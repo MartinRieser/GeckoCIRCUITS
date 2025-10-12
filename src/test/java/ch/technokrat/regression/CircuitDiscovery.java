@@ -100,7 +100,8 @@ public class CircuitDiscovery {
         Path filePath = circuitFile.toPath().toAbsolutePath();
 
         try {
-            return resourcesPath.relativize(filePath).toString();
+            // Use forward slashes consistently for cross-platform compatibility
+            return resourcesPath.relativize(filePath).toString().replace('\\', '/');
         } catch (IllegalArgumentException e) {
             // File is not in resources directory
             return circuitFile.getName();

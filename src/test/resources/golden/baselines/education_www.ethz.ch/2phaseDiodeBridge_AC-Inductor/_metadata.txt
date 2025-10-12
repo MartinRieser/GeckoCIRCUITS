@@ -1,0 +1,5 @@
+circuit=education_www.ipes.ethz.ch/2phaseDiodeBridge_AC-Inductor.ipes
+simulationTime=0.01
+timestep=1.0E-7
+checksum=d691b6089f3dd2dda2e4a217f1b516b7bf8fe01491578bfa4de54834d0de3b85
+signalCount=3

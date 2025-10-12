@@ -1,0 +1,5 @@
+circuit=education_www.ipes.ethz.ch/buck_simple.ipes
+simulationTime=0.01
+timestep=1.0E-7
+checksum=e15977b495285694fbe667bb0801aef5b382825c9e6cb1f511829e06ded284aa
+signalCount=3

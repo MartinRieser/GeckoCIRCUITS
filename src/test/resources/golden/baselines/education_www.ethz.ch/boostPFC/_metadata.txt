@@ -1,0 +1,5 @@
+circuit=education_www.ipes.ethz.ch/boostPFC.ipes
+simulationTime=0.01
+timestep=1.0E-7
+checksum=d39c34c37090ad83d0a6259c45b6d121e56413067b2d76930a2d990c17e56506
+signalCount=3

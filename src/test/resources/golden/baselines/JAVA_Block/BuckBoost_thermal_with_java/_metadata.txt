@@ -1,0 +1,5 @@
+circuit=JAVA_Block/BuckBoost_thermal_with_java.ipes
+simulationTime=0.01
+timestep=1.0E-7
+checksum=f8e25294f5d0fca9b99ed0dd8e4b92977d2927c39659355f8e61630d6243bd6e
+signalCount=5

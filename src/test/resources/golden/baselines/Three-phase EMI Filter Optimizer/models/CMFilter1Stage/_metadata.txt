@@ -1,0 +1,5 @@
+circuit=Three-phase EMI Filter Optimizer/models/CMFilter1Stage.ipes
+simulationTime=0.01
+timestep=1.0E-7
+checksum=4a41a0456dd1e1c8b410e6eaad8c131275cabc45136b2d11750b9d7cb2e6d221
+signalCount=2

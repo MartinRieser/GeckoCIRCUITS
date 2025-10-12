@@ -1,0 +1,5 @@
+circuit=TutorialExercises/3_three_phaseInverter/inverter.ipes
+simulationTime=0.01
+timestep=1.0E-7
+checksum=010957b5738f50b456da106211cd90df9e1db53af1a4f6628e44b4facca1f497
+signalCount=3

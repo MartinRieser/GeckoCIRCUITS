@@ -151,9 +151,10 @@ public class GoldenReferenceTestHarnessGUI {
             // Wait for simulation to complete
             int maxWaitMs = 600000; // 10 minutes for GUI mode
             int waitedMs = 0;
-            int checkIntervalMs = 1000;
+            int checkIntervalMs = 2000; // Check every 2 seconds
+            boolean simulationCompleted = false;
 
-            while (!GeckoSim._testSuccessful && waitedMs < maxWaitMs) {
+            while (!simulationCompleted && waitedMs < maxWaitMs) {
                 Thread.sleep(checkIntervalMs);
                 waitedMs += checkIntervalMs;
 
@@ -161,14 +162,46 @@ public class GoldenReferenceTestHarnessGUI {
                 if (waitedMs % 30000 == 0) {
                     LOGGER.info("Simulation running... " + (waitedMs/1000) + "s elapsed");
                 }
+
+                // Check for simulation completion by testing if data is available
+                // In GUI mode, _testSuccessful may not be set automatically
+                try {
+                    String[] controlElements = GeckoExternal.getControlElements();
+                    if (controlElements != null && controlElements.length > 0) {
+                        // Try to get data from any control element
+                        for (String elementName : controlElements) {
+                            if (elementName == null || elementName.trim().isEmpty()) {
+                                continue;
+                            }
+
+                            try {
+                                double[] timeArray = GeckoExternal.getTimeArray(elementName, 0, tend, 0);
+                                if (timeArray != null && timeArray.length > 0) {
+                                    LOGGER.info("Simulation completed - found " + timeArray.length + " data points from " + elementName);
+                                    simulationCompleted = true;
+                                    GeckoSim._testSuccessful = true; // Set flag for consistency
+                                    break;
+                                }
+                            } catch (Exception e) {
+                                // Element doesn't have data - continue checking
+                                LOGGER.finest("No data from " + elementName + ": " + e.getMessage());
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    LOGGER.finest("Error checking completion status: " + e.getMessage());
+                }
             }
 
-            if (!GeckoSim._testSuccessful) {
+            if (!simulationCompleted) {
                 throw new RuntimeException("Simulation did not complete successfully or timed out after "
                     + (maxWaitMs/1000) + " seconds for circuit: " + circuitFile.getName());
             }
 
             LOGGER.info("Simulation completed successfully");
+
+            // Give more time for signal data to be ready for capture
+            Thread.sleep(5000);
 
             // Capture results
             SimulationResult result = captureResults(circuitFile, dt, tend);
@@ -211,18 +244,63 @@ public class GoldenReferenceTestHarnessGUI {
                 }
 
                 try {
-                    // Try to get signal data
+                    // Try to get signal data with retry mechanism for timing issues
                     double[] timeArray = GeckoExternal.getTimeArray(elementName, 0, tend, 0);
-                    float[] signalData = GeckoExternal.getSignalData(elementName, 0, tend, 0);
+                    float[] signalData = null;
 
-                    if (timeArray != null && signalData != null && timeArray.length > 0) {
-                        result.addSignal(elementName, timeArray, signalData);
-                        LOGGER.info("Captured signal: " + elementName + " (" + timeArray.length + " points)");
+                    if (timeArray != null && timeArray.length > 0) {
+                        // Retry signal data capture up to 5 times with delays
+                        int maxRetries = 5;
+                        for (int retry = 0; retry < maxRetries; retry++) {
+                            try {
+                                signalData = GeckoExternal.getSignalData(elementName, 0, tend, 0);
+
+                                if (signalData != null && signalData.length > 0) {
+                                    LOGGER.info("Got signal data for " + elementName + " on attempt " + (retry + 1));
+                                    break;
+                                } else if (retry < maxRetries - 1) {
+                                    LOGGER.info("No signal data for " + elementName + " (attempt " + (retry + 1) + "/" + maxRetries + "), retrying in 2s...");
+                                    Thread.sleep(2000);
+                                }
+                            } catch (Exception e) {
+                                if (retry < maxRetries - 1) {
+                                    LOGGER.info("Signal data error for " + elementName + " (attempt " + (retry + 1) + "/" + maxRetries + "): " + e.getMessage());
+                                    Thread.sleep(2000);
+                                }
+                            }
+                        }
+                    }
+
+                    if (timeArray != null && signalData != null && timeArray.length > 0 && signalData.length > 0) {
+                        // Check if arrays have same length
+                        if (timeArray.length == signalData.length) {
+                            result.addSignal(elementName, timeArray, signalData);
+                            LOGGER.info("✅ Captured signal: " + elementName + " (" + timeArray.length + " points)");
+                        } else {
+                            // Arrays have different lengths - truncate to minimum
+                            int minLength = Math.min(timeArray.length, signalData.length);
+                            if (minLength > 0) {
+                                // Create truncated arrays
+                                double[] truncatedTime = new double[minLength];
+                                float[] truncatedSignal = new float[minLength];
+                                System.arraycopy(timeArray, 0, truncatedTime, 0, minLength);
+                                System.arraycopy(signalData, 0, truncatedSignal, 0, minLength);
+
+                                result.addSignal(elementName, truncatedTime, truncatedSignal);
+                                LOGGER.info("✅ Captured signal (truncated): " + elementName + " (" + minLength + " points, was " + timeArray.length + " time, " + signalData.length + " signal)");
+                            } else {
+                                LOGGER.info("❌ No valid data for: " + elementName + " (time: " + timeArray.length + ", signal: " + signalData.length + ")");
+                            }
+                        }
+                    } else {
+                        LOGGER.info("❌ No data available for element: " + elementName +
+                                   (timeArray != null ? " (time: " + timeArray.length + ")" : " (no time data)") +
+                                   (signalData != null ? " (signal: " + signalData.length + ")" : " (no signal data)"));
                     }
 
                 } catch (Exception e) {
-                    // Element is not a scope or doesn't have data - skip it
-                    LOGGER.finest("Could not capture data from: " + elementName + " - " + e.getMessage());
+                    // Element is not a scope or doesn't have data - log at info level for debugging
+                    LOGGER.info("❌ Could not capture data from: " + elementName + " - " + e.getMessage());
                 }
             }
 

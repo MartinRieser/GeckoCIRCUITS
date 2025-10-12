@@ -1,0 +1,5 @@
+circuit=Education_ETHZ/ex_1.ipes
+simulationTime=0.001
+timestep=1.0E-8
+checksum=null
+signalCount=2

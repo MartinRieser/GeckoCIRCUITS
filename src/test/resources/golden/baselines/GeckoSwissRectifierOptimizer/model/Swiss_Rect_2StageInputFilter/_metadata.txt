@@ -1,0 +1,5 @@
+circuit=GeckoSwissRectifierOptimizer/model/Swiss_Rect_2StageInputFilter.ipes
+simulationTime=0.01
+timestep=1.0E-7
+checksum=c9d0d1d53e3c47c27e9f14aa8ae946d60f1def1d1f1b0a9f9240ae4d00b1d057
+signalCount=3
