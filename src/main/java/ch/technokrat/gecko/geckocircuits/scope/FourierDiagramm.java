@@ -1,7 +1,7 @@
 /*  This file is part of GeckoCIRCUITS. Copyright (C) ETH Zurich, Gecko-Simulations GmbH
  *
  *  GeckoCIRCUITS is free software: you can redistribute it and/or modify it under 
- *  the terms of the GNU General Public License as published by the Free Software 
+ *  terms of the GNU General Public License as published by the Free Software 
  *  Foundation, either version 3 of the License, or (at your option) any later version.
  *
  *  GeckoCIRCUITS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
@@ -24,40 +24,109 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
+/**
+ * Displays a bar chart (stem plot) of Fourier spectrum coefficients.
+ * <p>
+ * This class renders the magnitude spectrum of a Fourier transform as vertical bars
+ * centered at each harmonic frequency. The x-axis represents the harmonic order (n),
+ * and the y-axis represents the amplitude of the Fourier coefficient (cn).
+ * <p>
+ * The visualization uses a bar chart format where each harmonic component is represented
+ * by a vertical line from the x-axis to the coefficient value. This is commonly
+ * called a "stem plot" in signal processing literature.
+ * <p>
+ * The plot supports mouse interactions including:
+ * <ul>
+ *   <li>Zoom rectangle - Select a region to zoom in</li>
+ *   <li>Value slider - Move a vertical line to inspect values at specific frequencies</li>
+ *   <li>Autoscale - Automatically adjust axes to fit data range</li>
+ * </ul>
+ *
+ * @author Gecko-Simulations GmbH
+ * @see GraferV3
+ * @see GraferImplementation
+ */
 class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionListener {
 
     //----------------------------
+    /** Fourier magnitude coefficients (cn) - displayed as bar heights in spectrum */
     private double[] cnSG;
+    
+    /** Minimum harmonic order to display on the x-axis */
     private int nMin;
+    
+    /** Arrays of x and y coordinates for rendering bars as polyline */
     private double[] xNeu, yNeu;
-    private int bi, hi, X0xi, X0yi, Y0xi, Y0yi;  // Hoehe, Breite, X-u-Y-Koord. des Achsenkreuzes (alles in Pix)
+    
+    /** Width, height, and axis intersection coordinates in pixels.
+     * width = width of plot area (excluding margins)
+     * height = height of plot area (excluding margins)
+     * X0xi, X0yi = x-axis intersection points
+     * Y0xi, Y0yi = y-axis intersection points (all in pixels) */
+    private int bi, hi, X0xi, X0yi, Y0xi, Y0yi;
+    
     //-----------------------
+    /** Current mouse interaction mode */
     private int mausModus = GraferImplementation.MAUSMODUS_NIX;
+    
+    /** Coordinates for zoom rectangle corners */
     private int x1Zoom, y1Zoom, x2Zoom, y2Zoom;
+    
+    /** Indicates whether mouse drag operation is in progress */
     private boolean imDragModus = false;
-    // Bereichsgrenzen eines Diagramms bezueglich Maus-Klick:
+    
+    /** Boundary limits of diagram for mouse click operations - one set per graph */
     private int[] xGrfMIN, xGrfMAX, yGrfMIN, yGrfMAX;
+    
+    /** Index of currently clicked/active graph (for multi-graph displays) */
     private int indexAngeklickterGraph = 0;
+    
     //-----------------------
+    /** Indicates whether x-axis slider is currently active */
     private boolean xSchieberAktiv = false;
+    
+    /** Current x-axis pixel position of slider */
     private int xSchieberPix;
-    private double[] xSchieberWert = new double[]{-1, -1};  // einem einzelnen Pixelpunkt sind eventuell mehrere Werte zugeordnet
+    
+    /** Slider values corresponding to current position.
+     * At a single pixel position, multiple values may be assigned:
+     * [0] = harmonic order (n) at slider position
+     * [1] = actual frequency (Hz) at slider position */
+    private double[] xSchieberWert = new double[]{-1, -1};
+    
+    /** Corresponding y-values for slider position.
+     * [0] = magnitude coefficient value at slider
+     * [1] = not used (placeholder) */
     private double[] yNeuWert = new double[]{-1, -1};
+    
+    /** Formatter for displaying numerical values */
     private TechFormat cf = new TechFormat();
+    
     //-----------------------
+    /** Base (fundamental) frequency in Hz for converting harmonic order to actual frequency */
     private final double _baseFrequency;
 
-    public FourierDiagramm(double[] cnSG, int nMin, double baseFreqency) {
+    /**
+     * Constructs a Fourier spectrum display with a bar chart visualization.
+     *
+     * @param cnSG Array of Fourier magnitude coefficients (cn) for each harmonic order.
+     *               Each coefficient becomes the height of a vertical bar in the plot.
+     * @param nMin Minimum harmonic order (n) to display on the x-axis.
+     *            Higher values skip lower frequency components.
+     * @param baseFrequency Fundamental frequency (f1) in Hz.
+     *                  Used to convert harmonic order n to actual frequency (f = n * f1).
+     */
+    public FourierDiagramm(double[] cnSG, int nMin, double baseFrequency) {
         bi = 350;
         hi = 300;
         X0xi = 60;
         X0yi = hi + 60;
         Y0xi = X0xi;
         Y0yi = X0yi;
-        _baseFrequency = baseFreqency;
+        _baseFrequency = baseFrequency;
         
-        this.setPreferredSize(new Dimension(bi + 2 * X0xi, X0yi + (X0yi - hi)));  // fuer pack() im uebergeordneten JFrame
-        // Bereichsgrenzen fuers Maus-Klicken:
+        this.setPreferredSize(new Dimension(bi + 2 * X0xi, X0yi + (X0yi - hi)));  // For pack() in parent JFrame
+        // Set boundary limits for mouse clicking:
         xGrfMIN = new int[]{0};
         xGrfMAX = new int[]{this.getWidth()};
         yGrfMIN = new int[]{0};
@@ -69,10 +138,10 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
         this.cnSG = cnSG;
         this.nMin = nMin;
         //-----------------------
-        // Kurve 'aufbereiten'  --> Umwandlung der Balkendaten
+        // Prepare curve data - convert bar data to polyline format
         xNeu = new double[4 * cnSG.length];
         yNeu = new double[4 * cnSG.length];
-        int i2 = 0;  // Zaehler in 'xNeu'
+        int i2 = 0;  // Counter for xCoordinates
         double balkenbreite = 0.1;
         double deltaX = 1e-6;
         for (int i1 = 0; i1 < cnSG.length; i1++) {
@@ -96,10 +165,15 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
         //-----------------------
         this.setzeAchsen();
         this.setzeKurven();
-        this.resize();  // damit's auch wirklich passt
+        this.resize();  // Ensure proper sizing
     }
 
-    // Neuskalierung des Diagramms, wenn die Fenster-Abmessungen geaendert werden -->
+    /**
+     * Rescales and repositions axes and bars when the window size changes.
+     * <p>
+     * Recalculates all dimensions, margins, and boundary limits based on the new
+     * window size. Called when the parent container is resized.
+     */
     public void resize() {
         //---------------------------------------
         bi = this.getWidth() - 2 * X0xi;
@@ -110,7 +184,7 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
         Y0yi = X0yi;
         this.setzeAchsenBreiteHoeheX0Y0(new int[]{bi}, new int[]{hi}, new int[]{X0xi}, new int[]{X0yi}, new int[]{Y0xi}, new int[]{Y0yi});
         //---------------------------------------
-        // Bereichsgrenzen fuers Maus-Klicken --> wird hier fuer 2 Diagramme definiert
+        // Set boundary limits for mouse clicking - defined here for 2 graphs
         xGrfMIN = new int[]{0};
         xGrfMAX = new int[]{this.getWidth()};
         yGrfMIN = new int[]{0};
@@ -118,6 +192,19 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
         //---------------------------------------
     }
 
+    /**
+     * Sets the mouse interaction mode and updates the display accordingly.
+     * <p>
+     * Different modes enable different mouse behaviors:
+     * <ul>
+     *   <li>NIX (None) - Disables all mouse interaction</li>
+     *   <li>ZOOM_AUTOFIT - Autoscales axes to fit all data</li>
+     *   <li>ZOOM_FENSTER (Window/Rectangle) - Enables rectangle selection for zooming</li>
+     *   <li>WERTANZEIGE_SCHIEBER (Value Slider) - Shows slider with value display</li>
+     * </ul>
+     *
+     * @param mausModus The new mouse mode from GraferImplementation constants
+     */
     public void setMausModus(int mausModus) {
         this.mausModus = mausModus;
         //---------
@@ -136,27 +223,36 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
             this.setzeTickSpacing(new double[]{(cnSG.length / 10)}, new double[]{empf[4]});
             repaint();
         } else if (mausModus == GraferImplementation.MAUSMODUS_ZOOM_FENSTER) {
+            // Nothing specific to do - zoom handled in mouse events
         } else if (mausModus == GraferImplementation.MAUSMODUS_WERTANZEIGE_SCHIEBER) {
             //------------------------------------
             xSchieberAktiv = true;
-            xSchieberPix = X0xi;  // x-Schieber wird an den Anfang gesetzt
+            xSchieberPix = X0xi;  // x-slider is set to the start position
         }
         //---------
     }
 
-    // wird ueberschrieben, um Text dazuschreiben zu koennen -->
+    /**
+     * Custom painting to draw additional visual elements on top of the plot.
+     * <p>
+     * Draws zoom rectangle when in zoom mode, and value slider line when in slider mode.
+     * These overlays are drawn on top of the base plot to indicate current state.
+     *
+     * @param g The graphics context for drawing
+     */
+    @Override
     protected void zeichne(Graphics g) {
         if ((mausModus == GraferImplementation.MAUSMODUS_ZOOM_FENSTER) && (imDragModus)) {
             g.setColor(GlobalColors.farbeZoomRechteck);
             int b = Math.abs(x2Zoom - x1Zoom), h = Math.abs(y2Zoom - y1Zoom);
             if ((x1Zoom > x2Zoom) && (y1Zoom > y2Zoom)) {
                 g.drawRect(x2Zoom, y2Zoom, b, h);
-            } else if ((x1Zoom > x2Zoom) && (y2Zoom > y1Zoom)) {
+            } else if ((x1Zoom > x2Zoom) && (y1Zoom > y2Zoom)) {
                 g.drawRect(x2Zoom, y1Zoom, b, h);
             } else if ((x1Zoom < x2Zoom) && (y1Zoom > y2Zoom)) {
                 g.drawRect(x1Zoom, y2Zoom, b, h);
-            } else if ((x1Zoom < x2Zoom) && (y2Zoom > y1Zoom)) {
-                g.drawRect(x1Zoom, y1Zoom, b, h);
+            } else if ((x1Zoom < x2Zoom) && (y1Zoom > y1Zoom)) {
+                g.drawRect(x1Zoom, y2Zoom, b, h);
             }
         }
         if ((mausModus == GraferImplementation.MAUSMODUS_WERTANZEIGE_SCHIEBER) || (xSchieberAktiv)) {
@@ -174,6 +270,13 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
         }
     }
 
+    /**
+     * Configures x and y axes for the Fourier spectrum plot.
+     * <p>
+     * Sets up axis labels, colors, types (linear), and positioning.
+     * Disables grid lines for clean spectrum display. Configures tick marks
+     * based on harmonic order range.
+     */
     @Override
     public void setzeAchsen() {
         //-------------------------------------
@@ -182,7 +285,7 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
         this.setzeAchsenFarbe(new Color[]{Color.black}, new Color[]{Color.black});
         this.setzeAchsenTyp(new int[]{ACHSE_LIN}, new int[]{ACHSE_LIN});
         this.setzeAchsenLinienStil(new int[]{SOLID_PLAIN}, new int[]{SOLID_PLAIN});
-        this.setzeAchsenBeschriftungen(new String[]{""}, new String[]{""});  // braucht es, damit kein NullPointer-Error
+        this.setzeAchsenBeschriftungen(new String[]{""}, new String[]{""});  // Needed to avoid NullPointerException
         this.definiereGridNormalX(new int[]{0}, new int[]{0});
         this.definiereGridNormalY(new int[]{0}, new int[]{0});
         this.setzeGridLinienStil(new int[]{INVISIBLE}, new int[]{DOTTED_PLAIN}, new int[]{INVISIBLE}, new int[]{INVISIBLE});
@@ -213,11 +316,17 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
         //-------------------------------------
     }
 
+    /**
+     * Configures the Fourier spectrum bars (curves) for display.
+     * <p>
+     * Sets up one curve representing the stem plot bars. Configures
+     * the data source, styling, and point symbols.
+     */
     @Override
     protected void setzeKurven() {
         //=========================================
-        // anhand der Worksheet-Daten zu setzen -->
-        //------------------------------------- 
+        // Set data based on worksheet data -->
+        //-------------------------------------
         this.setzeKurvenAnzahl(1);
         this.setzeZugehoerigkeitKurveAchsen(new int[]{0}, new int[]{0});
         this.setzeKurveIndexWorksheetKolonnenXY(new int[][]{{0, 1}});
@@ -238,39 +347,60 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
     public void mouseExited(final MouseEvent mouseEvent) {
     }
 
+    /**
+     * Handles mouse button press events.
+     * <p>
+     * Records initial click position for zoom operations or activates slider.
+     * Behavior depends on current mouse mode.
+     *
+     * @param mouseEvent The mouse event containing click coordinates
+     */
     @Override
     public void mousePressed(final MouseEvent mouseEvent) {
         if (mausModus == GraferImplementation.MAUSMODUS_NIX) {
+            // Do nothing
         } else if (mausModus == GraferImplementation.MAUSMODUS_ZOOM_AUTOFIT) {
+            // Handled in setMausModus
         } else if (mausModus == GraferImplementation.MAUSMODUS_ZOOM_FENSTER) {
             x1Zoom = mouseEvent.getX();
             y1Zoom = mouseEvent.getY();
             imDragModus = true;
         } else if (mausModus == GraferImplementation.MAUSMODUS_WERTANZEIGE_SCHIEBER) {
+            // Handled in mouseDragged
         }
     }
 
+    /**
+     * Handles mouse button release events.
+     * <p>
+     * Completes zoom rectangle operation and applies new axis limits.
+     * Calculates appropriate tick spacing for the zoomed region.
+     *
+     * @param mouseEvent The mouse event containing release coordinates
+     */
     @Override
     public void mouseReleased(final MouseEvent mouseEvent) {
         //-------------------
         if (mausModus == GraferImplementation.MAUSMODUS_NIX) {
+            // Do nothing
         } else if (mausModus == GraferImplementation.MAUSMODUS_ZOOM_AUTOFIT) {
+            // Do nothing
         } else if (mausModus == GraferImplementation.MAUSMODUS_ZOOM_FENSTER) {
             imDragModus = false;
             x2Zoom = mouseEvent.getX();
             y2Zoom = mouseEvent.getY();
-            // Umrechnung der Zoom-Koordinaten von Pixelpunkten in Werte des Zomm-definierenden Rechtecks -->
+            // Convert zoom coordinates from pixel points to values of the zoom rectangle -->
             double[] xy1 = getValueFromPixel(x1Zoom, y1Zoom);
             double[] xy2 = getValueFromPixel(x2Zoom, y2Zoom);
             if (xy1[0] > xy2[0]) {  // flip x-values
-                double q = xy1[0];
+                double temp = xy1[0];
                 xy1[0] = xy2[0];
-                xy2[0] = q;
+                xy2[0] = temp;
             }
             if (xy1[1] > xy2[1]) {  // flip y-values
-                double q = xy1[1];
+                double temp = xy1[1];
                 xy1[1] = xy2[1];
-                xy2[1] = q;
+                xy2[1] = temp;
             }
             double[] empfX = new double[]{xy1[0], xy2[0], -1, -1, (0.2 * (xy2[0] - xy1[0]))};
             empfX[4] = Math.round(empfX[4]);
@@ -282,9 +412,10 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
                 empfY[4] *= 0.5;
             }
             if (empfY[0] < 0) {
-                empfY[0] = 0;  // damit keine negativen y-Werte
-            }            //
-            // Achsen entsprechend neu setzen -->
+                empfY[0] = 0;  // Ensure no negative y-values
+            }
+            //
+            // Set axes accordingly -->
             this.setzeAchsenBegrenzungen(
                     new double[]{empfX[0]}, new double[]{empfX[1]}, new boolean[]{true},
                     new double[]{empfY[0]}, new double[]{empfY[1]}, new boolean[]{true});
@@ -292,6 +423,7 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
             repaint();
             //-------------------
         } else if (mausModus == GraferImplementation.MAUSMODUS_WERTANZEIGE_SCHIEBER) {
+            // Do nothing
         }
     }
 
@@ -303,10 +435,20 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
     public void mouseMoved(final MouseEvent mouseEvent) {
     }
 
+    /**
+     * Handles mouse drag events for zoom rectangle and slider movement.
+     * <p>
+     * In zoom mode: draws and updates zoom rectangle boundaries.
+     * In slider mode: updates slider position and calculates corresponding values.
+     *
+     * @param mouseEvent The mouse event containing current coordinates
+     */
     @Override
     public void mouseDragged(final MouseEvent mouseEvent) {
         if (mausModus == GraferImplementation.MAUSMODUS_NIX) {
+            // Do nothing
         } else if (mausModus == GraferImplementation.MAUSMODUS_ZOOM_AUTOFIT) {
+            // Do nothing
         } else if (mausModus == GraferImplementation.MAUSMODUS_ZOOM_FENSTER) {
             if (!imDragModus) {
                 return;
@@ -335,7 +477,7 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
             if (xSchieberPix > X0xi + bi) {
                 xSchieberPix = X0xi + bi;
             }
-            xSchieberWert[0] = Math.round(getValueFromPixel(xSchieberPix, 0)[0]);  // x-Wert der Schieber-Position, nur ganzzahlige n-Werte
+            xSchieberWert[0] = Math.round(getValueFromPixel(xSchieberPix, 0)[0]);  // x-value at slider position, integer harmonic only
             xSchieberWert[1] = xSchieberWert[0] * _baseFrequency;
             
             for (int i1 = 1; i1 < xNeu.length; i1++) {
@@ -348,9 +490,18 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
         }
         //-------------------
     }
-    //================================================
 
-    // Wenn mit der Maus in das Pixel-Feld geklickt wird -->
+    /**
+     * Converts pixel coordinates to axis values.
+     * <p>
+     * When mouse is clicked in the pixel area, this method calculates the
+     * corresponding x (harmonic order) and y (amplitude) values on the axes.
+     * Searches through all available axes to find which one contains the click point.
+     *
+     * @param xPix The x-coordinate in pixels
+     * @param yPix The y-coordinate in pixels
+     * @return Array containing [x-value, y-value, y-axis-index] at the pixel position
+     */
     private double[] getValueFromPixel(int xPix, int yPix) {
         //-------------------
         double achseXmin_ = -1, achseYmin_ = -1;
@@ -395,7 +546,18 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
         //-------------------
     }
 
-    // Ermittle (x/y)-Wert in Pixel zu einem Wertepaar -->
+    /**
+     * Calculates pixel coordinates from axis values.
+     * <p>
+     * Converts axis values (harmonic order and amplitude) to screen pixel coordinates.
+     * Handles both linear and logarithmic axis scaling.
+     *
+     * @param xWert The x-axis value (harmonic order) to convert
+     * @param yWert The y-axis value (amplitude) to convert
+     * @param index_xAchse Index of the x-axis configuration to use
+     * @param index_yAchse Index of the y-axis configuration to use
+     * @return Array containing [x-pixel, y-pixel] coordinates
+     */
     private int[] getPixelFromValue(double xWert, double yWert, int index_xAchse, int index_yAchse) {
         //-------------------
         double achseXmin_ = achseXmin[index_xAchse];
