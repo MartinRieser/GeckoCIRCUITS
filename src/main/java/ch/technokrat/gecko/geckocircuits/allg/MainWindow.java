@@ -242,513 +242,8 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     }
 
     private void baueGUI() {
-        JMenu fileMenu = GuiFabric.getJMenu(I18nKeys.FILE);
-        mItemNew = GuiFabric.getJMenuItem(I18nKeys.NEW);
-        mItemNew.setActionCommand("New");
-        mItemNew.addActionListener(this);
-        mItemNew.setMnemonic(KeyEvent.VK_N);
-        mItemOpen = GuiFabric.getJMenuItem(I18nKeys.OPEN);
-        mItemOpen.setActionCommand("Open");
-        mItemOpen.addActionListener(this);
-        mItemOpen.setMnemonic(KeyEvent.VK_O);
-        mItemSave = GuiFabric.getJMenuItem(I18nKeys.SAVE);
-        mItemSave.setActionCommand("Save");
-        mItemSave.addActionListener(this);
-        mItemSave.setMnemonic(KeyEvent.VK_S);
-        mItemSaveAs = GuiFabric.getJMenuItem(I18nKeys.SAVE_AS);
-        mItemSaveAs.setActionCommand("Save As");
-        mItemSaveAs.addActionListener(this);
-
-        mItemSaveView = GuiFabric.getJMenuItem(I18nKeys.SAVE_VIEW_AS_IMAGE);
-        mItemSaveView.setActionCommand("Save View as Image");
-        mItemSaveView.addActionListener(this);
-        mItemExit = GuiFabric.getJMenuItem(I18nKeys.EXIT);
-        mItemExit.setActionCommand("Exit");
-        mItemExit.addActionListener(this);
-        //
-        fileMenu.add(mItemNew);
-        mItemNew.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
-        fileMenu.add(mItemOpen);
-        mItemOpen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK));
-        fileMenu.add(mItemSave);
-        mItemSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK));
-        fileMenu.add(mItemSaveAs);
-        fileMenu.add(mItemSaveView);
-        fileMenu.add(mItemExit);
-        // the most recently edited files:
-        fileMenu.addSeparator();
-        mItemRECENT_1 = new JMenuItem(getTextMenuItemRECENT(GlobalFilePathes.RECENT_CIRCUITS_1, RECENT_FILE_SPACE));
-        mItemRECENT_1.addActionListener(this);
-        mItemRECENT_1.setActionCommand("RECENT_1");
-        mItemRECENT_2 = new JMenuItem(getTextMenuItemRECENT(GlobalFilePathes.RECENT_CIRCUITS_2, RECENT_FILE_SPACE));
-        mItemRECENT_2.addActionListener(this);
-        mItemRECENT_2.setActionCommand("RECENT_2");
-        mItemRECENT_3 = new JMenuItem(getTextMenuItemRECENT(GlobalFilePathes.RECENT_CIRCUITS_3, RECENT_FILE_SPACE));
-        mItemRECENT_3.addActionListener(this);
-        mItemRECENT_3.setActionCommand("RECENT_3");
-        mItemRECENT_4 = new JMenuItem(getTextMenuItemRECENT(GlobalFilePathes.RECENT_CIRCUITS_4, RECENT_FILE_SPACE));
-        mItemRECENT_4.addActionListener(this);
-        mItemRECENT_4.setActionCommand("RECENT_4");
-        fileMenu.add(mItemRECENT_1);
-        fileMenu.add(mItemRECENT_2);
-        fileMenu.add(mItemRECENT_3);
-        fileMenu.add(mItemRECENT_4);
-        //=======================================
-        JMenu editMenu = GuiFabric.getJMenu(I18nKeys.EDIT);
-        mItemUndo = GuiFabric.getJMenuItem(I18nKeys.UNDO);
-        mItemUndo.setActionCommand("Undo");
-        mItemUndo.addActionListener(this);
-        mItemUndo.setMnemonic(KeyEvent.VK_Z);
-
-        mItemRedo = GuiFabric.getJMenuItem(I18nKeys.REDO);
-        mItemRedo.setActionCommand("Redo");
-        mItemRedo.addActionListener(this);
-        mItemRedo.setMnemonic(KeyEvent.VK_Y);
-
-        mItemCopy = GuiFabric.getJMenuItem(I18nKeys.COPY_ELEMENTS);
-        mItemCopy.setActionCommand("Copy Elements");
-        mItemCopy.addActionListener(this);
-        mItemCopy.setMnemonic(KeyEvent.VK_C);
-        mItemMove = GuiFabric.getJMenuItem(I18nKeys.MOVE_ELEMENTS);
-        mItemMove.setActionCommand("Move Elements");
-        mItemMove.addActionListener(this);
-        mItemMove.setMnemonic(KeyEvent.VK_X);
-        mItemDelete = GuiFabric.getJMenuItem(I18nKeys.DELETE_ELEMENTS);
-        mItemDelete.setActionCommand("Delete Elements");
-        mItemDelete.addActionListener(this);
-        mItemDelete.setMnemonic(KeyEvent.VK_DELETE);
-        mItemEscape = GuiFabric.getJMenuItem(I18nKeys.DESELECT);
-        mItemEscape.setActionCommand("Deselect");
-        mItemEscape.addActionListener(this);
-        mItemEscape.setMnemonic(KeyEvent.VK_ESCAPE);
-        mItemSelectAll = GuiFabric.getJMenuItem(I18nKeys.SELECT_ALL);
-        mItemSelectAll.setActionCommand("SelectAll");
-        mItemSelectAll.addActionListener(this);
-        mItemSelectAll.setMnemonic(KeyEvent.VK_ESCAPE);
-        mItemDisable = GuiFabric.getJMenuItem(I18nKeys.ENABLE_DISABLE);
-        mItemDisable.setActionCommand("Disable");
-        mItemDisable.addActionListener(this);
-        mItemDisable.setMnemonic(KeyEvent.VK_A);
-
-        mItemDisableShort = GuiFabric.getJMenuItem(I18nKeys.SHORT_CIRCUIT_COMPONENT);
-        mItemDisableShort.setActionCommand("DisableShort");
-        mItemDisableShort.addActionListener(this);
-
-        mItemImport = GuiFabric.getJMenuItem(I18nKeys.IMPORT);
-        mItemImport.setActionCommand("Import");
-        mItemImport.addActionListener(this);
-
-        mItemImportFromFile = GuiFabric.getJMenuItem(I18nKeys.IMPORT_FROM_FILE);
-        mItemImportFromFile.setActionCommand("ImportFromFile");
-        mItemImportFromFile.addActionListener(this);
-
-        mItemExport = GuiFabric.getJMenuItem(I18nKeys.EXPORT);
-        mItemExport.setActionCommand("Export");
-        mItemExport.addActionListener(this);
-
-        editMenu.addSeparator();
-        editMenu.add(mItemUndo);
-        editMenu.add(mItemRedo);
-        editMenu.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                boolean canUndo = AbstractUndoGenericModel.undoManager.canUndo();
-                mItemUndo.setEnabled(canUndo);
-                String undoText = AbstractUndoGenericModel.undoManager.getUndoPresentationName();
-                if (canUndo) {
-                    mItemUndo.setText("Undo: " + undoText);
-                } else {
-                    mItemUndo.setText("Undo (not available)");
-                }
-
-                boolean canRedo = AbstractUndoGenericModel.undoManager.canRedo();
-                mItemRedo.setEnabled(canRedo);
-                if (canRedo) {
-                    String redoText = AbstractUndoGenericModel.undoManager.getRedoPresentationName();
-                    mItemRedo.setText("Redo: " + redoText);
-                } else {
-                    mItemRedo.setText("Redo (not available)");
-                }
-
-            }
-        });
-        mItemRedo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK));
-        mItemUndo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK));
-        editMenu.addSeparator();
-        editMenu.add(mItemMove);
-        mItemMove.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK));
-        editMenu.add(mItemCopy);
-        mItemCopy.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK));
-        editMenu.add(mItemDelete);    //mItemDelete.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
-        editMenu.add(mItemEscape);
-        mItemEscape.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0));
-
-        editMenu.add(mItemSelectAll);
-        mItemSelectAll.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_DOWN_MASK));
-
-        mItemDisable.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.CTRL_DOWN_MASK));
-        mItemDisableShort.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.ALT_DOWN_MASK));
-
-        editMenu.add(mItemDisable);
-        editMenu.add(mItemDisableShort);
-
-        editMenu.addSeparator();
-        editMenu.add(mItemImport);
-
-        editMenu.add(mItemExport);
-        editMenu.add(mItemImportFromFile);
-
-        aliasingCONTROL = new JCheckBoxMenuItem("Use Antialiasing");
-        aliasingCONTROL.addActionListener(this);
-        aliasingCONTROL.setActionCommand("aliasingCommand");
-
-        DataJunkCompressable.setMemoryPrecision();
-
-        String valueString = GeckoSim.applicationProps.getProperty("ANTI_ALIASING");
-        if (valueString != null) {
-            if (Boolean.parseBoolean(valueString)) {
-                _se.setAntialiasing(true);
-                aliasingCONTROL.setSelected(true);
-                jtfStatus.setAliasing(aliasingCONTROL.isSelected());
-            }
-        }
-
-        vItemShowNameLK = new JCheckBoxMenuItem("Name");
-        vItemShowNameLK.addActionListener(this);
-        vItemShowNameLK.setActionCommand("vItemShowNameLK");
-        vItemShowNameLK.setSelected(SchematicEditor2._lkDisplayMode.showName);
-        vItemShowNameLK.setForeground(GlobalColors.farbeFertigElementLK);
-        vItemShowParLK = new JCheckBoxMenuItem("Show Parameter");
-        vItemShowParLK.addActionListener(this);
-        vItemShowParLK.setActionCommand("vItemShowParLK");
-        vItemShowParLK.setSelected(SchematicEditor2._lkDisplayMode.showParameter);
-        vItemShowParLK.setForeground(GlobalColors.farbeFertigElementLK);
-        vItemShowTextLineLK = new JCheckBoxMenuItem("Show Text-Line");
-        vItemShowTextLineLK.addActionListener(this);
-        vItemShowTextLineLK.setActionCommand("vItemShowTextLineLK");
-        vItemShowTextLineLK.setSelected(SchematicEditor2._lkDisplayMode.showParameter);
-        vItemShowTextLineLK.setForeground(GlobalColors.farbeFertigElementLK);
-        vItemShowFlowLK = new JCheckBoxMenuItem("Flow Direction");
-        vItemShowFlowLK.addActionListener(this);
-        vItemShowFlowLK.setActionCommand("vItemShowFlowLK");
-        vItemShowFlowLK.setSelected(SchematicEditor2._lkDisplayMode.showFlowSymbol);
-        vItemShowFlowLK.setForeground(GlobalColors.farbeFertigElementLK);
-        //
-        vItemShowNameCONTROL = new JCheckBoxMenuItem("Name");
-        vItemShowNameCONTROL.addActionListener(this);
-        vItemShowNameCONTROL.setActionCommand("vItemShowNameCONTROL");
-        vItemShowNameCONTROL.setSelected(SchematicEditor2._controlDisplayMode.showName);
-        vItemShowNameCONTROL.setForeground(GlobalColors.farbeFertigElementCONTROL);
-        vItemShowParCONTROL = new JCheckBoxMenuItem("Show Parameter");
-        vItemShowParCONTROL.addActionListener(this);
-        vItemShowParCONTROL.setActionCommand("vItemShowParCONTROL");
-        vItemShowParCONTROL.setSelected(SchematicEditor2._controlDisplayMode.showParameter);
-        vItemShowParCONTROL.setForeground(GlobalColors.farbeFertigElementCONTROL);
-        vItemShowTextLineCONTROL = new JCheckBoxMenuItem("Show Text-Line");
-        vItemShowTextLineCONTROL.addActionListener(this);
-        vItemShowTextLineCONTROL.setActionCommand("vItemShowTextLineCONTROL");
-        vItemShowTextLineCONTROL.setSelected(SchematicEditor2._controlDisplayMode.showParameter);
-        vItemShowTextLineCONTROL.setForeground(GlobalColors.farbeFertigElementCONTROL);
-        //
-        vItemShowNameTHERM = new JCheckBoxMenuItem("Name");
-        vItemShowNameTHERM.addActionListener(this);
-        vItemShowNameTHERM.setActionCommand("vItemShowNameTHERM");
-
-        vItemShowNameTHERM.setSelected(SchematicEditor2._thermDisplayMode.showName);
-        vItemShowNameTHERM.setForeground(GlobalColors.farbeFertigElementTHERM);
-        vItemShowParTHERM = new JCheckBoxMenuItem("Show Parameter");
-        vItemShowParTHERM.addActionListener(this);
-        vItemShowParTHERM.setActionCommand("vItemShowParTHERM");
-        vItemShowParTHERM.setSelected(SchematicEditor2._thermDisplayMode.showParameter);
-        vItemShowParTHERM.setForeground(GlobalColors.farbeFertigElementTHERM);
-        vItemShowTextLineTHERM = new JCheckBoxMenuItem("Show Text-Line");
-        vItemShowTextLineTHERM.addActionListener(this);
-        vItemShowTextLineTHERM.setActionCommand("vItemShowTextLineTHERM");
-        vItemShowTextLineTHERM.setSelected(SchematicEditor2._thermDisplayMode.showParameter);
-        vItemShowTextLineTHERM.setForeground(GlobalColors.farbeFertigElementTHERM);
-        vItemShowFlowTHERM = new JCheckBoxMenuItem("Flow Direction");
-        vItemShowFlowTHERM.addActionListener(this);
-        vItemShowFlowTHERM.setActionCommand("vItemShowFlowTHERM");
-        vItemShowFlowTHERM.setSelected(SchematicEditor2._thermDisplayMode.showFlowSymbol);
-        vItemShowFlowTHERM.setForeground(GlobalColors.farbeFertigElementTHERM);
-        //
-        JMenu menueSkalierung = GuiFabric.getJMenu(I18nKeys.SCALING);
-        JMenuItem mItemSkal10 = GuiFabric.getJMenuItem(I18nKeys.POINT_10);
-        mItemSkal10.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                AbstractCircuitSheetComponent.dpixValue.setValue(10);
-            }
-        });
-        JMenuItem mItemSkal12 = GuiFabric.getJMenuItem(I18nKeys.POINT_12);
-        mItemSkal12.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                AbstractCircuitSheetComponent.dpixValue.setValue(12);
-            }
-        });
-        JMenuItem mItemSkal14 = GuiFabric.getJMenuItem(I18nKeys.POINT_14);
-        mItemSkal14.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                AbstractCircuitSheetComponent.dpixValue.setValue(14);
-            }
-        });
-        JMenuItem mItemSkal16 = GuiFabric.getJMenuItem(I18nKeys.POINT_16);
-        mItemSkal16.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                AbstractCircuitSheetComponent.dpixValue.setValue(16);
-            }
-        });
-        JMenuItem mItemSkal18 = GuiFabric.getJMenuItem(I18nKeys.POINT_18);
-        mItemSkal18.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                AbstractCircuitSheetComponent.dpixValue.setValue(18);
-            }
-        });
-        menueSkalierung.add(mItemSkal10);
-        menueSkalierung.add(mItemSkal12);
-        menueSkalierung.add(mItemSkal14);
-        menueSkalierung.add(mItemSkal16);
-        menueSkalierung.add(mItemSkal18);
-        //
-        JMenu menueFontSize = GuiFabric.getJMenu(I18nKeys.FONT_SIZE);
-        JMenuItem mItemFS06 = GuiFabric.getJMenuItem(I18nKeys.POINT_6);
-        mItemFS06.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                _se.setzeFont(6, "Arial");
-            }
-        });
-        JMenuItem mItemFS08 = GuiFabric.getJMenuItem(I18nKeys.POINT_8);
-        mItemFS08.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                _se.setzeFont(8, "Arial");
-            }
-        });
-        JMenuItem mItemFS10 = GuiFabric.getJMenuItem(I18nKeys.POINT_10);
-        mItemFS10.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                _se.setzeFont(10, "Arial");
-            }
-        });
-        JMenuItem mItemFS12 = GuiFabric.getJMenuItem(I18nKeys.POINT_12);
-        mItemFS12.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                _se.setzeFont(12, "Arial");
-            }
-        });
-        JMenuItem mItemFS14 = GuiFabric.getJMenuItem(I18nKeys.POINT_14);
-        mItemFS14.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                _se.setzeFont(14, "Arial");
-            }
-        });
-        JMenuItem mItemFS16 = GuiFabric.getJMenuItem(I18nKeys.POINT_16);
-        mItemFS16.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                _se.setzeFont(16, "Arial");
-            }
-        });
-        JMenuItem mItemFS18 = GuiFabric.getJMenuItem(I18nKeys.POINT_18);
-        mItemFS18.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                _se.setzeFont(18, "Arial");
-            }
-        });
-        menueFontSize.add(mItemFS06);
-        menueFontSize.add(mItemFS08);
-        menueFontSize.add(mItemFS10);
-        menueFontSize.add(mItemFS12);
-        menueFontSize.add(mItemFS14);
-        menueFontSize.add(mItemFS16);
-        menueFontSize.add(mItemFS18);
-        //
-        JMenu viewMenu = GuiFabric.getJMenu(I18nKeys.VIEW);
-        viewMenu.add(menueSkalierung);
-        viewMenu.add(menueFontSize);
-        viewMenu.add(aliasingCONTROL);
-        viewMenu.addSeparator();
-        viewMenu.add(vItemShowNameLK);
-        viewMenu.add(vItemShowParLK);
-        viewMenu.add(vItemShowTextLineLK);
-        viewMenu.add(vItemShowFlowLK);
-        viewMenu.addSeparator();
-        viewMenu.add(vItemShowNameCONTROL);
-        viewMenu.add(vItemShowParCONTROL);
-        viewMenu.add(vItemShowTextLineCONTROL);
-        viewMenu.addSeparator();
-        viewMenu.add(vItemShowNameTHERM);
-        viewMenu.add(vItemShowParTHERM);
-        viewMenu.add(vItemShowTextLineTHERM);
-        viewMenu.add(vItemShowFlowTHERM);
-        //=======================================
-        JMenu toolsMenu = GuiFabric.getJMenu(I18nKeys.TOOLS);
-
-        mItemMemorySettings = GuiFabric.getJMenuItem(I18nKeys.MEMORY_SETTINGS);
-        mItemMemorySettings.setActionCommand("memorySettings");
-        mItemMemorySettings.addActionListener(this);
-
-        mItemUpdateSettings = GuiFabric.getJMenuItem(I18nKeys.UPDATE_SETTINGS);
-        mItemUpdateSettings.setActionCommand("updateSettings");
-        mItemUpdateSettings.addActionListener(this);
-
-        mItemRemoteSettings = GuiFabric.getJMenuItem(I18nKeys.REMOTE_ACCESS_SETTINGS);
-        mItemRemoteSettings.setActionCommand("remoteSettings");
-        mItemRemoteSettings.addActionListener(this);
-
-        //
-        mItemConnectorTest = new JCheckBoxMenuItem("Check Connections");
-        mItemConnectorTest.addActionListener(this);
-        mItemConnectorTest.setActionCommand("mItemConnectorTest");
-        mItemConnectorTest.setSelected(false);
-
-        //
-        mItemSetPar = GuiFabric.getJMenuItem(I18nKeys.SET_PARAMETERS);
-        mItemSetPar.setActionCommand("setParameters");
-        mItemSetPar.addActionListener(this);
-        // 
-        mItemSetOrder = GuiFabric.getJMenuItem(I18nKeys.SET_ORDER_OF_CONTROL);
-        mItemSetOrder.setActionCommand("setOrder");
-        mItemSetOrder.addActionListener(this);
-
-        mItemCheckModel = GuiFabric.getJMenuItem(I18nKeys.CHECK_CONTROL_MODEL);
-        mItemCheckModel.setActionCommand("mItemCheckModel");
-        mItemCheckModel.addActionListener(this);
-        mItemCheckModel.setMnemonic(KeyEvent.VK_Q);
-
-        mItemFindString = GuiFabric.getJMenuItem(I18nKeys.FIND_IN_MODEL);
-        mItemFindString.setActionCommand("mItemFind");
-        mItemFindString.addActionListener(this);
-        mItemFindString.setMnemonic(KeyEvent.VK_F);
-        mItemFindString.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK));
-
-        //
-        toolsMenu.add(mItemConnectorTest);
-        mItemConnectorTest.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_K, KeyEvent.CTRL_DOWN_MASK));
-        toolsMenu.add(mItemCheckModel);
-        toolsMenu.add(mItemFindString);
-        mItemCheckModel.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyEvent.CTRL_DOWN_MASK));
-        toolsMenu.addSeparator();
-        toolsMenu.add(mItemSetPar);
-        toolsMenu.addSeparator();
-        toolsMenu.add(mItemMemorySettings);
-        toolsMenu.add(mItemUpdateSettings);
-        toolsMenu.add(mItemRemoteSettings);
-        JMenu helpMenu = GuiFabric.getJMenu(I18nKeys.HELP);
-
-        JMenuItem mItemAbout = GuiFabric.getJMenuItem(I18nKeys.ABOUT);
-        mItemAbout.setActionCommand("About");
-        mItemAbout.addActionListener(this);
-        //
-        helpMenu.add(mItemAbout);
-
-        JMenuItem mItemLicenses = GuiFabric.getJMenuItem(I18nKeys.LICENSING);
-        mItemLicenses.setActionCommand("Licensing");
-        mItemLicenses.addActionListener(this);
-        //
-        helpMenu.add(mItemLicenses);
-
-        JMenuItem mItemFeedback = GuiFabric.getJMenuItem(I18nKeys.FEEDBACK);
-        mItemFeedback.setActionCommand("Feedback");
-        mItemFeedback.addActionListener(this);
-
-        helpMenu.add(mItemFeedback);
-
-        JMenuItem mItemUpdate = GuiFabric.getJMenuItem(I18nKeys.UPDATES);
-        mItemUpdate.setActionCommand("Update");
-        mItemUpdate.addActionListener(this);
-
-        helpMenu.add(mItemUpdate);
-
-        //=======================================
-        // Simulations-Status-Anzeige:
-        JLabel jlSpace1 = new JLabel("       ");
-        //=======================================
-        JMenu geckoMenu = GuiFabric.getJMenu(I18nKeys.GECKO);
-        geckoMenu.setForeground(GlobalColors.farbeGecko);
-        _mItemScriptingTool = new JMenuItem("GeckoSCRIPT");  // TxtI.ti_optimizerSimple
-        _mItemScriptingTool.setEnabled(true);
-        _mItemScriptingTool.setActionCommand("geckoScript");
-        _mItemScriptingTool.addActionListener(this);
-        JMenuItem mItemOptimizerSimple = new JMenuItem("GeckoOPTIMIZER");  // TxtI.ti_optimizerSimple
-        mItemOptimizerSimple.setEnabled(false);
-        mItemOptimizerSimple.setActionCommand("geckoOptimizer");
-        mItemOptimizerSimple.addActionListener(this);
-        JMenuItem mItem3DTherm = new JMenuItem("GeckoHEAT");
-        mItem3DTherm.setActionCommand("3Dtherm");
-        mItem3DTherm.addActionListener(this);
-        JMenuItem mItemMagnet = new JMenuItem("GeckoMAGNETICS");
-        mItemMagnet.setActionCommand("magnet");
-        mItemMagnet.addActionListener(this);
-        JMenuItem mItemEMC = new JMenuItem("GeckoEMC");
-        mItemEMC.setActionCommand("geckoEMC");
-        mItemEMC.addActionListener(this);
-        geckoMenu.add(_mItemScriptingTool);
-        geckoMenu.add(mItemOptimizerSimple);
-        geckoMenu.add(mItem3DTherm);
-        geckoMenu.add(mItemMagnet);
-        geckoMenu.add(mItemEMC);
-
-        if (INCLUDE_GeckoMAGNETICS) {
-            mItemMagnet.setEnabled(true);
-        } else {
-            mItemMagnet.setEnabled(false);
-        }
-        if (INCLUDE_GeckoHEAT) {
-            mItem3DTherm.setEnabled(true);
-        } else {
-            mItem3DTherm.setEnabled(false);
-        }
-        if (INCLUDE_GeckoEMC) {
-            mItemEMC.setEnabled(true);
-        } else {
-            mItemEMC.setEnabled(false);
-        }
-        //=======================================
-        //
-        _menuBar = new JMenuBar();
-        _menuBar.add(fileMenu);
-        _menuBar.add(editMenu);
-        JMenu simMenu = GuiFabric.getJMenu(I18nKeys.SIMULATION);
-        _menuBar.add(simMenu);
-        _menuBar.add(viewMenu);
-        _menuBar.add(toolsMenu);
-        _menuBar.add(helpMenu);
-        _menuBar.add(geckoMenu);
-        _menuBar.add(jlSpace1);
-        _menuBar.add(jtfStatus);
-        this.setJMenuBar(_menuBar);
-        setSimulationMenu();
-
-        seScroll.getVerticalScrollBar().setUnitIncrement(20);
-        seScroll.getHorizontalScrollBar().setUnitIncrement(20);
-        JPanel p2 = new JPanel();
-        p2.setLayout(new BorderLayout());
-        p2.add(sea, BorderLayout.CENTER);
-        _northPanel.setBorder(new EmptyBorder(-5, -5, -5, -5));
-        _searchTestField = new SuggestionField(this);
-        _searchTestField.setCaseSensitive(false);
-        sea.registerSearchField(_searchTestField);
-
-        JPanel searchPanel = new JPanel();
-        searchPanel.setLayout(new BorderLayout());
-        _lastComponentButton = new LastComponentButton();
-        sea.registerLastComponentButton(_lastComponentButton);
-
-        _lastComponentButton.setContentAreaFilled(false);
-        _lastComponentButton.setFocusPainted(false);
-        Dimension dim = new Dimension(130, 130);
-        _lastComponentButton.setPreferredSize(dim);
-        _lastComponentButton.setMinimumSize(dim);
-        _lastComponentButton.setMaximumSize(dim);
-        searchPanel.add(_lastComponentButton);
-        searchPanel.add(_searchTestField, BorderLayout.SOUTH);
-        JPanel newPanel = new JPanel();
-        newPanel.setLayout(new BorderLayout());
-        newPanel.add(_northPanel);
-        newPanel.add(_northPanel, BorderLayout.NORTH);
-        newPanel.add(seScroll, BorderLayout.CENTER);
-        p2.add(searchPanel, BorderLayout.SOUTH);
-        split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, newPanel, p2);
-        this.getContentPane().add(split, BorderLayout.CENTER);
-
+        buildMenuBar();
+        buildMainPanel();
     }
 
     /**
@@ -1994,5 +1489,550 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         }
         return lines;
     }
-    
+
+    private void buildMenuBar() {
+        _menuBar = new JMenuBar();
+        _menuBar.add(buildFileMenu());
+        _menuBar.add(buildEditMenu());
+        JMenu simMenu = GuiFabric.getJMenu(I18nKeys.SIMULATION);
+        _menuBar.add(simMenu);
+        _menuBar.add(buildViewMenu());
+        _menuBar.add(buildToolsMenu());
+        _menuBar.add(buildHelpMenu());
+        _menuBar.add(buildGeckoMenu());
+
+        JLabel jlSpace1 = new JLabel("       ");
+        _menuBar.add(jlSpace1);
+        _menuBar.add(jtfStatus);
+        this.setJMenuBar(_menuBar);
+        setSimulationMenu();
+    }
+
+    private JMenu buildFileMenu() {
+        JMenu fileMenu = GuiFabric.getJMenu(I18nKeys.FILE);
+        mItemNew = GuiFabric.getJMenuItem(I18nKeys.NEW);
+        mItemNew.setActionCommand("New");
+        mItemNew.addActionListener(this);
+        mItemNew.setMnemonic(KeyEvent.VK_N);
+        mItemOpen = GuiFabric.getJMenuItem(I18nKeys.OPEN);
+        mItemOpen.setActionCommand("Open");
+        mItemOpen.addActionListener(this);
+        mItemOpen.setMnemonic(KeyEvent.VK_O);
+        mItemSave = GuiFabric.getJMenuItem(I18nKeys.SAVE);
+        mItemSave.setActionCommand("Save");
+        mItemSave.addActionListener(this);
+        mItemSave.setMnemonic(KeyEvent.VK_S);
+        mItemSaveAs = GuiFabric.getJMenuItem(I18nKeys.SAVE_AS);
+        mItemSaveAs.setActionCommand("Save As");
+        mItemSaveAs.addActionListener(this);
+
+        mItemSaveView = GuiFabric.getJMenuItem(I18nKeys.SAVE_VIEW_AS_IMAGE);
+        mItemSaveView.setActionCommand("Save View as Image");
+        mItemSaveView.addActionListener(this);
+        mItemExit = GuiFabric.getJMenuItem(I18nKeys.EXIT);
+        mItemExit.setActionCommand("Exit");
+        mItemExit.addActionListener(this);
+
+        fileMenu.add(mItemNew);
+        mItemNew.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
+        fileMenu.add(mItemOpen);
+        mItemOpen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK));
+        fileMenu.add(mItemSave);
+        mItemSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK));
+        fileMenu.add(mItemSaveAs);
+        fileMenu.add(mItemSaveView);
+        fileMenu.add(mItemExit);
+
+        fileMenu.addSeparator();
+        mItemRECENT_1 = new JMenuItem(getTextMenuItemRECENT(GlobalFilePathes.RECENT_CIRCUITS_1, RECENT_FILE_SPACE));
+        mItemRECENT_1.addActionListener(this);
+        mItemRECENT_1.setActionCommand("RECENT_1");
+        mItemRECENT_2 = new JMenuItem(getTextMenuItemRECENT(GlobalFilePathes.RECENT_CIRCUITS_2, RECENT_FILE_SPACE));
+        mItemRECENT_2.addActionListener(this);
+        mItemRECENT_2.setActionCommand("RECENT_2");
+        mItemRECENT_3 = new JMenuItem(getTextMenuItemRECENT(GlobalFilePathes.RECENT_CIRCUITS_3, RECENT_FILE_SPACE));
+        mItemRECENT_3.addActionListener(this);
+        mItemRECENT_3.setActionCommand("RECENT_3");
+        mItemRECENT_4 = new JMenuItem(getTextMenuItemRECENT(GlobalFilePathes.RECENT_CIRCUITS_4, RECENT_FILE_SPACE));
+        mItemRECENT_4.addActionListener(this);
+        mItemRECENT_4.setActionCommand("RECENT_4");
+        fileMenu.add(mItemRECENT_1);
+        fileMenu.add(mItemRECENT_2);
+        fileMenu.add(mItemRECENT_3);
+        fileMenu.add(mItemRECENT_4);
+
+        return fileMenu;
+    }
+
+    private JMenu buildEditMenu() {
+        JMenu editMenu = GuiFabric.getJMenu(I18nKeys.EDIT);
+        mItemUndo = GuiFabric.getJMenuItem(I18nKeys.UNDO);
+        mItemUndo.setActionCommand("Undo");
+        mItemUndo.addActionListener(this);
+        mItemUndo.setMnemonic(KeyEvent.VK_Z);
+
+        mItemRedo = GuiFabric.getJMenuItem(I18nKeys.REDO);
+        mItemRedo.setActionCommand("Redo");
+        mItemRedo.addActionListener(this);
+        mItemRedo.setMnemonic(KeyEvent.VK_Y);
+
+        mItemCopy = GuiFabric.getJMenuItem(I18nKeys.COPY_ELEMENTS);
+        mItemCopy.setActionCommand("Copy Elements");
+        mItemCopy.addActionListener(this);
+        mItemCopy.setMnemonic(KeyEvent.VK_C);
+        mItemMove = GuiFabric.getJMenuItem(I18nKeys.MOVE_ELEMENTS);
+        mItemMove.setActionCommand("Move Elements");
+        mItemMove.addActionListener(this);
+        mItemMove.setMnemonic(KeyEvent.VK_X);
+        mItemDelete = GuiFabric.getJMenuItem(I18nKeys.DELETE_ELEMENTS);
+        mItemDelete.setActionCommand("Delete Elements");
+        mItemDelete.addActionListener(this);
+        mItemDelete.setMnemonic(KeyEvent.VK_DELETE);
+        mItemEscape = GuiFabric.getJMenuItem(I18nKeys.DESELECT);
+        mItemEscape.setActionCommand("Deselect");
+        mItemEscape.addActionListener(this);
+        mItemEscape.setMnemonic(KeyEvent.VK_ESCAPE);
+        mItemSelectAll = GuiFabric.getJMenuItem(I18nKeys.SELECT_ALL);
+        mItemSelectAll.setActionCommand("SelectAll");
+        mItemSelectAll.addActionListener(this);
+        mItemSelectAll.setMnemonic(KeyEvent.VK_ESCAPE);
+        mItemDisable = GuiFabric.getJMenuItem(I18nKeys.ENABLE_DISABLE);
+        mItemDisable.setActionCommand("Disable");
+        mItemDisable.addActionListener(this);
+        mItemDisable.setMnemonic(KeyEvent.VK_A);
+
+        mItemDisableShort = GuiFabric.getJMenuItem(I18nKeys.SHORT_CIRCUIT_COMPONENT);
+        mItemDisableShort.setActionCommand("DisableShort");
+        mItemDisableShort.addActionListener(this);
+
+        mItemImport = GuiFabric.getJMenuItem(I18nKeys.IMPORT);
+        mItemImport.setActionCommand("Import");
+        mItemImport.addActionListener(this);
+
+        mItemImportFromFile = GuiFabric.getJMenuItem(I18nKeys.IMPORT_FROM_FILE);
+        mItemImportFromFile.setActionCommand("ImportFromFile");
+        mItemImportFromFile.addActionListener(this);
+
+        mItemExport = GuiFabric.getJMenuItem(I18nKeys.EXPORT);
+        mItemExport.setActionCommand("Export");
+        mItemExport.addActionListener(this);
+
+        editMenu.addSeparator();
+        editMenu.add(mItemUndo);
+        editMenu.add(mItemRedo);
+        editMenu.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                boolean canUndo = AbstractUndoGenericModel.undoManager.canUndo();
+                mItemUndo.setEnabled(canUndo);
+                String undoText = AbstractUndoGenericModel.undoManager.getUndoPresentationName();
+                if (canUndo) {
+                    mItemUndo.setText("Undo: " + undoText);
+                } else {
+                    mItemUndo.setText("Undo (not available)");
+                }
+
+                boolean canRedo = AbstractUndoGenericModel.undoManager.canRedo();
+                mItemRedo.setEnabled(canRedo);
+                if (canRedo) {
+                    String redoText = AbstractUndoGenericModel.undoManager.getRedoPresentationName();
+                    mItemRedo.setText("Redo: " + redoText);
+                } else {
+                    mItemRedo.setText("Redo (not available)");
+                }
+
+            }
+        });
+        mItemRedo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK));
+        mItemUndo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK));
+        editMenu.addSeparator();
+        editMenu.add(mItemMove);
+        mItemMove.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK));
+        editMenu.add(mItemCopy);
+        mItemCopy.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK));
+        editMenu.add(mItemDelete);
+        editMenu.add(mItemEscape);
+        mItemEscape.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0));
+
+        editMenu.add(mItemSelectAll);
+        mItemSelectAll.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_DOWN_MASK));
+
+        mItemDisable.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.CTRL_DOWN_MASK));
+        mItemDisableShort.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.ALT_DOWN_MASK));
+
+        editMenu.add(mItemDisable);
+        editMenu.add(mItemDisableShort);
+
+        editMenu.addSeparator();
+        editMenu.add(mItemImport);
+
+        editMenu.add(mItemExport);
+        editMenu.add(mItemImportFromFile);
+
+        return editMenu;
+    }
+
+    private JMenu buildViewMenu() {
+        JMenu viewMenu = GuiFabric.getJMenu(I18nKeys.VIEW);
+        buildViewMenuItems(viewMenu);
+
+        JMenu menueSkalierung = buildScalingMenu();
+        JMenu menueFontSize = buildFontSizeMenu();
+
+        viewMenu.add(menueSkalierung);
+        viewMenu.add(menueFontSize);
+        viewMenu.add(aliasingCONTROL);
+        viewMenu.addSeparator();
+        viewMenu.add(vItemShowNameLK);
+        viewMenu.add(vItemShowParLK);
+        viewMenu.add(vItemShowTextLineLK);
+        viewMenu.add(vItemShowFlowLK);
+        viewMenu.addSeparator();
+        viewMenu.add(vItemShowNameCONTROL);
+        viewMenu.add(vItemShowParCONTROL);
+        viewMenu.add(vItemShowTextLineCONTROL);
+        viewMenu.addSeparator();
+        viewMenu.add(vItemShowNameTHERM);
+        viewMenu.add(vItemShowParTHERM);
+        viewMenu.add(vItemShowTextLineTHERM);
+        viewMenu.add(vItemShowFlowTHERM);
+
+        return viewMenu;
+    }
+
+    private JMenu buildScalingMenu() {
+        JMenu menueSkalierung = GuiFabric.getJMenu(I18nKeys.SCALING);
+        JMenuItem mItemSkal10 = GuiFabric.getJMenuItem(I18nKeys.POINT_10);
+        mItemSkal10.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                AbstractCircuitSheetComponent.dpixValue.setValue(10);
+            }
+        });
+        JMenuItem mItemSkal12 = GuiFabric.getJMenuItem(I18nKeys.POINT_12);
+        mItemSkal12.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                AbstractCircuitSheetComponent.dpixValue.setValue(12);
+            }
+        });
+        JMenuItem mItemSkal14 = GuiFabric.getJMenuItem(I18nKeys.POINT_14);
+        mItemSkal14.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                AbstractCircuitSheetComponent.dpixValue.setValue(14);
+            }
+        });
+        JMenuItem mItemSkal16 = GuiFabric.getJMenuItem(I18nKeys.POINT_16);
+        mItemSkal16.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                AbstractCircuitSheetComponent.dpixValue.setValue(16);
+            }
+        });
+        JMenuItem mItemSkal18 = GuiFabric.getJMenuItem(I18nKeys.POINT_18);
+        mItemSkal18.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                AbstractCircuitSheetComponent.dpixValue.setValue(18);
+            }
+        });
+        menueSkalierung.add(mItemSkal10);
+        menueSkalierung.add(mItemSkal12);
+        menueSkalierung.add(mItemSkal14);
+        menueSkalierung.add(mItemSkal16);
+        menueSkalierung.add(mItemSkal18);
+
+        return menueSkalierung;
+    }
+
+    private JMenu buildFontSizeMenu() {
+        JMenu menueFontSize = GuiFabric.getJMenu(I18nKeys.FONT_SIZE);
+        JMenuItem mItemFS06 = GuiFabric.getJMenuItem(I18nKeys.POINT_6);
+        mItemFS06.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                _se.setzeFont(6, "Arial");
+            }
+        });
+        JMenuItem mItemFS08 = GuiFabric.getJMenuItem(I18nKeys.POINT_8);
+        mItemFS08.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                _se.setzeFont(8, "Arial");
+            }
+        });
+        JMenuItem mItemFS10 = GuiFabric.getJMenuItem(I18nKeys.POINT_10);
+        mItemFS10.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                _se.setzeFont(10, "Arial");
+            }
+        });
+        JMenuItem mItemFS12 = GuiFabric.getJMenuItem(I18nKeys.POINT_12);
+        mItemFS12.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                _se.setzeFont(12, "Arial");
+            }
+        });
+        JMenuItem mItemFS14 = GuiFabric.getJMenuItem(I18nKeys.POINT_14);
+        mItemFS14.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                _se.setzeFont(14, "Arial");
+            }
+        });
+        JMenuItem mItemFS16 = GuiFabric.getJMenuItem(I18nKeys.POINT_16);
+        mItemFS16.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                _se.setzeFont(16, "Arial");
+            }
+        });
+        JMenuItem mItemFS18 = GuiFabric.getJMenuItem(I18nKeys.POINT_18);
+        mItemFS18.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                _se.setzeFont(18, "Arial");
+            }
+        });
+        menueFontSize.add(mItemFS06);
+        menueFontSize.add(mItemFS08);
+        menueFontSize.add(mItemFS10);
+        menueFontSize.add(mItemFS12);
+        menueFontSize.add(mItemFS14);
+        menueFontSize.add(mItemFS16);
+        menueFontSize.add(mItemFS18);
+
+        return menueFontSize;
+    }
+
+    private void buildViewMenuItems(JMenu viewMenu) {
+        aliasingCONTROL = new JCheckBoxMenuItem("Use Antialiasing");
+        aliasingCONTROL.addActionListener(this);
+        aliasingCONTROL.setActionCommand("aliasingCommand");
+
+        DataJunkCompressable.setMemoryPrecision();
+
+        String valueString = GeckoSim.applicationProps.getProperty("ANTI_ALIASING");
+        if (valueString != null) {
+            if (Boolean.parseBoolean(valueString)) {
+                _se.setAntialiasing(true);
+                aliasingCONTROL.setSelected(true);
+                jtfStatus.setAliasing(aliasingCONTROL.isSelected());
+            }
+        }
+
+        vItemShowNameLK = new JCheckBoxMenuItem("Name");
+        vItemShowNameLK.addActionListener(this);
+        vItemShowNameLK.setActionCommand("vItemShowNameLK");
+        vItemShowNameLK.setSelected(SchematicEditor2._lkDisplayMode.showName);
+        vItemShowNameLK.setForeground(GlobalColors.farbeFertigElementLK);
+        vItemShowParLK = new JCheckBoxMenuItem("Show Parameter");
+        vItemShowParLK.addActionListener(this);
+        vItemShowParLK.setActionCommand("vItemShowParLK");
+        vItemShowParLK.setSelected(SchematicEditor2._lkDisplayMode.showParameter);
+        vItemShowParLK.setForeground(GlobalColors.farbeFertigElementLK);
+        vItemShowTextLineLK = new JCheckBoxMenuItem("Show Text-Line");
+        vItemShowTextLineLK.addActionListener(this);
+        vItemShowTextLineLK.setActionCommand("vItemShowTextLineLK");
+        vItemShowTextLineLK.setSelected(SchematicEditor2._lkDisplayMode.showParameter);
+        vItemShowTextLineLK.setForeground(GlobalColors.farbeFertigElementLK);
+        vItemShowFlowLK = new JCheckBoxMenuItem("Flow Direction");
+        vItemShowFlowLK.addActionListener(this);
+        vItemShowFlowLK.setActionCommand("vItemShowFlowLK");
+        vItemShowFlowLK.setSelected(SchematicEditor2._lkDisplayMode.showFlowSymbol);
+        vItemShowFlowLK.setForeground(GlobalColors.farbeFertigElementLK);
+
+        vItemShowNameCONTROL = new JCheckBoxMenuItem("Name");
+        vItemShowNameCONTROL.addActionListener(this);
+        vItemShowNameCONTROL.setActionCommand("vItemShowNameCONTROL");
+        vItemShowNameCONTROL.setSelected(SchematicEditor2._controlDisplayMode.showName);
+        vItemShowNameCONTROL.setForeground(GlobalColors.farbeFertigElementCONTROL);
+        vItemShowParCONTROL = new JCheckBoxMenuItem("Show Parameter");
+        vItemShowParCONTROL.addActionListener(this);
+        vItemShowParCONTROL.setActionCommand("vItemShowParCONTROL");
+        vItemShowParCONTROL.setSelected(SchematicEditor2._controlDisplayMode.showParameter);
+        vItemShowParCONTROL.setForeground(GlobalColors.farbeFertigElementCONTROL);
+        vItemShowTextLineCONTROL = new JCheckBoxMenuItem("Show Text-Line");
+        vItemShowTextLineCONTROL.addActionListener(this);
+        vItemShowTextLineCONTROL.setActionCommand("vItemShowTextLineCONTROL");
+        vItemShowTextLineCONTROL.setSelected(SchematicEditor2._controlDisplayMode.showParameter);
+        vItemShowTextLineCONTROL.setForeground(GlobalColors.farbeFertigElementCONTROL);
+
+        vItemShowNameTHERM = new JCheckBoxMenuItem("Name");
+        vItemShowNameTHERM.addActionListener(this);
+        vItemShowNameTHERM.setActionCommand("vItemShowNameTHERM");
+
+        vItemShowNameTHERM.setSelected(SchematicEditor2._thermDisplayMode.showName);
+        vItemShowNameTHERM.setForeground(GlobalColors.farbeFertigElementTHERM);
+        vItemShowParTHERM = new JCheckBoxMenuItem("Show Parameter");
+        vItemShowParTHERM.addActionListener(this);
+        vItemShowParTHERM.setActionCommand("vItemShowParTHERM");
+        vItemShowParTHERM.setSelected(SchematicEditor2._thermDisplayMode.showParameter);
+        vItemShowParTHERM.setForeground(GlobalColors.farbeFertigElementTHERM);
+        vItemShowTextLineTHERM = new JCheckBoxMenuItem("Show Text-Line");
+        vItemShowTextLineTHERM.addActionListener(this);
+        vItemShowTextLineTHERM.setActionCommand("vItemShowTextLineTHERM");
+        vItemShowTextLineTHERM.setSelected(SchematicEditor2._thermDisplayMode.showParameter);
+        vItemShowTextLineTHERM.setForeground(GlobalColors.farbeFertigElementTHERM);
+        vItemShowFlowTHERM = new JCheckBoxMenuItem("Flow Direction");
+        vItemShowFlowTHERM.addActionListener(this);
+        vItemShowFlowTHERM.setActionCommand("vItemShowFlowTHERM");
+        vItemShowFlowTHERM.setSelected(SchematicEditor2._thermDisplayMode.showFlowSymbol);
+        vItemShowFlowTHERM.setForeground(GlobalColors.farbeFertigElementTHERM);
+    }
+
+    private JMenu buildToolsMenu() {
+        JMenu toolsMenu = GuiFabric.getJMenu(I18nKeys.TOOLS);
+
+        mItemMemorySettings = GuiFabric.getJMenuItem(I18nKeys.MEMORY_SETTINGS);
+        mItemMemorySettings.setActionCommand("memorySettings");
+        mItemMemorySettings.addActionListener(this);
+
+        mItemUpdateSettings = GuiFabric.getJMenuItem(I18nKeys.UPDATE_SETTINGS);
+        mItemUpdateSettings.setActionCommand("updateSettings");
+        mItemUpdateSettings.addActionListener(this);
+
+        mItemRemoteSettings = GuiFabric.getJMenuItem(I18nKeys.REMOTE_ACCESS_SETTINGS);
+        mItemRemoteSettings.setActionCommand("remoteSettings");
+        mItemRemoteSettings.addActionListener(this);
+
+        mItemConnectorTest = new JCheckBoxMenuItem("Check Connections");
+        mItemConnectorTest.addActionListener(this);
+        mItemConnectorTest.setActionCommand("mItemConnectorTest");
+        mItemConnectorTest.setSelected(false);
+
+        mItemSetPar = GuiFabric.getJMenuItem(I18nKeys.SET_PARAMETERS);
+        mItemSetPar.setActionCommand("setParameters");
+        mItemSetPar.addActionListener(this);
+
+        mItemSetOrder = GuiFabric.getJMenuItem(I18nKeys.SET_ORDER_OF_CONTROL);
+        mItemSetOrder.setActionCommand("setOrder");
+        mItemSetOrder.addActionListener(this);
+
+        mItemCheckModel = GuiFabric.getJMenuItem(I18nKeys.CHECK_CONTROL_MODEL);
+        mItemCheckModel.setActionCommand("mItemCheckModel");
+        mItemCheckModel.addActionListener(this);
+        mItemCheckModel.setMnemonic(KeyEvent.VK_Q);
+
+        mItemFindString = GuiFabric.getJMenuItem(I18nKeys.FIND_IN_MODEL);
+        mItemFindString.setActionCommand("mItemFind");
+        mItemFindString.addActionListener(this);
+        mItemFindString.setMnemonic(KeyEvent.VK_F);
+        mItemFindString.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK));
+
+        toolsMenu.add(mItemConnectorTest);
+        mItemConnectorTest.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_K, KeyEvent.CTRL_DOWN_MASK));
+        toolsMenu.add(mItemCheckModel);
+        toolsMenu.add(mItemFindString);
+        mItemCheckModel.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyEvent.CTRL_DOWN_MASK));
+        toolsMenu.addSeparator();
+        toolsMenu.add(mItemSetPar);
+        toolsMenu.addSeparator();
+        toolsMenu.add(mItemMemorySettings);
+        toolsMenu.add(mItemUpdateSettings);
+        toolsMenu.add(mItemRemoteSettings);
+
+        return toolsMenu;
+    }
+
+    private JMenu buildHelpMenu() {
+        JMenu helpMenu = GuiFabric.getJMenu(I18nKeys.HELP);
+
+        JMenuItem mItemAbout = GuiFabric.getJMenuItem(I18nKeys.ABOUT);
+        mItemAbout.setActionCommand("About");
+        mItemAbout.addActionListener(this);
+
+        helpMenu.add(mItemAbout);
+
+        JMenuItem mItemLicenses = GuiFabric.getJMenuItem(I18nKeys.LICENSING);
+        mItemLicenses.setActionCommand("Licensing");
+        mItemLicenses.addActionListener(this);
+
+        helpMenu.add(mItemLicenses);
+
+        JMenuItem mItemFeedback = GuiFabric.getJMenuItem(I18nKeys.FEEDBACK);
+        mItemFeedback.setActionCommand("Feedback");
+        mItemFeedback.addActionListener(this);
+
+        helpMenu.add(mItemFeedback);
+
+        JMenuItem mItemUpdate = GuiFabric.getJMenuItem(I18nKeys.UPDATES);
+        mItemUpdate.setActionCommand("Update");
+        mItemUpdate.addActionListener(this);
+
+        helpMenu.add(mItemUpdate);
+
+        return helpMenu;
+    }
+
+    private JMenu buildGeckoMenu() {
+        JMenu geckoMenu = GuiFabric.getJMenu(I18nKeys.GECKO);
+        geckoMenu.setForeground(GlobalColors.farbeGecko);
+        _mItemScriptingTool = new JMenuItem("GeckoSCRIPT");
+        _mItemScriptingTool.setEnabled(true);
+        _mItemScriptingTool.setActionCommand("geckoScript");
+        _mItemScriptingTool.addActionListener(this);
+        JMenuItem mItemOptimizerSimple = new JMenuItem("GeckoOPTIMIZER");
+        mItemOptimizerSimple.setEnabled(false);
+        mItemOptimizerSimple.setActionCommand("geckoOptimizer");
+        mItemOptimizerSimple.addActionListener(this);
+        JMenuItem mItem3DTherm = new JMenuItem("GeckoHEAT");
+        mItem3DTherm.setActionCommand("3Dtherm");
+        mItem3DTherm.addActionListener(this);
+        JMenuItem mItemMagnet = new JMenuItem("GeckoMAGNETICS");
+        mItemMagnet.setActionCommand("magnet");
+        mItemMagnet.addActionListener(this);
+        JMenuItem mItemEMC = new JMenuItem("GeckoEMC");
+        mItemEMC.setActionCommand("geckoEMC");
+        mItemEMC.addActionListener(this);
+        geckoMenu.add(_mItemScriptingTool);
+        geckoMenu.add(mItemOptimizerSimple);
+        geckoMenu.add(mItem3DTherm);
+        geckoMenu.add(mItemMagnet);
+        geckoMenu.add(mItemEMC);
+
+        if (INCLUDE_GeckoMAGNETICS) {
+            mItemMagnet.setEnabled(true);
+        } else {
+            mItemMagnet.setEnabled(false);
+        }
+        if (INCLUDE_GeckoHEAT) {
+            mItem3DTherm.setEnabled(true);
+        } else {
+            mItem3DTherm.setEnabled(false);
+        }
+        if (INCLUDE_GeckoEMC) {
+            mItemEMC.setEnabled(true);
+        } else {
+            mItemEMC.setEnabled(false);
+        }
+
+        return geckoMenu;
+    }
+
+    private void buildMainPanel() {
+        seScroll.getVerticalScrollBar().setUnitIncrement(20);
+        seScroll.getHorizontalScrollBar().setUnitIncrement(20);
+        JPanel p2 = new JPanel();
+        p2.setLayout(new BorderLayout());
+        p2.add(sea, BorderLayout.CENTER);
+        _northPanel.setBorder(new EmptyBorder(-5, -5, -5, -5));
+        _searchTestField = new SuggestionField(this);
+        _searchTestField.setCaseSensitive(false);
+        sea.registerSearchField(_searchTestField);
+
+        JPanel searchPanel = new JPanel();
+        searchPanel.setLayout(new BorderLayout());
+        _lastComponentButton = new LastComponentButton();
+        sea.registerLastComponentButton(_lastComponentButton);
+
+        _lastComponentButton.setContentAreaFilled(false);
+        _lastComponentButton.setFocusPainted(false);
+        Dimension dim = new Dimension(130, 130);
+        _lastComponentButton.setPreferredSize(dim);
+        _lastComponentButton.setMinimumSize(dim);
+        _lastComponentButton.setMaximumSize(dim);
+        searchPanel.add(_lastComponentButton);
+        searchPanel.add(_searchTestField, BorderLayout.SOUTH);
+        JPanel newPanel = new JPanel();
+        newPanel.setLayout(new BorderLayout());
+        newPanel.add(_northPanel);
+        newPanel.add(_northPanel, BorderLayout.NORTH);
+        newPanel.add(seScroll, BorderLayout.CENTER);
+        p2.add(searchPanel, BorderLayout.SOUTH);
+        split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, newPanel, p2);
+        this.getContentPane().add(split, BorderLayout.CENTER);
+    }
+
 }
