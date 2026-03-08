@@ -107,6 +107,58 @@ Generated from review of changes since commit 3a72b5fa59a7499133e89c1165e28f00e6
 
 ## Priority Execution Order
 
+### Current Session Recommendations (2025-03-08)
+
+Based on work completed in this session:
+
+1. **Testing Recommended Before Further Refactoring**
+   - The refactored MainWindow code (baueGUI, actionPerformed handlers) needs thorough testing
+   - Verify all file menu operations work correctly
+   - Verify all view display toggles work correctly
+   - Test that simulation controls still work
+   - Test that undo/redo, copy/move/delete work correctly
+   - Test that tools menu items work correctly
+   - Test that gecko menu items work correctly
+   - Test that dialogs open correctly (About, Licensing, Feedback)
+   - Verify no regressions were introduced
+
+2. **Proceed With Caution on actionPerformed() Refactoring**
+   - The method handles ~38 different commands in a large if-else chain
+   - Adding more handler methods requires careful understanding of command flow
+   - Each handler method must preserve exact same behavior as original code
+   - Consider extracting related command groups together rather than individually
+   - Test each extracted handler immediately after extraction
+
+3. **ProjectData.importASCII() Refactoring Requires Careful Analysis**
+   - This 256-line method handles complex file parsing logic
+   - Contains tight coupling to GUI components (GeckoSim._win)
+   - Contains tight coupling to SchematicEditor2 static modes
+   - Extracting methods requires understanding all dependencies
+   - Test file import functionality thoroughly after refactoring
+   - Consider this as highest complexity task in the codebase
+
+4. **Recommended Order for actionPerformed() Completion**:
+   a. Extract remaining Edit menu commands (Undo, Redo, Copy, Move, Delete, Deselect, SelectAll, Enable/Disable, Short)
+   b. Extract simulation-related commands (may already exist as methods)
+   c. Extract tools menu commands (Parameters, Find, Settings)
+   d. Extract gecko menu commands
+   e. Extract dialog commands (About, Licensing, Feedback, Updates, Set Order)
+   f. Test all commands after each extraction round
+
+5. **Testing Strategy After Completion**:
+   - Start application and test all menu items
+   - Test file operations: New, Open, Save, Save As, Import, Export
+   - Test view toggles for all three domains
+   - Test simulation: Run, Pause, Continue, Stop
+   - Test undo/redo functionality
+   - Test edit operations: Copy, Move, Delete, Select All
+   - Test all dialogs and their functionality
+   - Test file loading of various formats
+   - Test recent files functionality
+   - Run integration tests if available
+
+## Original Priority Execution Order
+
 1. **Phase 1: High Priority** (Resource leaks, empty catches, long methods)
 2. **Phase 2: Medium Priority** (Legacy collections, @Override, suppress warnings)
 3. **Phase 3: Low Priority** (Naming, magic numbers, encapsulation, final, etc.)
