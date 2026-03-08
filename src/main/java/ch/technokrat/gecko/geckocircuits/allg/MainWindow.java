@@ -175,12 +175,14 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         } catch (UnsupportedLookAndFeelException ex) {
             Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
+            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, "Metal look and feel class not found", ex);
         }
         try {
             // Fix for Java 21: use URL constructor instead of URI.toURL()
             URL gifUrl = new URL(GlobalFilePathes.PFAD_PICS_URL, "gecko.gif");
             this.setIconImage(new ImageIcon(gifUrl).getImage());
         } catch (Exception e) {
+            Logger.getLogger(MainWindow.class.getName()).log(Level.WARNING, "Failed to load application icon", e);
         }
 
         this.setTitle(aktuellerDateiName + spTitleX + "GeckoCIRCUITS");
@@ -850,30 +852,16 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     }
 
     public void rawSaveFile(File file) {
-
-        try {
-            ProjectData datLK = new ProjectData(
-                    getSize(),
-                    MainWindow.optimizerParameterData,
-                    uniqueFileID, _scripter, _fileManager, _se, _solverSettings);
-            //------------
-            // Plain-Test variant in ASCII -->
-            // BufferedWriter out= new BufferedWriter(new FileWriter(GlobalFilePathes.DATNAM));
-            //
-            // Compressed data stream --> reduced and unreadable file -->
-            // DeflaterOutputStream out1= new DeflaterOutputStream(new FileOutputStream(new File(GlobalFilePathes.DATNAM)));
-            GZIPOutputStream out1 = new GZIPOutputStream(new FileOutputStream(file));
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(out1));
-            //            
+        ProjectData datLK = new ProjectData(
+                getSize(),
+                MainWindow.optimizerParameterData,
+                uniqueFileID, _scripter, _fileManager, _se, _solverSettings);
+        try (GZIPOutputStream out1 = new GZIPOutputStream(new FileOutputStream(file));
+             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(out1))) {
             out.write(datLK.exportASCII());
-            out.flush();
-            out.close();
             checkWrittenFileSize(file);
-            //------------
-            //
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
             checkWrittenFileSize(file);
         }
     }
@@ -925,7 +913,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
             //
         } catch (Exception e) {
             speicherVorgangLaeuft = false;
-            System.out.println(e + " peorkkkg");
+            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, "Error saving file", e);
         }
         this.setTitle(aktuellerDateiName + spTitleX + "GeckoCIRCUITS");
         this.aktualisierePropertiesRECENT(aktuellerDateiName);
@@ -950,9 +938,11 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         try {
             currentDirectory = new File(GlobalFilePathes.DATNAM);
         } catch (Exception e) {
+            Logger.getLogger(MainWindow.class.getName()).log(Level.WARNING, "Failed to use DATNAM as current directory, trying PFAD_JAR_HOME", e);
             try {
                 currentDirectory = new File(GlobalFilePathes.PFAD_JAR_HOME);
             } catch (Exception ex) {
+                Logger.getLogger(MainWindow.class.getName()).log(Level.WARNING, "Failed to use PFAD_JAR_HOME as current directory", ex);
                 currentDirectory = null;
             }
         }
@@ -1082,9 +1072,9 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
-            }
+             }
         } else {
-            System.out.println("Warning: Check for auto-backup file disabled!");
+            Logger.getLogger(MainWindow.class.getName()).log(Level.WARNING, "Check for auto-backup file disabled!");
         }
     }
 
@@ -1456,12 +1446,12 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
                 _scripter.makeVisible();
             } else if (befehl.equals(
                     "magnet")) {
-            } else if (befehl.equals(
-                    "3Delmag")) {
-                System.out.println("Nicht implementiert");
+             } else if (befehl.equals(
+                     "3Delmag")) {
+                Logger.getLogger(MainWindow.class.getName()).log(Level.WARNING, "Command '3Delmag' not implemented");
             } else if (befehl.equals(
                     "optimize")) {
-                System.out.println("Nicht implementiert");
+                Logger.getLogger(MainWindow.class.getName()).log(Level.WARNING, "Command 'optimize' not implemented");
             } else if (befehl.equals(
                     "About")) {
                 doAboutDialog();
@@ -1756,9 +1746,9 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
                 final long totalFileSize = zipFile.length();
                 long writtenFileSize = 0;
 
-                try {
-                    final ZipFile zipSrc = new ZipFile(zipFile);
-                    final ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(newFile));
+                try (final ZipFile zipSrc = new ZipFile(zipFile);
+                     final ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(newFile))) {
+
                     final Enumeration<? extends ZipEntry> srcEntries = zipSrc.entries();
 
                     int counter = 0;
@@ -1774,18 +1764,14 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
                         ZipEntry newEntry = new ZipEntry(entry.getName());
                         zos.putNextEntry(newEntry);
 
-                        BufferedInputStream bis = new BufferedInputStream(zipSrc.getInputStream(entry), 10000);
-
-                        while (bis.available() > 0) {
-                            zos.write(bis.read());
+                        try (BufferedInputStream bis = new BufferedInputStream(zipSrc.getInputStream(entry), 10000)) {
+                            while (bis.available() > 0) {
+                                zos.write(bis.read());
+                            }
                         }
 
                         zos.closeEntry();
-                        bis.close();
                     }
-
-                    zos.close();
-                    zipSrc.close();
 
                     while (progress < 100) {
                         try {
@@ -1798,7 +1784,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
                     }
 
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, "Could not write to output file: " + newFile.getAbsolutePath(), ex);
                     JOptionPane.showMessageDialog(MainWindow.this,
                             "Could not write to output file: " + newFile.getAbsolutePath() + " \n Error-message: " + ex.getMessage(),
                             "Warning",
@@ -1971,11 +1957,9 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         String[] lines = null;
         //----------
         // GZIP format (March 2009) - completely new! -->
-        try {
-            GZIPInputStream in1 = null;
-            in1 = new GZIPInputStream(new FileInputStream(dateiName));
+        try (GZIPInputStream in1 = new GZIPInputStream(new FileInputStream(dateiName));
+             BufferedReader in = new BufferedReader(new InputStreamReader(in1))) {
 
-            BufferedReader in = new BufferedReader(new InputStreamReader(in1));
             Vector<String> datVec = new Vector<>();
             String z = null;
 
@@ -1983,35 +1967,29 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
                 datVec.addElement(z);
             }
 
-            in.close();
-
             lines = new String[datVec.size()];
             for (int i1 = 0; i1 < datVec.size(); i1++) {
                 lines[i1] = datVec.elementAt(i1);
             }
-            
+
 
         } catch (Exception e) {
-            System.out.println("openFile() - GZIP >> " + e);
-            e.printStackTrace();
+            Logger.getLogger(MainWindow.class.getName()).log(Level.WARNING, "openFile() - GZIP error, trying old format", e);
             // new version 'gzipped' -->
-            try {
-                InflaterInputStream in1 = new InflaterInputStream(new FileInputStream(GlobalFilePathes.DATNAM));
-                BufferedReader in = new BufferedReader(new InputStreamReader(in1));
+            try (InflaterInputStream in1 = new InflaterInputStream(new FileInputStream(GlobalFilePathes.DATNAM));
+                 BufferedReader in = new BufferedReader(new InputStreamReader(in1))) {
                 Vector<String> datVec = new Vector<>();
                 String z = null;
                 while ((z = in.readLine()) != null) {
                     datVec.addElement(z);
                 }
-                in.close();
                 lines = new String[datVec.size()];
                 for (int i1 = 0; i1 < datVec.size(); i1++) {
                     lines[i1] = datVec.elementAt(i1);
-                    //System.out.println("zeile[i1]= "+zeile[i1]);
-                }                
+                     //System.out.println("zeile[i1]= "+zeile[i1]);
+                }
             } catch (Exception eGZIP) {
-                System.out.println("openFile() - A >> " + eGZIP);
-                eGZIP.printStackTrace();
+                Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, "openFile() - failed to read file", eGZIP);
             }
         }
         return lines;

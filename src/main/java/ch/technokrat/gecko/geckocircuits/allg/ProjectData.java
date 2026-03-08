@@ -29,6 +29,8 @@ import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 // Helper class: Format for project data storage
@@ -397,8 +399,7 @@ public class ProjectData implements Serializable {
                 }
 
             } catch (Exception ex) {
-                System.err.println("Error! Could not create control block with id: " + typ);
-                ex.printStackTrace();
+                Logger.getLogger(ProjectData.class.getName()).log(Level.SEVERE, "Could not create control block with id: " + typ, ex);
             }
         }
 
@@ -413,8 +414,7 @@ public class ProjectData implements Serializable {
                     allSubCircuitBlocks.add((SubcircuitBlock) newBlock);
                 }
             } catch (Exception ex) {
-                System.err.println("Error! Could not create control block with id: " + typ);
-                ex.printStackTrace();
+                Logger.getLogger(ProjectData.class.getName()).log(Level.SEVERE, "Could not create special block with id: " + typ, ex);
             }
 
         }
@@ -674,6 +674,8 @@ public class ProjectData implements Serializable {
                 return neuerPfadDETAIL;
             }
         } catch (Exception e) {
+            // Path manipulation failed - fall through to return default undefined path
+            // This is expected when file paths are malformed or incomplete
         }
         return new String(GlobalFilePathes.DATNAM_NOT_DEFINED);
     }
