@@ -573,15 +573,74 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         }
     }
 
+    private boolean isFileCommand(String command) {
+        return command.equals("New") || command.equals("Open") || command.equals("Save") ||
+               command.equals("Save As") || command.equals("Save View as Image") ||
+               command.equals("Exit") || command.equals("RECENT_1") ||
+               command.equals("RECENT_2") || command.equals("RECENT_3") ||
+               command.equals("RECENT_4") || command.equals("Import") ||
+               command.equals("Export") || command.equals("ImportFromFile");
+    }
+
+    private void handleFileCommand(String command) {
+        if (command.equals("New")) {
+            _se.setConnectorTestMode(false);
+            if (_se.getZustandGeaendert()) {
+                int returnOption = JOptionPane.showConfirmDialog(
+                        this,
+                        "The content of the file has changed.\nDo you want to save the changes?\n",
+                        "Warning: Create new file",
+                        JOptionPane.YES_NO_CANCEL_OPTION);
+
+                switch (returnOption) {
+                    case 0:
+                        saveFile();
+                    case 1:
+                        createNewFile();
+                        break;
+                    case 2:
+                        break;
+                    default:
+                        assert false;
+                }
+            } else {
+                createNewFile();
+            }
+        } else if (command.equals("Open")) {
+            openFileDialog();
+        } else if (command.equals("Save")) {
+            saveFile();
+        } else if (command.equals("Save As")) {
+            saveFileAs();
+        } else if (command.equals("Save View as Image")) {
+            new SaveViewFrame(this, _se._visibleCircuitSheet).setVisible(true);
+        } else if (command.equals("Exit")) {
+            schliesseProgramm();
+        } else if (command.equals("RECENT_1")) {
+            loadFileFromList_withoutSaving(0);
+        } else if (command.equals("RECENT_2")) {
+            loadFileFromList_withoutSaving(1);
+        } else if (command.equals("RECENT_3")) {
+            loadFileFromList_withoutSaving(2);
+        } else if (command.equals("RECENT_4")) {
+            loadFileFromList_withoutSaving(3);
+        } else if (command.equals("Import")) {
+            _se.importFromClipboard();
+        } else if (command.equals("Export")) {
+            _se.export_allesImBearbeitungsModus();
+        } else if (command.equals("ImportFromFile")) {
+            _se.importFromClipboard();
+        }
+    }
+
     public void actionPerformed(ActionEvent ae) {
         if (!simulatorAktiviert) {
             return;
         }
-        //
         String befehl = ae.getActionCommand();
         try {
-            //========================================================================
-            if (befehl.equals("New")) {
+            if (isFileCommand(befehl)) {
+                handleFileCommand(befehl);
                 _se.setConnectorTestMode(false);
                 // 'createNewFile()' is optionally called from the dialog
                 if (_se.getZustandGeaendert()) {
