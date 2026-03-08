@@ -582,6 +582,15 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
                command.equals("Export") || command.equals("ImportFromFile");
     }
 
+    private boolean isViewCommand(String command) {
+        return command.equals("vItemShowNameLK") || command.equals("aliasingCommand") ||
+               command.equals("vItemShowParLK") || command.equals("vItemShowTextLineLK") ||
+               command.equals("vItemShowFlowLK") || command.equals("vItemShowNameCONTROL") ||
+               command.equals("vItemShowParCONTROL") || command.equals("vItemShowTextLineCONTROL") ||
+               command.equals("vItemShowNameTHERM") || command.equals("vItemShowParTHERM") ||
+               command.equals("vItemShowTextLineTHERM") || command.equals("vItemShowFlowTHERM");
+    }
+
     private void handleFileCommand(String command) {
         if (command.equals("New")) {
             _se.setConnectorTestMode(false);
@@ -633,6 +642,71 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         }
     }
 
+    private void handleViewCommand(String command) {
+        if (command.equals("vItemShowNameLK")) {
+            SchematicEditor2._lkDisplayMode.showName = vItemShowNameLK.getState();
+            if ((!SchematicEditor2._lkDisplayMode.showName) && (!SchematicEditor2._lkDisplayMode.showParameter)) {
+                vItemShowTextLineLK.setState(false);
+                SchematicEditor2._lkDisplayMode.showTextLine = vItemShowTextLineLK.getState();
+            }
+            _se._visibleCircuitSheet.repaint();
+        } else if (command.equals("aliasingCommand")) {
+            _se.setAntialiasing(aliasingCONTROL.isSelected());
+            jtfStatus.setAliasing(aliasingCONTROL.isSelected());
+        } else if (command.equals("vItemShowParLK")) {
+            SchematicEditor2._lkDisplayMode.showParameter = vItemShowParLK.getState();
+            if ((!SchematicEditor2._lkDisplayMode.showName) && (!SchematicEditor2._lkDisplayMode.showParameter)) {
+                vItemShowTextLineLK.setState(false);
+                SchematicEditor2._lkDisplayMode.showTextLine = vItemShowTextLineLK.getState();
+            }
+            _se._visibleCircuitSheet.repaint();
+        } else if (command.equals("vItemShowTextLineLK")) {
+            SchematicEditor2._lkDisplayMode.showTextLine = vItemShowTextLineLK.getState();
+            _se._visibleCircuitSheet.repaint();
+        } else if (command.equals("vItemShowFlowLK")) {
+            SchematicEditor2._lkDisplayMode.showFlowSymbol = vItemShowFlowLK.getState();
+            _se._visibleCircuitSheet.repaint();
+        } else if (command.equals("vItemShowNameCONTROL")) {
+            SchematicEditor2._controlDisplayMode.showName = vItemShowNameCONTROL.getState();
+            if ((!SchematicEditor2._controlDisplayMode.showName) && (!SchematicEditor2._controlDisplayMode.showParameter)) {
+                vItemShowTextLineCONTROL.setState(false);
+                SchematicEditor2._controlDisplayMode.showTextLine = vItemShowTextLineCONTROL.getState();
+            }
+            _se._circuitSheet.repaint();
+        } else if (command.equals("vItemShowParCONTROL")) {
+            SchematicEditor2._controlDisplayMode.showParameter = vItemShowParCONTROL.getState();
+            if ((!SchematicEditor2._controlDisplayMode.showName) && (!SchematicEditor2._controlDisplayMode.showParameter)) {
+                vItemShowTextLineCONTROL.setState(false);
+                SchematicEditor2._controlDisplayMode.showTextLine = vItemShowTextLineCONTROL.getState();
+            }
+            _se._circuitSheet.repaint();
+        } else if (command.equals("vItemShowTextLineCONTROL")) {
+            SchematicEditor2._controlDisplayMode.showTextLine = vItemShowTextLineCONTROL.getState();
+            _se._circuitSheet.repaint();
+        } else if (command.equals("vItemShowNameTHERM")) {
+            SchematicEditor2._thermDisplayMode.showName = vItemShowNameTHERM.getState();
+            if ((!SchematicEditor2._thermDisplayMode.showName) && (!SchematicEditor2._thermDisplayMode.showParameter)) {
+                vItemShowTextLineTHERM.setState(false);
+                SchematicEditor2._thermDisplayMode.showTextLine = vItemShowTextLineTHERM.getState();
+            }
+            _se._circuitSheet.repaint();
+        } else if (command.equals("vItemShowParTHERM")) {
+            SchematicEditor2._thermDisplayMode.showParameter = vItemShowParTHERM.getState();
+            if ((!SchematicEditor2._thermDisplayMode.showName) && (!SchematicEditor2._thermDisplayMode.showParameter)) {
+                vItemShowTextLineTHERM.setState(false);
+                SchematicEditor2._thermDisplayMode.showTextLine = vItemShowTextLineTHERM.getState();
+            }
+            _se._circuitSheet.repaint();
+        } else if (command.equals("vItemShowTextLineTHERM")) {
+            SchematicEditor2._thermDisplayMode.showTextLine = vItemShowTextLineTHERM.getState();
+            _se._circuitSheet.repaint();
+        } else if (command.equals("vItemShowFlowTHERM")) {
+            SchematicEditor2._thermDisplayMode.showFlowSymbol = vItemShowFlowTHERM.getState();
+            _se._circuitSheet.repaint();
+        }
+    }
+
+
     public void actionPerformed(ActionEvent ae) {
         if (!simulatorAktiviert) {
             return;
@@ -641,6 +715,8 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         try {
             if (isFileCommand(befehl)) {
                 handleFileCommand(befehl);
+            } else if (isViewCommand(befehl)) {
+                handleViewCommand(befehl);
                 _se.setConnectorTestMode(false);
                 // 'createNewFile()' is optionally called from the dialog
                 if (_se.getZustandGeaendert()) {
