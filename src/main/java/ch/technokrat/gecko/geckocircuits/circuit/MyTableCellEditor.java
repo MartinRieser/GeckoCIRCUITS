@@ -21,6 +21,8 @@ import javax.swing.table.TableCellEditor;
 
 class MyTableCellEditor extends AbstractCellEditor implements TableCellEditor {
 
+    private static final long serialVersionUID = 1L;
+
     FormatJTextField component = new FormatJTextField();
 
   public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected,

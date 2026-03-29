@@ -14,7 +14,7 @@
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
 
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class AbstractSwitchCalculator extends CircuitComponent implements AStampable, BStampable {
 
     

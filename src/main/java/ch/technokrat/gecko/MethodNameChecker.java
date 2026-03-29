@@ -28,7 +28,7 @@ final class MethodNameChecker {
         super();
     }
 
-    static MethodNameChecker checkFabric(final Class checkMethods,
+    static MethodNameChecker checkFabric(final Class<?> checkMethods,
             final Class<GeckoRemoteInterface> containsMethodSignature) {
         try {
             assert false; // immediately return when assertions are turned off

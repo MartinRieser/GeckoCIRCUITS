@@ -35,14 +35,16 @@ import javax.swing.JOptionPane;
  */
 public class SubCircuitSheet extends CircuitSheet {
 
+    private static final long serialVersionUID = 1L;
     private static final int BUTTON_WIDTH = 120;
-    public final SubcircuitBlock _subBlock;
+    public transient final SubcircuitBlock _subBlock;
     private final JButton _upButton;
     private final JButton _settingsButton;
     private final JButton _newTerminalButton;
     private final JButton _infoButton;
     private JLabel _nameLabel;
 
+    @SuppressWarnings("this-escape")
     public SubCircuitSheet(SchematicEditor2 se, SubcircuitBlock subBlock) {
         super(se);
         _subBlock = subBlock;

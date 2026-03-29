@@ -23,6 +23,7 @@ import java.util.List;
 // koppelbare Leistungskreis-Induktivitaet [H]
 // dahinter verbirgt sich nicht ein Subcircuit, sondern die linearisierte Martixgleichung der Topologie wird
 // um die Stroeme in diesen gekoppelten Induktivitaeten erweitert --> verbesserte numerische Stabilitaet 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public final class InductorCoupable extends AbstractInductor  {    
     private static final int DOT_DIAMETER = 5;
     private static final double DOT_SPACING_X = 0.4;

@@ -89,7 +89,7 @@ public abstract class ModelMVCGeneric<T> implements Serializable{
    * value is still mutable, if other access than setValue() is used (by
    * reference for instance).
    */
-  protected T _value;
+  protected transient T _value;
 
   /**
    * initialisation konstructor. Please consider that the write access to the

@@ -179,6 +179,7 @@ public abstract class AbstractJavaBlock {
 
     }
 
+    @SuppressWarnings("unchecked")
     void importIndividualCONTROL(final TokenMap tokenMap) {
         _javaBlockSource = new JavaBlockSource(tokenMap);
         if (!tokenMap.containsToken("classMapBytes[]")) {

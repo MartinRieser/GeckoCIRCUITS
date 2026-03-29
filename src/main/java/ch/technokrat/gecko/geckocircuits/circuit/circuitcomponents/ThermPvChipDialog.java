@@ -19,7 +19,10 @@ import ch.technokrat.gecko.geckocircuits.control.DialogElementCONTROL;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 final class ThermPvChipDialog extends DialogElementLK {
+
+    private static final long serialVersionUID = 1L;
 
     ThermPvChipDialog(final ThermPvChip parent) {
         super(parent);
@@ -29,7 +32,7 @@ final class ThermPvChipDialog extends DialogElementLK {
     public void baueGUIIndividual() {
         JPanel jpM = null;
         if (element instanceof ComponentCoupable) {
-            jpM = DialogElementCONTROL.createComponentCouplingPanel((AbstractBlockInterface) element);
+            jpM = DialogElementCONTROL.createComponentCouplingPanel(element);
         }
         con.add(jpM, BorderLayout.CENTER);
     }

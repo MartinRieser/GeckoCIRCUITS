@@ -31,7 +31,9 @@ import javax.swing.event.ListSelectionListener;
  */
 public final class DialogFindInModel extends javax.swing.JDialog {
 
-    private final SchematicEditor2 _se;
+    private static final long serialVersionUID = 1L;
+
+    private final transient SchematicEditor2 _se;
 
     /**
      * Creates new form DialogFindInModel

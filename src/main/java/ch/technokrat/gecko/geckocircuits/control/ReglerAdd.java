@@ -17,6 +17,7 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalc
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 public final class ReglerAdd extends AbstractReglerVariableInputs {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerAdd.class, "ADD", I18nKeys.ADDITION);
 
     public ReglerAdd() {

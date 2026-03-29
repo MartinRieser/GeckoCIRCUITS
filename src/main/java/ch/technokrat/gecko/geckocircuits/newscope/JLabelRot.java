@@ -22,6 +22,7 @@ import java.awt.Dimension;
 
 public class JLabelRot extends JLabel {
 
+    private static final long serialVersionUID = 1L;
     private double _phiDegClockWise = 0;
     private String _txt;
     private static final int X_OFFSET = 5;
@@ -50,6 +51,7 @@ public class JLabelRot extends JLabel {
         super();
     }
 
+    @SuppressWarnings("this-escape")
     public JLabelRot(final String txt, final double phiGradClockWise, final int width, final int height) {
         this(txt);
         this._txt = txt;

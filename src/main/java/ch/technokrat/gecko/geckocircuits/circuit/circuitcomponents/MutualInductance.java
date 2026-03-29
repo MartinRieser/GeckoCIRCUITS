@@ -33,6 +33,7 @@ import java.util.List;
  *
  * @author andreas
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public final class MutualInductance extends AbstractCircuitBlockInterface implements ComponentCoupable {
     static final AbstractTypeInfo TYPE_INFO = 
             new CircuitTypeInfo(MutualInductance.class, "K", I18nKeys.MAGNETIC_COUPLING_K, I18nKeys.MAGNETIC_COUPLING_DESCRIPTION);
@@ -72,15 +73,15 @@ public final class MutualInductance extends AbstractCircuitBlockInterface implem
             if (_componentCoupling._coupledElements[0] != null) {
                 final InductorCoupable lkop = (InductorCoupable) _componentCoupling._coupledElements[0];
                 graphics.drawLine(0, 0,
-                        (int) (dpix * (lkop.getSheetPosition().x - getSheetPosition().x)),
-                        (int) (dpix * (lkop.getSheetPosition().y - getSheetPosition().y)));  // Verbindungslinie zu L1
+                        dpix * (lkop.getSheetPosition().x - getSheetPosition().x),
+                        dpix * (lkop.getSheetPosition().y - getSheetPosition().y));
             }
 
             if (_componentCoupling._coupledElements[1] != null) {
                 final InductorCoupable lkop = (InductorCoupable) (_componentCoupling._coupledElements[1]);
                 graphics.drawLine(0, 0,
-                        (int) (dpix * (lkop.getSheetPosition().x - getSheetPosition().x)),
-                        (int) (dpix * (lkop.getSheetPosition().y - getSheetPosition().y)));  // Verbindungslinie zu L1
+                        dpix * (lkop.getSheetPosition().x - getSheetPosition().x),
+                        dpix * (lkop.getSheetPosition().y - getSheetPosition().y));
             }
             graphics.setColor(origColor);
         }

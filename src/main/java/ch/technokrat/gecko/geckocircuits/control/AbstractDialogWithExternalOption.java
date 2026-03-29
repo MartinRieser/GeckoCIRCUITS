@@ -19,9 +19,10 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 
 public abstract class AbstractDialogWithExternalOption<T extends RegelBlock> extends DialogElementCONTROL<T> {
+    private static final long serialVersionUID = 1L;
 
     final JCheckBox _jCheckBoxUseExternal = new JCheckBox("Use external parameters");
-    private final ControlInputTwoTerminalStateable _externable;
+    private transient final ControlInputTwoTerminalStateable _externable;
 
     public AbstractDialogWithExternalOption(final T element) {
         super(element);

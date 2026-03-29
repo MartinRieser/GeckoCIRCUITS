@@ -27,6 +27,10 @@ public abstract class AbstractMotorIM extends AbstractMotorIMCommon {
             arrayIndex(this, 21).
             build();        
 
+    @SuppressWarnings("this-escape")
+    protected AbstractMotorIM() {
+    }
+
     double isd0, isq0 = 0, ird0 = 0, irq0 = 0;
     double isd, isq = 0, ird = 0, irq = 0;                       
     

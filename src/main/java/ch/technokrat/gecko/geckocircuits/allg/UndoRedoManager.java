@@ -27,6 +27,7 @@ public class UndoRedoManager {
     private int undoAnzahl, redoAnzahl;  // soviele Undo- und Redo-Aktionen sind moeglich 
     //------------------------------------------------------
 
+    @SuppressWarnings("this-escape")
     public UndoRedoManager() {
         this.init();
     }

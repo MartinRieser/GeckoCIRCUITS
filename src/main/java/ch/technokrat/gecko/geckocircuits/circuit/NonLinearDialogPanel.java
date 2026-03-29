@@ -42,16 +42,19 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+@SuppressWarnings("deprecation")
 public class NonLinearDialogPanel extends JPanel {
+
+    private static final long serialVersionUID = 1L;
 
     private static final int BUTTON_HEIGHT = 30;
     private static final Dimension BUTTON_DIMENSION = new Dimension(80, BUTTON_HEIGHT);
-    private final AbstractNonLinearCircuitComponent _nonlinearParent;
+    private transient final AbstractNonLinearCircuitComponent _nonlinearParent;
     private double[][] data;
     private String _extension = ".txt";
     private String _type = "text file";
     private File savedExternalFile;
-    private GeckoFile loadedFile = null;
+    private transient GeckoFile loadedFile = null;
     private GraferV4 _grafer;
     public JButton _jbOK;
     private final JPanel lowerPanel = new JPanel();
@@ -59,6 +62,7 @@ public class NonLinearDialogPanel extends JPanel {
     private final SimpleGraferPanel newScope1;
     private final JDialog _parentDialog;
 
+    @SuppressWarnings("this-escape")
     public NonLinearDialogPanel(JDialog parentDialog, final AbstractNonLinearCircuitComponent elementLK,
             final boolean isYAxisLog) {
         _nonlinearParent = elementLK;

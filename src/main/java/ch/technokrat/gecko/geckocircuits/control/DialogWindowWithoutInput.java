@@ -15,6 +15,8 @@ package ch.technokrat.gecko.geckocircuits.control;
 
 class DialogWindowWithoutInput extends DialogElementCONTROL<RegelBlock> {
 
+    private static final long serialVersionUID = 1L;
+
     public DialogWindowWithoutInput(RegelBlock aThis) {
         super(aThis);
     }

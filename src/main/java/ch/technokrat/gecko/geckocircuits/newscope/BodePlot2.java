@@ -25,13 +25,15 @@ import javax.swing.JPanel;
  * @author andy
  */
 public class BodePlot2 extends JPanel {
+    private static final long serialVersionUID = 1L;
     public GraferV4 _graferNew;
     private NewScope _graferPanel;
     private final int NUMBER_SIGNALS = 2;
     private final String[] SIGNAL_NAMES = new String[]{"Magnitude", "Phase"};
     private DialogConnectSignalsGraphs _diagCON;
-    private DataContainerSimple _dataContainer;
+    private transient DataContainerSimple _dataContainer;
 
+    @SuppressWarnings({"deprecation", "this-escape"})
     public BodePlot2() {                        
         _graferNew = new GraferV4(new ScopeSettings());
         _graferPanel = new NewScope(_graferNew);
@@ -40,6 +42,7 @@ public class BodePlot2 extends JPanel {
     }
         
     
+    @SuppressWarnings("deprecation")
     public void insertData(double[][]erg) {
         _graferNew = new GraferV4(new ScopeSettings());
         _graferNew.setNewXNames("w [rad / sec] = ", "1/w [sec] = ");        

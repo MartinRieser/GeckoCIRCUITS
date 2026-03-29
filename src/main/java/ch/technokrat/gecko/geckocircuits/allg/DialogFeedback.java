@@ -24,8 +24,11 @@ import javax.swing.JFrame;
 
 public class DialogFeedback extends javax.swing.JDialog {
 
+    private static final long serialVersionUID = 1L;
+
     private static final String BUGZILLA_URL = "www.bugs.gecko-simulations.org";
     
+    @SuppressWarnings("this-escape")
     public DialogFeedback(final JFrame parentFrame) {
         super(parentFrame, true);
         try {

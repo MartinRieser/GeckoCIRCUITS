@@ -42,6 +42,7 @@ import javax.swing.JSpinner;
  *
  * @author andy
  */
+@SuppressWarnings("deprecation")
 public class SpaceVectorDisplay extends javax.swing.JFrame {
     static long counter = 0;
     final int ORIGINX = 180;

@@ -49,16 +49,16 @@ public final class SuggestionField extends JTextField {
     private static final long serialVersionUID = 1756202080423312153L;
     private final JDialog _dialog;
     private JList<String> _list;
-    private List<String> _data = new ArrayList<String>();
-    private final List<String> _suggestions = new ArrayList<String>();
-    private InterruptableMatcher _matcher;
+    private transient List<String> _data = new ArrayList<String>();
+    private transient final List<String> _suggestions = new ArrayList<String>();
+    private transient InterruptableMatcher _matcher;
     private Font _busy;
     private Font _regular;
     private String _lastWord = "";
     private String _lastChosenExistingVariable;
     private String _hint;
-    private final List<ActionListener> _listeners = new ArrayList<ActionListener>();
-    private SuggestMatcher _suggestMatcher = new ContainsMatcher();
+    private transient final List<ActionListener> _listeners = new ArrayList<ActionListener>();
+    private transient SuggestMatcher _suggestMatcher = new ContainsMatcher();
     private boolean _caseSensitive = false;
     private final JScrollPane _scrollPane;
 
@@ -155,7 +155,7 @@ public final class SuggestionField extends JTextField {
 
             public void mouseReleased(MouseEvent e) {
                 if (this.selected == SuggestionField.this._list.getSelectedIndex()) {
-                    SuggestionField.this.setText((String) SuggestionField.this._list.getSelectedValue());
+                    SuggestionField.this.setText(SuggestionField.this._list.getSelectedValue());
                     SuggestionField.this._lastChosenExistingVariable = SuggestionField.this._list.getSelectedValue().toString();
                     SuggestionField.this.fireActionEvent();
                     SuggestionField.this._dialog.setVisible(false);
@@ -204,7 +204,7 @@ public final class SuggestionField extends JTextField {
                         return;
                     }
                     if (((e.getKeyCode() == 10 ? 1 : 0) & (SuggestionField.this._list.getSelectedIndex() != -1 ? 1 : 0) & (SuggestionField.this._suggestions.size() > 0 ? 1 : 0)) != 0) {
-                        SuggestionField.this.setText((String) SuggestionField.this._list.getSelectedValue());
+                        SuggestionField.this.setText(SuggestionField.this._list.getSelectedValue());
                         SuggestionField.this._lastChosenExistingVariable = SuggestionField.this._list.getSelectedValue().toString();
                         SuggestionField.this.fireActionEvent();
                         SuggestionField.this._dialog.setVisible(false);
@@ -345,11 +345,11 @@ public final class SuggestionField extends JTextField {
                     }
 
                     if (SuggestionField.this._caseSensitive) {
-                        if (!SuggestionField.this._suggestMatcher.matches((String) it.next(), word)) {
+                        if (!SuggestionField.this._suggestMatcher.matches(it.next(), word)) {
                             it.remove();
                         }
                     } else if (!SuggestionField.this._suggestMatcher.matches(
-                            ((String) it.next()).toLowerCase(), word.toLowerCase())) {
+                            it.next().toLowerCase(), word.toLowerCase())) {
                         it.remove();
                     }
                 }

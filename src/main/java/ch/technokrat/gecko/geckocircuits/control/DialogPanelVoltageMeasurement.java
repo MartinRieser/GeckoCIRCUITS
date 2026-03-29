@@ -17,9 +17,13 @@ package ch.technokrat.gecko.geckocircuits.control;
  *
  * @author andy
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class DialogPanelVoltageMeasurement extends javax.swing.JPanel {
 
+    private static final long serialVersionUID = 1L;
+
     /** Creates new form DialogPanelVoltageMeasurement */
+    @SuppressWarnings("this-escape")
     public DialogPanelVoltageMeasurement() {
         initComponents();        
     }

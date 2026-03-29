@@ -21,8 +21,11 @@ import java.util.List;
 
 public abstract class ReglerWithSingleReference extends RegelBlock implements ComponentCoupable {
 
-    final ComponentCoupling _coupling = new ComponentCoupling(1, this, new int[]{0});
+    private static final long serialVersionUID = 1L;
 
+    transient final ComponentCoupling _coupling = new ComponentCoupling(1, this, new int[]{0});
+
+    @SuppressWarnings("this-escape")
     public ReglerWithSingleReference(final int noInputs, final int noOutputs) {
         super(noInputs, noOutputs);
     }

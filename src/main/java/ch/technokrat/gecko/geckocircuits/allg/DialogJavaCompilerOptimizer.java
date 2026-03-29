@@ -23,8 +23,10 @@ import java.util.logging.Logger;
 
 
 public class DialogJavaCompilerOptimizer extends JFrame {
-    
-    private GeckoJavaCompiler geckoJavaCompiler;
+
+    private static final long serialVersionUID = 1L;
+
+    private transient GeckoJavaCompiler geckoJavaCompiler;
     private javax.swing.JButton jButtonCloseWindow;
     private javax.swing.JButton jButtonCompile;
     private javax.swing.JButton jButtonExecute;
@@ -108,6 +110,7 @@ public class DialogJavaCompilerOptimizer extends JFrame {
     
     
     
+    @SuppressWarnings("this-escape")
     public DialogJavaCompilerOptimizer (GeckoJavaCompiler geckoJavaCompiler) {
         try {
             @SuppressWarnings("deprecation")

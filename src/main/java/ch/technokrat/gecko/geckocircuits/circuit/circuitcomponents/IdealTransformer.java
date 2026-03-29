@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@SuppressWarnings({"this-escape", "rawtypes", "unchecked"})
 public class IdealTransformer extends AbstractCircuitBlockInterface implements HiddenSubCircuitable, CurrentMeasurable, DirectVoltageMeasurable {
 
     private static final double HEIGHT = 0.8;
@@ -201,34 +202,34 @@ public class IdealTransformer extends AbstractCircuitBlockInterface implements H
         for (int i = -1; i < 2; i += 2) {
             switch (orientierung) {
                 case NORTH_SOUTH:
-                    xFl[0] = (int) (dpix * (x - i));
+                    xFl[0] = dpix * (x - i);
                     xFl[1] = xFl[0] - ARROW_WIDTH;
                     xFl[2] = xFl[0] + ARROW_WIDTH;
-                    yFl[0] = (int) (dpix * (y + 2)) - 2;
+                    yFl[0] = dpix * (y + 2) - 2;
                     yFl[1] = yFl[0] - ARROW_LENGTH;
                     yFl[2] = yFl[1];
                     break;
                 case SOUTH_NORTH:
-                    xFl[0] = (int) (dpix * (x - i));
+                    xFl[0] = dpix * (x - i);
                     xFl[1] = xFl[0] - ARROW_WIDTH;
                     xFl[2] = xFl[0] + ARROW_WIDTH;
-                    yFl[0] = (int) (dpix * (y - 2)) + 2;
+                    yFl[0] = dpix * (y - 2) + 2;
                     yFl[1] = yFl[0] + ARROW_LENGTH;
                     yFl[2] = yFl[1];
                     break;
                 case WEST_EAST:
-                    xFl[0] = (int) (dpix * (x + 2)) - 2;
+                    xFl[0] = dpix * (x + 2) - 2;
                     xFl[1] = xFl[0] - ARROW_LENGTH;
                     xFl[2] = xFl[1];
-                    yFl[0] = (int) (dpix * (y - i));
+                    yFl[0] = dpix * (y - i);
                     yFl[1] = yFl[0] - ARROW_WIDTH;
                     yFl[2] = yFl[0] + ARROW_WIDTH;
                     break;
                 case EAST_WEST:
-                    xFl[0] = (int) (dpix * (x - 2)) + 2;
+                    xFl[0] = dpix * (x - 2) + 2;
                     xFl[1] = xFl[0] + ARROW_LENGTH;
                     xFl[2] = xFl[1];
-                    yFl[0] = (int) (dpix * (y + i));
+                    yFl[0] = dpix * (y + i);
                     yFl[1] = yFl[0] - ARROW_WIDTH;
                     yFl[2] = yFl[0] + ARROW_WIDTH;
                     break;
@@ -243,7 +244,7 @@ public class IdealTransformer extends AbstractCircuitBlockInterface implements H
 
     @Override
     protected void drawConnectorLines(final Graphics2D graphics) {
-        Graphics2D g2 = (Graphics2D) graphics;
+        Graphics2D g2 = graphics;
         int x = getSheetPosition().x;
         int y = getSheetPosition().y;
         //-----------------
@@ -260,14 +261,14 @@ public class IdealTransformer extends AbstractCircuitBlockInterface implements H
         }
 
         g2.setStroke(new BasicStroke((float) 0.2 * dpix));
-        g2.drawLine((int) (dpix * 0), (int) (dpix * (0 + HEIGHT)), (int) (dpix * 0), (int) (dpix * (0 - HEIGHT) - rq));
+        g2.drawLine(dpix * 0, (int) (dpix * (0 + HEIGHT)), dpix * 0, (int) (dpix * (0 - HEIGHT) - rq));
 
         g2.setStroke(new BasicStroke((float) 1.0));
-        g2.drawLine((int) (dpix * (0 - 1)), (int) (dpix * (0 + HEIGHT) + rq), (int) (dpix * (0 - 1)), (int) (dpix * (0 + 2)));
-        g2.drawLine((int) (dpix * (0 - 1)), (int) (dpix * (0 - HEIGHT) - rq), (int) (dpix * (0 - 1)), (int) (dpix * (0 - 2)));
+        g2.drawLine(-dpix, (int) (dpix * (0 + HEIGHT) + rq), -dpix, dpix * 2);
+        g2.drawLine(-dpix, (int) (dpix * (0 - HEIGHT) - rq), -dpix, -dpix * 2);
 
-        g2.drawLine((int) (dpix * (0 + 1)), (int) (dpix * (0 + HEIGHT) + rq), (int) (dpix * (0 + 1)), (int) (dpix * (0 + 2)));
-        g2.drawLine((int) (dpix * (0 + 1)), (int) (dpix * (0 - HEIGHT) - rq), (int) (dpix * (0 + 1)), (int) (dpix * (0 - 2)));
+        g2.drawLine(dpix, (int) (dpix * (0 + HEIGHT) + rq), dpix, dpix * 2);
+        g2.drawLine(dpix, (int) (dpix * (0 - HEIGHT) - rq), dpix, -dpix * 2);
 
         // Ansichten -->
         restoreOrigTransformation(graphics);

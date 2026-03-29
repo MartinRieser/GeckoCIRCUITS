@@ -23,6 +23,7 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.NothingToDoCalculat
 import java.awt.Window;
 
 public abstract class AbstractCurrentMeasurement extends ReglerWithSingleReference {
+    private static final long serialVersionUID = 1L;
 
     public AbstractCurrentMeasurement() {
         super(0, 1);

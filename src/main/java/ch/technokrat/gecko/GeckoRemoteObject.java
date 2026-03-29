@@ -43,7 +43,7 @@ import java.util.logging.Logger;
  * names, argument types, ...).
  *
  */
-@SuppressWarnings({"PMD.ExcessivePublicCount", "PMD.NullAssignment"})
+@SuppressWarnings({"PMD.ExcessivePublicCount", "PMD.NullAssignment", "deprecation"})
 public class GeckoRemoteObject {
 
     public GeckoRemoteObject() {        
@@ -220,7 +220,7 @@ public class GeckoRemoteObject {
                     _wrapped = existingInstance;
 
                     ClassLoader loader = _wrapped.getClass().getClassLoader();
-                    Class[] interfaces = new Class[]{GeckoRemoteIntWithoutExc.class};
+                    Class<?>[] interfaces = new Class<?>[]{GeckoRemoteIntWithoutExc.class};
 
                     _invocationHandler = new RemoteInvocationHandler(_wrapped);
                     _proxy = (GeckoRemoteIntWithoutExc) Proxy.newProxyInstance(loader, interfaces, _invocationHandler);

@@ -18,6 +18,7 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.CounterCalculatable
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 public final class ReglerCounter extends SimpleRegelBlock {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerCounter.class, "COUNTER", I18nKeys.COUNTER);
     
     public ReglerCounter() {

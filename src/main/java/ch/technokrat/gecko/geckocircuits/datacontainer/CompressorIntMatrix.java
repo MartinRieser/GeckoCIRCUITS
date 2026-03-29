@@ -38,6 +38,7 @@ public class CompressorIntMatrix {
     private final int _m;
     private final int _n;
 
+    @SuppressWarnings("this-escape")
     public CompressorIntMatrix(int[][] dataToCompress) {
         _m = dataToCompress.length;
         if(_m > 0) {

@@ -34,6 +34,8 @@ import javax.swing.JLabel;
  */
 public abstract class DialogElementLK<T extends AbstractCircuitBlockInterface> extends DialogCircuitComponent<T> {
 
+    private static final long serialVersionUID = 1L;
+
     private GridBagConstraints gbc = new GridBagConstraints();                
 
     DialogElementLK(final T elementLK) {

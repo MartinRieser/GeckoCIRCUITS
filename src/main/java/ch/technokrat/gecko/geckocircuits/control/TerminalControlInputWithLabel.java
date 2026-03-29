@@ -36,7 +36,7 @@ class TerminalControlInputWithLabel extends TerminalControlInput {
         super.paintLabelString(graphics); //To change body of generated methods, choose Tools | Templates.                        
         Font origFont = graphics.getFont();
         graphics.setFont(getReducedSizeFont(origFont));
-        final int xPos = (int) (_parentElement.dpix * getPosition().x + _parentElement.dpix * 1.75)+2;
+        final int xPos = (int) (AbstractBlockInterface.dpix * getPosition().x + AbstractBlockInterface.dpix * 1.75)+2;
         final int yPos = getYFontPosition(this, graphics);
         
         final Color origColor = graphics.getColor();
@@ -49,7 +49,7 @@ class TerminalControlInputWithLabel extends TerminalControlInput {
     
     public static int getYFontPosition(final AbstractTerminal terminal, final Graphics2D graphics) {
         final int fontHeightThird = graphics.getFontMetrics().getHeight() / 3;         
-        return (int) (AbstractBlockInterface.dpix * terminal.getPosition().y) + fontHeightThird-1;
+        return AbstractBlockInterface.dpix * terminal.getPosition().y + fontHeightThird-1;
     }
     
     

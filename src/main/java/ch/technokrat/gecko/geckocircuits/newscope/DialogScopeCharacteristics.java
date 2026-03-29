@@ -31,6 +31,7 @@ import javax.swing.border.TitledBorder;
 
 public class DialogScopeCharacteristics extends GeckoDialog {
 
+    private static final long serialVersionUID = 1L;
     private GridBagConstraints _gridBagConst = new GridBagConstraints();
     private final TechFormat _cf = new TechFormat();
     private FormatJTextField _jTextFieldStatus;  // Staus-Anzeige der Berechnung
@@ -43,7 +44,7 @@ public class DialogScopeCharacteristics extends GeckoDialog {
     private JPanel _panelPowAnal;
     private JTabbedPane _powerAnalPane;
     private JPanel _jpCalc;
-    private final AbstractDataContainer _worksheet;
+    private transient final AbstractDataContainer _worksheet;
     private JButton _jbCALC;
     private static final double LARGE_VAL = 1e99;
     private static final int TEXT_FIELD_COLS = 16;
@@ -51,6 +52,7 @@ public class DialogScopeCharacteristics extends GeckoDialog {
     private static final int POW_AN_X = 379, POW_AN_Y = 224;
     private static final int CHAR_X_SIZE = 788, CHAR_Y_SIZE = 173;
 
+    @SuppressWarnings("this-escape")
     public DialogScopeCharacteristics(final JFrame parent, final AbstractDataContainer worksheet,
             final PowerAnalysisSettings powerAnalSettings, final double[] sliderValues) {
         super(parent, true);
@@ -90,7 +92,7 @@ public class DialogScopeCharacteristics extends GeckoDialog {
                     graphics.fillRect(0, 0, RECT_SIZE, RECT_SIZE);  // weisser Hintergrund
                     URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;
                     // Fix for Java 21: use URL constructor instead of URI.toURL()
-                    URL pngUrl = new URL(picsUrl, "equ1.png");
+                    URL pngUrl = picsUrl.toURI().resolve("equ1.png").toURL();
                     java.awt.Image equ1 = new ImageIcon(pngUrl).getImage();
                     graphics.drawImage(equ1, 0, 0, null);
                 } catch (Exception exc) {
@@ -119,7 +121,7 @@ public class DialogScopeCharacteristics extends GeckoDialog {
                     graphics.fillRect(0, 0, RECT_SIZE, RECT_SIZE);  // weisser Hintergrund
                     URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;
                     // Fix for Java 21: use URL constructor instead of URI.toURL()
-                    URL pngUrl = new URL(picsUrl, "equ2b.png");
+                    URL pngUrl = picsUrl.toURI().resolve("equ2b.png").toURL();
                     java.awt.Image equ1 = new ImageIcon(pngUrl).getImage();
                     graphics.drawImage(equ1, 0, 0, null);
                 } catch (Exception exception) {

@@ -44,6 +44,10 @@ public abstract class AbstractInductor extends AbstractNonLinearCircuitComponent
             arrayIndex(this, 1).
             build();
 
+    @SuppressWarnings("this-escape")
+    protected AbstractInductor() {
+    }
+
     @Override
     public final String getNonlinearFileExtension() {
         return ".nll";
@@ -94,8 +98,8 @@ public abstract class AbstractInductor extends AbstractNonLinearCircuitComponent
     protected void drawConnectorLines(final Graphics2D graphics) {
         final double rq = getRQ();
         graphics.setStroke(new BasicStroke((float) 1.0));
-        graphics.drawLine(0, (int) (-dpix * 2), 0, (int) (-dpix * HEIGHT - rq));
-        graphics.drawLine(0, (int) (dpix * 2), 0, (int) (dpix * HEIGHT + rq));
+        graphics.drawLine(0, -dpix * 2, 0, (int) (-dpix * HEIGHT - rq));
+        graphics.drawLine(0, dpix * 2, 0, (int) (dpix * HEIGHT + rq));
     }
 
     public double getStartInductance() {

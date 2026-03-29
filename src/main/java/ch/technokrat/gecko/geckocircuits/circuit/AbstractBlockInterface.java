@@ -87,6 +87,7 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
         return getTypeInfo().getSimulationDomain();
     }
 
+    @SuppressWarnings("this-escape")
     public AbstractBlockInterface() {
         for (int i = 0; i < nameOpt.length; i++) {
             nameOpt[i] = "";
@@ -678,6 +679,7 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
         return vecAllNodes;
     }
 
+    @SuppressWarnings("unchecked")
     public void copyLKBlockPars(final AbstractBlockInterface copy) {
         copy.setSheetPositionWithoutUndo(getSheetPosition());
         copy.setPositionVorVerschieben(getSheetPosition());
@@ -797,8 +799,8 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
 
     @Override
     public int elementAngeklickt(final Point clickPoint) {
-        return istAngeklickt((int) (dpix * clickPoint.x),
-                (int) (dpix * clickPoint.y));
+        return istAngeklickt(dpix * clickPoint.x,
+                dpix * clickPoint.y);
     }
 
     @Override

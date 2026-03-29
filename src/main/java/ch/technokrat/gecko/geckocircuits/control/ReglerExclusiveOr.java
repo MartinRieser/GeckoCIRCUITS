@@ -19,6 +19,7 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
 public final class ReglerExclusiveOr extends RegelBlock {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerExclusiveOr.class, "XOR", I18nKeys.XOR);
 
     public ReglerExclusiveOr() {

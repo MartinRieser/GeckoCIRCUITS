@@ -41,8 +41,10 @@ import javax.swing.JOptionPane;
 
 public class DialogFourier extends JDialog {
 
+    private static final long serialVersionUID = 1L;
+
     //-------------
-    private AbstractDataContainer worksheet;
+    private transient AbstractDataContainer worksheet;
     private boolean[] signalFourierAnalysiert;  // gibt zu jedem Header (= Signalnamen) an, ob Fourier-Analyse durchgefuehrt wurde
     private GridBagConstraints gbc = new GridBagConstraints();
     //-------------
@@ -60,13 +62,14 @@ public class DialogFourier extends JDialog {
     private final JPanelDialogRange _jPanelRange;
     private final NewScope _newScope;
 
+    @SuppressWarnings("this-escape")
     public DialogFourier(AbstractDataContainer worksheet, double[] sliderValues, final NewScope newScope) {
         _newScope = newScope;
         super.setModal(true);
         try {
             URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;
             // Fix for Java 21: use URL constructor instead of URI.toURL()
-            URL gifUrl = new URL(picsUrl, "gecko.gif");
+            URL gifUrl = picsUrl.toURI().resolve("gecko.gif").toURL();
             this.setIconImage(new ImageIcon(gifUrl).getImage());
         } catch (Exception e) {
         }
@@ -157,7 +160,7 @@ public class DialogFourier extends JDialog {
         pSEL.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Select Curve(s)", TitledBorder.LEFT, TitledBorder.TOP));
         //
         jcbZV = new JCheckBox[worksheet.getRowLength()];
-        gbc.fill = gbc.BOTH;
+        gbc.fill = GridBagConstraints.BOTH;
         for (int i1 = 1; i1 < worksheet.getRowLength() + 1; i1++) {
             gbc.gridx = 0;
             gbc.gridy = i1 - 1;
@@ -356,7 +359,7 @@ public class DialogFourier extends JDialog {
                     while (worksheet.getTimeValue(j, 0) < startTime + i * timeSpan / NN) {
                         j++;
                     }
-                    data[i] = (float) worksheet.getValue(i2 - 1, j);
+                    data[i] = worksheet.getValue(i2 - 1, j);
                 }
 
                 Cispr16Fft.realft(data, 1);

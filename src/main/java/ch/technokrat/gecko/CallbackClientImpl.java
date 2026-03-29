@@ -29,6 +29,8 @@ import java.util.logging.Logger;
  */
 public final class CallbackClientImpl extends UnicastRemoteObject implements CallbackClientInterface {
 
+    private static final long serialVersionUID = 1L;
+
     private final String _clientHostname;
     private final String _clientUserID;
     private final String _connectionDate;

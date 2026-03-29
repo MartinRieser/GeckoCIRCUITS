@@ -31,7 +31,8 @@ import javax.swing.event.ChangeListener;
 
 public final class DialogVerlusteDetail extends GeckoDialog {
 
-    private final VerlustBerechnungDetailed _lossCalculation;
+    private static final long serialVersionUID = 1L;
+    private final transient VerlustBerechnungDetailed _lossCalculation;
     private final JPanel _lowerPanel = new JPanel();
     private final JPanel _exitPanel = new JPanel();
     private final DetailedSwitchingLossesPanel _switchingLossPanel = new DetailedSwitchingLossesPanel();
@@ -104,7 +105,7 @@ public final class DialogVerlusteDetail extends GeckoDialog {
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);        
     }
 
-    private final ActionListener _saveChangeListener = new ActionListener() {
+    private final transient ActionListener _saveChangeListener = new ActionListener() {
         @Override
         public void actionPerformed(final ActionEvent event) {
 
@@ -116,7 +117,7 @@ public final class DialogVerlusteDetail extends GeckoDialog {
             }
         }
     };
-    private final ActionListener _saveNewActionListener = new ActionListener() {
+    private final transient ActionListener _saveNewActionListener = new ActionListener() {
         @Override
         public void actionPerformed(final ActionEvent actionEvent) {
             doSaveAsNew();

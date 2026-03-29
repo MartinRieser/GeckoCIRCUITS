@@ -23,6 +23,7 @@ import java.text.NumberFormat;
 
 public class FormatJTextField extends JTextField {
 
+    private static final long serialVersionUID = 1L;
     public static final double IS_VARIABLE = -1e95;  // GeckoOPTIMIZER
     private boolean _numberOK;
     private String _techFormatPat = TechFormat.FORMAT_AUTO;  // default
@@ -30,7 +31,7 @@ public class FormatJTextField extends JTextField {
     private final NumberFormat _nf = NumberFormat.getNumberInstance();
     private static final int OFFSET2 = 5;
     private static final int OFFSET1 = 2;
-    private LineSettable _lineSettable;
+    private transient LineSettable _lineSettable;
     
     public FormatJTextField() {
         super();
@@ -41,16 +42,19 @@ public class FormatJTextField extends JTextField {
         super(string);
     }
 
+    @SuppressWarnings("this-escape")
     public FormatJTextField(final double value) {
         super();
         this.setNumberToField(value);
     }
 
+    @SuppressWarnings("this-escape")
     public FormatJTextField(final double value, final int maxFracDigits) {
         super();
         this.setNumberToField(value, maxFracDigits);
     }
 
+    @SuppressWarnings("this-escape")
     public FormatJTextField(final double value, final String pattern) {
         super();
         this._techFormatPat = pattern;

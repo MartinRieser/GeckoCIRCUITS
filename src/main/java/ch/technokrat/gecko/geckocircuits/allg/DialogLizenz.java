@@ -33,9 +33,11 @@ import javax.swing.border.EtchedBorder;
 
 
 public class DialogLizenz extends JDialog implements WindowListener, ActionListener {
+    private static final long serialVersionUID = 1L;
     private JButton knOK;
     private StringBuffer sbInfoTxt; 
 
+    @SuppressWarnings("this-escape")
     public DialogLizenz (StringBuffer sbInfoTxt) {
         super.setModal(true);
         try {

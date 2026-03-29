@@ -36,22 +36,24 @@ import javax.swing.JTextArea;
 import javax.swing.BorderFactory;
 
 public class DialogOptimizerParameterSettings extends GeckoDialog {
+    private static final long serialVersionUID = 1L;
     private static final String TXT_HELP =
                 "\nParameters (name-value pairs) must match the parameters defined in the simulation model, \ne.g. $Rload. "
                 + "\n\nPairs of name-value in the input list must be separated by space or tab. "
                 + "\n\nIf a name is defined twice, a warning is given, but the simulation can be performed. "
-                + "If names are defined in the input list, that are not used in the simulation model, a warning is given. "
+                + "If names are defined in the input list, are not used in the simulation model, a warning is given. "
                 + "\n\nIf parameter names in the simulation model are not defined in the input list, an error is given. In this case "
                 + "the simulation cannot be performed. "
                 + "\n";
         
-    private final OptimizerParameterData _optData;
-    private Map<String, Integer> _numberOfUsedParamemters = new HashMap<String, Integer>();
+    private final transient OptimizerParameterData _optData;
+    private transient Map<String, Integer> _numberOfUsedParamemters = new HashMap<String, Integer>();
     private JTabbedPane tabber;
     private JTextArea jtaHLP;
     
     private DataTablePanelParameters _dataTable;
 
+    @SuppressWarnings("this-escape")
     public DialogOptimizerParameterSettings(OptimizerParameterData optData, List<AbstractBlockInterface> e) {
         super(GeckoSim._win, true);
         _optData = optData;

@@ -13,8 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.control;
 
+@SuppressWarnings("unchecked")
 class ReglerConstantDialog extends DialogElementCONTROL<ReglerConstant> {
-    
+    private static final long serialVersionUID = 1L;
+
     public ReglerConstantDialog(ReglerConstant reglerConst) {
         super(reglerConst);
     }

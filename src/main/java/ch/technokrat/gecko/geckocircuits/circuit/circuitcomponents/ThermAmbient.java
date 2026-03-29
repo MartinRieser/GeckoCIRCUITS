@@ -96,6 +96,7 @@ public final class ThermAmbient extends AbstractCircuitBlockInterface {
         return new ThermAmbientDialog(this);
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public List<? extends CircuitComponent> getCircuitCalculatorsForSimulationStart() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

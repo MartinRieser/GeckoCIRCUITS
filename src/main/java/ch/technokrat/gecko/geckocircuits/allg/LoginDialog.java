@@ -19,8 +19,10 @@ import javax.swing.*;
 import javax.swing.border.*;
  
 public class LoginDialog extends JDialog {
-             
-    
+
+    private static final long serialVersionUID = 1L;
+
+
     private JTextField tfUsername;
     private JPasswordField pfPassword;
     private JLabel lbUsername;
@@ -31,6 +33,7 @@ public class LoginDialog extends JDialog {
  
     public boolean _canceled;
     
+    @SuppressWarnings("this-escape")
     public LoginDialog(final Frame parent, final String userName, final String password) {
         super(parent, "Login", true);
         //

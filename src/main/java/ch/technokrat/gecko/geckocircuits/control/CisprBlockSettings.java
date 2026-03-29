@@ -18,8 +18,10 @@ import ch.technokrat.gecko.geckocircuits.newscope.GeckoDialog;
 import javax.swing.JOptionPane;
 
 public class CisprBlockSettings extends GeckoDialog {
+    private static final long serialVersionUID = 1L;
     private final ReglerCISPR16 _regler;
 
+    @SuppressWarnings("this-escape")
     public CisprBlockSettings(final ReglerCISPR16 regler, final java.awt.Frame parent) {
         super(parent, true);        
         initComponents();

@@ -19,7 +19,10 @@ package ch.technokrat.gecko.geckocircuits.allg;
  */
 public class DialogLicensing extends javax.swing.JFrame {
 
+    private static final long serialVersionUID = 1L;
+
     /** Creates new form DialogLicensing */
+    @SuppressWarnings("this-escape")
     public DialogLicensing() {
         initComponents();
         this.setVisible(true);

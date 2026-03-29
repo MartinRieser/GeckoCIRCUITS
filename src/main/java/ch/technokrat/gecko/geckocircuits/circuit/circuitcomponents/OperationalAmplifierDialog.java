@@ -29,6 +29,8 @@ import javax.swing.border.TitledBorder;
 
 final class OperationalAmplifierDialog extends DialogElementLK<OperationalAmplifier> {
 
+    private static final long serialVersionUID = 1L;
+
     public OperationalAmplifierDialog(final OperationalAmplifier parent) {
         super(parent);
     }

@@ -24,6 +24,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 class ReglerHysteresisDialog extends AbstractDialogWithExternalOption<ReglerHysteresis> {
+    private static final long serialVersionUID = 1L;
     private static final int IMAGE_COMPONENT_WIDTH = 130;
     private static final int IMAGE_COMPONENT_HEIGHT = 100;
         
@@ -90,6 +91,7 @@ class ReglerHysteresisDialog extends AbstractDialogWithExternalOption<ReglerHyst
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     JComponent[] getComponentsDisabledExternal() {        
         return new JComponent[] {tf.get(0)};
     }

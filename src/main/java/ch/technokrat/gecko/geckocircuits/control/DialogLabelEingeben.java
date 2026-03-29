@@ -31,21 +31,22 @@ import javax.swing.*;
 
 public final class DialogLabelEingeben extends JDialog {
 
-    private final Verbindung _connector;
+    private static final long serialVersionUID = 1L;
+    private final transient Verbindung _connector;
     private final FormatJTextField _textField = new FormatJTextField();
     private final String _originalLabel;
     private JCheckBox jCheckBoxEnabled;
     private static final int COLS = 12;
-    private final ConnectorType _conType;
-    private final TerminalInterface _clickedTerminal;
-    private final CircuitLabel _label;
+    private final transient ConnectorType _conType;
+    private final transient TerminalInterface _clickedTerminal;
+    private transient final CircuitLabel _label;
 
     public DialogLabelEingeben(final TerminalInterface terminal) {
         super(GeckoSim._win, true);
         try {
             URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;
             // Fix for Java 21: use URL constructor instead of URI.toURL()
-            URL gifUrl = new URL(picsUrl, "gecko.gif");
+            URL gifUrl = URI.create(picsUrl.toString() + "gecko.gif").toURL();
             this.setIconImage(new ImageIcon(gifUrl).getImage());
         } catch (Exception e) {
             e.printStackTrace();

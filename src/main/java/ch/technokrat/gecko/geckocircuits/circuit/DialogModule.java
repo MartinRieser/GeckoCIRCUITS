@@ -22,7 +22,10 @@ import javax.swing.JFrame;
  */
 public class DialogModule extends GeckoDialog {
 
+    private static final long serialVersionUID = 1L;
+
     /** Creates new form DialogModule */
+    @SuppressWarnings("this-escape")
     public DialogModule(final JFrame parent, final boolean modal) {
         super(parent, modal);
         initComponents();

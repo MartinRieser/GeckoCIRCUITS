@@ -33,6 +33,8 @@ import org.apache.batik.svggen.SVGGraphics2D;
 
 public class CircuitSheet extends JPanel {
 
+    private static final long serialVersionUID = 1L;
+
     private static final int RAD_CTM = 7;  // radius of the oval node-marker in connectorTestMode
     public final MapList allElements = new MapList() {
         @Override
@@ -40,8 +42,8 @@ public class CircuitSheet extends JPanel {
             return super.add(toAdd);
         }
     };
-    public final SchematicEditor2 _se;
-    public final WorksheetSize _worksheetSize;
+    public transient final SchematicEditor2 _se;
+    public transient final WorksheetSize _worksheetSize;
     /**
      * the nodes which should be highlighted due to a string search
      */
@@ -51,6 +53,7 @@ public class CircuitSheet extends JPanel {
      */
     public static Set<Point> _showNodes = new HashSet<Point>();
 
+    @SuppressWarnings("this-escape")
     public CircuitSheet(final SchematicEditor2 se) {
         _se = se;
         _worksheetSize = new WorksheetSize(this);
@@ -95,8 +98,8 @@ public class CircuitSheet extends JPanel {
         final int dpix = AbstractCircuitSheetComponent.dpix;
         graphics.setColor(GlobalColors.farbeConnectorTestModeInternal);
         for (Point point : CircuitSheet._showNodes) {
-            graphics.fillOval((int) (point.x * dpix) - RAD_CTM,
-                    (int) (point.y * dpix) - RAD_CTM, 2 * RAD_CTM, 2 * RAD_CTM);
+            graphics.fillOval(point.x * dpix - RAD_CTM,
+                    point.y * dpix - RAD_CTM, 2 * RAD_CTM, 2 * RAD_CTM);
         }
     }
 
@@ -104,8 +107,8 @@ public class CircuitSheet extends JPanel {
         graphics.setColor(GlobalColors.farbeConnectorTestMode);
         final int dpix = AbstractCircuitSheetComponent.dpix;
         for (Point point : CircuitSheet._showNodes) {
-            graphics.drawOval((int) (point.x * dpix) - RAD_CTM,
-                    (int) (point.y * dpix) - RAD_CTM, 2 * RAD_CTM, 2 * RAD_CTM);
+            graphics.drawOval(point.x * dpix - RAD_CTM,
+                    point.y * dpix - RAD_CTM, 2 * RAD_CTM, 2 * RAD_CTM);
         }
     }        
     
@@ -145,7 +148,7 @@ public class CircuitSheet extends JPanel {
 
             for (Point pt : _findNodes) {
                 g2d.setColor(Color.YELLOW);
-                graphics.fillOval((int) (pt.x * dpix) - 2 * RAD_CTM, (int) (pt.y * dpix) - 2 * RAD_CTM, 4 * RAD_CTM, 4 * RAD_CTM);
+                graphics.fillOval(pt.x * dpix - 2 * RAD_CTM, pt.y * dpix - 2 * RAD_CTM, 4 * RAD_CTM, 4 * RAD_CTM);
             }
 
 
@@ -212,7 +215,7 @@ public class CircuitSheet extends JPanel {
                 g2d.setColor(Color.MAGENTA);
                 g2d.setStroke(new java.awt.BasicStroke(2F));
 
-                graphics.drawOval((int) (pt.x * dpix) - 2 * RAD_CTM, (int) (pt.y * dpix) - 2 * RAD_CTM, 4 * RAD_CTM, 4 * RAD_CTM);
+                graphics.drawOval(pt.x * dpix - 2 * RAD_CTM, pt.y * dpix - 2 * RAD_CTM, 4 * RAD_CTM, 4 * RAD_CTM);
             }
             g2d.setStroke(oldStroke);
             super.paintComponent(g2d);            
@@ -532,7 +535,7 @@ public class CircuitSheet extends JPanel {
         final Collection<AbstractBlockInterface> allComponents = allElements.getClassFromContainer(AbstractBlockInterface.class);
         returnValue.addAll(allComponents);
         for (AbstractBlockInterface remove : allComponents) {
-            if (connectorType == connectorType.RELUCTANCE || connectorType == ConnectorType.LK || connectorType == ConnectorType.LK_AND_RELUCTANCE) {
+            if (connectorType == ConnectorType.RELUCTANCE || connectorType == ConnectorType.LK || connectorType == ConnectorType.LK_AND_RELUCTANCE) {
                 if (remove.getSimulationDomain() != ConnectorType.LK && remove.getSimulationDomain() != ConnectorType.LK_AND_RELUCTANCE && remove.getSimulationDomain() != ConnectorType.RELUCTANCE) {
                     returnValue.remove(remove);
                 }

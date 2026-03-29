@@ -45,6 +45,7 @@ public class Verbindung extends AbstractCircuitSheetComponent implements Compone
     public List<Point> _subPaths = new ArrayList<Point>();
     private List<Point> _trimmedCoords = new ArrayList<Point>();
 
+    @SuppressWarnings("this-escape")
     public Verbindung(final ConnectorType connectorType, final CircuitSheet parentSheet) {
         super();
         _connectorType = connectorType;
@@ -57,6 +58,7 @@ public class Verbindung extends AbstractCircuitSheetComponent implements Compone
         return _connectorType;
     }
 
+    @SuppressWarnings("this-escape")
     public Verbindung(final TokenMap tokenMap, final ConnectorType connectorType) {
         super();
         _connectorType = connectorType;

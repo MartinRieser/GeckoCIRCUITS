@@ -28,6 +28,10 @@ public abstract class AbstractSwitch extends AbstractSemiconductor implements Cu
     
     protected final LossProperties verluste = new LossProperties(this);
 
+    @SuppressWarnings("this-escape")
+    protected AbstractSwitch() {
+    }
+
     @Override
     public final void doReferenceAddAction(final ComponentCoupling added) {
         if (added.getParent() instanceof ReglerGate) {            

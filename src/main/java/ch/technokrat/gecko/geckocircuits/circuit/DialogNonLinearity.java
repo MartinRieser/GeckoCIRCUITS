@@ -23,9 +23,11 @@ import java.net.URI;
 import java.awt.Dimension;
 import javax.swing.*;
 
-public class DialogNonLinearity extends GeckoDialog {    
+public class DialogNonLinearity extends GeckoDialog {
+    private static final long serialVersionUID = 1L;
     private final NonLinearDialogPanel _content;
     private static final Dimension _windowSize = new Dimension(800, 600);
+    @SuppressWarnings("this-escape")
     public DialogNonLinearity(final AbstractNonLinearCircuitComponent elementLK, final boolean yAxisLog) {
         super(GeckoSim._win, true);
         _content = new NonLinearDialogPanel(this, elementLK, yAxisLog);        

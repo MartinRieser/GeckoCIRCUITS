@@ -23,8 +23,10 @@ import javax.swing.JOptionPane;
 
 public class CisprDataExport extends GeckoDialog {
 
-    private final AbstractDataContainer _dataContainer;
+    private static final long serialVersionUID = 1L;
+    private final transient AbstractDataContainer _dataContainer;
 
+    @SuppressWarnings("this-escape")
     public CisprDataExport(final TestReceiverWindow parent, final Cispr16Settings settings,
             final AbstractDataContainer dataContainer) {
         super(parent, true);

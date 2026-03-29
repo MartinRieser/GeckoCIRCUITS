@@ -24,6 +24,7 @@ import java.awt.Window;
 import java.util.Arrays;
 import java.util.List;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class AbstractCapacitor extends AbstractNonLinearCircuitComponent 
 implements CurrentMeasurable, DirectVoltageMeasurable {
     private static final double WIDTH = 0.9;
@@ -48,6 +49,10 @@ implements CurrentMeasurable, DirectVoltageMeasurable {
             showInTextInfo(TextInfoType.SHOW_NON_NULL).            
             arrayIndex(this, 1).
             build();                                            
+
+    @SuppressWarnings("this-escape")
+    protected AbstractCapacitor() {
+    }
 
     @Override
     public void setzeParameterZustandswerteAufNULL() {

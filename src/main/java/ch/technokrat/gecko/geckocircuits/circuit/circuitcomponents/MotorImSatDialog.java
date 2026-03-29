@@ -25,6 +25,8 @@ import javax.swing.JPanel;
  */
 class MotorImSatDialog extends AbstractMotorDialog<MotorImSat> {
 
+    private static final long serialVersionUID = 1L;
+
     public MotorImSatDialog(final MotorImSat parent) {
         super(parent);
     }

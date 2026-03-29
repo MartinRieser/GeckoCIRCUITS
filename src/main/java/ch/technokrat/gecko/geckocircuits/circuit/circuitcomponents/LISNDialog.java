@@ -30,7 +30,10 @@ import javax.swing.JTabbedPane;
  *
  * @author andy
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 class LISNDialog extends DialogElementLK {
+
+    private static final long serialVersionUID = 1L;
 
     public LISNDialog(final LISN parent) {
         super(parent);

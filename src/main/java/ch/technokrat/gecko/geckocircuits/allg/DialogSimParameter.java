@@ -39,8 +39,10 @@ import javax.swing.JTabbedPane;
 
 public class DialogSimParameter extends JDialog implements ActionListener {
 
+    private static final long serialVersionUID = 1L;
+
     private double _dt, _tDuration, _tPause;
-    private SolverSettings _solverSettings;
+    private transient SolverSettings _solverSettings;
     private FormatJTextField[] _tf;
     private static final int COLS = 6;
     private double _tPre = -1;
@@ -49,6 +51,7 @@ public class DialogSimParameter extends JDialog implements ActionListener {
     private int _solvertype;
     private JComboBox<String> _dropdownSolvSel = new JComboBox<>(_solverOptions);
 
+    @SuppressWarnings("this-escape")
     public DialogSimParameter(final Frame owner, final SolverSettings callback) {
         super(owner, true);
         

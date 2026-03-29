@@ -25,11 +25,14 @@ import javax.swing.border.TitledBorder;
 
 class CapacitorDialog extends DialogElementLK<AbstractCapacitor> {
 
+    private static final long serialVersionUID = 1L;
+
     public CapacitorDialog(final AbstractCapacitor parent) {
         super(parent);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected void baueGUIIndividual() {
         final JPanel pIN = createParameterPanel(element._capacitance, element._initialValue);
         

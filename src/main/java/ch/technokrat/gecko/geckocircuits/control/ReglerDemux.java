@@ -27,6 +27,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public final class ReglerDemux extends RegelBlock implements VariableTerminalNumber {
+    private static final long serialVersionUID = 1L;
 
     private static final double DA_CONST = 0.5;
     private static final double WIDTH = 0.3;
@@ -35,7 +36,7 @@ public final class ReglerDemux extends RegelBlock implements VariableTerminalNum
     public ReglerJavaFunction _connectedJavaBlock;
     public int _connectedJavaOutputIndex;
 
-    final UserParameter<Integer> _outputTerminalNumber = UserParameter.Builder.
+    final transient UserParameter<Integer> _outputTerminalNumber = UserParameter.Builder.
             <Integer>start("tn", 3).
             longName(I18nKeys.NO_OUTPUT_TERMINALS).
             shortName("numberOutputTerminals").
@@ -125,9 +126,9 @@ public final class ReglerDemux extends RegelBlock implements VariableTerminalNum
         yKlickMin = (int) (dpix * (yPos - WIDTH));
         yKlickMax = (int) (dpix * (yPos + 1.0 * termNumber));
 
-        graphics.fillRect((int) (dpix * (xPos - 0.4)), (int) (dpix * (yPos - 0.4)), (int) (dpix * (2 * 0.4)), (int) (dpix * termNumber));
+        graphics.fillRect((int) (dpix * (xPos - 0.4)), (int) (dpix * (yPos - 0.4)), (int) (dpix * (2 * 0.4)), dpix * termNumber);
         graphics.setColor(origColor);
-        graphics.drawRect((int) (dpix * (xPos - 0.4)), (int) (dpix * (yPos - 0.4)), (int) (dpix * (2 * 0.4)), (int) (dpix * termNumber));
+        graphics.drawRect((int) (dpix * (xPos - 0.4)), (int) (dpix * (yPos - 0.4)), (int) (dpix * (2 * 0.4)), dpix * termNumber);
         graphics.setColor(origColor);
     }
 

@@ -19,6 +19,7 @@ import java.awt.Graphics2D;
 public abstract class AbstractTwoPortLKreisBlock extends AbstractCircuitBlockInterface {
     private static final int TWO_PORT_DIST = 2;            
 
+    @SuppressWarnings("this-escape")
     public AbstractTwoPortLKreisBlock() {
         createTwoPortTerminals();
     } 

@@ -18,6 +18,7 @@ package ch.technokrat.gecko.geckocircuits.circuit;
  * @author andreas
  */
 public class NameAlreadyExistsException extends Exception {
+    private static final long serialVersionUID = 1L;
     public NameAlreadyExistsException(final String message) {
         super(message);
     }

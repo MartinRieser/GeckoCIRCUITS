@@ -19,6 +19,7 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
 public final class ReglerABCDQ extends RegelBlock {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerABCDQ.class, "ABCDQ", I18nKeys.ABC_DQ_TRANSFORM);
     
     public ReglerABCDQ() {

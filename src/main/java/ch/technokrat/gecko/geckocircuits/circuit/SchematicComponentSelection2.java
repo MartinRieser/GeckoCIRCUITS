@@ -49,14 +49,15 @@ import javax.swing.border.EmptyBorder;
 
 public class SchematicComponentSelection2 extends JTabbedPane {
 
+    private static final long serialVersionUID = 1L;
     private static final int MIN_GRID_SIZE = 12;
     private static final int LOWER_BOUND_OFFSET = -4;
-    private final List<AbstractBlockInterface> _showBlocks;
-    private final List<AbstractComponentTyp> _showBlocksType = new ArrayList<AbstractComponentTyp>();
-    private final Map<AbstractComponentTyp, AbstractBlockInterface> _map = new HashMap<AbstractComponentTyp, AbstractBlockInterface>();
-    private AbstractBlockInterface _paintBlock = null;
-    public AbstractComponentTyp _typElement = null;
-    private SchematicEditor2 se;
+    private transient final List<AbstractBlockInterface> _showBlocks;
+    private transient final List<AbstractComponentTyp> _showBlocksType = new ArrayList<AbstractComponentTyp>();
+    private transient final Map<AbstractComponentTyp, AbstractBlockInterface> _map = new HashMap<AbstractComponentTyp, AbstractBlockInterface>();
+    private transient AbstractBlockInterface _paintBlock = null;
+    public transient AbstractComponentTyp _typElement = null;
+    private transient SchematicEditor2 se;
     private CircuitTyp[] _typLK = new CircuitTyp[]{
         CircuitTyp.LK_U, CircuitTyp.LK_I, CircuitTyp.LK_R, CircuitTyp.LK_C, CircuitTyp.LK_L,
         CircuitTyp.LK_LKOP2, CircuitTyp.LK_M, CircuitTyp.LK_S, CircuitTyp.LK_IGBT, CircuitTyp.LK_MOSFET,
@@ -68,7 +69,7 @@ public class SchematicComponentSelection2 extends JTabbedPane {
          * Typ.LK_MOTOR_IMB,
          */ CircuitTyp.LK_LISN,};
     
-    private AbstractComponentTyp[] _typSubcircuit = new AbstractComponentTyp[]{
+    private transient AbstractComponentTyp[] _typSubcircuit = new AbstractComponentTyp[]{
         SpecialTyp.SUBCIRCUIT, CircuitTyp.LK_TERMINAL, CircuitTyp.TH_TERMINAL,
         ControlTyp.C_TERMINAL, CircuitTyp.REL_TERMINAL, CircuitTyp.LK_GLOBAL_TERMINAL,
         CircuitTyp.TH_GLOBAL_TERMINAL, ControlTyp.C_GLOBAL_TERMINAL,
@@ -98,13 +99,13 @@ public class SchematicComponentSelection2 extends JTabbedPane {
     };
     
     
-    private AbstractComponentTyp[] _typSpecial = new AbstractComponentTyp[]{
+    private transient AbstractComponentTyp[] _typSpecial = new AbstractComponentTyp[]{
         ControlTyp.C_JAVA_FUNCTION, ControlTyp.C_NATIVE_C_FUNCTION, ControlTyp.C_SMALL_SIG, ControlTyp.C_ABCDQ, ControlTyp.C_DQABC,
         ControlTyp.C_TIME, ControlTyp.C_SPARSEMATRIX, ControlTyp.C_PMSM_CONTROL,
         ControlTyp.C_PMSM_MODULATOR, ControlTyp.C_THYR_CTRL, 
         /*ControlTyp.C_DEBUG,*/ SpecialTyp.TEXTFIELD
     };
-    private AbstractComponentTyp[] _typTherm = new AbstractComponentTyp[]{
+    private transient AbstractComponentTyp[] _typTherm = new AbstractComponentTyp[]{
         CircuitTyp.TH_TEMP, CircuitTyp.TH_FLOW, CircuitTyp.TH_PvCHIP,
         CircuitTyp.TH_RTH, CircuitTyp.TH_CTH,
         CircuitTyp.TH_AMBIENT
@@ -118,6 +119,7 @@ public class SchematicComponentSelection2 extends JTabbedPane {
         this.se = se;
     }
 
+    @SuppressWarnings("this-escape")
     public SchematicComponentSelection2() {
 
         List<AbstractBlockInterface> showAllBlocks = new ArrayList<AbstractBlockInterface>();
@@ -205,7 +207,8 @@ public class SchematicComponentSelection2 extends JTabbedPane {
 
     class ComponentSelectionButton extends JButton {
 
-        private final AbstractComponentTyp _typ;
+        private static final long serialVersionUID = 1L;
+        private transient final AbstractComponentTyp _typ;
 
         public ComponentSelectionButton(final AbstractComponentTyp typ, final AbstractBlockInterface exampleBlock) {
             super(LangInit.getTranslatedString(exampleBlock.getTypeDescription()));                        
@@ -317,7 +320,7 @@ public class SchematicComponentSelection2 extends JTabbedPane {
                     Robot robot;
                     robot = new Robot();
                     final java.awt.Point mousePoint = MouseInfo.getPointerInfo().getLocation();
-                    robot.mouseRelease(InputEvent.BUTTON1_MASK);
+                    robot.mouseRelease(InputEvent.getMaskForButton(1));
                     robot.mouseMove(mousePoint.x - 10, mousePoint.y);
                     //robot.mousePress(InputEvent.BUTTON1_MASK);
 

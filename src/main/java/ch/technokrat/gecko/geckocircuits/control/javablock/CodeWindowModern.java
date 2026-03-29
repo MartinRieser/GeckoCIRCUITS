@@ -30,8 +30,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 public class CodeWindowModern extends JFrame {
-
-    private ReglerJavaFunction _javaFunction;
+    private static final long serialVersionUID = 1L;
+    private transient ReglerJavaFunction _javaFunction;
     private final VariableBusWidth _variableBusWidth;
     private final StringBuffer _outputStringBuffer;
 
@@ -53,6 +53,7 @@ public class CodeWindowModern extends JFrame {
     final ExtraFilesWindow _extSourceWindow;
     private boolean _extWindowInit = false;
 
+    @SuppressWarnings("this-escape")
     public CodeWindowModern(ReglerJavaFunction regelBlock, StringBuffer outputStringBuffer) {
         super();
         setTitle("Java Custom Code Control Block");

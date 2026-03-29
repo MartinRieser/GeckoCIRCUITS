@@ -28,11 +28,14 @@ import javax.swing.table.TableColumn;
 
 public class DataTablePanel extends JPanel {
 
+    private static final long serialVersionUID = 1L;
+
     private final MyTableModel _tableModel;
     private final JTable _table;
     private final String[] _columnTitles;
     private boolean _sortingDisabled;
 
+    @SuppressWarnings("this-escape")
     public DataTablePanel(final String[] columnTitles) {
         super(new GridLayout(1, 1));
         _columnTitles = columnTitles;
@@ -113,8 +116,10 @@ public class DataTablePanel extends JPanel {
 
     class MyTableModel extends AbstractTableModel {
 
+        private static final long serialVersionUID = 1L;
+
         private final int _numberColumns;
-        private List<List<Double>> data = new ArrayList<List<Double>>() {
+        private transient List<List<Double>> data = new ArrayList<List<Double>>() {
             @Override
             public boolean add(List<Double> e) {
                 assert e.size() == _numberColumns;

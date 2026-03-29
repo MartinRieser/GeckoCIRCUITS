@@ -32,6 +32,7 @@ import javax.swing.border.TitledBorder;
  */
 public final class JPanelDialogRange extends JPanel {
 
+    private static final long serialVersionUID = 1L;
     private final JRadioButton jRadButScopeRange, jRadButtDefRange, jrb3;
     private final FormatJTextField _rngSc1, _rngSc2, _rngDf1, _rngDf2, _rngSl1, _rngSl2;  // Angaben Zeitbereiche
     private final double _xScope1, _xScope2;
@@ -62,7 +63,7 @@ public final class JPanelDialogRange extends JPanel {
             }
         }
     };
-    private ActionListener _listener;
+    private transient ActionListener _listener;
     
     void registerActionListener(ActionListener listener) {
         _listener = listener;

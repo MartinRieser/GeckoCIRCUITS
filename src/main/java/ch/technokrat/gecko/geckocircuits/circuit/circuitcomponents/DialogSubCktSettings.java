@@ -26,13 +26,16 @@ import javax.swing.JOptionPane;
  */
 public class DialogSubCktSettings extends javax.swing.JDialog {
 
-    private final SubcircuitBlock _subBlock;
+    private static final long serialVersionUID = 1L;
+
+    private transient final SubcircuitBlock _subBlock;
     private final SubCircuitSheet _subSheet;
     private final boolean _initDone;
 
     /**
      * Creates new form DialogSheetSettings
      */
+    @SuppressWarnings("this-escape")
     public DialogSubCktSettings(java.awt.Frame parent, boolean modal,
             final SubcircuitBlock subBlock) {
         super(parent, modal);

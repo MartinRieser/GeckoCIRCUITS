@@ -90,7 +90,7 @@ public class SmallSignalCalculator extends AbstractControlCalculatable implement
 
     public void externalSetTime(double time) {
         _time = time;
-        _signalTypeCalculator._time = time;
+        AbstractControlCalculatable._time = time;
     }
 
     @Override

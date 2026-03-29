@@ -17,7 +17,9 @@ import java.awt.BorderLayout;
 import javax.swing.JPanel;
 
 class ReglerDelayDialog extends DialogElementCONTROL<ReglerDelay> {
-    
+    private static final long serialVersionUID = 1L;
+
+    @SuppressWarnings("unchecked")
     public ReglerDelayDialog(ReglerDelay reglerDelay) {
         super(reglerDelay);
     }

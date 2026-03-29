@@ -32,11 +32,14 @@ import javax.swing.table.TableColumn;
 
 public class DataTablePanelParameters extends JPanel {
 
+    private static final long serialVersionUID = 1L;
+
     private final DataTablePanelParameters.MyTableModel _tableModel;
     private final JTable _table;
     private final String[] _columnTitles;
-    private final Map<String, Integer> _usedParameterNames;
+    private final transient Map<String, Integer> _usedParameterNames;
 
+    @SuppressWarnings("this-escape")
     public DataTablePanelParameters(final String[] columnTitles, final Map<String, Integer> usedParameterNames) {
         super(new GridLayout(1, 1));
         _columnTitles = columnTitles;
@@ -201,9 +204,11 @@ public class DataTablePanelParameters extends JPanel {
 
     class MyTableModel extends AbstractTableModel {
 
+        private static final long serialVersionUID = 1L;
+
         private final int _numberColumns;
-        private List<String> variableNames = new ArrayList<String>();
-        private List<Double> variableNumbers = new ArrayList<Double>();
+        private transient List<String> variableNames = new ArrayList<String>();
+        private transient List<Double> variableNumbers = new ArrayList<Double>();
 
         public MyTableModel(final int numberColumns) {
             _numberColumns = numberColumns;            

@@ -46,8 +46,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
+@SuppressWarnings("this-escape")
 public class ReglerSignalSource extends RegelBlock implements ControlInputTwoTerminalStateable,
         GeckoFileable, Operationable {
+    private static final long serialVersionUID = 1L;
 
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerSignalSource.class, "SIGNAL", I18nKeys.SIGNAL_SOURCE);
 
@@ -55,21 +57,21 @@ public class ReglerSignalSource extends RegelBlock implements ControlInputTwoTer
     private static final int IN_TERM_NUMBER_EXTERNAL = 5;
     private static final int IN_TERM_NUMBER_NORMAL = 0;
     private static final int BLOCK_WIDTH = 3;
-    final UserParameter<ControlSourceType> _typQuelle = UserParameter.Builder.
+    transient final UserParameter<ControlSourceType> _typQuelle = UserParameter.Builder.
             <ControlSourceType>start("typQuelle", ControlSourceType.QUELLE_RECHTECK).
             longName(I18nKeys.TYPE_OF_SIGNAL_SOURCE).
             shortName("type").
             arrayIndex(this, 0).
             build();
     private static final double DEFAULT_AMPLITUDE = 10.0;
-    final UserParameter<Double> _amplitudeAC = UserParameter.Builder.
+    transient final UserParameter<Double> _amplitudeAC = UserParameter.Builder.
             <Double>start("amplitudeAC", DEFAULT_AMPLITUDE).
             longName(I18nKeys.PEAK_AMPLITUDE).
             shortName("amplMAX").
             arrayIndex(this, 1).
             build();
     private static final double DEFAULT_FREQUENCY = 50.0;
-    final UserParameter<Double> _frequency = UserParameter.Builder.
+    transient final UserParameter<Double> _frequency = UserParameter.Builder.
             <Double>start("frequenz", DEFAULT_FREQUENCY).
             longName(I18nKeys.FREQUENCY).
             unit("Hz").
@@ -77,14 +79,14 @@ public class ReglerSignalSource extends RegelBlock implements ControlInputTwoTer
             arrayIndex(this, 2).
             build();
     private static final int OFFSET_PAR_INDEX = 3;
-    final UserParameter<Double> _offsetDC = UserParameter.Builder.
+    transient final UserParameter<Double> _offsetDC = UserParameter.Builder.
             <Double>start("anteilDC", 0.0).
             longName(I18nKeys.OFFSET_OF_WAVEFORM_FROM_ZERO).
             shortName("offset").
             arrayIndex(this, OFFSET_PAR_INDEX).
             build();
     private static final int PHASE_PAR_INDEX = 4;
-    final UserParameter<Double> _phase = UserParameter.Builder.
+    transient final UserParameter<Double> _phase = UserParameter.Builder.
             <Double>start(PHASE, 0.0).
             longName(I18nKeys.SIGNAL_PHASE_DELAY).
             shortName(PHASE).
@@ -92,21 +94,21 @@ public class ReglerSignalSource extends RegelBlock implements ControlInputTwoTer
             build();
     private static final int DUTY_PAR_INDEX = 5;
     private static final double DEFAULT_DUTY = 0.5;
-    final UserParameter<Double> _dutyRatio = UserParameter.Builder.
+    transient final UserParameter<Double> _dutyRatio = UserParameter.Builder.
             <Double>start("tastverhaeltnis", DEFAULT_DUTY).
             longName(I18nKeys.DUTY_RATIO).
             shortName("d").
             arrayIndex(this, DUTY_PAR_INDEX).
             build();
     private static final int EXTERNAL_PAR_INDEX = 6;
-    final UserParameter<Boolean> _useExternal = UserParameter.Builder.
+    transient final UserParameter<Boolean> _useExternal = UserParameter.Builder.
             <Boolean>start("useExternal", false).
             longName(I18nKeys.IF_TRUE_EXTERNAL_TERMINALS).
             shortName("useExternal").
             arrayIndex(this, EXTERNAL_PAR_INDEX).
             build();
     private static final int DISP_PAR_INDEX = 7;
-    final UserParameter<Boolean> _displayDetails = UserParameter.Builder.
+    transient final UserParameter<Boolean> _displayDetails = UserParameter.Builder.
             <Boolean>start("displayDetails", false).
             longName(I18nKeys.IF_TRUE_MORE_INFORMATION).
             shortName("display").
@@ -115,7 +117,7 @@ public class ReglerSignalSource extends RegelBlock implements ControlInputTwoTer
     private double[][] _xy;  // Importierter ZV (als ASCII-Datei)
     private String _datnamXY = GlobalFilePathes.DATNAM_NOT_DEFINED;
     // for TRI, RECHT-states we simple store variables 'aufsteigend' and '_dreieck'
-    private GeckoFile _externalDataFile = null;
+    private transient GeckoFile _externalDataFile = null;
     private long _externalDataFileHashValue = 0;
     private String[] _labelsBeforeFold;
     private Stack<TerminalControlInput> _terminalStack = new Stack<TerminalControlInput>();
@@ -229,20 +231,20 @@ public class ReglerSignalSource extends RegelBlock implements ControlInputTwoTer
 
         final FontRenderContext frc = graphics.getFontRenderContext();
         if (_useExternal.getValue()) {
-            graphics.drawLine((int) (dpix * xPos), (int) (dpix * (yPos + 1 / 2.0)),
-                    (int) (dpix * xPos), (int) (dpix * (yPos + Y_SIZE)));
+            graphics.drawLine(dpix * xPos, (int) (dpix * (yPos + 1 / 2.0)),
+                    dpix * xPos, dpix * (yPos + Y_SIZE));
             final int yShift = (int) (graphics.getFont().getStringBounds("xxx", frc).getHeight() * 0.25);
             graphics.setColor(GlobalColors.farbeInBearbeitungCONTROL);
             int strYPos = 2;
-            graphics.drawString("ac", (int) (dpix * xPos) + X_OFFSET, (int) (dpix * (yPos + strYPos)) + yShift);
+            graphics.drawString("ac", dpix * xPos + X_OFFSET, dpix * (yPos + strYPos) + yShift);
             strYPos++;
-            graphics.drawString("f", (int) (dpix * xPos) + X_OFFSET, (int) (dpix * (yPos + strYPos)) + yShift);
+            graphics.drawString("f", dpix * xPos + X_OFFSET, dpix * (yPos + strYPos) + yShift);
             strYPos++;
-            graphics.drawString("dc", (int) (dpix * xPos) + X_OFFSET, (int) (dpix * (yPos + strYPos)) + yShift);
+            graphics.drawString("dc", dpix * xPos + X_OFFSET, dpix * (yPos + strYPos) + yShift);
             strYPos++;
-            graphics.drawString(PHASE, (int) (dpix * xPos) + X_OFFSET, (int) (dpix * (yPos + strYPos)) + yShift);
+            graphics.drawString(PHASE, dpix * xPos + X_OFFSET, dpix * (yPos + strYPos) + yShift);
             strYPos++;
-            graphics.drawString("duty", (int) (dpix * xPos) + X_OFFSET, (int) (dpix * (yPos + strYPos)) + yShift);
+            graphics.drawString("duty", dpix * xPos + X_OFFSET, dpix * (yPos + strYPos) + yShift);
             graphics.setColor(origColor);
         }
 

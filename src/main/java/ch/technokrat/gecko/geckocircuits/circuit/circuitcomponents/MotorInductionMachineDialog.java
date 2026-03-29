@@ -22,7 +22,10 @@ import javax.swing.JPanel;
  *
  * @author andy
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 class MotorInductionMachineDialog extends AbstractMotorDialog<MotorInductionMachine> {
+    
+    private static final long serialVersionUID = 1L;
     
     public MotorInductionMachineDialog(MotorInductionMachine parent) {
         super(parent);

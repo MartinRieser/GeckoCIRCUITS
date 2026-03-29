@@ -38,14 +38,16 @@ import javax.swing.JTabbedPane;
 import javax.swing.border.TitledBorder;
 
 class MutualInductanceDialog extends DialogElementLK<MutualInductance> {
-    private AbstractBlockInterface _selectedCoupling1;
-    private AbstractBlockInterface _selectedCoupling2;
+    private static final long serialVersionUID = 1L;
+    private transient AbstractBlockInterface _selectedCoupling1;
+    private transient AbstractBlockInterface _selectedCoupling2;
     private final JCheckBox _jcbM = new JCheckBox(I18nKeys.SHOW_LINES.getTranslation());
     
     public MutualInductanceDialog(final MutualInductance parent) {
         super(parent);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void baueGUIIndividual() {        
 

@@ -25,6 +25,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+@SuppressWarnings("unchecked")
 class ReglerLimitDialog extends AbstractDialogWithExternalOption<ReglerLimit> {    
 
     public ReglerLimitDialog(final ReglerLimit reglerLimit) {

@@ -50,15 +50,15 @@ public abstract class AbstractTerminal implements TerminalInterface {
     @Override
     public void paintComponent(final Graphics graphics) {
         final int dpix = AbstractCircuitSheetComponent.dpix;
-        graphics.fillOval((int) (dpix * getPosition().x) - POINT_DIAMETER / 2,
-                (int) (dpix * getPosition().y) - POINT_DIAMETER / 2, POINT_DIAMETER, POINT_DIAMETER);
+        graphics.fillOval(dpix * getPosition().x - POINT_DIAMETER / 2,
+                dpix * getPosition().y - POINT_DIAMETER / 2, POINT_DIAMETER, POINT_DIAMETER);
 
     }
 
     public void paintLabelString(final Graphics2D graphics) {
         if (!_label.getLabelString().isEmpty()) {
-            graphics.drawString(_label.getLabelString(), (int) (AbstractCircuitSheetComponent.dpix * getPosition().x) + DX_IN,
-                    (int) (AbstractCircuitSheetComponent.dpix * getPosition().y) + DY_TEXT);
+            graphics.drawString(_label.getLabelString(), AbstractCircuitSheetComponent.dpix * getPosition().x + DX_IN,
+                    AbstractCircuitSheetComponent.dpix * getPosition().y + DY_TEXT);
         }
     }
 
@@ -101,38 +101,38 @@ public abstract class AbstractTerminal implements TerminalInterface {
         int[] yFl = new int[3];
                 
         if (_parentElement.getSheetPosition().y < y) {            
-            xFl[0] = (int) (dpix * x);
+            xFl[0] = dpix * x;
             xFl[1] = xFl[0] - _pFb;
             xFl[2] = xFl[0] + _pFb;
-            yFl[0] = (int) (dpix * (y));
+            yFl[0] = dpix * y;
             yFl[1] = yFl[0] - _pFa;
             yFl[2] = yFl[1];
         }
             
         if (_parentElement.getSheetPosition().y > y) {
-            xFl[0] = (int) (dpix * x);
+            xFl[0] = dpix * x;
             xFl[1] = xFl[0] - _pFb;
             xFl[2] = xFl[0] + _pFb;
-            yFl[0] = (int) (dpix * (y));
+            yFl[0] = dpix * y;
             yFl[1] = yFl[0] + _pFa;
             yFl[2] = yFl[1];
         }
         
         if (_parentElement.getSheetPosition().x < x) {
-            xFl[0] = (int) (dpix * (x));
+            xFl[0] = dpix * x;
             xFl[1] = xFl[0] - _pFa;
             xFl[2] = xFl[1];
-            yFl[0] = (int) (dpix * y);
+            yFl[0] = dpix * y;
             yFl[1] = yFl[0] - _pFb;
             yFl[2] = yFl[0] + _pFb;
           }
         
 
         if(_parentElement.getSheetPosition().x > x) {
-            xFl[0] = (int) (dpix * (x));
+            xFl[0] = dpix * x;
             xFl[1] = xFl[0] + _pFa;
             xFl[2] = xFl[1];
-            yFl[0] = (int) (dpix * y);
+            yFl[0] = dpix * y;
             yFl[1] = yFl[0] - _pFb;
             yFl[2] = yFl[0] + _pFb;
         }

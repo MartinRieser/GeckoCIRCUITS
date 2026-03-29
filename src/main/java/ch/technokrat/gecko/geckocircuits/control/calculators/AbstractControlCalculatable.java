@@ -29,6 +29,7 @@ public abstract class AbstractControlCalculatable {
     public final double[][] _inputSignal;
     public final double[][] _outputSignal;
 
+    @SuppressWarnings("this-escape")
     public AbstractControlCalculatable(final int noInputs, final int noOutputs) {        
         _inputSignal = new double[noInputs][]; // careful: the array value of the input
         // signal is set when all components are connected within the netlist.

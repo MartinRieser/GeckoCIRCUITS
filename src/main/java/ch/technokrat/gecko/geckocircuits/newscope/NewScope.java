@@ -29,12 +29,13 @@ import javax.swing.GroupLayout;
 
 public final class NewScope extends javax.swing.JPanel {
 
-    public final List<GraferV4> _grafer = new ArrayList<GraferV4>();
+    private static final long serialVersionUID = 1L;
+    public transient final List<GraferV4> _grafer = new ArrayList<GraferV4>();
     private boolean _signalCrvSelected;
     private static final String CURSOR_FORWARD_INFO = "Forward/Backward mode for cursor search functions";
     private static final String ZOOM_INFO = "<html>Lock zoom to X-axis. Alternatively, press<br> CTRL button "
             + "when dragging the zoom window</html>";
-    private final SliderContainer _sliderContainer;
+    private transient final SliderContainer _sliderContainer;
     private GraferV4 _fourierPanel;
 
     /**

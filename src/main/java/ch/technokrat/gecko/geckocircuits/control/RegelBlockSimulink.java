@@ -19,6 +19,8 @@ import java.util.Stack;
 
 abstract class RegelBlockSimulink extends RegelBlock {
 
+    private static final long serialVersionUID = 1L;
+
     public RegelBlockSimulink() {
         super();
     }

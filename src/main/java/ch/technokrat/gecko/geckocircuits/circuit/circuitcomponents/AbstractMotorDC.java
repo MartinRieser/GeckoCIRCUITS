@@ -179,7 +179,7 @@ abstract class AbstractMotorDC extends AbstractMotor {
         g.setColor(Color.magenta);
         int[] xFl = new int[3];
         int[] yFl = new int[3];
-        xFl[0] = (int) (dpix * 2) - 2;
+        xFl[0] = dpix * 2 - 2;
         xFl[1] = xFl[0] - ARROW_LENGTH;
         xFl[2] = xFl[1];
         yFl[0] = 0;

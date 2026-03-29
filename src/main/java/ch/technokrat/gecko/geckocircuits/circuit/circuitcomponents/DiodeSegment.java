@@ -19,6 +19,7 @@ public class DiodeSegment {
     public final double _RDiff;
     public final double _uF;
     
+    @SuppressWarnings("this-escape")
     public DiodeSegment(double startVoltage, double endVoltage, double startCurrent, double endCurrent) {
         _startVoltage = startVoltage;
         _endVoltage = endVoltage;

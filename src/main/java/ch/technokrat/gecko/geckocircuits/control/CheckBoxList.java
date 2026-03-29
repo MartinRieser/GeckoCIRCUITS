@@ -21,6 +21,7 @@ import java.util.*;
 
 public class CheckBoxList extends JList<String>
     implements ListSelectionListener {
+    private static final long serialVersionUID = 1L;
 
     static Color listForeground, listBackground,
         listSelectionForeground,
@@ -37,6 +38,7 @@ public class CheckBoxList extends JList<String>
     int toggleIndex = -1;
     boolean toggleWasSelected;
 
+    @SuppressWarnings("this-escape")
     public CheckBoxList() {
         super();
         setCellRenderer (new CheckBoxListCellRenderer());
@@ -69,7 +71,7 @@ public class CheckBoxList extends JList<String>
             // add or remove the delta
             it = newSelections.iterator();
             while (it.hasNext()) {
-                Integer nextInt = (Integer) it.next();
+                Integer nextInt = it.next();
                 int index = nextInt;
                 if (selectionCache.contains (nextInt))
                     getSelectionModel().removeSelectionInterval (index, index);
@@ -119,6 +121,7 @@ public class CheckBoxList extends JList<String>
 
     class CheckBoxListCellRenderer extends JComponent
         implements ListCellRenderer<Object> {
+        private static final long serialVersionUID = 1L;
         DefaultListCellRenderer defaultComp;
         JCheckBox checkbox;
         public CheckBoxListCellRenderer() {

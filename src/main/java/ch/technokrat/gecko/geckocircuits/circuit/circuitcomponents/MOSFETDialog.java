@@ -20,6 +20,8 @@ import javax.swing.border.TitledBorder;
 
 class MOSFETDialog extends AbstractDialogPowerSwitch<MOSFET> {
 
+    private static final long serialVersionUID = 1L;
+
     protected FormatJTextField _antiUF;
     protected FormatJTextField _antiROn;
     protected FormatJTextField _antiROff;    
@@ -29,6 +31,7 @@ class MOSFETDialog extends AbstractDialogPowerSwitch<MOSFET> {
     }
 
 
+    @SuppressWarnings("unchecked")
     @Override
     public JPanel createParameterPanel() {
         JPanel switchPanel = createParameterPanel(element._onResistance, element._offResistance, element.numberParalleled);

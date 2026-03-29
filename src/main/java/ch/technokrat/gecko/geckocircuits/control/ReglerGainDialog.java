@@ -22,6 +22,8 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 class ReglerGainDialog extends DialogElementCONTROL<ReglerGain> {
+    private static final long serialVersionUID = 1L;
+    @SuppressWarnings("unchecked")
     public ReglerGainDialog(ReglerGain reglerGain) {
         super(reglerGain);    
     }

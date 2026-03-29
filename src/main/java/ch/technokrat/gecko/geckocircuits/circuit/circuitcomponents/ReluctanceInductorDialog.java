@@ -29,6 +29,8 @@ import javax.swing.border.TitledBorder;
 
 class ReluctanceInductorDialog extends DialogElementLK<ReluctanceInductor> {
 
+    private static final long serialVersionUID = 1L;
+
     public ReluctanceInductorDialog(final ReluctanceInductor parent) {
         super(parent);
     }

@@ -32,17 +32,21 @@ import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class DragTest extends JFrame implements DragSourceListener,
     DragGestureListener {
+
+  private static final long serialVersionUID = 1L;
 
   DragSource ds;
 
   JList jl;
 
-  StringSelection transferable;
+  transient StringSelection transferable;
 
   String[] items = { "Java", "C", "C++", "Lisp", "Perl", "Python" };
 
+  @SuppressWarnings("this-escape")
   public DragTest() {
     super("Drag Test");
     setSize(200, 150);

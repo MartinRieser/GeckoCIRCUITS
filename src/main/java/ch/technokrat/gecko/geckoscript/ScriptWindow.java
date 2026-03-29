@@ -39,9 +39,10 @@ import javax.swing.*;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 public class ScriptWindow extends javax.swing.JFrame {
+    private static final long serialVersionUID = 1L;
     ExtraFilesWindow _extSourceWindow;
     private boolean _extWindowInit = false;
-    SimulationAccess _circuit;
+    transient SimulationAccess _circuit;
     Random _nameGenerator;
     String _declarations = "";
     String _className = "GeckoCustom";
@@ -54,7 +55,7 @@ public class ScriptWindow extends javax.swing.JFrame {
     String _compileSourceCode = "";
     String _workingDirectory;
     CompileStatus _compileStatus = CompileStatus.NOT_COMPILED;
-    AbstractGeckoCustom _scriptObject;
+    transient AbstractGeckoCustom _scriptObject;
     final RSyntaxTextArea _codeTextArea;
     final RSyntaxTextArea _declarationsTextArea;
     final RSyntaxTextArea _importsTextArea;
@@ -63,12 +64,13 @@ public class ScriptWindow extends javax.swing.JFrame {
     String compilerMessages = "";
     final DefaultListModel<FunctionDescription> _listModel;
     final DefaultComboBoxModel<MethodCategory> _categoryModel;
-    final PrintStream _outputStream;        
+    transient final PrintStream _outputStream;        
     
 
     /**
      * Creates new form ScriptWindow
      */
+    @SuppressWarnings("this-escape")
     public ScriptWindow(SimulationAccess circuitSim) {
         _extSourceWindow = new ExtraFilesWindow(circuitSim);
         _circuit = circuitSim;
@@ -100,7 +102,7 @@ public class ScriptWindow extends javax.swing.JFrame {
             public void mouseClicked(MouseEvent evt) {
                 if (evt.getClickCount() == 2) {
                     int index = jListFunctions.locationToIndex(evt.getPoint());
-                    FunctionDescription funcDes = (FunctionDescription) _listModel.get(index);
+                    FunctionDescription funcDes = _listModel.get(index);
                     optionJDialog(funcDes._detailsString);
                 }
             }
@@ -506,7 +508,7 @@ public class ScriptWindow extends javax.swing.JFrame {
         compileCode();
 
 }//GEN-LAST:event_jButtonCompileActionPerformed
-    private Thread computationThread;
+    private transient Thread computationThread;
 
     private void jButtonRunActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD//GEN-FIRST:event_jButtonRunActionPerformed
 

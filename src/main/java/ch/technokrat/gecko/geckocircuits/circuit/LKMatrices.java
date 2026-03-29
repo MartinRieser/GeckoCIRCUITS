@@ -112,6 +112,7 @@ public class LKMatrices {
 
     }
 
+    @SuppressWarnings("fallthrough")
     public void schreibeMatrix_A(double dt, double time, boolean capError) {
 
         if (netzliste.elements != null) {
@@ -245,6 +246,7 @@ public class LKMatrices {
                         a[x][y1] -= gain;
                         a[y][x1] -= gain;
                     }
+                    break;
                 case TH_FLOW:
                     // kein Beitrag
                     break;
@@ -359,6 +361,7 @@ public class LKMatrices {
 //        }
     }
 
+    @SuppressWarnings("fallthrough")
     public void schreibeMatrix_B(double dt, double t, boolean capError) {
 
         for (int i1 = 0; i1 < matrixSize; i1++) {
@@ -586,6 +589,7 @@ public class LKMatrices {
 //        System.out.println("time: " + t + " " + bHash);
     }
 
+    @SuppressWarnings("fallthrough")
     public boolean berechneBauteilStroeme(double stoergroesse, double dt, double t, boolean isNewIteration,
             int errorCounter) {
 
@@ -614,14 +618,14 @@ public class LKMatrices {
                 case LK_R:
                 case TH_RTH:
                     if (netzliste.parameter[i1][0] < FAST_NULL_R) {
-                        netzliste.eLKneu[i1]._currentInAmps = (p[x] - p[y]) / this.FAST_NULL_R;
+                        netzliste.eLKneu[i1]._currentInAmps = (p[x] - p[y]) / LKMatrices.FAST_NULL_R;
                     } else {
                         netzliste.eLKneu[i1]._currentInAmps = (p[x] - p[y]) / netzliste.parameter[i1][0];
                     }
                     break;
                 case TH_AMBIENT:
                     if (netzliste.parameter[i1][0] < FAST_NULL_R) {
-                        netzliste.eLKneu[i1]._currentInAmps = (p[x] - p[y]) / this.FAST_NULL_R;
+                        netzliste.eLKneu[i1]._currentInAmps = (p[x] - p[y]) / LKMatrices.FAST_NULL_R;
                     } else {
                         netzliste.eLKneu[i1]._currentInAmps = (p[x] - p[y]) / netzliste.parameter[i1][0];
                     }

@@ -32,6 +32,7 @@ import javax.swing.event.ListSelectionListener;
 @SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyMethods", "PMD.CyclomaticComplexity"})
 public final class DialogTransferFunction extends javax.swing.JFrame {
 
+    private static final long serialVersionUID = 1L;
     private final DefaultListModel<ComplexPrinter> _nomModel = new DefaultListModel<ComplexPrinter>();
     private final DefaultListModel<ComplexPrinter> _deNomModel = new DefaultListModel<ComplexPrinter>();
     private final ReglerTransferFunction _reglerTF;
@@ -153,13 +154,13 @@ public final class DialogTransferFunction extends javax.swing.JFrame {
         _reglerTF.clearPolesAndZeros();
 
         for (int i = 0; i < _deNomModel.getSize(); i++) {
-            _reglerTF.setPole(((ComplexPrinter) _deNomModel.get(i))._value.getRe(), 2 * i);
-            _reglerTF.setPole(((ComplexPrinter) _deNomModel.get(i))._value.getIm(), 2 * i + 1);
+            _reglerTF.setPole(_deNomModel.get(i)._value.getRe(), 2 * i);
+            _reglerTF.setPole(_deNomModel.get(i)._value.getIm(), 2 * i + 1);
         }
 
         for (int i = 0; i < _nomModel.getSize(); i++) {
-            _reglerTF.setZero(((ComplexPrinter) _nomModel.get(i))._value.getRe(), 2 * i);
-            _reglerTF.setZero(((ComplexPrinter) _nomModel.get(i))._value.getIm(), 2 * i + 1);
+            _reglerTF.setZero(_nomModel.get(i)._value.getRe(), 2 * i);
+            _reglerTF.setZero(_nomModel.get(i)._value.getIm(), 2 * i + 1);
         }
         
         
@@ -171,12 +172,12 @@ public final class DialogTransferFunction extends javax.swing.JFrame {
         final List<Double> denominator = new ArrayList<Double>();
 
         for (int i = 0; i < _nomModel.size(); i++) {
-            final double value = ((ComplexPrinter) _nomModel.get(i))._value.getRe();
+            final double value = _nomModel.get(i)._value.getRe();
             numerator.add(value);
         }
 
         for (int i = 0; i < _deNomModel.size(); i++) {
-            final double value = ((ComplexPrinter) _deNomModel.get(i))._value.getRe();
+            final double value = _deNomModel.get(i)._value.getRe();
             denominator.add(value);
         }
                 
@@ -257,7 +258,7 @@ public final class DialogTransferFunction extends javax.swing.JFrame {
                             return;
                         }
                         jButtAddDenomEdit.setEnabled(true);
-                        final ComplexPrinter cont = (ComplexPrinter) jListDenom.getSelectedValue();
+                        final ComplexPrinter cont = jListDenom.getSelectedValue();
                         jTFInsertDeNum.setText("" + cont._value.getRe());
                         jTFInsertDeNumIm.setText("" + cont._value.getIm());
                     }
@@ -272,7 +273,7 @@ public final class DialogTransferFunction extends javax.swing.JFrame {
                     return;
                 }
                 jButtonEditNom.setEnabled(true);
-                final ComplexPrinter cont = (ComplexPrinter) jListNom.getSelectedValue();
+                final ComplexPrinter cont = jListNom.getSelectedValue();
                 jTFInsertNumberRe.setText("" + cont._value.getRe());
                 jTFInsertNumIm.setText("" + cont._value.getIm());
             }

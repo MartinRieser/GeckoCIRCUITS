@@ -36,8 +36,11 @@ import java.net.URL;
 
 public class DialogWarningNodeNumber extends JDialog implements WindowListener, ActionListener {
 
+    private static final long serialVersionUID = 1L;
 
 
+
+    @SuppressWarnings("this-escape")
     public DialogWarningNodeNumber () {
         super.setModal(true);
         try {

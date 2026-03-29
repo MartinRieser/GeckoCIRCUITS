@@ -26,8 +26,12 @@ public abstract class AbstractVoltageDropSwitch extends AbstractSwitch implement
             unit("V").            
             arrayIndex(this, 1).
             build();     
-    
 
+    @SuppressWarnings("this-escape")
+    protected AbstractVoltageDropSwitch() {
+    }
+
+    
     @Override
     public UserParameter<Double> getForwardVoltageDropParameter() {
         return _forwardVoltageDrop;

@@ -119,6 +119,10 @@ public abstract class AbstractCircuitSource extends AbstractTwoPortLKreisBlock i
     private final ComponentCoupling _compCoupling = new ComponentCoupling(1, this, new int[]{1});
     private final PotentialCoupling _potCoupling = new PotentialCoupling(this, new int[]{0}, ConnectorType.CONTROL);
 
+    @SuppressWarnings("this-escape")
+    protected AbstractCircuitSource() {
+    }
+
     @Override
     public final void checkComponentCompatibility(final Object testObject, final List<AbstractBlockInterface> insertList) {
 

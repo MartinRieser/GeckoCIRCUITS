@@ -34,8 +34,10 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+@SuppressWarnings("unchecked")
 abstract class DetailledLossPanel<T extends LossCurve> extends JPanel {
 
+    private static final long serialVersionUID = 1L;
     static final int DIVISIONS_TEST_CURVE = 25;
     private LossCurvePlotPanel _grafer;
     private final FormatJTextField _jtfTemperature = new FormatJTextField();
@@ -44,10 +46,10 @@ abstract class DetailledLossPanel<T extends LossCurve> extends JPanel {
     final JPanel _leftPanelTempAndBlocking = new JPanel();
     DataTablePanel _table;
     boolean _listenerActive = true;
-    T _selectedCurve;
-    LossCurve _testCurve;
+    transient T _selectedCurve;
+    transient LossCurve _testCurve;
     JPanel _jPanelTemperatureInput = new JPanel();
-    public final List<T> _lossCurves = new ArrayList<T>() {
+    public final transient List<T> _lossCurves = new ArrayList<T>() {
         @Override
         public boolean add(final LossCurve newCurve) {
             int insertionIndex = 0;

@@ -41,7 +41,7 @@ import java.util.Map;
  * names, argument types, ...).
  *
  */
-@SuppressWarnings({"PMD.ExcessivePublicCount", "PMD.NullAssignment"})
+@SuppressWarnings({"PMD.ExcessivePublicCount", "PMD.NullAssignment", "deprecation"})
 public class GeckoRemote {
     private static String _pathToJava = "";
 
@@ -221,7 +221,7 @@ public class GeckoRemote {
                     _wrapped = existingInstance;
                     
                     ClassLoader loader = _wrapped.getClass().getClassLoader();
-                    Class[] interfaces = new Class[]{GeckoRemoteIntWithoutExc.class};
+                    Class<?>[] interfaces = new Class<?>[]{GeckoRemoteIntWithoutExc.class};
 
                     _invocationHandler = new GeckoRemote.RemoteInvocationHandler(_wrapped);
                     _proxy = (GeckoRemoteIntWithoutExc) Proxy.newProxyInstance(loader, interfaces, _invocationHandler);

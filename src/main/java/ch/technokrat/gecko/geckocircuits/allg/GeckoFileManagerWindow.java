@@ -34,17 +34,19 @@ import javax.swing.filechooser.FileFilter;
  */
 public class GeckoFileManagerWindow extends javax.swing.JDialog {
 
-    private VerlustBerechnungDetailed _losses = null;
+    private static final long serialVersionUID = 1L;
+
+    private transient VerlustBerechnungDetailed _losses = null;
     private final String _fileExtension;
     private final String _fileType;
     private final StorageType _newFileType = StorageType.EXTERNAL;
     private final JFileChooser _addFilesDialog = new JFileChooser();
-    private final List<GeckoFile> _newFilesToAdd = new ArrayList<GeckoFile>();
+    private transient final List<GeckoFile> _newFilesToAdd = new ArrayList<GeckoFile>();
     private final DefaultListModel<GeckoFile> _existingFilesList = new DefaultListModel<>();
     private final DefaultListModel<GeckoFile> _selectedFilesList = new DefaultListModel<>();
     private boolean _isLossElement = false;
     private boolean _singleFileOnly = true;
-    private final List<GeckoFile> _filesToRemove = new ArrayList<GeckoFile>();
+    private transient final List<GeckoFile> _filesToRemove = new ArrayList<GeckoFile>();
     private DialogNonLinearity nonLinearDialog = null;
     /**
      * pointing to ElementLKDialog text fields, for setting the loss file
@@ -52,12 +54,13 @@ public class GeckoFileManagerWindow extends javax.swing.JDialog {
     private FormatJTextField _jlS2;
     private FormatJTextField _jlS2b;
     private javax.swing.JButton _jbS2edit;
-    private final GeckoFileable _geckoFileable;
+    private transient final GeckoFileable _geckoFileable;
 
     /**
      * Creates new form GeckoFileManagerWindow should make a different
      * constructor for using circuit blocks (i.e. for loss files)
      */
+    @SuppressWarnings("this-escape")
     public GeckoFileManagerWindow(final GeckoFileable fileable, final String extension, final String type, final boolean singleFileOnly) {
         initComponents();
         _geckoFileable = fileable;
@@ -81,6 +84,7 @@ public class GeckoFileManagerWindow extends javax.swing.JDialog {
      * @param jlS2b
      * @param jbS2edit
      */
+    @SuppressWarnings("this-escape")
     public GeckoFileManagerWindow(final VerlustBerechnungDetailed losses, final String extension, final String type,
             final FormatJTextField jlS2, final FormatJTextField jlS2b, final javax.swing.JButton jbS2edit) {
 
@@ -546,7 +550,7 @@ public class GeckoFileManagerWindow extends javax.swing.JDialog {
         GeckoFile file;
         int selectedIndex = jListSelectedFilesToAdd.getMaxSelectionIndex();
         while (selectedIndex != -1) {
-            file = (GeckoFile) _selectedFilesList.getElementAt(selectedIndex);
+            file = _selectedFilesList.getElementAt(selectedIndex);
             removeGeckoFileFromList(file);
             _selectedFilesList.remove(selectedIndex);
             selectedIndex = jListSelectedFilesToAdd.getMaxSelectionIndex();

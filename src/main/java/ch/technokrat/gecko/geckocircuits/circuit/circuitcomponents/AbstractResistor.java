@@ -27,6 +27,7 @@ import java.awt.Window;
 import java.util.Arrays;
 import java.util.List;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class AbstractResistor extends AbstractTwoPortLKreisBlock
         implements CurrentMeasurable, LossCalculatable, DirectVoltageMeasurable {
 
@@ -44,6 +45,10 @@ public abstract class AbstractResistor extends AbstractTwoPortLKreisBlock
             arrayIndex(this, 0).            
             build();
     
+
+    @SuppressWarnings("this-escape")
+    protected AbstractResistor() {
+    }
 
     @Override
     public final void setzeParameterZustandswerteAufNULL() {

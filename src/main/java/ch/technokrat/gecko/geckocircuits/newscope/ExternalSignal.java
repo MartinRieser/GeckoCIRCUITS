@@ -41,6 +41,7 @@ public class ExternalSignal extends AbstractScopeSignal{
    * @param times An array holding the time values matching the data values.
    * @param values An array holding the data values of the external signal.
    */
+  @SuppressWarnings("this-escape")
   public ExternalSignal(final double[] times, final double[] values){
     this.setData(times, values);
     _subCircuitPath = "";
@@ -53,6 +54,7 @@ public class ExternalSignal extends AbstractScopeSignal{
    * @param times An array holding the time values matching the data values.
    * @param values An array holding the data values of the external signal.
    */
+  @SuppressWarnings("this-escape")
   public ExternalSignal(final String name, final double[] times, final double[] values, String subCircuitPath){
     this.setName(name);
     this.setData(times, values);
@@ -173,7 +175,7 @@ public class ExternalSignal extends AbstractScopeSignal{
         start = startTime;
         stop = stopTime;
       }
-      step = ((double)(this.getTime(this.size() - 1) - this.getTime(0))) / this.size();
+      step = (this.getTime(this.size() - 1) - this.getTime(0)) / this.size();
       firstIndex = (int)((start - this.getTime(0)) / step);
       if(firstIndex < 0){
         firstIndex = 0;

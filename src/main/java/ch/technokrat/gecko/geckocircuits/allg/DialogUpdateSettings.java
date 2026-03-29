@@ -16,7 +16,10 @@ package ch.technokrat.gecko.geckocircuits.allg;
 import ch.technokrat.gecko.GeckoSim;
 
 public class DialogUpdateSettings extends javax.swing.JFrame {
-    
+
+    private static final long serialVersionUID = 1L;
+
+    @SuppressWarnings("this-escape")
     public DialogUpdateSettings() {
         initComponents();        
         this.setVisible(true);

@@ -20,6 +20,8 @@ import java.io.Serializable;
 
 public class TechFormat implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     public static final String FORMAT_AUTO = "AUTO";  // automatic adjustment to the size of the number to format
     //
     private int anzDigits = 4;  // default

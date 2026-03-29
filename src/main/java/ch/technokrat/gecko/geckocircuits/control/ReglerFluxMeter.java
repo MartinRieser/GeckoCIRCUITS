@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 
 public final class ReglerFluxMeter extends AbstractCurrentMeasurement {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerFluxMeter.class, "FLUX", I18nKeys.FLUX_MEASUREMENT_WB);
 
     @Override

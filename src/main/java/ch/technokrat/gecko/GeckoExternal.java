@@ -46,6 +46,7 @@ import java.util.logging.Logger;
  *
  * @author anstupar
  */
+@SuppressWarnings("deprecation")
 public class GeckoExternal {
 
     protected static ExternalGeckoCustom external;
@@ -163,12 +164,12 @@ public class GeckoExternal {
 
     public static void setGlobalParameterValue(final String parameterName, final double value) {
         checkExternal();
-        GeckoSim._geckoSim._win.optimizerParameterData.setNumberFromName(parameterName, value);
+        MainWindow.optimizerParameterData.setNumberFromName(parameterName, value);
     }
 
     public static double getGlobalParameterValue(final String parameterName) {
         checkExternal();
-        return GeckoSim._geckoSim._win.optimizerParameterData.getNumberFromName(parameterName);
+        return MainWindow.optimizerParameterData.getNumberFromName(parameterName);
     }
 
     public String[] getThyristors() {

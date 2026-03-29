@@ -11,16 +11,18 @@ import java.awt.event.ActionListener;
  * @author andreas
  */
 public abstract class AbstractReglerVariableInputs extends RegelBlock implements VariableTerminalNumber {
+    private static final long serialVersionUID = 1L;
 
     private final static int DEFAULT_NUMBER_INPUTS = 1;
     
-    public final UserParameter<Integer> _inputTerminalNumber = UserParameter.Builder.
+    public final transient UserParameter<Integer> _inputTerminalNumber = UserParameter.Builder.
             <Integer>start("anzXIN", DEFAULT_NUMBER_INPUTS).
             longName(I18nKeys.NO_INPUT_TERMINALS).
             shortName("numberInputTerminals").
             arrayIndex(this, -1).
             build();
     
+    @SuppressWarnings("this-escape")
     public AbstractReglerVariableInputs(final int defaultInputs) {
         super(defaultInputs, 1); 
         _inputTerminalNumber.setValueWithoutUndo(defaultInputs);

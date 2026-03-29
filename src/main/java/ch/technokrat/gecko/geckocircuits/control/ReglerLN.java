@@ -19,6 +19,7 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
 public final class ReglerLN extends AbstractReglerSingleInputSingleOutput {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerLN.class, "LN", I18nKeys.LN);
 
     @Override

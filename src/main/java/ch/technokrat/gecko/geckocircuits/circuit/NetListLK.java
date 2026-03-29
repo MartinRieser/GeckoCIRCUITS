@@ -493,7 +493,7 @@ public class NetListLK {
                     double kValue = parM[0];
                     double M = kValue * Math.sqrt(inductor1.getStartInductance() * inductor2.getStartInductance());
                     kM.add(M);
-                    kLc.add(new AbstractMap.SimpleEntry(inductor1, inductor2));
+                    kLc.add(new AbstractMap.SimpleEntry<>(inductor1, inductor2));
                 } //else one or two couplings are not defined
             }
         }

@@ -32,6 +32,7 @@ public class QuasiPeakCalculator {
     private double _tau_d;
     private final Cispr16Settings _settings;
 
+    @SuppressWarnings("this-escape")
     public QuasiPeakCalculator(int calculationIndex, Cispr16Fft fftNew, Cispr16Settings settings) {
         _NN = fftNew._zvResampled.length;
         _settings = settings;
@@ -206,8 +207,8 @@ public class QuasiPeakCalculator {
             if (index < 0) {
                 continue;
             }
-            fourierTransform[2 * index] *= shapeFactor;
-            fourierTransform[2 * index + 1] *= shapeFactor;
+            fourierTransform[2 * index] *= (float) shapeFactor;
+            fourierTransform[2 * index + 1] *= (float) shapeFactor;
         }
 
 
@@ -215,8 +216,8 @@ public class QuasiPeakCalculator {
             final double shapeFactor = 2.0 + -j * 2.0 / intervalSpan;
             assert shapeFactor <= 1 && shapeFactor >= 0 : shapeFactor;
             final int index = fourIndex + j;
-            fourierTransform[2 * index] *= shapeFactor;
-            fourierTransform[2 * index + 1] *= shapeFactor;
+            fourierTransform[2 * index] *= (float) shapeFactor;
+            fourierTransform[2 * index + 1] *= (float) shapeFactor;
         }
 
         return fourierTransform;
@@ -260,8 +261,8 @@ public class QuasiPeakCalculator {
             min[i] = (float) Math.sqrt(minValue);
 
             if (useBlackman) {
-                min[i] /= Cispr16Fft.BLACKMAN_NORM;
-                max[i] /= Cispr16Fft.BLACKMAN_NORM;
+                min[i] /= (float) Cispr16Fft.BLACKMAN_NORM;
+                max[i] /= (float) Cispr16Fft.BLACKMAN_NORM;
             }
         }
     }

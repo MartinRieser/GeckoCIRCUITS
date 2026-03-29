@@ -40,8 +40,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+@SuppressWarnings({"deprecation", "unchecked"})
 public class DialogSmallSignalAnalysis extends DialogElementCONTROL<ReglerSmallSignalAnalysis> {
 
+    private static final long serialVersionUID = 1L;
     private JComboBox<SSAShape> _jComboSignal;
     private GraferV4 _grafer;
     private SimpleGraferPanel newScope1;
@@ -51,6 +53,7 @@ public class DialogSmallSignalAnalysis extends DialogElementCONTROL<ReglerSmallS
     /**
      * Creates new form DialogSmallSignalAnalysis2
      */
+    @SuppressWarnings("this-escape")
     public DialogSmallSignalAnalysis(final ReglerSmallSignalAnalysis parent) {
         super(parent);
         initComponents();
@@ -111,7 +114,7 @@ public class DialogSmallSignalAnalysis extends DialogElementCONTROL<ReglerSmallS
 
         if (element.getControlCalculatable() != null) {
             SmallSignalCalculator ssc = (SmallSignalCalculator) element.getControlCalculatable();
-            _bodePlot.insertData(ssc._bode);
+            _bodePlot.insertData(SmallSignalCalculator._bode);
         }
 
         _bodePlot.setMinimumSize(new Dimension(300, 300));

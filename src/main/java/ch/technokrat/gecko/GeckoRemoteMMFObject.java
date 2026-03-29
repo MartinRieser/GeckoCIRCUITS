@@ -31,7 +31,7 @@ import java.util.logging.Logger;
  * 
  * @author andrija s.
  */
-@SuppressWarnings({"PMD.ExcessivePublicCount", "PMD.NullAssignment"})
+@SuppressWarnings({"PMD.ExcessivePublicCount", "PMD.NullAssignment", "deprecation"})
 public final class GeckoRemoteMMFObject extends GeckoRemoteObject {
 
     public GeckoRemoteMMFObject() {        

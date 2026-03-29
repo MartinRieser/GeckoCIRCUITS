@@ -17,6 +17,7 @@ import ch.technokrat.gecko.geckocircuits.allg.TechFormat;
 import javax.swing.table.DefaultTableCellRenderer;
 
 class MyTableCellRenderer extends DefaultTableCellRenderer {
+    private static final long serialVersionUID = 1L;
     private final TechFormat tf = new TechFormat();
     public MyTableCellRenderer() {
     }

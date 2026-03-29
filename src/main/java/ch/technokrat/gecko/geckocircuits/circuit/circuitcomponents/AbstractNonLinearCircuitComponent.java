@@ -79,6 +79,7 @@ implements Operationable, Nonlinearable {
     
     
     
+    @SuppressWarnings("this-escape")
     public AbstractNonLinearCircuitComponent() {
         super();
         nonlinearData = getInitalNonlinValues();  
@@ -315,7 +316,7 @@ implements Operationable, Nonlinearable {
 
     public void setNonlinearCharacteristic(double[][] data) {        
         if (nonLinearChar == null) {
-            String newFileName = getStringID() + "NonLinearity" + ((int) 100 * Math.random()) + 
+            String newFileName = getStringID() + "NonLinearity" + (100 * Math.random()) + 
                     getNonlinearFileEnding();
             setNonlinearCharacteristic(data, newFileName);
         } else {

@@ -158,8 +158,8 @@ public final class TerminalToWrap {
     }
 
     public static boolean sameBlockPosition(final SubCircuitTerminable terminable1, final SubCircuitTerminable terminable2) {
-        final TerminalSubCircuitBlock termSub1 = (TerminalSubCircuitBlock) terminable1.getBlockTerminal();
-        final TerminalSubCircuitBlock termSub2 = (TerminalSubCircuitBlock) terminable2.getBlockTerminal();
+        final TerminalSubCircuitBlock termSub1 = terminable1.getBlockTerminal();
+        final TerminalSubCircuitBlock termSub2 = terminable2.getBlockTerminal();
         
         final int relX1 = termSub1.getRelativeX();
         final int relX2 = termSub2.getRelativeX();

@@ -34,6 +34,7 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 // Leistungskreis Idealer Schalter (hoch- oder niederohmiger Widerstand, daher bidirektional)
 // BJT is NOT an AbstractSwitch, since it does not connect to a "control gate"!
+@SuppressWarnings({"rawtypes", "unchecked"})
 public final class BJT extends AbstractTwoPortLKreisBlock implements HiddenSubCircuitable {
     
     private static final double DEF_FORWARD_BETA = 100;

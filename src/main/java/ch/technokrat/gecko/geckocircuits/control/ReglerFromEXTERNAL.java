@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Stack;
 
 public final class ReglerFromEXTERNAL extends RegelBlockSimulink implements VariableTerminalNumber {
+    private static final long serialVersionUID = 1L;
 
     public static List<RegelBlock> fromExternals = new ArrayList<RegelBlock>();
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerFromEXTERNAL.class, "FromEXT", I18nKeys.IMPORT_DATA_FROM_SIMULINK);
@@ -185,6 +186,7 @@ public final class ReglerFromEXTERNAL extends RegelBlockSimulink implements Vari
         return YOUT;
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private final class CompareOrder implements Comparator {
 
         @Override

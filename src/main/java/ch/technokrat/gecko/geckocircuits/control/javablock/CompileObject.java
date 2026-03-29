@@ -39,6 +39,7 @@ import javax.tools.*;
  *
  * @author andreas
  */
+@SuppressWarnings("deprecation")
 public final class CompileObject extends AbstractCompileObject {
 
     private final String _compilerMessage;

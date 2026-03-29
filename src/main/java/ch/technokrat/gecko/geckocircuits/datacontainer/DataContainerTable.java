@@ -20,12 +20,14 @@ import javax.swing.table.TableColumn;
 
 public class DataContainerTable extends javax.swing.JPanel {
 
+    private static final long serialVersionUID = 1L;
     String[] columnName = new String[]{"time", "val1", "val2"};
-    private AbstractDataContainer _dataContainer;
+    private transient AbstractDataContainer _dataContainer;
 
     /**
      * Creates new form DataContainerTable
      */
+    @SuppressWarnings("this-escape")
     public DataContainerTable() {        
         initComponents();
     }

@@ -21,7 +21,9 @@ import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("deprecation")
 public class LossCurvePlotPanel extends SimpleGraferPanel {
+    private static final long serialVersionUID = 1L;
     private int _moreDataFactor;
     
     

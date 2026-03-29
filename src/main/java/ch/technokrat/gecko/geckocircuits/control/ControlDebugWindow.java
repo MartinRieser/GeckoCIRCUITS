@@ -18,9 +18,12 @@ import ch.technokrat.gecko.geckocircuits.newscope.GeckoDialog;
 
 public class ControlDebugWindow extends GeckoDialog {
 
+    private static final long serialVersionUID = 1L;
+
     /**
      * Creates new form ControlDebugWindow
      */
+    @SuppressWarnings("this-escape")
     public ControlDebugWindow() {
         super(GeckoSim._win, false);
         initComponents();

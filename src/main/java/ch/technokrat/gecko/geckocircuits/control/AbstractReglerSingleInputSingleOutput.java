@@ -16,6 +16,7 @@ package ch.technokrat.gecko.geckocircuits.control;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 public abstract class AbstractReglerSingleInputSingleOutput extends RegelBlock {
+    private static final long serialVersionUID = 1L;
 
     public AbstractReglerSingleInputSingleOutput() {
         super(1,1);

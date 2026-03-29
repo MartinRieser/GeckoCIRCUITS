@@ -35,8 +35,10 @@ import javax.swing.border.TitledBorder;
  *
  * @author andy
  */
+@SuppressWarnings({"unchecked", "rawtypes"})
 public final class PowerAnalysisPanel extends JPanel {
 
+    private static final long serialVersionUID = 1L;
     private final JComboBox<String>[] _comboU = new JComboBox[3];
     private final JComboBox<String>[] _comboI = new JComboBox[3];
     private FormatJTextField[][] _pqTextFields;  // Textfelder fuer Leistungswerte A und B

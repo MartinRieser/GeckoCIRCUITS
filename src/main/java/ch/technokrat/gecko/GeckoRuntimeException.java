@@ -18,6 +18,8 @@ package ch.technokrat.gecko;
  * @author andreas
  */
 public class GeckoRuntimeException extends RuntimeException {
+    private static final long serialVersionUID = 1L;
+
     public GeckoRuntimeException(final String errorMessage) {
         super(errorMessage);
     }

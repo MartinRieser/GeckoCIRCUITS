@@ -17,8 +17,10 @@ import ch.technokrat.gecko.geckocircuits.allg.FormatJTextField;
 import ch.technokrat.gecko.geckocircuits.circuit.CircuitLabel;
 import javax.swing.JLabel;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 class TerminalCircuitDialog extends DialogElementLK {
 
+    private static final long serialVersionUID = 1L;
     private FormatJTextField terminalLabel;
 
     public TerminalCircuitDialog(AbstractCircuitTerminal parent) {

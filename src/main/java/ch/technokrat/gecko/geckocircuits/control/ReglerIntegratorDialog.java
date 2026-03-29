@@ -24,11 +24,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 class ReglerIntegratorDialog extends DialogElementCONTROL<ReglerIntegrator> {
+    private static final long serialVersionUID = 1L;
 
     public ReglerIntegratorDialog(final ReglerIntegrator reglerIntegrator) {
         super(reglerIntegrator);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void baueGuiIndividual() {
         JComponent compIm2 = getImageComponent();

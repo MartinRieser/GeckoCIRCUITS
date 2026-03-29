@@ -61,6 +61,7 @@ public abstract class AbstractTypeInfo {
     public final Class<? extends AbstractBlockInterface> _typeClass;
     public AbstractComponentTyp _parentType;
 
+    @SuppressWarnings("this-escape")
     public AbstractTypeInfo(final Class<? extends AbstractBlockInterface> typeClass, final String idString, final I18nKeys typeDescription, final I18nKeys typeDescriptionVerbose) {
         _typeDescription = typeDescription;
         _typeDescriptionVerbose = typeDescriptionVerbose;

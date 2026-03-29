@@ -36,14 +36,16 @@ import javax.swing.event.ListDataListener;
  *
  * @author andreas
  */
+@SuppressWarnings({"rawtypes", "unchecked", "deprecation"})
 public final class DialogDataExport extends javax.swing.JDialog {
 
+    private static final long serialVersionUID = 1L;
     private boolean _txtFormat;
     private final ReportingListTransferHandler _arrayListHandler = new ReportingListTransferHandler();
-    private final List<AbstractDataContainer> _containers;
-    private DefaultListModel _selectedModel;
+    private transient final List<AbstractDataContainer> _containers;
+    private transient DefaultListModel _selectedModel;
     private final boolean _initDone;
-    private DataSaver _dataSaver;
+    private transient DataSaver _dataSaver;
     public final ReglerSaveData _reglerDataSave;
     private boolean _inFillLists;
     
@@ -215,7 +217,7 @@ public final class DialogDataExport extends javax.swing.JDialog {
                 if (_initDone && !_inFillLists) {
                     DataIndexItem[] listItems = new DataIndexItem[jListSelected.getModel().getSize()];
                     for (int i = 0; i < listItems.length; i++) {
-                        listItems[i] = (DataIndexItem) (jListSelected.getModel().getElementAt(i));
+                        listItems[i] = jListSelected.getModel().getElementAt(i);
                     }
                     _reglerDataSave.setSelectedSignals(listItems);
                 }

@@ -73,9 +73,9 @@ final class ThermMODUL extends AbstractCircuitBlockInterface {
     @Override
     protected void drawConnectorLines(final Graphics2D graphics) {
         for (int i1 = 0; i1 < _noOfChips; i1++) {
-            _xBef[i1] = (int) (0 + 1);
-            _yBef[i1] = (int) (0 - _noOfChips - 1 + i1);
-            graphics.drawLine((int) (dpix * _xBef[i1]), (int) (dpix * _yBef[i1]), (int) (dpix * 0) + D_E,
+            _xBef[i1] = 0 + 1;
+            _yBef[i1] = 0 - _noOfChips - 1 + i1;
+            graphics.drawLine((int) (dpix * _xBef[i1]), (int) (dpix * _yBef[i1]), dpix * 0 + D_E,
                     (int) (dpix * _yBef[i1]));
         }
     }
@@ -84,7 +84,7 @@ final class ThermMODUL extends AbstractCircuitBlockInterface {
     protected void drawForeground(final Graphics2D graphics) {
         _xOUT = 0;
         _yOUT = (int) (_height + 1);
-        graphics.drawLine((int) (dpix * _xOUT), (int) (dpix * (0 + 1)), (int) (dpix * _xOUT), (int) (dpix * _yOUT));
+        graphics.drawLine((int) (dpix * _xOUT), dpix * (0 + 1), (int) (dpix * _xOUT), (int) (dpix * _yOUT));
 
         PowerModulePainter.zeichne(graphics, this, graphics.getColor(), dpix);
         if (_noOfChips > 0) {
@@ -94,22 +94,22 @@ final class ThermMODUL extends AbstractCircuitBlockInterface {
 
     private void drawInputs(final Graphics graphics, final Color color1) {        
         graphics.setColor(Color.lightGray);
-        graphics.fillRect((int) (dpix * getSheetPosition().x) - D_E, (int) (dpix * (_yBef[0] - 1 / 2.0)),
+        graphics.fillRect(dpix * getSheetPosition().x - D_E, (int) (dpix * (_yBef[0] - 1 / 2.0)),
                 2 * D_E, (int) (dpix * (_yBef[_noOfChips - 1] - _yBef[0] + 1)));
         if (color1.equals(Color.gray)) {
             graphics.setColor(Color.white);
         } else {
             graphics.setColor(Color.darkGray);
         }
-        graphics.drawRect((int) (dpix * getSheetPosition().x) - D_E, (int) (dpix * (_yBef[0] - 1 / 2.0)), 2 * D_E,
+        graphics.drawRect(dpix * getSheetPosition().x - D_E, (int) (dpix * (_yBef[0] - 1 / 2.0)), 2 * D_E,
                 (int) (dpix * (_yBef[_noOfChips - 1] - _yBef[0] + 1)));
         if (color1.equals(Color.gray)) {
             graphics.setColor(Color.lightGray);
         } else {
             graphics.setColor(color1);
         }
-        graphics.drawLine((int) (dpix * getSheetPosition().x), (int) (dpix * getSheetPosition().y), 
-                (int) (dpix * getSheetPosition().x), (int) (dpix * (_yBef[_noOfChips - 1] + 1 / 2.0)));
+        graphics.drawLine(dpix * getSheetPosition().x, dpix * getSheetPosition().y, 
+                dpix * getSheetPosition().x, (int) (dpix * (_yBef[_noOfChips - 1] + 1 / 2.0)));
     }
 
     @Override
@@ -122,6 +122,7 @@ final class ThermMODUL extends AbstractCircuitBlockInterface {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public List<? extends CircuitComponent> getCircuitCalculatorsForSimulationStart() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

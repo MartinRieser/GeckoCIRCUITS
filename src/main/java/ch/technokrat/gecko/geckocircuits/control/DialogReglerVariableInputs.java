@@ -19,6 +19,7 @@ import javax.swing.SpinnerModel;
 
 final class DialogReglerVariableInputs extends DialogElementCONTROL<AbstractReglerVariableInputs> {
 
+    private static final long serialVersionUID = 1L;
     private static final int NORTH_GRID_SIZE = 3;
     private JSpinner _spinnerInputNumber;
 
@@ -28,7 +29,7 @@ final class DialogReglerVariableInputs extends DialogElementCONTROL<AbstractRegl
 
     @Override
     protected void processInputs() {
-        ((AbstractReglerVariableInputs) element)._inputTerminalNumber.setUserValue((Integer) _spinnerInputNumber.getValue());
+        element._inputTerminalNumber.setUserValue((Integer) _spinnerInputNumber.getValue());
     }
 
     @Override

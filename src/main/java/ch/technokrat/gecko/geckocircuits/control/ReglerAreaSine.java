@@ -18,6 +18,7 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalc
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 public final class ReglerAreaSine extends AbstractInversTrigFunction {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerAreaSine.class, "ASIN", I18nKeys.ASIN);
 
     @Override

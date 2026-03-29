@@ -18,6 +18,7 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.GreaterThanCalculat
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 public final class ReglerGreaterThan extends SimpleRegelBlock {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerGreaterThan.class, "GT", I18nKeys.GREATER_THAN);
 
     public ReglerGreaterThan() {

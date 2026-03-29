@@ -21,6 +21,7 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
  * @author andy
  */
 public class ReglerImportFromFile  extends ReglerSignalSource {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerImportFromFile.class, "FILE", I18nKeys.DATA_FROM_FILE);    
 
     public ReglerImportFromFile() {    

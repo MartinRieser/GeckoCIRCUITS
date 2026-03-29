@@ -26,6 +26,8 @@ import java.io.Serializable;
 
 public class KnotenLabel implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     //----------------------------------
     private String labelTxt;
     private int xTxt, yTxt;      // Pixel-Koord. vom Text
@@ -44,6 +46,7 @@ public class KnotenLabel implements Serializable {
 
     public KnotenLabel () {}
 
+    @SuppressWarnings("this-escape")
     public KnotenLabel (String[] ascii) {
         this.importASCII(ascii);
     }
@@ -61,7 +64,7 @@ public class KnotenLabel implements Serializable {
         g.setColor(f1); 
         g.drawString(labelTxt, xTxt,yTxt); 
         g.setColor(Color.lightGray); 
-        g.drawLine((int)(dpix*xAnker), (int)(dpix*yAnker), xTxt, yTxt); 
+        g.drawLine(dpix*xAnker, dpix*yAnker, xTxt, yTxt);
         //-----
         FontRenderContext frc= ((Graphics2D)g).getFontRenderContext();
         Rectangle rect= g.getFont().getStringBounds(labelTxt, frc).getBounds(); 

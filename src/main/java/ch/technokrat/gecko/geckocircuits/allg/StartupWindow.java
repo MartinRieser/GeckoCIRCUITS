@@ -21,6 +21,8 @@ import javax.swing.JFrame;
 
 public class StartupWindow extends javax.swing.JDialog {
 
+    private static final long serialVersionUID = 1L;
+
     private static final String SUPPORT_URL = "http://www.gecko-simulations.com/open_source/support.html";
 
     public static boolean testDialogOpenSourceVersion(final String featureName) {
@@ -59,6 +61,7 @@ public class StartupWindow extends javax.swing.JDialog {
 
     }
 
+    @SuppressWarnings("this-escape")
     public StartupWindow(final JFrame parentFrame) {
         super(parentFrame, true);
         initComponents();

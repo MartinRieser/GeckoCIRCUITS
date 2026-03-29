@@ -59,6 +59,10 @@ public abstract class AbstractMotorIMCommon extends AbstractThreePhaseMotor {
             arrayIndex(this, getInitialStatorFluxIndexQ()).
             build();           
     
+    @SuppressWarnings("this-escape")
+    protected AbstractMotorIMCommon() {
+    }
+
     @Override
     final int getInertiaIndex() {
         return 14;

@@ -19,6 +19,7 @@ import java.util.List;
 import javax.swing.JPanel;
 
 class MotorPermanentDialog extends AbstractMotorDialog<MotorPermanent> {
+    private static final long serialVersionUID = 1L;
     public MotorPermanentDialog(final MotorPermanent parent) { 
         super(parent);
     }        

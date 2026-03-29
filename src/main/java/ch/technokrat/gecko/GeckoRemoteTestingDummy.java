@@ -22,6 +22,7 @@ import java.rmi.RemoteException;
  * will auto-generate this for you.
  * @author andy
  */
+@SuppressWarnings("deprecation")
 public class GeckoRemoteTestingDummy implements GeckoRemoteInterface {
     public static final long SESSION_ID = 12345;
 

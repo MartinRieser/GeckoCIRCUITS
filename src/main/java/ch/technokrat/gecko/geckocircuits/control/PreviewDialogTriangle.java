@@ -22,6 +22,9 @@ import javax.swing.JDialog;
 
 public class PreviewDialogTriangle extends PreviewDialog {
 
+    private static final long serialVersionUID = 1L;
+
+    @SuppressWarnings("this-escape")
     public PreviewDialogTriangle(final JDialog parent) {
         super(parent);
         setTitle(" TRIANGULAR");

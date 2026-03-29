@@ -27,7 +27,9 @@ import javax.swing.JOptionPane;
  * @author Andrija
  */
 public final class DialogRemotePort extends javax.swing.JDialog {
-    
+
+    private static final long serialVersionUID = 1L;
+
     private String[] _localIPs;
     private String _externalIP;
     

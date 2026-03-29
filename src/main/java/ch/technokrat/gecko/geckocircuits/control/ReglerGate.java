@@ -24,6 +24,7 @@ import java.awt.Window;
 import java.util.List;
 
 public final class ReglerGate extends ReglerWithSingleReference implements ComponentCoupable {
+    private static final long serialVersionUID = 1L;
     private static final int BLOCK_WIDTH = 3;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerGate.class, "GATE", I18nKeys.GATE_CONTROL);
 
@@ -48,7 +49,7 @@ public final class ReglerGate extends ReglerWithSingleReference implements Compo
 
     @Override
     public int getBlockWidth() {
-        return (int) (BLOCK_WIDTH * dpix);
+        return BLOCK_WIDTH * dpix;
     }
 
     

@@ -23,9 +23,12 @@ import javax.swing.JOptionPane;
  */
 public class DialogMemory extends javax.swing.JFrame {
 
+    private static final long serialVersionUID = 1L;
+
     /**
      * Creates new form DialogMemory
      */
+    @SuppressWarnings("this-escape")
     public DialogMemory() {
         initComponents();
         long mem = Runtime.getRuntime().maxMemory() / (1024 * 1024);

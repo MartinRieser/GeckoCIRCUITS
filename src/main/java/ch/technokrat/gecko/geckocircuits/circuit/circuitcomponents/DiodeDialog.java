@@ -17,11 +17,14 @@ import javax.swing.JPanel;
 
 class DiodeDialog extends AbstractDialogPowerSwitch<Diode> {
 
+    private static final long serialVersionUID = 1L;
+
     public DiodeDialog(final Diode parent) {
         super(parent);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public JPanel createParameterPanel() {
         return createParameterPanel(element._forwardVoltageDrop, element._onResistance,
                 element._offResistance, element.numberParalleled);

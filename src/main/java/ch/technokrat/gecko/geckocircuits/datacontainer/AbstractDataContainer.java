@@ -22,6 +22,7 @@ import java.util.Observable;
  * minumum-maximum values, ...
  * @author andy
  */
+@SuppressWarnings("deprecation")
 public abstract class AbstractDataContainer extends Observable{
   /**
    * @param row the row where to search inside

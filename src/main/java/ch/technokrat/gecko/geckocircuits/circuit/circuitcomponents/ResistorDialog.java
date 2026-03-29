@@ -17,7 +17,10 @@ import ch.technokrat.gecko.geckocircuits.circuit.DialogNonLinearity;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 class ResistorDialog extends DialogElementLK<AbstractResistor> {
+
+    private static final long serialVersionUID = 1L;
 
     public ResistorDialog(AbstractResistor parent) {
         super(parent);

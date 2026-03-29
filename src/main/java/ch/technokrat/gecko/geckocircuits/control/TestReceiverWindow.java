@@ -39,18 +39,20 @@ import java.util.Stack;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+@SuppressWarnings({"deprecation", "unchecked"})
 public final class TestReceiverWindow extends JFrame {
 
+    private static final long serialVersionUID = 1L;
     private static final TechFormat tcf = new TechFormat();
     private final ReglerCISPR16 _reglerCISPR16;
-    private final Cispr16Settings _settings;
+    private final transient Cispr16Settings _settings;
     private boolean initDone = false;
     private final GraferV4 _graferNew;
     private final NewScope _graferPanel;
-    private TestReceiverCalculation _calculatorNew;
+    private transient TestReceiverCalculation _calculatorNew;
     private int _calculationDoneForHash;
-    private CalculationRunnable _calculationRunnable;
-    private DataContainerCompressable _dataContainer;
+    private transient CalculationRunnable _calculationRunnable;
+    private transient DataContainerCompressable _dataContainer;
     private static final int NUMBER_SIGNALS = 8;
     private static final String[] SIGNAL_NAMES =
             new String[]{"Class A", "Class B", "Maximum est.", "Peak", "Quasi-Peak", "Average", "Minimum est.", "Fourier"};
@@ -1164,10 +1166,10 @@ public final class TestReceiverWindow extends JFrame {
             this.setTitle(" " + _reglerCISPR16.getStringID());
             jCheckBoxPeak.setSelected(_settings._peak.getValue());
             jCheckBoxQuasiPeak.setSelected(_settings._qpeak.getValue());
-            jSpinnerMaximum.setValue((Double) _settings._maxFreq.getValue());
-            jSpinnerMinFreq.setValue((Double) _settings._minFreq.getValue());
-            jSpinnerThreshold.setValue((Double) _settings._filterThreshold.getValue());
-            jSpinnerIntervalFreq.setValue((Double) _settings._qpInteval.getValue());
+            jSpinnerMaximum.setValue(_settings._maxFreq.getValue());
+            jSpinnerMinFreq.setValue(_settings._minFreq.getValue());
+            jSpinnerThreshold.setValue(_settings._filterThreshold.getValue());
+            jSpinnerIntervalFreq.setValue(_settings._qpInteval.getValue());
             jCheckBoxAverage.setSelected(_settings._average.getValue());
             jCheckBoxBlackman.setSelected(_settings._useBlackman.getValue());
             jRadioButtonRMS.setSelected(_settings._showRMSValues.getValue());

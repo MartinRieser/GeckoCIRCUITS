@@ -37,6 +37,7 @@ import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
+import java.net.URI;
 import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
@@ -69,7 +70,8 @@ import javax.swing.event.ChangeListener;
 import ch.technokrat.modelviewcontrol.AbstractUndoGenericModel;
 
 public final class MainWindow extends JFrame implements WindowListener, ActionListener, ComponentListener {
-    
+
+    private static final long serialVersionUID = 1L;
 
     int _simMenuIndex = 2; // simulation menu is third in bar.
     JMenuBar _menuBar; // to provide dynamic changing of the menu bar, need to make this a member.
@@ -115,8 +117,8 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     public static GeckoFileManager _fileManager = null;
     public static ExternalGeckoCustom _external = null;
     public static GeckoCustomMMF _mmf_access = null;
-    public final SimulationRunner _simRunner;
-    public final KeyAdapter keyAdapter;
+    public transient final SimulationRunner _simRunner;
+    public transient final KeyAdapter keyAdapter;
     private static final String spTitleX = "  -  ";
     public static boolean IS_BRANDED = false;
     private SuggestionField _searchTestField;
@@ -178,8 +180,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
             Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, "Metal look and feel class not found", ex);
         }
         try {
-            // Fix for Java 21: use URL constructor instead of URI.toURL()
-            URL gifUrl = new URL(GlobalFilePathes.PFAD_PICS_URL, "gecko.gif");
+            URL gifUrl = GlobalFilePathes.PFAD_PICS_URL.toURI().resolve("gecko.gif").toURL();
             this.setIconImage(new ImageIcon(gifUrl).getImage());
         } catch (Exception e) {
             Logger.getLogger(MainWindow.class.getName()).log(Level.WARNING, "Failed to load application icon", e);
@@ -604,6 +605,8 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
                 switch (returnOption) {
                     case 0:
                         saveFile();
+                        createNewFile();
+                        break;
                     case 1:
                         createNewFile();
                         break;
@@ -730,10 +733,12 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
                     switch (returnOption) {
                         case 0:
                             saveFile();
-                        case 1: // just exit, without saving
                             createNewFile();
                             break;
-                        case 2: // cancel option
+                        case 1:
+                            createNewFile();
+                            break;
+                        case 2:
                             break;
                         default:
                             assert false;
@@ -753,7 +758,10 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
                     switch (returnOption) {
                         case 0:
                             saveFile();
-                        case 1: // just exit, without saving
+                            this.openFileDialog();
+                            this.setAnsicht();
+                            break;
+                        case 1:
                             this.openFileDialog();
                             this.setAnsicht();
                             break;
@@ -804,7 +812,10 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
                     switch (returnOption) {
                         case 0:
                             saveFile();
-                        case 1: // just exit, without saving
+                            loadFileFromList_withoutSaving(1);
+                            this.setAnsicht();
+                            break;
+                        case 1:
                             loadFileFromList_withoutSaving(1);
                             this.setAnsicht();
                             break;
@@ -832,7 +843,10 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
                     switch (returnOption) {
                         case 0:
                             saveFile();
-                        case 1: // just exit, without saving
+                            loadFileFromList_withoutSaving(2);
+                            this.setAnsicht();
+                            break;
+                        case 1:
                             loadFileFromList_withoutSaving(2);
                             this.setAnsicht();
                             break;
@@ -860,7 +874,10 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
                     switch (returnOption) {
                         case 0:
                             saveFile();
-                        case 1: // just exit, without saving
+                            loadFileFromList_withoutSaving(3);
+                            this.setAnsicht();
+                            break;
+                        case 1:
                             loadFileFromList_withoutSaving(3);
                             this.setAnsicht();
                             break;
@@ -888,7 +905,10 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
                     switch (returnOption) {
                         case 0:
                             saveFile();
-                        case 1: // just exit, without saving
+                            loadFileFromList_withoutSaving(4);
+                            this.setAnsicht();
+                            break;
+                        case 1:
                             loadFileFromList_withoutSaving(4);
                             this.setAnsicht();
                             break;
@@ -1342,7 +1362,14 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
             switch (returnOption) {
                 case 0:
                     saveFile();
-                case 1: // just exit, without saving
+                    if (GeckoSim.operatingmode == OperatingMode.STANDALONE) {
+                        System.exit(0);
+                    }
+                    if (GeckoSim.operatingmode == OperatingMode.SIMULINK || GeckoSim.operatingmode == OperatingMode.EXTERNAL) {
+                        dispose();
+                    }
+                    break;
+                case 1:
                     if (GeckoSim.operatingmode == OperatingMode.STANDALONE) {
                         System.exit(0);
                     }

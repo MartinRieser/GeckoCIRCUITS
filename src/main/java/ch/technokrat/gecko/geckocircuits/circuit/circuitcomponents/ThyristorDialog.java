@@ -17,11 +17,14 @@ import javax.swing.JPanel;
 
 public final class ThyristorDialog extends AbstractDialogPowerSwitch<Thyristor> {
 
+    private static final long serialVersionUID = 1L;
+
     public ThyristorDialog(final Thyristor parent) {
         super(parent);
     }
         
 
+    @SuppressWarnings("unchecked")
     @Override
     public JPanel createParameterPanel() {        
         return createParameterPanel(element._forwardVoltageDrop, element._onResistance, 

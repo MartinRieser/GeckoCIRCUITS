@@ -19,6 +19,7 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AndTwoPortCalculato
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 public final class ReglerAnd extends AbstractReglerVariableInputs {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerAnd.class, "AND", I18nKeys.AND);
 
     public ReglerAnd() {

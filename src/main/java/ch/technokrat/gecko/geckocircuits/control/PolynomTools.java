@@ -27,6 +27,7 @@ import javax.swing.DefaultListModel;
  *
  * @author andy
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public final class PolynomTools {
 
     public static final int MAX_ARRAY_SIZE = 20;
@@ -182,7 +183,7 @@ public final class PolynomTools {
         }
 
         for (int i = 0; i <= maxIndex; i++) {
-            returnValue.add((double) polynomReal[i]);
+            returnValue.add(polynomReal[i]);
         }
         return returnValue;
     }

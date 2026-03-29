@@ -27,19 +27,20 @@ import java.util.List;
 
 public class ScopeSettings implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     public static final int ANZ_DIAGRAM_MAX = 12;
     private int anzDiagram;  // Anzahl der Diagramme
-    private List<String> nameDiagram;  // Bezeichnungen der Diagramme
-    private List<Double> ySpacingDiagram;  // wieviel 'y-Anteil' hat das jeweilige Diagramm
+    private transient List<String> nameDiagram;  // Bezeichnungen der Diagramme
+    private transient List<Double> ySpacingDiagram;  // wieviel 'y-Anteil' hat das jeweilige Diagramm
     private int[] diagramTyp;  // ist das jeweilige Diagramm ein ZV-Typ oder ein Signal-Typ?
     //
     private boolean[] autoScaleX, autoScaleY;  // sollen die Achsenbegrenzungen automatisch an die Worksheetdaten angepasst werden?
-    private List<Double> userScaleXMin, userScaleXMax, userScaleYMin, userScaleYMax;
-    private List<String> signalNamen = new ArrayList<String>();
+    private transient List<Double> userScaleXMin, userScaleXMax, userScaleYMin, userScaleYMax;
+    private transient List<String> signalNamen = new ArrayList<String>();
     private int[] xAchsenTyp, yAchsenTyp;  // Linear oder logarithmisch?
     private int[] xAchseFarbe, yAchseFarbe;
     private int[] xAchseStil, yAchseStil;
-    private List<String> xAchseBeschriftung, yAchseBeschriftung;
+    private transient List<String> xAchseBeschriftung, yAchseBeschriftung;
     //
     private int[] farbeGridNormalX, farbeGridNormalXminor, farbeGridNormalY, farbeGridNormalYminor;
     private int[] linStilGridNormalX, linStilGridNormalXminor, linStilGridNormalY, linStilGridNormalYminor;
@@ -273,10 +274,10 @@ public class ScopeSettings implements Serializable {
                     y1Axis._axisTickSettings.setTickLengthMaj(ORIGjtfYtickLengthMaj[i]);
                     y1Axis._axisTickSettings.setTickLengthMin(ORIGjtfYtickLengthMin[i]);
 
-                    xAxis._axisGridSettings.getColorGridMaj().getFromCode(ORIGjcmXlinCol[i]);
-                    y1Axis._axisGridSettings.getColorGridMaj().getFromCode(ORIGjcmYlinCol[i]);
-                    xAxis._axisGridSettings.getLinStyleMaj().getFromCode(ORIGjcmXlinStyl[i]);
-                    y1Axis._axisGridSettings.getLinStyleMaj().getFromCode(ORIGjcmYlinStyl[i]);
+                    GeckoColor.getFromCode(ORIGjcmXlinCol[i]);
+                    GeckoColor.getFromCode(ORIGjcmYlinCol[i]);
+                    GeckoLineStyle.getFromCode(ORIGjcmXlinStyl[i]);
+                    GeckoLineStyle.getFromCode(ORIGjcmYlinStyl[i]);
                 }
 
                 int diagNo = 0;

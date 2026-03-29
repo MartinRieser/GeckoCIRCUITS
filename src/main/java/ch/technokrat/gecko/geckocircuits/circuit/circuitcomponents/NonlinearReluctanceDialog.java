@@ -19,6 +19,7 @@ import java.awt.Dimension;
 import javax.swing.JPanel;
 
 class NonlinearReluctanceDialog extends DialogElementLK<NonLinearReluctance> {
+    private static final long serialVersionUID = 1L;
     private NonLinearDialogPanel _nonLinearDialogPanel;
     
     public NonlinearReluctanceDialog(final NonLinearReluctance parent) {

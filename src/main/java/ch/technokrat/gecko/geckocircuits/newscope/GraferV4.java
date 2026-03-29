@@ -34,14 +34,14 @@ public final class GraferV4 extends JPanel {
     final ScopeSettings _scopeSettings;
     boolean _antialiasing = true;
     final XSliderValueDrawer _xSliderDrawer = new XSliderValueDrawer();
-    final SliderContainer _sliderContainer = new SliderContainer(this, _xSliderDrawer);
+    transient final SliderContainer _sliderContainer = new SliderContainer(this, _xSliderDrawer);
     private final GridBagLayout _layout = new GridBagLayout();
-    private AbstractDataContainer _dataContainer;
+    private transient AbstractDataContainer _dataContainer;
     private GridBagConstraints _contstraints;
     private static final double DIAG_WEIGHT_X = 0.5;
-    private Thread updateThread = new Thread(new UpdateRunnable());
+    private transient Thread updateThread = new Thread(new UpdateRunnable());
     private boolean _loadAndDraw;
-    public final DiagramCurveSignalManager _manager = new DiagramCurveSignalManager(this);
+    public transient final DiagramCurveSignalManager _manager = new DiagramCurveSignalManager(this);
     private int _sleepMillis = 400;
     public boolean _isNormalSimulationView = true;
     private boolean _isGlobalFitEnabled = true;
@@ -456,8 +456,8 @@ public final class GraferV4 extends JPanel {
     }
     MausModus _mausModus = MausModus.ZOOM_WINDOW;  // default --> Maus deaktiviert
     //    
-    private HiLoData _tLimitsScope = HiLoData.hiLoDataFabric(0, 1);
-    private AbstractCurve _curveSelected = null;
+    private transient HiLoData _tLimitsScope = HiLoData.hiLoDataFabric(0, 1);
+    private transient AbstractCurve _curveSelected = null;
 
 
     /*
@@ -481,10 +481,10 @@ public final class GraferV4 extends JPanel {
 
         final Graphics2D g2d = (Graphics2D) graphics;
         if (_antialiasing) {
-            ((Graphics2D) g2d).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
         } else {
-            ((Graphics2D) g2d).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_OFF);
         }
     }

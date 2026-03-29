@@ -19,8 +19,11 @@ import java.awt.Color;
 
 public class SimpleGraferPanel extends javax.swing.JPanel {
 
+    private static final long serialVersionUID = 1L;
+
     final GraferV4 _grafer;
 
+    @SuppressWarnings("this-escape")
     public SimpleGraferPanel() {
 
         super();
@@ -29,6 +32,7 @@ public class SimpleGraferPanel extends javax.swing.JPanel {
         assert false;
     }
 
+    @SuppressWarnings("this-escape")
     public SimpleGraferPanel(final GraferV4 grafer) {
         super();
 

@@ -31,6 +31,7 @@ import java.util.List;
 import javax.swing.JOptionPane;
 
 // Leistungskreis-IGBT (Knickkennlinie, Modifikation des THYR)
+@SuppressWarnings({"rawtypes", "unchecked"})
 public final class MOSFET extends AbstractSwitch implements HiddenSubCircuitable {
     public static final AbstractTypeInfo TYPE_INFO = 
             new CircuitTypeInfo(MOSFET.class, "MOSFET", I18nKeys.MOSFET, I18nKeys.IDEALIZED_METAL_OXIDE_FIELD_EFFECT);

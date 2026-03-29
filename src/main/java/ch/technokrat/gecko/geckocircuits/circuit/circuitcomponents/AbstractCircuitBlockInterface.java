@@ -167,7 +167,7 @@ public abstract class AbstractCircuitBlockInterface extends AbstractBlockInterfa
     }
     
     public List<String> getParameterStringIntern() {
-        return Collections.EMPTY_LIST;
+        return Collections.<String>emptyList();
     }
     
     @SuppressWarnings("rawtypes")

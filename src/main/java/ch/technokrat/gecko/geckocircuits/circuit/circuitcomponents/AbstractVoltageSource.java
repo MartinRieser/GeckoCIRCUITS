@@ -22,6 +22,7 @@ import java.awt.Graphics2D;
 import java.util.Arrays;
 import java.util.List;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class AbstractVoltageSource extends AbstractCircuitSource {
 
     public static final String[] SHORT_NAMES_FOR_AMPLITUDE = new String[]{"uMAX", "MMF_MAX", "T_MAX"};
@@ -48,6 +49,10 @@ public abstract class AbstractVoltageSource extends AbstractCircuitSource {
             arrayIndex(this, UPPER_LIMIT_INDEX).
             build();
 
+    @SuppressWarnings("this-escape")
+    protected AbstractVoltageSource() {
+    }
+
     @Override
     protected final void drawForeground(final Graphics2D graphics) {
         super.drawForeground(graphics);
@@ -58,13 +63,13 @@ public abstract class AbstractVoltageSource extends AbstractCircuitSource {
 
     private void drawPlusSymbol(final Graphics2D graphics, final int length) {
         final int yHeight = (int) (-dpix * PLUSMINUS_SEPARATION);
-        graphics.drawLine((int) PLUS_MINUS_X_OFFSET - length / 2, yHeight, (int) PLUS_MINUS_X_OFFSET + length / 2, yHeight);
-        graphics.drawLine(PLUS_MINUS_X_OFFSET, (int) yHeight + length / 2, PLUS_MINUS_X_OFFSET, (int) yHeight - length / 2);
+        graphics.drawLine(PLUS_MINUS_X_OFFSET - length / 2, yHeight, PLUS_MINUS_X_OFFSET + length / 2, yHeight);
+        graphics.drawLine(PLUS_MINUS_X_OFFSET, yHeight + length / 2, PLUS_MINUS_X_OFFSET, yHeight - length / 2);
     }
 
     private void drawMinusSymbol(final Graphics2D graphics, final int length) {
         final int yHeight = (int) (PLUSMINUS_SEPARATION * dpix);
-        graphics.drawLine((int) PLUS_MINUS_X_OFFSET - length / 2, yHeight, (int) PLUS_MINUS_X_OFFSET + length / 2, yHeight);
+        graphics.drawLine(PLUS_MINUS_X_OFFSET - length / 2, yHeight, PLUS_MINUS_X_OFFSET + length / 2, yHeight);
     }
     
     @Override

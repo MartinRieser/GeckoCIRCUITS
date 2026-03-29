@@ -28,6 +28,9 @@ import javax.swing.JToolBar;
 
 public class ToolBar extends JFrame {
 
+    private static final long serialVersionUID = 1L;
+
+    @SuppressWarnings("this-escape")
     public ToolBar() {
         super("ToolBar");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

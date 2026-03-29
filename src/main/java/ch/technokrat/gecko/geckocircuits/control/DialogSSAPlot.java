@@ -40,6 +40,7 @@ import javax.swing.event.TableModelListener;
  */
 public final class DialogSSAPlot extends GeckoDialog {
     
+    private static final long serialVersionUID = 1L;
     private double[][] _data;
     //private String _extension = ".txt";
     private String _type = "text file";
@@ -48,6 +49,7 @@ public final class DialogSSAPlot extends GeckoDialog {
     private DataTablePanel table;
     private final SimpleGraferPanel newScope1;
     
+    @SuppressWarnings("deprecation")
     public DialogSSAPlot(final double[][] data){
         super(GeckoSim._win, true);
         _data = data;

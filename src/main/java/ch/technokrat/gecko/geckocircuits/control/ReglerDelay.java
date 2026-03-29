@@ -23,10 +23,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public final class ReglerDelay extends AbstractReglerSingleInputSingleOutput {
+    private static final long serialVersionUID = 1L;
     private static final double DEFAULT_DELAY = 10e-6;    
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerDelay.class, "DELAY", I18nKeys.DELAY);
     
-    public final UserParameter<Double> _tDelay = UserParameter.Builder.<Double>start("tDelay", DEFAULT_DELAY).
+    public final transient UserParameter<Double> _tDelay = UserParameter.Builder.<Double>start("tDelay", DEFAULT_DELAY).
             longName(I18nKeys.DELAY_INPUT).
             unit("sec").
             shortName("T").

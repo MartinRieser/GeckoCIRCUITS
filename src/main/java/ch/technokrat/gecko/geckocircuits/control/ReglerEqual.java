@@ -19,6 +19,7 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.EqualCalculatorTwoI
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 public final class ReglerEqual extends SimpleRegelBlock {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerEqual.class, "EQ", I18nKeys.EQUAL);
     
     public ReglerEqual() {

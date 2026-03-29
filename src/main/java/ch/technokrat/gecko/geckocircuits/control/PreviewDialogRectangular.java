@@ -22,6 +22,9 @@ import javax.swing.JDialog;
 
 public class PreviewDialogRectangular extends PreviewDialog {
 
+    private static final long serialVersionUID = 1L;
+
+    @SuppressWarnings("this-escape")
     public PreviewDialogRectangular(final JDialog parent) {
         super(parent);
         setTitle(" RECTANGULAR");

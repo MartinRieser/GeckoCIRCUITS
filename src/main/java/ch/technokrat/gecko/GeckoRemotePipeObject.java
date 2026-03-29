@@ -23,13 +23,15 @@ import java.io.Serializable;
  */
 public class GeckoRemotePipeObject implements Serializable {
     
+    private static final long serialVersionUID = 1L;
+
     //internal enum which defines which type of action this objects represents - a method call, a return variable, successful void return, or an error message
     public static enum GeckoRemotePipeObjectType { METHOD_CALL, METHOD_RETURN_VALUE, METHOD_VOID_RETURN, ERROR_MESSAGE };
     
     private final GeckoRemotePipeObjectType _type; //the type of action this object represents
     private final String _methodName; //the name of the method - must be set for all types (method calls and returns and errors)
-    private final Object[] _methodArguments; //method arguments for method call - null in other cases
-    private final Object _methodReturnValue; //the return value of the method - null if void or if not a return action
+    private final transient Object[] _methodArguments; //method arguments for method call - null in other cases
+    private final transient Object _methodReturnValue; //the return value of the method - null if void or if not a return action
     private final String _errorMessage; //the error message - empty string if none required
     
     /**

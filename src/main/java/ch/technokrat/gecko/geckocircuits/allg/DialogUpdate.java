@@ -37,6 +37,8 @@ import javax.swing.JOptionPane;
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.TooManyFields"})
 public final class DialogUpdate extends javax.swing.JFrame {
 
+    private static final long serialVersionUID = 1L;
+
     private static void doRealUpdateCheck() {
         Thread updateThread = new Thread(new Runnable() {
             @Override

@@ -24,8 +24,10 @@ import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.TransferHandler;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public final class ReportingListTransferHandler extends TransferHandler {
 
+    private static final long serialVersionUID = 1L;
     private DataFlavor _locArrayLstFlvr;
     private final DataFlavor _serArrayLstFlvr;
     private final String _locArrayListType = DataFlavor.javaJVMLocalObjectMimeType + ";class=java.util.ArrayList";

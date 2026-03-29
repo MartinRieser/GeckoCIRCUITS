@@ -23,9 +23,10 @@ import java.util.logging.Logger;
  * @author andreas
  */
 public final class DialogMakeExternal extends javax.swing.JDialog {
+    private static final long serialVersionUID = 1L;
     private final byte[] _contents;
- 
-    private final GeckoFile _geckoFile;
+
+    private final transient GeckoFile _geckoFile;
     
     public static String dialogResultFabric(final GeckoFile geckoFile, final byte[] originalContents) {
         final DialogMakeExternal dialog = new DialogMakeExternal(geckoFile, originalContents);

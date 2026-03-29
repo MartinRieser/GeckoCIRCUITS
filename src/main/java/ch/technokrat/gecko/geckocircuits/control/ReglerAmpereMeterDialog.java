@@ -24,6 +24,8 @@ import javax.swing.JPanel;
 
 class ReglerAmpereMeterDialog extends DialogElementCONTROL<AbstractCurrentMeasurement> {
     
+    private static final long serialVersionUID = 1L;
+    
     private JComboBox<LossComponent> _comboLossType;
     
     public ReglerAmpereMeterDialog(final AbstractCurrentMeasurement reglerAMP) {

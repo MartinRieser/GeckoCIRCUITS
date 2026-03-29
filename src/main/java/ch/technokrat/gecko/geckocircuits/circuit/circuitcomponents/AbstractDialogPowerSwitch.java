@@ -33,9 +33,11 @@ import javax.swing.border.TitledBorder;
 
 public abstract class AbstractDialogPowerSwitch<T extends AbstractSemiconductor> extends DialogElementLK<T> {
     
+    private static final long serialVersionUID = 1L;
+
     private final JPanelHalbleiterDetailButtons _panelHalbleiterDetail;
-    private JPanel _jPanelSimpleLosses;
-    private final LossProperties _lossCalculation;
+    private transient JPanel _jPanelSimpleLosses;
+    private transient final LossProperties _lossCalculation;
     private final JRadioButton _jRadioButtonSimpleLosses = new JRadioButton();
     private final JRadioButton _jRadioButtonDetailedLosses = new JRadioButton();
     private final JPanel _characteristicsPanel = new JPanel();
@@ -131,6 +133,7 @@ public abstract class AbstractDialogPowerSwitch<T extends AbstractSemiconductor>
         }
     }
 
+    @SuppressWarnings("unchecked")
     private JPanel createSimpleOuterPanel() {
         _jPanelSimpleLosses = createParameterPanel(element.kOn, element.kOff, element.uK);
         _jPanelSimpleLosses.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),

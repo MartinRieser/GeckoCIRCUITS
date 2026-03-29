@@ -93,7 +93,7 @@ public final class DataJunkCompressable implements DataJunk {
         _dataSoftRef = new SoftReference<float[][]>(_data);
         _startIndex = startIndex;
         _timeSerie = timeSeries;
-        _rows = (int) rows;
+        _rows = rows;
     }    
 
     @Override
@@ -380,7 +380,7 @@ public final class DataJunkCompressable implements DataJunk {
         final int correctedStop = Math.min(stop, _columns + _startIndex - 1);
         HiLoData hld = null;
         for (int i = correctedStart; i <= correctedStop; i++) {
-            final float value = (float) getValue(row, i);
+            final float value = getValue(row, i);
             hld = HiLoData.mergeFromValue(hld, value);
         }
         assert hld != null : correctedStart + " " + correctedStop + " " + start + " " + stop + " " + _startIndex + " " + _columns;

@@ -16,7 +16,8 @@ package ch.technokrat.gecko.geckocircuits.circuit.losscalculation;
 import java.io.Serializable;
 
 // Datenbehaelter fuer eine Messkurve -->
-public class LeitverlusteMesskurve extends LossCurve implements Serializable {    
+public class LeitverlusteMesskurve extends LossCurve implements Serializable {
+    private static final long serialVersionUID = 1L;
    
     // Datenbehaelter mit folgendem Format fuer  data[][] -->
     // U [V] - I [A]

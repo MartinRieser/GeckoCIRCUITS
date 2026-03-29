@@ -19,9 +19,11 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
 public class ReglerControlDebug extends RegelBlock {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerControlDebug.class,"CTRL_DEBUG", I18nKeys.DEBUGGING_STEP);
     private ControlDebugWindow _debugWindow;
     
+    @SuppressWarnings("this-escape")
     public ReglerControlDebug() {
         super(0, 0);        
         XIN.add(new TerminalControlInputWithLabel(this, -4, 0, "1"));

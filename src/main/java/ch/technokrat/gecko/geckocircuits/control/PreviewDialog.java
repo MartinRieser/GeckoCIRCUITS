@@ -22,8 +22,10 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 
 abstract class PreviewDialog extends JDialog {
+    private static final long serialVersionUID = 1L;
     final NumberFormat nf = NumberFormat.getNumberInstance();
     
+    @SuppressWarnings("deprecation")
     protected PreviewDialog(final JDialog parent) {
         super(parent);
         try {

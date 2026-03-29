@@ -58,8 +58,8 @@ public class TerminalControlOutput extends TerminalControl {
         final int dpix = AbstractCircuitSheetComponent.dpix;
 
         if (!_label.getLabelString().isEmpty()) {
-            graphics2D.drawString(_label.getLabelString(), (int) (dpix * getPosition().x), 
-                    (int) (dpix * getPosition().y) + DY_TEXT);
+            graphics2D.drawString(_label.getLabelString(), dpix * getPosition().x, 
+                    dpix * getPosition().y + DY_TEXT);
         }
     }           
     

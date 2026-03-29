@@ -39,13 +39,16 @@ import java.util.Stack;
  *
  * @author andreas
  */
+@SuppressWarnings("deprecation")
 public final class ReglerOSZI extends RegelBlock implements VariableTerminalNumber,
         SpecialNameVisible {
+
+    private static final long serialVersionUID = 1L;
 
     private static final int TERM_POS_X = -2;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerOSZI.class, "SCOPE", I18nKeys.SCOPE, I18nKeys.COMPONENT_FOR_DATA_VISUALIZATION);
     
-    final UserParameter<Integer> _inputTerminalNumber = UserParameter.Builder.
+    transient final UserParameter<Integer> _inputTerminalNumber = UserParameter.Builder.
             <Integer>start("tn", 0).
             longName(I18nKeys.NO_INPUT_TERMINALS).
             shortName("numberInputTerminals").
@@ -58,7 +61,7 @@ public final class ReglerOSZI extends RegelBlock implements VariableTerminalNumb
             _yKlickMaxTermADD, _yKlickMinTermSUB, _yKlickMaxTermSUB;
     // fuer Zugriff auf SCOPE und die Moeglichkeit zum Update der Labels wenn Terminal-Anzahl geaendert wird
     // alle ZV-Daten nicht komprimiert fuer eventuelle Festplattenspeicherung --> Speicherkritisch
-    private AbstractDataContainer _zvDatenRAM;
+    private transient AbstractDataContainer _zvDatenRAM;
     //for use with GeckoSCRIPT - waveform characteristic
     private transient CharacteristicsCalculator _waveformChar;
     private double _charStart = 0;
@@ -72,14 +75,14 @@ public final class ReglerOSZI extends RegelBlock implements VariableTerminalNumb
     private static final int FOUR_CHAN_DEPTH = 4;
     public static final int DEF_TERM_NUMBER = 3;
     //for reading the correct rows from the global DataContainer
-    private ScopeWrapperIndices _scopeWrapperIndices;
+    private transient ScopeWrapperIndices _scopeWrapperIndices;
     private String[] _saveLoadSignalNames;
     private final ScopeSettings _scopeSettings = new ScopeSettings();  // initiale ScopeSettings definieren   ;    
     private final GraferV4 _grafer = new GraferV4(_scopeSettings);
     public ScopeFrame _scopeFrame = new ScopeFrame(_grafer);
     private boolean _isShowName;
     Stack<AbstractScopeSignal> _scopeInputSignals = new Stack<AbstractScopeSignal>();
-    private final DefinedMeanSignals _meanSignals = new DefinedMeanSignals(_scopeInputSignals);
+    private final transient DefinedMeanSignals _meanSignals = new DefinedMeanSignals(_scopeInputSignals);
     
     private static final int DIAMETER = 4;
     private static final double HEIGHT = 0.6;
@@ -88,6 +91,7 @@ public final class ReglerOSZI extends RegelBlock implements VariableTerminalNumb
     private int _testcounter = 0; // a variable used for the signal name when testing external signals
     //*/
 
+    @SuppressWarnings("deprecation")
     public ReglerOSZI() {
         super(DEF_TERM_NUMBER, 0);
         _inputTerminalNumber.setValueWithoutUndo(DEF_TERM_NUMBER);                        
@@ -312,7 +316,7 @@ public final class ReglerOSZI extends RegelBlock implements VariableTerminalNumb
         graphics.setColor(Color.red);
 
 
-        final int[] triXCoords = new int[]{(int) (dpix * x), (int) (dpix * (x) + DIAMETER), (int) (dpix * (x)) - DIAMETER};
+        final int[] triXCoords = new int[]{dpix * x, dpix * (x) + DIAMETER, dpix * (x) - DIAMETER};
         final int yp0 = (int) (dpix * (y - WIDTH - HEIGHT) - DELTA), yp1 = (int) (dpix * (y - WIDTH) - DELTA);
         final int ym1 = (int) (dpix * (y - WIDTH + _inputTerminalNumber.getValue()) + DELTA),
                 ym0 = (int) (dpix * (y - WIDTH + _inputTerminalNumber.getValue() + HEIGHT) + DELTA);

@@ -23,6 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
 class BJTDialog extends DialogElementLK<BJT> {
+    private static final long serialVersionUID = 1L;
     private JRadioButton _npnButton;
     private JRadioButton _pnpButton;
     private static final int NUMBER_GRID_ROWS = 9;
@@ -32,6 +33,7 @@ class BJTDialog extends DialogElementLK<BJT> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected void baueGUIIndividual() {
         JPanel pIN = createParameterPanel(element._forwardBeta, element._backwardBeta, 
                 element._baseResistance, element._emitterResistance, element._collectorResistance, element._forwardVoltage);        

@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
+@SuppressWarnings("deprecation")
 public final class VerlustBerechnungDetailed implements GeckoFileable, AbstractLossCalculatorFabric {
 
     final AbstractCircuitBlockInterface _parent;
@@ -211,7 +212,7 @@ public final class VerlustBerechnungDetailed implements GeckoFileable, AbstractL
         //
         String[] ascii = new String[datVec.size()];
         for (int i1 = 0; i1 < datVec.size(); i1++) {
-            ascii[i1] = (String) datVec.get(i1);
+            ascii[i1] = datVec.get(i1);
         }
                 
         final TokenMap tokenMap = new TokenMap(ascii);

@@ -24,6 +24,7 @@ import javax.swing.JLabel;
  * @author andy
  */
 public final class FractionPrinter extends javax.swing.JPanel {
+    private static final long serialVersionUID = 1L;
     private static final double STRING_LENTH_FAC = 0.85;
     
     public FractionPrinter() {
@@ -128,6 +129,8 @@ public final class FractionPrinter extends javax.swing.JPanel {
     
 
     class JLabelLine extends JLabel {
+
+        private static final long serialVersionUID = 1L;
 
         @Override
         public void paint(Graphics g) {

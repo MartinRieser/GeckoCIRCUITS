@@ -26,6 +26,7 @@ import javax.swing.border.TitledBorder;
 
 public final class DialogConnectSignalsGraphs extends GeckoDialog {
 
+    private static final long serialVersionUID = 1L;
     private final GraferV4 _grafer;
     private final Container _container;
     private FormatJTextField[][] jbM;
@@ -49,7 +50,7 @@ public final class DialogConnectSignalsGraphs extends GeckoDialog {
     private Color _origBackColor;
     ;
   private AbstractDiagram _selectedDiagram;
-    private final DiagramCurveSignalManager _manager;
+    private transient final DiagramCurveSignalManager _manager;
     private int modifiedWeightIndex = -1;
 
     public DialogConnectSignalsGraphs(final GraferV4 grafer) {

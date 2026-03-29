@@ -479,7 +479,7 @@ public final class NetzlisteCONTROL {
         }
 
         globalData.clear();
-        ((DataContainerGlobal) globalData).init(potIndex.size(), dataNames, "t");
+        globalData.init(potIndex.size(), dataNames, "t");
 
         for (RegelBlock reg : elementsControl) {
             if (reg != null && reg instanceof ReglerCISPR16) {

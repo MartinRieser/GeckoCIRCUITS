@@ -18,7 +18,8 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.ExpCalculator;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
-public final class ReglerExponential extends AbstractReglerSingleInputSingleOutput {                
+public final class ReglerExponential extends AbstractReglerSingleInputSingleOutput {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerExponential.class, "EXP", I18nKeys.EXP);
     
     @Override

@@ -78,6 +78,7 @@ public abstract class AbstractSemiconductor extends AbstractTwoPortLKreisBlock i
             unit("V").
             build();
 
+    @SuppressWarnings("this-escape")
     public AbstractSemiconductor() {                               
     }
 
@@ -108,6 +109,7 @@ public abstract class AbstractSemiconductor extends AbstractTwoPortLKreisBlock i
     public void addFiles(List<GeckoFile> _newFilesToAdd) {
     }
 
+    @SuppressWarnings("unchecked")
     public List<GeckoFile> getFiles() {
         if (this instanceof LossCalculatable) {
             List<GeckoFile> returnValue = new ArrayList<GeckoFile>();

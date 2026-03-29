@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 
 // Leistungskreis-IGBT (Knickkennlinie, Modifikation des THYR)
+@SuppressWarnings({"rawtypes", "unchecked"})
 public final class IGBT extends AbstractVoltageDropSwitch implements HiddenSubCircuitable {
 
     private static final double WIDTH = 0.7;
@@ -79,7 +80,7 @@ public final class IGBT extends AbstractVoltageDropSwitch implements HiddenSubCi
                 new int[]{-dpix, dpix, dpix}, 3);
         graphics.fillPolygon(
                 new int[]{(int) (-dpix * WIDTH), (int) (-dpix * WIDTH), 0},
-                new int[]{(int) (dpix - TRIANGLE_WIDTH), dpix, dpix}, 3);
+                new int[]{dpix - TRIANGLE_WIDTH, dpix, dpix}, 3);
 
     }
 

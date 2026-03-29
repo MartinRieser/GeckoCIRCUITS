@@ -18,7 +18,8 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.DivCalculator;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
-public final class ReglerDivision extends RegelBlock {    
+public final class ReglerDivision extends RegelBlock {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerDivision.class, "DIV", I18nKeys.DIVISION);
     
     public ReglerDivision() {

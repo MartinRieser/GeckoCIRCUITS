@@ -34,11 +34,12 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 final class JPanelHalbleiterDetailButtons extends JPanel {
+    private static final long serialVersionUID = 1L;
     private static final int BUTTON_WIDTH = 500;
     
     private final FormatJTextField _jlS2 = new FormatJTextField("-");
     private final FormatJTextField _jlS2b = new FormatJTextField();
-    private final VerlustBerechnungDetailed _detailedLosses;
+    private transient final VerlustBerechnungDetailed _detailedLosses;
     private final JButton jbS2edit = GuiFabric.getJButton(I18nKeys.EDIT_SEMICONDUCTOR);
     
     JPanelHalbleiterDetailButtons(final VerlustBerechnungDetailed detailedLosses) {

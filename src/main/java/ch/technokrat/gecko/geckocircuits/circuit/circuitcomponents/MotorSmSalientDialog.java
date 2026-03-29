@@ -24,6 +24,8 @@ import javax.swing.JPanel;
  */
 class MotorSmSalientDialog extends AbstractMotorDialog<MotorSmSalient> {
 
+    private static final long serialVersionUID = 1L;
+
     public MotorSmSalientDialog(MotorSmSalient parent) {
         super(parent);
     }

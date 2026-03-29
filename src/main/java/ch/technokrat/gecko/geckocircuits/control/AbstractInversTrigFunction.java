@@ -17,6 +17,7 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
 abstract class AbstractInversTrigFunction extends AbstractReglerSingleInputSingleOutput {
+    private static final long serialVersionUID = 1L;
     @Override
     public final String[] getOutputNames() {
         return new String[]{getFixedIDString().toLowerCase()};

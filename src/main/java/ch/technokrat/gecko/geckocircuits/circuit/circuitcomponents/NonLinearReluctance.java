@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public final class NonLinearReluctance extends AbstractNonLinearCircuitComponent implements
         HiddenSubCircuitable, PostCalculatable, CurrentMeasurable, DirectVoltageMeasurable {
 

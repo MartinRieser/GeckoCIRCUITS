@@ -26,8 +26,11 @@ import javax.swing.event.ListSelectionListener;
  * @author andreas
  */
 public class DialogControlCheck extends javax.swing.JDialog {
-    private final NetzlisteCONTROL _nlc;
+    private static final long serialVersionUID = 1L;
+
+    private transient final NetzlisteCONTROL _nlc;
     
+    @SuppressWarnings("this-escape")
     public DialogControlCheck(java.awt.Frame parent, boolean modal, final NetzlisteCONTROL nlc) {
         super(parent, modal);
         _nlc = nlc;

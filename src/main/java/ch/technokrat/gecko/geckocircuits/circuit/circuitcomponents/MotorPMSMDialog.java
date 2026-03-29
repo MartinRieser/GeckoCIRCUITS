@@ -18,7 +18,10 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.JPanel;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 class MotorPMSMDialog extends AbstractMotorDialog<MotorPMSM> {
+    
+    private static final long serialVersionUID = 1L;
     
     public MotorPMSMDialog(final MotorPMSM parent) {
         super(parent);

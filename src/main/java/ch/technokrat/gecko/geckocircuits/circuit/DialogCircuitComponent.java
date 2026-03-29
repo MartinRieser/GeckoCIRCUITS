@@ -37,16 +37,19 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 abstract public class DialogCircuitComponent<T extends AbstractBlockInterface> extends GeckoDialog
         implements Schliessable, WindowListener {
 
-    final List<UserParameter<? extends Number>> registeredParameters = new ArrayList<UserParameter<? extends Number>>();
+    private static final long serialVersionUID = 1L;
+
+    final transient List<UserParameter<? extends Number>> registeredParameters = new ArrayList<UserParameter<? extends Number>>();
     private static final int TEXT_FIELD_LENGTH = 10;
     public static final int NO_TF_COLS = 6;
-    private SchematicEditor2 _se;  // callback fuer registerChange()        
-    public final T element;
+    private transient SchematicEditor2 _se;
+    public final transient T element;
     public String _originalName;
-    public final List<FormatJTextField> tf = new ArrayList<FormatJTextField>();
+    public final transient List<FormatJTextField> tf = new ArrayList<FormatJTextField>();
     public FormatJTextField tfNam;
     public JPanel jPanelName;
     private JCheckBox checkBoxCompEnabled;
@@ -59,6 +62,7 @@ abstract public class DialogCircuitComponent<T extends AbstractBlockInterface> e
     private static final int BUTTON_HEIGHT = 25;
     private static final Dimension OK_CANCEL_DIMENSION = new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT);
 
+    @SuppressWarnings({"this-escape", "rawtypes", "unchecked"})
     public DialogCircuitComponent(final JFrame parent, final boolean modal, final T element) {
         super(parent, modal);
         this.element = element;
@@ -137,7 +141,7 @@ abstract public class DialogCircuitComponent<T extends AbstractBlockInterface> e
         jPanelButtonOkCancel.add(jButtonOk);
         jPanelButtonOkCancel.add(jButtonCancel);
     }
-    public final ActionListener okActionListener = new ActionListener() {
+    public transient final ActionListener okActionListener = new ActionListener() {
 
         @Override
         public void actionPerformed(final ActionEvent actionEvent) {

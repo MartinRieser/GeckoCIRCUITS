@@ -14,6 +14,7 @@
 package ch.technokrat.gecko.geckocircuits.control;
 
 class ReglerGateDialog extends DialogElementCONTROL<ReglerGate> {
+    private static final long serialVersionUID = 1L;
 
     public ReglerGateDialog(final ReglerGate reglerGate) {
         super(reglerGate);

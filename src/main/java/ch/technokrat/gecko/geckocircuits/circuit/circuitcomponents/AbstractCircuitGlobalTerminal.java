@@ -29,10 +29,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class AbstractCircuitGlobalTerminal extends AbstractCircuitBlockInterface implements GlobalTerminable {    
     public static final Map<AbstractComponentTyp, HashSet<AbstractCircuitGlobalTerminal>> ALL_GLOBALS = 
             new HashMap<AbstractComponentTyp, HashSet<AbstractCircuitGlobalTerminal>>();
 
+    @SuppressWarnings("this-escape")
     public AbstractCircuitGlobalTerminal() {
         super();
         XIN.add(new TerminalTwoPortComponent(this, 0));     

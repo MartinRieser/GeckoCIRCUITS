@@ -19,6 +19,8 @@ package ch.technokrat.gecko;
  */
 public class GeckoRemoteException extends Exception {
 
+    private static final long serialVersionUID = 1L;
+
     /**
      * Creates a new instance of
      * <code>GeckoRemoteObjectException</code> without detail message.

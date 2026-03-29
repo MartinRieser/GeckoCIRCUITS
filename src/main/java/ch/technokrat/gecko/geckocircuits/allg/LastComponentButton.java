@@ -26,9 +26,10 @@ import javax.swing.JButton;
 
 public class LastComponentButton extends JButton {
 
-    private AbstractBlockInterface _showComponent;
-    private AbstractBlockInterface _tmpShowComponent;
-    private AbstractComponentTyp _typ;
+    private static final long serialVersionUID = 1L;
+    private transient AbstractBlockInterface _showComponent;
+    private transient AbstractBlockInterface _tmpShowComponent;
+    private transient AbstractComponentTyp _typ;
     private ComponentDirection _componentDirection = ComponentDirection.NORTH_SOUTH;
 
     public LastComponentButton() {

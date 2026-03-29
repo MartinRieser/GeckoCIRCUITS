@@ -23,10 +23,12 @@ import javax.swing.JOptionPane;
  *
  * @author andreas
  */
+@SuppressWarnings({"this-escape", "rawtypes", "unchecked"})
 public class DialogGlobalTerminal extends javax.swing.JDialog {
-    private final GlobalTerminable _globalTerminable;
+    private static final long serialVersionUID = 1L;
+    private final transient GlobalTerminable _globalTerminable;
     private final HashSet<GlobalTerminable> _allGlobalTerminals;
-    private final AbstractBlockInterface _thisTerminal;
+    private final transient AbstractBlockInterface _thisTerminal;
     private boolean _initDone = false;
     /**
      * Creates new form DialogGlobalTerminal
@@ -34,7 +36,7 @@ public class DialogGlobalTerminal extends javax.swing.JDialog {
     public DialogGlobalTerminal(final java.awt.Frame parent, final AbstractBlockInterface globalTerminal) {
         super(parent, true);
         initComponents();
-        _thisTerminal = (AbstractBlockInterface) globalTerminal;
+        _thisTerminal = globalTerminal;
         jTextFieldName.setText(globalTerminal.getStringID());        
         _globalTerminable = (GlobalTerminable) globalTerminal;
         

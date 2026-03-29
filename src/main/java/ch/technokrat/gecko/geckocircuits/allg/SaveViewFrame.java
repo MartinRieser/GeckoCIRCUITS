@@ -43,6 +43,8 @@ import org.w3c.dom.Document;
 
 public final class SaveViewFrame extends GeckoDialog {
 
+    private static final long serialVersionUID = 1L;
+
     private static final Float JPG_QUALITY = 0.8f;  // Float literal autoboxing
     private static final float GREY_RED = 0.212671f;
     private static final float GREY_GREEN = 0.715160f;

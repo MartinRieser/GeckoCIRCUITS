@@ -20,6 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
 class DialogSimpleInfoMessage extends DialogWindowWithoutInput {
+    private static final long serialVersionUID = 1L;
     private final String _displayMessage;
 
     public DialogSimpleInfoMessage(RegelBlock aThis, String displayMessage) {

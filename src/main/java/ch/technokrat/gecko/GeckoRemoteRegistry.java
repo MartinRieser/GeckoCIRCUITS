@@ -21,6 +21,7 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.URI;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -30,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+@SuppressWarnings("deprecation")
 public class GeckoRemoteRegistry {
 
     private static final String INTERFACE_NAME = "GeckoRemoteInterface";
@@ -187,7 +189,7 @@ public class GeckoRemoteRegistry {
      */
     public static String getExternalIPAddress() throws MalformedURLException, IOException {
         //ask a site to get the IP seen on the internet
-        URL getMyIP = new URL(_ipQuerySite);
+        URL getMyIP = URI.create(_ipQuerySite).toURL();
         BufferedReader in = new BufferedReader(new InputStreamReader(getMyIP.openStream()));
         final String ip = in.readLine(); //the IP is the first line of the page
         return ip;

@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class AbstractMotor extends AbstractCircuitBlockInterface implements PotentialCoupable, HiddenSubCircuitable, PostCalculatable {    
     
     private static final double SIXTY_OVER_TWOPI = 60.0 / (2 * Math.PI);

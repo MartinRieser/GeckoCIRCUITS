@@ -193,6 +193,7 @@ public final class StateSpaceCalculator {
         _AMatrix2 = new Matrix(aMatrix2);
     }
 
+    @SuppressWarnings("fallthrough")
     public void calculateTimeStep(final double[][] xIN, final double deltaT, final double[][] outputSignal, final double time) {
 
         if (_stateVariables == null) {

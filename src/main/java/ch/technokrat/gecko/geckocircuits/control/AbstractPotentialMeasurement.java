@@ -28,10 +28,12 @@ import java.util.List;
 
 public abstract class AbstractPotentialMeasurement extends RegelBlock implements ch.technokrat.gecko.geckocircuits.circuit.PotentialCoupable, ch.technokrat.gecko.geckocircuits.circuit.ComponentCoupable {
 
-    final PotentialCoupling _potentialLabelCoupling;
-    final ComponentCoupling _componentCoupling = new ComponentCoupling(1, this, new int[]{2});
+    private static final long serialVersionUID = 1L;
+    transient final PotentialCoupling _potentialLabelCoupling;
+    transient final ComponentCoupling _componentCoupling = new ComponentCoupling(1, this, new int[]{2});
     final ConnectorType _measureConnectorType;
 
+    @SuppressWarnings("this-escape")
     public AbstractPotentialMeasurement(final ConnectorType connectorType) {
         super(0, 1);
         _measureConnectorType = connectorType;

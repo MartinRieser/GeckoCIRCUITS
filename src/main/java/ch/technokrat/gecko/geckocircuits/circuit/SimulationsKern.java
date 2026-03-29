@@ -332,7 +332,7 @@ public class SimulationsKern {
     }
 
     public void runSimulation() {        
-        while ((t <= tEND) && (_simulationStatus != _simulationStatus.PAUSED)) {
+        while ((t <= tEND) && (_simulationStatus != SimulationStatus.PAUSED)) {
             simulateOneTimeStep();
             t += dt;
         }
@@ -395,8 +395,8 @@ public class SimulationsKern {
     }
 
     public void setZeiten(double tSTART, double tEND, double dt) {
-        this.tSTART = tSTART;
-        this.tEND = tEND;
+        SimulationsKern.tSTART = tSTART;
+        SimulationsKern.tEND = tEND;
         this.dt = dt;
     }
 
@@ -407,8 +407,8 @@ public class SimulationsKern {
         _simulationStatus = SimulationStatus.RUNNING;
 
         this.dt = dt;
-        this.tSTART = tSTART;
-        this.tEND = tEND;
+        SimulationsKern.tSTART = tSTART;
+        SimulationsKern.tEND = tEND;
         this.tPAUSE = tPAUSE;
         this.t = tAktuell;
         //            
@@ -464,7 +464,7 @@ public class SimulationsKern {
             //
             // thermischer Kreis:
             lkmTHERM = new LKMatrices(MainWindow._solverSettings.SOLVER_TYPE.getValue());
-            lkmTHERM.initMatrizen((NetListLK) thermNL, getAnfangsbedVomDialogfenster, false, MainWindow._solverSettings.SOLVER_TYPE.getValue());
+            lkmTHERM.initMatrizen(thermNL, getAnfangsbedVomDialogfenster, false, MainWindow._solverSettings.SOLVER_TYPE.getValue());
             lkmTHERM.schreibeMatrix_A(dt, tAktuell, false);
         }
         //=============================

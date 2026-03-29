@@ -33,6 +33,7 @@ import javax.swing.JPanel;
 
 public class GeckoStatusBar extends JPanel {
 
+    private static final long serialVersionUID = 1L;
     private final JButton _portLabelButton = new JButton();
     private final JLabel _jLabelSimulationStatus = new JLabel();
     private boolean _aliasing;
@@ -124,6 +125,8 @@ public class GeckoStatusBar extends JPanel {
     }
 
     private class GeckoProgressPanel extends JPanel {
+
+        private static final long serialVersionUID = 1L;
 
         public GeckoProgressPanel() {
             super();

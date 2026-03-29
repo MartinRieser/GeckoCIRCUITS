@@ -36,6 +36,7 @@ import javax.swing.filechooser.FileFilter;
  * @author andy
  */
 class ReglerImportDialog extends DialogElementCONTROL<ReglerSignalSource>{
+    private static final long serialVersionUID = 1L;
 
     private FormatJTextField jtfImportStatus;  // fuer das Importieren externer Zeitverlaeufe, die dann vom SIGNAL-Block ausgegeben werden    
     
@@ -43,6 +44,7 @@ class ReglerImportDialog extends DialogElementCONTROL<ReglerSignalSource>{
         super(element);
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     void baueGuiIndividual() {     
         JTextArea jtx = new JTextArea();
@@ -89,7 +91,7 @@ class ReglerImportDialog extends DialogElementCONTROL<ReglerSignalSource>{
                 GeckoFileManagerWindow fileManager = new GeckoFileManagerWindow(element, ".dat", "Data file, space-separated", true);
                 fileManager.setVisible(true);
                 //------------
-                String datnam = ((ReglerSignalSource) element).getDatnam();
+                String datnam = element.getDatnam();
                 if (datnam == null) {
                     datnam = GlobalFilePathes.DATNAM_NOT_DEFINED;
                 }
@@ -107,7 +109,7 @@ class ReglerImportDialog extends DialogElementCONTROL<ReglerSignalSource>{
         jpCheck.setLayout(new BorderLayout());
         jtfImportStatus = new FormatJTextField();
         jtfImportStatus.setColumns(25);
-        String datnam = ((ReglerSignalSource) element).getDatnam();
+        String datnam = element.getDatnam();
         if (datnam == null) {
             datnam = GlobalFilePathes.DATNAM_NOT_DEFINED;
         }

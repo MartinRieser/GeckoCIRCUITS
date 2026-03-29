@@ -29,10 +29,12 @@ import java.awt.Graphics2D;
 import java.awt.Window;
 import java.util.List;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class AbstractCircuitTerminal extends AbstractCircuitBlockInterface implements SubCircuitTerminable {
 
     private final TerminalToWrap _wrapped = new TerminalToWrap(this);
 
+    @SuppressWarnings("this-escape")
     public AbstractCircuitTerminal() {
         super();
         XIN.add(new TerminalTwoPortComponent(this, 0));

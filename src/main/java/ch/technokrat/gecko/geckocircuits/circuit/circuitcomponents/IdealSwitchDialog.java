@@ -17,11 +17,14 @@ import javax.swing.JPanel;
 
 class IdealSwitchDialog extends AbstractDialogPowerSwitch<IdealSwitch> {
 
+    private static final long serialVersionUID = 1L;
+
     public IdealSwitchDialog(IdealSwitch parent) {
         super(parent);
     }
     
     @Override
+    @SuppressWarnings("unchecked")
     public JPanel createParameterPanel() {
         return createParameterPanel(element._onResistance, element._offResistance, element.numberParalleled);        
     }            

@@ -28,6 +28,7 @@ import java.util.Set;
 
 public final class ControlGlobalTerminal extends RegelBlock implements GlobalTerminable {
 
+    private static final long serialVersionUID = 1L;
     public static final Set<ControlGlobalTerminal> ALL_GLOBALS = new HashSet<ControlGlobalTerminal>();
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlGlobalTerminal.class,"GLOBAL_CONTROL", I18nKeys.GLOBAL_CONTROL_TERMINAL);
 

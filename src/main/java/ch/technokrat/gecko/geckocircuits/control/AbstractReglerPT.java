@@ -22,14 +22,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 abstract class AbstractReglerPT extends AbstractReglerSingleInputSingleOutput {
+    private static final long serialVersionUID = 1L;
 
-    final UserParameter<Double> _TVal = UserParameter.Builder.<Double>start("T", 1.0).
+    final transient UserParameter<Double> _TVal = UserParameter.Builder.<Double>start("T", 1.0).
             longName(I18nKeys.TIME_CONSTANT).
             shortName("T").
             showInTextInfo(TextInfoType.SHOW_WHEN_DISPLAYPARAMETERS).
             arrayIndex(this, 0).
             build();
-    final UserParameter<Double> _a1Val = UserParameter.Builder.<Double>start("a1", 1.0).
+    final transient UserParameter<Double> _a1Val = UserParameter.Builder.<Double>start("a1", 1.0).
             longName(I18nKeys.GAIN).
             shortName("a1").
             showInTextInfo(TextInfoType.SHOW_WHEN_DISPLAYPARAMETERS).

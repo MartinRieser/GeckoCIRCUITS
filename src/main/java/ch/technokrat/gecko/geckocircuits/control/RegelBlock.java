@@ -32,6 +32,7 @@ import java.util.ArrayList;
 
 public abstract class RegelBlock extends AbstractBlockInterface implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     public final static double[] EMPTY_OUTPUT = new double[]{};
     // Abmessungen der einzelnen Elemente:
     private static final double WIDTH = 1.5;
@@ -45,13 +46,14 @@ public abstract class RegelBlock extends AbstractBlockInterface implements Seria
     protected ControlTyp _controlTyp;
 
     
-    public AbstractControlCalculatable _calculator;
+    public transient AbstractControlCalculatable _calculator;
     private int _priority;
 
     RegelBlock() {
         // package-private constructor!
     }        
 
+    @SuppressWarnings("this-escape")
     protected RegelBlock(final int noInputs, final int noOutputs) {                
         if (this instanceof VariableTerminalNumber) {
             ((VariableTerminalNumber) this).setInputTerminalNumber(noInputs);
@@ -321,7 +323,7 @@ public abstract class RegelBlock extends AbstractBlockInterface implements Seria
 
     public int getBlockHeight() {
         int maxTerminals = Math.max(XIN.size(), YOUT.size());
-        int height = (int) (dpix * (maxTerminals));
+        int height = dpix * (maxTerminals);
         return height;
     }
 
@@ -364,7 +366,7 @@ public abstract class RegelBlock extends AbstractBlockInterface implements Seria
 
         int startx = (int) (dpix * (posX - 1 / 2.0)) - width / 2;
         int starty = (int) (dpix * (posY - 1 / 2.0));
-        startx += getXShift() * dpix;
+        startx += (int) (getXShift() * dpix);
         starty += getYShift() * dpix;
 
         graphics.fillRect(startx, starty, width, height);

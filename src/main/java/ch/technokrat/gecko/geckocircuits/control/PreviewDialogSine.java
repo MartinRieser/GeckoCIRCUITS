@@ -22,6 +22,9 @@ import javax.swing.JDialog;
 
 public class PreviewDialogSine extends PreviewDialog {
 
+    private static final long serialVersionUID = 1L;
+
+    @SuppressWarnings("this-escape")
     public PreviewDialogSine(final JDialog parent) {
         super(parent);
         setTitle(" SINUSOIDAL");

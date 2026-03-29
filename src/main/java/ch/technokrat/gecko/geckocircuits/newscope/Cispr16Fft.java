@@ -83,7 +83,7 @@ public final class Cispr16Fft {
 
         for (int i = 1; i <= _resampledN; i++) {
             final int index = data.getMaximumTimeIndex(0) - i - endShift;
-            _zvResampled[_resampledN - i] += (float) data.getValue(0, index);
+            _zvResampled[_resampledN - i] += data.getValue(0, index);
         }
 
         double lastTime = data.getTimeValue(data.getMaximumTimeIndex(0), 0);
@@ -102,8 +102,8 @@ public final class Cispr16Fft {
         // the blackman curve is symmetric... speed it up by calculation only half the values.
         for (int ii = 0; ii < NNN / 2+1; ii++) {            
             double factor = calculateBlackmanFactor(const1, ii);
-            data[ii] *= factor;
-            data[NNN - ii] *= factor;            
+            data[ii] *= (float) factor;
+            data[NNN - ii] *= (float) factor;            
         }
     }
     
@@ -125,8 +125,8 @@ public final class Cispr16Fft {
         // the blackman curve is symmetric... speed it up by calculation only half the values.
         for (int ii = 0; ii < NNN/2+1; ii++) {
             final double factor = 1.0 / calculateBlackmanFactor(const1, ii);
-            data[ii] *= factor;
-            data[NNN - ii] *= factor;
+            data[ii] *= (float) factor;
+            data[NNN - ii] *= (float) factor;
         }
     }    
     

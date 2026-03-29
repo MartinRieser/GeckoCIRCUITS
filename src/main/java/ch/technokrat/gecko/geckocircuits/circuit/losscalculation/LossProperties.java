@@ -190,7 +190,7 @@ public final class LossProperties implements AbstractLossCalculatorFabric {
         }
 
         if (_parent instanceof MOSFET) {
-            final Diode diodeElement = (Diode) ((MOSFET) _parent).getAntiParallelDiode();
+            final Diode diodeElement = ((MOSFET) _parent).getAntiParallelDiode();
             returnValue = new LossCalculatorAdditionalDiode(returnValue, diodeElement);
         }
 

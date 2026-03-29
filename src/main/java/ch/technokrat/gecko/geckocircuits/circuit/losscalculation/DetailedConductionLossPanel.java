@@ -21,10 +21,11 @@ import javax.swing.JPanel;
 
 class DetailedConductionLossPanel extends DetailledLossPanel<LeitverlusteMesskurve> {
 
+    private static final long serialVersionUID = 1L;
     public double uMaxCOND, iMaxCOND;  // maximale Bereichsgrenze aller 'messkurvePvCOND[]' bzw 'messkurvePvSWITCH[]' --> korekte Darstellung im Grafer
     public double[] tjGrenzenCOND, b0COND, b1COND, c0COND, c1COND, d0COND, d1COND;  // Koeffizienten der Naeherungspoloynome (siehe Publikation IPEC'05) --> Econd(i,tj)
     final JCheckBox useInSolver = new JCheckBox("<html>Use curve in electric<br>model characteristic</html>");
-    Diode nonlinearDiode = null;
+    transient Diode nonlinearDiode = null;
         
     
     public void useNonlinearInElectric(final Diode diode) {        

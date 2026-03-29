@@ -25,6 +25,7 @@ import java.awt.event.ActionListener;
 
 public final class ReglerSmallSignalAnalysis extends RegelBlock {
     
+    private static final long serialVersionUID = 1L;
     private static final double DEFAULT_AMPLITUDE = 0.005;
     private static final double DEFAULT_FREQ_START = 50.0;
     private static final double DEFAULT_FREQ_END = 10000.0;
@@ -34,14 +35,14 @@ public final class ReglerSmallSignalAnalysis extends RegelBlock {
     
     private final int BLOCK_WIDTH = 6;
     
-    final UserParameter<Double> _amplitude = UserParameter.Builder.<Double>start("Amplitude", DEFAULT_AMPLITUDE).
+    transient final UserParameter<Double> _amplitude = UserParameter.Builder.<Double>start("Amplitude", DEFAULT_AMPLITUDE).
             longName(I18nKeys.AMPLITUDE).
             shortName("Ampl").
             showInTextInfo(TextInfoType.SHOW_WHEN_DISPLAYPARAMETERS).
             arrayIndex(this, -1).
             build();
     
-    final UserParameter<Double> _fBase = UserParameter.Builder.<Double>start("StartFreq", DEFAULT_FREQ_START).
+    transient final UserParameter<Double> _fBase = UserParameter.Builder.<Double>start("StartFreq", DEFAULT_FREQ_START).
             longName(I18nKeys.FREQ_START).
             shortName("fBase").
             unit("Hz").
@@ -49,7 +50,7 @@ public final class ReglerSmallSignalAnalysis extends RegelBlock {
             arrayIndex(this, -1).
             build();
     
-    final UserParameter<Double> _fMax = UserParameter.Builder.<Double>start("EndFreq", DEFAULT_FREQ_END).
+    transient final UserParameter<Double> _fMax = UserParameter.Builder.<Double>start("EndFreq", DEFAULT_FREQ_END).
             longName(I18nKeys.FREQ_END).
             shortName("fMax").
             unit("Hz").
@@ -58,7 +59,7 @@ public final class ReglerSmallSignalAnalysis extends RegelBlock {
             build();        
         
     
-    final UserParameter<SSAShape> _signalType = UserParameter.Builder.<SSAShape>start("signalTypeNew", SSAShape.RECTANGLE).
+    transient final UserParameter<SSAShape> _signalType = UserParameter.Builder.<SSAShape>start("signalTypeNew", SSAShape.RECTANGLE).
             longName(I18nKeys.SIGNALTYPE_SSA).
             shortName("shape").
             showInTextInfo(TextInfoType.SHOW_WHEN_DISPLAYPARAMETERS).
@@ -66,7 +67,7 @@ public final class ReglerSmallSignalAnalysis extends RegelBlock {
             build();
         
     
-    public final UserParameter<Boolean> _doAddOutput = UserParameter.Builder.
+    public transient final UserParameter<Boolean> _doAddOutput = UserParameter.Builder.
             <Boolean>start("addOutput", false).
             longName(I18nKeys.IF_TRUE_USE_NONLINEAR_CHARACTERISTIC).
             shortName("addOutput").            
@@ -74,9 +75,9 @@ public final class ReglerSmallSignalAnalysis extends RegelBlock {
             build();                               
     
     
-    TerminalControlInputWithLabel externalExcitationTerm = new TerminalControlInputWithLabel(this, -4, -2, "excitation");
+    transient TerminalControlInputWithLabel externalExcitationTerm = new TerminalControlInputWithLabel(this, -4, -2, "excitation");
     
-    public SmallSignalCalculator _lastCalculator;
+    public transient SmallSignalCalculator _lastCalculator;
     
     
     public ReglerSmallSignalAnalysis() {

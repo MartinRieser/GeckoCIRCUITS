@@ -18,11 +18,13 @@ package ch.technokrat.gecko.geckocircuits.allg;
  * @author andreas
  */
 public class MemoryWarning extends javax.swing.JDialog {
+    private static final long serialVersionUID = 1L;
     private final MainWindow _fenster;
 
     /**
      * Creates new form MemoryWarning
      */
+    @SuppressWarnings("this-escape")
     public MemoryWarning(java.awt.Frame parent, boolean modal, final MainWindow fenster) {
         super(parent, modal);
         setTitle("Memory usage warning!");

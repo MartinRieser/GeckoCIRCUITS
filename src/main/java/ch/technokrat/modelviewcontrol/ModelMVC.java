@@ -24,7 +24,7 @@ import java.io.Serializable;
 public class ModelMVC<T> extends AbstractUndoGenericModel<T>
         implements Serializable{
   private static final long serialVersionUID = 784635241326447L;
-  private Object _descriptionObject = null;
+  private transient Object _descriptionObject = null;
 
   public ModelMVC(T initValue){
     super(initValue);

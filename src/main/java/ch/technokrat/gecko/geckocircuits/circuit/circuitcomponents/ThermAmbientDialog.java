@@ -16,7 +16,10 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 
+@SuppressWarnings("unchecked")
 final class ThermAmbientDialog extends DialogElementLK<ThermAmbient> {
+
+    private static final long serialVersionUID = 1L;
 
     public ThermAmbientDialog(final ThermAmbient parent) {
         super(parent);

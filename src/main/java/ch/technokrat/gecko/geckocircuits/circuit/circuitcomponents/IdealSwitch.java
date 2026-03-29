@@ -24,6 +24,7 @@ import java.util.List;
 
 
 // Leistungskreis Idealer Schalter (hoch- oder niederohmiger Widerstand, daher bidirektional)
+@SuppressWarnings({"rawtypes", "unchecked"})
 public final class IdealSwitch extends AbstractSwitch {
     private static final double WIDTH = 1.6;
     private static final double HEIGHT = 0.8;

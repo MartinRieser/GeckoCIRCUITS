@@ -18,6 +18,7 @@ package ch.technokrat.gecko.geckocircuits.newscope;
  * @author andreas
  */
 public class NoCurveSelectedException extends Exception {
+    private static final long serialVersionUID = 1L;
     public NoCurveSelectedException(final String message) {
         super(message);
     }

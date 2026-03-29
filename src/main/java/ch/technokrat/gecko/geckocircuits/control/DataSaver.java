@@ -30,6 +30,7 @@ import javax.swing.JOptionPane;
  * This class is responsible for saving the simulation data to a data file.
  *
  */
+@SuppressWarnings("deprecation")
 public final class DataSaver extends Observable implements Observer {
 
     private final AbstractDataContainer _data;
@@ -507,6 +508,8 @@ public final class DataSaver extends Observable implements Observer {
     }
 
     class SignalMissingException extends Exception {
+
+        private static final long serialVersionUID = 1L;
 
         public SignalMissingException(String message) {
             super(message);

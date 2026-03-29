@@ -26,7 +26,8 @@ import java.util.Arrays;
 import java.util.List;
 
 
-public final class ReglerFlowMeter extends AbstractCurrentMeasurement {        
+public final class ReglerFlowMeter extends AbstractCurrentMeasurement {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerFlowMeter.class, "FLOW", I18nKeys.HEATFLOW_MEASUREMENT_W);
     
     private LossComponent _measurementType = LossComponent.TOTAL;

@@ -33,6 +33,7 @@ import javax.swing.JTextArea;
 import javax.swing.border.TitledBorder;
 
 class AbstractCircuitSourceDialog extends DialogElementLK<AbstractCircuitSource> {
+    private static final long serialVersionUID = 1L;
     private static final int SIN_TAB_INDEX = 0;
     private static final int DC_SOURCE_TAB_INDEX = 1;
     private static final int SIGNAL_CTRL_TAB_INDEX = 2;

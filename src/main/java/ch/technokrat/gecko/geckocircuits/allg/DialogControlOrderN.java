@@ -48,9 +48,12 @@ import javax.swing.DefaultListModel;
  */
 public class DialogControlOrderN extends javax.swing.JDialog implements DragGestureListener, DragSourceListener, DropTargetListener{
 
+    private static final long serialVersionUID = 1L;
+
     /**
      * Creates new form DialogControlOrderN
      */
+    @SuppressWarnings("this-escape")
     public DialogControlOrderN(final java.awt.Frame parent, final boolean modal, final List<RegelBlock> optimizedList) {
         
         super(parent, modal);
@@ -174,7 +177,7 @@ public class DialogControlOrderN extends javax.swing.JDialog implements DragGest
                 System.out.println("OK pressed");
                 final List<RegelBlock> userList = new ArrayList<RegelBlock>();
                 for(int i=0; i<jListUser.getModel().getSize(); i++){
-                    userList.add((RegelBlock) jListUser.getModel().getElementAt(i));
+                    userList.add(jListUser.getModel().getElementAt(i));
                     userList.get(i).setPriority(i);
                     /*System.out.print(userList.get(i));
                     System.out.print("\t");
@@ -196,7 +199,7 @@ public class DialogControlOrderN extends javax.swing.JDialog implements DragGest
                 System.out.println("Reset pressed");
                 final DefaultListModel<RegelBlock> userModel = new DefaultListModel<>();
                 for(int i=0; i<jListOptimized.getModel().getSize(); i++){
-                    userModel.addElement((RegelBlock) jListOptimized.getModel().getElementAt(i));
+                    userModel.addElement(jListOptimized.getModel().getElementAt(i));
                 }
                 jListUser.setModel(userModel);
             }
@@ -278,7 +281,7 @@ public class DialogControlOrderN extends javax.swing.JDialog implements DragGest
     // End of variables declaration//GEN-END:variables
     //not really, some more:
     DragSource _dragSource;
-    Object _draggedObject;
+    transient Object _draggedObject;
     int _sourceIndex = -1;
     DropTarget _dropTarget;
     

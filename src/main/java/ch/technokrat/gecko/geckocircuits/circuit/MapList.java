@@ -26,12 +26,14 @@ import java.util.Map.Entry;
  */
 public class MapList extends ArrayList<AbstractCircuitSheetComponent> {
 
+    private static final long serialVersionUID = 1L;
+
     private final Class<?>[] registeredTypes = new Class<?>[]{
         AbstractCircuitBlockInterface.class, RegelBlock.class, AbstractSpecialBlock.class, TextFieldBlock.class,
         ComponentCoupable.class, PotentialCoupable.class, 
         AbstractBlockInterface.class, Verbindung.class, SubcircuitBlock.class
     };
-    private final Map<Class<?>, ArrayList> classMap = new HashMap<Class<?>, ArrayList>();
+    private transient final Map<Class<?>, ArrayList<AbstractCircuitSheetComponent>> classMap = new HashMap<Class<?>, ArrayList<AbstractCircuitSheetComponent>>();
 
     @Override
     public void clear() {
@@ -41,7 +43,7 @@ public class MapList extends ArrayList<AbstractCircuitSheetComponent> {
 
     @Override
     public boolean remove(Object o) {
-        for (Entry<Class<?>, ArrayList> entry : classMap.entrySet()) {
+        for (Entry<Class<?>, ArrayList<AbstractCircuitSheetComponent>> entry : classMap.entrySet()) {
             ArrayList<?> list = entry.getValue();
             if (list.contains(o)) {
                 list.remove(o);
@@ -51,7 +53,7 @@ public class MapList extends ArrayList<AbstractCircuitSheetComponent> {
     }
 
     @Override
-    public boolean removeAll(Collection c) {
+    public boolean removeAll(Collection<?> c) {
         assert false;
         return super.removeAll(c);
     }
@@ -73,7 +75,7 @@ public class MapList extends ArrayList<AbstractCircuitSheetComponent> {
                 if (classMap.containsKey(type)) {
                     classMap.get(type).add(toAdd);
                 } else {
-                    ArrayList newList = new ArrayList<>();
+                    ArrayList<AbstractCircuitSheetComponent> newList = new ArrayList<>();
                     newList.add(toAdd);
                     classMap.put(type, newList);
                 }
@@ -82,9 +84,10 @@ public class MapList extends ArrayList<AbstractCircuitSheetComponent> {
         return super.add(toAdd);
     }
 
+    @SuppressWarnings("unchecked")
     public <T> List<T> getClassFromContainer(final Class<T> type) {
         if (classMap.containsKey(type)) {
-            ArrayList<T> returnValue = classMap.get(type);            
+            List<T> returnValue = (List<T>) classMap.get(type);
             return Collections.unmodifiableList(returnValue);
         } else {
             return Collections.unmodifiableList(new ArrayList<T>());

@@ -16,7 +16,8 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.ACosCalculator;
 import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalculatable;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
-public final class ReglerAreaCosine extends AbstractInversTrigFunction {        
+public final class ReglerAreaCosine extends AbstractInversTrigFunction {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerAreaCosine.class, "ACOS", I18nKeys.ACOS);
 
     @Override

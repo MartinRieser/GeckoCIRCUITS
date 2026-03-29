@@ -36,7 +36,7 @@ public class TerminalRelativePositionReluctance extends TerminalRelativePosition
         Color origColor = graphics.getColor();                
         graphics.setColor(GlobalColors.farbeElementRELFOREGROUND);
         if (!_label.getLabelString().isEmpty()) {
-            graphics.drawString(_label.getLabelString(), (int) (dpix * getPosition().x) + DX_IN, (int) (dpix * getPosition().y) + DY_TEXT);
+            graphics.drawString(_label.getLabelString(), dpix * getPosition().x + DX_IN, dpix * getPosition().y + DY_TEXT);
         }
         graphics.setColor(origColor);
     }

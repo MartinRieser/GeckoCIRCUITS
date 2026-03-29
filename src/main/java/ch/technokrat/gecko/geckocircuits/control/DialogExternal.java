@@ -32,11 +32,13 @@ import javax.swing.JFrame;
  */
 public class DialogExternal extends javax.swing.JDialog {
 
+    private static final long serialVersionUID = 1L;
     private final RegelBlockSimulink _regelBlock;
-    private List<RegelBlock> orderList;
+    private transient List<RegelBlock> orderList;
 //
 
     /** Creates new form DialogExterna */
+    @SuppressWarnings("this-escape")
     public DialogExternal(final RegelBlockSimulink regelBlock) {
         super((JFrame) null, true);
         this.setLocationByPlatform(true);

@@ -55,7 +55,7 @@ public class LISN extends AbstractCircuitBlockInterface implements HiddenSubCirc
     private AbstractCapacitor _CGnd2;
     private AbstractCapacitor _CGnd3;
     
-    @SuppressWarnings("overridable-method-call-in-constructor")
+    @SuppressWarnings({"overridable-method-call-in-constructor", "this-escape"})
     public LISN() {
         super();
         setComponentDirection(ComponentDirection.NORTH_SOUTH);
@@ -270,13 +270,13 @@ public class LISN extends AbstractCircuitBlockInterface implements HiddenSubCirc
         int x10 = YOUT.get(6).getPosition().x;
         int y10 = YOUT.get(6).getPosition().y;
         
-        graphics.drawLine((int) (dpix * x1), (int) (dpix * y1), (int) (dpix * x4), (int) (dpix * y4));
-        graphics.drawLine((int) (dpix * x2), (int) (dpix * y2), (int) (dpix * x5), (int) (dpix * y5));
-        graphics.drawLine((int) (dpix * x3), (int) (dpix * y3), (int) (dpix * x6), (int) (dpix * y6));
-        graphics.drawLine((int) (dpix * x7), (int) (dpix * y7), (int) (dpix * x7), (int) (dpix * y));
-        graphics.drawLine((int) (dpix * x8), (int) (dpix * y8), (int) (dpix * x8), (int) (dpix * y));
-        graphics.drawLine((int) (dpix * x9), (int) (dpix * y9), (int) (dpix * x9), (int) (dpix * y));
-        graphics.drawLine((int) (dpix * x10), (int) (dpix * y10), (int) (dpix * x10), (int) (dpix * y));
+        graphics.drawLine(dpix * x1, dpix * y1, dpix * x4, dpix * y4);
+        graphics.drawLine(dpix * x2, dpix * y2, dpix * x5, dpix * y5);
+        graphics.drawLine(dpix * x3, dpix * y3, dpix * x6, dpix * y6);
+        graphics.drawLine(dpix * x7, dpix * y7, dpix * x7, dpix * y);
+        graphics.drawLine(dpix * x8, dpix * y8, dpix * x8, dpix * y);
+        graphics.drawLine(dpix * x9, dpix * y9, dpix * x9, dpix * y);
+        graphics.drawLine(dpix * x10, dpix * y10, dpix * x10, dpix * y);
         setTranslationRotation(graphics);
     }
     
@@ -305,16 +305,16 @@ public class LISN extends AbstractCircuitBlockInterface implements HiddenSubCirc
         int x9 = YOUT.get(5).getPosition().x;
         int x10 = YOUT.get(6).getPosition().x;
 
-        graphics.drawString("R", (int) (dpix * (x - 2.5)) + 2, (int) (dpix * y1) + 5);
-        graphics.drawString("S", (int) (dpix * (x - 2.5)) + 2, (int) (dpix * y2) + 5);
-        graphics.drawString("T", (int) (dpix * (x - 2.5)) + 2, (int) (dpix * y3) + 5);
-        graphics.drawString("U", (int) (dpix * (x + 1.5)) - 12, (int) (dpix * y1) + 5);
-        graphics.drawString("V", (int) (dpix * (x + 1.5)) - 12, (int) (dpix * y2) + 5);
-        graphics.drawString("W", (int) (dpix * (x + 1.5)) - 12, (int) (dpix * y3) + 5);
-        graphics.drawString("n", (int) (dpix * x7) - 5, (int) (dpix * (y + 2.5)) - 3);
-        graphics.drawString("a", (int) (dpix * x8) - 5, (int) (dpix * (y + 2.5)) - 3);
-        graphics.drawString("b", (int) (dpix * x9) - 5, (int) (dpix * (y + 2.5)) - 3);
-        graphics.drawString("c", (int) (dpix * x10) - 5, (int) (dpix * (y + 2.5)) - 3);
+        graphics.drawString("R", (int) (dpix * (x - 2.5)) + 2, dpix * y1 + 5);
+        graphics.drawString("S", (int) (dpix * (x - 2.5)) + 2, dpix * y2 + 5);
+        graphics.drawString("T", (int) (dpix * (x - 2.5)) + 2, dpix * y3 + 5);
+        graphics.drawString("U", (int) (dpix * (x + 1.5)) - 12, dpix * y1 + 5);
+        graphics.drawString("V", (int) (dpix * (x + 1.5)) - 12, dpix * y2 + 5);
+        graphics.drawString("W", (int) (dpix * (x + 1.5)) - 12, dpix * y3 + 5);
+        graphics.drawString("n", dpix * x7 - 5, (int) (dpix * (y + 2.5)) - 3);
+        graphics.drawString("a", dpix * x8 - 5, (int) (dpix * (y + 2.5)) - 3);
+        graphics.drawString("b", dpix * x9 - 5, (int) (dpix * (y + 2.5)) - 3);
+        graphics.drawString("c", dpix * x10 - 5, (int) (dpix * (y + 2.5)) - 3);
         setTranslationRotation(graphics);
     }
 

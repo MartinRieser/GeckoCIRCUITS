@@ -36,7 +36,10 @@ import javax.swing.border.TitledBorder;
 
 public class DialogViewPowerModule extends JDialog implements WindowListener, ActionListener {
 
+    private static final long serialVersionUID = 1L;
+
     
+    @SuppressWarnings("this-escape")
     public DialogViewPowerModule(AbstractCircuitBlockInterface elementTH, Container c) {
         super.setModal(true);
         try {

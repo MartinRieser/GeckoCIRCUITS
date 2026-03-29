@@ -19,11 +19,11 @@ import javax.swing.ListModel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
-public final class WeakListModel implements ListModel, Serializable{
+public final class WeakListModel implements ListModel<Object>, Serializable{
   public static final long serialVersionUID = 582811111394392L;
-  private final Map<ListDataListener, Object> _listenerList =
+  private transient final Map<ListDataListener, Object> _listenerList =
           Collections.synchronizedMap(new WeakHashMap<ListDataListener, Object>());
-  private final Object _present = new Object();
+  private transient final Object _present = new Object();
   @SuppressWarnings("PMD")
   private final ArrayList<Object> _delegate = new ArrayList<Object>();
 
@@ -53,7 +53,7 @@ public final class WeakListModel implements ListModel, Serializable{
     return _delegate.isEmpty();
   }
 
-  public Enumeration elements(){
+  public Enumeration<Object> elements(){
     return Collections.enumeration(_delegate);
   }
 
@@ -138,7 +138,7 @@ public final class WeakListModel implements ListModel, Serializable{
     }
   }
 
-  public EventListener[] getListeners(final Class listenerType){
+  public EventListener[] getListeners(final Class<?> listenerType){
     final Set<ListDataListener> set = _listenerList.keySet();
     return set.toArray(new EventListener[set.size()]);
   }

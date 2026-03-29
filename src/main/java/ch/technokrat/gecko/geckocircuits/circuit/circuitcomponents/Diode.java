@@ -24,6 +24,7 @@ import java.awt.Window;
 import java.util.Arrays;
 import java.util.List;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public final class Diode extends AbstractSemiconductor implements ForwardVoltageDropable {
     static final AbstractTypeInfo TYPE_INFO = 
             new CircuitTypeInfo(Diode.class, "D", I18nKeys.DIODE, I18nKeys.IDEAL_DIODE_WITH_ON_RESISTANCE);

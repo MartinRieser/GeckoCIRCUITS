@@ -22,6 +22,7 @@ public class SymmetricDoubleSparseMatrix {
     public HashMap<Integer, HashMap<Integer, Double>> rowEntriesValue = new HashMap<Integer, HashMap<Integer, Double>>();
     private final int _N;
 
+    @SuppressWarnings("this-escape")
     public SymmetricDoubleSparseMatrix(int N) {
         _N = N;
 

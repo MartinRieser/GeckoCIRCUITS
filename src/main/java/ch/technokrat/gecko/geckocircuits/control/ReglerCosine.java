@@ -17,7 +17,8 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalc
 import ch.technokrat.gecko.geckocircuits.control.calculators.CosCalculator;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
-public final class ReglerCosine extends AbstractTrigonometricFunction {    
+public final class ReglerCosine extends AbstractTrigonometricFunction {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ReglerCosine.class, "COS", I18nKeys.COS);
 
     @Override

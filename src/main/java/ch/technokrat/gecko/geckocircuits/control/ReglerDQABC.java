@@ -19,7 +19,8 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
 public final class ReglerDQABC extends RegelBlock {
-    
+    private static final long serialVersionUID = 1L;
+
     private static final int PORT_1_POS = 0;
     private static final int PORT_2_POS = -1;
     private static final int PORT_3_POS = -2;

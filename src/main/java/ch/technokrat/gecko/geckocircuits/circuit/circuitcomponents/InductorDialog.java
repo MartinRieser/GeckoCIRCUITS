@@ -27,8 +27,10 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 class InductorDialog extends DialogElementLK<AbstractInductor> {
-    private JCheckBox jcbLossL;  // soll GeckoMAGNETICS aktiviert werden? 
+    private static final long serialVersionUID = 1L;
+    private JCheckBox jcbLossL;
     
     public InductorDialog(final AbstractInductor parent) {
         super(parent);

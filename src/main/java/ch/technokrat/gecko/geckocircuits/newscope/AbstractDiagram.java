@@ -34,11 +34,12 @@ import javax.swing.JPanel;
  */
 public abstract class AbstractDiagram extends JPanel {
 
-    public final DiagramSettings _diagramSettings;
-    protected Axis _xAxis = new Axis(Axis.Direction.X, false, this);
-    protected Axis _yAxis1 = new Axis(Axis.Direction.Y, false, this);
-    protected Axis _yAxis2 = new Axis(Axis.Direction.Y, true, this);
-    private List<AbstractCurve> _curves = Collections.unmodifiableList(new ArrayList<AbstractCurve>());
+    private static final long serialVersionUID = 1L;
+    public transient final DiagramSettings _diagramSettings;
+    protected transient Axis _xAxis = new Axis(Axis.Direction.X, false, this);
+    protected transient Axis _yAxis1 = new Axis(Axis.Direction.Y, false, this);
+    protected transient Axis _yAxis2 = new Axis(Axis.Direction.Y, true, this);
+    private transient List<AbstractCurve> _curves = Collections.unmodifiableList(new ArrayList<AbstractCurve>());
     protected int _ySpaceUpper = DY_IN_UPPER_SMALL;
     static final int DY_IN_UNTEN = 8;
     static final int DX_IN_LINKS = 70;
@@ -49,15 +50,15 @@ public abstract class AbstractDiagram extends JPanel {
     private static final int DY_IN_UPPER_SMALL = 8;
     private static final int DY_IN_UPPER_LARGE = 16;
     private static final int THREE = 3;
-    GraferV4 _grafer;
-    final ZoomWindow _zoomWindow = new ZoomWindow(this);
+    transient GraferV4 _grafer;
+    final transient ZoomWindow _zoomWindow = new ZoomWindow(this);
     private int _topOffset;
     private int _bottomOffset;
     static final int DEF_PREF_WIDTH = 3000;
     private static final int DEF_TOP_OFFSET = 7;
     private static final int TITLE_OFFSET = 10;
-    private final HorizontalLevel _ylevel = new HorizontalLevel(Color.darkGray, this);
-    private final TriggerPosition _triggerPrositon = new TriggerPosition(Color.darkGray, this);
+    private final transient HorizontalLevel _ylevel = new HorizontalLevel(Color.darkGray, this);
+    private final transient TriggerPosition _triggerPrositon = new TriggerPosition(Color.darkGray, this);
     private boolean _isProbeUtilsEnabled = false;
 
     static AbstractDiagram fabricFromModelFile(final TokenMap diagramMap, final GraferV4 grafer) {
@@ -159,6 +160,8 @@ public abstract class AbstractDiagram extends JPanel {
     
 
     private class LabelPanel extends JPanel {
+
+        private static final long serialVersionUID = 1L;
 
         LabelPanel() {
             super();
