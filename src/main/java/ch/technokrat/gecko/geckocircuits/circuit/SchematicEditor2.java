@@ -49,7 +49,7 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
     private SchematicComponentSelection2 _sea;
     public MainWindow win;
     //
-    private boolean simulatorAktiviert = false;
+    private boolean simulatorActivated = false;
     public static boolean zustandGeaendert = false;  // // indicates whether 'QuitWithoutSaving' needs to be enabled
     //
     private static final double CLICK_RADIUS_RELATIVE = 0.5;  // [0...1]
@@ -605,8 +605,8 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
     boolean antialiasing = false;    //
 
     // // you can use this to activate or deactivate the simulator -->
-    public void setActivationOfSimulator(boolean simulatorAktiviert) {
-        this.simulatorAktiviert = simulatorAktiviert;
+    public void setActivationOfSimulator(boolean simulatorActivated) {
+        this.simulatorActivated = simulatorActivated;
     }
     public static SchematicEditor2 Singleton;
 
@@ -656,7 +656,7 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
     public void setDirtyFlag() {
         zustandGeaendert = true;
         _visibleCircuitSheet.repaint();
-        win.modifiziereTitel();
+        win.modifyTitle();
     }
 
     //for linking up additional files to the blocks
@@ -884,7 +884,7 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
             _lastMouseClickTime = System.currentTimeMillis();
         }
 
-        if (!simulatorAktiviert) {
+        if (!simulatorActivated) {
             return;
         }
 
@@ -1265,7 +1265,7 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
     }
 
     public void mouseMoved(MouseEvent me) {
-        if (!simulatorAktiviert) {
+        if (!simulatorActivated) {
             return;
         }
         Point movePoint = findRasterPoint(me);
@@ -1447,7 +1447,7 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
             _dragStartTime = System.currentTimeMillis();
         }
 
-        if (!simulatorAktiviert) {
+        if (!simulatorActivated) {
             return;
         }
 
@@ -1472,7 +1472,7 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
     }
 
     public void mouseReleased(final MouseEvent me) {
-        if (!simulatorAktiviert) {
+        if (!simulatorActivated) {
             return;
         }
 

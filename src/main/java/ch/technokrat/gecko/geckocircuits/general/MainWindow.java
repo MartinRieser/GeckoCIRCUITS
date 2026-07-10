@@ -76,7 +76,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     int _simMenuIndex = 2; // simulation menu is third in bar.
     JMenuBar _menuBar; // to provide dynamic changing of the menu bar, need to make this a member.
     //--------------------------------------
-    private boolean simulatorAktiviert = false;
+    private boolean simulatorActivated = false;
     //
     public static SchematicEditor2 _se;
     public SchematicComponentSelection2 sea;
@@ -84,7 +84,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     public static final boolean INCLUDE_GeckoHEAT = false;
     public static final boolean INCLUDE_GeckoEMC = false;
     private static final String UNTITLED = "Untitled";  // displayed in the window title bar when a new file is started
-    public static String aktuellerDateiName = UNTITLED;  // without path! - only for display in the window title bar (as is common in Windows)
+    public static String currentFileName = UNTITLED;  // without path! - only for display in the window title bar (as is common in Windows)
     //--------------------------------------
     private JSplitPane split;
     public static int seaBREITE = 110;  // width of the 'SchematicComponentSelection2()' component on the right edge
@@ -103,7 +103,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     final GeckoStatusBar jtfStatus = new GeckoStatusBar("Ready ...", this);  // Status display of the circuit simulation
     public static final int RECENT_FILE_SPACE = -1;
     //--------------------------------------
-    private boolean speicherVorgangLaeuft = false;
+    private boolean saveInProgress = false;
     //--------------------------------------
     //-------------------------
     // simple parameter-set for GeckoOPTIMIZER --> 
@@ -137,7 +137,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     }
 
     public static String getOpenFileName() {
-        return aktuellerDateiName;
+        return currentFileName;
     }
 
     public boolean saveZVData(String stringID_scope, String fileName) {
@@ -159,11 +159,11 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     /**
      * this can be used to activate or deactivate the simulator
      *
-     * @param simulatorAktiviert
+     * @param simulatorActivated
      */
-    public void setActivationOfSimulator(boolean simulatorAktiviert) {
-        this.simulatorAktiviert = simulatorAktiviert;
-        _se.setActivationOfSimulator(simulatorAktiviert);
+    public void setActivationOfSimulator(boolean simulatorActivated) {
+        this.simulatorActivated = simulatorActivated;
+        _se.setActivationOfSimulator(simulatorActivated);
     }
 
     public MainWindow() {
@@ -186,7 +186,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
             Logger.getLogger(MainWindow.class.getName()).log(Level.WARNING, "Failed to load application icon", e);
         }
 
-        this.setTitle(aktuellerDateiName + spTitleX + "GeckoCIRCUITS");
+        this.setTitle(currentFileName + spTitleX + "GeckoCIRCUITS");
 
         this.addWindowListener(this);
         this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);  // so that the 'QuitWithoutSaving' dialog can be raised ...
@@ -206,7 +206,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         sea = new SchematicComponentSelection2();
         _se.setSchematicEditorSelection(sea);
         sea.registerSchematicEditor(_se);
-        baueGUI();
+        buildGUI();
 
         Timer timer = new Timer();
         // start after 10 seconds, and then save a backup after every 20 seconds
@@ -242,7 +242,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
 
     }
 
-    private void baueGUI() {
+    private void buildGUI() {
         buildMenuBar();
         buildMainPanel();
     }
@@ -271,8 +271,8 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     }
 
     // for modification of the title bar --> when changes have not yet been saved -->
-    public void modifiziereTitel() {
-        this.setTitle(aktuellerDateiName + "*" + spTitleX + "GeckoCIRCUITS");
+    public void modifyTitle() {
+        this.setTitle(currentFileName + "*" + spTitleX + "GeckoCIRCUITS");
     }
 
     // is called after the window dimensions are known:
@@ -282,7 +282,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         }
     }
 
-    private void aktualisierePropertiesRECENT(String datnam) {
+    private void updateRecentProperties(String datnam) {
         if ((datnam.equals(GlobalFilePathes.RECENT_CIRCUITS_1)) || (datnam.isEmpty())) {
             return;
         }
@@ -321,30 +321,30 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     }
 
     public void saveFileAs() {
-        if (speicherVorgangLaeuft) {
+        if (saveInProgress) {
             return;
         }
-        speicherVorgangLaeuft = true;
+        saveInProgress = true;
         //
 
         GeckoFileChooser dialog = GeckoFileChooser.createSaveFileChooser(".ipes", "Circuit Simulation Files (*.ipes)", this, new File(GlobalFilePathes.DATNAM));
 
         if (dialog.getUserResult() == GeckoFileChooser.FileChooserResult.CANCEL) {
-            speicherVorgangLaeuft = false;
+            saveInProgress = false;
             return;
         }
         GlobalFilePathes.DATNAM = dialog.getFileWithCheckedEnding().getAbsolutePath();
-        aktuellerDateiName = GlobalFilePathes.DATNAM;
+        currentFileName = GlobalFilePathes.DATNAM;
 
         generateNewFileId();
-        _fileManager.recomputeRelativePaths(aktuellerDateiName);
-        rawSaveFile(new File(aktuellerDateiName));
+        _fileManager.recomputeRelativePaths(currentFileName);
+        rawSaveFile(new File(currentFileName));
 
-        speicherVorgangLaeuft = false;
+        saveInProgress = false;
         _se.resetModelModified();  // this prevents the 'QuitWithoutSaving' dialog from being invoked even though the file has already been saved
 
-        this.setTitle(aktuellerDateiName + spTitleX + "GeckoCIRCUITS");
-        this.aktualisierePropertiesRECENT(aktuellerDateiName);
+        this.setTitle(currentFileName + spTitleX + "GeckoCIRCUITS");
+        this.updateRecentProperties(currentFileName);
     }
 
     public void rawSaveFile(File file) {
@@ -367,17 +367,17 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     public void saveFile() {
         boolean reworkRelativePaths = false;
         //----------------
-        if (speicherVorgangLaeuft) {
+        if (saveInProgress) {
             return;
         }
-        speicherVorgangLaeuft = true;
+        saveInProgress = true;
         //----
         // if no file name has been selected yet -->
-        if (aktuellerDateiName.equals(UNTITLED)) {
+        if (currentFileName.equals(UNTITLED)) {
             GeckoFileChooser fileChooser = GeckoFileChooser.createSaveFileChooser(".ipes", "Circuit Simulation Files (*.ipes)", this, null);
 
             if (fileChooser.getUserResult() == GeckoFileChooser.FileChooserResult.CANCEL) {
-                speicherVorgangLaeuft = false;
+                saveInProgress = false;
                 return;
             }
             GlobalFilePathes.DATNAM = fileChooser.getFileWithCheckedEnding().getAbsolutePath();
@@ -385,40 +385,40 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         }
         //----------
         try {
-            aktuellerDateiName = GlobalFilePathes.DATNAM;
+            currentFileName = GlobalFilePathes.DATNAM;
             generateNewFileId();
-            if (aktuellerDateiName.contains("autoBackup")) {
+            if (currentFileName.contains("autoBackup")) {
                 int response = JOptionPane.showConfirmDialog(null, "Caution: you try to overwrite your auto-backup file. \nYou should rename your filename to prevent data-loss!\n Do you want to continue anyway?", "Warning!",
                         JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
                 if (response == JOptionPane.NO_OPTION) {
-                    speicherVorgangLaeuft = false;
+                    saveInProgress = false;
                     return;
                 } else if (response == JOptionPane.CLOSED_OPTION) {
-                    speicherVorgangLaeuft = false;
+                    saveInProgress = false;
                     return;
 
                 }
             }
             if (reworkRelativePaths) {
-                _fileManager.recomputeRelativePaths(aktuellerDateiName);
+                _fileManager.recomputeRelativePaths(currentFileName);
             }
-            rawSaveFile(new File(aktuellerDateiName));
+            rawSaveFile(new File(currentFileName));
             //------------
-            speicherVorgangLaeuft = false;
+            saveInProgress = false;
             _se.resetModelModified();  // this prevents the 'QuitWithoutSaving' dialog from being invoked even though the file has already been saved
             //
         } catch (Exception e) {
-            speicherVorgangLaeuft = false;
+            saveInProgress = false;
             Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, "Error saving file", e);
         }
-        this.setTitle(aktuellerDateiName + spTitleX + "GeckoCIRCUITS");
-        this.aktualisierePropertiesRECENT(aktuellerDateiName);
+        this.setTitle(currentFileName + spTitleX + "GeckoCIRCUITS");
+        this.updateRecentProperties(currentFileName);
     }
 
     public void createNewFile() {
         optimizerParameterData.clear();
-        MainWindow.aktuellerDateiName = UNTITLED;
-        this.setTitle(aktuellerDateiName + spTitleX + "GeckoCIRCUITS");
+        MainWindow.currentFileName = UNTITLED;
+        this.setTitle(currentFileName + spTitleX + "GeckoCIRCUITS");
         sea._typElement = null;
         _se.resetCircuitSheetsForNewFile();
         _se.resetModelModified();  // this prevents the 'QuitWithoutSaving' dialog from being invoked even though the file has already been saved
@@ -538,7 +538,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
             _se._circuitSheet._worksheetSize.setNewWorksheetSize(900, 900);
         }
 
-        aktuellerDateiName = dateiName;
+        currentFileName = dateiName;
         _se.updateAllComponentReferences();
         _se.resetModelModified();  // // This prevents the 'QuitWithoutSaving' dialog from being called even though the file has already been saved
 
@@ -549,8 +549,8 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         _scripter.setExtraFilesHashBlock(daten._scripterExtraFiles);
         _fileManager = new GeckoFileManager(daten.fileMgrFiles);
         _se.initAdditionalFiles(_se._circuitSheet.getAllElements().getClassFromContainer(AbstractBlockInterface.class));
-        this.setTitle(aktuellerDateiName + spTitleX + "GeckoCIRCUITS");
-        this.aktualisierePropertiesRECENT(aktuellerDateiName);
+        this.setTitle(currentFileName + spTitleX + "GeckoCIRCUITS");
+        this.updateRecentProperties(currentFileName);
         uniqueFileID = daten._uniqueFileId;
 
         // don't do this for two reasons: first - how it is implemented now with 
@@ -679,7 +679,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
                 JOptionPane.showMessageDialog(null, ex.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE);
             }
         } else if (command.equals("Exit")) {
-            this.schliesseProgramm();
+            this.closeProgram();
         } else if (command.startsWith("RECENT_")) {
             _se.setConnectorTestMode(false);
             int index = Integer.parseInt(command.substring(7));
@@ -900,7 +900,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
 
 
     public void actionPerformed(ActionEvent ae) {
-        if (!simulatorAktiviert) {
+        if (!simulatorActivated) {
             return;
         }
         String befehl = ae.getActionCommand();
@@ -1109,7 +1109,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     }
 
     public void windowClosing(WindowEvent we) {
-        this.schliesseProgramm();
+        this.closeProgram();
     }
 
     public void componentResized(ComponentEvent ce) {
@@ -1126,7 +1126,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     }
     //------------------------------------------------
 
-    public void schliesseProgramm() {
+    public void closeProgram() {
 
         if (IS_BRANDED) {
             try {
@@ -1155,7 +1155,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
             int returnOption = JOptionPane.showConfirmDialog(
                     this,
                     "The model has changed since last save to the model\nfile. Do you like to save your model "
-                    + "to the file:\n" + MainWindow.aktuellerDateiName + "\nbefore exiting GeckoCIRCUITS?",
+                    + "to the file:\n" + MainWindow.currentFileName + "\nbefore exiting GeckoCIRCUITS?",
                     "Warning: Exit GeckoCIRCUITS without saving!",
                     JOptionPane.YES_NO_CANCEL_OPTION);
 
@@ -1308,7 +1308,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         }
 
         if (openFileId == daten._uniqueFileId) {
-            File dateTimeTestOrig = new File(aktuellerDateiName);
+            File dateTimeTestOrig = new File(currentFileName);
             File autoBackupTimeTest = new File(dateiName);
             if (dateTimeTestOrig.lastModified() < autoBackupTimeTest.lastModified()) {
                 int n = JOptionPane.showConfirmDialog(

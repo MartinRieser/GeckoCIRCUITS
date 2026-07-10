@@ -59,7 +59,7 @@ public final class DialogDataExport extends javax.swing.JDialog {
         jSpinnerDigits.setValue(_controlDataSave._significDigits.getValue());
         _dataSaver = _parentDataSaver;
 
-        jTextArea1.setText(MainWindow.aktuellerDateiName.replace(".ipes", "CISPR.txt"));
+        jTextArea1.setText(MainWindow.currentFileName.replace(".ipes", "CISPR.txt"));
 
         if (_containers.size() == 1) {
             jLabelFilter.setVisible(false);

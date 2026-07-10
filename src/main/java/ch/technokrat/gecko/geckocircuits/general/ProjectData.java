@@ -42,11 +42,11 @@ public class ProjectData implements Serializable {
     private transient OptimizerParameterData optimizerParameterData;
     public String geckoOpt_code_ascii;
     //------------------
-    // Simulationsparameter
+    // Simulation parameters
     public double _dt, _tDURATION;
     public double _tPAUSE = -1;
     //------------------
-    // Ansicht im SchematicEntry
+    // View in SchematicEntry
     public int dpix = 16;
     public int fontSize;
     public String _fontTyp;
@@ -135,7 +135,7 @@ public class ProjectData implements Serializable {
 //        geckoOpt.exportASCII(asc);
         asc.append("\n\n");
         //------------------
-        // aktuelles Datum: 
+        // current date: 
         asc.append("\nDtStor ").append(dFormat.format(new Date()));
         //------------------
         // // Simulation settings:
@@ -434,7 +434,7 @@ public class ProjectData implements Serializable {
         }
     }
 
-    // Hilfsfunktionen:
+    // Helper functions:
     // // Data is rewritten into an ASCII string -->
     public static void appendAsString(StringBuffer ascii, int wert) {
         ascii.append(' ');
@@ -634,7 +634,7 @@ public class ProjectData implements Serializable {
     }
 
     // ************************************************************************************
-    // Hilfsfunktionen:
+    // Helper functions:
     // // Changes in relative and absolute paths are taken into account -->
     // // datnamAbsolutIPES ... new current absolute path+name of the *.ipes file that contains the topology/circuit simulation
     // // datnamAbsLoadIPES ... saved path+name of the *.ipes file that contains the topology/circuit simulation
