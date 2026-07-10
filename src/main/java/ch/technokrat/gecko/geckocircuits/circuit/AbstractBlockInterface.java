@@ -14,11 +14,11 @@
 package ch.technokrat.gecko.geckocircuits.circuit;
 
 import ch.technokrat.gecko.geckocircuits.control.ControlTypeInfo;
-import ch.technokrat.gecko.geckocircuits.allg.AbstractComponentTyp;
+import ch.technokrat.gecko.geckocircuits.general.AbstractComponentType;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.AbstractSwitch;
-import ch.technokrat.gecko.geckocircuits.allg.ProjectData;
-import ch.technokrat.gecko.geckocircuits.allg.MainWindow;
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.ProjectData;
+import ch.technokrat.gecko.geckocircuits.general.MainWindow;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.AbstractCircuitBlockInterface;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.Diode;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.SemiconductorLossCalculatable;
@@ -260,8 +260,8 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
         if (this instanceof SemiconductorLossCalculatable) {
             TokenMap subBlock = tokenMap.getBlockTokenMap("<Verluste>");
             if (subBlock != null) {
-                LossProperties verluste = (LossProperties) ((SemiconductorLossCalculatable) this).getVerlustBerechnung();
-                verluste.importASCII(subBlock);  // Laden der korrekten Parameter
+                LossProperties verluste = (LossProperties) ((SemiconductorLossCalculatable) this).getLossCalculation();
+                verluste.importASCII(subBlock);  // // Load the correct parameters
             }
         }
 
@@ -320,7 +320,7 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
         }
 
 
-        setPositionVorVerschieben(getSheetPosition());
+        setPositionBeforeMoving(getSheetPosition());
         setOrientationBeforeMove(getComponentDirection());
 
 
@@ -344,7 +344,7 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
             ((AbstractCircuitBlockInterface) this).setzeParameterZustandswerteAufNULL();
         }
 
-        if (this instanceof RegelBlock) {
+        if (this instanceof ControlBlock) {
             setParameterWithoutUnDo(getParameter());
         }
 
@@ -378,9 +378,9 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
         //remove all extra files (loss files, extra java files, nonlinearity files, etc.)
         LossProperties lossDescription = null;
         if (this instanceof AbstractSwitch) {
-            lossDescription = ((AbstractSwitch) (this)).getVerlustBerechnung();
+            lossDescription = ((AbstractSwitch) (this)).getLossCalculation();
         } else if (this instanceof Diode) {
-            lossDescription = ((Diode) (this)).getVerlustBerechnung();
+            lossDescription = ((Diode) (this)).getLossCalculation();
         }
         if (lossDescription != null) {
             lossDescription._lossCalculationDetailed.removeLossFile();
@@ -453,11 +453,11 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
         exportAsciiIndividual(ascii);
 
         if (this instanceof SemiconductorLossCalculatable) {
-            ((LossProperties) ((SemiconductorLossCalculatable) this).getVerlustBerechnung()).exportASCII(ascii);
+            ((LossProperties) ((SemiconductorLossCalculatable) this).getLossCalculation()).exportASCII(ascii);
         }
 
         _textInfo.exportASCII(ascii);
-        // Daten der individuellen ReglerBloecke:
+        // // Data of the individual control blocks:
         ascii.append("\n");
         final String saveIdentifierEndString = "\n<\\" + getTypeInfo().getSaveIdentifier() + ">\n";
         ascii.append(saveIdentifierEndString);
@@ -547,11 +547,11 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
         YOUT.set(termIndex, terminal);
     }
 
-    public List<Verbindung> getShortConnectors() {
-        final List<Verbindung> returnValue = new ArrayList<Verbindung>();
+    public List<Connection> getShortConnectors() {
+        final List<Connection> returnValue = new ArrayList<Connection>();
 
         for (int i = 0; i < Math.min(XIN.size(), YOUT.size()); i++) {
-            final Verbindung verb = new VerbindungShortConnector(ConnectorType.LK, this.getParentCircuitSheet());
+            final Connection verb = new ConnectionShortConnector(ConnectorType.LK, this.getParentCircuitSheet());
             Point startPoint = XIN.get(i).getPosition();
             Point stopPoint = YOUT.get(i).getPosition();
 
@@ -564,14 +564,14 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
 
             if (distX != 0) {
                 for (int j = 0; j <= Math.abs(distX); j++) {
-                    verb.setzeAktuellenPunktAufVerbindung(new Point(xPos, yPos));
+                    verb.setzeAktuellenPunktAufConnection(new Point(xPos, yPos));
                     xPos += distX / distX;
                 }
             }
 
             if (distY != 0) {
                 for (int j = 0; j <= Math.abs(distY); j++) {
-                    verb.setzeAktuellenPunktAufVerbindung(new Point(xPos, yPos));
+                    verb.setzeAktuellenPunktAufConnection(new Point(xPos, yPos));
                     yPos += distY / distY;
                 }
             }
@@ -617,7 +617,7 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
 
     @Override
     public void absetzenElement() {
-        setPositionVorVerschieben(getSheetPosition());
+        setPositionBeforeMoving(getSheetPosition());
         setOrientationBeforeMove(getComponentDirection());
         setModus(ComponentState.FINISHED);
     }
@@ -649,10 +649,10 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
     @Override
     public void deselectViaESCAPE() {
         setComponentDirection(getOrientationBeforeMove());
-        setPositionWithoutUndo(getPositionVorVerschieben().x, getPositionVorVerschieben().y);
+        setPositionWithoutUndo(getPositionBeforeMoving().x, getPositionBeforeMoving().y);
     }
 
-    public void rotiereSymbol() {
+    public void rotateSymbol() {
         for (AbstractTerminal term : XIN) {
             term.getLabelObject().setLabelPriority(LabelPriority.LOW);
         }
@@ -682,7 +682,7 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
     @SuppressWarnings("unchecked")
     public void copyLKBlockPars(final AbstractBlockInterface copy) {
         copy.setSheetPositionWithoutUndo(getSheetPosition());
-        copy.setPositionVorVerschieben(getSheetPosition());
+        copy.setPositionBeforeMoving(getSheetPosition());
         System.arraycopy(parameter, 0, copy.parameter, 0, parameter.length);
         copy.parameterString = new String[this.parameterString.length];
         System.arraycopy(this.parameterString, 0, copy.parameterString, 0, this.parameterString.length);
@@ -707,8 +707,8 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
 
 
         if (this instanceof SemiconductorLossCalculatable) {
-            LossProperties origLosses = (LossProperties) ((SemiconductorLossCalculatable) this).getVerlustBerechnung();
-            ((LossProperties) ((SemiconductorLossCalculatable) copy).getVerlustBerechnung()).copyPropertiesFrom(origLosses);
+            LossProperties origLosses = (LossProperties) ((SemiconductorLossCalculatable) this).getLossCalculation();
+            ((LossProperties) ((SemiconductorLossCalculatable) copy).getLossCalculation()).copyPropertiesFrom(origLosses);
         }
 
 
@@ -765,14 +765,14 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
         _textInfo.clearParameters();
 
         if (getDisplayProperties().showName || (this instanceof SpecialNameVisible
-                && ((SpecialNameVisible) this).isNameVisible())) {  // falls zusaetzlich auch der Name angezeigt werden soll            
+                && ((SpecialNameVisible) this).isNameVisible())) {  // // if the name should also be displayed
             _textInfo.addParameter(getStringID());
         }
 
         this.addTextInfoParameters();
         _textInfo.addParameters(getRegisteredParameters(), getDisplayProperties());
 
-        _textInfo.zeichneLinie(graphics, getDisplayProperties().showTextLine);
+        _textInfo.drawLine(graphics, getDisplayProperties().showTextLine);
 
         for (TerminalInterface term : getAllTerminals()) {
             if (term.getCircuitSheet() == _parentCircuitSheet) {
@@ -844,14 +844,14 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
     /**
      * @return the positionVorVerschieben
      */
-    public ch.technokrat.gecko.geckocircuits.control.Point getPositionVorVerschieben() {
+    public ch.technokrat.gecko.geckocircuits.control.Point getPositionBeforeMoving() {
         return _sheetPosBeforeMove;
     }
 
     /**
      * @param positionVorVerschieben the positionVorVerschieben to set
      */
-    public void setPositionVorVerschieben(ch.technokrat.gecko.geckocircuits.control.Point positionVorVerschieben) {
+    public void setPositionBeforeMoving(ch.technokrat.gecko.geckocircuits.control.Point positionVorVerschieben) {
         this._sheetPosBeforeMove = positionVorVerschieben;
     }
 
@@ -1013,7 +1013,7 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
      *
      * @return
      */
-    public final AbstractComponentTyp getTypeEnum() {
+    public final AbstractComponentType getTypeEnum() {
         return ControlTypeInfo.getTypeEnumFromClass(this.getClass());
     }
 

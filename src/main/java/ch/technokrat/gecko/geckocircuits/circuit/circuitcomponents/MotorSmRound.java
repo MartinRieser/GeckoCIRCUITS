@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.geckocircuits.circuit.CircuitTypeInfo;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
@@ -64,7 +64,7 @@ public final class MotorSmRound extends AbstractMotorSM {
             arrayIndex(this, INIT_DAMP_CURRENT_INDEX).
             build();
 
-    // Initialisiereung nach INIT&START --> 
+    // // Initialization after INIT&START -->
     @Override
     public void setzeParameterZustandswerteAufNULL() {
         super.setzeParameterZustandswerteAufNULL();
@@ -80,7 +80,7 @@ public final class MotorSmRound extends AbstractMotorSM {
         double ubc = -_controlledAnchorSourceC.parameter[7];
         double uf = _controlledSource3.parameter[7];
 
-        // Berechnung der Maschinen-Diff.Gl: 
+        // // Calculation of the machine diff. equation:
         // Block 'vdq': 
         double ud = calculate_ud(uab, ubc);
         double uq = calculate_uq(uab, ubc);

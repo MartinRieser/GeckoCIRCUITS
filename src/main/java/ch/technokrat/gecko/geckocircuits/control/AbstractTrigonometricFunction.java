@@ -15,7 +15,7 @@ package ch.technokrat.gecko.geckocircuits.control;
 
 import java.awt.Window;
 
-abstract class AbstractTrigonometricFunction extends AbstractReglerSingleInputSingleOutput {
+abstract class AbstractTrigonometricFunction extends AbstractControlSingleInputSingleOutput {
     private static final long serialVersionUID = 1L;
 
     @Override

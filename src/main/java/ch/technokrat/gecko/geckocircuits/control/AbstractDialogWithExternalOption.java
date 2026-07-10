@@ -18,7 +18,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 
-public abstract class AbstractDialogWithExternalOption<T extends RegelBlock> extends DialogElementCONTROL<T> {
+public abstract class AbstractDialogWithExternalOption<T extends ControlBlock> extends DialogElementCONTROL<T> {
     private static final long serialVersionUID = 1L;
 
     final JCheckBox _jCheckBoxUseExternal = new JCheckBox("Use external parameters");

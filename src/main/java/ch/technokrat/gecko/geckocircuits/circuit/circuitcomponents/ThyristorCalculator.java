@@ -74,7 +74,7 @@ public class ThyristorCalculator extends AbstractSwitchCalculator implements Cur
 
     private void doTurnOn() {
         
-            // gate==1  und  (uD > uf) und Thyristor "OFF"
+            // // gate==1 and (uD > uf) and thyristor "OFF"
             _rDt = _rON;
             if (_bVector != null) {
                 _bVector.setUpdateAllFlag();

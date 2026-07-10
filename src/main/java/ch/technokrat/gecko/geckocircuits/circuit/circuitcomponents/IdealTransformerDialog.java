@@ -13,9 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.FormatJTextField;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalColors;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFonts;
+import ch.technokrat.gecko.geckocircuits.general.FormatJTextField;
+import ch.technokrat.gecko.geckocircuits.general.GlobalColors;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFonts;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.KeyEvent;

@@ -26,7 +26,7 @@ import java.awt.Window;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractPotentialMeasurement extends RegelBlock implements ch.technokrat.gecko.geckocircuits.circuit.PotentialCoupable, ch.technokrat.gecko.geckocircuits.circuit.ComponentCoupable {
+public abstract class AbstractPotentialMeasurement extends ControlBlock implements ch.technokrat.gecko.geckocircuits.circuit.PotentialCoupable, ch.technokrat.gecko.geckocircuits.circuit.ComponentCoupable {
 
     private static final long serialVersionUID = 1L;
     transient final PotentialCoupling _potentialLabelCoupling;
@@ -80,7 +80,7 @@ public abstract class AbstractPotentialMeasurement extends RegelBlock implements
 
     @Override
     protected final Window openDialogWindow() {
-        return new ReglerVOLTDialog(this);
+        return new ControlVOLTDialog(this);
     }
     
     public final void checkComponentCompatibility(Object testObject, List<AbstractBlockInterface> insertList) {

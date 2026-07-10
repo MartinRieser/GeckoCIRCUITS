@@ -14,10 +14,10 @@
 package ch.technokrat.gecko.geckocircuits.newscope;
 
 import ch.technokrat.gecko.geckocircuits.datacontainer.AbstractDataContainer;
-import ch.technokrat.gecko.geckocircuits.allg.FormatJTextField;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalColors;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFonts;
-import ch.technokrat.gecko.geckocircuits.allg.TechFormat;
+import ch.technokrat.gecko.geckocircuits.general.FormatJTextField;
+import ch.technokrat.gecko.geckocircuits.general.GlobalColors;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFonts;
+import ch.technokrat.gecko.geckocircuits.general.TechFormat;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -41,7 +41,7 @@ public final class PowerAnalysisPanel extends JPanel {
     private static final long serialVersionUID = 1L;
     private final JComboBox<String>[] _comboU = new JComboBox[3];
     private final JComboBox<String>[] _comboI = new JComboBox[3];
-    private FormatJTextField[][] _pqTextFields;  // Textfelder fuer Leistungswerte A und B
+    private FormatJTextField[][] _pqTextFields;  // // Text fields for performance values ​​A and B
     private final TechFormat _cf = new TechFormat();
     private final GridBagConstraints _gbc = new GridBagConstraints();
     private final String[] signalListe;

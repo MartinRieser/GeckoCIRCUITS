@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.control;
 
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractSpecialBlock;
 import ch.technokrat.gecko.geckocircuits.circuit.CircuitSheet;
 import ch.technokrat.gecko.geckocircuits.circuit.ElementDisplayProperties;
@@ -127,7 +127,7 @@ public final class TextFieldBlock extends AbstractSpecialBlock implements Operat
     }   
 
     @Override
-    public int[] getAussenabmessungenRechteckEckpunkte() {
+    public int[] getOuterBounds() {
         return new int[]{_xKlickMin, _yKlickMin, _xKlickMax, _yKlickMax};
     }
 

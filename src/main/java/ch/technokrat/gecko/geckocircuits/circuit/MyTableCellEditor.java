@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit;
 
-import ch.technokrat.gecko.geckocircuits.allg.FormatJTextField;
+import ch.technokrat.gecko.geckocircuits.general.FormatJTextField;
 import java.awt.Component;
 import javax.swing.AbstractCellEditor;
 import javax.swing.JTable;

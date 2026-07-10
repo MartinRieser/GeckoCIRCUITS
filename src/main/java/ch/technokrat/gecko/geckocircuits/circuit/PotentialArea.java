@@ -29,8 +29,8 @@ public final class PotentialArea {
 
     private final Set<Point> _pointsSchematic = new LinkedHashSet<Point>();
     private final Set<Point> _nodeTerminals = new LinkedHashSet<Point>();
-    private String _potentialLabel = "";  // der zu diesem Potential gehoerige Label
-    private final Set<Verbindung> _potentialConnections = new LinkedHashSet<Verbindung>();
+    private String _potentialLabel = "";  // // the label associated with this potential
+    private final Set<Connection> _potentialConnections = new LinkedHashSet<Connection>();
     private final Set<ElementNodes> _elementNodeTerminals = new LinkedHashSet<ElementNodes>();
     public final Set<SubCircuitTerminable> _potentialTerminals = new LinkedHashSet<SubCircuitTerminable>();
     private final Set<AbstractBlockInterface> _globalTerminals = new LinkedHashSet<AbstractBlockInterface>();
@@ -44,11 +44,11 @@ public final class PotentialArea {
     Point _upperLeftCorner;
     Point _lowerRightCorner;
 
-    private Collection<? extends Verbindung> getConnections() {
+    private Collection<? extends Connection> getConnections() {
         return Collections.unmodifiableCollection(_potentialConnections);
     }
 
-    public Set<Verbindung> getAllConnections() {
+    public Set<Connection> getAllConnections() {
         return Collections.unmodifiableSet(_potentialConnections);
     }
 
@@ -64,7 +64,7 @@ public final class PotentialArea {
         // use static fabric methods for object construction!
     }
 
-    public static PotentialArea fabricFromConnector(final Verbindung connector) {
+    public static PotentialArea fabricFromConnector(final Connection connector) {
         final PotentialArea returnValue = new PotentialArea();
         returnValue._potentialConnections.add(connector);
         returnValue._pointsSchematic.addAll(connector.getAllPointCoordinates());
@@ -72,7 +72,7 @@ public final class PotentialArea {
         for (TerminalInterface term : connector.getAllTerminals()) {
             returnValue._nodeTerminals.add(term.getPosition());
         }
-        returnValue._isShortConnector = connector instanceof VerbindungShortConnector;
+        returnValue._isShortConnector = connector instanceof ConnectionShortConnector;
         returnValue._potentialLabel = connector.getLabel();
         returnValue._highesPriority = connector.getLabelPriority();
 
@@ -189,14 +189,14 @@ public final class PotentialArea {
 
         for (Point point : _pointsSchematic) {
             if (pot2._nodeTerminals.contains(point)) {
-                doVerbindungChangeType(this, pot2);
+                doConnectionChangeType(this, pot2);
                 return true;
             }
         }
 
         for (Point point2 : pot2._pointsSchematic) {
             if (_nodeTerminals.contains(point2)) {
-                doVerbindungChangeType(this, pot2);
+                doConnectionChangeType(this, pot2);
                 return true;
             }
         }
@@ -207,8 +207,8 @@ public final class PotentialArea {
     }
     static long counter = 0;
 
-    // wenn das aktuelle Potential gleich pot2 ist, werden die beiden zu einem Potential verschmolzen
-    // das neue Potentailgebiet (das nun beide enthaelt), wird zurueckgegeben -->
+    // // if the current potential is equal to pot2, the two will be merged into one potential
+    // // the new potential area (which now contains both) is returned -->
     public PotentialArea mergePotential(final PotentialArea pot2, final boolean doLabelConnectRename) {
 
         final PotentialArea pot1 = this;
@@ -220,7 +220,7 @@ public final class PotentialArea {
             pot2._isShortConnector = true;
         }
 
-        doVerbindungChangeType(pot1, pot2);
+        doConnectionChangeType(pot1, pot2);
 
         final String label1 = pot1.getLabel().trim();
         final String label2 = pot2.getLabel().trim();
@@ -263,7 +263,7 @@ public final class PotentialArea {
                 }
             }
 
-            for (Verbindung verb : _potentialConnections) {
+            for (Connection verb : _potentialConnections) {
                 verb.setLabel(_potentialLabel);
                 verb.setLabelPriority(_highesPriority);
             }
@@ -314,17 +314,17 @@ public final class PotentialArea {
         return false;
     }
 
-    public boolean containsConnector(final Verbindung verb) {
+    public boolean containsConnector(final Connection verb) {
         return _potentialConnections.contains(verb);
     }
 
-    // ein Label ist gerade an einer bestimmten Stelle gesetzt worden -->
-    // dieses Label wird allen (auch den Element-Knoten) aufgezwungen
+    // // a label has just been set at a specific location -->
+    // // this label is imposed on everyone (including the element nodes).
     public void updateLabel(final String label, final Collection<AbstractBlockInterface> element) {
-        // Labels auf Verbindungen werden gesetzt:
+        // // Labels on connections are set:
 
-        // Labels auf Element-Knoten werden gesetzt (aber nur, wenn dort schon ein String eingetragen wurde, dh. '... !="" ...')
-        for (Verbindung verb : _potentialConnections) {
+        // // Labels on element nodes are set (but only if a string has already been entered there, i.e. '... !="" ...')
+        for (Connection verb : _potentialConnections) {
             if (!verb.getLabel().trim().isEmpty()) {
                 verb.setLabel(label);
             }
@@ -342,9 +342,9 @@ public final class PotentialArea {
         this._potentialLabel = label;
     }
 
-    // verschiedene Potentiale sind (eventuell) gerade miteinander verbunden worden -->
-    // die Labels werden nun aktualisiert, ein dominantes Label ist nicht vorgegeben
-    public void aktualisiereLabel(final List<Verbindung> connector, final Collection<AbstractBlockInterface> element) {
+    // // different potentials have (possibly) just been connected to each other -->
+    // // the labels are now updated, a dominant label is not specified
+    public void aktualisiereLabel(final List<Connection> connector, final Collection<AbstractBlockInterface> element) {
         // zuerst schaun wir, ob es Labels auf Element-Knoten des Potentials gibt:
 
         for (ElementNodes elInfo : _elementNodeTerminals) {
@@ -359,19 +359,19 @@ public final class PotentialArea {
 
         adaptLabelDueToConnector();
 
-        // nun setzen wir das soeben ermittelte Potential-Label ueberall wo noetig:        
+        // // now we put the potential label we just determined wherever necessary:
         this.updateLabel(_potentialLabel, element);
     }
 
     private void adaptLabelDueToConnector() {
-        final List<Verbindung> allConnections = new ArrayList<Verbindung>();
+        final List<Connection> allConnections = new ArrayList<Connection>();
         allConnections.addAll(_potentialConnections);
 
         if (_potentialLabel.isEmpty()) {
             // iterate backward:
             for (int i1 = allConnections.size() - 1; i1 >= 0; i1--) {
-                final Verbindung verb = allConnections.get(i1);
-                if (!verb.getLabel().isEmpty() && !(verb instanceof VerbindungShortConnector)) {
+                final Connection verb = allConnections.get(i1);
+                if (!verb.getLabel().isEmpty() && !(verb instanceof ConnectionShortConnector)) {
                     _potentialLabel = verb.getLabel();
                     break;
                 }
@@ -406,7 +406,7 @@ public final class PotentialArea {
             }
         }
 
-        for (Verbindung verb : _potentialConnections) {
+        for (Connection verb : _potentialConnections) {
             verb.getLabelObject().clearPriority();
         }
 
@@ -522,7 +522,7 @@ public final class PotentialArea {
         return true;
     }
 
-    private void doVerbindungChangeType(PotentialArea pot1, PotentialArea pot2) {
+    private void doConnectionChangeType(PotentialArea pot1, PotentialArea pot2) {
         if (pot1._potentialTyp == pot2._potentialTyp) {
             return;
         }
@@ -537,12 +537,12 @@ public final class PotentialArea {
 
     private void setNewPotentialTyp(ConnectorType newPotentialTyp) {
         _potentialTyp = newPotentialTyp;
-        for (Verbindung verb : _potentialConnections) {
+        for (Connection verb : _potentialConnections) {
             verb.changeConnectorType(newPotentialTyp);
         }
     }
 
-    public List<TerminalVerbindung> getTermConnectors() {
+    public List<TerminalConnection> getTermConnectors() {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
@@ -550,7 +550,7 @@ public final class PotentialArea {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    public void addTermConnector(TerminalVerbindung terminalVerbindung) {
+    public void addTermConnector(TerminalConnection terminalConnection) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 

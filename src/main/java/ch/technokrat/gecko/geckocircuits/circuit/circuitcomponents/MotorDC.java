@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTerminal;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.geckocircuits.circuit.CircuitTypeInfo;
@@ -104,11 +104,11 @@ public final class MotorDC extends AbstractMotorDC {
     void setSubCircuit() {        
         super.setSubCircuit();        
         // Le im Erregerstromkreis --> 
-        _Le = (InductorWOCoupling) fabricHiddenSub(CircuitTyp.LK_L, this);
+        _Le = (InductorWOCoupling) fabricHiddenSub(CircuitType.LK_L, this);
         // Re im Erregerstromkreis --> 
-        _Re = (AbstractResistor) fabricHiddenSub(CircuitTyp.LK_R, this);
-        // hochohmiger Widerstand zur Anbindung des Rotorkreises --> 
-        _LargeResistor = (AbstractResistor) fabricHiddenSub(CircuitTyp.LK_R, this);                
+        _Re = (AbstractResistor) fabricHiddenSub(CircuitType.LK_R, this);
+        // // high-resistance resistance for connecting the rotor circuit -->
+        _LargeResistor = (AbstractResistor) fabricHiddenSub(CircuitType.LK_R, this);                
         _Le._inductance.setValueWithoutUndo(_fieldInductance);
         _Re._resistance.setValueWithoutUndo(_fieldResistance);
         _LargeResistor._resistance.setValueWithoutUndo(LARGE_RESISTOR_VALUE);
@@ -155,7 +155,7 @@ public final class MotorDC extends AbstractMotorDC {
     void calculateEMK() {
         double excitationCurrent = _Le.parameter[2];
         _flux = _fieldInductance / _fieldWindings * excitationCurrent;  // Erregerfluss
-        _emk = _machineConstant * _flux * _omegaElectric;  // innere Spannung der Maschine         
+        _emk = _machineConstant * _flux * _omegaElectric;  // // internal tension of the machine
     }
                     
     @Override

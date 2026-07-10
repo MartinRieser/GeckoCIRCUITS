@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.losscalculation;
 
-import ch.technokrat.gecko.geckocircuits.allg.FormatJTextField;
+import ch.technokrat.gecko.geckocircuits.general.FormatJTextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JLabel;

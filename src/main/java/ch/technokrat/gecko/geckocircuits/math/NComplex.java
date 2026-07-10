@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.math;
 
-import ch.technokrat.gecko.geckocircuits.allg.TechFormat;
+import ch.technokrat.gecko.geckocircuits.general.TechFormat;
 
 /** Support for complex numbers in Java */
 public class NComplex {

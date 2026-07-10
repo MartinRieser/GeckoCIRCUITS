@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.newscope;
 
-import ch.technokrat.gecko.geckocircuits.allg.GlobalColors;
+import ch.technokrat.gecko.geckocircuits.general.GlobalColors;
 import ch.technokrat.gecko.geckocircuits.newscope.GraferV4.MausModus;
 import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
@@ -154,7 +154,7 @@ final class ZoomWindow {
         _clickedDiagram = parentComponent;
     }
 
-    void setMausModus(final MausModus mausModus) {
+    void setMouseMode(final MausModus mausModus) {
         if (mausModus == MausModus.ZOOM_WINDOW) {
             _zoomModusEnabled = true;
         } else {
@@ -225,7 +225,7 @@ final class ZoomWindow {
 
     private void setDiagramRange(final GraferV4 grafer) {
 
-        // neue x-Bereichsgrenze fuer alle Diagramme
+        // // new x-range limit for all diagrams
         final Axis zoomedXAxis = _clickedDiagram._xAxis;
 
         // if user just clicked, without draggin a "real" window, just exit

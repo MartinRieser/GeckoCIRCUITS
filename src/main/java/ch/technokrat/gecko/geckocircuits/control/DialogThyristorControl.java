@@ -20,17 +20,17 @@ package ch.technokrat.gecko.geckocircuits.control;
 public class DialogThyristorControl extends javax.swing.JFrame {
 
     private static final long serialVersionUID = 1L;
-    ReglerThyristorControl _thyrControl;
+    ControlThyristorControl _thyrControl;
 
     /** Creates new form DialogThyristorControl */
     @SuppressWarnings("this-escape")
-    public DialogThyristorControl(ReglerThyristorControl reglerThyrControl) {
+    public DialogThyristorControl(ControlThyristorControl controlThyrControl) {
         initComponents();
 
-        _thyrControl = reglerThyrControl;        
-        jSpinnerInitFreq.setValue(reglerThyrControl._initFreq.getValue());
-        jSpinnerPhaseShift.setValue(reglerThyrControl._phaseShift.getValue());
-        jSpinnerGateOn.setValue(reglerThyrControl._onTime.getValue() * 1000.0);
+        _thyrControl = controlThyrControl;        
+        jSpinnerInitFreq.setValue(controlThyrControl._initFreq.getValue());
+        jSpinnerPhaseShift.setValue(controlThyrControl._phaseShift.getValue());
+        jSpinnerGateOn.setValue(controlThyrControl._onTime.getValue() * 1000.0);
     }
 
     /** This method is called from within the constructor to

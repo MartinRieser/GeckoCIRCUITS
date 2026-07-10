@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractBlockInterface;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.geckocircuits.circuit.ComponentDirection;
@@ -76,8 +76,8 @@ public class IdealTransformer extends AbstractCircuitBlockInterface implements H
             arrayIndex(this, 2).
             build();
 
-    private final AbstractVoltageSource primaryVoltageSource = (AbstractVoltageSource) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_U, this);
-    private final AbstractVoltageSource secondaryVoltageSource = (AbstractVoltageSource) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_U, this);
+    private final AbstractVoltageSource primaryVoltageSource = (AbstractVoltageSource) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_U, this);
+    private final AbstractVoltageSource secondaryVoltageSource = (AbstractVoltageSource) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_U, this);
 
     public IdealTransformer() {
         super();
@@ -111,7 +111,7 @@ public class IdealTransformer extends AbstractCircuitBlockInterface implements H
         secondaryVoltageSource._upperLimit.setValueWithoutUndo(Double.MAX_VALUE);
     }
 
-    // Initialisiereung nach INIT&START --> 
+    // // Initialization after INIT&START -->
     @Override
     public void setzeParameterZustandswerteAufNULL() {
         this.initPar();
@@ -307,7 +307,7 @@ public class IdealTransformer extends AbstractCircuitBlockInterface implements H
     @Override
     protected void drawForeground(final Graphics2D graphics) {
         int pkd = (int) (0.4 * dpix);  // Durchmesser des Kopplungspunktes in Pixel
-        double pk2 = -0.48;  // Punkt zur Markierung der eventuellen Kopplung mit anderen Spulen
+        double pk2 = -0.48;  // // Point to mark possible coupling with other coils
         graphics.fillOval((int) (dpix * (+pk2) - pkd / 2), (int) (dpix * (-1.4) - pkd / 2), pkd, pkd);
         graphics.fillOval((int) (dpix * (-pk2) - pkd / 2), (int) (dpix * (+_reversed.getValue() * 1.4) - pkd / 2), pkd, pkd);
     }

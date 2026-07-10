@@ -23,7 +23,7 @@ public final class SignalCalculatorRectangle extends AbstractSignalCalculatorPer
     }
 
     @Override
-    public void berechneYOUT(final double deltaT) {
+    public void calculateYOUT(final double deltaT) {
         //double dphi= Math.PI*(0.5-tastverhaeltnis);  // Korrekturwinkel, damit Rechteck-Signal immer im Ursprung beginnt
         //double fdr= 1/Math.PI*Math.asin(Math.sin(2*Math.PI*frequenz*t -phase +dphi)) +0.5;  // [0...1]
         _dyUP = FOUR * _frequency * deltaT;
@@ -67,7 +67,7 @@ public final class SignalCalculatorRectangle extends AbstractSignalCalculatorPer
             } else {
                 _triangle -= dyDOWNx;
             }
-            if (_amplitudeAC != 0) {  // bei t==0 kann es hier Verwirrung geben!
+            if (_amplitudeAC != 0) {  // // at t==0 there can be confusion here!
                 if (_triangle >= 1) {
                     _triangle = 1;
                     _aufsteigend = false;

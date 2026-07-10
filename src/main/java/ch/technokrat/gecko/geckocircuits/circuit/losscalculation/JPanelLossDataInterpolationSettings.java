@@ -13,8 +13,8 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.losscalculation;
 
-import ch.technokrat.gecko.geckocircuits.allg.FormatJTextField;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalColors;
+import ch.technokrat.gecko.geckocircuits.general.FormatJTextField;
+import ch.technokrat.gecko.geckocircuits.general.GlobalColors;
 import ch.technokrat.gecko.i18n.GuiFabric;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.BorderLayout;
@@ -31,7 +31,7 @@ class JPanelLossDataInterpolationSettings extends JPanel {
 
     private static final long serialVersionUID = 1L;
     private final JLabel _jlUTest = new JLabel("    U =");
-    private final DialogVerlusteDetail _parentDialog;
+    private final DialogLossesDetail _parentDialog;
     private final FormatJTextField _jtfTemperature = new FormatJTextField(100);
     private final JPanel _jpTt = new JPanel();
     private final FormatJTextField _jtfVoltage = new FormatJTextField(300);
@@ -48,7 +48,7 @@ class JPanelLossDataInterpolationSettings extends JPanel {
         }
     };
 
-    JPanelLossDataInterpolationSettings(final DialogVerlusteDetail parentDialog) {
+    JPanelLossDataInterpolationSettings(final DialogLossesDetail parentDialog) {
         super();
         _parentDialog = parentDialog;
 

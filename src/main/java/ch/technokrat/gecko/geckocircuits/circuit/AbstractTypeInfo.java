@@ -14,7 +14,7 @@
 
 package ch.technokrat.gecko.geckocircuits.circuit;
 
-import ch.technokrat.gecko.geckocircuits.allg.AbstractComponentTyp;
+import ch.technokrat.gecko.geckocircuits.general.AbstractComponentType;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.AbstractCircuitBlockInterface;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.util.HashMap;
@@ -24,12 +24,12 @@ import java.util.Set;
 
 public abstract class AbstractTypeInfo {        
     
-    static Map<Class<? extends AbstractBlockInterface>, AbstractComponentTyp> _classEnumMap = new HashMap<Class<? extends AbstractBlockInterface>, AbstractComponentTyp>();
+    static Map<Class<? extends AbstractBlockInterface>, AbstractComponentType> _classEnumMap = new HashMap<Class<? extends AbstractBlockInterface>, AbstractComponentType>();
     static Map<Class<? extends AbstractBlockInterface>, AbstractTypeInfo> _classTypeMap = new HashMap<Class<? extends AbstractBlockInterface>, AbstractTypeInfo>();
     static Map<String, AbstractTypeInfo> _stringTypeMap = new HashMap<String, AbstractTypeInfo>();
-    static Map<AbstractComponentTyp, AbstractTypeInfo> _enumTypeMap = new HashMap<AbstractComponentTyp, AbstractTypeInfo>();    
+    static Map<AbstractComponentType, AbstractTypeInfo> _enumTypeMap = new HashMap<AbstractComponentType, AbstractTypeInfo>();    
     
-    public static final Map<String, AbstractComponentTyp> _exportImportEnumMap = new HashMap<String, AbstractComponentTyp>();
+    public static final Map<String, AbstractComponentType> _exportImportEnumMap = new HashMap<String, AbstractComponentType>();
     
     static Set<Class<? extends AbstractBlockInterface>> _uniqueClassSet = new HashSet<Class<? extends AbstractBlockInterface>>();
     static Set<String> _uniqueTestSet = new HashSet<String>() {
@@ -39,10 +39,10 @@ public abstract class AbstractTypeInfo {
             return super.add(insertTest); //To change body of generated methods, choose Tools | Templates.
         }
     };
-    static Set<AbstractComponentTyp> _allRegisteredComponentEnums = new HashSet<AbstractComponentTyp>();
+    static Set<AbstractComponentType> _allRegisteredComponentEnums = new HashSet<AbstractComponentType>();
     static Set<AbstractTypeInfo> _allRegisteredTypeInfos = new HashSet<AbstractTypeInfo>();            
 
-    static AbstractTypeInfo getTypeFromEnum(final AbstractComponentTyp _typElement) {
+    static AbstractTypeInfo getTypeFromEnum(final AbstractComponentType _typElement) {
         return _enumTypeMap.get(_typElement);
     }
 
@@ -59,7 +59,7 @@ public abstract class AbstractTypeInfo {
     public final I18nKeys _typeDescriptionVerbose;    
     public final String _fixedIDString;
     public final Class<? extends AbstractBlockInterface> _typeClass;
-    public AbstractComponentTyp _parentType;
+    public AbstractComponentType _parentType;
 
     @SuppressWarnings("this-escape")
     public AbstractTypeInfo(final Class<? extends AbstractBlockInterface> typeClass, final String idString, final I18nKeys typeDescription, final I18nKeys typeDescriptionVerbose) {
@@ -91,11 +91,11 @@ public abstract class AbstractTypeInfo {
         return _classTypeMap.get(aClass);
     }
     
-    public static AbstractComponentTyp getTypeEnumFromClass(Class<? extends AbstractBlockInterface> aClass) {
+    public static AbstractComponentType getTypeEnumFromClass(Class<? extends AbstractBlockInterface> aClass) {
         return _classEnumMap.get(aClass);
     }
             
-    public void addParentEnum(final AbstractComponentTyp parentType) {
+    public void addParentEnum(final AbstractComponentType parentType) {
         assert !_allRegisteredComponentEnums.contains(parentType);                
         _allRegisteredComponentEnums.add(parentType);
         _parentType = parentType;
@@ -121,7 +121,7 @@ public abstract class AbstractTypeInfo {
     public abstract String getExportImportCharacters();
     public abstract String getSaveIdentifier(); 
     
-    public static final AbstractBlockInterface fabricFromFile(final AbstractComponentTyp typ, TokenMap tokenMap) {        
+    public static final AbstractBlockInterface fabricFromFile(final AbstractComponentType typ, TokenMap tokenMap) {        
         final AbstractBlockInterface returnValue = typ.getTypeInfo().fabric();
         returnValue.importASCII(tokenMap);        
         return returnValue;
@@ -134,7 +134,7 @@ public abstract class AbstractTypeInfo {
         return returnValue;
     }
     
-    public static AbstractCircuitBlockInterface fabricHiddenSub(final AbstractComponentTyp typ,
+    public static AbstractCircuitBlockInterface fabricHiddenSub(final AbstractComponentType typ,
             final AbstractCircuitSheetComponent parent) {
         final AbstractCircuitBlockInterface returnValue = (AbstractCircuitBlockInterface) typ.getTypeInfo().fabric();
         returnValue.setParent(parent);

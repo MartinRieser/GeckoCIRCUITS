@@ -13,8 +13,8 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.circuit.losscalculation.LeitverlusteMesskurve;
-import ch.technokrat.gecko.geckocircuits.circuit.losscalculation.VerlustBerechnungDetailed;
+import ch.technokrat.gecko.geckocircuits.circuit.losscalculation.ConductionLossMeasurementCurve;
+import ch.technokrat.gecko.geckocircuits.circuit.losscalculation.LossCalculationDetailed;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,9 +28,9 @@ public class DiodeCharacteristic {
     public DiodeSegment activeSegment;
     int activeIndex = 0;
     
-    DiodeCharacteristic(VerlustBerechnungDetailed lossCalculationDetailed) {
+    DiodeCharacteristic(LossCalculationDetailed lossCalculationDetailed) {
         
-        LeitverlusteMesskurve curve = lossCalculationDetailed._messkurvePvCOND.get(0);
+        ConductionLossMeasurementCurve curve = lossCalculationDetailed._messkurvePvCOND.get(0);
         double[][] data = curve.data;
         
         final List<DiodeSegment> diodeSegments = new ArrayList<DiodeSegment>();

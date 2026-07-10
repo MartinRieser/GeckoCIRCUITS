@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.newscope;
 
-import ch.technokrat.gecko.geckocircuits.allg.TechFormat;
+import ch.technokrat.gecko.geckocircuits.general.TechFormat;
 import java.awt.Graphics2D;
 
 /**

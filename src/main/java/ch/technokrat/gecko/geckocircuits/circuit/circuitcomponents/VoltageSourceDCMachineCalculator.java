@@ -64,7 +64,7 @@ public class VoltageSourceDCMachineCalculator extends VoltageSourceCalculator im
     }
 
     public void doPostProcess(double dt, double time) {
-        // aus dem internen Subcircuit -->
+        // // from the internal subcircuit -->
         double ia = - _la._current;  // Ankerstrom
         double ie = _le._current;  // Erregerstrom
 
@@ -75,8 +75,8 @@ public class VoltageSourceDCMachineCalculator extends VoltageSourceCalculator im
 
         drehzahl = (60.0 / (2 * Math.PI)) * omega;
         
-        emk = _cM * phi * omega;  // innere Spannung der Maschine
-        _timeFunction.setValue(emk);  // DC-Wert der internen WSpg.Quelle
+        emk = _cM * phi * omega;  // // internal tension of the machine
+        _timeFunction.setValue(emk);  // // DC value of the internal voltage source
         //if (t==0) System.out.println(t+"   "+dt+"   "+ia+"   "+ie+"   "+momentLast+"   "+phi+"   "+momentElektr+"   "+omega+"   "+drehzahl+"   "+emk+"   omegaALT="+omegaALT+"   J="+J+"   Fr="+Fr);
         omegaALT = omega;
     }

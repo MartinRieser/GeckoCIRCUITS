@@ -13,8 +13,8 @@
  */
 package ch.technokrat.gecko.geckocircuits.scope;
 
-import ch.technokrat.gecko.geckocircuits.allg.GlobalColors;
-import ch.technokrat.gecko.geckocircuits.allg.TechFormat;
+import ch.technokrat.gecko.geckocircuits.general.GlobalColors;
+import ch.technokrat.gecko.geckocircuits.general.TechFormat;
 import ch.technokrat.gecko.geckocircuits.datacontainer.AbstractDataContainer;
 import ch.technokrat.gecko.geckocircuits.newscope.Cispr16Fft;
 import java.awt.Color;
@@ -43,7 +43,7 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
     //-----------------------
     private boolean xSchieberAktiv = false;
     private int xSchieberPix;
-    private double[] xSchieberWert = new double[]{-1, -1};  // einem einzelnen Pixelpunkt sind eventuell mehrere Werte zugeordnet
+    private double[] xSchieberWert = new double[]{-1, -1};  // // a single pixel point may have multiple values ​​assigned to it
     private double[] yRefWert = new double[]{-1, -1}, yNeuWert = new double[]{-1, -1};
     private TechFormat cf = new TechFormat();
     //-----------------------
@@ -57,7 +57,7 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
         X0yi = hi + 30;
         Y0xi = X0xi;
         Y0yi = X0yi;
-        this.setPreferredSize(new Dimension(bi + 2 * X0xi, X0yi + (X0yi - hi)));  // fuer pack() im uebergeordneten JFrame
+        this.setPreferredSize(new Dimension(bi + 2 * X0xi, X0yi + (X0yi - hi)));  // // for pack() in the parent JFrame
         // Bereichsgrenzen fuers Maus-Klicken:
         xGrfMIN = new int[]{0};
         xGrfMAX = new int[]{this.getWidth()};
@@ -71,7 +71,7 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
         _bn = bn;
         this.f1 = f1;
         //=======================================
-        // Kurve 'aufbereiten'  --> Zurueckverwandeln der Fourier-Daten in eine analoge Kurve
+        // // 'Process' curve --> Convert the Fourier data back into an analog curve
         //
         int lg = 0;
 
@@ -139,7 +139,7 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
         
     }
 
-    // Neuskalierung des Diagramms, wenn die Fenster-Abmessungen geaendert werden -->
+    // // Rescale the chart when the window dimensions are changed -->
     public void resize() {
         //---------------------------------------
         bi = this.getWidth() - 2 * X0xi;
@@ -148,9 +148,9 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
         X0yi = hi + 30;
         Y0xi = X0xi;
         Y0yi = X0yi;
-        this.setzeAchsenBreiteHoeheX0Y0(new int[]{bi}, new int[]{hi}, new int[]{X0xi}, new int[]{X0yi}, new int[]{Y0xi}, new int[]{Y0yi});
+        this.setAxisWidthHeightX0Y0(new int[]{bi}, new int[]{hi}, new int[]{X0xi}, new int[]{X0yi}, new int[]{Y0xi}, new int[]{Y0yi});
         //---------------------------------------
-        // Bereichsgrenzen fuers Maus-Klicken --> wird hier fuer 2 Diagramme definiert
+        // // Area limits for mouse clicking --> is defined here for 2 diagrams
         xGrfMIN = new int[]{0};
         xGrfMAX = new int[]{this.getWidth()};
         yGrfMIN = new int[]{0};
@@ -158,7 +158,7 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
         //---------------------------------------
     }
 
-    public void setMausModus(int mausModus) {
+    public void setMouseMode(int mausModus) {
         this.mausModus = mausModus;
         //---------
         if (mausModus == GraferImplementation.MAUSMODUS_NIX) {
@@ -189,12 +189,12 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
         } else if (mausModus == GraferImplementation.MAUSMODUS_WERTANZEIGE_SCHIEBER) {
             //------------------------------------
             xSchieberAktiv = true;
-            xSchieberPix = X0xi;  // x-Schieber wird an den Anfang gesetzt
+            xSchieberPix = X0xi;  // // x slider is placed at the beginning
         }
         //---------
     }
 
-    // wird ueberschrieben, um Text dazuschreiben zu koennen -->
+    // // will be overwritten in order to be able to add text -->
     protected void zeichne(Graphics g) {
         if ((mausModus == GraferImplementation.MAUSMODUS_ZOOM_FENSTER) && (imDragModus)) {
             g.setColor(GlobalColors.farbeZoomRechteck);
@@ -227,8 +227,8 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
     public void setzeAchsen() {
         //-------------------------------------
         this.setzeAchsenAnzahl(1, 1);
-        this.setzeAchsenBreiteHoeheX0Y0(new int[]{bi}, new int[]{hi}, new int[]{X0xi}, new int[]{X0yi}, new int[]{Y0xi}, new int[]{Y0yi});
-        this.setzeAchsenFarbe(new Color[]{Color.black}, new Color[]{Color.black});
+        this.setAxisWidthHeightX0Y0(new int[]{bi}, new int[]{hi}, new int[]{X0xi}, new int[]{X0yi}, new int[]{Y0xi}, new int[]{Y0yi});
+        this.setAxisColor(new Color[]{Color.black}, new Color[]{Color.black});
         this.setzeAchsenTyp(new int[]{ACHSE_LIN}, new int[]{ACHSE_LIN});
         this.setzeAchsenLinienStil(new int[]{SOLID_PLAIN}, new int[]{SOLID_PLAIN});
         this.setzeAchsenBeschriftungen(new String[]{""}, new String[]{""});  // braucht es, damit kein NullPointer-Error
@@ -238,9 +238,9 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
         this.showGridLines(new int[][]{{0, 0}}, new int[][]{{0, 0}}, new int[][]{{0, 0}}, new int[][]{{0, 0}});
         this.setzeGridFarben(new Color[]{Color.lightGray}, new Color[]{Color.lightGray}, new Color[]{Color.lightGray}, new Color[]{Color.lightGray});
         this.setzeTickAnzMinor(new int[]{2}, new int[]{2});
-        this.setzeTickLaenge(new int[]{4}, new int[]{4}, new int[]{0}, new int[]{0});
+        this.setTickLength(new int[]{4}, new int[]{4}, new int[]{0}, new int[]{0});
         this.setzeTickAusrichtung(new boolean[]{true}, new boolean[]{true});
-        this.setzeTickLabelAnzeige(new boolean[]{true}, new boolean[]{true}, new boolean[]{false}, new boolean[]{false});
+        this.setTickLabelVisible(new boolean[]{true}, new boolean[]{true}, new boolean[]{false}, new boolean[]{false});
         this.setzeTickLabelPosition(new int[]{20}, new int[]{16});
         this.setzeTickLabelFont(new Font[]{new Font("Arial", Font.PLAIN, 12)}, new Font[]{new Font("Arial", Font.PLAIN, 12)});
         //=========================================
@@ -273,18 +273,18 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
 
     protected void setzeKurven() {
         //=========================================
-        // anhand der Worksheet-Daten zu setzen -->
+        // // to set based on the worksheet data -->
         //-------------------------------------
         this.setzeKurvenAnzahl(2);
         this.setzeZugehoerigkeitKurveAchsen(new int[]{0, 0}, new int[]{0, 0});
         this.setzeKurveIndexWorksheetKolonnenXY(new int[][]{{0, 1}, {0, 2}});
-        this.setzeKurvePunktSymbolAnzeigen(
+        this.setCurvePointSymbolVisible(
                 new boolean[]{false, false}, new int[]{20, 20}, new int[]{SYBM_CIRCLE, SYBM_RECT_FILLED}, new Color[]{Color.black, Color.gray});
         this.setzeKurveClipping(
                 new double[]{xNeu[0], xNeu[0]}, new double[]{xNeu[xNeu.length - 1], xNeu[xNeu.length - 1]}, new double[]{0, 0}, new double[]{1, 1},
                 new int[]{CLIP_NO, CLIP_NO}, new int[]{CLIP_NO, CLIP_NO}, new int[]{CLIP_NO, CLIP_NO}, new int[]{CLIP_NO, CLIP_NO});
         this.setzeKurveLinienstil(new int[]{SOLID_PLAIN, SOLID_PLAIN});
-        this.setzeKurveFarbe(new Color[]{Color.blue, Color.darkGray});
+        this.setCurveColor(new Color[]{Color.blue, Color.darkGray});
         //-------------------------------------
     }
 
@@ -319,7 +319,7 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
             imDragModus = false;
             x2Zoom = me.getX();
             y2Zoom = me.getY();
-            // Umrechnung der Zoom-Koordinaten von Pixelpunkten in Werte des Zomm-definierenden Rechtecks -->
+            // // Converting the zoom coordinates of pixel points into values ​​of the zoom-defining rectangle -->
             double[] xy1 = getValueFromPixel(x1Zoom, y1Zoom);
             double[] xy2 = getValueFromPixel(x2Zoom, y2Zoom);
             if (xy1[0] > xy2[0]) {  // flip x-values
@@ -378,7 +378,7 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
                 xSchieberPix = X0xi + bi;
             }
             xSchieberWert[0] = getValueFromPixel(xSchieberPix, 0)[0]; 
-            // x-Wert der Schieber-Position
+            // // x value of the slider position
             for (int i1 = 1; i1 < xNeu.length; i1++) {
                 if ((xNeu[i1 - 1] <= xSchieberWert[0]) && (xSchieberWert[0] <= xNeu[i1])) {
                     yNeuWert[0] = yNeu[i1];
@@ -392,7 +392,7 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
     }
     //================================================
 
-    // Wenn mit der Maus in das Pixel-Feld geklickt wird -->
+    // // When the mouse is clicked into the pixel field -->
     private double[] getValueFromPixel(int xPix, int yPix) {
         //-------------------
         double achseXmin_ = -1, achseYmin_ = -1;
@@ -437,7 +437,7 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
         //-------------------
     }
 
-    // Ermittle (x/y)-Wert in Pixel zu einem Wertepaar -->
+    // // Determine (x/y) value in pixels to a pair of values ​​-->
     private int[] getPixelFromValue(double xWert, double yWert, int index_xAchse, int index_yAchse) {
         //-------------------
         double achseXmin_ = achseXmin[index_xAchse];

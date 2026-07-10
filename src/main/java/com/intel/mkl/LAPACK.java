@@ -17,9 +17,9 @@ import java.nio.FloatBuffer;
  * straightforward approach similar to CBLAS wrapper.
  *
  * <p>To make interface more suitable some modification of original
- * LAPACK subroutines has been performed. This is mainly removing
+ * LAPACK subroutines have been performed. This is mainly removing
  * work arrays and replacing chars arguments with integers ones,
- * similar to CBLAS interface to BLAS subroutines. Also "info" is
+ * similar to CBLAS interface to BLAS subroutines. So “info” is
  * returned as function value. For this purposes one more layer
  * has been created, see files clapack.h and clapack.c.
  *
@@ -30,7 +30,7 @@ import java.nio.FloatBuffer;
  *
  * <p>A complex number is stored as 2-elements array: real part
  * of the number as the 1st element of the array, and imaginary
- * part as the 2nd.
+ *part as the 2nd.
  *
  * <p>A complex data series of the length N is stored as a real
  * series of the length 2*N. The n-th complex element is stored
@@ -38,8 +38,7 @@ import java.nio.FloatBuffer;
  * indexed for real part and the odd indexed for imaginary part.
  *
  * <p>For more details, please see the MKL User's Guide.
- *
- */
+ **/
 public final class LAPACK {
     
     /** Instantiation is disabled. */
@@ -363,8 +362,7 @@ public final class LAPACK {
      * Wrapper for MKL function ssyev().
      *
      * <p>Unlike the original LAPACK subroutine argument jobz is integer type.
-     * Also original LAPACK arguments work and lwork are skipped.
-     */
+     * Also original LAPACK arguments work and lwork are skipped.*/
     public static int ssyev(int jobz, int uplo, int n, float[] a, int lda, float[] w) {
         return LAPACKNative.ssyev(jobz, uplo, n, a, lda, w);
     }
@@ -373,8 +371,7 @@ public final class LAPACK {
      * Wrapper for MKL function dsyev().
      *
      * <p>Unlike the original LAPACK subroutine argument jobz is integer type.
-     * Also original LAPACK arguments work and lwork are skipped.
-     */
+     * Also original LAPACK arguments work and lwork are skipped.*/
     public static int dsyev(int jobz, int uplo, int n, double[] a, int lda, double[] w) {
         return LAPACKNative.dsyev(jobz, uplo, n, a, lda, w);
     }
@@ -450,8 +447,7 @@ public final class LAPACK {
      * Wrapper for MKL function sgeev().
      *
      * <p>Unlike the original LAPACK subroutine argument jobvl and jobvr are integer type.
-     * Also original LAPACK arguments work and lwork are skipped.
-     */
+     * Also original LAPACK arguments work and lwork are skipped.*/
     public static int sgeev(int jobvl, int jobvr, int n, float[] a, int lda, float[] wr, float[] wi, float[] vl, int ldvl, float[] vr, int ldvr) {
         return LAPACKNative.sgeev(jobvl, jobvr, n, a, lda, wr, wi, vl, ldvl, vr, ldvr);
     }
@@ -460,8 +456,7 @@ public final class LAPACK {
      * Wrapper for MKL function dgeev().
      *
      * <p>Unlike the original LAPACK subroutine argument jobvl and jobvr are integer type.
-     * Also original LAPACK arguments work and lwork are skipped.
-     */
+     * Also original LAPACK arguments work and lwork are skipped.*/
     public static int dgeev(int jobvl, int jobvr, int n, double[] a, int lda, double[] wr, double[] wi, double[] vl, int ldvl, double[] vr, int ldvr) {
         return LAPACKNative.dgeev(jobvl, jobvr, n, a, lda, wr, wi, vl, ldvl, vr, ldvr);
     }
@@ -470,8 +465,7 @@ public final class LAPACK {
      * Wrapper for MKL function cgeev().
      *
      * <p>Unlike the original LAPACK subroutine argument jobvl and jobvr are integer type.
-     * Also original LAPACK arguments work and lwork are skipped.
-     */
+     * Also original LAPACK arguments work and lwork are skipped.*/
     public static int cgeev(int jobvl, int jobvr, int n, float[] a, int lda, float[] w, float[] vl, int ldvl, float[] vr, int ldvr) {
         return LAPACKNative.cgeev(jobvl, jobvr, n, a, lda, w, vl, ldvl, vr, ldvr);
     }
@@ -480,8 +474,7 @@ public final class LAPACK {
      * Wrapper for MKL function zgeev().
      *
      * <p>Unlike the original LAPACK subroutine argument jobvl and jobvr are integer type.
-     * Also original LAPACK arguments work and lwork are skipped.
-     */
+     * Also original LAPACK arguments work and lwork are skipped.*/
     public static int zgeev(int jobvl, int jobvr, int n, double[] a, int lda, double[] w, double[] vl, int ldvl, double[] vr, int ldvr) {
         return LAPACKNative.zgeev(jobvl, jobvr, n, a, lda, w, vl, ldvl, vr, ldvr);
     }
@@ -493,8 +486,7 @@ public final class LAPACK {
      * Also original LAPACK arguments work and lwork are skipped.
      * Additional argument sd contains the unconverged
      * superdiagonal elements of an upper bidiagonal matrix B
-     * whose diagonal is in s if result (info) > 0 (i.e work(2:min(m,n)))
-     */
+     * whose diagonal is in s if result (info) > 0 (i.e work(2:min(m,n)))*/
     public static int sgesvd(int jobu, int jobvt, int m, int n, float[] a, int lda, float[] s, float[] u, int ldu, float[] vt, int ldvt, float[] sd) {
         return LAPACKNative.sgesvd(jobu, jobvt, m, n, a, lda, s, u, ldu, vt, ldvt, sd);
     }
@@ -506,8 +498,7 @@ public final class LAPACK {
      * Also original LAPACK arguments work and lwork are skipped.
      * Additional argument sd contains the unconverged
      * superdiagonal elements of an upper bidiagonal matrix B
-     * whose diagonal is in s if result (info) > 0 (i.e work(2:min(m,n)))
-     */
+     * whose diagonal is in s if result (info) > 0 (i.e work(2:min(m,n)))*/
     public static int dgesvd(int jobu, int jobvt, int m, int n, double[] a, int lda, double[] s, double[] u, int ldu, double[] vt, int ldvt, double[] sd) {
         return LAPACKNative.dgesvd(jobu, jobvt, m, n, a, lda, s, u, ldu, vt, ldvt, sd);
     }
@@ -519,8 +510,7 @@ public final class LAPACK {
      * Also original LAPACK arguments work, rwork and lwork are skipped.
      * Additional argument sd contains the unconverged
      * superdiagonal elements of an upper bidiagonal matrix B
-     * whose diagonal is in s if result (info) > 0 (i.e rwork(1:min(m,n)-1))
-     */
+     * whose diagonal is in s if result (info) > 0 (i.e rwork(1:min(m,n)-1))*/
     public static int cgesvd(int jobu, int jobvt, int m, int n, float[] a, int lda, float[] s, float[] u, int ldu, float[] vt, int ldvt, float[] sd) {
         return LAPACKNative.cgesvd(jobu, jobvt, m, n, a, lda, s, u, ldu, vt, ldvt, sd);
     }
@@ -532,8 +522,7 @@ public final class LAPACK {
      * Also original LAPACK arguments work, rwork and lwork are skipped.
      * Additional argument sd contains the unconverged
      * superdiagonal elements of an upper bidiagonal matrix B
-     * whose diagonal is in s if result (info) > 0 (i.e rwork(1:min(m,n)-1))
-     */
+     * whose diagonal is in s if result (info) > 0 (i.e rwork(1:min(m,n)-1))*/
     public static int zgesvd(int jobu, int jobvt, int m, int n, double[] a, int lda, double[] s, double[] u, int ldu, double[] vt, int ldvt, double[] sd) {
         return LAPACKNative.zgesvd(jobu, jobvt, m, n, a, lda, s, u, ldu, vt, ldvt, sd);
     }

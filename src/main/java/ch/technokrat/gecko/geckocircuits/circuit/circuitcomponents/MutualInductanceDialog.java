@@ -13,8 +13,8 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.GlobalColors;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFonts;
+import ch.technokrat.gecko.geckocircuits.general.GlobalColors;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFonts;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractBlockInterface;
 import ch.technokrat.gecko.geckocircuits.circuit.CircuitSheet;
 import ch.technokrat.gecko.geckocircuits.circuit.ComponentCoupable;
@@ -152,7 +152,7 @@ class MutualInductanceDialog extends DialogElementLK<MutualInductance> {
     }
     
 
-    // eine kleine Auflistung der Trafo-Gleichungen im Dialogfenster der magnetischen Kopplung
+    // // a small list of the transformer equations in the magnetic coupling dialog box
     protected JComponent schreibeFormeln_M() {
         final int bG = 230, hG = 180, x1 = 10, y1 = 30, y2 = y1 + 30, y3 = y2 + 30, y4 = y3 + 35, y5 = y4 + 30;
         JComponent comp = new JComponent() {

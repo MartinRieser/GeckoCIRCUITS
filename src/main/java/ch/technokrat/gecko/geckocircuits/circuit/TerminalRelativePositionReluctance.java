@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit;
 
-import ch.technokrat.gecko.geckocircuits.allg.GlobalColors;
+import ch.technokrat.gecko.geckocircuits.general.GlobalColors;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;

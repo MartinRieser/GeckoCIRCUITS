@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractBlockInterface;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTerminal;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
@@ -103,7 +103,7 @@ public final class IGBT extends AbstractVoltageDropSwitch implements HiddenSubCi
     @Override
     public Collection<AbstractBlockInterface> getHiddenSubCircuitElements() {
         if (_isSatCurEnabled.getValue()) {
-            Diode saturationDiode = (Diode) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_D, this);
+            Diode saturationDiode = (Diode) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_D, this);
             double rONSmall = _onResistance.getValue();
             double uForwardSmall = -_onResistance.getValue() * _saturationCurrent.getValue();
 
@@ -122,7 +122,7 @@ public final class IGBT extends AbstractVoltageDropSwitch implements HiddenSubCi
                 this.YOUT.add(outTerminal);
             }
 
-            AbstractCurrentSource saturationCurrentSource = (AbstractCurrentSource) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_I, this);
+            AbstractCurrentSource saturationCurrentSource = (AbstractCurrentSource) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_I, this);
             // TypQuelle - iNmax - frequ - offset - phase - tastverh. - Strom - Spannung    -->
             double[] currentParameter = new double[]{SourceType.QUELLE_DC_NEW, _saturationCurrent.getValue(), 0, 0, 0, 0, 0, 0, -1, -1, 0, 0};
             saturationCurrentSource.setParameter(currentParameter);

@@ -14,7 +14,7 @@
 package ch.technokrat.gecko.geckocircuits.control;
 
 import ch.technokrat.gecko.GeckoSim;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFilePathes;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFilePathes;
 import ch.technokrat.gecko.geckocircuits.circuit.DataTablePanel;
 import ch.technokrat.gecko.geckocircuits.datacontainer.ContainerStatus;
 import ch.technokrat.gecko.geckocircuits.datacontainer.DataContainerSimple;

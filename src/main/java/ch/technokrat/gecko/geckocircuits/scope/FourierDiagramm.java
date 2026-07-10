@@ -14,8 +14,8 @@
 
 package ch.technokrat.gecko.geckocircuits.scope;
 
-import ch.technokrat.gecko.geckocircuits.allg.GlobalColors;
-import ch.technokrat.gecko.geckocircuits.allg.TechFormat;
+import ch.technokrat.gecko.geckocircuits.general.GlobalColors;
+import ch.technokrat.gecko.geckocircuits.general.TechFormat;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -182,7 +182,7 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
         X0yi = hi + 30;
         Y0xi = X0xi;
         Y0yi = X0yi;
-        this.setzeAchsenBreiteHoeheX0Y0(new int[]{bi}, new int[]{hi}, new int[]{X0xi}, new int[]{X0yi}, new int[]{Y0xi}, new int[]{Y0yi});
+        this.setAxisWidthHeightX0Y0(new int[]{bi}, new int[]{hi}, new int[]{X0xi}, new int[]{X0yi}, new int[]{Y0xi}, new int[]{Y0yi});
         //---------------------------------------
         // Set boundary limits for mouse clicking - defined here for 2 graphs
         xGrfMIN = new int[]{0};
@@ -205,7 +205,7 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
      *
      * @param mausModus The new mouse mode from GraferImplementation constants
      */
-    public void setMausModus(int mausModus) {
+    public void setMouseMode(int mausModus) {
         this.mausModus = mausModus;
         //---------
         if (mausModus == GraferImplementation.MAUSMODUS_NIX) {
@@ -281,8 +281,8 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
     public void setzeAchsen() {
         //-------------------------------------
         this.setzeAchsenAnzahl(1, 1);
-        this.setzeAchsenBreiteHoeheX0Y0(new int[]{bi}, new int[]{hi}, new int[]{X0xi}, new int[]{X0yi}, new int[]{Y0xi}, new int[]{Y0yi});
-        this.setzeAchsenFarbe(new Color[]{Color.black}, new Color[]{Color.black});
+        this.setAxisWidthHeightX0Y0(new int[]{bi}, new int[]{hi}, new int[]{X0xi}, new int[]{X0yi}, new int[]{Y0xi}, new int[]{Y0yi});
+        this.setAxisColor(new Color[]{Color.black}, new Color[]{Color.black});
         this.setzeAchsenTyp(new int[]{ACHSE_LIN}, new int[]{ACHSE_LIN});
         this.setzeAchsenLinienStil(new int[]{SOLID_PLAIN}, new int[]{SOLID_PLAIN});
         this.setzeAchsenBeschriftungen(new String[]{""}, new String[]{""});  // Needed to avoid NullPointerException
@@ -292,9 +292,9 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
         this.showGridLines(new int[][]{{0, 0}}, new int[][]{{0, 0}}, new int[][]{{0, 0}}, new int[][]{{0, 0}});
         this.setzeGridFarben(new Color[]{Color.lightGray}, new Color[]{Color.lightGray}, new Color[]{Color.lightGray}, new Color[]{Color.lightGray});
         this.setzeTickAnzMinor(new int[]{2}, new int[]{2});
-        this.setzeTickLaenge(new int[]{4}, new int[]{4}, new int[]{0}, new int[]{0});
+        this.setTickLength(new int[]{4}, new int[]{4}, new int[]{0}, new int[]{0});
         this.setzeTickAusrichtung(new boolean[]{true}, new boolean[]{true});
-        this.setzeTickLabelAnzeige(new boolean[]{true}, new boolean[]{true}, new boolean[]{false}, new boolean[]{false});
+        this.setTickLabelVisible(new boolean[]{true}, new boolean[]{true}, new boolean[]{false}, new boolean[]{false});
         this.setzeTickLabelPosition(new int[]{20}, new int[]{16});
         this.setzeTickLabelFont(new Font[]{new Font("Arial", Font.PLAIN, 12)}, new Font[]{new Font("Arial", Font.PLAIN, 12)});
         //=========================================
@@ -330,12 +330,12 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
         this.setzeKurvenAnzahl(1);
         this.setzeZugehoerigkeitKurveAchsen(new int[]{0}, new int[]{0});
         this.setzeKurveIndexWorksheetKolonnenXY(new int[][]{{0, 1}});
-        this.setzeKurvePunktSymbolAnzeigen(new boolean[]{false}, new int[]{1}, new int[]{SYBM_CIRCLE}, new Color[]{Color.black});
+        this.setCurvePointSymbolVisible(new boolean[]{false}, new int[]{1}, new int[]{SYBM_CIRCLE}, new Color[]{Color.black});
         this.setzeKurveClipping(
                 new double[]{0}, new double[]{1}, new double[]{0}, new double[]{1},
                 new int[]{CLIP_NO}, new int[]{CLIP_NO}, new int[]{CLIP_NO}, new int[]{CLIP_NO});
         this.setzeKurveLinienstil(new int[]{SOLID_PLAIN});
-        this.setzeKurveFarbe(new Color[]{Color.blue});
+        this.setCurveColor(new Color[]{Color.blue});
         //-------------------------------------
     }
 
@@ -360,7 +360,7 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
         if (mausModus == GraferImplementation.MAUSMODUS_NIX) {
             // Do nothing
         } else if (mausModus == GraferImplementation.MAUSMODUS_ZOOM_AUTOFIT) {
-            // Handled in setMausModus
+            // Handled in setMouseMode
         } else if (mausModus == GraferImplementation.MAUSMODUS_ZOOM_FENSTER) {
             x1Zoom = mouseEvent.getX();
             y1Zoom = mouseEvent.getY();

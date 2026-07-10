@@ -13,12 +13,12 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit;
 
-import ch.technokrat.gecko.geckocircuits.allg.MainWindow;
+import ch.technokrat.gecko.geckocircuits.general.MainWindow;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.SubcircuitBlock;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalColors;
+import ch.technokrat.gecko.geckocircuits.general.GlobalColors;
 import ch.technokrat.gecko.geckocircuits.circuit.SchematicEditor2.MouseMoveMode;
 import ch.technokrat.gecko.geckocircuits.control.Point;
-import ch.technokrat.gecko.geckocircuits.control.RegelBlock;
+import ch.technokrat.gecko.geckocircuits.control.ControlBlock;
 import ch.technokrat.gecko.geckocircuits.control.TextFieldBlock;
 import ch.technokrat.gecko.geckocircuits.newscope.GeckoGraphics2D;
 import java.awt.Color;
@@ -74,7 +74,7 @@ public class CircuitSheet extends JPanel {
         g2d.fillRect(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height);
 
         // Punktraster:
-        g2d.setColor(Color.decode("0xaaaaaa"));  // zwischen GRAY (808080) und LIGHTGREY (d3d3d3)
+        g2d.setColor(Color.decode("0xaaaaaa"));  // // between GRAY (808080) and LIGHTGREY (d3d3d3)
         g2d.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
                 java.awt.RenderingHints.VALUE_ANTIALIAS_OFF);
 
@@ -175,7 +175,7 @@ public class CircuitSheet extends JPanel {
             }
 
 
-            // Symbol Zeichenstift beim Zeichnen der Verbindungen:
+            // // Pen symbol when drawing the connections:
             if (_se.wirePenVisible) {
                 g2d.setColor(Color.lightGray);
                 g2d.fillPolygon(_se.xStift, _se.yStift, 4);
@@ -188,7 +188,7 @@ public class CircuitSheet extends JPanel {
                 g2d.drawPolygon(_se.xStift, _se.yStift, 4);
             }
             //---------------------------
-            // Markierungsrechteck fuer Drag & Drop:
+            // // Marking rectangle for drag & drop:
             if (_se._mouseMoveMode == MouseMoveMode.SELECT_WINDOW) {
                 g2d.setColor(Color.orange);
                 if (_se.x1markRe < _se.x2markRe) {
@@ -237,10 +237,10 @@ public class CircuitSheet extends JPanel {
     }
 
     public void updateNetListForLabels(ConnectorType connectorType) {
-        // zur Aktualisierung eventuell neu angeschlossener Labels:
+        // // to update any newly connected labels:
         switch(connectorType) {
             case CONTROL:
-                NetzlisteAllg.fabricNetzlistComplete(getConnection(ConnectorType.CONTROL), allElements.getClassFromContainer(RegelBlock.class));
+                NetlistGeneral.fabricNetzlistComplete(getConnection(ConnectorType.CONTROL), allElements.getClassFromContainer(ControlBlock.class));
                 break;
             case THERMAL:
                 NetListLK.fabricExcludingSubcircuits(getConnection(ConnectorType.THERMAL), getLocalComponents(ConnectorType.THERMAL));
@@ -276,8 +276,8 @@ public class CircuitSheet extends JPanel {
                             _findNodes.add(sheetPos);
                             if (elem instanceof AbstractBlockInterface) {
                                 foundStrings.add("Label of: " + ((AbstractBlockInterface) elem).getStringID() + " x=" + sheetPos.x + " y=" + sheetPos.y);
-                            } else if (elem instanceof Verbindung) {
-                                foundStrings.add("Connection label: " + ((Verbindung) elem).getLabel());
+                            } else if (elem instanceof Connection) {
+                                foundStrings.add("Connection label: " + ((Connection) elem).getLabel());
                             }
 
                         }
@@ -323,7 +323,7 @@ public class CircuitSheet extends JPanel {
                 for (Point pt : potArea.getAllElementKnotenXY(elements, this)) {
                     CircuitSheet._showNodes.add(pt);
                 }
-                for (Verbindung verb : potArea.getAllConnections()) {
+                for (Connection verb : potArea.getAllConnections()) {
                     for (TerminalInterface term : verb.getAllTerminals()) {
                         CircuitSheet._showNodes.add(term.getPosition());
                     }
@@ -335,9 +335,9 @@ public class CircuitSheet extends JPanel {
         return false;
     }
 
-    public void maus_connectorTest(final Point clickPoint) {
-        // damit man nicht (wie unten) beim 'return' vorzeitig aussteigt und eine Verbindung versehentlich
-        // im Bearbeitungs-Modus laesst, die folgende kleine Schleife:        
+    public void mouseConnectorTest(final Point clickPoint) {
+        // // so that you don't get out early on the 'return' (as below) and accidentally create a connection
+        // // in edit mode, leave the following small loop:
         CircuitSheet._showNodes.clear();
 
         List<AbstractBlockInterface> localElementsLK = getLocalComponents(ConnectorType.LK_AND_RELUCTANCE);
@@ -360,7 +360,7 @@ public class CircuitSheet extends JPanel {
         }
 
         // (1) LK-Check --> 
-        PotentialArea[] pot = (NetzlisteAllg.fabricNetzlistComplete(getConnection(ConnectorType.LK_AND_RELUCTANCE), localElementsLK)).getPotentiale();
+        PotentialArea[] pot = (NetlistGeneral.fabricNetzlistComplete(getConnection(ConnectorType.LK_AND_RELUCTANCE), localElementsLK)).getPotentiale();
 
         if (selectPotentialNodesToShow(pot, clickPoint, localElementsLK)) {
             return;
@@ -368,13 +368,13 @@ public class CircuitSheet extends JPanel {
 
         // (2) CONTROL-Check --> 
 
-        PotentialArea[] pot2 = (NetzlisteAllg.fabricNetzlistComplete(getConnection(ConnectorType.CONTROL), localElementsCONTROL)).getPotentiale();
+        PotentialArea[] pot2 = (NetlistGeneral.fabricNetzlistComplete(getConnection(ConnectorType.CONTROL), localElementsCONTROL)).getPotentiale();
         if (selectPotentialNodesToShow(pot2, clickPoint, localElementsCONTROL)) {
             return;
         }
 
         // (3) THERM-Check --> 
-        PotentialArea[] pot3 = (NetzlisteAllg.fabricNetzlistComplete(getConnection(ConnectorType.THERMAL),
+        PotentialArea[] pot3 = (NetlistGeneral.fabricNetzlistComplete(getConnection(ConnectorType.THERMAL),
                 localElementsTHERM)).getPotentiale();
         if (selectPotentialNodesToShow(pot3, clickPoint, localElementsTHERM)) {
             return;
@@ -383,26 +383,26 @@ public class CircuitSheet extends JPanel {
         CircuitSheet._showNodes.clear();
     }
 
-    public Set<Verbindung> getConnection(final ConnectorType connectorType) {
+    public Set<Connection> getConnection(final ConnectorType connectorType) {
         Collection<AbstractCircuitSheetComponent> allElements = getLocalSheetComponents();
-        Set<Verbindung> allConnectors = new LinkedHashSet<Verbindung>();
+        Set<Connection> allConnectors = new LinkedHashSet<Connection>();
         for (AbstractCircuitSheetComponent comp : allElements) {
-            if (comp instanceof Verbindung) {
-                allConnectors.add((Verbindung) comp);
+            if (comp instanceof Connection) {
+                allConnectors.add((Connection) comp);
             }
         }
 
         if (connectorType == ConnectorType.LK_AND_RELUCTANCE) {
-            Set<Verbindung> returnValue = new LinkedHashSet<Verbindung>();
+            Set<Connection> returnValue = new LinkedHashSet<Connection>();
             returnValue.addAll(getConnection(ConnectorType.LK));
             returnValue.addAll(getConnection(ConnectorType.RELUCTANCE));
             return Collections.unmodifiableSet(returnValue);
         }
 
-        Set<Verbindung> returnValue = new LinkedHashSet<Verbindung>();
+        Set<Connection> returnValue = new LinkedHashSet<Connection>();
         for (AbstractCircuitSheetComponent verbCand : allConnectors) {
-            if (verbCand instanceof Verbindung) {
-                Verbindung verb = (Verbindung) verbCand;
+            if (verbCand instanceof Connection) {
+                Connection verb = (Connection) verbCand;
                 if (verb.getSimulationDomain() == connectorType) {
                     returnValue.add(verb);
                 }
@@ -423,9 +423,9 @@ public class CircuitSheet extends JPanel {
         return returnValue;
     }
 
-    // Welche Bauteile werden vom MarkierungsRechteck umfasst? -->
+    // // Which components are included in the marking rectangle? -->
     private static boolean componentIsIncludedInRectangle(int x1MR, int y1MR, int x2MR, int y2MR, AbstractCircuitSheetComponent elem) {
-        int[] ausenabmessungen = elem.getAussenabmessungenRechteckEckpunkte();
+        int[] ausenabmessungen = elem.getOuterBounds();
         int x1 = ausenabmessungen[0];
         int y1 = ausenabmessungen[1];
         int x2 = ausenabmessungen[2];
@@ -554,8 +554,8 @@ public class CircuitSheet extends JPanel {
         final List<AbstractBlockInterface> allControlComponents = getLocalComponents(ConnectorType.CONTROL);
         allControlLabels.add("");
         for (AbstractBlockInterface block : allControlComponents) {
-            if (block instanceof RegelBlock) {
-                final RegelBlock regelBlock = (RegelBlock) block;
+            if (block instanceof ControlBlock) {
+                final ControlBlock regelBlock = (ControlBlock) block;
                 for (String label : regelBlock.getAllNodeLabels()) {
                     if (!label.isEmpty()) {
                         allControlLabels.add(label);

@@ -26,17 +26,17 @@ public final class BlockOrderOptimizer3 {
      * the non-optimized output list as given as input to this optimizer
      *
      */
-    private List<RegelBlock> _allControlsInput;
+    private List<ControlBlock> _allControlsInput;
     private LinkedList<ControlOrderNode> _optimizedList;
-    private ArrayList<RegelBlock> _outList;
+    private ArrayList<ControlBlock> _outList;
     private Set<ControlOrderNode> _transferStops;
     private Set<ControlOrderNode> _transferStarts;
     private int _stopIteration;
 
-    public BlockOrderOptimizer3(final List<RegelBlock> allControlBlocks) {
+    public BlockOrderOptimizer3(final List<ControlBlock> allControlBlocks) {
         this._allControlsInput = Collections.unmodifiableList(allControlBlocks);        
-        for (RegelBlock regler : _allControlsInput) {            
-            _allNodes.add(new ControlOrderNode(regler));
+        for (ControlBlock control : _allControlsInput) {            
+            _allNodes.add(new ControlOrderNode(control));
         }        
 
         for (ControlOrderNode node : _allNodes) {
@@ -46,7 +46,7 @@ public final class BlockOrderOptimizer3 {
         doOrdering();
     }
 
-    public List<RegelBlock> getOptimierteAbarbeitungsListe() {
+    public List<ControlBlock> getOptimierteAbarbeitungsListe() {
         return Collections.unmodifiableList(_outList);
     }
 
@@ -90,7 +90,7 @@ public final class BlockOrderOptimizer3 {
                
         _optimizedList = sortNodesWithPriorities();
         
-        _outList = new ArrayList<RegelBlock>();
+        _outList = new ArrayList<ControlBlock>();
         for (int i = 0; i < _allControlsInput.size(); i++) {
             _outList.add(_optimizedList.get(i).getElementControl());         
         }        
@@ -98,7 +98,7 @@ public final class BlockOrderOptimizer3 {
         doConsistencyChecks(_outList, _allControlsInput);                        
         //System.out.println("number of loops " + countNumberOfOutOfOrderLoops(_optimizedList) + " of " + _optimizedList.size());
 //        System.out.println("---------- control block order: ");
-//        for(RegelBlock block : _outList) {
+//        for(ControlBlock block : _outList) {
 //            System.out.println(block.getIDStringDialog());
 //        }
 //        System.out.println("---------");
@@ -166,29 +166,29 @@ public final class BlockOrderOptimizer3 {
         return loop;
     }
 
-    private static void doConsistencyChecks(final List<RegelBlock> outList, final List<RegelBlock> allControlsInput) {
+    private static void doConsistencyChecks(final List<ControlBlock> outList, final List<ControlBlock> allControlsInput) {
         if (outList.size() != allControlsInput.size()) {
             System.err.println("unequal length of lists: input " + allControlsInput.size() + " output: " + outList.size());
             assert false;
         }
 
-        final Set<RegelBlock> set1 = new HashSet<RegelBlock>(outList);
+        final Set<ControlBlock> set1 = new HashSet<ControlBlock>(outList);
         if (outList.size() != set1.size()) {
             System.err.println("duplicate components in sorted list!");
             assert false;
         }
 
-        final Set<RegelBlock> set2 = new HashSet<RegelBlock>(allControlsInput);
+        final Set<ControlBlock> set2 = new HashSet<ControlBlock>(allControlsInput);
         if (allControlsInput.size() != set2.size()) {
             System.err.println("duplicate components in input of sorted list!");
             assert false;
         }
 
-        for (RegelBlock block : set1) {
+        for (ControlBlock block : set1) {
             assert set2.contains(block);
         }
 
-        for (RegelBlock block : set2) {
+        for (ControlBlock block : set2) {
             assert set1.contains(block);
         }
     }

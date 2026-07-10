@@ -154,9 +154,8 @@ public final class WorksheetSize {
     }
 
     /**
-     * Wenn Elemente bzw. Verbindungen ausserhalb des Worksheet sind, also unsichtbar, dann ist das eine potentialle Fehlerquelle
-     * --> sollte also dem User nicht ermoeglicht werden --> wird hier grundsaetzlich geprueft
-     */
+     * If elements or connections are outside the worksheet, i.e. invisible, then this is a potential source of errors
+     * --> should therefore not be made possible for the user --> is fundamentally checked here*/
     private boolean isComponentOutsideDrawingArea(final int worksheetSizeX, final int worksheetSizeY) {
 
         final List<Point> allPoints = new ArrayList<Point>();

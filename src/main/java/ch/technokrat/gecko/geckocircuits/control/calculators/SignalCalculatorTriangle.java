@@ -34,7 +34,7 @@ public final class SignalCalculatorTriangle extends AbstractSignalCalculatorPeri
             } else {
                 _triangle -= dyDOWNx;
             }
-            if (_amplitudeAC != 0) {  // bei t==0 kann es hier Verwirrung geben!
+            if (_amplitudeAC != 0) {  // // at t==0 there can be confusion here!
                 if (_triangle >= _amplitudeAC) {
                     _triangle = _amplitudeAC;
                     _aufsteigend = false;
@@ -50,7 +50,7 @@ public final class SignalCalculatorTriangle extends AbstractSignalCalculatorPeri
 
 
     @Override
-    public void berechneYOUT(final double deltaT) {
+    public void calculateYOUT(final double deltaT) {
         //signal= amplitudeAC*(2/Math.PI*Math.asin(Math.sin(2*Math.PI*frequenz*t -phase))) +anteilDC; 
         _dyUP = (_amplitudeAC * 2 * _frequency * deltaT) / _dutyRatio;
         _dyDOWN = (_amplitudeAC * 2 * _frequency * deltaT) / (1 - _dutyRatio);
@@ -62,7 +62,7 @@ public final class SignalCalculatorTriangle extends AbstractSignalCalculatorPeri
             _triangle -= _dyDOWN;
         }
         
-        if (_amplitudeAC != 0) {  // bei t==0 kann es hier Verwirrung geben!
+        if (_amplitudeAC != 0) {  // // at t==0 there can be confusion here!
             if (_triangle >= +_amplitudeAC) {
                 _triangle = +_amplitudeAC;
                 _aufsteigend = false;

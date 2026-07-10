@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.control;
 
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFonts;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFonts;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -108,7 +108,7 @@ public class PreviewDialogRectangular extends PreviewDialog {
                 g.drawPolyline(triX, triY, triX.length);  // Signalkurve
                 g.setColor(Color.gray);
                 g.drawLine(x0 + xPh, y0 - offset - 10, x0 + xPh, y0 + 10);  // senkrechte Markierungsline (--> offset)
-                g.drawLine(x1, y0 - offset / 2, x1, y0 - offset - ac / 2);  // senkrechte Linie bei (2*PI)
+                g.drawLine(x1, y0 - offset / 2, x1, y0 - offset - ac / 2);  // // vertical line at (2*PI)
                 g.drawPolyline(new int[]{x0 + xPh, x0 + xPh, x0 + xPh - p2, x0 + xPh}, new int[]{y0 - offset - 2 * p1, y0 - offset, y0 - offset - p1, y0 - offset - p1}, 4);  // Pfeilspitze senkrecht
                 g.drawPolyline(new int[]{x0 + xPh, x0 + xPh, x0 + xPh - p2, x0 + xPh}, new int[]{y0 + 2 * p1, y0, y0 + p1, y0 + p1}, 4);  // Pfeilspitze senkrecht
                 g.drawPolyline(new int[]{x0 + xMx, x0 + xMx + p2, x0 + xMx, x0 + xMx, x0 + xMx + p2, x0 + xMx}, new int[]{y0 - offset - ac + p1, y0 - offset - ac + p1, y0 - offset - ac, y0 - offset, y0 - offset - p1, y0 - offset - p1}, 6);  // AC-max-Linie (senkrecht) plus Pfeilspitzen

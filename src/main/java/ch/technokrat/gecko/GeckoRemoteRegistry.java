@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko;
 
-import ch.technokrat.gecko.geckocircuits.allg.MainWindow;
+import ch.technokrat.gecko.geckocircuits.general.MainWindow;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;

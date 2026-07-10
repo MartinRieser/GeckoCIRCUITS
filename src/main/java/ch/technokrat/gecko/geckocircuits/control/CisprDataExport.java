@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.control;
 
-import ch.technokrat.gecko.geckocircuits.allg.GeckoFileChooser;
+import ch.technokrat.gecko.geckocircuits.general.GeckoFileChooser;
 import ch.technokrat.gecko.geckocircuits.datacontainer.AbstractDataContainer;
 import ch.technokrat.gecko.geckocircuits.newscope.GeckoDialog;
 import java.io.BufferedWriter;

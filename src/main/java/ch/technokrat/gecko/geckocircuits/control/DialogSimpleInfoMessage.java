@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.control;
 
-import ch.technokrat.gecko.geckocircuits.allg.GlobalColors;
+import ch.technokrat.gecko.geckocircuits.general.GlobalColors;
 import java.awt.BorderLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -23,7 +23,7 @@ class DialogSimpleInfoMessage extends DialogWindowWithoutInput {
     private static final long serialVersionUID = 1L;
     private final String _displayMessage;
 
-    public DialogSimpleInfoMessage(RegelBlock aThis, String displayMessage) {
+    public DialogSimpleInfoMessage(ControlBlock aThis, String displayMessage) {
         super(aThis);
         _displayMessage = displayMessage;
     }

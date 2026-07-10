@@ -19,11 +19,11 @@ import java.awt.event.ActionListener;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
-class DetailedConductionLossPanel extends DetailledLossPanel<LeitverlusteMesskurve> {
+class DetailedConductionLossPanel extends DetailledLossPanel<ConductionLossMeasurementCurve> {
 
     private static final long serialVersionUID = 1L;
     public double uMaxCOND, iMaxCOND;  // maximale Bereichsgrenze aller 'messkurvePvCOND[]' bzw 'messkurvePvSWITCH[]' --> korekte Darstellung im Grafer
-    public double[] tjGrenzenCOND, b0COND, b1COND, c0COND, c1COND, d0COND, d1COND;  // Koeffizienten der Naeherungspoloynome (siehe Publikation IPEC'05) --> Econd(i,tj)
+    public double[] tjGrenzenCOND, b0COND, b1COND, c0COND, c1COND, d0COND, d1COND;  // // Coefficients of the approximation polynomials (see publication IPEC'05) --> Econd(i,tj)
     final JCheckBox useInSolver = new JCheckBox("<html>Use curve in electric<br>model characteristic</html>");
     transient Diode nonlinearDiode = null;
         
@@ -46,7 +46,7 @@ class DetailedConductionLossPanel extends DetailledLossPanel<LeitverlusteMesskur
     
     @Override
     LossCurve createNewCurve(final double curveTemperatureParameter) {        
-        return new LeitverlusteMesskurve(curveTemperatureParameter);                
+        return new ConductionLossMeasurementCurve(curveTemperatureParameter);                
     }
 
     @Override
@@ -62,7 +62,7 @@ class DetailedConductionLossPanel extends DetailledLossPanel<LeitverlusteMesskur
 
     @Override
     LossCurve calculateNewTestCurve(double temperature, double measuredVoltage) {
-        final LossCurve returnValue = new LeitverlusteMesskurve(temperature);
+        final LossCurve returnValue = new ConductionLossMeasurementCurve(temperature);
         double currentStepper = 0;
         final double currentStepwidth = calculateMaximumCurrentInAllCurves() / DIVISIONS_TEST_CURVE;
         

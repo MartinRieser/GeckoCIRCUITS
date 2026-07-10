@@ -13,9 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.MainWindow;
-import ch.technokrat.gecko.geckocircuits.allg.GeckoFile;
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.MainWindow;
+import ch.technokrat.gecko.geckocircuits.general.GeckoFile;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.CurrentMeasurable;
 import ch.technokrat.gecko.geckocircuits.circuit.DirectVoltageMeasurable;
 import ch.technokrat.gecko.geckocircuits.circuit.losscalculation.LossCalculatable;
@@ -32,7 +32,7 @@ import java.util.List;
  *
  * @author andy diodes and switches are abstractSemiconductors.
  */
-public abstract class AbstractSemiconductor extends AbstractTwoPortLKreisBlock implements SemiconductorLossCalculatable, CurrentMeasurable,
+public abstract class AbstractSemiconductor extends AbstractTwoPortPowerCircuitBlock implements SemiconductorLossCalculatable, CurrentMeasurable,
         DirectVoltageMeasurable, Operationable {
 
     public final UserParameter<Double> _onResistance = UserParameter.Builder.
@@ -113,7 +113,7 @@ public abstract class AbstractSemiconductor extends AbstractTwoPortLKreisBlock i
     public List<GeckoFile> getFiles() {
         if (this instanceof LossCalculatable) {
             List<GeckoFile> returnValue = new ArrayList<GeckoFile>();
-            GeckoFile lossFile = ((LossProperties) ((LossCalculatable) this).getVerlustBerechnung()).getDetailedLosses().lossFile;
+            GeckoFile lossFile = ((LossProperties) ((LossCalculatable) this).getLossCalculation()).getDetailedLosses().lossFile;
             returnValue.add(lossFile);
             return returnValue;
         } else {
@@ -146,7 +146,7 @@ public abstract class AbstractSemiconductor extends AbstractTwoPortLKreisBlock i
                 if (lossFile.exists() && !lossFile.isDirectory()) {
                     final String foundLossFileName = lossFile.getAbsolutePath();
                     if (foundLossFileName.endsWith(".scl")) {                                                
-                        ((LossProperties) getVerlustBerechnung()).getDetailedLosses().readLossesFromFileAndSetDetailedLossType(foundLossFileName);                        
+                        ((LossProperties) getLossCalculation()).getDetailedLosses().readLossesFromFileAndSetDetailedLossType(foundLossFileName);                        
                     } else {                        
                         throw new RuntimeException("Invalid loss file " + foundLossFileName);
                     }

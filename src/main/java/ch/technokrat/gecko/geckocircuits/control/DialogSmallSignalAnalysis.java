@@ -15,8 +15,8 @@ package ch.technokrat.gecko.geckocircuits.control;
 
 import ch.technokrat.gecko.GeckoExternal;
 import ch.technokrat.gecko.GeckoSim;
-import ch.technokrat.gecko.geckocircuits.allg.FormatJTextField;
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.FormatJTextField;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalculatable;
 import ch.technokrat.gecko.geckocircuits.control.calculators.SmallSignalCalculator;
 import ch.technokrat.gecko.geckocircuits.datacontainer.DataContainerSimple;
@@ -41,7 +41,7 @@ import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
 @SuppressWarnings({"deprecation", "unchecked"})
-public class DialogSmallSignalAnalysis extends DialogElementCONTROL<ReglerSmallSignalAnalysis> {
+public class DialogSmallSignalAnalysis extends DialogElementCONTROL<ControlSmallSignalAnalysis> {
 
     private static final long serialVersionUID = 1L;
     private JComboBox<SSAShape> _jComboSignal;
@@ -54,7 +54,7 @@ public class DialogSmallSignalAnalysis extends DialogElementCONTROL<ReglerSmallS
      * Creates new form DialogSmallSignalAnalysis2
      */
     @SuppressWarnings("this-escape")
-    public DialogSmallSignalAnalysis(final ReglerSmallSignalAnalysis parent) {
+    public DialogSmallSignalAnalysis(final ControlSmallSignalAnalysis parent) {
         super(parent);
         initComponents();
         //jPanelBode.add(new BodePlot2());

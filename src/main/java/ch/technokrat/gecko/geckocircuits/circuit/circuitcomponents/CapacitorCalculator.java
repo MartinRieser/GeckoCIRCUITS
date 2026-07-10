@@ -14,7 +14,7 @@
 
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.SolverType;
+import ch.technokrat.gecko.geckocircuits.general.SolverType;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public final class CapacitorCalculator extends CircuitComponent implements AStampable, BStampable,

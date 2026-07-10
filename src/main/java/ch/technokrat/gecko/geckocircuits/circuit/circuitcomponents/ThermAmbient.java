@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import static ch.technokrat.gecko.geckocircuits.circuit.AbstractCircuitSheetComponent.dpix;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.geckocircuits.circuit.ComponentDirection;
@@ -26,8 +26,8 @@ import java.awt.Graphics2D;
 import java.awt.Window;
 import java.util.List;
 
-// Definierte Bezugstemperatur speziell fuer interne Subcircuits, ist eigentlich KEINE Ambient-Temperatur
-// --> realisiert als niederohmiger Widerstand mit nur einem zugaenglichen Knoten auf ein 
+// // Defined reference temperature specifically for internal subcircuits, is actually NOT an ambient temperature
+// // --> implemented as a low-resistance with only one accessible node on a
 // Benutzer-definierbares Bezugstemperaturpotential
 public final class ThermAmbient extends AbstractCircuitBlockInterface {
     public static final AbstractTypeInfo TYPE_INFO = 
@@ -36,11 +36,11 @@ public final class ThermAmbient extends AbstractCircuitBlockInterface {
     private static final double LINE_LENTH = 0.7;
     private static final int RECT_WIDTH = 3;
     
-    // die 'hinter' einem MODUL (bzw. PvCHIP) generierten TEMP- und FLOW-Elemente werden mit einem vom
+    // // the TEMP and FLOW elements generated 'behind' a MODULE (or PvCHIP) are with a from
     // SchematicEntry aus unerreichbaren Punkt auf einen Bezugpunkt (Potential 'Null') gelegt -->    
     public static final Point THERMAL_ZERO = new Point(-4711, -4711);
-    // man kann nur eine 'globale' Bezugstemperatur vorgeben, diese ist immer 
-    // Null und kann (vorerst) nicht veraendert werden        
+    // // you can only specify a 'global' reference temperature, this is always
+    // // Zero and cannot be changed (for now).
     public static final double T_ZERO = 0;  
     
     final UserParameter<Double> _ambientTemp = UserParameter.Builder.

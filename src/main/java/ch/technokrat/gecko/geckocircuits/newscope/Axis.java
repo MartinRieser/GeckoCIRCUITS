@@ -13,9 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.newscope;
 
-import ch.technokrat.gecko.geckocircuits.allg.ProjectData;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFonts;
-import ch.technokrat.gecko.geckocircuits.allg.TechFormat;
+import ch.technokrat.gecko.geckocircuits.general.ProjectData;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFonts;
+import ch.technokrat.gecko.geckocircuits.general.TechFormat;
 import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -48,8 +48,7 @@ public final class Axis {
     private static final int DEF_TICK_SPACING = 100;
     /**
      * this constant is used so that also tick values at the interval border get
-     * drawn.
-     */
+     * drawn.*/
     private static final double MOUSE_WHEEL_ZOOM = 1.1;
     private HiLoData _panningOriginLimits;
     private final AbstractDiagram _diagram;
@@ -67,7 +66,7 @@ public final class Axis {
     final AxisGridSettings _axisGridSettings = new AxisGridSettings();
     final AxisTickSettings _axisTickSettings = new AxisTickSettings();
     private int _axisLengthPix;
-    double _tickSpacing = DEF_TICK_SPACING;  // Abstand zwischen 2 Ticks, ausgehend von Null
+    double _tickSpacing = DEF_TICK_SPACING;  // // Distance between 2 ticks, starting from zero
     AbstractAxisScale _axisScale;
 
     /*
@@ -548,7 +547,7 @@ public final class Axis {
 
         _axisSettings.getStroke().setStrokeStyle(g2d);
 
-        // jetzt die Linie ziehen:
+        // // now draw the line:
         grL.reset();
         grL.moveTo(_axisOriginPixel.x, _axisOriginPixel.y);
 

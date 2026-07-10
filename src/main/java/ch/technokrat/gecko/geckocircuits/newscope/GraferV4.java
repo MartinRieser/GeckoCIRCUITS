@@ -13,9 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.newscope;
 
-import ch.technokrat.gecko.geckocircuits.circuit.SimulationsKern;
+import ch.technokrat.gecko.geckocircuits.circuit.SimulationKernel;
 import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
-import ch.technokrat.gecko.geckocircuits.control.ReglerOSZI;
+import ch.technokrat.gecko.geckocircuits.control.ControlOSZI;
 import ch.technokrat.gecko.geckocircuits.datacontainer.AbstractDataContainer;
 import ch.technokrat.gecko.geckocircuits.datacontainer.ContainerStatus;
 import java.awt.*;
@@ -72,7 +72,7 @@ public final class GraferV4 extends JPanel {
 
     public void createInitialDiagram() {
         if (_manager.getNumberDiagrams() == 0) {
-            _manager.updateCurveNumber(ReglerOSZI.DEF_TERM_NUMBER);
+            _manager.updateCurveNumber(ControlOSZI.DEF_TERM_NUMBER);
             final AbstractDiagram diag = new DiagramCurve(this);
             diag._diagramSettings.setNameDiagram("GRF " + _manager.getNumberDiagrams());
 
@@ -324,7 +324,7 @@ public final class GraferV4 extends JPanel {
                         NiceScale xNiceScale = new NiceScale(HiLoData.hiLoDataFabric((float) startTime, (float) endTime), true);
                         HiLoData niceLimits = xNiceScale.getNiceLimits();
 
-                        if (Math.abs(SimulationsKern.tEND - endTime) / Math.abs(SimulationsKern.tEND + endTime) > 0.01) {
+                        if (Math.abs(SimulationKernel.tEND - endTime) / Math.abs(SimulationKernel.tEND + endTime) > 0.01) {
                             setSimulationTimeBoundaries(startTime, niceLimits._yHi);
                         } else {
                             setSimulationTimeBoundaries(startTime, endTime);
@@ -509,7 +509,7 @@ public final class GraferV4 extends JPanel {
     }
 
     private void definiereAchsenbegrenzungenNumerischeSimulation(final HiLoData startStopTimes) {
-        for (AbstractDiagram diag : _manager.getDiagrams()) {   // geht durch die Zeilen
+        for (AbstractDiagram diag : _manager.getDiagrams()) {   // // goes through the lines
             final Axis xAxis = diag._xAxis;
             xAxis._axisMinMax.setGlobalAutoScaleValues(startStopTimes);
         }
@@ -532,11 +532,11 @@ public final class GraferV4 extends JPanel {
         }
     }
 
-    public void setMausModus(final MausModus mausModus) {
-        this._mausModus = mausModus;  // in den neuen Zustand gehen
+    public void setMouseMode(final MausModus mausModus) {
+        this._mausModus = mausModus;  // // go to the new state
         //--------------------------
         for (AbstractDiagram diag : _manager.getDiagrams()) {
-            diag._zoomWindow.setMausModus(mausModus);
+            diag._zoomWindow.setMouseMode(mausModus);
         }
 
         switch (mausModus) {
@@ -555,7 +555,7 @@ public final class GraferV4 extends JPanel {
                 addSliderXDrawer();
                 if (!_sliderContainer.isSliderActive()) {
                     _sliderContainer.setSliderActivity(true);
-                    // x-Schieber wird an den Anfang gesetzt: gleich fuer alle Diagramme, in GraferV3 definiert
+                    // // x slider is placed at the beginning: same for all diagrams, defined in GraferV3
                     this.setAxisPositions();
                     this.repaint();
                 }

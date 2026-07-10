@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.CircuitSourceType;
 import ch.technokrat.gecko.geckocircuits.circuit.TerminalRelativePosition;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
@@ -155,10 +155,10 @@ abstract class AbstractMotorSM extends AbstractThreePhaseMotor {
     @Override
     void setSubCircuit() {
         super.setSubCircuit();
-        // Erregerstromquelle fuer ifx(t) -->
-        _controlledSource3 = (AbstractCurrentSource) fabricHiddenSub(CircuitTyp.LK_I, this);
-        // hochohmiger Widerstand zur Anbindung des Rotorkreises --> 
-        _resistor = (AbstractResistor) fabricHiddenSub(CircuitTyp.LK_R, this);
+        // // Excitation current source for ifx(t) -->
+        _controlledSource3 = (AbstractCurrentSource) fabricHiddenSub(CircuitType.LK_I, this);
+        // // high-resistance resistance for connecting the rotor circuit -->
+        _resistor = (AbstractResistor) fabricHiddenSub(CircuitType.LK_R, this);
 
         _controlledSource3.sourceType.setValueWithoutUndo(CircuitSourceType.QUELLE_SIGNALGESTEUERT);
         _resistor._resistance.setValueWithoutUndo(1e8);

@@ -18,7 +18,7 @@ package ch.technokrat.gecko.geckocircuits.newscope;
  * compatibility reasons, it is still here. It should be refactored or removed, soon!
  *
  */
-import ch.technokrat.gecko.geckocircuits.allg.ProjectData;
+import ch.technokrat.gecko.geckocircuits.general.ProjectData;
 import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
 
 import java.io.Serializable;
@@ -29,15 +29,15 @@ public class ScopeSettings implements Serializable {
 
     private static final long serialVersionUID = 1L;
     public static final int ANZ_DIAGRAM_MAX = 12;
-    private int anzDiagram;  // Anzahl der Diagramme
-    private transient List<String> nameDiagram;  // Bezeichnungen der Diagramme
-    private transient List<Double> ySpacingDiagram;  // wieviel 'y-Anteil' hat das jeweilige Diagramm
-    private int[] diagramTyp;  // ist das jeweilige Diagramm ein ZV-Typ oder ein Signal-Typ?
+    private int anzDiagram;  // // Number of charts
+    private transient List<String> nameDiagram;  // // Labels of the diagrams
+    private transient List<Double> ySpacingDiagram;  // // how much 'y-part' does the respective diagram have
+    private int[] diagramTyp;  // // is the respective diagram a ZV type or a signal type?
     //
-    private boolean[] autoScaleX, autoScaleY;  // sollen die Achsenbegrenzungen automatisch an die Worksheetdaten angepasst werden?
+    private boolean[] autoScaleX, autoScaleY;  // // should the axis limits be automatically adjusted to the worksheet data?
     private transient List<Double> userScaleXMin, userScaleXMax, userScaleYMin, userScaleYMax;
     private transient List<String> signalNamen = new ArrayList<String>();
-    private int[] xAchsenTyp, yAchsenTyp;  // Linear oder logarithmisch?
+    private int[] xAchsenTyp, yAchsenTyp;  // // Linear or logarithmic?
     private int[] xAchseFarbe, yAchseFarbe;
     private int[] xAchseStil, yAchseStil;
     private transient List<String> xAchseBeschriftung, yAchseBeschriftung;
@@ -60,7 +60,7 @@ public class ScopeSettings implements Serializable {
     private boolean[] ORIGjcbYShowLabelMaj, ORIGjcbYShowLabelMin;
     private int[][] matrixZuordnungKurveDiagram;
     private int[][] indexWsXY;  // Zuordnung Worksheetdaten - Kurven
-    private int[][] crvAchsenTyp;  // wird ueber SET-Methode aktualisiert, damit die Matrix 'matrixZuordnungKurveDiagram' nicht vergessen wird!
+    private int[][] crvAchsenTyp;  // // is updated via the SET method so that the matrix 'matrixAssignmentCurveDiagram' is not forgotten!
     private int[][] crvLineStyle, crvLineColor;
     private boolean[][] crvSymbShow;
     private int[][] crvSymbFrequ;
@@ -179,7 +179,7 @@ public class ScopeSettings implements Serializable {
         ORIGjcbXShowLabelMin = new boolean[ANZ_DIAGRAM_MAX];
         ORIGjcbYShowLabelMaj = new boolean[ANZ_DIAGRAM_MAX];
         ORIGjcbYShowLabelMin = new boolean[ANZ_DIAGRAM_MAX];
-        // speziell fuer SIGNAL -->
+        // // especially for SIGNAL -->
 
         crvTransparency = new double[50][50];
         for (int i = 0; i < 10; i++) {
@@ -313,7 +313,7 @@ public class ScopeSettings implements Serializable {
 
     }
 
-    // zum Speichern im ASCII-Format (anstatt als Object-Stream) -->
+    // // to save in ASCII format (instead of as an object stream) -->
     //
     public void exportASCII(final StringBuffer ascii) {
         ascii.append("\n<scopeSettings>");
@@ -460,7 +460,7 @@ public class ScopeSettings implements Serializable {
         }
 
 
-        // Achtung: in alten Versionen sind diese beiden Parameter nicht gesetzt, daher hier default-Initialisierung: 
+        // // Attention: these two parameters are not set in old versions, so default initialization here:
         if (crvTransparency == null) {
             crvTransparency = new double[crvLineColor.length][crvLineColor[0].length];
             for (int i = 0; i < crvTransparency.length; i++) {

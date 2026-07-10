@@ -13,13 +13,13 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.losscalculation;
 
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 import java.io.Serializable;
 
-// Datenbehaelter fuer eine Messkurve -->
+// // Data container for a measurement curve -->
 public class SwitchingLossCurve extends LossCurve implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -33,12 +33,12 @@ public class SwitchingLossCurve extends LossCurve implements Serializable {
             build();            
     
     
-    // Datenbehaelter mit folgendem Format fuer  data[][] -->
+    // // Data container with the following format for data[][] -->
     // I [A] - Eon [Ws] - Eoff [Ws] - Etotal
     // ..      ..         ..          ..
     // ..      ..         ..          ..
     // usw.
-    // Parameter: T_junction, uBlock --> bei der Messung vorgegeben
+    // // Parameters: T_junction, uBlock --> specified during the measurement
     //
     public SwitchingLossCurve(double tj, double uBlock) {        
         this.tj.setValueWithoutUndo(tj);

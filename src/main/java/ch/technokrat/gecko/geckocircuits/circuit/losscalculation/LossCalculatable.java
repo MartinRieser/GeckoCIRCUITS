@@ -14,5 +14,5 @@
 package ch.technokrat.gecko.geckocircuits.circuit.losscalculation;
 
 public interface LossCalculatable {
-    AbstractLossCalculatorFabric getVerlustBerechnung();    
+    AbstractLossCalculatorFabric getLossCalculation();    
 }

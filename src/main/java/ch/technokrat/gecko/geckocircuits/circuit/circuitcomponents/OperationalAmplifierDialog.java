@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFilePathes;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFilePathes;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;

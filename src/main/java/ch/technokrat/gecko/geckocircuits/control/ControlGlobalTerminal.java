@@ -26,7 +26,7 @@ import java.awt.Window;
 import java.util.HashSet;
 import java.util.Set;
 
-public final class ControlGlobalTerminal extends RegelBlock implements GlobalTerminable {
+public final class ControlGlobalTerminal extends ControlBlock implements GlobalTerminable {
 
     private static final long serialVersionUID = 1L;
     public static final Set<ControlGlobalTerminal> ALL_GLOBALS = new HashSet<ControlGlobalTerminal>();

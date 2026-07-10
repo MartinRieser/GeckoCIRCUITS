@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.newscope;
 
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFilePathes;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFilePathes;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Window;

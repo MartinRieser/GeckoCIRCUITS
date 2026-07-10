@@ -38,8 +38,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 
-import ch.technokrat.gecko.geckocircuits.allg.GeckoFileChooser;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFilePathes;
+import ch.technokrat.gecko.geckocircuits.general.GeckoFileChooser;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFilePathes;
 import ch.technokrat.gecko.geckocircuits.datacontainer.AbstractDataContainer;
 import ch.technokrat.gecko.i18n.GuiFabric;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
@@ -183,12 +183,12 @@ public class DialogFourierDiagramm extends JDialog implements ComponentListener 
     private void buildToolbar() {
         //--------------------
         try {
-            String[] iconFiles = {"iconON_off.png", "iconON_zoomFit2.png", "iconON_zoomFenster.png",
-                                  "iconON_getXYschieber.png", "iconON_log.png"};
+            String[] iconFiles = {"iconON_off.png", "iconON_zoomFit2.png", "iconON_zoomWindow.png",
+                                  "iconON_getXYslider.png", "iconON_log.png"};
 
             iconON = new ImageIcon[iconFiles.length];
             for (int i = 0; i < iconFiles.length; i++) {
-                URL iconUrl = DialogFourierDiagramm.class.getResource("/gecko/geckocircuits/allg/" + iconFiles[i]);
+                URL iconUrl = DialogFourierDiagramm.class.getResource("/gecko/geckocircuits/general/" + iconFiles[i]);
                 iconON[i] = new ImageIcon(iconUrl);
                 if (iconON[i].getImageLoadStatus() != java.awt.MediaTracker.COMPLETE) {
                     Logger.getLogger(DialogFourierDiagramm.class.getName()).log(Level.WARNING,
@@ -196,12 +196,12 @@ public class DialogFourierDiagramm extends JDialog implements ComponentListener 
                 }
             }
 
-            String[] iconFilesOFF = {"iconOFF_off.png", "iconOFF_zoomFit2.png", "iconOFF_zoomFenster.png",
-                                      "iconOFF_getXYschieber.png", "iconOFF_log.png"};
+            String[] iconFilesOFF = {"iconOFF_off.png", "iconOFF_zoomFit2.png", "iconOFF_zoomWindow.png",
+                                      "iconOFF_getXYslider.png", "iconOFF_log.png"};
 
             iconOFF = new ImageIcon[iconFilesOFF.length];
             for (int i = 0; i < iconFilesOFF.length; i++) {
-                URL iconUrl = DialogFourierDiagramm.class.getResource("/gecko/geckocircuits/allg/" + iconFilesOFF[i]);
+                URL iconUrl = DialogFourierDiagramm.class.getResource("/gecko/geckocircuits/general/" + iconFilesOFF[i]);
                 iconOFF[i] = new ImageIcon(iconUrl);
                 if (iconOFF[i].getImageLoadStatus() != java.awt.MediaTracker.COMPLETE) {
                     Logger.getLogger(DialogFourierDiagramm.class.getName()).log(Level.WARNING,
@@ -308,8 +308,8 @@ public class DialogFourierDiagramm extends JDialog implements ComponentListener 
         }
         for (int i1 = 1; i1 < _worksheet.getRowLength()+1; i1++) {
             if (_signalFourierAnalysiert[i1]) {
-                diagrams[i1 - 1].setMausModus(mouseMode);
-                reconstructions[i1 - 1].setMausModus(mouseMode);
+                diagrams[i1 - 1].setMouseMode(mouseMode);
+                reconstructions[i1 - 1].setMouseMode(mouseMode);
             }
         }
         if (mouseMode == GraferImplementation.MAUSMODUS_ZOOM_AUTOFIT) {
@@ -318,8 +318,8 @@ public class DialogFourierDiagramm extends JDialog implements ComponentListener 
             mouseButtons[previousActiveIconIndex].setIcon(iconON[previousActiveIconIndex]);
             for (int i1 = 1; i1 < _worksheet.getRowLength()+1; i1++) {
                 if (_signalFourierAnalysiert[i1]) {
-                    diagrams[i1 - 1].setMausModus(mouseMode);
-                    reconstructions[i1 - 1].setMausModus(mouseMode);
+                    diagrams[i1 - 1].setMouseMode(mouseMode);
+                    reconstructions[i1 - 1].setMouseMode(mouseMode);
                 }
             }
         } else {

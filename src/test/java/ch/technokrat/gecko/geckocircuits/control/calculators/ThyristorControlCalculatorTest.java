@@ -32,7 +32,7 @@ public class ThyristorControlCalculatorTest {
     }
 
     @Test
-    public void testBerechneYOUT() {
+    public void testCalculateYOUT() {
 
         calculator._inputSignal[0][0] = 30; // phase
         int[] eventCounter = new int[6];
@@ -44,7 +44,7 @@ public class ThyristorControlCalculatorTest {
                 oldOutput[i] = calculator._outputSignal[i][0];
             }
             calculator._inputSignal[1][0] = 100 * Math.sin(2 * Math.PI * time / 50);
-            calculator.berechneYOUT(DELTA_T);
+            calculator.calculateYOUT(DELTA_T);
             for(int i = 0; i < 6; i++) {
                 if(oldOutput[i] != calculator._outputSignal[i][0]) {
                     eventCounter[i]++;

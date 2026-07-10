@@ -27,7 +27,7 @@ public final class MotorImCage extends AbstractMotorIM {
     public static final AbstractTypeInfo TYPE_INFO = new CircuitTypeInfo(MotorImCage.class, "IM-CAGE", I18nKeys.IM_CAGE, I18nKeys.SQUIRREL_CAGE_INDUCTION_MACHINE);
 
     private int drMpix = 3;
-    // Mechanische und Elektrische Kenngroessen der Maschine --> 
+    // // Mechanical and electrical parameters of the machine -->
     //    
     private double Lls = 1e-3;
     private double Rr = 1.0, Llr = 1.8e-3;
@@ -47,7 +47,7 @@ public final class MotorImCage extends AbstractMotorIM {
     }
     
 
-    // Initialisiereung nach INIT&START --> 
+    // // Initialization after INIT&START -->
     @Override
     public void setzeParameterZustandswerteAufNULL() {
         super.setzeParameterZustandswerteAufNULL();                
@@ -82,7 +82,7 @@ public final class MotorImCage extends AbstractMotorIM {
         double urd = 0;  // weil Kurzschlusslaeufer 
         double urq = 0;  // weil Kurzschlusslaeufer                 
         
-        // Bloecke fuer magnetische Fluss-Berechnungen: 
+        // // Blocks for magnetic flux calculations:
         double psimd = _magnetizingInductance * (isd + ird);
         double psimq = _magnetizingInductance * (isq + irq);
         psisd = Lls * isd + psimd;

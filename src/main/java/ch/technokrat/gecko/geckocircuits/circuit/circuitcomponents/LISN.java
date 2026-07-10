@@ -29,9 +29,9 @@ import ch.technokrat.gecko.geckocircuits.circuit.HiddenSubCircuitable;
 import ch.technokrat.gecko.geckocircuits.circuit.TerminalRelativeFixedDirection;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
-// LISN-Netzwerk fuer EMV-Messungen 
-// Leistungskreis-Induktivitaet koppelbar ueber M (im Gegensatz dazu kann L nicht gekoppelt werden)
-// dieses Element ist in Wirklichkeit ein Subcircuit, der ein L in Serie zu einer Spannungsquelle enthaelt
+// // LISN network for EMC measurements
+// // Power circuit inductance can be coupled via M (in contrast, L cannot be coupled)
+// // this element is actually a subcircuit containing an L in series with a voltage source
 public class LISN extends AbstractCircuitBlockInterface implements HiddenSubCircuitable {
     public static final AbstractTypeInfo TYPE_INFO = new CircuitTypeInfo(LISN.class, "LISN", I18nKeys.LISN, I18nKeys.LINE_IMPEDANCE_STABILIZATION_NETWORK);
         
@@ -130,9 +130,9 @@ public class LISN extends AbstractCircuitBlockInterface implements HiddenSubCirc
         qLK = new AbstractBlockInterface[15];
         //----------------
         // 3x Eingangsinduktivitaet (netzseitig) --> 
-        _Lin1 = (InductorWOCoupling) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_L, this);
-        _Lin2 = (InductorWOCoupling) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_L, this);
-        _Lin3 = (InductorWOCoupling) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_L, this);
+        _Lin1 = (InductorWOCoupling) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_L, this);
+        _Lin2 = (InductorWOCoupling) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_L, this);
+        _Lin3 = (InductorWOCoupling) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_L, this);
         
         qLK[0] = _Lin1;
         qLK[1] = _Lin2;
@@ -152,9 +152,9 @@ public class LISN extends AbstractCircuitBlockInterface implements HiddenSubCirc
         _Lin3.setOutputTerminal(0, intern3);
         
         // 3x Ausgangsinduktivitaet (Konverter-seitig) --> 
-        _Lout1 = (InductorWOCoupling) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_L, this);
-        _Lout2 = (InductorWOCoupling) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_L, this);
-        _Lout3 = (InductorWOCoupling) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_L, this);
+        _Lout1 = (InductorWOCoupling) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_L, this);
+        _Lout2 = (InductorWOCoupling) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_L, this);
+        _Lout3 = (InductorWOCoupling) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_L, this);
                 
         qLK[3] = _Lout1;
         qLK[4] = _Lout2;
@@ -173,11 +173,11 @@ public class LISN extends AbstractCircuitBlockInterface implements HiddenSubCirc
         
         // 3x Ausgangswiderstand (Konverter-seitig) --> 
         //if (!elementVonDateiGeladen) {
-        //    SchematicEditor2.staticZaehlerLKelementeINIT[CircuitTyp.LK_R]++;
+        //    SchematicEditor2.staticZaehlerLKelementeINIT[CircuitType.LK_R]++;
         //}
-        _Rout1 = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_R, this);
-        _Rout2 = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_R, this);
-        _Rout3 = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_R, this);
+        _Rout1 = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_R, this);
+        _Rout2 = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_R, this);
+        _Rout3 = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_R, this);
         
         qLK[6] = _Rout1;
         qLK[7] = _Rout2;
@@ -196,9 +196,9 @@ public class LISN extends AbstractCircuitBlockInterface implements HiddenSubCirc
         _Rout3.setInputTerminal(0, intern9);
         
         // 3x GND-widerstand (Signalmessbezug) --> 
-        _RGnd1 = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_R, this);
-        _RGnd2 = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_R, this);
-        _RGnd3 = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_R, this);
+        _RGnd1 = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_R, this);
+        _RGnd2 = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_R, this);
+        _RGnd3 = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_R, this);
         
         qLK[ 9] = _RGnd1;
         qLK[10] = _RGnd2;        
@@ -217,9 +217,9 @@ public class LISN extends AbstractCircuitBlockInterface implements HiddenSubCirc
         _RGnd3.setInputTerminal(0, YOUT.get(6));
         
         // 3x GND-kapazitaet (Signalmessung) --> 
-        _CGnd1 = (AbstractCapacitor) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_C, this);
-        _CGnd2 = (AbstractCapacitor) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_C, this);
-        _CGnd3 = (AbstractCapacitor) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_C, this);
+        _CGnd1 = (AbstractCapacitor) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_C, this);
+        _CGnd2 = (AbstractCapacitor) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_C, this);
+        _CGnd3 = (AbstractCapacitor) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_C, this);
         
         qLK[12] = _CGnd1;
         qLK[13] = _CGnd2;

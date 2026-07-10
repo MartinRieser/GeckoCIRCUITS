@@ -13,10 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit;
 
-import ch.technokrat.gecko.geckocircuits.allg.ProjectData;
+import ch.technokrat.gecko.geckocircuits.general.ProjectData;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.AbstractCircuitBlockInterface;
 import ch.technokrat.gecko.geckocircuits.control.Operationable;
-import ch.technokrat.gecko.geckocircuits.control.ReglerGate;
+import ch.technokrat.gecko.geckocircuits.control.ControlGate;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -323,8 +323,8 @@ public final class ComponentCoupling {
 
     private void removeWithSingleReference(final AbstractBlockInterface partner, final int index) {                
         for(ComponentCoupling otherCoup : partner._isReferencedBy.toArray(new ComponentCoupling[partner._isReferencedBy.size()])) {                        
-            if(otherCoup._parentElement instanceof ReglerGate 
-                    && _parentElement instanceof ReglerGate) {  
+            if(otherCoup._parentElement instanceof ControlGate 
+                    && _parentElement instanceof ControlGate) {  
                 otherCoup.setNewCouplingElementUndoable(index, null);
             }            
         }

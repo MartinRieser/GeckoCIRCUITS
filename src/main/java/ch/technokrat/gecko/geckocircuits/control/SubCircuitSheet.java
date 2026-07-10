@@ -17,9 +17,9 @@ import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.TerminalCircu
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.DialogSubCktSettings;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.SubcircuitBlock;
 import ch.technokrat.gecko.GeckoSim;
-import ch.technokrat.gecko.geckocircuits.allg.MainWindow;
+import ch.technokrat.gecko.geckocircuits.general.MainWindow;
 import ch.technokrat.gecko.geckocircuits.circuit.*;
-import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.CircuitTyp;
+import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.CircuitType;
 import ch.technokrat.gecko.i18n.GuiFabric;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.*;
@@ -96,7 +96,7 @@ public class SubCircuitSheet extends CircuitSheet {
                         newElement = AbstractTypeInfo.fabricNew(AbstractTypeInfo.getTypeInfoFromClass(TerminalCircuit.class));
                         break;
                     case SchematicEditor2.WIRE_MODE_CONTROL:
-                        newElement = AbstractTypeInfo.fabricNew(AbstractTypeInfo.getTypeInfoFromClass(ReglerTERMINAL.class));
+                        newElement = AbstractTypeInfo.fabricNew(AbstractTypeInfo.getTypeInfoFromClass(ControlTERMINAL.class));
                         break;
                     default:
                         assert false;
@@ -136,7 +136,7 @@ public class SubCircuitSheet extends CircuitSheet {
     @Override
     public void drawCircuitSheet(Graphics2D g2d) {
         super.drawCircuitSheet(g2d);
-        g2d.setColor(Color.decode("0xaaaaaa"));  // zwischen GRAY (808080) und LIGHTGREY (d3d3d3)
+        g2d.setColor(Color.decode("0xaaaaaa"));  // // between GRAY (808080) and LIGHTGREY (d3d3d3)
         int dpix = AbstractCircuitSheetComponent.dpix;        
         g2d.drawRect(0, 0, dpix * (_worksheetSize.getSizeX()), dpix * (_worksheetSize.getSizeY()));
     }       

@@ -19,15 +19,15 @@ import javax.swing.JOptionPane;
 
 public class CisprBlockSettings extends GeckoDialog {
     private static final long serialVersionUID = 1L;
-    private final ReglerCISPR16 _regler;
+    private final ControlCISPR16 _control;
 
     @SuppressWarnings("this-escape")
-    public CisprBlockSettings(final ReglerCISPR16 regler, final java.awt.Frame parent) {
+    public CisprBlockSettings(final ControlCISPR16 control, final java.awt.Frame parent) {
         super(parent, true);        
         initComponents();
-        jTextFieldName.setText(regler.getStringID());        
-        _regler = regler;
-        jCheckBoxShowName.setSelected(regler._settings._showName.getValue());
+        jTextFieldName.setText(control.getStringID());        
+        _control = control;
+        jCheckBoxShowName.setSelected(control._settings._showName.getValue());
         getRootPane().setDefaultButton(jButtonOk);
         setTitle("CISPR 16 Component settings");
     }
@@ -119,7 +119,7 @@ public class CisprBlockSettings extends GeckoDialog {
 
     private void jButtonOkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonOkActionPerformed
         try {
-            _regler.getIDStringDialog().setNewNameCheckedUndoable(jTextFieldName.getText());
+            _control.getIDStringDialog().setNewNameCheckedUndoable(jTextFieldName.getText());
         } catch (NameAlreadyExistsException ex) {            
             JOptionPane.showMessageDialog(this,
                     "Object name: " + jTextFieldName.getText() + " is already in use!",
@@ -127,7 +127,7 @@ public class CisprBlockSettings extends GeckoDialog {
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
-        _regler._settings._showName.setUserValue(jCheckBoxShowName.isSelected());
+        _control._settings._showName.setUserValue(jCheckBoxShowName.isSelected());
         dispose();
     }//GEN-LAST:event_jButtonOkActionPerformed
     

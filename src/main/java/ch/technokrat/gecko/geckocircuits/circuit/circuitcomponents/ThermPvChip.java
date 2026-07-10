@@ -39,9 +39,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-// Waermequelle: Leit- und Schaltverluste von Leistungshalbleitern
-// --> Messunsg von Strom und Spannung durch LK_D oder LK_S
-// --> Ermittlung der Verluste ueber Datenblattwerte (parameter[] von LK_D und LK_S)
+// // Heat source: conduction and switching losses of power semiconductors
+// // --> Measurement of current and voltage by LK_D or LK_S
+// // --> Determination of losses via data sheet values ​​(parameter[] of LK_D and LK_S)
 // --> Realisierung mittels einer signalgesteuerten Stromquelle
 public final class ThermPvChip extends AbstractCircuitBlockInterface implements ComponentCoupable, CurrentMeasurable,
         HiddenSubCircuitable, PostCalculatable, DirectVoltageMeasurable {
@@ -57,7 +57,7 @@ public final class ThermPvChip extends AbstractCircuitBlockInterface implements 
     private static final int DIAMETER = 4;
     
     
-    // FLOW-Quelle und paralleler hochohmiger Innenwiderstand Rth:
+    // // FLOW source and parallel high-resistance internal resistance Rth:
     private final AbstractBlockInterface[] _qTH = new AbstractCircuitBlockInterface[2]; 
     private final ComponentCoupling _componentCoupling = new ComponentCoupling(1, this, new int[]{0});
     private AbstractCurrentSource _thFlow;
@@ -88,7 +88,7 @@ public final class ThermPvChip extends AbstractCircuitBlockInterface implements 
         return false;
     }
 
-    // beim Laden von Datei muessen die SubCircuit-IDstrings geladen und aktualisiert werden -->
+    // // When loading a file, the SubCircuit ID strings must be loaded and updated -->
     public void initialisiereSubcircuit() {
         _thFlow.getIDStringDialog().setNameUnChecked(getStringID());
         _parallelRes.getIDStringDialog().setRandomStringID();  // RTH
@@ -97,7 +97,7 @@ public final class ThermPvChip extends AbstractCircuitBlockInterface implements 
 
     private void setzeSubcircuit() {                
         // FLOW-Quelle:
-        _thFlow = (AbstractCurrentSource) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.TH_FLOW, this);
+        _thFlow = (AbstractCurrentSource) AbstractTypeInfo.fabricHiddenSub(CircuitType.TH_FLOW, this);
         _qTH[0] = _thFlow;
 
         _thFlow.setInputTerminal(0, XIN.get(0));
@@ -106,8 +106,8 @@ public final class ThermPvChip extends AbstractCircuitBlockInterface implements 
         _thFlow.sourceType.setValueWithoutUndo(CircuitSourceType.QUELLE_SIGNALGESTEUERT);
 
         //----------------
-        // parallel zur FLOW-Quelle ein hochohmiger Innenwiderstand RTH:
-        _parallelRes = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.TH_RTH, this);
+        // // A high-resistance internal resistance RTH parallel to the FLOW source:
+        _parallelRes = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitType.TH_RTH, this);
         _qTH[1] = _parallelRes;
         _parallelRes._resistance.setValueWithoutUndo(PARALLEL_RESISTANCE);
 
@@ -145,14 +145,14 @@ public final class ThermPvChip extends AbstractCircuitBlockInterface implements 
         }
 
         if (_lossComponent instanceof LossCalculatable) {
-            final AbstractLossCalculatorFabric verluste = ((LossCalculatable) _lossComponent).getVerlustBerechnung();
+            final AbstractLossCalculatorFabric verluste = ((LossCalculatable) _lossComponent).getLossCalculation();
             _lossCalculator = verluste.lossCalculatorFabric();
         }        
     }
 
     @Override
     public void doCalculation(final double deltaT, final double time) {
-        // Junction-Temperatur --> Temperaturdifferenz an Rth, wobei Bezugspunkt das Null-Niveau ist ('TH_NULLBEZUG_KNOTEN')
+        // // Junction temperature --> temperature difference at Rth, where reference point is the zero level ('TH_NULLBEZUG_KNOTEN')
         final double temperature = -_parallelRes.parameter[2];  
         if(_lossComponent == null) {
             return;
@@ -167,7 +167,7 @@ public final class ThermPvChip extends AbstractCircuitBlockInterface implements 
             _switchingLosses = ((LossCalculationSplittable) _lossCalculator).getSwitchingLoss();
         }
         
-        _thFlow.parameter[1] = _currentInAmps;  // Verluste repraesentieren Waermestrom [W/m2] in der gesteuerten FLOW-Quelle        
+        _thFlow.parameter[1] = _currentInAmps;  // // Losses represent heat flow [W/m2] in the controlled FLOW source
     }
 
     @Override

@@ -13,10 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
-import ch.technokrat.gecko.geckocircuits.allg.ProjectData;
-import ch.technokrat.gecko.geckocircuits.allg.MainWindow;
-import ch.technokrat.gecko.geckocircuits.allg.GeckoFile;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.ProjectData;
+import ch.technokrat.gecko.geckocircuits.general.MainWindow;
+import ch.technokrat.gecko.geckocircuits.general.GeckoFile;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractCircuitSheetComponent;
 import ch.technokrat.gecko.geckocircuits.circuit.SchematicEditor2;
 import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
@@ -42,7 +42,7 @@ import javax.swing.JOptionPane;
 
 // TODO: Future developer: This class needs refactoring when you have time and understand the full context.
 
-public abstract class AbstractNonLinearCircuitComponent extends AbstractTwoPortLKreisBlock 
+public abstract class AbstractNonLinearCircuitComponent extends AbstractTwoPortPowerCircuitBlock 
 implements Operationable, Nonlinearable {       
     
     public final UserParameter<Boolean> _isNonlinear = UserParameter.Builder.
@@ -225,7 +225,7 @@ implements Operationable, Nonlinearable {
                 File nonLinFile = new File(characteristicFileName);                
                 //if it doesn't exist, try first to see if it is in the same directory as the currently open model file
                 if (!nonLinFile.exists()) {
-                    final File modelFile = new File(ch.technokrat.gecko.geckocircuits.allg.MainWindow.getOpenFileName());
+                    final File modelFile = new File(ch.technokrat.gecko.geckocircuits.general.MainWindow.getOpenFileName());
                     final String currentModelDirectory = modelFile.getParent();
                     final String nonLinFileName = currentModelDirectory + System.getProperty("file.separator") + characteristicFileName;
                     nonLinFile = new File(nonLinFileName);                    
@@ -364,7 +364,7 @@ implements Operationable, Nonlinearable {
     
     //===================================
     // ASSUMPTION: x- and y-axis both linear
-    // also employed with LKOP2
+    // // also employed with LKOP2
     // nlX,nlY define the picewise non-linear characteristic, x is the actual value 
     public double getActualValueLINFromLinearizedCharacteristic(double x) {        
         int i1 = 0;
@@ -387,7 +387,7 @@ implements Operationable, Nonlinearable {
     
     //===================================
     // ASSUMPTION: x- and y-axis both linear
-    // also employed with LKOP2
+    // // also employed with LKOP2
     // nlX,nlY define the picewise non-linear characteristic, x is the actual value 
     public double getActualValueLINFromLinearizedCharacteristicInverse(double x) {        
         int i1 = 0;

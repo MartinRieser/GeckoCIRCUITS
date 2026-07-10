@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFilePathes;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFilePathes;
 import ch.technokrat.gecko.i18n.GuiFabric;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.BorderLayout;
@@ -59,7 +59,7 @@ public class DialogViewPowerModule extends JDialog implements WindowListener, Ac
         jbOK.setActionCommand("OK");
         jbOK.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                schliesseFenster();
+                closeWindow();
             }
         });
         JPanel jpOK = new JPanel();
@@ -119,14 +119,14 @@ public class DialogViewPowerModule extends JDialog implements WindowListener, Ac
     }
 
     public void windowClosing(WindowEvent we) {
-        this.schliesseFenster();
+        this.closeWindow();
     }
 
     public void windowOpened(WindowEvent we) {
     }
     //------------------------------------------------
 
-    private void schliesseFenster() {
+    private void closeWindow() {
         //mutterFenster.gibFocusZurueck();
         this.dispose();
     }

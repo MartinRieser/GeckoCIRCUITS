@@ -14,8 +14,8 @@
 package ch.technokrat.gecko.geckocircuits.control;
 
 import ch.technokrat.gecko.GeckoSim;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalColors;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFonts;
+import ch.technokrat.gecko.geckocircuits.general.GlobalColors;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFonts;
 import ch.technokrat.gecko.geckocircuits.circuit.*;
 import ch.technokrat.gecko.geckocircuits.circuit.losscalculation.LossComponent;
 import java.awt.*;
@@ -27,7 +27,7 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
-public abstract class DialogElementCONTROL<T extends RegelBlock> extends DialogCircuitComponent<T> {
+public abstract class DialogElementCONTROL<T extends ControlBlock> extends DialogCircuitComponent<T> {
     private static final long serialVersionUID = 1L;
     JPanel jpM = new JPanel();                    
 
@@ -139,7 +139,7 @@ public abstract class DialogElementCONTROL<T extends RegelBlock> extends DialogC
     public void processInputIndividual() {
         processInputs();
         processRegisteredParameters();
-        schliesseFenster();
+        closeWindow();
     }        
 
     protected void processInputs() {

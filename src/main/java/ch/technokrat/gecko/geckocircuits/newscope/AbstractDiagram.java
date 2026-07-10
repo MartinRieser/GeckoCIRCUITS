@@ -13,8 +13,8 @@
  */
 package ch.technokrat.gecko.geckocircuits.newscope;
 
-import ch.technokrat.gecko.geckocircuits.allg.ProjectData;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFonts;
+import ch.technokrat.gecko.geckocircuits.general.ProjectData;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFonts;
 import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
 import ch.technokrat.gecko.geckocircuits.datacontainer.AbstractDataContainer;
 import ch.technokrat.gecko.geckocircuits.datacontainer.DataContainerNullData;

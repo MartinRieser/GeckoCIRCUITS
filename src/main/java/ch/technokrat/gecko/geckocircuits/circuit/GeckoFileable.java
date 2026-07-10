@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit;
 
-import ch.technokrat.gecko.geckocircuits.allg.GeckoFile;
+import ch.technokrat.gecko.geckocircuits.general.GeckoFile;
 import java.util.List;
 
 /**

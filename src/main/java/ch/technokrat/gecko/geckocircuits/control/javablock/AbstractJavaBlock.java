@@ -14,8 +14,8 @@
 package ch.technokrat.gecko.geckocircuits.control.javablock;
 
 import ch.technokrat.gecko.GeckoRuntimeException;
-import ch.technokrat.gecko.geckocircuits.allg.ProjectData;
-import ch.technokrat.gecko.geckocircuits.allg.GeckoFile;
+import ch.technokrat.gecko.geckocircuits.general.ProjectData;
+import ch.technokrat.gecko.geckocircuits.general.GeckoFile;
 import ch.technokrat.gecko.geckocircuits.circuit.SchematicEditor2;
 import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
 import java.io.*;
@@ -25,14 +25,14 @@ import java.util.logging.Logger;
 
 public abstract class AbstractJavaBlock {       
     
-    protected final ReglerJavaFunction _reglerJavaBlock;
+    protected final ControlJavaFunction _controlJavaBlock;
     protected AbstractCompileObject _compileObject = new CompileObjectNull();
     JavaBlockSource _javaBlockSource = new JavaBlockSource.Builder().build();
     final List<GeckoFile> _additionalSourceFiles = new ArrayList<GeckoFile>();
     protected Map<String, CompiledClassContainer> _classNameFileMap;
 
-    AbstractJavaBlock(final ReglerJavaFunction reglerJavaBlock) {
-        _reglerJavaBlock = reglerJavaBlock;
+    AbstractJavaBlock(final ControlJavaFunction controlJavaBlock) {
+        _controlJavaBlock = controlJavaBlock;
     }
 
     abstract AbstractJavaBlock createOtherBlockTypeCopy();
@@ -50,7 +50,7 @@ public abstract class AbstractJavaBlock {
         SchematicEditor2.zustandGeaendert = true;
         
         String className = CompileObject.findUniqueClassName();
-        String sourceString = SourceFileGenerator.createSourceCode(_javaBlockSource, className, _reglerJavaBlock.YOUT.size(), _reglerJavaBlock._variableBusWidth);
+        String sourceString = SourceFileGenerator.createSourceCode(_javaBlockSource, className, _controlJavaBlock.YOUT.size(), _controlJavaBlock._variableBusWidth);
                 
         _compileObject = new CompileObject(sourceString, className, _additionalSourceFiles);
         
@@ -66,8 +66,8 @@ public abstract class AbstractJavaBlock {
 
         // test if the java block code changed from last compilation
         final String newSourceString = SourceFileGenerator.createSourceCode(_javaBlockSource,
-                _compileObject.getClassName(), _reglerJavaBlock.YOUT.size(),
-                _reglerJavaBlock._variableBusWidth);
+                _compileObject.getClassName(), _controlJavaBlock.YOUT.size(),
+                _controlJavaBlock._variableBusWidth);
         final String oldSourceString = _compileObject.getSourceCode();
 
         if (!newSourceString.equals(oldSourceString)) {
@@ -108,7 +108,7 @@ public abstract class AbstractJavaBlock {
         try {
             doCompilationIfRequired();
         } catch (IOException ex) {
-            Logger.getLogger(ReglerJavaFunction.class.getName()).log(Level.SEVERE, "IOException during compilation: " + ex.getMessage(), ex);
+            Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, "IOException during compilation: " + ex.getMessage(), ex);
         }
     }
 
@@ -147,7 +147,7 @@ public abstract class AbstractJavaBlock {
                 doCompilationIfRequired();
             }
         } catch (Exception ex) {
-            Logger.getLogger(ReglerJavaFunction.class.getName()).log(Level.SEVERE, "could not find class.", ex);
+            Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, "could not find class.", ex);
         }
 
         _javaBlockSource.exportIndividualCONTROL(ascii);
@@ -172,7 +172,7 @@ public abstract class AbstractJavaBlock {
             final byte[] outBytes = baos.toByteArray();
             ProjectData.appendAsString(ascii.append("\nclassMapBytes"), outBytes);
         } catch (IOException ex) {
-            Logger.getLogger(ReglerJavaFunction.class.getName()).log(Level.SEVERE, "IOException while serializing class map: " + ex.getMessage(), ex);
+            Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, "IOException while serializing class map: " + ex.getMessage(), ex);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -195,7 +195,7 @@ public abstract class AbstractJavaBlock {
             final Map<String, CompiledClassContainer> classMap = (Map<String, CompiledClassContainer>) oInStream.readObject();
             _classNameFileMap = classMap;
         } catch (IOException ex) {
-            Logger.getLogger(ReglerJavaFunction.class.getName()).log(Level.SEVERE, "IOException while deserializing class map: " + ex.getMessage(), ex);
+            Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, "IOException while deserializing class map: " + ex.getMessage(), ex);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

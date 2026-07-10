@@ -13,8 +13,8 @@
  */
 package ch.technokrat.gecko;
 
-import ch.technokrat.gecko.geckocircuits.allg.MainWindow;
-import ch.technokrat.gecko.geckocircuits.allg.OperatingMode;
+import ch.technokrat.gecko.geckocircuits.general.MainWindow;
+import ch.technokrat.gecko.geckocircuits.general.OperatingMode;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;

@@ -17,7 +17,7 @@ import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.AbstractCircu
 
 abstract class AbstractLossCalculatorSwitch implements AbstractLossCalculator, LossCalculationSplittable {
 
-    static final double EPS = 1e-2;  // praktisch Null --> Schwelle zur Umgehung numerischer Minimalfehler
+    static final double EPS = 1e-2;  // // practically zero --> threshold for circumventing numerical minimum errors
     double _oldCurrent = -1; // history values of current and voltage
     double _oldVoltage = -1; // ... used for switchingLoss-calculation
     double _voltage;

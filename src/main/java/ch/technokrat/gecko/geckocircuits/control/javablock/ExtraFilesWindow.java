@@ -13,9 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.javablock;
 
-import ch.technokrat.gecko.geckocircuits.allg.GeckoFile;
-import ch.technokrat.gecko.geckocircuits.allg.GeckoFileManagerWindow;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFilePathes;
+import ch.technokrat.gecko.geckocircuits.general.GeckoFile;
+import ch.technokrat.gecko.geckocircuits.general.GeckoFileManagerWindow;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFilePathes;
 import ch.technokrat.gecko.geckocircuits.circuit.GeckoFileable;
 import java.net.URI;
 import java.net.URL;

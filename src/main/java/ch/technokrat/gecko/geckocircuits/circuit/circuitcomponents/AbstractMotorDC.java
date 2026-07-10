@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTerminal;
 import ch.technokrat.gecko.geckocircuits.circuit.CircuitSourceType;
 import ch.technokrat.gecko.geckocircuits.circuit.ComponentDirection;
@@ -133,11 +133,11 @@ abstract class AbstractMotorDC extends AbstractMotor {
     @Override
     void setSubCircuit() {
         // La im Ankerstromkreis --> 
-        _LAnker = (InductorWOCoupling) fabricHiddenSub(CircuitTyp.LK_L, this);
+        _LAnker = (InductorWOCoupling) fabricHiddenSub(CircuitType.LK_L, this);
         // Ra im Ankerstromkreis --> 
-        _RAnker = (AbstractResistor) fabricHiddenSub(CircuitTyp.LK_R, this);
+        _RAnker = (AbstractResistor) fabricHiddenSub(CircuitType.LK_R, this);
         // EMK im Ankerstromkreis --> 
-        _uEMK = (AbstractVoltageSource) fabricHiddenSub(CircuitTyp.LK_U, this);
+        _uEMK = (AbstractVoltageSource) fabricHiddenSub(CircuitType.LK_U, this);
 
         _LAnker._inductance.setValueWithoutUndo(_armatureInductance);
         _RAnker._resistance.setValueWithoutUndo(_armatureResistance);
@@ -166,7 +166,7 @@ abstract class AbstractMotorDC extends AbstractMotor {
 
     @Override
     void updateSourceParameters() {
-        _uEMK.parameter[1] = _emk;  // DC-Wert der internen WSpg.Quelle                 
+        _uEMK.parameter[1] = _emk;  // // DC value of the internal voltage source
     }
 
     @Override

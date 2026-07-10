@@ -29,8 +29,8 @@ import ch.technokrat.gecko.GeckoExternal;
 import ch.technokrat.gecko.GeckoRemoteInterface;
 import ch.technokrat.gecko.GeckoSim;
 import ch.technokrat.gecko.MethodCategory;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFilePathes;
-import ch.technokrat.gecko.geckocircuits.allg.OperatingMode;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFilePathes;
+import ch.technokrat.gecko.geckocircuits.general.OperatingMode;
 import ch.technokrat.gecko.geckocircuits.circuit.*;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.AbstractInductor;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.IdealSwitch;
@@ -216,7 +216,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
     @Override
     //gives the user an array of strings - names of all control elements in circuit
     public final String[] getControlElements() {
-        final List<RegelBlock> controlElems = _circuit.se.getElementCONTROL();
+        final List<ControlBlock> controlElems = _circuit.se.getElementCONTROL();
         final int size = controlElems.size();
         final String[] controlNames = new String[size];
         for (int i = 0; i < size; i++) {
@@ -434,11 +434,11 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
     public final double getOutput(final String elementName, final String outputName) {
         double outputValue = 0.0;
         AbstractBlockInterface abstractBlock = IDStringDialog.getComponentByName(elementName);
-        if (!(abstractBlock instanceof RegelBlock)) {
+        if (!(abstractBlock instanceof ControlBlock)) {
             writerOutputErrorLn("Error, selected component is not a control block!");
             throw new RuntimeException("Error, selected component is not a control block!");
         }
-        RegelBlock control_elem = (RegelBlock) abstractBlock;
+        ControlBlock control_elem = (ControlBlock) abstractBlock;
         try {
             outputValue = control_elem.getOutput(outputName);
         } catch (IllegalAccessException e) {
@@ -459,11 +459,11 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
     public final double getOutput(final String elementName) {
         double outputValue = 0.0;
         AbstractBlockInterface abstractBlock = IDStringDialog.getComponentByName(elementName);
-        if (!(abstractBlock instanceof RegelBlock)) {
+        if (!(abstractBlock instanceof ControlBlock)) {
             writerOutputErrorLn("Error, selected component is not a control block!");
             throw new RuntimeException("Error, selected component is not a control block!");
         }
-        RegelBlock control_elem = (RegelBlock) abstractBlock;
+        ControlBlock control_elem = (ControlBlock) abstractBlock;
         try {
             outputValue = control_elem.getOutput();
         } catch (IllegalAccessException e) {
@@ -712,9 +712,9 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
 
     private final int getSignalRow(String signalName) {
         int signalRow = -1;
-        for (int row = 0; row < NetzlisteCONTROL.globalData.getRowLength(); row++) {
-            String tmpSignalName = NetzlisteCONTROL.globalData.getSignalName(row);
-            String tmpSignalPath = NetzlisteCONTROL.globalData.getSubcircuitSignalPath(row);
+        for (int row = 0; row < NetlistControl.globalData.getRowLength(); row++) {
+            String tmpSignalName = NetlistControl.globalData.getSignalName(row);
+            String tmpSignalPath = NetlistControl.globalData.getSubcircuitSignalPath(row);
             String qualifiedName = tmpSignalPath + tmpSignalName;
 
             if (qualifiedName.equals(signalName)) {
@@ -723,8 +723,8 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
         }
 
         if (signalRow == -1) {
-            for (int row = 0; row < NetzlisteCONTROL.globalData.getRowLength(); row++) {
-                String tmpSignalName = NetzlisteCONTROL.globalData.getSignalName(row);
+            for (int row = 0; row < NetlistControl.globalData.getRowLength(); row++) {
+                String tmpSignalName = NetlistControl.globalData.getSignalName(row);
                 if (tmpSignalName.equals(signalName)) {
                     signalRow = row;
                 }
@@ -742,7 +742,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
     @Override
     public final double getSignalAvg(final String signalName, final double startTime, final double endTime) {
         int[] row = {getSignalRow(signalName)};
-        CharacteristicsCalculator charCalc = CharacteristicsCalculator.calculateFabric(NetzlisteCONTROL.globalData, row, startTime, endTime);
+        CharacteristicsCalculator charCalc = CharacteristicsCalculator.calculateFabric(NetlistControl.globalData, row, startTime, endTime);
         try {
             double[] characteristics = charCalc.getChannelCharacteristics(0);
             return characteristics[0];
@@ -755,7 +755,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
     @Override
     public final double getSignalRMS(final String signalName, final double startTime, final double endTime) {
         int[] row = {getSignalRow(signalName)};
-        CharacteristicsCalculator charCalc = CharacteristicsCalculator.calculateFabric(NetzlisteCONTROL.globalData, row, startTime, endTime);
+        CharacteristicsCalculator charCalc = CharacteristicsCalculator.calculateFabric(NetlistControl.globalData, row, startTime, endTime);
         try {
             double[] characteristics = charCalc.getChannelCharacteristics(0);
             return characteristics[1];
@@ -768,7 +768,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
     @Override
     public final double getSignalMin(final String signalName, final double startTime, final double endTime) {
         int[] row = {getSignalRow(signalName)};
-        CharacteristicsCalculator charCalc = CharacteristicsCalculator.calculateFabric(NetzlisteCONTROL.globalData, row, startTime, endTime);
+        CharacteristicsCalculator charCalc = CharacteristicsCalculator.calculateFabric(NetlistControl.globalData, row, startTime, endTime);
         try {
             double[] characteristics = charCalc.getChannelCharacteristics(0);
             return characteristics[3];
@@ -781,7 +781,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
     @Override
     public final double getSignalMax(final String signalName, final double startTime, final double endTime) {
         int[] row = {getSignalRow(signalName)};
-        CharacteristicsCalculator charCalc = CharacteristicsCalculator.calculateFabric(NetzlisteCONTROL.globalData, row, startTime, endTime);
+        CharacteristicsCalculator charCalc = CharacteristicsCalculator.calculateFabric(NetlistControl.globalData, row, startTime, endTime);
         try {
             double[] characteristics = charCalc.getChannelCharacteristics(0);
             return characteristics[4];
@@ -794,7 +794,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
     @Override
     public final double getSignalTHD(final String signalName, final double startTime, final double endTime) {
         int[] row = {getSignalRow(signalName)};
-        CharacteristicsCalculator charCalc = CharacteristicsCalculator.calculateFabric(NetzlisteCONTROL.globalData, row, startTime, endTime);
+        CharacteristicsCalculator charCalc = CharacteristicsCalculator.calculateFabric(NetlistControl.globalData, row, startTime, endTime);
         try {
             double[] characteristics = charCalc.getChannelCharacteristics(0);
             return characteristics[2];
@@ -807,7 +807,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
     @Override
     public final double getSignalShape(final String signalName, final double startTime, final double endTime) {
         int[] row = {getSignalRow(signalName)};
-        CharacteristicsCalculator charCalc = CharacteristicsCalculator.calculateFabric(NetzlisteCONTROL.globalData, row, startTime, endTime);
+        CharacteristicsCalculator charCalc = CharacteristicsCalculator.calculateFabric(NetlistControl.globalData, row, startTime, endTime);
         try {
             double[] characteristics = charCalc.getChannelCharacteristics(0);
             return characteristics[7];
@@ -820,7 +820,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
     @Override
     public final double getSignalKlirr(final String signalName, final double startTime, final double endTime) {
         int[] row = {getSignalRow(signalName)};
-        CharacteristicsCalculator charCalc = CharacteristicsCalculator.calculateFabric(NetzlisteCONTROL.globalData, row, startTime, endTime);
+        CharacteristicsCalculator charCalc = CharacteristicsCalculator.calculateFabric(NetlistControl.globalData, row, startTime, endTime);
         try {
             double[] characteristics = charCalc.getChannelCharacteristics(0);
             return characteristics[6];
@@ -833,7 +833,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
     @Override
     public final double getSignalRipple(final String signalName, final double startTime, final double endTime) {
         int[] row = {getSignalRow(signalName)};
-        CharacteristicsCalculator charCalc = CharacteristicsCalculator.calculateFabric(NetzlisteCONTROL.globalData, row, startTime, endTime);
+        CharacteristicsCalculator charCalc = CharacteristicsCalculator.calculateFabric(NetlistControl.globalData, row, startTime, endTime);
         try {
             double[] characteristics = charCalc.getChannelCharacteristics(0);
             return characteristics[5];
@@ -876,7 +876,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
 
             for (int i = 0; i < stateVariables.length; i++) {
                 elem = IDStringDialog.getComponentByName(stateVariables[i]);
-                if (!((elem instanceof ReglerVOLT) || (elem instanceof ReglerAmperemeter) || (elem instanceof ReglerTEMP))) {
+                if (!((elem instanceof ControlVOLT) || (elem instanceof ControlAmperemeter) || (elem instanceof ControlTEMP))) {
                     writerOutputErrorLn("Supplied element " + stateVariables[i] + " is not a measuring element. Steady state monitoring not initialized!");
                     return;
                 }
@@ -936,8 +936,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
      * @param diff
      * @param allowed_error
      * @param option
-     * @return
-     */
+     * @return*/
     private boolean evaluateVector(final double[] diff, final double allowed_error, final int option) {
         boolean steadystate;
 
@@ -1087,7 +1086,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
         initSimulation(_steadyStateDt, _steadyStateSimTime); //initialize simulation to find signal names
 
         try {
-            final AbstractDataContainer data = NetzlisteCONTROL.globalData;
+            final AbstractDataContainer data = NetlistControl.globalData;
 
             for (int i = 0; i < stateVariables.length; i++) {
                 int foundIndex = -1; // search for the signal with the right name.
@@ -1535,7 +1534,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
     @Override
     public final void rotate(final String elementName) {
         final AbstractBlockInterface parentElement = IDStringDialog.getComponentByName(elementName);
-        parentElement.rotiereSymbol();
+        parentElement.rotateSymbol();
         parentElement.absetzenElement();
     }
 
@@ -1604,7 +1603,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
 
     @Override
     public final float[] getSignalData(final String signalName, final double tStart, final double tEnd, final int skipPoints) {
-        final AbstractDataContainer data = NetzlisteCONTROL.globalData;
+        final AbstractDataContainer data = NetlistControl.globalData;
         final TimeIntervalData timeIntervalData = new TimeIntervalData(tStart, tEnd, skipPoints, data);
 
         int foundIndex = -1; // search for the signal with the right name.
@@ -1631,7 +1630,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
 
     @Override
     public final double[] getTimeArray(final String signalName, final double tStart, final double tEnd, final int skipPoints) {
-        final AbstractDataContainer data = NetzlisteCONTROL.globalData;
+        final AbstractDataContainer data = NetlistControl.globalData;
         final TimeIntervalData timeIntervalData = new TimeIntervalData(tStart, tEnd, skipPoints, data);
         final AbstractTimeSerie timeSerie = data.getTimeSeries(0);
 

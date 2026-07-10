@@ -14,7 +14,7 @@
 package ch.technokrat.gecko.geckocircuits.newscope;
 
 import ch.technokrat.gecko.geckocircuits.circuit.CircuitSheet;
-import ch.technokrat.gecko.geckocircuits.control.ReglerOSZI;
+import ch.technokrat.gecko.geckocircuits.control.ControlOSZI;
 import ch.technokrat.gecko.geckocircuits.control.SubCircuitSheet;
 
 /**
@@ -25,20 +25,20 @@ import ch.technokrat.gecko.geckocircuits.control.SubCircuitSheet;
 public final class ScopeSignalRegular extends AbstractScopeSignal {
 
     private final int _scopeInputIndex;
-    private final ReglerOSZI _reglerOSZI;
+    private final ControlOSZI _controlOSZI;
 
-    public ScopeSignalRegular(final int scopeInputIndex, final ReglerOSZI reglerOSZI) {
+    public ScopeSignalRegular(final int scopeInputIndex, final ControlOSZI controlOSZI) {
         super();
         _scopeInputIndex = scopeInputIndex;
-        _reglerOSZI = reglerOSZI;
+        _controlOSZI = controlOSZI;
     }
 
     @Override
     public String getSignalName() {
-        if (_reglerOSZI == null) {
-            return "no regleroszi defined";
+        if (_controlOSZI == null) {
+            return "no controloszi defined";
         }
-        final String returnValue = _reglerOSZI.XIN.get(_scopeInputIndex).getLabelObject().getLabelString();
+        final String returnValue = _controlOSZI.XIN.get(_scopeInputIndex).getLabelObject().getLabelString();
         if (returnValue.isEmpty()) {
             return "sg." + _scopeInputIndex;
         } else {
@@ -52,6 +52,6 @@ public final class ScopeSignalRegular extends AbstractScopeSignal {
 
     @Override
     public String getSubcircuitPath() {
-        return _reglerOSZI.getSubCircuitPath();        
+        return _controlOSZI.getSubCircuitPath();        
     }
 }

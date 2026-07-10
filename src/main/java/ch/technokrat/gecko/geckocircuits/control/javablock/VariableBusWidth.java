@@ -13,8 +13,8 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.javablock;
 
-import ch.technokrat.gecko.geckocircuits.allg.ProjectData;
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.ProjectData;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.TextInfoType;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
@@ -29,7 +29,7 @@ class VariableBusWidth {
     final UserParameter<Integer> _fixedOutputBusWidth;
     final UserParameter<Boolean> _useMatrix;
     
-    public VariableBusWidth(final ReglerJavaFunction parent) {
+    public VariableBusWidth(final ControlJavaFunction parent) {
         
          _fixedOutputBusWidth = UserParameter.Builder.
             <Integer>start("outputBusWidth", 1).

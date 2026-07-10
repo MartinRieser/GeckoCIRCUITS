@@ -14,7 +14,7 @@
 package ch.technokrat.gecko.geckocircuits.control;
 
 import ch.technokrat.gecko.GeckoSim;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFilePathes;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFilePathes;
 import ch.technokrat.gecko.geckocircuits.newscope.GeckoDialog;
 
 
@@ -153,7 +153,7 @@ public class UZiDisplay extends GeckoDialog {
     /**
      * Creates new form SpaceVectorDisplay
      */
-    public UZiDisplay(final ReglerU_ZI regelBlock) {
+    public UZiDisplay(final ControlU_ZI regelBlock) {
         super(GeckoSim._win, false);
                 
         initComponents();

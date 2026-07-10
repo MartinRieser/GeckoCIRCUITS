@@ -25,7 +25,7 @@ import java.util.Set;
 
 /**
  * this wrapper class is used for determining the control execution order. It
- * hides all unnecessary RegelBlock properties from the programmer.
+ * hides all unnecessary ControlBlock properties from the programmer.
  *
  * @author andy
  */
@@ -33,11 +33,11 @@ final class ControlOrderNode {
 
     private final Set<ControlOrderNode> _directInputs = new LinkedHashSet<ControlOrderNode>();
     private final Set<ControlOrderNode> _directOutputs = new LinkedHashSet<ControlOrderNode>();
-    private final RegelBlock _elementControl;
+    private final ControlBlock _elementControl;
     private int _priority;
     private boolean _loopCrack;
 
-    public ControlOrderNode(final RegelBlock elementControl) {
+    public ControlOrderNode(final ControlBlock elementControl) {
         _elementControl = elementControl;        
     }
     
@@ -55,7 +55,7 @@ final class ControlOrderNode {
         return _elementControl.getType();
     }
 
-    public RegelBlock getElementControl() {
+    public ControlBlock getElementControl() {
         return _elementControl;
     }
     

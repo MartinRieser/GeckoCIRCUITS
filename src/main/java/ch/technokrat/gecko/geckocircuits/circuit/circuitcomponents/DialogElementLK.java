@@ -14,7 +14,7 @@
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
 import ch.technokrat.gecko.GeckoSim;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalColors;
+import ch.technokrat.gecko.geckocircuits.general.GlobalColors;
 import ch.technokrat.gecko.geckocircuits.circuit.ConnectorType;
 import ch.technokrat.gecko.geckocircuits.circuit.DialogCircuitComponent;
 import ch.technokrat.gecko.geckocircuits.circuit.PotentialCoupable;
@@ -57,13 +57,13 @@ public abstract class DialogElementLK<T extends AbstractCircuitBlockInterface> e
 
     static Component createControlLabelCombo(final AbstractCircuitBlockInterface elementLK) {
         Component returnValue = null;
-        final List<String> labelListeReglerKnotenTemp = elementLK.getParentCircuitSheet().getLocalLabels(ConnectorType.CONTROL);
-        if (!labelListeReglerKnotenTemp.isEmpty()) {
-            final JComboBox<String> combo = new JComboBox<>(labelListeReglerKnotenTemp.toArray(new String[0]));
+        final List<String> labelListeControlKnotenTemp = elementLK.getParentCircuitSheet().getLocalLabels(ConnectorType.CONTROL);
+        if (!labelListeControlKnotenTemp.isEmpty()) {
+            final JComboBox<String> combo = new JComboBox<>(labelListeControlKnotenTemp.toArray(new String[0]));
 
-            for (String search : labelListeReglerKnotenTemp) {
+            for (String search : labelListeControlKnotenTemp) {
                 if (elementLK.getParameterString()[0].equals(search)) {
-                    combo.setSelectedIndex(labelListeReglerKnotenTemp.indexOf(search));
+                    combo.setSelectedIndex(labelListeControlKnotenTemp.indexOf(search));
                     break;
                 }
             }

@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.newscope;
 
-import ch.technokrat.gecko.geckocircuits.allg.ProjectData;
+import ch.technokrat.gecko.geckocircuits.general.ProjectData;
 import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
 
 /**
@@ -26,7 +26,7 @@ final class AxisTickSettings {
     private boolean _showLabelsMin = false;
     private int _tickLengthMaj = DEF_LENGTH_MAJ;
     private int _tickLengthMin = DEF_LENGTH_MIN;
-    private int _anzTicksMinor = 2;  // Zahl der Minor-Ticks zwischen zwei regulaeren Ticks        
+    private int _anzTicksMinor = 2;  // // Number of minor ticks between two regular ticks
     
     private static final int DEF_LENGTH_MAJ = 8;
     private static final int DEF_LENGTH_MIN = 5;

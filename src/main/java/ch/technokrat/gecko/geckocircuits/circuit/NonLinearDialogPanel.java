@@ -13,10 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit;
 
-import ch.technokrat.gecko.geckocircuits.allg.MainWindow;
-import ch.technokrat.gecko.geckocircuits.allg.GeckoFile;
-import ch.technokrat.gecko.geckocircuits.allg.GeckoFileChooser;
-import ch.technokrat.gecko.geckocircuits.allg.GeckoFileManagerWindow;
+import ch.technokrat.gecko.geckocircuits.general.MainWindow;
+import ch.technokrat.gecko.geckocircuits.general.GeckoFile;
+import ch.technokrat.gecko.geckocircuits.general.GeckoFileChooser;
+import ch.technokrat.gecko.geckocircuits.general.GeckoFileManagerWindow;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.AbstractNonLinearCircuitComponent;
 import ch.technokrat.gecko.geckocircuits.datacontainer.ContainerStatus;
 import ch.technokrat.gecko.geckocircuits.datacontainer.DataContainerSimple;

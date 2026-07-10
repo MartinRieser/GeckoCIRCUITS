@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.SolverType;
+import ch.technokrat.gecko.geckocircuits.general.SolverType;
 import java.util.List;
 
 public class CoupledInductorsGroup implements AStampable, CurrentCalculatable {

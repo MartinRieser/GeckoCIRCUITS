@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.scope;
 
-import ch.technokrat.gecko.geckocircuits.allg.TechFormat;
+import ch.technokrat.gecko.geckocircuits.general.TechFormat;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -62,7 +62,7 @@ class DisplayFourierWorksheet extends JPanel {
             }
         }
         table = new JTable(wsObj, header) {
-            // ueberschreiben, damit man nicht in den Daten herumeditieren kann -->
+            // // overwrite so that you can't edit the data -->
 
             public boolean isCellEditable(int row, int col) {
                 return false;

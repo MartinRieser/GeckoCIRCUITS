@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.control;
 
-import ch.technokrat.gecko.geckocircuits.control.ReglerSaveData;
+import ch.technokrat.gecko.geckocircuits.control.ControlSaveData;
 import ch.technokrat.gecko.geckocircuits.datacontainer.AbstractDataContainer;
 import ch.technokrat.gecko.geckocircuits.datacontainer.ContainerStatus;
 import java.io.*;
@@ -44,11 +44,11 @@ public final class DataSaver extends Observable implements Observer {
     private static final double PERCENT_CONST = 100;
     private boolean _hasCounterValue = false;
     private static final int MAX_FILE_COUNTER = 1000;
-    private final ReglerSaveData _regler;
+    private final ControlSaveData _control;
 
-    public DataSaver(final AbstractDataContainer data, ReglerSaveData regler) {
+    public DataSaver(final AbstractDataContainer data, ControlSaveData control) {
         super();
-        _regler = regler;
+        _control = control;
         _data = data;
         initSettings();
     }
@@ -63,7 +63,7 @@ public final class DataSaver extends Observable implements Observer {
             throw new RuntimeException("Error: blocking save can only be initiated when simulation has stopped.");
         }
         
-        if(_regler._saveModus != ReglerSaveData.SaveModus.MANUAL) {
+        if(_control._saveModus != ControlSaveData.SaveModus.MANUAL) {
             throw new RuntimeException("Error: Data export block must be set to \"Save manually.\"");
         }
         _saveRunnable.run();
@@ -75,7 +75,7 @@ public final class DataSaver extends Observable implements Observer {
 
     @Override
     public void update(final Observable obs, final Object arg) {
-        if (_regler._saveModus == ReglerSaveData.SaveModus.SIMULATION_END) {
+        if (_control._saveModus == ControlSaveData.SaveModus.SIMULATION_END) {
             if (_data.getContainerStatus() == ContainerStatus.PAUSED) {
                 final Thread runThread = new Thread(_saveRunnable);
                 runThread.start();
@@ -114,7 +114,7 @@ public final class DataSaver extends Observable implements Observer {
     }
 
     private void initSettings() {
-        switch (_regler._saveModus) {
+        switch (_control._saveModus) {
             case SIMULATION_END:
                 _data.addObserver(this);
                 break;
@@ -134,7 +134,7 @@ public final class DataSaver extends Observable implements Observer {
         @Override
         public void run() {
             try {
-                if (_regler._saveModus == ReglerSaveData.SaveModus.SIMULATION_END) {
+                if (_control._saveModus == ControlSaveData.SaveModus.SIMULATION_END) {
                     initSave(_data);
                     doFullSave(_data);
                     try {
@@ -195,16 +195,16 @@ public final class DataSaver extends Observable implements Observer {
             }
         }
 
-        if (_regler._fileOverwrite.equals(ReglerSaveData.FileOverwrite.DO_NUMBERING) && new File(_regler._file.getValue()).exists()) {
-            _regler._file.setValueWithoutUndo(findFreeFile(_regler._file.getValue()));
+        if (_control._fileOverwrite.equals(ControlSaveData.FileOverwrite.DO_NUMBERING) && new File(_control._file.getValue()).exists()) {
+            _control._file.setValueWithoutUndo(findFreeFile(_control._file.getValue()));
         }
 
-        switch (_regler._outputType) {
+        switch (_control._outputType) {
             case TEXT:
-                _linePrinter = new TxtLinePrinter(new File(_regler._file.getValue()), data, _regler);
+                _linePrinter = new TxtLinePrinter(new File(_control._file.getValue()), data, _control);
                 break;
             case BINARY:
-                _linePrinter = new BinaryLinePrinter(new File(_regler._file.getValue()), data, _regler);
+                _linePrinter = new BinaryLinePrinter(new File(_control._file.getValue()), data, _control);
                 break;
             default:
                 assert false;
@@ -223,10 +223,10 @@ public final class DataSaver extends Observable implements Observer {
     private void doFullSave(final AbstractDataContainer data) {
         final int maxIndex = data.getMaximumTimeIndex(0);
         int savePercentage = 0;
-        final int skipDataPoints = _regler._skipDataPoints.getValue();
+        final int skipDataPoints = _control._skipDataPoints.getValue();
         try {
 
-            if (_regler._transposeData.getValue()) {
+            if (_control._transposeData.getValue()) {
                 _linePrinter.printTransposedData();
                 _percentage = (int) PERCENT_CONST;
                 setChanged();
@@ -266,9 +266,9 @@ public final class DataSaver extends Observable implements Observer {
         final AbstractDataContainer _data;        
         final File _file;
         final int[] _selectedIndices;
-        final ReglerSaveData _settings;
+        final ControlSaveData _settings;
 
-        public AbstractLinePrinter(final File file, final AbstractDataContainer data, final ReglerSaveData settings)
+        public AbstractLinePrinter(final File file, final AbstractDataContainer data, final ControlSaveData settings)
                 throws SignalMissingException {
             _file = file;
             _data = data;
@@ -344,7 +344,7 @@ public final class DataSaver extends Observable implements Observer {
         private final String _separator;
 
         TxtLinePrinter(final File file, final AbstractDataContainer data,
-                final ReglerSaveData settings) throws SignalMissingException {
+                final ControlSaveData settings) throws SignalMissingException {
             super(file, data, settings);
             _separator = settings._itemSeparator.stringValue();
             setFormatters();
@@ -467,7 +467,7 @@ public final class DataSaver extends Observable implements Observer {
 
         private DataOutputStream _outputStream;
 
-        BinaryLinePrinter(final File file, final AbstractDataContainer data, final ReglerSaveData settings) throws SignalMissingException {
+        BinaryLinePrinter(final File file, final AbstractDataContainer data, final ControlSaveData settings) throws SignalMissingException {
             super(file, data, settings);
 
         }

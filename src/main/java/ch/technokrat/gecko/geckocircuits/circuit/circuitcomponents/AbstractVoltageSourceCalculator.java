@@ -14,13 +14,13 @@
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
 
-public abstract class AbstractVoltageSourceCalculator extends CircuitComponent<AbstractTwoPortLKreisBlock>
+public abstract class AbstractVoltageSourceCalculator extends CircuitComponent<AbstractTwoPortPowerCircuitBlock>
     implements AStampable, DirectCurrentCalculatable, HistoryUpdatable {
 
     protected int _z = -1;
 
 
-    public AbstractVoltageSourceCalculator(final AbstractTwoPortLKreisBlock parent) {
+    public AbstractVoltageSourceCalculator(final AbstractTwoPortPowerCircuitBlock parent) {
         super(parent);
     }
     

@@ -17,14 +17,14 @@ import ch.technokrat.gecko.geckocircuits.circuit.ComponentCoupling;
 import ch.technokrat.gecko.geckocircuits.circuit.CurrentMeasurable;
 import ch.technokrat.gecko.geckocircuits.circuit.DirectVoltageMeasurable;
 import ch.technokrat.gecko.geckocircuits.circuit.losscalculation.LossProperties;
-import ch.technokrat.gecko.geckocircuits.control.ReglerGate;
+import ch.technokrat.gecko.geckocircuits.control.ControlGate;
 
 public abstract class AbstractSwitch extends AbstractSemiconductor implements CurrentMeasurable, DirectVoltageMeasurable {
 
     public static final double UF_DEFAULT = 0.60;
     public static final double RD_ON_DEFAULT = 10e-3;
     public static final double RD_OFF_DEFAULT = 1e7;
-    ReglerGate _connectedGateBlock;
+    ControlGate _connectedGateBlock;
     
     protected final LossProperties verluste = new LossProperties(this);
 
@@ -34,19 +34,19 @@ public abstract class AbstractSwitch extends AbstractSemiconductor implements Cu
 
     @Override
     public final void doReferenceAddAction(final ComponentCoupling added) {
-        if (added.getParent() instanceof ReglerGate) {            
-            _connectedGateBlock = ((ReglerGate) added.getParent());            
+        if (added.getParent() instanceof ControlGate) {            
+            _connectedGateBlock = ((ControlGate) added.getParent());            
         }
     }
 
     @Override
     public final void doReferenceRemoveAction(final ComponentCoupling removed) {
-        if (removed.getParent() instanceof ReglerGate) {            
+        if (removed.getParent() instanceof ControlGate) {            
             _connectedGateBlock = null;
         }
     }
 
-    public final LossProperties getVerlustBerechnung() {
+    public final LossProperties getLossCalculation() {
         return verluste;
     }
 
@@ -66,6 +66,6 @@ public abstract class AbstractSwitch extends AbstractSemiconductor implements Cu
     
     @Override
     public void setToolbarPaintProperties() {
-        _connectedGateBlock = new ReglerGate();        
+        _connectedGateBlock = new ControlGate();        
     }
 }

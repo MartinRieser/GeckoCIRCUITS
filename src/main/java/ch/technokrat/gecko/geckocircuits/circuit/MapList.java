@@ -15,7 +15,7 @@ package ch.technokrat.gecko.geckocircuits.circuit;
 
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.AbstractCircuitBlockInterface;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.SubcircuitBlock;
-import ch.technokrat.gecko.geckocircuits.control.RegelBlock;
+import ch.technokrat.gecko.geckocircuits.control.ControlBlock;
 import ch.technokrat.gecko.geckocircuits.control.TextFieldBlock;
 import java.util.*;
 import java.util.Map.Entry;
@@ -29,9 +29,9 @@ public class MapList extends ArrayList<AbstractCircuitSheetComponent> {
     private static final long serialVersionUID = 1L;
 
     private final Class<?>[] registeredTypes = new Class<?>[]{
-        AbstractCircuitBlockInterface.class, RegelBlock.class, AbstractSpecialBlock.class, TextFieldBlock.class,
+        AbstractCircuitBlockInterface.class, ControlBlock.class, AbstractSpecialBlock.class, TextFieldBlock.class,
         ComponentCoupable.class, PotentialCoupable.class, 
-        AbstractBlockInterface.class, Verbindung.class, SubcircuitBlock.class
+        AbstractBlockInterface.class, Connection.class, SubcircuitBlock.class
     };
     private transient final Map<Class<?>, ArrayList<AbstractCircuitSheetComponent>> classMap = new HashMap<Class<?>, ArrayList<AbstractCircuitSheetComponent>>();
 

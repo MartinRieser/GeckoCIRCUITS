@@ -18,7 +18,7 @@ import ch.technokrat.gecko.Declaration;
 import ch.technokrat.gecko.Documentation;
 import ch.technokrat.gecko.GeckoRemoteInterface;
 import ch.technokrat.gecko.MethodCategory;
-import ch.technokrat.gecko.geckocircuits.allg.StartupWindow;
+import ch.technokrat.gecko.geckocircuits.general.StartupWindow;
 import ch.technokrat.gecko.geckocircuits.control.javablock.CodeWindowModern;
 import ch.technokrat.gecko.geckocircuits.control.javablock.CompileStatus;
 import ch.technokrat.gecko.geckocircuits.control.javablock.ExtraFilesWindow;

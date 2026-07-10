@@ -13,8 +13,8 @@
  */
 package ch.technokrat.gecko;
 
-import ch.technokrat.gecko.geckocircuits.allg.MainWindow;
-import ch.technokrat.gecko.geckocircuits.allg.OperatingMode;
+import ch.technokrat.gecko.geckocircuits.general.MainWindow;
+import ch.technokrat.gecko.geckocircuits.general.OperatingMode;
 import ch.technokrat.gecko.geckocircuits.newscope.Cispr16Fft;
 import java.io.FileNotFoundException;
 import java.rmi.RemoteException;

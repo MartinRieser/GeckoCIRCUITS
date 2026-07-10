@@ -14,7 +14,7 @@
 package ch.technokrat.gecko.geckocircuits.circuit;
 
 import ch.technokrat.gecko.GeckoRuntimeException;
-import ch.technokrat.gecko.geckocircuits.allg.ProjectData;
+import ch.technokrat.gecko.geckocircuits.general.ProjectData;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.SubcircuitBlock;
 import ch.technokrat.gecko.geckocircuits.control.Point;
 import ch.technokrat.gecko.geckocircuits.control.SubCircuitSheet;
@@ -24,7 +24,7 @@ import javax.swing.JOptionPane;
 
 
 /**
- * I made this component to be wrapped from ReglerTerminal and LKreisterminal.
+ * I made this component to be wrapped from ControlTerminal and LKreisterminal.
  * Otherwise, I cannot avoid code duplication. This is maybe not really
  * "beautiful", however DRY: don't repeat yourself!
  * @author andy
@@ -45,8 +45,8 @@ public final class TerminalToWrap {
     public void reCalculateLocation(final Point moveToPoint) {
         final int wsSizeX = _parentComponent.getParentCircuitSheet()._worksheetSize.getSizeX();
         final int wsSizeY = _parentComponent.getParentCircuitSheet()._worksheetSize.getSizeY();
-        final int checkedPointX = Math.min(moveToPoint.x + _parentComponent.getPositionVorVerschieben().x, wsSizeX - 1);
-        final int checkedPointY = Math.min(moveToPoint.y + _parentComponent.getPositionVorVerschieben().y, wsSizeY - 1);
+        final int checkedPointX = Math.min(moveToPoint.x + _parentComponent.getPositionBeforeMoving().x, wsSizeX - 1);
+        final int checkedPointY = Math.min(moveToPoint.y + _parentComponent.getPositionBeforeMoving().y, wsSizeY - 1);
         if (checkedPointY > checkedPointX * 1.0 * wsSizeY / wsSizeX) {
             if (checkedPointY < wsSizeY - checkedPointX * 1.0 * wsSizeY / wsSizeX) {
                 _parentComponent.setSheetPositionWithoutUndo(new Point(1, checkedPointY));

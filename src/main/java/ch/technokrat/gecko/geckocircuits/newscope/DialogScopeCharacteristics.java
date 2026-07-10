@@ -13,9 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.newscope;
 
-import ch.technokrat.gecko.geckocircuits.allg.FormatJTextField;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFilePathes;
-import ch.technokrat.gecko.geckocircuits.allg.TechFormat;
+import ch.technokrat.gecko.geckocircuits.general.FormatJTextField;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFilePathes;
+import ch.technokrat.gecko.geckocircuits.general.TechFormat;
 import ch.technokrat.gecko.geckocircuits.datacontainer.AbstractDataContainer;
 import ch.technokrat.gecko.i18n.GuiFabric;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
@@ -34,7 +34,7 @@ public class DialogScopeCharacteristics extends GeckoDialog {
     private static final long serialVersionUID = 1L;
     private GridBagConstraints _gridBagConst = new GridBagConstraints();
     private final TechFormat _cf = new TechFormat();
-    private FormatJTextField _jTextFieldStatus;  // Staus-Anzeige der Berechnung
+    private FormatJTextField _jTextFieldStatus;  // // Status display of the calculation
     private final JPanelDialogRange _panelDialRange;
     private final PanelCharacteristicsResult _characErgPanel;
     private PowerAnalysisPanel _powAnalPanel;

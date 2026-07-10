@@ -13,8 +13,8 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit;
 
-import ch.technokrat.gecko.geckocircuits.allg.ProjectData;
-import ch.technokrat.gecko.geckocircuits.allg.GeckoFile;
+import ch.technokrat.gecko.geckocircuits.general.ProjectData;
+import ch.technokrat.gecko.geckocircuits.general.GeckoFile;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.SubcircuitBlock;
 import ch.technokrat.gecko.geckocircuits.control.Point;
 import ch.technokrat.gecko.geckocircuits.control.SubCircuitSheet;
@@ -90,7 +90,7 @@ public abstract class AbstractCircuitSheetComponent {
      */
     public abstract AbstractCircuitSheetComponent copyFabric(final long shiftIdentifier);
 
-    abstract public int[] getAussenabmessungenRechteckEckpunkte();
+    abstract public int[] getOuterBounds();
 
     public AbstractCircuitSheetComponent() {
         _identifier.createNewIdentifier();

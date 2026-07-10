@@ -13,8 +13,8 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.TechFormat;
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.TechFormat;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractBlockInterface;
 import ch.technokrat.gecko.geckocircuits.circuit.ConnectorType;
 import static ch.technokrat.gecko.geckocircuits.circuit.ConnectorType.CONTROL;
@@ -31,7 +31,7 @@ import java.util.List;
 public abstract class AbstractCircuitBlockInterface extends AbstractBlockInterface {
 
     static final TechFormat tcf = new TechFormat();
-    static final int ARROW_LENGTH = 11, ARROW_WIDTH = 3;  // Symbol-Pfeil fuer Flussrichtung --> Pfeilspitzenabmessung
+    static final int ARROW_LENGTH = 11, ARROW_WIDTH = 3;  // // Symbol arrow for flow direction --> arrowhead dimension
     
     public double _currentInAmps;
     public double _voltage;        
@@ -81,26 +81,26 @@ public abstract class AbstractCircuitBlockInterface extends AbstractBlockInterfa
 
     @Override
     public final int istAngeklickt(final int mouseX, final int mouseY) {
-        if ((getAussenabmessungenRechteckEckpunkte()[0] <= mouseX)
-                && (mouseX <= getAussenabmessungenRechteckEckpunkte()[2])
-                && (getAussenabmessungenRechteckEckpunkte()[1] <= mouseY)
-                && (mouseY <= getAussenabmessungenRechteckEckpunkte()[3])) {
+        if ((getOuterBounds()[0] <= mouseX)
+                && (mouseX <= getOuterBounds()[2])
+                && (getOuterBounds()[1] <= mouseY)
+                && (mouseY <= getOuterBounds()[3])) {
             return 1;
         } else {
             return 00;
         }
     }
 
-    // fuer das MarkierungsRechteck - Aussenabmessungen sind Element-umfassendes Rechteck
+    // // for the marking rectangle - external dimensions are element-encompassing rectangle
     // --> new int[]{xLinksOben, yLinksOben, xRechtsUnten, yRechtsUnten} in 'echten' PixelPunkt-Koord.
     @Override
-    public final int[] getAussenabmessungenRechteckEckpunkte() {
+    public final int[] getOuterBounds() {
         return new int[]{dpix * (getSheetPosition().x - 1), dpix * (getSheetPosition().y - 1), dpix * (getSheetPosition().x + 1),
             dpix * (getSheetPosition().y + 1)};
-    }  // muss individuell implementiert werden        
+    }  // // must be implemented individually
 
-    public final CircuitTyp getCircuitTyp() {
-        return (CircuitTyp) getTypeEnum();
+    public final CircuitType getCircuitType() {
+        return (CircuitType) getTypeEnum();
     }
 
     /**

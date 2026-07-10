@@ -13,8 +13,8 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.GlobalColors;
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.GlobalColors;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractBlockInterface;
 import static ch.technokrat.gecko.geckocircuits.circuit.AbstractCircuitSheetComponent.dpix;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
@@ -91,9 +91,9 @@ public final class ReluctanceInductor extends AbstractCircuitBlockInterface
     ;
     
     private final AbstractVoltageSource _primarySource =
-            (AbstractVoltageSource) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_U, this);
+            (AbstractVoltageSource) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_U, this);
     public final AbstractVoltageSource _secondarySource =
-            (AbstractVoltageSource) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_U, this);
+            (AbstractVoltageSource) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_U, this);
 
     public ReluctanceInductor() {
         super();

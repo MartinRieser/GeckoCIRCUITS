@@ -14,7 +14,7 @@
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
 import ch.technokrat.gecko.GeckoSim;
-import ch.technokrat.gecko.geckocircuits.allg.AbstractComponentTyp;
+import ch.technokrat.gecko.geckocircuits.general.AbstractComponentType;
 import ch.technokrat.gecko.geckocircuits.circuit.DialogGlobalTerminal;
 import ch.technokrat.gecko.geckocircuits.circuit.GlobalTerminable;
 import ch.technokrat.gecko.geckocircuits.circuit.TerminalHiddenSubcircuit;
@@ -31,8 +31,8 @@ import java.util.Set;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class AbstractCircuitGlobalTerminal extends AbstractCircuitBlockInterface implements GlobalTerminable {    
-    public static final Map<AbstractComponentTyp, HashSet<AbstractCircuitGlobalTerminal>> ALL_GLOBALS = 
-            new HashMap<AbstractComponentTyp, HashSet<AbstractCircuitGlobalTerminal>>();
+    public static final Map<AbstractComponentType, HashSet<AbstractCircuitGlobalTerminal>> ALL_GLOBALS = 
+            new HashMap<AbstractComponentType, HashSet<AbstractCircuitGlobalTerminal>>();
 
     @SuppressWarnings("this-escape")
     public AbstractCircuitGlobalTerminal() {
@@ -43,11 +43,11 @@ public abstract class AbstractCircuitGlobalTerminal extends AbstractCircuitBlock
         // when loading from file. It will be replaced when the references are
         // set correctly.
         YOUT.add(new TerminalHiddenSubcircuit(this));
-        if(!ALL_GLOBALS.containsKey(getCircuitTyp())) {
-            ALL_GLOBALS.put(getCircuitTyp(), new HashSet<AbstractCircuitGlobalTerminal>());
+        if(!ALL_GLOBALS.containsKey(getCircuitType())) {
+            ALL_GLOBALS.put(getCircuitType(), new HashSet<AbstractCircuitGlobalTerminal>());
         } 
         
-        ALL_GLOBALS.get(getCircuitTyp()).add(this);        
+        ALL_GLOBALS.get(getCircuitType()).add(this);        
     }
         
     

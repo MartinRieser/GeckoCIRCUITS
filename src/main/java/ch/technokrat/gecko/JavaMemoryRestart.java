@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko;
 
-import ch.technokrat.gecko.geckocircuits.allg.GetJarPath;
+import ch.technokrat.gecko.geckocircuits.general.GetJarPath;
 import java.io.*;
 import java.security.AccessControlException;
 import java.util.ArrayList;

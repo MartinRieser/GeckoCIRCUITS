@@ -26,8 +26,7 @@ public interface DataContainerValuesSettable {
     
     /**
      * since we can insert values, the memory size should also be reportable
-     * @return 
-     */
+     * @return*/
     int getUsedRAMSizeInMB();
     long getCachedRAMSizeInMB();
     

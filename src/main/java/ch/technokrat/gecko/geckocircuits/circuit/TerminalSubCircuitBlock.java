@@ -15,9 +15,9 @@ package ch.technokrat.gecko.geckocircuits.circuit;
 
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.SubcircuitBlock;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.AbstractCircuitTerminal;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalColors;
+import ch.technokrat.gecko.geckocircuits.general.GlobalColors;
 import ch.technokrat.gecko.geckocircuits.control.Point;
-import ch.technokrat.gecko.geckocircuits.control.ReglerTERMINAL;
+import ch.technokrat.gecko.geckocircuits.control.ControlTERMINAL;
 import ch.technokrat.gecko.geckocircuits.control.SubCircuitSheet;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -74,7 +74,7 @@ public final class TerminalSubCircuitBlock extends AbstractTerminal implements C
             return lkTerminal.getSimulationDomain();
         }
 
-        if (_lkTerminal instanceof ReglerTERMINAL) {
+        if (_lkTerminal instanceof ControlTERMINAL) {
             return ConnectorType.CONTROL;
         }
         assert false;

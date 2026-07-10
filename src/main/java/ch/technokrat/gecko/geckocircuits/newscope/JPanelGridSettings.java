@@ -93,16 +93,16 @@ public class JPanelGridSettings extends javax.swing.JPanel {
         jLabelTickSpace = new javax.swing.JLabel();
         jLabelTickLengthMaj = new javax.swing.JLabel();
         jCheckBoxShowLabelMaj = new javax.swing.JCheckBox();
-        formatJTextFieldTickSpace = new ch.technokrat.gecko.geckocircuits.allg.FormatJTextField();
-        formatJTextFieldTickLenghtMaj = new ch.technokrat.gecko.geckocircuits.allg.FormatJTextField();
+        formatJTextFieldTickSpace = new ch.technokrat.gecko.geckocircuits.general.FormatJTextField();
+        formatJTextFieldTickLenghtMaj = new ch.technokrat.gecko.geckocircuits.general.FormatJTextField();
         jPanelMin = new javax.swing.JPanel();
         jCheckBoxShowGridLineMin = new javax.swing.JCheckBox();
         jPanelLineMinGrid = new ch.technokrat.gecko.geckocircuits.newscope.JPanelLineProperties();
         jLabelNumTicks = new javax.swing.JLabel();
         jLabelTickLengthMin = new javax.swing.JLabel();
         jCheckBoxShowLabelMin = new javax.swing.JCheckBox();
-        formatJTextFieldNumTicks = new ch.technokrat.gecko.geckocircuits.allg.FormatJTextField();
-        formatJTextFieldTickLengthMin = new ch.technokrat.gecko.geckocircuits.allg.FormatJTextField();
+        formatJTextFieldNumTicks = new ch.technokrat.gecko.geckocircuits.general.FormatJTextField();
+        formatJTextFieldTickLengthMin = new ch.technokrat.gecko.geckocircuits.general.FormatJTextField();
         jCheckBoxAutoGridLine = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Define Ticks", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Arial", 0, 12))); // NOI18N
@@ -409,10 +409,10 @@ public class JPanelGridSettings extends javax.swing.JPanel {
     }//GEN-LAST:event_formatJTextFieldTickLenghtMajKeyReleased
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private ch.technokrat.gecko.geckocircuits.allg.FormatJTextField formatJTextFieldNumTicks;
-    private ch.technokrat.gecko.geckocircuits.allg.FormatJTextField formatJTextFieldTickLenghtMaj;
-    private ch.technokrat.gecko.geckocircuits.allg.FormatJTextField formatJTextFieldTickLengthMin;
-    private ch.technokrat.gecko.geckocircuits.allg.FormatJTextField formatJTextFieldTickSpace;
+    private ch.technokrat.gecko.geckocircuits.general.FormatJTextField formatJTextFieldNumTicks;
+    private ch.technokrat.gecko.geckocircuits.general.FormatJTextField formatJTextFieldTickLenghtMaj;
+    private ch.technokrat.gecko.geckocircuits.general.FormatJTextField formatJTextFieldTickLengthMin;
+    private ch.technokrat.gecko.geckocircuits.general.FormatJTextField formatJTextFieldTickSpace;
     private javax.swing.JCheckBox jCheckBoxAutoGridLine;
     private javax.swing.JCheckBox jCheckBoxAutoSpacing;
     private javax.swing.JCheckBox jCheckBoxShowGridLineMaj;

@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko;
 
-import ch.technokrat.gecko.geckocircuits.allg.*;
+import ch.technokrat.gecko.geckocircuits.general.*;
 import ch.technokrat.gecko.i18n.LangInit;
 import java.awt.Color;
 import java.awt.Font;
@@ -220,7 +220,7 @@ public class GeckoSim {
                         } else if (args[i].equals("-mm")) { //memory mapped file access
                             try {
                                 //there must be one additional argument - the file name
-                                //there should also be a second one - the file size - but if this one is missing we can set the default size
+                                // //there should also be a second one - the file size - but if this one is missing we can set the default size
                                 if (i != (args.length -1)) {
                                     final String fileName = args[i+1];
                                     final long fileSize;
@@ -383,7 +383,7 @@ public class GeckoSim {
         }
     }
 
-    // funktioniert nur, wenn Java 1.6 installiert ist -> 
+    // // only works if Java 1.6 is installed ->
     private void checkJavaVersion() {
         try {
             Properties sysProp = System.getProperties();
@@ -469,7 +469,7 @@ public class GeckoSim {
         try {
 
             // bad hack: if property is found in defaultProperties, and not in
-            // application properties, this will save the missing property also
+            // // application properties, this will save the missing property also
             // in the newly created application-property file.
             Enumeration<?> propNames = applicationProps.propertyNames();
             while (propNames.hasMoreElements()) {

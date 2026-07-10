@@ -97,7 +97,7 @@ public class Paradiso {
         
         
         /* -------------------------------------------------------------------- */
-        /* ..  Reordering and Symbolic Factorization.  This step also allocates */
+        /*.. Reordering and Symbolic Factorization.  This step also allocates*/
         /*     all memory that is necessary for the factorization.              */
         /* -------------------------------------------------------------------- */
         int phase = 11;        

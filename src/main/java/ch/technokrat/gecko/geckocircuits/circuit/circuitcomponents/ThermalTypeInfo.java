@@ -16,7 +16,7 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractBlockInterface;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.geckocircuits.circuit.ConnectorType;
-import ch.technokrat.gecko.geckocircuits.circuit.SpecialTyp;
+import ch.technokrat.gecko.geckocircuits.circuit.SpecialType;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,7 +54,7 @@ public class ThermalTypeInfo extends AbstractTypeInfo {
             return _typeClass.getDeclaredConstructor().newInstance();
         } catch (Throwable ex) {
             System.err.println("error: " + _typeClass);
-            Logger.getLogger(SpecialTyp.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SpecialType.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
 

@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFilePathes;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFilePathes;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.geckocircuits.control.Point;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
@@ -32,13 +32,13 @@ final class ThermMODUL extends AbstractCircuitBlockInterface {
     // pro befestigtem Halbleiter(modul) gibt es einen Anschluss
     private double[] _xBef = new double[MAX_INPUT_NO], _yBef = new double[MAX_INPUT_NO];
     private final int _noOfChips;
-    private double _xOUT, _yOUT;  // es gibt 1 SignalAusgang (Waermestrom zum Kuehler)
-    // zum Zeichnen eines Kuehlers (Pixelpunkt-Daten vom ICEPAK-Screenshot gemessen):
+    private double _xOUT, _yOUT;  // // there is 1 signal output (heat flow to the cooler)
+    // // to draw a cooler (pixel point data measured from ICEPAK screenshot):
     private final double _scaling;  // Skalierung
     private static final int X_CENTER = 430, Y_CENTER = 250;  // Zentrum des Modul-Bildes in PixelPunkten
     // Dateiname (inkl. Pfad) des Modul-ESBs:
     private String _fileName = GlobalFilePathes.DATNAM_NOT_DEFINED;
-    // ID-Strings der SubCircuit-Elemente -->
+    // // ID strings of the SubCircuit elements -->
     private static final int D_E = 5;
     private static final double B_R = 2.5;
     private static final int MAX_INPUT_NO = 99;

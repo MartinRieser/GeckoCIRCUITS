@@ -33,13 +33,13 @@ import javax.swing.JFrame;
 public class DialogExternal extends javax.swing.JDialog {
 
     private static final long serialVersionUID = 1L;
-    private final RegelBlockSimulink _regelBlock;
-    private transient List<RegelBlock> orderList;
+    private final ControlBlockSimulink _regelBlock;
+    private transient List<ControlBlock> orderList;
 //
 
     /** Creates new form DialogExterna */
     @SuppressWarnings("this-escape")
-    public DialogExternal(final RegelBlockSimulink regelBlock) {
+    public DialogExternal(final ControlBlockSimulink regelBlock) {
         super((JFrame) null, true);
         this.setLocationByPlatform(true);
 
@@ -58,7 +58,7 @@ public class DialogExternal extends javax.swing.JDialog {
         DefaultListModel<String> model = new DefaultListModel<String>();
         jList1.setModel(model);
         
-        for (RegelBlock block : orderList) {
+        for (ControlBlock block : orderList) {
             model.addElement(block.getStringID());
             if (block == _regelBlock) {
                 jList1.setSelectedIndex(orderList.indexOf(_regelBlock));
@@ -220,19 +220,19 @@ public class DialogExternal extends javax.swing.JDialog {
     }//GEN-LAST:event_jTextFieldIdStringKeyTyped
 
     private void jSpinnerPortNumberStateChanged(javax.swing.event.ChangeEvent evt) {//NOPMD//GEN-FIRST:event_jSpinnerPortNumberStateChanged
-        if (_regelBlock instanceof ReglerToEXTERNAL) {
-            ((ReglerToEXTERNAL) _regelBlock).setInputTerminalNumber((Integer) jSpinnerPortNumber.getValue());
+        if (_regelBlock instanceof ControlToEXTERNAL) {
+            ((ControlToEXTERNAL) _regelBlock).setInputTerminalNumber((Integer) jSpinnerPortNumber.getValue());
         }
 
-        if (_regelBlock instanceof ReglerFromEXTERNAL) {
-            ((ReglerFromEXTERNAL) _regelBlock).setOutputTerminalNumber((Integer) jSpinnerPortNumber.getValue());
+        if (_regelBlock instanceof ControlFromEXTERNAL) {
+            ((ControlFromEXTERNAL) _regelBlock).setOutputTerminalNumber((Integer) jSpinnerPortNumber.getValue());
         }                
         
     }//GEN-LAST:event_jSpinnerPortNumberStateChanged
 
     private void jButtonDownActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD//GEN-FIRST:event_jButtonDownActionPerformed
         int selectedIndex = jList1.getSelectedIndex();
-        RegelBlock selectedBlock = null;
+        ControlBlock selectedBlock = null;
 
         if (selectedIndex < orderList.size() - 1 && selectedIndex >= 0) {
             selectedBlock = orderList.get(selectedIndex);
@@ -251,7 +251,7 @@ public class DialogExternal extends javax.swing.JDialog {
 
 
         int selectedIndex = jList1.getSelectedIndex();
-        RegelBlock selectedBlock = null;
+        ControlBlock selectedBlock = null;
 
         if (selectedIndex > 0) {
             selectedBlock = orderList.get(selectedIndex);

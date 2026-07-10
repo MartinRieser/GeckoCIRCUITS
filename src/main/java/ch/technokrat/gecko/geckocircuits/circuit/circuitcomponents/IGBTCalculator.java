@@ -44,7 +44,7 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
         _current = (_voltage - _uForward) / _rDt;
         //System.out.println("IGBT " + _element._elementName.getValue() + " voltage: " + _voltage + ", current: " + _current);
         if (_gateValue) {
-            // Andy bugfix/modification: _rDt * current was probably missing, also in the old GeckoCIRCUITS
+            // // Andy bugfix/modification: _rDt * current was probably missing, also in the old GeckoCIRCUITS
             if (_voltage + _rDt * _current <= disturbanceValue * _uForward) {
                 if (_rDt < _rOFF) {
                     //System.out.println("voltage less than VF for " + _element._elementName.getValue() + " when in ON state");

@@ -13,10 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit;
 
-import ch.technokrat.gecko.geckocircuits.allg.ProjectData;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalColors;
-import ch.technokrat.gecko.geckocircuits.allg.TechFormat;
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.ProjectData;
+import ch.technokrat.gecko.geckocircuits.general.GlobalColors;
+import ch.technokrat.gecko.geckocircuits.general.TechFormat;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.AbstractNonLinearCircuitComponent;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.Nonlinearable;
 import ch.technokrat.gecko.geckocircuits.control.ControlInputTwoTerminalStateable;
@@ -41,7 +41,7 @@ public final class SchematicTextInfo {
     private int _xTxtKlickMax;
     private int _yTxtKlickMin;
     private int _yTxtKlickMax;
-    private Point _txtKlickPoint;  // zum Starten des relativen Text-Verschiebens wurd initial auf diesen Punkt geklickt
+    private Point _txtKlickPoint;  // // To start the relative text movement, this point was initially clicked
     private double _dxTxt = 2.0;
     private double _dyTxt = 2.0;
     private double _maxLengthText = 4.0;
@@ -73,7 +73,7 @@ public final class SchematicTextInfo {
         return (_xTxtKlickMin <= mouseX) && (mouseX <= _xTxtKlickMax) && (_yTxtKlickMin <= mouseY) && (mouseY <= _yTxtKlickMax);
     }
 
-    public void zeichneLinie(final Graphics graphics, final boolean showLine) {
+    public void drawLine(final Graphics graphics, final boolean showLine) {
 
         if (_neverVisible) {
             return;
@@ -161,7 +161,7 @@ public final class SchematicTextInfo {
 
         final FontRenderContext frc = graphics.getFontRenderContext();
         final int dpix = AbstractCircuitSheetComponent.dpix;
-        if (SchematicEditor2._thermDisplayMode.showName) {  // falls zusaetzlich auch der Name angezeigt werden soll
+        if (SchematicEditor2._thermDisplayMode.showName) {  // // if the name should also be displayed
             _yTxtKlickMin = _yTxtKlickMin - SchematicEditor2.DY_ZEILENABSTAND_TXT;
         }
 

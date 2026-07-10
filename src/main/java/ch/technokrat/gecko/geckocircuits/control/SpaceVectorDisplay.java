@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.control;
 
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFilePathes;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFilePathes;
 import javax.swing.ImageIcon; 
 import java.net.URI;
 import java.net.URL;
@@ -59,7 +59,7 @@ public class SpaceVectorDisplay extends javax.swing.JFrame {
     SpaceVector sv1;
     SpaceVector sv2;
     SpaceVector sv3;
-    private ReglerSpaceVector reglerSpaceVector;
+    private ControlSpaceVector controlSpaceVector;
    
 
     private class SpaceVector {
@@ -166,7 +166,7 @@ public class SpaceVectorDisplay extends javax.swing.JFrame {
 
 
     /** Creates new form SpaceVectorDisplay */
-    public SpaceVectorDisplay(RegelBlock regelBlock) {
+    public SpaceVectorDisplay(ControlBlock regelBlock) {
         try {
             URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;
             // Fix for Java 21: use URL constructor instead of URI.toURL()
@@ -175,8 +175,8 @@ public class SpaceVectorDisplay extends javax.swing.JFrame {
         } catch (Exception ex) {}
         initComponents();
 
-        if(regelBlock instanceof ReglerSpaceVector) {
-            reglerSpaceVector = (ReglerSpaceVector) regelBlock;
+        if(regelBlock instanceof ControlSpaceVector) {
+            controlSpaceVector = (ControlSpaceVector) regelBlock;
         }
 
         doubleBufferImage = gfxConf.createCompatibleImage(getWidth(), getHeight());

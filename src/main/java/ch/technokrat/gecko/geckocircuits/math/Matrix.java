@@ -747,9 +747,8 @@ public class Matrix implements Cloneable, java.io.Serializable {
     }
 
     /** Solve X*A = B, which is also A'*X' = B'
-    @param B    right hand side
-    @return     solution if A is square, least squares solution otherwise.
-     */
+    @param B right hand side
+    @return solution if A is square, least squares solution otherwise.*/
     public Matrix solveTranspose(Matrix B) {
         return transpose().solve(B.transpose());
     }

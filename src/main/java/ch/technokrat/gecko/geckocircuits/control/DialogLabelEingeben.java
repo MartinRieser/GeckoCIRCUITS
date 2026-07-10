@@ -14,8 +14,8 @@
 package ch.technokrat.gecko.geckocircuits.control;
 
 import ch.technokrat.gecko.GeckoSim;
-import ch.technokrat.gecko.geckocircuits.allg.FormatJTextField;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFilePathes;
+import ch.technokrat.gecko.geckocircuits.general.FormatJTextField;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFilePathes;
 import ch.technokrat.gecko.geckocircuits.circuit.*;
 import ch.technokrat.gecko.i18n.GuiFabric;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
@@ -32,7 +32,7 @@ import javax.swing.*;
 public final class DialogLabelEingeben extends JDialog {
 
     private static final long serialVersionUID = 1L;
-    private final transient Verbindung _connector;
+    private final transient Connection _connector;
     private final FormatJTextField _textField = new FormatJTextField();
     private final String _originalLabel;
     private JCheckBox jCheckBoxEnabled;
@@ -55,8 +55,8 @@ public final class DialogLabelEingeben extends JDialog {
         _clickedTerminal = terminal;
         _label = terminal.getLabelObject();
         _conType = _clickedTerminal.getCategory();
-        if (terminal instanceof TerminalVerbindung) {
-            _connector = ((TerminalVerbindung) terminal).getParentConnection();
+        if (terminal instanceof TerminalConnection) {
+            _connector = ((TerminalConnection) terminal).getParentConnection();
         } else {
             _connector = null;
         }        
@@ -124,7 +124,7 @@ public final class DialogLabelEingeben extends JDialog {
 
                 }
 
-                // 'OK'-Knopf oder 'Return'-Taste gedrueckt --> entsprechender Label des Elements wird aktualisiert
+                // // 'OK' button or 'Return' key pressed --> the corresponding label of the element is updated
                 _label.setLabelFromUserDialog(_textField.getText());                
                 _clickedTerminal.getCircuitSheet().updateRenamedLabel(_originalLabel, _textField.getText(), _conType);
                 SchematicEditor2.Singleton.registerChangeWithNetlistUpdate();

@@ -13,15 +13,15 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.MainWindow;
-import ch.technokrat.gecko.geckocircuits.allg.SolverType;
+import ch.technokrat.gecko.geckocircuits.general.MainWindow;
+import ch.technokrat.gecko.geckocircuits.general.SolverType;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTerminal;
 
 /**
  *
  * @author andy
  */
-public abstract class CircuitComponent<T extends AbstractTwoPortLKreisBlock> {
+public abstract class CircuitComponent<T extends AbstractTwoPortPowerCircuitBlock> {
 
     protected int _portNumber = -1;
     protected int[] matrixIndices = new int[]{-1, -1};

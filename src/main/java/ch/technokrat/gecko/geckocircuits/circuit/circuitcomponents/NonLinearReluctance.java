@@ -13,7 +13,7 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
  *  You should have received a copy of the GNU General Public License along with
  *  GeckoCIRCUITS.  If not, see <http://www.gnu.org/licenses/>.
  */
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractBlockInterface;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractCircuitSheetComponent;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
@@ -48,9 +48,9 @@ public final class NonLinearReluctance extends AbstractNonLinearCircuitComponent
     private static final double WIDTH = 0.35;
     private static final double HEIGHT = 1;
     private final AbstractVoltageSource _primarySource
-            = (AbstractVoltageSource) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_U, this);
+            = (AbstractVoltageSource) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_U, this);
     public final AbstractVoltageSource _secondarySource
-            = (AbstractVoltageSource) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_U, this);
+            = (AbstractVoltageSource) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_U, this);
     private AbstractBlockInterface[] qLK = new AbstractBlockInterface[]{_primarySource, _secondarySource};
 
     public NonLinearReluctance() {

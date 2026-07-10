@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.javablock;
 
-import ch.technokrat.gecko.geckocircuits.allg.GeckoFile;
+import ch.technokrat.gecko.geckocircuits.general.GeckoFile;
 import ch.technokrat.gecko.geckocircuits.circuit.NameAlreadyExistsException;
 import ch.technokrat.gecko.geckocircuits.circuit.SchematicEditor2;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -31,7 +31,7 @@ import java.awt.event.WindowEvent;
 
 public class CodeWindowModern extends JFrame {
     private static final long serialVersionUID = 1L;
-    private transient ReglerJavaFunction _javaFunction;
+    private transient ControlJavaFunction _javaFunction;
     private final VariableBusWidth _variableBusWidth;
     private final StringBuffer _outputStringBuffer;
 
@@ -54,7 +54,7 @@ public class CodeWindowModern extends JFrame {
     private boolean _extWindowInit = false;
 
     @SuppressWarnings("this-escape")
-    public CodeWindowModern(ReglerJavaFunction regelBlock, StringBuffer outputStringBuffer) {
+    public CodeWindowModern(ControlJavaFunction regelBlock, StringBuffer outputStringBuffer) {
         super();
         setTitle("Java Custom Code Control Block");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -99,7 +99,7 @@ public class CodeWindowModern extends JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                loadCodeIntoRegler();
+                loadCodeIntoControl();
             }
         });
     }
@@ -205,11 +205,11 @@ public class CodeWindowModern extends JFrame {
 
         btnCompile.addActionListener(e -> {
             _tabbedPane.setSelectedIndex(1);
-            loadCodeIntoRegler();
+            loadCodeIntoControl();
         });
 
         btnClose.addActionListener(e -> {
-            loadCodeIntoRegler();
+            loadCodeIntoControl();
             dispose();
         });
 
@@ -467,7 +467,7 @@ public class CodeWindowModern extends JFrame {
         _tabbedPane.setSelectedIndex(0);
     }
 
-    private void loadCodeIntoRegler() {
+    private void loadCodeIntoControl() {
         JavaBlockSource newSource = new JavaBlockSource.Builder()
                 .sourceCode(_codeTextArea.getText())
                 .importsCode(_importsTextArea.getText())

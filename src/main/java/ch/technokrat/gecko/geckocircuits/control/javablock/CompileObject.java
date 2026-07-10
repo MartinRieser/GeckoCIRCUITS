@@ -15,9 +15,9 @@
 package ch.technokrat.gecko.geckocircuits.control.javablock;
 
 import ch.technokrat.gecko.GeckoRuntimeException;
-import ch.technokrat.gecko.geckocircuits.allg.GeckoFile;
-import ch.technokrat.gecko.geckocircuits.allg.GetJarPath;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFilePathes;
+import ch.technokrat.gecko.geckocircuits.general.GeckoFile;
+import ch.technokrat.gecko.geckocircuits.general.GetJarPath;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFilePathes;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -106,9 +106,9 @@ public final class CompileObject extends AbstractCompileObject {
                 _compilerWriter.append("Compile status: ERROR");
             }
         } catch (IllegalArgumentException ex) {
-            Logger.getLogger(ReglerJavaFunction.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SecurityException ex) {
-            Logger.getLogger(ReglerJavaFunction.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         _compilerWriter.close();
@@ -170,12 +170,12 @@ public final class CompileObject extends AbstractCompileObject {
                     compiler = (JavaCompiler) Class.forName("com.sun.tools.javac.api.JavacTool").newInstance();
                     Logger.getLogger(CompileObject.class.getName()).log(Level.INFO, "Java Compiler found via fallback: " + compiler.getClass().getName());
                 } catch (InstantiationException ex) {
-                    Logger.getLogger(ReglerJavaFunction.class.getName()).log(Level.SEVERE, "InstantiationException in fallback compiler", ex);
+                    Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, "InstantiationException in fallback compiler", ex);
                 } catch (IllegalAccessException ex) {
-                    Logger.getLogger(ReglerJavaFunction.class.getName()).log(Level.SEVERE, "IllegalAccessException in fallback compiler", ex);
+                    Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, "IllegalAccessException in fallback compiler", ex);
                 }
             } catch (ClassNotFoundException ex) {
-                Logger.getLogger(ReglerJavaFunction.class.getName()).log(Level.SEVERE, "ClassNotFoundException in fallback compiler", ex);
+                Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, "ClassNotFoundException in fallback compiler", ex);
             }
 
             if (compiler == null) {

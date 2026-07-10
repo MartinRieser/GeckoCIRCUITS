@@ -13,8 +13,8 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.GlobalColors;
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.GlobalColors;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractBlockInterface;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractCircuitSheetComponent;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractSpecialBlock;
@@ -33,7 +33,7 @@ import ch.technokrat.gecko.geckocircuits.circuit.TerminalToWrap;
 import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
 import ch.technokrat.gecko.geckocircuits.control.DialogLabelEingeben;
 import ch.technokrat.gecko.geckocircuits.control.Point;
-import ch.technokrat.gecko.geckocircuits.control.ReglerTERMINAL;
+import ch.technokrat.gecko.geckocircuits.control.ControlTERMINAL;
 import ch.technokrat.gecko.geckocircuits.control.SubCircuitSheet;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Color;
@@ -252,7 +252,7 @@ public final class SubcircuitBlock extends AbstractSpecialBlock {
     }
 
     @Override
-    public int[] getAussenabmessungenRechteckEckpunkte() {
+    public int[] getOuterBounds() {
         return new int[]{dpix * getSheetPosition().x, dpix * getSheetPosition().y,
                     dpix * (getSheetPosition().x + _blockSizeX.getValue() - 1),
                     dpix * (getSheetPosition().y + _blockSizeY.getValue() - 1)};
@@ -406,7 +406,7 @@ public final class SubcircuitBlock extends AbstractSpecialBlock {
                     assert false;
                     return GlobalColors.farbeFertigElementLK;
             }
-        } else if (terminal instanceof ReglerTERMINAL) {
+        } else if (terminal instanceof ControlTERMINAL) {
             return GlobalColors.farbeFertigElementCONTROL;
         }
         

@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.newscope;
 
-import ch.technokrat.gecko.geckocircuits.allg.ProjectData;
+import ch.technokrat.gecko.geckocircuits.general.ProjectData;
 import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
 
 /**
@@ -172,10 +172,9 @@ public final class AxisGridSettings{
   }
 
   /**
-   * wenn die Diagramme in einem sehr kleinen Fenster gezeichnet werden, dann
-   * muessen eventuell die Grid-Linien ausgeblendet werden, um eine gewisse
-   * Uebersichtlichkeit zu wahren -->
-   */
+   * if the charts are drawn in a very small window then
+   * The grid lines may need to be hidden to achieve a certain
+   * To maintain clarity -->*/
   public void blendeEventuellGridLinienAus(final int axisLengthPix){
     if(_autoGrids){
       if(isUserShowGridMaj() && axisLengthPix > PX2 * PXR){

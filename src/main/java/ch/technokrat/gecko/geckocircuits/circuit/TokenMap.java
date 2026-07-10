@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit;
 
-import ch.technokrat.gecko.geckocircuits.allg.ProjectData;
+import ch.technokrat.gecko.geckocircuits.general.ProjectData;
 import ch.technokrat.gecko.geckocircuits.newscope.HiLoData;
 import java.util.*;
 import java.util.logging.Level;
@@ -38,9 +38,9 @@ public final class TokenMap {
     public TokenMap(final String[] ascii, final boolean makeSpecialPairs) {
         asciiLines = ascii;
         if (makeSpecialPairs) {
-            _specialTokens.put("verbindungLK", new SpecialPair("<Verbindung>", "<\\Verbindung>"));
-            _specialTokens.put("verbindungCONTROL", new SpecialPair("<Verbindung>", "<\\Verbindung>"));
-            _specialTokens.put("verbindungTHERM", new SpecialPair("<Verbindung>", "<\\Verbindung>"));
+            _specialTokens.put("verbindungLK", new SpecialPair("<Connection>", "<\\Connection>"));
+            _specialTokens.put("verbindungCONTROL", new SpecialPair("<Connection>", "<\\Connection>"));
+            _specialTokens.put("verbindungTHERM", new SpecialPair("<Connection>", "<\\Connection>"));
             _specialTokens.put("e", new SpecialPair("<ElementLK>", "<\\ElementLK>"));
             _specialTokens.put("sp", new SpecialPair("<ElementSPECIAL>", "<\\ElementSPECIAL>"));
             _specialTokens.put("eTH", new SpecialPair("<ElementTHERM>", "<\\ElementTHERM>"));
@@ -296,7 +296,7 @@ public final class TokenMap {
             final Integer lineNumber = _map.get(identifier);
             final String ascii = asciiLines[lineNumber];
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
-            stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
+            stk.nextToken();  // // 1st entry is ID string --> will be skipped
             return Long.parseLong(stk.nextToken());
         } catch (Exception ex) {
             logErrorString(identifier, ex);
@@ -309,7 +309,7 @@ public final class TokenMap {
             final Integer lineNumber = _map.get(identifier);
             final String ascii = asciiLines[lineNumber];
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
-            stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen            
+            stk.nextToken();  // // 1st entry is ID string --> will be skipped
             String wert = stk.nextToken();
             if (wert.equals(ProjectData.NIX)) {
                 return "";
@@ -328,7 +328,7 @@ public final class TokenMap {
             final Integer lineNumber = _map.get(identifier);
             final String ascii = asciiLines[lineNumber];
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
-            stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
+            stk.nextToken();  // // 1st entry is ID string --> will be skipped
             return Boolean.parseBoolean(stk.nextToken());
         } catch (Exception ex) {
             logErrorString(identifier, ex);
@@ -341,7 +341,7 @@ public final class TokenMap {
             final Integer lineNumber = _map.get(identifier);
             final String ascii = asciiLines[lineNumber];
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
-            stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
+            stk.nextToken();  // // 1st entry is ID string --> will be skipped
             return Double.parseDouble(stk.nextToken());
         } catch (Exception ex) {
             logErrorString(identifier, ex);
@@ -354,7 +354,7 @@ public final class TokenMap {
             final Integer lineNumber = _map.get(identifier);
             final String ascii = asciiLines[lineNumber];
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
-            stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
+            stk.nextToken();  // // 1st entry is ID string --> will be skipped
             float lowValue = Float.parseFloat(stk.nextToken());
             float hiValue = Float.parseFloat(stk.nextToken());
             return HiLoData.hiLoDataFabric(lowValue, hiValue);
@@ -370,7 +370,7 @@ public final class TokenMap {
             final String ascii = asciiLines[lineNumber];
             final String asciiDaten = ascii.substring(ascii.indexOf(' '));
             final StringTokenizer stk = new StringTokenizer(asciiDaten, ProjectData.SEPARATOR_ASCII_STRINGARRAY);
-            stk.nextToken();  // erster Wert wird uebersprungen
+            stk.nextToken();  // // first value is skipped
             String[] wert = new String[stk.countTokens()];
             for (int i1 = 0; i1 < wert.length; i1++) {
                 wert[i1] = stk.nextToken();
@@ -390,7 +390,7 @@ public final class TokenMap {
             final Integer lineNumber = _map.get(identifier);
             final String ascii = asciiLines[lineNumber];            
             final StringTokenizer stk = new StringTokenizer(ascii, ProjectData.SEPARATOR_ASCII_STRINGARRAY);
-            stk.nextToken();  // erster Wert wird uebersprungen
+            stk.nextToken();  // // first value is skipped
             final int numberTokens = stk.countTokens();            
             List<String> wert = new ArrayList<String>();
             for (int i1 = 0; i1 < numberTokens; i1++) {
@@ -414,7 +414,7 @@ public final class TokenMap {
             final Integer lineNumber = _map.get(identifier);
             final String ascii = asciiLines[lineNumber];
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
-            stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
+            stk.nextToken();  // // 1st entry is ID string --> will be skipped
             final int size1 = Integer.parseInt(stk.nextToken());
             final int size2 = Integer.parseInt(stk.nextToken());
             final boolean[][] wert = new boolean[size1][size2];
@@ -436,7 +436,7 @@ public final class TokenMap {
             final String ascii = asciiLines[lineNumber];
 
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
-            stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
+            stk.nextToken();  // // 1st entry is ID string --> will be skipped
             final int size1 = Integer.parseInt(stk.nextToken());
             final int size2 = Integer.parseInt(stk.nextToken());
             int[][] wert = new int[size1][size2];
@@ -458,7 +458,7 @@ public final class TokenMap {
             final String ascii = asciiLines[lineNumber];
 
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
-            stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
+            stk.nextToken();  // // 1st entry is ID string --> will be skipped
             final int size1 = Integer.parseInt(stk.nextToken());
             final int size2 = Integer.parseInt(stk.nextToken());
             double[][] wert = new double[size1][size2];
@@ -481,7 +481,7 @@ public final class TokenMap {
 
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
             final boolean[] wert = new boolean[stk.countTokens() - 1];
-            stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
+            stk.nextToken();  // // 1st entry is ID string --> will be skipped
             for (int i1 = 0; i1 < wert.length; i1++) {
                 final String zzString = stk.nextToken();
                 if (i1 == 0 && "null".equals(zzString)) {
@@ -509,7 +509,7 @@ public final class TokenMap {
             final String ascii = asciiLines[lineNumber];
 
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
-            final String identifierNew = stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
+            final String identifierNew = stk.nextToken();  // // 1st entry is ID string --> will be skipped
             String wert = ascii;
             if (stk.hasMoreElements()) {
                 // remove first token, the rest is the String to read in.
@@ -533,7 +533,7 @@ public final class TokenMap {
 
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
             final double[] wert = new double[stk.countTokens() - 1];
-            stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
+            stk.nextToken();  // // 1st entry is ID string --> will be skipped
             for (int i1 = 0; i1 < wert.length; i1++) {
                 final String zzString = stk.nextToken();
                 if (i1 == 0 && "null".equals(zzString)) {
@@ -557,7 +557,7 @@ public final class TokenMap {
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
             final int numberReadTokens = stk.countTokens()-1;
             final List<Double> wert = new ArrayList<Double>();
-            stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
+            stk.nextToken();  // // 1st entry is ID string --> will be skipped
             for (int i1 = 0; i1 < numberReadTokens; i1++) {
                 final String zzString = stk.nextToken();
                 if (i1 == 0 && "null".equals(zzString)) {
@@ -580,7 +580,7 @@ public final class TokenMap {
 
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
             final int[] wert = new int[stk.countTokens() - 1];
-            stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
+            stk.nextToken();  // // 1st entry is ID string --> will be skipped
             for (int i1 = 0; i1 < wert.length; i1++) {
                 final String zzString = stk.nextToken();
                 if (i1 == 0 && "null".equals(zzString)) {
@@ -602,7 +602,7 @@ public final class TokenMap {
 
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
             final long[] wert = new long[stk.countTokens() - 1];
-            stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
+            stk.nextToken();  // // 1st entry is ID string --> will be skipped
             for (int i1 = 0; i1 < wert.length; i1++) {
                 final String zzString = stk.nextToken();
                 if (i1 == 0 && "null".equals(zzString)) {
@@ -626,7 +626,7 @@ public final class TokenMap {
 
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
             final byte[] wert = new byte[stk.countTokens() - 1];
-            stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
+            stk.nextToken();  // // 1st entry is ID string --> will be skipped
             for (int i1 = 0; i1 < wert.length; i1++) {
                 final String zzString = stk.nextToken();
                 if (i1 == 0 && "null".equals(zzString)) {
@@ -647,7 +647,7 @@ public final class TokenMap {
             final String ascii = asciiLines[lineNumber];
 
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
-            stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
+            stk.nextToken();  // // 1st entry is ID string --> will be skipped
             return Integer.parseInt(stk.nextToken());
         } catch (Exception ex) {
             logErrorString(identifier, ex);

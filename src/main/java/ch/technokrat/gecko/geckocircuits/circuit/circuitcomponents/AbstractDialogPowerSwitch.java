@@ -17,7 +17,7 @@ import ch.technokrat.gecko.geckocircuits.circuit.losscalculation.LossCalculation
 import static ch.technokrat.gecko.geckocircuits.circuit.losscalculation.LossCalculationDetail.DETAILED;
 import static ch.technokrat.gecko.geckocircuits.circuit.losscalculation.LossCalculationDetail.SIMPLE;
 import ch.technokrat.gecko.geckocircuits.circuit.losscalculation.LossProperties;
-import ch.technokrat.gecko.geckocircuits.circuit.losscalculation.VerlustBerechnungDetailed;
+import ch.technokrat.gecko.geckocircuits.circuit.losscalculation.LossCalculationDetailed;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -35,7 +35,7 @@ public abstract class AbstractDialogPowerSwitch<T extends AbstractSemiconductor>
     
     private static final long serialVersionUID = 1L;
 
-    private final JPanelHalbleiterDetailButtons _panelHalbleiterDetail;
+    private final JPanelSemiconductorDetailButtons _panelHalbleiterDetail;
     private transient JPanel _jPanelSimpleLosses;
     private transient final LossProperties _lossCalculation;
     private final JRadioButton _jRadioButtonSimpleLosses = new JRadioButton();
@@ -46,7 +46,7 @@ public abstract class AbstractDialogPowerSwitch<T extends AbstractSemiconductor>
     
     public AbstractDialogPowerSwitch(final T elementLK) {
         super(elementLK);        
-        _lossCalculation = (LossProperties) element.getVerlustBerechnung();
+        _lossCalculation = (LossProperties) element.getLossCalculation();
         ButtonGroup bgD = new ButtonGroup();
         bgD.add(_jRadioButtonSimpleLosses);
         bgD.add(_jRadioButtonDetailedLosses);
@@ -67,9 +67,9 @@ public abstract class AbstractDialogPowerSwitch<T extends AbstractSemiconductor>
             }
         });
         
-        final LossProperties lossProps = (LossProperties) element.getVerlustBerechnung();
-        final VerlustBerechnungDetailed detailed = lossProps.getDetailedLosses();
-        _panelHalbleiterDetail = new JPanelHalbleiterDetailButtons(detailed);
+        final LossProperties lossProps = (LossProperties) element.getLossCalculation();
+        final LossCalculationDetailed detailed = lossProps.getDetailedLosses();
+        _panelHalbleiterDetail = new JPanelSemiconductorDetailButtons(detailed);
     }
     
     public abstract JPanel createParameterPanel();

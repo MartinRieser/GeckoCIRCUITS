@@ -15,7 +15,7 @@ package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 
 public final class SignalCalculatorImport extends AbstractSignalCalculator implements InitializableAtSimulationStart {
-    // Periode des Signals --> wichtig, wenn Repeat==ON / tSigStart ... lokale Zeit innerhalb der importierten Signal-Periode
+    // // Period of the signal --> important if Repeat==ON / tSigStart ... local time within the imported signal period
 
     private final double _signalDuration;
     private double _tSigStart = 0;
@@ -42,10 +42,10 @@ public final class SignalCalculatorImport extends AbstractSignalCalculator imple
     }
 
     @Override
-    public void berechneYOUT(final double deltaT) {
+    public void calculateYOUT(final double deltaT) {
 
         if (_tSigStart > _time) {
-            _tSigStart = 0;  // zB. bei Neustarten der Simulation
+            _tSigStart = 0;  // // e.g. when restarting the simulation
         }
 
         calculateSigStartTimeEstimation();
@@ -88,20 +88,20 @@ public final class SignalCalculatorImport extends AbstractSignalCalculator imple
 
     private void calculateSigStartTimeEstimation() {
         while (_tSigStart + _signalDuration < _time) {
-            _tSigStart += _signalDuration;  // tLokal 'zeigt' immer auf den Zeitpunkt des Beginns einer Signal-Periode
+            _tSigStart += _signalDuration;  // // tLokal always 'points' to the time at which a signal period begins
         }
     }
 
     private int calculateAccurateTimePointer() {
         int timePointer = (int) (_xy[0].length * ((_time - _tSigStart) / _signalDuration));
-        // Feinadjustierung: jetzt die exakte Posistion bestimmen
+        // // Fine adjustment: now determine the exact position
         if (_tSigStart + _xy[0][timePointer] < _time) {
             while ((timePointer < _xy[0].length - 1) && (_tSigStart + _xy[0][timePointer] < _time)) {
-                timePointer++;  // Erg. -->  xy[0][zeiger] >= t  oder  zeiger ==> xy[0][end]
+                timePointer++;  // // Result --> xy[0][pointer] >= t or pointer ==> xy[0][end]
             }
         } else {
             while ((timePointer > 0) && (_tSigStart + _xy[0][timePointer] > _time)) {
-                timePointer--;  // Erg. -->  xy[0][zeiger] <= t  oder  zeiger ==> xy[0][0]
+                timePointer--;  // // Result --> xy[0][pointer] <= t or pointer ==> xy[0][0]
             }
         }
         return timePointer;

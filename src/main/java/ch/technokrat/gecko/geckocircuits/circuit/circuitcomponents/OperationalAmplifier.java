@@ -13,8 +13,8 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.ProjectData;
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.ProjectData;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractBlockInterface;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTerminal;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
@@ -123,31 +123,31 @@ public final class OperationalAmplifier extends AbstractCircuitBlockInterface im
         intern3 = new TerminalRelativePosition(this, 0, -1);
 
         setComponentDirection(ComponentDirection.WEST_EAST);
-        _rIN = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_R, this);
+        _rIN = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_R, this);
         _rIN.getIDStringDialog().setRandomStringID();
 
-        _rOUT = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_R, this);
+        _rOUT = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_R, this);
         _rOUT.getIDStringDialog().setRandomStringID();
 
-        _rIsolation = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_R, this);
+        _rIsolation = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_R, this);
         _rIsolation.getIDStringDialog().setRandomStringID();
 
-        _Rf = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_R, this);
+        _Rf = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_R, this);
         _Rf._resistance.setValueWithoutUndo(R_F);
         _Rf.getIDStringDialog().setRandomStringID();
 
-        _Ra = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_R, this);
+        _Ra = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_R, this);
         _Ra.getIDStringDialog().setRandomStringID();
 
-        _Rb = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_R, this);
+        _Rb = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_R, this);
         _Rb.getIDStringDialog().setRandomStringID();
 
-        _internalVoltageSource = (AbstractVoltageSource) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_U, this);
+        _internalVoltageSource = (AbstractVoltageSource) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_U, this);
         _internalVoltageSource.getIDStringDialog().setRandomStringID();
-        _outputCapacitor = (AbstractCapacitor) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_C, this);
+        _outputCapacitor = (AbstractCapacitor) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_C, this);
         _outputCapacitor.getIDStringDialog().setRandomStringID();
 
-        _outputVoltageSource = (AbstractVoltageSource) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_U, this);
+        _outputVoltageSource = (AbstractVoltageSource) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_U, this);
         _outputVoltageSource.getIDStringDialog().setRandomStringID();
         _outputVoltageSource._lowerLimit.setValueWithoutUndo(-Double.MAX_VALUE / 2);
         _outputVoltageSource._upperLimit.setValueWithoutUndo(Double.MAX_VALUE / 2);
@@ -187,7 +187,7 @@ public final class OperationalAmplifier extends AbstractCircuitBlockInterface im
         _Rb._resistance.setValueWithoutUndo(voltageDividerRb.getValue());
     }
 
-    // Initialisiereung nach INIT&START --> 
+    // // Initialization after INIT&START -->
     public void setzeParameterZustandswerteAufNULL() {
         this.initPar();
         _outputCapacitor.parameter[1] = 0;

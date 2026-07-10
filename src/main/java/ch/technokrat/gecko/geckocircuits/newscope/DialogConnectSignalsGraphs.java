@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.newscope;
 
-import ch.technokrat.gecko.geckocircuits.allg.FormatJTextField;
+import ch.technokrat.gecko.geckocircuits.general.FormatJTextField;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -30,8 +30,8 @@ public final class DialogConnectSignalsGraphs extends GeckoDialog {
     private final GraferV4 _grafer;
     private final Container _container;
     private FormatJTextField[][] jbM;
-    private JButton[] jlGRF;  // draufklicken --> Fenster zum Graph-Editieren
-    private JCheckBox[] _jCheckBoxSignals;  // ist Graph 'Digital'?
+    private JButton[] jlGRF;  // // click on it --> window for graph editing
+    private JCheckBox[] _jCheckBoxSignals;  // // is graph 'digital'?
     private FormatJTextField[] jtfWEIG;  // relative Graphen-Gewichtung (y-Achse) mi SCOPE
     private JButton _jButtonClose;
     private JButton _jButtonAdd;
@@ -133,7 +133,7 @@ public final class DialogConnectSignalsGraphs extends GeckoDialog {
 
         _gbc.gridx = 0;
         _gbc.gridy = noDiags + 2;
-        jpMatrix.add(new JLabel(" "), _gbc);  // MATRIX: Vertikaler Abstandshalter nach unten
+        jpMatrix.add(new JLabel(" "), _gbc);  // // MATRIX: Vertical spacer down
 
 
         final JPanel jpALLG = new JPanel();
@@ -221,9 +221,9 @@ public final class DialogConnectSignalsGraphs extends GeckoDialog {
                 jtfWEIG[jtfWEIG.length - 1].setNumberToField(110 / jtfWEIG.length);
                 modifiedWeightIndex = jtfWEIG.length - 1;
                 setMinimumSize(new Dimension(getWidth(), getHeight()));
-                // die x-Achse wird nur beim untesten Diagramm angezeigt --> Aktualisierung
+                // // the x-axis is only displayed on the bottom diagram --> update
                 updateXAxisVisibilityAfterAdd(diag);
-                // Graph-Gewichtung des neuen Graphen muss angepasst werden:
+                // // Graph weighting of the new graph needs to be adjusted:
                 aktualisiereGrafer();
             }
         });
@@ -231,7 +231,7 @@ public final class DialogConnectSignalsGraphs extends GeckoDialog {
             @Override
             public void actionPerformed(final ActionEvent actionEvent) {
                 if (_manager.getNumberDiagrams() == 1) {
-                    return;  // mindestens 1 Graph muss angezeigt werden
+                    return;  // // at least 1 graph must be displayed
                 }
 
                 int n = JOptionPane.showConfirmDialog(
@@ -253,9 +253,9 @@ public final class DialogConnectSignalsGraphs extends GeckoDialog {
                 //setResizable(true);
                 baueGUI();
                 setMinimumSize(new Dimension(getWidth(), getHeight()));
-                // die x-Achse wird nur beim untesten Diagramm angezeigt --> Aktualisierung
+                // // the x-axis is only displayed on the bottom diagram --> update
 
-                // Graph-Gewichtung der verringerten Graphen muss angepasst werden:
+                // // Graph weighting of the reduced graphs needs to be adjusted:
                 aktualisiereGrafer();
             }
         });
@@ -355,7 +355,7 @@ public final class DialogConnectSignalsGraphs extends GeckoDialog {
         _gbc.gridy = rowIndex + 1;
         jpMatrix.add(jbM[rowIndex][columnIndex], _gbc);  // MATRIX: x/y/y2/sg - Knoepfe als zentrales Element
         jbM[rowIndex][columnIndex].setLineSettable(curve);
-        jbM[rowIndex][columnIndex].addMouseListener(new MouseAdapter() {  // x-Achse (Zeit) nicht anklick- und veraenderbar 
+        jbM[rowIndex][columnIndex].addMouseListener(new MouseAdapter() {  // // x-axis (time) cannot be clicked or changed
             @Override
             public void mousePressed(final MouseEvent mouseEvent) {
                 final List<AbstractDiagram> diagrams = _manager.getDiagrams();
@@ -363,7 +363,7 @@ public final class DialogConnectSignalsGraphs extends GeckoDialog {
                 AbstractCurve curve = diagram.getCurve(columnIndex - 1);
                 setSelectedDiagram(diagram);
 
-                // rechte Maus --> 'Flippen' der ZUORDNUNG ohne Dialogfenster-Eingabe
+                // // right mouse --> 'Flipping' the ASSIGNMENT without dialog window input
                 if (mouseEvent.getModifiersEx() == MouseEvent.BUTTON3_DOWN_MASK || mouseEvent.isControlDown()) {
                     final AxisConnection jcbAchsenTyp = curve.getAxisConnection().iterateNext(diagram instanceof DiagramSignal);
                     diagram.getCurve(columnIndex - 1).setAxisConnection(jcbAchsenTyp);
@@ -455,11 +455,11 @@ public final class DialogConnectSignalsGraphs extends GeckoDialog {
         _gbc.gridy = rowIndex + 1;
         _gbc.fill = GridBagConstraints.NONE;
         jpMatrix.add(_jCheckBoxSignals[rowIndex], _gbc);  // MATRIX: Check-Boxen Digital JA/NEIN ?
-        _gbc.fill = GridBagConstraints.BOTH;  // fuer alle anderen Elemente
+        _gbc.fill = GridBagConstraints.BOTH;  // // for all other elements
     }
 
     private void recalculateWeights() {
-        int totalYSpace = 0;  // // fuer Normierung auf 100% insgesamt
+        int totalYSpace = 0;  // // // for normalization to 100% overall
         int spaceWOSelection = 100;
         for (int i1 = 0; i1 < jtfWEIG.length; i1++) {
 
@@ -491,7 +491,7 @@ public final class DialogConnectSignalsGraphs extends GeckoDialog {
                 _yWeightDiagram[i1] = jtfWEIG[i1].getNumberFromField() / 100.0;
             }
             if (totalYSpace == 0) {
-                totalYSpace = 1;  // ist dann relevant, wenn nur DIGITAL-Signale
+                totalYSpace = 1;  // // is relevant if only DIGITAL signals
             }
 
             _manager.getDiagram(i1)._diagramSettings.setWeightDiagram(_yWeightDiagram[i1]);

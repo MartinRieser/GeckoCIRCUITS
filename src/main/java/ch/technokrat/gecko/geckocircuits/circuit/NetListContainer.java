@@ -14,21 +14,21 @@
 package ch.technokrat.gecko.geckocircuits.circuit;
 
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.AbstractCircuitBlockInterface;
-import ch.technokrat.gecko.geckocircuits.control.NetzlisteCONTROL;
+import ch.technokrat.gecko.geckocircuits.control.NetlistControl;
 
 public class NetListContainer {    
 
-    public final NetzlisteCONTROL _nlControl;
+    public final NetlistControl _nlControl;
     public final NetListLK _nlLK;
     public final NetListLK _nlTH;
     
-    public static NetListContainer fabricStartSimulation(final SchematicEditor2 schematicEntry, SimulationsKern simKern) {        
+    public static NetListContainer fabricStartSimulation(final SchematicEditor2 schematicEntry, SimulationKernel simKern) {        
         schematicEntry.checkNameOptParameters();               
-        NetzlisteAllg nlC1 = NetzlisteAllg.fabricNetzlistDisabledParentSubsRemoved(schematicEntry.getConnection(ConnectorType.CONTROL), schematicEntry.getElementCONTROL());
-        NetListLK nlL = schematicEntry.getNetzliste(ConnectorType.LK_AND_RELUCTANCE);
+        NetlistGeneral nlC1 = NetlistGeneral.fabricNetzlistDisabledParentSubsRemoved(schematicEntry.getConnection(ConnectorType.CONTROL), schematicEntry.getElementCONTROL());
+        NetListLK nlL = schematicEntry.getNetlist(ConnectorType.LK_AND_RELUCTANCE);
         
-        NetListLK nlT = schematicEntry.getNetzliste(ConnectorType.THERMAL);
-        NetzlisteCONTROL nlC = NetzlisteCONTROL.FabricRunSimulation(nlC1);
+        NetListLK nlT = schematicEntry.getNetlist(ConnectorType.THERMAL);
+        NetlistControl nlC = NetlistControl.FabricRunSimulation(nlC1);
         
         for(AbstractCircuitSheetComponent elem : schematicEntry._circuitSheet.getAllElements()) {
             if(elem instanceof AbstractCircuitBlockInterface) {
@@ -45,19 +45,19 @@ public class NetListContainer {
         return new NetListContainer(nlC, nlL, nlT);
     }
     
-    public static NetListContainer fabricContinueSimulation(final SchematicEditor2 schematicEntry, SimulationsKern simKern,
+    public static NetListContainer fabricContinueSimulation(final SchematicEditor2 schematicEntry, SimulationKernel simKern,
             NetListContainer oldNetlist) {
         schematicEntry.checkNameOptParameters();               
-        return new NetListContainer(NetzlisteCONTROL.FabricContinueSimulation(oldNetlist._nlControl), oldNetlist._nlLK, oldNetlist._nlTH);
+        return new NetListContainer(NetlistControl.FabricContinueSimulation(oldNetlist._nlControl), oldNetlist._nlLK, oldNetlist._nlTH);
     }
     
     
     
-    public static NetListContainer fabricGuiUpdate(NetListLK circuitNL, NetListLK thermNL, NetzlisteCONTROL nlCONTROL) {
+    public static NetListContainer fabricGuiUpdate(NetListLK circuitNL, NetListLK thermNL, NetlistControl nlCONTROL) {
         return new NetListContainer(nlCONTROL, circuitNL, thermNL);
     }
     
-    private NetListContainer(NetzlisteCONTROL nlc, NetListLK nlk, NetListLK nlTH) {
+    private NetListContainer(NetlistControl nlc, NetListLK nlk, NetListLK nlTH) {
         _nlControl = nlc;
         _nlLK = nlk;
         _nlTH = nlTH;

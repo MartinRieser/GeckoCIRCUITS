@@ -14,12 +14,12 @@
 package ch.technokrat.gecko.geckocircuits.newscope;
 
 import ch.technokrat.gecko.GeckoSim;
-import ch.technokrat.gecko.geckocircuits.allg.ProjectData;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFilePathes;
-import ch.technokrat.gecko.geckocircuits.allg.SaveViewFrame;
+import ch.technokrat.gecko.geckocircuits.general.ProjectData;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFilePathes;
+import ch.technokrat.gecko.geckocircuits.general.SaveViewFrame;
 import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
-import ch.technokrat.gecko.geckocircuits.control.RegelBlock;
-import ch.technokrat.gecko.geckocircuits.control.ReglerOSZI;
+import ch.technokrat.gecko.geckocircuits.control.ControlBlock;
+import ch.technokrat.gecko.geckocircuits.control.ControlOSZI;
 import ch.technokrat.gecko.geckocircuits.datacontainer.AbstractDataContainer;
 import ch.technokrat.gecko.geckocircuits.datacontainer.DataContainerIntegralCalculatable;
 import java.awt.Dimension;
@@ -46,10 +46,9 @@ import javax.swing.KeyStroke;
 public final class ScopeFrame extends javax.swing.JFrame{
   private static final long serialVersionUID = 1L;
   private GraferV4 _grafer;
-  private ReglerOSZI _regelBlockOSZI;
+  private ControlOSZI _regelBlockOSZI;
   /**
-   * Dialog fuer Zuordnungen SignalZV - Graph.
-   */
+   * Dialog for assignments SignalZV - Graph.*/
   private DialogConnectSignalsGraphs _diagCON;
   //---------------------------------
   private DialogScopeCharacteristics _diagAvgRms;
@@ -213,8 +212,8 @@ public final class ScopeFrame extends javax.swing.JFrame{
     _scope.importIndividualCONTROL(settingsMap);
   }
   
-  public void setReferenzAufRegelBlock(final RegelBlock regelBlockOSZI){
-    _regelBlockOSZI = (ReglerOSZI)regelBlockOSZI;
+  public void setReferenzAufControlBlock(final ControlBlock regelBlockOSZI){
+    _regelBlockOSZI = (ControlOSZI)regelBlockOSZI;
   }
 
   public void setNewTerminalNumber(final int terminalNumber){
@@ -230,11 +229,10 @@ public final class ScopeFrame extends javax.swing.JFrame{
   }
 
   /**
-   * Wenn die Simulation gerade laeuft, werden alle Menus deaktiviert, damit man
-   * dort nicht herumpfuschen kann.
+   * If the simulation is currently running, all menus are deactivated so that you can
+   * can't mess around there.
    *
-   * @param simStarted true if simulation started, false otherwise
-   */
+   * @param simStarted true if simulation started, false otherwise*/
   public void setScopeMenueEnabled(final boolean simStarted){
     if(simStarted){
       jMenuItemInitAndStart.setEnabled(false);
@@ -244,7 +242,7 @@ public final class ScopeFrame extends javax.swing.JFrame{
       jMenuScopeData.setEnabled(false);
       jMenuGraphs.setEnabled(false);
       jMenuAnalysis.setEnabled(false);
-      // Worksheet-Daten waehrend der Simulation nicht zugaenglich:            
+      // // Worksheet data not accessible during simulation:
     }else{
       jMenuItemInitAndStart.setEnabled(true);
       jMenuItemParameter.setEnabled(true);

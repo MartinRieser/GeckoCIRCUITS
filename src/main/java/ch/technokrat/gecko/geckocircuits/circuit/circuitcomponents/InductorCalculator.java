@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.SolverType;
+import ch.technokrat.gecko.geckocircuits.general.SolverType;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class InductorCalculator extends CircuitComponent implements BStampable,
@@ -59,7 +59,7 @@ public class InductorCalculator extends CircuitComponent implements BStampable,
         b[matrixIndices[1]] -= bW;
     }
 
-    //because of coupled inductors, so that inductor coupling can override this method - also UGLY, just a temporary solution
+    // //because of coupled inductors, so that inductor coupling can override this method - also UGLY, just a temporary solution
     protected double stampVectorBTRZ(double dt) {
         return (-_oldCurrent - dt * (_potential1 - _potential2) / (2 * _inductance));
     }

@@ -13,8 +13,8 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.ProjectData;
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.ProjectData;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractBlockInterface;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractCircuitSheetComponent;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
@@ -48,7 +48,7 @@ public abstract class AbstractMotor extends AbstractCircuitBlockInterface implem
     double _omegaElectric, _thetaElectric;    
     public double _omegaMechanic, _omegaMechanicOld, _thetaMechanic, _thetaMechanicOld;    
     private double _polePairs, _drehzahl, _torqueEl;    
-    private double _torqueMech = 0; // wird vorgegeben (zB. als Signal) --> 
+    private double _torqueMech = 0; // // is specified (e.g. as a signal) -->
     
     final UserParameter<Double> _polePairsParameter = UserParameter.Builder.
             <Double>start("polePairs", 1.0).
@@ -175,7 +175,7 @@ public abstract class AbstractMotor extends AbstractCircuitBlockInterface implem
         // extend if necessary.
     }
     
-    public static AbstractCircuitBlockInterface fabricHiddenSub(final CircuitTyp typ, 
+    public static AbstractCircuitBlockInterface fabricHiddenSub(final CircuitType typ, 
             final AbstractCircuitSheetComponent parent) {
         final AbstractCircuitBlockInterface returnValue = AbstractTypeInfo.fabricHiddenSub(typ, parent);
         assert parent instanceof AbstractMotor: "Invalid circuit type:  " + typ;

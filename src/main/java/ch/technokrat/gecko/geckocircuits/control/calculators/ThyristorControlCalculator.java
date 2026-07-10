@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class ThyristorControlCalculator extends AbstractControlCalculatable {
-    private static final int TN_X = 2, TN_Y = 6;  // Nummer der Terminals fuer Signal-Anschluss
+    private static final int TN_X = 2, TN_Y = 6;  // // Number of terminals for signal connection
     private static final double THREE = 3;
     private static final double THREE_HALF = 1.5;
     private double _lastFallingZero = -1;    
@@ -59,7 +59,7 @@ public final class ThyristorControlCalculator extends AbstractControlCalculatabl
     
 
     @Override
-    public void berechneYOUT(final double deltaT) {
+    public void calculateYOUT(final double deltaT) {
         if (_synchOld <= 0 && _inputSignal[1][0] >= 0 && _synchOld != _inputSignal[1][0]) {
             _synchTime = _time;
 

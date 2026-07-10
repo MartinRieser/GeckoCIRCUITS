@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.ConnectorType;
 import ch.technokrat.gecko.geckocircuits.circuit.CurrentMeasurable;
 import ch.technokrat.gecko.geckocircuits.circuit.DirectVoltageMeasurable;
@@ -28,7 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
-public abstract class AbstractResistor extends AbstractTwoPortLKreisBlock
+public abstract class AbstractResistor extends AbstractTwoPortPowerCircuitBlock
         implements CurrentMeasurable, LossCalculatable, DirectVoltageMeasurable {
 
     private static final double DEFAULT_RESISTANCE = 1000.0;
@@ -73,7 +73,7 @@ public abstract class AbstractResistor extends AbstractTwoPortLKreisBlock
     }
 
     @Override
-    public final AbstractLossCalculatorFabric getVerlustBerechnung() {
+    public final AbstractLossCalculatorFabric getLossCalculation() {
         return new AbstractLossCalculatorFabric() {
             @Override
             public AbstractLossCalculator lossCalculatorFabric() {

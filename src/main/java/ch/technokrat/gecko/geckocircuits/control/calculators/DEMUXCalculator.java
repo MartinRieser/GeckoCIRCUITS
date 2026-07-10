@@ -13,18 +13,18 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
-import ch.technokrat.gecko.geckocircuits.control.ReglerDemux;
+import ch.technokrat.gecko.geckocircuits.control.ControlDemux;
 
 public final class DEMUXCalculator extends AbstractControlCalculatable implements InitializableAtSimulationStart {
-    private final ReglerDemux _parent;
+    private final ControlDemux _parent;
 
-    public DEMUXCalculator(final int noOutputs, final ReglerDemux parent) {
+    public DEMUXCalculator(final int noOutputs, final ControlDemux parent) {
         super(1, noOutputs);
         _parent = parent;
     }
 
     @Override
-    public void berechneYOUT(final double deltaT) {
+    public void calculateYOUT(final double deltaT) {
         for (int i = 0; i < _outputSignal.length; i++) {
             _outputSignal[i][0] = _inputSignal[0][i];  // Signal-Quelle
         }

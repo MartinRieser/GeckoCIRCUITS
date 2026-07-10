@@ -30,7 +30,7 @@ public class VoltageSourceCalculator extends AbstractVoltageSourceCalculator imp
     }
 
     VoltageSourceCalculator(final double initialValue, final int mat0, final int mat1, 
-            final int zValue, final int compNumber, final AbstractTwoPortLKreisBlock parent) {
+            final int zValue, final int compNumber, final AbstractTwoPortPowerCircuitBlock parent) {
         super(parent);
         _function = new TimeFunctionConstant(-initialValue);
         matrixIndices[0] = mat0;

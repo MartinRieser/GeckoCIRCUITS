@@ -24,7 +24,7 @@ import java.util.Iterator;
  * @author andreas
  */
 public final class JavaBlockSource {
-    // fields contain source code, that is also saved in the JAVA-object .ipes stuff
+    // // fields contain source code, that is also saved in the JAVA object .ipes stuff
     // since it is final, we don't need the private modifier
 
     final String _sourceCode;

@@ -15,11 +15,11 @@ package ch.technokrat.gecko.geckocircuits.newscope;
 
 import ch.technokrat.gecko.geckocircuits.scope.DialogFourierDiagramm;
 import ch.technokrat.gecko.geckocircuits.datacontainer.AbstractDataContainer;
-import ch.technokrat.gecko.geckocircuits.allg.FormatJTextField;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalColors;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFilePathes;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFonts;
-import ch.technokrat.gecko.geckocircuits.allg.TechFormat;
+import ch.technokrat.gecko.geckocircuits.general.FormatJTextField;
+import ch.technokrat.gecko.geckocircuits.general.GlobalColors;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFilePathes;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFonts;
+import ch.technokrat.gecko.geckocircuits.general.TechFormat;
 import ch.technokrat.gecko.geckocircuits.scope.FourierPlotFrame;
 import ch.technokrat.gecko.i18n.GuiFabric;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
@@ -50,10 +50,10 @@ public class DialogFourier extends JDialog {
     //-------------
     private TechFormat cf = new TechFormat();
     private FormatJTextField rngSc1, rngSc2, rngDf1, rngDf2, rngSl1, rngSl2;  // Angaben Zeitbereiche
-    private FormatJTextField ftfnMax, ftff1;  // Textfelder fuer Fourier-Daten
-    private double f1;  // Grundfrequenz fuer Fourieranalyse
-    private int nMin, nMax;  // Grundfrequenz-Vielfache fuer Fourieranalyse
-    private JCheckBox[] jcbZV;   // Auswahl der ZV-Kurven, die Fourier-analysiert werden soll
+    private FormatJTextField ftfnMax, ftff1;  // // Text fields for Fourier data
+    private double f1;  // // Fundamental frequency for Fourier analysis
+    private int nMin, nMax;  // // Fundamental frequency multiples for Fourier analysis
+    private JCheckBox[] jcbZV;   // // Selection of the ZV curves to be Fourier analyzed
     private JButton jbCALC;  // Berechnung starten
     //-------------
     //-------------
@@ -182,7 +182,7 @@ public class DialogFourier extends JDialog {
             pSEL.add(jlZV, gbc);
         }
 
-        final JDialog ich = this;  // fuer Referenz in innerer Klasse
+        final JDialog ich = this;  // // for reference in inner class
         //
         JPanel pOK = new JPanel();
         jbCALC = GuiFabric.getJButton(I18nKeys.CALCULATE);
@@ -204,7 +204,7 @@ public class DialogFourier extends JDialog {
                     private double[][][] erg;
 
                     public void run() {
-                        jbCALC.setEnabled(false);  // damit man nicht mehrere Berechnungen durch versehentliches Druecken startet
+                        jbCALC.setEnabled(false);  // // so that you don't start multiple calculations by accidentally pressing it
                         try {
                             erg = calculate();
                             //-----------------
@@ -215,7 +215,7 @@ public class DialogFourier extends JDialog {
                                 plotFrame.setVisible(true);
                             }
                             //-----------------
-                            // fertige Grafik nach Rechenende hochfahren ..
+                            // // start up the finished graphic after the end of the calculation..
                             DialogFourierDiagramm diagramm = new DialogFourierDiagramm(
                                     erg, signalFourierAnalysiert, nMin, f1, worksheet, _jPanelRange.getStartTimeValue(),
                                     _jPanelRange.getStopTimeValue());
@@ -275,7 +275,7 @@ public class DialogFourier extends JDialog {
         //===========================================================
     }
 
-    private double[][][] calculate() throws Exception, Error {  // eventuell OutOfMemoryError bei zuvielen Oberschwingungen
+    private double[][][] calculate() throws Exception, Error {  // // possibly OutOfMemoryError if there are too many harmonics
 
         double[][] an = new double[worksheet.getRowLength()][nMax - nMin + 1];
         double[][] bn = new double[worksheet.getRowLength()][nMax - nMin + 1];
@@ -327,22 +327,22 @@ public class DialogFourier extends JDialog {
         double dT = rng2 - rng1;
         double dt = worksheet.getTimeValue(i1 + 1, 0) - worksheet.getTimeValue(i1, 0);
         //-------------------
-        // Rechnen bis zum Endpunkt:
+        // // Calculate to the end point:
         double q = 2 * Math.PI * f1;  // Hilfskonstante
         while ((i1 < worksheet.getMaximumTimeIndex(0)) && (worksheet.getTimeValue(i1 + 1, 0) > worksheet.getTimeValue(i1, 0))
                 && (rng1 <= worksheet.getTimeValue(i1, 0)) && (worksheet.getTimeValue(i1, 0) <= rng2)) {  // Schleife Zeitbereich [t1...t2]
             try {
                 dt = worksheet.getTimeValue(i1 + 1, 0) - worksheet.getTimeValue(i1, 0);
             } catch (Exception e) {
-            }  // wenn wir ganz am Ende sind --> Exception --> altes 'dt' wird verwendet
+            }  // // when we get to the very end --> Exception --> old 'dt' is used
             for (int i2 = 1; i2 < worksheet.getRowLength() + 1; i2++) {  // Schleife ueber alle Fourier-zu-zerlegenden Kurven
                 if (jcbZV[i2 - 1].isSelected()) {
                     signalFourierAnalysiert[i2] = true;
                     double wert = worksheet.getValue(i2 - 1, i1);
                     double arg = q * worksheet.getTimeValue(i1, 0);
 //                    for (int n = nMin; n <= nMax; n++) {  // Schleife ueber alle Grundfrequenz-Vielfachen [nMin...nMax]
-//                        an[i2 - 1][n - nMin] += (wert * Math.cos(arg * n) * dt) / (0.5 * dT);
-//                        bn[i2 - 1][n - nMin] += (wert * Math.sin(arg * n) * dt) / (0.5 * dT);
+// // an[i2 - 1][n - nMin] += (value * Math.cos(arg * n) * dt) / (0.5 * dT);
+// // bn[i2 - 1][n - nMin] += (value * Math.sin(arg * n) * dt) / (0.5 * dT);
 //                    }
                 } else {
                     signalFourierAnalysiert[i2] = false;

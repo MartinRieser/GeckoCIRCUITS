@@ -15,8 +15,8 @@
 package ch.technokrat.gecko.geckoscript;
 
 import ch.technokrat.gecko.GeckoSim;
-import ch.technokrat.gecko.geckocircuits.allg.MainWindow;
-import ch.technokrat.gecko.geckocircuits.allg.GeckoRuntimeException;
+import ch.technokrat.gecko.geckocircuits.general.MainWindow;
+import ch.technokrat.gecko.geckocircuits.general.GeckoRuntimeException;
 import ch.technokrat.gecko.geckocircuits.control.javablock.AbstractCompileObject;
 import ch.technokrat.gecko.geckocircuits.control.javablock.CodeWindowModern;
 import ch.technokrat.gecko.geckocircuits.control.javablock.CompileObject;
@@ -24,7 +24,7 @@ import ch.technokrat.gecko.geckocircuits.control.javablock.CompileObjectNull;
 import ch.technokrat.gecko.geckocircuits.control.javablock.CompileStatus;
 import ch.technokrat.gecko.geckocircuits.control.javablock.CompiledClassContainer;
 import ch.technokrat.gecko.geckocircuits.control.javablock.JavaBlockClassLoader;
-import ch.technokrat.gecko.geckocircuits.control.javablock.ReglerJavaFunction;
+import ch.technokrat.gecko.geckocircuits.control.javablock.ControlJavaFunction;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -211,18 +211,18 @@ public class CompileScript {
             } catch (NoClassDefFoundError err) {
                 err.printStackTrace();
             } catch (InstantiationException ex) {
-                Logger.getLogger(ReglerJavaFunction.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IllegalAccessException ex) {
-                Logger.getLogger(ReglerJavaFunction.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, null, ex);
             } catch (SecurityException ex) {
-                Logger.getLogger(ReglerJavaFunction.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IllegalArgumentException ex) {
                 Logger.getLogger(CompileScript.class.getName()).log(Level.SEVERE, null, ex);
             } catch (InvocationTargetException ex) {
                 Logger.getLogger(CompileScript.class.getName()).log(Level.SEVERE, null, ex);
             }
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ReglerJavaFunction.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     

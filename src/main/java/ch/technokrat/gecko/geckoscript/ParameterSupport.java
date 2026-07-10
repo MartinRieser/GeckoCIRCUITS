@@ -13,11 +13,11 @@
  */
 package ch.technokrat.gecko.geckoscript;
 
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractBlockInterface;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.geckocircuits.control.Operationable;
-import ch.technokrat.gecko.geckocircuits.control.RegelBlock;
+import ch.technokrat.gecko.geckocircuits.control.ControlBlock;
 import java.awt.Component;
 import java.awt.Font;
 import java.util.Collections;
@@ -306,8 +306,8 @@ public class ParameterSupport extends javax.swing.JFrame {
                     }
                 }
 
-                if (firstElement instanceof RegelBlock) {
-                    final List<String[]> currentElemTypeOutputs = ((RegelBlock) firstElement).getOutputs();
+                if (firstElement instanceof ControlBlock) {
+                    final List<String[]> currentElemTypeOutputs = ((ControlBlock) firstElement).getOutputs();
                     _availableParametersModel.addElement("-- OUTPUT --");
                     if (currentElemTypeOutputs != null) {
                         for (String[] output : currentElemTypeOutputs) {

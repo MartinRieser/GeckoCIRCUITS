@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.control;
 
-import ch.technokrat.gecko.geckocircuits.allg.TechFormat;
+import ch.technokrat.gecko.geckocircuits.general.TechFormat;
 import ch.technokrat.gecko.geckocircuits.math.NComplex;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -276,9 +276,9 @@ public final class PolynomTools {
 
 //    public static void main(String[] args) {
 //        double [] num = new double[]{ 1, 1};
-//        double [] den = new double[]{ 1, 2, 1};
+// // double [] den = new double[]{ 1, 2, 1};
 //        double[] lead = new double[0];
-//        double[] remainder = polynomialDivision(num, den, lead);
+// // double[] remainder = polynomialDivision(num, den, lead);
 //        
 //        System.out.println(PolynomTools.getPolynomString(remainder));
 //    }

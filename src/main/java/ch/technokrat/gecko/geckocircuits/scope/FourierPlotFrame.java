@@ -14,7 +14,7 @@
 
 package ch.technokrat.gecko.geckocircuits.scope;
 
-import ch.technokrat.gecko.geckocircuits.allg.SaveViewFrame;
+import ch.technokrat.gecko.geckocircuits.general.SaveViewFrame;
 import ch.technokrat.gecko.geckocircuits.control.ScopeSignalSimpleName;
 import ch.technokrat.gecko.geckocircuits.newscope.AbstractScopeSignal;
 import ch.technokrat.gecko.geckocircuits.newscope.DialogConnectSignalsGraphs;

@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.CircuitSourceType;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Graphics2D;
@@ -69,15 +69,15 @@ abstract class AbstractThreePhaseMotor extends AbstractMotor {
 
     @Override
     void setSubCircuit() {
-        // Statorstromquelle fuer isa(t) --> 
-        _controlledAnchorSourceA = (AbstractCurrentSource) fabricHiddenSub(CircuitTyp.LK_I, this);
+        // // Stator current source for isa(t) -->
+        _controlledAnchorSourceA = (AbstractCurrentSource) fabricHiddenSub(CircuitType.LK_I, this);
         _controlledAnchorSourceA.sourceType.setValueWithoutUndo(CircuitSourceType.QUELLE_SIGNALGESTEUERT);
         
         _controlledAnchorSourceA.setInputTerminal(0, XIN.get(0));
         _controlledAnchorSourceA.setOutputTerminal(0, XIN.get(1));
         
-        // Statorstromquelle fuer isc(t) --> 
-        _controlledAnchorSourceC = (AbstractCurrentSource) fabricHiddenSub(CircuitTyp.LK_I, this);                    
+        // // Stator current source for isc(t) -->
+        _controlledAnchorSourceC = (AbstractCurrentSource) fabricHiddenSub(CircuitType.LK_I, this);                    
         _controlledAnchorSourceC.sourceType.setValueWithoutUndo(CircuitSourceType.QUELLE_SIGNALGESTEUERT);                
         _controlledAnchorSourceC.setInputTerminal(0, XIN.get(2));
         _controlledAnchorSourceC.setOutputTerminal(0, XIN.get(1));

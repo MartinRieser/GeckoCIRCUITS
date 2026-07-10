@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.losscalculation;
 
-import ch.technokrat.gecko.geckocircuits.allg.ProjectData;
+import ch.technokrat.gecko.geckocircuits.general.ProjectData;
 import ch.technokrat.gecko.geckocircuits.circuit.SchematicTextInfo;
 import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.AbstractCircuitBlockInterface;
@@ -28,19 +28,19 @@ public final class LossProperties implements AbstractLossCalculatorFabric {
     public final ModelMVC<LossCalculationDetail> _lossType = new ModelMVC<LossCalculationDetail>(LossCalculationDetail.SIMPLE,
             "Loss calculation level: ");
     // Eigenschaften des Halbleiters:
-    // falls detaillierte Halbleiter-Verlusteigenschaften spezifiziert sind -->
+    // // if detailed semiconductor loss characteristics are specified -->
     //        
     private final AbstractCircuitBlockInterface _parent;    
 
     public LossProperties(final AbstractSemiconductor parent) {
-        _lossCalculationDetailed = new VerlustBerechnungDetailed(parent, this);
+        _lossCalculationDetailed = new LossCalculationDetailed(parent, this);
         _lossCalculationSimple = new LossCalculationSimple(parent);
         _parent = parent;
     }
     private final LossCalculationSimple _lossCalculationSimple;
-    public final VerlustBerechnungDetailed _lossCalculationDetailed;
+    public final LossCalculationDetailed _lossCalculationDetailed;
 
-    public VerlustBerechnungDetailed getDetailedLosses() {
+    public LossCalculationDetailed getDetailedLosses() {
         return _lossCalculationDetailed;
     }
     
@@ -56,7 +56,7 @@ public final class LossProperties implements AbstractLossCalculatorFabric {
     public boolean importASCII(final TokenMap tokenMap) {
         _lossCalculationDetailed.importASCII(tokenMap);
         _lossType.setValue(LossCalculationDetail.getFromDeprecatedFileVersion(tokenMap.readDataLine("verlustTyp", 1)));
-        return true;  // 'laden OK'--> true; 'Ladefehler'--> false
+        return true;  // // 'load OK'--> true; 'Loading error' --> false
     }
 
     public void copyPropertiesFrom(final LossProperties origLosses) {
@@ -67,8 +67,8 @@ public final class LossProperties implements AbstractLossCalculatorFabric {
 
     public void addTextInfoValue(final SchematicTextInfo textInfo) {
 
-        // ist die Datei mit der Verlustbeschreibung ueberhaupt vorhanden?
-        final boolean isLossFileOk = _lossCalculationDetailed.pruefeLinkAufHalbleiterDatei();
+        // // does the file with the loss description even exist?
+        final boolean isLossFileOk = _lossCalculationDetailed.checkLinkToSemiconductorFile();
         if (_lossType.getValue() == LossCalculationDetail.DETAILED) {
             if (isLossFileOk) {
                 textInfo.addParameter(_lossCalculationDetailed.lossFile.getName());
@@ -146,7 +146,7 @@ public final class LossProperties implements AbstractLossCalculatorFabric {
             _original = original;
             assert original instanceof LossCalculationSplittable;
             _splittable = (LossCalculationSplittable) original;
-            _diodeLosses = ((SemiconductorLossCalculatable) _diode).getVerlustBerechnung().lossCalculatorFabric();
+            _diodeLosses = ((SemiconductorLossCalculatable) _diode).getLossCalculation().lossCalculatorFabric();
         }
 
         @Override

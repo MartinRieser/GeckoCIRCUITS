@@ -14,7 +14,7 @@
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
 import ch.technokrat.gecko.GeckoSim;
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractBlockInterface;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.geckocircuits.circuit.CircuitTypeInfo;
@@ -69,7 +69,7 @@ public final class MOSFET extends AbstractSwitch implements HiddenSubCircuitable
 
     public MOSFET() {
         super();
-        _antiParallelDiode = (Diode) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_D, this);
+        _antiParallelDiode = (Diode) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_D, this);
         double[] diodeParameter = new double[]{AbstractSwitch.RD_OFF_DEFAULT, 550e-3, 3.9e-3, 
             AbstractSwitch.RD_OFF_DEFAULT, 0, 0, 0, 0, -1, -1, 0, -1, 1};
         _antiParallelDiode.setParameter(diodeParameter);

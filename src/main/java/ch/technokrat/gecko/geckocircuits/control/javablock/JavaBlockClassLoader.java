@@ -13,8 +13,8 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.javablock;
 
-import ch.technokrat.gecko.geckocircuits.allg.MainWindow;
-import ch.technokrat.gecko.geckocircuits.allg.GlobalFilePathes;
+import ch.technokrat.gecko.geckocircuits.general.MainWindow;
+import ch.technokrat.gecko.geckocircuits.general.GlobalFilePathes;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -62,11 +62,11 @@ public final class JavaBlockClassLoader extends URLClassLoader {
                 final URL url = new URL("file://" + path + "/");
 		this.addURL(url);
             } catch (IllegalArgumentException ex) {
-                Logger.getLogger(ReglerJavaFunction.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, null, ex);
             } catch (SecurityException ex) {
-                Logger.getLogger(ReglerJavaFunction.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, null, ex);
             } catch (MalformedURLException ex) {
-                Logger.getLogger(ReglerJavaFunction.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

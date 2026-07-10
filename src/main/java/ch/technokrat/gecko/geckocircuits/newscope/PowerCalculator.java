@@ -101,7 +101,7 @@ public final class PowerCalculator {
             double[] bnU = new double[CALC_NUM_HARM], bnI = new double[CALC_NUM_HARM];
             double[] cnU = new double[CALC_NUM_HARM], cnI = new double[CALC_NUM_HARM], dphiUI = new double[CALC_NUM_HARM];
             
-            // Rechnen bis zum Endpunkt:
+            // // Calculate to the end point:
             for (int i1 = startIndex; (i1 < worksheet.getMaximumTimeIndex(0)) 
                     && (worksheet.getTimeValue(i1 + 1, 0) > worksheet.getTimeValue(i1, 0))
                     && (worksheet.getTimeValue(i1, 0) <= rng2); i1++) {

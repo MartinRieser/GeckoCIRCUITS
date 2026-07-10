@@ -14,8 +14,8 @@
 
 package ch.technokrat.gecko.geckocircuits.newscope;
 
-import ch.technokrat.gecko.geckocircuits.allg.GeckoFileChooser;
-import ch.technokrat.gecko.geckocircuits.allg.SaveViewFrame;
+import ch.technokrat.gecko.geckocircuits.general.GeckoFileChooser;
+import ch.technokrat.gecko.geckocircuits.general.SaveViewFrame;
 import ch.technokrat.gecko.geckocircuits.control.ScopeSignalSimpleName;
 import ch.technokrat.gecko.geckocircuits.datacontainer.ContainerStatus;
 import ch.technokrat.gecko.geckocircuits.datacontainer.DataContainerFourier;

@@ -72,7 +72,7 @@ public final class DiodeCalculator extends CircuitComponent<Diode> implements AS
         final double resistorVoltage = _voltage - _uForward;
         _current = resistorVoltage / _rDt;
                        
-        // Andy bugfix/modification: _rDt * current was probably missing, also in the old GeckoCIRCUITS
+        // // Andy bugfix/modification: _rDt * current was probably missing, also in the old GeckoCIRCUITS
         if (_voltage + _rDt * _current <= disturbanceValue * _uForward) {
             if (_rDt < _rOff) {
                 //System.out.println("voltage less than VF for " + _element._elementName.getValue() + " when in ON state");
@@ -94,13 +94,13 @@ public final class DiodeCalculator extends CircuitComponent<Diode> implements AS
 
 
 
-//        if (((p[matrixIndices[0]] - p[matrixIndices[1]]) < (Diode.stoerGroesse * _uForward)) && (_rD_t < _rOff)) {  // (uD < uf) und Diode "ON"
+// // if (((p[matrixIndices[0]] - p[matrixIndices[1]]) < (Diode.stoerGroesse * _uForward)) && (_rD_t < _rOff)) { // (uD < uf) and diode "ON"
 //            _rD_t = _rOff;
 
 //            diodeSwitchError = true;
 //        }
 //
-//        if ((((p[matrixIndices[0]] - p[matrixIndices[1]]) > (Diode.stoerGroesse * _uForward)) && (_rD_t > _rOn))) {  // (uD > uf) und Diode "OFF"
+// // if ((((p[matrixIndices[0]] - p[matrixIndices[1]]) > (Diode.stoerGroesse * _uForward)) && (_rD_t > _rOn))) { // (uD > uf) and diode "OFF"
 //            _rD_t = _rOn;
 
 //            diodeSwitchError = true;

@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.losscalculation;
 
-import ch.technokrat.gecko.geckocircuits.allg.FormatJTextField;
+import ch.technokrat.gecko.geckocircuits.general.FormatJTextField;
 import ch.technokrat.gecko.geckocircuits.circuit.DataTablePanel;
 import ch.technokrat.gecko.geckocircuits.newscope.LossCurvePlotPanel;
 import ch.technokrat.gecko.i18n.GuiFabric;
@@ -123,7 +123,7 @@ abstract class DetailledLossPanel<T extends LossCurve> extends JPanel {
             public void actionPerformed(final ActionEvent actionEvent) {
                 _testCurve = null;
                 if (_lossCurves.size() == 1) {
-                    return;  // maximal eine Kurve muss immer da sein!
+                    return;  // // a maximum of one curve must always be there!
                 }
                 deleteSelectedCurve();
             }
@@ -135,7 +135,7 @@ abstract class DetailledLossPanel<T extends LossCurve> extends JPanel {
         _leftPanelTempAndBlocking.add(jbDel);
         _jPanelCurvesSelection.add(_leftPanelTempAndBlocking, BorderLayout.SOUTH);
 
-        // die Messkurven-Liste wird in einer eigenen Methode erzeugt, weil sie aktualisiert werden kann -->        
+        // // the measurement curve list is created in its own method because it can be updated -->
         _temperatureButtons = createRadioButtonsPanel();
         _jPanelCurvesSelection.add(_temperatureButtons, BorderLayout.NORTH);
 

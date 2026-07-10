@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractBlockInterface;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTerminal;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
@@ -32,10 +32,10 @@ import ch.technokrat.gecko.geckocircuits.circuit.TerminalHiddenSubcircuit;
 import ch.technokrat.gecko.geckocircuits.circuit.TerminalRelativePosition;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
-// Leistungskreis Idealer Schalter (hoch- oder niederohmiger Widerstand, daher bidirektional)
+// // Power circuit Ideal switch (high or low resistance, therefore bidirectional)
 // BJT is NOT an AbstractSwitch, since it does not connect to a "control gate"!
 @SuppressWarnings({"rawtypes", "unchecked"})
-public final class BJT extends AbstractTwoPortLKreisBlock implements HiddenSubCircuitable {
+public final class BJT extends AbstractTwoPortPowerCircuitBlock implements HiddenSubCircuitable {
     
     private static final double DEF_FORWARD_BETA = 100;
     private static final double DEF_BACKWARD_BETA = 60;
@@ -123,32 +123,32 @@ public final class BJT extends AbstractTwoPortLKreisBlock implements HiddenSubCi
         XIN.add(_baseTerminal);
         //YOUT.add(_baseMidTerminal);
 
-        _diode1 = (Diode) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_D, this);
+        _diode1 = (Diode) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_D, this);
         _diode1.getIDStringDialog().setRandomStringID();        
         _diode1.setOutputTerminal(0, _collectorTerminal);
         _diode1.setInputTerminal(0, _midTerminal);
 
-        _diode2 = (Diode) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_D, this);
+        _diode2 = (Diode) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_D, this);
         _diode2.getIDStringDialog().setRandomStringID();        
         _diode2.setOutputTerminal(0, _emitterTerminal);
         _diode2.setInputTerminal(0, _midTerminal);
 
 
-        controlledSource1 = (AbstractCurrentSource) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_I, this);        
+        controlledSource1 = (AbstractCurrentSource) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_I, this);        
         controlledSource1.setOutputTerminal(0, _midTerminal);
         controlledSource1.setInputTerminal(0, _collectorTerminal);
         controlledSource1.sourceType.setValueWithoutUndo(CircuitSourceType.QUELLE_VOLTAGECONTROLLED_DIRECTLY);
         controlledSource1.directPotentialGain.setValueWithoutUndo(DEF_FORWARD_BETA / DEF_BASE_RES);        
 
 
-        controlledSource2 = (AbstractCurrentSource) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_I, this);        
+        controlledSource2 = (AbstractCurrentSource) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_I, this);        
         controlledSource2.setOutputTerminal(0, _midTerminal);
         controlledSource2.setInputTerminal(0, _emitterTerminal);
         controlledSource2.sourceType.setValueWithoutUndo(CircuitSourceType.QUELLE_VOLTAGECONTROLLED_DIRECTLY);
         controlledSource2.directPotentialGain.setValueWithoutUndo(DEF_BACKWARD_BETA / DEF_BASE_RES);
         
 
-        _resistor1 = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitTyp.LK_R, this);        
+        _resistor1 = (AbstractResistor) AbstractTypeInfo.fabricHiddenSub(CircuitType.LK_R, this);        
         _resistor1._resistance.setValueWithoutUndo(DEF_BASE_RES);
         _resistor1.setOutputTerminal(0, _midTerminal);
         _resistor1.setInputTerminal(0, _baseTerminal);

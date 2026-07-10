@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.geckocircuits.circuit.CircuitSourceType;
 import ch.technokrat.gecko.geckocircuits.circuit.CircuitTypeInfo;
@@ -83,12 +83,12 @@ public final class MotorImSat extends AbstractMotorIMCommon {
     @Override
     void setSubCircuit() {
         super.setSubCircuit();
-        // Eingangsstromquelle fuer iax(t) --> 
-        _controlledSource3 = (AbstractCurrentSource) fabricHiddenSub(CircuitTyp.LK_I, this);
-        // Eingangsstromquelle fuer icx(t) --> 
-        _controlledSource4 = (AbstractCurrentSource) fabricHiddenSub(CircuitTyp.LK_I, this);
-        // hochohmiger Widerstand zur Anbindung des Rotorkreises --> 
-        _resistor = (AbstractResistor) fabricHiddenSub(CircuitTyp.LK_R, this);
+        // // Input current source for iax(t) -->
+        _controlledSource3 = (AbstractCurrentSource) fabricHiddenSub(CircuitType.LK_I, this);
+        // // Input current source for icx(t) -->
+        _controlledSource4 = (AbstractCurrentSource) fabricHiddenSub(CircuitType.LK_I, this);
+        // // high-resistance resistance for connecting the rotor circuit -->
+        _resistor = (AbstractResistor) fabricHiddenSub(CircuitType.LK_R, this);
 
 
         _controlledSource3.sourceType.setValueWithoutUndo(CircuitSourceType.QUELLE_SIGNALGESTEUERT);
@@ -109,7 +109,7 @@ public final class MotorImSat extends AbstractMotorIMCommon {
         return 15;
     }
 
-    // Initialisiereung nach INIT&START --> 
+    // // Initialization after INIT&START -->
     @Override
     public void setzeParameterZustandswerteAufNULL() {
         super.setzeParameterZustandswerteAufNULL();

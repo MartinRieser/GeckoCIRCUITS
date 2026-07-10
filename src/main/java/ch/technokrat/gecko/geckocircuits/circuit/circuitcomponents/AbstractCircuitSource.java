@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-import ch.technokrat.gecko.geckocircuits.allg.UserParameter;
+import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractBlockInterface;
 import ch.technokrat.gecko.geckocircuits.circuit.ComponentCoupable;
 import ch.technokrat.gecko.geckocircuits.circuit.ComponentCoupling;
@@ -41,7 +41,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class AbstractCircuitSource extends AbstractTwoPortLKreisBlock implements DirectVoltageMeasurable,
+public abstract class AbstractCircuitSource extends AbstractTwoPortPowerCircuitBlock implements DirectVoltageMeasurable,
         ComponentCoupable, PotentialCoupable, CurrentMeasurable {
 
     static final double WIDTH = 0.9;
