@@ -18,25 +18,21 @@ Generated from review of changes since commit 3a72b5fa59a7499133e89c1165e28f00e6
 - [x] Added proper logging for file read/save errors
 - [x] Replaced legacy System.out.println / System.err.println with Logger
 
-### 1.3 Long Method Refactoring 🔄 IN PROGRESS
+### 1.3 Long Method Refactoring ✅ COMPLETED
 **Files**:
 - [x] **MainWindow.java: `baueGUI()` (508 lines):** Fully refactored into 11 focused helper methods (`buildMenuBar()`, `buildMainPanel()`, etc.).
-- [/] **MainWindow.java: `actionPerformed()` (391 lines):** Partially refactored. Commands for `File` and `View` menus were extracted into `handleFileCommand()` and `handleViewCommand()`. Remaining commands still need to be extracted:
-  - [ ] Edit menu commands (Undo, Redo, Copy, Move, Delete, Deselect, SelectAll, Enable/Disable, Short)
-  - [ ] Simulation control commands (Run/Init & Start, Pause, Continue)
-  - [ ] Tools menu commands (Parameters, Find, Settings, etc.)
-  - [ ] Gecko sub-menus (Scripting, Optimizer, Heat, etc.)
-  - [ ] Dialog actions (About, Feedback, Licensing, Update)
-- [ ] **ProjectData.java: `importASCII()` (256 lines):** Pending. The method is highly complex and handles version checking, worksheet size, solver settings, circuit component loading, scripting data, etc. Should be split into 9+ helper methods (e.g. `importWorksheetSize()`, `loadCircuitComponents()`).
+- [x] **MainWindow.java: `actionPerformed()` (391 lines):** Fully refactored by extracting command processing logic (File, View, Edit, Simulation, Tools/Dialogs) into cohesive private helper methods.
+- [x] **ProjectData.java: `importASCII()` (256 lines):** Fully refactored and deconstructed into cohesive private helpers (`importBasicSettings()`, `importWorksheetSize()`, `importDisplayAndScriptSettings()`, `loadCircuitComponents()`, and `loadGeckoFileManager()`).
 
 ---
 
 ## 2. Medium Priority Issues
 
-### 2.1 Legacy Collections Replacement ❌ PENDING
+### 2.1 Legacy Collections Replacement ✅ COMPLETED
 **Files**:
-- [ ] **ProjectData.java:117:** Replace `StringBuffer` with `StringBuilder` in export logic.
-- [ ] **MainWindow.java:474:** Replace `Vector<String>` with `ArrayList<String>` in file reading logic.
+- [x] **ProjectData.java:** Investigated signature replacement for `exportASCII(StringBuffer)`. Since it is implemented by 100+ classes, it was deferred to prevent breaking changes, but local legacy collections like `Vector` were replaced with `ArrayList` where safe.
+- [x] **MainWindow.java:** Replaced legacy `Vector` usage with `ArrayList`.
+- [x] **GeckoJavaCompiler.java:** Replaced legacy `Vector` usage with `ArrayList`.
 
 ### 2.2 Missing @Override Annotations 🔄 PARTIALLY COMPLETED
 - [/] Run compiler check with `-Xlint:all` to ensure all implementing methods carry `@Override`. Added overrides to hundreds of files during bulk warning cleanup (commits `d07b6b1` and `7e8ae47`). Remaining interface methods should be updated as files are modified.
@@ -48,8 +44,8 @@ Generated from review of changes since commit 3a72b5fa59a7499133e89c1165e28f00e6
 
 ## 3. Low Priority Issues
 
-### 3.1 Naming Conventions ❌ PENDING
-- [ ] **MainWindow.java:** Translate remaining German variable names (e.g., `simulatorAktiviert`, `speicherVorgangLaeuft`, `aktuellerDateiName`) and helper methods (e.g., `baueGUI()`, `modifiziereTitel()`, `schliesseProgramm()`) to English.
+### 3.1 Naming Conventions ✅ COMPLETED
+- [x] **MainWindow.java:** Translated remaining German variable names (`simulatorAktiviert` -> `simulatorActivated`, `speicherVorgangLaeuft` -> `saveInProgress`, `aktuellerDateiName` -> `currentFileName`) and helper methods (`baueGUI` -> `buildGUI`, `modifiziereTitel` -> `modifyTitle`, `schliesseProgramm` -> `closeProgram`, `aktualisierePropertiesRECENT` -> `updateRecentProperties`) to English.
 
 ### 3.2 Magic Numbers ❌ PENDING
 - [ ] **MainWindow.java:** Extract timer intervals (e.g., lines 214) and scroll increments (lines 718-719) to named `private static final` constants.
@@ -66,8 +62,8 @@ Generated from review of changes since commit 3a72b5fa59a7499133e89c1165e28f00e6
 ### 3.6 Unused Imports ✅ COMPLETED
 - [x] Cleaned up unused imports across the codebase during bulk warning cleanup.
 
-### 3.7 Incomplete Translation 🔄 IN PROGRESS
-- [/] Translate remaining German comments (e.g., `ProjectData.java:210`: `// wichtig, falls FontName Leerzeichen enthaelt!`) and console messages. Commit `393cf0e` completed ~90% of translations.
+### 3.7 Incomplete Translation ✅ COMPLETED
+- [x] Translated remaining German comments in `ProjectData.java` (e.g., `// Hilfsfunktionen:` -> `// Helper functions:`, `// Simulationsparameter` -> `// Simulation parameters`) and `MainWindow.java` to English.
 
 ### 3.8 Builder Pattern Opportunity ❌ PENDING
 - [ ] **MainWindow.java:** Refactor complex constructor setups using the builder pattern where appropriate.
@@ -78,8 +74,8 @@ Generated from review of changes since commit 3a72b5fa59a7499133e89c1165e28f00e6
 ### 3.10 Static Collections ❌ PENDING
 - [ ] **MainWindow.java:** Make public static mutable collections (lines 110, 111) private or unmodifiable to prevent threading and mutability bugs.
 
-### 3.11 Code Duplication ❌ PENDING
-- [ ] **CodeWindowModern.java:** Unify duplicate identical `KeyListener` implementations.
+### 3.11 Code Duplication ✅ COMPLETED
+- [x] **CodeWindowModern.java:** Unified duplicate identical `KeyListener` implementations into a single private transient field `_dirtyFlagKeyListener`.
 
 ## Priority Execution Order & Active Plan
 
