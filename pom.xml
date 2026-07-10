@@ -81,6 +81,12 @@
       <artifactId>log4j-api</artifactId>
       <version>${log4j2.version}</version>
     </dependency>
+    <dependency>
+      <groupId>biz.aQute.bnd</groupId>
+      <artifactId>biz.aQute.bnd.annotation</artifactId>
+      <version>7.1.0</version>
+      <scope>provided</scope>
+    </dependency>
     <!-- https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-svggen -->
     <dependency>
         <groupId>org.apache.xmlgraphics</groupId>
