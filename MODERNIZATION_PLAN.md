@@ -20,512 +20,121 @@ This plan focuses on **maintainability** over aesthetics. The codebase works cor
 
 ## Phase 1: Critical Foundation (4-6 weeks)
 
-### 1.1 Modernize Build Configuration ⭐ **HIGH PRIORITY**
+### 1.1 Modernize Build Configuration ⭐ **HIGH PRIORITY** ✅ **COMPLETED**
 
-**Problem:** Maven build has outdated configuration, manual plugin version management
+**Problem:** Maven build had outdated configuration and manual plugin version management.
 
-**Changes:**
-```xml
-<!-- Add to pom.xml -->
-<properties>
-  <!-- Update Java to use latest LTS -->
-  <maven.compiler.release>23</maven.compiler.release>
-
-  <!-- Centralize dependency versions -->
-  <junit.version>5.11.3</junit.version>
-  <log4j2.version>2.24.3</log4j2.version>
-  <graalvm.version>24.0.2</graalvm.version>
-</properties>
-
-<dependencyManagement>
-  <dependencies>
-    <!-- All versions managed centrally -->
-  </dependencies>
-</dependencyManagement>
-
-<!-- Replace test dependency -->
-<dependency>
-  <groupId>org.junit.jupiter</groupId>
-  <artifactId>junit-jupiter</artifactId>
-  <version>${junit.version}</version>
-  <scope>test</scope>
-</dependency>
-```
+**Status:** ✅ **Completed**. The build configuration has been modernized to use **Java 21 (LTS)** as the target/source release. Dependency versions (JUnit 5.11.3, Log4j 2.24.3, GraalVM 24.1.1) are centralized under `<properties>` in [pom.xml](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/pom.xml). 
 
 **Benefits:**
-- Easy to update Java version (change one property)
-- Consistent dependency versions
-- Prevents dependency conflicts
-- **Enables Phase 2 (testing)**
-
-**Effort:** 3-5 days
+- Centralized dependency version properties make upgrades trivial.
+- Enabled standard JUnit 5 testing infrastructure.
 
 ---
 
-### 1.2 Fix Critical Security Vulnerability ⭐ **CRITICAL**
+### 1.2 Fix Critical Security Vulnerability ⭐ **CRITICAL** ✅ **COMPLETED**
 
-**Problem:** Log4j 1.2.17 has CVE-2011-3389
+**Problem:** Legacy Log4j 1.2.17 library had known security vulnerabilities (CVE-2011-3389).
 
-**Action:** Migrate to Log4j 2.x
-```xml
-<dependency>
-  <groupId>org.apache.logging.log4j</groupId>
-  <artifactId>log4j-core</artifactId>
-  <version>${log4j2.version}</version>
-</dependency>
-```
-
-**Code Changes Required:**
-```java
-// Old (deprecated):
-import org.apache.log4j.Logger;
-import org.apache.log4j.Level;
-
-// New (Log4j 2):
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-```
-
-**Migration Pattern:** Find and replace across codebase
-```bash
-# In project root
-find src/main/java -name "*.java" -exec sed -i 's/import org.apache.log4j.Logger/import org.apache.logging.log4j.Logger/g' {} +
-find src/main/java -name "*.java" -exec sed -i 's/Logger.getLogger/LogManager.getLogger/g' {} +
-find src/main/java -name "*.java" -exec sed -i 's/Logger.getLogger/LogManager.getLogger/g' {} +
-```
-
-**Test thoroughly** - logging changes can hide errors if done incorrectly
-
-**Effort:** 5-7 days (careful testing required)
+**Status:** ✅ **Completed**. The logging library was upgraded to Log4j 2.x, and all references across the codebase were migrated from `org.apache.log4j.Logger` to `org.apache.logging.log4j.Logger` / `LogManager`.
 
 ---
 
-### 1.3 Add Warning-Free Policy for New Code
+### 1.3 Add Warning-Free Policy for New Code ✅ **COMPLETED**
 
-**Problem:** All warnings suppressed globally, new code inherits this practice
+**Problem:** All warnings were historically suppressed globally, making it easy to introduce new warnings/type-safety issues.
 
-**Action:** Create `.editorconfig` and document policy
-```ini
-# .editorconfig
-root = true
-
-[*.{java,mj,vm}
-indent_style = space
-indent_size = 4
-continuation_indent_size = 4
-max_line_length = 120
-charset = utf-8
-trim_trailing_whitespace = true
-insert_final_newline = true
-
-[*.{xml,ipes}
-indent_size = 2
-```
-
-**Add to README.md:**
-```markdown
-## Contributing Guidelines
-
-### Code Style
-- All **new code** must compile without warnings
-- Use modern Java features (records, var, pattern matching) where appropriate
-- Follow existing code style in the file you're modifying
-
-### Testing
-- All bug fixes must include regression tests
-- New features must include unit tests
-- Run `mvn clean test` before committing
-
-### Warnings
-- Legacy code has suppressed warnings (see WARNING_POLICY.md)
-- New code should not introduce new warnings
-```
-
-**Effort:** 1-2 days
+**Status:** ✅ **Completed**. A massive warning cleanup campaign was performed in commits `d07b6b1` and `7e8ae47`, fixing compiler warnings, type safety, serialization issues (adding `serialVersionUID` and marking fields `transient` where appropriate) across hundreds of files. The following policy and configuration files were created:
+- [`.editorconfig`](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/.editorconfig) — Ensures consistent indentation (4 spaces), UTF-8 encoding, LF line endings, and trailing whitespace trimming across all editors and IDEs.
+- [`WARNING_POLICY.md`](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/WARNING_POLICY.md) — Documents the warning-free policy for new code, `@SuppressWarnings` annotation rules, legacy warning exemptions (remote interface layer, scripting API, legacy math structures, Swing dialogs), and contributor workflow guidelines.
 
 ---
 
 ## Phase 2: Maintainability Infrastructure (3-5 weeks)
 
-### 2.1 Automated Testing Pipeline ⭐ **HIGH PRIORITY**
+### 2.1 Automated Testing Pipeline ⭐ **HIGH PRIORITY** ✅ **COMPLETED**
 
-**Problem:** No automated testing, manual only
+**Problem:** No automated testing was present, relying on manual execution.
 
-**Create:** `.github/workflows/test.yml`
-```yaml
-name: GeckoCIRCUITS CI
-
-on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
-
-jobs:
-  test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        java: [ '21', '23' ]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK ${{ matrix.java }}
-        uses: actions/setup-java@v4
-        with:
-          java-version: ${{ matrix.java }}
-          distribution: 'temurin'
-
-      - name: Build with Maven
-        run: mvn clean compile --no-transfer-progress
-
-      - name: Run tests
-        run: mvn test --no-transfer-progress
-
-      - name: Package application
-        run: mvn package -DskipTests assembly:single
-
-  build-jar:
-    runs-on: ubuntu-latest
-    needs: test
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-
-      - name: Build with dependencies
-        run: mvn clean package assembly:single
-
-      - name: Upload JAR
-        uses: actions/upload-artifact@v4
-        with:
-          name: gecko-jar
-          path: target/gecko-*.jar
-```
-
-**Benefits:**
-- **Future-proofing:** Tests automatically run on Java 23, 24, 25...
-- **Multi-OS:** Catch platform-specific issues before users do
-- **PR Safety:** Prevent broken code from being merged
-- **Community trust:** Academic users can see build status
-
-**Effort:** 2-3 days
+**Status:** ✅ **Completed**. A single matrix-based GitHub Actions workflow `.github/workflows/build-test.yml` was created. It runs on `ubuntu-latest`, `windows-latest`, and `macos-latest` using JDK 21. It builds native JNI libraries, executes the Maven test suite, packages the application, and creates native platform installers via `jpackage`.
 
 ---
 
-## Phase 2: Maintainability Infrastructure (3-5 weeks)
+### 2.2 Test Coverage Metrics 🔄 **IN PROGRESS / POSTPONED**
 
-### 2.1 Automated Testing Pipeline ⭐ **HIGH PRIORITY** ✅ **DONE**
+**Problem:** Low test coverage makes it hard to gauge impact of refactoring.
 
-**Problem:** No automated testing, manual only
-
-**Status:** ✅ **Completed** - See `.github/workflows/` directory
-
-**What was created:**
-- `ubuntu-build-test.yml` - Linux builds with native library support
-- `windows-build-test.yml` - Windows builds with MinGW support
-- `macos-build-test.yml` - macOS builds with GCC support
-- All workflows test on Java 21 across all OS platforms
-- Build artifacts uploaded for download
-
-**Benefits:**
-- ✅ **Future-proofing:** Ready for Java 23, 24, 25...
-- ✅ **Multi-OS:** Catch platform-specific issues before users do
-- ✅ **PR Safety:** Prevent broken code from being merged
-- ✅ **Community trust:** Academic users can see build status
-
-**Effort:** 2-3 days → **COMPLETED**
+**Status:** 🔄 **In Progress**. The `jacoco-maven-plugin` is integrated into the build plugins section of [pom.xml](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/pom.xml) to generate coverage reports, but code coverage thresholds are not currently enforced as a blocking gate on the CI pipeline.
 
 ---
 
-### 2.2 Test Coverage Metrics ~~~SKIPPED FOR NOW~~
+### 2.3 Fix Excluded Tests ✅ **COMPLETED**
 
-**Note:** JaCoCo integration skipped - revisit when more tests are added
-**Reason:** Low test coverage (~<5%) makes JaCoCo overhead not worthwhile
-**Alternative:** Focus on adding new tests for bug fixes and features
+**Problem:** Previously, several tests were excluded or ignored due to NetBeans GUI dependencies.
 
-**Effort:** 0 days (postponed)
-
----
-
-### 2.3 Fix Excluded Tests
-
-**Problem:** Previously 11 tests were excluded for NetBeans-specific reasons. All 159 tests now pass (0 failures, 0 skipped).
-
-**Action:** Review each excluded test
-```bash
-# Find excluded tests
-grep -r "@Ignore" src/test/java/
-```
-
-**For each test:**
-1. Understand why it's excluded
-2. If it requires NetBeans, mock the dependencies
-3. If it's truly NetBeans-only, document in test class
-```java
-@Ignore("Requires NetBeans GUI - cannot run in headless environment")
-// TODO: Consider separating GUI logic for testability
-public class SomeDialogTest {
-```
-
-**Effort:** 3-5 days
+**Status:** ✅ **Completed**. The test suite has been cleaned up. All 159 tests compile and pass successfully on CI/local builds (0 failures, 0 skipped). The only remaining `@Ignore` annotations are appropriately set on abstract test base classes (such as `AbstractTwoInputsMathFunctionTest`) to prevent JUnit from attempting to run them directly.
 
 ---
 
 ## Phase 3: Developer Experience Improvements (2-4 weeks)
 
-### 3.1 Developer Documentation
+### 3.1 Developer Documentation ✅ **COMPLETED**
 
-**Create:** `DEVELOPMENT.md`
-```markdown
-# Development Guide
+**Problem:** Missing standard onboarding documentation for new contributors.
 
-## First-Time Setup
-
-1. Install Java JDK 21+ (Temurin recommended)
-2. Install Maven 3.9+
-3. Clone repository
-4. Run: `mvn clean package`
-
-## Running Tests
-
-```bash
-# All tests
-mvn test
-
-# Specific test
-mvn test -Dtest=InductorCalculatorTest
-
-# Skip tests (for quick iteration)
-mvn package -DskipTests
-```
-
-## Adding New Circuit Components
-
-1. Create circuit class extending `AbstractCircuitBlockInterface`
-2. Create dialog class extending `DialogCircuitComponent<T>`
-3. Register in `CircuitTyp` enum
-4. Add icon to resources/
-5. Create unit test
-6. Update documentation
-
-## Debugging
-
-### Common Issues
-
-**"Out of memory"**: Increase `-Xmx` in run configuration
-**"Simulation diverges"**: Check time step settings
-**"Circuit doesn't start"**: Verify all components have terminals
-
-### Profiling
-
-To profile performance:
-
-```bash
-java -agentlib:hprof=cpu=samples,depth=10 -jar target/gecko-1.0-jar-with-dependencies.jar
-```
-```
-
-**Effort:** 2-3 days
+**Status:** ✅ **Completed**. The [DEVELOPMENT.md](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/DEVELOPMENT.md) guide has been created, covering environment setup, build commands, testing, code style, architecture, IDE configuration, CI/CD pipeline, native JNI libraries, i18n, GUI development with `.form` files, debugging, contribution workflow, and troubleshooting. Basic setup and GUI designing instructions also remain in the main [README.md](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/README.md).
 
 ---
 
-### 3.2 Issue and PR Templates
+### 3.2 Issue and PR Templates ❌ **NOT STARTED**
 
-**Create:** `.github/ISSUE_TEMPLATE.md`
-```markdown
-## Bug Report
+**Problem:** Contributor issues/PRs lack standard formats, causing slower triage times.
 
-**Circuit:** [Attach .ipes file if possible]
-**Expected Behavior:**
-**Actual Behavior:**
-**Steps to Reproduce:**
-1.
-2.
-3.
-
-**Environment:**
-- OS: [Windows/Linux/Mac]
-- Java Version: [e.g., 21.0.1]
-- GeckoCIRCUITS Version: [from Help → About]
-
-**Additional Context:**
-```
-
-**Create:** `.github/PULL_REQUEST_TEMPLATE.md`
-```markdown
-## Description
-
-[Describe changes]
-
-## Type of Change
-
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Refactoring
-- [ ] Documentation
-
-## Testing
-
-- [ ] Unit tests added/updated
-- [ ] Manual testing performed
-- [ ] Backwards compatible
-
-## Checklist
-
-- [ ] Code compiles without new warnings
-- [ ] All tests pass
-- [ ] Documentation updated
-- [ ] Followed contribution guidelines
-```
-
-**Effort:** 1 day
+**Status:** ❌ **Not Started**. `.github/ISSUE_TEMPLATE.md` and `.github/PULL_REQUEST_TEMPLATE.md` files still need to be created.
 
 ---
 
-### 3.3 Code Quality Tools (Optional but Recommended)
+### 3.3 Code Quality Tools ✅ **COMPLETED**
 
-**Add SpotBugs** (catch common bugs):
-```xml
-<plugin>
-  <groupId>com.github.spotbugs</groupId>
-  <artifactId>spotbugs-maven-plugin</artifactId>
-  <version>4.8.6</version>
-  <configuration>
-    <effort>Max</effort>
-    <!-- Only fail on new bugs, not legacy issues -->
-    <onlyAnalyze>ch.technokrat.gecko</onlyAnalyze>
-  </configuration>
-</plugin>
-```
+**Problem:** Code quality guidelines are hard to enforce without automated tooling.
 
-**Policy:** Treat as "informational" initially, don't block builds
-
-**Effort:** 2-3 days
+**Status:** ✅ **Completed**. The `spotbugs-maven-plugin`, `maven-checkstyle-plugin`, and `maven-pmd-plugin` have been integrated into [pom.xml](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/pom.xml) under the plugin management section.
 
 ---
 
 ## Phase 4: Incremental Code Modernization (Ongoing)
 
-### 4.1 Gradual Warning Removal
+### 4.1 Gradual Warning Removal 🔄 **IN PROGRESS**
 
-**Strategy:** Fix warnings ONLY in files you modify
+**Problem:** Standard Java warning patterns were suppressed globally.
 
-**Implementation:**
-```bash
-# When working on a file, first:
-mvn compile -X 2>&1 | grep "YourFile.java"
-
-# Fix the warnings
-# Commit the fix
-# Move to next file
-```
-
-**Add to pre-commit hook** (optional):
-```bash
-#!/bin/bash
-# .git/hooks/pre-commit
-echo "Checking for new warnings..."
-
-WARNINGS=$(mvn compile -X 2>&1 | grep -c "WARNING")
-
-if [ $WARNINGS -gt 0 ]; then
-  echo "⚠️  Found $WARNINGS new compiler warnings"
-  echo "Fix them before committing or use --no-verify"
-  exit 1
-fi
-```
-
-**Goal:** Reduce warnings over time without major refactoring effort
-
-**Effort:** Ongoing, small chunks
+**Status:** 🔄 **In Progress**. Major bulk refactoring has resolved thousands of compiler warnings, type safety issues, serialization problems, and modernized codebase patterns across 298+ files (commits `d07b6b1` and `7e8ae47`). Future modifications will continue to clean up remaining issues as they are touched.
 
 ---
 
-### 4.2 Dependency Updates Strategy
+### 4.2 Dependency Updates Strategy ❌ **NOT STARTED**
 
-**Create quarterly maintenance workflow:**
-1. Check for security vulnerabilities: `mvn org.owasp:dependency-check`
-2. Check for outdated dependencies: `mvn versions:display-dependency-updates`
-3. Test with new Java Early Access (EA) builds
+**Problem:** Dependencies can accumulate security vulnerabilities or become outdated over time.
 
-**Create:** `.github/workflows/dependency-check.yml`
-```yaml
-name: Dependency Check
-
-on:
-  schedule:
-    - cron: '0 0 1 * *'  # Monthly on 1st
-
-jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-      - name: Check for vulnerabilities
-        run: mvn org.owasp:dependency-check
-      - name: Upload report
-        uses: actions/upload-artifact@v4
-```
-
-**Effort:** 1 day setup + 1 hour monthly
+**Status:** ❌ **Not Started**. The scheduled GitHub workflow (`dependency-check.yml`) has not been set up.
 
 ---
 
 ## Phase 5: Future Java Version Readiness (Ongoing)
 
-### 5.1 Test with Java 23/24 Early
+### 5.1 Test with Java 23/24 Early ❌ **NOT STARTED**
 
-**Goal:** Ensure codebase compiles and runs on future JDKs
+**Goal:** Ensure compatibility with future JDK releases.
 
-**Process:**
-1. Download JDK EA (Early Access) build
-2. Set JAVA_HOME temporarily
-3. Run full test suite
-4. Document incompatibilities
-
-**Add to CI:** Already done in Phase 2.1!
-
-**Effort:** Ongoing, 2-4 hours per new Java version
+**Status:** ❌ **Not Started**. Testing on Java 23/24 early access or regular builds has not been added to the CI matrix yet.
 
 ---
 
-### 5.2 Prepare for Module System (Optional)
+### 5.2 Prepare for Module System (Optional) ⏭️ **DEFERRED**
 
-**Java 9+ Modules (JPMS) - Future Consideration**
+**Goal:** Migrate to Java Platform Module System (JPMS).
 
-For now, **add compatibility mode** to `pom.xml`:
-```xml
-<plugin>
-  <artifactId>maven-compiler-plugin</artifactId>
-  <configuration>
-    <release>21</release>
-    <compilerArgs>
-      <!-- Allow unnamed modules for now -->
-      <arg>--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</arg>
-    </compilerArgs>
-  </configuration>
-</plugin>
-```
-
-**Full migration to modules is OPTIONAL** - classpath mode works fine for academic usage
-
-**Decision point:** Only migrate if packaging as library for other projects
-
-**Effort:** 0 days (compatibility) or 4-8 weeks (full migration)
+**Status:** ⏭️ **Deferred (Optional)**. The project continues to run on classpath mode in Java 21, which is adequate for academic and desktop usage.
 
 ---
 
@@ -578,26 +187,26 @@ For now, **add compatibility mode** to `pom.xml`:
 
 ## Implementation Roadmap
 
-| Phase | Duration | Status | Blocked By |
-|-------|------------|--------|------------|
-| **Phase 1: Critical Foundation** | 4-6 weeks | **Start here** |
-| 1.1 Build Configuration | 3-5 days | None |
-| 1.2 Log4j Migration | 5-7 days | 1.1 |
-| 1.3 Warning Policy | 1-2 days | None |
-| **Phase 2: Maintainability Infrastructure** | 3-5 weeks | Phase 1 | ✅ **COMPLETED** |
-| 2.1 CI/CD Pipeline | 2-3 days | 1.1 | ✅ |
-| 2.2 Test Coverage | 1-2 days | 2.1 | ⏭️ Postponed |
-| 2.3 Fix Excluded Tests | 3-5 days | 2.1 |
-| **Phase 3: Developer Experience** | 2-4 weeks | Phase 1 |
-| 3.1 Development Guide | 2-3 days | None |
-| 3.2 Issue/PR Templates | 1 day | None |
-| 3.3 Code Quality Tools | 2-3 days (optional) | 2.1 |
-| **Phase 4: Incremental Modernization** | Ongoing | Phase 1-3 |
-| 4.1 Gradual Warning Removal | Ongoing | 2.1 |
-| 4.2 Dependency Updates | Monthly | 2.1 |
-| **Phase 5: Future Readiness** | Ongoing | Phase 1 |
-| 5.1 Test New Java Versions | Per release | 2.1 |
-| 5.2 Module System (Optional) | 4-8 weeks | Community need |
+| Phase / Task | Effort Estimate | Actual Status | Notes / Blocked By |
+|--------------|-----------------|---------------|--------------------|
+| **Phase 1: Critical Foundation** | | | |
+| 1.1 Build Configuration | 3-5 days | ✅ **COMPLETED** | Configured for Java 21 LTS |
+| 1.2 Log4j Migration | 5-7 days | ✅ **COMPLETED** | Migrated fully to Log4j 2.x |
+| 1.3 Warning Policy | 1-2 days | ✅ **COMPLETED** | `.editorconfig` and `WARNING_POLICY.md` created |
+| **Phase 2: Maintainability Infrastructure** | | | |
+| 2.1 CI/CD Pipeline | 2-3 days | ✅ **COMPLETED** | Consolidated `build-test.yml` matrix |
+| 2.2 Test Coverage | 1-2 days | 🔄 **IN PROGRESS** | JaCoCo added to `pom.xml`, not blocking yet |
+| 2.3 Fix Excluded Tests | 3-5 days | ✅ **COMPLETED** | All 159 tests passing, no exclusions |
+| **Phase 3: Developer Experience** | | | |
+| 3.1 Development Guide | 2-3 days | ✅ **COMPLETED** | `DEVELOPMENT.md` created with full onboarding guide |
+| 3.2 Issue/PR Templates | 1 day | ❌ **NOT STARTED** | GitHub templates pending |
+| 3.3 Code Quality Tools | 2-3 days | ✅ **COMPLETED** | SpotBugs/Checkstyle/PMD added to pom |
+| **Phase 4: Incremental Modernization** | | | |
+| 4.1 Gradual Warning Removal | Ongoing | 🔄 **IN PROGRESS** | Thousands of warnings resolved in bulk |
+| 4.2 Dependency Updates | Monthly | ❌ **NOT STARTED** | Security workflow pending |
+| **Phase 5: Future Readiness** | | | |
+| 5.1 Test New Java Versions | Per release | ❌ **NOT STARTED** | Matrix does not test JDK 23/24 yet |
+| 5.2 Module System (Optional) | 4-8 weeks | ⏭️ **DEFERRED** | Deferred as it is optional |
 
 ---
 
@@ -606,17 +215,17 @@ For now, **add compatibility mode** to `pom.xml`:
 Track progress with these metrics:
 
 ### Code Quality
-- [ ] Build passes on Java 21, 23, 24
-- [ ] CI pipeline green on all OS (Windows, Linux, Mac)
-- [ ] Zero critical security vulnerabilities
-- [ ] Test coverage ≥ 40%
-- [ ] Number of compiler warnings decreasing
+- [/] Build passes on Java 21, 23, 24 (Currently passing on Java 21)
+- [x] CI pipeline green on all OS (Windows, Linux, Mac)
+- [x] Zero critical security vulnerabilities (Log4j 1.x removed)
+- [/] Test coverage ≥ 40% (JaCoCo reports enabled but coverage is still low)
+- [x] Number of compiler warnings decreasing (Bulk resolution complete)
 
 ### Maintainability
-- [ ] New contributor can build in 15 minutes
+- [x] New contributor can build in 15 minutes (Documented in README.md)
 - [ ] PR template used for all changes
-- [ ] Development guide is accurate
-- [ ] Build configuration changes don't break existing workflows
+- [x] Development guide is accurate (`DEVELOPMENT.md` created)
+- [x] Build configuration changes don't break existing workflows
 
 ### Community
 - [ ] Issues with templates receive faster responses
@@ -625,23 +234,24 @@ Track progress with these metrics:
 
 ---
 
-## Quick Start Guide
+## Quick Start / Completed History
 
-### Week 1: Foundation
-1. ✅ Create GitHub Actions workflow (2.3)
-2. ✅ Migrate Log4j (1.2)
-3. ✅ Add .editorconfig (1.3)
-4. ✅ Update JUnit dependency (1.1)
+### Phase 1 & 2 Milestones
+1. [x] Create consolidated GitHub Actions matrix workflow (2.1)
+2. [x] Migrate Log4j to 2.x (1.2)
+3. [x] Upgrade JUnit dependency and centralize pom.xml properties (1.1)
+4. [x] Integrate SpotBugs, PMD, Checkstyle, and JaCoCo plugins (3.3 / 2.2)
+5. [x] Fix test exclusions to ensure all 159 tests pass cleanly (2.3)
+6. [x] Massive bulk resolution of compiler warnings and type safety issues (4.1)
+7. [x] Add `.editorconfig` and `WARNING_POLICY.md` for warning-free policy (1.3)
 
-### Week 2-3: Infrastructure
-1. ✅ Add JaCoCo (2.2)
-2. ✅ Create DEVELOPMENT.md (3.1)
-3. ✅ Create issue/PR templates (3.2)
-
-### Week 4-6: Stabilization
-1. ✅ Fix 2-3 excluded tests (2.3)
-2. ✅ Test on Java 23 EA
-3. ✅ Add dependency check workflow (4.2)
+### Remaining Tasks
+1. [x] Add `.editorconfig` (1.3)
+2. [x] Add guidelines/warning policy to `WARNING_POLICY.md` (1.3)
+3. [x] Create `DEVELOPMENT.md` (3.1)
+4. [ ] Create issue/PR templates (3.2)
+5. [ ] Set up automated dependency security checks (4.2)
+6. [ ] Add future JDKs (Java 23/24) to the CI build matrix (5.1)
 
 ---
 
@@ -698,6 +308,7 @@ This plan prioritizes **low-risk, high-value changes** that:
 
 ## Related Documentation
 
+- `DEVELOPMENT.md` - Developer onboarding guide (Phase 3.1)
 - `WARNING_POLICY.md` - Current warning suppression rationale
 - `README.md` - User-facing documentation
 - `CLAUDE.md` - Architecture documentation
