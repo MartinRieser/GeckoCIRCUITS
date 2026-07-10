@@ -588,7 +588,29 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
                command.equals("vItemShowTextLineTHERM") || command.equals("vItemShowFlowTHERM");
     }
 
-    private void handleFileCommand(String command) {
+    private boolean isEditCommand(String command) {
+        return command.equals("Undo") || command.equals("Redo") ||
+               command.equals("Copy Elements") || command.equals("Move Elements") ||
+               command.equals("Delete Elements") || command.equals("Deselect") ||
+               command.equals("SelectAll") || command.equals("Disable") ||
+               command.equals("DisableShort");
+    }
+
+    private boolean isSimulationCommand(String command) {
+        return command.equals("Init & Start") || command.equals("Pause") || command.equals("Continue");
+    }
+
+    private boolean isToolsAndDialogCommand(String command) {
+        return command.equals("Parameter") || command.equals("setParameters") ||
+               command.equals("setOrder") || command.equals("mItemConnectorTest") ||
+               command.equals("mItemFind") || command.equals("mItemCheckModel") ||
+               command.equals("memorySettings") || command.equals("updateSettings") ||
+               command.equals("remoteSettings") || command.equals("geckoScript") ||
+               command.equals("About") || command.equals("Feedback") ||
+               command.equals("Licensing") || command.equals("Update");
+    }
+
+    private void handleFileCommand(String command) throws FileNotFoundException {
         if (command.equals("New")) {
             _se.setConnectorTestMode(false);
             if (_se.getZustandGeaendert()) {
@@ -615,29 +637,200 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
                 createNewFile();
             }
         } else if (command.equals("Open")) {
-            openFileDialog();
+            _se.setConnectorTestMode(false);
+            if (_se.getZustandGeaendert()) {
+                int returnOption = JOptionPane.showConfirmDialog(
+                        this,
+                        "The content of the file has changed.\nDo you want to save the changes?\n",
+                        "Warning: Open new file",
+                        JOptionPane.YES_NO_CANCEL_OPTION);
+
+                switch (returnOption) {
+                    case 0:
+                        saveFile();
+                        this.openFileDialog();
+                        this.setAnsicht();
+                        break;
+                    case 1:
+                        this.openFileDialog();
+                        this.setAnsicht();
+                        break;
+                    case 2:
+                        break;
+                    default:
+                        assert false;
+                }
+            } else {
+                this.openFileDialog();
+                this.setAnsicht();
+            }
         } else if (command.equals("Save")) {
-            saveFile();
+            this.saveFile();
         } else if (command.equals("Save As")) {
-            saveFileAs();
+            this.saveFileAs();
         } else if (command.equals("Save View as Image")) {
-            new SaveViewFrame(this, _se._visibleCircuitSheet).setVisible(true);
+            try {
+                new SaveViewFrame(this, _se._visibleCircuitSheet).setVisible(true);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(null, ex.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE);
+            } catch (OutOfMemoryError ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(null, ex.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE);
+            }
         } else if (command.equals("Exit")) {
-            schliesseProgramm();
-        } else if (command.equals("RECENT_1")) {
-            loadFileFromList_withoutSaving(0);
-        } else if (command.equals("RECENT_2")) {
-            loadFileFromList_withoutSaving(1);
-        } else if (command.equals("RECENT_3")) {
-            loadFileFromList_withoutSaving(2);
-        } else if (command.equals("RECENT_4")) {
-            loadFileFromList_withoutSaving(3);
+            this.schliesseProgramm();
+        } else if (command.startsWith("RECENT_")) {
+            _se.setConnectorTestMode(false);
+            int index = Integer.parseInt(command.substring(7));
+            String recentPath = "";
+            switch (index) {
+                case 1: recentPath = GlobalFilePathes.RECENT_CIRCUITS_1; break;
+                case 2: recentPath = GlobalFilePathes.RECENT_CIRCUITS_2; break;
+                case 3: recentPath = GlobalFilePathes.RECENT_CIRCUITS_3; break;
+                case 4: recentPath = GlobalFilePathes.RECENT_CIRCUITS_4; break;
+            }
+            if (recentPath.equals("")) {
+                return;
+            }
+            if (_se.getZustandGeaendert()) {
+                int returnOption = JOptionPane.showConfirmDialog(
+                        this,
+                        "The content of the file has changed.\nDo you want to save the changes?\n",
+                        "Warning: Open new file",
+                        JOptionPane.YES_NO_CANCEL_OPTION);
+
+                switch (returnOption) {
+                    case 0:
+                        saveFile();
+                        loadFileFromList_withoutSaving(index);
+                        this.setAnsicht();
+                        break;
+                    case 1:
+                        loadFileFromList_withoutSaving(index);
+                        this.setAnsicht();
+                        break;
+                    case 2:
+                        break;
+                    default:
+                        assert false;
+                }
+            } else {
+                this.openFile(recentPath);
+                this.setAnsicht();
+            }
         } else if (command.equals("Import")) {
             _se.importFromClipboard();
         } else if (command.equals("Export")) {
             _se.export_allesImBearbeitungsModus();
         } else if (command.equals("ImportFromFile")) {
-            _se.importFromClipboard();
+            handleImportFromFile();
+        }
+    }
+
+    private void handleImportFromFile() {
+        File currentDirectory = null;
+        try {
+            currentDirectory = new File(GlobalFilePathes.DATNAM);
+        } catch (Exception e) {
+            try {
+                currentDirectory = new File(GlobalFilePathes.PFAD_JAR_HOME);
+            } catch (Exception ex) {
+                currentDirectory = null;
+            }
+        }
+        GeckoFileChooser fileChooser = GeckoFileChooser.createOpenFileChooser(".ipes", "Circuit Simulation Files (*.ipes)", this, currentDirectory);
+        if (fileChooser.getUserResult() == GeckoFileChooser.FileChooserResult.CANCEL) {
+            return;
+        }                
+        final String fileName = fileChooser.getFileWithCheckedEnding().getAbsolutePath();                    
+        try {
+            if((new File(fileName)).exists()) {
+                String[] fileLines = getLinesArrayFromIpesFile(fileName);
+                _se.readSelectedElementsFromASCIIString(fileLines);                    
+            } else {
+                throw new FileNotFoundException("File not found " + fileName);
+            }                        
+        } catch(Throwable error) {
+            JOptionPane.showMessageDialog(MainWindow.this,
+                "Error during file import : " + fileName + "\n" + error.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }                                        
+    }
+
+    private void handleEditCommand(String command) {
+        if (command.equals("Undo")) {
+            if (AbstractUndoGenericModel.undoManager.canUndo()) {
+                AbstractUndoGenericModel.undoManager.undo();
+                _se._visibleCircuitSheet.repaint();
+            }
+        } else if (command.equals("Redo")) {
+            if (AbstractUndoGenericModel.undoManager.canRedo()) {
+                AbstractUndoGenericModel.undoManager.redo();
+                _se._visibleCircuitSheet.repaint();
+            }
+        } else if (command.equals("Copy Elements")) {
+            _se.kopiereAllesImBearbeitungsModus();
+        } else if (command.equals("Move Elements")) {
+            _se.verschiebeAllesImBearbeitungsModus();
+        } else if (command.equals("Delete Elements")) {
+            _se.deleteSelectedComponentsWithUndo();
+        } else if (command.equals("Deselect")) {
+            _se.deselect();
+        } else if (command.equals("SelectAll")) {
+            _se.selectAll();
+        } else if (command.equals("Disable")) {
+            _se.toggleEnable(false);
+        } else if (command.equals("DisableShort")) {
+            _se.toggleEnable(true);
+        }
+    }
+
+    private void handleSimulationCommand(String command) {
+        if (command.equals("Init & Start")) {
+            initStartWithErrorDialogMessage();
+        } else if (command.equals("Pause")) {
+            this.pauseSimulation();
+        } else if (command.equals("Continue")) {
+            continueCalculationWithPossibleErrorMessage();
+        }
+    }
+
+    private void handleToolsAndDialogCommand(String command) {
+        if (command.equals("Parameter")) {
+            openParameterMenu(this);
+        } else if (command.equals("setParameters")) {
+            new DialogOptimizerParameterSettings(optimizerParameterData, _se.getBlockInterfaceComponents());
+        } else if (command.equals("setOrder")) {
+            NetlistGeneral nlA = NetlistGeneral.fabricNetzlistComplete(_se.getConnection(ConnectorType.CONTROL), _se.getElementCONTROL());
+            NetlistControl.getOptimizedList(nlA);
+            new DialogControlOrderN(this, true, NetlistControl.getOptimizedList(nlA));
+        } else if (command.equals("mItemConnectorTest")) {
+            boolean checkConnectors = mItemConnectorTest.getState();
+            _se.setConnectorTestMode(checkConnectors);
+        } else if (command.equals("mItemFind")) {
+            new DialogFindInModel(this, false, _se);
+        } else if (command.equals("mItemCheckModel")) {
+            NetlistGeneral nlA = NetlistGeneral.fabricNetzlistComplete(_se.getConnection(ConnectorType.CONTROL), _se.getElementCONTROL());
+            new DialogControlCheck(this, true, NetlistControl.FabricRunSimulation(nlA)).setVisible(true);
+        } else if (command.equals("memorySettings")) {
+            new DialogMemory();
+        } else if (command.equals("updateSettings")) {
+            DialogUpdateSettings du = new DialogUpdateSettings();
+            du.setVisible(true);
+        } else if (command.equals("remoteSettings")) {
+            DialogRemotePort drp = new DialogRemotePort(this, false);
+            drp.setVisible(true);
+        } else if (command.equals("geckoScript")) {
+            _scripter.makeVisible();
+        } else if (command.equals("About")) {
+            doAboutDialog();
+        } else if (command.equals("Feedback")) {
+            new DialogFeedback(this);
+        } else if (command.equals("Licensing")) {
+            new DialogLicensing();
+        } else if (command.equals("Update")) {
+            DialogUpdate du = new DialogUpdate();
+            du.setVisible(true);
         }
     }
 
@@ -716,403 +909,14 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
                 handleFileCommand(befehl);
             } else if (isViewCommand(befehl)) {
                 handleViewCommand(befehl);
-                _se.setConnectorTestMode(false);
-                // 'createNewFile()' is optionally called from the dialog
-                if (_se.getZustandGeaendert()) {
-
-                    int returnOption = JOptionPane.showConfirmDialog(
-                            this,
-                            "The content of the file has changed.\nDo you want to save the changes?\n",
-                            "Warning: Create new file",
-                            JOptionPane.YES_NO_CANCEL_OPTION);
-
-                    switch (returnOption) {
-                        case 0:
-                            saveFile();
-                            createNewFile();
-                            break;
-                        case 1:
-                            createNewFile();
-                            break;
-                        case 2:
-                            break;
-                        default:
-                            assert false;
-                    }
-                } else {
-                    this.createNewFile();
-                }
-            } else if (befehl.equals("Open")) {
-                _se.setConnectorTestMode(false);
-                if (_se.getZustandGeaendert()) {
-                    int returnOption = JOptionPane.showConfirmDialog(
-                            this,
-                            "The content of the file has changed.\nDo you want to save the changes?\n",
-                            "Warning: Open new file",
-                            JOptionPane.YES_NO_CANCEL_OPTION);
-
-                    switch (returnOption) {
-                        case 0:
-                            saveFile();
-                            this.openFileDialog();
-                            this.setAnsicht();
-                            break;
-                        case 1:
-                            this.openFileDialog();
-                            this.setAnsicht();
-                            break;
-                        case 2: // cancel option
-                            break;
-                        default:
-                            assert false;
-                    }
-                } else {
-                    this.openFileDialog();
-                    this.setAnsicht();
-                }
-            } else if (befehl.equals("Save")) {
-                this.saveFile();
-            } else if (befehl.equals("Save As")) {
-                this.saveFileAs();
-            } else if (befehl.equals("Save View as Image")) {
-                try {
-                    new SaveViewFrame(this, _se._visibleCircuitSheet).setVisible(true);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(null,
-                            ex.getMessage(),
-                            "Error!",
-                            JOptionPane.ERROR_MESSAGE);
-                } catch (OutOfMemoryError ex) {
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(null,
-                            ex.getMessage(),
-                            "Error!",
-                            JOptionPane.ERROR_MESSAGE);
-                }
-            } else if (befehl.equals("Exit")) {
-                this.schliesseProgramm();
-                //--------------------------------------------
-            } else if (befehl.equals("RECENT_1")) {
-                _se.setConnectorTestMode(false);
-                if (GlobalFilePathes.RECENT_CIRCUITS_1.equals("")) {
-                    return;
-                }
-                if (_se.getZustandGeaendert()) {
-                    int returnOption = JOptionPane.showConfirmDialog(
-                            this,
-                            "The content of the file has changed.\nDo you want to save the changes?\n",
-                            "Warning: Open new file",
-                            JOptionPane.YES_NO_CANCEL_OPTION);
-
-                    switch (returnOption) {
-                        case 0:
-                            saveFile();
-                            loadFileFromList_withoutSaving(1);
-                            this.setAnsicht();
-                            break;
-                        case 1:
-                            loadFileFromList_withoutSaving(1);
-                            this.setAnsicht();
-                            break;
-                        case 2: // cancel option
-                            break;
-                        default:
-                            assert false;
-                    }
-                } else {
-                    this.openFile(GlobalFilePathes.RECENT_CIRCUITS_1);
-                    this.setAnsicht();
-                }
-            } else if (befehl.equals("RECENT_2")) {
-                _se.setConnectorTestMode(false);
-                if (GlobalFilePathes.RECENT_CIRCUITS_2.equals("")) {
-                    return;
-                }
-                if (_se.getZustandGeaendert()) {
-                    int returnOption = JOptionPane.showConfirmDialog(
-                            this,
-                            "The content of the file has changed.\nDo you want to save the changes?\n",
-                            "Warning: Open new file",
-                            JOptionPane.YES_NO_CANCEL_OPTION);
-
-                    switch (returnOption) {
-                        case 0:
-                            saveFile();
-                            loadFileFromList_withoutSaving(2);
-                            this.setAnsicht();
-                            break;
-                        case 1:
-                            loadFileFromList_withoutSaving(2);
-                            this.setAnsicht();
-                            break;
-                        case 2: // cancel option
-                            break;
-                        default:
-                            assert false;
-                    }
-                } else {
-                    this.openFile(GlobalFilePathes.RECENT_CIRCUITS_2);
-                    this.setAnsicht();
-                }
-            } else if (befehl.equals("RECENT_3")) {
-                _se.setConnectorTestMode(false);
-                if (GlobalFilePathes.RECENT_CIRCUITS_3.equals("")) {
-                    return;
-                }
-                if (_se.getZustandGeaendert()) {
-                    int returnOption = JOptionPane.showConfirmDialog(
-                            this,
-                            "The content of the file has changed.\nDo you want to save the changes?\n",
-                            "Warning: Open new file",
-                            JOptionPane.YES_NO_CANCEL_OPTION);
-
-                    switch (returnOption) {
-                        case 0:
-                            saveFile();
-                            loadFileFromList_withoutSaving(3);
-                            this.setAnsicht();
-                            break;
-                        case 1:
-                            loadFileFromList_withoutSaving(3);
-                            this.setAnsicht();
-                            break;
-                        case 2: // cancel option
-                            break;
-                        default:
-                            assert false;
-                    }
-                } else {
-                    this.openFile(GlobalFilePathes.RECENT_CIRCUITS_3);
-                    this.setAnsicht();
-                }
-            } else if (befehl.equals("RECENT_4")) {
-                _se.setConnectorTestMode(false);
-                if (GlobalFilePathes.RECENT_CIRCUITS_4.equals("")) {
-                    return;
-                }
-                if (_se.getZustandGeaendert()) {
-                    int returnOption = JOptionPane.showConfirmDialog(
-                            this,
-                            "The content of the file has changed.\nDo you want to save the changes?\n",
-                            "Warning: Open new file",
-                            JOptionPane.YES_NO_CANCEL_OPTION);
-
-                    switch (returnOption) {
-                        case 0:
-                            saveFile();
-                            loadFileFromList_withoutSaving(4);
-                            this.setAnsicht();
-                            break;
-                        case 1:
-                            loadFileFromList_withoutSaving(4);
-                            this.setAnsicht();
-                            break;
-                        case 2: // cancel option
-                            break;
-                        default:
-                            assert false;
-                    }
-                } else {
-                    this.openFile(GlobalFilePathes.RECENT_CIRCUITS_4);
-                    this.setAnsicht();
-                }
-                //========================================================================
-            } else if (befehl.equals("Move Elements")) {
-                _se.verschiebeAllesImBearbeitungsModus();
-            } else if (befehl.equals("Copy Elements")) {
-                _se.kopiereAllesImBearbeitungsModus();
-            } else if (befehl.equals("Undo")) {
-                if (AbstractUndoGenericModel.undoManager.canUndo()) {
-                    AbstractUndoGenericModel.undoManager.undo();
-                    _se._visibleCircuitSheet.repaint();
-                }
-            } else if (befehl.equals("Redo")) {
-                if (AbstractUndoGenericModel.undoManager.canRedo()) {
-                    AbstractUndoGenericModel.undoManager.redo();
-                    _se._visibleCircuitSheet.repaint();
-                }
-            } else if (befehl.equals("Delete Elements")) {
-                _se.deleteSelectedComponentsWithUndo();
-            } else if (befehl.equals("Deselect")) {
-                _se.deselect();
-            } else if (befehl.equals("SelectAll")) {
-                _se.selectAll();
-            } else if (befehl.equals("Disable")) {
-                _se.toggleEnable(false);
-            } else if (befehl.equals("DisableShort")) {
-                _se.toggleEnable(true);
-            } else if (befehl.equals("Import")) {
-                _se.importFromClipboard();
-            } else if (befehl.equals("ImportFromFile")) {
-                File currentDirectory = null;
-                try {
-                    currentDirectory = new File(GlobalFilePathes.DATNAM);
-                } catch (Exception e) {
-                    try {
-                        currentDirectory = new File(GlobalFilePathes.PFAD_JAR_HOME);
-                    } catch (Exception ex) {
-                        currentDirectory = null;
-                    }
-                }
-                GeckoFileChooser fileChooser = GeckoFileChooser.createOpenFileChooser(".ipes", "Circuit Simulation Files (*.ipes)", this, currentDirectory);
-                if (fileChooser.getUserResult() == GeckoFileChooser.FileChooserResult.CANCEL) {
-                    return;
-                }                
-                    final String fileName = fileChooser.getFileWithCheckedEnding().getAbsolutePath();                    
-                    try {
-                        if((new File(fileName)).exists()) {
-                            String[] fileLines = getLinesArrayFromIpesFile(fileName);
-                            _se.readSelectedElementsFromASCIIString(fileLines);                    
-                        } else {
-                            throw new FileNotFoundException("File not found " + fileName);
-                        }                        
-                    } catch(Throwable error) {
-                        JOptionPane.showMessageDialog(MainWindow.this,
-                            "Error during file import : " + fileName + "\n" + error.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                    }                                        
-            } else if (befehl.equals("Export")) {
-                _se.export_allesImBearbeitungsModus();
-                //========================================================================
-            } else if (befehl.equals("Parameter")) {
-                openParameterMenu(this);
-            } else if (befehl.equals("Init & Start")) {
-                initStartWithErrorDialogMessage();
-            } else if (befehl.equals("Pause")) {
-                this.pauseSimulation();
-            } else if (befehl.equals("Continue")) {
-                continueCalculationWithPossibleErrorMessage();
-            } else if (befehl.equals(
-                    "vItemShowNameLK")) {
-                SchematicEditor2._lkDisplayMode.showName = vItemShowNameLK.getState();
-                if ((!SchematicEditor2._lkDisplayMode.showName) && (!SchematicEditor2._lkDisplayMode.showParameter)) {
-                    vItemShowTextLineLK.setState(false);
-                    SchematicEditor2._lkDisplayMode.showTextLine = vItemShowTextLineLK.getState();
-                }
-                _se._visibleCircuitSheet.repaint();
-            } else if (befehl.equals(
-                    "aliasingCommand")) {
-                _se.setAntialiasing(aliasingCONTROL.isSelected());
-                jtfStatus.setAliasing(aliasingCONTROL.isSelected());
-            } else if (befehl.equals(
-                    "vItemShowParLK")) {
-                SchematicEditor2._lkDisplayMode.showParameter = vItemShowParLK.getState();
-                if ((!SchematicEditor2._lkDisplayMode.showName) && (!SchematicEditor2._lkDisplayMode.showParameter)) {
-                    vItemShowTextLineLK.setState(false);
-                    SchematicEditor2._lkDisplayMode.showTextLine = vItemShowTextLineLK.getState();
-                }
-                _se._visibleCircuitSheet.repaint();
-            } else if (befehl.equals(
-                    "vItemShowTextLineLK")) {
-                SchematicEditor2._lkDisplayMode.showTextLine = vItemShowTextLineLK.getState();
-                _se._visibleCircuitSheet.repaint();
-            } else if (befehl.equals(
-                    "vItemShowFlowLK")) {
-                SchematicEditor2._lkDisplayMode.showFlowSymbol = vItemShowFlowLK.getState();
-                _se._visibleCircuitSheet.repaint();
-                //---------------------------------------------------------
-            } else if (befehl.equals(
-                    "vItemShowNameCONTROL")) {
-                SchematicEditor2._controlDisplayMode.showName = vItemShowNameCONTROL.getState();
-                if ((!SchematicEditor2._controlDisplayMode.showName) && (!SchematicEditor2._controlDisplayMode.showParameter)) {
-                    vItemShowTextLineCONTROL.setState(false);
-                    SchematicEditor2._controlDisplayMode.showTextLine = vItemShowTextLineCONTROL.getState();
-                }
-                _se._circuitSheet.repaint();
-            } else if (befehl.equals(
-                    "vItemShowParCONTROL")) {
-                SchematicEditor2._controlDisplayMode.showParameter = vItemShowParCONTROL.getState();
-                if ((!SchematicEditor2._controlDisplayMode.showName) && (!SchematicEditor2._controlDisplayMode.showParameter)) {
-                    vItemShowTextLineCONTROL.setState(false);
-                    SchematicEditor2._controlDisplayMode.showTextLine = vItemShowTextLineCONTROL.getState();
-                }
-                _se._circuitSheet.repaint();
-            } else if (befehl.equals(
-                    "vItemShowTextLineCONTROL")) {
-                SchematicEditor2._controlDisplayMode.showTextLine = vItemShowTextLineCONTROL.getState();
-                _se._circuitSheet.repaint();
-                //---------------------------------------------------------
-            } else if (befehl.equals(
-                    "vItemShowNameTHERM")) {
-                SchematicEditor2._thermDisplayMode.showName = vItemShowNameTHERM.getState();
-                if ((!SchematicEditor2._thermDisplayMode.showName) && (!SchematicEditor2._thermDisplayMode.showParameter)) {
-                    vItemShowTextLineTHERM.setState(false);
-                    SchematicEditor2._thermDisplayMode.showTextLine = vItemShowTextLineTHERM.getState();
-                }
-                _se._circuitSheet.repaint();
-            } else if (befehl.equals(
-                    "vItemShowParTHERM")) {
-                SchematicEditor2._thermDisplayMode.showParameter = vItemShowParTHERM.getState();
-                if ((!SchematicEditor2._thermDisplayMode.showName) && (!SchematicEditor2._thermDisplayMode.showParameter)) {
-                    vItemShowTextLineTHERM.setState(false);
-                    SchematicEditor2._thermDisplayMode.showTextLine = vItemShowTextLineTHERM.getState();
-                }
-                _se._circuitSheet.repaint();
-            } else if (befehl.equals(
-                    "vItemShowTextLineTHERM")) {
-                SchematicEditor2._thermDisplayMode.showTextLine = vItemShowTextLineTHERM.getState();
-                _se._circuitSheet.repaint();
-            } else if (befehl.equals(
-                    "vItemShowFlowTHERM")) {
-                SchematicEditor2._thermDisplayMode.showFlowSymbol = vItemShowFlowTHERM.getState();
-                _se._circuitSheet.repaint();
-            } else if (befehl.equals(
-                    "setParameters")) {
-                new DialogOptimizerParameterSettings(optimizerParameterData, _se.getBlockInterfaceComponents());
-            } else if (befehl.equals(
-                    "setOrder")) {
-                NetlistGeneral nlA = NetlistGeneral.fabricNetzlistComplete(_se.getConnection(ConnectorType.CONTROL), _se.getElementCONTROL());
-                NetlistControl.getOptimizedList(nlA);
-                new DialogControlOrderN(this, true, NetlistControl.getOptimizedList(nlA));
-            } else if (befehl.equals(
-                    "mItemConnectorTest")) {
-                boolean checkConnectors = mItemConnectorTest.getState();
-                _se.setConnectorTestMode(checkConnectors);
-            } else if (befehl.equals(
-                    "mItemFind")) {
-                new DialogFindInModel(this, false, _se);
-            } else if (befehl.equals(
-                    "mItemCheckModel")) {
-                NetlistGeneral nlA = NetlistGeneral.fabricNetzlistComplete(_se.getConnection(ConnectorType.CONTROL), _se.getElementCONTROL());
-                new DialogControlCheck(this, true, NetlistControl.FabricRunSimulation(nlA)).setVisible(true);
-            } else if (befehl.equals("memorySettings")) {
-                new DialogMemory();
-
-            } else if (befehl.equals("updateSettings")) {
-                DialogUpdateSettings du = new DialogUpdateSettings();
-                du.setVisible(true);
-            } else if (befehl.equals(
-                    "remoteSettings")) {
-                DialogRemotePort drp = new DialogRemotePort(this, false);
-                drp.setVisible(true);
-            } else if (befehl.equals(
-                    "3Dtherm")) {
-            } else if (befehl.equals(
-                    "geckoScript")) {
-                _scripter.makeVisible();
-            } else if (befehl.equals(
-                    "magnet")) {
-             } else if (befehl.equals(
-                     "3Delmag")) {
-                Logger.getLogger(MainWindow.class.getName()).log(Level.WARNING, "Command '3Delmag' not implemented");
-            } else if (befehl.equals(
-                    "optimize")) {
-                Logger.getLogger(MainWindow.class.getName()).log(Level.WARNING, "Command 'optimize' not implemented");
-            } else if (befehl.equals(
-                    "About")) {
-                doAboutDialog();
-            } else if (befehl.equals(
-                    "Feedback")) {
-                new DialogFeedback(this);
-            } else if (befehl.equals(
-                    "Licensing")) {
-                new DialogLicensing();
-            } else if (befehl.equals(
-                    "Update")) {
-                DialogUpdate du = new DialogUpdate();
-                du.setVisible(true);
+            } else if (isEditCommand(befehl)) {
+                handleEditCommand(befehl);
+            } else if (isSimulationCommand(befehl)) {
+                handleSimulationCommand(befehl);
+            } else if (isToolsAndDialogCommand(befehl)) {
+                handleToolsAndDialogCommand(befehl);
             }
-        } catch (FileNotFoundException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
