@@ -1,0 +1,31 @@
+name: Dependency Check
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'  # Weekly on Monday at 00:00 UTC
+  workflow_dispatch:      # Allow manual runs
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Check for vulnerabilities
+        run: mvn org.owasp:dependency-check-maven:10.0.3:check -DfailBuildOnCVSS=7.0 --no-transfer-progress
+
+      - name: Upload Dependency Check Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dependency-check-report
+          path: target/dependency-check-report.html
+          retention-days: 30
