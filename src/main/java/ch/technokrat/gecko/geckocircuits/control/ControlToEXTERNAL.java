@@ -29,7 +29,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Stack;
 
-public final class ControlToEXTERNAL extends ControlBlockSimulink implements Comparable, VariableTerminalNumber {
+public final class ControlToEXTERNAL extends ControlBlockSimulink implements Comparable<ControlToEXTERNAL>, VariableTerminalNumber {
 
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlToEXTERNAL.class, "ToEXT", I18nKeys.EXPORT_DATA_TO_SIMULINK);
     public static final ArrayList<ControlBlock> toExternals = new ArrayList<ControlBlock>();
@@ -72,27 +72,6 @@ public final class ControlToEXTERNAL extends ControlBlockSimulink implements Com
         return XIN;
     }
 
-    private class compareOrder implements Comparator {
-
-        @Override
-        public int compare(final Object compare1, final Object compare2) {
-            if (compare1 instanceof ControlToEXTERNAL && compare2 instanceof ControlToEXTERNAL) {
-                final ControlToEXTERNAL fromExtern1 = (ControlToEXTERNAL) compare1;
-                final ControlToEXTERNAL fromExtern2 = (ControlToEXTERNAL) compare2;
-                if (fromExtern1.externalOrderNumber == fromExtern2.externalOrderNumber) {
-                    return 0;
-                }
-                if (fromExtern1.externalOrderNumber < fromExtern2.externalOrderNumber) {
-                    return -1;
-                }
-                return 1;
-            }
-
-            assert false;
-            return 0;
-        }
-    }
-
     @Override
     public void setInputTerminalNumber(final int number) {
         while (XIN.size() > number) {
@@ -112,7 +91,12 @@ public final class ControlToEXTERNAL extends ControlBlockSimulink implements Com
 
     public void insertOrderCorrect(final int orderNo) {
         externalOrderNumber = orderNo;
-        Collections.sort(toExternals, new compareOrder());
+        toExternals.sort(Comparator.comparingInt(cb -> {
+            if (cb instanceof ControlToEXTERNAL) {
+                return ((ControlToEXTERNAL) cb).externalOrderNumber;
+            }
+            return 0;
+        }));
     }
 
     public void setExternalName(final String name) {
@@ -161,15 +145,15 @@ public final class ControlToEXTERNAL extends ControlBlockSimulink implements Com
         xKlickMin = (int) (dpix * (posX - WIDTH));
         xKlickMax = (int) (dpix * (posX + WIDTH));
         yKlickMin = (int) (dpix * (posY - WIDTH));
-        yKlickMax = (int) (dpix * (posY + XIN.size()));
+        yKlickMax = dpix * (posY + XIN.size());
         graphics.setColor(getBackgroundColor());
 
         graphics.fillRect((int) (dpix * (posX - WIDTH)), (int) (dpix * (posY - WIDTH)),
-                (int) (dpix * (2 * WIDTH)), (int) (dpix * XIN.size()));
+                (int) (dpix * (2 * WIDTH)), dpix * XIN.size());
 
         graphics.setColor(origColor);
         graphics.drawRect((int) (dpix * (posX - WIDTH)), (int) (dpix * (posY - WIDTH)),
-                (int) (dpix * (2 * WIDTH)), (int) (dpix * XIN.size()));
+                (int) (dpix * (2 * WIDTH)), dpix * XIN.size());
         // Pfeil-Symbol:
         int d1 = 10, d2 = 4, dpfx = 8, dpfy = 3;
         double pf = 2.0;  // Pfeilspitzen-X-Abstand
@@ -203,20 +187,8 @@ public final class ControlToEXTERNAL extends ControlBlockSimulink implements Com
     }
 
     @Override
-    public int compareTo(final Object toCompare) {
-        if (toCompare instanceof ControlToEXTERNAL) {
-            final ControlToEXTERNAL otherToExtern = (ControlToEXTERNAL) toCompare;
-            if (otherToExtern.externalOrderNumber == this.externalOrderNumber) {
-                return 0;
-            }
-            if (otherToExtern.externalOrderNumber < this.externalOrderNumber) {
-                return 1;
-            }
-            return -1;
-        }
-
-        assert false;
-        return 0;
+    public int compareTo(final ControlToEXTERNAL otherToExtern) {
+        return Integer.compare(this.externalOrderNumber, otherToExtern.externalOrderNumber);
     }
 
     @Override

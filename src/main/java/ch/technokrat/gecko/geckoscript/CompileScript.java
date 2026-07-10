@@ -194,12 +194,12 @@ public class CompileScript {
             _classNameFileMap = _compileObject.getClassNameFileMap();
 
             final ClassLoader classLoader = new JavaBlockClassLoader(_classNameFileMap);
-            final Class clazz = Class.forName(_compileObject.getClassName(), false, classLoader);
+            final Class<?> clazz = Class.forName(_compileObject.getClassName(), false, classLoader);
 
             try {
                 
-                Constructor[] constructorlist = clazz.getConstructors();
-                Constructor constructor = constructorlist[0];
+                Constructor<?>[] constructorlist = clazz.getConstructors();
+                Constructor<?> constructor = constructorlist[0];
                 
                 if (sw._advancedOption) {
                         sw._scriptObject = (AbstractGeckoCustom) constructor.newInstance(new Object[]{sw._circuit, 

@@ -20,14 +20,16 @@ import javax.swing.JDialog;
  * @author andy
  */
 class DialogDiagramProps extends javax.swing.JDialog {
-    private final AbstractDiagram _diagram;
-    private final GraferV4 _grafer;
+    private static final long serialVersionUID = 1L;
+    private final transient AbstractDiagram _diagram;
+    private final transient GraferV4 _grafer;
     
     // careful: This variable cannot be made private final boolean.
     // I discovered that the obfuscater will then mess the initialization up!
     private boolean _initDone = false;
 
     /** Creates new form DialogGraphProps */
+    @SuppressWarnings("this-escape")
     public DialogDiagramProps(final JDialog parent, final boolean modal, final AbstractDiagram diagram, final GraferV4 grafer) {
         super(parent, modal);
         initComponents();

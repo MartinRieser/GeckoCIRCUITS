@@ -18,11 +18,13 @@ package ch.technokrat.gecko.geckocircuits.newscope;
  *
  * @author andy
  */
+@SuppressWarnings({"unchecked", "rawtypes", "serial"})
 class DialogCurveProperties extends GeckoDialog {
-    private final LineSettable _lineSettable;
-    private final GraferV4 _grafer;    
-    private final AbstractCurve _curve;
-    private final SymbolSettable _symbSettable;
+    private static final long serialVersionUID = 1L;
+    private final transient LineSettable _lineSettable;
+    private final transient GraferV4 _grafer;    
+    private final transient AbstractCurve _curve;
+    private final transient SymbolSettable _symbSettable;
     
     /** Creates new form DialogCurveProps */
     public DialogCurveProperties(final javax.swing.JDialog parent, final boolean modal, final AbstractCurve curve, 

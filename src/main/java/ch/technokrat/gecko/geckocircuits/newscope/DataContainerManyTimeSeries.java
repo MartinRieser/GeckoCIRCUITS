@@ -74,7 +74,7 @@ public class DataContainerManyTimeSeries extends AbstractDataContainer implement
         HiLoData hiLoData = null;
 
         for (int index = columnStart; index < columnStop; index++) {
-            hiLoData = HiLoData.mergeFromValue(hiLoData, (float) _data[row][index]);
+            hiLoData = HiLoData.mergeFromValue(hiLoData, _data[row][index]);
         }
 
         return hiLoData;

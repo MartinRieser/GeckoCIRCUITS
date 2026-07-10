@@ -186,7 +186,7 @@ public final class ControlSlidingDFT extends AbstractControlVariableInputs {
 
         @Override
         public int hashCode() {
-            return (int) (long) Double.doubleToLongBits(_frequency.getValue()) + _outputData.hashCode();
+            return (int) Double.doubleToLongBits(_frequency.getValue()) + _outputData.hashCode();
         }
 
         
@@ -288,8 +288,8 @@ public final class ControlSlidingDFT extends AbstractControlVariableInputs {
 
         @Override
         public void die() {
-            _newList = Collections.EMPTY_LIST;
-            _oldList = Collections.EMPTY_LIST;
+            _newList = Collections.emptyList();
+            _oldList = Collections.emptyList();
         }
 
         @Override

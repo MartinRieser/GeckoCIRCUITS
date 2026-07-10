@@ -18,6 +18,7 @@ import ch.technokrat.gecko.geckocircuits.circuit.CircuitLabel;
 import javax.swing.JLabel;
 
 class ControlTerminalDialog extends DialogElementCONTROL<ControlTERMINAL> {
+    private static final long serialVersionUID = 1L;
 
     private FormatJTextField terminalLabel;
 

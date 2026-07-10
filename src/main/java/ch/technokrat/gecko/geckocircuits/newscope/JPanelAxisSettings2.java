@@ -19,13 +19,16 @@ import javax.swing.JOptionPane;
  *
  * @author andy
  */
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class JPanelAxisSettings2 extends javax.swing.JPanel {
+    private static final long serialVersionUID = 1L;
 
-    private GraferV4 _grafer;
-    private Axis _axis;
+    private transient GraferV4 _grafer;
+    private transient Axis _axis;
     private boolean _initDone;
 
     /** Creates new form JPanelAxisSettings2 */
+    @SuppressWarnings("this-escape")
     public JPanelAxisSettings2() {
         super();
         initComponents();
@@ -301,7 +304,7 @@ public class JPanelAxisSettings2 extends javax.swing.JPanel {
     private ch.technokrat.gecko.geckocircuits.general.FormatJTextField formatJTextFieldMinVal;
     private javax.swing.JCheckBox jCheckBoxAutoScale;
     public javax.swing.JCheckBox jCheckBoxSymmetricZero;
-    private javax.swing.JComboBox jComboBoxScaleType;
+    private javax.swing.JComboBox<AxisLinLog> jComboBoxScaleType;
     private javax.swing.JLabel jLabelAxisLabel;
     private javax.swing.JLabel jLabelMaxVal;
     private javax.swing.JLabel jLabelMinVal;

@@ -27,6 +27,7 @@ import java.util.Observer;
  *
  * @author andy
  */
+@SuppressWarnings("deprecation")
 public final class DataContainerScopeWrapper extends AbstractDataContainer implements DataContainerIntegralCalculatable {
 
     private final AbstractDataContainer _globalContainer;

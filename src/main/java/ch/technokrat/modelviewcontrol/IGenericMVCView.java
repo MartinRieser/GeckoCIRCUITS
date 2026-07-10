@@ -21,7 +21,7 @@ import ch.technokrat.modelviewcontrol.ModelMVCGeneric;
  * @param <L>
  * @author andy
  */
-public interface IGenericMVCView <L extends ModelMVCGeneric> {
+public interface IGenericMVCView <L extends ModelMVCGeneric<?>> {
     /**
      * 
      * @param pointModel

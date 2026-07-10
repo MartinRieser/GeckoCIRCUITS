@@ -30,10 +30,12 @@ public class NativeCLibraryFile {
     public NativeCLibraryFile () {
     }
     
+    @SuppressWarnings("this-escape")
     public NativeCLibraryFile (final String fileName) throws FileNotFoundException {
         setFile(fileName);
     }
     
+    @SuppressWarnings("this-escape")
     public NativeCLibraryFile (final File file) throws FileNotFoundException {
         setFile(file);
     }

@@ -18,11 +18,13 @@ package ch.technokrat.gecko.geckocircuits.newscope;
  * @author andy
  */
 public class JPanelGridSettings extends javax.swing.JPanel {
-    private Axis _axis;
-    private GraferV4 _grafer;
+    private static final long serialVersionUID = 1L;
+    private transient Axis _axis;
+    private transient GraferV4 _grafer;
     private boolean _initDone;
 
     /** This constructor is only meant for the netbeans gui builder! */
+    @SuppressWarnings("this-escape")
     public JPanelGridSettings() {
         super();
         initComponents();      

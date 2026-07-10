@@ -409,7 +409,7 @@ public class GraferV3 extends JPanel {
     }
 
     protected int calculateXPixLogarithmic(double wert, int index) {
-        return (_xAchseX[index] + (int) (sfX[index] * this.lg10(wert / achseXmin[index])));
+        return (_xAchseX[index] + (int) (sfX[index] * GraferV3.lg10(wert / achseXmin[index])));
     }
 
     protected int calculateYPixLinear(double wert, int index) {
@@ -417,7 +417,7 @@ public class GraferV3 extends JPanel {
     }
 
     protected int calculateYPixLogarithmic(double wert, int index) {
-        return (_yAchseY[index] - (int) (sfY[index] * this.lg10(wert / achseYmin[index])));
+        return (_yAchseY[index] - (int) (sfY[index] * GraferV3.lg10(wert / achseYmin[index])));
     }
 
     protected void zeichneKurven(Graphics g) {
@@ -546,7 +546,7 @@ public class GraferV3 extends JPanel {
             if (xAchseTyp[indexZurKurveGehoerigeXachse[i1]] == ACHSE_LIN) {
                 xPix[i2] = (float) (x0Kurve + (sfX[indexZurKurveGehoerigeXachse[i1]] * (x - achseXmin[indexZurKurveGehoerigeXachse[i1]])));
             } else if ((xAchseTyp[indexZurKurveGehoerigeXachse[i1]] == ACHSE_LOG)) {
-                xPix[i2] = (float) (x0Kurve + (sfX[indexZurKurveGehoerigeXachse[i1]] * this.lg10(x / achseXmin[indexZurKurveGehoerigeXachse[i1]])));
+                xPix[i2] = (float) (x0Kurve + (sfX[indexZurKurveGehoerigeXachse[i1]] * GraferV3.lg10(x / achseXmin[indexZurKurveGehoerigeXachse[i1]])));
             }
 
             double y = worksheetDaten.getValue(kurve_index_worksheetKolonnen_XY[i1][1], i2);
@@ -560,7 +560,7 @@ public class GraferV3 extends JPanel {
                 if (y <= 0) {
                     y = 1e-99;  //y=achseYmin[indexZurKurveGehoerigeYachse[i1]];
                 }
-                yPix[i2] = (float) (y0Kurve - (sfY[indexZurKurveGehoerigeYachse[i1]] * this.lg10(y / achseYmin[indexZurKurveGehoerigeYachse[i1]])));
+                yPix[i2] = (float) (y0Kurve - (sfY[indexZurKurveGehoerigeYachse[i1]] * GraferV3.lg10(y / achseYmin[indexZurKurveGehoerigeYachse[i1]])));
             }
         }
 
@@ -612,7 +612,7 @@ public class GraferV3 extends JPanel {
                 if (i2 % crvSymbFrequ[i1] == 0) {
                     switch (crvSymbShape[i1]) {
                         case SYBM_CIRCLE:
-                            g2.drawOval(Math.round(xPix[i2]) - dmCIRCLE / 2, (int) Math.round(yPix[i2]) - dmCIRCLE / 2, dmCIRCLE, dmCIRCLE);
+                            g2.drawOval(Math.round(xPix[i2]) - dmCIRCLE / 2, Math.round(yPix[i2]) - dmCIRCLE / 2, dmCIRCLE, dmCIRCLE);
                             break;
                         case SYBM_CIRCLE_FILLED:
                             g2.fillOval(Math.round(xPix[i2]) - dmCIRCLE / 2, Math.round(yPix[i2]) - dmCIRCLE / 2, dmCIRCLE, dmCIRCLE);
@@ -756,13 +756,13 @@ public class GraferV3 extends JPanel {
             //==================================
         } else if (xAchseTyp[i1] == ACHSE_LOG) {
             // // mandatory --> xTickSpacing[i1]=AUTO because it only makes sense to add ticks to the tens of decades
-            sfX[i1] = breitePix[i1] / this.lg10(achseXmax[i1] / achseXmin[i1]);
-            int anzTicks = (int) Math.round(this.lg10(achseXmax[i1] / achseXmin[i1])) + 3;
+            sfX[i1] = breitePix[i1] / GraferV3.lg10(achseXmax[i1] / achseXmin[i1]);
+            int anzTicks = (int) Math.round(GraferV3.lg10(achseXmax[i1] / achseXmin[i1])) + 3;
             double[] wertTickX_temp = new double[anzTicks];
             int[] tickX_temp = new int[anzTicks];
             int j = 0;
             for (int i2 = 0; i2 < anzTicks; i2++) {
-                double wert = Math.pow(10, ((int) this.lg10(achseXmin[i1]) - 1 + i2));
+                double wert = Math.pow(10, ((int) GraferV3.lg10(achseXmin[i1]) - 1 + i2));
                 int tick = this.calculateXPixLogarithmic(wert, i1);
                 if ((achseXmin[i1] <= wert) && (wert <= achseXmax[i1])) {
                     wertTickX_temp[j] = wert;
@@ -937,13 +937,13 @@ public class GraferV3 extends JPanel {
                 achseYmin[i1] = achseYmax[i1] / 1e4;
             }
             // // mandatory --> yTickSpacing[i1]=AUTO because it only makes sense to add ticks to the tens of decades
-            sfY[i1] = hoehePix[i1] / this.lg10(achseYmax[i1] / achseYmin[i1]);
-            int anzTicks = (int) (this.lg10(achseYmax[i1] / achseYmin[i1])) + 3;
+            sfY[i1] = hoehePix[i1] / GraferV3.lg10(achseYmax[i1] / achseYmin[i1]);
+            int anzTicks = (int) (GraferV3.lg10(achseYmax[i1] / achseYmin[i1])) + 3;
             double[] wertTickY_temp = new double[anzTicks];
             int[] tickY_temp = new int[anzTicks];
             int j = 0;
             for (int i2 = 0; i2 < anzTicks; i2++) {
-                double wert = Math.pow(10, ((int) this.lg10(achseYmin[i1]) - 1 + i2));
+                double wert = Math.pow(10, ((int) GraferV3.lg10(achseYmin[i1]) - 1 + i2));
                 int tick = this.calculateYPixLogarithmic(wert, i1);
                 if ((achseYmin[i1] <= wert) && (wert <= achseYmax[i1])) {
                     wertTickY_temp[j] = wert;

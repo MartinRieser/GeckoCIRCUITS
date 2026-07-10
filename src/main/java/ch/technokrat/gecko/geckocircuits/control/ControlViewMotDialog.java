@@ -27,6 +27,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 class ControlViewMotDialog extends DialogElementCONTROL<ControlVIEWMOT> {
+    private static final long serialVersionUID = 1L;
 
     public ControlViewMotDialog(final ControlVIEWMOT aThis) {
         super(aThis);
@@ -41,7 +42,7 @@ class ControlViewMotDialog extends DialogElementCONTROL<ControlVIEWMOT> {
                 getClassFromContainer(AbstractCircuitBlockInterface.class);
         for (AbstractCircuitBlockInterface elem : possibleElements) {
             if (elem instanceof AbstractMotor) {
-                for (String parameterString : ((AbstractCircuitBlockInterface) (elem)).getParameterStringIntern()) {
+                for (String parameterString : elem.getParameterStringIntern()) {
                     labelListeElementLK2.add(elem.getStringID() + "." + parameterString);
                 }
             }
@@ -71,7 +72,7 @@ class ControlViewMotDialog extends DialogElementCONTROL<ControlVIEWMOT> {
                     parStr[2] = selectedString.substring(selectedString.lastIndexOf(".") + 1);
                     for (AbstractBlockInterface search : possibleElements) {
                         if (search.getStringID().equals(parStr[1])) {
-                            ((ControlVIEWMOT) element).getComponentCoupling().setNewCouplingElementUndoable(0, search);
+                            element.getComponentCoupling().setNewCouplingElementUndoable(0, search);
                         }
                     }
                 }

@@ -19,12 +19,15 @@ package ch.technokrat.gecko.i18n.translationtoolbox;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+@SuppressWarnings("serial")
 public class TranslationDialog extends javax.swing.JFrame {
+    private static final long serialVersionUID = 1L;
 
     /**
      * Creates new form TranslationDialog with 1 message
      * @param dialog Dialog message to display to the user
      */
+    @SuppressWarnings("this-escape")
     public TranslationDialog(String dialog) {
         initComponents();
         setLocationRelativeTo(null); // display in center screen
@@ -45,6 +48,7 @@ public class TranslationDialog extends javax.swing.JFrame {
      * @param dialog1 First dialog message to display to the user
      * @param dialog2 Second dialog message to display to the user
      */
+    @SuppressWarnings("this-escape")
     public TranslationDialog(String dialog1, String dialog2) {
         initComponents();
         setLocationRelativeTo(null); // display in center screen

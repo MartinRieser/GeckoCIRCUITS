@@ -28,10 +28,12 @@ import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
+@SuppressWarnings({"unchecked", "rawtypes"})
 class ControlVOLTDialog extends DialogElementCONTROL<AbstractPotentialMeasurement> {
+    private static final long serialVersionUID = 1L;
 
     private DialogPanelVoltageMeasurement dpvm;
-    JComboBox componentCombo;
+    JComboBox<?> componentCombo;
 
     public ControlVOLTDialog(AbstractPotentialMeasurement potMeas) {
         super(potMeas);
@@ -99,7 +101,7 @@ class ControlVOLTDialog extends DialogElementCONTROL<AbstractPotentialMeasuremen
         dpvm.jComboBoxLabel1.setForeground(potentialColor);
         Object testCombo = ((JPanel) compMeasurement.getComponent(0)).getComponent(0);
         if (testCombo instanceof JComboBox) {
-            componentCombo = (JComboBox) ((JPanel) compMeasurement.getComponent(0)).getComponent(0);
+            componentCombo = (JComboBox<?>) ((JPanel) compMeasurement.getComponent(0)).getComponent(0);
             dpvm.jComboBoxLabel1.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
                     if (dpvm.jComboBoxLabel1.getSelectedItem() != null) {

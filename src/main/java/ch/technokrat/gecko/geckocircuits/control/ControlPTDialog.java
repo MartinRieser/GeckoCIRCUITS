@@ -24,6 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
 class ControlPTDialog extends DialogElementCONTROL<AbstractControlPT> {
+    private static final long serialVersionUID = 1L;
     
     private static final int WIDTH_PT1 = 140;
     private static final int HEIGHT_PT1 = 45;

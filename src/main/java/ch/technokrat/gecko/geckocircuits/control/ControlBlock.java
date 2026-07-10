@@ -27,12 +27,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
-import java.io.Serializable;
 import java.util.ArrayList;
 
-public abstract class ControlBlock extends AbstractBlockInterface implements Serializable {
+public abstract class ControlBlock extends AbstractBlockInterface {
 
-    private static final long serialVersionUID = 1L;
     public final static double[] EMPTY_OUTPUT = new double[]{};
     // // Dimensions of the individual elements:
     private static final double WIDTH = 1.5;

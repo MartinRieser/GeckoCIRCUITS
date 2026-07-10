@@ -21,11 +21,14 @@ import javax.swing.border.TitledBorder;
  *
  * @author andy
  */
+@SuppressWarnings({"unchecked", "rawtypes", "serial"})
 public class JPanelLineProperties extends javax.swing.JPanel {
+    private static final long serialVersionUID = 1L;
 
-    private LineSettable _lineSettable;
+    private transient LineSettable _lineSettable;
     private Component _redrawComponent;
 
+    @SuppressWarnings("this-escape")
     public JPanelLineProperties() {
         super();
         initComponents();

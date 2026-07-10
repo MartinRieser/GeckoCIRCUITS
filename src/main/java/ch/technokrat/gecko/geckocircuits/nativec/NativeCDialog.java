@@ -52,9 +52,11 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  * GUI Dialog to load the Native Libraries
  * @author DIEHL Controls Ricardo Richter
  */
+@SuppressWarnings({"unchecked", "rawtypes", "serial"})
 public class NativeCDialog extends GeckoDialog {
-    private final DefaultListModel _fileList;
-    private final Container _con;
+    private static final long serialVersionUID = 1L;
+    private final transient DefaultListModel _fileList;
+    private final transient Container _con;
     private final JButton jButtonOK = GuiFabric.getJButton(I18nKeys.OK);
     private final JList<String> jListLibFiles;
     private final JButton jButtonOpenFile = GuiFabric.getJButton(I18nKeys.ADD_NEW);
@@ -65,9 +67,9 @@ public class NativeCDialog extends GeckoDialog {
     
     private JFileChooser jFileChooser;
     protected final NativeCDialog _thisObj;
-    private final ControlNativeC _regNCObj;
+    private final transient ControlNativeC _regNCObj;
     
-    private final NativeCLibraryFile _selectedLibFile;
+    private final transient NativeCLibraryFile _selectedLibFile;
     
 
 
@@ -79,6 +81,7 @@ public class NativeCDialog extends GeckoDialog {
      * @param libFile       Reference to NativeCLibraryFile, used to fill with user inputs
      * @param libFileList   Reference to List of added Native Libraries, used to fill with user inputs
      */
+    @SuppressWarnings("this-escape")
     public NativeCDialog(ControlNativeC regObj, Window parent, boolean modal, NativeCLibraryFile libFile, DefaultListModel libFileList) {
         super(parent, modal);
         _selectedLibFile = libFile;

@@ -21,14 +21,15 @@ import javax.swing.JTable;
 
 @Deprecated
 class DisplayFourierWorksheet extends JPanel {
+    private static final long serialVersionUID = 1L;
 
     //----------------------------
-    private JTable table;
-    private JScrollPane jsp;
-    private Object[][] wsObj;
-    private TechFormat cf = new TechFormat();
+    private transient JTable table;
+    private transient JScrollPane jsp;
+    private transient Object[][] wsObj;
+    private transient TechFormat cf = new TechFormat();
     //----------------------------
-    private double[] cnSG, jnSG;
+    private transient double[] cnSG, jnSG;
     private int nMin;
     //----------------------------
 

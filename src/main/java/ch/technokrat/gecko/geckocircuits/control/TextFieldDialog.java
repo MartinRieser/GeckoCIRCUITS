@@ -20,10 +20,12 @@ import javax.swing.JColorChooser;
  *
  * @author muesinga
  */
+@SuppressWarnings("serial")
 public class TextFieldDialog extends javax.swing.JDialog {
-    private TextFieldBlock _tfb;
+    private static final long serialVersionUID = 1L;
+    private transient TextFieldBlock _tfb;
     
-    /** Creates new form NewJDialog */
+    @SuppressWarnings("this-escape")
     public TextFieldDialog(final java.awt.Frame parent, final TextFieldBlock tfb) {
         super(parent, true);
         initComponents();

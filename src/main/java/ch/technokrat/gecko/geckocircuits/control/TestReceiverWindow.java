@@ -44,11 +44,11 @@ public final class TestReceiverWindow extends JFrame {
 
     private static final long serialVersionUID = 1L;
     private static final TechFormat tcf = new TechFormat();
-    private final ControlCISPR16 _controlCISPR16;
+    private final transient ControlCISPR16 _controlCISPR16;
     private final transient Cispr16Settings _settings;
     private boolean initDone = false;
-    private final GraferV4 _graferNew;
-    private final NewScope _graferPanel;
+    private final transient GraferV4 _graferNew;
+    private final transient NewScope _graferPanel;
     private transient TestReceiverCalculation _calculatorNew;
     private int _calculationDoneForHash;
     private transient CalculationRunnable _calculationRunnable;
@@ -56,7 +56,7 @@ public final class TestReceiverWindow extends JFrame {
     private static final int NUMBER_SIGNALS = 8;
     private static final String[] SIGNAL_NAMES =
             new String[]{"Class A", "Class B", "Maximum est.", "Peak", "Quasi-Peak", "Average", "Minimum est.", "Fourier"};
-    private CisprDataExport _dataDialog;
+    private transient CisprDataExport _dataDialog;
     public static final int INDEX_CLASS_A = 0;
     public static final int INDEX_CLASS_B = 1;
     public static final int INDEX_MAX_EST = 2;

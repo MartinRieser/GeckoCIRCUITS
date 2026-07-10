@@ -32,7 +32,7 @@ import java.awt.event.WindowEvent;
 public class CodeWindowModern extends JFrame {
     private static final long serialVersionUID = 1L;
     private transient ControlJavaFunction _javaFunction;
-    private final VariableBusWidth _variableBusWidth;
+    private final transient VariableBusWidth _variableBusWidth;
     private final StringBuffer _outputStringBuffer;
 
     private final RSyntaxTextArea _codeTextArea;

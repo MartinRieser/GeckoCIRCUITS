@@ -76,7 +76,7 @@ public class JavaBlockMatrix extends AbstractJavaBlock {
             final Class<?> clazz = Class.forName(_compileObject.getClassName(), false, classLoader);
 
             try {
-                _compiledInstance = (ControlCalculatableMatrix) clazz.newInstance();
+                _compiledInstance = (ControlCalculatableMatrix) clazz.getDeclaredConstructor().newInstance();
 
             } catch (NoClassDefFoundError err) {
                 Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, "NoClassDefFoundError while loading Java block: " + err.getMessage(), err);
@@ -86,6 +86,8 @@ public class JavaBlockMatrix extends AbstractJavaBlock {
                 Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, "IllegalAccessException while creating Java block instance: " + ex.getMessage(), ex);
             } catch (SecurityException ex) {
                 Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, "SecurityException while creating Java block instance: " + ex.getMessage(), ex);
+            } catch (Exception ex) {
+                Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, "Exception while creating Java block instance: " + ex.getMessage(), ex);
             }
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, "ClassNotFoundException while loading Java block class: " + ex.getMessage(), ex);

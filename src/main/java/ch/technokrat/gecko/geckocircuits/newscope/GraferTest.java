@@ -17,8 +17,10 @@ package ch.technokrat.gecko.geckocircuits.newscope;
 import java.awt.Dimension;
 
 public class GraferTest extends javax.swing.JFrame {
-    private final GraferV4 _grafer;    
+    private static final long serialVersionUID = 1L;
+    private final transient GraferV4 _grafer;    
 
+    @SuppressWarnings({"this-escape", "deprecation"})
     public GraferTest() {        
         ScopeSettings settings = new ScopeSettings();        
         _grafer = new GraferV4(settings);

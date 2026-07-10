@@ -28,12 +28,14 @@ import javax.swing.JLabel;
 
 public class DialogDefineAvg extends javax.swing.JDialog {
 
-    final List<JCheckBox> _checkBoxes = new ArrayList<JCheckBox>();
-    private final DefinedMeanSignals _definedMeanSignals;
+    private static final long serialVersionUID = 1L;
+    final transient List<JCheckBox> _checkBoxes = new ArrayList<JCheckBox>();
+    private final transient DefinedMeanSignals _definedMeanSignals;
 
     /**
      * Creates new form DialogDefineAvg
      */
+    @SuppressWarnings("this-escape")
     public DialogDefineAvg(final java.awt.Frame parent, final boolean modal,
             final DataContainerIntegralCalculatable dataContainer) {
         super(parent, modal);

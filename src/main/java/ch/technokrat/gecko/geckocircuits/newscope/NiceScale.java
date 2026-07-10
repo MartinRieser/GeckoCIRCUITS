@@ -48,11 +48,11 @@ public final class NiceScale {
 
         if (min == max && min > 0) {
             if (min > 0) {
-                min *= 0.9;
-                max *= 1.1;
+                min *= 0.9f;
+                max *= 1.1f;
             } else {
-                max *= 0.9;
-                min *= 1.1;
+                max *= 0.9f;
+                min *= 1.1f;
             }
         }
 

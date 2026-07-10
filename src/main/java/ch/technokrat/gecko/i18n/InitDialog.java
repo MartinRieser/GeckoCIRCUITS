@@ -20,10 +20,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class InitDialog extends javax.swing.JFrame {
+    private static final long serialVersionUID = 1L;
 
     /**
      * Creates new form InitDialog
      */
+    @SuppressWarnings("this-escape")
     public InitDialog() {
         initComponents();
         setLocationRelativeTo(null);  // display in center-screen

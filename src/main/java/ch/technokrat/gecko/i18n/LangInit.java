@@ -26,6 +26,7 @@ import ch.technokrat.gecko.i18n.bot.DLbot;
 import ch.technokrat.gecko.i18n.resources.EnglishMapper;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+@SuppressWarnings({"unchecked", "rawtypes", "serial"})
 public class LangInit extends javax.swing.JDialog implements PropertyChangeListener {
 
     /**
@@ -108,9 +109,8 @@ public class LangInit extends javax.swing.JDialog implements PropertyChangeListe
 
     /**
      * Creates new form LangInit
-     *
-     * @param args Arguments given to main method of program
      */
+    @SuppressWarnings("this-escape")
     public LangInit(String[] args) {
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();

@@ -313,8 +313,16 @@ abstract public class DialogCircuitComponent<T extends AbstractBlockInterface> e
         registeredParameters.remove(index);
     }
 
-    @SuppressWarnings({"unchecked", "varargs"})
-    public JPanel createParameterPanel(final UserParameter<? extends Number>... parameters) {
+    public FormatJTextField getTextFieldForParameter(final UserParameter<? extends Number> par) {
+        int index = registeredParameters.indexOf(par);
+        if (index >= 0) {
+            return tf.get(index);
+        }
+        return null;
+    }
+
+    @SafeVarargs
+    public final JPanel createParameterPanel(final UserParameter<? extends Number>... parameters) {
         JPanel pPD = new JPanel();
         pPD.setLayout(new GridLayout(parameters.length + 1, 2));
 

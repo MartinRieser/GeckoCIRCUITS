@@ -33,7 +33,7 @@ import javax.swing.JFrame;
 public class DialogExternal extends javax.swing.JDialog {
 
     private static final long serialVersionUID = 1L;
-    private final ControlBlockSimulink _regelBlock;
+    private final transient ControlBlockSimulink _regelBlock;
     private transient List<ControlBlock> orderList;
 //
 

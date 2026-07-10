@@ -22,6 +22,7 @@ import java.util.List;
  * @author andy
  */
 public final class DiagramCurve extends AbstractDiagram {
+    private static final long serialVersionUID = 1L;
     static final String DIAGRAM_TYPE_STRING = "DiagramCurve";
 
     public DiagramCurve(final GraferV4 grafer) {

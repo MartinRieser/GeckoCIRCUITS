@@ -169,25 +169,18 @@ public class DialogSmallSignalAnalysis extends DialogElementCONTROL<ControlSmall
 
     }
 
-    @Override
-    @SuppressWarnings({"unchecked", "varargs"})
-    public JPanel createParameterPanel(UserParameter<? extends Number>... parameters) {
-        JPanel returnValue = super.createParameterPanel(parameters); //To change body of generated methods, choose Tools | Templates.
-        Object formatField = returnValue.getComponent(1);
-        if (formatField instanceof FormatJTextField) {
-            final FormatJTextField ff = (FormatJTextField) formatField;
-
+    private void addFocusListenerForParameter(UserParameter<? extends Number> par) {
+        FormatJTextField ff = getTextFieldForParameter(par);
+        if (ff != null) {
             ff.addFocusListener(new FocusAdapter() {
                 @Override
                 public void focusLost(FocusEvent e) {
-                    super.focusLost(e); //To change body of generated methods, choose Tools | Templates.
+                    super.focusLost(e);
                     processRegisteredParameters();
                     updatePlot();
                 }
-
             });
         }
-        return returnValue;
     }
 
     private void updatePlot() {
@@ -244,12 +237,15 @@ public class DialogSmallSignalAnalysis extends DialogElementCONTROL<ControlSmall
         
         JPanel pAmpl = createParameterPanel(element._amplitude);
         jpM.add(pAmpl, BorderLayout.CENTER);
+        addFocusListenerForParameter(element._amplitude);
 
         JPanel pLowFreq = createParameterPanel(element._fBase);
         jpM.add(pLowFreq, BorderLayout.CENTER);
+        addFocusListenerForParameter(element._fBase);
 
         JPanel pHighFreq = createParameterPanel(element._fMax);
         jpM.add(pHighFreq, BorderLayout.CENTER);
+        addFocusListenerForParameter(element._fMax);
 
         jpM.add(new JLabel("Small Signal Shape:"), BorderLayout.CENTER);
         jpM.add(_jComboSignal);

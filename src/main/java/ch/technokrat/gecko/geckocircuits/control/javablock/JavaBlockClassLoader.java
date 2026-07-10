@@ -59,7 +59,7 @@ public final class JavaBlockClassLoader extends URLClassLoader {
         if (directory.isDirectory()) {
             try {
                 final String path = directory.getAbsolutePath();
-                final URL url = new URL("file://" + path + "/");
+                final URL url = java.net.URI.create("file://" + path + "/").toURL();
 		this.addURL(url);
             } catch (IllegalArgumentException ex) {
                 Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, null, ex);
@@ -84,7 +84,7 @@ public final class JavaBlockClassLoader extends URLClassLoader {
                 final File tmpfile = new File(GlobalFilePathes.DATNAM);
                 final File file = new File(tmpfile.getAbsolutePath());
                 final String path = file.getAbsolutePath();
-                final URL url = new URL("file://" + path + "/");
+                final URL url = java.net.URI.create("file://" + path + "/").toURL();
                 System.out.print(url);
 
                 return Class.forName(name, true, new URLClassLoader(new URL[] { url }));

@@ -24,6 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
 class ControlPDDialog extends DialogElementCONTROL<ControlPD> {
+    private static final long serialVersionUID = 1L;
    
     public ControlPDDialog(final ControlPD controlPD) {
         super(controlPD);        

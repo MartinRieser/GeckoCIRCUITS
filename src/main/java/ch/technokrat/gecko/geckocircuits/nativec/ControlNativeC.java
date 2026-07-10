@@ -54,7 +54,7 @@ public final class ControlNativeC extends ControlBlock implements VariableTermin
     private NativeCDialog _guiWindow;
     private NativeCBlock _nativeCBlock;
     private NativeCLibraryFile _libFile;
-    private DefaultListModel _libFileList;
+    private DefaultListModel<String> _libFileList;
     private static final String PATH_SPLITTER = ";";
     
     
@@ -479,7 +479,7 @@ public final class ControlNativeC extends ControlBlock implements VariableTermin
         }
         String libNamesList = _paramLibNames.getValue();
         if (libNamesList.isEmpty() || libNamesList.equals("null")) {
-            _libFileList = new DefaultListModel();
+            _libFileList = new DefaultListModel<String>();
         } else {
             _libFileList = convertString2List(libNamesList);
         }

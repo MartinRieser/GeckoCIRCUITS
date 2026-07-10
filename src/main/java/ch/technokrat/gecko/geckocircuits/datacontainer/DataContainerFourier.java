@@ -123,7 +123,7 @@ public class DataContainerFourier extends AbstractDataContainer implements DataC
 
     @Override
     public void setContainerStatus(ContainerStatus containerStatus) {
-        _dataCont.setContainerStatus(containerStatus.PAUSED);
+        _dataCont.setContainerStatus(ContainerStatus.PAUSED);
     }
 
     @Override

@@ -24,6 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 class ControlPIDialog extends DialogElementCONTROL<ControlPI> {
+    private static final long serialVersionUID = 1L;
 
     public ControlPIDialog(ControlPI aThis) {
         super(aThis);

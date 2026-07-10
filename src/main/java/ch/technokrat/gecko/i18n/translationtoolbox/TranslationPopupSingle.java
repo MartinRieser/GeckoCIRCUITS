@@ -28,7 +28,9 @@ import ch.technokrat.gecko.i18n.LangInit;
 import ch.technokrat.gecko.i18n.bot.UPbot;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+@SuppressWarnings("serial")
 public class TranslationPopupSingle extends javax.swing.JFrame implements PropertyChangeListener {
+    private static final long serialVersionUID = 1L;
     
     private boolean confirmed = false;
     private final I18nKeys key; // key of the triggering GUI element
@@ -37,8 +39,8 @@ public class TranslationPopupSingle extends javax.swing.JFrame implements Proper
     private String buttonName = "";
     
     private static ProgressMonitor progressMonitor; // Progress Monitor GUI
-    private Task task; // Background Task Thread
-    private Progress progress; // getProgress Thread
+    private transient Task task; // Background Task Thread
+    private transient Progress progress; // getProgress Thread
     
     /*
      * Inner class used to execute upload instructions from a separate
@@ -86,6 +88,7 @@ public class TranslationPopupSingle extends javax.swing.JFrame implements Proper
      * Creates new form TranslationPopupSingle
      * @param key Key of the pop-up triggering element text
      */
+    @SuppressWarnings("this-escape")
     public TranslationPopupSingle(final I18nKeys key) {
         initComponents();
         setTitle(InitParameters.TRANS_TOOL);

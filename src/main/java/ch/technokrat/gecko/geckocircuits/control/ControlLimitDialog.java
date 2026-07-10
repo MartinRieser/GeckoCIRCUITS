@@ -27,6 +27,7 @@ import javax.swing.border.TitledBorder;
 
 @SuppressWarnings("unchecked")
 class ControlLimitDialog extends AbstractDialogWithExternalOption<ControlLimit> {    
+    private static final long serialVersionUID = 1L;
 
     public ControlLimitDialog(final ControlLimit controlLimit) {
         super(controlLimit);

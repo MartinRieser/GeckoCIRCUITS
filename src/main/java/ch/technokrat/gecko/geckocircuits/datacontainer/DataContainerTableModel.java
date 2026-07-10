@@ -16,7 +16,8 @@ package ch.technokrat.gecko.geckocircuits.datacontainer;
 import javax.swing.table.AbstractTableModel;
 
 public final class DataContainerTableModel extends AbstractTableModel{
-  private final AbstractDataContainer _dataContainer;  
+  private static final long serialVersionUID = 1L;
+  private final transient AbstractDataContainer _dataContainer;  
   
 
   public DataContainerTableModel(final AbstractDataContainer dataContainer){

@@ -21,18 +21,21 @@ import java.awt.event.ActionListener;
  *
  * @author andy
  */
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class JPanelSymbProps extends javax.swing.JPanel {
-
-    private SymbolSettable _symbSettable;
-    private Component _redrawComponent;
+    private static final long serialVersionUID = 1L;
+    private transient SymbolSettable _symbSettable;
+    private transient Component _redrawComponent;
 
     /**
      * Creates new form JPanelSymbProps
      */
+    @SuppressWarnings("this-escape")
     public JPanelSymbProps() {
         initComponents();
     }
 
+    @SuppressWarnings("this-escape")
     public JPanelSymbProps(SymbolSettable lineSettable, final Component redrawComponent) {                
         initComponents();
         _symbSettable = lineSettable;
@@ -220,8 +223,8 @@ public class JPanelSymbProps extends javax.swing.JPanel {
     }//GEN-LAST:event_jSpinnerSkipStateChanged
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox jCheckBoxShow;
-    private javax.swing.JComboBox jComboBoxShape;
-    private javax.swing.JComboBox jComboBoxSymbColor;
+    private javax.swing.JComboBox<GeckoSymbol> jComboBoxShape;
+    private javax.swing.JComboBox<GeckoColor> jComboBoxSymbColor;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

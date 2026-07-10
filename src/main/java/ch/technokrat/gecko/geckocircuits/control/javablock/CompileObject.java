@@ -99,7 +99,7 @@ public final class CompileObject extends AbstractCompileObject {
 
 
             } else {
-                for (Diagnostic dm : _diagnostics.getDiagnostics()) {
+                for (Diagnostic<?> dm : _diagnostics.getDiagnostics()) {
                     _compilerWriter.println(dm);
                 }
                 _compileStatus = CompileStatus.COMPILE_ERROR;

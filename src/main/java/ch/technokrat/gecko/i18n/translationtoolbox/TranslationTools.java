@@ -28,7 +28,9 @@ import ch.technokrat.gecko.i18n.LangInit;
 import ch.technokrat.gecko.i18n.InitParameters;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+@SuppressWarnings("serial")
 public class TranslationTools extends javax.swing.JFrame implements PropertyChangeListener {
+    private static final long serialVersionUID = 1L;
     
     private boolean confirmedSingle = false;
     private boolean confirmedMultiple = false;
@@ -46,8 +48,8 @@ public class TranslationTools extends javax.swing.JFrame implements PropertyChan
     private String buttonName = "";
     
     private static ProgressMonitor progressMonitor; // Progress Monitor GUI
-    private Task task; // Background Task Thread
-    private Progress progress; // getProgress Thread
+    private transient Task task; // Background Task Thread
+    private transient Progress progress; // getProgress Thread
     
     /*
      * Inner class used to execute upload instructions from a separate
@@ -98,6 +100,7 @@ public class TranslationTools extends javax.swing.JFrame implements PropertyChan
     /**
      * Creates new form TranslationTools
      */
+    @SuppressWarnings("this-escape")
     public TranslationTools() {
         initComponents();
         setTitle(InitParameters.TRANS_TOOLS);

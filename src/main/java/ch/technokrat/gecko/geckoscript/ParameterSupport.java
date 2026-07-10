@@ -27,13 +27,16 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
 
+@SuppressWarnings({"unchecked", "rawtypes", "serial"})
 public class ParameterSupport extends javax.swing.JFrame {
+    private static final long serialVersionUID = 1L;
 
-    private final List<List<AbstractBlockInterface>> _allComponents;
-    private final DefaultListModel _availableParametersModel = new DefaultListModel();
-    private final DefaultListModel<AbstractTypeInfo> _selectBlockTypeModel = new DefaultListModel<>();
-    private final DefaultListModel<AbstractBlockInterface> _availableBlocksModel;
+    private final transient List<List<AbstractBlockInterface>> _allComponents;
+    private final transient DefaultListModel _availableParametersModel = new DefaultListModel();
+    private final transient DefaultListModel<AbstractTypeInfo> _selectBlockTypeModel = new DefaultListModel<>();
+    private final transient DefaultListModel<AbstractBlockInterface> _availableBlocksModel;
 
+    @SuppressWarnings("this-escape")
     public ParameterSupport(final SimulationAccess circuit) {
         super();
         _allComponents = Collections.unmodifiableList(circuit.getElementsSorted());

@@ -22,6 +22,7 @@ import javax.swing.JPanel;
  * @author andy
  */
 class ControlRandomDialog extends DialogElementCONTROL<ControlSignalSource>{
+    private static final long serialVersionUID = 1L;
 
     public ControlRandomDialog(ControlSignalSource element) {
         super(element);

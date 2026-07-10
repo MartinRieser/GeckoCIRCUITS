@@ -116,8 +116,8 @@ final class CurvePainterSignal extends AbstractCurvePainter{
   }
 
   private void loadFloatValue(final Float value, final int index){
-    if(value instanceof Float){
-      final boolean signalValue = ((Float)value) > SGN_THRESHOLD;
+    if(value != null){
+      final boolean signalValue = value > SGN_THRESHOLD;
       appendDataPixel(signalValue, signalValue, index);
 
       if(_curve.isSymbolEnabled()){

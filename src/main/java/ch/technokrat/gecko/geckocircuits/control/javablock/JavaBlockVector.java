@@ -101,7 +101,7 @@ public class JavaBlockVector extends AbstractJavaBlock {
             System.out.println("Class loaded successfully: " + clazz.getName());
 
             try {
-                _compiledInstance = (ControlCalculatable) clazz.newInstance();
+                _compiledInstance = (ControlCalculatable) clazz.getDeclaredConstructor().newInstance();
                 System.out.println("Instance created successfully: " + _compiledInstance.getClass().getName());
             } catch (NoClassDefFoundError err) {
                 System.err.println("ERROR: NoClassDefFoundError while loading Java block: " + err.getMessage());
@@ -115,6 +115,9 @@ public class JavaBlockVector extends AbstractJavaBlock {
             } catch (SecurityException ex) {
                 System.err.println("ERROR: SecurityException while creating Java block instance: " + ex.getMessage());
                 Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, "SecurityException while creating Java block instance: " + ex.getMessage(), ex);
+            } catch (Exception ex) {
+                System.err.println("ERROR: Exception while creating Java block instance: " + ex.getMessage());
+                Logger.getLogger(ControlJavaFunction.class.getName()).log(Level.SEVERE, "Exception while creating Java block instance: " + ex.getMessage(), ex);
             }
         } catch (ClassNotFoundException ex) {
             System.err.println("ERROR: ClassNotFoundException while loading Java block class: " + ex.getMessage());

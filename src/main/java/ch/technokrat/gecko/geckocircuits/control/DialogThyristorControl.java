@@ -20,7 +20,7 @@ package ch.technokrat.gecko.geckocircuits.control;
 public class DialogThyristorControl extends javax.swing.JFrame {
 
     private static final long serialVersionUID = 1L;
-    ControlThyristorControl _thyrControl;
+    transient ControlThyristorControl _thyrControl;
 
     /** Creates new form DialogThyristorControl */
     @SuppressWarnings("this-escape")

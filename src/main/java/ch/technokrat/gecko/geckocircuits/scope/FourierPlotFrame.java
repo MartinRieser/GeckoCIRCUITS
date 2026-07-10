@@ -26,7 +26,9 @@ import java.io.BufferedWriter;
  * @author andy
  */
 public class FourierPlotFrame extends javax.swing.JFrame {    
+    private static final long serialVersionUID = 1L;
 
+    @SuppressWarnings("this-escape")
     public FourierPlotFrame(final NewScope newScope, final double baseFrequency, final double[][][] erg) {
         initComponents();        
         jPanelFourier1.insertData(baseFrequency, erg);

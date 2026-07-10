@@ -46,7 +46,7 @@ public final class DialogDataExport extends javax.swing.JDialog {
     private transient DefaultListModel _selectedModel;
     private final boolean _initDone;
     private transient DataSaver _dataSaver;
-    public final ControlSaveData _controlDataSave;
+    public final transient ControlSaveData _controlDataSave;
     private boolean _inFillLists;
     
     public DialogDataExport(final java.awt.Frame parent, final boolean modal, final ControlSaveData dataSavable,

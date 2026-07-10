@@ -214,7 +214,7 @@ public class CompressedData {
         System.out.println("\tAvg compression rate:\t" + (avgResultLength / (32 * 32) * 100) + "%");
         System.out.println("\t\tmin:\t" + ((double) minResultLength / blockLength * 100) + "%");
         System.out.println("\t\tmax:\t" + ((double) maxResultLength / blockLength * 100) + "%");
-        System.out.println("\tAvg Needed Bits:\t" + ((double) avgBits / 32));
+        System.out.println("\tAvg Needed Bits:\t" + (avgBits / 32));
         System.out.println("\t\tmin:\t" + minbits);
         System.out.println("\t\tmax:\t" + maxbits);
     }

@@ -19,7 +19,7 @@ import javax.swing.JOptionPane;
 
 public class CisprBlockSettings extends GeckoDialog {
     private static final long serialVersionUID = 1L;
-    private final ControlCISPR16 _control;
+    private final transient ControlCISPR16 _control;
 
     @SuppressWarnings("this-escape")
     public CisprBlockSettings(final ControlCISPR16 control, final java.awt.Frame parent) {

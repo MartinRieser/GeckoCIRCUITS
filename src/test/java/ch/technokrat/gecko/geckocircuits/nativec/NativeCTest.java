@@ -16,13 +16,10 @@ package ch.technokrat.gecko.geckocircuits.nativec;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.Rule;
-import org.junit.Ignore;
-import org.junit.rules.ExpectedException;
-import org.junit.Assert;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
 
 /**
  * Comment: The Native C Test Libraries were compiled on a Windows x86_64 machine 
@@ -36,9 +33,6 @@ public class NativeCTest {
     private NativeCBlock _nativeCBlock;
     private NativeCLibraryFile _libFile;
     String _libFilePath, _libName;
-    
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
     
     /**
      * 
@@ -64,10 +58,10 @@ public class NativeCTest {
                 + "nativec" + File.separator
                 + "testJNI_DLL" + File.separator
                 + fileName;
-        return absPath;
+         return absPath;
     }
     
-    @Before
+    @BeforeEach
     public void setUp() {
         try {
             // Detect platform and select appropriate library extension
@@ -96,39 +90,39 @@ public class NativeCTest {
     }
     
     @Test
-    public void testNativeCLibraryFile_NotFound() throws FileNotFoundException {
-        thrown.expect(FileNotFoundException.class);
-        thrown.expectMessage("Could not find Library File");
-        NativeCLibraryFile testLibFile = new NativeCLibraryFile( "..\\.dll");
+    public void testNativeCLibraryFile_NotFound() {
+        FileNotFoundException exception = Assertions.assertThrows(FileNotFoundException.class, () -> {
+            new NativeCLibraryFile("..\\.dll");
+        });
+        Assertions.assertTrue(exception.getMessage().contains("Could not find Library File"));
     }
     
     @Test
     public void testNativeCLibraryFile_Found() {
-        org.junit.Assume.assumeTrue("Native library not available for this platform", _libFile != null);
-        NativeCLibraryFile testLibFile;
+        Assumptions.assumeTrue(_libFile != null, "Native library not available for this platform");
         try {
-            testLibFile = new NativeCLibraryFile(_libFilePath);
-            Assert.assertNotNull(testLibFile);
-            Assert.assertNotNull(testLibFile.getFile());
-            Assert.assertNotNull(testLibFile.getFileName());
+            NativeCLibraryFile testLibFile = new NativeCLibraryFile(_libFilePath);
+            Assertions.assertNotNull(testLibFile);
+            Assertions.assertNotNull(testLibFile.getFile());
+            Assertions.assertNotNull(testLibFile.getFileName());
         } catch (FileNotFoundException exc) {
-            Assert.fail("Test File was not found!");
+            Assertions.fail("Test File was not found!");
         }
     }
     
     @Test
     public void testLoadAndExecuteNativeLibrary() {
-        org.junit.Assume.assumeTrue("Native library not available for this platform", _libFile != null);
+        Assumptions.assumeTrue(_libFile != null, "Native library not available for this platform");
         _nativeCBlock = new NativeCBlock();
         double[][] testInput = {{1, 2, 3, 4, 5}};
         double[][] testOutput = {{0, 0, 0}};
-        Assert.assertNotNull(_nativeCBlock);
+        Assertions.assertNotNull(_nativeCBlock);
 
         boolean loaded = _nativeCBlock.loadLibraries(_libFilePath);
         if (!loaded) {
             System.out.println("WARNING: Native library could not be loaded. " +
                 "This test requires native libraries compiled for the current platform. Skipping test.");
-            org.junit.Assume.assumeTrue("Native library not available for this platform", false);
+            Assumptions.assumeTrue(false, "Native library not available for this platform");
             return;
         }
 
@@ -138,19 +132,17 @@ public class NativeCTest {
                 double tmpOut = 0;
                 for (int i = 0; i < testOutput.length; i++) {
                     tmpOut = tmpOut + testInput[0][i];
-                    Assert.assertEquals(testOutput[0][i], tmpOut, 1e-6);
+                    Assertions.assertEquals(testOutput[0][i], tmpOut, 1e-6);
                 }
             }
             _nativeCBlock.unloadLibraries();
-            Assert.assertNull(_nativeCBlock._customCClassLoader);
+            Assertions.assertNull(_nativeCBlock._customCClassLoader);
             _nativeCBlock = null;
-            Assert.assertNull(_nativeCBlock);
+            Assertions.assertNull(_nativeCBlock);
         } catch (Exception exc) {
-            Assert.fail(exc.getMessage());
+            Assertions.fail(exc.getMessage());
         }
     }
-
-
 
     @Test
     public void testLoadAndExecuteNLAgain() {
@@ -159,7 +151,7 @@ public class NativeCTest {
         // test with different library
         String testLib2 = _libName.replace("libtestJNI_DLL", "libtestJNI_DLL2");
         _libFilePath = constructAbsolutPath(testLib2);
-        Assert.assertNotNull(_libFilePath);
+        Assertions.assertNotNull(_libFilePath);
         testLoadAndExecuteNativeLibrary();
     }
 }

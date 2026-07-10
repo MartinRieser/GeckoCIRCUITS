@@ -186,31 +186,14 @@ public final class ControlFromEXTERNAL extends ControlBlockSimulink implements V
         return YOUT;
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private final class CompareOrder implements Comparator {
-
-        @Override
-        public int compare(final Object obj1, final Object obj2) {
-            if (obj1 instanceof ControlFromEXTERNAL && obj2 instanceof ControlFromEXTERNAL) {
-                final ControlFromEXTERNAL toExtern1 = (ControlFromEXTERNAL) obj1;
-                final ControlFromEXTERNAL toExtern2 = (ControlFromEXTERNAL) obj2;
-                if (toExtern1.externalOrderNumber == toExtern2.externalOrderNumber) {
-                    return 0;
-                }
-                if (toExtern1.externalOrderNumber < toExtern2.externalOrderNumber) {
-                    return -1;
-                }
-                return 1;
-            }
-
-            assert false;
-            return 0;
-        }
-    }
-
     public void insertOrderCorrect(final int orderNo) {
         externalOrderNumber = orderNo;
-        Collections.sort(fromExternals, new CompareOrder());
+        fromExternals.sort(Comparator.comparingInt(cb -> {
+            if (cb instanceof ControlFromEXTERNAL) {
+                return ((ControlFromEXTERNAL) cb).externalOrderNumber;
+            }
+            return 0;
+        }));
     }
 
     @Override

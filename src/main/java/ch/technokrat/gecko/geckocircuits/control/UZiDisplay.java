@@ -37,7 +37,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JSpinner;
 
+@SuppressWarnings("serial")
 public class UZiDisplay extends GeckoDialog {
+    private static final long serialVersionUID = 1L;
 
     static long counter = 0;
     static final int ORIGINX = 180;
@@ -46,11 +48,11 @@ public class UZiDisplay extends GeckoDialog {
     private double _time;
     private double _old_time;
     private double _timeStep;
-    private BufferedImage doubleBufferImage;
-    private final GraphicsConfiguration gfxConf = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
-    Graphics2D offGraph;
-    DrawVector sv1;
-    DrawVector sv2;
+    private transient BufferedImage doubleBufferImage;
+    private final transient GraphicsConfiguration gfxConf = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+    private transient Graphics2D offGraph;
+    private transient DrawVector sv1;
+    private transient DrawVector sv2;
     
 
     private class DrawVector {
@@ -150,9 +152,7 @@ public class UZiDisplay extends GeckoDialog {
         }
     }
 
-    /**
-     * Creates new form SpaceVectorDisplay
-     */
+    @SuppressWarnings("this-escape")
     public UZiDisplay(final ControlU_ZI regelBlock) {
         super(GeckoSim._win, false);
                 

@@ -93,8 +93,8 @@ public final class ControlU_ZI extends ControlBlock {
         g.drawRect((int) (dpix * (x - 0.4)), (int) (dpix * (y - br+1)), (int) (dpix * (2 * da)), (int) (dpix * (1.0 * Math.max(tnX, 0))));
 
         int ds1 = 3, ds2 = 3;
-        g.drawRect((int) (dpix * (x - 0.4)), (int) (dpix * (y )) - ds2, ds1, (int) (dpix * (1)) + 2 * ds2);
-        g.drawRect((int) (dpix * (x - 0.4)), (int) (dpix * (y + 2)) - ds2, ds1, (int) (dpix * (1)) + 2 * ds2);
+        g.drawRect((int) (dpix * (x - 0.4)), dpix * y - ds2, ds1, dpix * 1 + 2 * ds2);
+        g.drawRect((int) (dpix * (x - 0.4)), dpix * (y + 2) - ds2, ds1, dpix * 1 + 2 * ds2);
     }
 
     @Override

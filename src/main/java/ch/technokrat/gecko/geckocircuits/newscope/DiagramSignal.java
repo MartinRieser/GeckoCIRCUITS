@@ -23,6 +23,7 @@ import java.util.List;
  * @author andy
  */
 final class DiagramSignal extends AbstractDiagram {
+    private static final long serialVersionUID = 1L;
 
     private static final int DEF_MIN_WIDTH = 30;
     public static final String DIAGRAM_TYPE_STRING = "DiagramSignal";

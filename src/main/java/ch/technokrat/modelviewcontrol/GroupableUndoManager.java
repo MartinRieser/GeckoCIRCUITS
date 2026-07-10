@@ -21,6 +21,7 @@ import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 
 public final class GroupableUndoManager extends UndoManager{
+  private static final long serialVersionUID = 1L;
   @Override
   public synchronized void undo() throws CannotUndoException{
     super.undo();

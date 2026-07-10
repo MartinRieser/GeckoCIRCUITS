@@ -42,8 +42,9 @@ import javax.swing.JSpinner;
  *
  * @author andy
  */
-@SuppressWarnings("deprecation")
+@SuppressWarnings({"deprecation", "serial"})
 public class SpaceVectorDisplay extends javax.swing.JFrame {
+    private static final long serialVersionUID = 1L;
     static long counter = 0;
     final int ORIGINX = 180;
     final int ORIGINY = 200;
@@ -53,13 +54,13 @@ public class SpaceVectorDisplay extends javax.swing.JFrame {
     private double _timeStep;
     
     
-    private BufferedImage doubleBufferImage;
-    private final GraphicsConfiguration gfxConf = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
-    Graphics2D offGraph;
-    SpaceVector sv1;
-    SpaceVector sv2;
-    SpaceVector sv3;
-    private ControlSpaceVector controlSpaceVector;
+    private transient BufferedImage doubleBufferImage;
+    private final transient GraphicsConfiguration gfxConf = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+    private transient Graphics2D offGraph;
+    private transient SpaceVector sv1;
+    private transient SpaceVector sv2;
+    private transient SpaceVector sv3;
+    private transient ControlSpaceVector controlSpaceVector;
    
 
     private class SpaceVector {
@@ -166,6 +167,7 @@ public class SpaceVectorDisplay extends javax.swing.JFrame {
 
 
     /** Creates new form SpaceVectorDisplay */
+    @SuppressWarnings("this-escape")
     public SpaceVectorDisplay(ControlBlock regelBlock) {
         try {
             URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;

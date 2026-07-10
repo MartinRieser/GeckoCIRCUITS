@@ -46,7 +46,9 @@ import java.awt.event.MouseMotionListener;
  * @see GraferV3
  * @see GraferImplementation
  */
+@SuppressWarnings("deprecation")
 class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionListener {
+    private static final long serialVersionUID = 1L;
 
     //----------------------------
     /** Fourier magnitude coefficients (cn) - displayed as bar heights in spectrum */

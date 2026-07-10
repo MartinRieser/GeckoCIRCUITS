@@ -20,11 +20,13 @@ import javax.swing.JDialog;
  * @author andreas
  */
 public class DataTableFrame extends JDialog {
+    private static final long serialVersionUID = 1L;
 
     
     /**
      * Creates new form DataTableFrame
      */
+    @SuppressWarnings("this-escape")
     public DataTableFrame(final AbstractDataContainer dataContainer, final JDialog owner) {
         super(owner);
         initComponents();

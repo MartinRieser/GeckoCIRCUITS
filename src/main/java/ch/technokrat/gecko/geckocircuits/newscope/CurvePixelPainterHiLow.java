@@ -27,7 +27,7 @@ final class CurvePixelPainterHiLow extends AbstractCurvePixelPainter{
   public CurvePixelPainterHiLow(final float xPixel, final HiLoData value,
                                 final Axis yAxis, final AbstractCurvePixelPainter previousValue){
     super(xPixel, yAxis, previousValue);
-    final HiLoData hiLow = (HiLoData)value;
+    final HiLoData hiLow = value;
     final float lowPixelValue = (float)_yAxis.getPixelFromValue(hiLow._yLo);
     final float hiPixelValue = (float)_yAxis.getPixelFromValue(hiLow._yHi);
 

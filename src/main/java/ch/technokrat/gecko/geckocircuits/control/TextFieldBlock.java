@@ -186,7 +186,7 @@ public final class TextFieldBlock extends AbstractSpecialBlock implements Operat
             int lineCounter = 0;
             for (String lineString : split) {
                 final int stringPosY = lineCounter * (graphics.getFont().getSize()+1)
-                        + (int) (rectPosY + dpix);
+                        + rectPosY + dpix;
                 final int stringPosX = rectPosX + TEXT_DX;                
                 graphics.drawString(lineString, stringPosX, stringPosY);
                 lineCounter++;

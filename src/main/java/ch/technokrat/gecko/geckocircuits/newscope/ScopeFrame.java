@@ -45,14 +45,14 @@ import javax.swing.KeyStroke;
  */
 public final class ScopeFrame extends javax.swing.JFrame{
   private static final long serialVersionUID = 1L;
-  private GraferV4 _grafer;
-  private ControlOSZI _regelBlockOSZI;
+  private transient GraferV4 _grafer;
+  private transient ControlOSZI _regelBlockOSZI;
   /**
    * Dialog for assignments SignalZV - Graph.*/
-  private DialogConnectSignalsGraphs _diagCON;
+  private transient DialogConnectSignalsGraphs _diagCON;
   //---------------------------------
-  private DialogScopeCharacteristics _diagAvgRms;
-  private DialogFourier _diagFourier;
+  private transient DialogScopeCharacteristics _diagAvgRms;
+  private transient DialogFourier _diagFourier;
   //---------------------------------
   private int _windowWidth;
   private int _windowHeight;

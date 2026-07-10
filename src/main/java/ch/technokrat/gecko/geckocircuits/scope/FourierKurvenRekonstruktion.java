@@ -25,7 +25,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
+@SuppressWarnings({"deprecation", "serial"})
 public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListener, MouseMotionListener {
+    private static final long serialVersionUID = 1L;
 
     //----------------------------
     float[] xNeu, yNeu, yRef;
@@ -48,6 +50,7 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
     private TechFormat cf = new TechFormat();
     //-----------------------
 
+    @SuppressWarnings("this-escape")
     public FourierKurvenRekonstruktion(
             double[] an, double[] bn, int nMin, double f1, AbstractDataContainer worksheet, int dataIndex, double rng1, double rng2) {
         //---------------------------------------
@@ -113,7 +116,7 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
                 j++;
             }
             xNeu[i] = (float) worksheet.getTimeValue(j, 0);
-            yRef[i] = (float) worksheet.getValue(dataIndex-1, j);
+            yRef[i] = worksheet.getValue(dataIndex-1, j);
         }        
         
         for(i = 0; i < an.length; i++) {

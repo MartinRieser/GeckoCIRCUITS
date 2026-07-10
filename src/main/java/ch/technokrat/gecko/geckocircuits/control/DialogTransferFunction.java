@@ -35,9 +35,9 @@ public final class DialogTransferFunction extends javax.swing.JFrame {
     private static final long serialVersionUID = 1L;
     private final DefaultListModel<ComplexPrinter> _nomModel = new DefaultListModel<ComplexPrinter>();
     private final DefaultListModel<ComplexPrinter> _deNomModel = new DefaultListModel<ComplexPrinter>();
-    private final ControlTransferFunction _controlTF;
+    private final transient ControlTransferFunction _controlTF;
     private boolean _inPolynomialMode = false;
-    private final ControlBlock _elementControl;
+    private final transient ControlBlock _elementControl;
     private final boolean _initDone;
 
     public DialogTransferFunction(final ControlTransferFunction controlTF, final ControlBlock element) {

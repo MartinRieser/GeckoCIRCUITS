@@ -70,6 +70,7 @@ import java.math.BigDecimal;
 */
 
 public class BigMatrix implements java.io.Serializable {
+   private static final long serialVersionUID = 1L;
 
 /* ------------------------
    Class variables
@@ -634,6 +635,7 @@ public class BigMatrix implements java.io.Serializable {
    @param input the input stream.
    */
 
+   @SuppressWarnings({"unchecked", "rawtypes"})
    public static Matrix read (BufferedReader input) throws java.io.IOException {
       StreamTokenizer tokenizer= new StreamTokenizer(input);
 

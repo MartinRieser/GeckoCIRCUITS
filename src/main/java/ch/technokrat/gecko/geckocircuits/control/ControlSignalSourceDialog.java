@@ -27,6 +27,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 class ControlSignalSourceDialog extends AbstractDialogWithExternalOption<ControlSignalSource> {
+    private static final long serialVersionUID = 1L;
     
     private JCheckBox jCheckBoxShowDetails;  // // How much information should be displayed in the SchematicEntry (overview vs. info)?
     // // Sub-dialogs for preview SIGNAL -->

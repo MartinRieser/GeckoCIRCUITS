@@ -31,6 +31,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Deprecated
+@SuppressWarnings({"static-access", "cast", "serial", "deprecation"})
 public final class GraferImplementation extends GraferV3 implements MouseListener, MouseMotionListener {
     // // Number of intervals on the x-axis in which Hi and Lo values ​​are determined for data compression
     private static final int INTERVALLE_ENTLANG_X = 2000;
@@ -316,7 +317,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         final Graphics2D g2 = (Graphics2D) g;
         int zd = 0;  // Beschriftungs-Nummerierung in y-Richtung
         for (int i1 = 0; i1 < anzahlKurven; i1++) {
-            if (matrixZuordnungKurveDiagram[indexDerKurveInDerMatrix[i1] / 1000][indexDerKurveInDerMatrix[i1] % 1000] == this.ZUORDNUNG_SIGNAL) {
+            if (matrixZuordnungKurveDiagram[indexDerKurveInDerMatrix[i1] / 1000][indexDerKurveInDerMatrix[i1] % 1000] == ZUORDNUNG_SIGNAL) {
                 try {
                     zeichneEinzelneSIGNALKurve(g2, i1);
                 } catch (Exception e) {
@@ -736,7 +737,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             if (xAchseTyp[indexZurKurveGehoerigeXachse[i1]] == ACHSE_LIN) {
                 xPix[i2] = x0Kurve + (int) (sfX[indexZurKurveGehoerigeXachse[i1]] * (xValue - achseXmin[indexZurKurveGehoerigeXachse[i1]]));
             } else if ((xAchseTyp[indexZurKurveGehoerigeXachse[i1]] == ACHSE_LOG)) {
-                xPix[i2] = x0Kurve + (int) (sfX[indexZurKurveGehoerigeXachse[i1]] * this.lg10(xValue / achseXmin[indexZurKurveGehoerigeXachse[i1]]));
+                xPix[i2] = x0Kurve + (int) (sfX[indexZurKurveGehoerigeXachse[i1]] * lg10(xValue / achseXmin[indexZurKurveGehoerigeXachse[i1]]));
             }
             //------------------
             double yValue = worksheetDaten.getValue(kurve_index_worksheetKolonnen_XY[i1][1], i2);
@@ -1038,7 +1039,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             for (int i1 = 0; i1 < this.getAnzahlDiagramme(); i1++) {
                 final int zugX = i1;  // // because all curves of a graph see the same x-axis
                 for (int i2 = 0; i2 < matrixZuordnungKurveDiagram[0].length; i2++) {
-                    if ((matrixZuordnungKurveDiagram[i1][i2] == this.ZUORDNUNG_Y) || (matrixZuordnungKurveDiagram[i1][i2] == this.ZUORDNUNG_SIGNAL)) {
+                    if ((matrixZuordnungKurveDiagram[i1][i2] == ZUORDNUNG_Y) || (matrixZuordnungKurveDiagram[i1][i2] == ZUORDNUNG_SIGNAL)) {
                         zugehoerigkeitX[kurvenIndex] = zugX;
                         zugehoerigkeitY[kurvenIndex] = i1;
                         indexDerKurveInDerMatrix[kurvenIndex] = 1000 * i1 + i2;
@@ -1057,12 +1058,12 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             for (int i1 = 0; i1 < this.getAnzahlDiagramme(); i1++) {
                 int zugX = -1;
                 for (int i2 = 0; i2 < matrixZuordnungKurveDiagram[0].length; i2++) {
-                    if (matrixZuordnungKurveDiagram[i1][i2] == this.ZUORDNUNG_X) {
+                    if (matrixZuordnungKurveDiagram[i1][i2] == ZUORDNUNG_X) {
                         zugX = i2;
                     }
                 }
                 for (int i2 = 0; i2 < matrixZuordnungKurveDiagram[0].length; i2++) {
-                    if ((matrixZuordnungKurveDiagram[i1][i2] == this.ZUORDNUNG_Y) || (matrixZuordnungKurveDiagram[i1][i2] == this.ZUORDNUNG_SIGNAL)) {
+                    if ((matrixZuordnungKurveDiagram[i1][i2] == ZUORDNUNG_Y) || (matrixZuordnungKurveDiagram[i1][i2] == ZUORDNUNG_SIGNAL)) {
                         indexWsXY[kurvenIndex][0] = zugX;
                         indexWsXY[kurvenIndex][1] = i2;
                         kurvenIndex++;
@@ -1788,7 +1789,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
                         indexAngeklickterGraph = -1;
                     }
                     //-------------
-                    if ((me.getModifiersEx() & me.BUTTON1_DOWN_MASK) != 0 && !me.isControlDown()) {
+                    if ((me.getModifiersEx() & java.awt.event.InputEvent.BUTTON1_DOWN_MASK) != 0 && !me.isControlDown()) {
                         inDiffMode = false;
                         xSchieberPix = mx;
                     } else {

@@ -24,11 +24,13 @@ import javax.swing.JOptionPane;
  * @author andreas
  */
 public class DialogScopeSettings extends javax.swing.JDialog {
-    private final ControlOSZI _controlOSZI;
+    private static final long serialVersionUID = 1L;
+    private final transient ControlOSZI _controlOSZI;
     private final boolean _initDone;
-    private final JFrame _parentScopeFrame;
+    private final transient JFrame _parentScopeFrame;
     
 
+    @SuppressWarnings("this-escape")
     DialogScopeSettings(final JFrame parent, final ControlOSZI regelBlockOSZI, final boolean modal) {
         super(parent, modal);        
         initComponents();

@@ -30,16 +30,19 @@ import javax.swing.border.TitledBorder;
  *
  * @author andy
  */
+@SuppressWarnings({"serial", "deprecation"})
 public class JPanelFourier extends javax.swing.JPanel {
+    private static final long serialVersionUID = 1L;
     
 
-    public GraferV4 _graferNew;
-    private NewScope _graferPanel;
+    public transient GraferV4 _graferNew;
+    private transient NewScope _graferPanel;
     private final int NUMBER_SIGNALS = 2;
     private final String[] SIGNAL_NAMES = new String[]{"Re", "Im"};
-    private DialogConnectSignalsGraphs _diagCON;
-    private DataContainerFourier _dataContainer;
+    private transient DialogConnectSignalsGraphs _diagCON;
+    private transient DataContainerFourier _dataContainer;
 
+    @SuppressWarnings("this-escape")
     public JPanelFourier() {
         initComponents();
         setBorder(new TitledBorder("Fourier analysis"));
@@ -48,6 +51,7 @@ public class JPanelFourier extends javax.swing.JPanel {
         _dataContainer = null;
     }
     
+    @SuppressWarnings("this-escape")
     public JPanelFourier(final double baseFrequency, final double[][][] erg) {
         initComponents();                
     }   

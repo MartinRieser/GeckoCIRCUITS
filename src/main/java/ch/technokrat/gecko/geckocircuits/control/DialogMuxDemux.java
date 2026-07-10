@@ -21,7 +21,7 @@ import javax.swing.JFrame;
 public class DialogMuxDemux extends javax.swing.JDialog {
 
     private static final long serialVersionUID = 1L;
-    private final ControlBlock _regelBlock;
+    private final transient ControlBlock _regelBlock;
 
     /** Creates new form DialogExterna */
     @SuppressWarnings("this-escape")

@@ -40,12 +40,13 @@ import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
 class ControlSlidingDFTDialog extends DialogElementCONTROL<ControlSlidingDFT> {
+    private static final long serialVersionUID = 1L;
 
     private final GridLayout _grid;
     private final Stack<JComboBox<ControlSlidingDFT.OutputData>> _frequencySelectionList = new Stack<>();
     private final Stack<FormatJTextField> _freqFields = new Stack<FormatJTextField>();
     private final Stack<JLabel> _labels = new Stack<JLabel>();
-    private final List<ControlSlidingDFT.FrequencyData> _originalData;
+    private final transient List<ControlSlidingDFT.FrequencyData> _originalData;
     private final JPanel jPanelFreqs;
     private JButton _jButtonAddFreq;
     private JButton _jButtonRemoveFreq;
@@ -183,7 +184,7 @@ class ControlSlidingDFTDialog extends DialogElementCONTROL<ControlSlidingDFT> {
         super.processInputIndividual(); //To change body of generated methods, choose Tools | Templates.
         element.setOutputTerminalNumber(_freqFields.size());
                 
-        for(JComboBox combo : _frequencySelectionList) {
+        for(JComboBox<ControlSlidingDFT.OutputData> combo : _frequencySelectionList) {
             int index = _frequencySelectionList.indexOf(combo);            
             _originalData.get(index)._outputData = (OutputData) combo.getSelectedItem();
         }
