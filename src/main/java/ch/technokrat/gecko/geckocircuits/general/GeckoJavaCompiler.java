@@ -32,7 +32,8 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import javax.tools.*;
 import javax.tools.JavaFileObject.Kind;
 import javax.tools.JavaCompiler.CompilationTask;
@@ -254,7 +255,7 @@ public class GeckoJavaCompiler {
                 _workingDirectory = System.getProperty("user.dir");
             }
 
-            Vector<String> opt = new Vector<String>();
+            List<String> opt = new ArrayList<>();
 
             opt.add("-classpath");
             String cp0 = System.getProperty("user.dir");

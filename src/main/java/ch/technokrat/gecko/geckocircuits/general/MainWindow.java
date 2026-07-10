@@ -471,17 +471,13 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
 
     public void openFile(BufferedReader in) throws IOException {
         _se.resetCircuitSheetsForNewFile();
-        Vector<String> datVec = new Vector<>();
+        List<String> datVec = new ArrayList<>();
         String z = null;
         while ((z = in.readLine()) != null) {
-            datVec.addElement(z);
+            datVec.add(z);
         }
         in.close();
-        String[] zeile = new String[datVec.size()];
-        for (int i1 = 0; i1 < datVec.size(); i1++) {
-            zeile[i1] = datVec.elementAt(i1);
-            //System.out.println("zeile[i1]= "+zeile[i1]);
-        }
+        String[] zeile = datVec.toArray(new String[0]);
 
         ProjectData daten = new ProjectData(zeile, false, null);
         _se.resetCircuitSheetsForNewFile();
@@ -1617,34 +1613,26 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         try (GZIPInputStream in1 = new GZIPInputStream(new FileInputStream(dateiName));
              BufferedReader in = new BufferedReader(new InputStreamReader(in1))) {
 
-            Vector<String> datVec = new Vector<>();
+            List<String> datVec = new ArrayList<>();
             String z = null;
 
             while ((z = in.readLine()) != null) {
-                datVec.addElement(z);
+                datVec.add(z);
             }
 
-            lines = new String[datVec.size()];
-            for (int i1 = 0; i1 < datVec.size(); i1++) {
-                lines[i1] = datVec.elementAt(i1);
-            }
-
+            lines = datVec.toArray(new String[0]);
 
         } catch (Exception e) {
             Logger.getLogger(MainWindow.class.getName()).log(Level.WARNING, "openFile() - GZIP error, trying old format", e);
             // new version 'gzipped' -->
             try (InflaterInputStream in1 = new InflaterInputStream(new FileInputStream(GlobalFilePathes.DATNAM));
                  BufferedReader in = new BufferedReader(new InputStreamReader(in1))) {
-                Vector<String> datVec = new Vector<>();
+                List<String> datVec = new ArrayList<>();
                 String z = null;
                 while ((z = in.readLine()) != null) {
-                    datVec.addElement(z);
+                    datVec.add(z);
                 }
-                lines = new String[datVec.size()];
-                for (int i1 = 0; i1 < datVec.size(); i1++) {
-                    lines[i1] = datVec.elementAt(i1);
-                     //System.out.println("zeile[i1]= "+zeile[i1]);
-                }
+                lines = datVec.toArray(new String[0]);
             } catch (Exception eGZIP) {
                 Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, "openFile() - failed to read file", eGZIP);
             }
