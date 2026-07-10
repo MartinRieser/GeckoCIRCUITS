@@ -47,11 +47,11 @@ Generated from review of changes since commit 3a72b5fa59a7499133e89c1165e28f00e6
 ### 3.1 Naming Conventions ✅ COMPLETED
 - [x] **MainWindow.java:** Translated remaining German variable names (`simulatorAktiviert` -> `simulatorActivated`, `speicherVorgangLaeuft` -> `saveInProgress`, `aktuellerDateiName` -> `currentFileName`) and helper methods (`baueGUI` -> `buildGUI`, `modifiziereTitel` -> `modifyTitle`, `schliesseProgramm` -> `closeProgram`, `aktualisierePropertiesRECENT` -> `updateRecentProperties`) to English.
 
-### 3.2 Magic Numbers ❌ PENDING
-- [ ] **MainWindow.java:** Extract timer intervals (e.g., lines 214) and scroll increments (lines 718-719) to named `private static final` constants.
+### 3.2 Magic Numbers ✅ COMPLETED
+- [x] **MainWindow.java:** Extracted timer delay/period and scroll unit increments to named constants.
 
-### 3.3 Public Fields Encapsulation ❌ PENDING
-- [ ] **MainWindow.java:** Encapsulate mutable public fields (lines 74-125) with proper private scopes and getter/setter access.
+### 3.3 Public Fields Encapsulation ✅ COMPLETED
+- [x] **MainWindow.java:** Encapsulated mutable fields with private scopes and getters/setters, updating references in all dependent classes.
 
 ### 3.4 Inconsistent Use of Final 🔄 PARTIALLY COMPLETED
 - [/] Mark local variables, fields, and parameters as `final` where applicable. Substantial progress was made in the compiler warnings cleanups (commits `d07b6b1` and `7e8ae47`).
@@ -71,8 +71,8 @@ Generated from review of changes since commit 3a72b5fa59a7499133e89c1165e28f00e6
 ### 3.9 Raw Type Usage ✅ COMPLETED
 - [x] Resolved raw type declarations (e.g., swing components) across the codebase during the warnings cleanup.
 
-### 3.10 Static Collections ❌ PENDING
-- [ ] **MainWindow.java:** Make public static mutable collections (lines 110, 111) private or unmodifiable to prevent threading and mutability bugs.
+### 3.10 Static Collections ✅ COMPLETED
+- [x] **MainWindow.java:** Made public static fields private and added static getters/setters.
 
 ### 3.11 Code Duplication ✅ COMPLETED
 - [x] **CodeWindowModern.java:** Unified duplicate identical `KeyListener` implementations into a single private transient field `_dirtyFlagKeyListener`.
