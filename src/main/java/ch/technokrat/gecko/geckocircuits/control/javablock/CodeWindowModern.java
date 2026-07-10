@@ -53,6 +53,23 @@ public class CodeWindowModern extends JFrame {
     final ExtraFilesWindow _extSourceWindow;
     private boolean _extWindowInit = false;
 
+    private transient final KeyListener _dirtyFlagKeyListener = new KeyListener() {
+        @Override
+        public void keyTyped(KeyEvent e) {
+            SchematicEditor2.Singleton.setDirtyFlag();
+        }
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+            SchematicEditor2.Singleton.setDirtyFlag();
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e) {
+            SchematicEditor2.Singleton.setDirtyFlag();
+        }
+    };
+
     @SuppressWarnings("this-escape")
     public CodeWindowModern(ControlJavaFunction regelBlock, StringBuffer outputStringBuffer) {
         super();
@@ -115,22 +132,7 @@ public class CodeWindowModern extends JFrame {
         textArea.setEditable(true);
         textArea.setEnabled(true);
 
-        textArea.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                SchematicEditor2.Singleton.setDirtyFlag();
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-                SchematicEditor2.Singleton.setDirtyFlag();
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                SchematicEditor2.Singleton.setDirtyFlag();
-            }
-        });
+        textArea.addKeyListener(_dirtyFlagKeyListener);
 
         return textArea;
     }
@@ -154,6 +156,9 @@ public class CodeWindowModern extends JFrame {
         textArea.setEditable(true);
         textArea.setEnabled(true);
 
+        // Note: static context cannot reference instance-level _dirtyFlagKeyListener directly.
+        // We will add the anonymous listener here, or reference the singleton.
+        // Let's check: SchematicEditor2.Singleton.setDirtyFlag() is static and accessible.
         textArea.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
