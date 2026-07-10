@@ -374,7 +374,7 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
         if (!_datnamXY.equals(GlobalFilePathes.DATNAM_NOT_DEFINED)) {
             //first check if this is a file loaded from previous versions
             try {
-                _externalDataFile = MainWindow._fileManager.getFile(_externalDataFileHashValue);                                                
+                _externalDataFile = MainWindow.getFileManager().getFile(_externalDataFileHashValue);                                                
             } catch (FileNotFoundException e) {
                 final String errorMessage = "External data file missing in signal source "
                         + getStringID() + ":\n" + e.getMessage();
@@ -402,11 +402,11 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
         //check first if file already exists, and remove it
         if (_externalDataFile != null) {
             _externalDataFile.removeUser(getUniqueObjectIdentifier());
-            MainWindow._fileManager.maintain(_externalDataFile);
+            MainWindow.getFileManager().maintain(_externalDataFile);
         }
         _externalDataFile = newFiles.get(0);
         _externalDataFile.setUser(getUniqueObjectIdentifier());
-        MainWindow._fileManager.addFile(_externalDataFile);
+        MainWindow.getFileManager().addFile(_externalDataFile);
         _datnamXY = _externalDataFile.getCurrentAbsolutePath();
     }
 
@@ -416,7 +416,7 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
         //since there is only one file, we just remove it
         if (!filesToRemove.isEmpty() && _externalDataFile != null) {
             _externalDataFile.removeUser(getUniqueObjectIdentifier());
-            MainWindow._fileManager.maintain(_externalDataFile);
+            MainWindow.getFileManager().maintain(_externalDataFile);
             _externalDataFile = null;
             _datnamXY = GlobalFilePathes.DATNAM_NOT_DEFINED;
         }
@@ -499,7 +499,7 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
                     _externalDataFile = new GeckoFile(new File((String) parameterValue), GeckoFile.StorageType.EXTERNAL, MainWindow.getOpenFileName());
                     _externalDataFile.setUser(getUniqueObjectIdentifier());
                     _datnamXY = (String) parameterValue;
-                    MainWindow._fileManager.addFile(_externalDataFile);
+                    MainWindow.getFileManager().addFile(_externalDataFile);
                     return true;
                 } catch (FileNotFoundException ex) {
                     Logger.getLogger(ControlSignalSource.class.getName()).log(Level.SEVERE, null, ex);

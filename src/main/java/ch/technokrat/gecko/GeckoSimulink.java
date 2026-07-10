@@ -72,7 +72,7 @@ public class GeckoSimulink {
             System.out.println("initializing GeckoCIRCUITS");
             return -1;
         }
-        GeckoSim._win._simRunner.external_init(tend);
+        GeckoSim._win.getSimulationRunner().external_init(tend);
         tStartSimulink = System.currentTimeMillis();
         
         for (AbstractBlockInterface block : SchematicEditor2.Singleton.getElementCONTROL()) {
@@ -85,15 +85,15 @@ public class GeckoSimulink {
     }
     
     public void external_step(double t) {
-        GeckoSim._win._simRunner.simKern.external_step(t);
+        GeckoSim._win.getSimulationRunner().simKern.external_step(t);
     }
 
     public double external_getdt() {        
-        return GeckoSim._win._simRunner.simKern.getdt();
+        return GeckoSim._win.getSimulationRunner().simKern.getdt();
     }
 
     public void external_end() {        
-        GeckoSim._win._simRunner.simKern.external_end();        
+        GeckoSim._win.getSimulationRunner().simKern.external_end();        
         tEndSimulink = System.currentTimeMillis();        
         GeckoSim._win.external_end(tStartSimulink, tEndSimulink);        
         isRunning = false;        

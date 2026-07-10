@@ -108,7 +108,7 @@ public class GeckoSim {
         }
 
         if (testIfBrandedVersion()) {
-            MainWindow.IS_BRANDED = true;
+            MainWindow.setBranded(true);
         }
 
         //
@@ -171,7 +171,7 @@ public class GeckoSim {
         _geckoSim = new GeckoSim();
 
         _geckoSim.initialisiere();
-        if (!MainWindow.IS_BRANDED) {
+        if (!MainWindow.isBranded()) {
             SystemOutputRedirect.init();
         }
 
@@ -229,8 +229,8 @@ public class GeckoSim {
                                     } else {
                                         fileSize = GeckoMemoryMappedFile._defaultBufferSize;
                                     }
-                                    MainWindow._mmf_access = new GeckoCustomMMF(MainWindow._scripter);
-                                    MainWindow._mmf_access.enableAccess(fileName, fileSize);
+                                    MainWindow.setMmfAccess(new GeckoCustomMMF(MainWindow.getScripter()));
+                                    MainWindow.getMmfAccess().enableAccess(fileName, fileSize);
                                 } else {
                                     System.err.println("No file given for memory-mapped access.");
                                     System.exit(4);
@@ -341,7 +341,7 @@ public class GeckoSim {
             }
 
             // now load properties from last invocation
-            if (!MainWindow.IS_BRANDED) {
+            if (!MainWindow.isBranded()) {
                 try {
                     APPLICATION_PROPERTY_FILE = GetJarPath.getJarPath() + "GeckoProperties.prp";
                     try {

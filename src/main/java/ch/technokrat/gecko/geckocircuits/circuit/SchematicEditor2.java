@@ -125,7 +125,7 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
         }
         _visibleCircuitSheet.removeMouseListener(this);
         _visibleCircuitSheet.removeMouseMotionListener(this);
-        _visibleCircuitSheet.removeKeyListener(win.keyAdapter);
+        _visibleCircuitSheet.removeKeyListener(win.getKeyAdapter());
 
         _visibleCircuitSheet = _circuitSheet;
         _visibleCircuitSheet = newCircuitSheet;
@@ -134,11 +134,11 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
         centerPanel.setBorder(new EmptyBorder(EMPTY_BORDER_OFFSET, EMPTY_BORDER_OFFSET, 0, 0));
         centerPanel.setOpaque(false);
         centerPanel.add(_visibleCircuitSheet);
-        MainWindow.seScroll.setViewportView(centerPanel);
+        MainWindow.getSeScroll().setViewportView(centerPanel);
         _visibleCircuitSheet.addMouseListener(this);
         _visibleCircuitSheet.addMouseMotionListener(this);
-        _visibleCircuitSheet.addKeyListener(win.keyAdapter);
-        MainWindow.seScroll.revalidate();
+        _visibleCircuitSheet.addKeyListener(win.getKeyAdapter());
+        MainWindow.getSeScroll().revalidate();
 
         for (AbstractCircuitSheetComponent searchTerminal
                 : _selectedComponents.toArray(new AbstractCircuitSheetComponent[_selectedComponents.size()])) {
@@ -152,7 +152,7 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
             defineNewParent.setParentCircuitSheet(_visibleCircuitSheet);
         }
         newCircuitSheet.revalidate();
-        MainWindow.seScroll.repaint();
+        MainWindow.getSeScroll().repaint();
     }
 
     private Point findRasterPoint(final MouseEvent mouseEvent) {
@@ -666,7 +666,7 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
                 ((GeckoFileable) elem).initExtraFiles();
             }
         }
-        MainWindow._scripter.initExtraFiles();
+        MainWindow.getScripter().initExtraFiles();
     }
 
     public void resetCircuitSheetsForNewFile() {
@@ -1096,7 +1096,7 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
         elementAKTUELL.rotateSymbol();
         _visibleCircuitSheet.repaint();
         _lastRotationDirection = elementAKTUELL.getComponentDirection();
-        GeckoSim._win._lastComponentButton.setComponentDirection(_lastRotationDirection);
+        GeckoSim._win.getLastComponentButton().setComponentDirection(_lastRotationDirection);
     }
 
     private void mouseReleaseSelectedGroup() {

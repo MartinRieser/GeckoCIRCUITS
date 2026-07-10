@@ -67,7 +67,7 @@ public class DialogSimParameter extends JDialog implements ActionListener {
         _tPause = callback._tPAUSE.getValue();
         _tPre = callback._T_pre.getValue();
         _dtPre = callback._dt_pre.getValue();
-        _solvertype = MainWindow._solverSettings.SOLVER_TYPE.getValue().getOldGeckoIndex();
+        _solvertype = MainWindow.getSolverSettings().SOLVER_TYPE.getValue().getOldGeckoIndex();
         _tf = new FormatJTextField[9];
         for (int i1 = 0; i1 < _tf.length; i1++) {
             _tf[i1] = new FormatJTextField();

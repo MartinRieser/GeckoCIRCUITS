@@ -62,7 +62,7 @@ public abstract class CircuitComponent<T extends AbstractTwoPortPowerCircuitBloc
         _term1 = parent.XIN.get(0);
         _term2 = parent.YOUT.get(0);        
         var_history = new double[steps_saved][9];        
-        _solverType = MainWindow._solverSettings.SOLVER_TYPE.getValue();
+        _solverType = MainWindow.getSolverSettings().SOLVER_TYPE.getValue();
     }
     
     public double getOldCurrent() {

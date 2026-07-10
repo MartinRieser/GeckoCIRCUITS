@@ -157,7 +157,7 @@ public class GetJarPath {
 
         // finally, make a test if the directory is exisiting. If not write out an
         // error message!
-        if (!MainWindow.IS_BRANDED) {
+        if (!MainWindow.isBranded()) {
             final File testFile = new File(path);
             if (!testFile.isDirectory()) {
                 System.err.println("Error: jar-Path is not a directory!");
@@ -177,7 +177,7 @@ public class GetJarPath {
         initializeWithOwnClassRef();
 
         final File file = new File(_JARpath);
-        if (!MainWindow.IS_BRANDED && !file.isDirectory()) {
+        if (!MainWindow.isBranded() && !file.isDirectory()) {
             JOptionPane.showMessageDialog(null,
                     "Could not find path to GeckoCIRCUITS installation: \n" + file.getAbsolutePath() + "\n"
                     + "Probably non-ASCII-Characters are not resolved properly. "

@@ -353,7 +353,7 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
     public void checkNameOptParameter() {
         for (UserParameter par : getRegisteredParameters()) {
             if (!par.getNameOpt().isEmpty()) {
-                MainWindow.optimizerParameterData.getNumberFromName(par.getNameOpt());
+                MainWindow.getOptimizerParameterData().getNumberFromName(par.getNameOpt());
             }
 
         }

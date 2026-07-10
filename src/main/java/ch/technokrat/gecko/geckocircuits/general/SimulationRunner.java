@@ -163,22 +163,22 @@ public final class SimulationRunner {
 
         simKern = new SimulationKernel();
         double tSTART = 0, tAktuell = tSTART;
-        MainWindow._solverSettings._tDURATION.setValueWithoutUndo(tEND);
-        MainWindow._solverSettings.dt.setValueWithoutUndo(dtLoc);
+        MainWindow.getSolverSettings()._tDURATION.setValueWithoutUndo(tEND);
+        MainWindow.getSolverSettings().dt.setValueWithoutUndo(dtLoc);
         //double tEND = tDURATION;
         //double dtLoc = dt;
-
-        if (MainWindow._solverSettings.inPreCalculationMode) {
-            tEND = MainWindow._solverSettings._T_pre.getValue();
-            dtLoc = MainWindow._solverSettings._dt_pre.getValue();
+ 
+        if (MainWindow.getSolverSettings().inPreCalculationMode) {
+            tEND = MainWindow.getSolverSettings()._T_pre.getValue();
+            dtLoc = MainWindow.getSolverSettings()._dt_pre.getValue();
         }
-
+ 
         nlContainer = NetListContainer.fabricStartSimulation(_se, simKern);
-
+ 
         simKern.initSimulation(
-                dtLoc, tSTART, tAktuell, tEND, MainWindow._solverSettings._tPAUSE.getValue(),
+                dtLoc, tSTART, tAktuell, tEND, MainWindow.getSolverSettings()._tPAUSE.getValue(),
                 getAnfangsbedVomDialogfenster, nlContainer, false);
-        MainWindow._solverSettings._dt_ALT = dtLoc;
+        MainWindow.getSolverSettings()._dt_ALT = dtLoc;
         simKern.initialisiereCONTROLatSimulationStart(dtLoc);  // // not done when 'Continue' is enabled
         _mainwindow.jtfStatus.setText("Starting Simulation ... ");
 
@@ -192,7 +192,7 @@ public final class SimulationRunner {
 
     //for initializing simulation to be controlled step by step from GeckoSCRIPT
     public void initSim() {
-        this.initSim(MainWindow._solverSettings.dt.getValue(), MainWindow._solverSettings._tDURATION.getValue());
+        this.initSim(MainWindow.getSolverSettings().dt.getValue(), MainWindow.getSolverSettings()._tDURATION.getValue());
     }
     
 
@@ -222,7 +222,7 @@ public final class SimulationRunner {
                 try {
                     simKern.runSimulation();
 
-                    if (MainWindow.IS_BRANDED) {
+                    if (MainWindow.isBranded()) {
                         _mainwindow.mItemNew.setEnabled(false);
                         _mainwindow.mItemOpen.setEnabled(false);
                     } else {
@@ -239,10 +239,10 @@ public final class SimulationRunner {
                 } catch (java.lang.OutOfMemoryError err) {
                     throw new OutOfMemoryError("Could not allocate enough java RAM memory for the simulation!");
                 } finally {
-                    if (!MainWindow._solverSettings.inPreCalculationMode) {
+                    if (!MainWindow.getSolverSettings().inPreCalculationMode) {
                         endRun();
                     } else {
-                        MainWindow._solverSettings.inPreCalculationMode = false;
+                        MainWindow.getSolverSettings().inPreCalculationMode = false;
                         try {
                             _mainwindow.continueCalculation(false);
                         } catch (Throwable error) {                            
@@ -253,7 +253,7 @@ public final class SimulationRunner {
                 }
             } catch (Throwable error) {
                 GeckoSim._win.pauseSimulation();
-                GeckoSim._win._simRunner.simKern._simulationStatus = SimulationKernel.SimulationStatus.FINISHED;
+                GeckoSim._win.getSimulationRunner().simKern._simulationStatus = SimulationKernel.SimulationStatus.FINISHED;
                 GeckoSim._win.jtfStatus.setText("Simulation aborted.");
                 if (!_runWithoutThread) {
                     error.printStackTrace();
@@ -288,8 +288,8 @@ public final class SimulationRunner {
         double tSTART = 0, tAktuell = tSTART;
         nlContainer = NetListContainer.fabricStartSimulation(_se, simKern);
         simKern.initSimulation(
-                MainWindow._solverSettings.dt.getValue(), tSTART, tAktuell, tEnd, MainWindow._solverSettings._tPAUSE.getValue(),
+                MainWindow.getSolverSettings().dt.getValue(), tSTART, tAktuell, tEnd, MainWindow.getSolverSettings()._tPAUSE.getValue(),
                 getAnfangsbedVomDialogfenster, nlContainer, false);
-        simKern.initialisiereCONTROLatSimulationStart(MainWindow._solverSettings.dt.getValue());
+        simKern.initialisiereCONTROLatSimulationStart(MainWindow.getSolverSettings().dt.getValue());
     }
 }

@@ -59,7 +59,7 @@ public class SimulationAccess implements GeckoFileable {
 
     public void startSim() {
         try {
-            mainWindow._simRunner.startCalculation(false, MainWindow._solverSettings);
+            mainWindow.getSimulationRunner().startCalculation(false, MainWindow.getSolverSettings());
             waitForDataSavers();
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -91,7 +91,7 @@ public class SimulationAccess implements GeckoFileable {
 
     public void initializeSimulation() {
         try {
-            mainWindow._simRunner.initSim();
+            mainWindow.getSimulationRunner().initSim();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -99,18 +99,18 @@ public class SimulationAccess implements GeckoFileable {
 
     public void initializeSimulation(double dt, double endTime) {
         try {
-            mainWindow._simRunner.initSim(dt, endTime);
+            mainWindow.getSimulationRunner().initSim(dt, endTime);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
     public void simulateOneStep() throws Exception {
-        mainWindow._simRunner.simKern.simulateOneStep();
+        mainWindow.getSimulationRunner().simKern.simulateOneStep();
     }
 
     public void simulateSpecifiedTime(double time) throws Exception {
-        mainWindow._simRunner.simKern.simulateTime(time);
+        mainWindow.getSimulationRunner().simKern.simulateTime(time);
     }
 
     public void endSimulation() {
@@ -217,19 +217,19 @@ public class SimulationAccess implements GeckoFileable {
     }
 
     void set_Tend(double Tend) {
-        MainWindow._solverSettings._tDURATION.setValueWithoutUndo(Tend);
+        MainWindow.getSolverSettings()._tDURATION.setValueWithoutUndo(Tend);
     }
 
     void set_Tend_pre(double Tend) {
-        MainWindow._solverSettings._T_pre.setValueWithoutUndo(Tend);
+        MainWindow.getSolverSettings()._T_pre.setValueWithoutUndo(Tend);
     }
 
     void set_dt(double value) {
-        MainWindow._solverSettings.dt.setValue(value);
+        MainWindow.getSolverSettings().dt.setValue(value);
     }
 
     void set_dt_pre(double value) {
-        MainWindow._solverSettings._dt_pre.setValueWithoutUndo(value);
+        MainWindow.getSolverSettings()._dt_pre.setValueWithoutUndo(value);
     }
 
     void saveFileAs(String fileName) {
@@ -274,19 +274,19 @@ public class SimulationAccess implements GeckoFileable {
     }
 
     public double get_dt() {
-        return MainWindow._solverSettings.dt.getValue();
+        return MainWindow.getSolverSettings().dt.getValue();
     }
 
     double get_dt_pre() {
-        return MainWindow._solverSettings._dt_pre.getValue();
+        return MainWindow.getSolverSettings()._dt_pre.getValue();
     }
 
     double get_Tend_pre() {
-        return MainWindow._solverSettings._T_pre.getValue();
+        return MainWindow.getSolverSettings()._T_pre.getValue();
     }
 
     double get_Tend() {
-        return MainWindow._solverSettings._tDURATION.getValue();
+        return MainWindow.getSolverSettings()._tDURATION.getValue();
     }
 
     //to clear the GeckoCustom object after opening a new file
@@ -314,8 +314,8 @@ public class SimulationAccess implements GeckoFileable {
              * ElementInterface element,
              */int x, int y) throws Exception {
         boolean valid = false;
-        int worksheetSizeX = MainWindow._se._circuitSheet._worksheetSize.getSizeX();
-        int worksheetSizeY = MainWindow._se._circuitSheet._worksheetSize.getSizeY();
+        int worksheetSizeX = MainWindow.getSchematicEditor()._circuitSheet._worksheetSize.getSizeX();
+        int worksheetSizeY = MainWindow.getSchematicEditor()._circuitSheet._worksheetSize.getSizeY();
         if (x >= worksheetSizeX || y >= worksheetSizeY) {
             throw new Exception("Given position is outside defined drawing area! Sheet size is " + worksheetSizeX + "x" + worksheetSizeY + " and given new position is " + x + "x" + y + ".");
         } else {
@@ -428,7 +428,7 @@ public class SimulationAccess implements GeckoFileable {
     }
 
     public double getSimulationTime() {        
-        return GeckoSim._win._simRunner.simKern.getCurrentTime();
+        return GeckoSim._win.getSimulationRunner().simKern.getCurrentTime();
     }
 
     @Override
@@ -436,7 +436,7 @@ public class SimulationAccess implements GeckoFileable {
         for (GeckoFile newFile : newFiles) {
             _additionalSourceFiles.add(newFile);
             newFile.setUser(DUMMY_BLOCK_ID);
-            MainWindow._fileManager.addFile(newFile);
+            MainWindow.getFileManager().addFile(newFile);
         }
         scriptwindow._extSourceWindow.addNewFiles(newFiles);
     }
@@ -451,7 +451,7 @@ public class SimulationAccess implements GeckoFileable {
         for (GeckoFile removedFile : filesToRemove) {
             _additionalSourceFiles.remove(removedFile);
             removedFile.removeUser(DUMMY_BLOCK_ID);
-            MainWindow._fileManager.maintain(removedFile);
+            MainWindow.getFileManager().maintain(removedFile);
         }
 
         scriptwindow._extSourceWindow.removeFilesFromList(filesToRemove);
@@ -494,7 +494,7 @@ public class SimulationAccess implements GeckoFileable {
                 }
                 hashValue = Long.valueOf(hash.trim());
                 try {
-                    file = MainWindow._fileManager.getFile(hashValue);
+                    file = MainWindow.getFileManager().getFile(hashValue);
                     _additionalSourceFiles.add(file);
                 } catch (Exception e) {
                     fileMissing = true;
@@ -513,12 +513,12 @@ public class SimulationAccess implements GeckoFileable {
     }
 
     void setWorksheetSize(int sizeX, int sizeY) {
-        MainWindow._se._circuitSheet._worksheetSize.setNewWorksheetSize(sizeX, sizeY);
+        MainWindow.getSchematicEditor()._circuitSheet._worksheetSize.setNewWorksheetSize(sizeX, sizeY);
     }
 
     int[] getWorksheetSize() {
-        int sizeX = MainWindow._se._circuitSheet._worksheetSize.getSizeX();
-        int sizeY = MainWindow._se._circuitSheet._worksheetSize.getSizeY();
+        int sizeX = MainWindow.getSchematicEditor()._circuitSheet._worksheetSize.getSizeX();
+        int sizeY = MainWindow.getSchematicEditor()._circuitSheet._worksheetSize.getSizeY();
         return new int[]{sizeX, sizeY};
     }
 

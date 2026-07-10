@@ -145,12 +145,12 @@ public class SubCircuitSheet extends CircuitSheet {
         super.doSetVisibleAction();    
         _nameLabel = new JLabel();
         setNameLabelText();
-        MainWindow._northPanel.add(_nameLabel);
-        MainWindow._northPanel.add(_upButton);
-        MainWindow._northPanel.add(_settingsButton);
-        MainWindow._northPanel.add(_newTerminalButton);
-        MainWindow._northPanel.add(_infoButton);
-        MainWindow._northPanel.revalidate();
+        MainWindow.getNorthPanel().add(_nameLabel);
+        MainWindow.getNorthPanel().add(_upButton);
+        MainWindow.getNorthPanel().add(_settingsButton);
+        MainWindow.getNorthPanel().add(_newTerminalButton);
+        MainWindow.getNorthPanel().add(_infoButton);
+        MainWindow.getNorthPanel().revalidate();
         //this.add(upButton);        
     }
     

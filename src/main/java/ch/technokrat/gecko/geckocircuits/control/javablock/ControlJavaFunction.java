@@ -344,7 +344,7 @@ public final class ControlJavaFunction extends ControlBlock implements VariableT
             for (String hash : _additionalFilesHashKeys) {
                 hashValue = Long.valueOf(hash);
                 try {
-                    file = MainWindow._fileManager.getFile(hashValue);
+                    file = MainWindow.getFileManager().getFile(hashValue);
                     _javaBlock._additionalSourceFiles.add(file);
                 } catch (Exception e) {
                     fileMissing = true;
@@ -541,7 +541,7 @@ public final class ControlJavaFunction extends ControlBlock implements VariableT
         for (GeckoFile newFile : newFiles) {
             _javaBlock._additionalSourceFiles.add(newFile);
             newFile.setUser(getUniqueObjectIdentifier());
-            MainWindow._fileManager.addFile(newFile);
+            MainWindow.getFileManager().addFile(newFile);
         }
         _codeWindow.addNewExtraFiles(newFiles);
     }
@@ -551,7 +551,7 @@ public final class ControlJavaFunction extends ControlBlock implements VariableT
         for (GeckoFile removedFile : filesToRemove) {
             _javaBlock._additionalSourceFiles.remove(removedFile);
             removedFile.removeUser(getUniqueObjectIdentifier());
-            MainWindow._fileManager.maintain(removedFile);
+            MainWindow.getFileManager().maintain(removedFile);
         }
 
         if (_codeWindow != null) {

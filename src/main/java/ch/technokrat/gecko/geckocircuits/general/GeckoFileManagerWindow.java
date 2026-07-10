@@ -125,7 +125,7 @@ public class GeckoFileManagerWindow extends javax.swing.JDialog {
         lsmExisting.addListSelectionListener(new GeckoFileExistingListSelectionHandler());
 
 
-        List<GeckoFile> existingFiles = MainWindow._fileManager.getFilesByExtension(extension);
+        List<GeckoFile> existingFiles = MainWindow.getFileManager().getFilesByExtension(extension);
 
         if (alreadyUsedFiles.size() > 0) {
             existingFiles.removeAll(alreadyUsedFiles);

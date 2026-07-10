@@ -102,8 +102,8 @@ public class GeckoExternal {
 
     protected static void checkExternal() {
         if (external == null) {
-            external = new ExternalGeckoCustom(MainWindow._scripter);
-            MainWindow._external = external;
+            external = new ExternalGeckoCustom(MainWindow.getScripter());
+            MainWindow.setExternal(external);
         }
     }
 
@@ -164,12 +164,12 @@ public class GeckoExternal {
 
     public static void setGlobalParameterValue(final String parameterName, final double value) {
         checkExternal();
-        MainWindow.optimizerParameterData.setNumberFromName(parameterName, value);
+        MainWindow.getOptimizerParameterData().setNumberFromName(parameterName, value);
     }
 
     public static double getGlobalParameterValue(final String parameterName) {
         checkExternal();
-        return MainWindow.optimizerParameterData.getNumberFromName(parameterName);
+        return MainWindow.getOptimizerParameterData().getNumberFromName(parameterName);
     }
 
     public String[] getThyristors() {

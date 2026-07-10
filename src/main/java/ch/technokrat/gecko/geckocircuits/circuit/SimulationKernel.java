@@ -457,14 +457,14 @@ public class SimulationKernel {
         //
         // Leistungskreis:
         if (getAnfangsbedVomDialogfenster) {
-            lkmLK = new LKMatrices(MainWindow._solverSettings.SOLVER_TYPE.getValue());
-            lkmLK.initMatrizen(nl, getAnfangsbedVomDialogfenster, true, MainWindow._solverSettings.SOLVER_TYPE.getValue());  // pALT= new double[..];   iALT= new double[..];
+            lkmLK = new LKMatrices(MainWindow.getSolverSettings().SOLVER_TYPE.getValue());
+            lkmLK.initMatrizen(nl, getAnfangsbedVomDialogfenster, true, MainWindow.getSolverSettings().SOLVER_TYPE.getValue());  // pALT= new double[..];   iALT= new double[..];
             lkmLK.schreibeMatrix_A(dt, tAktuell, false);
 
             //
             // thermischer Kreis:
-            lkmTHERM = new LKMatrices(MainWindow._solverSettings.SOLVER_TYPE.getValue());
-            lkmTHERM.initMatrizen(thermNL, getAnfangsbedVomDialogfenster, false, MainWindow._solverSettings.SOLVER_TYPE.getValue());
+            lkmTHERM = new LKMatrices(MainWindow.getSolverSettings().SOLVER_TYPE.getValue());
+            lkmTHERM.initMatrizen(thermNL, getAnfangsbedVomDialogfenster, false, MainWindow.getSolverSettings().SOLVER_TYPE.getValue());
             lkmTHERM.schreibeMatrix_A(dt, tAktuell, false);
         }
         //=============================

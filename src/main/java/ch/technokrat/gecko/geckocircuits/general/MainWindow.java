@@ -78,20 +78,20 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     //--------------------------------------
     private boolean simulatorActivated = false;
     //
-    public static SchematicEditor2 _se;
-    public SchematicComponentSelection2 sea;
+    private static SchematicEditor2 _se;
+    private SchematicComponentSelection2 sea;
     public static final boolean INCLUDE_GeckoMAGNETICS = false;
     public static final boolean INCLUDE_GeckoHEAT = false;
     public static final boolean INCLUDE_GeckoEMC = false;
     private static final String UNTITLED = "Untitled";  // displayed in the window title bar when a new file is started
-    public static String currentFileName = UNTITLED;  // without path! - only for display in the window title bar (as is common in Windows)
+    private static String currentFileName = UNTITLED;  // without path! - only for display in the window title bar (as is common in Windows)
     //--------------------------------------
     private JSplitPane split;
-    public static int seaBREITE = 110;  // width of the 'SchematicComponentSelection2()' component on the right edge
-    public JCheckBoxMenuItem vItemShowParLK, vItemShowFlowLK, vItemShowNameLK, vItemShowTextLineLK;
-    public JCheckBoxMenuItem vItemShowParCONTROL, vItemShowNameCONTROL, vItemShowTextLineCONTROL;
-    public JCheckBoxMenuItem aliasingCONTROL;
-    public JCheckBoxMenuItem vItemShowParTHERM, vItemShowFlowTHERM, vItemShowNameTHERM, vItemShowTextLineTHERM;
+    public static final int seaBREITE = 110;  // width of the 'SchematicComponentSelection2()' component on the right edge
+    private JCheckBoxMenuItem vItemShowParLK, vItemShowFlowLK, vItemShowNameLK, vItemShowTextLineLK;
+    private JCheckBoxMenuItem vItemShowParCONTROL, vItemShowNameCONTROL, vItemShowTextLineCONTROL;
+    private JCheckBoxMenuItem aliasingCONTROL;
+    private JCheckBoxMenuItem vItemShowParTHERM, vItemShowFlowTHERM, vItemShowNameTHERM, vItemShowTextLineTHERM;
     JMenuItem mItemNew, mItemOpen, mItemSave, mItemSaveAs, mItemExit, mItemSaveView, mItemMemorySettings, mItemRemoteSettings,
             mItemUpdateSettings;
     private JMenuItem mItemCheckModel, mItemFindString, mItemExport, mItemImport, mItemImportFromFile, mItemSetPar, mItemSetOrder;
@@ -107,23 +107,26 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     //--------------------------------------
     //-------------------------
     // simple parameter-set for GeckoOPTIMIZER --> 
-    public static final OptimizerParameterData optimizerParameterData = new OptimizerParameterData();
-    public static final JScrollPane seScroll = new JScrollPane();
+    private static final OptimizerParameterData optimizerParameterData = new OptimizerParameterData();
+    private static final JScrollPane seScroll = new JScrollPane();
     //-------------------------
     private int uniqueFileID = 0;
-    public static SimulationAccess _scripter = null;
-    public static final SolverSettings _solverSettings = new SolverSettings();
+    private static SimulationAccess _scripter = null;
+    private static final SolverSettings _solverSettings = new SolverSettings();
     private JMenuItem _mItemScriptingTool;
-    public static GeckoFileManager _fileManager = null;
-    public static ExternalGeckoCustom _external = null;
-    public static GeckoCustomMMF _mmf_access = null;
-    public transient final SimulationRunner _simRunner;
-    public transient final KeyAdapter keyAdapter;
+    private static GeckoFileManager _fileManager = null;
+    private static ExternalGeckoCustom _external = null;
+    private static GeckoCustomMMF _mmf_access = null;
+    private transient final SimulationRunner _simRunner;
+    private transient final KeyAdapter keyAdapter;
     private static final String spTitleX = "  -  ";
-    public static boolean IS_BRANDED = false;
+    private static final int BACKUP_TIMER_DELAY_MS = 10000;
+    private static final int BACKUP_TIMER_PERIOD_MS = 20000;
+    private static final int SCROLL_UNIT_INCREMENT = 20;
+    private static boolean IS_BRANDED = false;
     private SuggestionField _searchTestField;
-    public LastComponentButton _lastComponentButton;
-    public final static JPanel _northPanel = new JPanel();
+    private LastComponentButton _lastComponentButton;
+    private final static JPanel _northPanel = new JPanel();
 
     /*
      * // steady-state analysis >> private int numberOfDomains= 3; // LK=0, THERM=1, CONTR=2 private double Tss=20e-3; // to be
@@ -152,9 +155,97 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         return false;
     }
 
-    public OptimizerParameterData getOptimizerParameterData() {
+    public static OptimizerParameterData getOptimizerParameterData() {
         return optimizerParameterData;
     }
+
+    public static SchematicEditor2 getSchematicEditor() {
+        return _se;
+    }
+
+    public static void setSchematicEditor(SchematicEditor2 se) {
+        _se = se;
+    }
+
+    public SchematicComponentSelection2 getSchematicComponentSelection() {
+        return sea;
+    }
+
+    public static JScrollPane getSeScroll() {
+        return seScroll;
+    }
+
+    public static SimulationAccess getScripter() {
+        return _scripter;
+    }
+
+    public static void setScripter(SimulationAccess scripter) {
+        _scripter = scripter;
+    }
+
+    public static SolverSettings getSolverSettings() {
+        return _solverSettings;
+    }
+
+    public static GeckoFileManager getFileManager() {
+        return _fileManager;
+    }
+
+    public static void setFileManager(GeckoFileManager fileManager) {
+        _fileManager = fileManager;
+    }
+
+    public static ExternalGeckoCustom getExternal() {
+        return _external;
+    }
+
+    public static void setExternal(ExternalGeckoCustom external) {
+        _external = external;
+    }
+
+    public static GeckoCustomMMF getMmfAccess() {
+        return _mmf_access;
+    }
+
+    public static void setMmfAccess(GeckoCustomMMF mmfAccess) {
+        _mmf_access = mmfAccess;
+    }
+
+    public SimulationRunner getSimulationRunner() {
+        return _simRunner;
+    }
+
+    public KeyAdapter getKeyAdapter() {
+        return keyAdapter;
+    }
+
+    public static boolean isBranded() {
+        return IS_BRANDED;
+    }
+
+    public static void setBranded(boolean branded) {
+        IS_BRANDED = branded;
+    }
+
+    public LastComponentButton getLastComponentButton() {
+        return _lastComponentButton;
+    }
+
+    public static JPanel getNorthPanel() {
+        return _northPanel;
+    }
+
+    public JCheckBoxMenuItem getvItemShowParLK() { return vItemShowParLK; }
+    public JCheckBoxMenuItem getvItemShowFlowLK() { return vItemShowFlowLK; }
+    public JCheckBoxMenuItem getvItemShowNameLK() { return vItemShowNameLK; }
+    public JCheckBoxMenuItem getvItemShowTextLineLK() { return vItemShowTextLineLK; }
+    public JCheckBoxMenuItem getvItemShowParCONTROL() { return vItemShowParCONTROL; }
+    public JCheckBoxMenuItem getvItemShowNameCONTROL() { return vItemShowNameCONTROL; }
+    public JCheckBoxMenuItem getvItemShowTextLineCONTROL() { return vItemShowTextLineCONTROL; }
+    public JCheckBoxMenuItem getvItemShowParTHERM() { return vItemShowParTHERM; }
+    public JCheckBoxMenuItem getvItemShowFlowTHERM() { return vItemShowFlowTHERM; }
+    public JCheckBoxMenuItem getvItemShowTextLineTHERM() { return vItemShowTextLineTHERM; }
+    public JCheckBoxMenuItem getvItemShowNameTHERM() { return vItemShowNameTHERM; }
 
     /**
      * this can be used to activate or deactivate the simulator
@@ -211,7 +302,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         Timer timer = new Timer();
         // start after 10 seconds, and then save a backup after every 20 seconds
         if (!IS_BRANDED) {
-            timer.schedule(new BackupTask(), 10000, 20000);
+            timer.schedule(new BackupTask(), BACKUP_TIMER_DELAY_MS, BACKUP_TIMER_PERIOD_MS);
         }
 
         _scripter = new SimulationAccess(this);
@@ -1956,8 +2047,8 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     }
 
     private void buildMainPanel() {
-        seScroll.getVerticalScrollBar().setUnitIncrement(20);
-        seScroll.getHorizontalScrollBar().setUnitIncrement(20);
+        seScroll.getVerticalScrollBar().setUnitIncrement(SCROLL_UNIT_INCREMENT);
+        seScroll.getHorizontalScrollBar().setUnitIncrement(SCROLL_UNIT_INCREMENT);
         JPanel p2 = new JPanel();
         p2.setLayout(new BorderLayout());
         p2.add(sea, BorderLayout.CENTER);

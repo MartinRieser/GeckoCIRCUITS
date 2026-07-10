@@ -136,7 +136,7 @@ public class GeckoStatusBar extends JPanel {
         @Override
         public void paint(Graphics graphics) {
 
-            SimulationKernel simKern = _fenster._simRunner.simKern;
+            SimulationKernel simKern = _fenster.getSimulationRunner().simKern;
             if (simKern != null) {
                 switch (simKern._simulationStatus) {
                     case PAUSED:

@@ -631,7 +631,7 @@ public class CircuitSheet extends JPanel {
     }
 
     public void doSetVisibleAction() {
-        MainWindow._northPanel.removeAll();
-        MainWindow._northPanel.revalidate();
+        MainWindow.getNorthPanel().removeAll();
+        MainWindow.getNorthPanel().revalidate();
     }
 }

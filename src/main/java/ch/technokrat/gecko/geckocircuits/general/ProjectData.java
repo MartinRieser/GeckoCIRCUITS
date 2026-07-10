@@ -152,7 +152,7 @@ public class ProjectData implements Serializable {
         asc.append("\nfontTyp ").append(_fontTyp);
         asc.append("\nfensterWidth ").append(_fensterWidth);
         asc.append("\nfensterHeight ").append(_fensterHeight);
-        MainWindow._se._circuitSheet._worksheetSize.exportAscii(asc);
+        MainWindow.getSchematicEditor()._circuitSheet._worksheetSize.exportAscii(asc);
         // 
         asc.append("\nANSICHT_SHOW_LK_NAME ").append(SchematicEditor2._lkDisplayMode.showName);
         asc.append("\nANSICHT_SHOW_LK_PARAMETER ").append(SchematicEditor2._lkDisplayMode.showParameter);
@@ -316,19 +316,19 @@ public class ProjectData implements Serializable {
                     SchematicEditor2._controlDisplayMode.showTextLine);
         }
 
-        GeckoSim._win.vItemShowParLK.setSelected(SchematicEditor2._lkDisplayMode.showParameter);
-        GeckoSim._win.vItemShowFlowLK.setSelected(SchematicEditor2._lkDisplayMode.showFlowSymbol);
-        GeckoSim._win.vItemShowTextLineLK.setSelected(SchematicEditor2._lkDisplayMode.showTextLine);
-        GeckoSim._win.vItemShowNameLK.setSelected(SchematicEditor2._lkDisplayMode.showName);
+        GeckoSim._win.getvItemShowParLK().setSelected(SchematicEditor2._lkDisplayMode.showParameter);
+        GeckoSim._win.getvItemShowFlowLK().setSelected(SchematicEditor2._lkDisplayMode.showFlowSymbol);
+        GeckoSim._win.getvItemShowTextLineLK().setSelected(SchematicEditor2._lkDisplayMode.showTextLine);
+        GeckoSim._win.getvItemShowNameLK().setSelected(SchematicEditor2._lkDisplayMode.showName);
 
-        GeckoSim._win.vItemShowParCONTROL.setSelected(SchematicEditor2._controlDisplayMode.showParameter);
-        GeckoSim._win.vItemShowTextLineCONTROL.setSelected(SchematicEditor2._controlDisplayMode.showTextLine);
-        GeckoSim._win.vItemShowNameCONTROL.setSelected(SchematicEditor2._controlDisplayMode.showName);
+        GeckoSim._win.getvItemShowParCONTROL().setSelected(SchematicEditor2._controlDisplayMode.showParameter);
+        GeckoSim._win.getvItemShowTextLineCONTROL().setSelected(SchematicEditor2._controlDisplayMode.showTextLine);
+        GeckoSim._win.getvItemShowNameCONTROL().setSelected(SchematicEditor2._controlDisplayMode.showName);
 
-        GeckoSim._win.vItemShowParTHERM.setSelected(SchematicEditor2._thermDisplayMode.showParameter);
-        GeckoSim._win.vItemShowFlowTHERM.setSelected(SchematicEditor2._thermDisplayMode.showFlowSymbol);
-        GeckoSim._win.vItemShowTextLineTHERM.setSelected(SchematicEditor2._thermDisplayMode.showTextLine);
-        GeckoSim._win.vItemShowNameTHERM.setSelected(SchematicEditor2._thermDisplayMode.showName);
+        GeckoSim._win.getvItemShowParTHERM().setSelected(SchematicEditor2._thermDisplayMode.showParameter);
+        GeckoSim._win.getvItemShowFlowTHERM().setSelected(SchematicEditor2._thermDisplayMode.showFlowSymbol);
+        GeckoSim._win.getvItemShowTextLineTHERM().setSelected(SchematicEditor2._thermDisplayMode.showTextLine);
+        GeckoSim._win.getvItemShowNameTHERM().setSelected(SchematicEditor2._thermDisplayMode.showName);
 
         if (tokenMap.containsToken("optimizerName[]")) {
             _optimizerNames = tokenMap.readDataLineStringArray("optimizerName[]");

@@ -122,7 +122,7 @@ public class GeckoRemoteRegistry {
             return; // nothing todo - port already enabled!
         }
         try {            
-            remoteAccess = new GeckoCustomRemote(MainWindow._scripter);            
+            remoteAccess = new GeckoCustomRemote(MainWindow.getScripter());            
             
             GeckoRemoteInterface stub = (GeckoRemoteInterface) UnicastRemoteObject.exportObject(remoteAccess, 0);            
             System.setProperty("java.rmi.server.hostname",_ipAddress);

@@ -175,7 +175,7 @@ public final class UserParameter<T> {
 
     public T getValue() {
         if (!_nameOpt.isEmpty() && _value.getValue() instanceof Number) {            
-            Double returnValue = (Double) MainWindow.optimizerParameterData.getNumberFromNameWOException(_nameOpt);
+            Double returnValue = (Double) MainWindow.getOptimizerParameterData().getNumberFromNameWOException(_nameOpt);
             if(_value.getValue() instanceof Integer) {
                 return (T) (Integer) returnValue.intValue();
             } else {
@@ -235,7 +235,7 @@ public final class UserParameter<T> {
 
     public double getDoubleValue() {
         if (!_nameOpt.isEmpty()) {
-                return MainWindow.optimizerParameterData.getNumberFromNameWOException(_nameOpt);
+                return MainWindow.getOptimizerParameterData().getNumberFromNameWOException(_nameOpt);
         }
 
         if (_value.getValue() instanceof Number) {

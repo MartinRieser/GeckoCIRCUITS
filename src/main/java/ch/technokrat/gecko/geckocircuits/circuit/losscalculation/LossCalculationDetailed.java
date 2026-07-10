@@ -164,7 +164,7 @@ public final class LossCalculationDetailed implements GeckoFileable, AbstractLos
     public void removeLossFile() {
         if (lossFile != null) {
             lossFile.removeUser(_parent.getUniqueObjectIdentifier());
-            MainWindow._fileManager.maintain(lossFile);
+            MainWindow.getFileManager().maintain(lossFile);
         }
 
         datnamGemesseneVerluste = GlobalFilePathes.DATNAM_NOT_DEFINED;
@@ -249,11 +249,11 @@ public final class LossCalculationDetailed implements GeckoFileable, AbstractLos
         //remove old loss file, set new
         if (lossFile != null) {
             lossFile.removeUser(_parent.getUniqueObjectIdentifier());
-            MainWindow._fileManager.maintain(lossFile);
+            MainWindow.getFileManager().maintain(lossFile);
         }
         newLossFile.setUser(_parent.getUniqueObjectIdentifier());
         lossFile = newLossFile;
-        MainWindow._fileManager.addFile(lossFile);
+        MainWindow.getFileManager().addFile(lossFile);
                 
         return true;
     }
@@ -261,7 +261,7 @@ public final class LossCalculationDetailed implements GeckoFileable, AbstractLos
     public void initLossFile() {
         if (lossFileHashValue != 0) {            
             try {                
-                GeckoFile detailedLossFile = MainWindow._fileManager.getFile(lossFileHashValue);
+                GeckoFile detailedLossFile = MainWindow.getFileManager().getFile(lossFileHashValue);
                 readDetailedLossesFromFile(detailedLossFile);
             } catch (FileNotFoundException e) {
                 //this means this is probably an old .ipes file without a valid hash key for the GeckoFile (i.e. saved in an older version)
@@ -344,10 +344,10 @@ public final class LossCalculationDetailed implements GeckoFileable, AbstractLos
             //check first if a loss file already exists, and remove it if it does
             if (lossFile != null) {
                 lossFile.removeUser(_parent.getUniqueObjectIdentifier());
-                MainWindow._fileManager.maintain(lossFile);
+                MainWindow.getFileManager().maintain(lossFile);
             }
             lossFile = newLossFile;
-            MainWindow._fileManager.addFile(lossFile);
+            MainWindow.getFileManager().addFile(lossFile);
         }
 
         return true;
@@ -367,7 +367,7 @@ public final class LossCalculationDetailed implements GeckoFileable, AbstractLos
         if (lossFile.getStorageType() == GeckoFile.StorageType.EXTERNAL) {
             return new File(lossFile.getCurrentAbsolutePath()).exists();
         } else {
-            for (GeckoFile gFile : MainWindow._fileManager.getFilesByExtension(".scl")) {
+            for (GeckoFile gFile : MainWindow.getFileManager().getFilesByExtension(".scl")) {
                 if (gFile.getCurrentAbsolutePath().equals(lossFile.getCurrentAbsolutePath())) {
                     return true;
                 }

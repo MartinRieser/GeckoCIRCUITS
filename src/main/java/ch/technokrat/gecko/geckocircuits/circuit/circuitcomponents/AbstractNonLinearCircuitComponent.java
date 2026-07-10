@@ -117,7 +117,7 @@ implements Operationable, Nonlinearable {
         //in this case there should only be one file to remove
         if (filesToRemove.size() > 0 && nonLinearChar != null) {
             nonLinearChar.removeUser(getUniqueObjectIdentifier());
-            MainWindow._fileManager.maintain(nonLinearChar);
+            MainWindow.getFileManager().maintain(nonLinearChar);
             nonLinearChar = null;
         }
     }    
@@ -131,12 +131,12 @@ implements Operationable, Nonlinearable {
                 double[][] nonLin = readNonLinearCharacteristicFromFile(newNonLin);
                 if (nonLinearChar != null) {
                     nonLinearChar.removeUser(getUniqueObjectIdentifier());
-                    MainWindow._fileManager.maintain(nonLinearChar);
+                    MainWindow.getFileManager().maintain(nonLinearChar);
                 }
                 nonLinearChar = newNonLin;
                 nonlinearData = nonLin;
                 nonLinearChar.setUser(getUniqueObjectIdentifier());
-                MainWindow._fileManager.addFile(nonLinearChar);
+                MainWindow.getFileManager().addFile(nonLinearChar);
                 nonLinearLastModified = nonLinearChar.checkModificationTimeStamp();
             } catch (NumberFormatException e) {
                 final String errorMessage = "Non-linear characteristic file format error: \n" + e.getMessage();
@@ -343,13 +343,13 @@ implements Operationable, Nonlinearable {
         nonlinearData = data;
         if (nonLinearChar != null) {
             nonLinearChar.removeUser(getUniqueObjectIdentifier());
-            MainWindow._fileManager.maintain(nonLinearChar);
+            MainWindow.getFileManager().maintain(nonLinearChar);
         }
         try {
             File newFile = writeNonLinearCharacteristicToFile(nonlinearData, new File(newInternalFileName));
             nonLinearChar = new GeckoFile(newFile, GeckoFile.StorageType.INTERNAL, MainWindow.getOpenFileName());
             nonLinearChar.setUser(getUniqueObjectIdentifier());
-            MainWindow._fileManager.addFile(nonLinearChar);
+            MainWindow.getFileManager().addFile(nonLinearChar);
             nonLinearLastModified = nonLinearChar.checkModificationTimeStamp();
         } catch (Exception e) {
             final String errorMessage = "Error writing non-linear characteristic file in " + getStringID() + "\n" + e.getMessage();
@@ -475,7 +475,7 @@ implements Operationable, Nonlinearable {
         if (_isNonlinear.getValue()) {
             if (initNonLinFromFile) {
                 try {
-                    nonLinearChar = MainWindow._fileManager.getFile(nonLinearCharHashValueForInit);
+                    nonLinearChar = MainWindow.getFileManager().getFile(nonLinearCharHashValueForInit);
                     updateNonLinearCharacteristic();
                 } catch (FileNotFoundException e) {
                     createNewInitialInternalFile();                    
