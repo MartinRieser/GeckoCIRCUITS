@@ -21,9 +21,11 @@ import java.util.Observer;
 
 //CHECKSTYLE:ON
 /**
- * Be careful: in the scope, the number of input ports can be
- * increased/decreased. Therefore, check if we are out of bounds, and give zer0
- * as return value, if so.
+ * Adapter that exposes the global simulation data container to an individual
+ * scope window.  It maps scope-local signal indices to the global container's
+ * row indices and transparently delegates mean-signal queries to a
+ * {@link DataContainerMeanWrapper}.  When the scope's input port count changes,
+ * out-of-bounds accesses safely return zero.
  *
  * @author andy
  */

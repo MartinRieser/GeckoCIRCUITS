@@ -13,6 +13,11 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
+/**
+ * Contract for components whose branch currents must be computed after the solver
+ * has determined the node potentials, rather than being directly available from
+ * the solution vector.
+ */
 public interface CurrentCalculatable {
     void calculateCurrent(final double[] potVector, final double deltaT, final double time);
     double getCurrent();

@@ -21,6 +21,10 @@ import java.awt.Graphics;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+/**
+ * Parameter dialog for editing the gain factor of a {@link ControlGain} block, including a
+ * rendered transfer-function symbol preview.
+ */
 class ControlGainDialog extends DialogElementCONTROL<ControlGain> {
     private static final long serialVersionUID = 1L;
     @SuppressWarnings("unchecked")

@@ -46,6 +46,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
+/**
+ * Primary signal source block supporting sine, triangle, rectangle, random, and
+ * file-imported waveforms. Can optionally expose external terminals for amplitude,
+ * frequency, offset, phase, and duty ratio control.
+ */
 @SuppressWarnings("this-escape")
 public class ControlSignalSource extends ControlBlock implements ControlInputTwoTerminalStateable,
         GeckoFileable, Operationable {
@@ -184,6 +189,12 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
         return _datnamXY;
     }
 
+    /**
+     * Creates the appropriate signal calculator based on the configured source type.
+     *
+     * @param typQuelle the signal source type
+     * @return the matching {@link AbstractSignalCalculator} implementation
+     */
     private AbstractSignalCalculator createSignalCalculator(final ControlSourceType typQuelle) {
         switch (typQuelle) {
             case QUELLE_SIN:
@@ -284,6 +295,9 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
         }
     }
 
+    /**
+     * Reads external waveform data from the imported file into the {@code _xy} array.
+     */
     public void readExternalDataFromFile() {
         if (_externalDataFile == null) {
             throw new GeckoRuntimeException("could not read data file in SIGNAL source block!");
@@ -320,6 +334,9 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
         }
     }
 
+    /**
+     * Adds text info parameters for file-imported signal sources, displaying the imported filename.
+     */
     private void addImportParameters() {
         final String typus = "Import-Data";
         _textInfo.addParameter(typus);
@@ -484,6 +501,11 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
         return new I18nKeys[]{getTypeDescription()};
     }
 
+    /**
+     * Returns the list of GeckoSCRIPT operations for this block, including setting an import filename.
+     *
+     * @return unmodifiable list of operation interfaces
+     */
     @Override
     public List<OperationInterface> getOperationEnumInterfaces() {
         final List<OperationInterface> returnValue = new ArrayList<OperationInterface>();

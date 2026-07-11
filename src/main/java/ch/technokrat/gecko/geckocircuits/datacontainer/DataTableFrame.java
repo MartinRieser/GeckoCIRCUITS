@@ -16,6 +16,8 @@ package ch.technokrat.gecko.geckocircuits.datacontainer;
 import javax.swing.JDialog;
 
 /**
+ * Dialog window that displays simulation data in a tabular view using an
+ * embedded {@link DataContainerTable}.
  *
  * @author andreas
  */

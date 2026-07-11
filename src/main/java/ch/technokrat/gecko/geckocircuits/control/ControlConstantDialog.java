@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control;
 
+/**
+ * Parameter dialog for editing the constant value of a {@link ControlConstant} block.
+ */
 @SuppressWarnings("unchecked")
 class ControlConstantDialog extends DialogElementCONTROL<ControlConstant> {
     private static final long serialVersionUID = 1L;

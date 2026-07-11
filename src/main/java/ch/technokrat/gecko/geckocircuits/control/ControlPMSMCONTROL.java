@@ -18,6 +18,10 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalc
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+/**
+ * Permanent Magnet Synchronous Machine (PMSM) field-oriented controller block.
+ * Transforms phase currents to the dq reference frame and computes voltage references.
+ */
 public final class ControlPMSMCONTROL extends ControlBlock {
 
     private static final int BLOCK_WIDTH = 5;

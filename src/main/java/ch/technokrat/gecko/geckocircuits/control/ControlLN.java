@@ -18,6 +18,9 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.LnCalculator;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+/**
+ * Computes the natural logarithm (ln) of the input signal.
+ */
 public final class ControlLN extends AbstractControlSingleInputSingleOutput {
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlLN.class, "LN", I18nKeys.LN);

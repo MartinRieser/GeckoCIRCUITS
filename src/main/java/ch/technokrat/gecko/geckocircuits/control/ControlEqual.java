@@ -18,6 +18,9 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.EqualCalculatorMult
 import ch.technokrat.gecko.geckocircuits.control.calculators.EqualCalculatorTwoInputs;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Compares two (or more) inputs for equality, outputting 1 when all inputs are equal and 0 otherwise.
+ */
 public final class ControlEqual extends SimpleControlBlock {
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlEqual.class, "EQ", I18nKeys.EQUAL);

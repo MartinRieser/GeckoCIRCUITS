@@ -30,9 +30,18 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Stack;
 
+/**
+ * Imports signal values from an external (e.g. Simulink) co-simulation interface into the
+ * GeckoCIRCUITS control diagram.
+ */
 public final class ControlFromEXTERNAL extends ControlBlockSimulink implements VariableTerminalNumber {
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Static registry of all FromEXTERNAL blocks in the current circuit. Each block adds itself
+     * on construction and removes itself on deletion; the list is used to establish and persist
+     * the co-simulation signal ordering.
+     */
     public static List<ControlBlock> fromExternals = new ArrayList<ControlBlock>();
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlFromEXTERNAL.class, "FromEXT", I18nKeys.IMPORT_DATA_FROM_SIMULINK);
     private int _terminalNumber;

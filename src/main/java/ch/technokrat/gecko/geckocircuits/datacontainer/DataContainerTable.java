@@ -18,6 +18,10 @@ import java.awt.Rectangle;
 import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 
+/**
+ * Swing panel that displays a data container in a scrollable JTable, with
+ * controls to jump to the start, end, or a user-specified time value.
+ */
 public class DataContainerTable extends javax.swing.JPanel {
 
     private static final long serialVersionUID = 1L;

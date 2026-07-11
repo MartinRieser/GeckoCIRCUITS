@@ -25,6 +25,10 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Configuration dialog for the {@link ControlLimit} block, editing the upper and lower limits
+ * and displaying the limiter transfer-characteristic preview.
+ */
 @SuppressWarnings("unchecked")
 class ControlLimitDialog extends AbstractDialogWithExternalOption<ControlLimit> {    
     private static final long serialVersionUID = 1L;
@@ -96,6 +100,6 @@ class ControlLimitDialog extends AbstractDialogWithExternalOption<ControlLimit> 
                 ((Graphics2D) graphics).setRenderingHints(oldRendering);
             }
         };   
-        //CHECKSTYLE:OFF
+        //CHECKSTYLE:ON
     }
 }

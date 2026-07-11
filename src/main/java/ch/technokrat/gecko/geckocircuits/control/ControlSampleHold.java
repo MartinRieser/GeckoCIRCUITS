@@ -18,10 +18,17 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.SampleHoldCalculato
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
-public final class ControlSampleHold extends ControlBlock {    
+/**
+ * Sample-and-hold control block. When the control input z > 0.5, it samples input x1;
+ * otherwise it holds the last sampled value.
+ */
+public final class ControlSampleHold extends ControlBlock {
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlSampleHold.class, "SHLD", I18nKeys.SAMPLE_HOLD);
     private static final double THRESHOLD = 0.5;
     
+    /**
+     * Creates a sample-and-hold block with 2 inputs (signal + control) and 1 output.
+     */
     public ControlSampleHold() {
         super(2, 1);
     }
@@ -36,6 +43,9 @@ public final class ControlSampleHold extends ControlBlock {
         return new I18nKeys[]{I18nKeys.SAMPLED_INPUT};
     }        
 
+    /**
+     * @return a new {@link SampleHoldCalculator} instance for simulation
+     */
     @Override
     public AbstractControlCalculatable getInternalControlCalculatableForSimulationStart() {
         return new SampleHoldCalculator();
@@ -47,6 +57,9 @@ public final class ControlSampleHold extends ControlBlock {
     }
     
     
+    /**
+     * @return a dialog displaying the sample-and-hold behavior description
+     */
     @Override
     protected  Window openDialogWindow() {
         final String message = "<html>if (z > " + THRESHOLD + ")  ...  y1 = x1;  sh = x1<br>"

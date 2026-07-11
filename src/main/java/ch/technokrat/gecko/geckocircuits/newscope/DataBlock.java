@@ -14,6 +14,10 @@
 package ch.technokrat.gecko.geckocircuits.newscope;
 
 /**
+ * Represents a contiguous block of equally-spaced time values for efficient
+ * block-based data storage in the scope.  Each block stores a start value,
+ * a constant time step, and a size, avoiding the need to store every
+ * individual time stamp.
  *
  * @author xtibi
  */

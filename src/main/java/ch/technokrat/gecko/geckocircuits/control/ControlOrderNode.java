@@ -35,6 +35,7 @@ final class ControlOrderNode {
     private final Set<ControlOrderNode> _directOutputs = new LinkedHashSet<ControlOrderNode>();
     private final ControlBlock _elementControl;
     private int _priority;
+    /** Flag indicating this node is a "loop crack" (feedback loop break point) in the execution order graph. */
     private boolean _loopCrack;
 
     public ControlOrderNode(final ControlBlock elementControl) {
@@ -60,6 +61,11 @@ final class ControlOrderNode {
     }
     
 
+    /**
+     * Determines which other nodes are direct inputs (predecessors) of this node by matching node numbers.
+     *
+     * @param allBlocks all control order nodes in the diagram
+     */
     private void calculateDirectInputs(final Collection<ControlOrderNode> allBlocks) {
         assert _directInputs.isEmpty() : "do this calculation only once at the beginning!";
 
@@ -84,6 +90,11 @@ final class ControlOrderNode {
         }
     }
 
+    /**
+     * Determines which other nodes are direct outputs (successors) of this node by matching node numbers.
+     *
+     * @param allBlocks all control order nodes in the diagram
+     */
     private void calculateDirectOutputs(final Collection<ControlOrderNode> allBlocks) {
         assert _directOutputs.isEmpty() : "do this calculation only once at the beginning!";
 
@@ -146,10 +157,18 @@ final class ControlOrderNode {
         return _priority;
     }
 
+    /**
+     * Marks this node as a loop crack, indicating it breaks a feedback loop in the execution order.
+     */
     void setLoopCrackTrue() {
         _loopCrack = true;
     }
     
+    /**
+     * Returns whether this node is marked as a loop crack.
+     *
+     * @return true if this node breaks a feedback loop
+     */
     boolean getLoopCrack() {
         return _loopCrack;
     }

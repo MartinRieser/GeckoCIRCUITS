@@ -17,6 +17,8 @@ import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
 
 /**
+ * Pixel painter that connects neighbouring data points with straight line
+ * segments, chaining them into a shared general path for efficient rendering.
  *
  * @author andy
  */

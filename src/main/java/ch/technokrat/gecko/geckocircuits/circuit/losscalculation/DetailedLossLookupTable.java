@@ -15,9 +15,21 @@ package ch.technokrat.gecko.geckocircuits.circuit.losscalculation;
 
 import java.util.List;
 
+/**
+ * Two-dimensional interpolation lookup table for semiconductor loss data,
+ * indexed by junction temperature and current.  Supports bilinear
+ * interpolation between measured data points.
+ */
 public class DetailedLossLookupTable {
 
-    static DetailedLossLookupTable fabric(final List<? extends LossCurve> messkurvePvSWITCH, 
+    /**
+     * Factory method that builds a lookup table from a list of loss curves.
+     *
+     * @param messkurvePvSWITCH the source loss curves (one per temperature)
+     * @param dataIndex         the data column to extract: 1 = Eon, 2 = Eoff
+     * @return a new lookup table with normalised energy values
+     */
+    static DetailedLossLookupTable fabric(final List<? extends LossCurve> messkurvePvSWITCH,
             final int dataIndex) {
         double[][] currentValues = new double[messkurvePvSWITCH.size()][];
         double[][] energyValues = new double[messkurvePvSWITCH.size()][];
@@ -63,6 +75,14 @@ public class DetailedLossLookupTable {
         assert _energyValues.length == _temperatures.length;        
     }
 
+    /**
+     * Returns the interpolated energy (y) value for the given temperature and
+     * current using bilinear interpolation between the nearest data points.
+     *
+     * @param temp    the junction temperature
+     * @param current the device current
+     * @return the interpolated loss energy, never negative
+     */
     public double getInterpolatedYValue(double temp, double current) {
         int upperTempIndex = 0;
         while (upperTempIndex < _temperatures.length - 1 && temp > _temperatures[upperTempIndex]) {
@@ -103,6 +123,14 @@ public class DetailedLossLookupTable {
         return Math.max(returnValue, 0);
     }
     
+    /**
+     * Returns the interpolated current (x) value for the given temperature and
+     * energy using bilinear interpolation between the nearest data points.
+     *
+     * @param temp   the junction temperature
+     * @param yValue the energy value
+     * @return the interpolated current (may be negative for bidirectional devices)
+     */
     public double getInterpolatedXValue(double temp, double yValue) {        
         int upperTempIndex = 0;
         while (upperTempIndex < _temperatures.length - 1 && temp > _temperatures[upperTempIndex]) {            

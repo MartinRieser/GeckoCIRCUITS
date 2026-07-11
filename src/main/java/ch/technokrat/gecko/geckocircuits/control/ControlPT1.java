@@ -17,6 +17,9 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalc
 import ch.technokrat.gecko.geckocircuits.control.calculators.PT1Calculator;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * First-order lag (PT1) transfer function block: G(s) = a1 / (1 + s*T).
+ */
 public final class ControlPT1 extends AbstractControlPT {                
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlPT1.class, "PT1", I18nKeys.PT1);
     @Override

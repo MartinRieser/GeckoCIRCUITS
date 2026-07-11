@@ -19,6 +19,9 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 
 
+/**
+ * Voltage measurement block. Measures the voltage between two labeled circuit nodes.
+ */
 public final class ControlVOLT extends AbstractPotentialMeasurement  {        
 
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlVOLT.class, "VOLT", I18nKeys.VOLTAGE_MEASUREMENT_V);

@@ -17,6 +17,9 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalc
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+/**
+ * Power computation block. Computes y = (x1)^(x2) for two input signals.
+ */
 public final class ControlPOW extends ControlBlock {
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlPOW.class, "POW", I18nKeys.POW);
 

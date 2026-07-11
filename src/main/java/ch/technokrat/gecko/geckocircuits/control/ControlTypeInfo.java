@@ -21,6 +21,10 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Type metadata for control-domain components. Stores the component class, display name, and
+ * internationalized description, and provides factory instantiation via reflection.
+ */
 public final class ControlTypeInfo extends AbstractTypeInfo {
 
     public ControlTypeInfo(final Class<? extends AbstractBlockInterface> typeClass, final String idString, final I18nKeys typeDescription, final I18nKeys typeDescriptionVerbose) {
@@ -46,6 +50,12 @@ public final class ControlTypeInfo extends AbstractTypeInfo {
         return "ElementCONTROL";
     }
 
+    /**
+     * Creates a new instance of the component class via reflection.
+     * Catches all {@link Throwable} and returns {@code null} on failure.
+     *
+     * @return a new instance of the component, or null if instantiation fails
+     */
     @Override
     public AbstractBlockInterface fabric() {
         try {

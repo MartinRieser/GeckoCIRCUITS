@@ -23,9 +23,15 @@ import java.awt.RenderingHints;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+/**
+ * Configuration dialog for the {@link ControlHysteresis} block, allowing the threshold to be set
+ * and providing a graphical preview of the hysteresis characteristic.
+ */
 class ControlHysteresisDialog extends AbstractDialogWithExternalOption<ControlHysteresis> {
     private static final long serialVersionUID = 1L;
+    /** Width (in pixels) of the hysteresis-characteristic preview image component. */
     private static final int IMAGE_COMPONENT_WIDTH = 130;
+    /** Height (in pixels) of the hysteresis-characteristic preview image component. */
     private static final int IMAGE_COMPONENT_HEIGHT = 100;
         
     private JPanel _parameterPanel;

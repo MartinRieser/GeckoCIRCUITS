@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.control;
 
+/**
+ * Interface for control blocks that can switch between a folded (single-input) and expanded
+ * (external-threshold-input) terminal configuration.
+ */
 public interface ControlInputTwoTerminalStateable {
     abstract void setFolded();
     abstract void setExpanded(); 

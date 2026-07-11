@@ -18,12 +18,18 @@ import ch.technokrat.gecko.geckocircuits.circuit.ControlSourceType;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 /**
+ * Random-walk signal source block. Produces a random-walk signal by delegating to
+ * {@link ControlSignalSource} with the {@code SOURCE_RANDOM} source type.
  *
  * @author andy
  */
 final class ControlRandomWalk extends ControlSignalSource {
+    /** Registration metadata for the control framework type registry. */
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlRandomWalk.class, "RANDOM", I18nKeys.RANDOM_WALK);
 
+    /**
+     * Creates a random-walk signal source by setting the source type to {@code SOURCE_RANDOM}.
+     */
     public ControlRandomWalk() {
         super();
         _sourceType.setValueWithoutUndo(ControlSourceType.SOURCE_RANDOM);

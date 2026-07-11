@@ -22,6 +22,10 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Time-domain integrator with configurable initial value, gain, and upper/lower output limits.
+ * The second input (z) resets the integrator to its initial value when high.
+ */
 public final class ControlIntegrator extends ControlBlock {
     private static final long serialVersionUID = 1L;
 
@@ -31,24 +35,28 @@ public final class ControlIntegrator extends ControlBlock {
     private static final int MAX_INDEX = 3;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlIntegrator.class, "INT", I18nKeys.INTEGRATOR);
     
+    /** Integrator gain coefficient (a1) multiplied with the input before integration. */
     public transient final UserParameter<Double> _a1Val = UserParameter.Builder.<Double>start("a1", 1.0).
             longName(I18nKeys.INTEGRATOR_COEFFICIENT).
             shortName("a1").
             arrayIndex(this, 0).
             showInTextInfo(TextInfoType.SHOW_WHEN_DISPLAYPARAMETERS).
             build();
+    /** Initial value (y0) of the integrator output at simulation start. */
     public transient final UserParameter<Double> _y0Val = UserParameter.Builder.<Double>start("y0", 0.0).
             longName(I18nKeys.INITIAL_VALUE).
             shortName("y0").
             showInTextInfo(TextInfoType.SHOW_NON_NULL).
             arrayIndex(this, 1).
             build();
+    /** Lower saturation limit applied to the integrator output. */
     public transient final UserParameter<Double> _minLimit = UserParameter.Builder.<Double>start("min", -1.0).
             longName(I18nKeys.LOWER_LIMIT).
             shortName(MIN).
             showInTextInfo(TextInfoType.SHOW_WHEN_DISPLAYPARAMETERS).
             arrayIndex(this, MIN_INDEX).
             build();
+    /** Upper saturation limit applied to the integrator output. */
     public transient final UserParameter<Double> _maxLimit = UserParameter.Builder.<Double>start("max", 1.0).
             longName(I18nKeys.UPPER_LIMIT).
             shortName(MAX).

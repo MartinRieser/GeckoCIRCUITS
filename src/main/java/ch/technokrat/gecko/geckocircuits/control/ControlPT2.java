@@ -17,6 +17,9 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalc
 import ch.technokrat.gecko.geckocircuits.control.calculators.PT2Calculator;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Second-order lag (PT2) transfer function block: G(s) = a1 / (1 + s*T)^2.
+ */
 public final class ControlPT2 extends AbstractControlPT {
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlPT2.class, "PT2", I18nKeys.PT2_CONTROL);
 

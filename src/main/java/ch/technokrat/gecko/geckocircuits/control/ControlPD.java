@@ -22,6 +22,9 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Proportional-Differential (PD) controller block with transfer function G(s) = a1*s.
+ */
 public final class ControlPD extends AbstractControlSingleInputSingleOutput {
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlPD.class, "PD", I18nKeys.PD_CONTROL);
 

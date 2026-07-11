@@ -17,6 +17,9 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalc
 import ch.technokrat.gecko.geckocircuits.control.calculators.NotEqualCalculator;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Compares two inputs for inequality, outputting 1 when the inputs differ and 0 otherwise.
+ */
 public final class ControlNE extends SimpleControlBlock {
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlNE.class, "NE", I18nKeys.NOT_EQUAL);
     

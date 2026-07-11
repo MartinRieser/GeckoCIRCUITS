@@ -18,6 +18,9 @@ import ch.technokrat.gecko.geckocircuits.circuit.ConnectorType;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 
+/**
+ * Temperature measurement block. Measures the thermal potential (temperature) at a labeled thermal node.
+ */
 public final class ControlTEMP extends AbstractPotentialMeasurement {            
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlTEMP.class, "TEMP", I18nKeys.TEMPERATURE_MEASUREMENT);
     

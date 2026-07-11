@@ -19,22 +19,30 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.ThyristorControlCal
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+/**
+ * 6-pulse thyristor rectifier gate signal generator. Generates synchronized firing pulses
+ * for a six-thyristor bridge based on the control angle and synchronization signal.
+ */
 public final class ControlThyristorControl extends ControlBlock {
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlThyristorControl.class, "THYRISTOR_CONTROL", I18nKeys.THYRISTOR_CONTROL);
 
     private DialogThyristorControl dtc;
+    /** Number of gate signal output terminals (6 for a full bridge). */
     private static final int TN_Y = 6;  // // Number of terminals for signal connection
+    /** Gate on-time duration in seconds. */
     transient final UserParameter<Double> _onTime = UserParameter.Builder.<Double>start("onTime", 4e-3).
             longName(I18nKeys.GATE_ON_TIME_SEC).
             shortName("ontime").
             arrayIndex(this, -1).
             build();
+    /** Initial (synchronization) frequency in Hz. */
     transient final UserParameter<Double> _initFreq = UserParameter.Builder.<Double>start("initFreq", 50.0).
             longName(I18nKeys.INITIAL_FREQUENCY_HZ).
             shortName("initf").
             arrayIndex(this, -1).
             build();
+    /** Phase shift of the firing angle in degrees. */
     transient final UserParameter<Double> _phaseShift = UserParameter.Builder.<Double>start("phaseShift", 30.0).
             longName(I18nKeys.PHASE_SHIFT_DEGREES).
             shortName("phase").

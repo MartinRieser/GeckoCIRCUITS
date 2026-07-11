@@ -23,11 +23,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 
+/**
+ * Multiplies the input signal by a user-defined gain factor.
+ */
 public final class ControlGain extends AbstractControlSingleInputSingleOutput {
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlGain.class, "GAIN", I18nKeys.GAIN);
 
     
+    /**
+     * User-configurable gain factor by which the input signal is multiplied.
+     */
     public final transient UserParameter<Double> _gain = UserParameter.Builder.<Double>start("k", 1.0).
             longName(I18nKeys.GAIN).
             shortName("r0").

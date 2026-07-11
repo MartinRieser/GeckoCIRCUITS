@@ -22,6 +22,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Measures the magnetic flux (in Weber) through a coupled reluctance component.
+ */
 public final class ControlFluxMeter extends AbstractCurrentMeasurement {
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlFluxMeter.class, "FLUX", I18nKeys.FLUX_MEASUREMENT_WB);

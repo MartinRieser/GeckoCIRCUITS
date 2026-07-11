@@ -26,6 +26,10 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumn;
 
+/**
+ * A sortable JTable-based panel for editing double-value data.  Rows are
+ * automatically sorted by the first column after each edit.
+ */
 public class DataTablePanel extends JPanel {
 
     private static final long serialVersionUID = 1L;
@@ -64,6 +68,11 @@ public class DataTablePanel extends JPanel {
 
     }
 
+    /**
+     * Populates the table with the given 2-D data array.
+     *
+     * @param data the data values, indexed as [column][row]
+     */
     public void setValues(double[][] data) {
         _sortingDisabled = true;
         for (int j = 0; j < data[0].length; j++) {
@@ -80,6 +89,12 @@ public class DataTablePanel extends JPanel {
         _tableModel.addTableModelListener(tableModelListener);
     }
 
+    /**
+     * Returns all fully-populated rows as a 2-D array, sorted by the first column.
+     * Rows with any null cell are skipped.
+     *
+     * @return the validated data indexed as [column][row]
+     */
     public double[][] getCheckedData() {
         List<List<Double>> returnList = new ArrayList<List<Double>>();
         _tableModel.sortWithFirstRow();
@@ -103,15 +118,25 @@ public class DataTablePanel extends JPanel {
         return returnValue;
     }
 
-    public void clear() {  
+    /**
+     * Removes all rows and fires a table-data-changed event.
+     */
+    public void clear() {
         _tableModel.data.clear();
         _tableModel.fireTableDataChanged();
     }
-    
+
+    /**
+     * Removes all rows silently, without firing a table-model event.
+     */
     void clearWithoutEvent() {
         _tableModel.data.clear();
     }
 
+    /**
+     * Table model backing the data table, storing rows as lists of Double values
+     * and keeping them sorted by the first column.
+     */
     class MyTableModel extends AbstractTableModel {
 
         private static final long serialVersionUID = 1L;
@@ -194,6 +219,10 @@ public class DataTablePanel extends JPanel {
 
         }
 
+        /**
+         * Re-sorts all data rows by the first-column value if sorting is
+         * currently enabled.
+         */
         private void sortWithFirstRow() {
             if(_sortingDisabled) {
                 return;
@@ -229,6 +258,9 @@ public class DataTablePanel extends JPanel {
             return hash;
         }
 
+        /**
+         * Creates a new row filled with null values, one per column.
+         */
         private List<Double> createNullRow() {
             List<Double> returnValue = new ArrayList<Double>();
             for (int i = 0; i < _numberColumns; i++) {

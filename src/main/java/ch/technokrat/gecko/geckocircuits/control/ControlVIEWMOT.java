@@ -20,7 +20,11 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 import java.util.List;
 
-public final class ControlVIEWMOT extends ControlWithSingleReference {    
+/**
+ * Machine internal quantity reading block. Reads and outputs an internal variable
+ * (e.g., speed, current) from a motor or drive component in the circuit.
+ */
+public final class ControlVIEWMOT extends ControlWithSingleReference {
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlVIEWMOT.class, "VIEWMOT", I18nKeys.MACHINE_INTERNAL);
 
     public ControlVIEWMOT() {
@@ -56,6 +60,12 @@ public final class ControlVIEWMOT extends ControlWithSingleReference {
         }        
     }
 
+    /**
+     * Returns the 3-element parameter string: [full reference, machine ID, variable name].
+     * Index 0 is the concatenation of indices 1 and 2 in the form "machineID.variableName".
+     *
+     * @return the parameter string array
+     */
     @Override
     public String[] getParameterString() {
         // this is ugly, but at the moment the best solution:

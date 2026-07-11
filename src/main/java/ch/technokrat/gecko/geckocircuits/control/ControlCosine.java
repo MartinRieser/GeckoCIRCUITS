@@ -17,6 +17,9 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalc
 import ch.technokrat.gecko.geckocircuits.control.calculators.CosCalculator;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Computes the cosine of the input signal (input interpreted in radians).
+ */
 public final class ControlCosine extends AbstractTrigonometricFunction {
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlCosine.class, "COS", I18nKeys.COS);

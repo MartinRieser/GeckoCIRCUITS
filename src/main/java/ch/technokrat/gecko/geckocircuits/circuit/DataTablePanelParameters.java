@@ -30,6 +30,13 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+/**
+ * JTable-based panel for editing parameter name/value pairs.
+ * Column indices: 0 = parameter name, 1 = value, 2 = usage count.
+ * Names starting with '$' denote valid variable references; entries without
+ * the '$' prefix are shown in red (invalid), while valid-but-unused entries
+ * are shown in blue.
+ */
 public class DataTablePanelParameters extends JPanel {
 
     private static final long serialVersionUID = 1L;
@@ -39,6 +46,13 @@ public class DataTablePanelParameters extends JPanel {
     private final String[] _columnTitles;
     private final transient Map<String, Integer> _usedParameterNames;
 
+    /**
+     * Constructs the parameter panel.
+     *
+     * @param columnTitles       the column header titles
+     * @param usedParameterNames map from parameter name to usage count, used
+     *                           to populate the read-only third column
+     */
     @SuppressWarnings("this-escape")
     public DataTablePanelParameters(final String[] columnTitles, final Map<String, Integer> usedParameterNames) {
         super(new GridLayout(1, 1));
@@ -167,6 +181,11 @@ public class DataTablePanelParameters extends JPanel {
         _tableModel.setValueAt(parameterValue, insertRow, 1);
     }
 
+    /**
+     * Returns the list of valid parameter names (those starting with '$').
+     *
+     * @return unmodifiable list of parameter-name strings
+     */
     public List<String> getVariableNames() {
         final List<Integer> validIndices = getIndicesWithValidData();
         final List<String> returnValue = new ArrayList<String>();
@@ -176,6 +195,12 @@ public class DataTablePanelParameters extends JPanel {
         return Collections.unmodifiableList(returnValue);
     }
 
+    /**
+     * Returns the list of numeric values for valid parameters (those whose
+     * names start with '$').
+     *
+     * @return unmodifiable list of parameter values
+     */
     public List<Double> getVariableValues() {
         final List<Integer> validIndices = getIndicesWithValidData();
         final List<Double> returnValue = new ArrayList<Double>();

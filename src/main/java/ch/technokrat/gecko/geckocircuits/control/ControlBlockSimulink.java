@@ -17,6 +17,10 @@ import ch.technokrat.gecko.geckocircuits.circuit.AbstractTerminal;
 import java.util.List;
 import java.util.Stack;
 
+/**
+ * Base class for control blocks that interface with Simulink, providing variable terminal
+ * management and ordered block lookup used during co-simulation.
+ */
 abstract class ControlBlockSimulink extends ControlBlock {
 
     private static final long serialVersionUID = 1L;

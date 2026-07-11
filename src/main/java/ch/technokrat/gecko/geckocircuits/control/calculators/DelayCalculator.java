@@ -15,6 +15,11 @@ package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 import ch.technokrat.gecko.geckocircuits.control.IsDtChangeSensitive;
 
+/**
+ * Implements a discrete time delay using a circular buffer.  The input signal
+ * is delayed by a fixed number of time steps corresponding to the configured
+ * delay time.
+ */
 public final class DelayCalculator extends AbstractSingleInputSingleOutputCalculator
         implements InitializableAtSimulationStart, IsDtChangeSensitive {
 
@@ -39,6 +44,13 @@ public final class DelayCalculator extends AbstractSingleInputSingleOutputCalcul
         setDelayTime(delayTime);
     }
 
+    /**
+     * Re-samples the delay buffer when the simulation time step changes,
+     * preserving the existing delay history by interpolating between the
+     * old and new sample rates.
+     *
+     * @param deltaT the new simulation time step
+     */
     @Override
     public void initWithNewDt(final double deltaT) {
         _delayTime = _initDelayTime;

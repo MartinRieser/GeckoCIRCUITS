@@ -116,6 +116,10 @@ public final class ControlNativeC extends ControlBlock implements VariableTermin
     }
             
     
+    /**
+     * Calculator that delegates the actual numeric computation to the loaded native C library.
+     * Handles error recovery by unloading the library when severe errors occur.
+     */
     class CCalculator extends AbstractControlCalculatable {
             private boolean severeErrorOccurred = false; // save error to jump out of calculateYOUT
             
@@ -430,6 +434,9 @@ public final class ControlNativeC extends ControlBlock implements VariableTermin
             return (Window) _guiWindow;        
     }
     
+    /**
+     * Persists the current library list and selected library name to the user parameters.
+     */
     public void triggerUpdate () {
         _paramLibNames.setUserValue(convertList2String(_libFileList));
         if (_libFile.getFile() == null ||_libFile.getFileName() == null) {
@@ -440,6 +447,12 @@ public final class ControlNativeC extends ControlBlock implements VariableTermin
         
     }
     
+    /**
+     * Converts a semicolon-separated string of library names into a {@link DefaultListModel}.
+     *
+     * @param list the semicolon-separated string of library names
+     * @return a DefaultListModel containing each library name as an element
+     */
     public DefaultListModel<String> convertString2List (final String list) {
         DefaultListModel<String> result = new DefaultListModel<>();
         String[] elements = list.split(Pattern.quote(PATH_SPLITTER));
@@ -449,6 +462,12 @@ public final class ControlNativeC extends ControlBlock implements VariableTermin
         return result;
     }
     
+    /**
+     * Converts a {@link DefaultListModel} of library names into a single semicolon-separated string.
+     *
+     * @param listVec the list model containing library names
+     * @return a semicolon-separated string of all library names
+     */
     public String convertList2String (final DefaultListModel<String> listVec) {
         StringBuffer result = new StringBuffer();
         for (int i=0; i<listVec.size(); i++) {
@@ -457,6 +476,9 @@ public final class ControlNativeC extends ControlBlock implements VariableTermin
         return result.toString();
     }
     
+    /**
+     * Lazily loads the selected native library file and the library name list from the stored user parameters.
+     */
     public void loadUserData () {
         String selLibName = _paramSelectedLibName.getValue();
         if (selLibName.isEmpty() || selLibName.equals("null")) {

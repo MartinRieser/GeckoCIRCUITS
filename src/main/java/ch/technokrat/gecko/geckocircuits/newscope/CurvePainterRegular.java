@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Stack;
 
 /**
+ * Paints a regular (analog) curve by delegating per-pixel rendering to a stack
+ * of {@link AbstractCurvePixelPainter} instances built from the data container.
  *
  * @author andy
  */

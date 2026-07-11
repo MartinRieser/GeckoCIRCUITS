@@ -16,6 +16,12 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 import ch.technokrat.gecko.geckocircuits.general.SolverType;
 import java.util.List;
 
+/**
+ * Assembles and stamps the inductance matrix for a group of magnetically coupled inductors.
+ * The mutual inductance matrix is built from individual inductor and coupling entries,
+ * then inverted via Cholesky decomposition (the matrix is symmetric positive-definite).
+ * The inverse is used both for A-matrix stamping and post-solve current calculation.
+ */
 public class CoupledInductorsGroup implements AStampable, CurrentCalculatable {
 
     private double[][] inductanceMatrix;
@@ -70,6 +76,13 @@ public class CoupledInductorsGroup implements AStampable, CurrentCalculatable {
         }
     }
 
+    /**
+     * Stamps the inverse inductance matrix contribution into the global A-matrix,
+     * scaled by the time step and a solver-dependent coefficient.
+     *
+     * @param matrix the global system A-matrix to stamp into
+     * @param dt     the current simulation time step
+     */
     @Override
     public void stampMatrixA(double[][] matrix, double dt) {
 
@@ -119,6 +132,14 @@ public class CoupledInductorsGroup implements AStampable, CurrentCalculatable {
 
     }
 
+    /**
+     * Computes the branch currents through each coupled inductor from the solved
+     * node potential vector, using the inverse inductance matrix.
+     *
+     * @param p  the node potential vector from the solver
+     * @param dt the current simulation time step
+     * @param t  the current simulation time
+     */
      public void calculateCurrent(double[] p, double dt, double t) {
 
         SolverType solver = getSolverType();
@@ -166,6 +187,14 @@ public class CoupledInductorsGroup implements AStampable, CurrentCalculatable {
 
     }
 
+    /**
+     * Inverts a symmetric positive-definite matrix via Cholesky decomposition.
+     *
+     * @param a the symmetric positive-definite matrix to invert
+     * @param n the dimension of the matrix
+     * @return the inverted matrix
+     * @throws IllegalArgumentException if the matrix is not positive-definite
+     */
     public static double[][] choleskyInverse(final double[][] a, final int n) {
         double[][] el = new double[n][n];
         for (int i = 0; i < n; i++) {

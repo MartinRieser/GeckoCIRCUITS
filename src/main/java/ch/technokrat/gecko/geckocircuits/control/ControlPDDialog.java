@@ -23,6 +23,9 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Parameter dialog for the PD controller block, displaying the transfer function R(s) = a1*s.
+ */
 class ControlPDDialog extends DialogElementCONTROL<ControlPD> {
     private static final long serialVersionUID = 1L;
    

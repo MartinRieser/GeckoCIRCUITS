@@ -179,15 +179,25 @@ public class ControlDebugWindow extends GeckoDialog {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    /** Steps the debug execution forward by a single control block. */
     private javax.swing.JButton jButton1;
+    /** Advances execution to the next break point. */
     private javax.swing.JButton jButton2;
+    /** Advances execution to the next simulation timestep. */
     private javax.swing.JButton jButton3;
+    /** Closes the debug window. */
     private javax.swing.JButton jButtonClose;
+    /** Label displaying the current simulation time. */
     private javax.swing.JLabel jLabel1;
+    /** Label displaying the configured break point time. */
     private javax.swing.JLabel jLabel2;
+    /** Label displaying the previously executed control block. */
     private javax.swing.JLabel jLabel3;
+    /** Label displaying the currently executed control block. */
     private javax.swing.JLabel jLabel4;
+    /** Label displaying the control break component. */
     private javax.swing.JLabel jLabel5;
+    /** Label displaying the next control block to be executed. */
     private javax.swing.JLabel jLabel6;
     // End of variables declaration//GEN-END:variables
 }

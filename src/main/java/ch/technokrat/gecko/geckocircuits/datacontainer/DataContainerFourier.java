@@ -18,6 +18,10 @@ import ch.technokrat.gecko.geckocircuits.newscope.AbstractTimeSeries;
 import ch.technokrat.gecko.geckocircuits.newscope.HiLoData;
 import ch.technokrat.gecko.geckocircuits.newscope.TimeSeriesConstantDt;
 
+/**
+ * Data container storing Fourier-transformed results (real/imaginary or
+ * magnitude/phase pairs) with frequency as the x-axis instead of time.
+ */
 public class DataContainerFourier extends AbstractDataContainer implements DataContainerValuesSettable {
 
     // CHECKSTYLE:OFF

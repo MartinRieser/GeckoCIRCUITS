@@ -22,11 +22,19 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Delays the input signal by a user-specified time, reproducing the input value at the output
+ * after the configured delay has elapsed.
+ */
 public final class ControlDelay extends AbstractControlSingleInputSingleOutput {
     private static final long serialVersionUID = 1L;
+    /** Default delay time (in seconds) applied when no user value is set. */
     private static final double DEFAULT_DELAY = 10e-6;    
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlDelay.class, "DELAY", I18nKeys.DELAY);
     
+    /**
+     * User-configurable delay time (in seconds) by which the input signal is shifted.
+     */
     public final transient UserParameter<Double> _tDelay = UserParameter.Builder.<Double>start("tDelay", DEFAULT_DELAY).
             longName(I18nKeys.DELAY_INPUT).
             unit("sec").

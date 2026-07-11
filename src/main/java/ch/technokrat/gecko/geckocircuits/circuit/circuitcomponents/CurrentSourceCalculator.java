@@ -17,6 +17,10 @@ import ch.technokrat.gecko.geckocircuits.circuit.TimeFunction;
 import ch.technokrat.gecko.geckocircuits.circuit.TimeFunctionConstant;
 
 
+/**
+ * Calculator for ideal current sources.  Current sources contribute only to the
+ * right-hand-side B-vector (they have no admittance entry in the A-matrix).
+ */
 public class CurrentSourceCalculator extends CircuitComponent<AbstractCurrentSource> implements AStampable, BStampable, HistoryUpdatable {
 
     private TimeFunction _function;
@@ -29,6 +33,14 @@ public class CurrentSourceCalculator extends CircuitComponent<AbstractCurrentSou
     public final void stampMatrixA(final double[][] matrix, final double deltaT) {
     }
 
+    /**
+     * Evaluates the source time function and stamps the resulting current into the
+     * B-vector at the positive and negative terminal indices.
+     *
+     * @param bVector the right-hand-side vector to stamp into
+     * @param time    the current simulation time
+     * @param deltaT  the current simulation time step
+     */
     @Override
     public final void stampVectorB(final double[] bVector, double time, double deltaT) {        
         _current = _function.calculate(time, deltaT);                

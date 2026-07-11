@@ -17,6 +17,10 @@ import ch.technokrat.gecko.geckocircuits.newscope.DefinedMeanSignals;
 import ch.technokrat.gecko.geckocircuits.newscope.ScopeSignalMean;
 import java.util.List;
 
+/**
+ * Interface for data containers that support integral (average) value
+ * calculation over a time interval, enabling mean-signal display in the scope.
+ */
 public interface DataContainerIntegralCalculatable{
   float getAVGValueInInterval(final double intervalStart, final double intervalStop, final int columnIndex);
 

@@ -28,6 +28,10 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.JOptionPane;
 
+/**
+ * Implements a CISPR-16 EMI test receiver that captures a time-domain signal during simulation
+ * and computes peak, quasi-peak, and average detector results according to the CISPR-16 standard.
+ */
 public final class ControlCISPR16 extends ControlBlock implements SpecialNameVisible,
         Operationable {
     private static final long serialVersionUID = 1L;
@@ -40,7 +44,9 @@ public final class ControlCISPR16 extends ControlBlock implements SpecialNameVis
      * todo: I don't know a better name for "DA" - this comes from Uwe. Maybe it
      * means "Distanz Aussen"
      */
+    /** Outer offset (in grid units) for the right/bottom edge of the receiver symbol drawing. */
     private static final double DA_OFFSET = 0.5;
+    /** Inner rectangle pixel offset used when drawing the receiver symbol border. */
     private static final int DI_OFFSET = 3;  // Innen-Rechteck
     private static final double WIDTH = 1.5;
     private static final int DATA_INDEX_ADD = 5;
@@ -179,6 +185,10 @@ public final class ControlCISPR16 extends ControlBlock implements SpecialNameVis
         }
     }
 
+    /**
+     * Calculator that stores each simulated input sample into an in-memory data container
+     * so the test receiver evaluation can run after the simulation completes.
+     */
     private class CisprCalculator extends AbstractControlCalculatable implements MemoryInitializable {
 
         public CisprCalculator() {

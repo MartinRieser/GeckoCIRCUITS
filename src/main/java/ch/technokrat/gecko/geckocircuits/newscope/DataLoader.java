@@ -17,9 +17,11 @@ import ch.technokrat.gecko.geckocircuits.datacontainer.AbstractDataContainer;
 import java.util.List;
 
 /**
- * this class detects, which data values in the CurvePaintabel have to be
- * loaded. Usually, data is just added to the datacontainer, therefore do not do
- * a full load.
+ * Determines which data values a curve painter needs to load from its data
+ * container.  A caching strategy is used: when the axis properties have not
+ * changed and the same data container is still active, only newly appended
+ * data points are loaded rather than performing a full reload.
+ *
  * @author andy
  */
 public final class DataLoader{

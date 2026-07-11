@@ -18,6 +18,9 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.NotCalculator;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+/**
+ * Performs the logical NOT (negation) operation on the boolean-like input signal.
+ */
 public final class ControlNOT extends AbstractControlSingleInputSingleOutput {
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlNOT.class, "NOT", I18nKeys.NOT);
 

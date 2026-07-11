@@ -18,6 +18,9 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.XORCalculator;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+/**
+ * Performs the logical exclusive-OR (XOR) operation on its two boolean-like inputs.
+ */
 public final class ControlExclusiveOr extends ControlBlock {
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlExclusiveOr.class, "XOR", I18nKeys.XOR);

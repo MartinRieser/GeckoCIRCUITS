@@ -23,6 +23,10 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Small-signal analysis block. Injects a swept-frequency perturbation signal and measures
+ * the system response to determine frequency-domain characteristics.
+ */
 public final class ControlSmallSignalAnalysis extends ControlBlock {
     
     private static final long serialVersionUID = 1L;
@@ -101,11 +105,19 @@ public final class ControlSmallSignalAnalysis extends ControlBlock {
         });
     }
 
+    /**
+     * @return the block width in pixels
+     */
     @Override
     public int getBlockWidth() {
         return BLOCK_WIDTH * dpix;
     }                                                
     
+    /**
+     * Creates the small-signal calculator when simulation starts.
+     *
+     * @return a {@link SmallSignalCalculator} configured with amplitude, frequency range, and signal type
+     */
     @Override
     // Is called if SSA block is on worksheet and simulation is initiated and running
     public AbstractControlCalculatable getInternalControlCalculatableForSimulationStart() {
@@ -116,11 +128,17 @@ public final class ControlSmallSignalAnalysis extends ControlBlock {
         return lastCalculator;
     }
     
+    /**
+     * @return the centered label string "SSA"
+     */
     @Override
     protected String getCenteredDrawString() {
         return "SSA";
     }                
 
+    /**
+     * @return the output signal name for the small-signal response
+     */
     @Override
     public String[] getOutputNames() {
         return new String[]{"SmallSignal"};
@@ -131,6 +149,9 @@ public final class ControlSmallSignalAnalysis extends ControlBlock {
         return new I18nKeys[] {I18nKeys.SMALL_SIGNAL_OUTPUT_FOR_ANALYSIS};
     }
 
+    /**
+     * @return the configuration dialog for small-signal analysis parameters
+     */
     @Override
     // Is called if one drags the SSA block on the worksheet
     protected Window openDialogWindow() {

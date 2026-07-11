@@ -23,6 +23,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+/**
+ * Parameter dialog for the PI controller block. Supports live cross-computation between
+ * the integrator coefficient (a1) and the time constant (T = r0 / a1).
+ */
 class ControlPIDialog extends DialogElementCONTROL<ControlPI> {
     private static final long serialVersionUID = 1L;
 

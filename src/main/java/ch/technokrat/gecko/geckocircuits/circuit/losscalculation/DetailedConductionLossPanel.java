@@ -19,15 +19,34 @@ import java.awt.event.ActionListener;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
+/**
+ * Editor panel for conduction loss curves with two columns (voltage U,
+ * current I) per temperature.
+ */
 class DetailedConductionLossPanel extends DetailledLossPanel<ConductionLossMeasurementCurve> {
 
     private static final long serialVersionUID = 1L;
+    /**
+     * Maximum range limits of all conduction-loss measurement curves.
+     * Currently unused (legacy fields from an older approximation model).
+     */
     public double uMaxCOND, iMaxCOND;  // maximum range limit of all 'messkurvePvCOND[]' or 'messkurvePvSWITCH[]' -> correct representation in the Grafer
-    public double[] tjGrenzenCOND, b0COND, b1COND, c0COND, c1COND, d0COND, d1COND;  // // Coefficients of the approximation polynomials (see publication IPEC'05) --> Econd(i,tj)
+    /**
+     * Coefficients of the approximation polynomials (see publication IPEC'05)
+     * for E_cond(i, tj).  Currently unused (legacy fields retained for
+     * backward compatibility with older data files).
+     */
+    public double[] tjGrenzenCOND, b0COND, b1COND, c0COND, c1COND, d0COND, d1COND;
     final JCheckBox useInSolver = new JCheckBox("<html>Use curve in electric<br>model characteristic</html>");
     transient Diode nonlinearDiode = null;
         
     
+    /**
+     * Enables a nonlinear diode characteristic for use in the electric solver
+     * model, adding a checkbox to the panel for user control.
+     *
+     * @param diode the diode component whose nonlinear characteristic is toggled
+     */
     public void useNonlinearInElectric(final Diode diode) {        
         this.nonlinearDiode = diode;
         _leftPanelTempAndBlocking.add(useInSolver);

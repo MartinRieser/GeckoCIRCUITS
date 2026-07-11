@@ -18,6 +18,9 @@ import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.geckocircuits.circuit.CircuitTypeInfo;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Concrete leaf implementation of an ideal current source component.
+ */
 class CurrentSourceCircuit extends AbstractCurrentSource {
     static final AbstractTypeInfo TYPE_INFO = 
             new CircuitTypeInfo(CurrentSourceCircuit.class, "I", I18nKeys.CURRENT_SOURCE_I_A);    

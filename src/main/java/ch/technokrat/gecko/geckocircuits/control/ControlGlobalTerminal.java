@@ -26,9 +26,17 @@ import java.awt.Window;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Terminal element that transmits a control signal across different subcircuit sheets, allowing
+ * connections without explicit wiring between sheets.
+ */
 public final class ControlGlobalTerminal extends ControlBlock implements GlobalTerminable {
 
     private static final long serialVersionUID = 1L;
+    /**
+     * Registry of every global terminal in the current model, used to match terminals that share
+     * the same signal name across subcircuits.
+     */
     public static final Set<ControlGlobalTerminal> ALL_GLOBALS = new HashSet<ControlGlobalTerminal>();
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlGlobalTerminal.class,"GLOBAL_CONTROL", I18nKeys.GLOBAL_CONTROL_TERMINAL);
 

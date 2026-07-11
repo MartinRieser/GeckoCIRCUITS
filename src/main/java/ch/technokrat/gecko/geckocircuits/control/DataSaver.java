@@ -39,6 +39,10 @@ public final class DataSaver extends Observable implements Observer {
     private boolean _abortSignal = false;
     private int _percentage = 0;
     private int _lastSavedDataIndex = -1;
+    /**
+     * Global counter of pending save operations that are waiting for simulation
+     * to finish.  Used to coordinate orderly shutdown.
+     */
     public static final AtomicInteger WAIT_COUNTER = new AtomicInteger(0);
     private static final int SLEEP_TIMER = 200;
     private static final double PERCENT_CONST = 100;
@@ -53,11 +57,20 @@ public final class DataSaver extends Observable implements Observer {
         initSettings();
     }
 
+    /**
+     * Starts an asynchronous (non-blocking) save operation on a background thread.
+     */
     public void doManualSave() {
         final Thread runThread = new Thread(_saveRunnable);
         runThread.start();
     }
-    
+
+    /**
+     * Performs a synchronous (blocking) save on the calling thread.
+     *
+     * @throws RuntimeException if the simulation is still running or the save
+     *                          mode is not set to MANUAL
+     */
     public void doManualSaveBlocking() {
         if(_data.getContainerStatus() == ContainerStatus.RUNNING) {
             throw new RuntimeException("Error: blocking save can only be initiated when simulation has stopped.");
@@ -69,6 +82,9 @@ public final class DataSaver extends Observable implements Observer {
         _saveRunnable.run();
     }
 
+    /**
+     * Signals an in-progress save to abort as soon as possible.
+     */
     void abortSave() {
         _abortSignal = true;
     }
@@ -261,6 +277,10 @@ public final class DataSaver extends Observable implements Observer {
         }
     }
 
+    /**
+     * Abstract base class for line-oriented data printers that write container
+     * data to a file, either in text or binary format.
+     */
     abstract class AbstractLinePrinter {
 
         final AbstractDataContainer _data;        
@@ -334,6 +354,10 @@ public final class DataSaver extends Observable implements Observer {
         }
     }
 
+    /**
+     * Text-based line printer that writes data rows as human-readable
+     * decimal or scientific notation separated by a configurable delimiter.
+     */
     private class TxtLinePrinter extends AbstractLinePrinter {
 
         private DecimalFormat _sciFormat = new DecimalFormat("0.#####E0");
@@ -463,6 +487,10 @@ public final class DataSaver extends Observable implements Observer {
         }
     }
 
+    /**
+     * Binary line printer that writes time stamps as doubles and signal
+     * values as floats to a compact binary file.
+     */
     private class BinaryLinePrinter extends AbstractLinePrinter {
 
         private DataOutputStream _outputStream;

@@ -16,6 +16,9 @@ package ch.technokrat.gecko.geckocircuits.newscope;
 import java.awt.Graphics2D;
 
 /**
+ * Represents a regular (analog) curve type in the scope, using a
+ * {@link CurvePainterRegular} for rendering and a {@link CurveLabelRegular}
+ * for its label.
  *
  * @author andy
  */

@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Wraps a data container to provide averaged (mean) signal values computed
+ * over a configurable time window around each sample point.
  *
  * @author andreas
  */

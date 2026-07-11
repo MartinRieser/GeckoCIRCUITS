@@ -20,19 +20,30 @@ import java.awt.event.ActionListener;
 import javax.swing.JCheckBox;
 
 /**
+ * A JCheckBox that acts as an MVC view for a Boolean-valued {@link ModelMVC}.
+ * When the checkbox is toggled, the model value is updated; when the model
+ * changes, the checkbox selection is synchronised.
  *
- * @param <M>
+ * @param <M> the Boolean model type
  * @author andy
  */
 public class DelegateCheckBox<M extends ModelMVC<Boolean>> extends JCheckBox
     implements IGenericMVCView<M>, ActionListener {
         private static final long serialVersionUID = 159473276254167L;
-        private transient ModelMVC<Boolean> _model;
+    /**
+     * The action listener that propagates checkbox toggles to the model.
+     */
     private transient ActionListener _listener;
+    /**
+     * The Boolean MVC model this checkbox view is bound to.
+     */
+    private transient ModelMVC<Boolean> _model;
 
      /**
+     * Binds this checkbox view to the given Boolean model.
      *
-     * @param model
+     * @param model        the Boolean model to bind
+     * @param undoRedoText label text for undo/redo actions
      */
     @Override
     public void registerModel(M model, String undoRedoText) {
@@ -51,6 +62,9 @@ public class DelegateCheckBox<M extends ModelMVC<Boolean>> extends JCheckBox
 
     }
 
+    /**
+     * Detaches this view from the model, removing all registered listeners.
+     */
     @Override
     public void unregisterModel() {
         if(_model != null) {

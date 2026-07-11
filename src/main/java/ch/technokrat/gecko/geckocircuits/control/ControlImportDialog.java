@@ -32,6 +32,8 @@ import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileFilter;
 
 /**
+ * Dialog for importing an external ASCII data file (space-separated time/value pairs) that is
+ * then used as the output waveform of a signal source block.
  *
  * @author andy
  */

@@ -16,6 +16,9 @@ package ch.technokrat.gecko.geckocircuits.control;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 
+/**
+ * Parameter dialog for editing the delay time of a {@link ControlDelay} block.
+ */
 class ControlDelayDialog extends DialogElementCONTROL<ControlDelay> {
     private static final long serialVersionUID = 1L;
 

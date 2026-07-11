@@ -21,8 +21,25 @@ package ch.technokrat.gecko;
  */
 public interface ControlCalculatableMatrix {
     static final long serialVersionUID = 36474232114L;
+    /**
+     * Performs the matrix-based output calculation for the current simulation step.
+     *
+     * @param xIN     matrix of input signal values (terminals x samples)
+     * @param time    absolute simulation time at the current step
+     * @param deltaT  time step between successive simulation iterations
+     * @return        matrix of computed output signal values
+     */
     @SuppressWarnings("PMD")
     double[][] calculateYOUT(double[][] xIN, double time, double deltaT) throws Exception;
+    /**
+     * Called once at the start of a simulation to initialise internal state before the first
+     * calculation step is performed.
+     */
     void init();
+    /**
+     * Returns the last computed output signal matrix.
+     *
+     * @return matrix of output signal values
+     */
     double[][] getOutputSignal();
 }

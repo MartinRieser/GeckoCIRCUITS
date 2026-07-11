@@ -28,6 +28,11 @@ import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
+/**
+ * Dialog for configuring voltage measurement. Allows selection of two node labels
+ * or a component for voltage measurement, with mutual-exclusion logic ensuring only
+ * one measurement mode is active at a time.
+ */
 @SuppressWarnings({"unchecked", "rawtypes"})
 class ControlVOLTDialog extends DialogElementCONTROL<AbstractPotentialMeasurement> {
     private static final long serialVersionUID = 1L;

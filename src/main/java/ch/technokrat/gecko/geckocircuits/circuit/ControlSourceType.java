@@ -13,7 +13,11 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit;
 
-public enum ControlSourceType {            
+/**
+ * Enumerates the available control signal source types (sine, triangle, rectangle, random, import)
+ * with mappings for both legacy and current GeckoCIRCUITS file format IDs.
+ */
+public enum ControlSourceType {
     QUELLE_SIN(402, 0, "SINE"),
     QUELLE_DREIECK(403, 1, "TRIANGLE"),    
     QUELLE_RECHTECK(404, 2, "RECTANGLE"),
@@ -24,12 +28,25 @@ public enum ControlSourceType {
     private final int _oldGeckoID;
     private final int _newGeckoID;
     
+    /**
+     * Creates a source type with legacy and current IDs and a display string.
+     *
+     * @param oldGeckoID the legacy file format identifier
+     * @param newGeckoID the current file format identifier
+     * @param outputString the human-readable name
+     */
     ControlSourceType(final int oldGeckoID, final int newGeckoID, final String outputString) {
         _oldGeckoID = oldGeckoID;
         _newGeckoID = newGeckoID;
         _outputString = outputString;
     }
     
+    /**
+     * Resolves a source type from its legacy or current numeric ID.
+     *
+     * @param idValue the ID to look up
+     * @return the matching ControlSourceType, or QUELLE_RECHTECK if not found
+     */
     public static ControlSourceType getFromID(final int idValue) {
         for(ControlSourceType tmp : ControlSourceType.values()) {
             if(idValue == tmp._oldGeckoID) {
@@ -54,6 +71,9 @@ public enum ControlSourceType {
         return _outputString;
     }
 
+    /**
+     * @return the current format numeric ID for this source type
+     */
     public int getNewID() {
         return _newGeckoID;
     }

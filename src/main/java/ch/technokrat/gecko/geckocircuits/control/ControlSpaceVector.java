@@ -22,6 +22,10 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Window;
 
+/**
+ * Space vector display block. Visualizes a space vector diagram for up to 9 input signals,
+ * typically used in three-phase system analysis.
+ */
 public final class ControlSpaceVector extends ControlBlock {
 
     private static final int NO_INPUTS = 9;

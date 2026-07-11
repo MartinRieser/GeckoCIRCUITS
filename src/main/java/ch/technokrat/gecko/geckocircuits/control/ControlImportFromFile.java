@@ -17,6 +17,7 @@ import ch.technokrat.gecko.geckocircuits.circuit.ControlSourceType;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 /**
+ * Signal source block that reads its output waveform from an external ASCII data file.
  *
  * @author andy
  */

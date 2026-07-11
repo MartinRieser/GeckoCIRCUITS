@@ -20,6 +20,7 @@ package ch.technokrat.gecko.geckocircuits.control.calculators;
  * @author andreas
  */
 public final class CounterCalculatable extends AbstractTwoInputsOneOutputCalculator {
+    /** Stores the previous value of the counting input for rising-edge detection. */
     private double _lastValue = 0;            
 
     @Override

@@ -14,8 +14,9 @@
 package ch.technokrat.gecko.geckocircuits.datacontainer;
 
 /**
- * a DataContainerValuesSettable is a data container, where values can be inserted,
- * in contradiction to any of the wrappers.
+ * Marker interface for data containers that accept new values during
+ * simulation, as opposed to read-only wrappers that only delegate queries.
+ *
  * @author andreas
  */
 public interface DataContainerValuesSettable {

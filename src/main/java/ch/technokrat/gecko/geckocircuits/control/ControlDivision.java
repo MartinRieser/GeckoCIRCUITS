@@ -18,6 +18,10 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.DivCalculator;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+/**
+ * Divides the first input by the second input, emitting a warning when a division by zero
+ * produces NaN or infinite output.
+ */
 public final class ControlDivision extends ControlBlock {
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlDivision.class, "DIV", I18nKeys.DIVISION);

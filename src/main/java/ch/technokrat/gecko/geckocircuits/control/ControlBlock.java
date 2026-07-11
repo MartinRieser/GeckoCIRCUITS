@@ -29,16 +29,28 @@ import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
+/**
+ * Abstract base class for all signal-flow control blocks in GeckoCIRCUITS. Provides terminal
+ * management, painting, simulation calculator lookup, and click-area handling for derived
+ * control elements.
+ */
 public abstract class ControlBlock extends AbstractBlockInterface {
 
+    /** Empty default output array used when a block produces no output values. */
     public final static double[] EMPTY_OUTPUT = new double[]{};
     // // Dimensions of the individual elements:
+    /** Default half-width (in grid units) used when laying out the block rectangle. */
     private static final double WIDTH = 1.5;
+    /** Arrowhead dimensions for the optional flow direction symbol. */
     protected int pFa = 11, pFb = 3;  // // Symbol arrow for flow direction --> arrowhead dimension
+    /** Polygon coordinates for the optional direction-of-current-flow arrow symbol. */
     protected int[] xFl = new int[3], yFl = new int[3];  // // Symbol arrow that optionally shows the direction of current flow in the element
+    /** Bounding box defining the mouse click area, set by each concrete control block. */
     protected int xKlickMin, xKlickMax, yKlickMin, yKlickMax;  // // Area to click on, values ​​are defined specific to the control block
     static final TechFormat tcf = new TechFormat();
+    /** Threshold above which a boolean-like signal is considered logical high. */
     public static final double SIGNAL_THRESHOLD = 0.5;
+    /** Number of significant digits used when formatting displayed numeric values. */
     static final int DISP_DIGITS = 3;
     
     protected ControlComponentType _controlTyp;

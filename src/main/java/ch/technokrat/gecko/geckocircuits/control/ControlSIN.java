@@ -17,9 +17,16 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalc
 import ch.technokrat.gecko.geckocircuits.control.calculators.SinCalculator;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
-public final  class ControlSIN extends AbstractTrigonometricFunction {        
+/**
+ * Sine function control block. Computes the sine of its input angle using {@link SinCalculator}.
+ */
+public final  class ControlSIN extends AbstractTrigonometricFunction {
+    /** Registration metadata for the control framework type registry. */
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlSIN.class, "SIN", I18nKeys.SIN);
     
+    /**
+     * @return a new {@link SinCalculator} instance for simulation
+     */
     @Override
     public AbstractControlCalculatable getInternalControlCalculatableForSimulationStart() {
         return new SinCalculator();        

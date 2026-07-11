@@ -19,6 +19,10 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 import java.awt.Window;
 
+/**
+ * Sparse Matrix converter control block. Implements the modulation and control logic
+ * for a Sparse Matrix converter topology, generating gate signals from AC voltage references.
+ */
 public final class ControlSparseMatrix extends ControlBlock {
 
     private static final int X_POS_IN = -2;

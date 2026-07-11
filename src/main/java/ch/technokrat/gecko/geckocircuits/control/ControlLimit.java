@@ -28,13 +28,22 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Stack;
 
+/**
+ * Limits (saturates) the input signal to a configurable lower and upper bound, with the option
+ * to supply the limits via external terminals instead of parameters.
+ */
 public final class ControlLimit extends ControlBlock implements ControlInputTwoTerminalStateable {    
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlLimit.class, "LIMIT", I18nKeys.LIMITER);
     
+    /** Vertical offset (in grid units) for drawing the min/max labels when external terminals are shown. */
     private static final double Y_STRING_DRAW_OFFSET = 2.2;
+    /** Horizontal pixel offset for drawing the min/max labels. */
     private static final int X_DRAW_OFFSET = 3;
+    /** Vertical grid offset for drawing the external-limit terminal connector line. */
     private static final int Y_DRAW_OFFSET = 3;
+    /** Number of input terminals when the block is in expanded (external-limits) mode. */
     private static final int IN_TERMS_WITH_EXT = 3;    
+    /** X grid position of the external limit terminals. */
     private static final int X_EXTERNAL_TERMINAL = -1;
     private static final String MAX = "max";
     private static final String MIN = "min";

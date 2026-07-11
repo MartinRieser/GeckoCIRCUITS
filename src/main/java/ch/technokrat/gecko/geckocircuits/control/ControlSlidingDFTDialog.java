@@ -39,6 +39,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Dialog for configuring Sliding DFT frequencies and output data types.
+ * Allows adding/removing frequency bins and selecting magnitude, real, imaginary, or phase output.
+ */
 class ControlSlidingDFTDialog extends DialogElementCONTROL<ControlSlidingDFT> {
     private static final long serialVersionUID = 1L;
     private static final int COMBO_WIDTH = 20;

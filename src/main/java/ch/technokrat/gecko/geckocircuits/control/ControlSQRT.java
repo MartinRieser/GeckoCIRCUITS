@@ -18,24 +18,40 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalc
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+/**
+ * Square root control block. Computes the square root of its input: y = sqrt(x).
+ */
 public final class ControlSQRT extends AbstractControlSingleInputSingleOutput {
+    /** Registration metadata for the control framework type registry. */
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlSQRT.class, "SQRT", I18nKeys.SQRT);
 
+    /**
+     * @return the output signal name for the square root result
+     */
     @Override
     public String[] getOutputNames() {
         return new String[]{"root"};
     }   
     
+    /**
+     * @return a new {@link SqrtCalculator} instance for simulation
+     */
     @Override
     public AbstractControlCalculatable getInternalControlCalculatableForSimulationStart() {
         return new SqrtCalculator();        
     }
     
+    /**
+     * @return a dialog displaying the formula y1 = sqrt(x1)
+     */
     @Override
     protected Window openDialogWindow() {
         return new DialogSimpleInfoMessage(this, "y1 = sqrt (x1)");
     }
     
+    /**
+     * @return the output description for the square root signal
+     */
     @Override
     public I18nKeys[] getOutputDescription() {
         return new I18nKeys[]{I18nKeys.SQUARE_ROOT_OF_INPUT};

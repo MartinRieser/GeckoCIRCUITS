@@ -23,6 +23,10 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+/**
+ * Configuration dialog for the {@link ControlIntegrator} block, displaying the transfer-function
+ * symbol and editing the gain, initial value, and output limits.
+ */
 class ControlIntegratorDialog extends DialogElementCONTROL<ControlIntegrator> {
     private static final long serialVersionUID = 1L;
 

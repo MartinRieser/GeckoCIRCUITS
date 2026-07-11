@@ -23,6 +23,10 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Window;
 
+/**
+ * U-Z*I trajectory plot block. Displays a voltage-current trajectory diagram
+ * from up to 4 input signals during simulation.
+ */
 public final class ControlU_ZI extends ControlBlock {
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlU_ZI.class, "UZI", I18nKeys.U_ZI_DIAGRAM);
 
@@ -63,6 +67,12 @@ public final class ControlU_ZI extends ControlBlock {
         return new I18nKeys[0];
     }
 
+    /**
+     * Updates the header label for a terminal node index for display in the trajectory diagram.
+     *
+     * @param q the label string to set
+     * @param nodeIndex the zero-based index of the terminal
+     */
     public void setTerminalNodeLabel(String q, int nodeIndex) {
         // // ... is called by 'setLabelStartNode()' in ElementCONTROL whenever the netlist is updated
         // // current access to the node labels for the SCOPE headers -->

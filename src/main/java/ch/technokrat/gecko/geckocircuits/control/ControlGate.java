@@ -23,6 +23,9 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 import java.util.List;
 
+/**
+ * Provides a gate (on/off) control signal to a coupled switch component in the power circuit.
+ */
 public final class ControlGate extends ControlWithSingleReference implements ComponentCoupable {
     private static final long serialVersionUID = 1L;
     private static final int BLOCK_WIDTH = 3;

@@ -18,6 +18,9 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.ExpCalculator;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+/**
+ * Computes e^x (the exponential function) of the input signal.
+ */
 public final class ControlExponential extends AbstractControlSingleInputSingleOutput {
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlExponential.class, "EXP", I18nKeys.EXP);

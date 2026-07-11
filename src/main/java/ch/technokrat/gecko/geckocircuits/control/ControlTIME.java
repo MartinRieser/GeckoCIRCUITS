@@ -18,6 +18,9 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.TimeCalculator;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+/**
+ * Simulation time output block. Provides the current simulation time as an output signal.
+ */
 public final class ControlTIME extends ControlBlock {
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlTIME.class, "TIME", I18nKeys.SIMULATION_TIME);
 

@@ -21,6 +21,9 @@ import java.util.List;
 import java.util.Stack;
 
 /**
+ * Manages the set of user-defined mean (averaged) signals in the scope,
+ * handling creation, removal, persistence, and registration with the
+ * data container wrapper.
  *
  * @author andreas
  */

@@ -32,6 +32,10 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
+/**
+ * Data export block. Exports simulation data to a file (text or binary), with configurable
+ * formatting, signal selection, and save modes (manual, at simulation end, or continuous).
+ */
 @SuppressWarnings("deprecation")
 public final class ControlSaveData extends ControlBlock implements Operationable {
 
@@ -144,6 +148,12 @@ public final class ControlSaveData extends ControlBlock implements Operationable
         }
     }
 
+    /**
+     * Sets the signal index value at a specific position in the selected signals list.
+     *
+     * @param j the global signal index value to store
+     * @param i the list position at which to store the signal index
+     */
     void setSelectedSignal(int j, int i) {
         _selectedSignalIndices.set(i, j);
     }

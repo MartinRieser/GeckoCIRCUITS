@@ -15,6 +15,10 @@ package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 import ch.technokrat.gecko.geckocircuits.control.ControlDemux;
 
+/**
+ * Demultiplexer calculator that splits a single vector input signal into
+ * multiple scalar output signals.
+ */
 public final class DEMUXCalculator extends AbstractControlCalculatable implements InitializableAtSimulationStart {
     private final ControlDemux _parent;
 
@@ -37,6 +41,13 @@ public final class DEMUXCalculator extends AbstractControlCalculatable implement
     
     
 
+    /**
+     * Validates signal consistency at simulation start.  When the DEMUX is
+     * connected to a Java block, re-binds the input to the Java block output;
+     * throws if the input and output dimensions do not match.
+     *
+     * @param deltaT the simulation time step
+     */
     @Override
     public void initializeAtSimulationStart(final double deltaT) {
         if(_parent._connectedJavaBlock != null) {

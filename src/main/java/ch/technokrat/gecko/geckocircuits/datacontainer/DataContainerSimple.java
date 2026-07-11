@@ -20,6 +20,8 @@ import ch.technokrat.gecko.geckocircuits.newscope.TimeSeriesArray;
 import ch.technokrat.gecko.geckocircuits.newscope.TimeSeriesConstantDt;
 
 /**
+ * Simple in-memory data container backed by a dense 2-D float array.
+ * Supports both constant-dt and variable-dt time series.
  *
  * @author andy
  */
@@ -55,6 +57,12 @@ public class DataContainerSimple extends AbstractDataContainer implements DataCo
     
     
     
+    /**
+     * Constructs a simple data container with the given dimensions.
+     *
+     * @param rows    the number of signal rows
+     * @param columns the maximum number of time-column entries
+     */
     public DataContainerSimple(final int rows, final int columns) {
         _data = new float[rows][columns];
         _abMinMaxValues = new HiLoData[rows];        
@@ -75,11 +83,23 @@ public class DataContainerSimple extends AbstractDataContainer implements DataCo
         return niceScale.getNiceLimits()._yHi;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return the value at the given row and column
+     */
     @Override
     public final float getValue(final int row, final int column) {
-        return _data[row][column];        
+        return _data[row][column];
     }
 
+    /**
+     * Stores a value at the given row and column and updates the min/max cache.
+     *
+     * @param value  the value to store
+     * @param row    the signal row index
+     * @param column the time-column index
+     */
     public final void setValue(final float value, final int row, final int column) {
         assert row < _data.length : "size: " + _data.length + " " + row;
         assert row > 0;
@@ -122,6 +142,13 @@ public class DataContainerSimple extends AbstractDataContainer implements DataCo
         return _maximumIndex;
     }
 
+    /**
+     * Appends a new data row at the end of the container, advancing the
+     * maximum index.
+     *
+     * @param values    the signal values for the new row
+     * @param timeValue the time stamp for the new row
+     */
     @SuppressWarnings("PMD")
     @Override
     public void insertValuesAtEnd(final float[] values, final double timeValue) {        

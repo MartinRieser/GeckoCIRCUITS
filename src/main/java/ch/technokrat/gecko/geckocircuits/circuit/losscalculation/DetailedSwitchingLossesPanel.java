@@ -19,6 +19,11 @@ import java.awt.event.ActionListener;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+/**
+ * Editor panel for switching loss curves with three columns (current I,
+ * turn-on energy Eon, turn-off energy Eoff) per temperature and blocking
+ * voltage.  The default blocking voltage is "600" V.
+ */
 public class DetailedSwitchingLossesPanel extends DetailledLossPanel<SwitchingLossCurve> {
 
     private static final long serialVersionUID = 1L;
@@ -26,17 +31,20 @@ public class DetailedSwitchingLossesPanel extends DetailledLossPanel<SwitchingLo
         
             
 
+    /** {@inheritDoc} */
     @Override
     String[] getTableCaptions() {
         return new String[]{"I [A]", "Eon [J]", "Eoff [J]"};
     }
 
+    /** {@inheritDoc} */
     @Override
     void loadSelectedCurveIntoTable() {
         super.loadSelectedCurveIntoTable();
         _jtfUb.setNumberToField(_selectedCurve._uBlock.getValue());        
     }
 
+    /** {@inheritDoc} */
     @Override
     void addBlockingVoltageButton(final JPanel parent) {
         final JLabel jLabBlockingVoltage = new JLabel("U_b [V] =");        
@@ -56,6 +64,7 @@ public class DetailedSwitchingLossesPanel extends DetailledLossPanel<SwitchingLo
     }
     
     
+    /** {@inheritDoc} */
     @Override
     LossCurve createNewCurve(final double curveTemperatureParameter) {        
         final double blockingVoltage = _jtfUb.getNumberFromField();
@@ -63,6 +72,7 @@ public class DetailedSwitchingLossesPanel extends DetailledLossPanel<SwitchingLo
         return messkurve;        
     }
 
+    /** {@inheritDoc} */
     @Override
     LossCurve calculateNewTestCurve(final double temperature, final double blockingVoltage) {
         final LossCurve returnValue = new SwitchingLossCurve(temperature, blockingVoltage);

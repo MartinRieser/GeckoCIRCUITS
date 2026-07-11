@@ -22,21 +22,28 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Proportional-Integral (PI) controller block. The time constant T is derived from
+ * the gain and integrator coefficient via the relationship T = r0 / a1.
+ */
 public final class ControlPI extends AbstractControlSingleInputSingleOutput {
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlPI.class, "PI", I18nKeys.PI_CONTROL);
 
+    /** Proportional gain r0 of the PI controller. */
     public final UserParameter<Double> _r0 = UserParameter.Builder.<Double>start("r0", -1.0).
             longName(I18nKeys.GAIN).
             shortName("r0").
             showInTextInfo(TextInfoType.SHOW_WHEN_DISPLAYPARAMETERS).
             arrayIndex(this, 0).
             build();
+    /** Integrator coefficient a1 (1/sec) of the PI controller. */
     public final UserParameter<Double> _a1 = UserParameter.Builder.<Double>start("a1", -1.0).
             longName(I18nKeys.INTEGRATOR_COEFFICIENT).
             shortName("a1").
             unit("1/sec").
             arrayIndex(this, 1).
             build();
+    /** Time constant T = r0 / a1 (sec), automatically computed from gain and integrator coefficient. */
     public final UserParameter<Double> _TimeConstant = UserParameter.Builder.<Double>start("T_Value", 1.0).
             longName(I18nKeys.TIME_CONSTANT).
             unit("sec").

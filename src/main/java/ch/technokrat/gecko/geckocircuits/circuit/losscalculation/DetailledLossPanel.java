@@ -73,12 +73,36 @@ abstract class DetailledLossPanel<T extends LossCurve> extends JPanel {
         }
     };
 
+    /**
+     * Creates a new loss curve for the given temperature parameter.
+     *
+     * @param curveTemperatureParameter the junction temperature for the new curve
+     * @return the newly created (empty) curve
+     */
     abstract LossCurve createNewCurve(final double curveTemperatureParameter);
 
+    /**
+     * Adds a blocking-voltage input control to the given parent panel.
+     *
+     * @param panelToInsertButton the panel to add the control to
+     */
     abstract void addBlockingVoltageButton(final JPanel panelToInsertButton);
 
+    /**
+     * Computes a synthetic test curve by interpolating the existing curves
+     * at the given temperature and measured voltage.
+     *
+     * @param temperature     the temperature for interpolation
+     * @param measuredVoltage the blocking voltage (ignored for conduction losses)
+     * @return the interpolated test curve
+     */
     abstract LossCurve calculateNewTestCurve(final double temperature, final double measuredVoltage);
 
+    /**
+     * Returns the column header titles for the data table.
+     *
+     * @return an array of column caption strings
+     */
     abstract String[] getTableCaptions();
 
     private void deleteSelectedCurve() {
@@ -100,6 +124,10 @@ abstract class DetailledLossPanel<T extends LossCurve> extends JPanel {
         _listenerActive = true;
     }
 
+    /**
+     * Constructs the full GUI layout: curve selection panel, data table,
+     * temperature input, and grafer plot panel.
+     */
     final void buildGUI() {
         
         _jPanelCurvesSelection = new JPanel();

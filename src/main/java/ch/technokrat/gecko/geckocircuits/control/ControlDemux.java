@@ -26,6 +26,10 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Demultiplexer that splits a single vector input signal into multiple scalar output
+ * terminals, with the number of outputs configurable by the user.
+ */
 public final class ControlDemux extends ControlBlock implements VariableTerminalNumber {
     private static final long serialVersionUID = 1L;
 

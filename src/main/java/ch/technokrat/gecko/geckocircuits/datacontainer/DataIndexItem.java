@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.datacontainer;
 
+/**
+ * Lightweight entry pairing a signal's original container index with a
+ * display name, used for signal selection UIs.
+ */
 public final class DataIndexItem {
 
     private final int _origIndex;

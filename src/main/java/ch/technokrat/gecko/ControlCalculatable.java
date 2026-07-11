@@ -21,7 +21,19 @@ package ch.technokrat.gecko;
  */
 public interface ControlCalculatable {
     static final long serialVersionUID = 364747364514L;
+    /**
+     * Computes the output values for the current simulation step.
+     *
+     * @param xIN     array of input signal values for the current step
+     * @param time    absolute simulation time at the current step
+     * @param deltaT  time step between successive simulation iterations
+     * @return        array of computed output signal values
+     */
     @SuppressWarnings("PMD")
     double[] calculateYOUT(double[] xIN, double time, double deltaT) throws Exception;
+    /**
+     * Called once at the start of a simulation to initialise internal state before the first
+     * calculation step is performed.
+     */
     void init();
 }

@@ -29,9 +29,15 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Stack;
 
+/**
+ * Control signal export block for interfacing with external programs (e.g., Simulink).
+ * Collects input signal values into a data vector accessible by the external program.
+ * Implements {@link Comparable} to maintain a deterministic export ordering.
+ */
 public final class ControlToEXTERNAL extends ControlBlockSimulink implements Comparable<ControlToEXTERNAL>, VariableTerminalNumber {
 
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlToEXTERNAL.class, "ToEXT", I18nKeys.EXPORT_DATA_TO_SIMULINK);
+    /** Static list of all ToExternal blocks, maintained for ordered export. Not thread-safe. */
     public static final ArrayList<ControlBlock> toExternals = new ArrayList<ControlBlock>();
     private String _externalName = "";
     private static final double WIDTH = 0.3;
@@ -186,6 +192,13 @@ public final class ControlToEXTERNAL extends ControlBlockSimulink implements Com
         insertOrderCorrect(tokenMap.readDataLine("torder", externalOrderNumber));
     }
 
+    /**
+     * Compares this block with another based on their external order numbers.
+     *
+     * @param otherToExtern the other ToExternal block
+     * @return a negative integer, zero, or a positive integer as this block's order is less than,
+     *         equal to, or greater than the other's
+     */
     @Override
     public int compareTo(final ControlToEXTERNAL otherToExtern) {
         return Integer.compare(this.externalOrderNumber, otherToExtern.externalOrderNumber);

@@ -17,6 +17,9 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalc
 import ch.technokrat.gecko.geckocircuits.control.calculators.GreaterThanCalculator;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Compares two inputs, outputting 1 when the first is strictly greater than the second, 0 otherwise.
+ */
 public final class ControlGreaterThan extends SimpleControlBlock {
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlGreaterThan.class, "GT", I18nKeys.GREATER_THAN);

@@ -25,8 +25,13 @@ import java.awt.Window;
 import java.awt.geom.AffineTransform;
 import java.util.List;
 
-public final class ControlTERMINAL extends ControlBlock implements SubCircuitTerminable {                
+/**
+ * Control-domain subcircuit terminal block. Acts as a pass-through terminal connecting
+ * control signals between a subcircuit and its parent sheet.
+ */
+public final class ControlTERMINAL extends ControlBlock implements SubCircuitTerminable {
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlTERMINAL.class, "CONTROL_TERMINAL", I18nKeys.CONTROL_TERMINAL);
+    /** Wrapper that manages the terminal's connection to the parent subcircuit boundary. */
     private final TerminalToWrap _wrapped = new TerminalToWrap(this);
     
     public ControlTERMINAL() {
@@ -63,11 +68,10 @@ public final class ControlTERMINAL extends ControlBlock implements SubCircuitTer
     }
 
     /**
-     * return null if no terminal was clicked!
+     * Returns the terminal at the given click position, or null if no terminal was clicked.
      *
-     * @param px screen coordinates in (dpix-scaled!) pixel
-     * @param py
-     * @return
+     * @param clickPoint the screen coordinates of the mouse click
+     * @return null, since the label dialog should never appear for this terminal
      */
     @Override
     public TerminalInterface clickedTerminal(final Point clickPoint) {

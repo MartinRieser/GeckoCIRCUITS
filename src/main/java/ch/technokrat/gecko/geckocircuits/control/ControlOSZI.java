@@ -35,7 +35,9 @@ import java.util.List;
 import java.util.Stack;
 
 /**
- * TODO: please clean anybody up this mess!
+ * Oscilloscope (SCOPE) component for real-time visualization of simulation data.
+ * Displays waveforms from multiple input terminals with configurable diagrams,
+ * mean signals, and Fourier analysis support.
  *
  * @author andreas
  */
@@ -61,12 +63,18 @@ public final class ControlOSZI extends ControlBlock implements VariableTerminalN
     // // all ZV data not compressed for possible hard disk storage --> storage critical
     private transient AbstractDataContainer _zvDatenRAM;
     //for use with GeckoSCRIPT - waveform characteristic
+    /** Calculator for waveform characteristics (rise time, overshoot, etc.) used by GeckoSCRIPT. */
     private transient CharacteristicsCalculator _waveformChar;
+    /** Start time of the waveform characteristic analysis window. */
     private double _charStart = 0;
+    /** End time of the waveform characteristic analysis window. */
     private double _charEnd = 1;
     //for use with GeckoSCRIPT - Fourier analysis
+    /** Cached Fourier analysis results: [coefficient][channel][harmonic value]. */
     private double[][][] _fourier = null;
+    /** Start time of the Fourier analysis window. */
     private double _fourStart = 0;
+    /** End time of the Fourier analysis window. */
     private double _fourEnd = 1;
     private static final int DELTA = 3;  // // Distance from the red triangle to the SCOPE block (up or down)
     private static final int INSIDE_RECT = 2;
@@ -124,6 +132,10 @@ public final class ControlOSZI extends ControlBlock implements VariableTerminalN
         return "";
     }
 
+    /**
+     * Initializes the scope by registering null data references, setting up the scope frame,
+     * and invalidating any cached waveform/Fourier analysis.
+     */
     public void initScope() {
         // // is called once during SCOPE initialization
         // // References for SCOPE are being registered...
@@ -157,7 +169,14 @@ public final class ControlOSZI extends ControlBlock implements VariableTerminalN
         _scopeWrapperIndices = new ScopeWrapperIndices(globalIndices, NetlistControl.globalData);
     }
 
-    // // is overwritten by ControlOSZI in order to be able to change the number of terminals directly as an additional functionality
+    /**
+     * Handles mouse click detection on the SCOPE symbol and the red triangles
+     * used to increase or decrease the number of input terminals.
+     *
+     * @param mouseX the x-coordinate of the mouse click
+     * @param mouseY the y-coordinate of the mouse click
+     * @return 1 if the symbol was clicked, 2 if a terminal triangle was clicked, 0 otherwise
+     */
     @Override
     public int isClicked(final int mouseX, final int mouseY) {
 

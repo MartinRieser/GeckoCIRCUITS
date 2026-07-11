@@ -18,25 +18,41 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalc
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+/**
+ * Square function control block. Computes the square of its input: y = x^2.
+ */
 public final class ControlSQR extends AbstractControlSingleInputSingleOutput {
+    /** Registration metadata for the control framework type registry. */
     static final ControlTypeInfo TYPE_INFO = new ControlTypeInfo(ControlSQR.class, "SQR", I18nKeys.SQUARE);
 
+    /**
+     * @return the output signal name for the squared result
+     */
     @Override
     public String[] getOutputNames() {
          return new String[]{"square"};
     }           
     
+    /**
+     * @return a new {@link SquareCalculator} instance for simulation
+     */
     @Override
     public AbstractControlCalculatable getInternalControlCalculatableForSimulationStart() {
         return new SquareCalculator();        
     }    
 
+    /**
+     * @return a dialog displaying the formula y1 = (x1)^2
+     */
     @Override
     protected Window openDialogWindow() {
         return new DialogSimpleInfoMessage(this, "y1 = (x1)^2");
     }
 
     
+    /**
+     * @return the output description for the squared signal
+     */
     @Override
     public I18nKeys[] getOutputDescription() {
         return new I18nKeys[]{I18nKeys.SQUARE_OF_INPUT_DESCRIPTION};

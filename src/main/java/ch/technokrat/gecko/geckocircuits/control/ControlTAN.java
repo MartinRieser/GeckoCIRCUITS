@@ -17,7 +17,10 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalc
 import ch.technokrat.gecko.geckocircuits.control.calculators.TanCalculator;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
-public final class ControlTAN extends AbstractTrigonometricFunction {    
+/**
+ * Tangent function control block. Computes the tangent of its input angle using {@link TanCalculator}.
+ */
+public final class ControlTAN extends AbstractTrigonometricFunction {
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlTAN.class, "TAN", I18nKeys.TAN);
     
     @Override

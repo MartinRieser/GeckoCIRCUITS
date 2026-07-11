@@ -21,20 +21,30 @@ import javax.swing.JSpinner;
 import javax.swing.event.ChangeListener;
 
 /**
+ * A JSpinner that acts as an MVC view for an Integer-valued {@link ModelMVC}.
+ * Spinner changes propagate to the model and vice-versa.
  *
- * @param <M>
+ * @param <M> the Integer model type
  * @author andy
  */
 public class DelegateIntSpinner<M extends ModelMVC<Integer>> extends JSpinner
         implements IGenericMVCView<M>, ActionListener {
 
     private static final long serialVersionUID = 759473276284147L;
-    private transient ModelMVC<Integer> _model;
+    /**
+     * The change listener that propagates spinner edits to the model.
+     */
     private transient ChangeListener _changeListener;
+    /**
+     * The Integer MVC model this spinner view is bound to.
+     */
+    private transient ModelMVC<Integer> _model;
 
     /**
+     * Binds this spinner view to the given Integer model.
      *
-     * @param integer Model
+     * @param integerModel  the Integer model to bind
+     * @param undoRedoText label text for undo/redo actions
      */
     @Override
     public void registerModel(M integerModel, String undoRedoText) {
@@ -54,6 +64,9 @@ public class DelegateIntSpinner<M extends ModelMVC<Integer>> extends JSpinner
         addChangeListener(_changeListener);
     }
 
+    /**
+     * Detaches this view from the model, removing all registered listeners.
+     */
     @Override
     public void unregisterModel() {
         if(_model!= null) {
@@ -62,6 +75,11 @@ public class DelegateIntSpinner<M extends ModelMVC<Integer>> extends JSpinner
         }
     }
 
+    /**
+     * Retrieves the current spinner value as an Integer.
+     *
+     * @return the current value cast to Integer
+     */
     public Integer getIntegerValue() {
         return (Integer) (super.getValue());
     }

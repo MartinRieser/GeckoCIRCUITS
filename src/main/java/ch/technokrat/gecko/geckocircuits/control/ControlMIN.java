@@ -18,6 +18,9 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.MinCalculatorMultiI
 import ch.technokrat.gecko.geckocircuits.control.calculators.MinCalculatorTwoInputs;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Outputs the minimum value among all connected inputs.
+ */
 public final class ControlMIN extends AbstractControlVariableInputs {
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlMIN.class, "MIN", I18nKeys.MINIMUM);
 

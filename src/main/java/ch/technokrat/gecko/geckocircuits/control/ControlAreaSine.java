@@ -17,6 +17,9 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.ASinCalculator;
 import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalculatable;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Computes the arc sine (inverse sine) of the input signal, returning the result in radians.
+ */
 public final class ControlAreaSine extends AbstractInversTrigFunction {
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlAreaSine.class, "ASIN", I18nKeys.ASIN);

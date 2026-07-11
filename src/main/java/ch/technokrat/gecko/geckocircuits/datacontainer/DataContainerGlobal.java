@@ -19,9 +19,10 @@ import java.util.Observable;
 import java.util.Observer;
 
 /**
- * We use a separate class containing the actual datacontainer, for easier
- * memory management. The _data-Field is wrapped by this class, so that no other
- * class can reference to it. Otherwise, garbage-collection would be difficult.
+ * Global simulation data container that wraps the actual data container for
+ * easier memory management.  The wrapped _data field is intentionally hidden
+ * so that no other class can hold a reference, allowing reliable garbage
+ * collection when the data is cleared.
  *
  */
 @SuppressWarnings("deprecation")

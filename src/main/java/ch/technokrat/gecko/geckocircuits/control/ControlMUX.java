@@ -25,6 +25,9 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Multiplexer that combines multiple scalar input signals into a single vector output.
+ */
 public final class ControlMUX extends ControlBlock implements VariableTerminalNumber {
 
     private static final double WIDTH = 0.3;

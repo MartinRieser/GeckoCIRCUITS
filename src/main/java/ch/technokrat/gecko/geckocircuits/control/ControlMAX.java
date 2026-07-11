@@ -18,6 +18,9 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.MaxCalculatorMultiI
 import ch.technokrat.gecko.geckocircuits.control.calculators.MaxCalculatorTwoInputs;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Outputs the maximum value among all connected inputs.
+ */
 public final class ControlMAX extends AbstractControlVariableInputs {
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlMAX.class, "MAX", I18nKeys.MAXIMUM);
     

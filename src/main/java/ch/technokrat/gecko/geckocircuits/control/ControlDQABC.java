@@ -18,6 +18,10 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.DQABCDCalculator;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+/**
+ * Performs the inverse Park/Clarke transformation, converting the rotating dq reference frame
+ * values plus the electrical angle into three-phase abc quantities.
+ */
 public final class ControlDQABC extends ControlBlock {
     private static final long serialVersionUID = 1L;
 

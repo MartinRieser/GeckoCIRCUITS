@@ -17,6 +17,10 @@ import java.awt.Graphics2D;
 import java.awt.Stroke;
 
 /**
+ * Pixel painter for a vertical hi/low range, used when a single pixel column
+ * spans multiple data values (e.g. fast signal transitions).  Draws a vertical
+ * line from the low to the high pixel value and chains into general paths
+ * for neighbouring painters.
  *
  * @author andy
  */

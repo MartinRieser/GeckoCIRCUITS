@@ -16,6 +16,8 @@ package ch.technokrat.gecko.geckocircuits.newscope;
 import java.awt.Graphics2D;
 
 /**
+ * Draws labels for digital signal curves, showing the curve name followed by
+ * the on/off state string provided by the slider.
  *
  * @author andy
  */

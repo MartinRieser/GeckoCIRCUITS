@@ -18,6 +18,9 @@ import ch.technokrat.gecko.geckocircuits.datacontainer.ContainerStatus;
 import ch.technokrat.gecko.geckocircuits.datacontainer.DataContainerValuesSettable;
 
 /**
+ * Data container that supports multiple independent time series, one per row.
+ * Each row maintains its own {@link TimeSeriesArray}, allowing non-uniform
+ * time spacing between different signals.
  *
  * @author andy
  */

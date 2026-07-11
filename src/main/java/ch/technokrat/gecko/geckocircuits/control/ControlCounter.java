@@ -17,6 +17,10 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalc
 import ch.technokrat.gecko.geckocircuits.control.calculators.CounterCalculatable;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Rising-edge counter that increments its output on each rising edge of the input signal and
+ * resets to zero when the reset input is high.
+ */
 public final class ControlCounter extends SimpleControlBlock {
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlCounter.class, "COUNTER", I18nKeys.COUNTER);

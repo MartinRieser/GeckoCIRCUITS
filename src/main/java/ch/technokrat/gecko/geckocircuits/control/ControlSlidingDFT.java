@@ -28,6 +28,10 @@ import java.util.List;
 import javax.swing.undo.UndoableEdit;
 import ch.technokrat.modelviewcontrol.AbstractUndoGenericModel;
 
+/**
+ * Sliding Discrete Fourier Transform (SDFT) control block. Performs real-time spectral analysis
+ * at user-defined frequencies, computing magnitude, real, imaginary, or phase components.
+ */
 public final class ControlSlidingDFT extends AbstractControlVariableInputs {
 
     private static final double DEFAULT_WIN_SIZE = 1e-5;
@@ -150,6 +154,10 @@ public final class ControlSlidingDFT extends AbstractControlVariableInputs {
         }
     }
 
+    /**
+     * Represents a single frequency bin configuration for the SDFT, storing the frequency value
+     * and the selected output data type (magnitude, real, imaginary, or phase).
+     */
     public final class FrequencyData {
         
         public final UserParameter<Double> _frequency;
@@ -167,6 +175,12 @@ public final class ControlSlidingDFT extends AbstractControlVariableInputs {
             build();
         }        
 
+        /**
+         * Compares this FrequencyData with another for equality based on frequency and output type.
+         *
+         * @param obj the object to compare
+         * @return true if both frequency value and output data type match
+         */
         @Override
         public boolean equals(final Object obj) {
             if (obj == null) {
@@ -185,6 +199,12 @@ public final class ControlSlidingDFT extends AbstractControlVariableInputs {
             return true;
         }
 
+        /**
+         * Computes a hash code from the frequency and output data type.
+         * Note: the {@code long}-to-{@code int} cast of the frequency bits may produce collisions.
+         *
+         * @return the hash code value
+         */
         @Override
         public int hashCode() {
             return (int) Double.doubleToLongBits(_frequency.getValue()) + _outputData.hashCode();

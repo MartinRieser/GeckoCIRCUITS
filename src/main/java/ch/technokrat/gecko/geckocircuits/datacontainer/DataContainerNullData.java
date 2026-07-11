@@ -18,11 +18,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Null-object implementation of a data container, used when no simulation
+ * data is available yet.  All accessors return zero or empty values.
  *
  * @author andreas
  */
 public final class DataContainerNullData extends AbstractDataContainer implements DataContainerValuesSettable,
-                                                                                  DataContainerIntegralCalculatable{
+                                                                                   DataContainerIntegralCalculatable{
   private List<AbstractScopeSignal> _signalNames;
   private DefinedMeanSignals _definedMeanSignals;  
 

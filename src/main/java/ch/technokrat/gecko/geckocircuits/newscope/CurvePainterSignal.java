@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Stack;
 
 /**
+ * Paints a digital signal curve using a stack of {@link SignalStateDrawer}
+ * instances that represent high/low transitions between pixels.
  *
  * @author andy
  */

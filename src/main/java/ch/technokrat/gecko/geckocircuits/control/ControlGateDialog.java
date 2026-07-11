@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control;
 
+/**
+ * Dialog for selecting which switch component a {@link ControlGate} block controls.
+ */
 class ControlGateDialog extends DialogElementCONTROL<ControlGate> {
     private static final long serialVersionUID = 1L;
 

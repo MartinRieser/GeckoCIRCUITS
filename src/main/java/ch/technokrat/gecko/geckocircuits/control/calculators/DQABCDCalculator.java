@@ -13,9 +13,16 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Performs the inverse Park transformation, converting DQ rotating-frame
+ * values to three-phase ABC stationary-frame values.
+ * Input indices: [0]=d, [1]=q, [2]=theta (electrical angle).
+ */
 public final class DQABCDCalculator extends AbstractControlCalculatable {
 
+    /** Constant 2/3 used in the transformation matrix. */
     private static final double TWO_THIRD = 0.6666666666666;
+    /** Phase shift of 2/3*pi (120 degrees) for the three-phase system. */
     private static final double TWO_PI_THIRD = Math.PI * TWO_THIRD;
     private static final int NO_INPUTS = 3;
     private static final int NO_OUTPUTS = 3;

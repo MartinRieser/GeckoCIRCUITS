@@ -26,6 +26,10 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+/**
+ * Dialog for selecting a machine component and one of its internal variables to measure.
+ * Lists all motor components found in the circuit sheet with their available parameters.
+ */
 class ControlViewMotDialog extends DialogElementCONTROL<ControlVIEWMOT> {
     private static final long serialVersionUID = 1L;
 

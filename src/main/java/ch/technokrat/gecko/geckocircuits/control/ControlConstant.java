@@ -22,6 +22,9 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Control block that outputs a single user-defined constant value to its output terminal.
+ */
 public final class ControlConstant extends ControlBlock {
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlConstant.class, "CONST", I18nKeys.CONSTANT_VALUE);

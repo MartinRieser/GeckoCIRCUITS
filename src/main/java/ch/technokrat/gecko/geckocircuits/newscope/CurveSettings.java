@@ -17,6 +17,8 @@ import ch.technokrat.gecko.geckocircuits.general.ProjectData;
 import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
 
 /**
+ * Stores per-curve visual settings such as colour, line style, transparency,
+ * symbol shape and averaging span.  Supports ASCII export/import for persistence.
  *
  * @author andy
  */

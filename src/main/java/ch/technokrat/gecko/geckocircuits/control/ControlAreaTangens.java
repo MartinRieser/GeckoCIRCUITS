@@ -17,6 +17,9 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.ATanCalculator;
 import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalculatable;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Computes the arc tangent (inverse tangent) of the input signal, returning the result in radians.
+ */
 public final class ControlAreaTangens extends AbstractInversTrigFunction {
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlAreaTangens.class, "ATAN", I18nKeys.ATAN);

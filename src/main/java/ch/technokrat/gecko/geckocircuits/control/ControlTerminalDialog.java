@@ -17,6 +17,9 @@ import ch.technokrat.gecko.geckocircuits.general.FormatJTextField;
 import ch.technokrat.gecko.geckocircuits.circuit.CircuitLabel;
 import javax.swing.JLabel;
 
+/**
+ * Dialog for editing the label of a control-domain subcircuit terminal.
+ */
 class ControlTerminalDialog extends DialogElementCONTROL<ControlTERMINAL> {
     private static final long serialVersionUID = 1L;
 

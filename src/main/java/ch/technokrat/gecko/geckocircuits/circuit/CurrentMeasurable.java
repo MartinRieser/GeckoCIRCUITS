@@ -20,5 +20,11 @@ import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.AbstractCircu
  * @author andreas
  */
 public interface CurrentMeasurable {
+    /**
+     * Returns the sub-components that contribute to current measurement for the given connector type.
+     *
+     * @param connectorType the terminal/connector side to query
+     * @return array of measurement components, or an empty array if none apply
+     */
     abstract AbstractCircuitBlockInterface[] getCurrentMeasurementComponents(final ConnectorType connectorType);
 }

@@ -15,6 +15,11 @@ package ch.technokrat.gecko.geckocircuits.datacontainer;
 
 import javax.swing.table.AbstractTableModel;
 
+/**
+ * Table model that adapts an {@link AbstractDataContainer} for display in a
+ * JTable, using the x-data name as the first column header and signal names
+ * for subsequent columns.
+ */
 public final class DataContainerTableModel extends AbstractTableModel{
   private static final long serialVersionUID = 1L;
   private final transient AbstractDataContainer _dataContainer;  

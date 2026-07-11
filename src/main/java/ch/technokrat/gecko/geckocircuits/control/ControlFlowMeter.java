@@ -26,10 +26,18 @@ import java.util.Arrays;
 import java.util.List;
 
 
+/**
+ * Measures heat flow (power losses) from coupled thermal components, supporting conduction,
+ * switching, and total loss measurement via the {@link LossComponent} selection.
+ */
 public final class ControlFlowMeter extends AbstractCurrentMeasurement {
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlFlowMeter.class, "FLOW", I18nKeys.HEATFLOW_MEASUREMENT_W);
     
+    /**
+     * Selects which loss component (conduction, switching, or total) is measured and displayed.
+     * The {@link LossComponent} enum defines the available measurement categories.
+     */
     private LossComponent _measurementType = LossComponent.TOTAL;
     
     @Override

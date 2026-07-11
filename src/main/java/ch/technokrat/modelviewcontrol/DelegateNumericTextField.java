@@ -17,13 +17,28 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JTextField;
 
+/**
+ * A JTextField that acts as an MVC view for a Double-valued {@link ModelMVC}.
+ * Text input is parsed to a double on action; invalid input reverts to the
+ * model's current value.
+ *
+ * @param <M> the Double model type
+ */
 public class DelegateNumericTextField <M extends ModelMVC<Double>> extends JTextField
         implements IGenericMVCView<M>, ActionListener {
         private static final long serialVersionUID = 759956473825447L;
+        /** Action listener that parses text input and updates the model. */
         private transient ActionListener _listener;
+        /** The Double MVC model this text field view is bound to. */
         private transient ModelMVC<Double> _model;
 
 
+        /**
+         * Constructs a numeric text field initialised to "0.0".
+         * The {@code @SuppressWarnings("this-escape")} silences the warning
+         * caused by calling {@link #setText} (an overridable method) from
+         * the constructor.
+         */
         @SuppressWarnings("this-escape")
         public DelegateNumericTextField() {
             this.setText("0.0");

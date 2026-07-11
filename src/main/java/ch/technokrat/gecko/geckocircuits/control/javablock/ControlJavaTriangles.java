@@ -22,11 +22,25 @@ public class ControlJavaTriangles {
        public int _xClickMinTerminal, _xClickMaxTerminal, _yKlickMinTerminalADD, _yKlickMaxTerminalADD,
             _yKlickMinTerminalSUB, _yKlickMaxTerminalSUB;  // // Click areas for red triangles --> change the number of terminals
 
+    /**
+     * Determines whether the given screen coordinate lies within the "increase terminal number" triangle.
+     *
+     * @param mouseX the horizontal click coordinate in pixels
+     * @param mouseY the vertical click coordinate in pixels
+     * @return {@code true} if the click is inside the increase triangle, {@code false} otherwise
+     */
     public boolean isIncreaseClicked(final int mouseX, final int mouseY) {
         return _xClickMinTerminal <= mouseX && mouseX <= _xClickMaxTerminal
                 && _yKlickMinTerminalADD <= mouseY && mouseY <= _yKlickMaxTerminalADD;
     }
 
+    /**
+     * Determines whether the given screen coordinate lies within the "decrease terminal number" triangle.
+     *
+     * @param mouseX the horizontal click coordinate in pixels
+     * @param mouseY the vertical click coordinate in pixels
+     * @return {@code true} if the click is inside the decrease triangle, {@code false} otherwise
+     */
     public boolean isDecreaseClicked(int mouseX, int mouseY) {
         return _xClickMinTerminal <= mouseX && mouseX <= _xClickMaxTerminal
                 && _yKlickMinTerminalSUB <= mouseY && mouseY <= _yKlickMaxTerminalSUB;

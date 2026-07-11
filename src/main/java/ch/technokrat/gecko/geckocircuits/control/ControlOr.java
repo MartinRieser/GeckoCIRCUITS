@@ -18,6 +18,9 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.OrCalculatorMultipl
 import ch.technokrat.gecko.geckocircuits.control.calculators.OrCalculatorTwoInputs;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Logical OR control block. Computes the logical OR of two or more boolean-like inputs.
+ */
 public final class ControlOr extends AbstractControlVariableInputs {
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlOr.class, "OR", I18nKeys.OR);
 

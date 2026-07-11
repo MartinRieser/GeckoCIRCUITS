@@ -27,11 +27,16 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Hysteresis comparator that toggles its output when the input crosses a configurable threshold,
+ * with separate switching points for rising and falling input edges.
+ */
 public final class ControlHysteresis extends ControlBlock implements ControlInputTwoTerminalStateable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * yes, -1 and not +1! with this setting, the output gets +1 when the input is -1, and vice versa.
+     * Default hysteresis threshold. Note the value is -1 (not +1): with this setting the output
+     * becomes +1 when the input is -1, and vice versa.
      */
     private static final double DEF_HYS_THRES = -1;
     
@@ -51,6 +56,10 @@ public final class ControlHysteresis extends ControlBlock implements ControlInpu
             arrayIndex(this, 1).
             build();
     
+    /**
+     * Holds the external threshold terminal while the block is in folded (single-input) state,
+     * so it can be restored when expanded again.
+     */
     private transient TerminalControlInput _stashedTerminal;
     
     public ControlHysteresis() {

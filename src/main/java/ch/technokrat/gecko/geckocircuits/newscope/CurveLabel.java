@@ -19,6 +19,9 @@ import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 
 /**
+ * Base class for the label hierarchy drawn alongside curves in the scope diagram.
+ * Subclasses ({@link CurveLabelRegular}, {@link CurveLabelSignal}) provide the
+ * concrete rendering of analog and digital signal labels respectively.
  *
  * @author andy
  */

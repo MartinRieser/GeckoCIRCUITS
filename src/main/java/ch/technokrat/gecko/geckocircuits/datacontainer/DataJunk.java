@@ -23,6 +23,9 @@ package ch.technokrat.gecko.geckocircuits.datacontainer;
 import ch.technokrat.gecko.geckocircuits.newscope.HiLoData;
 
 /**
+ * A contiguous block (chunk) of data within a data container.  Splitting the
+ * overall data into smaller junks enables dynamic growth and per-junk
+ * compression.
  *
  * @author andy
  */

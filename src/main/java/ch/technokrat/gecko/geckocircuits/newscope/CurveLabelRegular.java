@@ -17,6 +17,8 @@ import ch.technokrat.gecko.geckocircuits.general.TechFormat;
 import java.awt.Graphics2D;
 
 /**
+ * Draws labels for regular (analog) curves, showing the curve name and,
+ * when the slider is active, the numerical value at the slider position.
  *
  * @author andy
  */

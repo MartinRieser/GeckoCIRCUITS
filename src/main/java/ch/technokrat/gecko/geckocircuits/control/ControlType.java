@@ -13,6 +13,11 @@
  */
 package ch.technokrat.gecko.geckocircuits.control;
 
+/**
+ * Classifies control blocks by their signal flow role in the execution order graph.
+ * {@code TRANSFER} blocks have both inputs and outputs, {@code SINK} blocks have only inputs,
+ * and {@code SOURCE} blocks have only outputs.
+ */
 public enum ControlType {
     TRANSFER,
     SINK,

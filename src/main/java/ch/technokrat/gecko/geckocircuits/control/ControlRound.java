@@ -18,31 +18,50 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.RoundCalculator;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+/**
+ * Rounding control block. Rounds its input to the nearest integer using {@link RoundCalculator}.
+ */
 public final class ControlRound extends AbstractControlSingleInputSingleOutput {
+    /** Registration metadata for the control framework type registry. */
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlRound.class, "ROUND", I18nKeys.ROUND);
 
+    /**
+     * @return the output signal name for the rounded result
+     */
     @Override
     public String[] getOutputNames() {
         return new String[]{"rounded"};
     }
     
+    /**
+     * @return a new {@link RoundCalculator} instance for simulation
+     */
     @Override
     public AbstractControlCalculatable getInternalControlCalculatableForSimulationStart() {
         return new RoundCalculator();        
     }
 
 
+    /**
+     * @return the centered label string drawn on the block symbol
+     */
     @Override
     protected String getCenteredDrawString() {
         return "RND";
     }                
 
+    /**
+     * @return the dialog window for this block (no parameters to configure)
+     */
     @Override
     protected final Window openDialogWindow() {
         return new DialogWindowWithoutInput(this);
     }
     
     
+    /**
+     * @return the output description for the rounded signal
+     */
     @Override
     public I18nKeys[] getOutputDescription() {
         return new I18nKeys[]{I18nKeys.INPUT_ROUNDED_TO_INTEGER_DESCRIPTION};

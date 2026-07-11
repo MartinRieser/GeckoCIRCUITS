@@ -23,6 +23,10 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Parameter dialog for PT1 and PT2 transfer function blocks, displaying the
+ * appropriate transfer function formula and gain/time constant parameters.
+ */
 class ControlPTDialog extends DialogElementCONTROL<AbstractControlPT> {
     private static final long serialVersionUID = 1L;
     

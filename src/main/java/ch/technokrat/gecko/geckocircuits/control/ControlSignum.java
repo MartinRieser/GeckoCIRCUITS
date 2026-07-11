@@ -17,9 +17,16 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalc
 import ch.technokrat.gecko.geckocircuits.control.calculators.SignumCalculator;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Signum (sign) function control block. Returns +1 for positive input, -1 for negative input, and 0 for zero.
+ */
 public final class ControlSignum extends SimpleControlBlock {
+    /** Registration metadata for the control framework type registry. */
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlSignum.class, "SGN", I18nKeys.SIGNUM);
 
+    /**
+     * Creates a signum block with 1 input and 1 output.
+     */
     public ControlSignum() {
         super(1, 1);
     }    
@@ -34,12 +41,18 @@ public final class ControlSignum extends SimpleControlBlock {
         return new I18nKeys[]{I18nKeys.SIGN_OF_INPUT};
     }
 
+    /**
+     * @return a new {@link SignumCalculator} instance for simulation
+     */
     @Override
     public AbstractControlCalculatable getInternalControlCalculatableForSimulationStart() {
         return new SignumCalculator();        
     }          
     
 
+    /**
+     * @return an HTML string describing the signum function behavior
+     */
     @Override
     String getDialogMessage() {
         return "<html>x1 >  0  ...  y1 = +1<br>"

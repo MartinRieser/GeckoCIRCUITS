@@ -21,9 +21,17 @@ import javax.swing.JPanel;
  *
  * @author andy
  */
+/**
+ * Dialog for the Random signal source block, providing a simple info label.
+ */
 class ControlRandomDialog extends DialogElementCONTROL<ControlSignalSource>{
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Creates the dialog for the Random signal source block.
+     *
+     * @param element the ControlSignalSource to configure
+     */
     public ControlRandomDialog(ControlSignalSource element) {
         super(element);
     }

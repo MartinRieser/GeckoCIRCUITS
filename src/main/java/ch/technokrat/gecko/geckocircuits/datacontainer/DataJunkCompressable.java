@@ -23,18 +23,21 @@ import java.util.List;
 import javax.swing.JOptionPane;
 
 /**
+ * Compressible data junk that stores data with lossy precision reduction
+ * followed by difference and zip compression.  Larger junk sizes yield
+ * better compression ratios because the difference coding exploits
+ * inter-sample correlation.  Float values are rounded to a configurable
+ * number of mantissa bits (see {@link #setMemoryPrecision()}), then stored
+ * as int bit-patterns for difference compression of order 2.
  *
- * @author andy Compresses the data employing a zip-compression algorithm. In
- * order to achive a higher compression ratio, the difference compression
- * algorithm of order 2 (MDIFFORDER) is used, see therefore the paper: "Lossless
- * Compression of High-volume Numerical Data from Simulations, Engelson,
- * Fritzson, Fritzson... For conveniece, the float data is directly stored
- * inside a int array, therefore use the Float.floatBitsToInt and
- * Float.intBitsToFloat to access the data values. Furhermore, the double values
- * are rounded to less bits than float.
+ * @author andy
  */
 public final class DataJunkCompressable implements DataJunk {
 
+    /**
+     * Reads the lossy-compression setting from application properties and
+     * sets the float precision bit-mask accordingly.
+     */
     public static void setMemoryPrecision() {
         final String lossyCompression = GeckoSim.applicationProps.getProperty("LOSSY_COMPRESSION");
 

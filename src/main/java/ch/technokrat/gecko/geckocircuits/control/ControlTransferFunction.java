@@ -26,12 +26,18 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Transfer function block H(s) implemented via state-space representation.
+ * Supports configuration through either polynomial coefficients or pole/zero specifications.
+ */
 public final class ControlTransferFunction extends AbstractControlSingleInputSingleOutput
         implements Operationable {
 
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlTransferFunction.class, "TF", I18nKeys.TRANSFER_FUNKTION_H_S, I18nKeys.DEFINES_A_TRANSFER_FUNCTION);
+    /** Zeros of the transfer function. For complex pairs, real and imaginary parts are interleaved. */
     private double[] _zeros = new double[MAX_ARRAY_SIZE];
+    /** Poles of the transfer function. For complex pairs, real and imaginary parts are interleaved. */
     private double[] _poles = new double[MAX_ARRAY_SIZE];
     private double[] _numeratorPolynom = new double[ControlTransferFunction.MAX_ARRAY_SIZE];
     private double[] _denomPolynom = new double[ControlTransferFunction.MAX_ARRAY_SIZE];

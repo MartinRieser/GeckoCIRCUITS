@@ -16,6 +16,7 @@ package ch.technokrat.gecko.geckocircuits.datacontainer;
 import ch.technokrat.gecko.geckocircuits.newscope.HiLoData;
 
 /**
+ * Simple, uncompressed data junk backed by a dense 2-D float array.
  *
  * @author andy
  */

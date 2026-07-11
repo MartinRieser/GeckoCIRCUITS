@@ -26,6 +26,10 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+/**
+ * Dialog for configuring signal source parameters including signal shape (rectangle/sine/triangle),
+ * amplitude, frequency, offset, phase, duty ratio, and display options.
+ */
 class ControlSignalSourceDialog extends AbstractDialogWithExternalOption<ControlSignalSource> {
     private static final long serialVersionUID = 1L;
     private static final int DISPLAY_DETAILS_PARAM_INDEX = 7;
@@ -111,6 +115,9 @@ class ControlSignalSourceDialog extends AbstractDialogWithExternalOption<Control
                                 
     }           
 
+    /**
+     * Processes the dialog inputs and applies them to the signal source element.
+     */
     @Override
     protected void processInputs() {
         super.processInputs();                
@@ -119,6 +126,9 @@ class ControlSignalSourceDialog extends AbstractDialogWithExternalOption<Control
     }
     
 
+    /**
+     * @return the components that should be disabled when external terminals are used
+     */
     @Override
     JComponent[] getComponentsDisabledExternal() {
         return tf.toArray(new JComponent[tf.size()]);                

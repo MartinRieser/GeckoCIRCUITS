@@ -18,8 +18,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Method-level annotation that stores the original declaration signature
+ * string of a Java-scriptable control block method, so it can be recovered
+ * at runtime for reflection-based invocation.
+ */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Declaration {
+
+    /**
+     * @return the method signature string, e.g. "YOUT(double dt, double t, double[] yIn, double[] yOut)"
+     */
     String value();
 }

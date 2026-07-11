@@ -17,6 +17,9 @@ import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
 import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalculatable;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Multiplies all connected input signals and outputs the product.
+ */
 public final class ControlMUL extends AbstractControlVariableInputs {
     static ControlTypeInfo tinfo = new ControlTypeInfo(ControlMUL.class, "MUL", I18nKeys.MULTIPLICATION);
 
@@ -34,6 +37,9 @@ public final class ControlMUL extends AbstractControlVariableInputs {
         return new I18nKeys[]{I18nKeys.MULTIPLICATION_OF_INPUT};
     }            
 
+    /**
+     * Calculator for multiplying exactly two input signals.
+     */
     private class TwoParameterMultiplication extends AbstractControlCalculatable {
 
         public TwoParameterMultiplication() {
@@ -46,6 +52,9 @@ public final class ControlMUL extends AbstractControlVariableInputs {
         }
     }
 
+    /**
+     * Calculator for multiplying three or more input signals.
+     */
     private class MoreParameterMultiplication extends AbstractControlCalculatable {
 
         public MoreParameterMultiplication() {

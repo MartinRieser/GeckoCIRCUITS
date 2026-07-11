@@ -17,6 +17,8 @@ import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 
 /**
+ * Represents a digital signal curve type in the scope.  Signals are drawn as
+ * step-like high/low traces stacked vertically in a {@link DiagramSignal}.
  *
  * @author andy
  */

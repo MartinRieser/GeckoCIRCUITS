@@ -17,6 +17,9 @@ import ch.technokrat.gecko.geckocircuits.circuit.ConnectorType;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 
+/**
+ * Measures the magnetomotive force (MMF, in Amperes) across a coupled reluctance component.
+ */
 public final class ControlMMF extends AbstractPotentialMeasurement  {        
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlMMF.class,"MMF_MEAS", I18nKeys.MMF_MEASURE_A);
     

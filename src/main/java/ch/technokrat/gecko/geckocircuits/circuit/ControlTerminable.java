@@ -14,11 +14,29 @@
 package ch.technokrat.gecko.geckocircuits.circuit;
 
 /**
+ * Interface for control terminals that participate in node numbering for netlist generation.
+ * Each terminal is assigned a unique node number that identifies its signal connection in the
+ * control execution order graph.
  *
  * @author andreas
  */
 public interface ControlTerminable {
-    public int getNodeNumber();    
-    void setNodeNumber(final int newValue);    
-    void clearNodeNumber();                  
+    /**
+     * Returns the node number assigned to this terminal.
+     *
+     * @return the node number
+     */
+    public int getNodeNumber();
+
+    /**
+     * Sets the node number for this terminal.
+     *
+     * @param newValue the node number to assign
+     */
+    void setNodeNumber(final int newValue);
+
+    /**
+     * Clears the node number, resetting it to an unassigned state.
+     */
+    void clearNodeNumber();
 }

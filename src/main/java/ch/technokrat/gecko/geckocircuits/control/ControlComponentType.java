@@ -20,6 +20,12 @@ import ch.technokrat.gecko.geckocircuits.nativec.ControlNativeC;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Enumerates every control-block component type, mapping each to a non-sequential integer type
+ * ID and its associated {@link AbstractTypeInfo}. The integer IDs contain deliberate gaps (e.g.
+ * 24, 28, 30-31, 52, 54-57, 67-71) that are preserved for backward-compatibility with saved
+ * circuit files.
+ */
 public enum ControlComponentType implements AbstractComponentType {
 
     C_VOLTMETER(1, ControlVOLT.tinfo),

@@ -19,6 +19,10 @@ import ch.technokrat.gecko.geckocircuits.circuit.SchematicEditor2;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.util.List;
 
+/**
+ * Abstract base class for control blocks that reference a single circuit component.
+ * Provides a single component coupling slot and associated display/operation logic.
+ */
 public abstract class ControlWithSingleReference extends ControlBlock implements ComponentCoupable {
 
     private static final long serialVersionUID = 1L;
