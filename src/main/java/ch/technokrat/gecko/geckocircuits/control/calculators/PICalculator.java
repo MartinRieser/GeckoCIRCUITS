@@ -15,9 +15,13 @@ package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 public final class PICalculator extends AbstractControlCalculatable implements InitializableAtSimulationStart {
 
+    /** Proportional gain coefficient (R0). */
     private double _r0;
+    /** Integral gain coefficient (A1). */
     private double _a1;
-    private double y1alt = 0;  // Speicherung des I-Anteils
+    /** Storage of the previous integral part (y1alt). */
+    private double y1alt = 0;  
+    /** Storage of the previous input value (xalt) and intermediate calculation value (y11). */
     private double xalt = 0, y11 = -1;
 
     public PICalculator(final double r0, final double a1) {

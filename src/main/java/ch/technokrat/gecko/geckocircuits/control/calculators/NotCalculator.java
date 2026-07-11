@@ -19,7 +19,7 @@ public final class NotCalculator extends AbstractSingleInputSingleOutputCalculat
     @Override
     public void calculateYOUT(final double deltaT) {
         if (_inputSignal[0][0] < SIGNAL_THRESHOLD) {
-            _outputSignal[0][0] = 1;  // Logik-Schwellwert --> 0.5
+            _outputSignal[0][0] = 1;  // Logic threshold -> 0.5
         } else {
             _outputSignal[0][0] = 0;
         }

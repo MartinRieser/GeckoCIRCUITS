@@ -26,18 +26,46 @@ import java.util.*;
 
 public class NetListLK {
 
-    public int knotenMAX, spgQuelleMAX;  // // nodeMAX ... total number of nodes minus 'Ground';  spgSourceMAX ... Sum of the SpgSources plus LKOP2 elements
+    /** The maximum node index (total number of nodes excluding Ground reference). */
+    public int knotenMAX;
+    /** The maximum voltage source index (total number of voltage sources plus LKOP2 elements). */
+    public int spgQuelleMAX;  
+    
+    /** Array containing the circuit component types. */
     public CircuitType[] typ;
-    public int[] knotenX, knotenY;
+    
+    /** The X coordinate nodes for each component connection. */
+    public int[] knotenX;
+    /** The Y coordinate nodes for each component connection. */
+    public int[] knotenY;
+    
+    /** Node pairs representing direct voltage controlled sources. */
     public int[][] nodePairDirVoltContSrc;
-    public double[][] parameter;  // // component value; Type 'sinus', 'triangle', ... for current/voltage source; init values ​​iL_ALT and uC_ALT; ...
-    public int[] spgQuelleNr;  // // not only counts the voltage sources starting from 1, but also the LKOP2 elements, where mixing with the voltage sources is possible
-    protected int[][] gemeinsameKnoten;  // // Element nodes plus all connections that have the same potential
+    
+    /** 
+     * Component parameters: component value, source type (sinus, triangle, etc.), 
+     * and initial state values (such as initial inductor currents or capacitor voltages).
+     */
+    public double[][] parameter;  
+    
+    /** Index mapping for voltage sources and related LKOP2 elements. */
+    public int[] spgQuelleNr;  
+    
+    /** Internal node groups that share the same potential. */
+    protected int[][] gemeinsameKnoten;  
     protected int gesamtzahlKnotenNr;
+    
+    /** Array of all connections in the netlist. */
     public Connection[] v;
+    /** The total count of connection lines. */
     public int verbindungANZAHL;
+    
+    /** All circuit elements, new LK elements, and M elements in the netlist. */
     public AbstractCircuitBlockInterface[] elements, eLKneu, eLK_M;
+    /** The total count of elements and new elements. */
     public int elementANZAHL, elementANZAHLneu;
+    
+    /** Array of string labels. */
     public String[] labelListe;
     //
     public PotentialArea[] potLab;

@@ -36,39 +36,65 @@ public class SimulationKernel {
     private static final double PERTURBATION_INITIAL = 0.9999999;
     private static final double SWITCH_THRESHOLD = 0.5;
 
+    /** Indicates a diode switching/recalculation error. */
     private boolean diodenSchaltfehler;
+    
+    /** The simulation time step (dt), current simulation time (t), and pause time. */
     private double dt, t, tPAUSE;
+    /** The start time and end time of the simulation. */
     public static double tSTART, tEND;
-    private LKMatrices lkmLK;  // Leistungskreis
-    private LKMatrices lkmTHERM;  // thermischer Kreis
-    private NetListLK nl;  // Leistungskreis
-    private NetlistControl controlNL;  // Controlkreis
-    private NetListLK thermNL;  // thermischer Kreis
-    private boolean simuliereLeistungskreis;  // // is 'false' if no power circuit has been set up
-    private boolean simuliereControlkreis;  // // is 'false' if no control circuit has been set up
-    private boolean simuliereThermKreis;  // // is 'false' if no thermal circuit has been set up
-    //-------------------------------
-    // // Power circuit and thermal circuit:
-    //
-    private double[] pLK_ALT, pTHERM_ALT;  // // to store the system matrices for correct continuation after CONTINUE
-    //-------------------------------
-    // Kopplung [ Leistungskreis - Controlkreis - thermischer Kreis ]
-    //
-    private int[] interessanteKnotenLK;   // // to record the ZV voltage curves between LK nodes using VOLT
-    private int[] interessanteKnotenTHERM;   // // for recording the ZV temperature curves between THERM nodes using TEMP
-    private int[] zeigerAufControlElement;  // Interaktion LK - CONTROL
-    private int[] zeigerAufControlElementTHERM;  // Interaktion THERM - CONTROL
-    private int[][] zeiger_VIEWMOT_MaschineLK;  // // for measuring internal machine parameters
+    
+    /** Power circuit matrices. */
+    private LKMatrices lkmLK;  
+    /** Thermal circuit matrices. */
+    private LKMatrices lkmTHERM;  
+    /** Power circuit netlist. */
+    private NetListLK nl;  
+    /** Control circuit netlist. */
+    private NetlistControl controlNL;  
+    /** Thermal circuit netlist. */
+    private NetListLK thermNL;  
+    
+    /** Flag to simulate power circuit (false if no power circuit components exist). */
+    private boolean simuliereLeistungskreis;  
+    /** Flag to simulate control circuit (false if no control components exist). */
+    private boolean simuliereControlkreis;  
+    /** Flag to simulate thermal circuit (false if no thermal components exist). */
+    private boolean simuliereThermKreis;  
+    
+    /** System state variables from the previous step for power (LK) and thermal (THERM) circuits. */
+    private double[] pLK_ALT, pTHERM_ALT;  
+    
+    /** Nodes of interest in the power circuit (for voltage plotting). */
+    private int[] interessanteKnotenLK;   
+    /** Nodes of interest in the thermal circuit (for temperature plotting). */
+    private int[] interessanteKnotenTHERM;   
+    
+    /** Pointers/mappings from power circuit elements to control elements. */
+    private int[] zeigerAufControlElement;  
+    /** Pointers/mappings from thermal circuit elements to control elements. */
+    private int[] zeigerAufControlElementTHERM;  
+    /** Pointers/mappings for machine parameters from VIEWMOT to power circuit. */
+    private int[][] zeiger_VIEWMOT_MaschineLK;  
     private int jjZeiger;
-    private int mult = 20, add = 50;  // // Expansion of the fields in the interaction methods to cover special cases
-    //
-    private int[][] zuordnung_SchalterLK_SWITCH;  // // Which switch is controlled by which SWITCH?
-    private int[][] zuordnung_QuelleLK_signalCONTROL;  // Welcher CONTROL-Knoten steuert welche signalgesteuerte LK-Quelle?
-    private int[][] zuordnung_QuelleTHERM_signalCONTROL;  // Welcher CONTROL-Knoten steuert welche signalgesteuerte THERM-Quelle?
-    private int[][] zuordnung_MaschineLK_LoadParameterInCONTROL;  // Welcher CONTROL-Knoten definiert welche mechanischen Signale (zB. externes Moment) des Motors? 
-    //
+    
+    /** Multiplier and adder for bounds expansion in lookup vectors. */
+    private int mult = 20, add = 50;  
+    
+    /** Mapping: power circuit switch components controlled by SWITCH control blocks. */
+    private int[][] zuordnung_SchalterLK_SWITCH;  
+    /** Mapping: power circuit source components controlled by CONTROL signal sources. */
+    private int[][] zuordnung_QuelleLK_signalCONTROL;  
+    /** Mapping: thermal circuit source components controlled by CONTROL signal sources. */
+    private int[][] zuordnung_QuelleTHERM_signalCONTROL;  
+    /** Mapping: machine components defined by mechanical loads in CONTROL. */
+    private int[][] zuordnung_MaschineLK_LoadParameterInCONTROL;  
+    
+    /** Control block components. */
     private ControlBlock[] c;
+    /** Parameters/state values of the control blocks. */
     private double[][] controlParameters;
+    /** The total count of control blocks. */
     private int controlANZAHL;
     //-------------------------------
     private AbstractCachedMatrix _lkCachedMatrix;

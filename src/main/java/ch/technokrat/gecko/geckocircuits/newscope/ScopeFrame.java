@@ -113,7 +113,7 @@ public final class ScopeFrame extends javax.swing.JFrame{
           break;
       }
       for(AbstractDiagram diag : this._grafer._manager.getDiagrams()){
-        if(diag.getCurves().get(tmpIndex).getAxisConnection() != AxisConnection.ZUORDNUNG_NIX){
+        if(diag.getCurves().get(tmpIndex).getAxisConnection() != AxisConnection.ASSIGNMENT_NONE){
           diag.loadDataFromContainer(diag._grafer.getDataContainer());
         }
       }

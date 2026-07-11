@@ -385,7 +385,7 @@ public final class NetlistControl {
         //_orderedControlBlocks = blockOrderOtimizerNew.getOptimierteAbarbeitungsListe().toArray(new ControlBlock[0]);
 
         BlockOrderOptimizer3 blockOrderOtimizer3 = new BlockOrderOptimizer3(elementsControl);
-        _orderedControlBlocks = blockOrderOtimizer3.getOptimierteAbarbeitungsListe().toArray(new ControlBlock[0]);
+        _orderedControlBlocks = blockOrderOtimizer3.getOptimizedProcessingList().toArray(new ControlBlock[0]);
                 
         
 //        for(int i = 0; i < _orderedControlBlocks.length; i++) {

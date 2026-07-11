@@ -27,6 +27,10 @@ import net.sourceforge.jwbf.core.contentRep.SimpleArticle;
 import ch.technokrat.gecko.i18n.translationtoolbox.TranslationDialog;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Upload bot class.
+ * This bot uploads user translation suggestions and comments to the Wiki database.
+ */
 public class UPbot {
     
     private static boolean connected = false; // Applet-Wiki connection status indicator

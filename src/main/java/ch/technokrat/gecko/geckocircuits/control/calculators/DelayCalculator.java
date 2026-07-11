@@ -18,9 +18,13 @@ import ch.technokrat.gecko.geckocircuits.control.IsDtChangeSensitive;
 public final class DelayCalculator extends AbstractSingleInputSingleOutputCalculator
         implements InitializableAtSimulationStart, IsDtChangeSensitive {
 
+    /** The original simulation time step. */
     private double _originalDt;
+    /** Buffer for delayed output history (youtVerzoegert). */
     private double[] _youtVerzoegert = null;
+    /** Current index pointer in the delayed output buffer (zeigerYOUT). */
     private int _zeigerYOUT = -1;
+    /** Flag indicating whether the delay memory buffer is still empty. */
     private boolean _speicherLeer;
     
     /*

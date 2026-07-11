@@ -44,7 +44,7 @@ public final class LossCalculationDetailed implements GeckoFileable, AbstractLos
     private DetailedLossLookupTable _conductionTable;
     
     // // Name of the file (including path) that contains the detailed data, i.e. measurement curves of the conduction and switching losses
-    private String datnamGemesseneVerluste = GlobalFilePathes.DATNAM_NOT_DEFINED;
+    private String _measuredLossesFilename = GlobalFilePathes.DATNAM_NOT_DEFINED;
     private long lossFileHashValue = 0;
     public GeckoFile lossFile = null;
     //
@@ -115,7 +115,7 @@ public final class LossCalculationDetailed implements GeckoFileable, AbstractLos
     }
 
     public void copyPropertiesFrom(LossCalculationDetailed origLosses) {
-        datnamGemesseneVerluste = origLosses.datnamGemesseneVerluste;
+        _measuredLossesFilename = origLosses._measuredLossesFilename;
         _onLossesLookupTable = DetailedLossLookupTable.fabric(origLosses._messkurvePvSWITCH, 1);
 
         lossFile = origLosses.lossFile;
@@ -137,14 +137,14 @@ public final class LossCalculationDetailed implements GeckoFileable, AbstractLos
             lossFileHashValue = tokenMap.readDataLine("lossFileHashValue", lossFileHashValue);
         }                
         
-        datnamGemesseneVerluste = tokenMap.readDataLine("datnamGemesseneVerluste", datnamGemesseneVerluste);
+        _measuredLossesFilename = tokenMap.readDataLine("datnamGemesseneVerluste", _measuredLossesFilename);
 
         
         try {
             // // Check relative path information and update if necessary:
-            if (!datnamGemesseneVerluste.equals(GlobalFilePathes.DATNAM_NOT_DEFINED)) {
-                String aktualisierterPfad = ProjectData.localizeRelativePath(GlobalFilePathes.DATNAM, datnamGemesseneVerluste);
-                datnamGemesseneVerluste = aktualisierterPfad;
+            if (!_measuredLossesFilename.equals(GlobalFilePathes.DATNAM_NOT_DEFINED)) {
+                String aktualisierterPfad = ProjectData.localizeRelativePath(GlobalFilePathes.DATNAM, _measuredLossesFilename);
+                _measuredLossesFilename = aktualisierterPfad;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -153,7 +153,7 @@ public final class LossCalculationDetailed implements GeckoFileable, AbstractLos
     }
 
     public void exportASCII(StringBuffer ascii) {
-        ProjectData.appendAsString(ascii.append("\ndatnamGemesseneVerluste"), datnamGemesseneVerluste);
+        ProjectData.appendAsString(ascii.append("\ndatnamGemesseneVerluste"), _measuredLossesFilename);
         if (lossFile != null) {
             ProjectData.appendAsString(ascii.append("\nlossFileHashValue"), lossFile.getHashValue());
         } else {
@@ -167,7 +167,7 @@ public final class LossCalculationDetailed implements GeckoFileable, AbstractLos
             MainWindow.getFileManager().maintain(lossFile);
         }
 
-        datnamGemesseneVerluste = GlobalFilePathes.DATNAM_NOT_DEFINED;
+        _measuredLossesFilename = GlobalFilePathes.DATNAM_NOT_DEFINED;
         lossFile = null;
     }
 
@@ -245,7 +245,7 @@ public final class LossCalculationDetailed implements GeckoFileable, AbstractLos
         
         _conductionTable = DetailedLossLookupTable.fabric(_messkurvePvCOND, 1);
 
-        datnamGemesseneVerluste = newLossFile.getCurrentAbsolutePath();
+        _measuredLossesFilename = newLossFile.getCurrentAbsolutePath();
         //remove old loss file, set new
         if (lossFile != null) {
             lossFile.removeUser(_parent.getUniqueObjectIdentifier());
@@ -266,7 +266,7 @@ public final class LossCalculationDetailed implements GeckoFileable, AbstractLos
             } catch (FileNotFoundException e) {
                 //this means this is probably an old .ipes file without a valid hash key for the GeckoFile (i.e. saved in an older version)
                 //here try to recover from the old file name                
-                readLossesFromFileAndSetDetailedLossType(datnamGemesseneVerluste);
+                readLossesFromFileAndSetDetailedLossType(_measuredLossesFilename);
             }
         }
     }
@@ -324,7 +324,7 @@ public final class LossCalculationDetailed implements GeckoFileable, AbstractLos
             //--------
             File lossesFile;
             if (fkaku == null) {
-                lossesFile = new File(datnamGemesseneVerluste);
+                lossesFile = new File(_measuredLossesFilename);
             } else {
                 lossesFile = new File(fkaku);
             }
@@ -336,7 +336,7 @@ public final class LossCalculationDetailed implements GeckoFileable, AbstractLos
             // //blocks using this loss file can also see the changes
             newLossFile = new GeckoFile(lossesFile, storageType, MainWindow.getOpenFileName());
             newLossFile.setUser(_parent.getUniqueObjectIdentifier());
-            datnamGemesseneVerluste = fkaku;
+            _measuredLossesFilename = fkaku;
         } catch (Exception e) {
             return false;
         }

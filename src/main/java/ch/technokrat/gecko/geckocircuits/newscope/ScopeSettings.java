@@ -220,8 +220,8 @@ public class ScopeSettings implements Serializable {
                 xAxis._axisGridSettings.setLinStyleMin(GeckoLineStyle.getFromCode(linStilGridNormalXminor[i]));
                 yAxis._axisGridSettings.setLinStyleMaj(GeckoLineStyle.getFromCode(linStilGridNormalY[i]));
                 yAxis._axisGridSettings.setLinStyleMin(GeckoLineStyle.getFromCode(linStilGridNormalYminor[i]));
-                xAxis._axisTickSettings.setAnzTicksMinor(xAnzTicksMinor[i]);
-                yAxis._axisTickSettings.setAnzTicksMinor(yAnzTicksMinor[i]);
+                xAxis._axisTickSettings.setNumTicksMinor(xAnzTicksMinor[i]);
+                yAxis._axisTickSettings.setNumTicksMinor(yAnzTicksMinor[i]);
                 xAxis._axisTickSettings.setTickLengthMaj(xTickLaenge[i]);
                 xAxis._axisTickSettings.setTickLengthMin(xTickLaengeMinor[i]);
                 yAxis._axisTickSettings.setTickLengthMaj(yTickLaenge[i]);
@@ -286,7 +286,7 @@ public class ScopeSettings implements Serializable {
                 for (int jj = 1; jj < noInputSignals + 1; jj++) {
                     AxisConnection axisConnection = AxisConnection.getFromCode(matrixZuordnungKurveDiagram[i][jj]);
                     diag.getCurve(jj - 1).setAxisConnection(axisConnection);
-                    if (axisConnection == AxisConnection.ZUORDNUNG_SIGNAL) {
+                    if (axisConnection == AxisConnection.ASSIGNMENT_SIGNAL) {
                         diagNo = manager.getDiagrams().indexOf(diag);
                         curveNo = diag.getCurves().indexOf(diag.getCurve(jj - 1));
                     }

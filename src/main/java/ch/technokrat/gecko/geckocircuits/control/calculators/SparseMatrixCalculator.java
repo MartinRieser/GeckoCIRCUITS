@@ -21,9 +21,9 @@ public final class SparseMatrixCalculator extends AbstractControlCalculatable im
 
     
     // // Detection of a pulse period start for calculation -->
-    private double fDRaltalt = 0, fDRalt = 0;
-    private boolean neuePulsperiodeBeginnt = true;
-    private double tLokal = 0;  // // Local time, is set to zero at the start of the pulse period
+    private double fDRPreviousOld = 0, fDRPrevious = 0;
+    private boolean newPulsePeriodBegins = true;
+    private double tLocal = 0;  // // Local time, is set to zero at the start of the pulse period
     // Globale Rechengroessen --> 
     private int seIN = -1, seOUT = -1;  // Sektorinfo des Matrix-Konverters
     private double Tp0 = 1 / 25e3, Tp = Tp0;  // // initial assumption for the switching frequency (must be determined first and can change)
@@ -37,11 +37,11 @@ public final class SparseMatrixCalculator extends AbstractControlCalculatable im
 
     @Override
     public void initializeAtSimulationStart(final double deltaT) {
-        fDRaltalt = 0;
-        fDRalt = 0;
+        fDRPreviousOld = 0;
+        fDRPrevious = 0;
         Tp = Tp0;
-        tLokal = 0;
-        neuePulsperiodeBeginnt = true;
+        tLocal = 0;
+        newPulsePeriodBegins = true;
     }
 
     @Override
@@ -50,23 +50,23 @@ public final class SparseMatrixCalculator extends AbstractControlCalculatable im
         double uNmax = _inputSignal[4][0], uOUTmax = _inputSignal[5][0], fOUT = _inputSignal[6][0];  // // Amplitudes and output frequency
         double fDR = _inputSignal[0][0];  // // Clock frequency for the pulse period
         double phi2 = _inputSignal[7][0];  // output-side angle for creating uaOUT*, ubOUT*, ucOUT* for PMSM-control; reliable alternative to fOUT 
-        if ((fDRaltalt < fDRalt) && (fDRalt > fDR)) {
-            neuePulsperiodeBeginnt = true;
+        if ((fDRPreviousOld < fDRPrevious) && (fDRPrevious > fDR)) {
+            newPulsePeriodBegins = true;
         }
-        fDRaltalt = fDRalt;
-        fDRalt = fDR;
+        fDRPreviousOld = fDRPrevious;
+        fDRPrevious = fDR;
         //-------------
-        if (neuePulsperiodeBeginnt) {
-            if (tLokal != 0) {
-                Tp = tLokal;
+        if (newPulsePeriodBegins) {
+            if (tLocal != 0) {
+                Tp = tLocal;
             }
-            tLokal = 0;
+            tLocal = 0;
             sectorDetection(ur, us, ut, fOUT, phi2);  // // Sector indices seIN, seOUT are determined
             calculateSwitchingTimes(ur, us, ut, uNmax, uOUTmax, fOUT, phi2);  // // Duty cycles dOUT=[d1..d5] and dIN=[da,db] are calculated
-            neuePulsperiodeBeginnt = false;
+            newPulsePeriodBegins = false;
         }
         setPulseWidths(dOUT[0], dOUT[1], dOUT[2], dOUT[3], dOUT[4], dIN[0], dIN[1], (1.0 / Tp));  // // all 9 switching signals are generated
-        tLokal += deltaT;
+        tLocal += deltaT;
 
         _outputSignal[0][0] = sRp;
         _outputSignal[1][0] = sSp;
@@ -97,7 +97,7 @@ public final class SparseMatrixCalculator extends AbstractControlCalculatable im
         y6 = y5 + d;
         y7 = y6 + 2 * d;
         y8 = y7 + d;
-        double xLokal = LG * fDR * tLokal;
+        double xLokal = LG * fDR * tLocal;
         switch (seIN) {
             case 1:
                 x1a = x1;

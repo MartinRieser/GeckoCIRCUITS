@@ -28,7 +28,7 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
 
 public abstract class AbstractCircuitSheetComponent {
 
-    public static int dpix;  // Abstand 2er Rasterpunkte in Pixelpunkten                
+    public static int dpix;  // Distance of two grid points in pixels                
     public final static ModelMVC<Integer> dpixValue;
     private ComponentState _modus = ComponentState.FINISHED;
 

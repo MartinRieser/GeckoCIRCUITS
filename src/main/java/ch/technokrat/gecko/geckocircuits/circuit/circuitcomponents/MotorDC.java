@@ -190,7 +190,7 @@ public final class MotorDC extends AbstractMotorDC {
 
     @Override
     double calculateElectricTorque() {
-        return _machineConstant * _flux * _anchorCurrent;
+        return _machineConstant * _flux * _armatureCurrent;
     }                
 
     @Override

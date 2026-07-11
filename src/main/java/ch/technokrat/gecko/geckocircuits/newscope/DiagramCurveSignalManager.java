@@ -160,8 +160,8 @@ public final class DiagramCurveSignalManager{
 
       final AbstractCurve connectedCurve = diag.getCurve(insertionIndex - 1);
 
-      if(!(connectedCurve.getAxisConnection() == AxisConnection.ZUORDNUNG_NIX)
-              && !(connectedCurve.getAxisConnection() == AxisConnection.ZUORDNUNG_SIGNAL)){
+      if(!(connectedCurve.getAxisConnection() == AxisConnection.ASSIGNMENT_NONE)
+              && !(connectedCurve.getAxisConnection() == AxisConnection.ASSIGNMENT_SIGNAL)){
         newCurve.setAxisConnection(connectedCurve.getAxisConnection());
       }
 

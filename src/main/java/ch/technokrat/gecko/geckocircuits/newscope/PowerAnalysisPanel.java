@@ -44,7 +44,7 @@ public final class PowerAnalysisPanel extends JPanel {
     private FormatJTextField[][] _pqTextFields;  // // Text fields for performance values ​​A and B
     private final TechFormat _cf = new TechFormat();
     private final GridBagConstraints _gbc = new GridBagConstraints();
-    private final String[] signalListe;
+    private final String[] _signalList;
 
     public PowerAnalysisPanel(final AbstractDataContainer worksheet, final PowerAnalysisSettings powerAnalSettings) {
         super();
@@ -58,11 +58,11 @@ public final class PowerAnalysisPanel extends JPanel {
         }
         
         //
-        signalListe = new String[worksheet.getRowLength()+1];
-        signalListe[0] = "deactivated";
+        _signalList = new String[worksheet.getRowLength()+1];
+        _signalList[0] = "deactivated";
         
         for(int i = 0; i < worksheet.getRowLength(); i++) {
-            signalListe[i+1] = worksheet.getSignalName(i);
+            _signalList[i+1] = worksheet.getSignalName(i);
         }
         
         setComboUIActions(powerAnalSettings);
@@ -175,7 +175,7 @@ public final class PowerAnalysisPanel extends JPanel {
     private void setComboUIActions(final PowerAnalysisSettings powerAnalSettings) {
         for (int i = 0; i < _comboU.length; i++) {
             final int index = i;
-            _comboU[i] = new JComboBox<>(signalListe);
+            _comboU[i] = new JComboBox<>(_signalList);
 
             if (powerAnalSettings._powerAnalVoltageIndices[i] >= 0) {
                 _comboU[i].setSelectedIndex(powerAnalSettings._powerAnalVoltageIndices[i]);
@@ -188,7 +188,7 @@ public final class PowerAnalysisPanel extends JPanel {
                 }
             });
 
-            _comboI[i] = new JComboBox<>(signalListe);
+            _comboI[i] = new JComboBox<>(_signalList);
 
             if (powerAnalSettings._powerAnalCurrentIndices[i] >= 0) {
                 _comboI[i].setSelectedIndex(powerAnalSettings._powerAnalCurrentIndices[i]);

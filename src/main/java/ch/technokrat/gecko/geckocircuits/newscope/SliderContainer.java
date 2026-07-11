@@ -230,7 +230,7 @@ final class SliderContainer{
   protected String getLabelString(final AbstractCurve curve){
     String returnValue = "";
 
-    if(curve.getAxisConnection() == AxisConnection.ZUORDNUNG_SIGNAL){
+    if(curve.getAxisConnection() == AxisConnection.ASSIGNMENT_SIGNAL){
       if(isSliderActive()){
         double value;
         if(_activeSlider.equals(_redSlider)){

@@ -27,7 +27,7 @@ public final class LossProperties implements AbstractLossCalculatorFabric {
 
     public final ModelMVC<LossCalculationDetail> _lossType = new ModelMVC<LossCalculationDetail>(LossCalculationDetail.SIMPLE,
             "Loss calculation level: ");
-    // Eigenschaften des Halbleiters:
+    // Properties of the semiconductor:
     // // if detailed semiconductor loss characteristics are specified -->
     //        
     private final AbstractCircuitBlockInterface _parent;    

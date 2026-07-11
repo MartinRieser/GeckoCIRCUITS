@@ -14,9 +14,9 @@
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 /**
- * Der internen Zaehler kann durch den zweiten (unteren) RESET-Eingang auf '0' zurueckgesetzt werden:
- * solange der RESET-Eingang auf Null steht, ist der interne Zaehle auf Null gesetzt,
- * sobald der RESET-Eingang auf Eins gesetzt wird, beginnt der interne Zaehler zu laufen und wird direkt am Ausgang ausgegeben
+ * The internal counter can be reset to '0' by the second (lower) RESET input:
+ * as long as the RESET input is at zero, the internal counter is set to zero.
+ * As soon as the RESET input is set to one, the internal counter starts running and is output directly at the output.
  * @author andreas
  */
 public final class CounterCalculatable extends AbstractTwoInputsOneOutputCalculator {

@@ -128,10 +128,10 @@ public final class ControlFromEXTERNAL extends ControlBlockSimulink implements V
         graphics.fillRect((int) (dpix * (xPos - 0.4)), (int) (dpix * (yPos - 0.4)), (int) (dpix * (2 * 0.4)), (int) (dpix * (1.0 * _terminalNumber)));
         graphics.setColor(origColor);
         graphics.drawRect((int) (dpix * (xPos - 0.4)), (int) (dpix * (yPos - 0.4)), (int) (dpix * (2 * 0.4)), (int) (dpix * (1.0 * _terminalNumber)));
-        // Pfeil-Symbol:
+        // Arrow symbol:
 
-        double pf = 3.5;  // Pfeilspitzen-X-Abstand
-        double pfym = yPos - 0.4 + (1.0 * _terminalNumber) / 2;  // Pfeil-Y-Koordinate
+        double pf = 3.5;  // arrowhead X spacing
+        double pfym = yPos - 0.4 + (1.0 * _terminalNumber) / 2;  // arrow Y coordinate
         graphics.drawPolygon(new int[]{(int) (dpix * (xPos - 0.4)) - DPFX, (int) (dpix * (xPos - 0.4)) - DPFX, (int) (dpix * (xPos - 0.4))}, new int[]{(int) (dpix * pfym) - DPFY, (int) (dpix * pfym) + DPFY, (int) (dpix * pfym)}, 3);
         graphics.drawString("From", (int) (dpix * (xPos - pf)), (int) (dpix * pfym - 1 * graphics.getFont().getSize() / 2));
         graphics.drawString("EXTERN", (int) (dpix * (xPos - pf)), (int) (dpix * pfym + 3 * graphics.getFont().getSize() / 2));

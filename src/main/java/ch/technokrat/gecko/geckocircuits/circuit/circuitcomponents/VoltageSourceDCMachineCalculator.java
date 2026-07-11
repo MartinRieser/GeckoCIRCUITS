@@ -21,12 +21,12 @@ import ch.technokrat.gecko.geckocircuits.circuit.TimeFunctionConstant;
 public class VoltageSourceDCMachineCalculator extends VoltageSourceCalculator implements BStampable, PostProcessable {
 
     private double phi;
-    private double emk;
-    private double drehzahl;
-    private double omegaALT;
+    private double emf;
+    private double rotationalSpeed;
+    private double omegaOld;
     private double Fr;
     private double omega;
-    private double momentElektr;
+    private double electricalTorque;
     private double _J;
     private double momentLast;
     private double _cM;
@@ -70,13 +70,13 @@ public class VoltageSourceDCMachineCalculator extends VoltageSourceCalculator im
 
         // Motor-Gleichungen durchrechnen -->
         phi = _le.getInductance() / _Ne * ie;  // Erregerfluss
-        momentElektr = _cM * phi * ia;  // elektrisches Moment
-        omega = (_J / dt * omegaALT + momentElektr - momentLast) / (_J / dt + Fr);
+        electricalTorque = _cM * phi * ia;  // elektrisches Moment
+        omega = (_J / dt * omegaOld + electricalTorque - momentLast) / (_J / dt + Fr);
 
-        drehzahl = (60.0 / (2 * Math.PI)) * omega;
+        rotationalSpeed = (60.0 / (2 * Math.PI)) * omega;
         
-        emk = _cM * phi * omega;  // // internal tension of the machine
-        _timeFunction.setValue(emk);  // // DC value of the internal voltage source
-        omegaALT = omega;
+        emf = _cM * phi * omega;  // // internal tension of the machine
+        _timeFunction.setValue(emf);  // // DC value of the internal voltage source
+        omegaOld = omega;
     }
 }

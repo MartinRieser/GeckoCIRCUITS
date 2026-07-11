@@ -26,6 +26,10 @@ import ch.technokrat.gecko.i18n.InitParameters;
 import ch.technokrat.gecko.i18n.LangInit;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Download bot class.
+ * This bot downloads current translations from the Wiki database.
+ */
 public class DLbot {
         
     private static boolean connected = false; // Applet-Wiki connection status indicator

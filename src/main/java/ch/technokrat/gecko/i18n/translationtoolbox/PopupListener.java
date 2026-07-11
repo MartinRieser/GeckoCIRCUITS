@@ -22,6 +22,10 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+/**
+ * Pop-up mouse listener class.
+ * Listens for user gestures (e.g. Ctrl+Shift+Click) to trigger translation pop-ups.
+ */
 public final class PopupListener implements MouseListener {
 
     private final I18nKeys _key; // used to determine which GUI element triggered event

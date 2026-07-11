@@ -13,12 +13,22 @@
  */
 package ch.technokrat.gecko.geckocircuits.newscope;
 
-public enum AxisConnection{
-  ZUORDNUNG_X(51, "X"),
-  ZUORDNUNG_Y(52, "Y"),
-  ZUORDNUNG_Y2(53, "Y2"),
-  ZUORDNUNG_SIGNAL(54, "sg"),
-  ZUORDNUNG_NIX(55, "-");
+/**
+ * Defines axis assignments/mappings for scope signals.
+ *
+ * <p>German prefix {@code ZUORDNUNG} translates to "assignment" or "mapping".</p>
+ */
+public enum AxisConnection {
+  /** Mapping of the signal to the primary X-axis. */
+  ASSIGNMENT_X(51, "X"),
+  /** Mapping of the signal to the primary Y-axis. */
+  ASSIGNMENT_Y(52, "Y"),
+  /** Mapping of the signal to the secondary Y-axis (Y2). */
+  ASSIGNMENT_Y2(53, "Y2"),
+  /** Generic mapping of the signal (unassigned axis). */
+  ASSIGNMENT_SIGNAL(54, "sg"),
+  /** No axis mapping (none/disabled). */
+  ASSIGNMENT_NONE(55, "-");
   private String _displayString;
   private int _code;
 
@@ -33,7 +43,7 @@ public enum AxisConnection{
         return val;
       }
     }
-    return AxisConnection.ZUORDNUNG_NIX;
+    return AxisConnection.ASSIGNMENT_NONE;
   }
 
   int getCode(){
@@ -49,10 +59,10 @@ public enum AxisConnection{
 
     if(signal){
       switch(this){
-        case ZUORDNUNG_SIGNAL:
-          return AxisConnection.ZUORDNUNG_NIX;
-        case ZUORDNUNG_NIX:
-          return AxisConnection.ZUORDNUNG_SIGNAL;
+        case ASSIGNMENT_SIGNAL:
+          return AxisConnection.ASSIGNMENT_NONE;
+        case ASSIGNMENT_NONE:
+          return AxisConnection.ASSIGNMENT_SIGNAL;
         default:
           assert false : this;
           break;
@@ -61,12 +71,12 @@ public enum AxisConnection{
 
 
     switch(this){
-      case ZUORDNUNG_NIX:
-        return AxisConnection.ZUORDNUNG_Y;
-      case ZUORDNUNG_Y:
-        return AxisConnection.ZUORDNUNG_Y2;
-      case ZUORDNUNG_Y2:
-        return AxisConnection.ZUORDNUNG_NIX;
+      case ASSIGNMENT_NONE:
+        return AxisConnection.ASSIGNMENT_Y;
+      case ASSIGNMENT_Y:
+        return AxisConnection.ASSIGNMENT_Y2;
+      case ASSIGNMENT_Y2:
+        return AxisConnection.ASSIGNMENT_NONE;
       default:
         assert false;
         break;

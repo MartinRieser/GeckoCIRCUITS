@@ -31,8 +31,8 @@ class CurveSignal extends AbstractCurve {
     public CurveSignal(final AbstractCurve curve, final AbstractDiagram diagram) {
         super(curve, diagram);
 
-        if (curve.getAxisConnection() != AxisConnection.ZUORDNUNG_NIX) {
-            setAxisConnection(AxisConnection.ZUORDNUNG_SIGNAL);
+        if (curve.getAxisConnection() != AxisConnection.ASSIGNMENT_NONE) {
+            setAxisConnection(AxisConnection.ASSIGNMENT_SIGNAL);
         }
         _curvePainter = new CurvePainterSignal(this);
     }

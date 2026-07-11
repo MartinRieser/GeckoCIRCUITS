@@ -19,6 +19,10 @@ package ch.technokrat.gecko.i18n.translationtoolbox;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+/**
+ * Translation dialog GUI class.
+ * Displays messages or warnings to the user during translation processes.
+ */
 @SuppressWarnings("serial")
 public class TranslationDialog extends javax.swing.JFrame {
     private static final long serialVersionUID = 1L;

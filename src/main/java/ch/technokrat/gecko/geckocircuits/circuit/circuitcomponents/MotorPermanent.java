@@ -55,7 +55,7 @@ public final class MotorPermanent extends AbstractMotorDC {
 
     @Override
     double calculateElectricTorque() {
-        return _fluxLinkage * _anchorCurrent;
+        return _fluxLinkage * _armatureCurrent;
     }
 
     @Override

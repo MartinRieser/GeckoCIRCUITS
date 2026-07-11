@@ -28,6 +28,10 @@ import ch.technokrat.gecko.i18n.LangInit;
 import ch.technokrat.gecko.i18n.bot.UPbot;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Translation pop-up GUI class for single-line values.
+ * Allows the user to suggest and submit new translations with comments.
+ */
 @SuppressWarnings("serial")
 public class TranslationPopupSingle extends javax.swing.JFrame implements PropertyChangeListener {
     private static final long serialVersionUID = 1L;

@@ -29,7 +29,7 @@ public final class SignalCalculatorImport extends AbstractSignalCalculator imple
             System.arraycopy(dataTable[i], 0, _xy[i], 0, dataTable[0].length);
         }
         
-        // Periode (Wiederholrate) des Signals;                        
+        // Period (repetition rate) of the signal;                        
         _signalDuration = dataTable[0][dataTable[0].length - 1] - dataTable[0][0];  
     }
 
@@ -49,7 +49,7 @@ public final class SignalCalculatorImport extends AbstractSignalCalculator imple
         }
 
         calculateSigStartTimeEstimation();
-                        // ungefaehre Position bestimmen:
+                        // determine approximate position:
         
         final int timePointer = calculateAccurateTimePointer();
         if (timePointer == 0) {

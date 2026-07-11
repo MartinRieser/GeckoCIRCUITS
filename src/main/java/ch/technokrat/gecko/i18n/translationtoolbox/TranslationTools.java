@@ -28,6 +28,10 @@ import ch.technokrat.gecko.i18n.LangInit;
 import ch.technokrat.gecko.i18n.InitParameters;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Translation toolbox GUI class.
+ * Provides a user interface to view and edit all translated items.
+ */
 @SuppressWarnings("serial")
 public class TranslationTools extends javax.swing.JFrame implements PropertyChangeListener {
     private static final long serialVersionUID = 1L;

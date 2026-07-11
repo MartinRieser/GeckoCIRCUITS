@@ -37,7 +37,7 @@ public class SwitchingLossCurve extends LossCurve implements Serializable {
     // I [A] - Eon [Ws] - Eoff [Ws] - Etotal
     // ..      ..         ..          ..
     // ..      ..         ..          ..
-    // usw.
+    // etc.
     // // Parameters: T_junction, uBlock --> specified during the measurement
     //
     public SwitchingLossCurve(double tj, double uBlock) {        

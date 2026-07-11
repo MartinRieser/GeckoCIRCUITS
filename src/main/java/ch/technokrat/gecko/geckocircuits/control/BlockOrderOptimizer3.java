@@ -42,7 +42,7 @@ public final class BlockOrderOptimizer3 {
         doOrdering();
     }
 
-    public List<ControlBlock> getOptimierteAbarbeitungsListe() {
+    public List<ControlBlock> getOptimizedProcessingList() {
         return Collections.unmodifiableList(_outList);
     }
 

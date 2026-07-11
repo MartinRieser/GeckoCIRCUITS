@@ -32,7 +32,7 @@ public abstract class AbstractCurve implements LineSettable, SymbolSettable {
     protected final Axis _xAxis;
     protected Axis _yAxis;
     protected static final GeneralPath GPATH = new GeneralPath();
-    private AxisConnection _axisConnection = AxisConnection.ZUORDNUNG_NIX;
+    private AxisConnection _axisConnection = AxisConnection.ASSIGNMENT_NONE;
     protected final AbstractDiagram _diagram;
     protected int _noCuvePoints;
     protected final CurveSettings _curveSettings;
@@ -41,7 +41,7 @@ public abstract class AbstractCurve implements LineSettable, SymbolSettable {
     boolean _isSelected;    
 
     AbstractCurve(final AbstractDiagram diagram) {
-        this._axisConnection = AxisConnection.ZUORDNUNG_NIX;
+        this._axisConnection = AxisConnection.ASSIGNMENT_NONE;
         _diagram = diagram;
         _xAxis = diagram._xAxis;
         _yAxis = diagram._yAxis1;
@@ -56,7 +56,7 @@ public abstract class AbstractCurve implements LineSettable, SymbolSettable {
      * @param dataIndex
      */
     AbstractCurve(final AbstractCurve origCurve, final AbstractDiagram diagram) {
-        this._axisConnection = AxisConnection.ZUORDNUNG_NIX;
+        this._axisConnection = AxisConnection.ASSIGNMENT_NONE;
         _diagram = diagram;
         _xAxis = origCurve._xAxis;
         _yAxis = origCurve._yAxis;

@@ -22,7 +22,7 @@ import javax.swing.JPanel;
 class DetailedConductionLossPanel extends DetailledLossPanel<ConductionLossMeasurementCurve> {
 
     private static final long serialVersionUID = 1L;
-    public double uMaxCOND, iMaxCOND;  // maximale Bereichsgrenze aller 'messkurvePvCOND[]' bzw 'messkurvePvSWITCH[]' --> korekte Darstellung im Grafer
+    public double uMaxCOND, iMaxCOND;  // maximum range limit of all 'messkurvePvCOND[]' or 'messkurvePvSWITCH[]' -> correct representation in the Grafer
     public double[] tjGrenzenCOND, b0COND, b1COND, c0COND, c1COND, d0COND, d1COND;  // // Coefficients of the approximation polynomials (see publication IPEC'05) --> Econd(i,tj)
     final JCheckBox useInSolver = new JCheckBox("<html>Use curve in electric<br>model characteristic</html>");
     transient Diode nonlinearDiode = null;

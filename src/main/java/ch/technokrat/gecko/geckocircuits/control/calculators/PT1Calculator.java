@@ -15,7 +15,7 @@ package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 public final class PT1Calculator extends AbstractPTCalculator {
         
-        private double _yOld = 0;  // Speicherung des I-Anteils
+        private double _yOld = 0;  // Storage of previous output
         private double _xOld = 0;
 
         public PT1Calculator(final double timeConstant, final double gainFactor) {            

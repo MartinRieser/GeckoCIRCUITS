@@ -28,7 +28,7 @@ import java.util.List;
 
 // // Defined reference temperature specifically for internal subcircuits, is actually NOT an ambient temperature
 // // --> implemented as a low-resistance with only one accessible node on a
-// Benutzer-definierbares Bezugstemperaturpotential
+// // user-definable reference temperature potential.
 public final class ThermAmbient extends AbstractCircuitBlockInterface {
     public static final AbstractTypeInfo TYPE_INFO = 
             new ThermalTypeInfo(ThermAmbient.class, "TREF", I18nKeys.REFERENCE_TEMPERATURE);
@@ -36,8 +36,8 @@ public final class ThermAmbient extends AbstractCircuitBlockInterface {
     private static final double LINE_LENTH = 0.7;
     private static final int RECT_WIDTH = 3;
     
-    // // the TEMP and FLOW elements generated 'behind' a MODULE (or PvCHIP) are with a from
-    // SchematicEntry aus unerreichbaren Punkt auf einen Bezugpunkt (Potential 'Null') gelegt -->    
+    // // the TEMP and FLOW elements generated 'behind' a MODULE (or PvCHIP) are placed
+    // // from an unreachable point in SchematicEntry to a reference point (Potential 'Zero') -->    
     public static final Point THERMAL_ZERO = new Point(-4711, -4711);
     // // you can only specify a 'global' reference temperature, this is always
     // // Zero and cannot be changed (for now).

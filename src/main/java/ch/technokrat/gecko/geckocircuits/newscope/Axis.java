@@ -128,7 +128,7 @@ public final class Axis {
                 assert false;
                 break;
         }
-        _axisTickSettings.setAnzTicksMinor(_axisScale.getDefaultNumberMinorTicks());
+        _axisTickSettings.setNumTicksMinor(_axisScale.getDefaultNumberMinorTicks());
     }
 
     abstract class AbstractAxisScale {
@@ -156,7 +156,7 @@ public final class Axis {
         protected void drawMinorTicks(final Graphics2D g2D, final Axis otherAxis, final List<Tick> majorTicks) {
 
             final HiLoData axisMinMax = _axisMinMax.getLimits();            
-            final double yTickSpacingMinor = _tickSpacing / _axisTickSettings.getAnzTicksMinor();
+            final double yTickSpacingMinor = _tickSpacing / _axisTickSettings.getNumTicksMinor();
             final int yMinorTicksAnzahl = (int) ((axisMinMax.getIntervalRange()) / yTickSpacingMinor) + 2;
 
             if (yMinorTicksAnzahl <= 0 || majorTicks.size() < 2) {
@@ -164,9 +164,9 @@ public final class Axis {
             }
 
             for (int i = 0; i < majorTicks.size() - 1; i++) {
-                for (int j = 1; j < _axisTickSettings.getAnzTicksMinor(); j++) {
+                for (int j = 1; j < _axisTickSettings.getNumTicksMinor(); j++) {
                     final double value = majorTicks.get(i)._wert + j * (majorTicks.get(i + 1)._wert
-                            - majorTicks.get(i)._wert) / _axisTickSettings.getAnzTicksMinor();
+                            - majorTicks.get(i)._wert) / _axisTickSettings.getNumTicksMinor();
                     final Tick minorTick = new Tick(value, _axisTickSettings.getTickLengthMin(), false);
                     minorTick.drawTick(g2D, TECH_FORMAT.formatENG(minorTick._wert, DIGITS_TO_SHOW), _axisTickSettings.isShowLabelsMin());
                     if (_axisGridSettings.isShowGridNormalMinor()) {

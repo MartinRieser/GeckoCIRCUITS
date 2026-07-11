@@ -81,7 +81,7 @@ public final class GraferV4 extends JPanel {
             _manager.addDiagram(diag);
 
             for (AbstractCurve curve : diag.getCurves()) {
-                curve.setAxisConnection(AxisConnection.ZUORDNUNG_Y);
+                curve.setAxisConnection(AxisConnection.ASSIGNMENT_Y);
             }
         }
     }
@@ -152,9 +152,9 @@ public final class GraferV4 extends JPanel {
 
     public void setInitalCurveConnection(final int terminalNumber) {
         if(_manager.getDiagram(0) instanceof DiagramSignal) {
-            _manager.getDiagram(0).getCurve(terminalNumber - 1).setAxisConnection(AxisConnection.ZUORDNUNG_SIGNAL);
+            _manager.getDiagram(0).getCurve(terminalNumber - 1).setAxisConnection(AxisConnection.ASSIGNMENT_SIGNAL);
         } else {
-            _manager.getDiagram(0).getCurve(terminalNumber - 1).setAxisConnection(AxisConnection.ZUORDNUNG_Y);
+            _manager.getDiagram(0).getCurve(terminalNumber - 1).setAxisConnection(AxisConnection.ASSIGNMENT_Y);
         }
         
     }
@@ -220,7 +220,7 @@ public final class GraferV4 extends JPanel {
             AbstractCurve curve = diag.getCurve(i);
             curve.setSymbolEnabled(true);
             curve.setSymbol(GeckoSymbol.RECT_FILLED);
-            curve.setAxisConnection(AxisConnection.ZUORDNUNG_Y);
+            curve.setAxisConnection(AxisConnection.ASSIGNMENT_Y);
             curve.setColor(color);
             color = GeckoColor.getNextColor(color);
         }
@@ -260,7 +260,7 @@ public final class GraferV4 extends JPanel {
         for (int i = 0; i < numberCurves; i++) {
             AbstractCurve curve = diag.getCurve(i);
             curve.setSymbol(GeckoSymbol.RECT_FILLED);
-            curve.setAxisConnection(AxisConnection.ZUORDNUNG_Y);
+            curve.setAxisConnection(AxisConnection.ASSIGNMENT_Y);
             curve.setColor(color);
             color = GeckoColor.getNextColor(color);
         }

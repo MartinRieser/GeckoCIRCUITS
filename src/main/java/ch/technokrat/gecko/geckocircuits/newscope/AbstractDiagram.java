@@ -171,7 +171,7 @@ public abstract class AbstractDiagram extends JPanel {
                 @Override
                 public void mouseClicked(final MouseEvent mouseEvent) {
                     for (AbstractCurve curve : _curves) {
-                        if (curve.getAxisConnection() != AxisConnection.ZUORDNUNG_NIX
+                        if (curve.getAxisConnection() != AxisConnection.ASSIGNMENT_NONE
                                 && curve.getCurveLabel().isInSelectionWindow(mouseEvent)) {
                             _grafer.setSelectedCurve(curve);
                         }
@@ -197,7 +197,7 @@ public abstract class AbstractDiagram extends JPanel {
             super.paintComponent(graphics);
 
             for (AbstractCurve curve : _curves) {
-                if (curve.getAxisConnection() != AxisConnection.ZUORDNUNG_NIX) {
+                if (curve.getAxisConnection() != AxisConnection.ASSIGNMENT_NONE) {
                     curve.getCurveLabel().drawLabel(g2d);
                 }
             }
@@ -261,7 +261,7 @@ public abstract class AbstractDiagram extends JPanel {
     public boolean checkForY2Axis() {
         boolean hasAnyY2Axis = false;
         for (AbstractCurve curve : _curves) {
-            if (curve.getAxisConnection() == AxisConnection.ZUORDNUNG_Y2) {
+            if (curve.getAxisConnection() == AxisConnection.ASSIGNMENT_Y2) {
                 hasAnyY2Axis = true;
             }
         }
@@ -374,8 +374,8 @@ public abstract class AbstractDiagram extends JPanel {
     }
 
     private void calculateAutoScaleYBothYAxis(final AbstractDataContainer worksheetDaten) {
-        final HiLoData minMaxValue1 = calculateAutoScaleYMinMax(AxisConnection.ZUORDNUNG_Y, worksheetDaten);
-        final HiLoData minMaxValue2 = calculateAutoScaleYMinMax(AxisConnection.ZUORDNUNG_Y2, worksheetDaten);
+        final HiLoData minMaxValue1 = calculateAutoScaleYMinMax(AxisConnection.ASSIGNMENT_Y, worksheetDaten);
+        final HiLoData minMaxValue2 = calculateAutoScaleYMinMax(AxisConnection.ASSIGNMENT_Y2, worksheetDaten);
 
         if (minMaxValue1 != null) {            
             _yAxis1._axisMinMax.setGlobalAutoScaleValues(minMaxValue1);
@@ -400,7 +400,7 @@ public abstract class AbstractDiagram extends JPanel {
         
         for (int i = 0; i < this._curves.size(); i++) {
             AbstractCurve curve = this._curves.get(i);
-            if (curve.getAxisConnection() != AxisConnection.ZUORDNUNG_NIX) {
+            if (curve.getAxisConnection() != AxisConnection.ASSIGNMENT_NONE) {
                 forceLoad = (this._grafer._manager.getAllScopeSignals().get(curve.getValueDataIndex()) instanceof ExternalSignal);
                 try {                    
                     curve._curvePainter.loadRequiredData(container, forceLoad);                    
@@ -435,7 +435,7 @@ public abstract class AbstractDiagram extends JPanel {
     private void drawCurves(final Graphics2D g2d, final SliderContainer slider) {        
         int labelIndex = 0;
         for (AbstractCurve curve : _curves) {
-            if (curve.getAxisConnection() == AxisConnection.ZUORDNUNG_NIX) {
+            if (curve.getAxisConnection() == AxisConnection.ASSIGNMENT_NONE) {
                 curve.getCurveLabel().setLabelIndex(-1);
             } else {
                 final java.awt.Shape oldClip = g2d.getClip();

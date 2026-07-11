@@ -26,6 +26,10 @@ import ch.technokrat.gecko.i18n.bot.DLbot;
 import ch.technokrat.gecko.i18n.resources.EnglishMapper;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Language initialization (LangInit) GUI class.
+ * Provides the user interface for selecting and downloading localization data.
+ */
 @SuppressWarnings({"unchecked", "rawtypes", "serial"})
 public class LangInit extends javax.swing.JDialog implements PropertyChangeListener {
 

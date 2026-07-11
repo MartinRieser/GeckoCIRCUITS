@@ -598,7 +598,7 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
     private Point _moveStartPoint = new Point(0, 0);  // // Starting point (ScematicEntry coordinate) for moving/copying elements
     boolean connectorTestMode = false;
     public boolean wirePenVisible = false;
-    public int wireModeVersteckt = WIRE_MODE_LK;
+    public int hiddenWireMode = WIRE_MODE_LK;
     public static final int WIRE_MODE_OFF = 0, WIRE_MODE_LK = 1, WIRE_MODE_CONTROL = 2, WIRE_MODE_THERM = 3, WIRE_MODE_RELUCTANCE = 4;
     //
     int[] xStift, yStift;  // Symbol Zeichenstift

@@ -24,7 +24,7 @@ import java.awt.Window;
 import java.util.Arrays;
 import java.util.List;
 
-// Leistungskreis-Thyristor (Knickkennlinie)
+// Power circuit thyristor (piecewise linear characteristic)
 public final class Thyristor extends AbstractVoltageDropSwitch {
     private static final double WIDTH = 0.5;
     private static final double HEIGHT = 0.6;

@@ -89,7 +89,7 @@ public class SubCircuitSheet extends CircuitSheet {
             @Override
             public void actionPerformed(ActionEvent e) {
                 AbstractBlockInterface newElement = null;                                
-                switch(SchematicEditor2.Singleton.wireModeVersteckt) {
+                switch(SchematicEditor2.Singleton.hiddenWireMode) {
                     case SchematicEditor2.WIRE_MODE_LK:
                     case SchematicEditor2.WIRE_MODE_RELUCTANCE:
                     case SchematicEditor2.WIRE_MODE_THERM:

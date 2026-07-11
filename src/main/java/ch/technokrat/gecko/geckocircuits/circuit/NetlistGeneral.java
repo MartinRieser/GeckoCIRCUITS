@@ -135,9 +135,8 @@ public final class NetlistGeneral {
     // // Connections and element nodes are combined in potential areas --> pot[]
     private void createPotentialSheetConnectedGeometric() {
         //-----------------------------------
-        // // first all connections connected to each other and with
-        // gleichlautenden Labels behaftete Knoten in sogenannte "Potentiale"
-        // (--> PotentialGebiet) zusammengefasst :
+        // // first all connections connected to each other and nodes with
+        // identical labels are combined into "potentials" (PotentialArea):
         //
         // // first: one potential area per connection:
 

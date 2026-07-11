@@ -40,7 +40,7 @@ public final class IntegratorCalculation extends AbstractControlCalculatable imp
 
     @Override
     public void calculateYOUT(final double deltaT) {
-        if (_inputSignal[1][0] < 1) {   // normaler Betrieb - Integration  
+        if (_inputSignal[1][0] < 1) {   // normal operation - integration  
             
             _y11 = _y1old + _a1Val * deltaT * (_inputSignal[0][0] + _xold) / 2.0;
             if (_y11 <= _min) {
@@ -52,7 +52,7 @@ public final class IntegratorCalculation extends AbstractControlCalculatable imp
             _outputSignal[0][0] = _y11;
             _xold = _inputSignal[0][0];
             _y1old = _y11;
-        } else {// reset: alles auf Null bzw. Init            
+        } else { // reset: set to initial value            
             _xold = 0;
             _y1old = _y0Val;
             _outputSignal[0][0] = _y0Val;

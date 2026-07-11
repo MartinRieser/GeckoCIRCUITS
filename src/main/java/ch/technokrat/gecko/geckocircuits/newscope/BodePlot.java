@@ -58,8 +58,8 @@ public class BodePlot extends GeckoDialog {
         diag._xAxis.setAxisType(AxisLinLog.AXIS_LOGARITHMIC);
         
         _graferNew.getManager().addDiagram(diag);
-        _graferNew._manager.getDiagram(0).getCurve(1).setAxisConnection(AxisConnection.ZUORDNUNG_NIX);
-        diag.getCurve(1).setAxisConnection(AxisConnection.ZUORDNUNG_Y);
+        _graferNew._manager.getDiagram(0).getCurve(1).setAxisConnection(AxisConnection.ASSIGNMENT_NONE);
+        diag.getCurve(1).setAxisConnection(AxisConnection.ASSIGNMENT_Y);
         
         //_graferNew._manager.getDiagrams().get(0).setAllCurvesWithBars(new int[]{0});
         

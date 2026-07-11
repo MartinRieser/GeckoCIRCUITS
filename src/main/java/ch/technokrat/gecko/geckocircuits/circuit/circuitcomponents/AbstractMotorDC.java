@@ -66,7 +66,7 @@ abstract class AbstractMotorDC extends AbstractMotor {
     AbstractResistor _RAnker;
     AbstractVoltageSource _uEMK;
     double _emk = 0;
-    double _anchorCurrent; // anker strom               
+    double _armatureCurrent; // armature current               
 
     @Override
     void setTerminals() {
@@ -90,7 +90,7 @@ abstract class AbstractMotorDC extends AbstractMotor {
 
     @Override
     void calculateMotorEquations(final double deltaT, double time) {
-        _anchorCurrent = _LAnker.parameter[2];  // Ankerstrom        
+        _armatureCurrent = _LAnker.parameter[2];  // Ankerstrom        
         // Motor-Gleichungen durchrechnen -->         
         calculateEMK();
     }
@@ -156,7 +156,7 @@ abstract class AbstractMotorDC extends AbstractMotor {
     @Override
     void updateOldSolverParameters() {
         super.updateOldSolverParameters();
-        parameter[ANCHOR_CURRENT_INDEX] = _anchorCurrent;
+        parameter[ANCHOR_CURRENT_INDEX] = _armatureCurrent;
         parameter[getEMKIndex()] = _emk;
     }
 
