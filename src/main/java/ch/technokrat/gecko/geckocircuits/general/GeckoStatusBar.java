@@ -31,6 +31,10 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+/**
+ * Bottom status bar panel showing simulation status, memory consumption,
+ * and port registry connections.
+ */
 public class GeckoStatusBar extends JPanel {
 
     private static final long serialVersionUID = 1L;

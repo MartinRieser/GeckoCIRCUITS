@@ -24,6 +24,10 @@ import java.util.List;
 
 
 // // Power circuit Ideal switch (high or low resistance, therefore bidirectional)
+/**
+ * Model of an ideal switch.
+ * The switch has high or low resistance depending on its state (bidirectional).
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public final class IdealSwitch extends AbstractSwitch {
     private static final double WIDTH = 1.6;

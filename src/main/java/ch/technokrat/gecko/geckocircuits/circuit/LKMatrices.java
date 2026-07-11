@@ -26,6 +26,10 @@ import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.DiodeCharacte
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.SourceType;
 import java.text.NumberFormat;
 
+/**
+ * Stencils, stamps, and solves the system of Modified Nodal Analysis (MNA) equations (A * x = b)
+ * for the electrical and thermal networks.
+ */
 public class LKMatrices {
 
     private static final double FAST_NULL_R = 1e-9;

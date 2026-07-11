@@ -849,6 +849,9 @@ public enum I18nKeys {
                 + "Example: double FFT = getFourier(\"SCOPE.1\",2,0.00001,150e-3,20);<br> where the aforementioned coefficients for the e.g. 5th harmonic would be located in FFT[0][5], FFT[1][5], FFT[2][5], FFT[3][5]."),
     GET_FOURIER_2_DOC("Returns, as a two-dimensional array of doubles, calculated Fourier series coefficients for the"
                 + " waveform at SCOPE channel at port 0 (the upper-most port). Convenient for use with single-port SCOPEs."),
+    GET_SIGNAL_FOURIER_DOC("Calculates the Fourier series expansion coefficients of a named measurement signal."
+                + " The times in between which the calculation is to take place must also be specified."
+                + " The number of harmonics must also be specified. Returned is a two-dimensional array of coefficients."),
     SET_LOSS_FILE_DOC("Sets the detailed loss model file for a semiconductor element (IGBT, ideal"
                 + "switch, thyristor, or diode)."
                 + " Supply the full path name of the file or just the file name in the case it is located in the same directory"

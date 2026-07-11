@@ -15,6 +15,10 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
 import ch.technokrat.gecko.geckocircuits.general.SolverType;
 
+/**
+ * Calculator class for inductor elements.
+ * Handles the simulation equations and B-vector stamping for inductors.
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class InductorCalculator extends CircuitComponent implements BStampable,
         HistoryUpdatable {

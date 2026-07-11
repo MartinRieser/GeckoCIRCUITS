@@ -14,6 +14,10 @@
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
 
+/**
+ * Calculator class for the Ideal Switch component.
+ * Handles variable-resistance stamping for the switch's on and off states.
+ */
 public class IdealSwitchCalculator extends AbstractSwitchCalculator implements HistoryUpdatable {
 
     public IdealSwitchCalculator(final IdealSwitch parent) {

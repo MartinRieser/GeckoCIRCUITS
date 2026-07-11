@@ -15,6 +15,9 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
 import javax.swing.JPanel;
 
+/**
+ * User interface configuration dialog for the Ideal Switch component.
+ */
 class IdealSwitchDialog extends AbstractDialogPowerSwitch<IdealSwitch> {
 
     private static final long serialVersionUID = 1L;

@@ -32,6 +32,10 @@ import java.util.List;
 
 // Leistungskreis-IGBT (Knickkennlinie, Modifikation des THYR)
 @SuppressWarnings({"rawtypes", "unchecked"})
+/**
+ * Model of an Insulated-Gate Bipolar Transistor (IGBT).
+ * Represents a gate-controlled power semiconductor switch with forward voltage drop.
+ */
 public final class IGBT extends AbstractVoltageDropSwitch implements HiddenSubCircuitable {
 
     private static final double WIDTH = 0.7;

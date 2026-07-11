@@ -42,6 +42,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Model of an ideal transformer.
+ * Couples primary and secondary windings with a defined windings turns ratio.
+ */
 @SuppressWarnings({"this-escape", "rawtypes", "unchecked"})
 public class IdealTransformer extends AbstractCircuitBlockInterface implements HiddenSubCircuitable, CurrentMeasurable, DirectVoltageMeasurable {
 

@@ -23,6 +23,10 @@ import java.util.List;
 // koppelbare Leistungskreis-Induktivitaet [H]
 // // behind it there is not a subcircuit, but the linearized Martix equation of the topology
 // // expanded to include the currents in these coupled inductors --> improved numerical stability
+/**
+ * Model of a magnetically coupleable power circuit inductor.
+ * Integrates directly with mutual coupling elements and solves using extended matrix equations.
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public final class InductorCoupable extends AbstractInductor  {    
     private static final int DOT_DIAMETER = 5;

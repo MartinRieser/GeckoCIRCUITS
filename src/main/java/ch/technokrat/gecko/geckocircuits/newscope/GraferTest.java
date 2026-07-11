@@ -16,6 +16,9 @@ package ch.technokrat.gecko.geckocircuits.newscope;
 
 import java.awt.Dimension;
 
+/**
+ * Test JFrame window containing a {@link GraferV4} scope for visual validation of plot layouts.
+ */
 public class GraferTest extends javax.swing.JFrame {
     private static final long serialVersionUID = 1L;
     private final transient GraferV4 _grafer;    

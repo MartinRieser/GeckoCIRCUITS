@@ -19,6 +19,10 @@ import javax.swing.JButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
+/**
+ * Utility factory for creating internationalized Swing components (menus, menu items, buttons)
+ * with translation pop-up support enabled.
+ */
 public final class GuiFabric {    
     
     

@@ -31,6 +31,10 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+/**
+ * Registry manager for Gecko RMI (Remote Method Invocation) interface.
+ * Handles binding, local/remote IP queries, port configurations, and registration lifecycle.
+ */
 @SuppressWarnings("deprecation")
 public class GeckoRemoteRegistry {
 

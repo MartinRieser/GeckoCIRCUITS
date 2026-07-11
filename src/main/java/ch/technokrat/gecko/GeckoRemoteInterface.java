@@ -340,6 +340,7 @@ public interface GeckoRemoteInterface extends Remote {
     double getSignalRipple(String signalName, double startTime, double endTime) throws RemoteException;
 
     @Category(MethodCategory.SIGNAL_PROCESSING)
+    @Documentation(I18nKeys.GET_SIGNAL_FOURIER_DOC)
     @Declaration("double[][] getSignalFourier(String signalName, double startTime, double endTime, int harmonics)")
     double[][] getSignalFourier(String signalName, double startTime, double endTime, int harmonics) throws RemoteException;        
 

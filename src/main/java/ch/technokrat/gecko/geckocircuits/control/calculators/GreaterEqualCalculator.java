@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Comparator calculator that outputs 1 if input[0] >= input[1], otherwise 0.
+ */
 public final class GreaterEqualCalculator extends AbstractTwoInputsOneOutputCalculator {    
 
     @Override

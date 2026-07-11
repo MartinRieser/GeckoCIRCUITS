@@ -13,6 +13,15 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
+/**
+ * Interface for components that maintain history/states during simulation.
+ * Allows updating history states based on calculated node potentials.
+ */
 public interface HistoryUpdatable {
+    /**
+     * Updates the component history/state variables.
+     *
+     * @param p the array of current node potentials and source currents
+     */
     public abstract void updateHistory(double[] p);
 }

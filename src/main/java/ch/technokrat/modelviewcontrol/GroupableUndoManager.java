@@ -20,23 +20,47 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 
+/**
+ * Extends {@link UndoManager} to support grouping multiple edits.
+ * Allows executing undo/redo operations on composite groups of edits atomically.
+ */
 public final class GroupableUndoManager extends UndoManager{
   private static final long serialVersionUID = 1L;
+
+  /**
+   * Performs the undo action on the edit history.
+   *
+   * @throws CannotUndoException if undo cannot be performed
+   */
   @Override
   public synchronized void undo() throws CannotUndoException{
     super.undo();
   }
 
+  /**
+   * Adds an edit to this undo manager.
+   *
+   * @param anEdit the edit to add
+   * @return true if the edit was successfully added
+   */
   @Override
   public synchronized boolean addEdit(final UndoableEdit anEdit){
     return super.addEdit(anEdit);
   }
 
+  /**
+   * Performs the redo action on the edit history.
+   *
+   * @throws CannotRedoException if redo cannot be performed
+   */
   @Override
   public synchronized void redo(){
     super.redo();
   }
 
+  /**
+   * Marker edit indicating the start of a grouped undo operation.
+   */
   public static final class GroupUndoStart implements UndoableEdit{
     private final List<UndoableEdit> _mergedEdits = new ArrayList<UndoableEdit>();
     private boolean otherEditsAccepted = true;
@@ -106,6 +130,10 @@ public final class GroupableUndoManager extends UndoManager{
     }
   }
 
+  /**
+   * Marker edit indicating the end of a grouped undo operation.
+   * Holds the list of merged edits that occurred since the matching start.
+   */
   public final static class GroupUndoStop implements UndoableEdit{
     private final GroupUndoStart _matchingStart;
     private List<UndoableEdit> _editList;

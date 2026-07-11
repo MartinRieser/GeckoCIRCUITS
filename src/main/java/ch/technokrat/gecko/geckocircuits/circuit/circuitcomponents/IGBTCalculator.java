@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
+/**
+ * Calculator class for IGBT.
+ * Handles the simulation calculations, matrix stamping, and current computation for the IGBT component.
+ */
  public final class IGBTCalculator extends AbstractSwitchCalculator implements CurrentCalculatable {
 
 

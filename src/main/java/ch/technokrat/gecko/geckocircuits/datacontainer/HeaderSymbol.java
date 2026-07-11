@@ -15,6 +15,9 @@ package ch.technokrat.gecko.geckocircuits.datacontainer;
 
 
 
+/**
+ * Defines character symbols used as headers or comment prefixes in exported data files.
+ */
 public enum HeaderSymbol {
 
     /**

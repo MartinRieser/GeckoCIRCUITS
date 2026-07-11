@@ -22,6 +22,9 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+/**
+ * User interface configuration dialog for the IGBT component.
+ */
 public final class IGBTDialog extends AbstractDialogPowerSwitch<IGBT> {
 
     private static final long serialVersionUID = 1L;

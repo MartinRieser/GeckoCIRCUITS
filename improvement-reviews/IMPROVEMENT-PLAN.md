@@ -352,5 +352,5 @@ After editing, run: mvn -T 1C clean compile
 [x] Phase 6: Bug fixes + regression    (4 batches)   mvn -T 1C clean compile && mvn -T 1C test
 [x] Phase 7: German -> English         (4 batches)   mvn -T 1C clean compile && mvn -T 1C test
 [x] Phase 8: Javadoc (bulk)            (16 batches)  mvn -T 1C clean compile
-[ ] Final: Full verification                         mvn -T 1C clean verify
+[x] Final: Full verification                         mvn -T 1C clean verify
 ```

@@ -35,6 +35,11 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 @SuppressWarnings("unchecked")
+/**
+ * Abstract user interface panel for detailed semiconductor loss curves visualization and editing.
+ *
+ * @param <T> the type of LossCurve
+ */
 abstract class DetailledLossPanel<T extends LossCurve> extends JPanel {
 
     private static final long serialVersionUID = 1L;

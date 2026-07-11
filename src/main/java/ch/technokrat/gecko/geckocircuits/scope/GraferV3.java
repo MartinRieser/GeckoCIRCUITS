@@ -33,6 +33,11 @@ import java.text.NumberFormat;
 /*
  * this is the "old scope", in future, replace with "newScope"
  */
+/**
+ * Legacy scope graphing component.
+ *
+ * @deprecated replaced by {@link ch.technokrat.gecko.geckocircuits.newscope.GraferV4}
+ */
 @SuppressWarnings("serial")
 @Deprecated
 public class GraferV3 extends JPanel {

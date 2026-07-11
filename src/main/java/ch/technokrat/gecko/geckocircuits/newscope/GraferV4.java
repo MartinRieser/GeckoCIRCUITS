@@ -28,6 +28,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 
+/**
+ * Primary scope graphing component in GeckoCIRCUITS.
+ * Manages multiple sub-diagrams, curves, grid layouts, and user mouse/wheel actions (zoom, pan).
+ */
 public final class GraferV4 extends JPanel {
 
     private static final long serialVersionUID = 364726123473711L;

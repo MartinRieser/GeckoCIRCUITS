@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.general;
 
+/**
+ * Generic runtime exception thrown by the GeckoCIRCUITS simulation kernel or UI classes.
+ */
 public class GeckoRuntimeException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;

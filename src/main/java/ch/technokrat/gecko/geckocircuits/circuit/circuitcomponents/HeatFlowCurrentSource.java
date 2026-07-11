@@ -16,6 +16,10 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Heat flow current source component in the thermal domain.
+ * Models a source of thermal heat flow (in Watts).
+ */
 class HeatFlowCurrentSource  extends AbstractCurrentSource {
     static final AbstractTypeInfo TYPE_INFO = 
             new ThermalTypeInfo(HeatFlowCurrentSource.class, "HEAT-SOURCE", I18nKeys.HEAT_SOURCE_W);    

@@ -42,6 +42,10 @@ import javax.swing.JOptionPane;
 
 // TODO: Future developer: This class needs refactoring when you have time and understand the full context.
 
+/**
+ * Base abstract class for all nonlinear circuit elements.
+ * Supports nonlinear parameter curves, dynamic linearization, and external file settings.
+ */
 public abstract class AbstractNonLinearCircuitComponent extends AbstractTwoPortPowerCircuitBlock 
 implements Operationable, Nonlinearable {       
     

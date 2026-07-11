@@ -16,6 +16,10 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 import ch.technokrat.gecko.geckocircuits.general.SolverType;
 import java.util.ArrayList;
 
+/**
+ * Calculator class for coupled inductors.
+ * Extends {@link InductorCalculator} to handle magnetic coupling current updates and solver formulations.
+ */
 public class InductorCouplingCalculator extends InductorCalculator {
 
     private ArrayList<InductorCouplingCalculator> allInductorsTmp = new ArrayList<InductorCouplingCalculator>();

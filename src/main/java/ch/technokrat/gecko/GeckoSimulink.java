@@ -24,6 +24,10 @@ import java.io.FileNotFoundException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Interface coordinator for Simulink integration.
+ * Enables control exchange, state monitoring, and remote file opening under SIMULINK mode.
+ */
 public class GeckoSimulink {
 
     private long tStartSimulink, tEndSimulink;

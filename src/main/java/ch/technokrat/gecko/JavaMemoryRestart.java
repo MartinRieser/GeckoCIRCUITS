@@ -23,6 +23,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @SuppressWarnings("removal")  // AccessControlException is deprecated but required for legacy applet security
+/**
+ * Utility class to check JVM memory parameters and handle restarts with custom heap limits.
+ */
 final class JavaMemoryRestart {
 
     private static final int MINIMUM_MEM_MB = 128;
