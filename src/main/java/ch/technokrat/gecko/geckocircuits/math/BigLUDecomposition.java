@@ -128,7 +128,7 @@ public class BigLUDecomposition implements java.io.Serializable {
 
             // Compute multipliers.
 
-            if (j < m & LU[j][j].abs().doubleValue() > PIVOT_THRESHOLD) {
+            if (j < m && LU[j][j].abs().doubleValue() > PIVOT_THRESHOLD) {
                 for (int i = j + 1; i < m; i++) {
                     LU[i][j] = LU[i][j].divide(LU[j][j], mc);
                 }

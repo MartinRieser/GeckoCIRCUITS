@@ -33,7 +33,7 @@ public final class ControlSparseMatrix extends ControlBlock {
         XIN.add(new TerminalControlInputWithLabel(this, X_POS_IN, -XIN.size(), "fp"));
         XIN.add(new TerminalControlInputWithLabel(this, X_POS_IN, -XIN.size(), "uN1"));
         XIN.add(new TerminalControlInputWithLabel(this, X_POS_IN, -XIN.size(), "uN2"));
-        XIN.add(new TerminalControlInputWithLabel(this, X_POS_IN, -XIN.size(), "uN2"));
+        XIN.add(new TerminalControlInputWithLabel(this, X_POS_IN, -XIN.size(), "uN3"));
         XIN.add(new TerminalControlInputWithLabel(this, X_POS_IN, -XIN.size(), "uNmax"));
         XIN.add(new TerminalControlInputWithLabel(this, X_POS_IN, -XIN.size(), "uLmax"));
         XIN.add(new TerminalControlInputWithLabel(this, X_POS_IN, -XIN.size(), "ufL"));
@@ -59,8 +59,11 @@ public final class ControlSparseMatrix extends ControlBlock {
 
     @Override
     public I18nKeys[] getOutputDescription() {
-        return new I18nKeys[]{I18nKeys.GATE_SIGNAL, I18nKeys.GATE_SIGNAL,
-            I18nKeys.GATE_SIGNAL, I18nKeys.GATE_SIGNAL, I18nKeys.GATE_SIGNAL, I18nKeys.GATE_SIGNAL, I18nKeys.GATE_SIGNAL, I18nKeys.GATE_SIGNAL};
+        return new I18nKeys[]{
+            I18nKeys.GATE_SIGNAL, I18nKeys.GATE_SIGNAL, I18nKeys.GATE_SIGNAL,
+            I18nKeys.GATE_SIGNAL, I18nKeys.GATE_SIGNAL, I18nKeys.GATE_SIGNAL,
+            I18nKeys.GATE_SIGNAL, I18nKeys.GATE_SIGNAL, I18nKeys.GATE_SIGNAL
+        };
     }
 
     @Override

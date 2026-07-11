@@ -231,7 +231,7 @@ public final class ControlSaveData extends ControlBlock implements Operationable
             if (percentage == HUNDRED_PERCENT) {
                 _statusTxt = "Finished";
             } else {
-                _statusTxt = "Saving: " + _dataSaver.getPercentage() + "%";
+                _statusTxt = "Saving: " + percentage + "%";
             }
         }
 

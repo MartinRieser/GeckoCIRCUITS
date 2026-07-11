@@ -264,27 +264,11 @@ public final class CBLAS {
     public static native void dspmv(int order, int uplo, int n, double alpha, double[] ap, double[] x, int incx, double beta, double[] y, int incy);
 
     /**
-     * Computes a matrix-vector product using a symmetric packed matrix: y := alpha*A*x + beta*y
-     * @param uplo Specifies whether the upper or lower triangular part of the
-     * matrix A is supplied in the packed array ap. uplo If uplo = 'U' or 'u',
-     * then the upper triangular part of the matrix A is supplied in the packed
-     * array ap . If uplo = 'L' or 'l', then the low triangular part of the
-     * matrix A is supplied in the packed array ap .
-     * @param n Specifies the order of the matrix a. The value of n must be at least zero.
-     * @param alpha Specifies the scalar alpha.
-     * @param ap Before entry with uplo = 'U' or 'u', the array ap must contain the
-     * upper triangular part of the symmetric matrix packed sequentially, column-by-column,
-     * so that ap(1) contains a(1,1), ap(2) and ap(3) contain a(1,2) and a(2, 2) respectively,
-     * and so on. Before entry with uplo = 'L' or 'l', the array ap must contain the lower triangular
-     * part of the symmetric matrix packed sequentially, column-by-column, so that ap(1) contains
-     * a(1,1), ap(2) and ap(3) contain a(2,1) and a(3,1) respectively, and so on.
-     * @param x Array, DIMENSION at least (1 + (n - 1)*abs(incx)). Before entry, the incremented
-     * array x must contain the n-element vector x.
-     * @param incx Specifies the increment for the elements of x. The value of incx must not be zero.
-     * @param beta Specifies the scalar beta. When beta is supplied as zero, then y need not be set on input.
-     * @param y Array, DIMENSION at least (1 + (n - 1)*abs(incy)). Before entry, the incremented array y
-     * must contain the n-element vector y.
-     * @param incy Specifies the increment for the elements of y. The value of incy must not be zero.
+     * Computes a matrix-vector product using a symmetric packed matrix: y := A*x
+     * @param n Specifies the order of the matrix. The value of n must be at least zero.
+     * @param ap Before entry, the array ap must contain the symmetric matrix packed sequentially.
+     * @param x Array of size at least n. Before entry, the array x must contain the vector x.
+     * @param y Array of size at least n. On exit, the array y contains the resulting vector y.
      */
     public static native void cspmv(int n, float[] ap, float[] x, float[] y);
 

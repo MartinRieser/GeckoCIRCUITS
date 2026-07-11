@@ -59,7 +59,7 @@ public enum CircuitSourceType {
         return _outputString;
     }
 
-    public double getNewID() {
+    public int getNewID() {
         return _newGeckoID;
     }
     

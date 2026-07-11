@@ -16,6 +16,10 @@ package ch.technokrat.gecko.geckocircuits.control;
 import ch.technokrat.gecko.GeckoSim;
 import ch.technokrat.gecko.geckocircuits.newscope.GeckoDialog;
 
+/**
+ * A dialog window for stepping through and debugging control block execution.
+ * Displays information about the simulation time, current, previous, and next control blocks.
+ */
 public class ControlDebugWindow extends GeckoDialog {
 
     private static final long serialVersionUID = 1L;
@@ -133,7 +137,7 @@ public class ControlDebugWindow extends GeckoDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
+        // TODO: Implement single block-step debugging logic. Currently acts as a placeholder.
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButtonCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCloseActionPerformed

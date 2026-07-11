@@ -236,6 +236,15 @@ public final class ControlTransferFunction extends AbstractControlSingleInputSin
         }
     }
 
+    /**
+     * Clears all poles, zeros, and numerator/denominator polynomial coefficients.
+     * 
+     * <p><strong>Note on Potential Bug / Oddity:</strong>
+     * The loop for clearing poles and zeros iterates over {@code _poles.length} but calls {@code setZero(0, i)},
+     * assuming that {@code _poles} and {@code _zeros} always have the same length. If their lengths were
+     * to differ in the future, this would cause an {@link ArrayIndexOutOfBoundsException}.
+     * </p>
+     */
     public void clearPolesAndZeros() {
         for (int i = 0; i < _poles.length; i++) {
             _poles[i] = 0;

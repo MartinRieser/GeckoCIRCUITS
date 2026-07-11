@@ -365,7 +365,7 @@ public final class ControlOSZI extends ControlBlock implements VariableTerminalN
         }
 
         final TokenMap windowSettingsMap = tokenMap.getBlockTokenMap("<ScopeWindowSettings>");
-        if (settingsMap != null) {
+        if (windowSettingsMap != null) {
             _scopeFrame.importIndividualCONTROL(windowSettingsMap);
         }
 

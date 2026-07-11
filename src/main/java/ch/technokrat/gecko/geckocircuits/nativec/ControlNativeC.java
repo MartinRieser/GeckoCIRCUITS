@@ -194,7 +194,12 @@ public final class ControlNativeC extends ControlBlock implements VariableTermin
                     _nativeCBlock.unloadLibraries();
                     _nativeCBlock = null;
                 }
-                String errorStr = "Could not load Native Library " + _libFile.getFileName() + " !";
+                String errorStr;
+                if (_libFile != null && _libFile.getFileName() != null) {
+                    errorStr = "Could not load Native Library " + _libFile.getFileName() + " !";
+                } else {
+                    errorStr = "No valid Native Library selected!";
+                }
                 System.err.println(errorStr);
                 JOptionPane.showMessageDialog(null, errorStr, "Error", JOptionPane.ERROR_MESSAGE);
                 } catch (Exception ex) {

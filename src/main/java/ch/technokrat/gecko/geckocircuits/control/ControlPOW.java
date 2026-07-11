@@ -32,7 +32,7 @@ public final class ControlPOW extends ControlBlock {
 
     @Override
     public AbstractControlCalculatable getInternalControlCalculatableForSimulationStart() {
-        return new AbstractControlCalculatable(1, 1) {
+        return new AbstractControlCalculatable(2, 1) {
 
             @Override
             public void calculateYOUT(final double deltaT) {

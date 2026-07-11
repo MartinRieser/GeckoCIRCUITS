@@ -89,9 +89,7 @@ public class DataContainerSimple extends AbstractDataContainer implements DataCo
         }
 
 
-        if (column < _data[row].length) {
-            _data[row][column] = value;
-        }
+        _data[row][column] = value;
     }
 
     @Override

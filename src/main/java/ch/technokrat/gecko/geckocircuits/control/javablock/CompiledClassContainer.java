@@ -17,6 +17,8 @@ import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
 import java.io.Serializable;
 
 /**
+ * A container class that holds the compiled bytecode (as a byte array) and
+ * the corresponding Java source code string for dynamically compiled Java blocks.
  *
  * @author andreas
  */
@@ -26,18 +28,31 @@ public final class CompiledClassContainer implements Serializable {
     private final byte[] _classBytes;
     private final String _sourceString;
 
+    /**
+     * Constructs an empty CompiledClassContainer with no bytecode and an empty source string.
+     */
     public CompiledClassContainer() {
         _classBytes = null;
         _sourceString = "";
     }
     
+    /**
+     * Constructs a CompiledClassContainer with the given compiled bytecode and source string.
+     *
+     * @param classBytes the compiled Java bytecode
+     * @param sourceString the corresponding Java source code
+     */
     public CompiledClassContainer(final byte[] classBytes, final String sourceString) {
         _classBytes = new byte[classBytes.length];
         _sourceString = sourceString;
         System.arraycopy(classBytes, 0, _classBytes, 0, classBytes.length);  
     }
     
-    
+    /**
+     * Constructs a CompiledClassContainer by reading the bytecode from the given token map.
+     *
+     * @param tokenMap the map containing serialization data
+     */
     public CompiledClassContainer(final TokenMap tokenMap) {
         if (tokenMap.containsToken("classBytesNew[]")) {
             _classBytes = tokenMap.readDataLine("classBytesNew[]", new byte[0]);
@@ -47,12 +62,25 @@ public final class CompiledClassContainer implements Serializable {
         _sourceString = "";
     }
     
+    /**
+     * Returns a copy of the compiled class bytes. If no bytecode is present, returns an empty array.
+     *
+     * @return the compiled bytecode as a copy
+     */
     public byte[] getClassBytes() {
+        if (_classBytes == null) {
+            return new byte[0];
+        }
         final byte[] returnValue = new byte[_classBytes.length];
         System.arraycopy(_classBytes, 0, returnValue, 0, _classBytes.length);
         return returnValue;
     }
     
+    /**
+     * Returns the corresponding Java source code string.
+     *
+     * @return the source code string
+     */
     public String getSourceString() {
         return _sourceString;
     }

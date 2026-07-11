@@ -414,52 +414,54 @@ public class BigMatrix implements java.io.Serializable {
    @param input the input stream.
    */
 
-   @SuppressWarnings({"unchecked", "rawtypes"})
-   public static Matrix read (BufferedReader input) throws java.io.IOException {
+   public static BigMatrix read (BufferedReader input) throws java.io.IOException {
       StreamTokenizer tokenizer= new StreamTokenizer(input);
 
       // Although StreamTokenizer will parse numbers, it doesn't recognize
-      // scientific notation (E or D); however, Double.valueOf does.
+      // scientific notation (E or D); however, BigDecimal valueOf does.
       // The strategy here is to disable StreamTokenizer's number parsing.
       // We'll only get whitespace delimited words, EOL's and EOF's.
-      // These words should all be numbers, for Double.valueOf to parse.
+      // These words should all be numbers, for BigDecimal to parse.
 
       tokenizer.resetSyntax();
       tokenizer.wordChars(0,255);
       tokenizer.whitespaceChars(0, ' ');
       tokenizer.eolIsSignificant(true);
-      java.util.Vector v = new java.util.Vector();
+      java.util.List<BigDecimal> firstRow = new java.util.ArrayList<>();
 
       // Ignore initial empty lines
       while (tokenizer.nextToken() == StreamTokenizer.TT_EOL);
       if (tokenizer.ttype == StreamTokenizer.TT_EOF)
 	throw new java.io.IOException("Unexpected EOF on matrix read.");
       do {
-         v.addElement(Double.valueOf(tokenizer.sval)); // Read & store 1st row.
+         firstRow.add(new BigDecimal(tokenizer.sval)); // Read & store 1st row.
       } while (tokenizer.nextToken() == StreamTokenizer.TT_WORD);
 
-      int n = v.size();  // Now we've got the number of columns!
-      double row[] = new double[n];
+      int n = firstRow.size();  // Now we've got the number of columns!
+      java.util.List<BigDecimal[]> rows = new java.util.ArrayList<>();
+      BigDecimal[] row = new BigDecimal[n];
       for (int j=0; j<n; j++)  // extract the elements of the 1st row.
-         row[j]=((Double)v.elementAt(j)).doubleValue();
-      v.removeAllElements();
-      v.addElement(row);  // Start storing rows instead of columns.
+         row[j]=firstRow.get(j);
+      rows.add(row);  // Start storing rows.
       while (tokenizer.nextToken() == StreamTokenizer.TT_WORD) {
          // While non-empty lines
-         v.addElement(row = new double[n]);
+         row = new BigDecimal[n];
+         rows.add(row);
          int j = 0;
          do {
             if (j >= n) throw new java.io.IOException
-               ("Row " + v.size() + " is too long.");
-            row[j++] = Double.valueOf(tokenizer.sval).doubleValue();
+               ("Row " + rows.size() + " is too long.");
+            row[j++] = new BigDecimal(tokenizer.sval);
          } while (tokenizer.nextToken() == StreamTokenizer.TT_WORD);
          if (j < n) throw new java.io.IOException
-            ("Row " + v.size() + " is too short.");
+            ("Row " + rows.size() + " is too short.");
       }
-      int m = v.size();  // Now we've got the number of rows.
-      double[][] A = new double[m][];
-      v.copyInto(A);  // copy the rows out of the vector
-      return new Matrix(A);
+      int m = rows.size();  // Now we've got the number of rows.
+      BigDecimal[][] A = new BigDecimal[m][];
+      for (int i=0; i<m; i++) {
+         A[i] = rows.get(i);
+      }
+      return new BigMatrix(A);
    }
 
 

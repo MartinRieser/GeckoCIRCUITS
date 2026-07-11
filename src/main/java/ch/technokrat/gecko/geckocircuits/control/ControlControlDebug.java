@@ -18,6 +18,11 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalc
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+/**
+ * A control block representing a debugging breakpoint. It opens a debugger
+ * stepping window ({@link ControlDebugWindow}) when double-clicked, allowing
+ * simulation stepping or inspection.
+ */
 public class ControlControlDebug extends ControlBlock {
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlControlDebug.class,"CTRL_DEBUG", I18nKeys.DEBUGGING_STEP);
