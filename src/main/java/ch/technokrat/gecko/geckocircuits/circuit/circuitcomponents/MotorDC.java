@@ -24,6 +24,11 @@ import java.awt.Window;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * DC machine model with separate field excitation winding.
+ * Supports configurable field inductance, resistance, windings, and
+ * initial field current.
+ */
 public final class MotorDC extends AbstractMotorDC { 
     private static final int YPOS_EXCITATION_1 = -2;
     private static final double MID_POSITION = 1.5;

@@ -27,6 +27,9 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Dialog for configuring the parameters of an OperationalAmplifier component.
+ */
 final class OperationalAmplifierDialog extends DialogElementLK<OperationalAmplifier> {
 
     private static final long serialVersionUID = 1L;

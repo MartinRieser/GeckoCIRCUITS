@@ -14,8 +14,16 @@
 package ch.technokrat.gecko.geckocircuits.math;
 
 /**
-* The Polynomials class contains methods to handle Polynomials and Rational Functions.
-*/
+ * Utility class for polynomial arithmetic, e.g. polynomial division (poldiv).
+ * Usage example:
+ * <pre>
+ *   float[] u = {1, 2, 3}; // 1 + 2x + 3x^2
+ *   float[] v = {1, 1};    // 1 + x
+ *   float[] q = new float[3];
+ *   float[] r = new float[3];
+ *   Polynomials.poldiv(u, 2, v, 1, q, r);
+ * </pre>
+ */
 public class Polynomials extends Object {
 
    /**
@@ -24,6 +32,13 @@ public class Polynomials extends Object {
    * v giving a quotient polynomial whose coefficients are returned in q[0..n], and a
    * remainder polynomial whose coefficients are returned in r[0..n]. The elements r[nv..n]
    * and q[n-nv+1..n] are returned as zero.
+   *
+   * @param u  coefficients of the numerator polynomial (degree n)
+   * @param n  the degree of polynomial u
+   * @param v  coefficients of the denominator polynomial (degree nv)
+   * @param nv the degree of polynomial v
+   * @param q  output array for quotient coefficients (length n+1)
+   * @param r  output array for remainder coefficients (length n+1)
    */
    public static void poldiv(float u[], int n, float v[], int nv, float q[], float r[])
    {

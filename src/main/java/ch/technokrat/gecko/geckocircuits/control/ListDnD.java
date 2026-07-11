@@ -18,6 +18,10 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
  
+/**
+ * Drag-and-drop list test utility. Demonstrates drag-and-drop transfer between two JList components.
+ * This class is a demo/example and may not be used in production.
+ */
 public class ListDnD {
     ReportingListTransferHandler arrayListHandler =
                          new ReportingListTransferHandler();

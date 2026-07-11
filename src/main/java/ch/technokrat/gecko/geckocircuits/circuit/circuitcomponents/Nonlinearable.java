@@ -16,6 +16,10 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.GeckoFileable;
 
+/**
+ * Contract for circuit components that support a user-defined non-linear characteristic,
+ * e.g. non-linear inductors or reluctances.
+ */
 public interface Nonlinearable extends GeckoFileable {
     String getNonlinearFileEnding();
 

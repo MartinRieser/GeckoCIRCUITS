@@ -16,7 +16,7 @@ package ch.technokrat.gecko.geckocircuits.nativec;
 
 /**
  * This Class provides Interface Prototype functions.
- * The functions init() and calcOutputs(...) are intended to be overwritten
+ * The functions init() and calcOutputs(...) are intended to be implemented
  * by native functions.
  * Using the Interface makes the method call easier.
  * 
@@ -24,9 +24,24 @@ package ch.technokrat.gecko.geckocircuits.nativec;
  */
 public interface InterfaceNativeCWrapper {
     
+    /**
+     * Loads the native library with the specified name.
+     * @param name the library name to load
+     */
     public void loadLibrary (String name);
     
+    /**
+     * Initializes parameters before calling native functions.
+     */
     public void initParameters ();
     
+    /**
+     * Calls the native calculation function.
+     * @param xINVector input vector for the native function
+     * @param xOUTVector output vector from the native function
+     * @param numberOfOuts number of output values
+     * @param time current simulation time
+     * @param deltaT simulation time step
+     */
     public void calcOutputs (double[] xINVector, double[] xOUTVector, int numberOfOuts, double time, double deltaT);
 }

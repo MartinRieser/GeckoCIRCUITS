@@ -14,8 +14,10 @@
 package ch.technokrat.gecko.geckocircuits.circuit.losscalculation;
 
 /**
- * This is a class to "package" losses being returned by loss-calculators - so we can keep switching and conduction losses separate for
- * semiconductor components. Wrapping them in an object is more "proper" than returning an array.
+ * Container that packages switching and conduction losses returned by loss calculators.
+ * Keeps the two loss components separate for semiconductor components.
+ * Usage example: {@code new LossContainer(conductionW, switchingW)} then retrieve via
+ * {@link #getTotalLosses()}, {@link #getConductionLosses()}, or {@link #getSwitchingLosses()}.
  * @author anstupar
  */
 public class LossContainer {

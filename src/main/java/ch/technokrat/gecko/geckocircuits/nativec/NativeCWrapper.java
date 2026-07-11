@@ -30,18 +30,20 @@ public class NativeCWrapper implements InterfaceNativeCWrapper {
     }
 
     /**
-     * function is called every timestep
-     * @param xINVector the input vector
-     * @param numberOfOuts number of Outputs of the Native C/C++ Block
-     * @param time  current time
-     * @param deltaT    time difference
-     * @return Array with dimension of numberOfOuts, with the computed outputs
+     * Calculates the output values from the input vector using the native library.
+     *
+     * @param xINVector    the input vector
+     * @param xOUTVector   the output vector to be filled by the native method
+     * @param numberOfOuts number of outputs of the native C/C++ block
+     * @param time         current simulation time
+     * @param deltaT       simulation time step
      */
     @Override
     public native void calcOutputs(double[] xINVector, double[] xOUTVector, int numberOfOuts, double time, double deltaT);
 
     /**
-     * function called at time t=0 to initialize parameters
+     * Initializes the native C/C++ block parameters at the start of the simulation (t=0).
+     * This is a native method implemented in the external C/C++ library.
      */
     @Override
     public native void initParameters();

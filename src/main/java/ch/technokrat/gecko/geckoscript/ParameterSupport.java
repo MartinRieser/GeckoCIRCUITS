@@ -27,6 +27,10 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
 
+/**
+ * GUI frame for browsing and displaying accessible parameters and outputs for GeckoSCRIPT.
+ * Parameters are resolved by traversing block type information and registered parameter lists.
+ */
 @SuppressWarnings({"unchecked", "rawtypes", "serial"})
 public class ParameterSupport extends javax.swing.JFrame {
     private static final long serialVersionUID = 1L;

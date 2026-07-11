@@ -13,6 +13,15 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
+/**
+ * Interface for components that require post-solve processing after each simulation step.
+ */
 public interface PostProcessable {
+    /**
+     * Performs post-processing calculations.
+     *
+     * @param dt   the time step size
+     * @param time the current simulation time
+     */
     public void doPostProcess(double dt, double time);
 }

@@ -15,12 +15,19 @@ package ch.technokrat.gecko.geckocircuits.circuit.losscalculation;
 
 
 /**
- * Whenever a loss calculation can be split into conduction and switching losses,
- * the conduction loss class should implement this interface.
+ * Interface for loss calculations that can be split into separate switching and conduction loss components.
  * @author andy
  */
 
 public interface LossCalculationSplittable {
+    /**
+     * Returns the total switching loss in watts.
+     * @return switching loss in W
+     */
     double getSwitchingLoss();
+    /**
+     * Returns the total conduction loss in watts.
+     * @return conduction loss in W
+     */
     double getConductionLoss();
 }

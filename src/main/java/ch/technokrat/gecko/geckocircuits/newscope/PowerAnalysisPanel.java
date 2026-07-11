@@ -32,6 +32,8 @@ import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
 /**
+ * Panel for power analysis (P, Q, S, D, cos(phi)) per phase (A, B, C),
+ * with combo boxes for voltage/current signal selection and result display.
  *
  * @author andy
  */
@@ -41,7 +43,7 @@ public final class PowerAnalysisPanel extends JPanel {
     private static final long serialVersionUID = 1L;
     private final JComboBox<String>[] _comboU = new JComboBox[3];
     private final JComboBox<String>[] _comboI = new JComboBox[3];
-    private FormatJTextField[][] _pqTextFields;  // // Text fields for performance values ​​A and B
+    private FormatJTextField[][] _pqTextFields;  // // Text fields for performance values (columns A, B, C)
     private final TechFormat _cf = new TechFormat();
     private final GridBagConstraints _gbc = new GridBagConstraints();
     private final String[] _signalList;
@@ -154,6 +156,13 @@ public final class PowerAnalysisPanel extends JPanel {
 
     }
 
+    /**
+     * Calculates power quantities for the selected voltage/current signals within the given time range.
+     *
+     * @param _worksheet    the data container with signal data
+     * @param startTimeValue the start of the analysis time range
+     * @param stopTimeValue  the end of the analysis time range
+     */
     public void calculate(final AbstractDataContainer _worksheet, final double startTimeValue, final double stopTimeValue) {
         final PowerCalculatorSelectionIndex pcsi = new PowerCalculatorSelectionIndex(startTimeValue, stopTimeValue);
         pcsi.calculate(_worksheet);

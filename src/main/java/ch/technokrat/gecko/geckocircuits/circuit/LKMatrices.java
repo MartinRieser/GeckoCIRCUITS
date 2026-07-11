@@ -44,10 +44,23 @@ public class LKMatrices {
         _solverType = solverType;
     }
 
+    /**
+     * Initializes matrices for the given netlist with default initial conditions.
+     * @param netzliste the circuit netlist
+     * @param typLK true for power circuit matrix, false for thermal
+     * @param solverType the solver type (BE, TRZ, or GS)
+     */
     public void initMatrizen(NetListLK netzliste, boolean typLK, final SolverType solverType) {
         this.initMatrizen(netzliste, false, typLK, solverType);
     }
 
+    /**
+     * Initializes matrices for the given netlist, optionally using initial conditions from a dialog.
+     * @param netzliste the circuit netlist
+     * @param getAnfangsbedVomDialogfenster if true, use initial conditions from dialog
+     * @param typLK true for power circuit matrix, false for thermal
+     * @param solverType the solver type (BE, TRZ, or GS)
+     */
     public void initMatrizen(NetListLK netzliste, boolean getAnfangsbedVomDialogfenster, boolean typLK,
             final SolverType solverType) {
         double[][][] kop2 = null;
@@ -91,6 +104,10 @@ public class LKMatrices {
     // // Set the initial conditions in 'setInitialconditions()' -->
     // // is only called from within this class
     //
+    /**
+     * Internal matrix initialization with a given netlist.
+     * @param netzliste the circuit netlist
+     */
     private void initMatrizen(NetListLK netzliste) {
         this.netzliste = netzliste;
         this.elementANZAHL = netzliste.getElementANZAHLinklusiveSubcircuit();
@@ -112,6 +129,14 @@ public class LKMatrices {
     }
 
     @SuppressWarnings("fallthrough")
+    /**
+     * Writes the system matrix A (conductance/susceptance matrix) for the current time step.
+     * Uses solver-type-dependent coefficients (SOLVER_BE, SOLVER_TRZ, SOLVER_GS) for
+     * inductors and capacitors.
+     * @param dt simulation time step
+     * @param time current simulation time
+     * @param capError if true, apply capacitor error correction
+     */
     public void schreibeMatrix_A(double dt, double time, boolean capError) {
 
         if (netzliste.elements != null) {
@@ -314,6 +339,12 @@ public class LKMatrices {
     }
 
     @SuppressWarnings("fallthrough")
+    /**
+     * Writes the right-hand side vector B (interference/forcing vector) for the current time step.
+     * @param dt simulation time step
+     * @param t current simulation time
+     * @param capError if true, apply capacitor error correction
+     */
     public void schreibeMatrix_B(double dt, double t, boolean capError) {
 
         for (int i1 = 0; i1 < matrixSize; i1++) {
@@ -516,6 +547,16 @@ public class LKMatrices {
     }
 
     @SuppressWarnings("fallthrough")
+    /**
+     * Calculates currents through all circuit components. This method is called within the
+     * non-linear convergence loop and may request a step-back if convergence fails.
+     * @param stoergroesse disturbance value
+     * @param dt simulation time step
+     * @param t current simulation time
+     * @param isNewIteration true if this is a new iteration step
+     * @param errorCounter current error counter for convergence
+     * @return true if a step-back is required
+     */
     public boolean calculateComponentCurrents(double stoergroesse, double dt, double t, boolean isNewIteration,
             int errorCounter) {
 
@@ -974,6 +1015,11 @@ public class LKMatrices {
         return einSchrittZurueck;
     }
 
+    /**
+     * Updates node potentials for the next time step by shifting the potential history arrays.
+     * @param dt simulation time step
+     * @param time current simulation time
+     */
     public void aktualisiereKnotenpotentiale(double dt, double time) {
         //------------------------------
         // Spannungen aktualisieren:
@@ -1120,6 +1166,11 @@ public class LKMatrices {
     // // i(0) and u(0) values ​​are read from netzliste.parameter[][],
     // // This means that 'setInitialConditions()' can be used both for the dialog input values ​​at t0==0 and for CONTINUE after PAUSE -->
     //
+    /**
+     * Sets initial conditions (zero initial node potentials and currents) for the simulation start.
+     * @param getAnfangsbedVomDialogfenster if true, read initial conditions from dialog
+     * @param solverType the solver type for initialization
+     */
     private void setzeAnfangsbedingungen(boolean getAnfangsbedVomDialogfenster, final SolverType solverType) {
         //=======================================
         // // Initial condition, set in the dialog window, e.g. at INIT/START -->
@@ -1310,6 +1361,14 @@ public class LKMatrices {
         }
     }
 
+    /**
+     * Computes the conductance matrix entry for an inductor based on the solver type.
+     * Parameter array indices: [0]=inductance, [10]=inductance in A-matrix, [11]=conductance value.
+     * @param usedInductance the inductance value
+     * @param parameter the parameter array for this component
+     * @param dt simulation time step
+     * @return the conductance value for the A matrix
+     */
     private double getAWForInductance(double usedInductance, double[] parameter, double dt) {
         double aW = 0;
         if (usedInductance < FAST_NULL_L) {

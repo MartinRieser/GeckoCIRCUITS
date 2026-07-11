@@ -222,6 +222,9 @@ public class NativeCDialog extends GeckoDialog {
         this.pack();
     }
     
+    /**
+     * Initializes the file chooser with a library file filter for the current platform.
+     */
     private void initFileChooser () {
         FileFilter filterLibrary = new FileNameExtensionFilter("Shared Library (*.dll, *.so, *.jnilib)", 
                 "dll", "so", "jnilib"); // Windows: *.dll, Linux: *.so, Mac OS: *.jnilib
@@ -236,6 +239,12 @@ public class NativeCDialog extends GeckoDialog {
         }
     }
     
+    /**
+     * Checks whether the given file name is already present in the library file list.
+     *
+     * @param name the file name to check
+     * @return true if the name is null or already exists in the list, false otherwise
+     */
     private boolean isFileNameAlreadyInList (final String name) {
         if (name == null) {
             return true;

@@ -127,10 +127,22 @@ public final class PotentialArea {
         return returnValue;
     }
 
+    /**
+     * Returns the label associated with this potential area.
+     *
+     * @return the potential label string
+     */
     public String getLabel() {
         return _potentialLabel;
     }
 
+    /**
+     * Returns all element node coordinates that are on this potential within the given circuit sheet.
+     *
+     * @param elements    the list of elements to check
+     * @param circuitSheet the circuit sheet filter
+     * @return list of node points on this potential
+     */
     // is used in SchematicEditor2 to get all nodes of elements for showing the connections --> 
     public List<Point> getAllElementKnotenXY(final List<? extends AbstractBlockInterface> elements,
             final CircuitSheet circuitSheet) {
@@ -313,10 +325,22 @@ public final class PotentialArea {
         return false;
     }
 
+    /**
+     * Checks whether this potential area contains the given connection.
+     *
+     * @param verb the connection to check
+     * @return true if the connection is part of this potential area
+     */
     public boolean containsConnector(final Connection verb) {
         return _potentialConnections.contains(verb);
     }
 
+    /**
+     * Updates all connections and terminal labels in this potential area to the given label.
+     *
+     * @param label   the new label to apply
+     * @param element collection of elements (unused parameter, kept for API compatibility)
+     */
     // // a label has just been set at a specific location -->
     // // this label is imposed on everyone (including the element nodes).
     public void updateLabel(final String label, final Collection<AbstractBlockInterface> element) {
@@ -341,6 +365,12 @@ public final class PotentialArea {
         this._potentialLabel = label;
     }
 
+    /**
+     * Updates labels after potential areas have been connected, determining a dominant label.
+     *
+     * @param connector list of connections (unused, kept for API compatibility)
+     * @param element   collection of elements
+     */
     // // different potentials have (possibly) just been connected to each other -->
     // // the labels are now updated, a dominant label is not specified
     public void aktualisiereLabel(final List<Connection> connector, final Collection<AbstractBlockInterface> element) {
@@ -379,6 +409,12 @@ public final class PotentialArea {
         }
     }
 
+    /**
+     * Checks whether the given terminal is part of this potential area.
+     *
+     * @param terminal the terminal to check
+     * @return true if the terminal is on this potential
+     */
     public boolean isTerminalOnPotential(final TerminalInterface terminal) {
         if (_pointsSchematic.contains(terminal.getPosition())) {
             for (ElementNodes elNode : _elementNodeTerminals) {
@@ -393,11 +429,20 @@ public final class PotentialArea {
 
     }
 
+    /**
+     * Checks whether the given point is on this potential area.
+     *
+     * @param testPoint the point to check
+     * @return true if the point is contained
+     */
     public boolean isPointOnPotential(final Point testPoint) {
 
         return _pointsSchematic.contains(testPoint);
     }
 
+    /**
+     * Resets label priorities on all terminals and connections in this potential area to LOW.
+     */
     void clearLabelPriorities() {
         for (ElementNodes elNode : _elementNodeTerminals) {
             for (TerminalInterface term : elNode._element.getAllTerminals()) {
@@ -413,6 +458,9 @@ public final class PotentialArea {
 
     }
 
+    /**
+     * Checks for terminals at the same position (double labels) and flags them.
+     */
     public void checkForDoubleTerminalLabels() {
 
         for (ElementNodes nodes : _elementNodeTerminals) {
@@ -454,6 +502,11 @@ public final class PotentialArea {
      *
      * @return
      */
+    /**
+     * Returns true if no components are connected to this potential area (empty).
+     *
+     * @return true if the potential area is empty
+     */
     public boolean isEmptyPotential() {
 
         if (_elementNodeTerminals.size() == 2) { // special case: when a terminal is defined, but nothing else connected
@@ -471,6 +524,11 @@ public final class PotentialArea {
         return _elementNodeTerminals.isEmpty();
     }
 
+    /**
+     * Returns all terminal interfaces connected to this potential area.
+     *
+     * @return a set of all terminals
+     */
     public Set<TerminalInterface> getAllTerminals() {
         Set<TerminalInterface> returnValue = new LinkedHashSet<TerminalInterface>();
         for (ElementNodes nodes : _elementNodeTerminals) {
@@ -577,6 +635,13 @@ public final class PotentialArea {
         return returnValue.toString();
     }
 
+    /**
+     * Tests whether two potential areas should be connected based on matching labels on the same circuit sheet.
+     *
+     * @param pot1 the first potential area
+     * @param pot2 the second potential area
+     * @return true if the labels match and the areas should be merged
+     */
     public static boolean testForLabelConnection(final PotentialArea pot1, final PotentialArea pot2) {
         if (pot2._potentialTyp != pot1._potentialTyp) {
             return false;

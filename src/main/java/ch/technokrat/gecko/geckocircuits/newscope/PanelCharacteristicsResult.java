@@ -27,6 +27,7 @@ import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
 /**
+ * Panel displaying signal characteristic results (AVG, RMS, THD, min, max, peak-peak, etc.).
  *
  * @author andy
  */

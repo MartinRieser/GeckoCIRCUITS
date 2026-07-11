@@ -11,16 +11,16 @@
  *  You should have received a copy of the GNU General Public License along with
  *  GeckoCIRCUITS.  If not, see <http://www.gnu.org/licenses/>.
  */
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ch.technokrat.gecko.geckocircuits.control;
 
 /**
- *
+ * Interface for components that need to be notified when the simulation time step changes.
  * @author andreas
  */
 public interface IsDtChangeSensitive {
+    /**
+     * Called when the simulation time step changes, allowing the component to re-initialize.
+     * @param dt the new simulation time step
+     */
     void initWithNewDt(final double dt);
 }

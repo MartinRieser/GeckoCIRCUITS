@@ -13,16 +13,29 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * PD controller implementing numerical differentiation: output = gain/dt * (input - oldValue).
+ */
 public final class PDCalculator extends AbstractControlCalculatable {
 
     private double _gain;
     private double _oldValue = 0;
     
+    /**
+     * Creates a PDCalculator with the specified gain.
+     *
+     * @param gain the derivative gain factor
+     */
     public PDCalculator(final double gain) {
         super(1, 1);
         setGain(gain);
     }    
 
+    /**
+     * Computes the derivative output using backward difference: gain/dt * (input - oldValue).
+     *
+     * @param deltaT the time step size
+     */
     @Override
     public void calculateYOUT(final double deltaT) {
         // // simplified formula without yalt --> becomes numerically much more robust
@@ -30,6 +43,11 @@ public final class PDCalculator extends AbstractControlCalculatable {
         _oldValue = _inputSignal[0][0];
     }
 
+    /**
+     * Sets the derivative gain factor.
+     *
+     * @param gain the new gain value
+     */
     public void setGain(final double gain) {
         _gain = gain;
     }

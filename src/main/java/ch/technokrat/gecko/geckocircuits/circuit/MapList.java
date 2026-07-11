@@ -21,6 +21,8 @@ import java.util.*;
 import java.util.Map.Entry;
 
 /**
+ * An ArrayList that maintains a secondary index mapping component types
+ * to sub-lists for efficient type-based lookups via {@link #getClassFromContainer(Class)}.
  *
  * @author andreas
  */
@@ -28,6 +30,9 @@ public class MapList extends ArrayList<AbstractCircuitSheetComponent> {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * The set of types that are tracked in the secondary class-type index map.
+     */
     private final Class<?>[] registeredTypes = new Class<?>[]{
         AbstractCircuitBlockInterface.class, ControlBlock.class, AbstractSpecialBlock.class, TextFieldBlock.class,
         ComponentCoupable.class, PotentialCoupable.class, 
@@ -41,6 +46,11 @@ public class MapList extends ArrayList<AbstractCircuitSheetComponent> {
         classMap.clear();
     }
 
+    /**
+     * Removes the element from this list and from all secondary type-index maps.
+     * @param o the element to remove
+     * @return true if the list was modified
+     */
     @Override
     public boolean remove(Object o) {
         for (Entry<Class<?>, ArrayList<AbstractCircuitSheetComponent>> entry : classMap.entrySet()) {
@@ -65,6 +75,12 @@ public class MapList extends ArrayList<AbstractCircuitSheetComponent> {
         return super.removeAll(c);
     }
 
+    /**
+     * Adds all elements of the given collection to this list, updating the
+     * type-index maps for each element.
+     * @param c the collection whose elements are to be added
+     * @return true if the list was modified
+     */
     @Override
     public boolean addAll(Collection<? extends AbstractCircuitSheetComponent> c) {
         for (AbstractCircuitSheetComponent obj : c) {
@@ -73,6 +89,12 @@ public class MapList extends ArrayList<AbstractCircuitSheetComponent> {
         return true;
     }
 
+    /**
+     * Adds an element to this list and updates the type-index maps for all
+     * registered types that the element is an instance of.
+     * @param toAdd the element to add
+     * @return true (as specified by {@link Collection#add})
+     */
     @Override
     public boolean add(AbstractCircuitSheetComponent toAdd) {
         assert toAdd != null;
@@ -91,6 +113,13 @@ public class MapList extends ArrayList<AbstractCircuitSheetComponent> {
         return super.add(toAdd);
     }
 
+    /**
+     * Returns an unmodifiable list of all elements matching the given type,
+     * as tracked by the secondary type-index map.
+     * @param <T> the type parameter
+     * @param type the class type to look up
+     * @return an unmodifiable list of matching elements, or an empty list if none found
+     */
     @SuppressWarnings("unchecked")
     public <T> List<T> getClassFromContainer(final Class<T> type) {
         if (classMap.containsKey(type)) {

@@ -25,6 +25,10 @@ public enum LossComponent {
     private final static String saveStringConduction = "conduction";
     private final static String saveStringSwitching = "switching";
     
+    /**
+     * Returns a human-readable description of this loss component type.
+     * @return "Total losses", "Conduction losses", or "Switching losses"
+     */
     @Override
     public String toString() {
         String description;
@@ -45,6 +49,10 @@ public enum LossComponent {
         return description;
     }
     
+    /**
+     * Returns a short, case-sensitive save string for persistence.
+     * @return "total", "conduction", or "switching"
+     */
     public String getSaveString() {
         String saveString;
          switch(this) {
@@ -64,6 +72,12 @@ public enum LossComponent {
     }
     
     
+    /**
+     * Converts a save string back to the corresponding LossComponent enum value.
+     * Falls back to {@link #TOTAL} if the string does not match any known value.
+     * @param saveString the save string to convert
+     * @return the matching LossComponent, or TOTAL for unrecognised strings
+     */
     public static LossComponent getEnumFromSaveString(final String saveString) {
         if (saveStringConduction.equals(saveString)) {
             return CONDUCTION;

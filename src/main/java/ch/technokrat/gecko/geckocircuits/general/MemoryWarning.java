@@ -14,6 +14,8 @@
 package ch.technokrat.gecko.geckocircuits.general;
 
 /**
+ * Dialog shown when excessive memory usage is detected during simulation.
+ * Offers the user the option to continue (with reduced cache) or abort the simulation.
  *
  * @author andreas
  */

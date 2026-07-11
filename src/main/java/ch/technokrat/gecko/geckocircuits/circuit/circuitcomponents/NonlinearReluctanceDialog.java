@@ -18,6 +18,9 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import javax.swing.JPanel;
 
+/**
+ * Dialog for editing the non-linear characteristic of a NonLinearReluctance component.
+ */
 class NonlinearReluctanceDialog extends DialogElementLK<NonLinearReluctance> {
     private static final long serialVersionUID = 1L;
     private NonLinearDialogPanel _nonLinearDialogPanel;

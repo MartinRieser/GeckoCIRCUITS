@@ -24,6 +24,10 @@ import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
 
+/**
+ * Manages control-domain netlist construction, signal routing, and time-step execution
+ * for all control blocks.
+ */
 public final class NetlistControl {
 
     public static final DataContainerGlobal globalData = new DataContainerGlobal();
@@ -52,6 +56,12 @@ public final class NetlistControl {
     private NetlistControl() {
     }
 
+    /**
+     * Factory method to create a NetlistControl for continuing a simulation from a previous state.
+     *
+     * @param previousNetList the previous netlist control state
+     * @return a new NetlistControl with copied references
+     */
     public static NetlistControl FabricContinueSimulation(NetlistControl previousNetList) {
         final NetlistControl returnValue = new NetlistControl();
         returnValue.controlCalc = previousNetList.controlCalc;
@@ -67,12 +77,24 @@ public final class NetlistControl {
         return returnValue;
     }
 
+    /**
+     * Factory method to create a NetlistControl for GUI update purposes only.
+     *
+     * @param nlC the general netlist for the control domain
+     * @return a new NetlistControl
+     */
     public static NetlistControl FabricUpdateGui(final NetlistGeneral nlC) {
         final NetlistControl returnValue = new NetlistControl();
         returnValue.connectPotentialLabels(nlC);
         return returnValue;
     }
 
+    /**
+     * Factory method to create a fully initialized NetlistControl for running a simulation.
+     *
+     * @param nlC the general netlist for the control domain
+     * @return a new NetlistControl ready for simulation
+     */
     public static NetlistControl FabricRunSimulation(final NetlistGeneral nlC) {
         SystemOutputRedirect.reset();
         final NetlistControl returnValue = new NetlistControl();
@@ -85,6 +107,12 @@ public final class NetlistControl {
         return returnValue;
     }
 
+    /**
+     * Returns the optimized processing order for a given control netlist.
+     *
+     * @param nlA the general netlist
+     * @return list of ControlBlocks in optimized order
+     */
     public static List<ControlBlock> getOptimizedList(final NetlistGeneral nlA) {
         final NetlistControl nlC = new NetlistControl();
         nlC.connectPotentialLabels(nlA);
@@ -308,11 +336,21 @@ public final class NetlistControl {
         }
     }
 
-    public class IndexConnection { // to avoid the Integer-Object usage
+    /**
+     * Holds a connection index pair (element index and block-internal index)
+     * to avoid Integer-object overhead.
+     */
+    public class IndexConnection {
 
         public final int _elementIndex;
         public final int _inBlockIndex_outputIndex;
 
+        /**
+         * Creates an IndexConnection with the given indices.
+         *
+         * @param elementIndex   the index of the element
+         * @param inBlockIndex   the index within the block
+         */
         public IndexConnection(final int elementIndex, final int inBlockIndex) {
             _elementIndex = elementIndex;
             _inBlockIndex_outputIndex = inBlockIndex;
@@ -320,6 +358,12 @@ public final class NetlistControl {
         }
     }
 
+    /**
+     * Executes one time step by calling calculateYOUT on all sorted control calculators.
+     *
+     * @param deltaT the time step size
+     * @param time   the current simulation time
+     */
     public void calculateTimeStep(final double deltaT, final double time) {
         AbstractControlCalculatable.setTime(time);
 

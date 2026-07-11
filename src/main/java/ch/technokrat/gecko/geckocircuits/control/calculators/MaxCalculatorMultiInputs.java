@@ -14,6 +14,7 @@
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 
+/** Outputs the maximum value across all N input signals. */
 public final class MaxCalculatorMultiInputs extends AbstractControlCalculatable {
 
     public MaxCalculatorMultiInputs(final int noInputs) {

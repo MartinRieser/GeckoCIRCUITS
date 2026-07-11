@@ -39,6 +39,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Non-linear magnetic reluctance component that models magnetic saturation
+ * using a user-defined flux-linkage vs. current characteristic.
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public final class NonLinearReluctance extends AbstractNonLinearCircuitComponent implements
         HiddenSubCircuitable, PostCalculatable, CurrentMeasurable, DirectVoltageMeasurable {

@@ -24,6 +24,9 @@ import java.io.Serializable;
 
 
 
+/**
+ * Represents a schematic node label with an anchor point, text position, and clickable area.
+ */
 public class NodeLabel implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -88,6 +91,11 @@ public class NodeLabel implements Serializable {
 
 
 
+    /**
+     * Placeholder for ASCII import; currently not implemented.
+     *
+     * @param ascii the ASCII data to import
+     */
     public void importASCII (final String[] ascii) {
         
     }

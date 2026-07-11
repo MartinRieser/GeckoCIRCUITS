@@ -27,6 +27,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Settings panel for configuring test/interpolation curves in loss data analysis.
+ * Provides UI for temperature and voltage input to create test curves.
+ */
 class JPanelLossDataInterpolationSettings extends JPanel {
 
     private static final long serialVersionUID = 1L;
@@ -48,6 +52,10 @@ class JPanelLossDataInterpolationSettings extends JPanel {
         }
     };
 
+    /**
+     * Constructs the interpolation settings panel.
+     * @param parentDialog the parent loss detail dialog
+     */
     JPanelLossDataInterpolationSettings(final DialogLossesDetail parentDialog) {
         super();
         _parentDialog = parentDialog;
@@ -90,6 +98,10 @@ class JPanelLossDataInterpolationSettings extends JPanel {
         _jpTt.add(_jtfVoltage);
     }
 
+    /**
+     * Sets whether the voltage selection field is visible.
+     * @param isVisible true to show the voltage field, false to hide it
+     */
     void setVoltageSelectionVisible(final boolean isVisible) {
         _jtfVoltage.setVisible(isVisible);
         _jlUTest.setVisible(isVisible);

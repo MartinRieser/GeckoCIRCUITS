@@ -30,6 +30,11 @@ import java.util.Collection;
 import java.util.List;
 import javax.swing.JOptionPane;
 
+/**
+ * MOSFET component modelled as a bidirectional gate-controlled switch
+ * with an integrated anti-parallel diode. Supports loss calculation
+ * including conduction and switching losses.
+ */
 // Leistungskreis-IGBT (Knickkennlinie, Modifikation des THYR)
 @SuppressWarnings({"rawtypes", "unchecked"})
 public final class MOSFET extends AbstractSwitch implements HiddenSubCircuitable {

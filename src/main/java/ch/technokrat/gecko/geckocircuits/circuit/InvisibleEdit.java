@@ -15,6 +15,11 @@ package ch.technokrat.gecko.geckocircuits.circuit;
 
 import javax.swing.undo.UndoableEdit;
 
+/**
+ * Represents an undoable edit that does not appear in the undo menu.
+ * These "invisible" edits are used for internal state changes that should be
+ * undoable via UndoManager but not shown to the user in the undo/redo UI.
+ */
 public abstract class InvisibleEdit implements UndoableEdit {
 
     @Override

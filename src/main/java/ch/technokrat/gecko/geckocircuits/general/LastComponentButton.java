@@ -24,6 +24,9 @@ import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import javax.swing.JButton;
 
+/**
+ * A button that displays the last-used circuit component for quick re-selection.
+ */
 public class LastComponentButton extends JButton {
 
     private static final long serialVersionUID = 1L;

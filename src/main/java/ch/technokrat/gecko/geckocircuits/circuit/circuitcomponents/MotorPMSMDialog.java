@@ -18,6 +18,9 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.JPanel;
 
+/**
+ * Dialog for editing permanent magnet synchronous machine parameters.
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 class MotorPMSMDialog extends AbstractMotorDialog<MotorPMSM> {
     

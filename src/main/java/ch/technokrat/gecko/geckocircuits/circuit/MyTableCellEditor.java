@@ -19,12 +19,25 @@ import javax.swing.AbstractCellEditor;
 import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
 
+/**
+ * Table cell editor that uses a {@link FormatJTextField} for numeric input
+ * with proper number formatting support.
+ */
 class MyTableCellEditor extends AbstractCellEditor implements TableCellEditor {
 
     private static final long serialVersionUID = 1L;
 
     FormatJTextField component = new FormatJTextField();
 
+  /**
+   * Returns the editor component pre-populated with the cell's current value.
+   * @param table the table containing the cell
+   * @param value the current cell value (expected to be a Double or null)
+   * @param isSelected whether the cell is selected
+   * @param rowIndex the row index
+   * @param vColIndex the column index
+   * @return the formatted text field editor component
+   */
   public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected,
       int rowIndex, int vColIndex) {      
       if(value != null) {
@@ -36,6 +49,10 @@ class MyTableCellEditor extends AbstractCellEditor implements TableCellEditor {
     return component;
   }
 
+  /**
+   * Returns the parsed numeric value from the editor field.
+   * @return the Double value, or null if the field is empty
+   */
   public Object getCellEditorValue() {
       if(component.getText().isEmpty()) {
           return null;

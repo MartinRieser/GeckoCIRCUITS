@@ -19,6 +19,10 @@ import ch.technokrat.gecko.geckocircuits.circuit.CircuitTypeInfo;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+/**
+ * Salient-pole synchronous machine model with different magnetising
+ * inductances in the d- and q-axes and damper windings.
+ */
 public final class MotorSmSalient extends AbstractMotorSM {
     private static final double INITIAL_UNSAT_INDUCTANCE = 0.003;
     

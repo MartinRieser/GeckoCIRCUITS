@@ -23,6 +23,10 @@ import java.awt.Window;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * General induction machine model (Asynchronmaschine) with
+ * wound-rotor accessible via three-phase terminals on both stator and rotor.
+ */
 // Maschinenmodell 
 // Asynchronmaschine allg. 
 public final class MotorInductionMachine extends AbstractMotorIM {

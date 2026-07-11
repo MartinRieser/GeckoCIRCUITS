@@ -17,6 +17,8 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
+ * Comparator that sorts lists of Doubles in ascending order based on the
+ * first column element. Null values are sorted after non-null values.
  *
  * @author andy
  */
@@ -25,6 +27,13 @@ class MyTableComparator implements Comparator<List<Double>> {
     public MyTableComparator() {
     }
 
+    /**
+     * Compares two lists by their first element. Null values are treated as
+     * greater than non-null values (sorted to the end).
+     * @param o1 the first list
+     * @param o2 the second list
+     * @return negative, zero, or positive as per {@link Comparator}
+     */
     @Override
     public int compare(List<Double> o1, List<Double> o2) {
         assert o1.size() == o2.size();

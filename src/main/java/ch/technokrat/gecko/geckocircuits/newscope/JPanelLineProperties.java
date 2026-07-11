@@ -18,7 +18,7 @@ import java.awt.Component;
 import javax.swing.border.TitledBorder;
 
 /**
- *
+ * Panel for configuring line properties including style, color, type, and transparency.
  * @author andy
  */
 @SuppressWarnings({"unchecked", "rawtypes", "serial"})

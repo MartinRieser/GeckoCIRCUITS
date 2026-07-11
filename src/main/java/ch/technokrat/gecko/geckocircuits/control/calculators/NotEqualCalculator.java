@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Outputs 1 if inputs are not equal, 0 otherwise.
+ */
 public final class NotEqualCalculator extends AbstractTwoInputsOneOutputCalculator {
 
     @Override

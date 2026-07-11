@@ -36,6 +36,11 @@ final class JavaMemoryRestart {
         // private constructor, since this is a pure utility class!
     }
 
+    /**
+     * Checks if a JVM restart is required to allocate the requested memory.
+     * @param userMemorySize the desired memory size in MB
+     * @return true if the current JVM has insufficient memory for the request
+     */
     public static boolean isMemoryRestartRequired(final int userMemorySize) {
         final int memorySize = setLowerMemoryBound(userMemorySize);
         System.out.println("Requested memory size: " + memorySize + "MB.");
@@ -93,6 +98,12 @@ final class JavaMemoryRestart {
         return false;
     }
 
+    /**
+     * Reads process output until the "GeckoCIRCUITS is ready" string is found or a timeout occurs.
+     * @param stdBufRead reader for standard output stream
+     * @param errBufRead reader for error output stream
+     * @return true if the ready string was found within the timeout
+     */
     private static boolean searchForReadyString(final BufferedReader stdBufRead, final BufferedReader errBufRead) {
 
         class SearchRunnable implements Runnable {
@@ -173,6 +184,14 @@ final class JavaMemoryRestart {
         }
     }
 
+    /**
+     * Builds the command list for launching a new JVM process with increased memory.
+     * @param javaCommand the path to the java executable
+     * @param memorySize the desired heap memory size in MB
+     * @param pathToJarFile the path to the GeckoCIRCUITS JAR file
+     * @param args the original command-line arguments to pass through
+     * @return list of command components for ProcessBuilder
+     */
     private static List<String> createJVMCallCommands(final String javaCommand, final int memorySize,
             final String pathToJarFile, final String[] args) {
         final List<String> commands = new ArrayList<String>();

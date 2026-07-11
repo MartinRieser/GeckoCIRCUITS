@@ -16,11 +16,17 @@ package ch.technokrat.gecko.geckocircuits.circuit.losscalculation;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.AbstractSemiconductor;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.ForwardVoltageDropable;
 
+/**
+ * Simplified loss calculation using switching loss coefficients and a linear conduction model.
+ */
 public final class LossCalculationSimple implements AbstractLossCalculatorFabric {    
     public static final double UK_DEFAULT_VALUE = 400.0;
         
+    /** Switching loss coefficient for turn-on. */
     double _kON;
+    /** Switching loss coefficient for turn-off. */
     double _kOFF;
+    /** Normalization voltage for switching losses. */
     double _uSWnorm = UK_DEFAULT_VALUE;
     
     private final AbstractSemiconductor _parent;
@@ -42,6 +48,9 @@ public final class LossCalculationSimple implements AbstractLossCalculatorFabric
         _uSWnorm = origLosses._uSWnorm;
     }
 
+    /**
+     * Inner calculator that computes simple switching and conduction losses using linear formulas.
+     */
     public final class LossCalculatorSwitchSimple extends AbstractLossCalculatorSwitch {
         private final double _uf;
         private final double _rON;    
@@ -74,6 +83,10 @@ public final class LossCalculationSimple implements AbstractLossCalculatorFabric
             return Math.abs(_kOFF * _oldCurrent / _deltaT);
         }
 
+        /**
+         * Calculates the voltage scaling factor. The NaN check idiom (returnValue != returnValue)
+         * detects NaN values since NaN is not equal to itself.
+         */
         @Override
         double calculateRelativeVoltageFactor(final double appliedVoltage) {            
             double returnValue = Math.abs(appliedVoltage / _uSWnorm);

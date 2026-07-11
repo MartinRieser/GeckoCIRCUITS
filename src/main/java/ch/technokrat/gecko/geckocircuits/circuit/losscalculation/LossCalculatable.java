@@ -13,6 +13,13 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.losscalculation;
 
+/**
+ * Interface for circuit components that support loss calculation.
+ */
 public interface LossCalculatable {
+    /**
+     * Returns the loss calculator fabric for this component.
+     * @return the loss calculator instance
+     */
     AbstractLossCalculatorFabric getLossCalculation();    
 }

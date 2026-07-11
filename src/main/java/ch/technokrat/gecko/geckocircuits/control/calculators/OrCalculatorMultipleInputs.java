@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Logical OR across all N inputs -- outputs 1 if any input exceeds SIGNAL_THRESHOLD.
+ */
 public final class OrCalculatorMultipleInputs extends AbstractControlCalculatable {
 
     public OrCalculatorMultipleInputs(final int noInputs) {

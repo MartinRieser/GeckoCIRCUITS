@@ -23,6 +23,11 @@ import static java.lang.Math.*;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Permanent magnet synchronous machine (PMSM) model.
+ * Features salient-pole rotor with direct- and quadrature-axis inductances
+ * and permanent-magnet flux linkage.
+ */
 public final class MotorPMSM extends AbstractThreePhaseMotor {
     
     private static final int FLUX_LINKAGE_INDEX = 7;

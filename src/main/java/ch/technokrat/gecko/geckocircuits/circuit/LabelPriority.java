@@ -14,7 +14,8 @@
 package ch.technokrat.gecko.geckocircuits.circuit;
 
 /**
- *
+ * Defines display priority levels for circuit labels. Higher numeric values indicate
+ * higher priority. Note that value 3 is intentionally unused.
  * @author andreas
  */
 public enum LabelPriority {
@@ -37,6 +38,11 @@ public enum LabelPriority {
         }
     }
 
+    /**
+     * Checks if this priority is greater than the given priority.
+     * @param otherPrio the priority to compare against
+     * @return true if this priority has a higher numeric value
+     */
     public boolean isBiggerThan(LabelPriority otherPrio) {
         return _numericValue > otherPrio._numericValue;
     }

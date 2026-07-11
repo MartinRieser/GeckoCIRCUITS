@@ -23,6 +23,11 @@ import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.MOSFET;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.SemiconductorLossCalculatable;
 import ch.technokrat.modelviewcontrol.ModelMVC;
 
+/**
+ * Central loss-calculation configuration for semiconductor components.
+ * Holds a loss type ({@link LossCalculationDetail}) and delegates to the
+ * corresponding simple or detailed loss calculator.
+ */
 public final class LossProperties implements AbstractLossCalculatorFabric {
 
     public final ModelMVC<LossCalculationDetail> _lossType = new ModelMVC<LossCalculationDetail>(LossCalculationDetail.SIMPLE,
@@ -32,6 +37,10 @@ public final class LossProperties implements AbstractLossCalculatorFabric {
     //        
     private final AbstractCircuitBlockInterface _parent;    
 
+    /**
+     * Creates a new loss configuration for the given semiconductor.
+     * @param parent the semiconductor component whose losses are configured
+     */
     public LossProperties(final AbstractSemiconductor parent) {
         _lossCalculationDetailed = new LossCalculationDetailed(parent, this);
         _lossCalculationSimple = new LossCalculationSimple(parent);
@@ -45,6 +54,10 @@ public final class LossProperties implements AbstractLossCalculatorFabric {
     }
     
 
+    /**
+     * Exports the loss configuration to ASCII format.
+     * @param ascii the buffer to append serialised data to
+     */
     public void exportASCII(final StringBuffer ascii) {
         ascii.append("\n<Verluste>");
 
@@ -53,6 +66,11 @@ public final class LossProperties implements AbstractLossCalculatorFabric {
         ascii.append("\n<\\Verluste>");
     }
 
+    /**
+     * Imports the loss configuration from an ASCII token map.
+     * @param tokenMap the token map containing serialised loss data
+     * @return true if loading succeeded, false on error
+     */
     public boolean importASCII(final TokenMap tokenMap) {
         _lossCalculationDetailed.importASCII(tokenMap);
         _lossType.setValue(LossCalculationDetail.getFromDeprecatedFileVersion(tokenMap.readDataLine("verlustTyp", 1)));
@@ -78,20 +96,37 @@ public final class LossProperties implements AbstractLossCalculatorFabric {
         }
     }
 
+    /**
+     * Sets the loss calculation detail level.
+     * @param lossCalculationDetail the detail level to use
+     */
     public void setLossType(final LossCalculationDetail lossCalculationDetail) {
         _lossType.setValue(lossCalculationDetail);
     }
 
+    /**
+     * Returns the current loss calculation detail level.
+     * @return the current loss type
+     */
     public LossCalculationDetail getLossType() {
         return _lossType.getValue();
     }
 
+    /**
+     * Wraps a loss calculator to scale losses for paralleled devices.
+     * Reduces the current by the number of parallel devices before delegating,
+     * then multiplies the result back.
+     */
     private class LossCalculatorParallelWrapper implements AbstractLossCalculator {
 
         final AbstractLossCalculator _wrapped;
         private double _totalLosses;
         protected int _numberParalleled = 1;
 
+        /**
+         * @param toWrap the calculator to delegate to
+         * @param numberParalleled the number of parallel devices
+         */
         public LossCalculatorParallelWrapper(final AbstractLossCalculator toWrap, final int numberParalleled) {
             super();
             _wrapped = toWrap;
@@ -111,9 +146,17 @@ public final class LossProperties implements AbstractLossCalculatorFabric {
         }
     }
 
+    /**
+     * Extension of {@link LossCalculatorParallelWrapper} that also provides
+     * separate switching and conduction loss values via {@link LossCalculationSplittable}.
+     */
     private class LossCalculatorParallelWrapperWithSplit extends LossCalculatorParallelWrapper
             implements LossCalculationSplittable {
 
+        /**
+         * @param toWrap the calculator to delegate to
+         * @param numberParalleld the number of parallel devices
+         */
         public LossCalculatorParallelWrapperWithSplit(final AbstractLossCalculator toWrap, final int numberParalleld) {
             super(toWrap, numberParalleld);
             assert toWrap instanceof LossCalculationSplittable;
@@ -131,6 +174,10 @@ public final class LossProperties implements AbstractLossCalculatorFabric {
 
     }
 
+    /**
+     * Combines the losses of a MOSFET with those of its anti-parallel diode,
+     * providing aggregated switching and conduction losses.
+     */
     private final class LossCalculatorAdditionalDiode implements AbstractLossCalculator, LossCalculationSplittable {
 
         private final Diode _diode;
@@ -140,6 +187,10 @@ public final class LossProperties implements AbstractLossCalculatorFabric {
         private double _conductionLosses;
         private double _switchingLosses;
 
+        /**
+         * @param original the MOSFET loss calculator
+         * @param diode the anti-parallel diode
+         */
         public LossCalculatorAdditionalDiode(final AbstractLossCalculator original, final Diode diode) {
             super();
             _diode = diode;
@@ -174,6 +225,11 @@ public final class LossProperties implements AbstractLossCalculatorFabric {
         }
     }
 
+    /**
+     * Fabricates the appropriate loss calculator based on the current loss type,
+     * optionally wrapping it with parallel-device and anti-parallel diode logic.
+     * @return a configured loss calculator for the parent semiconductor
+     */
     @Override
     public AbstractLossCalculator lossCalculatorFabric() {
         AbstractLossCalculator returnValue = null;

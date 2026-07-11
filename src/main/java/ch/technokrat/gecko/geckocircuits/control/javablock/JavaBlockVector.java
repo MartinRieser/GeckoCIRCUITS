@@ -17,6 +17,9 @@ import ch.technokrat.gecko.ControlCalculatable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Java block variant that supports vector operations for compiled control blocks.
+ */
 public class JavaBlockVector extends AbstractJavaBlock {
     private ControlCalculatable _compiledInstance;
     private double[] _xINVector;

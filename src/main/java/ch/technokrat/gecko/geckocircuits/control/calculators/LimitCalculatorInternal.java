@@ -13,11 +13,19 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Limit calculator with internally configured min/max values.
+ */
 public final class LimitCalculatorInternal extends AbstractControlCalculatable {
 
     private double _lowerLimit;
     private double _upperLimit;
 
+    /**
+     * Constructs a limit calculator with the given bounds.
+     * @param minLimit the minimum output value
+     * @param maxLimit the maximum output value
+     */
     public LimitCalculatorInternal(final double minLimit, final double maxLimit) {
         super(1, 1);
         setMinMaxValues(minLimit, maxLimit);        

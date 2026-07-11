@@ -15,6 +15,7 @@ package ch.technokrat.gecko.geckocircuits.circuit;
 
 
 /**
+ * Cached matrix implementation that uses the Pardiso sparse solver for factorization and solution.
  *
  * @author andy
  */
@@ -22,18 +23,32 @@ public class PardisoCachedMatrix extends AbstractCachedMatrix {
     private final int N;
     private SymmetricSparseMatrix sparseMatrix;
 
+    /**
+     * Creates a PardisoCachedMatrix wrapping the given dense matrix.
+     *
+     * @param matrix the dense matrix to be cached and solved
+     */
     public PardisoCachedMatrix(double[][] matrix) {
         super(matrix);
         N = matrix.length;
     }
 
+    /**
+     * Placeholder; memory requirement calculation is not yet implemented for this class.
+     *
+     * @return (unused)
+     */
     @Override
     int calculateMemoryRequirement() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     
 
+    /**
+     * Initializes the LU decomposition by converting the original matrix to a symmetric sparse format
+     * and verifying symmetry before factorization.
+     */
     @Override
     void initLUDecomp() {                
         

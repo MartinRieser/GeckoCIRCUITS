@@ -21,6 +21,8 @@ import java.util.logging.Logger;
 
 
 /**
+ * Wrapper for the Intel PARDISO sparse direct solver. Provides factorize and solve
+ * methods for symmetric/non-symmetric systems with configurable matrix type (mtype).
  *
  * @author muesinga
  */
@@ -69,6 +71,18 @@ public class Paradiso {
     
    
     
+    /**
+     * Performs symbolic and numerical factorization of the sparse matrix using PARDISO.
+     * mtype values: 1 = structurally symmetric, 2 = symmetric positive definite,
+     * -2 = symmetric indefinite, 11 = non-symmetric, 13 = complex.
+     *
+     * @param values  matrix non-zero values
+     * @param ai      row indices (CSR format)
+     * @param aj      column pointers (CSR format)
+     * @param n       matrix dimension
+     * @param mtype   matrix type indicator
+     * @param paradiso the Paradiso instance holding solver state
+     */
     public static void factorize(double[] values, int[] ai, int[] aj, int n, int mtype, Paradiso paradiso) {
         /* Auxiliary variables. */
 
@@ -147,6 +161,19 @@ public class Paradiso {
     }
     
     
+    /**
+     * Solves the factored linear system Ax = b using PARDISO back-substitution.
+     *
+     * @param values  matrix non-zero values
+     * @param ai      row indices (CSR format)
+     * @param aj      column pointers (CSR format)
+     * @param rhs     right-hand side vector(s)
+     * @param n       matrix dimension
+     * @param mtype   matrix type (same as used in factorize)
+     * @param nRHS    number of right-hand sides
+     * @param paradiso the Paradiso instance with factored matrix
+     * @return the solution vector(s)
+     */
     public static double[] solve(double[] values, int[] ai, int[] aj, double[] rhs, int n, int mtype, int nRHS, Paradiso paradiso) {
         /* RHS and solution vectors. */
         double[] x = null;

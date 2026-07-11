@@ -18,8 +18,10 @@ package ch.technokrat.gecko.geckocircuits.control;
  * @author andreas
  */
 public interface MemoryInitializable {
-    /*
-     * This function should called every simulation start & continue!
+    /**
+     * Initialises the component at simulation start and after every continue.
+     * This method should be called to reset internal state before each simulation run.
+     * @param deltaT the simulation time step
      */
     void doInit(final double deltaT);
 }

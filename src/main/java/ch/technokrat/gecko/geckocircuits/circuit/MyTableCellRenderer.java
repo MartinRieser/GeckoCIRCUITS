@@ -16,12 +16,21 @@ package ch.technokrat.gecko.geckocircuits.circuit;
 import ch.technokrat.gecko.geckocircuits.general.TechFormat;
 import javax.swing.table.DefaultTableCellRenderer;
 
+/**
+ * Table cell renderer that displays numeric values using engineering notation
+ * via {@link TechFormat#formatENG(double, int)}.
+ */
 class MyTableCellRenderer extends DefaultTableCellRenderer {
     private static final long serialVersionUID = 1L;
     private final TechFormat tf = new TechFormat();
     public MyTableCellRenderer() {
     }
 
+    /**
+     * Sets the displayed text by formatting a numeric value with engineering notation.
+     * If the value is null, the cell is left blank.
+     * @param value the value to format and display
+     */
     public void setValue(Object value) {
         if(value == null) {
             setText("");

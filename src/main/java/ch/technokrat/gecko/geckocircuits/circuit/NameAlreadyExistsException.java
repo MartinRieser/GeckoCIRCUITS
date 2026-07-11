@@ -14,11 +14,15 @@
 package ch.technokrat.gecko.geckocircuits.circuit;
 
 /**
+ * Thrown when a component name already exists and a duplicate is not allowed.
  *
  * @author andreas
  */
 public class NameAlreadyExistsException extends Exception {
     private static final long serialVersionUID = 1L;
+    /**
+     * @param message a human-readable description of the duplicate-name error
+     */
     public NameAlreadyExistsException(final String message) {
         super(message);
     }

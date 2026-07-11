@@ -27,23 +27,49 @@ public class NativeCLibraryFile {
     private String _libPathName;
     private File _libFile;
     
+    /**
+     * Creates an empty NativeCLibraryFile with no file reference.
+     */
     public NativeCLibraryFile () {
     }
     
+    /**
+     * Creates a NativeCLibraryFile from the given file path string.
+     *
+     * @param fileName the absolute path to the library file
+     * @throws FileNotFoundException if the file does not exist
+     */
     @SuppressWarnings("this-escape")
     public NativeCLibraryFile (final String fileName) throws FileNotFoundException {
         setFile(fileName);
     }
     
+    /**
+     * Creates a NativeCLibraryFile from the given File object.
+     *
+     * @param file the library file
+     * @throws FileNotFoundException if the file does not exist
+     */
     @SuppressWarnings("this-escape")
     public NativeCLibraryFile (final File file) throws FileNotFoundException {
         setFile(file);
     }
     
+    /**
+     * Returns the absolute path name of the library file.
+     *
+     * @return the library path name, or null if not set
+     */
     public String getFileName () {
         return _libPathName;
     }
     
+    /**
+     * Sets the library file and updates its timestamp from the given File object.
+     *
+     * @param file the library file to set
+     * @throws FileNotFoundException if the file does not exist
+     */
     public void setFile (final File file) throws FileNotFoundException {
         if (file != null) {
             if (!file.exists()) {
@@ -56,6 +82,12 @@ public class NativeCLibraryFile {
         }
     }
     
+    /**
+     * Sets the library file from a file path string and updates its timestamp.
+     *
+     * @param fileName the absolute path to the library file
+     * @throws FileNotFoundException if the file does not exist
+     */
     public void setFile (final String fileName) throws FileNotFoundException {
         _libFile = new File(fileName);
         if (!_libFile.exists()) {
@@ -66,12 +98,20 @@ public class NativeCLibraryFile {
         }
     }
     
+    /**
+     * Clears the library file reference and resets the timestamp to zero.
+     */
     public void setFile () {
         _libFile = null;
         _libPathName = null;
         _timeStamp = 0;
     }
     
+    /**
+     * Returns the underlying File object for the library file.
+     *
+     * @return the library File, or null if not set
+     */
     public File getFile() {
         return _libFile;
     }
@@ -95,12 +135,18 @@ public class NativeCLibraryFile {
     /**
      * The TimeStamp can be used in future as an easy implementation for 
      * revision control.
-     * @return 
+     * @return the last-modified timestamp of the library file
      */
     public long getTimeStamp () {
         return _timeStamp;
     }
     
+    /**
+     * Updates the timestamp to the current last-modified time of the library file.
+     *
+     * @return true if the timestamp changed, false otherwise
+     * @throws FileNotFoundException if no library file is set or it cannot be found
+     */
     public boolean updateTimeStamp () throws FileNotFoundException {
         long newTimeStamp;
         if (_libFile == null) {

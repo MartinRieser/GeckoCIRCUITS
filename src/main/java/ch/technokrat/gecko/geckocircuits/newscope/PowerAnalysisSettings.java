@@ -17,11 +17,14 @@ import ch.technokrat.gecko.geckocircuits.general.ProjectData;
 import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
 
 /**
+ * Stores voltage and current signal indices for power analysis of phases A, B, C.
  *
  * @author andreas
  */
 public final class PowerAnalysisSettings {    
+    /** Voltage signal indices for phases A, B, C (index 0=A, 1=B, 2=C). */
     int[] _powerAnalVoltageIndices = new int[] {-1, -1, -1};
+    /** Current signal indices for phases A, B, C (index 0=A, 1=B, 2=C). */
     int[] _powerAnalCurrentIndices = new int[]{-1, -1, -1};
 
     void exportIndividualControl(final StringBuffer ascii) {

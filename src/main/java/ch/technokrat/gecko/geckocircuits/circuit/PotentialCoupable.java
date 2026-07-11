@@ -20,6 +20,15 @@ import ch.technokrat.gecko.geckocircuits.control.Operationable;
  * or signal controled voltage source) should implement this interface!
  * @author andreas
  */
+/**
+ * Every component that has a link to a Potential (e.g. voltage measurement,
+ * signal controlled voltage source) should implement this interface.
+ */
 public interface PotentialCoupable extends Operationable {
+    /**
+     * Returns the potential coupling object for this component.
+     *
+     * @return the PotentialCoupling instance
+     */
     PotentialCoupling getPotentialCoupling();    
 }

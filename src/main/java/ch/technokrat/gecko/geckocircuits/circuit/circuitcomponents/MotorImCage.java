@@ -22,6 +22,10 @@ import java.awt.Window;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Squirrel-cage induction machine model (Kurzschlusslaeufer).
+ * Rotor windings are short-circuited; no external rotor connections required.
+ */
 // Squirrel-Cage Induction Machine (Kurzschlusslaeufer)
 public final class MotorImCage extends AbstractMotorIM {
     public static final AbstractTypeInfo TYPE_INFO = new CircuitTypeInfo(MotorImCage.class, "IM-CAGE", I18nKeys.IM_CAGE, I18nKeys.SQUIRREL_CAGE_INDUCTION_MACHINE);
@@ -70,6 +74,12 @@ public final class MotorImCage extends AbstractMotorIM {
     }
     
 
+    /**
+     * Computes the stator and rotor currents in the dq reference frame
+     * using the induction machine equivalent circuit equations.
+     * @param deltaT the simulation time step
+     * @param time the current simulation time
+     */
     @Override
     void calculateMotorEquations(double deltaT, double time) {
         double usab = _controlledAnchorSourceA.parameter[7];

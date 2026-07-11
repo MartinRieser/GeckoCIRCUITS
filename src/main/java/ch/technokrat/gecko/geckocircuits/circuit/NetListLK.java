@@ -24,6 +24,10 @@ import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.SourceType;
 import ch.technokrat.gecko.geckocircuits.control.AbstractPotentialMeasurement;
 import java.util.*;
 
+/**
+ * LK (power circuit) netlist containing components, nodes, parameters, and coupling data for
+ * the circuit simulation matrix.
+ */
 public class NetListLK {
 
     /** The maximum node index (total number of nodes excluding Ground reference). */
@@ -78,34 +82,70 @@ public class NetListLK {
     public int[] _singularityEntries = new int[0];
 
     
+    /**
+     * Returns the current simulation time.
+     *
+     * @return the simulation time
+     */
     public double getSimulationTime() {
         return t;
     }
     
 
+    /**
+     * Returns the shared (merged) node groups.
+     *
+     * @return 2D array of node indices that share the same potential
+     */
     public int[][] getGemeinsameKnoten() {
         return gemeinsameKnoten;
     }
 
+    /**
+     * Returns the total number of distinct node numbers.
+     *
+     * @return total node count
+     */
     public int getGesamtzahlKnotenNr() {
         return gesamtzahlKnotenNr;
     }
 
+    /**
+     * Returns the array of all connections in the netlist.
+     *
+     * @return array of Connection objects
+     */
     public Connection[] getConnectionen() {
         return v;
     }
 
+    /**
+     * Returns the total number of connections in the netlist.
+     *
+     * @return connection count
+     */
     public int getConnectionANZAHL() {
         return verbindungANZAHL;
     }
 
+    /**
+     * Returns the total number of elements in the netlist.
+     *
+     * @return element count
+     */
     public int getElementANZAHL() {
         return elementANZAHL;
     }
 
+    /**
+     * Returns the total number of elements including subcircuit expansions.
+     * Couplings M are not counted.
+     *
+     * @return element count including subcircuits
+     */
     public int getElementANZAHLinklusiveSubcircuit() {
         return elementANZAHLneu;
-    }  // // Couplings M are not counted!
+    }
 
     // // the number of an ElementLK in the netlist is often not identical to the ID number,
     // // e.g. if coupling k is installed and then additional ElementLK are added -->
@@ -119,6 +159,11 @@ public class NetListLK {
         return -1;
     }
 
+    /**
+     * Returns all mutual inductance couplings evaluated for the LK matrix algorithm.
+     *
+     * @return 3D array containing coupling source numbers and coupling values
+     */
     // // all couplings M that are evaluated in LK matrices in the algorithm -->
     public double[][][] getAlleKopplungenM() {
         double[][] zuLKOP2gehoerigeM_spgQnr = new double[elementANZAHLneu][];
@@ -262,6 +307,11 @@ public class NetListLK {
         }
     }
 
+    /**
+     * Updates nonlinear capacitance and resistance values for all elements.
+     *
+     * @return true if any value was updated
+     */
     public boolean updateNonlinearCapacitancesAndResistors() {
         boolean returnValue = false;
         for (AbstractCircuitBlockInterface elem : eLKneu) {
@@ -274,6 +324,13 @@ public class NetListLK {
         return returnValue;
     }
 
+    /**
+     * Calculates subcircuit components as differential equations at each time step,
+     * avoiding a full netlist rebuild for performance.
+     *
+     * @param dt the time step size
+     * @param t  the current simulation time
+     */
     // // at each time step in the simulation loop in 'SimulationKernel' analytical components of the SubCircuit are calculated,
     // // (i.e. not as a netlist to reduce computing effort)
     public void calculateSubCircuitAsDifferentialEquation(double dt, double t) {
@@ -283,6 +340,9 @@ public class NetListLK {
         }
     }
 
+    /**
+     * Integrates subcircuit elements into the main LK netlist, expanding hidden subcircuits.
+     */
     // // e.g. the elementsLK ​​defined in the SubCircuit are integrated into the LK netlist -->
     public final void integriereSubCircuits() {
         Set<AbstractBlockInterface> eLKneuSet = new LinkedHashSet<AbstractBlockInterface>();
@@ -563,6 +623,14 @@ public class NetListLK {
         }
     }
 
+    /**
+     * Finds the node index for a given label within the sheet of a measurement component.
+     *
+     * @param searchLabel the label string to search for
+     * @param measurement the measurement component providing the circuit sheet context
+     * @return the node index (knotenX or knotenY) matching the label
+     * @throws RuntimeException if the label references a disabled component
+     */
     public int findIndexFromLabelInSheet(final String searchLabel, final AbstractPotentialMeasurement measurement) {
         final CircuitSheet parentCircuitSheet = measurement.getParentCircuitSheet();
 

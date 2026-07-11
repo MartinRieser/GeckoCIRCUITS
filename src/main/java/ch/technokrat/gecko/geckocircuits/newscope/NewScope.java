@@ -27,6 +27,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.GroupLayout;
 
+/**
+ * Main scope panel for signal visualization, cursor measurements, and zoom control.
+ * Supports cursor-based measurement with forward/backward navigation, zoom locking on X/Y axes,
+ * and slider/cursor modes for detailed signal analysis.
+ */
 public final class NewScope extends javax.swing.JPanel {
 
     private static final long serialVersionUID = 1L;
@@ -80,6 +85,11 @@ public final class NewScope extends javax.swing.JPanel {
         enableZoomButtons();
     }
 
+    /**
+     * Adds an additional panel (e.g. Fourier analysis) below the main graph.
+     *
+     * @param fourierPanel the grafer panel to add
+     */
     public void additionalPanel(final GraferV4 fourierPanel) {
 
         if (_fourierPanel != null) {
@@ -96,17 +106,30 @@ public final class NewScope extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * Replaces the tabbed pane with the graph panel directly.
+     */
     public void setTabsInvisible() {
         GroupLayout layout = (GroupLayout) getLayout();
         layout.replace(jTabbedPane, jPanelGraph);
     }
 
+    /**
+     * Sets the data container for both the table and the grafer.
+     *
+     * @param dataContainer the data to display
+     */
     public void setDataContainer(final AbstractDataContainer dataContainer) {
         assert dataContainer != null;
         dataContainerTable1.setDataContainer(dataContainer);
         _grafer.get(0).setDataContainer(dataContainer);
     }
 
+    /**
+     * Sets whether a signal curve is selected, enabling or disabling slider buttons.
+     *
+     * @param sCrvSel true if a signal curve is selected
+     */
     public void setSignalCrvSelected(final boolean sCrvSel) {
         _signalCrvSelected = sCrvSel;
         if (jToggleButtonSlider.isSelected()) {
@@ -655,6 +678,11 @@ private void jButtonNextEqualActionPerformed(java.awt.event.ActionEvent evt) {//
         }
     }
 
+    /**
+     * Returns the cursor search direction based on the toggle button state.
+     *
+     * @return BACKWARD if the CTRL button is selected, FORWARD otherwise
+     */
     private IterationDirection getIterationDirection() {
         if (jToggleButtonCtrl.isSelected()) {
             return IterationDirection.BACKWARD;
@@ -663,11 +691,21 @@ private void jButtonNextEqualActionPerformed(java.awt.event.ActionEvent evt) {//
         }
     }
 
+    /**
+     * Exports the auto-scale window state to ASCII.
+     *
+     * @param ascii the StringBuffer to append to
+     */
     public void exportInvidualControl(StringBuffer ascii) {
         boolean isSelected = jToggleButtonAuto.isSelected();
         ProjectData.appendAsString(ascii.append("\nisAutoScaleWindowOn"), isSelected);
     }
 
+    /**
+     * Imports the auto-scale window setting from a token map.
+     *
+     * @param settingsMap the token map containing the setting
+     */
     public void importIndividualCONTROL(final TokenMap settingsMap) {
         if (settingsMap.containsToken("isAutoScaleWindowOn")) {
             boolean isAutoScale = settingsMap.readDataLine("isAutoScaleWindowOn", true);

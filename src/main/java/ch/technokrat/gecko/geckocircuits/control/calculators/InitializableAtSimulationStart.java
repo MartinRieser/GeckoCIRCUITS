@@ -14,9 +14,13 @@
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 /**
- *
+ * Interface for components that require initialization at the start of a simulation.
  * @author andreas
  */
 public interface InitializableAtSimulationStart {
+    /**
+     * Called at simulation start to initialize the component with the given time step.
+     * @param deltaT the simulation time step
+     */
     void initializeAtSimulationStart(final double deltaT);
 }

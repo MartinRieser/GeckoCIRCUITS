@@ -14,7 +14,7 @@
 package ch.technokrat.gecko.geckocircuits.newscope;
 
 /**
- *
+ * Panel for configuring grid settings including tick spacing, labels, and grid lines.
  * @author andy
  */
 public class JPanelGridSettings extends javax.swing.JPanel {

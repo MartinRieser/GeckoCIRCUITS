@@ -13,8 +13,14 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Multiplexer that combines N scalar input signals into a single vector output signal.
+ */
 public final class MUXControlCalculatable extends AbstractControlCalculatable {
 
+    /**
+     * @param noInputs the number of scalar inputs to multiplex
+     */
     public MUXControlCalculatable(final int noInputs) {
         super(noInputs, 1);
         _outputSignal[0] = new double[noInputs];

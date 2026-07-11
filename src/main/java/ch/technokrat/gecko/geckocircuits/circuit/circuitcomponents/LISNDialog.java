@@ -27,7 +27,7 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 /**
- *
+ * Dialog for viewing the LISN circuit definition and schematic.
  * @author andy
  */
 @SuppressWarnings({"rawtypes", "unchecked"})

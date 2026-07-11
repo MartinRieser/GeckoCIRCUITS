@@ -13,11 +13,19 @@
  */
 package ch.technokrat.gecko.geckocircuits.general;
 
+/**
+ * Defines the operating mode of the GeckoCIRCUITS application.
+ */
 public enum OperatingMode {
 
+    /** Running as a standalone desktop application. */
     STANDALONE,
+    /** Running as a Simulink S-function. */
     SIMULINK,
+    /** Running with external interface. */
     EXTERNAL,
-    REMOTE,    
+    /** Running in remote control mode. */
+    REMOTE,
+    /** Running with magneto-motive force (MMF) coupling. */
     MMF
 }

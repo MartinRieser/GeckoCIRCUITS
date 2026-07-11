@@ -27,7 +27,7 @@ import javax.swing.JRadioButton;
 import javax.swing.border.TitledBorder;
 
 /**
- *
+ * Panel for selecting the time range (data range, define range, or slider range).
  * @author andy
  */
 public final class JPanelDialogRange extends JPanel {

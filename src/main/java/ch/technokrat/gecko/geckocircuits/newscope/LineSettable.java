@@ -14,7 +14,7 @@
 package ch.technokrat.gecko.geckocircuits.newscope;
 
 /**
- *
+ * Interface for objects whose line style, color, transparency, and stroke can be configured.
  * @author andy
  */
 public interface LineSettable {

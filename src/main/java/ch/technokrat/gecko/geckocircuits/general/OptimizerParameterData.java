@@ -22,6 +22,10 @@ import java.util.Set;
 import javax.swing.undo.UndoableEdit;
 import ch.technokrat.modelviewcontrol.AbstractUndoGenericModel;
 
+/**
+ * Stores optimizer parameter name-value pairs for the simulation model,
+ * supporting undo/redo of parameter changes.
+ */
 public final class OptimizerParameterData {
 
     private Map<String, Double> _dataMap = new LinkedHashMap<String, Double>();

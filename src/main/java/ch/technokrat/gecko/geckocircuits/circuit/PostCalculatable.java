@@ -18,7 +18,20 @@ package ch.technokrat.gecko.geckocircuits.circuit;
  * e.g. for nonlinear inductors/capacitors or motor models
  * @author andreas
  */
+/**
+ * Interface for components that require a post-simulation-step calculation,
+ * e.g. non-linear inductors/capacitors or motor models.
+ */
 public interface PostCalculatable {
+    /**
+     * Performs initialization before the simulation loop starts.
+     */
     public void doInitialization();
+    /**
+     * Performs a calculation after each simulation time step.
+     *
+     * @param dt the time step size
+     * @param t  the current simulation time
+     */
     void doCalculation(double dt, double t);    
 }

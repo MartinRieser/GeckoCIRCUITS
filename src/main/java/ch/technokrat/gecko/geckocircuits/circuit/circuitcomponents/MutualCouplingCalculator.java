@@ -16,6 +16,11 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
 import java.util.List;
 
+/**
+ * Calculator for mutual inductance between two coupled inductors.
+ * Stamps the mutual inductance value into the global inductance matrix
+ * used by the circuit solver.
+ */
 public class MutualCouplingCalculator {
     private double _M;
     private double _k;
@@ -47,6 +52,12 @@ public class MutualCouplingCalculator {
     }
 
 
+    /**
+     * Stamps the mutual inductance (M = k * sqrt(L1 * L2)) into the symmetric
+     * inductance matrix at the positions corresponding to the two coupled inductors.
+     * @param inductanceMatrix the system inductance matrix to stamp into
+     * @param allInductors the list of all coupled inductors (used to find matrix indices)
+     */
     void stampInductanceMatrix(double[][] inductanceMatrix, final List<InductorCouplingCalculator> allInductors) {
         int index1 = allInductors.indexOf(_l1);
         int index2 = allInductors.indexOf(_l2);

@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.newscope;
 
+/**
+ * Computes "nice" axis scaling numbers using Heckbert's algorithm,
+ * producing human-readable tick spacing and axis limits.
+ */
 public final class NiceScale {
 
     private double _minPoint;

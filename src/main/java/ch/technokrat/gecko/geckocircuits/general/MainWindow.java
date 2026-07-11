@@ -69,6 +69,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import ch.technokrat.modelviewcontrol.AbstractUndoGenericModel;
 
+/**
+ * Main application window for GeckoCIRCUITS. Manages the menu bar, schematic editor,
+ * simulation runner, and all top-level user interactions such as file I/O,
+ * simulation control, and view settings.
+ */
 public final class MainWindow extends JFrame implements WindowListener, ActionListener, ComponentListener {
 
     private static final long serialVersionUID = 1L;
@@ -1481,6 +1486,10 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         }
     }
 
+    /**
+     * Periodic backup task that saves the current model to an auto-backup file
+     * whenever the model has unsaved changes.
+     */
     class BackupTask extends TimerTask {
 
         public void run() {
@@ -1560,6 +1569,11 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         setSimulationMenu();
     }
 
+    /**
+     * Builds the File menu with New, Open, Save, Save As, Save View, Exit,
+     * and the four most recently used files.
+     * @return the configured File menu
+     */
     private JMenu buildFileMenu() {
         JMenu fileMenu = GuiFabric.getJMenu(I18nKeys.FILE);
         mItemNew = GuiFabric.getJMenuItem(I18nKeys.NEW);
@@ -1616,6 +1630,11 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         return fileMenu;
     }
 
+    /**
+     * Builds the Edit menu with undo/redo, copy/move/delete, select all,
+     * disable, import, export, and import-from-file actions.
+     * @return the configured Edit menu
+     */
     private JMenu buildEditMenu() {
         JMenu editMenu = GuiFabric.getJMenu(I18nKeys.EDIT);
         mItemUndo = GuiFabric.getJMenuItem(I18nKeys.UNDO);
@@ -1724,6 +1743,11 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         return editMenu;
     }
 
+    /**
+     * Builds the View menu with visibility toggles for names, parameters,
+     * text lines, and flow symbols, plus scaling and font-size submenus.
+     * @return the configured View menu
+     */
     private JMenu buildViewMenu() {
         JMenu viewMenu = GuiFabric.getJMenu(I18nKeys.VIEW);
         buildViewMenuItems(viewMenu);
@@ -1752,6 +1776,10 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         return viewMenu;
     }
 
+    /**
+     * Builds the scaling submenu offering preset dpix values (10–18).
+     * @return the configured scaling submenu
+     */
     private JMenu buildScalingMenu() {
         JMenu menueSkalierung = GuiFabric.getJMenu(I18nKeys.SCALING);
         JMenuItem mItemSkal10 = GuiFabric.getJMenuItem(I18nKeys.POINT_10);
@@ -1793,6 +1821,10 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         return menueSkalierung;
     }
 
+    /**
+     * Builds the font-size submenu offering preset sizes (6–18 pt).
+     * @return the configured font-size submenu
+     */
     private JMenu buildFontSizeMenu() {
         JMenu menueFontSize = GuiFabric.getJMenu(I18nKeys.FONT_SIZE);
         JMenuItem mItemFS06 = GuiFabric.getJMenuItem(I18nKeys.POINT_6);
@@ -1848,6 +1880,11 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         return menueFontSize;
     }
 
+    /**
+     * Creates and configures all check-box menu items for the View menu,
+     * including antialiasing and visibility toggles for each circuit type.
+     * @param viewMenu the View menu to populate
+     */
     private void buildViewMenuItems(JMenu viewMenu) {
         aliasingCONTROL = new JCheckBoxMenuItem("Use Antialiasing");
         aliasingCONTROL.addActionListener(this);
@@ -1924,6 +1961,11 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         vItemShowFlowTHERM.setForeground(GlobalColors.farbeFertigElementTHERM);
     }
 
+    /**
+     * Builds the Tools menu with memory settings, update settings, remote access,
+     * connection check, parameter/order settings, model check, and find-in-model.
+     * @return the configured Tools menu
+     */
     private JMenu buildToolsMenu() {
         JMenu toolsMenu = GuiFabric.getJMenu(I18nKeys.TOOLS);
 
@@ -1978,6 +2020,10 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         return toolsMenu;
     }
 
+    /**
+     * Builds the Help menu with About, Licensing, Feedback, and Updates items.
+     * @return the configured Help menu
+     */
     private JMenu buildHelpMenu() {
         JMenu helpMenu = GuiFabric.getJMenu(I18nKeys.HELP);
 
@@ -2008,6 +2054,11 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         return helpMenu;
     }
 
+    /**
+     * Builds the Gecko menu with GeckoSCRIPT, GeckoOPTIMIZER, GeckoHEAT,
+     * GeckoMAGNETICS, and GeckoEMC entries.
+     * @return the configured Gecko menu
+     */
     private JMenu buildGeckoMenu() {
         JMenu geckoMenu = GuiFabric.getJMenu(I18nKeys.GECKO);
         geckoMenu.setForeground(GlobalColors.farbeGecko);

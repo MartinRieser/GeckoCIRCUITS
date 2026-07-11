@@ -18,6 +18,9 @@ import ch.technokrat.gecko.ControlCalculatableMatrix;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Java block variant that supports matrix operations for compiled control blocks.
+ */
 public class JavaBlockMatrix extends AbstractJavaBlock {
     private ControlCalculatableMatrix _compiledInstance;
     JavaBlockMatrix(final ControlJavaFunction control) {

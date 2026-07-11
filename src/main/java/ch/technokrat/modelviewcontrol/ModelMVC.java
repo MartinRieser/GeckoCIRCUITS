@@ -16,32 +16,46 @@ package ch.technokrat.modelviewcontrol;
 import java.io.Serializable;
 
 /**
- * class represents the MVC - Model of a Generic type value, which is undoable
+ * Concrete MVC model that stores a single generic value with undo/redo support.
+ * Extends {@link AbstractUndoGenericModel} to provide automatic undo management.
  *
- * @param <T>
+ * @param <T> the type of the stored value
  * @author andy
  */
 public class ModelMVC<T> extends AbstractUndoGenericModel<T>
         implements Serializable{
   private static final long serialVersionUID = 784635241326447L;
+
+  /**
+   * Optional description object used by {@link #toString()} for display purposes,
+   * e.g. "Undo dielectric constant".
+   */
   private transient Object _descriptionObject = null;
 
+  /**
+   * Creates a model with the given initial value.
+   * @param initValue the initial value
+   */
   public ModelMVC(T initValue){
     super(initValue);
   }
 
   /**
-   *
-   * @param initValue initial Float value of model
-   * @param description a string which tells what kind of object the object
-   * represents. This is used, e.g. for an undo-event: "Undo dielectric
-   * constant".
+   * Creates a model with the given initial value and description object.
+   * @param initValue the initial value
+   * @param descriptionObject an object whose {@code toString()} provides a
+   *        human-readable description, used e.g. in undo messages
    */
   public ModelMVC(T initValue, Object descriptionObject){
     super(initValue);
     _descriptionObject = descriptionObject;
   }
 
+  /**
+   * Returns the description object's string representation, or a class-based
+   * default if no description is set.
+   * @return the description string
+   */
   @Override
   public String toString(){
       if(_descriptionObject != null) {

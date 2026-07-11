@@ -16,7 +16,7 @@ package ch.technokrat.gecko.geckocircuits.newscope;
 import javax.swing.JOptionPane;
 
 /**
- *
+ * Panel for configuring axis settings including scale type, auto-scaling, and axis limits.
  * @author andy
  */
 @SuppressWarnings({"unchecked", "rawtypes"})

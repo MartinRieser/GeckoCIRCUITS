@@ -18,10 +18,21 @@ import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Abstract base class for loss curves using the template method pattern.
+ * Concrete subclasses implement {@link #exportIndividual(StringBuffer)} and
+ * {@link #importIndividual(TokenMap)} to handle curve-specific data.
+ */
 public abstract class LossCurve {
     
+    /**
+     * Curve data table. Expected layout: {@code data[0]} = x-values, {@code data[1]} = y-values.
+     */
     public double[][] data;
     
+    /**
+     * Junction temperature parameter, default 0.0 &deg;C.
+     */
     final UserParameter<Double> tj = UserParameter.Builder.
             <Double>start("tj", 0.0).            
             longName(I18nKeys.TEMP_AT_WHICH).
@@ -29,7 +40,10 @@ public abstract class LossCurve {
             unit("C").            
             build();            
 
-    
+    /**
+     * Imports curve data and individual subclass data from a token map.
+     * @param tokenMap the token map containing serialised curve data
+     */
     final void importASCII(final TokenMap tokenMap) {        
         data = tokenMap.readDataLine("data[][]", data);
                 
@@ -37,6 +51,10 @@ public abstract class LossCurve {
         tj.readFromTokenMap(tokenMap);        
     }
 
+    /**
+     * Exports curve data and individual subclass data to the given buffer.
+     * @param ascii the buffer to append the serialised curve to
+     */
     final void exportASCII(final StringBuffer ascii) {
         
         ascii.append("\n<" + getXMLTag() + ">");
@@ -50,12 +68,24 @@ public abstract class LossCurve {
         return ((int) (double) tj.getValue()) + "°C";
     }
 
+    /**
+     * Returns the XML tag used for serialising this curve type.
+     * @return the XML tag string
+     */
     abstract String getXMLTag();
 
+    /**
+     * Hook method for subclasses to export additional data. Default implementation does nothing.
+     * @param ascii the buffer to append subclass-specific data to
+     */
     protected void exportIndividual(final StringBuffer ascii) {        
         // nothing todo - template method pattern
     }
 
+    /**
+     * Hook method for subclasses to import additional data. Default implementation does nothing.
+     * @param tokenMap the token map containing subclass-specific data
+     */
     protected void importIndividual(final TokenMap tokenMap) {
         // nothing todo - template method pattern
     }

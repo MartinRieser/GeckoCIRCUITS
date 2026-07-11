@@ -24,6 +24,11 @@ import java.awt.Window;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Saturatable induction machine model that accounts for magnetic saturation
+ * effects in the magnetising inductance. Uses a smooth transition between
+ * unsaturated and saturated inductance values.
+ */
 // Saettigbare Asynchronmaschine 
 public final class MotorImSat extends AbstractMotorIMCommon {
     public static final AbstractTypeInfo TYPE_INFO = new CircuitTypeInfo(MotorImSat.class, "IM-SAT", I18nKeys.IM_SAT, I18nKeys.SATURABLE_INDUCTION_MACHINE);

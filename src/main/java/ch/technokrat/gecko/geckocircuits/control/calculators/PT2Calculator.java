@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * PT2 second-order low-pass filter: G(s) = K / (1 + (sT)^2), discretized using an LC-equivalent.
+ */
 public final class PT2Calculator extends AbstractPTCalculator {
 
     private double _yalt = 0;

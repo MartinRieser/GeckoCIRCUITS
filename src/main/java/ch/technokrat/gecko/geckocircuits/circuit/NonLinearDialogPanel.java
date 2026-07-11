@@ -42,6 +42,10 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+/**
+ * Dialog panel for editing non-linear characteristics (e.g. for non-linear inductors or reluctances).
+ * Provides table-based data entry, file save/load, and graphical preview.
+ */
 @SuppressWarnings("deprecation")
 public class NonLinearDialogPanel extends JPanel {
 
@@ -62,6 +66,13 @@ public class NonLinearDialogPanel extends JPanel {
     private final SimpleGraferPanel newScope1;
     private final JDialog _parentDialog;
 
+    /**
+     * Creates a NonLinearDialogPanel for the given circuit component.
+     *
+     * @param parentDialog the parent dialog
+     * @param elementLK    the non-linear circuit component being edited
+     * @param isYAxisLog   whether the Y-axis should be logarithmic
+     */
     @SuppressWarnings("this-escape")
     public NonLinearDialogPanel(JDialog parentDialog, final AbstractNonLinearCircuitComponent elementLK,
             final boolean isYAxisLog) {

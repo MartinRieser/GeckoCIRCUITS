@@ -20,7 +20,7 @@ package ch.technokrat.gecko.geckocircuits.control;
 import java.util.List;
 
 /**
- *
+ * Thrown when a control loop is detected in the block diagram (algebraic loop).
  * @author andy
  */
 class LoopDetectionException extends Exception {

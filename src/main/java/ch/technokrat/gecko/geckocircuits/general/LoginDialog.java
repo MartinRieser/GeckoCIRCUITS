@@ -18,6 +18,9 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
  
+/**
+ * A modal dialog for user login with username and password fields.
+ */
 public class LoginDialog extends JDialog {
 
     private static final long serialVersionUID = 1L;

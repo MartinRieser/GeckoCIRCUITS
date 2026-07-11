@@ -17,6 +17,10 @@ import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.ThermAmbient;
 import ch.technokrat.gecko.geckocircuits.control.Point;
 import java.util.*;
 
+/**
+ * General netlist builder that creates potential areas from connections and component terminals,
+ * merges them via geometry and labels, and handles subcircuit integration.
+ */
 public final class NetlistGeneral {
 
     
@@ -132,6 +136,9 @@ public final class NetlistGeneral {
     }
     
 
+    /**
+     * Creates potential areas by merging geometrically connected connections and element terminals.
+     */
     // // Connections and element nodes are combined in potential areas --> pot[]
     private void createPotentialSheetConnectedGeometric() {
         //-----------------------------------
@@ -158,6 +165,9 @@ public final class NetlistGeneral {
         }
     }
 
+    /**
+     * Merges potential areas that share identical labels on the same circuit sheet.
+     */
     // // the potential areas are now also linked via identical labels where there are none
     // direkte (optische) Connection am Bildschirm besteht --> potUeberLabelsVerbunden[]
     // // ... this is the starting point for assigning node numbers to the element nodes in the netlist
@@ -189,12 +199,18 @@ public final class NetlistGeneral {
         }
     }
 
+    /**
+     * Resets label priorities on all potential areas to LOW.
+     */
     private void resetAllLabelPriorities() {
         for (PotentialArea pot : _potentialAreas) {
             pot.clearLabelPriorities();
         }
     }
 
+    /**
+     * Removes potential areas that have no component terminals connected.
+     */
     private void removeEmptyPotentials() {
 
         for (PotentialArea pot : _potentialAreas.toArray(new PotentialArea[0])) {
@@ -205,6 +221,10 @@ public final class NetlistGeneral {
 
     }
 
+    /**
+     * Connects potential areas that share global terminals with the same ID and simulation domain,
+     * or are connected via the global thermal zero reference.
+     */
     private void connectGlobalTerminals() {
         boolean continueLoop = true;
         while (continueLoop) {
@@ -252,6 +272,9 @@ public final class NetlistGeneral {
         }
     }
 
+    /**
+     * Connects potential areas that share subcircuit input/output terminals of the same type.
+     */
     private void connectSubCircuitInOutTerminals() {
         boolean continueLoop = true;
         while (continueLoop) {
@@ -279,6 +302,11 @@ public final class NetlistGeneral {
         }
     }
 
+    /**
+     * Tests whether any potential areas can be merged due to geometric overlap.
+     *
+     * @return true if any merge was performed
+     */
     private boolean testMergeConnection() {
         boolean returnValue = false;
         final PotentialArea[] array = _potentialAreas.toArray(new PotentialArea[_potentialAreas.size()]);
@@ -312,17 +340,32 @@ public final class NetlistGeneral {
         return returnValue;
     }
 
+    /**
+     * Edge in a graph connecting two PotentialArea nodes, used for detecting isolated potentials.
+     */
     private class GraphEdge {
 
         private final PotentialArea _pot1;
         private final PotentialArea _pot2;
         public boolean isVisited = false;
 
+        /**
+         * Creates a GraphEdge connecting two potential areas.
+         *
+         * @param pot1 the first potential area
+         * @param pot2 the second potential area
+         */
         public GraphEdge(final PotentialArea pot1, final PotentialArea pot2) {
             _pot1 = pot1;
             _pot2 = pot2;
         }
 
+        /**
+         * Traverses this edge and all reachable edges in the graph to collect a connected set.
+         *
+         * @param graphMap      the adjacency map of the graph
+         * @param connectedEdges the set to which connected edges are added
+         */
         private void traverse(Map<PotentialArea, ArrayList<GraphEdge>> graphMap, LinkedHashSet<GraphEdge> connectedEdges) {
             isVisited = true;
             connectedEdges.add(this);
@@ -339,6 +382,10 @@ public final class NetlistGeneral {
         }
     }
 
+    /**
+     * Detects isolated potential groups (components connected without a ground reference)
+     * and records their indices for singularity handling.
+     */
     void deSingularizeIsolatedPotentials() {
 
         List<GraphEdge> connectionGraph = new ArrayList<GraphEdge>();

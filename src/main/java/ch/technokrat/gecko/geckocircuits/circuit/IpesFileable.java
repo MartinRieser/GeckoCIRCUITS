@@ -14,9 +14,15 @@
 package ch.technokrat.gecko.geckocircuits.circuit;
 
 /**
- *
+ * Interface for exporting circuit data in the IPES (Institut für
+ * Leistungselektronik und Steuerungen) ASCII file format.
+ * Package-private because this format is only used internally for legacy support.
  * @author andy
  */
 interface IpesFileable {
+    /**
+     * Exports data as ASCII string to the given buffer.
+     * @param strBuf the buffer to append the exported data to
+     */
     void exportAscii(final StringBuffer strBuf);
 }

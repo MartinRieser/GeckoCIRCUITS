@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Limit calculator with externally supplied min/max values.
+ * Input signal indices: [0] = signal to limit, [1] = minimum limit, [2] = maximum limit.
+ */
 public final class LimitCalculatorExternal extends AbstractControlCalculatable {
 
     private static final int NUMBER_INPUTS = 3;

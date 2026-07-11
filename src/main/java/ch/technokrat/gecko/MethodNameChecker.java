@@ -44,6 +44,14 @@ final class MethodNameChecker {
      * @param containsMethodSignature the interface that should contain matching methods
      * @return null
      */
+    /**
+     * Validates that all methods in {@code checkMethods} have an identical signature
+     * in {@code containsMethodSignature}. Uses assertions so the check only runs
+     * when the JVM is started with the {@code -ea} flag.
+     * @param checkMethods the class whose methods should be checked
+     * @param containsMethodSignature the interface expected to contain matching methods
+     * @return always null
+     */
     static MethodNameChecker checkFabric(final Class<?> checkMethods,
             final Class<GeckoRemoteInterface> containsMethodSignature) {
         try {

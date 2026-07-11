@@ -15,16 +15,29 @@ package ch.technokrat.gecko.geckocircuits.circuit.losscalculation;
 
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.AbstractCircuitBlockInterface;
 
+/**
+ * Loss calculator for resistors using P = I * V (Joule heating) loss calculation.
+ * Temperature and deltaT parameters are accepted but ignored, as resistive losses
+ * are computed directly from the instantaenous current and voltage.
+ */
 public final class LossCalculatorResistor implements AbstractLossCalculator {
 
     final AbstractCircuitBlockInterface _resistor;
     private double _totalLosses;
 
+    /**
+     * Creates a loss calculator for the given resistor.
+     * @param resistor the resistor component whose losses are calculated
+     */
     public LossCalculatorResistor(final AbstractCircuitBlockInterface resistor) {
         super();
         _resistor = resistor;
     }
 
+    /**
+     * Calculates total losses as I * V. The temperature and deltaT parameters are
+     * accepted for interface compatibility but are not used.
+     */
     @Override
     public void calcLosses(final double current, final double temperature, final double deltaT) {
         _totalLosses = _resistor._currentInAmps * _resistor._voltage;

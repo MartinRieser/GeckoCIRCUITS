@@ -19,27 +19,49 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import javax.swing.JOptionPane;
 
+/**
+ * Monitors output volume during simulation and warns the user about excessive output,
+ * which can slow down the simulation. Uses static counters shared across all instances
+ * to track total output bytes globally.
+ */
 public final class OutputWarningStream extends BufferedOutputStream {
 
     private final PrintStream _ps;
+    /** Whether the verbosity warning has already been shown for this instance. */
     private boolean _verbosityWarnShown = false;
     private static final long DEFAULT_WARN_SIZE = 50000000;
+    /** Static threshold at which a warning is triggered (shared globally). */
     private static long warningBytesSize = DEFAULT_WARN_SIZE;
+    /** Static byte counter accumulating total output across all instances. */
     private static long byteCounter = 0;
+    /** Whether this stream writes to the original console output (true) or to an alternative buffer. */
     private boolean _isOriginalOutput = true;
     @SuppressWarnings("PMD")
     private StringBuffer _alternativeOutput;
     private static final int MAX_STRING_BUFFER_SIZE = 100000;
     private static String outputDescription;
+    /** If true, no further warning dialogs will be shown. */
     private boolean _ignoreFutureMessages = false;
     private static final int BUFFER_FRACTION = 5; // this means, after cleaning the buffer, 1/5th of the original space is left
     private static final int SEARCH_NEWLINE_CHARS = 200;
 
+    /**
+     * Creates an OutputWarningStream wrapping the given output stream.
+     *
+     * @param aStream       the underlying output stream
+     * @param bufferedWriter the print stream for buffered writing
+     */
     public OutputWarningStream(final OutputStream aStream, final PrintStream bufferedWriter) {
         super(aStream);
         _ps = bufferedWriter;
     }
 
+    /**
+     * Writes bytes to the output, updates the byte counter, and checks for excessive output.
+     *
+     * @param bytes the data to write
+     * @throws IOException if an I/O error occurs
+     */
     @Override
     public void write(final byte[] bytes) throws IOException {
         final String aString = new String(bytes);
@@ -53,6 +75,14 @@ public final class OutputWarningStream extends BufferedOutputStream {
         checkLineCount();
     }
 
+    /**
+     * Writes a sub-range of bytes to the output and checks for excessive output.
+     *
+     * @param bytes the data to write
+     * @param off   the start offset in the data
+     * @param len   the number of bytes to write
+     * @throws IOException if an I/O error occurs
+     */
     @Override
     public void write(final byte[] bytes, final int off, final int len) throws IOException {
         final String aString = new String(bytes, off, len);
@@ -66,6 +96,9 @@ public final class OutputWarningStream extends BufferedOutputStream {
         checkLineCount();
     }
 
+    /**
+     * Checks if the accumulated byte count exceeds the warning threshold and shows a dialog if so.
+     */
     public void checkLineCount() {
         if (byteCounter > warningBytesSize) {
             Thread showWarningThread = new Thread(new Runnable() {
@@ -81,6 +114,9 @@ public final class OutputWarningStream extends BufferedOutputStream {
         }
     }
 
+    /**
+     * Resets the byte counter and warning flag.
+     */
     public void reset() {
         byteCounter = 0;
         _verbosityWarnShown = false;
@@ -117,12 +153,21 @@ public final class OutputWarningStream extends BufferedOutputStream {
         }
     }
 
+    /**
+     * Switches this stream to write to an alternative buffer instead of the original output.
+     *
+     * @param stringBuffer the alternative output buffer
+     * @param description  a description of the output source
+     */
     void setAlternativeOutput(final StringBuffer stringBuffer, final String description) {
         _isOriginalOutput = false;
         _alternativeOutput = stringBuffer;
         outputDescription = description;
     }
 
+    /**
+     * Switches this stream back to writing to the original console output.
+     */
     void setOriginalOutput() {
         _isOriginalOutput = true;
     }
@@ -142,6 +187,11 @@ public final class OutputWarningStream extends BufferedOutputStream {
         }
     }
 
+    /**
+     * Restores console output mode and updates the output description.
+     *
+     * @param description a description of the output source
+     */
     void setConsoleOutput(final String description) {
         _isOriginalOutput = true;
         outputDescription = description;

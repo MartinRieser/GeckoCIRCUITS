@@ -20,6 +20,9 @@
 package ch.technokrat.gecko.i18n;
 
 
+/**
+ * Defines all constant parameters for the i18n toolkit.
+ */
 public class InitParameters {
     
     private InitParameters(){} // prevents instantiation

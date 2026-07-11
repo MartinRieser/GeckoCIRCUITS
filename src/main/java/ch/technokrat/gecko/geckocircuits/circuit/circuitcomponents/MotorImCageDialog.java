@@ -19,9 +19,9 @@ import java.util.List;
 import javax.swing.JPanel;
 
 /**
+ * Dialog for editing squirrel-cage induction machine parameters.
  *
  * @author andy
- * Kurzschlusskaefig-Laeufer
  */
 class MotorImCageDialog extends AbstractMotorDialog<MotorImCage> {
     

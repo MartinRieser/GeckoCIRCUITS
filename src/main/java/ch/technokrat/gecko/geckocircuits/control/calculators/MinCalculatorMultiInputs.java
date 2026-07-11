@@ -13,6 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/** Outputs the minimum value across all N input signals. */
 public final class MinCalculatorMultiInputs extends AbstractControlCalculatable {        
         public MinCalculatorMultiInputs(final int inputSize) {
             super(inputSize, 1);

@@ -15,8 +15,18 @@ package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 import ch.technokrat.gecko.geckocircuits.control.NotCalculateableMarker;
 
+/**
+ * Pass-through/no-op calculator that performs no computation.
+ * Used as a placeholder for non-calculable control blocks.
+ */
 public class NothingToDoCalculator extends AbstractControlCalculatable implements NotCalculateableMarker {
 
+    /**
+     * Creates a NothingToDoCalculator with the specified number of inputs and outputs.
+     *
+     * @param noInputs  number of input signals
+     * @param noOutput  number of output signals
+     */
     public NothingToDoCalculator(int noInputs, int noOutput) {
         super(noInputs, noOutput);
     }

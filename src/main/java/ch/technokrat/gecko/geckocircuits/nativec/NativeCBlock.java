@@ -27,10 +27,22 @@ public class NativeCBlock {
     private double[] _xINVector;
     private double[] _xOUTVector;
     
+    /**
+     * Constructs a new NativeCBlock and initializes a NativeCClassLoader.
+     */
     public NativeCBlock () {
         _customCClassLoader = new NativeCClassLoader();
     }
     
+    /**
+     * Computes the output signals from the input signals by calling the native C/C++ wrapper.
+     *
+     * @param time          current simulation time
+     * @param deltaT        time step size
+     * @param inputSignals  array of input signal vectors
+     * @param outputSignals array of output signal vectors
+     * @throws Exception if native calculation fails
+     */
     @SuppressWarnings({"PMD.SignatureDeclareThrowsException", "PMD.AvoidArrayLoops"})
     void calculateYOUT(final double time, final double deltaT, final double[][] inputSignals,
             final double[][] outputSignals) throws Exception {
@@ -62,6 +74,12 @@ public class NativeCBlock {
         checkOutputsForNANorINFValues(outputSignals);
     }
     
+    /**
+     * Loads the native library with the specified name using a fresh class loader.
+     *
+     * @param name the full path and name of the native library
+     * @return true if the library was loaded successfully, false otherwise
+     */
     public boolean loadLibraries (final String name) {
         try {
             _customCClassLoader = new NativeCClassLoader();
@@ -78,6 +96,9 @@ public class NativeCBlock {
         }
     }
     
+    /**
+     * Unloads the native library by clearing all references and invoking garbage collection.
+     */
     public void unloadLibraries () {
         try {
             _nativeCWrapperObj = null;
@@ -91,6 +112,12 @@ public class NativeCBlock {
         }
     }
     
+    /**
+     * Checks all output signals for NaN or infinite values and throws an exception if any are found.
+     *
+     * @param signal the array of output signals to check
+     * @throws ArithmeticException if any output value is NaN or infinite
+     */
     private void checkOutputsForNANorINFValues(double[][] signal) {
         for (int i = 0; i < signal.length; i++) {
             if (Double.isNaN(signal[i][0]) || Double.isInfinite(signal[i][0])) {

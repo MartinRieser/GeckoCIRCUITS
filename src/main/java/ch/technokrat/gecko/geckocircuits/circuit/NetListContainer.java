@@ -16,12 +16,24 @@ package ch.technokrat.gecko.geckocircuits.circuit;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.AbstractCircuitBlockInterface;
 import ch.technokrat.gecko.geckocircuits.control.NetlistControl;
 
+/**
+ * Container aggregating three netlists: control, power circuit (LK), and thermal (TH).
+ */
 public class NetListContainer {    
 
+    /** Control-domain netlist. */
     public final NetlistControl _nlControl;
+    /** Power circuit (LK) netlist. */
     public final NetListLK _nlLK;
+    /** Thermal (TH) netlist. */
     public final NetListLK _nlTH;
     
+    /**
+     * Factory method for creating a NetListContainer at simulation start.
+     *
+     * @param schematicEntry the schematic editor containing the circuit
+     * @return a new NetListContainer initialized for simulation
+     */
     public static NetListContainer fabricStartSimulation(final SchematicEditor2 schematicEntry) {        
         schematicEntry.checkNameOptParameters();               
         NetlistGeneral nlC1 = NetlistGeneral.fabricNetzlistDisabledParentSubsRemoved(schematicEntry.getConnection(ConnectorType.CONTROL), schematicEntry.getElementCONTROL());
@@ -45,6 +57,13 @@ public class NetListContainer {
         return new NetListContainer(nlC, nlL, nlT);
     }
     
+    /**
+     * Factory method for continuing a simulation, reusing the previous LK and TH netlists.
+     *
+     * @param schematicEntry the schematic editor
+     * @param oldNetlist     the previous NetListContainer to carry forward
+     * @return a new NetListContainer for continued simulation
+     */
     public static NetListContainer fabricContinueSimulation(final SchematicEditor2 schematicEntry,
             NetListContainer oldNetlist) {
         schematicEntry.checkNameOptParameters();               
@@ -53,6 +72,14 @@ public class NetListContainer {
     
     
     
+    /**
+     * Factory method for creating a NetListContainer for GUI updates.
+     *
+     * @param circuitNL the power circuit netlist
+     * @param thermNL   the thermal netlist
+     * @param nlCONTROL the control netlist
+     * @return a new NetListContainer
+     */
     public static NetListContainer fabricGuiUpdate(NetListLK circuitNL, NetListLK thermNL, NetlistControl nlCONTROL) {
         return new NetListContainer(nlCONTROL, circuitNL, thermNL);
     }

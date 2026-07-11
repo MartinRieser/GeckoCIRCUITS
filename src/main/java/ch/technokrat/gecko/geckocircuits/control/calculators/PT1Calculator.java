@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * PT1 low-pass filter: G(s) = K / (1 + sT), discretized using the bilinear transform.
+ */
 public final class PT1Calculator extends AbstractPTCalculator {
         
         private double _yOld = 0;  // Storage of previous output

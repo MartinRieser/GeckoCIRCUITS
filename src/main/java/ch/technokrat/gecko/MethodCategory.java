@@ -15,12 +15,21 @@ package ch.technokrat.gecko;
 
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Enum that categorises remote API methods for the GeckoCIRCUITS scripting interface.
+ */
 public enum MethodCategory {
+    /** Methods invoked at simulation start. */
     SIMULATION_START(I18nKeys.SIM_START_CATEGORY),
+    /** Methods for loading and saving models. */
     LOAD_SAVE_MODEL(I18nKeys.LOAD_SAVE_CATEGORY),
+    /** Signal-processing methods. */
     SIGNAL_PROCESSING(I18nKeys.SIGNAL_PROCESSING),
+    /** Methods for querying/modifying component properties. */
     COMPONENT_PROPERTIES(I18nKeys.COMPONENT_PROPERTIES),
+    /** Methods for creating and listing components. */
     COMPONENT_CREATION_LISTING(I18nKeys.COMPONENT_CREATION),
+    /** Pseudo-category representing all available methods. */
     ALL_CATEGORIES(I18nKeys.ALL_CATEGORIES);
     
     private I18nKeys _translationKey;
@@ -29,6 +38,10 @@ public enum MethodCategory {
         _translationKey = translationKey;
     }    
 
+    /**
+     * Returns the localised display name of this category.
+     * @return the translated category name
+     */
     @Override
     public String toString() {
         return _translationKey.getTranslation();

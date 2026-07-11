@@ -33,6 +33,9 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+/**
+ * Panel with buttons for managing semiconductor loss detail files (load, edit, create).
+ */
 final class JPanelSemiconductorDetailButtons extends JPanel {
     private static final long serialVersionUID = 1L;
     private static final int BUTTON_WIDTH = 500;

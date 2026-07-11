@@ -19,6 +19,11 @@ import ch.technokrat.gecko.geckocircuits.circuit.CircuitTypeInfo;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+/**
+ * Round-rotor synchronous machine model with damper windings in both
+ * d- and q-axes and a second q-axis damper winding for detailed
+ * transient behaviour.
+ */
 public final class MotorSmRound extends AbstractMotorSM {
 
     private static final int SAT_MAG_INDUCTANCE_INDEX = 20;

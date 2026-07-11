@@ -25,6 +25,11 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Panel with radio buttons for selecting a loss curve by temperature.
+ * Each curve is represented by a {@link JRadioButton};
+ * only one curve can be selected at a time via a {@link ButtonGroup}.
+ */
 public final class LossCurveTemperaturePanel extends JPanel {
 
     private static final long serialVersionUID = 1L;
@@ -32,6 +37,10 @@ public final class LossCurveTemperaturePanel extends JPanel {
     private final ButtonGroup _buttonGroup = new ButtonGroup();
     private final transient List<ActionListener> _listeners = new ArrayList<ActionListener>();
     
+    /**
+     * Constructs a panel with radio buttons for each curve in the list.
+     * @param curveList the loss curves to display as selectable options
+     */
     public LossCurveTemperaturePanel(final List<? extends LossCurve> curveList) {                        
         super();
         setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Curves", TitledBorder.LEFT, TitledBorder.TOP));
@@ -41,6 +50,10 @@ public final class LossCurveTemperaturePanel extends JPanel {
         
     }
 
+    /**
+     * Returns the index of the currently selected radio button.
+     * @return the selected index, or -1 if none is selected
+     */
     int getSelectedIndex() {
         for (JRadioButton button : _radioButtons) {
             if (button.isSelected()) {
@@ -51,20 +64,36 @@ public final class LossCurveTemperaturePanel extends JPanel {
         return -1;
     }
     
+    /**
+     * Registers an action listener that will be notified when a curve selection changes.
+     * @param listener the listener to add
+     */
     public void addActionListener(final ActionListener listener) {
         _listeners.add(listener);
     }
 
+    /**
+     * Notifies all registered listeners of a selection change.
+     * @param event the action event to forward
+     */
     private void sendActionEvent(final ActionEvent event) {
         for(ActionListener listener : _listeners) {
             listener.actionPerformed(event);
         }
     }    
 
+    /**
+     * Programmatically selects the radio button at the given index.
+     * @param toSelect the index of the button to select
+     */
     void setSelectedButton(final int toSelect) {
         _radioButtons.get(toSelect).setSelected(true);
     }           
 
+    /**
+     * Rebuilds the radio button list from the given curve list, clearing any existing buttons.
+     * @param curveList the loss curves to create buttons for
+     */
     public void setGuiButtonsFromList(final List<? extends LossCurve> curveList) {
         setLayout(new GridLayout(curveList.size(), 1));                
                 

@@ -24,6 +24,8 @@ import java.util.Map.Entry;
 import javax.swing.DefaultListModel;
 
 /**
+ * Utility class for polynomial string formatting, evaluation, division,
+ * and factorized expression manipulation.
  *
  * @author andy
  */
@@ -50,6 +52,11 @@ public final class PolynomTools {
         return getPolynomString(tmpList);
     }
     
+    /**
+     * Test method for polynomial string formatting (used for development/debugging).
+     *
+     * @param args command-line arguments (not used)
+     */
     public static void main(String[] args) {
         List<Double> testPoly = Arrays.asList(-2.0, -2.0);
         System.out.println(getPolynomString(testPoly));
@@ -137,10 +144,11 @@ public final class PolynomTools {
     }
 
     /**
+     * Evaluates a factorized polynomial expression from its roots/zeros into coefficient form.
      *
      * @param coefficients if poles or zeros are give, the factorized polynom will be returned
      * @param factor multiplication factor for the result
-     * @return coefficients of a polynom: [1 0 3] == 1 + 3s^2
+     * @return coefficients of a polynom: [1 0 3] == 1 + 3s^3
      */
     public static List<Double> evaluateFactorizedExpression(final List<NComplex> coefficients, final double factor) {
         double[] polynomReal = new double[MAX_ARRAY_SIZE];
@@ -228,7 +236,7 @@ public final class PolynomTools {
 
     /**
      *
-     * @param polynomList list of polynome coefficient [1 2 0 4] == 1 + 2s + 4s^4
+     * @param polynomList list of polynome coefficient [1 2 0 4] == 1 + 2s + 4s^3
      * @return map between polynom powers and coefficients
      */
     private static Map<NComplex, Integer> getPowersMap(final List<NComplex> polynomList) {

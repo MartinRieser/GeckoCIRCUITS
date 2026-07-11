@@ -14,6 +14,7 @@
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 
+/** Outputs the minimum of two input signals. */
 public final class MinCalculatorTwoInputs extends AbstractTwoInputsOneOutputCalculator {
 
     @Override

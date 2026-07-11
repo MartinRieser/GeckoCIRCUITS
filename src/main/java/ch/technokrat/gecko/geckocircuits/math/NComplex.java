@@ -21,18 +21,27 @@ public class NComplex {
    private final float im;
    private TechFormat tcf = new TechFormat();
    
-   /** create a new complex number with real and imaginary parts */
+   /**
+    * Creates a new complex number with the given real and imaginary parts.
+    * @param r the real part
+    * @param i the imaginary part
+    */
    public NComplex(float r, float i) {
       re = r;
       im = i;
    }
 
-   /** create a new complex number r + 0i */
+   /**
+    * Creates a new complex number with the given real part and zero imaginary part.
+    * @param r the real part (imaginary part is 0)
+    */
    public NComplex(float r) {
       this(r, 0.0f);
    }
 
-   /** create a new complex number 0 + 0i */
+   /**
+    * Creates a new complex number with both real and imaginary parts set to zero.
+    */
    public NComplex() {
       this(0.0f, 0.0f);
    }
@@ -50,7 +59,12 @@ public class NComplex {
    /** return a string representation of the complex number */
    public String toString()  { return re + " + " + im + "i"; }
 
-   /** returns a new complex number with value a + b */
+   /**
+    * Returns a new complex number with value a + b.
+    * @param a first operand
+    * @param b second operand
+    * @return a + b
+    */
    public static NComplex add(NComplex a, NComplex b) {
       float re, im;
       re = a.re + b.re;
@@ -59,7 +73,12 @@ public class NComplex {
       return new NComplex(re, im);
    }
 
-   /** returns a new complex number with value a - b */
+   /**
+    * Returns a new complex number with value a - b.
+    * @param a first operand
+    * @param b second operand
+    * @return a - b
+    */
    public static NComplex sub(NComplex a, NComplex b) {
       float re, im;
       re = a.re - b.re;
@@ -68,7 +87,12 @@ public class NComplex {
       return new NComplex(re, im);
    }
 
-   /** returns a new complex number with value a*b */
+   /**
+    * Returns a new complex number with value a * b.
+    * @param a first operand
+    * @param b second operand
+    * @return a * b
+    */
    public static NComplex mul(NComplex a, NComplex b) {
       float re, im;
       re = a.re*b.re - a.im*b.im;
@@ -77,12 +101,21 @@ public class NComplex {
       return new NComplex(re, im);
    }
 
-   /** returns a new complex number with the conjugate value of a */
+   /**
+    * Returns a new complex number with the conjugate value of a.
+    * @param a the complex number to conjugate
+    * @return complex conjugate of a
+    */
    public static NComplex conj(NComplex a) {
       return new NComplex(a.re, -a.im);
    }
 
-   /** returns a new complex number with value a/b */
+   /**
+    * Returns a new complex number with value a / b.
+    * @param a dividend
+    * @param b divisor
+    * @return a / b
+    */
    public static NComplex div(NComplex a, NComplex b) {
       float re, im;
       float r,den;
@@ -102,7 +135,11 @@ public class NComplex {
       return new NComplex(re, im);
    }
 
-   /** returns the absolute value of a */
+   /**
+    * Returns the absolute value (magnitude) of a.
+    * @param a the complex number
+    * @return sqrt(re^2 + im^2)
+    */
    public static float abs(NComplex a) {
         if (a.re != 0.0f || a.im != 0.0f) {
             return (float)Math.sqrt(a.re*a.re + a.im*a.im);
@@ -111,7 +148,11 @@ public class NComplex {
         }
    }
 
-   /** returns the sqrt of a */
+   /**
+    * Returns the square root of a.
+    * @param a the complex number
+    * @return sqrt(a)
+    */
    public static NComplex sqrt(NComplex a) {
       float im,re;
       float x,y,w,r;
@@ -142,7 +183,12 @@ public class NComplex {
       return new NComplex(re, im);
    }
 
-   /** returns a new complex number with value a*x */
+   /**
+    * Returns a new complex number with value a * x (scalar multiplication).
+    * @param x the scalar multiplier
+    * @param a the complex number
+    * @return a * x
+    */
    public static NComplex multiplyByScalar(float x, NComplex a) {
       float im,re;
 

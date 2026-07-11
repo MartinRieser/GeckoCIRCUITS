@@ -85,11 +85,10 @@ public class LUDecompositionCache {
         System.out.println("memory requirement in MB: " + memoryBytes / 1024 / 1024);
     }
 
-    /*
-     * if cache is larger than maximum cache size, then remove
-     * the oldest and the two least accessed matrix entry.
-     * careful with the least accessed: put a threshold, so that 
-     * a quite new matrix is not removed immediately!
+    /**
+     * If the cache exceeds the maximum size, removes the oldest matrix
+     * and the two least-accessed matrices that are older than a threshold.
+     * @param time current simulation time
      */
     private void testForCacheShrink(double time) {
         if (_cachedMatrices.size() > varMaxCacheSize) {
@@ -118,6 +117,10 @@ public class LUDecompositionCache {
         calculateNewVarMaxCacheSize();
     }
 
+    /**
+     * Removes up to three least-accessed matrices that are older than the specified age.
+     * @param accessMinimumAge minimum age threshold for removal consideration
+     */
     private void removeLeastAccessedMatrices(double accessMinimumAge) {
         Integer leastAccessKey = -1;
         Integer secondLeastAccessKey = -1;
@@ -162,6 +165,10 @@ public class LUDecompositionCache {
         }
     }
 
+    /**
+     * Adjusts the maximum cache size based on current memory usage.
+     * Reduces the limit if memory usage exceeds one third of max JVM memory.
+     */
     private void calculateNewVarMaxCacheSize() {
         if (memoryBytes > maxJVMMemory / 3) {
             // enshure that the cache size is not too big.

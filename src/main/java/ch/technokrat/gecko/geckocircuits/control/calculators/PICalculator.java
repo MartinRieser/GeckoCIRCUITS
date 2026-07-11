@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * PI controller using trapezoidal (bilinear) integration for the integral part.
+ */
 public final class PICalculator extends AbstractControlCalculatable implements InitializableAtSimulationStart {
 
     /** Proportional gain coefficient (R0). */

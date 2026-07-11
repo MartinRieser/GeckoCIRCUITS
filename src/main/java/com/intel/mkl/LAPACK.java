@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.intel.mkl;
 
 import java.nio.DoubleBuffer;
@@ -118,70 +114,133 @@ public final class LAPACK {
         return LAPACKNative.spotrf(uplo, n, a, lda);
     }
 
+    /**
+     * Computes the inverse of a symmetric positive-definite matrix (float).
+     * @param uplo Must be 'U' or 'L' indicating the storage of the matrix
+     * @param n The order of the matrix A; n >= 0
+     * @param a The factorization of the matrix A as returned by spotrf
+     * @param lda The first dimension of a
+     * @return info result code (0 = success)
+     */
     public static int spotri(int uplo, int n, float[] a, int lda) {
         return LAPACKNative.spotri(uplo, n, a, lda);
     }
 
+    /**
+     * Computes the Cholesky factorization of a symmetric positive-definite matrix (float packed format).
+     * @param uplo Must be 'U' or 'L' indicating the storage of the matrix
+     * @param n The order of the matrix A; n >= 0
+     * @param a The packed matrix A
+     * @param lda The first dimension of a
+     * @return info result code (0 = success)
+     */
     public static int spptrf(int uplo, int n, float[] a, int lda) {
         return LAPACKNative.spptrf(uplo, n, a, lda);
     }
 
+    /**
+     * Computes the inverse of a symmetric positive-definite matrix (float packed format).
+     * @param uplo Must be 'U' or 'L' indicating the storage of the matrix
+     * @param n The order of the matrix A; n >= 0
+     * @param a The packed matrix A
+     * @param lda The first dimension of a
+     * @return info result code (0 = success)
+     */
     public static int spptri(int uplo, int n, float[] a, int lda) {
         return LAPACKNative.spptri(uplo, n, a, lda);
     }
 
+    /**
+     * Computes the Cholesky factorization using a FloatBuffer (float packed format).
+     * @param uplo Must be 'U' or 'L' indicating the storage of the matrix
+     * @param n The order of the matrix A; n >= 0
+     * @param fb FloatBuffer containing the packed matrix
+     * @param lda The first dimension of a
+     * @return info result code (0 = success)
+     */
     public static int spptrf2(int uplo, int n, FloatBuffer fb, int lda) {
         return LAPACKNative.spptrf2(uplo, n, fb, lda);
     }
 
+    /**
+     * Computes the inverse of a symmetric positive-definite matrix using a FloatBuffer.
+     * @param uplo Must be 'U' or 'L' indicating the storage of the matrix
+     * @param n The order of the matrix A; n >= 0
+     * @param fb FloatBuffer containing the packed matrix
+     * @param lda The first dimension of a
+     * @return info result code (0 = success)
+     */
     public static int spptri2(int uplo, int n, FloatBuffer fb, int lda) {
         return LAPACKNative.spptri2(uplo, n, fb, lda);
     }
 
 
     /**
-     * Wrapper for MKL function dgetrf().
+     * Wrapper for MKL function zgetrs().
      */
     public static int zgetrs(int trans, int n, int nrhs, double[] a, int lda, int[] ipiv, double[] b, int ldb) {
         return LAPACKNative.zgetrs(trans, n, nrhs, a, lda, ipiv, b, ldb);
     }
 
     /**
-     * Wrapper for MKL function dgetrf().
+     * Wrapper for MKL function zgetrs2().
      */
     public static int zgetrs2(int trans, int n, int nrhs, DoubleBuffer a, int lda, int[] ipiv, double[] b, int ldb) {
         return LAPACKNative.zgetrs2(trans, n, nrhs, a, lda, ipiv, b, ldb);
     }
 
     /**
-     * Wrapper for MKL function dgetrf().
+     * Wrapper for MKL function cgetrs().
      */
     public static int cgetrs(int trans, int n, int nrhs, float[] a, int lda, int[] ipiv, float[] b, int ldb) {
         return LAPACKNative.cgetrs(trans, n, nrhs, a, lda, ipiv, b, ldb);
     }
 
     /**
-     * Wrapper for MKL function dgetrf().
+     * Wrapper for MKL function sgetrs().
      */
     public static int sgetrs(int trans, int n, int nrhs, float[] a, int lda, int[] ipiv, float[] b, int ldb) {
         return LAPACKNative.sgetrs(trans, n, nrhs, a, lda, ipiv, b, ldb);
     }
 
     /**
-     * Wrapper for MKL function dgetrf().
+     * Wrapper for MKL function dgetrs().
      */
     public static int dgetrs(int trans, int n, int nrhs, double[] a, int lda, int[] ipiv, double[] b, int ldb) {
         return LAPACKNative.dgetrs(trans, n, nrhs, a, lda, ipiv, b, ldb);
     }
 
+    /**
+     * Computes the inverse of a symmetric positive-definite matrix (complex float packed format).
+     * @param uplo Must be 'U' or 'L' indicating the storage of the matrix
+     * @param n The order of the matrix A; n >= 0
+     * @param a The packed matrix A
+     * @return info result code (0 = success)
+     */
     public static int cpptri(char uplo, int n, float[] a) {
         return LAPACKNative.cpptri(uplo, n, a);
     }
 
+    /**
+     * Computes the Cholesky factorization of a symmetric positive-definite matrix (complex float packed format).
+     * @param uplo Must be 'U' or 'L' indicating the storage of the matrix
+     * @param n The order of the matrix A; n >= 0
+     * @param a The packed matrix A
+     * @return info result code (0 = success)
+     */
     public static int cpptrf(char uplo, int n, float[] a) {
         return LAPACKNative.cpptrf(uplo, n, a);
     }
 
+    /**
+     * Computes the LU factorization of a complex m-by-n matrix (float).
+     * @param m The number of rows in the matrix A
+     * @param n The number of columns in A
+     * @param a The matrix A
+     * @param lda The first dimension of array a
+     * @param ipiv The pivot indices
+     * @return info result code (0 = success)
+     */
     public static int cgetrf(int m, int n, float[] a, int lda, int[] ipiv) {
         return LAPACKNative.cgetrf(m, n, a, lda, ipiv);
     }
@@ -216,14 +275,14 @@ public final class LAPACK {
 
 
     /**
-     * Wrapper for MKL function dgetrf().
+     * Wrapper for MKL function zsytrf().
      */
     public static int zsytrf(char uplo, int n, double[] a, int lda, int[] ipiv, double[] work, int lwork) {
         return LAPACKNative.zsytrf(uplo, n, a, lda, ipiv, work, lwork);
     }
 
     /**
-     * Wrapper for MKL function dgetrf().
+     * Wrapper for MKL function zsytrs().
      */
     public static int zsytrs(char uplo, int n, int nrhs, double[] a, int lda, int[] ipiv, double[] b, int ldb) {
         return LAPACKNative.zsytrs(uplo, n, nrhs, a, lda, ipiv, b, ldb);
@@ -231,14 +290,14 @@ public final class LAPACK {
 
 
     /**
-     * Wrapper for MKL function dgetrf().
+     * Wrapper for MKL function zsptrf().
      */
     public static int zsptrf(char uplo, int n, double[] a, int[] ipiv) {
         return LAPACKNative.zsptrf(uplo, n, a, ipiv);
     }
 
     /**
-     * Wrapper for MKL function zgetrs().
+     * Wrapper for MKL function zsptrs().
      */
     public static int zsptrs(char uplo, int n, int nrhs, double[] a, int[] ipiv, double[] b, int ldb) {
         return LAPACKNative.zsptrs(uplo, n, nrhs, a, ipiv, b, ldb);
@@ -285,7 +344,7 @@ public final class LAPACK {
      * @param lwork The size of the work array; lwork ≥ n. If lwork = -1, then a workspace query is assumed; the routine only
      * calculates the optimal size of the work array, returns this value as the first entry of the work array, and no error message related to lwork is
      * issued by xerbla.
-     * @return
+     * @return info result code (0 = success)
      */
     public static int sgetri(int n, float[] a, int lda, int[] ipiv, float[] work, int lwork) {
         return LAPACKNative.sgetri(n, a, lda, ipiv, work, lwork);
@@ -301,7 +360,7 @@ public final class LAPACK {
      * @param lwork The size of the work array; lwork ≥ n. If lwork = -1, then a workspace query is assumed; the routine only
      * calculates the optimal size of the work array, returns this value as the first entry of the work array, and no error message related to lwork is
      * issued by xerbla.
-     * @return
+     * @return info result code (0 = success)
      */
     public static int dgetri(int n, double[] a, int lda, int[] ipiv, double[] work, int lwork) {
         return LAPACKNative.dgetri(n, a, lda, ipiv, work, lwork);
@@ -317,7 +376,7 @@ public final class LAPACK {
      * @param lwork The size of the work array; lwork ≥ n. If lwork = -1, then a workspace query is assumed; the routine only
      * calculates the optimal size of the work array, returns this value as the first entry of the work array, and no error message related to lwork is
      * issued by xerbla.
-     * @return
+     * @return info result code (0 = success)
      */
     public static int zgetri(int n, double[] a, int lda, int[] ipiv, double[] work, int lwork) {
         return LAPACKNative.zgetri(n, a, lda, ipiv, work, lwork);
@@ -377,16 +436,33 @@ public final class LAPACK {
     }
 
 
+    /**
+     * Computes the LU factorization of a complex symmetric packed matrix (float).
+     * @param c Must be 'U' or 'L' indicating the storage of the matrix
+     * @param n The order of the matrix A; n >= 0
+     * @param array The packed matrix A
+     * @param ipiv The pivot indices
+     * @return info result code (0 = success)
+     */
     public static int csptrf(char c, int n, float[] array, int[] ipiv) {
         return LAPACKNative.csptrf(c, n, array, ipiv);
     }
 
+    /**
+     * Computes the inverse of a complex symmetric packed matrix using the factorization from csptrf (float).
+     * @param c Must be 'U' or 'L' indicating the storage of the matrix
+     * @param n The order of the matrix A; n >= 0
+     * @param array The packed matrix A as returned by csptrf
+     * @param work Workspace array
+     * @param ipiv The pivot indices as returned by csptrf
+     * @return info result code (0 = success)
+     */
     public static int csptri(char c, int n, float[] array, float[] work, int[] ipiv) {
         return LAPACKNative.csptri(c, n, array, work, ipiv);
     }
 
     /**
-     * Wrapper for MKL function zgetrs().
+     * Wrapper for MKL function csptrs().
      */
     public static int csptrs(char uplo, int n, int nrhs, float[] a, int[] ipiv, float[] b, int ldb) {
         return LAPACKNative.csptrs(uplo, n, nrhs, a, ipiv, b, ldb);
@@ -399,7 +475,8 @@ public final class LAPACK {
      * @param uplo Must be 'U' or 'L'. If uplo = 'U', the upper triangle of A is stored. If uplo = 'L', the lower triangle of A is stored.
      * @param n The order of the matrix A; n ≥ 0.
      * @param nrhs  The number of right-hand sides; nrhs ≥ 0.
-     * @param a contains the original packed matrix A, as supplied to ?sptrf.
+     * @param af contains the factored packed matrix A, as returned by ?sptrf.
+     * @param afp contains the original packed matrix A, as supplied to ?sptrf.
      * @param ipiv Array, DIMENSION at least max(1, n). The ipiv array, as returned by ?sptrf.
      * @param b contains the right-hand side matrix B.
      * @param ldb The first dimension of b; ldb ≥ max(1, n).
@@ -423,7 +500,8 @@ public final class LAPACK {
      * @param uplo Must be 'U' or 'L'. If uplo = 'U', the upper triangle of A is stored. If uplo = 'L', the lower triangle of A is stored.
      * @param n The order of the matrix A; n ≥ 0.
      * @param nrhs  The number of right-hand sides; nrhs ≥ 0.
-     * @param a contains the original packed matrix A, as supplied to ?sptrf.
+     * @param af contains the factored packed matrix A, as returned by ?sptrf.
+     * @param afp contains the original packed matrix A, as supplied to ?sptrf.
      * @param ipiv Array, DIMENSION at least max(1, n). The ipiv array, as returned by ?sptrf.
      * @param b contains the right-hand side matrix B.
      * @param ldb The first dimension of b; ldb ≥ max(1, n).
@@ -527,39 +605,156 @@ public final class LAPACK {
         return LAPACKNative.zgesvd(jobu, jobvt, m, n, a, lda, s, u, ldu, vt, ldvt, sd);
     }
 
+    /**
+     * Intel MKL PARDISO: direct sparse solver interface.
+     * @param pt internal work array of size 64
+     * @param maxfct maximum number of factors in memory
+     * @param mnum current factorization number
+     * @param mtype matrix type (e.g. 1=real structurally symmetric, 2=real symmetric positive definite)
+     * @param phase control phase (e.g. 12=analysis+numeric factor, 33=solve+iterative refine)
+     * @param n order of the matrix
+     * @param values non-zero values of the sparse matrix in CSR format
+     * @param ai row pointers for CSR format
+     * @param aj column indices for CSR format
+     * @param idum dummy parameter
+     * @param nrhs number of right-hand sides
+     * @param iparm parameter array for PARDISO control
+     * @param msglvl message level (0=no output, 1=output)
+     * @param b right-hand side matrix
+     * @param x solution matrix
+     * @param error error flag output
+     * @return info result code (0 = success)
+     */
     public static int PARDISO(int[] pt, int maxfct, int mnum, int mtype, int phase, int n, double[] values, int[] ai, int[] aj, int idum, int nrhs, int[] iparm, int msglvl, double[] b, double[] x, int error) {
         return LAPACKNative.PARADISO(pt, maxfct, mnum, mtype, phase, n, values, ai, aj, idum, nrhs, iparm, msglvl, b, x, error);
     }
 
+    /**
+     * Estimates the reciprocal condition number of a general matrix (float).
+     * @param norm norm type ('1' = 1-norm, 'I' = infinity norm)
+     * @param n order of the matrix
+     * @param a the matrix A
+     * @param lda leading dimension of a
+     * @param anorm the norm of the matrix A (computed by ?lange)
+     * @param rcond output reciprocal condition number
+     * @return info result code (0 = success)
+     */
     public static int sgecon(char norm, int n, float[] a, int lda, float anorm, float[] rcond) {
         return LAPACKNative.sgecon(norm, n, a, lda, anorm, rcond);
     }
 
+    /**
+     * Estimates the reciprocal condition number of a general matrix (double).
+     * @param norm norm type ('1' = 1-norm, 'I' = infinity norm)
+     * @param n order of the matrix
+     * @param a the matrix A
+     * @param lda leading dimension of a
+     * @param anorm the norm of the matrix A (computed by ?lange)
+     * @param rcond output reciprocal condition number
+     * @return info result code (0 = success)
+     */
     public static int dgecon(char norm, int n, double[] a, int lda, double anorm, double[] rcond) {
         return LAPACKNative.dgecon(norm, n, a, lda, anorm, rcond);
     }
 
+    /**
+     * Estimates the reciprocal condition number of a general matrix (complex double).
+     * @param norm norm type ('1' = 1-norm, 'I' = infinity norm)
+     * @param n order of the matrix
+     * @param a the matrix A
+     * @param lda leading dimension of a
+     * @param anorm the norm of the matrix A (computed by ?lange)
+     * @param rcond output reciprocal condition number
+     * @return info result code (0 = success)
+     */
     public static int zgecon(char norm, int n, double[] a, int lda, double anorm, double[] rcond) {
         return LAPACKNative.zgecon(norm, n, a, lda, anorm, rcond);
     }
 
 
+    /**
+     * Computes row and column scaling for a general complex matrix to equilibrate it.
+     * @param m number of rows
+     * @param n number of columns
+     * @param a the matrix A
+     * @param lda leading dimension of a
+     * @param r output row scale factors
+     * @param c output column scale factors
+     * @param rowcnd output ratio of smallest to largest row scale
+     * @param colcnd output ratio of smallest to largest column scale
+     * @param amax output maximum absolute value of the matrix
+     * @return info result code (0 = success)
+     */
     public static int zgeequ(int m, int n, double[] a, int lda, double[] r, double[] c, double[] rowcnd, double[] colcnd, double[] amax) {
         return LAPACKNative.zgeequ(m, n, a, lda, r, c, rowcnd, colcnd, amax);
     }
 
+    /**
+     * Computes row and column scaling using a DoubleBuffer for the matrix.
+     * @param m number of rows
+     * @param n number of columns
+     * @param a DoubleBuffer containing the matrix A
+     * @param lda leading dimension of a
+     * @param r output row scale factors
+     * @param c output column scale factors
+     * @param rowcnd output ratio of smallest to largest row scale
+     * @param colcnd output ratio of smallest to largest column scale
+     * @param amax output maximum absolute value
+     * @return info result code (0 = success)
+     */
     public static int zgeequ2(int m, int n, DoubleBuffer a, int lda, double[] r, double[] c, double[] rowcnd, double[] colcnd, double[] amax) {
         return LAPACKNative.zgeequ2(m, n, a, lda, r, c, rowcnd, colcnd, amax);
     }
 
+    /**
+     * Scales a general complex matrix using row and column factors.
+     * @param m number of rows
+     * @param n number of columns
+     * @param a matrix to be scaled (overwritten)
+     * @param lda leading dimension of a
+     * @param r row scale factors
+     * @param c column scale factors
+     * @param rowcnd row condition number
+     * @param colcnd column condition number
+     * @param amax maximum value
+     * @param equed output string indicating which scaling was applied
+     * @return info result code (0 = success)
+     */
     public static int zlaqge(int m,int n,double[] a,int lda,double[] r, double[] c, double[] rowcnd,double[] colcnd, double[] amax, char[] equed ) {
         return LAPACKNative.zlaqge(m, n, a, lda, r, c, rowcnd, colcnd, amax, equed);
     }
 
+    /**
+     * Scales a general complex matrix using row and column factors (float).
+     * @param m number of rows
+     * @param n number of columns
+     * @param a matrix to be scaled (overwritten)
+     * @param lda leading dimension of a
+     * @param r row scale factors
+     * @param c column scale factors
+     * @param rowcnd row condition number
+     * @param colcnd column condition number
+     * @param amax maximum value
+     * @param equed output string indicating which scaling was applied
+     * @return info result code (0 = success)
+     */
     public static int claqge(int m,int n,float[] a,int lda,float[] r, float[] c, float[] rowcnd, float[] colcnd, float[] amax, char[] equed ) {
         return LAPACKNative.claqge(m, n, a, lda, r, c, rowcnd, colcnd, amax, equed);
     }
 
+    /**
+     * Computes row and column scaling for a general complex matrix (float).
+     * @param m number of rows
+     * @param n number of columns
+     * @param a the matrix A
+     * @param lda leading dimension of a
+     * @param r output row scale factors
+     * @param c output column scale factors
+     * @param rowcnd output ratio of smallest to largest row scale
+     * @param colcnd output ratio of smallest to largest column scale
+     * @param amax output maximum absolute value
+     * @return info result code (0 = success)
+     */
     public static int cgeequ(int m, int n, float[] a, int lda, float[] r, float[] c, float[] rowcnd, float[] colcnd, float[] amax) {
         return LAPACKNative.cgeequ(m, n, a, lda, r, c, rowcnd, colcnd, amax);
     }

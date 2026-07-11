@@ -21,6 +21,10 @@ import java.awt.Window;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Permanent-magnet DC machine model where the field flux is provided by
+ * permanent magnets instead of a separate field winding.
+ */
 public final class MotorPermanent extends AbstractMotorDC {
 
     private static final double INITIAL_FLUX_VALUE = 0.01;

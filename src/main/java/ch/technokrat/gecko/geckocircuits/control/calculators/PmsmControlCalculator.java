@@ -14,30 +14,64 @@
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 
+/**
+ * Field-oriented control (FOC) calculator for Permanent Magnet Synchronous Motors (PMSM).
+ * Implements speed control, Iq/Id current control, and Park/inverse-Park transformations.
+ */
 public class PmsmControlCalculator extends AbstractControlCalculatable {
 
+    /** Last simulation time. */
     double time_last = 0;
+    /** Last stator flux linkage alpha component. */
     double psi_sa_last = 0;
+    /** Last stator flux linkage beta component. */
     double psi_sb_last = 0;
+    /** Last alpha voltage. */
     double valpha_last = 0;
+    /** Last beta voltage. */
     double vbeta_last = 0;
+    /** Last rotor angle. */
     double phi_last = 0;
+    /** Last startup angle. */
     double phi_startup_last = 0;
+    /** Last speed controller integral term. */
     double int_n_last = 0;
+    /** Last Iq current controller integral term. */
     double int_iq_last = 0;
+    /** Last Id current controller integral term. */
     double int_id_last = 0;
+    /** Last speed error. */
     double x_n_last = 0;
+    /** Last Iq current error. */
     double x_iq_last = 0;
+    /** Last Id current error. */
     double x_id_last = 0;
+    /** Last estimated speed. */
     double w_est_last = 0;
+    /** Last filtered estimated speed. */
     double w_est_filt_last = 0;
+    /** Startup mode flag. */
     boolean startup = true;
+    /** Voltage-frequency offset. */
     double vf_offset = 0;
 
+    /**
+     * Creates a PmsmControlCalculator with 12 inputs and 8 outputs.
+     * Inputs: [0]=ia, [1]=ib, [2]=w, [3]=phi, [4]=n_ref, [5]=Kp_n, [6]=T_n,
+     * [7]=n_limit, [8]=Kp_i, [9]=T_i, [10]=i_limit, [11]=fP.
+     * Outputs: [0]=valpha, [1]=vbeta, [2]=vq_ref, [3]=vd_ref, [4]=iq_ref,
+     * [5]=id_ref, [6]=iq, [7]=id.
+     */
     public PmsmControlCalculator() {
         super(12, 8);
     }
 
+    /**
+     * Executes one control cycle: Park transforms currents, runs speed/Iq/Id PI controllers,
+     * applies anti-windup limits, and inverse-Park transforms to output alpha-beta voltages.
+     *
+     * @param deltaT the time step size
+     */
     @Override
     public void calculateYOUT(final double deltaT) {
         final double ia = _inputSignal[0][0];

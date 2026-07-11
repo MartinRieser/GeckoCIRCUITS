@@ -13,6 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/** Outputs the maximum of two input signals. */
 public final class MaxCalculatorTwoInputs extends AbstractTwoInputsOneOutputCalculator {    
     @Override
     public void calculateYOUT(final double deltaT) {

@@ -13,6 +13,13 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit;
 
+/**
+ * Marker interface for circuit elements that can have a label attached.
+ */
 interface Labable {
+    /**
+     * Returns the label object associated with this element.
+     * @return the circuit label, or null if no label is set
+     */
     CircuitLabel getLabelObject();
 }

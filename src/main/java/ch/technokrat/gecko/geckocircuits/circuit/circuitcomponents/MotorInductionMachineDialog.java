@@ -19,6 +19,7 @@ import java.util.List;
 import javax.swing.JPanel;
 
 /**
+ * Dialog for editing the general induction machine parameters.
  *
  * @author andy
  */

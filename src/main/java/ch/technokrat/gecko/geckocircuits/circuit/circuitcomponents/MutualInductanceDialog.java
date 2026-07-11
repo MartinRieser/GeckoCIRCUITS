@@ -37,6 +37,10 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Dialog for configuring mutual inductance coupling between two inductors,
+ * including selection of the coupled inductors and the coupling coefficient.
+ */
 class MutualInductanceDialog extends DialogElementLK<MutualInductance> {
     private static final long serialVersionUID = 1L;
     private transient AbstractBlockInterface _selectedCoupling1;

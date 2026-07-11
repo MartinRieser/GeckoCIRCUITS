@@ -14,7 +14,7 @@
 package ch.technokrat.gecko.geckocircuits.circuit;
 
 /**
- *
+ * Immutable value class representing a circuit label with a connector type and label string.
  * @author andreas
  */
 public class Label {
@@ -27,6 +27,10 @@ public class Label {
     }
 
    
+    /**
+     * Returns a hash code based on the connector type and label string.
+     * @return the hash code
+     */
     @Override
     public int hashCode() {
         int hash = 7;
@@ -35,6 +39,11 @@ public class Label {
         return hash;
     }
 
+    /**
+     * Compares this label with another object based on connector type and label string.
+     * @param obj the object to compare with
+     * @return true if the objects are equal
+     */
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {

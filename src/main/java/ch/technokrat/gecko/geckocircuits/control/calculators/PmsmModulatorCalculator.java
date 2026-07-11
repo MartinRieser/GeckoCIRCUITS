@@ -14,7 +14,11 @@
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 /**
- * TODO: beautify this mess!
+ * Space Vector PWM modulator for a 2-level 3-phase inverter.
+ * Computes switch states U, V, W from alpha-beta voltage references,
+ * modulation index, and carrier triangle waveform.
+ * Sector detection uses sequential if-statements (not else-if) to allow
+ * easy extension or modification of sector boundaries.
  * @author andreas
  */
 @SuppressWarnings("PMD")
@@ -27,6 +31,12 @@ public final class PmsmModulatorCalculator extends AbstractControlCalculatable {
         super(NO_INPUTS, NO_OUTPUTS);
     }
 
+    /**
+     * Computes PWM output signals U, V, W from alpha-beta voltage, DC link voltage,
+     * and triangle carrier using space vector modulation.
+     *
+     * @param deltaT the time step size
+     */
     @Override
     public void calculateYOUT(final double deltaT) {
         final double valpha = _inputSignal[0][0];

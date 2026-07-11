@@ -18,7 +18,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- *
+ * Panel for configuring symbol properties including shape, color, and display skip.
  * @author andy
  */
 @SuppressWarnings({"unchecked", "rawtypes"})

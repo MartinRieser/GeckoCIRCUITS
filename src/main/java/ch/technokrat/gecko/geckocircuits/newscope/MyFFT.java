@@ -13,6 +13,11 @@
  */
 package ch.technokrat.gecko.geckocircuits.newscope;
 
+/**
+ * Custom FFT implementation supporting only power-of-two input lengths.
+ * Uses a radix-2 decimation-in-time (DIT) Cooley-Tukey butterfly algorithm
+ * with pre-computed trigonometric lookup tables for performance.
+ */
 public class MyFFT {
 
     int n, m;
@@ -51,25 +56,14 @@ public class MyFFT {
 
     }
 
-    /***************************************************************
-     * fft.c
-     * Douglas L. Jones
-     * University of Illinois at Urbana-Champaign
-     * January 19, 1992
-     * http://cnx.rice.edu/content/m12016/latest/
+    /**
+     * Performs an in-place radix-2 decimation-in-time (DIT) FFT using the
+     * Cooley-Tukey butterfly algorithm. The input arrays are overwritten
+     * with the transform result, then normalised by N/2.
      *
-     *   fft: in-place radix-2 DIT DFT of a complex input
-     *
-     *   input:
-     * n: length of FFT: must be a power of two
-     * m: n = 2**m
-     *   input/output
-     * x: double array of length n with real part of data
-     * y: double array of length n with imag part of data
-     *
-     *   Permission to copy and use this program is granted
-     *   as long as this header is included.
-     ****************************************************************/
+     * @param x real part of input/output data (length n)
+     * @param y imaginary part of input/output data (length n)
+     */
     public void fft(double[] x, double[] y) {
         int i, j, k, n1, n2, a;
         double c, s, e, t1, t2;

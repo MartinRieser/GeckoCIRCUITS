@@ -22,12 +22,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("deprecation")
+/**
+ * Panel for plotting loss curves using a {@link GraferV4} scope component.
+ * Instances are created via the static factory method {@link #fabric(List, LossCurve)};
+ * the constructor is private because this is a utility-style panel that requires
+ * full initialisation through the factory.
+ */
 public class LossCurvePlotPanel extends SimpleGraferPanel {
     private static final long serialVersionUID = 1L;
     private int _moreDataFactor;
     
     
 
+    /**
+     * Private constructor; instances must be created via {@link #fabric(List, LossCurve)}.
+     * @param grafer the grafer component backing this panel
+     */
     private LossCurvePlotPanel(GraferV4 grafer) {
         super(grafer);
     }

@@ -29,9 +29,11 @@ import ch.technokrat.gecko.geckocircuits.circuit.HiddenSubCircuitable;
 import ch.technokrat.gecko.geckocircuits.circuit.TerminalRelativeFixedDirection;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
-// // LISN network for EMC measurements
-// // Power circuit inductance can be coupled via M (in contrast, L cannot be coupled)
-// // this element is actually a subcircuit containing an L in series with a voltage source
+/**
+ * LISN (Line Impedance Stabilization Network) for EMC measurements.
+ * This element is a subcircuit containing inductors in series with resistors and
+ * capacitors to ground for conducted EMI analysis.
+ */
 public class LISN extends AbstractCircuitBlockInterface implements HiddenSubCircuitable {
     public static final AbstractTypeInfo TYPE_INFO = new CircuitTypeInfo(LISN.class, "LISN", I18nKeys.LISN, I18nKeys.LINE_IMPEDANCE_STABILIZATION_NETWORK);
         

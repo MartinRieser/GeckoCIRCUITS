@@ -15,6 +15,10 @@ package ch.technokrat.gecko.geckocircuits.general;
 
 import java.io.IOException;
 
+/**
+ * Utility class for launching URLs in the default system browser.
+ * Uses platform-specific commands: rundll32 on Windows, firefox on other platforms.
+ */
 public final class LaunchBrowser {
 
     private LaunchBrowser() {

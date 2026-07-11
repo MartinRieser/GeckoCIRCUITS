@@ -18,6 +18,10 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.JPanel;
 
+/**
+ * Dialog for editing DC machine parameters including field circuit
+ * (resistance, inductance, windings) and armature initial conditions.
+ */
 class MotorDCDialog extends AbstractMotorDialog<MotorDC> {
     private static final long serialVersionUID = 1L;
     public MotorDCDialog(final MotorDC parent) { 

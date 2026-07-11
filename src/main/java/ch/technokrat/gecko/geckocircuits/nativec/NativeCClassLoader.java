@@ -24,16 +24,31 @@ import java.io.IOException;
  */
 public class NativeCClassLoader extends ClassLoader {
     
+    /**
+     * Creates a new NativeCClassLoader instance.
+     */
     public NativeCClassLoader() {
         
     }
     
  
+    /**
+     * Returns the fully qualified class name of this class loader.
+     *
+     * @return the class name string
+     */
     @Override
     public String toString() {
         return NativeCClassLoader.class.getName();
     }
     
+    /**
+     * Finds and loads the specified class by reading its bytecode from the system classpath.
+     *
+     * @param name the fully qualified name of the class to find
+     * @return the resulting Class object
+     * @throws ClassNotFoundException if the class cannot be found or an I/O error occurs
+     */
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         final byte[] classBytes;

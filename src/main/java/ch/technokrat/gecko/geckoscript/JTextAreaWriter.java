@@ -19,7 +19,8 @@ import javax.swing.JTextArea;
 import java.io.IOException;
 
 /**
- *
+ * A Writer implementation that appends output directly to a JTextArea.
+ * This class is not thread-safe and should be used from a single thread.
  * @author anstupar
  */
 public final class JTextAreaWriter extends Writer {

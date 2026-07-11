@@ -28,6 +28,10 @@ import java.io.Serializable;
  *
  */
 public abstract class ModelMVCGeneric<T> implements Serializable{
+  /**
+   * List of registered listeners stored as weak references so that observers
+   * can be garbage-collected even if they are still referenced here.
+   */
   transient public WeakListModel listeners = new WeakListModel();
   private static final long serialVersionUID = 784638463745367L;
   private static final double NAN_REPLACEMENT = 1.0;
@@ -102,9 +106,11 @@ public abstract class ModelMVCGeneric<T> implements Serializable{
   }
 
   /**
-   * writes the new value and sends an update notification to all listeners
+   * Writes the new value and sends an update notification to all listeners.
+   * If the value is a {@code Double} with {@code NaN}, it is replaced by
+   * {@code 1.0} to avoid propagating invalid numbers.
    *
-   * @param value
+   * @param value the new value to store
    */
   public void setValue(final T value){
     this._value = value;

@@ -18,6 +18,10 @@ import java.awt.GridLayout;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Dialog for editing MOSFET parameters, including switch parameters
+ * and antiparallel diode parameters (forward voltage, on/off resistance).
+ */
 class MOSFETDialog extends AbstractDialogPowerSwitch<MOSFET> {
 
     private static final long serialVersionUID = 1L;

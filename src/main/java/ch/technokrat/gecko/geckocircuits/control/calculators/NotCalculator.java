@@ -14,6 +14,9 @@
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 
+/**
+ * Logical NOT -- inverts the input signal based on SIGNAL_THRESHOLD.
+ */
 public final class NotCalculator extends AbstractSingleInputSingleOutputCalculator {
 
     @Override

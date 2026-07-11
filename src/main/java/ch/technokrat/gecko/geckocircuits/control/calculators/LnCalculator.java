@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Calculates the natural logarithm (ln) of the input signal.
+ * The input domain is restricted to values greater than 0 as enforced by the assertion.
+ */
 public final class LnCalculator extends AbstractSingleInputSingleOutputCalculator {
     
     @Override

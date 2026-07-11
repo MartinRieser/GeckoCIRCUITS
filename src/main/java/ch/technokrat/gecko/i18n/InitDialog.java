@@ -19,6 +19,9 @@ package ch.technokrat.gecko.i18n;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Initialization dialog GUI class for i18n.
+ */
 public class InitDialog extends javax.swing.JFrame {
     private static final long serialVersionUID = 1L;
 

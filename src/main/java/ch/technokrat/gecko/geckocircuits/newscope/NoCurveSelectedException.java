@@ -14,6 +14,7 @@
 package ch.technokrat.gecko.geckocircuits.newscope;
 
 /**
+ * Thrown when a cursor or measurement operation is attempted but no curve is selected in the scope.
  *
  * @author andreas
  */

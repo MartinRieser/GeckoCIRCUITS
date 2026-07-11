@@ -32,6 +32,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Ideal operational amplifier model with configurable gain, input/output resistance,
+ * frequency dependency, and voltage limitation.
+ */
 public final class OperationalAmplifier extends AbstractCircuitBlockInterface implements HiddenSubCircuitable {
 
     public static final AbstractTypeInfo TYPE_INFO =

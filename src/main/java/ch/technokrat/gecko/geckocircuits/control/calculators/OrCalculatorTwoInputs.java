@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Logical OR of two inputs -- outputs 1 if either input exceeds SIGNAL_THRESHOLD.
+ */
 public final class OrCalculatorTwoInputs extends AbstractTwoInputsOneOutputCalculator {
 
     @Override

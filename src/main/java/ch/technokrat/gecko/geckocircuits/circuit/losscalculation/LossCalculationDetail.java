@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.losscalculation;
 
+/**
+ * Enum representing the two levels of loss calculation detail: SIMPLE and DETAILED.
+ */
 public enum LossCalculationDetail {
 
     SIMPLE("simple"),
@@ -40,6 +43,11 @@ public enum LossCalculationDetail {
         }
     }
     
+    /**
+     * Resolves a legacy file ordinal to the corresponding enum value.
+     * @param number the legacy ordinal number
+     * @return the matching LossCalculationDetail value
+     */
     public static LossCalculationDetail getFromDeprecatedFileVersion(final int number) {
         for(LossCalculationDetail val : LossCalculationDetail.values()) {
             if(val.getOldGeckoCIRCUITSOrdinal() == number) {

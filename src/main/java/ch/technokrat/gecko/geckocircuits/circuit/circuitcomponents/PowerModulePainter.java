@@ -19,6 +19,8 @@ import java.awt.Color;
 import java.awt.Graphics;
 
 /**
+ * Renders the thermal power module (e.g. IGBT/diode package) as filled polygons
+ * based on predefined coordinate sets scaled to the schematic grid.
  *
  * @author andy
  */

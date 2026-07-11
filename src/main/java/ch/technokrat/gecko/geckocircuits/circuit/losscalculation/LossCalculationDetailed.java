@@ -33,6 +33,9 @@ import java.util.List;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
+/**
+ * Detailed loss data from measurement files (.scl format) including switching and conduction loss curves.
+ */
 @SuppressWarnings("deprecation")
 public final class LossCalculationDetailed implements GeckoFileable, AbstractLossCalculatorFabric {
 
@@ -171,6 +174,12 @@ public final class LossCalculationDetailed implements GeckoFileable, AbstractLos
         lossFile = null;
     }
 
+    /**
+     * Reads detailed loss data from a file, trying up to three formats in order:
+     * GZIP-compressed, Inflater-compressed, then plain ASCII.
+     * @param newLossFile the file to read loss data from
+     * @return true if the file was successfully read
+     */
     public boolean readDetailedLossesFromFile(final GeckoFile newLossFile) {        
         //------------------
         // // Read file -->
@@ -297,6 +306,14 @@ public final class LossCalculationDetailed implements GeckoFileable, AbstractLos
         }
     }
 
+    /**
+     * Writes detailed loss measurement curves to a file.
+     * @param fkaku the file path to write to (may be null to use the current measured losses filename)
+     * @param messkurvePvSWITCH the switching loss measurement curves
+     * @param messkurvePvCOND the conduction loss measurement curves
+     * @param storageType the storage type for the output file
+     * @return true if the file was successfully written
+     */
     public boolean writeDetailedLossesToFile(final String fkaku, final List<SwitchingLossCurve> messkurvePvSWITCH,
             final List<ConductionLossMeasurementCurve> messkurvePvCOND, final GeckoFile.StorageType storageType) {
         //added boolean flag "external" - true if losses always looked up from external file, 
@@ -354,9 +371,8 @@ public final class LossCalculationDetailed implements GeckoFileable, AbstractLos
     }
 
     /**
-     *
-     * @return String to be displayed in circuit sheet (file name). When link
-     * could not be found, return null!
+     * Checks whether the linked semiconductor loss file exists and is accessible.
+     * @return true if the loss file exists and is valid
      */
     public boolean checkLinkToSemiconductorFile() {
 

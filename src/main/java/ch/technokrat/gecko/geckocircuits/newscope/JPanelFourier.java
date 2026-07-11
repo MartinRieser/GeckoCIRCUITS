@@ -27,7 +27,7 @@ import javax.swing.JOptionPane;
 import javax.swing.border.TitledBorder;
 
 /**
- *
+ * Panel for displaying Fourier analysis results including magnitude and phase plots.
  * @author andy
  */
 @SuppressWarnings({"serial", "deprecation"})

@@ -20,6 +20,9 @@ import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.Dimension;
 
+/**
+ * A JLabel that supports rotated text rendering using an affine transform.
+ */
 public class JLabelRot extends JLabel {
 
     private static final long serialVersionUID = 1L;

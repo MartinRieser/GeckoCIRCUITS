@@ -16,6 +16,8 @@ package ch.technokrat.gecko.geckocircuits.newscope;
 import ch.technokrat.gecko.geckocircuits.datacontainer.AbstractDataContainer;
 
 /**
+ * Computes power quantities (P, Q, S, D, lambda, cos(phi)) from voltage and current
+ * signals using harmonic analysis (Fourier series up to CALC_NUM_HARM).
  *
  * @author andy
  */
@@ -58,26 +60,67 @@ public final class PowerCalculator {
         calculate(worksheet, voltageIndices, currentIndices, selectedIndices.startTime, selectedIndices.stopTime);
     }
 
+    /**
+     * Returns the active power P for the given analysis index.
+     * P = (1/T) * integral(u(t) * i(t) dt)
+     *
+     * @param index the analysis index
+     * @return active power in watts
+     */
     public double getPowerP(final int index) {
         return _powerP[index];
     }
     
+    /**
+     * Returns the reactive power Q for the given analysis index.
+     * Q = sum(cUn * cIn * sin(dphi_n) / 2) for each harmonic n.
+     *
+     * @param index the analysis index
+     * @return reactive power in VAR
+     */
     public double getPowerQ(final int index) {
         return _powerQ[index];
     }
     
+    /**
+     * Returns the distortion power D for the given analysis index.
+     * D = sqrt(S^2 - (P^2 + Q^2)).
+     *
+     * @param index the analysis index
+     * @return distortion power in VA
+     */
     public double getPowerD(final int index) {
         return _powerD[index];
     }
     
+    /**
+     * Returns the apparent power S for the given analysis index.
+     * S = sqrt(Urms^2 * Irms^2).
+     *
+     * @param index the analysis index
+     * @return apparent power in VA
+     */
     public double getPowerS(final int index) {
         return _powerS[index];
     }
     
+    /**
+     * Returns the power factor lambda for the given analysis index.
+     * lambda = P / S.
+     *
+     * @param index the analysis index
+     * @return power factor
+     */
     public double getLambda(final int index) {
         return _lambda[index];
     }
     
+    /**
+     * Returns cos(phi) for the fundamental harmonic for the given analysis index.
+     *
+     * @param index the analysis index
+     * @return cos(phi) of the fundamental
+     */
     public double getCosPhi(final int index) {
         return _cosPhi[index];
     }

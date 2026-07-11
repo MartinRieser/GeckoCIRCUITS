@@ -13,14 +13,26 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Numerical integrator using the trapezoidal rule with two modes: normal integration and reset.
+ */
 public final class IntegratorCalculation extends AbstractControlCalculatable implements InitializableAtSimulationStart {
 
+    /** Storage of the integral part (previous output). */
     private double _y1old = 0;  // Storage of Integral part
-    private double _xold = 0, _y11 = -1;
+    /** Previous input value for trapezoidal integration. */
+    private double _xold = 0;
+    /** Current integration result. */
+    private double _y11 = -1;
+    /** Stored initial values for simulation restart. */
     private double _xoldInit, _yoldInit;  // for Init&Start simulation
+    /** Gain factor (a1) for the integrator. */
     private double _a1Val = 1;
+    /** Initial output value. */
     private final double _y0Val;
+    /** Minimum output limit. */
     private double _min = -1;
+    /** Maximum output limit. */
     private double _max = 1;  // default: G(s)= a1/s    
 
     public IntegratorCalculation(final double constantFactor, final double initValue, final double min, final double max) {
