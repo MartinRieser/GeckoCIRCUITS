@@ -128,6 +128,9 @@ public final class DataContainerGlobal extends AbstractDataContainer implements 
 
   @Override
   public ContainerStatus getContainerStatus(){
+    if(_data == null){
+      return ContainerStatus.FINISHED;
+    }
     return _data.getContainerStatus();
   }
 
@@ -143,6 +146,9 @@ public final class DataContainerGlobal extends AbstractDataContainer implements 
 
   @Override
   public void update(final Observable observable, final Object arg){
+    if(_data == null){
+      return;
+    }
 
     if(getMaximumTimeIndex(0) != _lastDataIndex){
       this.setChanged();

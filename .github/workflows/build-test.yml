@@ -18,10 +18,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up JDK ${{ matrix.java }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: ${{ matrix.java }}
           distribution: 'temurin'
@@ -99,7 +99,7 @@ jobs:
         run: mvn package assembly:single -DskipTests --no-transfer-progress
 
       - name: Upload JAR artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gecko-jar-${{ matrix.os }}
           path: target/gecko-*.jar
@@ -162,7 +162,7 @@ jobs:
 
       - name: Upload installer artifact
         if: hashFiles('release/*') != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gecko-installer-${{ matrix.os }}
           path: release/*
