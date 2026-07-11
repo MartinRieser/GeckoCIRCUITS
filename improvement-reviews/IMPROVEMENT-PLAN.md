@@ -346,7 +346,7 @@ After editing, run: mvn -T 1C clean compile
 ```
 [x] Phase 1: Dead code removal         (7 batches)   mvn -T 1C clean compile
 [x] Phase 2: Typo fixes                (3 batches)   mvn -T 1C clean compile
-[ ] Phase 3: Magic number extraction   (3 batches)   mvn -T 1C clean compile
+[x] Phase 3: Magic number extraction   (3 batches)   mvn -T 1C clean compile
 [ ] Phase 4: Assert -> exception       (1 batch)     mvn -T 1C clean compile && mvn -T 1C test
 [ ] Phase 5: New test cases            (2 batches)   mvn -T 1C test && mvn jacoco:report
 [ ] Phase 6: Bug fixes + regression    (4 batches)   mvn -T 1C clean compile && mvn -T 1C test
