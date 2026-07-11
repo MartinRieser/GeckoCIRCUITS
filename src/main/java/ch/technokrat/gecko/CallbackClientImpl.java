@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 public final class CallbackClientImpl extends UnicastRemoteObject implements CallbackClientInterface {
 
     private static final long serialVersionUID = 1L;
+    private static final int INITIAL_STRINGBUFFER_CAPACITY = 100;
 
     private final String _clientHostname;
     private final String _clientUserID;
@@ -71,7 +72,7 @@ public final class CallbackClientImpl extends UnicastRemoteObject implements Cal
 
     @Override
     public String ping() {          
-        final StringBuffer returnValue = new StringBuffer(0x64);
+        final StringBuffer returnValue = new StringBuffer(INITIAL_STRINGBUFFER_CAPACITY);
         returnValue.append("User: ");
         returnValue.append(_clientUserID);
         returnValue.append("\nHostname: ");

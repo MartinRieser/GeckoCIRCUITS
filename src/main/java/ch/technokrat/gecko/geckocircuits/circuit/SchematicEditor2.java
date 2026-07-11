@@ -69,6 +69,9 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
     // // the actual elements (LK, CONTROL, THERM) -->
     //    
     private AbstractBlockInterface _selectedTextFieldToMove;
+    private static final int DOUBLE_CLICK_TIME_MS = 350;
+    private static final int DRAG_TIME_MS = 50;
+    private static final int SLEEP_TIME_MS = 10;
     private long _lastMouseClickTime;
     public CircuitSheet _visibleCircuitSheet = _circuitSheet;
     private ComponentDirection _lastRotationDirection = ComponentDirection.NORTH_SOUTH;
@@ -870,7 +873,7 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
 
     public void mousePressed(final MouseEvent me) {
 
-        if (me.getClickCount() < 2 && System.currentTimeMillis() - _lastMouseClickTime < 350
+        if (me.getClickCount() < 2 && System.currentTimeMillis() - _lastMouseClickTime < DOUBLE_CLICK_TIME_MS
                 && me.getModifiersEx() != MouseEvent.BUTTON3_DOWN_MASK && _mouseMoveMode != MouseMoveMode.DRAW_CONNECTION) {
             // this is to prevent the following: when trying to double-click a component, but
             // accidentally we move the mouse during the double click, the component is moved,
@@ -1477,7 +1480,7 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
         }
 
         if (_singleComponentMouseDrag) {
-            if (System.currentTimeMillis() - _dragStartTime > 50) {
+            if (System.currentTimeMillis() - _dragStartTime > DRAG_TIME_MS) {
                 if (!_selectedComponents.isEmpty()) {
                     mouseReleaseSelectedGroup();
                 }
@@ -1509,7 +1512,7 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
     public void mouseEntered(final MouseEvent me) {
         _visibleCircuitSheet.requestFocusInWindow();  // // This allows KeyEvents to be processed in MainWindow()
         try {
-            Thread.sleep(10);
+            Thread.sleep(SLEEP_TIME_MS);
         } catch (InterruptedException ex) {
             Logger.getLogger(SchematicEditor2.class.getName()).log(Level.SEVERE, null, ex);
         }

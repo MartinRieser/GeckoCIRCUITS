@@ -22,14 +22,17 @@ import java.util.logging.Logger;
  * @author andy
  */
 public class GeckoRemoteObjectTest {
+    private static final int PORT = 43035;
+    private static final int ITERATIONS = 100;
+    private static final int SLEEP_MS = 2000;
 
     public static void main(String[] args) {                
-        GeckoRemoteObject tester = GeckoRemoteObject.connectToExistingInstance(43035);
+        GeckoRemoteObject tester = GeckoRemoteObject.connectToExistingInstance(PORT);
         tester.allowAdditionalClients(1);                
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < ITERATIONS; i++) {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(SLEEP_MS);
             } catch (InterruptedException ex) {
                 Logger.getLogger(GeckoRemoteObjectTest.class.getName()).log(Level.SEVERE, null, ex);
             }

@@ -30,6 +30,7 @@ import java.io.Serializable;
 public abstract class ModelMVCGeneric<T> implements Serializable{
   transient public WeakListModel listeners = new WeakListModel();
   private static final long serialVersionUID = 784638463745367L;
+  private static final double NAN_REPLACEMENT = 1.0;
 
   /**
    * register Listener in list. Careful: the listener is not updated during
@@ -111,7 +112,7 @@ public abstract class ModelMVCGeneric<T> implements Serializable{
         double dVal = (Double) value;
         if (Double.isNaN(dVal)) {
             @SuppressWarnings("unchecked")
-            T replacementValue = (T) Double.valueOf(1.0);
+            T replacementValue = (T) Double.valueOf(NAN_REPLACEMENT);
             this._value = replacementValue;
         }
     }

@@ -30,6 +30,9 @@ public final class ControlSmallSignalAnalysis extends ControlBlock {
     private static final double DEFAULT_FREQ_START = 50.0;
     private static final double DEFAULT_FREQ_END = 10000.0;
     
+    private static final int INPUT_TERMINAL_TYPE = -4;
+    private static final int OUTPUT_TERMINAL_TYPE = 3;
+
     public static final ControlTypeInfo TYPE_INFO = 
             new ControlTypeInfo(ControlSmallSignalAnalysis.class, "ANALYSIS", I18nKeys.SMALL_SIGNAL_ANALYSIS);
     
@@ -75,16 +78,16 @@ public final class ControlSmallSignalAnalysis extends ControlBlock {
             build();                               
     
     
-    transient TerminalControlInputWithLabel externalExcitationTerm = new TerminalControlInputWithLabel(this, -4, -2, "excitation");
+    transient TerminalControlInputWithLabel externalExcitationTerm = new TerminalControlInputWithLabel(this, INPUT_TERMINAL_TYPE, -2, "excitation");
     
     public transient SmallSignalCalculator _lastCalculator;
     
     
     public ControlSmallSignalAnalysis() {
         super();          
-        XIN.add(new TerminalControlInputWithLabel(this, -4, XIN.size(), "measure"));
-        XIN.add(new TerminalControlInputWithLabel(this, -4, -XIN.size(), "signal"));        
-        YOUT.add(new TerminalControlOutputWithLabel(this, 3, YOUT.size(), "out"));
+        XIN.add(new TerminalControlInputWithLabel(this, INPUT_TERMINAL_TYPE, XIN.size(), "measure"));
+        XIN.add(new TerminalControlInputWithLabel(this, INPUT_TERMINAL_TYPE, -XIN.size(), "signal"));        
+        YOUT.add(new TerminalControlOutputWithLabel(this, OUTPUT_TERMINAL_TYPE, YOUT.size(), "out"));
         _signalType.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

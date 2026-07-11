@@ -55,6 +55,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 @SuppressWarnings({"unchecked", "rawtypes", "serial"})
 public class NativeCDialog extends GeckoDialog {
     private static final long serialVersionUID = 1L;
+    private static final double DIALOG_SIZE_RATIO = 0.3;
     private final transient DefaultListModel _fileList;
     private final transient Container _con;
     private final JButton jButtonOK = GuiFabric.getJButton(I18nKeys.OK);
@@ -201,7 +202,7 @@ public class NativeCDialog extends GeckoDialog {
             }
         });
         // set window size of Dialog GUI to 30 % of Main Window ... seemed to be a good choice on my screen
-        Dimension winSize = new Dimension( (int) (GeckoSim._win.getWidth() * 0.3), (int) (GeckoSim._win.getHeight() * 0.3));
+        Dimension winSize = new Dimension( (int) (GeckoSim._win.getWidth() * DIALOG_SIZE_RATIO), (int) (GeckoSim._win.getHeight() * DIALOG_SIZE_RATIO));
         jListLibFiles.setPreferredSize(winSize);
         jPanelButtonOk = new JPanel();
         jPanelOpenFile = new JPanel();

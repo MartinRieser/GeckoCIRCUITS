@@ -49,6 +49,11 @@ import java.awt.event.MouseMotionListener;
 @SuppressWarnings("deprecation")
 class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionListener {
     private static final long serialVersionUID = 1L;
+    private static final int DEFAULT_WIDTH = 350;
+    private static final int DEFAULT_HEIGHT = 300;
+    private static final int AXIS_ORIGIN_X = 60;
+    private static final double BALK_BREITE = 0.1;
+    private static final double DELTA_X = 1e-6;
 
     //----------------------------
     /** Fourier magnitude coefficients (cn) - displayed as bar heights in spectrum */
@@ -119,10 +124,10 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
      *                  Used to convert harmonic order n to actual frequency (f = n * f1).
      */
     public FourierDiagramm(double[] cnSG, int nMin, double baseFrequency) {
-        bi = 350;
-        hi = 300;
-        X0xi = 60;
-        X0yi = hi + 60;
+        bi = DEFAULT_WIDTH;
+        hi = DEFAULT_HEIGHT;
+        X0xi = AXIS_ORIGIN_X;
+        X0yi = hi + AXIS_ORIGIN_X;
         Y0xi = X0xi;
         Y0yi = X0yi;
         _baseFrequency = baseFrequency;
@@ -144,8 +149,8 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
         xNeu = new double[4 * cnSG.length];
         yNeu = new double[4 * cnSG.length];
         int i2 = 0;  // Counter for xCoordinates
-        double balkenbreite = 0.1;
-        double deltaX = 1e-6;
+        double balkenbreite = BALK_BREITE;
+        double deltaX = DELTA_X;
         for (int i1 = 0; i1 < cnSG.length; i1++) {
             xNeu[i2] = (nMin + i1) - balkenbreite - deltaX;
             yNeu[i2] = 0;

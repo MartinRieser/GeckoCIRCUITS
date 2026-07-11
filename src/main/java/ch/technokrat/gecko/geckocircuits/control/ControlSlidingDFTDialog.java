@@ -41,6 +41,9 @@ import javax.swing.border.TitledBorder;
 
 class ControlSlidingDFTDialog extends DialogElementCONTROL<ControlSlidingDFT> {
     private static final long serialVersionUID = 1L;
+    private static final int COMBO_WIDTH = 20;
+    private static final int COMBO_HEIGHT = 3;
+    private static final int GRID_COLUMNS = 5;
 
     private final GridLayout _grid;
     private final Stack<JComboBox<ControlSlidingDFT.OutputData>> _frequencySelectionList = new Stack<>();
@@ -110,7 +113,7 @@ class ControlSlidingDFTDialog extends DialogElementCONTROL<ControlSlidingDFT> {
                 jPanelFreqs.remove(_labels.pop());                
 
                 _grid.setRows(_freqFields.size());
-                _grid.setColumns(5);
+                _grid.setColumns(GRID_COLUMNS);
                 jPanelFreqs.setLayout(_grid);
                 setResizable(true);
                 jPanelFreqs.revalidate();
@@ -139,7 +142,7 @@ class ControlSlidingDFTDialog extends DialogElementCONTROL<ControlSlidingDFT> {
 
     private void addComboBox(final OutputData data) {
         final JComboBox<ControlSlidingDFT.OutputData> frequencySelectionBox = new JComboBox<>();
-        Dimension comboDimension = new Dimension(20, 3);
+        Dimension comboDimension = new Dimension(COMBO_WIDTH, COMBO_HEIGHT);
         frequencySelectionBox.setPreferredSize(comboDimension);
         frequencySelectionBox.setMaximumSize(comboDimension);
         frequencySelectionBox.setMinimumSize(comboDimension);

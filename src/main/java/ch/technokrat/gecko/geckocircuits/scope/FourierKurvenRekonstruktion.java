@@ -28,6 +28,13 @@ import java.awt.event.MouseMotionListener;
 @SuppressWarnings({"deprecation", "serial"})
 public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListener, MouseMotionListener {
     private static final long serialVersionUID = 1L;
+    private static final int DEFAULT_WIDTH = 350;
+    private static final int DEFAULT_HEIGHT = 300;
+    private static final int AXIS_ORIGIN_X = 75;
+    private static final int AXIS_ORIGIN_Y_OFFSET = 30;
+    private static final double INIT_MIN = 1e99;
+    private static final double INIT_MAX = -1e99;
+    private static final double HALF_VALUE = 0.5;
 
     //----------------------------
     float[] xNeu, yNeu, yRef;
@@ -54,10 +61,10 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
     public FourierKurvenRekonstruktion(
             double[] an, double[] bn, int nMin, double f1, AbstractDataContainer worksheet, int dataIndex, double rng1, double rng2) {
         //---------------------------------------
-        bi = 350;
-        hi = 300;
-        X0xi = 75;
-        X0yi = hi + 30;
+        bi = DEFAULT_WIDTH;
+        hi = DEFAULT_HEIGHT;
+        X0xi = AXIS_ORIGIN_X;
+        X0yi = hi + AXIS_ORIGIN_Y_OFFSET;
         Y0xi = X0xi;
         Y0yi = X0yi;
         this.setPreferredSize(new Dimension(bi + 2 * X0xi, X0yi + (X0yi - hi)));  // // for pack() in the parent JFrame
@@ -135,7 +142,7 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
             daten.setValue(yRef[i1], 2, i1);
         }
         worksheetDaten = daten;
-        this.setzeKurveTransparenz(new double[]{0.5, 0.5});
+        this.setzeKurveTransparenz(new double[]{HALF_VALUE, HALF_VALUE});
         //-----------------------
         this.setzeAchsen();
         this.setzeKurven();
@@ -169,7 +176,7 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
             repaint();
         } else if (mausModus == GraferImplementation.MAUSMODUS_ZOOM_AUTOFIT) {
             //------------------------------------
-            double ymin = 1e99, ymax = -1e99;
+            double ymin = INIT_MIN, ymax = INIT_MAX;
             for (int i1 = 0; i1 < yNeu.length; i1++) {
                 if (yNeu[i1] > ymax) {
                     ymax = yNeu[i1];
@@ -247,7 +254,7 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
         this.setzeTickLabelPosition(new int[]{20}, new int[]{16});
         this.setzeTickLabelFont(new Font[]{new Font("Arial", Font.PLAIN, 12)}, new Font[]{new Font("Arial", Font.PLAIN, 12)});
         //=========================================
-        double ymin = 1e99, ymax = -1e99;
+        double ymin = INIT_MIN, ymax = INIT_MAX;
         for (int i1 = 0; i1 < yNeu.length; i1++) {
             if (yNeu[i1] > ymax) {
                 ymax = yNeu[i1];
@@ -263,8 +270,8 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
             }
         }
         double[] empf = auto_Achsenbegrenzung_Wertempfehlung(ymin, ymax);
-        while (empf[4] > 0.5 * (ymax - ymin)) {
-            empf[4] *= 0.5;
+        while (empf[4] > HALF_VALUE * (ymax - ymin)) {
+            empf[4] *= HALF_VALUE;
         }
         //
         this.setzeAchsenBegrenzungen(new double[]{xNeu[0]}, new double[]{xNeu[xNeu.length - 1]}, new boolean[]{true}, new double[]{empf[0]}, new double[]{empf[1]}, new boolean[]{true});
@@ -332,12 +339,12 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
                 xy2[1] = q;
             }
             double[] empfX = new double[]{xy1[0], xy2[0], -1, -1, auto_Achsenbegrenzung_Wertempfehlung(xy1[0], xy2[0])[4]};
-            while (empfX[4] > 0.5 * (xy2[0] - xy1[0])) {
-                empfX[4] *= 0.5;
+            while (empfX[4] > HALF_VALUE * (xy2[0] - xy1[0])) {
+                empfX[4] *= HALF_VALUE;
             }
             double[] empfY = new double[]{xy1[1], xy2[1], -1, -1, auto_Achsenbegrenzung_Wertempfehlung(xy1[1], xy2[1])[4]};
-            while (empfY[4] > 0.5 * (xy2[1] - xy1[1])) {
-                empfY[4] *= 0.5;
+            while (empfY[4] > HALF_VALUE * (xy2[1] - xy1[1])) {
+                empfY[4] *= HALF_VALUE;
             }
             //
             // Achsen entsprechend neu setzen -->

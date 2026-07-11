@@ -32,6 +32,28 @@ public class Paradiso {
     /* Pardiso control parameters. */
     public int[] iparm = new int[64];
 
+    private static final int IPARM_SOLVER_DEFAULT = 0;
+    private static final int IPARM_FILL_IN_REORDERING = 1;
+    private static final int IPARM_NUM_PROCESSORS = 2;
+    private static final int IPARM_ITERATIVE_DIRECT = 3;
+    private static final int IPARM_USER_FILL_IN_PERM = 4;
+    private static final int IPARM_WRITE_SOLUTION = 5;
+    private static final int IPARM_NOT_IN_USE_6 = 6;
+    private static final int IPARM_MAX_ITER_REF_STEPS = 7;
+    private static final int IPARM_NOT_IN_USE_8 = 8;
+    private static final int IPARM_PERTURB_PIVOT = 9;
+    private static final int IPARM_NONSYM_PERM_SCALING = 10;
+    private static final int IPARM_NOT_IN_USE_11 = 11;
+    private static final int IPARM_MAX_WEIGHTED_MATCH = 12;
+    private static final int IPARM_OUTPUT_PERTURBED = 13;
+    private static final int IPARM_NOT_IN_USE_14 = 14;
+    private static final int IPARM_NOT_IN_USE_15 = 15;
+    private static final int IPARM_NOT_IN_USE_16 = 16;
+    private static final int IPARM_OUTPUT_NONZEROS_LU = 17;
+    private static final int IPARM_OUTPUT_MFLOPS = 18;
+    private static final int IPARM_OUTPUT_CG_ITER = 19;
+    private static final int IPARM_EPS_PIVOT = 28;
+
     /* Internal solver memory pointer pt,                  */
         /* 32-bit: int pt[64]; 64-bit: long int pt[64]         */
         /* or void *pt[64] should be OK on both architectures  */
@@ -59,28 +81,28 @@ public class Paradiso {
         for (int i = 0; i < 64; i++) {
             paradiso.iparm[i] = 0;
         }
-        paradiso.iparm[0] = 1; /* No solver default */
-        paradiso.iparm[1] = 2; /* Fill-in reordering from METIS */
+        paradiso.iparm[IPARM_SOLVER_DEFAULT] = 1; /* No solver default */
+        paradiso.iparm[IPARM_FILL_IN_REORDERING] = 2; /* Fill-in reordering from METIS */
                         
-        paradiso.iparm[2] = 4; /* Numbers of processors, value of OMP_NUM_THREADS */
-        paradiso.iparm[3] = 0; /* 0No iterative-direct algorithm */
-        paradiso.iparm[4] = 0; /* No user fill-in reducing permutation */
-        paradiso.iparm[5] = 0; /* Write solution into x */
-        paradiso.iparm[6] = 0; /* Not in use */
-        paradiso.iparm[7] = 2; /* Max numbers of iterative refinement steps */
-        paradiso.iparm[8] = 0; /* Not in use */
-        paradiso.iparm[9] = 13; /* Perturb the pivot elements with 1E-13 */
-        paradiso.iparm[10] = 1; /* Use nonsymmetric permutation and scaling MPS */
-        paradiso.iparm[11] = 0; /* Not in use */
-        paradiso.iparm[12] = 0; /* Maximum weighted matching algorithm is switched-on (default for non-symmetric) */
-        paradiso.iparm[13] = 0; /* Output: Number of perturbed pivots */
-        paradiso.iparm[14] = 0; /* Not in use */
-        paradiso.iparm[15] = 0; /* Not in use */
-        paradiso.iparm[16] = 0; /* Not in use */
-        paradiso.iparm[17] = -1; /* Output: Number of nonzeros in the factor LU */
-        paradiso.iparm[18] = -1; /* Output: Mflops for LU factorization */
-        paradiso.iparm[19] = 0; /* Output: Numbers of CG Iterations */
-        paradiso.iparm[28] = 1;
+        paradiso.iparm[IPARM_NUM_PROCESSORS] = 4; /* Numbers of processors, value of OMP_NUM_THREADS */
+        paradiso.iparm[IPARM_ITERATIVE_DIRECT] = 0; /* 0No iterative-direct algorithm */
+        paradiso.iparm[IPARM_USER_FILL_IN_PERM] = 0; /* No user fill-in reducing permutation */
+        paradiso.iparm[IPARM_WRITE_SOLUTION] = 0; /* Write solution into x */
+        paradiso.iparm[IPARM_NOT_IN_USE_6] = 0; /* Not in use */
+        paradiso.iparm[IPARM_MAX_ITER_REF_STEPS] = 2; /* Max numbers of iterative refinement steps */
+        paradiso.iparm[IPARM_NOT_IN_USE_8] = 0; /* Not in use */
+        paradiso.iparm[IPARM_PERTURB_PIVOT] = 13; /* Perturb the pivot elements with 1E-13 */
+        paradiso.iparm[IPARM_NONSYM_PERM_SCALING] = 1; /* Use nonsymmetric permutation and scaling MPS */
+        paradiso.iparm[IPARM_NOT_IN_USE_11] = 0; /* Not in use */
+        paradiso.iparm[IPARM_MAX_WEIGHTED_MATCH] = 0; /* Maximum weighted matching algorithm is switched-on (default for non-symmetric) */
+        paradiso.iparm[IPARM_OUTPUT_PERTURBED] = 0; /* Output: Number of perturbed pivots */
+        paradiso.iparm[IPARM_NOT_IN_USE_14] = 0; /* Not in use */
+        paradiso.iparm[IPARM_NOT_IN_USE_15] = 0; /* Not in use */
+        paradiso.iparm[IPARM_NOT_IN_USE_16] = 0; /* Not in use */
+        paradiso.iparm[IPARM_OUTPUT_NONZEROS_LU] = -1; /* Output: Number of nonzeros in the factor LU */
+        paradiso.iparm[IPARM_OUTPUT_MFLOPS] = -1; /* Output: Mflops for LU factorization */
+        paradiso.iparm[IPARM_OUTPUT_CG_ITER] = 0; /* Output: Numbers of CG Iterations */
+        paradiso.iparm[IPARM_EPS_PIVOT] = 1;
         maxfct = 1;         /* Maximum number of numerical factorizations.  */
         mnum = 1;         /* Which factorization to use. */
         

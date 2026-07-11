@@ -129,7 +129,7 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
 
     @Override
     public double getXShift() {
-        return 1 / 2.0;
+        return ONE_HALF;
     }
 
     @Override
@@ -219,6 +219,9 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
     }
     private static final int X_OFFSET = 3;
     private static final int Y_SIZE = 6;
+    private static final double ONE_HALF = 0.5;
+    private static final double Y_SHIFT_FACTOR = 0.25;
+    private static final int FIRST_LABEL_Y_POS = 2;
 
     @Override
     public void drawBlockRectangle(final Graphics2D graphics) {
@@ -229,20 +232,16 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
 
         final FontRenderContext frc = graphics.getFontRenderContext();
         if (_useExternal.getValue()) {
-            graphics.drawLine(dpix * xPos, (int) (dpix * (yPos + 1 / 2.0)),
+            graphics.drawLine(dpix * xPos, (int) (dpix * (yPos + ONE_HALF)),
                     dpix * xPos, dpix * (yPos + Y_SIZE));
-            final int yShift = (int) (graphics.getFont().getStringBounds("xxx", frc).getHeight() * 0.25);
+            final int yShift = (int) (graphics.getFont().getStringBounds("xxx", frc).getHeight() * Y_SHIFT_FACTOR);
             graphics.setColor(GlobalColors.farbeInBearbeitungCONTROL);
-            int strYPos = 2;
-            graphics.drawString("ac", dpix * xPos + X_OFFSET, dpix * (yPos + strYPos) + yShift);
-            strYPos++;
-            graphics.drawString("f", dpix * xPos + X_OFFSET, dpix * (yPos + strYPos) + yShift);
-            strYPos++;
-            graphics.drawString("dc", dpix * xPos + X_OFFSET, dpix * (yPos + strYPos) + yShift);
-            strYPos++;
-            graphics.drawString(PHASE, dpix * xPos + X_OFFSET, dpix * (yPos + strYPos) + yShift);
-            strYPos++;
-            graphics.drawString("duty", dpix * xPos + X_OFFSET, dpix * (yPos + strYPos) + yShift);
+            final String[] labels = {"ac", "f", "dc", PHASE, "duty"};
+            int strYPos = FIRST_LABEL_Y_POS;
+            for (String label : labels) {
+                graphics.drawString(label, dpix * xPos + X_OFFSET, dpix * (yPos + strYPos) + yShift);
+                strYPos++;
+            }
             graphics.setColor(origColor);
         }
 

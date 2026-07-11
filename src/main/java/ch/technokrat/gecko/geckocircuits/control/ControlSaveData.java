@@ -74,6 +74,7 @@ public final class ControlSaveData extends ControlBlock implements Operationable
     private static final int HUNDRED_PERCENT = 100;
     private static final int BLOCK_HEIGHT = 3;
     private static final int BLOCK_WIDTH = 6;
+    private static final int MAX_FILE_COUNTER = 100;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlSaveData.class, "DataExport", I18nKeys.DATA_EXPORT_TO_FILE);
     private transient DataSaver _dataSaver;
     private String _statusTxt = "waiting";
@@ -174,7 +175,7 @@ public final class ControlSaveData extends ControlBlock implements Operationable
             String parentDirectory = ipesFile.getParent();
             int testCounter = 1;
             
-            while (testCounter < 100) {
+            while (testCounter < MAX_FILE_COUNTER) {
                 String filePath = parentDirectory + "/data" + testCounter + ".txt";
                 File file = new File(filePath);
                 if(!file.exists()) {

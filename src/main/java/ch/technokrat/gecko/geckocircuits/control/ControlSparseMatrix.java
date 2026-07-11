@@ -23,6 +23,8 @@ public final class ControlSparseMatrix extends ControlBlock {
 
     private static final int X_POS_IN = -2;
     private static final int X_POS_OUT = 2;
+    private static final int WIDTH_MULTIPLIER = 3;
+    private static final double X_SHIFT_VALUE = 0.5;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlSparseMatrix.class, "SPARSEMATRIX", I18nKeys.SPARSE_MATRIX_CONVERTER_CONTROL);
     
     public ControlSparseMatrix() {
@@ -63,12 +65,12 @@ public final class ControlSparseMatrix extends ControlBlock {
 
     @Override
     public int getBlockWidth() {
-        return 3 * dpix;
+        return WIDTH_MULTIPLIER * dpix;
     }
 
     @Override
     public double getXShift() {
-        return 0.5;
+        return X_SHIFT_VALUE;
     }
     
 

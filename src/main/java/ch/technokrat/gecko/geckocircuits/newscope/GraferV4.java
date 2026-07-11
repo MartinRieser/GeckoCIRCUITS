@@ -39,6 +39,8 @@ public final class GraferV4 extends JPanel {
     private transient AbstractDataContainer _dataContainer;
     private GridBagConstraints _contstraints;
     private static final double DIAG_WEIGHT_X = 0.5;
+    private static final int UPDATE_SLEEP_FACTOR = 2;
+    private static final double TIME_TOLERANCE = 0.01;
     private transient Thread updateThread = new Thread(new UpdateRunnable());
     private boolean _loadAndDraw;
     public transient final DiagramCurveSignalManager _manager = new DiagramCurveSignalManager(this);
@@ -300,12 +302,12 @@ public final class GraferV4 extends JPanel {
                     AbstractDataContainer dataContainer = _dataContainer;
                     if (!_isVisible) { // if not visible, don't redraw, but enshure that when component made visible, we redraw.
                         _loadAndDraw = true;
-                        Thread.sleep(2 * _sleepMillis);
+                        Thread.sleep(UPDATE_SLEEP_FACTOR * _sleepMillis);
                         continue;
                     }
 
                     if (dataContainer == null) {
-                        Thread.sleep(2 * _sleepMillis);
+                        Thread.sleep(UPDATE_SLEEP_FACTOR * _sleepMillis);
                         continue;
                     }
 
@@ -324,7 +326,7 @@ public final class GraferV4 extends JPanel {
                         NiceScale xNiceScale = new NiceScale(HiLoData.hiLoDataFabric((float) startTime, (float) endTime), true);
                         HiLoData niceLimits = xNiceScale.getNiceLimits();
 
-                        if (Math.abs(SimulationKernel.tEND - endTime) / Math.abs(SimulationKernel.tEND + endTime) > 0.01) {
+                        if (Math.abs(SimulationKernel.tEND - endTime) / Math.abs(SimulationKernel.tEND + endTime) > TIME_TOLERANCE) {
                             setSimulationTimeBoundaries(startTime, niceLimits._yHi);
                         } else {
                             setSimulationTimeBoundaries(startTime, endTime);

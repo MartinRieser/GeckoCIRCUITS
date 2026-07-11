@@ -30,6 +30,7 @@ import javax.swing.undo.UndoableEdit;
  */
 public abstract class AbstractUndoGenericModel<T> extends ModelMVCGeneric<T> implements Serializable{
   private static final long serialVersionUID = 28474838273478583L;
+  private static final int UNDO_LIMIT = 1000;
   protected boolean _initialized = false;
 
   /**
@@ -44,7 +45,7 @@ public abstract class AbstractUndoGenericModel<T> extends ModelMVCGeneric<T> imp
   public final static UndoManager undoManager = new GroupableUndoManager();
 
   static{
-    undoManager.setLimit(1000);
+    undoManager.setLimit(UNDO_LIMIT);
   }
   // history list
   /**

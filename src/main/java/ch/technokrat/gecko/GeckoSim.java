@@ -75,6 +75,13 @@ public class GeckoSim {
     public static boolean _testSuccessful = false;
     public static boolean _isTestingMode = false;
     public static OperatingMode operatingmode = OperatingMode.STANDALONE;  // default
+    private static final int SMALL_SCREEN_WIDTH = 640;
+    private static final int SMALL_SCREEN_HEIGHT = 480;
+    private static final int MEDIUM_SCREEN_THRESHOLD = 1000;
+    private static final double WIDTH_FACTOR = 0.90;
+    private static final double HEIGHT_FACTOR = 0.80;
+    private static final int DEFAULT_WINDOW_WIDTH = 1000;
+    private static final int DEFAULT_WINDOW_HEIGHT = 800;
 
     static {
         System.setProperty("polyglot.js.nashorn-compat", "true");
@@ -453,12 +460,12 @@ public class GeckoSim {
         GraphicsDevice grdev = grenv.getDefaultScreenDevice();
         int h = (int) grdev.getDefaultConfiguration().getBounds().getHeight();
         int b = (int) grdev.getDefaultConfiguration().getBounds().getWidth();
-        if ((b <= 640) && (h <= 480)) {
-            win.setSize(640, 480);
-        } else if ((b <= 1000) && (h <= 1000)) {
-            win.setSize((int) (0.90 * b), (int) (0.80 * h));
+        if ((b <= SMALL_SCREEN_WIDTH) && (h <= SMALL_SCREEN_HEIGHT)) {
+            win.setSize(SMALL_SCREEN_WIDTH, SMALL_SCREEN_HEIGHT);
+        } else if ((b <= MEDIUM_SCREEN_THRESHOLD) && (h <= MEDIUM_SCREEN_THRESHOLD)) {
+            win.setSize((int) (WIDTH_FACTOR * b), (int) (HEIGHT_FACTOR * h));
         } else {
-            win.setSize(1000, 800);
+            win.setSize(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
         }
 
         win.setLocationByPlatform(true);

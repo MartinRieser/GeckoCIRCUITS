@@ -28,6 +28,7 @@ import javax.swing.JPanel;
 
 class ControlSignalSourceDialog extends AbstractDialogWithExternalOption<ControlSignalSource> {
     private static final long serialVersionUID = 1L;
+    private static final int DISPLAY_DETAILS_PARAM_INDEX = 7;
     
     private JCheckBox jCheckBoxShowDetails;  // // How much information should be displayed in the SchematicEntry (overview vs. info)?
     // // Sub-dialogs for preview SIGNAL -->
@@ -72,7 +73,7 @@ class ControlSignalSourceDialog extends AbstractDialogWithExternalOption<Control
                 
         
         jCheckBoxShowDetails = new JCheckBox("Display Details");
-        if (element.getParameter()[7] == 0) {  // init
+        if (element.getParameter()[DISPLAY_DETAILS_PARAM_INDEX] == 0) {  // init
             displayDetails = false;
             jCheckBoxShowDetails.setSelected(false);
         } else {

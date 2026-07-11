@@ -20,6 +20,7 @@ import java.awt.Window;
 
 public final class ControlSampleHold extends ControlBlock {    
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlSampleHold.class, "SHLD", I18nKeys.SAMPLE_HOLD);
+    private static final double THRESHOLD = 0.5;
     
     public ControlSampleHold() {
         super(2, 1);
@@ -48,8 +49,8 @@ public final class ControlSampleHold extends ControlBlock {
     
     @Override
     protected  Window openDialogWindow() {
-        final String message = "<html>if (z > 0.5)  ...  y1 = x1;  sh = x1<br>"
-                + "if (z < 0.5)  ...  y1 = sh";
+        final String message = "<html>if (z > " + THRESHOLD + ")  ...  y1 = x1;  sh = x1<br>"
+                + "if (z < " + THRESHOLD + ")  ...  y1 = sh";
         return new DialogSimpleInfoMessage(this, message);        
     }
 }

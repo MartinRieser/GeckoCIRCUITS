@@ -35,6 +35,9 @@ import java.util.logging.Logger;
 public final class GraferImplementation extends GraferV3 implements MouseListener, MouseMotionListener {
     // // Number of intervals on the x-axis in which Hi and Lo values ​​are determined for data compression
     private static final int INTERVALLE_ENTLANG_X = 2000;
+    private static final int INDEX_ENCODING_FACTOR = 1000;
+    private static final int CLIP_HEIGHT = 10000;
+    private static final float ALPHA_COMPOSITE_VALUE = 0.6f;
     
     private static final long serialVersionUID = 364726123473711L;
     private final Scopable _scope;  // callback 
@@ -51,6 +54,9 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
     public static int DY_IN_OBEN = 8, DY_IN_UNTEN = 8;  // // y-indentation of the axes in pixels from above or below and y-distance between 2 diagrams
     public static int ABSTAND_BESCHRIFTUNG_XACHSE = 35;  // // There is this much additional distance to the bottom so that the x-axis labels can be set
     private static final int ANZ_AUTO_TICKS = 5;
+    private static final int GRID_HIDE_THRESHOLD_Y = 230;
+    private static final int GRID_HIDE_THRESHOLD_X = 100;
+    private static final double GRID_HIDE_THRESHOLD_RATIO = 2.5;
     private int x1, x2, y1, y2;  // Rechteck-Koordinaten des Zoom-Fensters
     private boolean angeklicktZoom = false;
     //--------
@@ -136,7 +142,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
     // Kurven-Properties
     public int kurvenanzahl;  // // This is how many different curves are currently displayed in the SCOPE --> corresponds to a 'curve ID'
     // // to assign the curve indices to the assignment matrix:
-    public int[] indexDerKurveInDerMatrix;  // Abspeichern in folgendem Format: --> 1000*i1 +i2 wobei (i1..Graphenanzahl / i2..Kurvenanzahl)
+    public int[] indexDerKurveInDerMatrix;  // Abspeichern in folgendem Format: --> INDEX_ENCODING_FACTOR*i1 +i2 wobei (i1..Graphenanzahl / i2..Kurvenanzahl)
     public int[] indexDerKurveInDerMatrixALT;  // // Storage necessary to display the SIGNAL order correctly
     //
     // // each entry in the linkage matrix corresponds to a potential curve -->
@@ -317,7 +323,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         final Graphics2D g2 = (Graphics2D) g;
         int zd = 0;  // Beschriftungs-Nummerierung in y-Richtung
         for (int i1 = 0; i1 < anzahlKurven; i1++) {
-            if (matrixZuordnungKurveDiagram[indexDerKurveInDerMatrix[i1] / 1000][indexDerKurveInDerMatrix[i1] % 1000] == ZUORDNUNG_SIGNAL) {
+            if (matrixZuordnungKurveDiagram[indexDerKurveInDerMatrix[i1] / INDEX_ENCODING_FACTOR][indexDerKurveInDerMatrix[i1] % INDEX_ENCODING_FACTOR] == ZUORDNUNG_SIGNAL) {
                 try {
                     zeichneEinzelneSIGNALKurve(g2, i1);
                 } catch (Exception e) {
@@ -349,12 +355,12 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
     private void beschrifteNamenDerEinzelnenZVKurve(final Graphics2D g2D, final int i1, final int zd) {
         //--------------------------------
         int yLinksObenKurve = _yAchseY[indexZurKurveGehoerigeYachse[i1]] - hoehePix[indexZurKurveGehoerigeYachse[i1]];
-        String name = signalNamen[indexDerKurveInDerMatrix[i1] % 1000];
+        String name = signalNamen[indexDerKurveInDerMatrix[i1] % INDEX_ENCODING_FACTOR];
         cf.setMaximumDigits(4);
-        String wert = cf.formatT(ySchieberWert[indexDerKurveInDerMatrix[i1] % 1000 - 1][0], TechFormat.FORMAT_AUTO);
+        String wert = cf.formatT(ySchieberWert[indexDerKurveInDerMatrix[i1] % INDEX_ENCODING_FACTOR - 1][0], TechFormat.FORMAT_AUTO);
 
         if (inDiffMode) {
-            int index = indexDerKurveInDerMatrix[i1] % 1000 - 1;
+            int index = indexDerKurveInDerMatrix[i1] % INDEX_ENCODING_FACTOR - 1;
             wert = cf.formatT(ySchieberWert2[index][0] - ySchieberWert[index][0], TechFormat.FORMAT_AUTO);
         }
 
@@ -501,7 +507,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         // // there is a y tick at '0' and one at '1'; namely for each SIGNAL course within the corresponding graph
         int z = 0;
         for (int i3 = 0; i3 < indexDerKurveInDerMatrix.length; i3++) {
-            final int grf = indexDerKurveInDerMatrix[i3] / 1000;
+            final int grf = indexDerKurveInDerMatrix[i3] / INDEX_ENCODING_FACTOR;
             if (grf == i1 / 2) {
                 z++;
             }
@@ -631,7 +637,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             // // then number the '-1' entries in ascending order -->
             int z1 = 0, z2 = 0;
             while (z2 < kurvenanzahl) {
-                while ((z2 < kurvenanzahl) && (indexDerKurveInDerMatrix[z1] / 1000 == indexDerKurveInDerMatrix[z2] / 1000)) {
+                while ((z2 < kurvenanzahl) && (indexDerKurveInDerMatrix[z1] / INDEX_ENCODING_FACTOR == indexDerKurveInDerMatrix[z2] / INDEX_ENCODING_FACTOR)) {
                     z2++;
                 }
                 this.reorderLine(positionSIGNAL, z1, z2);
@@ -645,7 +651,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             positionSIGNAL[0] = positionsZaehler;
             positionsZaehler++;
             for (int i1 = 1; i1 < kurvenanzahl; i1++) {
-                if (indexDerKurveInDerMatrix[i1] / 1000 != indexDerKurveInDerMatrix[i1 - 1] / 1000) {
+                if (indexDerKurveInDerMatrix[i1] / INDEX_ENCODING_FACTOR != indexDerKurveInDerMatrix[i1 - 1] / INDEX_ENCODING_FACTOR) {
                     positionsZaehler = 0;  // // Reset with new graph
                 }
                 positionSIGNAL[i1] = positionsZaehler;
@@ -767,10 +773,10 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         }
         //-----------------------
         // // for labeling the SIGNAL-ZV in the graph -->
-        final String name = signalNamen[indexDerKurveInDerMatrix[i1] % 1000];
+        final String name = signalNamen[indexDerKurveInDerMatrix[i1] % INDEX_ENCODING_FACTOR];
         if (xSchieberAktiv) {
             g2.drawString(
-                    (ySchieberWert[indexDerKurveInDerMatrix[i1] % 1000 - 1][0] < sgnSchwelle[indexZurKurveGehoerigeXachse[i1]] ? "off" : "on"),
+                    (ySchieberWert[indexDerKurveInDerMatrix[i1] % INDEX_ENCODING_FACTOR - 1][0] < sgnSchwelle[indexZurKurveGehoerigeXachse[i1]] ? "off" : "on"),
                     DX_IN_LINKS - 30,
                     (y0Kurve + sgnDistance[indexZurKurveGehoerigeXachse[i1]]) + (int) (positionSIGNAL[i1] * delta + sgnHeight[indexZurKurveGehoerigeXachse[i1]]));
         }
@@ -780,7 +786,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
                 (y0Kurve + sgnDistance[indexZurKurveGehoerigeXachse[i1]]) + (int) (positionSIGNAL[i1] * delta + sgnHeight[indexZurKurveGehoerigeXachse[i1]]));
         //-----------------------
         // // now draw the SIGNAL line:
-        g2.setClip(x0Kurve + 1, 0, breitePix[indexZurKurveGehoerigeYachse[i1]] - 2, 10000);
+        g2.setClip(x0Kurve + 1, 0, breitePix[indexZurKurveGehoerigeYachse[i1]] - 2, CLIP_HEIGHT);
 
         grL.reset();
         if (kurveLinienstil[i1] != GraferV3.INVISIBLE) {
@@ -804,8 +810,8 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             }
             //grFill.closePath();
             //---------------
-            final int im1 = (int) (indexDerKurveInDerMatrix[i1] / 1000);
-            final int im2 = (int) (indexDerKurveInDerMatrix[i1] % 1000);
+            final int im1 = (int) (indexDerKurveInDerMatrix[i1] / INDEX_ENCODING_FACTOR);
+            final int im2 = (int) (indexDerKurveInDerMatrix[i1] % INDEX_ENCODING_FACTOR);
             if (crvFillDigitalCurves[im1][im2]) {
                 final Color fuellFarbe = GraferV3.selectColor(crvFillingDigitalColor[im1][im2]);
                 g2.setColor(fuellFarbe);
@@ -814,7 +820,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             //---------------
             g2.setColor(kurveFarbe[i1]);
 
-            final AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.6f);
+            final AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, ALPHA_COMPOSITE_VALUE);
             g2.setComposite(ac);
             g2.draw(grL);
             //---------------
@@ -1036,7 +1042,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
                     if ((matrixZuordnungKurveDiagram[i1][i2] == ZUORDNUNG_Y) || (matrixZuordnungKurveDiagram[i1][i2] == ZUORDNUNG_SIGNAL)) {
                         zugehoerigkeitX[kurvenIndex] = zugX;
                         zugehoerigkeitY[kurvenIndex] = i1;
-                        indexDerKurveInDerMatrix[kurvenIndex] = 1000 * i1 + i2;
+                        indexDerKurveInDerMatrix[kurvenIndex] = INDEX_ENCODING_FACTOR * i1 + i2;
                         kurvenIndex++;
                     }
                 }
@@ -1073,8 +1079,8 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         int[] crvLineColorLok = new int[kurvenanzahl];
         final double[] crvTransparencyLok = new double[kurvenanzahl];
         for (int i1 = 0; i1 < kurvenanzahl; i1++) {
-            final int im1 = (int) (indexDerKurveInDerMatrix[i1] / 1000);
-            final int im2 = (int) (indexDerKurveInDerMatrix[i1] % 1000);
+            final int im1 = (int) (indexDerKurveInDerMatrix[i1] / INDEX_ENCODING_FACTOR);
+            final int im2 = (int) (indexDerKurveInDerMatrix[i1] % INDEX_ENCODING_FACTOR);
             crvAchsenTypLok[i1] = crvAchsenTyp[im1][im2];
             crvLineStyleLok[i1] = crvLineStyle[im1][im2];
             crvLineColorLok[i1] = crvLineColor[im1][im2];
@@ -1094,8 +1100,8 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         int[] crvSymbShapeLok = new int[kurvenanzahl];
         int[] crvSymbColorLok = new int[kurvenanzahl];
         for (int i1 = 0; i1 < kurvenanzahl; i1++) {
-            final int im1 = (int) (indexDerKurveInDerMatrix[i1] / 1000);
-            final int im2 = (int) (indexDerKurveInDerMatrix[i1] % 1000);
+            final int im1 = (int) (indexDerKurveInDerMatrix[i1] / INDEX_ENCODING_FACTOR);
+            final int im2 = (int) (indexDerKurveInDerMatrix[i1] % INDEX_ENCODING_FACTOR);
             crvSymbShowLok[i1] = crvSymbShow[im1][im2];
             crvSymbFrequLok[i1] = crvSymbFrequ[im1][im2];
             crvSymbShapeLok[i1] = crvSymbShape[im1][im2];
@@ -1113,8 +1119,8 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         double[] crvClipValXminLok = new double[kurvenanzahl], crvClipValXmaxLok = new double[kurvenanzahl];
         double[] crvClipValYminLok = new double[kurvenanzahl], crvClipValYmaxLok = new double[kurvenanzahl];
         for (int i1 = 0; i1 < kurvenanzahl; i1++) {
-            final int im1 = (int) (indexDerKurveInDerMatrix[i1] / 1000);
-            final int im2 = (int) (indexDerKurveInDerMatrix[i1] % 1000);
+            final int im1 = (int) (indexDerKurveInDerMatrix[i1] / INDEX_ENCODING_FACTOR);
+            final int im2 = (int) (indexDerKurveInDerMatrix[i1] % INDEX_ENCODING_FACTOR);
             crvClipXminLok[i1] = crvClipXmin[im1][im2];
             crvClipXmaxLok[i1] = crvClipXmax[im1][im2];
             crvClipYminLok[i1] = crvClipYmin[im1][im2];
@@ -1463,7 +1469,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         // // if the diagrams are drawn in a very small window, then the grid lines may need to be hidden,
         // // to maintain a certain level of clarity -->
         // 
-        final double px1 = 230, px2 = 100, pxr = 2.5;
+        final double px1 = GRID_HIDE_THRESHOLD_Y, px2 = GRID_HIDE_THRESHOLD_X, pxr = GRID_HIDE_THRESHOLD_RATIO;
         final int[][] showGridXMax = new int[anzGrfVisible][2], showGridXMin = new int[anzGrfVisible][2];
         for (int i1 = 0; i1 < anzGrfVisible; i1++) {
             final int indexAchseX = gridNormalX_zugeordneteXAchse[i1];
@@ -2156,7 +2162,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         //-------------------
     }
 
-    // // In the SCOPE representation, the data is reduced to a few 1000 (pixel) points in Hi-Lo representation in order to achieve the efficiency
+    // // In the SCOPE representation, the data is reduced to a few INDEX_ENCODING_FACTOR (pixel) points in Hi-Lo representation in order to achieve the efficiency
     // // to significantly increase the graphical representation. For example, if you zoom in, the data must be included
     // // be reloaded with a significantly higher resolution and transferred in Hi-Lo display so that the graphical representation
     // // loses non-important information (e.g. 'frayed' ripple curves, disappeared peaks, rectangles become triangles, etc.)

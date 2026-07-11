@@ -30,6 +30,12 @@ public final class ControlSpaceVector extends ControlBlock {
     private String[] header;
     private static final double DA_VALUE = 0.5;
     private static final double WIDTH = 1.4;
+    private static final double RECT_X_OFFSET = 0.4;
+    private static final int CONNECTOR_HEIGHT_FACTOR = 2;
+    private static final int CONNECTOR_Y_OFFSET_1 = 3;
+    private static final int CONNECTOR_Y_OFFSET_2 = 6;
+    private static final int DS1 = 3;
+    private static final int DS2 = 3;
 
     @Override
     protected final Window openDialogWindow() {
@@ -79,13 +85,12 @@ public final class ControlSpaceVector extends ControlBlock {
         Color origColor = graphics.getColor();
         graphics.setColor(getBackgroundColor());  // default        
 
-        graphics.fillRect((int) (dpix * (x - 0.4)), (int) (dpix * (y - WIDTH + 1)), (int) (dpix * (2 * DA_VALUE)), dpix * NO_INPUTS);
+        graphics.fillRect((int) (dpix * (x - RECT_X_OFFSET)), (int) (dpix * (y - WIDTH + 1)), (int) (dpix * (2 * DA_VALUE)), dpix * NO_INPUTS);
         graphics.setColor(origColor);
-        graphics.drawRect((int) (dpix * (x - 0.4)), (int) (dpix * (y - WIDTH + 1)), (int) (dpix * (2 * DA_VALUE)), dpix * NO_INPUTS);
-        int ds1 = 3, ds2 = 3;
-        graphics.drawRect((int) (dpix * (x - 0.4)), dpix * y - ds2, ds1, dpix * 2 + 2 * ds2);
-        graphics.drawRect((int) (dpix * (x - 0.4)), dpix * (y + 3) - ds2, ds1, dpix * 2 + 2 * ds2);
-        graphics.drawRect((int) (dpix * (x - 0.4)), dpix * (y + 6) - ds2, ds1, dpix * 2 + 2 * ds2);
+        graphics.drawRect((int) (dpix * (x - RECT_X_OFFSET)), (int) (dpix * (y - WIDTH + 1)), (int) (dpix * (2 * DA_VALUE)), dpix * NO_INPUTS);
+        graphics.drawRect((int) (dpix * (x - RECT_X_OFFSET)), dpix * y - DS2, DS1, dpix * CONNECTOR_HEIGHT_FACTOR + CONNECTOR_HEIGHT_FACTOR * DS2);
+        graphics.drawRect((int) (dpix * (x - RECT_X_OFFSET)), dpix * (y + CONNECTOR_Y_OFFSET_1) - DS2, DS1, dpix * CONNECTOR_HEIGHT_FACTOR + CONNECTOR_HEIGHT_FACTOR * DS2);
+        graphics.drawRect((int) (dpix * (x - RECT_X_OFFSET)), dpix * (y + CONNECTOR_Y_OFFSET_2) - DS2, DS1, dpix * CONNECTOR_HEIGHT_FACTOR + CONNECTOR_HEIGHT_FACTOR * DS2);
 
     }
 

@@ -33,6 +33,7 @@ public class BigLUDecomposition implements java.io.Serializable {
     private static final long serialVersionUID = 1L;
 
     private static final MathContext mc = new MathContext(20, RoundingMode.HALF_EVEN);
+    private static final double PIVOT_THRESHOLD = 1e-30;
 /* ------------------------
     Class variables
      * ------------------------ */
@@ -127,7 +128,7 @@ public class BigLUDecomposition implements java.io.Serializable {
 
             // Compute multipliers.
 
-            if (j < m & LU[j][j].abs().doubleValue() > 1e-30) {
+            if (j < m & LU[j][j].abs().doubleValue() > PIVOT_THRESHOLD) {
                 for (int i = j + 1; i < m; i++) {
                     LU[i][j] = LU[i][j].divide(LU[j][j], mc);
                 }

@@ -31,6 +31,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SimulationKernel {
+    private static final int MAX_ITERATIONS = 10000;
+    private static final double PERTURBATION_FACTOR = 0.99;
+    private static final double PERTURBATION_INITIAL = 0.9999999;
+    private static final double SWITCH_THRESHOLD = 0.5;
 
     private boolean diodenSchaltfehler;
     private double dt, t, tPAUSE;
@@ -155,12 +159,12 @@ public class SimulationKernel {
 
     private void doDiodeErrorsRecalculations() {
         int switchingErrorCounter = 0;   // // 'stoersize<1.0' prevents the algorithm from getting stuck when switching diodes between states
-        double stoergroesse = 1;//0.9999999;
+        double stoergroesse = 1;//PERTURBATION_INITIAL
         boolean isNewIteration = false;
 
         while (diodenSchaltfehler = lkmLK.calculateComponentCurrents(stoergroesse, dt, t, isNewIteration, switchingErrorCounter)) {
             isNewIteration = true;
-            if (switchingErrorCounter > 10000) {
+            if (switchingErrorCounter > MAX_ITERATIONS) {
                 //new DialogDiodenError(switchingErrorCounter, t);
                 this.lastUpdateOfScope();  // // the final simulation will be updated again to be on the safe side
                 throw new Error("Numerical instablity of switch!\nAborting simulation.");
@@ -168,7 +172,7 @@ public class SimulationKernel {
 
             //this.ausgebenDiodenzustaende(t);
             if ((switchingErrorCounter++) > 2) {
-                stoergroesse *= 0.99;
+                stoergroesse *= PERTURBATION_FACTOR;
             }
 
             _lkCachedMatrix = _luDecompCache.getCachedLUDecomposition(lkmLK.a, t);
@@ -285,7 +289,7 @@ public class SimulationKernel {
                 case LK_S:
                     // rDS(t) - rDS,on - rDS,off - i(t) - u(t) - uDSon[V] - k_on[Ws] - k_off[Ws]    -->
                     double rS_vorher = par[0];
-                    if (schaltSignal > 0.5) {
+                    if (schaltSignal > SWITCH_THRESHOLD) {
                         par[0] = par[1];  // // --> on, threshold '0.5' for switching
                     } else {
                         par[0] = par[2];  // --> off
@@ -298,7 +302,7 @@ public class SimulationKernel {
                 case LK_MOSFET:
                     // rDS(t) - rDS,on - rDS,off - i(t) - u(t) - uDSon[V] - k_on[Ws] - k_off[Ws]    -->
                     rS_vorher = par[0];
-                    if (schaltSignal > 0.5) {
+                    if (schaltSignal > SWITCH_THRESHOLD) {
                         par[0] = par[2];  // // --> on, threshold '0.5' for switching
                     } else {
                         par[0] = par[3];  // --> off
@@ -310,7 +314,7 @@ public class SimulationKernel {
                     break;
                 case LK_THYR:
                     // // THYR is treated like a diode (see below!!), the current gate state is stored here:
-                    if (schaltSignal > 0.5) {
+                    if (schaltSignal > SWITCH_THRESHOLD) {
                         par[8] = 1;
                     } else {
                         par[8] = 0;  // // --> on, threshold '0.5' for switching
@@ -320,7 +324,7 @@ public class SimulationKernel {
 
                     // // IGBT is treated similarly to THYR, the current gate state is saved here:
                     // rD(t) - uf - rON - rOFF - i(t) - u(t) - xxx - xxx - gateStatusOnOff   --> aehnlich wie THYR
-                    if (schaltSignal > 0.5) {
+                    if (schaltSignal > SWITCH_THRESHOLD) {
                         par[8] = 1;
                     } else {
                         par[8] = 0;  // // --> on, threshold '0.5' for switching

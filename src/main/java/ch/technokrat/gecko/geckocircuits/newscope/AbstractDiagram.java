@@ -50,6 +50,8 @@ public abstract class AbstractDiagram extends JPanel {
     private static final int DY_IN_UPPER_SMALL = 8;
     private static final int DY_IN_UPPER_LARGE = 16;
     private static final int THREE = 3;
+    private static final int CLIP_BORDER = 1;
+    private static final int CLIP_EXTRA_BORDER = 2;
     transient GraferV4 _grafer;
     final transient ZoomWindow _zoomWindow = new ZoomWindow(this);
     private int _topOffset;
@@ -422,11 +424,11 @@ public abstract class AbstractDiagram extends JPanel {
     }
 
     protected void setClipping(final Graphics2D g2d) {
-        final int clipXmin = Math.max(g2d.getClipBounds().x, _xAxis._axisOriginPixel.x + 1);
-        final int clipXMax = _xAxis._axisOriginPixel.x + _xAxis.getAxisLengthPixel() + 2;
+        final int clipXmin = Math.max(g2d.getClipBounds().x, _xAxis._axisOriginPixel.x + CLIP_BORDER);
+        final int clipXMax = _xAxis._axisOriginPixel.x + _xAxis.getAxisLengthPixel() + CLIP_EXTRA_BORDER;
         final int clipXwidth = clipXMax - clipXmin;
         final int yAxis1Lenth = _yAxis1.getAxisLengthPixel();
-        g2d.setClip(clipXmin, _xAxis._axisOriginPixel.y - yAxis1Lenth + 1, clipXwidth, yAxis1Lenth - 1);
+        g2d.setClip(clipXmin, _xAxis._axisOriginPixel.y - yAxis1Lenth + CLIP_BORDER, clipXwidth, yAxis1Lenth - CLIP_BORDER);
 
     }
 
