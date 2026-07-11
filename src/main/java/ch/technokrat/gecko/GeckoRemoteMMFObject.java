@@ -1811,7 +1811,7 @@ public final class GeckoRemoteMMFObject extends GeckoRemoteObject {
     public double[] simulateToSteadyState(final boolean suppressMessages, final double targetCorrelation, final double targetMeanPctDiff) {
         try {
             if (checkRemote()) {
-                final GeckoRemotePipeObject method = new GeckoRemotePipeObject("getSignalData",new Object[]{suppressMessages,targetCorrelation,targetMeanPctDiff});
+                final GeckoRemotePipeObject method = new GeckoRemotePipeObject("simulateToSteadyState",new Object[]{suppressMessages,targetCorrelation,targetMeanPctDiff});
                 final GeckoRemotePipeObject returnValue = _mmf.callMethod(sessionID, method);
                 if (returnValue.isReturnValue()) {
                     return (double[])returnValue.getMethodReturnValue();

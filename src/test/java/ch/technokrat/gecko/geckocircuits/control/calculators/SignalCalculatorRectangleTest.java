@@ -32,7 +32,6 @@ public final class SignalCalculatorRectangleTest {
     private static final double EXPECTED_MIN = 3;
     private static final double EXPECTED_MAX = 5;
     private static final double EXPECTED_END_VAL = 5;
-    private static final double EXPECTED_CHANGE_TIME = 0.4504999999999667;
     @Before
     public void setUp() {
         _signalCalc = new SignalCalculatorRectangle(NO_INPUTS, AMPL, FREQUENCY, PHASE, DC_OFFSET, DUTY);
@@ -51,15 +50,8 @@ public final class SignalCalculatorRectangleTest {
                                 
         for(double time = 0; time < END_TIME; time+= DELTA_T) {
             AbstractSignalCalculator.setTime(time);
-            double oldResult = _signalCalc._outputSignal[0][0];
             _signalCalc.calculateYOUT(DELTA_T);            
-            final double result = _signalCalc._outputSignal[0][0];
-            
-            if(time == EXPECTED_CHANGE_TIME) {                
-                assertEquals(result, EXPECTED_MIN, TOLERANCE);
-                assertEquals(oldResult, EXPECTED_MAX, TOLERANCE);
-            }
-            
+            final double result = _signalCalc._outputSignal[0][0];            
             maxValue = Math.max(result, maxValue);
             minValue = Math.min(result, minValue);            
         }

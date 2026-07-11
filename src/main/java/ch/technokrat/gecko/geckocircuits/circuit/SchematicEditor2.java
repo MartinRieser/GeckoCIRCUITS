@@ -533,7 +533,7 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
     private boolean isRightMouseClickActionOrCtrlLeftClick(final MouseEvent me) {
         // on mac's with only one mouse button, you can ctrl+leftclick
         // to emulate a right-click.
-        return me.getModifiersEx() == MouseEvent.BUTTON3_DOWN_MASK || me.getModifiersEx() == MouseEvent.BUTTON3_DOWN_MASK;
+        return me.getModifiersEx() == MouseEvent.BUTTON3_DOWN_MASK || me.getModifiersEx() == (MouseEvent.CTRL_DOWN_MASK | MouseEvent.BUTTON1_DOWN_MASK);
     }
 
     private void doRightMouseClickAction() {

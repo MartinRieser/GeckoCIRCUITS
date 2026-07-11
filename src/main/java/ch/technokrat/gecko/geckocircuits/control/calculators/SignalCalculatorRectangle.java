@@ -60,8 +60,8 @@ public final class SignalCalculatorRectangle extends AbstractSignalCalculatorPer
             txE += txEnd;
         }
         while (txValue < txE) {
-            final double dyUPx = 2 * _frequency * dtx / 0.5;
-            final double dyDOWNx = 2 * _frequency * dtx / (1 - 0.5);
+            final double dyUPx = 2 * _frequency * dtx / _dutyRatio;
+            final double dyDOWNx = 2 * _frequency * dtx / (1 - _dutyRatio);
             if (_aufsteigend) {
                 _triangle += dyUPx;
             } else {

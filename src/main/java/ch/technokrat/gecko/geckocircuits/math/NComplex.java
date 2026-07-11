@@ -181,7 +181,7 @@ public class NComplex {
 
     @Override
     public int hashCode() {
-        return Double.hashCode(re) - 7 * Double.hashCode(im) + 3;
+        return Float.hashCode(re) - 7 * Float.hashCode(im) + 3;
     }
 
     @Override

@@ -41,7 +41,11 @@ public class DelegateNumericTextField <M extends ModelMVC<Double>> extends JText
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                _model.setValue(Double.parseDouble(getText()));
+                try {
+                    _model.setValue(Double.parseDouble(getText()));
+                } catch (NumberFormatException ex) {
+                    setText(_model.getValue().toString());
+                }
             }
         };
 
@@ -65,7 +69,11 @@ public class DelegateNumericTextField <M extends ModelMVC<Double>> extends JText
     }
     
     public void saveValue() {
-        _model.setValue(Double.parseDouble(getText()));
+        try {
+            _model.setValue(Double.parseDouble(getText()));
+        } catch (NumberFormatException ex) {
+            setText(_model.getValue().toString());
+        }
     }
 
 

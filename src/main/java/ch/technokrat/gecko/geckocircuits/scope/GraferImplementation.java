@@ -327,6 +327,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
                 try {
                     zeichneEinzelneSIGNALKurve(g2, i1);
                 } catch (Exception e) {
+                    Logger.getLogger(GraferImplementation.class.getName()).log(Level.WARNING, "Error drawing SIGNAL curve.", e);
                 }  // SIGNAL --> siehe Implementierung gleich unten
             } else {
                 int anzKurvenpunkteImWorksheet = worksheetDaten.getColumnLength();
@@ -336,6 +337,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
                 try {
                     zeichneEinzelneKurve(g2, i1, anzKurvenpunkteImWorksheet);
                 } catch (Exception e) {
+                    Logger.getLogger(GraferImplementation.class.getName()).log(Level.WARNING, "Error drawing ZV curve.", e);
                 }  // // ZV --> is standard in 'GraferV3'
                 //----------
                 if ((i1 > 0) && (_yAchseY[indexZurKurveGehoerigeYachse[i1]] != _yAchseY[indexZurKurveGehoerigeYachse[i1 - 1]])) {
@@ -750,7 +752,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
                 }
                 yPix[i2] = (y0Kurve + sgnDistance[indexZurKurveGehoerigeXachse[i1]]) + (int) yValue;
             } catch (Exception e) {
-
+                Logger.getLogger(GraferImplementation.class.getName()).log(Level.WARNING, "Error computing SIGNAL pixel value.", e);
             }
         }
         //--------------------------------
@@ -1323,10 +1325,10 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         final boolean[] xTickAutoSpacing = new boolean[anzGrfVisible];
         final boolean[] yTickAutoSpacing = new boolean[anzGrfVisible];
         for (int i1 = 0; i1 < xTickAutoSpacing.length; i1++) {
-            xTickAutoSpacing[i1] = xTickAutoSpacing[i1];
+            xTickAutoSpacing[i1] = this.xTickAutoSpacing[i1];
         }
         for (int i1 = 0; i1 < yTickAutoSpacing.length; i1++) {
-            yTickAutoSpacing[i1] = yTickAutoSpacing[i1];
+            yTickAutoSpacing[i1] = this.yTickAutoSpacing[i1];
         }
         this.setzeTickAutoSpacing(xTickAutoSpacing, yTickAutoSpacing);
         //-----------
@@ -1775,6 +1777,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             try {
                 xSchieberWert[0] = getValueFromPixel(xSchieberPix, 0)[0];
             } catch (Exception e) {
+                Logger.getLogger(GraferImplementation.class.getName()).log(Level.WARNING, "Error computing slider x-value.", e);
             }  // // x value of the slider position
             int index = findSliderTimeIndex(xSchieberWert[0]);
             if (index >= 0) {

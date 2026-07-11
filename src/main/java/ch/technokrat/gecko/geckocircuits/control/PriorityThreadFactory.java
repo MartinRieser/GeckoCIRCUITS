@@ -25,6 +25,6 @@ class PriorityThreadFactory implements ThreadFactory {
     public Thread newThread(Runnable r) {
         Thread thread = new Thread(r);
         thread.setPriority(Thread.MIN_PRIORITY);
-        return new Thread(r);
+        return thread;
     }
 }

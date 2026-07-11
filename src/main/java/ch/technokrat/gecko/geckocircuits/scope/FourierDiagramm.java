@@ -254,12 +254,12 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
             int b = Math.abs(x2Zoom - x1Zoom), h = Math.abs(y2Zoom - y1Zoom);
             if ((x1Zoom > x2Zoom) && (y1Zoom > y2Zoom)) {
                 g.drawRect(x2Zoom, y2Zoom, b, h);
-            } else if ((x1Zoom > x2Zoom) && (y1Zoom > y2Zoom)) {
+            } else if ((x1Zoom > x2Zoom) && (y2Zoom > y1Zoom)) {
                 g.drawRect(x2Zoom, y1Zoom, b, h);
             } else if ((x1Zoom < x2Zoom) && (y1Zoom > y2Zoom)) {
                 g.drawRect(x1Zoom, y2Zoom, b, h);
-            } else if ((x1Zoom < x2Zoom) && (y1Zoom > y1Zoom)) {
-                g.drawRect(x1Zoom, y2Zoom, b, h);
+            } else if ((x1Zoom < x2Zoom) && (y2Zoom > y1Zoom)) {
+                g.drawRect(x1Zoom, y1Zoom, b, h);
             }
         }
         if ((mausModus == GraferImplementation.MAUSMODUS_WERTANZEIGE_SCHIEBER) || (xSchieberAktiv)) {
@@ -578,14 +578,14 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
         //-------------------
         int xPix = -1, yPix = -1;
         if (xAchseTyp_ == ACHSE_LOG) {
-            xWert = achseXmin_ * Math.pow(10.0, ((xPix - xAchseX_) / sfX_));
+            xPix = xAchseX_ + (int) (sfX_ * GraferV3.lg10(xWert / achseXmin_));
         } else if (xAchseTyp_ == ACHSE_LIN) {
-            xWert = achseXmin_ + (xPix - xAchseX_) / sfX_;
+            xPix = xAchseX_ + (int) (sfX_ * (xWert - achseXmin_));
         }
         if (yAchseTyp_ == ACHSE_LOG) {
-            yWert = achseYmin_ * Math.pow(10.0, ((yAchseY_ - yPix) / sfY_));
+            yPix = yAchseY_ - (int) (sfY_ * GraferV3.lg10(yWert / achseYmin_));
         } else if (yAchseTyp_ == ACHSE_LIN) {
-            yWert = achseYmin_ + (yAchseY_ - yPix) / sfY_;
+            yPix = yAchseY_ - (int) (sfY_ * (yWert - achseYmin_));
         }
         return new int[]{xPix, yPix};
         //-------------------

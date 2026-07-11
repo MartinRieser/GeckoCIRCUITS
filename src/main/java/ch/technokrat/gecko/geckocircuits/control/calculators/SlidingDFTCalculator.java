@@ -73,7 +73,7 @@ public final class SlidingDFTCalculator extends AbstractControlCalculatable
                     break;
                 default:
                     assert false;
-                    _outputSignal[0][0] = 0;
+                    _outputSignal[i][0] = 0;
             }
         }
     }

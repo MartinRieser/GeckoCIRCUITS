@@ -20,8 +20,8 @@ public enum GeckoLineType {
     CONNECT_NEIGHBOURS(0, "Connect neigbours"),
     BAR(1, "Bar to x-Axis");    
 
-    static GeckoLineStyle getFromOrdinal(final int ordinal) {
-        for (GeckoLineStyle val : GeckoLineStyle.values()) {
+    static GeckoLineType getFromOrdinal(final int ordinal) {
+        for (GeckoLineType val : GeckoLineType.values()) {
             if (val.ordinal() == ordinal) {
                 return val;
             }
@@ -41,8 +41,8 @@ public enum GeckoLineType {
         return _code;
     }        
 
-    public static GeckoLineStyle setzeLinienstilSelektiert(final int ordinal) {
-        for (GeckoLineStyle val : GeckoLineStyle.values()) {
+    public static GeckoLineType setzeLinienstilSelektiert(final int ordinal) {
+        for (GeckoLineType val : GeckoLineType.values()) {
             if (val.ordinal() == ordinal) {
                 return val;
             }

@@ -414,7 +414,7 @@ public final class LossCalculationDetailed implements GeckoFileable, AbstractLos
          * the curves reference voltage is rescaled to this voltage before the
          * Lookup-table.
          */
-        public static final double DEFAULT_REFERENCE_VOLTAGE = 100;
+        public static final double DEFAULT_TEMPERATURE_CELSIUS = 100;
         private static final double LARGE_TEMPERATURE = 1E4;
         private double _temperature;
 
@@ -426,7 +426,7 @@ public final class LossCalculationDetailed implements GeckoFileable, AbstractLos
         public void calcLosses(final double current, final double temperature, final double deltaT) {
             if (temperature > LARGE_TEMPERATURE || temperature != temperature) {
                 // when no thermal model is connected, we set the temperature to some default value.
-                _temperature = DEFAULT_REFERENCE_VOLTAGE;
+                _temperature = DEFAULT_TEMPERATURE_CELSIUS;
             } else {
                 _temperature = temperature;
             }            

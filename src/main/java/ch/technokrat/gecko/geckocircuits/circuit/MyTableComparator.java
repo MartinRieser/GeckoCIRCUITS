@@ -34,7 +34,7 @@ class MyTableComparator implements Comparator<List<Double>> {
         if(o2.get(0) == null) {
             return -1;            
         }
-        if(o1.get(0) == null && o2.get(0) == 0) {
+        if(o1.get(0) == null && o2.get(0) == 0.0) {
             return 0;
         }
         if(o1.get(0) < o2.get(0)) {

@@ -18,6 +18,8 @@ import ch.technokrat.gecko.geckocircuits.newscope.GeckoGraphics2D;
 import java.awt.AlphaComposite;
 
 import java.awt.Graphics;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.awt.Graphics2D;
 import java.awt.BasicStroke;
 import java.awt.Stroke;
@@ -214,6 +216,7 @@ public class GraferV3 extends JPanel {
         this.gridNormalX_zugeordneteXAchse = zugeordneteXAchse;
         this.gridNormalX_zugeordneteYAchse = zugeordneteYAchse;
         if (zugeordneteXAchse.length != zugeordneteYAchse.length) {
+            Logger.getLogger(GraferV3.class.getName()).log(Level.WARNING, "Grid X axis assignment length mismatch.");
         }
     }
 
@@ -221,6 +224,7 @@ public class GraferV3 extends JPanel {
         this.gridNormalY_zugeordneteXAchse = zugeordneteXAchse;
         this.gridNormalY_zugeordneteYAchse = zugeordneteYAchse;
         if (zugeordneteXAchse.length != zugeordneteYAchse.length) {
+            Logger.getLogger(GraferV3.class.getName()).log(Level.WARNING, "Grid Y axis assignment length mismatch.");
         }
     }
 
@@ -388,6 +392,7 @@ public class GraferV3 extends JPanel {
         try {
             this.zeichne(g);
         } catch (Exception e) {
+            Logger.getLogger(GraferV3.class.getName()).log(Level.WARNING, "Error in zeichne().", e);
         }
         //--------------------------
     }
