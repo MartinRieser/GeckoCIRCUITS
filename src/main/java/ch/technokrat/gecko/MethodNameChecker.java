@@ -28,6 +28,22 @@ final class MethodNameChecker {
         super();
     }
 
+    /**
+     * Validates that all methods defined in the {@code checkMethods} class/interface
+     * are present with the identical signature in {@code containsMethodSignature}.
+     * 
+     * <p><strong>Assertion-based Execution Strategy:</strong>
+     * This method uses a try-catch block around an {@code assert false} statement to
+     * determine if JVM assertions are enabled (via the {@code -ea} flag). If assertions
+     * are disabled (the default in production), the method returns immediately to save
+     * startup/execution time. If assertions are enabled, the caught {@link AssertionError}
+     * triggers the full reflection-based signature validation.
+     * </p>
+     *
+     * @param checkMethods the class whose methods need to be checked
+     * @param containsMethodSignature the interface that should contain matching methods
+     * @return null
+     */
     static MethodNameChecker checkFabric(final Class<?> checkMethods,
             final Class<GeckoRemoteInterface> containsMethodSignature) {
         try {

@@ -24,7 +24,6 @@ public enum CompileStatus {
                 return val;
             }
         }
-        assert false;
-        return null;
+        throw new IllegalArgumentException("Invalid ordinal: " + ordinal);
     }
 };

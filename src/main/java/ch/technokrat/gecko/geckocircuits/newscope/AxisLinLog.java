@@ -33,8 +33,7 @@ enum AxisLinLog {
                 return val;
             }
         }
-        assert false;
-        return null;
+        throw new IllegalArgumentException("Invalid ordinal: " + ordinal);
     }
     
     static AxisLinLog getFromCode(final int code) {

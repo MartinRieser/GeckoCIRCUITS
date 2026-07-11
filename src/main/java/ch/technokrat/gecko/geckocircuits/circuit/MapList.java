@@ -52,6 +52,13 @@ public class MapList extends ArrayList<AbstractCircuitSheetComponent> {
         return super.remove(o);
     }
 
+    /**
+     * Unsupported operation. The internal map tracking components by class type
+     * does not support bulk removal through this method, so calling it is intentionally disabled via assertion.
+     *
+     * @param c the collection containing elements to be removed from this list
+     * @return {@code true} if this list changed as a result of the call
+     */
     @Override
     public boolean removeAll(Collection<?> c) {
         assert false;

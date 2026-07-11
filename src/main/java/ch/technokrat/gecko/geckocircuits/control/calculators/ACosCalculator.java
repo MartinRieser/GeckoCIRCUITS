@@ -18,9 +18,9 @@ public final class ACosCalculator extends AbstractSingleInputSingleOutputCalcula
     @Override
     public void calculateYOUT(final double deltaT) {
         assert _inputSignal[0][0] <= Math.PI / 2:  
-                "Illegal argument of input signal: "  + _inputSignal[0][0] + " + must be <= -PI/2";
+                "Illegal argument of input signal: "  + _inputSignal[0][0] + " must be <= PI/2";
         assert _inputSignal[0][0] >= - Math.PI /2: 
-                "Illegal argument of input signal: "  + _inputSignal[0][0] + " + must be >= -PI/2";
+                "Illegal argument of input signal: "  + _inputSignal[0][0] + " must be >= -PI/2";
         _outputSignal[0][0] = Math.acos(_inputSignal[0][0]);
     }
 }
