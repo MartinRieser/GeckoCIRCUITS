@@ -75,7 +75,7 @@ public abstract class AbstractDialogPowerSwitch<T extends AbstractSemiconductor>
     public abstract JPanel createParameterPanel();
     
     @Override
-    protected final void baueGUIIndividual() {
+    protected final void buildGUIIndividual() {
         _tabber = new JTabbedPane();        
         
         populateCharacteristicsPanel();        

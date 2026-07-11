@@ -77,17 +77,17 @@ public class DialogOptimizerParameterSettings extends GeckoDialog {
 
     private void init() {
         tabber = new JTabbedPane();
-        tabber.addTab(I18nKeys.PARAMETER.getTranslation(), this.baueGUIInput());
-        tabber.addTab(I18nKeys.HELP.getTranslation(), this.baueGUIHelp());
+        tabber.addTab(I18nKeys.PARAMETER.getTranslation(), this.buildGUIInput());
+        tabber.addTab(I18nKeys.HELP.getTranslation(), this.buildGUIHelp());
         Container con = this.getContentPane();
         con.setLayout(new BorderLayout());
         con.add(tabber, BorderLayout.CENTER);
-        con.add(this.baueGUIok(), BorderLayout.SOUTH);
+        con.add(this.buildGUIok(), BorderLayout.SOUTH);
         this.setTitle(I18nKeys.PARAMETER_SET.getTranslation());
         this.pack();
     }
 
-    private JPanel baueGUIInput() {
+    private JPanel buildGUIInput() {
 
         _dataTable = new DataTablePanelParameters(new String[]{I18nKeys.NAME.getTranslation(), 
             I18nKeys.VALUE.getTranslation(), I18nKeys.USAGES.getTranslation()}, _numberOfUsedParamemters);
@@ -102,14 +102,14 @@ public class DialogOptimizerParameterSettings extends GeckoDialog {
         return _dataTable;
     }
 
-    private JScrollPane baueGUIHelp() {
+    private JScrollPane buildGUIHelp() {
         jtaHLP = new JTextArea(TXT_HELP);
         jtaHLP.setLineWrap(true);
         jtaHLP.setWrapStyleWord(true);
         return new JScrollPane(jtaHLP);
     }
 
-    private JPanel baueGUIok() {
+    private JPanel buildGUIok() {
         final JPanel returnValue = new JPanel();
         returnValue.setBorder(BorderFactory.createEtchedBorder());
         JButton jbOK = GuiFabric.getJButton(I18nKeys.OK);

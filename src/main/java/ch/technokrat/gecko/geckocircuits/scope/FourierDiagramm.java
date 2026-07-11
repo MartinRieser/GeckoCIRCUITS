@@ -290,7 +290,7 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
         this.setzeAchsenAnzahl(1, 1);
         this.setAxisWidthHeightX0Y0(new int[]{bi}, new int[]{hi}, new int[]{X0xi}, new int[]{X0yi}, new int[]{Y0xi}, new int[]{Y0yi});
         this.setAxisColor(new Color[]{Color.black}, new Color[]{Color.black});
-        this.setzeAchsenTyp(new int[]{ACHSE_LIN}, new int[]{ACHSE_LIN});
+        this.setzeAchsenTyp(new int[]{AXIS_LINEAR}, new int[]{AXIS_LINEAR});
         this.setzeAchsenLinienStil(new int[]{SOLID_PLAIN}, new int[]{SOLID_PLAIN});
         this.setzeAchsenBeschriftungen(new String[]{""}, new String[]{""});  // Needed to avoid NullPointerException
         this.definiereGridNormalX(new int[]{0}, new int[]{0});
@@ -539,14 +539,14 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
         }
         //-------------------
         double xWert = -1, yWert = -1;
-        if (xAchseTyp_ == ACHSE_LOG) {
+        if (xAchseTyp_ == AXIS_LOGARITHMIC) {
             xWert = achseXmin_ * Math.pow(10.0, ((xPix - xAchseX_) / sfX_));
-        } else if (xAchseTyp_ == ACHSE_LIN) {
+        } else if (xAchseTyp_ == AXIS_LINEAR) {
             xWert = achseXmin_ + (xPix - xAchseX_) / sfX_;
         }
-        if (yAchseTyp_ == ACHSE_LOG) {
+        if (yAchseTyp_ == AXIS_LOGARITHMIC) {
             yWert = achseYmin_ * Math.pow(10.0, ((yAchseY_ - yPix) / sfY_));
-        } else if (yAchseTyp_ == ACHSE_LIN) {
+        } else if (yAchseTyp_ == AXIS_LINEAR) {
             yWert = achseYmin_ + (yAchseY_ - yPix) / sfY_;
         }
         return new double[]{xWert, yWert, indexDiagrammYachse};
@@ -577,14 +577,14 @@ class FourierDiagramm extends GraferV3 implements MouseListener, MouseMotionList
         int yAchseTyp_ = yAchseTyp[index_yAchse];
         //-------------------
         int xPix = -1, yPix = -1;
-        if (xAchseTyp_ == ACHSE_LOG) {
+        if (xAchseTyp_ == AXIS_LOGARITHMIC) {
             xPix = xAchseX_ + (int) (sfX_ * GraferV3.lg10(xWert / achseXmin_));
-        } else if (xAchseTyp_ == ACHSE_LIN) {
+        } else if (xAchseTyp_ == AXIS_LINEAR) {
             xPix = xAchseX_ + (int) (sfX_ * (xWert - achseXmin_));
         }
-        if (yAchseTyp_ == ACHSE_LOG) {
+        if (yAchseTyp_ == AXIS_LOGARITHMIC) {
             yPix = yAchseY_ - (int) (sfY_ * GraferV3.lg10(yWert / achseYmin_));
-        } else if (yAchseTyp_ == ACHSE_LIN) {
+        } else if (yAchseTyp_ == AXIS_LINEAR) {
             yPix = yAchseY_ - (int) (sfY_ * (yWert - achseYmin_));
         }
         return new int[]{xPix, yPix};

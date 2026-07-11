@@ -22,7 +22,7 @@ class ControlConstantDialog extends DialogElementCONTROL<ControlConstant> {
     }
 
     @Override
-    protected void baueGuiIndividual() {
+    protected void buildIndividualGUI() {
         jpM = createParameterPanel(element._constValue);        
     }
 }

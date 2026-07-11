@@ -281,7 +281,7 @@ public class GeckoStatusBar extends JPanel {
         g2d.drawRect(0, 0, barPixelLength, getHeight() - 1);
     }
 
-    void setzeStatusRechenzeit(long tsim) {
+    void setComputeTimeStatus(long tsim) {
         String displayText = "Stopped after  ";
         // tsim ... Simulationszeit in [ms]
         double tsec = tsim / 1e3;  // // Total time in [s] --> [ms] are only displayed after the decimal place

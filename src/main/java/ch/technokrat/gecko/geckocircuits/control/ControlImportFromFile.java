@@ -26,6 +26,6 @@ public class ControlImportFromFile  extends ControlSignalSource {
 
     public ControlImportFromFile() {    
         super();
-        _typQuelle.setValueWithoutUndo(ControlSourceType.QUELLE_IMPORT);
+        _sourceType.setValueWithoutUndo(ControlSourceType.QUELLE_IMPORT);
     }            
 }

@@ -317,7 +317,7 @@ public final class SubcircuitBlock extends AbstractSpecialBlock {
     }
 
     @Override
-    public int istAngeklickt(final int mouseX, final int mouseY) {
+    public int isClicked(final int mouseX, final int mouseY) {
         if (dpix * (getSheetPosition().x - BORDER_CLICK_OFFSET) < mouseX
                 && mouseX < dpix * (getSheetPosition().x + _blockSizeX.getValue())
                 && dpix * (getSheetPosition().y - BORDER_CLICK_OFFSET) < mouseY

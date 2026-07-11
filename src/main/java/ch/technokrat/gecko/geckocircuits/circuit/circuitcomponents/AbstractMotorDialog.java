@@ -55,7 +55,7 @@ abstract class AbstractMotorDialog<T extends AbstractMotor> extends DialogElemen
     }
 
     @Override
-    protected final void baueGUIIndividual() {
+    protected final void buildGUIIndividual() {
         JTabbedPane tabber = this.createMotorGUI();
         con.add(tabber, BorderLayout.CENTER);
     }

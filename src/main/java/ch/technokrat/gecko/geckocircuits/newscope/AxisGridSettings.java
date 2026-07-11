@@ -175,7 +175,7 @@ public final class AxisGridSettings{
    * if the charts are drawn in a very small window then
    * The grid lines may need to be hidden to achieve a certain
    * To maintain clarity -->*/
-  public void blendeEventuellGridLinienAus(final int axisLengthPix){
+  public void possiblyHideGridLines(final int axisLengthPix){
     if(_autoGrids){
       if(isUserShowGridMaj() && axisLengthPix > PX2 * PXR){
         _showGridMaj = true;

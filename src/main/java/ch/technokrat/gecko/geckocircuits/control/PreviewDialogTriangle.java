@@ -38,46 +38,46 @@ public class PreviewDialogTriangle extends PreviewDialog {
         final int[] kordY = new int[]{y2, y1, y1 + p1, y1 + p1, y1, y0, y0, y0, y0 - p2, y0 + p2, y0};
         final int[] triX = new int[b], triY = new int[triX.length];
         final int offset = 20, ac = 55, phase = 60;
-        final double duty = 0.2, anteilDC = offset;
+        final double duty = 0.2, dcOffset = offset;
         //------------------
-        double tx = 0, tEnd = b, dt = 1, dreieck = 0;
-        double phaseX = phase * Math.PI / 180.0, amplitudeAC = ac, frequenz = 1.0 / b, tastverhaeltnis = duty;
-        double dyUP = (amplitudeAC * 2 * frequenz * dt) / tastverhaeltnis;
-        double dyDOWN = (amplitudeAC * 2 * frequenz * dt) / (1 - tastverhaeltnis);
-        boolean aufsteigend = true;
+        double tx = 0, tEnd = b, dt = 1, triangle = 0;
+        double phaseX = phase * Math.PI / 180.0, amplitudeAC = ac, frequency = 1.0 / b, dutyRatio = duty;
+        double dyUP = (amplitudeAC * 2 * frequency * dt) / dutyRatio;
+        double dyDOWN = (amplitudeAC * 2 * frequency * dt) / (1 - dutyRatio);
+        boolean rising = true;
         while (tx < (tEnd * phaseX / (2 * Math.PI))) {
-            if (aufsteigend) {
-                dreieck += dyUP;
+            if (rising) {
+                triangle += dyUP;
             } else {
-                dreieck -= dyDOWN;
+                triangle -= dyDOWN;
             }
-            if (dreieck >= +amplitudeAC) {
-                dreieck = +amplitudeAC;
-                aufsteigend = false;
-            } else if (dreieck <= -amplitudeAC) {
-                dreieck = -amplitudeAC;
-                aufsteigend = true;
+            if (triangle >= +amplitudeAC) {
+                triangle = +amplitudeAC;
+                rising = false;
+            } else if (triangle <= -amplitudeAC) {
+                triangle = -amplitudeAC;
+                rising = true;
             }
             tx += dt;
         }
-        dreieck = -dreieck;  // // Starting value for the actual calculation
+        triangle = -triangle;  // // Starting value for the actual calculation
         int i1 = 0;
         tx = 0;
         while (tx < tEnd) {
-            if (aufsteigend) {
-                dreieck += dyUP;
+            if (rising) {
+                triangle += dyUP;
             } else {
-                dreieck -= dyDOWN;
+                triangle -= dyDOWN;
             }
-            if (dreieck >= +amplitudeAC) {
-                dreieck = +amplitudeAC;
-                aufsteigend = false;
-            } else if (dreieck <= -amplitudeAC) {
-                dreieck = -amplitudeAC;
-                aufsteigend = true;
+            if (triangle >= +amplitudeAC) {
+                triangle = +amplitudeAC;
+                rising = false;
+            } else if (triangle <= -amplitudeAC) {
+                triangle = -amplitudeAC;
+                rising = true;
             }
             triX[i1] = x0 + i1;
-            triY[i1] = y0 - (int) (dreieck + anteilDC);
+            triY[i1] = y0 - (int) (triangle + dcOffset);
             tx += dt;
             i1++;
         }

@@ -57,7 +57,7 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
     private static final int IN_TERM_NUMBER_EXTERNAL = 5;
     private static final int IN_TERM_NUMBER_NORMAL = 0;
     private static final int BLOCK_WIDTH = 3;
-    transient final UserParameter<ControlSourceType> _typQuelle = UserParameter.Builder.
+    transient final UserParameter<ControlSourceType> _sourceType = UserParameter.Builder.
             <ControlSourceType>start("typQuelle", ControlSourceType.QUELLE_RECHTECK).
             longName(I18nKeys.TYPE_OF_SIGNAL_SOURCE).
             shortName("type").
@@ -116,7 +116,7 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
             build();
     private double[][] _xy;  // // Imported ZV (as ASCII file)
     private String _datnamXY = GlobalFilePathes.DATNAM_NOT_DEFINED;
-    // for TRI, RECHT-states we simple store variables 'aufsteigend' and '_dreieck'
+    // for TRI, RECHT-states we simple store variables '_rising' and '_triangle'
     private transient GeckoFile _externalDataFile = null;
     private long _externalDataFileHashValue = 0;
     private String[] _labelsBeforeFold;
@@ -149,12 +149,12 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
 
     @Override
     protected String getCenteredDrawString() {
-        switch (_typQuelle.getValue()) {
+        switch (_sourceType.getValue()) {
             case QUELLE_DREIECK:
                 return "TRI";
             case QUELLE_IMPORT:
                 return "FILE";
-            case QUELLE_RANDOM:
+            case SOURCE_RANDOM:
                 return "RAND";
             case QUELLE_SIN:
                 return "SINE";
@@ -184,7 +184,7 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
         return _datnamXY;
     }
 
-    private AbstractSignalCalculator fabricSignalCalculator(final ControlSourceType typQuelle) {
+    private AbstractSignalCalculator createSignalCalculator(final ControlSourceType typQuelle) {
         switch (typQuelle) {
             case QUELLE_SIN:
                 return new SignalCalculatorSinus(XIN.size(), _amplitudeAC.getValue(), _frequency.getValue(),
@@ -195,7 +195,7 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
             case QUELLE_RECHTECK:
                 return new SignalCalculatorRectangle(XIN.size(), _amplitudeAC.getValue(), _frequency.getValue(),
                         Math.toRadians(_phase.getValue()), _offsetDC.getValue(), _dutyRatio.getValue());
-            case QUELLE_RANDOM:
+            case SOURCE_RANDOM:
                 return new SignalCalculatorRandom();
             case QUELLE_IMPORT:
                 readExternalDataFromFile();
@@ -208,7 +208,7 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
 
     @Override
     public AbstractControlCalculatable getInternalControlCalculatableForSimulationStart() {
-        final AbstractSignalCalculator calculator = fabricSignalCalculator(_typQuelle.getValue());
+        final AbstractSignalCalculator calculator = createSignalCalculator(_sourceType.getValue());
         if (_useExternal.getValue()) {
             assert calculator instanceof AbstractSignalCalculatorPeriodic;
             return new SignalCalculatorExternalWrapper((AbstractSignalCalculatorPeriodic) calculator);
@@ -255,17 +255,17 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
             return;
         }
 
-        if (_typQuelle.getValue() == ControlSourceType.QUELLE_RANDOM) {
+        if (_sourceType.getValue() == ControlSourceType.SOURCE_RANDOM) {
             final String typus = "Random";
             _textInfo.addParameter(typus);
-        } else if (_typQuelle.getValue() == ControlSourceType.QUELLE_IMPORT) {
+        } else if (_sourceType.getValue() == ControlSourceType.QUELLE_IMPORT) {
             addImportParameters();
         } else {
             if (_displayDetails.getValue()) {
                 addDetailedTextInfo();
             } else {
                 final StringBuffer typus = new StringBuffer("I");
-                switch (_typQuelle.getValue()) {
+                switch (_sourceType.getValue()) {
                     case QUELLE_SIN:
                         typus.append("_sin");
                         break;
@@ -421,8 +421,8 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
 
     @Override
     protected Window openDialogWindow() {
-        switch (_typQuelle.getValue()) {
-            case QUELLE_RANDOM:
+        switch (_sourceType.getValue()) {
+            case SOURCE_RANDOM:
                 return new ControlRandomDialog(this);
             case QUELLE_IMPORT:
                 return new ControlImportDialog(this);
@@ -434,11 +434,11 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
 
     private void addDetailedTextInfo() {
         String typus = null;
-        if (_typQuelle.getValue() == ControlSourceType.QUELLE_SIN) {
+        if (_sourceType.getValue() == ControlSourceType.QUELLE_SIN) {
             typus = "Sin.-Type";
-        } else if (_typQuelle.getValue() == ControlSourceType.QUELLE_RECHTECK) {
+        } else if (_sourceType.getValue() == ControlSourceType.QUELLE_RECHTECK) {
             typus = "Rect.-Type";
-        } else if (_typQuelle.getValue() == ControlSourceType.QUELLE_DREIECK) {
+        } else if (_sourceType.getValue() == ControlSourceType.QUELLE_DREIECK) {
             typus = "Tri.-Type";
         }
         _textInfo.addParameter(typus);
@@ -447,7 +447,7 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
         _textInfo.addParameter("offset= " + tcf.formatENG(_offsetDC.getValue(), DISP_DIGITS));
         final double degreesPhase = _phase.getValue();
         _textInfo.addParameter("phase= " + tcf.formatENG(Math.round(degreesPhase), DISP_DIGITS));
-        if (_typQuelle.getValue() != ControlSourceType.QUELLE_SIN) {
+        if (_sourceType.getValue() != ControlSourceType.QUELLE_SIN) {
             _textInfo.addParameter("duty= " + tcf.formatENG(_dutyRatio.getValue(), DISP_DIGITS));
         }
     }

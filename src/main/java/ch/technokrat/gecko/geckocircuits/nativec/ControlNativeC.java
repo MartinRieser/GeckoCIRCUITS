@@ -226,7 +226,7 @@ public final class ControlNativeC extends ControlBlock implements VariableTermin
     
 
     @Override
-    public int istAngeklickt(final int mouseX, final int mouseY) {
+    public int isClicked(final int mouseX, final int mouseY) {
         if ((xKlickMin <= mouseX) && (mouseX <= xKlickMax) && (yKlickMin <= mouseY) && (mouseY <= yKlickMax)) {
             return 1;  // // SCOPE symbol has been clicked --> Dialog or editing mode
         }
@@ -298,16 +298,16 @@ public final class ControlNativeC extends ControlBlock implements VariableTermin
 
 
         // // Click area red triangles for terminal number change:
-        _inputTri._xKlickMinTerminal = xd2;
-        _inputTri._xKlickMaxTerminal = xd1;
+        _inputTri._xClickMinTerminal = xd2;
+        _inputTri._xClickMaxTerminal = xd1;
         _inputTri._yKlickMinTerminalSUB = yp0;  // // upper triangle --> SUB / reduction of the number of terminals
         _inputTri._yKlickMaxTerminalSUB = yp1;
         _inputTri._yKlickMinTerminalADD = ym1;  // // lower triangle --> ADD / increase the number of terminals
         _inputTri._yKlickMaxTerminalADD = ym0;
 
         // // the same for the outputs:
-        _outputTri._xKlickMinTerminal = xdOUT2;
-        _outputTri._xKlickMaxTerminal = xdOUT1;
+        _outputTri._xClickMinTerminal = xdOUT2;
+        _outputTri._xClickMaxTerminal = xdOUT1;
         _outputTri._yKlickMinTerminalSUB = ypOUT0;  // // upper triangle --> SUB / reduction of the number of terminals
         _outputTri._yKlickMaxTerminalSUB = ypOUT1;
         _outputTri._yKlickMinTerminalADD = ymOUT1;  // // lower triangle --> ADD / increase the number of terminals
@@ -335,14 +335,22 @@ public final class ControlNativeC extends ControlBlock implements VariableTermin
             _clearOutput = tokenMap.readDataLine("clearOutput", _clearOutput);
         }
 
-        if (tokenMap.containsToken("anzXIN")) {
+        if (tokenMap.containsToken("numberInputTerminals")) {
+            int inNumber = XIN.size();
+            inNumber = tokenMap.readDataLine("numberInputTerminals", inNumber);
+            setInputTerminalNumber(inNumber);
+        } else if (tokenMap.containsToken("anzXIN")) {
             int inNumber = XIN.size();
             inNumber = tokenMap.readDataLine("anzXIN", inNumber);
             setInputTerminalNumber(inNumber);
         }
         // these two blocks are for backward-compatibility with versions before 1.60. Here,
         // we have to correct the number of input/output terminals!
-        if (tokenMap.containsToken("anzYOUT")) {
+        if (tokenMap.containsToken("numberOutputTerminals")) {
+            int outNumber = YOUT.size();
+            outNumber = tokenMap.readDataLine("numberOutputTerminals", outNumber);
+            setOutputTerminalNumber(outNumber);
+        } else if (tokenMap.containsToken("anzYOUT")) {
             int outNumber = YOUT.size();
             outNumber = tokenMap.readDataLine("anzYOUT", outNumber);
             setOutputTerminalNumber(outNumber);

@@ -29,7 +29,7 @@ class ControlGainDialog extends DialogElementCONTROL<ControlGain> {
     }
 
     @Override
-    protected void baueGuiIndividual() {
+    protected void buildIndividualGUI() {
         final int bG = 80,
                 hG = 32,
                 abstandG = 15;

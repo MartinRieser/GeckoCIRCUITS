@@ -28,7 +28,7 @@ class TerminalCircuitDialog extends DialogElementLK {
     }
 
     @Override
-    protected void baueGUIIndividual() {
+    protected void buildGUIIndividual() {
         JLabel label = labelFabric("Label:");
         if(terminalLabel == null) {
             terminalLabel = new FormatJTextField();

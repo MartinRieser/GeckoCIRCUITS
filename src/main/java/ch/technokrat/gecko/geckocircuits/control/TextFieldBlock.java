@@ -147,7 +147,7 @@ public final class TextFieldBlock extends AbstractSpecialBlock implements Operat
     }
 
     @Override
-    public int istAngeklickt(final int mouseX, final int mouseY) {
+    public int isClicked(final int mouseX, final int mouseY) {
         if (_xKlickMin < mouseX && mouseX < _xKlickMax
                 && _yKlickMin - 1 < mouseY && mouseY < _yKlickMax) {
             return 1;

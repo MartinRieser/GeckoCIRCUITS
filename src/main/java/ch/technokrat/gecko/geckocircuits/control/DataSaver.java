@@ -63,7 +63,7 @@ public final class DataSaver extends Observable implements Observer {
             throw new RuntimeException("Error: blocking save can only be initiated when simulation has stopped.");
         }
         
-        if(_control._saveModus != ControlSaveData.SaveModus.MANUAL) {
+        if(_control._saveMode != ControlSaveData.SaveMode.MANUAL) {
             throw new RuntimeException("Error: Data export block must be set to \"Save manually.\"");
         }
         _saveRunnable.run();
@@ -75,7 +75,7 @@ public final class DataSaver extends Observable implements Observer {
 
     @Override
     public void update(final Observable obs, final Object arg) {
-        if (_control._saveModus == ControlSaveData.SaveModus.SIMULATION_END) {
+        if (_control._saveMode == ControlSaveData.SaveMode.SIMULATION_END) {
             if (_data.getContainerStatus() == ContainerStatus.PAUSED) {
                 final Thread runThread = new Thread(_saveRunnable);
                 runThread.start();
@@ -114,7 +114,7 @@ public final class DataSaver extends Observable implements Observer {
     }
 
     private void initSettings() {
-        switch (_control._saveModus) {
+        switch (_control._saveMode) {
             case SIMULATION_END:
                 _data.addObserver(this);
                 break;
@@ -134,7 +134,7 @@ public final class DataSaver extends Observable implements Observer {
         @Override
         public void run() {
             try {
-                if (_control._saveModus == ControlSaveData.SaveModus.SIMULATION_END) {
+                if (_control._saveMode == ControlSaveData.SaveMode.SIMULATION_END) {
                     initSave(_data);
                     doFullSave(_data);
                     try {

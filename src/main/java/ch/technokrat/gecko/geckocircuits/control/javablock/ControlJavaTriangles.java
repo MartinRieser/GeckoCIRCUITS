@@ -19,16 +19,16 @@ package ch.technokrat.gecko.geckocircuits.control.javablock;
  * @author andreas
  */
 public class ControlJavaTriangles {
-       public int _xKlickMinTerminal, _xKlickMaxTerminal, _yKlickMinTerminalADD, _yKlickMaxTerminalADD,
+       public int _xClickMinTerminal, _xClickMaxTerminal, _yKlickMinTerminalADD, _yKlickMaxTerminalADD,
             _yKlickMinTerminalSUB, _yKlickMaxTerminalSUB;  // // Click areas for red triangles --> change the number of terminals
 
     public boolean isIncreaseClicked(final int mouseX, final int mouseY) {
-        return _xKlickMinTerminal <= mouseX && mouseX <= _xKlickMaxTerminal
+        return _xClickMinTerminal <= mouseX && mouseX <= _xClickMaxTerminal
                 && _yKlickMinTerminalADD <= mouseY && mouseY <= _yKlickMaxTerminalADD;
     }
 
     public boolean isDecreaseClicked(int mouseX, int mouseY) {
-        return _xKlickMinTerminal <= mouseX && mouseX <= _xKlickMaxTerminal
+        return _xClickMinTerminal <= mouseX && mouseX <= _xClickMaxTerminal
                 && _yKlickMinTerminalSUB <= mouseY && mouseY <= _yKlickMaxTerminalSUB;
     }
 }

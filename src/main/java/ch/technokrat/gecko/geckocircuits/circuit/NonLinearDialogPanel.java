@@ -79,8 +79,8 @@ public class NonLinearDialogPanel extends JPanel {
         _type = "nonlinear " + _nonlinearParent.getNonlinearName() + " characteristic";
 
         this.initCharacteristic();
-        baueGUIok();
-        add(this.baueGUIInput(), BorderLayout.CENTER);
+        buildGUIok();
+        add(this.buildGUIInput(), BorderLayout.CENTER);
 
         this.add(lowerPanel, BorderLayout.SOUTH);
         _parentDialog.setTitle(_type);
@@ -114,7 +114,7 @@ public class NonLinearDialogPanel extends JPanel {
         }
     }
 
-    private JPanel baueGUIInput() {
+    private JPanel buildGUIInput() {
         table = new DataTablePanel(new String[]{_nonlinearParent.getIndependentVariableName(),
             _nonlinearParent.getNonlinearNameShort()});
         table.setPreferredSize(new Dimension(150, 100));
@@ -183,7 +183,7 @@ public class NonLinearDialogPanel extends JPanel {
         return jpCOND;
     }
 
-    private void baueGUIok() {
+    private void buildGUIok() {
         lowerPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "", TitledBorder.LEFT, TitledBorder.TOP));
         //---------------
         _jbOK = GuiFabric.getJButton(I18nKeys.OK);

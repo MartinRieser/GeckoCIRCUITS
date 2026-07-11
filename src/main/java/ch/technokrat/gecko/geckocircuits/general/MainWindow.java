@@ -360,7 +360,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     }
 
     // is called after the window dimensions are known:
-    public void aktualisiereDividerSplitPane(int breiteMainWindow) {
+    public void updateDividerSplitPane(int breiteMainWindow) {
         if (split != null) {
             split.setDividerLocation(breiteMainWindow - seaBREITE);
         }
@@ -1081,7 +1081,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         mItemSave.setEnabled(true);
         mItemSaveAs.setEnabled(true);
         mItemSaveView.setEnabled(true);
-        setzeSTATUS("Stopped after  ");
+        setStatus("Stopped after  ");
         pauseSimulation();
         setMenuDuringSimulation(false, true);
 
@@ -1183,7 +1183,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         }
     }
 
-    public void setzeSTATUS(String txt) {
+    public void setStatus(String txt) {
         jtfStatus.setText(txt);
     }
 
@@ -1211,7 +1211,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     }
 
     public void componentResized(ComponentEvent ce) {
-        this.aktualisiereDividerSplitPane(this.getWidth() - seaBREITE);
+        this.updateDividerSplitPane(this.getWidth() - seaBREITE);
     }
 
     public void componentMoved(ComponentEvent ce) {
@@ -1286,7 +1286,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     }
 
     public void external_end(long tStartSimulink, long tEndSimulink) {
-        jtfStatus.setzeStatusRechenzeit(tEndSimulink - tStartSimulink);
+        jtfStatus.setComputeTimeStatus(tEndSimulink - tStartSimulink);
     }
     void copyFile(final File zipFile, final File newFile) {
 

@@ -33,7 +33,7 @@ final class DialogControlVariableInputs extends DialogElementCONTROL<AbstractCon
     }
 
     @Override
-    protected void baueGuiIndividual() {
+    protected void buildIndividualGUI() {
         SpinnerModel spinnerModel = new javax.swing.SpinnerNumberModel(Integer.valueOf(element.XIN.size()),
                 Integer.valueOf(2), null, Integer.valueOf(1));
         _spinnerInputNumber = new JSpinner(spinnerModel);

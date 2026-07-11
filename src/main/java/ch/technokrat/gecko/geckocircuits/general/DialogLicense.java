@@ -48,13 +48,13 @@ public class DialogLicense extends JDialog implements WindowListener, ActionList
         this.sbInfoTxt= sbInfoTxt; 
         this.addWindowListener(this);
         this.setTitle(" Licence Information");
-        this.baueGUI();
+        this.buildGUI();
         this.setSize(240,200);
         this.setResizable(false);
         //------------------------
     }
 
-    private void baueGUI () {
+    private void buildGUI () {
         Container con= this.getContentPane();
         con.setLayout(new BorderLayout());
         //------------------

@@ -33,7 +33,7 @@ class CapacitorDialog extends DialogElementLK<AbstractCapacitor> {
 
     @Override
     @SuppressWarnings("unchecked")
-    protected void baueGUIIndividual() {
+    protected void buildGUIIndividual() {
         final JPanel pIN = createParameterPanel(element._capacitance, element._initialValue);
         
         final JButton jbNonLinC = GuiFabric.getJButton(I18nKeys.DEFINE_CHARACTERISTIC);

@@ -78,7 +78,7 @@ public final class NetlistControl {
         final NetlistControl returnValue = new NetlistControl();
         returnValue.connectPotentialLabels(nlC);
         returnValue.removeMuxAndDemux();
-        returnValue.optimiereAbarbeitungsListe();
+        returnValue.optimizeProcessingList();
         returnValue.setGlobalDatacontainer();
         returnValue.createControlCalculators();
         returnValue.initializeConnections();
@@ -88,7 +88,7 @@ public final class NetlistControl {
     public static List<ControlBlock> getOptimizedList(final NetlistGeneral nlA) {
         final NetlistControl nlC = new NetlistControl();
         nlC.connectPotentialLabels(nlA);
-        nlC.optimiereAbarbeitungsListe();
+        nlC.optimizeProcessingList();
         List<ControlBlock> optimizedList = new ArrayList<ControlBlock>();
         return Arrays.asList(nlC._orderedControlBlocks);
     }
@@ -380,7 +380,7 @@ public final class NetlistControl {
     // // is changed and the NetlistControl is rebuilt, which is also very time-consuming (for large control structures).
     // // Calculation of the component optimization is carried out and the SchematicEntry reacts accordingly to the user
     // 
-    public void optimiereAbarbeitungsListe() {
+    public void optimizeProcessingList() {
         //BlockOrderOptimizerNew blockOrderOtimizerNew = new BlockOrderOptimizerNew(elementsControl);
         //_orderedControlBlocks = blockOrderOtimizerNew.getOptimierteAbarbeitungsListe().toArray(new ControlBlock[0]);
 

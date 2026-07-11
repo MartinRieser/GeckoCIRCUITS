@@ -37,7 +37,7 @@ class InductorDialog extends DialogElementLK<AbstractInductor> {
     }
 
     @Override
-    protected void baueGUIIndividual() {
+    protected void buildGUIIndividual() {
         jcbLossL = new JCheckBox("Calculate Losses");
         JPanel pIN = createParameterPanel(element._inductance, element._initialCurrent);
         

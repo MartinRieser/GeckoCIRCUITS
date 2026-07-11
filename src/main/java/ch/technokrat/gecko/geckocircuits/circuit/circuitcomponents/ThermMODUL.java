@@ -30,7 +30,7 @@ final class ThermMODUL extends AbstractCircuitBlockInterface {
 
     private final double _height;
     // pro befestigtem Halbleiter(modul) gibt es einen Anschluss
-    private double[] _xBef = new double[MAX_INPUT_NO], _yBef = new double[MAX_INPUT_NO];
+    private double[] _xPrev = new double[MAX_INPUT_NO], _yPrev = new double[MAX_INPUT_NO];
     private final int _noOfChips;
     private double _xOUT, _yOUT;  // // there is 1 signal output (heat flow to the cooler)
     // // to draw a cooler (pixel point data measured from ICEPAK screenshot):
@@ -50,11 +50,11 @@ final class ThermMODUL extends AbstractCircuitBlockInterface {
         _noOfChips = 2;  // vorerst einmal
     }
 
-    public int getChipAnzahl() {
+    public int getChipCount() {
         return _noOfChips;
     }
 
-    public void setDateiname(final String datnam) {
+    public void setFileName(final String datnam) {
         _fileName = datnam;
     }
 
@@ -66,10 +66,10 @@ final class ThermMODUL extends AbstractCircuitBlockInterface {
     @Override
     protected void drawConnectorLines(final Graphics2D graphics) {
         for (int i1 = 0; i1 < _noOfChips; i1++) {
-            _xBef[i1] = 0 + 1;
-            _yBef[i1] = 0 - _noOfChips - 1 + i1;
-            graphics.drawLine((int) (dpix * _xBef[i1]), (int) (dpix * _yBef[i1]), dpix * 0 + D_E,
-                    (int) (dpix * _yBef[i1]));
+            _xPrev[i1] = 0 + 1;
+            _yPrev[i1] = 0 - _noOfChips - 1 + i1;
+            graphics.drawLine((int) (dpix * _xPrev[i1]), (int) (dpix * _yPrev[i1]), dpix * 0 + D_E,
+                    (int) (dpix * _yPrev[i1]));
         }
     }
 
@@ -87,22 +87,22 @@ final class ThermMODUL extends AbstractCircuitBlockInterface {
 
     private void drawInputs(final Graphics graphics, final Color color1) {        
         graphics.setColor(Color.lightGray);
-        graphics.fillRect(dpix * getSheetPosition().x - D_E, (int) (dpix * (_yBef[0] - 1 / 2.0)),
-                2 * D_E, (int) (dpix * (_yBef[_noOfChips - 1] - _yBef[0] + 1)));
+        graphics.fillRect(dpix * getSheetPosition().x - D_E, (int) (dpix * (_yPrev[0] - 1 / 2.0)),
+                2 * D_E, (int) (dpix * (_yPrev[_noOfChips - 1] - _yPrev[0] + 1)));
         if (color1.equals(Color.gray)) {
             graphics.setColor(Color.white);
         } else {
             graphics.setColor(Color.darkGray);
         }
-        graphics.drawRect(dpix * getSheetPosition().x - D_E, (int) (dpix * (_yBef[0] - 1 / 2.0)), 2 * D_E,
-                (int) (dpix * (_yBef[_noOfChips - 1] - _yBef[0] + 1)));
+        graphics.drawRect(dpix * getSheetPosition().x - D_E, (int) (dpix * (_yPrev[0] - 1 / 2.0)), 2 * D_E,
+                (int) (dpix * (_yPrev[_noOfChips - 1] - _yPrev[0] + 1)));
         if (color1.equals(Color.gray)) {
             graphics.setColor(Color.lightGray);
         } else {
             graphics.setColor(color1);
         }
         graphics.drawLine(dpix * getSheetPosition().x, dpix * getSheetPosition().y, 
-                dpix * getSheetPosition().x, (int) (dpix * (_yBef[_noOfChips - 1] + 1 / 2.0)));
+                dpix * getSheetPosition().x, (int) (dpix * (_yPrev[_noOfChips - 1] + 1 / 2.0)));
     }
 
     @Override

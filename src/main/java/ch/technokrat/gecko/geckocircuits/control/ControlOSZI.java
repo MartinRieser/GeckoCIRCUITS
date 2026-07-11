@@ -141,12 +141,12 @@ public final class ControlOSZI extends ControlBlock implements VariableTerminalN
         _grafer.refreshComponentPane();
     }
 
-    public AbstractDataContainer getZVDatenImRAM() {
+    public AbstractDataContainer getZVDataInRAM() {
         return _zvDatenRAM;
     }
 
-    public void setTerminalNodeLabel(final String newLabel, final int knotenIndex) {
-        // TODO ??? _zvDatenRAM.setSignalName(knotenIndex, newLabel);
+    public void setTerminalNodeLabel(final String newLabel, final int nodeIndex) {
+        // TODO ??? _zvDatenRAM.setSignalName(nodeIndex, newLabel);
     }
 
     public void setDataContainerIndices(final int[] indices) {                
@@ -159,7 +159,7 @@ public final class ControlOSZI extends ControlBlock implements VariableTerminalN
 
     // // is overwritten by ControlOSZI in order to be able to change the number of terminals directly as an additional functionality
     @Override
-    public int istAngeklickt(final int mouseX, final int mouseY) {
+    public int isClicked(final int mouseX, final int mouseY) {
 
         final boolean symbolClicked = xKlickMin <= mouseX && mouseX <= xKlickMax
                 && yKlickMin <= mouseY && mouseY <= yKlickMax;

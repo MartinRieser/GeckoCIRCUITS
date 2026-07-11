@@ -23,15 +23,15 @@ public enum MethodCategory {
     COMPONENT_CREATION_LISTING(I18nKeys.COMPONENT_CREATION),
     ALL_CATEGORIES(I18nKeys.ALL_CATEGORIES);
     
-    private I18nKeys _tranlsationKey;
+    private I18nKeys _translationKey;
 
     private MethodCategory(final I18nKeys translationKey) {
-        _tranlsationKey = translationKey;
+        _translationKey = translationKey;
     }    
 
     @Override
     public String toString() {
-        return _tranlsationKey.getTranslation();
+        return _translationKey.getTranslation();
     }
     
     

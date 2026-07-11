@@ -21,7 +21,7 @@ class ControlGateDialog extends DialogElementCONTROL<ControlGate> {
     }
 
     @Override
-    protected void baueGuiIndividual() {
+    protected void buildIndividualGUI() {
         jpM = createComponentCouplingPanel(element);
     }
 }

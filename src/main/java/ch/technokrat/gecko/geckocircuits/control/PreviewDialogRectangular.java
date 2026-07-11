@@ -38,53 +38,53 @@ public class PreviewDialogRectangular extends PreviewDialog {
         final int[] kordY = new int[]{y2, y1, y1 + p1, y1 + p1, y1, y0, y0, y0, y0 - p2, y0 + p2, y0};
         final int[] triX = new int[b], triY = new int[triX.length];
         final int offset = 20, ac = 55, phase = 60, q2 = ac / 2 - 7;
-        final double duty = 0.2, anteilDC = offset;
+        final double duty = 0.2, dcOffset = offset;
         //------------------
-        double tx = 0, tEnd = b, dt = 1, dreieck = 0;
-        double phaseX = phase * Math.PI / 180.0, amplitudeAC = ac, frequenz = 1.0 / b, tastverhaeltnis = duty;
-        double tE = tEnd * phaseX / (2 * Math.PI) - (1 - 2 * tastverhaeltnis) / (4 * frequenz);
+        double tx = 0, tEnd = b, dt = 1, triangle = 0;
+        double phaseX = phase * Math.PI / 180.0, amplitudeAC = ac, frequency = 1.0 / b, dutyRatio = duty;
+        double tE = tEnd * phaseX / (2 * Math.PI) - (1 - 2 * dutyRatio) / (4 * frequency);
         if (tE < 0) {
             tE += tEnd;
         }
-        double dyUP = (2 * frequenz * dt) / 0.5;
-        double dyDOWN = (2 * frequenz * dt) / (1 - 0.5);
-        boolean aufsteigend = true;
+        double dyUP = (2 * frequency * dt) / 0.5;
+        double dyDOWN = (2 * frequency * dt) / (1 - 0.5);
+        boolean rising = true;
         while (tx < tE) {
-            if (aufsteigend) {
-                dreieck += dyUP;
+            if (rising) {
+                triangle += dyUP;
             } else {
-                dreieck -= dyDOWN;
+                triangle -= dyDOWN;
             }
-            if (dreieck >= (+1)) {
-                dreieck = (+1);
-                aufsteigend = false;
-            } else if (dreieck <= (-1)) {
-                dreieck = (-1);
-                aufsteigend = true;
+            if (triangle >= (+1)) {
+                triangle = (+1);
+                rising = false;
+            } else if (triangle <= (-1)) {
+                triangle = (-1);
+                rising = true;
             }
             tx += dt;
         }
-        dreieck = -dreieck;
+        triangle = -triangle;
         int i1 = 0;
         tx = 0;
         while (tx < tEnd) {
-            if (aufsteigend) {
-                dreieck += dyUP;
+            if (rising) {
+                triangle += dyUP;
             } else {
-                dreieck -= dyDOWN;
+                triangle -= dyDOWN;
             }
-            if (dreieck >= (+1)) {
-                dreieck = (+1);
-                aufsteigend = false;
-            } else if (dreieck <= (-1)) {
-                dreieck = (-1);
-                aufsteigend = true;
+            if (triangle >= (+1)) {
+                triangle = (+1);
+                rising = false;
+            } else if (triangle <= (-1)) {
+                triangle = (-1);
+                rising = true;
             }
             triX[i1] = x0 + i1;
-            if (dreieck > 1 - 2 * tastverhaeltnis) {
-                triY[i1] = y0 - (int) (amplitudeAC + anteilDC);
+            if (triangle > 1 - 2 * dutyRatio) {
+                triY[i1] = y0 - (int) (amplitudeAC + dcOffset);
             } else {
-                triY[i1] = y0 - (int) (anteilDC);
+                triY[i1] = y0 - (int) (dcOffset);
             }
             try {
                 if (triY[i1] != triY[i1 - 1]) {

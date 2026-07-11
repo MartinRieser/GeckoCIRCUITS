@@ -1245,7 +1245,7 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
         if (_selectedComponents.size() != 1) {
             return;
         }
-        ((Connection) _selectedComponents.iterator().next()).setzeEndKnoten(clickPoint.x, clickPoint.y);
+        ((Connection) _selectedComponents.iterator().next()).setEndNode(clickPoint.x, clickPoint.y);
         NetListLK.fabricExcludingSubcircuits(getConnection(ConnectorType.LK_AND_RELUCTANCE), getElementLK());
         NetListLK.fabricExcludingSubcircuits(getConnection(ConnectorType.THERMAL), getElementTHERM());
         NetlistGeneral.fabricNetzlistComplete(getConnection(ConnectorType.CONTROL), getElementCONTROL());
@@ -1264,7 +1264,7 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
         AbstractUndoGenericModel.undoManager.addEdit(verbAction);
         verbindungAKTUELL.setParentCircuitSheet(_visibleCircuitSheet);
         _selectedComponents.add(verbindungAKTUELL);
-        verbindungAKTUELL.setzeStartKnoten(clickPoint);
+        verbindungAKTUELL.setStartNode(clickPoint);
     }
 
     public void mouseMoved(MouseEvent me) {
@@ -1296,7 +1296,7 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
             case DRAW_CONNECTION:
                 assert _selectedComponents.size() == 1;
                 Connection verbindungAKTUELL = (Connection) _selectedComponents.iterator().next();
-                verbindungAKTUELL.setzeAktuellenPunktAufConnection(new Point(px, py));
+                verbindungAKTUELL.setCurrentPointOnConnection(new Point(px, py));
                 break;
             case MOVE_COMPONENTS:
                 if (!_selectedComponents.isEmpty()) {
@@ -1314,7 +1314,7 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
 
     public Connection externalCreateAndPlaceNewConnector(String elementName, int xStart, int yStart, int xEnd, int yEnd, boolean startHorizontal) {
         Connection connector = new Connection(ConnectorType.NONE, _circuitSheet);
-        connector.setzeStartKnoten(new Point(xStart, yStart));
+        connector.setStartNode(new Point(xStart, yStart));
 
         int xLength = xEnd - xStart;
         int yLength = yEnd - yStart;
@@ -1334,21 +1334,21 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
 
         if (startHorizontal) {
             for (; Math.abs(i-xLength) > 0; i += xDir) {
-                connector.setzeAktuellenPunktAufConnection(new Point(xStart + i, yStart+j));                
+                connector.setCurrentPointOnConnection(new Point(xStart + i, yStart+j));                
             }
             for (; Math.abs(j-yLength) > 0; j += yDir) {
-                connector.setzeAktuellenPunktAufConnection(new Point(xStart + i, yStart + j));
+                connector.setCurrentPointOnConnection(new Point(xStart + i, yStart + j));
             }
         } else {
             for (; Math.abs(j-yLength) > 0; j += yDir) {
-                connector.setzeAktuellenPunktAufConnection(new Point(xStart + i, yStart + j));
+                connector.setCurrentPointOnConnection(new Point(xStart + i, yStart + j));
             }
             for (; Math.abs(i-xLength) > 0; i += xDir) {
-                connector.setzeAktuellenPunktAufConnection(new Point(xStart + i, yStart+j));
+                connector.setCurrentPointOnConnection(new Point(xStart + i, yStart+j));
             }
         }
 
-        connector.setzeEndKnoten(xStart + i, yStart + j);
+        connector.setEndNode(xStart + i, yStart + j);
 
         CircuitSheet parentSheet = _circuitSheet.findSubCircuit(elementName);
         connector.setParentCircuitSheet(parentSheet);

@@ -92,12 +92,12 @@ public class DialogFourierDiagramm extends JDialog implements ComponentListener 
         setTitle("Fourier Transform Diagram");
         getContentPane().setLayout(new BorderLayout());
         buildToolbar();
-        baueGUI();
+        buildGUI();
         pack();
         addComponentListener(this);
     }
 
-    private void baueGUI() {
+    private void buildGUI() {
         tabbedPane = new JTabbedPane();
         diagrams = new FourierDiagramm[_worksheet.getRowLength()+1];
         sheet = new DisplayFourierWorksheet[_worksheet.getRowLength()+1];
@@ -253,7 +253,7 @@ public class DialogFourierDiagramm extends JDialog implements ComponentListener 
         //--------------------
     }
 
-    private int yAxisType = GraferV3.ACHSE_LIN;
+    private int yAxisType = GraferV3.AXIS_LINEAR;
 
     private void updateMouseMode(final ActionEvent actionEvent) {
         //--------------------
@@ -283,17 +283,17 @@ public class DialogFourierDiagramm extends JDialog implements ComponentListener 
                 mouseMode = GraferImplementation.MAUSMODUS_WERTANZEIGE_SCHIEBER;
                 break;
             case 4:
-                if(yAxisType == GraferV3.ACHSE_LIN) {
-                   yAxisType = GraferV3.ACHSE_LOG;
+                if(yAxisType == GraferV3.AXIS_LINEAR) {
+                   yAxisType = GraferV3.AXIS_LOGARITHMIC;
                    mouseButtons[4].setIcon(iconON[4]);
                 } else {
-                    yAxisType = GraferV3.ACHSE_LIN;
+                    yAxisType = GraferV3.AXIS_LINEAR;
                     mouseButtons[4].setIcon(iconOFF[4]);
                 }
 
                 for (int i = 0; i < diagrams.length; i++) {
                     if (diagrams[i] != null) {
-                        diagrams[i].setzeAchsenTyp(new int[]{GraferV3.ACHSE_LIN}, new int[]{yAxisType});
+                        diagrams[i].setzeAchsenTyp(new int[]{GraferV3.AXIS_LINEAR}, new int[]{yAxisType});
                         diagrams[i].repaint();
                     }
 

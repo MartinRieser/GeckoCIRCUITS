@@ -32,7 +32,7 @@ class ControlIntegratorDialog extends DialogElementCONTROL<ControlIntegrator> {
 
     @SuppressWarnings("unchecked")
     @Override
-    protected void baueGuiIndividual() {
+    protected void buildIndividualGUI() {
         JComponent compIm2 = getImageComponent();
         JPanel pIm2 = new JPanel();
         pIm2.setLayout(new BorderLayout());

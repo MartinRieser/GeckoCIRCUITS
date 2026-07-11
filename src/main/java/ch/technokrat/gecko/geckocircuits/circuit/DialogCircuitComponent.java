@@ -188,7 +188,7 @@ abstract public class DialogCircuitComponent<T extends AbstractBlockInterface> e
     public void setVisible(boolean b) {
         this.setTitle(" " + element.getTypeDescription().getTranslation());
         this.setBackground(Color.lightGray);
-        this.baueGUI();
+        this.buildGUI();
         this.pack();        
         this.setResizable(true);
         getRootPane().setDefaultButton(jButtonOk);
@@ -212,7 +212,7 @@ abstract public class DialogCircuitComponent<T extends AbstractBlockInterface> e
         _se._visibleCircuitSheet.requestFocus();
     }
 
-    public abstract void baueGUI();
+    public abstract void buildGUI();
 
     public final void setNewElementName() throws NameAlreadyExistsException {
         _originalName = element.getStringID();

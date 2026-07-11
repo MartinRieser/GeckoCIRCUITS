@@ -85,7 +85,7 @@ public class DialogAbout extends JDialog {
         }
 
         this.setTitle(" About");
-        this.baueGUI();
+        this.buildGUI();
         this.pack();
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     }
@@ -96,7 +96,7 @@ public class DialogAbout extends JDialog {
      * Creates the layout containing the logo, version information,
      * build number, release date, license information, and an OK button.
      */
-    private void baueGUI() {
+    private void buildGUI() {
         Container con = this.getContentPane();
         con.setLayout(new BorderLayout());
 

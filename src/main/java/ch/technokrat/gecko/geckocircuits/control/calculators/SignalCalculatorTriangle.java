@@ -15,8 +15,8 @@ package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 public final class SignalCalculatorTriangle extends AbstractSignalCalculatorPeriodic {    
     public SignalCalculatorTriangle(final int noInputs, final double amplitudeAC, final double frequency,
-            final double phase, final double anteilDC, final double duty) {
-        super(noInputs, amplitudeAC, frequency, phase, anteilDC, duty);        
+            final double phase, final double dcOffset, final double duty) {
+        super(noInputs, amplitudeAC, frequency, phase, dcOffset, duty);        
     }    
     
     /**
@@ -29,7 +29,7 @@ public final class SignalCalculatorTriangle extends AbstractSignalCalculatorPeri
             final double dyUPx = (_amplitudeAC * 2 * _frequency * dtx) / _dutyRatio;
             final double dyDOWNx = (_amplitudeAC * 2 * _frequency * dtx) / (1 - _dutyRatio);
                         
-            if (_aufsteigend) {
+            if (_rising) {
                 _triangle += dyUPx;
             } else {
                 _triangle -= dyDOWNx;
@@ -37,10 +37,10 @@ public final class SignalCalculatorTriangle extends AbstractSignalCalculatorPeri
             if (_amplitudeAC != 0) {  // // at t==0 there can be confusion here!
                 if (_triangle >= _amplitudeAC) {
                     _triangle = _amplitudeAC;
-                    _aufsteigend = false;
+                    _rising = false;
                 } else if (_triangle <= -_amplitudeAC) {
                     _triangle = -_amplitudeAC;
-                    _aufsteigend = true;
+                    _rising = true;
                 }
             }
             txValue += dtx;
@@ -55,7 +55,7 @@ public final class SignalCalculatorTriangle extends AbstractSignalCalculatorPeri
         _dyDOWN = (_amplitudeAC * 2 * _frequency * deltaT) / (1 - _dutyRatio);
                         
         
-        if (_aufsteigend) {
+        if (_rising) {
             _triangle += _dyUP;
         } else {
             _triangle -= _dyDOWN;
@@ -64,12 +64,12 @@ public final class SignalCalculatorTriangle extends AbstractSignalCalculatorPeri
         if (_amplitudeAC != 0) {  // // at t==0 there can be confusion here!
             if (_triangle >= +_amplitudeAC) {
                 _triangle = +_amplitudeAC;
-                _aufsteigend = false;
+                _rising = false;
             } else if (_triangle <= -_amplitudeAC) {
                 _triangle = -_amplitudeAC;
-                _aufsteigend = true;
+                _rising = true;
             }
         }
-        _outputSignal[0][0] = _triangle + _anteilDC;
+        _outputSignal[0][0] = _triangle + _dcOffset;
     }
 }

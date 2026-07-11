@@ -227,11 +227,11 @@ public final class GraferV4 extends JPanel {
 
 
         if (yAxisLog) {
-            diag._yAxis1.setAxisType(AxisLinLog.ACHSE_LOG);
+            diag._yAxis1.setAxisType(AxisLinLog.AXIS_LOGARITHMIC);
         }
 
         if (xAxisLog) {
-            diag._xAxis.setAxisType(AxisLinLog.ACHSE_LOG);
+            diag._xAxis.setAxisType(AxisLinLog.AXIS_LOGARITHMIC);
         }
 
         final Stack<AbstractScopeSignal> inputSignals = new Stack<AbstractScopeSignal>();
@@ -267,11 +267,11 @@ public final class GraferV4 extends JPanel {
 
 
         if (yAxisLog) {
-            diag._yAxis1.setAxisType(AxisLinLog.ACHSE_LOG);
+            diag._yAxis1.setAxisType(AxisLinLog.AXIS_LOGARITHMIC);
         }
 
         if (xAxisLog) {
-            diag._xAxis.setAxisType(AxisLinLog.ACHSE_LOG);
+            diag._xAxis.setAxisType(AxisLinLog.AXIS_LOGARITHMIC);
         }
 
         final Stack<AbstractScopeSignal> inputSignals = new Stack<AbstractScopeSignal>();

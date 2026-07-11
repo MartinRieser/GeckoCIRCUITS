@@ -100,7 +100,7 @@ abstract class DetailledLossPanel<T extends LossCurve> extends JPanel {
         _listenerActive = true;
     }
 
-    final void baueGUI() {
+    final void buildGUI() {
         
         _jPanelCurvesSelection = new JPanel();
         _jPanelCurvesSelection.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Edit Curves", TitledBorder.LEFT, TitledBorder.TOP));

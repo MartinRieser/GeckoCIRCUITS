@@ -56,7 +56,7 @@ class AbstractCircuitSourceDialog extends DialogElementLK<AbstractCircuitSource>
     }
 
     @Override
-    void baueGUIIndividual() {
+    void buildGUIIndividual() {
         
         String labelText1 = "";        
         

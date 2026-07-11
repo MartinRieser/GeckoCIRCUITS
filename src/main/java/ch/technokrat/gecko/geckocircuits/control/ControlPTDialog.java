@@ -35,7 +35,7 @@ class ControlPTDialog extends DialogElementCONTROL<AbstractControlPT> {
     }
 
     @Override
-    protected void baueGuiIndividual() {
+    protected void buildIndividualGUI() {
         jpM = new JPanel();
         jpM.setLayout(new BorderLayout());
         jpM.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), 

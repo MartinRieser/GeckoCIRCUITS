@@ -27,7 +27,7 @@ class ControlTerminalDialog extends DialogElementCONTROL<ControlTERMINAL> {
     }
 
     @Override
-    protected void baueGuiIndividual() {
+    protected void buildIndividualGUI() {
         JLabel label = new JLabel("Label:");
         terminalLabel = new FormatJTextField();
         terminalLabel.setText(element.XIN.get(0).getLabelObject().getLabelString());

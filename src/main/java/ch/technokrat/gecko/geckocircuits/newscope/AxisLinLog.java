@@ -15,8 +15,8 @@ package ch.technokrat.gecko.geckocircuits.newscope;
 
 enum AxisLinLog {
 
-    ACHSE_LIN(-111111114),
-    ACHSE_LOG(-111111115);
+    AXIS_LINEAR(-111111114),
+    AXIS_LOGARITHMIC(-111111115);
     private int _code;
 
     AxisLinLog(final int code) {
@@ -42,6 +42,6 @@ enum AxisLinLog {
                 return val;
             }
         }
-        return AxisLinLog.ACHSE_LIN;
+        return AxisLinLog.AXIS_LINEAR;
     }
 };

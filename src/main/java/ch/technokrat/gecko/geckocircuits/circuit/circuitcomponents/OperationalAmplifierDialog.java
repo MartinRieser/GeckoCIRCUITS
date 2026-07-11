@@ -36,7 +36,7 @@ final class OperationalAmplifierDialog extends DialogElementLK<OperationalAmplif
     }
 
     @Override
-    protected void baueGUIIndividual() {
+    protected void buildGUIIndividual() {
         JTabbedPane tabberOPV1 = this.createGUI_OPV1();
         con.add(tabberOPV1, BorderLayout.CENTER);
 

@@ -82,14 +82,14 @@ public class DialogSimParameter extends JDialog implements ActionListener {
         }
 
         this.setTitle(" Simulation Parameters");
-        this.baueGUI();
+        this.buildGUI();
         //this.pack();
         this.setSize(260, 340);
         this.setResizable(false);
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     }
 
-    private void baueGUI() {
+    private void buildGUI() {
         //------------------------
         JButton knOK = GuiFabric.getJButton(I18nKeys.OK);
 

@@ -190,7 +190,7 @@ public abstract class ControlBlock extends AbstractBlockInterface {
      * @return
      */
     @Override
-    public int istAngeklickt(final int mousePixelX, final int mousePixelY) {
+    public int isClicked(final int mousePixelX, final int mousePixelY) {
         if (((xKlickMin <= mousePixelX) && (mousePixelX <= xKlickMax)
                 && (yKlickMin <= mousePixelY) && (mousePixelY <= yKlickMax))) {
             return 1;

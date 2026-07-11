@@ -27,7 +27,7 @@ class ResistorDialog extends DialogElementLK<AbstractResistor> {
     }
 
     @Override
-    protected void baueGUIIndividual() {
+    protected void buildGUIIndividual() {
         JPanel pIN = createParameterPanel(element._resistance);
 
 

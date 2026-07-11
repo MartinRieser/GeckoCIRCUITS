@@ -45,7 +45,7 @@ public final class ControlGlobalTerminal extends ControlBlock implements GlobalT
     }
 
     @Override
-    public int istAngeklickt(final int mouseX, final int mouseY) {
+    public int isClicked(final int mouseX, final int mouseY) {
         if (((getSheetPosition().x * dpix - dpix / 2 <= mouseX) && mouseX <= (getSheetPosition().x * dpix + dpix / 2)
                 && (getSheetPosition().y * dpix - dpix / 2 <= mouseY) && (mouseY <= getSheetPosition().y * dpix + dpix / 2))) {
             return 1;

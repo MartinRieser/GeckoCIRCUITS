@@ -309,7 +309,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         this.setzeAchsen();  // // the default values ​​of the axes are defined and properly prepared and passed on to GraferV3, the tick parameters were determined in 'initAutotickSpacing()'
         this.setzeKurven();  // // the default values ​​of the curves (defined in 'setDefault_ZVs') are properly prepared and passed on to GraferV3
         //--------------------------
-        this.blendeEventuellGridLinienAus();
+        this.possiblyHideGridLines();
         this.repaint();
     }
 
@@ -736,9 +736,9 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         //
         for (int i2 = 0; i2 < _zvCounter; i2++) {
             final double xValue = worksheetDaten.getValue(kurve_index_worksheetKolonnen_XY[i1][0], i2);
-            if (xAchseTyp[indexZurKurveGehoerigeXachse[i1]] == ACHSE_LIN) {
+            if (xAchseTyp[indexZurKurveGehoerigeXachse[i1]] == AXIS_LINEAR) {
                 xPix[i2] = x0Kurve + (int) (sfX[indexZurKurveGehoerigeXachse[i1]] * (xValue - achseXmin[indexZurKurveGehoerigeXachse[i1]]));
-            } else if ((xAchseTyp[indexZurKurveGehoerigeXachse[i1]] == ACHSE_LOG)) {
+            } else if ((xAchseTyp[indexZurKurveGehoerigeXachse[i1]] == AXIS_LOGARITHMIC)) {
                 xPix[i2] = x0Kurve + (int) (sfX[indexZurKurveGehoerigeXachse[i1]] * lg10(xValue / achseXmin[indexZurKurveGehoerigeXachse[i1]]));
             }
             //------------------
@@ -1460,13 +1460,13 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         this.setAxisWidthHeightX0Y0(laenge_xAchse, laenge_yAchse, posX_xAchse, posY_xAchse, posX_yAchse, posY_yAchse);
         //-------------
         try {
-            this.blendeEventuellGridLinienAus();
+            this.possiblyHideGridLines();
         } catch (NullPointerException e) {
             Logger.getLogger(GraferImplementation.class.getName()).log(Level.SEVERE, "Nullpointer-Exception after resizing.");
         }
     }
 
-    public void blendeEventuellGridLinienAus() {
+    public void possiblyHideGridLines() {
         //-------------------------------------
         // // if the diagrams are drawn in a very small window, then the grid lines may need to be hidden,
         // // to maintain a certain level of clarity -->
@@ -1882,14 +1882,14 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         }
         //-------------------
         double xWert = -1, yWert = -1;
-        if (xAchseTyp_ == ACHSE_LOG) {
+        if (xAchseTyp_ == AXIS_LOGARITHMIC) {
             xWert = achseXmin_ * Math.pow(10.0, ((xPix - xAchseX_) / sfX_));
-        } else if (xAchseTyp_ == ACHSE_LIN) {
+        } else if (xAchseTyp_ == AXIS_LINEAR) {
             xWert = achseXmin_ + (xPix - xAchseX_) / sfX_;
         }
-        if (yAchseTyp_ == ACHSE_LOG) {
+        if (yAchseTyp_ == AXIS_LOGARITHMIC) {
             yWert = achseYmin_ * Math.pow(10.0, ((yAchseY_ - yPix) / sfY_));
-        } else if (yAchseTyp_ == ACHSE_LIN) {
+        } else if (yAchseTyp_ == AXIS_LINEAR) {
             yWert = achseYmin_ + (yAchseY_ - yPix) / sfY_;
         }
         return new double[]{xWert, yWert, indexYAchse};
@@ -1911,15 +1911,15 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             final int yAchseTyp_ = yAchseTyp[index_yAchse];
             //-------------------
             int xPix = -1, yPix = -1;
-            if (xAchseTyp_ == ACHSE_LOG) {
+            if (xAchseTyp_ == AXIS_LOGARITHMIC) {
                 xPix = (int) (sfX_ * Math.log10(xWert / achseXminLok) + xAchseXLok);
 
-            } else if (xAchseTyp_ == ACHSE_LIN) {
+            } else if (xAchseTyp_ == AXIS_LINEAR) {
                 xPix = (int) ((xWert - achseXminLok) * sfX_ + xAchseXLok);
             }
-            if (yAchseTyp_ == ACHSE_LOG) {
+            if (yAchseTyp_ == AXIS_LOGARITHMIC) {
                 yWert = achseYmin_ * Math.pow(10.0, ((yAchseY_ - yPix) / sfY_));
-            } else if (yAchseTyp_ == ACHSE_LIN) {
+            } else if (yAchseTyp_ == AXIS_LINEAR) {
                 yPix = (int) (yAchseY_ - (yWert - achseYmin_) * sfY_);
             }
             return new int[]{xPix, yPix};
@@ -2194,7 +2194,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
 
             // // x1 and x2 describe the area boundaries --> load RAM data -->
             final int lg1 = worksheetDaten.getRowLength(), lg2 = worksheetDaten.getColumnLength();
-            final DataContainer wsRAM = _scope.getZVDatenImRAM();  // hochaufloesende Daten im RAM
+            final DataContainer wsRAM = _scope.getZVDataInRAM();  // hochaufloesende Daten im RAM
             int estimatedIndex = (int) (_zvCounter * 1.0 / lg2 * wsRAM.getColumnLength());
             //-------------
             // entsprechende Bereichsgrenzen in RAM-Daten finden -->
@@ -2322,7 +2322,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             }
             //-------------
             // // Update ZV data in the worksheet display -->
-            _scope.ladeWorkSheet();
+            _scope.loadWorkSheet();
 
             //-------------
             //System.out.println("x1RAM= "+x1RAM+"\tx2RAM= "+x2RAM);

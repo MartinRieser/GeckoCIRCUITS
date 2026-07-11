@@ -70,7 +70,7 @@ class ControlSlidingDFTDialog extends DialogElementCONTROL<ControlSlidingDFT> {
     }
 
     @Override
-    void baueGuiIndividual() {
+    void buildIndividualGUI() {
         jpM = new JPanel();
         jpM.setLayout(new BorderLayout());
         jpM.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),

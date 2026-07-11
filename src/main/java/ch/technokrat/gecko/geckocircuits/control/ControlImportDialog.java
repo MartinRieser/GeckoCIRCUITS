@@ -46,7 +46,7 @@ class ControlImportDialog extends DialogElementCONTROL<ControlSignalSource>{
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
-    void baueGuiIndividual() {     
+    void buildIndividualGUI() {     
         JTextArea jtx = new JTextArea();
         jtx.setForeground(GlobalColors.LAB_COLOR_DIALOG_1);
         jtx.setText("Data Format (Space-Separator)[ time  -  value ]");

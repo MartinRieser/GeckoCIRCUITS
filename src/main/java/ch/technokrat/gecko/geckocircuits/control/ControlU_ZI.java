@@ -63,15 +63,15 @@ public final class ControlU_ZI extends ControlBlock {
         return new I18nKeys[0];
     }
 
-    public void setTerminalNodeLabel(String q, int knotenIndex) {
+    public void setTerminalNodeLabel(String q, int nodeIndex) {
         // // ... is called by 'setLabelStartNode()' in ElementCONTROL whenever the netlist is updated
         // // current access to the node labels for the SCOPE headers -->
         if (header == null) {
             header = new String[tnX + 1];
         }
-        header[knotenIndex + 1] = q;
-        if (header[knotenIndex + 1].equals(new String(""))) {
-            header[knotenIndex + 1] = "sg." + (knotenIndex + 1);
+        header[nodeIndex + 1] = q;
+        if (header[nodeIndex + 1].equals(new String(""))) {
+            header[nodeIndex + 1] = "sg." + (nodeIndex + 1);
         }
     }
 

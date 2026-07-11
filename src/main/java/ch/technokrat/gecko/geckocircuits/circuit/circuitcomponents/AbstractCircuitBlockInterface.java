@@ -80,7 +80,7 @@ public abstract class AbstractCircuitBlockInterface extends AbstractBlockInterfa
     }
 
     @Override
-    public final int istAngeklickt(final int mouseX, final int mouseY) {
+    public final int isClicked(final int mouseX, final int mouseY) {
         if ((getOuterBounds()[0] <= mouseX)
                 && (mouseX <= getOuterBounds()[2])
                 && (getOuterBounds()[1] <= mouseY)

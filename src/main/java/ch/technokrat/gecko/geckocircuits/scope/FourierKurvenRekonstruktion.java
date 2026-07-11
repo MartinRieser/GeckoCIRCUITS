@@ -43,15 +43,15 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
     private double[] _an, _bn;
     private int bi, hi, X0xi, X0yi, Y0xi, Y0yi;  // Hoehe, Breite, X-u-Y-Koord. des Achsenkreuzes (alles in Pix)
     //-----------------------
-    private int mausModus = GraferImplementation.MAUSMODUS_NIX;
+    private int mouseMode = GraferImplementation.MAUSMODUS_NIX;
     private int x1Zoom, y1Zoom, x2Zoom, y2Zoom;
-    private boolean imDragModus = false;
+    private boolean inDragMode = false;
     // Bereichsgrenzen eines Diagramms bezueglich Maus-Klick:
     private int[] xGrfMIN, xGrfMAX, yGrfMIN, yGrfMAX;
     private int indexAngeklickterGraph = 0;
     //-----------------------
-    private boolean xSchieberAktiv = false;
-    private int xSchieberPix;
+    private boolean xSliderActive = false;
+    private int xSliderPixels;
     private double[] xSchieberWert = new double[]{-1, -1};  // // a single pixel point may have multiple values ​​assigned to it
     private double[] yRefWert = new double[]{-1, -1}, yNeuWert = new double[]{-1, -1};
     private TechFormat cf = new TechFormat();
@@ -168,13 +168,13 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
         //---------------------------------------
     }
 
-    public void setMouseMode(int mausModus) {
-        this.mausModus = mausModus;
+    public void setMouseMode(int mouseMode) {
+        this.mouseMode = mouseMode;
         //---------
-        if (mausModus == GraferImplementation.MAUSMODUS_NIX) {
-            xSchieberAktiv = false;
+        if (mouseMode == GraferImplementation.MAUSMODUS_NIX) {
+            xSliderActive = false;
             repaint();
-        } else if (mausModus == GraferImplementation.MAUSMODUS_ZOOM_AUTOFIT) {
+        } else if (mouseMode == GraferImplementation.MAUSMODUS_ZOOM_AUTOFIT) {
             //------------------------------------
             double ymin = INIT_MIN, ymax = INIT_MAX;
             for (int i1 = 0; i1 < yNeu.length; i1++) {
@@ -195,18 +195,18 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
             this.setzeAchsenBegrenzungen(new double[]{xNeu[0]}, new double[]{xNeu[xNeu.length - 1]}, new boolean[]{true}, new double[]{empf[0]}, new double[]{empf[1]}, new boolean[]{true});
             this.setzeTickSpacing(new double[]{(0.2 / f1)}, new double[]{empf[4]});
             repaint();
-        } else if (mausModus == GraferImplementation.MAUSMODUS_ZOOM_FENSTER) {
-        } else if (mausModus == GraferImplementation.MAUSMODUS_WERTANZEIGE_SCHIEBER) {
+        } else if (mouseMode == GraferImplementation.MAUSMODUS_ZOOM_FENSTER) {
+        } else if (mouseMode == GraferImplementation.MAUSMODUS_WERTANZEIGE_SCHIEBER) {
             //------------------------------------
-            xSchieberAktiv = true;
-            xSchieberPix = X0xi;  // // x slider is placed at the beginning
+            xSliderActive = true;
+            xSliderPixels = X0xi;  // // x slider is placed at the beginning
         }
         //---------
     }
 
     // // will be overwritten in order to be able to add text -->
     protected void zeichne(Graphics g) {
-        if ((mausModus == GraferImplementation.MAUSMODUS_ZOOM_FENSTER) && (imDragModus)) {
+        if ((mouseMode == GraferImplementation.MAUSMODUS_ZOOM_FENSTER) && (inDragMode)) {
             g.setColor(GlobalColors.farbeZoomRechteck);
             int b = Math.abs(x2Zoom - x1Zoom), h = Math.abs(y2Zoom - y1Zoom);
             if ((x1Zoom > x2Zoom) && (y1Zoom > y2Zoom)) {
@@ -219,9 +219,9 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
                 g.drawRect(x1Zoom, y1Zoom, b, h);
             }
         }
-        if ((mausModus == GraferImplementation.MAUSMODUS_WERTANZEIGE_SCHIEBER) || (xSchieberAktiv)) {
+        if ((mouseMode == GraferImplementation.MAUSMODUS_WERTANZEIGE_SCHIEBER) || (xSliderActive)) {
             g.setColor(Color.red);
-            g.drawLine(xSchieberPix, X0yi, xSchieberPix, X0yi - hi);
+            g.drawLine(xSliderPixels, X0yi, xSliderPixels, X0yi - hi);
             int x0 = X0xi + bi - 15, y0 = X0yi - hi + 12, dy = 15;
             g.setColor(Color.white);
             g.fillRect(x0, y0 - 12, 25, 12 + 2 * dy);
@@ -239,7 +239,7 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
         this.setzeAchsenAnzahl(1, 1);
         this.setAxisWidthHeightX0Y0(new int[]{bi}, new int[]{hi}, new int[]{X0xi}, new int[]{X0yi}, new int[]{Y0xi}, new int[]{Y0yi});
         this.setAxisColor(new Color[]{Color.black}, new Color[]{Color.black});
-        this.setzeAchsenTyp(new int[]{ACHSE_LIN}, new int[]{ACHSE_LIN});
+        this.setzeAchsenTyp(new int[]{AXIS_LINEAR}, new int[]{AXIS_LINEAR});
         this.setzeAchsenLinienStil(new int[]{SOLID_PLAIN}, new int[]{SOLID_PLAIN});
         this.setzeAchsenBeschriftungen(new String[]{""}, new String[]{""});  // braucht es, damit kein NullPointer-Error
         this.definiereGridNormalX(new int[]{0}, new int[]{0});
@@ -305,24 +305,24 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
 
     public void mousePressed(MouseEvent me) {
         //-------------------
-        if (mausModus == GraferImplementation.MAUSMODUS_NIX) {
-        } else if (mausModus == GraferImplementation.MAUSMODUS_ZOOM_AUTOFIT) {
-        } else if (mausModus == GraferImplementation.MAUSMODUS_ZOOM_FENSTER) {
+        if (mouseMode == GraferImplementation.MAUSMODUS_NIX) {
+        } else if (mouseMode == GraferImplementation.MAUSMODUS_ZOOM_AUTOFIT) {
+        } else if (mouseMode == GraferImplementation.MAUSMODUS_ZOOM_FENSTER) {
             x1Zoom = me.getX();
             y1Zoom = me.getY();
-            imDragModus = true;
-        } else if (mausModus == GraferImplementation.MAUSMODUS_WERTANZEIGE_SCHIEBER) {
+            inDragMode = true;
+        } else if (mouseMode == GraferImplementation.MAUSMODUS_WERTANZEIGE_SCHIEBER) {
         }
         //-------------------
     }
 
     public void mouseReleased(MouseEvent me) {
         //-------------------
-        if (mausModus == GraferImplementation.MAUSMODUS_NIX) {
-        } else if (mausModus == GraferImplementation.MAUSMODUS_ZOOM_AUTOFIT) {
-        } else if (mausModus == GraferImplementation.MAUSMODUS_ZOOM_FENSTER) {
+        if (mouseMode == GraferImplementation.MAUSMODUS_NIX) {
+        } else if (mouseMode == GraferImplementation.MAUSMODUS_ZOOM_AUTOFIT) {
+        } else if (mouseMode == GraferImplementation.MAUSMODUS_ZOOM_FENSTER) {
             //--------------------------------------
-            imDragModus = false;
+            inDragMode = false;
             x2Zoom = me.getX();
             y2Zoom = me.getY();
             // // Converting the zoom coordinates of pixel points into values ​​of the zoom-defining rectangle -->
@@ -353,7 +353,7 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
                     new double[]{empfY[0]}, new double[]{empfY[1]}, new boolean[]{true});
             this.setzeTickSpacing(new double[]{empfX[4]}, new double[]{empfY[4]});
             repaint();
-        } else if (mausModus == GraferImplementation.MAUSMODUS_WERTANZEIGE_SCHIEBER) {
+        } else if (mouseMode == GraferImplementation.MAUSMODUS_WERTANZEIGE_SCHIEBER) {
         }
     }
 
@@ -366,24 +366,24 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
     }
 
     public void mouseDragged(MouseEvent me) {
-        if (mausModus == GraferImplementation.MAUSMODUS_NIX) {
-        } else if (mausModus == GraferImplementation.MAUSMODUS_ZOOM_AUTOFIT) {
-        } else if (mausModus == GraferImplementation.MAUSMODUS_ZOOM_FENSTER) {
-            if (!imDragModus) {
+        if (mouseMode == GraferImplementation.MAUSMODUS_NIX) {
+        } else if (mouseMode == GraferImplementation.MAUSMODUS_ZOOM_AUTOFIT) {
+        } else if (mouseMode == GraferImplementation.MAUSMODUS_ZOOM_FENSTER) {
+            if (!inDragMode) {
                 return;
             }
             x2Zoom = me.getX();
             y2Zoom = me.getY();
             repaint();
-        } else if (xSchieberAktiv) {
-            xSchieberPix = me.getX();
-            if (xSchieberPix < X0xi) {
-                xSchieberPix = X0xi;
+        } else if (xSliderActive) {
+            xSliderPixels = me.getX();
+            if (xSliderPixels < X0xi) {
+                xSliderPixels = X0xi;
             }
-            if (xSchieberPix > X0xi + bi) {
-                xSchieberPix = X0xi + bi;
+            if (xSliderPixels > X0xi + bi) {
+                xSliderPixels = X0xi + bi;
             }
-            xSchieberWert[0] = getValueFromPixel(xSchieberPix, 0)[0]; 
+            xSchieberWert[0] = getValueFromPixel(xSliderPixels, 0)[0]; 
             // // x value of the slider position
             for (int i1 = 1; i1 < xNeu.length; i1++) {
                 if ((xNeu[i1 - 1] <= xSchieberWert[0]) && (xSchieberWert[0] <= xNeu[i1])) {
@@ -429,14 +429,14 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
         }
         //-------------------
         double xWert = -1, yWert = -1;
-        if (xAchseTyp_ == ACHSE_LOG) {
+        if (xAchseTyp_ == AXIS_LOGARITHMIC) {
             xWert = achseXmin_ * Math.pow(10.0, ((xPix - xAchseX_) / sfX_));
-        } else if (xAchseTyp_ == ACHSE_LIN) {
+        } else if (xAchseTyp_ == AXIS_LINEAR) {
             xWert = achseXmin_ + (xPix - xAchseX_) / sfX_;
         }
-        if (yAchseTyp_ == ACHSE_LOG) {
+        if (yAchseTyp_ == AXIS_LOGARITHMIC) {
             yWert = achseYmin_ * Math.pow(10.0, ((yAchseY_ - yPix) / sfY_));
-        } else if (yAchseTyp_ == ACHSE_LIN) {
+        } else if (yAchseTyp_ == AXIS_LINEAR) {
             yWert = achseYmin_ + (yAchseY_ - yPix) / sfY_;
         }
         return new double[]{xWert, yWert, indexDiagrammYachse};
@@ -456,14 +456,14 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
         int yAchseTyp_ = yAchseTyp[index_yAchse];
         //-------------------
         int xPix = -1, yPix = -1;
-        if (xAchseTyp_ == ACHSE_LOG) {
+        if (xAchseTyp_ == AXIS_LOGARITHMIC) {
             xPix = xAchseX_ + (int) (sfX_ * GraferV3.lg10(xWert / achseXmin_));
-        } else if (xAchseTyp_ == ACHSE_LIN) {
+        } else if (xAchseTyp_ == AXIS_LINEAR) {
             xPix = xAchseX_ + (int) (sfX_ * (xWert - achseXmin_));
         }
-        if (yAchseTyp_ == ACHSE_LOG) {
+        if (yAchseTyp_ == AXIS_LOGARITHMIC) {
             yPix = yAchseY_ - (int) (sfY_ * GraferV3.lg10(yWert / achseYmin_));
-        } else if (yAchseTyp_ == ACHSE_LIN) {
+        } else if (yAchseTyp_ == AXIS_LINEAR) {
             yPix = yAchseY_ - (int) (sfY_ * (yWert - achseYmin_));
         }
         return new int[]{xPix, yPix};

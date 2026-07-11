@@ -40,7 +40,7 @@ class LISNDialog extends DialogElementLK {
     }
 
     @Override
-    protected void baueGUIIndividual() {
+    protected void buildGUIIndividual() {
         JPanel jpDefLISN = new JPanel();
         jpDefLISN.setLayout(new BorderLayout());
         JComponent jcLISN = new JComponent() {

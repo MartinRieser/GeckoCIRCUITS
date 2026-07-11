@@ -55,7 +55,7 @@ public class BodePlot extends GeckoDialog {
         _graferNew._manager.getDiagram(0)._diagramSettings.setNameDiagram("Magnitude");
         AbstractDiagram diag = new DiagramCurve(_graferNew);                
         diag._diagramSettings.setNameDiagram("Phase");
-        diag._xAxis.setAxisType(AxisLinLog.ACHSE_LOG);
+        diag._xAxis.setAxisType(AxisLinLog.AXIS_LOGARITHMIC);
         
         _graferNew.getManager().addDiagram(diag);
         _graferNew._manager.getDiagram(0).getCurve(1).setAxisConnection(AxisConnection.ZUORDNUNG_NIX);

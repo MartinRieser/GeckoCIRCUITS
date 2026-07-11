@@ -63,13 +63,13 @@ public final class DialogConnectSignalsGraphs extends GeckoDialog {
         _container = this.getContentPane();
         _container.setLayout(new BorderLayout());
         //--------------------
-        this.baueGUI();
+        this.buildGUI();
         this.pack();
         this.setMinimumSize(new Dimension(this.getWidth(), this.getHeight()));        
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     }
 
-    private void baueGUI() {
+    private void buildGUI() {
         _jButtonClose = new JButton(I18nKeys.CLOSE_WINDOW.getTranslation());
         _origBackColor = _jButtonClose.getBackground();
         _jButtonAdd = new JButton(I18nKeys.ADD_GRAPH.getTranslation());
@@ -217,14 +217,14 @@ public final class DialogConnectSignalsGraphs extends GeckoDialog {
                 _grafer.getManager().addDiagram(diag);
 
                 _grafer.refreshComponentPane();
-                baueGUI();
+                buildGUI();
                 jtfWEIG[jtfWEIG.length - 1].setNumberToField(110 / jtfWEIG.length);
                 modifiedWeightIndex = jtfWEIG.length - 1;
                 setMinimumSize(new Dimension(getWidth(), getHeight()));
                 // // the x-axis is only displayed on the bottom diagram --> update
                 updateXAxisVisibilityAfterAdd(diag);
                 // // Graph weighting of the new graph needs to be adjusted:
-                aktualisiereGrafer();
+                updateGrafer();
             }
         });
         _jButtonDelete.addActionListener(new ActionListener() {
@@ -251,19 +251,19 @@ public final class DialogConnectSignalsGraphs extends GeckoDialog {
                 _manager.deleteDiagram(_selectedDiagram);
                 setSelectedDiagram(_manager.getDiagram(Math.max(0, deleteIndex - 1)));
                 //setResizable(true);
-                baueGUI();
+                buildGUI();
                 setMinimumSize(new Dimension(getWidth(), getHeight()));
                 // // the x-axis is only displayed on the bottom diagram --> update
 
                 // // Graph weighting of the reduced graphs needs to be adjusted:
-                aktualisiereGrafer();
+                updateGrafer();
             }
         });
 
         _jButtonClose.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent actionEvent) {
-                aktualisiereGrafer();
+                updateGrafer();
                 dispose();
             }
         });
@@ -283,7 +283,7 @@ public final class DialogConnectSignalsGraphs extends GeckoDialog {
                 }
 
                 _grafer.getManager().swapDiagrams(_selectedDiagram, _manager.getDiagram(oldIndex - 1));
-                baueGUI();
+                buildGUI();
             }
         });
 
@@ -304,13 +304,13 @@ public final class DialogConnectSignalsGraphs extends GeckoDialog {
                     oldLastDiagram._xAxis.setAxisInvisible();
                 }
 
-                baueGUI();
+                buildGUI();
             }
         });
 
     }
 
-    private void aktualisiereGrafer() {
+    private void updateGrafer() {
         recalculateWeights();
         _grafer.refreshComponentPane();
         _grafer.setAxisPositions();
@@ -331,7 +331,7 @@ public final class DialogConnectSignalsGraphs extends GeckoDialog {
                 } else {
                     final Dialog dialog = new DialogDiagramProps(DialogConnectSignalsGraphs.this, true, diagram, _grafer);
                     dialog.setVisible(true);
-                    baueGUI();
+                    buildGUI();
                 }
                 setSelectedDiagram(diagram);
             }
@@ -401,7 +401,7 @@ public final class DialogConnectSignalsGraphs extends GeckoDialog {
             @Override
             public void actionPerformed(final ActionEvent actionEvent) {
                 DialogConnectSignalsGraphs.this.modifiedWeightIndex = rowIndex;
-                aktualisiereGrafer();
+                updateGrafer();
                 setSelectedDiagram(_manager.getDiagram(rowIndex));
             }
         });
@@ -446,7 +446,7 @@ public final class DialogConnectSignalsGraphs extends GeckoDialog {
                 }
 
                 _grafer.doZoomAutoFit();
-                aktualisiereGrafer();
+                updateGrafer();
                 setSelectedDiagram(_manager.getDiagram(rowIndex));
             }
         });

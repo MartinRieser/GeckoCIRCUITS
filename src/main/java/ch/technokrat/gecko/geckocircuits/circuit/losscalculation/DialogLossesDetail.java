@@ -89,10 +89,10 @@ public final class DialogLossesDetail extends GeckoDialog {
         }
 
         add(_tabbedPane, BorderLayout.CENTER);
-        _conductionLossPanel.baueGUI();
+        _conductionLossPanel.buildGUI();
         _tabbedPane.addTab("Conduction Losses", _conductionLossPanel);
 
-        _switchingLossPanel.baueGUI();
+        _switchingLossPanel.buildGUI();
         _tabbedPane.addTab("Switching Losses", _switchingLossPanel);
 
         if(_lossCalculation._parent instanceof Diode) {

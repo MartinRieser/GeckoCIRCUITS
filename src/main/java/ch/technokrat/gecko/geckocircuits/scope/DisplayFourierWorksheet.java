@@ -37,18 +37,18 @@ class DisplayFourierWorksheet extends JPanel {
         this.cnSG = cnSG;
         this.jnSG = jnSG;
         this.nMin = nMin;
-        this.schreibeData();
-        this.baueGUI();
+        this.writeData();
+        this.buildGUI();
     }
 
-    private void baueGUI() {
+    private void buildGUI() {
         this.removeAll();
         this.setLayout(new BorderLayout());
         jsp = new JScrollPane(table);
         this.add(jsp, BorderLayout.CENTER);
     }
 
-    private void schreibeData() {
+    private void writeData() {
         final String[] header = new String[]{"n", "c_n", "phi_n [rad]"};
         final String[][] wsObj = new String[cnSG.length][header.length];
         for (int i1 = 0; i1 < wsObj.length; i1++) {

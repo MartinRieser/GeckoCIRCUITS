@@ -21,6 +21,6 @@ class DialogWindowWithoutInput extends DialogElementCONTROL<ControlBlock> {
         super(aThis);
     }
 
-    protected void baueGuiIndividual() {        
+    protected void buildIndividualGUI() {        
     }
 }

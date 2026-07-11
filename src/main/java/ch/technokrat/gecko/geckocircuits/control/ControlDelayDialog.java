@@ -25,7 +25,7 @@ class ControlDelayDialog extends DialogElementCONTROL<ControlDelay> {
     }
 
     @Override
-    protected void baueGuiIndividual() {
+    protected void buildIndividualGUI() {
         final JPanel pDEL = createParameterPanel(element._tDelay);
         jpM.add(pDEL, BorderLayout.CENTER);
     }

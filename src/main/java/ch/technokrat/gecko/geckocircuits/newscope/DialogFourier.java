@@ -82,7 +82,7 @@ public class DialogFourier extends JDialog {
         this.setTitle(" Fourier-Transform");
         this.getContentPane().setLayout(new BorderLayout());
         _jPanelRange = new JPanelDialogRange(worksheet, sliderValues);
-        this.baueGUI();
+        this.buildGUI();
 
         _jPanelRange.registerActionListener(new ActionListener() {
             @Override
@@ -97,7 +97,7 @@ public class DialogFourier extends JDialog {
         //------------------------
     }
 
-    private void baueGUI() {
+    private void buildGUI() {
         //------------------
         Container con = this.getContentPane();
         con.setLayout(new BorderLayout());

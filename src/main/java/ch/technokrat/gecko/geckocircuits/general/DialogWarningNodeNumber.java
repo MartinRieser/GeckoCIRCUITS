@@ -50,7 +50,7 @@ public class DialogWarningNodeNumber extends JDialog implements WindowListener, 
         } catch (Exception e) {}
         this.addWindowListener(this);
         this.setTitle(" Warning: Node Number");
-        this.baueGUI();
+        this.buildGUI();
         this.setSize(280,200);
         setLocationRelativeTo(GeckoSim._win);
         this.setResizable(false);
@@ -59,7 +59,7 @@ public class DialogWarningNodeNumber extends JDialog implements WindowListener, 
 
 
 
-    private void baueGUI () {
+    private void buildGUI () {
         Container con= this.getContentPane();
         con.setLayout(new BorderLayout());
         //------------------

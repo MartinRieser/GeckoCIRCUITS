@@ -54,7 +54,7 @@ public class BodePlot2 extends JPanel {
         _graferNew._manager.getDiagram(0).getCurve(0).setSymbolEnabled(false);
         AbstractDiagram diag = new DiagramCurve(_graferNew);                
         diag._diagramSettings.setNameDiagram("Phase [Degree]");
-        diag._xAxis.setAxisType(AxisLinLog.ACHSE_LOG);        
+        diag._xAxis.setAxisType(AxisLinLog.AXIS_LOGARITHMIC);        
         
         _graferNew.getManager().addDiagram(diag);
         _graferNew._manager.getDiagram(0).getCurve(1).setAxisConnection(AxisConnection.ZUORDNUNG_NIX);

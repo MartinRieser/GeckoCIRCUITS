@@ -41,7 +41,7 @@ class IdealTransformerDialog extends DialogElementLK<IdealTransformer> {
     }
 
     @Override
-    protected void baueGUIIndividual() {
+    protected void buildGUIIndividual() {
         JPanel pIN2 = new JPanel();
         pIN2.setLayout(new GridLayout(3, 3));
         pIN2.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "", TitledBorder.LEFT, TitledBorder.TOP));

@@ -38,7 +38,7 @@ public abstract class DialogElementCONTROL<T extends ControlBlock> extends Dialo
     
 
     @Override
-    public void baueGUI() {
+    public void buildGUI() {
         this.setLocationRelativeTo(GeckoSim._win);                
         con = this.getContentPane();
         con.setLayout(new BorderLayout());                                        
@@ -52,7 +52,7 @@ public abstract class DialogElementCONTROL<T extends ControlBlock> extends Dialo
         jpM.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
                 "Parameter", TitledBorder.LEFT, TitledBorder.TOP));
         
-        baueGuiIndividual();
+        buildIndividualGUI();
         con.add(jpM, BorderLayout.CENTER);
         con.add(jPanelButtonOkCancel, BorderLayout.SOUTH);
     }
@@ -133,7 +133,7 @@ public abstract class DialogElementCONTROL<T extends ControlBlock> extends Dialo
         }
     };
 
-    abstract void baueGuiIndividual();
+    abstract void buildIndividualGUI();
 
     @Override
     public void processInputIndividual() {

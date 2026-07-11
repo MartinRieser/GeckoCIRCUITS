@@ -41,8 +41,8 @@ public class GraferV3 extends JPanel {
     // Konstanten:
     public static final int AUTO = -111111111;
     public static final int DEAKTIVIERT = -111111112;
-    public static final int ACHSE_LIN = -111111114;
-    public static final int ACHSE_LOG = -111111115;
+    public static final int AXIS_LINEAR = -111111114;
+    public static final int AXIS_LOGARITHMIC = -111111115;
     //
     public static final String[] CLIPPING = new String[]{"AXIS", "DATA", "VALUE"};
     public static final int CLIP_ACHSE = -111111116;
@@ -544,17 +544,17 @@ public class GraferV3 extends JPanel {
 
         for (int i2 = 0; i2 < anzKurvenpunkteImWorksheet; i2++) {
             double x = worksheetDaten.getValue(kurve_index_worksheetKolonnen_XY[i1][0], i2);
-            if (xAchseTyp[indexZurKurveGehoerigeXachse[i1]] == ACHSE_LIN) {
+            if (xAchseTyp[indexZurKurveGehoerigeXachse[i1]] == AXIS_LINEAR) {
                 xPix[i2] = (float) (x0Kurve + (sfX[indexZurKurveGehoerigeXachse[i1]] * (x - achseXmin[indexZurKurveGehoerigeXachse[i1]])));
-            } else if ((xAchseTyp[indexZurKurveGehoerigeXachse[i1]] == ACHSE_LOG)) {
+            } else if ((xAchseTyp[indexZurKurveGehoerigeXachse[i1]] == AXIS_LOGARITHMIC)) {
                 xPix[i2] = (float) (x0Kurve + (sfX[indexZurKurveGehoerigeXachse[i1]] * GraferV3.lg10(x / achseXmin[indexZurKurveGehoerigeXachse[i1]])));
             }
 
             double y = worksheetDaten.getValue(kurve_index_worksheetKolonnen_XY[i1][1], i2);
-            if (yAchseTyp[indexZurKurveGehoerigeYachse[i1]] == ACHSE_LIN) {
+            if (yAchseTyp[indexZurKurveGehoerigeYachse[i1]] == AXIS_LINEAR) {
                 yPix[i2] = (float) (y0Kurve - (sfY[indexZurKurveGehoerigeYachse[i1]] * (y - achseYmin[indexZurKurveGehoerigeYachse[i1]])));
 
-            } else if ((yAchseTyp[indexZurKurveGehoerigeYachse[i1]] == ACHSE_LOG)) {
+            } else if ((yAchseTyp[indexZurKurveGehoerigeYachse[i1]] == AXIS_LOGARITHMIC)) {
                 if (y <= 0) {
                     y = 1e-99;  //y=achseYmin[indexZurKurveGehoerigeYachse[i1]];
                 }
@@ -646,7 +646,7 @@ public class GraferV3 extends JPanel {
 
     protected void zeichneEinzelneKoordinatenAchse_X(Graphics2D g2, int i1) {
         //==================================
-        if (xAchseTyp[i1] == ACHSE_LIN) {
+        if (xAchseTyp[i1] == AXIS_LINEAR) {
             sfX[i1] = breitePix[i1] / (achseXmax[i1] - achseXmin[i1]);
             int anzTicks = (int) (achseXmax[i1] / xTickSpacing[i1]) - (int) (achseXmin[i1] / xTickSpacing[i1]) + 1;
             double[] wertTickX_temp = new double[anzTicks];
@@ -749,7 +749,7 @@ public class GraferV3 extends JPanel {
                 }
             }
             //==================================
-        } else if (xAchseTyp[i1] == ACHSE_LOG) {
+        } else if (xAchseTyp[i1] == AXIS_LOGARITHMIC) {
             // // mandatory --> xTickSpacing[i1]=AUTO because it only makes sense to add ticks to the tens of decades
             sfX[i1] = breitePix[i1] / GraferV3.lg10(achseXmax[i1] / achseXmin[i1]);
             int anzTicks = (int) Math.round(GraferV3.lg10(achseXmax[i1] / achseXmin[i1])) + 3;
@@ -842,7 +842,7 @@ public class GraferV3 extends JPanel {
 
     protected void zeichneEinzelneKoordinatenAchse_Y(Graphics2D g2, int i1) {
 
-        if (yAchseTyp[i1] == ACHSE_LIN) {
+        if (yAchseTyp[i1] == AXIS_LINEAR) {
             sfY[i1] = hoehePix[i1] / (achseYmax[i1] - achseYmin[i1]);
             int anzTicks = (int) (achseYmax[i1] / yTickSpacing[i1]) - (int) (achseYmin[i1] / yTickSpacing[i1]) + 1;
             anzTicks = Math.max(anzTicks, 2);
@@ -927,7 +927,7 @@ public class GraferV3 extends JPanel {
                 }
             }
             //==================================
-        } else if (yAchseTyp[i1] == ACHSE_LOG) {
+        } else if (yAchseTyp[i1] == AXIS_LOGARITHMIC) {
             if (achseYmin[i1] <= 0) {
                 achseYmin[i1] = achseYmax[i1] / 1e4;
             }
@@ -1189,7 +1189,7 @@ public class GraferV3 extends JPanel {
         int laenge = worksheetDaten.getRowLength();
         double[] minEmpfehlungLIN = new double[laenge];  // // recommended minimum axis values ​​for AUTO / AXIS_LIN
         double[] maxEmpfehlungLIN = new double[laenge];  // // recommended axis max values ​​for AUTO / AXIS_LIN
-        double[] minEmpfehlungLOG = new double[laenge];  // // recommended axis min values ​​for AUTO / ACHSE_LOG
+        double[] minEmpfehlungLOG = new double[laenge];  // // recommended axis min values ​​for AUTO / AXIS_LOGARITHMIC
         double[] maxEmpfehlungLOG = new double[laenge];  // // recommended axis max values ​​for AUTO / AXIS_LOG
         double[] min = new double[laenge];  // // Min and max values ​​of the individual columns of 'worksheet data'
         double[] max = new double[laenge];
@@ -1220,10 +1220,10 @@ public class GraferV3 extends JPanel {
                 achseXmin[achsenNr] = 1e99;  // // default if no curve is assigned
                 for (int nrKurve = 0; nrKurve < anzahlKurven; nrKurve++) {
                     if (achsenNr == indexZurKurveGehoerigeXachse[nrKurve]) {
-                        if ((xAchseTyp[achsenNr] == ACHSE_LIN)
+                        if ((xAchseTyp[achsenNr] == AXIS_LINEAR)
                                 && (achseXmin[achsenNr] > minEmpfehlungLIN[kurve_index_worksheetKolonnen_XY[nrKurve][0]])) {
                             achseXmin[achsenNr] = minEmpfehlungLIN[kurve_index_worksheetKolonnen_XY[nrKurve][0]];
-                        } else if ((xAchseTyp[achsenNr] == ACHSE_LOG)
+                        } else if ((xAchseTyp[achsenNr] == AXIS_LOGARITHMIC)
                                 && (achseXmin[achsenNr] > minEmpfehlungLOG[kurve_index_worksheetKolonnen_XY[nrKurve][0]])) {
                             achseXmin[achsenNr] = minEmpfehlungLOG[kurve_index_worksheetKolonnen_XY[nrKurve][0]];
                         }
@@ -1237,10 +1237,10 @@ public class GraferV3 extends JPanel {
                 achseXmax[achsenNr] = -1e99;  // // default if no curve is assigned
                 for (int nrKurve = 0; nrKurve < anzahlKurven; nrKurve++) {
                     if (achsenNr == indexZurKurveGehoerigeXachse[nrKurve]) {
-                        if ((xAchseTyp[achsenNr] == ACHSE_LIN)
+                        if ((xAchseTyp[achsenNr] == AXIS_LINEAR)
                                 && (achseXmax[achsenNr] < maxEmpfehlungLIN[kurve_index_worksheetKolonnen_XY[nrKurve][0]])) {
                             achseXmax[achsenNr] = maxEmpfehlungLIN[kurve_index_worksheetKolonnen_XY[nrKurve][0]];
-                        } else if ((xAchseTyp[achsenNr] == ACHSE_LOG)
+                        } else if ((xAchseTyp[achsenNr] == AXIS_LOGARITHMIC)
                                 && (achseXmax[achsenNr] < maxEmpfehlungLOG[kurve_index_worksheetKolonnen_XY[nrKurve][0]])) {
                             achseXmax[achsenNr] = maxEmpfehlungLOG[kurve_index_worksheetKolonnen_XY[nrKurve][0]];
                         }
@@ -1254,10 +1254,10 @@ public class GraferV3 extends JPanel {
                 achseYmin[achsenNr] = 1e99;  // // default if no curve is assigned
                 for (int nrKurve = 0; nrKurve < anzahlKurven; nrKurve++) {
                     if (achsenNr == indexZurKurveGehoerigeYachse[nrKurve]) {
-                        if ((yAchseTyp[achsenNr] == ACHSE_LIN)
+                        if ((yAchseTyp[achsenNr] == AXIS_LINEAR)
                                 && (achseYmin[achsenNr] > minEmpfehlungLIN[kurve_index_worksheetKolonnen_XY[nrKurve][1]])) {
                             achseYmin[achsenNr] = minEmpfehlungLIN[kurve_index_worksheetKolonnen_XY[nrKurve][1]];
-                        } else if ((yAchseTyp[achsenNr] == ACHSE_LOG)
+                        } else if ((yAchseTyp[achsenNr] == AXIS_LOGARITHMIC)
                                 && (achseYmin[achsenNr] > minEmpfehlungLOG[kurve_index_worksheetKolonnen_XY[nrKurve][1]])) {
                             achseYmin[achsenNr] = minEmpfehlungLOG[kurve_index_worksheetKolonnen_XY[nrKurve][1]];
                         }
@@ -1271,10 +1271,10 @@ public class GraferV3 extends JPanel {
                 achseYmax[achsenNr] = -1e99;  // // default if no curve is assigned
                 for (int nrKurve = 0; nrKurve < anzahlKurven; nrKurve++) {
                     if (achsenNr == indexZurKurveGehoerigeYachse[nrKurve]) {
-                        if ((yAchseTyp[achsenNr] == ACHSE_LIN)
+                        if ((yAchseTyp[achsenNr] == AXIS_LINEAR)
                                 && (achseYmax[achsenNr] < maxEmpfehlungLIN[kurve_index_worksheetKolonnen_XY[nrKurve][1]])) {
                             achseYmax[achsenNr] = maxEmpfehlungLIN[kurve_index_worksheetKolonnen_XY[nrKurve][1]];
-                        } else if ((yAchseTyp[achsenNr] == ACHSE_LOG)
+                        } else if ((yAchseTyp[achsenNr] == AXIS_LOGARITHMIC)
                                 && (achseYmax[achsenNr] < maxEmpfehlungLOG[kurve_index_worksheetKolonnen_XY[nrKurve][1]])) {
                             achseYmax[achsenNr] = maxEmpfehlungLOG[kurve_index_worksheetKolonnen_XY[nrKurve][1]];
                         }

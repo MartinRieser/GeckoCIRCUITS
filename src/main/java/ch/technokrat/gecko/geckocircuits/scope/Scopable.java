@@ -19,9 +19,9 @@ package ch.technokrat.gecko.geckocircuits.scope;
  */
 @Deprecated
 public interface Scopable {
-    void updateMouseMode(int mausmodus);
-    public DataContainer getZVDatenImRAM();
-    public void ladeWorkSheet();
+    void updateMouseMode(int mouseMode);
+    public DataContainer getZVDataInRAM();
+    public void loadWorkSheet();
 
     
 }

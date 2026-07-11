@@ -124,17 +124,17 @@ public final class DialogDataExport extends javax.swing.JDialog {
         _inFillLists = false;
     }
 
-    private void setSaveModus() {
+    private void setSaveMode() {
         if (jRadButtManSave.isSelected()) {
-            _controlDataSave._saveModus = ControlSaveData.SaveModus.MANUAL;
+            _controlDataSave._saveMode = ControlSaveData.SaveMode.MANUAL;
         }
 
         if (jRadButtEndSave.isSelected()) {
-            _controlDataSave._saveModus = ControlSaveData.SaveModus.SIMULATION_END;
+            _controlDataSave._saveMode = ControlSaveData.SaveMode.SIMULATION_END;
         }
 
         if (jRadButtContinSav.isSelected()) {
-            _controlDataSave._saveModus = ControlSaveData.SaveModus.DURING_SIMULATION;
+            _controlDataSave._saveMode = ControlSaveData.SaveMode.DURING_SIMULATION;
         }
     }
 
@@ -162,7 +162,7 @@ public final class DialogDataExport extends javax.swing.JDialog {
             }
         }
 
-        switch (_controlDataSave._saveModus) {
+        switch (_controlDataSave._saveMode) {
             case MANUAL:
                 jRadButtManSave.setSelected(true);
                 break;
@@ -798,15 +798,15 @@ public final class DialogDataExport extends javax.swing.JDialog {
     }//GEN-LAST:event_jComboHeaderSymActionPerformed
 
     private void jRadButtManSaveActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD//GEN-FIRST:event_jRadButtManSaveActionPerformed
-        setSaveModus();
+        setSaveMode();
     }//GEN-LAST:event_jRadButtManSaveActionPerformed
 
     private void jRadButtEndSaveActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD//GEN-FIRST:event_jRadButtEndSaveActionPerformed
-        setSaveModus();
+        setSaveMode();
     }//GEN-LAST:event_jRadButtEndSaveActionPerformed
 
     private void jRadButtContinSavActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD//GEN-FIRST:event_jRadButtContinSavActionPerformed
-        setSaveModus();
+        setSaveMode();
     }//GEN-LAST:event_jRadButtContinSavActionPerformed
 
     private void jRadButtOverwriteActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD//GEN-FIRST:event_jRadButtOverwriteActionPerformed

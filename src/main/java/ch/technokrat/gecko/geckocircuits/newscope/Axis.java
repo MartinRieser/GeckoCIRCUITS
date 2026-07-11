@@ -61,7 +61,7 @@ public final class Axis {
     final Point _axisOriginPixel = new Point();
     final AxisLimits _axisMinMax = new AxisLimits();
     //public double minimumValue;
-    private AxisLinLog _axisType = AxisLinLog.ACHSE_LIN;
+    private AxisLinLog _axisType = AxisLinLog.AXIS_LINEAR;
     final AxisDesignSettings _axisSettings = new AxisDesignSettings();
     final AxisGridSettings _axisGridSettings = new AxisGridSettings();
     final AxisTickSettings _axisTickSettings = new AxisTickSettings();
@@ -118,10 +118,10 @@ public final class Axis {
         }
         _axisType = newType;
         switch (_axisType) {
-            case ACHSE_LIN:
+            case AXIS_LINEAR:
                 _axisScale = new AxisLin();
                 break;
-            case ACHSE_LOG:
+            case AXIS_LOGARITHMIC:
                 _axisScale = new AxisLog();
                 break;
             default:
@@ -134,7 +134,7 @@ public final class Axis {
     abstract class AbstractAxisScale {
 
         protected HiLoData getLimits() {            
-            if (_axisType == AxisLinLog.ACHSE_LOG) {
+            if (_axisType == AxisLinLog.AXIS_LOGARITHMIC) {
                 _axisMinMax.setNiceScale(false);
                 HiLoData accurateLimits = Axis.this._axisMinMax.getLimits();
                 return HiLoData.hiLoDataFabric(accurateLimits._yLo, accurateLimits._yHi * 1.5f);
@@ -413,7 +413,7 @@ public final class Axis {
     }
 
     public void drawAxis(final Graphics2D g2d, final boolean isSignalAxis, final Axis otherAxis) {
-        _axisGridSettings.blendeEventuellGridLinienAus(_axisLengthPix);
+        _axisGridSettings.possiblyHideGridLines(_axisLengthPix);
         g2d.setFont(FONT_TICK_LABEL);
         if (_axisTickSettings.isAutoTickSpacing()) {
             _tickSpacing = getAutoTickSpacing();
@@ -525,11 +525,11 @@ public final class Axis {
     void drawAxisLabel(final Graphics2D g2d) {
         switch (_direction) {
             case X:
-                g2d.drawString(_axisSettings.getAchseBeschriftung(), _axisOriginPixel.x
+                g2d.drawString(_axisSettings.getAxisLabel(), _axisOriginPixel.x
                         + _axisLengthPix / 2, _axisOriginPixel.y + POS_TICK_LABELS);
                 break;
             case Y:
-                g2d.drawString(_axisSettings.getAchseBeschriftung(), _axisOriginPixel.x - POS_TICK_LABELS,
+                g2d.drawString(_axisSettings.getAxisLabel(), _axisOriginPixel.x - POS_TICK_LABELS,
                         _axisOriginPixel.y - _axisLengthPix / 2);
                 break;
             default:

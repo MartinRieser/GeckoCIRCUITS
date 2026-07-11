@@ -272,7 +272,7 @@ public final class SimulationRunner {
             _mainwindow.pauseSimulation();
             simKern._simulationStatus = SimulationStatus.FINISHED;
             simKern.tearDownOnPause();
-            _mainwindow.jtfStatus.setzeStatusRechenzeit(q2 - q1);
+            _mainwindow.jtfStatus.setComputeTimeStatus(q2 - q1);
             waitForDataSavers();
             _mainwindow.setMenuDuringSimulation(false, true);
         }

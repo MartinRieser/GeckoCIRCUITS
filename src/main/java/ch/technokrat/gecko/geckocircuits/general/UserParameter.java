@@ -45,6 +45,7 @@ public final class UserParameter<T> {
     private int _index = -1;
     private ModelMVC<T> _value;
     private final String _identifier;
+    private final String _alternativeSaveIdentifier;
     private final List<ConnectorType> _typeMap;
     private final List<String> _shortNames;
     // this field can be used to maintain backward-compatibility with older versions.
@@ -70,6 +71,7 @@ public final class UserParameter<T> {
 
         _longName = builder._longNames;
         _identifier = builder._identifier;
+        _alternativeSaveIdentifier = builder._alternativeSaveIdentifier;
         _identifierNameOpt = _identifier + NAME_OPT_EXTENSION;
         _typeMap = builder._connectorTypeMap;
         _parameterableObject = builder._paramterableObject;
@@ -275,56 +277,59 @@ public final class UserParameter<T> {
 
     public void readFromTokenMap(final TokenMap tokenMap) {
         final T oldValue = _value.getValue();                                
-        
-        if (tokenMap.containsToken(_identifier)) {                        
+        String tokenId = _identifier;
+        if (!tokenMap.containsToken(tokenId) && _alternativeSaveIdentifier != null) {
+            tokenId = _alternativeSaveIdentifier;
+        }
+        if (tokenMap.containsToken(tokenId)) {                        
             
             if(tokenMap.containsToken(_identifierNameOpt)) {
                 _nameOpt = tokenMap.readDataLine(_identifierNameOpt, "");            
             }
             
             if (oldValue instanceof Double) {
-                final Double newValue = tokenMap.readDataLine(_identifier, (Double) _value.getValue());
+                final Double newValue = tokenMap.readDataLine(tokenId, (Double) _value.getValue());
                 _value.setValueWithoutUndo((T) newValue);                                                
                 return;
             }
             if (oldValue instanceof Boolean) {
-                final Boolean newValue = tokenMap.readDataLine(_identifier, (Boolean) _value.getValue());
+                final Boolean newValue = tokenMap.readDataLine(tokenId, (Boolean) _value.getValue());
                 _value.setValueWithoutUndo((T) newValue);
                 return;
             }
 
             if (oldValue instanceof Integer) {
-                final Integer newValue = tokenMap.readDataLine(_identifier, (Integer) _value.getValue());
+                final Integer newValue = tokenMap.readDataLine(tokenId, (Integer) _value.getValue());
                 _value.setValueWithoutUndo((T) newValue);
                 return;
             }
 
             if (oldValue instanceof ControlSourceType) {
-                final ControlSourceType newValue = ControlSourceType.getFromID(tokenMap.readDataLine(_identifier, ControlSourceType.QUELLE_RECHTECK.getOldGeckoID()));
+                final ControlSourceType newValue = ControlSourceType.getFromID(tokenMap.readDataLine(tokenId, ControlSourceType.QUELLE_RECHTECK.getOldGeckoID()));
                 _value.setValueWithoutUndo((T) newValue);
                 return;
             }
             
             if(oldValue instanceof SSAShape) {                
-                final SSAShape newValue = SSAShape.getFromOrdinal(tokenMap.readDataLine(_identifier, SSAShape.RECTANGLE.ordinal()));
+                final SSAShape newValue = SSAShape.getFromOrdinal(tokenMap.readDataLine(tokenId, SSAShape.RECTANGLE.ordinal()));
                 _value.setValueWithoutUndo((T) newValue);
                 return;
             }
 
             if (oldValue instanceof CircuitSourceType) {
-                final CircuitSourceType newValue = CircuitSourceType.getFromID(tokenMap.readDataLine(_identifier, SourceType.QUELLE_DC_NEW));
+                final CircuitSourceType newValue = CircuitSourceType.getFromID(tokenMap.readDataLine(tokenId, SourceType.QUELLE_DC_NEW));
                 _value.setValueWithoutUndo((T) newValue);
                 return;
             }
 
             if (oldValue instanceof String) {
-                final String newValue = tokenMap.readDataLine(_identifier, (String) _value.getValue());
+                final String newValue = tokenMap.readDataLine(tokenId, (String) _value.getValue());
                 _value.setValueWithoutUndo((T) newValue);
                 return;
             }
 
             if (oldValue instanceof Color) {
-                final Color newValue = new Color(tokenMap.readDataLine(_identifier, ((Color) _value.getValue()).getRGB()));
+                final Color newValue = new Color(tokenMap.readDataLine(tokenId, ((Color) _value.getValue()).getRGB()));
                 _value.setValueWithoutUndo((T) newValue);
                 return;
             }                        
@@ -621,6 +626,7 @@ public final class UserParameter<T> {
 
         private int _index = -1;
         private String _identifier;
+        private String _alternativeSaveIdentifier;
         private final T _initialValue;
         private List<ConnectorType> _connectorTypeMap;
         private final List<String> _units = new ArrayList<String>();
@@ -689,6 +695,11 @@ public final class UserParameter<T> {
          */
         public Builder<T> addAlternativeShortName(final String... additionalAlternativeNames) {
             Collections.addAll(_alternativeShortNames, additionalAlternativeNames);
+            return this;
+        }
+
+        public Builder<T> addAlternativeSaveIdentifier(final String alternativeSaveIdentifier) {
+            _alternativeSaveIdentifier = alternativeSaveIdentifier;
             return this;
         }
 

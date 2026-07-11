@@ -37,8 +37,8 @@ public class NodeLabel implements Serializable {
     //----------------------------------
 
     
-    public void setKoordTxt (int xT, int yT) { this.xTxt=xT;   this.yTxt=yT; }
-    public void setKoordAnker (int xA, int yA) { this.xAnker=xA;   this.yAnker=yA; }
+    public void setTextCoord (int xT, int yT) { this.xTxt=xT;   this.yTxt=yT; }
+    public void setAnchorCoord (int xA, int yA) { this.xAnker=xA;   this.yAnker=yA; }
     public void setText (String txt) { this.labelTxt=txt; } 
     public void setVisible (boolean visible) { this.visible=visible; }
 
@@ -52,12 +52,12 @@ public class NodeLabel implements Serializable {
     }
 
 
-    public boolean istAngeklickt (int xPix, int yPix) {
+    public boolean isClicked (int xPix, int yPix) {
         if ((x1click<xPix)&&(xPix<x2click)&&(y1click<yPix)&&(yPix<y2click)) return true; else return false; 
     }
 
     
-    public void zeichne (Graphics g, Color f1, int dpix) {
+    public void draw (Graphics g, Color f1, int dpix) {
         if (!visible) return; 
         //-----
         //g.setFont(font);

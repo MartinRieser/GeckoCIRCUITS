@@ -63,11 +63,11 @@ public final class DialogLabelEingeben extends JDialog {
         
         _originalLabel = _label.getLabelString();               
         setTitle(" Label");
-        baueGUI();
+        buildGUI();
 
     }
 
-    private void baueGUI() {
+    private void buildGUI() {
         final Container con = this.getContentPane();
         con.setLayout(new BorderLayout());
         this.setLocationRelativeTo(GeckoSim._win);

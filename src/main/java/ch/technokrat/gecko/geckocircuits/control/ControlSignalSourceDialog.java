@@ -47,7 +47,7 @@ class ControlSignalSourceDialog extends AbstractDialogWithExternalOption<Control
         
 
     @Override
-    protected void baueGuiIndividual() {
+    protected void buildIndividualGUI() {
         jpM = new JPanel();
         jpM.setLayout(new BorderLayout());
         
@@ -69,7 +69,7 @@ class ControlSignalSourceDialog extends AbstractDialogWithExternalOption<Control
             }            
         });
         
-        jComboShape.setSelectedItem(element._typQuelle.getValue());        
+        jComboShape.setSelectedItem(element._sourceType.getValue());        
                 
         
         jCheckBoxShowDetails = new JCheckBox("Display Details");
@@ -115,7 +115,7 @@ class ControlSignalSourceDialog extends AbstractDialogWithExternalOption<Control
     protected void processInputs() {
         super.processInputs();                
         element._displayDetails.setUserValue(displayDetails);                
-        element._typQuelle.setUserValue((ControlSourceType) jComboShape.getSelectedItem());
+        element._sourceType.setUserValue((ControlSourceType) jComboShape.getSelectedItem());
     }
     
 

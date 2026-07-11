@@ -218,7 +218,7 @@ public final class ControlCISPR16 extends ControlBlock implements SpecialNameVis
         return new CisprCalculator();
     }
 
-    public AbstractDataContainer getZVDatenImRAM() {
+    public AbstractDataContainer getZVDataInRAM() {
         assert _zvDatenRam != null;
         return _zvDatenRam;
     }

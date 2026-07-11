@@ -36,7 +36,7 @@ class ReluctanceInductorDialog extends DialogElementLK<ReluctanceInductor> {
     }
 
     @Override
-    protected void baueGUIIndividual() {
+    protected void buildGUIIndividual() {
         JPanel pIN2 = new JPanel();
         pIN2.setLayout(new GridLayout(5, 2));
         pIN2.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "", TitledBorder.LEFT, TitledBorder.TOP));

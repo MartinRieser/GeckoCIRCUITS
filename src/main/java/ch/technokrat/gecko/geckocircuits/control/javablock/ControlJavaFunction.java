@@ -59,14 +59,16 @@ public final class ControlJavaFunction extends ControlBlock implements VariableT
     private CodeWindowModern _codeWindow;
 
     transient final UserParameter<Integer> _inputTerminalNumber = UserParameter.Builder.
-            <Integer>start("anzXIN", 3).
+            <Integer>start("numberInputTerminals", 3).
+            addAlternativeSaveIdentifier("anzXIN").
             longName(I18nKeys.NO_INPUT_TERMINALS).
             shortName("numberInputTerminals").
             arrayIndex(this, -1).
             build();
 
     transient final UserParameter<Integer> _outputTerminalNumber = UserParameter.Builder.
-            <Integer>start("anzYOUT", 2).
+            <Integer>start("numberOutputTerminals", 2).
+            addAlternativeSaveIdentifier("anzYOUT").
             longName(I18nKeys.NO_OUTPUT_TERMINALS).
             shortName("numberOutputTerminals").
             arrayIndex(this, -1).
@@ -360,7 +362,7 @@ public final class ControlJavaFunction extends ControlBlock implements VariableT
     }
 
     @Override
-    public int istAngeklickt(final int mouseX, final int mouseY) {
+    public int isClicked(final int mouseX, final int mouseY) {
         if ((xKlickMin <= mouseX) && (mouseX <= xKlickMax) && (yKlickMin <= mouseY) && (mouseY <= yKlickMax)) {
             return 1;  // // SCOPE symbol has been clicked --> Dialog or editing mode
         }
@@ -438,16 +440,16 @@ public final class ControlJavaFunction extends ControlBlock implements VariableT
         graphics.fillPolygon(new int[]{xdOUT0, xdOUT1, xdOUT2}, new int[]{ymOUT0, ymOUT1, ymOUT1}, THREE);
 
         // // Click area red triangles for terminal number change:
-        _inputTri._xKlickMinTerminal = xd2;
-        _inputTri._xKlickMaxTerminal = xd1;
+        _inputTri._xClickMinTerminal = xd2;
+        _inputTri._xClickMaxTerminal = xd1;
         _inputTri._yKlickMinTerminalSUB = yp0;  // // upper triangle --> SUB / reduction of the number of terminals
         _inputTri._yKlickMaxTerminalSUB = yp1;
         _inputTri._yKlickMinTerminalADD = ym1;  // // lower triangle --> ADD / increase the number of terminals
         _inputTri._yKlickMaxTerminalADD = ym0;
 
         // // the same for the outputs:
-        _outputTri._xKlickMinTerminal = xdOUT2;
-        _outputTri._xKlickMaxTerminal = xdOUT1;
+        _outputTri._xClickMinTerminal = xdOUT2;
+        _outputTri._xClickMaxTerminal = xdOUT1;
         _outputTri._yKlickMinTerminalSUB = ypOUT0;  // // upper triangle --> SUB / reduction of the number of terminals
         _outputTri._yKlickMaxTerminalSUB = ypOUT1;
         _outputTri._yKlickMinTerminalADD = ymOUT1;  // // lower triangle --> ADD / increase the number of terminals
@@ -497,14 +499,22 @@ public final class ControlJavaFunction extends ControlBlock implements VariableT
             _clearOutput = tokenMap.readDataLine("clearOutput", _clearOutput);
         }
 
-        if (tokenMap.containsToken("anzXIN")) {
+        if (tokenMap.containsToken("numberInputTerminals")) {
+            int inNumber = XIN.size();
+            inNumber = tokenMap.readDataLine("numberInputTerminals", inNumber);
+            setInputTerminalNumber(inNumber);
+        } else if (tokenMap.containsToken("anzXIN")) {
             int inNumber = XIN.size();
             inNumber = tokenMap.readDataLine("anzXIN", inNumber);
             setInputTerminalNumber(inNumber);
         }
         // these two blocks are for backward-compatibility with versions before 1.60. Here,
         // we have to correct the number of input/output terminals!
-        if (tokenMap.containsToken("anzYOUT")) {
+        if (tokenMap.containsToken("numberOutputTerminals")) {
+            int outNumber = YOUT.size();
+            outNumber = tokenMap.readDataLine("numberOutputTerminals", outNumber);
+            setOutputTerminalNumber(outNumber);
+        } else if (tokenMap.containsToken("anzYOUT")) {
             int outNumber = YOUT.size();
             outNumber = tokenMap.readDataLine("anzYOUT", outNumber);
             setOutputTerminalNumber(outNumber);

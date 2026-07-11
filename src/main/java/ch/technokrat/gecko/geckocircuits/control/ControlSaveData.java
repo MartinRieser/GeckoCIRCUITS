@@ -91,14 +91,14 @@ public final class ControlSaveData extends ControlBlock implements Operationable
         TEXT;
     }
 
-    enum SaveModus {
+    enum SaveMode {
 
         MANUAL,
         SIMULATION_END,
         DURING_SIMULATION;
 
-        static SaveModus getFromOrdinal(final int testOrdinal) {
-            for (SaveModus modus : SaveModus.values()) {
+        static SaveMode getFromOrdinal(final int testOrdinal) {
+            for (SaveMode modus : SaveMode.values()) {
                 if (modus.ordinal() == testOrdinal) {
                     return modus;
                 }
@@ -126,7 +126,7 @@ public final class ControlSaveData extends ControlBlock implements Operationable
     TextSeparator _itemSeparator = TextSeparator.SPACE;
     HeaderSymbol _headerSymbol = HeaderSymbol.HASH;
     private static final int DEFAULT_DIGITS = 4;
-    SaveModus _saveModus = SaveModus.MANUAL;
+    SaveMode _saveMode = SaveMode.MANUAL;
     OutputType _outputType = OutputType.TEXT;
     
     FileOverwrite _fileOverwrite = FileOverwrite.OVERWRITE;
@@ -161,7 +161,7 @@ public final class ControlSaveData extends ControlBlock implements Operationable
     }
 
     public boolean isSaveDuringSimulation() {
-        return _saveModus == SaveModus.DURING_SIMULATION;
+        return _saveMode == SaveMode.DURING_SIMULATION;
     }
 
     void removeSignal(final int removeIndex) {
@@ -250,7 +250,7 @@ public final class ControlSaveData extends ControlBlock implements Operationable
         ProjectData.appendAsString(ascii.append("\nselectedSignalIndices"), _selectedSignalIndices);
         ProjectData.appendAsString(ascii.append("\nitemSeparator"), _itemSeparator.ordinal());
         ProjectData.appendAsString(ascii.append("\nheaderSymbol"), _headerSymbol.ordinal());
-        ProjectData.appendAsString(ascii.append("\nsaveModus"), _saveModus.ordinal());
+        ProjectData.appendAsString(ascii.append("\nsaveMode"), _saveMode.ordinal());
         ProjectData.appendAsString(ascii.append("\nfileOverwrite"), _fileOverwrite.ordinal());
     }
 
@@ -267,7 +267,7 @@ public final class ControlSaveData extends ControlBlock implements Operationable
         for (int value : tmp) {
             _selectedSignalIndices.add(value);
         }
-        _saveModus = SaveModus.getFromOrdinal(tokenMap.readDataLine("saveModus", _saveModus.ordinal()));
+        _saveMode = SaveMode.getFromOrdinal(tokenMap.readDataLine("saveMode", tokenMap.readDataLine("saveModus", _saveMode.ordinal())));
         _fileOverwrite = FileOverwrite.getFromOrdinal(tokenMap.readDataLine("fileOverwrite", _fileOverwrite.ordinal()));        
     }
     

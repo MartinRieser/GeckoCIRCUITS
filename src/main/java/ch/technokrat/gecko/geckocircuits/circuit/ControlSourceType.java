@@ -17,7 +17,7 @@ public enum ControlSourceType {
     QUELLE_SIN(402, 0, "SINE"),
     QUELLE_DREIECK(403, 1, "TRIANGLE"),    
     QUELLE_RECHTECK(404, 2, "RECTANGLE"),
-    QUELLE_RANDOM(405, 3, "RANDOM"),
+    SOURCE_RANDOM(405, 3, "RANDOM"),
     QUELLE_IMPORT(406,4, "IMPORT");
     
     private final String _outputString;

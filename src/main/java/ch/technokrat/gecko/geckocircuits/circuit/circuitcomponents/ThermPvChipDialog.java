@@ -29,7 +29,7 @@ final class ThermPvChipDialog extends DialogElementLK {
     }
 
     @Override
-    public void baueGUIIndividual() {
+    public void buildGUIIndividual() {
         JPanel jpM = null;
         if (element instanceof ComponentCoupable) {
             jpM = DialogElementCONTROL.createComponentCouplingPanel(element);

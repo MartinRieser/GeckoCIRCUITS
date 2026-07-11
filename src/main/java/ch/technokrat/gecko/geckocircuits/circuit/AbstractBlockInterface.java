@@ -537,7 +537,7 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
         return nameOpt;
     }
 
-    public abstract int istAngeklickt(final int mouseX, final int mouseY);
+    public abstract int isClicked(final int mouseX, final int mouseY);
 
     public final void setInputTerminal(final int termIndex, final AbstractTerminal terminal) {
         XIN.set(termIndex, terminal);
@@ -555,7 +555,7 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
             Point startPoint = XIN.get(i).getPosition();
             Point stopPoint = YOUT.get(i).getPosition();
 
-            verb.setzeStartKnoten(startPoint);
+            verb.setStartNode(startPoint);
 
             int distX = startPoint.x - stopPoint.x;
             int distY = startPoint.y - stopPoint.y;
@@ -564,19 +564,19 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
 
             if (distX != 0) {
                 for (int j = 0; j <= Math.abs(distX); j++) {
-                    verb.setzeAktuellenPunktAufConnection(new Point(xPos, yPos));
+                    verb.setCurrentPointOnConnection(new Point(xPos, yPos));
                     xPos += distX / distX;
                 }
             }
 
             if (distY != 0) {
                 for (int j = 0; j <= Math.abs(distY); j++) {
-                    verb.setzeAktuellenPunktAufConnection(new Point(xPos, yPos));
+                    verb.setCurrentPointOnConnection(new Point(xPos, yPos));
                     yPos += distY / distY;
                 }
             }
 
-            verb.setzeEndKnoten(stopPoint.x, stopPoint.y);
+            verb.setEndNode(stopPoint.x, stopPoint.y);
             returnValue.add(verb);
         }
         return returnValue;
@@ -793,7 +793,7 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
 
     @Override
     public int elementAngeklickt(final Point clickPoint) {
-        return istAngeklickt(dpix * clickPoint.x,
+        return isClicked(dpix * clickPoint.x,
                 dpix * clickPoint.y);
     }
 

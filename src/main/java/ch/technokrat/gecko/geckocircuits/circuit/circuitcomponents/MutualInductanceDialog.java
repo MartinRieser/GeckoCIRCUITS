@@ -49,7 +49,7 @@ class MutualInductanceDialog extends DialogElementLK<MutualInductance> {
 
     @SuppressWarnings("unchecked")
     @Override
-    protected void baueGUIIndividual() {        
+    protected void buildGUIIndividual() {        
 
         JPanel pIN = createParameterPanel(element._couplingCoefficient);                        
         _jcbM.setSelected(element._showLines.getValue());

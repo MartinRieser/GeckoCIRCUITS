@@ -465,7 +465,7 @@ private void jMenuItemSignalGraphActionPerformed(java.awt.event.ActionEvent evt)
 }//GEN-LAST:event_jMenuItemSignalGraphActionPerformed
 
 private void jMenuItemCharacteristicsActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD//GEN-FIRST:event_jMenuItemCharacteristicsActionPerformed
-  final AbstractDataContainer ramData = _regelBlockOSZI.getZVDatenImRAM();
+  final AbstractDataContainer ramData = _regelBlockOSZI.getZVDataInRAM();
   if(ramData == null){
     return;
   }
@@ -478,7 +478,7 @@ private void jMenuItemCharacteristicsActionPerformed(java.awt.event.ActionEvent 
 }//GEN-LAST:event_jMenuItemCharacteristicsActionPerformed
 
 private void jMenuItemFourierActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD//GEN-FIRST:event_jMenuItemFourierActionPerformed
-  final AbstractDataContainer ramData = _regelBlockOSZI.getZVDatenImRAM();
+  final AbstractDataContainer ramData = _regelBlockOSZI.getZVDataInRAM();
   if(ramData == null){
     return;
   }
@@ -517,7 +517,7 @@ private void jMenuItemContinueActionPerformed(java.awt.event.ActionEvent evt) {/
 
     private void jMenuItemAvgSgnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemAvgSgnActionPerformed
       final DialogDefineAvg dialog = new DialogDefineAvg(this, true,
-                                                         (DataContainerIntegralCalculatable)_regelBlockOSZI.getZVDatenImRAM());
+                                                         (DataContainerIntegralCalculatable)_regelBlockOSZI.getZVDataInRAM());
       dialog.setVisible(true);
     }//GEN-LAST:event_jMenuItemAvgSgnActionPerformed
 

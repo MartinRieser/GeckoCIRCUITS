@@ -33,7 +33,7 @@ class ControlAmpereMeterDialog extends DialogElementCONTROL<AbstractCurrentMeasu
     }
 
     @Override
-    protected void baueGuiIndividual() {
+    protected void buildIndividualGUI() {
         if (element instanceof ComponentCoupable) {
             jpM = createComponentCouplingPanel((AbstractBlockInterface) element);
             if (element instanceof ControlFlowMeter) {
