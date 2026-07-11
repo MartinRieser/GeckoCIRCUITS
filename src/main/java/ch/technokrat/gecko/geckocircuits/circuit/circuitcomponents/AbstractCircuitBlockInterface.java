@@ -27,6 +27,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Base class for all schematic circuit (power-electronic) elements.
+ * Provides painting of foreground/background layers, connector lines,
+ * and measurement hooks for current and voltage.
+ */
 @SuppressWarnings("rawtypes")
 public abstract class AbstractCircuitBlockInterface extends AbstractBlockInterface {
 

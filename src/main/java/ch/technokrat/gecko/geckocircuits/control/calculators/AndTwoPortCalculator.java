@@ -19,6 +19,12 @@ package ch.technokrat.gecko.geckocircuits.control.calculators;
  */
 public final class AndTwoPortCalculator extends AbstractTwoInputsOneOutputCalculator {
 
+    /**
+     * Computes the logical AND of two input signals (output 1 only if both
+     * inputs exceed the signal threshold, otherwise 0).
+     *
+     * @param deltaT the simulation time step (unused)
+     */
     @Override
     public void calculateYOUT(final double deltaT) {
         if (_inputSignal[0][0] > SIGNAL_THRESHOLD && _inputSignal[1][0] > SIGNAL_THRESHOLD) {

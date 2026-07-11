@@ -18,6 +18,11 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalc
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+/**
+ * Control block implementing the ABC-to-DQ (Park/Clarke) transformation, converting
+ * three-phase stationary signals (a, b, c) into a rotating reference frame (d, q)
+ * using the supplied angle &theta;.
+ */
 public final class ControlABCDQ extends ControlBlock {
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlABCDQ.class, "ABCDQ", I18nKeys.ABC_DQ_TRANSFORM);

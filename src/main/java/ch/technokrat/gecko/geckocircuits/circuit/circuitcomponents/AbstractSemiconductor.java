@@ -29,6 +29,13 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * Abstract base class for semiconductor components (diodes, switches).
+ * Provides on/off resistance parameters, current-dependent loss coefficients,
+ * parallel device count, and loss file management.
+ *
+ * <p>Parameter array indices: index 2 = on-resistance, index 3 = off-resistance,
+ * index 6 = on current coefficient (kOn), index 7 = off current coefficient (kOff),
+ * index 12 = number of paralleled devices.</p>
  *
  * @author andy diodes and switches are abstractSemiconductors.
  */
@@ -106,10 +113,21 @@ public abstract class AbstractSemiconductor extends AbstractTwoPortPowerCircuitB
         return 3;
     }
 
+    /**
+     * Hook for subclasses to add external files (e.g. loss data files).
+     *
+     * @param _newFilesToAdd list of files to add
+     */
     public void addFiles(List<GeckoFile> _newFilesToAdd) {
     }
 
     @SuppressWarnings("unchecked")
+    /**
+     * Returns the list of files associated with this semiconductor (e.g. loss
+     * files), or an empty list if the component is not loss-calculatable.
+     *
+     * @return unmodifiable list of associated Gecko files
+     */
     public List<GeckoFile> getFiles() {
         if (this instanceof LossCalculatable) {
             List<GeckoFile> returnValue = new ArrayList<GeckoFile>();
@@ -125,6 +143,12 @@ public abstract class AbstractSemiconductor extends AbstractTwoPortPowerCircuitB
     }
 
     @Override
+    /**
+     * Returns the list of scriptable operations for this semiconductor, such
+     * as setting a loss file at runtime.
+     *
+     * @return unmodifiable list of operation interfaces
+     */
     public List<OperationInterface> getOperationEnumInterfaces() {
         List<OperationInterface> returnValue = new ArrayList<OperationInterface>();
         returnValue.add(new OperationInterface("setLossFile", I18nKeys.SET_LOSS_FILE_DOC) {

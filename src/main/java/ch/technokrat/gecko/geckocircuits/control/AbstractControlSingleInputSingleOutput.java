@@ -15,6 +15,9 @@ package ch.technokrat.gecko.geckocircuits.control;
 
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Base class for control blocks with exactly one input and one output terminal.
+ */
 public abstract class AbstractControlSingleInputSingleOutput extends ControlBlock {
     private static final long serialVersionUID = 1L;
 

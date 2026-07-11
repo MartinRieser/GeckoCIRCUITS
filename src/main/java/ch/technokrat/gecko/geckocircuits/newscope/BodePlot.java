@@ -20,9 +20,14 @@ import java.awt.Dialog;
 import java.util.Stack;
 
 /**
+ * Dialog displaying a Bode plot (magnitude and phase diagrams) from frequency
+ * response data.
  *
  * @author andy
+ * @deprecated use {@link BodePlot2} which is a JPanel-based component with
+ * improved frequency axis labeling in rad/sec.
  */
+@Deprecated
 @SuppressWarnings({"serial", "deprecation"})
 public class BodePlot extends GeckoDialog {
     private static final long serialVersionUID = 1L;

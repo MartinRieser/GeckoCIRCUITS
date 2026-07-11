@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.general;
 
+/**
+ * Matcher implementation that tests whether a data word contains a search word
+ * as a substring.
+ */
 public class ContainsMatcher
   implements SuggestMatcher
 {

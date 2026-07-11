@@ -16,6 +16,10 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 import ch.technokrat.gecko.geckocircuits.circuit.TerminalTwoPortComponent;
 import java.awt.Graphics2D;
 
+/**
+ * Standard two-port power circuit block with one input terminal and one output
+ * terminal arranged vertically at a fixed distance.
+ */
 public abstract class AbstractTwoPortPowerCircuitBlock extends AbstractCircuitBlockInterface {
     private static final int TWO_PORT_DIST = 2;            
 
@@ -29,6 +33,10 @@ public abstract class AbstractTwoPortPowerCircuitBlock extends AbstractCircuitBl
         graphics.drawLine(0, dpix * 2, 0, -dpix * 2);        
     }
         
+    /**
+     * Creates the input and output terminals for the two-port topology,
+     * spaced vertically at {@value #TWO_PORT_DIST} units from center.
+     */
     private void createTwoPortTerminals() {
         XIN.add(new TerminalTwoPortComponent(this, -TWO_PORT_DIST));
         final TerminalTwoPortComponent outTerminal = new TerminalTwoPortComponent(this, TWO_PORT_DIST);

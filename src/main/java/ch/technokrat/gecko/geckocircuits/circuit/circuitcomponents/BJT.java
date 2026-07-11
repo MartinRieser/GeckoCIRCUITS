@@ -34,6 +34,12 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 // // Power circuit Ideal switch (high or low resistance, therefore bidirectional)
 // BJT is NOT an AbstractSwitch, since it does not connect to a "control gate"!
+/**
+ * Bipolar Junction Transistor (BJT) model supporting both NPN and PNP types.
+ * Implemented via a hidden sub-circuit containing two diodes, two controlled
+ * current sources, and a base resistance. BJT is not an AbstractSwitch since
+ * it does not connect to a control gate.
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public final class BJT extends AbstractTwoPortPowerCircuitBlock implements HiddenSubCircuitable {
     

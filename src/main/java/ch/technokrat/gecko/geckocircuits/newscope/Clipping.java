@@ -14,12 +14,17 @@
 package ch.technokrat.gecko.geckocircuits.newscope;
 
 /**
+ * Defines the Y-axis display clipping (scaling) modes for oscilloscope diagrams:
+ * global auto-scaling, zoomed (user range), or local auto-scaling per sub-view.
  *
  * @author andy
  */
 public enum Clipping {
-    GLOBAL_AUTO,    
+    /** Auto-scale using the full data range across all traces. */
+    GLOBAL_AUTO,
+    /** Use the user-defined zoom range for scaling. */
     ZOOMED,
+    /** Auto-scale using only the currently visible time window. */
     LOCAL_AUTO;    
     
     static Clipping getFromOrdinal(final int ordinal) {

@@ -23,8 +23,18 @@ import java.util.List;
  * @author andreas
  */
 public interface ComponentCoupable extends Operationable {
+    /** @return the coupling data structure holding the referenced elements. */
     ComponentCoupling getComponentCoupling();
+    /** @return the i18n key for the coupling dialog title. */
     I18nKeys getCouplingTitle();
+    /** @return the i18n key for the message shown when a referenced component is missing. */
     I18nKeys getMissingComponentsString();
-    void checkComponentCompatibility(final Object testObject, List<AbstractBlockInterface> insertList);    
+    /**
+     * Checks whether the tested object is compatible for coupling and adds it to the
+     * insert list if so.
+     *
+     * @param testObject the candidate element to test
+     * @param insertList list of compatible elements (modified in place)
+     */
+    void checkComponentCompatibility(final Object testObject, List<AbstractBlockInterface> insertList);
 }

@@ -13,17 +13,21 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.losscalculation;
 
-public interface AbstractLossCalculator {    
+/**
+ * Contract for semiconductor loss calculators. Implementations compute
+ * conduction and switching losses per simulation step and report the
+ * cumulative total.
+ */
+public interface AbstractLossCalculator {
     /**
-     * 
-     * @param current actual current value in AMP
-     * @param temperature Semiconductor temperature in C
-     * @param deltaT Timestep
-     * @param state for switches: on-state or off-state
-     * @return 
+     * Calculates conduction and switching losses for one simulation step.
+     *
+     * @param current actual current value in amperes
+     * @param temperature semiconductor temperature in degrees Celsius
+     * @param deltaT simulation time step in seconds
      */
-    void calcLosses(final double current, final double temperature, final double deltaT);    
-    
+    void calcLosses(final double current, final double temperature, final double deltaT);
+
     /**
      * careful: before, you have to call "calcLosses"!
      * @return the loss power in Watts

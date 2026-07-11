@@ -16,8 +16,9 @@ package ch.technokrat.gecko.geckocircuits.control;
 import ch.technokrat.gecko.geckocircuits.math.NComplex;
 
 /**
-     * This helper class is only used for making a nicer "toString" Method for complex numbers
-     */
+ * Helper class that formats complex numbers for UI display, producing an HTML string
+ * when the imaginary part is non-zero.
+ */
     class ComplexPrinter {
         public final NComplex _value; // NOPMD
         

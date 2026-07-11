@@ -15,6 +15,9 @@
 package ch.technokrat.gecko.geckocircuits.newscope;
 
 /**
+ * Compresses a byte array by storing inter-sample differences using the minimum
+ * number of bits needed to represent the largest difference, reducing storage
+ * for simulation data.
  *
  * @author Zimmi
  */

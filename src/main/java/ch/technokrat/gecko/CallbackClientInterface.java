@@ -13,16 +13,35 @@
  */
 package ch.technokrat.gecko;
 
-public interface CallbackClientInterface 
+/**
+ * RMI callback interface for propagating messages (system output, errors,
+ * status) from the GeckoCIRCUITS server back to connected clients such as
+ * MATLAB.
+ */
+public interface CallbackClientInterface
   extends java.rmi.Remote{
-  // This remote method is invoked by a callback
-  // server to make a callback to an client which
-  // implements this interface.
-  // @param message - a string containing information for the
-  //                  client to process upon being called back.
 
-    void printSystemMessage(String message) throws java.rmi.RemoteException;           
+    /**
+     * Displays a system-level message on the client.
+     *
+     * @param message the message string to process
+     * @throws java.rmi.RemoteException if a remote communication error occurs
+     */
+    void printSystemMessage(String message) throws java.rmi.RemoteException;
+
+    /**
+     * Displays an error-level message on the client.
+     *
+     * @param message the error message string to process
+     * @throws java.rmi.RemoteException if a remote communication error occurs
+     */
     void printErrorMessage(String message) throws java.rmi.RemoteException;
 
+    /**
+     * Returns client identification information (user, hostname, connection date).
+     *
+     * @return a string containing client status info
+     * @throws java.rmi.RemoteException if a remote communication error occurs
+     */
     String ping() throws java.rmi.RemoteException;
 }

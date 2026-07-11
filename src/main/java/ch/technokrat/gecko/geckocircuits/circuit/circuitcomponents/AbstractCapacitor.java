@@ -24,6 +24,15 @@ import java.awt.Window;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Abstract base class for capacitor components, supporting both linear and
+ * nonlinear (voltage-dependent) capacitance characteristics.
+ * <p>
+ * parameter[] array layout:
+ * [0] = nominal capacitance, [1] = initial voltage, [2]-[5] = state variables,
+ * [6] = original starting capacitance (nonlinear), [7] = actual nonlinear capacitance value,
+ * [8]-[10] = additional state variables.
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class AbstractCapacitor extends AbstractNonLinearCircuitComponent 
 implements CurrentMeasurable, DirectVoltageMeasurable {
@@ -67,6 +76,12 @@ implements CurrentMeasurable, DirectVoltageMeasurable {
         initialize();
     }
 
+    /**
+     * Updates the nonlinear capacitance value based on the current voltage.
+     * Always returns {@code false} (no convergence iteration needed for capacitors).
+     *
+     * @return always false
+     */
     public boolean updateNonlinearCapacitances() {
         // parameter[6] : original starting capacitance
         // parameter[7] : actual value of nonlinear capacitance        

@@ -16,6 +16,9 @@ package ch.technokrat.gecko.geckocircuits.control;
 import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalculatable;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Control block that computes the sum of all connected input signals.
+ */
 public final class ControlAdd extends AbstractControlVariableInputs {
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlAdd.class, "ADD", I18nKeys.ADDITION);

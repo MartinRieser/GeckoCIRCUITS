@@ -15,7 +15,10 @@ package ch.technokrat.gecko.geckocircuits.circuit.losscalculation;
 
 import java.io.Serializable;
 
-// // Data container for a measurement curve -->
+/**
+ * Data container for a conduction loss measurement curve, storing a U/I characteristic
+ * (voltage vs. current) measured at a specific junction temperature.
+ */
 public class ConductionLossMeasurementCurve extends LossCurve implements Serializable {
     private static final long serialVersionUID = 1L;
    
@@ -26,10 +29,19 @@ public class ConductionLossMeasurementCurve extends LossCurve implements Seriali
     // usw.
     // // Parameter: T_junction --> specified during the measurement
     //
+    /**
+     * @param tj the junction temperature at which the measurement was taken
+     */
     public ConductionLossMeasurementCurve(double tj) {
         this.tj.setValueWithoutUndo(tj);
     }
 
+    /**
+     * Creates a deep copy of this curve, duplicating the data matrix and junction
+     * temperature.
+     *
+     * @return a new independent copy of this curve
+     */
     public ConductionLossMeasurementCurve copy() {
         ConductionLossMeasurementCurve copy = new ConductionLossMeasurementCurve(-1);
         copy.data = new double[this.data.length][this.data[0].length];

@@ -16,6 +16,10 @@ package ch.technokrat.gecko.geckocircuits.control;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+/**
+ * Base class for inverse trigonometric function control blocks
+ * (asin, acos, atan). Output is measured in radians.
+ */
 abstract class AbstractInversTrigFunction extends AbstractControlSingleInputSingleOutput {
     private static final long serialVersionUID = 1L;
     @Override

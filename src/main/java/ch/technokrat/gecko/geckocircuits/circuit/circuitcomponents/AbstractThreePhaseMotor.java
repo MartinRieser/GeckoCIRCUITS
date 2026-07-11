@@ -18,6 +18,11 @@ import ch.technokrat.gecko.geckocircuits.circuit.CircuitSourceType;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Graphics2D;
 
+/**
+ * Abstract base class for three-phase motor models. Defines the three-phase
+ * terminal layout with upper, mid, and lower left/right terminal connections,
+ * and provides dq-to-abc coordinate transformations.
+ */
 abstract class AbstractThreePhaseMotor extends AbstractMotor {
     private static final int THETA_M_INDEX = 5;
     private static final int ELECTRIC_TORQUE_INDEX = 6;        

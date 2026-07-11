@@ -17,6 +17,8 @@ import ch.technokrat.gecko.geckocircuits.general.ProjectData;
 import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
 
 /**
+ * Configures tick mark display settings for a diagram axis, including tick
+ * lengths, label visibility, minor tick count, and automatic tick spacing.
  *
  * @author andy
  */

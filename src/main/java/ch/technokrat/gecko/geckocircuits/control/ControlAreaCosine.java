@@ -16,6 +16,9 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.ACosCalculator;
 import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalculatable;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Control block that computes the arc cosine (inverse cosine) of its input signal.
+ */
 public final class ControlAreaCosine extends AbstractInversTrigFunction {
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlAreaCosine.class, "ACOS", I18nKeys.ACOS);

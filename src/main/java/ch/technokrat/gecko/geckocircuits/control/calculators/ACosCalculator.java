@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Calculates the arc cosine of the input signal.
+ */
 public final class ACosCalculator extends AbstractSingleInputSingleOutputCalculator {
 
     @Override

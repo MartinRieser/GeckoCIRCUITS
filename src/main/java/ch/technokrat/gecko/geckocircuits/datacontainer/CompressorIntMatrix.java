@@ -25,6 +25,9 @@ import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
 /**
+ * Compresses and decompresses 2-D integer matrices (simulation data) using the
+ * ZIP/Deflate algorithm, converting between {@code int[][]} and byte representations
+ * and caching byte buffers for reuse.
  *
  * @author andreas
  */

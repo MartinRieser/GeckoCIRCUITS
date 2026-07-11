@@ -21,6 +21,10 @@ import java.io.File;
 import java.io.FileWriter;
 import javax.swing.JOptionPane;
 
+/**
+ * Dialog for exporting CISPR-16 test receiver measurement data to a text file,
+ * supporting both dB&micro;V and raw Volt output formats.
+ */
 public class CisprDataExport extends GeckoDialog {
 
     private static final long serialVersionUID = 1L;
@@ -40,6 +44,12 @@ public class CisprDataExport extends GeckoDialog {
 
     }
 
+    /**
+     * Converts a dB&micro;V value back to the corresponding voltage in Volts.
+     *
+     * @param value the value in dB&micro;V
+     * @return the reconstructed voltage in Volts
+     */
     private static float calculateInverseDbMu(final double value) {
         return (float) (1e-6 * Math.exp(Math.log(10) * value / 20));
     }
@@ -216,6 +226,12 @@ public class CisprDataExport extends GeckoDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Reads the selected data row from the radio buttons and delegates to
+     * {@link #saveData(int, AbstractDataContainer, File, boolean)}.
+     *
+     * @param useDBMu if {@code true}, values are kept in dB&micro;V; otherwise converted to Volts
+     */
     private void doSave(final boolean useDBMu) {
             int dataIndex = -1;
             if (jRadioButtonMax.isSelected()) {                
@@ -235,6 +251,14 @@ public class CisprDataExport extends GeckoDialog {
     }        
     
 
+    /**
+     * Writes a single data row of the container to a text file (time + value per line).
+     *
+     * @param dataIndex the row index to export
+     * @param dataContainer the source data container
+     * @param file the destination file
+     * @param useDBMu if {@code true}, values are written in dB&micro;V; otherwise in Volts
+     */
     public static void saveData(final int dataIndex, final AbstractDataContainer dataContainer, final File file,
             final boolean useDBMu) {
         try {            

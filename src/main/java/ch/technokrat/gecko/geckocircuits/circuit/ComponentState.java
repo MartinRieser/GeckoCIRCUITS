@@ -14,10 +14,13 @@
 package ch.technokrat.gecko.geckocircuits.circuit;
 
 /**
+ * Represents the interaction state of a component during schematic editing.
  *
  * @author andreas
  */
 public enum ComponentState {
+    /** The component is currently selected by the user. */
     SELECTED,
+    /** The component has been placed and its creation is finished. */
     FINISHED;
 }

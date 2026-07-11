@@ -18,23 +18,44 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Base class for compile objects that manage Java source compilation for
+ * Java-based control blocks. Tracks compiled class containers and their
+ * compilation status.
  *
  * @author andreas
  */
 public abstract class AbstractCompileObject {
 
-    protected final Map<String, CompiledClassContainer> _classMap = new HashMap<String, CompiledClassContainer>();   
+    protected final Map<String, CompiledClassContainer> _classMap = new HashMap<String, CompiledClassContainer>();
 
+    /**
+     * @return the current compilation status
+     */
     public abstract CompileStatus getCompileStatus();
 
+    /**
+     * Sets the error status when compilation fails.
+     */
     abstract void setErrorStatus();
 
+    /**
+     * @return the compiler diagnostic message, if any
+     */
     public abstract String getCompilerMessage();
 
+    /**
+     * @return the fully qualified name of the main compiled class
+     */
     public abstract String getClassName();
 
+    /**
+     * @return the Java source code to be compiled
+     */
     public abstract String getSourceCode();
 
+    /**
+     * @return an unmodifiable map of compiled class names to their byte-code containers
+     */
     public final Map<String, CompiledClassContainer> getClassNameFileMap() {
         return Collections.unmodifiableMap(_classMap);
     }

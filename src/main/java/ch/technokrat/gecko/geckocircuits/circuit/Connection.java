@@ -29,11 +29,17 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.UndoableEdit;
 import ch.technokrat.modelviewcontrol.AbstractUndoGenericModel;
 
+/**
+ * Represents a wire/connection between two nodes on the circuit schematic. The path
+ * is stored as a list of grid points forming an orthogonal polyline, and supports
+ * undo/redo of moves via {@link MoveConnectionUndoAction}.
+ */
 public class Connection extends AbstractCircuitSheetComponent implements ComponentTerminable, Labable {
 
     private boolean _inMoveMode = false;  // // is only used for de-selection using ESCAPE
     private final List<Point> _connectorPoints = new ArrayList<Point>();
-    private boolean _movementWestEast;  // // Direction of movement with the mouse when dragging the connection
+    /** Direction of movement with the mouse when dragging the connection. */
+    private boolean _movementWestEast;
     private CircuitLabel _label = new CircuitLabel();
     private final List<Point> _pointsBeforeMove = new ArrayList<Point>();
     private ConnectorType _connectorType;
@@ -41,8 +47,11 @@ public class Connection extends AbstractCircuitSheetComponent implements Compone
             new TerminalConnection(this, _connectorPoints, TerminalConnection.Location.START);
     private final TerminalConnection _endTerminal =
             new TerminalConnection(this, _connectorPoints, TerminalConnection.Location.END);
-    private boolean _isInitialized;    
+    /** Flag indicating the connection has been fully initialized (first move completed). */
+    private boolean _isInitialized;
+    /** Intermediate routing points when the connection follows a complex path. */
     public List<Point> _subPaths = new ArrayList<Point>();
+    /** Simplified corner coordinates after trimming redundant collinear points. */
     private List<Point> _trimmedCoords = new ArrayList<Point>();
 
     @SuppressWarnings("this-escape")
@@ -152,6 +161,12 @@ public class Connection extends AbstractCircuitSheetComponent implements Compone
         }
     }
 
+    /**
+     * Extends the connection horizontally from the start point towards the target point.
+     *
+     * @param point     the target end point
+     * @param startPoint the fixed start point
+     */
     private void moveHorizontal(final Point point, final Point startPoint) {
         final int xEcke = point.x, yEcke = startPoint.y;
 
@@ -175,6 +190,12 @@ public class Connection extends AbstractCircuitSheetComponent implements Compone
         }
     }
 
+    /**
+     * Extends the connection vertically from the start point towards the target point.
+     *
+     * @param point     the target end point
+     * @param startPoint the fixed start point
+     */
     private void moveVertical(final Point point, final Point startPoint) {
         final int xEcke = startPoint.x, yEcke = point.y;
         int dirX = -1;
@@ -228,8 +249,14 @@ public class Connection extends AbstractCircuitSheetComponent implements Compone
         //nothing todo here!
     }
 
+    /**
+     * Paints the connection as a colored polyline, with color determined by the
+     * simulation domain (LK, CONTROL, THERMAL, RELUCTANCE).
+     *
+     * @param graphics the graphics context
+     */
     @Override
-    public final void paintGeckoComponent(final Graphics2D graphics) {        
+    public final void paintGeckoComponent(final Graphics2D graphics) {
         Color fFertig = GlobalColors.farbeFertigConnectionLK;
         switch (_connectorType) {
             case RELUCTANCE:
@@ -402,6 +429,10 @@ public class Connection extends AbstractCircuitSheetComponent implements Compone
         throw new UnsupportedOperationException("Not yet implemented");
     }
     
+    /**
+     * Reduces the connector point list to only the corner points, removing intermediate
+     * collinear points that lie on a straight segment.
+     */
     public void trimCoordinates() {
         if (_connectorPoints.size() > 1) {
             _trimmedCoords.add(new Point(_connectorPoints.get(0).x, _connectorPoints.get(0).y));
@@ -432,6 +463,10 @@ public class Connection extends AbstractCircuitSheetComponent implements Compone
         return _trimmedCoords;
     }
 
+    /**
+     * Undoable edit that records the old and new positions of a moved connection,
+     * allowing the move to be reverted or re-applied.
+     */
     private class MoveConnectionUndoAction implements UndoableEdit {
         private final List<Point> _newPositions = new ArrayList<Point>();
         private final List<Point> _oldPositions = new ArrayList<Point>();

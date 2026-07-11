@@ -31,6 +31,11 @@ import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Abstract dialog for semiconductor (power switch) components with tabbed
+ * characteristic and loss-calculation panels. Supports switching between
+ * simple and detailed loss models via radio buttons.
+ */
 public abstract class AbstractDialogPowerSwitch<T extends AbstractSemiconductor> extends DialogElementLK<T> {
     
     private static final long serialVersionUID = 1L;
@@ -72,8 +77,16 @@ public abstract class AbstractDialogPowerSwitch<T extends AbstractSemiconductor>
         _panelHalbleiterDetail = new JPanelSemiconductorDetailButtons(detailed);
     }
     
+    /**
+     * Creates the panel containing component-specific parameter input fields.
+     *
+     * @return the parameter panel
+     */
     public abstract JPanel createParameterPanel();
-    
+
+    /**
+     * Builds the tabbed GUI with "Characteristic" and "Losses" tabs.
+     */
     @Override
     protected final void buildGUIIndividual() {
         _tabber = new JTabbedPane();        

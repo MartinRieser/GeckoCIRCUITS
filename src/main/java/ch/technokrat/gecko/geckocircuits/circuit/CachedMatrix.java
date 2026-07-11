@@ -16,6 +16,11 @@ package ch.technokrat.gecko.geckocircuits.circuit;
 import ch.technokrat.gecko.geckocircuits.datacontainer.ShortArrayCache;
 import ch.technokrat.gecko.geckocircuits.datacontainer.ShortMatrixCache;
 
+/**
+ * Caches the LU decomposition of a circuit system matrix, with sparse
+ * optimization for matrices larger than 50x50. Stores both the decomposed
+ * matrix and pre-computed index arrays for sparse forward/back substitution.
+ */
 public final class CachedMatrix extends AbstractCachedMatrix {
 
     private double[][] _LUDecomp;
@@ -56,6 +61,13 @@ public final class CachedMatrix extends AbstractCachedMatrix {
         calculateUpperSparseLUDecompositionIndices();
     }
 
+    /**
+     * Returns the memory requirement in bytes for the LU decomposition storage.
+     * Computed as {@code 2 * n * n * Double.SIZE / 8} where n is the matrix
+     * dimension, accounting for both the L and U factors.
+     *
+     * @return the memory requirement in bytes
+     */
     @Override
     int calculateMemoryRequirement() {
         return 2 * _originalMatrix.length * _originalMatrix.length * Double.SIZE / 8;
@@ -70,6 +82,13 @@ public final class CachedMatrix extends AbstractCachedMatrix {
         }
     }
 
+    /**
+     * Performs a standard (non-sparse) LU decomposition with partial pivoting
+     * using a Crout/Doolittle algorithm. Throws {@link RuntimeException} if the
+     * matrix is singular.
+     *
+     * @param aMatrix the square matrix to decompose (1-indexed, row 0/col 0 unused)
+     */
     public void doLUDecomposition(final double[][] aMatrix) {
 
         // Use a "left-looking", dot-product, Crout/Doolittle algorithm.
@@ -150,6 +169,13 @@ public final class CachedMatrix extends AbstractCachedMatrix {
         }
     }
 
+    /**
+     * Performs a sparse-optimized LU decomposition that only processes non-zero
+     * entries via cached row index arrays, providing significant speedup for
+     * large matrices.
+     *
+     * @param aMatrix the square matrix to decompose (1-indexed, row 0/col 0 unused)
+     */
     private void doLUDecompositionSparse(final double[][] aMatrix) {
         // Use a "left-looking", dot-product, Crout/Doolittle algorithm.
         assert aMatrix.length == aMatrix[0].length;
@@ -277,6 +303,14 @@ public final class CachedMatrix extends AbstractCachedMatrix {
         _LUDecomp[j] = t;
     }
 
+    /**
+     * Solves the linear system A*x = b using the pre-computed LU decomposition.
+     * Performs forward substitution (L*Y = B(piv,:)) then back substitution
+     * (U*X = Y), using sparse index arrays for efficiency.
+     *
+     * @param bVector the right-hand side vector b
+     * @return the solution vector x
+     */
     public double[] solve(final double[] bVector) {
         for (int i = 0; i < _piv.length; i++) {
             _XCol[i + 1] = bVector[_piv[i]];
@@ -301,6 +335,10 @@ public final class CachedMatrix extends AbstractCachedMatrix {
         return _XCol;
     }
 
+    /**
+     * Pre-computes the sparse column indices of the lower-triangular factor L
+     * for efficient forward substitution during solving.
+     */
     private void calculateLowerSparseLUDecompositionIndices() {
         short[][] lowerLUIndices = new short[_LUDecomp.length][];
 
@@ -325,6 +363,10 @@ public final class CachedMatrix extends AbstractCachedMatrix {
         _lowerLUIndices = lowerLUIndices;
     }
 
+    /**
+     * Pre-computes the sparse column indices of the upper-triangular factor U
+     * for efficient back substitution during solving.
+     */
     private void calculateUpperSparseLUDecompositionIndices() {
 
         short[][] upper = new short[_LUDecomp.length][];

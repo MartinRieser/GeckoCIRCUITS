@@ -23,6 +23,10 @@ import java.awt.event.ActionListener;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Dialog for editing capacitor parameters, including capacitance value, initial voltage,
+ * and non-linear characteristic definition.
+ */
 class CapacitorDialog extends DialogElementLK<AbstractCapacitor> {
 
     private static final long serialVersionUID = 1L;

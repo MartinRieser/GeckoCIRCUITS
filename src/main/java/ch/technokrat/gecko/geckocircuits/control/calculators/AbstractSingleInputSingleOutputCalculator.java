@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Abstract base class for control calculators with exactly one input
+ * and one output signal.
+ */
 abstract class AbstractSingleInputSingleOutputCalculator extends AbstractControlCalculatable {
         double[] _inputSignalValue;
         double[] _outputSignalValue;

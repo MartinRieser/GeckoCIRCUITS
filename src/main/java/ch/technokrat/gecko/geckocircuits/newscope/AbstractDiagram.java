@@ -29,6 +29,11 @@ import java.util.List;
 import javax.swing.JPanel;
 
 /**
+ * Base class for scope diagrams in the newscope (GraferV4) framework.
+ * Manages the diagram lifecycle: axis layout, curve rendering, autoscaling,
+ * mouse-driven zoom/pan, and serialisation. A diagram supports one X-axis
+ * and exactly two Y-axes (primary Y1 and secondary Y2) so that curves with
+ * different units can be overlaid.
  *
  * @author andy
  */
@@ -36,8 +41,11 @@ public abstract class AbstractDiagram extends JPanel {
 
     private static final long serialVersionUID = 1L;
     public transient final DiagramSettings _diagramSettings;
+    /** Primary X-axis (usually time). */
     protected transient Axis _xAxis = new Axis(Axis.Direction.X, false, this);
+    /** Primary Y-axis (left side) for curves assigned to Y1. */
     protected transient Axis _yAxis1 = new Axis(Axis.Direction.Y, false, this);
+    /** Secondary Y-axis (right side) for curves assigned to Y2, allowing a second unit scale. */
     protected transient Axis _yAxis2 = new Axis(Axis.Direction.Y, true, this);
     private transient List<AbstractCurve> _curves = Collections.unmodifiableList(new ArrayList<AbstractCurve>());
     protected int _ySpaceUpper = DY_IN_UPPER_SMALL;
@@ -461,6 +469,10 @@ public abstract class AbstractDiagram extends JPanel {
         return !diagramName.isEmpty() && !diagramName.startsWith("GRF");
     }
 
+    /**
+     * Registers mouse listeners for slider interaction, zoom-window
+     * selection (drag-rectangle), and mouse-wheel zoom/pan.
+     */
     private void addMouseListeners() {
 
         this.addMouseListener(new MouseListener() {

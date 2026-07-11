@@ -34,6 +34,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Abstract base class for motor components. Motors are simulated using a
+ * hidden subcircuit (electrical model) combined with mechanical equations
+ * (torque, inertia, friction, angular position/velocity).
+ * <p>
+ * The parameter[] array layout is shared across motor subclasses with
+ * subclass-specific index accessors (e.g. {@link #getInertiaIndex()},
+ * {@link #getPolePairIndex()}, {@link #getIndexForLoadTorque()}).
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class AbstractMotor extends AbstractCircuitBlockInterface implements PotentialCoupable, HiddenSubCircuitable, PostCalculatable {    
     
@@ -175,7 +184,15 @@ public abstract class AbstractMotor extends AbstractCircuitBlockInterface implem
         // extend if necessary.
     }
     
-    public static AbstractCircuitBlockInterface fabricHiddenSub(final CircuitType typ, 
+    /**
+     * Creates a hidden subcircuit component of the given type and registers
+     * it with this motor via reflective instantiation.
+     *
+     * @param typ the circuit type of the hidden subcircuit element
+     * @param parent the parent motor component
+     * @return the newly created hidden subcircuit element
+     */
+    public static AbstractCircuitBlockInterface fabricHiddenSub(final CircuitType typ,
             final AbstractCircuitSheetComponent parent) {
         final AbstractCircuitBlockInterface returnValue = AbstractTypeInfo.fabricHiddenSub(typ, parent);
         assert parent instanceof AbstractMotor: "Invalid circuit type:  " + typ;
@@ -185,6 +202,13 @@ public abstract class AbstractMotor extends AbstractCircuitBlockInterface implem
         return returnValue;
     }
     
+    /**
+     * Performs one simulation step: reads the load torque, calculates motor
+     * equations, mechanical parameters, and updates source/history values.
+     *
+     * @param deltaT the simulation time step in seconds
+     * @param time the current simulation time in seconds
+     */
     @Override
     public final void doCalculation(final double deltaT, final double time) {
         _torqueMech = parameter[getIndexForLoadTorque()];
@@ -217,6 +241,12 @@ public abstract class AbstractMotor extends AbstractCircuitBlockInterface implem
         _omegaMechanicOld = _omegaMechanic;
     }
 
+    /**
+     * Computes the mechanical parameters (angular velocity, position, torque)
+     * from the electrical torque and load torque using the equation of motion.
+     *
+     * @param deltaT the simulation time step in seconds
+     */
     final void calculateMechanicalParameters(final double deltaT) {
         _torqueEl = _polePairs * calculateElectricTorque();
         _omegaMechanic = (_torqueEl - _torqueMech + _inertia * _omegaMechanicOld / deltaT) / (_inertia / deltaT + _frictionMech);                        

@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Calculates the absolute value of the input signal.
+ */
 public final class AbsCalculator extends AbstractSingleInputSingleOutputCalculator {
 
     @Override

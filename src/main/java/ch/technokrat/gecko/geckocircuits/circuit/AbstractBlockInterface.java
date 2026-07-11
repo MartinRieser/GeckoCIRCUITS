@@ -43,6 +43,11 @@ import javax.swing.undo.UndoableEdit;
 import ch.technokrat.modelviewcontrol.AbstractUndoGenericModel;
 import ch.technokrat.modelviewcontrol.ModelMVC;
 
+    /**
+     * Base abstract class for all circuit block components (control blocks,
+     * power-circuit elements, thermal elements). Provides parameter management,
+     * terminal handling, serialization, painting, and undo/redo support.
+     */
     @SuppressWarnings("rawtypes")
     public abstract class AbstractBlockInterface extends AbstractCircuitSheetComponent
         implements ComponentTerminable {
@@ -547,6 +552,11 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
         YOUT.set(termIndex, terminal);
     }
 
+    /**
+     * Builds the short-circuit connector lines between matching input and output terminals.
+     *
+     * @return list of connections linking each input terminal to its corresponding output terminal
+     */
     public List<Connection> getShortConnectors() {
         final List<Connection> returnValue = new ArrayList<Connection>();
 
@@ -585,9 +595,8 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
     /**
      * return null if no terminal was clicked!
      *
-     * @param px screen coordinates in (dpix-scaled!) pixel
-     * @param py
-     * @return
+     * @param clickPoint screen coordinates in (dpix-scaled!) pixel
+     * @return the clicked terminal, or null if none was hit
      */
     public TerminalInterface clickedTerminal(final Point clickPoint) {
         for (TerminalInterface testTerm : getAllTerminals()) {
@@ -679,6 +688,14 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
         return vecAllNodes;
     }
 
+    /**
+     * Copies all "LK Block Pars" (LeistungsKreis block parameters) from this
+     * component to the target copy, including sheet position, parameter array,
+     * terminals, orientation, optimizer names, loss properties, and all
+     * registered user parameters.
+     *
+     * @param copy the target block interface to receive the copied parameters
+     */
     @SuppressWarnings("unchecked")
     public void copyLKBlockPars(final AbstractBlockInterface copy) {
         copy.setSheetPositionWithoutUndo(getSheetPosition());

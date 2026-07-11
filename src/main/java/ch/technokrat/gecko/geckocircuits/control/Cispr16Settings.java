@@ -17,6 +17,11 @@ import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.TextInfoType;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Holds the user-configurable parameters for a CISPR-16 EMI test receiver block,
+ * including detector selection (peak, quasi-peak, average), frequency range, and
+ * Blackman window settings.
+ */
 public final class Cispr16Settings {
     
     private static final double DEFAULT_MAX_FREQ = 2000000;

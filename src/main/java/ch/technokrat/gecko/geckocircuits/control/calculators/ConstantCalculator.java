@@ -15,8 +15,15 @@ package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 import ch.technokrat.gecko.geckocircuits.control.NotCalculateableMarker;
 
+/**
+ * Calculator that outputs a single constant value. Since it never needs to be
+ * evaluated during simulation, it implements {@link NotCalculateableMarker}.
+ */
 public final class ConstantCalculator extends AbstractControlCalculatable implements NotCalculateableMarker {
 
+    /**
+     * @param constValue the constant value to output
+     */
     public ConstantCalculator(final double constValue) {
         super(0, 1);
         setConst(constValue);

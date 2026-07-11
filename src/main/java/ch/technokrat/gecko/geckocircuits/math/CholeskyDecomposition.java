@@ -52,8 +52,7 @@ public class CholeskyDecomposition implements java.io.Serializable {
  * ------------------------ */
 
    /** Cholesky algorithm for symmetric and positive definite matrix.
-   @param  A   Square, symmetric matrix.
-   @return     Structure to access L and isspd flag.
+   @param  source   Square, symmetric matrix to decompose.
    */
 
    public CholeskyDecomposition (Matrix source) {

@@ -17,6 +17,10 @@ import ch.technokrat.gecko.geckocircuits.circuit.NameAlreadyExistsException;
 import ch.technokrat.gecko.geckocircuits.newscope.GeckoDialog;
 import javax.swing.JOptionPane;
 
+/**
+ * Dialog for configuring the basic settings (name, visibility) of a CISPR-16
+ * EMI test receiver component.
+ */
 public class CisprBlockSettings extends GeckoDialog {
     private static final long serialVersionUID = 1L;
     private final transient ControlCISPR16 _control;

@@ -17,6 +17,9 @@ import ch.technokrat.gecko.geckocircuits.general.ProjectData;
 import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
 
 /**
+ * Manages grid line visibility and styling for major and minor grid lines.
+ * Visibility can be automatically suppressed when the diagram is too small
+ * to display grids legibly.
  *
  * @author andy
  */

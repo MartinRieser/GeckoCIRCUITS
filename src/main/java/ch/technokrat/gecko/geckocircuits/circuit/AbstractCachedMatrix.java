@@ -1,5 +1,10 @@
 package ch.technokrat.gecko.geckocircuits.circuit;
 
+/**
+ * Base class for cached LU-decomposed matrices used in circuit simulation.
+ * Caching is keyed by matrix content hash codes to avoid redundant
+ * factorizations of identical system matrices.
+ */
 abstract class AbstractCachedMatrix {
 
     protected int _hashCode = -1;
@@ -21,12 +26,29 @@ abstract class AbstractCachedMatrix {
         _originalMatrix = matrix;
     }
 
+    /**
+     * Initializes the LU decomposition cache for the stored matrix.
+     */
     abstract void initLUDecomp();
 
+    /**
+     * Removes the cached LU decomposition, freeing memory.
+     */
     abstract public void deleteCache();
 
+    /**
+     * Solves the linear system A*x = b using the cached LU decomposition.
+     *
+     * @param bVector the right-hand side vector
+     * @return the solution vector x
+     */
     abstract public double[] solve(final double[] bVector);
 
+    /**
+     * Estimates the number of bytes required to store the LU decomposition cache.
+     *
+     * @return estimated memory requirement in bytes
+     */
     abstract int calculateMemoryRequirement();
 
     public long secondHashCode() {
@@ -54,6 +76,12 @@ abstract class AbstractCachedMatrix {
         return _hashCode;
     }
 
+    /**
+     * Compares this cached matrix with another for element-wise equality.
+     *
+     * @param obj the object to compare
+     * @return true if the matrices have identical dimensions and element values
+     */
     @Override
     public boolean equals(final Object obj) {
         if (obj == null) {
@@ -79,15 +107,26 @@ abstract class AbstractCachedMatrix {
         return true;
     }
 
+    /**
+     * Records that the cache was accessed at the given simulation time.
+     *
+     * @param time the current simulation time
+     */
     protected void setAccess(final double time) {
         _accessCounter++;
         _latestAccessTime = time;
     }
 
+    /**
+     * @return the number of times this cache entry has been accessed
+     */
     protected int getAccessCounter() {
         return _accessCounter;
     }
 
+    /**
+     * @return the simulation time of the most recent access
+     */
     protected double getLatestAccessTime() {
         return _latestAccessTime;
     }

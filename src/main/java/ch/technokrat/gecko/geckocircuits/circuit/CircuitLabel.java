@@ -18,6 +18,10 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import ch.technokrat.modelviewcontrol.AbstractUndoGenericModel;
 
+/**
+ * Represents a text label attached to a circuit node or terminal, with support for
+ * undo/redo of rename operations via {@link RenameLabelUndoableEdit}.
+ */
 public class CircuitLabel {
     private String _label;      
     private LabelPriority _labelPriority = LabelPriority.NORMAL;
@@ -26,6 +30,11 @@ public class CircuitLabel {
         _label = "";
     }
 
+    /**
+     * Sets a new label and records an undoable edit so the change can be reverted.
+     *
+     * @param newLabel the new label text
+     */
     public void setLabel(final String newLabel) {
         if(newLabel.equals(_label)) {
             return;
@@ -35,6 +44,12 @@ public class CircuitLabel {
         _label = newLabel;
     }
     
+    /**
+     * Sets a new label directly without creating an undoable edit. Use this for
+     * programmatic changes that should not appear in the undo history.
+     *
+     * @param newLabel the new label text
+     */
     public void setLabelWithoutUndo(final String newLabel) {
         assert newLabel != null;
         _label = newLabel;
@@ -45,6 +60,10 @@ public class CircuitLabel {
         return _label;
     }
     
+    /**
+     * @return the current label priority, or {@code EMPTY_STRING} if the label is blank
+     *         and priority is {@code NORMAL}.
+     */
     public LabelPriority getLabelPriority() {
         if (_label.isEmpty() && _labelPriority == LabelPriority.NORMAL) {
             return LabelPriority.EMPTY_STRING;
@@ -57,10 +76,17 @@ public class CircuitLabel {
         _labelPriority = priority;
     }
 
+    /** Resets the label priority back to {@code NORMAL}. */
     public void clearPriority() {
         _labelPriority = LabelPriority.NORMAL;
     }
 
+    /**
+     * Sets the label from the user dialog, forcing the name priority so that the
+     * user-defined label is not overwritten by automatic naming.
+     *
+     * @param newLabel the new label text entered by the user
+     */
     public void setLabelFromUserDialog(final String newLabel) {
         _labelPriority = LabelPriority.FORCE_NAME;
         if(newLabel.equals(_label)) {

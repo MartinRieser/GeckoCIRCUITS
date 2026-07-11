@@ -22,6 +22,11 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalc
 import ch.technokrat.gecko.geckocircuits.control.calculators.NothingToDoCalculator;
 import java.awt.Window;
 
+/**
+ * Abstract control block that measures the current flowing through a coupled
+ * power-circuit component. Delegates to specialized inner calculators for
+ * different component types (general, MOSFET, thermal).
+ */
 public abstract class AbstractCurrentMeasurement extends ControlWithSingleReference {
     private static final long serialVersionUID = 1L;
 
@@ -29,6 +34,7 @@ public abstract class AbstractCurrentMeasurement extends ControlWithSingleRefere
         super(0, 1);
     }
 
+    /** Calculator that reads the current directly from a coupled circuit component. */
     private class CurrentCalculation extends AbstractControlCalculatable {
         private final AbstractCircuitBlockInterface _coupled;
 
@@ -44,6 +50,7 @@ public abstract class AbstractCurrentMeasurement extends ControlWithSingleRefere
         }
     }
     
+    /** Calculator that computes MOSFET current by subtracting the anti-parallel diode current. */
     private class MOSFETCurrentCalculation extends AbstractControlCalculatable {
         private final MOSFET _mosefet;
         private final Diode _antiParallelDiode;

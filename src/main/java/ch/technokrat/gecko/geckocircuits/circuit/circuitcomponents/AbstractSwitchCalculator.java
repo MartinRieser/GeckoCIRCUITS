@@ -14,6 +14,11 @@
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
 
+/**
+ * Abstract calculator for switch components, implementing variable-resistance
+ * stamping. The switch resistance toggles between on and off values based on
+ * the gate signal, and participates in global error-correction iterations.
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class AbstractSwitchCalculator extends CircuitComponent implements AStampable, BStampable {
 
@@ -27,7 +32,9 @@ public abstract class AbstractSwitchCalculator extends CircuitComponent implemen
     protected double _rDt = DEFAULT_R_OFF;
     protected double _uForward = DEFAULT_U_FORWARD;
 
+    /** Flag indicating a gate signal change occurred in the current time step. */
     public static boolean switchAction = false;
+    /** Global flag indicating that a switch action occurred, triggering error-correction re-iteration. */
     public static boolean switchActionOccurred = false;
     protected BVector _bVector;
 

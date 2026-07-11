@@ -16,6 +16,11 @@ package ch.technokrat.gecko.geckocircuits.newscope;
 import ch.technokrat.gecko.geckocircuits.datacontainer.AbstractDataContainer;
 import ch.technokrat.gecko.geckocircuits.datacontainer.DataContainerSimple;
 
+/**
+ * Performs a CISPR 16 compliant Fast Fourier Transform on sampled time-domain data,
+ * including resampling to a power-of-two length, optional Blackman windowing, and
+ * magnitude spectrum extraction for EMI analysis.
+ */
 public final class Cispr16Fft {
 
     public float[] _zvResampled;    

@@ -32,6 +32,10 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Tabbed dialog for configuring circuit sources. Provides four tabs:
+ * AC sinusoidal, DC constant, signal-controlled, and direct voltage control.
+ */
 class AbstractCircuitSourceDialog extends DialogElementLK<AbstractCircuitSource> {
     private static final long serialVersionUID = 1L;
     private static final int SIN_TAB_INDEX = 0;
@@ -55,6 +59,10 @@ class AbstractCircuitSourceDialog extends DialogElementLK<AbstractCircuitSource>
         super(parent);
     }
 
+    /**
+     * Builds the tabbed GUI with AC, DC, signal-controlled, and direct-voltage
+     * panels, selecting the tab matching the current source type.
+     */
     @Override
     void buildGUIIndividual() {
         
@@ -194,6 +202,10 @@ class AbstractCircuitSourceDialog extends DialogElementLK<AbstractCircuitSource>
         con.add(jpMM, BorderLayout.CENTER);
     }
     
+    /**
+     * Sets the source type based on the currently selected tab when the user
+     * confirms the dialog.
+     */
     @Override
     public void processInputIndividual() {                                        
         switch (_tabberU.getSelectedIndex()) {

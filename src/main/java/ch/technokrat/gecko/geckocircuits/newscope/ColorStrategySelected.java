@@ -17,6 +17,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 
 /**
+ * Color strategy that converts any color to a grey tone, used to visually
+ * highlight the currently selected element in the oscilloscope display.
  *
  * @author andreas
  */

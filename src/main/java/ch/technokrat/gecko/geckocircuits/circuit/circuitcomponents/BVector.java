@@ -18,6 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Optimized B-vector for circuit simulation that caches the stamps of
+ * basis-stampable components. When no non-basis component has changed, the
+ * cached basis stamp is simply copied instead of re-stamping all components.
  *
  * @author andy
  */
@@ -58,6 +61,14 @@ public class BVector {
     }
 
 
+    /**
+     * Stamps the B vector, reusing the cached basis stamp when possible.
+     * Basis-stampable components are only re-stamped when {@link #setUpdateAllFlag()}
+     * was called; non-basis components are always re-stamped.
+     *
+     * @param t the current simulation time
+     * @param dt the current time step
+     */
     public void stampBVector(double t, double dt) {
         //System.out.println("stamping B vectors at " + t + ", updateAllFlag: " + updateAllFlag);
         
@@ -94,12 +105,20 @@ public class BVector {
     
     
 
+    /**
+     * Marks the basis stamp as dirty, forcing all basis-stampable components
+     * to be re-stamped on the next {@link #stampBVector(double, double)} call.
+     */
     public void setUpdateAllFlag() {
         updateAllFlag = true;
         //System.out.println("update all flag set to true: " + updateAllFlag);
     }
 
-    //creates a copy of this BVector
+    /**
+     * Creates a deep copy of this BVector, including arrays and component lists.
+     *
+     * @return a new BVector copy
+     */
     public BVector copy()
     {
         double[] bCopy = new double[b.length];
@@ -110,7 +129,10 @@ public class BVector {
         return BCopy;
     }
     
-    //for registering the bstampables with the B vector which has been created as a copy
+    /**
+     * Re-registers this BVector with all basis-stampable components, used after
+     * creating a copy so that components point to the new BVector instance.
+     */
     public void registerBVector() {
         for (BStampable bstampable : _isBasisStampable) {
             bstampable.registerBVector(this);

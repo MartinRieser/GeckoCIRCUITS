@@ -23,6 +23,11 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Base class for Java-based control blocks. Manages source code compilation,
+ * class loading, serialization, and the simulation lifecycle of user-supplied
+ * Java code running inside a GeckoCIRCUITS control block.
+ */
 public abstract class AbstractJavaBlock {       
     
     protected final ControlJavaFunction _controlJavaBlock;
@@ -37,12 +42,20 @@ public abstract class AbstractJavaBlock {
 
     abstract AbstractJavaBlock createOtherBlockTypeCopy();
 
+    /** @return the current compilation status */
     public CompileStatus getCompileStatus() {
         return _compileObject.getCompileStatus();
     }
 
+    /** Compiles the Java block source if the source or dependencies have changed. */
     public abstract void findAndLoadClass();
 
+    /**
+     * Recompiles the Java block source if the source code or external
+     * dependency files have changed since the last compilation.
+     *
+     * @throws IOException if source file generation fails
+     */
     public void doCompilationIfRequired() throws IOException {
         if (!checkIfCompilationRequired()) {
             return;
@@ -112,10 +125,12 @@ public abstract class AbstractJavaBlock {
         }
     }
 
+    /** @return the generated Java source code from the last compilation */
     public String getCompilerSource() {
         return _compileObject.getSourceCode();
     }
 
+    /** @return the compiler diagnostic message from the last compilation */
     public String getCompilerMessage() {
         return _compileObject.getCompilerMessage();
     }
@@ -124,6 +139,13 @@ public abstract class AbstractJavaBlock {
         return _javaBlockSource;
     }
 
+    /**
+     * Initializes the Java block, compiling if necessary, before simulation starts.
+     *
+     * @param inputSignals the input signal arrays
+     * @param outputSignals the output signal arrays
+     * @throws Exception if compilation or initialization fails
+     */
     void initialize(final double[][] inputSignals,
             final double[][] outputSignals) throws Exception {
         if (_compileObject.getCompileStatus() == CompileStatus.NOT_COMPILED) {

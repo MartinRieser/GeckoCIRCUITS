@@ -29,6 +29,11 @@ import java.awt.Graphics2D;
 import java.awt.Window;
 import java.util.List;
 
+/**
+ * Abstract base class for subcircuit terminal components. A terminal provides
+ * a connection point between a parent sheet and a subcircuit sheet, delegating
+ * painting and movement to a wrapped {@link TerminalToWrap} helper.
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class AbstractCircuitTerminal extends AbstractCircuitBlockInterface implements SubCircuitTerminable {
 

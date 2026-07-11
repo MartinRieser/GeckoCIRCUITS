@@ -20,8 +20,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation that assigns a {@link MethodCategory} to a remote interface method,
+ * used to group exposed methods by functional category.
+ */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Category {
+    /**
+     * @return the method category assigned to the annotated method
+     */
     MethodCategory value();
 }

@@ -18,6 +18,10 @@ import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.geckocircuits.circuit.CircuitTypeInfo;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * A global circuit terminal that connects nodes across different circuit sheets,
+ * acting as a shared connection point visible throughout the schematic.
+ */
 class CircuitGlobalTerminal extends AbstractCircuitGlobalTerminal {
     static final AbstractTypeInfo TYPE_INFO = 
             new CircuitTypeInfo(CircuitGlobalTerminal.class, "CKT_GLOBAL", I18nKeys.GLOBAL_CIRCUIT_TERMINAL);        

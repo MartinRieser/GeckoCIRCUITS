@@ -17,6 +17,12 @@ import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Graphics2D;
 
+/**
+ * Induction machine (asynchronous motor) model based on the dq-axis flux
+ * formulation. Extends {@link AbstractMotorIMCommon} with the magnetizing
+ * inductance parameter and implements the electric torque calculation
+ * using rotor and stator currents in the dq reference frame.
+ */
 public abstract class AbstractMotorIM extends AbstractMotorIMCommon {    
     double _magnetizingInductance;
     public final UserParameter<Double> _magnetizingInductancePar = UserParameter.Builder.

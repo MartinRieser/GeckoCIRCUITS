@@ -17,18 +17,33 @@ import ch.technokrat.gecko.geckocircuits.general.GlobalColors;
 import java.awt.Color;
 
 /**
+ * Categorizes the simulation domain of a connection or terminal: electrical power
+ * circuit (LK), signal/control (CONTROL), magnetic reluctance (RELUCTANCE), or
+ * thermal (THERMAL). Also provides display color and rendering mode for each domain.
  *
  * @author andreas
  */
 public enum ConnectorType {
 
+    /** Electrical power circuit domain. */
     LK,
+    /** Signal/control domain. */
     CONTROL,
+    /** Magnetic reluctance domain. */
     RELUCTANCE,
+    /** Combined electrical + reluctance domain (used for filtering). */
     LK_AND_RELUCTANCE,
+    /** Thermal domain. */
     THERMAL,
-    NONE;    
+    /** No specific domain / unassigned. */
+    NONE;
 
+    /**
+     * Resolves the connector type from its ordinal value.
+     *
+     * @param ord the ordinal to look up
+     * @return the matching connector type, defaulting to {@code LK}
+     */
     public static ConnectorType fromOrdinal(final int ord) {
         for (ConnectorType tmp : ConnectorType.values()) {
             if (tmp.ordinal() == ord) {
@@ -39,6 +54,7 @@ public enum ConnectorType {
         return LK;
     }
 
+    /** @return the display properties (visibility mode) for this domain. */
     public ElementDisplayProperties getDisplayMode() {
         switch(this) {
             case LK:
@@ -54,6 +70,7 @@ public enum ConnectorType {
         }        
     }
 
+    /** @return the background color used when painting components of this domain. */
     Color getBackgroundColor() {
         switch (this) {
             case THERMAL:
@@ -71,6 +88,7 @@ public enum ConnectorType {
         }
     }
 
+    /** @return the foreground (line/component) color for this domain. */
     Color getForeGroundColor() {
         switch (this) {
             case THERMAL:

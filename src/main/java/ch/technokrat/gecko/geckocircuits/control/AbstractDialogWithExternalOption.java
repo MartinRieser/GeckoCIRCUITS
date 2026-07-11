@@ -18,6 +18,11 @@ import java.awt.event.ActionListener;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 
+/**
+ * Dialog base class providing a "Use external parameters" checkbox. When
+ * checked, the component's parameter fields are disabled and the values
+ * are driven by external input terminals instead.
+ */
 public abstract class AbstractDialogWithExternalOption<T extends ControlBlock> extends DialogElementCONTROL<T> {
     private static final long serialVersionUID = 1L;
 
@@ -47,5 +52,8 @@ public abstract class AbstractDialogWithExternalOption<T extends ControlBlock> e
         _externable.setExternalUsed(_jCheckBoxUseExternal.isSelected());
     }
 
+    /**
+     * @return the UI components that should be disabled when "Use external parameters" is checked
+     */
     abstract JComponent[] getComponentsDisabledExternal();
 }

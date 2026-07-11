@@ -25,6 +25,8 @@ import ch.technokrat.gecko.geckoscript.GeckoInvalidArgumentException;
  */
 public final class CharacteristicsCalculator {
 
+    // Note: these static fields form a mutable cache shared across all calculator
+    // instances. Access is not synchronized; callers must ensure single-threaded use.
     private static CharacteristicsCalculator _valueCache = null;
     private static double _startTime;
     private static double _endTime;
@@ -110,38 +112,47 @@ public final class CharacteristicsCalculator {
         _isValid = true;
     }
 
+    /** @return the average (mean) value for the given data row index. */
     public double getAVGValue(final int index) {
         return _avg[index];
     }
 
+    /** @return the RMS value for the given data row index. */
     public double getRMS2Value(final int index) {
         return _rms2[index];
     }
 
+    /** @return the minimum value for the given data row index. */
     public double getMinValue(final int index) {
         return _min[index];
     }
     
+    /** @return the peak-to-peak (max - min) value for the given data row index. */
     public double getPeakToPeakValue(final int index) {
         return _peakPeak[index];
     }
 
+    /** @return the maximum value for the given data row index. */
     public double getMaxValue(final int index) {
         return _max[index];
     }
 
+    /** @return the shape factor (RMS / rectified value) for the given data row index. */
     public double getShapeValue(final int index) {
         return _shape[index];
     }
 
+    /** @return the total harmonic distortion (THD) for the given data row index. */
     public double getTHDValue(final int index) {
         return _thd[index];
     }
 
+    /** @return the klirr factor for the given data row index. */
     public double getKlirrValue(final int index) {
         return _klirr[index];
     }
 
+    /** @return the ripple factor for the given data row index. */
     public double getRippleValue(final int index) {
         return _ripple[index];
     }

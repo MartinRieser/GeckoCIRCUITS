@@ -15,6 +15,11 @@ package ch.technokrat.gecko.geckocircuits.circuit;
 
 import ch.technokrat.gecko.geckocircuits.control.Point;
 
+/**
+ * Represents the four cardinal orientations of a component on the schematic sheet.
+ * Each direction also stores a legacy ordinal code (501&ndash;504) for backward
+ * file-format compatibility.
+ */
 public enum ComponentDirection {
 
     NORTH_SOUTH(503),
@@ -23,14 +28,25 @@ public enum ComponentDirection {
     WEST_EAST(502);
     int _oldOrdinal;
 
+    /**
+     * @param oldOrdinal legacy orientation code (501&ndash;504 from the old format)
+     */
     ComponentDirection(int oldOrdinal) {
         _oldOrdinal = oldOrdinal;
     }
 
+    /** @return the legacy ordinal code for file serialization. */
     public int code() {
         return _oldOrdinal;
     }
 
+    /**
+     * Resolves a direction from its legacy code, defaulting to {@code NORTH_SOUTH}
+     * if the code is unrecognized.
+     *
+     * @param code the legacy ordinal code
+     * @return the matching direction
+     */
     static ComponentDirection getFromCode(final int code) {
         for (ComponentDirection val : ComponentDirection.values()) {
             if (val._oldOrdinal == code) {
@@ -40,6 +56,7 @@ public enum ComponentDirection {
         return ComponentDirection.NORTH_SOUTH;
     }
 
+    /** @return the next orientation in the rotation cycle (90&deg; clockwise). */
     ComponentDirection nextOrientation() {
         switch (this) {
             case NORTH_SOUTH:
@@ -57,6 +74,13 @@ public enum ComponentDirection {
         return ComponentDirection.NORTH_SOUTH;
     }
     
+    /**
+     * Determines the direction from two grid points.
+     *
+     * @param start the starting point
+     * @param end   the ending point
+     * @return the direction from start to end
+     */
     public static ComponentDirection getDirection(final Point start, final Point end) {
         if (start.x == end.x) {
             if (start.y > end.y) {
@@ -74,6 +98,7 @@ public enum ComponentDirection {
         }
     }
     
+    /** @return {@code true} if this orientation is horizontal (EAST_WEST or WEST_EAST). */
     public boolean isHorizontal() {
         return this == WEST_EAST || this == EAST_WEST;
     }

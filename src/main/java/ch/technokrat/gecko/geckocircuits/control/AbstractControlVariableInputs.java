@@ -15,6 +15,7 @@ public abstract class AbstractControlVariableInputs extends ControlBlock impleme
 
     private final static int DEFAULT_NUMBER_INPUTS = 1;
     
+    /** UserParameter controlling the number of input terminals; stored at array index -1 (not persisted in parameter array). */
     public final transient UserParameter<Integer> _inputTerminalNumber = UserParameter.Builder.
             <Integer>start("numberInputTerminals", DEFAULT_NUMBER_INPUTS).
             addAlternativeSaveIdentifier("anzXIN").
@@ -35,6 +36,11 @@ public abstract class AbstractControlVariableInputs extends ControlBlock impleme
         });
     }
     
+    /**
+     * Sets the number of input terminals and updates the corresponding user parameter.
+     *
+     * @param number the new number of input terminals
+     */
     @Override
     public final void setInputTerminalNumber(final int number) {        
         super.setInputTerminalNumber(number);
@@ -43,6 +49,11 @@ public abstract class AbstractControlVariableInputs extends ControlBlock impleme
         }        
     }
 
+    /**
+     * Sets the number of output terminals (fixed at 1 output per terminal group).
+     *
+     * @param number the new number of output terminals
+     */
     @Override
     public final void setOutputTerminalNumber(final int number) {
         setOutputTerminalNumber(number, 1);

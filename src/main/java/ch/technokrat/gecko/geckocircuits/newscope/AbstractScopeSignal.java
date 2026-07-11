@@ -14,13 +14,26 @@
 package ch.technokrat.gecko.geckocircuits.newscope;
 
 /**
+ * Base abstraction for scope signals, providing access to signal metadata
+ * such as the display name and subcircuit path.
  *
  * @author andreas
  */
 public abstract class AbstractScopeSignal {
+
+    /**
+     * Returns the human-readable name of this signal.
+     *
+     * @return the signal name
+     */
     public abstract String getSignalName();
-    
-    
+
+    /**
+     * Returns the subcircuit path for this signal, or an empty string
+     * if the signal is in the top-level circuit.
+     *
+     * @return the subcircuit path string
+     */
     public String getSubcircuitPath() {
         return "";        
     }

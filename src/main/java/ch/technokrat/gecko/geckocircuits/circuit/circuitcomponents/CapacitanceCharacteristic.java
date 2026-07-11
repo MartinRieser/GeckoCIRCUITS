@@ -17,6 +17,8 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 import java.util.ArrayList;
 
 /**
+ * Stores and interpolates a nonlinear capacitance-vs-voltage characteristic.
+ * Supports both linear and logarithmic interpolation on the capacitance axis.
  *
  * @author anstupar
  */
@@ -105,6 +107,14 @@ public class CapacitanceCharacteristic {
         return existing_index;
     }
 
+    /**
+     * Returns the capacitance at a given voltage by interpolating the
+     * characteristic curve. Uses logarithmic interpolation on the capacitance
+     * axis when enabled, otherwise linear interpolation.
+     *
+     * @param V the voltage at which to evaluate the capacitance
+     * @return the interpolated capacitance value
+     */
     public double getCapacitanceAtV(double V) {
         //function that evaluates the non-linear characteristic to return a capacitance at a specific voltage
         int i = 0;

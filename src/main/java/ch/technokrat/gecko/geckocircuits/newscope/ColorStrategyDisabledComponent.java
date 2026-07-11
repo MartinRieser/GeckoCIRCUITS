@@ -16,6 +16,10 @@ package ch.technokrat.gecko.geckocircuits.newscope;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
+/**
+ * Color strategy that renders a component in a washed-out grey tone to indicate
+ * it is disabled or inactive.
+ */
 public class ColorStrategyDisabledComponent implements ColorSettable {
     private static final int ADDITIONAL_GREY = 15;
     private static final int COLOR_DIVISOR = 5;

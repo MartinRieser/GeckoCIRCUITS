@@ -23,6 +23,14 @@ import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.Window;
 
+/**
+ * Abstract base class for inductor components, supporting both linear and
+ * nonlinear (current-dependent) inductance characteristics.
+ * <p>
+ * parameter[] array layout:
+ * [0] = (nonlinear) inductance value, [1] = initial current,
+ * [2]-[4] = state variables.
+ */
 public abstract class AbstractInductor extends AbstractNonLinearCircuitComponent
         implements PostCalculatable, CurrentMeasurable, DirectVoltageMeasurable {
 
@@ -102,6 +110,9 @@ public abstract class AbstractInductor extends AbstractNonLinearCircuitComponent
         graphics.drawLine(0, dpix * 2, 0, (int) (dpix * HEIGHT + rq));
     }
 
+    /**
+     * @return the inductance value, using the nonlinear characteristic if enabled
+     */
     public double getStartInductance() {
         if (_isNonlinear.getValue()) {
             return getActualValueLINFromLinearizedCharacteristic(Math.abs(parameter[1]));
@@ -142,6 +153,13 @@ public abstract class AbstractInductor extends AbstractNonLinearCircuitComponent
         return new InductorDialog(this);
     }
 
+    /**
+     * Updates the nonlinear inductance value based on the current flowing
+     * through the inductor.
+     *
+     * @param deltaT the simulation time step in seconds
+     * @param time the current simulation time in seconds
+     */
     @Override
     public final void doCalculation(final double deltaT, final double time) {
         if (_isNonlinearForCalculationUsage) {

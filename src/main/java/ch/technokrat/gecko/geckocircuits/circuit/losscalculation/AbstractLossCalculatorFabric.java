@@ -13,6 +13,15 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.losscalculation;
 
-public interface AbstractLossCalculatorFabric {        
-    AbstractLossCalculator lossCalculatorFabric();    
+/**
+ * Factory interface for creating loss calculator instances. Implemented by
+ * semiconductor components to provide their specific loss calculation strategy.
+ */
+public interface AbstractLossCalculatorFabric {
+    /**
+     * Creates a new loss calculator instance for this component.
+     *
+     * @return a new {@link AbstractLossCalculator} instance
+     */
+    AbstractLossCalculator lossCalculatorFabric();
 }

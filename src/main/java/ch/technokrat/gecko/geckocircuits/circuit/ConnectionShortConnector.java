@@ -14,10 +14,15 @@
 package ch.technokrat.gecko.geckocircuits.circuit;
 
 /**
+ * A special "short connector" connection that directly bridges two adjacent terminals
+ * without participating in the normal parent-sheet lookup. The parent sheet is stored
+ * explicitly so the connector can reference it even before the standard parent chain
+ * is established.
  *
  * @author andreas
  */
 public class ConnectionShortConnector extends Connection {
+    /** The explicitly assigned parent sheet, bypassing the normal parent resolution. */
     private final CircuitSheet _parentSheet;
     
     public ConnectionShortConnector(final ConnectorType connectorType, final CircuitSheet parentSheet) {
@@ -25,6 +30,13 @@ public class ConnectionShortConnector extends Connection {
         _parentSheet = parentSheet;
     }
 
+    /**
+     * Returns the explicitly stored parent sheet rather than using the normal parent
+     * resolution logic, because short connectors are created before the standard
+     * parent chain is set up.
+     *
+     * @return the stored parent circuit sheet
+     */
     @Override
     public CircuitSheet getParentCircuitSheet() {
         return _parentSheet;        

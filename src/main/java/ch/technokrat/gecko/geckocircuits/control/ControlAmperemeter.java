@@ -22,6 +22,10 @@ import java.util.Arrays;
 import java.util.List;
 
 
+/**
+ * Control block that measures the electrical current flowing through a coupled
+ * power-circuit component.
+ */
 public final class ControlAmperemeter extends AbstractCurrentMeasurement {
     private static final long serialVersionUID = 1L;
     static ControlTypeInfo tinfo = new ControlTypeInfo(ControlAmperemeter.class, "AMP", I18nKeys.CURRENT_MEASUREMENT_A);
@@ -36,6 +40,13 @@ public final class ControlAmperemeter extends AbstractCurrentMeasurement {
         return "i";
     }                            
 
+    /**
+     * Checks whether the tested object can provide current measurements and adds
+     * the compatible sub-components to the insert list.
+     *
+     * @param testObject the candidate element
+     * @param insertList list of compatible measurable components (modified in place)
+     */
     @Override
     public void checkComponentCompatibility(final Object testObject, final List<AbstractBlockInterface> insertList) {
         if(testObject instanceof CurrentMeasurable) {

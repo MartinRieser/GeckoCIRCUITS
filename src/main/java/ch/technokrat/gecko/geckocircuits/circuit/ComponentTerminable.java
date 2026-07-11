@@ -16,10 +16,14 @@ package ch.technokrat.gecko.geckocircuits.circuit;
 import java.util.Collection;
 
 /**
+ * Interface for schematic components that expose terminals (connection points) and
+ * associated node labels.
  *
  * @author andy
  */
 public interface ComponentTerminable {
+    /** @return collection of all node labels attached to this component's terminals. */
     public Collection<String> getAllNodeLabels();
+    /** @return collection of all terminals belonging to this component. */
     public Collection<? extends TerminalInterface> getAllTerminals();
 }

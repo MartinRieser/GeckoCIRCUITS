@@ -22,6 +22,10 @@ import java.awt.Graphics2D;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Abstract voltage source component supporting electrical (LK), reluctance,
+ * and thermal domains, with configurable upper/lower voltage limits.
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class AbstractVoltageSource extends AbstractCircuitSource {
 
@@ -61,12 +65,24 @@ public abstract class AbstractVoltageSource extends AbstractCircuitSource {
         drawMinusSymbol(graphics, lgq);
     }
 
+    /**
+     * Draws the plus (+) polarity symbol near the top of the component.
+     *
+     * @param graphics the graphics context
+     * @param length the pixel length of the symbol
+     */
     private void drawPlusSymbol(final Graphics2D graphics, final int length) {
         final int yHeight = (int) (-dpix * PLUSMINUS_SEPARATION);
         graphics.drawLine(PLUS_MINUS_X_OFFSET - length / 2, yHeight, PLUS_MINUS_X_OFFSET + length / 2, yHeight);
         graphics.drawLine(PLUS_MINUS_X_OFFSET, yHeight + length / 2, PLUS_MINUS_X_OFFSET, yHeight - length / 2);
     }
 
+    /**
+     * Draws the minus (-) polarity symbol near the bottom of the component.
+     *
+     * @param graphics the graphics context
+     * @param length the pixel length of the symbol
+     */
     private void drawMinusSymbol(final Graphics2D graphics, final int length) {
         final int yHeight = (int) (PLUSMINUS_SEPARATION * dpix);
         graphics.drawLine(PLUS_MINUS_X_OFFSET - length / 2, yHeight, PLUS_MINUS_X_OFFSET + length / 2, yHeight);
@@ -118,6 +134,13 @@ public abstract class AbstractVoltageSource extends AbstractCircuitSource {
         return DEFAULT_AMPLITUDE;
     }
 
+    /**
+     * Returns the domain-specific short name for the DC value (e.g. "uDC" for
+     * electrical, "T_dc" for thermal, "MMF_DC" for reluctance).
+     *
+     * @param connectorType the simulation domain
+     * @return the short name string for the DC value in that domain
+     */
     @Override
     final String getDCValueShortNameFromDomain(final ConnectorType connectorType) {
 

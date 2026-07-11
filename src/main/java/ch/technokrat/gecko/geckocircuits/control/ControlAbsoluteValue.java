@@ -18,6 +18,9 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AbstractControlCalc
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+/**
+ * Control block that computes the absolute value of its single input signal.
+ */
 public final class ControlAbsoluteValue extends AbstractControlSingleInputSingleOutput {
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlAbsoluteValue.class, "ABS", I18nKeys.ABSOLUTE);

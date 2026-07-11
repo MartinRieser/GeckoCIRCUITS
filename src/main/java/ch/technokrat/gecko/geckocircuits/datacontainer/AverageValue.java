@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.datacontainer;
 
+/**
+ * Stores a running average value over a time interval, supporting merging of
+ * adjacent intervals to compute combined weighted averages.
+ */
 public final class AverageValue {
     private final double _intervalStart;
     private double _intervalStop;

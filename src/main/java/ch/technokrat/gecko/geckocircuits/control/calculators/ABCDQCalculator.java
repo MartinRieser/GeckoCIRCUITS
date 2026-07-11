@@ -13,6 +13,13 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Performs the ABC-to-DQ (Park) transformation, converting three-phase
+ * stationary signals into the direct/quadrature (dq) rotating reference frame.
+ * <p>
+ * Input indices: [0] = phase a, [1] = phase b, [2] = phase c, [3] = theta (angle).
+ * Output indices: [0] = d-axis, [1] = q-axis.
+ */
 public final class ABCDQCalculator extends AbstractControlCalculatable {
 
     private static final double SQRT3 = Math.sqrt(3);

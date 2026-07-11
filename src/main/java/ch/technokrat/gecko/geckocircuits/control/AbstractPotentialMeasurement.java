@@ -26,6 +26,11 @@ import java.awt.Window;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Abstract control block for measuring potential (voltage) between two
+ * nodes or across a component. Supports both node-label-based and
+ * component-reference-based voltage measurement.
+ */
 public abstract class AbstractPotentialMeasurement extends ControlBlock implements ch.technokrat.gecko.geckocircuits.circuit.PotentialCoupable, ch.technokrat.gecko.geckocircuits.circuit.ComponentCoupable {
 
     private static final long serialVersionUID = 1L;
@@ -55,6 +60,10 @@ public abstract class AbstractPotentialMeasurement extends ControlBlock implemen
         return new NothingToDoCalculator(0, 1);
     }
 
+    /**
+     * Populates the text info display with the measured potential labels
+     * or coupled component name.
+     */
     @Override
     protected final void addTextInfoParameters() {
         super.addTextInfoParameters();
@@ -83,6 +92,13 @@ public abstract class AbstractPotentialMeasurement extends ControlBlock implemen
         return new ControlVOLTDialog(this);
     }
     
+    /**
+     * Checks whether a candidate object provides direct voltage measurement
+     * for this block's connector type, and if so adds it to the insert list.
+     *
+     * @param testObject the candidate circuit element
+     * @param insertList the list to add compatible measurement components to
+     */
     public final void checkComponentCompatibility(Object testObject, List<AbstractBlockInterface> insertList) {
         if(testObject instanceof DirectVoltageMeasurable) {
             DirectVoltageMeasurable voltMeas = (DirectVoltageMeasurable) testObject;

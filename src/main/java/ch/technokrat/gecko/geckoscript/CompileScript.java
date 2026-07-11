@@ -44,6 +44,10 @@ import javax.swing.JOptionPane;
 import javax.tools.SimpleJavaFileObject;
 
 /**
+ * Handles compilation of GeckoSCRIPT user scripts: assembles source code from the
+ * script editor, invokes the system Java compiler, loads the resulting class, and
+ * instantiates it for simulation-time execution. Errors are captured and surfaced
+ * back to the user via compiler messages.
  *
  * @author andy
  */

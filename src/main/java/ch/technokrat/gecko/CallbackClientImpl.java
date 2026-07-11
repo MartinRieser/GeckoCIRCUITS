@@ -32,10 +32,19 @@ public final class CallbackClientImpl extends UnicastRemoteObject implements Cal
     private static final long serialVersionUID = 1L;
     private static final int INITIAL_STRINGBUFFER_CAPACITY = 100;
 
+    /** The hostname of the client machine. */
     private final String _clientHostname;
+    /** The OS user ID of the client. */
     private final String _clientUserID;
+    /** The timestamp when the client connected. */
     private final String _connectionDate;
     
+    /**
+     * Constructs a callback client, capturing the local hostname, OS user ID,
+     * and current timestamp for identification purposes.
+     *
+     * @throws RemoteException if RMI initialization fails
+     */
     public CallbackClientImpl() throws RemoteException {
         super();
 
@@ -59,17 +68,33 @@ public final class CallbackClientImpl extends UnicastRemoteObject implements Cal
     }
         
 
+    /**
+     * Prints a system-level message to standard output.
+     *
+     * @param message the message to display
+     */
     @Override
     public void printSystemMessage(final String message) {
         System.out.println(message);        
     }
 
+    /**
+     * Prints an error-level message to standard error.
+     *
+     * @param message the error message to display
+     */
     @Override
     public void printErrorMessage(final String message) {
         System.err.println(message);
     }
     
 
+    /**
+     * Returns a status string containing the client's user ID, hostname,
+     * and connection timestamp.
+     *
+     * @return a formatted string with client identification information
+     */
     @Override
     public String ping() {          
         final StringBuffer returnValue = new StringBuffer(INITIAL_STRINGBUFFER_CAPACITY);

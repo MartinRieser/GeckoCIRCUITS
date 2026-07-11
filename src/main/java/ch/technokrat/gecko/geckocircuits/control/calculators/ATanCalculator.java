@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Calculates the arc tangent of the input signal.
+ */
 public final class ATanCalculator extends AbstractSingleInputSingleOutputCalculator {    
 
     @Override

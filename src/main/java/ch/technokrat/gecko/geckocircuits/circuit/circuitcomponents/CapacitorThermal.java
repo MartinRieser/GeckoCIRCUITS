@@ -16,6 +16,10 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Thermal capacitor component representing a heat capacity (thermal capacitance) in the
+ * thermal simulation domain. Stores thermal energy proportional to temperature change.
+ */
 final class CapacitorThermal extends AbstractCapacitor {
     static final AbstractTypeInfo TYPE_INFO = 
             new ThermalTypeInfo(CapacitorThermal.class, "Cth", I18nKeys.CAPACITOR_CTH_JK);

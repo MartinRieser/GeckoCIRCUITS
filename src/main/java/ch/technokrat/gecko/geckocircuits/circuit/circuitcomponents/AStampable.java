@@ -14,9 +14,17 @@
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
 /**
+ * Contract for circuit elements that contribute entries to the A-matrix
+ * (system matrix) during Modified Nodal Analysis stamping.
  *
  * @author andy
  */
 interface AStampable {
+    /**
+     * Stamps this element's contribution into the system A-matrix.
+     *
+     * @param matrix the A-matrix to stamp into
+     * @param deltaT the simulation time step in seconds
+     */
     void stampMatrixA(final double[][] matrix, final double deltaT);
 }

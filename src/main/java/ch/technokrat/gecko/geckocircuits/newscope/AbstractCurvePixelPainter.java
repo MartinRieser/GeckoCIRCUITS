@@ -18,6 +18,10 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 
 /**
+ * Pixel-level painting strategy for curves. Each instance represents the
+ * visual representation of one data point (or hi/lo range) at a single
+ * x-pixel position, and chains to the previous pixel painter to draw
+ * connecting line segments.
  *
  * @author andy
  */

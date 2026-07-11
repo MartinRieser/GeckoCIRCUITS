@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Abstract base for periodic signal-source calculators (sine, triangle, etc.).
+ * Encapsulates amplitude, frequency, phase, DC offset, and duty cycle parameters.
+ */
 public abstract class AbstractSignalCalculatorPeriodic extends AbstractSignalCalculator
         implements InitializableAtSimulationStart {
 
@@ -40,6 +44,12 @@ public abstract class AbstractSignalCalculatorPeriodic extends AbstractSignalCal
 
     }
 
+    /**
+     * Initializes the periodic signal at simulation start by discretizing one
+     * period into {@value #THOUSAND} steps and pre-calculating the start waveform.
+     *
+     * @param deltaT the simulation time step
+     */
     @Override
     public final void initializeAtSimulationStart(final double deltaT) {
         final double txEnd = 1.0 / _frequency;
@@ -53,6 +63,12 @@ public abstract class AbstractSignalCalculatorPeriodic extends AbstractSignalCal
     protected abstract void calculateStartSignal(final double dtx,
             final double txEnd, final double phaseX);
 
+    /**
+     * Normalizes the phase to the range [0, 2&pi;) by adding or subtracting
+     * full rotations as needed.
+     *
+     * @return the normalized phase value in radians
+     */
     protected final double calculatePhaseX() {
         double phaseX = _phase;
         while (phaseX > 2 * Math.PI) {

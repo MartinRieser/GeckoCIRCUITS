@@ -14,24 +14,39 @@
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 /**
+ * Calculator base class for PT (proportional time-delay / lag) transfer
+ * function elements (PT1, PT2). Provides the time constant and gain
+ * parameters used by subclasses to compute the dynamic response.
  *
  * @author andreas
  */
 public abstract class AbstractPTCalculator extends AbstractSingleInputSingleOutputCalculator {
 
+    /** Time constant T of the transfer function (seconds). */
     protected double _TVal;
+    /** Gain a1 of the transfer function. */
     protected double _a1Val;
 
+    /**
+     * @param timeConstant the time constant T
+     * @param gainFactor the gain a1
+     */
     public AbstractPTCalculator(final double timeConstant, final double gainFactor) {
         super();
         _TVal = timeConstant;
         _a1Val = gainFactor;
     }
 
+    /**
+     * @param value the new time constant T
+     */
     public void setTimeConstant(final double value) {
         _TVal = value;
     }
 
+    /**
+     * @param value the new gain a1
+     */
     public void setGain(final double value) {
         _a1Val = value;
     }

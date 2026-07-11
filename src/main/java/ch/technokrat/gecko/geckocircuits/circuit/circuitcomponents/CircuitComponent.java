@@ -18,6 +18,9 @@ import ch.technokrat.gecko.geckocircuits.general.SolverType;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTerminal;
 
 /**
+ * Abstract base class for simulation-time calculators associated with power circuit components.
+ * Subclasses implement the numerical algorithms that update current, voltage, and potential
+ * values during each simulation time step.
  *
  * @author andy
  */
@@ -41,7 +44,11 @@ public abstract class CircuitComponent<T extends AbstractTwoPortPowerCircuitBloc
     //for stepping back in history
     protected double prev_time = -1;
     protected boolean stepped_back = false;
-    //double array to hold history - previous two steps
+    /**
+     * Holds history values for step-back support. Each row represents one saved time step;
+     * column indices: 0=current, 1=voltage, 2=potential1, 3=potential2, 4=oldCurrent,
+     * 5=oldOldCurrent, 6=potOld1, 7=potOld2, 8=time.
+     */
     protected double[][] var_history;
     protected int steps_saved = 2;
     protected int steps_reversed = 0;

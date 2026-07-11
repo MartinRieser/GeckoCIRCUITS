@@ -37,6 +37,13 @@ public enum AxisConnection {
     _displayString = displayString;
   }
 
+  /**
+   * Returns the AxisConnection matching the given integer code, or
+   * {@link #ASSIGNMENT_NONE} if no match is found.
+   *
+   * @param code the integer code to look up
+   * @return the matching AxisConnection, or ASSIGNMENT_NONE as default
+   */
   static AxisConnection getFromCode(final int code){
     for(AxisConnection val : AxisConnection.values()){
       if(val.getCode() == code){
@@ -55,6 +62,14 @@ public enum AxisConnection {
     return _displayString;
   }
 
+  /**
+   * Returns the next axis assignment in the cycle. For signal-mode, toggles
+   * between ASSIGNMENT_SIGNAL and ASSIGNMENT_NONE. For normal mode, cycles
+   * through ASSIGNMENT_NONE &rarr; Y &rarr; Y2 &rarr; ASSIGNMENT_NONE.
+   *
+   * @param signal if true, use the signal-mode cycle
+   * @return the next AxisConnection in the cycle
+   */
   public AxisConnection iterateNext(final boolean signal){
 
     if(signal){

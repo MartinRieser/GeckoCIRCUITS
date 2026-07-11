@@ -15,6 +15,10 @@ package ch.technokrat.gecko.geckocircuits.general;
 
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 
+/**
+ * Interface for component type enumerations, providing a numeric type code
+ * and access to the associated {@link AbstractTypeInfo} metadata.
+ */
 public interface AbstractComponentType {  
     int getTypeNumber(); 
     AbstractTypeInfo getTypeInfo();

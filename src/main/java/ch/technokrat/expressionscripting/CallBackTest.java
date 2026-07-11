@@ -22,11 +22,24 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+/**
+ * Test/demo class for JavaScript engine callback functionality. Demonstrates
+ * how a Java object can be exposed to the JavaScript scripting engine and
+ * invoked from script code.
+ */
 public class CallBackTest {
 
+    /** The shared script engine manager for obtaining script engines. */
     private static ScriptEngineManager mgr = new ScriptEngineManager();
+    /** The shared JavaScript script engine instance used for evaluation. */
     public static ScriptEngine engine = mgr.getEngineByName("JavaScript");
     
+    /**
+     * Entry point that registers this object as a callback named "callBack"
+     * in the JavaScript engine, then evaluates a script that invokes it.
+     *
+     * @param args command-line arguments (unused)
+     */
     public static void main(String[] args) {
         try {
             engine.getContext().setAttribute("callBack", new CallBackTest(),
@@ -43,6 +56,13 @@ public class CallBackTest {
             
     }
     
+    /**
+     * Callback method invoked from JavaScript to demonstrate Java-to-script
+     * integration.
+     *
+     * @param test the string argument passed from the script
+     * @throws ScriptException if a script error occurs
+     */
     public void invoke(final String test) throws ScriptException {
     }
     

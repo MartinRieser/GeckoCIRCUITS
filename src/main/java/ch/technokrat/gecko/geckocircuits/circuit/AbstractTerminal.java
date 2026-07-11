@@ -19,6 +19,11 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
+/**
+ * Abstract base class for circuit terminals, providing common painting,
+ * labelling, and category determination functionality shared by all terminal
+ * implementations.
+ */
 public abstract class AbstractTerminal implements TerminalInterface {
 
     protected static final int DX_IN = 3, DX_OUT = DX_IN, DY_TEXT = -3;
@@ -47,6 +52,11 @@ public abstract class AbstractTerminal implements TerminalInterface {
         return _hasDoubleLabel;
     }
 
+    /**
+     * Paints the terminal as a filled circle at its screen position.
+     *
+     * @param graphics the graphics context to paint on
+     */
     @Override
     public void paintComponent(final Graphics graphics) {
         final int dpix = AbstractCircuitSheetComponent.dpix;
@@ -55,6 +65,11 @@ public abstract class AbstractTerminal implements TerminalInterface {
 
     }
 
+    /**
+     * Paints the terminal's label string next to the terminal position, if set.
+     *
+     * @param graphics the graphics context to paint on
+     */
     public void paintLabelString(final Graphics2D graphics) {
         if (!_label.getLabelString().isEmpty()) {
             graphics.drawString(_label.getLabelString(), AbstractCircuitSheetComponent.dpix * getPosition().x + DX_IN,
@@ -62,6 +77,12 @@ public abstract class AbstractTerminal implements TerminalInterface {
         }
     }
 
+    /**
+     * Creates a copy of this terminal associated with the given related component.
+     *
+     * @param relatedComponent the component that owns the copied terminal
+     * @return a new terminal copy
+     */
     public abstract AbstractTerminal createCopy(AbstractBlockInterface relatedComponent);
 
     @Override
@@ -69,6 +90,12 @@ public abstract class AbstractTerminal implements TerminalInterface {
         return _parentElement._parentCircuitSheet;
     }
 
+    /**
+     * Determines the connector type (domain) of this terminal based on the
+     * parent component type and terminal position.
+     *
+     * @return the connector type for this terminal
+     */
     @Override
     public ConnectorType getCategory() {
         if (_parentElement instanceof ReluctanceInductor) {

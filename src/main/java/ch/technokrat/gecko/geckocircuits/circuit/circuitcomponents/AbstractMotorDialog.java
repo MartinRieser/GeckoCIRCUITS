@@ -25,6 +25,11 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Abstract dialog for motor components with tabbed "Parameter" and "Initial"
+ * panels. Provides parameter input fields and an optional mechanical torque
+ * coupling combo.
+ */
 abstract class AbstractMotorDialog<T extends AbstractMotor> extends DialogElementLK<T> {
     private static final long serialVersionUID = 1L;
     final static String trenner = "   ";
@@ -54,6 +59,7 @@ abstract class AbstractMotorDialog<T extends AbstractMotor> extends DialogElemen
         }        
     }
 
+    /** Builds the tabbed motor GUI with parameter and initial value tabs. */
     @Override
     protected final void buildGUIIndividual() {
         JTabbedPane tabber = this.createMotorGUI();

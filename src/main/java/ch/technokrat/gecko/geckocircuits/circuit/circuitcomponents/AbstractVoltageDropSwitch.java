@@ -17,6 +17,10 @@ import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 
+/**
+ * Abstract switch with a forward voltage drop parameter, modeling the
+ * threshold voltage behavior of diodes and similar semiconductors.
+ */
 public abstract class AbstractVoltageDropSwitch extends AbstractSwitch implements ForwardVoltageDropable {
     UserParameter<Double> _forwardVoltageDrop = UserParameter.Builder.
             <Double>start("forwardVoltageDrop", AbstractSwitch.UF_DEFAULT).                       
@@ -32,6 +36,11 @@ public abstract class AbstractVoltageDropSwitch extends AbstractSwitch implement
     }
 
     
+    /**
+     * Returns the user parameter for the forward voltage drop.
+     *
+     * @return the forward voltage drop user parameter
+     */
     @Override
     public UserParameter<Double> getForwardVoltageDropParameter() {
         return _forwardVoltageDrop;

@@ -14,10 +14,24 @@
 package ch.technokrat.gecko.geckocircuits.control.javablock;
 
 
+/**
+ * Represents the outcome of a Java block or script compilation attempt.
+ */
 public enum CompileStatus {
 
-    NOT_COMPILED, COMPILED_SUCCESSFUL, COMPILE_ERROR;
+    /** The source has not been compiled yet. */
+    NOT_COMPILED,
+    /** Compilation completed without errors. */
+    COMPILED_SUCCESSFUL,
+    /** Compilation failed with one or more errors. */
+    COMPILE_ERROR;
 
+    /**
+     * Resolves the enum constant matching the given ordinal value.
+     *
+     * @param ordinal the ordinal position to look up
+     * @return the matching compile status
+     */
     public static CompileStatus getFromOrdinal(final int ordinal) {
         for (CompileStatus val : CompileStatus.values()) {
             if (val.ordinal() == ordinal) {

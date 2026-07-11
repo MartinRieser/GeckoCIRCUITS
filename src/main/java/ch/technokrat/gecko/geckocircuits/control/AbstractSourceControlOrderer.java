@@ -16,6 +16,10 @@ package ch.technokrat.gecko.geckocircuits.control;
 import java.util.Collection;
 import java.util.Set;
 
+/**
+ * Control orderer that traverses the block graph starting from source blocks
+ * (blocks with no inputs), ordering them so that outputs propagate forward.
+ */
 abstract class AbstractSourceControlOrderer  extends AbstractControlOrderer {
 
     public AbstractSourceControlOrderer(Collection<ControlOrderNode> allNodesToSort) {

@@ -20,6 +20,10 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Type metadata for circuit (power-electronic) component classes. Stores the
+ * class, ID string, display names, and provides reflective instantiation.
+ */
 public abstract class AbstractCircuitTypeInfo extends AbstractTypeInfo {
 
     public AbstractCircuitTypeInfo(Class<? extends AbstractBlockInterface> typeClass, String idString, I18nKeys typeDescription) {
@@ -40,6 +44,12 @@ public abstract class AbstractCircuitTypeInfo extends AbstractTypeInfo {
         return "ElementLK";
     }
     
+    /**
+     * Creates a new instance of the component class via reflective
+     * no-argument constructor invocation.
+     *
+     * @return a new instance of the component, or null if instantiation fails
+     */
     @Override
     public final AbstractBlockInterface fabric() {
         try {

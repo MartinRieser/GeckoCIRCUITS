@@ -31,10 +31,17 @@ import javax.swing.undo.UndoableEdit;
 public abstract class AbstractUndoGenericModel<T> extends ModelMVCGeneric<T> implements Serializable{
   private static final long serialVersionUID = 28474838273478583L;
   private static final int UNDO_LIMIT = 1000;
+  /**
+   * When {@code false}, the first call to {@link #setValue(Object)} does not
+   * generate an undo edit. This prevents an undo of the initial value
+   * assignment.
+   */
   protected boolean _initialized = false;
 
   /**
+   * Creates a new undo-aware model with the given initial value.
    *
+   * @param initValue the initial value for this model
    */
   public AbstractUndoGenericModel(final T initValue){
     super(initValue);
@@ -92,6 +99,13 @@ public abstract class AbstractUndoGenericModel<T> extends ModelMVCGeneric<T> imp
     fireGlobalEvent();
   }
 
+  /**
+   * Sets the value without creating an undo entry. Use this method when
+   * programmatically updating the value (e.g. during undo/redo replay) where
+   * the change should not be recorded in the undo history.
+   *
+   * @param value the new value to set
+   */
   public void setValueWithoutUndo(final T value){
     _initialized = true;
     if(!value.equals(getValue())){
@@ -108,10 +122,15 @@ public abstract class AbstractUndoGenericModel<T> extends ModelMVCGeneric<T> imp
    * @author Andreas Müsing
    */
   protected final class UndoableAction<T> implements UndoableEdit{
+    /** Whether this edit can be undone. */
     private boolean _canUndo = false;
+    /** Whether this edit can be redone. */
     private boolean _canRedo = false;
+    /** The model whose value this edit modifies. */
     private AbstractUndoGenericModel<T> _source;
+    /** The value before the change (restored on undo). */
     private T _oldValue;
+    /** The value after the change (restored on redo). */
     private T _newValue;
 
     /**
@@ -184,7 +203,7 @@ public abstract class AbstractUndoGenericModel<T> extends ModelMVCGeneric<T> imp
      * removed from undomanager
      */
     @Override
-    @SuppressWarnings("PMD")
+    @SuppressWarnings("PMD") // intentionally nulling references to allow GC
     public void die(){
       _source = null;
       _oldValue = null;
@@ -195,14 +214,20 @@ public abstract class AbstractUndoGenericModel<T> extends ModelMVCGeneric<T> imp
      * Combine different edits, e.g. when they are to small or trivial not used
      * yet
      *
-     * @param arg0
-     * @return
+     * @param arg0 an edit to potentially absorb into this edit
+     * @return false, indicating this edit does not absorb the given edit
      */
     @Override
     public boolean addEdit(final UndoableEdit arg0){
       return false;
     }
 
+    /**
+     * Attempts to replace this edit with the given edit.
+     *
+     * @param arg0 the edit that might replace this edit
+     * @return false, indicating this edit is not replaced
+     */
     @Override
     public boolean replaceEdit(final UndoableEdit arg0){
       return false;
@@ -228,8 +253,9 @@ public abstract class AbstractUndoGenericModel<T> extends ModelMVCGeneric<T> imp
     }
 
     /**
+     * Returns the text displayed in the undo menu item.
      *
-     * @return
+     * @return a string describing the undo operation with old and new values
      */
     @Override
     public String getUndoPresentationName(){
@@ -237,10 +263,9 @@ public abstract class AbstractUndoGenericModel<T> extends ModelMVCGeneric<T> imp
     }
 
     /**
-     * text that will be displayed in the undo JMenuItem entry, e.g redo delete
-     * point
+     * Returns the text displayed in the redo menu item.
      *
-     * @return
+     * @return a string describing the redo operation with new and old values
      */
     @Override
     public String getRedoPresentationName(){

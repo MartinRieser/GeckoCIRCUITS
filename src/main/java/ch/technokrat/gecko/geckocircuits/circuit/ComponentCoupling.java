@@ -26,16 +26,32 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import ch.technokrat.modelviewcontrol.AbstractUndoGenericModel;
 
+/**
+ * Manages coupling references between components (e.g. a current measurement referencing
+ * a component, or an inductor coupling referencing another inductor). Each coupling
+ * stores the referenced element, its unique identifier for persistence, and supports
+ * undo/redo of coupling changes.
+ */
 public final class ComponentCoupling {
 
+    /** Array of coupled elements, indexed by coupling slot. */
     public final AbstractBlockInterface[] _coupledElements;
+    /** Persistent unique identifiers for each coupled element, used for serialization. */
     public final long[] _coupledIdentifiers;
+    /** Identifiers captured before a copy operation, used to restore references after paste. */
     private long[] _coupledIdentifiersBeforeCopy;
     final AbstractBlockInterface _parentElement;
     final int[] _parStringIndices;
     private int _internalStringIndex = -1;
     private String _internalString = "";
 
+    /**
+     * Creates a coupling with the given maximum number of slots.
+     *
+     * @param maxNumberCouplings maximum number of elements that can be coupled
+     * @param parent the owning component
+     * @param parStringIndices indices into the parent's parameter string array for each slot
+     */
     public ComponentCoupling(final int maxNumberCouplings, AbstractBlockInterface parent, int[] parStringIndices) {
         _coupledElements = new AbstractBlockInterface[maxNumberCouplings];
         _coupledIdentifiers = new long[maxNumberCouplings];
@@ -44,7 +60,13 @@ public final class ComponentCoupling {
         System.arraycopy(parStringIndices, 0, _parStringIndices, 0, parStringIndices.length);
     }
     
-    public void setNewCouplingElement(final int index, final AbstractBlockInterface element) {        
+    /**
+     * Sets the coupled element at the given slot index, updating reference tracking.
+     *
+     * @param index the coupling slot
+     * @param element the new element to couple, or {@code null} to clear
+     */
+    public void setNewCouplingElement(final int index, final AbstractBlockInterface element) {
         _internalStringIndex = -1;
         _internalString = "";
         if (element == null) {
@@ -66,6 +88,13 @@ public final class ComponentCoupling {
         updateCouplingParameterStrings();
     }
 
+    /**
+     * Sets the coupled element with an associated internal parameter string suffix.
+     *
+     * @param index the coupling slot
+     * @param element the new element to couple, or {@code null} to clear
+     * @param is the internal string identifier to match on the coupled element
+     */
     public void setNewCouplingElement(int index, AbstractBlockInterface element, String is) {        
         if (element == null) {
             _coupledIdentifiers[index] = 0;
@@ -193,6 +222,13 @@ public final class ComponentCoupling {
         ProjectData.appendAsString(ascii.append("\ninternalString"), _internalString);
     }
 
+    /**
+     * Re-resolves all coupled element references from the parent's parameter strings
+     * by searching the given list of sheet elements. Used after loading a saved circuit
+     * to reconnect couplings by identifier or by string ID.
+     *
+     * @param allSheetElements all elements on the circuit sheet (including hidden subcircuits)
+     */
     public void refreshCoupledReferences(final List<? extends AbstractCircuitSheetComponent> allSheetElements) {
                 
         
@@ -276,7 +312,13 @@ public final class ComponentCoupling {
      * @param vecIndexExchangeAllNew
      * @param originElement
      */
-    public void trySetCopyReference(final List<AbstractCircuitSheetComponent> allNewElements) {   
+    /**
+     * Attempts to re-establish coupling references after a copy-paste operation by
+     * matching the stored identifiers against the newly created elements.
+     *
+     * @param allNewElements the newly pasted elements to search for matching identifiers
+     */
+    public void trySetCopyReference(final List<AbstractCircuitSheetComponent> allNewElements) {
                 
         for (int i = 0; i < _coupledElements.length; i++) {
             long searchCouplingIdentifier = _coupledIdentifiers[i];            
@@ -330,6 +372,9 @@ public final class ComponentCoupling {
         }
     }
     
+    /**
+     * Operation that sets a component coupling by name via the scripting/remote interface.
+     */
     class SetOperation extends Operationable.OperationInterface {
         final int _index;
         SetOperation(final int index) {            

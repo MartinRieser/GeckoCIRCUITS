@@ -26,6 +26,11 @@ import java.util.Collection;
 import java.util.List;
 import ch.technokrat.modelviewcontrol.ModelMVC;
 
+/**
+ * Base class for all circuit sheet components. Manages grid scaling,
+ * enable/disable state, unique identifiers, parent sheet references,
+ * and ASCII serialization for save/load operations.
+ */
 public abstract class AbstractCircuitSheetComponent {
 
     public static int dpix;  // Distance of two grid points in pixels                
@@ -96,6 +101,10 @@ public abstract class AbstractCircuitSheetComponent {
         _identifier.createNewIdentifier();
     }
 
+    /**
+     * Removes this component from its parent circuit sheet and deletes
+     * any associated files (loss files, nonlinearity files, etc.).
+     */
     public void deleteComponent() {        
         if (this instanceof GeckoFileable) {
             List<GeckoFile> filesList = ((GeckoFileable)this).getFiles();
@@ -148,6 +157,12 @@ public abstract class AbstractCircuitSheetComponent {
         _isEnabled.setValue(isEnabled);
     }
 
+    /**
+     * Imports this component's state (identifier, enabled flag, parent sheet)
+     * from a token map during file loading.
+     *
+     * @param tokenMap the token map to read from
+     */
     void importASCII(final TokenMap tokenMap) {
         _identifier.importASCII(tokenMap);
         boolean oldEnabled = true;
@@ -174,6 +189,12 @@ public abstract class AbstractCircuitSheetComponent {
         return _tempParentSheetIdentifier;
     }
 
+    /**
+     * Exports this component's state (enabled flag, parent sheet identifier)
+     * to the given string buffer during file saving.
+     *
+     * @param ascii the string buffer to append to
+     */
     public void exportASCII(final StringBuffer ascii) {
         ProjectData.appendAsString(ascii.append("\nenabledShorted"), _isEnabled.getValue().ordinal());
 
@@ -186,6 +207,9 @@ public abstract class AbstractCircuitSheetComponent {
 
     }
 
+    /**
+     * @return the parent circuit sheet that owns this component
+     */
     public CircuitSheet getParentCircuitSheet() {
         if (_parent == null) {
             return _parentCircuitSheet;
@@ -200,6 +224,12 @@ public abstract class AbstractCircuitSheetComponent {
     /**
      * @param parentCircuitSheet the _parentCircuitSheet to set
      */    
+    /**
+     * Sets the parent circuit sheet for this component, registering it
+     * in the new sheet's element list and removing it from the old one.
+     *
+     * @param parentCircuitSheet the new parent circuit sheet
+     */
     public void setParentCircuitSheet(final CircuitSheet parentCircuitSheet) {        
         if (_parentCircuitSheet != null && _parentCircuitSheet.allElements.contains(this)) {
             _parentCircuitSheet.allElements.remove(this);
@@ -270,6 +300,12 @@ public abstract class AbstractCircuitSheetComponent {
         _parent = parent;
     }
 
+    /**
+     * Shifts all identifiers (component id, coupling references, parent sheet
+     * reference) by the given value to support group-copy operations.
+     *
+     * @param shiftValue the offset to add to each identifier
+     */
     public void shiftAllIdentifiers(final long shiftValue) {
         getIdentifier().createNewIdentifier(getUniqueObjectIdentifier() + shiftValue);
         if (this instanceof ComponentCoupable) {
@@ -283,6 +319,11 @@ public abstract class AbstractCircuitSheetComponent {
 
     public abstract String getExportImportCharacters();
     
+    /**
+     * Checks whether the parent subcircuit (if any) is enabled.
+     *
+     * @return false if this component lives in a disabled subcircuit sheet, true otherwise
+     */
     public boolean allParentSubcircuitsEnabled() {        
         if(_parentCircuitSheet != null && _parentCircuitSheet instanceof SubCircuitSheet) {
             SubCircuitSheet subSheet = (SubCircuitSheet) _parentCircuitSheet;

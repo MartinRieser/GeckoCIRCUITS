@@ -19,9 +19,27 @@ package ch.technokrat.gecko.geckocircuits.newscope;
  * more easily for constant time steps in a calculation routine
  * with start and stop time and number of steps in between.
  */
+/**
+ * Abstract container for simulation time steps. Time series data can be stored
+ * in an array or computed on-the-fly from start/stop time and step count.
+ */
 public abstract class AbstractTimeSeries {
     protected static final int FIND_OVER_STEP = 5;
+
+    /**
+     * Returns the time value at the given index.
+     *
+     * @param index the index into the time series
+     * @return the time value at that index
+     */
     public abstract double getValue(final int index);
+
+    /**
+     * Sets the time value at the given index.
+     *
+     * @param index the index into the time series
+     * @param value the time value to store
+     */
     public abstract void setValue(final int index, final double value);
     /**
      * 

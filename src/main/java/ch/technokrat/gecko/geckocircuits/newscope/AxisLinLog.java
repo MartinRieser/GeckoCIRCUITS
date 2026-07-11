@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.newscope;
 
+/**
+ * Enum selecting between linear and logarithmic axis scaling for scope diagrams.
+ */
 enum AxisLinLog {
 
     AXIS_LINEAR(-111111114),
@@ -36,6 +39,13 @@ enum AxisLinLog {
         throw new IllegalArgumentException("Invalid ordinal: " + ordinal);
     }
     
+    /**
+     * Returns the AxisLinLog matching the given integer code, defaulting to
+     * {@link #AXIS_LINEAR} for unrecognized codes.
+     *
+     * @param code the integer code to look up
+     * @return the matching AxisLinLog, or AXIS_LINEAR if not found
+     */
     static AxisLinLog getFromCode(final int code) {
         for (AxisLinLog val : AxisLinLog.values()) {
             if (val._code == code) {

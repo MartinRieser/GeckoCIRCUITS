@@ -14,6 +14,11 @@
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
 
+/**
+ * Abstract calculator for voltage sources using modified nodal analysis (MNA).
+ * Introduces an auxiliary current variable ({@code _z}) so that the source
+ * current becomes an unknown in the system matrix.
+ */
 public abstract class AbstractVoltageSourceCalculator extends CircuitComponent<AbstractTwoPortPowerCircuitBlock>
     implements AStampable, DirectCurrentCalculatable, HistoryUpdatable {
 
@@ -25,6 +30,14 @@ public abstract class AbstractVoltageSourceCalculator extends CircuitComponent<A
     }
     
     
+    /**
+     * Stamps the MNA matrix entries for this voltage source using the auxiliary
+     * variable index {@code _z}. The conductance entries link the two terminal
+     * nodes to the auxiliary current variable row/column.
+     *
+     * @param matrix the system admittance matrix A
+     * @param deltaT the current time step (unused for ideal sources)
+     */
     @Override
     public void stampMatrixA(final double[][] matrix, final double deltaT) {
         assert _z > 0;

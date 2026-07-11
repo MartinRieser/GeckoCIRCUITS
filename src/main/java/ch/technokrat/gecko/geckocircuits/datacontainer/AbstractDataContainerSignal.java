@@ -14,6 +14,8 @@
 package ch.technokrat.gecko.geckocircuits.datacontainer;
 
 /**
+ * Represents a single signal (row) within an {@link AbstractDataContainer}.
+ * Holds a reference to the parent container and the row index of this signal.
  *
  * @author andreas
  */

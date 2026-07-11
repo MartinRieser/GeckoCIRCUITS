@@ -13,13 +13,33 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
+/**
+ * Interface for components that can stamp entries into the right-hand side
+ * vector (B vector) of the MNA system during circuit simulation.
+ */
 public interface BStampable {
 
-    void stampVectorB(double[] bVector, double time, final double deltaT);
-    void registerBVector(BVector bVector);
     /**
-     * tells if the component has the same stamp over several timesteps
-     * @return true if stamp will not change all the time
+     * Stamps this component's contribution into the B vector.
+     *
+     * @param bVector the right-hand side vector
+     * @param time the current simulation time
+     * @param deltaT the current time step
      */
-    boolean isBasisStampable();   
+    void stampVectorB(double[] bVector, double time, final double deltaT);
+
+    /**
+     * Registers the B vector with this component so it can request updates.
+     *
+     * @param bVector the B vector to register
+     */
+    void registerBVector(BVector bVector);
+
+    /**
+     * Indicates whether this component's B-vector stamp remains constant
+     * across time steps, enabling caching optimizations.
+     *
+     * @return true if the stamp does not change between time steps
+     */
+    boolean isBasisStampable();
 }

@@ -38,6 +38,9 @@ package com.intel.mkl;
  * indexed for real part and the odd indexed for imaginary part.
  *
  * <p>For more details, please see the MKL User's Guide.
+ *
+ * <p>All methods in this class are {@code native} and delegate directly to the
+ * Intel MKL shared library via JNI. No Java-side implementation is provided.</p>
  */
 public final class CBLAS {
 
@@ -115,19 +118,83 @@ public final class CBLAS {
 
     //////////////////////////////////////////////////////////
 
-    /** Wrapper to cblas_sgemm(). */
+    /**
+     * Computes a matrix-matrix product with general matrices: C := alpha*op(A)*op(B) + beta*C (single precision).
+     * @param Order Specifies row-major (101) or column-major (102) ordering.
+     * @param TransA Specifies the transpose operation for A: NoTrans(111), Trans(112), or ConjTrans(113).
+     * @param TransB Specifies the transpose operation for B: NoTrans(111), Trans(112), or ConjTrans(113).
+     * @param M Number of rows of the matrix op(A) and of the matrix C.
+     * @param N Number of columns of the matrix op(B) and of the matrix C.
+     * @param K Number of columns of the matrix op(A) and number of rows of the matrix op(B).
+     * @param alpha Scaling scalar alpha.
+     * @param A Array holding matrix A.
+     * @param lda The leading dimension of A as declared in the calling program.
+     * @param B Array holding matrix B.
+     * @param ldb The leading dimension of B as declared in the calling program.
+     * @param beta Scaling scalar beta.
+     * @param C Array holding matrix C.
+     * @param ldc The leading dimension of C as declared in the calling program.
+     */
     public static native void sgemm(int Order, int TransA, int TransB, int M, int N, int K,
         float alpha, float[] A, int lda, float[] B, int ldb, float beta, float[] C, int ldc);
 
-    /** Wrapper to cblas_dgemm(). */
+    /**
+     * Computes a matrix-matrix product with general matrices: C := alpha*op(A)*op(B) + beta*C (double precision).
+     * @param Order Specifies row-major (101) or column-major (102) ordering.
+     * @param TransA Specifies the transpose operation for A: NoTrans(111), Trans(112), or ConjTrans(113).
+     * @param TransB Specifies the transpose operation for B: NoTrans(111), Trans(112), or ConjTrans(113).
+     * @param M Number of rows of the matrix op(A) and of the matrix C.
+     * @param N Number of columns of the matrix op(B) and of the matrix C.
+     * @param K Number of columns of the matrix op(A) and number of rows of the matrix op(B).
+     * @param alpha Scaling scalar alpha.
+     * @param A Array holding matrix A.
+     * @param lda The leading dimension of A as declared in the calling program.
+     * @param B Array holding matrix B.
+     * @param ldb The leading dimension of B as declared in the calling program.
+     * @param beta Scaling scalar beta.
+     * @param C Array holding matrix C.
+     * @param ldc The leading dimension of C as declared in the calling program.
+     */
     public static native void dgemm(int Order, int TransA, int TransB, int M, int N, int K,
         double alpha, double[] A, int lda, double[] B, int ldb, double beta, double[] C, int ldc);
 
-    /** Wrapper to cblas_cgemm(). */
+    /**
+     * Computes a matrix-matrix product with general matrices: C := alpha*op(A)*op(B) + beta*C (single precision complex).
+     * @param Order Specifies row-major (101) or column-major (102) ordering.
+     * @param TransA Specifies the transpose operation for A: NoTrans(111), Trans(112), or ConjTrans(113).
+     * @param TransB Specifies the transpose operation for B: NoTrans(111), Trans(112), or ConjTrans(113).
+     * @param M Number of rows of the matrix op(A) and of the matrix C.
+     * @param N Number of columns of the matrix op(B) and of the matrix C.
+     * @param K Number of columns of the matrix op(A) and number of rows of the matrix op(B).
+     * @param alpha Two-element array specifying the complex scalar alpha (real, imaginary).
+     * @param A Array holding matrix A.
+     * @param lda The leading dimension of A as declared in the calling program.
+     * @param B Array holding matrix B.
+     * @param ldb The leading dimension of B as declared in the calling program.
+     * @param beta Two-element array specifying the complex scalar beta (real, imaginary).
+     * @param C Array holding matrix C.
+     * @param ldc The leading dimension of C as declared in the calling program.
+     */
     public static native void cgemm(int Order, int TransA, int TransB, int M, int N, int K,
         float[] alpha, float[] A, int lda, float[] B, int ldb, float[] beta, float[] C, int ldc);
 
-    /** Wrapper to cblas_zgemm(). */
+    /**
+     * Computes a matrix-matrix product with general matrices: C := alpha*op(A)*op(B) + beta*C (double precision complex).
+     * @param Order Specifies row-major (101) or column-major (102) ordering.
+     * @param TransA Specifies the transpose operation for A: NoTrans(111), Trans(112), or ConjTrans(113).
+     * @param TransB Specifies the transpose operation for B: NoTrans(111), Trans(112), or ConjTrans(113).
+     * @param M Number of rows of the matrix op(A) and of the matrix C.
+     * @param N Number of columns of the matrix op(B) and of the matrix C.
+     * @param K Number of columns of the matrix op(A) and number of rows of the matrix op(B).
+     * @param alpha Two-element array specifying the complex scalar alpha (real, imaginary).
+     * @param A Array holding matrix A.
+     * @param lda The leading dimension of A as declared in the calling program.
+     * @param B Array holding matrix B.
+     * @param ldb The leading dimension of B as declared in the calling program.
+     * @param beta Two-element array specifying the complex scalar beta (real, imaginary).
+     * @param C Array holding matrix C.
+     * @param ldc The leading dimension of C as declared in the calling program.
+     */
     public static native void zgemm(int Order, int TransA, int TransB, int M, int N, int K,
         double[] alpha, double[] A, int lda, double[] B, int ldb, double[] beta, double[] C, int ldc);
     
@@ -206,35 +273,149 @@ public final class CBLAS {
 
     //////////////////////////////////////////////////////////
 
-    /** Wrapper to cblas_sdot(). */
+    /**
+     * Computes the dot product of two single-precision vectors.
+     * @param N Number of elements in the vectors.
+     * @param X Array holding vector x.
+     * @param incX Stride between consecutive elements of x.
+     * @param Y Array holding vector y.
+     * @param incY Stride between consecutive elements of y.
+     * @return The dot product of x and y.
+     */
     public static native float sdot(int N, float[] X, int incX, float[] Y, int incY);
 
-    /** Wrapper to cblas_ddot(). */
+    /**
+     * Computes the dot product of two double-precision vectors.
+     * @param N Number of elements in the vectors.
+     * @param X Array holding vector x.
+     * @param incX Stride between consecutive elements of x.
+     * @param Y Array holding vector y.
+     * @param incY Stride between consecutive elements of y.
+     * @return The dot product of x and y.
+     */
     public static native double ddot(int N, double[] X, int incX, double[] Y, int incY);
 
-    /** Wrapper to cblas_cdotc_sub(). */
+    /**
+     * Computes the conjugate dot product of two single-precision complex vectors.
+     * @param N Number of elements in the vectors.
+     * @param X Array holding vector x (interleaved real/imaginary pairs).
+     * @param incX Stride between consecutive elements of x.
+     * @param Y Array holding vector y (interleaved real/imaginary pairs).
+     * @param incY Stride between consecutive elements of y.
+     * @param dotc Output array (2 elements: real, imaginary) receiving the result.
+     */
     public static native void cdotc_sub(int N, float[] X, int incX, float[] Y, int incY, float[] dotc);
 
-    /** Wrapper to cblas_zdotc_sub(). */
+    /**
+     * Computes the conjugate dot product of two double-precision complex vectors.
+     * @param N Number of elements in the vectors.
+     * @param X Array holding vector x (interleaved real/imaginary pairs).
+     * @param incX Stride between consecutive elements of x.
+     * @param Y Array holding vector y (interleaved real/imaginary pairs).
+     * @param incY Stride between consecutive elements of y.
+     * @param dotc Output array (2 elements: real, imaginary) receiving the result.
+     */
     public static native void zdotc_sub(int N, double[] X, int incX, double[] Y, int incY, double[] dotc);
 
-    /** Wrapper to cblas_cdotu_sub(). */
+    /**
+     * Computes the unconjugated dot product of two single-precision complex vectors.
+     * @param N Number of elements in the vectors.
+     * @param X Array holding vector x (interleaved real/imaginary pairs).
+     * @param incX Stride between consecutive elements of x.
+     * @param Y Array holding vector y (interleaved real/imaginary pairs).
+     * @param incY Stride between consecutive elements of y.
+     * @param dotu Output array (2 elements: real, imaginary) receiving the result.
+     */
     public static native void cdotu_sub(int N, float[] X, int incX, float[] Y, int incY, float[] dotu);
 
-    /** Wrapper to cblas_zdotu_sub(). */
+    /**
+     * Computes the unconjugated dot product of two double-precision complex vectors.
+     * @param N Number of elements in the vectors.
+     * @param X Array holding vector x (interleaved real/imaginary pairs).
+     * @param incX Stride between consecutive elements of x.
+     * @param Y Array holding vector y (interleaved real/imaginary pairs).
+     * @param incY Stride between consecutive elements of y.
+     * @param dotu Output array (2 elements: real, imaginary) receiving the result.
+     */
     public static native void zdotu_sub(int N, double[] X, int incX, double[] Y, int incY, double[] dotu);
 
-    //public static native int ddnscsr(int[] job, int m, int n, double[] adns, int lda, double[] acsr, int[] aj, int[] ai);    
+    /**
+     * Converts a dense matrix to sparse CSR format (double precision).
+     * @param job Integer array (6 elements) specifying conversion direction and parameters.
+     * @param m Number of rows in the dense matrix.
+     * @param n Number of columns in the dense matrix.
+     * @param adns Dense matrix values in column-major or row-major order.
+     * @param lda Leading dimension of the dense matrix.
+     * @param acsr Output array containing the CSR-format values.
+     * @param aj Output array containing the column indices for CSR format.
+     * @param ai Output array containing the row start indices for CSR format.
+     * @return Status info: 0 on success, 1 if insufficient space, etc.
+     */
+    //public static native int ddnscsr(int[] job, int m, int n, double[] adns, int lda, double[] acsr, int[] aj, int[] ai);
     public static native int ddnscsr(int[] job, int m, int n, double[] adns, int lda, double[] acsr, int[] aj, int[] ai);
 
 
+    /**
+     * Computes a sparse matrix-matrix product in CSR format (double precision): C := alpha*A*B + beta*C.
+     * @param transa Operation type for A: 'N' (no transpose), 'T' (transpose), or 'C' (conjugate transpose).
+     * @param m Number of rows of matrix A.
+     * @param n Number of columns of matrix C.
+     * @param k Number of columns of matrix A / rows of matrix B.
+     * @param alpha Scaling scalar alpha.
+     * @param matdescra Character array specifying matrix attributes (general, symmetric, etc.).
+     * @param val Array of non-zero values of the sparse matrix A.
+     * @param index Column indices of non-zero elements in A.
+     * @param pntrb Array of row start indices for CSR format.
+     * @param pntre Array of row end indices for CSR format.
+     * @param b Dense matrix B.
+     * @param ldb Leading dimension of B.
+     * @param beta Scaling scalar beta.
+     * @param c Output dense matrix C.
+     * @param ldc Leading dimension of C.
+     */
     public static native void dcsrmm(char transa, int m, int n, int k, double[] alpha, char[] matdescra, double[] val,
             int[] index, int[] pntrb, int[] pntre, double[] b, int ldb, double[] beta, double[] c , int ldc);
 
+    /**
+     * Computes a sparse matrix-matrix product in CSR format (single precision): C := alpha*A*B + beta*C.
+     * @param transa Operation type for A: 'N' (no transpose), 'T' (transpose), or 'C' (conjugate transpose).
+     * @param m Number of rows of matrix A.
+     * @param n Number of columns of matrix C.
+     * @param k Number of columns of matrix A / rows of matrix B.
+     * @param alpha Scaling scalar alpha.
+     * @param matdescra Character array specifying matrix attributes.
+     * @param val Array of non-zero values of the sparse matrix A.
+     * @param index Column indices of non-zero elements in A.
+     * @param pntrb Array of row start indices for CSR format.
+     * @param pntre Array of row end indices for CSR format.
+     * @param b Dense matrix B.
+     * @param ldb Leading dimension of B.
+     * @param beta Scaling scalar beta.
+     * @param c Output dense matrix C.
+     * @param ldc Leading dimension of C.
+     */
     public static native void scsrmm(char transa, int m, int n, int k, float[] alpha, char[] matdescra, float[] val,
             int[] index, int[] pntrb, int[] pntre, float[] b, int ldb, float[] beta, float[] c , int ldc);
 
 
+    /**
+     * Computes a sparse matrix-matrix product in CSR format (double-precision complex): C := alpha*A*B + beta*C.
+     * @param transa Operation type for A: 'N' (no transpose), 'T' (transpose), or 'C' (conjugate transpose).
+     * @param m Number of rows of matrix A.
+     * @param n Number of columns of matrix C.
+     * @param k Number of columns of matrix A / rows of matrix B.
+     * @param alpha Two-element array specifying the complex scalar alpha (real, imaginary).
+     * @param matdescra Character array specifying matrix attributes.
+     * @param val Array of non-zero values of the sparse matrix A (interleaved real/imaginary pairs).
+     * @param index Column indices of non-zero elements in A.
+     * @param pntrb Array of row start indices for CSR format.
+     * @param pntre Array of row end indices for CSR format.
+     * @param b Dense matrix B (interleaved real/imaginary pairs).
+     * @param ldb Leading dimension of B.
+     * @param beta Two-element array specifying the complex scalar beta (real, imaginary).
+     * @param c Output dense matrix C (interleaved real/imaginary pairs).
+     * @param ldc Leading dimension of C.
+     */
     public static native void zcsrmm(char transa, int m, int n, int k, double[] alpha, char[] matdescra, double[] val,
             int[] index, int[] pntrb, int[] pntre, double[] b, int ldb, double[] beta, double[] c , int ldc);
 
@@ -300,23 +481,23 @@ public final class CBLAS {
 
 
     /**
-     * Computes matrix - matrix product of a sparse matrix stored in the CSR format.
-     * @param transa
-     * @param m
-     * @param n
-     * @param k
-     * @param alpha
-     * @param matdescra
-     * @param val
-     * @param index
-     * @param pntrb
-     * @param pntre
-     * @param b
-     * @param ldb
-     * @param beta
-     * @param c
-     * @param ldc
-     */    
+     * Computes matrix - matrix product of a sparse matrix stored in the CSR format (single precision complex).
+     * @param transa Operation type for A: 'N' (no transpose), 'T' (transpose), or 'C' (conjugate transpose).
+     * @param m Number of rows of matrix A.
+     * @param n Number of columns of matrix C.
+     * @param k Number of columns of matrix A / rows of matrix B.
+     * @param alpha Two-element array specifying the complex scalar alpha (real, imaginary).
+     * @param matdescra Byte array specifying matrix attributes (general, symmetric, etc.).
+     * @param A Array of non-zero values of the sparse matrix A (interleaved real/imaginary pairs).
+     * @param columns Column indices of non-zero elements in A.
+     * @param rowIndices Array of row start indices for CSR format.
+     * @param rowIndices1 Array of row end indices for CSR format.
+     * @param B Dense matrix B (interleaved real/imaginary pairs).
+     * @param ldb Leading dimension of B.
+     * @param beta Two-element array specifying the complex scalar beta (real, imaginary).
+     * @param C Output dense matrix C (interleaved real/imaginary pairs).
+     * @param ldc Leading dimension of C.
+     */
       public static native void ccsrmm( byte transa, int m, int n, int k, float[] alpha, byte[] matdescra, 
                 float[] A, int[] columns, int[] rowIndices, int[] rowIndices1, float[] B, int ldb, float[] beta, float[] C, int ldc);
 
@@ -345,13 +526,86 @@ public final class CBLAS {
      */
     public static native void simatcopy(char ordering, char Trans, int rows, int cols, float[] array, float alpha, int src_lda, int dst_lda);
 
+    /**
+     * Computes the Euclidean (L2) norm of a double-precision vector.
+     * @param ivar Number of elements in the vector.
+     * @param expected_solution Array holding the vector.
+     * @param i Stride between consecutive elements.
+     * @return The 2-norm of the vector.
+     */
     public static native double dnrm2(int ivar, double[] expected_solution, int i);
 
+    /**
+     * Initializes the FGMRES (Flexible GMRES) iterative solver for linear systems.
+     * @param ivar Number of variables (size of the system).
+     * @param computed_solution Array for the solution vector (initialized on output).
+     * @param rhs Right-hand side vector of the system.
+     * @param RCI_request Reverse Communication Interface request indicator.
+     * @param ipar Integer parameter array for solver configuration.
+     * @param dpar Double parameter array for solver configuration.
+     * @param tmp Temporary workspace array.
+     */
     public static native void dfgmresInit(int ivar, double[] computed_solution, double[] rhs, int[] RCI_request, int[] ipar, double[] dpar, double[] tmp);
 
+    /**
+     * Computes a sparse matrix-vector product in CSR format with two output vectors (double precision): y = A*x.
+     * @param cvar Character specifying the operation type ('N' or 'T').
+     * @param ivar Number of rows in the matrix.
+     * @param A Array of non-zero values of the sparse matrix.
+     * @param ia Row index array in CSR format.
+     * @param ja Column index array in CSR format.
+     * @param tmp Temporary/work array.
+     * @param k Size parameter for the operation.
+     * @param l Additional size parameter.
+     */
     public static native void dcsrgemv2(char cvar, int ivar, double[] A, int[] ia, int[] ja, double[] tmp, int k, int l);
+
+    /**
+     * Computes a sparse matrix-vector product in CSR format (double precision): y = A*x.
+     * @param cvar Character specifying the operation type ('N' or 'T').
+     * @param ivar Number of rows in the matrix.
+     * @param A Array of non-zero values of the sparse matrix.
+     * @param ia Row index array in CSR format.
+     * @param ja Column index array in CSR format.
+     * @param x Input vector x.
+     * @param y Output vector y receiving the result.
+     */
     public static native void dcsrgemv(char cvar, int ivar, double[] A, int[] ia, int[] ja, double[] x, double[] y);
+
+    /**
+     * Performs one step of the FGMRES iterative solver via reverse communication.
+     * @param n Size of the system (number of variables).
+     * @param x Solution vector (updated on output).
+     * @param b Right-hand side vector.
+     * @param RCI_request Reverse Communication Interface request indicator.
+     * @param ipar Integer parameter array for solver configuration.
+     * @param dpar Double parameter array for solver configuration.
+     * @param tmp Temporary workspace array.
+     */
     public static native void dfgmres(int n, double[] x, double[] b, int[] RCI_request, int[] ipar, double[] dpar, double[] tmp);
+
+    /**
+     * Checks the FGMRES solver status for convergence or errors.
+     * @param n Size of the system (number of variables).
+     * @param x Current solution vector.
+     * @param b Right-hand side vector.
+     * @param RCI_request Reverse Communication Interface request indicator.
+     * @param ipar Integer parameter array for solver configuration.
+     * @param dpar Double parameter array for solver configuration.
+     * @param tmp Temporary workspace array.
+     */
     public static native void dfgmresCheck(int n, double[] x, double[] b, int[] RCI_request, int[] ipar, double[] dpar, double[] tmp);
+
+    /**
+     * Retrieves the FGMRES solution and iteration count after convergence.
+     * @param ivar Size of the system (number of variables).
+     * @param x Solution vector to be filled.
+     * @param b Right-hand side vector.
+     * @param RCI_request Reverse Communication Interface request indicator.
+     * @param ipar Integer parameter array for solver configuration.
+     * @param dpar Double parameter array for solver configuration.
+     * @param tmp Temporary workspace array.
+     * @param itercount Output array receiving the number of iterations performed.
+     */
     public static native void dfgmresGet(int ivar, double[] x, double[] b, int[] RCI_request, int[] ipar, double[] dpar, double[] tmp, int[] itercount);
 }

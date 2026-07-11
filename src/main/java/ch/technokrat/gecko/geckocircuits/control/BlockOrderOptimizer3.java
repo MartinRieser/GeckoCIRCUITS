@@ -15,6 +15,12 @@ package ch.technokrat.gecko.geckocircuits.control;
 
 import java.util.*;
 
+/**
+ * Priority-based block ordering optimizer for control circuits. Assigns
+ * integer priorities to each control block by propagating from source blocks
+ * (lowest priority) forward and from sink blocks (highest priority) backward,
+ * then sorts blocks by priority to minimize out-of-order execution.
+ */
 public final class BlockOrderOptimizer3 {
 
     private final List<ControlOrderNode> _allNodes = new ArrayList<ControlOrderNode>();

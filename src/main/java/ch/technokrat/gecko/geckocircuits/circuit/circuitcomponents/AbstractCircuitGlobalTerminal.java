@@ -29,6 +29,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Represents a "global terminal" — a special circuit node that is accessible
+ * across all subcircuit sheets (e.g. ground, thermal ambient). Global terminals
+ * are tracked in {@link #ALL_GLOBALS} keyed by component type so that
+ * cross-sheet connections can be resolved automatically.
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class AbstractCircuitGlobalTerminal extends AbstractCircuitBlockInterface implements GlobalTerminable {    
     public static final Map<AbstractComponentType, HashSet<AbstractCircuitGlobalTerminal>> ALL_GLOBALS = 

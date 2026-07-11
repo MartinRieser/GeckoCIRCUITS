@@ -17,6 +17,9 @@ import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 /**
+ * Shared parameter definitions for induction machine (IM) models.
+ * Defines stator leakage inductance, rotor resistance and leakage
+ * inductance, and initial stator flux values common to all IM variants.
  *
  * @author andy
  */
@@ -81,9 +84,13 @@ public abstract class AbstractMotorIMCommon extends AbstractThreePhaseMotor {
         return 17;
     }
     
+    /** @return the parameter array index for the initial stator current (phase A) */
     abstract int getInitialStatorCurrentIndexA();
-    abstract int getInitialStatorCurrentIndexB();            
-    
-    abstract int getInitialStatorFluxIndexD();    
+    /** @return the parameter array index for the initial stator current (phase B) */
+    abstract int getInitialStatorCurrentIndexB();
+
+    /** @return the parameter array index for the initial stator flux (d-axis) */
+    abstract int getInitialStatorFluxIndexD();
+    /** @return the parameter array index for the initial stator flux (q-axis) */
     abstract int getInitialStatorFluxIndexQ();                
 }

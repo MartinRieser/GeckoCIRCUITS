@@ -21,6 +21,9 @@ import java.util.Stack;
 import javax.swing.JPanel;
 
 /**
+ * JPanel-based Bode plot component displaying magnitude (gain in dB) and phase
+ * (in degrees) diagrams with a logarithmic frequency axis in rad/sec. Unlike
+ * the deprecated {@link BodePlot} dialog, this is an embeddable panel.
  *
  * @author andy
  */
@@ -33,7 +36,7 @@ public class BodePlot2 extends JPanel {
     private DialogConnectSignalsGraphs _diagCON;
     private transient DataContainerSimple _dataContainer;
 
-    @SuppressWarnings({"deprecation", "this-escape"})
+    @SuppressWarnings({"deprecation", "this-escape"}) // deprecation: intentionally references deprecated scope APIs; this-escape: acceptable in constructor
     public BodePlot2() {                        
         _graferNew = new GraferV4(new ScopeSettings());
         _graferPanel = new NewScope(_graferNew);

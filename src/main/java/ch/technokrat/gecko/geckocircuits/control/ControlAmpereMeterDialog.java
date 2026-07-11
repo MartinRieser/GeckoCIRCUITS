@@ -22,6 +22,10 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+/**
+ * Dialog for configuring an amperemeter or flowmeter control block, including
+ * the selection of the measured component and (for flowmeters) the loss component.
+ */
 class ControlAmpereMeterDialog extends DialogElementCONTROL<AbstractCurrentMeasurement> {
     
     private static final long serialVersionUID = 1L;

@@ -16,15 +16,22 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
 import ch.technokrat.gecko.geckocircuits.general.SolverType;
 
+/**
+ * Circuit calculator for capacitor components using MNA stamping. Supports
+ * three solver types (backward Euler, trapezoidal, Gear-shifted) and nonlinear
+ * capacitance interpolation for voltage-dependent capacitors.
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public final class CapacitorCalculator extends CircuitComponent implements AStampable, BStampable,
          DirectCurrentCalculatable, CurrentCalculatable, HistoryUpdatable {
 
+    /** Global flag set when initializing capacitors with non-zero initial voltage. */
     public static boolean initCapacitor = false;
     private double _capacitance = 100E-6;
     private double _initialValue = 0;
     private VoltageSourceCalculator initVoltageSource;
     // ok, this is a "public" variable... bad, but useful here
+    /** Global flag set when nonlinear capacitance deviation triggers a re-iteration. */
     public static boolean capError = false;
     private int _z;
     // Note: _bVector is used at line 207 in registerBVector(), IDE warning is false positive
@@ -44,6 +51,14 @@ public final class CapacitorCalculator extends CircuitComponent implements AStam
         _initialValue = parent._initialValue.getValue();
     }
 
+    /**
+     * Stamps the A-matrix entries for the capacitor based on the solver type
+     * (backward Euler, trapezoidal, or Gear-shifted), or stamps an initial
+     * voltage source when initializing.
+     *
+     * @param matrix the system admittance matrix A
+     * @param dt the current time step
+     */
     @Override
     public void stampMatrixA(double[][] matrix, double dt) {
         //  +C/dt
@@ -68,6 +83,14 @@ public final class CapacitorCalculator extends CircuitComponent implements AStam
         }
     }
 
+    /**
+     * Stamps the B-vector entries for the capacitor based on the solver type,
+     * including nonlinear correction current when applicable.
+     *
+     * @param b the right-hand side vector
+     * @param t the current simulation time
+     * @param dt the current time step
+     */
     @Override
     public final void stampVectorB(double[] b, double t, double dt) {
 
@@ -189,6 +212,11 @@ public final class CapacitorCalculator extends CircuitComponent implements AStam
         return _isNonLinear;
     }
 
+    /**
+     * Updates the capacitance value from the nonlinear characteristic, but only
+     * triggers a matrix re-stamp if the relative deviation exceeds 10%, to
+     * minimize expensive A-matrix recalculations.
+     */
     public void updateNonLinearCapacitance() {
         double new_capacitance;
         if (initCapacitor) {

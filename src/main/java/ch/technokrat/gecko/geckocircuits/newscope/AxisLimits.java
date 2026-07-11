@@ -18,6 +18,9 @@ import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
 import java.util.Stack;
 
 /**
+ * Manages axis value limits, supporting global autoscale, local autoscale,
+ * user-specified fixed values, zoom with undo history, and nice-scale
+ * rounding for display purposes.
  *
  * @author andy
  */
@@ -76,6 +79,16 @@ final class AxisLimits {
         _isAutoEnabled = value;
     }
 
+    /**
+     * Returns the active axis limits based on the current mode.
+     * When autoscale is disabled, returns the user/local value scale.
+     * When autoscale is enabled with GLOBAL_AUTO clipping, returns the global
+     * autoscale limits (optionally rounded via NiceScale).
+     * With LOCAL_AUTO clipping, returns the local autoscale limits.
+     * With ZOOMED clipping, returns the zoomed limits.
+     *
+     * @return the active HiLoData limits for this axis
+     */
     public HiLoData getLimits() {
         if (!_isAutoEnabled) {
             return _valueScaleLocal;

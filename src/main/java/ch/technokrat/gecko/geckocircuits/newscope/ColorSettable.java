@@ -17,9 +17,17 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 
 /**
+ * Strategy interface for setting a (possibly transformed) drawing color on a
+ * {@code Graphics2D} context.
  *
  * @author andreas
  */
 public interface ColorSettable {
+        /**
+         * Applies the color to the graphics context.
+         *
+         * @param color the base color
+         * @param g2d   the graphics context to modify
+         */
         void setColor(Color color, Graphics2D g2d);
 }

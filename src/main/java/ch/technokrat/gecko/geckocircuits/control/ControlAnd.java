@@ -18,6 +18,9 @@ import ch.technokrat.gecko.geckocircuits.control.calculators.AndMultiInputCalcul
 import ch.technokrat.gecko.geckocircuits.control.calculators.AndTwoPortCalculator;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Control block that computes the logical AND of all connected input signals.
+ */
 public final class ControlAnd extends AbstractControlVariableInputs {
     private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlAnd.class, "AND", I18nKeys.AND);

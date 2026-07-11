@@ -17,6 +17,8 @@ import ch.technokrat.gecko.geckocircuits.general.ProjectData;
 import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
 
 /**
+ * Stores visual design settings for a diagram axis, including color, line style,
+ * and caption/label text.
  *
  * @author andy
  */

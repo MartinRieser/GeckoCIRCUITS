@@ -41,6 +41,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Abstract base class for circuit sources (voltage/current) supporting
+ * multiple source types: DC, sinusoidal AC, signal-controlled, and
+ * direct-voltage-controlled.
+ * <p>
+ * parameter[] array layout:
+ * [0] = source type, [1] = DC value, [2] = frequency, [3] = offset,
+ * [4] = phase, [5] = unused, [6]-[9] = state variables, [10] = unused,
+ * [11] = direct potential gain, [12]-[14] = unused, [15] = di/dt initial current,
+ * [16]-[19] = unused, [20] = peak amplitude.
+ */
 public abstract class AbstractCircuitSource extends AbstractTwoPortPowerCircuitBlock implements DirectVoltageMeasurable,
         ComponentCoupable, PotentialCoupable, CurrentMeasurable {
 
@@ -289,14 +300,29 @@ public abstract class AbstractCircuitSource extends AbstractTwoPortPowerCircuitB
 
     }
 
+    /**
+     * @return the unit string for the given connector domain
+     */
     abstract String getUnitForDomain(ConnectorType connectorType);
 
+    /**
+     * @return the connector domains this source supports (e.g. LK, RELUCTANCE, THERMAL)
+     */
     abstract ConnectorType[] getDomains();
 
+    /**
+     * @return short name strings for the amplitude parameter
+     */
     abstract String[] getShortNamesForAmplitude();
 
+    /**
+     * @return the default amplitude value for this source type
+     */
     abstract double getDefaultAmplitudeValue();
 
+    /**
+     * @return the DC value short name for the given connector domain
+     */
     abstract String getDCValueShortNameFromDomain(ConnectorType connectorType);
 
     //CHECKSTYLE:OFF

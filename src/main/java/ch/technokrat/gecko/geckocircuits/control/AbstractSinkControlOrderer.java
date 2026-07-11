@@ -16,6 +16,10 @@ package ch.technokrat.gecko.geckocircuits.control;
 import java.util.Collection;
 import java.util.Set;
 
+/**
+ * Control orderer that traverses the block graph starting from sink blocks
+ * (blocks with no outputs), ordering them so that inputs are computed first.
+ */
 abstract class AbstractSinkControlOrderer extends AbstractControlOrderer {
 
     public AbstractSinkControlOrderer(Collection<ControlOrderNode> allNodesToSort) {

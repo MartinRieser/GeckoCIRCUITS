@@ -13,11 +13,17 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Abstract base class for signal-source calculators. Each signal source
+ * produces a single output signal.
+ */
 public abstract class AbstractSignalCalculator extends AbstractControlCalculatable {
 
     public AbstractSignalCalculator(final int noInputs) {
         super(noInputs, 1);
     }
+
+    /** Constant representing 2&pi;, used for phase calculations in radians. */
     static final double TWO_PI = 2 * Math.PI;
     
 }

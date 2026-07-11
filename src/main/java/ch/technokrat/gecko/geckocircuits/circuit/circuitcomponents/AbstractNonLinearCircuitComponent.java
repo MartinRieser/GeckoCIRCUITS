@@ -362,6 +362,14 @@ implements Operationable, Nonlinearable {
         return nonLinearChar;
     }
     
+    /**
+     * Interpolates the y-value from a piecewise-linear nonlinear characteristic
+     * where both x- and y-axes are linear. Clamps to the boundary values
+     * when {@code x} is outside the data range.
+     *
+     * @param x the input value (e.g. voltage)
+     * @return the interpolated characteristic value (e.g. capacitance)
+     */
     //===================================
     // ASSUMPTION: x- and y-axis both linear
     // // also employed with LKOP2
@@ -409,6 +417,14 @@ implements Operationable, Nonlinearable {
     }
     
 
+    /**
+     * Interpolates the y-value from a piecewise-linear characteristic with
+     * linear x-axis and logarithmic y-axis (e.g. Coss curves). Clamps to
+     * boundary values when {@code x} is outside the data range.
+     *
+     * @param x the input value (e.g. voltage)
+     * @return the interpolated characteristic value (e.g. capacitance)
+     */
     //===================================
     // ASSUMPTION: x-axis is linear, but y-axis is logarithmic
     // Coss(u) in S, D, THYR

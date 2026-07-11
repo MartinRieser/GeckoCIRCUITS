@@ -22,7 +22,13 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Performs topological sorting of control blocks to determine the correct
+ * execution order during simulation. Subclasses define the sort direction
+ * (source-first or sink-first).
+ */
  abstract class AbstractControlOrderer {
+    /** Maximum iteration count to prevent infinite loops when detecting cyclic dependencies. */
     static final int MAX_ITERATION_COUNT = 10000;    
     
     @SuppressWarnings("PMD")
@@ -136,9 +142,14 @@ import java.util.logging.Logger;
         }
     }       
     
-    abstract Set<ControlOrderNode> getStartSet();    
+    /** @return the set of nodes from which to start the sort */
+    abstract Set<ControlOrderNode> getStartSet();
+    /** Moves a node toward the start of the ordered list during initial sort. */
     abstract void moveNodeToStartDirectionInList(ControlOrderNode node);
+    /** Moves a node toward the end of the ordered list during iterative sort. */
     abstract void moveNodeToEndDirectionInList(ControlOrderNode node);
+    /** @return the set of neighbouring nodes to consider next after the given node */
     abstract Set<ControlOrderNode> getNextNeighbourNodes(ControlOrderNode node);
+    /** @return the warning string shown for unconnected nodes after sorting */
     abstract String getRemainingWarningString();
 }

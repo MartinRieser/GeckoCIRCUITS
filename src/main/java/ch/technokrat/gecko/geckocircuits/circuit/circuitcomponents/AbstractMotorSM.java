@@ -21,6 +21,12 @@ import java.awt.Graphics2D;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Synchronous machine (SM) model with damper windings and magnetic
+ * saturation support. Uses a dq-axis equivalent circuit with field winding,
+ * damper circuits in d- and q-axes, and a controllable excitation current
+ * source in the hidden subcircuit.
+ */
 abstract class AbstractMotorSM extends AbstractThreePhaseMotor {
 
     AbstractCurrentSource _controlledSource3;

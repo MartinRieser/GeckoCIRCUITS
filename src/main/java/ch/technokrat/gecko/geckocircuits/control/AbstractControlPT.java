@@ -21,15 +21,21 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Base class for PT1/PT2 transfer function control blocks, providing
+ * shared user parameters for the time constant and gain.
+ */
 abstract class AbstractControlPT extends AbstractControlSingleInputSingleOutput {
     private static final long serialVersionUID = 1L;
 
+    /** Time constant T of the transfer function. */
     final transient UserParameter<Double> _TVal = UserParameter.Builder.<Double>start("T", 1.0).
             longName(I18nKeys.TIME_CONSTANT).
             shortName("T").
             showInTextInfo(TextInfoType.SHOW_WHEN_DISPLAYPARAMETERS).
             arrayIndex(this, 0).
             build();
+    /** Gain a1 of the transfer function. */
     final transient UserParameter<Double> _a1Val = UserParameter.Builder.<Double>start("a1", 1.0).
             longName(I18nKeys.GAIN).
             shortName("a1").

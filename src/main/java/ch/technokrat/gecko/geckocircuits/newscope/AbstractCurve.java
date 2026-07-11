@@ -31,6 +31,11 @@ public abstract class AbstractCurve implements LineSettable, SymbolSettable {
     protected static final int DY_IN_OBEN = 8, DY_IN_UNTEN = 8;
     protected final Axis _xAxis;
     protected Axis _yAxis;
+    /**
+     * Shared mutable GeneralPath used for drawing all curves.
+     * <strong>Thread-safety hazard:</strong> this static field is reused
+     * across instances and is not synchronized.
+     */
     protected static final GeneralPath GPATH = new GeneralPath();
     private AxisConnection _axisConnection = AxisConnection.ASSIGNMENT_NONE;
     protected final AbstractDiagram _diagram;

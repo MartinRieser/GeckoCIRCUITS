@@ -14,6 +14,7 @@
 package ch.technokrat.gecko.geckocircuits.datacontainer;
 
 /**
+ * Represents the lifecycle state of a data container during and after simulation.
  *
  * @author andreas
  */

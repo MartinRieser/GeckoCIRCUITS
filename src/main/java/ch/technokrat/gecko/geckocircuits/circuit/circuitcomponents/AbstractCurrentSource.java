@@ -18,6 +18,11 @@ import java.awt.Graphics2D;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Abstract current source component. Draws a circle symbol with an arrow
+ * indicating current flow direction. Drawing constants define the arrow
+ * head and shaft dimensions relative to the grid size.
+ */
 public abstract class AbstractCurrentSource extends AbstractCircuitSource {
 
     private static final double I_ARROW_LENGTH = 0.7;
@@ -84,6 +89,9 @@ public abstract class AbstractCurrentSource extends AbstractCircuitSource {
         }
     }
     
+    /**
+     * @return a list containing the calculator for this current source
+     */
     @Override
     @SuppressWarnings("rawtypes")
     public List<? extends CircuitComponent> getCircuitCalculatorsForSimulationStart() {

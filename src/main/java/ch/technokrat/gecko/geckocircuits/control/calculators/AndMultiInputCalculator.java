@@ -19,10 +19,21 @@ package ch.technokrat.gecko.geckocircuits.control.calculators;
  */
 public final class AndMultiInputCalculator extends AbstractControlCalculatable {
 
+    /**
+     * Creates an AND calculator for the given number of input signals.
+     *
+     * @param inputNumber the number of input signals to evaluate
+     */
     public AndMultiInputCalculator(final int inputNumber) {
         super(inputNumber, 1);
     }
 
+    /**
+     * Computes the logical AND of all input signals. Output is 1 only if
+     * every input exceeds the signal threshold, otherwise 0.
+     *
+     * @param deltaT the simulation time step (unused)
+     */
     @Override
     public void calculateYOUT(final double deltaT) {
         _outputSignal[0][0] = 1;

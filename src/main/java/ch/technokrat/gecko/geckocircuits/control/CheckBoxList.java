@@ -19,6 +19,10 @@ import javax.swing.*;
 import javax.swing.event.*;
 import java.util.*;
 
+/**
+ * A {@code JList} that mimics checkbox-style toggle selection: clicking a selected item
+ * deselects it and vice versa, allowing multiple non-contiguous selections.
+ */
 public class CheckBoxList extends JList<String>
     implements ListSelectionListener {
     private static final long serialVersionUID = 1L;
@@ -93,6 +97,10 @@ public class CheckBoxList extends JList<String>
 
 
 
+    /**
+     * Cell renderer that displays a checkbox alongside the default list cell renderer
+     * to visualize the toggle-selection state of each entry.
+     */
     class CheckBoxListCellRenderer extends JComponent
         implements ListCellRenderer<Object> {
         private static final long serialVersionUID = 1L;

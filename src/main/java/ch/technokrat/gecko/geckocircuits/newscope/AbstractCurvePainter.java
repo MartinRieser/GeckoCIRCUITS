@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
+ * Abstract painter that handles loading and rendering of curve data
+ * onto a diagram's graphics context. Subclasses implement specific
+ * painting strategies (e.g. line, pixel-based).
  *
  * @author andy
  */
@@ -30,22 +33,27 @@ abstract class AbstractCurvePainter {
   final DataLoader _dataLoader = new DataLoader(this);
   ConcurrentLinkedQueue<Point2D.Float> _allPoints = new ConcurrentLinkedQueue<Point2D.Float>();
 
+    /** Paints the curve onto the given graphics context. */
     abstract void paintComponent(final Graphics2D g2d);
-    
+
     /*
      * load the full data range up to the given pixel value
      */
     abstract void reLoadData(final int minimumPixel, final int maximumPixel);
-    
+
     /*
      * load only part of the data, from startPixel to stopPixel
      */
     abstract void loadDataRange(final int startPixel, final int stopPixel);
-    
-                
-  
+
+
+
+    /** @return the list of axes this painter is sensitive to (for zoom/pan) */
     abstract List<Axis> getSensitiveAxis();
-  
+
+  /**
+   * @param curve the curve to paint
+   */
   public AbstractCurvePainter(final AbstractCurve curve){
     _curve = curve;
     _xAxis = curve._xAxis;
@@ -53,20 +61,33 @@ abstract class AbstractCurvePainter {
   }
 
   
+  /** @return the RAM data container backing this painter */
   public AbstractDataContainer getRamData(){
     return _ramData;
   }
 
   
+  /**
+   * Sets the RAM data container backing this painter.
+   *
+   * @param newData the new data container
+   */
   public void setRamData(final AbstractDataContainer newData){
     _ramData = newData;
   }
 
   
+  /** @return the x-axis associated with this painter */
   public Axis getXAxis(){
     return _xAxis;
   }
 
+  /**
+   * Triggers loading of required data if necessary.
+   *
+   * @param newData the data container to load from
+   * @param forceLoad if true, forces a reload even if data appears current
+   */
   public void loadRequiredData(final AbstractDataContainer newData, final boolean forceLoad){
     if(newData == null){
       return;

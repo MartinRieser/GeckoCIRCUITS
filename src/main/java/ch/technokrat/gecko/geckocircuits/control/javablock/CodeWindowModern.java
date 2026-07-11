@@ -29,6 +29,15 @@ import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+/**
+ * Main editor window for Java code control blocks. Provides tabbed editors for
+ * imports, variable definitions, initialization code, and the calculate-YOUT
+ * method, plus a compiler output view and example loader.
+ * <p>
+ * Lifecycle: the user edits source code in the tabs, clicks "Compile Code" to
+ * invoke {@link #loadCodeIntoControl()} which assembles and compiles the source,
+ * then closes the window to persist the code back into the control block.
+ */
 public class CodeWindowModern extends JFrame {
     private static final long serialVersionUID = 1L;
     private transient ControlJavaFunction _javaFunction;
@@ -422,12 +431,14 @@ public class CodeWindowModern extends JFrame {
         toggleOutput();
     }
 
+    /** Switches between console and in-window output, enabling/disabling the clear checkbox accordingly. */
     private void toggleOutput() {
         boolean isWindow = _radioWindow.isSelected();
         _checkBoxClear.setEnabled(isWindow);
         _javaFunction.setConsoleOutput(!isWindow);
     }
 
+    /** Loads example 1 (simple output assignment) into the editor tabs. */
     private void loadExample1() {
         _codeTextArea.setText(
             "\nyOUT[0]= Math.sqrt(Math.abs(xIN[0]*xIN[1])); "
@@ -440,6 +451,7 @@ public class CodeWindowModern extends JFrame {
         _tabbedPane.setSelectedIndex(0);
     }
 
+    /** Loads example 2 (simulation time display in a JFrame) into the editor tabs. */
     private void loadExample2() {
         _codeTextArea.setText(
             "\n//out.println(xIN[0] + \" \" + xIN[1] + \" \" + xIN[2] + \" \" + xIN.length );"
@@ -472,6 +484,10 @@ public class CodeWindowModern extends JFrame {
         _tabbedPane.setSelectedIndex(0);
     }
 
+    /**
+     * Assembles the source from all editor tabs, compiles it via the associated
+     * Java block, and updates the generated-source and compiler-messages views.
+     */
     private void loadCodeIntoControl() {
         JavaBlockSource newSource = new JavaBlockSource.Builder()
                 .sourceCode(_codeTextArea.getText())

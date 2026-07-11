@@ -15,6 +15,10 @@ package ch.technokrat.gecko.geckocircuits.control;
 
 import java.awt.Window;
 
+/**
+ * Abstract base class for trigonometric function control blocks. Input is
+ * interpreted in radians.
+ */
 abstract class AbstractTrigonometricFunction extends AbstractControlSingleInputSingleOutput {
     private static final long serialVersionUID = 1L;
 

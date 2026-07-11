@@ -28,6 +28,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
+/**
+ * Represents a single diagram axis (X or Y), handling pixel-to-data value
+ * conversion, tick mark calculation, grid line drawing, and zooming/panning.
+ * Supports both linear and logarithmic scaling via the {@link AbstractAxisScale}
+ * strategy.
+ */
 public final class Axis {
 
     private static final int HASH_CONSTANT1 = 3;
@@ -191,7 +197,13 @@ public final class Axis {
         private static final int DEF_MIN_TICKS = 10;
 
         @Override
-        protected double getPixelFromValue(final double value) {                        
+    /**
+     * Converts a data value to its corresponding pixel position on this axis.
+     *
+     * @param value the data value
+     * @return the pixel coordinate
+     */
+    protected double getPixelFromValue(final double value) {
             double positiveValue = value;
             if (positiveValue <= 0) {
                 positiveValue = Float.MIN_VALUE;
@@ -203,7 +215,13 @@ public final class Axis {
 
                 
         @Override
-        protected double getValueFromPixel(final int xPix) {                                    
+    /**
+     * Converts a pixel position to its corresponding data value on this axis.
+     *
+     * @param xPix the pixel coordinate
+     * @return the data value at that pixel
+     */
+    protected double getValueFromPixel(final int xPix) {
             return getLimits()._yLo * Math.pow(LOG_AXIS_BASE,
                     getSignDirection() * (xPix - getDirectionOrigin()) / getScaleFactor());
         }

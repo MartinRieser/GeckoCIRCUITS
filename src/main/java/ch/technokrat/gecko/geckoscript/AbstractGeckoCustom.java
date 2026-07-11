@@ -48,6 +48,13 @@ import java.rmi.RemoteException;
 import java.util.*;
 import javax.swing.JTextArea;
 
+/**
+ * Abstract base class for custom scripting integrations with GeckoCIRCUITS.
+ * Provides methods for controlling simulations, accessing circuit elements,
+ * reading/writing parameters, computing signal characteristics, and
+ * detecting steady-state conditions. Subclasses implement {@link #runScript()}
+ * to define the user's script logic.
+ */
 public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
 
     protected SimulationAccess _circuit;
@@ -57,6 +64,10 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
     private static float[][] _globalFloatMatrix;
     private static double[][] _globalDoubleMatrix;
 
+    /**
+     * @param simaccess the simulation access handle
+     * @param outputFrame the text area for script output, or null for stdout
+     */
     protected AbstractGeckoCustom(final SimulationAccess simaccess, final JTextArea outputFrame) {
         _circuit = simaccess;
         _outputWindow = outputFrame;
@@ -89,11 +100,16 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
         _simInited = true;
     }
 
+    /**
+     * @param sizeX the worksheet width in grid points
+     * @param sizeY the worksheet height in grid points
+     */
     @Override
     public void setWorksheetSize(int sizeX, int sizeY) {
         _circuit.setWorksheetSize(sizeX, sizeY);
     }
 
+    /** @return the worksheet size as {sizeX, sizeY} */
     @Override
     public int[] getWorksheetSize() {
         return _circuit.getWorksheetSize();
@@ -213,6 +229,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
      * System.err.println(e); writeOutput("Node named " + name + " not found in
      * circuit!"); } return 0; }
      */
+    /** @return an array of names of all control elements in the circuit */
     @Override
     //gives the user an array of strings - names of all control elements in circuit
     public final String[] getControlElements() {
@@ -225,6 +242,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
         return controlNames;
     }
 
+    /** @return an array of names of all circuit (power) elements */
     @Override
     //gives the user an array of strings - names of all circuit elements in circuit
     public final String[] getCircuitElements() {
@@ -305,6 +323,11 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
         return returnValue;
     }
 
+    /**
+     * @param oldName the current element name
+     * @param newName the new element name
+     * @throws Exception if the new name already exists or is invalid
+     */
     @Override
     public void setComponentName(final String oldName, final String newName) throws Exception {
         AbstractBlockInterface foundBlock = IDStringDialog.getComponentByName(oldName);
@@ -907,6 +930,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
         return steadyStateVector;
     }
 
+    /** @return the current simulation time in seconds */
     @Override
     public double getSimulationTime() {
         return _circuit.getSimulationTime();

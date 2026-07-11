@@ -22,6 +22,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
+/**
+ * Parameter dialog for the BJT component, allowing configuration of forward/
+ * backward beta, internal resistances, forward voltage, and NPN/PNP type
+ * selection.
+ */
 class BJTDialog extends DialogElementLK<BJT> {
     private static final long serialVersionUID = 1L;
     private JRadioButton _npnButton;

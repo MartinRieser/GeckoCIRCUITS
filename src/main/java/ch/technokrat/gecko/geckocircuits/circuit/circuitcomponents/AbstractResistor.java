@@ -27,6 +27,11 @@ import java.awt.Window;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Abstract base class for resistor components that can operate across multiple
+ * simulation domains (electrical LK, reluctance, and thermal). The resistance
+ * parameter is mapped to domain-specific units (ohm, Amp-Turns/Weber, K/W).
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class AbstractResistor extends AbstractTwoPortPowerCircuitBlock
         implements CurrentMeasurable, LossCalculatable, DirectVoltageMeasurable {
@@ -72,6 +77,11 @@ public abstract class AbstractResistor extends AbstractTwoPortPowerCircuitBlock
         return new ResistorDialog(this);
     }
 
+    /**
+     * Creates the loss calculation fabric for this resistor.
+     *
+     * @return a fabric that produces a {@link LossCalculatorResistor} bound to this component
+     */
     @Override
     public final AbstractLossCalculatorFabric getLossCalculation() {
         return new AbstractLossCalculatorFabric() {

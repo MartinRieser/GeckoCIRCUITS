@@ -31,6 +31,10 @@ import javax.swing.JPanel;
 import javax.swing.JViewport;
 import org.apache.batik.svggen.SVGGraphics2D;
 
+/**
+ * {@code JPanel} that renders a single circuit schematic sheet, managing the painting of
+ * components, connections, and grid, as well as mouse interaction for placement and wiring.
+ */
 public class CircuitSheet extends JPanel {
 
     private static final long serialVersionUID = 1L;
@@ -113,6 +117,13 @@ public class CircuitSheet extends JPanel {
     }        
     
 
+    /**
+     * Paints the circuit sheet: grid, components, connections, search highlights,
+     * and selection/drag rectangles. Catches concurrent-modification exceptions
+     * that may occur when components are added during painting.
+     *
+     * @param graphics the graphics context
+     */
     @Override
     public void paintComponent(final Graphics graphics) {
         try {
@@ -228,6 +239,15 @@ public class CircuitSheet extends JPanel {
         return Collections.unmodifiableCollection(allElements);
     }
 
+    /**
+     * Searches all component IDs and terminal labels on this sheet for the given string,
+     * highlighting matching nodes visually.
+     *
+     * @param searchString the text to search for
+     * @param ignoreCase if {@code true}, case-insensitive matching is used
+     * @param startsWith if {@code true}, matches by prefix; otherwise substring matching
+     * @return set of human-readable descriptions of the matches found
+     */
     public Set<String> findString(final String searchString, final boolean ignoreCase, final boolean startsWith) {
         Set<String> foundStrings = new HashSet<String>();
         _findNodes.clear();
@@ -335,6 +355,12 @@ public class CircuitSheet extends JPanel {
         return false;
     }
 
+    /**
+     * Highlights all nodes electrically connected to the clicked point, checking the
+     * LK, CONTROL, and THERMAL simulation domains in sequence.
+     *
+     * @param clickPoint the grid coordinate that was clicked
+     */
     public void mouseConnectorTest(final Point clickPoint) {
         // // so that you don't get out early on the 'return' (as below) and accidentally create a connection
         // // in edit mode, leave the following small loop:
@@ -377,6 +403,13 @@ public class CircuitSheet extends JPanel {
         CircuitSheet._showNodes.clear();
     }
 
+    /**
+     * Collects all {@link Connection} objects on this sheet that belong to the given
+     * simulation domain. {@code LK_AND_RELUCTANCE} returns the union of LK and RELUCTANCE.
+     *
+     * @param connectorType the simulation domain to filter by
+     * @return unmodifiable set of matching connections
+     */
     public Set<Connection> getConnection(final ConnectorType connectorType) {
         Collection<AbstractCircuitSheetComponent> allElements = getLocalSheetComponents();
         Set<Connection> allConnectors = new LinkedHashSet<Connection>();
@@ -441,6 +474,14 @@ public class CircuitSheet extends JPanel {
      * search the circuit sheet. E.g. Sub.1#inductor.3 would return the circuit
      * sheet of Sub.1
      * @return
+     */
+    /**
+     * Resolves the innermost {@code CircuitSheet} that contains the component identified
+     * by a hierarchical path. The path uses {@code #} as a separator, e.g.
+     * {@code Sub.1#inductor.3} navigates into the subcircuit named {@code Sub.1}.
+     *
+     * @param elementName the full hierarchical path of the component
+     * @return the circuit sheet containing the component, or this sheet if no {@code #} is present
      */
     public CircuitSheet findSubCircuit(String elementName) {
         int subCharIndex = elementName.indexOf('#');
@@ -524,6 +565,14 @@ public class CircuitSheet extends JPanel {
         return false;
     }
 
+    /**
+     * Returns all block components on this sheet whose simulation domain matches the
+     * given connector type. For {@code LK}, {@code RELUCTANCE}, and {@code LK_AND_RELUCTANCE},
+     * components from all three electrical/reluctance domains are included.
+     *
+     * @param connectorType the simulation domain to filter by
+     * @return list of matching block components on this sheet (not recursive)
+     */
     public List<AbstractBlockInterface> getLocalComponents(final ConnectorType connectorType) {
         final LinkedList<AbstractBlockInterface> returnValue = new LinkedList<AbstractBlockInterface>();
         final Collection<AbstractBlockInterface> allComponents = allElements.getClassFromContainer(AbstractBlockInterface.class);

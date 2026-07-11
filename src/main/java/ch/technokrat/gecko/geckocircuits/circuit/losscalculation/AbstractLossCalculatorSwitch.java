@@ -15,8 +15,14 @@ package ch.technokrat.gecko.geckocircuits.circuit.losscalculation;
 
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.AbstractCircuitBlockInterface;
 
+/**
+ * Abstract loss calculator for switch-type semiconductors (IGBTs, MOSFETs,
+ * thyristors). Computes conduction losses each step and detects turn-on/turn-off
+ * transitions to calculate switching losses.
+ */
 abstract class AbstractLossCalculatorSwitch implements AbstractLossCalculator, LossCalculationSplittable {
 
+    /** Practically zero current threshold (1e-2 A) for detecting switching transitions. */
     static final double EPS = 1e-2;  // // practically zero --> threshold for circumventing numerical minimum errors
     double _oldCurrent = -1; // history values of current and voltage
     double _oldVoltage = -1; // ... used for switchingLoss-calculation
@@ -31,12 +37,22 @@ abstract class AbstractLossCalculatorSwitch implements AbstractLossCalculator, L
         _parent = parent;
     }
 
+    /** @return the conduction loss for the current step */
     abstract double calcConductionLoss();
 
+    /** @return the turn-on switching loss energy for the current transition */
     abstract double calcTurnOnSwitchingLoss();
 
+    /** @return the turn-off switching loss energy for the current transition */
     abstract double calcTurnOffSwitchingLoss();
 
+    /**
+     * Calculates conduction and switching losses for one simulation step.
+     *
+     * @param current actual current value in amperes
+     * @param temperature semiconductor temperature in degrees Celsius (unused here)
+     * @param deltaT simulation time step in seconds
+     */
     @Override
     public void calcLosses(final double current, final double temperature, final double deltaT) {
         _voltage = _parent._voltage;
@@ -58,12 +74,14 @@ abstract class AbstractLossCalculatorSwitch implements AbstractLossCalculator, L
         _switchingLoss = switchingLoss;                
     }
 
-    boolean detectTurnOff() {
-        return (Math.abs(_oldCurrent) > EPS) && (Math.abs(_current) < EPS);
-    }
-
+    /** @return true if the switch transitioned from off to on in this step */
     boolean detectTurnOn() {
         return (Math.abs(_oldCurrent) < EPS) && (Math.abs(_current) > EPS);
+    }
+
+    /** @return true if the switch transitioned from on to off in this step */
+    boolean detectTurnOff() {
+        return (Math.abs(_oldCurrent) > EPS) && (Math.abs(_current) < EPS);
     }
 
     abstract double calculateRelativeVoltageFactor(final double appliedVoltage);

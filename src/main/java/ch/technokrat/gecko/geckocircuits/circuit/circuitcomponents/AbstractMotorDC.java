@@ -23,6 +23,11 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
+/**
+ * Abstract DC motor model. The subcircuit topology consists of an armature
+ * inductor (La), armature resistor (Ra), and a back-EMF voltage source
+ * connected in series between the two terminals.
+ */
 abstract class AbstractMotorDC extends AbstractMotor {
 
     static final int XPOS_LEFT_TERM = -2;
@@ -66,7 +71,7 @@ abstract class AbstractMotorDC extends AbstractMotor {
     AbstractResistor _RAnker;
     AbstractVoltageSource _uEMK;
     double _emk = 0;
-    double _armatureCurrent; // armature current               
+    double _armatureCurrent; // armature current ("Ankerstrom")
 
     @Override
     void setTerminals() {
@@ -88,6 +93,13 @@ abstract class AbstractMotorDC extends AbstractMotor {
         _LAnker.parameter[2] = _initialArmatureCurrent;  // iALT in La setzen                
     }
 
+    /**
+     * Calculates motor equations: reads the armature current from the
+     * hidden inductor and computes the back-EMF.
+     *
+     * @param deltaT the simulation time step in seconds
+     * @param time the current simulation time in seconds
+     */
     @Override
     void calculateMotorEquations(final double deltaT, double time) {
         _armatureCurrent = _LAnker.parameter[2];  // Ankerstrom        
@@ -130,6 +142,10 @@ abstract class AbstractMotorDC extends AbstractMotor {
         }
     }    
 
+    /**
+     * Builds the hidden subcircuit: armature inductor, resistor, and EMK
+     * voltage source connected in series.
+     */
     @Override
     void setSubCircuit() {
         // La im Ankerstromkreis --> 
@@ -164,6 +180,7 @@ abstract class AbstractMotorDC extends AbstractMotor {
 
     abstract void calculateEMK();
 
+    /** Updates the internal EMK voltage source parameter with the computed back-EMF value. */
     @Override
     void updateSourceParameters() {
         _uEMK.parameter[1] = _emk;  // // DC value of the internal voltage source
