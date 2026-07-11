@@ -101,51 +101,51 @@ public class GraferV3 extends JPanel {
     //
     //-------------------------------------
     // (1) Achsen:
-    protected int anzahlAchsenX, anzahlAchsenY;  // // Number of x and y axes
-    protected int[] breitePix, hoehePix;  // // Width and height of the respective diagram axes
-    protected int[] _xAchseX, _yAchseX, _xAchseY, _yAchseY;  // Achsen-Koordinaten
-    protected int[] xAchseTyp, yAchseTyp;  // // Axis linear or logarithmic
-    protected Color[] farbeAchsenX, farbeAchsenY;  // // Colors of the individual axes, e.g. invisible --> white
-    protected int[] linienStilAchsenX, linienStilAchsenY;  // durchgezogen, gepunktet, fett(???)
+    protected int numAxesX, numAxesY;  // // Number of x and y axes
+    protected int[] widthPix, heightPix;  // // Width and height of the respective diagram axes
+    protected int[] _xAxisX, _xAxisY, _yAxisX, _yAxisY;  // Achsen-Koordinaten
+    protected int[] xAxisType, yAxisType;  // // Axis linear or logarithmic
+    protected Color[] colorAxesX, colorAxesY;  // // Colors of the individual axes, e.g. invisible --> white
+    protected int[] lineStyleAxesX, lineStyleAxesY;  // durchgezogen, gepunktet, fett(???)
     //
-    protected double[] achseXmin, achseXmax, achseYmin, achseYmax;  // min- u. max-Zahlenwerte
-    protected boolean[] autoAchseXmin, autoAchseXmax, autoAchseYmin, autoAchseYmax;  // // are these values ​​set to AUTO??
-    protected String[] xAchseBeschriftung, yAchseBeschriftung;
+    protected double[] axisXmin, axisXmax, axisYmin, axisYmax;  // min- u. max-Zahlenwerte
+    protected boolean[] autoAxisXmin, autoAxisXmax, autoAxisYmin, autoAxisYmax;  // // are these values ​​set to AUTO??
+    protected String[] xAxisLabel, yAxisLabel;
     //-------------
-    protected Color[] farbeGridNormalX, farbeGridNormalY, farbeGridNormalXminor, farbeGridNormalYminor;
-    protected int[] linStilGridNormalX, linStilGridNormalY, linStilGridNormalXminor, linStilGridNormalYminor;
-    protected int[] gridNormalX_zugeordneteXAchse, gridNormalX_zugeordneteYAchse;
-    protected int[] gridNormalY_zugeordneteXAchse, gridNormalY_zugeordneteYAchse;
+    protected Color[] colorGridNormalX, colorGridNormalY, colorGridNormalXminor, colorGridNormalYminor;
+    protected int[] lineStyleGridNormalX, lineStyleGridNormalY, lineStyleGridNormalXminor, lineStyleGridNormalYminor;
+    protected int[] gridNormalX_associatedXAxis, gridNormalX_associatedYAxis;
+    protected int[] gridNormalY_associatedXAxis, gridNormalY_associatedYAxis;
     protected int[][] showGridNormalXmajor, showGridNormalXminor, showGridNormalYmajor, showGridNormalYminor;  // // which grid lines should be displayed?
     // --> zB. showGridNormalXmajor[i1]= {index_xAchse, index_yAchse}
     //-------------
     protected boolean[] xTickAutoSpacing, yTickAutoSpacing;  // // should the tick spacing be determined automatically?
     protected double[] xTickSpacing, yTickSpacing;  // // Distance between 2 ticks, starting from zero
-    protected int[] xAnzTicksMinor, yAnzTicksMinor;  // // Number of minor ticks between two regular ticks
-    protected int[] xTickLaenge, yTickLaenge, xTickLaengeMinor, yTickLaengeMinor;
-    protected boolean[] zeigeXticksUnten, zeigeYticksLinks;  // // Ticks on the x-axis can point down or up, analogous to those on the y-axis
+    protected int[] xNumTicksMinor, yNumTicksMinor;  // // Number of minor ticks between two regular ticks
+    protected int[] xTickLength, yTickLength, xTickLengthMinor, yTickLengthMinor;
+    protected boolean[] showXTicksBottom, showYTicksLeft;  // // Ticks on the x-axis can point down or up, analogous to those on the y-axis
     //
-    protected boolean[] zeigeLabelsXmaj, zeigeLabelsXmin, zeigeLabelsYmaj, zeigeLabelsYmin;  // // should the corresponding labels be displayed for the respective ticks?
+    protected boolean[] showLabelsXmaj, showLabelsXmin, showLabelsYmaj, showLabelsYmin;  // // should the corresponding labels be displayed for the respective ticks?
     protected int[] posXtickLabels, posYtickLabels;  // // how far away are the tick labels from each axis?
     protected Font[] foTickLabelX, foTickLabelY;
     //-------------
     protected int[][] tickX, tickY, tickXminor, tickYminor;  // // Pixel point position of the ticks
-    protected double[][] wertTickX, wertTickY, wertTickXminor, wertTickYminor;  // // Numerical values ​​of the individual ticks
+    protected double[][] valueTickX, valueTickY, valueTickXminor, valueTickYminor;  // // Numerical values ​​of the individual ticks
     protected double[] sfX, sfY;  // // Stretch factors for converting pixels <--> values
     //-------------------------------------
     // (2) Kurven:
-    protected DataContainer worksheetDaten;  // // the points of all curves are here --> currently only ONE worksheet is implemented
+    protected DataContainer worksheetData;  // // the points of all curves are here --> currently only ONE worksheet is implemented
     //-------------
-    protected int[] indexZurKurveGehoerigeXachse, indexZurKurveGehoerigeYachse;  // Zuordnung Kurve <--> Achsen
-    protected int anzahlKurven;  // alle in diesem JPanel gezeichneten Kurven
-    protected int[][] kurve_index_worksheetKolonnen_XY;  // int[][]{{index_x_kolonne,index_y_kolonne}}
-    protected boolean[] kurvenPunktSymbolAnzeigen;  // // Should the points of the curve be displayed as points
+    protected int[] indexCurveAssociatedXAxis, indexCurveAssociatedYAxis;  // Zuordnung Kurve <--> Achsen
+    protected int numCurves;  // alle in diesem JPanel gezeichneten Kurven
+    protected int[][] curve_index_worksheetColumns_XY;  // int[][]{{index_x_kolonne,index_y_kolonne}}
+    protected boolean[] showCurvePointSymbol;  // // Should the points of the curve be displayed as points
     protected int[] crvSymbFrequ, crvSymbShape;     // // Details about drawing the symbols on the curve data points
     protected Color[] crvSymbFarbe;                 // // Details about drawing the symbols on the curve data points
-    protected double[] kurveClippling_xmin, kurveClippling_xmax, kurveClippling_ymin, kurveClippling_ymax;  // definierter Zahlenwert fuers Clipping
+    protected double[] curveClipping_xmin, curveClipping_xmax, curveClipping_ymin, curveClipping_ymax;  // definierter Zahlenwert fuers Clipping
     protected int[] clipXmin, clipXmax, clipYmin, clipYmax;  // Art des Cilpping --> "AXIS", "NO CLIP", "VALUE"
-    protected int[] kurveLinienstil;
-    protected Color[] kurveFarbe;
+    protected int[] curveLineStyle;
+    protected Color[] curveColor;
     //-------------------------------------
     // sonstiges:
     protected NumberFormat nf = NumberFormat.getNumberInstance();
@@ -155,20 +155,20 @@ public class GraferV3 extends JPanel {
     //-------------------------------------
     // speziell (eigentlich gepfuscht):
     // Unterscheidung ZV - Signal -->
-    protected int[] kurvenTypZVvsSIGNAL;  // // is sent directly without the 'get' function. addressed by the derived class
+    protected int[] curveTypeZVvsSIGNAL;  // // is sent directly without the 'get' function. addressed by the derived class
     //-------------------------------------
     public boolean _antialiasing = true;
     private double[] kurveTransparenz;
 
-    public boolean ladeWorksheetDaten(DataContainer daten) {
+    public boolean loadWorksheetData(DataContainer daten) {
         //-----------------------
-        this.worksheetDaten = daten;
+        this.worksheetData = daten;
         // Daten-Konsistenz (grob) pruefen:
         if (daten.getRowLength() < 2) {
             return false;  // // only one column --> at least 2 required for y=y(x) - curve
         }
 
-        this.autoSettingsAnpassen();  // // only makes sense once the curve data is there!
+        this.adjustAutoSettings();  // // only makes sense once the curve data is there!
         return true;
         //-----------------------
     }
@@ -176,75 +176,75 @@ public class GraferV3 extends JPanel {
     //-------------------------------------
     // (1) setze Achsen:
     //
-    public void setzeAchsenAnzahl(int anzX, int anzY) {
-        this.anzahlAchsenX = anzX;
-        this.anzahlAchsenY = anzY;
+    public void setAxesCount(int anzX, int anzY) {
+        this.numAxesX = anzX;
+        this.numAxesY = anzY;
     }
 
     public void setAxisWidthHeightX0Y0(int[] b, int[] h, int[] xX, int[] yX, int[] xY, int[] yY) {
-        this.breitePix = b;
-        this.hoehePix = h;
-        this._xAchseX = xX;
-        this._yAchseX = yX;
-        this._xAchseY = xY;
-        this._yAchseY = yY;
+        this.widthPix = b;
+        this.heightPix = h;
+        this._xAxisX = xX;
+        this._xAxisY = yX;
+        this._yAxisX = xY;
+        this._yAxisY = yY;
     }
 
-    public void setzeAchsenBegrenzungen(double[] xMin, double[] xMax, boolean[] autoScaleX, double[] yMin, double[] yMax, boolean[] autoScaleY) {
-        this.achseXmin = xMin;
-        this.autoAchseXmin = autoScaleX;
-        this.achseXmax = xMax;
-        this.autoAchseXmax = autoScaleX;
-        this.achseYmin = yMin;        
-        this.autoAchseYmin = autoScaleY;
-        this.achseYmax = yMax;
-        this.autoAchseYmax = autoScaleY;
+    public void setAxesLimits(double[] xMin, double[] xMax, boolean[] autoScaleX, double[] yMin, double[] yMax, boolean[] autoScaleY) {
+        this.axisXmin = xMin;
+        this.autoAxisXmin = autoScaleX;
+        this.axisXmax = xMax;
+        this.autoAxisXmax = autoScaleX;
+        this.axisYmin = yMin;        
+        this.autoAxisYmin = autoScaleY;
+        this.axisYmax = yMax;
+        this.autoAxisYmax = autoScaleY;
     }
 
-    public void setzeAchsenTyp(int[] x, int[] y) {
-        this.xAchseTyp = x;
-        this.yAchseTyp = y;
+    public void setAxesType(int[] x, int[] y) {
+        this.xAxisType = x;
+        this.yAxisType = y;
     }
 
     public void setAxisColor(Color[] fX, Color[] fY) {
-        this.farbeAchsenX = fX;
-        this.farbeAchsenY = fY;
+        this.colorAxesX = fX;
+        this.colorAxesY = fY;
     }
 
-    public void setzeAchsenLinienStil(int[] stilX, int[] stilY) {
-        this.linienStilAchsenX = stilX;
-        this.linienStilAchsenY = stilY;
+    public void setAxesLineStyle(int[] stilX, int[] stilY) {
+        this.lineStyleAxesX = stilX;
+        this.lineStyleAxesY = stilY;
     }
     //-----------
 
-    public void definiereGridNormalX(int[] zugeordneteXAchse, int[] zugeordneteYAchse) {
-        this.gridNormalX_zugeordneteXAchse = zugeordneteXAchse;
-        this.gridNormalX_zugeordneteYAchse = zugeordneteYAchse;
+    public void defineGridNormalX(int[] zugeordneteXAchse, int[] zugeordneteYAchse) {
+        this.gridNormalX_associatedXAxis = zugeordneteXAchse;
+        this.gridNormalX_associatedYAxis = zugeordneteYAchse;
         if (zugeordneteXAchse.length != zugeordneteYAchse.length) {
             Logger.getLogger(GraferV3.class.getName()).log(Level.WARNING, "Grid X axis assignment length mismatch.");
         }
     }
 
-    public void definiereGridNormalY(int[] zugeordneteXAchse, int[] zugeordneteYAchse) {
-        this.gridNormalY_zugeordneteXAchse = zugeordneteXAchse;
-        this.gridNormalY_zugeordneteYAchse = zugeordneteYAchse;
+    public void defineGridNormalY(int[] zugeordneteXAchse, int[] zugeordneteYAchse) {
+        this.gridNormalY_associatedXAxis = zugeordneteXAchse;
+        this.gridNormalY_associatedYAxis = zugeordneteYAchse;
         if (zugeordneteXAchse.length != zugeordneteYAchse.length) {
             Logger.getLogger(GraferV3.class.getName()).log(Level.WARNING, "Grid Y axis assignment length mismatch.");
         }
     }
 
-    public void setzeGridFarben(Color[] farbeGridNormalX, Color[] farbeGridNormalY, Color[] farbeGridNormalXminor, Color[] farbeGridNormalYminor) {
-        this.farbeGridNormalX = farbeGridNormalX;
-        this.farbeGridNormalY = farbeGridNormalY;
-        this.farbeGridNormalXminor = farbeGridNormalXminor;
-        this.farbeGridNormalYminor = farbeGridNormalYminor;
+    public void setGridColors(Color[] colorGridNormalX, Color[] colorGridNormalY, Color[] colorGridNormalXminor, Color[] colorGridNormalYminor) {
+        this.colorGridNormalX = colorGridNormalX;
+        this.colorGridNormalY = colorGridNormalY;
+        this.colorGridNormalXminor = colorGridNormalXminor;
+        this.colorGridNormalYminor = colorGridNormalYminor;
     }
 
-    public void setzeGridLinienStil(int[] linStilGridNormalX, int[] linStilGridNormalY, int[] linStilGridNormalXminor, int[] linStilGridNormalYminor) {
-        this.linStilGridNormalX = linStilGridNormalX;
-        this.linStilGridNormalY = linStilGridNormalY;
-        this.linStilGridNormalXminor = linStilGridNormalXminor;
-        this.linStilGridNormalYminor = linStilGridNormalYminor;
+    public void setGridLineStyle(int[] lineStyleGridNormalX, int[] lineStyleGridNormalY, int[] lineStyleGridNormalXminor, int[] lineStyleGridNormalYminor) {
+        this.lineStyleGridNormalX = lineStyleGridNormalX;
+        this.lineStyleGridNormalY = lineStyleGridNormalY;
+        this.lineStyleGridNormalXminor = lineStyleGridNormalXminor;
+        this.lineStyleGridNormalYminor = lineStyleGridNormalYminor;
     }
 
     public void showGridLines(int[][] showGridNormalXmajor, int[][] showGridNormalXminor, int[][] showGridNormalYmajor, int[][] showGridNormalYminor) {
@@ -255,114 +255,114 @@ public class GraferV3 extends JPanel {
     }
     //-----------
 
-    public void setzeTickAutoSpacing(boolean[] xTickAutoSpacing, boolean[] yTickAutoSpacing) {
+    public void setTickAutoSpacing(boolean[] xTickAutoSpacing, boolean[] yTickAutoSpacing) {
         this.xTickAutoSpacing = xTickAutoSpacing;
         this.yTickAutoSpacing = yTickAutoSpacing;
     }
 
-    public void setzeTickSpacing(double[] x, double[] y) {
+    public void setTickSpacing(double[] x, double[] y) {
         this.xTickSpacing = x;
         this.yTickSpacing = y;
     }
 
-    public void setzeTickAnzMinor(int[] x, int[] y) {
-        this.xAnzTicksMinor = x;
-        this.yAnzTicksMinor = y;
+    public void setTickCountMinor(int[] x, int[] y) {
+        this.xNumTicksMinor = x;
+        this.yNumTicksMinor = y;
     }
 
     public void setTickLabelVisible(boolean[] xMaj, boolean[] yMaj, boolean[] xMin, boolean[] yMin) {
-        this.zeigeLabelsXmaj = xMaj;
-        this.zeigeLabelsYmaj = yMaj;
-        this.zeigeLabelsXmin = xMin;
-        this.zeigeLabelsYmin = yMin;
+        this.showLabelsXmaj = xMaj;
+        this.showLabelsYmaj = yMaj;
+        this.showLabelsXmin = xMin;
+        this.showLabelsYmin = yMin;
     }
 
     public void setTickLength(int[] x, int[] y, int[] xMinor, int[] yMinor) {
-        this.xTickLaenge = x;
-        this.yTickLaenge = y;
-        this.xTickLaengeMinor = xMinor;
-        this.yTickLaengeMinor = yMinor;
+        this.xTickLength = x;
+        this.yTickLength = y;
+        this.xTickLengthMinor = xMinor;
+        this.yTickLengthMinor = yMinor;
     }
     // - - - - - - - - - - - - -
 
-    public void setzeTickAusrichtung(boolean[] x, boolean[] y) {
-        this.zeigeXticksUnten = x;
-        this.zeigeYticksLinks = y;
+    public void setTickAlignment(boolean[] x, boolean[] y) {
+        this.showXTicksBottom = x;
+        this.showYTicksLeft = y;
     }
 
-    public void setzeTickLabelPosition(int[] x, int[] y) {
+    public void setTickLabelPosition(int[] x, int[] y) {
         this.posXtickLabels = x;
         this.posYtickLabels = y;
     }
 
-    public void setzeTickLabelFont(Font[] foX, Font[] foY) {
+    public void setTickLabelFont(Font[] foX, Font[] foY) {
         this.foTickLabelX = foX;
         this.foTickLabelY = foY;
     }
 
-    public void setzeAchsenBeschriftungen(String[] x, String[] y) {
-        this.xAchseBeschriftung = x;
-        this.yAchseBeschriftung = y;
+    public void setAxesLabels(String[] x, String[] y) {
+        this.xAxisLabel = x;
+        this.yAxisLabel = y;
     }
     //-------------------------------------
     // (2) setze Kurven:
     //
 
-    public void setzeKurvenAnzahl(int anz) {
-        this.anzahlKurven = anz;
+    public void setCurvesCount(int anz) {
+        this.numCurves = anz;
     }
 
-    public void setzeZugehoerigkeitKurveAchsen(int[] indexXachse, int[] indexYachse) {
-        this.indexZurKurveGehoerigeXachse = indexXachse;
-        this.indexZurKurveGehoerigeYachse = indexYachse;
+    public void setCurveAxesAssignment(int[] indexXachse, int[] indexYachse) {
+        this.indexCurveAssociatedXAxis = indexXachse;
+        this.indexCurveAssociatedYAxis = indexYachse;
     }
 
-    public void setzeKurveIndexWorksheetKolonnenXY(int[][] iwkXY) {
-        this.kurve_index_worksheetKolonnen_XY = iwkXY;
+    public void setCurveIndexWorksheetColumnsXY(int[][] iwkXY) {
+        this.curve_index_worksheetColumns_XY = iwkXY;
     }
 
     public void setCurvePointSymbolVisible(boolean[] sym, int[] crvSymbFrequ, int[] crvSymbShape, Color[] crvSymbFarbe) {
-        this.kurvenPunktSymbolAnzeigen = sym;
+        this.showCurvePointSymbol = sym;
         this.crvSymbFrequ = crvSymbFrequ;
         this.crvSymbShape = crvSymbShape;
         this.crvSymbFarbe = crvSymbFarbe;
     }
 
-    public void setzeKurveClipping(double[] xmin, double[] xmax, double[] ymin, double[] ymax, int[] clipXmin, int[] clipXmax, int[] clipYmin, int[] clipYmax) {
-        this.kurveClippling_xmin = xmin;
-        this.kurveClippling_xmax = xmax;
-        this.kurveClippling_ymin = ymin;
-        this.kurveClippling_ymax = ymax;  // eventuell manuell definierte konkrete Zahlenwerte
+    public void setCurveClipping(double[] xmin, double[] xmax, double[] ymin, double[] ymax, int[] clipXmin, int[] clipXmax, int[] clipYmin, int[] clipYmax) {
+        this.curveClipping_xmin = xmin;
+        this.curveClipping_xmax = xmax;
+        this.curveClipping_ymin = ymin;
+        this.curveClipping_ymax = ymax;  // eventuell manuell definierte konkrete Zahlenwerte
         this.clipXmin = clipXmin;
         this.clipXmax = clipXmax;
         this.clipYmin = clipYmin;
         this.clipYmax = clipYmax;         // Art des Cilpping --> "AXIS", "NO CLIP", "VALUE"
     }
 
-    public void setzeKurveLinienstil(int[] kurveLinienstil) {
-        this.kurveLinienstil = kurveLinienstil;
+    public void setCurveLineStyle(int[] curveLineStyle) {
+        this.curveLineStyle = curveLineStyle;
     }
 
     public void setCurveColor(Color[] f) {
-        this.kurveFarbe = f;
+        this.curveColor = f;
     }
 
-    public void setzeKurveTransparenz(double[] trans) {
+    public void setCurveTransparency(double[] trans) {
         this.kurveTransparenz = trans;
     }
     //-------------------------------------
 
-    public void autoSettingsAnpassen() {
+    public void adjustAutoSettings() {
         // // AUTO settings can only be made once all relevant Grafer data is available
         // --> expliziter Aufruf
-        this.auto_BereichsgrenzenDerAchsen();  // falls "AUTO"-Grenze --> automatisch setzen
+        this.autoAxisLimits();  // falls "AUTO"-Grenze --> automatisch setzen
     }
     //-------------------------------------
 
-    public void setzeAchsen() {
+    public void setAxes() {
     }
 
-    protected void setzeKurven() {
+    protected void setCurves() {
     }
 
     public GraferV3() {
@@ -384,26 +384,26 @@ public class GraferV3 extends JPanel {
         g.fillRect(0, 0, this.getWidth(), this.getHeight());  // --> weisser Hintergrund
         //--------------------------
         try {
-            this.zeichneKoordinatenAchsen(g);
+            this.drawCoordinateAxes(g);
         } catch (Exception e) {
             e.printStackTrace();
 
         }
         try {
-            this.zeichneKurven(g);
+            this.drawCurves(g);
         } catch (Exception e) {
             e.printStackTrace();
         }
         try {
-            this.zeichne(g);
+            this.draw(g);
         } catch (Exception e) {
-            Logger.getLogger(GraferV3.class.getName()).log(Level.WARNING, "Error in zeichne().", e);
+            Logger.getLogger(GraferV3.class.getName()).log(Level.WARNING, "Error in draw().", e);
         }
         //--------------------------
     }
 
     // // to overwrite
-    protected void zeichne(Graphics g) {
+    protected void draw(Graphics g) {
     }
 
     public static double lg10(double x) {
@@ -411,59 +411,59 @@ public class GraferV3 extends JPanel {
     }
 
     protected int calculateXPixLinear(double wert, int index) {
-        return (_xAchseX[index] + (int) (sfX[index] * (wert - achseXmin[index])));
+        return (_xAxisX[index] + (int) (sfX[index] * (wert - axisXmin[index])));
     }
 
     protected int calculateXPixLogarithmic(double wert, int index) {
-        return (_xAchseX[index] + (int) (sfX[index] * GraferV3.lg10(wert / achseXmin[index])));
+        return (_xAxisX[index] + (int) (sfX[index] * GraferV3.lg10(wert / axisXmin[index])));
     }
 
     protected int calculateYPixLinear(double wert, int index) {
-        return (_yAchseY[index] - (int) (sfY[index] * (wert - achseYmin[index])));
+        return (_yAxisY[index] - (int) (sfY[index] * (wert - axisYmin[index])));
     }
 
     protected int calculateYPixLogarithmic(double wert, int index) {
-        return (_yAchseY[index] - (int) (sfY[index] * GraferV3.lg10(wert / achseYmin[index])));
+        return (_yAxisY[index] - (int) (sfY[index] * GraferV3.lg10(wert / axisYmin[index])));
     }
 
-    protected void zeichneKurven(Graphics g) {
-        if (worksheetDaten == null) {
+    protected void drawCurves(Graphics g) {
+        if (worksheetData == null) {
             return;
         }
         GeckoGraphics2D g2 = new GeckoGraphics2D((Graphics2D) g);
-        for (int i1 = 0; i1 < anzahlKurven; i1++) {
-            this.zeichneEinzelneKurve(g2, i1, worksheetDaten.getColumnLength());
+        for (int i1 = 0; i1 < numCurves; i1++) {
+            this.drawSingleCurve(g2, i1, worksheetData.getColumnLength());
         }
     }
 
-    protected void zeichneKoordinatenAchsen(Graphics g) {
+    protected void drawCoordinateAxes(Graphics g) {
         GeneralPath grL = new GeneralPath();
         Graphics2D g2 = (Graphics2D) g;
         //
         //===============================================
-        wertTickX = new double[anzahlAchsenX][];
-        tickX = new int[anzahlAchsenX][];
-        wertTickXminor = new double[anzahlAchsenX][];
-        tickXminor = new int[anzahlAchsenX][];
-        wertTickY = new double[anzahlAchsenY][];
-        tickY = new int[anzahlAchsenY][];
-        wertTickYminor = new double[anzahlAchsenY][];
-        tickYminor = new int[anzahlAchsenY][];
+        valueTickX = new double[numAxesX][];
+        tickX = new int[numAxesX][];
+        valueTickXminor = new double[numAxesX][];
+        tickXminor = new int[numAxesX][];
+        valueTickY = new double[numAxesY][];
+        tickY = new int[numAxesY][];
+        valueTickYminor = new double[numAxesY][];
+        tickYminor = new int[numAxesY][];
         //
-        sfX = new double[anzahlAchsenX];
-        sfY = new double[anzahlAchsenY];
+        sfX = new double[numAxesX];
+        sfY = new double[numAxesY];
         //===============================================
         // x-Achsen:
-        for (int i1 = 0; i1 < anzahlAchsenX; i1++) {
-            this.zeichneEinzelneKoordinatenAchse_X(g2, i1);
+        for (int i1 = 0; i1 < numAxesX; i1++) {
+            this.drawSingleCoordinateAxisX(g2, i1);
         }
         // y-Achsen:
-        for (int i1 = 0; i1 < anzahlAchsenY; i1++) {
-            this.zeichneEinzelneKoordinatenAchse_Y(g2, i1);
+        for (int i1 = 0; i1 < numAxesY; i1++) {
+            this.drawSingleCoordinateAxisY(g2, i1);
         }
         //===============================================
-        this.zeichneGrid_NormalX(g);
-        this.zeichneGrid_NormalY(g);
+        this.drawGridNormalX(g);
+        this.drawGridNormalY(g);
         //===============================================
         // // subsequently the
         // // be covered
@@ -471,60 +471,60 @@ public class GraferV3 extends JPanel {
         // // be put because in 'this.drawSingleCoordinateAxis_X(g2,i1)' and 'this.drawSingleCoordinateAxis_Y(g2,i1)' first of all
         // // the grid needs to be calculated
         //
-        for (int i1 = 0; i1 < anzahlAchsenX; i1++) {
-            g2.setColor(farbeAchsenX[i1]);
-            if (linienStilAchsenX[i1] == SOLID_PLAIN) {
+        for (int i1 = 0; i1 < numAxesX; i1++) {
+            g2.setColor(colorAxesX[i1]);
+            if (lineStyleAxesX[i1] == SOLID_PLAIN) {
                 g2.setStroke(str_SOLID_PLAIN);
-            } else if (linienStilAchsenX[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
-            } else if (linienStilAchsenX[i1] == SOLID_FAT_1) {
+            } else if (lineStyleAxesX[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
+            } else if (lineStyleAxesX[i1] == SOLID_FAT_1) {
                 g2.setStroke(str_SOLID_FAT_1);
-            } else if (linienStilAchsenX[i1] == SOLID_FAT_2) {
+            } else if (lineStyleAxesX[i1] == SOLID_FAT_2) {
                 g2.setStroke(str_SOLID_FAT_2);
-            } else if (linienStilAchsenX[i1] == DOTTED_PLAIN) {
+            } else if (lineStyleAxesX[i1] == DOTTED_PLAIN) {
                 g2.setStroke(str_DOTTED_PLAIN);
-            } else if (linienStilAchsenX[i1] == DOTTED_FAT) {
+            } else if (lineStyleAxesX[i1] == DOTTED_FAT) {
                 g2.setStroke(str_DOTTED_FAT);
             }
             //-----------------------
             // // now draw the line:
             grL.reset();
-            grL.moveTo(_xAchseX[i1], _yAchseX[i1]);
-            grL.lineTo(_xAchseX[i1] + breitePix[i1], _yAchseX[i1]);
-            if (linienStilAchsenX[i1] != GraferV3.INVISIBLE) {
+            grL.moveTo(_xAxisX[i1], _xAxisY[i1]);
+            grL.lineTo(_xAxisX[i1] + widthPix[i1], _xAxisY[i1]);
+            if (lineStyleAxesX[i1] != GraferV3.INVISIBLE) {
                 g2.draw(grL);
-                g2.drawString(xAchseBeschriftung[i1], _xAchseX[i1] + breitePix[i1] / 2, _yAchseX[i1] + posXtickLabels[i1]);
+                g2.drawString(xAxisLabel[i1], _xAxisX[i1] + widthPix[i1] / 2, _xAxisY[i1] + posXtickLabels[i1]);
             }
             g2.setStroke(str_SOLID_PLAIN);  // wieder auf 'default' setzen
         }
-        for (int i1 = 0; i1 < anzahlAchsenY; i1++) {
-            g2.setColor(farbeAchsenY[i1]);
-            if (linienStilAchsenY[i1] == SOLID_PLAIN) {
+        for (int i1 = 0; i1 < numAxesY; i1++) {
+            g2.setColor(colorAxesY[i1]);
+            if (lineStyleAxesY[i1] == SOLID_PLAIN) {
                 g2.setStroke(str_SOLID_PLAIN);
-            } else if (linienStilAchsenY[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
-            } else if (linienStilAchsenY[i1] == SOLID_FAT_1) {
+            } else if (lineStyleAxesY[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
+            } else if (lineStyleAxesY[i1] == SOLID_FAT_1) {
                 g2.setStroke(str_SOLID_FAT_1);
-            } else if (linienStilAchsenY[i1] == SOLID_FAT_2) {
+            } else if (lineStyleAxesY[i1] == SOLID_FAT_2) {
                 g2.setStroke(str_SOLID_FAT_2);
-            } else if (linienStilAchsenY[i1] == DOTTED_PLAIN) {
+            } else if (lineStyleAxesY[i1] == DOTTED_PLAIN) {
                 g2.setStroke(str_DOTTED_PLAIN);
-            } else if (linienStilAchsenY[i1] == DOTTED_FAT) {
+            } else if (lineStyleAxesY[i1] == DOTTED_FAT) {
                 g2.setStroke(str_DOTTED_FAT);
             }
             //-----------------------
             // // now draw the line:
             grL.reset();
-            grL.moveTo(_xAchseY[i1], _yAchseY[i1]);
-            grL.lineTo(_xAchseY[i1], _yAchseY[i1] - hoehePix[i1]);
-            if (linienStilAchsenY[i1] != GraferV3.INVISIBLE) {
+            grL.moveTo(_yAxisX[i1], _yAxisY[i1]);
+            grL.lineTo(_yAxisX[i1], _yAxisY[i1] - heightPix[i1]);
+            if (lineStyleAxesY[i1] != GraferV3.INVISIBLE) {
                 g2.draw(grL);
-                g2.drawString(yAchseBeschriftung[i1], _xAchseY[i1] - posYtickLabels[i1], _yAchseY[i1] - hoehePix[i1] / 2);
+                g2.drawString(yAxisLabel[i1], _yAxisX[i1] - posYtickLabels[i1], _yAxisY[i1] - heightPix[i1] / 2);
             }
             g2.setStroke(str_SOLID_PLAIN);  // wieder auf 'default' setzen
         }
         //==================================
     }
 
-    protected void zeichneEinzelneKurve(Graphics2D g2, int i1, int anzKurvenpunkteImWorksheet) {
+    protected void drawSingleCurve(Graphics2D g2, int i1, int anzKurvenpunkteImWorksheet) {
 
 
         if (kurveTransparenz != null) {
@@ -543,53 +543,53 @@ public class GraferV3 extends JPanel {
         //===============================================
         float[] xPix = new float[anzKurvenpunkteImWorksheet];
         float[] yPix = new float[anzKurvenpunkteImWorksheet];
-        int x0Kurve = _xAchseX[indexZurKurveGehoerigeXachse[i1]];  // // associated x-axis defines x0 of the curve
-        int y0Kurve = _yAchseY[indexZurKurveGehoerigeYachse[i1]];  // // associated y-axis defines y0 of the curve
+        int x0Kurve = _xAxisX[indexCurveAssociatedXAxis[i1]];  // // associated x-axis defines x0 of the curve
+        int y0Kurve = _yAxisY[indexCurveAssociatedYAxis[i1]];  // // associated y-axis defines y0 of the curve
 
 
         for (int i2 = 0; i2 < anzKurvenpunkteImWorksheet; i2++) {
-            double x = worksheetDaten.getValue(kurve_index_worksheetKolonnen_XY[i1][0], i2);
-            if (xAchseTyp[indexZurKurveGehoerigeXachse[i1]] == AXIS_LINEAR) {
-                xPix[i2] = (float) (x0Kurve + (sfX[indexZurKurveGehoerigeXachse[i1]] * (x - achseXmin[indexZurKurveGehoerigeXachse[i1]])));
-            } else if ((xAchseTyp[indexZurKurveGehoerigeXachse[i1]] == AXIS_LOGARITHMIC)) {
-                xPix[i2] = (float) (x0Kurve + (sfX[indexZurKurveGehoerigeXachse[i1]] * GraferV3.lg10(x / achseXmin[indexZurKurveGehoerigeXachse[i1]])));
+            double x = worksheetData.getValue(curve_index_worksheetColumns_XY[i1][0], i2);
+            if (xAxisType[indexCurveAssociatedXAxis[i1]] == AXIS_LINEAR) {
+                xPix[i2] = (float) (x0Kurve + (sfX[indexCurveAssociatedXAxis[i1]] * (x - axisXmin[indexCurveAssociatedXAxis[i1]])));
+            } else if ((xAxisType[indexCurveAssociatedXAxis[i1]] == AXIS_LOGARITHMIC)) {
+                xPix[i2] = (float) (x0Kurve + (sfX[indexCurveAssociatedXAxis[i1]] * GraferV3.lg10(x / axisXmin[indexCurveAssociatedXAxis[i1]])));
             }
 
-            double y = worksheetDaten.getValue(kurve_index_worksheetKolonnen_XY[i1][1], i2);
-            if (yAchseTyp[indexZurKurveGehoerigeYachse[i1]] == AXIS_LINEAR) {
-                yPix[i2] = (float) (y0Kurve - (sfY[indexZurKurveGehoerigeYachse[i1]] * (y - achseYmin[indexZurKurveGehoerigeYachse[i1]])));
+            double y = worksheetData.getValue(curve_index_worksheetColumns_XY[i1][1], i2);
+            if (yAxisType[indexCurveAssociatedYAxis[i1]] == AXIS_LINEAR) {
+                yPix[i2] = (float) (y0Kurve - (sfY[indexCurveAssociatedYAxis[i1]] * (y - axisYmin[indexCurveAssociatedYAxis[i1]])));
 
-            } else if ((yAchseTyp[indexZurKurveGehoerigeYachse[i1]] == AXIS_LOGARITHMIC)) {
+            } else if ((yAxisType[indexCurveAssociatedYAxis[i1]] == AXIS_LOGARITHMIC)) {
                 if (y <= 0) {
-                    y = 1e-99;  //y=achseYmin[indexZurKurveGehoerigeYachse[i1]];
+                    y = 1e-99;  //y=axisYmin[indexCurveAssociatedYAxis[i1]];
                 }
-                yPix[i2] = (float) (y0Kurve - (sfY[indexZurKurveGehoerigeYachse[i1]] * GraferV3.lg10(y / achseYmin[indexZurKurveGehoerigeYachse[i1]])));
+                yPix[i2] = (float) (y0Kurve - (sfY[indexCurveAssociatedYAxis[i1]] * GraferV3.lg10(y / axisYmin[indexCurveAssociatedYAxis[i1]])));
             }
         }
 
 
 
-        g2.setClip(x0Kurve + 1, y0Kurve - hoehePix[indexZurKurveGehoerigeYachse[i1]] - 1, breitePix[indexZurKurveGehoerigeYachse[i1]] + 2, hoehePix[indexZurKurveGehoerigeYachse[i1]] + 3);
+        g2.setClip(x0Kurve + 1, y0Kurve - heightPix[indexCurveAssociatedYAxis[i1]] - 1, widthPix[indexCurveAssociatedYAxis[i1]] + 2, heightPix[indexCurveAssociatedYAxis[i1]] + 3);
         //--------------------------------
-        g2.setColor(kurveFarbe[i1]);
+        g2.setColor(curveColor[i1]);
         //
-        if (kurveLinienstil[i1] == SOLID_PLAIN) {
+        if (curveLineStyle[i1] == SOLID_PLAIN) {
             g2.setStroke(str_SOLID_PLAIN);
-        } else if (kurveLinienstil[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
-        } else if (kurveLinienstil[i1] == SOLID_FAT_1) {
+        } else if (curveLineStyle[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
+        } else if (curveLineStyle[i1] == SOLID_FAT_1) {
             g2.setStroke(str_SOLID_FAT_1);
-        } else if (kurveLinienstil[i1] == SOLID_FAT_2) {
+        } else if (curveLineStyle[i1] == SOLID_FAT_2) {
             g2.setStroke(str_SOLID_FAT_2);
-        } else if (kurveLinienstil[i1] == DOTTED_PLAIN) {
+        } else if (curveLineStyle[i1] == DOTTED_PLAIN) {
             g2.setStroke(str_DOTTED_PLAIN);
-        } else if (kurveLinienstil[i1] == DOTTED_FAT) {
+        } else if (curveLineStyle[i1] == DOTTED_FAT) {
             g2.setStroke(str_DOTTED_FAT);
         }
         
         //-----------------------
         // // now draw the line:
         grL.reset();
-        if (kurveLinienstil[i1] != GraferV3.INVISIBLE) {            
+        if (curveLineStyle[i1] != GraferV3.INVISIBLE) {            
             grL.moveTo(xPix[0], yPix[0]);
             for (int i5 = 1; i5 < anzKurvenpunkteImWorksheet; i5++) {
                 if(xPix[i5] < 2000 && yPix[i5] < 2000) { // old uwe-bug!
@@ -606,7 +606,7 @@ public class GraferV3 extends JPanel {
         //-----------------------
         int dmCIRCLE = 8, hCROSS = 4, aRECT = 6, aTRIANG = 8;
 
-        if (kurvenPunktSymbolAnzeigen[i1]) {
+        if (showCurvePointSymbol[i1]) {
             g2.setColor(crvSymbFarbe[i1]);
             for (int i2 = 0; i2 < anzKurvenpunkteImWorksheet; i2++) {
 
@@ -649,18 +649,18 @@ public class GraferV3 extends JPanel {
         //===============================================
     }
 
-    protected void zeichneEinzelneKoordinatenAchse_X(Graphics2D g2, int i1) {
+    protected void drawSingleCoordinateAxisX(Graphics2D g2, int i1) {
         //==================================
-        if (xAchseTyp[i1] == AXIS_LINEAR) {
-            sfX[i1] = breitePix[i1] / (achseXmax[i1] - achseXmin[i1]);
-            int anzTicks = (int) (achseXmax[i1] / xTickSpacing[i1]) - (int) (achseXmin[i1] / xTickSpacing[i1]) + 1;
+        if (xAxisType[i1] == AXIS_LINEAR) {
+            sfX[i1] = widthPix[i1] / (axisXmax[i1] - axisXmin[i1]);
+            int anzTicks = (int) (axisXmax[i1] / xTickSpacing[i1]) - (int) (axisXmin[i1] / xTickSpacing[i1]) + 1;
             double[] wertTickX_temp = new double[anzTicks];
             int[] tickX_temp = new int[anzTicks];
             int j = 0;
             for (int i2 = 0; i2 < anzTicks; i2++) {
-                double wert = xTickSpacing[i1] * (int) (achseXmin[i1] / xTickSpacing[i1]) + i2 * xTickSpacing[i1];
+                double wert = xTickSpacing[i1] * (int) (axisXmin[i1] / xTickSpacing[i1]) + i2 * xTickSpacing[i1];
                 int tick = this.calculateXPixLinear(wert, i1);
-                if ((achseXmin[i1] <= wert) && (wert <= achseXmax[i1])) {
+                if ((axisXmin[i1] <= wert) && (wert <= axisXmax[i1])) {
                     wertTickX_temp[j] = wert;
                     tickX_temp[j] = tick;
                     j++;
@@ -669,102 +669,102 @@ public class GraferV3 extends JPanel {
             anzTicks = j;  // // Correction of the number of ticks -->
             double maxXtic = -100;
             int maxIndex = -1;
-            for (int i3 = 0; i3 < _yAchseX.length; i3++) {
-                maxXtic = Math.max(_yAchseX[i3] + posXtickLabels[i3], maxXtic);
-                if (maxXtic == _yAchseX[i3] + posXtickLabels[i3]) {
+            for (int i3 = 0; i3 < _xAxisY.length; i3++) {
+                maxXtic = Math.max(_xAxisY[i3] + posXtickLabels[i3], maxXtic);
+                if (maxXtic == _xAxisY[i3] + posXtickLabels[i3]) {
                     maxIndex = i3;
                 }
 
             }
-            zeigeLabelsXmaj[maxIndex] = true;
+            showLabelsXmaj[maxIndex] = true;
 
             //
             // // This checks whether ticks should be entered at all -->
             if (j != 0) {
                 //-----------------------------------------------------------------------------------------------------------------------
-                wertTickX[i1] = new double[anzTicks];
-                System.arraycopy(wertTickX_temp, 0, wertTickX[i1], 0, anzTicks);
+                valueTickX[i1] = new double[anzTicks];
+                System.arraycopy(wertTickX_temp, 0, valueTickX[i1], 0, anzTicks);
                 tickX[i1] = new int[anzTicks];
                 System.arraycopy(tickX_temp, 0, tickX[i1], 0, anzTicks);
                 //
-                int d = xTickLaenge[i1];
-                if (zeigeXticksUnten[i1]) {
+                int d = xTickLength[i1];
+                if (showXTicksBottom[i1]) {
                     d = -d;
                 }
 
 
                 for (int i2 = 0; i2 < anzTicks; i2++) {
-                    g2.setColor(farbeAchsenX[i1]);
-                    g2.drawLine(tickX[i1][i2], _yAchseX[i1], tickX[i1][i2], _yAchseX[i1] - d);  // // Ticks on the x-axis
+                    g2.setColor(colorAxesX[i1]);
+                    g2.drawLine(tickX[i1][i2], _xAxisY[i1], tickX[i1][i2], _xAxisY[i1] - d);  // // Ticks on the x-axis
 
 
-                    if (zeigeLabelsXmaj[i1]) {
+                    if (showLabelsXmaj[i1]) {
                         g2.setFont(foTickLabelX[i1]);
-                        String label = tcf.formatENG(wertTickX[i1][i2], digitsX);  //nf.format(wertTickX[i1][i2]);
-                        g2.drawString(label, -3 + tickX[i1][i2], _yAchseX[i1] + posXtickLabels[i1]);  // // Labels on the x-axis
+                        String label = tcf.formatENG(valueTickX[i1][i2], digitsX);  //nf.format(valueTickX[i1][i2]);
+                        g2.drawString(label, -3 + tickX[i1][i2], _xAxisY[i1] + posXtickLabels[i1]);  // // Labels on the x-axis
                     }
                 }
                 //
-                double xTickSpacingMinor = xTickSpacing[i1] / xAnzTicksMinor[i1];  // // Value between two minor ticks on the x-axis
-                int xMinorTicksAnzahl = (int) ((achseXmax[i1] - achseXmin[i1]) / xTickSpacingMinor) + 2;
+                double xTickSpacingMinor = xTickSpacing[i1] / xNumTicksMinor[i1];  // // Value between two minor ticks on the x-axis
+                int xMinorTicksAnzahl = (int) ((axisXmax[i1] - axisXmin[i1]) / xTickSpacingMinor) + 2;
                 double[] wertTickMinorX_temp = new double[xMinorTicksAnzahl];
                 int[] tickMinorX_temp = new int[xMinorTicksAnzahl];
-                double wertMinor = wertTickX[i1][0] - xTickSpacing[i1];
+                double wertMinor = valueTickX[i1][0] - xTickSpacing[i1];
                 j = 0;
-                while (wertMinor < wertTickX[i1][0] - 1.5 * xTickSpacingMinor) {
+                while (wertMinor < valueTickX[i1][0] - 1.5 * xTickSpacingMinor) {
                     wertMinor += xTickSpacingMinor;
-                    if (wertMinor >= achseXmin[i1]) {
+                    if (wertMinor >= axisXmin[i1]) {
                         wertTickMinorX_temp[j] = wertMinor;
                         j++;
                     }
                 }
-                for (int i2 = 0; i2 < wertTickX[i1].length - 1; i2++) {
-                    wertMinor = wertTickX[i1][i2] + xTickSpacingMinor;
+                for (int i2 = 0; i2 < valueTickX[i1].length - 1; i2++) {
+                    wertMinor = valueTickX[i1][i2] + xTickSpacingMinor;
                     wertTickMinorX_temp[j] = wertMinor;
                     j++;
-                    while (wertMinor < wertTickX[i1][i2 + 1] - 1.5 * xTickSpacingMinor) {
+                    while (wertMinor < valueTickX[i1][i2 + 1] - 1.5 * xTickSpacingMinor) {
                         wertMinor += xTickSpacingMinor;
                         wertTickMinorX_temp[j] = wertMinor;
                         j++;
                     }
                 }
-                wertMinor = wertTickX[i1][wertTickX[i1].length - 1];
-                while (wertMinor < achseXmax[i1] - 0.99 * xTickSpacingMinor) {
+                wertMinor = valueTickX[i1][valueTickX[i1].length - 1];
+                while (wertMinor < axisXmax[i1] - 0.99 * xTickSpacingMinor) {
                     wertMinor += xTickSpacingMinor;
                     wertTickMinorX_temp[j] = wertMinor;
                     j++;
                 }
                 xMinorTicksAnzahl = j;  // // Correction of the minor tick number
-                wertTickXminor[i1] = new double[xMinorTicksAnzahl];
+                valueTickXminor[i1] = new double[xMinorTicksAnzahl];
                 tickXminor[i1] = new int[xMinorTicksAnzahl];
-                System.arraycopy(wertTickMinorX_temp, 0, wertTickXminor[i1], 0, xMinorTicksAnzahl);
-                d = xTickLaengeMinor[i1];
-                if (zeigeXticksUnten[i1]) {
+                System.arraycopy(wertTickMinorX_temp, 0, valueTickXminor[i1], 0, xMinorTicksAnzahl);
+                d = xTickLengthMinor[i1];
+                if (showXTicksBottom[i1]) {
                     d = -d;
                 }
                 for (int i2 = 0; i2 < xMinorTicksAnzahl; i2++) {
-                    tickXminor[i1][i2] = this.calculateXPixLinear(wertTickXminor[i1][i2], i1);
-                    g2.drawLine(tickXminor[i1][i2], _yAchseX[i1], tickXminor[i1][i2], _yAchseX[i1] - d);  // // Minor ticks on the x-axis
-                    if (zeigeLabelsXmin[i1]) {
+                    tickXminor[i1][i2] = this.calculateXPixLinear(valueTickXminor[i1][i2], i1);
+                    g2.drawLine(tickXminor[i1][i2], _xAxisY[i1], tickXminor[i1][i2], _xAxisY[i1] - d);  // // Minor ticks on the x-axis
+                    if (showLabelsXmin[i1]) {
                         g2.setFont(foTickLabelX[i1]);
-                        String label = tcf.formatENG(wertTickXminor[i1][i2], digitsX);  // nf.format(wertTickXminor[i1][i2]);
-                        g2.drawString(label, tickXminor[i1][i2], _yAchseX[i1] + posXtickLabels[i1]);  // // Minor labels on the x-axis
+                        String label = tcf.formatENG(valueTickXminor[i1][i2], digitsX);  // nf.format(valueTickXminor[i1][i2]);
+                        g2.drawString(label, tickXminor[i1][i2], _xAxisY[i1] + posXtickLabels[i1]);  // // Minor labels on the x-axis
                     }
                     //-----------------------------------------------------------------------------------------------------------------------
                 }
             }
             //==================================
-        } else if (xAchseTyp[i1] == AXIS_LOGARITHMIC) {
+        } else if (xAxisType[i1] == AXIS_LOGARITHMIC) {
             // // mandatory --> xTickSpacing[i1]=AUTO because it only makes sense to add ticks to the tens of decades
-            sfX[i1] = breitePix[i1] / GraferV3.lg10(achseXmax[i1] / achseXmin[i1]);
-            int anzTicks = (int) Math.round(GraferV3.lg10(achseXmax[i1] / achseXmin[i1])) + 3;
+            sfX[i1] = widthPix[i1] / GraferV3.lg10(axisXmax[i1] / axisXmin[i1]);
+            int anzTicks = (int) Math.round(GraferV3.lg10(axisXmax[i1] / axisXmin[i1])) + 3;
             double[] wertTickX_temp = new double[anzTicks];
             int[] tickX_temp = new int[anzTicks];
             int j = 0;
             for (int i2 = 0; i2 < anzTicks; i2++) {
-                double wert = Math.pow(10, ((int) GraferV3.lg10(achseXmin[i1]) - 1 + i2));
+                double wert = Math.pow(10, ((int) GraferV3.lg10(axisXmin[i1]) - 1 + i2));
                 int tick = this.calculateXPixLogarithmic(wert, i1);
-                if ((achseXmin[i1] <= wert) && (wert <= achseXmax[i1])) {
+                if ((axisXmin[i1] <= wert) && (wert <= axisXmax[i1])) {
                     wertTickX_temp[j] = wert;
                     tickX_temp[j] = tick;
                     j++;
@@ -774,69 +774,69 @@ public class GraferV3 extends JPanel {
             if (j != 0) {
                 //-----------------------------------------------------------------------------------------------------------------------
                 anzTicks = j;  // // Correction of the number of ticks -->
-                wertTickX[i1] = new double[anzTicks];
-                System.arraycopy(wertTickX_temp, 0, wertTickX[i1], 0, anzTicks);
+                valueTickX[i1] = new double[anzTicks];
+                System.arraycopy(wertTickX_temp, 0, valueTickX[i1], 0, anzTicks);
                 tickX[i1] = new int[anzTicks];
                 System.arraycopy(tickX_temp, 0, tickX[i1], 0, anzTicks);
                 //
-                int d = xTickLaenge[i1];
-                if (zeigeXticksUnten[i1]) {
+                int d = xTickLength[i1];
+                if (showXTicksBottom[i1]) {
                     d = -d;
                 }
                 for (int i2 = 0; i2 < anzTicks; i2++) {
-                    g2.setColor(farbeAchsenX[i1]);
-                    g2.drawLine(tickX[i1][i2], _yAchseX[i1], tickX[i1][i2], _yAchseX[i1] - d);  // // Ticks on the x-axis
-                    if (zeigeLabelsXmaj[i1]) {
+                    g2.setColor(colorAxesX[i1]);
+                    g2.drawLine(tickX[i1][i2], _xAxisY[i1], tickX[i1][i2], _xAxisY[i1] - d);  // // Ticks on the x-axis
+                    if (showLabelsXmaj[i1]) {
                         g2.setFont(foTickLabelX[i1]);
-                        String label = tcf.formatT(wertTickX[i1][i2], "#.E0");  // tcf.formatENG(wertTickX[i1][i2],digitsX);
-                        g2.drawString(label, tickX[i1][i2], _yAchseX[i1] + posXtickLabels[i1]);  // // Labels on the x-axis
+                        String label = tcf.formatT(valueTickX[i1][i2], "#.E0");  // tcf.formatENG(valueTickX[i1][i2],digitsX);
+                        g2.drawString(label, tickX[i1][i2], _xAxisY[i1] + posXtickLabels[i1]);  // // Labels on the x-axis
                     }
                 }
                 //
                 int xMinorTicksAnzahl = 10 * (anzTicks + 1);
                 double[] wertTickMinorX_temp = new double[xMinorTicksAnzahl];
                 //int[] tickMinorX_temp= new int[xMinorTicksAnzahl];
-                double wertMinor = wertTickX[i1][0] / ((int) (wertTickX[i1][0] / achseXmin[i1]));
+                double wertMinor = valueTickX[i1][0] / ((int) (valueTickX[i1][0] / axisXmin[i1]));
                 wertTickMinorX_temp[0] = wertMinor;
                 j = 1;
-                while (wertMinor < 0.85 * wertTickX[i1][0]) {
-                    wertMinor += (0.1 * wertTickX[i1][0]);
+                while (wertMinor < 0.85 * valueTickX[i1][0]) {
+                    wertMinor += (0.1 * valueTickX[i1][0]);
                     wertTickMinorX_temp[j] = wertMinor;
                     j++;
                 }
-                for (int i2 = 0; i2 < wertTickX[i1].length - 1; i2++) {
-                    wertMinor = wertTickX[i1][i2] + (0.1 * wertTickX[i1][i2 + 1]);
+                for (int i2 = 0; i2 < valueTickX[i1].length - 1; i2++) {
+                    wertMinor = valueTickX[i1][i2] + (0.1 * valueTickX[i1][i2 + 1]);
                     wertTickMinorX_temp[j] = wertMinor;
                     j++;
-                    while (wertMinor < 0.85 * wertTickX[i1][i2 + 1]) {
-                        wertMinor += (0.1 * wertTickX[i1][i2 + 1]);
+                    while (wertMinor < 0.85 * valueTickX[i1][i2 + 1]) {
+                        wertMinor += (0.1 * valueTickX[i1][i2 + 1]);
                         wertTickMinorX_temp[j] = wertMinor;
                         j++;
                     }
                 }
-                wertMinor = wertTickX[i1][wertTickX[i1].length - 1];
-                while (wertMinor < achseXmax[i1]) {
-                    wertMinor += wertTickX[i1][wertTickX[i1].length - 1];
-                    if (wertMinor <= achseXmax[i1]) {
+                wertMinor = valueTickX[i1][valueTickX[i1].length - 1];
+                while (wertMinor < axisXmax[i1]) {
+                    wertMinor += valueTickX[i1][valueTickX[i1].length - 1];
+                    if (wertMinor <= axisXmax[i1]) {
                         wertTickMinorX_temp[j] = wertMinor;
                         j++;
                     }
                 }
                 xMinorTicksAnzahl = j;  // // Correction of the minor tick number
-                wertTickXminor[i1] = new double[xMinorTicksAnzahl];
+                valueTickXminor[i1] = new double[xMinorTicksAnzahl];
                 tickXminor[i1] = new int[xMinorTicksAnzahl];
-                System.arraycopy(wertTickMinorX_temp, 0, wertTickXminor[i1], 0, xMinorTicksAnzahl);
-                d = xTickLaengeMinor[i1];
-                if (zeigeXticksUnten[i1]) {
+                System.arraycopy(wertTickMinorX_temp, 0, valueTickXminor[i1], 0, xMinorTicksAnzahl);
+                d = xTickLengthMinor[i1];
+                if (showXTicksBottom[i1]) {
                     d = -d;
                 }
                 for (int i2 = 0; i2 < xMinorTicksAnzahl; i2++) {
-                    tickXminor[i1][i2] = this.calculateXPixLogarithmic(wertTickXminor[i1][i2], i1);
-                    g2.drawLine(tickXminor[i1][i2], _yAchseX[i1], tickXminor[i1][i2], _yAchseX[i1] - d);  // // Minor ticks on the x-axis
-                    if (zeigeLabelsXmin[i1]) {
+                    tickXminor[i1][i2] = this.calculateXPixLogarithmic(valueTickXminor[i1][i2], i1);
+                    g2.drawLine(tickXminor[i1][i2], _xAxisY[i1], tickXminor[i1][i2], _xAxisY[i1] - d);  // // Minor ticks on the x-axis
+                    if (showLabelsXmin[i1]) {
                         g2.setFont(foTickLabelX[i1]);
-                        String label = tcf.formatT(wertTickXminor[i1][i2], "#.E0");  // tcf.formatENG(wertTickXminor[i1][i2],digitsX);
-                        g2.drawString(label, tickXminor[i1][i2], _yAchseX[i1] + posXtickLabels[i1]);  // // Minor labels on the x-axis
+                        String label = tcf.formatT(valueTickXminor[i1][i2], "#.E0");  // tcf.formatENG(valueTickXminor[i1][i2],digitsX);
+                        g2.drawString(label, tickXminor[i1][i2], _xAxisY[i1] + posXtickLabels[i1]);  // // Minor labels on the x-axis
                     }
                 }
                 //-----------------------------------------------------------------------------------------------------------------------
@@ -845,107 +845,107 @@ public class GraferV3 extends JPanel {
 
     }
 
-    protected void zeichneEinzelneKoordinatenAchse_Y(Graphics2D g2, int i1) {
+    protected void drawSingleCoordinateAxisY(Graphics2D g2, int i1) {
 
-        if (yAchseTyp[i1] == AXIS_LINEAR) {
-            sfY[i1] = hoehePix[i1] / (achseYmax[i1] - achseYmin[i1]);
-            int anzTicks = (int) (achseYmax[i1] / yTickSpacing[i1]) - (int) (achseYmin[i1] / yTickSpacing[i1]) + 1;
+        if (yAxisType[i1] == AXIS_LINEAR) {
+            sfY[i1] = heightPix[i1] / (axisYmax[i1] - axisYmin[i1]);
+            int anzTicks = (int) (axisYmax[i1] / yTickSpacing[i1]) - (int) (axisYmin[i1] / yTickSpacing[i1]) + 1;
             anzTicks = Math.max(anzTicks, 2);
             double[] wertTickY_temp = new double[anzTicks];
             int[] tickY_temp = new int[anzTicks];
             int j = 0;
             
             for (int i2 = 0; i2 < anzTicks; i2++) {
-                double wert = yTickSpacing[i1] * (int) (achseYmin[i1] / yTickSpacing[i1]) + i2 * yTickSpacing[i1];
+                double wert = yTickSpacing[i1] * (int) (axisYmin[i1] / yTickSpacing[i1]) + i2 * yTickSpacing[i1];
                 int tick = this.calculateYPixLinear(wert, i1);                
-                if ((achseYmin[i1] <= wert) && (wert <= achseYmax[i1])) {
+                if ((axisYmin[i1] <= wert) && (wert <= axisYmax[i1])) {
                     wertTickY_temp[j] = wert;                    
                     tickY_temp[j] = tick;
                     j++;
                 }
             }
             anzTicks = j;  // // Correction of the number of ticks -->
-            wertTickY[i1] = new double[anzTicks];            
-            System.arraycopy(wertTickY_temp, 0, wertTickY[i1], 0, anzTicks);
+            valueTickY[i1] = new double[anzTicks];            
+            System.arraycopy(wertTickY_temp, 0, valueTickY[i1], 0, anzTicks);
             tickY[i1] = new int[anzTicks];
             System.arraycopy(tickY_temp, 0, tickY[i1], 0, anzTicks);
             //
-            int d = yTickLaenge[i1];
-            if (zeigeYticksLinks[i1]) {
+            int d = yTickLength[i1];
+            if (showYTicksLeft[i1]) {
                 d = -d;
             }
             for (int i2 = 0; i2 < anzTicks; i2++) {
-                g2.setColor(farbeAchsenY[i1]);
-                g2.drawLine(_xAchseY[i1], tickY[i1][i2], _xAchseY[i1] + d, tickY[i1][i2]);  // // Ticks on the y-axis
-                if (zeigeLabelsYmaj[i1]) {
+                g2.setColor(colorAxesY[i1]);
+                g2.drawLine(_yAxisX[i1], tickY[i1][i2], _yAxisX[i1] + d, tickY[i1][i2]);  // // Ticks on the y-axis
+                if (showLabelsYmaj[i1]) {
                     g2.setFont(foTickLabelY[i1]);
-                    String label = tcf.formatENG(wertTickY[i1][i2], digitsY);  // nf.format(wertTickY[i1][i2]);
-                    //if ((label.equals("0"))&&(wertTickY[i1][i2]!=0)) label= ""+wertTickY[i1][i2];
-                    g2.drawString(label, _xAchseY[i1] - posYtickLabels[i1] - (int) g2.getFontMetrics().getStringBounds(label, g2).getWidth(), tickY[i1][i2] + foTickLabelY[i1].getSize() / 2 - 1);  // // Labels on the y-axis
+                    String label = tcf.formatENG(valueTickY[i1][i2], digitsY);  // nf.format(valueTickY[i1][i2]);
+                    //if ((label.equals("0"))&&(valueTickY[i1][i2]!=0)) label= ""+valueTickY[i1][i2];
+                    g2.drawString(label, _yAxisX[i1] - posYtickLabels[i1] - (int) g2.getFontMetrics().getStringBounds(label, g2).getWidth(), tickY[i1][i2] + foTickLabelY[i1].getSize() / 2 - 1);  // // Labels on the y-axis
                 }
             }
             //
-            double yTickSpacingMinor = yTickSpacing[i1] / yAnzTicksMinor[i1];  // // Value between two minor ticks on the y-axis
-            int yMinorTicksAnzahl = (int) ((achseYmax[i1] - achseYmin[i1]) / yTickSpacingMinor) + 2;
+            double yTickSpacingMinor = yTickSpacing[i1] / yNumTicksMinor[i1];  // // Value between two minor ticks on the y-axis
+            int yMinorTicksAnzahl = (int) ((axisYmax[i1] - axisYmin[i1]) / yTickSpacingMinor) + 2;
             double[] wertTickMinorY_temp = new double[yMinorTicksAnzahl];
             int[] tickMinorY_temp = new int[yMinorTicksAnzahl];
-            double wertMinor = wertTickY[i1][0] - yTickSpacing[i1];
+            double wertMinor = valueTickY[i1][0] - yTickSpacing[i1];
             j = 0;
-            while (wertMinor < wertTickY[i1][0] - 1.5 * yTickSpacingMinor) {
+            while (wertMinor < valueTickY[i1][0] - 1.5 * yTickSpacingMinor) {
                 wertMinor += yTickSpacingMinor;
-                if (wertMinor >= achseYmin[i1]) {
+                if (wertMinor >= axisYmin[i1]) {
                     wertTickMinorY_temp[j] = wertMinor;
                     j++;
                 }
             }
-            for (int i2 = 0; i2 < wertTickY[i1].length - 1; i2++) {
-                wertMinor = wertTickY[i1][i2] + yTickSpacingMinor;
+            for (int i2 = 0; i2 < valueTickY[i1].length - 1; i2++) {
+                wertMinor = valueTickY[i1][i2] + yTickSpacingMinor;
                 wertTickMinorY_temp[j] = wertMinor;
                 j++;
-                while (wertMinor < wertTickY[i1][i2 + 1] - 1.5 * yTickSpacingMinor) {
+                while (wertMinor < valueTickY[i1][i2 + 1] - 1.5 * yTickSpacingMinor) {
                     wertMinor += yTickSpacingMinor;
                     wertTickMinorY_temp[j] = wertMinor;
                     j++;
                 }
             }
-            wertMinor = wertTickY[i1][wertTickY[i1].length - 1];
-            while (wertMinor < achseYmax[i1] - 0.99 * yTickSpacingMinor) {
+            wertMinor = valueTickY[i1][valueTickY[i1].length - 1];
+            while (wertMinor < axisYmax[i1] - 0.99 * yTickSpacingMinor) {
                 wertMinor += yTickSpacingMinor;
                 wertTickMinorY_temp[j] = wertMinor;
                 j++;
             }
             yMinorTicksAnzahl = j;  // // Correction of the minor tick number
-            wertTickYminor[i1] = new double[yMinorTicksAnzahl];
+            valueTickYminor[i1] = new double[yMinorTicksAnzahl];
             tickYminor[i1] = new int[yMinorTicksAnzahl];
-            System.arraycopy(wertTickMinorY_temp, 0, wertTickYminor[i1], 0, yMinorTicksAnzahl);
-            d = yTickLaengeMinor[i1];
-            if (zeigeYticksLinks[i1]) {
+            System.arraycopy(wertTickMinorY_temp, 0, valueTickYminor[i1], 0, yMinorTicksAnzahl);
+            d = yTickLengthMinor[i1];
+            if (showYTicksLeft[i1]) {
                 d = -d;
             }
             for (int i2 = 0; i2 < yMinorTicksAnzahl; i2++) {
-                tickYminor[i1][i2] = this.calculateYPixLinear(wertTickYminor[i1][i2], i1);
-                g2.drawLine(_xAchseY[i1], tickYminor[i1][i2], _xAchseY[i1] + d, tickYminor[i1][i2]);  // // Minor ticks on the y-axis
-                if (zeigeLabelsYmin[i1]) {
+                tickYminor[i1][i2] = this.calculateYPixLinear(valueTickYminor[i1][i2], i1);
+                g2.drawLine(_yAxisX[i1], tickYminor[i1][i2], _yAxisX[i1] + d, tickYminor[i1][i2]);  // // Minor ticks on the y-axis
+                if (showLabelsYmin[i1]) {
                     g2.setFont(foTickLabelY[i1]);
-                    String label = tcf.formatENG(wertTickYminor[i1][i2], digitsY);  // nf.format(wertTickYminor[i1][i2]);
-                    g2.drawString(label, _xAchseY[i1] - posYtickLabels[i1] - (int) g2.getFontMetrics().getStringBounds(label, g2).getWidth(), tickYminor[i1][i2] + foTickLabelY[i1].getSize() / 2);  // // Minor labels on the y-axis
+                    String label = tcf.formatENG(valueTickYminor[i1][i2], digitsY);  // nf.format(valueTickYminor[i1][i2]);
+                    g2.drawString(label, _yAxisX[i1] - posYtickLabels[i1] - (int) g2.getFontMetrics().getStringBounds(label, g2).getWidth(), tickYminor[i1][i2] + foTickLabelY[i1].getSize() / 2);  // // Minor labels on the y-axis
                 }
             }
             //==================================
-        } else if (yAchseTyp[i1] == AXIS_LOGARITHMIC) {
-            if (achseYmin[i1] <= 0) {
-                achseYmin[i1] = achseYmax[i1] / 1e4;
+        } else if (yAxisType[i1] == AXIS_LOGARITHMIC) {
+            if (axisYmin[i1] <= 0) {
+                axisYmin[i1] = axisYmax[i1] / 1e4;
             }
             // // mandatory --> yTickSpacing[i1]=AUTO because it only makes sense to add ticks to the tens of decades
-            sfY[i1] = hoehePix[i1] / GraferV3.lg10(achseYmax[i1] / achseYmin[i1]);
-            int anzTicks = (int) (GraferV3.lg10(achseYmax[i1] / achseYmin[i1])) + 3;
+            sfY[i1] = heightPix[i1] / GraferV3.lg10(axisYmax[i1] / axisYmin[i1]);
+            int anzTicks = (int) (GraferV3.lg10(axisYmax[i1] / axisYmin[i1])) + 3;
             double[] wertTickY_temp = new double[anzTicks];
             int[] tickY_temp = new int[anzTicks];
             int j = 0;
             for (int i2 = 0; i2 < anzTicks; i2++) {
-                double wert = Math.pow(10, ((int) GraferV3.lg10(achseYmin[i1]) - 1 + i2));
+                double wert = Math.pow(10, ((int) GraferV3.lg10(axisYmin[i1]) - 1 + i2));
                 int tick = this.calculateYPixLogarithmic(wert, i1);
-                if ((achseYmin[i1] <= wert) && (wert <= achseYmax[i1])) {
+                if ((axisYmin[i1] <= wert) && (wert <= axisYmax[i1])) {
                     wertTickY_temp[j] = wert;
                     tickY_temp[j] = tick;
                     j++;
@@ -955,69 +955,69 @@ public class GraferV3 extends JPanel {
             if (j != 0) {
                 //-----------------------------------------------------------------------------------------------------------------------
                 anzTicks = j;  // // Correction of the number of ticks -->
-                wertTickY[i1] = new double[anzTicks];
-                System.arraycopy(wertTickY_temp, 0, wertTickY[i1], 0, anzTicks);
+                valueTickY[i1] = new double[anzTicks];
+                System.arraycopy(wertTickY_temp, 0, valueTickY[i1], 0, anzTicks);
                 tickY[i1] = new int[anzTicks];
                 System.arraycopy(tickY_temp, 0, tickY[i1], 0, anzTicks);
                 //
-                int d = yTickLaenge[i1];
-                if (zeigeYticksLinks[i1]) {
+                int d = yTickLength[i1];
+                if (showYTicksLeft[i1]) {
                     d = -d;
                 }
                 for (int i2 = 0; i2 < anzTicks; i2++) {
-                    g2.setColor(farbeAchsenY[i1]);
-                    g2.drawLine(_xAchseY[i1], tickY[i1][i2], _xAchseY[i1] + d, tickY[i1][i2]);  // // Ticks on the y-axis
-                    if (zeigeLabelsYmaj[i1]) {
+                    g2.setColor(colorAxesY[i1]);
+                    g2.drawLine(_yAxisX[i1], tickY[i1][i2], _yAxisX[i1] + d, tickY[i1][i2]);  // // Ticks on the y-axis
+                    if (showLabelsYmaj[i1]) {
                         g2.setFont(foTickLabelY[i1]);
-                        String label = tcf.formatT(wertTickY[i1][i2], "#.E0");  // tcf.formatENG(wertTickY[i1][i2],digitsY);
-                        g2.drawString(label, _xAchseY[i1] - posYtickLabels[i1] - (int) g2.getFontMetrics().getStringBounds(label, g2).getWidth(), tickY[i1][i2] + foTickLabelY[i1].getSize() / 2);  // // Labels on the y-axis
+                        String label = tcf.formatT(valueTickY[i1][i2], "#.E0");  // tcf.formatENG(valueTickY[i1][i2],digitsY);
+                        g2.drawString(label, _yAxisX[i1] - posYtickLabels[i1] - (int) g2.getFontMetrics().getStringBounds(label, g2).getWidth(), tickY[i1][i2] + foTickLabelY[i1].getSize() / 2);  // // Labels on the y-axis
                     }
                 }
                 //
                 int yMinorTicksAnzahl = 10 * (anzTicks + 1);
                 double[] wertTickMinorY_temp = new double[yMinorTicksAnzahl];
                 int[] tickMinorY_temp = new int[yMinorTicksAnzahl];
-                double wertMinor = wertTickY[i1][0] / ((int) (wertTickY[i1][0] / achseYmin[i1]));
+                double wertMinor = valueTickY[i1][0] / ((int) (valueTickY[i1][0] / axisYmin[i1]));
                 wertTickMinorY_temp[0] = wertMinor;
                 j = 1;
-                while (wertMinor < 0.85 * wertTickY[i1][0]) {
-                    wertMinor += (0.1 * wertTickY[i1][0]);
+                while (wertMinor < 0.85 * valueTickY[i1][0]) {
+                    wertMinor += (0.1 * valueTickY[i1][0]);
                     wertTickMinorY_temp[j] = wertMinor;
                     j++;
                 }
-                for (int i2 = 0; i2 < wertTickY[i1].length - 1; i2++) {
-                    wertMinor = wertTickY[i1][i2] + (0.1 * wertTickY[i1][i2 + 1]);
+                for (int i2 = 0; i2 < valueTickY[i1].length - 1; i2++) {
+                    wertMinor = valueTickY[i1][i2] + (0.1 * valueTickY[i1][i2 + 1]);
                     wertTickMinorY_temp[j] = wertMinor;
                     j++;
-                    while (wertMinor < 0.85 * wertTickY[i1][i2 + 1]) {
-                        wertMinor += (0.1 * wertTickY[i1][i2 + 1]);
+                    while (wertMinor < 0.85 * valueTickY[i1][i2 + 1]) {
+                        wertMinor += (0.1 * valueTickY[i1][i2 + 1]);
                         wertTickMinorY_temp[j] = wertMinor;
                         j++;
                     }
                 }
-                wertMinor = wertTickY[i1][wertTickY[i1].length - 1];
-                while (wertMinor < achseYmax[i1]) {
-                    wertMinor += wertTickY[i1][wertTickY[i1].length - 1];
-                    if (wertMinor <= achseYmax[i1]) {
+                wertMinor = valueTickY[i1][valueTickY[i1].length - 1];
+                while (wertMinor < axisYmax[i1]) {
+                    wertMinor += valueTickY[i1][valueTickY[i1].length - 1];
+                    if (wertMinor <= axisYmax[i1]) {
                         wertTickMinorY_temp[j] = wertMinor;
                         j++;
                     }
                 }
                 yMinorTicksAnzahl = j;  // // Correction of the minor tick number
-                wertTickYminor[i1] = new double[yMinorTicksAnzahl];
+                valueTickYminor[i1] = new double[yMinorTicksAnzahl];
                 tickYminor[i1] = new int[yMinorTicksAnzahl];
-                System.arraycopy(wertTickMinorY_temp, 0, wertTickYminor[i1], 0, yMinorTicksAnzahl);
-                d = yTickLaengeMinor[i1];
-                if (zeigeYticksLinks[i1]) {
+                System.arraycopy(wertTickMinorY_temp, 0, valueTickYminor[i1], 0, yMinorTicksAnzahl);
+                d = yTickLengthMinor[i1];
+                if (showYTicksLeft[i1]) {
                     d = -d;
                 }
                 for (int i2 = 0; i2 < yMinorTicksAnzahl; i2++) {
-                    tickYminor[i1][i2] = this.calculateYPixLogarithmic(wertTickYminor[i1][i2], i1);
-                    g2.drawLine(_xAchseY[i1], tickYminor[i1][i2], _xAchseY[i1] + d, tickYminor[i1][i2]);  // // Minor ticks on the y-axis
-                    if (zeigeLabelsYmin[i1]) {
+                    tickYminor[i1][i2] = this.calculateYPixLogarithmic(valueTickYminor[i1][i2], i1);
+                    g2.drawLine(_yAxisX[i1], tickYminor[i1][i2], _yAxisX[i1] + d, tickYminor[i1][i2]);  // // Minor ticks on the y-axis
+                    if (showLabelsYmin[i1]) {
                         g2.setFont(foTickLabelY[i1]);
-                        String label = tcf.formatT(wertTickYminor[i1][i2], "#.E0");  // tcf.formatENG(wertTickYminor[i1][i2],digitsY);
-                        g2.drawString(label, _xAchseY[i1] - posYtickLabels[i1] - (int) g2.getFontMetrics().getStringBounds(label, g2).getWidth(), tickYminor[i1][i2] + foTickLabelY[i1].getSize() / 2);  // // Minor labels on the y-axis
+                        String label = tcf.formatT(valueTickYminor[i1][i2], "#.E0");  // tcf.formatENG(valueTickYminor[i1][i2],digitsY);
+                        g2.drawString(label, _yAxisX[i1] - posYtickLabels[i1] - (int) g2.getFontMetrics().getStringBounds(label, g2).getWidth(), tickYminor[i1][i2] + foTickLabelY[i1].getSize() / 2);  // // Minor labels on the y-axis
                     }
                 }
                 //-----------------------------------------------------------------------------------------------------------------------
@@ -1028,41 +1028,41 @@ public class GraferV3 extends JPanel {
         //==================================
     }
 
-    protected void zeichneGrid_NormalX(Graphics g) {
+    protected void drawGridNormalX(Graphics g) {
         GeneralPath grL = new GeneralPath();
         Graphics2D g2 = (Graphics2D) g;
         //
-        if ((gridNormalX_zugeordneteXAchse == null) || (gridNormalX_zugeordneteYAchse == null)) {
+        if ((gridNormalX_associatedXAxis == null) || (gridNormalX_associatedYAxis == null)) {
             return;  // um Fehler beim ersten Aufruf zu vermeiden
         }        //------------------------------------------------------------
         // // Grid lines parallel to the y-axis (i.e. normal to the x-axis) -->
-        for (int i1 = 0; i1 < gridNormalX_zugeordneteXAchse.length; i1++) {
-            int indexAchseX = gridNormalX_zugeordneteXAchse[i1];
-            int indexAchseY = gridNormalX_zugeordneteYAchse[i1];
+        for (int i1 = 0; i1 < gridNormalX_associatedXAxis.length; i1++) {
+            int indexAchseX = gridNormalX_associatedXAxis[i1];
+            int indexAchseY = gridNormalX_associatedYAxis[i1];
             if ((indexAchseX != -1) && (indexAchseY != -1)) {
                 // Minor-Grids -->
                 for (int i3 = 0; i3 < showGridNormalXminor.length; i3++) {
                     if ((showGridNormalXminor[i3][0] == indexAchseX) && ((showGridNormalXminor[i3][1] == indexAchseY)) && (tickXminor[indexAchseX] != null)) {
                         for (int i2 = 0; i2 < tickXminor[indexAchseX].length; i2++) {
-                            g.setColor(farbeGridNormalXminor[i1]);
-                            if (linStilGridNormalXminor[i1] == SOLID_PLAIN) {
+                            g.setColor(colorGridNormalXminor[i1]);
+                            if (lineStyleGridNormalXminor[i1] == SOLID_PLAIN) {
                                 g2.setStroke(str_SOLID_PLAIN);
-                            } else if (linStilGridNormalXminor[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
-                            } else if (linStilGridNormalXminor[i1] == SOLID_FAT_1) {
+                            } else if (lineStyleGridNormalXminor[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
+                            } else if (lineStyleGridNormalXminor[i1] == SOLID_FAT_1) {
                                 g2.setStroke(str_SOLID_FAT_1);
-                            } else if (linStilGridNormalXminor[i1] == SOLID_FAT_2) {
+                            } else if (lineStyleGridNormalXminor[i1] == SOLID_FAT_2) {
                                 g2.setStroke(str_SOLID_FAT_2);
-                            } else if (linStilGridNormalXminor[i1] == DOTTED_PLAIN) {
+                            } else if (lineStyleGridNormalXminor[i1] == DOTTED_PLAIN) {
                                 g2.setStroke(str_DOTTED_PLAIN);
-                            } else if (linStilGridNormalXminor[i1] == DOTTED_FAT) {
+                            } else if (lineStyleGridNormalXminor[i1] == DOTTED_FAT) {
                                 g2.setStroke(str_DOTTED_FAT);
             }
                             //-----------------------
                             // // now draw the line:
                             grL.reset();
-                            grL.moveTo(tickXminor[indexAchseX][i2], _yAchseY[indexAchseY]);
-                            grL.lineTo(tickXminor[indexAchseX][i2], _yAchseY[indexAchseY] - hoehePix[indexAchseY]);
-                            if (linStilGridNormalXminor[i1] != GraferV3.INVISIBLE) {
+                            grL.moveTo(tickXminor[indexAchseX][i2], _yAxisY[indexAchseY]);
+                            grL.lineTo(tickXminor[indexAchseX][i2], _yAxisY[indexAchseY] - heightPix[indexAchseY]);
+                            if (lineStyleGridNormalXminor[i1] != GraferV3.INVISIBLE) {
                                 g2.draw(grL);
                             }
                             g2.setStroke(str_SOLID_PLAIN);  // wieder auf 'default' setzen
@@ -1074,25 +1074,25 @@ public class GraferV3 extends JPanel {
                 for (int i3 = 0; i3 < showGridNormalXmajor.length; i3++) {
                     if ((showGridNormalXmajor[i3][0] == indexAchseX) && ((showGridNormalXmajor[i3][1] == indexAchseY)) && (tickX[indexAchseX] != null)) {
                         for (int i2 = 0; i2 < tickX[indexAchseX].length; i2++) {
-                            g.setColor(farbeGridNormalX[i1]);
-                            if (linStilGridNormalX[i1] == SOLID_PLAIN) {
+                            g.setColor(colorGridNormalX[i1]);
+                            if (lineStyleGridNormalX[i1] == SOLID_PLAIN) {
                                 g2.setStroke(str_SOLID_PLAIN);
-                            } else if (linStilGridNormalX[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
-                            } else if (linStilGridNormalX[i1] == SOLID_FAT_1) {
+                            } else if (lineStyleGridNormalX[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
+                            } else if (lineStyleGridNormalX[i1] == SOLID_FAT_1) {
                                 g2.setStroke(str_SOLID_FAT_1);
-                            } else if (linStilGridNormalX[i1] == SOLID_FAT_2) {
+                            } else if (lineStyleGridNormalX[i1] == SOLID_FAT_2) {
                                 g2.setStroke(str_SOLID_FAT_2);
-                            } else if (linStilGridNormalX[i1] == DOTTED_PLAIN) {
+                            } else if (lineStyleGridNormalX[i1] == DOTTED_PLAIN) {
                                 g2.setStroke(str_DOTTED_PLAIN);
-                            } else if (linStilGridNormalX[i1] == DOTTED_FAT) {
+                            } else if (lineStyleGridNormalX[i1] == DOTTED_FAT) {
                                 g2.setStroke(str_DOTTED_FAT);
             }
                             //-----------------------
                             // // now draw the line:
                             grL.reset();
-                            grL.moveTo(tickX[indexAchseX][i2], _yAchseY[indexAchseY]);
-                            grL.lineTo(tickX[indexAchseX][i2], _yAchseY[indexAchseY] - hoehePix[indexAchseY]);
-                            if (linStilGridNormalX[i1] != GraferV3.INVISIBLE) {
+                            grL.moveTo(tickX[indexAchseX][i2], _yAxisY[indexAchseY]);
+                            grL.lineTo(tickX[indexAchseX][i2], _yAxisY[indexAchseY] - heightPix[indexAchseY]);
+                            if (lineStyleGridNormalX[i1] != GraferV3.INVISIBLE) {
                                 g2.draw(grL);
                             }
                             g2.setStroke(str_SOLID_PLAIN);  // wieder auf 'default' setzen
@@ -1105,41 +1105,41 @@ public class GraferV3 extends JPanel {
         //------------------------------------------------------------
     }
 
-    protected void zeichneGrid_NormalY(Graphics g) {
+    protected void drawGridNormalY(Graphics g) {
         GeneralPath grL = new GeneralPath();
         Graphics2D g2 = (Graphics2D) g;
         //
-        if ((gridNormalY_zugeordneteXAchse == null) || (gridNormalY_zugeordneteYAchse == null)) {
+        if ((gridNormalY_associatedXAxis == null) || (gridNormalY_associatedYAxis == null)) {
             return;  // um Fehler beim ersten Aufruf zu vermeiden
         }        //------------------------------------------------------------
         // // Grid lines parallel to the x-axis (i.e. normal to the y-axis) -->
-        for (int i1 = 0; i1 < gridNormalY_zugeordneteXAchse.length; i1++) {
-            int indexAchseX = gridNormalY_zugeordneteXAchse[i1];
-            int indexAchseY = gridNormalY_zugeordneteYAchse[i1];
+        for (int i1 = 0; i1 < gridNormalY_associatedXAxis.length; i1++) {
+            int indexAchseX = gridNormalY_associatedXAxis[i1];
+            int indexAchseY = gridNormalY_associatedYAxis[i1];
             if ((indexAchseX != -1) && (indexAchseY != -1)) {
                 // Minor-Grids -->
                 for (int i3 = 0; i3 < showGridNormalYminor.length; i3++) {
                     if ((showGridNormalYminor[i3][0] == indexAchseX) && ((showGridNormalYminor[i3][1] == indexAchseY)) && (tickYminor[indexAchseY] != null)) {
                         for (int i2 = 0; i2 < tickYminor[indexAchseY].length; i2++) {
-                            g.setColor(farbeGridNormalYminor[i1]);
-                            if (linStilGridNormalYminor[i1] == SOLID_PLAIN) {
+                            g.setColor(colorGridNormalYminor[i1]);
+                            if (lineStyleGridNormalYminor[i1] == SOLID_PLAIN) {
                                 g2.setStroke(str_SOLID_PLAIN);
-                            } else if (linStilGridNormalYminor[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
-                            } else if (linStilGridNormalYminor[i1] == SOLID_FAT_1) {
+                            } else if (lineStyleGridNormalYminor[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
+                            } else if (lineStyleGridNormalYminor[i1] == SOLID_FAT_1) {
                                 g2.setStroke(str_SOLID_FAT_1);
-                            } else if (linStilGridNormalYminor[i1] == SOLID_FAT_2) {
+                            } else if (lineStyleGridNormalYminor[i1] == SOLID_FAT_2) {
                                 g2.setStroke(str_SOLID_FAT_2);
-                            } else if (linStilGridNormalYminor[i1] == DOTTED_PLAIN) {
+                            } else if (lineStyleGridNormalYminor[i1] == DOTTED_PLAIN) {
                                 g2.setStroke(str_DOTTED_PLAIN);
-                            } else if (linStilGridNormalYminor[i1] == DOTTED_FAT) {
+                            } else if (lineStyleGridNormalYminor[i1] == DOTTED_FAT) {
                                 g2.setStroke(str_DOTTED_FAT);
             }
                             //-----------------------
                             // // now draw the line:
                             grL.reset();
-                            grL.moveTo(_xAchseX[indexAchseX], tickYminor[indexAchseY][i2]);
-                            grL.lineTo(_xAchseX[indexAchseX] + breitePix[indexAchseX], tickYminor[indexAchseY][i2]);
-                            if (linStilGridNormalYminor[i1] != GraferV3.INVISIBLE) {
+                            grL.moveTo(_xAxisX[indexAchseX], tickYminor[indexAchseY][i2]);
+                            grL.lineTo(_xAxisX[indexAchseX] + widthPix[indexAchseX], tickYminor[indexAchseY][i2]);
+                            if (lineStyleGridNormalYminor[i1] != GraferV3.INVISIBLE) {
                                 g2.draw(grL);
                             }
                             g2.setStroke(str_SOLID_PLAIN);  // wieder auf 'default' setzen
@@ -1151,25 +1151,25 @@ public class GraferV3 extends JPanel {
                 for (int i3 = 0; i3 < showGridNormalYmajor.length; i3++) {
                     if ((showGridNormalYmajor[i3][0] == indexAchseX) && ((showGridNormalYmajor[i3][1] == indexAchseY)) && (tickY[indexAchseY] != null)) {
                         for (int i2 = 0; i2 < tickY[indexAchseY].length; i2++) {
-                            g.setColor(farbeGridNormalY[i1]);
-                            if (linStilGridNormalY[i1] == SOLID_PLAIN) {
+                            g.setColor(colorGridNormalY[i1]);
+                            if (lineStyleGridNormalY[i1] == SOLID_PLAIN) {
                                 g2.setStroke(str_SOLID_PLAIN);
-                            } else if (linStilGridNormalY[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
-                            } else if (linStilGridNormalY[i1] == SOLID_FAT_1) {
+                            } else if (lineStyleGridNormalY[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
+                            } else if (lineStyleGridNormalY[i1] == SOLID_FAT_1) {
                                 g2.setStroke(str_SOLID_FAT_1);
-                            } else if (linStilGridNormalY[i1] == SOLID_FAT_2) {
+                            } else if (lineStyleGridNormalY[i1] == SOLID_FAT_2) {
                                 g2.setStroke(str_SOLID_FAT_2);
-                            } else if (linStilGridNormalY[i1] == DOTTED_PLAIN) {
+                            } else if (lineStyleGridNormalY[i1] == DOTTED_PLAIN) {
                                 g2.setStroke(str_DOTTED_PLAIN);
-                            } else if (linStilGridNormalY[i1] == DOTTED_FAT) {
+                            } else if (lineStyleGridNormalY[i1] == DOTTED_FAT) {
                                 g2.setStroke(str_DOTTED_FAT);
             }
                             //-----------------------
                             // // now draw the line:
                             grL.reset();
-                            grL.moveTo(_xAchseX[indexAchseX], tickY[indexAchseY][i2]);
-                            grL.lineTo(_xAchseX[indexAchseX] + breitePix[indexAchseX], tickY[indexAchseY][i2]);
-                            if (linStilGridNormalY[i1] != GraferV3.INVISIBLE) {
+                            grL.moveTo(_xAxisX[indexAchseX], tickY[indexAchseY][i2]);
+                            grL.lineTo(_xAxisX[indexAchseX] + widthPix[indexAchseX], tickY[indexAchseY][i2]);
+                            if (lineStyleGridNormalY[i1] != GraferV3.INVISIBLE) {
                                 g2.draw(grL);
                             }
                             g2.setStroke(str_SOLID_PLAIN);  // wieder auf 'default' setzen
@@ -1182,16 +1182,16 @@ public class GraferV3 extends JPanel {
         //------------------------------------------------------------
     }
 
-    protected void auto_BereichsgrenzenDerAchsen() {
+    protected void autoAxisLimits() {
         //----------------------
         // // if only axes are drawn, but there is no curve data (yet?).
-        if (worksheetDaten == null) {
+        if (worksheetData == null) {
             return;
         }
         //
         //----------------------
         // // first find all minima and maxima of the curve data:
-        int laenge = worksheetDaten.getRowLength();
+        int laenge = worksheetData.getRowLength();
         double[] minEmpfehlungLIN = new double[laenge];  // // recommended minimum axis values ​​for AUTO / AXIS_LIN
         double[] maxEmpfehlungLIN = new double[laenge];  // // recommended axis max values ​​for AUTO / AXIS_LIN
         double[] minEmpfehlungLOG = new double[laenge];  // // recommended axis min values ​​for AUTO / AXIS_LOGARITHMIC
@@ -1202,15 +1202,15 @@ public class GraferV3 extends JPanel {
         for (int i1 = 0; i1 < laenge; i1++) {
             min[i1] = 1e99;
             max[i1] = -1e99;  // initial
-            for (int i2 = 0; i2 < worksheetDaten.getColumnLength(); i2++) {
-                if (worksheetDaten.getValue(i1, i2) < min[i1]) {
-                    min[i1] = worksheetDaten.getValue(i1, i2);
+            for (int i2 = 0; i2 < worksheetData.getColumnLength(); i2++) {
+                if (worksheetData.getValue(i1, i2) < min[i1]) {
+                    min[i1] = worksheetData.getValue(i1, i2);
                 }
-                if (worksheetDaten.getValue(i1, i2) > max[i1]) {
-                    max[i1] = worksheetDaten.getValue(i1, i2);
+                if (worksheetData.getValue(i1, i2) > max[i1]) {
+                    max[i1] = worksheetData.getValue(i1, i2);
                 }
             }
-            double[] autoEmpf = this.auto_Achsenbegrenzung_Wertempfehlung(min[i1], max[i1]);
+            double[] autoEmpf = this.autoAxisLimitRecommendation(min[i1], max[i1]);
             minEmpfehlungLIN[i1] = autoEmpf[0];
             maxEmpfehlungLIN[i1] = autoEmpf[1];
             minEmpfehlungLOG[i1] = autoEmpf[2];
@@ -1219,69 +1219,69 @@ public class GraferV3 extends JPanel {
         //----------------------
         // // only the data marked 'AUTO' will be set automatically below:
         //
-        for (int achsenNr = 0; achsenNr < achseXmin.length; achsenNr++) {
-            if (autoAchseXmin[achsenNr]) {
+        for (int achsenNr = 0; achsenNr < axisXmin.length; achsenNr++) {
+            if (autoAxisXmin[achsenNr]) {
                 // // now assign the corresponding minimums and maximums to the axes occupied by curves:
-                achseXmin[achsenNr] = 1e99;  // // default if no curve is assigned
-                for (int nrKurve = 0; nrKurve < anzahlKurven; nrKurve++) {
-                    if (achsenNr == indexZurKurveGehoerigeXachse[nrKurve]) {
-                        if ((xAchseTyp[achsenNr] == AXIS_LINEAR)
-                                && (achseXmin[achsenNr] > minEmpfehlungLIN[kurve_index_worksheetKolonnen_XY[nrKurve][0]])) {
-                            achseXmin[achsenNr] = minEmpfehlungLIN[kurve_index_worksheetKolonnen_XY[nrKurve][0]];
-                        } else if ((xAchseTyp[achsenNr] == AXIS_LOGARITHMIC)
-                                && (achseXmin[achsenNr] > minEmpfehlungLOG[kurve_index_worksheetKolonnen_XY[nrKurve][0]])) {
-                            achseXmin[achsenNr] = minEmpfehlungLOG[kurve_index_worksheetKolonnen_XY[nrKurve][0]];
+                axisXmin[achsenNr] = 1e99;  // // default if no curve is assigned
+                for (int nrKurve = 0; nrKurve < numCurves; nrKurve++) {
+                    if (achsenNr == indexCurveAssociatedXAxis[nrKurve]) {
+                        if ((xAxisType[achsenNr] == AXIS_LINEAR)
+                                && (axisXmin[achsenNr] > minEmpfehlungLIN[curve_index_worksheetColumns_XY[nrKurve][0]])) {
+                            axisXmin[achsenNr] = minEmpfehlungLIN[curve_index_worksheetColumns_XY[nrKurve][0]];
+                        } else if ((xAxisType[achsenNr] == AXIS_LOGARITHMIC)
+                                && (axisXmin[achsenNr] > minEmpfehlungLOG[curve_index_worksheetColumns_XY[nrKurve][0]])) {
+                            axisXmin[achsenNr] = minEmpfehlungLOG[curve_index_worksheetColumns_XY[nrKurve][0]];
                         }
                     }
                 }
             }
         }
-        for (int achsenNr = 0; achsenNr < achseXmax.length; achsenNr++) {
-            if (autoAchseXmax[achsenNr]) {
+        for (int achsenNr = 0; achsenNr < axisXmax.length; achsenNr++) {
+            if (autoAxisXmax[achsenNr]) {
                 // // now assign the corresponding minimums and maximums to the axes occupied by curves:
-                achseXmax[achsenNr] = -1e99;  // // default if no curve is assigned
-                for (int nrKurve = 0; nrKurve < anzahlKurven; nrKurve++) {
-                    if (achsenNr == indexZurKurveGehoerigeXachse[nrKurve]) {
-                        if ((xAchseTyp[achsenNr] == AXIS_LINEAR)
-                                && (achseXmax[achsenNr] < maxEmpfehlungLIN[kurve_index_worksheetKolonnen_XY[nrKurve][0]])) {
-                            achseXmax[achsenNr] = maxEmpfehlungLIN[kurve_index_worksheetKolonnen_XY[nrKurve][0]];
-                        } else if ((xAchseTyp[achsenNr] == AXIS_LOGARITHMIC)
-                                && (achseXmax[achsenNr] < maxEmpfehlungLOG[kurve_index_worksheetKolonnen_XY[nrKurve][0]])) {
-                            achseXmax[achsenNr] = maxEmpfehlungLOG[kurve_index_worksheetKolonnen_XY[nrKurve][0]];
+                axisXmax[achsenNr] = -1e99;  // // default if no curve is assigned
+                for (int nrKurve = 0; nrKurve < numCurves; nrKurve++) {
+                    if (achsenNr == indexCurveAssociatedXAxis[nrKurve]) {
+                        if ((xAxisType[achsenNr] == AXIS_LINEAR)
+                                && (axisXmax[achsenNr] < maxEmpfehlungLIN[curve_index_worksheetColumns_XY[nrKurve][0]])) {
+                            axisXmax[achsenNr] = maxEmpfehlungLIN[curve_index_worksheetColumns_XY[nrKurve][0]];
+                        } else if ((xAxisType[achsenNr] == AXIS_LOGARITHMIC)
+                                && (axisXmax[achsenNr] < maxEmpfehlungLOG[curve_index_worksheetColumns_XY[nrKurve][0]])) {
+                            axisXmax[achsenNr] = maxEmpfehlungLOG[curve_index_worksheetColumns_XY[nrKurve][0]];
                         }
                     }
                 }
             }
         }
-        for (int achsenNr = 0; achsenNr < achseYmin.length; achsenNr++) {
-            if (autoAchseYmin[achsenNr]) {
+        for (int achsenNr = 0; achsenNr < axisYmin.length; achsenNr++) {
+            if (autoAxisYmin[achsenNr]) {
                 // // now assign the corresponding minimums and maximums to the axes occupied by curves:
-                achseYmin[achsenNr] = 1e99;  // // default if no curve is assigned
-                for (int nrKurve = 0; nrKurve < anzahlKurven; nrKurve++) {
-                    if (achsenNr == indexZurKurveGehoerigeYachse[nrKurve]) {
-                        if ((yAchseTyp[achsenNr] == AXIS_LINEAR)
-                                && (achseYmin[achsenNr] > minEmpfehlungLIN[kurve_index_worksheetKolonnen_XY[nrKurve][1]])) {
-                            achseYmin[achsenNr] = minEmpfehlungLIN[kurve_index_worksheetKolonnen_XY[nrKurve][1]];
-                        } else if ((yAchseTyp[achsenNr] == AXIS_LOGARITHMIC)
-                                && (achseYmin[achsenNr] > minEmpfehlungLOG[kurve_index_worksheetKolonnen_XY[nrKurve][1]])) {
-                            achseYmin[achsenNr] = minEmpfehlungLOG[kurve_index_worksheetKolonnen_XY[nrKurve][1]];
+                axisYmin[achsenNr] = 1e99;  // // default if no curve is assigned
+                for (int nrKurve = 0; nrKurve < numCurves; nrKurve++) {
+                    if (achsenNr == indexCurveAssociatedYAxis[nrKurve]) {
+                        if ((yAxisType[achsenNr] == AXIS_LINEAR)
+                                && (axisYmin[achsenNr] > minEmpfehlungLIN[curve_index_worksheetColumns_XY[nrKurve][1]])) {
+                            axisYmin[achsenNr] = minEmpfehlungLIN[curve_index_worksheetColumns_XY[nrKurve][1]];
+                        } else if ((yAxisType[achsenNr] == AXIS_LOGARITHMIC)
+                                && (axisYmin[achsenNr] > minEmpfehlungLOG[curve_index_worksheetColumns_XY[nrKurve][1]])) {
+                            axisYmin[achsenNr] = minEmpfehlungLOG[curve_index_worksheetColumns_XY[nrKurve][1]];
                         }
                     }
                 }
             }
         }
-        for (int achsenNr = 0; achsenNr < achseYmax.length; achsenNr++) {
-            if (autoAchseYmax[achsenNr]) {
+        for (int achsenNr = 0; achsenNr < axisYmax.length; achsenNr++) {
+            if (autoAxisYmax[achsenNr]) {
                 // // now assign the corresponding minimums and maximums to the axes occupied by curves:
-                achseYmax[achsenNr] = -1e99;  // // default if no curve is assigned
-                for (int nrKurve = 0; nrKurve < anzahlKurven; nrKurve++) {
-                    if (achsenNr == indexZurKurveGehoerigeYachse[nrKurve]) {
-                        if ((yAchseTyp[achsenNr] == AXIS_LINEAR)
-                                && (achseYmax[achsenNr] < maxEmpfehlungLIN[kurve_index_worksheetKolonnen_XY[nrKurve][1]])) {
-                            achseYmax[achsenNr] = maxEmpfehlungLIN[kurve_index_worksheetKolonnen_XY[nrKurve][1]];
-                        } else if ((yAchseTyp[achsenNr] == AXIS_LOGARITHMIC)
-                                && (achseYmax[achsenNr] < maxEmpfehlungLOG[kurve_index_worksheetKolonnen_XY[nrKurve][1]])) {
-                            achseYmax[achsenNr] = maxEmpfehlungLOG[kurve_index_worksheetKolonnen_XY[nrKurve][1]];
+                axisYmax[achsenNr] = -1e99;  // // default if no curve is assigned
+                for (int nrKurve = 0; nrKurve < numCurves; nrKurve++) {
+                    if (achsenNr == indexCurveAssociatedYAxis[nrKurve]) {
+                        if ((yAxisType[achsenNr] == AXIS_LINEAR)
+                                && (axisYmax[achsenNr] < maxEmpfehlungLIN[curve_index_worksheetColumns_XY[nrKurve][1]])) {
+                            axisYmax[achsenNr] = maxEmpfehlungLIN[curve_index_worksheetColumns_XY[nrKurve][1]];
+                        } else if ((yAxisType[achsenNr] == AXIS_LOGARITHMIC)
+                                && (axisYmax[achsenNr] < maxEmpfehlungLOG[curve_index_worksheetColumns_XY[nrKurve][1]])) {
+                            axisYmax[achsenNr] = maxEmpfehlungLOG[curve_index_worksheetColumns_XY[nrKurve][1]];
                         }
                     }
                 }
@@ -1290,7 +1290,7 @@ public class GraferV3 extends JPanel {
         //----------------------
     }
 
-    protected double[] auto_Achsenbegrenzung_Wertempfehlung(double z1, double z2) {
+    protected double[] autoAxisLimitRecommendation(double z1, double z2) {
         //----------------------
         // // axis= [z1 .. z2] --> searched values ​​should be 'round' numbers and possibly a little larger than z1, z2
         // // ATTENTION: LIN and LOG scaling are treated differently!!

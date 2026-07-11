@@ -89,20 +89,20 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
     public int[] xAchseStil, yAchseStil;
     // TODO: the following fields hide Grafer fields, check if it would make a 
     // problem just to delete it from here!
-    public String[] xAchseBeschriftung, yAchseBeschriftung;
+    public String[] xAxisLabel, yAxisLabel;
     //
-    public int[] gridNormalX_zugeordneteXAchse, gridNormalX_zugeordneteYAchse;
-    public int[] gridNormalY_zugeordneteXAchse, gridNormalY_zugeordneteYAchse;
-    public int[] farbeGridNormalX, farbeGridNormalXminor, farbeGridNormalY, farbeGridNormalYminor;
-    public int[] linStilGridNormalX, linStilGridNormalXminor, linStilGridNormalY, linStilGridNormalYminor;
+    public int[] gridNormalX_associatedXAxis, gridNormalX_associatedYAxis;
+    public int[] gridNormalY_associatedXAxis, gridNormalY_associatedYAxis;
+    public int[] colorGridNormalX, colorGridNormalXminor, colorGridNormalY, colorGridNormalYminor;
+    public int[] lineStyleGridNormalX, lineStyleGridNormalXminor, lineStyleGridNormalY, lineStyleGridNormalYminor;
     public boolean[] xShowGridMaj, xShowGridMin, yShowGridMaj, yShowGridMin;
     //
     public boolean[] xTickAutoSpacing, yTickAutoSpacing;
     public double[] xTickSpacing, yTickSpacing;
-    public int[] xAnzTicksMinor, yAnzTicksMinor;
-    public int[] xTickLaenge, xTickLaengeMinor, yTickLaenge, yTickLaengeMinor;
+    public int[] xNumTicksMinor, yNumTicksMinor;
+    public int[] xTickLength, xTickLengthMinor, yTickLength, yTickLengthMinor;
     //
-    public boolean[] zeigeLabelsXmaj, zeigeLabelsXmin, zeigeLabelsYmaj, zeigeLabelsYmin;
+    public boolean[] showLabelsXmaj, showLabelsXmin, showLabelsYmaj, showLabelsYmin;
     //
     private boolean[] zeichneDiagrammUmrandung;  // // to draw if the grid is switched off because the display is too small (in pixel points).
     //-------------------------
@@ -221,7 +221,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         if (worksheetDatenTEMP != null) {
             for (int i1 = 0; i1 < worksheetDatenTEMP.length; i1++) {
                 for (int i2 = 0; i2 < worksheetDatenTEMP[0].length; i2++) {
-                    worksheetDaten.setValue(worksheetDatenTEMP[i1][i2], i1, i2);
+                    worksheetData.setValue(worksheetDatenTEMP[i1][i2], i1, i2);
                 }
             }
             worksheetDatenTEMP = null;
@@ -260,7 +260,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
     // // for calling external data that is no longer changed (in contrast to the continuous curve buildup in circuit simulation) -->
     // // or when initializing/changing the number of curves for the simulation
     public final void setzeKurvenUndWorksheetDaten(final String[] header, final DataContainer workSheet) {
-        this.worksheetDaten = workSheet;
+        this.worksheetData = workSheet;
 
         this.signalNamen = header;
         this.anzSignalePlusZeit = header.length;
@@ -290,12 +290,12 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         }
         //--------------------------
         // // for the slider:
-        ySchieberWert = new double[worksheetDaten.getRowLength() - 1][2];
-        ySchieberWert2 = new double[worksheetDaten.getRowLength() - 1][2];
+        ySchieberWert = new double[worksheetData.getRowLength() - 1][2];
+        ySchieberWert2 = new double[worksheetData.getRowLength() - 1][2];
 
         //-------------------------------------
-        this.setzeAchsen();  // // the default values ​​of the axes are defined and properly prepared and passed on to GraferV3, the tick parameters were determined in 'initAutotickSpacing()'
-        this.setzeKurven();  // // the default values ​​of the curves (defined in 'setDefault_ZVs') are properly prepared and passed on to GraferV3
+        this.setAxes();  // // the default values ​​of the axes are defined and properly prepared and passed on to GraferV3, the tick parameters were determined in 'initAutotickSpacing()'
+        this.setCurves();  // // the default values ​​of the curves (defined in 'setDefault_ZVs') are properly prepared and passed on to GraferV3
         //--------------------------
         this.repaint();
     }
@@ -306,8 +306,8 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         //--------------------------
         this.definiereAchsenbegrenzungenNumerischeSimulation(t1, t2);  // // minX[],maxX[],minY[],maxY[] are calculated from 'worksheetData'
         //--------------------------
-        this.setzeAchsen();  // // the default values ​​of the axes are defined and properly prepared and passed on to GraferV3, the tick parameters were determined in 'initAutotickSpacing()'
-        this.setzeKurven();  // // the default values ​​of the curves (defined in 'setDefault_ZVs') are properly prepared and passed on to GraferV3
+        this.setAxes();  // // the default values ​​of the axes are defined and properly prepared and passed on to GraferV3, the tick parameters were determined in 'initAutotickSpacing()'
+        this.setCurves();  // // the default values ​​of the curves (defined in 'setDefault_ZVs') are properly prepared and passed on to GraferV3
         //--------------------------
         this.possiblyHideGridLines();
         this.repaint();
@@ -315,14 +315,14 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
 
     // // Overwritten so that you can easily draw SIGNAL curves -->
     @Override
-    protected void zeichneKurven(final Graphics g) {
-        if (worksheetDaten == null) {
+    protected void drawCurves(final Graphics g) {
+        if (worksheetData == null) {
             return;
         }
 
         final Graphics2D g2 = (Graphics2D) g;
         int zd = 0;  // Beschriftungs-Nummerierung in y-Richtung
-        for (int i1 = 0; i1 < anzahlKurven; i1++) {
+        for (int i1 = 0; i1 < numCurves; i1++) {
             if (matrixZuordnungKurveDiagram[indexDerKurveInDerMatrix[i1] / INDEX_ENCODING_FACTOR][indexDerKurveInDerMatrix[i1] % INDEX_ENCODING_FACTOR] == ZUORDNUNG_SIGNAL) {
                 try {
                     zeichneEinzelneSIGNALKurve(g2, i1);
@@ -330,17 +330,17 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
                     Logger.getLogger(GraferImplementation.class.getName()).log(Level.WARNING, "Error drawing SIGNAL curve.", e);
                 }  // SIGNAL --> siehe Implementierung gleich unten
             } else {
-                int anzKurvenpunkteImWorksheet = worksheetDaten.getColumnLength();
+                int anzKurvenpunkteImWorksheet = worksheetData.getColumnLength();
                 if (!_usesExternalData) {
                     anzKurvenpunkteImWorksheet = _zvCounter;
                 }
                 try {
-                    zeichneEinzelneKurve(g2, i1, anzKurvenpunkteImWorksheet);
+                    drawSingleCurve(g2, i1, anzKurvenpunkteImWorksheet);
                 } catch (Exception e) {
                     Logger.getLogger(GraferImplementation.class.getName()).log(Level.WARNING, "Error drawing ZV curve.", e);
                 }  // // ZV --> is standard in 'GraferV3'
                 //----------
-                if ((i1 > 0) && (_yAchseY[indexZurKurveGehoerigeYachse[i1]] != _yAchseY[indexZurKurveGehoerigeYachse[i1 - 1]])) {
+                if ((i1 > 0) && (_yAxisY[indexCurveAssociatedYAxis[i1]] != _yAxisY[indexCurveAssociatedYAxis[i1 - 1]])) {
                     zd = 0;
                 } else {
                     if (i1 > 0) {
@@ -356,7 +356,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
     // i1 ... KurvenNummer
     private void beschrifteNamenDerEinzelnenZVKurve(final Graphics2D g2D, final int i1, final int zd) {
         //--------------------------------
-        int yLinksObenKurve = _yAchseY[indexZurKurveGehoerigeYachse[i1]] - hoehePix[indexZurKurveGehoerigeYachse[i1]];
+        int yLinksObenKurve = _yAxisY[indexCurveAssociatedYAxis[i1]] - heightPix[indexCurveAssociatedYAxis[i1]];
         String name = signalNamen[indexDerKurveInDerMatrix[i1] % INDEX_ENCODING_FACTOR];
         cf.setMaximumDigits(4);
         String wert = cf.formatT(ySchieberWert[indexDerKurveInDerMatrix[i1] % INDEX_ENCODING_FACTOR - 1][0], TechFormat.FORMAT_AUTO);
@@ -368,7 +368,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
 
         // // if the slider is activated, the y value is displayed instead of the names -->
         int delta = 16;  // // Distance between the signal names in the graph legend
-        g2D.setColor(kurveFarbe[i1]);
+        g2D.setColor(curveColor[i1]);
         if (xSchieberAktiv) {
             Font oldFont = g2D.getFont();
             Font tmpFont = new Font("Arial", Font.PLAIN, 9);
@@ -390,22 +390,22 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
 
     // // Overwritten so that you can easily draw a 'grid' for SIGNAL curves -->
     @Override
-    protected void zeichneKoordinatenAchsen(final Graphics g) {
+    protected void drawCoordinateAxes(final Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
         calculateSliderValues();
         //
         //===============================================
-        wertTickX = new double[anzahlAchsenX][];
-        tickX = new int[anzahlAchsenX][];
-        wertTickXminor = new double[anzahlAchsenX][];
-        tickXminor = new int[anzahlAchsenX][];
-        wertTickY = new double[anzahlAchsenY][];
-        tickY = new int[anzahlAchsenY][];
-        wertTickYminor = new double[anzahlAchsenY][];
-        tickYminor = new int[anzahlAchsenY][];
+        valueTickX = new double[numAxesX][];
+        tickX = new int[numAxesX][];
+        valueTickXminor = new double[numAxesX][];
+        tickXminor = new int[numAxesX][];
+        valueTickY = new double[numAxesY][];
+        tickY = new int[numAxesY][];
+        valueTickYminor = new double[numAxesY][];
+        tickYminor = new int[numAxesY][];
         //
-        sfX = new double[anzahlAchsenX];
-        sfY = new double[anzahlAchsenY];
+        sfX = new double[numAxesX];
+        sfY = new double[numAxesY];
         //===============================================
         // // if the grid lines are hidden (automatically because the diagram is too small in pixel points),
         // // then a border box is drawn for the diagram -->
@@ -415,25 +415,25 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         for (int i1 = 0; i1 < anzGrfVisible; i1++) {
             if (zeichneDiagrammUmrandung[i1]) {
                 g2.setColor(Color.lightGray);
-                g2.drawRect(_xAchseX[i1], _yAchseX[i1] - hoehePix[i1], breitePix[i1], hoehePix[i1]);
+                g2.drawRect(_xAxisX[i1], _xAxisY[i1] - heightPix[i1], widthPix[i1], heightPix[i1]);
             }
         }
         //===============================================
         // // x-axes --> there is no messing around (it's the same for ZV and SIGNAL)
-        for (int i1 = 0; i1 < anzahlAchsenX; i1++) {
-            zeichneEinzelneKoordinatenAchse_X(g2, i1);
+        for (int i1 = 0; i1 < numAxesX; i1++) {
+            drawSingleCoordinateAxisX(g2, i1);
         }
         // // y-axes --> is different for SIGNAL (grid and labels)
-        for (int i1 = 0; i1 < anzahlAchsenY; i1++) {
+        for (int i1 = 0; i1 < numAxesY; i1++) {
             if (diagramTyp[i1] == GraferImplementation.DIAGRAM_TYP_ZV) {
-                zeichneEinzelneKoordinatenAchse_Y(g2, i1);  // // the ticks for the grid are also calculated here
+                drawSingleCoordinateAxisY(g2, i1);  // // the ticks for the grid are also calculated here
             } else {
                 zeichneEinzelneSIGNALKoordinatenAchse_Y(g2, i1);
             }
         }
         //------------------------
-        zeichneGrid_NormalX(g);
-        zeichneGrid_NormalY(g);
+        drawGridNormalX(g);
+        drawGridNormalY(g);
         //===============================================
         // // subsequently the
         // // be covered
@@ -443,55 +443,55 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         //
         final GeneralPath grL = new GeneralPath();
         //
-        for (int i1 = 0; i1 < anzahlAchsenX; i1++) {
-            g2.setColor(farbeAchsenX[i1]);
+        for (int i1 = 0; i1 < numAxesX; i1++) {
+            g2.setColor(colorAxesX[i1]);
             // TODO: replace with switch statement
-            if (linienStilAchsenX[i1] == SOLID_PLAIN) {
+            if (lineStyleAxesX[i1] == SOLID_PLAIN) {
                 g2.setStroke(str_SOLID_PLAIN);
-            } else if (linienStilAchsenX[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
-            } else if (linienStilAchsenX[i1] == SOLID_FAT_1) {
+            } else if (lineStyleAxesX[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
+            } else if (lineStyleAxesX[i1] == SOLID_FAT_1) {
                 g2.setStroke(str_SOLID_FAT_1);
-            } else if (linienStilAchsenX[i1] == SOLID_FAT_2) {
+            } else if (lineStyleAxesX[i1] == SOLID_FAT_2) {
                 g2.setStroke(str_SOLID_FAT_2);
-            } else if (linienStilAchsenX[i1] == DOTTED_PLAIN) {
+            } else if (lineStyleAxesX[i1] == DOTTED_PLAIN) {
                 g2.setStroke(str_DOTTED_PLAIN);
-            } else if (linienStilAchsenX[i1] == DOTTED_FAT) {
+            } else if (lineStyleAxesX[i1] == DOTTED_FAT) {
                 g2.setStroke(str_DOTTED_FAT);
             }
             //-----------------------
             // // now draw the line:
             grL.reset();
-            grL.moveTo(_xAchseX[i1], _yAchseX[i1]);
-            grL.lineTo(_xAchseX[i1] + breitePix[i1], _yAchseX[i1]);
-            if (linienStilAchsenX[i1] != GraferV3.INVISIBLE) {
+            grL.moveTo(_xAxisX[i1], _xAxisY[i1]);
+            grL.lineTo(_xAxisX[i1] + widthPix[i1], _xAxisY[i1]);
+            if (lineStyleAxesX[i1] != GraferV3.INVISIBLE) {
                 g2.draw(grL);
-                g2.drawString(xAchseBeschriftung[i1], _xAchseX[i1] + breitePix[i1] / 2, _yAchseX[i1] + posXtickLabels[i1]);
+                g2.drawString(xAxisLabel[i1], _xAxisX[i1] + widthPix[i1] / 2, _xAxisY[i1] + posXtickLabels[i1]);
             }
             g2.setStroke(str_SOLID_PLAIN);  // wieder auf 'default' setzen
         }
-        for (int i1 = 0; i1 < anzahlAchsenY; i1++) {
-            g2.setColor(farbeAchsenY[i1]);
+        for (int i1 = 0; i1 < numAxesY; i1++) {
+            g2.setColor(colorAxesY[i1]);
             // TODO: replace with switch statement
-            if (linienStilAchsenY[i1] == SOLID_PLAIN) {
+            if (lineStyleAxesY[i1] == SOLID_PLAIN) {
                 g2.setStroke(str_SOLID_PLAIN);
-            } else if (linienStilAchsenY[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
-            } else if (linienStilAchsenY[i1] == SOLID_FAT_1) {
+            } else if (lineStyleAxesY[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
+            } else if (lineStyleAxesY[i1] == SOLID_FAT_1) {
                 g2.setStroke(str_SOLID_FAT_1);
-            } else if (linienStilAchsenY[i1] == SOLID_FAT_2) {
+            } else if (lineStyleAxesY[i1] == SOLID_FAT_2) {
                 g2.setStroke(str_SOLID_FAT_2);
-            } else if (linienStilAchsenY[i1] == DOTTED_PLAIN) {
+            } else if (lineStyleAxesY[i1] == DOTTED_PLAIN) {
                 g2.setStroke(str_DOTTED_PLAIN);
-            } else if (linienStilAchsenY[i1] == DOTTED_FAT) {
+            } else if (lineStyleAxesY[i1] == DOTTED_FAT) {
                 g2.setStroke(str_DOTTED_FAT);
             }
             //-----------------------
             // // now draw the line:
             grL.reset();
-            grL.moveTo(_xAchseY[i1], _yAchseY[i1]);
-            grL.lineTo(_xAchseY[i1], _yAchseY[i1] - hoehePix[i1]);
-            if (linienStilAchsenY[i1] != GraferV3.INVISIBLE) {
+            grL.moveTo(_yAxisX[i1], _yAxisY[i1]);
+            grL.lineTo(_yAxisX[i1], _yAxisY[i1] - heightPix[i1]);
+            if (lineStyleAxesY[i1] != GraferV3.INVISIBLE) {
                 g2.draw(grL);
-                g2.drawString(yAchseBeschriftung[i1], _xAchseY[i1] - posYtickLabels[i1], _yAchseY[i1] - hoehePix[i1] / 2);
+                g2.drawString(yAxisLabel[i1], _yAxisX[i1] - posYtickLabels[i1], _yAxisY[i1] - heightPix[i1] / 2);
             }
             g2.setStroke(str_SOLID_PLAIN);  // wieder auf 'default' setzen
         }
@@ -517,51 +517,51 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         //------------------------
         //
         final int anzTicks = 2 * z;
-        wertTickY[i1] = new double[anzTicks];  // // y numerical value associated with the tick --> is not used here
+        valueTickY[i1] = new double[anzTicks];  // // y numerical value associated with the tick --> is not used here
         tickY[i1] = new int[anzTicks];  // Pixel-Position
-        tickY[i1][0] = _yAchseY[i1];
+        tickY[i1][0] = _yAxisY[i1];
         for (int i2 = 0; i2 < anzTicks; i2++) {
             if (i2 % 2 == 0) {
-                wertTickY[i1][i2] = 0.0;
+                valueTickY[i1][i2] = 0.0;
                 if (i2 > 0) {
                     tickY[i1][i2] = tickY[i1][i2 - 1] - sgnDistance[i1];
                 }
             } else {
-                wertTickY[i1][i2] = 1.0;
+                valueTickY[i1][i2] = 1.0;
                 tickY[i1][i2] = tickY[i1][i2 - 1] - sgnHeight[i1];
             }
         }
         // // no minor ticks with SIGNAL -->
         final int yMinorTicksAnzahl = 0;
-        wertTickYminor[i1] = new double[yMinorTicksAnzahl];
+        valueTickYminor[i1] = new double[yMinorTicksAnzahl];
         tickYminor[i1] = new int[yMinorTicksAnzahl];
         //==================================
         if (i1 % 2 != 0) {
             return;  // // only the left y-axis is drawn!
         }        //
-        g2.setColor(farbeAchsenY[i1]);
+        g2.setColor(colorAxesY[i1]);
 
         // TODO: replace with switch expression!
-        if (linienStilAchsenY[i1] == SOLID_PLAIN) {
+        if (lineStyleAxesY[i1] == SOLID_PLAIN) {
             g2.setStroke(str_SOLID_PLAIN);
-        } else if (linienStilAchsenY[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
-        } else if (linienStilAchsenY[i1] == SOLID_FAT_1) {
+        } else if (lineStyleAxesY[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
+        } else if (lineStyleAxesY[i1] == SOLID_FAT_1) {
             g2.setStroke(str_SOLID_FAT_1);
-        } else if (linienStilAchsenY[i1] == SOLID_FAT_2) {
+        } else if (lineStyleAxesY[i1] == SOLID_FAT_2) {
             g2.setStroke(str_SOLID_FAT_2);
-        } else if (linienStilAchsenY[i1] == DOTTED_PLAIN) {
+        } else if (lineStyleAxesY[i1] == DOTTED_PLAIN) {
             g2.setStroke(str_DOTTED_PLAIN);
-        } else if (linienStilAchsenY[i1] == DOTTED_FAT) {
+        } else if (lineStyleAxesY[i1] == DOTTED_FAT) {
             g2.setStroke(str_DOTTED_FAT);
         }
         //-----------------------
         // // now draw the line:
         grL.reset();
-        grL.moveTo(_xAchseY[i1], _yAchseY[i1]);
-        grL.lineTo(_xAchseY[i1], _yAchseY[i1] - hoehePix[i1]);
-        if (linienStilAchsenY[i1] != GraferV3.INVISIBLE) {
+        grL.moveTo(_yAxisX[i1], _yAxisY[i1]);
+        grL.lineTo(_yAxisX[i1], _yAxisY[i1] - heightPix[i1]);
+        if (lineStyleAxesY[i1] != GraferV3.INVISIBLE) {
             g2.draw(grL);
-            g2.drawString(yAchseBeschriftung[i1], _xAchseY[i1] - posYtickLabels[i1], _yAchseY[i1] - hoehePix[i1] / 2);
+            g2.drawString(yAxisLabel[i1], _yAxisX[i1] - posYtickLabels[i1], _yAxisY[i1] - heightPix[i1] / 2);
         }
         g2.setStroke(str_SOLID_PLAIN);  // wieder auf 'default' setzen
         //==================================
@@ -729,46 +729,46 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         //----------------------
         final int[] xPix = new int[_zvCounter];
         final int[] yPix = new int[_zvCounter];
-        final int x0Kurve = _xAchseX[indexZurKurveGehoerigeXachse[i1]];  // // associated x-axis defines x0 of the curve
-        final int y0Kurve = _yAchseY[indexZurKurveGehoerigeYachse[i1]] - (notwendigeHoehePixGRF[indexZurKurveGehoerigeXachse[i1]] - (DY_IN_OBEN + DY_IN_UNTEN));  // // associated y-axis defines y0 of the curve, 'necessaryHeightPixGRF[i1]' for optical inversion (curve at the top left)
-        final int delta = sgnDistance[indexZurKurveGehoerigeXachse[i1]] + sgnHeight[indexZurKurveGehoerigeXachse[i1]];
+        final int x0Kurve = _xAxisX[indexCurveAssociatedXAxis[i1]];  // // associated x-axis defines x0 of the curve
+        final int y0Kurve = _yAxisY[indexCurveAssociatedYAxis[i1]] - (notwendigeHoehePixGRF[indexCurveAssociatedXAxis[i1]] - (DY_IN_OBEN + DY_IN_UNTEN));  // // associated y-axis defines y0 of the curve, 'necessaryHeightPixGRF[i1]' for optical inversion (curve at the top left)
+        final int delta = sgnDistance[indexCurveAssociatedXAxis[i1]] + sgnHeight[indexCurveAssociatedXAxis[i1]];
 
         //
         for (int i2 = 0; i2 < _zvCounter; i2++) {
-            final double xValue = worksheetDaten.getValue(kurve_index_worksheetKolonnen_XY[i1][0], i2);
-            if (xAchseTyp[indexZurKurveGehoerigeXachse[i1]] == AXIS_LINEAR) {
-                xPix[i2] = x0Kurve + (int) (sfX[indexZurKurveGehoerigeXachse[i1]] * (xValue - achseXmin[indexZurKurveGehoerigeXachse[i1]]));
-            } else if ((xAchseTyp[indexZurKurveGehoerigeXachse[i1]] == AXIS_LOGARITHMIC)) {
-                xPix[i2] = x0Kurve + (int) (sfX[indexZurKurveGehoerigeXachse[i1]] * lg10(xValue / achseXmin[indexZurKurveGehoerigeXachse[i1]]));
+            final double xValue = worksheetData.getValue(curve_index_worksheetColumns_XY[i1][0], i2);
+            if (xAxisType[indexCurveAssociatedXAxis[i1]] == AXIS_LINEAR) {
+                xPix[i2] = x0Kurve + (int) (sfX[indexCurveAssociatedXAxis[i1]] * (xValue - axisXmin[indexCurveAssociatedXAxis[i1]]));
+            } else if ((xAxisType[indexCurveAssociatedXAxis[i1]] == AXIS_LOGARITHMIC)) {
+                xPix[i2] = x0Kurve + (int) (sfX[indexCurveAssociatedXAxis[i1]] * lg10(xValue / axisXmin[indexCurveAssociatedXAxis[i1]]));
             }
             //------------------
-            double yValue = worksheetDaten.getValue(kurve_index_worksheetKolonnen_XY[i1][1], i2);
+            double yValue = worksheetData.getValue(curve_index_worksheetColumns_XY[i1][1], i2);
             // // Threshold turns the analog signal into a digital signal -->
             try {
-                if (yValue < sgnSchwelle[indexZurKurveGehoerigeXachse[i1]]) {
-                    yValue = positionSIGNAL[i1] * delta + sgnHeight[indexZurKurveGehoerigeXachse[i1]];
+                if (yValue < sgnSchwelle[indexCurveAssociatedXAxis[i1]]) {
+                    yValue = positionSIGNAL[i1] * delta + sgnHeight[indexCurveAssociatedXAxis[i1]];
                 } else {
                     yValue = (positionSIGNAL[i1] * delta);
                 }
-                yPix[i2] = (y0Kurve + sgnDistance[indexZurKurveGehoerigeXachse[i1]]) + (int) yValue;
+                yPix[i2] = (y0Kurve + sgnDistance[indexCurveAssociatedXAxis[i1]]) + (int) yValue;
             } catch (Exception e) {
                 Logger.getLogger(GraferImplementation.class.getName()).log(Level.WARNING, "Error computing SIGNAL pixel value.", e);
             }
         }
         //--------------------------------
-        g2.setColor(kurveFarbe[i1]);
+        g2.setColor(curveColor[i1]);
 
         // TODO: replace with switch statement
-        if (kurveLinienstil[i1] == SOLID_PLAIN) {
+        if (curveLineStyle[i1] == SOLID_PLAIN) {
             g2.setStroke(str_SOLID_PLAIN);
-        } else if (kurveLinienstil[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
-        } else if (kurveLinienstil[i1] == SOLID_FAT_1) {
+        } else if (curveLineStyle[i1] == INVISIBLE) {     // nix machen, weil unsichtbar
+        } else if (curveLineStyle[i1] == SOLID_FAT_1) {
             g2.setStroke(str_SOLID_FAT_1);
-        } else if (kurveLinienstil[i1] == SOLID_FAT_2) {
+        } else if (curveLineStyle[i1] == SOLID_FAT_2) {
             g2.setStroke(str_SOLID_FAT_2);
-        } else if (kurveLinienstil[i1] == DOTTED_PLAIN) {
+        } else if (curveLineStyle[i1] == DOTTED_PLAIN) {
             g2.setStroke(str_DOTTED_PLAIN);
-        } else if (kurveLinienstil[i1] == DOTTED_FAT) {
+        } else if (curveLineStyle[i1] == DOTTED_FAT) {
             g2.setStroke(str_DOTTED_FAT);
         } else {
             assert false;
@@ -778,20 +778,20 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         final String name = signalNamen[indexDerKurveInDerMatrix[i1] % INDEX_ENCODING_FACTOR];
         if (xSchieberAktiv) {
             g2.drawString(
-                    (ySchieberWert[indexDerKurveInDerMatrix[i1] % INDEX_ENCODING_FACTOR - 1][0] < sgnSchwelle[indexZurKurveGehoerigeXachse[i1]] ? "off" : "on"),
+                    (ySchieberWert[indexDerKurveInDerMatrix[i1] % INDEX_ENCODING_FACTOR - 1][0] < sgnSchwelle[indexCurveAssociatedXAxis[i1]] ? "off" : "on"),
                     DX_IN_LINKS - 30,
-                    (y0Kurve + sgnDistance[indexZurKurveGehoerigeXachse[i1]]) + (int) (positionSIGNAL[i1] * delta + sgnHeight[indexZurKurveGehoerigeXachse[i1]]));
+                    (y0Kurve + sgnDistance[indexCurveAssociatedXAxis[i1]]) + (int) (positionSIGNAL[i1] * delta + sgnHeight[indexCurveAssociatedXAxis[i1]]));
         }
         g2.drawString(
                 name,
                 this.getWidth() - DX_IN_RECHTS + TXT_DISTANCE_Y,
-                (y0Kurve + sgnDistance[indexZurKurveGehoerigeXachse[i1]]) + (int) (positionSIGNAL[i1] * delta + sgnHeight[indexZurKurveGehoerigeXachse[i1]]));
+                (y0Kurve + sgnDistance[indexCurveAssociatedXAxis[i1]]) + (int) (positionSIGNAL[i1] * delta + sgnHeight[indexCurveAssociatedXAxis[i1]]));
         //-----------------------
         // // now draw the SIGNAL line:
-        g2.setClip(x0Kurve + 1, 0, breitePix[indexZurKurveGehoerigeYachse[i1]] - 2, CLIP_HEIGHT);
+        g2.setClip(x0Kurve + 1, 0, widthPix[indexCurveAssociatedYAxis[i1]] - 2, CLIP_HEIGHT);
 
         grL.reset();
-        if (kurveLinienstil[i1] != GraferV3.INVISIBLE) {
+        if (curveLineStyle[i1] != GraferV3.INVISIBLE) {
             grL.moveTo(xPix[0], yPix[0]);
             for (int i5 = 1; i5 < _zvCounter; i5++) {
                 if (yPix[i5] != yPix[i5 - 1]) {  // // Switching process is implemented in the middle between 2 data points --> visual improvement
@@ -804,7 +804,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             // // optional color filling of the digital signals to better distinguish between '0' and '1' -->
             final GeneralPath grFill = new GeneralPath();
             grFill.append(grL.getPathIterator(null), false);
-            final int nullLinie = (y0Kurve + sgnDistance[indexZurKurveGehoerigeXachse[i1]]) + (int) (positionSIGNAL[i1] * delta + sgnHeight[indexZurKurveGehoerigeXachse[i1]]);
+            final int nullLinie = (y0Kurve + sgnDistance[indexCurveAssociatedXAxis[i1]]) + (int) (positionSIGNAL[i1] * delta + sgnHeight[indexCurveAssociatedXAxis[i1]]);
             grFill.lineTo(xPix[_zvCounter - 1], nullLinie);
             grFill.lineTo(xPix[0], nullLinie);
             if (yPix[0] < nullLinie) {
@@ -820,7 +820,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
                 g2.fill(grFill.createTransformedShape(null));
             }
             //---------------
-            g2.setColor(kurveFarbe[i1]);
+            g2.setColor(curveColor[i1]);
 
             final AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, ALPHA_COMPOSITE_VALUE);
             g2.setComposite(ac);
@@ -838,7 +838,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
 
     // // is called by 'DigitalDialogGraphProperties' and 'DialogGraphProperties' -->
     public void definiereAchsenbegrenzungenImAutoZoom() {
-        this.definiereAchsenbegrenzungenImAutoZoom(worksheetDaten);
+        this.definiereAchsenbegrenzungenImAutoZoom(worksheetData);
     }
 
     private void definiereAchsenbegrenzungenImAutoZoom(DataContainer ws) {
@@ -898,7 +898,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             //if ((minY[i1] ==+1e99)||(maxY[i1] ==-1e99)) { minY[i1]= minY2[i1];  maxY[i1]= maxY2[i1]; }
             //
             // 'schoenere' Bereichsgrenzen -->
-            final double[] autoEmpf = auto_Achsenbegrenzung_Wertempfehlung(minY[i1], maxY[i1]);
+            final double[] autoEmpf = autoAxisLimitRecommendation(minY[i1], maxY[i1]);
             minY[i1] = autoEmpf[0];
             maxY[i1] = autoEmpf[1];
             tickAbstandY[i1] = autoEmpf[4];
@@ -917,14 +917,14 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             yy2[i1] = maxY[i1];
             scY[i1] = autoScaleY[i1];
         }
-        this.setzeAchsenBegrenzungen(xx1, xx2, scX, yy1, yy2, scY);
+        this.setAxesLimits(xx1, xx2, scX, yy1, yy2, scY);
         //-------------------
         // initAutoTickSpacing() -->
         for (int i1 = 0; i1 < ANZ_DIAGRAM_MAX; i1++) {
             xTickSpacing[i1] = this.getAutoTickSpacingX(i1);
             yTickSpacing[i1] = tickAbstandY[i1];
         }
-        this.setzeTickSpacing(xTickSpacing, yTickSpacing);
+        this.setTickSpacing(xTickSpacing, yTickSpacing);
         //
         repaint();
         //--------------------------
@@ -932,12 +932,12 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
 
     private void definiereAchsenbegrenzungenNumerischeSimulation(double t1, double t2) {
         //--------------------------
-        final DataContainer ws = this.worksheetDaten;
+        final DataContainer ws = this.worksheetData;
         final double[] tickAbstandY = new double[ANZ_DIAGRAM_MAX], tickAbstandY2 = new double[ANZ_DIAGRAM_MAX];
         //--------------------------
         // // to increase efficiency:
         // // The smallest and largest values ​​are determined for each WS column -->
-        final double[] w1 = new double[worksheetDaten.getRowLength()], w2 = new double[worksheetDaten.getRowLength()];
+        final double[] w1 = new double[worksheetData.getRowLength()], w2 = new double[worksheetData.getRowLength()];
         for (int i1 = 0; i1 < w1.length; i1++) {
             w1[i1] = +1e99;
             w2[i1] = -1e99;
@@ -982,7 +982,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             //if ((minY[i1] ==+1e99)||(maxY[i1] ==-1e99)) { minY[i1]= minY2[i1];  maxY[i1]= maxY2[i1]; }
             //
             // 'schoenere' Bereichsgrenzen -->
-            final double[] autoEmpf = auto_Achsenbegrenzung_Wertempfehlung(minY[i1], maxY[i1]);
+            final double[] autoEmpf = autoAxisLimitRecommendation(minY[i1], maxY[i1]);
             minY[i1] = autoEmpf[0];
             maxY[i1] = autoEmpf[1];
             tickAbstandY[i1] = autoEmpf[4];
@@ -1011,7 +1011,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
     }
 
     @Override
-    public void setzeKurven() {
+    public void setCurves() {
         if (matrixZuordnungKurveDiagram == null) {
             return;
         }
@@ -1024,7 +1024,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
                 }
             }
         }
-        this.setzeKurvenAnzahl(kurvenanzahl);
+        this.setCurvesCount(kurvenanzahl);
         //-------------------------------------
         this.speichereALTeWerteFuerPosition();
         //
@@ -1050,7 +1050,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
                 }
             }
         }
-        this.setzeZugehoerigkeitKurveAchsen(zugehoerigkeitX, zugehoerigkeitY);
+        this.setCurveAxesAssignment(zugehoerigkeitX, zugehoerigkeitY);
         //-------------------------------------
         this.setzeYPositionDerSIGNALverlaeufe();
         //-------------------------------------
@@ -1073,7 +1073,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
                 }
             }
         }
-        this.setzeKurveIndexWorksheetKolonnenXY(indexWsXY);
+        this.setCurveIndexWorksheetColumnsXY(indexWsXY);
         //
         //=====================================
         int[] crvAchsenTypLok = new int[kurvenanzahl];  // // For each matrix entry there is a unique axis type (X or Y or Y2)
@@ -1088,14 +1088,14 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             crvLineColorLok[i1] = crvLineColor[im1][im2];
             crvTransparencyLok[i1] = crvTransparency[im1][im2];
         }
-        this.setzeKurveLinienstil(crvLineStyleLok);
+        this.setCurveLineStyle(crvLineStyleLok);
         //
         Color[] linienFarbe = new Color[kurvenanzahl];
         for (int i1 = 0; i1 < kurvenanzahl; i1++) {
             linienFarbe[i1] = GraferV3.selectColor(crvLineColorLok[i1]);
         }
         this.setCurveColor(linienFarbe);
-        this.setzeKurveTransparenz(crvTransparencyLok);
+        this.setCurveTransparency(crvTransparencyLok);
         //=====================================
         boolean[] crvSymbShowLok = new boolean[kurvenanzahl];
         int[] crvSymbFrequLok = new int[kurvenanzahl];
@@ -1132,18 +1132,18 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             crvClipValYminLok[i1] = crvClipValYmin[im1][im2];
             crvClipValYmaxLok[i1] = crvClipValYmax[im1][im2];
         }
-        this.setzeKurveClipping(crvClipValXminLok, crvClipValXmaxLok, crvClipValYminLok, crvClipValYmaxLok, crvClipXminLok, crvClipXmaxLok, crvClipYminLok, crvClipYmaxLok);
+        this.setCurveClipping(crvClipValXminLok, crvClipValXmaxLok, crvClipValYminLok, crvClipValYmaxLok, crvClipXminLok, crvClipXmaxLok, crvClipYminLok, crvClipYmaxLok);
         //=====================================
     }
 
     @Override
-    public void setzeAchsen() {
+    public void setAxes() {
         //-------------------------------------
         anzGrfVisible = 0;  // // Number of graphs to display (i.e. visible==true)
         for (int i1 = 0; i1 < this.getAnzahlDiagramme(); i1++) {
             anzGrfVisible++;
         }
-        this.setzeAchsenAnzahl(anzGrfVisible, anzGrfVisible);
+        this.setAxesCount(anzGrfVisible, anzGrfVisible);
         // 
         zeichneDiagrammUmrandung = new boolean[anzGrfVisible];
         //-----------
@@ -1212,17 +1212,17 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             y2[i1] = maxY[i1];
             scY[i1] = autoScaleY[i1];
         }
-        this.setzeAchsenBegrenzungen(x1, x2, scX, y1, y2, scY);
+        this.setAxesLimits(x1, x2, scX, y1, y2, scY);
         //-----------
         final String[] xAchseBeschriftungLok = new String[anzGrfVisible];
         final String[] yAchseBeschriftungLok = new String[anzGrfVisible];
         for (int i1 = 0; i1 < xAchseBeschriftungLok.length; i1++) {
-            xAchseBeschriftungLok[i1] = xAchseBeschriftung[i1];
+            xAchseBeschriftungLok[i1] = xAxisLabel[i1];
         }
         for (int i1 = 0; i1 < yAchseBeschriftungLok.length; i1++) {
-            yAchseBeschriftungLok[i1] = yAchseBeschriftung[i1];
+            yAchseBeschriftungLok[i1] = yAxisLabel[i1];
         }
-        this.setzeAchsenBeschriftungen(xAchseBeschriftungLok, yAchseBeschriftungLok);
+        this.setAxesLabels(xAchseBeschriftungLok, yAchseBeschriftungLok);
         //-----------
         int[] xAchseTypLoc = new int[anzGrfVisible], yAchseTypLoc = new int[anzGrfVisible];
         for (int i1 = 0; i1 < xAchseTypLoc.length; i1++) {
@@ -1231,7 +1231,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         for (int i1 = 0; i1 < yAchseTypLoc.length; i1++) {
             yAchseTypLoc[i1] = yAchsenTyp[i1];
         }
-        this.setzeAchsenTyp(xAchseTypLoc, yAchseTypLoc);
+        this.setAxesType(xAchseTypLoc, yAchseTypLoc);
         //-----------
         Color[] xAchseFarbeLok = new Color[anzGrfVisible], yAchseFarbeLok = new Color[anzGrfVisible];
         for (int i1 = 0; i1 < xAchseFarbeLok.length; i1++) {
@@ -1249,62 +1249,62 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         for (int i1 = 0; i1 < yAchseStilLok.length; i1++) {
             yAchseStilLok[i1] = yAchseStil[i1];
         }
-        this.setzeAchsenLinienStil(xAchseStilLok, yAchseStilLok);
+        this.setAxesLineStyle(xAchseStilLok, yAchseStilLok);
         //-----------
         //
-        gridNormalX_zugeordneteXAchse = new int[anzGrfVisible];  // Grid normal auf X-Achse
-        gridNormalX_zugeordneteYAchse = new int[anzGrfVisible];  // Grid normal auf X-Achse
-        for (int i1 = 0; i1 < gridNormalX_zugeordneteXAchse.length; i1++) {
-            gridNormalX_zugeordneteXAchse[i1] = i1;
+        gridNormalX_associatedXAxis = new int[anzGrfVisible];  // Grid normal auf X-Achse
+        gridNormalX_associatedYAxis = new int[anzGrfVisible];  // Grid normal auf X-Achse
+        for (int i1 = 0; i1 < gridNormalX_associatedXAxis.length; i1++) {
+            gridNormalX_associatedXAxis[i1] = i1;
         }
-        for (int i1 = 0; i1 < gridNormalX_zugeordneteYAchse.length; i1++) {
-            gridNormalX_zugeordneteYAchse[i1] = i1;
+        for (int i1 = 0; i1 < gridNormalX_associatedYAxis.length; i1++) {
+            gridNormalX_associatedYAxis[i1] = i1;
         }
-        this.definiereGridNormalX(gridNormalX_zugeordneteXAchse, gridNormalX_zugeordneteYAchse);
+        this.defineGridNormalX(gridNormalX_associatedXAxis, gridNormalX_associatedYAxis);
         //
-        gridNormalY_zugeordneteXAchse = new int[anzGrfVisible];  // Grid normal auf Y-Achse
-        gridNormalY_zugeordneteYAchse = new int[anzGrfVisible];  // Grid normal auf Y-Achse
-        for (int i1 = 0; i1 < gridNormalY_zugeordneteXAchse.length; i1++) {
-            gridNormalY_zugeordneteXAchse[i1] = i1;
+        gridNormalY_associatedXAxis = new int[anzGrfVisible];  // Grid normal auf Y-Achse
+        gridNormalY_associatedYAxis = new int[anzGrfVisible];  // Grid normal auf Y-Achse
+        for (int i1 = 0; i1 < gridNormalY_associatedXAxis.length; i1++) {
+            gridNormalY_associatedXAxis[i1] = i1;
         }
-        for (int i1 = 0; i1 < gridNormalY_zugeordneteYAchse.length; i1++) {
-            gridNormalY_zugeordneteYAchse[i1] = i1;
+        for (int i1 = 0; i1 < gridNormalY_associatedYAxis.length; i1++) {
+            gridNormalY_associatedYAxis[i1] = i1;
         }
-        this.definiereGridNormalY(gridNormalY_zugeordneteXAchse, gridNormalY_zugeordneteYAchse);
+        this.defineGridNormalY(gridNormalY_associatedXAxis, gridNormalY_associatedYAxis);
         //
         final Color[] farbeGridNormalXLok = new Color[anzGrfVisible];
         final Color[] farbeGridNormalXminorLok = new Color[farbeGridNormalXLok.length];
         for (int i1 = 0; i1 < farbeGridNormalXLok.length; i1++) {
-            farbeGridNormalXLok[i1] = GraferV3.selectColor(farbeGridNormalX[i1]);
-            farbeGridNormalXminorLok[i1] = GraferV3.selectColor(farbeGridNormalXminor[i1]);
+            farbeGridNormalXLok[i1] = GraferV3.selectColor(colorGridNormalX[i1]);
+            farbeGridNormalXminorLok[i1] = GraferV3.selectColor(colorGridNormalXminor[i1]);
         }
         final Color[] farbeGridNormalYLok = new Color[anzGrfVisible];
         final Color[] farbeGridNormalYminorLok = new Color[farbeGridNormalYLok.length];
         for (int i1 = 0; i1 < farbeGridNormalYLok.length; i1++) {
-            farbeGridNormalYLok[i1] = GraferV3.selectColor(farbeGridNormalY[i1]);
-            farbeGridNormalYminorLok[i1] = GraferV3.selectColor(farbeGridNormalYminor[i1]);
+            farbeGridNormalYLok[i1] = GraferV3.selectColor(colorGridNormalY[i1]);
+            farbeGridNormalYminorLok[i1] = GraferV3.selectColor(colorGridNormalYminor[i1]);
         }
-        this.setzeGridFarben(farbeGridNormalXLok, farbeGridNormalYLok, farbeGridNormalXminorLok, farbeGridNormalYminorLok);
+        this.setGridColors(farbeGridNormalXLok, farbeGridNormalYLok, farbeGridNormalXminorLok, farbeGridNormalYminorLok);
         //-----------
         int[] linStilGridNormalXLok = new int[anzGrfVisible];
         int[] linStilGridNormalXminorLok = new int[farbeGridNormalXLok.length];
         for (int i1 = 0; i1 < linStilGridNormalXLok.length; i1++) {
-            linStilGridNormalXLok[i1] = linStilGridNormalX[i1];
-            linStilGridNormalXminorLok[i1] = linStilGridNormalXminor[i1];
+            linStilGridNormalXLok[i1] = lineStyleGridNormalX[i1];
+            linStilGridNormalXminorLok[i1] = lineStyleGridNormalXminor[i1];
         }
         final int[] linStilGridNormalYLok = new int[anzGrfVisible];
         final int[] linStilGridNormalYminorLok = new int[farbeGridNormalYLok.length];
         for (int i1 = 0; i1 < linStilGridNormalYLok.length; i1++) {
-            linStilGridNormalYLok[i1] = linStilGridNormalY[i1];
-            linStilGridNormalYminorLok[i1] = linStilGridNormalYminor[i1];
+            linStilGridNormalYLok[i1] = lineStyleGridNormalY[i1];
+            linStilGridNormalYminorLok[i1] = lineStyleGridNormalYminor[i1];
         }
-        this.setzeGridLinienStil(linStilGridNormalXLok, linStilGridNormalYLok, linStilGridNormalXminorLok, linStilGridNormalYminorLok);
+        this.setGridLineStyle(linStilGridNormalXLok, linStilGridNormalYLok, linStilGridNormalXminorLok, linStilGridNormalYminorLok);
         //-----------
         final int[][] showGridNormalXmajLok = new int[anzGrfVisible][2], showGridNormalXminLok = new int[anzGrfVisible][2];
 
         for (int i1 = 0; i1 < anzGrfVisible; i1++) {
-            final int indexAchseX = gridNormalX_zugeordneteXAchse[i1];
-            final int indexAchseY = gridNormalX_zugeordneteYAchse[i1];
+            final int indexAchseX = gridNormalX_associatedXAxis[i1];
+            final int indexAchseY = gridNormalX_associatedYAxis[i1];
             showGridNormalXmajLok[i1][0] = (xShowGridMaj[i1]) ? indexAchseX : -1;  // // '-1' means: Do not draw grid line for this axis combination
             showGridNormalXmajLok[i1][1] = (xShowGridMaj[i1]) ? indexAchseY : -1;
             showGridNormalXminLok[i1][0] = (xShowGridMin[i1]) ? indexAchseX : -1;
@@ -1313,8 +1313,8 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         int[][] yShowGridMajor = new int[anzGrfVisible][2], yShowGridMinor = new int[anzGrfVisible][2];
 
         for (int i1 = 0; i1 < anzGrfVisible; i1++) {
-            final int indexAchseX = gridNormalY_zugeordneteXAchse[i1];
-            final int indexAchseY = gridNormalY_zugeordneteYAchse[i1];
+            final int indexAchseX = gridNormalY_associatedXAxis[i1];
+            final int indexAchseY = gridNormalY_associatedYAxis[i1];
             yShowGridMajor[i1][0] = (yShowGridMaj[i1]) ? indexAchseX : -1;  // // '-1' means: Do not draw grid line for this axis combination
             yShowGridMajor[i1][1] = (yShowGridMaj[i1]) ? indexAchseY : -1;
             yShowGridMinor[i1][0] = (yShowGridMin[i1]) ? indexAchseX : -1;
@@ -1330,7 +1330,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         for (int i1 = 0; i1 < yTickAutoSpacing.length; i1++) {
             yTickAutoSpacing[i1] = this.yTickAutoSpacing[i1];
         }
-        this.setzeTickAutoSpacing(xTickAutoSpacing, yTickAutoSpacing);
+        this.setTickAutoSpacing(xTickAutoSpacing, yTickAutoSpacing);
         //-----------
         double[] xTickSpacingLok = new double[anzGrfVisible];
         double[] yTickSpacingLok = new double[anzGrfVisible];
@@ -1340,50 +1340,50 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         for (int i1 = 0; i1 < yTickSpacingLok.length; i1++) {
             yTickSpacingLok[i1] = yTickSpacing[i1];
         }
-        this.setzeTickSpacing(xTickSpacingLok, yTickSpacingLok);
+        this.setTickSpacing(xTickSpacingLok, yTickSpacingLok);
         //-----------
         int[] xAnzTicksMinorLok = new int[anzGrfVisible];
         int[] yAnzTicksMinorLok = new int[anzGrfVisible];
         for (int i1 = 0; i1 < xAnzTicksMinorLok.length; i1++) {
-            xAnzTicksMinorLok[i1] = xAnzTicksMinor[i1];
+            xAnzTicksMinorLok[i1] = xNumTicksMinor[i1];
         }
         for (int i1 = 0; i1 < yAnzTicksMinorLok.length; i1++) {
-            yAnzTicksMinorLok[i1] = yAnzTicksMinor[i1];
+            yAnzTicksMinorLok[i1] = yNumTicksMinor[i1];
         }
-        this.setzeTickAnzMinor(xAnzTicksMinorLok, yAnzTicksMinorLok);
+        this.setTickCountMinor(xAnzTicksMinorLok, yAnzTicksMinorLok);
         //-----------
         final int[] xTickLength = new int[anzGrfVisible], xTickLengthMin = new int[anzGrfVisible];
         final int[] yTickLength = new int[anzGrfVisible], yTickLengthMin = new int[anzGrfVisible];
         for (int i1 = 0; i1 < xTickLength.length; i1++) {
-            xTickLength[i1] = xTickLaenge[i1];
-            xTickLengthMin[i1] = xTickLaengeMinor[i1];
+            xTickLength[i1] = xTickLength[i1];
+            xTickLengthMin[i1] = xTickLengthMinor[i1];
         }
         for (int i1 = 0; i1 < yTickLength.length; i1++) {
-            yTickLength[i1] = yTickLaenge[i1];
-            yTickLengthMin[i1] = yTickLaengeMinor[i1];
+            yTickLength[i1] = yTickLength[i1];
+            yTickLengthMin[i1] = yTickLengthMinor[i1];
         }
         this.setTickLength(xTickLength, yTickLength, xTickLengthMin, yTickLengthMin);
         //-----------
         final boolean[] showLabelsXMaj = new boolean[anzGrfVisible], showLabelsXMin = new boolean[anzGrfVisible];
         final boolean[] showLabelsYMax = new boolean[anzGrfVisible], showLabelsYMin = new boolean[anzGrfVisible];
         for (int i1 = 0; i1 < showLabelsXMaj.length; i1++) {
-            showLabelsXMaj[i1] = zeigeLabelsXmaj[i1];
-            showLabelsXMin[i1] = zeigeLabelsXmin[i1];
+            showLabelsXMaj[i1] = showLabelsXmaj[i1];
+            showLabelsXMin[i1] = showLabelsXmin[i1];
         }
         for (int i1 = 0; i1 < showLabelsYMax.length; i1++) {
-            showLabelsYMax[i1] = zeigeLabelsYmaj[i1];
-            showLabelsYMin[i1] = zeigeLabelsYmin[i1];
+            showLabelsYMax[i1] = showLabelsYmaj[i1];
+            showLabelsYMin[i1] = showLabelsYmin[i1];
         }
         this.setTickLabelVisible(showLabelsXMaj, showLabelsYMax, showLabelsXMin, showLabelsYMin);
         //-----------
-        boolean[] zeigeXticksUnten = new boolean[anzGrfVisible], zeigeYticksLinks = new boolean[anzGrfVisible];
-        for (int i1 = 0; i1 < zeigeXticksUnten.length; i1++) {
-            zeigeXticksUnten[i1] = true;
+        boolean[] showXTicksBottom = new boolean[anzGrfVisible], showYTicksLeft = new boolean[anzGrfVisible];
+        for (int i1 = 0; i1 < showXTicksBottom.length; i1++) {
+            showXTicksBottom[i1] = true;
         }
-        for (int i1 = 0; i1 < zeigeYticksLinks.length; i1++) {
-            zeigeYticksLinks[i1] = true;
+        for (int i1 = 0; i1 < showYTicksLeft.length; i1++) {
+            showYTicksLeft[i1] = true;
         }
-        this.setzeTickAusrichtung(zeigeXticksUnten, zeigeYticksLinks);
+        this.setTickAlignment(showXTicksBottom, showYTicksLeft);
         //-----------
         int[] posXtickLabels = new int[anzGrfVisible], posYtickLabels = new int[anzGrfVisible];
         for (int i1 = 0; i1 < posXtickLabels.length; i1++) {
@@ -1392,7 +1392,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         for (int i1 = 0; i1 < posYtickLabels.length; i1++) {
             posYtickLabels[i1] = yTickLength[i1] + 4; //45;
         }
-        this.setzeTickLabelPosition(posXtickLabels, posYtickLabels);
+        this.setTickLabelPosition(posXtickLabels, posYtickLabels);
         //-----------
         Font[] foX = new Font[anzGrfVisible], foY = new Font[anzGrfVisible];
         for (int i1 = 0; i1 < foX.length; i1++) {
@@ -1401,7 +1401,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         for (int i1 = 0; i1 < foY.length; i1++) {
             foY[i1] = new Font("Arial", Font.PLAIN, 11);
         }
-        this.setzeTickLabelFont(foX, foY);
+        this.setTickLabelFont(foX, foY);
         //-------------------------------------
     }
 
@@ -1474,18 +1474,18 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         final double px1 = GRID_HIDE_THRESHOLD_Y, px2 = GRID_HIDE_THRESHOLD_X, pxr = GRID_HIDE_THRESHOLD_RATIO;
         final int[][] showGridXMax = new int[anzGrfVisible][2], showGridXMin = new int[anzGrfVisible][2];
         for (int i1 = 0; i1 < anzGrfVisible; i1++) {
-            final int indexAchseX = gridNormalX_zugeordneteXAchse[i1];
-            final int indexAchseY = gridNormalX_zugeordneteYAchse[i1];
+            final int indexAchseX = gridNormalX_associatedXAxis[i1];
+            final int indexAchseY = gridNormalX_associatedYAxis[i1];
             showGridXMax[i1][0] = (xShowGridMaj[i1]) ? indexAchseX : -1;  // // '-1' means: Do not draw grid line for this axis combination
             showGridXMax[i1][1] = (xShowGridMaj[i1]) ? indexAchseY : -1;
             showGridXMin[i1][0] = (xShowGridMin[i1]) ? indexAchseX : -1;
             showGridXMin[i1][1] = (xShowGridMin[i1]) ? indexAchseY : -1;
             zeichneDiagrammUmrandung[i1] = false;
-            if (breitePix[indexAchseX] < px1 * pxr) {
+            if (widthPix[indexAchseX] < px1 * pxr) {
                 showGridXMin[i1][0] = -1;
                 showGridXMin[i1][1] = -1;
             }
-            if (breitePix[indexAchseX] < px2 * pxr) {
+            if (widthPix[indexAchseX] < px2 * pxr) {
                 showGridXMax[i1][0] = -1;
                 showGridXMax[i1][1] = -1;
                 zeichneDiagrammUmrandung[i1] = true;
@@ -1494,17 +1494,17 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
 
         final int[][] showGridNormalYmajLok = new int[anzGrfVisible][2], showGridNormalYminLok = new int[anzGrfVisible][2];
         for (int i1 = 0; i1 < anzGrfVisible; i1++) {
-            final int indexAchseX = gridNormalY_zugeordneteXAchse[i1];
-            final int indexAchseY = gridNormalY_zugeordneteYAchse[i1];
+            final int indexAchseX = gridNormalY_associatedXAxis[i1];
+            final int indexAchseY = gridNormalY_associatedYAxis[i1];
             showGridNormalYmajLok[i1][0] = (yShowGridMaj[i1]) ? indexAchseX : -1;  // // '-1' means: Do not draw grid line for this axis combination
             showGridNormalYmajLok[i1][1] = (yShowGridMaj[i1]) ? indexAchseY : -1;
             showGridNormalYminLok[i1][0] = (yShowGridMin[i1]) ? indexAchseX : -1;
             showGridNormalYminLok[i1][1] = (yShowGridMin[i1]) ? indexAchseY : -1;
-            if (hoehePix[indexAchseY] < px1) {
+            if (heightPix[indexAchseY] < px1) {
                 showGridNormalYminLok[i1][0] = -1;
                 showGridNormalYminLok[i1][1] = -1;
             }
-            if (hoehePix[indexAchseY] < px2) {
+            if (heightPix[indexAchseY] < px2) {
                 showGridNormalYmajLok[i1][0] = -1;
                 showGridNormalYmajLok[i1][1] = -1;
                 zeichneDiagrammUmrandung[i1] = true;
@@ -1533,8 +1533,8 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             case MAUSMODUS_WERTANZEIGE_SCHIEBER:
                 if (!xSchieberAktiv) {
                     xSchieberAktiv = true;
-                    xSchieberPix = _xAchseX[0];  // // x slider is placed at the beginning: same for all diagrams, defined in GraferV3
-                    xSchieberPix2 = _xAchseX[0];
+                    xSchieberPix = _xAxisX[0];  // // x slider is placed at the beginning: same for all diagrams, defined in GraferV3
+                    xSchieberPix2 = _xAxisX[0];
                     this.repaint();
                 }
                 break;
@@ -1613,7 +1613,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         if (worksheetDatenTEMP != null) {
             for (int i1 = 0; i1 < worksheetDatenTEMP.length; i1++) {
                 for (int i2 = 0; i2 < worksheetDatenTEMP[0].length; i2++) {
-                    worksheetDaten.setValue(worksheetDatenTEMP[i1][i2], i1, i2);
+                    worksheetData.setValue(worksheetDatenTEMP[i1][i2], i1, i2);
                 }
             }
             worksheetDatenTEMP = null;
@@ -1621,7 +1621,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             zvCounterTEMP = 0;
             nochNichtGeZoomt = true;
         }
-        this.definiereAchsenbegrenzungenImAutoZoom(worksheetDaten);
+        this.definiereAchsenbegrenzungenImAutoZoom(worksheetData);
         mausModus = mausModusALT;
         _scope.updateMouseMode(mausModus);
         //--------------
@@ -1635,11 +1635,11 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
 
 
 
-        if (mx < _xAchseX[0]) {
-            mx = _xAchseX[0];
+        if (mx < _xAxisX[0]) {
+            mx = _xAxisX[0];
         }
-        if (mx > _xAchseX[0] + breitePix[0]) {
-            mx = _xAchseX[0] + breitePix[0];
+        if (mx > _xAxisX[0] + widthPix[0]) {
+            mx = _xAxisX[0] + widthPix[0];
         }
         switch (mausAktion) {
             //--------------------------
@@ -1768,11 +1768,11 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
 
     private void calculateSliderValues() {
         if (!inDiffMode) {
-            if (xSchieberPix < _xAchseX[0]) {
-                xSchieberPix = _xAchseX[0];
+            if (xSchieberPix < _xAxisX[0]) {
+                xSchieberPix = _xAxisX[0];
             }
-            if (xSchieberPix > _xAchseX[0] + breitePix[0]) {
-                xSchieberPix = _xAchseX[0] + breitePix[0];
+            if (xSchieberPix > _xAxisX[0] + widthPix[0]) {
+                xSchieberPix = _xAxisX[0] + widthPix[0];
             }
             try {
                 xSchieberWert[0] = getValueFromPixel(xSchieberPix, 0)[0];
@@ -1782,7 +1782,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             int index = findSliderTimeIndex(xSchieberWert[0]);
             if (index >= 0) {
                 for (int i2 = 0; i2 < ySchieberWert.length; i2++) {
-                    ySchieberWert[i2][0] = worksheetDaten.getValue(i2 + 1, index);
+                    ySchieberWert[i2][0] = worksheetData.getValue(i2 + 1, index);
                 }
             } else {
                 for (int i2 = 0; i2 < ySchieberWert.length; i2++) {
@@ -1790,11 +1790,11 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
                 }
             }
         } else {
-            if (xSchieberPix2 < _xAchseX[0]) {
-                xSchieberPix2 = _xAchseX[0];
+            if (xSchieberPix2 < _xAxisX[0]) {
+                xSchieberPix2 = _xAxisX[0];
             }
-            if (xSchieberPix2 > _xAchseX[0] + breitePix[0]) {
-                xSchieberPix2 = _xAchseX[0] + breitePix[0];
+            if (xSchieberPix2 > _xAxisX[0] + widthPix[0]) {
+                xSchieberPix2 = _xAxisX[0] + widthPix[0];
             }
             try {
                 xSchieberWert2[0] = getValueFromPixel(xSchieberPix2, 0)[0];
@@ -1803,7 +1803,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             int index = findSliderTimeIndex(xSchieberWert2[0]);
             if (index >= 0) {
                 for (int i2 = 0; i2 < ySchieberWert.length; i2++) {
-                    ySchieberWert2[i2][0] = worksheetDaten.getValue(i2 + 1, index);
+                    ySchieberWert2[i2][0] = worksheetData.getValue(i2 + 1, index);
                 }
             } else {
                 for (int i2 = 0; i2 < ySchieberWert.length; i2++) {
@@ -1820,13 +1820,13 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             int i1 = 1;
 
             try {
-                for (int startIndex = 1; startIndex < worksheetDaten.getColumnLength(); startIndex += 10) {
-                    if (sliderValue >= worksheetDaten.getValue(0, startIndex - 1)) {
+                for (int startIndex = 1; startIndex < worksheetData.getColumnLength(); startIndex += 10) {
+                    if (sliderValue >= worksheetData.getValue(0, startIndex - 1)) {
                         i1 = startIndex - 10;
                         break;
                     }
                 }
-                if (i1 < 1 || i1 > worksheetDaten.getColumnLength() - 1) {
+                if (i1 < 1 || i1 > worksheetData.getColumnLength() - 1) {
                     i1 = 1;
                 }
 
@@ -1834,9 +1834,9 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
                 ex.printStackTrace();
             }
 
-            for (i1 = 1; i1 < worksheetDaten.getColumnLength(); i1++) {
-                if (sliderValue >= worksheetDaten.getValue(0, i1 - 1)) {
-                    if ((sliderValue <= worksheetDaten.getValue(0, i1))) {
+            for (i1 = 1; i1 < worksheetData.getColumnLength(); i1++) {
+                if (sliderValue >= worksheetData.getValue(0, i1 - 1)) {
+                    if ((sliderValue <= worksheetData.getValue(0, i1))) {
                         return i1;
                     }
 
@@ -1859,24 +1859,24 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         double sfX_ = -1, sfY_ = -1;
         int xAchseTyp_ = -1, yAchseTyp_ = -1;
         int indexYAchse = -1;
-        for (int i1 = 0; i1 < indexZurKurveGehoerigeXachse.length; i1++) {
-            if ((_xAchseX[indexZurKurveGehoerigeXachse[i1]] >= xGrfMIN[indexAngeklickterGraph])
-                    && (_xAchseX[indexZurKurveGehoerigeXachse[i1]] <= xGrfMAX[indexAngeklickterGraph])) {
-                achseXmin_ = achseXmin[indexZurKurveGehoerigeXachse[i1]];
-                xAchseX_ = _xAchseX[indexZurKurveGehoerigeXachse[i1]];
-                sfX_ = sfX[indexZurKurveGehoerigeXachse[i1]];
-                xAchseTyp_ = xAchseTyp[indexZurKurveGehoerigeXachse[i1]];
+        for (int i1 = 0; i1 < indexCurveAssociatedXAxis.length; i1++) {
+            if ((_xAxisX[indexCurveAssociatedXAxis[i1]] >= xGrfMIN[indexAngeklickterGraph])
+                    && (_xAxisX[indexCurveAssociatedXAxis[i1]] <= xGrfMAX[indexAngeklickterGraph])) {
+                achseXmin_ = axisXmin[indexCurveAssociatedXAxis[i1]];
+                xAchseX_ = _xAxisX[indexCurveAssociatedXAxis[i1]];
+                sfX_ = sfX[indexCurveAssociatedXAxis[i1]];
+                xAchseTyp_ = xAxisType[indexCurveAssociatedXAxis[i1]];
                 break;
             }
         }
-        for (int i1 = 0; i1 < indexZurKurveGehoerigeYachse.length; i1++) {
-            if ((_yAchseY[indexZurKurveGehoerigeYachse[i1]] >= yGrfMIN[indexAngeklickterGraph])
-                    && (_yAchseY[indexZurKurveGehoerigeYachse[i1]] <= yGrfMAX[indexAngeklickterGraph])) {
-                achseYmin_ = achseYmin[indexZurKurveGehoerigeYachse[i1]];
-                yAchseY_ = _yAchseY[indexZurKurveGehoerigeYachse[i1]];
-                sfY_ = sfY[indexZurKurveGehoerigeYachse[i1]];
-                yAchseTyp_ = yAchseTyp[indexZurKurveGehoerigeYachse[i1]];
-                indexYAchse = indexZurKurveGehoerigeYachse[i1];
+        for (int i1 = 0; i1 < indexCurveAssociatedYAxis.length; i1++) {
+            if ((_yAxisY[indexCurveAssociatedYAxis[i1]] >= yGrfMIN[indexAngeklickterGraph])
+                    && (_yAxisY[indexCurveAssociatedYAxis[i1]] <= yGrfMAX[indexAngeklickterGraph])) {
+                achseYmin_ = axisYmin[indexCurveAssociatedYAxis[i1]];
+                yAchseY_ = _yAxisY[indexCurveAssociatedYAxis[i1]];
+                sfY_ = sfY[indexCurveAssociatedYAxis[i1]];
+                yAchseTyp_ = yAxisType[indexCurveAssociatedYAxis[i1]];
+                indexYAchse = indexCurveAssociatedYAxis[i1];
                 break;
             }
         }
@@ -1901,14 +1901,14 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
     private int[] getPixelFromValue(final double xWert, double yWert, final int index_xAchse, final int index_yAchse) {
         try {
             //-------------------
-            final double achseXminLok = achseXmin[index_xAchse];
-            final int xAchseXLok = _xAchseX[index_xAchse];
+            final double achseXminLok = axisXmin[index_xAchse];
+            final int xAchseXLok = _xAxisX[index_xAchse];
             final double sfX_ = sfX[index_xAchse];
-            final int xAchseTyp_ = xAchseTyp[index_xAchse];
-            final double achseYmin_ = achseYmin[index_yAchse];
-            final int yAchseY_ = _yAchseY[index_yAchse];
+            final int xAchseTyp_ = xAxisType[index_xAchse];
+            final double achseYmin_ = axisYmin[index_yAchse];
+            final int yAchseY_ = _yAxisY[index_yAchse];
             final double sfY_ = sfY[index_yAchse];
-            final int yAchseTyp_ = yAchseTyp[index_yAchse];
+            final int yAchseTyp_ = yAxisType[index_yAchse];
             //-------------------
             int xPix = -1, yPix = -1;
             if (xAchseTyp_ == AXIS_LOGARITHMIC) {
@@ -1932,7 +1932,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
     }
 
     @Override
-    protected void zeichne(final Graphics graphics) {
+    protected void draw(final Graphics graphics) {
 
         //-------------------
         switch (mausModus) {
@@ -2085,20 +2085,20 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         //-------------------
         // // (2) for all other diagrams the y-range is fitted -->
         //
-        final double[] value1 = new double[worksheetDaten.getRowLength()], value2 = new double[worksheetDaten.getRowLength()];
-        for (int i1 = 0; i1 < worksheetDaten.getRowLength(); i1++) {
+        final double[] value1 = new double[worksheetData.getRowLength()], value2 = new double[worksheetData.getRowLength()];
+        for (int i1 = 0; i1 < worksheetData.getRowLength(); i1++) {
             value1[i1] = +1e99;
             value2[i1] = -1e99;
         }  // init
-        for (int i1 = 0; i1 < worksheetDaten.getRowLength(); i1++) // // goes through the columns
+        for (int i1 = 0; i1 < worksheetData.getRowLength(); i1++) // // goes through the columns
         {
             for (int i2 = 0; i2 < _zvCounter + 1; i2++) {  // // goes through the selected column line by line
-                if (i2 < worksheetDaten.getColumnLength()) {
-                    if (worksheetDaten.getValue(i1, i2) < value1[i1]) {
-                        value1[i1] = worksheetDaten.getValue(i1, i2);
+                if (i2 < worksheetData.getColumnLength()) {
+                    if (worksheetData.getValue(i1, i2) < value1[i1]) {
+                        value1[i1] = worksheetData.getValue(i1, i2);
                     }
-                    if (worksheetDaten.getValue(i1, i2) > value2[i1]) {
-                        value2[i1] = worksheetDaten.getValue(i1, i2);
+                    if (worksheetData.getValue(i1, i2) > value2[i1]) {
+                        value2[i1] = worksheetData.getValue(i1, i2);
                     }
                 }
             }
@@ -2123,7 +2123,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         }
         // 'schoenere' Bereichsgrenzen -->
         for (int i1 = 0; i1 < minY.length; i1++) {
-            final double[] autoEmpf = auto_Achsenbegrenzung_Wertempfehlung(minY[i1], maxY[i1]);
+            final double[] autoEmpf = autoAxisLimitRecommendation(minY[i1], maxY[i1]);
             minY[i1] = autoEmpf[0];
             maxY[i1] = autoEmpf[1];
             //tickAbstandY[i1]= autoEmpf[4];
@@ -2142,7 +2142,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             yy2[i1] = maxY[i1];
             scY[i1] = autoScaleY[i1];
         }
-        this.setzeAchsenBegrenzungen(xx1, xx2, scX, yy1, yy2, scY);
+        this.setAxesLimits(xx1, xx2, scX, yy1, yy2, scY);
         //-------------------
         double[] xTickSpacingLok = new double[anzGrfVisible];
         double[] yTickSpacingLok = new double[anzGrfVisible];
@@ -2154,7 +2154,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             yTickSpacingLok[i1] = this.getAutoTickSpacingY(i1);
             yTickSpacing[i1] = yTickSpacingLok[i1];
         }
-        this.setzeTickSpacing(xTickSpacingLok, yTickSpacingLok);
+        this.setTickSpacing(xTickSpacingLok, yTickSpacingLok);
         //-------------------
         x1 = -1;
         x2 = -1;
@@ -2176,10 +2176,10 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             // // save worksheet[][] data supplied by the simulator as long as you don't continue simulating
             if (nochNichtGeZoomt) {
                 nochNichtGeZoomt = false;
-                worksheetDatenTEMP = new double[worksheetDaten.getRowLength()][worksheetDaten.getColumnLength()];
+                worksheetDatenTEMP = new double[worksheetData.getRowLength()][worksheetData.getColumnLength()];
                 for (int i1 = 0; i1 < worksheetDatenTEMP.length; i1++) {
                     for (int i2 = 0; i2 < worksheetDatenTEMP[0].length; i2++) {
-                        worksheetDatenTEMP[i1][i2] = worksheetDaten.getValue(i1, i2);
+                        worksheetDatenTEMP[i1][i2] = worksheetData.getValue(i1, i2);
                     }
                 }
                 zvCounterTEMP = _zvCounter;
@@ -2193,7 +2193,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             }
 
             // // x1 and x2 describe the area boundaries --> load RAM data -->
-            final int lg1 = worksheetDaten.getRowLength(), lg2 = worksheetDaten.getColumnLength();
+            final int lg1 = worksheetData.getRowLength(), lg2 = worksheetData.getColumnLength();
             final DataContainer wsRAM = _scope.getZVDataInRAM();  // hochaufloesende Daten im RAM
             int estimatedIndex = (int) (_zvCounter * 1.0 / lg2 * wsRAM.getColumnLength());
             //-------------
@@ -2271,8 +2271,8 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
 
                 for (int worksheetIndex = 0; worksheetIndex < INTERVALLE_ENTLANG_X + 2; worksheetIndex++) {
                     final double timeValue = x1RAM + worksheetIndex * dtSCOPE;
-                    worksheetDaten.setValue(timeValue, 0, 2 * worksheetIndex);
-                    worksheetDaten.setValue(timeValue + dtSCOPE, 0, 2 * worksheetIndex + 1);
+                    worksheetData.setValue(timeValue, 0, 2 * worksheetIndex);
+                    worksheetData.setValue(timeValue + dtSCOPE, 0, 2 * worksheetIndex + 1);
 
                     while (higherIndex < maximumIndex && wsRAM.getEstimatedTimeValue(lowerIndex) < timeValue) {
                         lowerIndex++;
@@ -2289,17 +2289,17 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
                         final double meanValue = 0.5 * (hiLo.yHi + hiLo.yLo);
                         double oldMeanValue = 0;
                         try {
-                            oldMeanValue = 0.5 * (worksheetDaten.getValue(i1 + 1, 2 * worksheetIndex - 1) + worksheetDaten.getValue(i1 + 1, 2 * worksheetIndex - 2));
+                            oldMeanValue = 0.5 * (worksheetData.getValue(i1 + 1, 2 * worksheetIndex - 1) + worksheetData.getValue(i1 + 1, 2 * worksheetIndex - 2));
                         } catch (Exception ex) {
                             oldMeanValue = meanValue;
                         }
 
                         if (meanValue < oldMeanValue) {
-                            worksheetDaten.setValue(hiLo.yHi, i1 + 1, 2 * worksheetIndex);
-                            worksheetDaten.setValue(hiLo.yLo, i1 + 1, 2 * worksheetIndex + 1);
+                            worksheetData.setValue(hiLo.yHi, i1 + 1, 2 * worksheetIndex);
+                            worksheetData.setValue(hiLo.yLo, i1 + 1, 2 * worksheetIndex + 1);
                         } else {
-                            worksheetDaten.setValue(hiLo.yLo, i1 + 1, 2 * worksheetIndex);
-                            worksheetDaten.setValue(hiLo.yHi, i1 + 1, 2 * worksheetIndex + 1);
+                            worksheetData.setValue(hiLo.yLo, i1 + 1, 2 * worksheetIndex);
+                            worksheetData.setValue(hiLo.yHi, i1 + 1, 2 * worksheetIndex + 1);
                         }
 
                     }
@@ -2309,11 +2309,11 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             } else { // single point can be resolved:
                 for (int i2 = zeigerX1_RAM + 1; i2 < zeigerX2RAM + 1 && i2 < maximumIndex; i2++) {
                     final double time = wsRAM.getValue(0, i2);
-                    if (zvC < worksheetDaten.getColumnLength()) {
-                        worksheetDaten.setValue(time, 0, zvC);
+                    if (zvC < worksheetData.getColumnLength()) {
+                        worksheetData.setValue(time, 0, zvC);
                         for (int i1 = 0; i1 < lg1 - 1; i1++) {
                             final double value = wsRAM.getValue(i1 + 1, i2);
-                            worksheetDaten.setValue(value, i1 + 1, zvC);
+                            worksheetData.setValue(value, i1 + 1, zvC);
                         }
                     }
                     zvC++;
@@ -2354,7 +2354,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         //------------------
         // // (1) Find the assigned X-axis:
         int indexX = -1;
-        for (int i1 = 0; i1 < worksheetDaten.getRowLength(); i1++) {
+        for (int i1 = 0; i1 < worksheetData.getRowLength(); i1++) {
             if (matrixZuordnungKurveDiagram[im1][i1] == ZUORDNUNG_X) {
                 indexX = i1;
             }
@@ -2364,12 +2364,12 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         }
         // // (2) Find min and max values ​​in this column:
         double wsMIN = 1e99, wsMAX = -1e99;
-        for (int i1 = 0; i1 < worksheetDaten.getColumnLength(); i1++) {
-            if (worksheetDaten.getValue(indexX, i1) < wsMIN) {
-                wsMIN = worksheetDaten.getValue(indexX, i1);
+        for (int i1 = 0; i1 < worksheetData.getColumnLength(); i1++) {
+            if (worksheetData.getValue(indexX, i1) < wsMIN) {
+                wsMIN = worksheetData.getValue(indexX, i1);
             }
-            if (worksheetDaten.getValue(indexX, i1) > wsMAX) {
-                wsMAX = worksheetDaten.getValue(indexX, i1);
+            if (worksheetData.getValue(indexX, i1) > wsMAX) {
+                wsMAX = worksheetData.getValue(indexX, i1);
             }
         }
         return new double[]{wsMIN, wsMAX};
@@ -2379,12 +2379,12 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         // // Y-Clip --> Worksheet data is searched
         // // CLIP_NO means: Worksheet data is limiting
         double wsMIN = 1e99, wsMAX = -1e99;
-        for (int i1 = 0; i1 < worksheetDaten.getColumnLength(); i1++) {
-            if (worksheetDaten.getValue(im2, i1) < wsMIN) {
-                wsMIN = worksheetDaten.getValue(im2, i1);
+        for (int i1 = 0; i1 < worksheetData.getColumnLength(); i1++) {
+            if (worksheetData.getValue(im2, i1) < wsMIN) {
+                wsMIN = worksheetData.getValue(im2, i1);
             }
-            if (worksheetDaten.getValue(im2, i1) > wsMAX) {
-                wsMAX = worksheetDaten.getValue(im2, i1);
+            if (worksheetData.getValue(im2, i1) > wsMAX) {
+                wsMAX = worksheetData.getValue(im2, i1);
             }
         }
         return new double[]{wsMIN, wsMAX};

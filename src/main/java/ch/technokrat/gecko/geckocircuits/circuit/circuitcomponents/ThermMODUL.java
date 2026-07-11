@@ -84,7 +84,7 @@ final class ThermMODUL extends AbstractCircuitBlockInterface {
         _yOUT = (int) (_height + 1);
         graphics.drawLine((int) (dpix * _xOUT), dpix * (0 + 1), (int) (dpix * _xOUT), (int) (dpix * _yOUT));
 
-        PowerModulePainter.zeichne(graphics, this, graphics.getColor(), dpix);
+        PowerModulePainter.draw(graphics, this, graphics.getColor(), dpix);
         if (_noOfChips > 0) {
             drawInputs(graphics, graphics.getColor());
         }

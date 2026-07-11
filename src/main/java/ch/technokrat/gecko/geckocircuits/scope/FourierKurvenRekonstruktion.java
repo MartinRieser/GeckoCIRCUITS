@@ -157,11 +157,11 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
             daten.setValue(yNeu[i1], 1, i1);
             daten.setValue(yRef[i1], 2, i1);
         }
-        worksheetDaten = daten;
-        this.setzeKurveTransparenz(new double[]{HALF_VALUE, HALF_VALUE});
+        worksheetData = daten;
+        this.setCurveTransparency(new double[]{HALF_VALUE, HALF_VALUE});
         //-----------------------
-        this.setzeAchsen();
-        this.setzeKurven();
+        this.setAxes();
+        this.setCurves();
         
     }
 
@@ -214,9 +214,9 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
                     ymin = yRef[i1];
                 }
             }
-            double[] empf = auto_Achsenbegrenzung_Wertempfehlung(ymin, ymax);
-            this.setzeAchsenBegrenzungen(new double[]{xNeu[0]}, new double[]{xNeu[xNeu.length - 1]}, new boolean[]{true}, new double[]{empf[0]}, new double[]{empf[1]}, new boolean[]{true});
-            this.setzeTickSpacing(new double[]{(0.2 / f1)}, new double[]{empf[4]});
+            double[] empf = autoAxisLimitRecommendation(ymin, ymax);
+            this.setAxesLimits(new double[]{xNeu[0]}, new double[]{xNeu[xNeu.length - 1]}, new boolean[]{true}, new double[]{empf[0]}, new double[]{empf[1]}, new boolean[]{true});
+            this.setTickSpacing(new double[]{(0.2 / f1)}, new double[]{empf[4]});
             repaint();
         } else if (mouseMode == GraferImplementation.MAUSMODUS_ZOOM_FENSTER) {
         } else if (mouseMode == GraferImplementation.MAUSMODUS_WERTANZEIGE_SCHIEBER) {
@@ -232,7 +232,7 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
      * @param g the graphics context
      */
     // // will be overwritten in order to be able to add text -->
-    protected void zeichne(Graphics g) {
+    protected void draw(Graphics g) {
         if ((mouseMode == GraferImplementation.MAUSMODUS_ZOOM_FENSTER) && (inDragMode)) {
             g.setColor(GlobalColors.farbeZoomRechteck);
             int b = Math.abs(x2Zoom - x1Zoom), h = Math.abs(y2Zoom - y1Zoom);
@@ -264,25 +264,25 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
     /**
      * Configures the chart axes with appropriate bounds and tick spacing.
      */
-    public void setzeAchsen() {
+    public void setAxes() {
         //-------------------------------------
-        this.setzeAchsenAnzahl(1, 1);
+        this.setAxesCount(1, 1);
         this.setAxisWidthHeightX0Y0(new int[]{bi}, new int[]{hi}, new int[]{X0xi}, new int[]{X0yi}, new int[]{Y0xi}, new int[]{Y0yi});
         this.setAxisColor(new Color[]{Color.black}, new Color[]{Color.black});
-        this.setzeAchsenTyp(new int[]{AXIS_LINEAR}, new int[]{AXIS_LINEAR});
-        this.setzeAchsenLinienStil(new int[]{SOLID_PLAIN}, new int[]{SOLID_PLAIN});
-        this.setzeAchsenBeschriftungen(new String[]{""}, new String[]{""});  // braucht es, damit kein NullPointer-Error
-        this.definiereGridNormalX(new int[]{0}, new int[]{0});
-        this.definiereGridNormalY(new int[]{0}, new int[]{0});
-        this.setzeGridLinienStil(new int[]{DOTTED_PLAIN}, new int[]{DOTTED_PLAIN}, new int[]{INVISIBLE}, new int[]{INVISIBLE});
+        this.setAxesType(new int[]{AXIS_LINEAR}, new int[]{AXIS_LINEAR});
+        this.setAxesLineStyle(new int[]{SOLID_PLAIN}, new int[]{SOLID_PLAIN});
+        this.setAxesLabels(new String[]{""}, new String[]{""});  // braucht es, damit kein NullPointer-Error
+        this.defineGridNormalX(new int[]{0}, new int[]{0});
+        this.defineGridNormalY(new int[]{0}, new int[]{0});
+        this.setGridLineStyle(new int[]{DOTTED_PLAIN}, new int[]{DOTTED_PLAIN}, new int[]{INVISIBLE}, new int[]{INVISIBLE});
         this.showGridLines(new int[][]{{0, 0}}, new int[][]{{0, 0}}, new int[][]{{0, 0}}, new int[][]{{0, 0}});
-        this.setzeGridFarben(new Color[]{Color.lightGray}, new Color[]{Color.lightGray}, new Color[]{Color.lightGray}, new Color[]{Color.lightGray});
-        this.setzeTickAnzMinor(new int[]{2}, new int[]{2});
+        this.setGridColors(new Color[]{Color.lightGray}, new Color[]{Color.lightGray}, new Color[]{Color.lightGray}, new Color[]{Color.lightGray});
+        this.setTickCountMinor(new int[]{2}, new int[]{2});
         this.setTickLength(new int[]{4}, new int[]{4}, new int[]{0}, new int[]{0});
-        this.setzeTickAusrichtung(new boolean[]{true}, new boolean[]{true});
+        this.setTickAlignment(new boolean[]{true}, new boolean[]{true});
         this.setTickLabelVisible(new boolean[]{true}, new boolean[]{true}, new boolean[]{false}, new boolean[]{false});
-        this.setzeTickLabelPosition(new int[]{20}, new int[]{16});
-        this.setzeTickLabelFont(new Font[]{new Font("Arial", Font.PLAIN, 12)}, new Font[]{new Font("Arial", Font.PLAIN, 12)});
+        this.setTickLabelPosition(new int[]{20}, new int[]{16});
+        this.setTickLabelFont(new Font[]{new Font("Arial", Font.PLAIN, 12)}, new Font[]{new Font("Arial", Font.PLAIN, 12)});
         //=========================================
         double ymin = INIT_MIN, ymax = INIT_MAX;
         for (int i1 = 0; i1 < yNeu.length; i1++) {
@@ -299,32 +299,32 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
                 ymin = yRef[i1];
             }
         }
-        double[] empf = auto_Achsenbegrenzung_Wertempfehlung(ymin, ymax);
+        double[] empf = autoAxisLimitRecommendation(ymin, ymax);
         while (empf[4] > HALF_VALUE * (ymax - ymin)) {
             empf[4] *= HALF_VALUE;
         }
         //
-        this.setzeAchsenBegrenzungen(new double[]{xNeu[0]}, new double[]{xNeu[xNeu.length - 1]}, new boolean[]{true}, new double[]{empf[0]}, new double[]{empf[1]}, new boolean[]{true});
-        this.setzeTickSpacing(new double[]{(0.2 / (f1))}, new double[]{empf[4]});
+        this.setAxesLimits(new double[]{xNeu[0]}, new double[]{xNeu[xNeu.length - 1]}, new boolean[]{true}, new double[]{empf[0]}, new double[]{empf[1]}, new boolean[]{true});
+        this.setTickSpacing(new double[]{(0.2 / (f1))}, new double[]{empf[4]});
         //-------------------------------------
     }
 
     /**
      * Configures the curve styles, colors, and data source indices.
      */
-    protected void setzeKurven() {
+    protected void setCurves() {
         //=========================================
         // // to set based on the worksheet data -->
         //-------------------------------------
-        this.setzeKurvenAnzahl(2);
-        this.setzeZugehoerigkeitKurveAchsen(new int[]{0, 0}, new int[]{0, 0});
-        this.setzeKurveIndexWorksheetKolonnenXY(new int[][]{{0, 1}, {0, 2}});
+        this.setCurvesCount(2);
+        this.setCurveAxesAssignment(new int[]{0, 0}, new int[]{0, 0});
+        this.setCurveIndexWorksheetColumnsXY(new int[][]{{0, 1}, {0, 2}});
         this.setCurvePointSymbolVisible(
                 new boolean[]{false, false}, new int[]{20, 20}, new int[]{SYBM_CIRCLE, SYBM_RECT_FILLED}, new Color[]{Color.black, Color.gray});
-        this.setzeKurveClipping(
+        this.setCurveClipping(
                 new double[]{xNeu[0], xNeu[0]}, new double[]{xNeu[xNeu.length - 1], xNeu[xNeu.length - 1]}, new double[]{0, 0}, new double[]{1, 1},
                 new int[]{CLIP_NO, CLIP_NO}, new int[]{CLIP_NO, CLIP_NO}, new int[]{CLIP_NO, CLIP_NO}, new int[]{CLIP_NO, CLIP_NO});
-        this.setzeKurveLinienstil(new int[]{SOLID_PLAIN, SOLID_PLAIN});
+        this.setCurveLineStyle(new int[]{SOLID_PLAIN, SOLID_PLAIN});
         this.setCurveColor(new Color[]{Color.blue, Color.darkGray});
         //-------------------------------------
     }
@@ -371,20 +371,20 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
                 xy1[1] = xy2[1];
                 xy2[1] = q;
             }
-            double[] empfX = new double[]{xy1[0], xy2[0], -1, -1, auto_Achsenbegrenzung_Wertempfehlung(xy1[0], xy2[0])[4]};
+            double[] empfX = new double[]{xy1[0], xy2[0], -1, -1, autoAxisLimitRecommendation(xy1[0], xy2[0])[4]};
             while (empfX[4] > HALF_VALUE * (xy2[0] - xy1[0])) {
                 empfX[4] *= HALF_VALUE;
             }
-            double[] empfY = new double[]{xy1[1], xy2[1], -1, -1, auto_Achsenbegrenzung_Wertempfehlung(xy1[1], xy2[1])[4]};
+            double[] empfY = new double[]{xy1[1], xy2[1], -1, -1, autoAxisLimitRecommendation(xy1[1], xy2[1])[4]};
             while (empfY[4] > HALF_VALUE * (xy2[1] - xy1[1])) {
                 empfY[4] *= HALF_VALUE;
             }
             //
             // Achsen entsprechend neu setzen -->
-            this.setzeAchsenBegrenzungen(
+            this.setAxesLimits(
                     new double[]{empfX[0]}, new double[]{empfX[1]}, new boolean[]{true},
                     new double[]{empfY[0]}, new double[]{empfY[1]}, new boolean[]{true});
-            this.setzeTickSpacing(new double[]{empfX[4]}, new double[]{empfY[4]});
+            this.setTickSpacing(new double[]{empfX[4]}, new double[]{empfY[4]});
             repaint();
         } else if (mouseMode == GraferImplementation.MAUSMODUS_WERTANZEIGE_SCHIEBER) {
         }
@@ -439,24 +439,24 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
         double sfX_ = -1, sfY_ = -1;
         int xAchseTyp_ = -1, yAchseTyp_ = -1;
         int indexDiagrammYachse = -1;
-        for (int i1 = 0; i1 < indexZurKurveGehoerigeXachse.length; i1++) {
-            if ((_xAchseX[indexZurKurveGehoerigeXachse[i1]] >= xGrfMIN[indexAngeklickterGraph])
-                    && (_xAchseX[indexZurKurveGehoerigeXachse[i1]] <= xGrfMAX[indexAngeklickterGraph])) {
-                achseXmin_ = achseXmin[indexZurKurveGehoerigeXachse[i1]];
-                xAchseX_ = _xAchseX[indexZurKurveGehoerigeXachse[i1]];
-                sfX_ = sfX[indexZurKurveGehoerigeXachse[i1]];
-                xAchseTyp_ = xAchseTyp[indexZurKurveGehoerigeXachse[i1]];
+        for (int i1 = 0; i1 < indexCurveAssociatedXAxis.length; i1++) {
+            if ((_xAxisX[indexCurveAssociatedXAxis[i1]] >= xGrfMIN[indexAngeklickterGraph])
+                    && (_xAxisX[indexCurveAssociatedXAxis[i1]] <= xGrfMAX[indexAngeklickterGraph])) {
+                achseXmin_ = axisXmin[indexCurveAssociatedXAxis[i1]];
+                xAchseX_ = _xAxisX[indexCurveAssociatedXAxis[i1]];
+                sfX_ = sfX[indexCurveAssociatedXAxis[i1]];
+                xAchseTyp_ = xAxisType[indexCurveAssociatedXAxis[i1]];
                 break;
             }
         }
-        for (int i1 = 0; i1 < indexZurKurveGehoerigeYachse.length; i1++) {
-            if ((_yAchseY[indexZurKurveGehoerigeYachse[i1]] >= yGrfMIN[indexAngeklickterGraph])
-                    && (_yAchseY[indexZurKurveGehoerigeYachse[i1]] <= yGrfMAX[indexAngeklickterGraph])) {
-                achseYmin_ = achseYmin[indexZurKurveGehoerigeYachse[i1]];
-                yAchseY_ = _yAchseY[indexZurKurveGehoerigeYachse[i1]];
-                sfY_ = sfY[indexZurKurveGehoerigeYachse[i1]];
-                yAchseTyp_ = yAchseTyp[indexZurKurveGehoerigeYachse[i1]];
-                indexDiagrammYachse = indexZurKurveGehoerigeYachse[i1];
+        for (int i1 = 0; i1 < indexCurveAssociatedYAxis.length; i1++) {
+            if ((_yAxisY[indexCurveAssociatedYAxis[i1]] >= yGrfMIN[indexAngeklickterGraph])
+                    && (_yAxisY[indexCurveAssociatedYAxis[i1]] <= yGrfMAX[indexAngeklickterGraph])) {
+                achseYmin_ = axisYmin[indexCurveAssociatedYAxis[i1]];
+                yAchseY_ = _yAxisY[indexCurveAssociatedYAxis[i1]];
+                sfY_ = sfY[indexCurveAssociatedYAxis[i1]];
+                yAchseTyp_ = yAxisType[indexCurveAssociatedYAxis[i1]];
+                indexDiagrammYachse = indexCurveAssociatedYAxis[i1];
                 break;
             }
         }
@@ -479,14 +479,14 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
     // // Determine (x/y) value in pixels to a pair of values ​​-->
     private int[] getPixelFromValue(double xWert, double yWert, int index_xAchse, int index_yAchse) {
         //-------------------
-        double achseXmin_ = achseXmin[index_xAchse];
-        int xAchseX_ = _xAchseX[index_xAchse];
+        double achseXmin_ = axisXmin[index_xAchse];
+        int xAchseX_ = _xAxisX[index_xAchse];
         double sfX_ = sfX[index_xAchse];
-        int xAchseTyp_ = xAchseTyp[index_xAchse];
-        double achseYmin_ = achseYmin[index_yAchse];
-        int yAchseY_ = _yAchseY[index_yAchse];
+        int xAchseTyp_ = xAxisType[index_xAchse];
+        double achseYmin_ = axisYmin[index_yAchse];
+        int yAchseY_ = _yAxisY[index_yAchse];
         double sfY_ = sfY[index_yAchse];
-        int yAchseTyp_ = yAchseTyp[index_yAchse];
+        int yAchseTyp_ = yAxisType[index_yAchse];
         //-------------------
         int xPix = -1, yPix = -1;
         if (xAchseTyp_ == AXIS_LOGARITHMIC) {

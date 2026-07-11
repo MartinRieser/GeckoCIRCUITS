@@ -42,7 +42,7 @@ public class PowerModulePainter {
     private static int xC = 430, yC = 250;  // Zentrum des Modul-Bildes in PixelPunkten
     private static double br = 2.5;
     
-    static void zeichne(Graphics graphics, ThermMODUL aThis, Color color1, int dpix) {
+    static void draw(Graphics graphics, ThermMODUL aThis, Color color1, int dpix) {
     
         double sk = br / xC;
     

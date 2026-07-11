@@ -309,7 +309,7 @@ public class DialogFourierDiagramm extends JDialog implements ComponentListener 
 
                 for (int i = 0; i < diagrams.length; i++) {
                     if (diagrams[i] != null) {
-                        diagrams[i].setzeAchsenTyp(new int[]{GraferV3.AXIS_LINEAR}, new int[]{yAxisType});
+                        diagrams[i].setAxesType(new int[]{GraferV3.AXIS_LINEAR}, new int[]{yAxisType});
                         diagrams[i].repaint();
                     }
 
