@@ -348,7 +348,7 @@ After editing, run: mvn -T 1C clean compile
 [x] Phase 2: Typo fixes                (3 batches)   mvn -T 1C clean compile
 [x] Phase 3: Magic number extraction   (3 batches)   mvn -T 1C clean compile
 [x] Phase 4: Assert -> exception       (1 batch)     mvn -T 1C clean compile && mvn -T 1C test
-[ ] Phase 5: New test cases            (2 batches)   mvn -T 1C test && mvn jacoco:report
+[x] Phase 5: New test cases            (2 batches)   mvn -T 1C test && mvn jacoco:report
 [ ] Phase 6: Bug fixes + regression    (4 batches)   mvn -T 1C clean compile && mvn -T 1C test
 [ ] Phase 7: German -> English         (4 batches)   mvn -T 1C clean compile && mvn -T 1C test
 [ ] Phase 8: Javadoc (bulk)            (16 batches)  mvn -T 1C clean compile
