@@ -32,6 +32,7 @@ public final class ControlSlidingDFT extends AbstractControlVariableInputs {
 
     private static final double DEFAULT_WIN_SIZE = 1e-5;
     private static final double DEFAULT_FREQUENCY = 500;
+    private static final double FREQUENCY_DOUBLING_FACTOR = 2.0;
     public static final ControlTypeInfo T_INFO = new ControlTypeInfo(ControlSlidingDFT.class,"SDFT", I18nKeys.SDFT);
     
     final UserParameter<Double> _averageSpan = UserParameter.Builder.<Double>start("windowSpan", DEFAULT_WIN_SIZE).
@@ -105,7 +106,7 @@ public final class ControlSlidingDFT extends AbstractControlVariableInputs {
 
     void addDataPoint() {        
         final double newFrequencyValue = _data.get(_data.size()-1)._frequency.getDoubleValue();
-        _data.add(new FrequencyData(newFrequencyValue * 2, OutputData.ABS));
+        _data.add(new FrequencyData(newFrequencyValue * FREQUENCY_DOUBLING_FACTOR, OutputData.ABS));
     }
 
     void removeLastFrequencyData() {
