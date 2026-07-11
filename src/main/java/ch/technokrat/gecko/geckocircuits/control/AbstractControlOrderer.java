@@ -64,16 +64,6 @@ import java.util.logging.Logger;
     
     final void moveNodeToListStart(final ControlOrderNode node) {
         
-        if(node.getElementControl().getStringID().equals("OR.1") || node.getElementControl().getStringID().equals("SPARSEMATRIX.2")) {
-            System.out.println("yyyy: " + node.getElementControl().getStringID());
-            try {
-//                assert false;
-            } catch (AssertionError err) {
-                System.out.flush();
-                err.printStackTrace();
-            }
-        }
-        
         if(_orderedList.contains(node)) {
             _orderedList.remove(node);
         }
@@ -127,17 +117,7 @@ import java.util.logging.Logger;
         for (ControlOrderNode directNeighbour : getNextNeighbourNodes(node)) {            
             if(_availableBlocks.contains(directNeighbour)) {
                 _nextInsertBlocks.add(directNeighbour);
-            } else {
-                
             }
-//            for (ControlOrderNode nextNode : _availableBlocks) {
-//                if (nextNode == directNeighbour) {
-//                    if(nextNode.getElementControl().getStringID().startsWith("SPARSE")) {
-//                        System.out.println("insertion reason:  " + node.getElementControl().getStringID());
-//                    }
-//                
-//                }
-//            }
         }
     }            
     
@@ -151,10 +131,6 @@ import java.util.logging.Logger;
             for (ControlOrderNode node : _nextInsertBlocks.toArray(new ControlOrderNode[_nextInsertBlocks.size()])) {                
                 moveNodeToEndDirectionInList(node);
                 addNodesToNextList(node);
-                
-                if(node.getElementControl().getStringID().equals("OR.1")) {
-                    System.out.println("next: " + _nextInsertBlocks.size());
-                }
                 
             }
         }

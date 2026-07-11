@@ -15,7 +15,6 @@ package ch.technokrat.gecko.geckocircuits.circuit;
 
 import java.util.HashMap;
 import java.util.Map;
-//import java.util.WeakHashMap;
 
 /**
  * Main-Function: getCachedLUDecomposition. For switched converters, one and the
@@ -74,11 +73,6 @@ public class LUDecompositionCache {
 
             fromCache.setAccess(time);
             _cacheHitCounter++;
-            //System.out.println("matrix size : " + matrix.length);
-//             if(_cacheHitCounter%1000 == 0) {
-//                 printDebugMessages(time);
-//             }
-
             return fromCache;
         }
     }
@@ -87,10 +81,6 @@ public class LUDecompositionCache {
         _cacheHitCounter++;
 
         System.out.println("cache size: " + _cachedMatrices.size());
-        //for (int key : _cachedMatrices.keySet()) {
-        //    final AbstractCachedMatrix mat = _cachedMatrices.get(key);
-        //    System.out.println("cache: " + mat + " " + (time - mat.getLatestAccessTime()) + " " + mat.getAccessCounter());
-        //}
         System.out.println("cache hits: " + _cacheHitCounter + " " + _cacheMissCounter + " " + (100.0 * _cacheHitCounter / (_cacheHitCounter + _cacheMissCounter)) + "%");
         System.out.println("memory requirement in MB: " + memoryBytes / 1024 / 1024);
     }
@@ -102,9 +92,6 @@ public class LUDecompositionCache {
      * a quite new matrix is not removed immediately!
      */
     private void testForCacheShrink(double time) {
-//        if(1>0) {
-//            return; // i disabled this, since we use a weakHashMap for the cache, now!
-//        }
         if (_cachedMatrices.size() > varMaxCacheSize) {
             Integer oldestKey = -1;
             double oldestTime = 1e99;

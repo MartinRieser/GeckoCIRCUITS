@@ -86,7 +86,6 @@ class ControlSlidingDFTDialog extends DialogElementCONTROL<ControlSlidingDFT> {
                 _grid.setRows(_freqFields.size() + 1);
                 setResizable(true);
                 addParameterPanel();
-                //addFormatJTextField(newFreq);
                 addComboBox(ControlSlidingDFT.OutputData.ABS);
                 jPanelFreqs.revalidate();
                 ControlSlidingDFTDialog.this.pack();
@@ -174,14 +173,13 @@ class ControlSlidingDFTDialog extends DialogElementCONTROL<ControlSlidingDFT> {
     }
 
     private void addFreqData(final ControlSlidingDFT.FrequencyData data) {
-        //addFormatJTextField(data._frequency.getValue());
         addParameterPanel();
         addComboBox(data._outputData);
     }
 
     @Override
     public void processInputIndividual() {
-        super.processInputIndividual(); //To change body of generated methods, choose Tools | Templates.
+        super.processInputIndividual();
         element.setOutputTerminalNumber(_freqFields.size());
                 
         for(JComboBox<ControlSlidingDFT.OutputData> combo : _frequencySelectionList) {

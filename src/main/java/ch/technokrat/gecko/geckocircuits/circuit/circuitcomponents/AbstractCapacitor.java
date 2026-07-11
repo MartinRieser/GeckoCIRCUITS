@@ -70,7 +70,6 @@ implements CurrentMeasurable, DirectVoltageMeasurable {
     public boolean updateNonlinearCapacitances() {
         // parameter[6] : original starting capacitance
         // parameter[7] : actual value of nonlinear capacitance        
-        boolean returnValue = false;
         if (_isNonlinearForCalculationUsage) {
             parameter[7] = getActualValueLOGFromLinearizedCharacteristic(Math.abs(parameter[3]));
             if (parameter[6] == 0) {
@@ -81,8 +80,7 @@ implements CurrentMeasurable, DirectVoltageMeasurable {
             parameter[6] = parameter[0];
         }
 
-
-        return returnValue;
+        return false;
     }
 
     @Override

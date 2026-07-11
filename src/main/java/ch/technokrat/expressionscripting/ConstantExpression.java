@@ -11,24 +11,3 @@
  *  You should have received a copy of the GNU General Public License along with
  *  GeckoCIRCUITS.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-//package ch.technokrat.expressionscripting;
-//
-//import javax.script.ScriptException;
-//
-//class ConstantExpression extends AbstractExpression {
-//
-//    private final Double _constantReturnValue;    
-//    
-//    ConstantExpression(final Object nameable, final VariableExpression possibleReturnValue) 
-//            throws ScriptException {
-//        super(nameable, possibleReturnValue._scriptingCodeGivenFromUser);
-//        _constantReturnValue = possibleReturnValue.evaluate();                
-//    }
-//
-//    @Override
-//    Double evaluate() throws ScriptException {
-//        return _constantReturnValue;
-//    }
-//    
-//}

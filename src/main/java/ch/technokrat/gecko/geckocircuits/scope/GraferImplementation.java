@@ -545,8 +545,6 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             g2.setStroke(str_DOTTED_PLAIN);
         } else if (linienStilAchsenY[i1] == DOTTED_FAT) {
             g2.setStroke(str_DOTTED_FAT);
-        } else {
-            System.out.println("Fehler: hhqqt5");
         }
         //-----------------------
         // // now draw the line:
@@ -591,8 +589,6 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
                 }
             }
         }
-        //System.out.print("reorderLine() >>  ");  for (int i1=0;  i1<toBeOrdered.length;  i1++) System.out.print(toBeOrdered[i1]+"  "); System.out.println(); 
-        //-----------
         // // now number everything '-1' after the old values ​​in ascending order -->
         for (int i1 = 0; i1 < toBeOrdered.length; i1++) {
             if (toBeOrdered[i1] == -1) {
@@ -600,7 +596,6 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
                 anzAlteEintraege++;
             }
         }
-        //System.out.print("reorderLine() >>  ");  for (int i1=0;  i1<toBeOrdered.length;  i1++) System.out.print(toBeOrdered[i1]+"  "); System.out.println(); 
         //-----------
         for (int i1 = z1; i1 <= z2 - 1; i1++) {
             positionSIGNAL[i1] = toBeOrdered[i1 - z1];
@@ -661,8 +656,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             this.speichereALTeWerteFuerPosition();
             //-------------------------------------
         }
-        //for (int i1=0;  i1<positionSIGNAL.length;  i1++) System.out.println(i1+"  (1)  "+positionSIGNAL[i1]);  System.out.println("-----------");
-        //System.out.println("******************************");
+
     }
 
     // // for access from 'DialogOrdnungSIGNAL' -->
@@ -702,7 +696,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
                 }
                 notwendigeHoehePixGRF[i1] = anzSGN * (sgnHeight[i1] + sgnDistance[i1]);
                 notwendigeHoehePixGRF[i1] += (DY_IN_OBEN + DY_IN_UNTEN);
-                //System.out.println(notwendigeHoehePixGRF[i1]+"   "+i1+"   "+anzSGN);
+
             }
         }
     }
@@ -750,7 +744,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
                 }
                 yPix[i2] = (y0Kurve + sgnDistance[indexZurKurveGehoerigeXachse[i1]]) + (int) yValue;
             } catch (Exception e) {
-                System.out.println("Fehler: 5z6z4r447 " + e + "    kurvenanzahl= " + kurvenanzahl + "      i1= " + i1 + "     " + positionSIGNAL.length);
+
             }
         }
         //--------------------------------
@@ -1558,8 +1552,6 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         final int mouseX = me.getX(), mouseY = me.getY();
         if (mausModus == MAUSMODUS_ZOOM_FENSTER) {
             mouseMode_ZOOM_WINDOW(mouseX, mouseY, MOUSE_CLICKED, me.isControlDown(), me.isShiftDown());
-        } else if (mausModus == MAUSMODUS_ZEICHNE_LINIE) {
-            mouseMode_DRAW_LINE(mouseX, mouseY, MOUSE_CLICKED);
         } else if (mausModus == MAUSMODUS_WERTANZEIGE_SCHIEBER) {
             mouseMode_VALUE_DISPLAY_SLIDER(mouseX, mouseY, MOUSE_CLICKED, me);
         }
@@ -1572,8 +1564,6 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         final int mouseX = me.getX(), mouseY = me.getY();
         if (mausModus == MAUSMODUS_ZOOM_FENSTER) {
             mouseMode_ZOOM_WINDOW(mouseX, mouseY, MOUSE_PRESSED, me.isControlDown(), me.isShiftDown());
-        } else if (mausModus == MAUSMODUS_ZEICHNE_LINIE) {
-            mouseMode_DRAW_LINE(mouseX, mouseY, MOUSE_PRESSED);
         } else if (mausModus == MAUSMODUS_WERTANZEIGE_SCHIEBER) {
             mouseMode_VALUE_DISPLAY_SLIDER(mouseX, mouseY, MOUSE_PRESSED, me);
         }
@@ -1586,8 +1576,6 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         final int mouseX = me.getX(), mouseY = me.getY();
         if (mausModus == MAUSMODUS_ZOOM_FENSTER) {
             mouseMode_ZOOM_WINDOW(mouseX, mouseY, MOUSE_RELEASED, me.isControlDown(), me.isShiftDown());
-        } else if (mausModus == MAUSMODUS_ZEICHNE_LINIE) {
-            mouseMode_DRAW_LINE(mouseX, mouseY, MOUSE_RELEASED);
         } else if (mausModus == MAUSMODUS_WERTANZEIGE_SCHIEBER) {
             mouseMode_VALUE_DISPLAY_SLIDER(mouseX, mouseY, MOUSE_RELEASED, me);
         }
@@ -1605,8 +1593,6 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         int mx = me.getX(), my = me.getY();
         if (mausModus == MAUSMODUS_NIX); else if (mausModus == MAUSMODUS_ZOOM_AUTOFIT); else if (mausModus == MAUSMODUS_ZOOM_FENSTER) {
             mouseMode_ZOOM_WINDOW(mx, my, MOUSE_DRAGGED, me.isControlDown(), me.isShiftDown());
-        } else if (mausModus == MAUSMODUS_ZEICHNE_LINIE) {
-            mouseMode_DRAW_LINE(mx, my, MOUSE_DRAGGED);
         } else if (mausModus == MAUSMODUS_WERTANZEIGE_SCHIEBER) {
             mouseMode_VALUE_DISPLAY_SLIDER(mx, my, MOUSE_DRAGGED, me);
         }
@@ -1727,45 +1713,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         }
     }
 
-    public void mouseMode_DRAW_LINE(int mx, int my, int mausAktion) {
-        switch (mausAktion) {
-            //--------------------------
-            case MOUSE_PRESSED:
-                break;
-            //--------------------------
-            case MOUSE_RELEASED:
-                break;
-            //--------------------------
-            case MOUSE_DRAGGED:
-                break;
-            //--------------------------
-            case MOUSE_CLICKED:
-                break;
-            //--------------------------
-            default:
-                System.out.println("Fehler: eorivm3");
-                break;
-        }
-    }
 
-    public void mouseMode_DRAW_TEXT(int mx, int my, int mausAktion) {
-        switch (mausAktion) {
-            //--------------------------
-            case MOUSE_PRESSED:
-                break;
-            //--------------------------
-            case MOUSE_RELEASED:
-                break;
-            //--------------------------
-            case MOUSE_DRAGGED:
-                break;
-            //--------------------------
-            //--------------------------
-            default:
-                System.out.println("Fehler: oweifn03");
-                break;
-        }
-    }
 
     public void mouseMode_VALUE_DISPLAY_SLIDER(int mx, int my, int mausAktion, MouseEvent me) {
         switch (mausAktion) {
@@ -1892,11 +1840,7 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
         return -1;
     }
 
-    public void mouseMode_FIBONACCI_LIN(int mx, int my, int mausAktion) {
-    }
 
-    public void mouseMode_FIBONACCI_LOG(int mx, int my, int mausAktion) {
-    }
 
     // // When the mouse is clicked into the pixel field -->
     private double[] getValueFromPixel(int xPix, int yPix) {

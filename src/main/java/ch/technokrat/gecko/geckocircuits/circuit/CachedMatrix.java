@@ -72,8 +72,6 @@ public final class CachedMatrix extends AbstractCachedMatrix {
 
     public void doLUDecomposition(final double[][] aMatrix) {
 
-//        boolean isSymmetric = true;
-//        boolean isStructureSymmetric = true;        
         // Use a "left-looking", dot-product, Crout/Doolittle algorithm.
         assert aMatrix.length == aMatrix[0].length;
 
@@ -195,7 +193,6 @@ public final class CachedMatrix extends AbstractCachedMatrix {
                 int kmax = Math.min(i, j);
 
                 double s = 0.0;
-                //for (int k = 0; k < kmax; k++) {
                 short[] entryindices = rowEntryIndices[i];
                 int numberOfEntries = numberOfRowEntries[i];
                 for (short l = 0; l < numberOfEntries; l++) {
@@ -203,9 +200,6 @@ public final class CachedMatrix extends AbstractCachedMatrix {
                     if (k >= kmax) {
                         continue;
                     }
-//                    if(k >= kmax) {
-//                        break;
-//                    }
 
                     double rowValue = LUrowi[k];
                     s += rowValue * LUcolj[k];
@@ -251,7 +245,6 @@ public final class CachedMatrix extends AbstractCachedMatrix {
 
         ShortMatrixCache.recycleMatrix(rowEntryIndices);
 
-        //System.out.println("conuter:  " + counter + " " + counter2);        
     }
 
     private void setLUMatrixValue(int i, int j, double value) {

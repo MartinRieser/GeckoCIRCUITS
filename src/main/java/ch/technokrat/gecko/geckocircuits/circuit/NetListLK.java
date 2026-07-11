@@ -88,7 +88,6 @@ public class NetListLK {
                 return i1;
             }
         }
-        System.out.println("Fehler qer^08gj03qhg4");
         return -1;
     }
 
@@ -355,12 +354,6 @@ public class NetListLK {
             }
         }                
         
-//        System.out.println("yyyyyyyyyyyyyyyyyyyyyyy repair!!!");
-//        int[] saveKnotenX = new int[]{5, 2, 3, 4, 0, 5, 1};
-//        int[] saveKnotenY = new int[]{6, 3, 2, 6, 1, 4, 0};
-//        
-//        knotenX = saveKnotenX;
-//        knotenY = saveKnotenY;
         //------------------
         // // Requirement 1: Nodes are numbered continuously from zero
         // // Requirement 2: Voltage source numbers are numbered continuously and in ascending order starting from one

@@ -14,9 +14,6 @@
 
 package ch.technokrat.gecko.geckocircuits.nativec;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Vector;
 
 /**
  * Used to maintain the Classloader and call Native Functions
@@ -83,15 +80,6 @@ public class NativeCBlock {
     
     public void unloadLibraries () {
         try {
-            /*ClassLoader clLoader = this.getClass().getClassLoader();
-            Field field = ClassLoader.class.getDeclaredField("nativeLibraries");
-            field.setAccessible(true);
-            Vector libs = (Vector) field.get(clLoader);
-            for (Object o : libs) {
-                Method finalize = o.getClass().getDeclaredMethod("finalize", new Class[0]);
-                finalize.setAccessible(true);
-                finalize.invoke(o, new Object[0]);
-            }*/
             _nativeCWrapperObj = null;
             _nativeCWrapperClass = null;
             _customCClassLoader = null;

@@ -205,7 +205,6 @@ public final class PotentialArea {
 
         return false;
     }
-    static long counter = 0;
 
     // // if the current potential is equal to pot2, the two will be merged into one potential
     // // the new potential area (which now contains both) is returned -->
@@ -467,18 +466,6 @@ public final class PotentialArea {
                 compare = nodes._element;
             }
 
-        } else {
-//            for (ElementNodes nodes : _elementNodeTerminals) {
-//                boolean allTerminalCircuits = true;
-//                if( ! (nodes._element instanceof TerminalCircuit)) {
-//                    allTerminalCircuits = false;
-//                    break;
-//                }
-//                if(allTerminalCircuits) {
-//                    System.out.println("removing empty potential! " + ((TerminalCircuit) nodes._element).getStringID() + " " + ((TerminalCircuit) nodes._element).getParentSheetIdentifier());
-//                    return true;
-//                }
-//            }
         }
 
         return _elementNodeTerminals.isEmpty();

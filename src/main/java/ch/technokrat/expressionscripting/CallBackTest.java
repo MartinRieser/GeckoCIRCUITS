@@ -44,7 +44,6 @@ public class CallBackTest {
     }
     
     public void invoke(final String test) throws ScriptException {
-            System.out.println("some output " + test);            
     }
     
 }

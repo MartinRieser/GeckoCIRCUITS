@@ -145,7 +145,6 @@ public enum I18nKeys {
     JAR_SIMULATION_APPLET_JAR(".jar Simulation Applet (*.jar)"),
     ERROR_EXCLAMATION("Error!"),
     STOPPED_AFTER("Stopped after "),
-    //INIT_START("InitTxtStart", "Init TxtI.ti_InitStart Start"),
     PAUSE("Pause"),
     CONTINUE("Continue"),
     ABORTING_PROGRAM_EXIT_EXCL("Aborting, program exit!"),

@@ -20,7 +20,6 @@ package ch.technokrat.gecko;
  * @author andy
  */
 public interface ControlCalculatable {
-    //static final long serialVersionUID = 364747364511L;
     static final long serialVersionUID = 364747364514L;
     @SuppressWarnings("PMD")
     double[] calculateYOUT(double[] xIN, double time, double deltaT) throws Exception;

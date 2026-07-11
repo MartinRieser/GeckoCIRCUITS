@@ -22,6 +22,6 @@ public interface Scopable {
     void updateMouseMode(int mausmodus);
     public DataContainer getZVDatenImRAM();
     public void ladeWorkSheet();
-    //public ScopeSettings getScopeSettings();
+
     
 }

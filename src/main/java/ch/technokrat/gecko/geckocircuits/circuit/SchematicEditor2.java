@@ -1827,7 +1827,7 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
             if (_visibleCircuitSheet instanceof SubCircuitSheet) {
                 nameOfRootSub = ((SubCircuitSheet) _visibleCircuitSheet).getCircuitSheetName();
             }
-            comp.findAndSetReferenceToParentSheet2(datenSpeicher.allSubCircuitBlocks, nameOfRootSub);
+            comp.findAndSetReferenceToParentSheet(datenSpeicher.allSubCircuitBlocks, nameOfRootSub);
         }
 
         removeDuplicates(copiedLabels);

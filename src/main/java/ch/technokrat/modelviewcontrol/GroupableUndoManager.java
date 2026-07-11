@@ -29,7 +29,6 @@ public final class GroupableUndoManager extends UndoManager{
 
   @Override
   public synchronized boolean addEdit(final UndoableEdit anEdit){
-        //System.out.println("adding edit: " + anEdit.getUndoPresentationName());
     return super.addEdit(anEdit);
   }
 

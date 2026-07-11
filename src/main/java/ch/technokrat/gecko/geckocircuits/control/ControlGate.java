@@ -61,7 +61,7 @@ public final class ControlGate extends ControlWithSingleReference implements Com
     @Override
     String getDisplayValueWithoutError() {
         return ">> " + getComponentCoupling()._coupledElements[0].getStringID();
-    };
+    }
             
         
 

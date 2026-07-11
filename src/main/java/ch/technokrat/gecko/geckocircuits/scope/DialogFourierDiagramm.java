@@ -163,7 +163,7 @@ public class DialogFourierDiagramm extends JDialog implements ComponentListener 
                 fkaku.flush();
                 fkaku.close();
             } catch (Exception e) {
-                System.out.println(e + "   qe90r8gn03g8q");
+
             }
         });
         JMenuItem mItemF5 = GuiFabric.getJMenuItem(I18nKeys.EXIT);
@@ -237,7 +237,6 @@ public class DialogFourierDiagramm extends JDialog implements ComponentListener 
                     mouseButtons[i1].setToolTipText("set logarithmic y-axis");
                     break;
                 default:
-                    Logger.getLogger(DialogFourierDiagramm.class.getName()).log(Level.WARNING, "Error: 49ugnw3grjgtfzj");
                     break;
             }
             //--------------------
@@ -303,7 +302,6 @@ public class DialogFourierDiagramm extends JDialog implements ComponentListener 
 
                 break;
             default:
-                Logger.getLogger(DialogFourierDiagramm.class.getName()).log(Level.WARNING, "Error: 98n3gweggtq5t");
                 break;
         }
         for (int i1 = 1; i1 < _worksheet.getRowLength()+1; i1++) {

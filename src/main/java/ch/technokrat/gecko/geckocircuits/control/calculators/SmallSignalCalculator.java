@@ -18,15 +18,10 @@ import ch.technokrat.gecko.geckocircuits.control.SSAShape;
 import static ch.technokrat.gecko.geckocircuits.control.calculators.AbstractSignalCalculator.TWO_PI;
 import ch.technokrat.gecko.geckocircuits.newscope.Cispr16Fft;
 import ch.technokrat.gecko.geckocircuits.newscope.FFTLibrary;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 
 public class SmallSignalCalculator extends AbstractControlCalculatable implements InitializableAtSimulationStart, IsDtChangeSensitive {
 
-    //static boolean isSimulationDC;
     private static final int THREE = 3;
     private static final int FOUR = 4;
     private static final int NOFREQSMAX = 50;
@@ -129,7 +124,6 @@ public class SmallSignalCalculator extends AbstractControlCalculatable implement
     public void tearDownOnPause() {
 
         
-        System.out.println("xxx " + _nMax + " " + _numberSamples);
         if (_circularArrayFilled) {            
 
             try {
@@ -201,24 +195,6 @@ public class SmallSignalCalculator extends AbstractControlCalculatable implement
         return returnValue;
     }
 
-    private void printResults(float[] data, float[] smallData) {
-        PrintWriter writer = null;
-        try {
-            writer = new PrintWriter(new FileWriter("/home/andy/data.txt"));
-            if (writer != null) {
-                for (int i = 0; i < data.length; i++) {
-                    writer.print(data[i] + " " + smallData[i] + "\n");                    
-                }
-            }   if (writer != null) {
-                writer.close();
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(SmallSignalCalculator.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            writer.close();
-        }
-    }
-    
 
     private void calculateFourier() {
         
@@ -246,8 +222,6 @@ public class SmallSignalCalculator extends AbstractControlCalculatable implement
         
         
         
-        //printResults(data, smallSignalData);
-
         FFTLibrary.calculateForwardFFT (ddata);
         FFTLibrary.calculateForwardFFT (dsmallSignalData);                
 
@@ -296,23 +270,11 @@ public class SmallSignalCalculator extends AbstractControlCalculatable implement
             double y = (c * b - a * d) / (c * c - d * d);
             
             
-            //double phaseAngle = 180.0 / Math.PI * Math.abs(Math.atan2(y, x));
-            
             double phaseAngle = 180 / Math.PI * Math.atan(y/x);                        
             _bode[2][p] = phaseAngle;
         }
 
         
-        
-        // printResults();
-
-    }
-
-    private void printResults() {
-        System.out.println("printing results ------------------------");
-        for (int i = 0; i < _bode[0].length; i++) {
-            System.out.println("bode " + i + " " + _bode[0][i] + "\t" + _bode[1][i] + "\t" + _bode[2][i]);
-        }
     }
 
     private int[] removeDuplicates(final int[] arr, final int noValues) {

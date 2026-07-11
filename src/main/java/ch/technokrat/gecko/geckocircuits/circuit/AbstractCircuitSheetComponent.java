@@ -237,34 +237,6 @@ public abstract class AbstractCircuitSheetComponent {
 
     }
     
-    /**
-     *
-     * @param allSubs the subcircuit blocks from the NEW import (and only them!
-     * @param rootSubcircuitName if "null" or "emptyString": root of the import
-     * is the main circuit sheet. Else, find the subcircuit block and set this
-     * as root for the import.
-     */
-    public void findAndSetReferenceToParentSheet2(final List<SubcircuitBlock> allSubs, final String rootSubcircuitName) {
-
-        for (SubcircuitBlock subBlock : allSubs) {
-            if (subBlock.getUniqueObjectIdentifier() == _tempParentSheetIdentifier) {
-                setParentCircuitSheet(subBlock._myCircuitSheet);
-                return;
-            }
-        }
-        _tempParentSheetIdentifier = 0;
-
-
-        if (rootSubcircuitName != null && !rootSubcircuitName.isEmpty()) {
-            SubcircuitBlock rootBlock = (SubcircuitBlock) IDStringDialog.getComponentByName(rootSubcircuitName);
-            setParentCircuitSheet(rootBlock._myCircuitSheet);
-        } else {            
-            setParentCircuitSheet(SchematicEditor2.Singleton._circuitSheet);
-        }
-
-
-    }
-
     boolean isSubCircuitComponent() {
         return _isHiddenSubCircuitComponent;
     }

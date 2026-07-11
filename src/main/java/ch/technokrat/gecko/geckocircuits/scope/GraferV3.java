@@ -214,7 +214,6 @@ public class GraferV3 extends JPanel {
         this.gridNormalX_zugeordneteXAchse = zugeordneteXAchse;
         this.gridNormalX_zugeordneteYAchse = zugeordneteYAchse;
         if (zugeordneteXAchse.length != zugeordneteYAchse.length) {
-            System.out.println("Fehler 45763425n");
         }
     }
 
@@ -222,7 +221,6 @@ public class GraferV3 extends JPanel {
         this.gridNormalY_zugeordneteXAchse = zugeordneteXAchse;
         this.gridNormalY_zugeordneteYAchse = zugeordneteYAchse;
         if (zugeordneteXAchse.length != zugeordneteYAchse.length) {
-            System.out.println("Fehler 908hj4gw4");
         }
     }
 
@@ -380,18 +378,16 @@ public class GraferV3 extends JPanel {
             this.zeichneKoordinatenAchsen(g);
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println(e + " in zeichneKoordinatenAchsen()");
+
         }
         try {
             this.zeichneKurven(g);
         } catch (Exception e) {
-            System.out.println(e + " in zeichneKurven()");
             e.printStackTrace();
         }
         try {
             this.zeichne(g);
         } catch (Exception e) {
-            System.out.println(e + " in zeichne()");
         }
         //--------------------------
     }
@@ -552,10 +548,7 @@ public class GraferV3 extends JPanel {
             double y = worksheetDaten.getValue(kurve_index_worksheetKolonnen_XY[i1][1], i2);
             if (yAchseTyp[indexZurKurveGehoerigeYachse[i1]] == ACHSE_LIN) {
                 yPix[i2] = (float) (y0Kurve - (sfY[indexZurKurveGehoerigeYachse[i1]] * (y - achseYmin[indexZurKurveGehoerigeYachse[i1]])));
-//                if(y == 20.15) {
-//                    System.out.println(y + " " + yPix[i2]);
-//                }
-                //System.out.println(yPix[i2]);
+
             } else if ((yAchseTyp[indexZurKurveGehoerigeYachse[i1]] == ACHSE_LOG)) {
                 if (y <= 0) {
                     y = 1e-99;  //y=achseYmin[indexZurKurveGehoerigeYachse[i1]];
@@ -581,8 +574,6 @@ public class GraferV3 extends JPanel {
             g2.setStroke(str_DOTTED_PLAIN);
         } else if (kurveLinienstil[i1] == DOTTED_FAT) {
             g2.setStroke(str_DOTTED_FAT);
-        } else {
-            System.out.println("Fehler: rhjw5z65");
         }
         
         //-----------------------
@@ -636,7 +627,6 @@ public class GraferV3 extends JPanel {
                                     new int[]{Math.round(yPix[i2]) + (int) (0.29 * aTRIANG), Math.round(yPix[i2]) + (int) (0.29 * aTRIANG), Math.round(yPix[i2]) - (int) (0.58 * aTRIANG)}, 3);
                             break;
                         default:
-                            System.out.println("Fehler: q09gj023");
                             break;
                     }
                 }
@@ -1024,15 +1014,7 @@ public class GraferV3 extends JPanel {
             }
         }
         //==================================
-        /** g2.setColor(colorAxisY[i1]); if (linesStyleAxisY[i1]==SOLID_PLAIN) { g2.setStroke(str_SOLID_PLAIN); } else if
-         * (linienStilAxisY[i1]==INVISIBLE) { // don't do anything because it is invisible } else if (linienStilAxisY[i1]==SOLID_FAT_1) {
-         * g2.setStroke(str_SOLID_FAT_1); } else if (linesStyleAxisY[i1]==SOLID_FAT_2) { g2.setStroke(str_SOLID_FAT_2); } else
-         * if (linesStyleAxisY[i1]==DOTTED_PLAIN) { g2.setStroke(str_DOTTED_PLAIN); } else if
-         * (linesStyleAxisY[i1]==DOTTED_FAT) { g2.setStroke(str_DOTTED_FAT); } else System.out.println("Error: hhqqt5");
-         * //---------------------- // now draw the line: grL.reset(); grL.moveTo(xAxisY[i1], yAxisY[i1]);
-         * grL.lineTo(xAxisY[i1], yAxisY[i1]-heightPix[i1]); if (linesStyleAxisY[i1]!=GraferV3.INVISIBLE) { g2.draw(grL);
-         * g2.drawString(yAxisLabel[i1], xAxisY[i1]-posYtickLabels[i1], yAxisY[i1]-heightPix[i1]/2); }
-         * g2.setStroke(str_SOLID_PLAIN); // set to 'default' again*/
+
         //==================================
     }
 
@@ -1064,9 +1046,7 @@ public class GraferV3 extends JPanel {
                                 g2.setStroke(str_DOTTED_PLAIN);
                             } else if (linStilGridNormalXminor[i1] == DOTTED_FAT) {
                                 g2.setStroke(str_DOTTED_FAT);
-                            } else {
-                                System.out.println("Fehler: p05kgh9");
-                            }
+            }
                             //-----------------------
                             // // now draw the line:
                             grL.reset();
@@ -1096,9 +1076,7 @@ public class GraferV3 extends JPanel {
                                 g2.setStroke(str_DOTTED_PLAIN);
                             } else if (linStilGridNormalX[i1] == DOTTED_FAT) {
                                 g2.setStroke(str_DOTTED_FAT);
-                            } else {
-                                System.out.println("Fehler: hrtrjww5j");
-                            }
+            }
                             //-----------------------
                             // // now draw the line:
                             grL.reset();
@@ -1145,9 +1123,7 @@ public class GraferV3 extends JPanel {
                                 g2.setStroke(str_DOTTED_PLAIN);
                             } else if (linStilGridNormalYminor[i1] == DOTTED_FAT) {
                                 g2.setStroke(str_DOTTED_FAT);
-                            } else {
-                                System.out.println("Fehler: hezwhwh6");
-                            }
+            }
                             //-----------------------
                             // // now draw the line:
                             grL.reset();
@@ -1177,9 +1153,7 @@ public class GraferV3 extends JPanel {
                                 g2.setStroke(str_DOTTED_PLAIN);
                             } else if (linStilGridNormalY[i1] == DOTTED_FAT) {
                                 g2.setStroke(str_DOTTED_FAT);
-                            } else {
-                                System.out.println("Fehler: gjigrije");
-                            }
+            }
                             //-----------------------
                             // // now draw the line:
                             grL.reset();
@@ -1384,7 +1358,7 @@ public class GraferV3 extends JPanel {
             z2empfLIN = oben[k];
             schrittEmpfLIN = schritt[k];
         }
-        //System.out.println(z1+"   "+z1empfLIN+"  //  "+z2+"   "+z2empfLIN+"   "+schrittEmpfLIN);
+
         //----------------
         // LOG -->
         z1empfLOG = 0.7 * z1lg;  // min
@@ -1423,7 +1397,6 @@ public class GraferV3 extends JPanel {
             case GraferV3.DARKGREEN:
                 return Color.decode("0x006400");
             default:
-                System.out.println("Fehler: dtcjjztdm " + selector);
                 return Color.black;
         }
     }

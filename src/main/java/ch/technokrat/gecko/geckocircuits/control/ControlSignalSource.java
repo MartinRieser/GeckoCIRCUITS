@@ -122,8 +122,6 @@ public class ControlSignalSource extends ControlBlock implements ControlInputTwo
     private String[] _labelsBeforeFold;
     private Stack<TerminalControlInput> _terminalStack = new Stack<TerminalControlInput>();
 
-    ;
-
     public ControlSignalSource() {
         super(0, 1);
         setExpandedParameterListener(_useExternal);

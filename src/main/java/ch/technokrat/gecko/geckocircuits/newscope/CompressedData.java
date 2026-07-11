@@ -14,10 +14,6 @@
 
 package ch.technokrat.gecko.geckocircuits.newscope;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-
 /**
  *
  * @author Zimmi
@@ -137,85 +133,4 @@ public class CompressedData {
         return data;
     }
 
-    public void printCompressInfo() {
-        System.out.println("\tcompression rate:\t" + _compressRate + "%");
-        System.out.println("\tNeeded Bits:\t" + _bits);
-        System.out.println("\tMaximal Difference:\t" + _maxDiff);
-        System.out.println("\tLast byte:\t" + Integer.toBinaryString(_compressedData[_compressedData.length - 1] & 0xFF));
-        System.out.println("\tLast Difference:\t" + Integer.toBinaryString(trimByte(_differences[_differences.length - 1], _bits)));
-        System.out.println("\tresult length:\t" + _compressedData.length);
-        System.out.println("\tblock length:\t" + (_blockLength + 1));
-
-    }
-
-    private static byte[] readFromFile(String path) {
-        FileInputStream fip = null;
-        File file;
-
-        try {
-            file = new File(path);
-            fip = new FileInputStream(file);
-
-            byte[] fileContent = new byte[(int) file.length()];
-            System.out.println("DataPoints: " + ((int) file.length()));
-            fip.read(fileContent);
-
-            fip.close();
-            return fileContent;
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (fip != null) {
-                    fip.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
-    }
-
-    public static void main(String[] args) {
-        String file = "slowrect.txt";
-        byte[] data = readFromFile("C:/Users/Zimmi/Desktop/GeckoCode/Compress Data/" + file);
-
-        byte[] compressableData = new byte[32];
-
-        System.out.println("Full Container Compressed");
-        CompressedData block = new CompressedData(data);
-        block.printCompressInfo();
-
-        System.out.println("Container separated 32 byte blocks:");
-        int minbits = Integer.MAX_VALUE;
-        int maxbits = Integer.MIN_VALUE;
-        double avgBits = 0;
-        int minResultLength = Integer.MAX_VALUE;
-        int maxResultLength = Integer.MIN_VALUE;
-        double avgResultLength = 0;
-        int blockLength = 0;
-        for (int i = 0; i < 32; i++) {
-            for (int j = 0; j < 32; j++) {
-                compressableData[j] = data[32 * i + j];
-            }
-            block = new CompressedData(compressableData);
-            int[] info = block.getEssentialData();
-            minbits = Math.min(minbits, info[0]);
-            maxbits = Math.max(maxbits, info[0]);
-            avgBits += info[0];
-            blockLength = info[1];
-            minResultLength = Math.min(minResultLength, info[2]);
-            maxResultLength = Math.max(maxResultLength, info[2]);
-            avgResultLength += info[2];
-        }
-
-
-        System.out.println("\tAvg compression rate:\t" + (avgResultLength / (32 * 32) * 100) + "%");
-        System.out.println("\t\tmin:\t" + ((double) minResultLength / blockLength * 100) + "%");
-        System.out.println("\t\tmax:\t" + ((double) maxResultLength / blockLength * 100) + "%");
-        System.out.println("\tAvg Needed Bits:\t" + (avgBits / 32));
-        System.out.println("\t\tmin:\t" + minbits);
-        System.out.println("\t\tmax:\t" + maxbits);
-    }
 }

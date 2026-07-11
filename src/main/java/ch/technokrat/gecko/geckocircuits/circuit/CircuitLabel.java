@@ -29,11 +29,9 @@ public class CircuitLabel {
     public void setLabel(final String newLabel) {
         if(newLabel.equals(_label)) {
             return;
-        }        
-        if(!_label.equals(newLabel)) {            
-            RenameLabelUndoableEdit undoEdit = new RenameLabelUndoableEdit(_label, newLabel, false);
-            AbstractUndoGenericModel.undoManager.addEdit(undoEdit);
-        }        
+        }
+        RenameLabelUndoableEdit undoEdit = new RenameLabelUndoableEdit(_label, newLabel, false);
+        AbstractUndoGenericModel.undoManager.addEdit(undoEdit);
         _label = newLabel;
     }
     

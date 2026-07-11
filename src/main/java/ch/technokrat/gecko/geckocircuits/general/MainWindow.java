@@ -128,13 +128,6 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     private LastComponentButton _lastComponentButton;
     private final static JPanel _northPanel = new JPanel();
 
-    /*
-     * // steady-state analysis >> private int numberOfDomains= 3; // LK=0, THERM=1, CONTR=2 private double Tss=20e-3; // to be
-     * set by the user, e.g. 20ms for a PFC n a 50Hz-grid private int maxIterationsNewton=100; private double
-     * maxErrorNewton=0.01; private boolean useIterationNewton=true, useIterationSecant=false; // save user-defined initial
-     * values before stateady-state analysis >> private double[][][] states, statesAtFileload; private boolean[][] noStates,
-     * noStatesAtFileload;
-     */
     public boolean isSimulationRunning() {
         return !mItemRun.isEnabled();
     }

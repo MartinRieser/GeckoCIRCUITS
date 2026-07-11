@@ -735,18 +735,12 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
         for (AbstractTerminal term : XIN) {
             if (term.getCircuitSheet() == _parentCircuitSheet) {
                 term.paintLabelString(graphics);
-                //if(term instanceof TerminalControl) {
-                //    ((TerminalControl) term).paintControlState(graphics);
-                //}
             }
         }
 
         for (AbstractTerminal term : YOUT) {
             if (term.getCircuitSheet() == _parentCircuitSheet) {
                 term.paintLabelString(graphics);
-                //if(term instanceof TerminalControl) {
-                //    ((TerminalControl) term).paintControlState(graphics);
-                //}
             }
         }
 

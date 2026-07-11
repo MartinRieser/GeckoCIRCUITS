@@ -26,7 +26,6 @@ public class UniqueObjectIdentifer {
     }
     
     public long getIdentifier() {
-        //assert identifier != 0;
         return identifier;
     }
     

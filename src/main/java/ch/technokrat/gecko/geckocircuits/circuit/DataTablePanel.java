@@ -108,8 +108,6 @@ public class DataTablePanel extends JPanel {
         _tableModel.fireTableDataChanged();
     }
     
-    static int counter = 0;
-
     void clearWithoutEvent() {
         _tableModel.data.clear();
     }
@@ -215,8 +213,6 @@ public class DataTablePanel extends JPanel {
         
         
         private long calculateTableHash() {
-            counter++;
-            assert counter < 1000;
             long hash = 7;
             for (List<Double> hashList : data) {
                 if (hashList == null) {

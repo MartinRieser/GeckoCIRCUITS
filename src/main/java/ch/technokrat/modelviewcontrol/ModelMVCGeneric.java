@@ -28,7 +28,6 @@ import java.io.Serializable;
  *
  */
 public abstract class ModelMVCGeneric<T> implements Serializable{
-  // transient private Set<ActionListener> listeners = new HashSet<ActionListener>();
   transient public WeakListModel listeners = new WeakListModel();
   private static final long serialVersionUID = 784638463745367L;
 

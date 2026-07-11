@@ -332,9 +332,6 @@ public class NonLinearDialogPanel extends JPanel {
             data = new double[2][];
             data[0] = nonLin[0];
             data[1] = nonLin[1];
-            for(int i = 0; i < data[0].length; i++) {
-                System.out.println("iii " + i + " " + data[0][i] + " " + data[1][i] + " " + (data[0][i] * data[1][i]));
-            }
             table.setValues(data);
             loadedFile = file;
             updatePlot();

@@ -781,35 +781,7 @@ public class SimulationKernel {
         simulateOneTimeStep();
     }
 
-//    public void external_step (double time, double[] input) {
-//        //-------------------------
-//        t= time;
-//        if (dt==0) dt=1e-6;  // passiert beim Start?
-//
-//
-//        int counter = 0;
-//        for(ControlBlock reg : ControlFromEXTERNAL.fromExternals) {
-//            double[] param = reg.getParameter();
-//            assert param.length == ((ControlFromEXTERNAL) reg).getTerminalNumber();
-//            for(int i = 0; i < param.length; i++) {
-//                param[i] = input[counter];
-//                counter++;
-//            }
-//        }
-//
-//        //----
-////        if (index_FROM_EXTERNAL!=-1) {
-////            for (int i1=0;  i1<signals_from_external.length;  i1++) {
-////                double x= input[i1];
-////                if (x==x) signals_from_external[i1]= x; else signals_from_external[i1]=0;  // NaN, Inf
-////                //signals_from_external[i1]= input[i1];
-////            }
-////            c[index_FROM_EXTERNAL].setParameter(signals_from_external);
-////        }
-//        //-------------------------------
-//        simulateOneTimeStep();
-//
-//    }
+
     public double getTimeStep() {
         return dt;
     }

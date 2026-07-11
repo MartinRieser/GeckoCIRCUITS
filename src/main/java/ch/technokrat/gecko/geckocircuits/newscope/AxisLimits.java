@@ -230,11 +230,6 @@ final class AxisLimits {
         _userScale = axisMap.readDataLine("isUserScale", _userScale);
         _valueScaleLocal = axisMap.readDataLine("valueScale", _valueScaleLocal);
 
-//        if(!_isAutoEnabled)  {
-//            if(_userScale._yHi != _userScale._yLo) {
-//                _valueScaleLocal = _userScale;
-//            }            
-//        }
         if (axisMap.containsToken("isSymmetricZero")) {
             _isCommonZero = axisMap.readDataLine("isSymmetricZero", _isCommonZero);
         }

@@ -62,7 +62,7 @@ public final class SimulationRunner {
             dtLoc = solverSettings._dt_pre.getValue();
         }
 
-        nlContainer = NetListContainer.fabricStartSimulation(_se, simKern);
+        nlContainer = NetListContainer.fabricStartSimulation(_se);
         
 
         simKern.initSimulation(
@@ -104,7 +104,7 @@ public final class SimulationRunner {
             }
             solverSettings._dt_ALT = solverSettings.dt.getValue();
 
-            nlContainer = NetListContainer.fabricContinueSimulation(_se, simKern, nlContainer);
+            nlContainer = NetListContainer.fabricContinueSimulation(_se, nlContainer);
 
             simKern.initSimulation(solverSettings.dt.getValue(), tSTART, tAktuell, tEND,
                     solverSettings._tPAUSE.getValue(),
@@ -173,7 +173,7 @@ public final class SimulationRunner {
             dtLoc = MainWindow.getSolverSettings()._dt_pre.getValue();
         }
  
-        nlContainer = NetListContainer.fabricStartSimulation(_se, simKern);
+        nlContainer = NetListContainer.fabricStartSimulation(_se);
  
         simKern.initSimulation(
                 dtLoc, tSTART, tAktuell, tEND, MainWindow.getSolverSettings()._tPAUSE.getValue(),
@@ -286,7 +286,7 @@ public final class SimulationRunner {
         boolean getAnfangsbedVomDialogfenster = true;  // // Collect AB from Simulink!
         simKern = new SimulationKernel();
         double tSTART = 0, tAktuell = tSTART;
-        nlContainer = NetListContainer.fabricStartSimulation(_se, simKern);
+        nlContainer = NetListContainer.fabricStartSimulation(_se);
         simKern.initSimulation(
                 MainWindow.getSolverSettings().dt.getValue(), tSTART, tAktuell, tEnd, MainWindow.getSolverSettings()._tPAUSE.getValue(),
                 getAnfangsbedVomDialogfenster, nlContainer, false);

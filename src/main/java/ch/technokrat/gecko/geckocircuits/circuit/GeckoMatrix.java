@@ -13,30 +13,5 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit;
 
-///**
-// *
-// * @author andy
-// */
-//public abstract class GeckoMatrix {
-//    protected final int _rows;
-//    protected final int _cols;
-//    
-//    public GeckoMatrix(int rows, int cols) {
-//        _rows = rows;
-//        _cols = cols;
-//    }
-//    
-//    public abstract void setValue(int row, int column, double value);
-//    
-//    public abstract double getValue(int row, int column);
-//    
-//    public int getRowNumber() {
-//        return _rows;
-//    }
-//    
-//    public int getColumnNumber() {
-//        return _cols;
-//    }
-//
-//     
-//}
+// This file was entirely commented out (dead code). Kept as empty skeleton.
+

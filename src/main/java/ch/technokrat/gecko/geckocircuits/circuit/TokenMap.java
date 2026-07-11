@@ -185,15 +185,6 @@ public final class TokenMap {
         
     }
 
-    public TokenMap getBlockMap() {
-        return null;
-    }
-
-    public void makeBlockTokenMap(final String[] ascii) {
-        for (int i = 0; i < ascii.length; i++) {
-        }
-    }
-
     public TokenMap getSpecialBlockTokenMap(final String identifier) {        
         if (_specialMap.containsKey(identifier)) {
             Deque<BlockInfo> blockInfoList = _specialMap.get(identifier);

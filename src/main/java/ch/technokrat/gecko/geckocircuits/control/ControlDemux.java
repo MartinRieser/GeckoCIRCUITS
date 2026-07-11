@@ -69,7 +69,7 @@ public final class ControlDemux extends ControlBlock implements VariableTerminal
 
     @Override
     void setInputSignal(int inputIndex, ControlBlock outputBlock, int outputIndex) {        
-        super.setInputSignal(inputIndex, outputBlock, outputIndex); //To change body of generated methods, choose Tools | Templates.
+        super.setInputSignal(inputIndex, outputBlock, outputIndex);
         if(outputBlock instanceof ControlJavaFunction) {
             _connectedJavaBlock = (ControlJavaFunction) outputBlock;
             _connectedJavaOutputIndex = outputIndex;

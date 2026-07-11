@@ -85,9 +85,7 @@ public final class ControlOSZI extends ControlBlock implements VariableTerminalN
     private static final int DIAMETER = 4;
     private static final double HEIGHT = 0.6;
     private static final double WIDTH = 0.5;
-    ///* externalSignals test
-    private int _testcounter = 0; // a variable used for the signal name when testing external signals
-    //*/
+
 
     @SuppressWarnings("deprecation")
     public ControlOSZI() {
@@ -99,9 +97,7 @@ public final class ControlOSZI extends ControlBlock implements VariableTerminalN
         }
         _grafer.getManager().setInputSignals(_scopeInputSignals);
         _meanSignals.setGrafer(_grafer);        
-        ///* externalSignals test
-        this._testcounter = 0;
-        // */                
+                
         _inputTerminalNumber.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -111,33 +107,7 @@ public final class ControlOSZI extends ControlBlock implements VariableTerminalN
         initScope();
     }
 
-    ///* externalSignals test
-    ExternalSignal getSin(final double length, final double period, final double weight) {
-        double[] times = new double[10000];
-        double[] values = new double[10000];
-        ExternalSignal returnValue;
-        for (int i = 0; i < 10000; i++) {
-            times[i] = length / 10000.0 * i;
-            values[i] = weight * Math.sin(Math.PI / period * length / 10000.0 * i);
-        }
-        returnValue = new ExternalSignal("Sig." + this._testcounter, times, values, getSubCircuitPath());
-        this._testcounter++;
-        return returnValue;
-    }
 
-    ExternalSignal getCos(final double length, final double period, final double weight) {
-        double[] times = new double[5678];
-        double[] values = new double[5678];
-        ExternalSignal returnValue;
-        for (int i = 0; i < 5678; i++) {
-            times[i] = length / 5678.0 * i;
-            values[i] = weight * Math.cos(Math.PI / period * length / 5678.0 * i);
-        }
-        returnValue = new ExternalSignal("TestSignal" + this._testcounter, times, values, getSubCircuitPath());
-        this._testcounter++;
-        return returnValue;
-    }
-    //*/
 
     @Override
     public String[] getOutputNames() {
@@ -512,7 +482,6 @@ public final class ControlOSZI extends ControlBlock implements VariableTerminalN
             }
 
         } catch (Exception ex) {
-            //ex.printStackTrace();
         }
 
 

@@ -13,10 +13,6 @@
  */
 package ch.technokrat.gecko.geckocircuits.control;
 
-import java.util.LinkedList;
-import java.util.Set;
-
-
 import java.util.*;
 
 public final class BlockOrderOptimizer3 {
@@ -63,7 +59,6 @@ public final class BlockOrderOptimizer3 {
                     iterateIntoNegativeDirection(node.getAllDirectInputs(), node.getPriority() - 1);
                 } catch (LoopDetectionException ex) {
                     ex.printLoopMessage();
-                    //Logger.getLogger(BlockOrderOptimizer3.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }                                    
         }
@@ -82,12 +77,10 @@ public final class BlockOrderOptimizer3 {
                     iterateIntoNegativeDirection(node.getAllDirectInputs(), node.getPriority() - 1);
                 } catch (LoopDetectionException ex) {
                     ex.printLoopMessage();
-                    //Logger.getLogger(BlockOrderOptimizer3.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }                                    
         }
         
-               
         _optimizedList = sortNodesWithPriorities();
         
         _outList = new ArrayList<ControlBlock>();
@@ -95,13 +88,7 @@ public final class BlockOrderOptimizer3 {
             _outList.add(_optimizedList.get(i).getElementControl());         
         }        
 
-        doConsistencyChecks(_outList, _allControlsInput);                        
-        //System.out.println("number of loops " + countNumberOfOutOfOrderLoops(_optimizedList) + " of " + _optimizedList.size());
-//        System.out.println("---------- control block order: ");
-//        for(ControlBlock block : _outList) {
-//            System.out.println(block.getIDStringDialog());
-//        }
-//        System.out.println("---------");
+        doConsistencyChecks(_outList, _allControlsInput);
 
     }
 

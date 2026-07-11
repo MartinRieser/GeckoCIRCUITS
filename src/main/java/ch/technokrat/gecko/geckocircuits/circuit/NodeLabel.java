@@ -72,7 +72,6 @@ public class NodeLabel implements Serializable {
         y1click= yTxt+rect.y; 
         x2click= x1click +rect.width; 
         y2click= y1click +rect.height; 
-        //System.out.println(x1click+"   "+x2click+"   "+y1click+"   "+y2click); 
         g.setColor(Color.magenta); 
         g.drawRect(x1click,y1click, x2click-x1click,y2click-y1click);
         //-----
@@ -83,15 +82,7 @@ public class NodeLabel implements Serializable {
     // // to save in ASCII format (instead of as an object stream) -->
     public void exportASCII (StringBuffer ascii) {
         ascii.append("<Connection>");
-        //------------------
-        /*
-        ProjectData.appendAsString(ascii.append("\nlabel"), label);
-        ProjectData.appendAsString(ascii.append("\nxLabel"), xLabel);
-        ProjectData.appendAsString(ascii.append("\nyLabel"), yLabel);
-        */
-        //-----------
         ascii.append(new StringBuffer("\n<\\Connection>\n"));
-        //------------------
     }
 
 

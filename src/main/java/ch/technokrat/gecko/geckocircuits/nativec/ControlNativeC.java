@@ -173,9 +173,7 @@ public final class ControlNativeC extends ControlBlock implements VariableTermin
                     if (ste.length > 0) {
                         System.err.println(ste[0] + "\n");
                     }
-                    // Exception in the main method that we just tried to run
-                    //showMsg("Exception in main: " + ex.getTargetException());
-                    //ex.getTargetException().printStackTrace();
+
                 } catch (FileNotFoundException ex) {
                     severeErrorOccured = true; // native library was not found
                     if (_nativeCBlock != null) {
@@ -254,13 +252,6 @@ public final class ControlNativeC extends ControlBlock implements VariableTermin
         final Color origColor = graphics.getColor();
         graphics.setColor(getBackgroundColor());  // default
         if (getModus() == ComponentState.FINISHED) {
-//            if (_javaBlock.getCompileStatus() == CompileStatus.NOT_COMPILED) {
-//                graphics.setColor(Color.WHITE);
-//            } else if (_javaBlock.getCompileStatus() == CompileStatus.COMPILED_SUCCESSFULL) {
-//                graphics.setColor(GlobalColors.farbeElementCONTROLHintergrund);
-//            } else if (_javaBlock.getCompileStatus() == CompileStatus.COMPILE_ERROR) {
-//                graphics.setColor(Color.orange);
-//            }
         } else {
             graphics.setColor(Color.white);
         }
@@ -418,19 +409,9 @@ public final class ControlNativeC extends ControlBlock implements VariableTermin
             if (_guiWindow == null) {
                 _guiWindow = new NativeCDialog(this, GeckoSim._win, false, 
                             _libFile, _libFileList);
-//                if (_paramSelectedLibName.getValue().equals("null")) {
-//                    _guiWindow = new NativeCDialog(this, GeckoSim._win, false);
-//                } else {
-//                    String test = (_paramLibNames.getValue());
-//                    
-//                }
-                //_guiWindow.setVisible(true);
-                //_guiWindow.loadSourcesText();
             } else {
                 if (_guiWindow.isVisible()) {
                     _guiWindow.toFront();
-                } else {
-                    //_guiWindow.loadSourcesText();
                 }
             }
             return (Window) _guiWindow;        

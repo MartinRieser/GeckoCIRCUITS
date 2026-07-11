@@ -347,13 +347,7 @@ public class CircuitSheet extends JPanel {
         for (AbstractCircuitSheetComponent comp : this.getLocalSheetComponents()) {
             if (comp instanceof SubcircuitBlock) {
                 localElementsLK.add((AbstractBlockInterface) comp);
-            }
-
-            if (comp instanceof SubcircuitBlock) {
                 localElementsTHERM.add((AbstractBlockInterface) comp);
-            }
-
-            if (comp instanceof SubcircuitBlock) {
                 localElementsCONTROL.add((AbstractBlockInterface) comp);
             }
 
