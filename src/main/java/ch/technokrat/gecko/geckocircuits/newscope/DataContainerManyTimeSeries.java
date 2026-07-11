@@ -26,7 +26,7 @@ public class DataContainerManyTimeSeries extends AbstractDataContainer implement
     // CHECKSTYLE:OFF
     protected final float[][] _data;
     // CHECKSTYLE:ON
-    private final TimeSeriesArray[] _timeSerieArray;
+    private final TimeSeriesArray[] _timeSeriesArray;
     private String[] _signalNames;
     /*
      * the highest index where values are written into the container
@@ -37,9 +37,9 @@ public class DataContainerManyTimeSeries extends AbstractDataContainer implement
     public DataContainerManyTimeSeries(final int rows, final int maximumColumns) {
         _data = new float[rows][maximumColumns];
         _abMinMaxValues = new HiLoData[rows];
-        _timeSerieArray = new TimeSeriesArray[rows];
+        _timeSeriesArray = new TimeSeriesArray[rows];
         for (int i = 0; i < rows; i++) {
-            _timeSerieArray[i] = new TimeSeriesArray(maximumColumns);
+            _timeSeriesArray[i] = new TimeSeriesArray(maximumColumns);
         }
         _signalNames = new String[rows];
     }
@@ -83,22 +83,22 @@ public class DataContainerManyTimeSeries extends AbstractDataContainer implement
 
     @Override
     public final double getTimeValue(final int column, final int row) {
-        return _timeSerieArray[row].getValue(column);
+        return _timeSeriesArray[row].getValue(column);
 //        return _timeValues[column];
     }
 
     @Override
     public final int getMaximumTimeIndex(final int row) {        
-        return _timeSerieArray[row].getMaximumIndex();                
+        return _timeSeriesArray[row].getMaximumIndex();                
     }
 
     @SuppressWarnings("PMD")
     @Override
     public void insertValuesAtEnd(final float[] values, final double timeValue) {        
 
-        for (int j = 0; j < _timeSerieArray.length; j++) {
-            int index = _timeSerieArray[j].getMaximumIndex()+1;
-            _timeSerieArray[j].setValue(index, timeValue);
+        for (int j = 0; j < _timeSeriesArray.length; j++) {
+            int index = _timeSeriesArray[j].getMaximumIndex()+1;
+            _timeSeriesArray[j].setValue(index, timeValue);
             for (int i = 0; i < values.length; i++) {
                 _data[i][index] = values[i];
                 _abMinMaxValues[i] = HiLoData.mergeFromValue(_abMinMaxValues[i], values[i]);
@@ -110,9 +110,9 @@ public class DataContainerManyTimeSeries extends AbstractDataContainer implement
 
     @SuppressWarnings("PMD")
     public void insertValueAtEnd(final float value, final double timeValue, final int row) {
-        TimeSeriesArray timeSerie = _timeSerieArray[row];
-        int index = timeSerie.getMaximumIndex() + 1;
-        timeSerie.setValue(index, timeValue);
+        TimeSeriesArray timeSeries = _timeSeriesArray[row];
+        int index = timeSeries.getMaximumIndex() + 1;
+        timeSeries.setValue(index, timeValue);
         _data[row][index] = value;
         _abMinMaxValues[row] = HiLoData.mergeFromValue(_abMinMaxValues[row], value);
 
@@ -135,7 +135,7 @@ public class DataContainerManyTimeSeries extends AbstractDataContainer implement
         int returnValue = 0;
 
         for (int i = 0; i < this.getMaximumTimeIndex(row); i++) {
-            if (_timeSerieArray[row].getValue(i) < time) {
+            if (_timeSeriesArray[row].getValue(i) < time) {
                 returnValue++;
             } else {
                 return returnValue;
@@ -157,15 +157,15 @@ public class DataContainerManyTimeSeries extends AbstractDataContainer implement
 
     @Override
     public Object getDataValueInInterval(double intervalStart, double intervalStop, int rowIndex) {        
-//        int index = _timeSerieArray.findTimeIndex(intervalStop, _maximumIndex);
+//        int index = _timeSeriesArray.findTimeIndex(intervalStop, _maximumIndex);
 //        return getValue(0, index);
 //        System.out.println("Interval Start:" + intervalStart + "\tIntervallStop: " + intervalStop + "\t columnIndex: " + columnIndex);
-        final int startIndex = _timeSerieArray[rowIndex].findTimeIndex(intervalStart);
-        final int stopIndex = _timeSerieArray[rowIndex].findTimeIndex(intervalStop);
+        final int startIndex = _timeSeriesArray[rowIndex].findTimeIndex(intervalStart);
+        final int stopIndex = _timeSeriesArray[rowIndex].findTimeIndex(intervalStop);
 
         if (startIndex == 0 && stopIndex == 0) {
             // to get the first datapoint drawn properly:
-            double firstTimeValue = _timeSerieArray[rowIndex].getValue(0);
+            double firstTimeValue = _timeSeriesArray[rowIndex].getValue(0);
             if (intervalStart <= firstTimeValue && intervalStop >= firstTimeValue) {
                 return getValue(rowIndex, 0);
             }
@@ -175,7 +175,7 @@ public class DataContainerManyTimeSeries extends AbstractDataContainer implement
             return null;
         }
         if (startIndex + 1 == stopIndex) { // we have exactly one datapoint in the interval.
-            final double timeValue = _timeSerieArray[rowIndex].getValue(stopIndex);
+            final double timeValue = _timeSeriesArray[rowIndex].getValue(stopIndex);
             if (timeValue > intervalStop || timeValue < intervalStart) {
                 return null;
             } else {
@@ -224,13 +224,13 @@ public class DataContainerManyTimeSeries extends AbstractDataContainer implement
     }
 
     @Override
-    public AbstractTimeSerie getTimeSeries(final int row) {
-        return _timeSerieArray[row];
+    public AbstractTimeSeries getTimeSeries(final int row) {
+        return _timeSeriesArray[row];
     }
 
     public double getNiceMaximumXValue() {
         double maxXValue = 0;
-        for(AbstractTimeSerie ts : _timeSerieArray) {
+        for(AbstractTimeSeries ts : _timeSeriesArray) {
             maxXValue = Math.max(maxXValue, ts.getValue(ts.getMaximumIndex()));
         }
         

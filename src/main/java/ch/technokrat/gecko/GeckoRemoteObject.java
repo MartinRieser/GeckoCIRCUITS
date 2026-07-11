@@ -572,16 +572,16 @@ public class GeckoRemoteObject {
     }
     
     @Deprecated
-    public double[] simulateUntilSteadyState(final boolean supressMessages) {
-        return _proxy.simulateUntilSteadyState(supressMessages);
+    public double[] simulateUntilSteadyState(final boolean suppressMessages) {
+        return _proxy.simulateUntilSteadyState(suppressMessages);
     }
     
-    public double[] simulateToSteadyState(final boolean supressMessages) {
-        return _proxy.simulateToSteadyState(supressMessages);
+    public double[] simulateToSteadyState(final boolean suppressMessages) {
+        return _proxy.simulateToSteadyState(suppressMessages);
     }
     
-    public double[] simulateToSteadyState(final boolean supressMessages, final double targetCorrelation, final double targetMeanPctDiff) {
-        return _proxy.simulateToSteadyState(supressMessages, targetCorrelation, targetMeanPctDiff);
+    public double[] simulateToSteadyState(final boolean suppressMessages, final double targetCorrelation, final double targetMeanPctDiff) {
+        return _proxy.simulateToSteadyState(suppressMessages, targetCorrelation, targetMeanPctDiff);
     }
 
     public void setPosition(final String elementName, final int xCoord, final int yCoord) {

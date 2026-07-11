@@ -20,8 +20,8 @@ public class VoltageSourceCalculator extends AbstractVoltageSourceCalculator imp
         DirectCurrentCalculatable, HistoryUpdatable {
 
     private TimeFunction _function;
-    private static final int THREE = 3;
-    private static final int FOUR = 4;
+    private static final int HISTORY_CURRENT_INDEX = 3;
+    private static final int HISTORY_VOLTAGE_INDEX = 4;
     
     public VoltageSourceCalculator(final TimeFunction timeFunction, final AbstractVoltageSource parent) {
         super(parent);
@@ -67,8 +67,8 @@ public class VoltageSourceCalculator extends AbstractVoltageSourceCalculator imp
             prev_time = var_history[0][0];
             _potential1 = var_history[0][1];
             _potential2 = var_history[0][2];
-            _current = var_history[0][THREE];
-            _voltage = var_history[0][FOUR];
+            _current = var_history[0][HISTORY_CURRENT_INDEX];
+            _voltage = var_history[0][HISTORY_VOLTAGE_INDEX];
 
             _function.stepBack();
 

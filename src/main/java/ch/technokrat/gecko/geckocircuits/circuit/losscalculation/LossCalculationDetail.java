@@ -19,8 +19,8 @@ public enum LossCalculationDetail {
     DETAILED("detailed");
     private final String _displayString;
 
-    LossCalculationDetail(String diplayString) {
-        _displayString = diplayString;
+    LossCalculationDetail(String displayString) {
+        _displayString = displayString;
     }
 
     @Override

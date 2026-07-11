@@ -16,7 +16,7 @@ package ch.technokrat.gecko.geckocircuits.control.javablock;
 
 public enum CompileStatus {
 
-    NOT_COMPILED, COMPILED_SUCCESSFULL, COMPILE_ERROR;
+    NOT_COMPILED, COMPILED_SUCCESSFUL, COMPILE_ERROR;
 
     public static CompileStatus getFromOrdinal(final int ordinal) {
         for (CompileStatus val : CompileStatus.values()) {

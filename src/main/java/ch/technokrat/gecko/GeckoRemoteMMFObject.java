@@ -102,7 +102,7 @@ public final class GeckoRemoteMMFObject extends GeckoRemoteObject {
      * @return a GeckoRemoteObject connected to this new instance of GeckoCIRCUITS which can be used for controlling it remotely
      */
     public static GeckoRemoteMMFObject startNewRemoteInstance(final String file) {
-        return startNewRemoteInstance(file,GeckoMemoryMappedFile._defaultBufferSize);
+        return startNewRemoteInstance(file,GeckoMemoryMappedFile.DEFAULT_BUFFER_SIZE);
     }
     
    /**
@@ -1786,10 +1786,10 @@ public final class GeckoRemoteMMFObject extends GeckoRemoteObject {
     
         
     @Override
-    public double[] simulateToSteadyState(final boolean supressMessages) {
+    public double[] simulateToSteadyState(final boolean suppressMessages) {
         try {
             if (checkRemote()) {
-                final GeckoRemotePipeObject method = new GeckoRemotePipeObject("simulateToSteadyState",new Object[]{supressMessages});
+                final GeckoRemotePipeObject method = new GeckoRemotePipeObject("simulateToSteadyState",new Object[]{suppressMessages});
                 final GeckoRemotePipeObject returnValue = _mmf.callMethod(sessionID, method);
                 if (returnValue.isReturnValue()) {
                     return (double[])returnValue.getMethodReturnValue();
@@ -1808,10 +1808,10 @@ public final class GeckoRemoteMMFObject extends GeckoRemoteObject {
     }
     
     @Override
-    public double[] simulateToSteadyState(final boolean supressMessages, final double targetCorrelation, final double targetMeanPctDiff) {
+    public double[] simulateToSteadyState(final boolean suppressMessages, final double targetCorrelation, final double targetMeanPctDiff) {
         try {
             if (checkRemote()) {
-                final GeckoRemotePipeObject method = new GeckoRemotePipeObject("getSignalData",new Object[]{supressMessages,targetCorrelation,targetMeanPctDiff});
+                final GeckoRemotePipeObject method = new GeckoRemotePipeObject("getSignalData",new Object[]{suppressMessages,targetCorrelation,targetMeanPctDiff});
                 final GeckoRemotePipeObject returnValue = _mmf.callMethod(sessionID, method);
                 if (returnValue.isReturnValue()) {
                     return (double[])returnValue.getMethodReturnValue();

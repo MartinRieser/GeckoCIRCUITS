@@ -360,7 +360,7 @@ import ch.technokrat.modelviewcontrol.ModelMVC;
     }
 
     /*
-     * overwrite this mehtod for additional parameters to load! (Template method pattern)
+     * overwrite this method for additional parameters to load! (Template method pattern)
      *
      */
     protected void importIndividual(final TokenMap tokenMap) {

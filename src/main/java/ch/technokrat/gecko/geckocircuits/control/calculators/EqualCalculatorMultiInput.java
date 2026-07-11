@@ -15,8 +15,8 @@ package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 public final class EqualCalculatorMultiInput extends AbstractControlCalculatable {
 
-    public EqualCalculatorMultiInput(final int intputSize) {
-        super(intputSize, 1);
+    public EqualCalculatorMultiInput(final int inputSize) {
+        super(inputSize, 1);
     }
 
     @Override

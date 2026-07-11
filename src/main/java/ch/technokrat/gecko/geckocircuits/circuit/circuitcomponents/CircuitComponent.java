@@ -84,8 +84,8 @@ public abstract class CircuitComponent<T extends AbstractTwoPortPowerCircuitBloc
         return _voltage;
     }
 
-    public double getPotential(int terminalNUmber) {
-        switch (terminalNUmber) {
+    public double getPotential(int terminalNumber) {
+        switch (terminalNumber) {
             case 0:
                 return _potential1;
             case 1:

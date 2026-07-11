@@ -179,12 +179,12 @@ public interface GeckoRemoteIntWithoutExc {
     void initSteadyStateDetection(final String[] stateVariables, final double[] frequencies, final double deltaT, 
             final double simulationTime) ;
 
-    double[] simulateToSteadyState(boolean supressMessages) ;
+    double[] simulateToSteadyState(boolean suppressMessages) ;
     
-    double[] simulateToSteadyState(boolean supressMessages, double targetCorrelation, double targetMeanPctDiff) ;
+    double[] simulateToSteadyState(boolean suppressMessages, double targetCorrelation, double targetMeanPctDiff) ;
     
     @Deprecated
-    double[] simulateUntilSteadyState(boolean supressMessages) ;
+    double[] simulateUntilSteadyState(boolean suppressMessages) ;
 
     @Deprecated
     void setLossFile(String elementName, String lossFileName);

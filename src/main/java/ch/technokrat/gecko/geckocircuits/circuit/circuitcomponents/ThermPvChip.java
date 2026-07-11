@@ -280,7 +280,7 @@ public final class ThermPvChip extends AbstractCircuitBlockInterface implements 
         return _conductionLosses;
     }
     
-    public double getSwitchngLosses() {
+    public double getSwitchingLosses() {
         return _switchingLosses;
     }
 

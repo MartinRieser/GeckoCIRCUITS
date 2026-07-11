@@ -88,7 +88,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
      * ------------------------ */
     /** Construct an m-by-n matrix of zeros.
     @param m    Number of rows.
-    @param n    Number of colums.
+    @param n    Number of columns.
      */
     
     
@@ -101,7 +101,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
 
     /** Construct an m-by-n constant matrix.
     @param m    Number of rows.
-    @param n    Number of colums.
+    @param n    Number of columns.
     @param s    Fill the matrix with this scalar value.
      */
     public Matrix(int m, int n, double s) {
@@ -134,7 +134,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
     /** Construct a matrix quickly without checking arguments.
     @param A    Two-dimensional array of doubles.
     @param m    Number of rows.
-    @param n    Number of colums.
+    @param n    Number of columns.
      */
     public Matrix(double[][] A, int m, int n) {
         this.A = A;
@@ -741,7 +741,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
         }
     }
 
-    public void ResetLUDecomp() {
+    public void resetLUDecomp() {
         luDecomp = null;
     }
 
@@ -779,7 +779,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
 
     /** Generate matrix with random elements
     @param m    Number of rows.
-    @param n    Number of colums.
+    @param n    Number of columns.
     @return     An m-by-n matrix with uniformly distributed random elements.
      */
     public static Matrix random(int m, int n) {
@@ -795,7 +795,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
 
     /** Generate identity matrix
     @param m    Number of rows.
-    @param n    Number of colums.
+    @param n    Number of columns.
     @return     An m-by-n matrix with ones on the diagonal and zeros elsewhere.
      */
     public static Matrix identity(int m, int n) {

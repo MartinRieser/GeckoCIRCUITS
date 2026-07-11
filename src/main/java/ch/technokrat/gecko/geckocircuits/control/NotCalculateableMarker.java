@@ -14,7 +14,7 @@
 package ch.technokrat.gecko.geckocircuits.control;
 
 /**
- * blocks with this Marker interface only require a single computatoin at simualtion start.
+ * blocks with this Marker interface only require a single computation at simulation start.
  * @author andreas
  */
 public interface NotCalculateableMarker {

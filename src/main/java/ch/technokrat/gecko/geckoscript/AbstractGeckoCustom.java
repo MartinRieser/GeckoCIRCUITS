@@ -37,7 +37,7 @@ import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.IdealSwitch;
 import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.SubcircuitBlock;
 import ch.technokrat.gecko.geckocircuits.control.*;
 import ch.technokrat.gecko.geckocircuits.datacontainer.AbstractDataContainer;
-import ch.technokrat.gecko.geckocircuits.newscope.AbstractTimeSerie;
+import ch.technokrat.gecko.geckocircuits.newscope.AbstractTimeSeries;
 import ch.technokrat.gecko.geckocircuits.newscope.CharacteristicsCalculator;
 import ch.technokrat.gecko.geckocircuits.newscope.Cispr16Fft;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
@@ -994,7 +994,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
 
     @Override
     @SuppressWarnings("deprecation")
-    public final double[] simulateUntilSteadyState(final boolean supressMessages) {
+    public final double[] simulateUntilSteadyState(final boolean suppressMessages) {
         if (!_steadyStateInitialized) {
             writerOutputErrorLn("Steady state detection is not initialized! Please call initSteadyStateDetection() with appropriate arguments first!");
             return null;
@@ -1061,7 +1061,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
             }
         }
 
-        if (!supressMessages) {
+        if (!suppressMessages) {
             if (steadyStateReached) {
                 writeOutputLn("Steady state reached at " + time + " seconds with period of oscillation: " + period + " seconds.");
             } else {
@@ -1118,12 +1118,12 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
     }
 
     @Override
-    public final double[] simulateToSteadyState(final boolean supressMessages) {
-        return simulateToSteadyState(supressMessages, DEFAULT_TARGET_CORRELATION, DEFAULT_TARGET_MEAN_PCT_DIFF);
+    public final double[] simulateToSteadyState(final boolean suppressMessages) {
+        return simulateToSteadyState(suppressMessages, DEFAULT_TARGET_CORRELATION, DEFAULT_TARGET_MEAN_PCT_DIFF);
     }
 
     @Override
-    public final double[] simulateToSteadyState(final boolean supressMessages, final double targetCorrelation, final double targetMeanPctDiff) {
+    public final double[] simulateToSteadyState(final boolean suppressMessages, final double targetCorrelation, final double targetMeanPctDiff) {
         if (!_steadyStateCrossCorrelationInitialized) {
             writerOutputErrorLn("Steady state detection is not initialized! Please call initSteadyStateDetection() with appropriate arguments first!");
             return null;
@@ -1162,7 +1162,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
             start += period;
         }
         endSimulation();
-        if (!supressMessages) {
+        if (!suppressMessages) {
             if (steadyStateReached) {
                 writeOutputLn("Steady state reached at " + time + " seconds with period of oscillation: " + period + " seconds.");
             } else {
@@ -1578,7 +1578,7 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
 
         final int _checkedSkipPoints;
         private final AbstractDataContainer _data;
-        private final AbstractTimeSerie _timeSerie;
+        private final AbstractTimeSeries _timeSeries;
         final int _startIndex;
         final int _stopIndex;
         final int _numberOfSignalPoints;
@@ -1586,10 +1586,10 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
 
         TimeIntervalData(final double tStart, final double tEnd, final int skipPoints, final AbstractDataContainer data) {
             _data = data;
-            _timeSerie = _data.getTimeSeries(0);
+            _timeSeries = _data.getTimeSeries(0);
             _checkedSkipPoints = Math.max(skipPoints, 1);
-            _startIndex = _timeSerie.findTimeIndex(tStart);
-            _stopIndex = _timeSerie.findTimeIndex(tEnd);
+            _startIndex = _timeSeries.findTimeIndex(tStart);
+            _stopIndex = _timeSeries.findTimeIndex(tEnd);
             int numberOfSignalPoints = _stopIndex - _startIndex;
             if (numberOfSignalPoints < 0) {
                 numberOfSignalPoints = 0;
@@ -1632,12 +1632,12 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
     public final double[] getTimeArray(final String signalName, final double tStart, final double tEnd, final int skipPoints) {
         final AbstractDataContainer data = NetlistControl.globalData;
         final TimeIntervalData timeIntervalData = new TimeIntervalData(tStart, tEnd, skipPoints, data);
-        final AbstractTimeSerie timeSerie = data.getTimeSeries(0);
+        final AbstractTimeSeries timeSeries = data.getTimeSeries(0);
 
         double[] returnValue = new double[timeIntervalData._numberOfSignalPoints];
         for (int i = timeIntervalData._startIndex, counter = 0; i < timeIntervalData._indexLimitMaximum;
                 i += timeIntervalData._checkedSkipPoints, counter++) {
-            returnValue[counter] = timeSerie.getValue(i);
+            returnValue[counter] = timeSeries.getValue(i);
         }
 
         return returnValue;

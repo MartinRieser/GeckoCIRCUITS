@@ -293,7 +293,7 @@ public final class SubcircuitBlock extends AbstractSpecialBlock {
                 _myCircuitSheet.getLocalSheetComponents().toArray(new AbstractCircuitSheetComponent[0])) {
             final AbstractCircuitSheetComponent subCopy = subComponent.copyFabric(shiftValue);
             subCopy.setParentCircuitSheet(returnValue._myCircuitSheet);
-            // enshure that the names of components stays identical for sub-components!
+            // ensure that the names of components stays identical for sub-components!
             if (subCopy instanceof AbstractBlockInterface) {
                 final String originalName = ((AbstractBlockInterface) subComponent).getStringID();
                 ((AbstractBlockInterface) subCopy).getIDStringDialog().setNameUnChecked(originalName);

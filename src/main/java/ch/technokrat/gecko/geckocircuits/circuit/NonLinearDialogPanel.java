@@ -106,7 +106,7 @@ public class NonLinearDialogPanel extends JPanel {
         ch = _nonlinearParent.getNonlinearCharacteristic();
         if ((ch == null) || (ch[0].length == 0)) {
             // default-characteristic: 
-            data = _nonlinearParent.getInitalNonlinValues();
+            data = _nonlinearParent.getInitialNonlinValues();
         } else {
             data = new double[2][];
             data[0] = ch[0];

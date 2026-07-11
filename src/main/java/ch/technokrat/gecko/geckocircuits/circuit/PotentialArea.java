@@ -39,7 +39,7 @@ public final class PotentialArea {
     public CircuitSheet _potentialCircuitSheet;
     public ConnectorType _potentialTyp = ConnectorType.NONE;
     /**
-     * these two fields are used for speeding up the potential mergin.
+     * these two fields are used for speeding up the potential merging.
      */
     Point _upperLeftCorner;
     Point _lowerRightCorner;
@@ -249,7 +249,7 @@ public final class PotentialArea {
             _potentialCircuitSheet = null;
         }
 
-        _highesPriority = LabelPriority.getHighesPriority(pot1._highesPriority, pot2._highesPriority);
+        _highesPriority = LabelPriority.getHighestPriority(pot1._highesPriority, pot2._highesPriority);
 
         _elementNodeTerminals.addAll(pot2._elementNodeTerminals);
         _potentialTerminals.addAll(pot2._potentialTerminals);

@@ -45,7 +45,7 @@ public abstract class DialogElementCONTROL<T extends ControlBlock> extends Dialo
         try {
         con.add(jPanelName, BorderLayout.NORTH);
         } catch (Exception ex) {
-            // sometimes, I git an XException here... don't know the reason.
+            // sometimes, I get an XException here... don't know the reason.
             ex.printStackTrace();
         }  
         jpM.setLayout(new BorderLayout());

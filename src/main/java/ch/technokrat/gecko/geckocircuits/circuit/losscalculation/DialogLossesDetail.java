@@ -50,7 +50,7 @@ public final class DialogLossesDetail extends GeckoDialog {
         return returnValue;
     }
 
-    public static DialogLossesDetail fabricCreateExisiting(final LossCalculationDetailed lossCalculation, final Window parent) {
+    public static DialogLossesDetail fabricCreateExisting(final LossCalculationDetailed lossCalculation, final Window parent) {
         DialogLossesDetail returnValue = new DialogLossesDetail(lossCalculation, parent);
         returnValue._jButtonSaveChanged.setEnabled(true);
         return returnValue;
@@ -82,7 +82,7 @@ public final class DialogLossesDetail extends GeckoDialog {
         _lossCalculation = lossCalculation;
         // // Read in curve data from the measurement curves:
         _switchingLossPanel._lossCurves.addAll(_lossCalculation.getCopyOfSwitchingLossMeasurementCurvesArray());        
-        _conductionLossPanel._lossCurves.addAll(_lossCalculation.getCopyOfConductionLossMeasurementCurvenArray());        
+        _conductionLossPanel._lossCurves.addAll(_lossCalculation.getCopyOfConductionLossMeasurementCurvesArray());        
 
         if (_lossCalculation.lossFile != null) {
             this.setTitle(" " + _lossCalculation.lossFile.getName());

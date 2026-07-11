@@ -17,7 +17,7 @@ package ch.technokrat.gecko.geckocircuits.newscope;
  *
  * @author andy
  */
-public final class TimeSeriesConstantDt extends AbstractTimeSerie {
+public final class TimeSeriesConstantDt extends AbstractTimeSeries {
 
     private int _maxDefinedIndex = Integer.MIN_VALUE;
     private double _dt = DEFAULT_DT;

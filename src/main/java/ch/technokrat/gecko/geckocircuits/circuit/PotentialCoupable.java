@@ -16,7 +16,7 @@ package ch.technokrat.gecko.geckocircuits.circuit;
 import ch.technokrat.gecko.geckocircuits.control.Operationable;
 
 /**
- * Every component, that has a link to a Potential (for example Voltge measurement, 
+ * Every component, that has a link to a Potential (for example Voltage measurement, 
  * or signal controled voltage source) should implement this interface!
  * @author andreas
  */

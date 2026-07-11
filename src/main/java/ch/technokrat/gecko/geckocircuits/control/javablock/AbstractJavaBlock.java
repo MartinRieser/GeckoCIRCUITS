@@ -54,7 +54,7 @@ public abstract class AbstractJavaBlock {
                 
         _compileObject = new CompileObject(sourceString, className, _additionalSourceFiles);
         
-        if (_compileObject.getCompileStatus() == CompileStatus.COMPILED_SUCCESSFULL) {
+        if (_compileObject.getCompileStatus() == CompileStatus.COMPILED_SUCCESSFUL) {
             findAndLoadClass();
         }
 
@@ -207,7 +207,7 @@ public abstract class AbstractJavaBlock {
         className = tokenMap.readDataLine("className", className);
         _compileObject = new CompileObjectSavedFile(className, _classNameFileMap, compStatus);
         try {
-            if (_compileObject.getCompileStatus() == CompileStatus.COMPILED_SUCCESSFULL) {
+            if (_compileObject.getCompileStatus() == CompileStatus.COMPILED_SUCCESSFUL) {
                 findAndLoadClass();
             }
         } catch (java.lang.UnsupportedClassVersionError classVersionError) {

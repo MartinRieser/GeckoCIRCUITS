@@ -16,12 +16,12 @@ package ch.technokrat.gecko.geckocircuits.circuit;
 import ch.technokrat.gecko.geckocircuits.general.ProjectData;
 import java.util.Random;
 
-public class UniqueObjectIdentifer {
+public class UniqueObjectIdentifier {
 
     private static Random generator = new Random();    
     private long identifier = 0;    
 
-    public UniqueObjectIdentifer() {
+    public UniqueObjectIdentifier() {
         
     }
     

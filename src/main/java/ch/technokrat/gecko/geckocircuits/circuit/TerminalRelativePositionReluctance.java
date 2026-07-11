@@ -20,8 +20,8 @@ import java.awt.Graphics2D;
 
 public class TerminalRelativePositionReluctance extends TerminalRelativePosition {
 
-    public TerminalRelativePositionReluctance(AbstractBlockInterface parent, int poxX, int posY) {
-        super(parent, poxX, posY);
+    public TerminalRelativePositionReluctance(AbstractBlockInterface parent, int posX, int posY) {
+        super(parent, posX, posY);
     }
 
     @Override

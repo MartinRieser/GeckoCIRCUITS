@@ -19,7 +19,7 @@ package ch.technokrat.gecko.geckocircuits.newscope;
  * more easily for constant time steps in a calculation routine
  * with start and stop time and number of steps in between.
  */
-public abstract class AbstractTimeSerie {
+public abstract class AbstractTimeSeries {
     protected static final int FIND_OVER_STEP = 5;
     public abstract double getValue(final int index);
     public abstract void setValue(final int index, final double value);

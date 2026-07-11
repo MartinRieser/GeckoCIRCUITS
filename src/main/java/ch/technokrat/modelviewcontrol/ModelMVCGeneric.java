@@ -18,7 +18,7 @@ import java.awt.event.ActionListener;
 import java.io.Serializable;
 
 /**
- * A generic MVC framework. This seems to be very usefull when the MVC paradigma
+ * A generic MVC framework. This seems to be very useful when the MVC paradigma
  * is used extensively. The class does all the listener registration stuff,
  * notification... Detailed documentation, see
  * http://www.onjava.com/pub/a/onjava/2004/07/07/genericmvc.html?page=1 Be
@@ -33,7 +33,7 @@ public abstract class ModelMVCGeneric<T> implements Serializable{
 
   /**
    * register Listener in list. Careful: the listener is not updated during
-   * registration, that means the listener must aquire its initialisation data
+     * registration, that means the listener must acquire its initialisation data
    * manually. But thats ok, since we have a reference to the values, anyway.
    * this saves some events.
    *

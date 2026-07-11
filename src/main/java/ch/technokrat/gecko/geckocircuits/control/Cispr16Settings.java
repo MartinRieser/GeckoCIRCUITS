@@ -32,7 +32,7 @@ public final class Cispr16Settings {
     
     public final UserParameter<Double> _maxFreq;    
     public final UserParameter<Double> _minFreq;    
-    public final UserParameter<Double> _qpInteval;
+    public final UserParameter<Double> _qpInterval;
     public final UserParameter<Double> _filterThreshold;
     
     public final UserParameter<Boolean> _automaticQPSelection;
@@ -120,7 +120,7 @@ public final class Cispr16Settings {
             arrayIndex(control, -1).
             build();
          
-         _qpInteval = UserParameter.Builder.
+         _qpInterval = UserParameter.Builder.
             <Double>start("QPinterval", 9000.0).
             longName(I18nKeys.QP_INTERVAL).
             shortName("QPinterval").            

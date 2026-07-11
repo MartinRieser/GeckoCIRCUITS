@@ -95,7 +95,7 @@ public abstract class AbstractCircuitSource extends AbstractTwoPortPowerCircuitB
     final UserParameter<Double> _didtInitialCurrent = UserParameter.Builder.
             <Double>start("didtInitialCurrent", 0.0).
             longName(I18nKeys.NON_ACCESSIBLE).
-            shortName("non-accessibe").
+            shortName("non-accessible").
             arrayIndex(this, 15).
             build();
     final UserParameter<Double> _offset = UserParameter.Builder.

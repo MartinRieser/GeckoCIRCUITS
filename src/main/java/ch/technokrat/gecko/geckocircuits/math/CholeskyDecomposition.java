@@ -56,12 +56,12 @@ public class CholeskyDecomposition implements java.io.Serializable {
    @return     Structure to access L and isspd flag.
    */
 
-   public CholeskyDecomposition (Matrix Arg) {
+   public CholeskyDecomposition (Matrix source) {
       // Initialize.
-      double[][] A = Arg.getArray();
-      n = Arg.getRowDimension();
+      double[][] A = source.getArray();
+      n = source.getRowDimension();
       L = new double[n][n];
-      isspd = (Arg.getColumnDimension() == n);
+      isspd = (source.getColumnDimension() == n);
       // Main loop.
       for (int j = 0; j < n; j++) {
          double[] Lrowj = L[j];

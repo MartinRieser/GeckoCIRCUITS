@@ -15,7 +15,7 @@ package ch.technokrat.gecko.geckocircuits.control.javablock;
 
 /**
  * In fact, this class represents two red triangles: increase terminal number and decrease!
- * In the future, whe should split this / refactor
+ * In the future, we should split this / refactor
  * @author andreas
  */
 public class ControlJavaTriangles {

@@ -32,21 +32,22 @@ mvn jacoco:report                         # Generate test coverage report
 6. **Write Tests BEFORE translations/refactorings:** Adding a comprehensive test suite before making high-risk changes (like German-to-English renames) provides a strong verification gate.
 7. **Javadocs Last:** Complete all code cleanups, bug fixes, and renames before Javadoc generation. This ensures parameters and method names in the documentation match the final English names (e.g., `@param nodeIndex` rather than `@param knotenIndex`).
 8. **Phase-Level Commits:** Git commit and compile after every single batch to ensure errors can be easily bisected.
+9. **Mandatory Use of Target Markdown Files:** For every phase, the executing AI agent MUST NOT rely on the partial or illustrative lists printed directly in this plan. Instead, the agent MUST read the comprehensive, file-by-file targets list located in [improvement-reviews/targets/](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/improvement-reviews/targets) (e.g. `phase2_typo_fixes.md`, `phase3_magic_numbers.md`, etc.). These files have been pre-compiled from all 791 reviewed source files. The lists printed in this plan are only key examples and warnings.
 
 ---
 
 ## Phase Order (Optimized Dependency Flow)
 
-| Phase | Type | Risk | Files | AI Sessions | Recommended LLM | Notes / Goals |
-|-------|------|------|-------|-------------|-----------------|---------------|
-| 1 | Dead code & debug prints removal | Very Low | ~60 | 3 batches of ~20 | **DeepSeek V4 Flash** or **Gemini 3.5 Flash (Medium)** | Clean clutter |
-| 2 | Typo fixes in identifiers & comments | Low | ~25 | 1-2 batches | **DeepSeek V4 Flash** or **Gemini 3.5 Flash (Medium)** | Fix misspelled public/private keys |
-| 3 | Magic number extraction | Low | ~30 | 2 batches | **DeepSeek V4 Flash** or **Gemini 3.5 Flash (Medium)** | Constant extraction |
-| 4 | Assert-to-exception fixes | Medium | ~10 | 1 batch | **Gemini 3.5 Flash (High)** | Replace assert-false with explicit exceptions |
-| 5 | Test cases (new safety net) | Medium | ~25 | 2 batches | **Gemini 3.5 Flash (High)** | Safety net for bugs and renames |
-| 6 | Bug fixes (Test-Driven) | Medium-High | ~15 | 1-2 batches | **Gemini 3.5 Flash (High)** | Correct functional errors using new tests |
-| 7 | German-to-English translations | High | ~50 | 3 batches | **Gemini 3.5 Flash (High)** | Cross-file refactoring + serialization aliases |
-| 8 | Javadoc -- class-level + method-level | Low (volume)| ~785 | 16 batches of ~50 | **DeepSeek V4 Flash** or **Gemini 3.5 Flash (Medium)** | Document final English codebase |
+| Phase | Type | Risk | Files | AI Sessions | Recommended LLM | Notes / Goals | Target list reference |
+|-------|------|------|-------|-------------|-----------------|---------------|-----------------------|
+| 1 | Dead code & debug prints removal | Very Low | 143 | ~7 batches of ~20 | **DeepSeek V4 Flash** or **Gemini 3.5 Flash (Medium)** | Clean clutter | [phase1_dead_code.md](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/improvement-reviews/targets/phase1_dead_code.md) |
+| 2 | Typo fixes in identifiers & comments | Low | 62 | ~3 batches of ~20 | **DeepSeek V4 Flash** or **Gemini 3.5 Flash (Medium)** | Fix misspelled public/private keys | [phase2_typo_fixes.md](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/improvement-reviews/targets/phase2_typo_fixes.md) |
+| 3 | Magic number extraction | Low | 70 | ~3 batches of ~20 | **DeepSeek V4 Flash** or **Gemini 3.5 Flash (Medium)** | Constant extraction | [phase3_magic_numbers.md](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/improvement-reviews/targets/phase3_magic_numbers.md) |
+| 4 | Assert-to-exception fixes | Medium | 8 | 1 batch | **Gemini 3.5 Flash (High)** | Replace assert-false with explicit exceptions | [phase4_assert_fixes.md](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/improvement-reviews/targets/phase4_assert_fixes.md) |
+| 5 | Test cases (new safety net) | Medium | ~25 | 2 batches | **Gemini 3.5 Flash (High)** | Safety net for bugs and renames | *Self-contained package tests* |
+| 6 | Bug fixes (Test-Driven) | Medium-High | 71 | ~3-4 batches | **Gemini 3.5 Flash (High)** | Correct functional errors using new tests | [phase6_bug_fixes.md](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/improvement-reviews/targets/phase6_bug_fixes.md) |
+| 7 | German-to-English translations | High | 68 | ~3-4 batches | **Gemini 3.5 Flash (High)** | Cross-file refactoring + serialization aliases | [phase7_translations.md](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/improvement-reviews/targets/phase7_translations.md) |
+| 8 | Javadoc -- class-level + method-level | Low (volume)| 772 | 16 batches of ~50 | **DeepSeek V4 Flash** or **Gemini 3.5 Flash (Medium)** | Document final English codebase | [phase8_javadoc.md](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/improvement-reviews/targets/phase8_javadoc.md) |
 
 ---
 
@@ -56,71 +57,18 @@ mvn jacoco:report                         # Generate test coverage report
 * **Verification:** `mvn -T 1C clean compile` -- no behavior change.
 
 ### Target Files List:
-* **Batch 1 (Circuit & Core):**
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/general/MyProxy.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/general/GeckoExternal.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/general/GeckoSimulink.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/AbstractControlCalculatable.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/AbstractNonLinearCircuitComponent.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/AbstractSwitchCalculator.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/CapacitorCalculator.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/DiodeCalculator.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/IGBTCalculator.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/SubcircuitBlock.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/ThermMODUL.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/VoltageSourceCalculator.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/VoltageSourceDCMachineCalculator.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/general/MklWrapper.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/general/AbstractGeckoModel.java`
-* **Batch 2 (Control & Calculators):**
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/AbstractControlBlock.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlCalculatorInterface.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlClock.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlDelay.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlExpression.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlSaveData.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlTerminalCalculator.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlVariableTerminalNumber.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlXYPlot.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/calculators/AbsCalculator.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/calculators/CounterCalculatable.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/calculators/IntegratorCalculation.java`
-* **Batch 3 (Misc, Legacy & Scope):**
-  * `src/main/java/ch/technokrat/gecko/expressionscripting/ExpressionScriptingEngine.java` (delete or clean)
-  * `src/main/java/ch/technokrat/gecko/expressionscripting/GeckoMathParser.java` (delete or clean)
-  * `src/main/java/ch/technokrat/gecko/expressionscripting/ModelCalculatable.java` (delete or clean)
-  * `src/main/java/ch/technokrat/gecko/expressionscripting/ModelCalculatableScript.java` (delete or clean)
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/nativec/NativeCLibraryFile.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/math/LUDecomposition.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/math/Matrix.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/math/QRDecomposition.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/math/SingularValueDecomposition.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/nativec/CompileStatus.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/javablock/ScriptPanel.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/datacontainer/DataContainerSimple.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/scope/FourierKurvenRekonstruktion.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/scope/PlotSettingsDialog.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/CircuitComponent.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/CircuitComponentList.java`
-  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/ExportASCII.java`
+The complete, comprehensive list of 143 files is located in [phase1_dead_code.md](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/improvement-reviews/targets/phase1_dead_code.md). Note that Phase 1 has already been fully executed and committed.
 
 ### Agent prompt template (copy per batch):
 ```
-Read the improvement review section for these files from <REVIEW_FILE_PATH>.
-For EACH file below, read the source, then apply ONLY the dead-code and debug-print
-tasks listed in its review section:
+Using the target files and tasks list from phase1_dead_code.md:
+For EACH file in the current batch, read the source, then apply ONLY the dead-code, debug-print, and redundant element tasks specified:
 - Remove commented-out code blocks (not license headers or Javadoc)
-- Remove unused imports
-- Remove System.out.println debug statements (replace with Logger if review says so)
-- Remove dead local variables
+- Remove unused imports, fields, variables, parameters, and methods
+- Remove System.out.println / printStackTrace debug statements
+- Remove duplicate check structures or redundant checks
 
 DO NOT make any other changes. DO NOT rename anything. DO NOT add Javadoc.
-
-Files (base: src/main/java/ch/technokrat/gecko/geckocircuits/):
-1. <path1>
-2. <path2>
-...
-20. <path20>
 
 After editing, run: mvn -T 1C clean compile
 Report any compilation errors.
@@ -136,13 +84,13 @@ Report any compilation errors.
 * **Verification:** `mvn -T 1C clean compile`.
 
 ### Targeted Typos:
+The complete, comprehensive list of 62 target files and their tasks is located in [phase2_typo_fixes.md](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/improvement-reviews/targets/phase2_typo_fixes.md). Key examples include:
 * `DEFAULT_FREQENCY` -> `DEFAULT_FREQUENCY` in `ControlSlidingDFT.java`
 * `COMPILED_SUCCESSFULL` -> `COMPILED_SUCCESSFUL` in both nativec and javablock `CompileStatus.java` enums.
 * `LIGTHGRAY` -> `LIGHTGRAY` in `GraferV3.java`
 * `savegetFile` -> `safeGetFile` & `savegetFileName` -> `safeGetFileName` in `NativeCLibraryFile.java`
 * `severeErrorOccured` -> `severeErrorOccurred` in `ControlNativeC.java`
 * `SMALL_SIGNAL_ANALYIS` -> `SMALL_SIGNAL_ANALYSIS` in `I18nKeys`
-* Comment typos (e.g. `Paramter` -> `Parameter` in `UserParameter.java` / `GlobalParameterUndoable` undo presentation name)
 
 ### WARNING -- I18nKeys and Resource Bundle Verification:
 Several typo fixes affect `I18nKeys` enum constants and `UserParameter` string
@@ -155,25 +103,15 @@ serialization token maps. When renaming any of these:
    as a backward-compatible alias rather than renaming outright (see Phase 7's
    alias system for the full mechanism)
 
-Affected typos requiring this caution:
-* `SMALL_SIGNAL_ANALYIS` -> `SMALL_SIGNAL_ANALYSIS` (I18nKeys enum + properties)
-* `COMPILED_SUCCESSFULL` -> `COMPILED_SUCCESSFUL` (used in serialization)
-
 ### Agent prompt template:
 ```
-Fix typos in these files per the review at <REVIEW_FILE_PATH>.
-For each identifier rename, FIRST run grep to find all references across the codebase
-(including src/main/, src/test/, and resources/*.properties),
-THEN rename in all files.
+TASK: Fix typos and rename identifiers in target files.
+Read target files and tasks from phase2_typo_fixes.md.
 
-CAUTION: If a renamed identifier is an I18nKeys constant or serialization token,
-also update any matching keys in resources/*.properties files. For serialization
-tokens, add the old name as a backward-compatible alias (see Phase 7).
-
-Files:
-1. <path1>
-2. <path2>
-...
+For each file in the current batch:
+1. For each identifier rename or typo fix task, FIRST run grep to find all references across the codebase (including src/main/, src/test/, and resources/*.properties).
+2. Rename in all files.
+3. CAUTION: If a renamed identifier is an I18nKeys constant or serialization token, also update any matching keys in resources/*.properties files. For serialization tokens, add the old name as a backward-compatible alias (see Phase 7).
 
 After editing, run: mvn -T 1C clean compile
 Report any compilation errors and list ALL files modified.
@@ -188,38 +126,21 @@ Report any compilation errors and list ALL files modified.
 * **Risk:** Low. Extract literal values into `public/private static final` constants.
 
 ### Key Target Files:
+The complete, comprehensive list of 70 target files is located in [phase3_magic_numbers.md](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/improvement-reviews/targets/phase3_magic_numbers.md). Examples include:
 * `src/main/java/ch/technokrat/gecko/geckocircuits/scope/HiLoData.java` (Extract `1E30f` / `-1E30f` sentinels)
 * `src/main/java/ch/technokrat/gecko/geckocircuits/newscope/HiLoData.java` (Extract `1E30f` sentinel)
 * `src/main/java/ch/technokrat/gecko/geckocircuits/scope/GraferImplementation.java` (`1000` index encoding, `10000`, `0.6f` line widths)
 * `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlSaveData.java` (`100` file count threshold)
-* `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlSlidingDFT.java` (`2` frequency multiplier)
-* `src/main/java/ch/technokrat/gecko/geckocircuits/nativec/NativeCDialog.java` (`0.3` dialog size ratio)
-* `src/main/java/ch/technokrat/gecko/geckocircuits/general/OutputWarningStream.java` (`50000000`, `100000` buffer sizes)
-* `src/main/java/ch/technokrat/gecko/geckocircuits/general/JavaMemoryRestart.java` (`1098300` megabyte offset)
-* `src/main/java/ch/technokrat/gecko/geckocircuits/general/GeckoMemoryMappedFile.java` (`1000` connection delay)
-* `src/main/java/ch/technokrat/gecko/geckocircuits/general/GeckoSim.java` (`640`, `480` default screen size)
-* `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/AbstractCapacitor.java`
-* `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/AbstractSemiconductor.java`
-* `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/CapacitorCalculator.java`
-* `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/IGBTCalculator.java`
-* `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/ThyristorCalculator.java`
-* `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/VoltageSourceCalculator.java`
-* `src/main/java/ch/technokrat/gecko/geckocircuits/scope/PlotSettingsDialog.java`
-* `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlClock.java`
-* `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlTerminalCalculator.java`
-* `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlXYPlot.java`
 
 ### Agent prompt template:
 ```
-For each file below, read the source and the review at <REVIEW_FILE_PATH>.
-Apply ONLY the magic-number extraction tasks from the review:
-- Replace bare numeric literals with named constants at class level
-- Name constants in UPPER_SNAKE_CASE
-- DO NOT change any logic or behavior
+TASK: Extract magic numbers into named constants in the target files.
+Read target files and tasks from phase3_magic_numbers.md.
 
-Files:
-1. <path1>
-...
+For each file in the current batch, apply only the magic-number/constant extraction tasks:
+- Replace bare numeric literals or hardcoded index offsets with named constants at class level.
+- Name constants in UPPER_SNAKE_CASE.
+- DO NOT change any logic or behavior.
 
 After editing, run: mvn -T 1C clean compile
 ```
@@ -234,9 +155,11 @@ After editing, run: mvn -T 1C clean compile
 * **Verification:** `mvn -T 1C clean compile && mvn -T 1C test`.
 
 ### Targets:
+The complete list of 8 target files is located in [phase4_assert_fixes.md](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/improvement-reviews/targets/phase4_assert_fixes.md). It includes:
 * `CompileStatus.java` -- `getFromOrdinal`: `assert false; return null` -> `throw new IllegalArgumentException("Invalid ordinal: " + ordinal);`
 * `AxisLinLog.java` -- `getFromOrdinal`: same pattern.
 * `Matrix.java` -- `solve()`: `assert false; return null` -> `throw new IllegalArgumentException("Matrix must be square to solve.");`
+* `Clipping.java`, `ACosCalculator.java`, `ASinCalculator.java`, `MapList.java`, `MethodNameChecker.java`.
 
 **Gate:** `mvn -T 1C clean compile && mvn -T 1C test`. Git commit: `"Replace assert-false with IllegalArgumentException"`.
 
@@ -292,37 +215,26 @@ After writing, run: mvn test -Dtest="<ClassName>Test"
 * **Risk:** Medium-High. Each fix needs careful analysis.
 * **Verification:** `mvn -T 1C clean compile && mvn -T 1C test` verifies the fixes against Phase 5 tests.
 
-### Critically Identified Bugs:
-
-| File | Bug Details | Correct Fix Action |
-|------|-------------|--------------------|
-| `LUDecomposition.java:129` | `&` should be `&&` | Use short-circuiting `&&` to avoid index bounds exception on `LU[j][j]`. |
-| `BigLUDecomposition.java:132` | Same `&` vs `&&` bug | Replace `&` with `&&`. |
-| `CholeskyDecomposition.java:79,82` | Same `&` vs `&&` bug | Replace logical `&` with short-circuiting `&&`. |
-| `FourierDiagramm.java:247-259` | Duplicate zoom conditions + self-comparison | Simplify nested duplicate/buggy `if` conditions with: `g.drawRect(Math.min(x1Zoom, x2Zoom), Math.min(y1Zoom, y2Zoom), Math.abs(x2Zoom - x1Zoom), Math.abs(y2Zoom - y1Zoom));` |
-| `FourierKurvenRekonstruktion.java:202-214` | Same zoom condition bug | Apply same `Math.min`/`Math.abs` simplification. |
-| `FourierDiagramm.java:563-587` | `getPixelFromValue` returns `{-1, -1}` | Implement correct math formulas: `xPix = (xAchseTyp_ == ACHSE_LOG) ? (int) Math.round(xAchseX_ + Math.log10(xWert / achseXmin_) * sfX_) : (int) Math.round(xAchseX_ + (xWert - achseXmin_) * sfX_);` (similarly for `yPix`). |
-| `FourierKurvenRekonstruktion.java:444-469` | Same `getPixelFromValue` bug | Apply the same math formulas for logarithmic and linear pixel calculations. |
-| `GraferImplementation.java:1323-1331` | Shadowed variables create no-op self-assignment | Resolve shadowing of the fields `xTickAutoSpacing` and `yTickAutoSpacing` by referencing `this.xTickAutoSpacing` and `this.yTickAutoSpacing`. |
-| `HiLoData.java` (newscope): `179-190` | `correctWithNotANumber` dead logic bug | Fix `correctWithNotANumber` to return `value1` in the `else` branch (currently returns `value2`). |
-| `ControlSPARSEMATRIX.java` | Output counts mismatch | Align outputs: `getOutputNames()` returns 9, `getOutputDescription()` returns 8. Fix duplication on line 34 ("uN2" -> "uN3"). |
-| `NativeCBlock.java:108` | Infinity values check missing | Add check for `Double.isInfinite()` alongside NaN checks in `checkOutputsForNANorINFValues`. |
-| `CompiledClassContainer.java:51` | NPE risk | Add null check for `_classBytes` in `getClassBytes()`. |
-| `NativeCDialog.java:191` | Printing stack trace array hash | Replace `println(exc.getStackTrace())` with `exc.printStackTrace(System.err)`. |
+### Target Files List:
+The complete, comprehensive list of 71 bug, logic, and safety fixes is located in [phase6_bug_fixes.md](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/improvement-reviews/targets/phase6_bug_fixes.md). A few high-priority cases include:
+* Short-circuiting operator bugs (`&` instead of `&&`) in `LUDecomposition.java`, `BigLUDecomposition.java`, and `CholeskyDecomposition.java`.
+* Duplicate zoom conditions / self-comparisons in `FourierDiagramm.java` and `FourierKurvenRekonstruktion.java`.
+* Incorrect pixel formula rendering in `FourierDiagramm.java` and `FourierKurvenRekonstruktion.java`.
+* Shadowed field variables causing no-op self-assignments in `GraferImplementation.java`.
+* NPE risks and missing null/infinity checks in `CompiledClassContainer.java`, `NativeCBlock.java`, and others.
 
 ### Agent prompt template:
 ```
-TASK: You are applying critical bug fixes in a Test-Driven manner.
-For the file <TargetFile>, read the bug description and correct fix action in the table.
-Write a regression test in its corresponding test class (created in Phase 5) that reproduces the bug,
-then modify <TargetFile> to fix the bug.
-Verify that the test now passes.
+TASK: Apply critical bug, logic, and safety fixes in a Test-Driven manner.
+Read targets and tasks from phase6_bug_fixes.md.
 
-Target File: <TargetFile>
-Bug Details: <BugDetails>
-Correct Fix Action: <CorrectFixAction>
+For each file in the current batch:
+1. Identify the bug details and target class.
+2. Write a regression test in its corresponding test class (created/extended in Phase 5) that reproduces the bug.
+3. Modify the source file to resolve the issue as described.
+4. Verify the test now passes.
 
-After writing the test and code fix, run: mvn test -Dtest="<TestClass>"
+After writing the tests and code fixes, run: mvn test -Dtest="<TestClass>"
 ```
 
 **Gate:** `mvn -T 1C clean compile && mvn -T 1C test` all pass. (Advisory: `mvn spotbugs:check` — review only NEW findings in bug-fix files.) Git commit: `"Fix identified bugs using test-driven development"`.
@@ -353,6 +265,7 @@ Modify [UserParameter.java](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/src/mai
    ```
 
 ### German -> English Translation Targets:
+The complete, comprehensive list of 68 files requiring translations is located in [phase7_translations.md](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/improvement-reviews/targets/phase7_translations.md).
 
 #### (A) Serialized Keys Needing Legacy Aliases:
 * `anzXIN` -> `numberInputTerminals` (use `"anzXIN"` as a legacy identifier for backward compatibility)
@@ -360,6 +273,7 @@ Modify [UserParameter.java](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/src/mai
 * `COMPILED_SUCCESSFULL` -> `COMPILED_SUCCESSFUL` (used in serialization / persistent state)
 
 #### (B) Plain Identifiers Needing Grep-and-Replace (No Aliases Required):
+Key examples:
 * `baueGuiIndividual` -> `buildIndividualGUI` (dialog subclasses)
 * `baueGUI` -> `buildGUI`
 * `istAngeklickt` -> `isClicked`
@@ -374,17 +288,13 @@ Modify [UserParameter.java](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/src/mai
 
 ### Agent prompt template:
 ```
-TASK: Rename the German identifier to English across the codebase.
-If the identifier is in category (A), you must add its old value as a backward-compatible serialization alias in UserParameter.java.
-If the identifier is in category (B), perform a plain grep-and-replace across the entire codebase.
+TASK: Rename target German variable/class/method identifiers to English.
+Read targets and tasks from phase7_translations.md.
 
-Identifier: <OldName> -> <NewName>
-Category: <A or B>
-
-Steps:
-1. Grep for all occurrences of <OldName> in the codebase.
-2. Replace with <NewName> as appropriate.
-3. If category A, ensure UserParameter.java is modified to register <OldName> as an alias.
+For each translation target:
+1. Grep for all occurrences of the German name in the codebase.
+2. Replace with the English name.
+3. If category A (serialized keys/tokens), ensure UserParameter.java is modified to register the German name as an alias.
 4. Run mvn -T 1C clean compile to verify the build.
 ```
 
@@ -400,16 +310,13 @@ Steps:
 ### Agent prompt template (High Efficiency):
 ```
 TASK: Add Javadoc only. Do NOT change any code.
-The Javadoc tasks for each file are in <REVIEW_FILE_PATH>.
+Read target files and tasks from phase8_javadoc.md.
 
 For each file:
-1. Read the source file
-2. Add class-level Javadoc before the class/interface/enum declaration
-3. Add method Javadoc with @param/@return for public methods mentioned in the review
-4. DO NOT modify any code, imports, or existing comments
-
-Files:
-<file1> ... <file50>
+1. Read the source file.
+2. Add class-level Javadoc before the class/interface/enum declaration.
+3. Add method Javadoc with @param/@return tags for public methods specified in phase8_javadoc.md.
+4. DO NOT modify any code, imports, or existing comments.
 
 After editing, run: mvn -T 1C clean compile
 ```
@@ -422,28 +329,28 @@ After editing, run: mvn -T 1C clean compile
 
 | Phase | Batches | Files/batch | Est. tokens/batch | Total est. tokens |
 |-------|---------|-------------|-------------------|-------------------|
-| 1: Dead code | 3 | 20 | 25K | 75K |
-| 2: Typos | 1 | 25 | 30K | 30K |
-| 3: Magic numbers | 2 | 15 | 20K | 40K |
-| 4: Assert fixes | 1 | 10 | 15K | 15K |
+| 1: Dead code | 7 | 20 | 25K | 175K |
+| 2: Typos | 3 | 20 | 30K | 90K |
+| 3: Magic numbers | 3 | 20 | 25K | 75K |
+| 4: Assert fixes | 1 | 8 | 15K | 15K |
 | 5: New test cases | 2 | 13 | 45K | 90K |
-| 6: Bug fixes | 1 | 15 | 40K | 40K |
-| 7: German->English | 3 | 15 | 40K | 120K |
+| 6: Bug fixes | 4 | 20 | 40K | 160K |
+| 7: German->English | 4 | 20 | 40K | 160K |
 | 8: Javadoc | 16 | 50 | 35K | 560K |
-| **Total** | **29** | | | **~1.0M** |
+| **Total** | **40** | | | **~1.3M** |
 
 ---
 
 ## Execution Checklist
 
 ```
-[ ] Phase 1: Dead code removal         (3 batches)   mvn -T 1C clean compile
-[ ] Phase 2: Typo fixes                (1 batch)     mvn -T 1C clean compile
-[ ] Phase 3: Magic number extraction   (2 batches)   mvn -T 1C clean compile
+[x] Phase 1: Dead code removal         (7 batches)   mvn -T 1C clean compile
+[ ] Phase 2: Typo fixes                (3 batches)   mvn -T 1C clean compile
+[ ] Phase 3: Magic number extraction   (3 batches)   mvn -T 1C clean compile
 [ ] Phase 4: Assert -> exception       (1 batch)     mvn -T 1C clean compile && mvn -T 1C test
 [ ] Phase 5: New test cases            (2 batches)   mvn -T 1C test && mvn jacoco:report
-[ ] Phase 6: Bug fixes + regression    (1 batch)     mvn -T 1C clean compile && mvn -T 1C test
-[ ] Phase 7: German -> English         (3 batches)   mvn -T 1C clean compile && mvn -T 1C test
+[ ] Phase 6: Bug fixes + regression    (4 batches)   mvn -T 1C clean compile && mvn -T 1C test
+[ ] Phase 7: German -> English         (4 batches)   mvn -T 1C clean compile && mvn -T 1C test
 [ ] Phase 8: Javadoc (bulk)            (16 batches)  mvn -T 1C clean compile
 [ ] Final: Full verification                         mvn -T 1C clean verify
 ```

@@ -55,7 +55,7 @@ public abstract class AbstractCircuitSheetComponent {
         }
     };
     protected CircuitSheet _parentCircuitSheet;
-    private final UniqueObjectIdentifer _identifier = new UniqueObjectIdentifer();
+    private final UniqueObjectIdentifier _identifier = new UniqueObjectIdentifier();
     /**
      * temp because: at model loading time, the parent sheets are not yet
      * created. This field is used to find the reference after the model is
@@ -244,7 +244,7 @@ public abstract class AbstractCircuitSheetComponent {
     /**
      * @return the _identifier
      */
-    public UniqueObjectIdentifer getIdentifier() {
+    public UniqueObjectIdentifier getIdentifier() {
         return _identifier;
     }
 

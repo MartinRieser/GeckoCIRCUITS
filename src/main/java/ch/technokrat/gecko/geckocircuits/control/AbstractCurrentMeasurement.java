@@ -82,7 +82,7 @@ public abstract class AbstractCurrentMeasurement extends ControlWithSingleRefere
                     _outputSignal[0][0] = _lossSource.getConductionLosses();                    
                     break;
                 case SWITCHING:
-                    _outputSignal[0][0] = _lossSource.getSwitchngLosses();
+                    _outputSignal[0][0] = _lossSource.getSwitchingLosses();
                     break;
                 default:
                     _outputSignal[0][0] = _lossSource._currentInAmps;                       

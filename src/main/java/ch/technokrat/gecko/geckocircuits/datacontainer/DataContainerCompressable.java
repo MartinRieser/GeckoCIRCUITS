@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.datacontainer;
 
-import ch.technokrat.gecko.geckocircuits.newscope.AbstractTimeSerie;
+import ch.technokrat.gecko.geckocircuits.newscope.AbstractTimeSeries;
 import ch.technokrat.gecko.geckocircuits.newscope.DefinedMeanSignals;
 import ch.technokrat.gecko.geckocircuits.newscope.HiLoData;
 import ch.technokrat.gecko.geckocircuits.newscope.MemoryContainer;
@@ -39,7 +39,7 @@ public final class DataContainerCompressable extends AbstractDataContainer imple
     public static final int JUNK_SIZE = 4096;
     private final int _rows;
     private int _totalDataSize = 0;
-    private final AbstractTimeSerie _timeSerie;
+    private final AbstractTimeSeries _timeSeries;
     private final HiLoData[] _totMinMaxValues;
     private int _lastMinMaxJunk = 0;
     private static final int MEGA_BYTES = 1048000;
@@ -55,12 +55,12 @@ public final class DataContainerCompressable extends AbstractDataContainer imple
     private MemoryContainer _memoryContainer;
 
     public DataContainerCompressable(final int rows,
-            final AbstractTimeSerie timeSerie, final String[] signalNames, final String xDataName) {
+            final AbstractTimeSeries timeSeries, final String[] signalNames, final String xDataName) {
         super();
 
         _totMinMaxValues = new HiLoData[rows];
         _rows = rows;
-        _timeSerie = timeSerie;
+        _timeSeries = timeSeries;
         assert signalNames.length == rows;
         _signalNames = new String[signalNames.length];
 
@@ -116,7 +116,7 @@ public final class DataContainerCompressable extends AbstractDataContainer imple
                 (_data.get(_data.size() - 1)).doCompression();
             }
 
-            _data.add(new DataJunkCompressable(_memoryContainer, _totalDataSize, _rows, JUNK_SIZE, _timeSerie));
+            _data.add(new DataJunkCompressable(_memoryContainer, _totalDataSize, _rows, JUNK_SIZE, _timeSeries));
             _totalDataSize = _data.size() * JUNK_SIZE;
             setChanged();
             notifyObservers();
@@ -131,7 +131,7 @@ public final class DataContainerCompressable extends AbstractDataContainer imple
 
     @Override
     public double getTimeValue(final int column, final int row) {
-        return _timeSerie.getValue(column);
+        return _timeSeries.getValue(column);
     }
 
     @Override
@@ -157,22 +157,22 @@ public final class DataContainerCompressable extends AbstractDataContainer imple
 
     @Override
     public int getMaximumTimeIndex(final int row) {
-        return _timeSerie.getMaximumIndex();
+        return _timeSeries.getMaximumIndex();
     }
     double absoluteMaxValue = -1000000;
 
     @Override
     public void insertValuesAtEnd(final float[] values, final double timeValue) {
 
-        final int column = _timeSerie.getMaximumIndex() + 1;
+        final int column = _timeSeries.getMaximumIndex() + 1;
         checkContainerSize(column);
         _data.get(column / JUNK_SIZE).setValues(values, column);
 
         if (_avgIndicesArray.length > 0) {
             double timeInterval = 0;
-            final int maxIndex = _timeSerie.getMaximumIndex();
+            final int maxIndex = _timeSeries.getMaximumIndex();
             if (maxIndex > 0) {
-                timeInterval = timeValue - _timeSerie.getValue(maxIndex);
+                timeInterval = timeValue - _timeSeries.getValue(maxIndex);
             }
 
             //  for(int row = 0; row < values.length; row++) {        
@@ -181,7 +181,7 @@ public final class DataContainerCompressable extends AbstractDataContainer imple
                 _data.get(column / JUNK_SIZE).setIntegralValue(_integralValues[row], row, column);
             }
         }
-        _timeSerie.setValue(column, timeValue);
+        _timeSeries.setValue(column, timeValue);
     }
 
     @Override
@@ -203,7 +203,7 @@ public final class DataContainerCompressable extends AbstractDataContainer imple
 
     @Override
     public int findTimeIndex(final double time, final int row) {
-        return _timeSerie.findTimeIndex(time);
+        return _timeSeries.findTimeIndex(time);
     }
 
     @Override
@@ -234,12 +234,12 @@ public final class DataContainerCompressable extends AbstractDataContainer imple
     @Override
     public Object getDataValueInInterval(final double intervalStart, final double intervalStop, final int columnIndex) {
 
-        final int startIndex = _timeSerie.findTimeIndex(intervalStart);
-        final int stopIndex = _timeSerie.findTimeIndex(intervalStop);
+        final int startIndex = _timeSeries.findTimeIndex(intervalStart);
+        final int stopIndex = _timeSeries.findTimeIndex(intervalStop);
 
         if (startIndex == 0 && stopIndex == 0) {
             // to get the first datapoint drawn properls:
-            double firstTimeValue = _timeSerie.getValue(0);
+            double firstTimeValue = _timeSeries.getValue(0);
             if (intervalStart <= firstTimeValue && intervalStop >= firstTimeValue) {
                 return getValue(columnIndex, 0);
             }
@@ -249,7 +249,7 @@ public final class DataContainerCompressable extends AbstractDataContainer imple
             return null;
         }
         if (startIndex + 1 == stopIndex) { // we have exactly one datapoint in the interval.
-            final double timeValue = _timeSerie.getValue(stopIndex);
+            final double timeValue = _timeSeries.getValue(stopIndex);
             if (timeValue > intervalStop || timeValue < intervalStart) {
                 return null;
             } else {
@@ -263,10 +263,10 @@ public final class DataContainerCompressable extends AbstractDataContainer imple
 
     @Override
     public float getAVGValueInInterval(final double intervalStart, final double intervalStop, final int columnIndex) {
-        final int startIndex = _timeSerie.findTimeIndex(intervalStart);
-        final int stopIndex = _timeSerie.findTimeIndex(intervalStop);
+        final int startIndex = _timeSeries.findTimeIndex(intervalStart);
+        final int stopIndex = _timeSeries.findTimeIndex(intervalStop);
         final float integralValue = getIntegralValue(columnIndex, startIndex, stopIndex);
-        final double timeInterval = _timeSerie.getValue(stopIndex) - _timeSerie.getValue(startIndex);
+        final double timeInterval = _timeSeries.getValue(stopIndex) - _timeSeries.getValue(startIndex);
         return (float) (integralValue / timeInterval);
     }
 
@@ -306,8 +306,8 @@ public final class DataContainerCompressable extends AbstractDataContainer imple
     }
 
     @Override
-    public AbstractTimeSerie getTimeSeries(final int row) {
-        return _timeSerie;
+    public AbstractTimeSeries getTimeSeries(final int row) {
+        return _timeSeries;
     }
 
     @Override

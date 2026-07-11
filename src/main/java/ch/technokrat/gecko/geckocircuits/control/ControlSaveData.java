@@ -224,7 +224,7 @@ public final class ControlSaveData extends ControlBlock implements Operationable
 
     private void setPercentageText(final int percentage) {
         if (isSaveDuringSimulation()) {
-            _statusTxt = "Cont. Saving";
+            _statusTxt = "Continuous Saving";
 
         } else {
             if (percentage == HUNDRED_PERCENT) {

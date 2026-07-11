@@ -117,7 +117,7 @@ public final class ControlNativeC extends ControlBlock implements VariableTermin
             
     
     class CCalculator extends AbstractControlCalculatable {
-            private boolean severeErrorOccured = false; // save error to jump out of calculateYOUT
+            private boolean severeErrorOccurred = false; // save error to jump out of calculateYOUT
             
             CCalculator() {
                 super(XIN.size(), YOUT.size());
@@ -143,9 +143,9 @@ public final class ControlNativeC extends ControlBlock implements VariableTermin
                 }
                 try {
                     if (_time == 0) {
-                        severeErrorOccured = false;
+                        severeErrorOccurred = false;
                     }
-                    if (!severeErrorOccured) {  // if the native library or function was not found, there is no need to execute it!
+                    if (!severeErrorOccurred) {  // if the native library or function was not found, there is no need to execute it!
                         
                         // OBSERVATION: UserParameter _paramLib*** was filled lazy with data from loaded File,
                         //      too lazy to check them in the Constructor. 
@@ -156,14 +156,14 @@ public final class ControlNativeC extends ControlBlock implements VariableTermin
                         }
                         if (_nativeCBlock == null) {
                             _nativeCBlock = new NativeCBlock();
-                            _nativeCBlock.loadLibraries(_libFile.savegetFileName());
+                            _nativeCBlock.loadLibraries(_libFile.safeGetFileName());
                         }
-                        if (!severeErrorOccured) {
+                        if (!severeErrorOccurred) {
                             _nativeCBlock.calculateYOUT(_time, deltaT, _inputSignal, _outputSignal);
                         }
                     }
                 } catch (InvocationTargetException ex) {
-                    severeErrorOccured = true;  // library couldn't be loaded or native function couldn't be executed
+                    severeErrorOccurred = true;  // library couldn't be loaded or native function couldn't be executed
                     if (_nativeCBlock != null) {
                         _nativeCBlock.unloadLibraries();
                         _nativeCBlock = null;
@@ -175,7 +175,7 @@ public final class ControlNativeC extends ControlBlock implements VariableTermin
                     }
 
                 } catch (FileNotFoundException ex) {
-                    severeErrorOccured = true; // native library was not found
+                    severeErrorOccurred = true; // native library was not found
                     if (_nativeCBlock != null) {
                         _nativeCBlock.unloadLibraries();
                         _nativeCBlock = null;
@@ -189,7 +189,7 @@ public final class ControlNativeC extends ControlBlock implements VariableTermin
                     System.err.println(errorStr);
                     JOptionPane.showMessageDialog(null, errorStr, "Error", JOptionPane.ERROR_MESSAGE);
                 } catch (UnsatisfiedLinkError ex) {
-                severeErrorOccured = true; // native library was not found
+                severeErrorOccurred = true; // native library was not found
                 if (_nativeCBlock != null) {
                     _nativeCBlock.unloadLibraries();
                     _nativeCBlock = null;
@@ -198,7 +198,7 @@ public final class ControlNativeC extends ControlBlock implements VariableTermin
                 System.err.println(errorStr);
                 JOptionPane.showMessageDialog(null, errorStr, "Error", JOptionPane.ERROR_MESSAGE);
                 } catch (Exception ex) {
-                    severeErrorOccured = true;
+                    severeErrorOccurred = true;
                     ex.printStackTrace();
                     System.err.println(ex.getMessage());
                     final StackTraceElement[] ste = ex.getStackTrace();

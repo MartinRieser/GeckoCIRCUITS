@@ -88,7 +88,7 @@ public class JavaBlockVector extends AbstractJavaBlock {
         System.out.println("Compiler message: " + _compileObject.getCompilerMessage());
         System.out.println("Class name: " + _compileObject.getClassName());
         
-        if (_compileObject.getCompileStatus() != CompileStatus.COMPILED_SUCCESSFULL) {
+        if (_compileObject.getCompileStatus() != CompileStatus.COMPILED_SUCCESSFUL) {
             System.err.println("ERROR: Compilation was not successful! Status: " + _compileObject.getCompileStatus());
             return;
         }

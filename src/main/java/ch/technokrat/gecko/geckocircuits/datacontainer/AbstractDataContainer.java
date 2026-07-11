@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.datacontainer;
 
-import ch.technokrat.gecko.geckocircuits.newscope.AbstractTimeSerie;
+import ch.technokrat.gecko.geckocircuits.newscope.AbstractTimeSeries;
 import ch.technokrat.gecko.geckocircuits.newscope.HiLoData;
 import java.util.Observable;
 
@@ -57,7 +57,7 @@ public abstract class AbstractDataContainer extends Observable{
 
   public abstract boolean isInvalidNumbers(final int row);
 
-  public abstract AbstractTimeSerie getTimeSeries(final int row);
+  public abstract AbstractTimeSeries getTimeSeries(final int row);
 
   public abstract float[] getDataArray();
   

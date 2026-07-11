@@ -259,7 +259,7 @@ public final class ControlJavaFunction extends ControlBlock implements VariableT
 
         @Override
         protected double[][] createOutputSignal(int noOutputs) {
-            if (_javaBlock._compileObject.getCompileStatus() == CompileStatus.COMPILED_SUCCESSFULL) {
+            if (_javaBlock._compileObject.getCompileStatus() == CompileStatus.COMPILED_SUCCESSFUL) {
                 _javaBlock.findAndLoadClass();
             }
 
@@ -395,7 +395,7 @@ public final class ControlJavaFunction extends ControlBlock implements VariableT
         if (getModus() == ComponentState.FINISHED) {
             if (_javaBlock.getCompileStatus() == CompileStatus.NOT_COMPILED) {
                 graphics.setColor(Color.WHITE);
-            } else if (_javaBlock.getCompileStatus() == CompileStatus.COMPILED_SUCCESSFULL) {
+            } else if (_javaBlock.getCompileStatus() == CompileStatus.COMPILED_SUCCESSFUL) {
                 graphics.setColor(GlobalColors.farbeElementCONTROLHintergrund);
             } else if (_javaBlock.getCompileStatus() == CompileStatus.COMPILE_ERROR) {
                 graphics.setColor(Color.orange);

@@ -19,13 +19,13 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 import java.awt.Window;
 
-public final class ControlSPARSEMATRIX extends ControlBlock {
+public final class ControlSparseMatrix extends ControlBlock {
 
     private static final int X_POS_IN = -2;
     private static final int X_POS_OUT = 2;
-    public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlSPARSEMATRIX.class, "SPARSEMATRIX", I18nKeys.SPARSE_MATRIX_CONVERTER_CONTROL);
+    public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlSparseMatrix.class, "SPARSEMATRIX", I18nKeys.SPARSE_MATRIX_CONVERTER_CONTROL);
     
-    public ControlSPARSEMATRIX() {
+    public ControlSparseMatrix() {
         super();
         
         XIN.add(new TerminalControlInputWithLabel(this, X_POS_IN, -XIN.size(), "fp"));

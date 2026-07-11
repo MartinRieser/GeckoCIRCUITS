@@ -14,7 +14,7 @@
 package ch.technokrat.gecko.geckocircuits.datacontainer;
 
 import ch.technokrat.gecko.GeckoSim;
-import ch.technokrat.gecko.geckocircuits.newscope.AbstractTimeSerie;
+import ch.technokrat.gecko.geckocircuits.newscope.AbstractTimeSeries;
 import ch.technokrat.gecko.geckocircuits.newscope.HiLoData;
 import ch.technokrat.gecko.geckocircuits.newscope.MemoryContainer;
 import java.lang.ref.SoftReference;
@@ -68,7 +68,7 @@ public final class DataJunkCompressable implements DataJunk {
 //    private static int _compCounter = 1;
 //    private static double _compSum = 0;
     private static final int MORDER_DIFF = 2;
-    private final AbstractTimeSerie _timeSerie;
+    private final AbstractTimeSeries _timeSeries;
     private final int _rows;
     private int _memInBytes = 0;
     /**
@@ -83,7 +83,7 @@ public final class DataJunkCompressable implements DataJunk {
     private final MemoryContainer _container;
 
     public DataJunkCompressable(final MemoryContainer container, final int startIndex, final int rows, final int columns,
-            final AbstractTimeSerie timeSeries) {
+            final AbstractTimeSeries timeSeries) {
         // the data array is not completely initialized. This will happen later,
         // when data is inserted
         _container = container;
@@ -92,7 +92,7 @@ public final class DataJunkCompressable implements DataJunk {
         _columns = columns;
         _dataSoftRef = new SoftReference<float[][]>(_data);
         _startIndex = startIndex;
-        _timeSerie = timeSeries;
+        _timeSeries = timeSeries;
         _rows = rows;
     }    
 
@@ -288,12 +288,12 @@ public final class DataJunkCompressable implements DataJunk {
         }
 
         _avgCalculationOK = true;
-        final int maximumIndex = _timeSerie.getMaximumIndex();
+        final int maximumIndex = _timeSeries.getMaximumIndex();
 
         final int intervalLength = _columns / VALUE_CACHE_SIZE;
         for (int i = 0; i < VALUE_CACHE_SIZE && i * intervalLength + _startIndex <= maximumIndex; i++) {
             double localMean = 0;
-            final double startTime = _timeSerie.getValue(i * intervalLength + _startIndex);
+            final double startTime = _timeSeries.getValue(i * intervalLength + _startIndex);
             double stopTime = startTime;
             for (int j = 1 + i * intervalLength; j < (i + 1) * intervalLength; j++) {
                 if (j + _startIndex + 1 > maximumIndex) {
@@ -302,8 +302,8 @@ public final class DataJunkCompressable implements DataJunk {
                     break;
                 }
 
-                stopTime = _timeSerie.getValue(j + 1 + _startIndex);
-                final double deltaT = stopTime - _timeSerie.getValue(_startIndex + j);
+                stopTime = _timeSeries.getValue(j + 1 + _startIndex);
+                final double deltaT = stopTime - _timeSeries.getValue(_startIndex + j);
                 final double value = getValue(row, j + _startIndex);
                 localMean += value * deltaT;
             }
@@ -391,11 +391,11 @@ public final class DataJunkCompressable implements DataJunk {
     private AverageValue calculateRealAverageData(final int row, final double startTime, final double stopTime) {
         double localMean = 0;
         double totalTime = 0;
-        final int columnStart = Math.max(_startIndex, _timeSerie.findTimeIndex(startTime));
-        final int columnStop = Math.min(_timeSerie.findTimeIndex(stopTime), _startIndex + _columns);
+        final int columnStart = Math.max(_startIndex, _timeSeries.findTimeIndex(startTime));
+        final int columnStop = Math.min(_timeSeries.findTimeIndex(stopTime), _startIndex + _columns);
 
-        for (int i = columnStart; i < columnStop && i < _timeSerie.getMaximumIndex() - 1; i++) {
-            final double deltaT = _timeSerie.getValue(i + 1) - _timeSerie.getValue(i);
+        for (int i = columnStart; i < columnStop && i < _timeSeries.getMaximumIndex() - 1; i++) {
+            final double deltaT = _timeSeries.getValue(i + 1) - _timeSeries.getValue(i);
             final double value = getValue(row, i);
             localMean += value * deltaT;
             totalTime += deltaT;

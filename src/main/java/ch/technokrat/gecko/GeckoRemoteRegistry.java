@@ -40,7 +40,7 @@ public class GeckoRemoteRegistry {
     private static GeckoCustomRemote _remote = null;
     private static final String PROPERTIES_KEY = "REMOTE_ACCESS_PORT";
     private static GeckoCustomRemote remoteAccess;
-    private static final String _ipQuerySite = "http://icanhazip.com/";
+    private static final String IP_QUERY_SITE = "http://icanhazip.com/";
     private static String _ipAddress = "127.0.0.1";
     
 
@@ -189,7 +189,7 @@ public class GeckoRemoteRegistry {
      */
     public static String getExternalIPAddress() throws MalformedURLException, IOException {
         //ask a site to get the IP seen on the internet
-        URL getMyIP = URI.create(_ipQuerySite).toURL();
+        URL getMyIP = URI.create(IP_QUERY_SITE).toURL();
         BufferedReader in = new BufferedReader(new InputStreamReader(getMyIP.openStream()));
         final String ip = in.readLine(); //the IP is the first line of the page
         return ip;

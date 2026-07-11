@@ -79,7 +79,7 @@ public final class LossCalculationDetailed implements GeckoFileable, AbstractLos
         return new LossCalculatorDetailed(_parent);
     }
 
-    public List<ConductionLossMeasurementCurve> getCopyOfConductionLossMeasurementCurvenArray() {
+    public List<ConductionLossMeasurementCurve> getCopyOfConductionLossMeasurementCurvesArray() {
         List<ConductionLossMeasurementCurve> returnValue = new ArrayList<ConductionLossMeasurementCurve>();
         // // A copy is issued so that you don't have to apply the changes with 'Cancel' in the parent window -->
         for (ConductionLossMeasurementCurve toCopy : _messkurvePvCOND) {

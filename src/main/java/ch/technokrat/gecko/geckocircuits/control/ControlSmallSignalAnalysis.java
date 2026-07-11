@@ -31,7 +31,7 @@ public final class ControlSmallSignalAnalysis extends ControlBlock {
     private static final double DEFAULT_FREQ_END = 10000.0;
     
     public static final ControlTypeInfo TYPE_INFO = 
-            new ControlTypeInfo(ControlSmallSignalAnalysis.class, "ANALYSIS", I18nKeys.SMALL_SIGNAL_ANALYIS);
+            new ControlTypeInfo(ControlSmallSignalAnalysis.class, "ANALYSIS", I18nKeys.SMALL_SIGNAL_ANALYSIS);
     
     private final int BLOCK_WIDTH = 6;
     

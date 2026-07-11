@@ -20,9 +20,9 @@ public class SolverSettings {
     
     public ModelMVC<SolverType> SOLVER_TYPE = new ModelMVC<SolverType>(SolverType.SOLVER_BE ,"solver");
     public final ModelMVC<Double> _T_pre = new ModelMVC<Double>(-100e-3, "pre-calculation time");
-    public final ModelMVC<Double> _dt_pre = new ModelMVC<Double>(100e-9, "pre-calculation stepwidth");
+    public final ModelMVC<Double> _dt_pre = new ModelMVC<Double>(100e-9, "pre-calculation step width");
     
-    public final ModelMVC<Double> dt = new ModelMVC<Double>(0.1e-6, "simulation stepwidth dt");
+    public final ModelMVC<Double> dt = new ModelMVC<Double>(0.1e-6, "simulation step width dt");
     public final ModelMVC<Double> _tDURATION = new ModelMVC<Double>(20e-3, "simulation time");
     public final ModelMVC<Double> _tPAUSE = new ModelMVC<Double>(-1.0, "simulation pause time");
     

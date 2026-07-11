@@ -76,7 +76,7 @@ public final class DialogTransferFunction extends javax.swing.JFrame {
     }
         
 
-    private void readPolynomialCofficients() {
+    private void readPolynomialCoefficients() {
         _deNomModel.clear();
         _nomModel.clear();
         
@@ -131,7 +131,7 @@ public final class DialogTransferFunction extends javax.swing.JFrame {
             ((TitledBorder) jPanelNumerator.getBorder()).setTitle("Numerator polynom Coefficients");
             ((TitledBorder) jPanelDenominator.getBorder()).setTitle("Denominator polynom Coefficients");
             
-            readPolynomialCofficients();
+            readPolynomialCoefficients();
             updateTransferView();
         } else {
             _inPolynomialMode = false;

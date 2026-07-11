@@ -82,7 +82,7 @@ implements Operationable, Nonlinearable {
     @SuppressWarnings("this-escape")
     public AbstractNonLinearCircuitComponent() {
         super();
-        nonlinearData = getInitalNonlinValues();  
+        nonlinearData = getInitialNonlinValues();  
         _isNonlinear.addActionListener(new ActionListener() {
 
             @Override
@@ -294,7 +294,7 @@ implements Operationable, Nonlinearable {
             currentLine = lines.get(i);
             tokens = new StringTokenizer(currentLine, " ");
             if (tokens.countTokens() != 2) {
-                throw new NumberFormatException("Impromer data point in file: " + currentLine);
+                throw new NumberFormatException("Improper data point in file: " + currentLine);
             }            
             nonLinX[i] = Double.parseDouble(tokens.nextToken());
             nonLinY[i] = Double.parseDouble(tokens.nextToken());
@@ -365,7 +365,7 @@ implements Operationable, Nonlinearable {
     //===================================
     // ASSUMPTION: x- and y-axis both linear
     // // also employed with LKOP2
-    // nlX,nlY define the picewise non-linear characteristic, x is the actual value 
+    // nlX,nlY define the piecewise non-linear characteristic, x is the actual value
     public double getActualValueLINFromLinearizedCharacteristic(double x) {        
         int i1 = 0;
         int pkt = nonlinearData[0].length;
@@ -388,7 +388,7 @@ implements Operationable, Nonlinearable {
     //===================================
     // ASSUMPTION: x- and y-axis both linear
     // // also employed with LKOP2
-    // nlX,nlY define the picewise non-linear characteristic, x is the actual value 
+    // nlX,nlY define the piecewise non-linear characteristic, x is the actual value
     public double getActualValueLINFromLinearizedCharacteristicInverse(double x) {        
         int i1 = 0;
         int pkt = nonlinearData[0].length;
@@ -412,7 +412,7 @@ implements Operationable, Nonlinearable {
     //===================================
     // ASSUMPTION: x-axis is linear, but y-axis is logarithmic
     // Coss(u) in S, D, THYR
-    // nlX,nlY define the picewise non-linear characteristic, x is the actual value (e.g. x=u in case of C with y=C(u)) -->
+    // nlX,nlY define the piecewise non-linear characteristic, x is the actual value (e.g. x=u in case of C with y=C(u)) -->
     public double getActualValueLOGFromLinearizedCharacteristic(double x) {
         int i1 = 0;
         int pkt = nonlinearData[0].length;
@@ -453,7 +453,7 @@ implements Operationable, Nonlinearable {
         }
 
         if (nonlinearData.length != 2 || (nonlinearData[0].length < 2) || (nonlinearData[1].length < 2)) {
-            nonlinearData = getInitalNonlinValues();            
+            nonlinearData = getInitialNonlinValues();            
         }
         
         if (tokenMap.containsToken("nonLinearCharHashValue")) {

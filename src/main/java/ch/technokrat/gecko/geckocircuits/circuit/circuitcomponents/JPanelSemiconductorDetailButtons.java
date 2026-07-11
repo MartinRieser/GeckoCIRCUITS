@@ -68,7 +68,7 @@ final class JPanelSemiconductorDetailButtons extends JPanel {
             @Override
             public void actionPerformed(final ActionEvent actionEvent) {
                 // //focusIsReleased= true;  // This allows the focus to be passed on to the window that is now opening
-                final DialogLossesDetail dialog = DialogLossesDetail.fabricCreateExisiting(_detailedLosses, parentWindow);
+                final DialogLossesDetail dialog = DialogLossesDetail.fabricCreateExisting(_detailedLosses, parentWindow);
                 dialog.setVisible(true);
                 checkFileLink();
             }

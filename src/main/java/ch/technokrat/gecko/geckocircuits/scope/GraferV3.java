@@ -66,14 +66,14 @@ public class GraferV3 extends JPanel {
     //
     public static final String[] FARBEN = /*
              * TxtI.ti_farbe_GraferV3;
-             */ new String[]{"black", "red", "green", "blue", "darkgray", "gray", "ligthgray", "white", "magenta", "cyan", "orange", "yellow", "darkgreen"};
+             */ new String[]{"black", "red", "green", "blue", "darkgray", "gray", "lightgray", "white", "magenta", "cyan", "orange", "yellow", "darkgreen"};
     public static final int BLACK = -3444440;
     public static final int RED = -3444441;
     public static final int GREEN = -3444442;
     public static final int BLUE = -3444443;
     public static final int DARKGRAY = -3444444;
     public static final int GRAY = -3444445;
-    public static final int LIGTHGRAY = -3444446;
+    public static final int LIGHTGRAY = -3444446;
     public static final int WHITE = -3444447;
     public static final int MAGENTA = -3444448;
     public static final int CYAN = -3444449;
@@ -1382,7 +1382,7 @@ public class GraferV3 extends JPanel {
                 return Color.darkGray;
             case GraferV3.GRAY:
                 return Color.gray;
-            case GraferV3.LIGTHGRAY:
+            case GraferV3.LIGHTGRAY:
                 return Color.lightGray;
             case GraferV3.WHITE:
                 return Color.white;

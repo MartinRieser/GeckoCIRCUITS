@@ -73,7 +73,7 @@ public final class CompileObject extends AbstractCompileObject {
             final CompilationTask task = createCompilationTask(additionalSourceFiles);
 
             if (task.call()) {
-                _compileStatus = CompileStatus.COMPILED_SUCCESSFULL;
+                _compileStatus = CompileStatus.COMPILED_SUCCESSFUL;
                 _compilerWriter.append("\n \tCOMPILATION FINISHED SUCESSFULLY!");
 
 

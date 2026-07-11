@@ -1154,7 +1154,7 @@ public final class TestReceiverWindow extends JFrame {
             _settings._useBlackman.setUserValue(jCheckBoxBlackman.isSelected());
             _settings._showRMSValues.setUserValue(jRadioButtonRMS.isSelected());
             _settings._automaticQPSelection.setUserValue(jRadioButtonAuto.isSelected());
-            _settings._qpInteval.setUserValue((Double) jSpinnerIntervalFreq.getValue());
+            _settings._qpInterval.setUserValue((Double) jSpinnerIntervalFreq.getValue());
         }
     }
 
@@ -1169,7 +1169,7 @@ public final class TestReceiverWindow extends JFrame {
             jSpinnerMaximum.setValue(_settings._maxFreq.getValue());
             jSpinnerMinFreq.setValue(_settings._minFreq.getValue());
             jSpinnerThreshold.setValue(_settings._filterThreshold.getValue());
-            jSpinnerIntervalFreq.setValue(_settings._qpInteval.getValue());
+            jSpinnerIntervalFreq.setValue(_settings._qpInterval.getValue());
             jCheckBoxAverage.setSelected(_settings._average.getValue());
             jCheckBoxBlackman.setSelected(_settings._useBlackman.getValue());
             jRadioButtonRMS.setSelected(_settings._showRMSValues.getValue());

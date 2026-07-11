@@ -35,7 +35,7 @@ public final class ControlToEXTERNAL extends ControlBlockSimulink implements Com
     public static final ArrayList<ControlBlock> toExternals = new ArrayList<ControlBlock>();
     private String _externalName = "";
     private static final double WIDTH = 0.3;
-    // carful: this variable is only used when the model is read
+    // careful: this variable is only used when the model is read
     // it is not updated when the terminal is changed in the current model.
     private int externalOrderNumber = -1;
     public double[] dataVector;

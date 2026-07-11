@@ -16,7 +16,7 @@ package ch.technokrat.gecko.geckocircuits.newscope;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
-public class ColorStragegyDisabledComponent implements ColorSettable {
+public class ColorStrategyDisabledComponent implements ColorSettable {
     private static final int ADDITIONAL_GREY = 15;
     private static final int COLOR_DIVISOR = 5;
     private static final int MAX_VAL = 255;

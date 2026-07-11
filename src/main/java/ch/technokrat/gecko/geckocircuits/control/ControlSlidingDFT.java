@@ -31,7 +31,7 @@ import ch.technokrat.modelviewcontrol.AbstractUndoGenericModel;
 public final class ControlSlidingDFT extends AbstractControlVariableInputs {
 
     private static final double DEFAULT_WIN_SIZE = 1e-5;
-    private static final double DEFAULT_FREQENCY = 500;
+    private static final double DEFAULT_FREQUENCY = 500;
     public static final ControlTypeInfo T_INFO = new ControlTypeInfo(ControlSlidingDFT.class,"SDFT", I18nKeys.SDFT);
     
     final UserParameter<Double> _averageSpan = UserParameter.Builder.<Double>start("windowSpan", DEFAULT_WIN_SIZE).
@@ -53,7 +53,7 @@ public final class ControlSlidingDFT extends AbstractControlVariableInputs {
 
     public ControlSlidingDFT() {
         super(1);
-        _data.add(new FrequencyData(DEFAULT_FREQENCY, OutputData.ABS));
+        _data.add(new FrequencyData(DEFAULT_FREQUENCY, OutputData.ABS));
     }
     
     public List<FrequencyData> getFrequencyData() {
@@ -224,7 +224,7 @@ public final class ControlSlidingDFT extends AbstractControlVariableInputs {
         
         _data.clear();        
         
-        final double[] outputFrequencies = tokenMap.readDataLine("outputFrequencies[]", new double[]{DEFAULT_FREQENCY});        
+        final double[] outputFrequencies = tokenMap.readDataLine("outputFrequencies[]", new double[]{DEFAULT_FREQUENCY});        
         String[] outputFreqNameOpt = new String[outputFrequencies.length];
         for(int i = 0; i < outputFreqNameOpt.length; i++) {
             outputFreqNameOpt[i] = "";
@@ -309,17 +309,17 @@ public final class ControlSlidingDFT extends AbstractControlVariableInputs {
 
         @Override
         public String getPresentationName() {
-            return "Frequency selection of SFFT";
+            return "Frequency selection of SDFT";
         }
 
         @Override
         public String getUndoPresentationName() {
-            return "Frequency selection of SFFT";
+            return "Frequency selection of SDFT";
         }
 
         @Override
         public String getRedoPresentationName() {
-            return "Frequency selection of SFFT";
+            return "Frequency selection of SDFT";
         }        
     }
     

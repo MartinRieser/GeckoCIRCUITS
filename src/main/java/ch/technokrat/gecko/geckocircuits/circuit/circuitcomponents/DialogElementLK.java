@@ -27,7 +27,7 @@ import javax.swing.JLabel;
 
 /**
  * DialogElementLK is package private by intention! Every circuit component
- * should be defined within this packagse, and DialogElementLK should only be
+ * should be defined within this package, and DialogElementLK should only be
  * called from within this package.
  *
  * @author andy

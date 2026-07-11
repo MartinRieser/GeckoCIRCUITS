@@ -41,7 +41,7 @@ public class GeckoMemoryMappedFile {
     private static final int PIPE_OBJECT_SIZE_POS = 24;
     private static final int PIPE_OBJECT_POS = 32; //the position of the serialized pipe object in the buffer
     
-    public static final long _defaultBufferSize = 10000000; //the initial size of the buffer
+    public static final long DEFAULT_BUFFER_SIZE = 10000000; //the initial size of the buffer
     
     //the status ID values
     private static final long DISCONNECTED = -1;
@@ -82,7 +82,7 @@ public class GeckoMemoryMappedFile {
      * @throws IOException if something goes wrong in the process of memory-mapping
      */
     public GeckoMemoryMappedFile(final String fileName) throws FileNotFoundException, IOException {
-        this(fileName,_defaultBufferSize);
+        this(fileName,DEFAULT_BUFFER_SIZE);
     }
     
     /**

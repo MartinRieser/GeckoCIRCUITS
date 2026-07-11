@@ -167,11 +167,11 @@ public class CompileScript {
             _compileObject = new CompileObject(sw._compileSourceCode, sw._className, sw._circuit._additionalSourceFiles);                                
             sw.compilerMessages = _compileObject.getCompilerMessage();
 
-            if (_compileObject.getCompileStatus() != CompileStatus.COMPILED_SUCCESSFULL) {                
+            if (_compileObject.getCompileStatus() != CompileStatus.COMPILED_SUCCESSFUL) {                
                 sw._compileStatus = CompileStatus.COMPILE_ERROR;                
                 sw.compilerMessages = CodeWindowModern.checkForOldCompiler(sw.compilerMessages);
             } else {
-                sw._compileStatus = CompileStatus.COMPILED_SUCCESSFULL;                                
+                sw._compileStatus = CompileStatus.COMPILED_SUCCESSFUL;                                
             }
 
         } catch (IllegalArgumentException ex) {

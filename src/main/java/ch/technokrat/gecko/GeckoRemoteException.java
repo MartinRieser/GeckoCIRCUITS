@@ -43,9 +43,9 @@ public class GeckoRemoteException extends Exception {
      * Create a new GeckoRemoteException which contains a reference to the exception (e.g. IOException, or other) which cause the 
      * GeckoRemote exception.
      * @param message the message of the GeckoRemoteException
-     * @param preecedingException the exception which caused a GeckoRemoteException to be thrown
+     * @param precedingException the exception which caused a GeckoRemoteException to be thrown
      */
-    public GeckoRemoteException(final String message, final Throwable preecedingException) {
-        super(message,preecedingException);
+    public GeckoRemoteException(final String message, final Throwable precedingException) {
+        super(message,precedingException);
     }
 }

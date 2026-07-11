@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.datacontainer;
 
-import ch.technokrat.gecko.geckocircuits.newscope.AbstractTimeSerie;
+import ch.technokrat.gecko.geckocircuits.newscope.AbstractTimeSeries;
 import ch.technokrat.gecko.geckocircuits.newscope.HiLoData;
 import ch.technokrat.gecko.geckocircuits.newscope.NiceScale;
 import ch.technokrat.gecko.geckocircuits.newscope.TimeSeriesArray;
@@ -31,7 +31,7 @@ public class DataContainerSimple extends AbstractDataContainer implements DataCo
     private static final int MEGA_BYTE = 1048000;
     private static final int DOUBLE_BYTES = 8;
     private static final int FLOAT_BYTES = 8;
-    private AbstractTimeSerie _timeSerieArray;
+    private AbstractTimeSeries _timeSeriesArray;
     private String[] _signalNames;
     /*
      * the highest index where values are written into the container
@@ -43,13 +43,13 @@ public class DataContainerSimple extends AbstractDataContainer implements DataCo
     
     public static DataContainerSimple fabricConstantDtTimeSeries(final int rows, final int columns) {
         DataContainerSimple returnValue = new DataContainerSimple(rows, columns);
-        returnValue._timeSerieArray = new TimeSeriesConstantDt();
+        returnValue._timeSeriesArray = new TimeSeriesConstantDt();
         return returnValue;
     }
     
     public static DataContainerSimple fabricArrayTimeSeries(final int rows, final int columns) {
         DataContainerSimple returnValue = new DataContainerSimple(rows, columns);
-        returnValue._timeSerieArray = new TimeSeriesArray(columns);
+        returnValue._timeSeriesArray = new TimeSeriesArray(columns);
         return returnValue;
     }
     
@@ -63,13 +63,13 @@ public class DataContainerSimple extends AbstractDataContainer implements DataCo
     
     public void deleteDataReference() {
         _data = null;
-        _timeSerieArray = null;
+        _timeSeriesArray = null;
         System.gc();
     }
     
     public double getNiceMaximumXValue() {
         double maxXValue = 0;                    
-        maxXValue = Math.max(maxXValue, _timeSerieArray.getValue(_timeSerieArray.getMaximumIndex()));        
+        maxXValue = Math.max(maxXValue, _timeSeriesArray.getValue(_timeSeriesArray.getMaximumIndex()));        
         
         NiceScale niceScale = new NiceScale(HiLoData.hiLoDataFabric(0, (float) maxXValue));
         return niceScale.getNiceLimits()._yHi;
@@ -116,7 +116,7 @@ public class DataContainerSimple extends AbstractDataContainer implements DataCo
 
     @Override
     public final double getTimeValue(final int column, final int row) {
-        return _timeSerieArray.getValue(column);
+        return _timeSeriesArray.getValue(column);
     }
 
     @Override
@@ -128,7 +128,7 @@ public class DataContainerSimple extends AbstractDataContainer implements DataCo
     @Override
     public void insertValuesAtEnd(final float[] values, final double timeValue) {        
         _maximumIndex++;        
-        _timeSerieArray.setValue(_maximumIndex, timeValue);
+        _timeSeriesArray.setValue(_maximumIndex, timeValue);
         for (int i = 0; i < values.length; i++) {            
             _data[i][_maximumIndex] = values[i];
             _abMinMaxValues[i] = HiLoData.mergeFromValue(_abMinMaxValues[i], values[i]);
@@ -151,7 +151,7 @@ public class DataContainerSimple extends AbstractDataContainer implements DataCo
         int returnValue = 0;
 
         for (int i = 0; i < this.getMaximumTimeIndex(0); i++) {
-            if (_timeSerieArray.getValue(i) < time) {
+            if (_timeSeriesArray.getValue(i) < time) {
                 returnValue++;
             } else {
                 return returnValue;
@@ -162,7 +162,7 @@ public class DataContainerSimple extends AbstractDataContainer implements DataCo
 
     @Override
     public final int getUsedRAMSizeInMB() {
-        return (_data.length * _data[0].length * FLOAT_BYTES + _timeSerieArray.getMaximumIndex() * DOUBLE_BYTES) / MEGA_BYTE;
+        return (_data.length * _data[0].length * FLOAT_BYTES + _timeSeriesArray.getMaximumIndex() * DOUBLE_BYTES) / MEGA_BYTE;
     }
 
     @Override
@@ -172,12 +172,12 @@ public class DataContainerSimple extends AbstractDataContainer implements DataCo
 
     @Override
     public Object getDataValueInInterval(double intervalStart, double intervalStop, int columnIndex) {
-        final int startIndex = _timeSerieArray.findTimeIndex(intervalStart);
-        final int stopIndex = _timeSerieArray.findTimeIndex(intervalStop);
+        final int startIndex = _timeSeriesArray.findTimeIndex(intervalStart);
+        final int stopIndex = _timeSeriesArray.findTimeIndex(intervalStop);
 
         if (startIndex == 0 && stopIndex == 0) {
             // to get the first datapoint drawn properly:
-            double firstTimeValue = _timeSerieArray.getValue(0);
+            double firstTimeValue = _timeSeriesArray.getValue(0);
             if (intervalStart <= firstTimeValue && intervalStop >= firstTimeValue) {
                 return getValue(columnIndex, 0);
             }
@@ -187,7 +187,7 @@ public class DataContainerSimple extends AbstractDataContainer implements DataCo
             return null;
         }
         if (startIndex + 1 == stopIndex) { // we have exactly one datapoint in the interval.
-            final double timeValue = _timeSerieArray.getValue(stopIndex);
+            final double timeValue = _timeSeriesArray.getValue(stopIndex);
             if (timeValue > intervalStop || timeValue < intervalStart) {
                 return null;
             } else {
@@ -236,8 +236,8 @@ public class DataContainerSimple extends AbstractDataContainer implements DataCo
     }
 
     @Override
-    public AbstractTimeSerie getTimeSeries(final int row) {
-        return _timeSerieArray;
+    public AbstractTimeSeries getTimeSeries(final int row) {
+        return _timeSeriesArray;
     }
 
     @Override

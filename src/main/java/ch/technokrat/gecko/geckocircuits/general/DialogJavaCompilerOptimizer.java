@@ -385,7 +385,7 @@ public class DialogJavaCompilerOptimizer extends JFrame {
 
 private void jButtonCloseWindowActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD//GEN-FIRST:event_jButtonCloseWindowActionPerformed
     
-    if(! (geckoJavaCompiler.getCompileStatus() == GeckoJavaCompiler.COMPILESTATUS.COMPILED_SUCCESSFULL)) {
+    if(! (geckoJavaCompiler.getCompileStatus() == GeckoJavaCompiler.COMPILESTATUS.COMPILED_SUCCESSFUL)) {
         loadCode();
     }
     this.dispose();

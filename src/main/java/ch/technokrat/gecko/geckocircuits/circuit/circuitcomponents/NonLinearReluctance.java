@@ -177,7 +177,7 @@ public final class NonLinearReluctance extends AbstractNonLinearCircuitComponent
     }
 
     @Override
-    public final double[][] getInitalNonlinValues() {
+    public final double[][] getInitialNonlinValues() {
         double[][] returnValue = new double[2][NONLIN_IND_X_DEFAULT.length];
         for (int i = 0; i < NONLIN_IND_X_DEFAULT.length; i++) {
             returnValue[0][i] = NONLIN_REL_X_DEFAULT[i];

@@ -622,7 +622,7 @@ public class ScriptWindow extends javax.swing.JFrame {
 
     private void runCode() {
         jTextAreaOutput.setText("");
-        if (_compileStatus == CompileStatus.COMPILED_SUCCESSFULL) {
+        if (_compileStatus == CompileStatus.COMPILED_SUCCESSFUL) {
             try {
                 _scriptObject.runScript();
             } catch (Throwable e) {

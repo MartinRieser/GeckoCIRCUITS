@@ -131,7 +131,7 @@ public class NativeCDialog extends GeckoDialog {
         jButtonOK.addActionListener( new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
-                // trigger update function to save user data in Paramter Object
+                // trigger update function to save user data in Parameter Object
                 _regNCObj.triggerUpdate();
                 if (_selectedLibFile.getFile() != null) {
                     // set name of block to selected Native Library filename

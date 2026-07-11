@@ -422,9 +422,9 @@ public class GeckoExternal {
         external.initSteadyStateDetection(stateVariables, frequencies, deltaT, simulationTime);
     }
 
-    public static double[] simulateUntilSteadyState(final boolean supressMessages) {
+    public static double[] simulateUntilSteadyState(final boolean suppressMessages) {
         checkExternal();
-        return external.simulateUntilSteadyState(supressMessages);
+        return external.simulateUntilSteadyState(suppressMessages);
     }
 
     public static void setLossFile(final String elementName, final String lossFileName) throws FileNotFoundException {

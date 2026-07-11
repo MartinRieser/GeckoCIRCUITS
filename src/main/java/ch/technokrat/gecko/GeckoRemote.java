@@ -643,16 +643,16 @@ public class GeckoRemote {
     }
     
     @Deprecated
-    public static double[] simulateUntilSteadyState(final boolean supressMessages) {
-        return _proxy.simulateUntilSteadyState(supressMessages);
+    public static double[] simulateUntilSteadyState(final boolean suppressMessages) {
+        return _proxy.simulateUntilSteadyState(suppressMessages);
     }    
     
-    public static double[] simulateToSteadyState(final boolean supressMessages) {
-        return _proxy.simulateToSteadyState(supressMessages);
+    public static double[] simulateToSteadyState(final boolean suppressMessages) {
+        return _proxy.simulateToSteadyState(suppressMessages);
     }
     
-    public static double[] simulateToSteadyState(final boolean supressMessages, final double targetCorrelation, final double targetMeanPctDiff) {
-        return _proxy.simulateToSteadyState(supressMessages, targetCorrelation, targetMeanPctDiff);
+    public static double[] simulateToSteadyState(final boolean suppressMessages, final double targetCorrelation, final double targetMeanPctDiff) {
+        return _proxy.simulateToSteadyState(suppressMessages, targetCorrelation, targetMeanPctDiff);
     }
 
     public static int[] getPosition(final String elementName) {

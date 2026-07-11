@@ -13,7 +13,7 @@
  */
 package ch.technokrat.gecko.geckocircuits.datacontainer;
 
-import ch.technokrat.gecko.geckocircuits.newscope.AbstractTimeSerie;
+import ch.technokrat.gecko.geckocircuits.newscope.AbstractTimeSeries;
 import ch.technokrat.gecko.geckocircuits.newscope.HiLoData;
 import ch.technokrat.gecko.geckocircuits.newscope.ScopeSignalMean;
 import ch.technokrat.gecko.geckocircuits.newscope.ScopeSignalRegular;
@@ -162,7 +162,7 @@ public final class DataContainerMeanWrapper extends AbstractDataContainer {
     }
 
     @Override
-    public AbstractTimeSerie getTimeSeries(final int row) {
+    public AbstractTimeSeries getTimeSeries(final int row) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

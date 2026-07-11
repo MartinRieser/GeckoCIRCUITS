@@ -91,7 +91,7 @@ public class BigMatrix implements java.io.Serializable {
 
    /** Construct an m-by-n matrix of zeros.
    @param m    Number of rows.
-   @param n    Number of colums.
+   @param n    Number of columns.
    */
 
    public BigMatrix (int m, int n) {
@@ -331,7 +331,7 @@ public class BigMatrix implements java.io.Serializable {
    }
 
 
-   public void ResetLUDecomp() {
+   public void resetLUDecomp() {
     luDecomp = null;
    }
 

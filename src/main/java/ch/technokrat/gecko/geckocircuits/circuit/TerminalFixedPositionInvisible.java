@@ -24,8 +24,8 @@ public class TerminalFixedPositionInvisible extends TerminalFixedPosition {
     }
     
     
-    // do not paint this terminal! It is used from ther ThermPvChip-Object
-        // or other thermal components to reference to the zero temperatre.
+    // do not paint this terminal! It is used from the ThermPvChip-Object
+        // or other thermal components to reference to the zero temperature.
         // exporting the view to svg-images makes a regular terminal still
         // visible, therefore this workaround-class is used here!
     

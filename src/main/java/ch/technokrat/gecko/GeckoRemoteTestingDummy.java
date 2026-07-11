@@ -397,7 +397,7 @@ public class GeckoRemoteTestingDummy implements GeckoRemoteInterface {
     }
 
     @Override
-    public double[] simulateUntilSteadyState(boolean supressMessages) throws RemoteException {
+    public double[] simulateUntilSteadyState(boolean suppressMessages) throws RemoteException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
@@ -407,7 +407,7 @@ public class GeckoRemoteTestingDummy implements GeckoRemoteInterface {
     }
 
     @Override
-    public double[] simulateToSteadyState(boolean supressMessages) throws RemoteException {
+    public double[] simulateToSteadyState(boolean suppressMessages) throws RemoteException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -418,7 +418,7 @@ public class GeckoRemoteTestingDummy implements GeckoRemoteInterface {
         
     
     @Override
-    public double[] simulateToSteadyState(boolean supressMessages, double targetCorrelation, double targetMeanPctDiff) throws RemoteException {
+    public double[] simulateToSteadyState(boolean suppressMessages, double targetCorrelation, double targetMeanPctDiff) throws RemoteException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

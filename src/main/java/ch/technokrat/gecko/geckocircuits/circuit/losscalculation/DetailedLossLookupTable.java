@@ -94,11 +94,11 @@ public class DetailedLossLookupTable {
         double upperTemp = _temperatures[upperTempIndex];
         double lowerTemp = _temperatures[lowerTempIndex];
 
-        double wheigt2 = (temp - lowerTemp) / (upperTemp - lowerTemp);
-        double wheigt1 = (upperTemp - temp) / (upperTemp - lowerTemp);
+        double weight2 = (temp - lowerTemp) / (upperTemp - lowerTemp);
+        double weight1 = (upperTemp - temp) / (upperTemp - lowerTemp);
 
-        assert wheigt1 + wheigt2 < 1.01 && wheigt1 + wheigt2 > 0.99;
-        double returnValue = (lowerTempEnergy * wheigt1 + upperTempEnergy * wheigt2);
+        assert weight1 + weight2 < 1.01 && weight1 + weight2 > 0.99;
+        double returnValue = (lowerTempEnergy * weight1 + upperTempEnergy * weight2);
         // only return positive energies!        
         return Math.max(returnValue, 0);
     }
@@ -124,11 +124,11 @@ public class DetailedLossLookupTable {
         double upperTemp = _temperatures[upperTempIndex];
         double lowerTemp = _temperatures[lowerTempIndex];
 
-        double wheigt2 = (temp - lowerTemp) / (upperTemp - lowerTemp);
-        double wheigt1 = (upperTemp - temp) / (upperTemp - lowerTemp);
+        double weight2 = (temp - lowerTemp) / (upperTemp - lowerTemp);
+        double weight1 = (upperTemp - temp) / (upperTemp - lowerTemp);
 
-        assert wheigt1 + wheigt2 < 1.01 && wheigt1 + wheigt2 > 0.99;
-        double returnValue = (lowerTempEnergy * wheigt1 + upperTempEnergy * wheigt2);
+        assert weight1 + weight2 < 1.01 && weight1 + weight2 > 0.99;
+        double returnValue = (lowerTempEnergy * weight1 + upperTempEnergy * weight2);
         // changed: negative values are possible here, since then both voltage and current could be negative!
         return returnValue;
     }
@@ -153,11 +153,11 @@ public class DetailedLossLookupTable {
         double xLeft = xValues[leftXIndex];
         double xRight = xValues[rightXIndex];                                
         
-        double wheigt2 = (searchXValue - xLeft) / (xRight - xLeft);
-        double wheigt1 = (xRight - searchXValue) / (xRight - xLeft);
+        double weight2 = (searchXValue - xLeft) / (xRight - xLeft);
+        double weight1 = (xRight - searchXValue) / (xRight - xLeft);
 
-        assert wheigt1 + wheigt2 < 1.01 && wheigt1 + wheigt2 > 0.99;
-        double returnValue = (en1 * wheigt1 + en2 * wheigt2);                
+        assert weight1 + weight2 < 1.01 && weight1 + weight2 > 0.99;
+        double returnValue = (en1 * weight1 + en2 * weight2);                
         return returnValue;
     }
         

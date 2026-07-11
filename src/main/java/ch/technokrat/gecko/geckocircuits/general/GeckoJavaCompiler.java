@@ -60,7 +60,7 @@ public class GeckoJavaCompiler {
 
     public static enum COMPILESTATUS {
 
-        NOT_COMPILED, COMPILED_SUCCESSFULL, COMPILE_ERROR
+        NOT_COMPILED, COMPILED_SUCCESSFUL, COMPILE_ERROR
     };
     private COMPILESTATUS _compileStatus = COMPILESTATUS.NOT_COMPILED;
     //-------------------------------------------------------------------
@@ -279,7 +279,7 @@ public class GeckoJavaCompiler {
                 //------------------
             } else {
                 //------------------
-                _compileStatus = COMPILESTATUS.COMPILED_SUCCESSFULL;
+                _compileStatus = COMPILESTATUS.COMPILED_SUCCESSFUL;
                 compilerMessage += "\n \tCOMPILATION FINISHED SUCESSFULLY!";
                 // Try to access the class and run its main method                
 

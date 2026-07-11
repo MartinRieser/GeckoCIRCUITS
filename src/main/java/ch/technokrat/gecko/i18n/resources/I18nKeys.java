@@ -499,7 +499,7 @@ public enum I18nKeys {
     ADDITION("Addition"), 
     SUBTRACTION("Subtraction"), 
     MULTIPLICATION("Multiplication"), 
-    SMALL_SIGNAL_ANALYIS("Small signal analysis"),
+    SMALL_SIGNAL_ANALYSIS("Small signal analysis"),
     AMPLITUDE("Amplitude of excitation small signal"),
     NOT("NOT"), 
     AND("AND"), 
@@ -806,7 +806,7 @@ public enum I18nKeys {
                 + "Example: initSteadyStateDetection(new String[]{\"iL\",\"uC\"},200e3,1e-9,500e-6);"),
     SIMULATE_UNTIL_STEADY_STATE("Simulates a model until periodic steady-state is detected or until the end of the defined simulation time."
                 + " The function \"initSteadyStateDetection()\" must be called first with the appropriate arguments. Setting "
-                + " \"supressMessages\" to \"true\" omits the printing of messages by the function to the GeckoSCRIPT output"
+                + " \"suppressMessages\" to \"true\" omits the printing of messages by the function to the GeckoSCRIPT output"
                 + " pane and thus speeds up execution. Returned is an array with the results of the steady-state"
                 + " detection procedure. The first element in the returned array indicates if steady state has been"
                 + " reached (1 if yes, 0 if no), the second the time at which steady state was reached and the third"
@@ -814,7 +814,7 @@ public enum I18nKeys {
                 + "Example: double steadyStateResults = simulateUntilSteadyState(true);"),
     SIMULATE_TO_STEADY_STATE_DEFAULT("Simulates a model until periodic steady-state is detected or until the end of the defined simulation time."
                 + " The function \"initSteadyStateDetection()\" must be called first with the appropriate arguments. Setting "
-                + " \"supressMessages\" to \"true\" omits the printing of messages by the function to the GeckoSCRIPT output"
+                + " \"suppressMessages\" to \"true\" omits the printing of messages by the function to the GeckoSCRIPT output"
                 + " pane and thus speeds up execution. Returned is an array with the results of the steady-state"
                 + " detection procedure. The first element in the returned array indicates if steady state has been"
                 + " reached (1 if yes, 0 if no), the second the time at which steady state was reached and the third"
@@ -822,7 +822,7 @@ public enum I18nKeys {
                 + "Example: double steadyStateResults = simulateToSteadyState(true);"),
     SIMULATE_TO_STEADY_STATE("Simulates a model until periodic steady-state is detected or until the end of the defined simulation time."
                 + " The function \"initSteadyStateDetection()\" must be called first with the appropriate arguments. Setting "
-                + " \"supressMessages\" to \"true\" omits the printing of messages by the function to the GeckoSCRIPT output"
+                + " \"suppressMessages\" to \"true\" omits the printing of messages by the function to the GeckoSCRIPT output"
                 + " pane and thus speeds up execution. Steady-state is detected by comparing two subsequent periods of simulation"
                 + " by two criteria: the cross-correlation coefficient between the two periods, and the difference between the average values (RMS for waveforms with no DC offset)"
                 + " of the two periods. In an ideal case, these are 1.0 and 0.0 respectively, but in reality this rarely occurs. Therefore, more realistic values"

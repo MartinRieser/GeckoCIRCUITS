@@ -26,7 +26,7 @@ import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
 
 /**
- * This is the "block"-terminal of the subcuircuit block, which has the terminal
+ * This is the "block"-terminal of the subcircuit block, which has the terminal
  * name as label.
  *
  * @author andreas

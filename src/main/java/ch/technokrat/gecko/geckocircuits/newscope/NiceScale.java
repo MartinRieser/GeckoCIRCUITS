@@ -22,7 +22,7 @@ public final class NiceScale {
     private double _range;
     private double _niceMin;
     private double _niceMax;
-    private static final double ONE_PT_FIFE = 1.5;
+    private static final double ONE_PT_FIVE = 1.5;
     private static final int THREE = 3;
     private static final double SEVEN = 7;
     private static final double FIVE = 5;
@@ -138,7 +138,7 @@ public final class NiceScale {
         fraction = range / Math.pow(TEN, exponent);
 
         if (round) {
-            if (fraction < ONE_PT_FIFE) {
+            if (fraction < ONE_PT_FIVE) {
                 niceFraction = 1;
             } else if (fraction < THREE) {
                 niceFraction = 2;

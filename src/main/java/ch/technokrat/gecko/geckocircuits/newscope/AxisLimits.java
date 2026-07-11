@@ -54,7 +54,7 @@ final class AxisLimits {
     /**
      * storage for "undo-zoom" /zoom back
      */
-    private final Stack<HiLoData> _HistoryStack = new Stack<HiLoData>();
+    private final Stack<HiLoData> _historyStack = new Stack<HiLoData>();
 
     public Clipping getClipping() {
         return _clipping;
@@ -114,23 +114,23 @@ final class AxisLimits {
 
     private void pushHistoryStack() {
         // check if we are not pushing identical values:
-        if (!_HistoryStack.isEmpty()) {
-            final HiLoData oldLimits = _HistoryStack.pop();
-            _HistoryStack.push(oldLimits);
+        if (!_historyStack.isEmpty()) {
+            final HiLoData oldLimits = _historyStack.pop();
+            _historyStack.push(oldLimits);
             if (getLimits().compare(oldLimits)) {
                 return;
             }
         }
 
-        _HistoryStack.push(getLimits());
+        _historyStack.push(getLimits());
     }
 
     public void popHistoryStack() {
-        if (_HistoryStack.isEmpty()) {
+        if (_historyStack.isEmpty()) {
             return;
         }
 
-        _zoomedLimits = _HistoryStack.pop();
+        _zoomedLimits = _historyStack.pop();
         _valueScaleLocal = _zoomedLimits;
         _clipping = Clipping.ZOOMED;
     }

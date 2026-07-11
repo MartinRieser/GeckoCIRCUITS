@@ -227,7 +227,7 @@ public class GeckoSim {
                                     if ((i+1) != (args.length - 1)) {
                                         fileSize = Long.parseLong(args[i+2]);
                                     } else {
-                                        fileSize = GeckoMemoryMappedFile._defaultBufferSize;
+                                        fileSize = GeckoMemoryMappedFile.DEFAULT_BUFFER_SIZE;
                                     }
                                     MainWindow.setMmfAccess(new GeckoCustomMMF(MainWindow.getScripter()));
                                     MainWindow.getMmfAccess().enableAccess(fileName, fileSize);

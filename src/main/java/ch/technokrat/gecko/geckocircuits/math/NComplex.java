@@ -143,7 +143,7 @@ public class NComplex {
    }
 
    /** returns a new complex number with value a*x */
-   public static NComplex RCmul(float x, NComplex a) {
+   public static NComplex multiplyByScalar(float x, NComplex a) {
       float im,re;
 
       re = x*a.re;
