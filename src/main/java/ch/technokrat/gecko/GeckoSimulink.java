@@ -143,8 +143,6 @@ public class GeckoSimulink {
         return returnValue;
     }
 
-    static double[] tmpRemove = new double[10];
-    
     public double[] external_getValues(int portNumber) {        
         return ((ControlToEXTERNAL) ControlToEXTERNAL.toExternals.get(portNumber)).dataVector;
     }

@@ -58,7 +58,6 @@ public final class DiodeCalculator extends CircuitComponent<Diode> implements AS
     @Override
     public void stampVectorB(final double[] bVector, final double time, final double deltaT) {
         final double bValue = _uForward / _rDt;
-        //System.out.println(_element._elementName.getValue() + " stamp B: " + bValue + "  VF: " + _uForward + ", rDt: " + _rDt);
         bVector[matrixIndices[0]] += (+bValue);
         bVector[matrixIndices[1]] += (-bValue);
     }
@@ -75,16 +74,12 @@ public final class DiodeCalculator extends CircuitComponent<Diode> implements AS
         // // Andy bugfix/modification: _rDt * current was probably missing, also in the old GeckoCIRCUITS
         if (_voltage + _rDt * _current <= disturbanceValue * _uForward) {
             if (_rDt < _rOff) {
-                //System.out.println("voltage less than VF for " + _element._elementName.getValue() + " when in ON state");
-                //System.out.println("_voltage = " + _voltage + ", _current = " + _current + ", _rDt = " + _rDt);
                 diodeSwitchError = true;
                 _rDt = _rOff;
                 _bVector.setUpdateAllFlag();
             }
         } else {
             if (_rDt > _rOn) {
-                //System.out.println("voltage greater than VF for " + _element._elementName.getValue() + " when in OFF state");
-                //System.out.println("_voltage = " + _voltage + ", _current = " + _current + ", _rDt = " + _rDt);
                 diodeSwitchError = true;
                 _rDt = _rOn;
                 _bVector.setUpdateAllFlag();
@@ -93,18 +88,6 @@ public final class DiodeCalculator extends CircuitComponent<Diode> implements AS
 
 
 
-
-// // if (((p[matrixIndices[0]] - p[matrixIndices[1]]) < (Diode.stoerGroesse * _uForward)) && (_rD_t < _rOff)) { // (uD < uf) and diode "ON"
-//            _rD_t = _rOff;
-
-//            diodeSwitchError = true;
-//        }
-//
-// // if ((((p[matrixIndices[0]] - p[matrixIndices[1]]) > (Diode.stoerGroesse * _uForward)) && (_rD_t > _rOn))) { // (uD > uf) and diode "OFF"
-//            _rD_t = _rOn;
-
-//            diodeSwitchError = true;
-//        }
 
     }
 

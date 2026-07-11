@@ -10,7 +10,6 @@ mvn -T 1C test                            # Run all tests (159 baseline)
 mvn test -Dtest="ClassName"               # Run a single test class
 mvn test -Dtest="*Pattern*"               # Run tests matching a pattern
 mvn jacoco:report                         # Generate test coverage report
-mvn spotbugs:check                        # SpotBugs on changed code (advisory after high-risk phases)
 ```
 
 > **Note on static analysis:** The codebase has never been checkstyle/spotbugs-clean,
@@ -25,33 +24,85 @@ mvn spotbugs:check                        # SpotBugs on changed code (advisory a
 
 ## Execution Principles for Token Efficiency & Velocity
 
-1. **Leverage Modern Large Context Windows:** Instead of very small batches (3-5 files), use larger, logical batches (15-20 files for code edits, 40-50 files for bulk documentation like Javadoc). This reduces startup overhead and token waste from repeating project context.
-2. **Batch by Task Type, Not Package:** An agent doing typo fixes or dead-code removal across 20 files is extremely fast and efficient because the conceptual pattern is identical.
-3. **Test-Driven Bug Fixing:** Write tests (Phase 5) *before* fixing the bugs (Phase 6). This provides proof that the bug existed and is correctly solved.
-4. **Write Tests BEFORE translations/refactorings:** Adding a comprehensive test suite before making high-risk changes (like German-to-English renames) provides a strong verification gate.
-5. **Javadocs Last:** Complete all code cleanups, bug fixes, and renames before Javadoc generation. This ensures parameters and method names in the documentation match the final English names (e.g., `@param nodeIndex` rather than `@param knotenIndex`).
-6. **Phase-Level Commits:** Git commit and compile after every single batch to ensure errors can be easily bisected.
+1. **Sequential Branch Strategy:** Execute all phases sequentially on the same feature branch. Each phase commits on top of the previous one. Do not branch per phase. This avoids merge conflicts between code cleanups, bug fixes, and renames.
+2. **LLM Switching Workflow:** Switch to the recommended model in the IDE dropdown *before* starting each phase. Because you cannot change the model while an agent is running, request execution phase-by-phase (e.g., "Run Phase 1 and stop") to allow switching.
+3. **Leverage Modern Large Context Windows:** Instead of very small batches (3-5 files), use larger, logical batches (15-20 files for code edits, 40-50 files for Javadoc). This reduces startup overhead and token waste from repeating project context.
+4. **Batch by Task Type, Not Package:** An agent doing typo fixes or dead-code removal across 20 files is extremely fast and efficient because the conceptual pattern is identical.
+5. **Test-Driven Bug Fixing:** Write tests (Phase 5) *before* fixing the bugs (Phase 6). This provides proof that the bug existed and is correctly solved.
+6. **Write Tests BEFORE translations/refactorings:** Adding a comprehensive test suite before making high-risk changes (like German-to-English renames) provides a strong verification gate.
+7. **Javadocs Last:** Complete all code cleanups, bug fixes, and renames before Javadoc generation. This ensures parameters and method names in the documentation match the final English names (e.g., `@param nodeIndex` rather than `@param knotenIndex`).
+8. **Phase-Level Commits:** Git commit and compile after every single batch to ensure errors can be easily bisected.
 
 ---
 
 ## Phase Order (Optimized Dependency Flow)
 
-| Phase | Type | Risk | Files | AI Sessions | Notes / Goals |
-|-------|------|------|-------|-------------|---------------|
-| 1 | Dead code & debug prints removal | Very Low | ~60 | 3 batches of ~20 | Clean clutter |
-| 2 | Typo fixes in identifiers & comments | Low | ~25 | 1-2 batches | Fix misspelled public/private keys |
-| 3 | Magic number extraction | Low | ~30 | 2 batches | Constant extraction |
-| 4 | Assert-to-exception fixes | Medium | ~10 | 1 batch | Replace assert-false with explicit exceptions |
-| 5 | Test cases (new) | Medium | ~100 | 5 batches of 20 | Safety net for bugs and renames |
-| 6 | Bug fixes (Test-Driven) | Medium-High | ~15 | 1-2 batches | Correct functional errors using new tests |
-| 7 | German-to-English translations | High | ~50 | 3 batches | Cross-file refactoring + serialization aliases |
-| 8 | Javadoc -- class-level + method-level | Low (volume)| ~785 | 16 batches of ~50 | Document the clean, final English codebase |
+| Phase | Type | Risk | Files | AI Sessions | Recommended LLM | Notes / Goals |
+|-------|------|------|-------|-------------|-----------------|---------------|
+| 1 | Dead code & debug prints removal | Very Low | ~60 | 3 batches of ~20 | **DeepSeek V4 Flash** or **Gemini 3.5 Flash (Medium)** | Clean clutter |
+| 2 | Typo fixes in identifiers & comments | Low | ~25 | 1-2 batches | **DeepSeek V4 Flash** or **Gemini 3.5 Flash (Medium)** | Fix misspelled public/private keys |
+| 3 | Magic number extraction | Low | ~30 | 2 batches | **DeepSeek V4 Flash** or **Gemini 3.5 Flash (Medium)** | Constant extraction |
+| 4 | Assert-to-exception fixes | Medium | ~10 | 1 batch | **Gemini 3.5 Flash (High)** | Replace assert-false with explicit exceptions |
+| 5 | Test cases (new safety net) | Medium | ~25 | 2 batches | **Gemini 3.5 Flash (High)** | Safety net for bugs and renames |
+| 6 | Bug fixes (Test-Driven) | Medium-High | ~15 | 1-2 batches | **Gemini 3.5 Flash (High)** | Correct functional errors using new tests |
+| 7 | German-to-English translations | High | ~50 | 3 batches | **Gemini 3.5 Flash (High)** | Cross-file refactoring + serialization aliases |
+| 8 | Javadoc -- class-level + method-level | Low (volume)| ~785 | 16 batches of ~50 | **DeepSeek V4 Flash** or **Gemini 3.5 Flash (Medium)** | Document final English codebase |
 
 ---
 
 ## Phase 1: Dead Code & Debug Print Removal
-**Risk:** Very low. Only deletes commented-out code and `System.out.println` debug lines.
-**Verification:** `mvn -T 1C clean compile` -- no behavior change.
+* **Recommended LLM:** **DeepSeek V4 Flash** or **Gemini 3.5 Flash (Medium)** (Fast & cost-effective for bulk code removal)
+* **Risk:** Very low. Only deletes commented-out code and `System.out.println` debug lines.
+* **Verification:** `mvn -T 1C clean compile` -- no behavior change.
+
+### Target Files List:
+* **Batch 1 (Circuit & Core):**
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/general/MyProxy.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/general/GeckoExternal.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/general/GeckoSimulink.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/AbstractControlCalculatable.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/AbstractNonLinearCircuitComponent.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/AbstractSwitchCalculator.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/CapacitorCalculator.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/DiodeCalculator.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/IGBTCalculator.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/SubcircuitBlock.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/ThermMODUL.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/VoltageSourceCalculator.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/VoltageSourceDCMachineCalculator.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/general/MklWrapper.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/general/AbstractGeckoModel.java`
+* **Batch 2 (Control & Calculators):**
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/AbstractControlBlock.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlCalculatorInterface.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlClock.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlDelay.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlExpression.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlSaveData.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlTerminalCalculator.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlVariableTerminalNumber.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlXYPlot.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/calculators/AbsCalculator.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/calculators/CounterCalculatable.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/calculators/IntegratorCalculation.java`
+* **Batch 3 (Misc, Legacy & Scope):**
+  * `src/main/java/ch/technokrat/gecko/expressionscripting/ExpressionScriptingEngine.java` (delete or clean)
+  * `src/main/java/ch/technokrat/gecko/expressionscripting/GeckoMathParser.java` (delete or clean)
+  * `src/main/java/ch/technokrat/gecko/expressionscripting/ModelCalculatable.java` (delete or clean)
+  * `src/main/java/ch/technokrat/gecko/expressionscripting/ModelCalculatableScript.java` (delete or clean)
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/nativec/NativeCLibraryFile.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/math/LUDecomposition.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/math/Matrix.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/math/QRDecomposition.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/math/SingularValueDecomposition.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/nativec/CompileStatus.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/control/javablock/ScriptPanel.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/datacontainer/DataContainerSimple.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/scope/FourierKurvenRekonstruktion.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/scope/PlotSettingsDialog.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/CircuitComponent.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/CircuitComponentList.java`
+  * `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/ExportASCII.java`
 
 ### Agent prompt template (copy per batch):
 ```
@@ -75,18 +126,14 @@ After editing, run: mvn -T 1C clean compile
 Report any compilation errors.
 ```
 
-### Batch breakdown:
-* **Batch 1:** Files from `04-gecko-root.md` and `08-circuitcomponents.md` (commented-out / debug prints)
-* **Batch 2:** Files from `09/10-control*.md` and `11-calculators.md`
-* **Batch 3:** Files from `12-misc-packages.md`, `13-newscope.md`, `05/06-circuit*.md`
-
 **Gate:** `mvn -T 1C clean compile` passes. Git commit: `"Remove dead code and debug prints"`.
 
 ---
 
 ## Phase 2: Typo Fixes
-**Risk:** Low (file-local) to Medium (public identifiers need caller updates).
-**Verification:** `mvn -T 1C clean compile`.
+* **Recommended LLM:** **DeepSeek V4 Flash** or **Gemini 3.5 Flash (Medium)** (Fast & cost-effective for string replacements)
+* **Risk:** Low (file-local) to Medium (public identifiers need caller updates).
+* **Verification:** `mvn -T 1C clean compile`.
 
 ### Targeted Typos:
 * `DEFAULT_FREQENCY` -> `DEFAULT_FREQUENCY` in `ControlSlidingDFT.java`
@@ -137,15 +184,30 @@ Report any compilation errors and list ALL files modified.
 ---
 
 ## Phase 3: Magic Number Extraction
-**Risk:** Low. Extract literal values into `public/private static final` constants.
+* **Recommended LLM:** **DeepSeek V4 Flash** or **Gemini 3.5 Flash (Medium)** (Highly structured constant extraction)
+* **Risk:** Low. Extract literal values into `public/private static final` constants.
 
-### Key extractions:
-* `HiLoData.java` (scope): Extract `1E30f` / `-1E30f` sentinels into `public static final float SENTINEL_LO = 1E30f;` and `SENTINEL_HI = -1E30f;` (used by other classes).
-* `HiLoData.java` (newscope): Extract `1E30f` constant.
-* `GraferImplementation.java`: `1000` (index encoding), `10000`, `0.6f`.
-* `ControlSaveData.java`: `100` (MAX_FILE_COUNTER).
-* `ControlSlidingDFT.java`: `2` (frequency doubling).
-* `NativeCDialog.java`: `0.3` (DIALOG_SIZE_RATIO).
+### Key Target Files:
+* `src/main/java/ch/technokrat/gecko/geckocircuits/scope/HiLoData.java` (Extract `1E30f` / `-1E30f` sentinels)
+* `src/main/java/ch/technokrat/gecko/geckocircuits/newscope/HiLoData.java` (Extract `1E30f` sentinel)
+* `src/main/java/ch/technokrat/gecko/geckocircuits/scope/GraferImplementation.java` (`1000` index encoding, `10000`, `0.6f` line widths)
+* `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlSaveData.java` (`100` file count threshold)
+* `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlSlidingDFT.java` (`2` frequency multiplier)
+* `src/main/java/ch/technokrat/gecko/geckocircuits/nativec/NativeCDialog.java` (`0.3` dialog size ratio)
+* `src/main/java/ch/technokrat/gecko/geckocircuits/general/OutputWarningStream.java` (`50000000`, `100000` buffer sizes)
+* `src/main/java/ch/technokrat/gecko/geckocircuits/general/JavaMemoryRestart.java` (`1098300` megabyte offset)
+* `src/main/java/ch/technokrat/gecko/geckocircuits/general/GeckoMemoryMappedFile.java` (`1000` connection delay)
+* `src/main/java/ch/technokrat/gecko/geckocircuits/general/GeckoSim.java` (`640`, `480` default screen size)
+* `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/AbstractCapacitor.java`
+* `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/AbstractSemiconductor.java`
+* `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/CapacitorCalculator.java`
+* `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/IGBTCalculator.java`
+* `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/ThyristorCalculator.java`
+* `src/main/java/ch/technokrat/gecko/geckocircuits/circuit/circuitcomponents/VoltageSourceCalculator.java`
+* `src/main/java/ch/technokrat/gecko/geckocircuits/scope/PlotSettingsDialog.java`
+* `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlClock.java`
+* `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlTerminalCalculator.java`
+* `src/main/java/ch/technokrat/gecko/geckocircuits/control/ControlXYPlot.java`
 
 ### Agent prompt template:
 ```
@@ -167,8 +229,9 @@ After editing, run: mvn -T 1C clean compile
 ---
 
 ## Phase 4: Assert-to-Exception Fixes
-**Risk:** Medium. Changes runtime behavior when invalid input is given.
-**Verification:** `mvn -T 1C clean compile && mvn -T 1C test`.
+* **Recommended LLM:** **Gemini 3.5 Flash (High)** (Requires careful selection of Exception messages and imports)
+* **Risk:** Medium. Changes runtime behavior when invalid input is given.
+* **Verification:** `mvn -T 1C clean compile && mvn -T 1C test`.
 
 ### Targets:
 * `CompileStatus.java` -- `getFromOrdinal`: `assert false; return null` -> `throw new IllegalArgumentException("Invalid ordinal: " + ordinal);`
@@ -180,17 +243,39 @@ After editing, run: mvn -T 1C clean compile
 ---
 
 ## Phase 5: New Test Cases (Safety Net)
-**Risk:** None (additive only). High value. Adds coverage before bug fixing and refactoring.
+* **Recommended LLM:** **Gemini 3.5 Flash (High)** (Strong reasoning required to construct comprehensive JUnit tests from scratch)
+* **Risk:** None (additive only). High value. Adds coverage before bug fixing and refactoring.
 
-### Test Strategy:
-1. **Calculator tests:** Extend `AbstractSimpleMathFunctionTest`, `AbstractTwoInputsMathFunctionTest`, and `AbstractMultiInputFunctionTest`. Write test files for the ~15 untested calculators.
-2. **Math tests:** Create JUnit 5 tests for `Matrix.java`, `BigMatrix.java`, `NComplex.java`, `LUDecomposition.java`, and `CholeskyDecomposition.java`.
-3. **DataContainer tests:** Test `HiLoData.java` and `DataContainerSimple.java`.
+### Test Template:
+`src/test/java/ch/technokrat/gecko/geckocircuits/control/calculators/AbsCalculatorTest.java`
+
+### Target Untested Classes:
+1. **Math classes:**
+   * `src/main/java/ch/technokrat/gecko/geckocircuits/math/LUDecomposition.java` (Test factorization & pivot conditions)
+   * `src/main/java/ch/technokrat/gecko/geckocircuits/math/CholeskyDecomposition.java` (Test positive-definite checks)
+   * `src/main/java/ch/technokrat/gecko/geckocircuits/math/Matrix.java` (Test solving and dimension assertions)
+   * `src/main/java/ch/technokrat/gecko/geckocircuits/math/BigMatrix.java`
+   * `src/main/java/ch/technokrat/gecko/geckocircuits/math/NComplex.java`
+2. **Untested control calculators:**
+   * `src/main/java/ch/technokrat/gecko/geckocircuits/control/calculators/ABCDQCalculator.java`
+   * `src/main/java/ch/technokrat/gecko/geckocircuits/control/calculators/NothingToDoCalculator.java`
+   * `src/main/java/ch/technokrat/gecko/geckocircuits/control/calculators/PmsmControlCalculator.java`
+   * `src/main/java/ch/technokrat/gecko/geckocircuits/control/calculators/PmsmModulatorCalculator.java`
+   * `src/main/java/ch/technokrat/gecko/geckocircuits/control/calculators/SlidingDFTCalculator.java`
+   * `src/main/java/ch/technokrat/gecko/geckocircuits/control/calculators/SmallSignalCalculator.java`
+   * `src/main/java/ch/technokrat/gecko/geckocircuits/control/calculators/SpaceVectorCalculator.java`
+   * `src/main/java/ch/technokrat/gecko/geckocircuits/control/calculators/SparseMatrixCalculator.java`
+   * `src/main/java/ch/technokrat/gecko/geckocircuits/control/calculators/ThyristorControlCalculator.java`
+   * `src/main/java/ch/technokrat/gecko/geckocircuits/control/calculators/ViewMotorCalculator.java`
+3. **Data classes:**
+   * `src/main/java/ch/technokrat/gecko/geckocircuits/scope/HiLoData.java`
+   * `src/main/java/ch/technokrat/gecko/geckocircuits/newscope/HiLoData.java`
+   * `src/main/java/ch/technokrat/gecko/geckocircuits/datacontainer/DataContainerSimple.java`
 
 ### Agent prompt template:
 ```
 TASK: Write JUnit 5 tests for <ClassName>. Read the source file and the
-existing test pattern at <TEMPLATE_PATH> for style reference.
+existing test pattern at src/test/java/ch/technokrat/gecko/geckocircuits/control/calculators/AbsCalculatorTest.java for style reference.
 
 Create a test class at src/test/java/<mirrored_path>/<ClassName>Test.java
 Cover happy paths, edge cases (NaN, Infinities, negative, zero), and regression cases.
@@ -203,8 +288,9 @@ After writing, run: mvn test -Dtest="<ClassName>Test"
 ---
 
 ## Phase 6: Bug Fixes (Test-Driven)
-**Risk:** Medium-High. Each fix needs careful analysis.
-**Verification:** `mvn -T 1C clean compile && mvn -T 1C test` verifies the fixes against Phase 5 tests.
+* **Recommended LLM:** **Gemini 3.5 Flash (High)** (TDD requires analytical ability to trace failing test cases to exact fix logic)
+* **Risk:** Medium-High. Each fix needs careful analysis.
+* **Verification:** `mvn -T 1C clean compile && mvn -T 1C test` verifies the fixes against Phase 5 tests.
 
 ### Critically Identified Bugs:
 
@@ -224,13 +310,29 @@ After writing, run: mvn test -Dtest="<ClassName>Test"
 | `CompiledClassContainer.java:51` | NPE risk | Add null check for `_classBytes` in `getClassBytes()`. |
 | `NativeCDialog.java:191` | Printing stack trace array hash | Replace `println(exc.getStackTrace())` with `exc.printStackTrace(System.err)`. |
 
+### Agent prompt template:
+```
+TASK: You are applying critical bug fixes in a Test-Driven manner.
+For the file <TargetFile>, read the bug description and correct fix action in the table.
+Write a regression test in its corresponding test class (created in Phase 5) that reproduces the bug,
+then modify <TargetFile> to fix the bug.
+Verify that the test now passes.
+
+Target File: <TargetFile>
+Bug Details: <BugDetails>
+Correct Fix Action: <CorrectFixAction>
+
+After writing the test and code fix, run: mvn test -Dtest="<TestClass>"
+```
+
 **Gate:** `mvn -T 1C clean compile && mvn -T 1C test` all pass. (Advisory: `mvn spotbugs:check` — review only NEW findings in bug-fix files.) Git commit: `"Fix identified bugs using test-driven development"`.
 
 ---
 
 ## Phase 7: German-to-English Translations & Serialization Aliases
-**Risk:** High. Renaming serialized keys could break loading older schematic files.
-**Verification:** `mvn -T 1C clean compile && mvn -T 1C test` + GUI validation.
+* **Recommended LLM:** **Gemini 3.5 Flash (High)** (Extremely risky refactoring; requires precise multi-file string replacements and alias mapping)
+* **Risk:** High. Renaming serialized keys could break loading older schematic files.
+* **Verification:** `mvn -T 1C clean compile && mvn -T 1C test` + GUI validation.
 
 ### Required Alias System Implementation:
 Modify [UserParameter.java](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/src/main/java/ch/technokrat/gecko/geckocircuits/general/UserParameter.java) to support legacy aliases:
@@ -251,25 +353,49 @@ Modify [UserParameter.java](file:///c:/Users/mhr/Documents/GeckoCIRCUITS/src/mai
    ```
 
 ### German -> English Translation Targets:
+
+#### (A) Serialized Keys Needing Legacy Aliases:
 * `anzXIN` -> `numberInputTerminals` (use `"anzXIN"` as a legacy identifier for backward compatibility)
 * `anzYOUT` -> `numberOutputTerminals` (use `"anzYOUT"` as a legacy identifier)
-* `baueGuiIndividual` -> `buildIndividualGUI` (coordinate across dialog subclasses)
+* `COMPILED_SUCCESSFULL` -> `COMPILED_SUCCESSFUL` (used in serialization / persistent state)
+
+#### (B) Plain Identifiers Needing Grep-and-Replace (No Aliases Required):
+* `baueGuiIndividual` -> `buildIndividualGUI` (dialog subclasses)
 * `baueGUI` -> `buildGUI`
 * `istAngeklickt` -> `isClicked`
 * `knotenIndex` -> `nodeIndex`
 * `mausModus` -> `mouseMode`
 * `_xKlick*` -> `_xClick*`
 * `SaveModus` -> `SaveMode`
+* `_drehzahl` -> `_rotationalSpeed` (in `AbstractMotor.java`)
+* `_Ankerstrom` -> `_armatureCurrent` (in `AbstractMotorDC.java`)
 
 *Note: Verify `I18nKeys.java` and `*.properties` resource bundles so that strings displayed in the GUI are correctly mapped without breaking translation keys.*
+
+### Agent prompt template:
+```
+TASK: Rename the German identifier to English across the codebase.
+If the identifier is in category (A), you must add its old value as a backward-compatible serialization alias in UserParameter.java.
+If the identifier is in category (B), perform a plain grep-and-replace across the entire codebase.
+
+Identifier: <OldName> -> <NewName>
+Category: <A or B>
+
+Steps:
+1. Grep for all occurrences of <OldName> in the codebase.
+2. Replace with <NewName> as appropriate.
+3. If category A, ensure UserParameter.java is modified to register <OldName> as an alias.
+4. Run mvn -T 1C clean compile to verify the build.
+```
 
 **Gate:** `mvn -T 1C clean compile && mvn -T 1C test`. (Advisory: `mvn spotbugs:check` — review only NEW findings in renamed files.) Git commit: `"Translate German identifiers to English and add serialization aliases"`.
 
 ---
 
 ## Phase 8: Javadoc Documentation (Bulk)
-**Risk:** Very low. Documentation only.
-**Strategy:** Run in parallel batches of 50 files. Skip classes already documented in earlier phases.
+* **Recommended LLM:** **DeepSeek V4 Flash** or **Gemini 3.5 Flash (Medium)** (Excellent candidate for saving tokens on massive boilerplate documentation)
+* **Risk:** Very low. Documentation only.
+* **Strategy:** Run in parallel batches of 50 files. Skip classes already documented in earlier phases.
 
 ### Agent prompt template (High Efficiency):
 ```
@@ -300,13 +426,11 @@ After editing, run: mvn -T 1C clean compile
 | 2: Typos | 1 | 25 | 30K | 30K |
 | 3: Magic numbers | 2 | 15 | 20K | 40K |
 | 4: Assert fixes | 1 | 10 | 15K | 15K |
-| 5: New test cases | 5 | 20 | 45K | 225K |
+| 5: New test cases | 2 | 13 | 45K | 90K |
 | 6: Bug fixes | 1 | 15 | 40K | 40K |
 | 7: German->English | 3 | 15 | 40K | 120K |
 | 8: Javadoc | 16 | 50 | 35K | 560K |
-| **Total** | **32** | | | **~1.1M** |
-
-*Note: By scaling batch sizes appropriately for modern models, the number of sessions was reduced from **90** to **32**, significantly accelerating execution speed and lowering workspace bisection overhead.*
+| **Total** | **29** | | | **~1.0M** |
 
 ---
 
@@ -317,9 +441,9 @@ After editing, run: mvn -T 1C clean compile
 [ ] Phase 2: Typo fixes                (1 batch)     mvn -T 1C clean compile
 [ ] Phase 3: Magic number extraction   (2 batches)   mvn -T 1C clean compile
 [ ] Phase 4: Assert -> exception       (1 batch)     mvn -T 1C clean compile && mvn -T 1C test
-[ ] Phase 5: New test cases            (5 batches)   mvn -T 1C test && mvn jacoco:report
+[ ] Phase 5: New test cases            (2 batches)   mvn -T 1C test && mvn jacoco:report
 [ ] Phase 6: Bug fixes + regression    (1 batch)     mvn -T 1C clean compile && mvn -T 1C test
 [ ] Phase 7: German -> English         (3 batches)   mvn -T 1C clean compile && mvn -T 1C test
 [ ] Phase 8: Javadoc (bulk)            (16 batches)  mvn -T 1C clean compile
-[ ] Final: Full verification                         mvn -T 1C clean package assembly:single
+[ ] Final: Full verification                         mvn -T 1C clean verify
 ```

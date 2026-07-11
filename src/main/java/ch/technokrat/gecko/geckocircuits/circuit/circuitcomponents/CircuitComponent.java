@@ -103,7 +103,6 @@ public abstract class CircuitComponent<T extends AbstractTwoPortPowerCircuitBloc
         } else {
             matrixIndices[1] = 0;
         }
-        //System.out.println("element: " + _element._elementName.getValue() + " matrixIndices[0]=" + matrixIndices[0] + " matrixIndices[1]=" + matrixIndices[1]);
 
     }
 
@@ -173,18 +172,14 @@ public abstract class CircuitComponent<T extends AbstractTwoPortPowerCircuitBloc
                 historyBackward();
             }
             prev_time = var_history[0][0];
-            //System.out.println("before: _potential 1 = " + _potential1 + " _potential 2 = " + _potential2);
             _potential1 = var_history[0][1];
             _potential2 = var_history[0][2];
-            //System.out.println("after: _potential 1 = " + _potential1 + " _potential 2 = " + _potential2);
             _current = var_history[0][3];
             _voltage = var_history[0][4];
             if (_needsOldPotCurrent) {
                 _potOld1 = var_history[0][5];
                 _potOld2 = var_history[0][6];
-                //System.out.println("before: _oldCurrent = " + _oldCurrent);
                 _oldCurrent = var_history[0][7];
-                //System.out.println("after: _oldCurrent = " + _oldCurrent);
                 _oldOldCurrent = var_history[0][8];
             }
 

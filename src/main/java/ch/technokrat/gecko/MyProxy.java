@@ -17,6 +17,6 @@ package ch.technokrat.gecko;
  *
  * @author andy
  */
+@Deprecated
 public class MyProxy {
-   // TODO!!!  asdf
 }

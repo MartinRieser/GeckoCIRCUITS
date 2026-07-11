@@ -47,14 +47,7 @@ final class ThermMODUL extends AbstractCircuitBlockInterface {
         super();
         _scaling = B_R / X_CENTER;
         _height = Y_CENTER * _scaling;
-        //_elementTherm.setLabelAnfangsKnoten(new String[]{"bli", "bla", "blub"});
-        //_elementTherm.setLabelEndKnoten(new String[]{"blo", "blu", "blub"});
-        //----------------
         _noOfChips = 2;  // vorerst einmal
-
-
-        //_xOUT = (int) (sheetPosition.x);
-        //_yOUT = (int) (sheetPosition.y + ho + 1);        
     }
 
     public int getChipAnzahl() {

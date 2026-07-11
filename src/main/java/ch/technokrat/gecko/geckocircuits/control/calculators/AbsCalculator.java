@@ -19,4 +19,4 @@ public final class AbsCalculator extends AbstractSingleInputSingleOutputCalculat
     public void calculateYOUT(final double deltaT) {
         _outputSignal[0][0] = Math.abs(_inputSignal[0][0]);
     }
-};
+}

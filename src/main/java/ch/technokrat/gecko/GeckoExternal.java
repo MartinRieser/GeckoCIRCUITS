@@ -142,9 +142,6 @@ public class GeckoExternal {
         return external.getDiodes();
     }
 
-    public static void runGeckoSCRIPT() {
-    }
-
     public static void setGlobalDoubleMatrix(double[][] matrix) {
         _globalDoubleMatrix = matrix;
     }

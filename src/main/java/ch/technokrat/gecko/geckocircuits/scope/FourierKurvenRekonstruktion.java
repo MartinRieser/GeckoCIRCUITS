@@ -247,8 +247,6 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
         this.setzeTickLabelPosition(new int[]{20}, new int[]{16});
         this.setzeTickLabelFont(new Font[]{new Font("Arial", Font.PLAIN, 12)}, new Font[]{new Font("Arial", Font.PLAIN, 12)});
         //=========================================
-//        this.setzeAchsenBegrenzungen(new double[]{0.02}, new double[]{0.06}, new boolean[]{true}, new double[]{-4}, new double[]{4}, new boolean[]{true});
-//        this.setzeTickSpacing(new double[]{0.01}, new double[]{2});
         double ymin = 1e99, ymax = -1e99;
         for (int i1 = 0; i1 < yNeu.length; i1++) {
             if (yNeu[i1] > ymax) {
@@ -299,8 +297,6 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
     }
 
     public void mousePressed(MouseEvent me) {
-        //double[] xy= getValueFromPixel(me.getX(),me.getY());
-        //System.out.println("xPix= "+me.getX()+"\tyPix= "+me.getY()+"\t\tx= "+xy[0]+"\ty= "+xy[1]);
         //-------------------
         if (mausModus == GraferImplementation.MAUSMODUS_NIX) {
         } else if (mausModus == GraferImplementation.MAUSMODUS_ZOOM_AUTOFIT) {

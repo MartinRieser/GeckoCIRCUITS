@@ -14,8 +14,6 @@
 package ch.technokrat.gecko.geckocircuits.math;
 
 
-//package Jama;
-
    /** LU Decomposition.
    <P>
    For an m-by-n matrix A with m >= n, the LU decomposition is an m-by-n
@@ -32,7 +30,6 @@ package ch.technokrat.gecko.geckocircuits.math;
 public class LUDecomposition implements java.io.Serializable {
 
    private static final long serialVersionUID = 1L;
-//test
 /* ------------------------
    Class variables
  * ------------------------ */
@@ -133,65 +130,6 @@ public class LUDecomposition implements java.io.Serializable {
          }
       }
    }
-
-/* ------------------------
-   Temporary, experimental code.
-   ------------------------ *\
-
-   \** LU Decomposition, computed by Gaussian elimination.
-   <P>
-   This constructor computes L and U with the "daxpy"-based elimination
-   algorithm used in LINPACK and MATLAB.  In Java, we suspect the dot-product,
-   Crout algorithm will be faster.  We have temporarily included this
-   constructor until timing experiments confirm this suspicion.
-   <P>
-   @param  A             Rectangular matrix
-   @param  linpackflag   Use Gaussian elimination.  Actual value ignored.
-   @return               Structure to access L, U and piv.
-   *\
-
-   public LUDecomposition (Matrix A, int linpackflag) {
-      // Initialize.
-      LU = A.getArrayCopy();
-      m = A.getRowDimension();
-      n = A.getColumnDimension();
-      piv = new int[m];
-      for (int i = 0; i < m; i++) {
-         piv[i] = i;
-      }
-      pivsign = 1;
-      // Main loop.
-      for (int k = 0; k < n; k++) {
-         // Find pivot.
-         int p = k;
-         for (int i = k+1; i < m; i++) {
-            if (Math.abs(LU[i][k]) > Math.abs(LU[p][k])) {
-               p = i;
-            }
-         }
-         // Exchange if necessary.
-         if (p != k) {
-            for (int j = 0; j < n; j++) {
-               double t = LU[p][j]; LU[p][j] = LU[k][j]; LU[k][j] = t;
-            }
-            int t = piv[p]; piv[p] = piv[k]; piv[k] = t;
-            pivsign = -pivsign;
-         }
-         // Compute multipliers and eliminate k-th column.
-         if (LU[k][k] != 0.0) {
-            for (int i = k+1; i < m; i++) {
-               LU[i][k] /= LU[k][k];
-               for (int j = k+1; j < n; j++) {
-                  LU[i][j] -= LU[i][k]*LU[k][j];
-               }
-            }
-         }
-      }
-   }
-
-\* ------------------------
-   End of temporary code.
- * ------------------------ */
 
 /* ------------------------
    Public Methods

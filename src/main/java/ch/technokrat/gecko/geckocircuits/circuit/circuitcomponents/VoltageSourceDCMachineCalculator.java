@@ -77,7 +77,6 @@ public class VoltageSourceDCMachineCalculator extends VoltageSourceCalculator im
         
         emk = _cM * phi * omega;  // // internal tension of the machine
         _timeFunction.setValue(emk);  // // DC value of the internal voltage source
-        //if (t==0) System.out.println(t+"   "+dt+"   "+ia+"   "+ie+"   "+momentLast+"   "+phi+"   "+momentElektr+"   "+omega+"   "+drehzahl+"   "+emk+"   omegaALT="+omegaALT+"   J="+J+"   Fr="+Fr);
         omegaALT = omega;
     }
 }

@@ -157,7 +157,6 @@ public final class SubcircuitBlock extends AbstractSpecialBlock {
     }
 
     public boolean areTerminalPositionsOK() {
-        System.err.println("Warning: Terminal position check disabled!");
         if(1>0) return true;
         for (SubCircuitTerminable terminal1 : _myTerminals) {
             for (SubCircuitTerminable terminal2 : _myTerminals) {

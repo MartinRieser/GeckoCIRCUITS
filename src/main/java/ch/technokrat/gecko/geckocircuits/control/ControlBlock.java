@@ -144,7 +144,6 @@ public abstract class ControlBlock extends AbstractBlockInterface {
             output = new String[2];
             output[0] = outputs[i];
             output[1] = output_description[i];
-            //System.out.println(idStringDialog+output[0]+output[1]);
             outputList.add(output);
         }
         return outputList;

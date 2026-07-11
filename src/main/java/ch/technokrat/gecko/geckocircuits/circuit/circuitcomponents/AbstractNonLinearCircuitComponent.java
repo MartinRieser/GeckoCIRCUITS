@@ -391,19 +391,10 @@ implements Operationable, Nonlinearable {
     // nlX,nlY define the picewise non-linear characteristic, x is the actual value 
     public double getActualValueLINFromLinearizedCharacteristicInverse(double x) {        
         int i1 = 0;
-//        boolean debug = false;
-//        if( x > -23.513443326778713) {
-//            debug = true;
-//        }
         int pkt = nonlinearData[0].length;
         while ((i1 < pkt) && (nonlinearData[0][i1] < x)) {
             i1++;
         }        
-        
-        
-//        if(debug) {
-//            System.out.println("compare end value " + nonlinearData[0][pkt-1] + " " + x);
-//        }
         
         if (i1 == 0) {            
             return 1.0 / nonlinearData[1][i1];  // left boarder

@@ -117,7 +117,6 @@ public class DataContainerSimple extends AbstractDataContainer implements DataCo
     @Override
     public final double getTimeValue(final int column, final int row) {
         return _timeSerieArray.getValue(column);
-//        return _timeValues[column];
     }
 
     @Override
@@ -130,8 +129,6 @@ public class DataContainerSimple extends AbstractDataContainer implements DataCo
     public void insertValuesAtEnd(final float[] values, final double timeValue) {        
         _maximumIndex++;        
         _timeSerieArray.setValue(_maximumIndex, timeValue);
-//        _timeValues[_maximumIndex] = timeValue;
-        //YYY error! _abMinMaxValues[0] = HiLoData.mergeFromValue(_abMinMaxValues[0], (float) timeValue);        
         for (int i = 0; i < values.length; i++) {            
             _data[i][_maximumIndex] = values[i];
             _abMinMaxValues[i] = HiLoData.mergeFromValue(_abMinMaxValues[i], values[i]);
@@ -144,11 +141,9 @@ public class DataContainerSimple extends AbstractDataContainer implements DataCo
             HiLoData returnValue = _abMinMaxValues[row];
             return returnValue;
         } catch (ArrayIndexOutOfBoundsException ex) {
-            System.out.println("ArrayIndexOutOfBoundsException!! At index : " + row + ", _abMinMaxValues = " + _abMinMaxValues.length);
         }
         return _abMinMaxValues[0];
     }
-    static int clearCounter = 0;
     
 
     @Override
@@ -177,9 +172,6 @@ public class DataContainerSimple extends AbstractDataContainer implements DataCo
 
     @Override
     public Object getDataValueInInterval(double intervalStart, double intervalStop, int columnIndex) {
-//        int index = _timeSerieArray.findTimeIndex(intervalStop, _maximumIndex);
-//        return getValue(0, index);
-//        System.out.println("Interval Start:" + intervalStart + "\tIntervallStop: " + intervalStop + "\t columnIndex: " + columnIndex);
         final int startIndex = _timeSerieArray.findTimeIndex(intervalStart);
         final int stopIndex = _timeSerieArray.findTimeIndex(intervalStop);
 
