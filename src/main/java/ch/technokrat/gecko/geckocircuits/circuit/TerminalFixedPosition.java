@@ -15,9 +15,18 @@ package ch.technokrat.gecko.geckocircuits.circuit;
 
 import ch.technokrat.gecko.geckocircuits.control.Point;
 
+/**
+ * Terminal with a fixed absolute position that does not change with parent rotation.
+ * The position is specified at construction time and returned directly from getPosition().
+ */
 public class TerminalFixedPosition extends AbstractTerminal {
     private final Point _fixedPosition;
     
+    /**
+     * Constructs a terminal with a fixed absolute position.
+     * @param parent the parent block this terminal belongs to
+     * @param position the fixed absolute position point
+     */
     public TerminalFixedPosition(final AbstractBlockInterface parent, final Point position) {
         super(parent);
         _fixedPosition = position;

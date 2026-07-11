@@ -14,9 +14,9 @@
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
 /**
- * this ugly class is just (and still) used from the "old" geckocircuits solver.
- * Remove this, when the new solver is finished. CircuitSourceType should be a
- * complemte replacement of this one.
+ * Integer constants identifying source types (DC, SIN, signal-controlled,
+ * etc.) used by the legacy solver. Planned for removal once the new solver
+ * is complete.
  *
  * @author andy
  */

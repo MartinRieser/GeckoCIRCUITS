@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.newscope;
 
+/**
+ * Represents an averaged/mean scope signal computed over a configurable
+ * averaging time window from a {@link ScopeSignalRegular} source signal.
+ */
 public final class ScopeSignalMean extends AbstractScopeSignal {
     private double _averagingTime;
     final ScopeSignalRegular _connectedScopeSignal;        

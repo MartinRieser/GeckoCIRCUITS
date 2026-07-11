@@ -43,6 +43,11 @@ import javax.swing.undo.UndoableEdit;
 import ch.technokrat.modelviewcontrol.AbstractUndoGenericModel;
 import ch.technokrat.modelviewcontrol.GroupableUndoManager;
 
+/**
+ * Main mouse-driven schematic editor controller. Manages component
+ * selection, movement, wire drawing, subcircuit navigation, and
+ * undo/redo for all schematic editing operations.
+ */
 public final class SchematicEditor2 implements MouseListener, MouseMotionListener {
 
     public final CircuitSheet _circuitSheet = new CircuitSheet(this);
@@ -557,12 +562,25 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
         return false;
     }
 
+    /**
+     * State machine for mouse interaction modes. Transitions:
+     * NONE -> SELECT_WINDOW (drag empty area),
+     * NONE -> MOVE_COMPONENTS (click component),
+     * MOVE_COMPONENTS -> NONE (place component),
+     * DRAW_CONNECTION -> NONE (finish wire),
+     * SELECT_WINDOW -> NONE (release mouse).
+     */
     public enum MouseMoveMode {
 
+        /** No operation in progress. */
         NONE,
+        /** One or more components are being dragged to a new position. */
         MOVE_COMPONENTS,
+        /** A text label is being repositioned. */
         MOVE_TEXT,
+        /** A selection rectangle is being drawn. */
         SELECT_WINDOW,
+        /** A connection wire is being drawn between terminals. */
         DRAW_CONNECTION;
     }
     MouseMoveMode _mouseMoveMode = MouseMoveMode.NONE;

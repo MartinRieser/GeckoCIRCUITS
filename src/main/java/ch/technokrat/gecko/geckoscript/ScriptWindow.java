@@ -38,6 +38,12 @@ import java.io.PrintStream;
 import javax.swing.*;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
+/**
+ * GeckoSCRIPT IDE window providing a tabbed editor for Java-based scripting
+ * of GeckoCIRCUITS models. The compilation pipeline reads source code from
+ * the editor, compiles it via javax.tools.JavaCompiler, and executes the
+ * resulting script object against the simulation model.
+ */
 public class ScriptWindow extends javax.swing.JFrame {
     private static final long serialVersionUID = 1L;
     ExtraFilesWindow _extSourceWindow;

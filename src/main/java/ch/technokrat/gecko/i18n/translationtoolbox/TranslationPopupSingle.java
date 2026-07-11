@@ -46,9 +46,9 @@ public class TranslationPopupSingle extends javax.swing.JFrame implements Proper
     private transient Task task; // Background Task Thread
     private transient Progress progress; // getProgress Thread
     
-    /*
-     * Inner class used to execute upload instructions from a separate
-     * thread to avoid freezing up.
+    /**
+     * Background task that executes the upload of a single-line translation
+     * suggestion via UPbot in a separate thread to avoid freezing the GUI.
      */
     private class Task extends SwingWorker<Void, Void> {
         @Override
@@ -62,9 +62,9 @@ public class TranslationPopupSingle extends javax.swing.JFrame implements Proper
         public void done() {} // do nothing
     }
         
-    /*
-     * Inner class used to acquire progress information from the upload bot 
-     * class (UPbot) from a separate thread to avoid freezing up.
+    /**
+     * Background task that polls the upload progress from UPbot in a
+     * separate thread and publishes progress updates to the GUI.
      */
     private class Progress extends SwingWorker<Void, Void> {
         @Override

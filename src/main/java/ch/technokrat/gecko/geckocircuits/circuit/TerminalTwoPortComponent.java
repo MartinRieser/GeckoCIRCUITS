@@ -16,12 +16,17 @@ package ch.technokrat.gecko.geckocircuits.circuit;
 import ch.technokrat.gecko.geckocircuits.control.Point;
 import java.awt.Graphics;
 
+/**
+ * Offset terminal for two-port components, positioned at a fixed distance from the parent
+ * based on the component direction. Only one of the two terminals should show a flow symbol.
+ */
 public final class TerminalTwoPortComponent extends AbstractTerminal {
 
     private final int _termDist;
     
     /**
-     * a two-Terminal component should only show 1 flow symbol.
+     * Indicates whether this terminal should display the flow symbol.
+     * Only one of the two terminals in a two-port component should show the flow symbol.
      */
     boolean _isFlowSymbolTerminal = false;    
     

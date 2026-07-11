@@ -20,9 +20,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Utility class (only static methods) which constructs the javablock
- * sourcecode, when import code, class source code, ... is given.
- * createSourceCode returns the String for the .java-file!
+ * Generates Java source code from block definition components such as
+ * import code, variable declarations, init code, and the main calculation
+ * function. The resulting string is written to a .java file for compilation.
  *
  * @author andreas
  */

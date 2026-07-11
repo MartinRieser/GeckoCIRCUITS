@@ -14,8 +14,8 @@
 package ch.technokrat.gecko.geckocircuits.datacontainer;
 
 /**
- *
- * @author andreas
+ * Regular signal data container that wraps a data container and index,
+ * with optional custom signal name override.
  */
 public class SignalDataContainerRegular extends AbstractDataContainerSignal{
   private String _signalName;

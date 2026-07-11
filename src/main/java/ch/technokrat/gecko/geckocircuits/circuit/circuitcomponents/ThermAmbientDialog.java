@@ -16,6 +16,10 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 
+/**
+ * Read-only dialog for the ambient/reference temperature element.
+ * The temperature value is displayed but cannot be edited by the user.
+ */
 @SuppressWarnings("unchecked")
 final class ThermAmbientDialog extends DialogElementLK<ThermAmbient> {
 

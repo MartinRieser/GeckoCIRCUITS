@@ -24,6 +24,11 @@ import java.awt.Color;
 import java.awt.Window;
 import java.util.List;
 
+/**
+ * Thermal power module component that manages multiple semiconductor chips
+ * and their heat flow to the cooler. Draws a module housing with chip inputs
+ * and a single heat flow output.
+ */
 final class ThermMODUL extends AbstractCircuitBlockInterface {
     public static final AbstractTypeInfo TYPE_INFO = 
             new ThermalTypeInfo(ThermMODUL.class, "MOD", I18nKeys.POWER_MODULE_THERMAL_MODEL);

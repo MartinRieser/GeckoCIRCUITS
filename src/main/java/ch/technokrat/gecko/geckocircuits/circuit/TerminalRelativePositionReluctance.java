@@ -18,6 +18,10 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
+/**
+ * Terminal for the reluctance (magnetic) domain with domain-specific coloring.
+ * Overrides paint methods to use the reluctance-element foreground color.
+ */
 public class TerminalRelativePositionReluctance extends TerminalRelativePosition {
 
     public TerminalRelativePositionReluctance(AbstractBlockInterface parent, int posX, int posY) {

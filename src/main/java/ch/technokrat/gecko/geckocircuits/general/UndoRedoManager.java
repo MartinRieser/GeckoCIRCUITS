@@ -17,6 +17,10 @@ import java.io.ObjectInputStream;
 import java.io.ByteArrayInputStream;
 import java.util.zip.InflaterInputStream;
 
+/**
+ * Coordinates undo and redo operations using ring buffers of serialized state snapshots.
+ * Manages a configurable number of undo states with circular buffer overflow handling.
+ */
 public class UndoRedoManager {
 
     //------------------------------------------------------

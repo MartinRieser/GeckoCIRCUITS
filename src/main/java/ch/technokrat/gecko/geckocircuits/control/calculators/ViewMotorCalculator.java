@@ -15,6 +15,10 @@ package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 import ch.technokrat.gecko.geckocircuits.control.NotCalculateableMarker;
 
+/**
+ * Calculator for the display-only motor view component. This class does not
+ * perform any actual calculation and is marked as not calculatable.
+ */
 public final class ViewMotorCalculator extends AbstractControlCalculatable implements NotCalculateableMarker {
     public ViewMotorCalculator() {
             super(0, 1);

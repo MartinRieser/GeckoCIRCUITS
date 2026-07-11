@@ -17,6 +17,9 @@ import ch.technokrat.gecko.geckocircuits.circuit.DialogNonLinearity;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 
+/**
+ * Dialog for editing the resistance value of any resistor-type component.
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 class ResistorDialog extends DialogElementLK<AbstractResistor> {
 

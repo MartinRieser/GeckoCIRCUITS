@@ -21,6 +21,10 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 
+/**
+ * Base class for signal preview dialogs that display a graphical preview of a waveform
+ * (rectangular, sinusoidal, triangular) in a popup dialog window.
+ */
 abstract class PreviewDialog extends JDialog {
     private static final long serialVersionUID = 1L;
     final NumberFormat nf = NumberFormat.getNumberInstance();

@@ -17,6 +17,10 @@ import ch.technokrat.gecko.geckocircuits.circuit.AbstractBlockInterface;
 import ch.technokrat.gecko.geckocircuits.circuit.ConnectorType;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Type information for components operating exclusively in the reluctance
+ * simulation domain (magnetic circuits).
+ */
 public class ReluctanceTypeInfo extends AbstractCircuitTypeInfo {
 
     public ReluctanceTypeInfo(Class<? extends AbstractBlockInterface> typeClass, String idString, I18nKeys typeDescription) {

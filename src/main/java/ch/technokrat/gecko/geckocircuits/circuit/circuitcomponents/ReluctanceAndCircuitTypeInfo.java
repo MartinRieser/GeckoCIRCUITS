@@ -18,8 +18,8 @@ import ch.technokrat.gecko.geckocircuits.circuit.ConnectorType;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 /**
- *
- * @author andy
+ * Type information for components that operate in both the electrical and
+ * reluctance domains (dual-domain components such as the reluctance inductor).
  */
 class ReluctanceAndCircuitTypeInfo extends AbstractCircuitTypeInfo {
 

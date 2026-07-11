@@ -15,6 +15,11 @@ package ch.technokrat.gecko.i18n;
 
 import java.util.Locale;
 
+/**
+ * Available GUI languages for the GeckoCIRCUITS user interface. Each
+ * constant maps a language code to a locale and a display name in the
+ * native language.
+ */
 public enum SelectableLanguages {
 
     ENGLISH("en", "English"),

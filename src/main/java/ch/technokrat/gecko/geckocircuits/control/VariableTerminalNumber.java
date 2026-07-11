@@ -13,7 +13,21 @@
  */
 package ch.technokrat.gecko.geckocircuits.control;
 
+/**
+ * Interface for components whose terminal count can be changed at runtime.
+ */
 public interface VariableTerminalNumber {
+    /**
+     * Sets the number of input terminals. The implementing component must
+     * adjust its internal structure accordingly.
+     * @param number the new number of input terminals
+     */
     abstract void setInputTerminalNumber(final int number);
+
+    /**
+     * Sets the number of output terminals. The implementing component must
+     * adjust its internal structure accordingly.
+     * @param number the new number of output terminals
+     */
     abstract void setOutputTerminalNumber(final int number);
 }

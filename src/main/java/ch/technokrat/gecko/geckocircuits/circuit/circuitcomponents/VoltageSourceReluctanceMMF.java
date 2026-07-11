@@ -16,8 +16,13 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Leaf class for a reluctance circuit voltage source. MMF (Magnetomotive Force)
+ * is the magnetic analogue of voltage in an electric circuit.
+ */
 final class VoltageSourceReluctanceMMF extends AbstractVoltageSource {
     public static final AbstractTypeInfo TYPE_INFO = 
             new ReluctanceTypeInfo(VoltageSourceReluctanceMMF.class, "MMF", I18nKeys.MMF_AMP_TURNS);
+
     
 }

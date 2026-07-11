@@ -19,6 +19,10 @@ import ch.technokrat.gecko.geckocircuits.control.DialogElementCONTROL;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 
+/**
+ * Dialog for the thermal loss chip (ThermPvChip) that allows coupling
+ * to a loss-generating semiconductor component.
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 final class ThermPvChipDialog extends DialogElementLK {
 

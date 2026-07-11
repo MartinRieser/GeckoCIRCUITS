@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Logical XOR of two inputs. Output is 1 if exactly one input exceeds the
+ * signal threshold, otherwise 0.
+ */
 public final class XORCalculator extends AbstractTwoInputsOneOutputCalculator {
 
     @Override

@@ -15,8 +15,8 @@
 package ch.technokrat.gecko.geckocircuits.newscope;
 
 /**
- *
- * @author andy
+ * Basic array-backed time series implementation.
+ * Stores time values in a pre-allocated double array with O(1) index access.
  */
 public final class TimeSeriesArray extends AbstractTimeSeries {
     private double[] _timeSeries;

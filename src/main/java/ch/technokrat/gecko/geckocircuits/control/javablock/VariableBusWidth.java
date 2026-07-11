@@ -22,6 +22,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+/**
+ * Detects and manages variable bus widths for Java function block outputs.
+ * Maps output numbers to their corresponding bus widths for dynamic signal sizing.
+ */
 class VariableBusWidth {
     Map<Integer, Integer> busMap = new HashMap<Integer, Integer>();
 

@@ -40,8 +40,10 @@ import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 
 /**
- *
- * @author Tibor Keresztfalvi
+ * Main scope JFrame window that wraps the NewScope panel with menus for
+ * data management, graph configuration, simulation control, and analysis
+ * (Fourier, characteristics). Supports save/load of scope settings and
+ * image export via SaveViewFrame.
  */
 public final class ScopeFrame extends javax.swing.JFrame{
   private static final long serialVersionUID = 1L;

@@ -33,7 +33,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
-// Helper class: Format for project data storage
+/**
+ * Holds all project/model data for serialization to ASCII format and reloading,
+ * including circuit components, simulation parameters, view settings, and script code.
+ */
 public class ProjectData implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -112,6 +115,12 @@ public class ProjectData implements Serializable {
         _uniqueFileId = this.importASCII(ascii, isBackupRead);
     }
 
+    /**
+     * Serializes the entire project data (components, simulation settings, view
+     * preferences, script code) into a single ASCII string for file storage.
+     *
+     * @return the complete project data as an ASCII string
+     */
     public String exportASCII() {
         // Connection -->
         StringBuffer asc = new StringBuffer();
@@ -681,6 +690,10 @@ public class ProjectData implements Serializable {
      * if the same model is imported several times, the unique identifiers are
      * not unique, anymore. Therefore, we shift all identifiers by a constant,
      * as well as component references.
+     */
+    /**
+     * Shifts all unique identifiers and component references by a random constant
+     * to avoid collisions when the same model is imported multiple times.
      */
     public void shiftComponentReferences() {
         Random generator = new Random(System.currentTimeMillis());

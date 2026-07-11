@@ -19,8 +19,9 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- *
- * @author xtibi
+ * Block-based variable time series that optimizes memory by storing time-value pairs
+ * in DataBlock segments. GetLastTimeInterval() throws UnsupportedOperationException
+ * since the time step varies between blocks.
  */
 public final class TimeSeriesVariableBlock extends AbstractTimeSeries {
 

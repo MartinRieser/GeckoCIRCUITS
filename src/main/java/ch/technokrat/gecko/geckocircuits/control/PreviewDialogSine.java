@@ -20,6 +20,10 @@ import java.awt.Graphics;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 
+/**
+ * Preview dialog that draws a sinusoidal waveform preview with configurable
+ * amplitude, offset, and phase shift.
+ */
 public class PreviewDialogSine extends PreviewDialog {
 
     private static final long serialVersionUID = 1L;

@@ -16,12 +16,46 @@ package ch.technokrat.gecko.geckocircuits.circuit;
 import ch.technokrat.gecko.geckocircuits.control.Point;
 import java.awt.Color;
 
+/**
+ * Represents a terminal that bridges between a subcircuit sheet and its
+ * parent block, defining the physical connection point on the subcircuit
+ * boundary.
+ */
 public interface SubCircuitTerminable {
+    /**
+     * Returns the terminal block that represents this terminal on the
+     * subcircuit boundary.
+     * @return the block terminal instance
+     */
     public TerminalSubCircuitBlock getBlockTerminal();
+    /**
+     * Returns which side of the subcircuit block the terminal is located on.
+     * @return the terminal location (UP, DOWN, LEFT, RIGHT)
+     */
     public EnumTerminalLocation getTerminalLocation();
+    /**
+     * Returns the position of this terminal on the internal subcircuit sheet.
+     * @return the sheet position
+     */
     public Point getSheetPosition();
+    /**
+     * Sets the sheet position without registering an undo action.
+     * @param sheetPosition the new position
+     */
     public void setSheetPositionWithoutUndo(Point sheetPosition);
+    /**
+     * Returns the unique identifier string of this terminal.
+     * @return the string ID
+     */
     public String getStringID();
+    /**
+     * Returns the parent circuit sheet that contains this terminal.
+     * @return the parent circuit sheet
+     */
     public CircuitSheet getParentCircuitSheet();
+    /**
+     * Returns the foreground color for rendering this terminal.
+     * @return the foreground color
+     */
     public Color getForeGroundColor();
 }

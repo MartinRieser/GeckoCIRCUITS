@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
+/**
+ * Enumeration of display modes for text information in the circuit sheet.
+ * Controls when parameter values are shown as text annotations on components.
+ */
 public enum TextInfoType {
     SHOW_NEVER,
     SHOW_NON_NULL,

@@ -39,10 +39,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-// // Heat source: conduction and switching losses of power semiconductors
-// // --> Measurement of current and voltage by LK_D or LK_S
-// // --> Determination of losses via data sheet values ​​(parameter[] of LK_D and LK_S)
-// --> Realisierung mittels einer signalgesteuerten Stromquelle
+/**
+ * Heat source component that models conduction and switching losses of power semiconductors.
+ * Measures current and voltage from a coupled LK_D or LK_S component and determines losses
+ * via datasheet parameter values. Implemented as a signal-controlled current source.
+ */
 public final class ThermPvChip extends AbstractCircuitBlockInterface implements ComponentCoupable, CurrentMeasurable,
         HiddenSubCircuitable, PostCalculatable, DirectVoltageMeasurable {
 
@@ -95,6 +96,10 @@ public final class ThermPvChip extends AbstractCircuitBlockInterface implements 
     }
     
 
+    /**
+     * Sets up the internal subcircuit consisting of a flow source (controlled current source)
+     * and a parallel high-resistance internal resistance Rth.
+     */
     private void setzeSubcircuit() {                
         // FLOW-Quelle:
         _thFlow = (AbstractCurrentSource) AbstractTypeInfo.fabricHiddenSub(CircuitType.TH_FLOW, this);
@@ -136,6 +141,11 @@ public final class ThermPvChip extends AbstractCircuitBlockInterface implements 
         }
     };
 
+    /**
+     * Initializes the loss calculator by retrieving the appropriate calculator
+     * from the coupled loss component. Falls back to a dummy calculator if no
+     * coupling is defined.
+     */
     @Override
     public void doInitialization() {
         _lossCalculator = DUMMY_LOSS_CALC;
@@ -150,6 +160,13 @@ public final class ThermPvChip extends AbstractCircuitBlockInterface implements 
         }        
     }
 
+    /**
+     * Calculates the heat flow (losses) based on the junction temperature and
+     * the loss calculator. Updates the controlled current source parameter with
+     * the total loss value.
+     * @param deltaT the simulation time step
+     * @param time the current simulation time
+     */
     @Override
     public void doCalculation(final double deltaT, final double time) {
         // // Junction temperature --> temperature difference at Rth, where reference point is the zero level ('TH_NULLBEZUG_KNOTEN')

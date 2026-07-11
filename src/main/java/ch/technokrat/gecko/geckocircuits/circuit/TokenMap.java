@@ -20,8 +20,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author andreas
+ * Token-based map for reading and writing ASCII-encoded circuit data.
+ * Parses line-based token files into a map for efficient lookup, with support
+ * for nested blocks, special pairs, and multiple overloaded readDataLine methods.
  */
 public final class TokenMap {
 
@@ -54,6 +55,9 @@ public final class TokenMap {
         return asciiLines;
     }
 
+    /**
+     * Defines a pair of start and stop tokens for delimiting special blocks in the ASCII data.
+     */
     private class SpecialPair {
 
         final String _startToken;
@@ -245,6 +249,10 @@ public final class TokenMap {
         return null;
     }
 
+    /**
+     * Stores information about a block of ASCII lines delimited by start/end tokens.
+     * Used for nested element data within the token-based file format.
+     */
     private static class BlockInfo {
 
         final int _startIndex;
@@ -488,11 +496,11 @@ public final class TokenMap {
     }
 
     /**
-     * reads a textblock, including spaces. In contradiction, LeseAsciiString would return only the first token! If a \n
-     * character appears, a newline is done.
-     *
-     * @param ascii
-     * @return
+     * Reads a text block including spaces, unlike the default tokenizer which returns only the first token.
+     * Newline characters (\\n) in the data are converted to actual newlines.
+     * @param identifier the token identifier
+     * @param targetObject default value if the token is not found
+     * @return the parsed text block string, or the default
      */
     public String leseASCIITextBlock(final String identifier, final String targetObject) {
         try {
@@ -517,6 +525,12 @@ public final class TokenMap {
         }
     }
 
+    /**
+     * Reads a double array from the token map using the given identifier.
+     * @param identifier the token identifier
+     * @param targetObject default value if the token is not found
+     * @return the parsed double array, or the default
+     */
     public double[] readDataLine(final String identifier, final double[] targetObject) {
         try {
             final Integer lineNumber = _map.get(identifier);
@@ -540,6 +554,11 @@ public final class TokenMap {
 
     }
     
+    /**
+     * Reads a List of Double values from the token map using the given identifier.
+     * @param identifier the token identifier
+     * @return the parsed Double list, or an empty list
+     */
     public List<Double> readDataLineDoubleArray(final String identifier) {
         try {
             final Integer lineNumber = _map.get(identifier);
@@ -564,6 +583,12 @@ public final class TokenMap {
     }
     
 
+    /**
+     * Reads an int array from the token map using the given identifier.
+     * @param identifier the token identifier
+     * @param targetObject default value if the token is not found
+     * @return the parsed int array, or the default
+     */
     public int[] readDataLine(final String identifier, final int[] targetObject) {
         try {
             final Integer lineNumber = _map.get(identifier);
@@ -586,6 +611,12 @@ public final class TokenMap {
         }
     }
 
+    /**
+     * Reads a long array from the token map using the given identifier.
+     * @param identifier the token identifier
+     * @param targetObject default value if the token is not found
+     * @return the parsed long array, or the default
+     */
     public long[] readDataLine(final String identifier, final long[] targetObject) {
         try {
             final Integer lineNumber = _map.get(identifier);
@@ -610,6 +641,12 @@ public final class TokenMap {
 
     
     
+    /**
+     * Reads a byte array from the token map using the given identifier.
+     * @param identifier the token identifier
+     * @param targetObject default value if the token is not found
+     * @return the parsed byte array, or the default
+     */
     public byte[] readDataLine(final String identifier, final byte[] targetObject) {
         try {
             final Integer lineNumber = _map.get(identifier);
@@ -632,6 +669,12 @@ public final class TokenMap {
         }
     }
 
+    /**
+     * Reads an int value from the token map using the given identifier.
+     * @param identifier the token identifier
+     * @param targetObject default value if the token is not found
+     * @return the parsed int value, or the default
+     */
     public int readDataLine(final String identifier, final int targetObject) {
         try {
             final Integer lineNumber = _map.get(identifier);
@@ -653,6 +696,12 @@ public final class TokenMap {
         exception.printStackTrace();
     }
 
+    /**
+     * Finds a sub-block of ASCII lines between two identifiers.
+     * @param startIdentifier the start token identifier
+     * @param stopIdentifier the stop token identifier
+     * @return the lines between the two tokens, or an empty array
+     */
     public String[] findSubBlock(String startIdentifier, String stopIdentifier) {
         try {
             final Integer startLine = getLineNumber(startIdentifier);
@@ -670,6 +719,12 @@ public final class TokenMap {
         }
     }
 
+    /**
+     * Creates a single String from a sub-block between two identifiers, joined by newlines.
+     * @param startIdentifier the start token identifier
+     * @param stopIdentifier the stop token identifier
+     * @return the concatenated sub-block string
+     */
     public String createSubBlock(final String startIdentifier, final String stopIdentifier) {
         final String[] subBlock = findSubBlock(startIdentifier, stopIdentifier);
         final StringBuilder builder = new StringBuilder(4048);

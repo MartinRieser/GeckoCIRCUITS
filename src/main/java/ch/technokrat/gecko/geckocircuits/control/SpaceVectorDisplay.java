@@ -43,8 +43,16 @@ import javax.swing.JSpinner;
  * @author andy
  */
 @SuppressWarnings({"deprecation", "serial"})
+/**
+ * Real-time space vector display frame that visualizes up to three space
+ * vectors with averaging and persistence options.
+ */
 public class SpaceVectorDisplay extends javax.swing.JFrame {
     private static final long serialVersionUID = 1L;
+    /**
+     * Global counter incremented on each vector draw. Shared across
+     * instances; not thread-safe for concurrent access.
+     */
     static long counter = 0;
     final int ORIGINX = 180;
     final int ORIGINY = 200;
@@ -71,6 +79,10 @@ public class SpaceVectorDisplay extends javax.swing.JFrame {
             _length = length;
             _average = average;
         }
+        /**
+         * Maximum number of history samples for averaging. At 100000 entries
+         * (floats), each space vector consumes ~800 KB of memory.
+         */
         int HISTORY_BUFFER_SIZE = 100000;
         float[] averageHistoryRe = new float[HISTORY_BUFFER_SIZE];
         float[] averageHistoryIm = new float[HISTORY_BUFFER_SIZE];

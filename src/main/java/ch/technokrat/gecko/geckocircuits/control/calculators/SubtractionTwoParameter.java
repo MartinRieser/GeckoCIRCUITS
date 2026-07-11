@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Subtracts the second input from the first input.
+ */
 public final class SubtractionTwoParameter extends AbstractTwoInputsOneOutputCalculator {
 
     @Override

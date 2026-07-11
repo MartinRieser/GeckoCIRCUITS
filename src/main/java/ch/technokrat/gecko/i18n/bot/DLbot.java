@@ -28,7 +28,8 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 /**
  * Download bot class.
- * This bot downloads current translations from the Wiki database.
+ * This bot downloads current translations from the Wiki database
+ * using the MediaWiki API via JWBF.
  */
 public class DLbot {
         

@@ -36,28 +36,28 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 public class TranslationTools extends javax.swing.JFrame implements PropertyChangeListener {
     private static final long serialVersionUID = 1L;
     
-    private boolean confirmedSingle = false;
-    private boolean confirmedMultiple = false;
-    private boolean changed = false;
-    private Integer counterSingle;
-    private Integer counterMultiple;
-    private int maxCounterSingle;
-    private int maxCounterMultiple;
-    private HashMap<Integer,I18nKeys> keysSingle;
-    private HashMap<Integer,I18nKeys> keysMultiple;
-    private String newTranslationSingle;
-    private String newTranslationMultiple;
-    private String commentSingle;
-    private String commentMultiple;
-    private String buttonName = "";
+    private boolean confirmedSingle = false; // whether the current single-line suggestion is confirmed
+    private boolean confirmedMultiple = false; // whether the current multiple-line suggestion is confirmed
+    private boolean changed = false; // whether any change has been made
+    private Integer counterSingle; // index into the single-line items list
+    private Integer counterMultiple; // index into the multiple-line items list
+    private int maxCounterSingle; // total number of single-line items
+    private int maxCounterMultiple; // total number of multiple-line items
+    private HashMap<Integer,I18nKeys> keysSingle; // maps counter values to single-line I18nKeys
+    private HashMap<Integer,I18nKeys> keysMultiple; // maps counter values to multiple-line I18nKeys
+    private String newTranslationSingle; // the new single-line suggestion text
+    private String newTranslationMultiple; // the new multiple-line suggestion text
+    private String commentSingle; // comment for single-line suggestion
+    private String commentMultiple; // comment for multiple-line suggestion
+    private String buttonName = ""; // identifies which button triggered the upload
     
     private static ProgressMonitor progressMonitor; // Progress Monitor GUI
     private transient Task task; // Background Task Thread
     private transient Progress progress; // getProgress Thread
     
-    /*
-     * Inner class used to execute upload instructions from a separate
-     * thread to avoid freezing up.
+    /**
+     * Background task that executes the upload of translation suggestions
+     * (single-line and/or multiple-line) via UPbot in a separate thread.
      */
     private class Task extends SwingWorker<Void, Void> {
         @Override
@@ -77,9 +77,9 @@ public class TranslationTools extends javax.swing.JFrame implements PropertyChan
         public void done() {} // do nothing
     }
         
-    /*
-     * Inner class used to acquire progress information from the upload bot 
-     * class (UPbot) from a separate thread to avoid freezing up.
+    /**
+     * Background task that polls upload progress from UPbot in a separate
+     * thread and publishes progress updates to the GUI.
      */
     private class Progress extends SwingWorker<Void, Void> {
         @Override

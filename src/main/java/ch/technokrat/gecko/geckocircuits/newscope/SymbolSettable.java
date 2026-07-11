@@ -14,8 +14,8 @@
 package ch.technokrat.gecko.geckocircuits.newscope;
 
 /**
- *
- * @author andy
+ * Interface for components that support setting and retrieving plot
+ * symbol properties (symbol type, color, enabled state, skip number).
  */
 public interface SymbolSettable {
 

@@ -15,6 +15,10 @@ package ch.technokrat.gecko.geckocircuits.datacontainer;
 
 import ch.technokrat.gecko.geckocircuits.newscope.GeckoLineStyle;
 
+/**
+ * Enumerates separator characters (space, tab, semicolon, comma) used for
+ * delimiting data values in text-based data export and import operations.
+ */
 public enum TextSeparator {
 
     /**

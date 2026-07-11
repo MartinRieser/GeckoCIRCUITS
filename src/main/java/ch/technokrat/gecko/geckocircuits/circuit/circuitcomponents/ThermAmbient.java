@@ -26,9 +26,11 @@ import java.awt.Graphics2D;
 import java.awt.Window;
 import java.util.List;
 
-// // Defined reference temperature specifically for internal subcircuits, is actually NOT an ambient temperature
-// // --> implemented as a low-resistance with only one accessible node on a
-// // user-definable reference temperature potential.
+/**
+ * Reference temperature element for thermal subcircuits.
+ * Implemented as a low-resistance element with only one accessible node at a
+ * user-definable reference temperature potential (fixed at 0 degrees by default).
+ */
 public final class ThermAmbient extends AbstractCircuitBlockInterface {
     public static final AbstractTypeInfo TYPE_INFO = 
             new ThermalTypeInfo(ThermAmbient.class, "TREF", I18nKeys.REFERENCE_TEMPERATURE);

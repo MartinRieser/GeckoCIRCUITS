@@ -16,8 +16,9 @@ package ch.technokrat.gecko.geckocircuits.circuit;
 import ch.technokrat.gecko.geckocircuits.control.Point;
 
 /**
- *
- * @author andreas
+ * Terminal positioned relative to its parent element, following parent rotation.
+ * The relative coordinates (posX, posY) are transformed through the parent's
+ * component direction to compute the absolute sheet position.
  */
 public class TerminalRelativePosition extends AbstractTerminal {
     protected int _posX;
@@ -30,10 +31,18 @@ public class TerminalRelativePosition extends AbstractTerminal {
     } 
         
 
+    /**
+     * Returns the relative X position within the parent element.
+     * @return the relative X coordinate
+     */
     public int getRelativeX() {
         return _posX;
     }
     
+    /**
+     * Returns the relative Y position within the parent element.
+     * @return the relative Y coordinate
+     */
     public int getRelativeY() {
         return _posY;
     }
@@ -43,6 +52,14 @@ public class TerminalRelativePosition extends AbstractTerminal {
         return getPointFromDirection(_parentElement.getComponentDirection(), _parentElement.getSheetPosition(), _posX, _posY);
     }           
     
+    /**
+     * Computes a point offset from a center position according to a component direction.
+     * @param direction the component direction to apply
+     * @param center the center point
+     * @param posX the relative X offset
+     * @param posY the relative Y offset
+     * @return the computed absolute point
+     */
     public static Point getPointFromDirection(ComponentDirection direction, Point center, int posX, int posY) {
 
 

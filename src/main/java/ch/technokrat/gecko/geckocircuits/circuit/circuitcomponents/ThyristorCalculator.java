@@ -17,10 +17,17 @@ import static ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.Abstra
 import static ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.CircuitComponent.disturbanceValue;
 
 
+/**
+ * Calculator for thyristor switching behavior: gate-triggered turn-on and
+ * current-zero turn-off with reverse recovery delay. The thyristor turns on
+ * when the gate signal is active and the forward voltage exceeds the threshold;
+ * it turns off only after the reverse recovery time has elapsed and current is near zero.
+ */
 public class ThyristorCalculator extends AbstractSwitchCalculator implements CurrentCalculatable {
 
     private double _tReverse;
     private double _lastSwitchEvent;
+    /** Factor (3.0) applied to the reverse recovery time when determining turn-off timing. */
     private static final double REVERSE_FACTOR = 3.0;
     
     public ThyristorCalculator(final Thyristor parent) {
@@ -43,6 +50,12 @@ public class ThyristorCalculator extends AbstractSwitchCalculator implements Cur
         bVector[matrixIndices[1]] += (-bValue);
     }
 
+    /**
+     * Calculates the thyristor current and evaluates turn-on/turn-off conditions.
+     * @param pVector the voltage solution vector
+     * @param deltaT the simulation time step
+     * @param time the current simulation time
+     */
     @Override
     public final void calculateCurrent(final double[] pVector, final double deltaT, final double time) {
 
@@ -58,16 +71,19 @@ public class ThyristorCalculator extends AbstractSwitchCalculator implements Cur
     }
 
     /**
-     * function is overwritten, since the thyristor behaves different:
-     * - switch off only after _tReverse
-     * - switch off only when current is < 0
-     * @param value
+     * Overrides the gate signal setter for thyristor-specific behavior:
+     * turn-off only occurs after the reverse recovery delay and when current is negative.
+     * @param value the gate signal state (true = gate on)
      */
     @Override
     public final void setGateSignal(final boolean value) {
         _gateValue = value;
     }
 
+    /**
+     * Sets the reverse recovery time for the thyristor.
+     * @param value the reverse recovery time in seconds
+     */
     public final void setTRR(final double value) {
         _tReverse = value;
     }

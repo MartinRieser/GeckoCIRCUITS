@@ -30,6 +30,12 @@ import ch.technokrat.gecko.geckocircuits.newscope.ScopeFrame;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Core time-stepping simulation engine that manages the coupled power
+ * (LK), thermal (THERM), and control circuit simulations. Handles matrix
+ * assembly, LU decomposition caching, switch actions, and data transfers
+ * between domains at each time step.
+ */
 public class SimulationKernel {
     private static final int MAX_ITERATIONS = 10000;
     private static final double PERTURBATION_FACTOR = 0.99;
@@ -41,7 +47,10 @@ public class SimulationKernel {
     
     /** The simulation time step (dt), current simulation time (t), and pause time. */
     private double dt, t, tPAUSE;
-    /** The start time and end time of the simulation. */
+    /**
+     * The start and end time of the simulation. Publicly mutable; the
+     * simulation runs from tSTART to tEND.
+     */
     public static double tSTART, tEND;
     
     /** Power circuit matrices. */
@@ -104,6 +113,9 @@ public class SimulationKernel {
     private AbstractControlCalculatable[] sortedCalculators;
     private AbstractControlCalculatable[] unsortedCalculators;
 
+    /**
+     * Represents the current status of the simulation lifecycle.
+     */
     public enum SimulationStatus {
 
         NOT_INIT,
@@ -136,6 +148,7 @@ public class SimulationKernel {
     public double getdt() {
         return dt;
     }
+    /** Global step counter, incremented on each time step. */
     static int counter = 0;
 
     private void simulateOneTimeStep() {

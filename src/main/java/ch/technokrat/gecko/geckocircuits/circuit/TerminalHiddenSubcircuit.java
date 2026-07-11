@@ -17,8 +17,8 @@ import ch.technokrat.gecko.geckocircuits.control.Point;
 import java.awt.Graphics;
 
 /**
- *
- * @author andreas
+ * Invisible subcircuit terminal used for internal connections within a subcircuit.
+ * This terminal is not painted on the circuit sheet and is positioned at (0,0).
  */
 public class TerminalHiddenSubcircuit extends TerminalRelativePosition {
 

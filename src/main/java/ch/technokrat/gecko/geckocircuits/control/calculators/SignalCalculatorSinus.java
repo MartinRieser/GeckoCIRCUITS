@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Generates a sinusoidal signal: A * sin(2*pi*f*t - phase) + DC offset.
+ */
 public class SignalCalculatorSinus extends AbstractSignalCalculatorPeriodic {
     
     /**

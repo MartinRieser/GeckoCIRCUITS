@@ -17,12 +17,32 @@ import ch.technokrat.gecko.geckocircuits.control.Point;
 import java.awt.Graphics;
 
 /**
- *
- * @author andreas
+ * Base interface for all terminal types in the circuit sheet.
+ * Defines the common methods that every terminal must implement for positioning,
+ * painting, and determining its connection category.
  */
 public interface TerminalInterface extends Labable {    
+    /**
+     * Returns the position of this terminal on the circuit sheet.
+     * @return the terminal position point
+     */
     Point getPosition();
+    
+    /**
+     * Returns the circuit sheet that this terminal belongs to.
+     * @return the parent circuit sheet
+     */
     CircuitSheet getCircuitSheet();
+    
+    /**
+     * Paints this terminal component on the circuit sheet.
+     * @param graphics the graphics context to paint on
+     */
     void paintComponent(final Graphics graphics);    
+    
+    /**
+     * Returns the connection category (e.g., LK, CONTROL, THERMAL) of this terminal.
+     * @return the connector type category
+     */
     public ConnectorType getCategory();
 }

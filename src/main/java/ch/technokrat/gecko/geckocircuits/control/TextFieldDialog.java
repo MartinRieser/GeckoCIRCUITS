@@ -17,8 +17,8 @@ import java.awt.Color;
 import javax.swing.JColorChooser;
 
 /**
- *
- * @author muesinga
+ * Dialog for editing text field properties: title, contents, dimensions, and colors.
+ * The height spinner value is divided by 2.0 to convert from UI units to internal units.
  */
 @SuppressWarnings("serial")
 public class TextFieldDialog extends javax.swing.JDialog {
@@ -255,6 +255,10 @@ public class TextFieldDialog extends javax.swing.JDialog {
         _tfb._width.setUserValue( ((Integer) jSpinnerBreite.getValue()).doubleValue()) ;
     }//GEN-LAST:event_jSpinnerBreiteStateChanged
 
+    /**
+     * Updates the height parameter when the spinner changes.
+     * The spinner value is divided by 2.0 to convert from dialog units to internal units.
+     */
     private void jSpinnerHoeheStateChanged(javax.swing.event.ChangeEvent evt) {//NOPMD//GEN-FIRST:event_jSpinnerHoeheStateChanged
         _tfb._height.setUserValue(((Integer) jSpinnerHoehe.getValue()) / 2.0) ;
     }//GEN-LAST:event_jSpinnerHoeheStateChanged

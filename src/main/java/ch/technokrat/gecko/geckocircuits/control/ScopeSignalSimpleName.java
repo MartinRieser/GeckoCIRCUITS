@@ -15,6 +15,10 @@ package ch.technokrat.gecko.geckocircuits.control;
 
 import ch.technokrat.gecko.geckocircuits.newscope.AbstractScopeSignal;
 
+/**
+ * Simple wrapper around a scope signal that provides a custom display name
+ * without requiring a connection to an actual scope input terminal.
+ */
 public class ScopeSignalSimpleName extends AbstractScopeSignal {
     private final String _name;
 

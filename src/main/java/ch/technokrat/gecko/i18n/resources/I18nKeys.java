@@ -17,6 +17,11 @@ import ch.technokrat.gecko.i18n.LangInit;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Enumeration of all internationalizable string keys used throughout
+ * GeckoCIRCUITS. Each constant holds the English default translation and
+ * can be mapped to a translated value via {@link #getTranslation()}.
+ */
 public enum I18nKeys {
 
     FILE("File"),
@@ -996,6 +1001,12 @@ public enum I18nKeys {
         }        
     }
 
+    /**
+     * Returns the enum constant for the given key string. The internal
+     * lookup map is lazily initialized on the first call.
+     * @param keyString the string key to look up
+     * @return the matching I18nKeys constant, or null if not found
+     */
     public static I18nKeys fabricFromKeyString(final String keyString) {
         if (_keyStringToEnumConstant.isEmpty()) {
             for (I18nKeys val : values()) {

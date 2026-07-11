@@ -36,12 +36,21 @@ public final class TerminalToWrap {
     private EnumTerminalLocation _terminalLocation = EnumTerminalLocation.LEFT;
     private TerminalSubCircuitBlock _blockTerminal;
     
+    /**
+     * Constructs a TerminalToWrap for the given parent component.
+     * @param parentComponent the parent component, must implement SubCircuitTerminable
+     */
     public TerminalToWrap(final AbstractBlockInterface parentComponent) {
         _parentComponent = parentComponent;
         assert parentComponent instanceof SubCircuitTerminable;
         _subTerminable = (SubCircuitTerminable) _parentComponent;
     }
 
+    /**
+     * Recalculates the terminal location based on the move-to point and worksheet boundaries.
+     * Determines whether the terminal should be placed LEFT, RIGHT, BOTTOM, or UP.
+     * @param moveToPoint the target point for relocation
+     */
     public void reCalculateLocation(final Point moveToPoint) {
         final int wsSizeX = _parentComponent.getParentCircuitSheet()._worksheetSize.getSizeX();
         final int wsSizeY = _parentComponent.getParentCircuitSheet()._worksheetSize.getSizeY();
@@ -71,11 +80,19 @@ public final class TerminalToWrap {
         }
     }
 
+    /**
+     * Draws the background circle of the terminal.
+     * @param graphics the graphics context to paint on
+     */
     public void drawBackground(final Graphics2D graphics) {
         final int diameter = AbstractBlockInterface.dpix;
         graphics.fillOval(-diameter / 2 - 1, -diameter / 2 - 1, diameter + 1, diameter + 1);
     }
 
+    /**
+     * Validates terminal positions after placement and shows a warning dialog
+     * if any terminals share the same position within the subcircuit block.
+     */
     public void absetzenElement() {
         
         if (_parentComponent.getParentCircuitSheet() instanceof SubCircuitSheet
@@ -96,6 +113,11 @@ public final class TerminalToWrap {
 
     }
 
+    /**
+     * Moves the terminal component; note the suspicious condition that returns early
+     * when moveToPoint.x equals moveToPoint.y (likely a safeguard against diagonal movement).
+     * @param moveToPoint the target point for the move
+     */
     public void moveComponent(final Point moveToPoint) {
         if (moveToPoint.x == moveToPoint.y) {
             return;
@@ -103,6 +125,9 @@ public final class TerminalToWrap {
         reCalculateLocation(moveToPoint);
     }
 
+    /**
+     * Performs individual cleanup on delete: removes the terminal from the subcircuit block.
+     */
     public void deleteActionIndividual() {
         if (_parentComponent.getParentCircuitSheet() instanceof SubCircuitSheet) {
             final SubCircuitSheet sub = (SubCircuitSheet) _parentComponent.getParentCircuitSheet();
@@ -111,6 +136,10 @@ public final class TerminalToWrap {
         }
     }
 
+    /**
+     * Draws the foreground circle and, when selected, draws a connector line to the subcircuit block.
+     * @param graphics the graphics context to paint on
+     */
     public void drawForeground(final Graphics2D graphics) {
         final int dpix = AbstractBlockInterface.dpix;
         final int diameter = dpix / 2;
@@ -130,6 +159,9 @@ public final class TerminalToWrap {
     }
     
 
+    /**
+     * Creates or retrieves the block terminal and inserts it into the subcircuit block.
+     */
     public void createBlockTerminal() {
         if (_parentComponent.getParentCircuitSheet() instanceof SubCircuitSheet) {
             final SubCircuitSheet subSheet = (SubCircuitSheet) _parentComponent.getParentCircuitSheet();
@@ -144,19 +176,37 @@ public final class TerminalToWrap {
         }
     }
 
+    /**
+     * Exports the terminal location to the ASCII data format.
+     * @param ascii the string buffer to append to
+     */
     public void exportAsciiIndividual(final StringBuffer ascii) {
         ProjectData.appendAsString(ascii.append("\nterminalLocation"), _terminalLocation.ordinal());
     }
 
+    /**
+     * Imports the terminal location from a token map.
+     * @param tokenMap the token map to read from
+     */
     public void importIndividual(final TokenMap tokenMap) {
         _terminalLocation = EnumTerminalLocation.getFromOrdinal(tokenMap.readDataLine("terminalLocation",
                 _terminalLocation.ordinal()));
     }
 
+    /**
+     * Copies additional parameters (terminal location) from an original terminal.
+     * @param originalTerminal the terminal to copy from
+     */
     public void copyAdditionalParameters(final TerminalToWrap originalTerminal) {
         _terminalLocation = originalTerminal._terminalLocation;
     }
 
+    /**
+     * Checks whether two subcircuit terminables have the same block terminal position.
+     * @param terminable1 the first terminable
+     * @param terminable2 the second terminable
+     * @return true if both have identical relative X and Y positions
+     */
     public static boolean sameBlockPosition(final SubCircuitTerminable terminable1, final SubCircuitTerminable terminable2) {
         final TerminalSubCircuitBlock termSub1 = terminable1.getBlockTerminal();
         final TerminalSubCircuitBlock termSub2 = terminable2.getBlockTerminal();
@@ -168,10 +218,18 @@ public final class TerminalToWrap {
         return relX1 == relX2 && relY1 == relY2;
     }
 
+    /**
+     * Returns the current terminal location.
+     * @return the terminal location enum
+     */
     public EnumTerminalLocation getTerminalLocation() {
         return _terminalLocation;
     }
 
+    /**
+     * Returns the associated block terminal.
+     * @return the block terminal instance
+     */
     public TerminalSubCircuitBlock getBlockTerminal() {
         return _blockTerminal;
     }

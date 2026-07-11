@@ -15,8 +15,8 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
 
 /**
- *
- * @author andreas
+ * Contract for components that provide a reluctance-domain measurement
+ * component (e.g. for reading magnetic flux or MMF in the reluctance circuit).
  */
 public interface ReluctanceComponent {
     abstract AbstractCircuitBlockInterface getReluctanceMeasurementComponent();    

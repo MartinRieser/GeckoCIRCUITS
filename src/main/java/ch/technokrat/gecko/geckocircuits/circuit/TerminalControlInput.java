@@ -18,16 +18,26 @@ import java.awt.Graphics2D;
 import java.awt.font.FontRenderContext;
 
 /**
- *
- * @author andreas
+ * Control input terminal for receiving signals from the control domain.
+ * Draws a connection line from the terminal to its parent element.
  */
 public class TerminalControlInput extends TerminalControl {
 
+    /**
+     * Constructs a control input terminal at the given relative position.
+     * @param relatedComponent the parent block this terminal belongs to
+     * @param posX relative X position
+     * @param posY relative Y position
+     */
     public TerminalControlInput(AbstractBlockInterface relatedComponent, int posX, int posY) {
         super(relatedComponent, posX, posY);
     }    
     
     
+    /**
+     * Draws a connection line from the terminal to its parent element sheet position.
+     * @param graphics the graphics context to paint on
+     */
     @Override
     public void paintComponent(Graphics graphics) {
         final int dpix = AbstractCircuitSheetComponent.dpix;
@@ -36,6 +46,11 @@ public class TerminalControlInput extends TerminalControl {
         super.paintComponent(graphics);
     }
     
+    /**
+     * Creates a copy of this terminal for a different parent component.
+     * @param relatedComponent the new parent component
+     * @return a new TerminalControlInput with the same label
+     */
     @Override
     public AbstractTerminal createCopy(AbstractBlockInterface relatedComponent) {
         AbstractTerminal returnValue =  new TerminalControlInput(relatedComponent, _posX, _posY);
@@ -43,6 +58,10 @@ public class TerminalControlInput extends TerminalControl {
         return returnValue;
     }   
     
+    /**
+     * Paints the terminal label string with left-alignment adjustment.
+     * @param graphics2D the graphics context to paint on
+     */
     @Override
     public void paintLabelString(final Graphics2D graphics2D) {                
         FontRenderContext frc = graphics2D.getFontRenderContext();        

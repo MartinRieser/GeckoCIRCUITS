@@ -49,6 +49,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * A subcircuit container block that encapsulates a nested circuit sheet
+ * with its own components and terminals, enabling hierarchical circuit
+ * design.
+ */
 public final class SubcircuitBlock extends AbstractSpecialBlock {
 
     public static final AbstractTypeInfo tInfo = new SpecialTypeInfo(SubcircuitBlock.class, "SUBCIRCUIT", I18nKeys.SUBCIRCUIT);
@@ -156,6 +161,12 @@ public final class SubcircuitBlock extends AbstractSpecialBlock {
         _myCircuitSheet._worksheetSize.setNewWorksheetSize(_sheetSizeX.getValue(), _sheetSizeY.getValue());
     }
 
+    /**
+     * Checks whether all terminal positions are valid (no overlapping
+     * terminals). Currently always returns true due to the early return
+     * on line 2; the full validation logic is disabled.
+     * @return always true
+     */
     public boolean areTerminalPositionsOK() {
         if(1>0) return true;
         for (SubCircuitTerminable terminal1 : _myTerminals) {
@@ -278,6 +289,12 @@ public final class SubcircuitBlock extends AbstractSpecialBlock {
 
     
 
+    /**
+     * Creates a deep copy of this subcircuit block, including all
+     * sub-components and their coupling references.
+     * @param shiftValue the shift value for unique ID generation
+     * @return the copied subcircuit block
+     */
     @Override
     public AbstractCircuitSheetComponent copyFabric(final long shiftValue) {
         final SubcircuitBlock returnValue = (SubcircuitBlock) super.copyFabric(shiftValue);
@@ -327,6 +344,10 @@ public final class SubcircuitBlock extends AbstractSpecialBlock {
         return 0;
     }
 
+    /**
+     * Paints the subcircuit block outline and its terminal connection lines.
+     * @param graphics the graphics context to paint on
+     */
     @Override
     protected void paintIndividualComponent(final Graphics2D graphics) {
         final AffineTransform oldTransform = graphics.getTransform();        
@@ -389,6 +410,12 @@ public final class SubcircuitBlock extends AbstractSpecialBlock {
         super.setCircuitEnabled(isEnabled);
     }
 
+    /**
+     * Returns the color for a terminal based on its simulation domain
+     * (power, thermal, reluctance, or control).
+     * @param terminal the terminal object
+     * @return the domain-specific color
+     */
     private Color getColorForTerminal(final Object terminal) {
         if (terminal instanceof AbstractCircuitTerminal) {
             final AbstractCircuitTerminal lkTerminal = (AbstractCircuitTerminal) terminal;

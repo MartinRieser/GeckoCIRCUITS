@@ -26,6 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
 
+/**
+ * Manages a pair of red/green sliders on a grafer panel, supporting
+ * single-point and differential measurement modes.
+ */
 final class SliderContainer{
   private boolean _sliderActive = false;
   private final List<SliderValues> _ySliderValues = new ArrayList<SliderValues>();

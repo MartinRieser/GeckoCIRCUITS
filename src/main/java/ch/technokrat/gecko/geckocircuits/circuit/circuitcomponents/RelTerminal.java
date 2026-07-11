@@ -16,6 +16,10 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Reluctance-domain terminal (leaf class) representing a connection point for
+ * magnetic reluctance circuits.
+ */
 class RelTerminal extends AbstractCircuitTerminal {        
     public static final AbstractTypeInfo TYPE_INFO = new ReluctanceTypeInfo(RelTerminal.class, "RELUCTANCE_TERMINAL", I18nKeys.RELUCTANCE_TERMINAL);
     

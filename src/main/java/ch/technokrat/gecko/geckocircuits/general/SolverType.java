@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.general;
 
+/**
+ * Available numerical integration solver types for the circuit simulation:
+ * TRAPEZOIDAL, BACKWARD_EULER (SOLVER_BE), and GEAR_SHICHMAN (SOLVER_GS).
+ */
 public enum SolverType {
     SOLVER_BE(0, "backward-euler"),
     SOLVER_TRZ(1, "trapezoidal"),

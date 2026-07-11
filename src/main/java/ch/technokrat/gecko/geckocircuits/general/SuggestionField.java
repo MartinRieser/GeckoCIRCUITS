@@ -44,6 +44,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+/**
+ * A text field with an auto-suggest dropdown that filters a data list
+ * based on user input, using a pluggable {@link SuggestMatcher}.
+ */
 public final class SuggestionField extends JTextField {
 
     private static final long serialVersionUID = 1756202080423312153L;

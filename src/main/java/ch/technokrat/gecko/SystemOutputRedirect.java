@@ -18,8 +18,8 @@ import java.io.PrintStream;
 
 
 /**
- *
- * @author andreas
+ * Utility for redirecting System.out and System.err to alternative
+ * output streams (e.g., for capturing console output in the GUI).
  */
 public final class SystemOutputRedirect {
     private static final PrintStream ORIG_ERR_STREAM = System.err;
@@ -36,26 +36,45 @@ public final class SystemOutputRedirect {
         // this is a "static" behavior class! -> private constructor
     }
     
+    /**
+     * Redirects System.out and System.err to warning streams that also
+     * forward to the original streams.
+     */
     public static void init() {        
         System.setOut(new PrintStream(WARNING_STREAM));
         System.setErr(new PrintStream(WARNING_ERR_STREAM));
     }       
     
+    /**
+     * Redirects output to a StringBuffer with a description label.
+     * @param stringBuffer the buffer to capture output
+     * @param description a description for the output source
+     */
     public static void setAlternativeOutput(final StringBuffer stringBuffer, final String description) {
         WARNING_STREAM.setAlternativeOutput(stringBuffer, description);
         WARNING_ERR_STREAM.setAlternativeOutput(stringBuffer, description);
     }
     
+    /**
+     * Restores output to the original System.out/System.err streams.
+     */
     public static void setOriginalOutput() {
         WARNING_STREAM.setOriginalOutput();
         WARNING_ERR_STREAM.setOriginalOutput();
     }
     
+    /**
+     * Redirects output to the console with a source description.
+     * @param sourceDescription description of the output source
+     */
     public static void setConsoleOutput(final String sourceDescription) {
         WARNING_STREAM.setConsoleOutput(sourceDescription);
         WARNING_ERR_STREAM.setConsoleOutput(sourceDescription);
     }
     
+    /**
+     * Resets both warning streams to their initial state.
+     */
     public static void reset() {
         WARNING_ERR_STREAM.reset();
         WARNING_STREAM.reset();

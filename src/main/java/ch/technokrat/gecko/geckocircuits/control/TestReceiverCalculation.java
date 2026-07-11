@@ -17,6 +17,11 @@ import ch.technokrat.gecko.geckocircuits.datacontainer.ContainerStatus;
 import ch.technokrat.gecko.geckocircuits.datacontainer.DataContainerSimple;
 import ch.technokrat.gecko.geckocircuits.newscope.Cispr16Fft;
 
+/**
+ * Performs CISPR 16 test receiver calculations on simulation data.
+ * Provides quasi-peak, average, and peak detection at specified frequencies
+ * using FFT-based post-processing of time-domain simulation results.
+ */
 class TestReceiverCalculation {                
     
     private final Cispr16Settings _settings;

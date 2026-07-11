@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Calculates the square (x^2) of the input signal.
+ */
 public final class SquareCalculator extends AbstractSingleInputSingleOutputCalculator {
 
     @Override

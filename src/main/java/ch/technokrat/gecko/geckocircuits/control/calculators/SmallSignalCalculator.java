@@ -20,12 +20,21 @@ import ch.technokrat.gecko.geckocircuits.newscope.Cispr16Fft;
 import ch.technokrat.gecko.geckocircuits.newscope.FFTLibrary;
 
 
+/**
+ * Performs Small Signal Analysis (SSA) by exciting the system with a
+ * multi-sine signal and computing the Bode plot (magnitude and phase)
+ * via FFT of the measured response.
+ */
 public class SmallSignalCalculator extends AbstractControlCalculatable implements InitializableAtSimulationStart, IsDtChangeSensitive {
 
     private static final int THREE = 3;
     private static final int FOUR = 4;
     private static final int NOFREQSMAX = 50;
 
+    /**
+     * Shared Bode plot data across all instances. Row 0 = frequencies,
+     * row 1 = magnitude (dB), row 2 = phase (degrees).
+     */
     public static double[][] _bode = new double[THREE][];
 
     private final SSAShape _signalType;
@@ -120,6 +129,10 @@ public class SmallSignalCalculator extends AbstractControlCalculatable implement
 
     }
 
+    /**
+     * On simulation pause, performs FFT of the measured and excitation
+     * signals, then calculates the Bode magnitude and phase response.
+     */
     @Override
     public void tearDownOnPause() {
 

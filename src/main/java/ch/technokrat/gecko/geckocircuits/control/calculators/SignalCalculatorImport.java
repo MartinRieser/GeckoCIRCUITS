@@ -14,6 +14,11 @@
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 
+/**
+ * Generates an output signal by linearly interpolating between data points
+ * from an imported data table. The signal repeats periodically based on the
+ * total time span of the table.
+ */
 public final class SignalCalculatorImport extends AbstractSignalCalculator implements InitializableAtSimulationStart {
     // // Period of the signal --> important if Repeat==ON / tSigStart ... local time within the imported signal period
 
@@ -21,6 +26,13 @@ public final class SignalCalculatorImport extends AbstractSignalCalculator imple
     private double _tSigStart = 0;
     private final double[][] _xy;
 
+    /**
+     * Creates a signal calculator from an imported data table.
+     *
+     * @param dataTable 2D array where dataTable[0] = time values and
+     *                  dataTable[1] = corresponding signal values; time
+     *                  must be strictly monotonically increasing
+     */
     public SignalCalculatorImport(final double[][] dataTable) {
         super(0);
         assert dataTable != null;
@@ -92,6 +104,13 @@ public final class SignalCalculatorImport extends AbstractSignalCalculator imple
         }
     }
 
+    /**
+     * Uses linear interpolation to find the output value between two
+     * neighboring data points. First estimates the index position from
+     * the time ratio, then fine-tunes by scanning forward or backward.
+     *
+     * @return the index of the first data point at or before the current time
+     */
     private int calculateAccurateTimePointer() {
         int timePointer = (int) (_xy[0].length * ((_time - _tSigStart) / _signalDuration));
         // // Fine adjustment: now determine the exact position

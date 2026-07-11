@@ -15,8 +15,16 @@ package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 import ch.technokrat.gecko.geckocircuits.control.SpaceVectorDisplay;
 
+/**
+ * Feeds 9 input signals (3 phases x 3 space vectors) to a
+ * {@link SpaceVectorDisplay} for real-time visualization.
+ */
 public final class SpaceVectorCalculator extends AbstractControlCalculatable {
     private final SpaceVectorDisplay _svd;
+    /**
+     * Number of inputs: 3 phases (R, S, T) for each of the 3 space vectors.
+     * Inputs 0-2: vector 1, inputs 3-5: vector 2, inputs 6-8: vector 3.
+     */
     private static final int NO_INPUTS = 9;
     
     public SpaceVectorCalculator(final SpaceVectorDisplay display) {

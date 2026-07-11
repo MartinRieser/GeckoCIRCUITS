@@ -18,8 +18,8 @@ import java.awt.Component;
 import java.awt.Graphics;
 
 /**
- *
- * @author andy
+ * A vertical slider line drawn on a diagram for interactive measurement of
+ * x-axis values at a specific point in time.
  */
 class Slider {
 

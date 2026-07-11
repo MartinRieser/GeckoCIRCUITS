@@ -13,9 +13,15 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
-//this class allows us to get information about a switching device's state - when it changed into the present state and what is it
+/**
+ * Snapshot of a switching device's state (ON/OFF) at a specific time,
+ * including a reference to the circuit element.
+ */
 public class SwitchState {
     
+    /**
+     * The possible states of a switching device.
+     */
     public enum State {ON, OFF};
     
     private final State _state;

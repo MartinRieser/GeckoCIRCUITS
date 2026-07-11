@@ -32,6 +32,11 @@ import ch.technokrat.gecko.geckocircuits.datacontainer.ContainerStatus;
 import ch.technokrat.gecko.geckoscript.SimulationAccess;
 
 
+/**
+ * Manages the full simulation lifecycle: initialization, start, continue,
+ * pause, and stop. Delegates time-stepping to {@link SimulationKernel} and
+ * runs the simulation in a separate thread or synchronously.
+ */
 public final class SimulationRunner {
 
     final MainWindow _mainwindow;
@@ -44,6 +49,12 @@ public final class SimulationRunner {
         _se = schematicEntry;
     }
 
+    /**
+     * Initializes and starts a new simulation.
+     * @param createNewSimThread if true, runs simulation in a new thread
+     * @param solverSettings the solver configuration to use
+     * @throws Exception if simulation initialization fails
+     */
     public void startCalculation(boolean createNewSimThread, SolverSettings solverSettings) throws Exception {
         boolean getAnfangsbedVomDialogfenster = true;
         _mainwindow.setMenuDuringSimulation(true, false);
@@ -86,6 +97,12 @@ public final class SimulationRunner {
     
         
 
+    /**
+     * Continues a paused or finished simulation from its current state.
+     * @param createNewSimThread if true, runs continuation in a new thread
+     * @param solverSettings the solver configuration to use
+     * @throws Exception if continuation initialization fails
+     */
     void continueCalculation(final boolean createNewSimThread, final SolverSettings solverSettings) throws Exception {
         boolean getAnfangsbedVomDialogfenster = false;
         _mainwindow.setMenuDuringSimulation(true, false);
@@ -138,6 +155,10 @@ public final class SimulationRunner {
         }
     }
 
+    /**
+     * Pauses an actively running simulation by setting the kernel status
+     * to {@link SimulationStatus#PAUSED}.
+     */
     void pauseSimulation() {
         try {
             if (simKern != null) {

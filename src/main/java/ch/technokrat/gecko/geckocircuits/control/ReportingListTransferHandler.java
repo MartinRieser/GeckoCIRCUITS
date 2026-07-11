@@ -24,6 +24,10 @@ import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.TransferHandler;
 
+/**
+ * Drag-and-drop transfer handler for reordering items in a JList using
+ * ArrayList-based data flavors (local and serialized).
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public final class ReportingListTransferHandler extends TransferHandler {
 
@@ -46,6 +50,14 @@ public final class ReportingListTransferHandler extends TransferHandler {
         _serArrayLstFlvr = new DataFlavor(List.class, "ArrayList");
     }
 
+    /**
+     * Imports transferred list data into the target component, inserting items
+     * at the current selection index and avoiding self-drop.
+     *
+     * @param comp   the target JList component
+     * @param transf the transferable containing ArrayList data
+     * @return true if the import was successful
+     */
     @Override
     public boolean importData(final JComponent comp, final Transferable transf) {
 
@@ -99,6 +111,15 @@ public final class ReportingListTransferHandler extends TransferHandler {
         return true;
     }
 
+    /**
+     * Called after a transfer is complete; removes the source items from the
+     * original list when the action is MOVE, adjusting indices for any
+     * insertion point shifts.
+     *
+     * @param comp   the source JList component
+     * @param data   the transferred data
+     * @param action the transfer action (MOVE or COPY)
+     */
     @Override
     protected void exportDone(final JComponent comp, final Transferable data, final int action) {
         if (_addCount < 1) {
@@ -162,6 +183,13 @@ public final class ReportingListTransferHandler extends TransferHandler {
         return false;
     }
 
+    /**
+     * Creates a transferable containing the selected JList items as an
+     * ArrayList for drag-and-drop operations.
+     *
+     * @param comp the source JList component
+     * @return a ReportingListTransferable wrapping the selected items
+     */
     @Override
     protected Transferable createTransferable(final JComponent comp) {
         if (comp instanceof JList) {

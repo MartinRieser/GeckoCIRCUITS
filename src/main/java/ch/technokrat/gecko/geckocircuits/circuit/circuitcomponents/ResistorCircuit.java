@@ -17,6 +17,10 @@ import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.geckocircuits.circuit.CircuitTypeInfo;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Electrical-domain resistor (leaf class) with linear 1/R conductance
+ * stamping in the electrical circuit.
+ */
 public class ResistorCircuit extends AbstractResistor {
     static final AbstractTypeInfo TYPE_INFO = new CircuitTypeInfo(ResistorCircuit.class, "R", I18nKeys.RESISTOR_R_OHM);
 }

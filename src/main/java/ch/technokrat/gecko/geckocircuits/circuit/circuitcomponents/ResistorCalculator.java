@@ -14,6 +14,10 @@
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
 
+/**
+ * Simplest A-matrix stamping calculator: stamps a 1/R conductance between
+ * two nodes. No history terms are required for a purely resistive element.
+ */
 public final class ResistorCalculator extends CircuitComponent<AbstractResistor> implements AStampable, HistoryUpdatable {
 
     private static final double FAST_NULL_R = 1e-9;
@@ -25,6 +29,12 @@ public final class ResistorCalculator extends CircuitComponent<AbstractResistor>
         _resistance = parent._resistance.getValue();
     }
 
+    /**
+     * Sets the resistance value, clamping to a small non-zero minimum
+     * (FAST_NULL_R = 1e-9) to avoid numerical singularity.
+      *
+      * @param resistance the new resistance value in ohms
+      */
     public void setResistance(final double resistance) {
         if(_resistance < FAST_NULL_R) {
             _resistance = FAST_NULL_R;
@@ -43,11 +53,23 @@ public final class ResistorCalculator extends CircuitComponent<AbstractResistor>
     }
 
 
+    /**
+     * Returns a string representation including the class name, resistance
+     * value, and matrix indices.
+     *
+     * @return debug string with resistance and node indices
+     */
     @Override
     public String toString() {
         return super.toString() + getClass().getName() + "  " + _resistance + " " + matrixIndices[0] + " " + matrixIndices[1];
     }
 
+    /**
+     * Updates voltage and current from the solution potentials. No history
+     * state is needed for a purely resistive element.
+     *
+     * @param potentials the node potential array from the solver
+     */
     @Override
     public void updateHistory(final double[] potentials) {
         _potential1 = potentials[matrixIndices[0]];

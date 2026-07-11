@@ -13,10 +13,18 @@
  */
 package ch.technokrat.gecko.geckocircuits.control;
 
+/**
+ * Excitation signal shapes for small-signal analysis (SSA). Each constant
+ * defines a waveform type used to perturb the operating point.
+ */
 public enum SSAShape {
+    /** Sinusoidal excitation. */
     SINE("SINE"),
+    /** Rectangular (square) wave excitation. */
     RECTANGLE("RECT"),
+    /** Triangular wave excitation. */
     TRIANGLE("TRI"),
+    /** Externally defined excitation signal. */
     EXTERNAL("EXT");
     
     private final String _readableName;

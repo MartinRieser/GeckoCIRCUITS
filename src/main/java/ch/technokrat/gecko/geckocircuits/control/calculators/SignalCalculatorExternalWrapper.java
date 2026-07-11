@@ -13,16 +13,26 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Wraps a periodic signal calculator, exposing its internal parameters
+ * (amplitude, frequency, offset, phase, duty cycle) as runtime inputs
+ * that can be driven by external control signals.
+ */
 public final class SignalCalculatorExternalWrapper extends AbstractControlCalculatable
         implements InitializableAtSimulationStart {
 
     private static final int NO_INPUTS = 5;
     private final AbstractSignalCalculatorPeriodic _wrapped;
 
-    private static final int AMPLITUDE_INDEX = 0;    
+    /** Input index for the amplitude parameter. */
+    private static final int AMPLITUDE_INDEX = 0;
+    /** Input index for the frequency parameter (Hz). */
     private static final int FREQUENCY_INDEX = 1;
+    /** Input index for the DC offset parameter. */
     private static final int OFFSET_INDEX = 2;
+    /** Input index for the phase parameter (radians). */
     private static final int PHASE_INDEX = 3;
+    /** Input index for the duty cycle parameter [0..1]. */
     private static final int DUTY_INDEX = 4;               
     private static final double MAX_DUTY = 0.99999999;
     private static final double MIN_DUTY = 1e-7;

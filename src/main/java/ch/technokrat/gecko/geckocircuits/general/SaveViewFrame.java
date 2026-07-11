@@ -41,6 +41,10 @@ import org.apache.fop.svg.PDFTranscoder;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 
+/**
+ * Dialog for exporting the current view as an image file. Supports
+ * multiple export formats: SVG, SVGZ, PDF, JPG, GIF, and PNG.
+ */
 public final class SaveViewFrame extends GeckoDialog {
 
     private static final long serialVersionUID = 1L;

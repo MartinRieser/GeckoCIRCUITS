@@ -21,6 +21,10 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Type information for special (non-circuit) components such as subcircuit
+ * blocks and text fields. These components have no simulation domain.
+ */
 public class SpecialTypeInfo extends AbstractTypeInfo {
 
     public SpecialTypeInfo(Class<? extends AbstractBlockInterface> typeClass, String idString, I18nKeys typeDescription) {

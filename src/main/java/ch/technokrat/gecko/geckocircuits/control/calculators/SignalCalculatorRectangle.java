@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Generates a rectangular (square) wave signal with configurable amplitude,
+ * frequency, phase, DC offset, and duty cycle.
+ */
 public final class SignalCalculatorRectangle extends AbstractSignalCalculatorPeriodic {
 
     private static final double FOUR = 4;

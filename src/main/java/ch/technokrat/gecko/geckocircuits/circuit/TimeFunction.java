@@ -13,16 +13,29 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit;
 
+/**
+ * Abstract base for time-dependent source functions with history tracking.
+ * Supports a back-stepping algorithm for variable time-step simulation
+ * by saving and restoring previous state variable values.
+ */
 public abstract class TimeFunction {
 
+    /** Number of historical states saved for back-stepping. */
     protected int _steps_saved;
+    /** History buffer of state variables for back-stepping support. */
     protected double[][] var_history;
+    /** Flag indicating whether a step-back operation has been performed. */
     protected boolean stepped_back = false;
+    /** Number of steps reversed in the current back-stepping sequence. */
     protected int steps_reversed = 0;
+    /** Global flag to enable/disable history saving. */
     public static boolean saveHistory = false;
 
     public abstract double calculate(double t, double dt);
 
+    /**
+     * Shifts the history buffer forward (saves current state before modification).
+     */
     protected void historyForward()
     {
       for (int j = var_history.length - 1; j > 0; j--)
@@ -30,6 +43,9 @@ public abstract class TimeFunction {
             var_history[j][i] = var_history[j-1][i];
     }
 
+    /**
+     * Restores the previous state from the history buffer (undoes a step).
+     */
     protected void historyBackward()
     {
       for (int j = var_history.length - 1; j > 0; j--)

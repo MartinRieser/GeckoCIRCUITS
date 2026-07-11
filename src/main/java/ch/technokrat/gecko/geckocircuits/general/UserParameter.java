@@ -35,8 +35,9 @@ import ch.technokrat.modelviewcontrol.AbstractUndoGenericModel;
 import ch.technokrat.modelviewcontrol.ModelMVC;
 
 /**
- *
- * @author andreas
+ * User-editable parameter model with undo/redo integration and validation.
+ * Supports multiple data types (Double, Integer, Boolean, String, Color, Enum)
+ * and provides serialization for circuit file import/export.
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
 public final class UserParameter<T> {
@@ -175,6 +176,10 @@ public final class UserParameter<T> {
         }
     }
 
+    /**
+     * Returns the current parameter value, resolving optimizer parameter names if set.
+     * @return the current value of type T
+     */
     public T getValue() {
         if (!_nameOpt.isEmpty() && _value.getValue() instanceof Number) {            
             Double returnValue = (Double) MainWindow.getOptimizerParameterData().getNumberFromNameWOException(_nameOpt);
@@ -187,10 +192,18 @@ public final class UserParameter<T> {
         return _value.getValue();
     }
 
+    /**
+     * Sets the parameter value with undo support.
+     * @param newValue the new value to set
+     */
     public void setUserValue(T newValue) {
         _value.setValue(newValue);
     }
 
+    /**
+     * Sets the parameter value without recording an undo edit.
+     * @param newValue the new value to set
+     */
     public void setValueWithoutUndo(final T newValue) {
         _value.setValueWithoutUndo(newValue);
     }

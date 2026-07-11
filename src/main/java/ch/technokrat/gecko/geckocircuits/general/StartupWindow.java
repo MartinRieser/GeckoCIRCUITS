@@ -19,6 +19,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.JFrame;
 
+/**
+ * Startup splash dialog for open-source version information. Supports
+ * both blocking (immediate) and non-blocking (delayed) display.
+ */
 public class StartupWindow extends javax.swing.JDialog {
 
     private static final long serialVersionUID = 1L;

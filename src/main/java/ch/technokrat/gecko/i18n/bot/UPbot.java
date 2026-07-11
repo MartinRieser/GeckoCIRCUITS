@@ -30,6 +30,9 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 /**
  * Upload bot class.
  * This bot uploads user translation suggestions and comments to the Wiki database.
+ * The class is not thread-safe by itself; progress and connection status are
+ * static fields shared across invocations. External synchronization is required
+ * when accessing from multiple threads.
  */
 public class UPbot {
     

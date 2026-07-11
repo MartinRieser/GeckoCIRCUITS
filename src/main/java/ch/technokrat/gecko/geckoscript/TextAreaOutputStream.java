@@ -18,9 +18,9 @@ import java.io.OutputStream;
 import javax.swing.JTextArea;
 
 /**
- * Simple way to "print" to a JTextArea; just say
- * PrintStream out = new PrintStream(new TextAreaOutputStream(myTextArea));
- * Then out.println() et all will all appear in the TextArea.
+ * OutputStream that redirects output to a JTextArea.
+ * Thread-safe for writing to Swing components from non-EDT threads (uses SwingUtilities).
+ * Usage: PrintStream out = new PrintStream(new TextAreaOutputStream(myTextArea));
  */
 public final class TextAreaOutputStream extends OutputStream {
 

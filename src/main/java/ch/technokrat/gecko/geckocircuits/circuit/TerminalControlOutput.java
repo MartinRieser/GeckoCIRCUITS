@@ -17,12 +17,26 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.font.FontRenderContext;
 
+/**
+ * Control output terminal drawn as a triangular arrow symbol.
+ * Represents a signal output from a control block to the control domain.
+ */
 public class TerminalControlOutput extends TerminalControl {
 
+    /**
+     * Constructs a control output terminal at the given relative position.
+     * @param relatedComponent the parent block this terminal belongs to
+     * @param posX relative X position
+     * @param posY relative Y position
+     */
     public TerminalControlOutput(AbstractBlockInterface relatedComponent, int posX, int posY) {
         super(relatedComponent, posX, posY);
     }
 
+    /**
+     * Paints a triangular arrow symbol representing the control output.
+     * @param graphics the graphics context to paint on
+     */
     @Override
     public void paintComponent(final Graphics graphics) {
         final int dpix = AbstractCircuitSheetComponent.dpix;
@@ -46,6 +60,11 @@ public class TerminalControlOutput extends TerminalControl {
         g2d.drawPolygon(xFl, yFl, 3);                
     }                
     
+    /**
+     * Creates a copy of this terminal for a different parent component.
+     * @param relatedComponent the new parent component
+     * @return a new TerminalControlOutput with the same label
+     */
     @Override
     public AbstractTerminal createCopy(AbstractBlockInterface relatedComponent) {
         AbstractTerminal returnValue =  new TerminalControlOutput(relatedComponent, _posX, _posY);
@@ -53,6 +72,10 @@ public class TerminalControlOutput extends TerminalControl {
         return returnValue;
     }
     
+    /**
+     * Paints the terminal label string at the output terminal position.
+     * @param graphics2D the graphics context to paint on
+     */
     @Override
     public void paintLabelString(final Graphics2D graphics2D) {        
         final int dpix = AbstractCircuitSheetComponent.dpix;

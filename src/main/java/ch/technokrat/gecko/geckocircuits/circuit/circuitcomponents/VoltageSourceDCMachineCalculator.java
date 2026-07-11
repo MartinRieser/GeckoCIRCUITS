@@ -17,7 +17,12 @@ import ch.technokrat.gecko.geckocircuits.circuit.TimeFunctionConstant;
 
 // TODO: Ath the moment, the machine equations are implemented somewhere else
 // We have to merge the two approaches, soon!
-      
+
+/**
+ * Calculator for a DC machine EMF voltage source. It models the
+ * electromechanical interaction by computing back-EMF from armature
+ * current, field current, and mechanical speed.
+ */
 public class VoltageSourceDCMachineCalculator extends VoltageSourceCalculator implements BStampable, PostProcessable {
 
     private double phi;
@@ -63,6 +68,13 @@ public class VoltageSourceDCMachineCalculator extends VoltageSourceCalculator im
         momentLast = value;
     }
 
+    /**
+     * Solves the mechanical equation for the DC machine: computes flux,
+     * electrical torque, rotational speed, and back-EMF from the armature
+     * and field currents.
+     * @param dt the current time step
+     * @param time the current simulation time
+     */
     public void doPostProcess(double dt, double time) {
         // // from the internal subcircuit -->
         double ia = - _la._current;  // Ankerstrom

@@ -17,6 +17,9 @@ import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.geckocircuits.circuit.CircuitTypeInfo;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Leaf class for an electric voltage source in the circuit domain.
+ */
 final class VoltageSourceElectric extends AbstractVoltageSource {
     static final AbstractTypeInfo TYPE_INFO = 
             new CircuitTypeInfo(VoltageSourceElectric.class, "U", I18nKeys.VOLTAGE_SOURCE_U_V);        

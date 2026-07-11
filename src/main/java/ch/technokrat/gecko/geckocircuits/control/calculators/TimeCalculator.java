@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Calculator that outputs the current simulation time.
+ * Provides a simple pass-through of the internal time value to the output signal.
+ */
 public final class TimeCalculator extends AbstractControlCalculatable {
     
     public TimeCalculator() {

@@ -19,6 +19,10 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 
+/**
+ * Extended control output terminal that displays a magenta label alongside the regular label.
+ * Used to show additional type or connection information on the circuit sheet for output terminals.
+ */
 class TerminalControlOutputWithLabel extends TerminalControlOutput {
     private final String _magentaLabel;
 

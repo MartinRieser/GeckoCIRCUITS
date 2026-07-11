@@ -16,6 +16,10 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Leaf class representing a global thermal terminal for connecting thermal subcircuits
+ * to a global reference temperature point.
+ */
 class ThGlobalTerminal extends AbstractCircuitGlobalTerminal {
     static final AbstractTypeInfo TYPE_INFO = 
             new ThermalTypeInfo(ThGlobalTerminal.class, "TH_GLOBAL", I18nKeys.GLOBAL_THERMAL_TERMINAL);    

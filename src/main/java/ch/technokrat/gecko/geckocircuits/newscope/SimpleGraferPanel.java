@@ -17,6 +17,10 @@ import ch.technokrat.gecko.geckocircuits.datacontainer.AbstractDataContainer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 
+/**
+ * A wrapper panel that embeds a {@link GraferV4} graphing component for use
+ * in dialogs and standalone views.
+ */
 public class SimpleGraferPanel extends javax.swing.JPanel {
 
     private static final long serialVersionUID = 1L;

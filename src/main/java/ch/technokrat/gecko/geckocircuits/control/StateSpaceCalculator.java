@@ -26,6 +26,11 @@ import java.util.Arrays;
  */
 public final class StateSpaceCalculator {
 
+    /**
+     * Maximum allowed difference between numerator and denominator degree.
+     * A value of 3 permits up to second-derivative feedthrough via
+     * intentional switch fallthrough in {@link #calculateTimeStep}.
+     */
     private static final int MAX_DEGREE_DIFF = 3;
     /**
      * the "real" polynomial part, after doing the polynomial division, i.e. the leading polynomial without any fraction
@@ -193,6 +198,16 @@ public final class StateSpaceCalculator {
         _AMatrix2 = new Matrix(aMatrix2);
     }
 
+    /**
+     * Performs one time step using trapezoidal integration. The switch
+     * fallthrough on {@link #_leadingPolynom} computes proportional,
+     * first-derivative, and second-derivative contributions based on the
+     * leading polynom length.
+     * @param xIN input signals (xIN[0][0] is the primary input)
+     * @param deltaT the simulation time step
+     * @param outputSignal output array (result written to outputSignal[0][0])
+     * @param time the current simulation time
+     */
     @SuppressWarnings("fallthrough")
     public void calculateTimeStep(final double[][] xIN, final double deltaT, final double[][] outputSignal, final double time) {
 

@@ -18,9 +18,13 @@
 package ch.technokrat.gecko.geckocircuits.circuit;
 
 /**
- *
- * @author andy
+ * Interface for components that can close their associated window.
+ * Implementations should dispose of any resources and hide or dispose
+ * the window frame when closeWindow() is called.
  */
 public interface WindowCloseable {
+    /**
+     * Closes the associated window and releases any related resources.
+     */
     void closeWindow();
 }

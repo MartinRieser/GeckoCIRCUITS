@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Subtracts all subsequent inputs from the first input.
+ */
 public final class SubtractionMoreParameter extends AbstractControlCalculatable {
 
     public SubtractionMoreParameter(final int noInputs) {

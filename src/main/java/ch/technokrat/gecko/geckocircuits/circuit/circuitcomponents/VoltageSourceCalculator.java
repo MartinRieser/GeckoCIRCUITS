@@ -16,6 +16,11 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 import ch.technokrat.gecko.geckocircuits.circuit.TimeFunction;
 import ch.technokrat.gecko.geckocircuits.circuit.TimeFunctionConstant;
 
+/**
+ * Calculator for a function-driven voltage source. The output voltage is
+ * determined by a time function, and it supports history-based step-back
+ * operations for transient simulation.
+ */
 public class VoltageSourceCalculator extends AbstractVoltageSourceCalculator implements BStampable,
         DirectCurrentCalculatable, HistoryUpdatable {
 
@@ -39,6 +44,12 @@ public class VoltageSourceCalculator extends AbstractVoltageSourceCalculator imp
         _z = zValue;
     }
 
+    /**
+     * Stamps the voltage source contribution into the right-hand side vector B.
+     * @param bVector the system B vector
+     * @param time the current simulation time
+     * @param deltaT the current time step
+     */
     @Override
     public final void stampVectorB(final double[] bVector, final double time, final double deltaT) {
         bVector[_z] += _function.calculate(time, deltaT);
@@ -58,6 +69,10 @@ public class VoltageSourceCalculator extends AbstractVoltageSourceCalculator imp
         // nothing todo!
     }
 
+    /**
+     * Reverts the source state by one time step using the saved history,
+     * allowing the solver to re-evaluate the step.
+     */
     @Override
     public final void stepBack() {
         if ((!stepped_back && (steps_reversed == 0)) || (stepped_back && (steps_reversed < steps_saved))) {

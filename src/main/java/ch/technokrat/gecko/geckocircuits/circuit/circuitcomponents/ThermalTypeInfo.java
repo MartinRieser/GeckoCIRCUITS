@@ -21,6 +21,11 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Type information for thermal-domain components (THERM domain).
+ * Provides the simulation domain type, export/import characters, and factory method
+ * for instantiating thermal component types.
+ */
 public class ThermalTypeInfo extends AbstractTypeInfo {
 
     public ThermalTypeInfo(final Class<? extends AbstractBlockInterface> typeClass, 

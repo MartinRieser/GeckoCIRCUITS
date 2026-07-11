@@ -17,7 +17,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Determine the block execution order, starting from the sink blocks. 
+ * Determine the block execution order, starting from the sink blocks
+ * and traversing backward through the control graph.
  * @author andy
  */
 class StartFromSinkOrderer extends AbstractSinkControlOrderer {

@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * give an ordering, where first the sources are considered, then the direct
- * outputs, ...
+ * Give an ordering, where first the source blocks are considered, then
+ * their direct outputs, etc. through the control graph.
  */
 class StartFromSourceOrderer extends AbstractSourceControlOrderer {
 

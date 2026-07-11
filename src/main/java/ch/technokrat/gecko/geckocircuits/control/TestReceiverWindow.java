@@ -39,6 +39,11 @@ import java.util.Stack;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+/**
+ * EMI test receiver window that performs CISPR 16 compliant noise measurements
+ * on time-domain simulation data. Provides peak, quasi-peak, and average detection
+ * with automatic peak selection algorithms for frequency domain analysis.
+ */
 @SuppressWarnings({"deprecation", "unchecked"})
 public final class TestReceiverWindow extends JFrame {
 
@@ -571,6 +576,14 @@ public final class TestReceiverWindow extends JFrame {
     private void formComponentResized(java.awt.event.ComponentEvent evt) {//NOPMD//GEN-FIRST:event_formComponentResized
     }//GEN-LAST:event_formComponentResized
 
+    /**
+     * Eliminates peaks that fall below a slope-based threshold relative to stronger peaks.
+     * The slope is derived from the user-specified filter strength parameter.
+     * @param baseFreq the base frequency of the FFT
+     * @param maximumCalculation array of maximum values per FFT bin
+     * @param filtered list of candidate indices to filter
+     * @return filtered list with weak peaks removed
+     */
     private List<Integer> eliminateWithSlope(final double baseFreq, float[] maximumCalculation, List<Integer> filtered) {
         final double userFilterStrength = ((Double) jSpinnerThreshold.getValue());
 
@@ -634,6 +647,12 @@ public final class TestReceiverWindow extends JFrame {
         return returnValue;
     }
 
+    /**
+     * Eliminates local minima between adjacent peaks by removing points that are lower than both neighbors.
+     * @param maximumCalculation array of maximum values per FFT bin
+     * @param filtered list of candidate indices to filter
+     * @return filtered list with non-maximum points removed
+     */
     private List<Integer> eliminateMaxMinMax(float[] maximumCalculation, List<Integer> filtered) {
         List<Integer> returnValue = new ArrayList<Integer>();
         returnValue.add(filtered.get(0));
@@ -658,6 +677,14 @@ public final class TestReceiverWindow extends JFrame {
         return Math.abs((value1 - value2) / (1e-10 + value1 + value2));
     }
 
+    /**
+     * Eliminates data points that are too close together within a 200 Hz window,
+     * keeping only the local maximum in each window.
+     * @param calculator the test receiver calculation instance
+     * @param maximumCalculation array of maximum values per FFT bin
+     * @param originalList list of candidate peak indices
+     * @return filtered list with one peak per 200 Hz window
+     */
     private List<Integer> eliminateDataPointsTooClose200Hz(TestReceiverCalculation calculator, float[] maximumCalculation, List<Integer> originalList) {
 
         final List<Integer> returnValue = new ArrayList<Integer>();
@@ -688,6 +715,13 @@ public final class TestReceiverWindow extends JFrame {
         return returnValue;
     }
 
+    /**
+     * Eliminates peaks below the median value within the 200 Hz window range.
+     * @param calculator the test receiver calculation instance
+     * @param maximumCalculation array of maximum values per FFT bin
+     * @param originalList list of candidate peak indices
+     * @return filtered list with below-median peaks removed
+     */
     private List<Integer> eliminateBelowMedian200Hz(TestReceiverCalculation calculator, float[] maximumCalculation, List<Integer> originalList) {
 
         double medianSum = 0;
@@ -715,6 +749,14 @@ public final class TestReceiverWindow extends JFrame {
         return returnValue;
     }
 
+    /**
+     * Eliminates data points that are too close together within a 9 kHz window (above 150 kHz),
+     * keeping only the local maximum in each window.
+     * @param calculator the test receiver calculation instance
+     * @param maximumCalculation array of maximum values per FFT bin
+     * @param originalList list of candidate peak indices
+     * @return filtered list with one peak per 9 kHz window
+     */
     private List<Integer> eliminateDataPointsTooClose9kHz(TestReceiverCalculation calculator, float[] maximumCalculation, List<Integer> originalList) {
 
         final List<Integer> returnValue = new ArrayList<Integer>();
@@ -1188,6 +1230,11 @@ public final class TestReceiverWindow extends JFrame {
         }
     }
 
+    /**
+     * Returns the CISPR 16 Class A limit value in dBuV for the given frequency.
+     * @param freq the frequency in Hz
+     * @return the Class A limit in dBuV, or NaN if undefined for this frequency range
+     */
     float getClassAValue(final double freq) {
         if (freq < 150e3) {  // f < 150kHz, Limit undefiniert 
             return Float.NaN;
@@ -1200,6 +1247,11 @@ public final class TestReceiverWindow extends JFrame {
         }
     }
 
+    /**
+     * Returns the CISPR 16 Class B limit value in dBuV for the given frequency.
+     * @param freq the frequency in Hz
+     * @return the Class B limit in dBuV, or NaN if undefined for this frequency range
+     */
     float getClassBValue(final double freq) {
 
         if (freq < 150e3) {  // f < 150kHz, Limit undefiniert 

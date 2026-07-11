@@ -13,6 +13,11 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Sample-and-hold circuit: when the clock signal (input[1]) exceeds the logic
+ * threshold (0.5), the input signal (input[0]) is passed directly to the output;
+ * otherwise the last sampled value is held.
+ */
 public final class SampleHoldCalculator extends AbstractTwoInputsOneOutputCalculator {    
         
         @Override

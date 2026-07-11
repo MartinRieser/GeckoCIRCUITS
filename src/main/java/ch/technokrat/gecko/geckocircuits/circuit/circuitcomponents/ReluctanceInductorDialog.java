@@ -27,6 +27,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Dialog for configuring the reluctance inductor parameters: winding turns,
+ * initial current, and input/output reversal.
+ */
 class ReluctanceInductorDialog extends DialogElementLK<ReluctanceInductor> {
 
     private static final long serialVersionUID = 1L;

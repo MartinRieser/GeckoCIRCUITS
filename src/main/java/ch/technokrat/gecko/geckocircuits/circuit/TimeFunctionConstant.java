@@ -13,24 +13,46 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit;
 
+/**
+ * Constant (DC) time function that always returns the same configured value.
+ * The stepBack() method is intentionally empty since a constant does not need
+ * state restoration for back-stepping.
+ */
 public class TimeFunctionConstant extends TimeFunction {
 
     public double _value;
 
+    /**
+     * Constructs a constant time function with the given value.
+     * @param value the constant output value
+     */
     public TimeFunctionConstant(double value) {
         _value = value;
     }
 
 
+    /**
+     * Sets the constant output value.
+     * @param value the new constant value
+     */
     public final void setValue(double value) {
         _value = value;
     }
 
+    /**
+     * Returns the constant value regardless of time.
+     * @param t current simulation time (ignored)
+     * @param dt current time step (ignored)
+     * @return the constant value
+     */
     @Override
     public double calculate(double t, double dt) {
         return _value;
     }
 
+    /**
+     * Intentionally empty - a constant function has no state to restore.
+     */
     public void stepBack() { }
 
 }

@@ -20,8 +20,8 @@ import java.awt.Color;
 import java.awt.Graphics;
 
 /**
- *
- * @author Zimmi
+ * Represents a trigger position marker displayed as a vertical line
+ * on a scope diagram at a specified time value.
  */
 public class TriggerPosition {
     

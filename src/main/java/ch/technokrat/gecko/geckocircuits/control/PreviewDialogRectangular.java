@@ -20,6 +20,10 @@ import java.awt.Graphics;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 
+/**
+ * Preview dialog that draws a rectangular (square) waveform preview with configurable
+ * duty cycle, amplitude, offset, and phase shift.
+ */
 public class PreviewDialogRectangular extends PreviewDialog {
 
     private static final long serialVersionUID = 1L;

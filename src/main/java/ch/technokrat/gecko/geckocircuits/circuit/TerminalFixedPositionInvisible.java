@@ -17,23 +17,33 @@ import ch.technokrat.gecko.geckocircuits.control.Point;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
+/**
+ * Invisible terminal with fixed position, used by ThermPvChip and other thermal components
+ * to reference the zero temperature point without painting a visible terminal on the circuit sheet.
+ * Exporting to SVG would make a regular terminal visible, hence this workaround class.
+ */
 public class TerminalFixedPositionInvisible extends TerminalFixedPosition {
 
+    /**
+     * Constructs an invisible fixed-position terminal.
+     * @param parent the parent block this terminal belongs to
+     * @param position the fixed position point (typically ThermAmbient.THERMAL_ZERO)
+     */
     public TerminalFixedPositionInvisible(final AbstractBlockInterface parent, final Point position) {
         super(parent, position);
     }
     
-    
-    // do not paint this terminal! It is used from the ThermPvChip-Object
-        // or other thermal components to reference to the zero temperature.
-        // exporting the view to svg-images makes a regular terminal still
-        // visible, therefore this workaround-class is used here!
     
     @Override
     public void paintComponent(final Graphics graphics) {
         // nothing to paint!
     }
     
+    /**
+     * Overloaded paint method that accepts a dpix parameter; intentionally does nothing.
+     * @param graphics the graphics context
+     * @param dpix pixel scaling factor
+     */
     public void paintLabelString(final Graphics2D graphics, final int dpix) {
         // nothing to paint!!!
     }

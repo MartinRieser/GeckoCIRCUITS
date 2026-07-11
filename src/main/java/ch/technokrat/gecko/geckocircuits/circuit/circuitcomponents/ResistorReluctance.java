@@ -16,6 +16,10 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Magnetic reluctance element (leaf class) modeled as a resistor in the
+ * reluctance domain (analogous to electrical resistance).
+ */
 final class ResistorReluctance extends AbstractResistor {
     static final AbstractTypeInfo TYPE_INFO = new ReluctanceTypeInfo(ResistorReluctance.class, "Rel", I18nKeys.RELUCTANCE);    
 }

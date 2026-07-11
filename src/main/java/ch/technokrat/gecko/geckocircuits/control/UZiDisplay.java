@@ -18,10 +18,10 @@ import ch.technokrat.gecko.geckocircuits.general.GlobalFilePathes;
 import ch.technokrat.gecko.geckocircuits.newscope.GeckoDialog;
 
 
-/*
- * SpaceVectorDisplay.java
- *
- * Created on 27.03.2009, 23:30:02
+/**
+ * U vs Z*I trajectory display (space vector display) for visualizing
+ * the relationship between voltage and impedance-scaled current vectors.
+ * Tracks the filename reference "SpaceVectorDisplay.java" is incorrect.
  */
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -41,6 +41,7 @@ import javax.swing.JSpinner;
 public class UZiDisplay extends GeckoDialog {
     private static final long serialVersionUID = 1L;
 
+    /** Static counter used for indexing into the average history buffers across frame updates. */
     static long counter = 0;
     static final int ORIGINX = 180;
     static final int ORIGINY = 200;

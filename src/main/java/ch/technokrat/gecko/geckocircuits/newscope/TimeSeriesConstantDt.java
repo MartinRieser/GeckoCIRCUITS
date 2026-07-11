@@ -14,8 +14,8 @@
 package ch.technokrat.gecko.geckocircuits.newscope;
 
 /**
- *
- * @author andy
+ * Time series with constant delta-t optimization, enabling O(1) time index lookups.
+ * Assumes uniform time step spacing for efficient binary-search-free access.
  */
 public final class TimeSeriesConstantDt extends AbstractTimeSeries {
 

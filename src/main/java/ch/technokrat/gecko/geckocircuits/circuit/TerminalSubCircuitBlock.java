@@ -39,25 +39,46 @@ public final class TerminalSubCircuitBlock extends AbstractTerminal implements C
     private int relativeY;
     private int _nodeNumber;
 
+    /**
+     * Constructs a subcircuit block terminal linked to a subcircuit terminal.
+     * @param relatedComponent the parent subcircuit block
+     * @param lkTerminal the subcircuit terminal this block terminal represents
+     */
     public TerminalSubCircuitBlock(final SubcircuitBlock relatedComponent, SubCircuitTerminable lkTerminal) {
         super(relatedComponent);
         _subcircuitBlock = relatedComponent;
         _lkTerminal = lkTerminal;        
     }
 
+    /**
+     * Returns the absolute position of the block terminal on the circuit sheet.
+     * @return position computed from subcircuit block position plus relative offset
+     */
     @Override
     public Point getPosition() {
         return new Point(_subcircuitBlock.getSheetPosition().x + relativeX, _subcircuitBlock.getSheetPosition().y + relativeY);
     }
 
+    /**
+     * Returns the relative X offset within the subcircuit block.
+     * @return the relative X coordinate
+     */
     public int getRelativeX() {
         return relativeX;
     }
 
+    /**
+     * Returns the relative Y offset within the subcircuit block.
+     * @return the relative Y coordinate
+     */
     public int getRelativeY() {
         return relativeY;
     }
 
+    /**
+     * Paints the terminal using the linked subcircuit terminal's foreground color.
+     * @param graphics the graphics context to paint on
+     */
     @Override
     public void paintComponent(final Graphics graphics) {
         Color oldColor = graphics.getColor();
@@ -66,6 +87,10 @@ public final class TerminalSubCircuitBlock extends AbstractTerminal implements C
         graphics.setColor(oldColor);
     }
 
+    /**
+     * Returns the simulation domain category from the linked subcircuit terminal.
+     * @return the connector type (LK, CONTROL, etc.)
+     */
     @Override
     public ConnectorType getCategory() {
 
@@ -81,6 +106,11 @@ public final class TerminalSubCircuitBlock extends AbstractTerminal implements C
         return ConnectorType.LK;
     }
 
+    /**
+     * Creates a copy of this block terminal, linked to the corresponding subcircuit terminal.
+     * @param relatedComponent the new parent subcircuit block
+     * @return a new TerminalSubCircuitBlock with the same label and position
+     */
     @Override
     public AbstractTerminal createCopy(final AbstractBlockInterface relatedComponent) {        
         final SubCircuitTerminable terminable = (SubCircuitTerminable) relatedComponent;             
@@ -95,11 +125,21 @@ public final class TerminalSubCircuitBlock extends AbstractTerminal implements C
         return returnValue;
     }
 
+    /**
+     * Sets the relative position offset within the subcircuit block.
+     * @param relX the relative X offset
+     * @param relY the relative Y offset
+     */
     public void setRelativePosition(final int relX, int relY) {
         relativeX = relX;
         relativeY = relY;
     }
 
+    /**
+     * Paints the terminal label and the linked subcircuit terminal name, handling
+     * all four terminal locations (LEFT, RIGHT, BOTTOM, UP) with appropriate rotations.
+     * @param graphics the graphics context to paint on
+     */
     @Override
     public void paintLabelString(final Graphics2D graphics) {        
         final int dpix = AbstractCircuitSheetComponent.dpix;
@@ -153,16 +193,27 @@ public final class TerminalSubCircuitBlock extends AbstractTerminal implements C
 
     }
 
+    /**
+     * Returns the node number assigned to this terminal.
+     * @return the node number, or -1 if not assigned
+     */
     @Override
     public int getNodeNumber() {
         return _nodeNumber;
     }
     
+    /**
+     * Sets the node number for this terminal.
+     * @param newValue the node number to assign
+     */
     @Override
     public void setNodeNumber(final int newValue) {
         _nodeNumber = newValue;
     }
     
+    /**
+     * Clears the node number, resetting it to -1.
+     */
     @Override
     public void clearNodeNumber() {
         _nodeNumber = -1;

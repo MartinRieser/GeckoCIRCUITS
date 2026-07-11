@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Generates a triangular wave signal with configurable amplitude, frequency,
+ * phase, DC offset, and duty cycle.
+ */
 public final class SignalCalculatorTriangle extends AbstractSignalCalculatorPeriodic {    
     public SignalCalculatorTriangle(final int noInputs, final double amplitudeAC, final double frequency,
             final double phase, final double dcOffset, final double duty) {

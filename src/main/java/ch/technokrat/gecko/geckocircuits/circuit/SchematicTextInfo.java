@@ -31,8 +31,10 @@ import javax.swing.undo.UndoableEdit;
 import ch.technokrat.modelviewcontrol.AbstractUndoGenericModel;
 
 /**
- *
- * @author andreas
+ * Manages the display of parameter text and labels beside schematic
+ * components. Supports positioning, visibility toggling, and undoable
+ * text field movement. Inner classes handle special rendering for
+ * dollar-prefixed parameters and error values.
  */
 public final class SchematicTextInfo {
 

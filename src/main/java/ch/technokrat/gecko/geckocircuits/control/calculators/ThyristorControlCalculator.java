@@ -16,19 +16,37 @@ package ch.technokrat.gecko.geckocircuits.control.calculators;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Calculator for generating 6-pulse thyristor converter gate signals.
+ * Synchronizes to the line voltage zero-crossings and generates firing pulses
+ * with configurable phase shift and on-time for six thyristors.
+ */
 public final class ThyristorControlCalculator extends AbstractControlCalculatable {
-    private static final int TN_X = 2, TN_Y = 6;  // // Number of terminals for signal connection
+    /** Number of input terminals (2: phase shift and synchronization signals). */
+    private static final int TN_X = 2;
+    /** Number of output terminals (6: one gate signal per thyristor). */
+    private static final int TN_Y = 6;
+    /** Constant 3 used for three-phase pulse distribution. */
     private static final double THREE = 3;
+    /** Constant 1.5: half of THREE for offset calculation. */
     private static final double THREE_HALF = 1.5;
-    private double _lastFallingZero = -1;    
+    /** Time of the last falling zero-crossing of the synchronization signal. */
+    private double _lastFallingZero = -1;
+    /** Time of the most recent synchronization event (rising zero-crossing). */
     private double _synchTime;
+    /** Previous value of the synchronization signal for edge detection. */
     private double _synchOld = 0;
-    private double _synchFreq;    
+    /** Measured synchronization frequency derived from zero-crossing intervals. */
+    private double _synchFreq;
+    /** Gate on-time duration in seconds. */
     private double _onTime;
+    /** Phase shift in degrees applied to the firing angle. */
     private double _phaseShift;
         
     
+    /** List of scheduled gate events for all six thyristor channels. */
     private final List<GateEvent> _gateEvents = new ArrayList<GateEvent>();
+    /** Last computed on-time point for each of the six output channels. */
     private double[] _lastOnTimePoint = new double[]{-1, -1, -1, -1, -1, -1};
     
     /**
@@ -107,6 +125,10 @@ public final class ThyristorControlCalculator extends AbstractControlCalculatabl
     }
     
     
+    /**
+     * Represents a scheduled gate firing event for a single thyristor.
+     * Handles on/off timing and wraps events across period boundaries.
+     */
     class GateEvent {
         private static final double SMALL_VALUE = 1e-20;
         private final double _onTime;

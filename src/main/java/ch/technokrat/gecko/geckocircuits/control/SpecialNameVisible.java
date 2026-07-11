@@ -14,12 +14,20 @@
 package ch.technokrat.gecko.geckocircuits.control;
 
 /**
- * For some components, we may define an "extra" visiblity of the component name
+ * For some components, we may define an "extra" visibility of the component name
  * (e.g. Scope, Java-Block). This interface should "replace" the regular showName-
  * behavior.
  * @author andreas
  */
 public interface SpecialNameVisible {
+    /**
+     * Returns whether the component name is visible.
+     * @return true if the name is visible
+     */
     boolean isNameVisible();
+    /**
+     * Sets whether the component name should be visible.
+     * @param newValue true to make the name visible
+     */
     void setNameVisible(final boolean newValue);
 }

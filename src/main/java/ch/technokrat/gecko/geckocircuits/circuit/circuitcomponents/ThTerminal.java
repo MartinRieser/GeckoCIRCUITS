@@ -16,6 +16,10 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Leaf class representing a thermal-domain circuit terminal for connecting
+ * thermal components in the thermal simulation network.
+ */
 class ThTerminal extends AbstractCircuitTerminal {
     static final AbstractTypeInfo TYPE_INFO = 
             new ThermalTypeInfo(ThTerminal.class, "THERM_TERMINAL", I18nKeys.THERMAL_TERMINAL);    

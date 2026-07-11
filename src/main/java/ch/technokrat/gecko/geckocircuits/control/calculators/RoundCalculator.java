@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Rounds the input value to the nearest integer using {@link Math#round(double)}.
+ */
 public final class RoundCalculator extends AbstractSingleInputSingleOutputCalculator {
 
     @Override

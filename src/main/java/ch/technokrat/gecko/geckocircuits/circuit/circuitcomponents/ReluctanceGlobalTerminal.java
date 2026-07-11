@@ -16,6 +16,10 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Global (ground/reference) terminal for the reluctance simulation domain
+ * (leaf class).
+ */
 class ReluctanceGlobalTerminal extends AbstractCircuitGlobalTerminal{
     public static final AbstractTypeInfo TYPE_INFO = new ReluctanceTypeInfo(ReluctanceGlobalTerminal.class, "REL_GLOBAL", I18nKeys.GLOBAL_RELUCTANCE_TERMINAL);
 

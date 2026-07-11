@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Generates a random walk signal: each step adds a uniform random value
+ * in [-1, 1] to the previous output.
+ */
 public final class SignalCalculatorRandom extends AbstractSignalCalculator {
     private double _randomVal = 0;  // // Starting value for random walk
     

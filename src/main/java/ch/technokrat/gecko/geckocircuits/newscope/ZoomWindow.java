@@ -27,8 +27,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- *
- * @author andy
+ * Manages zoom window state (position, dimensions, axis lock flags) using
+ * individual boolean flags for control, shift, X-only and Y-only zoom modes.
+ * Consider refactoring these flags into an enum-based state machine.
  */
 final class ZoomWindow {
 

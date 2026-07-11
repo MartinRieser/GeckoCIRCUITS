@@ -16,13 +16,19 @@ package ch.technokrat.gecko.geckocircuits.circuit;
 import ch.technokrat.gecko.geckocircuits.control.Point;
 
 /**
- *
- * @author andreas
+ * Two-port terminal with a fixed direction independent of parent rotation.
+ * The position offset follows the specified fixed direction rather than the parent's rotation.
  */
 public class TerminalTwoPortRelativeFixedDirection extends AbstractTerminal {
     private final int _termDist;
     private final ComponentDirection _fixedDirection;
     
+    /**
+     * Constructs a two-port terminal with fixed direction.
+     * @param relatedComponent the parent block this terminal belongs to
+     * @param termDist the distance from the parent center
+     * @param fixedDirection the fixed direction to use regardless of parent rotation
+     */
     public TerminalTwoPortRelativeFixedDirection(AbstractBlockInterface relatedComponent, int termDist, ComponentDirection fixedDirection) {
         super(relatedComponent);
         _termDist = termDist;                        

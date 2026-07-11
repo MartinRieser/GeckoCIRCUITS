@@ -41,6 +41,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Reluctance inductor component using the permeance analogy: couples the
+ * electrical and reluctance domains via winding turns (N). Models the
+ * relationship MMF = N * I and d(lambda)/dt = N * dI/dt.
+ */
 public final class ReluctanceInductor extends AbstractCircuitBlockInterface
         implements HiddenSubCircuitable, CurrentMeasurable, 
         DirectVoltageMeasurable {

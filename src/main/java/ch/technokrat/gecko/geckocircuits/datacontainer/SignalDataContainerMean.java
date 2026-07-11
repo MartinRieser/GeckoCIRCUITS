@@ -14,8 +14,8 @@
 package ch.technokrat.gecko.geckocircuits.datacontainer;
 
 /**
- *
- * @author andreas
+ * Data container for a mean/averaged signal, wrapping an original signal
+ * and appending "_mean" to its name for display in the scope.
  */
 public class SignalDataContainerMean extends AbstractDataContainerSignal {
     AbstractDataContainerSignal _origSignal;

@@ -17,6 +17,10 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+/**
+ * Determines the block execution order by starting from blocks that have
+ * no output successors and traversing backward.
+ */
 class StartFromBlocksWithoutSuccessorOrderer extends AbstractSinkControlOrderer {
 
     public StartFromBlocksWithoutSuccessorOrderer(final Collection<ControlOrderNode> allNodesToSort) {

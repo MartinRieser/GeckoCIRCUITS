@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Calculates the signum function: returns -1, 0, or 1 using
+ * {@link Math#signum(double)}.
+ */
 public final class SignumCalculator extends AbstractSingleInputSingleOutputCalculator {    
     
     @Override

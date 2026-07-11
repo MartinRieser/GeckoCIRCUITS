@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Calculates the sine of the input signal.
+ */
 public final class SinCalculator extends AbstractSingleInputSingleOutputCalculator {
 
     @Override

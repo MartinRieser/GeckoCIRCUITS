@@ -17,6 +17,10 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+/**
+ * Determines the block execution order by starting from blocks that have
+ * no input predecessors and traversing forward.
+ */
 class StartFromBlocksWithoutPredecessorOrderer extends AbstractSourceControlOrderer {
 
     public StartFromBlocksWithoutPredecessorOrderer(final Collection<ControlOrderNode> allNodesToSort) {

@@ -18,6 +18,11 @@ import java.text.DecimalFormat;
 import java.util.Locale;
 import java.io.Serializable;
 
+/**
+ * Utility for formatting numbers in engineering notation (e.g., 1.234e-3)
+ * and parsing strings with SI prefixes (p, n, u, m, k, M). Supports
+ * both scientific and automatic format selection.
+ */
 public class TechFormat implements Serializable {
 
     private static final long serialVersionUID = 1L;

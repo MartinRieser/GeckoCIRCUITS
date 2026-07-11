@@ -18,6 +18,10 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 
+/**
+ * A control-circuit terminal with node numbering for potential
+ * equality detection within the control netlist.
+ */
 public class TerminalControl extends TerminalRelativePosition implements ControlTerminable {
     /**
      * _nodeNumber is a unique index for every control potential. this means, two terminals have the
@@ -44,6 +48,12 @@ public class TerminalControl extends TerminalRelativePosition implements Control
         _nodeNumber = -1;
     }                                   
     
+    /**
+     * Paints the control state value at the terminal position. Uses
+     * substring-based formatting to display the first digit of the
+     * value (fragile for values with multiple digits).
+     * @param graphics the graphics context
+     */
     public void paintControlState(Graphics2D graphics) {
         Color oldColor = graphics.getColor();
         final int CIRCLE_DIAMETER = 6;

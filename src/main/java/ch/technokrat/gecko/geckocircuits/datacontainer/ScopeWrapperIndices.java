@@ -18,8 +18,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- *
- * @author andreas
+ * Maps scope signal indices to global data container indices, supporting
+ * additional signals (e.g. averaged signals) inserted at arbitrary positions
+ * within the index list.
  */
 public final class ScopeWrapperIndices {
 

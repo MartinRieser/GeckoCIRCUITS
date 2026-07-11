@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Calculates the square root of the input signal.
+ */
 public final class SqrtCalculator extends AbstractSingleInputSingleOutputCalculator {
     
     @Override

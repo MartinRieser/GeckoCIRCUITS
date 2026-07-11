@@ -16,6 +16,10 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 import ch.technokrat.gecko.geckocircuits.circuit.GeckoFileable;
 import ch.technokrat.gecko.geckocircuits.circuit.losscalculation.LossCalculatable;
 
+/**
+ * Interface for semiconductor components that support loss calculation,
+ * combining file-based data loading with thermal loss computation.
+ */
 public interface SemiconductorLossCalculatable extends GeckoFileable, LossCalculatable {
     
 }

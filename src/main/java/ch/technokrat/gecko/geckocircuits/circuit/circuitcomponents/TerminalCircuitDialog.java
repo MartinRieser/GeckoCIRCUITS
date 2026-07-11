@@ -17,6 +17,9 @@ import ch.technokrat.gecko.geckocircuits.general.FormatJTextField;
 import ch.technokrat.gecko.geckocircuits.circuit.CircuitLabel;
 import javax.swing.JLabel;
 
+/**
+ * Dialog for editing a circuit terminal's label within a subcircuit sheet.
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 class TerminalCircuitDialog extends DialogElementLK {
 

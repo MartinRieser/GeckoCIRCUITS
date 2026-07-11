@@ -14,6 +14,11 @@
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
 
+/**
+ * Calculator for a di/dt-controlled voltage source. The output voltage is
+ * proportional to the derivative of the controlling current with respect
+ * to time.
+ */
 public final class VoltageSourceDIDTControlledCalculator extends AbstractVoltageSourceControlledCalculator
     implements HistoryUpdatable, BStampable {
 
@@ -42,7 +47,7 @@ public final class VoltageSourceDIDTControlledCalculator extends AbstractVoltage
 
     @Override
     public void registerBVector(final BVector bvector) {
-        // nothing todo??? 
+        // nothing todo 
     }
 
 }

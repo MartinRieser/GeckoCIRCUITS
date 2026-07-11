@@ -16,6 +16,9 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Leaf class for a thermal voltage source representing a defined temperature.
+ */
 final class VoltageSourceThermalTemperature extends AbstractVoltageSource {
     static final AbstractTypeInfo TYPE_INFO = 
             new ThermalTypeInfo(VoltageSourceThermalTemperature.class, "DT", I18nKeys.DEFINED_TEMPERATURE_C);    

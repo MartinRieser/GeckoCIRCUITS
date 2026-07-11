@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.general;
 
+/**
+ * A {@link SuggestMatcher} that matches suggestions by prefix (string
+ * starts-with) comparison.
+ */
 public class StartsWithMatcher
   implements SuggestMatcher
 {

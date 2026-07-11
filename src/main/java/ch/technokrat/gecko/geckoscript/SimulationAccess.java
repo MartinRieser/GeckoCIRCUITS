@@ -27,6 +27,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
+/**
+ * Provides script (GeckoSCRIPT) access to the simulation engine, enabling
+ * starting, continuing, and controlling simulations from external scripts.
+ * <p>
+ * Thread safety: Methods that modify UI state must be called on the Event
+ * Dispatch Thread (EDT). Simulation control methods ({@link #startSim()},
+ * {@link #continueSim()}, etc.) are typically called from script threads.
+ */
 public class SimulationAccess implements GeckoFileable {
 
     final static long DUMMY_BLOCK_ID = -1231231987;
@@ -39,6 +47,11 @@ public class SimulationAccess implements GeckoFileable {
     private MainWindow mainWindow;
 
     @SuppressWarnings("this-escape")
+    /**
+     * Creates a new SimulationAccess instance linked to the given main
+     * window.
+     * @param fenster the main application window
+     */
     public SimulationAccess(final MainWindow fenster) {
         se = SchematicEditor2.Singleton;
         mainWindow = fenster;
@@ -53,10 +66,20 @@ public class SimulationAccess implements GeckoFileable {
 
     }
 
+    /**
+     * Returns whether the scripting window is available (JSyntaxPane
+     * library found on classpath).
+     * @return true if scripting is enabled
+     */
     public boolean isScripterEnabled() {
         return scriptwindow != null;
     }
 
+    /**
+     * Starts a new simulation from the beginning. Blocking call; waits
+     * for data savers to complete.
+     * @throws RuntimeException if simulation fails to start
+     */
     public void startSim() {
         try {
             mainWindow.getSimulationRunner().startCalculation(false, MainWindow.getSolverSettings());
@@ -67,6 +90,10 @@ public class SimulationAccess implements GeckoFileable {
         }
     }
 
+    /**
+     * Continues a paused or finished simulation.
+     * @throws RuntimeException if continuation fails
+     */
     public void continueSim() {
         try {
             mainWindow.continueCalculation(false);
@@ -89,6 +116,11 @@ public class SimulationAccess implements GeckoFileable {
         }
     }
 
+    /**
+     * Initializes the simulation with default dt and end time from solver
+     * settings.
+     * @throws RuntimeException if initialization fails
+     */
     public void initializeSimulation() {
         try {
             mainWindow.getSimulationRunner().initSim();
@@ -97,6 +129,12 @@ public class SimulationAccess implements GeckoFileable {
         }
     }
 
+    /**
+     * Initializes the simulation with the given time step and end time.
+     * @param dt the simulation time step
+     * @param endTime the end time for the simulation
+     * @throws RuntimeException if initialization fails
+     */
     public void initializeSimulation(double dt, double endTime) {
         try {
             mainWindow.getSimulationRunner().initSim(dt, endTime);
@@ -105,24 +143,46 @@ public class SimulationAccess implements GeckoFileable {
         }
     }
 
+    /**
+     * Simulates a single time step.
+     * @throws Exception if the end time has been reached
+     */
     public void simulateOneStep() throws Exception {
         mainWindow.getSimulationRunner().simKern.simulateOneStep();
     }
 
+    /**
+     * Simulates for the specified duration (in seconds) from the current
+     * time.
+     * @param time the duration to simulate
+     * @throws Exception if the specified time exceeds the end time
+     */
     public void simulateSpecifiedTime(double time) throws Exception {
         mainWindow.getSimulationRunner().simKern.simulateTime(time);
     }
 
+    /**
+     * Ends the current simulation.
+     */
     public void endSimulation() {
         mainWindow.endSim();
     }
 
+    /**
+     * Makes the script window visible. Must be called on the EDT.
+     */
     public void makeVisible() {
         if (scriptwindow != null) {
             scriptwindow.setVisible(true);
         }
     }
 
+    /**
+     * Returns all circuit components of the specified type.
+     * @param <T> the component type
+     * @param searchClass the class to search for
+     * @return list of matching components
+     */
     @SuppressWarnings("unchecked")
     public <T extends AbstractCircuitBlockInterface> List<T> getComponentsOfType(Class<T> searchClass) {
         List<T> returnValue = new ArrayList<T>();
@@ -135,6 +195,10 @@ public class SimulationAccess implements GeckoFileable {
         return returnValue;
     }
 
+    /**
+     * Returns all elements (LK, control, thermal, special) sorted by type.
+     * @return list of lists, each containing elements of the same type
+     */
     public List<List<AbstractBlockInterface>> getElementsSorted() {
         List<List<AbstractBlockInterface>> returnValue = doListSort(se.getElementLK());
         returnValue.addAll(doListSort(se.getElementCONTROL()));
@@ -169,12 +233,20 @@ public class SimulationAccess implements GeckoFileable {
         return sortedListofLists;
     }
 
+    /**
+     * Sets the script code in the script window.
+     * @param scripterCode the script source code
+     */
     public void setScriptCode(String scripterCode) {
         if (scriptwindow != null) {
             scriptwindow.setScripterCode(scripterCode);
         }
     }
 
+    /**
+     * Returns the declaration code from the script window.
+     * @return the declaration code, or empty string if scripting disabled
+     */
     public String getDeclarationCode() {
         if (scriptwindow != null) {
             return scriptwindow.getDeclarationCode();
@@ -184,6 +256,10 @@ public class SimulationAccess implements GeckoFileable {
 
     }
 
+    /**
+     * Returns the import code from the script window.
+     * @return the import code, or empty string if scripting disabled
+     */
     public String getImportCode() {
         if (scriptwindow != null) {
             return scriptwindow.getImportCode();
@@ -193,6 +269,10 @@ public class SimulationAccess implements GeckoFileable {
 
     }
 
+    /**
+     * Sets the declaration code in the script window.
+     * @param code the declaration source code
+     */
     public void setDeclarationCode(String code) {
         if (scriptwindow != null) {
             scriptwindow.setDeclarationCode(code);
@@ -200,6 +280,10 @@ public class SimulationAccess implements GeckoFileable {
 
     }
 
+    /**
+     * Sets the import code in the script window.
+     * @param code the import source code
+     */
     public void setImportCode(String code) {
         if (scriptwindow != null) {
             scriptwindow.setImportCode(code);
@@ -207,6 +291,10 @@ public class SimulationAccess implements GeckoFileable {
 
     }
 
+    /**
+     * Returns the script source code from the script window.
+     * @return the script source, or empty string if scripting disabled
+     */
     public String getScriptCode() {
         if (scriptwindow != null) {
             return scriptwindow.getSourceCode();
@@ -240,6 +328,12 @@ public class SimulationAccess implements GeckoFileable {
         mainWindow.openFile(fileName);
     }
 
+    /**
+     * Imports components from an external file into a subcircuit.
+     * @param fileName the path to the file to import
+     * @param importIntoSubcircuit the name of the target subcircuit
+     * @throws FileNotFoundException if the file does not exist
+     */
     public final void importFromFile(final String fileName, final String importIntoSubcircuit)
             throws FileNotFoundException {
         MainWindow.importComponentsFromFile(fileName, importIntoSubcircuit);
@@ -249,6 +343,15 @@ public class SimulationAccess implements GeckoFileable {
         return new File(MainWindow.getOpenFileName());
     }
 
+    /**
+     * Returns signal characteristics for a scope channel.
+     * @param scopename the name of the scope component
+     * @param port the channel port index
+     * @param start_time the start time for analysis
+     * @param end_time the end time for analysis
+     * @return signal characteristic data
+     * @throws Exception if the scope is not found or analysis fails
+     */
     public double[] getSignalCharacteristics(String scopename, int port, double start_time, double end_time)
             throws Exception {
         AbstractBlockInterface block = IDStringDialog.getComponentByName(scopename);
@@ -262,6 +365,16 @@ public class SimulationAccess implements GeckoFileable {
 
     }
 
+    /**
+     * Performs Fourier analysis on a scope channel.
+     * @param scopename the name of the scope component
+     * @param port the channel port index
+     * @param start_time the start time for analysis
+     * @param end_time the end time for analysis
+     * @param harmonics the number of harmonics to compute
+     * @return frequency and magnitude data
+     * @throws Exception if the scope is not found or analysis fails
+     */
     public double[][] doFourierAnalysis(String scopename, int port, double start_time, double end_time, int harmonics) throws Exception {
         AbstractBlockInterface block = IDStringDialog.getComponentByName(scopename);
 
@@ -273,6 +386,10 @@ public class SimulationAccess implements GeckoFileable {
         }
     }
 
+    /**
+     * Returns the current simulation time step.
+     * @return the time step dt
+     */
     public double get_dt() {
         return MainWindow.getSolverSettings().dt.getValue();
     }
@@ -289,7 +406,10 @@ public class SimulationAccess implements GeckoFileable {
         return MainWindow.getSolverSettings()._tDURATION.getValue();
     }
 
-    //to clear the GeckoCustom object after opening a new file
+    /**
+     * Clears the GeckoCustom script object, typically called after opening
+     * a new file.
+     */
     public void clearData() {
         if (scriptwindow != null) {
             scriptwindow.clearObject();
@@ -297,6 +417,13 @@ public class SimulationAccess implements GeckoFileable {
 
     }
 
+    /**
+     * Moves a circuit element to the specified sheet position.
+     * @param element the element to move
+     * @param x the target x coordinate
+     * @param y the target y coordinate
+     * @throws Exception if the position is outside the worksheet
+     */
     public void setElementPosition(AbstractBlockInterface element, int x, int y) throws Exception {
         boolean positionOK = isPositionValid(/*
                  * element,
@@ -335,6 +462,10 @@ public class SimulationAccess implements GeckoFileable {
         return valid;
     }
 
+    /**
+     * Deletes a circuit element from the schematic.
+     * @param element the element to delete
+     */
     public void deleteElement(AbstractBlockInterface element) {
         se.deleteComponent(element);
     }
@@ -351,6 +482,15 @@ public class SimulationAccess implements GeckoFileable {
         }
     }
 
+    /**
+     * Creates and places a new circuit element on the sheet.
+     * @param elementCategory the type category of the element
+     * @param elementName the display name for the new element
+     * @param x the x position on the sheet
+     * @param y the y position on the sheet
+     * @return the created element
+     * @throws Exception if the position is invalid or creation fails
+     */
     public AbstractBlockInterface createNewElement(final AbstractTypeInfo elementCategory,
             final String elementName, final int x, final int y) throws Exception {
 
@@ -365,7 +505,12 @@ public class SimulationAccess implements GeckoFileable {
         return newElement;
     }
 
-    //returns true if element is renamed successfully, false otherwise
+    /**
+     * Renames a circuit element with a new unique name.
+     * @param element the element to rename
+     * @param newName the new name for the element
+     * @throws NameAlreadyExistsException if the name is already in use
+     */
     public void renameElement(AbstractBlockInterface element, String newName) throws NameAlreadyExistsException {
 
         if (newName.isEmpty()) {
@@ -376,7 +521,14 @@ public class SimulationAccess implements GeckoFileable {
         se.updateComponentCouplings(oldName, newName);
     }
 
-    //set the label for a model element
+    /**
+     * Sets the label on a circuit element's terminal node.
+     * @param element the circuit element
+     * @param labelType whether the terminal is a start (input) or stop (output) node
+     * @param nodeIndex the index of the terminal
+     * @param labelName the new label name
+     * @throws Exception if the label type is invalid
+     */
     public void setElementNodeLabel(final AbstractBlockInterface element, final AbstractGeckoCustom.StartOrStopNode labelType,
             final int nodeIndex, final String labelName) throws Exception {
 
@@ -406,7 +558,14 @@ public class SimulationAccess implements GeckoFileable {
     }
     
     
-    //set the label for a model element
+    /**
+     * Returns the label on a circuit element's terminal node.
+     * @param element the circuit element
+     * @param labelType whether the terminal is a start (input) or stop (output) node
+     * @param nodeIndex the index of the terminal
+     * @return the label string
+     * @throws Exception if the label type is invalid
+     */
     public String getElementNodeLabel(final AbstractBlockInterface element, final AbstractGeckoCustom.StartOrStopNode labelType,
             final int nodeIndex) throws Exception {
 
@@ -427,10 +586,18 @@ public class SimulationAccess implements GeckoFileable {
         return label.getLabelString();        
     }
 
+    /**
+     * Returns the current simulation time from the simulation kernel.
+     * @return the current simulation time in seconds
+     */
     public double getSimulationTime() {        
         return GeckoSim._win.getSimulationRunner().simKern.getCurrentTime();
     }
 
+    /**
+     * Adds external source files to the script environment.
+     * @param newFiles the files to add
+     */
     @Override
     public void addFiles(List<GeckoFile> newFiles) {
         for (GeckoFile newFile : newFiles) {
@@ -441,11 +608,19 @@ public class SimulationAccess implements GeckoFileable {
         scriptwindow._extSourceWindow.addNewFiles(newFiles);
     }
 
+    /**
+     * Returns the list of additional source files.
+     * @return the list of GeckoFile objects
+     */
     @Override
     public List<GeckoFile> getFiles() {
         return _additionalSourceFiles;
     }
 
+    /**
+     * Removes external source files and cleans up references.
+     * @param filesToRemove the files to remove
+     */
     @Override
     public void removeLocalComponentFiles(List<GeckoFile> filesToRemove) {
         for (GeckoFile removedFile : filesToRemove) {
@@ -457,6 +632,10 @@ public class SimulationAccess implements GeckoFileable {
         scriptwindow._extSourceWindow.removeFilesFromList(filesToRemove);
     }
 
+    /**
+     * Returns the hash values of all additional source files.
+     * @return concatenated hash values
+     */
     public String getExtraFilesHashes() {
         String returnValue = "";
         for (GeckoFile gFile : _additionalSourceFiles) {
@@ -465,12 +644,19 @@ public class SimulationAccess implements GeckoFileable {
         return returnValue;
     }
 
+    /**
+     * Sets the hash block for identifying additional source files on init.
+     * @param extraFilesHashString newline-separated hash strings
+     */
     public void setExtraFilesHashBlock(final String extraFilesHashString) {
         _additionalFilesHashKeys.clear();
         _additionalFilesHashKeys.addAll(Arrays.asList(extraFilesHashString.split("\\r?\\n")));
         _populateFileList = true;
     }
 
+    /**
+     * Initializes additional source files from stored hash keys.
+     */
     @Override
     public void initExtraFiles() {
         if (scriptwindow != null) {

@@ -24,7 +24,11 @@ import java.awt.Window;
 import java.util.Arrays;
 import java.util.List;
 
-// Power circuit thyristor (piecewise linear characteristic)
+/**
+ * Power circuit thyristor with piecewise linear characteristic.
+ * A gate-triggered semiconductor switch that turns on when a gate signal is applied
+ * and turns off when the current falls below the holding current.
+ */
 public final class Thyristor extends AbstractVoltageDropSwitch {
     private static final double WIDTH = 0.5;
     private static final double HEIGHT = 0.6;
@@ -63,6 +67,10 @@ public final class Thyristor extends AbstractVoltageDropSwitch {
         parameter[LAST_SWITCH_TIME_INDEX] = 0;
     }
 
+    /**
+     * Draws the filled background polygon (thyristor triangle) with the gate symbol.
+     * @param graphics the graphics context to paint on
+     */
     @Override
     protected void drawBackground(final Graphics2D graphics) {
         Color oldColor = graphics.getColor();
@@ -75,6 +83,10 @@ public final class Thyristor extends AbstractVoltageDropSwitch {
                 new int[]{(int) (dpix * HEIGHT), (int) (-dpix * HEIGHT), (int) (-dpix * HEIGHT)}, POLYGON_POINTS);
     }    
     
+    /**
+     * Draws the gate terminal symbol (a horizontal line at the top of the thyristor).
+     * @param graphics the graphics context to paint on
+     */
     private void drawGateSymbol(final Graphics2D graphics) {
         final double gateLength = GATE_SYMBOL_LENGTH * WIDTH;  // Gate-Symbol des THYR --> Laenge
         final int gtd = GATE_SYMB_THICKNESS;  // Gate-Symbol des THYR --> Breite in Pix
@@ -82,6 +94,10 @@ public final class Thyristor extends AbstractVoltageDropSwitch {
     }
     
     
+    /**
+     * Draws the thyristor outline polygon and base line.
+     * @param graphics the graphics context to paint on
+     */
     @Override
     protected void drawForeground(final Graphics2D graphics) {                                                
         graphics.drawPolygon(new int[]{0, (int) (-dpix * WIDTH), (int) (dpix * WIDTH)}, 

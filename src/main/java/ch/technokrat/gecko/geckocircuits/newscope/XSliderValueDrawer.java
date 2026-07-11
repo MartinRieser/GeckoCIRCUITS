@@ -22,8 +22,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
- *
- * @author andy
+ * Panel that draws slider value labels on the X axis of a scope diagram,
+ * showing the time (or frequency) range and derived quantities such as
+ * delta and inverse delta.
  */
 public final class XSliderValueDrawer extends JPanel {
 

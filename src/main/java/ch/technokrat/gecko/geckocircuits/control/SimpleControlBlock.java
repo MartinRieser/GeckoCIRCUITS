@@ -15,6 +15,10 @@ package ch.technokrat.gecko.geckocircuits.control;
 
 import java.awt.Window;
 
+/**
+ * Base class for control blocks that display an informational message dialog
+ * rather than providing configurable parameters.
+ */
 abstract class SimpleControlBlock extends ControlBlock {
     private static final long serialVersionUID = 1L;
 

@@ -19,21 +19,35 @@ import ch.technokrat.gecko.geckocircuits.control.ControlSlidingDFT.FrequencyData
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implements a Sliding Discrete Fourier Transform (SDFT) for real-time
+ * spectral analysis of a time-domain input signal. Uses a recursive update
+ * formula for O(1) per-sample computation.
+ */
 public final class SlidingDFTCalculator extends AbstractControlCalculatable 
     implements InitializableAtSimulationStart, IsDtChangeSensitive {
 
+    /** Maps output indices to compressed frequency set indices. */
     private int[] _frequencyIndicesMap;
+    /** Unique set of frequency bin indices to compute. */
     private int[] _frequencyIndicesSet;
+    /** The averaging span in seconds for the DFT window. */
     private final double _averageSpanSecs;
+    /** Number of samples in the DFT window. */
     private int _size;
-    private int _idx; // array index for input and output signals
-    // input signal
+    /** Circular buffer index for input and output signals. */
+    private int _idx;
+    /** Circular buffer of input time-domain samples. */
     private double[] _timeData;
-    private double _oldestDataReal, _newestDataReal;
-    // frequencies of input signal after ft
-    // Size increased by one because the optimized sdft code writes data to freqs[N]
+    /** Oldest sample being removed from the window. */
+    private double _oldestDataReal;
+    /** Newest sample being added to the window. */
+    private double _newestDataReal;
+    /** Real parts of the frequency-domain bins. */
     private double[] _freqsReal;
+    /** Imaginary parts of the frequency-domain bins. */
     private double[] _freqsImag;
+    /** Frequency output configuration data from the control block. */
     private final List<FrequencyData> _data;
 
     public SlidingDFTCalculator(final int noOutputs, final double avgSpan, final List<ControlSlidingDFT.FrequencyData> freqData) {
@@ -78,6 +92,11 @@ public final class SlidingDFTCalculator extends AbstractControlCalculatable
         }
     }
     
+    /**
+     * Performs one recursive DFT update: the oldest data point is subtracted
+     * from the frequency bins and the newest data point is added, using the
+     * formula: X_k(t) = (X_k(t-1) + (x_new - x_old) * e^(-j*2*pi*k/N)) .
+     */
     private void doSlidingFourierStep() {
         final double deltaReal = _newestDataReal - _oldestDataReal;        
         for (int i : _frequencyIndicesSet) {
@@ -88,6 +107,11 @@ public final class SlidingDFTCalculator extends AbstractControlCalculatable
         }
     }
 
+    /**
+     * Initializes the circular buffer, frequency arrays, and index at
+     * simulation start based on the given time step.
+     * @param deltaT the simulation time step
+     */
     @Override
     public void initializeAtSimulationStart(final double deltaT) {
         _size = (int) Math.round(_averageSpanSecs / deltaT);
@@ -119,6 +143,11 @@ public final class SlidingDFTCalculator extends AbstractControlCalculatable
 
     }
 
+    /**
+     * Re-initializes the calculator with a new time step, rescaling
+     * frequency bins and resampling the input buffer.
+     * @param deltaT the new simulation time step
+     */
     @Override
     public void initWithNewDt(final double deltaT) {
         final int oldSize = _size;

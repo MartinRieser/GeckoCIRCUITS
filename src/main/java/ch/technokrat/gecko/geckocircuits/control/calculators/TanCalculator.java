@@ -13,7 +13,15 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Calculates the tangent of the input signal. Includes assertions to
+ * avoid the PI/2 singularity where tan(x) is undefined.
+ */
 public final class TanCalculator extends AbstractSingleInputSingleOutputCalculator {    
+    /**
+     * Threshold for detecting proximity to PI/2 singularities where
+     * tan(x) approaches infinity.
+     */
     private static final double SMALL_NUMBER = 1e-14;
     @Override
     public void calculateYOUT(final double deltaT) {

@@ -24,6 +24,15 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import ch.technokrat.modelviewcontrol.ModelMVC;
 
+/**
+ * Manages worksheet (canvas) dimensions for circuit sheets. Provides
+ * getters, setters, serialization, and backwards-compatible parsing of
+ * old .ipes format size strings.
+ * <p>
+ * Note: {@code DEFAULT_SIZE = 40} is the current default, but
+ * {@link #getOldFormatWSSize(String)} returns {@code 30} when the
+ * size string is null, which is inconsistent.</p>
+ */
 public final class WorksheetSize {
 
     private static final int DEFAULT_SIZE = 40;
@@ -41,6 +50,12 @@ public final class WorksheetSize {
     private static final String WORKSHEETSIZE_350X350 = "5000x5000";
     private static final String WORKSHEETSIZE_900X900 = "9000x9000";
 
+    /**
+     * Creates a new WorksheetSize manager associated with the given circuit sheet.
+     * Registers a listener that updates the sheet's preferred size on dimension
+     * changes.
+     * @param parent the owning circuit sheet
+     */
     WorksheetSize(final CircuitSheet parent) {
         _parent = parent;
         _worksheetDimension.addModelListener(new ActionListener() {
@@ -55,14 +70,28 @@ public final class WorksheetSize {
         });
     }
 
+    /**
+     * @return the current worksheet width in grid units
+     */
     public int getSizeX() {
         return _worksheetDimension.getValue().x;
     }
 
+    /**
+     * @return the current worksheet height in grid units
+     */
     public int getSizeY() {
         return _worksheetDimension.getValue().y;
     }
 
+    /**
+     * Parses a size string from the old .ipes file format and returns the
+     * corresponding grid dimension. Returns {@code 30} for null or unknown
+     * values (note: {@link #DEFAULT_SIZE} is {@code 40}, which is
+     * inconsistent with this fallback).
+     * @param sizeString the size string from the old format
+     * @return the grid dimension in grid units
+     */
     public static int getOldFormatWSSize(final String sizeString) {
         //CHECKSTYLE:OFF
         if (sizeString == null) {
@@ -84,6 +113,13 @@ public final class WorksheetSize {
         //CHECKSTYLE:ON
     }
 
+    /**
+     * Sets a new worksheet size. If components lie outside the new boundary,
+     * an error dialog is shown. Subcircuit sheet terminals on the right or
+     * bottom edge are repositioned accordingly.
+     * @param sizeX the new width in grid units
+     * @param sizeY the new height in grid units
+     */
     public void setNewWorksheetSize(final int sizeX, final int sizeY) {        
         try {
             if (isComponentOutsideDrawingArea(sizeX, sizeY)) {
@@ -129,6 +165,15 @@ public final class WorksheetSize {
         }
     }
 
+    /**
+     * Repositions a subcircuit terminal only if the new position does not
+     * conflict with other terminals (no two terminals may occupy the same
+     * column or row on the respective edge).
+     * @param terminable the terminal to move
+     * @param posX the target X grid position
+     * @param posY the target Y grid position
+     * @param allSheetTerms all terminals on the sheet (for conflict check)
+     */
     private void setCheckedTerminalSheetPosition(SubCircuitTerminable terminable, int posX, int posY,
             Collection<SubCircuitTerminable> allSheetTerms) {
 
@@ -154,8 +199,12 @@ public final class WorksheetSize {
     }
 
     /**
-     * If elements or connections are outside the worksheet, i.e. invisible, then this is a potential source of errors
-     * --> should therefore not be made possible for the user --> is fundamentally checked here*/
+     * Checks whether any circuit component (excluding terminals) lies outside
+     * the specified worksheet boundaries.
+     * @param worksheetSizeX the X boundary in grid units
+     * @param worksheetSizeY the Y boundary in grid units
+     * @return true if any component is outside the drawing area
+     */
     private boolean isComponentOutsideDrawingArea(final int worksheetSizeX, final int worksheetSizeY) {
 
         final List<Point> allPoints = new ArrayList<Point>();
@@ -180,11 +229,23 @@ public final class WorksheetSize {
         return false;
     }
 
+    /**
+     * Appends the current worksheet dimensions to the given string buffer
+     * in ASCII export format.
+     * @param strBuf the buffer to append to
+     */
     public void exportAscii(final StringBuffer strBuf) {                
         strBuf.append("\nworksheetSizeX ").append(_worksheetDimension.getValue().x);
         strBuf.append("\nworksheetSizeY ").append(_worksheetDimension.getValue().y);                
     }        
 
+    /**
+     * Reads the worksheet size from a token map (backwards-compatible
+     * parsing of the old .ipes format). Falls back to {@value #DEFAULT_SIZE}
+     * if the tokens are not present.
+     * @param tokenMap the token map to read from
+     * @return a Point with the parsed (width, height) in grid units
+     */
     public static Point getSize(final TokenMap tokenMap) {
         if (tokenMap.containsToken("worksheetSizeX")) {            
             final int sizeX = tokenMap.readDataLine("worksheetSizeX", DEFAULT_SIZE);
@@ -197,6 +258,6 @@ public final class WorksheetSize {
     @Override
     public String toString() {
         return "Subcircuit " + hashCode() + " " + _worksheetDimension.getValue().x + " " + _worksheetDimension.getValue().y;
-    }            
+    }           
     
 }

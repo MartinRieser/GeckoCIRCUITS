@@ -15,6 +15,10 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
 import javax.swing.JPanel;
 
+/**
+ * Dialog for editing thyristor parameters: forward voltage drop,
+ * on-resistance, off-resistance, and reverse recovery delay.
+ */
 public final class ThyristorDialog extends AbstractDialogPowerSwitch<Thyristor> {
 
     private static final long serialVersionUID = 1L;

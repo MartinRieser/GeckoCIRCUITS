@@ -18,6 +18,10 @@ import ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents.SubcircuitBlo
 import ch.technokrat.gecko.geckocircuits.control.TextFieldBlock;
 
 
+/**
+ * Enumeration of "special" non-circuit component types, such as subcircuit
+ * blocks and text fields.
+ */
 public enum SpecialType implements AbstractComponentType {
     SUBCIRCUIT(27, SubcircuitBlock.tInfo),
     TEXTFIELD(70, TextFieldBlock.tInfo);   

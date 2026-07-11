@@ -47,6 +47,11 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
+/**
+ * Tabbed component palette that displays all available schematic elements
+ * (circuit, motor, subcircuit, thermal, reluctance, control, measure, digital,
+ * math, source/sink, special) organized by category for drag-and-drop placement.
+ */
 public class SchematicComponentSelection2 extends JTabbedPane {
 
     private static final long serialVersionUID = 1L;

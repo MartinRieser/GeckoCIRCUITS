@@ -30,6 +30,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Display-only text annotation block that shows a title and multi-line content
+ * on the circuit sheet. The text is rendered inside a colored rectangular box.
+ */
 public final class TextFieldBlock extends AbstractSpecialBlock implements Operationable {
 
     public static final ControlTypeInfo tInfo = new ControlTypeInfo(TextFieldBlock.class, "TEXT", I18nKeys.TEXT_FIELD);
@@ -107,6 +111,11 @@ public final class TextFieldBlock extends AbstractSpecialBlock implements Operat
         }
     };
 
+    /**
+     * Imports individual data from a token map, replacing literal "\\n" sequences
+     * with actual newline characters in the contents text.
+     * @param tokenMap the token map to read from
+     */
     @Override
     protected void importIndividual(TokenMap tokenMap) {
         super.importIndividual(tokenMap);

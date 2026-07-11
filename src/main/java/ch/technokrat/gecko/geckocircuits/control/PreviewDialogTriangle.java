@@ -20,6 +20,10 @@ import java.awt.Graphics;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 
+/**
+ * Preview dialog that draws a triangular waveform preview with configurable
+ * amplitude, offset, phase shift, and duty cycle.
+ */
 public class PreviewDialogTriangle extends PreviewDialog {
 
     private static final long serialVersionUID = 1L;

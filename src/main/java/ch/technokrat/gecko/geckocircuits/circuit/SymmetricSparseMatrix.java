@@ -18,9 +18,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * Sparse matrix formulation as defined in the csr format
- * See Intel mkl user's guide for more details
- * 
+ * Sparse symmetric matrix in Compressed Sparse Row (CSR) format,
+ * compatible with the Intel MKL Pardiso solver. The matrix is stored
+ * as three arrays: values (Acsr), row pointers (AI), and column indices
+ * (AJ).
  */
 public class SymmetricSparseMatrix {
 
@@ -34,32 +35,44 @@ public class SymmetricSparseMatrix {
     private final int _N;
 
     
+    /**
+     * Returns the matrix dimension.
+     * @return the size of the matrix
+     */
     public int getMatrixSize() {
         return _N;
     }
         
 
     /**
-     * 
-     * @param fullComplexMatrix
-     * @param rows
-     * @param cols
-     * @param rhs
-     * @return
+     * Empty Javadoc retained for consistency.
+     */
+    /**
+     * Factorizes the sparse matrix using the Pardiso solver with matrix
+     * type -2 (real symmetric positive definite).
+     * @param matrix the sparse matrix to factorize
+     * @param rows number of rows
+     * @param cols number of columns
      */
     public void factorize(final SymmetricDoubleSparseMatrix matrix, final int rows, final int cols) {        
         _paradiso = new Paradiso();                        
         Paradiso.factorize(Adns, AI, AJ, _N, -2, _paradiso);                        
     }
 
+    /**
+     * Solves the factorized system for the given right-hand side vector.
+     * @param rhs the right-hand side vector
+     * @return the solution vector
+     */
     public double[] solve(double[] rhs) {        
         return Paradiso.solve(Adns, AI, AJ, rhs, rhs.length, -2, 1, _paradiso);        
     }
 
     
     /**
-     * constructs a sparse matrix from the byte[][] representation
-     * @param fullMatrix
+     * Constructs a CSR-format sparse matrix from a
+     * {@link SymmetricDoubleSparseMatrix}.
+     * @param matrix the source symmetric sparse matrix
      */
     public SymmetricSparseMatrix(final SymmetricDoubleSparseMatrix matrix) {        
         _N = matrix.getMatrixSize();

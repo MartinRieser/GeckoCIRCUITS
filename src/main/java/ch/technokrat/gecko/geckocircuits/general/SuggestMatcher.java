@@ -14,7 +14,18 @@
 package ch.technokrat.gecko.geckocircuits.general;
 
 
+/**
+ * Contract for matching suggestion text against user input in auto-suggest
+ * fields.
+ */
 public abstract interface SuggestMatcher
 {
+  /**
+   * Returns true if the data word matches the search word according to
+   * the implementation's matching strategy.
+   * @param dataWord the candidate suggestion
+   * @param searchWord the user's search input
+   * @return true if the data word matches
+   */
   public abstract boolean matches(String paramString1, String paramString2);
 }

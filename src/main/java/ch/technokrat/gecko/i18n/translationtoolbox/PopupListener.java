@@ -24,7 +24,8 @@ import java.awt.event.MouseListener;
 
 /**
  * Pop-up mouse listener class.
- * Listens for user gestures (e.g. Ctrl+Shift+Click) to trigger translation pop-ups.
+ * Triggers a translation pop-up when the user Ctrl+Shift+clicks on a GUI
+ * element whose text is associated with an I18nKeys key.
  */
 public final class PopupListener implements MouseListener {
 

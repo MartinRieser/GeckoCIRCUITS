@@ -30,8 +30,9 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 /**
- *
- * @author andreas
+ * The circuit sheet displayed inside a subcircuit block, providing
+ * navigation buttons (level up, settings, new terminal) and handling
+ * the internal component layout.
  */
 public class SubCircuitSheet extends CircuitSheet {
 

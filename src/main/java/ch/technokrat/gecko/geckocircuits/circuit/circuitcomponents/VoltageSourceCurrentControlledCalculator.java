@@ -13,6 +13,11 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
+/**
+ * Calculator for a current-controlled voltage source (CCVS). The output
+ * voltage is proportional to a controlling current, and the contribution
+ * is stamped into the system matrix A.
+ */
 public final class VoltageSourceCurrentControlledCalculator
         extends AbstractVoltageSourceControlledCalculator implements HistoryUpdatable {
 

@@ -17,8 +17,8 @@ package ch.technokrat.gecko.geckocircuits.control;
 import java.util.concurrent.ThreadFactory;
 
 /**
- *
- * @author andy
+ * Thread factory that creates daemon threads with {@link Thread#MIN_PRIORITY} for
+ * low-priority background tasks.
  */
 class PriorityThreadFactory implements ThreadFactory {
 

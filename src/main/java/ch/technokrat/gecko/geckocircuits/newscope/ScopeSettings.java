@@ -14,9 +14,11 @@
 package ch.technokrat.gecko.geckocircuits.newscope;
 
 /**
- * this class is probably the biggest bullshit you have ever seen! This was from Uwe's old Scope implementation, for
- * compatibility reasons, it is still here. It should be refactored or removed, soon!
+ * Scope-level settings container for backwards compatibility with legacy
+ * scope data formats (pre-v1.60). New scope settings are stored internally
+ * in the grapher; this class is retained only for importing old model files.
  *
+ * @deprecated retained for backward compatibility only
  */
 import ch.technokrat.gecko.geckocircuits.general.ProjectData;
 import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;

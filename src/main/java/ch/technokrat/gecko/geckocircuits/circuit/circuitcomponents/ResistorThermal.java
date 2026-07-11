@@ -16,6 +16,10 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Thermal resistance element (leaf class) modeled as a resistor in the
+ * thermal domain (analogous to electrical resistance).
+ */
 final class ResistorThermal extends AbstractResistor {
     static final AbstractTypeInfo TYPE_INFO = 
             new ThermalTypeInfo(ResistorThermal.class, "Rth", I18nKeys.RESISTOR_RTH_K_W);    

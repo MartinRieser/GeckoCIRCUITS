@@ -18,9 +18,9 @@ import ch.technokrat.gecko.geckocircuits.control.ControlOSZI;
 import ch.technokrat.gecko.geckocircuits.control.SubCircuitSheet;
 
 /**
- * Immutable class, especially the scope input index should never change!
- *
- * @author andreas
+ * Standard immutable scope signal representing a direct connection to a
+ * scope input terminal. The scope input index is fixed after construction
+ * to preserve the immutability contract.
  */
 public final class ScopeSignalRegular extends AbstractScopeSignal {
 

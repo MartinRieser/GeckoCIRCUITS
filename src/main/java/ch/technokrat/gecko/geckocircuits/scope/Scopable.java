@@ -14,12 +14,18 @@
 package ch.technokrat.gecko.geckocircuits.scope;
 
 /**
- *
- * @author andy
+ * Deprecated interface for components that can be connected to an
+ * oscilloscope (scope) for data visualization and display.
  */
 @Deprecated
 public interface Scopable {
     void updateMouseMode(int mouseMode);
+    /**
+     * Returns the high-resolution simulation data stored in RAM for scope
+     * display.
+     *
+     * @return the data container holding the zero-voltage (ZV) data in RAM
+     */
     public DataContainer getZVDataInRAM();
     public void loadWorkSheet();
 

@@ -18,8 +18,8 @@ import ch.technokrat.gecko.geckocircuits.datacontainer.AbstractDataContainer;
 import javax.swing.JOptionPane;
 
 /**
- *
- * @author Tibor Keresztfalvi
+ * Static utility methods for slider-based measurement, including iteration
+ * to find extrema, signal flanks, and zero-crossings in curve data.
  */
 public final class SliderUtils {
 

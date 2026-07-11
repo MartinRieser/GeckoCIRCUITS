@@ -17,6 +17,10 @@ import ch.technokrat.gecko.geckocircuits.circuit.AbstractTypeInfo;
 import ch.technokrat.gecko.geckocircuits.circuit.CircuitTypeInfo;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * A circuit (power/thermal) terminal component used inside subcircuit
+ * sheets to define connection points to the parent block.
+ */
 public class TerminalCircuit extends AbstractCircuitTerminal {
     public static final AbstractTypeInfo TYPE_INFO = new CircuitTypeInfo(TerminalCircuit.class, "CIRCUIT_TERMINAL", I18nKeys.CIRCUIT_TERMINAL);            
 }

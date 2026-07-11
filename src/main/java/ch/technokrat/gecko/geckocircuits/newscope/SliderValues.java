@@ -14,8 +14,8 @@
 package ch.technokrat.gecko.geckocircuits.newscope;
 
 /**
- *
- * @author andy
+ * Immutable container holding a pair of (x, y) measurement values from the
+ * red and green sliders.
  */
 public final class SliderValues {
     private final double _xValue1;

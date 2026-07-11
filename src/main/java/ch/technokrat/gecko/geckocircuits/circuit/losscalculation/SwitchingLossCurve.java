@@ -19,7 +19,11 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
 import java.io.Serializable;
 
-// // Data container for a measurement curve -->
+/**
+ * Data container for a switching loss measurement curve. Stores turn-on
+ * (Eon), turn-off (Eoff), and total energy (Etotal) as a function of
+ * current at a given junction temperature and blocking voltage.
+ */
 public class SwitchingLossCurve extends LossCurve implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -40,6 +44,11 @@ public class SwitchingLossCurve extends LossCurve implements Serializable {
     // etc.
     // // Parameters: T_junction, uBlock --> specified during the measurement
     //
+    /**
+     * Creates a switching loss curve for the given operating conditions.
+     * @param tj junction temperature in degrees Celsius
+     * @param uBlock blocking voltage in Volts
+     */
     public SwitchingLossCurve(double tj, double uBlock) {        
         this.tj.setValueWithoutUndo(tj);
         _uBlock.setValueWithoutUndo(uBlock);
@@ -64,6 +73,12 @@ public class SwitchingLossCurve extends LossCurve implements Serializable {
         _uBlock.writeXMLToFile(ascii);
     }
 
+    /**
+     * Imports curve data from a token map. Includes legacy data repair:
+     * if the data array has length 4 (old format), it is truncated to 3
+     * rows (I, Eon, Eoff).
+     * @param tokenMap the token map to read from
+     */
     @Override
     protected void importIndividual(final TokenMap tokenMap) {        
         _uBlock.readFromTokenMap(tokenMap);                        

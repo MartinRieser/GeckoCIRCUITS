@@ -17,8 +17,18 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.font.FontRenderContext;
 
+/**
+ * Bidirectional control terminal that can serve as both input and output.
+ * Extends TerminalRelativePosition and implements ControlTerminable for control-domain connectivity.
+ */
 public class TerminalControlBidirectional extends TerminalRelativePosition implements ControlTerminable {
 
+    /**
+     * Constructs a bidirectional control terminal at the given relative position.
+     * @param relatedComponent the parent block this terminal belongs to
+     * @param posX relative X position
+     * @param posY relative Y position
+     */
     public TerminalControlBidirectional(AbstractBlockInterface relatedComponent, int posX, int posY) {
         super(relatedComponent, posX, posY);
     }    

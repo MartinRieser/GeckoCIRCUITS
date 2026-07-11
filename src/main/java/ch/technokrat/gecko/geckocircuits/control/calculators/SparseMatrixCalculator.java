@@ -14,7 +14,13 @@
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 /**
- * TODO: this is the biggest mess I have ever seen. Pleas clean anybody up!
+ * Implements the sparse matrix converter modulation algorithm for
+ * AC-AC matrix converters. Generates 9 switching signals based on
+ * input voltage sector detection and output duty cycle calculation.
+ * <p>
+ * Note: The switch statements for sectors 1-12 contain massive code
+ * duplication that should be refactored.
+ *
  * @author andreas
  */
 public final class SparseMatrixCalculator extends AbstractControlCalculatable implements InitializableAtSimulationStart {

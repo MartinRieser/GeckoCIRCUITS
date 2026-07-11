@@ -17,8 +17,8 @@ package ch.technokrat.gecko.geckocircuits.circuit;
 import ch.technokrat.gecko.geckocircuits.control.Point;
 
 /**
- *
- * @author andreas
+ * Terminal positioned relative to its parent with a fixed independent direction.
+ * The position is calculated from the fixed direction regardless of the parent's rotation.
  */
 public final class TerminalRelativeFixedDirection extends AbstractTerminal {
     private final int _posX;

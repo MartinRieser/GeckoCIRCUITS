@@ -17,8 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
- * @author xtibi
+ * Variable time series backed by an ArrayList for non-uniform time spacing.
+ * Uses interpolation-based search for efficient index lookup. Note the memory
+ * trade-off: boxed Doubles in ArrayList incur overhead compared to primitive arrays.
  */
 public final class TimeSeriesVariableArray extends AbstractTimeSeries{
   private final List<Double> _timeSeries = new ArrayList<Double>();

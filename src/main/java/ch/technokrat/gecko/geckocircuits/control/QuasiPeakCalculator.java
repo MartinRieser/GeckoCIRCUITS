@@ -15,11 +15,20 @@ package ch.technokrat.gecko.geckocircuits.control;
 
 import ch.technokrat.gecko.geckocircuits.newscope.Cispr16Fft;
 
+/**
+ * Implements the CISPR 16 quasi-peak detector for EMI/EMC measurements.
+ * Computes peak, average, and quasi-peak values from a Fourier-transformed
+ * input signal using band-specific time constants (CISPR Band A/B).
+ */
 public class QuasiPeakCalculator {
 
+    /** Lower frequency limit for CISPR Band A (9 kHz). */
     private static final double A_LOWER_LIMIT = 9000;
+    /** Lower frequency limit for CISPR Band B (150 kHz). */
     private static final double B_LOWER_LIMIT = 150000;
+    /** Narrow bandwidth for CISPR Band A (150 Hz). */
     private static final double A_NARROW_WIDTH = 150;
+    /** Wide bandwidth for CISPR Band A (200 Hz). */
     private static final double A_WIDE_WIDTH = 200;
     private int _NN, _i;
     private float[] _fourierTransform;
@@ -104,13 +113,22 @@ public class QuasiPeakCalculator {
 
                 _quasiPeak *= normalizationFactor;
             }
-            System.gc();
+            System.gc(); // generally discouraged; clears large Fourier arrays to free memory
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         _fourierTransform = null;
     }
 
+    /**
+     * Applies a quasi-peak detector using backward Euler discretization of the
+     * CISPR 16 RC charge/discharge network.
+     *
+     * @param inputSignalTD time-domain input signal (band-limited spectrum)
+     * @param startValue    initial quasi-peak value (0 for first run)
+     * @param dt            sampling interval
+     * @return the quasi-peak value averaged over the second half of the signal
+     */
     public double quasiPeakDetector(final float[] inputSignalTD, final double startValue, final double dt) {
 
         final int NNN = inputSignalTD.length;
