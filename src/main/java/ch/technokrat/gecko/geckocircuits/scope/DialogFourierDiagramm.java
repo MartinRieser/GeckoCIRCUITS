@@ -56,7 +56,7 @@ public class DialogFourierDiagramm extends JDialog implements ComponentListener 
     private JTabbedPane tabbedPane;
     private FourierDiagramm[] diagrams;
     private DisplayFourierWorksheet[] sheet;
-    private FourierKurvenRekonstruktion[] reconstructions;
+    private FourierCurveReconstruction[] reconstructions;
     //
     private final AbstractDataContainer _worksheet;
     private final double[][] _cn, _jn, _an, _bn;
@@ -117,7 +117,7 @@ public class DialogFourierDiagramm extends JDialog implements ComponentListener 
         tabbedPane = new JTabbedPane();
         diagrams = new FourierDiagramm[_worksheet.getRowLength()+1];
         sheet = new DisplayFourierWorksheet[_worksheet.getRowLength()+1];
-        reconstructions = new FourierKurvenRekonstruktion[_worksheet.getRowLength()+1];
+        reconstructions = new FourierCurveReconstruction[_worksheet.getRowLength()+1];
         //
         for (int i1 = 1; i1 < _worksheet.getRowLength()+1; i1++) {
             if (_signalFourierAnalysiert[i1]) {
@@ -129,7 +129,7 @@ public class DialogFourierDiagramm extends JDialog implements ComponentListener 
                 localTabbedPane.addTab("Fourier Analysis", diagrams[i1 - 1]);
                 sheet[i1 - 1] = new DisplayFourierWorksheet(_cn[i1 - 1], _jn[i1 - 1], _nMin);
                 localTabbedPane.addTab("Worksheet Data", sheet[i1 - 1]);
-                reconstructions[i1 - 1] = new FourierKurvenRekonstruktion(_an[i1 - 1], _bn[i1 - 1], _nMin, _f1, _worksheet, i1, _rng1, _rng2);
+                reconstructions[i1 - 1] = new FourierCurveReconstruction(_an[i1 - 1], _bn[i1 - 1], _nMin, _f1, _worksheet, i1, _rng1, _rng2);
                 localTabbedPane.addTab("Reconstruction", reconstructions[i1 - 1]);
                 //---------
                 jpSg.add(localTabbedPane, BorderLayout.CENTER);
