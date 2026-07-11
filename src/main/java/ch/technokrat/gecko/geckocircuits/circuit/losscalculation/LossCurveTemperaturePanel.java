@@ -68,12 +68,9 @@ public final class LossCurveTemperaturePanel extends JPanel {
     public void setGuiButtonsFromList(final List<? extends LossCurve> curveList) {
         setLayout(new GridLayout(curveList.size(), 1));                
                 
-        final GridBagConstraints _gbc = new GridBagConstraints();
         _radioButtons.clear();        
         this.removeAll();
         for (int i1 = 0; i1 < curveList.size(); i1++) {            
-            _gbc.gridx = 0;
-            _gbc.gridy = i1;
             final JRadioButton newButton = new JRadioButton(curveList.get(i1).getName());            
             _radioButtons.add(newButton);
             newButton.addActionListener(new ActionListener() {
@@ -89,7 +86,7 @@ public final class LossCurveTemperaturePanel extends JPanel {
             });
                         
             _buttonGroup.add(newButton);
-            this.add(newButton, _gbc);                                                
+            this.add(newButton);                                                
         }           
         this.updateUI();
     }

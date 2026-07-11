@@ -67,8 +67,9 @@ public class DelegateIntSpinner<M extends ModelMVC<Integer>> extends JSpinner
     }
 
     /**
+     * Synchronizes the spinner value with the underlying model's value.
      *
-     * @param evt
+     * @param evt the action event triggering the update
      */
     @Override
     public void actionPerformed(ActionEvent evt) {

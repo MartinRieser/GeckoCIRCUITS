@@ -448,6 +448,9 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     
 
 
+    /**
+     * Saves the current project data to the active file.
+     */
     public void saveFile() {
         boolean reworkRelativePaths = false;
         //----------------
@@ -593,6 +596,12 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         _se.initAdditionalFiles(_se._circuitSheet.getAllElements().getClassFromContainer(AbstractBlockInterface.class));
     }
 
+    /**
+     * Opens a project file and loads its project data into the workspace.
+     *
+     * @param dateiName the absolute path of the file to load
+     * @throws FileNotFoundException if the specified file does not exist
+     */
     public void openFile(String dateiName) throws FileNotFoundException {
         _se.resetCircuitSheetsForNewFile();
         GlobalFilePathes.DATNAM = dateiName;
@@ -983,6 +992,11 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     }
 
 
+    /**
+     * Handles action events from menus, buttons, and other user interfaces.
+     *
+     * @param ae the action event triggered by the user
+     */
     public void actionPerformed(ActionEvent ae) {
         if (!simulatorActivated) {
             return;

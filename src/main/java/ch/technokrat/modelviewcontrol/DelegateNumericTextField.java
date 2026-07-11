@@ -29,6 +29,13 @@ public class DelegateNumericTextField <M extends ModelMVC<Double>> extends JText
             this.setText("0.0");
         }
 
+    /**
+     * Registers the text field with a Double ModelMVC, setting up synchronization
+     * and a listener for text input action events.
+     *
+     * @param textModel the model representing a double value
+     * @param undoRedoText the description text for undo/redo actions
+     */
     @Override
     public void registerModel(M textModel, String undoRedoText) {
         assert textModel != null;
@@ -54,6 +61,9 @@ public class DelegateNumericTextField <M extends ModelMVC<Double>> extends JText
 
     }
 
+    /**
+     * Unregisters the model listener and cleans up the action listener reference.
+     */
     @Override
     public void unregisterModel() {
         removeActionListener(_listener);
@@ -63,11 +73,20 @@ public class DelegateNumericTextField <M extends ModelMVC<Double>> extends JText
         }
     }
 
+    /**
+     * Synchronizes the text field display with the underlying model's double value.
+     *
+     * @param evt the action event triggering the update
+     */
     @Override
     public void actionPerformed(ActionEvent evt) {
         setText(_model.getValue().toString());
     }
     
+    /**
+     * Parses the current text field contents and saves the parsed double value into the model.
+     * If the input is not a valid double, resets the text to the model's current value.
+     */
     public void saveValue() {
         try {
             _model.setValue(Double.parseDouble(getText()));

@@ -59,8 +59,14 @@ public class DelegateCheckBox<M extends ModelMVC<Boolean>> extends JCheckBox
         }
     }
 
+    /**
+     * Synchronizes the checkbox selection state with the underlying model's value
+     * when an action event is received.
+     *
+     * @param e the action event triggering the update
+     */
     @Override
-    public void actionPerformed(ActionEvent arg0) {
+    public void actionPerformed(ActionEvent e) {
         this.setSelected(_model.getValue());
     }
 

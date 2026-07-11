@@ -13,10 +13,23 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Calculates hysteresis output signal based on a fixed internal boundary threshold value.
+ *
+ * <p><strong>Assumptions:</strong>
+ * This calculator assumes that the boundary threshold value {@code hValue} is non-negative.
+ * If {@code hValue} is negative, the comparisons will yield unexpected results.
+ * </p>
+ */
 public final class HysteresisCalculatorInternal extends AbstractControlCalculatable {
 
     private double _hValue;
 
+    /**
+     * Constructs a new internal hysteresis calculator with a given threshold.
+     *
+     * @param hValue the hysteresis boundary value
+     */
     public HysteresisCalculatorInternal(final double hValue) {
         super(1, 1);
         setHValue(hValue);

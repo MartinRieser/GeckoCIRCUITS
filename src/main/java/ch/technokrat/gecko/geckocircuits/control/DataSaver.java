@@ -257,7 +257,7 @@ public final class DataSaver extends Observable implements Observer {
             }
             _lastSavedDataIndex = maxIndex;
         } catch (IOException ex) {
-            Logger.getLogger(DialogDataExport.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DataSaver.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

@@ -85,27 +85,13 @@ public final class DefinedMeanSignals{
     final ScopeSignalMean newSignal = new ScopeSignalMean(origSignal, value);
     _grafer.getManager().defineNewMeanSignal(newSignal);
 
+    _scopeMeanSignals.remove(newSignal);
+    _scopeMeanSignals.add(newSignal);
+    _scopeMeanSignals.sort((s1, s2) -> Integer.compare(s2.getConnectedScopeInputIndex(), s1.getConnectedScopeInputIndex()));
 
-    if(_scopeMeanSignals.contains(newSignal)){
-      _scopeMeanSignals.remove(newSignal);
-    }
-
-    // do a sorted insertion! ------------>
-    for(int i = 0; i < _scopeMeanSignals.size(); i++){
-      if(newSignal.getConnectedScopeInputIndex() > _scopeMeanSignals.get(i).getConnectedScopeInputIndex()){
-        _scopeMeanSignals.add(i, newSignal);
-        break;
-      }
-    }
-
-    if(!_scopeMeanSignals.contains(newSignal)){
-      _scopeMeanSignals.add(newSignal);
-    }
     if(_meanWrapper != null){  // when no simulation was done before, this could be null!
       registerIndices(_meanWrapper);
     }
-
-
   }
 
   void unDefineMeanSignal(final ScopeSignalMean toDelete){
