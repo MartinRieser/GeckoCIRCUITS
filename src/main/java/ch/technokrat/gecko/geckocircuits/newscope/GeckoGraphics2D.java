@@ -40,6 +40,11 @@ import java.text.AttributedCharacterIterator;
 import java.util.Map;
 
 
+/**
+ * A delegating Graphics2D wrapper that forwards all rendering operations
+ * to an underlying Graphics2D instance, with additional color strategy
+ * support for disabled/selected component states.
+ */
 public class GeckoGraphics2D extends Graphics2D {
         public final Graphics2D origGraphics;
         private ColorSettable colorStrategy = new ColorStrategyDisabledComponent();
@@ -230,6 +235,7 @@ public class GeckoGraphics2D extends Graphics2D {
             origGraphics.clip(shape);
         }
         
+        /** Switches to the "selected" color strategy, which overrides colors for selected components. */
         public void setColorStrategySelected() {
             colorStrategy = new ColorStrategySelected();
         }

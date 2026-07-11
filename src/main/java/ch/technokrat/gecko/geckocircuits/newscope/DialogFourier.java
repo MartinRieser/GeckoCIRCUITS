@@ -39,6 +39,11 @@ import java.net.URI;
 import java.net.URL;
 import javax.swing.JOptionPane;
 
+/**
+ * Dialog for performing Fourier (harmonic) analysis on simulation data.
+ * Computes magnitude and phase spectra for selected signals and displays
+ * or exports the Fourier transform results.
+ */
 public class DialogFourier extends JDialog {
 
     private static final long serialVersionUID = 1L;

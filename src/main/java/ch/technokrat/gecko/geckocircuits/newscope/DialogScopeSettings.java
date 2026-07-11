@@ -20,6 +20,8 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 /**
+ * Dialog for configuring general scope settings including the scope name,
+ * anti-aliasing filter enable, and name visibility on the scope display.
  *
  * @author andreas
  */

@@ -44,6 +44,11 @@ import ch.technokrat.gecko.geckocircuits.datacontainer.AbstractDataContainer;
 import ch.technokrat.gecko.i18n.GuiFabric;
 import ch.technokrat.gecko.i18n.resources.I18nKeys;
 
+/**
+ * Dialog displaying Fourier transform results as a multi-tabbed diagram.
+ * Shows magnitude/phase spectra, harmonic content tables, and optional
+ * signal reconstruction for the analyzed time-domain signal.
+ */
 @SuppressWarnings({"deprecation", "serial", "this-escape"})
 public class DialogFourierDiagramm extends JDialog implements ComponentListener {
 
@@ -69,6 +74,17 @@ public class DialogFourierDiagramm extends JDialog implements ComponentListener 
     private JMenuItem mItemF3;
     //-----------------------
 
+    /**
+     * Creates a new Fourier diagram dialog with the computed harmonic data.
+     *
+     * @param erg Array of Fourier coefficients [0]=an, [1]=bn, [2]=cn, [3]=jn
+     * @param sngFourierAnalysiert Per-signal flag indicating if Fourier analysis was performed
+     * @param nMin Minimum harmonic order to display
+     * @param f1 Fundamental frequency
+     * @param worksheet The data container holding the original time-domain signal
+     * @param rng1 Start of the analysis time range
+     * @param rng2 End of the analysis time range
+     */
     public DialogFourierDiagramm(
             double[][][] erg, boolean[] sngFourierAnalysiert, int nMin, double f1, AbstractDataContainer worksheet,
             double rng1, double rng2) {

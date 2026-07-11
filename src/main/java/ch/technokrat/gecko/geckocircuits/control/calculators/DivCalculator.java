@@ -19,8 +19,13 @@ package ch.technokrat.gecko.geckocircuits.control.calculators;
  */
 public final class DivCalculator extends AbstractTwoInputsOneOutputCalculator {
 
+    /** Large number returned when division by zero produces infinity. */
     private static final double LARGE_NUMBER = 1e40;
 
+    /**
+     * Divides the first input by the second. NaN (0/0) returns 0;
+     * Infinity (x/0) returns a large signed number.
+     */
     @Override
     public void calculateYOUT(final double deltaT) {
         final double result = _inputSignal[0][0] / _inputSignal[1][0];  // normale Division

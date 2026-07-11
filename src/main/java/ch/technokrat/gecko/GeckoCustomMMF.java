@@ -27,8 +27,11 @@ import javax.swing.JOptionPane;
  */
 public class GeckoCustomMMF extends AbstractGeckoCustom {
     
+    /** The memory-mapped file used for remote communication. */
     private GeckoMemoryMappedFile _mmf = null;
+    /** Whether remote access via MMF is enabled. */
     private boolean _accessEnabled = false;
+    /** The active connection ID, or -1 if not connected. */
     private long _connectionID = -1;
     
     
@@ -84,7 +87,8 @@ public class GeckoCustomMMF extends AbstractGeckoCustom {
     }
     
     /**
-     * Creates a new thread to monitor the MMF for incoming method calls.
+     * Creates a new thread to continuously monitor the MMF for incoming
+     * connection attempts, method calls, and shutdown requests.
      */
     private void startMonitoring() {
         Thread monitoringThread = new Thread(new Runnable() {
@@ -98,6 +102,10 @@ public class GeckoCustomMMF extends AbstractGeckoCustom {
         monitoringThread.start();
     }
     
+    /**
+     * Polls the MMF for connection attempts, method calls, and shutdown
+     * requests while access is enabled.
+     */
     private void monitorMMF() {
         GeckoRemotePipeObject methodCall;
         while (_accessEnabled) {
@@ -169,7 +177,7 @@ public class GeckoCustomMMF extends AbstractGeckoCustom {
     
     /**
      * Calls a method indicated by the client via the memory-mapped file and sends the response.
-     * @param methodObject
+     * @param methodObject the pipe object describing the method to call
      * @throws IOException if something goes wrong sending the response
      */
     private void callMethod(final GeckoRemotePipeObject methodObject) throws IOException {
@@ -239,7 +247,7 @@ public class GeckoCustomMMF extends AbstractGeckoCustom {
      * For transmission, all method arguments are converted to Objects, which means doubles become Doubles, etc.
      * However all the methods take primitive types, therefore we must convert back.
      * This method checks for this and does the conversion.
-     * @param type the class of the parameter extracted from the GeckoRemotePipeObject
+     * @param argType the class of the parameter extracted from the GeckoRemotePipeObject
      * @return the proper class of the parameter
      */
     private Class<?> checkForPrimitiveType(final Class<?> argType) {

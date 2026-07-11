@@ -19,6 +19,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
+/**
+ * Deprecated worksheet panel that displays Fourier analysis results (c_n, phi_n)
+ * in a non-editable JTable.
+ */
 @Deprecated
 class DisplayFourierWorksheet extends JPanel {
     private static final long serialVersionUID = 1L;
@@ -33,6 +37,12 @@ class DisplayFourierWorksheet extends JPanel {
     private int nMin;
     //----------------------------
 
+    /**
+     * Constructs the Fourier worksheet display.
+     * @param cnSG array of cosine coefficients
+     * @param jnSG array of sine coefficients
+     * @param nMin minimum harmonic order
+     */
     public DisplayFourierWorksheet(double[] cnSG, double[] jnSG, int nMin) {
         this.cnSG = cnSG;
         this.jnSG = jnSG;
@@ -65,6 +75,10 @@ class DisplayFourierWorksheet extends JPanel {
         table = new JTable(wsObj, header) {
             // // overwrite so that you can't edit the data -->
 
+            /**
+             * Overridden to make all cells read-only since the data
+             * represents computed Fourier results.
+             */
             public boolean isCellEditable(int row, int col) {
                 return false;
             }

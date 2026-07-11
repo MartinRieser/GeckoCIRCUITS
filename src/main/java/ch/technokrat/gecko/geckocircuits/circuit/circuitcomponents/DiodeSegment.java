@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
+/**
+ * Represents a single linear segment of a segmented diode loss
+ * characteristic curve, defined by start/end voltage and current.
+ */
 public class DiodeSegment {
     double _startVoltage, _endVoltage;
     final double _startCurrent, _endCurrent;

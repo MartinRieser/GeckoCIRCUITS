@@ -17,6 +17,11 @@ import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerModel;
 
+/**
+ * Dialog for configuring the number of input terminals on a variable-input
+ * control block (e.g. MUX block). Allows the user to set the input count via
+ * a spinner, with a minimum of 2 inputs.
+ */
 final class DialogControlVariableInputs extends DialogElementCONTROL<AbstractControlVariableInputs> {
 
     private static final long serialVersionUID = 1L;

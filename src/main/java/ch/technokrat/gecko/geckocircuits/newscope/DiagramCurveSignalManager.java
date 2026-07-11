@@ -45,6 +45,13 @@ public final class DiagramCurveSignalManager{
    *
    * @param value
    */
+  /**
+   * Adjusts the number of curves in all diagrams to match the given value.
+   * If the value equals the current size, no change is made. Curves are
+   * added or removed from each diagram as needed.
+   *
+   * @param value the target number of curves per diagram
+   */
   public void updateCurveNumber(final int value){
     for(AbstractDiagram diag : _diagrams){
       final List<AbstractCurve> oldCurves = diag.getCurves();
@@ -67,10 +74,18 @@ public final class DiagramCurveSignalManager{
 
   }
 
+  /**
+   * Returns an unmodifiable list of all scope signals (regular + external).
+   * @return unmodifiable list of all scope signals
+   */
   public List<AbstractScopeSignal> getAllScopeSignals(){
     return Collections.unmodifiableList(_allScopeSignals);
   }
 
+  /**
+   * Returns the total number of input signals (regular + external).
+   * @return number of input signals
+   */
   public int getNumberInputSignals(){
     return _allScopeSignals.size();
   }
@@ -85,20 +100,38 @@ public final class DiagramCurveSignalManager{
     return Collections.unmodifiableList(_diagrams);
   }
 
+  /**
+   * Returns the diagram at the given index.
+   * @param index the diagram index
+   * @return the diagram at the specified index
+   */
   AbstractDiagram getDiagram(final int index){
     return _diagrams.get(index);
   }
 
+  /**
+   * Removes the specified diagram and refreshes the scope display.
+   * @param toDelete the diagram to remove
+   */
   public void deleteDiagram(final AbstractDiagram toDelete){
     _diagrams.remove(toDelete);
     _grafer.refreshComponentPane();
   }
 
+  /**
+   * Inserts a diagram at the specified index.
+   * @param newIndex the insertion index
+   * @param toAdd the diagram to add
+   */
   void addDiagram(final int newIndex, final AbstractDiagram toAdd){
     _diagrams.add(newIndex, toAdd);
     _grafer.refreshComponentPane();
   }
 
+  /**
+   * Returns the total number of diagrams.
+   * @return diagram count
+   */
   public int getNumberDiagrams(){
     return _diagrams.size();
   }
@@ -119,6 +152,11 @@ public final class DiagramCurveSignalManager{
     _grafer.refreshComponentPane();
   }
 
+  /**
+   * Replaces one diagram with another while preserving curve assignments.
+   * @param oldDiag the diagram to replace
+   * @param newDiag the replacement diagram
+   */
   void replaceDiagram(final AbstractDiagram oldDiag, final AbstractDiagram newDiag){
     assert _diagrams.contains(oldDiag);
     final int index = _diagrams.indexOf(oldDiag);
@@ -127,6 +165,11 @@ public final class DiagramCurveSignalManager{
     _grafer.refreshComponentPane();
   }
 
+  /**
+   * Swaps the positions of two diagrams in the diagram list.
+   * @param swap1 the first diagram
+   * @param swap2 the second diagram
+   */
   void swapDiagrams(final AbstractDiagram swap1, final AbstractDiagram swap2){
     assert _diagrams.contains(swap1);
     assert _diagrams.contains(swap2);
@@ -201,6 +244,10 @@ public final class DiagramCurveSignalManager{
     this._allScopeSignals.remove(externalSignal);
   }
 
+  /**
+   * Replaces all input signals with the given stack and updates curve counts.
+   * @param scopeInputSignals the new input signals
+   */
   public void setInputSignals(final Stack<AbstractScopeSignal> scopeInputSignals){            
     _inputSignals = scopeInputSignals;
     _allScopeSignals.clear();
@@ -208,6 +255,10 @@ public final class DiagramCurveSignalManager{
     updateCurveNumber(_inputSignals.size());
   }
 
+  /**
+   * Removes a previously defined mean signal and its corresponding curve.
+   * @param deleteSignal the mean signal to remove
+   */
   void undefineMeanSignal(final ScopeSignalMean deleteSignal){
     for(AbstractDiagram diag : getDiagrams()){
       final List<AbstractCurve> newCurveList = new ArrayList<AbstractCurve>();
@@ -219,6 +270,15 @@ public final class DiagramCurveSignalManager{
     _allScopeSignals.remove(deleteSignal);
   }
 
+  /**
+   * Adjusts the number of input signals when the scope terminal count changes.
+   * Creates or removes signals and their associated curves as needed, handling
+   * mean signal cleanup when reducing the terminal count.
+   *
+   * @param control the scope control block
+   * @param newTerminalNumber the desired number of input terminals
+   * @param meanSigs manager for mean signal definitions
+   */
   public void defineNewSignalNumber(final ControlOSZI control, final int newTerminalNumber, final DefinedMeanSignals meanSigs){
     assert _inputSignals != null;
     // increasing terminal number

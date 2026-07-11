@@ -22,6 +22,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
+ * Dialog for displaying control port connection errors. Lists all unconnected
+ * input ports and allows the user to navigate to each port's location on the
+ * circuit sheet for troubleshooting.
  *
  * @author andreas
  */

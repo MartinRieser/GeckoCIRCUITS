@@ -15,7 +15,8 @@
 package ch.technokrat.gecko.geckocircuits.newscope;
 
 /**
- *
+ * Manages display scale values with a zoom step mechanism. The scale index
+ * selects from predefined step values; attenuation adjusts the magnitude.
  * @author Zimmi
  */
 public final class DisplayScale  {
@@ -27,6 +28,7 @@ public final class DisplayScale  {
     private final String _displayValue;
     private static final int BASE = 10;
     private static final int UNITCONDITION = 1000;
+    /** Maximum index for switching between mV and V display units. */
     private static final int MAXSWITCHINDEX = 5;
     
     

@@ -19,6 +19,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Simple informational dialog that displays a read-only message to the user.
+ * Used for control blocks that have no configurable parameters but need to
+ * show status or usage information.
+ */
 class DialogSimpleInfoMessage extends DialogWindowWithoutInput {
     private static final long serialVersionUID = 1L;
     private final String _displayMessage;

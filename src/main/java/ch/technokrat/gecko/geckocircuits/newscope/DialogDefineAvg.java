@@ -26,6 +26,11 @@ import java.util.Stack;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 
+/**
+ * Dialog for defining mean (averaged) signals from existing scope signals.
+ * The user selects which signals to average; the resulting mean signal is
+ * inserted as a new curve after the source signal.
+ */
 public class DialogDefineAvg extends javax.swing.JDialog {
 
     private static final long serialVersionUID = 1L;

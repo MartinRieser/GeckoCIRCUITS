@@ -16,7 +16,8 @@ package ch.technokrat.gecko.geckocircuits.newscope;
 import java.awt.Color;
 
 /**
- *
+ * Fixed color palette for scope curves. Colors cycle in order when exhausted.
+ * The static counter is NOT thread-safe.
  * @author Tibor Keresztfalvi
  */
 public enum GeckoColor {
@@ -40,6 +41,7 @@ public enum GeckoColor {
     DARKGREEN (-3444452, Color.decode("0x006400"));
 
     
+    /** Static counter for cycling through colors (not thread-safe). */
     private static int counter = 0;
     
     static GeckoColor getNextColor() {

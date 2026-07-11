@@ -13,7 +13,7 @@
  */
 
 /*
- * DialogExterna.java
+ * DialogExternal.java
  *
  * Created on 08.01.2011, 14:43:54
  */
@@ -27,6 +27,9 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
 
 /** 
+ * Dialog for configuring the Simulink external interface. Allows the user to
+ * set the Simulink block ID string, manage input/output port assignments,
+ * and configure the execution order of linked Simulink blocks.
  *
  * @author Andy
  */

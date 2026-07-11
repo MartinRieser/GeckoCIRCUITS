@@ -18,21 +18,34 @@ import edu.emory.mathcs.jtransforms.fft.DoubleFFT_1D;
 import edu.emory.mathcs.jtransforms.fft.FloatFFT_1D;
 
 /**
- *
+ * Wrapper around the JTransforms FFT library providing forward and inverse
+ * FFT calculations for float and double arrays.
  * @author andy
  */
 public class FFTLibrary {
 
+    /**
+     * Computes the forward real FFT on a float array (in-place).
+     * @param data the input/output float array
+     */
     static void calculateForwardFFT(float[] data) {
         FloatFFT_1D forwardFFT = new FloatFFT_1D(data.length);
         forwardFFT.realForward(data);
     }
     
+    /**
+     * Computes the forward real FFT on a double array (in-place).
+     * @param data the input/output double array
+     */
     public static void calculateForwardFFT(double[] data) {
         DoubleFFT_1D forwardFFT = new DoubleFFT_1D(data.length);        
         forwardFFT.realForward(data);
     }
 
+    /**
+     * Computes the inverse real FFT on a float array (in-place).
+     * @param data the input/output float array
+     */
     static void calculateInverseFFT(float[] data) {
         FloatFFT_1D inverseFFT = new FloatFFT_1D(data.length);
         inverseFFT.realInverse(data, false);

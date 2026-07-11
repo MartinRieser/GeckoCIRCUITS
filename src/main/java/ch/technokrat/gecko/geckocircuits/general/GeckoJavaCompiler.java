@@ -38,6 +38,11 @@ import javax.tools.*;
 import javax.tools.JavaFileObject.Kind;
 import javax.tools.JavaCompiler.CompilationTask;
 
+/**
+ * In-memory Java compiler that compiles user-provided source code from
+ * Java blocks, loads the resulting classes, and executes them. Configured
+ * with the application classpath and GeckoCIRCUITS jar.
+ */
 public class GeckoJavaCompiler {
 
     // // fields contain source code, that is also saved in the JAVA object .ipes stuff

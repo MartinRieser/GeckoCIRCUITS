@@ -34,6 +34,10 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Dialog for viewing power module details including internal switch and
+ * diode configuration, package pin layout, and thermal characteristics.
+ */
 public class DialogViewPowerModule extends JDialog implements WindowListener, ActionListener {
 
     private static final long serialVersionUID = 1L;

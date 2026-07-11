@@ -24,6 +24,11 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Dialog for assigning scope signals to diagram curves and configuring
+ * per-diagram properties (axis assignment, weight, digital/analog mode).
+ * Presents a matrix of signals vs. diagrams for visual assignment.
+ */
 public final class DialogConnectSignalsGraphs extends GeckoDialog {
 
     private static final long serialVersionUID = 1L;
@@ -458,6 +463,12 @@ public final class DialogConnectSignalsGraphs extends GeckoDialog {
         _gbc.fill = GridBagConstraints.BOTH;  // // for all other elements
     }
 
+    /**
+     * Normalizes diagram weights to sum to 100%. The weight of the
+     * last-modified diagram is preserved while other diagrams are proportionally
+     * adjusted. Digital diagrams are assigned zero weight and excluded from
+     * the normalization.
+     */
     private void recalculateWeights() {
         int totalYSpace = 0;  // // // for normalization to 100% overall
         int spaceWOSelection = 100;

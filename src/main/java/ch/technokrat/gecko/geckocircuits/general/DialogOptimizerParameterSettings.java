@@ -35,6 +35,11 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.BorderFactory;
 
+/**
+ * Dialog for configuring optimizer parameter settings. Allows the user to
+ * define parameter name-value pairs used in optimization sweeps, with
+ * validation for duplicate names, missing parameters, and unused names.
+ */
 public class DialogOptimizerParameterSettings extends GeckoDialog {
     private static final long serialVersionUID = 1L;
     private static final String TXT_HELP =

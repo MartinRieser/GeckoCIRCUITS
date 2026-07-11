@@ -61,6 +61,10 @@ public class GeckoRemote {
     private static RemoteInvocationHandler _invocationHandler;
     static boolean doProxyCheck = true;
 
+    /**
+     * Invocation handler that wraps remote method calls through a proxy,
+     * mapping interface methods to the actual remote object methods.
+     */
     public static class RemoteInvocationHandler implements InvocationHandler {
 
         private final Object object;
@@ -75,6 +79,10 @@ public class GeckoRemote {
             }
         }
 
+        /**
+         * Invokes the mapped method on the wrapped remote object, performing
+         * a remote connection check before each call.
+         */
         @Override
         public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
             if (doProxyCheck) {
@@ -98,9 +106,9 @@ public class GeckoRemote {
     }
 
     /**
-     * start GeckoCIRCUITS, set it up to use that port
+     * Starts a new GeckoCIRCUITS instance on the given port and connects to it.
      *
-     * @param port
+     * @param port the network port for remote communication
      */
     public static void startGui(final int port) {
         if (portFree(port)) {
@@ -164,11 +172,11 @@ public class GeckoRemote {
     }
 
     /**
-     * check whether this port is already used or if it's free and if it's used,
-     * is already a GeckoCIRCUITS instance running or something else
+     * Checks whether the given port is free or already occupied by a
+     * GeckoCIRCUITS instance (in which case it attempts to connect).
      *
-     * @param port
-     * @return
+     * @param port the port number to check
+     * @return true if the port is free, false if already in use
      */
     @SuppressWarnings({"PMD.DoNotThrowExceptionInFinally", "PMD.PreserveStackTrace"})
     private static boolean portFree(final int port) {
@@ -251,6 +259,7 @@ public class GeckoRemote {
 
     }
 
+    /** Disconnects from the current GeckoCIRCUITS remote session. */
     @SuppressWarnings("PMD.NonThreadSafeSingleton")
     public static void disconnectFromGecko() {
         try {
@@ -275,6 +284,7 @@ public class GeckoRemote {
         sessionID = NO_SESSION_ID;
     }
 
+    /** Configures whether extra client connections beyond the first are accepted. */
     public static void acceptExtraConnections(int numberOfExtraConnections) {
         _proxy.acceptExtraConnections(numberOfExtraConnections);
     }
@@ -373,356 +383,439 @@ public class GeckoRemote {
         return _proxy.getParametersNames(componentName);
     }
 
+    /** Returns the names of all control circuit elements. */
     public static String[] getControlElements() {
         return _proxy.getControlElements();
     }
 
+    /** Returns the names of all power circuit elements. */
     public static String[] getCircuitElements() {
         return _proxy.getCircuitElements();
     }
 
+    /** Returns the names of all thermal elements. */
     public static String[] getThermalElements() {
         return _proxy.getThermalElements();
     }
     
+    /** Returns the names of all special elements. */
     public static String[] getSpecialElements() {
         return _proxy.getSpecialElements();
     }
 
+    /** Returns the names of all IGBT elements. */
     public static String[] getIGBTs() {
         return _proxy.getIGBTs();
     }
 
+    /** Returns the names of all diode elements. */
     public static String[] getDiodes() {
         return _proxy.getDiodes();
     }
 
+    /** Returns the names of all thyristor elements. */
     public static String[] getThyristors() {
         return _proxy.getThyristors();
     }
 
+    /** Returns the names of all ideal switch elements. */
     public static String[] getIdealSwitches() {
         return _proxy.getIdealSwitches();
     }
 
+    /** Returns the names of all resistor elements. */
     public static String[] getResistors() {
         return _proxy.getResistors();
     }
 
+    /** Returns the names of all inductor elements. */
     public static String[] getInductors() {
         return _proxy.getInductors();
     }
 
+    /** Returns the names of all capacitor elements. */
     public static String[] getCapacitors() {
         return _proxy.getCapacitors();
     }
 
+    /** Performs a named operation on a component and returns the result. */
     public static Object doOperation(final String elementName, final String operationName, final Object parameterValue) {
         return _proxy.doOperation(elementName, operationName, parameterValue);
     }
     
+    /** Sets the worksheet dimensions for signal data storage. */
     public static void setWorksheetSize(int sizeX, int sizeY) {
         _proxy.setWorksheetSize(sizeX, sizeY);
         return;        
     }
     
+    /** Returns the worksheet dimensions. */
     public static int[] getWorksheetSize() {
         return _proxy.getWorksheetSize();        
     }
 
+    /** Sets a global optimizer parameter value by name. */
     public static void setGlobalParameterValue(final String parameterName, final double value) {
         _proxy.setGlobalParameterValue(parameterName, value);
     }
 
+    /** Gets a global optimizer parameter value by name. */
     public static double getGlobalParameterValue(final String parameterName) {
         return _proxy.getGlobalParameterValue(parameterName);
     }
 
+    /** Sets a single parameter on an element. */
     public static void setParameter(final String elementName, final String parameterName, final double value) {
         _proxy.setParameter(elementName, parameterName, value);
     }            
 
+    /** Sets multiple parameters on an element at once. */
     public static void setParameters(final String elementName, final String[] parameterNames, final double[] values) {
         _proxy.setParameters(elementName, parameterNames, values);
     }
 
+    /** Gets the value of a parameter from an element. */
     public static double getParameter(final String elementName, final String parameterName) {
         return _proxy.getParameter(elementName, parameterName);
     }
 
+    /** Gets the value of a named output from an element. */
     public static double getOutput(final String elementName, final String outputName) {
         return _proxy.getOutput(elementName, outputName);
     }
 
+    /** Gets the first output value of an element. */
     public static double getOutput(final String elementName) {
         return _proxy.getOutput(elementName);
     }
 
+    /** Runs the full simulation from start to end. */
     public static void runSimulation() {
         _proxy.runSimulation();
     }
 
+    /** Initializes the simulation with default timing settings. */
     public static void initSimulation() {
         _proxy.initSimulation();
     }
 
+    /** Initializes the simulation with the given time step and end time. */
     public static void initSimulation(final double deltaT, final double endTime) {
         _proxy.initSimulation(deltaT, endTime);
     }
 
+    /** Continues the simulation from the current time point. */
     public static void continueSimulation() {
         _proxy.continueSimulation();
     }
 
+    /** Advances the simulation by the given amount of time. */
     public static void simulateTime(final double time) {
         _proxy.simulateTime(time);
     }
     
     
 
+    /** Returns the current simulation time. */
     public static double getSimulationTime() {
         return _proxy.getSimulationTime();
     }
 
+    /** Ends the simulation and releases solver resources. */
     public static void endSimulation() {
         _proxy.endSimulation();
     }
 
+    /** Saves the current model to the specified file path. */
     public static void saveFileAs(final String fileName) {
         _proxy.saveFileAs(fileName);
     }
 
+    /** Opens a model file. */
     public static void openFile(final String fileName) throws FileNotFoundException {
         _proxy.openFile(fileName);
     }
 
     @SuppressWarnings("PMD")
     //CHECKSTYLE:OFF
+    /** Returns the current simulation time step. */
     public static double get_dt() {
         return _proxy.get_dt();
     }
 
     @SuppressWarnings("PMD")
     //CHECKSTYLE:OFF
+    /** Returns the preferred simulation time step. */
     public static double get_dt_pre() {
         return _proxy.get_dt_pre();
     }
 
     @SuppressWarnings("PMD")
     //CHECKSTYLE:OFF
+    /** Returns the simulation end time. */
     public static double get_Tend() {
         return _proxy.get_Tend();
     }
 
     @SuppressWarnings("PMD")
     //CHECKSTYLE:OFF
+    /** Sets the simulation time step. */
     public static void set_dt(final double value) {
         _proxy.set_dt(value);
     }
 
     @SuppressWarnings("PMD")
     //CHECKSTYLE:OFF
+    /** Sets the simulation end time. */
     public static void set_Tend(final double value) {
         _proxy.set_Tend(value);
     }
 
     @SuppressWarnings("PMD")
     //CHECKSTYLE:OFF    
+    /** Returns the preferred simulation end time. */
     public static double get_Tend_pre() {
         return _proxy.get_Tend_pre();
     }
 
     @SuppressWarnings("PMD")
     //CHECKSTYLE:OFF
+    /** Sets the preferred simulation time step. */
     public static void set_dt_pre(final double value) {
         _proxy.set_dt_pre(value);
     }
 
     @SuppressWarnings("PMD")
     //CHECKSTYLE:OFF
+    /** Sets the preferred simulation end time. */
     public static void set_Tend_pre(final double value) {
         _proxy.set_Tend_pre(value);
     }
 
+    /**
+     * @deprecated Use getSignalCharacteristics instead.
+     */
     @Deprecated
     public static double[] getSignalCharacteristics(final String scopeName, final int scopePort,
             final double startTime, final double endTime) {
         return _proxy.getSignalCharacteristics(scopeName, scopePort, startTime, endTime);
     }
 
+    /**
+     * @deprecated Use getSignalAvg instead.
+     */
     @Deprecated
     public static double getAvg(final String scopeName, final int scopePort, final double startTime, final double endTime) {
         return _proxy.getAvg(scopeName, scopePort, startTime, endTime);
     }
 
+    /** Returns the RMS value of a scope signal. */
     public static double getRMS(final String scopeName, final int scopePort, final double startTime, final double endTime) {
         return _proxy.getRMS(scopeName, scopePort, startTime, endTime);
     }
 
+    /** Returns the THD of a scope signal. */
     public static double getTHD(final String scopeName, final int scopePort, final double startTime, final double endTime) {
         return _proxy.getTHD(scopeName, scopePort, startTime, endTime);
     }
 
+    /** Returns the minimum value of a scope signal. */
     public static double getMin(final String scopeName, final int scopePort, final double startTime, final double endTime) {
         return _proxy.getMin(scopeName, scopePort, startTime, endTime);
     }
 
+    /** Returns the maximum value of a scope signal. */
     public static double getMax(final String scopeName, final int scopePort, final double startTime, final double endTime) {
         return _proxy.getMax(scopeName, scopePort, startTime, endTime);
     }
 
+    /** Returns the ripple of a scope signal. */
     public static double getRipple(final String scopeName, final int scopePort, final double startTime, final double endTime) {
         return _proxy.getRipple(scopeName, scopePort, startTime, endTime);
     }
 
+    /** Returns the klirr factor of a scope signal. */
     public static double getKlirr(final String scopeName, final int scopePort, final double startTime, final double endTime) {
         return _proxy.getKlirr(scopeName, scopePort, startTime, endTime);
     }
 
+    /** Returns the shape factor of a scope signal. */
     public static double getShape(final String scopeName, final int scopePort, final double startTime, final double endTime) {
         return _proxy.getShape(scopeName, scopePort, startTime, endTime);
     }
 
+    /** Convenience overload for scope port 0 signal characteristics. */
     public static double[] getSignalCharacteristics(final String scopeName, final double startTime, final double endTime) {
         return getSignalCharacteristics(scopeName, 0, startTime, endTime);
     }
     
+    /** Convenience overload for average on scope port 0. */
     public static double getAvg(final String scopeName, final double startTime, final double endTime) {
         return getAvg(scopeName, 0, startTime, endTime);
     }
 
+    /** Convenience overload for RMS on scope port 0. */
     public static double getRMS(final String scopeName, final double startTime, final double endTime) {
         return getRMS(scopeName, 0, startTime, endTime);
     }
 
+    /** Convenience overload for min on scope port 0. */
     public static double getMin(final String scopeName, final double startTime, final double endTime) {
         return getMin(scopeName, 0, startTime, endTime);
     }
 
+    /** Convenience overload for max on scope port 0. */
     public static double getMax(final String scopeName, final double startTime, final double endTime) {
         return getMax(scopeName, 0, startTime, endTime);
     }
 
+    /** Convenience overload for THD on scope port 0. */
     public static double getTHD(final String scopeName, final double startTime, final double endTime) {
         return getTHD(scopeName, 0, startTime, endTime);
     }
 
+    /** Convenience overload for shape on scope port 0. */
     public static double getShape(final String scopeName, final double startTime, final double endTime) {
         return getShape(scopeName, 0, startTime, endTime);
     }
 
+    /** Convenience overload for klirr on scope port 0. */
     public static double getKlirr(final String scopeName, final double startTime, final double endTime) {
         return getKlirr(scopeName, 0, startTime, endTime);
     }
 
+    /** Convenience overload for ripple on scope port 0. */
     public static double getRipple(final String scopeName, final double startTime, final double endTime) {
         return getRipple(scopeName, 0, startTime, endTime);
     }
 
+    /**
+     * @deprecated Use getSignalFourier instead.
+     */
     @Deprecated
     public static double[][] getFourier(final String scopeName, final int scopePort, final double startTime,
             final double endTime, final int harmonics) {
         return _proxy.getFourier(scopeName, scopePort, startTime, endTime, harmonics);
     }
     
+    /** @deprecated Use getSignalFourier instead. */
     @Deprecated
     public static double[][] getFourier(final String scopeName, final double startTime, final double endTime,
             final int harmonics) {
         return getFourier(scopeName, 0, startTime, endTime, harmonics);
     }
 
+    /**
+     * @deprecated Use initSteadyStateDetection with a single frequency instead.
+     */
     @Deprecated
     public static void initSteadyStateDetection(final String[] stateVariables, final double[] frequencies,
             final double deltaT, final double simulationTime) {
         _proxy.initSteadyStateDetection(stateVariables, frequencies, deltaT, simulationTime);
     }
     
+    /** Initializes steady-state detection parameters. */
     public static void initSteadyStateDetection(String[] stateVariables, double frequency, double deltaT,
             double simulationTime) {
         _proxy.initSteadyStateDetection(stateVariables, frequency, deltaT, simulationTime);
     }
     
+    /** @deprecated Use simulateToSteadyState instead. */
     @Deprecated
     public static double[] simulateUntilSteadyState(final boolean suppressMessages) {
         return _proxy.simulateUntilSteadyState(suppressMessages);
     }    
-    
+    /** Runs simulation until steady state is detected. */
     public static double[] simulateToSteadyState(final boolean suppressMessages) {
         return _proxy.simulateToSteadyState(suppressMessages);
     }
     
+    /** Runs simulation until steady state with custom convergence criteria. */
     public static double[] simulateToSteadyState(final boolean suppressMessages, final double targetCorrelation, final double targetMeanPctDiff) {
         return _proxy.simulateToSteadyState(suppressMessages, targetCorrelation, targetMeanPctDiff);
     }
 
+    /** Returns the position of a component in the schematic. */
     public static int[] getPosition(final String elementName) {
         return _proxy.getPosition(elementName);
     }
 
+    /** Deletes a component from the schematic. */
     public static void deleteComponent(final String elementName) {
         _proxy.deleteComponent(elementName);
     }
     
-    
+    /** Deletes all components from the given subcircuit. */
     public static void deleteAllComponents(final String subcircuitName) {
         _proxy.deleteAllComponents(subcircuitName);
     }
 
+    /** @deprecated Use the new loss file API. */
     @Deprecated
     public static void setLossFile(final String elementName, final String lossFileName) throws FileNotFoundException {
         _proxy.setLossFile(elementName, lossFileName);
     }
 
+    /** @deprecated Use createComponent instead. */
     @Deprecated
     public static void setNonLinear(final String elementName, final String characteristicFileName) throws FileNotFoundException {
         _proxy.setNonLinear(elementName, characteristicFileName);
     }
     
+    /** @deprecated Use createComponent instead. */
     @Deprecated
     public static void create(final String elementType, final String elementName, final int xCoord, final int yCoord) {
         _proxy.create(elementType, elementName, xCoord, yCoord);
     }
 
+    /** @deprecated Use deleteComponent instead. */
     @Deprecated
     public static void delete(final String elementName) {
         _proxy.delete(elementName);
     }
     
+    /** Creates a connector (wire) between two points in the schematic. */
     public static void createConnector(String elementName, int xStart, int yStart, int xEnd, int yEnd, boolean startHorizontal) {
         _proxy.createConnector(elementName, xStart, yStart, xEnd, yEnd, startHorizontal);
     }
 
+    /** Creates a new component in the schematic. */
     public static void createComponent(final String elementType, final String elementName, final int xCoord, final int yCoord) {
         _proxy.createComponent(elementType, elementName, xCoord, yCoord);
     }
 
+    /** Sets the name of an output node on a component. */
     public static void setOutputNodeName(final String elementName, final int nodeIndex, final String nodeName) {
         _proxy.setOutputNodeName(elementName, nodeIndex, nodeName);
     }
 
+    /** Sets the name of an input node on a component. */
     public static void setInputNodeName(final String elementName, final int nodeIndex, final String nodeName) {
         _proxy.setInputNodeName(elementName, nodeIndex, nodeName);
     }
     
-    
+    /** Returns the name of an output node. */
     public static String getOutputNodeName(final String elementName, final int nodeIndex) {        
         return _proxy.getOutputNodeName(elementName, nodeIndex);
     }
     
+    /** Sets the position of a component in the schematic. */
     public static void setPosition(final String elementName, int posX, int posY) {
         _proxy.setPosition(elementName, posX, posY);
         return;
     }
 
+    /** Returns the name of an input node. */
     public static String getInputNodeName(final String elementName, final int nodeIndex) {        
         return _proxy.getInputNodeName(elementName, nodeIndex);
     }
     
-
+    /** Returns the time array for a signal within the specified range. */
     public static double[] getTimeArray(final String signalName, final double tStart, final double tEnd, final int skipPoints) {
         return _proxy.getTimeArray(signalName, tStart, tEnd, skipPoints);
     }
 
+    /** Returns the signal data as a float array. */
     public static float[] getSignalData(final String signalName, final double tStart, final double tEnd, final int skipPoints) {
         return _proxy.getSignalData(signalName, tStart, tEnd, skipPoints);
     }
@@ -740,80 +833,96 @@ public class GeckoRemote {
         _proxy.setComponentName(oldName, newName);
     }
 
+    /** Rotates a component 90 degrees clockwise. */
     public static void rotate(final String elementName) {
         assert elementName != null;
         _proxy.rotate(elementName);
     }
 
+    /** Sets the orientation of a component to the specified direction. */
     public static void setOrientation(final String elementName, final String direction) {
         _proxy.setOrientation(elementName, direction);
     }
 
+    /** Imports a subcircuit from an external file. */
     public static void importFromFile(final String fileName, final String subCircuitName) throws FileNotFoundException {
         _proxy.importFromFile(fileName, subCircuitName);
     }
 
+    /** Returns the stored global float matrix. */
     public static float[][] getGlobalFloatMatrix() {
         return _proxy.getGlobalFloatMatrix();
     }
 
+    /** Returns the stored global double matrix. */
     public static double[][] getGlobalDoubleMatrix() {
         return _proxy.getGlobalDoubleMatrix();
     }
 
+    /** Stores a global float matrix for external access. */
     public static void setGlobalFloatMatrix(final float[][] matrix) {
         _proxy.setGlobalFloatMatrix(matrix);
     }
 
+    /** Stores a global double matrix for external access. */
     public static void setGlobalDoubleMatrix(final double[][] matrix) {
         _proxy.setGlobalDoubleMatrix(matrix);
     }
 
+    /** Returns the average value of a named signal. */
     public static double getSignalAvg(final String signalName, final double startTime, final double endTime) {
         return _proxy.getSignalAvg(signalName, startTime, endTime);
     }
 
+    /** Returns the RMS value of a named signal. */
     public static double getSignalRMS(final String signalName, final double startTime, final double endTime) {
         return _proxy.getSignalRMS(signalName, startTime, endTime);
     }
 
+    /** Returns the THD of a named signal. */
     public static double getSignalTHD(final String signalName, final double startTime, final double endTime) {
         return _proxy.getSignalTHD(signalName, startTime, endTime);
     }
 
+    /** Returns the minimum value of a named signal. */
     public static double getSignalMin(final String signalName, final double startTime, final double endTime) {
         return _proxy.getSignalMin(signalName, startTime, endTime);
     }
 
+    /** Returns the maximum value of a named signal. */
     public static double getSignalMax(final String signalName, final double startTime, final double endTime) {
         return _proxy.getSignalMax(signalName, startTime, endTime);
     }
 
+    /** Returns the ripple of a named signal. */
     public static double getSignalRipple(final String signalName, final double startTime, final double endTime) {
         return _proxy.getSignalRipple(signalName, startTime, endTime);
     }
 
+    /** Returns the klirr factor of a named signal. */
     public static double getSignalKlirr(final String signalName, final double startTime, final double endTime) {
         return _proxy.getSignalKlirr(signalName, startTime, endTime);
     }
 
+    /** Returns the shape factor of a named signal. */
     public static double getSignalShape(final String signalName, final double startTime, final double endTime) {
         return _proxy.getSignalShape(signalName, startTime, endTime);
     }
 
+    /** Returns Fourier analysis results for a named signal. */
     public static double[][] getSignalFourier(final String signalName, final double startTime,
             final double endTime, final int harmonics) {
         return _proxy.getSignalFourier(signalName, startTime, endTime, harmonics);
     }
 
+    /** Performs a forward FFT on a float array. */
     public static float[] floatFFT(final float[] timeDomainData) {
         return _proxy.floatFFT(timeDomainData);
     }
 
     /**
-     *
-     * @param timeDomainData
-     * @return
+     * @param timeDomainData the time-domain data array (length must be power of 2)
+     * @return the transformed frequency-domain data
      * @deprecated use floatFFT instead!
      */
     @Deprecated

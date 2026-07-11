@@ -14,6 +14,10 @@
 package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
 
+/**
+ * Iterative diode model that switches between on-resistance and off-resistance
+ * based on the operating point during simulation.
+ */
 public final class DiodeCalculator extends CircuitComponent<Diode> implements AStampable, BStampable, CurrentCalculatable {
 
     private double _uForward = DEFAULT_U_FORWARD;
@@ -23,8 +27,11 @@ public final class DiodeCalculator extends CircuitComponent<Diode> implements AS
      * varying component resistance (small when conducting, large when blocking
      */
     private double _rDt = _rOff;
+    /** Flag indicating a switch between on/off resistance occurred. */
     static boolean diodeSwitchError = false;
+    /** Flag indicating the simulation is in switch error handling mode. */
     static boolean inSwitchErrorMode = false;
+    /** Flag indicating a diode error has occurred during simulation. */
     static boolean diodeErrorOccurred = false;
     private BVector _bVector;
 
@@ -48,7 +55,7 @@ public final class DiodeCalculator extends CircuitComponent<Diode> implements AS
     @Override
     public void stampMatrixA(final double[][] matrix, final double deltaT) {
         final double aValue = 1.0 / _rDt;  //  +1/r
-        assert aValue == aValue;
+        assert aValue == aValue; // NaN check: NaN != NaN, so this assertion catches division by zero
         matrix[matrixIndices[0]][matrixIndices[0]] += (+aValue);
         matrix[matrixIndices[1]][matrixIndices[1]] += (+aValue);
         matrix[matrixIndices[0]][matrixIndices[1]] += (-aValue);

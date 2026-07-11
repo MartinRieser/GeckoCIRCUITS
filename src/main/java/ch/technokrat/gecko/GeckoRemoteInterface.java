@@ -25,7 +25,12 @@ import java.rmi.RemoteException;
  */
 public interface GeckoRemoteInterface extends Remote {
 
-    //these are functions for remote access session set up
+    /**
+     * Checks whether the GeckoCIRCUITS instance is free to accept a new remote connection.
+     * In a multi-client model, this returns true if the instance can accept additional clients.
+     * @return true if the instance can accept a new connection
+     * @throws RemoteException as any remote method
+     */
     boolean isFree() throws RemoteException;
     
     /**
@@ -37,16 +42,49 @@ public interface GeckoRemoteInterface extends Remote {
     @Deprecated
     long getSessionID() throws RemoteException;
 
+    /**
+     * Checks whether a given session ID is still valid for the current connection.
+     * In a multi-client model, each client has its own session ID.
+     * @param sessionID the session ID to validate
+     * @return true if the session ID is valid
+     * @throws RemoteException as any remote method
+     */
     boolean checkSessionID(long sessionID) throws RemoteException;
     
+    /**
+     * Connects a new client to this GeckoCIRCUITS instance and returns a new session ID.
+     * Multiple clients can connect simultaneously if extra connections are accepted.
+     * @return the new session ID for this client
+     * @throws RemoteException as any remote method
+     */
     long connect() throws RemoteException;
 
+    /**
+     * Disconnects a client session from this GeckoCIRCUITS instance.
+     * @param sessionID the session ID of the client to disconnect
+     * @throws RemoteException as any remote method
+     */
     void disconnect(long sessionID) throws RemoteException;
 
+    /**
+     * Allows additional clients to connect simultaneously to this GeckoCIRCUITS instance.
+     * @param numberOfExtraConnections the number of additional connections to allow
+     * @throws RemoteException as any remote method
+     */
     void acceptExtraConnections(int numberOfExtraConnections) throws RemoteException;
     
+    /**
+     * Checks whether this instance accepts extra client connections.
+     * @return true if extra connections are accepted
+     * @throws RemoteException as any remote method
+     */
     boolean acceptsExtraConnections() throws RemoteException;
     
+    /**
+     * Registers the last client that called a method, used for session tracking.
+     * @param sessionID the session ID of the client to register
+     * @throws RemoteException as any remote method
+     */
     void registerLastClientToCallMethod(long sessionID) throws RemoteException;
     
     @Category(MethodCategory.COMPONENT_CREATION_LISTING)
@@ -302,6 +340,7 @@ public interface GeckoRemoteInterface extends Remote {
     double getSignalRipple(String signalName, double startTime, double endTime) throws RemoteException;
 
     @Category(MethodCategory.SIGNAL_PROCESSING)
+    @Declaration("double[][] getSignalFourier(String signalName, double startTime, double endTime, int harmonics)")
     double[][] getSignalFourier(String signalName, double startTime, double endTime, int harmonics) throws RemoteException;        
 
     @Category(MethodCategory.COMPONENT_PROPERTIES)

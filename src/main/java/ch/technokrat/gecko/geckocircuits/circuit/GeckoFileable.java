@@ -17,14 +17,18 @@ import ch.technokrat.gecko.geckocircuits.general.GeckoFile;
 import java.util.List;
 
 /**
- *
+ * Interface for circuit components that support external file attachments
+ * (e.g., Java block source files, loss model files).
  * @author andy
  */
 public interface GeckoFileable {
+    /** Initializes the list of extra files for this component. */
     void initExtraFiles();
+    /** Adds new files to this component's file list. */
     void addFiles(final List<GeckoFile> newFilesToAdd);
-    //override these in java block and any other block which uses external files
+    /** Returns the list of files attached to this component. */
     List<GeckoFile> getFiles();        
+    /** Removes the specified files from this component. */
     void removeLocalComponentFiles(final List<GeckoFile> filesToRemove);
 
 }

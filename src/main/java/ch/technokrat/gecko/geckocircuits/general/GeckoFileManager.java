@@ -17,8 +17,9 @@ import java.io.FileNotFoundException;
 import java.util.*;
 
 /**
- *
- * @author anstupar This class keeps track of all the GeckoFile objects added to a model
+ * Manages the set of GeckoFile objects attached to a model, providing lookup
+ * by hash or extension, and relative path recomputation on save.
+ * @author anstupar
  */
 public final class GeckoFileManager {
 

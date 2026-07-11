@@ -15,6 +15,9 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
 import ch.technokrat.gecko.geckocircuits.general.UserParameter;
 
+/**
+ * Interface for components that have a configurable forward voltage drop.
+ */
 public interface ForwardVoltageDropable {
         UserParameter<Double> getForwardVoltageDropParameter();
 }

@@ -21,6 +21,11 @@ import java.awt.Graphics2D;
 import javax.swing.JTextField;
 import java.text.NumberFormat;
 
+/**
+ * A formatted text field that supports tech-format number display and parsing.
+ * Numbers can be formatted with auto, scientific, or fixed-point patterns.
+ * Invalid input is highlighted in red.
+ */
 public class FormatJTextField extends JTextField {
 
     private static final long serialVersionUID = 1L;

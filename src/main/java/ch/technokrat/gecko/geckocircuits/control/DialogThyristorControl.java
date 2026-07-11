@@ -14,6 +14,10 @@
 package ch.technokrat.gecko.geckocircuits.control;
 
 /**
+ * Dialog for configuring thyristor gate control parameters: initial
+ * frequency, phase shift, and gate-on time. The gate-on-time spinner
+ * displays values in milliseconds, but the underlying parameter is stored
+ * in seconds (conversion factor of 1000 applied in the constructor).
  *
  * @author andy
  */

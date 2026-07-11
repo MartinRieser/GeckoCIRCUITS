@@ -43,6 +43,9 @@ import java.util.List;
 import javax.swing.DefaultListModel;
 
 /**
+ * Dialog for reordering control blocks within a control block ordering list.
+ * Supports drag-and-drop reordering of blocks to define the execution order
+ * in the simulation sequence.
  *
  * @author florian
  */

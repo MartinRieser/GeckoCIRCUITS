@@ -24,10 +24,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author anstupar This class is for handling all extra files that are used
- * inside Gecko e.g. extra files for java block, loss model files, (in the
- * future) nonlinear characteristic files
+ * Manages a file reference associated with a GeckoCIRCUITS model. Files can
+ * be stored internally (embedded in the .ipes file) or externally (referenced
+ * by path on disk).
+ * @author anstupar
  */
 public final class GeckoFile {
 

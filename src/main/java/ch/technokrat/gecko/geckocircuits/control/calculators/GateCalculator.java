@@ -15,6 +15,10 @@ package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 import ch.technokrat.gecko.geckocircuits.control.NotCalculateableMarker;
 
+/**
+ * Represents the Gate terminal of a power semiconductor in the control circuit
+ * context. This calculator does not perform any numerical calculation.
+ */
 public final class GateCalculator extends AbstractControlCalculatable implements NotCalculateableMarker {
 
     public GateCalculator() {

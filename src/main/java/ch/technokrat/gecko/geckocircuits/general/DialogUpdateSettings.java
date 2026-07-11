@@ -15,6 +15,11 @@ package ch.technokrat.gecko.geckocircuits.general;
 
 import ch.technokrat.gecko.GeckoSim;
 
+/**
+ * Dialog for configuring software update check frequency and update level
+ * (minor/major). Reads current settings from application properties and
+ * allows the user to select NEVER, DAILY, or WEEKLY update intervals.
+ */
 public class DialogUpdateSettings extends javax.swing.JFrame {
 
     private static final long serialVersionUID = 1L;

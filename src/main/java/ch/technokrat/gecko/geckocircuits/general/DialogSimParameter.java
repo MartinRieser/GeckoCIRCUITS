@@ -37,6 +37,12 @@ import javax.swing.JDialog;
 import java.net.URL;
 import javax.swing.JTabbedPane;
 
+/**
+ * Dialog for configuring simulation parameters: time step, simulation
+ * duration, pause time, and solver type selection (Backward Euler,
+ * Trapezoidal, Gear-Shichman). Validates that the time step does not
+ * exceed the simulation duration.
+ */
 public class DialogSimParameter extends JDialog implements ActionListener {
 
     private static final long serialVersionUID = 1L;

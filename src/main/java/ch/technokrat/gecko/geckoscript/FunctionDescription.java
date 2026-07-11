@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckoscript;
 
+/**
+ * Describes a script function for autocomplete display, containing a
+ * declaration string and an HTML-formatted details string.
+ */
 public final class FunctionDescription {
 
     final String _declarationString;

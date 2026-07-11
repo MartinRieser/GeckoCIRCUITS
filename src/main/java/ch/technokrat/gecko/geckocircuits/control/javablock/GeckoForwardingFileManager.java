@@ -21,7 +21,8 @@ import javax.tools.*;
 //CHECKSTYLE:ON
 
 /**
- *
+ * A ForwardingJavaFileManager that redirects compiled class output to
+ * in-memory byte arrays (RAMJavaFileObject) instead of disk files.
  * @author andreas
  */
 public final class GeckoForwardingFileManager extends ForwardingJavaFileManager<JavaFileManager> {

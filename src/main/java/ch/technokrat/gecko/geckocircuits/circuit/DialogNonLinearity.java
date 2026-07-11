@@ -23,10 +23,23 @@ import java.net.URI;
 import java.awt.Dimension;
 import javax.swing.*;
 
+/**
+ * Dialog for editing the non-linear characteristic curve of a circuit
+ * component (e.g. diode, varistor). Provides a graphical editor for
+ * defining voltage-current or flux-current relationships with support
+ * for linear and logarithmic axis scaling.
+ */
 public class DialogNonLinearity extends GeckoDialog {
     private static final long serialVersionUID = 1L;
     private final NonLinearDialogPanel _content;
     private static final Dimension _windowSize = new Dimension(800, 600);
+    /**
+     * Creates a new non-linearity editing dialog.
+     *
+     * @param elementLK the non-linear circuit component to edit
+     * @param yAxisLog  if true, the y-axis uses logarithmic scaling;
+     *                  if false, linear scaling is used
+     */
     @SuppressWarnings("this-escape")
     public DialogNonLinearity(final AbstractNonLinearCircuitComponent elementLK, final boolean yAxisLog) {
         super(GeckoSim._win, true);
@@ -35,6 +48,7 @@ public class DialogNonLinearity extends GeckoDialog {
         try {
             this.setIconImage((new ImageIcon(URI.create(GlobalFilePathes.PFAD_PICS_URL + "gecko.gif").toURL())).getImage());
         } catch (Exception e) {
+            // silently ignored: icon loading failure should not block dialog creation
         }
         
         setPreferredSize(_windowSize);                

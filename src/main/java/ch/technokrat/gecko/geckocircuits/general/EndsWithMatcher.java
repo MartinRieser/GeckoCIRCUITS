@@ -14,6 +14,10 @@
 
 package ch.technokrat.gecko.geckocircuits.general;
 
+/**
+ * A matcher that checks whether a data word ends with the given search word.
+ * Used for suffix-based suggestion filtering.
+ */
 public class EndsWithMatcher
   implements SuggestMatcher
 {

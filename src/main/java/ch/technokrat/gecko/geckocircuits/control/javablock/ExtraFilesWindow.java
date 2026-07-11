@@ -29,7 +29,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
- *
+ * Dialog window for managing extra source files associated with a Java block.
+ * Allows adding, removing, and viewing additional .java files required for compilation.
  * @author anstupar
  */
 public final class ExtraFilesWindow extends javax.swing.JDialog {

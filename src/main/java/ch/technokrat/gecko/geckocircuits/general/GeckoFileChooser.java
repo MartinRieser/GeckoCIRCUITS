@@ -18,6 +18,10 @@ import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
+/**
+ * Custom file chooser with file extension filtering and last-used
+ * directory tracking. Uses factory methods for creation.
+ */
 public class GeckoFileChooser {
     
     
@@ -83,6 +87,14 @@ public class GeckoFileChooser {
         return new File(fileName);
     }
     
+    /**
+     * Creates an open file chooser with extension filtering.
+     * @param ending the file extension (e.g. ".ipes")
+     * @param fileDescription the description for the file filter
+     * @param windowParent the parent component for the dialog
+     * @param currentDirectory the initial directory
+     * @return the configured GeckoFileChooser
+     */
     public static GeckoFileChooser createOpenFileChooser(final String ending,
             final String fileDescription, final Component windowParent, final File currentDirectory) {
         final File checkedCurrentDirectory = calculateCheckedCurrentDirectory(currentDirectory);                
@@ -92,15 +104,25 @@ public class GeckoFileChooser {
         return returnValue;
     }
     
+    /** Simplified open file chooser using the extension as description. */
     public static GeckoFileChooser createSimpleOpenFileChooser(final String ending,
             final Component windowParent) {
         return createOpenFileChooser(ending, ending, windowParent, null);        
     }
 
+    /** Simplified save file chooser using the extension as description. */
     public static GeckoFileChooser createSimpleSaveFileChooser(final String ending, final Component windowParent) {
         return createSaveFileChooser(ending, ending, windowParent, null);
     }
 
+    /**
+     * Creates a save file chooser with extension filtering.
+     * @param ending the file extension (e.g. ".ipes")
+     * @param fileDescription the description for the file filter
+     * @param windowParent the parent component for the dialog
+     * @param currentDirectory the initial directory
+     * @return the configured GeckoFileChooser
+     */
     public static GeckoFileChooser createSaveFileChooser(final String ending,
             final String fileDescription, final Component windowParent, final File currentDirectory) {        
 

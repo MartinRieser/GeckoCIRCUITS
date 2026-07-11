@@ -29,6 +29,12 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+/**
+ * Dialog for editing transfer functions (Laplace-domain H(s)). Supports
+ * two modes: polynomial coefficients and pole/zero representation. Imaginary
+ * values use {@code Math.abs()} to enforce conjugate complex pairs when
+ * entering poles and zeros, ensuring numerical stability.
+ */
 @SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyMethods", "PMD.CyclomaticComplexity"})
 public final class DialogTransferFunction extends javax.swing.JFrame {
 
@@ -36,6 +42,7 @@ public final class DialogTransferFunction extends javax.swing.JFrame {
     private final DefaultListModel<ComplexPrinter> _nomModel = new DefaultListModel<ComplexPrinter>();
     private final DefaultListModel<ComplexPrinter> _deNomModel = new DefaultListModel<ComplexPrinter>();
     private final transient ControlTransferFunction _controlTF;
+    /** If true, the dialog is in polynomial coefficient mode; if false, in pole/zero mode. */
     private boolean _inPolynomialMode = false;
     private final transient ControlBlock _elementControl;
     private final boolean _initDone;

@@ -27,6 +27,12 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Abstract base dialog for all control component parameter configuration.
+ * Builds a standard layout with a name panel, a parameter panel with titled
+ * border, and OK/Cancel buttons. Subclasses implement
+ * {@code buildIndividualGUI()} to add component-specific controls.
+ */
 public abstract class DialogElementCONTROL<T extends ControlBlock> extends DialogCircuitComponent<T> {
     private static final long serialVersionUID = 1L;
     JPanel jpM = new JPanel();                    

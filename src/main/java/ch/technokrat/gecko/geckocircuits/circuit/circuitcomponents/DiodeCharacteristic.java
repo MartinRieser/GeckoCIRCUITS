@@ -19,7 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * Represents the characteristic curve of a diode as a series of linear
+ * segments for loss calculation.
  * @author andy
  */
 public class DiodeCharacteristic {

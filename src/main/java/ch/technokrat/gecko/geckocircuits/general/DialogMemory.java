@@ -18,6 +18,10 @@ import ch.technokrat.gecko.geckocircuits.datacontainer.DataJunkCompressable;
 import javax.swing.JOptionPane;
 
 /**
+ * Dialog for configuring JVM memory settings and data compression options.
+ * Displays current memory usage, allows setting the startup heap size
+ * (default read from application properties), and configures lossy data
+ * compression levels for simulation data storage.
  *
  * @author andy
  */

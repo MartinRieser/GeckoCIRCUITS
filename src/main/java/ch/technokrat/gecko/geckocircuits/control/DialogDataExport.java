@@ -33,6 +33,14 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
 /**
+ * Dialog for exporting simulation data to external file formats. Supports
+ * column/row selection, delimiter configuration, and various export options
+ * (transpose, header, skip data points).
+ * <p>
+ * The {@code _inFillLists} flag prevents re-entrant list-filling operations
+ * during signal deletion race conditions. The {@code Thread.sleep(100)} in
+ * {@code fillLists()} is a workaround for a race condition where a signal
+ * is deleted while lists are being populated.
  *
  * @author andreas
  */

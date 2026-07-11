@@ -37,6 +37,25 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+/**
+ * Abstract base dialog for editing circuit component parameters. Provides a
+ * standard layout with name field, enable/shorted checkboxes, and OK/Cancel
+ * buttons. Subclasses add component-specific parameter fields via
+ * {@code buildGUI()} and process inputs via {@code processInputIndividual()}.
+ *
+ * <p>UI component fields:
+ * <ul>
+ *   <li>{@code registeredParameters} - list of user-adjustable parameters registered for validation</li>
+ *   <li>{@code tf} - list of text fields for parameter values</li>
+ *   <li>{@code tfNam} - text field for the component name</li>
+ *   <li>{@code jPanelName} - panel containing the name label and text field</li>
+ *   <li>{@code checkBoxCompEnabled} - checkbox to enable/disable the component</li>
+ *   <li>{@code checkBoxCompShorted} - checkbox to short-circuit the component</li>
+ *   <li>{@code jButtonOk} / {@code jButtonCancel} - confirmation buttons</li>
+ *   <li>{@code jPanelButtonOkCancel} - panel containing OK/Cancel buttons</li>
+ *   <li>{@code con} - content pane reference</li>
+ * </ul>
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 abstract public class DialogCircuitComponent<T extends AbstractBlockInterface> extends GeckoDialog
         implements WindowCloseable, WindowListener {
@@ -141,6 +160,11 @@ abstract public class DialogCircuitComponent<T extends AbstractBlockInterface> e
         jPanelButtonOkCancel.add(jButtonOk);
         jPanelButtonOkCancel.add(jButtonCancel);
     }
+    /**
+     * Action listener for the OK button. Validates the component name, applies
+     * enabled/shorted state, processes registered parameters and individual
+     * inputs, then closes the dialog.
+     */
     public transient final ActionListener okActionListener = new ActionListener() {
 
         @Override
@@ -173,6 +197,11 @@ abstract public class DialogCircuitComponent<T extends AbstractBlockInterface> e
     };
     
 
+    /**
+     * Hook method for subclasses to process component-specific input values.
+     * Override to read custom UI fields and update the component&#39;s
+     * parameters. Called during OK button action.
+     */
     public void processInputIndividual() {
     }
 
@@ -212,8 +241,18 @@ abstract public class DialogCircuitComponent<T extends AbstractBlockInterface> e
         _se._visibleCircuitSheet.requestFocus();
     }
 
+    /**
+     * Builds the complete dialog GUI including name panel, parameter fields,
+     * and OK/Cancel buttons. Called during dialog initialization.
+     */
     public abstract void buildGUI();
 
+    /**
+     * Validates and sets the new element name from the name text field.
+     * Shows a warning dialog if the name is empty or already in use.
+     *
+     * @throws NameAlreadyExistsException if the name is already taken
+     */
     public final void setNewElementName() throws NameAlreadyExistsException {
         _originalName = element.getStringID();
         if (tfNam.getText().isEmpty() && !(element instanceof SubCircuitTerminable)) {
@@ -292,6 +331,14 @@ abstract public class DialogCircuitComponent<T extends AbstractBlockInterface> e
         return returnValue;
     }
 
+    /**
+     * Creates or retrieves a registered text field for the given parameter.
+     * The text field is pre-populated with the parameter's current value and
+     * added to both the parameter and text field tracking lists.
+     *
+     * @param par the user parameter to bind the text field to
+     * @return the configured FormatJTextField instance
+     */
     public FormatJTextField getRegisteredTextField(final UserParameter<? extends Number> par) {
         FormatJTextField returnValue = new FormatJTextField();
         registeredParameters.add(par);
@@ -322,6 +369,13 @@ abstract public class DialogCircuitComponent<T extends AbstractBlockInterface> e
     }
 
     @SafeVarargs
+    /**
+     * Creates a parameter panel with labeled text fields for each given
+     * parameter, arranged in a two-column grid layout.
+     *
+     * @param parameters the parameters to display in the panel
+     * @return the configured JPanel
+     */
     public final JPanel createParameterPanel(final UserParameter<? extends Number>... parameters) {
         JPanel pPD = new JPanel();
         pPD.setLayout(new GridLayout(parameters.length + 1, 2));
@@ -340,6 +394,10 @@ abstract public class DialogCircuitComponent<T extends AbstractBlockInterface> e
         return pPD;
     }
 
+    /**
+     * Reads values from all registered text fields and applies them to their
+     * corresponding user parameters. Supports both Double and Integer types.
+     */
     protected void processRegisteredParameters() {
         for (UserParameter<? extends Number> uPar : registeredParameters) {
             int index = registeredParameters.indexOf(uPar);

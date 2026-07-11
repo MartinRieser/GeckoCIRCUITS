@@ -14,13 +14,17 @@
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
 /**
- *
+ * Multiplies input by a constant gain factor.
  * @author andreas
  */
 public final class GainCalculator extends AbstractSingleInputSingleOutputCalculator {
 
     private double _gain;
 
+    /**
+     * Creates a gain calculator with the specified multiplier.
+     * @param gain the constant gain value
+     */
     public GainCalculator(final double gain) {
         super();
         setGain(gain);

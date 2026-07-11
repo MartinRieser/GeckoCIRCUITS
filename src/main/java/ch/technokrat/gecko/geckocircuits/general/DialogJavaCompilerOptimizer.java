@@ -22,6 +22,11 @@ import java.util.logging.Logger;
 
 
 
+/**
+ * Dialog for the Java compiler and optimizer tool within GeckoCIRCUITS.
+ * Provides a graphical interface for writing, compiling, and testing
+ * user-defined Java code snippets for custom control block implementations.
+ */
 public class DialogJavaCompilerOptimizer extends JFrame {
 
     private static final long serialVersionUID = 1L;

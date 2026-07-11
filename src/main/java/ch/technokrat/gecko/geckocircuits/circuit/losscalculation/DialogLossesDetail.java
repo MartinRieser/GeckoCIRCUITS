@@ -29,6 +29,11 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+/**
+ * Modal editor dialog for detailed loss curve data of semiconductor components.
+ * Provides tabs for conduction and switching loss curves, with support for
+ * loading, editing, saving (internal/external), and creating test curves.
+ */
 public final class DialogLossesDetail extends GeckoDialog {
 
     private static final long serialVersionUID = 1L;
@@ -124,6 +129,10 @@ public final class DialogLossesDetail extends GeckoDialog {
         }
     };
     
+    /**
+     * Prompts the user for a file name (external or model-internal) and saves
+     * the current loss curves as a new file.
+     */
     private void doSaveAsNew() {
         String fileName = getNewFileNameDialog();
             if (fileName == null) {
@@ -147,6 +156,13 @@ public final class DialogLossesDetail extends GeckoDialog {
         populateLowerPanel();
     }
 
+    /**
+     * Creates test curves in both the conduction and switching loss panels
+     * at the specified operating point.
+     *
+     * @param temperature the junction temperature for the test curve
+     * @param voltage the blocking voltage for the test curve
+     */
     public void createTestCurve(final double temperature, final double voltage) {
         _conductionLossPanel.createTestCurve(temperature, voltage);
         _switchingLossPanel.createTestCurve(temperature, voltage);
@@ -167,6 +183,12 @@ public final class DialogLossesDetail extends GeckoDialog {
         _exitPanel.add(_jButtonCancel);
     }
 
+    /**
+     * Applies the edited loss curve data to the loss calculation object and
+     * persists it to the specified file (external or model-internal).
+     *
+     * @param fileName the file path or internal identifier to save to
+     */
     private void applyChanges(final String fileName) {
 
         // // (1) Losses are reset:
@@ -183,6 +205,12 @@ public final class DialogLossesDetail extends GeckoDialog {
         dispose();
     }
 
+    /**
+     * Shows a dialog prompting the user to choose between an external file or
+     * a model-internal file for saving loss curve data.
+     *
+     * @return the selected file path or internal identifier, or null if cancelled
+     */
     private String getNewFileNameDialog() {
         final StringBuffer fileName = new StringBuffer();
         // // Create array of data type Object, add options

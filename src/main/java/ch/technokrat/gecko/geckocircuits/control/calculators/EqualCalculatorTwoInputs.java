@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Checks equality of two inputs. Outputs 1 if they are equal, 0 otherwise.
+ */
 public final class EqualCalculatorTwoInputs extends AbstractTwoInputsOneOutputCalculator {    
 
     @Override

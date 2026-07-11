@@ -25,6 +25,11 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
+/**
+ * Reconstructs and displays a time-domain curve from Fourier coefficients
+ * (an, bn) by performing an inverse FFT and plotting it alongside the
+ * original reference signal.
+ */
 @SuppressWarnings({"deprecation", "serial"})
 public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListener, MouseMotionListener {
     private static final long serialVersionUID = 1L;
@@ -57,6 +62,17 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
     private TechFormat cf = new TechFormat();
     //-----------------------
 
+    /**
+     * Constructs the Fourier reconstruction plot from coefficients.
+     * @param an cosine coefficients
+     * @param bn sine coefficients
+     * @param nMin minimum harmonic index
+     * @param f1 fundamental frequency
+     * @param worksheet the data container for the reference signal
+     * @param dataIndex index of the signal in the worksheet
+     * @param rng1 start time of the analysis window
+     * @param rng2 end time of the analysis window
+     */
     @SuppressWarnings("this-escape")
     public FourierKurvenRekonstruktion(
             double[] an, double[] bn, int nMin, double f1, AbstractDataContainer worksheet, int dataIndex, double rng1, double rng2) {
@@ -149,6 +165,9 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
         
     }
 
+    /**
+     * Rescales the chart dimensions when the window is resized.
+     */
     // // Rescale the chart when the window dimensions are changed -->
     public void resize() {
         //---------------------------------------
@@ -168,6 +187,10 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
         //---------------------------------------
     }
 
+    /**
+     * Sets the mouse interaction mode (none, zoom, auto-fit, slider).
+     * @param mouseMode the mode constant from GraferImplementation
+     */
     public void setMouseMode(int mouseMode) {
         this.mouseMode = mouseMode;
         //---------
@@ -204,6 +227,10 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
         //---------
     }
 
+    /**
+     * Draws the zoom rectangle and value slider overlay on the chart.
+     * @param g the graphics context
+     */
     // // will be overwritten in order to be able to add text -->
     protected void zeichne(Graphics g) {
         if ((mouseMode == GraferImplementation.MAUSMODUS_ZOOM_FENSTER) && (inDragMode)) {
@@ -234,6 +261,9 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
         }
     }
 
+    /**
+     * Configures the chart axes with appropriate bounds and tick spacing.
+     */
     public void setzeAchsen() {
         //-------------------------------------
         this.setzeAchsenAnzahl(1, 1);
@@ -279,6 +309,9 @@ public class FourierKurvenRekonstruktion extends GraferV3 implements MouseListen
         //-------------------------------------
     }
 
+    /**
+     * Configures the curve styles, colors, and data source indices.
+     */
     protected void setzeKurven() {
         //=========================================
         // // to set based on the worksheet data -->

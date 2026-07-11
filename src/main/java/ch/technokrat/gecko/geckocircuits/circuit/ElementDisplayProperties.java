@@ -14,12 +14,16 @@
 package ch.technokrat.gecko.geckocircuits.circuit;
 
 /**
- *
+ * Controls display and visibility flags for circuit element rendering.
  * @author andreas
  */
 public class ElementDisplayProperties {
+    /** Whether the element name is displayed. */
     public boolean showName = true;
+    /** Whether the element parameter value is displayed. */
     public boolean showParameter = true;
+    /** Whether the flow direction symbol is displayed. */
     public boolean showFlowSymbol = false;
+    /** Whether additional text lines are displayed. */
     public boolean showTextLine = true;
 }

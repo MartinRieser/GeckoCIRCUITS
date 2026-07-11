@@ -24,6 +24,10 @@ import javax.swing.ButtonGroup;
 import javax.swing.JOptionPane;
 
 /**
+ * Dialog for configuring the remote access port and network interface
+ * settings. Allows enabling/disabling remote access, selecting between
+ * localhost-only and network-wide access, and setting the TCP port number.
+ *
  * @author Andrija
  */
 public final class DialogRemotePort extends javax.swing.JDialog {

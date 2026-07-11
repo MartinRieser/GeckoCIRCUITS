@@ -20,7 +20,8 @@ import java.awt.Graphics;
 import javax.swing.JLabel;
 
 /**
- *
+ * Panel that renders a transfer function fraction (H(s) = numerator / denominator)
+ * with a horizontal fraction line.
  * @author andy
  */
 public final class FractionPrinter extends javax.swing.JPanel {
@@ -32,15 +33,18 @@ public final class FractionPrinter extends javax.swing.JPanel {
         initComponents();
     }
 
+    /** Sets the H(s) = label text. */
     public void hsSetText(final String newText) {
         jLabelHs.setText(newText);
     }
     
+    /** Sets the numerator text and repaints the fraction line. */
     public void setNumeratorText(final String newText) {
         jLabelNumerator.setText(newText);
         jLabelLine.repaint();
     }
     
+    /** Sets the denominator text and repaints the fraction line. */
     public void setDenominatorText(final String newText) {
         jLabelDenom.setText(newText);
         jLabelLine.repaint();
@@ -128,6 +132,7 @@ public final class FractionPrinter extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     
 
+    /** Custom JLabel that draws the horizontal fraction line between numerator and denominator. */
     class JLabelLine extends JLabel {
 
         private static final long serialVersionUID = 1L;

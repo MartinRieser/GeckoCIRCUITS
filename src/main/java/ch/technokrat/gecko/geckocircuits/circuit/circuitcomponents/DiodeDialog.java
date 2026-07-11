@@ -15,6 +15,10 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
 
 import javax.swing.JPanel;
 
+/**
+ * Dialog for editing diode parameters such as forward voltage, on-resistance,
+ * and off-resistance.
+ */
 class DiodeDialog extends AbstractDialogPowerSwitch<Diode> {
 
     private static final long serialVersionUID = 1L;

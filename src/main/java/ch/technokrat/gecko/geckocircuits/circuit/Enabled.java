@@ -14,14 +14,22 @@
 package ch.technokrat.gecko.geckocircuits.circuit;
 
 /**
- *
+ * Defines three component enable states: enabled, disabled, or shorted.
  * @author andreas
  */
 public enum Enabled {
+    /** Component is disabled (not active in simulation). */
     DISABLED,
+    /** Component is enabled and active in simulation. */
     ENABLED,
+    /** Component is disabled by being shorted. */
     DISABLED_SHORT;
     
+    /**
+     * Returns the enum constant for the given ordinal value.
+     * @param ordinal the ordinal to look up
+     * @return the matching Enabled constant
+     */
     public static Enabled getFromOrdinal(final int ordinal) {
         for(Enabled val : Enabled.values()) {
             if(val.ordinal() == ordinal) {

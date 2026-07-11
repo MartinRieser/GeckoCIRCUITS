@@ -26,6 +26,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
+ * Search dialog for finding text strings within the simulation model.
+ * Uses the circuit sheet's find mechanism to locate component names, labels,
+ * and parameter values. Supports exact and case-insensitive search modes.
  *
  * @author andreas
  */

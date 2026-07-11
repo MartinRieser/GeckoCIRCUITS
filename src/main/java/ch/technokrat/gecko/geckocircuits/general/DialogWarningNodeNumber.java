@@ -34,6 +34,11 @@ import java.net.URL;
 
 
 
+/**
+ * Warning dialog displayed when the circuit node numbering scheme contains
+ * gaps or inconsistencies that may indicate structural issues in the
+ * simulation model.
+ */
 public class DialogWarningNodeNumber extends JDialog implements WindowListener, ActionListener {
 
     private static final long serialVersionUID = 1L;

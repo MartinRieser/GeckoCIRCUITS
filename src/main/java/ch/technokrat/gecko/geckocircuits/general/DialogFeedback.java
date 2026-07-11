@@ -22,6 +22,11 @@ import java.net.URL;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 
+/**
+ * Dialog for submitting bug reports and feedback to the Gecko-Simulations
+ * bug tracking system. Opens a modal window with a feedback form that
+ * connects to the Bugzilla instance.
+ */
 public class DialogFeedback extends javax.swing.JDialog {
 
     private static final long serialVersionUID = 1L;

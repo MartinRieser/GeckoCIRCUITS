@@ -16,6 +16,12 @@ package ch.technokrat.gecko.geckocircuits.newscope;
 import javax.swing.JDialog;
 
 /**
+ * Dialog for editing diagram properties including name, x-axis, y-axis, and
+ * secondary y-axis settings for a single scope diagram.
+ * <p>
+ * The {@code _initDone} flag uses a non-final, non-private boolean as a
+ * workaround for the Java obfuscator, which would otherwise corrupt the
+ * initialization order of final boolean fields.
  *
  * @author andy
  */

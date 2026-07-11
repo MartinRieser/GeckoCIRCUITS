@@ -32,6 +32,11 @@ import javax.swing.border.EtchedBorder;
 
 
 
+/**
+ * Dialog displaying GeckoCIRCUITS license validation information. Shows
+ * the current license type, expiration date, and authorized user details
+ * retrieved from the license server or local license file.
+ */
 public class DialogLicense extends JDialog implements WindowListener, ActionListener {
     private static final long serialVersionUID = 1L;
     private JButton knOK;

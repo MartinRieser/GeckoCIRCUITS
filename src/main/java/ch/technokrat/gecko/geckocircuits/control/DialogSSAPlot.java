@@ -35,6 +35,13 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 /**
+ * Dialog for displaying Bode plots from small-signal analysis results.
+ * Shows magnitude (dB) and phase curves over frequency, with an editable
+ * data table for the frequency response data points.
+ * <p>
+ * The icon-loading catch block in the constructor silently swallows
+ * exceptions to avoid blocking dialog creation when the icon resource
+ * is unavailable.
  *
  * @author Raffael2
  */

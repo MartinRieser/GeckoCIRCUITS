@@ -21,6 +21,8 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 /**
+ * Dialog for configuring subcircuit properties: subcircuit name, block
+ * size (X/Y), and worksheet size (X/Y) of the subcircuit sheet.
  *
  * @author andreas
  */

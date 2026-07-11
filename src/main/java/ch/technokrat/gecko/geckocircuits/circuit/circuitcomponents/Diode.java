@@ -24,6 +24,11 @@ import java.awt.Window;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Ideal diode model with forward voltage drop and on-resistance. Behaves as
+ * a self-commutated switch that conducts when forward-biased beyond the
+ * threshold voltage and blocks when reverse-biased.
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public final class Diode extends AbstractSemiconductor implements ForwardVoltageDropable {
     static final AbstractTypeInfo TYPE_INFO = 

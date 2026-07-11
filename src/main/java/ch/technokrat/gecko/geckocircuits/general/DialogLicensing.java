@@ -14,6 +14,9 @@
 package ch.technokrat.gecko.geckocircuits.general;
 
 /**
+ * Dialog displaying software licensing terms and conditions. Shows both the
+ * GeckoCIRCUITS license and the Apache License in separate text areas
+ * within a tabbed pane.
  *
  * @author andy
  */

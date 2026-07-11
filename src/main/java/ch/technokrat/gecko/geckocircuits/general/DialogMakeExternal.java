@@ -19,6 +19,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Dialog for converting model-internal files to external (standalone) files.
+ * Allows the user to extract embedded file contents and save them as
+ * separate files on the file system.
  *
  * @author andreas
  */

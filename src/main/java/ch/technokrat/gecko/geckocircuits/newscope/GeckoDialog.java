@@ -30,7 +30,8 @@ import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 
 /**
- *
+ * Base dialog class that provides ESC key-to-close behavior and
+ * sets the Gecko application icon.
  * @author andy
  */
 public class GeckoDialog extends JDialog {

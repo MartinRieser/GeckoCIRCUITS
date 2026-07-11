@@ -14,9 +14,15 @@
 package ch.technokrat.gecko.geckocircuits.circuit;
 
 /**
- *
+ * Interface for circuit components that can have their voltage measured
+ * directly across a specific connector type.
  * @author andreas
  */
 public interface DirectVoltageMeasurable {
+    /**
+     * Returns the measurement components for the given connector type.
+     * @param connectorType the type of connector to measure
+     * @return array of measurement block interfaces
+     */
     AbstractBlockInterface[] getDirectVoltageMeasurementComponents(final ConnectorType connectorType);    
 }

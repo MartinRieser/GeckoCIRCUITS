@@ -20,6 +20,12 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 
 /**
+ * Dialog for configuring the name and connection of a global terminal.
+ * Global terminals create electrical or control connections between
+ * different subcircuits by matching component names.
+ * <p>
+ * The {@code _initDone} flag prevents event handlers from processing
+ * actions during GUI initialization.
  *
  * @author andreas
  */
@@ -29,9 +35,13 @@ public class DialogGlobalTerminal extends javax.swing.JDialog {
     private final transient GlobalTerminable _globalTerminable;
     private final HashSet<GlobalTerminable> _allGlobalTerminals;
     private final transient AbstractBlockInterface _thisTerminal;
+    /** Guard flag to prevent event processing during initialization. */
     private boolean _initDone = false;
     /**
-     * Creates new form DialogGlobalTerminal
+     * Creates a new global terminal configuration dialog.
+     *
+     * @param parent the parent frame
+     * @param globalTerminal the terminal/block to configure
      */
     public DialogGlobalTerminal(final java.awt.Frame parent, final AbstractBlockInterface globalTerminal) {
         super(parent, true);
@@ -47,6 +57,10 @@ public class DialogGlobalTerminal extends javax.swing.JDialog {
         setTitle("Set global terminal");
     }
     
+    /**
+     * Reads all global terminal names and their parent circuit sheets into the
+     * combo boxes for name selection and connection info display.
+     */
     private void readAllGlobalsIntoComboBoxes() {
         _initDone = false;
         jComboBoxAllNames.removeAllItems();
@@ -232,6 +246,12 @@ public class DialogGlobalTerminal extends javax.swing.JDialog {
                 "Information on global terminals",JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_jButtonShowInfoActionPerformed
 
+    /**
+     * Sets the component name for this global terminal, validating that the
+     * name is not already in use. Refreshes the combo box contents on success.
+     *
+     * @param newName the new name for the global terminal
+     */
     private void setComponentName(final String newName) {
         
         if(!_initDone) {

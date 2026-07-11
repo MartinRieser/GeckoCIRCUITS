@@ -18,6 +18,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * Standard analog curve diagram for displaying continuous signal waveforms.
+ * Each curve is a regular analog trace plotted against time (x-axis) with
+ * configurable y-axis assignment.
  *
  * @author andy
  */

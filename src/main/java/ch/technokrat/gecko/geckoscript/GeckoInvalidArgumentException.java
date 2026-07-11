@@ -14,7 +14,7 @@
 package ch.technokrat.gecko.geckoscript;
 
 /**
- *
+ * Exception thrown when a script method is called with invalid arguments.
  * @author andreas
  */
 public class GeckoInvalidArgumentException extends Exception {

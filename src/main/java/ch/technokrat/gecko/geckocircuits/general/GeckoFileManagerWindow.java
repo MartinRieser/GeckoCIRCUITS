@@ -29,7 +29,9 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 
 /**
- *
+ * GUI dialog for managing files attached to a model element. Supports adding
+ * new files, selecting from existing model files, and toggling internal/external
+ * storage mode.
  * @author anstupar
  */
 public class GeckoFileManagerWindow extends javax.swing.JDialog {

@@ -17,18 +17,29 @@ import java.awt.BasicStroke;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 
+/**
+ * Enum defining line styles for scope curves, each with a corresponding
+ * BasicStroke width and optional dash pattern.
+ */
 public enum GeckoLineStyle {
     /**
      * WARNING: Don't change the order of the enumeration constants, ordinal() is used!
      */
+    /** Solid 1px width line. */
     SOLID_PLAIN(-3333330, new BasicStroke(1f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0.1f)),
+    /** Invisible line (0.1px width, effectively hidden). */
     INVISIBLE(-3333331, new BasicStroke(0.1f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0.1f)),
+    /** Solid 2px width fat line. */
     SOLID_FAT_1(-3333332, new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0.1f)),
+    /** Solid 3px width extra fat line. */
     SOLID_FAT_2(-3333333, new BasicStroke(3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0.1f)),
+    /** Dotted 1px line with 4px dash, 4px gap pattern. */
     DOTTED_PLAIN(-3333334, new BasicStroke(1.0f, BasicStroke.CAP_ROUND,
     BasicStroke.JOIN_ROUND, 0.1f, new float[]{4, 4}, 0)),
+    /** Dotted 3px fat line with 4px dash, 4px gap pattern. */
     DOTTED_FAT(-3333335, new BasicStroke(3.0f, BasicStroke.CAP_ROUND,
     BasicStroke.JOIN_ROUND, 0.1f, new float[]{4, 4}, 0)),
+    /** Solid 0.5px thin line. */
     SOLID_THIN(-3333336, new BasicStroke(0.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0.1f));
 
     static GeckoLineStyle getFromOrdinal(final int ordinal) {

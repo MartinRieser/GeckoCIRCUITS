@@ -13,11 +13,13 @@
  */
 package ch.technokrat.gecko.geckocircuits.newscope;
 
-//for use with GeckoSCRIPT - like the DialogFourier object but without the GUI
-
 import ch.technokrat.gecko.geckocircuits.datacontainer.AbstractDataContainer;
 import ch.technokrat.gecko.geckoscript.GeckoInvalidArgumentException;
 
+/**
+ * Headless (non-GUI) Fourier analysis calculator for use with GeckoSCRIPT.
+ * Uses a windowing function based on the selected time range.
+ */
 public final class FourierGUIless {
     private final AbstractDataContainer _worksheet;
     private final String[] _header;

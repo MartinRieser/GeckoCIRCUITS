@@ -31,7 +31,10 @@ import javax.swing.JOptionPane;
 
 
 /**
- * Todo: remove all the code duplication in this file! DRY!!!
+ * Dialog for checking and installing software updates for GeckoCIRCUITS.
+ * Checks the update server for newer versions and displays release
+ * information with options to download and install.
+ *
  * @author andy
  */
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.TooManyFields"})

@@ -15,6 +15,8 @@ package ch.technokrat.gecko.geckocircuits.newscope;
 
 
 /**
+ * Dialog for editing per-curve display properties including line style, color,
+ * symbol settings, and axis assignment for a single curve in the scope.
  *
  * @author andy
  */

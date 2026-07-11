@@ -13,6 +13,9 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Checks equality across all N inputs. Outputs 1 if all inputs are equal, 0 otherwise.
+ */
 public final class EqualCalculatorMultiInput extends AbstractControlCalculatable {
 
     public EqualCalculatorMultiInput(final int inputSize) {

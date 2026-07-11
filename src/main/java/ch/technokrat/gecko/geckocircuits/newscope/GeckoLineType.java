@@ -13,6 +13,10 @@
  */
 package ch.technokrat.gecko.geckocircuits.newscope;
 
+/**
+ * Enum defining line connection types for scope curves, such as connecting
+ * neighbouring points or drawing bars to the x-axis.
+ */
 public enum GeckoLineType {
     /**
      * WARNING: Don't change the order of the enumeration constants, ordinal() is used!

@@ -21,7 +21,10 @@ package ch.technokrat.gecko.geckocircuits.circuit.circuitcomponents;
  * @author andy
  */
 public interface DirectCurrentCalculatable {
+    /** Sets the MNA auxiliary variable index for current calculation. */
     void setZValue(int index);
+    /** Gets the MNA auxiliary variable index for current calculation. */
     int getZValue();
+    /** Returns the computed current through the component. */
     double getCurrent();
 }

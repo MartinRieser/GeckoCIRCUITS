@@ -17,6 +17,9 @@ import ch.technokrat.gecko.geckocircuits.newscope.GeckoDialog;
 import javax.swing.JFrame;
 
 /**
+ * Dialog for selecting a module file to insert into the circuit. Provides a
+ * text field for the file name (initialized with placeholder "jTextField1"
+ * as leftover IDE-generated code) and an OK button to confirm.
  *
  * @author andy
  */

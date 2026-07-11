@@ -29,6 +29,11 @@ import java.net.URL;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Dialog for performing scope characteristics measurements on simulated data.
+ * Computes signal statistics (mean, RMS, min/max, frequency, duty cycle) and
+ * power analysis (active, reactive, apparent power) for selected signals.
+ */
 public class DialogScopeCharacteristics extends GeckoDialog {
 
     private static final long serialVersionUID = 1L;

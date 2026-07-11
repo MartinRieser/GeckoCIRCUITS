@@ -21,6 +21,11 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
+/**
+ * Links a remote interface method to an i18n resource key for
+ * documentation purposes.
+ */
 public @interface Documentation {
+    /** The i18n key providing the documentation text for this method. */
     I18nKeys value();
 }

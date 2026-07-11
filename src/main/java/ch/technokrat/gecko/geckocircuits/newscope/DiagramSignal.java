@@ -19,6 +19,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * Digital signal diagram for displaying discrete (binary/digital) signal
+ * waveforms. Each curve is a digital trace with fixed minimum width and
+ * distinct visual styling compared to analog curves.
  *
  * @author andy
  */

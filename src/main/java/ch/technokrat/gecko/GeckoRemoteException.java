@@ -23,14 +23,14 @@ public class GeckoRemoteException extends Exception {
 
     /**
      * Creates a new instance of
-     * <code>GeckoRemoteObjectException</code> without detail message.
+     * <code>GeckoRemoteException</code> without detail message.
      */
     public GeckoRemoteException() {
     }
 
     /**
      * Constructs an instance of
-     * <code>GeckoRemoteObjectException</code> with the specified detail
+     * <code>GeckoRemoteException</code> with the specified detail
      * message.
      *
      * @param msg the detail message.

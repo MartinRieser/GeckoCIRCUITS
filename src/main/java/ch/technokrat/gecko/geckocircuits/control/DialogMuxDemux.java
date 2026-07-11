@@ -18,6 +18,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 
+/**
+ * Dialog for configuring MUX/DEMUX port counts. Allows the user to set the
+ * number of input ports (for MUX) or output ports (for DEMUX) via a spinner
+ * control.
+ */
 public class DialogMuxDemux extends javax.swing.JDialog {
 
     private static final long serialVersionUID = 1L;

@@ -14,15 +14,25 @@
 package ch.technokrat.gecko.geckocircuits.circuit;
 
 /**
- *
+ * Defines the four possible terminal positions on a circuit component: top,
+ * left, right, and bottom.
  * @author andreas
  */
 public enum EnumTerminalLocation {
+    /** Terminal located at the top of the component. */
     UP,
+    /** Terminal located on the left side of the component. */
     LEFT,
+    /** Terminal located on the right side of the component. */
     RIGHT,
+    /** Terminal located at the bottom of the component. */
     BOTTOM;
 
+    /**
+     * Returns the enum constant for the given ordinal value.
+     * @param ordinal the ordinal to look up
+     * @return the matching EnumTerminalLocation constant
+     */
     public static EnumTerminalLocation getFromOrdinal(final int ordinal) {
         for(EnumTerminalLocation val : EnumTerminalLocation.values()) {
             if(val.ordinal() == ordinal) {

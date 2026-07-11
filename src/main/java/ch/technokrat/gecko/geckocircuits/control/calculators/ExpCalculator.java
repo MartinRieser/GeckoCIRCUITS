@@ -13,7 +13,11 @@
  */
 package ch.technokrat.gecko.geckocircuits.control.calculators;
 
+/**
+ * Calculates e^x. The input is limited to 100 to prevent double overflow.
+ */
 public final class ExpCalculator extends AbstractSingleInputSingleOutputCalculator {    
+    /** Maximum input value to prevent double overflow (exp(100) ~ 2.7e43 is safe). */
     private static final double LARGEST_POSSIBLE = 100;
     @Override
     public void calculateYOUT(final double deltaT) {

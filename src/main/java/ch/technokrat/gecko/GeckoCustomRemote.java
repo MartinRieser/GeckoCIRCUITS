@@ -33,12 +33,20 @@ import java.util.logging.Logger;
  */
 public final class GeckoCustomRemote extends AbstractGeckoCustom implements GeckoRemoteInterface, CallbackServerInterface {
 
-    private boolean _free = true; //denotes if this instance of GeckoCIRCUITS is free for a remote connection
+    /** Whether this GeckoCIRCUITS instance is free for a remote connection. */
+    private boolean _free = true;
+    /** Session ID of the last active client (static, shared across instances). */
     private static long _lastSessionIDActive = 0;
+    /**
+     * Map of connected clients by session ID. Public and static, shared across
+     * all instances; NOT thread-safe for concurrent modifications.
+     */
     public static Map<Long,CallbackClientInterface> clients;
     
-    private boolean _acceptsExtraConnections = false; //denotes if this instance of GeckoCIRCUITS allows more than one client to connect
-    private int _numberOfExtraConnectionsAccepted = 0; //denotes how many additional clients (besides the first one) this instance of GeckoCIRCUITS will accept
+    /** Whether this instance accepts connections from more than one client. */
+    private boolean _acceptsExtraConnections = false;
+    /** Number of additional clients (beyond the first) that can connect. */
+    private int _numberOfExtraConnectionsAccepted = 0;
 
     public GeckoCustomRemote(final SimulationAccess access) {
         super(access, null);
@@ -96,6 +104,10 @@ public final class GeckoCustomRemote extends AbstractGeckoCustom implements Geck
         }
     }
     
+    /**
+     * Generates a new session ID and registers the connecting client.
+     * @return the new session ID
+     */
     @Override
     //here we generate a session ID and return it to the sender
     public long connect() {
@@ -107,6 +119,10 @@ public final class GeckoCustomRemote extends AbstractGeckoCustom implements Geck
         return connectionID;
     }
 
+    /**
+     * Disconnects a client by session ID and updates the free status.
+     * @param remoteSessionID the session ID to disconnect
+     */
     @Override
     public void disconnect(final long remoteSessionID) {
         
@@ -136,6 +152,11 @@ public final class GeckoCustomRemote extends AbstractGeckoCustom implements Geck
         }
     }
     
+    /**
+     * Registers a callback client for the last active session.
+     * @param callbackClientObject the client to register for callbacks
+     * @throws java.rmi.RemoteException if remote communication fails
+     */
     @Override
     public void registerForCallback(
             final CallbackClientInterface callbackClientObject)
@@ -143,7 +164,10 @@ public final class GeckoCustomRemote extends AbstractGeckoCustom implements Geck
         clients.put(_lastSessionIDActive, callbackClientObject);
     }
 
-    
+    /**
+     * Configures whether extra client connections beyond the first are accepted.
+     * @param numberOfExtraConnections the number of additional allowed connections
+     */
     @Override
     public void acceptExtraConnections(int numberOfExtraConnections) {
         _acceptsExtraConnections = (numberOfExtraConnections > 0);

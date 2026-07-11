@@ -16,6 +16,11 @@ package ch.technokrat.gecko.geckocircuits.newscope;
 import ch.technokrat.gecko.geckocircuits.general.ProjectData;
 import ch.technokrat.gecko.geckocircuits.circuit.TokenMap;
 
+/**
+ * Per-diagram settings holding the diagram name and y-axis weight factor.
+ * The weight determines the relative vertical space allocated to this diagram
+ * in the scope display.
+ */
 public final class DiagramSettings {
     private static final double DEFAULT_SPACING = 0.2;
     
@@ -35,6 +40,13 @@ public final class DiagramSettings {
         return _nameDiagram;
     }
     
+    /**
+     * Sets the y-axis weight (relative vertical space) for this diagram.
+     * Valid range is [0, 1], where 0 hides the diagram and 1 allocates maximum
+     * space. Weights are normalized across all diagrams in the scope.
+     *
+     * @param weight the weight value in the range [0, 1]
+     */
     public void setWeightDiagram(final double weight) {
         assert weight >= 0;
         assert weight <= 1;

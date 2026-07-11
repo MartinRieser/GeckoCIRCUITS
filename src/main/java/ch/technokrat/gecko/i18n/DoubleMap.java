@@ -22,6 +22,10 @@ import ch.technokrat.gecko.i18n.resources.I18nKeys;
 import java.util.HashMap;
 import java.util.Set;
 
+/**
+ * A bidirectional map that stores key-value pairs (I18nKeys to String)
+ * and their reverse mapping for a specific language.
+ */
 public final class DoubleMap {
     
     /**
@@ -35,28 +39,34 @@ public final class DoubleMap {
     private HashMap<String, I18nKeys> _valuetoKey = new HashMap<String,I18nKeys>();        
    
     
+    /** Inserts a key-value pair and its reverse mapping. */
     public void insertPair(final I18nKeys englishKey, final String value) {
         _keytoValue.put(englishKey, value);
         _valuetoKey.put(value, englishKey);
     }
     
+    /** Removes a key-value pair and its reverse mapping. */
     public void removePair(final I18nKeys key, final String value) {
         _keytoValue.remove(key);
         _valuetoKey.remove(value);
     }
     
+    /** Returns the value mapped to the given key. */
     public String getValue(final I18nKeys key) {
         return _keytoValue.get(key);
     }
     
+    /** Returns the key mapped to the given value. */
     public I18nKeys getKey(final String value) {
         return _valuetoKey.get(value);
     }
 
+    /** Returns the set of all keys. */
     public Set<I18nKeys> getKeySet() {
         return _keytoValue.keySet();
     }
     
+    /** Returns the number of stored mappings. */
     public int getSize() {
         return _keytoValue.size();
     }

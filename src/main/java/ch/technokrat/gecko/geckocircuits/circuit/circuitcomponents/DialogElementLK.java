@@ -43,6 +43,10 @@ public abstract class DialogElementLK<T extends AbstractCircuitBlockInterface> e
         getContentPane().setLayout(new BorderLayout());        
     }            
 
+    /**
+     * Builds the individual GUI components specific to each circuit component
+     * type. Called during {@code buildGUI()} to populate the dialog body.
+     */
     abstract void buildGUIIndividual();
 
     @Override
@@ -55,6 +59,14 @@ public abstract class DialogElementLK<T extends AbstractCircuitBlockInterface> e
         con.add(jPanelButtonOkCancel, BorderLayout.SOUTH);        
     }   
 
+    /**
+     * Creates a combo box for selecting a control label (named signal node)
+     * from the circuit sheet's available control labels. If no control labels
+     * exist, returns a label indicating "No signal nodes defined."
+     *
+     * @param elementLK the circuit block interface to create the control for
+     * @return a JComboBox of control labels, or a JLabel if none are defined
+     */
     static Component createControlLabelCombo(final AbstractCircuitBlockInterface elementLK) {
         Component returnValue = null;
         final List<String> labelListeControlKnotenTemp = elementLK.getParentCircuitSheet().getLocalLabels(ConnectorType.CONTROL);

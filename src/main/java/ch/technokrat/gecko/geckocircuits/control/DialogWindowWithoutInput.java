@@ -13,6 +13,11 @@
  */
 package ch.technokrat.gecko.geckocircuits.control;
 
+/**
+ * Minimal dialog for control blocks that have no configurable parameters.
+ * Provides a bare-bones window with only the standard name and OK/Cancel
+ * buttons, with no additional input fields.
+ */
 class DialogWindowWithoutInput extends DialogElementCONTROL<ControlBlock> {
 
     private static final long serialVersionUID = 1L;

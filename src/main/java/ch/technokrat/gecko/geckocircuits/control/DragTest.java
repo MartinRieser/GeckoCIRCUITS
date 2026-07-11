@@ -33,6 +33,10 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
+/**
+ * Standalone test/demo class for drag-and-drop functionality.
+ * This class may be candidates for removal.
+ */
 public class DragTest extends JFrame implements DragSourceListener,
     DragGestureListener {
 

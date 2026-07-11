@@ -35,11 +35,16 @@ public class GeckoMemoryMappedFile {
     private final File _file; //the file being used for communication
     private final MappedByteBuffer _mmb; //the memory-mapped byte buffer the file is mapped to
     
-    private static final int CONNECTION_ID_POS = 0; //the position of the connection ID in the buffer
-    private static final int STATUS_ID_POS = 8; //the position of the file status ID in the buffer
-    private static final int BUFFER_SIZE_POS = 16; //the position of the buffer size in the buffer
+    /** Memory layout: [0..7] connection ID (long). */
+    private static final int CONNECTION_ID_POS = 0;
+    /** Memory layout: [8..15] file status ID (long). */
+    private static final int STATUS_ID_POS = 8;
+    /** Memory layout: [16..23] buffer size (long). */
+    private static final int BUFFER_SIZE_POS = 16;
+    /** Memory layout: [24..31] serialized pipe object size (long). */
     private static final int PIPE_OBJECT_SIZE_POS = 24;
-    private static final int PIPE_OBJECT_POS = 32; //the position of the serialized pipe object in the buffer
+    /** Memory layout: [32..] serialized pipe object data. */
+    private static final int PIPE_OBJECT_POS = 32;
     
     public static final long DEFAULT_BUFFER_SIZE = 10000000; //the initial size of the buffer
     
@@ -215,9 +220,9 @@ public class GeckoMemoryMappedFile {
     }
     
     /**
-     * Check if the incoming connection ID of a request transaction matches the active connection ID.
-     * @param connectionID the connection ID to check
-     * @throws RuntimeException if IDs don't match
+     * Verifies that the given connection ID matches the active connection ID.
+     * @param connectionID the connection ID to validate
+     * @throws RuntimeException if the IDs do not match
      */
     private void checkConnectionID(final long connectionID) {
         if (connectionID != getConnectionID()) {

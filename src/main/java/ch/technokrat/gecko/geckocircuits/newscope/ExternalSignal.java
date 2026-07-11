@@ -16,14 +16,17 @@ package ch.technokrat.gecko.geckocircuits.newscope;
 import java.awt.geom.Point2D;
 
 /**
- * Provides basic functions to facilitate access to external signals.
+ * Represents user-defined external signals that can be imported from data arrays.
+ * Supports offset positioning and min/max tracking.
  * @author JF
  */
 public class ExternalSignal extends AbstractScopeSignal{
   private String _signalName = ""; // The name of the external signal.
   private double[] _signalTimes = {}; // The array holding the time values for the external signal.
   private double[] _signalValues = {}; // the array holding the data values for the external signal.
+  /** Default minimum set to POSITIVE_INFINITY until data is loaded. */
   private double _min = Double.POSITIVE_INFINITY;
+  /** Default maximum set to NEGATIVE_INFINITY until data is loaded. */
   private double _max = Double.NEGATIVE_INFINITY;
   private double _offsetX = 0;
   private double _offsetY = 0;

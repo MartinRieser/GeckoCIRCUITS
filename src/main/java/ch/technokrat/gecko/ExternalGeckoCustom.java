@@ -17,16 +17,24 @@ import ch.technokrat.gecko.geckoscript.AbstractGeckoCustom;
 import ch.technokrat.gecko.geckoscript.SimulationAccess;
 
 /**
- *
+ * External wrapper for GeckoCustom used by GeckoExternal (deprecated API).
+ * This class is a placeholder that delegates to SimulationAccess.
  * @author andy
  */
 public final class ExternalGeckoCustom extends AbstractGeckoCustom {
- 
+  
     
+    /**
+     * Creates a new ExternalGeckoCustom instance.
+     * @param access the SimulationAccess instance for script interaction
+     */
     public ExternalGeckoCustom(final SimulationAccess access) {
         super(access, null);
     }
 
+    /**
+     * Not supported - this external interface does not run scripts directly.
+     */
     @Override
     public void runScript() {
         throw new UnsupportedOperationException("Not supported yet.");

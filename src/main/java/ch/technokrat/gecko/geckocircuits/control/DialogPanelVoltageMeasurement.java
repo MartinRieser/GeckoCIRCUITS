@@ -14,6 +14,9 @@
 package ch.technokrat.gecko.geckocircuits.control;
 
 /**
+ * Panel for selecting the two nodes for a voltage measurement. Provides
+ * combo boxes for the positive and negative measurement terminals, labeled
+ * as "Plus" and "Minus" within a titled border.
  *
  * @author andy
  */

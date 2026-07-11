@@ -29,6 +29,11 @@ import java.net.URI;
 import java.net.URL;
 import javax.swing.*;
 
+/**
+ * Dialog for editing terminal/connection labels on circuit components. Allows
+ * the user to set a custom label name for a signal connection point, with
+ * validation against existing labels on the same circuit sheet.
+ */
 public final class DialogLabelEingeben extends JDialog {
 
     private static final long serialVersionUID = 1L;

@@ -40,6 +40,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Dialog for configuring and running small-signal analysis (Bode plot).
+ * Sets the excitation signal shape, frequency range, and amplitude, then
+ * computes the frequency response for the selected control block.
+ */
 @SuppressWarnings({"deprecation", "unchecked"})
 public class DialogSmallSignalAnalysis extends DialogElementCONTROL<ControlSmallSignalAnalysis> {
 
@@ -47,6 +52,7 @@ public class DialogSmallSignalAnalysis extends DialogElementCONTROL<ControlSmall
     private JComboBox<SSAShape> _jComboSignal;
     private GraferV4 _grafer;
     private SimpleGraferPanel newScope1;
+    /** Previous simulation end time, used to detect time-range changes. */
     private double oldTend;
     private BodePlot2 _bodePlot;
 
