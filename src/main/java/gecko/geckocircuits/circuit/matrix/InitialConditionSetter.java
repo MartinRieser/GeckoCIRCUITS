@@ -278,9 +278,10 @@ public class InitialConditionSetter {
                 continue; // Skip but don't break
             }
 
-            if (iterationCount++ > 2) {
+            if (iterationCount > 2) {
                 perturbation *= 0.99;
             }
+            iterationCount++;
 
             // Recreate and resolve the system
             initSystem = createInitializationSystem(netlist, state.pALT.length, couplingData);

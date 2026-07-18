@@ -47,8 +47,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * @author andy
  */
 public class CompileScript {
-    private static final Logger LOGGER = LogManager.getLogger(CompileScript.class);
-
 
     static AbstractCompileObject _compileObject = new CompileObjectNull();
     static Map<String, CompiledClassContainer> _classNameFileMap;

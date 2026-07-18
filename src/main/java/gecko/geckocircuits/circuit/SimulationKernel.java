@@ -214,9 +214,10 @@ public class SimulationKernel implements ISimulationEngine {
             }
 
             //this.ausgebenDiodenzustaende(t);
-            if ((switchingErrorCounter++) > 2) {
+            if (switchingErrorCounter > 2) {
                 stoergroesse *= 0.99;
             }
+            switchingErrorCounter++;
 
             _lkCachedMatrix = _luDecompCache.getCachedLUDecomposition(lkmLK.a, t);
             lkmLK.p = _lkCachedMatrix.solve(lkmLK.bVector);

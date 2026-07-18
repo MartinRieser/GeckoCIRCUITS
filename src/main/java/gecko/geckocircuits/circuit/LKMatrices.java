@@ -1336,9 +1336,10 @@ public class LKMatrices {
                 }
 
                 //this.ausgebenDiodenzustaende(t);
-                if ((switchingErrorCounter++) > 2) {
+                if (switchingErrorCounter > 2) {
                     stoergroesse *= 0.99;
                 }
+                switchingErrorCounter++;
 
                 lkmInit = new LKMatrices(solverType);
                 lkmInit.initMatrizen(NetListLK.ersetze_C_durch_Udc_Fuer_init(netzliste));

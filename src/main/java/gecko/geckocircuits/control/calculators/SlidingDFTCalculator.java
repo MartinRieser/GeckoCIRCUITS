@@ -51,7 +51,8 @@ public final class SlidingDFTCalculator extends AbstractControlCalculatable
 
         doSlidingFourierStep();
 
-        if (++_idx == _size) {
+        _idx++;
+        if (_idx == _size) {
             _idx = 0; // bump global index
         }
         for (int i = 0; i < _frequencyIndicesMap.length; i++) {

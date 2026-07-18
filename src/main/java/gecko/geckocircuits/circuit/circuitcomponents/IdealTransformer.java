@@ -42,8 +42,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 public class IdealTransformer extends AbstractCircuitBlockInterface implements HiddenSubCircuitable, CurrentMeasurable, DirectVoltageMeasurable {
-    private static final Logger LOGGER = LogManager.getLogger(IdealTransformer.class);
-
 
     private static final double HEIGHT = 0.8;
     public static final AbstractTypeInfo TYPE_INFO = new CircuitTypeInfo(IdealTransformer.class, "Trans", I18nKeys.IDEAL_TRANSFORMER);
