@@ -103,7 +103,7 @@ public final class BigMatrix implements java.io.Serializable {
       A = new BigDecimal[m][n];
       for(int i = 0; i < m; i++) {
           for(int j = 0; j < n; j++) {
-              A[i][j] = new BigDecimal(0);
+              A[i][j] = BigDecimal.ZERO;
           }
       }
       luDecomp = null;
@@ -125,7 +125,7 @@ public final class BigMatrix implements java.io.Serializable {
             throw new IllegalArgumentException("All rows must have the same length.");
          }
          for(int j = 0; j < n; j++) {
-             BigDecimal tmpNumber = new BigDecimal(0);
+             BigDecimal tmpNumber = BigDecimal.ZERO;
              this.A[i][j] = tmpNumber.add(initA[i][j]);
          }
       }
@@ -137,6 +137,7 @@ public final class BigMatrix implements java.io.Serializable {
    @exception  IllegalArgumentException Array length must be a multiple of m.
    */
 
+   @SuppressWarnings("PMD.AvoidDecimalLiteralsInBigDecimalConstructor")
    public BigMatrix (double vals[], int m) {
       this.m = m;
       n = (m != 0 ? vals.length/m : 0);
@@ -172,8 +173,8 @@ public final class BigMatrix implements java.io.Serializable {
       BigDecimal[][] C = new BigDecimal[m][n];
       for (int i = 0; i < m; i++) {
          for (int j = 0; j < n; j++) {
-            C[i][j] = new BigDecimal(0);
-            C[i][j] = C[i][j].add(A[i][j]);
+             C[i][j] = BigDecimal.ZERO;
+             C[i][j] = C[i][j].add(A[i][j]);
          }
       }
 
@@ -648,7 +649,7 @@ public final class BigMatrix implements java.io.Serializable {
 
       // Ignore initial empty lines
       while (tokenizer.nextToken() == StreamTokenizer.TT_EOL) {
-          continue; // skip EOL tokens until non-EOL token found
+          // skip EOL tokens until non-EOL token found
       }
       if (tokenizer.ttype == StreamTokenizer.TT_EOF) {
 	throw new java.io.IOException("Unexpected EOF on matrix read.");

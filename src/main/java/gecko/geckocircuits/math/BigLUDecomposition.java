@@ -85,7 +85,7 @@ public class BigLUDecomposition implements java.io.Serializable {
         for (int j = 0; j < n; j++) {
             // Make a copy of the j-th column to localize references.
             for (int i = 0; i < m; i++) {
-                LUcolj[i] = new BigDecimal(0);
+                LUcolj[i] = BigDecimal.ZERO;
                 LUcolj[i] = LUcolj[i].add(LU[i][j]);
             }
 
@@ -97,14 +97,14 @@ public class BigLUDecomposition implements java.io.Serializable {
                 // Most of the time is spent in the following dot product.
 
                 int kmax = Math.min(i, j);
-                BigDecimal s = new BigDecimal(0.0);
+                BigDecimal s = BigDecimal.ZERO;
 
                 for (int k = 0; k < kmax; k++) {
                     s = s.add(LUrowi[k].multiply(LUcolj[k]));
                 }
 
                 LUcolj[i] = LUcolj[i].subtract(s);
-                LUrowi[j] = new BigDecimal(0);
+                LUrowi[j] = BigDecimal.ZERO;
                 LUrowi[j] = LUrowi[j].add(LUcolj[i]);
                 LU[i][j] = LUrowi[j];
 

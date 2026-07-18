@@ -106,9 +106,10 @@ public final class DiagramCurveSignalManager{
     return _diagrams.size();
   }
 
+  @SuppressWarnings("PMD.UnusedLocalVariable")
   public void addDiagram(final AbstractDiagram newDiagram){
     final List<AbstractCurve> curves = new ArrayList<AbstractCurve>();
-    for(int i = 0; i < _allScopeSignals.size(); i++){
+    for(AbstractScopeSignal signal : _allScopeSignals){
       curves.add(newDiagram.curveFabric());
     }
 
