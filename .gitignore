@@ -18,6 +18,8 @@
 *.zip
 *.tar.gz
 *.rar
+*.log.gz
+*.log
 
 # virtual machine crash logs
 hs_err_pid*
