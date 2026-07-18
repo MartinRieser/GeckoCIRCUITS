@@ -314,12 +314,6 @@ public final class ControlNativeC extends RegelBlock implements VariableTerminal
         graphics.setColor(origColor);
     }
 
-    @Override
-    public void copyAdditionalParameters(final AbstractBlockInterface originalBlock) {
-        super.copyAdditionalParameters(originalBlock);
-
-
-    }
 
     @Override
     protected void exportAsciiIndividual(final StringBuffer ascii) {

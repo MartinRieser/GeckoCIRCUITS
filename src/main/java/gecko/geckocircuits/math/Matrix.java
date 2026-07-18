@@ -201,7 +201,7 @@ public final class Matrix implements Cloneable, java.io.Serializable {
     /** Clone the Matrix object.
      */
     @Override
-    public Object clone() {
+    public Matrix clone() {
         try {
             Matrix cloned = (Matrix) super.clone();
             // Deep copy the matrix data

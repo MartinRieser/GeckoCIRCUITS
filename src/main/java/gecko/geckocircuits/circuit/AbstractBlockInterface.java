@@ -373,6 +373,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
         // no-op
     }
 
+    @Override
     public final String getStringID() {
         return getIDStringDialog().toString();
     }
@@ -738,7 +739,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
         graphics.setColor(getForeGroundColor());
 
         for (AbstractTerminal term : XIN) {
-            if (java.util.Objects.equals(term.getCircuitSheet(), _parentCircuitSheet)) {
+            if (Objects.equals(term.getCircuitSheet(), _parentCircuitSheet)) {
                 term.paintLabelString(graphics);
                 //if(term instanceof TerminalControl) {
                 //    ((TerminalControl) term).paintControlState(graphics);
@@ -747,7 +748,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
         }
 
         for (AbstractTerminal term : YOUT) {
-            if (java.util.Objects.equals(term.getCircuitSheet(), _parentCircuitSheet)) {
+            if (Objects.equals(term.getCircuitSheet(), _parentCircuitSheet)) {
                 term.paintLabelString(graphics);
                 //if(term instanceof TerminalControl) {
                 //    ((TerminalControl) term).paintControlState(graphics);
@@ -780,7 +781,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
         _textInfo.drawLine(graphics, getDisplayProperties().showTextLine);
 
         for (TerminalInterface term : getAllTerminals()) {
-            if (java.util.Objects.equals(term.getCircuitSheet(), _parentCircuitSheet)) {
+            if (Objects.equals(term.getCircuitSheet(), _parentCircuitSheet)) {
                 term.paintComponent(graphics);
             }
         }
@@ -979,7 +980,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
     @Override
     public void doDoubleClickAction(final Point clickedPoint) {
         final TerminalInterface clickedTerm = clickedTerminal(clickedPoint);
-        if (clickedTerm != null && java.util.Objects.equals(clickedTerm.getCircuitSheet(), SchematicEditor2.Singleton._visibleCircuitSheet)) {
+        if (clickedTerm != null && Objects.equals(clickedTerm.getCircuitSheet(), SchematicEditor2.Singleton._visibleCircuitSheet)) {
             final DialogLabelEingeben labelDialog = new DialogLabelEingeben(clickedTerm);
             labelDialog.setVisible(true);
             return;

@@ -1033,11 +1033,10 @@ public final class TestReceiverWindow extends JFrame {
         jButtonCalculate.setEnabled(false);
         jButtonAbort.setEnabled(true);
         _calculationRunnable = new CalculationRunnable();
-        Thread runThread = new Thread(_calculationRunnable);
         if (useNewThread) {
-            runThread.start();
+            new Thread(_calculationRunnable).start();
         } else {
-            runThread.run();
+            _calculationRunnable.run();
         }
 
     }
@@ -1218,8 +1217,8 @@ public final class TestReceiverWindow extends JFrame {
     private javax.swing.ButtonGroup buttonGroup2;
     private javax.swing.ButtonGroup buttonGroup3;
     private gecko.geckocircuits.datacontainer.DataContainerTable dataContainerTable1;
-    protected javax.swing.JButton jButtonAbort;
-    protected javax.swing.JButton jButtonCalculate;
+    private javax.swing.JButton jButtonAbort;
+    private javax.swing.JButton jButtonCalculate;
     private javax.swing.JButton jButtonCancel;
     private javax.swing.JButton jButtonImage;
     private javax.swing.JButton jButtonPlotOptions;

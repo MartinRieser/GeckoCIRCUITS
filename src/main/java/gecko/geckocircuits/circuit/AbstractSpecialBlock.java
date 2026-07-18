@@ -21,5 +21,6 @@ package gecko.geckocircuits.circuit;
  * are possibly all of the three domains.
  * @author andreas
  */
+@SuppressWarnings("PMD.AbstractClassWithoutAnyMethod")
 public abstract class AbstractSpecialBlock extends AbstractBlockInterface {
 }

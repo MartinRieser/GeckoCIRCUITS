@@ -108,7 +108,7 @@ public final class DiagramCurveSignalManager{
 
   public void addDiagram(final AbstractDiagram newDiagram){
     final List<AbstractCurve> curves = new ArrayList<AbstractCurve>();
-    for(AbstractScopeSignal signal : _allScopeSignals){
+    for(int i = 0; i < _allScopeSignals.size(); i++){
       curves.add(newDiagram.curveFabric());
     }
 

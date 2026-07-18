@@ -258,7 +258,7 @@ public final class ControlOSZI extends RegelBlock implements VariableTerminalNum
         String pathToComponent = "";
         CircuitSheet cs = getParentCircuitSheet();
 
-        while (cs != null && cs instanceof SubCircuitSheet) {
+        while (cs instanceof SubCircuitSheet) {
             SubCircuitSheet subSheet = (SubCircuitSheet) cs;
             pathToComponent = subSheet._subBlock.getStringID() + "#" + pathToComponent;
             cs = subSheet._subBlock.getParentCircuitSheet();

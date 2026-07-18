@@ -117,11 +117,11 @@ public final class SimulationRunner {
 			NetzlisteCONTROL.globalData.setContainerStatus(ContainerStatus.RUNNING);
 		}
 
-		Thread calc = new Thread(new RunThreadRun());
+		RunThreadRun runnable = new RunThreadRun();
 		if (createNewSimThread) {
-			calc.start();
+			new Thread(runnable).start();
 		} else {
-			calc.run();
+			runnable.run();
 		}
 	}
 

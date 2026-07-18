@@ -82,6 +82,7 @@ public class NativeCBlock {
         }
     }
 
+    @SuppressWarnings("PMD.DoNotCallGarbageCollectionExplicitly")
     public void unloadLibraries () {
         try {
             /*ClassLoader clLoader = this.getClass().getClassLoader();

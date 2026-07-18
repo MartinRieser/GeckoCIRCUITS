@@ -241,6 +241,8 @@ public class NonLinearDialogPanel extends JPanel {
                                         return;
                                     }
                                     break;
+                                default:
+                                    break;
                             }
                         } else if (existingNonLinFile.getStorageType() == GeckoFile.StorageType.EXTERNAL) {
                             if (originalDataIsChanged(data, _nonlinearParent.nonlinearData)) {
@@ -259,6 +261,8 @@ public class NonLinearDialogPanel extends JPanel {
                                         } else {
                                             return;
                                         }
+                                        break;
+                                    default:
                                         break;
                                 }
                             }

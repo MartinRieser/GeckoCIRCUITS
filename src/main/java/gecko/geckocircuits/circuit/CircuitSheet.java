@@ -40,13 +40,7 @@ public class CircuitSheet extends JPanel {
     private static final long serialVersionUID = 1L;
 
     private static final int RAD_CTM = 7;  // radius of the oval node-marker in connectorTestMode
-    public final MapList allElements = new MapList() {
-        private static final long serialVersionUID = 1L;
-        @Override
-        public boolean add(AbstractCircuitSheetComponent toAdd) {
-            return super.add(toAdd);
-        }
-    };
+    public final MapList allElements = new MapList();
     @SuppressWarnings("serial")
     public final SchematicEditor2 _se;
     @SuppressWarnings("serial")

@@ -41,7 +41,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  *
  * @author andreas
  */
-@SuppressWarnings({"unchecked", "rawtypes"})
+@SuppressWarnings({"unchecked", "rawtypes", "PMD.MissingStaticMethodInNonInstantiatableClass"})
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "User parameter builder stores references to parent block for parameter binding")
 public final class UserParameter<T> {
     private static final Logger LOGGER = LogManager.getLogger(UserParameter.class);

@@ -140,7 +140,7 @@ public class DialogFourierDiagram extends JDialog implements ComponentListener {
         mItemF3 = GuiFabric.getJMenuItem(I18nKeys.WRITE_DATA_TO_FILE);
         mItemF3.setMnemonic(KeyEvent.VK_S);
         mItemF3.addActionListener((ActionEvent ae) -> {
-            GeckoFileChooser fileChooser = GeckoFileChooser.createSimpleSaveFileChooser(".dat", DialogFourierDiagram.this);
+            GeckoFileChooser fileChooser = GeckoFileChooser.createSimpleSaveFileChooser(".dat", this);
             if (fileChooser.getUserResult() == GeckoFileChooser.FileChooserResult.CANCEL) {
                 return;
             }
@@ -174,7 +174,7 @@ public class DialogFourierDiagram extends JDialog implements ComponentListener {
         });
         JMenuItem mItemF5 = GuiFabric.getJMenuItem(I18nKeys.EXIT);
         mItemF5.setMnemonic(KeyEvent.VK_X);
-        mItemF5.addActionListener((ActionEvent ae) -> DialogFourierDiagram.this.dispose());
+        mItemF5.addActionListener((ActionEvent ae) -> dispose());
         dataMenu.add(mItemF3);
         mItemF3.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
         dataMenu.add(mItemF5);

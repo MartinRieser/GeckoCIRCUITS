@@ -303,6 +303,7 @@ public class GeckoSim {
     }
 
 
+    @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
     private void initialisiere() {
         //new LangInit(args);
         LangInit.initEnglish();

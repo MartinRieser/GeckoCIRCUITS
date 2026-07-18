@@ -191,6 +191,18 @@ public final class DataContainerGlobal extends AbstractDataContainer implements 
     return _data.hashCode();
   }
 
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null || getClass() != obj.getClass()) {
+      return false;
+    }
+    final DataContainerGlobal other = (DataContainerGlobal) obj;
+    return _data.equals(other._data);
+  }
+
     @Override
     public float[] getDataArray() {
         return _data.getDataArray();

@@ -76,10 +76,7 @@ public abstract class AbstractMotorIM extends AbstractMotorIMCommon {
         isd0 = isa;
     }
 
-    @Override
-    protected void drawConnectorLines(final Graphics2D graphics) {
-        super.drawConnectorLines(graphics);
-    }
+
 
 
 
