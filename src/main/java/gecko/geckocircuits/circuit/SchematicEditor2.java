@@ -755,9 +755,7 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
             vNew.add(shortConnector);
         }
 
-        NetListLK netzliste = NetListLK.fabricIncludingSubcircuits(vNew, eNew);
-
-        return netzliste;
+        return NetListLK.fabricIncludingSubcircuits(vNew, eNew);
     }
 
     public List<AbstractCircuitBlockInterface> getElementLK() {

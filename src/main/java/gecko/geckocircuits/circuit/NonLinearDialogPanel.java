@@ -307,7 +307,7 @@ public class NonLinearDialogPanel extends JPanel {
     private int overwriteOption(String existingFileName) {
         Object[] options = {"Overwrite existing", "Create New"};
 
-        int selected = JOptionPane.showOptionDialog(null,
+        return JOptionPane.showOptionDialog(null,
                 "Non-linear characteristic " + existingFileName + " is also used by other circuit elements.\n"
                 + "Would you like to overwrite it (will affect all other elements that use it!)\n"
                 + "or create a new one from the input data?",
@@ -315,20 +315,18 @@ public class NonLinearDialogPanel extends JPanel {
                 JOptionPane.DEFAULT_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 null, options, options[0]);
-        return selected;
     }
 
     private int overwriteExternal(String existingFileName) {
         Object[] options = {"Overwrite", "Create New"};
 
-        int selected = JOptionPane.showOptionDialog(null,
+        return JOptionPane.showOptionDialog(null,
                 "This element uses the external file " + existingFileName + " for its non-linear characteristic.\n"
                 + "Would you like to overwrite it or create a new internal file?",
                 "Overwrite external file?",
                 JOptionPane.DEFAULT_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 null, options, options[0]);
-        return selected;
     }
 
     public void setCharacteristicLoadedFromFile(final GeckoFile file) {

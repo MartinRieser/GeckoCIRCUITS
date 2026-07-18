@@ -359,9 +359,9 @@ public class EnglishMapper {
      * @return DoubleMap containing all multiple-line English key-value pairs
      */
     public static DoubleMap initEnglishMap_multiple() {
-        DoubleMap dm = new DoubleMap();
-
+        return new DoubleMap();
         // initialize multiple-line pairs
+//        DoubleMap dm = new DoubleMap();
 //        dm.putPair("DialogRemotePort.jTextAreaRemoteInfo.text", "Here you can allow the control of a \nGeckoCIRCUITS simulation by another\napplication (e.g. MATLAB) via a network \nport. For details see the GeckoSCRIPT\ntutorial. Currently only connections from\nthe local machine are allowed; network\naccess will be implemented in a future\nversion.");
 //        dm.putPair("GeckoFileManagerWindow.jTextArea1.text", "\nFiles specified as \"internal\" are read in by Gecko fully the first time they are added\nto a block and then saved into the Gecko model file (*.ipes). \n\"External\" files are accessed every time a block needs them, and must be distributed \nalong with the model file in order for the simulation to work properly with them.\nYou can use the buttons on the right-hand side to change an existing file's status.");
 //        dm.putPair("CautionOverwriteAutoBackupFile", "Caution: you try to overwrite your auto-backup file. \nYou should rename your filename to prevent data-loss!\n Do you want to continue anyway?");
@@ -373,8 +373,6 @@ public class EnglishMapper {
 //        dm.putPair("numericalstabilitytext", "Error:\nNumerical instability of switch.\nSimulation aborted at ");
 //        dm.putPair("DialogMemory.jTextArea1.text", "The \"Scope\" element needs to store the simulation data for output/display.\nSmall simulation step widths and long simulation times require a lot of RAM \nmemory. Therefore, you can modify the data storage strategies: \n\n- No lossy compression: The simulation data is stored with its original\n  values in single-precision (float) resolution. This requires probably more\n  RAM memory that available.\n\n- Lossy compression (low, medium, high): The number of significant digits\n  of the simulation data is reduced. The amount of required memory is\n  therefore, also reduced, significantly.\n  Disadvantage: The simulation data is rounded according to the setting:\n  Low: epsilon  1e-5\n  Medium: epsilon  5e-5\n  High: epsilon  2e-4\n  Please note that the timestep-resolution as well as the simulation itself\n  are not affected by the lossy compression. With the compression setting, \n  you can trad-off between  memory requirement and data compression \n  ratio.");
 //        dm.putPair("t13", "The model has changed since last save to the model\nfile. Would you like to save your model to the file:\n");
-
-
-        return dm;
+//        return dm;
     }
 }

@@ -114,8 +114,7 @@ public final class FourierGUIless {
 
         }
         // Auswertung:
-        double[][][] returnValue = evaluate(anVals, bnVals, cnVals, jnVals);
-        return returnValue;
+        return evaluate(anVals, bnVals, cnVals, jnVals);
     }
 
     private double[][][] evaluate(final double[][] anVals, final double[][] bnVals,
