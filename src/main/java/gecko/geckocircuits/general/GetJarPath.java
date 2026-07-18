@@ -38,6 +38,7 @@ import javax.swing.JOptionPane;
  * complicated.
  *
  */
+@SuppressWarnings("PMD.UseUtilityClass")
 public final class GetJarPath {
     private static final Logger LOGGER = LogManager.getLogger(GetJarPath.class);
 
