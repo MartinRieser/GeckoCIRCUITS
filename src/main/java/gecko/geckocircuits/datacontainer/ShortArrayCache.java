@@ -36,9 +36,6 @@ public final class ShortArrayCache {
 
     public static short[] getCachedArray(final int mDim) {
         final short[] isPresent = shortMatrixCache.remove(mDim);
-        //if(counter1 % 100 == 0) {
-        //    System.out.println("counters:  "+ counter1 + " " + counter2);
-        //}
         if (isPresent == null) {
             counter1++;
             return new short[mDim];

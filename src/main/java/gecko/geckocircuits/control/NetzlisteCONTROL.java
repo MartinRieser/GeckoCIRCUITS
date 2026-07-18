@@ -284,10 +284,7 @@ public final class NetzlisteCONTROL {
             ControlMUX mux = muxEntry.getValue();
 
             if (demuxes.containsKey(muxEntry.getKey())) {
-                //elementsControl.remove(mux);
                 for (ControlDemux demux : demuxes.get(muxEntry.getKey())) {
-                    //elementsControl.remove(demux);
-                    //System.out.print(" " + demux.getStringID() + " ");
                     assert demux.YOUT.size() == mux.XIN.size();
                     for (int i = 0; i < mux.XIN.size(); i++) {
                         int muxInputIndex = ((ControlTerminable) mux.XIN.get(i)).getNodeNumber();
@@ -323,52 +320,10 @@ public final class NetzlisteCONTROL {
     public void calculateTimeStep(final double deltaT, final double time) {
         AbstractControlCalculatable.setTime(time);
 
-//        if (!initDone) {
-//            initDone = true;
-//                try {
-//                    bufReader = new BufferedReader(new FileReader(compareFile));
-//
-//                } catch (IOException ex) {
-//                    Logger.getLogger(NetzlisteCONTROL.class.getName()).log(Level.SEVERE, null, ex);
-//                }
-//        }
-//        try {
-//            String readLine = bufReader.readLine();
-//            String timeCompare = "    simulation time: " + time;
-//            assert readLine.equals(timeCompare) : readLine + " xxx " + timeCompare;
-//        counter++;
-//        if (counter == 2) {
-//            for(AbstractControlCalculatable calc : _sortedControlBlocksNew) {
-//                System.out.print(calc.getClass().getName() + " ");
-//                for(int i = 0; i < calc._inputSignal.length; i++) {
-//                    System.out.print(calc._inputSignal[i][0] + " ");
-//                }
-//                System.out.print("     xxxx   ");
-//                for(int i = 0; i < calc._outputSignal.length; i++) {
-//                    System.out.print(calc._outputSignal[i][0] + " ");
-//                }
-//                System.out.println("");
-//            }
-//            System.exit(3);
-//        }
         for (AbstractControlCalculatable block : _sortedControlBlocksNew) {
             block.calculateYOUT(deltaT);
         }
 
-//        for(AbstractControlCalculatable calc : _sortedControlBlocksNew) {
-//            for(int i =0 ;i < calc._outputSignal.length; i++) {
-//                for(int j = 0; j < calc._outputSignal[i].length; j++) {
-//                    double value = calc._outputSignal[i][j];
-//                    if(value != value) {
-//                        for(int k = 0; k < _sortedReglerWONonCalculatables.length; k++) {
-//                            if(_sortedReglerWONonCalculatables[k]._calculator == calc) {
-//                                System.out.println("calculator " +  _sortedReglerWONonCalculatables[k].getStringID() + " " + i + " " + j);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
         writeData(time);
     }
 
@@ -380,16 +335,8 @@ public final class NetzlisteCONTROL {
     // Berechnung der Bauelement-Optimierung durchgefuehrt wird und das SchematicEntry entsprechend traege auf den User reagiert
     //
     public void optimiereAbarbeitungsListe() {
-        //BlockOrderOptimizerNew blockOrderOtimizerNew = new BlockOrderOptimizerNew(elementsControl);
-        //_orderedControlBlocks = blockOrderOtimizerNew.getOptimierteAbarbeitungsListe().toArray(new RegelBlock[0]);
-
         BlockOrderOptimizer3 blockOrderOtimizer3 = new BlockOrderOptimizer3(elementsControl);
         _orderedControlBlocks = blockOrderOtimizer3.getOptimierteAbarbeitungsListe().toArray(new RegelBlock[0]);
-
-
-//        for(int i = 0; i < _orderedControlBlocks.length; i++) {
-//            System.out.println("rb " + i + " " + _orderedControlBlocks[i]);
-//        }
     }
 
     public void createControlCalculators() {

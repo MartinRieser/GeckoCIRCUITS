@@ -568,10 +568,6 @@ public class GraferV3 extends JPanel {
             double y = worksheetData.getValue(curve_index_worksheetColumns_XY[i1][1], i2);
             if (yAxisType[indexCurveAssociatedYAxis[i1]] == ACHSE_LIN) {
                 yPix[i2] = (float) (y0Kurve - (sfY[indexCurveAssociatedYAxis[i1]] * (y - axisYmin[indexCurveAssociatedYAxis[i1]])));
-//                if(y == 20.15) {
-//                    System.out.println(y + " " + yPix[i2]);
-//                }
-                //System.out.println(yPix[i2]);
             } else if (yAxisType[indexCurveAssociatedYAxis[i1]] == ACHSE_LOG) {
                 if (y <= 0) {
                     y = 1e-99;  //y=axisYmin[indexCurveAssociatedYAxis[i1]];
@@ -1395,7 +1391,6 @@ public class GraferV3 extends JPanel {
             z2empfLIN = oben[k];
             schrittEmpfLIN = schritt[k];
         }
-        //System.out.println(z1+"   "+z1empfLIN+"  //  "+z2+"   "+z2empfLIN+"   "+schrittEmpfLIN);
         //----------------
         // LOG -->
         z1empfLOG = 0.7 * z1lg;  // min

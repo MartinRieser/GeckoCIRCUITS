@@ -69,7 +69,6 @@ public class NodeLabel implements Serializable {
         y1click= yTxt+rect.y;
         x2click= x1click +rect.width;
         y2click= y1click +rect.height;
-        //System.out.println(x1click+"   "+x2click+"   "+y1click+"   "+y2click);
         g.setColor(Color.magenta);
         g.drawRect(x1click,y1click, x2click-x1click,y2click-y1click);
         //-----

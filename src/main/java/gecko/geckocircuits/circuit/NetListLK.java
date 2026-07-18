@@ -346,7 +346,6 @@ public final class NetListLK {
             }
         }
 
-//        System.out.println("yyyyyyyyyyyyyyyyyyyyyyy repair!!!");
 //        int[] saveKnotenX = new int[]{5, 2, 3, 4, 0, 5, 1};
 //        int[] saveKnotenY = new int[]{6, 3, 2, 6, 1, 4, 0};
 //        knotenX = saveKnotenX;

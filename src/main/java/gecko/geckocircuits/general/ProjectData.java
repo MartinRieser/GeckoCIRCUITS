@@ -112,11 +112,6 @@ public final class ProjectData implements Serializable {
     }
 
     public ProjectData(String[] ascii, final boolean isBackupRead, OptimizerParameterData optimizer) {
-//        if(!isBackupRead) {
-//            for(String tmp : ascii) {
-//                System.out.println(tmp);
-//            }
-//        }
         _optimizer = optimizer;
         optimizerParameterData = new OptimizerParameterData();
         _uniqueFileId = this.importASCII(ascii, isBackupRead);

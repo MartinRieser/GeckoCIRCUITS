@@ -133,7 +133,6 @@ public final class SlidingDFTCalculator extends AbstractControlCalculatable
         _freqsReal = freqsRealOld;
         _freqsImag = freqsImagOld;
 
-        //System.out.println("factor: " + oldSize / _size);
         for (int i = 0; i < _freqsReal.length; i++) {
             _freqsReal[i] *= scalingFactor;
             _freqsImag[i] *= scalingFactor;

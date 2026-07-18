@@ -163,7 +163,6 @@ public class DataContainerManyTimeSeries extends AbstractDataContainer implement
     public Object getDataValueInInterval(double intervalStart, double intervalStop, int rowIndex) {
 //        int index = _timeSerieArray.findTimeIndex(intervalStop, _maximumIndex);
 //        return getValue(0, index);
-//        System.out.println("Interval Start:" + intervalStart + "\tIntervallStop: " + intervalStop + "\t columnIndex: " + columnIndex);
         final int startIndex = _timeSerieArray[rowIndex].findTimeIndex(intervalStart);
         final int stopIndex = _timeSerieArray[rowIndex].findTimeIndex(intervalStop);
 

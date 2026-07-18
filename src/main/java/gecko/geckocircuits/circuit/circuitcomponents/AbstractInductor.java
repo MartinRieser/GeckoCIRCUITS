@@ -145,7 +145,6 @@ public abstract class AbstractInductor extends AbstractNonLinearCircuitComponent
         if (_isNonlinearForCalculationUsage) {
             // continuous update of L(i) based on the non-linear characteristic -->
             parameter[0] = getActualValueLINFromLinearizedCharacteristic(Math.abs(parameter[2]));
-            //System.out.println("ind ind " + parameter[0] + "\t" + time + " " + parameter[2]);
         }
     }
 

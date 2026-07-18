@@ -1253,7 +1253,6 @@ public abstract class AbstractGeckoCustom implements GeckoRemoteInterface {
         rmsRatios = new double[numOfWaveforms];
         double meanDiff, rmsDiff;
         for (int i = 0; i < t1mean.length; i++) {
-            //System.out.println("t1mean[" + i + "] = " + t1mean[i] + " t2mean[" + i + "] = " + t2mean[i]);
             meanDiff = Math.abs(t1mean[i] - t2mean[i]);
             meanRatios[i] = Math.max(Math.abs(meanDiff / t1mean[i]), Math.abs(meanDiff / t2mean[i]));
             rmsDiff = Math.abs(t1rms[i] - t2rms[i]);

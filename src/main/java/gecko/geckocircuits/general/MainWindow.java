@@ -1003,7 +1003,6 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         String[] zeile = new String[datVec.size()];
         for (int i1 = 0; i1 < datVec.size(); i1++) {
             zeile[i1] = datVec.elementAt(i1);
-            //System.out.println("zeile[i1]= "+zeile[i1]);
         }
 
         ProjectData data = new ProjectData(zeile, false, null);
@@ -2034,7 +2033,6 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
                 lines = new String[datVec.size()];
                 for (int i1 = 0; i1 < datVec.size(); i1++) {
                     lines[i1] = datVec.elementAt(i1);
-                    //System.out.println("zeile[i1]= "+zeile[i1]);
                 }
             } catch (Exception eGZIP) {
                 LOGGER.info("openFile() - A >> " + eGZIP);

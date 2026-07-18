@@ -42,10 +42,5 @@ class LoopDetectionException extends Exception {
     }
 
     void printLoopMessage() {
-//        System.err.println("Control loop detected:");
-//        for (ControlOrderNode loopNode : _loopList) {
-//            System.err.print(" " + loopNode.getElementControl().getStringID());
-//        }
-//        System.err.println("");
     }
 }

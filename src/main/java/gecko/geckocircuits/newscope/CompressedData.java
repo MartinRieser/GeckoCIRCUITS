@@ -16,9 +16,6 @@ package gecko.geckocircuits.newscope;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 
 /**
  *
@@ -28,7 +25,6 @@ public class CompressedData {
     private static final Logger LOGGER = LogManager.getLogger(CompressedData.class);
 
 
-//    private final List<Byte> compData;
     private final int _blockLength;
     private final int _maxDiff;
     private final int _bits;
@@ -145,76 +141,5 @@ public class CompressedData {
         LOGGER.info("\tresult length:\t" + _compressedData.length);
         LOGGER.info("\tblock length:\t" + (_blockLength + 1));
 
-    }
-
-    private static byte[] readFromFile(String path) {
-        FileInputStream fip = null;
-        File file;
-
-        try {
-            file = new File(path);
-            fip = new FileInputStream(file);
-
-            byte[] fileContent = new byte[(int) file.length()];
-            LOGGER.info("DataPoints: " + ((int) file.length()));
-            fip.read(fileContent);
-
-            fip.close();
-            return fileContent;
-
-        } catch (IOException e) {
-            LOGGER.error("Failed to read data from file: " + path, e);
-        } finally {
-            try {
-                if (fip != null) {
-                    fip.close();
-                }
-            } catch (IOException e) {
-                LOGGER.error("Failed to close file input stream", e);
-            }
-        }
-        return new byte[0];
-    }
-
-    public static void main(String[] args) {
-        String file = "slowrect.txt";
-        byte[] data = readFromFile("C:/Users/Zimmi/Desktop/GeckoCode/Compress Data/" + file);
-
-        byte[] compressableData = new byte[32];
-
-        LOGGER.info("Full Container Compressed");
-        CompressedData block = new CompressedData(data);
-        block.printCompressInfo();
-
-        LOGGER.info("Container separated 32 byte blocks:");
-        int minbits = Integer.MAX_VALUE;
-        int maxbits = Integer.MIN_VALUE;
-        double avgBits = 0;
-        int minResultLength = Integer.MAX_VALUE;
-        int maxResultLength = Integer.MIN_VALUE;
-        double avgResultLength = 0;
-        int blockLength = 0;
-        for (int i = 0; i < 32; i++) {
-            for (int j = 0; j < 32; j++) {
-                compressableData[j] = data[32 * i + j];
-            }
-            block = new CompressedData(compressableData);
-            int[] info = block.getEssentialData();
-            minbits = Math.min(minbits, info[0]);
-            maxbits = Math.max(maxbits, info[0]);
-            avgBits += info[0];
-            blockLength = info[1];
-            minResultLength = Math.min(minResultLength, info[2]);
-            maxResultLength = Math.max(maxResultLength, info[2]);
-            avgResultLength += info[2];
-        }
-
-
-        LOGGER.info("\tAvg compression rate:\t" + (avgResultLength / (32 * 32) * 100) + "%");
-        LOGGER.info("\t\tmin:\t" + ((double) minResultLength / blockLength * 100) + "%");
-        LOGGER.info("\t\tmax:\t" + ((double) maxResultLength / blockLength * 100) + "%");
-        LOGGER.info("\tAvg Needed Bits:\t" + ((double) avgBits / 32));
-        LOGGER.info("\t\tmin:\t" + minbits);
-        LOGGER.info("\t\tmax:\t" + maxbits);
     }
 }

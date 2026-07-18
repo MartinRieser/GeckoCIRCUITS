@@ -158,7 +158,6 @@ public final class CompileScript {
             sw.addSourceLine("    }");
             sw.addSourceLine("  }");
             sw.addSourceLine("}");
-            //System.out.println("createSourceCode() --> \n\n_compilerMessage= \n"+_compilerMessage+"\n\n===========\n_sourceString= \n"+_sourceString+"\n\n===========\n");
         } catch (IOException ex) {LogManager.getLogger(ScriptWindow.class).error("Exception occurred", ex);
         }
 

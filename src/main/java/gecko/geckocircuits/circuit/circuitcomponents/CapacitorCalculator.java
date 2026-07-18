@@ -192,7 +192,6 @@ public final class CapacitorCalculator extends CircuitComponent implements AStam
                     _current += _nonLinearCorrectionCurrent;
                 }
                 _capCorrected = false;
-                //System.out.println("" + t + " " + _capacitance + " " + ((1 - _newOldCapRatio)*_capacitance));
             }
         }
 
@@ -259,7 +258,6 @@ public final class CapacitorCalculator extends CircuitComponent implements AStam
 
     public void updateNonLinearCapacitance() {
         double new_capacitance;
-        //System.out.println("update called");
         if (initCapacitor) {
             new_capacitance = _NonLinearCapacitance.getCapacitanceAtV(_initialValue);
         } else {
@@ -268,8 +266,6 @@ public final class CapacitorCalculator extends CircuitComponent implements AStam
 
         _newOldCapRatio = 1 - (new_capacitance / _capacitance);
         _nonLinearCorrectionCurrent = _newOldCapRatio * _oldCurrent;
-
-        //System.out.println("" + Math.abs(_potential1 - _potential2) + " " + new_capacitance);
 
 
         if (initCapacitor) {
@@ -281,7 +277,6 @@ public final class CapacitorCalculator extends CircuitComponent implements AStam
             capError = true;
             _newOldCapRatio = 0;
             _capCorrected = true;
-            //System.out.println("Capacitance changed to " + _capacitance);
         }
 
     }

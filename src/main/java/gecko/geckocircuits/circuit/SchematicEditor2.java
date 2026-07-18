@@ -827,8 +827,6 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
 
     public void toggleEnable(final boolean shortDisableCommand) {
         registerChangeWithNetlistUpdate();
-        //System.out.println("deselect() --> markierungsRechteckAktiviert");
-        //System.out.println("deselect() --> markierungsRechteckAktiviert");
         //======================
         _mouseMoveMode = MouseMoveMode.NONE;
 
@@ -1043,13 +1041,9 @@ public final class SchematicEditor2 implements MouseListener, MouseMotionListene
             case MOVE_COMPONENTS:
                 if (_elementsJustInitialized) {
                     //======================
-                    //System.out.println("deselect() --> geradeInitialisiert_elementLK/CONTROL/THERM");
-                    //======================
                     _elementsJustInitialized = false;
                     this.deleteSelectedComponents();
                 } else {
-                    //======================
-                    //System.out.println("deselect() --> geradeBeimVerschieben");
                     //======================
                     _mouseMoveMode = MouseMoveMode.NONE;
                     _sea._typElement = null;

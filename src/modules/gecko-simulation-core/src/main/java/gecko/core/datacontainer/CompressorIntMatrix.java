@@ -17,7 +17,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.zip.DataFormatException;
@@ -31,8 +30,6 @@ import java.util.zip.Inflater;
 public class CompressorIntMatrix {
     private static final Logger LOGGER = LogManager.getLogger(CompressorIntMatrix.class);
 
-
-    private static final Random RANDOM = new Random();
 
     private List<byte[]> byteContainer = new ArrayList<byte[]>();
     private static final int BYTE_BLOCK_SIZE = 1024;
@@ -55,7 +52,6 @@ public class CompressorIntMatrix {
         compressionRatio = (float) 4.0 * _m * _n / (byteContainer.size() * BYTE_BLOCK_SIZE);
         compressionTime = (tock - tick) / 1000.0f;
     }
-    static long compressedByteSize = 0;
 
     public void doCompression(int[][] origData) {
         byte[] input = convertIntToByteArray(origData);
@@ -65,7 +61,6 @@ public class CompressorIntMatrix {
         compressor.finish();
 
         compress(compressor);
-        //System.out.println("data bytes size: " + compressedByteSize / 1024 / 1024 + " MB");
 
         recycleByteArray(input);
     }
@@ -73,7 +68,6 @@ public class CompressorIntMatrix {
     private void compress(Deflater compressor) {
         while (!compressor.finished()) {
             byte[] compressed = new byte[BYTE_BLOCK_SIZE];
-            compressedByteSize += BYTE_BLOCK_SIZE;
             compressor.deflate(compressed);
             byteContainer.add(compressed);
         }
@@ -102,31 +96,6 @@ public class CompressorIntMatrix {
 
         // Decode the bytes into a String
         return convertByteArrayToInt(result, _m, _n);
-    }
-
-    public static void main(String[] args) {
-        final int m = 400;
-        final int n = 120;
-        int[][] origData = new int[m][n];
-
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                origData[i][j] = RANDOM.nextInt(2) + i + 7 * j - 4;
-            }
-        }
-
-        CompressorIntMatrix compObj = new CompressorIntMatrix(origData);
-
-        int[][] decompData = compObj.deCompress();
-        LOGGER.info("decompressed:");
-        for (int i = 0; i < decompData.length; i++) {
-            for (int j = 0; j < decompData[0].length; j++) {
-                assert decompData[i][j] == origData[i][j];
-            }
-        }
-
-        LOGGER.info("compression ratio: " + compObj.compressionRatio);
-        LOGGER.info("compression time:  " + compObj.compressionTime);
     }
 
     private static int[][] convertByteArrayToInt(byte[] buffer, int m, int n) {

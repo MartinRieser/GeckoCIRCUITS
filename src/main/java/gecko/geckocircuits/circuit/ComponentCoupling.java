@@ -223,7 +223,6 @@ public final class ComponentCoupling {
                     || _coupledElements[i].getUniqueObjectIdentifier() != _coupledIdentifiers[i]) {
                 for (AbstractBlockInterface elem : allElements) {
                     boolean internStringAdded = false;
-                    //System.out.println("searching: " + elem.getStringID() + " " + elem.getUniqueObjectIdentifier());
                     if (elem instanceof AbstractCircuitBlockInterface) {
                         AbstractCircuitBlockInterface lkblock = (AbstractCircuitBlockInterface) elem;
                         List<String> internStrings = lkblock.getParameterStringIntern();

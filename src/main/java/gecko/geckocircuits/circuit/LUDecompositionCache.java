@@ -15,7 +15,6 @@ package gecko.geckocircuits.circuit;
 
 import java.util.HashMap;
 import java.util.Map;
-//import java.util.WeakHashMap;
 
 /**
  * Main-Function: getCachedLUDecomposition. For switched converters, one and the
@@ -70,7 +69,6 @@ public class LUDecompositionCache {
             }
 
             fromCache.setAccess(time);
-            //System.out.println("matrix size : " + matrix.length);
 //             if(_cacheHitCounter%1000 == 0) {
 //                 printDebugMessages(time);
 //             }

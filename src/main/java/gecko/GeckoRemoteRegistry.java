@@ -166,7 +166,6 @@ public final class GeckoRemoteRegistry {
         Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
         while (interfaces.hasMoreElements()) {
             NetworkInterface interFace = interfaces.nextElement();
-            //System.out.println("interface: " + interFace.getName() + " is loopback: " + interFace.isLoopback() + " is up: " + interFace.isUp());
             //filters out 127.0.0.1 and inactive interfaces
             if (interFace.isLoopback() /*|| !interFace.isUp()*/) {
                 continue;
@@ -175,7 +174,6 @@ public final class GeckoRemoteRegistry {
             Enumeration<InetAddress> addresses = interFace.getInetAddresses();
             while(addresses.hasMoreElements()) {
                 InetAddress address = addresses.nextElement();
-                //System.out.println(interFace.getName() + ": " + address.getHostAddress());
                 machineIPs.add(address.getHostAddress());
             }
         }

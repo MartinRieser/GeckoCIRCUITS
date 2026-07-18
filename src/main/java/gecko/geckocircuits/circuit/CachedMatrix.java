@@ -253,8 +253,6 @@ public final class CachedMatrix extends AbstractCachedMatrix {
         }
 
         ShortMatrixCache.recycleMatrix(rowEntryIndices);
-
-        //System.out.println("conuter:  " + counter + " " + counter2);
     }
 
     private void setLUMatrixValue(int i, int j, double value) {

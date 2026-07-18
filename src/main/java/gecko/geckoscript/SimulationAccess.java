@@ -51,7 +51,6 @@ public final class SimulationAccess implements GeckoFileable {
 
         } catch (Throwable ex) {
             LOGGER.info("Could not find editor library jsyntaxpane.jar. Scripting tool disabled.");
-            // ex.printStackTrace();
         }
 
     }

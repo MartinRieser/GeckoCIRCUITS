@@ -407,10 +407,6 @@ implements Operationable, Nonlinearable {
         }
 
 
-//        if(debug) {
-//            System.out.println("compare end value " + nonlinearData[0][pkt-1] + " " + x);
-//        }
-
         if (i1 == 0) {
             return 1.0 / nonlinearData[1][i1];  // left boarder
         }

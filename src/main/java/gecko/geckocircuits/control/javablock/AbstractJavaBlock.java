@@ -205,7 +205,6 @@ public abstract class AbstractJavaBlock {
         } catch (UnsupportedClassVersionError classVersionError) {
             resetCompileObject();
             LOGGER.error(classVersionError.getMessage());
-            //classVersionError.printStackTrace();
         }
 
     }

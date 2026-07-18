@@ -279,7 +279,6 @@ public class GeckoJavaCompiler {
             String cp2 = cp0 + "/build/classes";
             String cp3 = GlobalFilePathes.PFAD_JAR_HOME + "GeckoCIRCUITS.jar";
             opt.add(cp0 + ";" + cp1 + ";" + cp2 + ";" + cp3 + ";");
-            //System.out.println("options --> \n"+cp0+"\n"+cp1+"\n"+cp2+"\n"+cp3+"\n----");
 
             CompilationTask task = compiler.getTask(
                     compilerWriter, jfm, diagnostics, opt, null,
@@ -417,7 +416,6 @@ public class GeckoJavaCompiler {
             LOGGER.info("Error in GeckoJavaCompiler.test(): " + e);
         }
         LOGGER.info("_compilerMessage= \n" + compilerMessage + "\n\n===========\n");
-        //System.out.println("_sourceString= \n"+_sourceString+"\n\n===========\n");
         boolean calcOK = this.startCalculation();
         LOGGER.info("Fertig. calcOK=" + calcOK);
     }

@@ -58,7 +58,6 @@ public class BVector {
 
 
     public void stampBVector(double t, double dt) {
-        //System.out.println("stamping B vectors at " + t + ", updateAllFlag: " + updateAllFlag);
 
 
         if (updateAllFlag) {
@@ -95,7 +94,6 @@ public class BVector {
 
     public void setUpdateAllFlag() {
         updateAllFlag = true;
-        //System.out.println("update all flag set to true: " + updateAllFlag);
     }
 
     //creates a copy of this BVector

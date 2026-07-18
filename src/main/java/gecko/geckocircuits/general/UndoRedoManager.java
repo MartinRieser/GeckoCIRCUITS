@@ -96,7 +96,6 @@ public class UndoRedoManager {
             LOGGER.info(e + "   e0oiv00'er");
         }
         //---------
-        //System.out.println("pointerToUndoStates= "+pointerToUndoStates+"\t\tzeigerAufRedoZustaende= "+zeigerAufRedoZustaende);
         if (redoAnzahl < undoZustaendeMAX - 1) {
             redoAnzahl++;
         }

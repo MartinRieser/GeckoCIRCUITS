@@ -468,27 +468,6 @@ public final class SpaceVectorDisplay extends javax.swing.JFrame {
         this.setVisible(false);
     }//GEN-LAST:event_jToggleButtonCloseActionPerformed
 
-//    /**
-//     * @param args the command line arguments
-//     */
-//    public static void main(String args[]) {
-//        SpaceVectorDisplay svd = new SpaceVectorDisplay();
-//        svd.setVisible(true);
-//        for (int i = 0; i < 4000; i++) {
-//            try {
-//                double time = i / 10000.0;
-//                double r = 20 * Math.sin(100 * time);
-//                double s = 20 * Math.sin(100 * time - 2 * Math.PI / 3);
-//                double t = 20 * Math.sin(100 * time - 4 * Math.PI / 3);
-//                svd.drawVector(time, r,s,t,r,s,t, r, s, t);
-//                Thread.sleep(10);
-//            } catch (InterruptedException ex) {
-//LogManager.getLogger(SpaceVectorDisplay.class).error("Exception occurred", ex);
-//            }
-//        }
-//        System.exit(-1);
-//    }
-
     private void SpaceVectorPaint(Graphics g) {
 
         Graphics2D g2d = (Graphics2D) g;

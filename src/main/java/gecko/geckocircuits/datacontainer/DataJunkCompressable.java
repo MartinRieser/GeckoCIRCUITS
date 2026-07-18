@@ -199,7 +199,6 @@ public final class DataJunkCompressable implements DataJunk {
         final int floatIntBits = Float.floatToIntBits(value);
         final int output = floatIntBits & precisionField;
         // this is for testing - don't remove. Bitstring should start with 1111, and have trailing zeros at the end.
-        //System.out.println(Integer.toBinaryString(bitField));
         return Float.intBitsToFloat(output);
     }
 
@@ -455,12 +454,10 @@ public final class DataJunkCompressable implements DataJunk {
 
                     final int[][] compressData = calculateDifferenceCompression(_data);
                     _compressor = new CompressorIntMatrix(compressData);
-                    //System.out.println("compressor:  " + _compressor.compressionRatio + " " + _compressor.compressionTime);
                     _memInBytes = _compressor.getCompressedMemory();
 
 //                compressionCounter++;
 //                compressionSum += 1.0 * byteLength / originalLength;
-//                System.out.println("compression ratio: " + compressionSum / compressionCounter);
                     IntegerMatrixCache.recycleIntArray(compressData);
                 } catch (java.lang.OutOfMemoryError ex) {
                     JOptionPane.showMessageDialog(null,

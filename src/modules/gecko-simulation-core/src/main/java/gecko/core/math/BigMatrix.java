@@ -23,7 +23,6 @@ import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.StreamTokenizer;
 import java.math.BigDecimal;
-//import Jama.util.*;
 
 /**
    Jama = Java Matrix class.

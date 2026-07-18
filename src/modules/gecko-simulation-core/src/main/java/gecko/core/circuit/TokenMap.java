@@ -179,7 +179,6 @@ public final class TokenMap {
         int readLineNumber = 0;
         while (readLineNumber < ascii.length) {
             final String line = ascii[readLineNumber];
-            //System.out.println(readLineNumber + " " + line);
 
             int spaceIndex = line.indexOf(' ');
             if (spaceIndex < 1) {
@@ -196,15 +195,9 @@ public final class TokenMap {
 
 
                 final String lineToken = line.substring(0, spaceIndex);
-                //System.out.println("line: " + line);
                 if (makeSpecialPairs) {
                     if (_specialTokens.containsKey(lineToken)) {
                         final SpecialPair pair = _specialTokens.get(lineToken);
-//                        System.out.println("--------------");
-//                        System.err.println("linetoken: " + lineToken + " " + pair._startToken + " " + pair._stopToken);
-//                        System.err.println("reading: " + ascii[readLineNumber + 0]);
-//                        System.err.println("reading: xxx " + ascii[readLineNumber + 1]);
-//                        System.err.println("reading: " + ascii[readLineNumber + 2]);
 
                         final String nextLine = ascii[readLineNumber + 1];
                         if (nextLine.equals(pair._startToken)
@@ -255,7 +248,6 @@ public final class TokenMap {
                         LOGGER.error("Failed to parse line token: " + lineToken, ex);
                     }
                 }
-                //System.out.println(lineToken);
                 readTokenLine(lineToken, readLineNumber, _map);
 
 

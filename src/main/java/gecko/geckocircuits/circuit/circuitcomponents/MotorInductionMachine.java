@@ -130,12 +130,6 @@ public final class MotorInductionMachine extends AbstractMotorIM {
         // Block 'usab,usbc -> udq':
         double usd = 2 * usab / 3 + usbc / 3;
 
-        /*counter++;
-        System.out.println("iii " + usd + " " + usab + " " + usbc);
-        if(counter > 2) {
-            System.exit(4);
-        }*/
-
         double usq = usbc / Math.sqrt(3);
         // Block 'vrdq':
         double urd = 2.0 / 3.0 * (urab * Math.cos(_thetaElectric) - urbc * Math.cos(_thetaElectric - 2 * Math.PI / 3));

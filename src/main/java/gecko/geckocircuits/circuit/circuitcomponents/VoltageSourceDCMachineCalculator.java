@@ -86,7 +86,6 @@ public class VoltageSourceDCMachineCalculator extends VoltageSourceCalculator im
 
         emk = _cM * phi * omega;  // innere Spannung der Maschine
         _timeFunction.setValue(emk);  // DC-Wert der internen WSpg.Quelle
-        //if (t==0) System.out.println(t+"   "+dt+"   "+ia+"   "+ie+"   "+momentLast+"   "+phi+"   "+momentElektr+"   "+omega+"   "+drehzahl+"   "+emk+"   omegaOld="+omegaOld+"   J="+J+"   Fr="+Fr);
         omegaOld = omega;
     }
 }

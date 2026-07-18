@@ -70,11 +70,6 @@ public class MemoryContainer {
             final float[] returnValue = _memCache[arrayIndex];
             _memCache[arrayIndex] = null;
             _inUsePointer++;
-//            if(_availablePointer % 1000 == 0) {
-//            System.out.println("Cache contains " +
-//                    (_availablePointer - _inUsePointer) * 100.0 / CACHE_SIZE
-//                    + "% valid arrays.");
-//            }
             assert _inUsePointer < _availablePointer;
             if(returnValue == null) {
                 return createNewArray();

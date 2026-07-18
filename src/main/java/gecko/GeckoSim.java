@@ -59,7 +59,6 @@ public class GeckoSim {
     private static final Logger LOGGER = LogManager.getLogger(GeckoSim.class);
 
 
-    static long startTime;  // MS_PKGPROTECT: only used within package
     public static MainWindow _win;
     static GeckoSim _geckoSim;
     public static final boolean _initialShow = true;  // MS_SHOULD_BE_FINAL: never modified after init
@@ -95,12 +94,6 @@ public class GeckoSim {
         }
     }
 
-    public static void stopTime() {
-        long stopTime = System.currentTimeMillis();
-        LOGGER.info("total execution:  " + (stopTime - startTime) / 1000.0);
-        System.exit(3);
-    }
-
     public static void main(final String[] args) {
         // Check for operating mode from system property
         String modeProperty = System.getProperty("operatingmode");
@@ -126,7 +119,6 @@ public class GeckoSim {
             setDefaultFonts();
         }
         Locale.setDefault(Locale.ENGLISH);
-        startTime = System.currentTimeMillis();
 
         GlobalFilePathes.PFAD_JAR_HOME = GetJarPath.getJarPath();
 
@@ -305,7 +297,6 @@ public class GeckoSim {
 
     @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
     private void initialisiere() {
-        //new LangInit(args);
         LangInit.initEnglish();
 
         GlobalFilePathes.PFAD_JAR_HOME = GetJarPath.getJarPath();
@@ -422,7 +413,6 @@ public class GeckoSim {
     }
 
     private void loadPropertyFile() {
-        //System.out.println("prop= "+GlobalFilePathes.PFAD_JAR_HOME+"GeckoProperties.prp");
 
         try {
             GlobalFilePathes.RECENT_CIRCUITS_1 = applicationProps.getProperty("RECENT_CIRCUITS_1");

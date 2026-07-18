@@ -100,7 +100,6 @@ final class SliderContainer{
    * @return a paix of x-y-Values
    */
   public SliderValues getSliderValues(final int curveID){
-//        System.out.println("xxyxyx. " + _ySliderValues.size() +" " +  _grafer.getManager().getNumberInputSignals());
     if(_ySliderValues.size() != _grafer.getManager().getNumberInputSignals()){
       initYSliderValue();
     }

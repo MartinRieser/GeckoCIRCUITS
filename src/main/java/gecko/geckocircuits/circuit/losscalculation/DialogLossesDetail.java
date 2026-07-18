@@ -179,7 +179,6 @@ public final class DialogLossesDetail extends GeckoDialog {
         //here pass 'false' for 'update' flag as this is a brand new file
         _lossCalculation.writeDetailedLossesToFile(fileName, _switchingLossPanel._lossCurves,
                 _conductionLossPanel._lossCurves, _storageType);
-        //System.out.println("new loss file OK: " + OK);
         // (3) die neuen Daten uebernehmen:
         dispose();
     }

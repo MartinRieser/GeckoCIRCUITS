@@ -300,7 +300,6 @@ public final class GeckoFile {
         //absModelPath points to a file - should be modified to point to a directory
         final int lastSeparatorIndex = absModelPath.lastIndexOf(File.separator);
         absModelPath = absModelPath.substring(0, lastSeparatorIndex);
-        //System.out.println(absModelPath);
 
         //this is because separator '\' does strange things with String.split()
         String regexCharacter = File.separator;
@@ -459,7 +458,6 @@ public final class GeckoFile {
         for (Long userID : _usageList) {
             ascii.append('\n');
             ascii.append(userID);
-            //System.out.println("user: " + user);
         }
         ascii.append("\n<\\usageList>");
 
@@ -750,12 +748,8 @@ public final class GeckoFile {
 //        try {
 //            GeckoFile geckoFile = new GeckoFile(new File("/home/andreas/testFile.txt"),
 //                StorageType.EXTERNAL, "/home/andreas/test.ipes");
-//            System.out.println("relative: " + geckoFile._relativePath);
 //            geckoFile.setStorageType(StorageType.INTERNAL);
-//            System.out.println("---------------");
 //            geckoFile.setStorageType(StorageType.EXTERNAL);
-//            System.out.println("relativeNew: " + geckoFile._relativePath);
-//            System.out.println("finally storage type: " + geckoFile.getStorageType());
 //        } catch (FileNotFoundException ex) {
 //LogManager.getLogger(GeckoFile.class).error("Exception occurred", ex);
 //        }

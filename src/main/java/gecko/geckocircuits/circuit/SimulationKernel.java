@@ -307,7 +307,6 @@ public class SimulationKernel implements ISimulationEngine {
             }
 
             // Signal bei VOLT setzen:
-            // System.out.println("getting voltage: " + potentialdifferenz);
             sortedCalculators[zeigerAufControlElement[i1 / 2]]._outputSignal[0][0] = potentialdifferenz;
 
         }
@@ -439,11 +438,9 @@ public class SimulationKernel implements ISimulationEngine {
         //-------------------------------
     }
 
-    //System.out.println("Warning: Node-Number has been changed!");
     @Override
     public void setInitialConditionsFromContinue() {
         if ((lkmLK.p.length != pLK_ALT.length) || (lkmTHERM.p.length != pTHERM_ALT.length)) {
-            //System.out.println("Warning: Node-Number has been changed!");
             return;
         }
         lkmLK.p = pLK_ALT;
@@ -839,32 +836,6 @@ public class SimulationKernel implements ISimulationEngine {
         simulateOneTimeStep();
     }
 
-//    public void external_step (double time, double[] input) {
-//-------------------------
-//        t= time;
-//System.out.println("\nexternal ended");
-//
-//        int counter = 0;
-//        for(RegelBlock reg : ControlFromEXTERNAL.fromExternals) {
-//            double[] param = reg.getParameter();
-//            assert param.length == ((ControlFromEXTERNAL) reg).getTerminalNumber();
-//            for(int i = 0; i < param.length; i++) {
-//                param[i] = input[counter];
-//                counter++;
-//            }
-//        }
-//        //----
-//        if (index_FROM_EXTERNAL!=-1) {
-//            for (int i1=0;  i1<signals_from_external.length;  i1++) {
-//                double x= input[i1];
-//                if (x==x) signals_from_external[i1]= x; else signals_from_external[i1]=0;  // NaN, Inf
-//                //signals_from_external[i1]= input[i1];
-//            }
-//            c[index_FROM_EXTERNAL].setParameter(signals_from_external);
-//        }
-//-------------------------------
-//        simulateOneTimeStep();
-//    }
     public double getTimeStep() {
         return dt;
     }
@@ -878,8 +849,6 @@ public class SimulationKernel implements ISimulationEngine {
         System.arraycopy(lkmLK.p, 0, pLK_ALT, 0, pLK_ALT.length);
         pTHERM_ALT = new double[lkmTHERM.p.length];
         System.arraycopy(lkmTHERM.p, 0, pTHERM_ALT, 0, pTHERM_ALT.length);
-        //-------------------------------
-        //System.out.println("\nexternal ended");
     }
 
     public void tearDownOnPause() {

@@ -53,7 +53,6 @@ public abstract class AbstractVoltageSourceCalculator extends CircuitComponent<A
 
     @Override
     public final void updateHistory(final double[] potentials) {
-        // System.out.println("function: " + _function + " " + _z);
         _current = potentials[_z];  // SpgQuellen-Stroeme stehen als Unbekannte ausnahmsweise auch im Knotenpotetial-Vektor
         _potential1 = potentials[matrixIndices[0]];
         _potential2 = potentials[matrixIndices[1]];

@@ -53,21 +53,16 @@ public final class IGBTCalculator extends AbstractSwitchCalculator implements Cu
         _potential2 = pVector[matrixIndices[1]];
         _voltage = _potential1 - _potential2;
         _current = (_voltage - _uForward) / _rDt;
-        //System.out.println("IGBT " + _element._elementName.getValue() + " voltage: " + _voltage + ", current: " + _current);
         if (_gateValue) {
             // Andy bugfix/modification: _rDt * current was probably missing, also in the old GeckoCIRCUITS
             if (_voltage + _rDt * _current <= disturbanceValue * _uForward) {
                 if (_rDt < _rOFF) {
-                    //System.out.println("voltage less than VF for " + _element._elementName.getValue() + " when in ON state");
-                    //System.out.println("_voltage = " + _voltage + ", _current = " + _current + ", _rDt = " + _rDt);
                     DiodeCalculator.diodeSwitchError = true;
                     _rDt = _rOFF;
                     _bVector.setUpdateAllFlag();
                 }
             } else {
                 if (_rDt > _rON) {
-                    //System.out.println("voltage greater than VF for " + _element._elementName.getValue() + " when in OFF state");
-                    //System.out.println("_voltage = " + _voltage + ", _current = " + _current + ", _rDt = " + _rDt);
                     DiodeCalculator.diodeSwitchError = true;
                     _rDt = _rON;
                     _bVector.setUpdateAllFlag();

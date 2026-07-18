@@ -233,7 +233,6 @@ public final class CompileObject extends AbstractCompileObject {
         }
 
         //add classpath to running program to be able to access all gecko classes from the newly created class
-        //System.out.println("classpath string: " + classPathString);
         options.addAll(Arrays.asList("-classpath", classPathString.toString()));
 
         return Collections.unmodifiableList(options);

@@ -98,12 +98,6 @@ public final class BlockOrderOptimizer3 {
         }
 
         doConsistencyChecks(_outList, _allControlsInput);
-        //System.out.println("number of loops " + countNumberOfOutOfOrderLoops(_optimizedList) + " of " + _optimizedList.size());
-//        System.out.println("---------- control block order: ");
-//        for(RegelBlock block : _outList) {
-//            System.out.println(block.getIDStringDialog());
-//        }
-//        System.out.println("---------");
 
     }
 

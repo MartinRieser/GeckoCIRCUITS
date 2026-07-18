@@ -18,7 +18,6 @@ import org.apache.logging.log4j.Logger;
 import gecko.geckocircuits.general.TechFormat;
 import gecko.geckocircuits.math.NComplex;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,12 +50,6 @@ public final class PolynomTools {
         }
         return getPolynomString(tmpList);
     }
-
-    public static void main(String[] args) {
-        List<Double> testPoly = Arrays.asList(-2.0, -2.0);
-        LOGGER.info(getPolynomString(testPoly));
-    }
-
 
     /*
      * return a html-String for the given polynom. Format: 1 + s - 2s^2 -> [1, 1, -2]
@@ -280,13 +273,6 @@ public final class PolynomTools {
         return returnValue;
     }
 
-//    public static void main(String[] args) {
-//        double [] num = new double[]{ 1, 1};
-//    public static void main(String[] args) {
-//        double[] lead = new double[0];
-//    public static void main(String[] args) {
-//        System.out.println(PolynomTools.getPolynomString(remainder));
-//    }
     /**
      * calculate the polynomial division between numerator and denominator.
      *

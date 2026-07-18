@@ -574,7 +574,6 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
                 }
             }
         }
-        //System.out.print("reorderLine() >>  ");  for (int i1=0;  i1<toBeOrdered.length;  i1++) System.out.print(toBeOrdered[i1]+"  "); System.out.println();
         //-----------
         // jetzt alles '-1' an die alten Werte anschliessend aufsteigend nummerieren -->
         for (int i1 = 0; i1 < toBeOrdered.length; i1++) {
@@ -583,7 +582,6 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
                 anzAlteEintraege++;
             }
         }
-        //System.out.print("reorderLine() >>  ");  for (int i1=0;  i1<toBeOrdered.length;  i1++) System.out.print(toBeOrdered[i1]+"  "); System.out.println();
         //-----------
         for (int i1 = z1; i1 <= z2 - 1; i1++) {
             positionSIGNAL[i1] = toBeOrdered[i1 - z1];
@@ -642,8 +640,6 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             this.speichereALTeWerteFuerPosition();
             //-------------------------------------
         }
-        //for (int i1=0;  i1<positionSIGNAL.length;  i1++) System.out.println(i1+"  (1)  "+positionSIGNAL[i1]);  System.out.println("-----------");
-        //System.out.println("******************************");
     }
 
     // Note: the curve in the matrix on the far left always has 'positionSIGNAL==0'
@@ -683,7 +679,6 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
                 }
                 notwendigeHoehePixGRF[i1] = anzSGN * (sgnHeight[i1] + sgnDistance[i1]);
                 notwendigeHoehePixGRF[i1] += (DY_IN_OBEN + DY_IN_UNTEN);
-                //System.out.println(notwendigeHoehePixGRF[i1]+"   "+i1+"   "+anzSGN);
             }
         }
     }
@@ -2360,7 +2355,6 @@ public final class GraferImplementation extends GraferV3 implements MouseListene
             _scope.ladeWorkSheet();
 
             //-------------
-            //System.out.println("x1RAM= "+x1RAM+"\tx2RAM= "+x2RAM);
         } catch (Exception ex) {
             ex.printStackTrace();
 

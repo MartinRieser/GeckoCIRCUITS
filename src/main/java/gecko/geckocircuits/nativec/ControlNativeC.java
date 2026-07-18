@@ -179,7 +179,6 @@ public final class ControlNativeC extends RegelBlock implements VariableTerminal
                     }
                     // Exception in the main method that we just tried to run
                     //showMsg("Exception in main: " + ex.getTargetException());
-                    //ex.getTargetException().printStackTrace();
                 } catch (FileNotFoundException ex) {
                     severeErrorOccured = true; // native library was not found
                     if (_nativeCBlock != null) {
@@ -456,7 +455,6 @@ public final class ControlNativeC extends RegelBlock implements VariableTerminal
                 _libFile = new NativeCLibraryFile(selLibName);
             } catch (FileNotFoundException exc) {
                 //String errTxt = "Native Library " + selLibName + " does not exist anymore.";
-                //System.err.println(errTxt);
                 //JOptionPane.showMessageDialog(null, errTxt, "Error", JOptionPane.ERROR_MESSAGE);
                 _libFile = new NativeCLibraryFile();
             }

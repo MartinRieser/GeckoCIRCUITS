@@ -106,10 +106,6 @@ public class Paradiso {
             LOGGER.error("during symbolic factorization: " + error);
         }
 
-        //System.out.println("\nReordering completed ... ");
-        //System.out.println("\nNumber of nonzeros in factors  = " + iparm[17]);
-        //System.out.println("\nNumber of factorization MFLOPS = " + iparm[18]);
-
         /* -------------------------------------------------------------------- */
         /* ..  Numerical factorization.                                         */
         /* -------------------------------------------------------------------- */
@@ -122,7 +118,6 @@ public class Paradiso {
             LOGGER.error("during numerical factorization: " + error);
         }
         //long facstop = System.currentTimeMillis();
-        //System.out.println("factorization time: " + (facstop - facstart)/1000.0);
         //System.exit(45);
     }
 

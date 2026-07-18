@@ -71,8 +71,6 @@ public abstract class AbstractSwitchCalculator extends CircuitComponent implemen
             _bVector.setUpdateAllFlag();
         }
 
-        //System.out.println("Gate signal set to " + _gateValue);
-
     }
 
     public final boolean isGateSignalOn() {

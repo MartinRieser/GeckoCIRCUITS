@@ -184,7 +184,6 @@ public class DataContainerSimple extends AbstractDataContainer implements DataCo
     public Object getDataValueInInterval(double intervalStart, double intervalStop, int columnIndex) {
 //        int index = _timeSerieArray.findTimeIndex(intervalStop, _maximumIndex);
 //        return getValue(0, index);
-//        System.out.println("Interval Start:" + intervalStart + "\tIntervallStop: " + intervalStop + "\t columnIndex: " + columnIndex);
         final int startIndex = _timeSerieArray.findTimeIndex(intervalStart);
         final int stopIndex = _timeSerieArray.findTimeIndex(intervalStop);
 
