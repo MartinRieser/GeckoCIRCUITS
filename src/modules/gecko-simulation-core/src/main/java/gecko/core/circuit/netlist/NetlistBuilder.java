@@ -222,7 +222,7 @@ public class NetlistBuilder {
         // Step 3: Build node arrays and parameter arrays
         int[] nodeX = new int[elementCount];
         int[] nodeY = new int[elementCount];
-        double[][] params = new double[elementCount][10]; // up to 10 params per component
+        double[][] params = new double[elementCount][16]; // up to 16 params per component
 
         for (int i = 0; i < elementCount; i++) {
             CircuitModel.ComponentData comp = components.get(i);
@@ -236,7 +236,7 @@ public class NetlistBuilder {
             nodeY[i] = yLabels.length > 0 ? labelToNode.getOrDefault(yLabels[0], 0) : 0;
 
             // Extract numeric parameters
-            for (int p = 0; p < 10; p++) {
+            for (int p = 0; p < 16; p++) {
                 Object val = comp.getParameters().get("param" + p);
                 params[i][p] = (val instanceof Number) ? ((Number) val).doubleValue() : 0.0;
             }
