@@ -1098,7 +1098,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     }
 
     @Override
-    @SuppressWarnings("fallthrough")
+    @SuppressWarnings({"fallthrough", "PMD.ImplicitSwitchFallThrough"})
     public void actionPerformed(ActionEvent ae) {
         if (!simulatorAktiviert) {
             return;

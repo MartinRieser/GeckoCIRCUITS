@@ -312,8 +312,8 @@ public class CircuitSheet extends JPanel {
         String newSearchString = searchString;
 
         if (ignoreCase) {
-            newCompString = componentString.toLowerCase();
-            newSearchString = searchString.toLowerCase();
+            newCompString = componentString.toLowerCase(Locale.ROOT);
+            newSearchString = searchString.toLowerCase(Locale.ROOT);
         }
 
         if (startsWith) {

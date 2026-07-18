@@ -32,6 +32,10 @@
 
         <!-- False positives: flags imports used in implements/extends clauses and wildcard imports -->
         <exclude name="UnnecessaryImport"/>
+
+        <!-- volatile is a legitimate Java keyword for memory visibility; rule is widely
+             considered a false positive in modern Java multithreading -->
+        <exclude name="AvoidUsingVolatile"/>
     </rule>
 
     <rule ref="category/java/errorprone.xml/EmptyCatchBlock">

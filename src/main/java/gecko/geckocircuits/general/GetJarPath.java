@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.Locale;
 import javax.swing.JOptionPane;
 
 /**
@@ -134,7 +135,7 @@ public final class GetJarPath {
         // remove preceeding file:-String. Be careful, Linux and Windows require
         // different handling:
         if (path.startsWith("file:")) {
-            if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            if (System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win")) {
                 path = path.substring("file:/".length());
             } else {
                 path = path.substring("file:".length());

@@ -23,6 +23,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.zip.GZIPOutputStream;
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
@@ -605,7 +606,7 @@ public final class SaveViewFrame extends GeckoDialog {
                 return true;
             }
             for (String end : _endings) {
-                if (file.getName().toLowerCase().endsWith(end)) {
+                if (file.getName().toLowerCase(Locale.ROOT).endsWith(end)) {
                     return true;
                 }
             }

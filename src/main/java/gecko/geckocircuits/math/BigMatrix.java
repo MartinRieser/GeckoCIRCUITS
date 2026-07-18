@@ -173,8 +173,8 @@ public final class BigMatrix implements java.io.Serializable {
       BigDecimal[][] C = new BigDecimal[m][n];
       for (int i = 0; i < m; i++) {
          for (int j = 0; j < n; j++) {
-             C[i][j] = BigDecimal.ZERO;
-             C[i][j] = C[i][j].add(A[i][j]);
+            C[i][j] = BigDecimal.ZERO;
+            C[i][j] = C[i][j].add(A[i][j]);
          }
       }
 

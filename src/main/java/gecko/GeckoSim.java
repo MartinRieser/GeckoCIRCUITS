@@ -106,7 +106,7 @@ public class GeckoSim {
         String modeProperty = System.getProperty("operatingmode");
         if (modeProperty != null) {
             try {
-                operatingmode = OperatingMode.valueOf(modeProperty.toUpperCase());
+                operatingmode = OperatingMode.valueOf(modeProperty.toUpperCase(Locale.ROOT));
             } catch (IllegalArgumentException e) {
                 LOGGER.error("Invalid operating mode: " + modeProperty);
             }

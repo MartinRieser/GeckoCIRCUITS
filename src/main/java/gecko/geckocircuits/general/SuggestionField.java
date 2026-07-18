@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
@@ -269,7 +270,7 @@ public final class SuggestionField extends JTextField {
     }
 
     public void showSuggest() {
-        if (!getText().toLowerCase().contains(this._lastWord.toLowerCase())) {
+        if (!getText().toLowerCase(Locale.ROOT).contains(this._lastWord.toLowerCase(Locale.ROOT))) {
             this._suggestions.clear();
         }
         if (this._suggestions.isEmpty()) {
@@ -367,7 +368,7 @@ public final class SuggestionField extends JTextField {
                             it.remove();
                         }
                     } else if (!SuggestionField.this._suggestMatcher.matches(
-                            it.next().toLowerCase(), word.toLowerCase())) {
+                            it.next().toLowerCase(Locale.ROOT), word.toLowerCase(Locale.ROOT))) {
                         it.remove();
                     }
                 }

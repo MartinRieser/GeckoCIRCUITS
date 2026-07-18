@@ -14,6 +14,7 @@
 package gecko.geckocircuits.control;
 
 import java.awt.Window;
+import java.util.Locale;
 
 abstract class AbstractTrigonometricFunction extends AbstractControlSingleInputSingleOutput {
 
@@ -24,6 +25,6 @@ abstract class AbstractTrigonometricFunction extends AbstractControlSingleInputS
 
     @Override
     public final String[] getOutputNames() {
-        return new String[]{getFixedIDString().toLowerCase()};
+        return new String[]{getFixedIDString().toLowerCase(Locale.ROOT)};
     }
 }
