@@ -632,6 +632,7 @@ public final class BigMatrix implements java.io.Serializable {
    @param input the input stream.
    */
 
+   @SuppressWarnings("PMD.EmptyControlStatement")
    public static Matrix read (BufferedReader input) throws java.io.IOException {
       StreamTokenizer tokenizer= new StreamTokenizer(input);
 

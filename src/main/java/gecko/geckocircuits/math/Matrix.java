@@ -917,6 +917,7 @@ public final class Matrix implements Cloneable, java.io.Serializable {
      * the last row is followed by a blank line.
     @param input the input stream.
      */
+    @SuppressWarnings("PMD.EmptyControlStatement")
     public static Matrix read(BufferedReader input) throws java.io.IOException {
         StreamTokenizer tokenizer = new StreamTokenizer(input);
 
