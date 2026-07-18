@@ -28,7 +28,7 @@ import net.sourceforge.jwbf.core.contentRep.SimpleArticle;
 import gecko.i18n.translationtoolbox.TranslationDialog;
 import gecko.i18n.resources.I18nKeys;
 
-public class UPbot {
+public final class UPbot {
 
     private UPbot() {
         // utility class

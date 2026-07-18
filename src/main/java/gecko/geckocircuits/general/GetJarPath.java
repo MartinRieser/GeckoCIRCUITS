@@ -38,7 +38,7 @@ import javax.swing.JOptionPane;
  * complicated.
  *
  */
-public class GetJarPath {
+public final class GetJarPath {
     private static final Logger LOGGER = LogManager.getLogger(GetJarPath.class);
 
     private GetJarPath() {

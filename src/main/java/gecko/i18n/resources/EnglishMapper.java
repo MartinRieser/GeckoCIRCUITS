@@ -19,7 +19,7 @@ package gecko.i18n.resources;
 
 import gecko.i18n.DoubleMap;
 
-public class EnglishMapper {
+public final class EnglishMapper {
 
     private EnglishMapper() {
         // utility class

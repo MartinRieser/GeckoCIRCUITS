@@ -16,7 +16,7 @@ package gecko.geckocircuits.math;
 /**
 * The Polynomials class contains methods to handle Polynomials and Rational Functions.
 */
-public class Polynomials {
+public final class Polynomials {
 
    private Polynomials() {
        // utility class

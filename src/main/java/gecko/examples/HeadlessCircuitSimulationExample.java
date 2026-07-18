@@ -121,7 +121,7 @@ import org.apache.logging.log4j.Logger;
  *
  * ============================================================================
  */
-public class HeadlessCircuitSimulationExample {
+public final class HeadlessCircuitSimulationExample {
     private static final Logger LOGGER = LogManager.getLogger(HeadlessCircuitSimulationExample.class);
 
     private HeadlessCircuitSimulationExample() {

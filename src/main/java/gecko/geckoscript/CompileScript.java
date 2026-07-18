@@ -46,7 +46,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  *
  * @author andy
  */
-public class CompileScript {
+public final class CompileScript {
 
     private CompileScript() {
         // utility class

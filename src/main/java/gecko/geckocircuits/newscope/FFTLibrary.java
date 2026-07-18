@@ -21,7 +21,7 @@ import edu.emory.mathcs.jtransforms.fft.FloatFFT_1D;
  *
  * @author andy
  */
-public class FFTLibrary {
+public final class FFTLibrary {
 
     private FFTLibrary() {
         // utility class

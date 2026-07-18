@@ -28,7 +28,7 @@ import gecko.i18n.InitParameters;
 import gecko.i18n.LangInit;
 import gecko.i18n.resources.I18nKeys;
 
-public class DLbot {
+public final class DLbot {
 
     private DLbot() {
         // utility class

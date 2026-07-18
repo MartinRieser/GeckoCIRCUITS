@@ -43,7 +43,7 @@ import java.util.Map;
  *
  */
 @SuppressWarnings({"PMD.ExcessivePublicCount", "PMD.NullAssignment"})
-public class GeckoRemote {
+public final class GeckoRemote {
     private static final Logger LOGGER = LogManager.getLogger(GeckoRemote.class);
 
     private GeckoRemote() {
