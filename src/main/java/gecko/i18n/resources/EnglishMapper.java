@@ -21,6 +21,10 @@ import gecko.i18n.DoubleMap;
 
 public class EnglishMapper {
 
+    private EnglishMapper() {
+        // utility class
+    }
+
     /**
      * Creates a new map with all single-line English key-value pairs and
      * returns it

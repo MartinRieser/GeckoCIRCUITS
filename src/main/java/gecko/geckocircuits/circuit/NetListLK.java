@@ -276,7 +276,7 @@ public final class NetListLK {
         eLKneu = eLK_M_vec.toArray(new AbstractCircuitBlockInterface[0]);
     }
 
-    protected void initialisiereMitSubcircuit() {
+    void initialisiereMitSubcircuit() {
         this.integriereSubCircuits();
         Set<Connection> connections = new LinkedHashSet<Connection>();
         for (Connection verb : v) {

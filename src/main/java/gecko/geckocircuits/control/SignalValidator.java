@@ -82,6 +82,7 @@ public final class SignalValidator {
     /**
      * Result of signal validation.
      */
+    @SuppressWarnings("PMD.AvoidStringBufferField")
     public static class ValidationResult {
         private final StringBuilder corrections = new StringBuilder();
         private final StringBuilder missingSignals = new StringBuilder();

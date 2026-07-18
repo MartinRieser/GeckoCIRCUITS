@@ -33,6 +33,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 
 
+@SuppressWarnings("PMD.AvoidStringBufferField")
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Dialog stores license text buffer for display")
 public class DialogLicense extends JDialog implements WindowListener, ActionListener {
     private JButton knOK;

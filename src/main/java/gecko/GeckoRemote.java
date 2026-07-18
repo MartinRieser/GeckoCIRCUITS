@@ -46,6 +46,10 @@ import java.util.Map;
 public class GeckoRemote {
     private static final Logger LOGGER = LogManager.getLogger(GeckoRemote.class);
 
+    private GeckoRemote() {
+        // utility class
+    }
+
     private static String _pathToJava = "";
 
 

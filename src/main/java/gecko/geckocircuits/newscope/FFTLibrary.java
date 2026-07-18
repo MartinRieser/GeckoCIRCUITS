@@ -23,6 +23,10 @@ import edu.emory.mathcs.jtransforms.fft.FloatFFT_1D;
  */
 public class FFTLibrary {
 
+    private FFTLibrary() {
+        // utility class
+    }
+
     static void calculateForwardFFT(float[] data) {
         FloatFFT_1D forwardFFT = new FloatFFT_1D(data.length);
         forwardFFT.realForward(data);

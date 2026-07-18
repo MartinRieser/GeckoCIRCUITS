@@ -41,6 +41,10 @@ import javax.swing.JOptionPane;
 public class GetJarPath {
     private static final Logger LOGGER = LogManager.getLogger(GetJarPath.class);
 
+    private GetJarPath() {
+        // utility class
+    }
+
 
     private static boolean _initialized;
     private static String _JARpath;

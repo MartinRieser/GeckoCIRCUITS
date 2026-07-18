@@ -124,6 +124,10 @@ import org.apache.logging.log4j.Logger;
 public class HeadlessCircuitSimulationExample {
     private static final Logger LOGGER = LogManager.getLogger(HeadlessCircuitSimulationExample.class);
 
+    private HeadlessCircuitSimulationExample() {
+        // utility class
+    }
+
 
     // This is a documentation class showing how to use gecko-simulation-core.
     // For actual implementation examples, see the documentation files above.

@@ -23,6 +23,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * PrintStream out = new PrintStream(new TextAreaOutputStream(myTextArea));
  * Then out.println() et all will all appear in the TextArea.
  */
+@SuppressWarnings("PMD.AvoidStringBufferField")
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Output stream stores text area reference for appending output")
 public final class TextAreaOutputStream extends OutputStream {
 

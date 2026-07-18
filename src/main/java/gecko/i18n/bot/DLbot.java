@@ -30,6 +30,10 @@ import gecko.i18n.resources.I18nKeys;
 
 public class DLbot {
 
+    private DLbot() {
+        // utility class
+    }
+
     private static volatile boolean connected = false; // Applet-Wiki connection status indicator
     private static volatile int progress = 0; // download progress (percent)
 

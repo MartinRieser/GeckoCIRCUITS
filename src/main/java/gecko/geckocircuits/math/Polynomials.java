@@ -18,6 +18,10 @@ package gecko.geckocircuits.math;
 */
 public class Polynomials {
 
+   private Polynomials() {
+       // utility class
+   }
+
    /**
    * Given the n+1 coefficients of a polynomial of degree n in u[0..n], and the nv+1 coefficients
    * of another polynomial of degree nv in v[0..nv], divide the polynomial u by the polynomial

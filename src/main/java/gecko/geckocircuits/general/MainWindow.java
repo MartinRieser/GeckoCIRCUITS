@@ -1098,6 +1098,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     }
 
     @Override
+    @SuppressWarnings("fallthrough")
     public void actionPerformed(ActionEvent ae) {
         if (!simulatorAktiviert) {
             return;

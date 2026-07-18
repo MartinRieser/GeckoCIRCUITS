@@ -48,6 +48,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  */
 public class CompileScript {
 
+    private CompileScript() {
+        // utility class
+    }
+
     static AbstractCompileObject _compileObject = new CompileObjectNull();
     static Map<String, CompiledClassContainer> _classNameFileMap;
 

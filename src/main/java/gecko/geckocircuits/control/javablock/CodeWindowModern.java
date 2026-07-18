@@ -27,6 +27,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+@SuppressWarnings("PMD.AvoidStringBufferField")
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Code window stores Java function block and output buffer references")
 public class CodeWindowModern extends JFrame {
 
