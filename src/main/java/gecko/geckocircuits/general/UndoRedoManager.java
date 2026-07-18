@@ -17,7 +17,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.io.ObjectInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
 import java.util.zip.InflaterInputStream;
+import java.util.zip.DeflaterOutputStream;
 
 public class UndoRedoManager {
     private static final Logger LOGGER = LogManager.getLogger(UndoRedoManager.class);
@@ -49,37 +52,26 @@ public class UndoRedoManager {
     public void speichereAutomatischAktuellenZustandFuerUndoRedo(Object data) {
         zeigerAufRedoZustaende = 0;  // dh. Redo nicht moeglich (Redo nur nach Undo moeglich)
         redoAnzahl = 0;
-        //--------------
-        //--------------
-        //--------------
-        //--------------
-        //--------------
-        //--------------
-        /*
         try {
-        ByteArrayOutputStream outByteArray= new ByteArrayOutputStream();
-        ObjectOutputStream out= new ObjectOutputStream(new DeflaterOutputStream(outByteArray));
-        out.writeObject(data);
-        out.flush();
-        out.close();
-        byte[] zustand= outByteArray.toByteArray();
-        //---------
-        if (undoNumber<undoZustaendeMAX-1) undoNumber++;
-        undoZustaende[pointerToUndoStates]= zustand;
-        pointerToUndoStates++;
-        if (pointerToUndoStates==undoZustaendeMAX) {
-        undoRingmemoryFirstExceeded= true;
-        pointerToUndoStates= 0;
-        }
-        //---------
+            ByteArrayOutputStream outByteArray = new ByteArrayOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(new DeflaterOutputStream(outByteArray));
+            out.writeObject(data);
+            out.flush();
+            out.close();
+            byte[] zustand = outByteArray.toByteArray();
+            if (undoNumber < undoZustaendeMAX - 1) {
+                undoNumber++;
+            }
+            undoZustaende[pointerToUndoStates] = zustand;
+            pointerToUndoStates++;
+            if (pointerToUndoStates == undoZustaendeMAX) {
+                undoRingmemoryFirstExceeded = true;
+                pointerToUndoStates = 0;
+            }
         } catch (Exception e) {
-        //---------
-        System.out.println(e+"  e0finv'");
-        this.init();
+            LOGGER.error("Error saving undo/redo state", e);
+            this.init();
         }
-         */
-        //System.out.println("pointerToUndoStates= "+pointerToUndoStates+"\t\tzeigerAufRedoZustaende= "+zeigerAufRedoZustaende);
-        //--------------
     }
 
     public Object undo() {
