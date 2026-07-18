@@ -259,8 +259,7 @@ public final class ControlSaveData extends RegelBlock implements Operationable {
 
     @Override
     protected void exportAsciiIndividual(final StringBuffer ascii) {
-        ProjectData.appendAsString(ascii.append("\nselectedSignalNames"), _selectedSignalNames.toArray(
-                new String[_selectedSignalNames.size()]));
+        ProjectData.appendAsString(ascii.append("\nselectedSignalNames"), _selectedSignalNames.toArray(new String[0]));
         ProjectData.appendAsString(ascii.append("\nselectedSignalIndices"), _selectedSignalIndices);
         ProjectData.appendAsString(ascii.append("\nitemSeparator"), _itemSeparator.ordinal());
         ProjectData.appendAsString(ascii.append("\nheaderSymbol"), _headerSymbol.ordinal());

@@ -192,6 +192,7 @@ public class ComponentPositioner {
      * @param positions collection of position providers
      * @return array of [minX, minY, maxX, maxY], or null if no valid positions
      */
+    @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull") // null signals "no bounding box found"
     public int[] calculateBoundingBox(Collection<? extends PositionProvider> positions) {
         if (positions == null || positions.isEmpty()) {
             return null;

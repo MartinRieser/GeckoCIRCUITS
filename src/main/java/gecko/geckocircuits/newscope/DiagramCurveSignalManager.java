@@ -107,12 +107,12 @@ public final class DiagramCurveSignalManager{
   }
 
   public void addDiagram(final AbstractDiagram newDiagram){
-    final List<AbstractCurve> newCurves = new ArrayList<AbstractCurve>();
+    final List<AbstractCurve> curves = new ArrayList<AbstractCurve>();
     for(AbstractScopeSignal signal : _allScopeSignals){
-      newCurves.add(newDiagram.curveFabric());
+      curves.add(newDiagram.curveFabric());
     }
 
-    newDiagram.setCurves(Collections.unmodifiableList(newCurves));
+    newDiagram.setCurves(Collections.unmodifiableList(curves));
     if(!_diagrams.isEmpty()){
       HiLoData oldLimits = _diagrams.get(_diagrams.size() - 1)._xAxis._axisMinMax.getLimits();
       newDiagram._xAxis._axisMinMax.setGlobalAutoScaleValues(oldLimits);
@@ -163,8 +163,8 @@ public final class DiagramCurveSignalManager{
 
       final AbstractCurve connectedCurve = diag.getCurve(insertionIndex - 1);
 
-      if(!(connectedCurve.getAxisConnection() == AxisConnection.ZUORDNUNG_NIX)
-              && !(connectedCurve.getAxisConnection() == AxisConnection.ZUORDNUNG_SIGNAL)){
+      if(connectedCurve.getAxisConnection() != AxisConnection.ZUORDNUNG_NIX
+              && connectedCurve.getAxisConnection() != AxisConnection.ZUORDNUNG_SIGNAL){
         newCurve.setAxisConnection(connectedCurve.getAxisConnection());
       }
 

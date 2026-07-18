@@ -373,7 +373,7 @@ public final class SuggestionField extends JTextField {
                 }
 
                 SuggestionField.this.setFont(SuggestionField.this._regular);
-                if (SuggestionField.this._suggestions.size() > 0) {
+                if (!SuggestionField.this._suggestions.isEmpty()) {
                     SuggestionField.this._list.setListData(SuggestionField.this._suggestions.toArray(new String[0]));
                     SuggestionField.this._list.setSelectedIndex(0);
                     SuggestionField.this._list.ensureIndexIsVisible(0);

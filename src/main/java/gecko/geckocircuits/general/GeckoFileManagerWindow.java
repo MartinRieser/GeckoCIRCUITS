@@ -48,7 +48,7 @@ public class GeckoFileManagerWindow extends JDialog {
     private transient LossCalculationDetailed _losses = null;
     private final String _fileExtension;
     private final String _fileType;
-    private final StorageType _newFileType = StorageType.EXTERNAL;
+    private static final StorageType _newFileType = StorageType.EXTERNAL;
     private final JFileChooser _addFilesDialog = new JFileChooser();
     private final transient List<GeckoFile> _newFilesToAdd = new ArrayList<GeckoFile>();
     private final DefaultListModel<GeckoFile> _existingFilesList = new DefaultListModel<>();

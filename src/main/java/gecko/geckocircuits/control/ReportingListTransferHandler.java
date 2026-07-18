@@ -32,7 +32,7 @@ public final class ReportingListTransferHandler extends TransferHandler {
 
     private DataFlavor _locArrayLstFlvr;
     private final DataFlavor _serArrayLstFlvr;
-    private final String _locArrayListType = DataFlavor.javaJVMLocalObjectMimeType + ";class=java.util.ArrayList";
+    private static final String _locArrayListType = DataFlavor.javaJVMLocalObjectMimeType + ";class=java.util.ArrayList";
     private JList _source = null;
     private int[] _indices = null;
     private int _addIndex = -1; //Location where items were added
