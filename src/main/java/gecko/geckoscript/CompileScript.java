@@ -53,9 +53,9 @@ public class CompileScript {
     static AbstractCompileObject _compileObject = new CompileObjectNull();
     static Map<String, CompiledClassContainer> _classNameFileMap;
 
-    static class scriptRAMJavaFileObject extends SimpleJavaFileObject {
+    static class ScriptRAMJavaFileObject extends SimpleJavaFileObject {
 
-        scriptRAMJavaFileObject(String name, Kind kind) {
+        ScriptRAMJavaFileObject(String name, Kind kind) {
             super(toURI(name), kind);
         }
         ByteArrayOutputStream baos;

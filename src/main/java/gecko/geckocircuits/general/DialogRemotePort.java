@@ -28,6 +28,7 @@ import javax.swing.JOptionPane;
 /**
  * @author Andrija
  */
+@SuppressWarnings("PMD.AvoidUsingHardCodedIP")
 public final class DialogRemotePort extends javax.swing.JDialog {
 
     private static final Logger LOGGER = LogManager.getLogger(DialogRemotePort.class);

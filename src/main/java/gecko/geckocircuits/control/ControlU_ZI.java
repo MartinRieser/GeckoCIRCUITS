@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Window;
 
+@SuppressWarnings("PMD.ClassNamingConventions")
 public final class ControlU_ZI extends RegelBlock {
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlU_ZI.class, "UZI", I18nKeys.U_ZI_DIAGRAM);
 

@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+@SuppressWarnings("PMD.AvoidUsingHardCodedIP")
 public final class GeckoRemoteRegistry {
     private static final Logger LOGGER = LogManager.getLogger(GeckoRemoteRegistry.class);
 
