@@ -39,7 +39,7 @@ Benefits:
 - [x] #15 `ControlJavaFunction._doDebug` — delete commented field  → `cleanup/15-controljavafunction-dodebug` @ 7f1e0cb3
 - [x] #19 `DataTablePanelParameters.getCheckedData()` — delete dead method  → `cleanup/19-datatablepanelparameters-getcheckeddata` @ 6eb30a58
 - [x] #20 `DialogSmallSignalAnalysis` — delete dead comments  → `cleanup/20-dialogsmallsignalanalysis-dead-comments` @ b46e7396
-- [ ] #13 `NodeLabel` — delete dead class + whitelist entry in `CorePackageValidationTest.java:97`
+- [x] #13 `NodeLabel` — delete dead class + whitelist entry in `CorePackageValidationTest.java:97`  → `cleanup/13-nodelabel-dead-class` @ d32730f0
 
 ### Phase B — MEDIUM, mechanical (no decision needed)
 - [ ] #6 Migrate ~3 call sites to `*Rgb()` variants, then remove deprecated methods
