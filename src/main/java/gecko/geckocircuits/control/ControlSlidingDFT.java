@@ -251,7 +251,6 @@ public final class ControlSlidingDFT extends AbstractControlVariableInputs {
 
     @Override
     protected Window openDialogWindow() {
-        //return new ControlSlidingDFTDialog(this);
         return new ControlSlidingDFTDialog(this);
     }
 
