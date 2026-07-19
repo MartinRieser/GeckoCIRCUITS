@@ -82,18 +82,30 @@ public class NativeCBlock {
         }
     }
 
+    /**
+     * Unload the native library and release all associated references.
+     *
+     * <p>Strategy: drop all references (the {@link NativeCClassLoader}, the
+     * wrapper class and instance, the IO vectors) and call {@code System.gc()}
+     * to encourage the JVM to collect the ClassLoader and release its hold on
+     * the loaded library file.
+     *
+     * <p>Note: since {@code NativeCWrapper.loadLibrary} now loads from a
+     * per-run temp copy (see that method's javadoc), the user's source
+     * {@code .dll}/{@code .so}/{@code .dylib} is never locked in the first
+     * place, so the determinism of this unload matters only for cleaning up
+     * temp files - not for unblocking user recompile workflows.
+     *
+     * <p>The old approach (Java 8 era) reflected into the private
+     * {@code ClassLoader.nativeLibraries} vector and called {@code finalize()}
+     * on each entry. That field became inaccessible on Java 9+ and the
+     * reflection was disabled. {@code System.gc()} is load-bearing here:
+     * removing it caused real Windows .dll-lock issues (see commit 71ac8ddd
+     * on {@code feature/fix-jni-and-spotbugs-for-gecko2026}).
+     */
     @SuppressWarnings("PMD.DoNotCallGarbageCollectionExplicitly")
     public void unloadLibraries () {
         try {
-            /*ClassLoader clLoader = this.getClass().getClassLoader();
-            Field field = ClassLoader.class.getDeclaredField("nativeLibraries");
-            field.setAccessible(true);
-            Vector libs = (Vector) field.get(clLoader);
-            for (Object o : libs) {
-                Method finalize = o.getClass().getDeclaredMethod("finalize", new Class[0]);
-                finalize.setAccessible(true);
-                finalize.invoke(o, new Object[0]);
-            }*/
             _nativeCWrapperObj = null;
             _nativeCWrapperClass = null;
             _customCClassLoader = null;
