@@ -94,7 +94,6 @@ class CorePackageValidationTest {
         "DialogNonLinearity.java",
         "GeckoUndoableEditAdapter.java",  // Bridge to Swing undo manager (intentional Swing dependency)
         "IDStringDialog.java",
-        "NodeLabel.java",
         "MyTableCellEditor.java",
         "MyTableCellRenderer.java",
         "NonLinearDialogPanel.java",
