@@ -42,12 +42,12 @@ Benefits:
 - [x] #13 `NodeLabel` — delete dead class + whitelist entry in `CorePackageValidationTest.java:97`  → `cleanup/13-nodelabel-dead-class` @ d32730f0
 
 ### Phase B — MEDIUM, mechanical (no decision needed)
-- [ ] #6 Migrate ~3 call sites to `*Rgb()` variants, then remove deprecated methods
-- [ ] #12 Align misleading `IGNORED:` Javadoc in `GeckoRemoteTest` with reality
+- [x] #6 Migrate ~3 call sites to `*Rgb()` variants, then remove deprecated methods  → `cleanup/06-connectortype-deprecated-color-methods` @ d9271f21
+- [x] #12 Align misleading `IGNORED:` Javadoc in `GeckoRemoteTest` with reality  → `cleanup/12-geckoremotetest-javadoc` @ cb4221bc
 
 ### Phase C — MEDIUM, needs a decision (decide *before* coding)
 For each: pick **delete** or **wire-up**, then execute.
-- [ ] #5  `NativeCBlock` native-library unload reflection
+- [x] #5  `NativeCBlock` native-library unload reflection  → `cleanup/05-nativecblock-copy-on-load` @ 7114bd53
 - [ ] #7  `SimulationStateListener` orphan SPI
 - [ ] #8  `UserParameterGUIAdapter` orphan adapter
 - [ ] #9  `DialogExternalStorageConverter` orphan implementation
