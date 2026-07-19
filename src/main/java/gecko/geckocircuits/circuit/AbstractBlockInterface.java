@@ -194,11 +194,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
     }
 
     public Color getForeGroundColor() {
-        return getSimulationDomain().getForeGroundColor();
+        return new Color(getSimulationDomain().getForeGroundColorRgb());
     }
 
     public Color getBackgroundColor() {
-        return getSimulationDomain().getBackgroundColor();
+        return new Color(getSimulationDomain().getBackgroundColorRgb());
     }
 
     public void setDummyIDStringDialog() {

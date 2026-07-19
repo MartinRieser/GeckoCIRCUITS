@@ -80,15 +80,6 @@ public enum ConnectorType {
     }
 
     /**
-     * @deprecated Use getBackgroundColorRgb() for GUI-free code.
-     * For GUI layer only - returns AWT Color.
-     */
-    @Deprecated(since = "Sprint 15", forRemoval = true)
-    java.awt.Color getBackgroundColor() {
-        return new java.awt.Color(getBackgroundColorRgb());
-    }
-
-    /**
      * Get foreground color as RGB integer value.
      * To convert to AWT Color: {@code new java.awt.Color(getForeGroundColorRgb())}
      */
@@ -107,15 +98,6 @@ public enum ConnectorType {
             default:
                 return 0x808080; // Color.GRAY as RGB
         }
-    }
-
-    /**
-     * @deprecated Use getForeGroundColorRgb() for GUI-free code.
-     * For GUI layer only - returns AWT Color.
-     */
-    @Deprecated(since = "Sprint 15", forRemoval = true)
-    java.awt.Color getForeGroundColor() {
-        return new java.awt.Color(getForeGroundColorRgb());
     }
 
     /**

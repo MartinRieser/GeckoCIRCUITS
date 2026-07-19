@@ -35,13 +35,4 @@ public interface SubCircuitTerminable {
      * To convert to AWT Color: {@code new java.awt.Color(getForeGroundColorRgb())}
      */
     int getForeGroundColorRgb();
-
-    /**
-     * @deprecated Use getForeGroundColorRgb() for GUI-free code.
-     * For GUI layer only - returns AWT Color.
-     */
-    @Deprecated(since = "Sprint 15", forRemoval = true)
-    default java.awt.Color getForeGroundColor() {
-        return new java.awt.Color(getForeGroundColorRgb());
-    }
 }
