@@ -50,7 +50,7 @@ For each: pick **delete** or **wire-up**, then execute.
 - [x] #5  `NativeCBlock` native-library unload reflection  → `cleanup/05-nativecblock-copy-on-load` @ 7114bd53
 - [x] #7  `SimulationStateListener` orphan SPI  → `cleanup/07-simulationstatelistener-wire-up` @ 4e089753
 - [x] #8  `UserParameterGUIAdapter` orphan adapter  → `cleanup/08-userparameterguiadapter-orphan` @ 1709c237
-- [ ] #9  `DialogExternalStorageConverter` orphan implementation
+- [x] #9  `DialogExternalStorageConverter` orphan implementation  → `cleanup/09-dialogexternalstorageconverter-orphan` @ b8f6b0e5
 - [ ] #11 `AxisLimits` disabled user-scale override on import
 - [ ] #10 `ControlOSZI` terminal rename propagation (also a latent bug — write a test)
 
