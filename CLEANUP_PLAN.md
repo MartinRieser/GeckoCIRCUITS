@@ -48,7 +48,7 @@ Benefits:
 ### Phase C — MEDIUM, needs a decision (decide *before* coding)
 For each: pick **delete** or **wire-up**, then execute.
 - [x] #5  `NativeCBlock` native-library unload reflection  → `cleanup/05-nativecblock-copy-on-load` @ 7114bd53
-- [x] #7  `SimulationStateListener` orphan SPI  → `cleanup/07-simulationstatelistener-orphan-spi` @ 97ad173b
+- [x] #7  `SimulationStateListener` orphan SPI  → `cleanup/07-simulationstatelistener-wire-up` @ 4e089753
 - [ ] #8  `UserParameterGUIAdapter` orphan adapter
 - [ ] #9  `DialogExternalStorageConverter` orphan implementation
 - [ ] #11 `AxisLimits` disabled user-scale override on import
