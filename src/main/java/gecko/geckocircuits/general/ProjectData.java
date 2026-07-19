@@ -349,8 +349,20 @@ public final class ProjectData implements Serializable {
 
 
 
-        // TODO: dataContainerSignals[] token is read but signal names are not applied.
-        // Previously: NetzlisteCONTROL.globalData.setSignalName(row, sigNames[row]);
+        // Note: the file-level "dataContainerSignals[]" token written by exportASCII()
+        // (line ~182) is intentionally NOT re-applied to NetzlisteCONTROL.globalData here.
+        // Doing so was never possible with the current data-container API:
+        //   - DataContainerCompressable._signalNames is final (set once at construction).
+        //   - AbstractDataContainer / DataContainerGlobal expose no setSignalName(row, name).
+        // Signal names for the global data container are recomputed from the loaded
+        // schematic on every simulation start (NetzlisteCONTROL.init() / globalData.init()
+        // at NetzlisteCONTROL.java:426). Each scope widget (ControlOSZI) additionally
+        // persists and restores its own signal names via its "savedSignalNames[]" token
+        // (ControlOSZI.java:355-359 / 389), so scope trace labels survive save/reload
+        // independently of this file-level token. The token is retained on the export
+        // side as decorative metadata and is consumed by the modular headless engine
+        // (HeadlessSimulationEngine.resolveSignalNames) as a fallback when no GUI scopes
+        // are present.
 
         if (_dt_pre <= 0) {
             _dt_pre = _dt;
