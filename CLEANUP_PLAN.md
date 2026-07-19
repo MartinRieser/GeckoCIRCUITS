@@ -52,7 +52,7 @@ For each: pick **delete** or **wire-up**, then execute.
 - [x] #8  `UserParameterGUIAdapter` orphan adapter  → `cleanup/08-userparameterguiadapter-orphan` @ 1709c237
 - [x] #9  `DialogExternalStorageConverter` orphan implementation  → `cleanup/09-dialogexternalstorageconverter-orphan` @ b8f6b0e5
 - [x] #11 `AxisLimits` disabled user-scale override on import  → `cleanup/11-axislimits-user-scale-import` @ 09213753
-- [ ] #10 `ControlOSZI` terminal rename propagation (also a latent bug — write a test)
+- [x] #10 `ControlOSZI` terminal rename propagation  → `cleanup/10-controloszi-orphan-methods` @ 00caf948
 
 ### Phase D — HIGH priority, real bugs and big refactors (last)
 For each bug: **write a failing regression test first**, then make it pass.
