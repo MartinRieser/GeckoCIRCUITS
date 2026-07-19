@@ -34,11 +34,11 @@ Benefits:
 ## 2. Recommended order (easiest → hardest)
 
 ### Phase A — LOW priority, pure deletions (workflow shakedown)
-- [ ] #21 `ControlSlidingDFT.java:254` — delete duplicate commented `return`  (**START HERE**)
-- [ ] #14 `GeneralPathWrapper.paintSymbols` — delete empty stub
-- [ ] #15 `ControlJavaFunction._doDebug` — delete commented field
-- [ ] #19 `DataTablePanelParameters.getCheckedData()` — delete dead method
-- [ ] #20 `DialogSmallSignalAnalysis` — delete dead comments
+- [x] #21 `ControlSlidingDFT.java:254` — delete duplicate commented `return`  → `cleanup/21-sliding-dft-dead-comment` @ 0ad20070
+- [x] #14 `GeneralPathWrapper.paintSymbols` — delete empty stub  → `cleanup/14-generalpathwrapper-paintsymbols-stub` @ 28459dba
+- [x] #15 `ControlJavaFunction._doDebug` — delete commented field  → `cleanup/15-controljavafunction-dodebug` @ 7f1e0cb3
+- [x] #19 `DataTablePanelParameters.getCheckedData()` — delete dead method  → `cleanup/19-datatablepanelparameters-getcheckeddata` @ 6eb30a58
+- [x] #20 `DialogSmallSignalAnalysis` — delete dead comments  → `cleanup/20-dialogsmallsignalanalysis-dead-comments` @ b46e7396
 - [ ] #13 `NodeLabel` — delete dead class + whitelist entry in `CorePackageValidationTest.java:97`
 
 ### Phase B — MEDIUM, mechanical (no decision needed)
@@ -72,7 +72,7 @@ Item: CLEANUP_TODO #<n>
 Files touched: <list>
 Behaviour change: yes / no
 Test added/updated: <name or "none — pure deletion">
-mvn test result: only the 4 known CircuitIntegrationTest failures
+mvn test result: 0 failures, 0 errors (matches baseline of 5378 run / 0 fail / 0 err / 0 skip)
 ```
 
 ---
@@ -82,8 +82,8 @@ mvn test result: only the 4 known CircuitIntegrationTest failures
 1. `git checkout -b cleanup/<n>-short-name`
 2. Read the cited file(s) and surrounding context.
 3. Make the change (edit, no extra refactors).
-4. `mvn test` — confirm only the 4 known failures remain.
-5. `git add -p && git commit` with the checklist as commit body.
+4. `mvn test` — confirm 0 failures, 0 errors (matches baseline).
+5. `git add -A && git commit` with the checklist as commit body.
 6. Optionally open a PR for review.
 
 For **bug fixes** (Phase C/D): step 2.5 is *write a failing test that reproduces the
@@ -97,3 +97,45 @@ branch.
 - Any new test failure ⇒ stop, investigate, do not commit until explained.
 - Any item that touches more than ~5 files ⇒ split or ask for review before commit.
 - Any "decide" item (Phase C/D) ⇒ do **not** guess; surface the question first.
+
+---
+
+## 6. Lessons learned (process notes)
+
+These are pitfalls hit while running Phase A. Read before starting a new item.
+
+### 6.1 Never run two git-mutating bash calls in parallel
+
+`git commit`, `git checkout`, and `git checkout -b` all take `.git/index.lock`. If
+two of them race, one will fail with `fatal: Unable to create '.git/index.lock'`.
+Worse: a `git checkout -b new-branch` issued in parallel with a `git commit` on
+the *old* branch can land the commit on the wrong branch (happened during Phase A
+— had to repoint both branches with `git branch -f`).
+
+**Rule:** chain git-mutating steps with `&&` *inside a single* bash call, or run
+the bash calls **sequentially** (one message, one bash block, wait for result).
+Read-only commands (`git log`, `git status`, `git diff`, `grep`, `mvn test`) may
+stay in parallel.
+
+### 6.2 Ignore ERROR/WARN log lines during `mvn test`
+
+Tests that exercise error paths (e.g. `DataContainerCompressableErrorPathsTest`,
+20 tests, all pass) intentionally produce ERROR/WARN log output as the code-under-test
+does its job. The console noise is meaningless. **Trust only**:
+
+- the per-class `Tests run: N, Failures: F, Errors: E, Skipped: S` lines in
+  `target/surefire-reports/*.txt`, and
+- the aggregate `mvn` build result line (`BUILD SUCCESS` / `BUILD FAILURE`).
+
+Quick summary after a run:
+
+```
+grep -hE "^Tests run" target/surefire-reports/*.txt \
+  | awk '{r+=$3; f+=$5; e+=$7; s+=$9} END {print "run="r" fail="f" err="e" skip="s}'
+```
+
+### 6.3 Verify "no callers" before deleting
+
+Every deletion in Phase A was preceded by a `grep` for the symbol across the whole
+codebase to confirm zero live callers. The TODO file is reliable but not infallible
+— re-verify each claim with a fresh search before editing.
