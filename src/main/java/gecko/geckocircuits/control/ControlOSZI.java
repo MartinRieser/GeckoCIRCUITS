@@ -161,8 +161,6 @@ public final class ControlOSZI extends RegelBlock implements VariableTerminalNum
     }
 
     public void initScope() {
-        // TODO ??? _zvDatenRAM.setSignalName(nodeIndex, newLabel);
-        // TODO ??? _zvDatenRAM.setSignalName(nodeIndex, newLabel);
         final DataContainerNullData nullData = new DataContainerNullData(_grafer.getManager().getAllScopeSignals());
         nullData.setDefinedMeanSignals(_meanSignals);
         _zvDatenRAM = nullData;
@@ -179,10 +177,6 @@ public final class ControlOSZI extends RegelBlock implements VariableTerminalNum
 
     public AbstractDataContainer getZVDataInRAM() {
         return _zvDatenRAM;
-    }
-
-    public void setTerminalNodeLabel(final String newLabel, final int nodeIndex) {
-        // TODO ??? _zvDatenRAM.setSignalName(nodeIndex, newLabel);
     }
 
     public void setDataContainerIndices(final int[] indices) {

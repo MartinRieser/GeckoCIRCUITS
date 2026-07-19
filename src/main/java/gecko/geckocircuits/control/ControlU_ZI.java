@@ -30,7 +30,6 @@ public final class ControlU_ZI extends RegelBlock {
     private UZiDisplay _uziDisplay = new UZiDisplay(this);
 
     private int tnX;  // Number of terminals for signal connection
-    private String[] header;
 
     private static double br = 1.4, da = 0.4;
 
@@ -62,18 +61,6 @@ public final class ControlU_ZI extends RegelBlock {
     @Override
     public I18nKeys[] getOutputDescription() {
         return new I18nKeys[0];
-    }
-
-    public void setTerminalNodeLabel(String q, int nodeIndex) {
-        // ... wird von 'setLabelAnfangsKnoten()' in ElementCONTROL aufgerufen, immer wenn die Netzliste aktualisiert wird
-        // aktueller Zugriff auf die Knoten-Labels fuer die SCOPE-Header -->
-        if (header == null) {
-            header = new String[tnX + 1];
-        }
-        header[nodeIndex + 1] = q;
-        if (header[nodeIndex + 1].equals("")) {
-            header[nodeIndex + 1] = "sg." + (nodeIndex + 1);
-        }
     }
 
     @Override
