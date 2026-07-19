@@ -54,7 +54,6 @@ public class DialogSmallSignalAnalysis extends DialogElementCONTROL<ControlSmall
     public DialogSmallSignalAnalysis(final ControlSmallSignalAnalysis parent) {
         super(parent);
         initComponents();
-        //jPanelBode.add(new BodePlot2());
         this.setResizable(true);
     }
 
@@ -116,7 +115,6 @@ public class DialogSmallSignalAnalysis extends DialogElementCONTROL<ControlSmall
         _bodePlot.setMinimumSize(new Dimension(300, 300));
         _bodePlot.setPreferredSize(new Dimension(600, 600));
 
-        //_bodePlot._graferNew._manager.getDiagrams().get(0).getCurve(0).setSymbolEnabled(false);
         con.add(_bodePlot, BorderLayout.CENTER);
 
         jpM.setLayout(new GridLayout(8, 1));
@@ -220,16 +218,9 @@ public class DialogSmallSignalAnalysis extends DialogElementCONTROL<ControlSmall
             }
         }
 
-
-
-//        for (int i = 0; i < data[0].length; i++) {
-//            dcs1.insertValuesAtEnd(new float[]{(float) data[1][i], (float) data[2][i]}, data[0][i]);
-//        }
-
         double Tnice = NiceScale.niceNum(T, true);
         _grafer.setSimulationTimeBoundaries(0, Tnice);
         _grafer._manager.getDiagrams().get(0).getCurve(1).setSymbolEnabled(false);
-        //dcs1.setContainerStatus(ContainerStatus.PAUSED);
 
         _grafer.setDataContainer(dcs1);
         dcs1.setSignalName("1", 0);
