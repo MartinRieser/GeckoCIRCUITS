@@ -443,4 +443,21 @@ public class AxisLimitsTest {
         assertEquals("Small min", -1e-10f, retrieved._yLo, 1e-15f);
         assertEquals("Small max", 1e-10f, retrieved._yHi, 1e-15f);
     }
+
+    @Test
+    public void testImportASCII_RestoresUserScaleWhenAutoDisabled() {
+        String[] ascii = {
+            "isAutoEnabled false",
+            "isUserScale -10.0 50.0",
+            "valueScale 0.0 100.0"
+        };
+        gecko.core.circuit.TokenMap tokenMap = new gecko.core.circuit.TokenMap(ascii);
+
+        limits.importASCII(tokenMap);
+
+        assertFalse(limits.isAutoEnabled());
+        HiLoData limitsData = limits.getLimits();
+        assertEquals("Limits should equal userScale when auto is disabled", -10.0, limitsData._yLo, DELTA);
+        assertEquals("Limits should equal userScale when auto is disabled", 50.0, limitsData._yHi, DELTA);
+    }
 }
