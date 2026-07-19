@@ -62,7 +62,7 @@ public final class TerminalSubCircuitBlock extends AbstractTerminal implements C
     @Override
     public void paintComponent(final Graphics graphics) {
         Color oldColor = graphics.getColor();
-        graphics.setColor(_lkTerminal.getForeGroundColor());
+        graphics.setColor(new Color(_lkTerminal.getForeGroundColorRgb()));
         super.paintComponent(graphics);
         graphics.setColor(oldColor);
     }
@@ -106,7 +106,7 @@ public final class TerminalSubCircuitBlock extends AbstractTerminal implements C
         final int dpix = AbstractCircuitSheetComponent.dpix;
         Color oldColor = graphics.getColor();
 
-        graphics.setColor(_lkTerminal.getForeGroundColor());
+        graphics.setColor(new Color(_lkTerminal.getForeGroundColorRgb()));
 
         if (!_label.getLabelString().isEmpty()) {
             graphics.drawString(_label.getLabelString(), dpix * getPosition().x + DX_IN, dpix * getPosition().y + DY_TEXT);
