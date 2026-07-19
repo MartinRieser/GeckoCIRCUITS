@@ -86,14 +86,6 @@ public final class ControlJavaFunction extends RegelBlock implements VariableTer
             arrayIndex(this, -1).
             build();
 
-    /*final UserParameter<Boolean> _doDebug = UserParameter.Builder.
-     <Boolean>start("doDebug", false).
-     longName(I18nKeys.ENABLE_DEBUGGING_OPTIONS).
-     shortName("doDebug").
-     showInTextInfo(TextInfoType.SHOW_NEVER).
-     arrayIndex(this, -1).
-     build();
-     */
     transient final VariableBusWidth _variableBusWidth = new VariableBusWidth(this);
 
     @SuppressWarnings("PMD")
