@@ -39,12 +39,12 @@ public class GeckoRemoteTest {
             "simulateStep", "simulateSteps", "registerLastClientToCallMethod", "checkSessionID", "acceptsExtraConnections");
 
     /**
-     * Tests all static methods in GeckoRemote via reflection proxy.
+     * Verifies every (non-excluded) method declared on {@code GeckoRemoteInterface}
+     * has a corresponding public static method on {@code GeckoRemote} with matching
+     * return type and parameter types.
      *
-     * IGNORED: Requires complex RMI/proxy setup that is not available in CI environment.
-     * This test exercises the remote interface by creating a dummy proxy and invoking
-     * all static methods. Requires GeckoRemote proxy infrastructure to be initialized.
-     * TODO: Re-enable once remote API testing infrastructure is established.
+     * Pure structural reflection over the API surface - no RMI infrastructure required,
+     * runs on every build.
      */
     @Test
     public void testMethodsAvailableNonStaticToStatic() {
@@ -78,11 +78,12 @@ public class GeckoRemoteTest {
     }
 
     /**
-     * Verifies all static methods in GeckoRemote have corresponding interface methods.
+     * Verifies every (non-excluded) public static method on {@code GeckoRemote} has
+     * a corresponding method on {@code GeckoRemoteInterface} with matching return
+     * type and parameter types.
      *
-     * IGNORED: Test performs reflection checks on interface/class structure. Currently
-     * requires RMI infrastructure and throws exceptions when classes are not fully loaded.
-     * TODO: Re-enable once remote API testing infrastructure is established.
+     * Pure structural reflection over the API surface - no RMI infrastructure required,
+     * runs on every build.
      */
     @Test
     public void testMethodsAvailableStaticToNonStatic() {
