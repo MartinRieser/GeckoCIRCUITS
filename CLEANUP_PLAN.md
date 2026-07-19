@@ -56,7 +56,7 @@ For each: pick **delete** or **wire-up**, then execute.
 
 ### Phase D — HIGH priority, real bugs and big refactors (last)
 For each bug: **write a failing regression test first**, then make it pass.
-- [ ] #3  `ProjectData.java:357` — restore `dataContainerSignals[]` on file load
+- [x] #3  `ProjectData.java:357` — `dataContainerSignals[]` on file load (Option A: document + close; not a real bug) → `cleanup/03-projectdata-signal-names-document` @ 0e8b7e2c
 - [ ] #4  `StateSpaceCalculator.initializeWithNewDt` — confirm/fix dt-change handling
 - [ ] #1  Orphan API interfaces (`IMainWindow`, `ICircuitSheet`, `ICircuitEditor`) — decide complete vs delete
 - [ ] #2  Finish `scope/` → `newscope/` migration, then delete legacy package
