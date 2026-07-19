@@ -159,8 +159,31 @@ public final class StateSpaceCalculator {
     void initializeWithNewDt(final double deltaT) {
          calculateMatrixA(deltaT);
 
-         //TODO: for differentiation (using _stateVariables._xOLD and _stateVariables._xNEW
-         // the stepwidth-change is not yet implemented correctly!
+         // Known limitation: when deltaT changes mid-simulation, the state-space
+         // matrices (above) are correctly recomputed, but the input-signal history
+         // used for derivative terms (_stateVariables._xNEW / _xOLD / _xOLDOLD) is
+         // NOT resampled. The derivative approximations in calculateTimeStep():
+         //   - 1st derivative (line ~234): (_xNEW - _xOLD) / deltaT
+         //   - 2nd derivative (line ~230): (_xNEW - 2*_xOLD + _xOLDOLD) / deltaT
+         // assume uniform spacing deltaT between successive samples, which no
+         // longer holds after a dt change. For 1-2 steps after the change, the
+         // computed derivative is wrong by a factor of (oldDt / newDt) because
+         // the history samples were captured at the previous step size.
+         //
+         // Impact: bounded to transfer functions whose numerator degree exceeds
+         // the denominator degree (i.e. the _leadingPolynom has derivative
+         // coefficients - see calculateTimeStep lines 227-240). Pure proper
+         // transfer functions are unaffected. The transient error magnitude is
+         // proportional to input curvature x (1st D-term) or x'' (2nd D-term)
+         // and decays after two steps at the new dt, when the history buffer is
+         // fully repopulated at the new spacing.
+         //
+         // Proper fix would require storing a timestamp per history sample
+         // (_tNEW, _tOLD, _tOLDOLD) in StateVariables and using the actual
+         // intervals in the derivative formulas - an architectural change that
+         // also touches the serialization format (exportIndividualCONTROL).
+         // Workaround: use a fixed-step solver when transfer functions with
+         // derivative terms are in the model.
     }
 
     StateVariables getStateVariables() {
