@@ -71,7 +71,7 @@ import gecko.modelviewcontrol.AbstractUndoGenericModel;
 
 @SuppressFBWarnings(value = {"ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", "MS_CANNOT_BE_FINAL", "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", "SE_BAD_FIELD", "SF_SWITCH_FALLTHROUGH"},
         justification = "MainWindow is effectively a singleton - static fields hold application-wide state; public fields for menu item access across UI components; JFrame is not serialized in this application; switch fallthrough in schliesseProgramm is intentional for save-then-exit flow")
-public final class MainWindow extends JFrame implements WindowListener, ActionListener, ComponentListener {
+public final class MainWindow extends JFrame implements WindowListener, ActionListener, ComponentListener, SimulationStateListener {
     private static final Logger LOGGER = LogManager.getLogger(MainWindow.class);
 
 
@@ -201,7 +201,8 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
 
         _se = new SchematicEditor2(this);
 
-        _simRunner = new SimulationRunner(this, _se);
+        _simRunner = new SimulationRunner(_se, _solverSettings);
+        _simRunner.addSimulationStateListener(this);
 
         sea = new SchematicComponentSelection2();
         _se.setSchematicEditorSelection(sea);
@@ -1702,6 +1703,43 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     @Override
     public void componentShown(ComponentEvent ce) {
         // no-op
+    }
+
+    @Override
+    public void onSimulationStarted() {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            setMenuDuringSimulation(true, false);
+            jtfStatus.setText("Starting Simulation ... ");
+        });
+    }
+
+    @Override
+    public void onSimulationPaused() {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            setMenuDuringSimulation(false, true);
+        });
+    }
+
+    @Override
+    public void onSimulationFinished(long elapsedTimeMs) {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            jtfStatus.setComputeTimeStatus(elapsedTimeMs);
+            setMenuDuringSimulation(false, true);
+        });
+    }
+
+    @Override
+    public void onSimulationAborted(String errorMessage) {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            jtfStatus.setText("Simulation aborted. " + (errorMessage != null ? errorMessage : ""));
+        });
+    }
+
+    @Override
+    public void onStatusUpdate(String message) {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            jtfStatus.setText(message);
+        });
     }
 
     @Override
