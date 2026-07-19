@@ -51,7 +51,7 @@ For each: pick **delete** or **wire-up**, then execute.
 - [x] #7  `SimulationStateListener` orphan SPI  → `cleanup/07-simulationstatelistener-wire-up` @ 4e089753
 - [x] #8  `UserParameterGUIAdapter` orphan adapter  → `cleanup/08-userparameterguiadapter-orphan` @ 1709c237
 - [x] #9  `DialogExternalStorageConverter` orphan implementation  → `cleanup/09-dialogexternalstorageconverter-orphan` @ b8f6b0e5
-- [ ] #11 `AxisLimits` disabled user-scale override on import
+- [x] #11 `AxisLimits` disabled user-scale override on import  → `cleanup/11-axislimits-user-scale-import` @ 09213753
 - [ ] #10 `ControlOSZI` terminal rename propagation (also a latent bug — write a test)
 
 ### Phase D — HIGH priority, real bugs and big refactors (last)
