@@ -186,11 +186,10 @@ For packages that mix computation and GUI classes, the project uses **interface 
 │ (file handling, GUI-free) │     ├──────────────────────────────────┤
 └──────────────────────────┘     │ promptForExternalPath()          │
                                   └──────────────────────────────────┘
-    ┌───────────────────────────┐              ▲
-    │DialogExternalStorageConverter│             │
-    │ (GUI adapter)              │──────────────┘
-    │ delegates to DialogMakeExternal│
-    └───────────────────────────┘
+                                                 ▲
+                                                 │
+                                     (Reflection fallback to GUI
+                                   DialogMakeExternal at runtime)
 ```
 
 - **Default constructor** uses reflection fallback to GUI dialog (preserves backward compatibility)
