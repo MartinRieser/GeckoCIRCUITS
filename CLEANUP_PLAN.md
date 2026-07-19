@@ -47,7 +47,7 @@ Benefits:
 
 ### Phase C — MEDIUM, needs a decision (decide *before* coding)
 For each: pick **delete** or **wire-up**, then execute.
-- [ ] #5  `NativeCBlock` native-library unload reflection
+- [x] #5  `NativeCBlock` native-library unload reflection  → `cleanup/05-nativecblock-copy-on-load` @ 7114bd53
 - [ ] #7  `SimulationStateListener` orphan SPI
 - [ ] #8  `UserParameterGUIAdapter` orphan adapter
 - [ ] #9  `DialogExternalStorageConverter` orphan implementation
