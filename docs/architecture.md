@@ -30,12 +30,11 @@ GeckoCIRCUITS is a multi-domain circuit simulator built in Java 21. The architec
 
 ## 2. Module Structure
 
-### 2.1 Multi-Module Build (`pom-reactor.xml`)
+### 2.1 Multi-Module Build (`pom.xml`)
 
 ```
-GeckoCIRCUITS/
-├── pom.xml                          # Main desktop application
-├── pom-reactor.xml                  # Reactor build (all modules)
+gecko/
+├── pom.xml                          # Parent build (all modules)
 ├── src/modules/
 │   ├── gecko-simulation-core/       # GUI-free simulation engine
 │   │   ├── pom.xml
@@ -378,7 +377,7 @@ TOPIC  /topic/simulations/{id}  Real-time simulation progress
 ### 7.1 Build Commands
 ```bash
 mvn clean package assembly:single          # Desktop JAR with dependencies
-mvn -f pom-reactor.xml test                # All modules (reactor)
+mvn test                # All modules (reactor)
 mvn clean test jacoco:report               # Coverage report
 mvn clean package -Pdist-all -DskipTests   # Platform distributions
 mkdocs build --strict                      # Docs site (catches broken links)

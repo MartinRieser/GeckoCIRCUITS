@@ -32,7 +32,7 @@ jobs:
           cache: maven
 
       - name: Build application (reactor)
-        run: mvn -f pom-reactor.xml clean install -DskipTests --no-transfer-progress
+        run: mvn clean install -DskipTests --no-transfer-progress
 
       - name: Build Linux distribution package
         run: mvn clean package -Pdist-linux -DskipTests --no-transfer-progress
@@ -90,7 +90,7 @@ jobs:
           cache: maven
 
       - name: Build application (reactor)
-        run: mvn -f pom-reactor.xml clean install -DskipTests --no-transfer-progress
+        run: mvn clean install -DskipTests --no-transfer-progress
 
       - name: Build WSL distribution package
         run: mvn clean package -Pdist-wsl -DskipTests --no-transfer-progress

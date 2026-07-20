@@ -9,7 +9,7 @@ All notable changes to GeckoCIRCUITS.
 ## v1.1.0 - "Multi-Module" (2026-02)
 
 ### Added
-- Multi-module Maven reactor build (`pom-reactor.xml`) aggregating main app, gecko-simulation-core, and gecko-rest-api
+- Multi-module Maven parent build (`pom.xml`) aggregating main app, gecko-simulation-core, and gecko-rest-api
 - Zero-crossing detection for switch events (`ZeroCrossingDetector`, `ZeroCrossingEvent`) in simulation core
 - 49 new tests for zero-crossing detection (bisection convergence, rising/falling edges, power electronics use cases)
 

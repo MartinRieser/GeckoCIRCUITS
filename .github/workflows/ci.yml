@@ -22,7 +22,7 @@ jobs:
 
       - name: Build
         run: |
-          mvn -f pom-reactor.xml clean install -DskipTests --no-transfer-progress
+          mvn clean install -DskipTests --no-transfer-progress
           mvn assembly:single -DskipTests --no-transfer-progress
 
       - name: Install test dependencies
@@ -41,7 +41,7 @@ jobs:
           export DISPLAY=:99
           Xvfb :99 -screen 0 1024x768x24 &
           sleep 1
-          mvn -f pom-reactor.xml test --no-transfer-progress -Dmaven.test.failure.ignore=true
+          mvn test --no-transfer-progress -Dmaven.test.failure.ignore=true
           mvn -f pom.xml jacoco:report --no-transfer-progress
           mvn -f src/modules/gecko-simulation-core/pom.xml jacoco:report --no-transfer-progress
 
@@ -137,7 +137,7 @@ jobs:
 
       - name: Build all modules
         run: |
-          mvn -f pom-reactor.xml clean install -DskipTests --no-transfer-progress
+          mvn clean install -DskipTests --no-transfer-progress
 
       - name: Run regression tests
         run: |

@@ -13,8 +13,8 @@ RUN apk add --no-cache maven
 # Set working directory
 WORKDIR /build
 
-# Copy parent reactor POM first (for reactor build context)
-COPY pom-reactor.xml ./
+# Copy parent POM first
+COPY pom.xml ./
 
 # Copy core module (dependency of REST API)
 COPY src/modules/gecko-simulation-core ./src/modules/gecko-simulation-core

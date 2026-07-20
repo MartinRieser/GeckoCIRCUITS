@@ -207,7 +207,7 @@ Also planned: citation tracking, dataset sharing, Jupyter/MATLAB integration, gr
 
 **Pre-Release:**
 
-- [ ] All tests passing: `mvn -f pom-reactor.xml test`
+- [ ] All tests passing: `mvn test`
 - [ ] Documentation updated: `docs/prd.md`, `docs/architecture.md`, `CLAUDE.md`
 - [ ] Version numbers updated in pom.xml files
 - [ ] SpotBugs: 0 bugs (`mvn spotbugs:check`)

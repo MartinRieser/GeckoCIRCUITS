@@ -40,7 +40,7 @@ jobs:
           echo "Building version: $VERSION"
 
       - name: Build application
-        run: mvn -f pom-reactor.xml clean install -DskipTests --no-transfer-progress
+        run: mvn clean install -DskipTests --no-transfer-progress
 
       - name: Build ${{ matrix.platform }} distribution package
         run: mvn clean package -Pdist-${{ matrix.platform }} -DskipTests --no-transfer-progress

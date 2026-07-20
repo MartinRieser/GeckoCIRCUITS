@@ -55,7 +55,7 @@ The `gecko-simulation-core` module provides GUI-free simulation classes for head
 
 - JaCoCo coverage enforcement: 60%+ instruction coverage
 - GUI-free validation: `CorePackageValidationTest` ensures no AWT/Swing imports
-- Build: `mvn -f pom-reactor.xml test -pl src/modules/gecko-simulation-core`
+- Build: `mvn test -pl src/modules/gecko-simulation-core`
 
 ## Related
 
