@@ -50,36 +50,42 @@ public final class DataContainerGlobal extends AbstractDataContainer implements 
 
   @Override
   public HiLoData getHiLoValue(final int row, final int columnMin, final int columnMax){
+    if (_data == null) return HiLoData.hiLoDataFabric(0, 0);
     return _data.getHiLoValue(row, columnMin, columnMax);
   }
 
   @Override
   public float getValue(final int row, final int column){
+    if (_data == null) return 0f;
     return _data.getValue(row, column);
   }
 
   @Override
   public int getRowLength(){
+    if (_data == null) return 0;
     return _data.getRowLength();
   }
 
   @Override
   public double getTimeValue(final int index, final int row){
+    if (_data == null) return 0;
     return _data.getTimeValue(index, row);
   }
 
   @Override
   public int getMaximumTimeIndex(final int row){
+    if (_data == null) return -1;
     return _data.getMaximumTimeIndex(row);
   }
 
   @Override
   public void insertValuesAtEnd(final float[] values, final double timeValue){
-    _settable.insertValuesAtEnd(values, timeValue);
+    if (_settable != null) _settable.insertValuesAtEnd(values, timeValue);
   }
 
   @Override
   public HiLoData getAbsoluteMinMaxValue(final int row){
+    if (_data == null) return HiLoData.hiLoDataFabric(0, 1);
     try{
       return _data.getAbsoluteMinMaxValue(row);
     }catch(ArithmeticException ex){
@@ -89,39 +95,47 @@ public final class DataContainerGlobal extends AbstractDataContainer implements 
   }
 
   public void clear(){
-    _data.setContainerStatus(ContainerStatus.DELETED);
-    _data.deleteObservers();
+    if (_data != null) {
+      _data.setContainerStatus(ContainerStatus.DELETED);
+      _data.deleteObservers();
+    }
     _settable = null;
     _data = null;
   }
 
   @Override
   public int findTimeIndex(final double time, final int row){
+    if (_data == null) return -1;
     return _data.findTimeIndex(time, row);
   }
 
   @Override
   public int getUsedRAMSizeInMB(){
+    if (_settable == null) return 0;
     return _settable.getUsedRAMSizeInMB();
   }
 
   @Override
   public long getCachedRAMSizeInMB(){
+    if (_settable == null) return 0;
     return _settable.getCachedRAMSizeInMB();
   }
 
   @Override
   public Object getDataValueInInterval(final double intervalStart, final double intervalStop, final int columnIndex){
+    if (_data == null) return null;
     return _data.getDataValueInInterval(intervalStart, intervalStop, columnIndex);
   }
 
   @Override
-  public String getSignalName(final int row){
+  public String getSignalName(final int row){      
+    if (_data == null) return "";
     return _data.getSignalName(row);
   }
 
   @Override
   public String getXDataName(){
+    if (_data == null) return "";
     return _data.getXDataName();
   }
 
@@ -135,11 +149,12 @@ public final class DataContainerGlobal extends AbstractDataContainer implements 
 
   @Override
   public void setContainerStatus(final ContainerStatus containerStatus){
-    _data.setContainerStatus(containerStatus);
+    if (_data != null) _data.setContainerStatus(containerStatus);
   }
 
   @Override
   public boolean isInvalidNumbers(final int row){
+    if (_data == null) return false;
     return _data.isInvalidNumbers(row);
   }
 
@@ -159,6 +174,7 @@ public final class DataContainerGlobal extends AbstractDataContainer implements 
 
   @Override
   public float getAVGValueInInterval(final double intervalStart, final double intervalStop, final int columnIndex){
+    if(_data == null) return 0f;
     if(_data instanceof DataContainerIntegralCalculatable){
       return ((DataContainerIntegralCalculatable)_data).getAVGValueInInterval(intervalStart, intervalStop, columnIndex);
     }else{
@@ -168,6 +184,7 @@ public final class DataContainerGlobal extends AbstractDataContainer implements 
 
   @Override
   public AbstractTimeSeries getTimeSeries(int row){
+    if (_data == null) return null;
     return _data.getTimeSeries(row);
   }
 
@@ -188,6 +205,7 @@ public final class DataContainerGlobal extends AbstractDataContainer implements 
 
   @Override
   public int hashCode(){
+    if (_data == null) return 0;
     return _data.hashCode();
   }
 
@@ -205,16 +223,18 @@ public final class DataContainerGlobal extends AbstractDataContainer implements 
 
     @Override
     public float[] getDataArray() {
+        if (_data == null) return new float[0];
         return _data.getDataArray();
     }
 
     @Override
     void setSignalPathName(int containerRowIndex, String subcircuitPath) {
-        _data.setSignalPathName(containerRowIndex, subcircuitPath);
-    }
+        if (_data != null) _data.setSignalPathName(containerRowIndex, subcircuitPath);
+    }          
 
     @Override
-    public String getSubcircuitSignalPath(final int row) {
+    public String getSubcircuitSignalPath(final int row) {      
+      if (_data == null) return "";
       return _data.getSubcircuitSignalPath(row);
   }
 }

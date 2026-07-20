@@ -76,7 +76,6 @@ public final class CompileObject extends AbstractCompileObject {
 
             if (task.call()) {
                 _compileStatus = CompileStatus.COMPILED_SUCCESSFULL;
-                _compilerWriter.append("\n \tCOMPILATION FINISHED SUCESSFULLY!");
 
 
                 for (Entry<String, RamJavaFileObject> entry : _nameFileMap.entrySet()) {

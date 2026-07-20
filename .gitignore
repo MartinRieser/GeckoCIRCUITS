@@ -31,6 +31,9 @@ target/
 # Native installer output
 release/
 
+# Workspace-local development toolchain (JDK + Maven)
+.devtools/
+
 # Claude Code workspace files
 .claude/
 .agents/

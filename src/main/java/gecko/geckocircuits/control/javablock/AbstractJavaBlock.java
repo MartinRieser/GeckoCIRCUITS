@@ -117,6 +117,18 @@ public abstract class AbstractJavaBlock {
         return _compileObject.getCompilerMessage();
     }
 
+    protected String getCompilationFailureDetails() {
+        final StringBuilder details = new StringBuilder("Java block compilation/load failed");
+        details.append(" (status: ").append(_compileObject.getCompileStatus()).append(")");
+
+        final String compilerMessage = _compileObject.getCompilerMessage();
+        if (compilerMessage != null && !compilerMessage.trim().isEmpty()) {
+            details.append(". Compiler message:\n").append(compilerMessage.trim());
+        }
+
+        return details.toString();
+    }
+
     JavaBlockSource getBlockSourceCode() {
         return _javaBlockSource;
     }
@@ -176,36 +188,11 @@ public abstract class AbstractJavaBlock {
 
     void importIndividualCONTROL(final TokenMap tokenMap) {
         _javaBlockSource = new JavaBlockSource(tokenMap);
-        if (!tokenMap.containsToken("classMapBytes[]")) {
-            return;
-        }
-
-        try {
-            byte[] inBytes = new byte[0];
-            inBytes = tokenMap.readDataLine("classMapBytes[]", inBytes);
-
-            final ByteArrayInputStream bais = new ByteArrayInputStream(inBytes);
-            final ObjectInputStream oInStream = new ObjectInputStream(bais);
-            final Map<String, CompiledClassContainer> classMap = (Map<String, CompiledClassContainer>) oInStream.readObject();
-            _classNameFileMap = classMap;
-        } catch (IOException | ClassNotFoundException ex) {
-            LOGGER.error("Exception while deserializing class map: " + ex.getMessage(), ex);
-        }
-
-        int compileOrdinal = CompileStatus.NOT_COMPILED.ordinal();
-        compileOrdinal = tokenMap.readDataLine("CompileStatus", compileOrdinal);
-        final CompileStatus compStatus = CompileStatus.getFromOrdinal(compileOrdinal);
-        String className = "";
-        className = tokenMap.readDataLine("className", className);
-        _compileObject = new CompileObjectSavedFile(className, _classNameFileMap, compStatus);
-        try {
-            if (_compileObject.getCompileStatus() == CompileStatus.COMPILED_SUCCESSFULL) {
-                findAndLoadClass();
-            }
-        } catch (UnsupportedClassVersionError classVersionError) {
-            resetCompileObject();
-            LOGGER.error(classVersionError.getMessage());
-        }
+        // Saved Java-block bytecode is not reused anymore. The source snippets in the
+        // *.ipes file remain the authoritative representation and the block is compiled
+        // again on first simulation initialize. Skipping the legacy classMapBytes[]
+        // deserialization avoids noisy compatibility warnings for older project files.
+        resetCompileObject();
 
     }
 

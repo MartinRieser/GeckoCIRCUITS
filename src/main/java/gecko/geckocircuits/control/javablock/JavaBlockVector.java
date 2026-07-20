@@ -40,7 +40,7 @@ public class JavaBlockVector extends AbstractJavaBlock {
     void calculateYOUT(final double time, final double deltaT, final double[][] inputSignals,
             final double[][] outputSignals) throws Exception {
         if (_compiledInstance == null) {
-            throw new IllegalStateException("Java block compilation failed - cannot simulate. Check error logs for details.");
+            throw new IllegalStateException(getCompilationFailureDetails());
         }
 
         for (int i = 0; i < _xINVector.length; i++) {
@@ -79,7 +79,7 @@ public class JavaBlockVector extends AbstractJavaBlock {
     @Override
     protected void doInitialize(double[][] xIN, double[][] yOUT) {
         if (_compiledInstance == null) {
-            throw new IllegalStateException("Java block compilation failed - cannot initialize. Check error logs for details.");
+            throw new IllegalStateException(getCompilationFailureDetails());
         }
         _compiledInstance.init();
     }
@@ -89,13 +89,9 @@ public class JavaBlockVector extends AbstractJavaBlock {
             justification = "ClassLoader creation is intentional for dynamic class loading in scripting code")
     @SuppressWarnings("PMD.CloseResource") // ClassLoader must persist for dynamically loaded class lifecycle
     public void findAndLoadClass() {
-        LOGGER.info("JavaBlockVector.findAndLoadClass() - Loading compiled class...");
-        LOGGER.info("Compilation status: " + _compileObject.getCompileStatus());
-        LOGGER.info("Compiler message: " + _compileObject.getCompilerMessage());
-        LOGGER.info("Class name: " + _compileObject.getClassName());
-
+        _compiledInstance = null;
         if (_compileObject.getCompileStatus() != CompileStatus.COMPILED_SUCCESSFULL) {
-            LOGGER.error("ERROR: Compilation was not successful! Status: " + _compileObject.getCompileStatus());
+            LOGGER.error("Compilation was not successful. Status: {}", _compileObject.getCompileStatus());
             return;
         }
 
@@ -104,22 +100,25 @@ public class JavaBlockVector extends AbstractJavaBlock {
 
             final ClassLoader classLoader = new JavaBlockClassLoader(_classNameFileMap);
             final Class<?> clazz = Class.forName(_compileObject.getClassName(), false, classLoader);
-            LOGGER.info("Class loaded successfully: " + clazz.getName());
 
             try {
                 _compiledInstance = (ControlCalculatable) clazz.newInstance();
-                LOGGER.info("Instance created successfully: " + _compiledInstance.getClass().getName());
             } catch (NoClassDefFoundError err) {
-                LOGGER.error("ERROR: NoClassDefFoundError while loading Java block: " + err.getMessage());LogManager.getLogger(ControlJavaFunction.class).error("NoClassDefFoundError while loading Java block: " + err.getMessage(), err);
+                LOGGER.error("NoClassDefFoundError while loading Java block: " + err.getMessage(), err);
+                resetCompileObject();
             } catch (InstantiationException ex) {
-                LOGGER.error("ERROR: InstantiationException while creating Java block instance: " + ex.getMessage());LogManager.getLogger(ControlJavaFunction.class).error("InstantiationException while creating Java block instance: " + ex.getMessage(), ex);
+                LOGGER.error("InstantiationException while creating Java block instance: " + ex.getMessage(), ex);
+                resetCompileObject();
             } catch (IllegalAccessException ex) {
-                LOGGER.error("ERROR: IllegalAccessException while creating Java block instance: " + ex.getMessage());LogManager.getLogger(ControlJavaFunction.class).error("IllegalAccessException while creating Java block instance: " + ex.getMessage(), ex);
+                LOGGER.error("IllegalAccessException while creating Java block instance: " + ex.getMessage(), ex);
+                resetCompileObject();
             } catch (SecurityException ex) {
-                LOGGER.error("ERROR: SecurityException while creating Java block instance: " + ex.getMessage());LogManager.getLogger(ControlJavaFunction.class).error("SecurityException while creating Java block instance: " + ex.getMessage(), ex);
+                LOGGER.error("SecurityException while creating Java block instance: " + ex.getMessage(), ex);
+                resetCompileObject();
             }
         } catch (ClassNotFoundException ex) {
-            LOGGER.error("ERROR: ClassNotFoundException while loading Java block class: " + ex.getMessage());LogManager.getLogger(ControlJavaFunction.class).error("ClassNotFoundException while loading Java block class: " + ex.getMessage(), ex);
+            LOGGER.error("ClassNotFoundException while loading Java block class: " + ex.getMessage(), ex);
+            resetCompileObject();
         }
     }
 

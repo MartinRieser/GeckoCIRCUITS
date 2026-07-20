@@ -258,6 +258,7 @@ public final class ControlJavaFunction extends RegelBlock implements VariableTer
     }
 
     private class JavaBlockCalculator extends AbstractControlCalculatable implements InitializableAtSimulationStart {
+        private boolean severeErrorOccured = false;
 
         public JavaBlockCalculator(final int noInputs, final int noOutput) {
             super(noInputs, noOutput);
@@ -278,6 +279,9 @@ public final class ControlJavaFunction extends RegelBlock implements VariableTer
 
         @Override
         public void calculateYOUT(final double deltaT) {
+            if (severeErrorOccured) {
+                return;
+            }
 
             if (_isConsoleOutput) {
                 SystemOutputRedirect.setConsoleOutput(getStringID());
@@ -293,6 +297,7 @@ public final class ControlJavaFunction extends RegelBlock implements VariableTer
                 if (ste.length > 0) {
                     LOGGER.error(ste[0] + "\n");
                 }
+                severeErrorOccured = true;
 
                 // Exception in the main method that we just tried to run
                 //showMsg("Exception in main: " + ex.getTargetException());
@@ -302,6 +307,7 @@ public final class ControlJavaFunction extends RegelBlock implements VariableTer
                 if (ste.length > 0) {
                     LOGGER.error(ste[0] + "\n");
                 }
+                severeErrorOccured = true;
 
             }
             SystemOutputRedirect.setOriginalOutput();
@@ -322,6 +328,7 @@ public final class ControlJavaFunction extends RegelBlock implements VariableTer
                 if (ste.length > 0) {
                     LOGGER.error(ste[0] + "\n");
                 }
+                severeErrorOccured = true;
             }
             SystemOutputRedirect.setOriginalOutput();
         }

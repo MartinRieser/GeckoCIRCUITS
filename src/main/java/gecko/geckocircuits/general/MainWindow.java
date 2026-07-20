@@ -863,33 +863,43 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
     }
 
     public void rawSaveFile(File file) {
+        rawSaveFile(file, true);
+    }
 
+    public void rawSaveFile(File file, boolean showGuiErrors) {
+        ProjectData datLK = new ProjectData(
+                getSize(),
+                optimizerParameterData,
+                uniqueFileID, _scripter, _fileManager, _se, _solverSettings);
+        
+        String exportString;
         try {
-            ProjectData datLK = new ProjectData(
-                    getSize(),
-                    optimizerParameterData,
-                    uniqueFileID, _scripter, _fileManager, _se, _solverSettings);
-            //------------
-            // Plain-Test variant in ASCII -->
-            // BufferedWriter out= new BufferedWriter(new FileWriter(GlobalFilePathes.DATNAM));
-            // Compressed data stream --> reduced and unreadable file -->
-            // DeflaterOutputStream out1= new DeflaterOutputStream(new FileOutputStream(new File(GlobalFilePathes.DATNAM)));
-            try (FileOutputStream fileOut = new FileOutputStream(file);
-                 GZIPOutputStream out1 = new GZIPOutputStream(fileOut);
-                 OutputStreamWriter streamWriter = new OutputStreamWriter(out1, java.nio.charset.StandardCharsets.UTF_8);
-                 BufferedWriter out = new BufferedWriter(streamWriter)) {
-                //
-                out.write(datLK.exportASCII());
-                out.flush();
+            exportString = datLK.exportASCII();
+        } catch (Throwable t) {
+            t.printStackTrace();
+            if (showGuiErrors) {
+                JOptionPane.showMessageDialog(this,
+                        "Failed to generate save data. The file was not modified.\n" +
+                        "Error: " + t.toString(),
+                        "Export Error", JOptionPane.ERROR_MESSAGE);
             }
-            checkWrittenFileSize(file);
-            //------------
-            //
+            return;
+        }
+
+        try (GZIPOutputStream out1 = new GZIPOutputStream(new FileOutputStream(file));
+             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(out1))) {
+            out.write(exportString);
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            checkWrittenFileSize(file);
+            if (showGuiErrors) {
+                JOptionPane.showMessageDialog(this,
+                        "Failed to write file to disk:\n" + file.getAbsolutePath() + "\n" +
+                        "Error: " + e.toString(),
+                        "Write Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
+        
+        checkWrittenFileSize(file, showGuiErrors);
     }
 
 
@@ -1851,17 +1861,16 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
 
     // check if written file is bigger than a given
     // threshold. If not, print a warning message.
-    private void checkWrittenFileSize(File file) {
+    private void checkWrittenFileSize(File file, boolean showGuiErrors) {
         long size = file.length();
 
-        if (size < 200) {
-            String jarPath = GetJarPath.getJarPath();
+        if (size < 200 && showGuiErrors) {
             JOptionPane.showMessageDialog(this,
                     "GeckoCIRCUITS had a problem to save the model file:"
-                    + "\n" + file.getAbsolutePath()
+                    + "\n" + file.getAbsolutePath() + "\n"
                     + "File size on disk is " + size + " Bytes. Please check your\n"
                     + "model and consider to open the auto-backup file: \n"
-                    + jarPath + getAutoBackupFileName(),
+                    + getAutoBackupFileName(),
                     "Warning",
                     JOptionPane.WARNING_MESSAGE);
         }
@@ -1973,7 +1982,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         @Override
         public void run() {
             if (_se.getZustandGeaendert()) {
-                rawSaveFile(new File(getAutoBackupFileName()));
+                rawSaveFile(new File(getAutoBackupFileName()), false);
             }
 
         }

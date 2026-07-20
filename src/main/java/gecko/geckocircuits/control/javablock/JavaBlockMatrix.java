@@ -39,7 +39,7 @@ public class JavaBlockMatrix extends AbstractJavaBlock {
     void calculateYOUT(final double time, final double deltaT, final double[][] inputSignals,
             final double[][] outputSignals) throws Exception {
         if (_compiledInstance == null) {
-            throw new IllegalStateException("Java block compilation failed - cannot simulate. Check error logs for details.");
+            throw new IllegalStateException(getCompilationFailureDetails());
         }
 
         _compiledInstance.calculateYOUT(inputSignals, time, deltaT);
@@ -48,7 +48,7 @@ public class JavaBlockMatrix extends AbstractJavaBlock {
 
     public double[][] getOutputVectorFromBlock() {
         if (_compiledInstance == null) {
-            throw new IllegalStateException("Java block compilation failed - cannot get output. Check error logs for details.");
+            throw new IllegalStateException(getCompilationFailureDetails());
         }
         return _compiledInstance.getOutputSignal();
     }
@@ -64,7 +64,7 @@ public class JavaBlockMatrix extends AbstractJavaBlock {
     @Override
     protected void doInitialize(double[][] xIN, double[][] yOUT) {
         if (_compiledInstance == null) {
-            throw new IllegalStateException("Java block compilation failed - cannot initialize. Check error logs for details.");
+            throw new IllegalStateException(getCompilationFailureDetails());
         }
         _compiledInstance.init();
     }
@@ -74,6 +74,7 @@ public class JavaBlockMatrix extends AbstractJavaBlock {
             justification = "ClassLoader creation is intentional for dynamic class loading in scripting code")
     @SuppressWarnings("PMD.CloseResource") // ClassLoader must persist for dynamically loaded class lifecycle
     public void findAndLoadClass() {
+        _compiledInstance = null;
         try {
             _classNameFileMap = _compileObject.getClassNameFileMap();
 
@@ -85,15 +86,20 @@ public class JavaBlockMatrix extends AbstractJavaBlock {
 
             } catch (NoClassDefFoundError err) {
                 LOGGER.error("NoClassDefFoundError while loading Java block: " + err.getMessage(), err);
+                resetCompileObject();
             } catch (InstantiationException ex) {
                 LOGGER.error("InstantiationException while creating Java block instance: " + ex.getMessage(), ex);
+                resetCompileObject();
             } catch (IllegalAccessException ex) {
                 LOGGER.error("IllegalAccessException while creating Java block instance: " + ex.getMessage(), ex);
+                resetCompileObject();
             } catch (SecurityException ex) {
                 LOGGER.error("SecurityException while creating Java block instance: " + ex.getMessage(), ex);
+                resetCompileObject();
             }
         } catch (ClassNotFoundException ex) {
             LOGGER.error("ClassNotFoundException while loading Java block class: " + ex.getMessage(), ex);
+            resetCompileObject();
         }
     }
 

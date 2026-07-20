@@ -122,11 +122,29 @@ public class NativeCTest {
         double[][] testOutput = {{0, 0, 0}};
         Assert.assertNotNull(_nativeCBlock);
 
-        boolean loaded = _nativeCBlock.loadLibraries(_libFilePath);
+        // Copy the library to a temporary file with a unique name to prevent JVM classloader conflicts
+        String loadPath = _libFilePath;
+        File tempLibFile = null;
+        try {
+            File origLib = new File(_libFilePath);
+            String extension = _libName.substring(_libName.lastIndexOf("."));
+            tempLibFile = File.createTempFile("libtestJNI_DLL_temp_", extension);
+            tempLibFile.deleteOnExit();
+            java.nio.file.Files.copy(origLib.toPath(), tempLibFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            tempLibFile.setExecutable(true);
+            loadPath = tempLibFile.getAbsolutePath();
+        } catch (Exception e) {
+            System.err.println("Warning: could not create temp copy of library, falling back to original: " + e.getMessage());
+        }
+
+        boolean loaded = _nativeCBlock.loadLibraries(loadPath);
         if (!loaded) {
             System.out.println("WARNING: Native library could not be loaded. " +
                 "This test requires native libraries compiled for the current platform. Skipping test.");
             org.junit.Assume.assumeTrue("Native library not available for this platform", false);
+            if (tempLibFile != null) {
+                tempLibFile.delete();
+            }
             return;
         }
 
@@ -145,6 +163,10 @@ public class NativeCTest {
             Assert.assertNull(_nativeCBlock);
         } catch (Exception exc) {
             Assert.fail(exc.getMessage());
+        } finally {
+            if (tempLibFile != null) {
+                tempLibFile.delete();
+            }
         }
     }
 
