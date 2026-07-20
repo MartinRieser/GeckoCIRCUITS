@@ -100,12 +100,12 @@ public class SimulationProgress {
      * @return formatted progress (e.g., "45.2%")
      */
     public String getProgressPercentage() {
-        return String.format("%.1f%%", overallProgress * 100.0);
+        return String.format(java.util.Locale.US, "%.1f%%", overallProgress * 100.0);
     }
 
     @Override
     public String toString() {
-        return String.format("SimulationProgress{progress=%.1f%%, step=%d/%d, time=%.6fs/%.6fs, state=%s, eta=%dms}",
+        return String.format(java.util.Locale.US, "SimulationProgress{progress=%.1f%%, step=%d/%d, time=%.6fs/%.6fs, state=%s, eta=%dms}",
             overallProgress * 100.0, currentStep, totalSteps, currentTime, endTime, state,
             estimatedRemainingMs != null ? estimatedRemainingMs : -1);
     }

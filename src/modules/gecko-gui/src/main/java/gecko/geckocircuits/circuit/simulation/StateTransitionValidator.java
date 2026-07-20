@@ -259,7 +259,7 @@ public class StateTransitionValidator {
 
     @Override
     public String toString() {
-        return String.format("StateTransitionValidator[type=%s, Uf=%.3f, tRec=%.2e]",
+        return String.format(java.util.Locale.US, "StateTransitionValidator[type=%s, Uf=%.3f, tRec=%.2e]",
             switchType, forwardVoltage, recoveryTime);
     }
 
@@ -389,7 +389,7 @@ public class StateTransitionValidator {
 
         @Override
         public String toString() {
-            return String.format("TransitionContext[gate=%.2f, V=%.3f, I=%.3f, t=%.6f]",
+            return String.format(java.util.Locale.US, "TransitionContext[gate=%.2f, V=%.3f, I=%.3f, t=%.6f]",
                 gateSignal, voltage, current, time);
         }
     }
