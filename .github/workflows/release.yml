@@ -48,7 +48,7 @@ jobs:
       - name: Find distribution package
         id: package
         run: |
-          PACKAGE=$(ls target/GeckoCIRCUITS-*-${{ matrix.platform }}.zip 2>/dev/null || echo "")
+          PACKAGE=$(ls src/modules/gecko-gui/target/GeckoCIRCUITS-*-${{ matrix.platform }}.zip 2>/dev/null || echo "")
           if [ -z "$PACKAGE" ]; then
             echo "Error: Distribution package not found for ${{ matrix.platform }}"
             exit 1

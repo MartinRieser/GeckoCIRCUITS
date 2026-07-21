@@ -40,7 +40,7 @@ jobs:
       - name: Verify Linux package
         id: verify
         run: |
-          PACKAGE=$(ls target/GeckoCIRCUITS-*-linux.zip)
+          PACKAGE=$(ls src/modules/gecko-gui/target/GeckoCIRCUITS-*-linux.zip)
           if [ -f "$PACKAGE" ]; then
             echo "✓ Linux package created: $PACKAGE"
             SIZE=$(du -h "$PACKAGE" | cut -f1)
@@ -98,7 +98,7 @@ jobs:
       - name: Verify WSL package
         id: verify
         run: |
-          PACKAGE=$(ls target/GeckoCIRCUITS-*-wsl.zip)
+          PACKAGE=$(ls src/modules/gecko-gui/target/GeckoCIRCUITS-*-wsl.zip)
           if [ -f "$PACKAGE" ]; then
             echo "✓ WSL package created: $PACKAGE"
             SIZE=$(du -h "$PACKAGE" | cut -f1)

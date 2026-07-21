@@ -31,12 +31,12 @@ jobs:
       - name: List generated files
         run: |
           echo "Contents of target directory:"
-          ls -lh target/*.zip 2>/dev/null || echo "No zip files found"
+          ls -lh src/modules/gecko-gui/target/*.zip 2>/dev/null || echo "No zip files found"
 
       - name: Verify Windows package
         id: verify
         run: |
-          PACKAGE=$(ls target/GeckoCIRCUITS-*-windows.zip)
+          PACKAGE=$(ls src/modules/gecko-gui/target/GeckoCIRCUITS-*-windows.zip)
           if [ -f "$PACKAGE" ]; then
             echo "✓ Windows package created: $PACKAGE"
             SIZE=$(du -h "$PACKAGE" | cut -f1)
