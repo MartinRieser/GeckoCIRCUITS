@@ -32,7 +32,7 @@ jobs:
 
       - name: Build native test libraries
         run: |
-          cd src/test/java/gecko/geckocircuits/nativec/testJNI_DLL
+          cd src/modules/gecko-gui/src/test/java/gecko/geckocircuits/nativec/testJNI_DLL
           chmod +x build_native_libraries.sh
           ./build_native_libraries.sh
 
@@ -47,19 +47,19 @@ jobs:
 
       - name: Check test results
         run: |
-          if grep -rq "Failures: [1-9]" target/surefire-reports/*.txt 2>/dev/null; then
+          if grep -rq "Failures: [1-9]" src/modules/*/target/surefire-reports/*.txt 2>/dev/null; then
             echo "::warning::Test failures detected"
-            grep "Failures: [1-9]" target/surefire-reports/*.txt
+            grep "Failures: [1-9]" src/modules/*/target/surefire-reports/*.txt
           fi
-          if grep -rq "Errors: [1-9]" target/surefire-reports/*.txt 2>/dev/null; then
+          if grep -rq "Errors: [1-9]" src/modules/*/target/surefire-reports/*.txt 2>/dev/null; then
             echo "::warning::Test errors detected (expected in CI for GUI/native tests)"
-            grep "Errors: [1-9]" target/surefire-reports/*.txt
+            grep "Errors: [1-9]" src/modules/*/target/surefire-reports/*.txt
           fi
           echo "Build and test step completed"
 
       - name: Coverage summary
         run: |
-          if [ -f target/site/jacoco/index.html ]; then
+          if [ -f src/modules/gecko-gui/target/site/jacoco/index.html ]; then
             echo "## JaCoCo Coverage Report" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "| Package | Instruction Coverage |" >> $GITHUB_STEP_SUMMARY
@@ -79,7 +79,7 @@ jobs:
                   if tag=='tr' and self.cur: self.rows.append(self.cur[:]); self.cur=[]
               def handle_data(self,data):
                   if self.in_td or self.in_a: self.cur.append(data.strip())
-          with open('target/site/jacoco/index.html') as f: content=f.read()
+          with open('src/modules/gecko-gui/target/site/jacoco/index.html') as f: content=f.read()
           p=P(); p.feed(content)
           core=['control.calculators','datacontainer','math','circuit.matrix','circuit.netlist','circuit.simulation','circuit.component','circuit.terminal','modelviewcontrol']
           for row in p.rows:
@@ -112,7 +112,7 @@ jobs:
         if: always()
         with:
           name: coverage-report
-          path: target/site/jacoco/
+          path: src/modules/gecko-gui/target/site/jacoco/
           retention-days: 30
 
   regression-tests:
@@ -151,6 +151,6 @@ jobs:
         if: always()
         with:
           name: regression-surefire-reports
-          path: target/surefire-reports/
+          path: src/modules/*/target/surefire-reports/
           retention-days: 30
 
