@@ -104,7 +104,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: GeckoCIRCUITS-jar
-          path: target/gecko-1.0-jar-with-dependencies.jar
+          path: src/modules/gecko-gui/target/gecko-1.0-jar-with-dependencies.jar
           retention-days: 30
 
       - name: Upload coverage report

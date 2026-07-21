@@ -123,6 +123,16 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- Skip assembly plugin for REST API module -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.8.0</version>
+                <configuration>
+                    <skipAssembly>true</skipAssembly>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
