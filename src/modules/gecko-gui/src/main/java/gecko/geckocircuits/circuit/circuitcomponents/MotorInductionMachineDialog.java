@@ -22,14 +22,16 @@ import javax.swing.JPanel;
  *
  * @author andy
  */
+@SuppressWarnings("serial")
 class MotorInductionMachineDialog extends AbstractMotorDialog<MotorInductionMachine> {
+    private static final long serialVersionUID = 1L;
 
     public MotorInductionMachineDialog(MotorInductionMachine parent) {
         super(parent);
     }
 
     @Override
-    List getDialogSortedParameters() {
+    List<UserParameter<Double>> getDialogSortedParameters() {
         return Arrays.asList(element._frictionParameter, element._inertiaParameter,
                 element._polePairsParameter, element._statorResistancePar,
                 element.statorLeakageInductance, element._magnetizingInductancePar,

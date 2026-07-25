@@ -38,6 +38,7 @@ public class NativeCTest {
     String _libFilePath, _libName;
 
     @Rule
+    @SuppressWarnings("deprecation")
     public ExpectedException thrown = ExpectedException.none();
 
     /**

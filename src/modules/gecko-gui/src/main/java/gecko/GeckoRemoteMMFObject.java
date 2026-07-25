@@ -1085,6 +1085,8 @@ public final class GeckoRemoteMMFObject extends GeckoRemoteObject {
     }
 
     @Override
+    @Deprecated
+    @SuppressWarnings("deprecation")
     public double[][] getFourier(final String scopeName, final int scopePort, final double startTime,
             final double endTime, final int harmonics) {
         try {
@@ -1108,6 +1110,8 @@ public final class GeckoRemoteMMFObject extends GeckoRemoteObject {
     }
 
     @Override
+    @Deprecated
+    @SuppressWarnings("deprecation")
     public double[][] getFourier(final String scopeName, final double startTime, final double endTime,
             final int harmonics) {
         return getFourier(scopeName, 0, startTime, endTime, harmonics);

@@ -25,6 +25,7 @@ import gecko.core.circuit.netlist.INetList;
  * This class implements the current calculation phase of the circuit simulation,
  * computing branch currents based on component types and node voltages.
  */
+@SuppressWarnings("fallthrough")
 public class ComponentCurrentCalculator {
 
     private static final double FAST_NULL_R = 1.0e-12;

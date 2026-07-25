@@ -42,18 +42,20 @@ import javax.swing.JPanel;
 
 @SuppressFBWarnings(value = {"CT_CONSTRUCTOR_THROW", "PA_PUBLIC_PRIMITIVE_ATTRIBUTE"},
         justification = "Abstract dialog class - subclasses handle initialization properly; public fields for subclass access")
+@SuppressWarnings({"serial", "this-escape"})
 abstract public class DialogCircuitComponent<T extends AbstractBlockInterface> extends GeckoDialog
         implements Schliessable, WindowListener {
 
+    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LogManager.getLogger(DialogCircuitComponent.class);
 
-    final List<UserParameter<? extends Number>> registeredParameters = new ArrayList<UserParameter<? extends Number>>();
+    transient final List<UserParameter<? extends Number>> registeredParameters = new ArrayList<UserParameter<? extends Number>>();
     private static final int TEXT_FIELD_LENGTH = 10;
     public static final int NO_TF_COLS = 6;
-    private SchematicEditor2 _se;  // callback fuer registerChange()
+    private transient SchematicEditor2 _se;  // callback fuer registerChange()
     public final T element;
     public String _originalName;
-    public final List<FormatJTextField> tf = new ArrayList<FormatJTextField>();
+    public final transient List<FormatJTextField> tf = new ArrayList<FormatJTextField>();
     public FormatJTextField tfNam;
     public JPanel jPanelName;
     private JCheckBox checkBoxCompEnabled;
@@ -145,7 +147,7 @@ abstract public class DialogCircuitComponent<T extends AbstractBlockInterface> e
         jPanelButtonOkCancel.add(jButtonCancel);
     }
 
-    public final ActionListener okActionListener = new ActionListener() {
+    public final transient ActionListener okActionListener = new ActionListener() {
 
         @Override
         @SuppressFBWarnings(value = "DE_MIGHT_IGNORE", justification = "Aborting action on duplicate component name is the intended flow")
@@ -286,7 +288,7 @@ abstract public class DialogCircuitComponent<T extends AbstractBlockInterface> e
         // no-op
     }
 
-    public static FormatJTextField fabricFormatTextField(final UserParameter parameter) {
+    public static FormatJTextField fabricFormatTextField(final UserParameter<? extends Number> parameter) {
         final FormatJTextField returnValue = new FormatJTextField(parameter.getDoubleValue());
 
         if (!parameter.getNameOpt().isEmpty()) {
@@ -344,6 +346,7 @@ abstract public class DialogCircuitComponent<T extends AbstractBlockInterface> e
         return pPD;
     }
 
+    @SuppressWarnings("unchecked")
     protected void processRegisteredParameters() {
         for (UserParameter<? extends Number> uPar : registeredParameters) {
             int index = registeredParameters.indexOf(uPar);

@@ -386,9 +386,9 @@ public class SmallSignalCalculatorTest {
         double testTime = 0.025;
         calc.externalSetTime(testTime);
 
-        assertEquals("Time should be set correctly", testTime, calc._time, TOLERANCE);
+        assertEquals("Time should be set correctly", testTime, AbstractControlCalculatable._time, TOLERANCE);
         assertEquals("Signal calculator time should be set", testTime,
-                    calc.AbstractControlCalculatable._time, TOLERANCE);
+                    AbstractControlCalculatable._time, TOLERANCE);
     }
 
     @Test

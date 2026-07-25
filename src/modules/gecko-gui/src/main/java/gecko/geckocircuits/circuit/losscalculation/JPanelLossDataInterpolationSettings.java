@@ -29,7 +29,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+@SuppressWarnings("serial")
 class JPanelLossDataInterpolationSettings extends JPanel {
+    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LogManager.getLogger(JPanelLossDataInterpolationSettings.class);
 
 

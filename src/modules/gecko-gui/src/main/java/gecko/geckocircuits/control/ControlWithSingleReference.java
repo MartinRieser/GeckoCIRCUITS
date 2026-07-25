@@ -21,9 +21,11 @@ import java.util.List;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Exposes component coupling for external component referencing")
+@SuppressWarnings({"serial", "this-escape"})
 public abstract class ControlWithSingleReference extends RegelBlock implements ComponentCoupable {
+    private static final long serialVersionUID = 1L;
 
-    final ComponentCoupling _coupling = new ComponentCoupling(1, this, new int[]{0});
+    final transient ComponentCoupling _coupling = new ComponentCoupling(1, this, new int[]{0});
 
     public ControlWithSingleReference(final int noInputs, final int noOutputs) {
         super(noInputs, noOutputs);

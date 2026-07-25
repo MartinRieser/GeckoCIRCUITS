@@ -13,7 +13,9 @@
  */
 package gecko.geckocircuits.control;
 
+@SuppressWarnings("serial")
 class ControlGateDialog extends DialogElementCONTROL<ControlGate> {
+    private static final long serialVersionUID = 1L;
 
     public ControlGateDialog(final ControlGate controlGate) {
         super(controlGate);

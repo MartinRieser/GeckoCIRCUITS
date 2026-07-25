@@ -40,20 +40,22 @@ import javax.swing.JOptionPane;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Dialog stores CISPR16 control block reference for EMI test receiver calculations")
+@SuppressWarnings("serial")
 public final class TestReceiverWindow extends JFrame {
+    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LogManager.getLogger(TestReceiverWindow.class);
 
 
     private static final TechFormat tcf = new TechFormat();
-    private final ControlCISPR16 _controlCISPR16;
-    private final Cispr16Settings _settings;
+    private final transient ControlCISPR16 _controlCISPR16;
+    private final transient Cispr16Settings _settings;
     private boolean initDone = false;
-    private final GraferV4 _graferNew;
-    private final NewScope _graferPanel;
-    private TestReceiverCalculation _calculatorNew;
+    private final transient GraferV4 _graferNew;
+    private final transient NewScope _graferPanel;
+    private transient TestReceiverCalculation _calculatorNew;
     private int _calculationDoneForHash;
-    private CalculationRunnable _calculationRunnable;
-    private DataContainerCompressable _dataContainer;
+    private transient CalculationRunnable _calculationRunnable;
+    private transient DataContainerCompressable _dataContainer;
     private static final int NUMBER_SIGNALS = 8;
     private static final String[] SIGNAL_NAMES =
             new String[]{"Class A", "Class B", "Maximum est.", "Peak", "Quasi-Peak", "Average", "Minimum est.", "Fourier"};
@@ -77,7 +79,9 @@ public final class TestReceiverWindow extends JFrame {
         setPreferredSize(windowSize);
         setSize(windowSize);
 
-        _graferNew = new GraferV4(new ScopeSettings());
+        @SuppressWarnings("deprecation")
+        ScopeSettings settings = new ScopeSettings();
+        _graferNew = new GraferV4(settings);
         _graferNew.setNewXNames("f [Hz] = ", "t [sec] = ");
         _graferNew.setSimulationTimeBoundaries(10, 100000);
         _graferPanel = new NewScope(_graferNew);
@@ -882,7 +886,7 @@ public final class TestReceiverWindow extends JFrame {
             QuasiPeakCalculator.calculateMinMaxEstimation(min, max, _settings._useBlackman.getValue(), _calculatorNew._fftOrig);
             jLabelStatus.setText("Initial FFT completed.");
             jButtonAbort.setEnabled(true);
-            Set<Integer> peaks = Collections.EMPTY_SET;
+            Set<Integer> peaks = Collections.emptySet();
 
             if (jRadioButtonInterval.isSelected()) {
                 peaks = getIndicesInInterval(_calculatorNew);
@@ -1155,10 +1159,10 @@ public final class TestReceiverWindow extends JFrame {
             this.setTitle(" " + _controlCISPR16.getStringID());
             jCheckBoxPeak.setSelected(_settings._peak.getValue());
             jCheckBoxQuasiPeak.setSelected(_settings._qpeak.getValue());
-            jSpinnerMaximum.setValue((Double) _settings._maxFreq.getValue());
-            jSpinnerMinFreq.setValue((Double) _settings._minFreq.getValue());
-            jSpinnerThreshold.setValue((Double) _settings._filterThreshold.getValue());
-            jSpinnerIntervalFreq.setValue((Double) _settings._qpInteval.getValue());
+            jSpinnerMaximum.setValue(_settings._maxFreq.getValue());
+            jSpinnerMinFreq.setValue(_settings._minFreq.getValue());
+            jSpinnerThreshold.setValue(_settings._filterThreshold.getValue());
+            jSpinnerIntervalFreq.setValue(_settings._qpInteval.getValue());
             jCheckBoxAverage.setSelected(_settings._average.getValue());
             jCheckBoxBlackman.setSelected(_settings._useBlackman.getValue());
             jRadioButtonRMS.setSelected(_settings._showRMSValues.getValue());

@@ -31,6 +31,7 @@ import java.util.List;
  *
  * @author andy diodes and switches are abstractSemiconductors.
  */
+@SuppressWarnings("this-escape")
 public abstract class AbstractSemiconductor extends AbstractTwoPortLKreisBlock implements SemiconductorLossCalculatable, CurrentMeasurable,
         DirectVoltageMeasurable, Operationable {
 

@@ -50,6 +50,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings(value = "SE_TRANSIENT_FIELD_NOT_RESTORED",
         justification = "Transient fields are repopulated during component initialization")
+@SuppressWarnings("this-escape")
 public class ControlSignalSource extends RegelBlock implements ControlInputTwoTerminalStateable,
         GeckoFileable, Operationable {
     private static final Logger LOGGER = LogManager.getLogger(ControlSignalSource.class);
@@ -235,20 +236,20 @@ public class ControlSignalSource extends RegelBlock implements ControlInputTwoTe
 
         final FontRenderContext frc = graphics.getFontRenderContext();
         if (_useExternal.getValue()) {
-            graphics.drawLine((int) (dpix * xPos), (int) (dpix * (yPos + 1 / 2.0)),
-                    (int) (dpix * xPos), (int) (dpix * (yPos + Y_SIZE)));
+            graphics.drawLine(dpix * xPos, (int) (dpix * (yPos + 1 / 2.0)),
+                    dpix * xPos, dpix * (yPos + Y_SIZE));
             final int yShift = (int) (graphics.getFont().getStringBounds("xxx", frc).getHeight() * 0.25);
             graphics.setColor(GlobalColors.farbeInBearbeitungCONTROL);
             int strYPos = 2;
-            graphics.drawString("ac", (int) (dpix * xPos) + X_OFFSET, (int) (dpix * (yPos + strYPos)) + yShift);
+            graphics.drawString("ac", dpix * xPos + X_OFFSET, dpix * (yPos + strYPos) + yShift);
             strYPos++;
-            graphics.drawString("f", (int) (dpix * xPos) + X_OFFSET, (int) (dpix * (yPos + strYPos)) + yShift);
+            graphics.drawString("f", dpix * xPos + X_OFFSET, dpix * (yPos + strYPos) + yShift);
             strYPos++;
-            graphics.drawString("dc", (int) (dpix * xPos) + X_OFFSET, (int) (dpix * (yPos + strYPos)) + yShift);
+            graphics.drawString("dc", dpix * xPos + X_OFFSET, dpix * (yPos + strYPos) + yShift);
             strYPos++;
-            graphics.drawString(PHASE, (int) (dpix * xPos) + X_OFFSET, (int) (dpix * (yPos + strYPos)) + yShift);
+            graphics.drawString(PHASE, dpix * xPos + X_OFFSET, dpix * (yPos + strYPos) + yShift);
             strYPos++;
-            graphics.drawString("duty", (int) (dpix * xPos) + X_OFFSET, (int) (dpix * (yPos + strYPos)) + yShift);
+            graphics.drawString("duty", dpix * xPos + X_OFFSET, dpix * (yPos + strYPos) + yShift);
             graphics.setColor(origColor);
         }
 

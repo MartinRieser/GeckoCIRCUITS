@@ -27,6 +27,7 @@ import java.awt.Window;
 import java.util.Arrays;
 import java.util.List;
 
+@SuppressWarnings("this-escape")
 public abstract class AbstractResistor extends AbstractTwoPortLKreisBlock
         implements CurrentMeasurable, LossCalculatable, DirectVoltageMeasurable {
 
@@ -78,6 +79,7 @@ public abstract class AbstractResistor extends AbstractTwoPortLKreisBlock
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public final List<? extends CircuitComponent> getCircuitCalculatorsForSimulationStart() {
         return Arrays.asList(new ResistorCalculator(this));
     }

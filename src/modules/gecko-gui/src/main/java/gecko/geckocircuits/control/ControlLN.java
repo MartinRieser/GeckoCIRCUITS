@@ -18,7 +18,9 @@ import gecko.geckocircuits.control.calculators.LnCalculator;
 import gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+@SuppressWarnings("serial")
 public final class ControlLN extends AbstractControlSingleInputSingleOutput {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlLN.class, "LN", I18nKeys.LN);
 
     @Override

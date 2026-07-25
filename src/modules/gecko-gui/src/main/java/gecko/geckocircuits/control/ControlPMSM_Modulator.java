@@ -19,8 +19,9 @@ import gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
 
-@SuppressWarnings("PMD.ClassNamingConventions")
+@SuppressWarnings({"PMD.ClassNamingConventions", "serial"})
 public final class ControlPMSM_Modulator extends RegelBlock {
+    private static final long serialVersionUID = 1L;
     private static final int BLOCK_WIDTH = 3;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlPMSM_Modulator.class, "PMSM_MOD", I18nKeys.PMSM_MODULATOR);
 

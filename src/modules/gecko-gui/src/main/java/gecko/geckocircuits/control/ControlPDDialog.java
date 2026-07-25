@@ -23,7 +23,9 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+@SuppressWarnings("serial")
 class ControlPDDialog extends DialogElementCONTROL<ControlPD> {
+    private static final long serialVersionUID = 1L;
 
     public ControlPDDialog(final ControlPD controlPD) {
         super(controlPD);

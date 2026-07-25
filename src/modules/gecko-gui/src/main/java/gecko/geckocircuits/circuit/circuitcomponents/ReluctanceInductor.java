@@ -221,12 +221,12 @@ public final class ReluctanceInductor extends AbstractCircuitBlockInterface
                 }
             }
 
-            xFl[0] = (int) (dpix * (-i));
+            xFl[0] = dpix * (-i);
             xFl[1] = xFl[0] - ARROW_WIDTH;
             xFl[2] = xFl[0] + ARROW_WIDTH;
-            yFl[0] = (int) reversed * ((int) (-dpix * 2) + 2);
-            yFl[1] = (int) (yFl[0] + reversed * ARROW_LENGTH);
-            yFl[2] = (int) yFl[1];
+            yFl[0] = reversed * (-dpix * 2 + 2);
+            yFl[1] = yFl[0] + reversed * ARROW_LENGTH;
+            yFl[2] = yFl[1];
 
             graphics.setColor(Color.magenta);
             graphics.drawPolygon(xFl, yFl, POLYGON_CORNERS);
@@ -256,8 +256,8 @@ public final class ReluctanceInductor extends AbstractCircuitBlockInterface
         }
 
         g2d.setStroke(new BasicStroke((float) 1.0));
-        g2d.drawLine((int) (dpix * (- 1)), (int) (dpix * (+HEIGHT) + radiusQ), (int) (dpix * (- 1)), (int) (dpix * (+2)));
-        g2d.drawLine((int) -dpix, (int) (-dpix * HEIGHT - radiusQ), (int) -dpix, (int) (-dpix * 2));
+        g2d.drawLine(-dpix, (int) (dpix * (+HEIGHT) + radiusQ), -dpix, dpix * 2);
+        g2d.drawLine(-dpix, (int) (-dpix * HEIGHT - radiusQ), -dpix, -dpix * 2);
 
     }
 
@@ -265,17 +265,17 @@ public final class ReluctanceInductor extends AbstractCircuitBlockInterface
     void drawConnectorLines(final Graphics2D graphics) {
         final double radiusQ = getRadiusQ();
 
-        graphics.drawLine((int) -dpix, (int) (dpix * HEIGHT + radiusQ), (int) (-dpix / 2), (int) (dpix * HEIGHT + radiusQ));
-        graphics.drawLine((int) -dpix, (int) (-dpix * HEIGHT - radiusQ), (int) (-dpix / 2), (int) (-dpix * HEIGHT - radiusQ));
-        graphics.drawLine((int) (-dpix / 2), (int) (-dpix * HEIGHT - radiusQ), (int) (-dpix / 2), (int) (dpix * HEIGHT + radiusQ));
+        graphics.drawLine(-dpix, (int) (dpix * HEIGHT + radiusQ), -dpix / 2, (int) (dpix * HEIGHT + radiusQ));
+        graphics.drawLine(-dpix, (int) (-dpix * HEIGHT - radiusQ), -dpix / 2, (int) (-dpix * HEIGHT - radiusQ));
+        graphics.drawLine(-dpix / 2, (int) (-dpix * HEIGHT - radiusQ), -dpix / 2, (int) (dpix * HEIGHT + radiusQ));
 
 
         final Color oldColor = graphics.getColor();
         graphics.setColor(GlobalColors.farbeFertigElementRELUCTANCE);
-        graphics.drawLine((int) dpix, (int) (dpix * HEIGHT + radiusQ), (int) dpix, (int) (dpix * 2));
-        graphics.drawLine((int) dpix, (int) (-dpix * HEIGHT - radiusQ), (int) dpix, (int) (-dpix * 2));
-        graphics.drawLine(0, (int) (dpix * (+HEIGHT) + radiusQ), (int) (dpix * (+1)), (int) (dpix * (+HEIGHT) + radiusQ));
-        graphics.drawLine(0, (int) (dpix * (-HEIGHT) - radiusQ), (int) (dpix * (+1)), (int) (dpix * (-HEIGHT) - radiusQ));
+        graphics.drawLine(dpix, (int) (dpix * HEIGHT + radiusQ), dpix, dpix * 2);
+        graphics.drawLine(dpix, (int) (-dpix * HEIGHT - radiusQ), dpix, -dpix * 2);
+        graphics.drawLine(0, (int) (dpix * (+HEIGHT) + radiusQ), dpix, (int) (dpix * (+HEIGHT) + radiusQ));
+        graphics.drawLine(0, (int) (dpix * (-HEIGHT) - radiusQ), dpix, (int) (dpix * (-HEIGHT) - radiusQ));
         graphics.setColor(oldColor);
     }
 
@@ -316,6 +316,7 @@ public final class ReluctanceInductor extends AbstractCircuitBlockInterface
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public List<? extends CircuitComponent> getCircuitCalculatorsForSimulationStart() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

@@ -17,7 +17,9 @@ import gecko.geckocircuits.circuit.AbstractTerminal;
 import java.util.List;
 import java.util.Stack;
 
+@SuppressWarnings("serial")
 abstract class RegelBlockSimulink extends RegelBlock {
+    private static final long serialVersionUID = 1L;
 
     public RegelBlockSimulink() {
         super();

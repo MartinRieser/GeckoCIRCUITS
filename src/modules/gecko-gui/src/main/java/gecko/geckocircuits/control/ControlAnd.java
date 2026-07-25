@@ -18,7 +18,9 @@ import gecko.geckocircuits.control.calculators.AndMultiInputCalculator;
 import gecko.geckocircuits.control.calculators.AndTwoPortCalculator;
 import gecko.i18n.resources.I18nKeys;
 
+@SuppressWarnings("serial")
 public final class ControlAnd extends AbstractControlVariableInputs {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlAnd.class, "AND", I18nKeys.AND);
 
     public ControlAnd() {

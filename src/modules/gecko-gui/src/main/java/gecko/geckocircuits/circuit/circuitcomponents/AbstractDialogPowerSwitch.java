@@ -30,11 +30,13 @@ import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
 import javax.swing.border.TitledBorder;
 
+@SuppressWarnings({"unchecked", "serial", "this-escape"})
 public abstract class AbstractDialogPowerSwitch<T extends AbstractSemiconductor> extends DialogElementLK<T> {
+    private static final long serialVersionUID = 1L;
 
     private final JPanelHalbleiterDetailButtons _panelHalbleiterDetail;
     private JPanel _jPanelSimpleLosses;
-    private final LossProperties _lossCalculation;
+    private final transient LossProperties _lossCalculation;
     private final JRadioButton _jRadioButtonSimpleLosses = new JRadioButton();
     private final JRadioButton _jRadioButtonDetailedLosses = new JRadioButton();
     private final JPanel _characteristicsPanel = new JPanel();

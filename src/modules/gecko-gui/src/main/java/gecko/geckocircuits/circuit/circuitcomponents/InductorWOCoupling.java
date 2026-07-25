@@ -23,6 +23,7 @@ public final class InductorWOCoupling extends AbstractInductor {
     public static final AbstractTypeInfo TYPE_INFO = new CircuitTypeInfo(InductorWOCoupling.class, "L", I18nKeys.INDUCTOR_L_H);
 
     @Override
+    @SuppressWarnings("rawtypes")
     public List<? extends CircuitComponent> getCircuitCalculatorsForSimulationStart() {
         return Arrays.asList(new InductorCalculator(this));
     }

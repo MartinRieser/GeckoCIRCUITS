@@ -46,6 +46,7 @@ public abstract class AbstractSwitchCalculator extends CircuitComponent implemen
 
     protected boolean _gateValue = false;
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public AbstractSwitchCalculator(final AbstractSwitch parent) {
         super(parent);
     }

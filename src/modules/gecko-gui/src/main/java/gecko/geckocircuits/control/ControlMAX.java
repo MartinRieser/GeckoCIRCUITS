@@ -18,7 +18,9 @@ import gecko.geckocircuits.control.calculators.MaxCalculatorMultiInputs;
 import gecko.geckocircuits.control.calculators.MaxCalculatorTwoInputs;
 import gecko.i18n.resources.I18nKeys;
 
+@SuppressWarnings("serial")
 public final class ControlMAX extends AbstractControlVariableInputs {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlMAX.class, "MAX", I18nKeys.MAXIMUM);
 
     public ControlMAX() {

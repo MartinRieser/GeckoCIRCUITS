@@ -21,6 +21,7 @@ import java.io.Serializable;
  * @param <T>
  * @author andy
  */
+@SuppressWarnings("serial")
 public class ModelMVC<T> extends AbstractUndoGenericModel<T>
         implements Serializable{
   private static final long serialVersionUID = 784635241326447L;

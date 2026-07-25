@@ -13,7 +13,8 @@
  */
 package gecko.geckocircuits.circuit.circuitcomponents;
 
-public class DiodeSegment {
+@SuppressWarnings("this-escape")
+public final class DiodeSegment {
     double _startVoltage, _endVoltage;
     final double _startCurrent, _endCurrent;
     public final double _RDiff;

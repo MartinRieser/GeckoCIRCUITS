@@ -32,12 +32,14 @@ import javax.swing.table.TableColumn;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Table panel stores column titles and parameter map for table display")
+@SuppressWarnings({"serial", "this-escape"})
 public class DataTablePanelParameters extends JPanel {
+    private static final long serialVersionUID = 1L;
 
     private final DataTablePanelParameters.MyTableModel _tableModel;
     private final JTable _table;
     private final String[] _columnTitles;
-    private final Map<String, Integer> _usedParameterNames;
+    private final transient Map<String, Integer> _usedParameterNames;
 
     public DataTablePanelParameters(final String[] columnTitles, final Map<String, Integer> usedParameterNames) {
         super(new GridLayout(1, 1));
@@ -197,11 +199,13 @@ public class DataTablePanelParameters extends JPanel {
         return returnValue;
     }
 
+    @SuppressWarnings("serial")
     class MyTableModel extends AbstractTableModel {
+        private static final long serialVersionUID = 1L;
 
         private final int _numberColumns;
-        private List<String> variableNames = new ArrayList<String>();
-        private List<Double> variableNumbers = new ArrayList<Double>();
+        private transient List<String> variableNames = new ArrayList<String>();
+        private transient List<Double> variableNumbers = new ArrayList<Double>();
 
         public MyTableModel(final int numberColumns) {
             _numberColumns = numberColumns;

@@ -15,7 +15,9 @@ package gecko.geckocircuits.circuit.circuitcomponents;
 
 import javax.swing.JPanel;
 
+@SuppressWarnings({"unchecked", "serial"})
 class DiodeDialog extends AbstractDialogPowerSwitch<Diode> {
+    private static final long serialVersionUID = 1L;
 
     public DiodeDialog(final Diode parent) {
         super(parent);

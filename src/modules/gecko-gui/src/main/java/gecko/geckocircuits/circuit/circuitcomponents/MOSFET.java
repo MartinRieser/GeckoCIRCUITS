@@ -249,6 +249,7 @@ public final class MOSFET extends AbstractSwitch implements HiddenSubCircuitable
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public List<? extends CircuitComponent> getCircuitCalculatorsForSimulationStart() {
         return getCalculatorsFromSubComponents(this);
     }

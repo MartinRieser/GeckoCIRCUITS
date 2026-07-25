@@ -228,7 +228,7 @@ public final class GeckoRemote {
                     _wrapped = existingInstance;
 
                     ClassLoader loader = _wrapped.getClass().getClassLoader();
-                    Class[] interfaces = new Class[]{GeckoRemoteIntWithoutExc.class};
+                    Class<?>[] interfaces = new Class<?>[]{GeckoRemoteIntWithoutExc.class};
 
                     _invocationHandler = new GeckoRemote.RemoteInvocationHandler(_wrapped);
                     _proxy = (GeckoRemoteIntWithoutExc) Proxy.newProxyInstance(loader, interfaces, _invocationHandler);
@@ -561,30 +561,44 @@ public final class GeckoRemote {
         return _proxy.getAvg(scopeName, scopePort, startTime, endTime);
     }
 
+    @Deprecated
+    @SuppressWarnings("deprecation")
     public static double getRMS(final String scopeName, final int scopePort, final double startTime, final double endTime) {
         return _proxy.getRMS(scopeName, scopePort, startTime, endTime);
     }
 
+    @Deprecated
+    @SuppressWarnings("deprecation")
     public static double getTHD(final String scopeName, final int scopePort, final double startTime, final double endTime) {
         return _proxy.getTHD(scopeName, scopePort, startTime, endTime);
     }
 
+    @Deprecated
+    @SuppressWarnings("deprecation")
     public static double getMin(final String scopeName, final int scopePort, final double startTime, final double endTime) {
         return _proxy.getMin(scopeName, scopePort, startTime, endTime);
     }
 
+    @Deprecated
+    @SuppressWarnings("deprecation")
     public static double getMax(final String scopeName, final int scopePort, final double startTime, final double endTime) {
         return _proxy.getMax(scopeName, scopePort, startTime, endTime);
     }
 
+    @Deprecated
+    @SuppressWarnings("deprecation")
     public static double getRipple(final String scopeName, final int scopePort, final double startTime, final double endTime) {
         return _proxy.getRipple(scopeName, scopePort, startTime, endTime);
     }
 
+    @Deprecated
+    @SuppressWarnings("deprecation")
     public static double getKlirr(final String scopeName, final int scopePort, final double startTime, final double endTime) {
         return _proxy.getKlirr(scopeName, scopePort, startTime, endTime);
     }
 
+    @Deprecated
+    @SuppressWarnings("deprecation")
     public static double getShape(final String scopeName, final int scopePort, final double startTime, final double endTime) {
         return _proxy.getShape(scopeName, scopePort, startTime, endTime);
     }

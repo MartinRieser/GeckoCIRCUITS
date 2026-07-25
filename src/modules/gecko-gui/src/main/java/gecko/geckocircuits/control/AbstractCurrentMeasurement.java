@@ -22,7 +22,9 @@ import gecko.geckocircuits.control.calculators.AbstractControlCalculatable;
 import gecko.geckocircuits.control.calculators.NothingToDoCalculator;
 import java.awt.Window;
 
+@SuppressWarnings("serial")
 public abstract class AbstractCurrentMeasurement extends ControlWithSingleReference {
+    private static final long serialVersionUID = 1L;
 
     public AbstractCurrentMeasurement() {
         super(0, 1);

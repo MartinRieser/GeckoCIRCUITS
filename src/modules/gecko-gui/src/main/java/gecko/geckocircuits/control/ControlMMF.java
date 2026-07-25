@@ -17,7 +17,9 @@ import gecko.geckocircuits.circuit.ConnectorType;
 import gecko.i18n.resources.I18nKeys;
 
 
+@SuppressWarnings("serial")
 public final class ControlMMF extends AbstractPotentialMeasurement  {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlMMF.class,"MMF_MEAS", I18nKeys.MMF_MEASURE_A);
 
     public ControlMMF() {

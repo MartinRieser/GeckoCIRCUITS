@@ -21,10 +21,12 @@ import javax.swing.JComponent;
 
 @SuppressFBWarnings(value = {"CT_CONSTRUCTOR_THROW", "EI_EXPOSE_REP2"},
         justification = "Abstract dialog class - subclasses handle initialization; stores element reference")
+@SuppressWarnings("serial")
 public abstract class AbstractDialogWithExternalOption<T extends RegelBlock> extends DialogElementCONTROL<T> {
+    private static final long serialVersionUID = 1L;
 
     final JCheckBox _jCheckBoxUseExternal = new JCheckBox("Use external parameters");
-    private final ControlInputTwoTerminalStateable _externable;
+    private final transient ControlInputTwoTerminalStateable _externable;
 
     public AbstractDialogWithExternalOption(final T element) {
         super(element);

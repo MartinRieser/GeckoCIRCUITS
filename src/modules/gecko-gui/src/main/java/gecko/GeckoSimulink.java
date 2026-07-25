@@ -86,15 +86,15 @@ public class GeckoSimulink {
     }
 
     public void external_step(double t) {
-        GeckoSim._geckoSim._win._simRunner.simKern.external_step(t);
+        GeckoSim._win._simRunner.simKern.external_step(t);
     }
 
     public double external_getdt() {
-        return GeckoSim._geckoSim._win._simRunner.simKern.getdt();
+        return GeckoSim._win._simRunner.simKern.getdt();
     }
 
     public void external_end() {
-        GeckoSim._geckoSim._win._simRunner.simKern.external_end();
+        GeckoSim._win._simRunner.simKern.external_end();
         tEndSimulink = System.currentTimeMillis();
         GeckoSim._win.external_end(tStartSimulink, tEndSimulink);
         isRunning = false;

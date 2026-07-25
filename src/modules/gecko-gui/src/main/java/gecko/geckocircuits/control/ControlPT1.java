@@ -17,7 +17,9 @@ import gecko.geckocircuits.control.calculators.AbstractControlCalculatable;
 import gecko.geckocircuits.control.calculators.PT1Calculator;
 import gecko.i18n.resources.I18nKeys;
 
+@SuppressWarnings("serial")
 public final class ControlPT1 extends AbstractControlPT {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlPT1.class, "PT1", I18nKeys.PT1);
     @Override
     public String[] getOutputNames() {

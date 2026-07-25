@@ -31,6 +31,7 @@ public class InductorCalculator extends CircuitComponent implements BStampable,
     protected double _initialCurrent = 0;
     private double _maxAbsVal = 0; //for fast steady state solving
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public InductorCalculator(final AbstractInductor parent) {
         super(parent);
         _needsOldPotCurrent = true;

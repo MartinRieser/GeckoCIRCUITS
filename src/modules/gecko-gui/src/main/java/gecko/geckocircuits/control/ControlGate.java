@@ -23,7 +23,9 @@ import gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 import java.util.List;
 
+@SuppressWarnings("serial")
 public final class ControlGate extends ControlWithSingleReference implements ComponentCoupable {
+    private static final long serialVersionUID = 1L;
     private static final int BLOCK_WIDTH = 3;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlGate.class, "GATE", I18nKeys.GATE_CONTROL);
 
@@ -48,7 +50,7 @@ public final class ControlGate extends ControlWithSingleReference implements Com
 
     @Override
     public int getBlockWidth() {
-        return (int) (BLOCK_WIDTH * dpix);
+        return BLOCK_WIDTH * dpix;
     }
 
 

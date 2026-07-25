@@ -71,7 +71,9 @@ import gecko.modelviewcontrol.AbstractUndoGenericModel;
 
 @SuppressFBWarnings(value = {"ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", "MS_CANNOT_BE_FINAL", "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", "SE_BAD_FIELD", "SF_SWITCH_FALLTHROUGH"},
         justification = "MainWindow is effectively a singleton - static fields hold application-wide state; public fields for menu item access across UI components; JFrame is not serialized in this application; switch fallthrough in schliesseProgramm is intentional for save-then-exit flow")
+@SuppressWarnings({"serial", "fallthrough"})
 public final class MainWindow extends JFrame implements WindowListener, ActionListener, ComponentListener {
+    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LogManager.getLogger(MainWindow.class);
 
 
@@ -178,8 +180,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
             // ignored: fall back to default look and feel
         }
         try {
-            // Fix for Java 21: use URL constructor instead of URI.toURL()
-            URL gifUrl = new URL(GlobalFilePathes.PFAD_PICS_URL, "gecko.gif");
+            URL gifUrl = GlobalFilePathes.PFAD_PICS_URL.toURI().resolve("gecko.gif").toURL();
             this.setIconImage(new ImageIcon(gifUrl).getImage());
         } catch (Exception e) {
             // ignored: icon loading is optional
@@ -856,7 +857,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         rawSaveFile(new File(currentFileName));
 
         saveInProgress = false;
-        _se.resetModelModified();  // this prevents the 'QuitWithoutSaving' dialog from being invoked even though the file has already been saved
+        SchematicEditor2.resetModelModified();  // this prevents the 'QuitWithoutSaving' dialog from being invoked even though the file has already been saved
 
         this.setTitle(currentFileName + spTitleX + "GeckoCIRCUITS");
         this.updateRecentProperties(currentFileName);
@@ -945,7 +946,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
             rawSaveFile(new File(currentFileName));
             //------------
             saveInProgress = false;
-            _se.resetModelModified();  // this prevents the 'QuitWithoutSaving' dialog from being invoked even though the file has already been saved
+            SchematicEditor2.resetModelModified();  // this prevents the 'QuitWithoutSaving' dialog from being invoked even though the file has already been saved
             //
         } catch (Exception e) {
             saveInProgress = false;
@@ -961,7 +962,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         this.setTitle(currentFileName + spTitleX + "GeckoCIRCUITS");
         sea._typElement = null;
         _se.resetCircuitSheetsForNewFile();
-        _se.resetModelModified();  // this prevents the 'QuitWithoutSaving' dialog from being invoked even though the file has already been saved
+        SchematicEditor2.resetModelModified();  // this prevents the 'QuitWithoutSaving' dialog from being invoked even though the file has already been saved
     }
 
 
@@ -1040,7 +1041,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
         _se._circuitSheet._worksheetSize.setNewWorksheetSize(data.sizeX, data.sizeY);
         _se.setzeFont(data.fontSize, data._fontTyp);
         _se.updateAllComponentReferences();
-        _se.resetModelModified();  // This prevents the 'QuitWithoutSaving' dialog from being called even though the file has already been saved
+        SchematicEditor2.resetModelModified();  // This prevents the 'QuitWithoutSaving' dialog from being called even though the file has already been saved
         _fileManager = new GeckoFileManager(data.fileMgrFiles);
         _se.initAdditionalFiles(_se._circuitSheet.getAllElements().getClassFromContainer(AbstractBlockInterface.class));
     }
@@ -1076,7 +1077,7 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
 
         currentFileName = dateiName;
         _se.updateAllComponentReferences();
-        _se.resetModelModified();  // This prevents the 'QuitWithoutSaving' dialog from being called even though the file has already been saved
+        SchematicEditor2.resetModelModified();  // This prevents the 'QuitWithoutSaving' dialog from being called even though the file has already been saved
 
         _scripter.clearData();
         _scripter.setScriptCode(data._scripterCode);

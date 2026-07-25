@@ -26,12 +26,14 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * @author andreas
  */
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Dialog stores subcircuit block reference for settings configuration")
+@SuppressWarnings({"serial", "this-escape"})
 public class DialogSubCktSettings extends javax.swing.JDialog {
+    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LogManager.getLogger(DialogSubCktSettings.class);
 
 
-    private final SubcircuitBlock _subBlock;
-    private final SubCircuitSheet _subSheet;
+    private final transient SubcircuitBlock _subBlock;
+    private final transient SubCircuitSheet _subSheet;
     private final boolean _initDone;
 
     /**

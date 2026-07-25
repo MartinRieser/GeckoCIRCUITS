@@ -17,6 +17,7 @@ import gecko.geckocircuits.general.UserParameter;
 import gecko.i18n.resources.I18nKeys;
 import java.awt.Graphics2D;
 
+@SuppressWarnings("this-escape")
 public abstract class AbstractMotorIM extends AbstractMotorIMCommon {
     double _magnetizingInductance;
     public final UserParameter<Double> _magnetizingInductancePar = UserParameter.Builder.

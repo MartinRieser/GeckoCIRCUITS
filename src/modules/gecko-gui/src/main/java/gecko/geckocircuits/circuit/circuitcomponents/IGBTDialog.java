@@ -22,7 +22,9 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+@SuppressWarnings({"unchecked", "serial"})
 public final class IGBTDialog extends AbstractDialogPowerSwitch<IGBT> {
+    private static final long serialVersionUID = 1L;
 
     private JCheckBox jCheckBoxSatCurrent;
     private FormatJTextField _tfSaturationCurrent;
@@ -39,7 +41,7 @@ public final class IGBTDialog extends AbstractDialogPowerSwitch<IGBT> {
 
         _tfSaturationCurrent = new FormatJTextField();
 
-        double initISat = ((IGBT) element)._saturationCurrent.getValue();
+        double initISat = element._saturationCurrent.getValue();
         if (initISat <= 0) {
             initISat = 10;
         }

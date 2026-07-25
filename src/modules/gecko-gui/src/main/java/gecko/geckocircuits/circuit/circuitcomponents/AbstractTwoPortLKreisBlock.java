@@ -16,6 +16,7 @@ package gecko.geckocircuits.circuit.circuitcomponents;
 import gecko.geckocircuits.circuit.TerminalTwoPortComponent;
 import java.awt.Graphics2D;
 
+@SuppressWarnings("this-escape")
 public abstract class AbstractTwoPortLKreisBlock extends AbstractCircuitBlockInterface {
     private static final int TWO_PORT_DIST = 2;
 

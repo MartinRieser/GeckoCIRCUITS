@@ -31,7 +31,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings(value = "SE_BAD_FIELD",
         justification = "Dialog is not serialized in this application")
+@SuppressWarnings("serial")
 public final class DialogLossesDetail extends GeckoDialog {
+    private static final long serialVersionUID = 1L;
 
     private final transient LossCalculationDetailed _lossCalculation;
     private final JPanel _lowerPanel = new JPanel();

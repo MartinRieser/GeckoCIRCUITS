@@ -23,7 +23,9 @@ import javax.swing.JPanel;
  * @author andy
  * Asynchronmaschine allgemein mit saettigbarer Induktivitaet -->
  */
+@SuppressWarnings("serial")
 class MotorImSatDialog extends AbstractMotorDialog<MotorImSat> {
+    private static final long serialVersionUID = 1L;
 
     public MotorImSatDialog(final MotorImSat parent) {
         super(parent);

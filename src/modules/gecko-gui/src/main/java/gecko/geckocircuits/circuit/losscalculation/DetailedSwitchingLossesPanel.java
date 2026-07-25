@@ -23,7 +23,9 @@ import java.awt.event.ActionListener;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+@SuppressWarnings("serial")
 public class DetailedSwitchingLossesPanel extends DetailledLossPanel<SwitchingLossCurve> {
+    private static final long serialVersionUID = 1L;
 
     private final FormatJTextField _jtfUb = new FormatJTextField();
 
@@ -37,7 +39,7 @@ public class DetailedSwitchingLossesPanel extends DetailledLossPanel<SwitchingLo
     @Override
     void loadSelectedCurveIntoTable() {
         super.loadSelectedCurveIntoTable();
-        _jtfUb.setNumberToField(((SwitchingLossCurve) _selectedCurve)._uBlock.getValue());
+        _jtfUb.setNumberToField(_selectedCurve._uBlock.getValue());
     }
 
     @Override

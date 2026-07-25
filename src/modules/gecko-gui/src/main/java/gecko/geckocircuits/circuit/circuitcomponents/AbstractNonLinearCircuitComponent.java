@@ -47,6 +47,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE",
         justification = "Public fields for nonlinear characteristic data shared during simulation and file I/O")
+@SuppressWarnings("this-escape")
 public abstract class AbstractNonLinearCircuitComponent extends AbstractTwoPortLKreisBlock
 implements Operationable, Nonlinearable {
     private static final Logger LOGGER = LogManager.getLogger(AbstractNonLinearCircuitComponent.class);
@@ -322,7 +323,7 @@ implements Operationable, Nonlinearable {
 
     public void setNonlinearCharacteristic(double[][] data) {
         if (nonLinearChar == null) {
-            String newFileName = getStringID() + "NonLinearity" + ((int) 100 * Math.random()) +
+            String newFileName = getStringID() + "NonLinearity" + ((int) (100 * Math.random())) +
                     getNonlinearFileEnding();
             setNonlinearCharacteristic(data, newFileName);
         } else {

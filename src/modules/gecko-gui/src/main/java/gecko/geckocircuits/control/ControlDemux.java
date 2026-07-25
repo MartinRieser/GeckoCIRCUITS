@@ -129,9 +129,9 @@ public final class ControlDemux extends RegelBlock implements VariableTerminalNu
         yKlickMin = (int) (dpix * (yPos - WIDTH));
         yKlickMax = (int) (dpix * (yPos + 1.0 * termNumber));
 
-        graphics.fillRect((int) (dpix * (xPos - 0.4)), (int) (dpix * (yPos - 0.4)), (int) (dpix * (2 * 0.4)), (int) (dpix * termNumber));
+        graphics.fillRect((int) (dpix * (xPos - 0.4)), (int) (dpix * (yPos - 0.4)), (int) (dpix * (2 * 0.4)), dpix * termNumber);
         graphics.setColor(origColor);
-        graphics.drawRect((int) (dpix * (xPos - 0.4)), (int) (dpix * (yPos - 0.4)), (int) (dpix * (2 * 0.4)), (int) (dpix * termNumber));
+        graphics.drawRect((int) (dpix * (xPos - 0.4)), (int) (dpix * (yPos - 0.4)), (int) (dpix * (2 * 0.4)), dpix * termNumber);
         graphics.setColor(origColor);
     }
 

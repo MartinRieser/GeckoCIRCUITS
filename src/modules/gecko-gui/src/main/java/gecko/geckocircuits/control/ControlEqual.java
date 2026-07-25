@@ -18,7 +18,9 @@ import gecko.geckocircuits.control.calculators.EqualCalculatorMultiInput;
 import gecko.geckocircuits.control.calculators.EqualCalculatorTwoInputs;
 import gecko.i18n.resources.I18nKeys;
 
+@SuppressWarnings("serial")
 public final class ControlEqual extends SimpleRegelBlock {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlEqual.class, "EQ", I18nKeys.EQUAL);
 
     public ControlEqual() {

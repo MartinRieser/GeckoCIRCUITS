@@ -33,7 +33,9 @@ import javax.swing.border.TitledBorder;
  *
  * @author andy
  */
+@SuppressWarnings("serial")
 class ControlImportDialog extends DialogElementCONTROL<ControlSignalSource>{
+    private static final long serialVersionUID = 1L;
 
     private FormatJTextField jtfImportStatus;  // for importing external time sequences, which are then output by the SIGNAL block
 
@@ -70,7 +72,7 @@ class ControlImportDialog extends DialogElementCONTROL<ControlSignalSource>{
                 GeckoFileManagerWindow fileManager = new GeckoFileManagerWindow(element, ".dat", "Data file, space-separated", true);
                 fileManager.setVisible(true);
                 //------------
-                String datnam = ((ControlSignalSource) element).getDatnam();
+                String datnam = element.getDatnam();
                 if (datnam == null) {
                     datnam = GlobalFilePathes.DATNAM_NOT_DEFINED;
                 }
@@ -88,7 +90,7 @@ class ControlImportDialog extends DialogElementCONTROL<ControlSignalSource>{
         jpCheck.setLayout(new BorderLayout());
         jtfImportStatus = new FormatJTextField();
         jtfImportStatus.setColumns(25);
-        String datnam = ((ControlSignalSource) element).getDatnam();
+        String datnam = element.getDatnam();
         if (datnam == null) {
             datnam = GlobalFilePathes.DATNAM_NOT_DEFINED;
         }

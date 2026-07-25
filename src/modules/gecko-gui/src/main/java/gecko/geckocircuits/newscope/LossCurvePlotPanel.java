@@ -23,7 +23,9 @@ import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("serial")
 public final class LossCurvePlotPanel extends SimpleGraferPanel {
+    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LogManager.getLogger(LossCurvePlotPanel.class);
 
     private int _moreDataFactor;
@@ -62,6 +64,7 @@ public final class LossCurvePlotPanel extends SimpleGraferPanel {
             moreDataFactor = 2;
         }
 
+        @SuppressWarnings("deprecation")
         ScopeSettings settings = new ScopeSettings();
         GraferV4 _grafer = new GraferV4(settings);
         _grafer.setUpdateSleep(50);

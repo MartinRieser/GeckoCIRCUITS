@@ -29,7 +29,9 @@ import java.util.Set;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Exposes unmodifiable set of global terminals for circuit connectivity")
+@SuppressWarnings("serial")
 public final class ControlGlobalTerminal extends RegelBlock implements GlobalTerminable {
+    private static final long serialVersionUID = 1L;
 
     private static final Set<ControlGlobalTerminal> ALL_GLOBALS_INTERNAL = new HashSet<>();
     public static final Set<ControlGlobalTerminal> ALL_GLOBALS = Collections.unmodifiableSet(ALL_GLOBALS_INTERNAL);

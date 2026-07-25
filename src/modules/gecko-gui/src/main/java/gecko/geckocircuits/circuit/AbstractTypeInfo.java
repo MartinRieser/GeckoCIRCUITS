@@ -31,6 +31,7 @@ import java.util.Set;
  */
 @SuppressFBWarnings(value = "CT_CONSTRUCTOR_THROW",
         justification = "Abstract class - subclasses are final or properly designed to handle constructor exceptions")
+@SuppressWarnings("this-escape")
 public abstract class AbstractTypeInfo extends TypeInfoCore {
 
     static Map<Class<? extends AbstractBlockInterface>, AbstractComponentType> _classEnumMap = new HashMap<Class<? extends AbstractBlockInterface>, AbstractComponentType>();

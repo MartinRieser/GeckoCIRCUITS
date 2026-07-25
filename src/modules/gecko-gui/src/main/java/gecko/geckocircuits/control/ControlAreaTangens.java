@@ -17,7 +17,9 @@ import gecko.geckocircuits.control.calculators.ATanCalculator;
 import gecko.geckocircuits.control.calculators.AbstractControlCalculatable;
 import gecko.i18n.resources.I18nKeys;
 
+@SuppressWarnings("serial")
 public final class ControlAreaTangens extends AbstractInversTrigFunction {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlAreaTangens.class, "ATAN", I18nKeys.ATAN);
 
     @Override

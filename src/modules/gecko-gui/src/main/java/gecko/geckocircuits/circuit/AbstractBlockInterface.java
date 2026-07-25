@@ -46,7 +46,7 @@ import gecko.modelviewcontrol.AbstractUndoGenericModel;
 import gecko.modelviewcontrol.ModelMVC;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({"rawtypes", "this-escape"})
     @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Block interface exposes terminals and parameters for circuit connectivity and configuration")
     public abstract class AbstractBlockInterface extends AbstractCircuitSheetComponent
         implements ComponentTerminable, ComponentIdentifiable {
@@ -194,11 +194,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
     }
 
     public Color getForeGroundColor() {
-        return getSimulationDomain().getForeGroundColor();
+        return new Color(getSimulationDomain().getForeGroundColorRgb());
     }
 
     public Color getBackgroundColor() {
-        return getSimulationDomain().getBackgroundColor();
+        return new Color(getSimulationDomain().getBackgroundColorRgb());
     }
 
     public void setDummyIDStringDialog() {
@@ -718,11 +718,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
         }
 
 
-        for (UserParameter par : getRegisteredParameters()) {
-            for (UserParameter insertCopySearch : copy.getRegisteredParameters()) {
+        for (UserParameter<?> par : getRegisteredParameters()) {
+            for (UserParameter<?> insertCopySearch : copy.getRegisteredParameters()) {
                 if (insertCopySearch.getSaveIdentifier().equals(par.getSaveIdentifier())
                         && insertCopySearch.getValue().getClass().equals(par.getValue().getClass())) {
-                    insertCopySearch.setValueWithoutUndo(par.getValue());
+                    copyParamHelper(par, insertCopySearch);
                     if (!par.getNameOpt().isEmpty()) {
                         insertCopySearch.setNameOpt(par.getNameOpt());
                     }
@@ -731,6 +731,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
         }
 
         copy.copyAdditionalParameters(this);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <V> void copyParamHelper(UserParameter<?> src, UserParameter<?> dest) {
+        ((UserParameter<V>) dest).setValueWithoutUndo((V) src.getValue());
     }
 
     @Override
@@ -805,8 +810,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
     @Override
     public int elementAngeklickt(final Point clickPoint) {
-        return istAngeklickt((int) (dpix * clickPoint.x),
-                (int) (dpix * clickPoint.y));
+        return istAngeklickt(dpix * clickPoint.x, dpix * clickPoint.y);
     }
 
     @Override

@@ -101,7 +101,7 @@ public final class FourierGUIless {
                     while (_worksheet.getTimeValue(jjj, 0) < startTime + i * timeSpan / _nValues) {
                         jjj++;
                     }
-                    data[i] = (float) _worksheet.getValue(i2, jjj);
+                    data[i] = _worksheet.getValue(i2, jjj);
                 }
 
 

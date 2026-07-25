@@ -29,6 +29,7 @@ import java.awt.Graphics2D;
 import java.awt.Window;
 import java.util.List;
 
+@SuppressWarnings("this-escape")
 public abstract class AbstractCircuitTerminal extends AbstractCircuitBlockInterface implements SubCircuitTerminable {
 
     private final TerminalToWrap _wrapped = new TerminalToWrap(this);
@@ -144,6 +145,7 @@ public abstract class AbstractCircuitTerminal extends AbstractCircuitBlockInterf
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public List<? extends CircuitComponent> getCircuitCalculatorsForSimulationStart() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

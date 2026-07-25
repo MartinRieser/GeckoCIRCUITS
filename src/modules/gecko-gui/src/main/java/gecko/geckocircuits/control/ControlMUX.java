@@ -104,15 +104,15 @@ public final class ControlMUX extends RegelBlock implements VariableTerminalNumb
         xKlickMin = (int) (dpix * (posX - WIDTH));
         xKlickMax = (int) (dpix * (posX + WIDTH));
         yKlickMin = (int) (dpix * (posY - WIDTH));
-        yKlickMax = (int) (dpix * (posY + XIN.size()));
+        yKlickMax = dpix * (posY + XIN.size());
         graphics.setColor(getBackgroundColor());
 
         graphics.fillRect((int) (dpix * (posX - WIDTH)), (int) (dpix * (posY - WIDTH)),
-                (int) (dpix * 2 * WIDTH), (int) (dpix * XIN.size()));
+                (int) (dpix * 2 * WIDTH), dpix * XIN.size());
 
         graphics.setColor(origColor);
         graphics.drawRect((int) (dpix * (posX - WIDTH)), (int) (dpix * (posY - WIDTH)),
-                (int) (dpix * 2 * WIDTH), (int) (dpix * XIN.size()));
+                (int) (dpix * 2 * WIDTH), dpix * XIN.size());
         // Pfeil-Symbol:
         double pf = 1.4;  // Pfeilspitzen-X-Abstand
         double pfym = YOUT.get(0).getPosition().y;  // Pfeil-Y-Koordinate

@@ -52,15 +52,15 @@ public abstract class AbstractTerminal implements TerminalInterface {
     @Override
     public void paintComponent(final Graphics graphics) {
         final int dpix = AbstractCircuitSheetComponent.dpix;
-        graphics.fillOval((int) (dpix * getPosition().x) - POINT_DIAMETER / 2,
-                (int) (dpix * getPosition().y) - POINT_DIAMETER / 2, POINT_DIAMETER, POINT_DIAMETER);
+        graphics.fillOval(dpix * getPosition().x - POINT_DIAMETER / 2,
+                dpix * getPosition().y - POINT_DIAMETER / 2, POINT_DIAMETER, POINT_DIAMETER);
 
     }
 
     public void paintLabelString(final Graphics2D graphics) {
         if (!_label.getLabelString().isEmpty()) {
-            graphics.drawString(_label.getLabelString(), (int) (AbstractCircuitSheetComponent.dpix * getPosition().x) + DX_IN,
-                    (int) (AbstractCircuitSheetComponent.dpix * getPosition().y) + DY_TEXT);
+            graphics.drawString(_label.getLabelString(), AbstractCircuitSheetComponent.dpix * getPosition().x + DX_IN,
+                    AbstractCircuitSheetComponent.dpix * getPosition().y + DY_TEXT);
         }
     }
 

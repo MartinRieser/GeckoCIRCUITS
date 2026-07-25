@@ -17,7 +17,9 @@ import gecko.geckocircuits.general.FormatJTextField;
 import gecko.geckocircuits.circuit.CircuitLabel;
 import javax.swing.JLabel;
 
-class TerminalCircuitDialog extends DialogElementLK {
+@SuppressWarnings("serial")
+class TerminalCircuitDialog extends DialogElementLK<AbstractCircuitTerminal> {
+    private static final long serialVersionUID = 1L;
 
     private FormatJTextField terminalLabel;
 

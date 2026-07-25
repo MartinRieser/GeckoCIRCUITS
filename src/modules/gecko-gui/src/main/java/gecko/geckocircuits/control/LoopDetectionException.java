@@ -23,9 +23,11 @@ import java.util.List;
  *
  * @author andy
  */
+@SuppressWarnings("serial")
 class LoopDetectionException extends Exception {
+    private static final long serialVersionUID = 1L;
 
-    private final List<ControlOrderNode> _loopList;
+    private final transient List<ControlOrderNode> _loopList;
 
     public LoopDetectionException(ControlOrderNode firstComponent, List<ControlOrderNode> loopList) {
         _loopList = loopList;

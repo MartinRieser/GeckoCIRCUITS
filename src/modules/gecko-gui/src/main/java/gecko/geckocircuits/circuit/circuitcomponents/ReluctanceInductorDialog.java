@@ -27,7 +27,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+@SuppressWarnings({"unchecked", "serial"})
 class ReluctanceInductorDialog extends DialogElementLK<ReluctanceInductor> {
+    private static final long serialVersionUID = 1L;
 
     public ReluctanceInductorDialog(final ReluctanceInductor parent) {
         super(parent);

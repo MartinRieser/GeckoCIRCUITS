@@ -21,6 +21,7 @@ import java.util.Observable;
  *
  * GUI-free version for use in headless simulation core.
  */
+@SuppressWarnings("deprecation")
 public abstract class AbstractDataContainer extends Observable {
 
     /**

@@ -16,7 +16,9 @@ package gecko.geckocircuits.control;
 import gecko.GeckoSim;
 import gecko.geckocircuits.newscope.GeckoDialog;
 
+@SuppressWarnings({"serial", "this-escape"})
 public class ControlDebugWindow extends GeckoDialog {
+    private static final long serialVersionUID = 1L;
 
 
     /**

@@ -24,7 +24,9 @@ import java.io.Serializable;
 
 
 
+@SuppressWarnings({"serial", "this-escape"})
 public class NodeLabel implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     //----------------------------------
     private String labelTxt;
@@ -61,7 +63,7 @@ public class NodeLabel implements Serializable {
         g.setColor(f1);
         g.drawString(labelTxt, xTxt,yTxt);
         g.setColor(Color.lightGray);
-        g.drawLine((int)(dpix*xAnker), (int)(dpix*yAnker), xTxt, yTxt);
+        g.drawLine(dpix * xAnker, dpix * yAnker, xTxt, yTxt);
         //-----
         FontRenderContext frc= ((Graphics2D)g).getFontRenderContext();
         Rectangle rect= g.getFont().getStringBounds(labelTxt, frc).getBounds();

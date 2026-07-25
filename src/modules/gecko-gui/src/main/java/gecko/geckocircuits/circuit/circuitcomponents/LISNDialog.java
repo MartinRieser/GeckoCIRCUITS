@@ -32,7 +32,9 @@ import javax.swing.JTabbedPane;
  *
  * @author andy
  */
-class LISNDialog extends DialogElementLK {
+@SuppressWarnings({"rawtypes", "unchecked", "serial"})
+class LISNDialog extends DialogElementLK<LISN> {
+    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LogManager.getLogger(LISNDialog.class);
 
 

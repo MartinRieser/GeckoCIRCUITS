@@ -17,7 +17,9 @@ import gecko.geckocircuits.control.calculators.AbstractControlCalculatable;
 import gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+@SuppressWarnings({"serial", "this-escape"})
 public class ControlControlDebug extends RegelBlock {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlControlDebug.class,"CTRL_DEBUG", I18nKeys.DEBUGGING_STEP);
     private ControlDebugWindow _debugWindow;
 

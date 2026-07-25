@@ -22,7 +22,9 @@ import javax.swing.JPanel;
  *
  * @author andy
  */
+@SuppressWarnings("serial")
 class MotorSmRoundDialog extends AbstractMotorDialog<MotorSmRound> {
+    private static final long serialVersionUID = 1L;
 
     public MotorSmRoundDialog(MotorSmRound parent) {
         super(parent);

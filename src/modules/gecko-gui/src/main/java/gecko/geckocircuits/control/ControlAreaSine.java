@@ -17,7 +17,9 @@ import gecko.geckocircuits.control.calculators.ASinCalculator;
 import gecko.geckocircuits.control.calculators.AbstractControlCalculatable;
 import gecko.i18n.resources.I18nKeys;
 
+@SuppressWarnings("serial")
 public final class ControlAreaSine extends AbstractInversTrigFunction {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlAreaSine.class, "ASIN", I18nKeys.ASIN);
 
     @Override

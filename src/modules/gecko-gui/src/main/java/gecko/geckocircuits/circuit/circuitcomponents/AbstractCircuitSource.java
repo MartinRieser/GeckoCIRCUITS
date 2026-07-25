@@ -42,6 +42,7 @@ import java.util.List;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Circuit source must share coupling references for circuit connectivity")
+@SuppressWarnings("this-escape")
 public abstract class AbstractCircuitSource extends AbstractTwoPortLKreisBlock implements DirectVoltageMeasurable,
         ComponentCoupable, PotentialCoupable, CurrentMeasurable {
 

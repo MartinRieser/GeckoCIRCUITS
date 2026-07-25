@@ -200,12 +200,12 @@ public class GeckoExternal {
 
     public static void setGlobalParameterValue(final String parameterName, final double value) {
         checkExternal();
-        GeckoSim._geckoSim._win.optimizerParameterData.setNumberFromName(parameterName, value);
+        MainWindow.optimizerParameterData.setNumberFromName(parameterName, value);
     }
 
     public static double getGlobalParameterValue(final String parameterName) {
         checkExternal();
-        return GeckoSim._geckoSim._win.optimizerParameterData.getNumberFromName(parameterName);
+        return MainWindow.optimizerParameterData.getNumberFromName(parameterName);
     }
 
     public String[] getThyristors() {
@@ -466,6 +466,7 @@ public class GeckoExternal {
         return external.simulateUntilSteadyState(supressMessages);
     }
 
+    @SuppressWarnings("deprecation")
     public static void setLossFile(final String elementName, final String lossFileName) throws FileNotFoundException {
         checkExternal();
         external.setLossFile(elementName, lossFileName);

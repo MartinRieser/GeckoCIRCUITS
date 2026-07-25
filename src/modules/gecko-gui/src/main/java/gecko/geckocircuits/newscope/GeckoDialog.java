@@ -64,8 +64,7 @@ public class GeckoDialog extends JDialog {
     private void init() {
         try {
             URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;
-            // Fix for Java 21: use URL constructor instead of URI.toURL()
-            URL gifUrl = new URL(picsUrl, "gecko.gif");
+            URL gifUrl = picsUrl.toURI().resolve("gecko.gif").toURL();
             this.setIconImage(new ImageIcon(gifUrl).getImage());
         } catch (Exception exception) {
             LOGGER.error("Failed to load dialog icon image", exception);

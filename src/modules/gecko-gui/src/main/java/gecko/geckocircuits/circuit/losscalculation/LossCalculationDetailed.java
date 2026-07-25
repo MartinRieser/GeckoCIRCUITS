@@ -158,6 +158,7 @@ public final class LossCalculationDetailed implements GeckoFileable, AbstractLos
 
     }
 
+    @SuppressWarnings("deprecation")
     public void importASCII(TokenMap tokenMap) {
         if (tokenMap.containsToken("lossFileHashValue")) {
             lossFileHashValue = tokenMap.readDataLine("lossFileHashValue", lossFileHashValue);

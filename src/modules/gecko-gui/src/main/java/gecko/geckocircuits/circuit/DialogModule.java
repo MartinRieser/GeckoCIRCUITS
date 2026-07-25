@@ -20,7 +20,9 @@ import javax.swing.JFrame;
  *
  * @author andy
  */
+@SuppressWarnings({"serial", "this-escape"})
 public class DialogModule extends GeckoDialog {
+    private static final long serialVersionUID = 1L;
 
 
     /** Creates new form DialogModule */

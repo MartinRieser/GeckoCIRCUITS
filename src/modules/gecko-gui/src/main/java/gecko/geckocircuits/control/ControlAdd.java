@@ -16,7 +16,9 @@ package gecko.geckocircuits.control;
 import gecko.geckocircuits.control.calculators.AbstractControlCalculatable;
 import gecko.i18n.resources.I18nKeys;
 
+@SuppressWarnings("serial")
 public final class ControlAdd extends AbstractControlVariableInputs {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlAdd.class, "ADD", I18nKeys.ADDITION);
 
     public ControlAdd() {

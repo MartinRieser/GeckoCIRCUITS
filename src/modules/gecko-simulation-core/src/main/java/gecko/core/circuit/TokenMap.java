@@ -643,7 +643,7 @@ public final class TokenMap {
             return wert;
         } catch (Exception ex) {
             logErrorString(identifier, ex);
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
     }
 

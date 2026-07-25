@@ -17,7 +17,9 @@ import gecko.geckocircuits.control.calculators.AbstractControlCalculatable;
 import gecko.geckocircuits.control.calculators.GreaterThanCalculator;
 import gecko.i18n.resources.I18nKeys;
 
+@SuppressWarnings("serial")
 public final class ControlGreaterThan extends SimpleRegelBlock {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlGreaterThan.class, "GT", I18nKeys.GREATER_THAN);
 
     public ControlGreaterThan() {

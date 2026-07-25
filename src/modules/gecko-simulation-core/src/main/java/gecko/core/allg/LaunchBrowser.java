@@ -35,6 +35,12 @@ public final class LaunchBrowser {
 
 
     public static void launch(final String url) {
+        if (url == null) {
+            throw new NullPointerException("URL cannot be null");
+        }
+        if (Boolean.getBoolean("gecko.disable.browser")) {
+            return;
+        }
         final String fileUrl = url;
         try {
             if (isWindows()) {

@@ -22,7 +22,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
+@SuppressWarnings({"unchecked", "serial"})
 class BJTDialog extends DialogElementLK<BJT> {
+    private static final long serialVersionUID = 1L;
     private JRadioButton _npnButton;
     private JRadioButton _pnpButton;
     private static final int NUMBER_GRID_ROWS = 9;

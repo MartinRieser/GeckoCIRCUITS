@@ -325,9 +325,9 @@ public class SchematicComponentSelection2 extends JTabbedPane {
                     Robot robot;
                     robot = new Robot();
                     final java.awt.Point mousePoint = MouseInfo.getPointerInfo().getLocation();
-                    robot.mouseRelease(InputEvent.BUTTON1_MASK);
+                    robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
                     robot.mouseMove(mousePoint.x - 10, mousePoint.y);
-                    //robot.mousePress(InputEvent.BUTTON1_MASK);
+                    //robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
 
 
                 } catch (AWTException ex) {

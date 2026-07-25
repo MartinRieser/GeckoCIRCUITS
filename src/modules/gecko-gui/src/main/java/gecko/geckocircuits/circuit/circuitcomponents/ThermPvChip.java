@@ -196,7 +196,7 @@ public final class ThermPvChip extends AbstractCircuitBlockInterface implements 
                     (int) (dpix * WIDTH), (int) (-dpix * WIDTH)},
                 new int[]{(int) (dpix * (0 + HEIGHT)), (int) (dpix * HEIGHT), 0,
                     (int) (-dpix * HEIGHT), (int) (-dpix * HEIGHT)}, POLYGON_POINTS);
-        graphics.drawString("Loss", (int) (-dpix * WIDTH + DIAMETER), (int) (graphics.getFont().getSize() / 2 - 2));
+        graphics.drawString("Loss", (int) (-dpix * WIDTH + DIAMETER), graphics.getFont().getSize() / 2 - 2);
         // 'Erde'  -->
 
         graphics.fillRect((int) (dpix * (- WIDTH - DIAMETER_A - EARTH_X)),
@@ -278,6 +278,7 @@ public final class ThermPvChip extends AbstractCircuitBlockInterface implements 
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public List<? extends CircuitComponent> getCircuitCalculatorsForSimulationStart() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

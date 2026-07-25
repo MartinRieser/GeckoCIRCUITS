@@ -23,7 +23,9 @@ import java.awt.RenderingHints;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+@SuppressWarnings("serial")
 class ControlHysteresisDialog extends AbstractDialogWithExternalOption<ControlHysteresis> {
+    private static final long serialVersionUID = 1L;
     private static final int IMAGE_COMPONENT_WIDTH = 130;
     private static final int IMAGE_COMPONENT_HEIGHT = 100;
 

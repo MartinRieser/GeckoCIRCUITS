@@ -37,7 +37,9 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.border.TitledBorder;
 
+@SuppressWarnings({"unchecked", "serial"})
 class MutualInductanceDialog extends DialogElementLK<MutualInductance> {
+    private static final long serialVersionUID = 1L;
     private AbstractBlockInterface _selectedCoupling1;
     private AbstractBlockInterface _selectedCoupling2;
     private final JCheckBox _jcbM = new JCheckBox(I18nKeys.SHOW_LINES.getTranslation());

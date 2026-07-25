@@ -33,7 +33,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE",
         justification = "Public data vector for external data exchange with Simulink/external tools")
+@SuppressWarnings("serial")
 public final class ControlFromEXTERNAL extends RegelBlockSimulink implements VariableTerminalNumber {
+    private static final long serialVersionUID = 1L;
 
     private static final List<RegelBlock> fromExternalsInternal = new ArrayList<>();
     public static final List<RegelBlock> fromExternals = Collections.unmodifiableList(fromExternalsInternal);

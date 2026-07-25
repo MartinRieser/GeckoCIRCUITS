@@ -61,7 +61,7 @@ public final class SimulationAccess implements GeckoFileable {
 
     public void startSim() {
         try {
-            mainWindow._simRunner.startCalculation(false, mainWindow._solverSettings);
+            mainWindow._simRunner.startCalculation(false, MainWindow._solverSettings);
             waitForDataSavers();
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -129,7 +129,7 @@ public final class SimulationAccess implements GeckoFileable {
         for (AbstractCircuitBlockInterface elem : se.getElementLK()) {
             AbstractCircuitBlockInterface block = elem;
             if (searchClass.isAssignableFrom(block.getClass())) {
-                returnValue.add((T) block);
+                returnValue.add(searchClass.cast(block));
             }
         }
         return returnValue;
@@ -217,19 +217,19 @@ public final class SimulationAccess implements GeckoFileable {
     }
 
     void set_Tend(double Tend) {
-        mainWindow._solverSettings._tDURATION.setValueWithoutUndo(Tend);
+        MainWindow._solverSettings._tDURATION.setValueWithoutUndo(Tend);
     }
 
     void set_Tend_pre(double Tend) {
-        mainWindow._solverSettings._T_pre.setValueWithoutUndo(Tend);
+        MainWindow._solverSettings._T_pre.setValueWithoutUndo(Tend);
     }
 
     void set_dt(double value) {
-        mainWindow._solverSettings.dt.setValue(value);
+        MainWindow._solverSettings.dt.setValue(value);
     }
 
     void set_dt_pre(double value) {
-        mainWindow._solverSettings._dt_pre.setValueWithoutUndo(value);
+        MainWindow._solverSettings._dt_pre.setValueWithoutUndo(value);
     }
 
     void saveFileAs(String fileName) {
@@ -246,7 +246,7 @@ public final class SimulationAccess implements GeckoFileable {
     }
 
     File getCurrentModelFile() {
-        return new File(mainWindow.getOpenFileName());
+        return new File(MainWindow.getOpenFileName());
     }
 
     public double[] getSignalCharacteristics(String scopename, int port, double start_time, double end_time)
@@ -274,19 +274,19 @@ public final class SimulationAccess implements GeckoFileable {
     }
 
     public double get_dt() {
-        return mainWindow._solverSettings.dt.getValue();
+        return MainWindow._solverSettings.dt.getValue();
     }
 
     double get_dt_pre() {
-        return mainWindow._solverSettings._dt_pre.getValue();
+        return MainWindow._solverSettings._dt_pre.getValue();
     }
 
     double get_Tend_pre() {
-        return mainWindow._solverSettings._T_pre.getValue();
+        return MainWindow._solverSettings._T_pre.getValue();
     }
 
     double get_Tend() {
-        return mainWindow._solverSettings._tDURATION.getValue();
+        return MainWindow._solverSettings._tDURATION.getValue();
     }
 
     //to clear the GeckoCustom object after opening a new file

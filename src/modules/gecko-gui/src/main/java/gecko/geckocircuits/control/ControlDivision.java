@@ -18,7 +18,9 @@ import gecko.geckocircuits.control.calculators.DivCalculator;
 import gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+@SuppressWarnings("serial")
 public final class ControlDivision extends RegelBlock {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlDivision.class, "DIV", I18nKeys.DIVISION);
 
     public ControlDivision() {

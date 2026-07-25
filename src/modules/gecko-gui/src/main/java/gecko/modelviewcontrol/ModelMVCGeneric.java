@@ -30,6 +30,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  */
 @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE",
         justification = "Public listeners field for MVC observer registration by subclasses")
+@SuppressWarnings("serial")
 public abstract class ModelMVCGeneric<T> implements Serializable{
   // transient private Set<ActionListener> listeners = new HashSet<ActionListener>();
   transient public WeakListModel listeners = new WeakListModel();

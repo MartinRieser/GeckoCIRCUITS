@@ -43,7 +43,9 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Script window stores simulation access reference for script execution")
+@SuppressWarnings("serial")
 public final class ScriptWindow extends JFrame {
+    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LogManager.getLogger(ScriptWindow.class);
 
     ExtraFilesWindow _extSourceWindow;
@@ -108,7 +110,7 @@ public final class ScriptWindow extends JFrame {
             public void mouseClicked(MouseEvent evt) {
                 if (evt.getClickCount() == 2) {
                     int index = jListFunctions.locationToIndex(evt.getPoint());
-                    FunctionDescription funcDes = (FunctionDescription) _listModel.get(index);
+                    FunctionDescription funcDes = _listModel.get(index);
                     optionJDialog(funcDes._detailsString);
                 }
             }

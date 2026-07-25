@@ -17,7 +17,9 @@ import gecko.geckocircuits.control.calculators.AbstractControlCalculatable;
 import gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+@SuppressWarnings("serial")
 public final class ControlPOW extends RegelBlock {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlPOW.class, "POW", I18nKeys.POW);
 
     public ControlPOW() {

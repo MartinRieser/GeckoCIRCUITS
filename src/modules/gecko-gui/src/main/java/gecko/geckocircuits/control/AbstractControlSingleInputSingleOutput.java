@@ -15,7 +15,9 @@ package gecko.geckocircuits.control;
 
 import gecko.i18n.resources.I18nKeys;
 
+@SuppressWarnings("serial")
 public abstract class AbstractControlSingleInputSingleOutput extends RegelBlock {
+    private static final long serialVersionUID = 1L;
 
     public AbstractControlSingleInputSingleOutput() {
         super(1,1);

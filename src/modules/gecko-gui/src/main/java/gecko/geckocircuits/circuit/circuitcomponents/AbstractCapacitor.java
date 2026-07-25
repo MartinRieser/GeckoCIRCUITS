@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Capacitor exposes parameters for nonlinear characteristic configuration")
+@SuppressWarnings("this-escape")
 public abstract class AbstractCapacitor extends AbstractNonLinearCircuitComponent
 implements CurrentMeasurable, DirectVoltageMeasurable {
     private static final double WIDTH = 0.9;
@@ -149,6 +150,7 @@ implements CurrentMeasurable, DirectVoltageMeasurable {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public List<? extends CircuitComponent> getCircuitCalculatorsForSimulationStart() {
         return Arrays.asList(new CapacitorCalculator(this));
     }

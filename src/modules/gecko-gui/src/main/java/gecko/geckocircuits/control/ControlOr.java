@@ -18,7 +18,9 @@ import gecko.geckocircuits.control.calculators.OrCalculatorMultipleInputs;
 import gecko.geckocircuits.control.calculators.OrCalculatorTwoInputs;
 import gecko.i18n.resources.I18nKeys;
 
+@SuppressWarnings("serial")
 public final class ControlOr extends AbstractControlVariableInputs {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlOr.class, "OR", I18nKeys.OR);
 
     public ControlOr() {

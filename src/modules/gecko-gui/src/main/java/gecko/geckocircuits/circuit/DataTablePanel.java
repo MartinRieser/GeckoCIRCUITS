@@ -28,7 +28,9 @@ import javax.swing.table.TableColumn;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Panel stores column titles array for table display")
+@SuppressWarnings({"serial", "this-escape"})
 public class DataTablePanel extends JPanel {
+    private static final long serialVersionUID = 1L;
 
     private final MyTableModel _tableModel;
     private final JTable _table;
@@ -113,8 +115,9 @@ public class DataTablePanel extends JPanel {
         _tableModel.data.clear();
     }
 
+    @SuppressWarnings("serial")
     class MyTableModel extends AbstractTableModel {
-
+        private static final long serialVersionUID = 1L;
         private final int _numberColumns;
         private List<List<Double>> data = new ArrayList<List<Double>>() {
             @Override

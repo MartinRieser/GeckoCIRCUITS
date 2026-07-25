@@ -16,7 +16,9 @@ package gecko.geckocircuits.circuit.circuitcomponents;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 
+@SuppressWarnings({"unchecked", "serial"})
 class ResistorDialog extends DialogElementLK<AbstractResistor> {
+    private static final long serialVersionUID = 1L;
 
     public ResistorDialog(AbstractResistor parent) {
         super(parent);

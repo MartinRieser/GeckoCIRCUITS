@@ -53,15 +53,15 @@ public final class SuggestionField extends JTextField {
     private static final long serialVersionUID = 1756202080423312153L;
     private final JDialog _dialog;
     private JList<String> _list;
-    private List<String> _data = new ArrayList<String>();
-    private final List<String> _suggestions = new ArrayList<String>();
+    private transient List<String> _data = new ArrayList<String>();
+    private final transient List<String> _suggestions = new ArrayList<String>();
     private transient InterruptableMatcher _matcher;
     private Font _busy;
     private Font _regular;
     private String _lastWord = "";
     private String _lastChosenExistingVariable;
     private String _hint;
-    private final List<ActionListener> _listeners = new ArrayList<ActionListener>();
+    private final transient List<ActionListener> _listeners = new ArrayList<ActionListener>();
     private transient SuggestMatcher _suggestMatcher = new ContainsMatcher();
     private boolean _caseSensitive = false;
     private final JScrollPane _scrollPane;

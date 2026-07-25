@@ -18,6 +18,7 @@ package gecko;
  * @author anstupar
  */
 public class GeckoRemoteException extends Exception {
+    private static final long serialVersionUID = 1L;
 
     /**
      * Creates a new instance of

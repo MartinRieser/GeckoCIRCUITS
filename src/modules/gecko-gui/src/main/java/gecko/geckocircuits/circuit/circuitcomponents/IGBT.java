@@ -80,7 +80,7 @@ public final class IGBT extends AbstractVoltageDropSwitch implements HiddenSubCi
                 new int[]{-dpix, dpix, dpix}, 3);
         graphics.fillPolygon(
                 new int[]{(int) (-dpix * WIDTH), (int) (-dpix * WIDTH), 0},
-                new int[]{(int) (dpix - TRIANGLE_WIDTH), dpix, dpix}, 3);
+                new int[]{dpix - TRIANGLE_WIDTH, dpix, dpix}, 3);
 
     }
 
@@ -139,7 +139,7 @@ public final class IGBT extends AbstractVoltageDropSwitch implements HiddenSubCi
             if (YOUT.size() > 1) {
                 YOUT.pop();
             }
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
     }
 
@@ -154,6 +154,7 @@ public final class IGBT extends AbstractVoltageDropSwitch implements HiddenSubCi
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public List<? extends CircuitComponent> getCircuitCalculatorsForSimulationStart() {
         return Arrays.asList(new IGBTCalculator(this));
     }

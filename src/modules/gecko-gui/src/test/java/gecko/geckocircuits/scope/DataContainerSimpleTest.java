@@ -21,6 +21,7 @@ import static org.junit.Assert.*;
  * Unit tests for {@link DataContainerSimple}, verifying data storage, retrieval,
  * resolution intervals, and range calculations.
  */
+@SuppressWarnings("deprecation")
 public class DataContainerSimpleTest {
 
     private static final double DELTA = 1e-9;

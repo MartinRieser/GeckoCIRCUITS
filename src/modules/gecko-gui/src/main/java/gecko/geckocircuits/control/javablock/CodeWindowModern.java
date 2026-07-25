@@ -27,12 +27,13 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-@SuppressWarnings("PMD.AvoidStringBufferField")
+@SuppressWarnings({"PMD.AvoidStringBufferField", "serial", "this-escape"})
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Code window stores Java function block and output buffer references")
 public class CodeWindowModern extends JFrame {
+    private static final long serialVersionUID = 1L;
 
     private ControlJavaFunction _javaFunction;
-    private final VariableBusWidth _variableBusWidth;
+    private final transient VariableBusWidth _variableBusWidth;
     private final StringBuffer _outputStringBuffer;
 
     private final RSyntaxTextArea _codeTextArea;

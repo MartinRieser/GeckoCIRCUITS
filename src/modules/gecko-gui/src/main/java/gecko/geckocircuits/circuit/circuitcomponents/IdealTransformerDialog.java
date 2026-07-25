@@ -30,7 +30,9 @@ import javax.swing.border.TitledBorder;
  *
  * @author andy
  */
+@SuppressWarnings("serial")
 class IdealTransformerDialog extends DialogElementLK<IdealTransformer> {
+    private static final long serialVersionUID = 1L;
 
     private JCheckBox reverse;
 
@@ -149,6 +151,6 @@ class IdealTransformerDialog extends DialogElementLK<IdealTransformer> {
         } else {
             element._reversed.setUserValue(-1.0);
         }
-        ((IdealTransformer) element).initPar();
+        element.initPar();
     }
 }

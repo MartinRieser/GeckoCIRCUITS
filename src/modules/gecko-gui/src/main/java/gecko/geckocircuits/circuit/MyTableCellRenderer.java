@@ -16,7 +16,9 @@ package gecko.geckocircuits.circuit;
 import gecko.geckocircuits.general.TechFormat;
 import javax.swing.table.DefaultTableCellRenderer;
 
+@SuppressWarnings("serial")
 class MyTableCellRenderer extends DefaultTableCellRenderer {
+    private static final long serialVersionUID = 1L;
     private final TechFormat tf = new TechFormat();
     public MyTableCellRenderer() {
         // no-op

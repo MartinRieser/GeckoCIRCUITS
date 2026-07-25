@@ -32,7 +32,9 @@ import static org.junit.Assert.*;
 public class ModelMVCGenericTest {
 
     // Concrete test implementation of abstract class
+    @SuppressWarnings("serial")
     private static class TestModelGeneric<T> extends ModelMVCGeneric<T> {
+        private static final long serialVersionUID = 1L;
         public TestModelGeneric(T initValue) {
             super(initValue);
         }

@@ -29,7 +29,9 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.border.TitledBorder;
 
+@SuppressWarnings("serial")
 final class OperationalAmplifierDialog extends DialogElementLK<OperationalAmplifier> {
+    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LogManager.getLogger(OperationalAmplifierDialog.class);
 
 

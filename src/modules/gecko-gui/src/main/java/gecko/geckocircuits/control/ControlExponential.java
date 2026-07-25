@@ -18,7 +18,9 @@ import gecko.geckocircuits.control.calculators.ExpCalculator;
 import gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+@SuppressWarnings("serial")
 public final class ControlExponential extends AbstractControlSingleInputSingleOutput {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlExponential.class, "EXP", I18nKeys.EXP);
 
     @Override

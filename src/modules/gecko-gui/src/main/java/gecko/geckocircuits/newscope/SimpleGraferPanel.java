@@ -20,7 +20,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings(value = {"CT_CONSTRUCTOR_THROW", "EI_EXPOSE_REP2"},
         justification = "Assertion is design-time check; stores grafer reference for panel display")
+@SuppressWarnings({"serial", "this-escape"})
 public class SimpleGraferPanel extends javax.swing.JPanel {
+    private static final long serialVersionUID = 1L;
 
     final GraferV4 _grafer;
 

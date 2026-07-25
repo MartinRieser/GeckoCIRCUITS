@@ -45,6 +45,7 @@ import java.util.Stack;
  */
 @SuppressFBWarnings(value = {"EI_EXPOSE_REP", "SE_TRANSIENT_FIELD_NOT_RESTORED", "DE_MIGHT_IGNORE"},
         justification = "Scope block exposes data container for efficient simulation data access; transient fields are repopulated during component initialization; exception in setInputTerminalNumber is safely ignored during init")
+@SuppressWarnings("deprecation")
 public final class ControlOSZI extends RegelBlock implements VariableTerminalNumber,
         SpecialNameVisible {
     private static final Logger LOGGER = LogManager.getLogger(ControlOSZI.class);

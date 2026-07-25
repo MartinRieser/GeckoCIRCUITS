@@ -18,14 +18,14 @@ class SelectableLanguagesTest {
     void testEnglishLanguage() {
         assertEquals("en", SelectableLanguages.ENGLISH.getLanguageCode());
         assertEquals("English", SelectableLanguages.ENGLISH.toString());
-        assertEquals(new Locale("en"), SelectableLanguages.ENGLISH.getLocale());
+        assertEquals(Locale.of("en"), SelectableLanguages.ENGLISH.getLocale());
     }
 
     @Test
     void testGermanLanguage() {
         assertEquals("de", SelectableLanguages.GERMAN.getLanguageCode());
         assertEquals("Deutsch", SelectableLanguages.GERMAN.toString());
-        assertEquals(new Locale("de"), SelectableLanguages.GERMAN.getLocale());
+        assertEquals(Locale.of("de"), SelectableLanguages.GERMAN.getLocale());
     }
 
     @Test

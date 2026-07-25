@@ -88,7 +88,7 @@ public abstract class AbstractUndoGenericModel<T> extends ModelMVCGeneric<T> imp
   @Override
   public void setValue(final T value){
     if(!value.equals(_value) && !_redoUndoFlag && _initialized){
-      undoManager.addEdit(new UndoableAction(this, this._value, value));
+      undoManager.addEdit(new UndoableAction<T>(this, this._value, value));
     }
     _initialized = true;
     super.setValue(value);

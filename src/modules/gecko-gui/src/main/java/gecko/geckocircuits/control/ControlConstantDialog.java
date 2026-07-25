@@ -13,7 +13,9 @@
  */
 package gecko.geckocircuits.control;
 
+@SuppressWarnings({"unchecked", "serial"})
 class ControlConstantDialog extends DialogElementCONTROL<ControlConstant> {
+    private static final long serialVersionUID = 1L;
 
     public ControlConstantDialog(ControlConstant controlConst) {
         super(controlConst);

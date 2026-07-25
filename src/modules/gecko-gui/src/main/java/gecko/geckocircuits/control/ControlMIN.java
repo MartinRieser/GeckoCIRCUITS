@@ -18,7 +18,9 @@ import gecko.geckocircuits.control.calculators.MinCalculatorMultiInputs;
 import gecko.geckocircuits.control.calculators.MinCalculatorTwoInputs;
 import gecko.i18n.resources.I18nKeys;
 
+@SuppressWarnings("serial")
 public final class ControlMIN extends AbstractControlVariableInputs {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlMIN.class, "MIN", I18nKeys.MINIMUM);
 
     public ControlMIN() {

@@ -7,9 +7,17 @@ import java.lang.reflect.InvocationTargetException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.BeforeAll;
+
 class LaunchBrowserTest {
 
+    @BeforeAll
+    static void setUp() {
+        System.setProperty("gecko.disable.browser", "true");
+    }
+
     @Test
+    @SuppressWarnings("deprecation")
     void testUtilityClassCannotBeInstantiated() {
         // Verify the private constructor exists
         Constructor<?>[] constructors = LaunchBrowser.class.getDeclaredConstructors();

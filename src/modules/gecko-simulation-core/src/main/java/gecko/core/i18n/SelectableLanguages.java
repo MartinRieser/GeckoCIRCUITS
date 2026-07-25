@@ -73,7 +73,7 @@ public enum SelectableLanguages {
     final Locale _locale;
 
     SelectableLanguages(final String code, final String foreignName) {
-        _locale = new Locale(code);
+        _locale = Locale.of(code);
         _foreignName = foreignName;
         _langCode = code;
 

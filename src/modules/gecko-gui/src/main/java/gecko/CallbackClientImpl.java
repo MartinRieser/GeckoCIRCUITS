@@ -27,6 +27,7 @@ import java.util.GregorianCalendar;
  *
  */
 public final class CallbackClientImpl extends UnicastRemoteObject implements CallbackClientInterface {
+    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LogManager.getLogger(CallbackClientImpl.class);
 
 

@@ -16,7 +16,9 @@ package gecko.geckocircuits.control;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 
+@SuppressWarnings({"unchecked", "serial"})
 class ControlDelayDialog extends DialogElementCONTROL<ControlDelay> {
+    private static final long serialVersionUID = 1L;
 
     public ControlDelayDialog(ControlDelay controlDelay) {
         super(controlDelay);

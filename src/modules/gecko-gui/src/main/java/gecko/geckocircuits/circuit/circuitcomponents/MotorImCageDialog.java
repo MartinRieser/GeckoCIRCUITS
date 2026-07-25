@@ -23,7 +23,9 @@ import javax.swing.JPanel;
  * @author andy
  * Kurzschlusskaefig-Laeufer
  */
+@SuppressWarnings("serial")
 class MotorImCageDialog extends AbstractMotorDialog<MotorImCage> {
+    private static final long serialVersionUID = 1L;
 
     public MotorImCageDialog(final MotorImCage parent) {
         super(parent);

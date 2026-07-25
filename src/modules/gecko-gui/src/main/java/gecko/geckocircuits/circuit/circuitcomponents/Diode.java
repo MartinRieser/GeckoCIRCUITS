@@ -108,6 +108,7 @@ public final class Diode extends AbstractSemiconductor implements ForwardVoltage
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public List<? extends CircuitComponent> getCircuitCalculatorsForSimulationStart() {
         return Arrays.asList(new DiodeCalculator(this));
     }

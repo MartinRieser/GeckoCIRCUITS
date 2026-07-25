@@ -21,7 +21,9 @@ import java.util.Arrays;
 import java.util.List;
 
 
+@SuppressWarnings("serial")
 public final class ControlAmperemeter extends AbstractCurrentMeasurement {
+    private static final long serialVersionUID = 1L;
     static ControlTypeInfo tinfo = new ControlTypeInfo(ControlAmperemeter.class, "AMP", I18nKeys.CURRENT_MEASUREMENT_A);
 
         @Override

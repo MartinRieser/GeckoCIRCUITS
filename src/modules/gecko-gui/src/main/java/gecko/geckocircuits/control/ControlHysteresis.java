@@ -102,7 +102,7 @@ public final class ControlHysteresis extends RegelBlock implements ControlInputT
             //int dy = (int) (SchematicEditor2.foCONTROL.getStringBounds("xxx", frc).getHeight() * 0.25);
             graphics.setColor(GlobalColors.farbeInBearbeitungCONTROL);
             //XIN[1] = new Point((int) xe1, (int) ye1);
-            graphics.drawString("h", (int) (dpix * xPos) + 1 + 2, (int) (dpix * (yPos + 2)) + 1 + 2);
+            graphics.drawString("h", dpix * xPos + 1 + 2, dpix * (yPos + 2) + 1 + 2);
             graphics.setColor(origColor);
 
         }

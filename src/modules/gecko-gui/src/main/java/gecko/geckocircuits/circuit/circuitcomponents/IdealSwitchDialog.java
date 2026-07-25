@@ -15,7 +15,9 @@ package gecko.geckocircuits.circuit.circuitcomponents;
 
 import javax.swing.JPanel;
 
+@SuppressWarnings({"unchecked", "serial"})
 class IdealSwitchDialog extends AbstractDialogPowerSwitch<IdealSwitch> {
+    private static final long serialVersionUID = 1L;
 
     public IdealSwitchDialog(IdealSwitch parent) {
         super(parent);

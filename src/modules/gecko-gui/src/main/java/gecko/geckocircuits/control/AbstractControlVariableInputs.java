@@ -11,7 +11,9 @@ import java.awt.event.ActionListener;
  * For some components, it makes sense to have a variable input number, e.g. adding, logic-or, multiplication...
  * @author andreas
  */
+@SuppressWarnings({"serial", "this-escape"})
 public abstract class AbstractControlVariableInputs extends RegelBlock implements VariableTerminalNumber {
+    private static final long serialVersionUID = 1L;
 
     private final static int DEFAULT_NUMBER_INPUTS = 1;
 

@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import java.util.Observer;
 import java.util.Observable;
 
+@SuppressWarnings("deprecation")
 public class DataContainerGlobalTest {
 
     private DataContainerGlobal global;

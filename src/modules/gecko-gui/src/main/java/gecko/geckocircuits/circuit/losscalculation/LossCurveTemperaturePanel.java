@@ -27,11 +27,13 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.border.TitledBorder;
 
+@SuppressWarnings("serial")
 public final class LossCurveTemperaturePanel extends JPanel {
+    private static final long serialVersionUID = 1L;
 
-    private final List<JRadioButton> _radioButtons = new ArrayList<JRadioButton>();
+    private final transient List<JRadioButton> _radioButtons = new ArrayList<JRadioButton>();
     private final ButtonGroup _buttonGroup = new ButtonGroup();
-    private final List<ActionListener> _listeners = new ArrayList<ActionListener>();
+    private final transient List<ActionListener> _listeners = new ArrayList<ActionListener>();
 
     public LossCurveTemperaturePanel(final List<? extends LossCurve> curveList) {
         super();

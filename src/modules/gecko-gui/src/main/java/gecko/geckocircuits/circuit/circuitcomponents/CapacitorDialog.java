@@ -23,7 +23,9 @@ import java.awt.event.ActionListener;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
+@SuppressWarnings({"unchecked", "serial"})
 class CapacitorDialog extends DialogElementLK<AbstractCapacitor> {
+    private static final long serialVersionUID = 1L;
 
     public CapacitorDialog(final AbstractCapacitor parent) {
         super(parent);

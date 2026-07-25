@@ -91,6 +91,7 @@ public final class IdealSwitch extends AbstractSwitch {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public List<? extends CircuitComponent> getCircuitCalculatorsForSimulationStart() {
         return Arrays.asList(new IdealSwitchCalculator(this));
     }

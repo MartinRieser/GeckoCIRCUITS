@@ -20,7 +20,9 @@ import java.text.DecimalFormat;
 import java.util.Locale;
 import java.io.Serializable;
 
+@SuppressWarnings("serial")
 public class TechFormat implements Serializable {
+    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LogManager.getLogger(TechFormat.class);
 
 

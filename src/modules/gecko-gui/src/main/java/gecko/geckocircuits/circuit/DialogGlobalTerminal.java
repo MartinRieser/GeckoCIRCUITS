@@ -25,9 +25,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * @author andreas
  */
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Dialog stores terminal reference for global connection configuration")
+@SuppressWarnings({"serial", "this-escape"})
 public class DialogGlobalTerminal extends javax.swing.JDialog {
-    private final GlobalTerminable _globalTerminable;
-    private final HashSet<GlobalTerminable> _allGlobalTerminals;
+    private static final long serialVersionUID = 1L;
+    private final transient GlobalTerminable _globalTerminable;
+    private final transient HashSet<GlobalTerminable> _allGlobalTerminals;
     private final AbstractBlockInterface _thisTerminal;
     private boolean _initDone = false;
     /**
@@ -36,7 +38,7 @@ public class DialogGlobalTerminal extends javax.swing.JDialog {
     public DialogGlobalTerminal(final java.awt.Frame parent, final AbstractBlockInterface globalTerminal) {
         super(parent, true);
         initComponents();
-        _thisTerminal = (AbstractBlockInterface) globalTerminal;
+        _thisTerminal = globalTerminal;
         jTextFieldName.setText(globalTerminal.getStringID());
         _globalTerminable = (GlobalTerminable) globalTerminal;
 
@@ -92,9 +94,9 @@ public class DialogGlobalTerminal extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         jTextFieldName = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        jComboBoxAllNames = new javax.swing.JComboBox();
+        jComboBoxAllNames = new javax.swing.JComboBox<>();
         jLabel3 = new javax.swing.JLabel();
-        jComboBoxConnections = new javax.swing.JComboBox();
+        jComboBoxConnections = new javax.swing.JComboBox<>();
         jButtonShowInfo = new javax.swing.JButton();
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -258,8 +260,8 @@ public class DialogGlobalTerminal extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonOK;
     private javax.swing.JButton jButtonShowInfo;
-    private javax.swing.JComboBox jComboBoxAllNames;
-    private javax.swing.JComboBox jComboBoxConnections;
+    private javax.swing.JComboBox<String> jComboBoxAllNames;
+    private javax.swing.JComboBox<String> jComboBoxConnections;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

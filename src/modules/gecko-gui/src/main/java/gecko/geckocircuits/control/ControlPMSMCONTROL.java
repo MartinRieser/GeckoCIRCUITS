@@ -18,7 +18,9 @@ import gecko.geckocircuits.control.calculators.AbstractControlCalculatable;
 import gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+@SuppressWarnings("serial")
 public final class ControlPMSMCONTROL extends RegelBlock {
+    private static final long serialVersionUID = 1L;
 
     private static final int BLOCK_WIDTH = 5;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlPMSMCONTROL.class, "PMSM_CTRL", I18nKeys.PMSM_CONTROLLER);

@@ -29,6 +29,7 @@ import java.text.NumberFormat;
 
 @SuppressFBWarnings(value = {"PA_PUBLIC_PRIMITIVE_ATTRIBUTE", "SF_SWITCH_FALLTHROUGH"},
         justification = "Performance-critical matrix class with direct field access for simulation speed; switch fallthroughs in TH_CTH to LK_C are intentional for thermal/electric capacitor handling")
+@SuppressWarnings("fallthrough")
 public class LKMatrices {
     private static final Logger LOGGER = LogManager.getLogger(LKMatrices.class);
 

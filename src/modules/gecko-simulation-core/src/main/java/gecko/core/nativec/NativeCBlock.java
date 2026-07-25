@@ -35,7 +35,7 @@ public class NativeCBlock {
 
 
     NativeCClassLoader _customCClassLoader;
-    Class _nativeCWrapperClass;
+    Class<?> _nativeCWrapperClass;
     InterfaceNativeCWrapper _nativeCWrapperObj;
     private double[] _xINVector;
     private double[] _xOUTVector;
@@ -79,7 +79,7 @@ public class NativeCBlock {
         try {
             _customCClassLoader = new NativeCClassLoader();
             _nativeCWrapperClass = _customCClassLoader.findClass("gecko.core.nativec.NativeCWrapper");
-            _nativeCWrapperObj = (InterfaceNativeCWrapper) _nativeCWrapperClass.newInstance();
+            _nativeCWrapperObj = (InterfaceNativeCWrapper) _nativeCWrapperClass.getDeclaredConstructor().newInstance();
             _nativeCWrapperObj.loadLibrary(name);
             return true;
         } catch (Exception e) {

@@ -116,7 +116,7 @@ public final class DataContainerCompressable extends AbstractDataContainer imple
     private void checkContainerSize(final int column) {
         if (column >= _totalDataSize) {
             if (!_data.isEmpty() && _data.get(0) instanceof DataJunkCompressable) {
-                ((DataJunkCompressable) _data.get(_data.size() - 1)).doCompression();
+                _data.get(_data.size() - 1).doCompression();
             }
 
             _data.add(new DataJunkCompressable(_memoryContainer, _totalDataSize, _rows, JUNK_SIZE, _timeSerie));
@@ -219,7 +219,7 @@ public final class DataContainerCompressable extends AbstractDataContainer imple
             totalBytes += junkBytes;
         }
         int returnValue = totalBytes / MEGA_BYTES;
-        returnValue += getCachedRAMSizeInMB();
+        returnValue += (int) getCachedRAMSizeInMB();
         return returnValue;
     }
 

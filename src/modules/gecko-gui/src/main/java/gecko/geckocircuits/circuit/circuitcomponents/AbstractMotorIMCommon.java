@@ -20,6 +20,7 @@ import gecko.i18n.resources.I18nKeys;
  *
  * @author andy
  */
+@SuppressWarnings("this-escape")
 public abstract class AbstractMotorIMCommon extends AbstractThreePhaseMotor {
 
     final UserParameter<Double> statorLeakageInductance = UserParameter.Builder.

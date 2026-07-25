@@ -24,9 +24,11 @@ import javax.swing.JOptionPane;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Dialog stores data container reference for export")
+@SuppressWarnings({"serial", "this-escape"})
 public class CisprDataExport extends GeckoDialog {
+    private static final long serialVersionUID = 1L;
 
-    private final AbstractDataContainer _dataContainer;
+    private final transient AbstractDataContainer _dataContainer;
 
     public CisprDataExport(final TestReceiverWindow parent, final Cispr16Settings settings,
             final AbstractDataContainer dataContainer) {

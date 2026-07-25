@@ -27,7 +27,9 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
+@SuppressWarnings("serial")
 public abstract class DialogElementCONTROL<T extends RegelBlock> extends DialogCircuitComponent<T> {
+    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LogManager.getLogger(DialogElementCONTROL.class);
 
     JPanel jpM = new JPanel();
@@ -106,7 +108,7 @@ public abstract class DialogElementCONTROL<T extends RegelBlock> extends DialogC
         return jpM;
     }
 
-    private static void addSelectionComboListener(final JComboBox combo, final List<AbstractBlockInterface> selectionList,
+    private static void addSelectionComboListener(final JComboBox<String> combo, final List<AbstractBlockInterface> selectionList,
             final ComponentCoupable coupable) {
         combo.addActionListener(new ActionListener() {
             @Override

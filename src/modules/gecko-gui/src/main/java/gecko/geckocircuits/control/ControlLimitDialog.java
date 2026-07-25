@@ -25,7 +25,9 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+@SuppressWarnings("serial")
 class ControlLimitDialog extends AbstractDialogWithExternalOption<ControlLimit> {
+    private static final long serialVersionUID = 1L;
 
     public ControlLimitDialog(final ControlLimit reglerLimit) {
         super(reglerLimit);

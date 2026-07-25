@@ -15,7 +15,9 @@ package gecko.geckocircuits.control;
 
 import java.awt.Window;
 
+@SuppressWarnings("serial")
 abstract class SimpleRegelBlock extends RegelBlock {
+    private static final long serialVersionUID = 1L;
 
     public SimpleRegelBlock(final int noInputs, final int noOutputs) {
         super(noInputs, noOutputs);

@@ -18,7 +18,9 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.JPanel;
 
+@SuppressWarnings("serial")
 class MotorPMSMDialog extends AbstractMotorDialog<MotorPMSM> {
+    private static final long serialVersionUID = 1L;
 
     public MotorPMSMDialog(final MotorPMSM parent) {
         super(parent);
@@ -36,7 +38,7 @@ class MotorPMSMDialog extends AbstractMotorDialog<MotorPMSM> {
     }
 
     @Override
-    List getDialogSortedParameters() {
+    List<UserParameter<Double>> getDialogSortedParameters() {
         return Arrays.asList(element._fluxLinkagePar, element._frictionParameter, element._inertiaParameter,
                 element._polePairsParameter, element._statorResistancePar, element._statorInductanceDPar, element._statorInductanceQPar,
                 element.initialStatorCurrentA, element.initialStatorCurrentB, element._initialRotationalSpeed,

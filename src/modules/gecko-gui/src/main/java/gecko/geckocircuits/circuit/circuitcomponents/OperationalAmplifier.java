@@ -260,22 +260,22 @@ public final class OperationalAmplifier extends AbstractCircuitBlockInterface im
 
     @Override
     protected void drawConnectorLines(final Graphics2D graphics) {
-        graphics.drawLine((int) -dpix, (int) (-dpix * 2), (int) -dpix, (int) -dpix);
-        graphics.drawLine((int) dpix, (int) (-dpix * 2), (int) dpix, (int) -dpix);
-        graphics.drawLine(0, 0, (int) (dpix * 0), (int) (dpix * 3));
-        graphics.drawLine(0, (int) dpix, -(int) (dpix * 2), (int) (dpix * 1));
+        graphics.drawLine(-dpix, -dpix * 2, -dpix, -dpix);
+        graphics.drawLine(dpix, -dpix * 2, dpix, -dpix);
+        graphics.drawLine(0, 0, 0, dpix * 3);
+        graphics.drawLine(0, dpix, -dpix * 2, dpix * 1);
     }
 
     @Override
     protected void drawBackground(final Graphics2D graphics) {
         graphics.fillPolygon(new int[]{(int) (-dpix * 1.5), (int) (dpix * 1.5), 0},
-                new int[]{(int) (-dpix * 1), (int) (-dpix * 1), (int) (dpix * 2)}, 3);
+                new int[]{-dpix, -dpix, dpix * 2}, 3);
     }
 
     @Override
     protected void drawForeground(final Graphics2D graphics) {
         graphics.drawPolygon(new int[]{(int) (-dpix * 1.5), (int) (dpix * 1.5), 0},
-                new int[]{(int) (-dpix * 1), (int) (-dpix * 1), (int) (dpix * 2)}, 3);
+                new int[]{-dpix, -dpix, dpix * 2}, 3);
 
         int ss = 3;  // pix
         // "+", "-":

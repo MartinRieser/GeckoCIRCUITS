@@ -17,7 +17,9 @@ import gecko.core.circuit.TokenMap;
 import gecko.geckocircuits.control.calculators.AbstractControlCalculatable;
 import gecko.i18n.resources.I18nKeys;
 
+@SuppressWarnings("serial")
 public final class ControlMUL extends AbstractControlVariableInputs {
+    private static final long serialVersionUID = 1L;
     static ControlTypeInfo tinfo = new ControlTypeInfo(ControlMUL.class, "MUL", I18nKeys.MULTIPLICATION);
 
     public ControlMUL() {

@@ -25,6 +25,7 @@ import java.util.Observer;
  * class can reference to it. Otherwise, garbage-collection would be difficult.
  *
  */
+@SuppressWarnings("deprecation")
 public final class DataContainerGlobal extends AbstractDataContainer implements Observer, DataContainerValuesSettable,
                                                                                 DataContainerIntegralCalculatable{
   private AbstractDataContainer _data;

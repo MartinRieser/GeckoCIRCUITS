@@ -16,7 +16,9 @@ import gecko.geckocircuits.control.calculators.ACosCalculator;
 import gecko.geckocircuits.control.calculators.AbstractControlCalculatable;
 import gecko.i18n.resources.I18nKeys;
 
+@SuppressWarnings("serial")
 public final class ControlAreaCosine extends AbstractInversTrigFunction {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlAreaCosine.class, "ACOS", I18nKeys.ACOS);
 
     @Override

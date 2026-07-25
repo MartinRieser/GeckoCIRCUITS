@@ -77,7 +77,7 @@ public final class Thyristor extends AbstractVoltageDropSwitch {
     private void drawGateSymbol(final Graphics2D graphics) {
         final double gateLength = GATE_SYMBOL_LENGTH * WIDTH;  // Gate-Symbol des THYR --> Laenge
         final int gtd = GATE_SYMB_THICKNESS;  // Gate-Symbol des THYR --> Breite in Pix
-        graphics.fillRect((int) (-dpix * gateLength), (int) (-gtd / 2), (int) (dpix * gateLength), gtd);
+        graphics.fillRect((int) (-dpix * gateLength), -gtd / 2, (int) (dpix * gateLength), gtd);
     }
 
 
@@ -102,6 +102,7 @@ public final class Thyristor extends AbstractVoltageDropSwitch {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public List<? extends CircuitComponent> getCircuitCalculatorsForSimulationStart() {
         return Arrays.asList(new ThyristorCalculator(this));
     }

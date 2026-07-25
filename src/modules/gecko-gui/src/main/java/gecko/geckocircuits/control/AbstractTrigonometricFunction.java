@@ -16,7 +16,9 @@ package gecko.geckocircuits.control;
 import java.awt.Window;
 import java.util.Locale;
 
+@SuppressWarnings("serial")
 abstract class AbstractTrigonometricFunction extends AbstractControlSingleInputSingleOutput {
+    private static final long serialVersionUID = 1L;
 
     @Override
     protected final Window openDialogWindow() {

@@ -32,10 +32,12 @@ import javax.swing.JOptionPane;
  *
  * @author andreas
  */
+@SuppressWarnings({"serial", "this-escape"})
 public class SubCircuitSheet extends CircuitSheet {
+    private static final long serialVersionUID = 1L;
 
     private static final int BUTTON_WIDTH = 120;
-    public final SubcircuitBlock _subBlock;
+    public final transient SubcircuitBlock _subBlock;
     private final JButton _upButton;
     private final JButton _settingsButton;
     private final JButton _newTerminalButton;

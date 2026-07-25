@@ -395,7 +395,7 @@ class CorePackageValidationTest {
             Path pkgPath = getPackagePath(pkg);
             if (Files.exists(pkgPath)) {
                 try (Stream<Path> files = Files.walk(pkgPath, 1)) {
-                    totalCoreClasses += files
+                    totalCoreClasses += (int) files
                         .filter(p -> p.toString().endsWith(".java"))
                         .filter(Files::isRegularFile)
                         .count();

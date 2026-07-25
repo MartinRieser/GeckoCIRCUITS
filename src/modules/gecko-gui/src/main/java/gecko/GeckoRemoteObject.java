@@ -223,7 +223,7 @@ public class GeckoRemoteObject {
                     _wrapped = existingInstance;
 
                     ClassLoader loader = _wrapped.getClass().getClassLoader();
-                    Class[] interfaces = new Class[]{GeckoRemoteIntWithoutExc.class};
+                    Class<?>[] interfaces = new Class<?>[]{GeckoRemoteIntWithoutExc.class};
 
                     _invocationHandler = new RemoteInvocationHandler(_wrapped);
                     _proxy = (GeckoRemoteIntWithoutExc) Proxy.newProxyInstance(loader, interfaces, _invocationHandler);

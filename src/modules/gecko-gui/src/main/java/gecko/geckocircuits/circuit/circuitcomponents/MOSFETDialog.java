@@ -18,7 +18,9 @@ import java.awt.GridLayout;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+@SuppressWarnings({"unchecked", "serial"})
 class MOSFETDialog extends AbstractDialogPowerSwitch<MOSFET> {
+    private static final long serialVersionUID = 1L;
 
     protected FormatJTextField _antiUF;
     protected FormatJTextField _antiROn;

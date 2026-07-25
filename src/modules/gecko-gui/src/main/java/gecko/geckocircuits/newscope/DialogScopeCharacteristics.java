@@ -97,8 +97,7 @@ public class DialogScopeCharacteristics extends GeckoDialog {
                     graphics.setColor(Color.white);
                     graphics.fillRect(0, 0, RECT_SIZE, RECT_SIZE);  // weisser Hintergrund
                     URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;
-                    // Fix for Java 21: use URL constructor instead of URI.toURL()
-                    URL pngUrl = new URL(picsUrl, "equ1.png");
+                    URL pngUrl = picsUrl.toURI().resolve("equ1.png").toURL();
                     java.awt.Image equ1 = new ImageIcon(pngUrl).getImage();
                     graphics.drawImage(equ1, 0, 0, null);
                 } catch (Exception exc) {
@@ -126,8 +125,7 @@ public class DialogScopeCharacteristics extends GeckoDialog {
                     graphics.setColor(Color.white);
                     graphics.fillRect(0, 0, RECT_SIZE, RECT_SIZE);  // weisser Hintergrund
                     URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;
-                    // Fix for Java 21: use URL constructor instead of URI.toURL()
-                    URL pngUrl = new URL(picsUrl, "equ2b.png");
+                    URL pngUrl = picsUrl.toURI().resolve("equ2b.png").toURL();
                     java.awt.Image equ1 = new ImageIcon(pngUrl).getImage();
                     graphics.drawImage(equ1, 0, 0, null);
                 } catch (Exception exception) {

@@ -60,8 +60,7 @@ public final class ExtraFilesWindow extends javax.swing.JDialog {
         super();
         try {
             URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;
-            // Fix for Java 21: use URL constructor instead of URI.toURL()
-            URL gifUrl = new URL(picsUrl, "gecko.gif");
+            URL gifUrl = picsUrl.toURI().resolve("gecko.gif").toURL();
             this.setIconImage(new ImageIcon(gifUrl).getImage());
         } catch (Exception ex) {
             LOGGER.warn("Could not load image icon", ex);
@@ -108,7 +107,7 @@ public final class ExtraFilesWindow extends javax.swing.JDialog {
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
-        jListExtraSourceFiles = new javax.swing.JList();
+        jListExtraSourceFiles = new javax.swing.JList<>();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTextArea2 = new javax.swing.JTextArea();

@@ -13,13 +13,14 @@
  */
 package gecko.geckocircuits.circuit.circuitcomponents;
 
-import gecko.geckocircuits.circuit.AbstractBlockInterface;
 import gecko.geckocircuits.circuit.ComponentCoupable;
 import gecko.geckocircuits.control.DialogElementCONTROL;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 
-final class ThermPvChipDialog extends DialogElementLK {
+@SuppressWarnings("serial")
+final class ThermPvChipDialog extends DialogElementLK<ThermPvChip> {
+    private static final long serialVersionUID = 1L;
 
     ThermPvChipDialog(final ThermPvChip parent) {
         super(parent);
@@ -29,7 +30,7 @@ final class ThermPvChipDialog extends DialogElementLK {
     public void buildGUIIndividual() {
         JPanel jpM = null;
         if (element instanceof ComponentCoupable) {
-            jpM = DialogElementCONTROL.createComponentCouplingPanel((AbstractBlockInterface) element);
+            jpM = DialogElementCONTROL.createComponentCouplingPanel(element);
         }
         con.add(jpM, BorderLayout.CENTER);
     }

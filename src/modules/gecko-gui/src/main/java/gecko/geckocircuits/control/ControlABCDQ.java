@@ -18,7 +18,9 @@ import gecko.geckocircuits.control.calculators.AbstractControlCalculatable;
 import gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+@SuppressWarnings("serial")
 public final class ControlABCDQ extends RegelBlock {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlABCDQ.class, "ABCDQ", I18nKeys.ABC_DQ_TRANSFORM);
 
     public ControlABCDQ() {

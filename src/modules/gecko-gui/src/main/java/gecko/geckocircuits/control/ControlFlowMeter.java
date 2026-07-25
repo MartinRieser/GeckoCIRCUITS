@@ -26,7 +26,9 @@ import java.util.Arrays;
 import java.util.List;
 
 
+@SuppressWarnings("serial")
 public final class ControlFlowMeter extends AbstractCurrentMeasurement {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlFlowMeter.class, "FLOW", I18nKeys.HEATFLOW_MEASUREMENT_W);
 
     private LossComponent _measurementType = LossComponent.TOTAL;

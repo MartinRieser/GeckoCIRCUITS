@@ -255,6 +255,7 @@ public abstract class AbstractMotor extends AbstractCircuitBlockInterface implem
     abstract void updateSourceParameters();
 
     @Override
+    @SuppressWarnings("rawtypes")
     final public List<? extends CircuitComponent> getCircuitCalculatorsForSimulationStart() {
         return getCalculatorsFromSubComponents(this);
     }

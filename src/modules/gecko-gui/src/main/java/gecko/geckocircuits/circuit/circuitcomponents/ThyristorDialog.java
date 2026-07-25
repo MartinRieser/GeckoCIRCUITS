@@ -15,7 +15,9 @@ package gecko.geckocircuits.circuit.circuitcomponents;
 
 import javax.swing.JPanel;
 
+@SuppressWarnings("serial")
 public final class ThyristorDialog extends AbstractDialogPowerSwitch<Thyristor> {
+    private static final long serialVersionUID = 1L;
 
     public ThyristorDialog(final Thyristor parent) {
         super(parent);

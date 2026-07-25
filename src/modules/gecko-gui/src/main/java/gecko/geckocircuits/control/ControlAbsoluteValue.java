@@ -18,7 +18,9 @@ import gecko.geckocircuits.control.calculators.AbstractControlCalculatable;
 import gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 
+@SuppressWarnings("serial")
 public final class ControlAbsoluteValue extends AbstractControlSingleInputSingleOutput {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlAbsoluteValue.class, "ABS", I18nKeys.ABSOLUTE);
 
     @Override

@@ -129,8 +129,8 @@ public final class ControlLimit extends RegelBlock implements ControlInputTwoTer
         if (_isExternalSet.getValue()) {
             graphics.drawLine(xPos * dpix, (int) ((yPos + 1/2.0) * dpix), xPos * dpix, (yPos + Y_DRAW_OFFSET) * dpix);
             graphics.setColor(GlobalColors.farbeInBearbeitungCONTROL);
-            graphics.drawString(MIN, (int) (dpix * xPos) + X_DRAW_OFFSET, (int) (dpix * (yPos + Y_STRING_DRAW_OFFSET)));
-            graphics.drawString(MAX, (int) (dpix * xPos) + X_DRAW_OFFSET, (int) (dpix * (yPos + Y_STRING_DRAW_OFFSET+1)));
+            graphics.drawString(MIN, dpix * xPos + X_DRAW_OFFSET, (int) (dpix * (yPos + Y_STRING_DRAW_OFFSET)));
+            graphics.drawString(MAX, dpix * xPos + X_DRAW_OFFSET, (int) (dpix * (yPos + Y_STRING_DRAW_OFFSET+1)));
             graphics.setColor(origColor);
         }
     }

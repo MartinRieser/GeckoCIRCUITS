@@ -115,7 +115,7 @@ public class SmallSignalCalculator extends AbstractControlCalculatable
     public void externalSetTime(double time) {
         _time = time;
         if (AbstractControlCalculatable != null) {
-            AbstractControlCalculatable._time = time;
+            gecko.core.control.calculators.AbstractControlCalculatable._time = time;
         }
     }
 

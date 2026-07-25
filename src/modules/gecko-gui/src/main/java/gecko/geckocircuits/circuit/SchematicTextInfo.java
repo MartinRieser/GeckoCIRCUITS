@@ -231,10 +231,11 @@ public final class SchematicTextInfo {
                 switch (par.getTextInfoType()) {
                     case SHOW_WHEN_NON_EXTERNAL:
                         assert _element instanceof ControlInputTwoTerminalStateable;
-                        if(((ControlInputTwoTerminalStateable) _element).isExternalSet()) {
-                            break;
+                        if (!((ControlInputTwoTerminalStateable) _element).isExternalSet()
+                                && properties.showParameter) {
+                            addUserParameter(par);
                         }
-                        // fall through
+                        break;
                     case SHOW_WHEN_DISPLAYPARAMETERS:
                         if (properties.showParameter) {
                             addUserParameter(par);

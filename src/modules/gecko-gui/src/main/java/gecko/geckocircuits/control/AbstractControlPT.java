@@ -21,7 +21,9 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+@SuppressWarnings({"serial", "this-escape"})
 abstract class AbstractControlPT extends AbstractControlSingleInputSingleOutput {
+    private static final long serialVersionUID = 1L;
 
     final UserParameter<Double> _TVal = UserParameter.Builder.<Double>start("T", 1.0).
             longName(I18nKeys.TIME_CONSTANT).

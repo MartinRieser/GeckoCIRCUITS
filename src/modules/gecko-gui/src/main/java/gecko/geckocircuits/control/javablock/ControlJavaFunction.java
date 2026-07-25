@@ -103,7 +103,7 @@ public final class ControlJavaFunction extends RegelBlock implements VariableTer
     private static final int DEF_IN_TERMS = 3;
     private static final int DEF_OUT_TERMS = 2;
     private transient AbstractJavaBlock _javaBlock = new JavaBlockVector(this);
-    private final Set<String> _additionalFilesHashKeys = new TreeSet();
+    private final transient Set<String> _additionalFilesHashKeys = new TreeSet<String>();
     private boolean _isConsoleOutput = true;
     private static final int DIAMETER = 4;
     private static final double HEIGHT = 0.6, WIDTH = 1.4;

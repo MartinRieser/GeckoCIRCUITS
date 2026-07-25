@@ -20,7 +20,7 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
 @SuppressWarnings("serial")
-public final class WeakListModel implements ListModel, Serializable{
+public final class WeakListModel implements ListModel<Object>, Serializable{
   public static final long serialVersionUID = 582811111394392L;
   private final Map<ListDataListener, Object> _listenerList =
           Collections.synchronizedMap(new WeakHashMap<ListDataListener, Object>());

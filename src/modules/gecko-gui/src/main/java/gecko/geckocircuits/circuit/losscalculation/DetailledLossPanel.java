@@ -36,7 +36,9 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+@SuppressWarnings("serial")
 abstract class DetailledLossPanel<T extends LossCurve> extends JPanel {
+    private static final long serialVersionUID = 1L;
 
     static final int DIVISIONS_TEST_CURVE = 25;
     private LossCurvePlotPanel _grafer;
@@ -47,10 +49,11 @@ abstract class DetailledLossPanel<T extends LossCurve> extends JPanel {
     DataTablePanel _table;
     boolean _listenerActive = true;
     T _selectedCurve;
-    LossCurve _testCurve;
+    transient LossCurve _testCurve;
     JPanel _jPanelTemperatureInput = new JPanel();
-    public final List<T> _lossCurves = new ArrayList<T>() {
+    public final transient List<T> _lossCurves = new ArrayList<T>() {
         @Override
+        @SuppressWarnings("unchecked")
         public boolean add(final LossCurve newCurve) {
             int insertionIndex = 0;
             for (LossCurve oldCurve : this) {
@@ -114,7 +117,9 @@ abstract class DetailledLossPanel<T extends LossCurve> extends JPanel {
             @Override
             public void actionPerformed(final ActionEvent actionEvent) {
                 _testCurve = null;
-                addNewCurve((T) createNewCurve(_jtfTemperature.getNumberFromField()));
+                @SuppressWarnings("unchecked")
+                T newT = (T) createNewCurve(_jtfTemperature.getNumberFromField());
+                addNewCurve(newT);
             }
         });
         final JButton jbDel = GuiFabric.getJButton(I18nKeys.DELETE);

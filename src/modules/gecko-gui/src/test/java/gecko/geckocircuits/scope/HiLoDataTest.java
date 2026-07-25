@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 /**
  * Unit tests for legacy {@link HiLoData} in the scope package.
  */
+@SuppressWarnings("deprecation")
 public class HiLoDataTest {
 
     private static final double DELTA = 1e-9;

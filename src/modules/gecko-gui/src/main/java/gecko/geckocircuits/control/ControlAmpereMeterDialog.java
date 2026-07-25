@@ -22,7 +22,9 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+@SuppressWarnings("serial")
 class ControlAmpereMeterDialog extends DialogElementCONTROL<AbstractCurrentMeasurement> {
+    private static final long serialVersionUID = 1L;
 
     private JComboBox<LossComponent> _comboLossType;
 

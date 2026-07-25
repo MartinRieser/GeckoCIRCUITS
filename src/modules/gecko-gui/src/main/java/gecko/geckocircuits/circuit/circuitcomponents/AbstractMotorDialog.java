@@ -25,7 +25,9 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.border.TitledBorder;
 
+@SuppressWarnings("serial")
 abstract class AbstractMotorDialog<T extends AbstractMotor> extends DialogElementLK<T> {
+    private static final long serialVersionUID = 1L;
     final static String trenner = "   ";
     final static String separator = "-------";
     JLabel[] variableNames;
@@ -129,7 +131,7 @@ abstract class AbstractMotorDialog<T extends AbstractMotor> extends DialogElemen
     JPanel buildPanelParameters(int startIndex, int endIndex, int[] separatorIndices, boolean addTorqueCombo) {
         JPanel jpParMOTOR = panelFabric();
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = gbc.BOTH;
+        gbc.fill = GridBagConstraints.BOTH;
 
         gbc.gridy = 0;
         for (int i = startIndex; i < endIndex; i++) {

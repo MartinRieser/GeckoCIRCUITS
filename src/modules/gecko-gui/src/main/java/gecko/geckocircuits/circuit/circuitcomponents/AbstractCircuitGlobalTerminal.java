@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@SuppressWarnings("this-escape")
 public abstract class AbstractCircuitGlobalTerminal extends AbstractCircuitBlockInterface implements GlobalTerminable {
     private static final Map<AbstractComponentType, HashSet<AbstractCircuitGlobalTerminal>> ALL_GLOBALS_INTERNAL =
             new HashMap<>();
@@ -120,6 +121,7 @@ public abstract class AbstractCircuitGlobalTerminal extends AbstractCircuitBlock
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public List<? extends CircuitComponent> getCircuitCalculatorsForSimulationStart() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

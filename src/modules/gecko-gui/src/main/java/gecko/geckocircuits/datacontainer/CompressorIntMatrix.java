@@ -27,6 +27,7 @@ import java.util.zip.Inflater;
  *
  * @author andreas
  */
+@SuppressWarnings("this-escape")
 public class CompressorIntMatrix {
     private static final Logger LOGGER = LogManager.getLogger(CompressorIntMatrix.class);
 

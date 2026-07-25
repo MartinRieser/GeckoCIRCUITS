@@ -17,7 +17,9 @@ import gecko.i18n.resources.I18nKeys;
 import java.awt.Window;
 import java.util.Locale;
 
+@SuppressWarnings("serial")
 abstract class AbstractInversTrigFunction extends AbstractControlSingleInputSingleOutput {
+    private static final long serialVersionUID = 1L;
     @Override
     public final String[] getOutputNames() {
         return new String[]{getFixedIDString().toLowerCase(Locale.ROOT)};

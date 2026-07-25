@@ -69,6 +69,7 @@ public class NonLinearDialogPanel extends JPanel {
     private final SimpleGraferPanel newScope1;
     private final JDialog _parentDialog;
 
+    @SuppressWarnings("deprecation")
     public NonLinearDialogPanel(JDialog parentDialog, final AbstractNonLinearCircuitComponent elementLK,
             final boolean isYAxisLog) {
         _nonlinearParent = elementLK;

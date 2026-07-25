@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.Observer;
 import java.util.Observable;
 
+@SuppressWarnings("deprecation")
 class DataContainerGlobalTest {
 
     private DataContainerGlobal global;

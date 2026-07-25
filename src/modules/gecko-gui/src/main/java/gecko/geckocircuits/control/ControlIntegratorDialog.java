@@ -23,7 +23,9 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+@SuppressWarnings("serial")
 class ControlIntegratorDialog extends DialogElementCONTROL<ControlIntegrator> {
+    private static final long serialVersionUID = 1L;
 
     public ControlIntegratorDialog(final ControlIntegrator controlIntegrator) {
         super(controlIntegrator);

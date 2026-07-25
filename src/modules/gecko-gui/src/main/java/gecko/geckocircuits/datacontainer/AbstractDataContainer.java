@@ -28,6 +28,7 @@ import java.util.Observable;
  * @author andy
  * @see IScopeData
  */
+@SuppressWarnings("deprecation")
 public abstract class AbstractDataContainer extends Observable implements IScopeData {
   /**
    * @param row the row where to search inside

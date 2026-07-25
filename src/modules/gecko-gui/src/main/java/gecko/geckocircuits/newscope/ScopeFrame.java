@@ -27,6 +27,7 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.net.URL;
 import javax.swing.AbstractAction;
@@ -136,15 +137,15 @@ public final class ScopeFrame extends javax.swing.JFrame{
     JComponent components = (JComponent)this.getContentPane();
     ActionMap actionMap = components.getActionMap();
     InputMap inputMap = components.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-    inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.CTRL_MASK, false), "moveExternalSignal" + KeyEvent.VK_LEFT);
+    inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.CTRL_DOWN_MASK, false), "moveExternalSignal" + KeyEvent.VK_LEFT);
     actionMap.put("moveExternalSignal" + KeyEvent.VK_LEFT, new MoveExternalSignal(grafer, KeyEvent.VK_LEFT));
-    inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.CTRL_MASK, false), "moveExternalSignal" + KeyEvent.VK_RIGHT);
+    inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.CTRL_DOWN_MASK, false), "moveExternalSignal" + KeyEvent.VK_RIGHT);
     actionMap.put("moveExternalSignal" + KeyEvent.VK_RIGHT, new MoveExternalSignal(grafer, KeyEvent.VK_RIGHT));
-    inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, KeyEvent.CTRL_MASK, false), "moveExternalSignal" + KeyEvent.VK_UP);
+    inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.CTRL_DOWN_MASK, false), "moveExternalSignal" + KeyEvent.VK_UP);
     actionMap.put("moveExternalSignal" + KeyEvent.VK_UP, new MoveExternalSignal(grafer, KeyEvent.VK_UP));
-    inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.CTRL_MASK, false), "moveExternalSignal" + KeyEvent.VK_DOWN);
+    inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.CTRL_DOWN_MASK, false), "moveExternalSignal" + KeyEvent.VK_DOWN);
     actionMap.put("moveExternalSignal" + KeyEvent.VK_DOWN, new MoveExternalSignal(grafer, KeyEvent.VK_DOWN));
-    inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, KeyEvent.CTRL_MASK, true), "moveExternalSignal" + KeyEvent.VK_DELETE);
+    inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.CTRL_DOWN_MASK, true), "moveExternalSignal" + KeyEvent.VK_DELETE);
     actionMap.put("moveExternalSignal" + KeyEvent.VK_DELETE, new MoveExternalSignal(grafer, KeyEvent.VK_DELETE));
 
 
@@ -152,8 +153,7 @@ public final class ScopeFrame extends javax.swing.JFrame{
 
     try{
       URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;
-      // Fix for Java 21: use URL constructor instead of URI.toURL()
-      URL gifUrl = new URL(picsUrl, "gecko.gif");
+      URL gifUrl = picsUrl.toURI().resolve("gecko.gif").toURL();
       this.setIconImage(new ImageIcon(gifUrl).getImage());
     }catch(Exception e){
       LOGGER.error("Failed to load scope frame icon image", e);

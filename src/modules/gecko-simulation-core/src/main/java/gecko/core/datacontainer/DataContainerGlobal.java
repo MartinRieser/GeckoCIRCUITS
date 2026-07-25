@@ -23,6 +23,7 @@ import java.util.Observer;
  * This is a simplified GUI-free version for use in headless simulation core.
  * It uses DataContainerSimple as the underlying storage.
  */
+@SuppressWarnings("deprecation")
 public final class DataContainerGlobal extends AbstractDataContainer implements Observer, DataContainerValuesSettable {
 
     private AbstractDataContainer _data;

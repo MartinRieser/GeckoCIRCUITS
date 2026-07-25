@@ -46,8 +46,10 @@ public final class PowerAnalysisPanel extends JPanel {
 
     private static final Logger LOGGER = LogManager.getLogger(PowerAnalysisPanel.class);
 
-    private final JComboBox<String>[] _comboU = new JComboBox[3];
-    private final JComboBox<String>[] _comboI = new JComboBox[3];
+    @SuppressWarnings("unchecked")
+    private final JComboBox<String>[] _comboU = (JComboBox<String>[]) new JComboBox<?>[3];
+    @SuppressWarnings("unchecked")
+    private final JComboBox<String>[] _comboI = (JComboBox<String>[]) new JComboBox<?>[3];
     private FormatJTextField[][] _pqTextFields;  // Text fields for performance values (columns A, B, C)
     private final TechFormat _cf = new TechFormat();
     private final GridBagConstraints _gbc = new GridBagConstraints();

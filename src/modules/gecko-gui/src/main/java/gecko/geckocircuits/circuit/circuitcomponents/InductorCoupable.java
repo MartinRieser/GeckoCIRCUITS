@@ -36,6 +36,7 @@ public final class InductorCoupable extends AbstractInductor  {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public List<? extends CircuitComponent> getCircuitCalculatorsForSimulationStart() {
         return Arrays.asList(new InductorCouplingCalculator(this));
     }

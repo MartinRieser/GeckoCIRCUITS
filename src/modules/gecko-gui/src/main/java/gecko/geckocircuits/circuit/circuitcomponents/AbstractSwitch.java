@@ -21,6 +21,7 @@ import gecko.geckocircuits.control.ControlGate;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Switch exposes loss properties for configuration")
+@SuppressWarnings("this-escape")
 public abstract class AbstractSwitch extends AbstractSemiconductor implements CurrentMeasurable, DirectVoltageMeasurable {
 
     public static final double UF_DEFAULT = 0.60;

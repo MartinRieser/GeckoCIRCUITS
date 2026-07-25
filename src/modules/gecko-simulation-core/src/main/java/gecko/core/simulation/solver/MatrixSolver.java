@@ -33,6 +33,7 @@ import gecko.core.math.Matrix;
  * - Node potentials (p, pALT, pALTALT, pALTALTALT) for time-stepping methods
  * - Component currents (iALT, iALTALT, iALTALTALT) for multi-step integration
  */
+@SuppressWarnings("fallthrough")
 public class MatrixSolver {
     private int matrixSize;           // Matrix order (node count + voltage source count + 1)
     private double[][] a;            // System matrix A for MNA
