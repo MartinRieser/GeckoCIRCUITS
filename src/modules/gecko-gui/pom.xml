@@ -191,12 +191,6 @@
            <version>3.5.4</version>
            <configuration>
              <trimStackTrace>false</trimStackTrace>
-             <excludes>
-               <!-- Integration tests requiring GUI + circuit files not in repo -->
-               <exclude>**/systemtests/ModelResultsTest.java</exclude>
-             </excludes>
-             <!-- Exclude regression tests from default run (require Xvfb + golden refs) -->
-             <excludedGroups>regression</excludedGroups>
            </configuration>
          </plugin>
          <!-- JaCoCo for test coverage tracking -->

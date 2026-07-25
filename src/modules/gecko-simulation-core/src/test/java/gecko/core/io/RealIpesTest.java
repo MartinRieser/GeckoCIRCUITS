@@ -4,25 +4,37 @@ import gecko.core.circuit.netlist.CircuitNetlist;
 import gecko.core.circuit.netlist.NetlistBuilder;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Integration test: parses a real .ipes file and verifies component extraction.
+ *
+ * <p>Circuit files are loaded from the classpath ({@code /ipes/...}) so the
+ * test does not depend on a developer-specific absolute path.
  */
 public class RealIpesTest {
 
-    private static final String IPES_DIR =
-        "/home/tinix/claude_wsl/GeckoCIRCUITS/resources/application_examples/education/Education_ETHZ/";
+    private static final String IPES_RESOURCE_DIR = "/ipes/";
+
+    private static Path resolveIpes(String fileName) throws IOException {
+        Path temp = Files.createTempFile("gecko-ipes-", ".ipes");
+        try (InputStream is = RealIpesTest.class.getResourceAsStream(IPES_RESOURCE_DIR + fileName)) {
+            assertNotNull(is, "Resource not found on classpath: " + IPES_RESOURCE_DIR + fileName);
+            Files.copy(is, temp, StandardCopyOption.REPLACE_EXISTING);
+        }
+        return temp;
+    }
 
     @Test
     void parseEx1_simulationParameters() throws Exception {
-        File f = new File(IPES_DIR + "ex_1.ipes");
-        assumeFileExists(f);
-
-        CircuitModel model = new CircuitFileParser().parse(f.getAbsolutePath());
+        CircuitModel model = new CircuitFileParser().parse(resolveIpes("ex_1.ipes").toAbsolutePath().toString());
         assertTrue(model.getSimulationDuration() > 0, "Duration > 0");
         assertTrue(model.getTimeStep() > 0, "TimeStep > 0");
         System.out.println("ex_1.ipes  duration=" + model.getSimulationDuration()
@@ -32,32 +44,24 @@ public class RealIpesTest {
 
     @Test
     void parseEx1_circuitComponents() throws Exception {
-        File f = new File(IPES_DIR + "ex_1.ipes");
-        assumeFileExists(f);
-
-        CircuitModel model = new CircuitFileParser().parse(f.getAbsolutePath());
+        CircuitModel model = new CircuitFileParser().parse(resolveIpes("ex_1.ipes").toAbsolutePath().toString());
         for (CircuitModel.ComponentData c : model.getCircuitComponents()) {
             System.out.printf("  [type=%d] %-12s params=%s  xL=%s  yL=%s%n",
                     c.getType(), c.getName(), c.getParameters(),
                     Arrays.toString(c.getTerminalXLabels()),
                     Arrays.toString(c.getTerminalYLabels()));
         }
-        // At minimum the file should parse without throwing
         assertNotNull(model.getCircuitComponents());
     }
 
     @Test
     void parseEx1_netlistFromLabels() throws Exception {
-        File f = new File(IPES_DIR + "ex_1.ipes");
-        assumeFileExists(f);
-
-        CircuitModel model = new CircuitFileParser().parse(f.getAbsolutePath());
+        CircuitModel model = new CircuitFileParser().parse(resolveIpes("ex_1.ipes").toAbsolutePath().toString());
         CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
 
         System.out.printf("Netlist: nodes=%d  vSrc=%d  elements=%d%n",
                 netlist.getNodeMax(), netlist.getVoltageSourceMax(), netlist.getElementCount());
 
-        // If components were parsed, netlist should reflect them
         if (!model.getCircuitComponents().isEmpty()) {
             assertEquals(model.getCircuitComponents().size(), netlist.getElementCount(),
                     "Element count should match component count");
@@ -66,10 +70,7 @@ public class RealIpesTest {
 
     @Test
     void parseEx3Pwm_simulationParameters() throws Exception {
-        File f = new File(IPES_DIR + "ex_3_pwm.ipes");
-        assumeFileExists(f);
-
-        CircuitModel model = new CircuitFileParser().parse(f.getAbsolutePath());
+        CircuitModel model = new CircuitFileParser().parse(resolveIpes("ex_3_pwm.ipes").toAbsolutePath().toString());
         assertTrue(model.getSimulationDuration() > 0, "Duration > 0");
         System.out.println("ex_3_pwm.ipes  duration=" + model.getSimulationDuration()
                 + " dt=" + model.getTimeStep()
@@ -81,11 +82,5 @@ public class RealIpesTest {
                     Arrays.toString(c.getTerminalXLabels()),
                     Arrays.toString(c.getTerminalYLabels()));
         }
-    }
-
-    /** Skip the test gracefully if the .ipes file is absent (CI/CD without resources). */
-    private static void assumeFileExists(File f) {
-        org.junit.jupiter.api.Assumptions.assumeTrue(f.exists(),
-                "Skipping: .ipes file not found at " + f.getAbsolutePath());
     }
 }
