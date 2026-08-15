@@ -72,9 +72,10 @@ public class DialogFourier extends JDialog {
         _newScope = newScope;
         super.setModal(true);
         try {
-            URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;
-            URL gifUrl = picsUrl.toURI().resolve("gecko.gif").toURL();
-            this.setIconImage(new ImageIcon(gifUrl).getImage());
+            java.awt.Image icon = GlobalFilePathes.getGeckoIconImage();
+            if (icon != null) {
+                this.setIconImage(icon);
+            }
         } catch (Exception e) { // NOPMD
             // Exception intentionally ignored: Icon loading is optional - dialog works without it
         }

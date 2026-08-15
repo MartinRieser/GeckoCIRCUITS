@@ -180,8 +180,10 @@ public final class MainWindow extends JFrame implements WindowListener, ActionLi
             // ignored: fall back to default look and feel
         }
         try {
-            URL gifUrl = GlobalFilePathes.PFAD_PICS_URL.toURI().resolve("gecko.gif").toURL();
-            this.setIconImage(new ImageIcon(gifUrl).getImage());
+            java.awt.Image icon = GlobalFilePathes.getGeckoIconImage();
+            if (icon != null) {
+                this.setIconImage(icon);
+            }
         } catch (Exception e) {
             // ignored: icon loading is optional
         }

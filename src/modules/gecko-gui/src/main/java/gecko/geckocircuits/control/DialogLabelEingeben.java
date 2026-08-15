@@ -46,10 +46,10 @@ public final class DialogLabelEingeben extends JDialog {
     public DialogLabelEingeben(final TerminalInterface terminal) {
         super(GeckoSim._win, true);
         try {
-            URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;
-            // Fix for Java 21: use URL constructor instead of URI.toURL()
-            URL gifUrl = new URL(picsUrl, "gecko.gif");
-            this.setIconImage(new ImageIcon(gifUrl).getImage());
+            java.awt.Image icon = GlobalFilePathes.getGeckoIconImage();
+            if (icon != null) {
+                this.setIconImage(icon);
+            }
         } catch (Exception e) {
             LOGGER.error("Failed to set dialog icon image", e);
         }

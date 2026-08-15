@@ -65,13 +65,15 @@ public class DialogAbout extends JDialog {
     public DialogAbout() {
         super.setModal(true);
         try {
-            @SuppressWarnings("deprecation")
-            URL url1 = new URL(GlobalFilePathes.PFAD_PICS_URL, "gecko.gif");
-            this.setIconImage(new ImageIcon(url1).getImage());
-            @SuppressWarnings("deprecation")
-            URL url2 = new URL(GlobalFilePathes.PFAD_PICS_URL, "GeckoSimulationsLogo_50.png");
-            geckoBild = new ImageIcon(url2).getImage();
-        } catch (MalformedURLException | RuntimeException e) {
+            java.awt.Image icon = GlobalFilePathes.getGeckoIconImage();
+            if (icon != null) {
+                this.setIconImage(icon);
+            }
+            URL logoUrl = GlobalFilePathes.getImageURL("GeckoSimulationsLogo_50.png");
+            if (logoUrl != null) {
+                geckoBild = new ImageIcon(logoUrl).getImage();
+            }
+        } catch (Exception e) {
             // ignored: icon loading is optional
         }
 

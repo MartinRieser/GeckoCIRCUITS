@@ -62,14 +62,7 @@ public class GeckoDialog extends JDialog {
 
 
     private void init() {
-        try {
-            URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;
-            URL gifUrl = picsUrl.toURI().resolve("gecko.gif").toURL();
-            this.setIconImage(new ImageIcon(gifUrl).getImage());
-        } catch (Exception exception) {
-            LOGGER.error("Failed to load dialog icon image", exception);
-        }
-
+        setGeckoIconImage();
         this.setLocationRelativeTo(_parent);
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     }
@@ -101,9 +94,11 @@ public class GeckoDialog extends JDialog {
 
     public void setGeckoIconImage() {
         try {
-            URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;
-            this.setIconImage(new ImageIcon(picsUrl.toURI().resolve("gecko.gif").toURL()).getImage());
-        } catch (java.net.URISyntaxException | java.net.MalformedURLException e) {
+            java.awt.Image icon = GlobalFilePathes.getGeckoIconImage();
+            if (icon != null) {
+                this.setIconImage(icon);
+            }
+        } catch (Throwable e) {
             // ignored: icon loading is optional
         }
     }
