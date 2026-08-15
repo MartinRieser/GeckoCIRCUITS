@@ -33,6 +33,7 @@ LU decomposition is in the solution of square systems of simultaneous
 linear equations.  This will fail if isNonsingular() returns false.
  */
 public class BigLUDecomposition implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LogManager.getLogger(BigLUDecomposition.class);
 
 

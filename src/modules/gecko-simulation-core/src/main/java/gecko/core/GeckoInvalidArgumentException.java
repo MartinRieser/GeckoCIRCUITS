@@ -23,6 +23,7 @@ package gecko.core;
  * @since Core Module Extraction Sprint - Phase 3
  */
 public class GeckoInvalidArgumentException extends Exception {
+    private static final long serialVersionUID = 1L;
 
     public GeckoInvalidArgumentException(final String message) {
         super(message);

@@ -22,6 +22,7 @@ package gecko.core;
  * @since Core Module Extraction Sprint
  */
 public class GeckoRuntimeException extends RuntimeException {
+    private static final long serialVersionUID = 1L;
 
     public GeckoRuntimeException(final String message) {
         super(message);

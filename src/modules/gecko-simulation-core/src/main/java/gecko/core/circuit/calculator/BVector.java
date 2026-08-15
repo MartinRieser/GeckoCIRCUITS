@@ -30,6 +30,7 @@ public class BVector {
     private final ArrayList<BStampable> _isNotBasisStampables = new ArrayList<BStampable>();
     private boolean updateAllFlag = true;
 
+    @SuppressWarnings("this-escape")
     public BVector(final int size, final List<BStampable> bstampables) {
         b = new double[size];
         basisB = new double[size];

@@ -626,6 +626,8 @@ public class CircuitFileParser {
      * Exception thrown when parsing fails.
      */
     public static class CircuitParseException extends Exception {
+        private static final long serialVersionUID = 1L;
+
         public CircuitParseException(String message) {
             super(message);
         }

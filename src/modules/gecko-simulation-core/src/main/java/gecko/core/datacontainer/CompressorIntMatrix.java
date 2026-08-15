@@ -27,6 +27,7 @@ import java.util.zip.Inflater;
  *
  * @author andreas
  */
+@SuppressWarnings("this-escape")
 public class CompressorIntMatrix {
     private static final Logger LOGGER = LogManager.getLogger(CompressorIntMatrix.class);
 
@@ -53,7 +54,7 @@ public class CompressorIntMatrix {
         compressionTime = (tock - tick) / 1000.0f;
     }
 
-    public void doCompression(int[][] origData) {
+    public final void doCompression(int[][] origData) {
         byte[] input = convertIntToByteArray(origData);
         // Compress the bytes
         Deflater compressor = new Deflater(5);

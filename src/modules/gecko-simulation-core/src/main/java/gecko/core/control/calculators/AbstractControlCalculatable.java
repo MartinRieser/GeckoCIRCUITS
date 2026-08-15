@@ -18,6 +18,7 @@ package gecko.core.control.calculators;
  *
  * @author andreas
  */
+@SuppressWarnings("this-escape")
 public abstract class AbstractControlCalculatable {
     public static final double SIGNAL_THRESHOLD = 0.5;
     public static double _time = 0;
