@@ -593,7 +593,10 @@ public class CircuitModel {
             return "ComponentData{type=" + type + ", name='" + name + "', family='" + family + "'}";
         }
 
-        private static String resolveParameterKey(int type) {
+        /**
+         * Returns the semantic parameter key for the primary value of a component type.
+         */
+        public static String resolveParameterKey(int type) {
             return switch (type) {
                 case 1 -> "resistance";     // LK_R
                 case 2 -> "inductance";     // LK_L

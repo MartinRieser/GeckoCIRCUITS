@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.ArrayList;
@@ -61,8 +62,23 @@ public class SimulationController {
     public ResponseEntity<SimulationResponse> submitSimulation(
             @Valid @RequestBody SimulationRequest request) {
 
+        boolean hasInlineCircuit = !isBlank(request.getCircuitId()) || !isBlank(request.getBase64Circuit());
+        if (isBlank(request.getCircuitId()) && isBlank(request.getBase64Circuit())
+                && isBlank(request.getCircuitFile())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "One of circuitId, base64Circuit or circuitFile must be provided");
+        }
+        if (!hasInlineCircuit && (request.getSimulationTime() == null || request.getTimeStep() == null)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "simulationTime and timeStep are required when using circuitFile");
+        }
+
         SimulationResponse response = simulationService.submitSimulation(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     /**

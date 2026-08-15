@@ -15,6 +15,7 @@ package gecko.core.simulation;
 
 import gecko.core.allg.SolverSettingsCore;
 import gecko.core.allg.SolverType;
+import gecko.core.io.CircuitModel;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ public final class SimulationConfig {
 
     private final SolverSettingsCore solverSettings;
     private final String circuitFilePath;
+    private final CircuitModel circuitModel;
     private final Map<String, Double> parameterOverrides;
     private final boolean enableDataLogging;
     private final int dataLoggingInterval;
@@ -35,6 +37,7 @@ public final class SimulationConfig {
     private SimulationConfig(Builder builder) {
         this.solverSettings = builder.solverSettings.copy();
         this.circuitFilePath = builder.circuitFilePath;
+        this.circuitModel = builder.circuitModel;
         this.parameterOverrides = Collections.unmodifiableMap(new HashMap<>(builder.parameterOverrides));
         this.enableDataLogging = builder.enableDataLogging;
         this.dataLoggingInterval = builder.dataLoggingInterval;
@@ -56,6 +59,15 @@ public final class SimulationConfig {
      */
     public String getCircuitFilePath() {
         return circuitFilePath;
+    }
+
+    /**
+     * Gets the in-memory circuit model, bypassing file parsing.
+     *
+     * @return circuit model, or null if the circuit must be loaded from {@link #getCircuitFilePath()}
+     */
+    public CircuitModel getCircuitModel() {
+        return circuitModel;
     }
 
     /**
@@ -101,6 +113,7 @@ public final class SimulationConfig {
     public static class Builder {
         private SolverSettingsCore solverSettings = new SolverSettingsCore();
         private String circuitFilePath;
+        private CircuitModel circuitModel;
         private Map<String, Double> parameterOverrides = new HashMap<>();
         private boolean enableDataLogging = true;
         private int dataLoggingInterval = 1;
@@ -167,6 +180,17 @@ public final class SimulationConfig {
         }
 
         /**
+         * Sets an in-memory circuit model, bypassing file loading.
+         *
+         * @param circuitModel parsed circuit model
+         * @return this builder
+         */
+        public Builder circuitModel(CircuitModel circuitModel) {
+            this.circuitModel = circuitModel;
+            return this;
+        }
+
+        /**
          * Adds a parameter override.
          *
          * @param parameterName the parameter name
@@ -223,8 +247,9 @@ public final class SimulationConfig {
 
     @Override
     public String toString() {
+        String circuit = circuitModel != null ? "in-memory model" : circuitFilePath;
         return String.format("SimulationConfig[circuit=%s, solver=%s, dt=%.2e, duration=%.2e]",
-                circuitFilePath, solverSettings.getSolverType(),
+                circuit, solverSettings.getSolverType(),
                 solverSettings.getStepWidth(), solverSettings.getSimulationDuration());
     }
 }

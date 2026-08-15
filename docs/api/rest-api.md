@@ -319,17 +319,27 @@ Request (all fields optional):
 }
 ```
 
-Response (200 OK):
-```json
-{
-  "circuitId": "circuit-uuid-001",
-  "name": "circuit",
-  "parameters": {
-    "simulationDuration": 0.05,
-    "timeStep": 5e-7,
-    "solverType": "gear-shichman"
-  }
-}
+**Download Circuit as .ipes File**
+
+Serialize a loaded circuit back to the gzip-compressed `.ipes` format. The file is
+interchangeable with the GeckoCIRCUITS Swing UI (upload → edit → download round trip).
+
+```bash
+GET /api/v1/circuits/{circuitId}/ipes
+```
+
+Response: `application/gzip` binary attachment.
+
+**Replace Circuit Content**
+
+Replace the circuit stored under the given ID with new `.ipes` content (gzip or plain
+ASCII). The circuit ID stays stable — this is the save endpoint for editor clients.
+
+```bash
+PUT /api/v1/circuits/{circuitId}
+Content-Type: multipart/form-data   (file=@circuit.ipes)
+# or
+Content-Type: application/json       ({"content": "<base64>", "filename": "x.ipes"})
 ```
 
 Live in: **v2.20.0+**
@@ -347,7 +357,7 @@ Content-Type: application/json
 Request:
 ```json
 {
-  "circuitFile": "base64-encoded-.ipes-data",
+  "circuitId": "previously-uploaded-circuit-uuid",
   "simulationTime": 0.01,
   "timeStep": 1e-7,
   "solverType": "backward-euler",
@@ -357,6 +367,14 @@ Request:
   }
 }
 ```
+
+The circuit can be referenced in one of three ways (exactly one is required):
+- `circuitId` — ID of a circuit uploaded via `POST /api/v1/circuits/parse`
+- `base64Circuit` — base64-encoded `.ipes` content
+- `circuitFile` — server-local `.ipes` file path (requires explicit `simulationTime` and `timeStep`)
+
+When `circuitId` or `base64Circuit` is used, `simulationTime` and `timeStep` are
+optional and default to the values stored in the circuit file.
 
 **Solver Types:**
 - `backward-euler` - Implicit 1st order (stable, for stiff circuits)
@@ -379,18 +397,6 @@ GET /api/v1/simulations
 
 ```bash
 DELETE /api/v1/simulations/{simulationId}
-```
-
-**Pause Simulation**
-
-```bash
-POST /api/v1/simulations/{simulationId}/pause
-```
-
-**Resume Simulation**
-
-```bash
-POST /api/v1/simulations/{simulationId}/resume
 ```
 
 **Get Detailed Progress**
@@ -778,7 +784,7 @@ curl -F "file=@circuit.ipes" http://localhost:8080/api/v1/circuits/parse
 # Submit simulation
 curl -X POST http://localhost:8080/api/v1/simulations \
   -H "Content-Type: application/json" \
-  -d '{"circuitFile": "circuit_base64", "simulationTime": 0.01, "timeStep": 1e-7}'
+  -d '{"circuitId": "circuit-uuid-from-parse", "simulationTime": 0.01, "timeStep": 1e-7}'
 ```
 
 ## Request / Response Models
@@ -787,9 +793,11 @@ curl -X POST http://localhost:8080/api/v1/simulations \
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `circuitFile` | string | Base64-encoded .ipes file or circuit ID |
-| `simulationTime` | number | Total simulation time (seconds) |
-| `timeStep` | number | Integration time step (seconds) |
+| `circuitId` | string | ID of a previously uploaded circuit (POST /api/v1/circuits/parse) |
+| `base64Circuit` | string | Base64-encoded .ipes file content |
+| `circuitFile` | string | Server-local .ipes file path (requires simulationTime/timeStep) |
+| `simulationTime` | number | Total simulation time (seconds); defaults to circuit value when using circuitId/base64Circuit |
+| `timeStep` | number | Integration time step (seconds); defaults to circuit value when using circuitId/base64Circuit |
 | `solverType` | enum | backward-euler, trapezoidal, gear-shichman |
 | `parameters` | map | Parameter overrides |
 

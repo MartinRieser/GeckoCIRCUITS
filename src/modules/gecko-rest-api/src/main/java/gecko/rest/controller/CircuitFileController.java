@@ -15,6 +15,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Base64;
 
 /**
  * REST controller for circuit file operations.
@@ -226,6 +229,107 @@ public class CircuitFileController {
         return ResponseEntity.ok()
                 .contentType(MediaType.TEXT_PLAIN)
                 .body(raw);
+    }
+
+    /**
+     * Download a loaded circuit as a .ipes file, re-serialized with CircuitFileWriter.
+     */
+    @GetMapping("/{circuitId}/ipes")
+    @Operation(
+        summary = "Download circuit as .ipes file",
+        description = "Serialize the loaded circuit back to the gzip-compressed .ipes format. " +
+                     "The file is interchangeable with the GeckoCIRCUITS Swing UI."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Circuit serialized",
+            content = @Content(mediaType = "application/gzip")
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Circuit not found"
+        )
+    })
+    public ResponseEntity<byte[]> getIpesFile(
+            @Parameter(description = "Circuit ID")
+            @PathVariable String circuitId) {
+
+        byte[] bytes = circuitFileService.getIpesBytes(circuitId);
+        CircuitInfo info = circuitFileService.getCircuitInfo(circuitId);
+        String filename = info != null ? info.filename() : "circuit.ipes";
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("application/gzip"))
+                .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
+                .body(bytes);
+    }
+
+    /**
+     * Replace circuit content under the same circuit ID (multipart variant).
+     */
+    @PutMapping(value = "/{circuitId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+        summary = "Replace circuit content (file upload)",
+        description = "Replace the circuit stored under the given ID with newly uploaded " +
+                     ".ipes content. The circuit ID stays stable for clients."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Circuit replaced",
+            content = @Content(schema = @Schema(implementation = CircuitInfo.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "Unparseable circuit content"),
+        @ApiResponse(responseCode = "404", description = "Circuit not found")
+    })
+    public ResponseEntity<CircuitInfo> replaceCircuitFromFile(
+            @Parameter(description = "Circuit ID")
+            @PathVariable String circuitId,
+            @Parameter(description = "Circuit file (.ipes)")
+            @RequestParam("file") MultipartFile file) {
+
+        try {
+            return ResponseEntity.ok(circuitFileService.replaceCircuit(
+                    circuitId, file.getBytes(), file.getOriginalFilename()));
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Failed to read file: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Replace circuit content under the same circuit ID (base64 variant).
+     */
+    @PutMapping(value = "/{circuitId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(
+        summary = "Replace circuit content (base64)",
+        description = "Replace the circuit stored under the given ID with base64-encoded " +
+                     ".ipes content. The circuit ID stays stable for clients."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Circuit replaced",
+            content = @Content(schema = @Schema(implementation = CircuitInfo.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "Invalid base64 or unparseable content"),
+        @ApiResponse(responseCode = "404", description = "Circuit not found")
+    })
+    public ResponseEntity<CircuitInfo> replaceCircuitFromBase64(
+            @Parameter(description = "Circuit ID")
+            @PathVariable String circuitId,
+            @Valid @RequestBody CircuitLoadRequest request) {
+
+        byte[] content;
+        try {
+            content = Base64.getDecoder().decode(request.content());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Invalid base64 encoding: " + e.getMessage());
+        }
+
+        return ResponseEntity.ok(circuitFileService.replaceCircuit(circuitId, content, request.filename()));
     }
 
     /**

@@ -184,4 +184,125 @@ class SimulationE2ETest {
                 .andExpect(jsonPath("$.version").exists())
                 .andExpect(jsonPath("$.status").value("running"));
     }
+
+    /**
+     * P0 acceptance test: submit a simulation by circuitId of a previously
+     * uploaded circuit, with explicit time overrides.
+     */
+    @Test
+    void simulationByCircuitId_completesWithResults() throws Exception {
+        String circuitId = uploadTestCircuit();
+
+        SimulationRequest request = new SimulationRequest(null, 1e-4, 1e-6);
+        request.setCircuitId(circuitId);
+
+        String simulationId = submitAndAwaitCompletion(request, 15);
+
+        mockMvc.perform(get("/api/v1/simulations/{id}/results", simulationId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.time").exists());
+    }
+
+    /**
+     * Submit by circuitId without time fields: defaults come from the circuit file.
+     */
+    @Test
+    void simulationByCircuitId_defaultsTimesFromCircuit() throws Exception {
+        String circuitId = uploadTestCircuit();
+
+        SimulationRequest request = new SimulationRequest();
+        request.setCircuitId(circuitId);
+
+        submitAndAwaitCompletion(request, 30);
+    }
+
+    @Test
+    void simulationByUnknownCircuitId_failsWithClearError() throws Exception {
+        SimulationRequest request = new SimulationRequest();
+        request.setCircuitId("no-such-circuit");
+
+        MvcResult submitResult = mockMvc.perform(post("/api/v1/simulations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String simulationId = objectMapper.readValue(
+                submitResult.getResponse().getContentAsString(), SimulationResponse.class).getSimulationId();
+
+        SimulationResponse.SimulationStatus status = awaitTerminalStatus(simulationId, 10);
+        assertEquals(SimulationResponse.SimulationStatus.FAILED, status);
+        MvcResult statusResult = mockMvc.perform(get("/api/v1/simulations/{id}", simulationId)).andReturn();
+        SimulationResponse response = objectMapper.readValue(
+                statusResult.getResponse().getContentAsString(), SimulationResponse.class);
+        assertTrue(response.getErrorMessage().contains("no-such-circuit"));
+    }
+
+    @Test
+    void simulationRequest_withoutAnyCircuitReference_rejected() throws Exception {
+        SimulationRequest request = new SimulationRequest();
+        request.setSimulationTime(0.01);
+        request.setTimeStep(1e-6);
+
+        mockMvc.perform(post("/api/v1/simulations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void simulationRequest_filePathWithoutTimes_rejected() throws Exception {
+        SimulationRequest request = new SimulationRequest();
+        request.setCircuitFile("test.ipes");
+
+        mockMvc.perform(post("/api/v1/simulations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    private String uploadTestCircuit() throws Exception {
+        byte[] ipesBytes = java.nio.file.Files.readAllBytes(
+                java.nio.file.Paths.get("src/test/resources/test-circuit.ipes"));
+        String base64 = java.util.Base64.getEncoder().encodeToString(ipesBytes);
+
+        MvcResult result = mockMvc.perform(post("/api/v1/circuits/parse")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new gecko.rest.model.circuit.CircuitLoadRequest(base64, "test-circuit.ipes"))))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        return objectMapper.readValue(result.getResponse().getContentAsString(),
+                gecko.rest.model.circuit.CircuitLoadResponse.class).circuitId();
+    }
+
+    private String submitAndAwaitCompletion(SimulationRequest request, int timeoutSeconds) throws Exception {
+        MvcResult submitResult = mockMvc.perform(post("/api/v1/simulations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String simulationId = objectMapper.readValue(
+                submitResult.getResponse().getContentAsString(), SimulationResponse.class).getSimulationId();
+        SimulationResponse.SimulationStatus status = awaitTerminalStatus(simulationId, timeoutSeconds);
+        assertEquals(SimulationResponse.SimulationStatus.COMPLETED, status);
+        return simulationId;
+    }
+
+    private SimulationResponse.SimulationStatus awaitTerminalStatus(String simulationId, int timeoutSeconds) throws Exception {
+        long deadline = System.currentTimeMillis() + timeoutSeconds * 1000L;
+        while (System.currentTimeMillis() < deadline) {
+            MvcResult result = mockMvc.perform(get("/api/v1/simulations/{id}", simulationId)).andReturn();
+            SimulationResponse response = objectMapper.readValue(
+                    result.getResponse().getContentAsString(), SimulationResponse.class);
+            if (response.getStatus() == SimulationResponse.SimulationStatus.COMPLETED
+                    || response.getStatus() == SimulationResponse.SimulationStatus.FAILED) {
+                return response.getStatus();
+            }
+            TimeUnit.MILLISECONDS.sleep(100);
+        }
+        throw new AssertionError("Simulation did not finish within " + timeoutSeconds + "s");
+    }
 }

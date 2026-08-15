@@ -1,6 +1,8 @@
 package gecko.rest.service;
 
 import gecko.core.allg.SolverType;
+import gecko.core.io.CircuitFileParser;
+import gecko.core.io.CircuitModel;
 import gecko.core.simulation.HeadlessSimulationEngine;
 import gecko.core.simulation.SimulationConfig;
 import gecko.core.simulation.SimulationProgress;
@@ -10,11 +12,17 @@ import gecko.rest.model.SimulationResponse;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -25,7 +33,6 @@ import java.util.concurrent.Executors;
 import gecko.rest.model.BatchSimulationRequest;
 import gecko.rest.model.BatchSimulationResponse;
 import gecko.rest.model.BatchJobStatus;
-import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -52,6 +59,12 @@ public class SimulationService {
     // Optional: injected when the WebSocket infrastructure is available (i.e. not in @WebMvcTest slice)
     @Autowired(required = false)
     private WebSocketProgressService webSocketProgressService;
+
+    private final CircuitFileService circuitFileService;
+
+    public SimulationService(CircuitFileService circuitFileService) {
+        this.circuitFileService = circuitFileService;
+    }
 
     /**
      * Register an SSE emitter to receive progress events for a simulation.
@@ -418,10 +431,21 @@ public class SimulationService {
     }
 
     SimulationConfig buildSimulationConfig(SimulationRequest request) {
+        CircuitModel circuitModel = resolveCircuitModel(request);
+
+        // Fall back to the times stored in the circuit when the request omits them
+        double duration = request.getSimulationTime() != null
+                ? request.getSimulationTime()
+                : circuitModel != null ? circuitModel.getSimulationDuration() : 0;
+        double timeStep = request.getTimeStep() != null
+                ? request.getTimeStep()
+                : circuitModel != null ? circuitModel.getTimeStep() : 0;
+
         SimulationConfig.Builder builder = SimulationConfig.builder()
                 .circuitFile(request.getCircuitFile())
-                .stepWidth(request.getTimeStep())
-                .simulationDuration(request.getSimulationTime())
+                .circuitModel(circuitModel)
+                .stepWidth(timeStep)
+                .simulationDuration(duration)
                 .solverType(parseSolverType(request.getSolverType()));
 
         if (request.getParameters() != null) {
@@ -429,6 +453,38 @@ public class SimulationService {
         }
 
         return builder.build();
+    }
+
+    /**
+     * Resolves the circuit source of a request into an in-memory model.
+     * Priority: circuitId (circuit store) > base64Circuit (inline content).
+     * Returns null for the plain circuitFile path variant — the engine loads it lazily.
+     */
+    private CircuitModel resolveCircuitModel(SimulationRequest request) {
+        if (request.getCircuitId() != null && !request.getCircuitId().isBlank()) {
+            CircuitModel model = circuitFileService.getModel(request.getCircuitId());
+            if (model == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Circuit not found: " + request.getCircuitId());
+            }
+            return model;
+        }
+        if (request.getBase64Circuit() != null && !request.getBase64Circuit().isBlank()) {
+            byte[] content;
+            try {
+                content = Base64.getDecoder().decode(request.getBase64Circuit());
+            } catch (IllegalArgumentException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Invalid base64 encoding of base64Circuit: " + e.getMessage());
+            }
+            try {
+                return new CircuitFileParser().parse(new ByteArrayInputStream(content), "inline.ipes");
+            } catch (IOException | CircuitFileParser.CircuitParseException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Failed to parse base64Circuit: " + e.getMessage());
+            }
+        }
+        return null;
     }
 
     /**

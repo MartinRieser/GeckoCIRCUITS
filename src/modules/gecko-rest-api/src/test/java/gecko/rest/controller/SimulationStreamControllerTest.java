@@ -18,7 +18,7 @@ public class SimulationStreamControllerTest {
 
     @BeforeEach
     void setUp() {
-        simulationService = new SimulationService();
+        simulationService = new SimulationService(new gecko.rest.service.CircuitFileService());
         testSimulationId = "test-sim-123e4567-e89b-12d3-a456-426614174000";
     }
 

@@ -263,7 +263,8 @@ public class HeadlessSimulationEngine {
                 .simulatedTime(currentTime)
                 .metadata("solver", settings.getSolverType().toString())
                 .metadata("dt", dt)
-                .metadata("circuitFile", config.getCircuitFilePath())
+                .metadata("circuitFile", config.getCircuitFilePath() != null
+                        ? config.getCircuitFilePath() : "in-memory model")
                 .metadata("parameterOverrides", config.getParameterOverrides().size())
                 .build();
     }
@@ -443,6 +444,10 @@ public class HeadlessSimulationEngine {
     }
 
     private static CircuitModel parseCircuitModel(SimulationConfig config) {
+        if (config.getCircuitModel() != null) {
+            return config.getCircuitModel();
+        }
+
         String circuitPath = config.getCircuitFilePath();
         if (circuitPath == null || circuitPath.isBlank()) {
             return null;

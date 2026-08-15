@@ -24,7 +24,7 @@ class SimulationServiceTest {
 
     @BeforeEach
     void setUp() {
-        simulationService = new SimulationService();
+        simulationService = new SimulationService(new CircuitFileService());
         simulationService.clearAll();
     }
 

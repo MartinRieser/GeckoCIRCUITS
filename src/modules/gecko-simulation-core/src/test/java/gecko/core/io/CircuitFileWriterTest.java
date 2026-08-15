@@ -260,12 +260,16 @@ class CircuitFileWriterTest {
         assertEquals(expected.getFileVersion(), actual.getFileVersion(), "File version mismatch");
         assertEquals(expected.getUniqueFileId(), actual.getUniqueFileId(), "Unique file ID mismatch");
         assertEquals(expected.getCreationDate(), actual.getCreationDate(), "Creation date mismatch");
+        assertEquals(expected.getPath(), actual.getPath(), "Path mismatch");
 
         assertEquals(expected.getScripterCode().trim(), actual.getScripterCode().trim(), "Scripter code mismatch");
         assertEquals(expected.getScripterImports().trim(), actual.getScripterImports().trim(), "Scripter imports mismatch");
         assertEquals(expected.getScripterDeclarations().trim(), actual.getScripterDeclarations().trim(), "Scripter declarations mismatch");
 
         assertArrayEquals(expected.getDataContainerSignals(), actual.getDataContainerSignals(), "Data container signals mismatch");
+
+        assertEquals(expected.getOptimizerNames(), actual.getOptimizerNames(), "Optimizer names mismatch");
+        assertEquals(expected.getOptimizerValues(), actual.getOptimizerValues(), "Optimizer values mismatch");
 
         // Verify Circuit Components
         assertComponentsListEqual("CircuitComponents", expected.getCircuitComponents(), actual.getCircuitComponents());
@@ -284,6 +288,9 @@ class CircuitFileWriterTest {
             assertEquals(expConn.getType(), actConn.getType(), "Connection[" + i + "] type mismatch");
             assertEquals(expConn.getLabel(), actConn.getLabel(), "Connection[" + i + "] label mismatch");
             assertEquals(expConn.getConnectorType(), actConn.getConnectorType(), "Connection[" + i + "] connectorType mismatch");
+            assertEquals(expConn.getUniqueObjectIdentifier(), actConn.getUniqueObjectIdentifier(), "Connection[" + i + "] uniqueObjectIdentifier mismatch");
+            assertEquals(expConn.getEnabledShorted(), actConn.getEnabledShorted(), "Connection[" + i + "] enabledShorted mismatch");
+            assertEquals(expConn.getParentSheetIdentifier(), actConn.getParentSheetIdentifier(), "Connection[" + i + "] parentSheetIdentifier mismatch");
             assertArrayEquals(expConn.getPoints(), actConn.getPoints(), "Connection[" + i + "] points mismatch");
         }
     }
@@ -302,6 +309,12 @@ class CircuitFileWriterTest {
             assertEquals(exp.getOrientation(), act.getOrientation(), label + "[" + i + "] orientation mismatch");
             assertArrayEquals(exp.getTerminalXLabels(), act.getTerminalXLabels(), label + "[" + i + "] terminalXLabels mismatch");
             assertArrayEquals(exp.getTerminalYLabels(), act.getTerminalYLabels(), label + "[" + i + "] terminalYLabels mismatch");
+            assertEquals(exp.getUniqueObjectIdentifier(), act.getUniqueObjectIdentifier(), label + "[" + i + "] uniqueObjectIdentifier mismatch");
+            assertEquals(exp.getEnabledShorted(), act.getEnabledShorted(), label + "[" + i + "] enabledShorted mismatch");
+            assertEquals(exp.getParentSheetIdentifier(), act.getParentSheetIdentifier(), label + "[" + i + "] parentSheetIdentifier mismatch");
+            assertArrayEquals(exp.getParameterStrings(), act.getParameterStrings(), label + "[" + i + "] parameterStrings mismatch");
+            assertArrayEquals(exp.getNameOpt(), act.getNameOpt(), label + "[" + i + "] nameOpt mismatch");
+            assertEquals(exp.getExtraLines(), act.getExtraLines(), label + "[" + i + "] extraLines mismatch");
 
             double[] expParams = exp.getRawParameters();
             double[] actParams = act.getRawParameters();

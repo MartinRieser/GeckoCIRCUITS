@@ -139,11 +139,13 @@ public class NetlistBuilder {
             return buildEmpty(0, 0, 0);
         }
 
+        // Only electrical, control and thermal domains participate in the MNA build.
+        // Special components (e.g. file manager, scopes) have no electrical type;
+        // including them would silently default to resistors and short nodes.
         List<CircuitModel.ComponentData> allComponents = new ArrayList<>();
         allComponents.addAll(model.getCircuitComponents());
         allComponents.addAll(model.getControlComponents());
         allComponents.addAll(model.getThermalComponents());
-        allComponents.addAll(model.getSpecialComponents());
 
         if (allComponents.isEmpty()) {
             return buildEmpty(0, 0, 0);
@@ -242,7 +244,7 @@ public class NetlistBuilder {
             }
             // Ensure primary value is set (safety)
             if (params[i][0] == 0.0) {
-                Object primary = comp.getParameters().get(resolveParameterKey(comp.getType()));
+                Object primary = comp.getParameters().get(CircuitModel.ComponentData.resolveParameterKey(comp.getType()));
                 if (primary instanceof Number) {
                     params[i][0] = ((Number) primary).doubleValue();
                 }
@@ -277,19 +279,5 @@ public class NetlistBuilder {
             estimatedVoltageSourceCount,
             totalComponents
         );
-    }
-
-    /**
-     * Returns the semantic parameter key for the primary value of a component type.
-     */
-    private static String resolveParameterKey(int type) {
-        return switch (type) {
-            case 1 -> "resistance";
-            case 2 -> "inductance";
-            case 3 -> "capacitance";
-            case 4 -> "amplitude";
-            case 5 -> "amplitude";
-            default -> "value";
-        };
     }
 }

@@ -1,24 +1,33 @@
 package gecko.rest.model;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.util.Map;
 
 /**
  * Request DTO for circuit simulation submissions.
- * Contains circuit file reference and simulation parameters.
+ *
+ * <p>The circuit can be referenced in one of three ways (exactly one is required,
+ * validated by the service):
+ * <ul>
+ *   <li>{@code circuitId} — ID of a previously uploaded circuit (POST /api/v1/circuits/parse)</li>
+ *   <li>{@code base64Circuit} — base64-encoded .ipes content</li>
+ *   <li>{@code circuitFile} — server-local .ipes file path</li>
+ * </ul>
+ *
+ * <p>{@code simulationTime} and {@code timeStep} are required for {@code circuitFile},
+ * and optional otherwise (they default to the values stored in the circuit).
  */
 public class SimulationRequest {
 
-    @NotBlank(message = "Circuit file path cannot be blank")
+    private String circuitId;
+
+    private String base64Circuit;
+
     private String circuitFile;
 
-    @NotNull(message = "Simulation time cannot be null")
     @Positive(message = "Simulation time must be positive")
     private Double simulationTime;
 
-    @NotNull(message = "Time step cannot be null")
     @Positive(message = "Time step must be positive")
     private Double timeStep;
 
@@ -26,7 +35,6 @@ public class SimulationRequest {
 
     private String solverType;  // Optional, defaults to backward-euler
 
-    // Constructors
     public SimulationRequest() {
     }
 
@@ -36,7 +44,22 @@ public class SimulationRequest {
         this.timeStep = timeStep;
     }
 
-    // Getters and setters
+    public String getCircuitId() {
+        return circuitId;
+    }
+
+    public void setCircuitId(String circuitId) {
+        this.circuitId = circuitId;
+    }
+
+    public String getBase64Circuit() {
+        return base64Circuit;
+    }
+
+    public void setBase64Circuit(String base64Circuit) {
+        this.base64Circuit = base64Circuit;
+    }
+
     public String getCircuitFile() {
         return circuitFile;
     }
@@ -80,7 +103,9 @@ public class SimulationRequest {
     @Override
     public String toString() {
         return "SimulationRequest{" +
-                "circuitFile='" + circuitFile + '\'' +
+                "circuitId='" + circuitId + '\'' +
+                ", base64Circuit=" + (base64Circuit != null ? "<present>" : "null") +
+                ", circuitFile='" + circuitFile + '\'' +
                 ", simulationTime=" + simulationTime +
                 ", timeStep=" + timeStep +
                 ", solverType='" + solverType + '\'' +

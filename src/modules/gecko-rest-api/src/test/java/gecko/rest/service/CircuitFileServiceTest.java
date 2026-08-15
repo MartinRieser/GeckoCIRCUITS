@@ -185,7 +185,8 @@ class CircuitFileServiceTest {
         String raw = service.getRawCircuit(circuitId);
 
         assertNotNull(raw);
-        assertTrue(raw.contains("CircuitModel"));
+        assertTrue(raw.contains("tDURATION"), "raw output should contain .ipes tokens");
+        assertTrue(raw.contains("FileVersion"), "raw output should contain .ipes tokens");
     }
 
     @Test
@@ -226,5 +227,70 @@ class CircuitFileServiceTest {
         // Try deleting again
         boolean deleted2 = service.deleteCircuit(circuitId);
         assertFalse(deleted2);
+    }
+
+    @Test
+    void testGetIpesBytes_returnsGzipRoundTrippableFile() {
+        CircuitLoadResponse loadResponse = service.loadCircuit(validIpesBase64, "test-circuit.ipes");
+        String circuitId = loadResponse.circuitId();
+        int originalCount = loadResponse.componentCount();
+
+        byte[] bytes = service.getIpesBytes(circuitId);
+
+        assertNotNull(bytes);
+        assertTrue(bytes.length > 2);
+        assertEquals(0x1f, bytes[0] & 0xff, "gzip magic byte 1");
+        assertEquals(0x8b, bytes[1] & 0xff, "gzip magic byte 2");
+
+        // Re-load the serialized bytes as a new circuit and compare
+        CircuitLoadResponse reload = service.loadCircuit(
+                Base64.getEncoder().encodeToString(bytes), "roundtrip.ipes");
+        assertEquals("loaded", reload.status());
+        assertEquals(originalCount, reload.componentCount());
+    }
+
+    @Test
+    void testGetIpesBytes_notFound() {
+        assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                () -> service.getIpesBytes("nonexistent-id"));
+    }
+
+    @Test
+    void testReplaceCircuit_keepsIdAndUpdatesContent() {
+        CircuitLoadResponse loadResponse = service.loadCircuit(validIpesBase64, "test-circuit.ipes");
+        String circuitId = loadResponse.circuitId();
+
+        CircuitInfo info = service.replaceCircuit(circuitId,
+                service.getIpesBytes(circuitId), "renamed.ipes");
+
+        assertEquals(circuitId, info.circuitId());
+        assertEquals("renamed.ipes", info.filename());
+        assertEquals(loadResponse.componentCount(), info.componentCounts().circuit()
+                + info.componentCounts().control() + info.componentCounts().thermal());
+    }
+
+    @Test
+    void testReplaceCircuit_notFound() {
+        assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                () -> service.replaceCircuit("nonexistent-id", new byte[]{1, 2}, "x.ipes"));
+    }
+
+    @Test
+    void testCloneCircuit_preservesConnectionsAndLabels() {
+        CircuitLoadResponse loadResponse = service.loadCircuit(validIpesBase64, "test-circuit.ipes");
+        String sourceId = loadResponse.circuitId();
+        int connectionCount = service.getModel(sourceId).getConnections().size();
+        assertTrue(connectionCount > 0, "fixture must contain connections");
+
+        CircuitLoadResponse clone = service.cloneCircuit(sourceId, null);
+
+        assertEquals(connectionCount, service.getModel(clone.circuitId()).getConnections().size());
+    }
+
+    @Test
+    void testGetModel_returnsModelOrNull() {
+        CircuitLoadResponse loadResponse = service.loadCircuit(validIpesBase64, "test-circuit.ipes");
+        assertNotNull(service.getModel(loadResponse.circuitId()));
+        assertNull(service.getModel("nonexistent-id"));
     }
 }

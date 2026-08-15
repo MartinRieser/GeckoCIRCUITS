@@ -1,6 +1,7 @@
 package gecko.rest.service;
 
 import gecko.core.io.CircuitFileParser;
+import gecko.core.io.CircuitFileWriter;
 import gecko.core.io.CircuitModel;
 import gecko.core.io.ParameterOverrideApplicator;
 import gecko.rest.model.circuit.*;
@@ -14,7 +15,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Service for loading and parsing .ipes circuit files.
@@ -158,14 +158,9 @@ public class CircuitFileService {
             errors.add("Invalid simulation parameters: time step must be positive and less than duration");
         }
 
-        // Note: Component parsing not yet implemented in CircuitFileParser
-        // Component count will be 0 for now - this is expected
         if (model.getTotalComponentCount() == 0) {
-            warnings.add("Component extraction not yet implemented (circuit file parsed for metadata only)");
+            warnings.add("Circuit contains no components");
         }
-
-        // Check for disconnected components (future enhancement)
-        // For now, skip this check since components aren't parsed yet
 
         if (errors.isEmpty()) {
             return warnings.isEmpty()
@@ -177,14 +172,68 @@ public class CircuitFileService {
     }
 
     /**
-     * Get raw circuit file content (decompressed ASCII).
+     * Get the parsed model of a loaded circuit.
+     *
+     * @return model, or null if the circuit ID is unknown
+     */
+    public CircuitModel getModel(String circuitId) {
+        ParsedCircuit parsed = circuits.get(circuitId);
+        return parsed != null ? parsed.model : null;
+    }
+
+    /**
+     * Serialize a loaded circuit back to gzip-compressed .ipes bytes
+     * using {@link CircuitFileWriter}.
+     *
+     * @throws ResponseStatusException 404 if circuit not found
+     */
+    public byte[] getIpesBytes(String circuitId) {
+        ParsedCircuit parsed = requireCircuit(circuitId);
+        try {
+            return CircuitFileWriter.write(parsed.model);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Failed to serialize circuit: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Replace the content of a loaded circuit under the same circuit ID.
+     * Used by the editor save flow; keeps the ID stable for clients.
+     *
+     * @param content new .ipes file content (gzip or plain ASCII)
+     * @param filename new filename, or null to keep the current one
+     * @return circuit info of the replaced circuit
+     * @throws ResponseStatusException 404 if circuit not found, 400 if content is unparseable
+     */
+    public CircuitInfo replaceCircuit(String circuitId, byte[] content, String filename) {
+        ParsedCircuit parsed = requireCircuit(circuitId);
+
+        CircuitModel newModel;
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(content)) {
+            newModel = parser.parse(bais, filename != null ? filename : parsed.filename);
+        } catch (CircuitFileParser.CircuitParseException | IOException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Failed to parse circuit content: " + e.getMessage(), e);
+        }
+
+        circuits.put(circuitId, new ParsedCircuit(
+                filename != null ? filename : parsed.filename,
+                newModel,
+                Instant.now()));
+
+        return getCircuitInfo(circuitId);
+    }
+
+    /**
+     * Get raw circuit file content (decompressed ASCII, re-serialized from the model).
      */
     public String getRawCircuit(String circuitId) {
         ParsedCircuit parsed = circuits.get(circuitId);
         if (parsed == null) {
             return null;
         }
-        return parsed.model.toString(); // CircuitModel doesn't store raw content, return string representation
+        return CircuitFileWriter.writeToString(parsed.model);
     }
 
     /**
@@ -233,9 +282,9 @@ public class CircuitFileService {
         }
 
         try {
-            // Create a new model by copying key properties from the original
-            CircuitModel originalModel = sourceParsed.model;
-            CircuitModel newModel = copyCircuitModel(originalModel);
+            // Deep copy via .ipes round-trip: guarantees the clone is a complete,
+            // independent copy of every stored field (components, wires, labels, extras).
+            CircuitModel newModel = copyCircuitModel(sourceParsed.model);
 
             // Apply parameter overrides if provided
             if (overrides != null && !overrides.isEmpty()) {
@@ -343,94 +392,26 @@ public class CircuitFileService {
     }
 
     /**
-     * Creates a deep copy of a CircuitModel by copying all essential fields.
-     * Component lists are copied element-by-element.
+     * Creates a deep copy of a CircuitModel by serializing to .ipes bytes and
+     * parsing them back — the same code path used for file save/load, so no
+     * field can be forgotten.
      */
     private CircuitModel copyCircuitModel(CircuitModel source) {
-        CircuitModel copy = new CircuitModel();
-
-        // Copy simulation parameters
-        copy.setSimulationDuration(source.getSimulationDuration());
-        copy.setTimeStep(source.getTimeStep());
-        copy.setPreSimulationTime(source.getPreSimulationTime());
-        copy.setPreSimulationTimeStep(source.getPreSimulationTimeStep());
-        copy.setPauseTime(source.getPauseTime());
-        copy.setSolverType(source.getSolverType());
-
-        // Copy file metadata
-        copy.setFilePath(source.getFilePath());
-        copy.setFileVersion(source.getFileVersion());
-        copy.setUniqueFileId(source.getUniqueFileId());
-        copy.setCreationDate(source.getCreationDate());
-
-        // Copy display settings
-        copy.setDisplayPixels(source.getDisplayPixels());
-        copy.setFontSize(source.getFontSize());
-        copy.setFontType(source.getFontType());
-        copy.setWindowWidth(source.getWindowWidth());
-        copy.setWindowHeight(source.getWindowHeight());
-
-        // Deep copy component lists (copy each component)
-        for (CircuitModel.ComponentData comp : source.getCircuitComponents()) {
-            copy.getCircuitComponents().add(copyComponentData(comp));
+        try {
+            byte[] bytes = CircuitFileWriter.write(source);
+            return parser.parse(new ByteArrayInputStream(bytes), source.getFilePath());
+        } catch (IOException | CircuitFileParser.CircuitParseException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Failed to copy circuit: " + e.getMessage(), e);
         }
-        for (CircuitModel.ComponentData comp : source.getControlComponents()) {
-            copy.getControlComponents().add(copyComponentData(comp));
-        }
-        for (CircuitModel.ComponentData comp : source.getThermalComponents()) {
-            copy.getThermalComponents().add(copyComponentData(comp));
-        }
-
-        // Deep copy connections
-        for (CircuitModel.ConnectionData conn : source.getConnections()) {
-            copy.getConnections().add(copyConnectionData(conn));
-        }
-
-        // Copy optimizer parameters
-        copy.getOptimizerParameters().putAll(source.getOptimizerParameters());
-
-        // Copy data container signals
-        if (source.getDataContainerSignals() != null) {
-            copy.setDataContainerSignals(source.getDataContainerSignals().clone());
-        }
-
-        // Copy scripting code
-        copy.setScripterCode(source.getScripterCode());
-        copy.setScripterImports(source.getScripterImports());
-        copy.setScripterDeclarations(source.getScripterDeclarations());
-
-        return copy;
     }
 
-    /**
-     * Creates a copy of ComponentData with independent parameter map.
-     */
-    private CircuitModel.ComponentData copyComponentData(CircuitModel.ComponentData source) {
-        CircuitModel.ComponentData copy = new CircuitModel.ComponentData(
-            source.getType(),
-            source.getName(),
-            source.getPosition()[0],
-            source.getPosition()[1],
-            source.getOrientation()
-        );
-
-        // Deep copy parameters
-        if (source.getParameters() != null) {
-            source.getParameters().forEach((key, value) -> copy.setParameter(key, value));
+    private ParsedCircuit requireCircuit(String circuitId) {
+        ParsedCircuit parsed = circuits.get(circuitId);
+        if (parsed == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Circuit not found: " + circuitId);
         }
-
-        return copy;
-    }
-
-    /**
-     * Creates a copy of ConnectionData.
-     */
-    private CircuitModel.ConnectionData copyConnectionData(CircuitModel.ConnectionData source) {
-        int[][] pointsCopy = new int[source.getPoints().length][];
-        for (int i = 0; i < source.getPoints().length; i++) {
-            pointsCopy[i] = source.getPoints()[i].clone();
-        }
-        return new CircuitModel.ConnectionData(source.getType(), pointsCopy);
+        return parsed;
     }
 
     private ComponentInfo componentDataToInfo(CircuitModel.ComponentData comp, String domain) {

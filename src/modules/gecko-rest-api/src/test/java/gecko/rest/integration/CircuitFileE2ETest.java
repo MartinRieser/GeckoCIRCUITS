@@ -238,4 +238,107 @@ class CircuitFileE2ETest {
         restTemplate.delete("/api/v1/circuits/" + circuitId1);
         restTemplate.delete("/api/v1/circuits/" + circuitId2);
     }
+
+    /**
+     * P0 acceptance test: the .ipes round trip.
+     * upload -> parse -> GET /ipes (re-serialized) -> re-parse must yield an
+     * identical circuit. This is the interchange guarantee with the Swing UI.
+     */
+    @Test
+    void testIpesRoundTrip_serializeAndReloadYieldsIdenticalCircuit() {
+        ResponseEntity<CircuitLoadResponse> loadResponse = restTemplate.postForEntity(
+            "/api/v1/circuits/parse",
+            new CircuitLoadRequest(validIpesBase64, "test-circuit.ipes"),
+            CircuitLoadResponse.class
+        );
+        assertThat(loadResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        String circuitId = loadResponse.getBody().circuitId();
+        int originalComponents = loadResponse.getBody().componentCount();
+
+        ResponseEntity<CircuitInfo> originalInfo = restTemplate.getForEntity(
+            "/api/v1/circuits/" + circuitId + "/info", CircuitInfo.class);
+
+        // Download the re-serialized .ipes file
+        ResponseEntity<byte[]> ipesResponse = restTemplate.getForEntity(
+            "/api/v1/circuits/" + circuitId + "/ipes", byte[].class);
+
+        assertThat(ipesResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        byte[] ipesBytes = ipesResponse.getBody();
+        assertThat(ipesBytes).isNotNull();
+        assertThat(ipesBytes.length).isGreaterThan(2);
+        assertThat(ipesBytes[0] & 0xff).isEqualTo(0x1f);
+        assertThat(ipesBytes[1] & 0xff).isEqualTo(0x8b);
+
+        // Re-upload the downloaded file as a new circuit
+        String reloadedBase64 = Base64.getEncoder().encodeToString(ipesBytes);
+        ResponseEntity<CircuitLoadResponse> reloadResponse = restTemplate.postForEntity(
+            "/api/v1/circuits/parse",
+            new CircuitLoadRequest(reloadedBase64, "roundtrip.ipes"),
+            CircuitLoadResponse.class
+        );
+        assertThat(reloadResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(reloadResponse.getBody().status()).isEqualTo("loaded");
+        assertThat(reloadResponse.getBody().componentCount()).isEqualTo(originalComponents);
+
+        // Simulation parameters survive the round trip
+        ResponseEntity<CircuitInfo> reloadedInfo = restTemplate.getForEntity(
+            "/api/v1/circuits/" + reloadResponse.getBody().circuitId() + "/info", CircuitInfo.class);
+        assertThat(reloadedInfo.getBody().simulationParameters().endTime())
+            .isEqualTo(originalInfo.getBody().simulationParameters().endTime());
+        assertThat(reloadedInfo.getBody().simulationParameters().timeStep())
+            .isEqualTo(originalInfo.getBody().simulationParameters().timeStep());
+
+        restTemplate.delete("/api/v1/circuits/" + circuitId);
+        restTemplate.delete("/api/v1/circuits/" + reloadResponse.getBody().circuitId());
+    }
+
+    @Test
+    void testGetIpesFile_notFound() {
+        ResponseEntity<byte[]> response = restTemplate.getForEntity(
+            "/api/v1/circuits/nonexistent-id/ipes", byte[].class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void testReplaceCircuit_sameIdNewContent() {
+        ResponseEntity<CircuitLoadResponse> loadResponse = restTemplate.postForEntity(
+            "/api/v1/circuits/parse",
+            new CircuitLoadRequest(validIpesBase64, "original.ipes"),
+            CircuitLoadResponse.class
+        );
+        String circuitId = loadResponse.getBody().circuitId();
+
+        // Replace with the re-serialized content of itself under a new name
+        byte[] ipesBytes = restTemplate.getForEntity(
+            "/api/v1/circuits/" + circuitId + "/ipes", byte[].class).getBody();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        ResponseEntity<CircuitInfo> replaceResponse = restTemplate.exchange(
+            "/api/v1/circuits/" + circuitId,
+            HttpMethod.PUT,
+            new HttpEntity<>(new CircuitLoadRequest(
+                Base64.getEncoder().encodeToString(ipesBytes), "edited.ipes"), headers),
+            CircuitInfo.class
+        );
+
+        assertThat(replaceResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(replaceResponse.getBody().circuitId()).isEqualTo(circuitId);
+        assertThat(replaceResponse.getBody().filename()).isEqualTo("edited.ipes");
+
+        restTemplate.delete("/api/v1/circuits/" + circuitId);
+    }
+
+    @Test
+    void testReplaceCircuit_notFound() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        ResponseEntity<CircuitInfo> response = restTemplate.exchange(
+            "/api/v1/circuits/nonexistent-id",
+            HttpMethod.PUT,
+            new HttpEntity<>(new CircuitLoadRequest(validIpesBase64, "x.ipes"), headers),
+            CircuitInfo.class
+        );
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
 }
