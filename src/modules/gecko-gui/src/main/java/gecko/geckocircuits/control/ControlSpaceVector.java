@@ -27,7 +27,6 @@ public final class ControlSpaceVector extends RegelBlock {
     private static final int NO_INPUTS = 9;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlSpaceVector.class, "SV", I18nKeys.SPACE_VECTOR_DIAGRAM);
     private final SpaceVectorDisplay svd = new SpaceVectorDisplay(this);
-    private String[] header;
     private static final double DA_VALUE = 0.5;
     private static final double WIDTH = 1.4;
 
@@ -53,18 +52,6 @@ public final class ControlSpaceVector extends RegelBlock {
     @Override
     public String[] getOutputNames() {
         return new String[0];
-    }
-
-    public void setTerminalNodeLabel(final String q, final int nodeIndex) {
-        // ... wird von 'setLabelAnfangsKnoten()' in ElementCONTROL aufgerufen, immer wenn die Netzliste aktualisiert wird
-        // aktueller Zugriff auf die Knoten-Labels fuer die SCOPE-Header -->
-        if (header == null) {
-            header = new String[NO_INPUTS + 1];
-        }
-        header[nodeIndex + 1] = q;
-        if (header[nodeIndex + 1].equals("")) {
-            header[nodeIndex + 1] = "sg." + (nodeIndex + 1);
-        }
     }
 
     @Override
