@@ -6,8 +6,15 @@
 - **Generics**: Use type-safe generic collections (`Collections.emptyList()`, `List<T>`) instead of legacy raw types (`Collections.EMPTY_LIST`, raw `Vector`).
 - **Constructor Safety**: Prevent `this-escape` warnings by making constructor-called methods `private` or `final`, or adding `@SuppressWarnings("this-escape")` where architecturally necessary.
 
-## Testing Standards
-- When verifying changes or running tests, never skip tests (`-DskipTests` is only for rapid intermediate compile checks). Always run `mvn test` before finalizing or merging changes.
+## Testing & Verification Standards
+- **No Test Skipping**: When verifying changes or running tests, never skip tests (`-DskipTests` is only for rapid intermediate compile checks). Always run `mvn test` before finalizing or merging changes.
+- **Exhaustive Field Fidelity**: When implementing parsers, serializers, or data models, tests must assert exact equality for every single modeled attribute, array, connection, identifier, flag, and metadata field. Never settle for superficial smoke checks.
+- **Complete Downstream Integration**: When adding core capabilities (e.g., serialization, new model types), always complete the integration in downstream consumers (services, controllers, netlist builders) and add full test coverage across all layers.
+
+## Task Completeness & Definition of Done
+- **No Premature Completion**: Never declare a task, goal, or milestone complete until all subtasks, edge cases, downstream integrations, and architectural plan requirements are fully implemented and verified.
+- **Plan Cross-Check**: Before finishing any phase or task, explicitly review the requirements checklist in the plan/specification document line-by-line.
+- **Clean Refactoring**: Eliminate code duplication immediately (e.g., share utility methods across core and builders) rather than leaving duplicate logic in place.
 
 ## CI & GitHub Actions Standards
 - Maintain modern GitHub Actions compatible with Node 24 runners (`actions/checkout@v7`, `actions/setup-java@v5`, `actions/setup-python@v7`, `actions/upload-artifact@v7`, `actions/download-artifact@v8`, `softprops/action-gh-release@v3`).
