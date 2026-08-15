@@ -9,6 +9,7 @@ import gecko.rest.model.circuit.ComponentInfo;
 import gecko.rest.model.circuit.ComponentPatchRequest;
 import gecko.rest.model.circuit.ConnectionCreateRequest;
 import gecko.rest.model.circuit.ConnectionPatchRequest;
+import gecko.rest.model.circuit.EditorModelResponse;
 import gecko.rest.model.circuit.NodeLabelRequest;
 import gecko.rest.model.circuit.WireInfo;
 import gecko.rest.service.CircuitFileService.CircuitState;
@@ -263,6 +264,43 @@ public class CircuitEditService {
         }
     }
 
+    // ========== Editor snapshot ==========
+
+    /**
+     * Full editor snapshot: components with terminal labels, wires with
+     * indices, render scale and current version.
+     */
+    public EditorModelResponse getEditorModel(String circuitId) {
+        CircuitState state = requireState(circuitId);
+        synchronized (state) {
+            CircuitModel model = state.model;
+
+            List<EditorModelResponse.Component> components = new ArrayList<>();
+            appendComponents(components, model.getCircuitComponents(), "LK");
+            appendComponents(components, model.getControlComponents(), "CONTROL");
+            appendComponents(components, model.getThermalComponents(), "THERM");
+            appendComponents(components, model.getSpecialComponents(), "SPECIAL");
+
+            List<EditorModelResponse.Wire> wires = new ArrayList<>();
+            for (int i = 0; i < model.getConnections().size(); i++) {
+                CircuitModel.ConnectionData conn = model.getConnections().get(i);
+                wires.add(new EditorModelResponse.Wire(i, conn.getType(), conn.getLabel(), conn.getPoints()));
+            }
+
+            return new EditorModelResponse(circuitId, state.version.get(), state.filename,
+                    model.getDisplayPixels(), model.getWorksheetSize(), components, wires);
+        }
+    }
+
+    private static void appendComponents(List<EditorModelResponse.Component> target,
+                                         List<CircuitModel.ComponentData> source, String family) {
+        for (CircuitModel.ComponentData comp : source) {
+            target.add(new EditorModelResponse.Component(
+                    comp.getType(), comp.getName(), family, comp.getPosition(), comp.getOrientation(),
+                    comp.getParameters(), comp.getTerminalXLabels(), comp.getTerminalYLabels()));
+        }
+    }
+
     // ========== Catalog ==========
 
     private static volatile List<CatalogResponse.CatalogEntry> catalog;
@@ -421,12 +459,12 @@ public class CircuitEditService {
         return connections.get(index);
     }
 
+    /**
+     * Grid raster snapping: .ipes coordinates are integer grid units
+     * (dpix is only the pixel render scale), so snapping = rounding.
+     */
     private static int snap(CircuitModel model, int value) {
-        int raster = model.getDisplayPixels();
-        if (raster <= 1) {
-            return value;
-        }
-        return Math.round((float) value / raster) * raster;
+        return Math.round((float) value);
     }
 
     private static int[][] snapPoints(CircuitModel model, int[][] points, boolean requireTwo) {
@@ -444,12 +482,34 @@ public class CircuitEditService {
         return snapped;
     }
 
+    /**
+     * Orientation codes of the .ipes format (ComponentDirection old ordinals):
+     * 501 = SOUTH_NORTH, 502 = WEST_EAST, 503 = NORTH_SOUTH (default),
+     * 504 = EAST_WEST. Rotation cycles 503 -> 504 -> 501 -> 502 -> 503.
+     */
+    private static final int[] ORIENTATION_CYCLE = {503, 504, 501, 502};
+
     private static int normalizeOrientation(Integer orientation) {
-        int value = orientation != null ? orientation : 0;
-        if (value < 0 || value > 3) {
-            throw badRequest("orientation must be 0-3");
+        if (orientation == null) {
+            return ORIENTATION_CYCLE[0];
         }
-        return value;
+        for (int valid : ORIENTATION_CYCLE) {
+            if (valid == orientation) {
+                return orientation;
+            }
+        }
+        throw badRequest("orientation must be one of 501 (SOUTH_NORTH), 502 (WEST_EAST), "
+                + "503 (NORTH_SOUTH), 504 (EAST_WEST)");
+    }
+
+    /** Next orientation in the GUI rotation cycle (right-click / 'r' key). */
+    static int rotateOrientation(int orientation) {
+        for (int i = 0; i < ORIENTATION_CYCLE.length; i++) {
+            if (ORIENTATION_CYCLE[i] == orientation) {
+                return ORIENTATION_CYCLE[(i + 1) % ORIENTATION_CYCLE.length];
+            }
+        }
+        return ORIENTATION_CYCLE[0];
     }
 
     private static void applyParameterMap(CircuitModel.ComponentData comp, Map<String, Double> parameters) {

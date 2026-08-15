@@ -363,7 +363,7 @@ Request:
   "name": "R1",
   "x": 96,
   "y": 96,
-  "orientation": 0,
+  "orientation": 503,
   "parameters": {"param0": 100.0}
 }
 ```
@@ -428,6 +428,16 @@ GET /api/v1/circuits/catalog
 ```
 
 Returns all placeable types with `type` number, `name` and `family`.
+
+**Editor Model Snapshot**
+
+```bash
+GET /api/v1/circuits/{circuitId}/model
+```
+
+Returns the full editor state in one response: components (with terminal node
+labels), wires (with their list indices), grid render scale (`dpix`), worksheet
+size and the current `modelVersion`. This is the boot endpoint for editor clients.
 
 Live in: **v2.20.0+**
 

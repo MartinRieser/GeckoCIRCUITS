@@ -128,6 +128,21 @@ class CircuitEditControllerTest {
     }
 
     @Test
+    void editorModel_returnsSnapshot() throws Exception {
+        when(editService.getEditorModel("circuit-1")).thenReturn(
+                new gecko.rest.model.circuit.EditorModelResponse(
+                        "circuit-1", 7, "test.ipes", 16, "600x600",
+                        List.of(), List.of()));
+
+        mockMvc.perform(get("/api/v1/circuits/circuit-1/model"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.modelVersion").value(7))
+                .andExpect(jsonPath("$.dpix").value(16))
+                .andExpect(jsonPath("$.components").isArray())
+                .andExpect(jsonPath("$.connections").isArray());
+    }
+
+    @Test
     void catalog_returnsTypes() throws Exception {
         when(editService.getCatalog()).thenReturn(new CatalogResponse(
                 List.of(new CatalogResponse.CatalogEntry(1, "LK_R", "LK"))));

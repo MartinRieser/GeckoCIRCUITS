@@ -128,7 +128,7 @@ class CircuitEditE2ETest {
 
     private HttpEntity<String> editRequest() {
         return jsonEntity("{\"family\": \"LK\", \"type\": 1, \"name\": \"R_e2e\", \"x\": 96, \"y\": 96, "
-                + "\"orientation\": 0, \"parameters\": {\"param0\": 100.0}}");
+                + "\"orientation\": 503, \"parameters\": {\"param0\": 100.0}}");
     }
 
     private int componentCount(String circuitId) {

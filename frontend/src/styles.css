@@ -1,0 +1,296 @@
+:root {
+  --bg: #1e2227;
+  --panel: #262b31;
+  --border: #3a4149;
+  --text: #d8dde3;
+  --accent: #4da3ff;
+  --wire: #d0aa5a;
+  --selection: #4da3ff;
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.toolbar button {
+  background: #333a42;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.toolbar button:hover:not(:disabled) {
+  background: #3d454f;
+}
+
+.toolbar button.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.toolbar button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.toolbar-separator {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 4px;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.sidebar {
+  width: 210px;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.main > .sidebar:last-child {
+  border-right: none;
+  border-left: 1px solid var(--border);
+}
+
+.palette {
+  padding: 8px;
+}
+
+.palette input {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 4px 6px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.palette-family {
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin: 8px 0 4px;
+}
+
+.palette-entry {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  color: var(--text);
+  border: none;
+  border-radius: 4px;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+
+.palette-entry:hover {
+  background: #333a42;
+}
+
+.sheet-scroll {
+  flex: 1;
+  overflow: auto;
+}
+
+.sheet {
+  display: block;
+  background: var(--bg);
+  cursor: crosshair;
+}
+
+.sheet pattern circle {
+  fill: #3a4149;
+}
+
+.component line,
+.component rect,
+.component path,
+.component circle,
+.component polyline {
+  stroke: var(--text);
+  fill: none;
+  stroke-width: 1.4;
+}
+
+.component.selected line,
+.component.selected rect,
+.component.selected path,
+.component.selected circle {
+  stroke: var(--selection);
+}
+
+.component circle[fill],
+.component path[fill]:not([fill='none']) {
+  fill: var(--text);
+}
+
+.selection-box {
+  stroke: var(--selection);
+  stroke-dasharray: 4 3;
+  fill: none;
+}
+
+.terminal {
+  fill: var(--accent);
+}
+
+.component-name {
+  fill: var(--text);
+  font-size: 11px;
+  text-anchor: middle;
+}
+
+.node-label {
+  fill: var(--accent);
+  font-size: 10px;
+}
+
+.wire polyline {
+  stroke: var(--wire);
+  fill: none;
+  stroke-width: 1.6;
+}
+
+.wire.selected polyline {
+  stroke: var(--selection);
+}
+
+.wire-hit {
+  stroke: transparent;
+  fill: none;
+  stroke-width: 9;
+  cursor: pointer;
+}
+
+.wire-draft {
+  stroke: var(--wire);
+  fill: none;
+  stroke-dasharray: 5 4;
+  stroke-width: 1.6;
+}
+
+.ghost {
+  opacity: 0.45;
+}
+
+.ghost line,
+.ghost rect,
+.ghost path,
+.ghost circle {
+  stroke: var(--text);
+  fill: none;
+  stroke-width: 1.4;
+}
+
+.rubber-band {
+  stroke: var(--accent);
+  fill: rgba(77, 163, 255, 0.08);
+  stroke-dasharray: 3 3;
+}
+
+.properties {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.properties-header {
+  font-weight: 600;
+}
+
+.properties-empty {
+  opacity: 0.6;
+}
+
+.properties label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+}
+
+.properties input {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 6px;
+}
+
+.properties-static {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.properties-section {
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-top: 6px;
+}
+
+.statusbar {
+  display: flex;
+  gap: 18px;
+  padding: 4px 10px;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.statusbar .ws {
+  margin-left: auto;
+}
+
+.ws.on {
+  color: #6fd08c;
+}
+
+.ws.off {
+  color: #d0805a;
+}

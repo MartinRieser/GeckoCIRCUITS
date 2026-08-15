@@ -20,7 +20,7 @@ public record ComponentInfo(
     @Schema(description = "X-Y position in schematic", example = "[100, 200]")
     int[] position,
 
-    @Schema(description = "Component orientation (0, 90, 180, 270)", example = "0")
+    @Schema(description = "Orientation: 501 SOUTH_NORTH, 502 WEST_EAST, 503 NORTH_SOUTH, 504 EAST_WEST", example = "503")
     int orientation,
 
     @Schema(description = "Component parameters (e.g., resistance, capacitance)", example = "{\"resistance\": 10.0, \"temperature\": 25.0}")

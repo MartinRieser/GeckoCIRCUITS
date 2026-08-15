@@ -16,7 +16,7 @@ public record ComponentPatchRequest(
     @Schema(description = "New Y grid position", example = "240")
     Integer y,
 
-    @Schema(description = "New orientation 0-3", example = "1")
+    @Schema(description = "New orientation: 501 SOUTH_NORTH, 502 WEST_EAST, 503 NORTH_SOUTH, 504 EAST_WEST", example = "503")
     Integer orientation,
 
     @Schema(description = "New component name (must stay unique)", example = "R_load")

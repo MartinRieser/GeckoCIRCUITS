@@ -6,6 +6,7 @@ import gecko.rest.model.circuit.ComponentCreateRequest;
 import gecko.rest.model.circuit.ComponentPatchRequest;
 import gecko.rest.model.circuit.ConnectionCreateRequest;
 import gecko.rest.model.circuit.ConnectionPatchRequest;
+import gecko.rest.model.circuit.EditorModelResponse;
 import gecko.rest.model.circuit.NodeLabelRequest;
 import gecko.rest.service.CircuitEditService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -158,6 +159,18 @@ public class CircuitEditController {
     })
     public CircuitChangeMessage redo(@PathVariable String circuitId) {
         return editService.redo(circuitId);
+    }
+
+    @GetMapping("/{circuitId}/model")
+    @Operation(summary = "Editor model snapshot",
+            description = "Full editor state: components with terminal labels, wires with indices, "
+                    + "grid scale and model version.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Snapshot returned"),
+        @ApiResponse(responseCode = "404", description = "Circuit not found")
+    })
+    public EditorModelResponse getEditorModel(@PathVariable String circuitId) {
+        return editService.getEditorModel(circuitId);
     }
 
     @GetMapping("/catalog")

@@ -30,7 +30,7 @@ public record ComponentCreateRequest(
     @NotNull
     Integer y,
 
-    @Schema(description = "Orientation 0-3 (0, 90, 180, 270 degrees)", example = "0")
+    @Schema(description = "Orientation: 501 SOUTH_NORTH, 502 WEST_EAST, 503 NORTH_SOUTH (default), 504 EAST_WEST", example = "503")
     Integer orientation,
 
     @Schema(description = "Numeric parameters by index", example = "{\"param0\": 100.0}")
