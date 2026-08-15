@@ -63,7 +63,7 @@ public class RealIpesTest {
                 netlist.getNodeMax(), netlist.getVoltageSourceMax(), netlist.getElementCount());
 
         if (!model.getCircuitComponents().isEmpty()) {
-            assertEquals(model.getCircuitComponents().size(), netlist.getElementCount(),
+            assertEquals(model.getTotalComponentCount(), netlist.getElementCount(),
                     "Element count should match component count");
         }
     }

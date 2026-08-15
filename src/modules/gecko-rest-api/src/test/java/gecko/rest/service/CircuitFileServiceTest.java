@@ -38,9 +38,7 @@ class CircuitFileServiceTest {
         assertEquals("loaded", response.status());
         assertEquals("test-circuit.ipes", response.filename());
         assertNotNull(response.circuitId());
-        // Note: Component parsing not yet implemented in CircuitFileParser
-        // Component count will be 0 until component parsing is added
-        assertEquals(0, response.componentCount());
+        assertEquals(24, response.componentCount());
         assertNull(response.errorMessage());
     }
 
@@ -93,9 +91,9 @@ class CircuitFileServiceTest {
         assertNotNull(simParams.timeStep());
         assertNotNull(simParams.solverType());
 
-        // Check component counts - Note: Component parsing not implemented yet
+        // Check component counts
         CircuitInfo.ComponentCounts counts = info.componentCounts();
-        assertEquals(0, counts.circuit() + counts.control() + counts.thermal());
+        assertEquals(24, counts.circuit() + counts.control() + counts.thermal());
     }
 
     @Test
@@ -116,8 +114,7 @@ class CircuitFileServiceTest {
         assertNotNull(response);
         assertEquals(circuitId, response.circuitId());
         assertNotNull(response.components());
-        // Note: Component parsing not yet implemented, so list will be empty
-        assertEquals(0, response.components().size());
+        assertEquals(24, response.components().size());
     }
 
     @Test
@@ -138,11 +135,8 @@ class CircuitFileServiceTest {
         assertNotNull(response);
         assertNotNull(response.warnings());
         assertNotNull(response.errors());
-        // Should have a warning about components not being implemented if valid
-        if (response.valid()) {
-            assertTrue(response.warnings().size() > 0);
-            assertTrue(response.warnings().stream().anyMatch(w -> w.contains("Component extraction not yet implemented")));
-        }
+        assertTrue(response.valid());
+        assertTrue(response.errors().isEmpty());
     }
 
     @Test
@@ -169,8 +163,7 @@ class CircuitFileServiceTest {
         CircuitListResponse.CircuitSummary summary1 = listResponse.circuits().get(0);
         assertNotNull(summary1.circuitId());
         assertNotNull(summary1.filename());
-        // Component count will be 0 until component parsing is implemented
-        assertEquals(0, summary1.componentCount());
+        assertEquals(24, summary1.componentCount());
         assertNotNull(summary1.loadedAt());
     }
 

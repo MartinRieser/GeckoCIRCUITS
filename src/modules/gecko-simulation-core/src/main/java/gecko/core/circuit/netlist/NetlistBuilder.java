@@ -139,11 +139,11 @@ public class NetlistBuilder {
             return buildEmpty(0, 0, 0);
         }
 
-        // Collect all components from all lists
         List<CircuitModel.ComponentData> allComponents = new ArrayList<>();
         allComponents.addAll(model.getCircuitComponents());
         allComponents.addAll(model.getControlComponents());
         allComponents.addAll(model.getThermalComponents());
+        allComponents.addAll(model.getSpecialComponents());
 
         if (allComponents.isEmpty()) {
             return buildEmpty(0, 0, 0);

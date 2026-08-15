@@ -159,4 +159,110 @@ public final class SerializationUtils {
             }
         }
     }
+
+    public static void appendAsString(StringBuilder buffer, int value) {
+        buffer.append(' ');
+        buffer.append(value);
+    }
+
+    public static void appendAsString(StringBuilder buffer, double value) {
+        buffer.append(' ');
+        buffer.append(value);
+    }
+
+    public static void appendAsString(StringBuilder buffer, long value) {
+        buffer.append(' ');
+        buffer.append(value);
+    }
+
+    public static void appendAsString(StringBuilder buffer, boolean value) {
+        buffer.append(' ');
+        buffer.append(value);
+    }
+
+    public static void appendAsString(StringBuilder buffer, String value) {
+        buffer.append(' ');
+        if (value == null || value.isEmpty() || value.equals(gecko.core.circuit.CircuitFileConstants.NIX)) {
+            buffer.append(gecko.core.circuit.CircuitFileConstants.NIX);
+        } else {
+            buffer.append(value);
+        }
+    }
+
+    public static void appendStringArray(StringBuilder buffer, String[] values) {
+        buffer.append("[]");
+        if (values == null || values.length == 0) {
+            buffer.append(" null");
+        } else {
+            buffer.append(' ');
+            for (String value : values) {
+                buffer.append(gecko.core.circuit.CircuitFileConstants.SEPARATOR_ASCII_STRINGARRAY);
+                if (value == null || value.trim().isEmpty() || value.equals(gecko.core.circuit.CircuitFileConstants.NIX)) {
+                    buffer.append(gecko.core.circuit.CircuitFileConstants.NIX);
+                } else {
+                    buffer.append(value.trim());
+                }
+            }
+        }
+    }
+
+    public static void appendStringArray(StringBuilder buffer, java.util.List<String> values) {
+        if (values == null) {
+            appendStringArray(buffer, (String[]) null);
+        } else {
+            appendStringArray(buffer, values.toArray(new String[0]));
+        }
+    }
+
+    public static void appendDoubleArray(StringBuilder buffer, double[] values) {
+        buffer.append("[] ");
+        if (values == null || values.length == 0) {
+            buffer.append("null");
+        } else {
+            for (double value : values) {
+                buffer.append(value);
+                buffer.append(' ');
+            }
+        }
+    }
+
+    public static void appendDoubleArray(StringBuilder buffer, java.util.List<Double> values) {
+        buffer.append("[] ");
+        if (values == null || values.isEmpty()) {
+            buffer.append("null");
+        } else {
+            for (Double value : values) {
+                if (value == null || value.isNaN()) {
+                    buffer.append("NaN ");
+                } else {
+                    buffer.append(value);
+                    buffer.append(' ');
+                }
+            }
+        }
+    }
+
+    public static void appendIntArray(StringBuilder buffer, int[] values) {
+        buffer.append("[] ");
+        if (values == null || values.length == 0) {
+            buffer.append("null");
+        } else {
+            for (int value : values) {
+                buffer.append(value);
+                buffer.append(' ');
+            }
+        }
+    }
+
+    public static void appendLongArray(StringBuilder buffer, long[] values) {
+        buffer.append("[] ");
+        if (values == null || values.length == 0) {
+            buffer.append("null");
+        } else {
+            for (long value : values) {
+                buffer.append(value);
+                buffer.append(' ');
+            }
+        }
+    }
 }

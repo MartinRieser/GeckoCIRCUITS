@@ -184,7 +184,7 @@ class CircuitFileParserTest {
 
         CircuitModel model = parser.parse(new BufferedReader(new StringReader(content)), "test.ipes");
 
-        assertArrayEquals(new String[]{"", "", "sigA", "", "", "sigB", ""}, model.getDataContainerSignals());
+        assertArrayEquals(new String[]{"", "sigA", "", "", "sigB", ""}, model.getDataContainerSignals());
     }
 
     @Test

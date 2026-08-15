@@ -14,6 +14,7 @@
 package gecko.core.io;
 
 import gecko.core.allg.SolverType;
+import gecko.core.circuit.CircuitFileConstants;
 import gecko.core.circuit.TokenMap;
 
 import java.io.*;
@@ -27,19 +28,30 @@ import java.util.zip.GZIPInputStream;
  *
  * <p>This parser is designed for REST APIs, CLI tools, and batch processing,
  * containing no Swing/AWT dependencies.</p>
- *
- * <p>Usage example:</p>
- * <pre>{@code
- * CircuitFileParser parser = new CircuitFileParser();
- * CircuitModel model = parser.parse("path/to/circuit.ipes");
- * double dt = model.getTimeStep();
- * double duration = model.getSimulationDuration();
- * }</pre>
  */
 public class CircuitFileParser {
 
-    private static final String NIX = "NIX_NIX_NIX";
-    private static final String SEPARATOR_ASCII_STRINGARRAY = "/";
+    private static final String NIX = CircuitFileConstants.NIX;
+    private static final String SEPARATOR_ASCII_STRINGARRAY = CircuitFileConstants.SEPARATOR_ASCII_STRINGARRAY;
+
+    private static final Set<String> KNOWN_ELEMENT_TOKENS = Set.of(
+            "labelAnfangsKnoten[]",
+            "labelEndKnoten[]",
+            "enabledShorted",
+            "parentSheetIdentifier",
+            "typ",
+            "uniqueObjectIdentifier",
+            "x",
+            "y",
+            "parameter[]",
+            "parameter",
+            "parameterString[]",
+            "parameterString",
+            "nameOpt[]",
+            "nameOpt",
+            "orientierung",
+            "idStringDialog"
+    );
 
     /**
      * Parses a .ipes circuit file and returns the circuit model.
@@ -88,8 +100,15 @@ public class CircuitFileParser {
      * @throws CircuitParseException if the format is invalid
      */
     public CircuitModel parse(InputStream inputStream, String sourceName) throws IOException, CircuitParseException {
+        byte[] bytes = inputStream.readAllBytes();
+        if (isGzipCompressed(bytes)) {
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(new GZIPInputStream(new ByteArrayInputStream(bytes)), StandardCharsets.UTF_8))) {
+                return parse(reader, sourceName);
+            }
+        }
         try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+                new InputStreamReader(new ByteArrayInputStream(bytes), StandardCharsets.UTF_8))) {
             return parse(reader, sourceName);
         }
     }
@@ -101,7 +120,6 @@ public class CircuitFileParser {
         try (InputStream fis = new FileInputStream(file)) {
             InputStream inputStream;
 
-            // Check if file is gzip compressed
             if (isGzipCompressed(file)) {
                 inputStream = new GZIPInputStream(fis);
             } else {
@@ -130,9 +148,15 @@ public class CircuitFileParser {
             if (read < 2) {
                 return false;
             }
-            // GZIP magic number: 0x1f 0x8b
             return (signature[0] == (byte) 0x1f) && (signature[1] == (byte) 0x8b);
         }
+    }
+
+    private boolean isGzipCompressed(byte[] data) {
+        if (data == null || data.length < 2) {
+            return false;
+        }
+        return (data[0] == (byte) 0x1f) && (data[1] == (byte) 0x8b);
     }
 
     /**
@@ -142,29 +166,36 @@ public class CircuitFileParser {
         CircuitModel model = new CircuitModel();
         model.setFilePath(filePath);
 
-        // Build token map for fast lookup
-        Map<String, Integer> tokenMap = buildTokenMap(lines);
+        Map<String, Integer> lineTokenMap = buildTokenMap(lines);
+        TokenMap tokenMap = new TokenMap(lines, true);
 
         // Parse simulation parameters
-        parseSimulationParameters(model, lines, tokenMap);
+        parseSimulationParameters(model, lines, lineTokenMap);
 
         // Parse display settings
-        parseDisplaySettings(model, lines, tokenMap);
+        parseDisplaySettings(model, lines, lineTokenMap);
 
         // Parse file metadata
-        parseFileMetadata(model, lines, tokenMap);
+        parseFileMetadata(model, lines, lineTokenMap);
 
         // Parse optimizer parameters
-        parseOptimizerParameters(model, lines, tokenMap);
+        parseOptimizerParameters(model, lines, lineTokenMap);
 
         // Parse scripting blocks
-        parseScripterBlocks(model, lines, tokenMap);
+        parseScripterBlocks(model, lines, lineTokenMap);
+
+        // Parse file manager block
+        parseFileManagerBlock(model, lines, lineTokenMap);
 
         // Parse signal names
-        parseSignalNames(model, lines, tokenMap);
+        parseSignalNames(model, lines, lineTokenMap);
 
-        // Parse circuit components from special blocks
-        parseCircuitComponents(lines, model);
+        // Parse extra global tokens (ANSICHT_SHOW_*, etc.)
+        parseExtraTokens(model, lines, lineTokenMap);
+
+        // Parse connections and components
+        parseConnections(tokenMap, model);
+        parseCircuitComponents(tokenMap, model);
 
         // Validate pre-simulation time step
         if (model.getPreSimulationTimeStep() <= 0) {
@@ -245,7 +276,7 @@ public class CircuitFileParser {
     }
 
     /**
-     * Parses display settings (preserved for compatibility).
+     * Parses display settings.
      */
     private void parseDisplaySettings(CircuitModel model, String[] lines,
                                       Map<String, Integer> tokenMap) {
@@ -269,6 +300,21 @@ public class CircuitFileParser {
 
         if (tokenMap.containsKey("fensterHeight")) {
             model.setWindowHeight(readInt(lines, tokenMap, "fensterHeight", -1));
+        }
+
+        if (tokenMap.containsKey("worksheetSize")) {
+            String wsLine = lines[tokenMap.get("worksheetSize")];
+            String[] parts = wsLine.split("\\s+");
+            if (parts.length >= 2) {
+                model.setWorksheetSize(parts[1]);
+            }
+        }
+
+        if (tokenMap.containsKey("path")) {
+            String pathLine = lines[tokenMap.get("path")];
+            if (pathLine.length() > "path ".length()) {
+                model.setPath(pathLine.substring("path ".length()).trim());
+            }
         }
     }
 
@@ -299,20 +345,16 @@ public class CircuitFileParser {
      */
     private void parseOptimizerParameters(CircuitModel model, String[] lines,
                                           Map<String, Integer> tokenMap) {
-        if (tokenMap.containsKey("optimizerName[]")) {
+        if (tokenMap.containsKey("optimizerName[]") || tokenMap.containsKey("optimizerName")) {
             List<String> names = readStringArray(lines, tokenMap, "optimizerName[]");
             List<Double> values = readDoubleArray(lines, tokenMap, "optimizerValue[]");
 
-            int nameOffset = 0;
-            // Keep backward compatibility with mixed formats:
-            // names often contain a leading slash slot while space-separated values do not.
-            if (names.size() == values.size() + 1 && !names.isEmpty() && names.get(0).isEmpty()) {
-                nameOffset = 1;
-            }
+            model.setOptimizerNames(names);
+            model.setOptimizerValues(values);
 
-            int count = Math.min(names.size() - nameOffset, values.size());
+            int count = Math.min(names.size(), values.size());
             for (int i = 0; i < count; i++) {
-                String name = names.get(i + nameOffset);
+                String name = names.get(i);
                 Double value = values.get(i);
                 if (!name.isEmpty() && !name.equals(NIX) && value != null && !value.isNaN()) {
                     model.setOptimizerParameter(name, value);
@@ -330,6 +372,17 @@ public class CircuitFileParser {
         model.setScripterImports(readBlockContent(lines, tokenMap, "<scripterImports>", "<\\scripterImports>"));
         model.setScripterDeclarations(readBlockContent(lines, tokenMap,
                 "<scripterDeclarations>", "<\\scripterDeclarations>"));
+        model.setScripterExtraFiles(readBlockContent(lines, tokenMap,
+                "<extraScriptSourceFiles>", "<\\extraScriptSourceFiles>"));
+    }
+
+    /**
+     * Parses file manager block.
+     */
+    private void parseFileManagerBlock(CircuitModel model, String[] lines,
+                                       Map<String, Integer> tokenMap) {
+        model.setFileManagerBlock(readBlockContent(lines, tokenMap,
+                "<GeckoFileManager>", "<\\GeckoFileManager>"));
     }
 
     /**
@@ -337,66 +390,147 @@ public class CircuitFileParser {
      */
     private void parseSignalNames(CircuitModel model, String[] lines,
                                   Map<String, Integer> tokenMap) {
-        if (tokenMap.containsKey("dataContainerSignals[]")) {
+        if (tokenMap.containsKey("dataContainerSignals[]") || tokenMap.containsKey("dataContainerSignals")) {
             List<String> signals = readStringArray(lines, tokenMap, "dataContainerSignals[]");
             model.setDataContainerSignals(signals.toArray(new String[0]));
         }
     }
 
     /**
-     * Parses all <ElementLK> component blocks from the circuit file.
-     * Each block contains: typ (component type), parameter[] (values),
-     * idStringDialog (name), x, y, labelAnfangsKnoten[], labelEndKnoten[].
-     *
-     * @param lines the raw circuit file lines
-     * @param model the circuit model to populate with components
+     * Parses additional global tokens (such as display mode flags).
      */
-    private void parseCircuitComponents(String[] lines, CircuitModel model) {
-        TokenMap tokenMap = new TokenMap(lines, true);
+    private void parseExtraTokens(CircuitModel model, String[] lines, Map<String, Integer> lineTokenMap) {
+        for (Map.Entry<String, Integer> entry : lineTokenMap.entrySet()) {
+            String token = entry.getKey();
+            int lineIdx = entry.getValue();
+            if (token.startsWith("ANSICHT_SHOW_") || token.startsWith("worksheetSize")) {
+                String line = lines[lineIdx].trim();
+                int spaceIdx = line.indexOf(' ');
+                if (spaceIdx > 0) {
+                    model.setExtraToken(token, line.substring(spaceIdx + 1).trim());
+                }
+            }
+        }
+    }
 
+    /**
+     * Parses wire connections.
+     */
+    private void parseConnections(TokenMap tokenMap, CircuitModel model) {
+        parseConnectionsForDomain(tokenMap, "verbindungLK", "LK", 0, model);
+        parseConnectionsForDomain(tokenMap, "verbindungCONTROL", "CONTROL", 1, model);
+        parseConnectionsForDomain(tokenMap, "verbindungTHERM", "THERMAL", 2, model);
+    }
+
+    private void parseConnectionsForDomain(TokenMap tokenMap, String tokenKey, String type,
+                                          int defaultConnectorType, CircuitModel model) {
+        TokenMap connBlock;
+        while ((connBlock = tokenMap.getSpecialBlockTokenMap(tokenKey)) != null) {
+            try {
+                String label = connBlock.readDataLine("label", "");
+                int[] xPoints = connBlock.readDataLine("x[]", new int[0]);
+                int[] yPoints = connBlock.readDataLine("y[]", new int[0]);
+                int length = Math.min(xPoints.length, yPoints.length);
+                int[][] points = new int[length][2];
+                for (int i = 0; i < length; i++) {
+                    points[i][0] = xPoints[i];
+                    points[i][1] = yPoints[i];
+                }
+
+                CircuitModel.ConnectionData conn = new CircuitModel.ConnectionData(type, points);
+                conn.setLabel(label.equals(NIX) ? "" : label);
+                conn.setEnabledShorted(connBlock.readDataLine("enabledShorted", 0));
+                conn.setParentSheetIdentifier(connBlock.readDataLine("parentSheetIdentifier", 0L));
+                conn.setUniqueObjectIdentifier(connBlock.readDataLine("uniqueObjectIdentifier", 0L));
+                conn.setConnectorType(connBlock.readDataLine("connectorType", defaultConnectorType));
+
+                model.addConnection(conn);
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
+    /**
+     * Parses all component blocks (<ElementLK>, <ElementCONTROL>, <ElementTHERM>, <ElementSPECIAL>).
+     */
+    private void parseCircuitComponents(TokenMap tokenMap, CircuitModel model) {
+        parseComponentsForDomain(tokenMap, "e", "LK", model);
+        parseComponentsForDomain(tokenMap, "c", "CONTROL", model);
+        parseComponentsForDomain(tokenMap, "eTH", "THERM", model);
+        parseComponentsForDomain(tokenMap, "sp", "SPECIAL", model);
+    }
+
+    private void parseComponentsForDomain(TokenMap tokenMap, String tokenKey, String family, CircuitModel model) {
         TokenMap elementBlock;
-        while ((elementBlock = tokenMap.getSpecialBlockTokenMap("e")) != null) {
+        while ((elementBlock = tokenMap.getSpecialBlockTokenMap(tokenKey)) != null) {
             try {
                 int type = elementBlock.readDataLine("typ", -1);
                 if (type < 0) {
-                    continue;  // skip invalid
+                    continue;
                 }
 
                 String name = elementBlock.readDataLine("idStringDialog", "");
+                if (name.equals(NIX)) {
+                    name = "";
+                }
                 int x = elementBlock.readDataLine("x", 0);
                 int y = elementBlock.readDataLine("y", 0);
                 int orientation = elementBlock.readDataLine("orientierung", 0);
 
-                // Read parameter array (component values: R, L, C, etc.)
-                // Real .ipes files use space-separated values; test/legacy data may use slash format
                 List<Double> paramsList = readComponentParameters(elementBlock);
                 double[] params = paramsList.stream()
                         .mapToDouble(v -> v != null ? v : Double.NaN)
                         .toArray();
 
-                // Read terminal node labels for connectivity
                 String[] xLabels = elementBlock.readDataLine("labelAnfangsKnoten[]", new String[0]);
                 String[] yLabels = elementBlock.readDataLine("labelEndKnoten[]", new String[0]);
+                String[] paramStrings = elementBlock.readDataLine("parameterString[]", new String[0]);
+                String[] nameOpt = elementBlock.readDataLine("nameOpt[]", new String[0]);
+                long uniqueId = elementBlock.readDataLine("uniqueObjectIdentifier", 0L);
+                int enabledShorted = elementBlock.readDataLine("enabledShorted", 0);
+                long parentSheetId = elementBlock.readDataLine("parentSheetIdentifier", 0L);
 
-                // Build ComponentData
                 CircuitModel.ComponentData comp = new CircuitModel.ComponentData(type, name, x, y, orientation);
+                comp.setFamily(family);
+                comp.setRawParameters(params);
+                comp.setRawTerminalXLabels(xLabels);
+                comp.setRawTerminalYLabels(yLabels);
+                comp.setTerminalXLabels(filterNix(xLabels));
+                comp.setTerminalYLabels(filterNix(yLabels));
+                comp.setParameterStrings(paramStrings);
+                comp.setNameOpt(nameOpt);
+                comp.setUniqueObjectIdentifier(uniqueId);
+                comp.setEnabledShorted(enabledShorted);
+                comp.setParentSheetIdentifier(parentSheetId);
 
-                // Store numeric parameters by index
                 for (int i = 0; i < params.length; i++) {
                     comp.setParameter("param" + i, params[i]);
                 }
-
-                // Also store primary value with a semantic key based on type
                 if (params.length > 0) {
                     comp.setParameter(resolveParameterKey(type), params[0]);
                 }
 
-                comp.setTerminalXLabels(filterNix(xLabels));
-                comp.setTerminalYLabels(filterNix(yLabels));
+                // Preserve extra block lines (e.g. XML parameters, loss models, etc.)
+                if (elementBlock.asciiLines != null) {
+                    for (String blockLine : elementBlock.asciiLines) {
+                        String trimmed = blockLine.trim();
+                        if (trimmed.isEmpty()) {
+                            continue;
+                        }
+                        String token = trimmed.split("\\s+")[0];
+                        if (!KNOWN_ELEMENT_TOKENS.contains(token)) {
+                            comp.addExtraLine(blockLine);
+                        }
+                    }
+                }
 
-                model.addCircuitComponent(comp);
-            } catch (Exception e) {
-                // Skip malformed blocks silently - log if needed
+                switch (family) {
+                    case "CONTROL" -> model.addControlComponent(comp);
+                    case "THERM" -> model.addThermalComponent(comp);
+                    case "SPECIAL" -> model.addSpecialComponent(comp);
+                    default -> model.addCircuitComponent(comp);
+                }
+            } catch (Exception ignored) {
             }
         }
     }
@@ -412,7 +546,6 @@ public class CircuitFileParser {
                 return result;
             }
 
-            // Format: "identifier /value1/value2/value3"
             int arrayStart = line.indexOf("[] ");
             if (arrayStart < 0) {
                 return result;
@@ -423,7 +556,6 @@ public class CircuitFileParser {
                 return result;
             }
 
-            // Split by "/" separator
             String[] parts = arrayPart.split(SEPARATOR_ASCII_STRINGARRAY, -1);
             for (String part : parts) {
                 String trimmed = part.trim();
@@ -437,24 +569,19 @@ public class CircuitFileParser {
                     }
                 }
             }
-        } catch (Exception e) {
-            // Return empty list if error
+        } catch (Exception ignored) {
         }
         return result;
     }
 
     /**
-     * Reads the parameter[] array from a component block, handling both formats:
-     * - Space-separated (real .ipes files): {@code parameter[] 0.0024 0.0 0.6886}
-     * - Slash-prefixed (legacy/test format): {@code parameter[] /100.0}
+     * Reads the parameter[] array from a component block.
      */
     private List<Double> readComponentParameters(TokenMap elementBlock) {
-        // Try space-separated first (real .ipes format via StringTokenizer)
         List<Double> result = elementBlock.readDataLineDoubleArray("parameter[]");
         if (result != null && !result.isEmpty()) {
             return result;
         }
-        // Fall back to slash-separated format (test/legacy synthetic data)
         return readDoubleArrayFromTokenMap(elementBlock, "parameter[]");
     }
 
@@ -483,7 +610,7 @@ public class CircuitFileParser {
         }
         List<String> filtered = new ArrayList<>();
         for (String label : labels) {
-            if (label != null && !label.equals("NIX_NIX_NIX") && !label.isBlank()) {
+            if (label != null && !label.equals(NIX) && !label.isBlank()) {
                 filtered.add(label.trim());
             }
         }
@@ -503,8 +630,7 @@ public class CircuitFileParser {
             if (parts.length >= 2) {
                 return Double.parseDouble(parts[1]);
             }
-        } catch (NumberFormatException e) {
-            // Return default
+        } catch (NumberFormatException ignored) {
         }
         return defaultValue;
     }
@@ -520,37 +646,61 @@ public class CircuitFileParser {
             if (parts.length >= 2) {
                 return Integer.parseInt(parts[1]);
             }
-        } catch (NumberFormatException e) {
-            // Return default
+        } catch (NumberFormatException ignored) {
         }
         return defaultValue;
     }
 
     private List<String> readStringArray(String[] lines, Map<String, Integer> tokenMap, String key) {
         List<String> result = new ArrayList<>();
-        if (!tokenMap.containsKey(key)) {
-            return result;
-        }
-
-        String line = lines[tokenMap.get(key)];
-        // Format: "key[] /value1/value2/value3"
-        int startIndex = line.indexOf("[] ");
-        if (startIndex < 0) {
-            return result;
-        }
-
-        String arrayPart = line.substring(startIndex + 3).trim();
-        if (arrayPart.equals("null")) {
-            return result;
-        }
-
-        String[] parts = arrayPart.split(SEPARATOR_ASCII_STRINGARRAY, -1);
-        for (String part : parts) {
-            String trimmed = part.trim();
-            if (trimmed.equals(NIX)) {
-                result.add("");
+        String actualKey = key;
+        if (!tokenMap.containsKey(actualKey)) {
+            if (actualKey.endsWith("[]") && tokenMap.containsKey(actualKey.substring(0, actualKey.length() - 2))) {
+                actualKey = actualKey.substring(0, actualKey.length() - 2);
+            } else if (!actualKey.endsWith("[]") && tokenMap.containsKey(actualKey + "[]")) {
+                actualKey = actualKey + "[]";
             } else {
-                result.add(trimmed);
+                return result;
+            }
+        }
+
+        String line = lines[tokenMap.get(actualKey)];
+        int startIndex = line.indexOf("[]");
+        String arrayPart;
+        if (startIndex >= 0) {
+            arrayPart = line.substring(startIndex + 2).trim();
+        } else {
+            int spaceIdx = line.indexOf(' ');
+            if (spaceIdx < 0) {
+                return result;
+            }
+            arrayPart = line.substring(spaceIdx + 1).trim();
+        }
+
+        if (arrayPart.isEmpty() || arrayPart.equals("null")) {
+            return result;
+        }
+
+        if (arrayPart.contains(SEPARATOR_ASCII_STRINGARRAY)) {
+            String[] parts = arrayPart.split(SEPARATOR_ASCII_STRINGARRAY, -1);
+            int startIdx = arrayPart.startsWith(SEPARATOR_ASCII_STRINGARRAY) ? 1 : 0;
+            for (int i = startIdx; i < parts.length; i++) {
+                String trimmed = parts[i].trim();
+                if (trimmed.equals(NIX)) {
+                    result.add("");
+                } else {
+                    result.add(trimmed);
+                }
+            }
+        } else {
+            String[] parts = arrayPart.split("\\s+");
+            for (String part : parts) {
+                String trimmed = part.trim();
+                if (trimmed.equals(NIX)) {
+                    result.add("");
+                } else {
+                    result.add(trimmed);
+                }
             }
         }
 
@@ -559,32 +709,47 @@ public class CircuitFileParser {
 
     private List<Double> readDoubleArray(String[] lines, Map<String, Integer> tokenMap, String key) {
         List<Double> result = new ArrayList<>();
-        if (!tokenMap.containsKey(key)) {
-            return result;
+        String actualKey = key;
+        if (!tokenMap.containsKey(actualKey)) {
+            if (actualKey.endsWith("[]") && tokenMap.containsKey(actualKey.substring(0, actualKey.length() - 2))) {
+                actualKey = actualKey.substring(0, actualKey.length() - 2);
+            } else if (!actualKey.endsWith("[]") && tokenMap.containsKey(actualKey + "[]")) {
+                actualKey = actualKey + "[]";
+            } else {
+                return result;
+            }
         }
 
-        String line = lines[tokenMap.get(key)];
-        int startIndex = line.indexOf("[] ");
-        if (startIndex < 0) {
-            return result;
+        String line = lines[tokenMap.get(actualKey)];
+        int startIndex = line.indexOf("[]");
+        String arrayPart;
+        if (startIndex >= 0) {
+            arrayPart = line.substring(startIndex + 2).trim();
+        } else {
+            int spaceIdx = line.indexOf(' ');
+            if (spaceIdx < 0) {
+                return result;
+            }
+            arrayPart = line.substring(spaceIdx + 1).trim();
         }
 
-        String arrayPart = line.substring(startIndex + 3).trim();
-        if (arrayPart.equals("null")) {
+        if (arrayPart.isEmpty() || arrayPart.equals("null")) {
             return result;
         }
 
         String[] parts;
+        int startIdx = 0;
         if (arrayPart.contains(SEPARATOR_ASCII_STRINGARRAY)) {
-            // Preserve empty slots for index alignment with corresponding string arrays.
             parts = arrayPart.split(SEPARATOR_ASCII_STRINGARRAY, -1);
+            if (arrayPart.startsWith(SEPARATOR_ASCII_STRINGARRAY)) {
+                startIdx = 1;
+            }
         } else {
-            // Legacy variant with plain whitespace separation.
             parts = arrayPart.split("\\s+");
         }
 
-        for (String part : parts) {
-            String trimmed = part.trim();
+        for (int i = startIdx; i < parts.length; i++) {
+            String trimmed = parts[i].trim();
             if (trimmed.isEmpty()) {
                 result.add(Double.NaN);
                 continue;
@@ -592,7 +757,6 @@ public class CircuitFileParser {
             try {
                 result.add(Double.parseDouble(trimmed));
             } catch (NumberFormatException e) {
-                // Preserve positional alignment with optimizerName[].
                 result.add(Double.NaN);
             }
         }
@@ -619,7 +783,7 @@ public class CircuitFileParser {
             content.append(lines[i]);
         }
 
-        return content.toString().trim();
+        return content.toString();
     }
 
     /**

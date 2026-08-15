@@ -15,10 +15,7 @@ package gecko.core.io;
 
 import gecko.core.allg.SolverType;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * GUI-free representation of a parsed GeckoCIRCUITS circuit model.
@@ -41,6 +38,7 @@ public class CircuitModel {
     private int fileVersion;
     private int uniqueFileId;
     private String creationDate;
+    private String path = "";
 
     // Display settings (for reference, not used in headless mode)
     private int displayPixels = 16;
@@ -48,23 +46,34 @@ public class CircuitModel {
     private String fontType = "Arial";
     private int windowWidth = -1;
     private int windowHeight = -1;
+    private String worksheetSize = "600x600";
 
     // Components
     private final List<ComponentData> circuitComponents = new ArrayList<>();
     private final List<ComponentData> controlComponents = new ArrayList<>();
     private final List<ComponentData> thermalComponents = new ArrayList<>();
+    private final List<ComponentData> specialComponents = new ArrayList<>();
     private final List<ConnectionData> connections = new ArrayList<>();
 
     // Optimizer parameters
-    private final Map<String, Double> optimizerParameters = new HashMap<>();
+    private final Map<String, Double> optimizerParameters = new LinkedHashMap<>();
+    private List<String> optimizerNames = new ArrayList<>();
+    private List<Double> optimizerValues = new ArrayList<>();
 
     // Signal names
-    private String[] dataContainerSignals;
+    private String[] dataContainerSignals = new String[0];
 
     // Scripting (if present)
     private String scripterCode = "";
     private String scripterImports = "";
     private String scripterDeclarations = "";
+    private String scripterExtraFiles = "";
+
+    // File manager (if present)
+    private String fileManagerBlock = "";
+
+    // Preservation of raw/unknown tokens (e.g. display flags, worksheet sizes, etc.)
+    private final Map<String, String> extraTokens = new LinkedHashMap<>();
 
     // Constructor
     public CircuitModel() {
@@ -128,6 +137,14 @@ public class CircuitModel {
 
     public void setFilePath(String filePath) {
         this.filePath = filePath;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path != null ? path : "";
     }
 
     public int getFileVersion() {
@@ -196,6 +213,14 @@ public class CircuitModel {
         this.windowHeight = windowHeight;
     }
 
+    public String getWorksheetSize() {
+        return worksheetSize;
+    }
+
+    public void setWorksheetSize(String worksheetSize) {
+        this.worksheetSize = worksheetSize != null ? worksheetSize : "600x600";
+    }
+
     // Component access
 
     public List<ComponentData> getCircuitComponents() {
@@ -203,6 +228,7 @@ public class CircuitModel {
     }
 
     public void addCircuitComponent(ComponentData component) {
+        component.setFamily("LK");
         circuitComponents.add(component);
     }
 
@@ -211,6 +237,7 @@ public class CircuitModel {
     }
 
     public void addControlComponent(ComponentData component) {
+        component.setFamily("CONTROL");
         controlComponents.add(component);
     }
 
@@ -219,7 +246,26 @@ public class CircuitModel {
     }
 
     public void addThermalComponent(ComponentData component) {
+        component.setFamily("THERM");
         thermalComponents.add(component);
+    }
+
+    public List<ComponentData> getSpecialComponents() {
+        return specialComponents;
+    }
+
+    public void addSpecialComponent(ComponentData component) {
+        component.setFamily("SPECIAL");
+        specialComponents.add(component);
+    }
+
+    public List<ComponentData> getAllComponents() {
+        List<ComponentData> all = new ArrayList<>(getTotalComponentCount());
+        all.addAll(circuitComponents);
+        all.addAll(controlComponents);
+        all.addAll(thermalComponents);
+        all.addAll(specialComponents);
+        return Collections.unmodifiableList(all);
     }
 
     public List<ConnectionData> getConnections() {
@@ -240,6 +286,22 @@ public class CircuitModel {
         optimizerParameters.put(name, value);
     }
 
+    public List<String> getOptimizerNames() {
+        return optimizerNames;
+    }
+
+    public void setOptimizerNames(List<String> optimizerNames) {
+        this.optimizerNames = optimizerNames != null ? optimizerNames : new ArrayList<>();
+    }
+
+    public List<Double> getOptimizerValues() {
+        return optimizerValues;
+    }
+
+    public void setOptimizerValues(List<Double> optimizerValues) {
+        this.optimizerValues = optimizerValues != null ? optimizerValues : new ArrayList<>();
+    }
+
     // Signal names
 
     public String[] getDataContainerSignals() {
@@ -247,7 +309,7 @@ public class CircuitModel {
     }
 
     public void setDataContainerSignals(String[] dataContainerSignals) {
-        this.dataContainerSignals = dataContainerSignals;
+        this.dataContainerSignals = dataContainerSignals != null ? dataContainerSignals : new String[0];
     }
 
     // Scripting
@@ -257,7 +319,7 @@ public class CircuitModel {
     }
 
     public void setScripterCode(String scripterCode) {
-        this.scripterCode = scripterCode;
+        this.scripterCode = scripterCode != null ? scripterCode : "";
     }
 
     public String getScripterImports() {
@@ -265,7 +327,7 @@ public class CircuitModel {
     }
 
     public void setScripterImports(String scripterImports) {
-        this.scripterImports = scripterImports;
+        this.scripterImports = scripterImports != null ? scripterImports : "";
     }
 
     public String getScripterDeclarations() {
@@ -273,7 +335,35 @@ public class CircuitModel {
     }
 
     public void setScripterDeclarations(String scripterDeclarations) {
-        this.scripterDeclarations = scripterDeclarations;
+        this.scripterDeclarations = scripterDeclarations != null ? scripterDeclarations : "";
+    }
+
+    public String getScripterExtraFiles() {
+        return scripterExtraFiles;
+    }
+
+    public void setScripterExtraFiles(String scripterExtraFiles) {
+        this.scripterExtraFiles = scripterExtraFiles != null ? scripterExtraFiles : "";
+    }
+
+    // File Manager
+
+    public String getFileManagerBlock() {
+        return fileManagerBlock;
+    }
+
+    public void setFileManagerBlock(String fileManagerBlock) {
+        this.fileManagerBlock = fileManagerBlock != null ? fileManagerBlock : "";
+    }
+
+    // Raw / extra tokens
+
+    public Map<String, String> getExtraTokens() {
+        return extraTokens;
+    }
+
+    public void setExtraToken(String key, String value) {
+        extraTokens.put(key, value);
     }
 
     // Utility methods
@@ -284,7 +374,7 @@ public class CircuitModel {
      * @return total component count
      */
     public int getTotalComponentCount() {
-        return circuitComponents.size() + controlComponents.size() + thermalComponents.size();
+        return circuitComponents.size() + controlComponents.size() + thermalComponents.size() + specialComponents.size();
     }
 
     /**
@@ -305,6 +395,7 @@ public class CircuitModel {
                 ", circuitComponents=" + circuitComponents.size() +
                 ", controlComponents=" + controlComponents.size() +
                 ", thermalComponents=" + thermalComponents.size() +
+                ", specialComponents=" + specialComponents.size() +
                 ", connections=" + connections.size() +
                 '}';
     }
@@ -318,20 +409,26 @@ public class CircuitModel {
         private final Map<String, Object> parameters;
         private final int[] position; // x, y coordinates
         private final int orientation;
-        private String[] terminalXLabels = new String[0];  // labelAnfangsKnoten[]
-        private String[] terminalYLabels = new String[0];  // labelEndKnoten[]
+        private String[] terminalXLabels = new String[0];
+        private String[] terminalYLabels = new String[0];
+        private String[] rawTerminalXLabels = new String[0];
+        private String[] rawTerminalYLabels = new String[0];
+        private double[] rawParameters = new double[0];
+        private String[] parameterStrings = new String[0];
+        private String[] nameOpt = new String[0];
+        private long uniqueObjectIdentifier;
+        private int enabledShorted;
+        private long parentSheetIdentifier;
+        private String family = "LK";
+        private final List<String> extraLines = new ArrayList<>();
 
         public ComponentData(int type, String name) {
-            this.type = type;
-            this.name = name;
-            this.parameters = new HashMap<>();
-            this.position = new int[2];
-            this.orientation = 0;
+            this(type, name, 0, 0, 0);
         }
 
         public ComponentData(int type, String name, int x, int y, int orientation) {
             this.type = type;
-            this.name = name;
+            this.name = name != null ? name : "";
             this.parameters = new HashMap<>();
             this.position = new int[]{x, y};
             this.orientation = orientation;
@@ -351,6 +448,62 @@ public class CircuitModel {
 
         public void setParameter(String key, Object value) {
             parameters.put(key, value);
+            if (value instanceof Number num && rawParameters.length > 0) {
+                if (key.startsWith("param")) {
+                    try {
+                        int idx = Integer.parseInt(key.substring("param".length()));
+                        if (idx >= 0 && idx < rawParameters.length) {
+                            rawParameters[idx] = num.doubleValue();
+                        }
+                    } catch (NumberFormatException ignored) {
+                    }
+                } else if (key.equals(resolveParameterKey(type))) {
+                    rawParameters[0] = num.doubleValue();
+                }
+            }
+        }
+
+        public double[] getRawParameters() {
+            if (rawParameters.length == 0 && !parameters.isEmpty()) {
+                List<Double> list = new ArrayList<>();
+                int idx = 0;
+                while (parameters.containsKey("param" + idx)) {
+                    Object val = parameters.get("param" + idx);
+                    list.add(val instanceof Number n ? n.doubleValue() : Double.NaN);
+                    idx++;
+                }
+                if (list.isEmpty()) {
+                    String semanticKey = resolveParameterKey(type);
+                    if (parameters.containsKey(semanticKey)) {
+                        Object val = parameters.get(semanticKey);
+                        list.add(val instanceof Number n ? n.doubleValue() : 0.0);
+                    }
+                }
+                if (!list.isEmpty()) {
+                    return list.stream().mapToDouble(Double::doubleValue).toArray();
+                }
+            }
+            return rawParameters;
+        }
+
+        public void setRawParameters(double[] rawParameters) {
+            this.rawParameters = rawParameters != null ? rawParameters : new double[0];
+        }
+
+        public String[] getParameterStrings() {
+            return parameterStrings;
+        }
+
+        public void setParameterStrings(String[] parameterStrings) {
+            this.parameterStrings = parameterStrings != null ? parameterStrings : new String[0];
+        }
+
+        public String[] getNameOpt() {
+            return nameOpt;
+        }
+
+        public void setNameOpt(String[] nameOpt) {
+            this.nameOpt = nameOpt != null ? nameOpt : new String[0];
         }
 
         public int[] getPosition() {
@@ -377,9 +530,80 @@ public class CircuitModel {
             this.terminalYLabels = terminalYLabels != null ? terminalYLabels : new String[0];
         }
 
+        public String[] getRawTerminalXLabels() {
+            return rawTerminalXLabels.length > 0 ? rawTerminalXLabels : terminalXLabels;
+        }
+
+        public void setRawTerminalXLabels(String[] rawTerminalXLabels) {
+            this.rawTerminalXLabels = rawTerminalXLabels != null ? rawTerminalXLabels : new String[0];
+        }
+
+        public String[] getRawTerminalYLabels() {
+            return rawTerminalYLabels.length > 0 ? rawTerminalYLabels : terminalYLabels;
+        }
+
+        public void setRawTerminalYLabels(String[] rawTerminalYLabels) {
+            this.rawTerminalYLabels = rawTerminalYLabels != null ? rawTerminalYLabels : new String[0];
+        }
+
+        public long getUniqueObjectIdentifier() {
+            return uniqueObjectIdentifier;
+        }
+
+        public void setUniqueObjectIdentifier(long uniqueObjectIdentifier) {
+            this.uniqueObjectIdentifier = uniqueObjectIdentifier;
+        }
+
+        public int getEnabledShorted() {
+            return enabledShorted;
+        }
+
+        public void setEnabledShorted(int enabledShorted) {
+            this.enabledShorted = enabledShorted;
+        }
+
+        public long getParentSheetIdentifier() {
+            return parentSheetIdentifier;
+        }
+
+        public void setParentSheetIdentifier(long parentSheetIdentifier) {
+            this.parentSheetIdentifier = parentSheetIdentifier;
+        }
+
+        public String getFamily() {
+            return family;
+        }
+
+        public void setFamily(String family) {
+            this.family = family != null ? family : "LK";
+        }
+
+        public List<String> getExtraLines() {
+            return extraLines;
+        }
+
+        public void addExtraLine(String line) {
+            if (line != null) {
+                extraLines.add(line);
+            }
+        }
+
         @Override
         public String toString() {
-            return "ComponentData{type=" + type + ", name='" + name + "'}";
+            return "ComponentData{type=" + type + ", name='" + name + "', family='" + family + "'}";
+        }
+
+        private static String resolveParameterKey(int type) {
+            return switch (type) {
+                case 1 -> "resistance";     // LK_R
+                case 2 -> "inductance";     // LK_L
+                case 3 -> "capacitance";    // LK_C
+                case 4 -> "amplitude";      // LK_U voltage source
+                case 5 -> "amplitude";      // LK_I current source
+                case 6 -> "forwardVoltage"; // LK_D diode
+                case 7 -> "resistance";     // LK_S ideal switch (on-resistance)
+                default -> "value";
+            };
         }
     }
 
@@ -389,10 +613,15 @@ public class CircuitModel {
     public static class ConnectionData {
         private final String type; // LK, CONTROL, THERMAL
         private final int[][] points;
+        private String label = "";
+        private long uniqueObjectIdentifier;
+        private int enabledShorted;
+        private long parentSheetIdentifier;
+        private int connectorType;
 
         public ConnectionData(String type, int[][] points) {
-            this.type = type;
-            this.points = points;
+            this.type = type != null ? type : "LK";
+            this.points = points != null ? points : new int[0][2];
         }
 
         public String getType() {
@@ -401,6 +630,46 @@ public class CircuitModel {
 
         public int[][] getPoints() {
             return points;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public void setLabel(String label) {
+            this.label = label != null ? label : "";
+        }
+
+        public long getUniqueObjectIdentifier() {
+            return uniqueObjectIdentifier;
+        }
+
+        public void setUniqueObjectIdentifier(long uniqueObjectIdentifier) {
+            this.uniqueObjectIdentifier = uniqueObjectIdentifier;
+        }
+
+        public int getEnabledShorted() {
+            return enabledShorted;
+        }
+
+        public void setEnabledShorted(int enabledShorted) {
+            this.enabledShorted = enabledShorted;
+        }
+
+        public long getParentSheetIdentifier() {
+            return parentSheetIdentifier;
+        }
+
+        public void setParentSheetIdentifier(long parentSheetIdentifier) {
+            this.parentSheetIdentifier = parentSheetIdentifier;
+        }
+
+        public int getConnectorType() {
+            return connectorType;
+        }
+
+        public void setConnectorType(int connectorType) {
+            this.connectorType = connectorType;
         }
 
         @Override
