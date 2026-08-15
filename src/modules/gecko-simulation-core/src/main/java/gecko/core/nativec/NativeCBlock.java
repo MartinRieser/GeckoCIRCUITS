@@ -88,17 +88,16 @@ public class NativeCBlock {
         }
     }
 
+    /**
+     * Unload the native library and release all associated references.
+     *
+     * <p>Strategy: drop all references (the {@link NativeCClassLoader}, the
+     * wrapper class and instance, the IO vectors) and call {@code System.gc()}
+     * to encourage the JVM to collect the ClassLoader and release its hold on
+     * the loaded library file.
+     */
     public void unloadLibraries () {
         try {
-            /*ClassLoader clLoader = this.getClass().getClassLoader();
-            Field field = ClassLoader.class.getDeclaredField("nativeLibraries");
-            field.setAccessible(true);
-            Vector libs = (Vector) field.get(clLoader);
-            for (Object o : libs) {
-                Method finalize = o.getClass().getDeclaredMethod("finalize", new Class[0]);
-                finalize.setAccessible(true);
-                finalize.invoke(o, new Object[0]);
-            }*/
             _nativeCWrapperObj = null;
             _nativeCWrapperClass = null;
             _customCClassLoader = null;

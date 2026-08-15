@@ -14,6 +14,12 @@
 
 package gecko.core.nativec;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+
 /**
  * Wrapper class for native C/C++ function calls.
  *
@@ -27,12 +33,50 @@ package gecko.core.nativec;
 public class NativeCWrapper implements InterfaceNativeCWrapper {
 
     /**
-     * Load the Native Library with the specified path
+     * Load the Native Library with the specified path.
+     *
+     * <p>The library is first copied to a unique temp file and that copy is
+     * what gets passed to {@link System#load(String)}. This is the
+     * cross-platform workaround for the well-known "JNI library already loaded
+     * in another classloader" / ".dll in use" problem: by loading from a fresh
+     * per-run copy, the user's source {@code .dll}/{@code .so}/{@code .dylib}
+     * is never locked by the OS, so it can be recompiled and replaced freely
+     * without restarting the JVM.
+     *
+     * <p>The temp copy IS locked until the owning ClassLoader is GC'd (same
+     * unload behaviour as before); only the source file benefits from being
+     * unlocked. Temp copies are registered for deletion on JVM exit via
+     * {@link java.io.File#deleteOnExit()}.
+     *
      * @param name the full path and name of the native library
      */
     @Override
     public void loadLibrary(String name) {
-        System.load(name);
+        try {
+            System.load(copyToTemp(name).toAbsolutePath().toString());
+        } catch (IOException ioe) {
+            // Fall back to direct load if temp-copy fails for any reason
+            // (read-only temp dir, out of disk space, etc.). This preserves
+            // the legacy single-load behaviour at the cost of locking the
+            // source file.
+            System.load(name);
+        }
+    }
+
+    /**
+     * Copy the source library to a unique temp file under
+     * {@code ${java.io.tmpdir}/geckocircuits-native/} and register it for
+     * deletion on JVM exit.
+     */
+    private static Path copyToTemp(final String sourcePath) throws IOException {
+        final Path source = Paths.get(sourcePath);
+        final Path tempDir = Paths.get(System.getProperty("java.io.tmpdir"), "geckocircuits-native");
+        Files.createDirectories(tempDir);
+        final String uniqueName = source.getFileName().toString() + "." + System.nanoTime();
+        final Path tempCopy = tempDir.resolve(uniqueName);
+        Files.copy(source, tempCopy, StandardCopyOption.REPLACE_EXISTING);
+        tempCopy.toFile().deleteOnExit();
+        return tempCopy;
     }
 
     /**
