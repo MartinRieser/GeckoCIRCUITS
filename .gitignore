@@ -74,3 +74,6 @@ resources/validation_report.json
 # Temporary/scratch files
 *.bak
 *.tmp
+
+# built web editor copied by frontend npm run build:spring
+src/modules/gecko-rest-api/src/main/resources/static/

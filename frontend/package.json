@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:spring": "npm run build && node -e \"fs.cpSync('dist', '../src/modules/gecko-rest-api/src/main/resources/static', {recursive: true})\"",
     "test": "vitest run",
     "preview": "vite preview"
   },
