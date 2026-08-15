@@ -32,9 +32,7 @@ import javax.swing.JButton;
 import javax.swing.BorderFactory;
 import javax.swing.border.TitledBorder;
 import javax.swing.JTextArea;
-import javax.swing.ImageIcon;
 import javax.swing.JDialog;
-import java.net.URL;
 import javax.swing.JTabbedPane;
 
 public class DialogSimParameter extends JDialog implements ActionListener {
