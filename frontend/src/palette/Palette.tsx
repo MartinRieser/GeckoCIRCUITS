@@ -40,8 +40,9 @@ export function Palette({ catalog, onArm }: PaletteProps) {
             <button
               key={`${entry.family}-${entry.type}`}
               className="palette-entry"
+              onMouseDown={() => onArm(entry)}
               onClick={() => onArm(entry)}
-              title={`Place ${entry.name} (type ${entry.type})`}
+              title={`Place ${entry.name} (type ${entry.type}) — click, or drag onto the sheet`}
             >
               {displayName(entry)}
             </button>

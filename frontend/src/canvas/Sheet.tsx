@@ -67,11 +67,6 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
     if (e.button !== 0) return;
     const p = toGrid(e);
     switch (state.mode) {
-      case 'placing':
-        if (state.ghost) {
-          actions.placeGhost(state.ghost.x, state.ghost.y, state.ghost.orientation);
-        }
-        break;
       case 'wiring':
         if (!state.wireDraft) {
           dispatch({ type: 'WIRE_START', ...snappedToTerminal(p) });
@@ -91,7 +86,16 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
     }
   };
 
+  // Placement happens on mouse UP (like the Swing editor): supports both
+  // click-to-place and drag-from-palette — the ghost follows the cursor
+  // while the button is held and drops where it is released.
   const handleMouseUp = () => {
+    if (state.mode === 'placing') {
+      if (state.ghost) {
+        actions.placeGhost(state.ghost.x, state.ghost.y, state.ghost.orientation);
+      }
+      return;
+    }
     if (state.mode === 'rubber') {
       dispatch({ type: 'RUBBER_END' });
     } else if (state.mode === 'dragging' && state.drag) {

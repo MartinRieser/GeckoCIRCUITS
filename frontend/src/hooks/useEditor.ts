@@ -65,6 +65,10 @@ export function useEditor() {
   );
 
   const arm = useCallback((entry: CatalogEntry) => {
+    if (!stateRef.current.circuitId) {
+      dispatch({ type: 'STATUS', status: 'Open a .ipes file first (Open... button)' });
+      return;
+    }
     dispatch({ type: 'ARM', componentType: entry.type, family: entry.family });
   }, []);
 

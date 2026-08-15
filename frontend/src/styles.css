@@ -185,13 +185,13 @@ body {
   font-size: 10px;
 }
 
-.wire polyline {
+polyline.wire {
   stroke: var(--wire);
   fill: none;
   stroke-width: 1.6;
 }
 
-.wire.selected polyline {
+polyline.wire.selected {
   stroke: var(--selection);
 }
 
