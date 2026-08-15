@@ -171,10 +171,10 @@ public final class SpaceVectorDisplay extends javax.swing.JFrame {
     /** Creates new form SpaceVectorDisplay */
     public SpaceVectorDisplay(RegelBlock regelBlock) {
         try {
-            URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;
-            // Fix for Java 21: use URL constructor instead of URI.toURL()
-            URL gifUrl = new URL(picsUrl, "gecko.gif");
-            this.setIconImage(new ImageIcon(gifUrl).getImage());
+            java.awt.Image icon = GlobalFilePathes.getGeckoIconImage();
+            if (icon != null) {
+                this.setIconImage(icon);
+            }
         } catch (Exception ex) {
             LOGGER.warn("Failed to load icon image", ex);
         }

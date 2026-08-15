@@ -96,10 +96,11 @@ public class DialogScopeCharacteristics extends GeckoDialog {
                 try {
                     graphics.setColor(Color.white);
                     graphics.fillRect(0, 0, RECT_SIZE, RECT_SIZE);  // weisser Hintergrund
-                    URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;
-                    URL pngUrl = picsUrl.toURI().resolve("equ1.png").toURL();
-                    java.awt.Image equ1 = new ImageIcon(pngUrl).getImage();
-                    graphics.drawImage(equ1, 0, 0, null);
+                    URL pngUrl = GlobalFilePathes.getImageURL("equ1.png");
+                    if (pngUrl != null) {
+                        java.awt.Image equ1 = new ImageIcon(pngUrl).getImage();
+                        graphics.drawImage(equ1, 0, 0, null);
+                    }
                 } catch (Exception exc) {
                     LOGGER.error("Failed to load characteristics equation image", exc);
                 }
@@ -124,10 +125,11 @@ public class DialogScopeCharacteristics extends GeckoDialog {
                 try {
                     graphics.setColor(Color.white);
                     graphics.fillRect(0, 0, RECT_SIZE, RECT_SIZE);  // weisser Hintergrund
-                    URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;
-                    URL pngUrl = picsUrl.toURI().resolve("equ2b.png").toURL();
-                    java.awt.Image equ1 = new ImageIcon(pngUrl).getImage();
-                    graphics.drawImage(equ1, 0, 0, null);
+                    URL pngUrl = GlobalFilePathes.getImageURL("equ2b.png");
+                    if (pngUrl != null) {
+                        java.awt.Image equ1 = new ImageIcon(pngUrl).getImage();
+                        graphics.drawImage(equ1, 0, 0, null);
+                    }
                 } catch (Exception exception) {
                     LOGGER.error("Failed to load power analysis equation image", exception);
                 }

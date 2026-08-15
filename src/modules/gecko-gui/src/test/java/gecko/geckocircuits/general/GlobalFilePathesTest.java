@@ -122,6 +122,24 @@ public class GlobalFilePathesTest {
         }
     }
 
+    @Test
+    public void testGetImageURL_ResolvesClasspathImages() {
+        java.net.URL url = GlobalFilePathes.getImageURL("gecko.gif");
+        assertNotNull("gecko.gif should resolve from classpath", url);
+
+        java.net.URL logoUrl = GlobalFilePathes.getImageURL("GeckoSimulationsLogo_50.png");
+        assertNotNull("GeckoSimulationsLogo_50.png should resolve from classpath", logoUrl);
+
+        assertNull("Null image name should return null", GlobalFilePathes.getImageURL(null));
+        assertNull("Empty image name should return null", GlobalFilePathes.getImageURL(""));
+    }
+
+    @Test
+    public void testGetGeckoIconImage_ReturnsValidImage() {
+        java.awt.Image icon = GlobalFilePathes.getGeckoIconImage();
+        assertNotNull("getGeckoIconImage should return a non-null image", icon);
+    }
+
     // ====================================================
     // PFAD_JAR_HOME Tests
     // ====================================================

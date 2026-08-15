@@ -151,11 +151,12 @@ public final class ScopeFrame extends javax.swing.JFrame{
 
     initComponents();
 
-    try{
-      URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;
-      URL gifUrl = picsUrl.toURI().resolve("gecko.gif").toURL();
-      this.setIconImage(new ImageIcon(gifUrl).getImage());
-    }catch(Exception e){
+    try {
+      java.awt.Image icon = GlobalFilePathes.getGeckoIconImage();
+      if (icon != null) {
+        this.setIconImage(icon);
+      }
+    } catch (Exception e) {
       LOGGER.error("Failed to load scope frame icon image", e);
     }
 

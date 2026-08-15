@@ -20,7 +20,6 @@ import gecko.geckocircuits.general.GlobalColors;
 import gecko.geckocircuits.general.GlobalFilePathes;
 import gecko.geckocircuits.general.GlobalFonts;
 import gecko.geckocircuits.general.TechFormat;
-import gecko.geckocircuits.scope.FourierPlotFrame;
 import gecko.i18n.GuiFabric;
 import gecko.i18n.resources.I18nKeys;
 import java.awt.*;
@@ -73,9 +72,10 @@ public class DialogFourier extends JDialog {
         _newScope = newScope;
         super.setModal(true);
         try {
-            URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;
-            URL gifUrl = picsUrl.toURI().resolve("gecko.gif").toURL();
-            this.setIconImage(new ImageIcon(gifUrl).getImage());
+            java.awt.Image icon = GlobalFilePathes.getGeckoIconImage();
+            if (icon != null) {
+                this.setIconImage(icon);
+            }
         } catch (Exception e) { // NOPMD
             // Exception intentionally ignored: Icon loading is optional - dialog works without it
         }
@@ -217,11 +217,6 @@ public class DialogFourier extends JDialog {
                             erg = calculate();
                             //-----------------
                             jbCALC.setEnabled(true);
-                            if (0 > 1) {
-                                FourierPlotFrame plotFrame = new FourierPlotFrame(_newScope, f1, erg);
-                                DialogFourier.this.setVisible(false);
-                                plotFrame.setVisible(true);
-                            }
                             //-----------------
                             // fertige Grafik nach Rechenende hochfahren ..
                             DialogFourierDiagram diagramm = new DialogFourierDiagram(

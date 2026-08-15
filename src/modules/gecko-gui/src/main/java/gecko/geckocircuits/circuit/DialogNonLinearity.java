@@ -36,7 +36,10 @@ public class DialogNonLinearity extends GeckoDialog {
         _content = new NonLinearDialogPanel(this, elementLK, yAxisLog);
         setContentPane(_content);
         try {
-            this.setIconImage(new ImageIcon(GlobalFilePathes.PFAD_PICS_URL.toURI().resolve("gecko.gif").toURL()).getImage());
+            java.awt.Image icon = GlobalFilePathes.getGeckoIconImage();
+            if (icon != null) {
+                this.setIconImage(icon);
+            }
         } catch (Exception e) { // NOPMD
             // Exception intentionally ignored: Icon loading is optional - dialog works without it
         }

@@ -32,9 +32,10 @@ public class DialogFeedback extends javax.swing.JDialog {
     public DialogFeedback(final JFrame parentFrame) {
         super(parentFrame, true);
         try {
-            @SuppressWarnings("deprecation")
-            URL url = new URL(GlobalFilePathes.PFAD_PICS_URL, "gecko.gif");
-            this.setIconImage(new ImageIcon(url).getImage());
+            java.awt.Image icon = GlobalFilePathes.getGeckoIconImage();
+            if (icon != null) {
+                this.setIconImage(icon);
+            }
         } catch (Exception ex) {
             LOGGER.error("Failed to load dialog icon image", ex);
         }

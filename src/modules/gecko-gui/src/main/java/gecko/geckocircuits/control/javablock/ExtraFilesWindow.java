@@ -59,9 +59,10 @@ public final class ExtraFilesWindow extends javax.swing.JDialog {
     public ExtraFilesWindow(final GeckoFileable geckoFileable) {
         super();
         try {
-            URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;
-            URL gifUrl = picsUrl.toURI().resolve("gecko.gif").toURL();
-            this.setIconImage(new ImageIcon(gifUrl).getImage());
+            java.awt.Image icon = GlobalFilePathes.getGeckoIconImage();
+            if (icon != null) {
+                this.setIconImage(icon);
+            }
         } catch (Exception ex) {
             LOGGER.warn("Could not load image icon", ex);
         }

@@ -431,4 +431,30 @@ class TokenMapTest {
         long result = map.readDataLine("longValue", 0L);
         assertEquals(1000000000L, result);
     }
+
+    @Test
+    void testHasToken() {
+        String[] ascii = {
+            "presentToken 42.0"
+        };
+        TokenMap map = new TokenMap(ascii);
+        assertTrue(map.hasToken("presentToken"));
+        assertFalse(map.hasToken("missingToken"));
+    }
+
+    @Test
+    void testMissingTokensReturnDefaultWithoutNPE() {
+        String[] ascii = {
+            "presentToken 42.0"
+        };
+        TokenMap map = new TokenMap(ascii);
+        assertArrayEquals(new double[]{1.0, 2.0}, map.readDataLine("nonlinX[]", new double[]{1.0, 2.0}), 0.0);
+        assertEquals(99.0, map.readDataLine("nonlinY", 99.0), 0.0);
+        assertEquals("defaultVal", map.readDataLine("missingString", "defaultVal"));
+        assertTrue(map.readDataLine("missingBool", true));
+        assertEquals(123L, map.readDataLine("missingLong", 123L));
+        assertEquals(456, map.readDataLine("missingInt", 456));
+        assertTrue(map.readDataLineDoubleArray("missingDoubleList").isEmpty());
+        assertTrue(map.readDataLineStringArray("missingStringList").isEmpty());
+    }
 }

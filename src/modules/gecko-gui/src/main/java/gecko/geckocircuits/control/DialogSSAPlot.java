@@ -54,10 +54,10 @@ public final class DialogSSAPlot extends GeckoDialog {
         _data = data;
 
         try {
-            URL picsUrl = GlobalFilePathes.PFAD_PICS_URL;
-            // Fix for Java 21: use URL constructor instead of URI.toURL()
-            URL gifUrl = new URL(picsUrl, "gecko.gif");
-            this.setIconImage(new ImageIcon(gifUrl).getImage());
+            java.awt.Image icon = GlobalFilePathes.getGeckoIconImage();
+            if (icon != null) {
+                this.setIconImage(icon);
+            }
         } catch (Exception e) {
             // ignored: icon loading is optional
         }

@@ -32,9 +32,7 @@ import javax.swing.JButton;
 import javax.swing.BorderFactory;
 import javax.swing.border.TitledBorder;
 import javax.swing.JTextArea;
-import javax.swing.ImageIcon;
 import javax.swing.JDialog;
-import java.net.URL;
 import javax.swing.JTabbedPane;
 
 public class DialogSimParameter extends JDialog implements ActionListener {
@@ -53,9 +51,10 @@ public class DialogSimParameter extends JDialog implements ActionListener {
         super(owner, true);
 
         try {
-            @SuppressWarnings("deprecation")
-            URL url = new URL(GlobalFilePathes.PFAD_PICS_URL, "gecko.gif");
-            this.setIconImage(new ImageIcon(url).getImage());
+            java.awt.Image icon = GlobalFilePathes.getGeckoIconImage();
+            if (icon != null) {
+                this.setIconImage(icon);
+            }
         } catch (Exception e) {
             // ignored: icon loading is optional
         }

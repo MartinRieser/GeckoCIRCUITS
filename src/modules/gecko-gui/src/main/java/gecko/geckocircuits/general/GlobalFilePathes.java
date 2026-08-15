@@ -14,7 +14,9 @@
 package gecko.geckocircuits.general;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.awt.Image;
 import java.net.URL;
+import javax.swing.ImageIcon;
 
 /**
  *
@@ -44,4 +46,50 @@ public class GlobalFilePathes {
     // This can maybe removed in the future. I keep it here for backwards-compatibility, since
     // somebody is using this field at the moment in a Java-Block.
     public static String datnamAbsLoadIPES;
+
+    /**
+     * Safely resolve an image resource URL by trying the classpath first, then relative path.
+     * Works uniformly in IDE, Maven execution, and packaged standalone JARs.
+     *
+     * @param imageName image file name (e.g., "gecko.gif", "lisn.png")
+     * @return URL pointing to the resource, or null if not found
+     */
+    public static URL getImageURL(final String imageName) {
+        if (imageName == null || imageName.isEmpty()) {
+            return null;
+        }
+        URL url = GlobalFilePathes.class.getResource(imageName);
+        if (url != null) {
+            return url;
+        }
+        url = GlobalFilePathes.class.getResource("/gecko/geckocircuits/general/" + imageName);
+        if (url != null) {
+            return url;
+        }
+        try {
+            if (PFAD_PICS_URL != null) {
+                return new URL(PFAD_PICS_URL, imageName);
+            }
+        } catch (Throwable ignored) {
+            // ignore fallback failure
+        }
+        return null;
+    }
+
+    /**
+     * Safely retrieve the Gecko icon Image.
+     *
+     * @return icon Image, or null if unavailable
+     */
+    public static Image getGeckoIconImage() {
+        try {
+            URL url = getImageURL("gecko.gif");
+            if (url != null) {
+                return new ImageIcon(url).getImage();
+            }
+        } catch (Throwable ignored) {
+            // ignore
+        }
+        return null;
+    }
 }
