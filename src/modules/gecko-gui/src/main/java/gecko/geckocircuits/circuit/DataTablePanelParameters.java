@@ -135,29 +135,6 @@ public class DataTablePanelParameters extends JPanel {
         _tableModel.addTableModelListener(tableModelListener);
     }
 
-    public double[][] getCheckedData() {
-//        List<List<Double>> returnList = new ArrayList<List<Double>>();
-//        for (List<Double> row : _tableModel.data) {
-//            boolean parsedOK = true;
-//            for (Double value : row) {
-//                if (value == null) {
-//                    parsedOK = false;
-//                }
-//            }
-//            if (parsedOK) {
-//                returnList.add(row);
-//            }
-//        }
-//        double[][] returnValue = new double[_table.getColumnCount()][returnList.size()];
-//        for (int i = 0; i < returnList.size(); i++) {
-//            for (int j = 0; j < returnList.get(i).size(); j++) {
-//                returnValue[j][i] = returnList.get(i).get(j);
-//            }
-//        }
-//        return returnValue;
-        return new double[0][];
-    }
-
     public void insertDataLine(final String parameterName, final double parameterValue) {
         final int insertRow = _tableModel.getRowCount() - 1;
         _tableModel.setValueAt(parameterName, insertRow, 0);

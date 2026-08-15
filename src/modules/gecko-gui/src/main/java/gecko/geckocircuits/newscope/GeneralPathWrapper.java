@@ -35,10 +35,6 @@ final class GeneralPathWrapper{
     _lastInsertPoint = new Point2D.Float(xPixel, yPixel);
   }
 
-  void paintSymbols(final Graphics2D g2d, final GeckoSymbol symbol){
-    // TODO: implement symbol painting
-  }
-
   void lineTo(final float xPixel, final float yPixel){
     if(detectSimplification(xPixel, yPixel)){
       _lastInsertPoint = new Point2D.Float(xPixel, yPixel);

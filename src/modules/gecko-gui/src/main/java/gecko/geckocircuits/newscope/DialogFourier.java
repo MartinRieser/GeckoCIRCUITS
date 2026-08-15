@@ -20,7 +20,6 @@ import gecko.geckocircuits.general.GlobalColors;
 import gecko.geckocircuits.general.GlobalFilePathes;
 import gecko.geckocircuits.general.GlobalFonts;
 import gecko.geckocircuits.general.TechFormat;
-import gecko.geckocircuits.scope.FourierPlotFrame;
 import gecko.i18n.GuiFabric;
 import gecko.i18n.resources.I18nKeys;
 import java.awt.*;
@@ -217,11 +216,6 @@ public class DialogFourier extends JDialog {
                             erg = calculate();
                             //-----------------
                             jbCALC.setEnabled(true);
-                            if (0 > 1) {
-                                FourierPlotFrame plotFrame = new FourierPlotFrame(_newScope, f1, erg);
-                                DialogFourier.this.setVisible(false);
-                                plotFrame.setVisible(true);
-                            }
                             //-----------------
                             // fertige Grafik nach Rechenende hochfahren ..
                             DialogFourierDiagram diagramm = new DialogFourierDiagram(
