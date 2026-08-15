@@ -19,6 +19,8 @@ import java.text.NumberFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.StreamTokenizer;
@@ -68,6 +70,7 @@ import java.math.BigDecimal;
 */
 
 public class BigMatrix implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
 
 /* ------------------------
    Class variables
@@ -637,37 +640,38 @@ public class BigMatrix implements java.io.Serializable {
       tokenizer.wordChars(0,255);
       tokenizer.whitespaceChars(0, ' ');
       tokenizer.eolIsSignificant(true);
-      java.util.Vector v = new java.util.Vector();
+      List<Double> v = new ArrayList<>();
 
       // Ignore initial empty lines
       while (tokenizer.nextToken() == StreamTokenizer.TT_EOL);
       if (tokenizer.ttype == StreamTokenizer.TT_EOF)
 	throw new java.io.IOException("Unexpected EOF on matrix read.");
       do {
-         v.addElement(Double.valueOf(tokenizer.sval)); // Read & store 1st row.
+         v.add(Double.valueOf(tokenizer.sval)); // Read & store 1st row.
       } while (tokenizer.nextToken() == StreamTokenizer.TT_WORD);
 
       int n = v.size();  // Now we've got the number of columns!
       double row[] = new double[n];
       for (int j=0; j<n; j++)  // extract the elements of the 1st row.
-         row[j]=((Double)v.elementAt(j)).doubleValue();
-      v.removeAllElements();
-      v.addElement(row);  // Start storing rows instead of columns.
+         row[j]=v.get(j).doubleValue();
+      List<double[]> rows = new ArrayList<>();
+      rows.add(row);  // Start storing rows instead of columns.
       while (tokenizer.nextToken() == StreamTokenizer.TT_WORD) {
          // While non-empty lines
-         v.addElement(row = new double[n]);
+         row = new double[n];
+         rows.add(row);
          int j = 0;
          do {
             if (j >= n) throw new java.io.IOException
-               ("Row " + v.size() + " is too long.");
+               ("Row " + rows.size() + " is too long.");
             row[j++] = Double.valueOf(tokenizer.sval).doubleValue();
          } while (tokenizer.nextToken() == StreamTokenizer.TT_WORD);
          if (j < n) throw new java.io.IOException
-            ("Row " + v.size() + " is too short.");
+            ("Row " + rows.size() + " is too short.");
       }
-      int m = v.size();  // Now we've got the number of rows.
+      int m = rows.size();  // Now we've got the number of rows.
       double[][] A = new double[m][];
-      v.copyInto(A);  // copy the rows out of the vector
+      rows.toArray(A);  // copy the rows out of the list
       return new Matrix(A);
    }
 
