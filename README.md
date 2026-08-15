@@ -18,13 +18,19 @@ Originally developed at ETH Zurich's Power Electronic Systems Laboratory by Andr
 
 ## Quick Start
 
-### Prerequisites
+### Native Desktop Packages (No Java Installation Required)
 
-- **Java 21** or later ([Adoptium Temurin](https://adoptium.net/) recommended)
+Pre-built self-contained native installers and portable packages are available on the [Releases](https://github.com/tinix84/GeckoCIRCUITS/releases) page:
 
-### Download and Run
+- **Windows**: `GeckoCIRCUITS-<version>.msi` (installer) or `*-windows-x64-portable.zip` (portable)
+- **macOS**: `GeckoCIRCUITS-<version>.dmg` (drag-and-drop installer) or `*-macos-app.zip`
+- **Linux**: `geckocircuits_<version>-1_amd64.deb` (Debian/Ubuntu), `*.rpm` (Fedora/RHEL), or `*-linux-x64-portable.tar.gz`
 
-1. Download `gecko-1.0-jar-with-dependencies.jar` from the [Releases](https://github.com/tinix84/GeckoCIRCUITS/releases) page
+See [docs/PACKAGING.md](docs/PACKAGING.md) for details on packaging and local build commands.
+
+### Running with Standalone JAR (Requires Java 21+)
+
+1. Download `gecko-1.0-jar-with-dependencies.jar` from [Releases](https://github.com/tinix84/GeckoCIRCUITS/releases)
 2. Run:
    ```bash
    java -Xmx3G -Dpolyglot.js.nashorn-compat=true -jar gecko-1.0-jar-with-dependencies.jar

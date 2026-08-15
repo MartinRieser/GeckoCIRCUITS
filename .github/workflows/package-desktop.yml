@@ -1,0 +1,197 @@
+name: Package Desktop Applications
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. 1.0.0)'
+        required: true
+        default: '1.0.0'
+      upload_release:
+        description: 'Publish as GitHub Release (for workflow_dispatch)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-packages:
+    name: Package (${{ matrix.os_name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            os_name: Windows
+            platform_id: windows
+          - os: macos-latest
+            os_name: macOS
+            platform_id: macos
+          - os: ubuntu-latest
+            os_name: Linux
+            platform_id: linux
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: pip install Pillow
+
+      # Linux-specific tools for DEB and RPM generation
+      - name: Install Linux packaging tools
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq rpm fakeroot binutils xvfb
+
+      # Windows-specific WiX Toolset check/install
+      - name: Ensure WiX Toolset (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          if (-not (Get-Command candle.exe -ErrorAction SilentlyContinue)) {
+            choco install wixtoolset -y --no-progress
+            echo "C:\Program Files (x86)\WiX Toolset v3.11\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          }
+
+      - name: Determine version
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/v}
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Building version: $VERSION"
+
+      - name: Build with Maven
+        run: mvn clean package assembly:single -DskipTests --no-transfer-progress
+
+      - name: Run jpackage desktop packager
+        shell: bash
+        run: |
+          python3 scripts/package-desktop.py --version "${{ steps.version.outputs.VERSION }}" --type all --dest dist
+
+      - name: List generated packages
+        shell: bash
+        run: |
+          echo "Generated packages in dist/:"
+          ls -lh dist/
+
+      - name: Upload platform artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: GeckoCIRCUITS-${{ steps.version.outputs.VERSION }}-${{ matrix.platform_id }}
+          path: |
+            dist/*.msi
+            dist/*.exe
+            dist/*.dmg
+            dist/*.pkg
+            dist/*.deb
+            dist/*.rpm
+            dist/*.zip
+            dist/*.tar.gz
+          if-no-files-found: error
+          retention-days: 30
+
+  release:
+    name: Publish Release
+    needs: build-packages
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.upload_release == 'true'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set release version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+            TAG="v${VERSION}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/v}
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "TAG=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-packages
+
+      - name: Prepare release assets and generate checksums
+        id: assets
+        run: |
+          mkdir -p release-dist
+          find release-packages -type f \( -name "*.msi" -o -name "*.exe" -o -name "*.dmg" -o -name "*.pkg" -o -name "*.deb" -o -name "*.rpm" -o -name "*.zip" -o -name "*.tar.gz" \) -exec cp {} release-dist/ \;
+          
+          cd release-dist
+          echo "Release files:"
+          ls -lh
+          
+          sha256sum * > SHA256SUMS.txt
+          echo "Generated SHA256SUMS.txt:"
+          cat SHA256SUMS.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.TAG }}
+          name: GeckoCIRCUITS v${{ steps.version.outputs.VERSION }}
+          body: |
+            # GeckoCIRCUITS v${{ steps.version.outputs.VERSION }}
+
+            Power Electronics Circuit Simulator - Native Desktop Packages.
+            All packages include an embedded, optimized Java runtime—no separate Java installation required.
+
+            ## Downloads
+
+            ### Windows
+            - **Installer (Recommended)**: `GeckoCIRCUITS-${{ steps.version.outputs.VERSION }}.msi`
+            - **Portable**: `GeckoCIRCUITS-${{ steps.version.outputs.VERSION }}-windows-x64-portable.zip`
+
+            ### macOS (Apple Silicon & Intel)
+            - **Installer (Recommended)**: `GeckoCIRCUITS-${{ steps.version.outputs.VERSION }}.dmg`
+            - **Application Bundle**: `GeckoCIRCUITS-${{ steps.version.outputs.VERSION }}-macos-app.zip`
+
+            ### Linux
+            - **Debian / Ubuntu / Mint**: `geckocircuits_${{ steps.version.outputs.VERSION }}-1_amd64.deb`
+            - **Fedora / RHEL / openSUSE**: `geckocircuits-${{ steps.version.outputs.VERSION }}-1.x86_64.rpm`
+            - **Portable**: `GeckoCIRCUITS-${{ steps.version.outputs.VERSION }}-linux-x64-portable.tar.gz`
+
+            ---
+            ### Verification
+            Verify the integrity of downloaded files using `SHA256SUMS.txt`:
+            ```bash
+            sha256sum -c SHA256SUMS.txt
+            ```
+          files: |
+            release-dist/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

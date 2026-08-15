@@ -30,6 +30,7 @@ target/
 
 # Native installer output
 release/
+dist/
 
 # Workspace-local development toolchain (JDK + Maven)
 .devtools/
