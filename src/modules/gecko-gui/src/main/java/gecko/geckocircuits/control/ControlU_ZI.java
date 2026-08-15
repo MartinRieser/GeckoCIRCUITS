@@ -25,6 +25,7 @@ import java.awt.Window;
 
 @SuppressWarnings("PMD.ClassNamingConventions")
 public final class ControlU_ZI extends RegelBlock {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlU_ZI.class, "UZI", I18nKeys.U_ZI_DIAGRAM);
 
     private UZiDisplay _uziDisplay = new UZiDisplay(this);
@@ -94,8 +95,8 @@ public final class ControlU_ZI extends RegelBlock {
         g.drawRect((int) (dpix * (x - 0.4)), (int) (dpix * (y - br+1)), (int) (dpix * 2 * da), (int) (dpix * 1.0 * Math.max(tnX, 0)));
 
         int ds1 = 3, ds2 = 3;
-        g.drawRect((int) (dpix * (x - 0.4)), (int) (dpix * y ) - ds2, ds1, (int) (dpix * 1) + 2 * ds2);
-        g.drawRect((int) (dpix * (x - 0.4)), (int) (dpix * (y + 2)) - ds2, ds1, (int) (dpix * 1) + 2 * ds2);
+        g.drawRect((int) (dpix * (x - 0.4)), (int) (dpix * y ) - ds2, ds1, (int) dpix + 2 * ds2);
+        g.drawRect((int) (dpix * (x - 0.4)), (int) (dpix * (y + 2)) - ds2, ds1, (int) dpix + 2 * ds2);
     }
 
     @Override

@@ -30,6 +30,7 @@ package gecko.geckocircuits.math;
    */
 
 public class LUDecomposition implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
 //test
 /* ------------------------
    Class variables

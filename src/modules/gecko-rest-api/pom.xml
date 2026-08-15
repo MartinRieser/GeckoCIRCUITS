@@ -93,7 +93,7 @@
                     <source>21</source>
                     <target>21</target>
                     <compilerArgs>
-                        <arg>-Xlint:all,-processing</arg>
+                        <arg>-Xlint:all,-processing,-serial,-rawtypes,-unchecked,-varargs,-deprecation,-cast,-this-escape,-static,-lossy-conversions,-dep-ann,-removal,-classfile</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>

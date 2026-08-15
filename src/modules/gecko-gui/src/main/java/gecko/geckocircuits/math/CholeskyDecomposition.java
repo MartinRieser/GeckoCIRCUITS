@@ -27,6 +27,7 @@ package gecko.geckocircuits.math;
    */
 
 public class CholeskyDecomposition implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
 
 /* ------------------------
    Class variables

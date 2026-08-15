@@ -21,6 +21,7 @@ import gecko.i18n.resources.I18nKeys;
  * @author andy
  */
 public class ControlImportFromFile  extends ControlSignalSource {
+    private static final long serialVersionUID = 1L;
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlImportFromFile.class, "FILE", I18nKeys.DATA_FROM_FILE);
 
     public ControlImportFromFile() {

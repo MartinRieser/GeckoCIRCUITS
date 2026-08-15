@@ -32,7 +32,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE",
         justification = "Public data vector for external data exchange with Simulink/external tools")
-public final class ControlToEXTERNAL extends RegelBlockSimulink implements Comparable, VariableTerminalNumber {
+public final class ControlToEXTERNAL extends RegelBlockSimulink implements Comparable<ControlToEXTERNAL>, VariableTerminalNumber {
+    private static final long serialVersionUID = 1L;
 
     public static final ControlTypeInfo tinfo = new ControlTypeInfo(ControlToEXTERNAL.class, "ToEXT", I18nKeys.EXPORT_DATA_TO_SIMULINK);
     private static final ArrayList<RegelBlock> toExternalsInternal = new ArrayList<>();
@@ -203,20 +204,11 @@ public final class ControlToEXTERNAL extends RegelBlockSimulink implements Compa
     }
 
     @Override
-    public int compareTo(final Object toCompare) {
-        if (toCompare instanceof ControlToEXTERNAL) {
-            final ControlToEXTERNAL otherToExtern = (ControlToEXTERNAL) toCompare;
-            if (otherToExtern.externalOrderNumber == this.externalOrderNumber) {
-                return 0;
-            }
-            if (otherToExtern.externalOrderNumber < this.externalOrderNumber) {
-                return 1;
-            }
-            return -1;
+    public int compareTo(final ControlToEXTERNAL otherToExtern) {
+        if (otherToExtern == null) {
+            return 1;
         }
-
-        assert false;
-        return 0;
+        return Integer.compare(this.externalOrderNumber, otherToExtern.externalOrderNumber);
     }
 
     @Override

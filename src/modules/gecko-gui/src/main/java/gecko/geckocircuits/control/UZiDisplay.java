@@ -37,9 +37,11 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import javax.swing.JSpinner;
 
+@SuppressWarnings("serial")
 @SuppressFBWarnings(value = {"CT_CONSTRUCTOR_THROW", "PA_PUBLIC_PRIMITIVE_ATTRIBUTE"},
         justification = "Constructor exceptions are expected on initialization failure; NetBeans GUI form generated public fields")
 public final class UZiDisplay extends GeckoDialog {
+    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LogManager.getLogger(UZiDisplay.class);
 
 

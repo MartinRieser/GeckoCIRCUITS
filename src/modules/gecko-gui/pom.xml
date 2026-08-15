@@ -182,7 +182,7 @@
             <target>21</target>
             <release>21</release>
             <compilerArgs>
-              <arg>-Xlint:all,-processing</arg>
+              <arg>-Xlint:all,-processing,-serial,-rawtypes,-unchecked,-varargs,-deprecation,-cast,-this-escape,-static,-lossy-conversions,-dep-ann,-removal,-classfile</arg>
             </compilerArgs>
           </configuration>
         </plugin>

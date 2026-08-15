@@ -258,7 +258,7 @@ public final class ControlTransferFunction extends AbstractControlSingleInputSin
 
     @Override
     protected Window openDialogWindow() {
-        return new DialogTransferFunction((ControlTransferFunction) this, this);
+        return new DialogTransferFunction(this, this);
 
     }
 
