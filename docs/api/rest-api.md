@@ -342,6 +342,93 @@ Content-Type: multipart/form-data   (file=@circuit.ipes)
 Content-Type: application/json       ({"content": "<base64>", "filename": "x.ipes"})
 ```
 
+### Circuit Editing Endpoints
+
+All editing mutations return a change message
+`{circuitId, modelVersion, operation, payload}` and broadcast it on the
+WebSocket topic `/topic/circuits/{circuitId}`. Every edit is undoable.
+
+**Create Component**
+
+```bash
+POST /api/v1/circuits/{circuitId}/components
+Content-Type: application/json
+```
+
+Request:
+```json
+{
+  "family": "LK",
+  "type": 1,
+  "name": "R1",
+  "x": 96,
+  "y": 96,
+  "orientation": 0,
+  "parameters": {"param0": 100.0}
+}
+```
+
+`family`: `LK` or `THERM` (CONTROL/SPECIAL creation not supported yet).
+`type`: type number from the catalog. Coordinates are snapped to the grid raster
+(`dpix`). Omitted names are generated from the type and made unique; duplicate
+explicit names return 409. Parameter keys are `param<index>`.
+
+**Patch Component** (move / rotate / rename / set parameters — all fields optional)
+
+```bash
+PATCH /api/v1/circuits/{circuitId}/components/{name}
+```
+
+**Delete Component**
+
+```bash
+DELETE /api/v1/circuits/{circuitId}/components/{name}
+```
+
+**Create Wire** (polyline of grid points, at least two)
+
+```bash
+POST /api/v1/circuits/{circuitId}/connections
+Content-Type: application/json
+{"type": "LK", "points": [[96, 200], [144, 200], [144, 256]], "label": "w1"}
+```
+
+**Patch / Delete Wire** (identified by index in the connection list)
+
+```bash
+PATCH  /api/v1/circuits/{circuitId}/connections/{index}   {"points": [...], "label": "..."}
+DELETE /api/v1/circuits/{circuitId}/connections/{index}
+```
+
+**Set Node Label** (terminals with equal labels are electrically connected)
+
+```bash
+PUT /api/v1/circuits/{circuitId}/nodes/{componentName}
+Content-Type: application/json
+{"terminalIndex": 0, "side": "x", "label": "dc_link"}
+```
+
+`side`: `x` (input/start terminal) or `y` (output/end terminal).
+
+**Undo / Redo**
+
+```bash
+POST /api/v1/circuits/{circuitId}/undo
+POST /api/v1/circuits/{circuitId}/redo
+```
+
+409 when there is nothing to undo/redo. A new edit discards the redo history.
+History is bounded (200 edits per circuit) and reset when the circuit content
+is replaced via `PUT /api/v1/circuits/{circuitId}`.
+
+**Component Type Catalog**
+
+```bash
+GET /api/v1/circuits/catalog
+```
+
+Returns all placeable types with `type` number, `name` and `family`.
+
 Live in: **v2.20.0+**
 
 

@@ -405,10 +405,10 @@ public class CircuitModel {
      */
     public static class ComponentData {
         private final int type;
-        private final String name;
+        private String name;
         private final Map<String, Object> parameters;
         private final int[] position; // x, y coordinates
-        private final int orientation;
+        private int orientation;
         private String[] terminalXLabels = new String[0];
         private String[] terminalYLabels = new String[0];
         private String[] rawTerminalXLabels = new String[0];
@@ -440,6 +440,10 @@ public class CircuitModel {
 
         public String getName() {
             return name;
+        }
+
+        public void setName(String name) {
+            this.name = name != null ? name : "";
         }
 
         public Map<String, Object> getParameters() {
@@ -512,6 +516,10 @@ public class CircuitModel {
 
         public int getOrientation() {
             return orientation;
+        }
+
+        public void setOrientation(int orientation) {
+            this.orientation = orientation;
         }
 
         public String[] getTerminalXLabels() {
@@ -615,7 +623,7 @@ public class CircuitModel {
      */
     public static class ConnectionData {
         private final String type; // LK, CONTROL, THERMAL
-        private final int[][] points;
+        private int[][] points;
         private String label = "";
         private long uniqueObjectIdentifier;
         private int enabledShorted;
@@ -633,6 +641,10 @@ public class CircuitModel {
 
         public int[][] getPoints() {
             return points;
+        }
+
+        public void setPoints(int[][] points) {
+            this.points = points != null ? points : new int[0][2];
         }
 
         public String getLabel() {

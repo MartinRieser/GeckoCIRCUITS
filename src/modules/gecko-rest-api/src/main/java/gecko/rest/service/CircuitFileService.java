@@ -14,6 +14,7 @@ import java.io.*;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
@@ -26,7 +27,7 @@ public class CircuitFileService {
     private final CircuitFileParser parser = new CircuitFileParser();
 
     // In-memory storage of parsed circuits (circuit ID -> parsed data)
-    private final Map<String, ParsedCircuit> circuits = new ConcurrentHashMap<>();
+    private final Map<String, CircuitState> circuits = new ConcurrentHashMap<>();
 
     /**
      * Load circuit from multipart file upload.
@@ -62,7 +63,7 @@ public class CircuitFileService {
      * Get detailed circuit information.
      */
     public CircuitInfo getCircuitInfo(String circuitId) {
-        ParsedCircuit parsed = circuits.get(circuitId);
+        CircuitState parsed = circuits.get(circuitId);
         if (parsed == null) {
             return null;
         }
@@ -114,7 +115,7 @@ public class CircuitFileService {
      * Get component list for a circuit.
      */
     public ComponentListResponse getComponents(String circuitId) {
-        ParsedCircuit parsed = circuits.get(circuitId);
+        CircuitState parsed = circuits.get(circuitId);
         if (parsed == null) {
             return null;
         }
@@ -144,7 +145,7 @@ public class CircuitFileService {
      * Validate a circuit.
      */
     public ValidationResponse validateCircuit(String circuitId) {
-        ParsedCircuit parsed = circuits.get(circuitId);
+        CircuitState parsed = circuits.get(circuitId);
         if (parsed == null) {
             return null;
         }
@@ -177,7 +178,7 @@ public class CircuitFileService {
      * @return model, or null if the circuit ID is unknown
      */
     public CircuitModel getModel(String circuitId) {
-        ParsedCircuit parsed = circuits.get(circuitId);
+        CircuitState parsed = circuits.get(circuitId);
         return parsed != null ? parsed.model : null;
     }
 
@@ -188,7 +189,7 @@ public class CircuitFileService {
      * @throws ResponseStatusException 404 if circuit not found
      */
     public byte[] getIpesBytes(String circuitId) {
-        ParsedCircuit parsed = requireCircuit(circuitId);
+        CircuitState parsed = requireCircuit(circuitId);
         try {
             return CircuitFileWriter.write(parsed.model);
         } catch (IOException e) {
@@ -207,7 +208,7 @@ public class CircuitFileService {
      * @throws ResponseStatusException 404 if circuit not found, 400 if content is unparseable
      */
     public CircuitInfo replaceCircuit(String circuitId, byte[] content, String filename) {
-        ParsedCircuit parsed = requireCircuit(circuitId);
+        CircuitState parsed = requireCircuit(circuitId);
 
         CircuitModel newModel;
         try (ByteArrayInputStream bais = new ByteArrayInputStream(content)) {
@@ -217,7 +218,7 @@ public class CircuitFileService {
                     "Failed to parse circuit content: " + e.getMessage(), e);
         }
 
-        circuits.put(circuitId, new ParsedCircuit(
+        circuits.put(circuitId, new CircuitState(
                 filename != null ? filename : parsed.filename,
                 newModel,
                 Instant.now()));
@@ -229,7 +230,7 @@ public class CircuitFileService {
      * Get raw circuit file content (decompressed ASCII, re-serialized from the model).
      */
     public String getRawCircuit(String circuitId) {
-        ParsedCircuit parsed = circuits.get(circuitId);
+        CircuitState parsed = circuits.get(circuitId);
         if (parsed == null) {
             return null;
         }
@@ -250,7 +251,7 @@ public class CircuitFileService {
         List<CircuitListResponse.CircuitSummary> summaries = circuits.entrySet().stream()
             .map(entry -> {
                 String id = entry.getKey();
-                ParsedCircuit parsed = entry.getValue();
+                CircuitState parsed = entry.getValue();
                 return new CircuitListResponse.CircuitSummary(
                     id,
                     parsed.filename,
@@ -273,7 +274,7 @@ public class CircuitFileService {
      * @throws ResponseStatusException 404 if circuit not found
      */
     public CircuitLoadResponse cloneCircuit(String circuitId, Map<String, Double> overrides) {
-        ParsedCircuit sourceParsed = circuits.get(circuitId);
+        CircuitState sourceParsed = circuits.get(circuitId);
         if (sourceParsed == null) {
             throw new ResponseStatusException(
                 HttpStatus.NOT_FOUND,
@@ -295,7 +296,7 @@ public class CircuitFileService {
             String newCircuitId = UUID.randomUUID().toString();
 
             // Create parsed circuit with timestamp
-            ParsedCircuit newParsed = new ParsedCircuit(
+            CircuitState newParsed = new CircuitState(
                 sourceParsed.filename,
                 newModel,
                 Instant.now()
@@ -325,7 +326,7 @@ public class CircuitFileService {
      * @throws ResponseStatusException 404 if circuit not found
      */
     public CircuitInfo updateCircuitParameters(String circuitId, CircuitParameterUpdate update) {
-        ParsedCircuit parsed = circuits.get(circuitId);
+        CircuitState parsed = circuits.get(circuitId);
         if (parsed == null) {
             throw new ResponseStatusException(
                 HttpStatus.NOT_FOUND,
@@ -368,7 +369,7 @@ public class CircuitFileService {
             String circuitId = UUID.randomUUID().toString();
 
             // Create parsed circuit with timestamp
-            ParsedCircuit parsed = new ParsedCircuit(
+            CircuitState parsed = new CircuitState(
                 filename,
                 model,
                 Instant.now()
@@ -406,12 +407,24 @@ public class CircuitFileService {
         }
     }
 
-    private ParsedCircuit requireCircuit(String circuitId) {
-        ParsedCircuit parsed = circuits.get(circuitId);
+    private CircuitState requireCircuit(String circuitId) {
+        CircuitState parsed = circuits.get(circuitId);
         if (parsed == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Circuit not found: " + circuitId);
         }
         return parsed;
+    }
+
+    /**
+     * Package-private state access for {@link CircuitEditService} (same package,
+     * no extra abstraction layer between the two services).
+     */
+    CircuitState getState(String circuitId) {
+        return circuits.get(circuitId);
+    }
+
+    CircuitState requireState(String circuitId) {
+        return requireCircuit(circuitId);
     }
 
     private ComponentInfo componentDataToInfo(CircuitModel.ComponentData comp, String domain) {
@@ -447,9 +460,65 @@ public class CircuitFileService {
 
     // ========== Internal Data Structure ==========
 
-    private record ParsedCircuit(
-        String filename,
-        CircuitModel model,
-        Instant loadedAt
-    ) {}
+    /**
+     * Stored circuit: the model plus editor bookkeeping (change version and
+     * bounded undo/redo history, managed by {@link CircuitEditService}).
+     * A fresh state (version 0, empty history) is created on load and replace.
+     */
+    static final class CircuitState {
+        record Edit(Runnable undo, Runnable redo) {}
+
+        private static final int MAX_HISTORY = 200;
+
+        String filename;
+        CircuitModel model;
+        final Instant loadedAt;
+        final AtomicLong version = new AtomicLong();
+        private final Deque<Edit> undoStack = new ArrayDeque<>();
+        private final Deque<Edit> redoStack = new ArrayDeque<>();
+
+        CircuitState(String filename, CircuitModel model, Instant loadedAt) {
+            this.filename = filename;
+            this.model = model;
+            this.loadedAt = loadedAt;
+        }
+
+        /**
+         * Records a just-applied edit (undo/redo closures over the live model).
+         * Discards the redo history, as usual for command stacks.
+         */
+        synchronized void recordEdit(Runnable undo, Runnable redo) {
+            undoStack.push(new Edit(undo, redo));
+            if (undoStack.size() > MAX_HISTORY) {
+                undoStack.removeLast();
+            }
+            redoStack.clear();
+        }
+
+        /** Pops the next edit to undo (moves it to the redo stack), or null. */
+        synchronized Edit pollUndo() {
+            Edit edit = undoStack.poll();
+            if (edit != null) {
+                redoStack.push(edit);
+            }
+            return edit;
+        }
+
+        /** Pops the next edit to redo (moves it back to the undo stack), or null. */
+        synchronized Edit pollRedo() {
+            Edit edit = redoStack.poll();
+            if (edit != null) {
+                undoStack.push(edit);
+            }
+            return edit;
+        }
+
+        synchronized boolean canUndo() {
+            return !undoStack.isEmpty();
+        }
+
+        synchronized boolean canRedo() {
+            return !redoStack.isEmpty();
+        }
+    }
 }
