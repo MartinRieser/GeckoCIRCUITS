@@ -366,9 +366,16 @@ public final class TokenMap {
         }
     }
 
+    public boolean hasToken(final String identifier) {
+        return getLineNumber(identifier) != null;
+    }
+
     public long readDataLine(final String identifier, final long targetObject) {
         try {
             final Integer lineNumber = getLineNumber(identifier);
+            if (lineNumber == null) {
+                return targetObject;
+            }
             final String ascii = asciiLines[lineNumber];
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
             stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
@@ -382,6 +389,9 @@ public final class TokenMap {
     public String readDataLine(final String identifier, final String targetObject) {
         try {
             final Integer lineNumber = getLineNumber(identifier);
+            if (lineNumber == null) {
+                return targetObject;
+            }
             final String ascii = asciiLines[lineNumber];
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
             stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
@@ -401,6 +411,9 @@ public final class TokenMap {
     public boolean readDataLine(final String identifier, final boolean targetObject) {
         try {
             final Integer lineNumber = getLineNumber(identifier);
+            if (lineNumber == null) {
+                return targetObject;
+            }
             final String ascii = asciiLines[lineNumber];
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
             stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
@@ -414,6 +427,9 @@ public final class TokenMap {
     public double readDataLine(final String identifier, final double targetObject) {
         try {
             final Integer lineNumber = getLineNumber(identifier);
+            if (lineNumber == null) {
+                return targetObject;
+            }
             final String ascii = asciiLines[lineNumber];
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
             stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
@@ -427,6 +443,9 @@ public final class TokenMap {
     public HiLoData readDataLine(final String identifier, final HiLoData targetObject) {
         try {
             final Integer lineNumber = getLineNumber(identifier);
+            if (lineNumber == null) {
+                return targetObject;
+            }
             final String ascii = asciiLines[lineNumber];
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
             stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
@@ -442,6 +461,9 @@ public final class TokenMap {
     public String[] readDataLine(final String identifier, final String[] targetObject) {
         try {
             final Integer lineNumber = getLineNumber(identifier);
+            if (lineNumber == null) {
+                return targetObject;
+            }
             final String ascii = asciiLines[lineNumber];
             final String asciiDaten = ascii.substring(ascii.indexOf(' '));
             final StringTokenizer stk = new StringTokenizer(asciiDaten, CircuitFileConstants.SEPARATOR_ASCII_STRINGARRAY);
@@ -463,6 +485,9 @@ public final class TokenMap {
     public List<String> readDataLineStringArray(final String identifier) {
         try {
             final Integer lineNumber = getLineNumber(identifier);
+            if (lineNumber == null) {
+                return Collections.emptyList();
+            }
             final String ascii = asciiLines[lineNumber];
             final StringTokenizer stk = new StringTokenizer(ascii, CircuitFileConstants.SEPARATOR_ASCII_STRINGARRAY);
             stk.nextToken();  // erster Wert wird uebersprungen
@@ -487,6 +512,9 @@ public final class TokenMap {
     public boolean[][] readDataLine(final String identifier, final boolean[][] targetObject) {
         try {
             final Integer lineNumber = getLineNumber(identifier);
+            if (lineNumber == null) {
+                return targetObject;
+            }
             final String ascii = asciiLines[lineNumber];
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
             stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
@@ -508,6 +536,9 @@ public final class TokenMap {
     public int[][] readDataLine(final String identifier, final int[][] targetObject) {
         try {
             final Integer lineNumber = getLineNumber(identifier);
+            if (lineNumber == null) {
+                return targetObject;
+            }
             final String ascii = asciiLines[lineNumber];
 
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
@@ -530,6 +561,9 @@ public final class TokenMap {
     public double[][] readDataLine(final String identifier, final double[][] targetObject) {
         try {
             final Integer lineNumber = getLineNumber(identifier);
+            if (lineNumber == null) {
+                return targetObject;
+            }
             final String ascii = asciiLines[lineNumber];
 
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
@@ -552,6 +586,9 @@ public final class TokenMap {
     public boolean[] readDataLine(final String identifier, final boolean[] targetObject) {
         try {
             final Integer lineNumber = getLineNumber(identifier);
+            if (lineNumber == null) {
+                return targetObject;
+            }
             final String ascii = asciiLines[lineNumber];
 
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
@@ -581,6 +618,9 @@ public final class TokenMap {
     public String leseASCIITextBlock(final String identifier, final String targetObject) {
         try {
             final Integer lineNumber = getLineNumber(identifier);
+            if (lineNumber == null) {
+                return targetObject;
+            }
             final String ascii = asciiLines[lineNumber];
 
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
@@ -604,6 +644,9 @@ public final class TokenMap {
     public double[] readDataLine(final String identifier, final double[] targetObject) {
         try {
             final Integer lineNumber = getLineNumber(identifier);
+            if (lineNumber == null) {
+                return targetObject;
+            }
             final String ascii = asciiLines[lineNumber];
 
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
@@ -627,6 +670,9 @@ public final class TokenMap {
     public List<Double> readDataLineDoubleArray(final String identifier) {
         try {
             final Integer lineNumber = getLineNumber(identifier);
+            if (lineNumber == null) {
+                return Collections.emptyList();
+            }
             final String ascii = asciiLines[lineNumber];
 
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
@@ -651,6 +697,9 @@ public final class TokenMap {
     public int[] readDataLine(final String identifier, final int[] targetObject) {
         try {
             final Integer lineNumber = getLineNumber(identifier);
+            if (lineNumber == null) {
+                return targetObject;
+            }
             final String ascii = asciiLines[lineNumber];
 
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
@@ -673,6 +722,9 @@ public final class TokenMap {
     public long[] readDataLine(final String identifier, final long[] targetObject) {
         try {
             final Integer lineNumber = getLineNumber(identifier);
+            if (lineNumber == null) {
+                return targetObject;
+            }
             final String ascii = asciiLines[lineNumber];
 
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
@@ -697,6 +749,9 @@ public final class TokenMap {
     public byte[] readDataLine(final String identifier, final byte[] targetObject) {
         try {
             final Integer lineNumber = getLineNumber(identifier);
+            if (lineNumber == null) {
+                return targetObject;
+            }
             final String ascii = asciiLines[lineNumber];
 
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
@@ -719,6 +774,9 @@ public final class TokenMap {
     public int readDataLine(final String identifier, final int targetObject) {
         try {
             final Integer lineNumber = getLineNumber(identifier);
+            if (lineNumber == null) {
+                return targetObject;
+            }
             final String ascii = asciiLines[lineNumber];
 
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
@@ -738,8 +796,14 @@ public final class TokenMap {
     public String[] findSubBlock(String startIdentifier, String stopIdentifier) {
         try {
             final Integer startLine = getLineNumber(startIdentifier);
+            if (startLine == null) {
+                return new String[0];
+            }
             final int shiftedStartLine = startLine + 1;
             final Integer stopLine = getLineNumber(stopIdentifier);
+            if (stopLine == null) {
+                return new String[0];
+            }
 
             final String[] returnValue = new String[stopLine - shiftedStartLine];
             for (int i = shiftedStartLine, j = 0; i < stopLine; i++, j++) {
