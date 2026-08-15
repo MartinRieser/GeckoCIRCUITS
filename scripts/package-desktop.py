@@ -164,6 +164,16 @@ def package_windows(jar_path: Path, version: str, pkg_types: list, output_dir: P
         run_command(cmd, check=False)
 
 
+def sanitize_version(version_str: str) -> str:
+    """Ensure version string contains only 1-3 dot-separated integers for jpackage."""
+    import re
+    # Extract digits and dots, or match semver
+    match = re.search(r"\b(\d+(\.\d+){0,2})\b", version_str)
+    if match:
+        return match.group(1)
+    return DEFAULT_VERSION
+
+
 def package_macos(jar_path: Path, version: str, pkg_types: list, output_dir: Path):
     """Build macOS packages (DMG, PKG, app-image, portable ZIP)."""
     icon_path = RESOURCES_DIR / "GeckoCIRCUITS.icns"
@@ -181,7 +191,6 @@ def package_macos(jar_path: Path, version: str, pkg_types: list, output_dir: Pat
         "--main-jar", main_jar_name,
         "--main-class", MAIN_CLASS,
         "--dest", str(output_dir),
-        "--mac-package-name", APP_NAME,
     ]
 
     for opt in DEFAULT_JAVA_OPTIONS:
@@ -205,14 +214,14 @@ def package_macos(jar_path: Path, version: str, pkg_types: list, output_dir: Pat
 
     if "dmg" in pkg_types or "installer" in pkg_types or "all" in pkg_types:
         cmd = base_cmd.copy()
-        cmd.extend(["--type", "dmg"])
+        cmd.extend(["--type", "dmg", "--mac-package-name", APP_NAME])
         if file_assoc.exists():
             cmd.extend(["--file-associations", str(file_assoc)])
         run_command(cmd)
 
     if "pkg" in pkg_types:
         cmd = base_cmd.copy()
-        cmd.extend(["--type", "pkg"])
+        cmd.extend(["--type", "pkg", "--mac-package-name", APP_NAME])
         if file_assoc.exists():
             cmd.extend(["--file-associations", str(file_assoc)])
         run_command(cmd)
@@ -236,9 +245,6 @@ def package_linux(jar_path: Path, version: str, pkg_types: list, output_dir: Pat
         "--main-jar", main_jar_name,
         "--main-class", MAIN_CLASS,
         "--dest", str(output_dir),
-        "--linux-shortcut",
-        "--linux-menu-group", "Science;Education;Engineering;",
-        "--linux-app-category", "Education",
     ]
 
     for opt in DEFAULT_JAVA_OPTIONS:
@@ -262,14 +268,25 @@ def package_linux(jar_path: Path, version: str, pkg_types: list, output_dir: Pat
 
     if "deb" in pkg_types or "installer" in pkg_types or "all" in pkg_types:
         cmd = base_cmd.copy()
-        cmd.extend(["--type", "deb", "--linux-deb-maintainer", "geckocircuits@users.noreply.github.com"])
+        cmd.extend([
+            "--type", "deb",
+            "--linux-shortcut",
+            "--linux-menu-group", "Science;Education;Engineering;",
+            "--linux-app-category", "Education",
+            "--linux-deb-maintainer", "geckocircuits@users.noreply.github.com"
+        ])
         if file_assoc.exists():
             cmd.extend(["--file-associations", str(file_assoc)])
         run_command(cmd)
 
     if "rpm" in pkg_types or "installer" in pkg_types or "all" in pkg_types:
         cmd = base_cmd.copy()
-        cmd.extend(["--type", "rpm"])
+        cmd.extend([
+            "--type", "rpm",
+            "--linux-shortcut",
+            "--linux-menu-group", "Science;Education;Engineering;",
+            "--linux-app-category", "Education",
+        ])
         if file_assoc.exists():
             cmd.extend(["--file-associations", str(file_assoc)])
         run_command(cmd, check=False)  # Continue if rpm-build isn't installed locally
@@ -297,21 +314,23 @@ def main():
         print(f"[ERROR] Could not find executable JAR. Run with --rebuild or run 'mvn clean package assembly:single' first.")
         sys.exit(1)
 
+    version = sanitize_version(args.version)
+
     print(f"\n==========================================")
     print(f" GeckoCIRCUITS Desktop Packager")
     print(f" Platform: {current_os}")
-    print(f" Version:  {args.version}")
+    print(f" Version:  {version} (raw: {args.version})")
     print(f" JAR:      {jar_path}")
     print(f" Output:   {dest_dir}")
     print(f" Types:    {args.type}")
     print(f"==========================================")
 
     if current_os == "Windows":
-        package_windows(jar_path, args.version, args.type, dest_dir)
+        package_windows(jar_path, version, args.type, dest_dir)
     elif current_os == "Darwin":
-        package_macos(jar_path, args.version, args.type, dest_dir)
+        package_macos(jar_path, version, args.type, dest_dir)
     elif current_os == "Linux":
-        package_linux(jar_path, args.version, args.type, dest_dir)
+        package_linux(jar_path, version, args.type, dest_dir)
     else:
         print(f"[ERROR] Unsupported OS: {current_os}")
         sys.exit(1)
