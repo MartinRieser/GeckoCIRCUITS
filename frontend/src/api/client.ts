@@ -164,8 +164,10 @@ export function subscribeCircuitChanges(
 
   const connect = () => {
     if (disposed) return;
+    // /ws-raw is a plain (non-SockJS) endpoint: its WebSocket URL has no
+    // /websocket transport suffix
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-    socket = new WebSocket(`${proto}://${location.host}/gecko/ws-raw/websocket`);
+    socket = new WebSocket(`${proto}://${location.host}/gecko/ws-raw`);
 
     socket.onopen = () => {
       attempt = 0;
