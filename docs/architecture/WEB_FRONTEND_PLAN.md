@@ -340,37 +340,17 @@ Behavior spec (= what the Swing editor does, see §1 "GUI interaction reference"
 Tests: Vitest (comes with Vite ecosystem) for `WireRouter`, store reducer, and API
 client (mocked fetch). No component-snapshot tests.
 
-### P3 — Keyboard-first layer
+### P3 — Keyboard-first layer [COMPLETE]
 
-**Goal:** the user's core requirement — full schematic editing without touching the mouse.
-All features are additive to the mouse workflows, never replacing them.
+**Goal:** full schematic editing without touching the mouse. All features are additive to the mouse workflows.
 
-Note: the command palette (item 1) and the basic shortcuts (w, r, Esc, Del,
-Ctrl+Z/Y/S) already landed with P2. Remaining work: items 2–4, the central
-keybinding map (5) and Ctrl+D duplicate.
-
-1. **Command palette** — `Ctrl+K` opens a search box (component catalog, fuzzy
-   substring match is enough — no fuzzy library), arrow keys navigate, Enter arms the
-   ghost. Reuse the palette's catalog endpoint.
-2. **Ghost placement by keyboard**: while a ghost is armed, arrow keys move it by one
-   raster step (Shift+arrow = 5 steps), `r`/`Shift+R` rotates, Enter places, Esc
-   cancels. This is the same store state as mouse ghosting — one code path.
-3. **Keyboard wiring**: `Tab`/`Shift+Tab` cycles terminals of the last-placed/hovered
-   component (visual highlight), Enter starts a wire at the highlighted terminal,
-   arrows extend the route raster step by raster step, Enter ends (auto-connect when
-   the end lands on a terminal), Esc aborts.
-4. **Selection nudge**: arrow keys move selected components by one raster step
-   (Shift = 5), with undo grouping (one undo entry per nudge-gesture, i.e. debounce
-   500 ms like the GUI's move undo).
-5. **Central keybinding map**: one `keybindings.ts` module mapping
-   `key → action name → handler`. No scattered `onKeyDown` handlers. Actions: place,
-   cancel, rotate, wire-toggle, delete, undo, redo, save, open, nudge, cycle-terminal,
-   command-palette.
-6. Standard shortcuts: Ctrl+Z/Y undo/redo (client store undo stack, backed by the P1
-   server undo), Ctrl+S save, Delete delete, Ctrl+D duplicate.
-
-Tests: reducer-level tests for every keyboard action (arm ghost, move ghost, place,
-wire cycle, nudge). Keybinding map is data — test that every action has a binding.
+**Completed in P3:**
+1. **Central keybinding map** (`keybindings.ts`): declarative registry mapping shortcuts to semantic editor actions across all modes (`idle`, `placing`, `wiring`, `dragging`). Includes keyboard shortcuts cheatsheet modal (`?`).
+2. **Ghost placement by keyboard**: armed ghost steered via arrow keys (1 step / Shift: 5 steps), `r`/`Shift+R` rotation, `Enter` / `Space` places, `Esc` cancels.
+3. **Keyboard wiring**: `Tab`/`Shift+Tab` cycles component terminals with glowing visual focus halo; `Enter` starts wire draft; arrow keys steer route step-by-step; `Enter` commits wire; `Esc` aborts draft.
+4. **Selection nudging & duplication**: arrow keys nudge selected components with 400ms server debounce; `Ctrl+D` duplicates selection with offset and opens inspector.
+5. **Undo/Redo & Shortcuts**: `Ctrl+Z` / `Ctrl+Y` / `Ctrl+Shift+Z` undo/redo with server sync, `Ctrl+S` save, `Del` / `Backspace` delete.
+6. **Tests**: full test coverage for keybinding registry, store reducer actions, and end-to-end keyboard editing flows (`Sheet.keyboard.test.tsx`, `keybindings.test.ts`, `store.test.ts`).
 
 ### P4 — Simulation & results in the web UI
 
