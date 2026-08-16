@@ -34,9 +34,12 @@ export interface EditorSnapshot {
   modelVersion: number;
   filename: string;
   dpix: number;
-  worksheetSize: string;
+  worksheetSize?: string;
+  sheetWidth?: number;
+  sheetHeight?: number;
   components: EditorComponent[];
-  connections: EditorWire[];
+  connections?: EditorWire[];
+  wires?: EditorWire[];
 }
 
 export interface ChangeMessage {

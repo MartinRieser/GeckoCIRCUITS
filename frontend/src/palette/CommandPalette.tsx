@@ -34,7 +34,7 @@ export function CommandPalette({
 
   const items = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return catalog
+    return (catalog || [])
       .map((entry) => {
         const meta = getComponentMeta(entry.type, entry.family, entry.name);
         return {

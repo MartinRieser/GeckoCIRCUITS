@@ -243,3 +243,53 @@ describe('store: wiring', () => {
     expect(state.wireDraft).toBeNull();
   });
 });
+
+describe('store: P3 keyboard actions', () => {
+  const loaded = editorReducer(initialState, { type: 'SNAPSHOT', snapshot });
+
+  it('GHOST_NUDGE moves the ghost by dx, dy', () => {
+    let state = editorReducer(loaded, { type: 'ARM', componentType: 1, family: 'LK' });
+    expect(state.ghost).toMatchObject({ x: 10, y: 10 });
+    state = editorReducer(state, { type: 'GHOST_NUDGE', dx: 5, dy: -2 });
+    expect(state.ghost).toMatchObject({ x: 15, y: 8 });
+  });
+
+  it('GHOST_ROTATE with ccw rotates counter-clockwise', () => {
+    let state = editorReducer(loaded, { type: 'ARM', componentType: 1, family: 'LK' });
+    expect(state.ghost?.orientation).toBe(503);
+    state = editorReducer(state, { type: 'GHOST_ROTATE', ccw: true });
+    expect(state.ghost?.orientation).toBe(502);
+  });
+
+  it('SELECTION_NUDGE moves only selected components by dx, dy', () => {
+    let state = editorReducer(loaded, { type: 'SELECT', name: 'R1', additive: false });
+    state = editorReducer(state, { type: 'SELECTION_NUDGE', dx: 2, dy: 3 });
+    const r1 = state.components.find((c) => c.name === 'R1');
+    const c1 = state.components.find((c) => c.name === 'C1');
+    expect(r1?.position).toEqual([12, 13]);
+    expect(c1?.position).toEqual([30, 10]); // untouched
+  });
+
+  it('TERMINAL_FOCUS_CYCLE cycles forward and backward across component terminals', () => {
+    let state = editorReducer(loaded, { type: 'TERMINAL_FOCUS_CYCLE' });
+    expect(state.focusedTerminal).not.toBeNull();
+    const firstTerm = state.focusedTerminal;
+    expect(firstTerm?.componentName).toBe('R1');
+
+    // Cycle next
+    state = editorReducer(state, { type: 'TERMINAL_FOCUS_CYCLE' });
+    expect(state.focusedTerminal?.terminalIndex).not.toBe(firstTerm?.terminalIndex);
+
+    // Cycle reverse
+    state = editorReducer(state, { type: 'TERMINAL_FOCUS_CYCLE', reverse: true });
+    expect(state.focusedTerminal?.terminalIndex).toBe(firstTerm?.terminalIndex);
+  });
+
+  it('WIRE_CURSOR_NUDGE steers the wire draft cursor', () => {
+    let state = editorReducer(loaded, { type: 'TOGGLE_WIRE_MODE' });
+    state = editorReducer(state, { type: 'WIRE_START', x: 10, y: 10 });
+    state = editorReducer(state, { type: 'WIRE_CURSOR_NUDGE', dx: 4, dy: 0 });
+    expect(state.wireDraft?.cursor).toEqual({ x: 14, y: 10 });
+    expect(state.wireDraft?.preferHorizontal).toBe(true);
+  });
+});

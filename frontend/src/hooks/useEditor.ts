@@ -306,6 +306,89 @@ export function useEditor() {
     }
   }, [refresh, reportError]);
 
+  const duplicateSelection = useCallback(async () => {
+    const current = stateRef.current;
+    const circuitId = current.circuitId;
+    if (!circuitId || current.selection.length === 0) return;
+
+    const clones: string[] = [];
+    for (const name of current.selection) {
+      const comp = current.components.find((c) => c.name === name);
+      if (!comp) continue;
+      try {
+        const msg = await api.createComponent(circuitId, {
+          family: comp.family,
+          type: comp.type,
+          x: comp.position[0] + 2,
+          y: comp.position[1] + 2,
+          orientation: comp.orientation,
+        });
+        const payload = msg.payload as ComponentPayload;
+        versionRef.current = msg.modelVersion;
+        const newComp = toEditorComponent(payload, comp.family);
+        if (comp.parameters && Object.keys(comp.parameters).length > 0) {
+          const patchMsg = await api.patchComponent(circuitId, payload.name, {
+            parameters: comp.parameters as Record<string, number>,
+          });
+          versionRef.current = patchMsg.modelVersion;
+          newComp.parameters = { ...comp.parameters };
+        }
+        dispatch({
+          type: 'COMPONENT_UPSERT',
+          component: newComp,
+          version: versionRef.current,
+        });
+        clones.push(payload.name);
+      } catch (e) {
+        reportError(e);
+      }
+    }
+
+    if (clones.length > 0) {
+      dispatch({ type: 'CLEAR_SELECTION' });
+      for (const name of clones) {
+        dispatch({ type: 'SELECT', name, additive: true });
+      }
+      dispatch({ type: 'PANEL_FOR', name: clones[0] });
+    }
+  }, [reportError]);
+
+  const nudgeTimerRef = useRef<number | null>(null);
+  const pendingNudgesRef = useRef<Record<string, { x: number; y: number }>>({});
+
+  const nudgeSelection = useCallback(
+    (dx: number, dy: number) => {
+      const current = stateRef.current;
+      if (current.selection.length === 0 || !current.circuitId) return;
+
+      dispatch({ type: 'SELECTION_NUDGE', dx, dy });
+
+      for (const name of current.selection) {
+        const comp = current.components.find((c) => c.name === name);
+        if (!comp) continue;
+        const currentPos = pendingNudgesRef.current[name] || { x: comp.position[0], y: comp.position[1] };
+        pendingNudgesRef.current[name] = { x: currentPos.x + dx, y: currentPos.y + dy };
+      }
+
+      if (nudgeTimerRef.current !== null) {
+        clearTimeout(nudgeTimerRef.current);
+      }
+
+      nudgeTimerRef.current = window.setTimeout(() => {
+        const moves = Object.entries(pendingNudgesRef.current).map(([name, pos]) => ({
+          name,
+          x: pos.x,
+          y: pos.y,
+        }));
+        pendingNudgesRef.current = {};
+        if (moves.length > 0) {
+          commitMove(moves);
+        }
+      }, 400);
+    },
+    [commitMove],
+  );
+
   const undo = useCallback(async () => {
     const circuitId = stateRef.current.circuitId;
     if (!circuitId) return;
@@ -313,6 +396,7 @@ export function useEditor() {
       const msg = await api.undo(circuitId);
       versionRef.current = msg.modelVersion;
       await refresh(circuitId);
+      dispatch({ type: 'STATUS', status: 'Undo applied' });
     } catch (e) {
       reportError(e);
     }
@@ -325,6 +409,7 @@ export function useEditor() {
       const msg = await api.redo(circuitId);
       versionRef.current = msg.modelVersion;
       await refresh(circuitId);
+      dispatch({ type: 'STATUS', status: 'Redo applied' });
     } catch (e) {
       reportError(e);
     }
@@ -408,9 +493,13 @@ export function useEditor() {
   // ========== Simulation Actions ==========
 
   const runSimulation = useCallback(
-    async (config: { simulationTime: number; timeStep: number; solverType: string }) => {
+    async (config?: { simulationTime?: number; timeStep?: number; solverType?: string }) => {
       const circuitId = stateRef.current.circuitId;
       if (!circuitId) return;
+
+      const simTime = config?.simulationTime ?? 0.02;
+      const tStep = config?.timeStep ?? 1e-6;
+      const solver = config?.solverType ?? 'BE';
 
       if (simPollTimerRef.current !== null) {
         clearInterval(simPollTimerRef.current);
@@ -425,9 +514,9 @@ export function useEditor() {
       try {
         const sim = await api.submitSimulation({
           circuitId,
-          simulationTime: config.simulationTime,
-          timeStep: config.timeStep,
-          solverType: config.solverType,
+          simulationTime: simTime,
+          timeStep: tStep,
+          solverType: solver,
         });
 
         currentSimIdRef.current = sim.simulationId;
@@ -519,6 +608,8 @@ export function useEditor() {
       deleteWire,
       labelWire,
       deleteSelection,
+      duplicateSelection,
+      nudgeSelection,
       undo,
       redo,
       save,

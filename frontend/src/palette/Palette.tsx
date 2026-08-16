@@ -21,7 +21,7 @@ export function Palette({ catalog, onArm }: PaletteProps) {
 
   // Augment catalog entries with schema metadata
   const catalogWithMeta = useMemo(() => {
-    return catalog.map((entry) => {
+    return (catalog || []).map((entry) => {
       const meta = getComponentMeta(entry.type, entry.family, entry.name);
       return {
         ...entry,

@@ -1,30 +1,31 @@
 /**
- * Editor store: a useReducer state machine with the same interaction modes
- * as the Swing editor's MouseMoveMode (idle / placing / wiring / rubber /
- * dragging). Pure reducer — API calls happen in event handlers, their
- * results are fed back as actions (optimistic updates apply the payloads
- * locally; failures trigger a REFRESH with a fresh server snapshot).
+ * Editor State Machine & useReducer store.
+ *
+ * Implements the core editor interaction states:
+ * - 'idle': normal selection, rubber band, component dragging
+ * - 'placing': ghost component follows cursor / keyboard arrows, waiting to be placed
+ * - 'wiring': wire drafting from a start terminal to target point/terminal
+ * - 'rubber': multi-component selection rectangle active
+ * - 'dragging': moving selected components on grid
  */
-import type { EditorComponent, EditorSnapshot, EditorWire } from './types';
+import type { EditorComponent, EditorWire, Point, EditorSnapshot } from './types';
+import { ORIENTATION_CYCLE, terminalPositions } from './geometry';
 
 export type Mode = 'idle' | 'placing' | 'wiring' | 'rubber' | 'dragging';
+export type EditorMode = Mode;
 
 export interface Ghost {
   type: number;
   family: string;
-  name: string | null;
   x: number;
   y: number;
   orientation: number;
 }
 
 export interface WireDraft {
-  start: { x: number; y: number };
-  cursor: { x: number; y: number };
-  /**
-   * Sticky routing axis, port of Connection._movementWestEast: chosen once
-   * when the draft leaves the start point, kept until the cursor returns to it.
-   */
+  start: Point;
+  cursor: Point;
+  /** locked horizontal preference once draft moves away from start */
   preferHorizontal: boolean | null;
 }
 
@@ -40,6 +41,14 @@ export interface DragState {
   origins: Record<string, { x: number; y: number }>;
   startX: number;
   startY: number;
+}
+
+export interface FocusedTerminal {
+  componentName: string;
+  terminalIndex: number;
+  label: string;
+  x: number;
+  y: number;
 }
 
 export interface EditorState {
@@ -59,6 +68,7 @@ export interface EditorState {
   selection: string[];
   selectedWire: number | null;
   panelFor: string | null;
+  focusedTerminal: FocusedTerminal | null;
   status: string;
   busy: boolean;
 }
@@ -80,7 +90,8 @@ export const initialState: EditorState = {
   selection: [],
   selectedWire: null,
   panelFor: null,
-  status: 'Open a .ipes file to begin',
+  focusedTerminal: null,
+  status: 'Open a .ipes file or example to begin',
   busy: false,
 };
 
@@ -90,7 +101,8 @@ export type Action =
   | { type: 'BUSY'; busy: boolean }
   | { type: 'ARM'; componentType: number; family: string }
   | { type: 'GHOST_MOVE'; x: number; y: number }
-  | { type: 'GHOST_ROTATE' }
+  | { type: 'GHOST_NUDGE'; dx: number; dy: number }
+  | { type: 'GHOST_ROTATE'; ccw?: boolean }
   | { type: 'CANCEL' }
   | { type: 'COMPONENT_UPSERT'; component: EditorComponent; version: number }
   | { type: 'COMPONENT_DELETED'; name: string; version: number }
@@ -100,18 +112,19 @@ export type Action =
   | { type: 'SELECT'; name: string; additive: boolean }
   | { type: 'SELECT_WIRE'; index: number | null }
   | { type: 'CLEAR_SELECTION' }
+  | { type: 'SELECTION_NUDGE'; dx: number; dy: number }
   | { type: 'WIRE_START'; x: number; y: number }
   | { type: 'WIRE_CURSOR'; x: number; y: number }
-  /** Aborts the current wire draft but keeps the wire pen armed (classic Esc). */
+  | { type: 'WIRE_CURSOR_NUDGE'; dx: number; dy: number }
+  | { type: 'TERMINAL_FOCUS_CYCLE'; reverse?: boolean }
+  | { type: 'SET_FOCUSED_TERMINAL'; terminal: FocusedTerminal | null }
   | { type: 'WIRE_DRAFT_ABORT' }
-  /** A wire was committed: clear the draft, keep the wire pen armed for the next one. */
   | { type: 'WIRE_DRAFT_END' }
   | { type: 'RUBBER_START'; x: number; y: number }
   | { type: 'RUBBER_MOVE'; x: number; y: number }
   | { type: 'RUBBER_END' }
   | { type: 'DRAG_START'; names: string[]; x: number; y: number }
   | { type: 'DRAG_MOVE'; x: number; y: number }
-  /** Ends the drag keeping the current positions (commit); CANCEL restores them. */
   | { type: 'DRAG_END' }
   | { type: 'PANEL_FOR'; name: string | null }
   | { type: 'TOGGLE_WIRE_MODE' };
@@ -119,31 +132,51 @@ export type Action =
 export function editorReducer(state: EditorState, action: Action): EditorState {
   switch (action.type) {
     case 'SNAPSHOT': {
-      const [w, h] = parseWorksheet(action.snapshot.worksheetSize);
+      const snap = action.snapshot as unknown as Record<string, unknown>;
+      let sheetWidth = 600;
+      let sheetHeight = 600;
+      if (typeof snap.sheetWidth === 'number' && typeof snap.sheetHeight === 'number') {
+        sheetWidth = snap.sheetWidth;
+        sheetHeight = snap.sheetHeight;
+      } else if (typeof snap.worksheetSize === 'string') {
+        const parts = snap.worksheetSize.replace('_', 'x').split('x');
+        sheetWidth = Number(parts[0]) || 600;
+        sheetHeight = Number(parts[1]) || 600;
+      }
+
+      const wires = (Array.isArray(snap.wires) ? snap.wires : Array.isArray(snap.connections) ? snap.connections : []) as EditorWire[];
+      const components = (Array.isArray(snap.components) ? snap.components : []) as EditorComponent[];
+
       return {
         ...state,
-        circuitId: action.snapshot.circuitId,
-        filename: action.snapshot.filename,
-        modelVersion: action.snapshot.modelVersion,
-        dpix: action.snapshot.dpix,
-        sheetWidth: w,
-        sheetHeight: h,
-        components: action.snapshot.components,
-        wires: action.snapshot.connections,
-        selection: [],
-        selectedWire: null,
+        circuitId: (snap.circuitId as string) || null,
+        filename: (snap.filename as string) || '',
+        modelVersion: typeof snap.modelVersion === 'number' ? snap.modelVersion : 0,
+        dpix: typeof snap.dpix === 'number' ? snap.dpix : 16,
+        sheetWidth,
+        sheetHeight,
+        components,
+        wires,
         mode: 'idle',
         ghost: null,
         wireDraft: null,
         rubber: null,
         drag: null,
+        selection: [],
+        selectedWire: null,
+        panelFor: null,
+        focusedTerminal: null,
+        status: `Loaded ${(snap.filename as string) || 'circuit'} (${components.length} components)`,
         busy: false,
       };
     }
+
     case 'STATUS':
       return { ...state, status: action.status };
+
     case 'BUSY':
       return { ...state, busy: action.busy };
+
     case 'ARM':
       return {
         ...state,
@@ -151,28 +184,47 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         ghost: {
           type: action.componentType,
           family: action.family,
-          name: null,
-          x: state.ghost?.x ?? 0,
-          y: state.ghost?.y ?? 0,
+          x: 10,
+          y: 10,
           orientation: 503,
         },
-        selection: [],
-        selectedWire: null,
-        panelFor: null,
-        status: 'Placing component — click to place, right-click or R to rotate, Esc to cancel',
+        wireDraft: null,
+        rubber: null,
+        drag: null,
+        status: 'Placing component — Click or press Enter to place, R to rotate, Esc to cancel',
       };
+
     case 'GHOST_MOVE':
       if (!state.ghost) return state;
-      return { ...state, ghost: { ...state.ghost, x: action.x, y: action.y } };
+      return {
+        ...state,
+        ghost: { ...state.ghost, x: action.x, y: action.y },
+      };
+
+    case 'GHOST_NUDGE': {
+      if (!state.ghost) return state;
+      const maxWidth = state.sheetWidth || 600;
+      const maxHeight = state.sheetHeight || 600;
+      const x = Math.max(2, Math.min(maxWidth - 2, state.ghost.x + action.dx));
+      const y = Math.max(2, Math.min(maxHeight - 2, state.ghost.y + action.dy));
+      return {
+        ...state,
+        ghost: { ...state.ghost, x, y },
+        status: `Ghost at (${x}, ${y}) — Enter to place, R to rotate, Esc to cancel`,
+      };
+    }
+
     case 'GHOST_ROTATE': {
       if (!state.ghost) return state;
-      const cycle = [503, 504, 501, 502];
-      const next = cycle[(cycle.indexOf(state.ghost.orientation) + 1) % cycle.length];
-      return { ...state, ghost: { ...state.ghost, orientation: next } };
+      const cycle = ORIENTATION_CYCLE;
+      const curIdx = cycle.indexOf(state.ghost.orientation as (typeof cycle)[number]);
+      const nextIdx = action.ccw
+        ? (curIdx - 1 + cycle.length) % cycle.length
+        : (curIdx + 1) % cycle.length;
+      return { ...state, ghost: { ...state.ghost, orientation: cycle[nextIdx] } };
     }
+
     case 'CANCEL': {
-      // classic behaviors: Esc restores a moved component to its drag origin
-      // (deselectViaESCAPE) and only kills the wire being drawn, not the wire pen
       if (state.mode === 'dragging' && state.drag) {
         const origins = state.drag.origins;
         return {
@@ -182,7 +234,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
           ),
           mode: 'idle',
           drag: null,
-          status: '',
+          status: 'Move cancelled',
         };
       }
       if (state.mode === 'wiring' && state.wireDraft) {
@@ -198,6 +250,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         status: '',
       };
     }
+
     case 'COMPONENT_UPSERT': {
       const exists = state.components.some((c) => c.name === action.component.name);
       const components = exists
@@ -207,25 +260,29 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         ...state,
         components,
         modelVersion: action.version,
-        status: '',
+        status: `${action.component.name} updated`,
       };
     }
-    case 'COMPONENT_DELETED':
+
+    case 'COMPONENT_DELETED': {
       return {
         ...state,
         components: state.components.filter((c) => c.name !== action.name),
         selection: state.selection.filter((n) => n !== action.name),
         panelFor: state.panelFor === action.name ? null : state.panelFor,
         modelVersion: action.version,
-        status: '',
+        status: `${action.name} deleted`,
       };
+    }
+
     case 'WIRE_CREATED':
       return {
         ...state,
         wires: [...state.wires, action.wire],
         modelVersion: action.version,
-        status: '',
+        status: `Wire #${action.wire.index} added`,
       };
+
     case 'WIRE_PATCHED':
       return {
         ...state,
@@ -233,39 +290,55 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
           w.index === action.index ? { ...w, points: action.points, label: action.label } : w,
         ),
         modelVersion: action.version,
+        status: `Wire #${action.index} updated`,
       };
+
     case 'WIRE_DELETED':
       return {
         ...state,
         wires: state.wires.filter((w) => w.index !== action.index),
         selectedWire: state.selectedWire === action.index ? null : state.selectedWire,
         modelVersion: action.version,
-        status: '',
+        status: `Wire #${action.index} deleted`,
       };
+
     case 'SELECT': {
       const selection = action.additive
         ? state.selection.includes(action.name)
           ? state.selection.filter((n) => n !== action.name)
           : [...state.selection, action.name]
         : [action.name];
-      return {
-        ...state,
-        selection,
-        selectedWire: null,
-        panelFor: action.additive ? state.panelFor : action.name,
-      };
+      return { ...state, selection, selectedWire: null };
     }
+
     case 'SELECT_WIRE':
       return { ...state, selectedWire: action.index, selection: [] };
+
     case 'CLEAR_SELECTION':
-      return { ...state, selection: [], selectedWire: null, panelFor: null };
+      return { ...state, selection: [], selectedWire: null };
+
+    case 'SELECTION_NUDGE': {
+      if (state.selection.length === 0) return state;
+      const maxWidth = state.sheetWidth || 600;
+      const maxHeight = state.sheetHeight || 600;
+      const set = new Set(state.selection);
+      const components = state.components.map((c) => {
+        if (!set.has(c.name)) return c;
+        const x = Math.max(2, Math.min(maxWidth - 2, c.position[0] + action.dx));
+        const y = Math.max(2, Math.min(maxHeight - 2, c.position[1] + action.dy));
+        return { ...c, position: [x, y] };
+      });
+      return { ...state, components };
+    }
+
     case 'WIRE_START':
       return {
         ...state,
         mode: 'wiring',
         wireDraft: { start: { x: action.x, y: action.y }, cursor: { x: action.x, y: action.y }, preferHorizontal: null },
-        status: 'Wiring — click to set the end point, Esc to abort, W to leave wire mode',
+        status: 'Wiring — click or press Enter to set end point, Esc to abort, W to leave wire mode',
       };
+
     case 'WIRE_CURSOR': {
       if (!state.wireDraft) return state;
       const draft = state.wireDraft;
@@ -280,40 +353,116 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         wireDraft: { ...draft, cursor: { x: action.x, y: action.y }, preferHorizontal },
       };
     }
+
+    case 'WIRE_CURSOR_NUDGE': {
+      if (!state.wireDraft) return state;
+      const cur = state.wireDraft.cursor;
+      const maxWidth = state.sheetWidth || 600;
+      const maxHeight = state.sheetHeight || 600;
+      const x = Math.max(0, Math.min(maxWidth, cur.x + action.dx));
+      const y = Math.max(0, Math.min(maxHeight, cur.y + action.dy));
+      const draft = state.wireDraft;
+      let preferHorizontal = draft.preferHorizontal;
+      if (x === draft.start.x && y === draft.start.y) {
+        preferHorizontal = null;
+      } else if (preferHorizontal === null) {
+        preferHorizontal = Math.abs(x - draft.start.x) >= Math.abs(y - draft.start.y);
+      }
+      return {
+        ...state,
+        wireDraft: { ...draft, cursor: { x, y }, preferHorizontal },
+        status: `Wire draft cursor at (${x}, ${y}) — Enter to commit, Esc to abort`,
+      };
+    }
+
+    case 'TERMINAL_FOCUS_CYCLE': {
+      if (state.components.length === 0) return state;
+      const allTerminals: FocusedTerminal[] = [];
+      for (const comp of state.components) {
+        const terms = terminalPositions(comp);
+        terms.input.forEach((p, idx) => {
+          allTerminals.push({ componentName: comp.name, terminalIndex: idx, label: 'in', x: p.x, y: p.y });
+        });
+        terms.output.forEach((p, idx) => {
+          allTerminals.push({ componentName: comp.name, terminalIndex: terms.input.length + idx, label: 'out', x: p.x, y: p.y });
+        });
+      }
+      if (allTerminals.length === 0) return state;
+
+      let nextIndex = 0;
+      if (state.focusedTerminal) {
+        const curIdx = allTerminals.findIndex(
+          (t) =>
+            t.componentName === state.focusedTerminal?.componentName &&
+            t.terminalIndex === state.focusedTerminal?.terminalIndex,
+        );
+        if (curIdx >= 0) {
+          nextIndex = action.reverse
+            ? (curIdx - 1 + allTerminals.length) % allTerminals.length
+            : (curIdx + 1) % allTerminals.length;
+        }
+      }
+
+      const focused = allTerminals[nextIndex];
+      const wireDraft =
+        state.mode === 'wiring' && state.wireDraft
+          ? { ...state.wireDraft, cursor: { x: focused.x, y: focused.y } }
+          : state.wireDraft;
+
+      return {
+        ...state,
+        focusedTerminal: focused,
+        wireDraft,
+        status: `Focused ${focused.componentName} pin ${focused.label} (${focused.x}, ${focused.y})`,
+      };
+    }
+
+    case 'SET_FOCUSED_TERMINAL':
+      return { ...state, focusedTerminal: action.terminal };
+
     case 'WIRE_DRAFT_ABORT':
       if (!state.wireDraft) return state;
-      return { ...state, wireDraft: null };
+      return { ...state, wireDraft: null, status: 'Wire draft aborted' };
+
     case 'WIRE_DRAFT_END':
       if (!state.wireDraft) return state;
-      return { ...state, wireDraft: null, status: 'Wire mode — click to draw the next wire' };
+      return { ...state, wireDraft: null, status: 'Wire mode — click or press Enter to draw the next wire' };
+
     case 'RUBBER_START':
       return {
         ...state,
         mode: 'rubber',
         rubber: { x0: action.x, y0: action.y, x1: action.x, y1: action.y },
       };
+
     case 'RUBBER_MOVE':
       if (!state.rubber) return state;
-      return { ...state, rubber: { ...state.rubber, x1: action.x, y1: action.y } };
+      return {
+        ...state,
+        rubber: { ...state.rubber, x1: action.x, y1: action.y },
+      };
+
     case 'RUBBER_END': {
       if (!state.rubber) return state;
-      const x0 = Math.min(state.rubber.x0, state.rubber.x1);
-      const x1 = Math.max(state.rubber.x0, state.rubber.x1);
-      const y0 = Math.min(state.rubber.y0, state.rubber.y1);
-      const y1 = Math.max(state.rubber.y0, state.rubber.y1);
-      const hit = state.components
-        .filter((c) => inBox(c.position, x0, y0, x1, y1))
+      const r = state.rubber;
+      const xMin = Math.min(r.x0, r.x1);
+      const xMax = Math.max(r.x0, r.x1);
+      const yMin = Math.min(r.y0, r.y1);
+      const yMax = Math.max(r.y0, r.y1);
+
+      const selected = state.components
+        .filter((c) => c.position[0] >= xMin && c.position[0] <= xMax && c.position[1] >= yMin && c.position[1] <= yMax)
         .map((c) => c.name);
+
       return {
         ...state,
         mode: 'idle',
         rubber: null,
-        selection: hit,
-        selectedWire: null,
-        panelFor: hit.length === 1 ? hit[0] : null,
-        status: hit.length ? `${hit.length} selected` : '',
+        selection: selected,
+        status: selected.length ? `${selected.length} components selected` : '',
       };
     }
+
     case 'DRAG_START': {
       const origins: Record<string, { x: number; y: number }> = {};
       for (const name of action.names) {
@@ -322,46 +471,53 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
           origins[name] = { x: comp.position[0], y: comp.position[1] };
         }
       }
-      return { ...state, mode: 'dragging', drag: { origins, startX: action.x, startY: action.y } };
+      return {
+        ...state,
+        mode: 'dragging',
+        drag: { origins, startX: action.x, startY: action.y },
+      };
     }
+
     case 'DRAG_MOVE': {
       if (!state.drag) return state;
       const dx = action.x - state.drag.startX;
       const dy = action.y - state.drag.startY;
+      const origins = state.drag.origins;
+
       const components = state.components.map((c) => {
-        const origin = state.drag!.origins[c.name];
-        return origin
-          ? { ...c, position: [origin.x + dx, origin.y + dy] }
-          : c;
+        if (origins[c.name]) {
+          return {
+            ...c,
+            position: [origins[c.name].x + dx, origins[c.name].y + dy],
+          };
+        }
+        return c;
       });
       return { ...state, components };
     }
+
     case 'DRAG_END':
       if (!state.drag) return state;
       return { ...state, mode: 'idle', drag: null };
+
     case 'PANEL_FOR':
       return { ...state, panelFor: action.name };
-    case 'TOGGLE_WIRE_MODE':
-      if (state.wireDraft) {
+
+    case 'TOGGLE_WIRE_MODE': {
+      if (state.mode === 'wiring') {
         return { ...state, mode: 'idle', wireDraft: null, status: '' };
       }
       return {
         ...state,
         mode: 'wiring',
-        ghost: null,
         wireDraft: null,
-        status: 'Wire mode — click a terminal or grid point to start a wire',
+        ghost: null,
+        selection: [],
+        status: 'Wire mode active — Click or Tab/Enter on a terminal to start',
       };
+    }
+
     default:
       return state;
   }
-}
-
-function inBox(position: number[], x0: number, y0: number, x1: number, y1: number): boolean {
-  return position[0] >= x0 && position[0] <= x1 && position[1] >= y0 && position[1] <= y1;
-}
-
-function parseWorksheet(size: string): [number, number] {
-  const match = /(\d+)\D+(\d+)/.exec(size);
-  return match ? [Number(match[1]), Number(match[2])] : [600, 600];
 }

@@ -27,6 +27,7 @@ export interface SheetActions {
   rotateComponent?: (name: string) => void;
   deleteComponent?: (name: string) => void;
   deleteWire?: (index: number) => void;
+  deleteSelection?: () => void;
   openProperties?: (name: string) => void;
   toggleWireMode?: () => void;
   openCommandPalette?: () => void;
@@ -587,6 +588,22 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
               className="terminal-snap-halo"
               pointerEvents="none"
             />
+          )}
+
+          {/* Focused Terminal indicator (Keyboard Tab navigation) */}
+          {state.focusedTerminal && (
+            <g
+              className="focused-terminal-ring"
+              transform={`translate(${state.focusedTerminal.x * dpix}, ${state.focusedTerminal.y * dpix})`}
+              pointerEvents="none"
+            >
+              <circle r={8} fill="none" stroke="#38bdf8" strokeWidth={2} strokeDasharray="3 2" />
+              <circle r={3} fill="#38bdf8" />
+              <rect x={10} y={-8} width={24} height={15} rx={3} fill="rgba(15, 23, 42, 0.9)" stroke="#38bdf8" strokeWidth={1} />
+              <text x={22} y={3} textAnchor="middle" fill="#38bdf8" fontSize={9} fontWeight="bold">
+                {state.focusedTerminal.label}
+              </text>
+            </g>
           )}
 
           {/* Wire draft preview */}
