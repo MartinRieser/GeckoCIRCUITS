@@ -261,7 +261,7 @@ typ 7
 uniqueObjectIdentifier 11
 x 10
 y 6
-parameter[] 0.0 0.01 1000000.0
+parameter[] 0.01 0.01 1000000.0
 orientierung 502
 idStringDialog S_main
 <\\ElementLK>
@@ -276,7 +276,7 @@ typ 6
 uniqueObjectIdentifier 12
 x 14
 y 8
-parameter[] 0.0 0.7 0.01 1000000.0
+parameter[] 1000000.0 0.7 0.01 1000000.0
 orientierung 501
 idStringDialog D_free
 <\\ElementLK>

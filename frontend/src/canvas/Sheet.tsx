@@ -7,7 +7,7 @@ import { useRef, useState, useMemo, useEffect } from 'react';
 import type { Dispatch, MouseEvent as ReactMouseEvent, WheelEvent as ReactWheelEvent, DragEvent as ReactDragEvent } from 'react';
 import type { EditorState, Action } from '../model/store';
 import { terminalPositions, terminalNear } from '../model/geometry';
-import { routeL } from './WireRouter';
+import { routeL, densePoints } from './WireRouter';
 import { ComponentSymbol } from './symbols';
 import type { Point } from '../model/types';
 import { ContextMenu } from './ContextMenu';
@@ -22,8 +22,8 @@ export interface SheetActions {
     familyOverride?: string,
   ): void;
   finishWire(points: number[][]): void;
+  labelWire?(index: number, label: string): void;
   commitMove(moves: { name: string; x: number; y: number }[]): void;
-  deleteSelection(): void;
   rotateComponent?: (name: string) => void;
   deleteComponent?: (name: string) => void;
   deleteWire?: (index: number) => void;
@@ -136,6 +136,24 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
     }
   };
 
+  /**
+   * Classic drop (mouseReleaseSelectedGroup): persist the dragged positions.
+   */
+  const commitDrag = () => {
+    const drag = state.drag;
+    if (!drag) return;
+    const moves = Object.entries(drag.origins)
+      .map(([name]) => {
+        const comp = state.components.find((c) => c.name === name)!;
+        return { name, x: comp.position[0], y: comp.position[1] };
+      })
+      .filter((m) => m.x !== drag.origins[m.name].x || m.y !== drag.origins[m.name].y);
+    dispatch({ type: 'DRAG_END' });
+    if (moves.length) {
+      actions.commitMove(moves);
+    }
+  };
+
   const handleMouseDown = (e: ReactMouseEvent) => {
     // Close context menu if open
     if (contextMenu) setContextMenu(null);
@@ -162,11 +180,16 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
           dispatch({ type: 'WIRE_START', ...snappedToTerminal(p) });
         } else {
           const end = snappedToTerminal(p);
-          const points = routeL(state.wireDraft.start, end);
-          dispatch({ type: 'CANCEL' });
-          actions.finishWire(points.map((pt) => [pt.x, pt.y]));
+          const route = routeL(state.wireDraft.start, end, state.wireDraft.preferHorizontal);
+          dispatch({ type: 'WIRE_DRAFT_END' });
+          actions.finishWire(densePoints(route).map((pt) => [pt.x, pt.y]));
         }
         break;
+      case 'dragging':
+        // classic behavior: a press while a grabbed group follows the cursor drops it
+        commitDrag();
+        dispatch({ type: 'CLEAR_SELECTION' });
+        return;
       default:
         dispatch({ type: 'RUBBER_START', x: p.x, y: p.y });
         if (!e.shiftKey) {
@@ -216,6 +239,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
     }
 
     if (state.mode === 'placing') {
+      // release after a press that started outside the sheet (palette drag)
       if (state.ghost) {
         actions.placeGhost(state.ghost.x, state.ghost.y, state.ghost.orientation);
       }
@@ -225,16 +249,14 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
     if (state.mode === 'rubber') {
       dispatch({ type: 'RUBBER_END' });
     } else if (state.mode === 'dragging' && state.drag) {
-      const origins = state.drag.origins;
-      const moves = Object.entries(origins)
-        .map(([name]) => {
-          const comp = state.components.find((c) => c.name === name)!;
-          return { name, x: comp.position[0], y: comp.position[1] };
-        })
-        .filter((m) => m.x !== origins[m.name].x || m.y !== origins[m.name].y);
-      dispatch({ type: 'CANCEL' });
-      if (moves.length) {
-        actions.commitMove(moves);
+      // classic semantics: a click that never moved leaves the group grabbed
+      // (it then follows the cursor); a completed drag gesture commits here
+      const moved = Object.entries(state.drag.origins).some(([name, origin]) => {
+        const comp = state.components.find((c) => c.name === name);
+        return comp && (comp.position[0] !== origin.x || comp.position[1] !== origin.y);
+      });
+      if (moved) {
+        commitDrag();
       }
     }
   };
@@ -297,7 +319,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
   const interactiveLayer = state.mode === 'idle';
 
   const wireDraftPoints = state.wireDraft
-    ? routeL(state.wireDraft.start, state.wireDraft.cursor)
+    ? routeL(state.wireDraft.start, state.wireDraft.cursor, state.wireDraft.preferHorizontal)
         .map((p) => `${p.x * dpix},${p.y * dpix}`)
         .join(' ')
     : null;
@@ -343,7 +365,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
           onClick={handleZoomFit}
           title="Fit to Screen"
         >
-          ⛶
+          Fit
         </button>
         <div className="canvas-ctrl-sep" />
         <button
@@ -352,7 +374,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
           onClick={actions.toggleWireMode}
           title="Wire Tool (W)"
         >
-          ✏
+          W
         </button>
         <button
           type="button"
@@ -360,7 +382,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
           onClick={() => setShowGrid(!showGrid)}
           title="Toggle Grid"
         >
-          ▦
+          #
         </button>
       </div>
 
@@ -462,13 +484,9 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                   onMouseDown={(e) => {
                     if (e.button !== 0) return;
                     e.stopPropagation();
+                    // note: while placing/dragging the components layer has
+                    // pointer-events none, so this only fires in idle mode
                     const grid = toGrid(e);
-                    if (state.mode === 'placing') {
-                      if (state.ghost) {
-                        actions.placeGhost(grid.x, grid.y, state.ghost.orientation);
-                      }
-                      return;
-                    }
                     dispatch({ type: 'SELECT', name: component.name, additive: e.shiftKey });
                     dispatch({ type: 'PANEL_FOR', name: component.name });
                     const names = state.selection.includes(component.name)
@@ -623,6 +641,13 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
           onRotate={actions.rotateComponent}
           onDeleteComponent={actions.deleteComponent}
           onDeleteWire={actions.deleteWire}
+          onLabelWire={(index) => {
+            const wire = state.wires.find((w) => w.index === index);
+            const label = window.prompt('Net label (empty = none, GND = ground):', wire?.label ?? '');
+            if (label !== null) {
+              actions.labelWire?.(index, label.trim());
+            }
+          }}
           onOpenProperties={actions.openProperties}
           onToggleWireMode={actions.toggleWireMode}
           onOpenCommandPalette={actions.openCommandPalette}

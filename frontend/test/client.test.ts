@@ -66,6 +66,17 @@ describe('api client', () => {
     expect(fetchMock.mock.calls[0][1].method).toBe('DELETE');
   });
 
+  it('patchConnection sends label changes for wire net labels', async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse({ circuitId: 'c1', modelVersion: 9, operation: 'patchConnection', payload: { index: 3, label: 'GND', points: [] } }),
+    );
+    await client.patchConnection('c1', 3, { label: 'GND' });
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe('/gecko/api/v1/circuits/c1/connections/3');
+    expect(init.method).toBe('PATCH');
+    expect(JSON.parse(init.body)).toEqual({ label: 'GND' });
+  });
+
   it('setNodeLabel puts terminalIndex, side and label', async () => {
     fetchMock.mockResolvedValue(jsonResponse({ circuitId: 'c1', modelVersion: 5, operation: 'setNodeLabel' }));
     await client.setNodeLabel('c1', 'R1', 0, 'y', 'gnd');

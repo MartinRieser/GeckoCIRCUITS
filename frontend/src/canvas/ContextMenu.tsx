@@ -20,6 +20,7 @@ export interface ContextMenuProps {
   onRotate?: (name: string) => void;
   onDeleteComponent?: (name: string) => void;
   onDeleteWire?: (index: number) => void;
+  onLabelWire?: (index: number) => void;
   onOpenProperties?: (name: string) => void;
   onToggleWireMode?: () => void;
   onOpenCommandPalette?: () => void;
@@ -34,6 +35,7 @@ export function ContextMenu({
   onRotate,
   onDeleteComponent,
   onDeleteWire,
+  onLabelWire,
   onOpenProperties,
   onToggleWireMode,
   onOpenCommandPalette,
@@ -79,7 +81,7 @@ export function ContextMenu({
               onClose();
             }}
           >
-            <span>⟳ Rotate 90°</span>
+            <span>Rotate 90°</span>
             <kbd>R</kbd>
           </button>
           <button
@@ -90,7 +92,7 @@ export function ContextMenu({
               onClose();
             }}
           >
-            <span>⚙ Properties</span>
+            <span>Properties</span>
             <kbd>2x Click</kbd>
           </button>
           <div className="context-menu-sep" />
@@ -102,7 +104,7 @@ export function ContextMenu({
               onClose();
             }}
           >
-            <span>🗑 Delete</span>
+            <span>Delete</span>
             <kbd>Del</kbd>
           </button>
         </>
@@ -113,13 +115,23 @@ export function ContextMenu({
           <div className="context-menu-header">Wire #{target.wireIndex}</div>
           <button
             type="button"
+            className="context-menu-item"
+            onClick={() => {
+              onLabelWire?.(target.wireIndex!);
+              onClose();
+            }}
+          >
+            <span>Net Label...</span>
+          </button>
+          <button
+            type="button"
             className="context-menu-item danger"
             onClick={() => {
               onDeleteWire?.(target.wireIndex!);
               onClose();
             }}
           >
-            <span>🗑 Delete Wire</span>
+            <span>Delete Wire</span>
             <kbd>Del</kbd>
           </button>
         </>
@@ -135,7 +147,7 @@ export function ContextMenu({
               onClose();
             }}
           >
-            <span>✏ Wire Tool</span>
+            <span>Wire Tool</span>
             <kbd>W</kbd>
           </button>
           <button
@@ -146,7 +158,7 @@ export function ContextMenu({
               onClose();
             }}
           >
-            <span>🔍 Add Component...</span>
+            <span>Add Component...</span>
             <kbd>Ctrl+K</kbd>
           </button>
           <div className="context-menu-sep" />
@@ -158,7 +170,7 @@ export function ContextMenu({
               onClose();
             }}
           >
-            <span>⛶ Zoom to Fit</span>
+            <span>Zoom to Fit</span>
           </button>
         </>
       )}

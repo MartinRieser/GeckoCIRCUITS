@@ -49,7 +49,7 @@ export function PropertiesPanel({
           <span className="properties-title">Properties</span>
         </div>
         <div className="properties-empty-state">
-          <div className="empty-icon">⚡</div>
+          <div className="empty-icon">&#9671;</div>
           <span className="empty-title">No selection</span>
           <p className="empty-hint">
             Select a component on the schematic sheet to inspect and edit its parameters, or double-click to open.
@@ -91,7 +91,7 @@ export function PropertiesPanel({
               onClick={() => onDelete(component.name)}
               title="Delete Component (Del)"
             >
-              🗑
+              &#10005;
             </button>
           )}
         </div>

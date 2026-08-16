@@ -101,7 +101,7 @@ describe('App user flow', () => {
     });
 
     // clicking a palette entry without an open circuit shows a hint instead of arming
-    fireEvent.mouseDown(container.querySelectorAll('.palette-entry')[0]);
+    fireEvent.click(container.querySelectorAll('.palette-entry')[0]);
     const svg = (container.querySelector('svg.sheet') || container.querySelector('svg'))!;
     fireEvent.mouseMove(svg, { clientX: 64, clientY: 64, button: 0 });
     expect(container.querySelector('g.ghost')).toBeNull();
@@ -117,9 +117,8 @@ describe('App user flow', () => {
     // wires are rendered from the snapshot
     expect(container.querySelectorAll('polyline.wire')).toHaveLength(1);
 
-    // arm the resistor from the palette, move, release to place
-    // (also covers drag-from-palette: press, move, release)
-    fireEvent.mouseDown(container.querySelectorAll('.palette-entry')[0]);
+    // arm the resistor from the palette, then click the sheet to place
+    fireEvent.click(container.querySelectorAll('.palette-entry')[0]);
     fireEvent.mouseMove(svg, { clientX: 100, clientY: 80, button: 0 });
     fireEvent.mouseUp(svg);
 

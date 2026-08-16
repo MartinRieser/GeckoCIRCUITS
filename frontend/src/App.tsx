@@ -104,7 +104,7 @@ export function App() {
       <header className="navbar">
         <div className="nav-brand">
           <div className="nav-logo">
-            <span className="logo-symbol">⚡</span>
+            <span className="logo-symbol">G</span>
           </div>
           <div className="nav-title-group">
             <span className="nav-title">GeckoCIRCUITS</span>
@@ -120,7 +120,7 @@ export function App() {
             onClick={() => actions.newCircuit()}
             title="Create blank circuit"
           >
-            ＋ New
+            New
           </button>
 
           <button
@@ -130,7 +130,7 @@ export function App() {
             disabled={state.busy}
             title="Open local .ipes file"
           >
-            📂 Open...
+            Open...
           </button>
           <input
             ref={fileInputRef}
@@ -153,7 +153,7 @@ export function App() {
             disabled={!state.circuitId}
             title="Download circuit as .ipes file (Ctrl+S)"
           >
-            💾 Save .ipes
+            Save .ipes
           </button>
 
           {/* Examples Dropdown */}
@@ -163,7 +163,7 @@ export function App() {
               className={`nav-btn dropdown-toggle ${examplesMenuOpen ? 'active' : ''}`}
               onClick={() => setExamplesMenuOpen(!examplesMenuOpen)}
             >
-              📚 Examples ▾
+              Examples ▾
             </button>
             {examplesMenuOpen && (
               <div className="dropdown-menu">
@@ -213,7 +213,7 @@ export function App() {
             disabled={!state.circuitId}
             title="Toggle Wire Tool (W)"
           >
-            ✏ Wire
+            Wire
           </button>
 
           <button
@@ -222,7 +222,7 @@ export function App() {
             onClick={() => setCommandPaletteOpen(true)}
             title="Command Palette (Ctrl+K or /)"
           >
-            🔍 Search parts <kbd>Ctrl+K</kbd>
+            Search parts <kbd>Ctrl+K</kbd>
           </button>
         </div>
 
@@ -246,9 +246,7 @@ export function App() {
           >
             {simState.status === 'RUNNING' ? (
               <span className="spinner" />
-            ) : (
-              <span>⚡</span>
-            )}
+            ) : null}
             <span>{simState.status === 'RUNNING' ? 'Simulating...' : 'Run Simulation'}</span>
           </button>
         </div>
@@ -280,8 +278,8 @@ export function App() {
             actions={{
               placeGhost: actions.placeGhost,
               finishWire: actions.finishWire,
+              labelWire: actions.labelWire,
               commitMove: actions.commitMove,
-              deleteSelection: actions.deleteSelection,
               rotateComponent: actions.rotateComponent,
               deleteComponent: actions.deleteComponent,
               deleteWire: actions.deleteWire,

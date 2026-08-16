@@ -265,6 +265,38 @@ the test).
 **Goal:** the editor can do what the Swing sheet can do with the mouse: place, move,
 rotate, wire, save, open.
 
+**Status: IMPLEMENTED (incl. reviewed fixes for classic behavior parity).**
+Locked-in classic behaviors (verified against `SchematicEditor2.java` /
+`Connection.java`):
+- Wire pen stays armed after each wire (`w`/toolbar toggles it, Esc aborts only the
+  draft; a second Esc leaves wire mode).
+- L-router keeps its horizontal/vertical preference once the draft leaves the start
+  point (port of `_movementWestEast`), and committed wires are stored as dense
+  per-raster-step point lists — the classic export format, which is also the
+  connectivity contract (a terminal touching ANY listed raster point connects;
+  `NetlistBuilder.buildFromWiresAndComponents` implements the same semantics).
+- Moving works like the classic editor: click grabs, the group follows the cursor,
+  the next click drops; a held-button drag commits on release; Esc restores the
+  original positions.
+- Component creation seeds the classic GUI default parameters server-side
+  (`CircuitEditService.DEFAULT_PARAMETERS`), so fresh circuits are simulable.
+
+Scope pulled forward during P2 (reviewed and kept):
+- Ctrl+K command palette and the basic keymap (part of P3) — arrow-key ghost
+  placement, keyboard wiring and nudging remain P3 work.
+- A simulation slice of P4 (run via `circuitId`, REST polling, SVG waveform
+  chart, CSV export). Signal selection from `dataContainerSignals[]`,
+  SSE/WS progress and the pause/resume decision remain P4 work.
+- Canvas zoom/pan (was P6). Dark mode and HiDPI polish remain P6.
+- Built-in example circuits + blank-circuit template (not previously planned;
+  kept because they make the editor instantly explorable).
+
+Budget note (principle 1): the frontend is ~8.5k lines incl. tests and CSS,
+above the 8k target for the whole program. Accepted deviation: ~2.9k of it are
+the component metadata table, example circuits and stylesheet that carry the
+approved GUI design; the interactive logic (store, sheet, router, client) is
+~1.7k. Revisit before P3 grows it further.
+
 Structure (new top-level directory `frontend/` — OUTSIDE the Maven modules, so the
 Java build is untouched):
 
@@ -313,6 +345,10 @@ client (mocked fetch). No component-snapshot tests.
 **Goal:** the user's core requirement — full schematic editing without touching the mouse.
 All features are additive to the mouse workflows, never replacing them.
 
+Note: the command palette (item 1) and the basic shortcuts (w, r, Esc, Del,
+Ctrl+Z/Y/S) already landed with P2. Remaining work: items 2–4, the central
+keybinding map (5) and Ctrl+D duplicate.
+
 1. **Command palette** — `Ctrl+K` opens a search box (component catalog, fuzzy
    substring match is enough — no fuzzy library), arrow keys navigate, Enter arms the
    ghost. Reuse the palette's catalog endpoint.
@@ -338,10 +374,13 @@ wire cycle, nudge). Keybinding map is data — test that every action has a bind
 
 ### P4 — Simulation & results in the web UI
 
-1. Sim panel: pick `dt`, `tEnd`, solver (model defaults from `/info`), Run →
-   `POST /api/v1/simulations` with `circuitId` → progress via existing SSE
-   (`/stream`) or WS topic → results table + line chart (ONE lightweight chart lib,
-   propose `uplot` for size; get approval before adding).
+Note: an initial slice landed with P2 (sim drawer, run by circuitId, REST
+polling, plain-SVG chart, CSV export). Remaining:
+
+1. Sim panel: pick `dt`, `tEnd`, solver — partially done, defaults still
+   hardcoded in the drawer instead of coming from `/info`; live progress via
+   existing SSE (`/stream`) or WS topic instead of REST polling. The drawer's
+   chart stays plain SVG (no chart library needed so far).
 2. Signal selection comes from `dataContainerSignals[]` in the file (same semantics as
    headless engine).
 3. Implement pause/resume properly OR remove it from docs — whichever is cheaper
@@ -381,7 +420,8 @@ Acceptance: green report over all curated circuits; report committed as
 
 ### P6 — Polish (only after P0–P5 are green)
 
-- Canvas zoom (mouse wheel) and pan (middle-drag + space-drag), HiDPI-correct.
+- Canvas zoom (mouse wheel) and pan (middle-drag + space-drag) — pulled forward
+  into P2; verify HiDPI correctness and mouse-wheel zoom (currently Ctrl+scroll).
 - Dark mode (CSS custom properties only).
 - Wire drawing anti-aliasing toggle.
 - Component coverage: extend beyond the top-20 symbols.

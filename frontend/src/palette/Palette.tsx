@@ -136,13 +136,12 @@ export function Palette({ catalog, onArm }: PaletteProps) {
                 type="button"
                 className="component-card palette-entry"
                 onClick={() => onArm(entry)}
-                onMouseDown={() => onArm(entry)}
                 draggable
                 onDragStart={(e) => {
                   e.dataTransfer.setData('text/plain', JSON.stringify(entry));
                   onArm(entry);
                 }}
-                title={`${entry.displayName} — Click or drag to place on schematic`}
+                title={`${entry.displayName} — click to arm, then click the sheet; or drag onto the sheet`}
               >
                 <div className="card-symbol-wrap">
                   <SymbolPreview

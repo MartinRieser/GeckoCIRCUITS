@@ -54,8 +54,7 @@ export async function uploadIpes(file: File): Promise<string> {
 
 /** Uploads raw ASCII or Base64 string content and returns the new circuit ID. */
 export async function uploadIpesString(content: string, filename = 'circuit.ipes'): Promise<string> {
-  const base64 = btoa(unescape(encodeURIComponent(content)));
-  return uploadIpesBase64(base64, filename);
+  return uploadIpesBase64(toBase64(new TextEncoder().encode(content)), filename);
 }
 
 /** Uploads base64 encoded .ipes file. */
@@ -171,14 +170,17 @@ export function cancelSimulation(simulationId: string): Promise<void> {
   return request(`/simulations/${simulationId}`, { method: 'DELETE' });
 }
 
-async function fileToBase64(file: File): Promise<string> {
-  const bytes = new Uint8Array(await file.arrayBuffer());
+function toBase64(bytes: Uint8Array): string {
   let binary = '';
   const chunk = 0x8000;
   for (let i = 0; i < bytes.length; i += chunk) {
     binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
   }
   return btoa(binary);
+}
+
+async function fileToBase64(file: File): Promise<string> {
+  return toBase64(new Uint8Array(await file.arrayBuffer()));
 }
 
 /**

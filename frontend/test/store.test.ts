@@ -153,6 +153,25 @@ describe('store: dragging', () => {
     const state = editorReducer(loaded, { type: 'DRAG_MOVE', x: 15, y: 10 });
     expect(state.components[0].position).toEqual([10, 10]);
   });
+
+  it('CANCEL (Esc) restores the components to their drag origins, classic deselectViaESCAPE', () => {
+    let state = editorReducer(loaded, { type: 'DRAG_START', names: ['R1'], x: 12, y: 12 });
+    state = editorReducer(state, { type: 'DRAG_MOVE', x: 15, y: 10 });
+    expect(state.components[0].position).toEqual([13, 8]);
+    state = editorReducer(state, { type: 'CANCEL' });
+    expect(state.components[0].position).toEqual([10, 10]);
+    expect(state.mode).toBe('idle');
+    expect(state.drag).toBeNull();
+  });
+
+  it('DRAG_END keeps the moved positions and returns to idle', () => {
+    let state = editorReducer(loaded, { type: 'DRAG_START', names: ['R1'], x: 12, y: 12 });
+    state = editorReducer(state, { type: 'DRAG_MOVE', x: 15, y: 10 });
+    state = editorReducer(state, { type: 'DRAG_END' });
+    expect(state.components[0].position).toEqual([13, 8]);
+    expect(state.mode).toBe('idle');
+    expect(state.drag).toBeNull();
+  });
 });
 
 describe('store: wiring', () => {
@@ -163,6 +182,41 @@ describe('store: wiring', () => {
     expect(state.mode).toBe('wiring');
     state = editorReducer(state, { type: 'WIRE_CURSOR', x: 20, y: 30 });
     expect(state.wireDraft?.cursor).toEqual({ x: 20, y: 30 });
+  });
+
+  it('picks the routing axis once when leaving the start point and keeps it (classic)', () => {
+    let state = editorReducer(loaded, { type: 'WIRE_START', x: 10, y: 10 });
+    // small horizontal move first: |dx| >= |dy| -> horizontal preferred
+    state = editorReducer(state, { type: 'WIRE_CURSOR', x: 11, y: 10 });
+    expect(state.wireDraft?.preferHorizontal).toBe(true);
+    // now the dominant axis flips, but the preference must stay sticky
+    state = editorReducer(state, { type: 'WIRE_CURSOR', x: 12, y: 40 });
+    expect(state.wireDraft?.preferHorizontal).toBe(true);
+    // returning to the start point resets the preference
+    state = editorReducer(state, { type: 'WIRE_CURSOR', x: 10, y: 10 });
+    expect(state.wireDraft?.preferHorizontal).toBeNull();
+    state = editorReducer(state, { type: 'WIRE_CURSOR', x: 10, y: 12 });
+    expect(state.wireDraft?.preferHorizontal).toBe(false);
+  });
+
+  it('WIRE_DRAFT_END keeps the wire pen armed for the next wire', () => {
+    let state = editorReducer(loaded, { type: 'TOGGLE_WIRE_MODE' });
+    state = editorReducer(state, { type: 'WIRE_START', x: 1, y: 1 });
+    state = editorReducer(state, { type: 'WIRE_CURSOR', x: 5, y: 5 });
+    state = editorReducer(state, { type: 'WIRE_DRAFT_END' });
+    expect(state.mode).toBe('wiring');
+    expect(state.wireDraft).toBeNull();
+  });
+
+  it('CANCEL (Esc) aborts the draft but stays in wire mode, like the classic wire pen', () => {
+    let state = editorReducer(loaded, { type: 'TOGGLE_WIRE_MODE' });
+    state = editorReducer(state, { type: 'WIRE_START', x: 1, y: 1 });
+    state = editorReducer(state, { type: 'CANCEL' });
+    expect(state.mode).toBe('wiring');
+    expect(state.wireDraft).toBeNull();
+    // a second Esc leaves wire mode entirely
+    state = editorReducer(state, { type: 'CANCEL' });
+    expect(state.mode).toBe('idle');
   });
 
   it('wire created appends to list', () => {

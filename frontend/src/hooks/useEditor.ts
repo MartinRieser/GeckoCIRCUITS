@@ -251,6 +251,28 @@ export function useEditor() {
     [reportError],
   );
 
+  const labelWire = useCallback(
+    (index: number, label: string) => {
+      const circuitId = stateRef.current.circuitId;
+      if (!circuitId) return;
+      api
+        .patchConnection(circuitId, index, { label })
+        .then((msg) => {
+          const payload = msg.payload as WirePayload;
+          versionRef.current = msg.modelVersion;
+          dispatch({
+            type: 'WIRE_PATCHED',
+            index,
+            points: payload.points,
+            label: payload.label,
+            version: msg.modelVersion,
+          });
+        })
+        .catch(reportError);
+    },
+    [reportError],
+  );
+
   const deleteSelection = useCallback(() => {
     const current = stateRef.current;
     const circuitId = current.circuitId;
@@ -495,6 +517,7 @@ export function useEditor() {
       rotateComponent,
       deleteComponent,
       deleteWire,
+      labelWire,
       deleteSelection,
       undo,
       redo,

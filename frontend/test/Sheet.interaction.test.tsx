@@ -47,8 +47,7 @@ const snapshot: EditorSnapshot = {
 const placeGhost = vi.fn();
 const finishWire = vi.fn();
 const commitMove = vi.fn();
-const deleteSelection = vi.fn();
-const actions: SheetActions = { placeGhost, finishWire, commitMove, deleteSelection };
+const actions: SheetActions = { placeGhost, finishWire, commitMove };
 
 function Harness() {
   const [state, dispatch] = useReducer(editorReducer, initialState, (init) =>
@@ -81,7 +80,6 @@ afterEach(() => {
   placeGhost.mockClear();
   finishWire.mockClear();
   commitMove.mockClear();
-  deleteSelection.mockClear();
 });
 
 describe('Sheet rendering', () => {
@@ -148,36 +146,78 @@ describe('placing a component', () => {
 });
 
 describe('wiring', () => {
-  it('two clicks create an L-routed wire', () => {
+  it('two clicks create a dense, classically routed wire', () => {
     const { svg, getByTestId } = setup();
     fireEvent.click(getByTestId('wiremode'));
 
     // start at grid (2,1) = client (32,16)
     fireEvent.mouseDown(svg, { clientX: 32, clientY: 16, button: 0 });
-    // move to grid (6,5) = client (96,80)
+    // move to grid (6,5): |dx| == |dy| -> horizontal preferred (classic >= rule)
     fireEvent.mouseMove(svg, { clientX: 96, clientY: 80, button: 0 });
     // terminal of R1 output is at grid (12,10) = client (192,160): snap there
     fireEvent.mouseDown(svg, { clientX: 190, clientY: 162, button: 0 });
 
+    // horizontal run first, then vertical: one point per raster step like the
+    // classic editor exports (mid-wire taps must connect)
     expect(finishWire).toHaveBeenCalledWith([
       [2, 1],
+      [3, 1],
+      [4, 1],
+      [5, 1],
+      [6, 1],
+      [7, 1],
+      [8, 1],
+      [9, 1],
+      [10, 1],
+      [11, 1],
       [12, 1],
+      [12, 2],
+      [12, 3],
+      [12, 4],
+      [12, 5],
+      [12, 6],
+      [12, 7],
+      [12, 8],
+      [12, 9],
       [12, 10],
     ]);
   });
 
-  it('wire start snaps to a nearby terminal', () => {
+  it('stays in wire mode after finishing a wire (classic wire pen)', () => {
+    const { svg, getByTestId, container } = setup();
+    fireEvent.click(getByTestId('wiremode'));
+
+    fireEvent.mouseDown(svg, { clientX: 32, clientY: 16, button: 0 });
+    fireEvent.mouseMove(svg, { clientX: 96, clientY: 80, button: 0 });
+    fireEvent.mouseDown(svg, { clientX: 190, clientY: 162, button: 0 });
+    expect(finishWire).toHaveBeenCalledTimes(1);
+
+    // the pen stays armed: the next two clicks draw another wire immediately
+    fireEvent.mouseDown(svg, { clientX: 32, clientY: 16, button: 0 });
+    fireEvent.mouseMove(svg, { clientX: 96, clientY: 80, button: 0 });
+    fireEvent.mouseDown(svg, { clientX: 96, clientY: 80, button: 0 });
+    expect(finishWire).toHaveBeenCalledTimes(2);
+    expect(container.querySelector('polyline.wire-draft')).toBeNull();
+  });
+
+  it('wire start snaps to a nearby terminal and routes vertically when dragged down', () => {
     const { svg, getByTestId } = setup();
     fireEvent.click(getByTestId('wiremode'));
 
     // R1 input terminal at grid (8,10) = client (128,160); click nearby
     fireEvent.mouseDown(svg, { clientX: 130, clientY: 158, button: 0 });
+    // move to grid (6,5): |dy| > |dx| -> vertical preferred
     fireEvent.mouseMove(svg, { clientX: 96, clientY: 80, button: 0 });
     fireEvent.mouseDown(svg, { clientX: 96, clientY: 80, button: 0 });
 
     expect(finishWire).toHaveBeenCalledWith([
       [8, 10],
+      [8, 9],
+      [8, 8],
+      [8, 7],
+      [8, 6],
       [8, 5],
+      [7, 5],
       [6, 5],
     ]);
   });
@@ -207,5 +247,24 @@ describe('selection', () => {
     fireEvent.mouseUp(svg);
 
     expect(commitMove).toHaveBeenCalledWith([{ name: 'R1', x: 13, y: 8 }]);
+  });
+
+  it('a plain click grabs the component; it follows the cursor and the next click drops it (classic)', () => {
+    const { container, svg } = setup();
+
+    const r1 = container.querySelectorAll('g.component')[0];
+    // click without moving: mouseup must NOT commit, the grab stays active
+    fireEvent.mouseDown(r1, { clientX: 160, clientY: 160, button: 0 });
+    fireEvent.mouseUp(svg);
+    expect(commitMove).not.toHaveBeenCalled();
+
+    // hover without any button held: the component follows the cursor
+    fireEvent.mouseMove(svg, { clientX: 176, clientY: 160, button: 0 });
+    const moved = container.querySelectorAll('g.component')[0];
+    expect(moved.getAttribute('transform')).toBe('translate(176, 160)');
+
+    // the next press drops the group where it is
+    fireEvent.mouseDown(svg, { clientX: 176, clientY: 160, button: 0 });
+    expect(commitMove).toHaveBeenCalledWith([{ name: 'R1', x: 11, y: 10 }]);
   });
 });

@@ -199,7 +199,7 @@ export function SimulationDrawer({
             >
               <option value="backward-euler">Backward Euler</option>
               <option value="trapezoidal">Trapezoidal</option>
-              <option value="rk4">Runge-Kutta 4</option>
+              <option value="gear-shichman">Gear-Shichman</option>
             </select>
           </div>
 
@@ -209,7 +209,7 @@ export function SimulationDrawer({
               className="sim-btn cancel"
               onClick={onCancelSimulation}
             >
-              ⏹ Cancel
+              Cancel
             </button>
           ) : (
             <button
@@ -219,7 +219,7 @@ export function SimulationDrawer({
               disabled={!circuitId}
               title="Run simulation on active circuit"
             >
-              ⚡ Run Simulation
+              Run Simulation
             </button>
           )}
 
@@ -230,7 +230,7 @@ export function SimulationDrawer({
               onClick={handleExportCsv}
               title="Export results as CSV"
             >
-              ⬇ Export CSV
+              Export CSV
             </button>
           )}
         </div>
@@ -251,17 +251,16 @@ export function SimulationDrawer({
         <div className="sim-content">
           {errorMessage && (
             <div className="sim-error-banner">
-              ⚠️ Simulation error: {errorMessage}
+              Simulation error: {errorMessage}
             </div>
           )}
 
           {!results || signalNames.length === 0 ? (
             <div className="sim-empty-state">
-              <div className="sim-empty-icon">📈</div>
               <span className="sim-empty-text">
                 {isRunning
                   ? 'Running simulation...'
-                  : 'Click "⚡ Run Simulation" above to calculate and plot circuit waveforms.'}
+                  : 'Click "Run Simulation" above to calculate and plot circuit waveforms.'}
               </span>
             </div>
           ) : (

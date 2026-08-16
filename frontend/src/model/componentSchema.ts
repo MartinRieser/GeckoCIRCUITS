@@ -65,7 +65,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
         key: 'param0',
         label: 'Resistance (R)',
         description: 'Resistance in Ohms',
-        defaultValue: 10,
+        defaultValue: 1000,
         unit: 'Ω',
         min: 1e-9,
         step: 1,
@@ -93,7 +93,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
         key: 'param0',
         label: 'Inductance (L)',
         description: 'Inductance in Henrys',
-        defaultValue: 1e-3,
+        defaultValue: 3e-4,
         unit: 'H',
         min: 1e-12,
         step: 1e-4,
@@ -129,7 +129,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
         key: 'param0',
         label: 'Capacitance (C)',
         description: 'Capacitance in Farads',
-        defaultValue: 10e-6,
+        defaultValue: 100e-9,
         unit: 'F',
         min: 1e-15,
         step: 1e-6,
@@ -179,7 +179,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
         key: 'param1',
         label: 'Voltage (Vdc / Vpk)',
         description: 'DC voltage or AC peak amplitude in Volts',
-        defaultValue: 24,
+        defaultValue: 10,
         unit: 'V',
       },
       {
@@ -334,18 +334,8 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     shortcut: 'S',
     defaultPrefix: 'S',
     parameters: [
-      {
-        index: 0,
-        key: 'param0',
-        label: 'Initial State',
-        description: 'Switch state at simulation start (0=Open, 1=Closed)',
-        defaultValue: 0,
-        unit: '',
-        options: [
-          { label: 'Open (0)', value: 0 },
-          { label: 'Closed (1)', value: 1 },
-        ],
-      },
+      // param0 is the solver's dynamic resistance state — not user-editable,
+      // matching the classic IdealSwitch parameter layout
       {
         index: 1,
         key: 'param1',
