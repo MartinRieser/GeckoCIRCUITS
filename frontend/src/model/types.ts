@@ -1,4 +1,4 @@
-/** Types mirroring the REST JSON of the gecko-rest-api editing endpoints. */
+/** Types mirroring the REST JSON of the gecko-rest-api editing and simulation endpoints. */
 
 export interface Point {
   x: number;
@@ -91,4 +91,31 @@ export interface ConnectionCreate {
 export interface ConnectionPatch {
   points?: number[][];
   label?: string;
+}
+
+export interface SimulationRequest {
+  circuitId?: string;
+  base64Circuit?: string;
+  circuitFile?: string;
+  simulationTime?: number;
+  timeStep?: number;
+  solverType?: string;
+  parameters?: Record<string, number>;
+}
+
+export type SimulationStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
+
+export interface SimulationResponse {
+  simulationId: string;
+  status: SimulationStatus;
+  progress?: number;
+  errorMessage?: string;
+  results?: Record<string, number[]>;
+  executionTimeMs?: number;
+  progressDetails?: {
+    currentStep: number;
+    totalSteps: number;
+    currentTime: number;
+    endTime: number;
+  };
 }

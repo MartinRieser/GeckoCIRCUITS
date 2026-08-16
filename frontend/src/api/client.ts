@@ -1,5 +1,5 @@
 /**
- * Thin REST client for the gecko-rest-api. Hand-rolled fetch wrappers,
+ * REST client for the gecko-rest-api. Hand-rolled fetch wrappers,
  * no SDK generation. All functions throw Error with the server's detail
  * message on non-2xx responses.
  */
@@ -11,6 +11,8 @@ import type {
   ConnectionCreate,
   ConnectionPatch,
   EditorSnapshot,
+  SimulationRequest,
+  SimulationResponse,
 } from '../model/types';
 
 const API = '/gecko/api/v1';
@@ -47,7 +49,18 @@ export function getEditorModel(circuitId: string): Promise<EditorSnapshot> {
 /** Uploads a .ipes file (gzip or plain) and returns the new circuit ID. */
 export async function uploadIpes(file: File): Promise<string> {
   const content = await fileToBase64(file);
-  const body = JSON.stringify({ content, filename: file.name });
+  return uploadIpesBase64(content, file.name);
+}
+
+/** Uploads raw ASCII or Base64 string content and returns the new circuit ID. */
+export async function uploadIpesString(content: string, filename = 'circuit.ipes'): Promise<string> {
+  const base64 = btoa(unescape(encodeURIComponent(content)));
+  return uploadIpesBase64(base64, filename);
+}
+
+/** Uploads base64 encoded .ipes file. */
+export async function uploadIpesBase64(base64Content: string, filename: string): Promise<string> {
+  const body = JSON.stringify({ content: base64Content, filename });
   const response = await fetch(API + '/circuits/parse', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -137,6 +150,27 @@ export async function downloadIpes(circuitId: string, filename: string): Promise
   URL.revokeObjectURL(url);
 }
 
+// ========== Simulation Endpoints ==========
+
+export function submitSimulation(req: SimulationRequest): Promise<SimulationResponse> {
+  return request('/simulations', {
+    method: 'POST',
+    body: JSON.stringify(req),
+  });
+}
+
+export function getSimulation(simulationId: string): Promise<SimulationResponse> {
+  return request(`/simulations/${simulationId}`);
+}
+
+export function getSimulationResults(simulationId: string): Promise<Record<string, number[]>> {
+  return request(`/simulations/${simulationId}/results`);
+}
+
+export function cancelSimulation(simulationId: string): Promise<void> {
+  return request(`/simulations/${simulationId}`, { method: 'DELETE' });
+}
+
 async function fileToBase64(file: File): Promise<string> {
   const bytes = new Uint8Array(await file.arrayBuffer());
   let binary = '';
@@ -150,8 +184,7 @@ async function fileToBase64(file: File): Promise<string> {
 /**
  * Minimal STOMP-over-WebSocket subscription to /topic/circuits/{id}.
  * Uses the raw WS endpoint; auto-reconnects with a small backoff.
- * Returns a disposer. If the initial connection fails, retries silently —
- * the editor works without live updates (status is reported via onStatus).
+ * Returns a disposer.
  */
 export function subscribeCircuitChanges(
   circuitId: string,
@@ -164,8 +197,6 @@ export function subscribeCircuitChanges(
 
   const connect = () => {
     if (disposed) return;
-    // /ws-raw is a plain (non-SockJS) endpoint: its WebSocket URL has no
-    // /websocket transport suffix
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
     socket = new WebSocket(`${proto}://${location.host}/gecko/ws-raw`);
 

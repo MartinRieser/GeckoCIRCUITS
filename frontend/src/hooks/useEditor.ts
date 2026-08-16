@@ -1,12 +1,19 @@
 /**
  * Editor controller: owns the reducer state, exposes action creators that
- * perform the REST calls and feed results back into the store, and keeps
- * the WebSocket subscription for external change detection alive.
+ * perform REST calls and feed results back into the store, manages simulation
+ * execution and polling, and keeps the WebSocket subscription alive.
  */
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import * as api from '../api/client';
 import { initialState, editorReducer } from '../model/store';
-import type { CatalogEntry, ComponentPayload, WirePayload } from '../model/types';
+import type {
+  CatalogEntry,
+  ComponentPayload,
+  WirePayload,
+  SimulationStatus,
+} from '../model/types';
+import { nextOrientation } from '../model/geometry';
+import { BLANK_CIRCUIT_IPES } from '../model/examples';
 
 export function useEditor() {
   const [state, dispatch] = useReducer(editorReducer, initialState);
@@ -14,55 +21,99 @@ export function useEditor() {
   const [wsConnected, setWsConnected] = useState(false);
   const versionRef = useRef(0);
   const unsubscribeRef = useRef<(() => void) | null>(null);
-  // latest state for callbacks that need current values without
-  // re-creating on every state change
+
+  // Simulation state
+  const [simStatus, setSimStatus] = useState<SimulationStatus | null>(null);
+  const [simProgress, setSimProgress] = useState(0);
+  const [simResults, setSimResults] = useState<Record<string, number[]> | null>(null);
+  const [simError, setSimError] = useState<string | null>(null);
+  const [simDrawerOpen, setSimDrawerOpen] = useState(false);
+  const simPollTimerRef = useRef<number | null>(null);
+  const currentSimIdRef = useRef<string | null>(null);
+
+  // latest state for callbacks that need current values without re-creating
   const stateRef = useRef(state);
   stateRef.current = state;
 
   useEffect(() => {
-    api.getCatalog().then((c) => setCatalog(c.types)).catch(() => setCatalog([]));
+    api
+      .getCatalog()
+      .then((c) => setCatalog(c.types))
+      .catch(() => setCatalog([]));
   }, []);
 
-  const refresh = useCallback(
-    async (circuitId: string) => {
-      try {
-        const snapshot = await api.getEditorModel(circuitId);
-        versionRef.current = snapshot.modelVersion;
-        dispatch({ type: 'SNAPSHOT', snapshot });
-      } catch (e) {
-        dispatch({ type: 'STATUS', status: `Refresh failed: ${(e as Error).message}` });
+  // Cleanup simulation polling timer on unmount
+  useEffect(() => {
+    return () => {
+      if (simPollTimerRef.current !== null) {
+        clearInterval(simPollTimerRef.current);
       }
-    },
-    [],
-  );
+    };
+  }, []);
+
+  const refresh = useCallback(async (circuitId: string) => {
+    try {
+      const snapshot = await api.getEditorModel(circuitId);
+      versionRef.current = snapshot.modelVersion;
+      dispatch({ type: 'SNAPSHOT', snapshot });
+    } catch (e) {
+      dispatch({ type: 'STATUS', status: `Refresh failed: ${(e as Error).message}` });
+    }
+  }, []);
 
   const reportError = useCallback((e: unknown) => {
     dispatch({ type: 'STATUS', status: `Error: ${(e as Error).message}` });
   }, []);
+
+  const attachSubscription = useCallback(
+    (circuitId: string) => {
+      unsubscribeRef.current?.();
+      unsubscribeRef.current = api.subscribeCircuitChanges(
+        circuitId,
+        (msg) => {
+          if (msg.modelVersion > versionRef.current) {
+            refresh(circuitId);
+          }
+        },
+        setWsConnected,
+      );
+    },
+    [refresh],
+  );
 
   const open = useCallback(
     async (file: File) => {
       dispatch({ type: 'STATUS', status: `Loading ${file.name}...` });
       try {
         const circuitId = await api.uploadIpes(file);
-        unsubscribeRef.current?.();
-        unsubscribeRef.current = api.subscribeCircuitChanges(
-          circuitId,
-          (msg) => {
-            if (msg.modelVersion > versionRef.current) {
-              refresh(circuitId);
-            }
-          },
-          setWsConnected,
-        );
+        attachSubscription(circuitId);
         await refresh(circuitId);
-        dispatch({ type: 'STATUS', status: '' });
+        dispatch({ type: 'STATUS', status: `Loaded ${file.name}` });
       } catch (e) {
         reportError(e);
       }
     },
-    [refresh, reportError],
+    [attachSubscription, refresh, reportError],
   );
+
+  const openContent = useCallback(
+    async (content: string, filename = 'circuit.ipes') => {
+      dispatch({ type: 'STATUS', status: `Loading ${filename}...` });
+      try {
+        const circuitId = await api.uploadIpesString(content, filename);
+        attachSubscription(circuitId);
+        await refresh(circuitId);
+        dispatch({ type: 'STATUS', status: `Loaded ${filename}` });
+      } catch (e) {
+        reportError(e);
+      }
+    },
+    [attachSubscription, refresh, reportError],
+  );
+
+  const newCircuit = useCallback(async () => {
+    await openContent(BLANK_CIRCUIT_IPES, 'Untitled.ipes');
+  }, [openContent]);
 
   const arm = useCallback((entry: CatalogEntry) => {
     if (!stateRef.current.circuitId) {
@@ -76,27 +127,33 @@ export function useEditor() {
   const toggleWireMode = useCallback(() => dispatch({ type: 'TOGGLE_WIRE_MODE' }), []);
 
   const placeGhost = useCallback(
-    (x: number, y: number, orientation: number) => {
+    (x: number, y: number, orientation?: number, typeOverride?: number, familyOverride?: string) => {
       const ghost = stateRef.current.ghost;
       const circuitId = stateRef.current.circuitId;
-      if (!ghost || !circuitId) return;
+      const type = typeOverride !== undefined ? typeOverride : ghost?.type;
+      const family = familyOverride || ghost?.family || 'LK';
+      const orient = orientation !== undefined ? orientation : (ghost?.orientation || 503);
+
+      if (type === undefined || !circuitId) return;
       dispatch({ type: 'CANCEL' });
       api
         .createComponent(circuitId, {
-          family: ghost.family,
-          type: ghost.type,
+          family,
+          type,
           x,
           y,
-          orientation,
+          orientation: orient,
         })
         .then((msg) => {
           const payload = msg.payload as ComponentPayload;
           versionRef.current = msg.modelVersion;
           dispatch({
             type: 'COMPONENT_UPSERT',
-            component: toEditorComponent(payload, ghost.family),
+            component: toEditorComponent(payload, family),
             version: msg.modelVersion,
           });
+          dispatch({ type: 'SELECT', name: payload.name, additive: false });
+          dispatch({ type: 'PANEL_FOR', name: payload.name });
         })
         .catch(reportError);
     },
@@ -141,6 +198,59 @@ export function useEditor() {
     [refresh, reportError],
   );
 
+  const rotateComponent = useCallback(
+    (name: string) => {
+      const circuitId = stateRef.current.circuitId;
+      if (!circuitId) return;
+      const comp = stateRef.current.components.find((c) => c.name === name);
+      if (!comp) return;
+
+      const nextOrient = nextOrientation(comp.orientation);
+      api
+        .patchComponent(circuitId, name, { orientation: nextOrient })
+        .then((msg) => {
+          versionRef.current = msg.modelVersion;
+          dispatch({
+            type: 'COMPONENT_UPSERT',
+            component: { ...comp, orientation: nextOrient },
+            version: msg.modelVersion,
+          });
+        })
+        .catch(reportError);
+    },
+    [reportError],
+  );
+
+  const deleteComponent = useCallback(
+    (name: string) => {
+      const circuitId = stateRef.current.circuitId;
+      if (!circuitId) return;
+      api
+        .deleteComponent(circuitId, name)
+        .then((msg) => {
+          versionRef.current = msg.modelVersion;
+          dispatch({ type: 'COMPONENT_DELETED', name, version: msg.modelVersion });
+        })
+        .catch(reportError);
+    },
+    [reportError],
+  );
+
+  const deleteWire = useCallback(
+    (index: number) => {
+      const circuitId = stateRef.current.circuitId;
+      if (!circuitId) return;
+      api
+        .deleteConnection(circuitId, index)
+        .then((msg) => {
+          versionRef.current = msg.modelVersion;
+          dispatch({ type: 'WIRE_DELETED', index, version: msg.modelVersion });
+        })
+        .catch(reportError);
+    },
+    [reportError],
+  );
+
   const deleteSelection = useCallback(() => {
     const current = stateRef.current;
     const circuitId = current.circuitId;
@@ -158,7 +268,11 @@ export function useEditor() {
       tasks.push(
         api.deleteConnection(circuitId, current.selectedWire).then((msg) => {
           versionRef.current = msg.modelVersion;
-          dispatch({ type: 'WIRE_DELETED', index: current.selectedWire!, version: msg.modelVersion });
+          dispatch({
+            type: 'WIRE_DELETED',
+            index: current.selectedWire!,
+            version: msg.modelVersion,
+          });
         }),
       );
     }
@@ -269,19 +383,118 @@ export function useEditor() {
     [reportError],
   );
 
+  // ========== Simulation Actions ==========
+
+  const runSimulation = useCallback(
+    async (config: { simulationTime: number; timeStep: number; solverType: string }) => {
+      const circuitId = stateRef.current.circuitId;
+      if (!circuitId) return;
+
+      if (simPollTimerRef.current !== null) {
+        clearInterval(simPollTimerRef.current);
+        simPollTimerRef.current = null;
+      }
+
+      setSimStatus('RUNNING');
+      setSimProgress(0.05);
+      setSimError(null);
+      setSimDrawerOpen(true);
+
+      try {
+        const sim = await api.submitSimulation({
+          circuitId,
+          simulationTime: config.simulationTime,
+          timeStep: config.timeStep,
+          solverType: config.solverType,
+        });
+
+        currentSimIdRef.current = sim.simulationId;
+
+        // Poll simulation status until completed or failed
+        const pollInterval = window.setInterval(async () => {
+          const simId = currentSimIdRef.current;
+          if (!simId) return;
+
+          try {
+            const current = await api.getSimulation(simId);
+            setSimStatus(current.status);
+
+            if (current.progressDetails) {
+              const { currentStep, totalSteps } = current.progressDetails;
+              if (totalSteps > 0) {
+                setSimProgress(currentStep / totalSteps);
+              }
+            }
+
+            if (current.status === 'COMPLETED') {
+              clearInterval(pollInterval);
+              simPollTimerRef.current = null;
+              setSimProgress(1.0);
+              const res = current.results || (await api.getSimulationResults(simId));
+              setSimResults(res);
+            } else if (current.status === 'FAILED' || current.status === 'CANCELLED') {
+              clearInterval(pollInterval);
+              simPollTimerRef.current = null;
+              setSimError(current.errorMessage || 'Simulation failed or was cancelled');
+            }
+          } catch (err) {
+            clearInterval(pollInterval);
+            simPollTimerRef.current = null;
+            setSimStatus('FAILED');
+            setSimError((err as Error).message);
+          }
+        }, 300);
+
+        simPollTimerRef.current = pollInterval;
+      } catch (err) {
+        setSimStatus('FAILED');
+        setSimError((err as Error).message);
+      }
+    },
+    [],
+  );
+
+  const cancelSimulation = useCallback(async () => {
+    if (simPollTimerRef.current !== null) {
+      clearInterval(simPollTimerRef.current);
+      simPollTimerRef.current = null;
+    }
+    const simId = currentSimIdRef.current;
+    if (simId) {
+      try {
+        await api.cancelSimulation(simId);
+      } catch {
+        // ignore
+      }
+    }
+    setSimStatus('CANCELLED');
+  }, []);
+
   return {
     state,
     dispatch,
     catalog,
     wsConnected,
+    simState: {
+      status: simStatus,
+      progress: simProgress,
+      results: simResults,
+      errorMessage: simError,
+      isOpen: simDrawerOpen,
+    },
     actions: {
       open,
+      openContent,
+      newCircuit,
       arm,
       cancel,
       toggleWireMode,
       placeGhost,
       finishWire,
       commitMove,
+      rotateComponent,
+      deleteComponent,
+      deleteWire,
       deleteSelection,
       undo,
       redo,
@@ -289,6 +502,10 @@ export function useEditor() {
       rename,
       setParameter,
       setLabel,
+      openProperties: (name: string) => dispatch({ type: 'PANEL_FOR', name }),
+      runSimulation,
+      cancelSimulation,
+      toggleSimDrawer: () => setSimDrawerOpen((prev) => !prev),
     },
   };
 }

@@ -16,10 +16,8 @@ package gecko.core.circuit.netlist;
 import gecko.core.circuit.circuitcomponents.CircuitTypCore;
 import gecko.core.io.CircuitModel;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Factory class for building CircuitNetlist from various sources.
@@ -27,17 +25,6 @@ import java.util.Map;
  * <p>Bridges the gap between circuit file parsing (CircuitModel) and simulation
  * (CircuitNetlist/INetList). Provides static factory methods to construct netlists
  * with proper initialization of MNA (Modified Nodal Analysis) data structures.</p>
- *
- * <p>This factory is used by the headless simulation engine to convert parsed circuit
- * models into executable netlist representations. Current implementation provides:
- * <ul>
- *   <li>Empty netlist creation for testing matrix solvers</li>
- *   <li>Netlist construction from CircuitModel with topology extraction via label matching</li>
- *   <li>Graceful fallback to dimension estimation when labels are unavailable</li>
- * </ul>
- *
- * @author Phase 3 - Circuit Extraction Refactoring
- * @since v2.18.0
  */
 public class NetlistBuilder {
 
@@ -45,33 +32,34 @@ public class NetlistBuilder {
         // Utility class - not instantiable
     }
 
+    private record GridPoint(int x, int y) {}
+
+    private static class DisjointSet<T> {
+        private final Map<T, T> parent = new HashMap<>();
+
+        public T find(T item) {
+            parent.putIfAbsent(item, item);
+            if (!parent.get(item).equals(item)) {
+                parent.put(item, find(parent.get(item)));
+            }
+            return parent.get(item);
+        }
+
+        public void union(T a, T b) {
+            T rootA = find(a);
+            T rootB = find(b);
+            if (!rootA.equals(rootB)) {
+                parent.put(rootA, rootB);
+            }
+        }
+    }
+
     /**
      * Build a simple CircuitNetlist for testing with given dimensions.
-     *
-     * <p>Creates an empty netlist with the specified size and initializes all arrays
-     * with zero/empty values. This is useful for unit testing the matrix solver without
-     * needing actual circuit components.</p>
-     *
-     * <p>The netlist will have:
-     * <ul>
-     *   <li>nodeCount nodes (numbered 0 to nodeCount-1, plus ground)</li>
-     *   <li>voltageSourceCount voltage sources (numbered 1 to voltageSourceCount)</li>
-     *   <li>elementCount passive components</li>
-     *   <li>All components initialized as RESISTOR type with zero resistance</li>
-     *   <li>All nodes connected to ground (node 0)</li>
-     * </ul>
-     *
-     * @param nodeCount number of nodes in circuit (excluding ground, typically >= 1)
-     * @param voltageSourceCount number of independent voltage sources (typically >= 0)
-     * @param elementCount number of passive components (typically >= 0)
-     * @return configured CircuitNetlist with initialized but empty circuit data
-     *
-     * @throws IllegalArgumentException if any count is negative
      */
     public static CircuitNetlist buildEmpty(
             int nodeCount, int voltageSourceCount, int elementCount) {
 
-        // Validate parameters
         if (nodeCount < 0) {
             throw new IllegalArgumentException("nodeCount must be non-negative, got: " + nodeCount);
         }
@@ -82,14 +70,12 @@ public class NetlistBuilder {
             throw new IllegalArgumentException("elementCount must be non-negative, got: " + elementCount);
         }
 
-        // Create component arrays with default values
         CircuitTypCore[] types = new CircuitTypCore[elementCount];
         int[] nodeX = new int[elementCount];
         int[] nodeY = new int[elementCount];
         int[] voltageSourceNr = new int[elementCount];
         double[][] params = new double[elementCount][];
 
-        // Initialize with defaults
         for (int i = 0; i < elementCount; i++) {
             types[i] = CircuitTypCore.LK_R;  // Default to resistor
             nodeX[i] = 0;                     // Connected to ground
@@ -99,7 +85,6 @@ public class NetlistBuilder {
             params[i][0] = 0.0;               // Zero resistance
         }
 
-        // Create netlist and initialize
         CircuitNetlist netlist = new CircuitNetlist();
         netlist.initNetlist(types, nodeX, nodeY, voltageSourceNr, params,
                             nodeCount > 0 ? nodeCount - 1 : 0,  // maxNodeIndex
@@ -111,37 +96,12 @@ public class NetlistBuilder {
 
     /**
      * Build a CircuitNetlist from a parsed CircuitModel.
-     *
-     * <p>This is the main entry point for converting circuit file data into a netlist
-     * suitable for simulation. The CircuitModel contains component lists and connection
-     * information extracted from .ipes circuit files.</p>
-     *
-     * <p>Implementation:
-     * <ul>
-     *   <li>Collects all components from circuit, control, and thermal lists</li>
-     *   <li>Attempts topology extraction via label matching if labels are present</li>
-     *   <li>Falls back to dimension estimation if labels are unavailable</li>
-     *   <li>Assigns voltage source numbers to voltage sources and coupable inductors</li>
-     *   <li>Extracts component parameters from parsed model</li>
-     *   <li>Initializes netlist with proper node and voltage source counts</li>
-     * </ul>
-     *
-     * @param model circuit model from CircuitFileParser, may be null
-     * @return configured CircuitNetlist with extracted or estimated topology, or empty netlist if model is null
-     *
-     * @see CircuitModel#getCircuitComponents()
-     * @see CircuitModel#getControlComponents()
-     * @see CircuitModel#getThermalComponents()
-     * @see CircuitModel#getTotalComponentCount()
      */
     public static CircuitNetlist buildFromCircuitModel(CircuitModel model) {
         if (model == null) {
             return buildEmpty(0, 0, 0);
         }
 
-        // Only electrical, control and thermal domains participate in the MNA build.
-        // Special components (e.g. file manager, scopes) have no electrical type;
-        // including them would silently default to resistors and short nodes.
         List<CircuitModel.ComponentData> allComponents = new ArrayList<>();
         allComponents.addAll(model.getCircuitComponents());
         allComponents.addAll(model.getControlComponents());
@@ -151,54 +111,148 @@ public class NetlistBuilder {
             return buildEmpty(0, 0, 0);
         }
 
-        // Check if any component has terminal labels (indicates parsed from file)
-        boolean hasLabels = allComponents.stream()
-                .anyMatch(comp -> comp.getTerminalXLabels().length > 0 || comp.getTerminalYLabels().length > 0);
+        // Count how many terminals have real (non-sentinel) net labels from classic file export
+        long explicitLabelCount = allComponents.stream()
+                .flatMap(c -> Stream.concat(Arrays.stream(c.getTerminalXLabels()), Arrays.stream(c.getTerminalYLabels())))
+                .filter(NetlistBuilder::isValidLabel)
+                .count();
 
-        if (hasLabels) {
-            // Use label-based topology extraction
+        // If circuit has explicit terminal labels on components (e.g. from classic GeckoCIRCUITS file), use label matching
+        if (explicitLabelCount >= allComponents.size()) {
+            return buildFromComponentsWithLabels(allComponents);
+        }
+
+        List<CircuitModel.ConnectionData> connections = model.getConnections();
+
+        // If circuit has wires, trace wires to component terminals
+        if (connections != null && !connections.isEmpty()) {
+            return buildFromWiresAndComponents(allComponents, connections);
+        }
+
+        if (explicitLabelCount > 0) {
             return buildFromComponentsWithLabels(allComponents);
         } else {
-            // Fall back to dimension estimation for backward compatibility
             return buildWithEstimatedDimensions(allComponents);
         }
     }
 
     /**
-     * Build netlist from components that have terminal labels (from .ipes file parsing).
-     *
-     * <p>Extracts topology through label matching:
-     * <ul>
-     *   <li>Builds a label-to-node mapping</li>
-     *   <li>Resolves component connectivity through label matching</li>
-     *   <li>Assigns voltage source numbers</li>
-     * </ul>
+     * Extracts circuit topology by tracing schematic wires to component terminals.
      */
-    private static CircuitNetlist buildFromComponentsWithLabels(List<CircuitModel.ComponentData> components) {
-        // Step 1: Build node label → index map
-        // Ground reference: label "0" or "" → node 0
-        Map<String, Integer> labelToNode = new LinkedHashMap<>();
-        labelToNode.put("0", 0);
-        labelToNode.put("", 0);  // Empty label also maps to ground
-        int nextNode = 1;
+    private static CircuitNetlist buildFromWiresAndComponents(
+            List<CircuitModel.ComponentData> components,
+            List<CircuitModel.ConnectionData> connections) {
 
-        for (CircuitModel.ComponentData comp : components) {
-            for (String label : comp.getTerminalXLabels()) {
-                if (!labelToNode.containsKey(label)) {
-                    labelToNode.put(label, nextNode++);
-                }
+        DisjointSet<GridPoint> pointDs = new DisjointSet<>();
+        Map<String, GridPoint> labelToPoint = new HashMap<>();
+        Set<GridPoint> groundPoints = new HashSet<>();
+
+        // 1. Union wire points
+        for (CircuitModel.ConnectionData conn : connections) {
+            int[][] pts = conn.getPoints();
+            if (pts == null || pts.length == 0) continue;
+
+            GridPoint first = new GridPoint(pts[0][0], pts[0][1]);
+            for (int k = 1; k < pts.length; k++) {
+                GridPoint next = new GridPoint(pts[k][0], pts[k][1]);
+                pointDs.union(first, next);
             }
-            for (String label : comp.getTerminalYLabels()) {
-                if (!labelToNode.containsKey(label)) {
-                    labelToNode.put(label, nextNode++);
+
+            // Wire label
+            if (isValidLabel(conn.getLabel())) {
+                String lbl = conn.getLabel().trim();
+                if (isGroundLabel(lbl)) {
+                    groundPoints.add(first);
+                } else {
+                    if (labelToPoint.containsKey(lbl)) {
+                        pointDs.union(first, labelToPoint.get(lbl));
+                    } else {
+                        labelToPoint.put(lbl, first);
+                    }
                 }
             }
         }
 
-        int nodeCount = nextNode;
+        // 2. Map component terminals to points
         int elementCount = components.size();
+        GridPoint[][] compTerminals = new GridPoint[elementCount][2];
 
-        // Step 2: Assign voltage source numbers
+        for (int i = 0; i < elementCount; i++) {
+            CircuitModel.ComponentData comp = components.get(i);
+            GridPoint[] terms = computeComponentTerminals(comp);
+            compTerminals[i] = terms;
+
+            // Check terminal X labels
+            for (String l : comp.getTerminalXLabels()) {
+                if (isValidLabel(l)) {
+                    String lbl = l.trim();
+                    if (isGroundLabel(lbl)) {
+                        groundPoints.add(terms[0]);
+                    } else {
+                        if (labelToPoint.containsKey(lbl)) {
+                            pointDs.union(terms[0], labelToPoint.get(lbl));
+                        } else {
+                            labelToPoint.put(lbl, terms[0]);
+                        }
+                    }
+                }
+            }
+
+            // Check terminal Y labels
+            for (String l : comp.getTerminalYLabels()) {
+                if (isValidLabel(l)) {
+                    String lbl = l.trim();
+                    if (isGroundLabel(lbl)) {
+                        groundPoints.add(terms[1]);
+                    } else {
+                        if (labelToPoint.containsKey(lbl)) {
+                            pointDs.union(terms[1], labelToPoint.get(lbl));
+                        } else {
+                            labelToPoint.put(lbl, terms[1]);
+                        }
+                    }
+                }
+            }
+
+            // Type 31 is Ground (LK_GLOBAL_TERMINAL)
+            if (comp.getType() == 31) {
+                groundPoints.add(terms[0]);
+                groundPoints.add(terms[1]);
+            }
+        }
+
+        // 3. Assign node indices
+        // Ground is node 0
+        Map<GridPoint, Integer> rootToNode = new HashMap<>();
+        for (GridPoint gp : groundPoints) {
+            rootToNode.put(pointDs.find(gp), 0);
+        }
+
+        int nextNode = 1;
+        for (int i = 0; i < elementCount; i++) {
+            for (int t = 0; t < 2; t++) {
+                GridPoint root = pointDs.find(compTerminals[i][t]);
+                if (!rootToNode.containsKey(root)) {
+                    rootToNode.put(root, nextNode++);
+                }
+            }
+        }
+
+        // If no explicit ground was specified, map the root of the first negative terminal to node 0
+        if (groundPoints.isEmpty() && elementCount > 0) {
+            GridPoint defaultGroundRoot = pointDs.find(compTerminals[0][1]);
+            int oldNode = rootToNode.getOrDefault(defaultGroundRoot, 1);
+            if (oldNode != 0) {
+                rootToNode.put(defaultGroundRoot, 0);
+            }
+        }
+
+        int maxNodeIndex = 0;
+        for (int idx : rootToNode.values()) {
+            if (idx > maxNodeIndex) maxNodeIndex = idx;
+        }
+
+        // 4. Build component type, source number, node arrays, and parameter arrays
         int voltageSourceCount = 0;
         int[] voltageSourceNumbers = new int[elementCount];
         CircuitTypCore[] types = new CircuitTypCore[elementCount];
@@ -209,7 +263,6 @@ public class NetlistBuilder {
             try {
                 typ = CircuitTypCore.fromTypeNumber(comp.getType());
             } catch (IllegalArgumentException e) {
-                // Unknown type - default to resistor
                 typ = CircuitTypCore.LK_R;
             }
             types[i] = typ;
@@ -221,28 +274,19 @@ public class NetlistBuilder {
             }
         }
 
-        // Step 3: Build node arrays and parameter arrays
         int[] nodeX = new int[elementCount];
         int[] nodeY = new int[elementCount];
-        double[][] params = new double[elementCount][16]; // up to 16 params per component
+        double[][] params = new double[elementCount][16];
 
         for (int i = 0; i < elementCount; i++) {
             CircuitModel.ComponentData comp = components.get(i);
+            nodeX[i] = rootToNode.getOrDefault(pointDs.find(compTerminals[i][0]), 0);
+            nodeY[i] = rootToNode.getOrDefault(pointDs.find(compTerminals[i][1]), 0);
 
-            // Assign X terminal (positive/start)
-            String[] xLabels = comp.getTerminalXLabels();
-            nodeX[i] = xLabels.length > 0 ? labelToNode.getOrDefault(xLabels[0], 0) : 0;
-
-            // Assign Y terminal (negative/end)
-            String[] yLabels = comp.getTerminalYLabels();
-            nodeY[i] = yLabels.length > 0 ? labelToNode.getOrDefault(yLabels[0], 0) : 0;
-
-            // Extract numeric parameters
             for (int p = 0; p < 16; p++) {
                 Object val = comp.getParameters().get("param" + p);
                 params[i][p] = (val instanceof Number) ? ((Number) val).doubleValue() : 0.0;
             }
-            // Ensure primary value is set (safety)
             if (params[i][0] == 0.0) {
                 Object primary = comp.getParameters().get(CircuitModel.ComponentData.resolveParameterKey(comp.getType()));
                 if (primary instanceof Number) {
@@ -251,26 +295,137 @@ public class NetlistBuilder {
             }
         }
 
-        // Step 4: Initialize and return netlist
         CircuitNetlist netlist = new CircuitNetlist();
         netlist.initNetlist(types, nodeX, nodeY, voltageSourceNumbers, params,
-                nodeCount - 1, voltageSourceCount, elementCount);
+                maxNodeIndex, voltageSourceCount, elementCount);
+        return netlist;
+    }
+
+    private static GridPoint[] computeComponentTerminals(CircuitModel.ComponentData comp) {
+        int x = comp.getPosition() != null && comp.getPosition().length >= 2 ? comp.getPosition()[0] : 0;
+        int y = comp.getPosition() != null && comp.getPosition().length >= 2 ? comp.getPosition()[1] : 0;
+        int orient = comp.getOrientation() != 0 ? comp.getOrientation() : 503;
+
+        GridPoint p0, p1;
+        switch (orient) {
+            case 502 -> { // WEST_EAST (0 deg)
+                p0 = new GridPoint(x - 2, y);
+                p1 = new GridPoint(x + 2, y);
+            }
+            case 504 -> { // EAST_WEST (180 deg)
+                p0 = new GridPoint(x + 2, y);
+                p1 = new GridPoint(x - 2, y);
+            }
+            case 501 -> { // SOUTH_NORTH (270 deg)
+                p0 = new GridPoint(x, y + 2);
+                p1 = new GridPoint(x, y - 2);
+            }
+            default -> { // NORTH_SOUTH (90 deg, 503)
+                p0 = new GridPoint(x, y - 2);
+                p1 = new GridPoint(x, y + 2);
+            }
+        }
+        return new GridPoint[]{p0, p1};
+    }
+
+    private static boolean isValidLabel(String label) {
+        if (label == null) return false;
+        String trimmed = label.trim();
+        return !trimmed.isEmpty() && !trimmed.equalsIgnoreCase("NIX_NIX_NIX");
+    }
+
+    private static boolean isGroundLabel(String label) {
+        if (label == null) return false;
+        String trimmed = label.trim().toLowerCase();
+        return trimmed.equals("0") || trimmed.equals("gnd") || trimmed.equals("ground");
+    }
+
+    /**
+     * Build netlist from components that have terminal labels (from .ipes file parsing).
+     */
+    private static CircuitNetlist buildFromComponentsWithLabels(List<CircuitModel.ComponentData> components) {
+        Map<String, Integer> labelToNode = new LinkedHashMap<>();
+        labelToNode.put("0", 0);
+        labelToNode.put("", 0);
+        labelToNode.put("GND", 0);
+        labelToNode.put("gnd", 0);
+        int nextNode = 1;
+
+        for (CircuitModel.ComponentData comp : components) {
+            for (String label : comp.getTerminalXLabels()) {
+                if (isValidLabel(label) && !labelToNode.containsKey(label)) {
+                    labelToNode.put(label, nextNode++);
+                }
+            }
+            for (String label : comp.getTerminalYLabels()) {
+                if (isValidLabel(label) && !labelToNode.containsKey(label)) {
+                    labelToNode.put(label, nextNode++);
+                }
+            }
+        }
+
+        int nodeCount = Math.max(nextNode, 1);
+        int elementCount = components.size();
+
+        int voltageSourceCount = 0;
+        int[] voltageSourceNumbers = new int[elementCount];
+        CircuitTypCore[] types = new CircuitTypCore[elementCount];
+
+        for (int i = 0; i < elementCount; i++) {
+            CircuitModel.ComponentData comp = components.get(i);
+            CircuitTypCore typ;
+            try {
+                typ = CircuitTypCore.fromTypeNumber(comp.getType());
+            } catch (IllegalArgumentException e) {
+                typ = CircuitTypCore.LK_R;
+            }
+            types[i] = typ;
+
+            if (typ == CircuitTypCore.LK_U || typ == CircuitTypCore.LK_LKOP2) {
+                voltageSourceNumbers[i] = ++voltageSourceCount;
+            } else {
+                voltageSourceNumbers[i] = -1;
+            }
+        }
+
+        int[] nodeX = new int[elementCount];
+        int[] nodeY = new int[elementCount];
+        double[][] params = new double[elementCount][16];
+
+        for (int i = 0; i < elementCount; i++) {
+            CircuitModel.ComponentData comp = components.get(i);
+
+            String[] xLabels = comp.getTerminalXLabels();
+            nodeX[i] = (xLabels.length > 0 && isValidLabel(xLabels[0]))
+                    ? labelToNode.getOrDefault(xLabels[0], 0) : 0;
+
+            String[] yLabels = comp.getTerminalYLabels();
+            nodeY[i] = (yLabels.length > 0 && isValidLabel(yLabels[0]))
+                    ? labelToNode.getOrDefault(yLabels[0], 0) : 0;
+
+            for (int p = 0; p < 16; p++) {
+                Object val = comp.getParameters().get("param" + p);
+                params[i][p] = (val instanceof Number) ? ((Number) val).doubleValue() : 0.0;
+            }
+            if (params[i][0] == 0.0) {
+                Object primary = comp.getParameters().get(CircuitModel.ComponentData.resolveParameterKey(comp.getType()));
+                if (primary instanceof Number) {
+                    params[i][0] = ((Number) primary).doubleValue();
+                }
+            }
+        }
+
+        CircuitNetlist netlist = new CircuitNetlist();
+        netlist.initNetlist(types, nodeX, nodeY, voltageSourceNumbers, params,
+                nodeCount > 0 ? nodeCount - 1 : 0, voltageSourceCount, elementCount);
         return netlist;
     }
 
     /**
      * Build netlist with estimated dimensions (backward compatible mode).
-     *
-     * <p>Used when components don't have terminal labels (created programmatically).
-     * Estimates node and voltage source counts based on component count.</p>
      */
     private static CircuitNetlist buildWithEstimatedDimensions(List<CircuitModel.ComponentData> components) {
         int totalComponents = components.size();
-
-        // Dimension estimation:
-        // - Nodes: assume ~1 node per 2 components (conservative estimate)
-        // - Voltage sources: estimate ~1 per 5 components
-        // - Elements: use actual component count
         int estimatedNodeCount = Math.max(1, totalComponents / 2 + 1);
         int estimatedVoltageSourceCount = Math.max(0, totalComponents / 5);
 

@@ -102,7 +102,7 @@ describe('App user flow', () => {
 
     // clicking a palette entry without an open circuit shows a hint instead of arming
     fireEvent.mouseDown(container.querySelectorAll('.palette-entry')[0]);
-    const svg = container.querySelector('svg')!;
+    const svg = (container.querySelector('svg.sheet') || container.querySelector('svg'))!;
     fireEvent.mouseMove(svg, { clientX: 64, clientY: 64, button: 0 });
     expect(container.querySelector('g.ghost')).toBeNull();
     expect(container.querySelector('.statusbar')!.textContent).toContain('Open a .ipes file');
