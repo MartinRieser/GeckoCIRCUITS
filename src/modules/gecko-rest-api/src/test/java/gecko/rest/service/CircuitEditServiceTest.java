@@ -81,6 +81,29 @@ class CircuitEditServiceTest {
     }
 
     @Test
+    void createComponent_seedsClassicDefaults() {
+        // resistor: classic default 1 kOhm, usable in simulation without manual editing
+        CircuitChangeMessage r = service.createComponent(circuitId,
+                new ComponentCreateRequest("LK", 1, "R_def", 16, 16, null, null));
+        assertEquals(Map.of("param0", 1000.0, "resistance", 1000.0),
+                payloadComponent(r).parameters());
+        assertArrayEquals(new double[]{1000.0}, findByName("R_def").getRawParameters(), 1e-12);
+
+        // voltage source: classic layout [0]=401 (DC), [1]=10 V, [2]=50 Hz, [20]=325 V amplitude
+        service.createComponent(circuitId, new ComponentCreateRequest("LK", 4, "U_def", 16, 16, null, null));
+        CircuitModel.ComponentData source = findByName("U_def");
+        assertEquals(401.0, source.getRawParameters()[0], 1e-12);
+        assertEquals(10.0, source.getRawParameters()[1], 1e-12);
+        assertEquals(50.0, source.getRawParameters()[2], 1e-12);
+        assertEquals(325.0, source.getRawParameters()[20], 1e-12);
+
+        // explicit parameters override the defaults
+        service.createComponent(circuitId,
+                new ComponentCreateRequest("LK", 1, "R_ovr", 16, 16, null, Map.of("param0", 47.0)));
+        assertArrayEquals(new double[]{47.0}, findByName("R_ovr").getRawParameters(), 1e-12);
+    }
+
+    @Test
     void createComponent_customNameAndParameters() {
         CircuitChangeMessage result = service.createComponent(circuitId,
                 new ComponentCreateRequest("LK", 1, "R_test", 32, 32, 502, Map.of("param0", 47.5)));

@@ -371,7 +371,10 @@ Request:
 `family`: `LK` or `THERM` (CONTROL/SPECIAL creation not supported yet).
 `type`: type number from the catalog. Coordinates are snapped to the grid raster
 (`dpix`). Omitted names are generated from the type and made unique; duplicate
-explicit names return 409. Parameter keys are `param<index>`.
+explicit names return 409. Parameter keys are `param<index>`. New components are
+seeded with the classic GUI's default parameters (e.g. resistor 1000 Ω, sources
+carry the classic source-type layout `[401, value, 50, 0, 0, ..., amplitude@20]`);
+explicit `parameters` override them.
 
 **Patch Component** (move / rotate / rename / set parameters — all fields optional)
 

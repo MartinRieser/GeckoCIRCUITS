@@ -144,7 +144,6 @@ public class HeadlessSimulationEngine {
         int expectedSteps = calculateExpectedSteps(dt, duration);
 
         // Create data container for results
-        // For now, create a simple container with a few test signals
         DataContainerGlobal dataContainer = new DataContainerGlobal();
         String[] signalNames = resolveSignalNames(circuitModel);
         dataContainer.init(signalNames.length, expectedSteps + 1, signalNames, "time [s]");
@@ -183,9 +182,15 @@ public class HeadlessSimulationEngine {
         }
 
         // Main simulation loop
-        // Note: This is a placeholder implementation. In production, this would
-        // integrate with the actual SimulationKernel or circuit solver.
         float[] values = new float[signalNames.length];
+
+        // Resolve each requested signal name to a node index via the netlist's
+        // labels (e.g. "V_out"); unresolvable signals stay zero
+        int[] signalNodes = new int[signalNames.length];
+        for (int i = 0; i < signalNames.length; i++) {
+            signalNodes[i] = circuitNetlist != null
+                    ? circuitNetlist.getLabelResolver().getIndex(signalNames[i]) : -1;
+        }
 
         while (currentTime <= duration) {
             if (cancelRequested.get()) {
@@ -227,8 +232,10 @@ public class HeadlessSimulationEngine {
 
                 // 7. Extract signal values for data logging
                 double[] nodeVoltages = matrixSolver.getP();
-                for (int sigIdx = 0; sigIdx < values.length && sigIdx < nodeVoltages.length; sigIdx++) {
-                    values[sigIdx] = (float) nodeVoltages[sigIdx];
+                for (int sigIdx = 0; sigIdx < values.length; sigIdx++) {
+                    int node = signalNodes[sigIdx];
+                    values[sigIdx] = node >= 0 && node < nodeVoltages.length
+                            ? (float) nodeVoltages[node] : 0.0f;
                 }
             } else {
                 // Fallback: no circuit loaded, use zero output

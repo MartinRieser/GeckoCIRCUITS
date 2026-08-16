@@ -71,6 +71,14 @@ public class CircuitNetlist implements INetList {
     private double[] lastNodeVoltages = new double[0];
     private double[] lastComponentCurrents = new double[0];
 
+    // Node labels for signal resolution (scope/probe lookups by name)
+    private final LabelResolver labelResolver = new LabelResolver();
+
+    /** Node labels (e.g. "V_out" -> node index) for signal extraction. */
+    public LabelResolver getLabelResolver() {
+        return labelResolver;
+    }
+
     /**
      * Creates a new empty CircuitNetlist.
      * Call initNetlist() to populate it with circuit data.

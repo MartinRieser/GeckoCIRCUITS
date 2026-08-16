@@ -188,4 +188,100 @@ public class NetlistBuilderTest {
             );
         }
     }
+
+    // ========== Wire-tracing topology (web editor circuits without labels) ==========
+
+    private static CircuitModel.ComponentData component(int type, String name, int x, int y, int orientation) {
+        CircuitModel.ComponentData comp = new CircuitModel.ComponentData(type, name, x, y, orientation);
+        comp.setParameter("param0", 100.0);
+        return comp;
+    }
+
+    private static int[][] dense(String points) {
+        String[] tokens = points.split(" ");
+        int[][] result = new int[tokens.length / 2][2];
+        for (int i = 0; i < result.length; i++) {
+            result[i][0] = Integer.parseInt(tokens[2 * i]);
+            result[i][1] = Integer.parseInt(tokens[2 * i + 1]);
+        }
+        return result;
+    }
+
+    @Test
+    public void testWiresConnectComponentTerminalsByCoincidentGridPoints() {
+        CircuitModel model = new CircuitModel();
+        // V source at (10,10) WEST_EAST: terminals (8,10) and (12,10)
+        model.addCircuitComponent(component(4, "V1", 10, 10, 502));
+        // resistor at (20,10) WEST_EAST: terminals (18,10) and (22,10)
+        model.addCircuitComponent(component(1, "R1", 20, 10, 502));
+        // dense wire linking only source output to resistor input
+        model.getConnections().add(new CircuitModel.ConnectionData("LK",
+                dense("12 10 13 10 14 10 15 10 16 10 17 10 18 10")));
+
+        CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
+
+        assertEquals(2, netlist.getElementCount());
+        assertEquals(1, netlist.getVoltageSourceMax(), "voltage source gets a source number");
+        // source output node == resistor input node (connected through the wire);
+        // without explicit ground the source's negative terminal becomes node 0
+        assertEquals(0, netlist.getNodeY(0), "default ground is the first component's output");
+        assertEquals(netlist.getNodeY(0), netlist.getNodeX(1), "wire joins source and resistor");
+        assertNotEquals(netlist.getNodeX(0), netlist.getNodeY(1), "free terminals stay separate");
+    }
+
+    @Test
+    public void testTerminalOnMidWirePointConnectsLikeTheClassicEditor() {
+        CircuitModel model = new CircuitModel();
+        // dense horizontal wire from (8,10) to (12,10) passes through (10,10)
+        model.getConnections().add(new CircuitModel.ConnectionData("LK", dense("8 10 9 10 10 10 11 10 12 10")));
+        // resistor above, SOUTH_NORTH orientation: terminals (10,12) and (10,10)
+        model.addCircuitComponent(component(1, "R1", 10, 12, 501));
+
+        CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
+
+        // R1's output (10,10) is a mid-wire raster point: it shares the wire's node,
+        // which (absent any ground) becomes the default ground node 0. The free
+        // input terminal (10,14) must be a separate node.
+        assertEquals(0, netlist.getNodeY(0), "tapped terminal joins the wire node");
+        assertNotEquals(0, netlist.getNodeX(0), "free terminal is a separate node");
+    }
+
+    @Test
+    public void testWireLabelGndDefinesGroundNode() {
+        CircuitModel model = new CircuitModel();
+        model.addCircuitComponent(component(1, "R1", 10, 10, 502));
+        model.addCircuitComponent(component(1, "R2", 20, 10, 502));
+        CircuitModel.ConnectionData groundWire =
+                new CircuitModel.ConnectionData("LK", dense("8 10 9 10 10 10 11 10 12 10"));
+        groundWire.setLabel("GND");
+        model.getConnections().add(groundWire);
+        // wire touching only R2's input terminal; R2's output stays floating
+        model.getConnections().add(new CircuitModel.ConnectionData("LK", dense("18 10 19 10")));
+
+        CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
+
+        assertEquals(0, netlist.getNodeX(0), "terminal on the GND-labeled wire is node 0");
+        assertEquals(0, netlist.getNodeY(0), "both terminals on the ground wire are node 0");
+        assertNotEquals(0, netlist.getNodeX(1), "separate wire is a separate node");
+        assertNotEquals(0, netlist.getNodeY(1), "floating terminal is not ground");
+    }
+
+    @Test
+    public void testFullyLabeledCircuitStillUsesLabelMatching() {
+        CircuitModel model = new CircuitModel();
+        CircuitModel.ComponentData v1 = component(4, "V1", 10, 10, 502);
+        v1.setTerminalXLabels(new String[]{"plus"});
+        v1.setTerminalYLabels(new String[]{"minus"});
+        CircuitModel.ComponentData r1 = component(1, "R1", 20, 10, 502);
+        r1.setTerminalXLabels(new String[]{"plus"});
+        r1.setTerminalYLabels(new String[]{"minus"});
+        model.addCircuitComponent(v1);
+        model.addCircuitComponent(r1);
+
+        CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
+
+        assertEquals(netlist.getNodeX(0), netlist.getNodeX(1), "equal labels connect");
+        assertEquals(netlist.getNodeY(0), netlist.getNodeY(1));
+        assertEquals(1, netlist.getVoltageSourceMax());
+    }
 }

@@ -123,17 +123,14 @@ public class NetlistBuilder {
         }
 
         List<CircuitModel.ConnectionData> connections = model.getConnections();
-
-        // If circuit has wires, trace wires to component terminals
         if (connections != null && !connections.isEmpty()) {
             return buildFromWiresAndComponents(allComponents, connections);
         }
 
         if (explicitLabelCount > 0) {
             return buildFromComponentsWithLabels(allComponents);
-        } else {
-            return buildWithEstimatedDimensions(allComponents);
         }
+        return buildWithEstimatedDimensions(allComponents);
     }
 
     /**
@@ -298,6 +295,18 @@ public class NetlistBuilder {
         CircuitNetlist netlist = new CircuitNetlist();
         netlist.initNetlist(types, nodeX, nodeY, voltageSourceNumbers, params,
                 maxNodeIndex, voltageSourceCount, elementCount);
+
+        // expose net labels so simulations can resolve signals like "V_out"
+        for (Map.Entry<String, GridPoint> entry : labelToPoint.entrySet()) {
+            Integer node = rootToNode.get(pointDs.find(entry.getValue()));
+            if (node != null) {
+                netlist.getLabelResolver().addLabel(entry.getKey(), node);
+            }
+        }
+        for (GridPoint gp : groundPoints) {
+            netlist.getLabelResolver().addLabel("GND", 0);
+            break;
+        }
         return netlist;
     }
 
@@ -418,6 +427,11 @@ public class NetlistBuilder {
         CircuitNetlist netlist = new CircuitNetlist();
         netlist.initNetlist(types, nodeX, nodeY, voltageSourceNumbers, params,
                 nodeCount > 0 ? nodeCount - 1 : 0, voltageSourceCount, elementCount);
+        for (Map.Entry<String, Integer> entry : labelToNode.entrySet()) {
+            if (!entry.getKey().isBlank()) {
+                netlist.getLabelResolver().addLabel(entry.getKey(), entry.getValue());
+            }
+        }
         return netlist;
     }
 

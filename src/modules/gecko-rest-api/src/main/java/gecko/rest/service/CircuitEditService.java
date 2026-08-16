@@ -65,6 +65,7 @@ public class CircuitEditService {
                     normalizeOrientation(request.orientation()));
             comp.setFamily(family);
             comp.setUniqueObjectIdentifier(nextUid(model));
+            applyDefaultParameters(comp);
             if (request.parameters() != null && !request.parameters().isEmpty()) {
                 applyParameterMap(comp, request.parameters());
             }
@@ -510,6 +511,50 @@ public class CircuitEditService {
             }
         }
         return ORIENTATION_CYCLE[0];
+    }
+
+    /**
+     * Default parameter arrays for new components, mirroring the classic GUI's
+     * constructor defaults (see AbstractResistor, AbstractCapacitor, AbstractCircuitSource,
+     * AbstractSemiconductor, AbstractSwitch). Sources carry the full classic layout:
+     * [0]=source type code, [1]=DC value, [2]=frequency, [3]=offset, [4]=phase,
+     * [20]=sinus amplitude. Switches/diodes: [0]=dynamic resistance (state),
+     * then type-specific values.
+     */
+    private static final Map<Integer, double[]> DEFAULT_PARAMETERS = Map.ofEntries(
+            Map.entry(1, new double[]{1000.0}),
+            Map.entry(2, new double[]{3.0e-4, 0.0}),
+            Map.entry(3, new double[]{100.0e-9, 0.0}),
+            Map.entry(4, sourceDefaults(10.0, 325.0)),
+            Map.entry(5, sourceDefaults(1.0, 1.0)),
+            Map.entry(6, new double[]{10.0e-3, 0.6, 10.0e-3, 1.0e7}),
+            Map.entry(7, new double[]{1.0e7, 10.0e-3, 1.0e7}),
+            Map.entry(41, new double[]{1.0}),
+            Map.entry(42, new double[]{1.0, 25.0}),
+            Map.entry(43, new double[]{401.0, 25.0}),
+            Map.entry(44, new double[]{401.0, 10.0}),
+            Map.entry(46, new double[]{401.0, 25.0}));
+
+    private static double[] sourceDefaults(double dcValue, double amplitude) {
+        double[] params = new double[21];
+        params[0] = 401.0;   // QUELLE_DC
+        params[1] = dcValue;
+        params[2] = 50.0;    // frequency
+        params[20] = amplitude;
+        return params;
+    }
+
+    /** Seeds a fresh component with the classic defaults, like the Swing constructors do. */
+    private static void applyDefaultParameters(CircuitModel.ComponentData comp) {
+        double[] defaults = DEFAULT_PARAMETERS.get(comp.getType());
+        if (defaults == null) {
+            return;
+        }
+        comp.setRawParameters(defaults.clone());
+        for (int i = 0; i < defaults.length; i++) {
+            comp.setParameter("param" + i, defaults[i]);
+        }
+        comp.setParameter(CircuitModel.ComponentData.resolveParameterKey(comp.getType()), defaults[0]);
     }
 
     private static void applyParameterMap(CircuitModel.ComponentData comp, Map<String, Double> parameters) {
