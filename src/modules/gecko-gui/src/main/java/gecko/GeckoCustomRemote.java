@@ -19,10 +19,11 @@ import gecko.geckoscript.AbstractGeckoCustom;
 import gecko.geckoscript.SimulationAccess;
 import gecko.i18n.resources.I18nKeys;
 import java.rmi.RemoteException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 /**
  * This is an implementation of GeckoCustom, that is to be used for remote
  * method invocation with GeckoRemote.
@@ -37,7 +38,10 @@ public final class GeckoCustomRemote extends AbstractGeckoCustom implements Geck
 
     private boolean _free = true; //denotes if this instance of GeckoCIRCUITS is free for a remote connection
     private static volatile long _lastSessionIDActive = 0;
-    public static final Map<Long,CallbackClientInterface> clients = new ConcurrentHashMap<>();
+    // HashMap (not ConcurrentHashMap): connect() stores a null placeholder until
+    // registerClientForCallback replaces it - CHM forbids null values (bug fix)
+    public static final Map<Long,CallbackClientInterface> clients =
+            Collections.synchronizedMap(new HashMap<>());
 
     private boolean _acceptsExtraConnections = false; //denotes if this instance of GeckoCIRCUITS allows more than one client to connect
     private int _numberOfExtraConnectionsAccepted = 0; //denotes how many additional clients (besides the first one) this instance of GeckoCIRCUITS will accept

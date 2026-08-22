@@ -62,10 +62,12 @@ public class RealIpesTest {
         System.out.printf("Netlist: nodes=%d  vSrc=%d  elements=%d%n",
                 netlist.getNodeMax(), netlist.getVoltageSourceMax(), netlist.getElementCount());
 
-        if (!model.getCircuitComponents().isEmpty()) {
-            assertEquals(model.getTotalComponentCount(), netlist.getElementCount(),
-                    "Element count should match component count");
-        }
+        // Only electrical + thermal components become netlist elements; control
+        // blocks (scope, probes) are measurement-only and must not collide
+        // with the LK type-number space.
+        int expected = model.getCircuitComponents().size() + model.getThermalComponents().size();
+        assertEquals(expected, netlist.getElementCount(),
+                "Element count should match LK + THERM component count");
     }
 
     @Test

@@ -157,16 +157,32 @@ public class NetlistBuilderTest {
         CircuitModel model = new CircuitModel();
         model.addCircuitComponent(new CircuitModel.ComponentData(1, "R1"));
         model.addCircuitComponent(new CircuitModel.ComponentData(2, "L1"));
-        model.addControlComponent(new CircuitModel.ComponentData(3, "PI1"));
         model.addThermalComponent(new CircuitModel.ComponentData(4, "Th1"));
-        // Total: 4 components
+        // Control blocks are excluded from the electrical netlist
 
         // Act
         CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
 
         // Assert
         assertNotNull(netlist, "Netlist should not be null");
-        assertEquals(4, netlist.getElementCount(), "Element count should be 4");
+        assertEquals(3, netlist.getElementCount(), "Element count should be 3");
+    }
+
+    @Test
+    public void controlComponentsAreExcludedFromElectricalNetlist() {
+        // Control file types share the number space with LK types (typ 1 = VOLT
+        // probe vs. LK_R); they must not become electrical elements.
+        CircuitModel model = new CircuitModel();
+        CircuitModel.ComponentData r = new CircuitModel.ComponentData(1, "R1", 10, 10, 503);
+        r.setParameter("param0", 100.0);
+        model.addCircuitComponent(r);
+        model.addControlComponent(new CircuitModel.ComponentData(1, "VOLT.1", 30, 10, 503));
+        model.addControlComponent(new CircuitModel.ComponentData(5, "SCOPE.1", 34, 10, 503));
+
+        CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
+
+        assertEquals(1, netlist.getElementCount(), "only the resistor becomes an element");
+        assertEquals(gecko.core.circuit.circuitcomponents.CircuitTypCore.LK_R, netlist.getType(0));
     }
 
     @Test

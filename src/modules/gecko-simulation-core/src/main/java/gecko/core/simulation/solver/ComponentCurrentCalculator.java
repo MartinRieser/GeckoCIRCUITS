@@ -63,6 +63,7 @@ public class ComponentCurrentCalculator {
         double[] pALTALT = matrixSolver.getPALTALT();
         double[] iALT = matrixSolver.getIALT();
         double[] iALTALT = matrixSolver.getIALTALT();
+        double[] iCurrent = matrixSolver.getICurrent();
         SolverType solverType = matrixSolver.getSolverType();
 
         for (int elementIdx = 0; elementIdx < netlist.getElementCount(); elementIdx++) {
@@ -239,6 +240,13 @@ public class ComponentCurrentCalculator {
 
                 default:
                     break;
+            }
+
+            // Legacy stores the element current in parameter[1]; keep the
+            // solver's current-state array in sync so the next history shift
+            // promotes it to iALT (inductor/cap history terms depend on it).
+            if (parameters.length > 1) {
+                iCurrent[elementIdx] = parameters[1];
             }
         }
 

@@ -38,5 +38,41 @@
             </plugins>
         </pluginManagement>
     </build>
+
+    <profiles>
+        <!-- P5 verification harness: runs both engines over curated circuits
+             and compares results. Opt-in only (needs the GUI jar + a display
+             for the legacy engine). Usage: mvn -Pparity verify -->
+        <profile>
+            <id>parity</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>run-parity-harness</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>powershell</executable>
+                                    <arguments>
+                                        <argument>-ExecutionPolicy</argument>
+                                        <argument>Bypass</argument>
+                                        <argument>-File</argument>
+                                        <argument>${maven.multiModuleProjectDirectory}/tools/parity/run-parity.ps1</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
 

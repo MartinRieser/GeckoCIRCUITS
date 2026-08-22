@@ -45,6 +45,7 @@ public class MatrixSolver {
     private double[] iALT;            // Previous time-step component currents
     private double[] iALTALT;         // Two steps back component currents
     private double[] iALTALTALT;      // Three steps back component currents
+    private double[] iCurrent;        // This step's component currents (promoted to iALT on shift)
     private SolverType solverType;
 
     // LU decomposition solver state
@@ -88,6 +89,7 @@ public class MatrixSolver {
         pALTALTALT = new double[matrixSize];
 
         // Allocate component current vectors for multi-step integration methods
+        iCurrent = new double[elementCount];
         iALT = new double[elementCount];
         iALTALT = new double[elementCount];
         iALTALTALT = new double[elementCount];
@@ -124,6 +126,14 @@ public class MatrixSolver {
 
     public double[] getIALT() {
         return iALT;
+    }
+
+    /**
+     * Current-step component currents, filled by ComponentCurrentCalculator.
+     * The next updateNodePotentials call promotes them into iALT.
+     */
+    public double[] getICurrent() {
+        return iCurrent;
     }
 
     public double[] getIALTALT() {
@@ -167,8 +177,9 @@ public class MatrixSolver {
         System.arraycopy(iALTALT, 0, iALTALTALT, 0, iALT.length);
         // Move one-step-back to two-steps-back
         System.arraycopy(iALT, 0, iALTALT, 0, iALT.length);
-        // Note: iALT will be populated with current values by ComponentCurrentCalculator
-        // before the next call to this method
+        // Promote this step's currents (computed by ComponentCurrentCalculator,
+        // legacy: iALT[i] = element._currentInAmps) to one-step-back
+        System.arraycopy(iCurrent, 0, iALT, 0, iALT.length);
     }
 
     /**
@@ -221,6 +232,26 @@ public class MatrixSolver {
             int nodeZ = netlist.getNodeMax() + voltageSourceNumber;
             double[] parameters = netlist.getParameter(elementIndex);
 
+            // Coupled inductors use the extended MNA formulation (current as
+            // unknown); the registry's InductorStamper cannot express the
+            // z-row. Port of the legacy LKMatrices case LK_LKOP2; mutual
+            // coupling (M) terms are deferred like in the legacy port.
+            if (componentType == CircuitTypCore.LK_LKOP2) {
+                double inductance = parameters[0];
+                parameters[10] = inductance;
+                a[nodeX][nodeZ] += 1.0;
+                a[nodeY][nodeZ] -= 1.0;
+                a[nodeZ][nodeX] += 1.0;
+                a[nodeZ][nodeY] -= 1.0;
+                double companion = switch (solverType) {
+                    case SOLVER_TRZ -> -2 * inductance / dt;
+                    case SOLVER_GS -> -1.5 * inductance / dt;
+                    default -> -inductance / dt;
+                };
+                a[nodeZ][nodeZ] += companion;
+                continue;
+            }
+
             // Step 3: Get stamper for this component type and stamp matrix A
             IMatrixStamper stamper = registry.getStamper(componentType);
             if (stamper != null) {
@@ -228,6 +259,14 @@ public class MatrixSolver {
             }
             // If no stamper is registered, component is skipped (e.g., terminals, unimplemented types)
         }
+
+        // Pin node 0 as the voltage reference (port of the legacy
+        // deSingularizeIsolatedPotentials a[index][index] = 1): without it the
+        // KCL rows sum to zero and the MNA system is singular.
+        for (int j = 0; j < matrixSize; j++) {
+            a[0][j] = 0.0;
+        }
+        a[0][0] = 1.0;
 
         // Note: Magnetic coupling (mutual inductance) handling is deferred for future refinement.
         // The legacy code injects coupling contributions after component stamping;
@@ -494,6 +533,10 @@ public class MatrixSolver {
                     break;
             }
         }
+
+        // Ground-row history terms (e.g. capacitor b-vector entries at node 0)
+        // must not bias the pinned reference potential.
+        bVector[0] = 0.0;
     }
 
     /**

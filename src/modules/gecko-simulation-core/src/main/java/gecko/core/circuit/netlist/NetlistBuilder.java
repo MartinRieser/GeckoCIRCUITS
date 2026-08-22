@@ -104,8 +104,10 @@ public class NetlistBuilder {
 
         List<CircuitModel.ComponentData> allComponents = new ArrayList<>();
         allComponents.addAll(model.getCircuitComponents());
-        allComponents.addAll(model.getControlComponents());
         allComponents.addAll(model.getThermalComponents());
+        // Control-domain blocks are deliberately excluded: their file type numbers
+        // come from a separate CONTROL namespace (e.g. typ 1 = VOLT probe) and would
+        // collide with LK type numbers (typ 1 = resistor), creating phantom elements.
 
         if (allComponents.isEmpty()) {
             return buildEmpty(0, 0, 0);

@@ -1,0 +1,158 @@
+﻿
+verbindungLeistungskreisANZAHL 0
+elementANZAHL 3
+
+e (0)
+<ElementLK>
+labelAnfangsKnoten[] /n1
+labelEndKnoten[] /gnd
+enabledShorted 1
+parentSheetIdentifier 0
+typ 4
+uniqueObjectIdentifier 100000001
+x 7
+y 11
+parameter[] 401.0 100.0 50.0 0.0 0.0 0.5 0.0 100.0 100.0 0.0 0.0 1.0 1.7976931348623157E308 0.0 0.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog U.1
+dxTxt -4.75
+dyTxt 1.75
+
+<\ElementLK>
+
+e (1)
+<ElementLK>
+labelAnfangsKnoten[] /n1
+labelEndKnoten[] /u_out
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier 100000002
+x 13
+y 11
+parameter[] 10.0 0.0 0.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog R.1
+dxTxt -4.375
+dyTxt 3.0625
+
+<\ElementLK>
+
+e (2)
+<ElementLK>
+labelAnfangsKnoten[] /u_out
+labelEndKnoten[] /gnd
+enabledShorted 1
+parentSheetIdentifier 0
+typ 3
+uniqueObjectIdentifier 100000003
+x 19
+y 11
+parameter[] 1.0E-4 0.0 0.0 0.0 0.0 0.0 1.0E-4 1.0E-4 0.0 0.0 0.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog C.1
+isNonlinear false
+dxTxt 3.4375
+dyTxt -5.0
+
+<\ElementLK>
+
+controlANZAHL 2
+
+c (0)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /u_out
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier 200000001
+x 27
+y 10
+parameter[] 0.0
+parameterString[] /u_out/gnd/0
+nameOpt[] 
+orientierung 503
+idStringDialog VOLT.1
+shiftLabelsIn[] 
+shiftLabelsOut[] true
+<detail>
+u[] 0.0
+<\detail>
+<\ElementCONTROL>
+
+c (1)
+<ElementCONTROL>
+labelAnfangsKnoten[] /u_out
+labelEndKnoten[] 
+enabledShorted 1
+parentSheetIdentifier 0
+typ 5
+uniqueObjectIdentifier 200000002
+x 31
+y 10
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SCOPE.1
+shiftLabelsIn[] true
+<\ElementCONTROL>
+
+thermANZAHL 0
+
+optimizerName[] 
+optimizerValue[] 
+<scripterCode>
+
+<\scripterCode>
+<scripterImports>
+
+<\scripterImports>
+<scripterDeclarations>
+
+<\scripterDeclarations>
+
+GeckoFileManager
+<GeckoFileManager>
+<\GeckoFileManager>
+
+
+DtStor 2026-08-22
+tDURATION 5.0E-3
+bl 0
+dt 1.0E-6
+tPAUSE -1.0
+T_pre -1.0
+dt_pre 1.0E-6
+solverType 0
+path c:/parity/rc-lowpass.ipes
+dpix 16
+fontSize 12
+fontTyp Dialog.plain
+fensterWidth 1047
+fensterHeight 637
+worksheetSizeX 900
+worksheetSizeY 900
+ANSICHT_SHOW_LK_NAME true
+ANSICHT_SHOW_LK_PARAMETER true
+ANSICHT_SHOW_LK_FLOWDIR true
+ANSICHT_SHOW_LK_TEXTLINIE true
+ANSICHT_SHOW_THERM_NAME true
+ANSICHT_SHOW_THERM_PARAMETER true
+ANSICHT_SHOW_THERM_FLOWDIR false
+ANSICHT_SHOW_THERM_TEXTLINIE true
+ANSICHT_SHOW_CONTROL_NAME false
+ANSICHT_SHOW_CONTROL_PARAMETER true
+ANSICHT_SHOW_CONTROL_TEXTLINIE true
+FileVersion 161
+UniqueFileId 111000001
+dataContainerSignals[] /u_out
+======================
+
