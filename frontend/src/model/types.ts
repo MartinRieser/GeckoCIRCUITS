@@ -29,6 +29,13 @@ export interface EditorWire {
   points: number[][];
 }
 
+export interface SimulationDefaults {
+  timeStep: number;
+  duration: number;
+  solverType: string;
+  signals: string[];
+}
+
 export interface EditorSnapshot {
   circuitId: string;
   modelVersion: number;
@@ -40,6 +47,7 @@ export interface EditorSnapshot {
   components: EditorComponent[];
   connections?: EditorWire[];
   wires?: EditorWire[];
+  simulationDefaults?: SimulationDefaults;
 }
 
 export interface ChangeMessage {
@@ -104,9 +112,10 @@ export interface SimulationRequest {
   timeStep?: number;
   solverType?: string;
   parameters?: Record<string, number>;
+  signals?: string[];
 }
 
-export type SimulationStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
+export type SimulationStatus = 'PENDING' | 'RUNNING' | 'PAUSED' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
 
 export interface SimulationResponse {
   simulationId: string;

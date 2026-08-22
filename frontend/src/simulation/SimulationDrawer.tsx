@@ -1,31 +1,37 @@
 /**
  * Simulation Control & Interactive Waveform Results Viewer.
  * Features:
- * - Simulation configuration (tEnd, dt, solver selection)
- * - Run / Cancel simulation with real-time progress
+ * - Simulation configuration (tEnd, dt, solver selection) pre-filled from the
+ *   circuit's .ipes metadata; recorded-signal selection from the file
+ * - Run / Pause / Resume / Cancel with live SSE progress
  * - Interactive multi-trace SVG waveform chart with hover crosshair and tooltips
  * - Signal visibility toggles and color legends
  * - Signal statistics (Min, Max, Peak-to-Peak, RMS)
  * - CSV export
  */
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
-import type { SimulationStatus } from '../model/types';
+import type { SimulationDefaults, SimulationStatus } from '../model/types';
 import {
   parseEngineeringValue,
   formatEngineeringValue,
 } from '../model/componentSchema';
+import { mapSimulationResults } from './chartData';
 
 interface SimulationDrawerProps {
   isOpen: boolean;
   onToggle: () => void;
   circuitId: string | null;
+  defaults: SimulationDefaults | null;
   onRunSimulation: (config: {
     simulationTime: number;
     timeStep: number;
     solverType: string;
+    signals?: string[];
   }) => void;
   onCancelSimulation?: () => void;
+  onPauseSimulation?: () => void;
+  onResumeSimulation?: () => void;
   status: SimulationStatus | null;
   progress: number;
   results: Record<string, number[]> | null;
@@ -47,8 +53,11 @@ export function SimulationDrawer({
   isOpen,
   onToggle,
   circuitId,
+  defaults,
   onRunSimulation,
   onCancelSimulation,
+  onPauseSimulation,
+  onResumeSimulation,
   status,
   progress,
   results,
@@ -57,66 +66,47 @@ export function SimulationDrawer({
   const [tEndStr, setTEndStr] = useState('20m');
   const [dtStr, setDtStr] = useState('1u');
   const [solverType, setSolverType] = useState('backward-euler');
+  const [recordedSignals, setRecordedSignals] = useState<string[]>([]);
   const [hiddenSignals, setHiddenSignals] = useState<Record<string, boolean>>({});
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [seededCircuit, setSeededCircuit] = useState<string | null>(null);
 
-  const isRunning = status === 'PENDING' || status === 'RUNNING';
+  // Re-seed the parameter inputs whenever another circuit is opened
+  useEffect(() => {
+    if (!defaults || seededCircuit === circuitId) return;
+    setSeededCircuit(circuitId);
+    if (defaults.duration > 0) setTEndStr(formatEngineeringValue(defaults.duration));
+    if (defaults.timeStep > 0) setDtStr(formatEngineeringValue(defaults.timeStep));
+    if (defaults.solverType) setSolverType(defaults.solverType);
+    setRecordedSignals(defaults.signals);
+  }, [circuitId, defaults, seededCircuit]);
+
+  const isRunning =
+    status === 'PENDING' || status === 'RUNNING' || status === 'PAUSED';
 
   const handleRun = () => {
     if (!circuitId) return;
-    const tEnd = parseEngineeringValue(tEndStr) ?? 0.02;
-    const dt = parseEngineeringValue(dtStr) ?? 1e-6;
+    const tEnd = parseEngineeringValue(tEndStr) ?? defaults?.duration ?? 0.02;
+    const dt = parseEngineeringValue(dtStr) ?? defaults?.timeStep ?? 1e-6;
     onRunSimulation({
       simulationTime: tEnd,
       timeStep: dt,
       solverType,
+      signals: recordedSignals.length > 0 ? recordedSignals : undefined,
     });
   };
 
+  const toggleRecorded = (name: string) => {
+    setRecordedSignals((prev) =>
+      prev.includes(name) ? prev.filter((s) => s !== name) : [...prev, name],
+    );
+  };
+
   // Signal names and time vector
-  const { signalNames, timeArray, signalStats } = useMemo(() => {
-    if (!results || Object.keys(results).length === 0) {
-      return { signalNames: [], timeArray: [], signalStats: {} };
-    }
-
-    const time = results['time'] || [];
-    const names = Object.keys(results).filter((k) => k !== 'time');
-
-    const stats: Record<
-      string,
-      { min: number; max: number; pkpk: number; mean: number; rms: number }
-    > = {};
-
-    for (const name of names) {
-      const arr = results[name] || [];
-      if (arr.length > 0) {
-        let min = arr[0];
-        let max = arr[0];
-        let sum = 0;
-        let sumSq = 0;
-
-        for (let i = 0; i < arr.length; i++) {
-          const v = arr[i];
-          if (v < min) min = v;
-          if (v > max) max = v;
-          sum += v;
-          sumSq += v * v;
-        }
-
-        const mean = sum / arr.length;
-        const rms = Math.sqrt(sumSq / arr.length);
-        stats[name] = {
-          min,
-          max,
-          pkpk: max - min,
-          mean,
-          rms,
-        };
-      }
-    }
-
-    return { signalNames: names, timeArray: time, signalStats: stats };
-  }, [results]);
+  const { signalNames, timeArray, signalStats } = useMemo(
+    () => mapSimulationResults(results),
+    [results],
+  );
 
   const toggleSignal = (name: string) => {
     setHiddenSignals((prev) => ({ ...prev, [name]: !prev[name] }));
@@ -204,13 +194,34 @@ export function SimulationDrawer({
           </div>
 
           {isRunning ? (
-            <button
-              type="button"
-              className="sim-btn cancel"
-              onClick={onCancelSimulation}
-            >
-              Cancel
-            </button>
+            <>
+              {status === 'PAUSED' ? (
+                <button
+                  type="button"
+                  className="sim-btn run"
+                  onClick={onResumeSimulation}
+                  title="Resume the paused simulation"
+                >
+                  Resume
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="sim-btn pause"
+                  onClick={onPauseSimulation}
+                  title="Pause the running simulation"
+                >
+                  Pause
+                </button>
+              )}
+              <button
+                type="button"
+                className="sim-btn cancel"
+                onClick={onCancelSimulation}
+              >
+                Cancel
+              </button>
+            </>
           ) : (
             <button
               type="button"
@@ -236,9 +247,32 @@ export function SimulationDrawer({
         </div>
       </div>
 
+      {/* Recorded-signal selection (from the file's dataContainerSignals,
+          falling back to the circuit's node labels) */}
+      {!isRunning && defaults && defaults.signals.length > 0 && (
+        <div className="sim-signals-bar">
+          <span className="sim-signals-label">Record:</span>
+          {defaults.signals.map((name) => {
+            const active = recordedSignals.includes(name);
+            return (
+              <button
+                key={name}
+                type="button"
+                className={`legend-pill ${active ? 'active' : 'hidden'}`}
+                onClick={() => toggleRecorded(name)}
+                title={active ? 'Exclude this signal from the next run' : 'Record this signal in the next run'}
+              >
+                <span className="legend-dot" />
+                {name}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Progress bar */}
       {isRunning && (
-        <div className="sim-progress-track">
+        <div className={`sim-progress-track ${status === 'PAUSED' ? 'paused' : ''}`}>
           <div
             className="sim-progress-bar"
             style={{ width: `${Math.max(5, Math.min(100, progress * 100))}%` }}

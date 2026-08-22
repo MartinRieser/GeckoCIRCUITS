@@ -10,6 +10,7 @@ import type {
   CatalogEntry,
   ComponentPayload,
   WirePayload,
+  SimulationDefaults,
   SimulationStatus,
 } from '../model/types';
 import { nextOrientation } from '../model/geometry';
@@ -28,8 +29,12 @@ export function useEditor() {
   const [simResults, setSimResults] = useState<Record<string, number[]> | null>(null);
   const [simError, setSimError] = useState<string | null>(null);
   const [simDrawerOpen, setSimDrawerOpen] = useState(false);
+  const [simDefaults, setSimDefaults] = useState<SimulationDefaults | null>(null);
   const simPollTimerRef = useRef<number | null>(null);
+  const simStreamStopRef = useRef<(() => void) | null>(null);
   const currentSimIdRef = useRef<string | null>(null);
+  const simDefaultsRef = useRef<SimulationDefaults | null>(null);
+  simDefaultsRef.current = simDefaults;
 
   // latest state for callbacks that need current values without re-creating
   const stateRef = useRef(state);
@@ -42,12 +47,13 @@ export function useEditor() {
       .catch(() => setCatalog([]));
   }, []);
 
-  // Cleanup simulation polling timer on unmount
+  // Cleanup simulation polling timer and SSE stream on unmount
   useEffect(() => {
     return () => {
       if (simPollTimerRef.current !== null) {
         clearInterval(simPollTimerRef.current);
       }
+      simStreamStopRef.current?.();
     };
   }, []);
 
@@ -55,6 +61,7 @@ export function useEditor() {
     try {
       const snapshot = await api.getEditorModel(circuitId);
       versionRef.current = snapshot.modelVersion;
+      setSimDefaults(snapshot.simulationDefaults ?? null);
       dispatch({ type: 'SNAPSHOT', snapshot });
     } catch (e) {
       dispatch({ type: 'STATUS', status: `Refresh failed: ${(e as Error).message}` });
@@ -493,19 +500,90 @@ export function useEditor() {
 
   // ========== Simulation Actions ==========
 
+  const stopPolling = useCallback(() => {
+    if (simPollTimerRef.current !== null) {
+      clearInterval(simPollTimerRef.current);
+      simPollTimerRef.current = null;
+    }
+  }, []);
+
+  const stopStream = useCallback(() => {
+    simStreamStopRef.current?.();
+    simStreamStopRef.current = null;
+  }, []);
+
+  /** REST polling fallback for when the SSE stream cannot be established. */
+  const startPolling = useCallback((simId: string) => {
+    stopPolling();
+    const pollInterval = window.setInterval(async () => {
+      if (currentSimIdRef.current !== simId) {
+        clearInterval(pollInterval);
+        return;
+      }
+      try {
+        const current = await api.getSimulation(simId);
+        setSimStatus(current.status);
+        if (current.progressDetails) {
+          const { currentStep, totalSteps } = current.progressDetails;
+          if (totalSteps > 0) {
+            setSimProgress(currentStep / totalSteps);
+          }
+        }
+        if (current.status === 'COMPLETED') {
+          clearInterval(pollInterval);
+          simPollTimerRef.current = null;
+          setSimProgress(1.0);
+          setSimResults(current.results || (await api.getSimulationResults(simId)));
+        } else if (current.status === 'FAILED' || current.status === 'CANCELLED') {
+          clearInterval(pollInterval);
+          simPollTimerRef.current = null;
+          setSimError(current.errorMessage || 'Simulation failed or was cancelled');
+        }
+      } catch (err) {
+        clearInterval(pollInterval);
+        simPollTimerRef.current = null;
+        setSimStatus('FAILED');
+        setSimError((err as Error).message);
+      }
+    }, 300);
+    simPollTimerRef.current = pollInterval;
+  }, [stopPolling]);
+
+  const finalizeSimulation = useCallback(async (simId: string) => {
+    stopStream();
+    try {
+      const current = await api.getSimulation(simId);
+      setSimStatus(current.status);
+      if (current.status === 'COMPLETED') {
+        setSimProgress(1.0);
+        setSimResults(current.results || (await api.getSimulationResults(simId)));
+      } else if (current.status === 'FAILED' || current.status === 'CANCELLED') {
+        setSimError(current.errorMessage || 'Simulation failed or was cancelled');
+      } else {
+        startPolling(simId);
+      }
+    } catch (err) {
+      setSimStatus('FAILED');
+      setSimError((err as Error).message);
+    }
+  }, [startPolling, stopStream]);
+
   const runSimulation = useCallback(
-    async (config?: { simulationTime?: number; timeStep?: number; solverType?: string }) => {
+    async (config?: {
+      simulationTime?: number;
+      timeStep?: number;
+      solverType?: string;
+      signals?: string[];
+    }) => {
       const circuitId = stateRef.current.circuitId;
       if (!circuitId) return;
 
-      const simTime = config?.simulationTime ?? 0.02;
-      const tStep = config?.timeStep ?? 1e-6;
-      const solver = config?.solverType ?? 'BE';
+      const simTime = config?.simulationTime ?? simDefaultsRef.current?.duration ?? 0.02;
+      const tStep = config?.timeStep ?? simDefaultsRef.current?.timeStep ?? 1e-6;
+      const solver = config?.solverType ?? simDefaultsRef.current?.solverType ?? 'backward-euler';
 
-      if (simPollTimerRef.current !== null) {
-        clearInterval(simPollTimerRef.current);
-        simPollTimerRef.current = null;
-      }
+      stopPolling();
+      stopStream();
 
       setSimStatus('RUNNING');
       setSimProgress(0.05);
@@ -518,46 +596,17 @@ export function useEditor() {
           simulationTime: simTime,
           timeStep: tStep,
           solverType: solver,
+          signals: config?.signals,
         });
-
         currentSimIdRef.current = sim.simulationId;
 
-        // Poll simulation status until completed or failed
-        const pollInterval = window.setInterval(async () => {
-          const simId = currentSimIdRef.current;
-          if (!simId) return;
-
-          try {
-            const current = await api.getSimulation(simId);
-            setSimStatus(current.status);
-
-            if (current.progressDetails) {
-              const { currentStep, totalSteps } = current.progressDetails;
-              if (totalSteps > 0) {
-                setSimProgress(currentStep / totalSteps);
-              }
-            }
-
-            if (current.status === 'COMPLETED') {
-              clearInterval(pollInterval);
-              simPollTimerRef.current = null;
-              setSimProgress(1.0);
-              const res = current.results || (await api.getSimulationResults(simId));
-              setSimResults(res);
-            } else if (current.status === 'FAILED' || current.status === 'CANCELLED') {
-              clearInterval(pollInterval);
-              simPollTimerRef.current = null;
-              setSimError(current.errorMessage || 'Simulation failed or was cancelled');
-            }
-          } catch (err) {
-            clearInterval(pollInterval);
-            simPollTimerRef.current = null;
-            setSimStatus('FAILED');
-            setSimError((err as Error).message);
-          }
-        }, 300);
-
-        simPollTimerRef.current = pollInterval;
+        // Live progress via SSE; REST polling only as connection fallback
+        simStreamStopRef.current = api.streamSimulationProgress(sim.simulationId, {
+          onProgress: (progress) => setSimProgress(Math.max(0.05, progress)),
+          onComplete: () => void finalizeSimulation(sim.simulationId),
+          onSimError: () => void finalizeSimulation(sim.simulationId),
+          onConnectionError: () => startPolling(sim.simulationId),
+        });
       } catch (err) {
         setSimStatus('FAILED');
         const msg = (err as Error).message;
@@ -565,14 +614,12 @@ export function useEditor() {
         dispatch({ type: 'STATUS', status: `Simulation failed: ${msg}` });
       }
     },
-    [],
+    [finalizeSimulation, startPolling, stopPolling, stopStream],
   );
 
   const cancelSimulation = useCallback(async () => {
-    if (simPollTimerRef.current !== null) {
-      clearInterval(simPollTimerRef.current);
-      simPollTimerRef.current = null;
-    }
+    stopPolling();
+    stopStream();
     const simId = currentSimIdRef.current;
     if (simId) {
       try {
@@ -582,6 +629,28 @@ export function useEditor() {
       }
     }
     setSimStatus('CANCELLED');
+  }, [stopPolling, stopStream]);
+
+  const pauseSimulation = useCallback(async () => {
+    const simId = currentSimIdRef.current;
+    if (!simId) return;
+    try {
+      const response = await api.pauseSimulation(simId);
+      setSimStatus(response.status);
+    } catch (err) {
+      setSimError((err as Error).message);
+    }
+  }, []);
+
+  const resumeSimulation = useCallback(async () => {
+    const simId = currentSimIdRef.current;
+    if (!simId) return;
+    try {
+      const response = await api.resumeSimulation(simId);
+      setSimStatus(response.status);
+    } catch (err) {
+      setSimError((err as Error).message);
+    }
   }, []);
 
   return {
@@ -595,6 +664,7 @@ export function useEditor() {
       results: simResults,
       errorMessage: simError,
       isOpen: simDrawerOpen,
+      defaults: simDefaults,
     },
     actions: {
       open,
@@ -622,6 +692,8 @@ export function useEditor() {
       openProperties: (name: string) => dispatch({ type: 'PANEL_FOR', name }),
       runSimulation,
       cancelSimulation,
+      pauseSimulation,
+      resumeSimulation,
       toggleSimDrawer: () => setSimDrawerOpen((prev) => !prev),
     },
   };

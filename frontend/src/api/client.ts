@@ -170,6 +170,78 @@ export function cancelSimulation(simulationId: string): Promise<void> {
   return request(`/simulations/${simulationId}`, { method: 'DELETE' });
 }
 
+export function pauseSimulation(simulationId: string): Promise<SimulationResponse> {
+  return request(`/simulations/${simulationId}/pause`, { method: 'POST' });
+}
+
+export function resumeSimulation(simulationId: string): Promise<SimulationResponse> {
+  return request(`/simulations/${simulationId}/resume`, { method: 'POST' });
+}
+
+export interface SimulationStreamHandlers {
+  onProgress?: (progress: number, currentTime: number, endTime: number) => void;
+  onComplete?: () => void;
+  onSimError?: (message: string) => void;
+  /** Called when the SSE connection itself fails (simulation outcome unknown). */
+  onConnectionError?: () => void;
+}
+
+/**
+ * Subscribes to the server's SSE progress stream for a simulation.
+ * Returns a disposer. Event names match the backend: progress / complete / error.
+ */
+export function streamSimulationProgress(
+  simulationId: string,
+  handlers: SimulationStreamHandlers,
+): () => void {
+  const source = new EventSource(`${API}/simulations/${simulationId}/stream`);
+  let done = false;
+  const finish = () => {
+    if (!done) {
+      done = true;
+      source.close();
+    }
+  };
+
+  source.addEventListener('progress', (event) => {
+    try {
+      const data = JSON.parse((event as MessageEvent).data);
+      handlers.onProgress?.(
+        data.progress ?? 0,
+        data.currentTime ?? 0,
+        data.endTime ?? 0,
+      );
+    } catch {
+      // ignore malformed payloads
+    }
+  });
+
+  source.addEventListener('complete', () => {
+    finish();
+    handlers.onComplete?.();
+  });
+
+  source.addEventListener('error', (event) => {
+    // server-sent "error" events carry data; bare connection errors do not
+    if (done) return;
+    if (event instanceof MessageEvent && typeof event.data === 'string' && event.data) {
+      finish();
+      let message = event.data;
+      try {
+        message = JSON.parse(event.data).errorMessage || message;
+      } catch {
+        // keep raw payload
+      }
+      handlers.onSimError?.(message);
+    } else if (source.readyState === EventSource.CLOSED) {
+      finish();
+      handlers.onConnectionError?.();
+    }
+  });
+
+  return finish;
+}
+
 function toBase64(bytes: Uint8Array): string {
   let binary = '';
   const chunk = 0x8000;

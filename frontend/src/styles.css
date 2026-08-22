@@ -1332,6 +1332,11 @@ polyline.wire.selected {
   color: var(--accent);
 }
 
+.sim-status-badge.paused {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
 .sim-status-badge.failed {
   background: rgba(244, 63, 94, 0.2);
   color: var(--danger);
@@ -1391,10 +1396,32 @@ polyline.wire.selected {
   color: #ffffff;
 }
 
+.sim-btn.pause {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+}
+
 .sim-btn.export {
   background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
+}
+
+.sim-signals-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.sim-signals-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
 }
 
 .sim-progress-track {
@@ -1407,6 +1434,10 @@ polyline.wire.selected {
   height: 100%;
   background: linear-gradient(90deg, #38bdf8, #a855f7);
   transition: width 0.15s ease;
+}
+
+.sim-progress-track.paused .sim-progress-bar {
+  background: #fbbf24;
 }
 
 .sim-content {

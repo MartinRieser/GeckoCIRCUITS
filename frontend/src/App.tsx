@@ -445,12 +445,15 @@ export function App() {
         isOpen={simState.isOpen}
         onToggle={actions.toggleSimDrawer}
         circuitId={state.circuitId}
+        defaults={simState.defaults}
         status={simState.status}
         progress={simState.progress}
         results={simState.results}
         errorMessage={simState.errorMessage}
         onRunSimulation={actions.runSimulation}
         onCancelSimulation={actions.cancelSimulation}
+        onPauseSimulation={actions.pauseSimulation}
+        onResumeSimulation={actions.resumeSimulation}
       />
 
       {/* Command Palette (Ctrl+K) */}
