@@ -233,7 +233,7 @@ export function streamSimulationProgress(
         // keep raw payload
       }
       handlers.onSimError?.(message);
-    } else if (source.readyState === EventSource.CLOSED) {
+    } else {
       finish();
       handlers.onConnectionError?.();
     }

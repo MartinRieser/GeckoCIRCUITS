@@ -32,7 +32,14 @@ describe('componentSchema', () => {
       expect(parseEngineeringValue('10')).toBe(10);
       expect(parseEngineeringValue('3.14')).toBe(3.14);
       expect(parseEngineeringValue('-5.5')).toBe(-5.5);
+      expect(parseEngineeringValue('−5.5')).toBe(-5.5); // Unicode minus U+2212
+      expect(parseEngineeringValue('−20m')).toBe(-0.02);
       expect(parseEngineeringValue('1e-3')).toBe(0.001);
+    });
+
+    it('round-trips formatted negative values', () => {
+      const formatted = formatEngineeringValue(-0.02);
+      expect(parseEngineeringValue(formatted)).toBeCloseTo(-0.02);
     });
 
     it('parses SI prefixes', () => {

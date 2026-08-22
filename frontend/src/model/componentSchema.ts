@@ -1348,7 +1348,7 @@ const SI_PREFIXES: Record<string, number> = {
  */
 export function parseEngineeringValue(input: string): number | null {
   if (!input || typeof input !== 'string') return null;
-  const trimmed = input.trim().replace(/\s+/g, '');
+  const trimmed = input.trim().replace(/\s+/g, '').replace(/−/g, '-');
   if (!trimmed) return null;
 
   // Direct number or exponential notation (e.g. 1e-3, 0.05, -12.4)

@@ -24,6 +24,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -124,7 +125,7 @@ public class SimulationService {
         // SSE broadcast
         List<SseEmitter> emitters = progressEmitters.get(simulationId);
         if (emitters != null && !emitters.isEmpty()) {
-            String data = String.format(
+            String data = String.format(Locale.ROOT,
                 "{\"progress\":%.3f,\"currentTime\":%.6f,\"endTime\":%.6f,\"simulationId\":\"%s\"}",
                 progress, currentTime, endTime, simulationId
             );
