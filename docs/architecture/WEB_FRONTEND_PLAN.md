@@ -352,15 +352,32 @@ client (mocked fetch). No component-snapshot tests.
 5. **Undo/Redo & Shortcuts**: `Ctrl+Z` / `Ctrl+Y` / `Ctrl+Shift+Z` undo/redo with server sync, `Ctrl+S` save, `Del` / `Backspace` delete.
 6. **Tests**: full test coverage for keybinding registry, store reducer actions, and end-to-end keyboard editing flows (`Sheet.keyboard.test.tsx`, `keybindings.test.ts`, `store.test.ts`).
 
-### P4 — Simulation & results in the web UI
+### P3.5 — Legacy GUI Parity & Signal/Control Domain [COMPLETE]
 
-Note: an initial slice landed with P2 (sim drawer, run by circuitId, REST
+**Goal:** Visual, structural, and behavioral parity with legacy Swing GUI domains (LK, CONTROL, THERM) and robust simulation launch.
+
+**Completed in P3.5:**
+1. **CONTROL Domain Catalog & Symbols**:
+   - Backend: Added 15 control/signal types (`CTRL_VOLT` 1001, `CTRL_AMP` 1002, `CTRL_SCOPE` 1003, `CTRL_SIGNAL` 1004, `CTRL_CONSTANT` 1005, `CTRL_GAIN` 1006, `CTRL_PI` 1007, `CTRL_PT1` 1008, `CTRL_INTEGRATOR` 1009, `CTRL_COMPARATOR` 1010, `CTRL_AND` 1011, `CTRL_OR` 1012, `CTRL_NOT` 1013, `CTRL_MUX` 1014, `CTRL_DELAY` 1015) to `CircuitTypCore.java` and `/catalog` endpoint with `isControl()` filtering.
+   - Frontend: Registered 3 new categories in `componentSchema.ts` ("Measurement", "Control & Signal", "Logic Gates") and created matching green SVG symbols in `symbols.tsx`.
+2. **Visual Differentiation by Domain**:
+   - Canvas & palette color-coding: LK (Electrical) = Sky Blue (`#38bdf8`), CONTROL (Signal/Measurement) = Green (`#4ade80`), THERM (Thermal) = Orange (`#fb923c`).
+3. **Wire Domain Typing**:
+   - Automatic terminal snap family detection (drafting wires from CONTROL terminals emits `type: 'CONTROL'` connections styled in green).
+4. **Simulation Pipeline Fixes**:
+   - Replaced auto-run on navbar click with explicit parameter configuration in `SimulationDrawer.tsx`.
+   - Surfaced server error messages directly to status bar and drawer.
+   - Added descriptive empty states when simulations return without recorded signals.
+
+### P4 — Simulation & results in the web UI [IN PROGRESS]
+
+Note: an initial slice landed with P2/P3 (sim drawer, run by circuitId, REST
 polling, plain-SVG chart, CSV export). Remaining:
 
-1. Sim panel: pick `dt`, `tEnd`, solver — partially done, defaults still
-   hardcoded in the drawer instead of coming from `/info`; live progress via
-   existing SSE (`/stream`) or WS topic instead of REST polling. The drawer's
-   chart stays plain SVG (no chart library needed so far).
+1. Sim panel: pick `dt`, `tEnd`, solver — defaults pre-populated from `.ipes`
+   metadata (`tDURATION`, `dt`, `solverType`); live progress via existing SSE
+   (`/stream`) or WS topic instead of REST polling. The drawer's chart stays
+   plain SVG (no chart library needed so far).
 2. Signal selection comes from `dataContainerSignals[]` in the file (same semantics as
    headless engine).
 3. Implement pause/resume properly OR remove it from docs — whichever is cheaper
