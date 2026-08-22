@@ -140,4 +140,28 @@ describe('App user flow', () => {
       orientation: 503,
     });
   });
+
+  it('toggles theme between dark and light', async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => catalogBody,
+    });
+
+    const { container } = render(<App />);
+    const themeBtn = container.querySelector('.nav-btn.theme-toggle') as HTMLButtonElement;
+    expect(themeBtn).toBeDefined();
+
+    // Default dark theme
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+
+    // Click to toggle to light
+    fireEvent.click(themeBtn);
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+    expect(localStorage.getItem('gecko-theme')).toBe('light');
+
+    // Click to toggle back to dark
+    fireEvent.click(themeBtn);
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    expect(localStorage.getItem('gecko-theme')).toBe('dark');
+  });
 });

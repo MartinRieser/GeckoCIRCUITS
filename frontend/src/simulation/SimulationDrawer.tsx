@@ -516,7 +516,7 @@ function WaveformChart({
         onMouseLeave={() => onHoverIndex(null)}
       >
         {/* Background */}
-        <rect width={width} height={height} fill="#0f172a" rx={6} />
+        <rect width={width} height={height} className="waveform-bg" rx={6} />
 
         {/* Plot area background */}
         <rect
@@ -524,7 +524,7 @@ function WaveformChart({
           y={padTop}
           width={plotW}
           height={plotH}
-          fill="#1e293b"
+          className="waveform-plot-area"
           rx={3}
         />
 

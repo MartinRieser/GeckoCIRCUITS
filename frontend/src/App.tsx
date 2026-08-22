@@ -25,6 +25,14 @@ export function App() {
   const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    return (localStorage.getItem('gecko-theme') as 'dark' | 'light') || 'dark';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('gecko-theme', theme);
+  }, [theme]);
 
   // Global Keyboard Shortcuts (Central Dispatcher)
   useEffect(() => {
@@ -341,6 +349,15 @@ export function App() {
             title="Open simulation panel to configure and run"
           >
             {simState.status === 'RUNNING' ? 'Simulating...' : 'Simulation'}
+          </button>
+
+          <button
+            type="button"
+            className="nav-btn theme-toggle"
+            onClick={() => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))}
+            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} theme`}
+          >
+            {theme === 'dark' ? '☀️' : '🌙'}
           </button>
 
           <div className="connection-badge" title={wsConnected ? 'WebSocket live' : 'Offline / Polling'}>

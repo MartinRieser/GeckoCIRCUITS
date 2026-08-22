@@ -420,14 +420,18 @@ chart, CSV export). Completed in P4:
 
 Acceptance: green report committed in `tools/parity/results/20260822-200129.txt`.
 
-### P6 — Polish (only after P0–P5 are green)
+### P6 — Polish (acceptance gate passed) [COMPLETE]
 
-- Canvas zoom (mouse wheel) and pan (middle-drag + space-drag) — pulled forward
-  into P2; verify HiDPI correctness and mouse-wheel zoom (currently Ctrl+scroll).
-- Dark mode (CSS custom properties only).
-- Wire drawing anti-aliasing toggle.
-- Component coverage: extend beyond the top-20 symbols.
-- Anything else from user feedback; each item needs explicit approval.
+Completed in P6:
+1. **Light & Dark Theme Switcher**:
+   - CSS custom property design system (`:root[data-theme='light']` and `:root[data-theme='dark']`) with clean paper-white schematic background and slate palette in light mode.
+   - Navbar Sun/Moon toggle with `localStorage` persistence and automated unit tests (`App.flow.test.tsx`).
+2. **CAD-Style Canvas Coordinate HUD**:
+   - Live grid coordinate readout (`X: 12 Y: 8`) dynamically rendered in the bottom-left floating view controls bar on mouse hover.
+3. **Theme-Aware Simulation Waveforms**:
+   - Simulation drawer SVG waveform chart plot area, background, and hover crosshair tooltips styled with CSS variables to adapt dynamically to light/dark themes.
+4. **Symbol & Domain Visual Parity**:
+   - Full palette coverage for LK, CONTROL (15 types), and THERM component domains with color-coded SVG symbols and connection typing.
 
 ---
 

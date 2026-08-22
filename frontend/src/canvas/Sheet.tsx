@@ -58,6 +58,9 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
   // Near-terminal hover snap halo
   const [hoveredTerminal, setHoveredTerminal] = useState<Point | null>(null);
 
+  // Live cursor grid coordinate
+  const [cursorCoord, setCursorCoord] = useState<Point | null>(null);
+
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{
     x: number;
@@ -219,6 +222,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
     }
 
     const p = toGrid(e);
+    setCursorCoord(p);
 
     // Update snap indicator
     const near = terminalNear(state.components, p);
@@ -341,6 +345,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
       onWheel={handleWheel}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
+      onMouseLeave={() => setCursorCoord(null)}
     >
       {/* Floating Canvas View Controls */}
       <div className="canvas-view-controls">
@@ -394,6 +399,14 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
         >
           #
         </button>
+        {cursorCoord && (
+          <>
+            <div className="canvas-ctrl-sep" />
+            <span className="canvas-coord-badge" title="Cursor Grid Coordinate">
+              X:{cursorCoord.x} Y:{cursorCoord.y}
+            </span>
+          </>
+        )}
       </div>
 
       <div
