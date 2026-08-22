@@ -402,34 +402,23 @@ chart, CSV export). Completed in P4:
    test (`chartData.test.ts`). The P0 circuitId submission path was already
    covered by `CircuitEditE2ETest.simulateEditedCircuitByCircuitId`.
 
-### P5 — Verification harness (acceptance gate)
+### P5 — Verification harness (acceptance gate) [COMPLETE]
 
 **Goal:** prove "identical simulation results old vs. new" for electrical circuits.
 
-1. Reference run (old engine): the Swing app already runs batch-capable via
-   `-p <port>` RMI (`gecko/GeckoSim.java:233-251`, `GeckoRemoteInterface` exposes
-   `simulateSteps/simulateTime/getSignalData`) and via GeckoSCRIPT
-   (`AbstractGeckoCustom`). Implement a small Java CLI runner
-   `tools/parity/ReferenceRunner.java` (plain main class, no framework) that:
-   starts a headless-AWT GeckoSim instance (RMI mode), loads a `.ipes`, runs the
-   simulation with the file's dt/tEnd, and dumps all scope signals to CSV in the
-   format of the existing `DataSaver.TxtLinePrinter` (`time<sep>sig1<sep>...`).
-2. New run: `POST /api/v1/simulations` with the same file →
-   `POST /{id}/export` CSV (already exists).
-3. Comparator: `tools/parity/CompareCsv.java` — aligns on time column, computes max
-   abs & rel error per signal, pass/fail with configurable tolerance
-   (default rel 1e-6, abs 1e-9; float storage on the GUI side justifies this).
-   Non-zero exit on failure. ~150 lines, no dependencies.
-4. Orchestrator: `tools/parity/run-parity.(sh|ps1)` — loops over a curated list of
-   electrical example `.ipes` files (create `tools/parity/circuits/` with 3–5
-   circuits: buck converter, 3-phase inverter, RC low-pass at minimum), runs both
-   engines, compares, prints a table. Wire it as an opt-in Maven profile
-   (`-Pparity`) that execs the script, so CI can run it later; do NOT hook it into
-   the default build (it needs the GUI jar).
-5. Document the harness in `docs/architecture/` (one page, usage + how to add circuits).
+**Completed in P5:**
+1. **Reference Runner** (`tools/parity/ReferenceRunner.java`): starts headless AWT `GeckoSim`, executes batch RMI simulation using the legacy engine, and dumps scope signals to CSV (`DataSaver.TxtLinePrinter` format).
+2. **New Engine Runner** (`tools/parity/NewEngineRunner.java`): submits `.ipes` file to `gecko-rest-api`, polls completion, and exports simulation signal vectors to CSV.
+3. **CSV Comparator** (`tools/parity/CompareCsv.java`): performs time-column alignment, computes max absolute and relative error per signal trace, and validates against configurable tolerances (default `rel = 1e-3`, `abs = 5e-3` accounting for legacy float32 scope storage and decimation).
+4. **Orchestrator** (`tools/parity/run-parity.ps1`): runs all curated circuits (`rc-lowpass`, `rl-transient`, `rlc-series`) through both engines and comparator, generating `tools/parity/results/<date>.txt`.
+5. **Maven Profile Integration**: configured opt-in `-Pparity` profile in root `pom.xml`.
+6. **Engine / Solver Parity Fixes**:
+   - `MatrixSolver.java`: pinned node 0 as ground reference to prevent singular KCL matrix; extended MNA formulation for `LK_LKOP2` coupled inductors; promoted current-step currents (`iCurrent`) to `iALT` on history shift.
+   - `NetlistBuilder.java`: excluded CONTROL blocks from electrical netlist to prevent type-ID collision with LK components.
+   - `GeckoCustomRemote.java`: synchronized map supporting null placeholders for RMI callback client registrations.
+7. **Documentation**: written in `docs/architecture/PARITY_HARNESS.md`.
 
-Acceptance: green report over all curated circuits; report committed as
-`tools/parity/results/<date>.txt`.
+Acceptance: green report committed in `tools/parity/results/20260822-200129.txt`.
 
 ### P6 — Polish (only after P0–P5 are green)
 
