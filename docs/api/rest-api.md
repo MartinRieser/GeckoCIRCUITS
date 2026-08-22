@@ -368,7 +368,7 @@ Request:
 }
 ```
 
-`family`: `LK` or `THERM` (CONTROL/SPECIAL creation not supported yet).
+`family`: `LK`, `THERM` or `CONTROL` (SPECIAL creation is not supported).
 `type`: type number from the catalog. Coordinates are snapped to the grid raster
 (`dpix`). Omitted names are generated from the type and made unique; duplicate
 explicit names return 409. Parameter keys are `param<index>`. New components are
@@ -440,9 +440,12 @@ GET /api/v1/circuits/{circuitId}/model
 
 Returns the full editor state in one response: components (with terminal node
 labels), wires (with their list indices), grid render scale (`dpix`), worksheet
-size and the current `modelVersion`. This is the boot endpoint for editor clients.
+size, the current `modelVersion`, and `simulationDefaults` — the dt / tEnd /
+solver stored in the file plus the signals the headless engine records
+(`dataContainerSignals[]` from the file, falling back to the circuit's node
+labels). This is the boot endpoint for editor clients.
 
-Live in: **v2.20.0+**
+Live in: **v2.20.0+** (`simulationDefaults` in v2.22.0+)
 
 
 ### Simulation Endpoints
@@ -461,6 +464,7 @@ Request:
   "simulationTime": 0.01,
   "timeStep": 1e-7,
   "solverType": "backward-euler",
+  "signals": ["V_out", "I_L1"],
   "parameters": {
     "PWM.1.dutyCycle": 0.5,
     "R.1.resistance": 10.0
@@ -475,6 +479,9 @@ The circuit can be referenced in one of three ways (exactly one is required):
 
 When `circuitId` or `base64Circuit` is used, `simulationTime` and `timeStep` are
 optional and default to the values stored in the circuit file.
+
+`signals` (optional) overrides the file's `dataContainerSignals[]` selection;
+signal names resolve to netlist node labels, unresolvable signals record as zero.
 
 **Solver Types:**
 - `backward-euler` - Implicit 1st order (stable, for stiff circuits)
@@ -498,6 +505,18 @@ GET /api/v1/simulations
 ```bash
 DELETE /api/v1/simulations/{simulationId}
 ```
+
+**Pause / Resume Simulation** (v2.22.0+)
+
+```bash
+POST /api/v1/simulations/{simulationId}/pause
+POST /api/v1/simulations/{simulationId}/resume
+```
+
+`pause` halts a running simulation at the next time step (status becomes
+`PAUSED`, progress freezes); `resume` continues it. 409 when the simulation is
+not in the matching state; a paused simulation can also be cancelled via
+`DELETE`.
 
 **Get Detailed Progress**
 

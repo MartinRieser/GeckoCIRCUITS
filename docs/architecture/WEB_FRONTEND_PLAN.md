@@ -369,22 +369,38 @@ client (mocked fetch). No component-snapshot tests.
    - Surfaced server error messages directly to status bar and drawer.
    - Added descriptive empty states when simulations return without recorded signals.
 
-### P4 — Simulation & results in the web UI [IN PROGRESS]
+Known limitation: the 15 CONTROL types are authoring/palette symbols only — no
+matrix stampers are registered for them (`StamperRegistry`), so the headless
+solver skips them during simulation. Control-domain headless parity remains the
+separate future workstream (see `docs/architecture/SOLVER_GAP_ANALYSIS.md`).
 
-Note: an initial slice landed with P2/P3 (sim drawer, run by circuitId, REST
-polling, plain-SVG chart, CSV export). Remaining:
+### P4 — Simulation & results in the web UI [COMPLETE]
 
-1. Sim panel: pick `dt`, `tEnd`, solver — defaults pre-populated from `.ipes`
-   metadata (`tDURATION`, `dt`, `solverType`); live progress via existing SSE
-   (`/stream`) or WS topic instead of REST polling. The drawer's chart stays
-   plain SVG (no chart library needed so far).
-2. Signal selection comes from `dataContainerSignals[]` in the file (same semantics as
-   headless engine).
-3. Implement pause/resume properly OR remove it from docs — whichever is cheaper
-   (likely: implement `pause()` flag check in the headless loop, it is a 2-line loop
-   condition fix plus REST endpoints; do that).
-4. Tests: REST tests for the P0 circuitId submission path + pause/resume if
-   implemented; frontend: chart data mapping unit test.
+Note: an initial slice landed with P2/P3 (sim drawer, run by circuitId, plain-SVG
+chart, CSV export). Completed in P4:
+
+1. Sim panel defaults pre-populated from `.ipes` metadata: the editor model
+   snapshot (`GET /circuits/{id}/model`) now carries `simulationDefaults`
+   (`timeStep`, `duration`, `solverType`, `signals`); the drawer re-seeds its
+   inputs whenever another circuit is opened. Live progress runs over the
+   existing SSE stream (`/simulations/{id}/stream`), with the REST polling kept
+   only as a connection fallback. The drawer's chart stays plain SVG.
+2. Signal selection comes from `dataContainerSignals[]` in the file (same
+   semantics as the headless engine; positional placeholders and the `[]`
+   empty-list marker are filtered). Files without stored signals fall back to
+   the circuit's node labels; the sim panel lets the user toggle which signals
+   to record, sent as `signals` on the simulation request and honored by
+   `HeadlessSimulationEngine`.
+3. Pause/resume implemented: `awaitResumeOrCancel()` in the headless loop,
+   cancel works from the paused state, `PAUSED` status on the response, REST
+   endpoints `POST /simulations/{id}/pause|resume`, and drawer
+   Pause/Resume/Cancel buttons with a paused progress bar.
+4. Tests: engine-level pause/freeze/resume and cancel-from-paused tests, signal
+   override test, controller + service pause/resume tests, E2E
+   `SimulationPauseResumeE2ETest` (pause freezes `currentTime`, resume
+   continues, cancel from paused), and the frontend chart data mapping unit
+   test (`chartData.test.ts`). The P0 circuitId submission path was already
+   covered by `CircuitEditE2ETest.simulateEditedCircuitByCircuitId`.
 
 ### P5 — Verification harness (acceptance gate)
 
