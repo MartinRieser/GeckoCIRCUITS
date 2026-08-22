@@ -30,8 +30,30 @@ public record EditorModelResponse(
     List<Component> components,
 
     @Schema(description = "Wires; index matches the connection list used by PATCH/DELETE")
-    List<Wire> connections
+    List<Wire> connections,
+
+    @Schema(description = "Simulation defaults from the .ipes metadata (dt, tEnd, solver, signals)")
+    SimulationDefaults simulationDefaults
 ) {
+    /**
+     * Simulation parameters stored in the file, used to pre-populate the
+     * sim panel. Signals fall back to the circuit's node labels when the
+     * file has no dataContainerSignals entry.
+     */
+    @Schema(description = "Simulation defaults")
+    public record SimulationDefaults(
+        @Schema(description = "Time step in seconds", example = "1.0E-6")
+        double timeStep,
+
+        @Schema(description = "Simulation duration in seconds", example = "0.02")
+        double duration,
+
+        @Schema(description = "Solver: backward-euler, trapezoidal or gear-shichman")
+        String solverType,
+
+        @Schema(description = "Signals the headless engine records")
+        List<String> signals
+    ) {}
     /**
      * Editor view of a component, including terminal labels.
      */

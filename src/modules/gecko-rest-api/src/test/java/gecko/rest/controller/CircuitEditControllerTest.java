@@ -132,14 +132,18 @@ class CircuitEditControllerTest {
         when(editService.getEditorModel("circuit-1")).thenReturn(
                 new gecko.rest.model.circuit.EditorModelResponse(
                         "circuit-1", 7, "test.ipes", 16, "600x600",
-                        List.of(), List.of()));
+                        List.of(), List.of(),
+                        new gecko.rest.model.circuit.EditorModelResponse.SimulationDefaults(
+                                1e-6, 0.02, "backward-euler", List.of("V_out"))));
 
         mockMvc.perform(get("/api/v1/circuits/circuit-1/model"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.modelVersion").value(7))
                 .andExpect(jsonPath("$.dpix").value(16))
                 .andExpect(jsonPath("$.components").isArray())
-                .andExpect(jsonPath("$.connections").isArray());
+                .andExpect(jsonPath("$.connections").isArray())
+                .andExpect(jsonPath("$.simulationDefaults.timeStep").value(1e-6))
+                .andExpect(jsonPath("$.simulationDefaults.signals[0]").value("V_out"));
     }
 
     @Test

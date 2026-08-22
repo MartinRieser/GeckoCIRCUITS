@@ -253,6 +253,34 @@ class SimulationServiceTest {
     }
 
     @Test
+    void buildSimulationConfig_withSignals_appliesOverride() {
+        SimulationRequest request = new SimulationRequest("test.ipes", 0.02, 1e-6);
+        request.setSignals(java.util.List.of("V_out", "I_L1"));
+
+        SimulationConfig config = simulationService.buildSimulationConfig(request);
+
+        assertEquals(java.util.List.of("V_out", "I_L1"), config.getSignals());
+    }
+
+    @Test
+    void pauseSimulation_unknownId_returnsNull() {
+        assertNull(simulationService.pauseSimulation("unknown-id"));
+        assertNull(simulationService.resumeSimulation("unknown-id"));
+    }
+
+    @Test
+    void pauseSimulation_withoutRunningEngine_throwsConflict() {
+        SimulationResponse idle = new SimulationResponse("idle-sim");
+        idle.setStatus(SimulationStatus.RUNNING);
+        putSimulation(idle);
+
+        assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                () -> simulationService.pauseSimulation("idle-sim"));
+        assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                () -> simulationService.resumeSimulation("idle-sim"));
+    }
+
+    @Test
     void cancelSimulation_pendingSimulation_updatesStatus() {
         String simulationId = "pending-sim";
         SimulationResponse pendingResponse = new SimulationResponse(simulationId);

@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SimulationResponse {
 
     public enum SimulationStatus {
-        PENDING, RUNNING, COMPLETED, FAILED
+        PENDING, RUNNING, PAUSED, COMPLETED, FAILED
     }
 
     /**

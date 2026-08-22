@@ -22,8 +22,10 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Circuit editing operations (P1): component/wire CRUD, node labels,
@@ -289,7 +291,53 @@ public class CircuitEditService {
             }
 
             return new EditorModelResponse(circuitId, state.version.get(), state.filename,
-                    model.getDisplayPixels(), model.getWorksheetSize(), components, wires);
+                    model.getDisplayPixels(), model.getWorksheetSize(), components, wires,
+                    simulationDefaults(model));
+        }
+    }
+
+    /**
+     * Sim panel pre-fill values from the file metadata; signals default to
+     * the circuit's node labels when the file carries no dataContainerSignals.
+     */
+    private static EditorModelResponse.SimulationDefaults simulationDefaults(CircuitModel model) {
+        List<String> signals = new ArrayList<>();
+        String[] stored = model.getDataContainerSignals();
+        if (stored != null) {
+            for (String signal : stored) {
+                if (signal != null && !signal.isBlank() && !signal.equals("[]")) {
+                    signals.add(signal);
+                }
+            }
+        }
+        if (signals.isEmpty()) {
+            LinkedHashSet<String> labels = new LinkedHashSet<>();
+            for (CircuitModel.ComponentData comp : model.getAllComponents()) {
+                collectLabel(labels, comp.getTerminalXLabels());
+                collectLabel(labels, comp.getTerminalYLabels());
+            }
+            for (CircuitModel.ConnectionData conn : model.getConnections()) {
+                collectLabel(labels, new String[] {conn.getLabel()});
+            }
+            signals.addAll(labels);
+        }
+        return new EditorModelResponse.SimulationDefaults(
+                model.getTimeStep(), model.getSimulationDuration(),
+                model.getSolverType().toString(), signals);
+    }
+
+    private static void collectLabel(Set<String> target, String[] labels) {
+        for (String label : labels) {
+            if (label == null) {
+                continue;
+            }
+            String trimmed = label.trim();
+            String lower = trimmed.toLowerCase();
+            if (trimmed.isEmpty() || trimmed.equalsIgnoreCase("NIX_NIX_NIX")
+                    || lower.equals("0") || lower.equals("gnd") || lower.equals("ground")) {
+                continue;
+            }
+            target.add(trimmed);
         }
     }
 

@@ -24,6 +24,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -420,6 +421,23 @@ class CircuitEditServiceTest {
     @Test
     void editorModel_unknownCircuit_404() {
         assertThrows(ResponseStatusException.class, () -> service.getEditorModel("no-such"));
+    }
+
+    @Test
+    void editorModelCarriesSimulationDefaultsAndDerivedSignals() {
+        service.createComponent(circuitId, new ComponentCreateRequest("LK", 1, "Rdef", 16, 16, null, null));
+        service.setNodeLabel(circuitId, "Rdef", new NodeLabelRequest(0, "x", "dc_link"));
+        service.setNodeLabel(circuitId, "Rdef", new NodeLabelRequest(0, "y", "gnd"));
+
+        EditorModelResponse.SimulationDefaults defaults = service.getEditorModel(circuitId)
+                .simulationDefaults();
+
+        assertThat(defaults).isNotNull();
+        assertThat(defaults.timeStep()).isGreaterThan(0);
+        assertThat(defaults.duration()).isGreaterThan(0);
+        assertThat(defaults.solverType()).isIn("backward-euler", "trapezoidal", "gear-shichman");
+        // fixture has no dataContainerSignals: derived from node labels, ground excluded
+        assertThat(defaults.signals()).contains("dc_link").doesNotContain("gnd");
     }
 
     // ========== Catalog ==========

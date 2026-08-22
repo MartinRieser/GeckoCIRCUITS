@@ -113,6 +113,66 @@ class SimulationControllerTest {
     }
 
     @Test
+    void pauseSimulation_runningSimulation_returnsOk() throws Exception {
+        testResponse.setStatus(SimulationResponse.SimulationStatus.PAUSED);
+        when(simulationService.pauseSimulation(testSimulationId))
+                .thenReturn(testResponse);
+
+        mockMvc.perform(post("/api/v1/simulations/{id}/pause", testSimulationId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PAUSED"));
+    }
+
+    @Test
+    void pauseSimulation_nonExistingId_returnsNotFound() throws Exception {
+        when(simulationService.pauseSimulation("non-existing-id"))
+                .thenReturn(null);
+
+        mockMvc.perform(post("/api/v1/simulations/{id}/pause", "non-existing-id"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void pauseSimulation_notRunning_throwsConflict() throws Exception {
+        when(simulationService.pauseSimulation(testSimulationId))
+                .thenThrow(new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.CONFLICT, "Simulation is not running"));
+
+        mockMvc.perform(post("/api/v1/simulations/{id}/pause", testSimulationId))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void resumeSimulation_pausedSimulation_returnsOk() throws Exception {
+        testResponse.setStatus(SimulationResponse.SimulationStatus.RUNNING);
+        when(simulationService.resumeSimulation(testSimulationId))
+                .thenReturn(testResponse);
+
+        mockMvc.perform(post("/api/v1/simulations/{id}/resume", testSimulationId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("RUNNING"));
+    }
+
+    @Test
+    void resumeSimulation_nonExistingId_returnsNotFound() throws Exception {
+        when(simulationService.resumeSimulation("non-existing-id"))
+                .thenReturn(null);
+
+        mockMvc.perform(post("/api/v1/simulations/{id}/resume", "non-existing-id"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void resumeSimulation_notPaused_throwsConflict() throws Exception {
+        when(simulationService.resumeSimulation(testSimulationId))
+                .thenThrow(new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.CONFLICT, "Simulation is not paused"));
+
+        mockMvc.perform(post("/api/v1/simulations/{id}/resume", testSimulationId))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
     void getSimulationResults_completedSimulation_returnsResults() throws Exception {
         testResponse.setStatus(SimulationResponse.SimulationStatus.COMPLETED);
         testResponse.addResult("V_out", new double[]{1.0, 2.0, 3.0});

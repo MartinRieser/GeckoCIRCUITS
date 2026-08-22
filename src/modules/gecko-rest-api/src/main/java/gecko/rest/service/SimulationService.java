@@ -266,7 +266,8 @@ public class SimulationService {
      */
     public SimulationResponse getSimulation(String simulationId) {
         SimulationResponse response = simulationStore.get(simulationId);
-        if (response != null && response.getStatus() == SimulationResponse.SimulationStatus.RUNNING) {
+        if (response != null && (response.getStatus() == SimulationResponse.SimulationStatus.RUNNING
+                || response.getStatus() == SimulationResponse.SimulationStatus.PAUSED)) {
             // Populate progress details if simulation is running
             HeadlessSimulationEngine engine = runningEngines.get(simulationId);
             if (engine != null) {
@@ -294,6 +295,58 @@ public class SimulationService {
      */
     public Map<String, SimulationResponse> getAllSimulations() {
         return new ConcurrentHashMap<>(simulationStore);
+    }
+
+    /**
+     * Pause a running simulation. The engine halts at the next time step.
+     *
+     * @param simulationId Simulation identifier
+     * @return Updated simulation response, or null if unknown
+     * @throws ResponseStatusException 409 if the simulation is not running
+     */
+    public SimulationResponse pauseSimulation(String simulationId) {
+        SimulationResponse response = simulationStore.get(simulationId);
+        if (response == null) {
+            return null;
+        }
+        HeadlessSimulationEngine engine = runningEngines.get(simulationId);
+        if (engine == null || !engine.pause()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Simulation is not running: " + simulationId);
+        }
+        synchronized (response) {
+            if (response.getStatus() == SimulationResponse.SimulationStatus.RUNNING) {
+                response.setStatus(SimulationResponse.SimulationStatus.PAUSED);
+            }
+        }
+        logger.info("Paused simulation {}", simulationId);
+        return response;
+    }
+
+    /**
+     * Resume a paused simulation.
+     *
+     * @param simulationId Simulation identifier
+     * @return Updated simulation response, or null if unknown
+     * @throws ResponseStatusException 409 if the simulation is not paused
+     */
+    public SimulationResponse resumeSimulation(String simulationId) {
+        SimulationResponse response = simulationStore.get(simulationId);
+        if (response == null) {
+            return null;
+        }
+        HeadlessSimulationEngine engine = runningEngines.get(simulationId);
+        if (engine == null || !engine.resume()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Simulation is not paused: " + simulationId);
+        }
+        synchronized (response) {
+            if (response.getStatus() == SimulationResponse.SimulationStatus.PAUSED) {
+                response.setStatus(SimulationResponse.SimulationStatus.RUNNING);
+            }
+        }
+        logger.info("Resumed simulation {}", simulationId);
+        return response;
     }
 
     /**
@@ -450,6 +503,9 @@ public class SimulationService {
 
         if (request.getParameters() != null) {
             builder.withParameters(request.getParameters());
+        }
+        if (request.getSignals() != null && !request.getSignals().isEmpty()) {
+            builder.signals(request.getSignals());
         }
 
         return builder.build();
@@ -656,7 +712,7 @@ public class SimulationService {
                         failed++;
                         failedIds.add(simId);
                     }
-                    case RUNNING -> running++;
+                    case RUNNING, PAUSED -> running++;
                     case PENDING -> pending++;
                 }
             }

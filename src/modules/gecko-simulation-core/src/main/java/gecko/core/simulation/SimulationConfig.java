@@ -19,6 +19,7 @@ import gecko.core.io.CircuitModel;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -33,6 +34,7 @@ public final class SimulationConfig {
     private final Map<String, Double> parameterOverrides;
     private final boolean enableDataLogging;
     private final int dataLoggingInterval;
+    private final List<String> signals;
 
     private SimulationConfig(Builder builder) {
         this.solverSettings = builder.solverSettings.copy();
@@ -41,6 +43,7 @@ public final class SimulationConfig {
         this.parameterOverrides = Collections.unmodifiableMap(new HashMap<>(builder.parameterOverrides));
         this.enableDataLogging = builder.enableDataLogging;
         this.dataLoggingInterval = builder.dataLoggingInterval;
+        this.signals = builder.signals == null ? null : List.copyOf(builder.signals);
     }
 
     /**
@@ -99,6 +102,16 @@ public final class SimulationConfig {
     }
 
     /**
+     * Gets the explicit signal selection, overriding the circuit file's
+     * dataContainerSignals when non-empty.
+     *
+     * @return signal names, or null to use the file's signals
+     */
+    public List<String> getSignals() {
+        return signals;
+    }
+
+    /**
      * Creates a new builder for SimulationConfig.
      *
      * @return new builder instance
@@ -117,6 +130,7 @@ public final class SimulationConfig {
         private Map<String, Double> parameterOverrides = new HashMap<>();
         private boolean enableDataLogging = true;
         private int dataLoggingInterval = 1;
+        private List<String> signals;
 
         private Builder() {
         }
@@ -232,6 +246,17 @@ public final class SimulationConfig {
          */
         public Builder dataLoggingInterval(int interval) {
             this.dataLoggingInterval = Math.max(1, interval);
+            return this;
+        }
+
+        /**
+         * Sets the signals to record, overriding the circuit file's selection.
+         *
+         * @param signals signal names to record
+         * @return this builder
+         */
+        public Builder signals(List<String> signals) {
+            this.signals = signals;
             return this;
         }
 

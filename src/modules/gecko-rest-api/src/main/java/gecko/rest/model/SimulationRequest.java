@@ -1,6 +1,7 @@
 package gecko.rest.model;
 
 import jakarta.validation.constraints.Positive;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,6 +35,8 @@ public class SimulationRequest {
     private Map<String, Double> parameters;
 
     private String solverType;  // Optional, defaults to backward-euler
+
+    private List<String> signals;  // Optional, overrides the file's dataContainerSignals
 
     public SimulationRequest() {
     }
@@ -100,6 +103,14 @@ public class SimulationRequest {
         this.solverType = solverType;
     }
 
+    public List<String> getSignals() {
+        return signals;
+    }
+
+    public void setSignals(List<String> signals) {
+        this.signals = signals;
+    }
+
     @Override
     public String toString() {
         return "SimulationRequest{" +
@@ -110,6 +121,7 @@ public class SimulationRequest {
                 ", timeStep=" + timeStep +
                 ", solverType='" + solverType + '\'' +
                 ", parameters=" + parameters +
+                ", signals=" + signals +
                 '}';
     }
 }

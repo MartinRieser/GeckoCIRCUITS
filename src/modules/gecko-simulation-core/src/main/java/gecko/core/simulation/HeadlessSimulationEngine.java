@@ -145,7 +145,7 @@ public class HeadlessSimulationEngine {
 
         // Create data container for results
         DataContainerGlobal dataContainer = new DataContainerGlobal();
-        String[] signalNames = resolveSignalNames(circuitModel);
+        String[] signalNames = resolveSignalNames(config, circuitModel);
         dataContainer.init(signalNames.length, expectedSteps + 1, signalNames, "time [s]");
         dataContainer.setContainerStatus(ContainerStatus.RUNNING);
 
@@ -193,6 +193,8 @@ public class HeadlessSimulationEngine {
         }
 
         while (currentTime <= duration) {
+            awaitResumeOrCancel();
+
             if (cancelRequested.get()) {
                 dataContainer.setContainerStatus(ContainerStatus.PAUSED);
                 return SimulationResult.builder()
@@ -277,11 +279,27 @@ public class HeadlessSimulationEngine {
     }
 
     /**
+     * Blocks while the simulation is paused. An interrupt while parked
+     * is treated as a cancellation request (e.g. executor shutdown).
+     */
+    private void awaitResumeOrCancel() {
+        while (state.get() == EngineState.PAUSED && !cancelRequested.get()) {
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                cancelRequested.set(true);
+            }
+        }
+    }
+
+    /**
      * Requests cancellation of the running simulation.
      * The simulation will stop at the next opportunity.
      */
     public void cancel() {
-        if (state.get() == EngineState.RUNNING) {
+        EngineState current = state.get();
+        if (current == EngineState.RUNNING || current == EngineState.PAUSED) {
             cancelRequested.set(true);
         }
     }
@@ -468,10 +486,18 @@ public class HeadlessSimulationEngine {
         }
     }
 
-    private static String[] resolveSignalNames(CircuitModel circuitModel) {
-        if (circuitModel != null && circuitModel.getDataContainerSignals() != null
-                && circuitModel.getDataContainerSignals().length > 0) {
-            return circuitModel.getDataContainerSignals();
+    private static String[] resolveSignalNames(SimulationConfig config, CircuitModel circuitModel) {
+        if (config.getSignals() != null && !config.getSignals().isEmpty()) {
+            return config.getSignals().toArray(new String[0]);
+        }
+        if (circuitModel != null && circuitModel.getDataContainerSignals() != null) {
+            // skip positional placeholders ("", NIX-mapped) and the "[]" empty-list marker
+            String[] cleaned = java.util.Arrays.stream(circuitModel.getDataContainerSignals())
+                    .filter(s -> s != null && !s.isBlank() && !s.equals("[]"))
+                    .toArray(String[]::new);
+            if (cleaned.length > 0) {
+                return cleaned;
+            }
         }
         return new String[] {"V_out", "I_in", "P_loss"};
     }

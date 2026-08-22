@@ -296,6 +296,56 @@ public class SimulationController {
     }
 
     /**
+     * Pause a running simulation.
+     *
+     * @param simulationId ID of the simulation to pause
+     * @return Paused simulation response
+     */
+    @PostMapping("/{simulationId}/pause")
+    @Operation(summary = "Pause simulation", description = "Pause a running simulation at the next time step")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Simulation paused",
+                    content = @Content(schema = @Schema(implementation = SimulationResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Simulation not found"),
+            @ApiResponse(responseCode = "409", description = "Simulation not running")
+    })
+    public ResponseEntity<SimulationResponse> pauseSimulation(
+            @Parameter(description = "Simulation ID")
+            @PathVariable String simulationId) {
+
+        SimulationResponse response = simulationService.pauseSimulation(simulationId);
+        if (response == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Resume a paused simulation.
+     *
+     * @param simulationId ID of the simulation to resume
+     * @return Running simulation response
+     */
+    @PostMapping("/{simulationId}/resume")
+    @Operation(summary = "Resume simulation", description = "Resume a paused simulation")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Simulation resumed",
+                    content = @Content(schema = @Schema(implementation = SimulationResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Simulation not found"),
+            @ApiResponse(responseCode = "409", description = "Simulation not paused")
+    })
+    public ResponseEntity<SimulationResponse> resumeSimulation(
+            @Parameter(description = "Simulation ID")
+            @PathVariable String simulationId) {
+
+        SimulationResponse response = simulationService.resumeSimulation(simulationId);
+        if (response == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * Export simulation results as CSV.
      *
      * @param simulationId ID of the simulation

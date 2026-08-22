@@ -9,6 +9,9 @@ package gecko.core.simulation;
 import gecko.core.allg.SolverType;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+import java.util.function.BooleanSupplier;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -86,29 +89,6 @@ class HeadlessSimulationEngineTest {
     }
 
     @Test
-    void pause_whileRunning_returnsTrue() {
-        HeadlessSimulationEngine engine = new HeadlessSimulationEngine();
-
-        // Simulate running state by using reflection to set state
-        // Note: This is a simplified test since actual simulation runs in executeSimulation
-        assertEquals(HeadlessSimulationEngine.EngineState.IDLE, engine.getState());
-
-        // Test pause while idle returns false
-        assertFalse(engine.pause());
-    }
-
-    @Test
-    void resume_whilePaused_returnsTrue() {
-        HeadlessSimulationEngine engine = new HeadlessSimulationEngine();
-
-        // Cannot test pause/resume without running simulation
-        // This test verifies the method exists and returns false when not paused
-        boolean resumed = engine.resume();
-
-        assertFalse(resumed);
-    }
-
-    @Test
     void resume_whileIdle_returnsFalse() {
         HeadlessSimulationEngine engine = new HeadlessSimulationEngine();
 
@@ -122,19 +102,90 @@ class HeadlessSimulationEngineTest {
     void isPaused_whileIdle_returnsFalse() {
         HeadlessSimulationEngine engine = new HeadlessSimulationEngine();
 
-        boolean paused = engine.isPaused();
-
-        assertFalse(paused);
+        assertFalse(engine.isPaused());
     }
 
     @Test
-    void isPaused_afterPause_returnsTrue() {
+    void pauseFreezesTime_resumeCompletesRun() throws Exception {
         HeadlessSimulationEngine engine = new HeadlessSimulationEngine();
+        engine.setProgressListener((currentTime, endTime, currentStep) -> {
+            if (currentStep == 1000) {
+                engine.pause();
+            }
+        });
 
-        // When idle, pause won't work, so isPaused should still be false
-        engine.pause();
+        Thread worker = new Thread(() -> engine.runSimulation(SimulationConfig.builder()
+                .stepWidth(1e-6)
+                .simulationDuration(20e-3)
+                .solverType(SolverType.SOLVER_BE)
+                .build()));
+        worker.start();
 
-        assertFalse(engine.isPaused());
+        assertTrue(waitFor(() -> engine.isPaused()), "engine should reach PAUSED state");
+        double frozenTime = engine.getCurrentTime();
+        Thread.sleep(150);
+        assertEquals(frozenTime, engine.getCurrentTime(), 1e-12, "time must not advance while paused");
+
+        assertTrue(engine.resume());
+        worker.join(10_000);
+        assertFalse(worker.isAlive());
+
+        assertEquals(HeadlessSimulationEngine.EngineState.IDLE, engine.getState());
+        assertTrue(engine.getCurrentTime() >= 20e-3, "run must finish after resume");
+    }
+
+    @Test
+    void cancelWhilePaused_stopsSimulation() throws Exception {
+        HeadlessSimulationEngine engine = new HeadlessSimulationEngine();
+        engine.setProgressListener((currentTime, endTime, currentStep) -> {
+            if (currentStep == 1000) {
+                engine.pause();
+            }
+        });
+
+        Thread worker = new Thread(() -> engine.runSimulation(SimulationConfig.builder()
+                .stepWidth(1e-6)
+                .simulationDuration(20e-3)
+                .solverType(SolverType.SOLVER_BE)
+                .build()));
+        worker.start();
+
+        assertTrue(waitFor(() -> engine.isPaused()), "engine should reach PAUSED state");
+        engine.cancel();
+        worker.join(10_000);
+        assertFalse(worker.isAlive());
+
+        assertEquals(HeadlessSimulationEngine.EngineState.IDLE, engine.getState());
+        assertTrue(engine.getCurrentTime() < 20e-3, "cancelled run must not reach the end");
+    }
+
+    @Test
+    void signalOverride_isRecordedInsteadOfFileSignals() {
+        HeadlessSimulationEngine engine = new HeadlessSimulationEngine();
+        SimulationConfig config = SimulationConfig.builder()
+                .signals(List.of("node_a", "node_b"))
+                .stepWidth(1e-6)
+                .simulationDuration(1e-3)
+                .solverType(SolverType.SOLVER_BE)
+                .build();
+
+        SimulationResult result = engine.runSimulation(config);
+
+        assertTrue(result.isSuccess());
+        assertEquals(2, result.getSignalNames().length);
+        assertEquals("node_a", result.getSignalNames()[0]);
+        assertEquals("node_b", result.getSignalNames()[1]);
+    }
+
+    private static boolean waitFor(BooleanSupplier condition) throws InterruptedException {
+        long deadline = System.currentTimeMillis() + 5_000;
+        while (System.currentTimeMillis() < deadline) {
+            if (condition.getAsBoolean()) {
+                return true;
+            }
+            Thread.sleep(10);
+        }
+        return false;
     }
 
     // ========== Detailed Progress Tests ==========
