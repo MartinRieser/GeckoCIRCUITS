@@ -18,6 +18,9 @@
   --success: #10b981;
   --danger: #f43f5e;
   --purple: #a855f7;
+  --color-lk: #38bdf8;
+  --color-control: #4ade80;
+  --color-therm: #fb923c;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', monospace;
   font-family: var(--font-sans);
@@ -684,11 +687,48 @@ body,
   stroke-width: 1.5;
 }
 
+/* Family-based component styling */
+.component.family-LK line,
+.component.family-LK rect,
+.component.family-LK path,
+.component.family-LK circle,
+.component.family-LK polyline {
+  stroke: var(--color-lk);
+}
+.component.family-LK circle[fill]:not([fill='none']),
+.component.family-LK path[fill]:not([fill='none']) {
+  fill: var(--color-lk);
+}
+
+.component.family-CONTROL line,
+.component.family-CONTROL rect,
+.component.family-CONTROL path,
+.component.family-CONTROL circle,
+.component.family-CONTROL polyline {
+  stroke: var(--color-control);
+}
+.component.family-CONTROL circle[fill]:not([fill='none']),
+.component.family-CONTROL path[fill]:not([fill='none']) {
+  fill: var(--color-control);
+}
+
+.component.family-THERM line,
+.component.family-THERM rect,
+.component.family-THERM path,
+.component.family-THERM circle,
+.component.family-THERM polyline {
+  stroke: var(--color-therm);
+}
+.component.family-THERM circle[fill]:not([fill='none']),
+.component.family-THERM path[fill]:not([fill='none']) {
+  fill: var(--color-therm);
+}
+
 .component.selected line,
 .component.selected rect,
 .component.selected path,
 .component.selected circle {
-  stroke: var(--selection);
+  stroke: var(--selection) !important;
 }
 
 .component circle[fill]:not([fill='none']),
@@ -761,8 +801,19 @@ polyline.wire {
   stroke-linecap: round;
 }
 
+polyline.wire.wire-LK {
+  stroke: var(--color-lk);
+}
+polyline.wire.wire-CONTROL {
+  stroke: var(--color-control);
+}
+polyline.wire.wire-THERMAL,
+polyline.wire.wire-THERM {
+  stroke: var(--color-therm);
+}
+
 polyline.wire.selected {
-  stroke: var(--selection);
+  stroke: var(--selection) !important;
   stroke-width: 2.2;
 }
 
@@ -780,8 +831,19 @@ polyline.wire.selected {
   stroke-width: 1.8;
 }
 
+.wire-draft.wire-LK {
+  stroke: var(--color-lk);
+}
+.wire-draft.wire-CONTROL {
+  stroke: var(--color-control);
+}
+.wire-draft.wire-THERMAL,
+.wire-draft.wire-THERM {
+  stroke: var(--color-therm);
+}
+
 .junction-dot {
-  fill: var(--wire);
+  fill: var(--text);
   stroke: var(--bg);
   stroke-width: 1;
 }

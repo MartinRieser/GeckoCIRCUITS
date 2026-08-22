@@ -313,8 +313,16 @@ public class CircuitEditService {
                 if (typ.isTerminal()) {
                     continue;
                 }
+                String family;
+                if (typ.isThermal()) {
+                    family = "THERM";
+                } else if (typ.isControl()) {
+                    family = "CONTROL";
+                } else {
+                    family = "LK";
+                }
                 entries.add(new CatalogResponse.CatalogEntry(
-                        typ.getTypeNumber(), typ.name(), typ.isThermal() ? "THERM" : "LK"));
+                        typ.getTypeNumber(), typ.name(), family));
             }
             catalog = entries;
         }
@@ -352,8 +360,14 @@ public class CircuitEditService {
                 }
                 return "THERM";
             }
+            case "CONTROL" -> {
+                if (!CircuitTypCore.isValidTypeNumber(type) || !CircuitTypCore.fromTypeNumber(type).isControl()) {
+                    throw badRequest("Unknown control type number: " + type);
+                }
+                return "CONTROL";
+            }
             default -> throw badRequest(
-                    "family must be LK or THERM (CONTROL/SPECIAL creation is not supported yet)");
+                    "family must be LK, THERM or CONTROL");
         }
     }
 

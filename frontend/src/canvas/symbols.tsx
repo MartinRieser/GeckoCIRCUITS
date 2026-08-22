@@ -139,6 +139,37 @@ export function SymbolByType({
       return <ThermalCapacitor u={u} />;
     case 48:
       return <AmbientSymbol u={u} />;
+    // CONTROL-domain blocks
+    case 1001:
+      return <VoltmeterSymbol u={u} />;
+    case 1002:
+      return <AmmeterSymbol u={u} />;
+    case 1003:
+      return <ScopeSymbol u={u} />;
+    case 1004:
+      return <SignalSourceSymbol u={u} />;
+    case 1005:
+      return <ConstantBlockSymbol u={u} />;
+    case 1006:
+      return <GainTriangleSymbol u={u} />;
+    case 1007:
+      return <ControlBlockLabel u={u} label="PI" />;
+    case 1008:
+      return <ControlBlockLabel u={u} label="PT1" />;
+    case 1009:
+      return <ControlBlockLabel u={u} label="∫" />;
+    case 1010:
+      return <ComparatorSymbol u={u} />;
+    case 1011:
+      return <AndGateSymbol u={u} />;
+    case 1012:
+      return <OrGateSymbol u={u} />;
+    case 1013:
+      return <NotGateSymbol u={u} />;
+    case 1014:
+      return <MuxSymbol u={u} />;
+    case 1015:
+      return <ControlBlockLabel u={u} label="τ" />;
     default:
       return <GenericBox u={u} family={family} type={type} />;
   }
@@ -511,3 +542,184 @@ function GenericBox({
     </g>
   );
 }
+
+// ========== CONTROL-domain symbols (green #4ade80) ==========
+
+const CTRL_COLOR = '#4ade80';
+
+function controlLeads(u: number) {
+  return (
+    <>
+      <line x1={-LEAD * u} y1={0} x2={-0.75 * u} y2={0} stroke={CTRL_COLOR} />
+      <line x1={0.75 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
+    </>
+  );
+}
+
+function VoltmeterSymbol({ u }: { u: number }) {
+  return (
+    <g>
+      <line x1={-LEAD * u} y1={-0.4 * u} x2={-0.7 * u} y2={-0.4 * u} stroke={CTRL_COLOR} />
+      <line x1={-LEAD * u} y1={0.4 * u} x2={-0.7 * u} y2={0.4 * u} stroke={CTRL_COLOR} />
+      <line x1={0.7 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
+      <rect x={-0.7 * u} y={-0.7 * u} width={1.4 * u} height={1.4 * u} rx={3}
+            stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.08)" />
+      <text x={0} y={0.3 * u} fontSize={0.75 * u} fill={CTRL_COLOR} stroke="none"
+            textAnchor="middle" fontWeight="bold">V</text>
+    </g>
+  );
+}
+
+function AmmeterSymbol({ u }: { u: number }) {
+  return (
+    <g>
+      <line x1={-LEAD * u} y1={-0.4 * u} x2={-0.7 * u} y2={-0.4 * u} stroke={CTRL_COLOR} />
+      <line x1={-LEAD * u} y1={0.4 * u} x2={-0.7 * u} y2={0.4 * u} stroke={CTRL_COLOR} />
+      <line x1={0.7 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
+      <circle cx={0} cy={0} r={0.65 * u} stroke={CTRL_COLOR} strokeWidth={1.5}
+              fill="rgba(74,222,128,0.08)" />
+      <text x={0} y={0.3 * u} fontSize={0.75 * u} fill={CTRL_COLOR} stroke="none"
+            textAnchor="middle" fontWeight="bold">A</text>
+    </g>
+  );
+}
+
+function ScopeSymbol({ u }: { u: number }) {
+  return (
+    <g>
+      {controlLeads(u)}
+      <rect x={-0.75 * u} y={-0.65 * u} width={1.5 * u} height={1.3 * u} rx={3}
+            stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
+      {/* Mini waveform inside */}
+      <path
+        d={`M ${-0.5 * u} 0 Q ${-0.25 * u} ${-0.4 * u} 0 0 Q ${0.25 * u} ${0.4 * u} ${0.5 * u} 0`}
+        stroke={CTRL_COLOR} strokeWidth={1.2} fill="none" />
+    </g>
+  );
+}
+
+function SignalSourceSymbol({ u }: { u: number }) {
+  return (
+    <g>
+      <line x1={0.75 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
+      <rect x={-0.75 * u} y={-0.65 * u} width={1.5 * u} height={1.3 * u} rx={3}
+            stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
+      <path
+        d={`M ${-0.45 * u} 0 Q ${-0.2 * u} ${-0.35 * u} 0 0 Q ${0.2 * u} ${0.35 * u} ${0.45 * u} 0`}
+        stroke={CTRL_COLOR} strokeWidth={1.4} fill="none" />
+    </g>
+  );
+}
+
+function ConstantBlockSymbol({ u }: { u: number }) {
+  return (
+    <g>
+      <line x1={0.75 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
+      <rect x={-0.65 * u} y={-0.55 * u} width={1.3 * u} height={1.1 * u} rx={3}
+            stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
+      <text x={0} y={0.25 * u} fontSize={0.65 * u} fill={CTRL_COLOR} stroke="none"
+            textAnchor="middle" fontWeight="bold">k</text>
+    </g>
+  );
+}
+
+function GainTriangleSymbol({ u }: { u: number }) {
+  return (
+    <g>
+      {controlLeads(u)}
+      <path
+        d={`M ${-0.65 * u} ${-0.65 * u} L ${-0.65 * u} ${0.65 * u} L ${0.65 * u} 0 z`}
+        stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
+      <text x={-0.2 * u} y={0.2 * u} fontSize={0.5 * u} fill={CTRL_COLOR} stroke="none"
+            textAnchor="middle" fontWeight="bold">k</text>
+    </g>
+  );
+}
+
+function ControlBlockLabel({ u, label }: { u: number; label: string }) {
+  return (
+    <g>
+      {controlLeads(u)}
+      <rect x={-0.75 * u} y={-0.55 * u} width={1.5 * u} height={1.1 * u} rx={3}
+            stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
+      <text x={0} y={0.25 * u} fontSize={0.55 * u} fill={CTRL_COLOR} stroke="none"
+            textAnchor="middle" fontWeight="bold">{label}</text>
+    </g>
+  );
+}
+
+function ComparatorSymbol({ u }: { u: number }) {
+  return (
+    <g>
+      <line x1={-LEAD * u} y1={-0.35 * u} x2={-0.65 * u} y2={-0.35 * u} stroke={CTRL_COLOR} />
+      <line x1={-LEAD * u} y1={0.35 * u} x2={-0.65 * u} y2={0.35 * u} stroke={CTRL_COLOR} />
+      <line x1={0.65 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
+      <path
+        d={`M ${-0.65 * u} ${-0.7 * u} L ${-0.65 * u} ${0.7 * u} L ${0.65 * u} 0 z`}
+        stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
+      <text x={-0.35 * u} y={-0.15 * u} fontSize={0.4 * u} fill={CTRL_COLOR} stroke="none" fontWeight="bold">+</text>
+      <text x={-0.35 * u} y={0.5 * u} fontSize={0.4 * u} fill={CTRL_COLOR} stroke="none" fontWeight="bold">−</text>
+    </g>
+  );
+}
+
+function AndGateSymbol({ u }: { u: number }) {
+  return (
+    <g>
+      <line x1={-LEAD * u} y1={-0.35 * u} x2={-0.5 * u} y2={-0.35 * u} stroke={CTRL_COLOR} />
+      <line x1={-LEAD * u} y1={0.35 * u} x2={-0.5 * u} y2={0.35 * u} stroke={CTRL_COLOR} />
+      <line x1={0.6 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
+      <path
+        d={`M ${-0.5 * u} ${-0.6 * u} L ${-0.5 * u} ${0.6 * u} L 0 ${0.6 * u} A ${0.6 * u} ${0.6 * u} 0 0 0 0 ${-0.6 * u} z`}
+        stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
+      <text x={-0.1 * u} y={0.2 * u} fontSize={0.4 * u} fill={CTRL_COLOR} stroke="none"
+            textAnchor="middle" fontWeight="bold">&amp;</text>
+    </g>
+  );
+}
+
+function OrGateSymbol({ u }: { u: number }) {
+  return (
+    <g>
+      <line x1={-LEAD * u} y1={-0.35 * u} x2={-0.35 * u} y2={-0.35 * u} stroke={CTRL_COLOR} />
+      <line x1={-LEAD * u} y1={0.35 * u} x2={-0.35 * u} y2={0.35 * u} stroke={CTRL_COLOR} />
+      <line x1={0.65 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
+      <path
+        d={`M ${-0.45 * u} ${-0.6 * u} Q ${0.1 * u} ${-0.6 * u} ${0.65 * u} 0 Q ${0.1 * u} ${0.6 * u} ${-0.45 * u} ${0.6 * u} Q ${-0.15 * u} 0 ${-0.45 * u} ${-0.6 * u} z`}
+        stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
+      <text x={0} y={0.2 * u} fontSize={0.4 * u} fill={CTRL_COLOR} stroke="none"
+            textAnchor="middle" fontWeight="bold">≥1</text>
+    </g>
+  );
+}
+
+function NotGateSymbol({ u }: { u: number }) {
+  return (
+    <g>
+      <line x1={-LEAD * u} y1={0} x2={-0.6 * u} y2={0} stroke={CTRL_COLOR} />
+      <line x1={0.75 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
+      <path
+        d={`M ${-0.6 * u} ${-0.55 * u} L ${-0.6 * u} ${0.55 * u} L ${0.55 * u} 0 z`}
+        stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
+      <circle cx={0.65 * u} cy={0} r={0.1 * u} stroke={CTRL_COLOR} strokeWidth={1.5}
+              fill="rgba(74,222,128,0.1)" />
+    </g>
+  );
+}
+
+function MuxSymbol({ u }: { u: number }) {
+  return (
+    <g>
+      <line x1={-LEAD * u} y1={-0.35 * u} x2={-0.55 * u} y2={-0.35 * u} stroke={CTRL_COLOR} />
+      <line x1={-LEAD * u} y1={0.35 * u} x2={-0.55 * u} y2={0.35 * u} stroke={CTRL_COLOR} />
+      <line x1={0.55 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
+      {/* Trapezoid shape */}
+      <path
+        d={`M ${-0.55 * u} ${-0.65 * u} L ${0.55 * u} ${-0.4 * u} L ${0.55 * u} ${0.4 * u} L ${-0.55 * u} ${0.65 * u} z`}
+        stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
+      <text x={0} y={0.2 * u} fontSize={0.4 * u} fill={CTRL_COLOR} stroke="none"
+            textAnchor="middle" fontWeight="bold">MUX</text>
+    </g>
+  );
+}
+

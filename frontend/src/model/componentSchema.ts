@@ -23,7 +23,7 @@ export interface ComponentMeta {
   family: string;
   name: string;
   displayName: string;
-  category: 'passives' | 'sources' | 'semiconductors' | 'switches' | 'transformers' | 'machines' | 'thermal' | 'terminals';
+  category: 'passives' | 'sources' | 'semiconductors' | 'switches' | 'transformers' | 'machines' | 'thermal' | 'terminals' | 'measurement' | 'control' | 'logic';
   description: string;
   shortcut?: string;
   defaultPrefix: string;
@@ -42,6 +42,9 @@ export const CATEGORIES = [
   { id: 'switches', label: 'Switches' },
   { id: 'transformers', label: 'Transformers & Coupled' },
   { id: 'machines', label: 'Motors & OpAmps' },
+  { id: 'measurement', label: 'Measurement' },
+  { id: 'control', label: 'Control & Signal' },
+  { id: 'logic', label: 'Logic Gates' },
   { id: 'thermal', label: 'Thermal Domain' },
   { id: 'terminals', label: 'Terminals & Net' },
 ] as const;
@@ -1003,6 +1006,273 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     terminals: {
       input: [{ label: 'U', description: 'Phase U' }],
       output: [{ label: 'V', description: 'Phase V' }],
+    },
+  },
+
+  // ========== CONTROL-domain: Measurement ==========
+
+  1001: {
+    type: 1001,
+    family: 'CONTROL',
+    name: 'CTRL_VOLT',
+    displayName: 'Voltmeter',
+    category: 'measurement',
+    description: 'Measures voltage between two electrical nodes',
+    shortcut: 'U',
+    defaultPrefix: 'V_meas',
+    parameters: [],
+    terminals: {
+      input: [{ label: '+', description: 'Positive probe' }],
+      output: [{ label: '−', description: 'Negative probe' }],
+    },
+  },
+
+  1002: {
+    type: 1002,
+    family: 'CONTROL',
+    name: 'CTRL_AMP',
+    displayName: 'Ammeter',
+    category: 'measurement',
+    description: 'Measures current through an electrical branch',
+    shortcut: 'A',
+    defaultPrefix: 'I_meas',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'in', description: 'Current flow in' }],
+      output: [{ label: 'out', description: 'Measurement output' }],
+    },
+  },
+
+  1003: {
+    type: 1003,
+    family: 'CONTROL',
+    name: 'CTRL_SCOPE',
+    displayName: 'Scope',
+    category: 'measurement',
+    description: 'Oscilloscope display — records and visualises signals',
+    defaultPrefix: 'SCOPE',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'ch1', description: 'Channel 1' },
+        { label: 'ch2', description: 'Channel 2' },
+        { label: 'ch3', description: 'Channel 3' },
+      ],
+      output: [],
+    },
+  },
+
+  // ========== CONTROL-domain: Signal Sources & Processing ==========
+
+  1004: {
+    type: 1004,
+    family: 'CONTROL',
+    name: 'CTRL_SIGNAL',
+    displayName: 'Signal Source',
+    category: 'control',
+    description: 'Generates sine, step, ramp, pulse or arbitrary waveform signals',
+    defaultPrefix: 'SIG',
+    parameters: [
+      { index: 0, key: 'param0', label: 'Waveform Type', description: 'Signal type (sine, step, etc.)', defaultValue: 0, unit: '' },
+      { index: 1, key: 'param1', label: 'Amplitude', description: 'Signal amplitude', defaultValue: 1, unit: '' },
+      { index: 2, key: 'param2', label: 'Frequency', description: 'Signal frequency', defaultValue: 50, unit: 'Hz' },
+    ],
+    terminals: {
+      input: [],
+      output: [{ label: 'out', description: 'Signal output' }],
+    },
+  },
+
+  1005: {
+    type: 1005,
+    family: 'CONTROL',
+    name: 'CTRL_CONSTANT',
+    displayName: 'Constant',
+    category: 'control',
+    description: 'Outputs a constant value',
+    defaultPrefix: 'K',
+    parameters: [
+      { index: 0, key: 'param0', label: 'Value (k)', description: 'Constant output value', defaultValue: 1, unit: '' },
+    ],
+    terminals: {
+      input: [],
+      output: [{ label: 'out', description: 'Constant output' }],
+    },
+  },
+
+  1006: {
+    type: 1006,
+    family: 'CONTROL',
+    name: 'CTRL_GAIN',
+    displayName: 'Gain',
+    category: 'control',
+    description: 'Multiplies input signal by a constant factor k',
+    defaultPrefix: 'GAIN',
+    parameters: [
+      { index: 0, key: 'param0', label: 'Gain (k)', description: 'Multiplication factor', defaultValue: 1, unit: '' },
+    ],
+    terminals: {
+      input: [{ label: 'in', description: 'Signal input' }],
+      output: [{ label: 'out', description: 'Amplified output' }],
+    },
+  },
+
+  1007: {
+    type: 1007,
+    family: 'CONTROL',
+    name: 'CTRL_PI',
+    displayName: 'PI Controller',
+    category: 'control',
+    description: 'Proportional-Integral controller with anti-windup',
+    defaultPrefix: 'PI',
+    parameters: [
+      { index: 0, key: 'param0', label: 'Kp', description: 'Proportional gain', defaultValue: 1, unit: '' },
+      { index: 1, key: 'param1', label: 'Ti', description: 'Integration time constant', defaultValue: 0.01, unit: 's' },
+    ],
+    terminals: {
+      input: [{ label: 'in', description: 'Error input' }],
+      output: [{ label: 'out', description: 'Controller output' }],
+    },
+  },
+
+  1008: {
+    type: 1008,
+    family: 'CONTROL',
+    name: 'CTRL_PT1',
+    displayName: 'PT1 Low-Pass',
+    category: 'control',
+    description: 'First-order low-pass filter (PT1 element)',
+    defaultPrefix: 'PT1',
+    parameters: [
+      { index: 0, key: 'param0', label: 'Time Constant (τ)', description: 'Filter time constant', defaultValue: 0.001, unit: 's' },
+    ],
+    terminals: {
+      input: [{ label: 'in', description: 'Signal input' }],
+      output: [{ label: 'out', description: 'Filtered output' }],
+    },
+  },
+
+  1009: {
+    type: 1009,
+    family: 'CONTROL',
+    name: 'CTRL_INTEGRATOR',
+    displayName: 'Integrator',
+    category: 'control',
+    description: 'Time integration of input signal (∫)',
+    defaultPrefix: 'INT',
+    parameters: [
+      { index: 0, key: 'param0', label: 'Initial Value', description: 'Initial integrator state', defaultValue: 0, unit: '' },
+    ],
+    terminals: {
+      input: [{ label: 'in', description: 'Signal input' }],
+      output: [{ label: 'out', description: 'Integrated output' }],
+    },
+  },
+
+  1010: {
+    type: 1010,
+    family: 'CONTROL',
+    name: 'CTRL_COMPARATOR',
+    displayName: 'Comparator',
+    category: 'control',
+    description: 'Compares two signals — outputs 1 if in1 > in2, else 0',
+    defaultPrefix: 'CMP',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: '+', description: 'Non-inverting input' },
+        { label: '−', description: 'Inverting input' },
+      ],
+      output: [{ label: 'out', description: 'Binary output (0 or 1)' }],
+    },
+  },
+
+  // ========== CONTROL-domain: Logic Gates ==========
+
+  1011: {
+    type: 1011,
+    family: 'CONTROL',
+    name: 'CTRL_AND',
+    displayName: 'AND Gate',
+    category: 'logic',
+    description: 'Logical AND — output = 1 only if ALL inputs > 0.5',
+    defaultPrefix: 'AND',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'A', description: 'Input A' },
+        { label: 'B', description: 'Input B' },
+      ],
+      output: [{ label: 'Q', description: 'AND output' }],
+    },
+  },
+
+  1012: {
+    type: 1012,
+    family: 'CONTROL',
+    name: 'CTRL_OR',
+    displayName: 'OR Gate',
+    category: 'logic',
+    description: 'Logical OR — output = 1 if ANY input > 0.5',
+    defaultPrefix: 'OR',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'A', description: 'Input A' },
+        { label: 'B', description: 'Input B' },
+      ],
+      output: [{ label: 'Q', description: 'OR output' }],
+    },
+  },
+
+  1013: {
+    type: 1013,
+    family: 'CONTROL',
+    name: 'CTRL_NOT',
+    displayName: 'NOT Gate',
+    category: 'logic',
+    description: 'Logical NOT / Inverter — output = 1 if input ≤ 0.5',
+    defaultPrefix: 'NOT',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'in', description: 'Input' }],
+      output: [{ label: 'Q', description: 'Inverted output' }],
+    },
+  },
+
+  1014: {
+    type: 1014,
+    family: 'CONTROL',
+    name: 'CTRL_MUX',
+    displayName: 'Multiplexer',
+    category: 'control',
+    description: 'Selects one of N inputs based on a selector signal',
+    defaultPrefix: 'MUX',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'sel', description: 'Selector' },
+        { label: 'in0', description: 'Input 0' },
+        { label: 'in1', description: 'Input 1' },
+      ],
+      output: [{ label: 'out', description: 'Selected output' }],
+    },
+  },
+
+  1015: {
+    type: 1015,
+    family: 'CONTROL',
+    name: 'CTRL_DELAY',
+    displayName: 'Time Delay',
+    category: 'control',
+    description: 'Delays input signal by a configurable time τ',
+    defaultPrefix: 'DELAY',
+    parameters: [
+      { index: 0, key: 'param0', label: 'Delay Time (τ)', description: 'Signal delay time', defaultValue: 0.001, unit: 's' },
+    ],
+    terminals: {
+      input: [{ label: 'in', description: 'Signal input' }],
+      output: [{ label: 'out', description: 'Delayed output' }],
     },
   },
 };

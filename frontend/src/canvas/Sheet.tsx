@@ -178,7 +178,16 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
         return;
       case 'wiring':
         if (!state.wireDraft) {
-          dispatch({ type: 'WIRE_START', ...snappedToTerminal(p) });
+          const snapped = snappedToTerminal(p);
+          const near = terminalNear(state.components, p);
+          let family = 'LK';
+          if (near) {
+            const comp = state.components.find((c) => c.name === near.component);
+            if (comp) {
+              family = comp.family;
+            }
+          }
+          dispatch({ type: 'WIRE_START', x: snapped.x, y: snapped.y, family });
         } else {
           const end = snappedToTerminal(p);
           const route = routeL(state.wireDraft.start, end, state.wireDraft.preferHorizontal);
@@ -428,7 +437,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
               <g key={wire.index}>
                 <polyline
                   points={wire.points.map((p) => `${p[0] * dpix},${p[1] * dpix}`).join(' ')}
-                  className={wire.index === state.selectedWire ? 'wire selected' : 'wire'}
+                  className={`wire wire-${wire.type || 'LK'}${wire.index === state.selectedWire ? ' selected' : ''}`}
                 />
                 <polyline
                   points={wire.points.map((p) => `${p[0] * dpix},${p[1] * dpix}`).join(' ')}
@@ -481,7 +490,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                 <g
                   key={component.name}
                   transform={`translate(${component.position[0] * dpix}, ${component.position[1] * dpix})`}
-                  className={selected ? 'component selected' : 'component'}
+                  className={`component family-${component.family || 'LK'}${selected ? ' selected' : ''}`}
                   onMouseDown={(e) => {
                     if (e.button !== 0) return;
                     e.stopPropagation();
@@ -608,7 +617,11 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
 
           {/* Wire draft preview */}
           {wireDraftPoints && (
-            <polyline points={wireDraftPoints} className="wire-draft" pointerEvents="none" />
+            <polyline
+              points={wireDraftPoints}
+              className={`wire-draft wire-${state.wireFamily || 'LK'}`}
+              pointerEvents="none"
+            />
           )}
 
           {/* Ghost preview while placing */}

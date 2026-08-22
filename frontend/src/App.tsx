@@ -336,14 +336,11 @@ export function App() {
             className={`nav-btn-primary ${simState.status === 'RUNNING' ? 'simulating' : ''}`}
             onClick={() => {
               actions.toggleSimDrawer();
-              if (simState.status !== 'RUNNING') {
-                actions.runSimulation();
-              }
             }}
             disabled={!state.circuitId}
-            title="Open simulation drawer and run analysis"
+            title="Open simulation panel to configure and run"
           >
-            {simState.status === 'RUNNING' ? 'Simulating...' : 'Run Simulation'}
+            {simState.status === 'RUNNING' ? 'Simulating...' : 'Simulation'}
           </button>
 
           <div className="connection-badge" title={wsConnected ? 'WebSocket live' : 'Offline / Polling'}>

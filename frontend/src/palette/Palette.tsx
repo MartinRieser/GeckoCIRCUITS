@@ -148,6 +148,7 @@ export function Palette({ catalog, onArm }: PaletteProps) {
                     type={entry.type}
                     family={entry.family}
                     size={viewMode === 'grid' ? 44 : 32}
+                    color={entry.family === 'CONTROL' ? '#4ade80' : entry.family === 'THERM' ? '#fb923c' : undefined}
                   />
                 </div>
                 <div className="card-info">

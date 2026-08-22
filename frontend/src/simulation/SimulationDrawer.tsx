@@ -260,7 +260,9 @@ export function SimulationDrawer({
               <span className="sim-empty-text">
                 {isRunning
                   ? 'Running simulation...'
-                  : 'Click "Run Simulation" above to calculate and plot circuit waveforms.'}
+                  : status === 'COMPLETED'
+                    ? 'Simulation completed but no signals were recorded. Ensure the circuit has measurable nodes (e.g. voltage across a component).'
+                    : 'Click "Run Simulation" above to calculate and plot circuit waveforms.'}
               </span>
             </div>
           ) : (

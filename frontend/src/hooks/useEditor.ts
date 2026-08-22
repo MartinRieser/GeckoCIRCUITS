@@ -164,8 +164,9 @@ export function useEditor() {
     (points: number[][]) => {
       const circuitId = stateRef.current.circuitId;
       if (!circuitId) return;
+      const wireType = stateRef.current.wireFamily || 'LK';
       api
-        .createConnection(circuitId, { type: 'LK', points })
+        .createConnection(circuitId, { type: wireType, points })
         .then((msg) => {
           const payload = msg.payload as WirePayload;
           versionRef.current = msg.modelVersion;
@@ -559,7 +560,9 @@ export function useEditor() {
         simPollTimerRef.current = pollInterval;
       } catch (err) {
         setSimStatus('FAILED');
-        setSimError((err as Error).message);
+        const msg = (err as Error).message;
+        setSimError(msg);
+        dispatch({ type: 'STATUS', status: `Simulation failed: ${msg}` });
       }
     },
     [],

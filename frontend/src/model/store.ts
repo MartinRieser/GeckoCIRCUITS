@@ -71,6 +71,7 @@ export interface EditorState {
   focusedTerminal: FocusedTerminal | null;
   status: string;
   busy: boolean;
+  wireFamily: string | null;
 }
 
 export const initialState: EditorState = {
@@ -93,6 +94,7 @@ export const initialState: EditorState = {
   focusedTerminal: null,
   status: 'Open a .ipes file or example to begin',
   busy: false,
+  wireFamily: null,
 };
 
 export type Action =
@@ -113,7 +115,7 @@ export type Action =
   | { type: 'SELECT_WIRE'; index: number | null }
   | { type: 'CLEAR_SELECTION' }
   | { type: 'SELECTION_NUDGE'; dx: number; dy: number }
-  | { type: 'WIRE_START'; x: number; y: number }
+  | { type: 'WIRE_START'; x: number; y: number; family?: string }
   | { type: 'WIRE_CURSOR'; x: number; y: number }
   | { type: 'WIRE_CURSOR_NUDGE'; dx: number; dy: number }
   | { type: 'TERMINAL_FOCUS_CYCLE'; reverse?: boolean }
@@ -335,6 +337,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
       return {
         ...state,
         mode: 'wiring',
+        wireFamily: action.family || 'LK',
         wireDraft: { start: { x: action.x, y: action.y }, cursor: { x: action.x, y: action.y }, preferHorizontal: null },
         status: 'Wiring — click or press Enter to set end point, Esc to abort, W to leave wire mode',
       };

@@ -100,7 +100,24 @@ public enum CircuitTypCore {
     LK_MOTOR_PERM(51), // Permanent magnet motor
 
     // Non-linear reluctance
-    NONLIN_REL(52);    // Non-linear reluctance
+    NONLIN_REL(52),    // Non-linear reluctance
+
+    // Control-domain blocks — IDs in 1000+ range to avoid collision with LK/THERM
+    CTRL_VOLT(1001),       // Voltage measurement
+    CTRL_AMP(1002),        // Current measurement
+    CTRL_SCOPE(1003),      // Oscilloscope / scope display
+    CTRL_SIGNAL(1004),     // Signal source (sine, step, ramp, etc.)
+    CTRL_CONSTANT(1005),   // Constant value output
+    CTRL_GAIN(1006),       // Gain / amplifier block
+    CTRL_PI(1007),         // PI controller
+    CTRL_PT1(1008),        // PT1 low-pass filter
+    CTRL_INTEGRATOR(1009), // Integrator
+    CTRL_COMPARATOR(1010), // Comparator / threshold
+    CTRL_AND(1011),        // AND logic gate
+    CTRL_OR(1012),         // OR logic gate
+    CTRL_NOT(1013),        // NOT logic gate
+    CTRL_MUX(1014),        // Multiplexer
+    CTRL_DELAY(1015);      // Time delay
 
     private final int typeNumber;
 
@@ -215,6 +232,15 @@ public enum CircuitTypCore {
         return this == REL_RELUCTANCE || this == REL_INDUCTOR ||
                this == REL_MMF || this == REL_TERMINAL || this == REL_GLOBAL_TERMINAL ||
                this == NONLIN_REL;
+    }
+
+    /**
+     * Checks if this type is a control-domain block (measurement, signal, logic).
+     *
+     * @return true if any CTRL_* type
+     */
+    public boolean isControl() {
+        return typeNumber >= 1001 && typeNumber <= 1099;
     }
 
     /**
