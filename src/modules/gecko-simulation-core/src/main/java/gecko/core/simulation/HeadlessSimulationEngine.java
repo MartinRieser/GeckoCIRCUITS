@@ -79,6 +79,19 @@ public class HeadlessSimulationEngine {
     // Event listener
     private SimulationProgressListener progressListener;
 
+    /** Candidate progress tick interval, in simulation steps. */
+    private static final int PROGRESS_TICK_STEPS = 100;
+
+    /**
+     * Step interval at which a progress callback is delivered unconditionally,
+     * even if the wall-clock throttle would suppress it. Keeps the listener
+     * usable as a deterministic step hook (e.g. pause at a fixed step).
+     */
+    private static final int PROGRESS_GUARANTEED_TICK_STEPS = 1000;
+
+    /** Minimum wall-clock time between two throttled progress callbacks, in ms. */
+    private static final long PROGRESS_MIN_INTERVAL_MS = 50;
+
     // Solver components
     private MatrixSolver matrixSolver;
     private ComponentCurrentCalculator componentCurrentCalculator;
@@ -192,6 +205,8 @@ public class HeadlessSimulationEngine {
                     ? circuitNetlist.getLabelResolver().getIndex(signalNames[i]) : -1;
         }
 
+        long lastProgressTime = startTime;
+
         while (currentTime <= duration) {
             awaitResumeOrCancel();
 
@@ -255,9 +270,18 @@ public class HeadlessSimulationEngine {
             currentTime += dt;
             currentStep++;
 
-            // Report progress
-            if (progressListener != null && currentStep % 1000 == 0) {
-                progressListener.onProgress(currentTime, duration, currentStep);
+            // Report progress: candidates every PROGRESS_TICK_STEPS steps, throttled
+            // to at most one callback per PROGRESS_MIN_INTERVAL_MS. Callbacks on
+            // PROGRESS_GUARANTEED_TICK_STEPS boundaries and at the end of the run
+            // are always delivered.
+            if (progressListener != null && (currentStep % PROGRESS_TICK_STEPS == 0 || currentTime >= duration)) {
+                long now = System.currentTimeMillis();
+                if (currentStep % PROGRESS_GUARANTEED_TICK_STEPS == 0
+                        || currentTime >= duration
+                        || now - lastProgressTime >= PROGRESS_MIN_INTERVAL_MS) {
+                    lastProgressTime = now;
+                    progressListener.onProgress(currentTime, duration, currentStep);
+                }
             }
         }
 
