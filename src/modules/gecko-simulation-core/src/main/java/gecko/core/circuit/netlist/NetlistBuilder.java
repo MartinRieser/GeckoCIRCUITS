@@ -13,6 +13,7 @@
  */
 package gecko.core.circuit.netlist;
 
+import gecko.core.circuit.ComponentTerminals;
 import gecko.core.circuit.circuitcomponents.CircuitTypCore;
 import gecko.core.io.CircuitModel;
 
@@ -312,31 +313,23 @@ public class NetlistBuilder {
         return netlist;
     }
 
+    /**
+     * Input and output terminal of a two-port component at {@code ±TERMINAL_DISTANCE}
+     * grid units along the flow direction; orientation 0 falls back to NORTH_SOUTH.
+     */
     private static GridPoint[] computeComponentTerminals(CircuitModel.ComponentData comp) {
         int x = comp.getPosition() != null && comp.getPosition().length >= 2 ? comp.getPosition()[0] : 0;
         int y = comp.getPosition() != null && comp.getPosition().length >= 2 ? comp.getPosition()[1] : 0;
-        int orient = comp.getOrientation() != 0 ? comp.getOrientation() : 503;
+        int orient = comp.getOrientation() != 0 ? comp.getOrientation() : ComponentTerminals.NORTH_SOUTH;
 
-        GridPoint p0, p1;
-        switch (orient) {
-            case 502 -> { // WEST_EAST (0 deg)
-                p0 = new GridPoint(x - 2, y);
-                p1 = new GridPoint(x + 2, y);
-            }
-            case 504 -> { // EAST_WEST (180 deg)
-                p0 = new GridPoint(x + 2, y);
-                p1 = new GridPoint(x - 2, y);
-            }
-            case 501 -> { // SOUTH_NORTH (270 deg)
-                p0 = new GridPoint(x, y + 2);
-                p1 = new GridPoint(x, y - 2);
-            }
-            default -> { // NORTH_SOUTH (90 deg, 503)
-                p0 = new GridPoint(x, y - 2);
-                p1 = new GridPoint(x, y + 2);
-            }
-        }
-        return new GridPoint[]{p0, p1};
+        int[] dir = ComponentTerminals.flowVector(orient);
+        GridPoint input = new GridPoint(
+                x - dir[0] * ComponentTerminals.TERMINAL_DISTANCE,
+                y - dir[1] * ComponentTerminals.TERMINAL_DISTANCE);
+        GridPoint output = new GridPoint(
+                x + dir[0] * ComponentTerminals.TERMINAL_DISTANCE,
+                y + dir[1] * ComponentTerminals.TERMINAL_DISTANCE);
+        return new GridPoint[]{input, output};
     }
 
     private static boolean isValidLabel(String label) {

@@ -1,5 +1,6 @@
 package gecko.rest.service;
 
+import gecko.core.circuit.ComponentTerminals;
 import gecko.core.circuit.circuitcomponents.CircuitTypCore;
 import gecko.core.io.CircuitModel;
 import gecko.rest.model.circuit.CatalogResponse;
@@ -108,7 +109,7 @@ public class CircuitEditService {
             List<WirePointRef> wireEdits = new ArrayList<>();
 
             if (dx != 0 || dy != 0) {
-                List<int[]> oldTerminals = getComponentTerminals(comp, beforePosition, beforeOrientation);
+                List<int[]> oldTerminals = ComponentTerminals.terminalsOf(comp, beforePosition, beforeOrientation);
                 for (int wIdx = 0; wIdx < model.getConnections().size(); wIdx++) {
                     CircuitModel.ConnectionData conn = model.getConnections().get(wIdx);
                     int[][] pts = conn.getPoints();
@@ -785,39 +786,6 @@ public class CircuitEditService {
 
     private static WireInfo toWireInfo(int index, CircuitModel.ConnectionData conn) {
         return new WireInfo(index, conn.getType(), conn.getLabel(), conn.getPoints());
-    }
-
-    static List<int[]> getComponentTerminals(CircuitModel.ComponentData comp, int[] position, int orientation) {
-        int x = position[0];
-        int y = position[1];
-        int[] dir = flowVector(orientation);
-        String family = comp.getFamily() != null ? comp.getFamily() : "LK";
-        int type = comp.getType();
-
-        List<int[]> terminals = new ArrayList<>();
-        if ("CONTROL".equalsIgnoreCase(family)) {
-            if (type == 4 || type == 3) {
-                terminals.add(new int[]{x + dir[0] * 2, y + dir[1] * 2});
-                return terminals;
-            }
-            if (type == 6 || type == 5) {
-                terminals.add(new int[]{x - dir[0] * 2, y - dir[1] * 2});
-                return terminals;
-            }
-        }
-        terminals.add(new int[]{x - dir[0] * 2, y - dir[1] * 2});
-        terminals.add(new int[]{x + dir[0] * 2, y + dir[1] * 2});
-        return terminals;
-    }
-
-    static int[] flowVector(int orientation) {
-        return switch (orientation) {
-            case 504 -> new int[]{-1, 0}; // EAST_WEST
-            case 503 -> new int[]{0, 1};  // NORTH_SOUTH
-            case 501 -> new int[]{0, -1}; // SOUTH_NORTH
-            case 502 -> new int[]{1, 0};  // WEST_EAST
-            default -> new int[]{1, 0};
-        };
     }
 
     private static ResponseStatusException badRequest(String message) {
