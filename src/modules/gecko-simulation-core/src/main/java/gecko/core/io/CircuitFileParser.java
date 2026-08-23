@@ -41,6 +41,8 @@ public class CircuitFileParser {
             "parentSheetIdentifier",
             "typ",
             "uniqueObjectIdentifier",
+            "coupledReferenceID[]",
+            "copyCoupledReferenceID[]",
             "x",
             "y",
             "parameter[]",
@@ -516,6 +518,7 @@ public class CircuitFileParser {
                 String[] paramStrings = elementBlock.readDataLine("parameterString[]", new String[0]);
                 String[] nameOpt = elementBlock.readDataLine("nameOpt[]", new String[0]);
                 long uniqueId = elementBlock.readDataLine("uniqueObjectIdentifier", 0L);
+                long coupledReferenceId = elementBlock.readDataLine("coupledReferenceID[]", 0L);
                 int enabledShorted = elementBlock.readDataLine("enabledShorted", 0);
                 long parentSheetId = elementBlock.readDataLine("parentSheetIdentifier", 0L);
 
@@ -529,6 +532,7 @@ public class CircuitFileParser {
                 comp.setParameterStrings(paramStrings);
                 comp.setNameOpt(nameOpt);
                 comp.setUniqueObjectIdentifier(uniqueId);
+                comp.setCoupledReferenceID(coupledReferenceId);
                 comp.setEnabledShorted(enabledShorted);
                 comp.setParentSheetIdentifier(parentSheetId);
 

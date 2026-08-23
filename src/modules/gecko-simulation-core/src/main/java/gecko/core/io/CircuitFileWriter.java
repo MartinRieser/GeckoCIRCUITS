@@ -224,6 +224,12 @@ public final class CircuitFileWriter {
             sb.append("\nuniqueObjectIdentifier");
             SerializationUtils.appendAsString(sb, comp.getUniqueObjectIdentifier());
 
+            if (comp.getCoupledReferenceID() != 0) {
+                sb.append("\ncoupledReferenceID[]");
+                SerializationUtils.appendAsString(sb, comp.getCoupledReferenceID());
+                sb.append(" ");
+            }
+
             sb.append("\nx");
             SerializationUtils.appendAsString(sb, comp.getPosition()[0]);
 

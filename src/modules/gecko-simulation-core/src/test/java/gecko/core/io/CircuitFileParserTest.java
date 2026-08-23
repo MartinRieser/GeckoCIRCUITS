@@ -632,7 +632,44 @@ class CircuitFileParserTest {
         assertEquals("R1", model.getCircuitComponents().get(0).getName());
         assertEquals(1, model.getControlComponents().size(), "ElementCONTROL alias must map to the CONTROL domain");
         assertEquals("Signal.1", model.getControlComponents().get(0).getName());
-        assertEquals(1, model.getThermalComponents().size(), "ElementTherm alias must map to the THERMAL domain");
+        assertEquals(1, model.getThermalComponents().size(), "ElementTherm alias must map to the THERM domain");
         assertEquals(1, model.getSpecialComponents().size(), "ElementSpecial alias must map to the SPECIAL domain");
+    }
+
+    @Test
+    void parse_coupledReferenceID_linksControlBlockToPowerComponent() throws Exception {
+        String content = """
+            tDURATION 0.02
+            dt 1e-6
+            e (0)
+            <ElementLK>
+            typ 10
+            idStringDialog IGBT.1
+            x 15
+            y 13
+            orientierung 502
+            parameter[] 0.01 0.6 0.01 10000000.0
+            uniqueObjectIdentifier 759856298
+            <\\ElementLK>
+            c (0)
+            <ElementCONTROL>
+            typ 6
+            idStringDialog GATE.1
+            x 37
+            y 46
+            orientierung 503
+            parameter[] 0.0
+            uniqueObjectIdentifier 1
+            coupledReferenceID[] 759856298
+            <\\ElementCONTROL>
+            """;
+
+        CircuitModel model = parser.parse(new BufferedReader(new StringReader(content)), "test.ipes");
+
+        assertEquals(759856298L, model.getCircuitComponents().get(0).getUniqueObjectIdentifier());
+        assertEquals(759856298L, model.getControlComponents().get(0).getCoupledReferenceID(),
+                "the gate block must carry the uniqueObjectIdentifier of its power component");
+        assertEquals(0L, model.getCircuitComponents().get(0).getCoupledReferenceID(),
+                "uncoupled components default to 0");
     }
 }

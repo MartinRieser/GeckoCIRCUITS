@@ -417,6 +417,7 @@ public class CircuitModel {
         private String[] parameterStrings = new String[0];
         private String[] nameOpt = new String[0];
         private long uniqueObjectIdentifier;
+        private long coupledReferenceID;
         private int enabledShorted;
         private long parentSheetIdentifier;
         private String family = "LK";
@@ -560,6 +561,19 @@ public class CircuitModel {
 
         public void setUniqueObjectIdentifier(long uniqueObjectIdentifier) {
             this.uniqueObjectIdentifier = uniqueObjectIdentifier;
+        }
+
+        /**
+         * Unique object identifier of the coupled partner component, e.g. the
+         * power component a CONTROL gate/voltmeter block is attached to
+         * ({@code coupledReferenceID[]} in the .ipes file); 0 = not coupled.
+         */
+        public long getCoupledReferenceID() {
+            return coupledReferenceID;
+        }
+
+        public void setCoupledReferenceID(long coupledReferenceID) {
+            this.coupledReferenceID = coupledReferenceID;
         }
 
         public int getEnabledShorted() {
