@@ -419,6 +419,7 @@ public class CircuitFileParser {
     private void parseConnections(TokenMap tokenMap, CircuitModel model) {
         parseConnectionsForDomain(tokenMap, "verbindungLK", "LK", 0, model);
         parseConnectionsForDomain(tokenMap, "verbindungCONTROL", "CONTROL", 1, model);
+        parseConnectionsForDomain(tokenMap, "verbindungControl", "CONTROL", 1, model);
         parseConnectionsForDomain(tokenMap, "verbindungTHERM", "THERMAL", 2, model);
     }
 
