@@ -84,10 +84,14 @@ export function SimulationDrawer({
   const isRunning =
     status === 'PENDING' || status === 'RUNNING' || status === 'PAUSED';
 
+  const parsedTEnd = parseEngineeringValue(tEndStr) ?? defaults?.duration ?? 0.02;
+  const parsedDt = parseEngineeringValue(dtStr) ?? defaults?.timeStep ?? 1e-6;
+  const stepCount = parsedDt > 0 ? Math.round(parsedTEnd / parsedDt) : 0;
+
   const handleRun = () => {
     if (!circuitId) return;
-    const tEnd = parseEngineeringValue(tEndStr) ?? defaults?.duration ?? 0.02;
-    const dt = parseEngineeringValue(dtStr) ?? defaults?.timeStep ?? 1e-6;
+    const tEnd = parsedTEnd;
+    const dt = parsedDt;
     onRunSimulation({
       simulationTime: tEnd,
       timeStep: dt,
@@ -191,6 +195,18 @@ export function SimulationDrawer({
               <option value="trapezoidal">Trapezoidal</option>
               <option value="gear-shichman">Gear-Shichman</option>
             </select>
+          </div>
+
+          <div className="sim-param-item steps-info" title={`${parsedTEnd}s / ${parsedDt}s`}>
+            {stepCount > 2_000_000 ? (
+              <span style={{ color: '#fbbf24', fontSize: '10px', fontWeight: 600 }}>
+                ⚠️ {stepCount.toLocaleString()} steps
+              </span>
+            ) : (
+              <span style={{ color: 'var(--text-dim)', fontSize: '10px' }}>
+                {stepCount > 0 ? `${stepCount.toLocaleString()} steps` : ''}
+              </span>
+            )}
           </div>
 
           {isRunning ? (
