@@ -36,11 +36,19 @@ export interface RubberBand {
   y1: number;
 }
 
+export interface ConnectedWirePoint {
+  wireIndex: number;
+  pointIndex: number;
+  originalX: number;
+  originalY: number;
+}
+
 export interface DragState {
   /** name -> original position (before the drag), for undo and delta math */
   origins: Record<string, { x: number; y: number }>;
   startX: number;
   startY: number;
+  connectedWirePoints: ConnectedWirePoint[];
 }
 
 export interface FocusedTerminal {
@@ -229,11 +237,26 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
     case 'CANCEL': {
       if (state.mode === 'dragging' && state.drag) {
         const origins = state.drag.origins;
+        const connected = state.drag.connectedWirePoints || [];
+        const wires = state.wires.map((wire, wireIndex) => {
+          const points = wire.points.map((pt) => [...pt]);
+          let changed = false;
+          for (const cp of connected) {
+            if (cp.wireIndex === wireIndex && points[cp.pointIndex]) {
+              points[cp.pointIndex][0] = cp.originalX;
+              points[cp.pointIndex][1] = cp.originalY;
+              changed = true;
+            }
+          }
+          return changed ? { ...wire, points } : wire;
+        });
+
         return {
           ...state,
           components: state.components.map((c) =>
             origins[c.name] ? { ...c, position: [origins[c.name].x, origins[c.name].y] } : c,
           ),
+          wires,
           mode: 'idle',
           drag: null,
           status: 'Move cancelled',
@@ -324,13 +347,35 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
       const maxWidth = state.sheetWidth || 600;
       const maxHeight = state.sheetHeight || 600;
       const set = new Set(state.selection);
+
+      const movedTerminalSet = new Set<string>();
+      for (const comp of state.components) {
+        if (set.has(comp.name)) {
+          const terms = terminalPositions(comp);
+          for (const t of [...terms.input, ...terms.output]) {
+            movedTerminalSet.add(`${t.x},${t.y}`);
+          }
+        }
+      }
+
       const components = state.components.map((c) => {
         if (!set.has(c.name)) return c;
         const x = Math.max(2, Math.min(maxWidth - 2, c.position[0] + action.dx));
         const y = Math.max(2, Math.min(maxHeight - 2, c.position[1] + action.dy));
         return { ...c, position: [x, y] };
       });
-      return { ...state, components };
+
+      const wires = state.wires.map((wire) => {
+        const points = wire.points.map((pt) => {
+          if (movedTerminalSet.has(`${pt[0]},${pt[1]}`)) {
+            return [pt[0] + action.dx, pt[1] + action.dy];
+          }
+          return pt;
+        });
+        return { ...wire, points };
+      });
+
+      return { ...state, components, wires };
     }
 
     case 'WIRE_START':
@@ -468,16 +513,36 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
 
     case 'DRAG_START': {
       const origins: Record<string, { x: number; y: number }> = {};
+      const movedTerminalSet = new Set<string>();
       for (const name of action.names) {
         const comp = state.components.find((c) => c.name === name);
         if (comp) {
           origins[name] = { x: comp.position[0], y: comp.position[1] };
+          const terms = terminalPositions(comp);
+          for (const t of [...terms.input, ...terms.output]) {
+            movedTerminalSet.add(`${t.x},${t.y}`);
+          }
         }
       }
+
+      const connectedWirePoints: ConnectedWirePoint[] = [];
+      state.wires.forEach((wire, wireIndex) => {
+        wire.points.forEach((pt, pointIndex) => {
+          if (movedTerminalSet.has(`${pt[0]},${pt[1]}`)) {
+            connectedWirePoints.push({
+              wireIndex,
+              pointIndex,
+              originalX: pt[0],
+              originalY: pt[1],
+            });
+          }
+        });
+      });
+
       return {
         ...state,
         mode: 'dragging',
-        drag: { origins, startX: action.x, startY: action.y },
+        drag: { origins, startX: action.x, startY: action.y, connectedWirePoints },
       };
     }
 
@@ -486,6 +551,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
       const dx = action.x - state.drag.startX;
       const dy = action.y - state.drag.startY;
       const origins = state.drag.origins;
+      const connected = state.drag.connectedWirePoints || [];
 
       const components = state.components.map((c) => {
         if (origins[c.name]) {
@@ -496,7 +562,21 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         }
         return c;
       });
-      return { ...state, components };
+
+      const wires = state.wires.map((wire, wireIndex) => {
+        const points = wire.points.map((pt) => [...pt]);
+        let changed = false;
+        for (const cp of connected) {
+          if (cp.wireIndex === wireIndex && points[cp.pointIndex]) {
+            points[cp.pointIndex][0] = cp.originalX + dx;
+            points[cp.pointIndex][1] = cp.originalY + dy;
+            changed = true;
+          }
+        }
+        return changed ? { ...wire, points } : wire;
+      });
+
+      return { ...state, components, wires };
     }
 
     case 'DRAG_END':

@@ -193,9 +193,10 @@ export function useEditor() {
           api.patchComponent(circuitId, move.name, { x: move.x, y: move.y }),
         ),
       )
-        .then((messages) => {
+        .then(async (messages) => {
           const last = messages[messages.length - 1];
           versionRef.current = last.modelVersion;
+          await refresh(circuitId);
           dispatch({ type: 'STATUS', status: `${moves.length} component(s) moved` });
         })
         .catch((e) => {

@@ -80,6 +80,8 @@ public class CircuitEditService {
         }
     }
 
+    record WirePointRef(int connectionIndex, int pointIndex, int originalX, int originalY) {}
+
     public CircuitChangeMessage patchComponent(String circuitId, String name, ComponentPatchRequest request) {
         CircuitState state = requireState(circuitId);
         synchronized (state) {
@@ -101,6 +103,29 @@ public class CircuitEditService {
                 requireNameFree(model, newName);
             }
 
+            int dx = newX - beforePosition[0];
+            int dy = newY - beforePosition[1];
+            List<WirePointRef> wireEdits = new ArrayList<>();
+
+            if (dx != 0 || dy != 0) {
+                List<int[]> oldTerminals = getComponentTerminals(comp, beforePosition, beforeOrientation);
+                for (int wIdx = 0; wIdx < model.getConnections().size(); wIdx++) {
+                    CircuitModel.ConnectionData conn = model.getConnections().get(wIdx);
+                    int[][] pts = conn.getPoints();
+                    if (pts == null) continue;
+                    for (int pIdx = 0; pIdx < pts.length; pIdx++) {
+                        for (int[] term : oldTerminals) {
+                            if (pts[pIdx][0] == term[0] && pts[pIdx][1] == term[1]) {
+                                wireEdits.add(new WirePointRef(wIdx, pIdx, pts[pIdx][0], pts[pIdx][1]));
+                                pts[pIdx][0] += dx;
+                                pts[pIdx][1] += dy;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
             comp.getPosition()[0] = newX;
             comp.getPosition()[1] = newY;
             comp.setOrientation(newOrientation);
@@ -110,7 +135,18 @@ public class CircuitEditService {
             }
 
             state.recordEdit(
-                    () -> restoreComponent(comp, beforePosition, beforeOrientation, beforeName, beforeParams),
+                    () -> {
+                        restoreComponent(comp, beforePosition, beforeOrientation, beforeName, beforeParams);
+                        for (WirePointRef ref : wireEdits) {
+                            if (ref.connectionIndex < model.getConnections().size()) {
+                                int[][] pts = model.getConnections().get(ref.connectionIndex).getPoints();
+                                if (pts != null && ref.pointIndex < pts.length) {
+                                    pts[ref.pointIndex][0] = ref.originalX;
+                                    pts[ref.pointIndex][1] = ref.originalY;
+                                }
+                            }
+                        }
+                    },
                     () -> {
                         comp.getPosition()[0] = newX;
                         comp.getPosition()[1] = newY;
@@ -118,6 +154,15 @@ public class CircuitEditService {
                         comp.setName(newName);
                         if (request.parameters() != null && !request.parameters().isEmpty()) {
                             applyParameterMap(comp, request.parameters());
+                        }
+                        for (WirePointRef ref : wireEdits) {
+                            if (ref.connectionIndex < model.getConnections().size()) {
+                                int[][] pts = model.getConnections().get(ref.connectionIndex).getPoints();
+                                if (pts != null && ref.pointIndex < pts.length) {
+                                    pts[ref.pointIndex][0] = ref.originalX + dx;
+                                    pts[ref.pointIndex][1] = ref.originalY + dy;
+                                }
+                            }
                         }
                     });
             return change(state, circuitId, "patchComponent",
@@ -740,6 +785,39 @@ public class CircuitEditService {
 
     private static WireInfo toWireInfo(int index, CircuitModel.ConnectionData conn) {
         return new WireInfo(index, conn.getType(), conn.getLabel(), conn.getPoints());
+    }
+
+    static List<int[]> getComponentTerminals(CircuitModel.ComponentData comp, int[] position, int orientation) {
+        int x = position[0];
+        int y = position[1];
+        int[] dir = flowVector(orientation);
+        String family = comp.getFamily() != null ? comp.getFamily() : "LK";
+        int type = comp.getType();
+
+        List<int[]> terminals = new ArrayList<>();
+        if ("CONTROL".equalsIgnoreCase(family)) {
+            if (type == 4 || type == 3) {
+                terminals.add(new int[]{x + dir[0] * 2, y + dir[1] * 2});
+                return terminals;
+            }
+            if (type == 6 || type == 5) {
+                terminals.add(new int[]{x - dir[0] * 2, y - dir[1] * 2});
+                return terminals;
+            }
+        }
+        terminals.add(new int[]{x - dir[0] * 2, y - dir[1] * 2});
+        terminals.add(new int[]{x + dir[0] * 2, y + dir[1] * 2});
+        return terminals;
+    }
+
+    static int[] flowVector(int orientation) {
+        return switch (orientation) {
+            case 504 -> new int[]{-1, 0}; // EAST_WEST
+            case 503 -> new int[]{0, 1};  // NORTH_SOUTH
+            case 501 -> new int[]{0, -1}; // SOUTH_NORTH
+            case 502 -> new int[]{1, 0};  // WEST_EAST
+            default -> new int[]{1, 0};
+        };
     }
 
     private static ResponseStatusException badRequest(String message) {
