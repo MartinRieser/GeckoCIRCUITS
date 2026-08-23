@@ -159,6 +159,46 @@ class HeadlessSimulationEngineTest {
         assertTrue(engine.getCurrentTime() < 20e-3, "cancelled run must not reach the end");
     }
 
+    // ========== Progress Reporting Tests ==========
+
+    @Test
+    void progress_reportsFinalStepEvenForShortRuns() {
+        HeadlessSimulationEngine engine = new HeadlessSimulationEngine();
+        List<Integer> reportedSteps = new java.util.concurrent.CopyOnWriteArrayList<>();
+        engine.setProgressListener((currentTime, endTime, currentStep) -> reportedSteps.add(currentStep));
+
+        SimulationResult result = engine.runSimulation(SimulationConfig.builder()
+                .stepWidth(1e-6)
+                .simulationDuration(300e-6) // 300 steps: below any tick boundary
+                .solverType(SolverType.SOLVER_BE)
+                .build());
+
+        assertTrue(result.isSuccess());
+        assertFalse(reportedSteps.isEmpty(),
+                "a run shorter than the tick interval must still report its final step");
+        assertEquals(result.getTotalTimeSteps(), reportedSteps.get(reportedSteps.size() - 1).intValue(),
+                "the last reported step must be the final step of the run");
+    }
+
+    @Test
+    void progress_guaranteesTickEveryThousandSteps() {
+        HeadlessSimulationEngine engine = new HeadlessSimulationEngine();
+        List<Integer> reportedSteps = new java.util.concurrent.CopyOnWriteArrayList<>();
+        engine.setProgressListener((currentTime, endTime, currentStep) -> reportedSteps.add(currentStep));
+
+        SimulationResult result = engine.runSimulation(SimulationConfig.builder()
+                .stepWidth(1e-6)
+                .simulationDuration(1500e-6) // crosses the 1000-step boundary
+                .solverType(SolverType.SOLVER_BE)
+                .build());
+
+        assertTrue(result.isSuccess());
+        assertTrue(reportedSteps.contains(1000),
+                "the 1000-step boundary must be reported even under wall-clock throttling");
+        assertEquals(result.getTotalTimeSteps(), reportedSteps.get(reportedSteps.size() - 1).intValue(),
+                "the last reported step must be the final step of the run");
+    }
+
     @Test
     void signalOverride_isRecordedInsteadOfFileSignals() {
         HeadlessSimulationEngine engine = new HeadlessSimulationEngine();
