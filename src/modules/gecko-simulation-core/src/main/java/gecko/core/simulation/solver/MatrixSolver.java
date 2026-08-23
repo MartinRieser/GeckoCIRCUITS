@@ -219,6 +219,18 @@ public class MatrixSolver {
             }
         }
 
+        // Port of legacy LKMatrices: de-singularize isolated potentials by initializing 1 on diagonal
+        int[] singularities = netlist.getSingularityEntries();
+        if (singularities != null && singularities.length > 0) {
+            for (int index : singularities) {
+                if (index >= 0 && index < matrixSize) {
+                    a[index][index] = 1.0;
+                }
+            }
+        } else if (matrixSize > 0) {
+            a[0][0] = 1.0;
+        }
+
         // Create stamper registry for component contributions
         StamperRegistry registry = StamperRegistry.createDefault();
 
@@ -259,14 +271,6 @@ public class MatrixSolver {
             }
             // If no stamper is registered, component is skipped (e.g., terminals, unimplemented types)
         }
-
-        // Pin node 0 as the voltage reference (port of the legacy
-        // deSingularizeIsolatedPotentials a[index][index] = 1): without it the
-        // KCL rows sum to zero and the MNA system is singular.
-        for (int j = 0; j < matrixSize; j++) {
-            a[0][j] = 0.0;
-        }
-        a[0][0] = 1.0;
 
         // Note: Magnetic coupling (mutual inductance) handling is deferred for future refinement.
         // The legacy code injects coupling contributions after component stamping;

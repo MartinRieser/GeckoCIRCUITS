@@ -71,12 +71,24 @@ public class CircuitNetlist implements INetList {
     private double[] lastNodeVoltages = new double[0];
     private double[] lastComponentCurrents = new double[0];
 
+    // Singularity de-singularization entries for isolated galvanic subcircuits
+    private int[] singularityEntries = new int[]{0};
+
     // Node labels for signal resolution (scope/probe lookups by name)
     private final LabelResolver labelResolver = new LabelResolver();
 
     /** Node labels (e.g. "V_out" -> node index) for signal extraction. */
     public LabelResolver getLabelResolver() {
         return labelResolver;
+    }
+
+    @Override
+    public int[] getSingularityEntries() {
+        return singularityEntries;
+    }
+
+    public void setSingularityEntries(int[] singularityEntries) {
+        this.singularityEntries = singularityEntries != null ? singularityEntries : new int[]{0};
     }
 
     /**

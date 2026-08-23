@@ -111,4 +111,13 @@ public interface INetList {
      * @return simulation time in seconds
      */
     double getSimulationTime();
+
+    /**
+     * Gets singularity / reference node indices for all galvanic subcircuits.
+     *
+     * @return array of node indices pinned to prevent singular MNA system
+     */
+    default int[] getSingularityEntries() {
+        return new int[]{0};
+    }
 }

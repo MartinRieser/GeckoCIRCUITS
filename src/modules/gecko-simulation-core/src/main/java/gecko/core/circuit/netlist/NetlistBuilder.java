@@ -114,14 +114,26 @@ public class NetlistBuilder {
             return buildEmpty(0, 0, 0);
         }
 
+        List<CircuitModel.ComponentData> branchComponents = new ArrayList<>();
+        for (CircuitModel.ComponentData comp : allComponents) {
+            if (!isNonBranchComponent(comp.getType())) {
+                branchComponents.add(comp);
+            }
+        }
+
+        if (branchComponents.isEmpty()) {
+            return buildEmpty(0, 0, 0);
+        }
+
         // Count how many terminals have real (non-sentinel) net labels from classic file export
         long explicitLabelCount = allComponents.stream()
                 .flatMap(c -> Stream.concat(Arrays.stream(c.getTerminalXLabels()), Arrays.stream(c.getTerminalYLabels())))
                 .filter(NetlistBuilder::isValidLabel)
                 .count();
 
-        // If circuit has explicit terminal labels on components (e.g. from classic GeckoCIRCUITS file), use label matching
-        if (explicitLabelCount >= allComponents.size()) {
+        // If circuit has explicit terminal labels on components (from classic GeckoCIRCUITS file export),
+        // use label matching with series terminal coordinate sharing
+        if (explicitLabelCount > 0) {
             return buildFromComponentsWithLabels(allComponents);
         }
 
@@ -130,9 +142,6 @@ public class NetlistBuilder {
             return buildFromWiresAndComponents(allComponents, connections);
         }
 
-        if (explicitLabelCount > 0) {
-            return buildFromComponentsWithLabels(allComponents);
-        }
         return buildWithEstimatedDimensions(allComponents);
     }
 
@@ -174,15 +183,12 @@ public class NetlistBuilder {
         }
 
         // 2. Map component terminals to points
-        int elementCount = components.size();
-        GridPoint[][] compTerminals = new GridPoint[elementCount][2];
-
-        for (int i = 0; i < elementCount; i++) {
-            CircuitModel.ComponentData comp = components.get(i);
+        List<CircuitModel.ComponentData> branchComponents = new ArrayList<>();
+        for (CircuitModel.ComponentData comp : components) {
+            int typ = comp.getType();
             GridPoint[] terms = computeComponentTerminals(comp);
-            compTerminals[i] = terms;
 
-            // Check terminal X labels
+            // Register labels / grounds
             for (String l : comp.getTerminalXLabels()) {
                 if (isValidLabel(l)) {
                     String lbl = l.trim();
@@ -198,7 +204,6 @@ public class NetlistBuilder {
                 }
             }
 
-            // Check terminal Y labels
             for (String l : comp.getTerminalYLabels()) {
                 if (isValidLabel(l)) {
                     String lbl = l.trim();
@@ -214,11 +219,21 @@ public class NetlistBuilder {
                 }
             }
 
-            // Type 31 is Ground (LK_GLOBAL_TERMINAL)
-            if (comp.getType() == 31) {
+            if (typ == 31) {
                 groundPoints.add(terms[0]);
                 groundPoints.add(terms[1]);
             }
+
+            // Only electrical/thermal branches are added to MNA netlist elements
+            if (!isNonBranchComponent(typ)) {
+                branchComponents.add(comp);
+            }
+        }
+
+        int elementCount = branchComponents.size();
+        GridPoint[][] compTerminals = new GridPoint[elementCount][2];
+        for (int i = 0; i < elementCount; i++) {
+            compTerminals[i] = computeComponentTerminals(branchComponents.get(i));
         }
 
         // 3. Assign node indices
@@ -258,7 +273,7 @@ public class NetlistBuilder {
         CircuitTypCore[] types = new CircuitTypCore[elementCount];
 
         for (int i = 0; i < elementCount; i++) {
-            CircuitModel.ComponentData comp = components.get(i);
+            CircuitModel.ComponentData comp = branchComponents.get(i);
             CircuitTypCore typ;
             try {
                 typ = CircuitTypCore.fromTypeNumber(comp.getType());
@@ -276,16 +291,22 @@ public class NetlistBuilder {
 
         int[] nodeX = new int[elementCount];
         int[] nodeY = new int[elementCount];
-        double[][] params = new double[elementCount][16];
+        double[][] params = new double[elementCount][40];
 
         for (int i = 0; i < elementCount; i++) {
-            CircuitModel.ComponentData comp = components.get(i);
+            CircuitModel.ComponentData comp = branchComponents.get(i);
             nodeX[i] = rootToNode.getOrDefault(pointDs.find(compTerminals[i][0]), 0);
             nodeY[i] = rootToNode.getOrDefault(pointDs.find(compTerminals[i][1]), 0);
 
-            for (int p = 0; p < 16; p++) {
+            if (comp.getRawParameters() != null) {
+                int copyLen = Math.min(comp.getRawParameters().length, 40);
+                System.arraycopy(comp.getRawParameters(), 0, params[i], 0, copyLen);
+            }
+            for (int p = 0; p < 40; p++) {
                 Object val = comp.getParameters().get("param" + p);
-                params[i][p] = (val instanceof Number) ? ((Number) val).doubleValue() : 0.0;
+                if (val instanceof Number) {
+                    params[i][p] = ((Number) val).doubleValue();
+                }
             }
             if (params[i][0] == 0.0) {
                 Object primary = comp.getParameters().get(CircuitModel.ComponentData.resolveParameterKey(comp.getType()));
@@ -298,6 +319,7 @@ public class NetlistBuilder {
         CircuitNetlist netlist = new CircuitNetlist();
         netlist.initNetlist(types, nodeX, nodeY, voltageSourceNumbers, params,
                 maxNodeIndex, voltageSourceCount, elementCount);
+        netlist.setSingularityEntries(calculateSingularityEntries(maxNodeIndex, elementCount, nodeX, nodeY));
 
         // expose net labels so simulations can resolve signals like "V_out"
         for (Map.Entry<String, GridPoint> entry : labelToPoint.entrySet()) {
@@ -344,39 +366,88 @@ public class NetlistBuilder {
         return trimmed.equals("0") || trimmed.equals("gnd") || trimmed.equals("ground");
     }
 
+    private static boolean isNonBranchComponent(int typ) {
+        return typ == 9 || typ == 30 || typ == 31 || typ == 41 || typ == 42;
+    }
+
     /**
      * Build netlist from components that have terminal labels (from .ipes file parsing).
      */
     private static CircuitNetlist buildFromComponentsWithLabels(List<CircuitModel.ComponentData> components) {
         Map<String, Integer> labelToNode = new LinkedHashMap<>();
         labelToNode.put("0", 0);
-        labelToNode.put("", 0);
         labelToNode.put("GND", 0);
         labelToNode.put("gnd", 0);
         int nextNode = 1;
 
         for (CircuitModel.ComponentData comp : components) {
             for (String label : comp.getTerminalXLabels()) {
-                if (isValidLabel(label) && !labelToNode.containsKey(label)) {
+                if (isValidLabel(label) && !isGroundLabel(label) && !labelToNode.containsKey(label)) {
                     labelToNode.put(label, nextNode++);
                 }
             }
             for (String label : comp.getTerminalYLabels()) {
-                if (isValidLabel(label) && !labelToNode.containsKey(label)) {
+                if (isValidLabel(label) && !isGroundLabel(label) && !labelToNode.containsKey(label)) {
                     labelToNode.put(label, nextNode++);
                 }
             }
         }
 
+        List<CircuitModel.ComponentData> branchComponents = new ArrayList<>();
+        for (CircuitModel.ComponentData comp : components) {
+            if (!isNonBranchComponent(comp.getType())) {
+                branchComponents.add(comp);
+            }
+        }
+
+        int elementCount = branchComponents.size();
+        GridPoint[][] compTerminals = new GridPoint[elementCount][2];
+        for (int i = 0; i < elementCount; i++) {
+            compTerminals[i] = computeComponentTerminals(branchComponents.get(i));
+        }
+
+        // Map unlabelled terminals (empty label) by their physical terminal GridPoint
+        Map<GridPoint, Integer> unlabelledPointToNode = new HashMap<>();
+        for (int i = 0; i < elementCount; i++) {
+            CircuitModel.ComponentData comp = branchComponents.get(i);
+            String[] xLabels = comp.getTerminalXLabels();
+            if (xLabels.length > 0 && isValidLabel(xLabels[0])) {
+                int node = isGroundLabel(xLabels[0]) ? 0 : labelToNode.getOrDefault(xLabels[0], 0);
+                unlabelledPointToNode.put(compTerminals[i][0], node);
+            }
+            String[] yLabels = comp.getTerminalYLabels();
+            if (yLabels.length > 0 && isValidLabel(yLabels[0])) {
+                int node = isGroundLabel(yLabels[0]) ? 0 : labelToNode.getOrDefault(yLabels[0], 0);
+                unlabelledPointToNode.put(compTerminals[i][1], node);
+            }
+        }
+
+        for (int i = 0; i < elementCount; i++) {
+            CircuitModel.ComponentData comp = branchComponents.get(i);
+            String[] xLabels = comp.getTerminalXLabels();
+            if (xLabels.length == 0 || !isValidLabel(xLabels[0])) {
+                GridPoint pt = compTerminals[i][0];
+                if (!unlabelledPointToNode.containsKey(pt)) {
+                    unlabelledPointToNode.put(pt, nextNode++);
+                }
+            }
+            String[] yLabels = comp.getTerminalYLabels();
+            if (yLabels.length == 0 || !isValidLabel(yLabels[0])) {
+                GridPoint pt = compTerminals[i][1];
+                if (!unlabelledPointToNode.containsKey(pt)) {
+                    unlabelledPointToNode.put(pt, nextNode++);
+                }
+            }
+        }
+
         int nodeCount = Math.max(nextNode, 1);
-        int elementCount = components.size();
 
         int voltageSourceCount = 0;
         int[] voltageSourceNumbers = new int[elementCount];
         CircuitTypCore[] types = new CircuitTypCore[elementCount];
 
         for (int i = 0; i < elementCount; i++) {
-            CircuitModel.ComponentData comp = components.get(i);
+            CircuitModel.ComponentData comp = branchComponents.get(i);
             CircuitTypCore typ;
             try {
                 typ = CircuitTypCore.fromTypeNumber(comp.getType());
@@ -394,22 +465,34 @@ public class NetlistBuilder {
 
         int[] nodeX = new int[elementCount];
         int[] nodeY = new int[elementCount];
-        double[][] params = new double[elementCount][16];
+        double[][] params = new double[elementCount][40];
 
         for (int i = 0; i < elementCount; i++) {
-            CircuitModel.ComponentData comp = components.get(i);
+            CircuitModel.ComponentData comp = branchComponents.get(i);
 
             String[] xLabels = comp.getTerminalXLabels();
-            nodeX[i] = (xLabels.length > 0 && isValidLabel(xLabels[0]))
-                    ? labelToNode.getOrDefault(xLabels[0], 0) : 0;
+            if (xLabels.length > 0 && isValidLabel(xLabels[0])) {
+                nodeX[i] = isGroundLabel(xLabels[0]) ? 0 : labelToNode.getOrDefault(xLabels[0], 0);
+            } else {
+                nodeX[i] = unlabelledPointToNode.getOrDefault(compTerminals[i][0], 0);
+            }
 
             String[] yLabels = comp.getTerminalYLabels();
-            nodeY[i] = (yLabels.length > 0 && isValidLabel(yLabels[0]))
-                    ? labelToNode.getOrDefault(yLabels[0], 0) : 0;
+            if (yLabels.length > 0 && isValidLabel(yLabels[0])) {
+                nodeY[i] = isGroundLabel(yLabels[0]) ? 0 : labelToNode.getOrDefault(yLabels[0], 0);
+            } else {
+                nodeY[i] = unlabelledPointToNode.getOrDefault(compTerminals[i][1], 0);
+            }
 
-            for (int p = 0; p < 16; p++) {
+            if (comp.getRawParameters() != null) {
+                int copyLen = Math.min(comp.getRawParameters().length, 40);
+                System.arraycopy(comp.getRawParameters(), 0, params[i], 0, copyLen);
+            }
+            for (int p = 0; p < 40; p++) {
                 Object val = comp.getParameters().get("param" + p);
-                params[i][p] = (val instanceof Number) ? ((Number) val).doubleValue() : 0.0;
+                if (val instanceof Number) {
+                    params[i][p] = ((Number) val).doubleValue();
+                }
             }
             if (params[i][0] == 0.0) {
                 Object primary = comp.getParameters().get(CircuitModel.ComponentData.resolveParameterKey(comp.getType()));
@@ -419,15 +502,46 @@ public class NetlistBuilder {
             }
         }
 
+        int maxNodeIndex = nodeCount > 0 ? nodeCount - 1 : 0;
         CircuitNetlist netlist = new CircuitNetlist();
         netlist.initNetlist(types, nodeX, nodeY, voltageSourceNumbers, params,
-                nodeCount > 0 ? nodeCount - 1 : 0, voltageSourceCount, elementCount);
+                maxNodeIndex, voltageSourceCount, elementCount);
+        netlist.setSingularityEntries(calculateSingularityEntries(maxNodeIndex, elementCount, nodeX, nodeY));
+
         for (Map.Entry<String, Integer> entry : labelToNode.entrySet()) {
             if (!entry.getKey().isBlank()) {
                 netlist.getLabelResolver().addLabel(entry.getKey(), entry.getValue());
             }
         }
         return netlist;
+    }
+
+    /**
+     * Calculates reference node indices (singularity entries) for all connected subcircuits.
+     */
+    public static int[] calculateSingularityEntries(int maxNodeIndex, int elementCount, int[] nodeX, int[] nodeY) {
+        if (maxNodeIndex < 0) {
+            return new int[]{0};
+        }
+        DisjointSet<Integer> ds = new DisjointSet<>();
+        for (int i = 0; i <= maxNodeIndex; i++) {
+            ds.find(i);
+        }
+        for (int i = 0; i < elementCount; i++) {
+            if (nodeX[i] >= 0 && nodeX[i] <= maxNodeIndex && nodeY[i] >= 0 && nodeY[i] <= maxNodeIndex) {
+                ds.union(nodeX[i], nodeY[i]);
+            }
+        }
+        int root0 = ds.find(0);
+        Map<Integer, Integer> groupToRepresentative = new LinkedHashMap<>();
+        groupToRepresentative.put(root0, 0);
+        for (int i = 1; i <= maxNodeIndex; i++) {
+            int r = ds.find(i);
+            if (!groupToRepresentative.containsKey(r)) {
+                groupToRepresentative.put(r, i);
+            }
+        }
+        return groupToRepresentative.values().stream().mapToInt(Integer::intValue).toArray();
     }
 
     /**

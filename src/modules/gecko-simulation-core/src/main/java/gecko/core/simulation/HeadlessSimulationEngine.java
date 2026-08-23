@@ -24,10 +24,13 @@ import gecko.core.simulation.solver.ComponentCurrentCalculator;
 import gecko.core.simulation.solver.InitialConditionSolver;
 import gecko.core.circuit.netlist.CircuitNetlist;
 import gecko.core.circuit.netlist.NetlistBuilder;
+import gecko.core.control.ControlCalculatorBuilder;
 import gecko.core.simulation.ControlNetlist;
 import gecko.core.simulation.DomainCoupler;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -100,6 +103,7 @@ public class HeadlessSimulationEngine {
     // Circuit and control netlists
     private CircuitNetlist circuitNetlist;
     private ControlNetlist controlNetlist;
+    private ControlCalculatorBuilder.ControlCoupling controlCoupling;
 
     // Domain coupling orchestrator
     private DomainCoupler domainCoupler;
@@ -133,7 +137,9 @@ public class HeadlessSimulationEngine {
         try {
             return executeSimulation(config, startTime);
         } catch (Exception e) {
-            return SimulationResult.failed("Simulation error: " + e.getMessage());
+            e.printStackTrace();
+            String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            return SimulationResult.failed("Simulation error: " + msg);
         } finally {
             state.set(EngineState.IDLE);
         }
@@ -156,17 +162,6 @@ public class HeadlessSimulationEngine {
         // Calculate expected number of steps
         int expectedSteps = calculateExpectedSteps(dt, duration);
 
-        // Create data container for results
-        DataContainerGlobal dataContainer = new DataContainerGlobal();
-        String[] signalNames = resolveSignalNames(config, circuitModel);
-        dataContainer.init(signalNames.length, expectedSteps + 1, signalNames, "time [s]");
-        dataContainer.setContainerStatus(ContainerStatus.RUNNING);
-
-        // Initialize matrix solver
-        matrixSolver = new MatrixSolver(settings.getSolverType());
-        componentCurrentCalculator = new ComponentCurrentCalculator();
-        initialConditionSolver = new InitialConditionSolver(settings.getSolverType());
-
         // Build netlists from circuit model
         // Apply parameter overrides before building the netlist
         if (circuitModel != null && !config.getParameterOverrides().isEmpty()) {
@@ -174,7 +169,28 @@ public class HeadlessSimulationEngine {
         }
 
         circuitNetlist = NetlistBuilder.buildFromCircuitModel(circuitModel);
+
+        // Build the CONTROL domain: calculators from the control blocks, gate
+        // drives for switches and measurement probes, coupled via
+        // coupledReferenceID like the classic editor
+        controlCoupling = ControlCalculatorBuilder.build(circuitModel, circuitNetlist);
         controlNetlist = ControlNetlist.createEmpty();
+        controlNetlist.setSortedCalculators(controlCoupling.calculators());
+        controlCoupling.initialize(dt);
+
+        // Signal selection: explicit request > file's stored signals >
+        // node labels and probe names (classic-like default logging)
+        String[] signalNames = resolveSignalNames(config, circuitModel, circuitNetlist, controlCoupling);
+
+        // Create data container for results
+        DataContainerGlobal dataContainer = new DataContainerGlobal();
+        dataContainer.init(signalNames.length, expectedSteps + 1, signalNames, "time [s]");
+        dataContainer.setContainerStatus(ContainerStatus.RUNNING);
+
+        // Initialize matrix solver
+        matrixSolver = new MatrixSolver(settings.getSolverType());
+        componentCurrentCalculator = new ComponentCurrentCalculator();
+        initialConditionSolver = new InitialConditionSolver(settings.getSolverType());
 
         // Initialize domain coupler for orchestrating LK, CONTROL, THERM domains
         domainCoupler = new DomainCoupler();
@@ -198,11 +214,21 @@ public class HeadlessSimulationEngine {
         float[] values = new float[signalNames.length];
 
         // Resolve each requested signal name to a node index via the netlist's
-        // labels (e.g. "V_out"); unresolvable signals stay zero
+        // labels (e.g. "V_out") or to a CONTROL measurement probe (e.g.
+        // "VOLT.1"); unresolvable signals stay zero
         int[] signalNodes = new int[signalNames.length];
+        ControlCalculatorBuilder.Probe[] signalProbes = new ControlCalculatorBuilder.Probe[signalNames.length];
         for (int i = 0; i < signalNames.length; i++) {
             signalNodes[i] = circuitNetlist != null
                     ? circuitNetlist.getLabelResolver().getIndex(signalNames[i]) : -1;
+            if (signalNodes[i] < 0) {
+                for (ControlCalculatorBuilder.Probe probe : controlCoupling.probes()) {
+                    if (probe.name().equals(signalNames[i])) {
+                        signalProbes[i] = probe;
+                        break;
+                    }
+                }
+            }
         }
 
         long lastProgressTime = startTime;
@@ -224,6 +250,10 @@ public class HeadlessSimulationEngine {
             // Phase 4: Execute domain coupling (LK → CONTROL → LK)
             // Orchestrates data transfer between circuit, control, and thermal domains
             domainCoupler.coupleDomainsForTimeStep(circuitNetlist, controlNetlist, dt, currentTime);
+
+            // Gate-driven switches: rewrite the switch resistance from the
+            // current control signals before the matrix is built
+            controlCoupling.applyGateSignals(circuitNetlist);
 
             // Real MNA solver: build and solve circuit matrices
             if (circuitNetlist != null && circuitNetlist.getElementCount() > 0) {
@@ -247,9 +277,17 @@ public class HeadlessSimulationEngine {
                 // 6. Store results back into netlist
                 circuitNetlist.storeResults(matrixSolver.getP(), matrixSolver.getIALT());
 
+                // 6.5 Refresh CONTROL measurement probes (voltmeter/ammeter)
+                controlCoupling.updateProbes(circuitNetlist, matrixSolver.getP());
+
                 // 7. Extract signal values for data logging
                 double[] nodeVoltages = matrixSolver.getP();
                 for (int sigIdx = 0; sigIdx < values.length; sigIdx++) {
+                    ControlCalculatorBuilder.Probe probe = signalProbes[sigIdx];
+                    if (probe != null) {
+                        values[sigIdx] = (float) probe.outputHolder()._outputSignal[0][0];
+                        continue;
+                    }
                     int node = signalNodes[sigIdx];
                     values[sigIdx] = node >= 0 && node < nodeVoltages.length
                             ? (float) nodeVoltages[node] : 0.0f;
@@ -510,7 +548,9 @@ public class HeadlessSimulationEngine {
         }
     }
 
-    private static String[] resolveSignalNames(SimulationConfig config, CircuitModel circuitModel) {
+    private static String[] resolveSignalNames(SimulationConfig config, CircuitModel circuitModel,
+                                              CircuitNetlist circuitNetlist,
+                                              ControlCalculatorBuilder.ControlCoupling controlCoupling) {
         if (config.getSignals() != null && !config.getSignals().isEmpty()) {
             return config.getSignals().toArray(new String[0]);
         }
@@ -522,6 +562,24 @@ public class HeadlessSimulationEngine {
             if (cleaned.length > 0) {
                 return cleaned;
             }
+        }
+        List<String> names = new ArrayList<>();
+        if (circuitNetlist != null && circuitNetlist.getLabelResolver() != null) {
+            for (String label : circuitNetlist.getLabelResolver().getAllLabels()) {
+                if (label != null && !label.isBlank() && !label.equalsIgnoreCase("GND") && !label.startsWith("NIX")) {
+                    names.add(label);
+                }
+            }
+        }
+        if (controlCoupling != null) {
+            for (ControlCalculatorBuilder.Probe probe : controlCoupling.probes()) {
+                if (!names.contains(probe.name())) {
+                    names.add(probe.name());
+                }
+            }
+        }
+        if (!names.isEmpty()) {
+            return names.toArray(new String[0]);
         }
         return new String[] {"V_out", "I_in", "P_loss"};
     }
