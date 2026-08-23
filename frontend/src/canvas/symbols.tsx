@@ -23,6 +23,25 @@ export function orientationAngle(orientation: number): number {
   }
 }
 
+/**
+ * Rotation angle for CONTROL blocks: the classic editor orients their
+ * terminals horizontally for NORTH_SOUTH (controlFlowVector), so the angle
+ * is a quarter turn behind the LK orientationAngle.
+ */
+export function controlOrientationAngle(orientation: number): number {
+  switch (orientation) {
+    case 504:
+      return 90; // EAST_WEST: flow south
+    case 501:
+      return 180; // SOUTH_NORTH: flow west
+    case 502:
+      return 270; // WEST_EAST: flow north
+    case 503:
+    default:
+      return 0; // NORTH_SOUTH: flow east
+  }
+}
+
 const LEAD = 2.0;
 
 export function ComponentSymbol({
@@ -33,8 +52,11 @@ export function ComponentSymbol({
   dpix: number;
 }) {
   const u = dpix;
+  const angle = component.family === 'CONTROL'
+    ? controlOrientationAngle(component.orientation)
+    : orientationAngle(component.orientation);
   return (
-    <g transform={`rotate(${orientationAngle(component.orientation)})`}>
+    <g transform={`rotate(${angle})`}>
       <SymbolByType type={component.type} u={u} family={component.family} />
     </g>
   );

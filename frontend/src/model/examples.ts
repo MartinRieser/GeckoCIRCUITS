@@ -348,7 +348,7 @@ uniqueObjectIdentifier 16
 x 8
 y 14
 parameter[] 1.0 1.0 20000.0 0.0 0.0 0.45 0 0
-orientierung 502
+orientierung 503
 idStringDialog Signal.1
 <\\ElementCONTROL>
 
@@ -363,7 +363,7 @@ uniqueObjectIdentifier 17
 x 16
 y 14
 parameter[] 0.0
-orientierung 502
+orientierung 503
 idStringDialog Gate.1
 <\\ElementCONTROL>
 

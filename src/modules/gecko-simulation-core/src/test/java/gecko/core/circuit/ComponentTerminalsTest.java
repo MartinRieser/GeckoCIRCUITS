@@ -66,40 +66,58 @@ class ComponentTerminalsTest {
 
     @Test
     void controlBlocks_singleTerminalOnActiveSide() {
+        // classic truth (TerminalRelativePosition): control blocks orient
+        // their terminals horizontally for NORTH_SOUTH, i.e. output east,
+        // input west — unlike LK two-ports
         // legacy classic-editor numbers
         assertArrayEquals(new int[][]{{12, 14}},
                 terminals("CONTROL", ComponentTerminals.CONTROL_SIGNAL_SOURCE, 10, 14,
-                        ComponentTerminals.WEST_EAST).toArray(),
-                "legacy signal source: output only");
+                        ComponentTerminals.NORTH_SOUTH).toArray(),
+                "legacy signal source: output only, east for NORTH_SOUTH");
         assertArrayEquals(new int[][]{{12, 14}},
                 terminals("CONTROL", ComponentTerminals.CONTROL_CONSTANT, 10, 14,
-                        ComponentTerminals.WEST_EAST).toArray(),
+                        ComponentTerminals.NORTH_SOUTH).toArray(),
                 "legacy constant: output only");
         assertArrayEquals(new int[][]{{8, 14}},
                 terminals("CONTROL", ComponentTerminals.CONTROL_GATE, 10, 14,
-                        ComponentTerminals.WEST_EAST).toArray(),
-                "legacy gate: input only");
+                        ComponentTerminals.NORTH_SOUTH).toArray(),
+                "legacy gate: input only, west for NORTH_SOUTH");
         assertArrayEquals(new int[][]{{8, 14}},
                 terminals("CONTROL", ComponentTerminals.CONTROL_SCOPE, 10, 14,
-                        ComponentTerminals.WEST_EAST).toArray(),
+                        ComponentTerminals.NORTH_SOUTH).toArray(),
                 "legacy scope: input only");
 
         // web catalog numbers
         assertArrayEquals(new int[][]{{12, 14}},
-                terminals("CONTROL", 1004, 10, 14, ComponentTerminals.WEST_EAST).toArray(),
+                terminals("CONTROL", 1004, 10, 14, ComponentTerminals.NORTH_SOUTH).toArray(),
                 "catalog signal source: output only");
         assertArrayEquals(new int[][]{{12, 14}},
-                terminals("CONTROL", 1005, 10, 14, ComponentTerminals.WEST_EAST).toArray(),
+                terminals("CONTROL", 1005, 10, 14, ComponentTerminals.NORTH_SOUTH).toArray(),
                 "catalog constant: output only");
         assertArrayEquals(new int[][]{{8, 14}},
-                terminals("CONTROL", 1003, 10, 14, ComponentTerminals.WEST_EAST).toArray(),
+                terminals("CONTROL", 1003, 10, 14, ComponentTerminals.NORTH_SOUTH).toArray(),
                 "catalog scope: input only");
+    }
+
+    @Test
+    void controlBlocks_allOrientationsFollowClassicRotation() {
+        // classic getPointFromDirection: output terminal rel (2,0) maps to
+        // NORTH_SOUTH (x+2,y), EAST_WEST (x,y+2), SOUTH_NORTH (x-2,y),
+        // WEST_EAST (x,y-2)
+        assertArrayEquals(new int[][]{{12, 14}},
+                terminals("CONTROL", 1004, 10, 14, ComponentTerminals.NORTH_SOUTH).toArray());
+        assertArrayEquals(new int[][]{{10, 16}},
+                terminals("CONTROL", 1004, 10, 14, ComponentTerminals.EAST_WEST).toArray());
+        assertArrayEquals(new int[][]{{8, 14}},
+                terminals("CONTROL", 1004, 10, 14, ComponentTerminals.SOUTH_NORTH).toArray());
+        assertArrayEquals(new int[][]{{10, 12}},
+                terminals("CONTROL", 1004, 10, 14, ComponentTerminals.WEST_EAST).toArray());
     }
 
     @Test
     void controlBlocks_withTwoPorts_fallBackToTwoPortGeometry() {
         assertArrayEquals(new int[][]{{8, 14}, {12, 14}},
-                terminals("CONTROL", 1006, 10, 14, ComponentTerminals.WEST_EAST).toArray(),
+                terminals("CONTROL", 1006, 10, 14, ComponentTerminals.NORTH_SOUTH).toArray(),
                 "gain and other two-terminal control blocks keep input and output");
     }
 
@@ -111,6 +129,19 @@ class ComponentTerminalsTest {
         assertArrayEquals(new int[]{0, -1}, ComponentTerminals.flowVector(ComponentTerminals.SOUTH_NORTH));
         assertArrayEquals(new int[]{0, 1}, ComponentTerminals.flowVector(0),
                 "unknown orientation falls back to NORTH_SOUTH like the classic editor");
+    }
+
+    @Test
+    void controlFlowVector_rotatedQuarterTurnAgainstLk() {
+        // control blocks draw horizontally for NORTH_SOUTH (classic default),
+        // i.e. the control flow vector is the LK vector of the previous
+        // orientation in the rotation cycle
+        assertArrayEquals(new int[]{1, 0}, ComponentTerminals.controlFlowVector(ComponentTerminals.NORTH_SOUTH));
+        assertArrayEquals(new int[]{0, 1}, ComponentTerminals.controlFlowVector(ComponentTerminals.EAST_WEST));
+        assertArrayEquals(new int[]{-1, 0}, ComponentTerminals.controlFlowVector(ComponentTerminals.SOUTH_NORTH));
+        assertArrayEquals(new int[]{0, -1}, ComponentTerminals.controlFlowVector(ComponentTerminals.WEST_EAST));
+        assertArrayEquals(new int[]{1, 0}, ComponentTerminals.controlFlowVector(0),
+                "unknown orientation falls back to NORTH_SOUTH flow like the classic editor");
     }
 
     @Test

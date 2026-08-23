@@ -77,13 +77,31 @@ public final class ComponentTerminals {
     }
 
     /**
+     * Flow vector of CONTROL blocks, which orient their terminals differently
+     * from LK two-ports: the classic editor maps the block-relative terminal
+     * coordinates through {@code TerminalRelativePosition.getPointFromDirection},
+     * so e.g. NORTH_SOUTH places the output terminal at {@code (x+2, y)} —
+     * horizontal flow, the default drawing direction of control blocks.
+     */
+    public static int[] controlFlowVector(int orientation) {
+        return switch (orientation) {
+            case SOUTH_NORTH -> new int[]{-1, 0};
+            case WEST_EAST -> new int[]{0, -1};
+            case EAST_WEST -> new int[]{0, 1};
+            default -> new int[]{1, 0}; // NORTH_SOUTH
+        };
+    }
+
+    /**
      * All terminals (inputs and outputs) of a component placed at the given
      * position with the given orientation, as {@code {x, y}} grid points.
+     * CONTROL blocks use {@link #controlFlowVector}; everything else uses
+     * the LK two-port layout.
      */
     public static List<int[]> terminalsOf(CircuitModel.ComponentData comp, int[] position, int orientation) {
         int x = position.length > 0 ? position[0] : 0;
         int y = position.length > 1 ? position[1] : 0;
-        int[] dir = flowVector(orientation);
+        int[] dir = isControlFamily(comp) ? controlFlowVector(orientation) : flowVector(orientation);
         int type = comp.getType();
 
         if (isControlFamily(comp)) {

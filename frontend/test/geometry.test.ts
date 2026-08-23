@@ -38,7 +38,8 @@ describe('terminalPositions', () => {
 });
 
 describe('terminalPositions: CONTROL blocks', () => {
-  const control = { family: 'CONTROL', position: [100, 200], orientation: 502 };
+  // classic truth: control terminals orient horizontally for NORTH_SOUTH
+  const control = { family: 'CONTROL', position: [100, 200], orientation: 503 };
 
   it('signal source and constant have a single output terminal', () => {
     for (const type of [3, 1004, 1005]) {
@@ -62,6 +63,17 @@ describe('terminalPositions: CONTROL blocks', () => {
     const t = terminalPositions({ ...control, type: 1006 });
     expect(t.input).toEqual([{ x: 98, y: 200 }]);
     expect(t.output).toEqual([{ x: 102, y: 200 }]);
+  });
+
+  it('control flow follows the classic quarter-turned rotation for all codes', () => {
+    // getPointFromDirection: output rel (2,0) at (x+2,y), (x,y+2), (x-2,y),
+    // (x,y-2) for 503, 504, 501, 502
+    expect(terminalPositions({ ...control, orientation: 504, type: 1004 }).output[0])
+      .toEqual({ x: 100, y: 202 });
+    expect(terminalPositions({ ...control, orientation: 501, type: 1004 }).output[0])
+      .toEqual({ x: 98, y: 200 });
+    expect(terminalPositions({ ...control, orientation: 502, type: 1004 }).output[0])
+      .toEqual({ x: 100, y: 198 });
   });
 });
 

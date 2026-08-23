@@ -54,6 +54,26 @@ export function flowVector(orientation: number): Point {
   }
 }
 
+/**
+ * Flow vector of CONTROL blocks. The classic editor maps control terminal
+ * offsets through TerminalRelativePosition, so e.g. NORTH_SOUTH places the
+ * output at (x+2, y) — horizontal flow, the default drawing direction of
+ * control blocks (a quarter turn against the LK two-port vector).
+ */
+export function controlFlowVector(orientation: number): Point {
+  switch (orientation) {
+    case 501:
+      return { x: -1, y: 0 }; // SOUTH_NORTH
+    case 502:
+      return { x: 0, y: -1 }; // WEST_EAST
+    case 504:
+      return { x: 0, y: 1 }; // EAST_WEST
+    case 503:
+    default:
+      return { x: 1, y: 0 }; // NORTH_SOUTH
+  }
+}
+
 export interface TerminalPositions {
   input: Point[];
   output: Point[];
@@ -71,8 +91,10 @@ export function terminalPositions(component: {
   orientation: number;
 }): TerminalPositions {
   const center = { x: component.position[0], y: component.position[1] };
-  const dir = flowVector(component.orientation);
   const family = component.family || 'LK';
+  const dir = family === 'CONTROL'
+    ? controlFlowVector(component.orientation)
+    : flowVector(component.orientation);
 
   if (family === 'CONTROL') {
     // constant & signal source: 0 inputs, 1 output on the output side

@@ -235,15 +235,16 @@ class CircuitEditServiceTest {
 
     @Test
     void patchComponent_moveShiftsSingleTerminalControlWires() {
-        // catalog signal source (1004) at (8,14), orientation 502: single
-        // output terminal at (10,14); scope (1003) at (24,14): single
-        // input terminal at (22,14). Legacy CONTROL numbers enter the model
-        // only through .ipes files; their geometry is covered by
-        // ComponentTerminalsTest in gecko-simulation-core.
+        // catalog signal source (1004) at (8,14), orientation 503: single
+        // output terminal at (10,14) — control terminals flow horizontally
+        // for NORTH_SOUTH (classic TerminalRelativePosition); scope (1003)
+        // at (24,14): single input terminal at (22,14). Legacy CONTROL
+        // numbers enter the model only through .ipes files; their geometry
+        // is covered by ComponentTerminalsTest in gecko-simulation-core.
         service.createComponent(circuitId,
-                new ComponentCreateRequest("CONTROL", 1004, "Sig1", 8, 14, 502, null));
+                new ComponentCreateRequest("CONTROL", 1004, "Sig1", 8, 14, 503, null));
         service.createComponent(circuitId,
-                new ComponentCreateRequest("CONTROL", 1003, "Scope1", 24, 14, 502, null));
+                new ComponentCreateRequest("CONTROL", 1003, "Scope1", 24, 14, 503, null));
         service.createConnection(circuitId,
                 new ConnectionCreateRequest("CONTROL", new int[][]{{10, 14}, {22, 14}}, "ctrl"));
 
