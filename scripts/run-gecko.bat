@@ -15,6 +15,9 @@ set "PROJECT_DIR=%SCRIPT_DIR%.."
 
 REM JAR file location
 set "JAR_FILE=%PROJECT_DIR%\target\gecko-1.0-jar-with-dependencies.jar"
+if not exist "%JAR_FILE%" (
+    set "JAR_FILE=%PROJECT_DIR%\src\modules\gecko-gui\target\gecko-1.0-jar-with-dependencies.jar"
+)
 
 REM Default JVM options
 set "JVM_OPTS=-Xmx3G -Dpolyglot.js.nashorn-compat=true"

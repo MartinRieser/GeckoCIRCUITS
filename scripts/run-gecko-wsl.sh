@@ -21,6 +21,9 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
 # JAR file location
 JAR_FILE="$PROJECT_DIR/target/gecko-1.0-jar-with-dependencies.jar"
+if [ ! -f "$JAR_FILE" ]; then
+    JAR_FILE="$PROJECT_DIR/src/modules/gecko-gui/target/gecko-1.0-jar-with-dependencies.jar"
+fi
 
 # Default JVM options
 JVM_OPTS="-Xmx3G -Dpolyglot.js.nashorn-compat=true"

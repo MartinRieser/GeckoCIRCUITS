@@ -286,7 +286,7 @@
         <executions>
           <execution>
             <id>copy-fat-jar-to-root</id>
-            <phase>verify</phase>
+            <phase>package</phase>
             <goals>
               <goal>copy-resources</goal>
             </goals>
