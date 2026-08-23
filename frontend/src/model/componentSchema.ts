@@ -51,6 +51,32 @@ export const CATEGORIES = [
 
 export type CategoryId = (typeof CATEGORIES)[number]['id'];
 
+/**
+ * CONTROL block type numbers with special terminal geometry.
+ *
+ * The classic editor serializes control blocks with legacy numbers
+ * (ControlTyp in the Swing code); the web catalog uses the 1001+ range
+ * (CircuitTypCore on the server). Both ranges must render and connect:
+ * constant and signal source have a single output terminal, gate and
+ * scope a single input terminal (see terminalPositions in geometry.ts).
+ */
+export const CTRL_TYPE = {
+  /** Constant block, legacy classic-editor number. */
+  LEGACY_CONSTANT: 3,
+  /** Signal source, legacy classic-editor number. */
+  LEGACY_SIGNAL_SOURCE: 4,
+  /** Scope, legacy classic-editor number. */
+  LEGACY_SCOPE: 5,
+  /** Gate input, legacy classic-editor number. */
+  LEGACY_GATE: 6,
+  /** Scope, web catalog number (CircuitTypCore.CTRL_SCOPE). */
+  SCOPE: 1003,
+  /** Signal source, web catalog number (CircuitTypCore.CTRL_SIGNAL). */
+  SIGNAL_SOURCE: 1004,
+  /** Constant block, web catalog number (CircuitTypCore.CTRL_CONSTANT). */
+  CONSTANT: 1005,
+} as const;
+
 export const COMPONENT_METAS: Record<number, ComponentMeta> = {
   // Resistor
   1: {

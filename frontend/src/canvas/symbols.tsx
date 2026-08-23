@@ -6,6 +6,7 @@
  * via an SVG transform.
  */
 import type { EditorComponent } from '../model/types';
+import { CTRL_TYPE } from '../model/componentSchema';
 
 /** Rotation angle (deg) that maps WEST_EAST base orientation to the given code. */
 export function orientationAngle(orientation: number): number {
@@ -76,6 +77,9 @@ export function SymbolByType({
   u: number;
   family?: string;
 }) {
+  // CONTROL blocks come in two numbering ranges: legacy classic-editor
+  // numbers (1-84) and web catalog numbers (1001+); see CTRL_TYPE. The case
+  // labels below are .ipes type keys, not free-form constants.
   if (family === 'CONTROL') {
     switch (type) {
       case 1:
@@ -84,16 +88,16 @@ export function SymbolByType({
       case 2:
       case 1002:
         return <AmmeterSymbol u={u} />;
-      case 3:
-      case 1005:
+      case CTRL_TYPE.LEGACY_CONSTANT:
+      case CTRL_TYPE.CONSTANT:
         return <ConstantBlockSymbol u={u} />;
-      case 4:
-      case 1004:
+      case CTRL_TYPE.LEGACY_SIGNAL_SOURCE:
+      case CTRL_TYPE.SIGNAL_SOURCE:
         return <SignalSourceSymbol u={u} />;
-      case 5:
-      case 1003:
+      case CTRL_TYPE.LEGACY_SCOPE:
+      case CTRL_TYPE.SCOPE:
         return <ScopeSymbol u={u} />;
-      case 6:
+      case CTRL_TYPE.LEGACY_GATE:
         return <GateSymbol u={u} />;
       case 7:
       case 1006:

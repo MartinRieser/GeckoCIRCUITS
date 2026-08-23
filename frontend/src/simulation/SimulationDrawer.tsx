@@ -17,6 +17,7 @@ import {
   formatEngineeringValue,
 } from '../model/componentSchema';
 import { mapSimulationResults } from './chartData';
+import { estimateStepCount, STEP_WARNING_THRESHOLD } from './simSteps';
 
 interface SimulationDrawerProps {
   isOpen: boolean;
@@ -86,7 +87,7 @@ export function SimulationDrawer({
 
   const parsedTEnd = parseEngineeringValue(tEndStr) ?? defaults?.duration ?? 0.02;
   const parsedDt = parseEngineeringValue(dtStr) ?? defaults?.timeStep ?? 1e-6;
-  const stepCount = parsedDt > 0 ? Math.round(parsedTEnd / parsedDt) : 0;
+  const stepCount = estimateStepCount(parsedTEnd, parsedDt);
 
   const handleRun = () => {
     if (!circuitId) return;
@@ -198,7 +199,7 @@ export function SimulationDrawer({
           </div>
 
           <div className="sim-param-item steps-info" title={`${parsedTEnd}s / ${parsedDt}s`}>
-            {stepCount > 2_000_000 ? (
+            {stepCount > STEP_WARNING_THRESHOLD ? (
               <span className="steps-warn">{stepCount.toLocaleString()} steps</span>
             ) : (
               stepCount > 0 && <span>{stepCount.toLocaleString()} steps</span>

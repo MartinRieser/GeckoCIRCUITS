@@ -12,10 +12,26 @@
  * - rotation cycle (right-click / 'r'): 503 -> 504 -> 501 -> 502
  */
 import type { EditorComponent, Point } from './types';
+import { CTRL_TYPE } from './componentSchema';
 
 export const ORIENTATION_CYCLE = [503, 504, 501, 502] as const;
 
 export const TWO_PORT_DIST = 2;
+
+/** CONTROL types carrying a single output terminal (constant, signal source). */
+const CONTROL_OUTPUT_ONLY = new Set<number>([
+  CTRL_TYPE.LEGACY_SIGNAL_SOURCE,
+  CTRL_TYPE.SIGNAL_SOURCE,
+  CTRL_TYPE.LEGACY_CONSTANT,
+  CTRL_TYPE.CONSTANT,
+]);
+
+/** CONTROL types carrying a single input terminal (gate, scope). */
+const CONTROL_INPUT_ONLY = new Set<number>([
+  CTRL_TYPE.LEGACY_GATE,
+  CTRL_TYPE.LEGACY_SCOPE,
+  CTRL_TYPE.SCOPE,
+]);
 
 export function nextOrientation(orientation: number): number {
   const i = ORIENTATION_CYCLE.indexOf(orientation as (typeof ORIENTATION_CYCLE)[number]);
@@ -59,15 +75,15 @@ export function terminalPositions(component: {
   const family = component.family || 'LK';
 
   if (family === 'CONTROL') {
-    // Signal source & Constant: 0 inputs, 1 output on output side
-    if (component.type === 4 || component.type === 1004 || component.type === 3 || component.type === 1005) {
+    // constant & signal source: 0 inputs, 1 output on the output side
+    if (CONTROL_OUTPUT_ONLY.has(component.type)) {
       return {
         input: [],
         output: [{ x: center.x + dir.x * TWO_PORT_DIST, y: center.y + dir.y * TWO_PORT_DIST }],
       };
     }
-    // Gate & Scope: 1 input on input side, 0 outputs
-    if (component.type === 6 || component.type === 5 || component.type === 1003) {
+    // gate & scope: 1 input on the input side, 0 outputs
+    if (CONTROL_INPUT_ONLY.has(component.type)) {
       return {
         input: [{ x: center.x - dir.x * TWO_PORT_DIST, y: center.y - dir.y * TWO_PORT_DIST }],
         output: [],
