@@ -195,6 +195,67 @@ class CircuitEditServiceTest {
         assertEquals(404, ex.getStatusCode().value());
     }
 
+    @Test
+    void patchComponent_moveShiftsWirePointsOnItsTerminals() {
+        // LK resistor at (30,30), orientation 503 (NORTH_SOUTH):
+        // terminals at (30,28) input and (30,32) output
+        service.createComponent(circuitId,
+                new ComponentCreateRequest("LK", 1, "Rw", 30, 30, 503, null));
+        service.createConnection(circuitId,
+                new ConnectionCreateRequest("LK", new int[][]{{30, 28}, {20, 28}}, "attached"));
+        service.createConnection(circuitId,
+                new ConnectionCreateRequest("LK", new int[][]{{5, 5}, {6, 6}}, "detached"));
+
+        service.patchComponent(circuitId, "Rw", new ComponentPatchRequest(40, 30, null, null, null));
+
+        assertArrayEquals(new int[][]{{40, 28}, {20, 28}}, wireByLabel("attached").getPoints(),
+                "wire point on the input terminal must shift with the component");
+        assertArrayEquals(new int[][]{{5, 5}, {6, 6}}, wireByLabel("detached").getPoints(),
+                "unrelated wire points must stay untouched");
+    }
+
+    @Test
+    void patchComponent_undoRedoRestoresAndReappliesWirePoints() {
+        service.createComponent(circuitId,
+                new ComponentCreateRequest("LK", 1, "Ru2", 30, 30, 503, null));
+        service.createConnection(circuitId,
+                new ConnectionCreateRequest("LK", new int[][]{{30, 32}, {30, 40}}, "out"));
+
+        service.patchComponent(circuitId, "Ru2", new ComponentPatchRequest(30, 36, null, null, null));
+        assertArrayEquals(new int[][]{{30, 38}, {30, 40}}, wireByLabel("out").getPoints());
+
+        service.undo(circuitId);
+        assertArrayEquals(new int[][]{{30, 32}, {30, 40}}, wireByLabel("out").getPoints(),
+                "undo must restore the wire point to its pre-move coordinates");
+
+        service.redo(circuitId);
+        assertArrayEquals(new int[][]{{30, 38}, {30, 40}}, wireByLabel("out").getPoints(),
+                "redo must re-apply the wire shift");
+    }
+
+    @Test
+    void patchComponent_moveShiftsSingleTerminalControlWires() {
+        // catalog signal source (1004) at (8,14), orientation 502: single
+        // output terminal at (10,14); scope (1003) at (24,14): single
+        // input terminal at (22,14). Legacy CONTROL numbers enter the model
+        // only through .ipes files; their geometry is covered by
+        // ComponentTerminalsTest in gecko-simulation-core.
+        service.createComponent(circuitId,
+                new ComponentCreateRequest("CONTROL", 1004, "Sig1", 8, 14, 502, null));
+        service.createComponent(circuitId,
+                new ComponentCreateRequest("CONTROL", 1003, "Scope1", 24, 14, 502, null));
+        service.createConnection(circuitId,
+                new ConnectionCreateRequest("CONTROL", new int[][]{{10, 14}, {22, 14}}, "ctrl"));
+
+        service.patchComponent(circuitId, "Sig1", new ComponentPatchRequest(12, 14, null, null, null));
+        assertArrayEquals(new int[][]{{14, 14}, {22, 14}}, wireByLabel("ctrl").getPoints(),
+                "signal source must move the wire point on its output terminal");
+
+        service.patchComponent(circuitId, "Scope1", new ComponentPatchRequest(28, 14, null, null, null));
+        assertArrayEquals(new int[][]{{14, 14}, {26, 14}}, wireByLabel("ctrl").getPoints(),
+                "scope must move the wire point on its input terminal");
+    }
+
     // ========== Delete + Undo/Redo ==========
 
     @Test
@@ -452,6 +513,13 @@ class CircuitEditServiceTest {
     }
 
     // ========== Helpers ==========
+
+    private CircuitModel.ConnectionData wireByLabel(String label) {
+        return model().getConnections().stream()
+                .filter(c -> label.equals(c.getLabel()))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("wire not found: " + label));
+    }
 
     private CircuitModel.ComponentData findByName(String name) {
         CircuitModel.ComponentData comp = findByNameOrNull(name);
