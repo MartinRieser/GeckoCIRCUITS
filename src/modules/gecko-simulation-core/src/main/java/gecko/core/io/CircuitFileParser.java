@@ -449,12 +449,9 @@ public class CircuitFileParser {
                 conn.setParentSheetIdentifier(connBlock.readDataLine("parentSheetIdentifier", 0L));
                 conn.setUniqueObjectIdentifier(connBlock.readDataLine("uniqueObjectIdentifier", 0L));
 
-                int cType = defaultConnectorType;
-                try {
-                    cType = connBlock.readDataLine("connectorType", defaultConnectorType);
-                } catch (Exception ignored) {
-                }
-                conn.setConnectorType(cType);
+                // readDataLine(int) never throws: it logs and returns the
+                // default for non-numeric values such as "connectorType LK"
+                conn.setConnectorType(connBlock.readDataLine("connectorType", defaultConnectorType));
 
                 model.addConnection(conn);
             } catch (Exception ignored) {
