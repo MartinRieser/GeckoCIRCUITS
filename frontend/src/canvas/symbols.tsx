@@ -76,6 +76,76 @@ export function SymbolByType({
   u: number;
   family?: string;
 }) {
+  if (family === 'CONTROL') {
+    switch (type) {
+      case 1:
+      case 1001:
+        return <VoltmeterSymbol u={u} />;
+      case 2:
+      case 1002:
+        return <AmmeterSymbol u={u} />;
+      case 3:
+      case 1005:
+        return <ConstantBlockSymbol u={u} />;
+      case 4:
+      case 1004:
+        return <SignalSourceSymbol u={u} />;
+      case 5:
+      case 1003:
+        return <ScopeSymbol u={u} />;
+      case 6:
+        return <GateSymbol u={u} />;
+      case 7:
+      case 1006:
+        return <GainTriangleSymbol u={u} />;
+      case 8:
+      case 1008:
+        return <ControlBlockLabel u={u} label="PT1" />;
+      case 9:
+        return <ControlBlockLabel u={u} label="PT2" />;
+      case 10:
+      case 1007:
+        return <ControlBlockLabel u={u} label="PI" />;
+      case 11:
+      case 1010:
+        return <ComparatorSymbol u={u} />;
+      case 12:
+        return <ControlBlockLabel u={u} label="+" />;
+      case 13:
+        return <ControlBlockLabel u={u} label="−" />;
+      case 14:
+        return <ControlBlockLabel u={u} label="×" />;
+      case 15:
+        return <ControlBlockLabel u={u} label="÷" />;
+      case 18:
+      case 1013:
+        return <NotGateSymbol u={u} />;
+      case 19:
+      case 1011:
+        return <AndGateSymbol u={u} />;
+      case 20:
+      case 1012:
+        return <OrGateSymbol u={u} />;
+      case 21:
+        return <ControlBlockLabel u={u} label="XOR" />;
+      case 25:
+      case 1015:
+        return <ControlBlockLabel u={u} label="τ" />;
+      case 26:
+        return <ControlBlockLabel u={u} label="S/H" />;
+      case 27:
+        return <ControlBlockLabel u={u} label="LIM" />;
+      case 64:
+      case 1009:
+        return <ControlBlockLabel u={u} label="∫" />;
+      case 84:
+      case 1014:
+        return <MuxSymbol u={u} />;
+      default:
+        return <GenericBox u={u} family={family} type={type} />;
+    }
+  }
+
   switch (type) {
     case 1:
       return <Resistor u={u} />;
@@ -139,37 +209,6 @@ export function SymbolByType({
       return <ThermalCapacitor u={u} />;
     case 48:
       return <AmbientSymbol u={u} />;
-    // CONTROL-domain blocks
-    case 1001:
-      return <VoltmeterSymbol u={u} />;
-    case 1002:
-      return <AmmeterSymbol u={u} />;
-    case 1003:
-      return <ScopeSymbol u={u} />;
-    case 1004:
-      return <SignalSourceSymbol u={u} />;
-    case 1005:
-      return <ConstantBlockSymbol u={u} />;
-    case 1006:
-      return <GainTriangleSymbol u={u} />;
-    case 1007:
-      return <ControlBlockLabel u={u} label="PI" />;
-    case 1008:
-      return <ControlBlockLabel u={u} label="PT1" />;
-    case 1009:
-      return <ControlBlockLabel u={u} label="∫" />;
-    case 1010:
-      return <ComparatorSymbol u={u} />;
-    case 1011:
-      return <AndGateSymbol u={u} />;
-    case 1012:
-      return <OrGateSymbol u={u} />;
-    case 1013:
-      return <NotGateSymbol u={u} />;
-    case 1014:
-      return <MuxSymbol u={u} />;
-    case 1015:
-      return <ControlBlockLabel u={u} label="τ" />;
     default:
       return <GenericBox u={u} family={family} type={type} />;
   }
@@ -619,6 +658,31 @@ function ConstantBlockSymbol({ u }: { u: number }) {
             stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
       <text x={0} y={0.25 * u} fontSize={0.65 * u} fill={CTRL_COLOR} stroke="none"
             textAnchor="middle" fontWeight="bold">k</text>
+    </g>
+  );
+}
+
+function GateSymbol({ u }: { u: number }) {
+  return (
+    <g>
+      <line x1={-LEAD * u} y1={0} x2={-0.6 * u} y2={0} stroke={CTRL_COLOR} />
+      <path
+        d={`M ${-0.6 * u} ${-0.6 * u} L ${-0.6 * u} ${0.6 * u} L ${0.6 * u} 0 z`}
+        stroke={CTRL_COLOR}
+        strokeWidth={1.5}
+        fill="rgba(74,222,128,0.1)"
+      />
+      <text
+        x={-0.15 * u}
+        y={0.25 * u}
+        fontSize={0.55 * u}
+        fill={CTRL_COLOR}
+        stroke="none"
+        textAnchor="middle"
+        fontWeight="bold"
+      >
+        G
+      </text>
     </g>
   );
 }

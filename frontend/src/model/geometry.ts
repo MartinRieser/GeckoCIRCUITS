@@ -50,11 +50,31 @@ export interface TerminalPositions {
  */
 export function terminalPositions(component: {
   type: number;
+  family?: string;
   position: number[];
   orientation: number;
 }): TerminalPositions {
   const center = { x: component.position[0], y: component.position[1] };
   const dir = flowVector(component.orientation);
+  const family = component.family || 'LK';
+
+  if (family === 'CONTROL') {
+    // Signal source & Constant: 0 inputs, 1 output on output side
+    if (component.type === 4 || component.type === 1004 || component.type === 3 || component.type === 1005) {
+      return {
+        input: [],
+        output: [{ x: center.x + dir.x * TWO_PORT_DIST, y: center.y + dir.y * TWO_PORT_DIST }],
+      };
+    }
+    // Gate & Scope: 1 input on input side, 0 outputs
+    if (component.type === 6 || component.type === 5 || component.type === 1003) {
+      return {
+        input: [{ x: center.x - dir.x * TWO_PORT_DIST, y: center.y - dir.y * TWO_PORT_DIST }],
+        output: [],
+      };
+    }
+  }
+
   return {
     input: [{ x: center.x - dir.x * TWO_PORT_DIST, y: center.y - dir.y * TWO_PORT_DIST }],
     output: [{ x: center.x + dir.x * TWO_PORT_DIST, y: center.y + dir.y * TWO_PORT_DIST }],

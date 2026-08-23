@@ -31,7 +31,7 @@ export const RLC_CIRCUIT_IPES = `
 verbindungLK (0)
 <Connection>
 label NIX_NIX_NIX
-x 4 6
+x 4 8
 y 6 6
 enabledShorted 0
 parentSheetIdentifier 0
@@ -42,7 +42,7 @@ uniqueObjectIdentifier 100
 verbindungLK (1)
 <Connection>
 label NIX_NIX_NIX
-x 10 10
+x 12 16
 y 6 6
 enabledShorted 0
 parentSheetIdentifier 0
@@ -53,7 +53,7 @@ uniqueObjectIdentifier 101
 verbindungLK (2)
 <Connection>
 label V_out
-x 14 16
+x 20 22
 y 6 6
 enabledShorted 0
 parentSheetIdentifier 0
@@ -64,7 +64,7 @@ uniqueObjectIdentifier 102
 verbindungLK (3)
 <Connection>
 label GND
-x 16 4
+x 22 4
 y 10 10
 enabledShorted 0
 parentSheetIdentifier 0
@@ -72,7 +72,7 @@ connectorType LK
 uniqueObjectIdentifier 103
 <\\Connection>
 
-ElementLK (0)
+e (0)
 <ElementLK>
 labelAnfangsKnoten[] NIX_NIX_NIX
 labelEndKnoten[] GND
@@ -87,7 +87,7 @@ orientierung 503
 idStringDialog V_in
 <\\ElementLK>
 
-ElementLK (1)
+e (1)
 <ElementLK>
 labelAnfangsKnoten[] NIX_NIX_NIX
 labelEndKnoten[] NIX_NIX_NIX
@@ -95,14 +95,14 @@ enabledShorted 0
 parentSheetIdentifier 0
 typ 1
 uniqueObjectIdentifier 2
-x 8
+x 10
 y 6
 parameter[] 5.0
 orientierung 502
 idStringDialog R1
 <\\ElementLK>
 
-ElementLK (2)
+e (2)
 <ElementLK>
 labelAnfangsKnoten[] NIX_NIX_NIX
 labelEndKnoten[] V_out
@@ -110,14 +110,14 @@ enabledShorted 0
 parentSheetIdentifier 0
 typ 2
 uniqueObjectIdentifier 3
-x 12
+x 14
 y 6
 parameter[] 0.001 0.0
 orientierung 502
 idStringDialog L1
 <\\ElementLK>
 
-ElementLK (3)
+e (3)
 <ElementLK>
 labelAnfangsKnoten[] V_out
 labelEndKnoten[] GND
@@ -125,7 +125,7 @@ enabledShorted 0
 parentSheetIdentifier 0
 typ 3
 uniqueObjectIdentifier 4
-x 16
+x 22
 y 8
 parameter[] 0.0001 0.0
 orientierung 503
@@ -236,7 +236,18 @@ connectorType LK
 uniqueObjectIdentifier 211
 <\\Connection>
 
-ElementLK (0)
+verbindungCONTROL (0)
+<Connection>
+label NIX_NIX_NIX
+x 10 14
+y 14 14
+enabledShorted 0
+parentSheetIdentifier 0
+connectorType CONTROL
+uniqueObjectIdentifier 212
+<\\Connection>
+
+e (0)
 <ElementLK>
 labelAnfangsKnoten[] NIX_NIX_NIX
 labelEndKnoten[] GND
@@ -251,22 +262,22 @@ orientierung 503
 idStringDialog V_dc
 <\\ElementLK>
 
-ElementLK (1)
+e (1)
 <ElementLK>
 labelAnfangsKnoten[] NIX_NIX_NIX
 labelEndKnoten[] SW_node
 enabledShorted 0
 parentSheetIdentifier 0
-typ 7
+typ 10
 uniqueObjectIdentifier 11
 x 10
 y 6
-parameter[] 0.01 0.01 1000000.0
+parameter[] 0.01 1000000.0 0.0 0.0
 orientierung 502
-idStringDialog S_main
+idStringDialog IGBT1
 <\\ElementLK>
 
-ElementLK (2)
+e (2)
 <ElementLK>
 labelAnfangsKnoten[] SW_node
 labelEndKnoten[] GND
@@ -281,7 +292,7 @@ orientierung 501
 idStringDialog D_free
 <\\ElementLK>
 
-ElementLK (3)
+e (3)
 <ElementLK>
 labelAnfangsKnoten[] SW_node
 labelEndKnoten[] V_out
@@ -296,7 +307,7 @@ orientierung 502
 idStringDialog L_filter
 <\\ElementLK>
 
-ElementLK (4)
+e (4)
 <ElementLK>
 labelAnfangsKnoten[] V_out
 labelEndKnoten[] GND
@@ -311,7 +322,7 @@ orientierung 503
 idStringDialog C_filter
 <\\ElementLK>
 
-ElementLK (5)
+e (5)
 <ElementLK>
 labelAnfangsKnoten[] V_out
 labelEndKnoten[] GND
@@ -325,6 +336,36 @@ parameter[] 10.0
 orientierung 503
 idStringDialog R_load
 <\\ElementLK>
+
+c (0)
+<ElementCONTROL>
+labelAnfangsKnoten[] NIX_NIX_NIX
+labelEndKnoten[] NIX_NIX_NIX
+enabledShorted 0
+parentSheetIdentifier 0
+typ 4
+uniqueObjectIdentifier 16
+x 8
+y 14
+parameter[] 1.0 1.0 20000.0 0.0 0.0 0.45 0 0
+orientierung 502
+idStringDialog Signal.1
+<\\ElementCONTROL>
+
+c (1)
+<ElementCONTROL>
+labelAnfangsKnoten[] NIX_NIX_NIX
+labelEndKnoten[] NIX_NIX_NIX
+enabledShorted 0
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier 17
+x 16
+y 14
+parameter[] 0.0
+orientierung 502
+idStringDialog Gate.1
+<\\ElementCONTROL>
 
 tDURATION 0.005
 dt 5e-07
@@ -375,7 +416,7 @@ connectorType LK
 uniqueObjectIdentifier 304
 <\\Connection>
 
-ElementLK (0)
+e (0)
 <ElementLK>
 labelAnfangsKnoten[] NIX_NIX_NIX
 labelEndKnoten[] GND
@@ -390,7 +431,7 @@ orientierung 503
 idStringDialog V_step
 <\\ElementLK>
 
-ElementLK (1)
+e (1)
 <ElementLK>
 labelAnfangsKnoten[] NIX_NIX_NIX
 labelEndKnoten[] V_out
@@ -405,7 +446,7 @@ orientierung 502
 idStringDialog R1
 <\\ElementLK>
 
-ElementLK (2)
+e (2)
 <ElementLK>
 labelAnfangsKnoten[] V_out
 labelEndKnoten[] GND
@@ -447,7 +488,7 @@ export const EXAMPLES: CircuitExample[] = [
     id: 'buck',
     name: 'DC-DC Buck Converter',
     category: 'Power Electronics',
-    description: 'Step-down switching converter (48V to ~12V) with freewheeling diode and LC output filter.',
+    description: 'Step-down switching converter (48V to ~12V) with freewheeling diode, IGBT switch, gate controller, and LC output filter.',
     content: BUCK_CONVERTER_IPES,
   },
   {
