@@ -37,6 +37,34 @@ describe('terminalPositions', () => {
   });
 });
 
+describe('terminalPositions: CONTROL blocks', () => {
+  const control = { family: 'CONTROL', position: [100, 200], orientation: 502 };
+
+  it('signal source and constant have a single output terminal', () => {
+    for (const type of [3, 1004, 1005]) {
+      const t = terminalPositions({ ...control, type });
+      expect(t.input).toEqual([]);
+      expect(t.output.length, `type ${type}`).toBe(1);
+      expect(t.output[0]).toEqual({ x: 102, y: 200 });
+    }
+  });
+
+  it('gate and scope have a single input terminal', () => {
+    for (const type of [5, 6, 1003]) {
+      const t = terminalPositions({ ...control, type });
+      expect(t.input.length, `type ${type}`).toBe(1);
+      expect(t.input[0]).toEqual({ x: 98, y: 200 });
+      expect(t.output).toEqual([]);
+    }
+  });
+
+  it('other control blocks fall back to two-port geometry', () => {
+    const t = terminalPositions({ ...control, type: 1006 });
+    expect(t.input).toEqual([{ x: 98, y: 200 }]);
+    expect(t.output).toEqual([{ x: 102, y: 200 }]);
+  });
+});
+
 describe('terminalNear', () => {
   const components = [
     { type: 1, name: 'R1', family: 'LK', position: [10, 10], orientation: 502, parameters: {}, inputLabels: [], outputLabels: [] },

@@ -174,6 +174,58 @@ describe('store: dragging', () => {
   });
 });
 
+describe('store: wire points follow dragged and nudged components', () => {
+  // R1 (type 1, orientation 502 at (10,10)) has terminals at (8,10)/(12,10);
+  // wire w2 starts exactly on the input terminal, w1 does not touch it
+  const snap: EditorSnapshot = {
+    ...snapshot,
+    connections: [
+      { index: 0, type: 'LK', label: 'w1', points: [[10, 10], [20, 10], [20, 20]] },
+      { index: 1, type: 'LK', label: 'w2', points: [[8, 10], [20, 10]] },
+    ],
+  };
+  const loaded = editorReducer(initialState, { type: 'SNAPSHOT', snapshot: snap });
+
+  it('DRAG_MOVE shifts wire points captured on the dragged terminals', () => {
+    let state = editorReducer(loaded, { type: 'DRAG_START', names: ['R1'], x: 12, y: 12 });
+    state = editorReducer(state, { type: 'DRAG_MOVE', x: 15, y: 10 }); // dx=3, dy=-2
+    expect(state.wires[1].points).toEqual([[11, 8], [20, 10]]);
+    expect(state.wires[0].points).toEqual([[10, 10], [20, 10], [20, 20]]);
+  });
+
+  it('CANCEL restores wire points to their pre-drag coordinates', () => {
+    let state = editorReducer(loaded, { type: 'DRAG_START', names: ['R1'], x: 12, y: 12 });
+    state = editorReducer(state, { type: 'DRAG_MOVE', x: 15, y: 10 });
+    state = editorReducer(state, { type: 'CANCEL' });
+    expect(state.wires[1].points).toEqual([[8, 10], [20, 10]]);
+    expect(state.components[0].position).toEqual([10, 10]);
+  });
+
+  it('SELECTION_NUDGE moves wire endpoints on nudged terminals only', () => {
+    let state = editorReducer(loaded, { type: 'SELECT', name: 'R1', additive: false });
+    state = editorReducer(state, { type: 'SELECTION_NUDGE', dx: 2, dy: 0 });
+    expect(state.components[0].position).toEqual([12, 10]);
+    expect(state.wires[1].points).toEqual([[10, 10], [20, 10]]);
+    expect(state.wires[0].points).toEqual([[10, 10], [20, 10], [20, 20]]);
+  });
+
+  it('dragging both components shifts wire points on either end once', () => {
+    // C1 (orientation 503 at (30,10)) has terminals at (30,8)/(30,12)
+    const both: EditorSnapshot = {
+      ...snap,
+      connections: [
+        { index: 0, type: 'LK', label: 'w3', points: [[8, 10], [30, 8]] },
+      ],
+    };
+    let state = editorReducer(initialState, { type: 'SNAPSHOT', snapshot: both });
+    state = editorReducer(state, { type: 'DRAG_START', names: ['R1', 'C1'], x: 0, y: 0 });
+    state = editorReducer(state, { type: 'DRAG_MOVE', x: 4, y: 3 }); // dx=4, dy=3
+    expect(state.components[0].position).toEqual([14, 13]);
+    expect(state.components[1].position).toEqual([34, 13]);
+    expect(state.wires[0].points).toEqual([[12, 13], [34, 11]]);
+  });
+});
+
 describe('store: wiring', () => {
   const loaded = editorReducer(initialState, { type: 'SNAPSHOT', snapshot });
 
