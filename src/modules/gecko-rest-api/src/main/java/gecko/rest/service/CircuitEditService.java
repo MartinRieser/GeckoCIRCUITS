@@ -81,8 +81,23 @@ public class CircuitEditService {
         }
     }
 
+    /**
+     * Address of a wire point that was moved together with a component:
+     * the owning connection and point index plus the pre-move coordinates,
+     * so undo can restore and redo can re-apply the shift.
+     */
     record WirePointRef(int connectionIndex, int pointIndex, int originalX, int originalY) {}
 
+    /**
+     * Patches position, orientation, name and/or parameters of a component.
+     *
+     * <p>When the component moves, wire points that sit exactly on one of its
+     * terminals (see {@link ComponentTerminals#terminalsOf}) are shifted by the
+     * same delta, keeping wires attached like in the classic editor. Undo
+     * restores both the component and the affected wire points; redo re-applies
+     * the move including the wire shift. Renaming requires the new name to be
+     * free; all position values are snapped to the circuit grid.</p>
+     */
     public CircuitChangeMessage patchComponent(String circuitId, String name, ComponentPatchRequest request) {
         CircuitState state = requireState(circuitId);
         synchronized (state) {

@@ -196,6 +196,8 @@ export function useEditor() {
         .then(async (messages) => {
           const last = messages[messages.length - 1];
           versionRef.current = last.modelVersion;
+          // the server shifts wire points sitting on moved terminals; refetch
+          // the model so client-side wire geometry mirrors the server state
           await refresh(circuitId);
           dispatch({ type: 'STATUS', status: `${moves.length} component(s) moved` });
         })

@@ -36,6 +36,11 @@ export interface RubberBand {
   y1: number;
 }
 
+/**
+ * A wire point that sits on a terminal of a component being dragged; the
+ * point follows the drag and is restored from the original coordinates on
+ * cancel (mirrors the server-side wire-follow in CircuitEditService).
+ */
 export interface ConnectedWirePoint {
   wireIndex: number;
   pointIndex: number;
@@ -48,6 +53,7 @@ export interface DragState {
   origins: Record<string, { x: number; y: number }>;
   startX: number;
   startY: number;
+  /** wire points captured on drag terminals at their pre-drag coordinates */
   connectedWirePoints: ConnectedWirePoint[];
 }
 
@@ -235,6 +241,8 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
     }
 
     case 'CANCEL': {
+      // aborting a drag restores components AND the wire points that
+      // followed them to their pre-drag coordinates
       if (state.mode === 'dragging' && state.drag) {
         const origins = state.drag.origins;
         const connected = state.drag.connectedWirePoints;
@@ -348,6 +356,8 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
       const maxHeight = state.sheetHeight || 600;
       const set = new Set(state.selection);
 
+      // wire points on terminals of the nudged components (at their
+      // pre-nudge positions) travel along with the selection
       const movedTerminalSet = new Set<string>();
       for (const comp of state.components) {
         if (set.has(comp.name)) {
@@ -512,6 +522,8 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
     }
 
     case 'DRAG_START': {
+      // capture origins plus every wire point sitting on a terminal of the
+      // dragged components, so DRAG_MOVE/CANCEL can shift or restore them
       const origins: Record<string, { x: number; y: number }> = {};
       const movedTerminalSet = new Set<string>();
       for (const name of action.names) {

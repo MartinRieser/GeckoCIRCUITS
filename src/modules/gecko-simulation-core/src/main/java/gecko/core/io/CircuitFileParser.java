@@ -422,6 +422,13 @@ public class CircuitFileParser {
         parseConnectionsForDomain(tokenMap, "verbindungTHERM", "THERMAL", 2, model);
     }
 
+    /**
+     * Parses wire connections of one domain. Wire coordinates are written as
+     * {@code x[]}/{@code y[]} data lines; some legacy writers emit them as
+     * plain {@code x}/{@code y}, which is accepted as a fallback. A
+     * non-numeric {@code connectorType} (e.g. the literal "LK") keeps the
+     * domain's default instead of dropping the connection.
+     */
     private void parseConnectionsForDomain(TokenMap tokenMap, String tokenKey, String type,
                                           int defaultConnectorType, CircuitModel model) {
         TokenMap connBlock;
@@ -461,6 +468,11 @@ public class CircuitFileParser {
 
     /**
      * Parses all component blocks (<ElementLK>, <ElementCONTROL>, <ElementTHERM>, <ElementSPECIAL>).
+     *
+     * <p>The classic format marks blocks with the short tokens {@code e},
+     * {@code c}, {@code eTH} and {@code sp}; some writers instead use the
+     * block tag names (e.g. {@code ElementLK}) in mixed case, which are
+     * accepted as aliases for the same domains.</p>
      */
     private void parseCircuitComponents(TokenMap tokenMap, CircuitModel model) {
         parseComponentsForDomain(tokenMap, "e", "LK", model);

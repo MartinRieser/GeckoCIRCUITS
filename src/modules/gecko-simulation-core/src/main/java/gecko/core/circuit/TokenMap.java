@@ -39,6 +39,9 @@ public final class TokenMap {
     public TokenMap(final String[] ascii, final boolean makeSpecialPairs) {
         asciiLines = ascii;
         if (makeSpecialPairs) {
+            // Canonical block tokens ("e", "c", "eTH", "sp", "verbindungLK",
+            // ...) plus aliases used by some .ipes writers (block tag names in
+            // mixed case); all map onto the same <Connection>/<Element...> pairs.
             _specialTokens.put("verbindungLK", new SpecialPair("<Connection>", "<\\Connection>"));
             _specialTokens.put("verbindungControl", new SpecialPair("<Connection>", "<\\Connection>"));
             _specialTokens.put("verbindungCONTROL", new SpecialPair("<Connection>", "<\\Connection>"));
