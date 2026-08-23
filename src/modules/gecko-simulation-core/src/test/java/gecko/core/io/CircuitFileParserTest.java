@@ -503,8 +503,136 @@ class CircuitFileParserTest {
 
         assertEquals(1, model.getCircuitComponents().size());
         CircuitModel.ComponentData comp = model.getCircuitComponents().get(0);
-        
+
         // Should have stored all parameters by index
         assertTrue(comp.getParameters().size() >= 5, "Should have stored at least 5 parameters");
+    }
+
+    @Test
+    void parse_connections_bracketAndPlainCoordinateLines() throws Exception {
+        String content = """
+            tDURATION 0.02
+            dt 1e-6
+            verbindungLK (0)
+            <Connection>
+            label NIX_NIX_NIX
+            x[] 4 6
+            y[] 6 6
+            enabledShorted 0
+            parentSheetIdentifier 0
+            connectorType 0
+            uniqueObjectIdentifier 100
+            <\\Connection>
+            verbindungLK (1)
+            <Connection>
+            label V_out
+            x 10 12
+            y 6 6
+            enabledShorted 0
+            parentSheetIdentifier 0
+            connectorType 0
+            uniqueObjectIdentifier 101
+            <\\Connection>
+            """;
+
+        CircuitModel model = parser.parse(new BufferedReader(new StringReader(content)), "test.ipes");
+
+        assertEquals(2, model.getConnections().size(),
+                "bracket and plain coordinate lines must both parse");
+        assertArrayEquals(new int[][]{{4, 6}, {6, 6}}, model.getConnections().get(0).getPoints());
+        assertArrayEquals(new int[][]{{10, 6}, {12, 6}}, model.getConnections().get(1).getPoints());
+        assertEquals("V_out", model.getConnections().get(1).getLabel());
+    }
+
+    @Test
+    void parse_connections_nonNumericConnectorTypeKeepsConnection() throws Exception {
+        String content = """
+            tDURATION 0.02
+            dt 1e-6
+            verbindungLK (0)
+            <Connection>
+            label NIX_NIX_NIX
+            x[] 4 6
+            y[] 6 6
+            enabledShorted 0
+            parentSheetIdentifier 0
+            connectorType LK
+            uniqueObjectIdentifier 100
+            <\\Connection>
+            verbindungControl (0)
+            <Connection>
+            label NIX_NIX_NIX
+            x[] 4 6
+            y[] 6 6
+            enabledShorted 0
+            parentSheetIdentifier 0
+            connectorType CONTROL
+            uniqueObjectIdentifier 101
+            <\\Connection>
+            """;
+
+        CircuitModel model = parser.parse(new BufferedReader(new StringReader(content)), "test.ipes");
+
+        assertEquals(2, model.getConnections().size(),
+                "a non-numeric connectorType must keep the connection alive");
+        assertEquals(0, model.getConnections().get(0).getConnectorType(),
+                "LK connections fall back to the LK default connector type");
+        assertEquals("CONTROL", model.getConnections().get(1).getType(),
+                "verbindungControl alias must map to the CONTROL domain");
+        assertEquals(1, model.getConnections().get(1).getConnectorType(),
+                "CONTROL connections fall back to the CONTROL default connector type");
+    }
+
+    @Test
+    void parse_components_tagNameAliasesMapToDomains() throws Exception {
+        String content = """
+            tDURATION 0.02
+            dt 1e-6
+            ElementLK (0)
+            <ElementLK>
+            typ 1
+            idStringDialog R1
+            x 10
+            y 20
+            orientierung 0
+            parameter[] /100.0
+            <\\ElementLK>
+            ElementCONTROL (0)
+            <ElementCONTROL>
+            typ 4
+            idStringDialog Signal.1
+            x 8
+            y 14
+            orientierung 502
+            parameter[] 1.0 1.0 20000.0
+            <\\ElementCONTROL>
+            ElementTherm (0)
+            <ElementTHERM>
+            typ 43
+            idStringDialog LossR
+            x 20
+            y 30
+            orientierung 502
+            parameter[] /0.1
+            <\\ElementTHERM>
+            ElementSpecial (0)
+            <ElementSPECIAL>
+            typ 1
+            idStringDialog Script.1
+            x 2
+            y 2
+            orientierung 502
+            parameter[] /0.0
+            <\\ElementSPECIAL>
+            """;
+
+        CircuitModel model = parser.parse(new BufferedReader(new StringReader(content)), "test.ipes");
+
+        assertEquals(1, model.getCircuitComponents().size(), "ElementLK alias must map to the LK domain");
+        assertEquals("R1", model.getCircuitComponents().get(0).getName());
+        assertEquals(1, model.getControlComponents().size(), "ElementCONTROL alias must map to the CONTROL domain");
+        assertEquals("Signal.1", model.getControlComponents().get(0).getName());
+        assertEquals(1, model.getThermalComponents().size(), "ElementTherm alias must map to the THERMAL domain");
+        assertEquals(1, model.getSpecialComponents().size(), "ElementSpecial alias must map to the SPECIAL domain");
     }
 }
