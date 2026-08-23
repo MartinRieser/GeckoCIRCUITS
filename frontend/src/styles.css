@@ -322,7 +322,6 @@ body,
 }
 
 /* ========== Studio 3-Column Layout ========== */
-.studio-main,
 .workspace {
   display: flex;
   flex: 1;
@@ -342,8 +341,7 @@ body,
 }
 
 .sidebar.left,
-.sidebar.left-sidebar,
-.left-sidebar {
+.sidebar.left {
   width: 280px;
   min-width: 280px;
   max-width: 280px;
@@ -351,8 +349,7 @@ body,
 }
 
 .sidebar.right,
-.sidebar.right-sidebar,
-.right-sidebar {
+.sidebar.right {
   width: 300px;
   min-width: 300px;
   max-width: 300px;
@@ -360,9 +357,9 @@ body,
 }
 
 .sidebar.collapsed {
-  width: 38px !important;
-  min-width: 38px !important;
-  max-width: 38px !important;
+  width: 38px;
+  min-width: 38px;
+  max-width: 38px;
 }
 
 .sidebar-header {
@@ -417,8 +414,7 @@ body,
   width: 100%;
 }
 
-.status-bar,
-.statusbar {
+.status-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1540,6 +1536,18 @@ polyline.wire.selected {
   color: var(--text-muted);
 }
 
+/* Estimated step count below the simulation time parameters */
+.sim-param-item.steps-info {
+  min-height: 14px;
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.sim-param-item.steps-info .steps-warn {
+  color: var(--wire);
+  font-weight: 600;
+}
+
 .sim-param-input {
   width: 60px;
   padding: 2px 6px;
@@ -1817,77 +1825,9 @@ polyline.wire.selected {
   border-bottom: 1px solid rgba(51, 65, 85, 0.4);
 }
 
-/* ========== Status Bar ========== */
-.statusbar {
-  display: flex;
-  align-items: center;
-  height: 24px;
-  padding: 0 12px;
-  background: var(--panel);
-  border-top: 1px solid var(--border);
-  font-size: 11px;
-  color: var(--text-muted);
-  gap: 16px;
-  z-index: 40;
-  user-select: none;
-}
-
-.status-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
+/* ========== Status Bar helpers ========== */
 .status-label {
   color: var(--text-dim);
-}
-
-.status-value {
-  color: var(--text);
-  font-weight: 500;
-}
-
-.status-msg {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.status-shortcuts {
-  display: flex;
-  gap: 10px;
-  color: var(--text-dim);
-  font-size: 10px;
-}
-
-.status-shortcuts kbd {
-  background: #0f172a;
-  border: 1px solid #334155;
-  border-radius: 3px;
-  padding: 0 3px;
-  color: var(--text-muted);
-}
-
-.ws-status {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.ws-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-}
-
-.ws-dot.on {
-  background: var(--success);
-  box-shadow: 0 0 6px var(--success);
-}
-
-.ws-dot.off {
-  background: var(--danger);
 }
 
 /* ========== Command Palette Modal ========== */

@@ -408,7 +408,7 @@ export function App() {
           />
 
           {/* Quick Status Bar */}
-          <div className="status-bar statusbar">
+          <div className="status-bar">
             <div className="status-left">
               <span className="status-circuit-name">
                 {state.filename || 'No circuit open'}

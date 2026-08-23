@@ -237,7 +237,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
     case 'CANCEL': {
       if (state.mode === 'dragging' && state.drag) {
         const origins = state.drag.origins;
-        const connected = state.drag.connectedWirePoints || [];
+        const connected = state.drag.connectedWirePoints;
         const wires = state.wires.map((wire, wireIndex) => {
           const points = wire.points.map((pt) => [...pt]);
           let changed = false;
@@ -551,7 +551,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
       const dx = action.x - state.drag.startX;
       const dy = action.y - state.drag.startY;
       const origins = state.drag.origins;
-      const connected = state.drag.connectedWirePoints || [];
+      const connected = state.drag.connectedWirePoints;
 
       const components = state.components.map((c) => {
         if (origins[c.name]) {

@@ -105,7 +105,7 @@ describe('App user flow', () => {
     const svg = (container.querySelector('svg.sheet') || container.querySelector('svg'))!;
     fireEvent.mouseMove(svg, { clientX: 64, clientY: 64, button: 0 });
     expect(container.querySelector('g.ghost')).toBeNull();
-    expect(container.querySelector('.statusbar')!.textContent).toContain('Open a .ipes file');
+    expect(container.querySelector('.status-bar')!.textContent).toContain('Open a .ipes file');
 
     // open a file through the hidden input
     const fileInput = container.querySelector('input[type=file]') as HTMLInputElement;

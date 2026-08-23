@@ -199,13 +199,9 @@ export function SimulationDrawer({
 
           <div className="sim-param-item steps-info" title={`${parsedTEnd}s / ${parsedDt}s`}>
             {stepCount > 2_000_000 ? (
-              <span style={{ color: '#fbbf24', fontSize: '10px', fontWeight: 600 }}>
-                ⚠️ {stepCount.toLocaleString()} steps
-              </span>
+              <span className="steps-warn">{stepCount.toLocaleString()} steps</span>
             ) : (
-              <span style={{ color: 'var(--text-dim)', fontSize: '10px' }}>
-                {stepCount > 0 ? `${stepCount.toLocaleString()} steps` : ''}
-              </span>
+              stepCount > 0 && <span>{stepCount.toLocaleString()} steps</span>
             )}
           </div>
 
