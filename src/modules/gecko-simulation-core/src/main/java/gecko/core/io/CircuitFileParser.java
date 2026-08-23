@@ -428,8 +428,14 @@ public class CircuitFileParser {
         while ((connBlock = tokenMap.getSpecialBlockTokenMap(tokenKey)) != null) {
             try {
                 String label = connBlock.readDataLine("label", "");
-                int[] xPoints = connBlock.readDataLine("x[]", new int[0]);
-                int[] yPoints = connBlock.readDataLine("y[]", new int[0]);
+                int[] xPoints = connBlock.readDataLine("x[]", (int[]) null);
+                if (xPoints == null || xPoints.length == 0) {
+                    xPoints = connBlock.readDataLine("x", new int[0]);
+                }
+                int[] yPoints = connBlock.readDataLine("y[]", (int[]) null);
+                if (yPoints == null || yPoints.length == 0) {
+                    yPoints = connBlock.readDataLine("y", new int[0]);
+                }
                 int length = Math.min(xPoints.length, yPoints.length);
                 int[][] points = new int[length][2];
                 for (int i = 0; i < length; i++) {
@@ -442,7 +448,13 @@ public class CircuitFileParser {
                 conn.setEnabledShorted(connBlock.readDataLine("enabledShorted", 0));
                 conn.setParentSheetIdentifier(connBlock.readDataLine("parentSheetIdentifier", 0L));
                 conn.setUniqueObjectIdentifier(connBlock.readDataLine("uniqueObjectIdentifier", 0L));
-                conn.setConnectorType(connBlock.readDataLine("connectorType", defaultConnectorType));
+
+                int cType = defaultConnectorType;
+                try {
+                    cType = connBlock.readDataLine("connectorType", defaultConnectorType);
+                } catch (Exception ignored) {
+                }
+                conn.setConnectorType(cType);
 
                 model.addConnection(conn);
             } catch (Exception ignored) {
@@ -455,9 +467,16 @@ public class CircuitFileParser {
      */
     private void parseCircuitComponents(TokenMap tokenMap, CircuitModel model) {
         parseComponentsForDomain(tokenMap, "e", "LK", model);
+        parseComponentsForDomain(tokenMap, "ElementLK", "LK", model);
         parseComponentsForDomain(tokenMap, "c", "CONTROL", model);
+        parseComponentsForDomain(tokenMap, "ElementCONTROL", "CONTROL", model);
+        parseComponentsForDomain(tokenMap, "ElementControl", "CONTROL", model);
         parseComponentsForDomain(tokenMap, "eTH", "THERM", model);
+        parseComponentsForDomain(tokenMap, "ElementTHERM", "THERM", model);
+        parseComponentsForDomain(tokenMap, "ElementTherm", "THERM", model);
         parseComponentsForDomain(tokenMap, "sp", "SPECIAL", model);
+        parseComponentsForDomain(tokenMap, "ElementSPECIAL", "SPECIAL", model);
+        parseComponentsForDomain(tokenMap, "ElementSpecial", "SPECIAL", model);
     }
 
     private void parseComponentsForDomain(TokenMap tokenMap, String tokenKey, String family, CircuitModel model) {

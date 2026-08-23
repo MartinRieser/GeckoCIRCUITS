@@ -40,12 +40,20 @@ public final class TokenMap {
         asciiLines = ascii;
         if (makeSpecialPairs) {
             _specialTokens.put("verbindungLK", new SpecialPair("<Connection>", "<\\Connection>"));
+            _specialTokens.put("verbindungControl", new SpecialPair("<Connection>", "<\\Connection>"));
             _specialTokens.put("verbindungCONTROL", new SpecialPair("<Connection>", "<\\Connection>"));
             _specialTokens.put("verbindungTHERM", new SpecialPair("<Connection>", "<\\Connection>"));
             _specialTokens.put("e", new SpecialPair("<ElementLK>", "<\\ElementLK>"));
+            _specialTokens.put("ElementLK", new SpecialPair("<ElementLK>", "<\\ElementLK>"));
             _specialTokens.put("sp", new SpecialPair("<ElementSPECIAL>", "<\\ElementSPECIAL>"));
+            _specialTokens.put("ElementSPECIAL", new SpecialPair("<ElementSPECIAL>", "<\\ElementSPECIAL>"));
+            _specialTokens.put("ElementSpecial", new SpecialPair("<ElementSPECIAL>", "<\\ElementSPECIAL>"));
             _specialTokens.put("eTH", new SpecialPair("<ElementTHERM>", "<\\ElementTHERM>"));
+            _specialTokens.put("ElementTHERM", new SpecialPair("<ElementTHERM>", "<\\ElementTHERM>"));
+            _specialTokens.put("ElementTherm", new SpecialPair("<ElementTHERM>", "<\\ElementTHERM>"));
             _specialTokens.put("c", new SpecialPair("<ElementCONTROL>", "<\\ElementCONTROL>"));
+            _specialTokens.put("ElementCONTROL", new SpecialPair("<ElementCONTROL>", "<\\ElementCONTROL>"));
+            _specialTokens.put("ElementControl", new SpecialPair("<ElementCONTROL>", "<\\ElementCONTROL>"));
             _specialTokens.put("GeckoFileManager", new SpecialPair("<GeckoFileManager>", "<\\GeckoFileManager>"));
         }
         makeTokenMap(ascii, makeSpecialPairs);
