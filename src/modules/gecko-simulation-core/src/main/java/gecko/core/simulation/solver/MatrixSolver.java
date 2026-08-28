@@ -48,6 +48,9 @@ public class MatrixSolver {
     private double[] iCurrent;        // This step's component currents (promoted to iALT on shift)
     private SolverType solverType;
 
+    // Rows pinned as island reference potentials (v = 0); b-entries must stay 0
+    private int[] pinnedRows = new int[]{0};
+
     // LU decomposition solver state
     private Matrix matrixSolverA;     // Cached Matrix wrapper for A
     private boolean matrixChanged;    // Flag to indicate A matrix needs refactorization
@@ -219,18 +222,6 @@ public class MatrixSolver {
             }
         }
 
-        // Port of legacy LKMatrices: de-singularize isolated potentials by initializing 1 on diagonal
-        int[] singularities = netlist.getSingularityEntries();
-        if (singularities != null && singularities.length > 0) {
-            for (int index : singularities) {
-                if (index >= 0 && index < matrixSize) {
-                    a[index][index] = 1.0;
-                }
-            }
-        } else if (matrixSize > 0) {
-            a[0][0] = 1.0;
-        }
-
         // Create stamper registry for component contributions
         StamperRegistry registry = StamperRegistry.createDefault();
 
@@ -275,6 +266,32 @@ public class MatrixSolver {
         // Note: Magnetic coupling (mutual inductance) handling is deferred for future refinement.
         // The legacy code injects coupling contributions after component stamping;
         // this will be added when LKOP2 coupling arrays are integrated into the netlist.
+
+        // Pin one reference node per galvanic island (port of legacy
+        // deSingularizeIsolatedPotentials). This must happen AFTER stamping:
+        // pre-stamping a[index][index] += 1 acts as a phantom 1 S conductance
+        // that the component stamps add to, which lets the circuit ground
+        // float and breaks legacy parity. Zeroing the full row makes it an
+        // exact v = 0 constraint instead.
+        int[] singularities = netlist.getSingularityEntries();
+        if (singularities == null || singularities.length == 0) {
+            singularities = new int[]{0};
+        }
+        pinnedRows = new int[singularities.length];
+        int pinnedCount = 0;
+        for (int index : singularities) {
+            if (index < 0 || index >= matrixSize) {
+                continue;
+            }
+            for (int j = 0; j < matrixSize; j++) {
+                a[index][j] = 0.0;
+            }
+            a[index][index] = 1.0;
+            pinnedRows[pinnedCount++] = index;
+        }
+        if (pinnedCount < pinnedRows.length) {
+            pinnedRows = java.util.Arrays.copyOf(pinnedRows, pinnedCount);
+        }
 
         // Mark matrix as changed so LU decomposition will be recalculated
         matrixChanged = true;
@@ -538,9 +555,13 @@ public class MatrixSolver {
             }
         }
 
-        // Ground-row history terms (e.g. capacitor b-vector entries at node 0)
-        // must not bias the pinned reference potential.
-        bVector[0] = 0.0;
+        // Pinned reference rows (island grounds) must not accumulate history
+        // terms (e.g. capacitor b-vector entries) — the pin enforces v = 0.
+        for (int row : pinnedRows) {
+            if (row >= 0 && row < matrixSize) {
+                bVector[row] = 0.0;
+            }
+        }
     }
 
     /**
