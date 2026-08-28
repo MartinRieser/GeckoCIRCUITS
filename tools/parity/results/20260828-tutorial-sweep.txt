@@ -1,0 +1,80 @@
+GeckoCIRCUITS tutorial sweep (new headless engine) 2026-08-28
+engine: feature/web-frontend ee81cc5e; duration capped, max 100k steps
+classification: CLEAN / SINGULAR (sim failed) / NONFINITE (ran, signals NaN/Inf)
+
+NONFINITE  | 1xx_getting_started/101_first_simulation/ex_1.ipes
+CLEAN      | 1xx_getting_started/102_basic_circuits/ex_2.ipes
+NONFINITE  | 1xx_getting_started/103_pwm_basics/ex_3_pwm.ipes
+CLEAN      | 2xx_dcdc_converters/201_buck_converter/A_Buck.ipes
+CLEAN      | 2xx_dcdc_converters/201_buck_converter/buck_simple.ipes
+CLEAN      | 2xx_dcdc_converters/202_boost_converter/boost_simple.ipes
+CLEAN      | 2xx_dcdc_converters/202_boost_converter/B_Boost.ipes
+CLEAN      | 2xx_dcdc_converters/203_buck_boost/BuckBoost_const_dutyCycle.ipes
+CLEAN      | 2xx_dcdc_converters/203_buck_boost/buckBoost_simple.ipes
+CLEAN      | 2xx_dcdc_converters/203_buck_boost/cuk_simple.ipes
+CLEAN      | 2xx_dcdc_converters/203_buck_boost/sepic_simple.ipes
+CLEAN      | 2xx_dcdc_converters/204_analog_circuits/OpAmp.ipes
+SINGULAR   | 2xx_dcdc_converters/204_analog_circuits/opamp_3rdOrderBessel.ipes |Simulation error: Matrix of size 10 is singular.
+SINGULAR   | 2xx_dcdc_converters/204_analog_circuits/opamp_frequency.ipes |Simulation error: Matrix of size 7 is singular.
+SINGULAR   | 2xx_dcdc_converters/204_analog_circuits/opamp_invertingDifferentiator.ipes |Simulation error: Matrix of size 7 is singular.
+CLEAN      | 2xx_dcdc_converters/204_analog_circuits/opamp_invertingIntegrator.ipes
+CLEAN      | 2xx_dcdc_converters/204_analog_circuits/opamp_multivibrator.ipes
+CLEAN      | 3xx_acdc_rectifiers/301_diode_rectifier/2phaseDiodeBridge_AC-Inductor.ipes
+CLEAN      | 3xx_acdc_rectifiers/301_diode_rectifier/2phaseDiodeBridge_DC-Inductor.ipes
+CLEAN      | 3xx_acdc_rectifiers/301_diode_rectifier/A_Rectifier.ipes
+CLEAN      | 3xx_acdc_rectifiers/301_diode_rectifier/diode_RL_singlePH_trafo.ipes
+CLEAN      | 3xx_acdc_rectifiers/302_pfc_basics/boostPFC.ipes
+CLEAN      | 3xx_acdc_rectifiers/302_pfc_basics/boostPFC_currentControl.ipes
+CLEAN      | 3xx_acdc_rectifiers/302_pfc_basics/B_pfc.ipes
+CLEAN      | 3xx_acdc_rectifiers/302_pfc_basics/C_pfc.ipes
+CLEAN      | 3xx_acdc_rectifiers/303_vienna_rectifier/three-phase_ViennaRectifier_simpleControl_250kW.ipes
+NONFINITE  | 4xx_dcac_inverters/401_single_phase_inverter/singlePhase_PWM_converter.ipes
+CLEAN      | 4xx_dcac_inverters/402_three_phase_inverter/inverter.ipes
+CLEAN      | 4xx_dcac_inverters/402_three_phase_inverter/three-phase_VSR_simpleControl_250kW.ipes
+CLEAN      | 5xx_thermal_simulation/501_loss_calculation/BuckBoost_thermal.ipes
+CLEAN      | 5xx_thermal_simulation/502_junction_temperature/BuckBoost_thermal_with_java.ipes
+CLEAN      | 5xx_thermal_simulation/502_junction_temperature/ThreePhase-VSR_10kW_thermal.ipes
+CLEAN      | 5xx_thermal_simulation/502_junction_temperature/ThreePhase-VSR_10kW_thermal_with_java.ipes
+CLEAN      | 6xx_emi_emc/602_cm_dm_filters/CMFilter1Stage.ipes
+CLEAN      | 6xx_emi_emc/602_cm_dm_filters/CMFilter1StageAddComp.ipes
+CLEAN      | 6xx_emi_emc/602_cm_dm_filters/CMFilter2Stage.ipes
+CLEAN      | 6xx_emi_emc/602_cm_dm_filters/CMFilter3Stage.ipes
+CLEAN      | 6xx_emi_emc/602_cm_dm_filters/CMFilter4Stage.ipes
+CLEAN      | 6xx_emi_emc/602_cm_dm_filters/DMFilter1Stage.ipes
+CLEAN      | 6xx_emi_emc/602_cm_dm_filters/DMFilter1StageAddComp.ipes
+CLEAN      | 6xx_emi_emc/602_cm_dm_filters/DMFilter2Stage.ipes
+CLEAN      | 6xx_emi_emc/602_cm_dm_filters/DMFilter3Stage.ipes
+CLEAN      | 6xx_emi_emc/602_cm_dm_filters/DMFilter4Stage.ipes
+CLEAN      | 7xx_scripting_automation/701_gecko_script_basics/buck_control.ipes
+CLEAN      | 7xx_scripting_automation/701_gecko_script_basics/GeckoSCRIPT.ipes
+NONFINITE  | 7xx_scripting_automation/702_matlab_integration/GeckoSCRIPT_
+SINGULAR   | 7xx_scripting_automation/703_simulink_cosimulation/vr1_simulink.ipes |Simulation error: Matrix of size 37 is singular.
+CLEAN      | 7xx_scripting_automation/704_java_blocks/demo_JAVA_Block.ipes
+SINGULAR   | 7xx_scripting_automation/704_java_blocks/JavaBlockPMSM.ipes |Simulation error: Matrix of size 29 is singular.
+CLEAN      | 7xx_scripting_automation/705_api_integration/ExternalSignalSource.ipes
+CLEAN      | 7xx_scripting_automation/705_api_integration/signalsourceExternal.ipes
+NONFINITE  | 8xx_advanced_topics/801_matrix_converters/three-phase_ACAC_sparsematrixConverter_junction_temperature.ipes
+CLEAN      | 8xx_advanced_topics/801_matrix_converters/three-phase_ACAC_sparse_root.ipes
+CLEAN      | 8xx_advanced_topics/801_matrix_converters/UltraSparseMatrixConverter.ipes
+CLEAN      | 8xx_advanced_topics/801_matrix_converters/UltraSparseMatrixConverter_root.ipes
+SINGULAR   | 8xx_advanced_topics/802_motor_drives_pmsm/indirect_matrix_java_with_PMSM_control.ipes |Simulation error: Matrix of size 26 is singular.
+SINGULAR   | 8xx_advanced_topics/802_motor_drives_pmsm/sparseMatrix_java_with_PMSM_control.ipes |Simulation error: Matrix of size 29 is singular.
+CLEAN      | 8xx_advanced_topics/803_optimization/GeckoSwissRectifierOptimizer/model/cmNoise.ipes
+SINGULAR   | 8xx_advanced_topics/803_optimization/GeckoSwissRectifierOptimizer/model/dmNoise.ipes |Simulation error: Matrix of size 10 is singular.
+CLEAN      | 8xx_advanced_topics/803_optimization/GeckoSwissRectifierOptimizer/model/InputFilterCurrentSourceModel.ipes
+CLEAN      | 8xx_advanced_topics/803_optimization/GeckoSwissRectifierOptimizer/model/InputFilterCurrentSourceModelDiffLsArrangement.ipes
+CLEAN      | 8xx_advanced_topics/803_optimization/GeckoSwissRectifierOptimizer/model/InputFilterVoltageSourceModel.ipes
+CLEAN      | 8xx_advanced_topics/803_optimization/GeckoSwissRectifierOptimizer/model/Swiss_Rect.ipes
+SINGULAR   | 8xx_advanced_topics/803_optimization/GeckoSwissRectifierOptimizer/model/Swiss_Rect_2StageInputFilter.ipes |Simulation error: Matrix of size 66 is singular.
+CLEAN      | 8xx_advanced_topics/804_thyristor_control/ThyristorControlBlock.ipes
+CLEAN      | 8xx_advanced_topics/804_thyristor_control/ThyristorCoupling.ipes
+CLEAN      | 8xx_advanced_topics/804_thyristor_control/thyristor_commutation_3ph_trafo.ipes
+CLEAN      | 8xx_advanced_topics/804_thyristor_control/thyristor_freeWheelingDiode.ipes
+CLEAN      | 8xx_advanced_topics/804_thyristor_control/thyristor_interface_trafo.ipes
+CLEAN      | 8xx_advanced_topics/804_thyristor_control/thyristor_Jakopovic.ipes
+CLEAN      | 8xx_advanced_topics/804_thyristor_control/thyristor_lossOfCommutation.ipes
+CLEAN      | 8xx_advanced_topics/804_thyristor_control/thyristor_RL_2phBridge.ipes
+CLEAN      | 8xx_advanced_topics/804_thyristor_control/thyristor_RL_3phBridge.ipes
+CLEAN      | 8xx_advanced_topics/804_thyristor_control/thyristor_RL_3ph_trafo.ipes
+CLEAN      | 8xx_advanced_topics/804_thyristor_control/thyristor_RL_single.ipes
+CLEAN      | 8xx_advanced_topics/804_thyristor_control/thyristor_RL_singlePh_trafo.ipes
