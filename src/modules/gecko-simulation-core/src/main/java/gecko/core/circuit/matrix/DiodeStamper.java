@@ -44,7 +44,7 @@ package gecko.core.circuit.matrix;
  */
 public class DiodeStamper implements IStatefulStamper {
 
-    /** Parameter index for ON resistance */
+    /** Parameter index of the CURRENT resistance (legacy netlist slot 0) */
     public static final int PARAM_R_ON = 0;
 
     /** Parameter index for OFF resistance */
@@ -210,15 +210,17 @@ public class DiodeStamper implements IStatefulStamper {
     }
 
     /**
-     * Gets current resistance, using parameter array if provided.
+     * Gets current resistance from the netlist parameter array. Following the
+     * legacy netlist layout, {@code parameter[0]} holds the CURRENT diode
+     * resistance (flipped between rOn/rOff by the state machine); the stamper
+     * must not reinterpret the parameter slots on its own.
      *
-     * @param parameter optional parameter array (may override instance values)
+     * @param parameter parameter array
      * @return current effective resistance
      */
     private double getCurrentResistance(double[] parameter) {
-        if (parameter != null && parameter.length > PARAM_R_OFF) {
-            double r = isOn ? parameter[PARAM_R_ON] : parameter[PARAM_R_OFF];
-            return Math.max(r, MIN_RESISTANCE);
+        if (parameter != null && parameter.length > PARAM_R_ON) {
+            return Math.max(parameter[PARAM_R_ON], MIN_RESISTANCE);
         }
         return getCurrentResistance();
     }

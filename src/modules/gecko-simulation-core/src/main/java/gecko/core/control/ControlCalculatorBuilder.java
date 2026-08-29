@@ -32,9 +32,11 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Builds the executable CONTROL domain from a parsed {@link CircuitModel}:
@@ -63,7 +65,8 @@ public final class ControlCalculatorBuilder {
     private static final int SIGNAL_AMPLITUDE = 1;
     private static final int SIGNAL_FREQUENCY = 2;
     private static final int SIGNAL_DC_OFFSET = 3;
-    private static final int SIGNAL_PHASE_DEGREES = 4;
+    /** Phase as stored in the .ipes file: radians (classic import applies toDegrees for the dialog). */
+    private static final int SIGNAL_PHASE_RADIANS = 4;
     private static final int SIGNAL_DUTY = 5;
 
     /** Gate signal parameter slot shared with the stampers. */
@@ -102,7 +105,8 @@ public final class ControlCalculatorBuilder {
     public record ControlCoupling(
             List<AbstractControlCalculatable> calculators,
             List<GateDrive> gateDrives,
-            List<Probe> probes) {
+            List<Probe> probes,
+            List<SignalTap> signalTaps) {
 
         /** Prepares stateful calculators (periodic signal sources) for a run. */
         public void initialize(double dt) {
@@ -116,7 +120,9 @@ public final class ControlCalculatorBuilder {
         /**
          * Writes the current gate signals into the switch elements' parameter
          * arrays (resistance slot + gate slot), so the next buildMatrixA stamps
-         * the switched resistance.
+         * the switched resistance. Like the classic engine, the matrix for
+         * time step t is stamped with the control value computed at t-1: the
+         * gates applied here lag the logged values by one step.
          */
         public void applyGateSignals(CircuitNetlist netlist) {
             for (GateDrive drive : gateDrives) {
@@ -144,9 +150,29 @@ public final class ControlCalculatorBuilder {
     /**
      * A gate block driving one switch element. The gate calculator itself is
      * never executed (classic {@code NotCalculateableMarker}); its input is an
-     * alias of the producer's output array and is read live each step.
+     * alias of the producer's output array and is read live each step. The
+     * drive carries the PREVIOUS step's signal: the classic engine stamps the
+     * matrix for step t with the control value from t-1.
      */
-    public record GateDrive(int elementIndex, CircuitTypCore switchType, GateCalculator gate) {
+    public static final class GateDrive {
+        private final int elementIndex;
+        private final CircuitTypCore switchType;
+        private final GateCalculator gate;
+        private double previousSignal;
+
+        GateDrive(int elementIndex, CircuitTypCore switchType, GateCalculator gate) {
+            this.elementIndex = elementIndex;
+            this.switchType = switchType;
+            this.gate = gate;
+        }
+
+        public int elementIndex() {
+            return elementIndex;
+        }
+
+        public CircuitTypCore switchType() {
+            return switchType;
+        }
 
         /** Parameter slot of the ON resistance per switch type. */
         private int onResistanceSlot() {
@@ -169,9 +195,20 @@ public final class ControlCalculatorBuilder {
 
         private void applyTo(CircuitNetlist netlist) {
             double[] params = netlist.getParameter(elementIndex);
-            double signal = gateSignal();
-            params[PARAM_GATE] = signal;
+            double signal = previousSignal;
+            previousSignal = gateSignal();
             boolean on = signal > AbstractControlCalculatable.SIGNAL_THRESHOLD;
+            if (switchType == CircuitTypCore.LK_THYR || switchType == CircuitTypCore.LK_IGBT) {
+                // The piecewise-linear state machine in ComponentCurrentCalculator
+                // owns the resistance flip; it only sees the 0/1 gate status.
+                if (params.length > PARAM_GATE) {
+                    params[PARAM_GATE] = on ? 1.0 : 0.0;
+                }
+                return;
+            }
+            if (params.length > PARAM_GATE) {
+                params[PARAM_GATE] = signal;
+            }
             int onSlot = onResistanceSlot();
             int offSlot = offResistanceSlot();
             double resistance = on && onSlot < params.length ? params[onSlot]
@@ -181,26 +218,38 @@ public final class ControlCalculatorBuilder {
     }
 
     /**
-     * A voltmeter or ammeter block attached to a power component via
-     * {@code coupledReferenceID}; its output array is written from the solved
-     * circuit each step (voltage across the element / current through it).
+     * A voltmeter or ammeter block: either attached to a power component via
+     * {@code coupledReferenceID} or a component name, or measuring between two
+     * node labels. Its output array is written from the solved circuit each
+     * step (voltage across the element / nodes, current through it).
      */
     public record Probe(int elementIndex, boolean current, String name,
-                        AbstractControlCalculatable outputHolder) {
+                        AbstractControlCalculatable outputHolder, int nodeX, int nodeY) {
 
         private void update(CircuitNetlist netlist, double[] nodeVoltages) {
             double value;
             if (current) {
                 double[] currents = netlist.getLastComponentCurrentsRef();
                 value = elementIndex < currents.length ? currents[elementIndex] : 0.0;
+            } else if (elementIndex >= 0) {
+                int x = netlist.getNodeX(elementIndex);
+                int y = netlist.getNodeY(elementIndex);
+                value = (x < nodeVoltages.length ? nodeVoltages[x] : 0.0)
+                        - (y < nodeVoltages.length ? nodeVoltages[y] : 0.0);
             } else {
-                int nodeX = netlist.getNodeX(elementIndex);
-                int nodeY = netlist.getNodeY(elementIndex);
                 value = (nodeX < nodeVoltages.length ? nodeVoltages[nodeX] : 0.0)
                         - (nodeY < nodeVoltages.length ? nodeVoltages[nodeY] : 0.0);
             }
             outputHolder._outputSignal[0][0] = value;
         }
+    }
+
+    /**
+     * A recordable control-domain output: a signal source or constant whose
+     * output terminal carries a user label ({@code labelEndKnoten}), logged
+     * under that label like the classic scope curve (e.g. "gate").
+     */
+    public record SignalTap(String name, AbstractControlCalculatable source) {
     }
 
     private ControlCalculatorBuilder() {
@@ -215,12 +264,14 @@ public final class ControlCalculatorBuilder {
         List<CircuitModel.ComponentData> controlComponents =
                 model != null ? model.getControlComponents() : List.of();
         if (controlComponents.isEmpty() || netlist == null || netlist.getElementCount() == 0) {
-            return new ControlCoupling(List.of(), List.of(), List.of());
+            return new ControlCoupling(List.of(), List.of(), List.of(), List.of());
         }
         Map<Long, Integer> elementIndexByUid = new HashMap<>();
-        List<CircuitModel.ComponentData> circuitComponents = model.getCircuitComponents();
-        for (int i = 0; i < circuitComponents.size() && i < netlist.getElementCount(); i++) {
-            elementIndexByUid.put(circuitComponents.get(i).getUniqueObjectIdentifier(), i);
+        for (int i = 0; i < netlist.getElementCount(); i++) {
+            long uid = netlist.getElementUids()[i];
+            if (uid != 0) {
+                elementIndexByUid.put(uid, i);
+            }
         }
 
         // union-find over the CONTROL wire topology
@@ -243,6 +294,8 @@ public final class ControlCalculatorBuilder {
         Map<String, AbstractControlCalculatable> calculatorByComp = new LinkedHashMap<>();
         List<GateDrive> gateDrives = new ArrayList<>();
         List<Probe> probes = new ArrayList<>();
+        List<SignalTap> signalTaps = new ArrayList<>();
+        Set<String> usedTapNames = new HashSet<>();
 
         for (CircuitModel.ComponentData comp : controlComponents) {
             AbstractControlCalculatable calculator = createCalculator(comp);
@@ -250,31 +303,134 @@ public final class ControlCalculatorBuilder {
                 continue;
             }
             calculatorByComp.put(keyOf(comp), calculator);
-            if (calculator instanceof GateCalculator gate && comp.getCoupledReferenceID() != 0) {
-                Integer elementIndex = elementIndexByUid.get(comp.getCoupledReferenceID());
+            if (calculator instanceof GateCalculator) {
+                Integer elementIndex = resolveCoupledElementIndex(comp, model, netlist, elementIndexByUid);
                 if (elementIndex != null && isSwitch(netlist.getType(elementIndex))) {
-                    gateDrives.add(new GateDrive(elementIndex, netlist.getType(elementIndex), gate));
+                    gateDrives.add(new GateDrive(elementIndex, netlist.getType(elementIndex), gate0(comp, calculatorByComp)));
                 } else {
-                    LOGGER.warn("Gate '{}' references unknown power component uid {}",
-                            comp.getName(), comp.getCoupledReferenceID());
+                    LOGGER.warn("Gate '{}' references unknown power component", comp.getName());
                 }
             }
-            if ((comp.getType() == TYP_VOLTMEETER || comp.getType() == TYP_AMMETER)
-                    && comp.getCoupledReferenceID() != 0) {
-                Integer elementIndex = elementIndexByUid.get(comp.getCoupledReferenceID());
-                if (elementIndex != null) {
-                    probes.add(new Probe(elementIndex, comp.getType() == TYP_AMMETER,
-                            displayName(comp), calculator));
+            if (comp.getType() == TYP_VOLTMEETER || comp.getType() == TYP_AMMETER) {
+                Probe probe = buildProbe(comp, calculator, elementIndexByUid, model, netlist);
+                if (probe != null) {
+                    probes.add(probe);
                 } else {
-                    LOGGER.warn("Measurement '{}' references unknown power component uid {}",
-                            comp.getName(), comp.getCoupledReferenceID());
+                    LOGGER.warn("Measurement '{}' references unknown power component or labels",
+                            comp.getName());
+                }
+            }
+            // recordable outputs: like the classic scope, the exported name is
+            // the block's output terminal label (labelEndKnoten)
+            if (comp.getType() == TYP_SIGNAL_SOURCE || comp.getType() == TYP_CONSTANT) {
+                String label = outputLabel(comp);
+                if (!label.equals(displayName(comp)) && usedTapNames.add(label)) {
+                    signalTaps.add(new SignalTap(label, calculator));
                 }
             }
         }
 
         wireInputs(controlComponents, calculatorByComp, parent);
 
-        return new ControlCoupling(topologicalOrder(calculatorByComp), gateDrives, probes);
+        return new ControlCoupling(topologicalOrder(calculatorByComp), gateDrives, probes,
+                signalTaps);
+    }
+
+    /** Output terminal label ({@code labelEndKnoten}) or the block name fallback. */
+    private static String outputLabel(CircuitModel.ComponentData comp) {
+        String[] yLabels = comp.getTerminalYLabels();
+        if (yLabels.length > 0 && yLabels[0] != null) {
+            String label = yLabels[0].trim();
+            if (!label.isEmpty() && !label.equals("NIX_NIX_NIX")) {
+                return label;
+            }
+        }
+        return displayName(comp);
+    }
+
+    private static GateCalculator gate0(CircuitModel.ComponentData comp,
+                                        Map<String, AbstractControlCalculatable> calculatorByComp) {
+        return (GateCalculator) calculatorByComp.get(keyOf(comp));
+    }
+
+    /**
+     * Resolves the power element a control block couples to: uid coupling
+     * ({@code coupledReferenceID}) or coupled component name
+     * ({@code parameterString[0]}, the classic GUI fallback).
+     */
+    private static Integer resolveCoupledElementIndex(CircuitModel.ComponentData comp,
+                                                      CircuitModel model, CircuitNetlist netlist,
+                                                      Map<Long, Integer> elementIndexByUid) {
+        if (comp.getCoupledReferenceID() != 0) {
+            Integer byUid = elementIndexByUid.get(comp.getCoupledReferenceID());
+            if (byUid != null) {
+                return byUid;
+            }
+        }
+        String[] measured = comp.getParameterStrings();
+        if (measured != null && measured.length > 0) {
+            String target = measured[0] == null ? "" : measured[0].trim();
+            if (!target.isEmpty() && !target.equals("NIX_NIX_NIX")) {
+                return elementIndexByName(model, netlist, target);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Resolves a measurement block to its power-domain target: uid coupling,
+     * coupled component name ({@code parameterString[0]}), or for voltmeters
+     * the measured node-label pair ({@code parameterString[0..1]}).
+     */
+    private static Probe buildProbe(CircuitModel.ComponentData comp,
+                                    AbstractControlCalculatable calculator,
+                                    Map<Long, Integer> elementIndexByUid,
+                                    CircuitModel model, CircuitNetlist netlist) {
+        boolean current = comp.getType() == TYP_AMMETER;
+        String name = outputLabel(comp);
+        Integer coupled = resolveCoupledElementIndex(comp, model, netlist, elementIndexByUid);
+        if (current) {
+            if (coupled != null) {
+                return new Probe(coupled, true, name, calculator, -1, -1);
+            }
+            return null;
+        }
+        if (coupled != null) {
+            return new Probe(coupled, false, name, calculator, -1, -1);
+        }
+        String[] measured = comp.getParameterStrings() != null
+                ? comp.getParameterStrings() : new String[0];
+        if (measured.length >= 2) {
+            int nodeX = nodeForLabel(netlist, measured[0]);
+            int nodeY = nodeForLabel(netlist, measured[1]);
+            return new Probe(-1, false, name, calculator, nodeX, nodeY);
+        }
+        return null;
+    }
+
+    private static int nodeForLabel(CircuitNetlist netlist, String label) {
+        if (label == null) {
+            return 0;
+        }
+        String trimmed = label.trim();
+        if (trimmed.isEmpty() || trimmed.equals("NIX_NIX_NIX")) {
+            return 0;
+        }
+        if (trimmed.equals("0") || trimmed.equalsIgnoreCase("gnd") || trimmed.equalsIgnoreCase("ground")) {
+            return 0;
+        }
+        int index = netlist.getLabelResolver().getIndex(trimmed);
+        return index >= 0 ? index : 0;
+    }
+
+    private static Integer elementIndexByName(CircuitModel model, CircuitNetlist netlist, String name) {
+        for (CircuitModel.ComponentData comp : model.getCircuitComponents()) {
+            if (name.equals(comp.getName())) {
+                int index = netlist.indexOfUid(comp.getUniqueObjectIdentifier());
+                return index >= 0 ? index : null;
+            }
+        }
+        return null;
     }
 
     private static AbstractControlCalculatable createCalculator(CircuitModel.ComponentData comp) {
@@ -302,7 +458,7 @@ public final class ControlCalculatorBuilder {
         double amplitude = param(params, SIGNAL_AMPLITUDE);
         double frequency = param(params, SIGNAL_FREQUENCY);
         double offset = param(params, SIGNAL_DC_OFFSET);
-        double phase = Math.toRadians(param(params, SIGNAL_PHASE_DEGREES));
+        double phase = param(params, SIGNAL_PHASE_RADIANS);
         double duty = param(params, SIGNAL_DUTY);
         try {
             return switch (sourceType) {

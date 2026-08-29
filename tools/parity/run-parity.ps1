@@ -28,11 +28,21 @@ $classes = Join-Path $tools 'classes'
 $work = Join-Path $env:TEMP ('gecko-parity-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
 New-Item -ItemType Directory -Force -Path $classes, "$tools\results", $work | Out-Null
 
-# name -> recorded signals (must match the file's dataContainerSignals)
+# name -> recorded signals (must match the file's dataContainerSignals or the
+# VOLT/AMP block names); Labels='auto' labels measurement blocks via RMI for
+# circuits whose blocks carry no terminal labels; TEnd caps long mains runs
+$tutorials = 'resources/tutorials'
 $circuits = @(
     @{ Name = 'rc-lowpass';  Signals = 'u_out' },
     @{ Name = 'rl-transient'; Signals = 'u_l' },
-    @{ Name = 'rlc-series';  Signals = 'u_c,u_l' }
+    @{ Name = 'rlc-series';  Signals = 'u_c,u_l' },
+    @{ Name = 'buck_simple'; File = "$tutorials/2xx_dcdc_converters/201_buck_converter/buck_simple.ipes"; Signals = 'u1,uS,u2,iL,iC,gate' },
+    @{ Name = 'boostPFC'; File = "$tutorials/3xx_acdc_rectifiers/302_pfc_basics/boostPFC.ipes"; Signals = 'uN,uf,uOUT,iN,iL,iS,iD,iC,iLref,fDR,di,pre,gate,di2,iA'; TEnd = '5e-3' },
+    @{ Name = 'thyristor_RL_3phBridge'; File = "$tutorials/8xx_advanced_topics/804_thyristor_control/thyristor_RL_3phBridge.ipes"; Signals = 'u1,u2,u3,uTH1,uOUT,u12,i1,iTH1,iOUT,gt1,gt2,gt3,gt4,gt5,gt6,u23,u31,sg,m,p,p2,p3,p4'; TEnd = '5e-3' },
+    @{ Name = 'three-phase_VSR_250kW'; File = "$tutorials/4xx_dcac_inverters/402_three_phase_inverter/three-phase_VSR_simpleControl_250kW.ipes"; Signals = 'uNR,uNS,uNT,iNR,iNS,iNT,uZ,iD1,iIGBT,iC'; TEnd = '2e-3' },
+    @{ Name = 'ex_1'; File = "$tutorials/1xx_getting_started/101_first_simulation/ex_1.ipes"; Signals = 'u_out,u_R,i_L,i_s,i_d,i_C' },
+    @{ Name = 'ex_3_pwm'; File = "$tutorials/1xx_getting_started/103_pwm_basics/ex_3_pwm.ipes"; Signals = 'u1meas,u0meas,imeas,i1'; TEnd = '1e-3' },
+    @{ Name = 'singlePhase_PWM_converter'; File = "$tutorials/4xx_dcac_inverters/401_single_phase_inverter/singlePhase_PWM_converter.ipes"; Signals = 'uA,uL,i,uDC'; TEnd = '2e-3' }
 )
 
 function Stop-JavaChildren {
@@ -80,24 +90,26 @@ try {
     $results = @()
     foreach ($c in $circuits) {
         $name = $c.Name
-        $ipes = Join-Path $tools "circuits\$name.ipes"
+        $ipes = if ($c.File) { Join-Path $script:RepoRoot $c.File } else { Join-Path $tools "circuits\$name.ipes" }
         $refCsv = Join-Path $work "$name-ref.csv"
         $newCsv = Join-Path $work "$name-new.csv"
+        $labels = if ($c.Labels) { $c.Labels } else { '' }
+        $tEnd = if ($c.TEnd) { $c.TEnd } else { '' }
 
         Write-Host "`n=== $name : legacy engine ==="
-        & java -cp "$classes;$guiJar" ReferenceRunner $guiJar $ipes $refCsv $c.Signals $RmiPort
+        & java -cp "$classes;$guiJar" ReferenceRunner $guiJar $ipes $refCsv $c.Signals $RmiPort $labels $tEnd
         $refOk = ($LASTEXITCODE -eq 0)
 
         Write-Host "=== $name : new engine ==="
         $newOk = $false
         if ($refOk) {
-            & java -cp $classes NewEngineRunner $BaseUrl $ipes $newCsv
+            & java -cp $classes NewEngineRunner $BaseUrl $ipes $newCsv $c.Signals $tEnd
             $newOk = ($LASTEXITCODE -eq 0)
         }
 
         Write-Host "=== $name : comparison ==="
         if ($refOk -and $newOk) {
-            $out = & java -cp $classes CompareCsv $refCsv $newCsv $RelTol $AbsTol
+            $out = & java -cp $classes CompareCsv $refCsv $newCsv $RelTol $AbsTol true
             $code = $LASTEXITCODE
             $out | Write-Host
             $results += [pscustomobject]@{ Circuit = $name; Result = if ($code -eq 0) { 'PASS' } else { 'FAIL' } }

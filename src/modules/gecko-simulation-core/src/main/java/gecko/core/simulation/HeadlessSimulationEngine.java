@@ -22,11 +22,15 @@ import gecko.core.io.ParameterOverrideApplicator;
 import gecko.core.simulation.solver.MatrixSolver;
 import gecko.core.simulation.solver.ComponentCurrentCalculator;
 import gecko.core.simulation.solver.InitialConditionSolver;
+import gecko.core.circuit.circuitcomponents.CircuitTypCore;
 import gecko.core.circuit.netlist.CircuitNetlist;
 import gecko.core.circuit.netlist.NetlistBuilder;
 import gecko.core.control.ControlCalculatorBuilder;
 import gecko.core.simulation.ControlNetlist;
 import gecko.core.simulation.DomainCoupler;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -55,6 +59,8 @@ import java.util.concurrent.atomic.AtomicReference;
  * }</pre>
  */
 public class HeadlessSimulationEngine {
+
+    private static final Logger LOGGER = LogManager.getLogger(HeadlessSimulationEngine.class);
 
     /**
      * Current state of the simulation engine.
@@ -94,6 +100,9 @@ public class HeadlessSimulationEngine {
 
     /** Minimum wall-clock time between two throttled progress callbacks, in ms. */
     private static final long PROGRESS_MIN_INTERVAL_MS = 50;
+
+    /** Max semiconductor state re-solves per time step (legacy limit). */
+    private static final int MAX_SEMICONDUCTOR_ITERATIONS = 10_000;
 
     // Solver components
     private MatrixSolver matrixSolver;
@@ -182,11 +191,6 @@ public class HeadlessSimulationEngine {
         // node labels and probe names (classic-like default logging)
         String[] signalNames = resolveSignalNames(config, circuitModel, circuitNetlist, controlCoupling);
 
-        // Create data container for results
-        DataContainerGlobal dataContainer = new DataContainerGlobal();
-        dataContainer.init(signalNames.length, expectedSteps + 1, signalNames, "time [s]");
-        dataContainer.setContainerStatus(ContainerStatus.RUNNING);
-
         // Initialize matrix solver
         matrixSolver = new MatrixSolver(settings.getSolverType());
         componentCurrentCalculator = new ComponentCurrentCalculator();
@@ -210,14 +214,17 @@ public class HeadlessSimulationEngine {
             matrixSolver.initializeMatrices(nodeCount, voltageSourceCount, elementCount);
         }
 
-        // Main simulation loop
-        float[] values = new float[signalNames.length];
-
         // Resolve each requested signal name to a node index via the netlist's
-        // labels (e.g. "V_out") or to a CONTROL measurement probe (e.g.
-        // "VOLT.1"); unresolvable signals stay zero
+        // labels (e.g. "V_out"), to a CONTROL measurement probe (e.g. "VOLT.1"
+        // or its labeled output "u1"), or to a labeled control signal tap
+        // (e.g. "gate"). Signals that resolve to nothing are dropped with a
+        // warning instead of logging silent zeros (classic container semantics:
+        // only connected measurement curves produce columns).
+        java.util.List<String> resolvedNames = new ArrayList<>(signalNames.length);
+        java.util.List<Integer> resolvedIndices = new ArrayList<>(signalNames.length);
         int[] signalNodes = new int[signalNames.length];
         ControlCalculatorBuilder.Probe[] signalProbes = new ControlCalculatorBuilder.Probe[signalNames.length];
+        ControlCalculatorBuilder.SignalTap[] signalTaps = new ControlCalculatorBuilder.SignalTap[signalNames.length];
         for (int i = 0; i < signalNames.length; i++) {
             signalNodes[i] = circuitNetlist != null
                     ? circuitNetlist.getLabelResolver().getIndex(signalNames[i]) : -1;
@@ -229,7 +236,51 @@ public class HeadlessSimulationEngine {
                     }
                 }
             }
+            if (signalNodes[i] < 0 && signalProbes[i] == null) {
+                for (ControlCalculatorBuilder.SignalTap tap : controlCoupling.signalTaps()) {
+                    if (tap.name().equals(signalNames[i])) {
+                        signalTaps[i] = tap;
+                        break;
+                    }
+                }
+            }
+            if (signalNodes[i] >= 0 || signalProbes[i] != null || signalTaps[i] != null) {
+                resolvedNames.add(signalNames[i]);
+                resolvedIndices.add(i);
+            } else {
+                LOGGER.warn("Signal '{}' cannot be resolved to a node, measurement probe or "
+                        + "labeled control output - not recorded", signalNames[i]);
+            }
         }
+        if (resolvedIndices.size() < signalNames.length) {
+            signalNames = resolvedNames.toArray(new String[0]);
+            int[] keptNodes = new int[signalNames.length];
+            ControlCalculatorBuilder.Probe[] keptProbes = new ControlCalculatorBuilder.Probe[signalNames.length];
+            ControlCalculatorBuilder.SignalTap[] keptTaps = new ControlCalculatorBuilder.SignalTap[signalNames.length];
+            for (int k = 0; k < resolvedIndices.size(); k++) {
+                int i = resolvedIndices.get(k);
+                keptNodes[k] = signalNodes[i];
+                keptProbes[k] = signalProbes[i];
+                keptTaps[k] = signalTaps[i];
+            }
+            signalNodes = keptNodes;
+            signalProbes = keptProbes;
+            signalTaps = keptTaps;
+        }
+
+        // Create data container for results
+        DataContainerGlobal dataContainer = new DataContainerGlobal();
+        dataContainer.init(signalNames.length, expectedSteps + 1, signalNames, "time [s]");
+        dataContainer.setContainerStatus(ContainerStatus.RUNNING);
+
+        // Main simulation loop
+        float[] values = new float[signalNames.length];
+
+        // Initial conditions (legacy semantics): inductor initial current and
+        // capacitor initial voltage from the file's parameter slot 1 seed the
+        // solver history, so files saved mid-run restart at their saved
+        // operating point like the classic GUI.
+        applyInitialConditions(circuitNetlist);
 
         long lastProgressTime = startTime;
 
@@ -257,49 +308,63 @@ public class HeadlessSimulationEngine {
 
             // Real MNA solver: build and solve circuit matrices
             if (circuitNetlist != null && circuitNetlist.getElementCount() > 0) {
-                // 1. Build system matrix A (component stamps)
                 matrixSolver.buildMatrixA(circuitNetlist, dt, currentTime, false);
-
-                // 2. Build right-hand side vector b (sources, history terms)
                 matrixSolver.buildVectorB(circuitNetlist, dt, currentTime, false);
-
-                // 3. Solve Ax=b for node voltages
                 matrixSolver.solve();
 
-                // 4. Calculate component currents from solved node voltages
-                componentCurrentCalculator.calculateComponentCurrents(
-                    matrixSolver, circuitNetlist, 0.0, dt, currentTime, true
-                );
+                // Semiconductor state machine (port of legacy
+                // doDiodeErrorsRecalculations): flip diode/thyristor/IGBT states
+                // until stable, re-solving the SAME time step (history is not
+                // shifted between iterations).
+                double stoergroesse = 1.0;
+                boolean isNewIteration = false;
+                int errorCounter = 0;
+                while (componentCurrentCalculator.calculateComponentCurrents(
+                        matrixSolver, circuitNetlist, stoergroesse, dt, currentTime,
+                        isNewIteration, errorCounter)) {
+                    isNewIteration = true;
+                    if (++errorCounter > MAX_SEMICONDUCTOR_ITERATIONS) {
+                        throw new IllegalStateException(
+                                "Numerical instability of switch states at t=" + currentTime);
+                    }
+                    if (errorCounter > 2) {
+                        stoergroesse *= 0.99;
+                    }
+                    matrixSolver.buildMatrixA(circuitNetlist, dt, currentTime, false);
+                    matrixSolver.buildVectorB(circuitNetlist, dt, currentTime, false);
+                    matrixSolver.solve();
+                }
 
-                // 5. Shift history for next time step
+                // Shift history for next time step
                 matrixSolver.updateNodePotentials(dt, currentTime);
 
-                // 6. Store results back into netlist
+                // Store results back into netlist
                 circuitNetlist.storeResults(matrixSolver.getP(), matrixSolver.getIALT());
 
-                // 6.5 Refresh CONTROL measurement probes (voltmeter/ammeter)
+                // Refresh CONTROL measurement probes (voltmeter/ammeter)
                 controlCoupling.updateProbes(circuitNetlist, matrixSolver.getP());
-
-                // 7. Extract signal values for data logging
-                double[] nodeVoltages = matrixSolver.getP();
-                for (int sigIdx = 0; sigIdx < values.length; sigIdx++) {
-                    ControlCalculatorBuilder.Probe probe = signalProbes[sigIdx];
-                    if (probe != null) {
-                        values[sigIdx] = (float) probe.outputHolder()._outputSignal[0][0];
-                        continue;
-                    }
-                    int node = signalNodes[sigIdx];
-                    values[sigIdx] = node >= 0 && node < nodeVoltages.length
-                            ? (float) nodeVoltages[node] : 0.0f;
-                }
-            } else {
-                // Fallback: no circuit loaded, use zero output
-                for (int sigIdx = 0; sigIdx < values.length; sigIdx++) {
-                    values[sigIdx] = 0.0f;
-                }
             }
 
-            // Store data (respecting logging interval)
+            // Sample the CURRENT state for data logging AFTER the solve: like
+            // the classic engine, the row logged at time t holds the state of
+            // the solve for [t-dt, t].
+            for (int sigIdx = 0; sigIdx < values.length; sigIdx++) {
+                ControlCalculatorBuilder.Probe probe = signalProbes[sigIdx];
+                if (probe != null) {
+                    values[sigIdx] = (float) probe.outputHolder()._outputSignal[0][0];
+                    continue;
+                }
+                ControlCalculatorBuilder.SignalTap tap = signalTaps[sigIdx];
+                if (tap != null) {
+                    values[sigIdx] = (float) tap.source()._outputSignal[0][0];
+                    continue;
+                }
+                int node = signalNodes[sigIdx];
+                values[sigIdx] = node >= 0 && circuitNetlist != null
+                        && node < matrixSolver.getP().length
+                        ? (float) matrixSolver.getP()[node] : 0.0f;
+            }
+
             if (config.isDataLoggingEnabled() &&
                     (currentStep % config.getDataLoggingInterval() == 0)) {
                 dataContainer.insertValuesAtEnd(values, currentTime);
@@ -513,6 +578,31 @@ public class HeadlessSimulationEngine {
         void onProgress(double currentTime, double endTime, int currentStep);
     }
 
+    /**
+     * Seeds the solver history with the file's initial conditions:
+     * inductors carry their initial current (parameter slot 1, legacy
+     * iALT), capacitors their initial voltage as node-potential history
+     * (pALT) on their positive node when the negative node is ground.
+     */
+    private void applyInitialConditions(CircuitNetlist netlist) {
+        if (netlist == null || netlist.getElementCount() == 0) {
+            return;
+        }
+        double[] currents = matrixSolver.getIALT();
+        double[] potentials = matrixSolver.getPALT();
+        for (int i = 0; i < netlist.getElementCount(); i++) {
+            double[] params = netlist.getParameter(i);
+            CircuitTypCore type = netlist.getType(i);
+            if (type == CircuitTypCore.LK_L && params.length > 1 && params[1] != 0.0) {
+                currents[i] = params[1];
+            } else if (type == CircuitTypCore.LK_C && params.length > 1 && params[1] != 0.0
+                    && netlist.getNodeY(i) == 0 && netlist.getNodeX(i) < potentials.length) {
+                potentials[netlist.getNodeX(i)] = params[1];
+            }
+        }
+        System.arraycopy(potentials, 0, matrixSolver.getP(), 0, potentials.length);
+    }
+
     private static int calculateExpectedSteps(double dt, double duration) {
         double rawSteps = Math.ceil(duration / dt);
         if (!Double.isFinite(rawSteps) || rawSteps > Integer.MAX_VALUE - 1) {
@@ -575,6 +665,11 @@ public class HeadlessSimulationEngine {
             for (ControlCalculatorBuilder.Probe probe : controlCoupling.probes()) {
                 if (!names.contains(probe.name())) {
                     names.add(probe.name());
+                }
+            }
+            for (ControlCalculatorBuilder.SignalTap tap : controlCoupling.signalTaps()) {
+                if (!names.contains(tap.name())) {
+                    names.add(tap.name());
                 }
             }
         }

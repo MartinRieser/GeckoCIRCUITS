@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
  *
  * Pure JDK HTTP client, no dependencies. The REST server must be running.
  *
- * Usage: NewEngineRunner &lt;baseUrl&gt; &lt;ipesFile&gt; &lt;outCsv&gt; [dt tEnd solver]
+ * Usage: NewEngineRunner &lt;baseUrl&gt; &lt;ipesFile&gt; &lt;outCsv&gt; [signal,signal,...] [tEndOverride]
  */
 public final class NewEngineRunner {
 
@@ -30,7 +30,7 @@ public final class NewEngineRunner {
 
     public static void main(String[] args) throws Exception {
         if (args.length < 3) {
-            System.err.println("Usage: NewEngineRunner <baseUrl> <ipesFile> <outCsv> [dt tEnd solver]");
+            System.err.println("Usage: NewEngineRunner <baseUrl> <ipesFile> <outCsv> [signals] [tEndOverride]");
             System.exit(2);
         }
         String baseUrl = args[0].endsWith("/") ? args[0].substring(0, args[0].length() - 1)
@@ -40,12 +40,19 @@ public final class NewEngineRunner {
 
         String base64 = Base64.getEncoder().encodeToString(Files.readAllBytes(ipes));
         StringBuilder json = new StringBuilder("{\"base64Circuit\":\"").append(base64).append('"');
-        if (args.length > 4) {
-            json.append(String.format(Locale.ROOT,
-                    ",\"timeStep\":%s,\"simulationTime\":%s", args[3], args[4]));
+        if (args.length > 3 && !args[3].isBlank()) {
+            json.append(",\"signals\":[");
+            String[] signals = args[3].split(",");
+            for (int i = 0; i < signals.length; i++) {
+                if (i > 0) {
+                    json.append(',');
+                }
+                json.append('"').append(signals[i]).append('"');
+            }
+            json.append(']');
         }
-        if (args.length > 5) {
-            json.append(",\"solverType\":\"").append(args[5]).append('"');
+        if (args.length > 4 && !args[4].isBlank()) {
+            json.append(String.format(Locale.ROOT, ",\"simulationTime\":%s", args[4]));
         }
         json.append('}');
 

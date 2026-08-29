@@ -74,6 +74,11 @@ public class CircuitNetlist implements INetList {
     // Singularity de-singularization entries for isolated galvanic subcircuits
     private int[] singularityEntries = new int[]{0};
 
+    // Source file uid per element (0 = none); lets the CONTROL domain couple
+    // gates and measurement blocks to the right element even when
+    // non-branch components were filtered from the element list
+    private long[] elementUids = new long[0];
+
     // Node labels for signal resolution (scope/probe lookups by name)
     private final LabelResolver labelResolver = new LabelResolver();
 
@@ -89,6 +94,26 @@ public class CircuitNetlist implements INetList {
 
     public void setSingularityEntries(int[] singularityEntries) {
         this.singularityEntries = singularityEntries != null ? singularityEntries : new int[]{0};
+    }
+
+    public long[] getElementUids() {
+        return elementUids;
+    }
+
+    public void setElementUids(long[] elementUids) {
+        this.elementUids = elementUids != null ? elementUids : new long[0];
+    }
+
+    /** Element index for a source file uid, or -1. */
+    public int indexOfUid(long uid) {
+        if (uid != 0) {
+            for (int i = 0; i < elementUids.length; i++) {
+                if (elementUids[i] == uid) {
+                    return i;
+                }
+            }
+        }
+        return -1;
     }
 
     /**

@@ -191,17 +191,17 @@ public final class SerializationUtils {
 
     public static void appendStringArray(StringBuilder buffer, String[] values) {
         buffer.append("[]");
+        // classic export writes nothing (not "null") for an empty list
         if (values == null || values.length == 0) {
-            buffer.append(" null");
-        } else {
-            buffer.append(' ');
-            for (String value : values) {
-                buffer.append(gecko.core.circuit.CircuitFileConstants.SEPARATOR_ASCII_STRINGARRAY);
-                if (value == null || value.trim().isEmpty() || value.equals(gecko.core.circuit.CircuitFileConstants.NIX)) {
-                    buffer.append(gecko.core.circuit.CircuitFileConstants.NIX);
-                } else {
-                    buffer.append(value.trim());
-                }
+            return;
+        }
+        buffer.append(' ');
+        for (String value : values) {
+            buffer.append(gecko.core.circuit.CircuitFileConstants.SEPARATOR_ASCII_STRINGARRAY);
+            if (value == null || value.trim().isEmpty() || value.equals(gecko.core.circuit.CircuitFileConstants.NIX)) {
+                buffer.append(gecko.core.circuit.CircuitFileConstants.NIX);
+            } else {
+                buffer.append(value.trim());
             }
         }
     }
@@ -216,13 +216,13 @@ public final class SerializationUtils {
 
     public static void appendDoubleArray(StringBuilder buffer, double[] values) {
         buffer.append("[] ");
+        // classic export writes nothing for an empty list
         if (values == null || values.length == 0) {
-            buffer.append("null");
-        } else {
-            for (double value : values) {
-                buffer.append(value);
-                buffer.append(' ');
-            }
+            return;
+        }
+        for (double value : values) {
+            buffer.append(value);
+            buffer.append(' ');
         }
     }
 

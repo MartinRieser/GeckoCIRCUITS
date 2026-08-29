@@ -24,14 +24,22 @@ public final class CompareCsv {
 
     public static void main(String[] args) throws IOException {
         if (args.length < 2) {
-            System.err.println("Usage: CompareCsv <reference.csv> <actual.csv> [relTol=1e-6] [absTol=1e-9]");
+            System.err.println("Usage: CompareCsv <reference.csv> <actual.csv> [relTol=1e-6] [absTol=1e-9] [skipFirstRow]");
             System.exit(2);
         }
         double relTol = args.length > 2 ? Double.parseDouble(args[2]) : 1e-6;
         double absTol = args.length > 3 ? Double.parseDouble(args[3]) : 1e-9;
+        boolean skipFirstRow = args.length > 4 && Boolean.parseBoolean(args[4]);
 
         Table reference = read(Path.of(args[0]));
         Table actual = read(Path.of(args[1]));
+        if (skipFirstRow) {
+            // the classic engine's row 0 comes from its own initialization
+            // convention (switches off, no control step yet) and is not
+            // comparable with the headless engine's first logged step
+            reference.dropFirstRow();
+            actual.dropFirstRow();
+        }
 
         List<String> common = new ArrayList<>();
         for (String column : reference.headers.keySet()) {
@@ -87,6 +95,19 @@ public final class CompareCsv {
         Map<String, Integer> headers = new LinkedHashMap<>();
         List<Double> time = new ArrayList<>();
         Map<Integer, double[]> columns = new LinkedHashMap<>();
+
+        void dropFirstRow() {
+            if (time.isEmpty()) {
+                return;
+            }
+            time.remove(0);
+            for (Map.Entry<Integer, double[]> entry : columns.entrySet()) {
+                double[] series = entry.getValue();
+                double[] shifted = new double[series.length - 1];
+                System.arraycopy(series, 1, shifted, 0, shifted.length);
+                entry.setValue(shifted);
+            }
+        }
     }
 
     private static Table read(Path file) throws IOException {

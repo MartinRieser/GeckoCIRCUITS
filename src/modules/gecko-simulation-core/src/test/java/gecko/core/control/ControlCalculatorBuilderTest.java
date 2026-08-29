@@ -162,20 +162,24 @@ class ControlCalculatorBuilderTest {
     }
 
     @Test
-    void applyGateSignals_switchesResistanceBetweenRonAndRoff() {
+    void applyGateSignals_writesGateStatusForTheStateMachine() {
         ControlCalculatorBuilder.GateDrive drive = coupling.gateDrives().get(0);
         SignalCalculatorRectangle source = (SignalCalculatorRectangle) coupling.calculators().get(0);
         assertEquals(CircuitTypCore.LK_IGBT, netlist.getType(drive.elementIndex()));
 
-        // high signal -> ON resistance (slot 2 = 0.01)
+        // high signal -> gate status 1 in slot 8. The resistance flip of an
+        // IGBT is owned by the piecewise-linear state machine in
+        // ComponentCurrentCalculator (legacy semantics), not by the gate drive.
+        // Like the classic engine, the applied gate lags the computed signal
+        // by one step: the first apply seeds the previous value.
         coupling.initialize(1e-6);
         source.calculateYOUT(1e-6);
         assertEquals(1.0, source._outputSignal[0][0], 1e-12);
         coupling.applyGateSignals(netlist);
-        assertEquals(0.01, netlist.getParameter(drive.elementIndex())[0], 1e-12);
+        coupling.applyGateSignals(netlist);
         assertEquals(1.0, netlist.getParameter(drive.elementIndex())[8], 1e-12);
 
-        // advance into the low half of the period -> OFF resistance (slot 3 = 1e7)
+        // advance into the low half of the period -> gate status 0 one step later
         boolean reachedLow = false;
         for (int i = 0; i < 2000 && !reachedLow; i++) {
             source.calculateYOUT(1e-6);
@@ -183,7 +187,7 @@ class ControlCalculatorBuilderTest {
         }
         assertTrue(reachedLow, "rectangle must reach its low phase within one period");
         coupling.applyGateSignals(netlist);
-        assertEquals(1.0E7, netlist.getParameter(drive.elementIndex())[0], 1e-3);
+        coupling.applyGateSignals(netlist);
         assertEquals(0.0, netlist.getParameter(drive.elementIndex())[8], 1e-12);
     }
 

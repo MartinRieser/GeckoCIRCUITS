@@ -139,7 +139,7 @@ public final class CircuitFileWriter {
             };
 
             sb.append("\n").append(connHeader).append(" (").append(elementCounter).append(")\n");
-            sb.append("<Connection>");
+            sb.append("<Verbindung>");
 
             sb.append("\nlabel");
             SerializationUtils.appendAsString(sb, conn.getLabel());
@@ -170,7 +170,7 @@ public final class CircuitFileWriter {
                 SerializationUtils.appendAsString(sb, conn.getUniqueObjectIdentifier());
             }
 
-            sb.append("\n<\\Connection>\n");
+            sb.append("\n<\\Verbindung>\n");
             elementCounter++;
         }
 

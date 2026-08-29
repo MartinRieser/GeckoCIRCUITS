@@ -200,7 +200,7 @@ class HeadlessSimulationEngineTest {
     }
 
     @Test
-    void signalOverride_isRecordedInsteadOfFileSignals() {
+    void signalOverride_unresolvableSignalsAreNotRecorded() {
         HeadlessSimulationEngine engine = new HeadlessSimulationEngine();
         SimulationConfig config = SimulationConfig.builder()
                 .signals(List.of("node_a", "node_b"))
@@ -212,9 +212,10 @@ class HeadlessSimulationEngineTest {
         SimulationResult result = engine.runSimulation(config);
 
         assertTrue(result.isSuccess());
-        assertEquals(2, result.getSignalNames().length);
-        assertEquals("node_a", result.getSignalNames()[0]);
-        assertEquals("node_b", result.getSignalNames()[1]);
+        // no circuit -> neither name resolves to a node, probe or labeled
+        // control output: like the classic container, nothing is recorded
+        // instead of silent zero columns
+        assertEquals(0, result.getSignalNames().length);
     }
 
     private static boolean waitFor(BooleanSupplier condition) throws InterruptedException {

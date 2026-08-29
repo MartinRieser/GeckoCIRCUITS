@@ -1,8 +1,58 @@
 # Headless CONTROL-Domain Parity — Investigation & Implementation Plan
 
-Status: PROPOSED (evidence gathered 2026-08-28)
+Status: PARTIALLY IMPLEMENTED (2026-08-29)
 Owner workstream referenced by `WEB_FRONTEND_PLAN.md` decision 3
 ("Control-domain headless parity is a separate future workstream").
+
+## 0. Implementation status after the first round (2026-08-29)
+
+Implemented and green (`mvn verify`, parity harness `tools/parity/results/`):
+
+- **W1 gate-driven switching**: legacy semiconductor port (diode/thyristor/IGBT
+  piecewise-linear state machine with bounded re-solve loop, legacy parameter
+  slots `[0]=rD [1]=uF [2]=rOn [3]=rOff [4]=i [5]=u`, `LK_S` current slot fix),
+  classic wire-topology semantics in `NetlistBuilder` (endpoint-junction rule:
+  wires connect only when one path contains the other's ENDPOINT — crossing
+  wires do not), `DiodeStamper` stamping `1/params[0]`, signal-source phase
+  taken as radians (the .ipes stores radians), measurement probes named after
+  the block's `labelEndKnoten` (classic container names), signal taps for
+  labeled sources, gate coupling via uid OR component name, gate applied one
+  step late like the classic engine.
+- **W3 legacy export**: solved differently than planned — the legacy GUI
+  recomputes container names from the schematic on every start, so file-level
+  injection cannot work; instead `ReferenceRunner` labels VOLT/AMP blocks via
+  RMI (`setOutputNodeName`, `labels=auto`) and `NewEngineRunner` requests the
+  same signal names. `CompareCsv` has `skipFirstRow` for the legacy
+  initialization-row convention.
+- **W5 partial**: `run-parity.ps1` now runs 10 circuits (7 tutorials + the 3
+  original parity fixtures).
+
+Result: `rc-lowpass`, `rl-transient`, `rlc-series`, `buck_simple` PASS
+(numerically identical within tolerance). Remaining FAILs have two distinct
+root causes, both now precisely known:
+
+1. **Saved initial conditions** (`ex_1`, `ex_3_pwm`, `singlePhase_PWM_converter`):
+   the classic GUI restarts at the operating point saved in the file
+   (L `params[1]` initial current — works; C `params[1]` initial voltage on
+   non-grounded capacitors and full node-potential initialization — needs a
+   proper DC operating point solve, not per-element seeding).
+2. **Unsupported control blocks** (`boostPFC`, `thyristor_RL_3phBridge`,
+   `three-phase_VSR_250kW`): PI/MUL/comparator chains are skipped by
+   `ControlCalculatorBuilder`, so their gate drives never fire. W4 fail-fast
+   (clear per-block error instead of silent zero) is NOT yet implemented.
+
+### Strategic alternative (recommended before investing more into W2/W4)
+
+Porting the classic engine block-by-block into the headless engine converges
+slowly (each circuit class exposes new slot/layout/convention gaps). A faster
+route to "web GUI with legacy-correct results": drive the REAL legacy engine
+headlessly (the proven `GeckoSim` RMI path used by `ReferenceRunner`) as an
+additional simulation backend of `gecko-rest-api`, and keep the pure-headless
+engine for simple LK circuits. That reuses 30 years of legacy correctness
+instead of re-implementing it, at the cost of an AWT-capable runtime for the
+backend process.
+
+---
 
 Baseline: LK parity is green (`tools/parity/results/20260828-165310.txt`,
 fix ee81cc5e "pin MNA island reference rows after stamping").

@@ -31,17 +31,12 @@ public class ComponentCurrentCalculator {
     private static final double FAST_NULL_R = 1.0e-12;
     private static final double FAST_NULL_L = 1.0e-12;
 
+    /** Above this resistance a semiconductor branch counts as blocking (legacy rDoffDEFAULT). */
+    private static final double RD_OFF_THRESHOLD = 1.0e7;
+
     /**
      * Calculates component currents after solving the MNA system Ax=b.
-     *
-     * @param matrixSolver     the MNA solver containing node potentials and arrays
-     * @param netlist          the circuit netlist with component types, nodes, and parameters
-     * @param perturbation     perturbation value for numerical derivatives (unused in basic version)
-     * @param dt               time step in seconds
-     * @param time             current simulation time in seconds
-     * @param isNewIteration   true if this is the first iteration of a new time step
-     * @return false for simplified version (no diode recalculation needed)
-     * @throws IllegalArgumentException if inputs are null
+     * Legacy-compatible overload with default disturbance and error counter.
      */
     public boolean calculateComponentCurrents(
             MatrixSolver matrixSolver,
@@ -50,6 +45,28 @@ public class ComponentCurrentCalculator {
             double dt,
             double time,
             boolean isNewIteration) {
+        return calculateComponentCurrents(matrixSolver, netlist, 1.0, dt, time, isNewIteration, 0);
+    }
+
+    /**
+     * Calculates component currents and runs the piecewise-linear semiconductor
+     * state machine (port of legacy {@code LKMatrices.calculateComponentCurrents}).
+     *
+     * @param stoergroesse     disturbance factor shrinking the switching thresholds
+     *                         when states oscillate (legacy anti-stuck mechanism)
+     * @param errorCounter     number of state re-solves already done for this step;
+     *                         widens the acceptance threshold after 300/600 flips
+     * @return true when a diode/thyristor/IGBT flipped its state — the caller must
+     *         re-build and re-solve the same time step (legacy einSchrittZurueck)
+     */
+    public boolean calculateComponentCurrents(
+            MatrixSolver matrixSolver,
+            INetList netlist,
+            double stoergroesse,
+            double dt,
+            double time,
+            boolean isNewIteration,
+            int errorCounter) {
 
         if (matrixSolver == null) {
             throw new IllegalArgumentException("Matrix solver cannot be null");
@@ -57,6 +74,9 @@ public class ComponentCurrentCalculator {
         if (netlist == null) {
             throw new IllegalArgumentException("Netlist cannot be null");
         }
+
+        boolean stepBack = false;
+        double acceptanceThreshold = errorCounter > 600 ? 0.2 : errorCounter > 300 ? 0.1 : 0.0;
 
         double[] p = matrixSolver.getP();
         double[] pALT = matrixSolver.getPALT();
@@ -92,7 +112,10 @@ public class ComponentCurrentCalculator {
                     if (resistance < FAST_NULL_R) {
                         resistance = FAST_NULL_R;
                     }
-                    parameters[1] = (p[nodeX] - p[nodeY]) / resistance;
+                    // legacy storage: LK_S -> [3]=i,[4]=u; MOSFET -> [4]=i,[5]=u.
+                    // params[1] holds the rOn slot of LK_S and must not be clobbered.
+                    writeCurrentAndVoltage(parameters, 4,
+                            (p[nodeX] - p[nodeY]) / resistance, p[nodeX] - p[nodeY]);
                     break;
                 }
 
@@ -202,23 +225,67 @@ public class ComponentCurrentCalculator {
                     break;
 
                 case LK_D: {
+                    // Port of the legacy diode model: params[0]=current rD, [1]=uF,
+                    // [2]=rOn, [3]=rOff, [4]=i, [5]=u. The piecewise-linear state
+                    // flip sets [0] and requests a re-solve of this time step.
                     double rD = parameters[0];
                     double uf = parameters[1];
-                    parameters[1] = (p[nodeX] - p[nodeY] - uf) / rD;
+                    double voltage = p[nodeX] - p[nodeY];
+                    writeCurrentAndVoltage(parameters, 4, (voltage - uf) / rD, voltage);
+                    boolean conducting = rD < RD_OFF_THRESHOLD;
+                    if (conducting && voltage < stoergroesse * uf + acceptanceThreshold) {
+                        parameters[0] = parameters[3];
+                        stepBack = true;
+                    } else if (!conducting && rD >= RD_OFF_THRESHOLD
+                            && voltage > stoergroesse * uf - acceptanceThreshold) {
+                        parameters[0] = parameters[2];
+                        stepBack = true;
+                    }
                     break;
                 }
 
                 case LK_THYR: {
-                    double rDThyr = parameters[0];
-                    double ufThyr = parameters[1];
-                    parameters[1] = (p[nodeX] - p[nodeY] - ufThyr) / rDThyr;
+                    double rD = parameters[0];
+                    double uf = parameters[1];
+                    double voltage = p[nodeX] - p[nodeY];
+                    writeCurrentAndVoltage(parameters, 4, (voltage - uf) / rD, voltage);
+                    if (voltage < stoergroesse * uf + acceptanceThreshold && rD < 0.5 * parameters[3]) {
+                        if (time - parameters[11] > 3 * parameters[9]) {
+                            parameters[11] = time;
+                        }
+                        if (time - parameters[11] >= parameters[9]) {
+                            parameters[0] = parameters[3];
+                            stepBack = true;
+                        }
+                    }
+                    if (parameters[8] == 1 && voltage > stoergroesse * uf - acceptanceThreshold
+                            && rD >= RD_OFF_THRESHOLD) {
+                        parameters[0] = parameters[2];
+                        stepBack = true;
+                    }
                     break;
                 }
 
                 case LK_IGBT: {
-                    double rDIgbt = parameters[0];
-                    double ufIgbt = parameters[1];
-                    parameters[1] = (p[nodeX] - p[nodeY] - ufIgbt) / rDIgbt;
+                    double rD = parameters[0];
+                    double uf = parameters[1];
+                    double voltage = p[nodeX] - p[nodeY];
+                    writeCurrentAndVoltage(parameters, 4, (voltage - uf) / rD, voltage);
+                    boolean conducting = rD < RD_OFF_THRESHOLD;
+                    if (conducting && parameters[8] == 1
+                            && voltage < stoergroesse * uf + acceptanceThreshold) {
+                        parameters[0] = parameters[3];
+                        stepBack = true;
+                    }
+                    if (parameters[8] == 1 && !conducting
+                            && voltage > stoergroesse * uf - acceptanceThreshold) {
+                        parameters[0] = parameters[2];
+                        stepBack = true;
+                    }
+                    if (parameters[8] == 0 && parameters[0] == parameters[2]) {
+                        parameters[0] = parameters[3];
+                        stepBack = true;
+                    }
                     break;
                 }
 
@@ -242,14 +309,29 @@ public class ComponentCurrentCalculator {
                     break;
             }
 
-            // Legacy stores the element current in parameter[1]; keep the
-            // solver's current-state array in sync so the next history shift
-            // promotes it to iALT (inductor/cap history terms depend on it).
+            // Legacy stores the element current in a type-specific parameter slot;
+            // keep the solver's current-state array in sync so the next history
+            // shift promotes it to iALT (inductor/cap history terms depend on it).
             if (parameters.length > 1) {
-                iCurrent[elementIdx] = parameters[1];
+                int currentSlot = switch (componentType) {
+                    case LK_S, LK_MOSFET, LK_D, LK_THYR, LK_IGBT -> 4;
+                    default -> 1;
+                };
+                iCurrent[elementIdx] = parameters[Math.min(currentSlot, parameters.length - 1)];
             }
         }
 
-        return false;
+        return stepBack;
+    }
+
+    /** Writes current/voltage into legacy storage slots, tolerating short arrays. */
+    private static void writeCurrentAndVoltage(double[] parameters, int slot,
+                                               double current, double voltage) {
+        if (parameters.length > slot) {
+            parameters[slot] = current;
+        }
+        if (parameters.length > slot + 1) {
+            parameters[slot + 1] = voltage;
+        }
     }
 }

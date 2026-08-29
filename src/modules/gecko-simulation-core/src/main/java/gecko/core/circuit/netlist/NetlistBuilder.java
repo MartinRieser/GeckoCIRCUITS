@@ -134,7 +134,7 @@ public class NetlistBuilder {
         // If circuit has explicit terminal labels on components (from classic GeckoCIRCUITS file export),
         // use label matching with series terminal coordinate sharing
         if (explicitLabelCount > 0) {
-            return buildFromComponentsWithLabels(allComponents);
+            return buildFromComponentsWithLabels(allComponents, model.getConnections());
         }
 
         List<CircuitModel.ConnectionData> connections = model.getConnections();
@@ -152,32 +152,26 @@ public class NetlistBuilder {
             List<CircuitModel.ComponentData> components,
             List<CircuitModel.ConnectionData> connections) {
 
-        DisjointSet<GridPoint> pointDs = new DisjointSet<>();
-        Map<String, GridPoint> labelToPoint = new HashMap<>();
-        Set<GridPoint> groundPoints = new HashSet<>();
+        WireNets wireNets = buildWireNets(connections);
+        DisjointSet<String> pointDs = new DisjointSet<>();
+        Map<String, String> labelToKey = new HashMap<>();
+        Set<String> groundPoints = new HashSet<>();
 
-        // 1. Union wire points
+        // 1. Wire labels name the whole wire net
         for (CircuitModel.ConnectionData conn : connections) {
             int[][] pts = conn.getPoints();
             if (pts == null || pts.length == 0) continue;
 
-            GridPoint first = new GridPoint(pts[0][0], pts[0][1]);
-            for (int k = 1; k < pts.length; k++) {
-                GridPoint next = new GridPoint(pts[k][0], pts[k][1]);
-                pointDs.union(first, next);
-            }
-
-            // Wire label
             if (isValidLabel(conn.getLabel())) {
                 String lbl = conn.getLabel().trim();
+                String key = wireNets.netKey(new GridPoint(pts[0][0], pts[0][1]));
+                pointDs.find(key);
                 if (isGroundLabel(lbl)) {
-                    groundPoints.add(first);
+                    groundPoints.add(key);
+                } else if (labelToKey.containsKey(lbl)) {
+                    pointDs.union(key, labelToKey.get(lbl));
                 } else {
-                    if (labelToPoint.containsKey(lbl)) {
-                        pointDs.union(first, labelToPoint.get(lbl));
-                    } else {
-                        labelToPoint.put(lbl, first);
-                    }
+                    labelToKey.put(lbl, key);
                 }
             }
         }
@@ -189,39 +183,26 @@ public class NetlistBuilder {
             GridPoint[] terms = computeComponentTerminals(comp);
 
             // Register labels / grounds
-            for (String l : comp.getTerminalXLabels()) {
-                if (isValidLabel(l)) {
-                    String lbl = l.trim();
-                    if (isGroundLabel(lbl)) {
-                        groundPoints.add(terms[0]);
-                    } else {
-                        if (labelToPoint.containsKey(lbl)) {
-                            pointDs.union(terms[0], labelToPoint.get(lbl));
+            for (int t = 0; t < 2; t++) {
+                String key = wireNets.netKey(terms[t]);
+                pointDs.find(key);
+                for (String l : t == 0 ? comp.getTerminalXLabels() : comp.getTerminalYLabels()) {
+                    if (isValidLabel(l)) {
+                        String lbl = l.trim();
+                        if (isGroundLabel(lbl)) {
+                            groundPoints.add(key);
+                        } else if (labelToKey.containsKey(lbl)) {
+                            pointDs.union(key, labelToKey.get(lbl));
                         } else {
-                            labelToPoint.put(lbl, terms[0]);
-                        }
-                    }
-                }
-            }
-
-            for (String l : comp.getTerminalYLabels()) {
-                if (isValidLabel(l)) {
-                    String lbl = l.trim();
-                    if (isGroundLabel(lbl)) {
-                        groundPoints.add(terms[1]);
-                    } else {
-                        if (labelToPoint.containsKey(lbl)) {
-                            pointDs.union(terms[1], labelToPoint.get(lbl));
-                        } else {
-                            labelToPoint.put(lbl, terms[1]);
+                            labelToKey.put(lbl, key);
                         }
                     }
                 }
             }
 
             if (typ == 31) {
-                groundPoints.add(terms[0]);
-                groundPoints.add(terms[1]);
+                groundPoints.add(wireNets.netKey(terms[0]));
+                groundPoints.add(wireNets.netKey(terms[1]));
             }
 
             // Only electrical/thermal branches are added to MNA netlist elements
@@ -238,15 +219,15 @@ public class NetlistBuilder {
 
         // 3. Assign node indices
         // Ground is node 0
-        Map<GridPoint, Integer> rootToNode = new HashMap<>();
-        for (GridPoint gp : groundPoints) {
-            rootToNode.put(pointDs.find(gp), 0);
+        Map<String, Integer> rootToNode = new HashMap<>();
+        for (String gk : groundPoints) {
+            rootToNode.put(pointDs.find(gk), 0);
         }
 
         int nextNode = 1;
         for (int i = 0; i < elementCount; i++) {
             for (int t = 0; t < 2; t++) {
-                GridPoint root = pointDs.find(compTerminals[i][t]);
+                String root = pointDs.find(wireNets.netKey(compTerminals[i][t]));
                 if (!rootToNode.containsKey(root)) {
                     rootToNode.put(root, nextNode++);
                 }
@@ -255,7 +236,7 @@ public class NetlistBuilder {
 
         // If no explicit ground was specified, map the root of the first negative terminal to node 0
         if (groundPoints.isEmpty() && elementCount > 0) {
-            GridPoint defaultGroundRoot = pointDs.find(compTerminals[0][1]);
+            String defaultGroundRoot = pointDs.find(wireNets.netKey(compTerminals[0][1]));
             int oldNode = rootToNode.getOrDefault(defaultGroundRoot, 1);
             if (oldNode != 0) {
                 rootToNode.put(defaultGroundRoot, 0);
@@ -295,8 +276,8 @@ public class NetlistBuilder {
 
         for (int i = 0; i < elementCount; i++) {
             CircuitModel.ComponentData comp = branchComponents.get(i);
-            nodeX[i] = rootToNode.getOrDefault(pointDs.find(compTerminals[i][0]), 0);
-            nodeY[i] = rootToNode.getOrDefault(pointDs.find(compTerminals[i][1]), 0);
+            nodeX[i] = rootToNode.getOrDefault(pointDs.find(wireNets.netKey(compTerminals[i][0])), 0);
+            nodeY[i] = rootToNode.getOrDefault(pointDs.find(wireNets.netKey(compTerminals[i][1])), 0);
 
             if (comp.getRawParameters() != null) {
                 int copyLen = Math.min(comp.getRawParameters().length, 40);
@@ -320,15 +301,20 @@ public class NetlistBuilder {
         netlist.initNetlist(types, nodeX, nodeY, voltageSourceNumbers, params,
                 maxNodeIndex, voltageSourceCount, elementCount);
         netlist.setSingularityEntries(calculateSingularityEntries(maxNodeIndex, elementCount, nodeX, nodeY));
+        long[] uids = new long[elementCount];
+        for (int i = 0; i < elementCount; i++) {
+            uids[i] = branchComponents.get(i).getUniqueObjectIdentifier();
+        }
+        netlist.setElementUids(uids);
 
         // expose net labels so simulations can resolve signals like "V_out"
-        for (Map.Entry<String, GridPoint> entry : labelToPoint.entrySet()) {
+        for (Map.Entry<String, String> entry : labelToKey.entrySet()) {
             Integer node = rootToNode.get(pointDs.find(entry.getValue()));
             if (node != null) {
                 netlist.getLabelResolver().addLabel(entry.getKey(), node);
             }
         }
-        for (GridPoint gp : groundPoints) {
+        for (String gk : groundPoints) {
             netlist.getLabelResolver().addLabel("GND", 0);
             break;
         }
@@ -354,6 +340,69 @@ public class NetlistBuilder {
         return new GridPoint[]{input, output};
     }
 
+    /**
+     * Classic wire connectivity model. Each wire forms one conductor; two
+     * wires merge only when one wire's path contains the other's ENDPOINT
+     * (T-junction or corner junction). Wires that merely cross at a point
+     * that is mid-path for both stay separate — the classic {@code Connection}
+     * exposes only its two endpoint terminals to
+     * {@code PotentialArea.geometricOnSamePotential}, so a shared mid-path
+     * point alone connects nothing. Terminals attach to a wire when they lie
+     * anywhere on its path.
+     */
+    private static final class WireNets {
+        private final Map<GridPoint, Integer> pointToWireId = new HashMap<>();
+        private final DisjointSet<Integer> wireIds = new DisjointSet<>();
+
+        /** Stable identity of the net a schematic point belongs to. */
+        String netKey(GridPoint p) {
+            Integer wireId = pointToWireId.get(p);
+            return wireId != null ? "W" + wireIds.find(wireId) : "P" + p.x + "," + p.y;
+        }
+    }
+
+    private static WireNets buildWireNets(List<CircuitModel.ConnectionData> connections) {
+        WireNets nets = new WireNets();
+        if (connections == null) {
+            return nets;
+        }
+        List<List<GridPoint>> wires = new ArrayList<>();
+        for (CircuitModel.ConnectionData conn : connections) {
+            if (!"LK".equalsIgnoreCase(conn.getType()) || conn.getPoints() == null) {
+                continue;
+            }
+            List<GridPoint> path = new ArrayList<>();
+            for (int[] pt : conn.getPoints()) {
+                GridPoint gp = new GridPoint(pt[0], pt[1]);
+                if (path.isEmpty() || !gp.equals(path.get(path.size() - 1))) {
+                    path.add(gp);
+                }
+            }
+            if (!path.isEmpty()) {
+                wires.add(path);
+            }
+        }
+        DisjointSet<Integer> ids = nets.wireIds;
+        Map<GridPoint, List<Integer>> wiresThroughPoint = new HashMap<>();
+        for (int i = 0; i < wires.size(); i++) {
+            ids.find(i);
+            for (GridPoint gp : wires.get(i)) {
+                wiresThroughPoint.computeIfAbsent(gp, k -> new ArrayList<>()).add(i);
+                nets.pointToWireId.putIfAbsent(gp, i);
+            }
+        }
+        for (int i = 0; i < wires.size(); i++) {
+            List<GridPoint> path = wires.get(i);
+            GridPoint[] ends = {path.get(0), path.get(path.size() - 1)};
+            for (GridPoint end : ends) {
+                for (int j : wiresThroughPoint.getOrDefault(end, List.of())) {
+                    ids.union(i, j);
+                }
+            }
+        }
+        return nets;
+    }
+
     private static boolean isValidLabel(String label) {
         if (label == null) return false;
         String trimmed = label.trim();
@@ -372,8 +421,11 @@ public class NetlistBuilder {
 
     /**
      * Build netlist from components that have terminal labels (from .ipes file parsing).
+     * Labeled terminals connect by equal label; unlabelled terminals connect through
+     * wire topology (union-find over wire points) or coincident terminal points.
      */
-    private static CircuitNetlist buildFromComponentsWithLabels(List<CircuitModel.ComponentData> components) {
+    private static CircuitNetlist buildFromComponentsWithLabels(List<CircuitModel.ComponentData> components,
+                                                                List<CircuitModel.ConnectionData> connections) {
         Map<String, Integer> labelToNode = new LinkedHashMap<>();
         labelToNode.put("0", 0);
         labelToNode.put("GND", 0);
@@ -406,19 +458,30 @@ public class NetlistBuilder {
             compTerminals[i] = computeComponentTerminals(branchComponents.get(i));
         }
 
-        // Map unlabelled terminals (empty label) by their physical terminal GridPoint
-        Map<GridPoint, Integer> unlabelledPointToNode = new HashMap<>();
+        // Classic wire topology so unlabelled terminals connect through wires,
+        // not only through coincident terminal coordinates
+        WireNets wireNets = buildWireNets(connections);
+
+        // Map net identities (wire nets and unattached terminal points) to node
+        // indices. Two labels sharing one wire net alias to the same node (first wins).
+        Map<String, Integer> rootToNode = new HashMap<>();
         for (int i = 0; i < elementCount; i++) {
             CircuitModel.ComponentData comp = branchComponents.get(i);
             String[] xLabels = comp.getTerminalXLabels();
             if (xLabels.length > 0 && isValidLabel(xLabels[0])) {
                 int node = isGroundLabel(xLabels[0]) ? 0 : labelToNode.getOrDefault(xLabels[0], 0);
-                unlabelledPointToNode.put(compTerminals[i][0], node);
+                Integer existing = rootToNode.putIfAbsent(wireNets.netKey(compTerminals[i][0]), node);
+                if (existing != null && !xLabels[0].trim().isEmpty()) {
+                    labelToNode.put(xLabels[0].trim(), existing);
+                }
             }
             String[] yLabels = comp.getTerminalYLabels();
             if (yLabels.length > 0 && isValidLabel(yLabels[0])) {
                 int node = isGroundLabel(yLabels[0]) ? 0 : labelToNode.getOrDefault(yLabels[0], 0);
-                unlabelledPointToNode.put(compTerminals[i][1], node);
+                Integer existing = rootToNode.putIfAbsent(wireNets.netKey(compTerminals[i][1]), node);
+                if (existing != null && !yLabels[0].trim().isEmpty()) {
+                    labelToNode.put(yLabels[0].trim(), existing);
+                }
             }
         }
 
@@ -426,16 +489,16 @@ public class NetlistBuilder {
             CircuitModel.ComponentData comp = branchComponents.get(i);
             String[] xLabels = comp.getTerminalXLabels();
             if (xLabels.length == 0 || !isValidLabel(xLabels[0])) {
-                GridPoint pt = compTerminals[i][0];
-                if (!unlabelledPointToNode.containsKey(pt)) {
-                    unlabelledPointToNode.put(pt, nextNode++);
+                String root = wireNets.netKey(compTerminals[i][0]);
+                if (!rootToNode.containsKey(root)) {
+                    rootToNode.put(root, nextNode++);
                 }
             }
             String[] yLabels = comp.getTerminalYLabels();
             if (yLabels.length == 0 || !isValidLabel(yLabels[0])) {
-                GridPoint pt = compTerminals[i][1];
-                if (!unlabelledPointToNode.containsKey(pt)) {
-                    unlabelledPointToNode.put(pt, nextNode++);
+                String root = wireNets.netKey(compTerminals[i][1]);
+                if (!rootToNode.containsKey(root)) {
+                    rootToNode.put(root, nextNode++);
                 }
             }
         }
@@ -474,14 +537,14 @@ public class NetlistBuilder {
             if (xLabels.length > 0 && isValidLabel(xLabels[0])) {
                 nodeX[i] = isGroundLabel(xLabels[0]) ? 0 : labelToNode.getOrDefault(xLabels[0], 0);
             } else {
-                nodeX[i] = unlabelledPointToNode.getOrDefault(compTerminals[i][0], 0);
+                nodeX[i] = rootToNode.getOrDefault(wireNets.netKey(compTerminals[i][0]), 0);
             }
 
             String[] yLabels = comp.getTerminalYLabels();
             if (yLabels.length > 0 && isValidLabel(yLabels[0])) {
                 nodeY[i] = isGroundLabel(yLabels[0]) ? 0 : labelToNode.getOrDefault(yLabels[0], 0);
             } else {
-                nodeY[i] = unlabelledPointToNode.getOrDefault(compTerminals[i][1], 0);
+                nodeY[i] = rootToNode.getOrDefault(wireNets.netKey(compTerminals[i][1]), 0);
             }
 
             if (comp.getRawParameters() != null) {
@@ -507,6 +570,11 @@ public class NetlistBuilder {
         netlist.initNetlist(types, nodeX, nodeY, voltageSourceNumbers, params,
                 maxNodeIndex, voltageSourceCount, elementCount);
         netlist.setSingularityEntries(calculateSingularityEntries(maxNodeIndex, elementCount, nodeX, nodeY));
+        long[] uids = new long[elementCount];
+        for (int i = 0; i < elementCount; i++) {
+            uids[i] = branchComponents.get(i).getUniqueObjectIdentifier();
+        }
+        netlist.setElementUids(uids);
 
         for (Map.Entry<String, Integer> entry : labelToNode.entrySet()) {
             if (!entry.getKey().isBlank()) {

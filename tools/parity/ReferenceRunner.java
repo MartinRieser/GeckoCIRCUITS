@@ -22,7 +22,14 @@ import java.util.zip.GZIPInputStream;
  * not reliably propagate on this headless-driven path (observed dt=0, which
  * makes the legacy loop spin forever).
  *
- * Usage: ReferenceRunner &lt;geckoFatJar&gt; &lt;ipesFile&gt; &lt;outCsv&gt; &lt;signal[,signal...]> [port]
+ * With labels="auto", the VOLT/AMP measurement blocks are labeled via RMI
+ * (setOutputNodeName name=name) before the run so the legacy container records
+ * columns for circuits whose measurement blocks carry no terminal labels.
+ * Any other non-blank value is an explicit "elem=alias,elem=alias" list.
+ * A tEnd argument overrides the .ipes simulation end time (keeps runtimes of
+ * long mains circuits sane; the new engine gets the same value).
+ *
+ * Usage: ReferenceRunner &lt;geckoFatJar&gt; &lt;ipesFile&gt; &lt;outCsv&gt; &lt;signal[,signal...]> [port] [labels|auto] [tEnd]
  */
 public final class ReferenceRunner {
 
@@ -50,6 +57,10 @@ public final class ReferenceRunner {
 
         double dt = parseToken(ipes, DT, 1e-6);
         double tEnd = parseToken(ipes, T_END, 1e-3);
+        String labelsSpec = args.length > 5 ? args[5] : "";
+        if (args.length > 6 && !args[6].isBlank()) {
+            tEnd = Double.parseDouble(args[6]);
+        }
         System.out.printf("reference parameters: dt=%g tEnd=%g%n", dt, tEnd);
 
         Path logFile = outCsv.resolveSibling(outCsv.getFileName() + ".gecko.log");
@@ -65,6 +76,7 @@ public final class ReferenceRunner {
             gecko.GeckoRemoteInterface gecko = waitForRmi(port, 120);
             long session = gecko.connect();
             try {
+                applyMeasurementLabels(gecko, ipes, labelsSpec);
                 gecko.initSimulation(dt, tEnd);
                 System.out.println("rmi: simulation initialized (dt=" + gecko.get_dt()
                         + ", Tend=" + gecko.get_Tend() + ")");
@@ -111,15 +123,54 @@ public final class ReferenceRunner {
         }
     }
 
-    /** .ipes files are gzip'd ASCII; falls back to plain text. */
-    private static double parseToken(Path ipes, Pattern pattern, double fallback) throws IOException {
-        String text;
-        try (var in = new GZIPInputStream(Files.newInputStream(ipes))) {
-            text = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            text = Files.readString(ipes, StandardCharsets.UTF_8);
+    /**
+     * Labels measurement blocks via RMI so the legacy data container records
+     * named columns: "auto" names every VOLT/AMP block after itself, otherwise
+     * the spec is an "elem=alias,elem=alias" list.
+     */
+    private static void applyMeasurementLabels(gecko.GeckoRemoteInterface gecko,
+                                               Path ipes, String labelsSpec) throws Exception {
+        if (labelsSpec == null || labelsSpec.isBlank()) {
+            return;
         }
-        Matcher matcher = pattern.matcher(text);
+        if ("auto".equalsIgnoreCase(labelsSpec)) {
+            for (String name : measurementBlockNames(readIpesText(ipes))) {
+                gecko.setOutputNodeName(name, 0, name);
+            }
+            return;
+        }
+        for (String pair : labelsSpec.split(",")) {
+            String[] kv = pair.split("=", 2);
+            if (kv.length == 2) {
+                gecko.setOutputNodeName(kv[0].trim(), 0, kv[1].trim());
+            }
+        }
+    }
+
+    /** Distinct VOLT.n / AMP.n measurement block names in file order. */
+    static java.util.List<String> measurementBlockNames(String ipesText) {
+        java.util.List<String> names = new java.util.ArrayList<>();
+        var matcher = java.util.regex.Pattern
+                .compile("idStringDialog ((?:VOLT|AMP)\\.\\d+)").matcher(ipesText);
+        while (matcher.find()) {
+            if (!names.contains(matcher.group(1))) {
+                names.add(matcher.group(1));
+            }
+        }
+        return names;
+    }
+
+    /** .ipes files are gzip'd ASCII; falls back to plain text. */
+    private static String readIpesText(Path ipes) throws IOException {
+        try (var in = new GZIPInputStream(Files.newInputStream(ipes))) {
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            return Files.readString(ipes, StandardCharsets.UTF_8);
+        }
+    }
+
+    private static double parseToken(Path ipes, Pattern pattern, double fallback) throws IOException {
+        Matcher matcher = pattern.matcher(readIpesText(ipes));
         return matcher.find() ? Double.parseDouble(matcher.group(1)) : fallback;
     }
 
