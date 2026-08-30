@@ -38,6 +38,8 @@ public class SimulationRequest {
 
     private List<String> signals;  // Optional, overrides the file's dataContainerSignals
 
+    private String backend;  // Optional: "headless" (default) or "legacy" (real GeckoSim via RMI)
+
     public SimulationRequest() {
     }
 
@@ -109,6 +111,14 @@ public class SimulationRequest {
 
     public void setSignals(List<String> signals) {
         this.signals = signals;
+    }
+
+    public String getBackend() {
+        return backend;
+    }
+
+    public void setBackend(String backend) {
+        this.backend = backend;
     }
 
     @Override

@@ -40,6 +40,11 @@ public final class NewEngineRunner {
 
         String base64 = Base64.getEncoder().encodeToString(Files.readAllBytes(ipes));
         StringBuilder json = new StringBuilder("{\"base64Circuit\":\"").append(base64).append('"');
+        for (String arg : args) {
+            if ("legacy".equalsIgnoreCase(arg)) {
+                json.append(",\"backend\":\"legacy\"");
+            }
+        }
         if (args.length > 3 && !args[3].isBlank()) {
             json.append(",\"signals\":[");
             String[] signals = args[3].split(",");
@@ -51,7 +56,7 @@ public final class NewEngineRunner {
             }
             json.append(']');
         }
-        if (args.length > 4 && !args[4].isBlank()) {
+        if (args.length > 4 && !args[4].isBlank() && !"legacy".equalsIgnoreCase(args[4])) {
             json.append(String.format(Locale.ROOT, ",\"simulationTime\":%s", args[4]));
         }
         json.append('}');

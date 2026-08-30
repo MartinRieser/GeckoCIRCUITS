@@ -218,12 +218,25 @@ public class CircuitFileService {
                     "Failed to parse circuit content: " + e.getMessage(), e);
         }
 
-        circuits.put(circuitId, new CircuitState(
+        CircuitState replaced = new CircuitState(
                 filename != null ? filename : parsed.filename,
                 newModel,
-                Instant.now()));
+                Instant.now());
+        replaced.originalContent = content;
+        circuits.put(circuitId, replaced);
 
         return getCircuitInfo(circuitId);
+    }
+
+    /**
+     * Faithful source bytes of the circuit's last load/save, or null when the
+     * circuit was created by a clone (its model was round-tripped anyway).
+     * The legacy backend runs on these bytes because the classic GUI cannot
+     * reliably open CircuitFileWriter rewrites.
+     */
+    public byte[] getOriginalBytes(String circuitId) {
+        CircuitState parsed = circuits.get(circuitId);
+        return parsed != null ? parsed.originalContent : null;
     }
 
     /**
@@ -374,6 +387,7 @@ public class CircuitFileService {
                 model,
                 Instant.now()
             );
+            parsed.originalContent = content;
 
             // Store in memory
             circuits.put(circuitId, parsed);
@@ -472,6 +486,10 @@ public class CircuitFileService {
 
         String filename;
         CircuitModel model;
+        // Faithful source bytes of the last load/save. The classic GUI cannot
+        // reliably open CircuitFileWriter rewrites (scope <detail> blocks are
+        // not round-tripped), so the legacy backend runs on these bytes.
+        byte[] originalContent;
         final Instant loadedAt;
         final AtomicLong version = new AtomicLong();
         private final Deque<Edit> undoStack = new ArrayDeque<>();

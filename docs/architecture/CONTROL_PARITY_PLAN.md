@@ -1,37 +1,122 @@
 # Headless CONTROL-Domain Parity — Investigation & Implementation Plan
 
-Status: PARTIALLY IMPLEMENTED (2026-08-29)
+Status: HANDOFF (2026-08-30) — read §0 "State for handoff" first; task **T1**
+is the active open item with all findings collected.
 Owner workstream referenced by `WEB_FRONTEND_PLAN.md` decision 3
 ("Control-domain headless parity is a separate future workstream").
 
-## 0. Implementation status after the first round (2026-08-29)
+## 0. State for handoff
 
-Implemented and green (`mvn verify`, parity harness `tools/parity/results/`):
+### 0.1 What is done and committed
 
-- **W1 gate-driven switching**: legacy semiconductor port (diode/thyristor/IGBT
-  piecewise-linear state machine with bounded re-solve loop, legacy parameter
-  slots `[0]=rD [1]=uF [2]=rOn [3]=rOff [4]=i [5]=u`, `LK_S` current slot fix),
-  classic wire-topology semantics in `NetlistBuilder` (endpoint-junction rule:
-  wires connect only when one path contains the other's ENDPOINT — crossing
-  wires do not), `DiodeStamper` stamping `1/params[0]`, signal-source phase
-  taken as radians (the .ipes stores radians), measurement probes named after
-  the block's `labelEndKnoten` (classic container names), signal taps for
-  labeled sources, gate coupling via uid OR component name, gate applied one
-  step late like the classic engine.
-- **W3 legacy export**: solved differently than planned — the legacy GUI
-  recomputes container names from the schematic on every start, so file-level
-  injection cannot work; instead `ReferenceRunner` labels VOLT/AMP blocks via
-  RMI (`setOutputNodeName`, `labels=auto`) and `NewEngineRunner` requests the
-  same signal names. `CompareCsv` has `skipFirstRow` for the legacy
-  initialization-row convention.
-- **W5 partial**: `run-parity.ps1` now runs 10 circuits (7 tutorials + the 3
-  original parity fixtures).
+Commits on `feature/web-frontend` (latest first):
+- `3b0667a3` classic-faithful switching simulations + extended parity harness
+- `e17c622c` this plan + tutorial sweep evidence
+- `ee81cc5e` MNA ground-pin fix (restores rc/rl/rlc parity)
 
-Result: `rc-lowpass`, `rl-transient`, `rlc-series`, `buck_simple` PASS
-(numerically identical within tolerance). Remaining FAILs have two distinct
-root causes, both now precisely known:
+Green: `mvn verify` (1837 core + 296 REST tests), parity harness
+`tools/parity/run-parity.ps1` → 4/10 PASS: `rc-lowpass`, `rl-transient`,
+`rlc-series`, `buck_simple` (the latter = gate-driven switching works).
 
-1. **Saved initial conditions** (`ex_1`, `ex_3_pwm`, `singlePhase_PWM_converter`):
+Implemented in the headless engine (full change list in commit 3b0667a3):
+classic wire connectivity
+(endpoint-junction rule), semiconductor state machine (LK_D/THYR/IGBT) with
+bounded re-solve, legacy parameter slots, initial conditions (L current /
+C voltage from `params[1]`), probes named after `labelEndKnoten`, signal taps,
+writer format fixes (`<Verbindung>` tags, no `null` arrays).
+
+Parity harness: `run-parity.ps1` runs 10 circuits through BOTH engines and
+compares. `ReferenceRunner <guiJar> <ipes> <outCsv> <signals> [port] [labels]
+[tEnd]` drives the classic GUI via RMI; `NewEngineRunner <baseUrl> <ipes>
+<outCsv> [signals] [tEnd] [legacy]` drives the REST API (the `legacy` marker
+selects the new backend below). `CompareCsv <ref> <new> relTol absTol
+[skipFirstRow]` — the classic engine's row 0 comes from its own init
+convention, hence `skipFirstRow=true` in the orchestrator.
+
+### 0.2 The legacy RMI backend — implemented, ONE open blocker (task T1)
+
+**Goal:** the web GUI gets legacy-correct results by driving the REAL classic
+engine (`gecko-gui`'s `gecko.GeckoSim`) headlessly via its RMI remote control —
+the exact path `tools/parity/ReferenceRunner.java` proves works for all
+tutorials — as an opt-in backend of `gecko-rest-api`.
+
+**Already implemented (uncommitted working tree — commit as-is before
+starting T1):**
+- `gecko.rest.service.LegacySimulationBackend` — launches
+  `java -cp <guiJar> gecko.GeckoSim <tempFile> -p <freePort>`, waits for the
+  RMI registry, labels unnamed VOLT/AMP blocks via `setOutputNodeName`,
+  `initSimulation(dt,tEnd)` → `runSimulation()`, exports
+  `getTimeArray/getSignalData` into a `SimulationResult`
+  (DataContainerGlobal), destroys the process in `finally`, `cancelActive()`.
+  Reflective invocation (no compile-time GUI dependency — the REST enforcer
+  bans Swing/AWT): the RMI stub is looked up with a `URLClassLoader` over the
+  GUI jar as thread-context classloader (`lookupRemote`), because
+  `registry.lookup` needs the `gecko.GeckoRemoteInterface` class loadable
+  client-side. Methods used: `connect/disconnect/initSimulation/runSimulation/
+  getSimulationTime/getTimeArray/getSignalData/setOutputNodeName/shutdown`.
+- `SimulationService`: `backend:"legacy"` in `SimulationRequest` selects the
+  backend; `resolveLegacyCircuitBytes` provides FAITHFUL original bytes
+  (circuitId store keeps `originalContent` now — `CircuitFileService.
+  getOriginalBytes`; base64 decodes; server-local path is read). The classic
+  GUI cannot open `CircuitFileWriter` rewrites (scope `<detail>` blocks are
+  not round-tripped) — never feed it rewritten bytes.
+- `NewEngineRunner` accepts a `legacy` marker argument (sets
+  `"backend":"legacy"` in the JSON).
+- Config: `gecko.legacy.gui-jar` (empty = auto-locate the fat jar),
+  `gecko.legacy.java-executable` (default `java`) in `application.properties`.
+- Unit tests: `LegacySimulationBackendTest` (export-name derivation).
+
+**Verified working:** GUI jar auto-located, GeckoSim process starts and
+becomes "ready" (its log lands in `$TEMP/gecko-legacy.log`), RMI lookup
+succeeds, `connect`/`initSimulation` return.
+
+**T1 — THE open blocker:** the `runSimulation()` RMI call never returns when
+driven from the REST server JVM. Timeline observed: process "ready" → sim
+stays RUNNING forever → REST runner times out (180 s) → process killed by
+backend cleanup. NOT the cause (all ruled out): progress poller (removed —
+still hangs), measurement labeling (ex_1 labels nothing), init overload
+resolution, port handling, file bytes (the identical file via
+`ReferenceRunner` completes in seconds with the identical call sequence
+connect → initSimulation → runSimulation).
+
+Prime difference vs `ReferenceRunner`: the REST server JVM is a Spring Boot
+fat jar (LaunchedURLClassLoader) and the RMI stub comes from the
+`URLClassLoader` trick. RMI *dispatch* works (connect/init return) — only the
+long-running `runSimulation` call hangs. Next diagnostic steps, in order:
+1. Reproduce with BOTH JVMs kept alive, then `jstack` the GeckoSim process
+   (is the simulation loop running? blocked on the AWT EventQueue?) and the
+   REST server thread (blocked in socket read = server never sent the reply,
+   or in unmarshal = reply lost/class resolution failure). Earlier attempts
+   failed only because the processes had been killed before dumping — keep
+   them alive this time (do NOT run the 180 s timeout runner; submit with
+   `curl` and inspect while RUNNING).
+2. Try invoking `runSimulation` asynchronously from the classic side: the
+   interface has `simulateSteps(int)` / `simulateTime(double)` — drive the
+   simulation in slices from the REST side (e.g. `simulateTime(tEnd/10)`
+   in a loop, polling `getSimulationTime()` between slices). This avoids
+   one long-blocking RMI call entirely and yields progress for free. If
+   `runSimulation` specifically hangs but `simulateTime` returns, the
+   slicing loop IS the fix — keep it.
+3. If RMI-from-Spring-Boot remains cursed, fall back to the helper-JVM
+   pattern: spawn a tiny driver JVM (GUI jar on ITS classpath — reuse
+   `ReferenceRunner` minus the CSV export, plus a `signals` argument) that
+   writes the exported CSV to a file the backend passes in; the backend
+   reads the CSV into a `SimulationResult` on process exit. ~100 lines,
+   reuses proven code, zero client-side RMI.
+
+**Acceptance for T1:** `NewEngineRunner <url> resources/tutorials/1xx_
+getting_started/101_first_simulation/ex_1.ipes <csv> "u_out,u_R,i_L,i_s,
+i_d,i_C" legacy` completes; `CompareCsv` against a fresh `ReferenceRunner`
+export of the same file reports PASS for all common signals (identical
+engine ⇒ identical numbers). Then repeat with `buck_simple`.
+
+**After T1:** update `docs/api/rest-api.md` with the `backend` request field,
+wire the web GUI sim drawer with a backend selector (optional), commit.
+
+### 0.3 Remaining headless-engine work (only if the legacy backend route is
+rejected by the product owner)
+
+1. **DC operating point init** (`ex_1`, `ex_3_pwm`, `singlePhase_PWM_converter`):
    the classic GUI restarts at the operating point saved in the file
    (L `params[1]` initial current — works; C `params[1]` initial voltage on
    non-grounded capacitors and full node-potential initialization — needs a
@@ -40,17 +125,17 @@ root causes, both now precisely known:
    `three-phase_VSR_250kW`): PI/MUL/comparator chains are skipped by
    `ControlCalculatorBuilder`, so their gate drives never fire. W4 fail-fast
    (clear per-block error instead of silent zero) is NOT yet implemented.
+3. W2 items (op-amp hidden subcircuit, LKOP2 mutual M-terms) as detailed in
+   §3 W2 below.
 
-### Strategic alternative (recommended before investing more into W2/W4)
+### Engineering rules (binding, from `WEB_FRONTEND_PLAN.md` §0)
 
-Porting the classic engine block-by-block into the headless engine converges
-slowly (each circuit class exposes new slot/layout/convention gaps). A faster
-route to "web GUI with legacy-correct results": drive the REAL legacy engine
-headlessly (the proven `GeckoSim` RMI path used by `ReferenceRunner`) as an
-additional simulation backend of `gecko-rest-api`, and keep the pure-headless
-engine for simple LK circuits. That reuses 30 years of legacy correctness
-instead of re-implementing it, at the cost of an AWT-capable runtime for the
-backend process.
+`mvn verify` green after every task; conventional commits
+(`feat(rest): ...`); no speculative abstraction; update
+`docs/api/rest-api.md` in the same commit when REST behavior changes; never
+commit secrets. When debugging long-running scenarios: kill order matters —
+the Spring Boot repackage fails if the server jar file is locked by a running
+server (stop the server BEFORE `mvn package`).
 
 ---
 
@@ -59,7 +144,7 @@ fix ee81cc5e "pin MNA island reference rows after stamping").
 
 ---
 
-## 1. Evidence: tutorial sweep through the new engine
+## 1. Evidence: tutorial sweep through the new engine (2026-08-28, historical)
 
 All 76 `.ipes` files under `resources/tutorials` were run through the
 headless engine (`tools/parity/TutorialSweep.java`, duration capped,
@@ -81,7 +166,7 @@ stores no `dataContainerSignals[]`, so the legacy RMI path records nothing
 and `run-parity.ps1` cannot compare it even though the legacy GUI simulates
 it correctly.
 
-## 2. Root-cause hypotheses (to confirm per workstream)
+## 2. Root-cause hypotheses as of 2026-08-28 (C1/C3 resolved since; C2a/C2b/C2c still open)
 
 | ID | Symptom | Suspected cause | Evidence |
 |---|---|---|---|
@@ -91,9 +176,9 @@ it correctly.
 | C2c | script/extern blocks (JAVA_FUNCTION typ 61, ToEXT typ 22, CISPR16 typ 60, MUL typ 14...) | `ControlCalculatorBuilder` skips unsupported calculators with a WARN, downstream sources then see undefined signals → singular or wrong | WARN lines in sweep log for exactly the failing files |
 | C3 | harness cannot export legacy signals for files without stored `dataContainerSignals[]` | legacy container columns only exist for names saved in the file | rc-lowpass (`dataContainerSignals[] /u_out`) exports, ex_1 (`[]`) does not |
 
-## 3. Workstreams (strict order, each ends green: `mvn verify`, parity harness, sweep)
+## 3. Original workstreams (W1/W3/W5 substantially done — see §0.1; W2/W4 still open)
 
-### W1 — Gate-driven switching (C1) — FIRST (getting-started tutorial!)
+### W1 — Gate-driven switching (C1) — DONE, commit 3b0667a3
 
 1. Minimal repros, one per phenomenon, added to core tests:
    U–S(gate)–R; U–S(gate)–L–C–R (ex_1 reduced); D+L freewheeling.
@@ -121,7 +206,7 @@ it correctly.
    simulate finite; add them to `ClassicCompatibilityTest`; parity vs
    legacy on opamp_frequency + Swiss_Rect_2StageInputFilter.
 
-### W3 — Legacy signal export for arbitrary files (C3)
+### W3 — Legacy signal export for arbitrary files (C3) — DONE differently, see §0.2
 
 1. Extend the harness: before feeding the legacy GUI, inject the desired
    signal names into `dataContainerSignals[]` using the existing core
@@ -139,7 +224,7 @@ of "matrix singular". No silent skipping.
 Acceptance: every tutorial file either simulates finite or reports a
 precise unsupported-block error; zero "Matrix ... is singular" surprises.
 
-### W5 — Make the sweep a permanent gate
+### W5 — Make the sweep a permanent gate — partially done (harness table; JUnit ratchet still open)
 
 1. Commit `tools/parity/TutorialSweep.java` + a `-Psweep` orchestrator
    script; integrate the sweep as a JUnit-tagged test with an explicit
