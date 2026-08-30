@@ -17,7 +17,11 @@ param(
     [double]$AbsTol = 5e-3,
     [string]$BaseUrl = "http://localhost:8080",
     [int]$RmiPort = 43099,
-    [int]$RestPort = 8080
+    [int]$RestPort = 8080,
+    # Hard wall-clock bound per engine invocation (legacy/new/compare).
+    # A hung classic-engine run fails the circuit instead of freezing the
+    # whole harness forever.
+    [int]$EngineTimeoutSec = 600
 )
 
 $ErrorActionPreference = 'Stop'
@@ -56,6 +60,24 @@ function Stop-JavaChildren {
             Stop-Process -Id $ProcId -Force -ErrorAction SilentlyContinue
         }
     } catch { }
+}
+
+function Invoke-JavaBounded {
+    # Runs java with a hard wall-clock bound; kills the process tree on
+    # expiry and returns 124 (the conventional timeout exit code).
+    param([string[]]$JavaArgs, [int]$TimeoutSec)
+    # Start-Process joins the array without quoting: preserve empty and
+    # whitespace-containing arguments (empty port/labels/tEnd markers).
+    $quoted = $JavaArgs | ForEach-Object {
+        if ($_ -eq '' -or $_ -match '\s') { '"' + $_ + '"' } else { $_ }
+    }
+    $p = Start-Process -FilePath 'java' -ArgumentList $quoted -NoNewWindow -PassThru
+    if (-not $p.WaitForExit($TimeoutSec * 1000)) {
+        Stop-JavaChildren $p.Id
+        Write-Host "TIMEOUT after ${TimeoutSec}s: java $($quoted -join ' ')"
+        return 124
+    }
+    return $p.ExitCode
 }
 
 try {
@@ -97,21 +119,23 @@ try {
         $tEnd = if ($c.TEnd) { $c.TEnd } else { '' }
 
         Write-Host "`n=== $name : legacy engine ==="
-        & java -cp "$classes;$guiJar" ReferenceRunner $guiJar $ipes $refCsv $c.Signals $RmiPort $labels $tEnd
-        $refOk = ($LASTEXITCODE -eq 0)
+        $refCode = Invoke-JavaBounded -TimeoutSec $EngineTimeoutSec `
+            -JavaArgs @('-cp', "$classes;$guiJar", 'ReferenceRunner', $guiJar, $ipes, $refCsv, $c.Signals, $RmiPort, $labels, $tEnd)
+        $refOk = ($refCode -eq 0)
 
         Write-Host "=== $name : new engine ==="
         $newOk = $false
         if ($refOk) {
-            & java -cp $classes NewEngineRunner $BaseUrl $ipes $newCsv $c.Signals $tEnd
-            $newOk = ($LASTEXITCODE -eq 0)
+            $newCode = Invoke-JavaBounded -TimeoutSec $EngineTimeoutSec `
+                -JavaArgs @('-cp', $classes, 'NewEngineRunner', $BaseUrl, $ipes, $newCsv, $c.Signals, $tEnd)
+            $newOk = ($newCode -eq 0)
         }
 
         Write-Host "=== $name : comparison ==="
         if ($refOk -and $newOk) {
-            $out = & java -cp $classes CompareCsv $refCsv $newCsv $RelTol $AbsTol true
-            $code = $LASTEXITCODE
-            $out | Write-Host
+            # CompareCsv prints its per-signal verdicts straight to the console
+            $code = Invoke-JavaBounded -TimeoutSec $EngineTimeoutSec `
+                -JavaArgs @('-cp', $classes, 'CompareCsv', $refCsv, $newCsv, $RelTol, $AbsTol, 'true')
             $results += [pscustomobject]@{ Circuit = $name; Result = if ($code -eq 0) { 'PASS' } else { 'FAIL' } }
         } else {
             Write-Host "SKIP (engine run failed: ref=$refOk new=$newOk)"

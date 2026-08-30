@@ -19,6 +19,10 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Simulation backend that drives the REAL classic GeckoCIRCUITS engine
@@ -42,6 +46,13 @@ public class LegacySimulationBackend {
     private final String guiJar;
     private final String javaExecutable;
     private volatile java.net.URLClassLoader remoteInterfaceLoader;
+    /** Kills the classic engine process when a run exceeds RUN_TIMEOUT_MS. */
+    private final ScheduledExecutorService watchdogExecutor =
+            Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread thread = new Thread(r, "legacy-watchdog");
+                thread.setDaemon(true);
+                return thread;
+            });
 
     /** The single actively running legacy process, if any. */
     private ActiveRun activeRun;
@@ -52,6 +63,7 @@ public class LegacySimulationBackend {
         volatile Object remote;
         volatile double lastSimulatedTime;
         volatile boolean cancelled;
+        volatile boolean timedOut;
 
         ActiveRun(Process process, double tEnd) {
             this.process = process;
@@ -135,6 +147,16 @@ public class LegacySimulationBackend {
             run.remote = waitForRemote(port);
             Object remote = run.remote;
 
+            // The RMI calls below have no client-side timeout: if the classic
+            // engine wedges, the watchdog destroys its process so the blocked
+            // call unwinds and the run fails visibly instead of hanging.
+            ScheduledFuture<?> watchdog = watchdogExecutor.schedule(() -> {
+                run.timedOut = true;
+                LOGGER.error("Legacy engine run exceeded {} ms - destroying the classic engine process",
+                        RUN_TIMEOUT_MS);
+                process.destroy();
+            }, RUN_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+
             long session = (Long) call(remote, "connect");
             try {
                 labelMeasurementBlocks(remote, model);
@@ -148,6 +170,7 @@ public class LegacySimulationBackend {
 
                 return exportResult(remote, model, signals);
             } finally {
+                watchdog.cancel(false);
                 try {
                     call(remote, "disconnect", new Class<?>[]{long.class}, session);
                 } catch (Exception ignored) {
@@ -163,6 +186,10 @@ public class LegacySimulationBackend {
             boolean cancelled = activeRun != null && activeRun.cancelled;
             if (cancelled) {
                 return SimulationResult.cancelled();
+            }
+            if (activeRun != null && activeRun.timedOut) {
+                return SimulationResult.failed("Legacy engine timed out after "
+                        + (RUN_TIMEOUT_MS / 1000) + " s - the classic engine did not finish the simulation");
             }
             String message = e instanceof InvocationTargetException && e.getCause() != null
                     ? e.getCause().getMessage() : e.getMessage();
@@ -251,7 +278,12 @@ public class LegacySimulationBackend {
         try {
             return remote.getClass().getMethod(method, types).invoke(remote, args);
         } catch (InvocationTargetException e) {
-            throw e.getCause() != null ? e.getCause() : e;
+            // a plain ternary here would infer Throwable, which the declared
+            // `throws Exception` cannot cover; Error causes stay wrapped
+            if (e.getCause() instanceof Exception exception) {
+                throw exception;
+            }
+            throw e;
         }
     }
 
@@ -404,6 +436,7 @@ public class LegacySimulationBackend {
 
     @PreDestroy
     public void shutdown() {
+        watchdogExecutor.shutdownNow();
         synchronized (this) {
             ActiveRun run = activeRun;
             if (run != null) {

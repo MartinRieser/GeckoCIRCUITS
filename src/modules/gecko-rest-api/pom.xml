@@ -141,6 +141,18 @@
                     <skipAssembly>true</skipAssembly>
                 </configuration>
             </plugin>
+
+            <!-- Kill the test fork instead of hanging forever when a
+                 simulation or legacy-engine call deadlocks. The whole module
+                 suite normally finishes in well under a minute. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.4</version>
+                <configuration>
+                    <forkedProcessTimeoutInSeconds>900</forkedProcessTimeoutInSeconds>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

@@ -191,6 +191,10 @@
            <version>3.5.4</version>
            <configuration>
              <trimStackTrace>false</trimStackTrace>
+             <!-- Kill the test fork instead of hanging forever when a
+                  simulation or AWT deadlock strikes; the module suite
+                  normally finishes in about a minute. -->
+             <forkedProcessTimeoutInSeconds>900</forkedProcessTimeoutInSeconds>
            </configuration>
          </plugin>
          <!-- JaCoCo for test coverage tracking -->

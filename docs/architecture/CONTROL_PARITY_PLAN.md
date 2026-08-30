@@ -104,6 +104,17 @@ long-running `runSimulation` call hangs. Next diagnostic steps, in order:
    reads the CSV into a `SimulationResult` on process exit. ~100 lines,
    reuses proven code, zero client-side RMI.
 
+**Hang-safety added (2026-08-30, uncommitted-diagnostic era closed):** the
+T1 hang can no longer freeze anything silently. `RUN_TIMEOUT_MS` is enforced:
+a watchdog thread destroys the GeckoSim process after 10 min, so a wedged
+`runSimulation` fails the request with "Legacy engine timed out after
+600 s" instead of hanging forever. Surefire test forks are bounded
+(`forkedProcessTimeoutInSeconds=900` in all three module poms — the whole
+suite normally needs ~90 s) and `run-parity.ps1` bounds every engine
+invocation (`-EngineTimeoutSec`, default 600, timeout exit 124). For
+diagnostic step 1 above this means: submit with `curl` and inspect while
+RUNNING, but finish inspections within the 10-minute watchdog window.
+
 **Acceptance for T1:** `NewEngineRunner <url> resources/tutorials/1xx_
 getting_started/101_first_simulation/ex_1.ipes <csv> "u_out,u_R,i_L,i_s,
 i_d,i_C" legacy` completes; `CompareCsv` against a fresh `ReferenceRunner`
@@ -135,7 +146,10 @@ rejected by the product owner)
 `docs/api/rest-api.md` in the same commit when REST behavior changes; never
 commit secrets. When debugging long-running scenarios: kill order matters —
 the Spring Boot repackage fails if the server jar file is locked by a running
-server (stop the server BEFORE `mvn package`).
+server (stop the server BEFORE `mvn package`; a leftover server from an
+earlier session lingers as a stray `java.exe -jar ...gecko-rest-api-1.0.0.jar`
+— kill it, or every later `mvn verify` dies in repackage while all tests
+pass).
 
 ---
 

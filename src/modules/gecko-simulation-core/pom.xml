@@ -163,11 +163,16 @@
                 </executions>
             </plugin>
 
-            <!-- Surefire for tests -->
+            <!-- Surefire for tests. The fork is killed instead of hanging
+                 forever when a simulation deadlocks; the module suite
+                 normally finishes in seconds. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.4</version>
+                <configuration>
+                    <forkedProcessTimeoutInSeconds>900</forkedProcessTimeoutInSeconds>
+                </configuration>
             </plugin>
 
             <!-- Skip assembly plugin for core module -->
