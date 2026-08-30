@@ -66,7 +66,11 @@ public final class ReferenceRunner {
         Path logFile = outCsv.resolveSibling(outCsv.getFileName() + ".gecko.log");
         Process process = new ProcessBuilder(
                 ProcessHandle.current().info().command().orElse("java"),
-                "-Xmx1g", "-Djava.rmi.server.hostname=127.0.0.1", "-cp", jar.toString(),
+                "-Xmx1g", "-Djava.rmi.server.hostname=127.0.0.1",
+                // suppress modal Swing dialogs (worksheet-size errors etc.) -
+                // nobody could click them away and main would never reach RMI
+                "-Dgecko.headless=true",
+                "-cp", jar.toString(),
                 "gecko.GeckoSim", ipes.toString(), "-p", String.valueOf(port))
                 .redirectErrorStream(true)
                 .redirectOutput(logFile.toFile())

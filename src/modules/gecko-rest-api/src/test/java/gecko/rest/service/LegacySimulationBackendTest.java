@@ -3,7 +3,10 @@ package gecko.rest.service;
 import gecko.core.io.CircuitModel;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -52,5 +55,25 @@ class LegacySimulationBackendTest {
         CircuitModel model = modelWithControl(block("VOLT.1", null), block("AMP.1", null));
         List<String> names = LegacySimulationBackend.exportSignalNames(model, null);
         assertEquals(List.of("VOLT.1", "AMP.1"), names);
+    }
+
+    @Test
+    void ensureClassicReadable_wrapsPlainTextInGzip() throws Exception {
+        byte[] plain = "dt 1e-6\ntDURATION 0.02\n".getBytes(StandardCharsets.UTF_8);
+        byte[] wrapped = LegacySimulationBackend.ensureClassicReadable(plain);
+        assertEquals(0x1f, wrapped[0] & 0xff, "gzip magic byte 1");
+        assertEquals(0x8b, wrapped[1] & 0xff, "gzip magic byte 2");
+        byte[] unpacked;
+        try (GZIPInputStream gzip = new GZIPInputStream(new ByteArrayInputStream(wrapped))) {
+            unpacked = gzip.readAllBytes();
+        }
+        assertArrayEquals(plain, unpacked);
+    }
+
+    @Test
+    void ensureClassicReadable_keepsAlreadyGzippedInput() throws Exception {
+        byte[] gzipped = LegacySimulationBackend.ensureClassicReadable(
+                "dt 1e-6".getBytes(StandardCharsets.UTF_8));
+        assertArrayEquals(gzipped, LegacySimulationBackend.ensureClassicReadable(gzipped));
     }
 }

@@ -1,7 +1,8 @@
 # Headless CONTROL-Domain Parity — Investigation & Implementation Plan
 
-Status: HANDOFF (2026-08-30) — read §0 "State for handoff" first; task **T1**
-is the active open item with all findings collected.
+Status: HANDOFF (2026-08-30, evening) — **T1 is RESOLVED for real .ipes
+files** (read §0.2 "T1 resolution"); the open work is the headless engine
+gaps (§0.3) and web-authored example content (§0.2 "Web-native circuits").
 Owner workstream referenced by `WEB_FRONTEND_PLAN.md` decision 3
 ("Control-domain headless parity is a separate future workstream").
 
@@ -70,39 +71,37 @@ starting T1):**
 becomes "ready" (its log lands in `$TEMP/gecko-legacy.log`), RMI lookup
 succeeds, `connect`/`initSimulation` return.
 
-**T1 — THE open blocker:** the `runSimulation()` RMI call never returns when
-driven from the REST server JVM. Timeline observed: process "ready" → sim
-stays RUNNING forever → REST runner times out (180 s) → process killed by
-backend cleanup. NOT the cause (all ruled out): progress poller (removed —
-still hangs), measurement labeling (ex_1 labels nothing), init overload
-resolution, port handling, file bytes (the identical file via
-`ReferenceRunner` completes in seconds with the identical call sequence
-connect → initSimulation → runSimulation).
+**T1 — RESOLVED (2026-08-30).** The hang never reproduced on a build of the
+committed code. Explaining the "hours without progress": commit 89c1c1b3 did
+not even compile (a Throwable-typed ternary in `LegacySimulationBackend.call`
+inside a `throws Exception` method), so the previous session's tested jar was
+built from an uncommitted working tree that never made it into git. On the
+fixed build: `NewEngineRunner … legacy` completes in seconds, and CompareCsv
+reports bit-identical results (maxRel 0.0 on all signals) vs a fresh
+`ReferenceRunner` export for **ex_1** and **buck_simple** — the T1 acceptance,
+passed twice (also re-verified after all robustness changes). The web UI got
+an Engine selector ("Headless (native)" / "Classic (exact parity)") that
+submits `backend:"legacy"`; `runSimulation`-blocking is bounded by the
+watchdog below. Robustness added along the way: the classic engine process is
+gzip-wrapped automatically (the GUI opens gzip-only .ipes), modal Swing error
+dialogs are suppressed under `-Dgecko.headless=true` (they deadlocked main
+before the RMI server came up — see `gecko.HeadlessDialogs`), and
+`ReferenceRunner` sets the same flag.
 
-Prime difference vs `ReferenceRunner`: the REST server JVM is a Spring Boot
-fat jar (LaunchedURLClassLoader) and the RMI stub comes from the
-`URLClassLoader` trick. RMI *dispatch* works (connect/init return) — only the
-long-running `runSimulation` call hangs. Next diagnostic steps, in order:
-1. Reproduce with BOTH JVMs kept alive, then `jstack` the GeckoSim process
-   (is the simulation loop running? blocked on the AWT EventQueue?) and the
-   REST server thread (blocked in socket read = server never sent the reply,
-   or in unmarshal = reply lost/class resolution failure). Earlier attempts
-   failed only because the processes had been killed before dumping — keep
-   them alive this time (do NOT run the 180 s timeout runner; submit with
-   `curl` and inspect while RUNNING).
-2. Try invoking `runSimulation` asynchronously from the classic side: the
-   interface has `simulateSteps(int)` / `simulateTime(double)` — drive the
-   simulation in slices from the REST side (e.g. `simulateTime(tEnd/10)`
-   in a loop, polling `getSimulationTime()` between slices). This avoids
-   one long-blocking RMI call entirely and yields progress for free. If
-   `runSimulation` specifically hangs but `simulateTime` returns, the
-   slicing loop IS the fix — keep it.
-3. If RMI-from-Spring-Boot remains cursed, fall back to the helper-JVM
-   pattern: spawn a tiny driver JVM (GUI jar on ITS classpath — reuse
-   `ReferenceRunner` minus the CSV export, plus a `signals` argument) that
-   writes the exported CSV to a file the backend passes in; the backend
-   reads the CSV into a `SimulationResult` on process exit. ~100 lines,
-   reuses proven code, zero client-side RMI.
+**Web-native circuits — NOT classic-compatible (documented, do not hand-patch).**
+Circuits authored in the web editor (e.g. the built-in Examples) use a writer
+dialect the classic GUI only partially imports. Empirically confirmed gaps:
+classic reads `enabledShorted` as the Enabled enum ordinal (0 = DISABLED,
+classic files write 1), its SpecialPair end tags differ from the raw `\\`
+escapes, wire Connection blocks need explicit full point lists (2-point web
+wires crash the netlist fabricator), and node labels must sit on element
+terminals for VOLT/AMP references. Web-authored circuits therefore fail or
+misbehave on the classic backend by design; they run on the headless engine
+(the web buck example currently yields all-NaN `V_out` there — the §2/C1-class
+control-domain gap). Authoring classic-compatible examples would mean
+re-emitting them in the classic native format (see `tools/parity/circuits/
+rc-lowpass.ipes` as the reference shape) — separate content task, product
+owner to decide.
 
 **Hang-safety added (2026-08-30, uncommitted-diagnostic era closed):** the
 T1 hang can no longer freeze anything silently. `RUN_TIMEOUT_MS` is enforced:
@@ -115,14 +114,7 @@ invocation (`-EngineTimeoutSec`, default 600, timeout exit 124). For
 diagnostic step 1 above this means: submit with `curl` and inspect while
 RUNNING, but finish inspections within the 10-minute watchdog window.
 
-**Acceptance for T1:** `NewEngineRunner <url> resources/tutorials/1xx_
-getting_started/101_first_simulation/ex_1.ipes <csv> "u_out,u_R,i_L,i_s,
-i_d,i_C" legacy` completes; `CompareCsv` against a fresh `ReferenceRunner`
-export of the same file reports PASS for all common signals (identical
-engine ⇒ identical numbers). Then repeat with `buck_simple`.
-
-**After T1:** update `docs/api/rest-api.md` with the `backend` request field,
-wire the web GUI sim drawer with a backend selector (optional), commit.
+**Acceptance for T1:** MET — see "T1 — RESOLVED" above.
 
 ### 0.3 Remaining headless-engine work (only if the legacy backend route is
 rejected by the product owner)

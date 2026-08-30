@@ -13,6 +13,7 @@
  */
 package gecko.geckocircuits.circuit;
 import gecko.core.circuit.TokenMap;
+import gecko.HeadlessDialogs;
 
 import gecko.geckocircuits.control.Point;
 import gecko.geckocircuits.control.SubCircuitSheet;
@@ -127,7 +128,7 @@ public final class WorksheetSize {
             }
         } catch (RuntimeException ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(null, ex.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE);
+            HeadlessDialogs.showMessageOrLog(ex.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE);
         }
     }
 

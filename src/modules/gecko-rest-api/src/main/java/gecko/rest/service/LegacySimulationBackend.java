@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
@@ -23,6 +24,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Simulation backend that drives the REAL classic GeckoCIRCUITS engine
@@ -124,11 +126,15 @@ public class LegacySimulationBackend {
         Path tempFile = null;
         try {
             tempFile = Files.createTempFile("gecko-legacy-", ".ipes");
-            Files.write(tempFile, ipesBytes);
+            Files.write(tempFile, ensureClassicReadable(ipesBytes));
 
             int port = freePort();
             Process process = new ProcessBuilder(
                     javaExecutable, "-Xmx1g", "-Djava.rmi.server.hostname=127.0.0.1",
+                    // never let modal Swing error dialogs block main before the
+                    // RMI server is up (e.g. worksheet-size errors on web-
+                    // authored circuits) - log them and continue instead
+                    "-Dgecko.headless=true",
                     "-cp", guiJar, "gecko.GeckoSim", tempFile.toAbsolutePath().toString(),
                     "-p", String.valueOf(port))
                     .redirectErrorStream(true)
@@ -144,7 +150,7 @@ public class LegacySimulationBackend {
                 activeRun = run;
             }
 
-            run.remote = waitForRemote(port);
+            run.remote = waitForRemote(port, tempFile.resolveSibling("gecko-legacy.log"));
             Object remote = run.remote;
 
             // The RMI calls below have no client-side timeout: if the classic
@@ -233,7 +239,25 @@ public class LegacySimulationBackend {
 
     // ------------------------------------------------------------------
 
-    private Remote waitForRemote(int port) throws Exception {
+    /**
+     * The classic GUI opens .ipes files as gzip archives only (its fallback
+     * readers never populated - GeckoSim main dies with an NPE on plain
+     * text). Circuits authored in the web editor arrive as plain text, so
+     * wrap them before handing them to GeckoSim; already-gzipped tutorial
+     * files pass through untouched.
+     */
+    static byte[] ensureClassicReadable(byte[] ipesBytes) throws IOException {
+        if (ipesBytes.length >= 2 && ipesBytes[0] == (byte) 0x1f && ipesBytes[1] == (byte) 0x8b) {
+            return ipesBytes;
+        }
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        try (GZIPOutputStream gzip = new GZIPOutputStream(buffer)) {
+            gzip.write(ipesBytes);
+        }
+        return buffer.toByteArray();
+    }
+
+    private Remote waitForRemote(int port, Path logFile) throws Exception {
         long deadline = System.currentTimeMillis() + STARTUP_TIMEOUT_S * 1000L;
         Exception last = null;
         while (System.currentTimeMillis() < deadline) {
@@ -247,7 +271,8 @@ public class LegacySimulationBackend {
             }
             Thread.sleep(500);
         }
-        throw new IllegalStateException("Classic engine RMI registry did not appear on port " + port, last);
+        throw new IllegalStateException("Classic engine RMI registry did not appear on port " + port
+                + " - usually a file-open failure; see the classic engine log " + logFile, last);
     }
 
     /**

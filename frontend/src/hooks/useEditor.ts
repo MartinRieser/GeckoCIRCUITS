@@ -576,6 +576,7 @@ export function useEditor() {
       simulationTime?: number;
       timeStep?: number;
       solverType?: string;
+      backend?: string;
       signals?: string[];
     }) => {
       const circuitId = stateRef.current.circuitId;
@@ -599,6 +600,7 @@ export function useEditor() {
           simulationTime: simTime,
           timeStep: tStep,
           solverType: solver,
+          backend: config?.backend,
           signals: config?.signals,
         });
         currentSimIdRef.current = sim.simulationId;

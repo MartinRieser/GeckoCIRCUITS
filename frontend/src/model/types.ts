@@ -111,6 +111,8 @@ export interface SimulationRequest {
   simulationTime?: number;
   timeStep?: number;
   solverType?: string;
+  /** "legacy" runs the original file in the classic engine via RMI. */
+  backend?: string;
   parameters?: Record<string, number>;
   signals?: string[];
 }

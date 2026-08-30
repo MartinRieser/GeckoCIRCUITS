@@ -918,6 +918,7 @@ curl -X POST http://localhost:8080/api/v1/simulations \
 | `simulationTime` | number | Total simulation time (seconds); defaults to circuit value when using circuitId/base64Circuit |
 | `timeStep` | number | Integration time step (seconds); defaults to circuit value when using circuitId/base64Circuit |
 | `solverType` | enum | backward-euler, trapezoidal, gear-shichman |
+| `backend` | string | `"legacy"` runs the ORIGINAL uploaded file in the classic GUI engine (headless RMI) instead of the built-in engine. Results are bit-identical to the classic GUI. Plain-text circuits are gzip-wrapped automatically; the run is hard-bounded at 600 s. Web-editor-authored circuits are NOT classic-compatible yet — the classic engine cannot fully import their wire format. |
 | `parameters` | map | Parameter overrides |
 
 ### ProgressDetails

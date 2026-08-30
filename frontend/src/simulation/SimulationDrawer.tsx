@@ -28,6 +28,7 @@ interface SimulationDrawerProps {
     simulationTime: number;
     timeStep: number;
     solverType: string;
+    backend?: string;
     signals?: string[];
   }) => void;
   onCancelSimulation?: () => void;
@@ -67,6 +68,7 @@ export function SimulationDrawer({
   const [tEndStr, setTEndStr] = useState('20m');
   const [dtStr, setDtStr] = useState('1u');
   const [solverType, setSolverType] = useState('backward-euler');
+  const [backend, setBackend] = useState('headless');
   const [recordedSignals, setRecordedSignals] = useState<string[]>([]);
   const [hiddenSignals, setHiddenSignals] = useState<Record<string, boolean>>({});
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -97,6 +99,7 @@ export function SimulationDrawer({
       simulationTime: tEnd,
       timeStep: dt,
       solverType,
+      backend,
       signals: recordedSignals.length > 0 ? recordedSignals : undefined,
     });
   };
@@ -195,6 +198,27 @@ export function SimulationDrawer({
               <option value="backward-euler">Backward Euler</option>
               <option value="trapezoidal">Trapezoidal</option>
               <option value="gear-shichman">Gear-Shichman</option>
+            </select>
+          </div>
+
+          <div
+            className="sim-param-item"
+            title={
+              backend === 'legacy'
+                ? 'Runs the ORIGINAL uploaded file in the classic engine (RMI). Unsaved web edits are not included.'
+                : 'Runs the built-in headless engine on the current circuit state.'
+            }
+          >
+            <label htmlFor="sim-backend-select">Engine:</label>
+            <select
+              id="sim-backend-select"
+              className="sim-param-select"
+              value={backend}
+              onChange={(e) => setBackend(e.target.value)}
+              disabled={isRunning}
+            >
+              <option value="headless">Headless (native)</option>
+              <option value="legacy">Classic (exact parity)</option>
             </select>
           </div>
 
