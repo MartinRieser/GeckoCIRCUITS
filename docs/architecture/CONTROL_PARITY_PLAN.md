@@ -213,6 +213,37 @@ it correctly.
 
 ### W2 — Singular matrices (C2a, C2b)
 
+**W2a design (2026-08-30, fully scoped - implement from here):**
+the op-amp (`OperationalAmplifier`, typ 22, LK domain) is a
+`HiddenSubCircuitable` in the classic GUI: at simulation start it expands
+into 9 primitive elements (see `OperationalAmplifier.setzeSubcircuit` +
+`initPar`). Port = expand typ 22 in `NetlistBuilder.buildFromWiresAndComponents`
+(generate the 9 primitives with fresh uniqueObjectIdentifiers + internal
+nodes) and add the VCVS stamp they need:
+
+| element | from -> to | value / control |
+|---|---|---|
+| rIN | XIN(0) -> XIN(1) | R = inputResistance; **measured element** |
+| rIsolation | XIN(1) -> YOUT(1) | R = R_ISOLATION constant |
+| internalVCVS | intern0 -> XIN(1) | e = gain * V(rIN), limits +/-VS |
+| Ra | intern0 -> intern1 | R = voltageDividerRa |
+| Rb | intern1 -> XIN(1) | R = voltageDividerRb |
+| Rf | intern1 -> intern2 | R = pole resistance (dialog value) |
+| Cp | intern2 -> XIN(1) | C = 1 / frequencyDependency |
+| outputVCVS | intern3 -> YOUT(1) | e = gain2 * V(Cp), limits |
+| rOUT | intern3 -> YOUT(0) | R = outputResistance |
+
+File-parameter mapping: verify against `importIndividual` (line 164) -
+params[0]=gain (90k/900k), params[4]=frequencyDependency (Cp=1/f),
+params[7]/[8] = +/-VS limits. Required engine capability: stamp a VCVS
+(`QUELLE_VOLTAGECONTROLLED_DIRECTLY`) whose value is k * V(measured element)
+via A-matrix gain columns + b-vector terms (the "params[12..14]" terms in the
+old plan text). The `coupledReferenceID`-based element coupling (the
+`registerMutualCoupling` pattern) already exists for LKOP2 and can carry the
+"measured element" reference. Acceptance: `opamp_frequency` and
+`opamp_3rdOrderBessel` leave the singular list (sweep 73/76), then parity vs
+a ReferenceRunner export.
+
 1. Port the missing voltage-controlled-source stamp case(s) from
    `LKMatrices.schreibeMatrix_A` (op-amp / VCVS variants incl.
    `params[12..14]` direct-control b-vector terms) into core stampers.
