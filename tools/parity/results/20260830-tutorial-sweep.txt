@@ -1,0 +1,1367 @@
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/1xx_getting_started/101_first_simulation/ex_1.ipes
+  parse OK  lk=7 ctrl=9 therm=0 types=1x3,2x5,3x1,4x2,5x2,6x2,7x1
+  SIM OK steps=2000 nonFiniteSignals=0/10 maxAbs=144.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/1xx_getting_started/102_basic_circuits/ex_2.ipes
+  parse OK  lk=17 ctrl=16 therm=0 types=1x5,2x1,3x5,4x3,5x2,6x8,8x1,9x1,10x3,12x2,13x1,27x1
+14:13:12.598 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'PI.2' has unsupported typ 10 - skipped
+14:13:12.603 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.1' has unsupported typ 27 - skipped
+14:13:12.603 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.1' has unsupported typ 13 - skipped
+14:13:12.603 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'PT1.2' has unsupported typ 8 - skipped
+14:13:12.603 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'd' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=25001 nonFiniteSignals=0/5 maxAbs=405.90411376953125
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/1xx_getting_started/103_pwm_basics/ex_3_pwm.ipes
+  parse OK  lk=15 ctrl=30 therm=0 types=1x4,2x3,3x5,4x5,5x3,6x6,8x1,9x1,10x3,12x5,13x2,14x3,15x2,27x1,45x1
+14:13:12.848 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'PT1.1' has unsupported typ 8 - skipped
+14:13:12.848 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.1' has unsupported typ 14 - skipped
+14:13:12.848 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DIV.1' has unsupported typ 15 - skipped
+14:13:12.848 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.1' has unsupported typ 13 - skipped
+14:13:12.848 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'PI.1' has unsupported typ 10 - skipped
+14:13:12.848 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.2' has unsupported typ 13 - skipped
+14:13:12.848 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'PI.2' has unsupported typ 10 - skipped
+14:13:12.848 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.1' has unsupported typ 27 - skipped
+14:13:12.848 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GE.1' has unsupported typ 45 - skipped
+14:13:12.848 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.2' has unsupported typ 14 - skipped
+14:13:12.848 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DIV.2' has unsupported typ 15 - skipped
+14:13:12.848 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.2' has unsupported typ 12 - skipped
+14:13:12.848 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.4' has unsupported typ 12 - skipped
+14:13:12.848 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.3' has unsupported typ 14 - skipped
+14:13:12.848 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.5' has unsupported typ 12 - skipped
+  SIM OK steps=100000 nonFiniteSignals=0/11 maxAbs=4.349999904632568
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/2xx_dcdc_converters/201_buck_converter/A_Buck.ipes
+  parse OK  lk=8 ctrl=6 therm=0 types=1x5,2x2,3x1,4x2,5x1,6x2,7x1
+  SIM OK steps=6001 nonFiniteSignals=0/4 maxAbs=12.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/2xx_dcdc_converters/201_buck_converter/buck_simple.ipes
+  parse OK  lk=6 ctrl=8 therm=0 types=1x4,2x3,3x1,4x2,5x1,6x2,7x1
+  SIM OK steps=1000 nonFiniteSignals=0/6 maxAbs=48.64396286010742
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/2xx_dcdc_converters/202_boost_converter/boost_simple.ipes
+  parse OK  lk=6 ctrl=8 therm=0 types=1x4,2x3,3x1,4x2,5x1,6x2,7x1
+  SIM OK steps=1000 nonFiniteSignals=0/6 maxAbs=39.16286087036133
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/2xx_dcdc_converters/202_boost_converter/B_Boost.ipes
+  parse OK  lk=6 ctrl=7 therm=0 types=1x2,2x3,3x1,4x2,5x2,6x2,10x1
+  SIM OK steps=1000 nonFiniteSignals=0/5 maxAbs=50.0699348449707
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/2xx_dcdc_converters/203_buck_boost/BuckBoost_const_dutyCycle.ipes
+  parse OK  lk=6 ctrl=7 therm=0 types=1x3,2x3,3x1,4x2,5x1,6x2,7x1
+  SIM OK steps=30001 nonFiniteSignals=0/5 maxAbs=88.47264862060547
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/2xx_dcdc_converters/203_buck_boost/buckBoost_simple.ipes
+  parse OK  lk=6 ctrl=9 therm=0 types=1x4,2x3,3x1,4x2,5x1,6x2,7x2
+14:13:13.418 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.1' has unsupported typ 7 - skipped
+14:13:13.418 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'u2_inv' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=1000 nonFiniteSignals=0/5 maxAbs=87.6816635131836
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/2xx_dcdc_converters/203_buck_boost/cuk_simple.ipes
+  parse OK  lk=8 ctrl=11 therm=0 types=1x6,2x4,3x2,4x2,5x1,6x2,7x2
+14:13:13.430 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.1' has unsupported typ 7 - skipped
+14:13:13.430 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'u2_inv' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=1000 nonFiniteSignals=0/7 maxAbs=157.0207977294922
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/2xx_dcdc_converters/203_buck_boost/sepic_simple.ipes
+  parse OK  lk=8 ctrl=10 therm=0 types=1x6,2x4,3x2,4x2,5x1,6x2,7x1
+  SIM OK steps=1000 nonFiniteSignals=0/8 maxAbs=150.68496704101562
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/2xx_dcdc_converters/204_analog_circuits/OpAmp.ipes
+  parse OK  lk=6 ctrl=4 therm=0 types=1x5,3x2,5x1,22x1,61x1
+14:13:13.460 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'JAVA.1' has unsupported typ 61 - skipped
+  SIM OK steps=100000 nonFiniteSignals=0/4 maxAbs=0.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/2xx_dcdc_converters/204_analog_circuits/opamp_3rdOrderBessel.ipes
+  parse OK  lk=9 ctrl=3 therm=0 types=1x4,3x3,4x2,5x1,22x2
+java.lang.RuntimeException: Matrix of size 9 is singular.
+	at gecko.core.math.LUDecomposition.solve(LUDecomposition.java:302)
+	at gecko.core.math.Matrix.solve(Matrix.java:737)
+	at gecko.core.simulation.solver.MatrixSolver.solve(MatrixSolver.java:625)
+	at gecko.core.simulation.HeadlessSimulationEngine.executeSimulation(HeadlessSimulationEngine.java:313)
+	at gecko.core.simulation.HeadlessSimulationEngine.runSimulation(HeadlessSimulationEngine.java:147)
+	at TutorialSweep.probe(TutorialSweep.java:45)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.stream.SortedOps$RefSortingSink.end(SortedOps.java:395)
+	at java.base/java.util.stream.Sink$ChainedReference.end(Sink.java:261)
+	at java.base/java.util.stream.Sink$ChainedReference.end(Sink.java:261)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:510)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at TutorialSweep.main(TutorialSweep.java:29)
+  SIM FAILED: Simulation error: Matrix of size 9 is singular.
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/2xx_dcdc_converters/204_analog_circuits/opamp_frequency.ipes
+  parse OK  lk=4 ctrl=6 therm=0 types=1x2,4x3,5x1,7x1,22x2,70x1
+14:13:13.646 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.1' has unsupported typ 7 - skipped
+14:13:13.646 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'Text.1' has unsupported typ 70 - skipped
+14:13:13.646 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'u1g' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+java.lang.RuntimeException: Matrix of size 7 is singular.
+	at gecko.core.math.LUDecomposition.solve(LUDecomposition.java:302)
+	at gecko.core.math.Matrix.solve(Matrix.java:737)
+	at gecko.core.simulation.solver.MatrixSolver.solve(MatrixSolver.java:625)
+	at gecko.core.simulation.HeadlessSimulationEngine.executeSimulation(HeadlessSimulationEngine.java:313)
+	at gecko.core.simulation.HeadlessSimulationEngine.runSimulation(HeadlessSimulationEngine.java:147)
+	at TutorialSweep.probe(TutorialSweep.java:45)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.stream.SortedOps$RefSortingSink.end(SortedOps.java:395)
+	at java.base/java.util.stream.Sink$ChainedReference.end(Sink.java:261)
+	at java.base/java.util.stream.Sink$ChainedReference.end(Sink.java:261)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:510)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at TutorialSweep.main(TutorialSweep.java:29)
+  SIM FAILED: Simulation error: Matrix of size 7 is singular.
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/2xx_dcdc_converters/204_analog_circuits/opamp_invertingDifferentiator.ipes
+  parse OK  lk=5 ctrl=4 therm=0 types=1x4,3x1,4x2,5x1,22x1
+  SIM OK steps=35000 nonFiniteSignals=0/2 maxAbs=0.49999991059303284
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/2xx_dcdc_converters/204_analog_circuits/opamp_invertingIntegrator.ipes
+  parse OK  lk=4 ctrl=3 therm=0 types=1x3,3x1,4x1,5x1,22x1
+  SIM OK steps=15000 nonFiniteSignals=0/2 maxAbs=0.5
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/2xx_dcdc_converters/204_analog_circuits/opamp_multivibrator.ipes
+  parse OK  lk=6 ctrl=3 therm=0 types=1x5,3x2,5x1,22x1
+  SIM OK steps=100000 nonFiniteSignals=0/2 maxAbs=0.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/3xx_acdc_rectifiers/301_diode_rectifier/2phaseDiodeBridge_AC-Inductor.ipes
+  parse OK  lk=8 ctrl=8 therm=0 types=1x6,2x3,3x1,4x1,5x1,6x4
+  SIM OK steps=40000 nonFiniteSignals=0/7 maxAbs=0.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/3xx_acdc_rectifiers/301_diode_rectifier/2phaseDiodeBridge_DC-Inductor.ipes
+  parse OK  lk=8 ctrl=8 therm=0 types=1x6,2x3,3x1,4x1,5x1,6x4
+  SIM OK steps=40000 nonFiniteSignals=0/7 maxAbs=0.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/3xx_acdc_rectifiers/301_diode_rectifier/A_Rectifier.ipes
+  parse OK  lk=7 ctrl=4 therm=0 types=1x2,2x2,4x2,5x1,6x4
+  SIM OK steps=100001 nonFiniteSignals=0/3 maxAbs=0.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/3xx_acdc_rectifiers/301_diode_rectifier/diode_RL_singlePH_trafo.ipes
+  parse OK  lk=13 ctrl=9 therm=0 types=1x6,2x5,3x1,4x1,5x1,6x2,9x3,12x3
+  SIM OK steps=60000 nonFiniteSignals=0/8 maxAbs=5.99999978589949E-8
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/3xx_acdc_rectifiers/302_pfc_basics/boostPFC.ipes
+  parse OK  lk=10 ctrl=29 therm=0 types=1x4,2x6,3x4,4x2,5x1,6x6,7x3,8x2,10x1,11x1,12x2,13x3,14x1,15x2,27x1
+14:13:14.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.1' has unsupported typ 7 - skipped
+14:13:14.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'PT1.1' has unsupported typ 8 - skipped
+14:13:14.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DIV.3' has unsupported typ 15 - skipped
+14:13:14.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.1' has unsupported typ 14 - skipped
+14:13:14.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.1' has unsupported typ 13 - skipped
+14:13:14.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.1' has unsupported typ 12 - skipped
+14:13:14.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.1' has unsupported typ 11 - skipped
+14:13:14.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DIV.4' has unsupported typ 15 - skipped
+14:13:14.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.2' has unsupported typ 12 - skipped
+14:13:14.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.2' has unsupported typ 13 - skipped
+14:13:14.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.3' has unsupported typ 7 - skipped
+14:13:14.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.4' has unsupported typ 7 - skipped
+14:13:14.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.3' has unsupported typ 13 - skipped
+14:13:14.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'PT1.2' has unsupported typ 8 - skipped
+14:13:14.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.1' has unsupported typ 27 - skipped
+14:13:14.455 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uf' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:14.455 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iN' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:14.455 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iLref' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:14.455 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'di' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:14.455 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'pre' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:14.455 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gate' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:14.455 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'di2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:14.455 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iA' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=60000 nonFiniteSignals=0/7 maxAbs=199.99667358398438
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/3xx_acdc_rectifiers/302_pfc_basics/boostPFC_currentControl.ipes
+  parse OK  lk=10 ctrl=26 therm=0 types=1x4,2x6,3x4,4x2,5x1,6x6,7x3,8x1,10x1,11x1,12x2,13x2,14x1,15x2
+14:13:14.600 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.1' has unsupported typ 7 - skipped
+14:13:14.600 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'PT1.1' has unsupported typ 8 - skipped
+14:13:14.600 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DIV.3' has unsupported typ 15 - skipped
+14:13:14.600 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.1' has unsupported typ 14 - skipped
+14:13:14.600 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.1' has unsupported typ 13 - skipped
+14:13:14.600 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.1' has unsupported typ 12 - skipped
+14:13:14.600 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.1' has unsupported typ 11 - skipped
+14:13:14.600 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DIV.4' has unsupported typ 15 - skipped
+14:13:14.600 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.2' has unsupported typ 12 - skipped
+14:13:14.600 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.2' has unsupported typ 13 - skipped
+14:13:14.600 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.3' has unsupported typ 7 - skipped
+14:13:14.600 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.4' has unsupported typ 7 - skipped
+14:13:14.600 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uf' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:14.600 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iN' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:14.600 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iLref' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:14.600 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'di' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:14.600 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'vst' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:14.600 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gate' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:14.600 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'di2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=20001 nonFiniteSignals=0/7 maxAbs=200.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/3xx_acdc_rectifiers/302_pfc_basics/B_pfc.ipes
+  parse OK  lk=10 ctrl=12 therm=0 types=1x2,2x4,3x1,4x2,5x1,6x6,7x2,11x1,13x1,14x1,25x1
+14:13:14.660 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.1' has unsupported typ 7 - skipped
+14:13:14.660 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.1' has unsupported typ 14 - skipped
+14:13:14.660 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.1' has unsupported typ 13 - skipped
+14:13:14.660 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.1' has unsupported typ 25 - skipped
+14:13:14.660 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.2' has unsupported typ 11 - skipped
+14:13:14.660 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=100001 nonFiniteSignals=0/4 maxAbs=150.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/3xx_acdc_rectifiers/302_pfc_basics/C_pfc.ipes
+  parse OK  lk=10 ctrl=14 therm=0 types=1x2,2x4,3x2,4x2,5x1,6x6,7x2,8x1,11x1,13x1,14x2
+14:13:14.915 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Measurement 'AMP.1' references unknown power component or labels
+14:13:14.915 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Gate 'GATE.1' references unknown power component
+14:13:14.915 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Measurement 'AMP.2' references unknown power component or labels
+14:13:14.915 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.3' has unsupported typ 7 - skipped
+14:13:14.915 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'PT1.2' has unsupported typ 8 - skipped
+14:13:14.915 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.3' has unsupported typ 14 - skipped
+14:13:14.915 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.2' has unsupported typ 13 - skipped
+14:13:14.915 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.4' has unsupported typ 11 - skipped
+14:13:14.915 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.4' has unsupported typ 14 - skipped
+  SIM OK steps=100001 nonFiniteSignals=0/10 maxAbs=450.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/3xx_acdc_rectifiers/303_vienna_rectifier/three-phase_ViennaRectifier_simpleControl_250kW.ipes
+  parse OK  lk=27 ctrl=49 therm=3 types=1x7,2x10,3x3,4x3,5x2,6x18,7x3,10x6,11x3,13x3,14x3,17x3,18x3,21x3,41x3,51x3,53x3
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.1' has unsupported typ 7 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.2' has unsupported typ 14 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.1' has unsupported typ 13 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.1' has unsupported typ 11 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.1' has unsupported typ 21 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SGN.1' has unsupported typ 51 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.2' has unsupported typ 7 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.3' has unsupported typ 14 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.2' has unsupported typ 13 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.2' has unsupported typ 11 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.2' has unsupported typ 21 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SGN.2' has unsupported typ 51 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.3' has unsupported typ 7 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.4' has unsupported typ 14 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.3' has unsupported typ 13 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.3' has unsupported typ 11 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.3' has unsupported typ 21 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SGN.3' has unsupported typ 51 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.8' has unsupported typ 18 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.9' has unsupported typ 18 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.10' has unsupported typ 18 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'COUNTER.1' has unsupported typ 53 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'COUNTER.2' has unsupported typ 53 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'COUNTER.3' has unsupported typ 53 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.1' has unsupported typ 17 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.2' has unsupported typ 17 - skipped
+14:13:15.190 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.3' has unsupported typ 17 - skipped
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'loss_igbt' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'loss_diode' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'Tj_igbt' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'Tj_diode' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'i_igbt' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'i_diode' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'un1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'un2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'un3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uL1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uL2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uL3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iN1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iN2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iN3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uZK' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's1p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's2p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's3p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's1m' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's2m' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's3m' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iL1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iL2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iL3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sA' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sB' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.190 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sC' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=40000 nonFiniteSignals=0/0 maxAbs=0.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/4xx_dcac_inverters/401_single_phase_inverter/singlePhase_PWM_converter.ipes
+  parse OK  lk=12 ctrl=26 therm=0 types=1x4,2x3,3x4,4x5,5x2,6x8,7x2,10x4,11x1,12x1,13x1,14x2,18x1
+14:13:15.566 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.1' has unsupported typ 13 - skipped
+14:13:15.566 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.1' has unsupported typ 11 - skipped
+14:13:15.566 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.1' has unsupported typ 18 - skipped
+14:13:15.566 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.1' has unsupported typ 12 - skipped
+14:13:15.566 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.1' has unsupported typ 7 - skipped
+14:13:15.566 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.2' has unsupported typ 7 - skipped
+14:13:15.566 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.1' has unsupported typ 14 - skipped
+14:13:15.566 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.2' has unsupported typ 14 - skipped
+  SIM OK steps=20001 nonFiniteSignals=0/17 maxAbs=100.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/4xx_dcac_inverters/402_three_phase_inverter/inverter.ipes
+  parse OK  lk=21 ctrl=40 therm=0 types=1x7,2x6,3x9,4x6,5x2,6x13,7x1,10x6,13x3,18x3,45x3,63x1,70x1
+14:13:15.643 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.1' has unsupported typ 13 - skipped
+14:13:15.643 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.2' has unsupported typ 13 - skipped
+14:13:15.643 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.3' has unsupported typ 13 - skipped
+14:13:15.643 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.1' has unsupported typ 18 - skipped
+14:13:15.643 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.2' has unsupported typ 18 - skipped
+14:13:15.643 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.3' has unsupported typ 18 - skipped
+14:13:15.643 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GE.4' has unsupported typ 45 - skipped
+14:13:15.643 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GE.5' has unsupported typ 45 - skipped
+14:13:15.643 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GE.6' has unsupported typ 45 - skipped
+14:13:15.643 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SV.1' has unsupported typ 63 - skipped
+14:13:15.643 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'Text.1' has unsupported typ 70 - skipped
+14:13:15.643 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'm1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.643 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'm2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:15.643 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'm3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=80000 nonFiniteSignals=0/11 maxAbs=601.3995361328125
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/4xx_dcac_inverters/402_three_phase_inverter/three-phase_VSR_simpleControl_250kW.ipes
+  parse OK  lk=20 ctrl=39 therm=2 types=1x5,2x9,3x2,4x3,5x2,6x12,7x3,10x6,11x3,13x3,14x3,17x2,18x3,41x2,53x3
+14:13:16.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.1' has unsupported typ 7 - skipped
+14:13:16.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.2' has unsupported typ 14 - skipped
+14:13:16.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.1' has unsupported typ 13 - skipped
+14:13:16.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.1' has unsupported typ 11 - skipped
+14:13:16.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.2' has unsupported typ 7 - skipped
+14:13:16.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.3' has unsupported typ 14 - skipped
+14:13:16.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.2' has unsupported typ 13 - skipped
+14:13:16.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.2' has unsupported typ 11 - skipped
+14:13:16.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.3' has unsupported typ 7 - skipped
+14:13:16.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.4' has unsupported typ 14 - skipped
+14:13:16.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.3' has unsupported typ 13 - skipped
+14:13:16.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.3' has unsupported typ 11 - skipped
+14:13:16.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'COUNTER.1' has unsupported typ 53 - skipped
+14:13:16.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'COUNTER.2' has unsupported typ 53 - skipped
+14:13:16.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'COUNTER.3' has unsupported typ 53 - skipped
+14:13:16.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.14' has unsupported typ 18 - skipped
+14:13:16.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.15' has unsupported typ 18 - skipped
+14:13:16.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.16' has unsupported typ 18 - skipped
+14:13:16.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.1' has unsupported typ 17 - skipped
+14:13:16.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.2' has unsupported typ 17 - skipped
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'loss_igbt' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'loss_diode' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'Tj_igbt' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'Tj_diode' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'i_igbt' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'i_diode' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'un1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'un2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'un3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uL1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uL2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uL3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iN1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iN2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iN3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uZK' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's1p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's2p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's3p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's1m' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's2m' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's3m' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iL1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iL2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iL3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sA' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sB' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:16.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sC' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=40000 nonFiniteSignals=0/0 maxAbs=0.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/5xx_thermal_simulation/501_loss_calculation/BuckBoost_thermal.ipes
+  parse OK  lk=6 ctrl=11 therm=14 types=1x3,2x3,3x1,4x2,5x2,6x2,10x1,16x1,17x2,41x2,45x1,46x5,47x5,48x1
+14:13:16.214 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.1' has unsupported typ 17 - skipped
+14:13:16.214 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.2' has unsupported typ 17 - skipped
+14:13:16.214 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEMP.2' has unsupported typ 16 - skipped
+  SIM OK steps=100001 nonFiniteSignals=0/10 maxAbs=2.20956891021312E14
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/5xx_thermal_simulation/502_junction_temperature/BuckBoost_thermal_with_java.ipes
+  parse OK  lk=6 ctrl=13 therm=14 types=1x3,2x4,3x1,4x2,5x2,6x2,10x1,16x1,17x2,41x2,45x1,46x5,47x5,48x1,61x1
+14:13:17.134 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.1' has unsupported typ 17 - skipped
+14:13:17.134 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.2' has unsupported typ 17 - skipped
+14:13:17.134 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEMP.2' has unsupported typ 16 - skipped
+14:13:17.134 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MODEL_TEST1' has unsupported typ 61 - skipped
+14:13:17.134 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'PSw' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.134 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'PD' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.134 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'TjSw' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=100001 nonFiniteSignals=0/4 maxAbs=55.81934356689453
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/5xx_thermal_simulation/502_junction_temperature/ThreePhase-VSR_10kW_thermal.ipes
+  parse OK  lk=20 ctrl=38 therm=4 types=1x5,2x6,3x2,4x3,5x2,6x12,7x3,10x6,11x3,13x3,14x3,17x4,18x3,41x4,53x3
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.1' has unsupported typ 7 - skipped
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.2' has unsupported typ 14 - skipped
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.1' has unsupported typ 13 - skipped
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.1' has unsupported typ 11 - skipped
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.2' has unsupported typ 7 - skipped
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.3' has unsupported typ 14 - skipped
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.2' has unsupported typ 13 - skipped
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.2' has unsupported typ 11 - skipped
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.3' has unsupported typ 7 - skipped
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.4' has unsupported typ 14 - skipped
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.3' has unsupported typ 13 - skipped
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.3' has unsupported typ 11 - skipped
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'COUNTER.1' has unsupported typ 53 - skipped
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'COUNTER.2' has unsupported typ 53 - skipped
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'COUNTER.3' has unsupported typ 53 - skipped
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.14' has unsupported typ 18 - skipped
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.15' has unsupported typ 18 - skipped
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.16' has unsupported typ 18 - skipped
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.3' has unsupported typ 17 - skipped
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.4' has unsupported typ 17 - skipped
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.5' has unsupported typ 17 - skipped
+14:13:17.912 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.6' has unsupported typ 17 - skipped
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'loss_igbt' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'loss_diode' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'Tj_igbt' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'Tj_diode' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'i_igbt' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'i_diode' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'un1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'un2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'un3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uL1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uL2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uL3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iN1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iN2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iN3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uZK' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's1p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's2p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's3p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's1m' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's2m' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's3m' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iL1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iL2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iL3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sA' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sB' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:17.912 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sC' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=40000 nonFiniteSignals=0/0 maxAbs=0.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/5xx_thermal_simulation/502_junction_temperature/ThreePhase-VSR_10kW_thermal_with_java.ipes
+  parse OK  lk=20 ctrl=39 therm=4 types=1x5,2x6,3x2,4x3,5x2,6x12,7x3,10x6,11x3,13x3,14x3,17x4,18x3,41x4,53x3,61x1
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.1' has unsupported typ 7 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.2' has unsupported typ 14 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.1' has unsupported typ 13 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.1' has unsupported typ 11 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.2' has unsupported typ 7 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.3' has unsupported typ 14 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.2' has unsupported typ 13 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.2' has unsupported typ 11 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.3' has unsupported typ 7 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.4' has unsupported typ 14 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.3' has unsupported typ 13 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.3' has unsupported typ 11 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'COUNTER.1' has unsupported typ 53 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'COUNTER.2' has unsupported typ 53 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'COUNTER.3' has unsupported typ 53 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.14' has unsupported typ 18 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.15' has unsupported typ 18 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.16' has unsupported typ 18 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.3' has unsupported typ 17 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.4' has unsupported typ 17 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.5' has unsupported typ 17 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.6' has unsupported typ 17 - skipped
+14:13:18.088 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MODEL_TEST' has unsupported typ 61 - skipped
+14:13:18.088 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'pvD1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:18.088 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'pvIGBT1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:18.088 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'cntR' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:18.088 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gR' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:18.088 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gS' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:18.088 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gT' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:18.088 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'cntS' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:18.088 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'cntT' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=40000 nonFiniteSignals=0/7 maxAbs=3924.60302734375
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/6xx_emi_emc/602_cm_dm_filters/CMFilter1Stage.ipes
+  parse OK  lk=9 ctrl=12 therm=0 types=1x4,2x5,3x4,4x2,5x2,70x4
+14:13:18.247 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.1' has unsupported typ 70 - skipped
+14:13:18.247 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.2' has unsupported typ 70 - skipped
+14:13:18.247 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.3' has unsupported typ 70 - skipped
+14:13:18.247 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.4' has unsupported typ 70 - skipped
+  SIM OK steps=100001 nonFiniteSignals=0/6 maxAbs=0.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/6xx_emi_emc/602_cm_dm_filters/CMFilter1StageAddComp.ipes
+  parse OK  lk=11 ctrl=12 therm=0 types=1x5,2x5,3x5,4x2,5x2,70x4
+14:13:18.518 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.1' has unsupported typ 70 - skipped
+14:13:18.518 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.2' has unsupported typ 70 - skipped
+14:13:18.518 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.3' has unsupported typ 70 - skipped
+14:13:18.518 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.4' has unsupported typ 70 - skipped
+14:13:18.518 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'VCDM1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:18.518 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'ICDM1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:18.518 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'ILDM1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:18.518 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'ILsCM1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:18.518 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'VLDM1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:18.518 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'VLsCM1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:18.518 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'Iina' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:18.518 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'Iinb' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:18.518 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'Iinc' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:18.518 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iDM1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:18.518 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iDM2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:18.518 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iDM3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=100001 nonFiniteSignals=0/0 maxAbs=0.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/6xx_emi_emc/602_cm_dm_filters/CMFilter2Stage.ipes
+  parse OK  lk=13 ctrl=16 therm=0 types=1x5,2x9,3x6,4x2,5x2,70x5
+14:13:18.808 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.1' has unsupported typ 70 - skipped
+14:13:18.808 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.2' has unsupported typ 70 - skipped
+14:13:18.808 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.3' has unsupported typ 70 - skipped
+14:13:18.808 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.4' has unsupported typ 70 - skipped
+14:13:18.808 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.5' has unsupported typ 70 - skipped
+  SIM OK steps=100001 nonFiniteSignals=0/9 maxAbs=70.63658905029297
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/6xx_emi_emc/602_cm_dm_filters/CMFilter3Stage.ipes
+  parse OK  lk=17 ctrl=21 therm=0 types=1x7,2x13,3x8,4x2,5x2,70x6
+14:13:19.151 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.1' has unsupported typ 70 - skipped
+14:13:19.151 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.2' has unsupported typ 70 - skipped
+14:13:19.151 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.3' has unsupported typ 70 - skipped
+14:13:19.151 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.4' has unsupported typ 70 - skipped
+14:13:19.151 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.5' has unsupported typ 70 - skipped
+14:13:19.151 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.6' has unsupported typ 70 - skipped
+  SIM OK steps=100001 nonFiniteSignals=0/13 maxAbs=0.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/6xx_emi_emc/602_cm_dm_filters/CMFilter4Stage.ipes
+  parse OK  lk=21 ctrl=26 therm=0 types=1x9,2x17,3x10,4x2,5x2,70x7
+14:13:19.626 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.1' has unsupported typ 70 - skipped
+14:13:19.626 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.2' has unsupported typ 70 - skipped
+14:13:19.626 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.3' has unsupported typ 70 - skipped
+14:13:19.626 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.4' has unsupported typ 70 - skipped
+14:13:19.626 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.5' has unsupported typ 70 - skipped
+14:13:19.626 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.6' has unsupported typ 70 - skipped
+14:13:19.626 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.7' has unsupported typ 70 - skipped
+  SIM OK steps=100001 nonFiniteSignals=0/17 maxAbs=0.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/6xx_emi_emc/602_cm_dm_filters/DMFilter1Stage.ipes
+  parse OK  lk=18 ctrl=20 therm=0 types=1x6,2x12,3x3,4x6,5x9,70x2
+14:13:20.212 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.1' has unsupported typ 70 - skipped
+14:13:20.212 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.3' has unsupported typ 70 - skipped
+  SIM OK steps=100001 nonFiniteSignals=0/12 maxAbs=640.6454467773438
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/6xx_emi_emc/602_cm_dm_filters/DMFilter1StageAddComp.ipes
+  parse OK  lk=24 ctrl=20 therm=0 types=1x9,2x12,3x6,4x6,5x9,70x2
+14:13:20.829 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.1' has unsupported typ 70 - skipped
+14:13:20.829 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.3' has unsupported typ 70 - skipped
+  SIM OK steps=100001 nonFiniteSignals=0/12 maxAbs=650.1531372070312
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/6xx_emi_emc/602_cm_dm_filters/DMFilter2Stage.ipes
+  parse OK  lk=27 ctrl=30 therm=0 types=1x9,2x21,3x6,4x6,5x11,70x4
+14:13:21.607 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.1' has unsupported typ 70 - skipped
+14:13:21.607 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.2' has unsupported typ 70 - skipped
+14:13:21.607 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.3' has unsupported typ 70 - skipped
+14:13:21.607 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.4' has unsupported typ 70 - skipped
+  SIM OK steps=100001 nonFiniteSignals=12/18 maxAbs=3.139157414964314E38
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/6xx_emi_emc/602_cm_dm_filters/DMFilter3Stage.ipes
+  parse OK  lk=36 ctrl=37 therm=0 types=1x12,2x30,3x9,4x6,5x10,70x6
+14:13:22.592 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.1' has unsupported typ 70 - skipped
+14:13:22.592 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.2' has unsupported typ 70 - skipped
+14:13:22.592 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.3' has unsupported typ 70 - skipped
+14:13:22.592 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.4' has unsupported typ 70 - skipped
+14:13:22.592 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.5' has unsupported typ 70 - skipped
+14:13:22.592 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.6' has unsupported typ 70 - skipped
+14:13:22.592 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'VCCM1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:22.592 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'ICCM1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:22.592 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'VCCM2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:22.592 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'ICCM2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:22.592 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'VCCM3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:22.592 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'ICCM3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:22.592 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'VCCM4' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:22.592 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'ICCM4' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:22.592 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'VLCM1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:22.592 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'ILCM1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:22.592 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'VLCM2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:22.592 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'ILCM2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:22.592 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uCM' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:22.592 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'VLCM3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:22.592 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'ILCM3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:22.592 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'VLCM4' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:22.592 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'ILCM4' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=100001 nonFiniteSignals=0/0 maxAbs=0.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/6xx_emi_emc/602_cm_dm_filters/DMFilter4Stage.ipes
+  parse OK  lk=45 ctrl=45 therm=0 types=1x15,2x39,3x12,4x6,5x10,70x8
+14:13:24.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.1' has unsupported typ 70 - skipped
+14:13:24.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.2' has unsupported typ 70 - skipped
+14:13:24.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.3' has unsupported typ 70 - skipped
+14:13:24.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.4' has unsupported typ 70 - skipped
+14:13:24.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.5' has unsupported typ 70 - skipped
+14:13:24.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.6' has unsupported typ 70 - skipped
+14:13:24.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.7' has unsupported typ 70 - skipped
+14:13:24.023 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEXT.8' has unsupported typ 70 - skipped
+14:13:24.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'T.1_Iin' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:24.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'T.1_Iout' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:24.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'T.1_Vmag' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:24.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'I1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:24.023 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'I2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=100001 nonFiniteSignals=2/2 maxAbs=3.314517505804718E38
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/7xx_scripting_automation/701_gecko_script_basics/buck_control.ipes
+  parse OK  lk=6 ctrl=17 therm=0 types=1x2,2x3,3x2,4x2,5x3,6x2,10x2,12x1,13x1,27x1,29x1,45x1,61x1,70x1
+14:13:26.049 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GE.1' has unsupported typ 45 - skipped
+14:13:26.049 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'PI.1' has unsupported typ 10 - skipped
+14:13:26.049 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'PD.1' has unsupported typ 29 - skipped
+14:13:26.049 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.1' has unsupported typ 12 - skipped
+14:13:26.065 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.1' has unsupported typ 13 - skipped
+14:13:26.065 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.1' has unsupported typ 27 - skipped
+14:13:26.065 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'JAVA_FUNCTION.5' has unsupported typ 61 - skipped
+14:13:26.065 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'Text.1' has unsupported typ 70 - skipped
+14:13:26.065 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'switch' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:26.065 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'duty' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:26.065 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'ampl' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:26.065 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'constampl' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:26.065 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'Ts' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:26.065 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'constTs' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=100001 nonFiniteSignals=0/4 maxAbs=10.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/7xx_scripting_automation/701_gecko_script_basics/GeckoSCRIPT.ipes
+  parse OK  lk=15 ctrl=34 therm=5 types=1x3,2x4,3x3,4x3,5x2,6x8,7x1,8x4,9x1,10x3,12x4,13x1,17x5,27x1,41x5,70x6
+14:13:26.240 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'PT1.3' has unsupported typ 8 - skipped
+14:13:26.240 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.3' has unsupported typ 13 - skipped
+14:13:26.240 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'PI.3' has unsupported typ 10 - skipped
+14:13:26.240 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.2' has unsupported typ 27 - skipped
+14:13:26.240 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.1' has unsupported typ 17 - skipped
+14:13:26.240 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.2' has unsupported typ 17 - skipped
+14:13:26.240 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.3' has unsupported typ 12 - skipped
+14:13:26.240 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'PT1.4' has unsupported typ 8 - skipped
+14:13:26.240 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'PT1.5' has unsupported typ 8 - skipped
+14:13:26.240 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.3' has unsupported typ 17 - skipped
+14:13:26.240 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.4' has unsupported typ 17 - skipped
+14:13:26.240 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.5' has unsupported typ 17 - skipped
+14:13:26.240 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.5' has unsupported typ 12 - skipped
+14:13:26.240 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'PT1.7' has unsupported typ 8 - skipped
+14:13:26.240 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'Text.1' has unsupported typ 70 - skipped
+14:13:26.240 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'Text.2' has unsupported typ 70 - skipped
+14:13:26.240 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'Text.3' has unsupported typ 70 - skipped
+14:13:26.240 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'Text.4' has unsupported typ 70 - skipped
+14:13:26.240 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'Text.5' has unsupported typ 70 - skipped
+14:13:26.240 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.8' has unsupported typ 7 - skipped
+14:13:26.240 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'Text.15' has unsupported typ 70 - skipped
+14:13:26.240 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'IGBT_Current' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:26.240 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'u_in' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=100000 nonFiniteSignals=0/0 maxAbs=0.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/7xx_scripting_automation/702_matlab_integration/GeckoSCRIPT_ example_matlab/outputstagemodel.ipes
+  parse OK  lk=15 ctrl=17 therm=26 types=1x1,2x2,3x3,4x3,5x4,6x10,10x4,16x2,41x2,45x2,46x10,47x10,48x2,61x3
+14:13:26.629 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Measurement 'AMP.1' references unknown power component or labels
+14:13:26.629 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Gate 'GATE.1' references unknown power component
+14:13:26.629 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Gate 'GATE.2' references unknown power component
+14:13:26.629 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Gate 'GATE.3' references unknown power component
+14:13:26.629 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Gate 'GATE.4' references unknown power component
+14:13:26.629 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'JAVA_FUNCTION.1' has unsupported typ 61 - skipped
+14:13:26.629 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'JAVA_FUNCTION.2' has unsupported typ 61 - skipped
+14:13:26.629 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEMP.1' has unsupported typ 16 - skipped
+14:13:26.629 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEMP.2' has unsupported typ 16 - skipped
+14:13:26.629 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'JAVA_FUNCTION.3' has unsupported typ 61 - skipped
+  SIM OK steps=100000 nonFiniteSignals=0/9 maxAbs=10000.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/7xx_scripting_automation/703_simulink_cosimulation/vr1_simulink.ipes
+  parse OK  lk=30 ctrl=19 therm=0 types=1x7,2x6,3x2,4x3,5x1,6x21,7x3,22x3,23x3
+14:13:30.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Measurement 'AMP.1' references unknown power component or labels
+14:13:30.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Measurement 'AMP.2' references unknown power component or labels
+14:13:30.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Measurement 'AMP.3' references unknown power component or labels
+14:13:30.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Gate 'GATE.1' references unknown power component
+14:13:30.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Gate 'GATE.2' references unknown power component
+14:13:30.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Gate 'GATE.3' references unknown power component
+14:13:30.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ToEXT.3' has unsupported typ 22 - skipped
+14:13:30.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ToEXT.4' has unsupported typ 22 - skipped
+14:13:30.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FromEXT.5' has unsupported typ 23 - skipped
+14:13:30.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FromEXT.6' has unsupported typ 23 - skipped
+14:13:30.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FromEXT.7' has unsupported typ 23 - skipped
+14:13:30.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ToEXT.5' has unsupported typ 22 - skipped
+  SIM OK steps=40000 nonFiniteSignals=0/12 maxAbs=0.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/7xx_scripting_automation/704_java_blocks/demo_JAVA_Block.ipes
+  parse OK  lk=0 ctrl=5 therm=0 types=4x2,5x1,61x1,70x1
+14:13:31.163 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'w1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:31.163 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'w2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:31.163 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'w3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:31.163 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'w4' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:31.163 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'w5' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=20001 nonFiniteSignals=0/0 maxAbs=0.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/7xx_scripting_automation/704_java_blocks/JavaBlockPMSM.ipes
+  parse OK  lk=37 ctrl=72 therm=0 types=1x4,2x1,3x3,4x8,5x5,6x33,7x7,8x1,10x15,12x3,13x3,15x1,18x3,21x3,26x4,27x3,45x1,61x2,62x5,64x3,65x1
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'JAVA_FUNCTION.1' has unsupported typ 61 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SHLD.1' has unsupported typ 26 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GE.1' has unsupported typ 45 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SHLD.2' has unsupported typ 26 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.5' has unsupported typ 21 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.6' has unsupported typ 21 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.7' has unsupported typ 21 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.9' has unsupported typ 18 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.10' has unsupported typ 18 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.11' has unsupported typ 18 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'PT1.6<detail>' has unsupported typ 8 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.1' has unsupported typ 13 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'INT.1<detail>' has unsupported typ 64 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.1<detail>' has unsupported typ 7 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.1<detail>' has unsupported typ 27 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.5' has unsupported typ 12 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.2<detail>' has unsupported typ 7 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.2' has unsupported typ 13 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'INT.2<detail>' has unsupported typ 64 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.3<detail>' has unsupported typ 7 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.2<detail>' has unsupported typ 27 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.6' has unsupported typ 12 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.4<detail>' has unsupported typ 7 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.3' has unsupported typ 13 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.5<detail>' has unsupported typ 7 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.7' has unsupported typ 12 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'INT.4<detail>' has unsupported typ 64 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.7<detail>' has unsupported typ 7 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.4<detail>' has unsupported typ 27 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'VIEWMOT.1' has unsupported typ 62 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'VIEWMOT.2' has unsupported typ 62 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'VIEWMOT.3' has unsupported typ 62 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'VIEWMOT.4' has unsupported typ 62 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'VIEWMOT.5' has unsupported typ 62 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.8<detail>' has unsupported typ 7 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ABCDQ.1' has unsupported typ 65 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'JAVA_FUNCTION.3' has unsupported typ 61 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SHLD.6' has unsupported typ 26 - skipped
+14:13:31.189 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SHLD.7' has unsupported typ 26 - skipped
+java.lang.RuntimeException: Matrix of size 20 is singular.
+	at gecko.core.math.LUDecomposition.solve(LUDecomposition.java:302)
+	at gecko.core.math.Matrix.solve(Matrix.java:737)
+	at gecko.core.simulation.solver.MatrixSolver.solve(MatrixSolver.java:625)
+	at gecko.core.simulation.HeadlessSimulationEngine.executeSimulation(HeadlessSimulationEngine.java:313)
+	at gecko.core.simulation.HeadlessSimulationEngine.runSimulation(HeadlessSimulationEngine.java:147)
+	at TutorialSweep.probe(TutorialSweep.java:45)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.stream.SortedOps$RefSortingSink.end(SortedOps.java:395)
+	at java.base/java.util.stream.Sink$ChainedReference.end(Sink.java:261)
+	at java.base/java.util.stream.Sink$ChainedReference.end(Sink.java:261)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:510)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at TutorialSweep.main(TutorialSweep.java:29)
+  SIM FAILED: Simulation error: Matrix of size 20 is singular.
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/7xx_scripting_automation/705_api_integration/ExternalSignalSource.ipes
+  parse OK  lk=17 ctrl=16 therm=0 types=1x5,2x1,3x5,4x3,5x2,6x8,8x1,9x1,10x3,12x2,13x1,27x1
+14:13:31.198 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'PI.2' has unsupported typ 10 - skipped
+14:13:31.198 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.1' has unsupported typ 27 - skipped
+14:13:31.198 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.1' has unsupported typ 13 - skipped
+14:13:31.198 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'PT1.2' has unsupported typ 8 - skipped
+14:13:31.198 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'd' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=25001 nonFiniteSignals=0/5 maxAbs=401.20489501953125
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/7xx_scripting_automation/705_api_integration/signalsourceExternal.ipes
+  parse OK  lk=12 ctrl=26 therm=0 types=1x4,2x3,3x4,4x5,5x2,6x8,7x2,10x4,11x1,12x1,13x1,14x2,18x1
+14:13:31.312 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.1' has unsupported typ 13 - skipped
+14:13:31.312 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.1' has unsupported typ 11 - skipped
+14:13:31.312 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.1' has unsupported typ 18 - skipped
+14:13:31.312 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.1' has unsupported typ 12 - skipped
+14:13:31.312 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.1' has unsupported typ 7 - skipped
+14:13:31.312 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.2' has unsupported typ 7 - skipped
+14:13:31.312 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.1' has unsupported typ 14 - skipped
+14:13:31.312 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.2' has unsupported typ 14 - skipped
+14:13:31.312 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uGS' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:31.312 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'g14' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:31.312 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'g23' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:31.312 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'iDC' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:31.312 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'pd' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:31.312 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'pA' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=20001 nonFiniteSignals=0/7 maxAbs=100.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/801_matrix_converters/three-phase_ACAC_sparsematrixConverter_junction_temperature.ipes
+  parse OK  lk=42 ctrl=66 therm=12 types=1x7,2x11,3x8,4x7,5x2,6x33,10x15,12x2,16x2,17x2,18x3,19x6,20x3,21x3,25x3,41x2,45x1,46x4,47x4,48x1,59x1
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.1' has unsupported typ 12 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.2' has unsupported typ 12 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'OR.1' has unsupported typ 20 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'OR.2' has unsupported typ 20 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'OR.3' has unsupported typ 20 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SPARSEMATRIX.2' has unsupported typ 59 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.1' has unsupported typ 25 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.2' has unsupported typ 21 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.4' has unsupported typ 18 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.1' has unsupported typ 19 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.2' has unsupported typ 19 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.2' has unsupported typ 25 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.3' has unsupported typ 21 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.5' has unsupported typ 18 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.3' has unsupported typ 19 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.4' has unsupported typ 19 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.3' has unsupported typ 25 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.4' has unsupported typ 21 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.6' has unsupported typ 18 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.5' has unsupported typ 19 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.6' has unsupported typ 19 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.1' has unsupported typ 17 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.2' has unsupported typ 17 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEMP.1' has unsupported typ 16 - skipped
+14:13:31.412 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEMP.2' has unsupported typ 16 - skipped
+14:13:31.412 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'loss_igbt' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:31.412 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'loss_diode' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:31.412 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's1p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:31.412 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's2p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:31.412 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's3p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:31.412 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's1m' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:31.412 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's2m' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:31.412 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's3m' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:31.412 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sA' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:31.412 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sB' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:31.412 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sC' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=100000 nonFiniteSignals=0/17 maxAbs=283.2031555175781
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/801_matrix_converters/three-phase_ACAC_sparse_root.ipes
+  parse OK  lk=42 ctrl=66 therm=12 types=1x7,2x11,3x8,4x7,5x2,6x33,10x15,12x2,16x2,17x2,18x3,19x6,20x3,21x3,25x3,41x2,45x1,46x4,47x4,48x1,59x1
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.1' has unsupported typ 12 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.2' has unsupported typ 12 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'OR.1' has unsupported typ 20 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'OR.2' has unsupported typ 20 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'OR.3' has unsupported typ 20 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SPARSEMATRIX.2' has unsupported typ 59 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.1' has unsupported typ 25 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.2' has unsupported typ 21 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.4' has unsupported typ 18 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.1' has unsupported typ 19 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.2' has unsupported typ 19 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.2' has unsupported typ 25 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.3' has unsupported typ 21 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.5' has unsupported typ 18 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.3' has unsupported typ 19 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.4' has unsupported typ 19 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.3' has unsupported typ 25 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.4' has unsupported typ 21 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.6' has unsupported typ 18 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.5' has unsupported typ 19 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.6' has unsupported typ 19 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.1' has unsupported typ 17 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.2' has unsupported typ 17 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEMP.1' has unsupported typ 16 - skipped
+14:13:33.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEMP.2' has unsupported typ 16 - skipped
+  SIM OK steps=100000 nonFiniteSignals=0/37 maxAbs=327.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/801_matrix_converters/UltraSparseMatrixConverter.ipes
+  parse OK  lk=37 ctrl=51 therm=0 types=1x7,2x9,3x7,4x7,5x1,6x27,10x9,12x2,18x3,19x6,20x3,21x3,25x3,59x1
+14:13:35.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.1' has unsupported typ 12 - skipped
+14:13:35.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.2' has unsupported typ 12 - skipped
+14:13:35.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'OR.1' has unsupported typ 20 - skipped
+14:13:35.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'OR.2' has unsupported typ 20 - skipped
+14:13:35.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'OR.3' has unsupported typ 20 - skipped
+14:13:35.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SPARSEMATRIX.2' has unsupported typ 59 - skipped
+14:13:35.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.1' has unsupported typ 25 - skipped
+14:13:35.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.2' has unsupported typ 21 - skipped
+14:13:35.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.4' has unsupported typ 18 - skipped
+14:13:35.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.1' has unsupported typ 19 - skipped
+14:13:35.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.2' has unsupported typ 19 - skipped
+14:13:35.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.2' has unsupported typ 25 - skipped
+14:13:35.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.3' has unsupported typ 21 - skipped
+14:13:35.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.5' has unsupported typ 18 - skipped
+14:13:35.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.3' has unsupported typ 19 - skipped
+14:13:35.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.4' has unsupported typ 19 - skipped
+14:13:35.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.3' has unsupported typ 25 - skipped
+14:13:35.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.4' has unsupported typ 21 - skipped
+14:13:35.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.6' has unsupported typ 18 - skipped
+14:13:35.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.5' has unsupported typ 19 - skipped
+14:13:35.455 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.6' has unsupported typ 19 - skipped
+14:13:35.455 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's1p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:35.455 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's2p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:35.455 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's3p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:35.455 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's1m' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:35.455 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's2m' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:35.455 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's3m' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:35.455 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sA' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:35.455 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sB' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:35.455 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sC' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=100001 nonFiniteSignals=0/14 maxAbs=283.1954345703125
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/801_matrix_converters/UltraSparseMatrixConverter_root.ipes
+  parse OK  lk=37 ctrl=55 therm=0 types=1x7,2x9,3x7,4x8,5x2,6x27,10x9,12x2,18x3,19x6,20x3,21x3,25x3,27x1,59x1,63x1
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.1' has unsupported typ 12 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.2' has unsupported typ 12 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'OR.1' has unsupported typ 20 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'OR.2' has unsupported typ 20 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'OR.3' has unsupported typ 20 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SPARSEMATRIX.2' has unsupported typ 59 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.1' has unsupported typ 25 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.2' has unsupported typ 21 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.4' has unsupported typ 18 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.1' has unsupported typ 19 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.2' has unsupported typ 19 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.2' has unsupported typ 25 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.3' has unsupported typ 21 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.5' has unsupported typ 18 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.3' has unsupported typ 19 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.4' has unsupported typ 19 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.3' has unsupported typ 25 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.4' has unsupported typ 21 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.6' has unsupported typ 18 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.5' has unsupported typ 19 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.6' has unsupported typ 19 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.1' has unsupported typ 27 - skipped
+14:13:36.462 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SV.1' has unsupported typ 63 - skipped
+14:13:36.462 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's1p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:36.462 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's2p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:36.462 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's3p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:36.462 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's1m' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:36.462 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's2m' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:36.462 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's3m' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:36.462 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sA' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:36.462 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sB' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:36.462 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sC' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=100001 nonFiniteSignals=0/14 maxAbs=283.1954345703125
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/802_motor_drives_pmsm/indirect_matrix_java_with_PMSM_control.ipes
+  parse OK  lk=40 ctrl=77 therm=0 types=1x4,2x1,3x2,4x8,5x3,6x36,7x7,10x18,12x3,13x3,15x1,18x3,26x4,27x3,45x1,61x2,62x5,64x3,65x1,70x9
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'JAVA_FUNCTION.1' has unsupported typ 61 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SHLD.1' has unsupported typ 26 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GE.1' has unsupported typ 45 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SHLD.2' has unsupported typ 26 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.9' has unsupported typ 18 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.10' has unsupported typ 18 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.11' has unsupported typ 18 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.1' has unsupported typ 13 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'INT.1' has unsupported typ 64 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.1' has unsupported typ 7 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.1' has unsupported typ 27 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.5' has unsupported typ 12 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.2' has unsupported typ 7 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.2' has unsupported typ 13 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'INT.2' has unsupported typ 64 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.3' has unsupported typ 7 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.2' has unsupported typ 27 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.6' has unsupported typ 12 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.4' has unsupported typ 7 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.3' has unsupported typ 13 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.5' has unsupported typ 7 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.7' has unsupported typ 12 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'INT.4' has unsupported typ 64 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.7' has unsupported typ 7 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.4' has unsupported typ 27 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'VIEWMOT.1' has unsupported typ 62 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'VIEWMOT.2' has unsupported typ 62 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'VIEWMOT.3' has unsupported typ 62 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'VIEWMOT.4' has unsupported typ 62 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'VIEWMOT.5' has unsupported typ 62 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.8' has unsupported typ 7 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ABCDQ.1' has unsupported typ 65 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'JAVA_FUNCTION.3' has unsupported typ 61 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SHLD.6' has unsupported typ 26 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SHLD.7' has unsupported typ 26 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'Text.1' has unsupported typ 70 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'Text.2' has unsupported typ 70 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'Text.3' has unsupported typ 70 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'Text.4' has unsupported typ 70 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'Text.5' has unsupported typ 70 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'Text.6' has unsupported typ 70 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'Text.7' has unsupported typ 70 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'Text.8' has unsupported typ 70 - skipped
+14:13:37.448 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'Text.9' has unsupported typ 70 - skipped
+java.lang.RuntimeException: Matrix of size 20 is singular.
+	at gecko.core.math.LUDecomposition.solve(LUDecomposition.java:302)
+	at gecko.core.math.Matrix.solve(Matrix.java:737)
+	at gecko.core.simulation.solver.MatrixSolver.solve(MatrixSolver.java:625)
+	at gecko.core.simulation.HeadlessSimulationEngine.executeSimulation(HeadlessSimulationEngine.java:313)
+	at gecko.core.simulation.HeadlessSimulationEngine.runSimulation(HeadlessSimulationEngine.java:147)
+	at TutorialSweep.probe(TutorialSweep.java:45)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.stream.SortedOps$RefSortingSink.end(SortedOps.java:395)
+	at java.base/java.util.stream.Sink$ChainedReference.end(Sink.java:261)
+	at java.base/java.util.stream.Sink$ChainedReference.end(Sink.java:261)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:510)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at TutorialSweep.main(TutorialSweep.java:29)
+  SIM FAILED: Simulation error: Matrix of size 20 is singular.
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/802_motor_drives_pmsm/sparseMatrix_java_with_PMSM_control.ipes
+  parse OK  lk=37 ctrl=72 therm=0 types=1x4,2x1,3x3,4x8,5x5,6x33,7x7,8x1,10x15,12x3,13x3,15x1,18x3,21x3,26x4,27x3,45x1,61x2,62x5,64x3,65x1
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'JAVA_FUNCTION.1' has unsupported typ 61 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SHLD.1' has unsupported typ 26 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GE.1' has unsupported typ 45 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SHLD.2' has unsupported typ 26 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.5' has unsupported typ 21 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.6' has unsupported typ 21 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.7' has unsupported typ 21 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.9' has unsupported typ 18 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.10' has unsupported typ 18 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.11' has unsupported typ 18 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'PT1.6<detail>' has unsupported typ 8 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.1' has unsupported typ 13 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'INT.1<detail>' has unsupported typ 64 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.1<detail>' has unsupported typ 7 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.1<detail>' has unsupported typ 27 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.5' has unsupported typ 12 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.2<detail>' has unsupported typ 7 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.2' has unsupported typ 13 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'INT.2<detail>' has unsupported typ 64 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.3<detail>' has unsupported typ 7 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.2<detail>' has unsupported typ 27 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.6' has unsupported typ 12 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.4<detail>' has unsupported typ 7 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.3' has unsupported typ 13 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.5<detail>' has unsupported typ 7 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.7' has unsupported typ 12 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'INT.4<detail>' has unsupported typ 64 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.7<detail>' has unsupported typ 7 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.4<detail>' has unsupported typ 27 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'VIEWMOT.1' has unsupported typ 62 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'VIEWMOT.2' has unsupported typ 62 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'VIEWMOT.3' has unsupported typ 62 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'VIEWMOT.4' has unsupported typ 62 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'VIEWMOT.5' has unsupported typ 62 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.8<detail>' has unsupported typ 7 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ABCDQ.1' has unsupported typ 65 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'JAVA_FUNCTION.3' has unsupported typ 61 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SHLD.6' has unsupported typ 26 - skipped
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SHLD.7' has unsupported typ 26 - skipped
+14:13:37.464 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'ia_filt' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:37.464 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's1i' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:37.464 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's2i' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:37.464 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's3i' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:37.464 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's1pp' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:37.464 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's2pp' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:37.464 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's3pp' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:37.464 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's1n' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:37.464 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's2n' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:37.464 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 's3n' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:37.464 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'isa' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:37.464 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'isb' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:37.464 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'isc' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:37.464 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'n' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:37.464 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'theta' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:37.464 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal '11' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:37.464 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal '22' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:37.464 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal '33' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:37.464 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal '44' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+java.lang.RuntimeException: Matrix of size 20 is singular.
+	at gecko.core.math.LUDecomposition.solve(LUDecomposition.java:302)
+	at gecko.core.math.Matrix.solve(Matrix.java:737)
+	at gecko.core.simulation.solver.MatrixSolver.solve(MatrixSolver.java:625)
+	at gecko.core.simulation.HeadlessSimulationEngine.executeSimulation(HeadlessSimulationEngine.java:313)
+	at gecko.core.simulation.HeadlessSimulationEngine.runSimulation(HeadlessSimulationEngine.java:147)
+	at TutorialSweep.probe(TutorialSweep.java:45)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.stream.SortedOps$RefSortingSink.end(SortedOps.java:395)
+	at java.base/java.util.stream.Sink$ChainedReference.end(Sink.java:261)
+	at java.base/java.util.stream.Sink$ChainedReference.end(Sink.java:261)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:510)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at TutorialSweep.main(TutorialSweep.java:29)
+  SIM FAILED: Simulation error: Matrix of size 20 is singular.
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/803_optimization/GeckoSwissRectifierOptimizer/model/cmNoise.ipes
+  parse OK  lk=7 ctrl=5 therm=0 types=1x4,2x2,3x2,4x2,5x1,60x1
+14:13:37.464 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'CISPR16.1' has unsupported typ 60 - skipped
+  SIM OK steps=100001 nonFiniteSignals=0/2 maxAbs=86.20800018310547
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/803_optimization/GeckoSwissRectifierOptimizer/model/dmNoise.ipes
+  parse OK  lk=7 ctrl=8 therm=0 types=1x4,2x4,3x2,4x1,5x3,60x1
+14:13:37.670 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'CISPR16.1' has unsupported typ 60 - skipped
+  SIM OK steps=100001 nonFiniteSignals=0/4 maxAbs=2.494137119057882E-9
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/803_optimization/GeckoSwissRectifierOptimizer/model/InputFilterCurrentSourceModel.ipes
+  parse OK  lk=27 ctrl=25 therm=0 types=1x8,2x20,3x6,4x6,5x10,70x2
+14:13:37.844 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'Text.7' has unsupported typ 70 - skipped
+14:13:37.844 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'Text.1' has unsupported typ 70 - skipped
+  SIM OK steps=100001 nonFiniteSignals=10/16 maxAbs=1.980241623917645E38
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/803_optimization/GeckoSwissRectifierOptimizer/model/InputFilterCurrentSourceModelDiffLsArrangement.ipes
+  parse OK  lk=27 ctrl=23 therm=0 types=1x8,2x20,3x6,4x6,5x10
+  SIM OK steps=100001 nonFiniteSignals=0/16 maxAbs=671.9801635742188
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/803_optimization/GeckoSwissRectifierOptimizer/model/InputFilterVoltageSourceModel.ipes
+  parse OK  lk=12 ctrl=6 therm=0 types=1x2,2x7,3x6,4x2,5x1
+  SIM OK steps=100001 nonFiniteSignals=0/5 maxAbs=83.6353530883789
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/803_optimization/GeckoSwissRectifierOptimizer/model/Swiss_Rect.ipes
+  parse OK  lk=41 ctrl=79 therm=18 types=1x21,2x20,3x7,4x6,5x13,6x22,10x8,12x1,14x5,15x1,16x4,17x4,27x2,36x2,41x4,45x1,46x10,47x4,48x1,61x1,70x16,75x1
+14:13:40.149 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.1' has unsupported typ 14 - skipped
+14:13:40.149 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.2' has unsupported typ 14 - skipped
+14:13:40.149 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.1' has unsupported typ 27 - skipped
+14:13:40.149 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.2' has unsupported typ 27 - skipped
+14:13:40.149 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GT.21' has unsupported typ 46 - skipped
+14:13:40.149 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GT.22' has unsupported typ 46 - skipped
+14:13:40.149 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'COS.3' has unsupported typ 36 - skipped
+14:13:40.149 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'COS.4' has unsupported typ 36 - skipped
+14:13:40.149 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.6' has unsupported typ 14 - skipped
+14:13:40.149 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.7' has unsupported typ 14 - skipped
+14:13:40.149 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.8' has unsupported typ 14 - skipped
+14:13:40.149 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'JAVA_FUNCTION.2' has unsupported typ 61 - skipped
+14:13:40.149 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.1' has unsupported typ 17 - skipped
+14:13:40.149 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEMP.1' has unsupported typ 16 - skipped
+14:13:40.151 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.3' has unsupported typ 17 - skipped
+14:13:40.151 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEMP.2' has unsupported typ 16 - skipped
+14:13:40.151 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.4' has unsupported typ 17 - skipped
+14:13:40.151 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEMP.3' has unsupported typ 16 - skipped
+14:13:40.151 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.5' has unsupported typ 17 - skipped
+14:13:40.151 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEMP.4' has unsupported typ 16 - skipped
+14:13:40.151 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.1' has unsupported typ 12 - skipped
+14:13:40.151 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DIV.1' has unsupported typ 15 - skipped
+14:13:40.151 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DataExport.1' has unsupported typ 75 - skipped
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uCM' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'P_DB' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'T_DB' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'P_SA' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'T_SA' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'P_Sy' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'T_Sy' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'P_DN' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'T_DN' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'I.1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'I.2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'I.3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'Vgs_S1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'Vgs_S2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'Vgs_S3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uiOutTau1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uiOutTau2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'S1a' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'S1b' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'S2a' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'S2b' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'S3a' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:40.151 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'S3b' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=100001 nonFiniteSignals=0/24 maxAbs=597.2147827148438
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/803_optimization/GeckoSwissRectifierOptimizer/model/Swiss_Rect_2StageInputFilter.ipes
+  parse OK  lk=46 ctrl=75 therm=18 types=1x19,2x20,3x10,4x6,5x12,6x22,10x8,12x1,13x1,14x5,15x1,16x4,17x4,27x2,36x2,41x4,45x1,46x10,47x4,48x1,60x1,61x1,70x16
+14:13:43.679 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.1' has unsupported typ 14 - skipped
+14:13:43.679 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.2' has unsupported typ 14 - skipped
+14:13:43.679 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.1' has unsupported typ 27 - skipped
+14:13:43.679 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.2' has unsupported typ 27 - skipped
+14:13:43.679 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GT.21' has unsupported typ 46 - skipped
+14:13:43.679 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GT.22' has unsupported typ 46 - skipped
+14:13:43.679 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'COS.3' has unsupported typ 36 - skipped
+14:13:43.679 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'COS.4' has unsupported typ 36 - skipped
+14:13:43.679 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.6' has unsupported typ 14 - skipped
+14:13:43.680 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.7' has unsupported typ 14 - skipped
+14:13:43.680 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'MUL.8' has unsupported typ 14 - skipped
+14:13:43.680 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'JAVA_FUNCTION.2' has unsupported typ 61 - skipped
+14:13:43.680 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.1' has unsupported typ 17 - skipped
+14:13:43.680 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEMP.1' has unsupported typ 16 - skipped
+14:13:43.680 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.3' has unsupported typ 17 - skipped
+14:13:43.680 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEMP.2' has unsupported typ 16 - skipped
+14:13:43.680 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.4' has unsupported typ 17 - skipped
+14:13:43.680 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEMP.3' has unsupported typ 16 - skipped
+14:13:43.680 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'FLOW.5' has unsupported typ 17 - skipped
+14:13:43.680 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'TEMP.4' has unsupported typ 16 - skipped
+14:13:43.680 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.1' has unsupported typ 12 - skipped
+14:13:43.680 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DIV.1' has unsupported typ 15 - skipped
+14:13:43.680 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'CISPR16.1' has unsupported typ 60 - skipped
+14:13:43.680 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'S1a' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.680 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'S1b' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.680 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'S2a' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.680 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'S2b' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.680 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'S3a' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.680 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'S3b' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.680 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uiOutTau1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.680 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uiOutTau2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.680 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'I.1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.680 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'I.2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.680 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'I.3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.680 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'Vgs_S1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.680 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'Vgs_S2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.680 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'Vgs_S3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.680 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'P_DN' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.680 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'T_DN' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.681 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'P_Sy' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.681 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'T_Sy' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.681 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'P_SA' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.681 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'T_SA' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.681 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'P_DB' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.681 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'T_DB' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:43.681 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uCM' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=100001 nonFiniteSignals=0/20 maxAbs=1.0449999570846558
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/804_thyristor_control/ThyristorControlBlock.ipes
+  parse OK  lk=25 ctrl=21 therm=0 types=1x12,2x6,3x8,4x3,5x2,6x6,8x7,61x1,70x2,72x1
+14:13:48.438 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'PT1.1' has unsupported typ 8 - skipped
+14:13:48.438 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'THYRISTOR_CONTROL.1' has unsupported typ 72 - skipped
+14:13:48.438 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'JAVA.1' has unsupported typ 61 - skipped
+  SIM OK steps=80000 nonFiniteSignals=0/19 maxAbs=5.99999978589949E-8
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/804_thyristor_control/ThyristorCoupling.ipes
+  parse OK  lk=23 ctrl=33 therm=0 types=1x12,2x10,3x2,4x3,5x1,6x3,8x3,9x3,11x2,12x7,13x2,18x1,19x1,21x1,25x3,61x1,64x1
+14:13:49.033 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.3' has unsupported typ 11 - skipped
+14:13:49.033 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.4' has unsupported typ 18 - skipped
+14:13:49.033 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'INT.2' has unsupported typ 64 - skipped
+14:13:49.033 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.2' has unsupported typ 13 - skipped
+14:13:49.033 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.4' has unsupported typ 11 - skipped
+14:13:49.033 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.3' has unsupported typ 25 - skipped
+14:13:49.033 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.2' has unsupported typ 21 - skipped
+14:13:49.033 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.3' has unsupported typ 19 - skipped
+14:13:49.033 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.4' has unsupported typ 25 - skipped
+14:13:49.033 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.4' has unsupported typ 12 - skipped
+14:13:49.033 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.3' has unsupported typ 13 - skipped
+14:13:49.033 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.5' has unsupported typ 25 - skipped
+14:13:49.033 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'JAVA.1' has unsupported typ 61 - skipped
+  SIM OK steps=80000 nonFiniteSignals=0/25 maxAbs=959.8052368164062
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/804_thyristor_control/thyristor_commutation_3ph_trafo.ipes
+  parse OK  lk=23 ctrl=32 therm=0 types=1x12,2x10,3x2,4x3,5x1,6x3,8x3,9x3,11x2,12x7,13x2,18x1,19x1,21x1,25x3,64x1
+14:13:49.939 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.3' has unsupported typ 11 - skipped
+14:13:49.939 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.4' has unsupported typ 18 - skipped
+14:13:49.939 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'INT.2' has unsupported typ 64 - skipped
+14:13:49.939 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.2' has unsupported typ 13 - skipped
+14:13:49.939 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.4' has unsupported typ 11 - skipped
+14:13:49.939 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.3' has unsupported typ 25 - skipped
+14:13:49.939 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.2' has unsupported typ 21 - skipped
+14:13:49.939 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.3' has unsupported typ 19 - skipped
+14:13:49.939 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.4' has unsupported typ 25 - skipped
+14:13:49.939 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.4' has unsupported typ 12 - skipped
+14:13:49.939 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.3' has unsupported typ 13 - skipped
+14:13:49.939 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.5' has unsupported typ 25 - skipped
+14:13:49.939 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sg' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:49.939 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'm' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:49.939 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:49.939 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:49.939 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:49.939 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:49.939 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:49.939 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=80000 nonFiniteSignals=0/14 maxAbs=20900.263671875
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/804_thyristor_control/thyristor_freeWheelingDiode.ipes
+  parse OK  lk=6 ctrl=19 therm=0 types=1x5,2x4,3x2,4x1,5x1,6x2,8x1,11x2,12x1,13x1,18x1,19x1,21x1,25x1,64x1
+14:13:50.777 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.3' has unsupported typ 12 - skipped
+14:13:50.777 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.3' has unsupported typ 11 - skipped
+14:13:50.777 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'INT.1' has unsupported typ 64 - skipped
+14:13:50.777 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.2' has unsupported typ 18 - skipped
+14:13:50.777 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.2' has unsupported typ 13 - skipped
+14:13:50.777 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.4' has unsupported typ 11 - skipped
+14:13:50.777 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.2' has unsupported typ 25 - skipped
+14:13:50.778 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.2' has unsupported typ 21 - skipped
+14:13:50.778 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.2' has unsupported typ 19 - skipped
+14:13:50.778 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:50.778 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sg' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:50.778 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'm' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:50.778 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:50.778 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:50.778 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=40000 nonFiniteSignals=0/6 maxAbs=5.99999978589949E-8
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/804_thyristor_control/thyristor_interface_trafo.ipes
+  parse OK  lk=38 ctrl=40 therm=0 types=1x19,2x5,3x2,4x3,5x1,6x6,8x6,9x10,11x2,12x12,13x2,18x1,19x1,21x1,25x6,64x1
+14:13:50.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.1' has unsupported typ 11 - skipped
+14:13:50.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.1' has unsupported typ 18 - skipped
+14:13:50.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'INT.1' has unsupported typ 64 - skipped
+14:13:50.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.1' has unsupported typ 13 - skipped
+14:13:50.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.2' has unsupported typ 11 - skipped
+14:13:50.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.1' has unsupported typ 25 - skipped
+14:13:50.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.1' has unsupported typ 21 - skipped
+14:13:50.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.1' has unsupported typ 19 - skipped
+14:13:50.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.2' has unsupported typ 13 - skipped
+14:13:50.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.1' has unsupported typ 12 - skipped
+14:13:50.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.2' has unsupported typ 25 - skipped
+14:13:50.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.3' has unsupported typ 25 - skipped
+14:13:50.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.4' has unsupported typ 25 - skipped
+14:13:50.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.5' has unsupported typ 25 - skipped
+14:13:50.872 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.6' has unsupported typ 25 - skipped
+14:13:50.872 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:50.872 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:50.872 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:50.872 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt4' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:50.872 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt5' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:50.872 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt6' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=20001 nonFiniteSignals=0/16 maxAbs=0.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/804_thyristor_control/thyristor_Jakopovic.ipes
+  parse OK  lk=7 ctrl=35 therm=0 types=1x5,2x5,3x3,4x2,5x2,6x2,8x2,11x4,12x2,13x2,18x2,19x2,21x2,25x2,27x3,64x2
+14:13:51.260 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.3' has unsupported typ 11 - skipped
+14:13:51.260 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.4' has unsupported typ 18 - skipped
+14:13:51.260 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'INT.2' has unsupported typ 64 - skipped
+14:13:51.260 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.2' has unsupported typ 13 - skipped
+14:13:51.260 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.4' has unsupported typ 11 - skipped
+14:13:51.260 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.3' has unsupported typ 25 - skipped
+14:13:51.260 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.2' has unsupported typ 21 - skipped
+14:13:51.260 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.3' has unsupported typ 19 - skipped
+14:13:51.260 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.4' has unsupported typ 12 - skipped
+14:13:51.260 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.2' has unsupported typ 27 - skipped
+14:13:51.260 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.3' has unsupported typ 27 - skipped
+14:13:51.260 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'LIMIT.4' has unsupported typ 27 - skipped
+14:13:51.260 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.5' has unsupported typ 11 - skipped
+14:13:51.260 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.5' has unsupported typ 18 - skipped
+14:13:51.260 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'INT.3' has unsupported typ 64 - skipped
+14:13:51.260 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.3' has unsupported typ 13 - skipped
+14:13:51.260 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.6' has unsupported typ 11 - skipped
+14:13:51.260 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.5' has unsupported typ 25 - skipped
+14:13:51.260 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.3' has unsupported typ 21 - skipped
+14:13:51.260 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.4' has unsupported typ 19 - skipped
+14:13:51.260 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.5' has unsupported typ 12 - skipped
+14:13:51.260 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uTHa' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:51.260 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'uTHb' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:51.260 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sg' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:51.260 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'm' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:51.260 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:51.260 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:51.260 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:51.260 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:51.260 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:51.260 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'u0' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=60000 nonFiniteSignals=0/5 maxAbs=300.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/804_thyristor_control/thyristor_lossOfCommutation.ipes
+  parse OK  lk=21 ctrl=29 therm=0 types=1x12,2x4,3x2,4x4,5x1,6x3,8x3,9x3,11x2,12x7,13x2,18x1,19x1,21x1,25x3,64x1
+14:13:51.410 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.3' has unsupported typ 11 - skipped
+14:13:51.410 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.4' has unsupported typ 18 - skipped
+14:13:51.410 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'INT.2' has unsupported typ 64 - skipped
+14:13:51.410 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.2' has unsupported typ 13 - skipped
+14:13:51.410 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.4' has unsupported typ 11 - skipped
+14:13:51.410 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.3' has unsupported typ 25 - skipped
+14:13:51.410 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.2' has unsupported typ 21 - skipped
+14:13:51.410 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.3' has unsupported typ 19 - skipped
+14:13:51.410 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.4' has unsupported typ 25 - skipped
+14:13:51.410 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.4' has unsupported typ 12 - skipped
+14:13:51.410 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.3' has unsupported typ 13 - skipped
+14:13:51.410 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.5' has unsupported typ 25 - skipped
+14:13:51.410 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sg' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:51.410 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'm' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:51.410 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:51.410 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:51.410 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:51.410 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:51.410 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:51.410 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=60000 nonFiniteSignals=0/11 maxAbs=246.92054748535156
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/804_thyristor_control/thyristor_RL_2phBridge.ipes
+  parse OK  lk=7 ctrl=21 therm=0 types=1x4,2x2,3x2,4x1,5x1,6x4,8x4,11x2,12x1,13x1,18x1,19x1,21x1,25x2,64x1
+14:13:51.993 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.1' has unsupported typ 11 - skipped
+14:13:51.993 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.1' has unsupported typ 25 - skipped
+14:13:51.993 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.1' has unsupported typ 13 - skipped
+14:13:51.993 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.2' has unsupported typ 11 - skipped
+14:13:51.993 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.1' has unsupported typ 21 - skipped
+14:13:51.993 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.1' has unsupported typ 19 - skipped
+14:13:51.993 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.3' has unsupported typ 12 - skipped
+14:13:51.993 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.2' has unsupported typ 25 - skipped
+14:13:51.993 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'INT.1' has unsupported typ 64 - skipped
+14:13:51.993 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.3' has unsupported typ 18 - skipped
+14:13:51.993 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:51.993 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sg' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:51.993 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'm' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:51.993 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:51.993 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:51.993 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=60000 nonFiniteSignals=0/4 maxAbs=11678.50390625
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/804_thyristor_control/thyristor_RL_3phBridge.ipes
+  parse OK  lk=11 ctrl=42 therm=0 types=1x9,2x4,3x2,4x3,5x1,6x6,7x1,8x6,11x2,12x7,13x1,18x1,19x1,21x1,25x7,64x1
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.1' has unsupported typ 11 - skipped
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.1' has unsupported typ 25 - skipped
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.1' has unsupported typ 13 - skipped
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.2' has unsupported typ 11 - skipped
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.1' has unsupported typ 21 - skipped
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.1' has unsupported typ 19 - skipped
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.3' has unsupported typ 12 - skipped
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.5' has unsupported typ 25 - skipped
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.5' has unsupported typ 12 - skipped
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.6' has unsupported typ 25 - skipped
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.6' has unsupported typ 12 - skipped
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.7' has unsupported typ 25 - skipped
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.7' has unsupported typ 12 - skipped
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.8' has unsupported typ 25 - skipped
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.8' has unsupported typ 12 - skipped
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.9' has unsupported typ 25 - skipped
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.9' has unsupported typ 12 - skipped
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'INT.1' has unsupported typ 64 - skipped
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.3' has unsupported typ 18 - skipped
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.10' has unsupported typ 25 - skipped
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.10' has unsupported typ 12 - skipped
+14:13:52.110 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'GAIN.5' has unsupported typ 7 - skipped
+14:13:52.110 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.110 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.110 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.110 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt4' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.110 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt5' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.110 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt6' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.110 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sg' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.110 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'm' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.110 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.110 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.110 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.110 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p4' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=20001 nonFiniteSignals=0/11 maxAbs=327.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/804_thyristor_control/thyristor_RL_3ph_trafo.ipes
+  parse OK  lk=20 ctrl=29 therm=0 types=1x12,2x4,3x2,4x3,5x1,6x3,8x3,9x3,11x2,12x7,13x2,18x1,19x1,21x1,25x3,64x1
+14:13:52.177 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.3' has unsupported typ 11 - skipped
+14:13:52.177 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.4' has unsupported typ 18 - skipped
+14:13:52.177 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'INT.2' has unsupported typ 64 - skipped
+14:13:52.177 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.2' has unsupported typ 13 - skipped
+14:13:52.177 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.4' has unsupported typ 11 - skipped
+14:13:52.177 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.3' has unsupported typ 25 - skipped
+14:13:52.177 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.2' has unsupported typ 21 - skipped
+14:13:52.177 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.3' has unsupported typ 19 - skipped
+14:13:52.177 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.4' has unsupported typ 25 - skipped
+14:13:52.177 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.4' has unsupported typ 12 - skipped
+14:13:52.177 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.3' has unsupported typ 13 - skipped
+14:13:52.177 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.5' has unsupported typ 25 - skipped
+14:13:52.177 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sg' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.177 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'm' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.177 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.177 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.177 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.177 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt1' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.177 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.177 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=60000 nonFiniteSignals=0/11 maxAbs=596.9697875976562
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/804_thyristor_control/thyristor_RL_single.ipes
+  parse OK  lk=4 ctrl=17 therm=0 types=1x4,2x2,3x2,4x1,5x1,6x1,8x1,11x2,12x1,13x1,18x1,19x1,21x1,25x1,64x1
+14:13:52.677 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.3' has unsupported typ 12 - skipped
+14:13:52.677 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.3' has unsupported typ 11 - skipped
+14:13:52.677 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'INT.1' has unsupported typ 64 - skipped
+14:13:52.677 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.2' has unsupported typ 18 - skipped
+14:13:52.677 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.2' has unsupported typ 13 - skipped
+14:13:52.677 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.4' has unsupported typ 11 - skipped
+14:13:52.677 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.2' has unsupported typ 25 - skipped
+14:13:52.677 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.2' has unsupported typ 21 - skipped
+14:13:52.677 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.2' has unsupported typ 19 - skipped
+14:13:52.677 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'gt' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.677 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'sg' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.677 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'm' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.677 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.677 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p2' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+14:13:52.677 [main] WARN gecko.core.simulation.HeadlessSimulationEngine -- Signal 'p3' cannot be resolved to a node, measurement probe or labeled control output - not recorded
+  SIM OK steps=40000 nonFiniteSignals=0/4 maxAbs=0.0
+FILE C:/Users/mhr/Documents/GeckoCIRCUITS/resources/tutorials/8xx_advanced_topics/804_thyristor_control/thyristor_RL_singlePh_trafo.ipes
+  parse OK  lk=13 ctrl=23 therm=0 types=1x6,2x5,3x3,4x1,5x1,6x2,8x2,9x3,11x2,12x4,13x1,18x1,19x1,21x1,25x2,64x1
+14:13:52.743 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.3' has unsupported typ 11 - skipped
+14:13:52.743 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'NOT.4' has unsupported typ 18 - skipped
+14:13:52.743 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'INT.2' has unsupported typ 64 - skipped
+14:13:52.743 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'SUB.2' has unsupported typ 13 - skipped
+14:13:52.743 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'HYS.4' has unsupported typ 11 - skipped
+14:13:52.743 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.3' has unsupported typ 25 - skipped
+14:13:52.743 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'XOR.2' has unsupported typ 21 - skipped
+14:13:52.743 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'AND.3' has unsupported typ 19 - skipped
+14:13:52.743 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'DELAY.4' has unsupported typ 25 - skipped
+14:13:52.743 [main] WARN gecko.core.control.ControlCalculatorBuilder -- Control block 'ADD.4' has unsupported typ 12 - skipped
+  SIM OK steps=60000 nonFiniteSignals=0/15 maxAbs=322.4613952636719

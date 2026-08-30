@@ -145,6 +145,16 @@ pass).
 
 ---
 
+Sweep status (2026-08-30, after the parameter-normalization fix in
+`CircuitNetlist.initNetlist`): **71 of 76 tutorials fully CLEAN** on the
+headless engine (was 62). The 5 remaining failures share exactly two root
+causes: op-amp circuits (`opamp_3rdOrderBessel`, `opamp_frequency` - W2a
+missing VCVS/op-amp stamp) and JAVA_BLOCK circuits (`JavaBlockPMSM`,
+2 PMSM matrix variants - W4 JAVA_FUNCTION typ 61 execution). Full log:
+`tools/parity/results/20260830-tutorial-sweep.txt`.
+
+---
+
 Baseline: LK parity is green (`tools/parity/results/20260828-165310.txt`,
 fix ee81cc5e "pin MNA island reference rows after stamping").
 
