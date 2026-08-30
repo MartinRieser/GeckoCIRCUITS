@@ -213,6 +213,22 @@ it correctly.
 
 ### W2 — Singular matrices (C2a, C2b)
 
+**W2a status (2026-08-30, late):** the VCVS machinery is IMPLEMENTED and
+merged: `INetList.registerVcvs(source, measured, gain)` /
+`getVcvsCouplings()` and MatrixSolver stamps the sensing rows
+(`a[z][measured +/- gain]`, constraint row `v(x) - v(y) = k * V(measured)`).
+What remains is the expansion itself, which hit one prerequisite discovered
+the hard way: **multi-pin geometry**. The label path maps only 2 terminals
+per component (x[0], y[0]) and the op-amp has 4 pins at rotated relative
+offsets (XIN(0)=(+1,+2), XIN(1)=(-1,+2), YOUT(0)=(0,-3), YOUT(1)=(-2,-1);
+the in- pin is usually UNLABELED - its net comes from wires). A faithful
+expansion needs NetlistBuilder to know per-type pin offsets + synthesize
+wires from each primitive terminal to the op-amp's pin points (rotating
+the offsets with the component orientation). First expansion attempt was
+reverted because it missed the pins and made OpAmp.ipes singular
+(ClassicCompatibilityTest regression). With pin geometry in place, the
+expansion design below applies as written.
+
 **W2a design (2026-08-30, fully scoped - implement from here):**
 the op-amp (`OperationalAmplifier`, typ 22, LK domain) is a
 `HiddenSubCircuitable` in the classic GUI: at simulation start it expands

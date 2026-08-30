@@ -69,4 +69,15 @@ public class SimpleNetList implements INetList {
 
     @Override
     public double getSimulationTime() { return 0.0; }
+
+
+    @Override
+    public void registerVcvs(int sourceElement, int measuredElement, double gain) {
+        // not needed by this test stub
+    }
+
+    @Override
+    public java.util.List<gecko.core.circuit.netlist.CircuitNetlist.VcvsCoupling> getVcvsCouplings() {
+        return java.util.List.of();
+    }
 }

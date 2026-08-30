@@ -79,6 +79,28 @@ public class CircuitNetlist implements INetList {
     // non-branch components were filtered from the element list
     private long[] elementUids = new long[0];
 
+    // Voltage-controlled voltage sources: the source element enforces
+    // v(nodeX) - v(nodeY) = gain * v(measured element)
+    private final List<VcvsCoupling> vcvsCouplings = new ArrayList<>();
+
+    /** A voltage-controlled voltage source created by e.g. the op-amp
+     *  hidden-subcircuit expansion. */
+    public record VcvsCoupling(int sourceElement, int measuredElement, double gain) {
+    }
+
+    /** Registers a VCVS: element {@code sourceElement} enforces
+     *  v(nodeX) - v(nodeY) = {@code gain} * v(nodeX - nodeY of
+     *  {@code measuredElement}). Both must be LK_U-type elements with a
+     *  voltage-source z-slot. */
+    public void registerVcvs(int sourceElement, int measuredElement, double gain) {
+        vcvsCouplings.add(new VcvsCoupling(sourceElement, measuredElement, gain));
+    }
+
+    public List<VcvsCoupling> getVcvsCouplings() {
+        return vcvsCouplings;
+    }
+
+
     // Node labels for signal resolution (scope/probe lookups by name)
     private final LabelResolver labelResolver = new LabelResolver();
 
@@ -198,6 +220,7 @@ public class CircuitNetlist implements INetList {
 
         // Clear any previous couplings when reinitializing
         couplingRegistry.clear();
+        vcvsCouplings.clear();
     }
 
     /** Minimum parameter array length: solver stamps read slots up to [20]

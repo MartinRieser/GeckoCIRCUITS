@@ -263,6 +263,27 @@ public class MatrixSolver {
             // If no stamper is registered, component is skipped (e.g., terminals, unimplemented types)
         }
 
+        // Voltage-controlled voltage sources (e.g. from the op-amp hidden-
+        // subcircuit expansion): constrain v(x) - v(y) = gain * V(measured).
+        // The source's z-row gets the sensing terms; the through-current
+        // column already came from the element's own stamper.
+        for (gecko.core.circuit.netlist.CircuitNetlist.VcvsCoupling vc : netlist.getVcvsCouplings()) {
+            int p = netlist.getNodeX(vc.sourceElement());
+            int n = netlist.getNodeY(vc.sourceElement());
+            int z = netlist.getNodeMax() + netlist.getVoltageSourceNumber(vc.sourceElement());
+            int mx = netlist.getNodeX(vc.measuredElement());
+            int my = netlist.getNodeY(vc.measuredElement());
+            if (z < 0 || z >= matrixSize) {
+                continue;
+            }
+            a[p][z] += 1.0;
+            a[n][z] -= 1.0;
+            a[z][p] -= 1.0;
+            a[z][n] += 1.0;
+            a[z][mx] += vc.gain();
+            a[z][my] -= vc.gain();
+        }
+
         // Note: Magnetic coupling (mutual inductance) handling is deferred for future refinement.
         // The legacy code injects coupling contributions after component stamping;
         // this will be added when LKOP2 coupling arrays are integrated into the netlist.

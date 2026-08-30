@@ -79,6 +79,14 @@ public interface INetList {
      */
     int getNodeY(int index);
 
+    /** Registers a voltage-controlled voltage source: element
+     *  {@code sourceElement} enforces v(nodeX) - v(nodeY) =
+     *  {@code gain} * v(nodeX - nodeY of {@code measuredElement}). */
+    void registerVcvs(int sourceElement, int measuredElement, double gain);
+
+    /** All registered VCVS couplings. */
+    java.util.List<CircuitNetlist.VcvsCoupling> getVcvsCouplings();
+
     /**
      * Gets the parameters for an element at the given index.
      * Parameter layout depends on element type:
