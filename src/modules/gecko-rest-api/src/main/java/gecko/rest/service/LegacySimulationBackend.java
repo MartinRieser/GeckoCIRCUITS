@@ -165,6 +165,18 @@ public class LegacySimulationBackend {
 
             long session = (Long) call(remote, "connect");
             try {
+                // Fail fast when the classic engine imported no components
+                // (web-authored circuits): a full run would only end in
+                // "recorded no data" after seconds of pointless simulation.
+                String[] circuitElements = (String[]) call(remote, "getCircuitElements");
+                String[] controlElements = (String[]) call(remote, "getControlElements");
+                if (circuitElements.length == 0 && controlElements.length == 0) {
+                    throw new IllegalStateException(
+                            "The classic engine imported no components from this circuit"
+                            + " - web-editor-authored circuits are not classic-compatible yet."
+                            + " Use the Headless engine, or run a classic-authored .ipes file.");
+                }
+
                 labelMeasurementBlocks(remote, model);
                 call(remote, "initSimulation", new Class<?>[]{double.class, double.class}, dt, tEnd);
 
@@ -405,7 +417,11 @@ public class LegacySimulationBackend {
             series.add(data);
         }
         if (time == null || available.isEmpty()) {
-            return SimulationResult.failed("Legacy engine recorded no data for the requested signals");
+            return SimulationResult.failed(
+                    "The classic engine ran but recorded no data for the requested signals."
+                    + " Web-editor-authored circuits are not fully classic-compatible yet"
+                    + " (use the Headless engine for them) - the Classic engine is meant"
+                    + " for classic-authored .ipes files");
         }
 
         DataContainerGlobal container = new DataContainerGlobal();

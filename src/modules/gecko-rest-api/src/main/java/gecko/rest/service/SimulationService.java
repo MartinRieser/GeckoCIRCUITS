@@ -1,6 +1,7 @@
 package gecko.rest.service;
 
 import gecko.core.allg.SolverType;
+import gecko.core.datacontainer.DataContainerGlobal;
 import gecko.core.io.CircuitFileParser;
 import gecko.core.io.CircuitModel;
 import gecko.core.simulation.HeadlessSimulationEngine;
@@ -47,6 +48,19 @@ import gecko.rest.model.BatchJobStatus;
 public class SimulationService {
 
     private static final Logger logger = LoggerFactory.getLogger(SimulationService.class);
+
+    /** Upper bound of integration steps per run - rejects only absurd
+     *  dt/duration pairs (typos like dt=1e-12); slow-but-plausible runs are
+     *  cut by the wall-clock budget instead. */
+    private static final long MAX_SIMULATION_STEPS = 100_000_000;
+
+    /** Wall-clock budget for a headless run before the engine is cancelled
+     *  (backstop against NaN loops and slow setup paths). */
+    private static final long HEADLESS_TIME_BUDGET_MS = 120_000;
+
+    /** Upper bound of stored result rows - larger runs record every Nth step
+     *  to keep the data container within heap. */
+    private static final long MAX_RECORDED_ROWS = 2_000_000;
     static final String CANCELLED_BY_USER = "Cancelled by user";
 
     private final Map<String, SimulationResponse> simulationStore = new ConcurrentHashMap<>();
@@ -222,6 +236,25 @@ public class SimulationService {
 
         try {
             SimulationConfig config = buildSimulationConfig(request);
+
+            // Hard bound: a circuit with an extreme step count would otherwise
+            // grind silently for minutes/hours (e.g. tEnd=2 s at dt=50 ns).
+            double stepWidth = config.getSolverSettings().getStepWidth();
+            double duration = config.getSolverSettings().getSimulationDuration();
+            long steps = stepWidth > 0 ? (long) (duration / stepWidth) : 0;
+            if (stepWidth <= 0 || duration <= 0) {
+                applyFailureResult(response, "Invalid solver settings: dt and duration must be > 0");
+                completeProgressStreams(simulationId, false);
+                return;
+            }
+            if (steps > MAX_SIMULATION_STEPS) {
+                applyFailureResult(response, "Simulation rejected: " + String.format("%,d", steps)
+                        + " steps exceed the limit of " + String.format("%,d", MAX_SIMULATION_STEPS)
+                        + " - increase the time step (dt) or reduce the duration");
+                completeProgressStreams(simulationId, false);
+                return;
+            }
+
             boolean legacyBackend = "legacy".equalsIgnoreCase(request.getBackend());
 
             SimulationResult result;
@@ -232,8 +265,16 @@ public class SimulationService {
                 HeadlessSimulationEngine engine = new HeadlessSimulationEngine();
                 runningEngines.put(simulationId, engine);
 
-                // Set up progress listener with SSE broadcasting
+                // Wall-clock backstop: the listener cancels the engine when the
+                // run exceeds its budget instead of burning CPU forever (e.g.
+                // NaN loops). Not an exact progress measure.
+                final long deadline = System.currentTimeMillis() + HEADLESS_TIME_BUDGET_MS;
+                final boolean[] budgetExceeded = {false};
                 engine.setProgressListener((currentTime, endTime, currentStep) -> {
+                    if (System.currentTimeMillis() > deadline) {
+                        budgetExceeded[0] = true;
+                        engine.cancel();
+                    }
                     double progress = endTime > 0 ? currentTime / endTime : 0;
                     broadcastProgress(simulationId, progress, currentTime, endTime);
                     logger.debug("Simulation {} progress: {:.1f}%", simulationId, (progress * 100));
@@ -244,9 +285,21 @@ public class SimulationService {
 
                 // Run the simulation
                 result = engine.runSimulation(config);
+
+                if (budgetExceeded[0]) {
+                    result = SimulationResult.failed("Simulation exceeded its " 
+                            + (HEADLESS_TIME_BUDGET_MS / 1000) + " s time budget"
+                            + " - increase the time step (dt) or reduce the duration");
+                }
             }
 
             // Process results
+            if (result.isSuccess() && isAllNonFinite(result)) {
+                result = SimulationResult.failed("All recorded signals are undefined (NaN/Inf)"
+                        + " - the circuit produced no valid solution"
+                        + " (check grounding/component values; classic-authored .ipes files"
+                        + " can also run on the Classic engine)");
+            }
             if (result.isSuccess()) {
                 if (applySuccessfulResult(response, result)) {
                     completeProgressStreams(simulationId, true);
@@ -264,8 +317,14 @@ public class SimulationService {
                 }
             }
 
-        } catch (Exception e) {
-            if (applyFailureResult(response, "Simulation error: " + e.getMessage())) {
+        } catch (Throwable e) {
+            // Throwable on purpose: an OutOfMemoryError from a huge data
+            // container must fail the run visibly - executorService.submit
+            // would otherwise swallow it and leave a zombie RUNNING record.
+            String message = e instanceof OutOfMemoryError
+                    ? "ran out of memory - reduce the duration or increase the time step (dt)"
+                    : String.valueOf(e.getMessage());
+            if (applyFailureResult(response, "Simulation error: " + message)) {
                 completeProgressStreams(simulationId, false);
                 logger.error("Simulation {} threw exception", simulationId, e);
             }
@@ -593,6 +652,29 @@ public class SimulationService {
         executorService.shutdownNow();
     }
 
+    /**
+     * True when a successful result carries no finite sample at all - the
+     * circuit "completed" without producing a valid solution (typical for
+     * control-domain circuits the headless engine cannot solve yet).
+     */
+    private static boolean isAllNonFinite(SimulationResult result) {
+        DataContainerGlobal container = result.getDataContainer();
+        if (container == null) {
+            return false;
+        }
+        boolean anySample = false;
+        for (int row = 0; row < container.getRowLength(); row++) {
+            int maxColumn = container.getMaximumTimeIndex(row);
+            for (int column = 0; column <= maxColumn; column++) {
+                if (Float.isFinite(container.getValue(row, column))) {
+                    return false;
+                }
+                anySample = true;
+            }
+        }
+        return anySample;
+    }
+
     SimulationConfig buildSimulationConfig(SimulationRequest request) {
         CircuitModel circuitModel = resolveCircuitModel(request);
 
@@ -610,6 +692,15 @@ public class SimulationService {
                 .stepWidth(timeStep)
                 .simulationDuration(duration)
                 .solverType(parseSolverType(request.getSolverType()));
+
+        // Bound result memory: logging every step of a huge run needs ~1 GB
+        // heap (OutOfMemoryError territory). Widen the interval so at most
+        // MAX_RECORDED_ROWS rows are stored - the chart subsamples anyway.
+        long totalSteps = timeStep > 0 && duration > 0
+                ? (long) (duration / timeStep) : 0;
+        if (totalSteps > MAX_RECORDED_ROWS) {
+            builder.dataLoggingInterval((int) (totalSteps / MAX_RECORDED_ROWS + 1));
+        }
 
         if (request.getParameters() != null) {
             builder.withParameters(request.getParameters());

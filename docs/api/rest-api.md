@@ -931,6 +931,16 @@ curl -X POST http://localhost:8080/api/v1/simulations \
 | `totalSteps` | number | Total steps for complete simulation |
 | `estimatedRemainingMs` | number | Estimated milliseconds until completion |
 
+### Simulation Limits
+
+| Limit | Value | Behavior |
+|-------|-------|----------|
+| Step count | 100,000,000 | Rejected before starting |
+| Wall-clock (headless engine) | 120 s | Run is cancelled and marked FAILED |
+| Recorded rows | 2,000,000 | Larger runs record every Nth step |
+| All-NaN results | - | FAILED with "no valid solution" message instead of an empty result |
+| Heap exhaustion | - | FAILED with "ran out of memory" instead of a zombie RUNNING state |
+
 ## Deployment
 
 ### Docker (Recommended)
