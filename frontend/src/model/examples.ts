@@ -360,6 +360,7 @@ enabledShorted 0
 parentSheetIdentifier 0
 typ 6
 uniqueObjectIdentifier 17
+coupledReferenceID[] 11
 x 16
 y 14
 parameter[] 0.0

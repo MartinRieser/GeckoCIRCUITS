@@ -189,7 +189,7 @@ public class CircuitNetlist implements INetList {
         this.parameters = new double[elementCount][];
         for (int i = 0; i < elementCount; i++) {
             if (params[i] != null) {
-                this.parameters[i] = params[i].clone();
+                this.parameters[i] = normalizeParameters(types[i], params[i]);
             }
         }
         this.nodeCount = maxNodeIndex;
@@ -198,6 +198,42 @@ public class CircuitNetlist implements INetList {
 
         // Clear any previous couplings when reinitializing
         couplingRegistry.clear();
+    }
+
+    /** Minimum parameter array length: solver stamps read slots up to [20]
+     *  (e.g. SIN source amplitude) and must never see ArrayIndexOutOfBounds. */
+    private static final int MIN_PARAM_SLOTS = 24;
+
+    /**
+     * Normalizes an element parameter array to the classic full-slot layout.
+     *
+     * <p>Files written by the classic GUI always store the complete parameter
+     * array including derived and state slots, but web-authored circuits
+     * carry short arrays with only the user-editable prefix. The solver reads
+     * derived slots directly (capacitance from [6], nonlinear factor from [7],
+     * history from [10], SIN amplitude from [20]) - a short or NaN-padded
+     * array poisons the whole solution with NaN. Missing values default to 0
+     * (= unenergized element), and the derived slots are filled from the
+     * primary value exactly like the classic editor does.
+     */
+    private static double[] normalizeParameters(CircuitTypCore type, double[] raw) {
+        double[] out = new double[Math.max(MIN_PARAM_SLOTS, raw.length)];
+        for (int i = 0; i < raw.length; i++) {
+            out[i] = Double.isFinite(raw[i]) ? raw[i] : 0.0;
+        }
+        if (type == CircuitTypCore.LK_C || type == CircuitTypCore.TH_CTH) {
+            // capacitance also lives in [6]; nonlinear factor defaults to C
+            // (linear element, fac = 1 - factor/C = 0); [10] history starts 0
+            out[6] = out[0];
+            out[7] = out[0];
+        } else if (type == CircuitTypCore.LK_U || type == CircuitTypCore.LK_I) {
+            int sourceType = (int) out[0];
+            if (sourceType == gecko.core.circuit.SourceType.QUELLE_SIN
+                    || sourceType == gecko.core.circuit.SourceType.QUELLE_SIN_NEW) {
+                out[20] = out[1]; // SIN amplitude slot
+            }
+        }
+        return out;
     }
 
     /**

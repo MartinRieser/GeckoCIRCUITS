@@ -145,22 +145,33 @@ public class InitialConditionSolver {
             if (type == CircuitTypCore.LK_C || type == CircuitTypCore.TH_CTH) {
                 // Capacitor: restore initial voltage
                 // param[4] = voltage at X node, param[5] = voltage at Y node
-                pALT[nodeX] = params[4];
-                pALT[nodeY] = params[5];
+                pALT[nodeX] = stateSlot(params, 4);
+                pALT[nodeY] = stateSlot(params, 5);
             } else if (type == CircuitTypCore.REL_MMF || type == CircuitTypCore.TH_TEMP) {
                 // MMF/Temperature source: restore potentials
                 // param[8] = voltage at X node, param[9] = voltage at Y node
-                pALT[nodeX] = params[8];
-                pALT[nodeY] = params[9];
+                pALT[nodeX] = stateSlot(params, 8);
+                pALT[nodeY] = stateSlot(params, 9);
             } else if (type == CircuitTypCore.LK_LKOP2) {
                 // Coupled inductor: restore source current in potential vector
                 // param[2] = source current
                 int voltageSourceNumber = netlist.getVoltageSourceNumber(i);
                 if (voltageSourceNumber > 0) {
-                    pALT[netlist.getNodeMax() + voltageSourceNumber] = params[2];
+                    pALT[netlist.getNodeMax() + voltageSourceNumber] = stateSlot(params, 2);
                 }
             }
         }
+    }
+
+    /**
+     * Saved-state slot of a netlist parameter array. Files written by the
+     * classic GUI always carry the full state array, but web-authored
+     * circuits store short parameter arrays - the missing/NaN slots mean
+     * "no saved state" and must default to 0, never to NaN (a single NaN
+     * here poisons the whole solution).
+     */
+    private static double stateSlot(double[] params, int index) {
+        return index < params.length && Double.isFinite(params[index]) ? params[index] : 0.0;
     }
 
     /**
@@ -182,20 +193,20 @@ public class InitialConditionSolver {
             if (type == CircuitTypCore.LK_C || type == CircuitTypCore.TH_CTH) {
                 // Capacitor: restore initial current
                 // param[2] = initial current
-                iALT[i] = params[2];
+                iALT[i] = stateSlot(params, 2);
             } else if (type == CircuitTypCore.LK_L || type == CircuitTypCore.NONLIN_REL) {
                 // Inductor: restore initial current
                 // param[1] = initial current (from dialog), param[2] = saved current
-                iALT[i] = params[2];
+                iALT[i] = stateSlot(params, 2);
                 iALTALT[i] = iALT[i];
             } else if (type == CircuitTypCore.LK_LKOP2) {
                 // Coupled inductor: restore initial current
-                iALT[i] = params[2];
+                iALT[i] = stateSlot(params, 2);
                 iALTALT[i] = iALT[i];
             } else if (type == CircuitTypCore.LK_I || type == CircuitTypCore.TH_FLOW) {
                 // Current source: restore initial current
                 // param[6] = saved current value
-                iALT[i] = params[6];
+                iALT[i] = stateSlot(params, 6);
             }
         }
     }
