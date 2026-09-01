@@ -537,6 +537,17 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                     });
                   }}
                 >
+                  {/* Full-area hit target so clicking anywhere on the component bounding area selects it */}
+                  <rect
+                    x={-2.4 * dpix}
+                    y={-2.4 * dpix}
+                    width={4.8 * dpix}
+                    height={4.8 * dpix}
+                    fill="transparent"
+                    pointerEvents="all"
+                    style={{ cursor: 'pointer' }}
+                  />
+
                   {/* Selection box halo */}
                   {selected && (
                     <rect
@@ -546,6 +557,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                       height={4.8 * dpix}
                       className="selection-box"
                       rx={3}
+                      pointerEvents="none"
                     />
                   )}
 

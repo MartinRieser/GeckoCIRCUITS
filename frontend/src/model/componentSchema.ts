@@ -1035,6 +1035,35 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     },
   },
 
+  // Gate Driver Block (CONTROL)
+  1000: {
+    type: 1000,
+    family: 'CONTROL',
+    name: 'CTRL_GATE',
+    displayName: 'Gate Driver',
+    category: 'control',
+    description: 'Coupled gate drive input block for semiconductor switches',
+    defaultPrefix: 'GATE',
+    parameters: [
+      {
+        index: 0,
+        key: 'param0',
+        label: 'Initial State',
+        description: 'Initial switch gate state',
+        defaultValue: 0,
+        unit: '',
+        options: [
+          { label: 'OFF (0)', value: 0 },
+          { label: 'ON (1)', value: 1 },
+        ],
+      },
+    ],
+    terminals: {
+      input: [{ label: 'gt', description: 'Gate Drive Signal' }],
+      output: [],
+    },
+  },
+
   // ========== CONTROL-domain: Measurement ==========
 
   1001: {
@@ -1096,12 +1125,71 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     name: 'CTRL_SIGNAL',
     displayName: 'Signal Source',
     category: 'control',
-    description: 'Generates sine, step, ramp, pulse or arbitrary waveform signals',
+    description: 'Generates sine, triangle, PWM pulse/rectangle, or noise waveform signals',
     defaultPrefix: 'SIG',
     parameters: [
-      { index: 0, key: 'param0', label: 'Waveform Type', description: 'Signal type (sine, step, etc.)', defaultValue: 0, unit: '' },
-      { index: 1, key: 'param1', label: 'Amplitude', description: 'Signal amplitude', defaultValue: 1, unit: '' },
-      { index: 2, key: 'param2', label: 'Frequency', description: 'Signal frequency', defaultValue: 50, unit: 'Hz' },
+      {
+        index: 0,
+        key: 'param0',
+        label: 'Waveform Type',
+        description: 'Signal waveform function',
+        defaultValue: 404,
+        unit: '',
+        options: [
+          { label: 'Rectangle / PWM (404)', value: 404 },
+          { label: 'Sine (402)', value: 402 },
+          { label: 'Triangle (403)', value: 403 },
+          { label: 'Random Noise (405)', value: 405 },
+        ],
+      },
+      {
+        index: 1,
+        key: 'param1',
+        label: 'Amplitude',
+        description: 'Peak signal amplitude',
+        defaultValue: 1.0,
+        unit: 'V',
+        step: 0.1,
+      },
+      {
+        index: 2,
+        key: 'param2',
+        label: 'Frequency (f)',
+        description: 'Repetition frequency in Hz',
+        defaultValue: 100000,
+        unit: 'Hz',
+        min: 1e-3,
+        step: 1000,
+      },
+      {
+        index: 3,
+        key: 'param3',
+        label: 'DC Offset',
+        description: 'Constant vertical offset',
+        defaultValue: 0.0,
+        unit: 'V',
+        step: 0.1,
+      },
+      {
+        index: 4,
+        key: 'param4',
+        label: 'Phase',
+        description: 'Initial phase angle in radians',
+        defaultValue: 0.0,
+        unit: 'rad',
+        step: 0.1,
+      },
+      {
+        index: 5,
+        key: 'param5',
+        label: 'Duty Cycle (D)',
+        description: 'Pulse duty ratio (0..1) for PWM rectangle signal',
+        defaultValue: 0.5,
+        unit: '',
+        min: 0.0,
+        max: 1.0,
+        step: 0.01,
+      },
     ],
     terminals: {
       input: [],
@@ -1311,7 +1399,16 @@ export function getComponentMeta(
   family: string = 'LK',
   nameHint: string = '',
 ): ComponentMeta {
-  const existing = COMPONENT_METAS[type];
+  let lookupType = type;
+  if (family === 'CONTROL') {
+    if (type === 1) lookupType = 1001; // Voltmeter
+    else if (type === 2) lookupType = 1002; // Ammeter
+    else if (type === 3) lookupType = 1005; // Constant
+    else if (type === 4) lookupType = 1004; // Signal Source
+    else if (type === 5) lookupType = 1003; // Scope
+    else if (type === 6) lookupType = 1000; // Gate Driver
+  }
+  const existing = COMPONENT_METAS[lookupType] ?? COMPONENT_METAS[type];
   if (existing) {
     return existing;
   }
