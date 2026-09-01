@@ -277,10 +277,12 @@ public class HeadlessSimulationEngine {
         float[] values = new float[signalNames.length];
 
         // Initial conditions (legacy semantics): inductor initial current and
-        // capacitor initial voltage from the file's parameter slot 1 seed the
-        // solver history, so files saved mid-run restart at their saved
-        // operating point like the classic GUI.
-        applyInitialConditions(circuitNetlist);
+        // capacitor initial voltage from parameters seed the solver history,
+        // so files saved mid-run restart at their saved operating point like
+        // the classic GUI.
+        if (circuitNetlist != null && circuitNetlist.getElementCount() > 0) {
+            initialConditionSolver.setInitialConditions(matrixSolver, circuitNetlist, settings.getSolverType());
+        }
 
         long lastProgressTime = startTime;
 
@@ -578,30 +580,7 @@ public class HeadlessSimulationEngine {
         void onProgress(double currentTime, double endTime, int currentStep);
     }
 
-    /**
-     * Seeds the solver history with the file's initial conditions:
-     * inductors carry their initial current (parameter slot 1, legacy
-     * iALT), capacitors their initial voltage as node-potential history
-     * (pALT) on their positive node when the negative node is ground.
-     */
-    private void applyInitialConditions(CircuitNetlist netlist) {
-        if (netlist == null || netlist.getElementCount() == 0) {
-            return;
-        }
-        double[] currents = matrixSolver.getIALT();
-        double[] potentials = matrixSolver.getPALT();
-        for (int i = 0; i < netlist.getElementCount(); i++) {
-            double[] params = netlist.getParameter(i);
-            CircuitTypCore type = netlist.getType(i);
-            if (type == CircuitTypCore.LK_L && params.length > 1 && params[1] != 0.0) {
-                currents[i] = params[1];
-            } else if (type == CircuitTypCore.LK_C && params.length > 1 && params[1] != 0.0
-                    && netlist.getNodeY(i) == 0 && netlist.getNodeX(i) < potentials.length) {
-                potentials[netlist.getNodeX(i)] = params[1];
-            }
-        }
-        System.arraycopy(potentials, 0, matrixSolver.getP(), 0, potentials.length);
-    }
+
 
     private static int calculateExpectedSteps(double dt, double duration) {
         double rawSteps = Math.ceil(duration / dt);

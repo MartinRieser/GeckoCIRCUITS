@@ -135,6 +135,8 @@ public class InitialConditionSolver {
      */
     private void restorePotentialsFromNetlist(MatrixSolver matrixSolver, INetList netlist) {
         double[] pALT = matrixSolver.getPALT();
+        double[] pALTALT = matrixSolver.getPALTALT();
+        double[] pALTALTALT = matrixSolver.getPALTALTALT();
 
         for (int i = 0; i < netlist.getElementCount(); i++) {
             CircuitTypCore type = netlist.getType(i);
@@ -143,23 +145,39 @@ public class InitialConditionSolver {
             double[] params = netlist.getParameter(i);
 
             if (type == CircuitTypCore.LK_C || type == CircuitTypCore.TH_CTH) {
-                // Capacitor: restore initial voltage
-                // param[4] = voltage at X node, param[5] = voltage at Y node
-                pALT[nodeX] = stateSlot(params, 4);
-                pALT[nodeY] = stateSlot(params, 5);
+                // Capacitor: dialog initial voltage is in param[1], saved state in param[4]/[5]
+                double u0 = (params.length > 1 && Double.isFinite(params[1]) && params[1] != 0.0)
+                        ? params[1] : (stateSlot(params, 4) - stateSlot(params, 5));
+                if (nodeY == 0 && nodeX < pALT.length) {
+                    pALT[nodeX] = u0;
+                } else if (nodeX == 0 && nodeY < pALT.length) {
+                    pALT[nodeY] = -u0;
+                } else if (nodeX < pALT.length && nodeY < pALT.length) {
+                    pALT[nodeX] = u0;
+                    pALT[nodeY] = 0.0;
+                }
             } else if (type == CircuitTypCore.REL_MMF || type == CircuitTypCore.TH_TEMP) {
                 // MMF/Temperature source: restore potentials
                 // param[8] = voltage at X node, param[9] = voltage at Y node
-                pALT[nodeX] = stateSlot(params, 8);
-                pALT[nodeY] = stateSlot(params, 9);
+                if (nodeX < pALT.length) pALT[nodeX] = stateSlot(params, 8);
+                if (nodeY < pALT.length) pALT[nodeY] = stateSlot(params, 9);
             } else if (type == CircuitTypCore.LK_LKOP2) {
                 // Coupled inductor: restore source current in potential vector
                 // param[2] = source current
                 int voltageSourceNumber = netlist.getVoltageSourceNumber(i);
-                if (voltageSourceNumber > 0) {
+                if (voltageSourceNumber > 0 && netlist.getNodeMax() + voltageSourceNumber < pALT.length) {
                     pALT[netlist.getNodeMax() + voltageSourceNumber] = stateSlot(params, 2);
                 }
             }
+        }
+        if (pALTALT != null && pALTALT.length >= pALT.length) {
+            System.arraycopy(pALT, 0, pALTALT, 0, pALT.length);
+        }
+        if (pALTALTALT != null && pALTALTALT.length >= pALT.length) {
+            System.arraycopy(pALT, 0, pALTALTALT, 0, pALT.length);
+        }
+        if (matrixSolver.getP() != null && matrixSolver.getP().length >= pALT.length) {
+            System.arraycopy(pALT, 0, matrixSolver.getP(), 0, pALT.length);
         }
     }
 
@@ -185,6 +203,7 @@ public class InitialConditionSolver {
     private void restoreCurrentsFromNetlist(MatrixSolver matrixSolver, INetList netlist) {
         double[] iALT = matrixSolver.getIALT();
         double[] iALTALT = matrixSolver.getIALTALT();
+        double[] iALTALTALT = matrixSolver.getIALTALTALT();
 
         for (int i = 0; i < netlist.getElementCount(); i++) {
             CircuitTypCore type = netlist.getType(i);
@@ -195,18 +214,29 @@ public class InitialConditionSolver {
                 // param[2] = initial current
                 iALT[i] = stateSlot(params, 2);
             } else if (type == CircuitTypCore.LK_L || type == CircuitTypCore.NONLIN_REL) {
-                // Inductor: restore initial current
-                // param[1] = initial current (from dialog), param[2] = saved current
-                iALT[i] = stateSlot(params, 2);
-                iALTALT[i] = iALT[i];
+                // Inductor: dialog initial current is in param[1], saved current in param[2]
+                double i0 = (params.length > 1 && Double.isFinite(params[1]) && params[1] != 0.0)
+                        ? params[1] : stateSlot(params, 2);
+                iALT[i] = i0;
+                iALTALT[i] = i0;
+                if (iALTALTALT != null && i < iALTALTALT.length) {
+                    iALTALTALT[i] = i0;
+                }
             } else if (type == CircuitTypCore.LK_LKOP2) {
                 // Coupled inductor: restore initial current
-                iALT[i] = stateSlot(params, 2);
-                iALTALT[i] = iALT[i];
+                double i0 = (params.length > 1 && Double.isFinite(params[1]) && params[1] != 0.0)
+                        ? params[1] : stateSlot(params, 2);
+                iALT[i] = i0;
+                iALTALT[i] = i0;
+                if (iALTALTALT != null && i < iALTALTALT.length) {
+                    iALTALTALT[i] = i0;
+                }
             } else if (type == CircuitTypCore.LK_I || type == CircuitTypCore.TH_FLOW) {
                 // Current source: restore initial current
                 // param[6] = saved current value
-                iALT[i] = stateSlot(params, 6);
+                double i0 = (params.length > 1 && Double.isFinite(params[1]) && params[1] != 0.0)
+                        ? params[1] : stateSlot(params, 6);
+                iALT[i] = i0;
             }
         }
     }

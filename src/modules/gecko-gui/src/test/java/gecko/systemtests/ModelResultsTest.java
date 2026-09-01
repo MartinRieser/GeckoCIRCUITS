@@ -47,6 +47,7 @@ public final class ModelResultsTest{
 
   @BeforeClass
   public static void setUpClass(){
+    org.junit.Assume.assumeFalse("Requires GUI display environment", java.awt.GraphicsEnvironment.isHeadless());
     GeckoSim._isTestingMode = true;
     GeckoSim.main(new String[]{});
     try {

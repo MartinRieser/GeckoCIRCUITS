@@ -62,6 +62,7 @@ public class RegressionTest {
 
     @BeforeAll
     void initGeckoSim() throws Exception {
+        org.junit.jupiter.api.Assumptions.assumeFalse(java.awt.GraphicsEnvironment.isHeadless(), "Requires GUI display environment");
         GeckoSim._isTestingMode = true;
         GeckoSim.main(new String[]{});
         // Wait for full initialization
