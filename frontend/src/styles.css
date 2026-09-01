@@ -928,6 +928,16 @@ body,
   stroke-width: 1;
 }
 
+.component rect.component-hit-area,
+.component.family-LK rect.component-hit-area,
+.component.family-CONTROL rect.component-hit-area,
+.component.family-THERM rect.component-hit-area,
+.component.selected rect.component-hit-area {
+  stroke: none !important;
+  fill: transparent !important;
+  stroke-width: 0 !important;
+}
+
 .terminal {
   fill: var(--accent);
   stroke: none;

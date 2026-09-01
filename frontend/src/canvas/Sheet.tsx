@@ -543,7 +543,9 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                     y={-2.4 * dpix}
                     width={4.8 * dpix}
                     height={4.8 * dpix}
+                    className="component-hit-area"
                     fill="transparent"
+                    stroke="none"
                     pointerEvents="all"
                     style={{ cursor: 'pointer' }}
                   />
