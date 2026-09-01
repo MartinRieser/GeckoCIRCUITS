@@ -148,240 +148,850 @@ dataContainerSignals[] V_out
 `;
 
 export const BUCK_CONVERTER_IPES = `
+verbindungLeistungskreisANZAHL 7
 verbindungLK (0)
-<Connection>
-label NIX_NIX_NIX
-x 4 8
-y 6 6
-enabledShorted 0
-parentSheetIdentifier 0
-connectorType LK
-uniqueObjectIdentifier 201
-<\\Connection>
+<Verbindung>
+label z1
+x[] 27 28 29 30 31 32 33 34 34 34 
+y[] 7 7 7 7 7 7 7 7 8 9 
+enabled true
+connectorType 0
+<\\Verbindung>
 
 verbindungLK (1)
-<Connection>
-label SW_node
-x 12 14
-y 6 6
-enabledShorted 0
-parentSheetIdentifier 0
-connectorType LK
-uniqueObjectIdentifier 202
-<\\Connection>
+<Verbindung>
+label 0
+x[] 8 8 8 8 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 
+y[] 11 12 13 14 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 
+enabled true
+connectorType 0
+<\\Verbindung>
 
 verbindungLK (2)
-<Connection>
-label SW_node
-x 14 16
-y 6 6
-enabledShorted 0
-parentSheetIdentifier 0
-connectorType LK
-uniqueObjectIdentifier 204
-<\\Connection>
+<Verbindung>
+label 0
+x[] 34 34 34 
+y[] 15 14 13 
+enabled true
+connectorType 0
+<\\Verbindung>
 
 verbindungLK (3)
-<Connection>
-label V_out
-x 20 22
-y 6 6
-enabledShorted 0
-parentSheetIdentifier 0
-connectorType LK
-uniqueObjectIdentifier 205
-<\\Connection>
+<Verbindung>
+label 0
+x[] 16 16 16 16 16 
+y[] 11 12 13 14 15 
+enabled true
+connectorType 0
+<\\Verbindung>
 
 verbindungLK (4)
-<Connection>
-label V_out
-x 22 26
-y 6 6
-enabledShorted 0
-parentSheetIdentifier 0
-connectorType LK
-uniqueObjectIdentifier 206
-<\\Connection>
+<Verbindung>
+label in
+x[] 16 15 14 13 12 11 10 9 8 8 8 8 8 
+y[] 3 3 3 3 3 3 3 3 3 4 5 6 7 
+enabled true
+connectorType 0
+<\\Verbindung>
 
 verbindungLK (5)
-<Connection>
-label GND
-x 26 22
-y 10 10
-enabledShorted 0
-parentSheetIdentifier 0
-connectorType LK
-uniqueObjectIdentifier 209
-<\\Connection>
+<Verbindung>
+label NIX_NIX_NIX
+x[] 16 17 18 
+y[] 7 7 7 
+enabled true
+connectorType 0
+<\\Verbindung>
 
 verbindungLK (6)
-<Connection>
-label GND
-x 22 14
-y 10 10
-enabledShorted 0
-parentSheetIdentifier 0
-connectorType LK
-uniqueObjectIdentifier 210
-<\\Connection>
-
-verbindungLK (7)
-<Connection>
-label GND
-x 14 4
-y 10 10
-enabledShorted 0
-parentSheetIdentifier 0
-connectorType LK
-uniqueObjectIdentifier 211
-<\\Connection>
+<Verbindung>
+label NIX_NIX_NIX
+x[] 23 22 
+y[] 7 7 
+enabled true
+connectorType 0
+<\\Verbindung>
 
 verbindungCONTROL (0)
-<Connection>
-label NIX_NIX_NIX
-x 10 14
-y 14 14
-enabledShorted 0
-parentSheetIdentifier 0
-connectorType CONTROL
-uniqueObjectIdentifier 212
-<\\Connection>
+<Verbindung>
+label gt
+x[] 7 8 9 10 
+y[] 18 18 18 18 
+enabled true
+connectorType 1
+<\\Verbindung>
+
+elementANZAHL 8
 
 e (0)
 <ElementLK>
-labelAnfangsKnoten[] NIX_NIX_NIX
-labelEndKnoten[] GND
-enabledShorted 0
-parentSheetIdentifier 0
+labelAnfangsKnoten[] /in
+labelEndKnoten[] /0
+enabledShorted 1
 typ 4
-uniqueObjectIdentifier 10
-x 4
-y 8
-parameter[] 401.0 48.0 50.0 0.0 0.0
+uniqueObjectIdentifier 307192937
+x 8
+y 9
+parameter[] 401.0 12.0 50.0 0.0 0.0 0.5 -2.184785639712847E-6 11.999999999999998 0.0 -11.999999999999998 0.0 1.0 1.7976931348623157E308 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 503
-idStringDialog V_dc
+idStringDialog U.1
+coupledReferenceID[] 0 
+copyCoupledReferenceID[] 0 
+dxTxt 1.875
+dyTxt 1.0
+
 <\\ElementLK>
 
 e (1)
 <ElementLK>
-labelAnfangsKnoten[] NIX_NIX_NIX
-labelEndKnoten[] SW_node
-enabledShorted 0
-parentSheetIdentifier 0
-typ 10
-uniqueObjectIdentifier 11
-x 10
-y 6
-parameter[] 0.01 1000000.0 0.0 0.0
-orientierung 502
-idStringDialog IGBT1
+labelAnfangsKnoten[] /0
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+typ 6
+uniqueObjectIdentifier 116998914
+x 16
+y 9
+parameter[] 0.01 0.0 0.01 1.0E7 4.198915005674664 0.04198915005674664 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog D.1
+<Verluste>
+verlustTyp 1
+rON 0.01
+uf 0.0
+kON 0.0
+kOFF 0.0
+uSWnorm -1.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\\Verluste>
+dxTxt -1.75
+dyTxt 2.5
+
 <\\ElementLK>
 
 e (2)
 <ElementLK>
-labelAnfangsKnoten[] SW_node
-labelEndKnoten[] GND
-enabledShorted 0
-parentSheetIdentifier 0
-typ 6
-uniqueObjectIdentifier 12
-x 14
-y 8
-parameter[] 1000000.0 0.7 0.01 1000000.0
-orientierung 501
-idStringDialog D_free
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+typ 2
+uniqueObjectIdentifier -1229649930
+x 20
+y 7
+parameter[] 2.0E-5 4.25 4.1989162098733 -4.957776986655911 -247888.84933279577 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 502
+idStringDialog L.1
+isNonlinear false
+nonlinX[] 0.0 10.0 15.0 30.0 
+nonlinY[] 5.0E-4 5.0E-4 1.5E-4 1.0E-4 
+nonLinearCharHashValue 0
+dxTxt -0.8125
+dyTxt -2.25
+
 <\\ElementLK>
 
 e (3)
 <ElementLK>
-labelAnfangsKnoten[] SW_node
-labelEndKnoten[] V_out
-enabledShorted 0
-parentSheetIdentifier 0
-typ 2
-uniqueObjectIdentifier 13
-x 18
-y 6
-parameter[] 0.0001 0.0
-orientierung 502
-idStringDialog L_filter
+labelAnfangsKnoten[] /z1
+labelEndKnoten[] /0
+enabledShorted 1
+typ 3
+uniqueObjectIdentifier -453526184
+x 27
+y 13
+parameter[] 2.0E-5 5.0 -0.7168706419417249 4.915787832400248 -7.08421216759975 -11.999999999999998 2.0E-5 2.0E-5 0.0 0.0 -0.7168706419417249 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog C.1
+isNonlinear false
+nonlinX[] 0.0 100.0 300.0 400.0 
+nonlinY[] 1.0E-7 8.0E-8 1.2E-9 1.0E-9 
+nonLinearCharHashValue 0
+dxTxt -4.8125
+dyTxt 0.5
+
 <\\ElementLK>
 
 e (4)
 <ElementLK>
-labelAnfangsKnoten[] V_out
-labelEndKnoten[] GND
-enabledShorted 0
-parentSheetIdentifier 0
-typ 3
-uniqueObjectIdentifier 14
-x 22
-y 8
-parameter[] 4.7e-05 0.0
+labelAnfangsKnoten[] /z1
+labelEndKnoten[] /0
+enabledShorted 1
+typ 1
+uniqueObjectIdentifier -2131230800
+x 34
+y 11
+parameter[] 1.0 4.915787832400248 4.915787832400248 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 503
-idStringDialog C_filter
+idStringDialog R.Last
+dxTxt -2.8125
+dyTxt 1.0
+
 <\\ElementLK>
 
 e (5)
 <ElementLK>
-labelAnfangsKnoten[] V_out
-labelEndKnoten[] GND
-enabledShorted 0
-parentSheetIdentifier 0
-typ 1
-uniqueObjectIdentifier 15
-x 26
-y 8
-parameter[] 10.0
+labelAnfangsKnoten[] /in
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+typ 7
+uniqueObjectIdentifier 727500737
+x 16
+y 5
+parameter[] 1.0E7 0.01 1.0E7 1.2041989150056745E-6 12.041989150056745 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0 
+parameterString[] /GATE.1/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 503
-idStringDialog R_load
+idStringDialog S.1
+<Verluste>
+verlustTyp 1
+rON 0.01
+uf 0.0
+kON 3.0E-5
+kOFF 1.5E-5
+uSWnorm 400.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\\Verluste>
+dxTxt -3.5
+dyTxt 0.25
+
 <\\ElementLK>
+
+e (6)
+<ElementLK>
+labelAnfangsKnoten[] /z1
+labelEndKnoten[] /z1
+enabledShorted 1
+typ 1
+uniqueObjectIdentifier -1651173459
+x 27
+y 9
+parameter[] 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog R.4
+dxTxt 1.125
+dyTxt 1.0
+
+<\\ElementLK>
+
+e (7)
+<ElementLK>
+labelAnfangsKnoten[] /z1
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+typ 1
+uniqueObjectIdentifier 1044681114
+x 25
+y 7
+parameter[] 0.0 -4.198915881659104 -4.198915881659104E-9 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 504
+idStringDialog R.L
+dxTxt -0.625
+dyTxt -1.4375
+
+<\\ElementLK>
+
+controlANZAHL 6
 
 c (0)
 <ElementCONTROL>
-labelAnfangsKnoten[] NIX_NIX_NIX
-labelEndKnoten[] NIX_NIX_NIX
-enabledShorted 0
-parentSheetIdentifier 0
+labelAnfangsKnoten[] 
+labelEndKnoten[] /gt
+enabledShorted 1
 typ 4
-uniqueObjectIdentifier 16
-x 8
-y 14
-parameter[] 1.0 1.0 20000.0 0.0 0.0 0.45 0 0
+uniqueObjectIdentifier -1678404099
+x 5
+y 18
+parameter[] 404.0 1.0 100000.0 0.0 0.0 0.417 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] null
 orientierung 503
-idStringDialog Signal.1
+idStringDialog SIGNAL.1
+dxTxt -1.0
+dyTxt 2.0625
+shiftLabelsIn[] 
+shiftLabelsOut[] false 
+<detail>
+typQuelle 404
+anteilDC 0.0
+amplitudeAC 1.0
+frequenz 100000.0
+tastverhaeltnis 0.417
+phase 0.0
+datnamXY not_defined
+externalDataFileHashValue 0
+<\\detail>
 <\\ElementCONTROL>
 
 c (1)
 <ElementCONTROL>
-labelAnfangsKnoten[] NIX_NIX_NIX
-labelEndKnoten[] NIX_NIX_NIX
-enabledShorted 0
-parentSheetIdentifier 0
+labelAnfangsKnoten[] /gt
+labelEndKnoten[] 
+enabledShorted 1
 typ 6
-uniqueObjectIdentifier 17
-coupledReferenceID[] 11
-x 16
-y 14
-parameter[] 0.0
+uniqueObjectIdentifier 884353769
+x 12
+y 18
+parameter[] 0.0 
+parameterString[] /S.1/NIX_NIX_NIX/0
+nameOpt[] null
 orientierung 503
-idStringDialog Gate.1
+idStringDialog GATE.1
+coupledReferenceID[] 727500737 
+copyCoupledReferenceID[] 727500737 
+dxTxt -1.5
+dyTxt 1.5
+shiftLabelsIn[] false 
+shiftLabelsOut[] 
+exportASCII_IndividualCONTROL()
 <\\ElementCONTROL>
 
-tDURATION 0.005
-dt 5e-07
+c (2)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /uOUT
+enabledShorted 1
+typ 1
+uniqueObjectIdentifier -673981939
+x 20
+y 18
+parameter[] 5.032120523973914 
+parameterString[] /z1/0/0
+nameOpt[] null
+orientierung 503
+idStringDialog VOLT.1
+coupledReferenceID[] 0 
+copyCoupledReferenceID[] 0 
+dxTxt -4.0625
+dyTxt 0.375
+shiftLabelsIn[] 
+shiftLabelsOut[] false 
+<detail>
+u[] 5.032120523973914 
+<\\detail>
+<\\ElementCONTROL>
+
+c (3)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /uIN
+enabledShorted 1
+typ 1
+uniqueObjectIdentifier -1563746041
+x 20
+y 19
+parameter[] 12.0 
+parameterString[] /in/0/0
+nameOpt[] null
+orientierung 503
+idStringDialog VOLT.2
+coupledReferenceID[] 0 
+copyCoupledReferenceID[] 0 
+dxTxt -4.1875
+dyTxt 0.625
+shiftLabelsIn[] 
+shiftLabelsOut[] false 
+<detail>
+u[] 12.0 
+<\\detail>
+<\\ElementCONTROL>
+
+c (4)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /iL1
+enabledShorted 1
+typ 2
+uniqueObjectIdentifier -942935446
+x 20
+y 20
+parameter[] 
+parameterString[] /L.1/NIX_NIX_NIX/0
+nameOpt[] null
+orientierung 503
+idStringDialog AMP.1
+coupledReferenceID[] -1229649930 
+copyCoupledReferenceID[] -1229649930 
+dxTxt -3.9375
+dyTxt 0.5
+shiftLabelsIn[] 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\\ElementCONTROL>
+
+c (5)
+<ElementCONTROL>
+labelAnfangsKnoten[] /uOUT/uIN/iL1/gt
+labelEndKnoten[] 
+enabledShorted 1
+typ 5
+uniqueObjectIdentifier -703889290
+x 32
+y 18
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] null
+orientierung 503
+idStringDialog SCOPE.1
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false false false 
+shiftLabelsOut[] 
+<detail>
+tn 4
+isShowName false
+savedSignalNames[] /uOUT/uIN/iL1/gt
+avgIndices[] 
+avgValues[] 
+<ScopeSettings>
+isAntiAliasing true
+<Diagram>
+
+diagramType DiagramCurve
+<xAxis>
+axisType -111111114
+noMinorTicks 2
+isShowLabelsMaj false
+isShowLabelsMin false
+tickLengthMaj 0
+tickLengthMin 0
+userShowGridMaj true
+userShowGridMin false
+linStilGridNormal -3333330
+linStilGridMinor -3333330
+colorGridNormal -3444446
+colorGridMinor -3444446
+axisColor -3444440
+axisStroke -3333331
+axisCaption NIX_NIX_NIX
+isAutoEnabled true
+isUserScale 0.0 0.0
+valueScale 0.0 3.0E-4
+<\\xAxis>
+<yAxis1>
+
+axisType -111111114
+noMinorTicks 2
+isShowLabelsMaj true
+isShowLabelsMin false
+tickLengthMaj 10
+tickLengthMin 5
+userShowGridMaj true
+userShowGridMin false
+linStilGridNormal -3333330
+linStilGridMinor -3333330
+colorGridNormal -3444445
+colorGridMinor -3444446
+axisColor -3444440
+axisStroke -3333330
+axisCaption NIX_NIX_NIX
+isAutoEnabled true
+isUserScale 0.0 0.0
+valueScale 0.0 1.0
+<\\yAxis1>
+<yAxis2>
+
+axisType -111111114
+noMinorTicks 2
+isShowLabelsMaj true
+isShowLabelsMin false
+tickLengthMaj 10
+tickLengthMin 5
+userShowGridMaj true
+userShowGridMin false
+linStilGridNormal -3333330
+linStilGridMinor -3333330
+colorGridNormal -3444445
+colorGridMinor -3444446
+axisColor -3444440
+axisStroke -3333330
+axisCaption NIX_NIX_NIX
+isAutoEnabled true
+isUserScale 0.0 0.0
+valueScale 0.0 1.0
+<\\yAxis2>
+<diagramSettings>
+
+nameDiagram GRF 0
+yWeightDiagram 0.5
+<\\diagramSettings>
+<CurveDiagram>
+
+curveColor -3444443
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 52
+<\\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444452
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 52
+<\\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\\CurveDiagram>
+<\\Diagram>
+<Diagram>
+
+diagramType DiagramSignal
+<xAxis>
+axisType -111111114
+noMinorTicks 2
+isShowLabelsMaj false
+isShowLabelsMin false
+tickLengthMaj 0
+tickLengthMin 0
+userShowGridMaj true
+userShowGridMin false
+linStilGridNormal -3333330
+linStilGridMinor -3333330
+colorGridNormal -3444446
+colorGridMinor -3444446
+axisColor -3444440
+axisStroke -3333331
+axisCaption NIX_NIX_NIX
+isAutoEnabled true
+isUserScale 0.0 0.0
+valueScale 0.0 3.0E-4
+<\\xAxis>
+<yAxis1>
+
+axisType -111111114
+noMinorTicks 2
+isShowLabelsMaj true
+isShowLabelsMin false
+tickLengthMaj 10
+tickLengthMin 5
+userShowGridMaj true
+userShowGridMin false
+linStilGridNormal -3333330
+linStilGridMinor -3333330
+colorGridNormal -3444445
+colorGridMinor -3444446
+axisColor -3444440
+axisStroke -3333330
+axisCaption NIX_NIX_NIX
+isAutoEnabled true
+isUserScale 0.0 0.0
+valueScale -1.0 1.0
+<\\yAxis1>
+<yAxis2>
+
+axisType -111111114
+noMinorTicks 2
+isShowLabelsMaj true
+isShowLabelsMin false
+tickLengthMaj 10
+tickLengthMin 5
+userShowGridMaj true
+userShowGridMin false
+linStilGridNormal -3333330
+linStilGridMinor -3333330
+colorGridNormal -3444445
+colorGridMinor -3444446
+axisColor -3444440
+axisStroke -3333330
+axisCaption NIX_NIX_NIX
+isAutoEnabled true
+isUserScale 0.0 0.0
+valueScale -1.0 1.0
+<\\yAxis2>
+<diagramSettings>
+
+nameDiagram GRF 1
+yWeightDiagram 0.0
+<\\diagramSettings>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 54
+<\\CurveDiagram>
+<\\Diagram>
+<Diagram>
+
+diagramType DiagramCurve
+<xAxis>
+axisType -111111114
+noMinorTicks 2
+isShowLabelsMaj true
+isShowLabelsMin false
+tickLengthMaj 10
+tickLengthMin 5
+userShowGridMaj true
+userShowGridMin false
+linStilGridNormal -3333330
+linStilGridMinor -3333330
+colorGridNormal -3444446
+colorGridMinor -3444446
+axisColor -3444440
+axisStroke -3333330
+axisCaption NIX_NIX_NIX
+isAutoEnabled true
+isUserScale 0.0 0.0
+valueScale 0.0 3.0E-4
+<\\xAxis>
+<yAxis1>
+
+axisType -111111114
+noMinorTicks 2
+isShowLabelsMaj true
+isShowLabelsMin false
+tickLengthMaj 10
+tickLengthMin 5
+userShowGridMaj true
+userShowGridMin false
+linStilGridNormal -3333330
+linStilGridMinor -3333330
+colorGridNormal -3444445
+colorGridMinor -3444446
+axisColor -3444440
+axisStroke -3333330
+axisCaption NIX_NIX_NIX
+isAutoEnabled true
+isUserScale 0.0 0.0
+valueScale 0.0 1.0
+<\\yAxis1>
+<yAxis2>
+
+axisType -111111114
+noMinorTicks 2
+isShowLabelsMaj true
+isShowLabelsMin false
+tickLengthMaj 10
+tickLengthMin 5
+userShowGridMaj true
+userShowGridMin false
+linStilGridNormal -3333330
+linStilGridMinor -3333330
+colorGridNormal -3444445
+colorGridMinor -3444446
+axisColor -3444440
+axisStroke -3333330
+axisCaption NIX_NIX_NIX
+isAutoEnabled true
+isUserScale 0.0 0.0
+valueScale 0.0 1.0
+<\\yAxis2>
+<diagramSettings>
+
+nameDiagram GRF 2
+yWeightDiagram 0.5
+<\\diagramSettings>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444441
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 52
+<\\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\\CurveDiagram>
+<\\Diagram>
+
+<\\ScopeSettings>
+
+<ScopeWindowSettings>
+
+isAutoScaleWindowOn true
+powerAnalCurIndices[] -1 -1 -1 
+powerAnalVoltIndices[] -1 -1 -1 
+windowWidth 741
+windowHeight 615
+saveScreenWidth 3840
+saveScreenHeight 1200
+saveScreenPosX 1985
+saveScreenPosY 354
+<\\ScopeWindowSettings>
+
+<\\detail>
+
+<\\ElementCONTROL>
+
+<scopeSettings>
+noInputSignals 4
+<\\scopeSettings>
+thermANZAHL 0
+
+optimizerName[] 
+optimizerValue[]  
+<scripterCode>
+ 
+<\\scripterCode> 
+<scripterImports>
+
+<\\scripterImports> 
+<scripterDeclarations>
+ 
+<\\scripterDeclarations>
+
+GeckoFileManager
+<GeckoFileManager>
+<\\GeckoFileManager>
+
+
+DtStor 2012-10-17
+tDURATION 3.0E-4
+bl 1378504800000
+dt 5.0E-8
 tPAUSE -1.0
-T_pre -1.0
-dt_pre 0.0
+T_pre -0.1
+dt_pre 1.0E-6
 solverType 0
+path /home/andreas/GeckoCIRCUITSDistr/TutorialExercises/1_DCDC/A_Buck.ipes
+
 dpix 16
 fontSize 12
-fontTyp Dialog
-worksheetSize 600_600
-FileVersion 1
-DtStor 2026-08-16
-dataContainerSignals[] V_out
-`;
+fontTyp Dialog.plain
+fensterWidth 1000
+fensterHeight 800
+worksheetSize 1000x1000
+ANSICHT_SHOW_LK_NAME true
+ANSICHT_SHOW_LK_PARAMETER true
+ANSICHT_SHOW_LK_FLOWDIR true
+ANSICHT_SHOW_LK_TEXTLINIE true
+ANSICHT_SHOW_THERM_NAME true
+ANSICHT_SHOW_THERM_PARAMETER true
+ANSICHT_SHOW_THERM_FLOWDIR false
+ANSICHT_SHOW_THERM_TEXTLINIE true
+ANSICHT_SHOW_CONTROL_NAME false
+ANSICHT_SHOW_CONTROL_PARAMETER true
+ANSICHT_SHOW_CONTROL_TEXTLINIE true
+FileVersion 160
+UniqueFileId 2120803383
+dataContainerSignals[] [] /uOUT/uIN/iL1/gt
+=======================
+ `;
 
 export const RC_FILTER_IPES = `
 verbindungLK (0)
@@ -649,7 +1259,7 @@ export const EXAMPLES: CircuitExample[] = [
     id: 'buck',
     name: 'DC-DC Buck Converter',
     category: 'Power Electronics',
-    description: 'Step-down switching converter (48V to ~12V) with freewheeling diode, IGBT switch, gate controller, and LC output filter.',
+    description: 'Authentic tutorial buck converter (12V to ~5V) with freewheeling diode, controlled switch, LC filter, and load resistor.',
     content: BUCK_CONVERTER_IPES,
   },
   {
