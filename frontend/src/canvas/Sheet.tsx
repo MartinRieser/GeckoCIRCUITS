@@ -85,11 +85,16 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
         setIsPanning(false);
       }
     };
+    const handleGlobalMouseUp = () => {
+      setIsPanning(false);
+    };
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('mouseup', handleGlobalMouseUp);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
     };
   }, []);
 
@@ -262,16 +267,9 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
 
     if (state.mode === 'rubber') {
       dispatch({ type: 'RUBBER_END' });
-    } else if (state.mode === 'dragging' && state.drag) {
-      // classic semantics: a click that never moved leaves the group grabbed
-      // (it then follows the cursor); a completed drag gesture commits here
-      const moved = Object.entries(state.drag.origins).some(([name, origin]) => {
-        const comp = state.components.find((c) => c.name === name);
-        return comp && (comp.position[0] !== origin.x || comp.position[1] !== origin.y);
-      });
-      if (moved) {
-        commitDrag();
-      }
+    } else if (state.mode === 'dragging') {
+      // Dragging ends immediately when mouse button is released
+      commitDrag();
     }
   };
 

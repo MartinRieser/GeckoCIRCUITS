@@ -249,22 +249,19 @@ describe('selection', () => {
     expect(commitMove).toHaveBeenCalledWith([{ name: 'R1', x: 13, y: 8 }]);
   });
 
-  it('a plain click grabs the component; it follows the cursor and the next click drops it (classic)', () => {
+  it('a plain click selects the component; releasing mouse does not drag unless mouse button is held', () => {
     const { container, svg } = setup();
 
     const r1 = container.querySelectorAll('g.component')[0];
-    // click without moving: mouseup must NOT commit, the grab stays active
+    // click without moving: mouseup commits (no moves), ends drag, component stays selected
     fireEvent.mouseDown(r1, { clientX: 160, clientY: 160, button: 0 });
     fireEvent.mouseUp(svg);
     expect(commitMove).not.toHaveBeenCalled();
 
-    // hover without any button held: the component follows the cursor
-    fireEvent.mouseMove(svg, { clientX: 176, clientY: 160, button: 0 });
-    const moved = container.querySelectorAll('g.component')[0];
-    expect(moved.getAttribute('transform')).toBe('translate(176, 160)');
-
-    // the next press drops the group where it is
-    fireEvent.mouseDown(svg, { clientX: 176, clientY: 160, button: 0 });
-    expect(commitMove).toHaveBeenCalledWith([{ name: 'R1', x: 11, y: 10 }]);
+    // hover without any button held: component does NOT follow cursor
+    fireEvent.mouseMove(svg, { clientX: 176, clientY: 160, button: 0, buttons: 0 });
+    const comp = container.querySelectorAll('g.component')[0];
+    expect(comp.getAttribute('transform')).toBe('translate(160, 160)');
+    expect(comp.classList.contains('selected')).toBe(true);
   });
 });
