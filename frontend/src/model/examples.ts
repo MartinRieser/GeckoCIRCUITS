@@ -28,111 +28,110 @@ dataContainerSignals[] V_out
 `;
 
 export const RLC_CIRCUIT_IPES = `
+verbindungLeistungskreisANZAHL 4
 verbindungLK (0)
-<Connection>
+<Verbindung>
 label NIX_NIX_NIX
-x 4 8
-y 6 6
-enabledShorted 0
-parentSheetIdentifier 0
-connectorType LK
-uniqueObjectIdentifier 100
-<\\Connection>
+x[] 4 5 6 7 8 
+y[] 6 6 6 6 6 
+enabled true
+connectorType 0
+<\\Verbindung>
 
 verbindungLK (1)
-<Connection>
+<Verbindung>
 label NIX_NIX_NIX
-x 12 16
-y 6 6
-enabledShorted 0
-parentSheetIdentifier 0
-connectorType LK
-uniqueObjectIdentifier 101
-<\\Connection>
+x[] 12 13 14 
+y[] 6 6 6 
+enabled true
+connectorType 0
+<\\Verbindung>
 
 verbindungLK (2)
-<Connection>
-label V_out
-x 20 22
-y 6 6
-enabledShorted 0
-parentSheetIdentifier 0
-connectorType LK
-uniqueObjectIdentifier 102
-<\\Connection>
+<Verbindung>
+label u_out
+x[] 18 19 20 21 22 
+y[] 6 6 6 6 6 
+enabled true
+connectorType 0
+<\\Verbindung>
 
 verbindungLK (3)
-<Connection>
-label GND
-x 22 4
-y 10 10
-enabledShorted 0
-parentSheetIdentifier 0
-connectorType LK
-uniqueObjectIdentifier 103
-<\\Connection>
+<Verbindung>
+label 0
+x[] 22 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 
+y[] 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 
+enabled true
+connectorType 0
+<\\Verbindung>
+
+elementANZAHL 4
 
 e (0)
 <ElementLK>
-labelAnfangsKnoten[] NIX_NIX_NIX
-labelEndKnoten[] GND
-enabledShorted 0
-parentSheetIdentifier 0
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /0
+enabledShorted 1
 typ 4
-uniqueObjectIdentifier 1
+uniqueObjectIdentifier 1001
 x 4
 y 8
-parameter[] 401.0 24.0 50.0 0.0 0.0
+parameter[] 401.0 24.0 50.0 0.0 0.0 0.5 0.0 24.0 0.0 -24.0 0.0 1.0 1.7976931348623157E308 0.0 0.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 503
 idStringDialog V_in
 <\\ElementLK>
 
 e (1)
 <ElementLK>
-labelAnfangsKnoten[] NIX_NIX_NIX
-labelEndKnoten[] NIX_NIX_NIX
-enabledShorted 0
-parentSheetIdentifier 0
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
 typ 1
-uniqueObjectIdentifier 2
+uniqueObjectIdentifier 1002
 x 10
 y 6
 parameter[] 5.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 502
 idStringDialog R1
 <\\ElementLK>
 
 e (2)
 <ElementLK>
-labelAnfangsKnoten[] NIX_NIX_NIX
-labelEndKnoten[] V_out
-enabledShorted 0
-parentSheetIdentifier 0
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /u_out
+enabledShorted 1
 typ 2
-uniqueObjectIdentifier 3
-x 14
+uniqueObjectIdentifier 1003
+x 16
 y 6
 parameter[] 0.001 0.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 502
 idStringDialog L1
 <\\ElementLK>
 
 e (3)
 <ElementLK>
-labelAnfangsKnoten[] V_out
-labelEndKnoten[] GND
-enabledShorted 0
-parentSheetIdentifier 0
+labelAnfangsKnoten[] /u_out
+labelEndKnoten[] /0
+enabledShorted 1
 typ 3
-uniqueObjectIdentifier 4
+uniqueObjectIdentifier 1004
 x 22
 y 8
-parameter[] 0.0001 0.0
+parameter[] 0.00001 0.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 503
 idStringDialog C1
 <\\ElementLK>
 
-tDURATION 0.02
+tDURATION 0.01
 dt 1e-06
 tPAUSE -1.0
 T_pre -1.0
@@ -144,7 +143,7 @@ fontTyp Dialog
 worksheetSize 600_600
 FileVersion 1
 DtStor 2026-08-16
-dataContainerSignals[] V_out
+dataContainerSignals[] /u_out
 `;
 
 export const BUCK_CONVERTER_IPES = `
