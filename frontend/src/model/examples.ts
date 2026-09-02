@@ -993,80 +993,83 @@ dataContainerSignals[] [] /uOUT/uIN/iL1/gt
  `;
 
 export const RC_FILTER_IPES = `
+verbindungLeistungskreisANZAHL 3
 verbindungLK (0)
-<Connection>
+<Verbindung>
 label NIX_NIX_NIX
-x 4 8
-y 6 6
-enabledShorted 0
-parentSheetIdentifier 0
-connectorType LK
-uniqueObjectIdentifier 301
-<\\Connection>
+x[] 4 5 6 7 8 
+y[] 6 6 6 6 6 
+enabled true
+connectorType 0
+<\\Verbindung>
 
 verbindungLK (1)
-<Connection>
+<Verbindung>
 label V_out
-x 12 16
-y 6 6
-enabledShorted 0
-parentSheetIdentifier 0
-connectorType LK
-uniqueObjectIdentifier 302
-<\\Connection>
+x[] 12 13 14 15 16 
+y[] 6 6 6 6 6 
+enabled true
+connectorType 0
+<\\Verbindung>
 
 verbindungLK (2)
-<Connection>
+<Verbindung>
 label GND
-x 16 4
-y 10 10
-enabledShorted 0
-parentSheetIdentifier 0
-connectorType LK
-uniqueObjectIdentifier 304
-<\\Connection>
+x[] 16 15 14 13 12 11 10 9 8 7 6 5 4 
+y[] 10 10 10 10 10 10 10 10 10 10 10 10 10 
+enabled true
+connectorType 0
+<\\Verbindung>
+
+elementANZAHL 3
 
 e (0)
 <ElementLK>
-labelAnfangsKnoten[] NIX_NIX_NIX
-labelEndKnoten[] GND
-enabledShorted 0
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /GND
+enabledShorted 1
 parentSheetIdentifier 0
 typ 4
 uniqueObjectIdentifier 31
 x 4
 y 8
-parameter[] 401.0 10.0 50.0 0.0 0.0
+parameter[] 401.0 10.0 50.0 0.0 0.0 0.5 0.0 10.0 10.0 0.0 0.0 1.0 1.7976931348623157E308 0.0 0.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 503
 idStringDialog V_step
 <\\ElementLK>
 
 e (1)
 <ElementLK>
-labelAnfangsKnoten[] NIX_NIX_NIX
-labelEndKnoten[] V_out
-enabledShorted 0
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /V_out
+enabledShorted 1
 parentSheetIdentifier 0
 typ 1
 uniqueObjectIdentifier 32
 x 10
 y 6
 parameter[] 1000.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 502
 idStringDialog R1
 <\\ElementLK>
 
 e (2)
 <ElementLK>
-labelAnfangsKnoten[] V_out
-labelEndKnoten[] GND
-enabledShorted 0
+labelAnfangsKnoten[] /V_out
+labelEndKnoten[] /GND
+enabledShorted 1
 parentSheetIdentifier 0
 typ 3
 uniqueObjectIdentifier 33
 x 16
 y 8
 parameter[] 1e-06 0.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 503
 idStringDialog C1
 <\\ElementLK>
@@ -1083,11 +1086,48 @@ fontTyp Dialog
 worksheetSize 600_600
 FileVersion 1
 DtStor 2026-08-16
-dataContainerSignals[] V_out
+dataContainerSignals[] /V_out
 `;
 
 export const RC_CLASSIC_IPES = `
-verbindungLeistungskreisANZAHL 0
+verbindungLeistungskreisANZAHL 3
+verbindungLK (0)
+<Verbindung>
+label n1
+x[] 7 8 9 10 11 
+y[] 9 9 9 9 9 
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (1)
+<Verbindung>
+label u_out
+x[] 15 16 17 18 19 
+y[] 9 9 9 9 9 
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (2)
+<Verbindung>
+label gnd
+x[] 19 18 17 16 15 14 13 12 11 10 9 8 7 
+y[] 13 13 13 13 13 13 13 13 13 13 13 13 13 
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungControlANZAHL 1
+verbindungCONTROL (0)
+<Verbindung>
+label u_out
+x[] 26 27 28 29 
+y[] 10 10 10 10 
+enabled true
+connectorType 1
+<\\Verbindung>
+
 elementANZAHL 3
 
 e (0)
@@ -1107,7 +1147,6 @@ orientierung 503
 idStringDialog U.1
 dxTxt -4.75
 dyTxt 1.75
-
 <\\ElementLK>
 
 e (1)
@@ -1119,15 +1158,14 @@ parentSheetIdentifier 0
 typ 1
 uniqueObjectIdentifier 100000002
 x 13
-y 11
+y 9
 parameter[] 10.0 0.0 0.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
-orientierung 503
+orientierung 502
 idStringDialog R.1
 dxTxt -4.375
 dyTxt 3.0625
-
 <\\ElementLK>
 
 e (2)
@@ -1148,7 +1186,6 @@ idStringDialog C.1
 isNonlinear false
 dxTxt 3.4375
 dyTxt -5.0
-
 <\\ElementLK>
 
 controlANZAHL 2
@@ -1161,7 +1198,7 @@ enabledShorted 1
 parentSheetIdentifier 0
 typ 1
 uniqueObjectIdentifier 200000001
-x 27
+x 25
 y 10
 parameter[] 0.0
 parameterString[] /u_out/gnd/0
@@ -1183,7 +1220,7 @@ enabledShorted 1
 parentSheetIdentifier 0
 typ 5
 uniqueObjectIdentifier 200000002
-x 31
+x 30
 y 10
 parameter[] 
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
