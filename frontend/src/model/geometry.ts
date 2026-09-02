@@ -89,6 +89,8 @@ export function terminalPositions(component: {
   family?: string;
   position: number[];
   orientation: number;
+  inputLabels?: string[];
+  inputs?: unknown[];
 }): TerminalPositions {
   const center = { x: component.position[0], y: component.position[1] };
   const family = component.family || 'LK';
@@ -104,7 +106,31 @@ export function terminalPositions(component: {
         output: [{ x: center.x + dir.x * TWO_PORT_DIST, y: center.y + dir.y * TWO_PORT_DIST }],
       };
     }
-    // gate & scope: 1 input on the input side, 0 outputs
+    // Scope: can have multiple inputs!
+    if (component.type === CTRL_TYPE.SCOPE || component.type === CTRL_TYPE.LEGACY_SCOPE) {
+      const count = Math.max(1, component.inputLabels?.length || component.inputs?.length || 1);
+      if (count <= 1) {
+        return {
+          input: [{ x: center.x - dir.x * TWO_PORT_DIST, y: center.y - dir.y * TWO_PORT_DIST }],
+          output: [],
+        };
+      }
+      const inputs: Point[] = [];
+      const step = 2; // 2 grid units per input channel
+      const startOffset = -((count - 1) * step) / 2;
+      for (let i = 0; i < count; i++) {
+        const offset = startOffset + i * step;
+        inputs.push({
+          x: center.x - dir.x * TWO_PORT_DIST - dir.y * offset,
+          y: center.y - dir.y * TWO_PORT_DIST + dir.x * offset,
+        });
+      }
+      return {
+        input: inputs,
+        output: [],
+      };
+    }
+    // gate & other single-input control blocks: 1 input on the input side, 0 outputs
     if (CONTROL_INPUT_ONLY.has(component.type)) {
       return {
         input: [{ x: center.x - dir.x * TWO_PORT_DIST, y: center.y - dir.y * TWO_PORT_DIST }],

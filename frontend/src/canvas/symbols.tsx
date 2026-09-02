@@ -55,9 +55,10 @@ export function ComponentSymbol({
   const angle = component.family === 'CONTROL'
     ? controlOrientationAngle(component.orientation)
     : orientationAngle(component.orientation);
+  const inputCount = component.inputLabels?.length || 1;
   return (
     <g transform={`rotate(${angle})`}>
-      <SymbolByType type={component.type} u={u} family={component.family} />
+      <SymbolByType type={component.type} u={u} family={component.family} inputCount={inputCount} />
     </g>
   );
 }
@@ -94,10 +95,12 @@ export function SymbolByType({
   type,
   u,
   family = 'LK',
+  inputCount = 1,
 }: {
   type: number;
   u: number;
   family?: string;
+  inputCount?: number;
 }) {
   // CONTROL blocks come in two numbering ranges: legacy classic-editor
   // numbers (1-84) and web catalog numbers (1001+); see CTRL_TYPE. The case
@@ -118,7 +121,7 @@ export function SymbolByType({
         return <SignalSourceSymbol u={u} />;
       case CTRL_TYPE.LEGACY_SCOPE:
       case CTRL_TYPE.SCOPE:
-        return <ScopeSymbol u={u} />;
+        return <ScopeSymbol u={u} inputCount={inputCount} />;
       case CTRL_TYPE.LEGACY_GATE:
         return <GateSymbol u={u} />;
       case 7:
@@ -649,16 +652,88 @@ function AmmeterSymbol({ u }: { u: number }) {
   );
 }
 
-function ScopeSymbol({ u }: { u: number }) {
+function ScopeSymbol({ u, inputCount = 1 }: { u: number; inputCount?: number }) {
+  if (inputCount <= 1) {
+    return (
+      <g>
+        {controlLeads(u)}
+        <rect x={-0.75 * u} y={-0.65 * u} width={1.5 * u} height={1.3 * u} rx={3}
+              stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
+        {/* Mini waveform inside */}
+        <path
+          d={`M ${-0.5 * u} 0 Q ${-0.25 * u} ${-0.4 * u} 0 0 Q ${0.25 * u} ${0.4 * u} ${0.5 * u} 0`}
+          stroke={CTRL_COLOR} strokeWidth={1.2} fill="none" />
+      </g>
+    );
+  }
+
+  // Multi-input Scope
+  const step = 2.0; // 2 grid units between input pins
+  const totalH = (inputCount - 1) * step;
+  const bodyH = Math.max(1.8 * u, (totalH + 1.4) * u);
+  const startOffset = -((inputCount - 1) * step) / 2;
+
   return (
     <g>
-      {controlLeads(u)}
-      <rect x={-0.75 * u} y={-0.65 * u} width={1.5 * u} height={1.3 * u} rx={3}
-            stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
-      {/* Mini waveform inside */}
+      {/* Main Scope Chassis */}
+      <rect
+        x={-0.9 * u}
+        y={-bodyH / 2}
+        width={1.8 * u}
+        height={bodyH}
+        rx={4}
+        stroke={CTRL_COLOR}
+        strokeWidth={1.6}
+        fill="rgba(74,222,128,0.06)"
+      />
+
+      {/* Screen Area */}
+      <rect
+        x={-0.45 * u}
+        y={-bodyH / 2 + 0.3 * u}
+        width={1.15 * u}
+        height={bodyH - 0.6 * u}
+        rx={2}
+        stroke={CTRL_COLOR}
+        strokeWidth={1.0}
+        strokeOpacity={0.6}
+        fill="rgba(15,23,42,0.6)"
+      />
+
+      {/* Mini display waveform */}
       <path
-        d={`M ${-0.5 * u} 0 Q ${-0.25 * u} ${-0.4 * u} 0 0 Q ${0.25 * u} ${0.4 * u} ${0.5 * u} 0`}
-        stroke={CTRL_COLOR} strokeWidth={1.2} fill="none" />
+        d={`M ${-0.35 * u} 0 Q ${-0.15 * u} ${-0.35 * u} 0.1 * u 0 Q ${0.35 * u} ${0.35 * u} 0.55 * u 0`}
+        stroke={CTRL_COLOR}
+        strokeWidth={1.2}
+        fill="none"
+      />
+
+      {/* Input pins and channel labels */}
+      {Array.from({ length: inputCount }).map((_, i) => {
+        const offset = (startOffset + i * step) * u;
+        return (
+          <g key={i}>
+            <line
+              x1={-LEAD * u}
+              y1={offset}
+              x2={-0.9 * u}
+              y2={offset}
+              stroke={CTRL_COLOR}
+              strokeWidth={1.5}
+            />
+            <text
+              x={-0.65 * u}
+              y={offset + 0.25 * u}
+              fontSize={0.4 * u}
+              fill={CTRL_COLOR}
+              stroke="none"
+              fontWeight="bold"
+            >
+              {i + 1}
+            </text>
+          </g>
+        );
+      })}
     </g>
   );
 }

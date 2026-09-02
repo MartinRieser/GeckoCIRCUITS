@@ -1325,8 +1325,8 @@ verbindungControlANZAHL 4
 verbindungCONTROL (0)
 <Verbindung>
 label v_in
-x[] 28 29 30 31 32 
-y[] 4 4 4 4 4 
+x[] 26 27 28 29 30 31 32 
+y[] 7 7 7 7 7 7 7 
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1334,8 +1334,8 @@ connectorType 1
 verbindungCONTROL (1)
 <Verbindung>
 label v_R1
-x[] 28 29 30 31 32 
-y[] 8 8 8 8 8 
+x[] 26 27 28 29 30 31 32 
+y[] 9 9 9 9 9 9 9 
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1343,8 +1343,8 @@ connectorType 1
 verbindungCONTROL (2)
 <Verbindung>
 label v_L1
-x[] 28 29 30 31 32 
-y[] 12 12 12 12 12 
+x[] 26 27 28 29 30 31 32 
+y[] 11 11 11 11 11 11 11 
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1352,8 +1352,8 @@ connectorType 1
 verbindungCONTROL (3)
 <Verbindung>
 label v_C1
-x[] 28 29 30 31 32 
-y[] 16 16 16 16 16 
+x[] 26 27 28 29 30 31 32 
+y[] 13 13 13 13 13 13 13 
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1433,8 +1433,8 @@ labelEndKnoten[] /v_in
 enabledShorted 1
 typ 1
 uniqueObjectIdentifier 2001
-x 26
-y 4
+x 24
+y 7
 parameter[] 0.0
 parameterString[] /V_in/0/0
 nameOpt[] 
@@ -1449,8 +1449,8 @@ labelEndKnoten[] /v_R1
 enabledShorted 1
 typ 1
 uniqueObjectIdentifier 2002
-x 26
-y 8
+x 24
+y 9
 parameter[] 0.0
 parameterString[] /V_in/n_mid/0
 nameOpt[] 
@@ -1465,8 +1465,8 @@ labelEndKnoten[] /v_L1
 enabledShorted 1
 typ 1
 uniqueObjectIdentifier 2003
-x 26
-y 12
+x 24
+y 11
 parameter[] 0.0
 parameterString[] /n_mid/V_out/0
 nameOpt[] 
@@ -1481,8 +1481,8 @@ labelEndKnoten[] /v_C1
 enabledShorted 1
 typ 1
 uniqueObjectIdentifier 2004
-x 26
-y 16
+x 24
+y 13
 parameter[] 0.0
 parameterString[] /V_out/0/0
 nameOpt[] 
