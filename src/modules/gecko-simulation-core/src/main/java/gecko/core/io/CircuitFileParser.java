@@ -420,9 +420,14 @@ public class CircuitFileParser {
      */
     private void parseConnections(TokenMap tokenMap, CircuitModel model) {
         parseConnectionsForDomain(tokenMap, "verbindungLK", "LK", 0, model);
+        parseConnectionsForDomain(tokenMap, "connectionLK", "LK", 0, model);
         parseConnectionsForDomain(tokenMap, "verbindungCONTROL", "CONTROL", 1, model);
+        parseConnectionsForDomain(tokenMap, "connectionCONTROL", "CONTROL", 1, model);
         parseConnectionsForDomain(tokenMap, "verbindungControl", "CONTROL", 1, model);
+        parseConnectionsForDomain(tokenMap, "connectionControl", "CONTROL", 1, model);
         parseConnectionsForDomain(tokenMap, "verbindungTHERM", "THERMAL", 2, model);
+        parseConnectionsForDomain(tokenMap, "connectionTHERM", "THERMAL", 2, model);
+        parseConnectionsForDomain(tokenMap, "connectionThermal", "THERMAL", 2, model);
     }
 
     /**
@@ -495,26 +500,28 @@ public class CircuitFileParser {
         TokenMap elementBlock;
         while ((elementBlock = tokenMap.getSpecialBlockTokenMap(tokenKey)) != null) {
             try {
-                int type = elementBlock.readDataLine("typ", -1);
+                int type = elementBlock.readDataLine("typ", elementBlock.readDataLine("type", -1));
                 if (type < 0) {
                     continue;
                 }
 
-                String name = elementBlock.readDataLine("idStringDialog", "");
+                String name = elementBlock.readDataLine("idStringDialog", elementBlock.readDataLine("name", ""));
                 if (name.equals(NIX)) {
                     name = "";
                 }
                 int x = elementBlock.readDataLine("x", 0);
                 int y = elementBlock.readDataLine("y", 0);
-                int orientation = elementBlock.readDataLine("orientierung", 0);
+                int orientation = elementBlock.readDataLine("orientierung", elementBlock.readDataLine("orientation", 0));
 
                 List<Double> paramsList = readComponentParameters(elementBlock);
                 double[] params = paramsList.stream()
                         .mapToDouble(v -> v != null ? v : Double.NaN)
                         .toArray();
 
-                String[] xLabels = elementBlock.readDataLine("labelAnfangsKnoten[]", new String[0]);
-                String[] yLabels = elementBlock.readDataLine("labelEndKnoten[]", new String[0]);
+                String[] xLabels = elementBlock.readDataLine("labelAnfangsKnoten[]",
+                        elementBlock.readDataLine("labelStartNode[]", new String[0]));
+                String[] yLabels = elementBlock.readDataLine("labelEndKnoten[]",
+                        elementBlock.readDataLine("labelEndNode[]", new String[0]));
                 String[] paramStrings = elementBlock.readDataLine("parameterString[]", new String[0]);
                 String[] nameOpt = elementBlock.readDataLine("nameOpt[]", new String[0]);
                 long uniqueId = elementBlock.readDataLine("uniqueObjectIdentifier", 0L);
