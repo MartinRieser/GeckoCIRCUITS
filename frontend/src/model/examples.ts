@@ -1283,7 +1283,259 @@ dataContainerSignals[] /u_out
 
 `;
 
+export const THREE_SCOPES_RLC_IPES = `
+verbindungLeistungskreisANZAHL 4
+verbindungLK (0)
+<Verbindung>
+label V_in
+x[] 4 5 6 7 8 
+y[] 6 6 6 6 6 
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (1)
+<Verbindung>
+label n_mid
+x[] 12 13 14 
+y[] 6 6 6 
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (2)
+<Verbindung>
+label V_out
+x[] 18 19 20 21 22 
+y[] 6 6 6 6 6 
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (3)
+<Verbindung>
+label 0
+x[] 22 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 
+y[] 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungControlANZAHL 3
+verbindungCONTROL (0)
+<Verbindung>
+label V_in
+x[] 26 27 28 
+y[] 4 4 4 
+enabled true
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (1)
+<Verbindung>
+label n_mid
+x[] 26 27 28 
+y[] 8 8 8 
+enabled true
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (2)
+<Verbindung>
+label V_out
+x[] 26 27 28 
+y[] 12 12 12 
+enabled true
+connectorType 1
+<\\Verbindung>
+
+elementANZAHL 4
+
+e (0)
+<ElementLK>
+labelAnfangsKnoten[] /V_in
+labelEndKnoten[] /0
+enabledShorted 1
+typ 4
+uniqueObjectIdentifier 1001
+x 4
+y 8
+parameter[] 401.0 24.0 50.0 0.0 0.0 0.5 0.0 24.0 0.0 -24.0 0.0 1.0 1.7976931348623157E308 0.0 0.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog V_step
+<\\ElementLK>
+
+e (1)
+<ElementLK>
+labelAnfangsKnoten[] /V_in
+labelEndKnoten[] /n_mid
+enabledShorted 1
+typ 1
+uniqueObjectIdentifier 1002
+x 10
+y 6
+parameter[] 5.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 502
+idStringDialog R1
+<\\ElementLK>
+
+e (2)
+<ElementLK>
+labelAnfangsKnoten[] /n_mid
+labelEndKnoten[] /V_out
+enabledShorted 1
+typ 2
+uniqueObjectIdentifier 1003
+x 16
+y 6
+parameter[] 0.001 0.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 502
+idStringDialog L1
+<\\ElementLK>
+
+e (3)
+<ElementLK>
+labelAnfangsKnoten[] /V_out
+labelEndKnoten[] /0
+enabledShorted 1
+typ 3
+uniqueObjectIdentifier 1004
+x 22
+y 8
+parameter[] 0.00001 0.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog C1
+<\\ElementLK>
+
+controlANZAHL 6
+
+c (0)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /V_in
+enabledShorted 1
+typ 1
+uniqueObjectIdentifier 2001
+x 24
+y 4
+parameter[] 0.0
+parameterString[] /V_in/0/0
+nameOpt[] 
+orientierung 503
+idStringDialog VOLT_1
+<\\ElementCONTROL>
+
+c (1)
+<ElementCONTROL>
+labelAnfangsKnoten[] /V_in
+labelEndKnoten[] 
+enabledShorted 1
+typ 5
+uniqueObjectIdentifier 2002
+x 30
+y 4
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SCOPE_VIN
+<\\ElementCONTROL>
+
+c (2)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /n_mid
+enabledShorted 1
+typ 1
+uniqueObjectIdentifier 2003
+x 24
+y 8
+parameter[] 0.0
+parameterString[] /n_mid/0/0
+nameOpt[] 
+orientierung 503
+idStringDialog VOLT_2
+<\\ElementCONTROL>
+
+c (3)
+<ElementCONTROL>
+labelAnfangsKnoten[] /n_mid
+labelEndKnoten[] 
+enabledShorted 1
+typ 5
+uniqueObjectIdentifier 2004
+x 30
+y 8
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SCOPE_VMID
+<\\ElementCONTROL>
+
+c (4)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /V_out
+enabledShorted 1
+typ 1
+uniqueObjectIdentifier 2005
+x 24
+y 12
+parameter[] 0.0
+parameterString[] /V_out/0/0
+nameOpt[] 
+orientierung 503
+idStringDialog VOLT_3
+<\\ElementCONTROL>
+
+c (5)
+<ElementCONTROL>
+labelAnfangsKnoten[] /V_out
+labelEndKnoten[] 
+enabledShorted 1
+typ 5
+uniqueObjectIdentifier 2006
+x 30
+y 12
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SCOPE_VOUT
+<\\ElementCONTROL>
+
+tDURATION 0.01
+dt 1e-06
+tPAUSE -1.0
+T_pre -1.0
+dt_pre 0.0
+solverType 0
+dpix 16
+fontSize 12
+fontTyp Dialog
+worksheetSize 700_600
+FileVersion 1
+DtStor 2026-08-16
+dataContainerSignals[] /V_in/n_mid/V_out
+`;
+
 export const EXAMPLES: CircuitExample[] = [
+  {
+    id: 'three-scopes',
+    name: 'Multi-Scope RLC (3 Scopes)',
+    category: 'Analog & Filter',
+    description: '3 independent scopes measuring Input Voltage (V_in), Inductor Voltage (n_mid), and Resonant Output (V_out).',
+    content: THREE_SCOPES_RLC_IPES,
+  },
   {
     id: 'rlc',
     name: 'RLC Resonant Circuit',
