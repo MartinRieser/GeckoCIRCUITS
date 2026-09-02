@@ -1,13 +1,18 @@
 /**
  * Full-Viewport Scope Instrument & Simulation View Tab.
- * Provides high-resolution waveform plotting, cursor measurements,
- * stacked / overlay modes, channel toggles, and signal metrics.
+ * Provides high-resolution waveform plotting, simulation configuration,
+ * cursor measurements, stacked / overlay modes, channel toggles, and signal metrics.
+ * Fully styled for both Dark and Light themes.
  */
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
-import type { EditorComponent, SimulationStatus } from '../model/types';
-import { formatEngineeringValue } from '../model/componentSchema';
+import type { EditorComponent, SimulationDefaults, SimulationStatus } from '../model/types';
+import {
+  parseEngineeringValue,
+  formatEngineeringValue,
+} from '../model/componentSchema';
 import { mapSimulationResults } from './chartData';
+import { estimateStepCount, STEP_WARNING_THRESHOLD } from './simSteps';
 
 interface ScopeViewTabProps {
   scopeName: string; // 'all' or 'SCOPE.1', 'SCOPE.2', etc.
@@ -16,12 +21,24 @@ interface ScopeViewTabProps {
   status: SimulationStatus | null;
   progress: number;
   circuitId: string | null;
-  onRunSimulation: () => void;
+  defaults?: SimulationDefaults | null;
+  errorMessage?: string | null;
+  theme?: 'dark' | 'light';
+  onRunSimulation: (config?: {
+    simulationTime: number;
+    timeStep: number;
+    solverType: string;
+    backend?: string;
+    signals?: string[];
+  }) => void;
+  onPauseSimulation?: () => void;
+  onResumeSimulation?: () => void;
+  onCancelSimulation?: () => void;
   onCloseTab?: () => void;
   onSelectTab: (tabId: string) => void;
 }
 
-const TRACE_COLORS = [
+const TRACE_COLORS_DARK = [
   '#38bdf8', // Sky blue
   '#f43f5e', // Rose
   '#10b981', // Emerald
@@ -32,6 +49,17 @@ const TRACE_COLORS = [
   '#14b8a6', // Teal
 ];
 
+const TRACE_COLORS_LIGHT = [
+  '#0284c7', // Vibrant Sky blue
+  '#e11d48', // Vibrant Rose/red
+  '#16a34a', // Vibrant Emerald/green
+  '#d97706', // Vibrant Amber/orange
+  '#9333ea', // Vibrant Purple
+  '#2563eb', // Vibrant Blue
+  '#db2777', // Vibrant Pink
+  '#0d9488', // Vibrant Teal
+];
+
 export function ScopeViewTab({
   scopeName,
   components,
@@ -39,7 +67,13 @@ export function ScopeViewTab({
   status,
   progress,
   circuitId,
+  defaults,
+  errorMessage,
+  theme = 'dark',
   onRunSimulation,
+  onPauseSimulation,
+  onResumeSimulation,
+  onCancelSimulation,
   onCloseTab,
   onSelectTab,
 }: ScopeViewTabProps) {
@@ -49,6 +83,31 @@ export function ScopeViewTab({
   const [cursorA, setCursorA] = useState<number | null>(null);
   const [cursorB, setCursorB] = useState<number | null>(null);
   const [channelSearch, setChannelSearch] = useState('');
+
+  // Simulation Parameters state
+  const [tEndStr, setTEndStr] = useState('20m');
+  const [dtStr, setDtStr] = useState('1u');
+  const [solverType, setSolverType] = useState('backward-euler');
+  const [backendEngine, setBackendEngine] = useState('headless');
+
+  useEffect(() => {
+    if (defaults) {
+      if (defaults.duration !== undefined) {
+        setTEndStr(formatEngineeringValue(defaults.duration, 's'));
+      }
+      if (defaults.timeStep !== undefined) {
+        setDtStr(formatEngineeringValue(defaults.timeStep, 's'));
+      }
+      if (defaults.solverType) {
+        setSolverType(defaults.solverType);
+      }
+      if ((defaults as { backend?: string }).backend) {
+        setBackendEngine((defaults as { backend?: string }).backend!);
+      }
+    }
+  }, [defaults]);
+
+  const traceColors = theme === 'light' ? TRACE_COLORS_LIGHT : TRACE_COLORS_DARK;
 
   const scopeBlocks = useMemo(() => {
     return components.filter(
@@ -94,6 +153,24 @@ export function ScopeViewTab({
   };
 
   const isRunning = status === 'PENDING' || status === 'RUNNING';
+  const isPaused = status === 'PAUSED';
+
+  // Step warning
+  const tEndNum = parseEngineeringValue(tEndStr);
+  const dtNum = parseEngineeringValue(dtStr);
+  const estSteps = estimateStepCount(tEndNum ?? 0.02, dtNum ?? 1e-6);
+  const isHeavyRun = estSteps > STEP_WARNING_THRESHOLD;
+
+  const handleRun = () => {
+    const dur = tEndNum !== null && !isNaN(tEndNum) && tEndNum > 0 ? tEndNum : 0.02;
+    const step = dtNum !== null && !isNaN(dtNum) && dtNum > 0 ? dtNum : 1e-6;
+    onRunSimulation({
+      simulationTime: dur,
+      timeStep: step,
+      solverType,
+      backend: backendEngine,
+    });
+  };
 
   const handleExportCsv = () => {
     if (!results || !timeArray.length) return;
@@ -117,13 +194,86 @@ export function ScopeViewTab({
 
   return (
     <div className="scope-view-tab-container">
+      {/* Simulation Configuration Bar (Shown for Simulation Overview or collapsible) */}
+      <div className="sim-params-bar" style={{ padding: '8px 16px', background: 'var(--panel-header)', borderBottom: '1px solid var(--border)' }}>
+        <div className="sim-param-item">
+          <label htmlFor="tab-tend-input">Duration (tEnd):</label>
+          <input
+            id="tab-tend-input"
+            type="text"
+            className="sim-param-input"
+            value={tEndStr}
+            onChange={(e) => setTEndStr(e.target.value)}
+            placeholder="e.g. 20m, 0.05"
+            disabled={isRunning}
+          />
+        </div>
+
+        <div className="sim-param-item">
+          <label htmlFor="tab-dt-input">Time step (dt):</label>
+          <input
+            id="tab-dt-input"
+            type="text"
+            className="sim-param-input"
+            value={dtStr}
+            onChange={(e) => setDtStr(e.target.value)}
+            placeholder="e.g. 1u, 1e-6"
+            disabled={isRunning}
+          />
+        </div>
+
+        <div className="sim-param-item">
+          <label htmlFor="tab-solver-select">Solver:</label>
+          <select
+            id="tab-solver-select"
+            className="sim-param-select"
+            value={solverType}
+            onChange={(e) => setSolverType(e.target.value)}
+            disabled={isRunning}
+          >
+            <option value="backward-euler">Backward Euler</option>
+            <option value="trapezoidal">Trapezoidal</option>
+            <option value="gear-shichman">Gear-Shichman</option>
+          </select>
+        </div>
+
+        <div className="sim-param-item">
+          <label htmlFor="tab-backend-select">Engine:</label>
+          <select
+            id="tab-backend-select"
+            className="sim-param-select"
+            value={backendEngine}
+            onChange={(e) => setBackendEngine(e.target.value)}
+            disabled={isRunning}
+          >
+            <option value="headless">Gecko Headless Core</option>
+            <option value="classic">Classic Simulation</option>
+          </select>
+        </div>
+
+        {isHeavyRun && (
+          <span className="step-warning-badge" title={`${estSteps.toLocaleString()} steps computed`}>
+            ⚠ {estSteps.toLocaleString()} steps
+          </span>
+        )}
+
+        {/* Status Badge */}
+        {status && (
+          <span className={`sim-status-badge ${status.toLowerCase()}`}>
+            {status}
+          </span>
+        )}
+      </div>
+
       {/* Scope Header Toolbar */}
       <div className="scope-tab-header">
         <div className="scope-tab-title-group">
-          <div className="scope-badge-icon">📺</div>
+          <div className="scope-badge-icon">
+            {scopeName === 'all' ? '📊' : '📺'}
+          </div>
           <div>
             <div className="scope-tab-title">
-              {scopeName === 'all' ? 'Simulation Overview (All Scopes)' : `Scope Instrument: ${scopeName}`}
+              {scopeName === 'all' ? 'Simulation Overview (All Scopes & Signals)' : `Scope Instrument: ${scopeName}`}
             </div>
             <div className="scope-tab-subtitle">
               {scopeChannels.length} channel{scopeChannels.length === 1 ? '' : 's'}:{' '}
@@ -170,15 +320,68 @@ export function ScopeViewTab({
             </button>
           </div>
 
-          <button
-            type="button"
-            className="sim-btn run"
-            onClick={onRunSimulation}
-            disabled={!circuitId || isRunning}
-            title="Run simulation to recalculate waveforms"
-          >
-            {isRunning ? `Simulating ${Math.round(progress * 100)}%` : '▶ Run Simulation'}
-          </button>
+          {/* Run / Pause / Cancel Controls */}
+          {!isRunning && !isPaused && (
+            <button
+              type="button"
+              className="sim-btn run"
+              onClick={handleRun}
+              disabled={!circuitId}
+              title="Run simulation"
+            >
+              ▶ Run Simulation
+            </button>
+          )}
+
+          {isRunning && (
+            <>
+              {onPauseSimulation && (
+                <button
+                  type="button"
+                  className="sim-btn pause"
+                  onClick={onPauseSimulation}
+                  title="Pause simulation"
+                >
+                  ⏸ Pause
+                </button>
+              )}
+              {onCancelSimulation && (
+                <button
+                  type="button"
+                  className="sim-btn cancel"
+                  onClick={onCancelSimulation}
+                  title="Cancel simulation"
+                >
+                  ⏹ Cancel
+                </button>
+              )}
+            </>
+          )}
+
+          {isPaused && (
+            <>
+              {onResumeSimulation && (
+                <button
+                  type="button"
+                  className="sim-btn resume"
+                  onClick={onResumeSimulation}
+                  title="Resume simulation"
+                >
+                  ▶ Resume
+                </button>
+              )}
+              {onCancelSimulation && (
+                <button
+                  type="button"
+                  className="sim-btn cancel"
+                  onClick={onCancelSimulation}
+                  title="Cancel simulation"
+                >
+                  ⏹ Cancel
+                </button>
+              )}
+            </>
+          )}
 
           {results && signalNames.length > 0 && (
             <button
@@ -223,12 +426,20 @@ export function ScopeViewTab({
         </div>
       )}
 
+      {/* Error message if any */}
+      {errorMessage && (
+        <div className="sim-error-banner">
+          <span className="error-icon">✕</span>
+          <span className="error-text">{errorMessage}</span>
+        </div>
+      )}
+
       {/* Channel Pills Legend */}
       <div className="scope-tab-legend-bar">
         <span className="legend-channels-label">Active Traces:</span>
         {filteredChannels.map((name) => {
           const colorIdx = signalNames.indexOf(name);
-          const color = TRACE_COLORS[colorIdx >= 0 ? colorIdx % TRACE_COLORS.length : 0];
+          const color = traceColors[colorIdx >= 0 ? colorIdx % traceColors.length : 0];
           const isHidden = !!hiddenSignals[name];
           return (
             <button
@@ -238,7 +449,7 @@ export function ScopeViewTab({
               onClick={() => toggleSignal(name)}
               style={{
                 borderColor: color,
-                color: isHidden ? '#64748b' : '#f8fafc',
+                color: isHidden ? 'var(--text-dim)' : 'var(--text)',
                 backgroundColor: isHidden ? 'transparent' : `${color}22`,
               }}
               title={isHidden ? `Show ${name}` : `Hide ${name}`}
@@ -275,13 +486,13 @@ export function ScopeViewTab({
       <div className="scope-tab-body">
         {!results || signalNames.length === 0 ? (
           <div className="scope-empty-state">
-            <div className="empty-icon">📺</div>
+            <div className="empty-icon">{scopeName === 'all' ? '📊' : '📺'}</div>
             <h3>No simulation data available</h3>
-            <p>Click <strong>"Run Simulation"</strong> above to compute and visualize waveforms for {scopeName}.</p>
+            <p>Configure parameters above and click <strong>"Run Simulation"</strong> to calculate waveforms.</p>
             <button
               type="button"
               className="sim-btn run"
-              onClick={onRunSimulation}
+              onClick={handleRun}
               disabled={!circuitId || isRunning}
               style={{ marginTop: 12 }}
             >
@@ -298,6 +509,7 @@ export function ScopeViewTab({
                   signals={results}
                   activeSignals={visibleSignals}
                   allSignals={signalNames}
+                  theme={theme}
                   hoverIndex={hoverIndex}
                   onHoverIndex={setHoverIndex}
                   cursorA={cursorA}
@@ -313,6 +525,7 @@ export function ScopeViewTab({
                   signals={results}
                   activeSignals={visibleSignals}
                   allSignals={signalNames}
+                  theme={theme}
                   hoverIndex={hoverIndex}
                   onHoverIndex={setHoverIndex}
                   cursorA={cursorA}
@@ -385,7 +598,7 @@ export function ScopeViewTab({
                       const st = signalStats[name];
                       if (!st) return null;
                       const colorIdx = signalNames.indexOf(name);
-                      const color = TRACE_COLORS[colorIdx >= 0 ? colorIdx % TRACE_COLORS.length : 0];
+                      const color = traceColors[colorIdx >= 0 ? colorIdx % traceColors.length : 0];
                       const isHidden = !!hiddenSignals[name];
                       const arr = results[name] || [];
                       const mean = arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
@@ -430,6 +643,7 @@ function FullScreenOverlayChart({
   signals,
   activeSignals,
   allSignals,
+  theme,
   hoverIndex,
   onHoverIndex,
   cursorA,
@@ -440,6 +654,7 @@ function FullScreenOverlayChart({
   signals: Record<string, number[]>;
   activeSignals: string[];
   allSignals: string[];
+  theme: 'dark' | 'light';
   hoverIndex: number | null;
   onHoverIndex: (idx: number | null) => void;
   cursorA: number | null;
@@ -456,6 +671,12 @@ function FullScreenOverlayChart({
 
   const plotW = width - padLeft - padRight;
   const plotH = height - padTop - padBottom;
+
+  const traceColors = theme === 'light' ? TRACE_COLORS_LIGHT : TRACE_COLORS_DARK;
+  const gridColor = theme === 'light' ? '#e2e8f0' : '#334155';
+  const textColor = theme === 'light' ? '#64748b' : '#94a3b8';
+  const zeroColor = theme === 'light' ? '#94a3b8' : '#64748b';
+  const crosshairColor = theme === 'light' ? '#334155' : '#cbd5e1';
 
   const { minT, maxT, minY, maxY } = useMemo(() => {
     if (!time.length) return { minT: 0, maxT: 1, minY: -1, maxY: 1 };
@@ -584,13 +805,13 @@ function FullScreenOverlayChart({
               y1={y}
               x2={width - padRight}
               y2={y}
-              stroke="#334155"
+              stroke={gridColor}
               strokeDasharray="3 4"
             />
             <text
               x={padLeft - 10}
               y={y + 4}
-              fill="#94a3b8"
+              fill={textColor}
               fontSize={11}
               fontWeight={600}
               textAnchor="end"
@@ -608,13 +829,13 @@ function FullScreenOverlayChart({
               y1={padTop}
               x2={x}
               y2={height - padBottom}
-              stroke="#334155"
+              stroke={gridColor}
               strokeDasharray="3 4"
             />
             <text
               x={x}
               y={height - padBottom + 20}
-              fill="#94a3b8"
+              fill={textColor}
               fontSize={11}
               fontWeight={600}
               textAnchor="middle"
@@ -631,7 +852,7 @@ function FullScreenOverlayChart({
             y1={mapY(0)}
             x2={width - padRight}
             y2={mapY(0)}
-            stroke="#64748b"
+            stroke={zeroColor}
             strokeWidth={1.2}
           />
         )}
@@ -639,7 +860,7 @@ function FullScreenOverlayChart({
         {/* Waveform Traces */}
         {tracePaths.map(({ name, path }) => {
           const colorIdx = allSignals.indexOf(name);
-          const color = TRACE_COLORS[colorIdx % TRACE_COLORS.length];
+          const color = traceColors[colorIdx % traceColors.length];
           return (
             <path
               key={name}
@@ -724,7 +945,7 @@ function FullScreenOverlayChart({
               y1={padTop}
               x2={mapX(time[hoverIndex])}
               y2={height - padBottom}
-              stroke="#cbd5e1"
+              stroke={crosshairColor}
               strokeWidth={1}
               strokeDasharray="3 3"
             />
@@ -732,7 +953,7 @@ function FullScreenOverlayChart({
               const val = signals[name]?.[hoverIndex];
               if (val === undefined) return null;
               const colorIdx = allSignals.indexOf(name);
-              const color = TRACE_COLORS[colorIdx % TRACE_COLORS.length];
+              const color = traceColors[colorIdx % traceColors.length];
               return (
                 <circle
                   key={name}
@@ -759,7 +980,7 @@ function FullScreenOverlayChart({
             const val = signals[name]?.[hoverIndex];
             if (val === undefined) return null;
             const colorIdx = allSignals.indexOf(name);
-            const color = TRACE_COLORS[colorIdx % TRACE_COLORS.length];
+            const color = traceColors[colorIdx % traceColors.length];
             return (
               <div key={name} className="tooltip-signal-row">
                 <span className="tooltip-dot" style={{ backgroundColor: color }} />
@@ -781,6 +1002,7 @@ function FullScreenStackedChart({
   signals,
   activeSignals,
   allSignals,
+  theme,
   hoverIndex,
   onHoverIndex,
   cursorA,
@@ -791,6 +1013,7 @@ function FullScreenStackedChart({
   signals: Record<string, number[]>;
   activeSignals: string[];
   allSignals: string[];
+  theme: 'dark' | 'light';
   hoverIndex: number | null;
   onHoverIndex: (idx: number | null) => void;
   cursorA: number | null;
@@ -807,6 +1030,11 @@ function FullScreenStackedChart({
   const padBottom = 35;
   const totalH = Math.max(480, padTop + padBottom + activeSignals.length * (laneH + laneGap) - laneGap);
   const plotW = width - padLeft - padRight;
+
+  const traceColors = theme === 'light' ? TRACE_COLORS_LIGHT : TRACE_COLORS_DARK;
+  const textColor = theme === 'light' ? '#64748b' : '#94a3b8';
+  const zeroColor = theme === 'light' ? '#cbd5e1' : '#475569';
+  const crosshairColor = theme === 'light' ? '#334155' : '#cbd5e1';
 
   const t0 = time[0] || 0;
   const t1 = time[time.length - 1] || 1;
@@ -857,7 +1085,7 @@ function FullScreenStackedChart({
         {activeSignals.map((name, k) => {
           const arr = signals[name] || [];
           const colorIdx = allSignals.indexOf(name);
-          const color = TRACE_COLORS[colorIdx % TRACE_COLORS.length];
+          const color = traceColors[colorIdx % traceColors.length];
           const laneTop = padTop + k * (laneH + laneGap);
 
           let y0 = Infinity;
@@ -914,7 +1142,7 @@ function FullScreenStackedChart({
                   y1={zeroY}
                   x2={width - padRight}
                   y2={zeroY}
-                  stroke="#475569"
+                  stroke={zeroColor}
                   strokeDasharray="3 3"
                 />
               )}
@@ -923,7 +1151,7 @@ function FullScreenStackedChart({
               <text
                 x={padLeft - 8}
                 y={laneTop + 14}
-                fill="#94a3b8"
+                fill={textColor}
                 fontSize={10}
                 fontWeight={600}
                 textAnchor="end"
@@ -933,7 +1161,7 @@ function FullScreenStackedChart({
               <text
                 x={padLeft - 8}
                 y={laneTop + laneH - 4}
-                fill="#94a3b8"
+                fill={textColor}
                 fontSize={10}
                 fontWeight={600}
                 textAnchor="end"
@@ -959,7 +1187,8 @@ function FullScreenStackedChart({
                 width={name.length * 8 + 24}
                 height={20}
                 rx={4}
-                fill="#0f172a"
+                fill={theme === 'light' ? '#f1f5f9' : '#0f172a'}
+                stroke={theme === 'light' ? '#cbd5e1' : '#334155'}
                 fillOpacity={0.9}
               />
               <circle
@@ -998,12 +1227,12 @@ function FullScreenStackedChart({
           y1={totalH - padBottom}
           x2={width - padRight}
           y2={totalH - padBottom}
-          stroke="#475569"
+          stroke={theme === 'light' ? '#cbd5e1' : '#475569'}
         />
         <text
           x={padLeft}
           y={totalH - padBottom + 18}
-          fill="#94a3b8"
+          fill={textColor}
           fontSize={11}
           fontWeight={600}
           textAnchor="middle"
@@ -1013,7 +1242,7 @@ function FullScreenStackedChart({
         <text
           x={width - padRight}
           y={totalH - padBottom + 18}
-          fill="#94a3b8"
+          fill={textColor}
           fontSize={11}
           fontWeight={600}
           textAnchor="middle"
@@ -1028,7 +1257,7 @@ function FullScreenStackedChart({
             y1={padTop}
             x2={mapX(time[hoverIndex])}
             y2={totalH - padBottom}
-            stroke="#cbd5e1"
+            stroke={crosshairColor}
             strokeWidth={1}
             strokeDasharray="3 3"
             pointerEvents="none"
@@ -1045,7 +1274,7 @@ function FullScreenStackedChart({
             const val = signals[name]?.[hoverIndex];
             if (val === undefined) return null;
             const colorIdx = allSignals.indexOf(name);
-            const color = TRACE_COLORS[colorIdx % TRACE_COLORS.length];
+            const color = traceColors[colorIdx % traceColors.length];
             return (
               <div key={name} className="tooltip-signal-row">
                 <span className="tooltip-dot" style={{ backgroundColor: color }} />

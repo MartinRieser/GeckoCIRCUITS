@@ -21,6 +21,13 @@
   --color-lk: #38bdf8;
   --color-control: #4ade80;
   --color-therm: #fb923c;
+  --chart-bg: #0f172a;
+  --chart-plot-bg: #0b1120;
+  --chart-grid: #334155;
+  --chart-text: #94a3b8;
+  --chart-zero: #64748b;
+  --chart-crosshair: #cbd5e1;
+  --chart-badge-bg: rgba(15, 23, 42, 0.9);
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', monospace;
   font-family: var(--font-sans);
@@ -51,6 +58,13 @@
   --color-lk: #0284c7;
   --color-control: #16a34a;
   --color-therm: #ea580c;
+  --chart-bg: #ffffff;
+  --chart-plot-bg: #f8fafc;
+  --chart-grid: #e2e8f0;
+  --chart-text: #64748b;
+  --chart-zero: #94a3b8;
+  --chart-crosshair: #334155;
+  --chart-badge-bg: rgba(241, 245, 249, 0.95);
   color-scheme: light;
 }
 
@@ -2377,7 +2391,7 @@ polyline.wire.selected {
 .workspace-tabs-bar {
   display: flex;
   align-items: center;
-  background: #090d16;
+  background: var(--panel-header);
   border-bottom: 1px solid var(--border);
   padding: 0 8px;
   gap: 2px;
@@ -2395,7 +2409,7 @@ polyline.wire.selected {
   height: 100%;
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-dim);
+  color: var(--text-muted);
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
@@ -2406,20 +2420,20 @@ polyline.wire.selected {
 
 .workspace-tab:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface-hover);
 }
 
 .workspace-tab.active {
-  color: #38bdf8;
-  background: rgba(56, 189, 248, 0.08);
-  border-bottom-color: #38bdf8;
+  color: var(--accent);
+  background: var(--surface);
+  border-bottom-color: var(--accent);
 }
 
 .workspace-tab-badge {
   font-size: 10px;
   padding: 1px 5px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--surface-hover);
   color: inherit;
 }
 
@@ -2432,7 +2446,7 @@ polyline.wire.selected {
   border-radius: 50%;
   border: none;
   background: transparent;
-  color: var(--text-muted);
+  color: var(--text-dim);
   cursor: pointer;
   font-size: 11px;
   line-height: 1;
@@ -2443,7 +2457,7 @@ polyline.wire.selected {
 
 .workspace-tab-close:hover {
   background: rgba(244, 63, 94, 0.2);
-  color: #f43f5e;
+  color: var(--danger);
 }
 
 .workspace-add-tab-btn {
@@ -2475,7 +2489,7 @@ polyline.wire.selected {
   flex-direction: column;
   height: 100%;
   width: 100%;
-  background: #0b0f19;
+  background: var(--bg);
   overflow-y: auto;
 }
 
@@ -2484,7 +2498,7 @@ polyline.wire.selected {
   align-items: center;
   justify-content: space-between;
   padding: 10px 16px;
-  background: #0d1322;
+  background: var(--panel);
   border-bottom: 1px solid var(--border);
   gap: 12px;
   flex-wrap: wrap;
@@ -2497,19 +2511,19 @@ polyline.wire.selected {
 }
 
 .scope-badge-icon {
-  font-size: 24px;
+  font-size: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  background: rgba(56, 189, 248, 0.1);
-  border: 1px solid rgba(56, 189, 248, 0.25);
+  width: 38px;
+  height: 38px;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
 }
 
 .scope-tab-title {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.2px;
@@ -2562,15 +2576,15 @@ polyline.wire.selected {
 
 .scope-close-tab-btn:hover {
   background: rgba(244, 63, 94, 0.15);
-  border-color: #f43f5e;
-  color: #f43f5e;
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 .scope-tab-legend-bar {
   display: flex;
   align-items: center;
   padding: 8px 16px;
-  background: #090d16;
+  background: var(--panel-header);
   border-bottom: 1px solid var(--border);
   gap: 6px;
   flex-wrap: wrap;
@@ -2616,11 +2630,11 @@ polyline.wire.selected {
 }
 
 .scope-tab-plot-area {
-  background: #0f172a;
+  background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 .full-waveform-wrap {
@@ -2635,6 +2649,14 @@ polyline.wire.selected {
   cursor: crosshair;
 }
 
+.full-waveform-svg rect.waveform-bg {
+  fill: var(--chart-bg);
+}
+
+.full-waveform-svg rect.waveform-plot-area {
+  fill: var(--chart-plot-bg);
+}
+
 .scope-tab-metrics-panel {
   display: flex;
   flex-direction: column;
@@ -2642,8 +2664,8 @@ polyline.wire.selected {
 }
 
 .cursor-delta-card {
-  background: #0f172a;
-  border: 1px solid rgba(56, 189, 248, 0.3);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 10px 14px;
 }
@@ -2652,7 +2674,7 @@ polyline.wire.selected {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  color: #38bdf8;
+  color: var(--accent);
   margin-bottom: 6px;
   letter-spacing: 0.5px;
 }
@@ -2669,10 +2691,11 @@ polyline.wire.selected {
   align-items: center;
   gap: 6px;
   font-size: 12px;
+  color: var(--text);
 }
 
 .delta-item.highlight {
-  color: #38bdf8;
+  color: var(--accent);
   font-weight: 700;
 }
 
@@ -2682,14 +2705,14 @@ polyline.wire.selected {
 }
 
 .delta-val {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 .delta-clear-btn {
   margin-left: auto;
   background: transparent;
-  border: 1px solid #334155;
-  color: var(--text-dim);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
   border-radius: 4px;
   padding: 2px 8px;
   font-size: 10px;
@@ -2702,7 +2725,7 @@ polyline.wire.selected {
 }
 
 .scope-table-card {
-  background: #0f172a;
+  background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
@@ -2715,7 +2738,7 @@ polyline.wire.selected {
 }
 
 .scope-metrics-table th {
-  background: #0d1322;
+  background: var(--panel-header);
   padding: 8px 12px;
   text-align: left;
   font-size: 11px;
@@ -2727,13 +2750,14 @@ polyline.wire.selected {
 
 .scope-metrics-table td {
   padding: 8px 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  font-family: 'JetBrains Mono', monospace;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
   font-size: 11px;
+  color: var(--text);
 }
 
 .scope-metrics-table tr:hover {
-  background: rgba(56, 189, 248, 0.05);
+  background: var(--surface-hover);
   cursor: pointer;
 }
 
@@ -2752,10 +2776,10 @@ polyline.wire.selected {
 
 .channel-status-pill.on {
   background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
+  color: var(--success);
 }
 
 .channel-status-pill.off {
-  background: rgba(100, 116, 139, 0.2);
-  color: #64748b;
+  background: var(--surface-hover);
+  color: var(--text-dim);
 }

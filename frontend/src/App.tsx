@@ -11,7 +11,6 @@ import { useEditor } from './hooks/useEditor';
 import { Sheet } from './canvas/Sheet';
 import { Palette } from './palette/Palette';
 import { PropertiesPanel } from './properties/PropertiesPanel';
-import { SimulationDrawer } from './simulation/SimulationDrawer';
 import { ScopeViewTab } from './simulation/ScopeViewTab';
 import { CommandPalette } from './palette/CommandPalette';
 import { EXAMPLES } from './model/examples';
@@ -103,7 +102,7 @@ export function App() {
           break;
         case 'toggle-simulation':
           e.preventDefault();
-          actions.toggleSimDrawer();
+          setActiveWorkspaceTab((prev) => (prev === 'schematic' ? 'simulation' : 'schematic'));
           break;
         case 'save':
           e.preventDefault();
@@ -406,17 +405,17 @@ export function App() {
 
         {/* Right Toolbar Actions */}
         <div className="nav-right">
-          {/* Prominent Run Simulation Button */}
+          {/* Prominent Simulation Overview Tab Button */}
           <button
             type="button"
-            className={`nav-btn-primary ${simState.status === 'RUNNING' ? 'simulating' : ''}`}
+            className={`nav-btn-primary ${simState.status === 'RUNNING' ? 'simulating' : ''} ${activeWorkspaceTab === 'simulation' ? 'active' : ''}`}
             onClick={() => {
-              actions.toggleSimDrawer();
+              setActiveWorkspaceTab((prev) => (prev === 'schematic' ? 'simulation' : 'schematic'));
             }}
             disabled={!state.circuitId}
-            title="Open simulation panel to configure and run"
+            title="Switch between Schematic and Simulation Overview tab"
           >
-            {simState.status === 'RUNNING' ? 'Simulating...' : 'Simulation'}
+            {simState.status === 'RUNNING' ? 'Simulating...' : '📊 Simulation'}
           </button>
 
           <button
@@ -578,23 +577,6 @@ export function App() {
                   </span>
                 </div>
               </div>
-
-              {/* Bottom Drawer: Simulation & Waveforms (docked inside viewport so sidebars stay visible) */}
-              <SimulationDrawer
-                isOpen={simState.isOpen}
-                onToggle={actions.toggleSimDrawer}
-                circuitId={state.circuitId}
-                components={state.components}
-                defaults={simState.defaults}
-                status={simState.status}
-                progress={simState.progress}
-                results={simState.results}
-                errorMessage={simState.errorMessage}
-                onRunSimulation={actions.runSimulation}
-                onCancelSimulation={actions.cancelSimulation}
-                onPauseSimulation={actions.pauseSimulation}
-                onResumeSimulation={actions.resumeSimulation}
-              />
             </>
           ) : (
             <ScopeViewTab
@@ -604,11 +586,13 @@ export function App() {
               status={simState.status}
               progress={simState.progress}
               circuitId={state.circuitId}
-              onRunSimulation={() => actions.runSimulation({
-                simulationTime: simState.defaults?.duration ?? 0.02,
-                timeStep: simState.defaults?.timeStep ?? 1e-6,
-                solverType: simState.defaults?.solverType ?? 'backward-euler',
-              })}
+              defaults={simState.defaults}
+              errorMessage={simState.errorMessage}
+              theme={theme}
+              onRunSimulation={actions.runSimulation}
+              onPauseSimulation={actions.pauseSimulation}
+              onResumeSimulation={actions.resumeSimulation}
+              onCancelSimulation={actions.cancelSimulation}
               onCloseTab={
                 activeWorkspaceTab.startsWith('scope:')
                   ? () => closeScopeTab(activeWorkspaceTab.replace('scope:', ''))
