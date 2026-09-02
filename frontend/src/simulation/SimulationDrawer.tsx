@@ -74,6 +74,8 @@ export function SimulationDrawer({
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const [seededCircuit, setSeededCircuit] = useState<string | null>(null);
 
+  const [selectedScopeTab, setSelectedScopeTab] = useState<'all' | 'stacked' | string>('all');
+
   // Re-seed the parameter inputs whenever another circuit is opened
   useEffect(() => {
     if (!defaults || seededCircuit === circuitId) return;
@@ -82,6 +84,7 @@ export function SimulationDrawer({
     if (defaults.timeStep > 0) setDtStr(formatEngineeringValue(defaults.timeStep));
     if (defaults.solverType) setSolverType(defaults.solverType);
     setRecordedSignals(defaults.signals);
+    setSelectedScopeTab('all');
   }, [circuitId, defaults, seededCircuit]);
 
   const isRunning =
@@ -138,6 +141,14 @@ export function SimulationDrawer({
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  const visibleSignals = useMemo(() => {
+    if (selectedScopeTab === 'all' || selectedScopeTab === 'stacked') {
+      return signalNames.filter((s) => !hiddenSignals[s]);
+    }
+    // Single scope focused
+    return signalNames.includes(selectedScopeTab) ? [selectedScopeTab] : signalNames;
+  }, [selectedScopeTab, signalNames, hiddenSignals]);
 
   return (
     <div className={`sim-drawer ${isOpen ? 'open' : 'closed'}`}>
@@ -340,54 +351,110 @@ export function SimulationDrawer({
             <div className="sim-results-grid">
               {/* Left: Waveform plot */}
               <div className="sim-plot-card">
-                {/* Signal legend toggles */}
-                <div className="sim-legend-bar">
+                {/* Scope Switcher Tabs */}
+                <div className="scope-tabs-bar">
+                  <button
+                    type="button"
+                    className={`scope-tab-btn ${selectedScopeTab === 'all' ? 'active' : ''}`}
+                    onClick={() => setSelectedScopeTab('all')}
+                    title="Overlay all scope signals on a single graph"
+                  >
+                    📊 All Scopes
+                  </button>
+                  <button
+                    type="button"
+                    className={`scope-tab-btn ${selectedScopeTab === 'stacked' ? 'active' : ''}`}
+                    onClick={() => setSelectedScopeTab('stacked')}
+                    title="Display each scope in its own horizontal subplot lane"
+                  >
+                    📑 Stacked Scopes
+                  </button>
+
+                  <span className="scope-tab-divider" />
+
                   {signalNames.map((name, i) => {
                     const color = TRACE_COLORS[i % TRACE_COLORS.length];
-                    const isHidden = !!hiddenSignals[name];
+                    const isActive = selectedScopeTab === name;
                     return (
                       <button
                         key={name}
                         type="button"
-                        className={`legend-pill ${isHidden ? 'hidden' : 'active'}`}
-                        onClick={() => toggleSignal(name)}
+                        className={`scope-tab-btn ${isActive ? 'active' : ''}`}
+                        onClick={() => setSelectedScopeTab(name)}
+                        title={`Focus exclusively on Scope: ${name}`}
                         style={{
-                          borderColor: color,
-                          color: isHidden ? '#64748b' : '#f8fafc',
-                          backgroundColor: isHidden
-                            ? 'transparent'
-                            : `${color}22`,
+                          borderColor: isActive ? color : undefined,
+                          color: isActive ? color : undefined,
                         }}
                       >
-                        <span
-                          className="legend-dot"
-                          style={{ backgroundColor: color }}
-                        />
-                        {name}
+                        <span className="legend-dot" style={{ backgroundColor: color }} />
+                        Scope: {name}
                       </button>
                     );
                   })}
                 </div>
 
-                {/* SVG Chart */}
-                <WaveformChart
-                  time={timeArray}
-                  signals={results}
-                  activeSignals={signalNames.filter((s) => !hiddenSignals[s])}
-                  allSignals={signalNames}
-                  hoverIndex={hoverIndex}
-                  onHoverIndex={setHoverIndex}
-                />
+                {/* Signal legend toggles (only shown in All / Combined mode) */}
+                {selectedScopeTab === 'all' && (
+                  <div className="sim-legend-bar">
+                    {signalNames.map((name, i) => {
+                      const color = TRACE_COLORS[i % TRACE_COLORS.length];
+                      const isHidden = !!hiddenSignals[name];
+                      return (
+                        <button
+                          key={name}
+                          type="button"
+                          className={`legend-pill ${isHidden ? 'hidden' : 'active'}`}
+                          onClick={() => toggleSignal(name)}
+                          style={{
+                            borderColor: color,
+                            color: isHidden ? '#64748b' : '#f8fafc',
+                            backgroundColor: isHidden
+                              ? 'transparent'
+                              : `${color}22`,
+                          }}
+                        >
+                          <span
+                            className="legend-dot"
+                            style={{ backgroundColor: color }}
+                          />
+                          {name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* SVG Chart: Render Stacked or Standard Waveform Chart */}
+                {selectedScopeTab === 'stacked' ? (
+                  <StackedWaveformChart
+                    time={timeArray}
+                    signals={results}
+                    activeSignals={visibleSignals}
+                    allSignals={signalNames}
+                    hoverIndex={hoverIndex}
+                    onHoverIndex={setHoverIndex}
+                  />
+                ) : (
+                  <WaveformChart
+                    time={timeArray}
+                    signals={results}
+                    activeSignals={visibleSignals}
+                    allSignals={signalNames}
+                    hoverIndex={hoverIndex}
+                    onHoverIndex={setHoverIndex}
+                  />
+                )}
               </div>
 
               {/* Right: Metrics / Statistics Table */}
               <div className="sim-stats-card">
-                <div className="stats-header">Signal Statistics</div>
+                <div className="stats-header">Scope Signal Statistics</div>
                 <div className="stats-table-wrap">
                   <table className="stats-table">
                     <thead>
                       <tr>
-                        <th>Signal</th>
+                        <th>Scope / Signal</th>
                         <th>Min</th>
                         <th>Max</th>
                         <th>Pk-Pk</th>
@@ -399,9 +466,21 @@ export function SimulationDrawer({
                         const st = signalStats[name];
                         if (!st) return null;
                         const color = TRACE_COLORS[i % TRACE_COLORS.length];
+                        const isFocused = selectedScopeTab === name;
                         return (
-                          <tr key={name}>
-                            <td style={{ color, fontWeight: 600 }}>{name}</td>
+                          <tr
+                            key={name}
+                            onClick={() => setSelectedScopeTab(name)}
+                            style={{
+                              cursor: 'pointer',
+                              backgroundColor: isFocused ? 'rgba(56, 189, 248, 0.12)' : undefined,
+                            }}
+                            title="Click to view this scope in full focus"
+                          >
+                            <td style={{ color, fontWeight: 600 }}>
+                              <span style={{ marginRight: 4 }}>📺</span>
+                              {name}
+                            </td>
                             <td>{formatEngineeringValue(st.min)}</td>
                             <td>{formatEngineeringValue(st.max)}</td>
                             <td>{formatEngineeringValue(st.pkpk)}</td>
@@ -415,6 +494,279 @@ export function SimulationDrawer({
               </div>
             </div>
           )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Stacked Subplots Waveform Chart:
+ * Renders each active scope signal in its own distinct horizontal graph lane
+ * with individual Y-scaling, label, and synchronized time-axis crosshair.
+ */
+function StackedWaveformChart({
+  time,
+  signals,
+  activeSignals,
+  allSignals,
+  hoverIndex,
+  onHoverIndex,
+}: {
+  time: number[];
+  signals: Record<string, number[]>;
+  activeSignals: string[];
+  allSignals: string[];
+  hoverIndex: number | null;
+  onHoverIndex: (idx: number | null) => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const width = 640;
+  const laneH = 75;
+  const laneGap = 12;
+  const padLeft = 60;
+  const padRight = 20;
+  const padTop = 15;
+  const padBottom = 25;
+  const totalH = Math.max(260, padTop + padBottom + activeSignals.length * (laneH + laneGap) - laneGap);
+  const plotW = width - padLeft - padRight;
+
+  const t0 = time[0] || 0;
+  const t1 = time[time.length - 1] || 1;
+
+  const mapX = (t: number) => padLeft + ((t - t0) / (t1 - t0 || 1)) * plotW;
+
+  const handleMouseMove = (e: ReactMouseEvent<SVGSVGElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const svgX = ((e.clientX - rect.left) / rect.width) * width;
+    if (svgX < padLeft || svgX > width - padRight) {
+      onHoverIndex(null);
+      return;
+    }
+
+    const t = t0 + ((svgX - padLeft) / plotW) * (t1 - t0);
+    let low = 0;
+    let high = time.length - 1;
+    while (low < high) {
+      const mid = Math.floor((low + high) / 2);
+      if (time[mid] < t) low = mid + 1;
+      else high = mid;
+    }
+    onHoverIndex(low);
+  };
+
+  return (
+    <div className="waveform-container" ref={containerRef}>
+      <svg
+        viewBox={`0 0 ${width} ${totalH}`}
+        className="waveform-svg"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => onHoverIndex(null)}
+      >
+        <rect width={width} height={totalH} className="waveform-bg" rx={6} />
+
+        {activeSignals.map((name, k) => {
+          const arr = signals[name] || [];
+          const colorIdx = allSignals.indexOf(name);
+          const color = TRACE_COLORS[colorIdx % TRACE_COLORS.length];
+          const laneTop = padTop + k * (laneH + laneGap);
+
+          let y0 = Infinity;
+          let y1 = -Infinity;
+          for (let i = 0; i < arr.length; i++) {
+            if (arr[i] < y0) y0 = arr[i];
+            if (arr[i] > y1) y1 = arr[i];
+          }
+          if (!Number.isFinite(y0) || !Number.isFinite(y1)) {
+            y0 = -1;
+            y1 = 1;
+          }
+          if (y0 === y1) {
+            y0 -= 1;
+            y1 += 1;
+          }
+          const yPad = (y1 - y0) * 0.1;
+          const minY = y0 - yPad;
+          const maxY = y1 + yPad;
+
+          const mapLaneY = (v: number) =>
+            laneTop + laneH - ((v - minY) / (maxY - minY || 1)) * laneH;
+
+          // Compute trace path
+          const len = Math.min(time.length, arr.length);
+          let pathD = '';
+          if (len > 0) {
+            const step = Math.max(1, Math.floor(len / 2000));
+            pathD = `M ${mapX(time[0])} ${mapLaneY(arr[0])}`;
+            for (let i = step; i < len; i += step) {
+              pathD += ` L ${mapX(time[i])} ${mapLaneY(arr[i])}`;
+            }
+            if ((len - 1) % step !== 0) {
+              pathD += ` L ${mapX(time[len - 1])} ${mapLaneY(arr[len - 1])}`;
+            }
+          }
+
+          // Zero line if 0 is in range
+          const hasZero = minY <= 0 && maxY >= 0;
+          const zeroY = hasZero ? mapLaneY(0) : null;
+
+          return (
+            <g key={name} className="stacked-lane">
+              {/* Lane background */}
+              <rect
+                x={padLeft}
+                y={laneTop}
+                width={plotW}
+                height={laneH}
+                className="waveform-plot-area"
+                rx={3}
+              />
+
+              {/* Zero reference line */}
+              {zeroY !== null && (
+                <line
+                  x1={padLeft}
+                  y1={zeroY}
+                  x2={width - padRight}
+                  y2={zeroY}
+                  stroke="#475569"
+                  strokeDasharray="3 3"
+                />
+              )}
+
+              {/* Min & Max Y-ticks */}
+              <text
+                x={padLeft - 6}
+                y={laneTop + 10}
+                fill="#94a3b8"
+                fontSize={9}
+                textAnchor="end"
+              >
+                {formatEngineeringValue(maxY)}
+              </text>
+              <text
+                x={padLeft - 6}
+                y={laneTop + laneH - 2}
+                fill="#94a3b8"
+                fontSize={9}
+                textAnchor="end"
+              >
+                {formatEngineeringValue(minY)}
+              </text>
+
+              {/* Trace Path */}
+              {pathD && (
+                <path
+                  d={pathD}
+                  fill="none"
+                  stroke={color}
+                  strokeWidth={1.8}
+                  strokeLinejoin="round"
+                />
+              )}
+
+              {/* Signal Badge in top-left */}
+              <rect
+                x={padLeft + 6}
+                y={laneTop + 4}
+                width={name.length * 7 + 18}
+                height={16}
+                rx={3}
+                fill="#0f172a"
+                fillOpacity={0.85}
+              />
+              <circle
+                cx={padLeft + 12}
+                cy={laneTop + 12}
+                r={3}
+                fill={color}
+              />
+              <text
+                x={padLeft + 18}
+                y={laneTop + 15}
+                fill={color}
+                fontSize={10}
+                fontWeight={700}
+              >
+                {name}
+              </text>
+
+              {/* Intersection dot on hover */}
+              {hoverIndex !== null && hoverIndex >= 0 && hoverIndex < time.length && (
+                <circle
+                  cx={mapX(time[hoverIndex])}
+                  cy={mapLaneY(arr[hoverIndex] ?? 0)}
+                  r={3.5}
+                  fill={color}
+                  stroke="#ffffff"
+                  strokeWidth={1.2}
+                />
+              )}
+            </g>
+          );
+        })}
+
+        {/* Global time axis at the bottom */}
+        <line
+          x1={padLeft}
+          y1={totalH - padBottom}
+          x2={width - padRight}
+          y2={totalH - padBottom}
+          stroke="#475569"
+        />
+        <text
+          x={padLeft}
+          y={totalH - padBottom + 16}
+          fill="#94a3b8"
+          fontSize={10}
+          textAnchor="middle"
+        >
+          {formatEngineeringValue(t0, 's')}
+        </text>
+        <text
+          x={width - padRight}
+          y={totalH - padBottom + 16}
+          fill="#94a3b8"
+          fontSize={10}
+          textAnchor="middle"
+        >
+          {formatEngineeringValue(t1, 's')}
+        </text>
+
+        {/* Crosshair line spanning full stacked height */}
+        {hoverIndex !== null && hoverIndex >= 0 && hoverIndex < time.length && (
+          <line
+            x1={mapX(time[hoverIndex])}
+            y1={padTop}
+            x2={mapX(time[hoverIndex])}
+            y2={totalH - padBottom}
+            stroke="#cbd5e1"
+            strokeWidth={1}
+            strokeDasharray="3 3"
+            pointerEvents="none"
+          />
+        )}
+      </svg>
+
+      {/* Floating Tooltip */}
+      {hoverIndex !== null && hoverIndex >= 0 && hoverIndex < time.length && (
+        <div className="waveform-tooltip">
+          <div className="tooltip-time">
+            t = {formatEngineeringValue(time[hoverIndex], 's')}
+          </div>
+          {activeSignals.map((name) => {
+            const val = signals[name]?.[hoverIndex];
+            if (val === undefined) return null;
+            const colorIdx = allSignals.indexOf(name);
+            const color = TRACE_COLORS[colorIdx % TRACE_COLORS.length];
+            return (
+              <div key={name} className="tooltip-signal-row">
+                <span className="tooltip-dot" style={{ backgroundColor: color }} />
+                <span className="tooltip-name">{name}:</span>
+                <span className="tooltip-val">{formatEngineeringValue(val)}</span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

@@ -1781,6 +1781,51 @@ polyline.wire.selected {
   min-height: 0;
 }
 
+/* Scope Switching Tabs Bar */
+.scope-tabs-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.scope-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.scope-tab-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+  border-color: var(--border-light);
+}
+
+.scope-tab-btn.active {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.scope-tab-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border);
+  margin: 0 4px;
+}
+
 .sim-legend-bar {
   display: flex;
   flex-wrap: wrap;
@@ -1817,6 +1862,7 @@ polyline.wire.selected {
   position: relative;
   flex: 1;
   min-height: 0;
+  overflow-y: auto;
 }
 
 .waveform-svg {
