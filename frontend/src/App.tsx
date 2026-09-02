@@ -57,6 +57,18 @@ export function App() {
           e.preventDefault();
           setCommandPaletteOpen((prev) => !prev);
           break;
+        case 'toggle-inspector':
+          e.preventDefault();
+          setRightSidebarOpen((prev) => !prev);
+          break;
+        case 'toggle-palette':
+          e.preventDefault();
+          setLeftSidebarOpen((prev) => !prev);
+          break;
+        case 'toggle-simulation':
+          e.preventDefault();
+          actions.toggleSimDrawer();
+          break;
         case 'save':
           e.preventDefault();
           actions.save();
@@ -317,6 +329,26 @@ export function App() {
             Wire
           </button>
 
+          <span className="nav-separator" />
+
+          {/* Panel Toggle Shortcuts */}
+          <button
+            type="button"
+            className={`nav-btn ${leftSidebarOpen ? 'active' : ''}`}
+            onClick={() => setLeftSidebarOpen(!leftSidebarOpen)}
+            title="Toggle Components Palette (Ctrl+B)"
+          >
+            Palette <span className="kbd-shortcut">Ctrl+B</span>
+          </button>
+          <button
+            type="button"
+            className={`nav-btn ${rightSidebarOpen ? 'active' : ''}`}
+            onClick={() => setRightSidebarOpen(!rightSidebarOpen)}
+            title="Toggle Inspector / Properties Panel (Ctrl+I)"
+          >
+            Inspector <span className="kbd-shortcut">Ctrl+I</span>
+          </button>
+
           <button
             type="button"
             className="nav-btn"
@@ -370,20 +402,33 @@ export function App() {
       {/* Main Workspace (3-Column Layout) */}
       <div className="workspace">
         {/* Left Sidebar: Component Palette */}
-        <aside className={`sidebar left ${leftSidebarOpen ? '' : 'collapsed'}`}>
+        <aside
+          className={`sidebar left ${leftSidebarOpen ? '' : 'collapsed'}`}
+          onClick={() => {
+            if (!leftSidebarOpen) setLeftSidebarOpen(true);
+          }}
+        >
           <div className="sidebar-header">
             <span className="sidebar-title">Components</span>
             <button
               type="button"
               className="sidebar-toggle-btn"
-              onClick={() => setLeftSidebarOpen(!leftSidebarOpen)}
-              title="Toggle palette panel"
+              onClick={(e) => {
+                e.stopPropagation();
+                setLeftSidebarOpen(!leftSidebarOpen);
+              }}
+              title={leftSidebarOpen ? 'Collapse palette panel (Ctrl+B)' : 'Expand palette panel (Ctrl+B)'}
             >
               {leftSidebarOpen ? '◀' : '▶'}
             </button>
           </div>
-          {leftSidebarOpen && (
+          {leftSidebarOpen ? (
             <Palette catalog={catalog} onArm={actions.arm} />
+          ) : (
+            <div className="collapsed-strip" title="Click to expand Components Palette (Ctrl+B)">
+              <span className="collapsed-strip-icon">⊞</span>
+              <span className="collapsed-strip-text">COMPONENTS</span>
+            </div>
           )}
         </aside>
 
@@ -401,7 +446,10 @@ export function App() {
               deleteComponent: actions.deleteComponent,
               deleteWire: actions.deleteWire,
               labelWire: actions.labelWire,
-              openProperties: actions.openProperties,
+              openProperties: (name: string) => {
+                actions.openProperties(name);
+                setRightSidebarOpen(true);
+              },
               toggleWireMode: actions.toggleWireMode,
               openCommandPalette: () => setCommandPaletteOpen(true),
             }}
@@ -429,22 +477,46 @@ export function App() {
               </span>
             </div>
           </div>
+
+          {/* Bottom Drawer: Simulation & Waveforms (docked inside viewport so sidebars stay visible) */}
+          <SimulationDrawer
+            isOpen={simState.isOpen}
+            onToggle={actions.toggleSimDrawer}
+            circuitId={state.circuitId}
+            defaults={simState.defaults}
+            status={simState.status}
+            progress={simState.progress}
+            results={simState.results}
+            errorMessage={simState.errorMessage}
+            onRunSimulation={actions.runSimulation}
+            onCancelSimulation={actions.cancelSimulation}
+            onPauseSimulation={actions.pauseSimulation}
+            onResumeSimulation={actions.resumeSimulation}
+          />
         </main>
 
         {/* Right Sidebar: Properties Panel */}
-        <aside className={`sidebar right ${rightSidebarOpen ? '' : 'collapsed'}`}>
+        <aside
+          className={`sidebar right ${rightSidebarOpen ? '' : 'collapsed'}`}
+          onClick={() => {
+            if (!rightSidebarOpen) setRightSidebarOpen(true);
+          }}
+        >
           <div className="sidebar-header">
             <span className="sidebar-title">Inspector</span>
             <button
               type="button"
               className="sidebar-toggle-btn"
-              onClick={() => setRightSidebarOpen(!rightSidebarOpen)}
-              title="Toggle inspector panel"
+              onClick={(e) => {
+                e.stopPropagation();
+                setRightSidebarOpen(!rightSidebarOpen);
+              }}
+              title={rightSidebarOpen ? 'Collapse inspector panel (Ctrl+I)' : 'Expand inspector panel (Ctrl+I)'}
             >
               {rightSidebarOpen ? '▶' : '◀'}
             </button>
           </div>
-          {rightSidebarOpen && (
+          {rightSidebarOpen ? (
             <PropertiesPanel
               component={state.components.find((c) => c.name === state.panelFor) || null}
               onRename={actions.rename}
@@ -453,25 +525,14 @@ export function App() {
               onRotate={actions.rotateComponent}
               onDelete={actions.deleteComponent}
             />
+          ) : (
+            <div className="collapsed-strip" title="Click to expand Inspector / Properties (Ctrl+I)">
+              <span className="collapsed-strip-icon">⚙</span>
+              <span className="collapsed-strip-text">INSPECTOR</span>
+            </div>
           )}
         </aside>
       </div>
-
-      {/* Bottom Drawer: Simulation & Waveforms */}
-      <SimulationDrawer
-        isOpen={simState.isOpen}
-        onToggle={actions.toggleSimDrawer}
-        circuitId={state.circuitId}
-        defaults={simState.defaults}
-        status={simState.status}
-        progress={simState.progress}
-        results={simState.results}
-        errorMessage={simState.errorMessage}
-        onRunSimulation={actions.runSimulation}
-        onCancelSimulation={actions.cancelSimulation}
-        onPauseSimulation={actions.pauseSimulation}
-        onResumeSimulation={actions.resumeSimulation}
-      />
 
       {/* Command Palette (Ctrl+K) */}
       <CommandPalette

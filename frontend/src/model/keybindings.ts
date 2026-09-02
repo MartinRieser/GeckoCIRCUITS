@@ -35,6 +35,9 @@ export type ActionId =
   | 'toggle-wire-mode'
   | 'rotate-selection'
   | 'save'
+  | 'toggle-inspector'
+  | 'toggle-palette'
+  | 'toggle-simulation'
   | 'show-shortcuts-help';
 
 export interface KeyBinding {
@@ -57,6 +60,20 @@ export const KEYBINDINGS: KeyBinding[] = [
     key: 'k',
     modifiers: { ctrlOrMeta: true },
     description: 'Open Command Palette',
+    category: 'General',
+  },
+  {
+    action: 'toggle-inspector',
+    key: 'i',
+    modifiers: { ctrlOrMeta: true },
+    description: 'Toggle Inspector / Properties Panel',
+    category: 'General',
+  },
+  {
+    action: 'toggle-palette',
+    key: 'b',
+    modifiers: { ctrlOrMeta: true },
+    description: 'Toggle Components Palette',
     category: 'General',
   },
   {

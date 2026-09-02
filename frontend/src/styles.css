@@ -360,6 +360,26 @@ body,
   width: 38px;
   min-width: 38px;
   max-width: 38px;
+  cursor: pointer;
+}
+
+.sidebar.collapsed .sidebar-header {
+  padding: 0;
+  justify-content: center;
+}
+
+.sidebar.collapsed .sidebar-title {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-toggle-btn {
+  width: 28px;
+  height: 26px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
 }
 
 .sidebar-header {
@@ -390,10 +410,51 @@ body,
   padding: 2px 6px;
   cursor: pointer;
   font-size: 10px;
+  transition: all 0.12s ease;
 }
 
 .sidebar-toggle-btn:hover {
   background: var(--surface-hover);
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+/* Collapsed sidebar vertical strip banner */
+.collapsed-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 18px;
+  gap: 14px;
+  height: 100%;
+  cursor: pointer;
+  user-select: none;
+  background: var(--panel);
+  transition: background 0.15s ease;
+}
+
+.collapsed-strip:hover {
+  background: var(--surface);
+}
+
+.collapsed-strip-icon {
+  font-size: 14px;
+  color: var(--accent);
+}
+
+.collapsed-strip-text {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  transition: color 0.15s ease;
+}
+
+.collapsed-strip:hover .collapsed-strip-text {
   color: var(--text);
 }
 
@@ -1126,6 +1187,7 @@ polyline.wire.selected {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -1136,6 +1198,7 @@ polyline.wire.selected {
   padding: 10px;
   background: var(--panel-header);
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .properties-title {
@@ -1203,11 +1266,32 @@ polyline.wire.selected {
 
 .properties-body {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #475569 transparent;
+}
+
+.properties-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.properties-body::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.properties-body::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 3px;
+}
+
+.properties-body::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
 }
 
 .component-summary-card {
@@ -1419,14 +1503,19 @@ polyline.wire.selected {
   cursor: pointer;
 }
 
+/* Collapsible Raw Parameters */
+.prop-section.advanced {
+  margin-top: 4px;
+}
+
 .advanced-toggle-btn {
   background: transparent;
   border: none;
   color: var(--text-dim);
   font-size: 11px;
   cursor: pointer;
+  padding: 4px 0;
   text-align: left;
-  padding: 2px 0;
 }
 
 .advanced-toggle-btn:hover {
@@ -1457,14 +1546,17 @@ polyline.wire.selected {
 /* ========== Simulation Drawer ========== */
 .sim-drawer {
   position: absolute;
-  bottom: 24px;
+  bottom: 26px;
   left: 0;
   right: 0;
   background: var(--panel);
   border-top: 1px solid var(--border-light);
   box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.6);
-  z-index: 30;
+  z-index: 20;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100% - 36px);
 }
 
 .sim-drawer.closed {
