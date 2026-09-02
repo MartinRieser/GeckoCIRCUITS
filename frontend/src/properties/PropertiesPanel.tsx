@@ -20,6 +20,7 @@ interface PanelProps {
   onSetLabel: (component: string, side: 'x' | 'y', label: string) => void;
   onRotate?: (name: string) => void;
   onDelete?: (name: string) => void;
+  onOpenScopeTab?: (scopeName: string) => void;
 }
 
 export function PropertiesPanel({
@@ -29,6 +30,7 @@ export function PropertiesPanel({
   onSetLabel,
   onRotate,
   onDelete,
+  onOpenScopeTab,
 }: PanelProps) {
   const [name, setName] = useState('');
   const [showRaw, setShowRaw] = useState(false);
@@ -113,6 +115,18 @@ export function PropertiesPanel({
             </div>
           </div>
         </div>
+
+        {/* Scope Instrument Tab Action */}
+        {onOpenScopeTab && (component.type === 5 || component.type === 1003 || component.name.toUpperCase().startsWith('SCOPE')) && (
+          <button
+            type="button"
+            className="sim-btn run"
+            style={{ width: '100%', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+            onClick={() => onOpenScopeTab(component.name)}
+          >
+            📺 Open {component.name} Scope Tab ↗
+          </button>
+        )}
 
         {/* Component Name Field */}
         <div className="prop-group">

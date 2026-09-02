@@ -6,12 +6,13 @@
  *
  * Central keyboard interaction layer (P3) powered by keybindings.ts.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { useEditor } from './hooks/useEditor';
 import { Sheet } from './canvas/Sheet';
 import { Palette } from './palette/Palette';
 import { PropertiesPanel } from './properties/PropertiesPanel';
 import { SimulationDrawer } from './simulation/SimulationDrawer';
+import { ScopeViewTab } from './simulation/ScopeViewTab';
 import { CommandPalette } from './palette/CommandPalette';
 import { EXAMPLES } from './model/examples';
 import { resolveShortcut, KEYBINDINGS } from './model/keybindings';
@@ -25,9 +26,44 @@ export function App() {
   const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
+  const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<string>('schematic');
+  const [openScopeTabs, setOpenScopeTabs] = useState<string[]>([]);
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     return (localStorage.getItem('gecko-theme') as 'dark' | 'light') || 'dark';
   });
+
+  const scopeComponents = useMemo(() => {
+    return state.components.filter(
+      (c) =>
+        c.type === 5 ||
+        c.type === 1003 ||
+        c.name.toUpperCase().startsWith('SCOPE') ||
+        c.name.toUpperCase().startsWith('OSZI'),
+    );
+  }, [state.components]);
+
+  // When a new circuit is loaded, automatically add its Scope instruments as workspace tabs
+  useEffect(() => {
+    if (scopeComponents.length > 0) {
+      setOpenScopeTabs(scopeComponents.map((s) => s.name));
+    } else {
+      setOpenScopeTabs([]);
+    }
+  }, [state.circuitId, scopeComponents.length]);
+
+  const openScopeTab = (scopeName: string) => {
+    if (!openScopeTabs.includes(scopeName)) {
+      setOpenScopeTabs((prev) => [...prev, scopeName]);
+    }
+    setActiveWorkspaceTab(`scope:${scopeName}`);
+  };
+
+  const closeScopeTab = (scopeName: string) => {
+    setOpenScopeTabs((prev) => prev.filter((s) => s !== scopeName));
+    if (activeWorkspaceTab === `scope:${scopeName}`) {
+      setActiveWorkspaceTab('schematic');
+    }
+  };
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -432,68 +468,155 @@ export function App() {
           )}
         </aside>
 
-        {/* Center: Canvas Schematic Sheet */}
+        {/* Center: Canvas Schematic Sheet / Scope Instrument Tabs */}
         <main className="sheet-viewport">
-          <Sheet
-            state={state}
-            dispatch={dispatch}
-            actions={{
-              placeGhost: actions.placeGhost,
-              finishWire: actions.finishWire,
-              commitMove: actions.commitMove,
-              deleteSelection: actions.deleteSelection,
-              rotateComponent: actions.rotateComponent,
-              deleteComponent: actions.deleteComponent,
-              deleteWire: actions.deleteWire,
-              labelWire: actions.labelWire,
-              openProperties: (name: string) => {
-                actions.openProperties(name);
-                setRightSidebarOpen(true);
-              },
-              toggleWireMode: actions.toggleWireMode,
-              openCommandPalette: () => setCommandPaletteOpen(true),
-            }}
-          />
+          {/* Workspace Tab Bar */}
+          <div className="workspace-tabs-bar">
+            <button
+              type="button"
+              className={`workspace-tab ${activeWorkspaceTab === 'schematic' ? 'active' : ''}`}
+              onClick={() => setActiveWorkspaceTab('schematic')}
+              title="Circuit Diagram Schematic Editor"
+            >
+              📐 Schematic
+            </button>
 
-          {/* Quick Status Bar */}
-          <div className="status-bar">
-            <div className="status-left">
-              <span className="status-circuit-name">
-                {state.filename || 'No circuit open'}
-              </span>
-              {state.modelVersion > 0 && (
-                <span className="status-version">v{state.modelVersion}</span>
-              )}
-              {state.mode !== 'idle' && (
-                <span className={`status-mode-pill ${state.mode}`}>
-                  {state.mode.toUpperCase()}
-                </span>
-              )}
-            </div>
-            <div className="status-msg">{state.status}</div>
-            <div className="status-right">
-              <span className="status-components-count">
-                {state.components.length} components, {state.wires.length} wires
-              </span>
-            </div>
+            <button
+              type="button"
+              className={`workspace-tab ${activeWorkspaceTab === 'simulation' ? 'active' : ''}`}
+              onClick={() => setActiveWorkspaceTab('simulation')}
+              title="Full Simulation Overview Dashboard"
+            >
+              📊 Simulation Overview
+            </button>
+
+            {openScopeTabs.map((scopeName) => {
+              const isActive = activeWorkspaceTab === `scope:${scopeName}`;
+              const sb = scopeComponents.find((s) => s.name === scopeName);
+              const chCount = sb ? sb.inputLabels.filter(Boolean).length : 0;
+              return (
+                <button
+                  key={scopeName}
+                  type="button"
+                  className={`workspace-tab ${isActive ? 'active' : ''}`}
+                  onClick={() => setActiveWorkspaceTab(`scope:${scopeName}`)}
+                  title={`Dedicated Full-Screen Scope View: ${scopeName}`}
+                >
+                  📺 {scopeName} {chCount > 0 && <span className="workspace-tab-badge">{chCount}</span>}
+                  <span
+                    className="workspace-tab-close"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      closeScopeTab(scopeName);
+                    }}
+                    title={`Close ${scopeName} tab`}
+                  >
+                    ×
+                  </span>
+                </button>
+              );
+            })}
+
+            {/* If there are unopened scopes, allow adding them as tabs */}
+            {scopeComponents.filter((sb) => !openScopeTabs.includes(sb.name)).map((sb) => (
+              <button
+                key={sb.name}
+                type="button"
+                className="workspace-add-tab-btn"
+                onClick={() => openScopeTab(sb.name)}
+                title={`Open dedicated tab for ${sb.name}`}
+              >
+                + 📺 {sb.name}
+              </button>
+            ))}
           </div>
 
-          {/* Bottom Drawer: Simulation & Waveforms (docked inside viewport so sidebars stay visible) */}
-          <SimulationDrawer
-            isOpen={simState.isOpen}
-            onToggle={actions.toggleSimDrawer}
-            circuitId={state.circuitId}
-            components={state.components}
-            defaults={simState.defaults}
-            status={simState.status}
-            progress={simState.progress}
-            results={simState.results}
-            errorMessage={simState.errorMessage}
-            onRunSimulation={actions.runSimulation}
-            onCancelSimulation={actions.cancelSimulation}
-            onPauseSimulation={actions.pauseSimulation}
-            onResumeSimulation={actions.resumeSimulation}
-          />
+          {/* Active Tab Content */}
+          {activeWorkspaceTab === 'schematic' ? (
+            <>
+              <Sheet
+                state={state}
+                dispatch={dispatch}
+                actions={{
+                  placeGhost: actions.placeGhost,
+                  finishWire: actions.finishWire,
+                  commitMove: actions.commitMove,
+                  deleteSelection: actions.deleteSelection,
+                  rotateComponent: actions.rotateComponent,
+                  deleteComponent: actions.deleteComponent,
+                  deleteWire: actions.deleteWire,
+                  labelWire: actions.labelWire,
+                  openProperties: (name: string) => {
+                    actions.openProperties(name);
+                    setRightSidebarOpen(true);
+                  },
+                  openScopeTab: (name: string) => openScopeTab(name),
+                  toggleWireMode: actions.toggleWireMode,
+                  openCommandPalette: () => setCommandPaletteOpen(true),
+                }}
+              />
+
+              {/* Quick Status Bar */}
+              <div className="status-bar">
+                <div className="status-left">
+                  <span className="status-circuit-name">
+                    {state.filename || 'No circuit open'}
+                  </span>
+                  {state.modelVersion > 0 && (
+                    <span className="status-version">v{state.modelVersion}</span>
+                  )}
+                  {state.mode !== 'idle' && (
+                    <span className={`status-mode-pill ${state.mode}`}>
+                      {state.mode.toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <div className="status-msg">{state.status}</div>
+                <div className="status-right">
+                  <span className="status-components-count">
+                    {state.components.length} components, {state.wires.length} wires
+                  </span>
+                </div>
+              </div>
+
+              {/* Bottom Drawer: Simulation & Waveforms (docked inside viewport so sidebars stay visible) */}
+              <SimulationDrawer
+                isOpen={simState.isOpen}
+                onToggle={actions.toggleSimDrawer}
+                circuitId={state.circuitId}
+                components={state.components}
+                defaults={simState.defaults}
+                status={simState.status}
+                progress={simState.progress}
+                results={simState.results}
+                errorMessage={simState.errorMessage}
+                onRunSimulation={actions.runSimulation}
+                onCancelSimulation={actions.cancelSimulation}
+                onPauseSimulation={actions.pauseSimulation}
+                onResumeSimulation={actions.resumeSimulation}
+              />
+            </>
+          ) : (
+            <ScopeViewTab
+              scopeName={activeWorkspaceTab === 'simulation' ? 'all' : activeWorkspaceTab.replace('scope:', '')}
+              components={state.components}
+              results={simState.results}
+              status={simState.status}
+              progress={simState.progress}
+              circuitId={state.circuitId}
+              onRunSimulation={() => actions.runSimulation({
+                simulationTime: simState.defaults?.duration ?? 0.02,
+                timeStep: simState.defaults?.timeStep ?? 1e-6,
+                solverType: simState.defaults?.solverType ?? 'backward-euler',
+              })}
+              onCloseTab={
+                activeWorkspaceTab.startsWith('scope:')
+                  ? () => closeScopeTab(activeWorkspaceTab.replace('scope:', ''))
+                  : undefined
+              }
+              onSelectTab={(tabId) => setActiveWorkspaceTab(tabId)}
+            />
+          )}
         </main>
 
         {/* Right Sidebar: Properties Panel */}
@@ -525,6 +648,7 @@ export function App() {
               onSetLabel={actions.setLabel}
               onRotate={actions.rotateComponent}
               onDelete={actions.deleteComponent}
+              onOpenScopeTab={(name) => openScopeTab(name)}
             />
           ) : (
             <div className="collapsed-strip" title="Click to expand Inspector / Properties (Ctrl+I)">

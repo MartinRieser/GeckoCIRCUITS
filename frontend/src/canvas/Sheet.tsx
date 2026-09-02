@@ -29,6 +29,7 @@ export interface SheetActions {
   deleteWire?: (index: number) => void;
   deleteSelection?: () => void;
   openProperties?: (name: string) => void;
+  openScopeTab?: (name: string) => void;
   toggleWireMode?: () => void;
   openCommandPalette?: () => void;
 }
@@ -518,7 +519,16 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                     dispatch({ type: 'DRAG_START', names, x: grid.x, y: grid.y });
                   }}
                   onDoubleClick={() => {
-                    dispatch({ type: 'PANEL_FOR', name: component.name });
+                    if (
+                      component.type === 5 ||
+                      component.type === 1003 ||
+                      component.name.toUpperCase().startsWith('SCOPE') ||
+                      component.name.toUpperCase().startsWith('OSZI')
+                    ) {
+                      actions.openScopeTab?.(component.name);
+                    } else {
+                      dispatch({ type: 'PANEL_FOR', name: component.name });
+                    }
                   }}
                   onContextMenu={(e) => {
                     e.preventDefault();

@@ -2370,3 +2370,392 @@ polyline.wire.selected {
   font-weight: 500;
   color: var(--text);
 }
+
+/* ==========================================================================
+   Workspace Tabs Bar (Schematic, Simulation Overview, Dedicated Scope Tabs)
+   ========================================================================== */
+.workspace-tabs-bar {
+  display: flex;
+  align-items: center;
+  background: #090d16;
+  border-bottom: 1px solid var(--border);
+  padding: 0 8px;
+  gap: 2px;
+  height: 36px;
+  min-height: 36px;
+  overflow-x: auto;
+  user-select: none;
+}
+
+.workspace-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  height: 100%;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  white-space: nowrap;
+}
+
+.workspace-tab:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.workspace-tab.active {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.08);
+  border-bottom-color: #38bdf8;
+}
+
+.workspace-tab-badge {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: inherit;
+}
+
+.workspace-tab-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+  padding: 0;
+  margin-left: 2px;
+  transition: all 0.1s ease;
+}
+
+.workspace-tab-close:hover {
+  background: rgba(244, 63, 94, 0.2);
+  color: #f43f5e;
+}
+
+.workspace-add-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--text-muted);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 6px;
+  transition: all 0.12s ease;
+}
+
+.workspace-add-tab-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ==========================================================================
+   Full-Viewport ScopeViewTab Component
+   ========================================================================== */
+.scope-view-tab-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: #0b0f19;
+  overflow-y: auto;
+}
+
+.scope-tab-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #0d1322;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.scope-tab-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.scope-badge-icon {
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 8px;
+}
+
+.scope-tab-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.2px;
+}
+
+.scope-tab-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.scope-tab-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.scope-btn-secondary {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.scope-btn-secondary:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-light);
+}
+
+.scope-close-tab-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 4px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.12s ease;
+}
+
+.scope-close-tab-btn:hover {
+  background: rgba(244, 63, 94, 0.15);
+  border-color: #f43f5e;
+  color: #f43f5e;
+}
+
+.scope-tab-legend-bar {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  background: #090d16;
+  border-bottom: 1px solid var(--border);
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.scope-tab-body {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.scope-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--text-dim);
+}
+
+.scope-empty-state .empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.scope-empty-state h3 {
+  font-size: 16px;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.scope-empty-state p {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.scope-tab-main-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.scope-tab-plot-area {
+  background: #0f172a;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.full-waveform-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.full-waveform-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  cursor: crosshair;
+}
+
+.scope-tab-metrics-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cursor-delta-card {
+  background: #0f172a;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.cursor-delta-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #38bdf8;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.cursor-delta-grid {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.delta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.delta-item.highlight {
+  color: #38bdf8;
+  font-weight: 700;
+}
+
+.delta-label {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.delta-val {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.delta-clear-btn {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid #334155;
+  color: var(--text-dim);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.delta-clear-btn:hover {
+  color: var(--text);
+  border-color: var(--border-light);
+}
+
+.scope-table-card {
+  background: #0f172a;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.scope-metrics-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.scope-metrics-table th {
+  background: #0d1322;
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+
+.scope-metrics-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+
+.scope-metrics-table tr:hover {
+  background: rgba(56, 189, 248, 0.05);
+  cursor: pointer;
+}
+
+.scope-metrics-table tr.row-hidden {
+  opacity: 0.4;
+}
+
+.channel-status-pill {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-family: inherit;
+  font-weight: 600;
+}
+
+.channel-status-pill.on {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.channel-status-pill.off {
+  background: rgba(100, 116, 139, 0.2);
+  color: #64748b;
+}
