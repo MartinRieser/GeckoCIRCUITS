@@ -1782,55 +1782,203 @@ polyline.wire.selected {
 }
 
 /* Scope Switching Tabs Bar */
-.scope-tabs-bar {
+.scope-toolbar {
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: space-between;
+  gap: 10px;
   margin-bottom: 8px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
 }
 
-.scope-tab-btn {
-  display: inline-flex;
+.scope-selector-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 220px;
+}
+
+.scope-group-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.scope-pills {
+  display: flex;
   align-items: center;
   gap: 5px;
+  flex-wrap: wrap;
+}
+
+.scope-pill-btn {
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text-dim);
-  border-radius: 4px;
-  padding: 3px 8px;
+  border-radius: 6px;
+  padding: 3px 10px;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   transition: all 0.12s ease;
 }
 
-.scope-tab-btn:hover {
+.scope-pill-btn:hover {
   background: var(--surface-hover);
   color: var(--text);
   border-color: var(--border-light);
 }
 
-.scope-tab-btn.active {
-  background: rgba(56, 189, 248, 0.15);
+.scope-pill-btn.active {
+  background: rgba(56, 189, 248, 0.14);
   border-color: var(--accent);
-  color: #ffffff;
+  color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.15);
 }
 
-.scope-tab-divider {
-  width: 1px;
-  height: 16px;
-  background: var(--border);
-  margin: 0 4px;
+.scope-ch-count {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: inherit;
+  font-weight: 700;
+}
+
+.scope-select {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  min-width: 180px;
+  max-width: 320px;
+}
+
+.scope-select:focus {
+  border-color: var(--accent);
+}
+
+.scope-layout-group {
+  display: flex;
+  align-items: center;
+}
+
+.segmented-control {
+  display: inline-flex;
+  background: #0f172a;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.segmented-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.segmented-btn:hover {
+  color: var(--text);
+}
+
+.segmented-btn.active {
+  background: var(--surface-hover);
+  color: #38bdf8;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.scope-search-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.scope-search-input {
+  background: #0f172a;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px 22px 3px 8px;
+  font-size: 11px;
+  color: var(--text);
+  width: 130px;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.scope-search-input:focus {
+  border-color: var(--accent);
+  width: 170px;
+}
+
+.scope-search-clear {
+  position: absolute;
+  right: 6px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 0;
 }
 
 .sim-legend-bar {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  min-height: 24px;
+}
+
+.legend-channels-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-right: 2px;
+}
+
+.legend-none-msg {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.stats-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.stats-filter-toggle {
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
 }
 
 .legend-pill {

@@ -76,7 +76,20 @@ export function SimulationDrawer({
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const [seededCircuit, setSeededCircuit] = useState<string | null>(null);
 
-  const [selectedScopeTab, setSelectedScopeTab] = useState<'all' | 'stacked' | string>('all');
+  const [selectedScope, setSelectedScope] = useState<string>('all');
+  const [displayLayout, setDisplayLayout] = useState<'overlay' | 'stacked'>('overlay');
+  const [channelSearch, setChannelSearch] = useState<string>('');
+
+  const scopeBlocks = useMemo(() => {
+    if (!components) return [];
+    return components.filter(
+      (c) =>
+        c.type === 5 ||
+        c.type === 1003 ||
+        c.name.toUpperCase().startsWith('SCOPE') ||
+        c.name.toUpperCase().startsWith('OSZI'),
+    );
+  }, [components]);
 
   // Re-seed the parameter inputs whenever another circuit is opened
   useEffect(() => {
@@ -86,8 +99,10 @@ export function SimulationDrawer({
     if (defaults.timeStep > 0) setDtStr(formatEngineeringValue(defaults.timeStep));
     if (defaults.solverType) setSolverType(defaults.solverType);
     setRecordedSignals(defaults.signals);
-    setSelectedScopeTab('all');
-  }, [circuitId, defaults, seededCircuit]);
+    setSelectedScope(scopeBlocks.length > 0 ? scopeBlocks[0].name : 'all');
+    setDisplayLayout('overlay');
+    setChannelSearch('');
+  }, [circuitId, defaults, seededCircuit, scopeBlocks]);
 
   const isRunning =
     status === 'PENDING' || status === 'RUNNING' || status === 'PAUSED';
@@ -144,32 +159,30 @@ export function SimulationDrawer({
     URL.revokeObjectURL(url);
   };
 
-  const scopeBlocks = useMemo(() => {
-    if (!components) return [];
-    return components.filter(
-      (c) =>
-        c.type === 5 ||
-        c.type === 1003 ||
-        c.name.toUpperCase().startsWith('SCOPE') ||
-        c.name.toUpperCase().startsWith('OSZI'),
-    );
-  }, [components]);
-
-  const visibleSignals = useMemo(() => {
-    if (selectedScopeTab === 'all' || selectedScopeTab === 'stacked') {
-      return signalNames.filter((s) => !hiddenSignals[s]);
+  // Active channels associated with currently selected Scope (or all signals)
+  const activeScopeChannels = useMemo(() => {
+    if (selectedScope === 'all') {
+      return signalNames;
     }
-    // Check if selectedScopeTab matches a Scope instrument block name (e.g. SCOPE.1, SCOPE.2)
-    const matchingScope = scopeBlocks.find((sb) => sb.name === selectedScopeTab);
+    const matchingScope = scopeBlocks.find((sb) => sb.name === selectedScope);
     if (matchingScope) {
       const channels = matchingScope.inputLabels.filter((l) => l && signalNames.includes(l));
-      if (channels.length > 0) {
-        return channels.filter((s) => !hiddenSignals[s]);
-      }
+      if (channels.length > 0) return channels;
     }
-    // Single signal focused
-    return signalNames.includes(selectedScopeTab) ? [selectedScopeTab] : signalNames;
-  }, [selectedScopeTab, signalNames, hiddenSignals, scopeBlocks]);
+    return signalNames;
+  }, [selectedScope, scopeBlocks, signalNames]);
+
+  // Filtered by search if provided
+  const filteredChannels = useMemo(() => {
+    if (!channelSearch.trim()) return activeScopeChannels;
+    const q = channelSearch.trim().toLowerCase();
+    return activeScopeChannels.filter((s) => s.toLowerCase().includes(q));
+  }, [activeScopeChannels, channelSearch]);
+
+  // Visible (unhidden) signals sent to the plot
+  const visibleSignals = useMemo(() => {
+    return filteredChannels.filter((s) => !hiddenSignals[s]);
+  }, [filteredChannels, hiddenSignals]);
 
   return (
     <div className={`sim-drawer ${isOpen ? 'open' : 'closed'}`}>
@@ -372,105 +385,134 @@ export function SimulationDrawer({
             <div className="sim-results-grid">
               {/* Left: Waveform plot */}
               <div className="sim-plot-card">
-                {/* Scope Switcher Tabs */}
-                <div className="scope-tabs-bar">
-                  <button
-                    type="button"
-                    className={`scope-tab-btn ${selectedScopeTab === 'all' ? 'active' : ''}`}
-                    onClick={() => setSelectedScopeTab('all')}
-                    title="Overlay all scope signals on a single graph"
-                  >
-                    📊 All Scopes
-                  </button>
-                  <button
-                    type="button"
-                    className={`scope-tab-btn ${selectedScopeTab === 'stacked' ? 'active' : ''}`}
-                    onClick={() => setSelectedScopeTab('stacked')}
-                    title="Display each scope in its own horizontal subplot lane"
-                  >
-                    📑 Stacked Scopes
-                  </button>
+                {/* Scope Instrument & Layout Controls Toolbar */}
+                <div className="scope-toolbar">
+                  {/* Scope Selector */}
+                  <div className="scope-selector-group">
+                    <span className="scope-group-label">Scope:</span>
+                    {scopeBlocks.length > 3 ? (
+                      <select
+                        className="scope-select"
+                        value={selectedScope}
+                        onChange={(e) => setSelectedScope(e.target.value)}
+                        title="Select Scope Instrument"
+                      >
+                        {scopeBlocks.map((sb) => {
+                          const channels = sb.inputLabels.filter(Boolean);
+                          return (
+                            <option key={sb.name} value={sb.name}>
+                              📺 {sb.name} ({channels.length} ch: {channels.join(', ')})
+                            </option>
+                          );
+                        })}
+                        <option value="all">🌐 All Scopes ({signalNames.length} signals)</option>
+                      </select>
+                    ) : (
+                      <div className="scope-pills">
+                        {scopeBlocks.map((sb) => {
+                          const isActive = selectedScope === sb.name;
+                          const channels = sb.inputLabels.filter(Boolean);
+                          return (
+                            <button
+                              key={sb.name}
+                              type="button"
+                              className={`scope-pill-btn ${isActive ? 'active' : ''}`}
+                              onClick={() => setSelectedScope(sb.name)}
+                              title={`Scope ${sb.name} (${channels.join(', ')})`}
+                            >
+                              📺 {sb.name} <span className="scope-ch-count">{channels.length}</span>
+                            </button>
+                          );
+                        })}
+                        <button
+                          type="button"
+                          className={`scope-pill-btn ${selectedScope === 'all' ? 'active' : ''}`}
+                          onClick={() => setSelectedScope('all')}
+                          title="All scope signals combined"
+                        >
+                          🌐 All Scopes <span className="scope-ch-count">{signalNames.length}</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
 
-                  {/* Scope Instruments */}
-                  {scopeBlocks.length > 0 && (
-                    <>
-                      <span className="scope-tab-divider" />
-                      {scopeBlocks.map((sb) => {
-                        const isActive = selectedScopeTab === sb.name;
-                        const channels = sb.inputLabels.filter(Boolean);
-                        return (
-                          <button
-                            key={sb.name}
-                            type="button"
-                            className={`scope-tab-btn ${isActive ? 'active' : ''}`}
-                            onClick={() => setSelectedScopeTab(sb.name)}
-                            title={`Focus on ${sb.name} (${channels.join(', ')})`}
-                          >
-                            📺 {sb.name} {channels.length > 0 ? `(${channels.join(', ')})` : ''}
-                          </button>
-                        );
-                      })}
-                    </>
+                  {/* Display Layout Switcher */}
+                  <div className="scope-layout-group">
+                    <div className="segmented-control">
+                      <button
+                        type="button"
+                        className={`segmented-btn ${displayLayout === 'overlay' ? 'active' : ''}`}
+                        onClick={() => setDisplayLayout('overlay')}
+                        title="Overlay signals on a unified plot"
+                      >
+                        📈 Overlay
+                      </button>
+                      <button
+                        type="button"
+                        className={`segmented-btn ${displayLayout === 'stacked' ? 'active' : ''}`}
+                        onClick={() => setDisplayLayout('stacked')}
+                        title={`Stack channels in separate subplots (${activeScopeChannels.length} lanes)`}
+                      >
+                        📑 Stacked ({activeScopeChannels.length})
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Search/Filter for large signal counts (> 6) */}
+                  {activeScopeChannels.length > 6 && (
+                    <div className="scope-search-group">
+                      <input
+                        type="text"
+                        className="scope-search-input"
+                        placeholder="Filter channels..."
+                        value={channelSearch}
+                        onChange={(e) => setChannelSearch(e.target.value)}
+                      />
+                      {channelSearch && (
+                        <button
+                          type="button"
+                          className="scope-search-clear"
+                          onClick={() => setChannelSearch('')}
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
                   )}
+                </div>
 
-                  <span className="scope-tab-divider" />
-
-                  {/* Individual Signals */}
-                  {signalNames.map((name, i) => {
-                    const color = TRACE_COLORS[i % TRACE_COLORS.length];
-                    const isActive = selectedScopeTab === name;
+                {/* Active Scope Channels Legend Bar */}
+                <div className="sim-legend-bar">
+                  <span className="legend-channels-label">Channels:</span>
+                  {filteredChannels.map((name) => {
+                    const colorIdx = signalNames.indexOf(name);
+                    const color = TRACE_COLORS[colorIdx >= 0 ? colorIdx % TRACE_COLORS.length : 0];
+                    const isHidden = !!hiddenSignals[name];
                     return (
                       <button
                         key={name}
                         type="button"
-                        className={`scope-tab-btn ${isActive ? 'active' : ''}`}
-                        onClick={() => setSelectedScopeTab(name)}
-                        title={`Focus exclusively on Signal: ${name}`}
+                        className={`legend-pill ${isHidden ? 'hidden' : 'active'}`}
+                        onClick={() => toggleSignal(name)}
                         style={{
-                          borderColor: isActive ? color : undefined,
-                          color: isActive ? color : undefined,
+                          borderColor: color,
+                          color: isHidden ? '#64748b' : '#f8fafc',
+                          backgroundColor: isHidden ? 'transparent' : `${color}22`,
                         }}
+                        title={isHidden ? `Show ${name}` : `Hide ${name}`}
                       >
                         <span className="legend-dot" style={{ backgroundColor: color }} />
                         {name}
                       </button>
                     );
                   })}
+                  {filteredChannels.length === 0 && (
+                    <span className="legend-none-msg">No channels match filter.</span>
+                  )}
                 </div>
 
-                {/* Signal legend toggles (only shown in All / Combined mode) */}
-                {selectedScopeTab === 'all' && (
-                  <div className="sim-legend-bar">
-                    {signalNames.map((name, i) => {
-                      const color = TRACE_COLORS[i % TRACE_COLORS.length];
-                      const isHidden = !!hiddenSignals[name];
-                      return (
-                        <button
-                          key={name}
-                          type="button"
-                          className={`legend-pill ${isHidden ? 'hidden' : 'active'}`}
-                          onClick={() => toggleSignal(name)}
-                          style={{
-                            borderColor: color,
-                            color: isHidden ? '#64748b' : '#f8fafc',
-                            backgroundColor: isHidden
-                              ? 'transparent'
-                              : `${color}22`,
-                          }}
-                        >
-                          <span
-                            className="legend-dot"
-                            style={{ backgroundColor: color }}
-                          />
-                          {name}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-
                 {/* SVG Chart: Render Stacked or Standard Waveform Chart */}
-                {selectedScopeTab === 'stacked' ? (
+                {displayLayout === 'stacked' ? (
                   <StackedWaveformChart
                     time={timeArray}
                     signals={results}
@@ -493,7 +535,32 @@ export function SimulationDrawer({
 
               {/* Right: Metrics / Statistics Table */}
               <div className="sim-stats-card">
-                <div className="stats-header">Scope Signal Statistics</div>
+                <div className="stats-header-bar">
+                  <span className="stats-header">
+                    {selectedScope === 'all' ? 'All Scope Signals' : `${selectedScope} Statistics`}
+                  </span>
+                  {selectedScope !== 'all' ? (
+                    <button
+                      type="button"
+                      className="stats-filter-toggle"
+                      onClick={() => setSelectedScope('all')}
+                      title="View statistics for all signals"
+                    >
+                      View All ({signalNames.length})
+                    </button>
+                  ) : (
+                    scopeBlocks.length > 0 && (
+                      <button
+                        type="button"
+                        className="stats-filter-toggle"
+                        onClick={() => setSelectedScope(scopeBlocks[0].name)}
+                        title={`Filter to ${scopeBlocks[0].name}`}
+                      >
+                        Scope Filter
+                      </button>
+                    )
+                  )}
+                </div>
                 <div className="stats-table-wrap">
                   <table className="stats-table">
                     <thead>
@@ -506,20 +573,21 @@ export function SimulationDrawer({
                       </tr>
                     </thead>
                     <tbody>
-                      {signalNames.map((name, i) => {
+                      {filteredChannels.map((name) => {
                         const st = signalStats[name];
                         if (!st) return null;
-                        const color = TRACE_COLORS[i % TRACE_COLORS.length];
-                        const isFocused = selectedScopeTab === name;
+                        const colorIdx = signalNames.indexOf(name);
+                        const color = TRACE_COLORS[colorIdx >= 0 ? colorIdx % TRACE_COLORS.length : 0];
+                        const isHidden = !!hiddenSignals[name];
                         return (
                           <tr
                             key={name}
-                            onClick={() => setSelectedScopeTab(name)}
+                            onClick={() => toggleSignal(name)}
                             style={{
                               cursor: 'pointer',
-                              backgroundColor: isFocused ? 'rgba(56, 189, 248, 0.12)' : undefined,
+                              opacity: isHidden ? 0.4 : 1,
                             }}
-                            title="Click to view this scope in full focus"
+                            title="Click to toggle signal visibility"
                           >
                             <td style={{ color, fontWeight: 600 }}>
                               <span style={{ marginRight: 4 }}>📺</span>
