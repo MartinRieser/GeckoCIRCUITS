@@ -1321,39 +1321,48 @@ enabled true
 connectorType 0
 <\\Verbindung>
 
-verbindungControlANZAHL 4
+verbindungControlANZAHL 5
 verbindungCONTROL (0)
 <Verbindung>
 label v_in
 x[] 26 27 28 29 30 31 32 
-y[] 7 7 7 7 7 7 7 
+y[] 4 4 4 4 4 4 4 
 enabled true
 connectorType 1
 <\\Verbindung>
 
 verbindungCONTROL (1)
 <Verbindung>
-label v_R1
+label v_out
 x[] 26 27 28 29 30 31 32 
-y[] 9 9 9 9 9 9 9 
+y[] 6 6 6 6 6 6 6 
 enabled true
 connectorType 1
 <\\Verbindung>
 
 verbindungCONTROL (2)
 <Verbindung>
-label v_L1
+label v_R1
 x[] 26 27 28 29 30 31 32 
-y[] 11 11 11 11 11 11 11 
+y[] 10 10 10 10 10 10 10 
 enabled true
 connectorType 1
 <\\Verbindung>
 
 verbindungCONTROL (3)
 <Verbindung>
+label v_L1
+x[] 26 27 28 29 30 31 32 
+y[] 12 12 12 12 12 12 12 
+enabled true
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (4)
+<Verbindung>
 label v_C1
 x[] 26 27 28 29 30 31 32 
-y[] 13 13 13 13 13 13 13 
+y[] 14 14 14 14 14 14 14 
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1424,7 +1433,7 @@ orientierung 503
 idStringDialog C1
 <\\ElementLK>
 
-controlANZAHL 5
+controlANZAHL 7
 
 c (0)
 <ElementCONTROL>
@@ -1434,7 +1443,7 @@ enabledShorted 1
 typ 1
 uniqueObjectIdentifier 2001
 x 24
-y 7
+y 4
 parameter[] 0.0
 parameterString[] /V_in/0/0
 nameOpt[] 
@@ -1445,12 +1454,44 @@ idStringDialog VOLT_IN
 c (1)
 <ElementCONTROL>
 labelAnfangsKnoten[] 
-labelEndKnoten[] /v_R1
+labelEndKnoten[] /v_out
 enabledShorted 1
 typ 1
 uniqueObjectIdentifier 2002
 x 24
-y 9
+y 6
+parameter[] 0.0
+parameterString[] /V_out/0/0
+nameOpt[] 
+orientierung 503
+idStringDialog VOLT_OUT
+<\\ElementCONTROL>
+
+c (2)
+<ElementCONTROL>
+labelAnfangsKnoten[] /v_in/v_out
+labelEndKnoten[] 
+enabledShorted 1
+typ 5
+uniqueObjectIdentifier 2003
+x 34
+y 5
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SCOPE.1
+<\\ElementCONTROL>
+
+c (3)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /v_R1
+enabledShorted 1
+typ 1
+uniqueObjectIdentifier 2004
+x 24
+y 10
 parameter[] 0.0
 parameterString[] /V_in/n_mid/0
 nameOpt[] 
@@ -1458,15 +1499,15 @@ orientierung 503
 idStringDialog VOLT_R1
 <\\ElementCONTROL>
 
-c (2)
+c (4)
 <ElementCONTROL>
 labelAnfangsKnoten[] 
 labelEndKnoten[] /v_L1
 enabledShorted 1
 typ 1
-uniqueObjectIdentifier 2003
+uniqueObjectIdentifier 2005
 x 24
-y 11
+y 12
 parameter[] 0.0
 parameterString[] /n_mid/V_out/0
 nameOpt[] 
@@ -1474,15 +1515,15 @@ orientierung 503
 idStringDialog VOLT_L1
 <\\ElementCONTROL>
 
-c (3)
+c (5)
 <ElementCONTROL>
 labelAnfangsKnoten[] 
 labelEndKnoten[] /v_C1
 enabledShorted 1
 typ 1
-uniqueObjectIdentifier 2004
+uniqueObjectIdentifier 2006
 x 24
-y 13
+y 14
 parameter[] 0.0
 parameterString[] /V_out/0/0
 nameOpt[] 
@@ -1490,20 +1531,20 @@ orientierung 503
 idStringDialog VOLT_C1
 <\\ElementCONTROL>
 
-c (4)
+c (6)
 <ElementCONTROL>
-labelAnfangsKnoten[] /v_in/v_R1/v_L1/v_C1
+labelAnfangsKnoten[] /v_R1/v_L1/v_C1
 labelEndKnoten[] 
 enabledShorted 1
 typ 5
-uniqueObjectIdentifier 2005
+uniqueObjectIdentifier 2007
 x 34
-y 10
+y 12
 parameter[] 
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] 
 orientierung 503
-idStringDialog SCOPE.1
+idStringDialog SCOPE.2
 <\\ElementCONTROL>
 
 tDURATION 0.01
@@ -1518,15 +1559,15 @@ fontTyp Dialog
 worksheetSize 700_600
 FileVersion 1
 DtStor 2026-08-16
-dataContainerSignals[] /v_in/v_R1/v_L1/v_C1
+dataContainerSignals[] /v_in/v_out/v_R1/v_L1/v_C1
 `;
 
 export const EXAMPLES: CircuitExample[] = [
   {
     id: 'three-scopes',
-    name: 'Multi-Input Scope RLC (All Component Voltages)',
+    name: 'Multi-Scope RLC (SCOPE.1 & SCOPE.2 Multi-Channel)',
     category: 'Analog & Filter',
-    description: 'Single Oscilloscope block (SCOPE.1) with 4 input channels measuring all component voltages (v_in, v_R1, v_L1, v_C1).',
+    description: 'Two separate Scopes on the schematic: SCOPE.1 (2 inputs: v_in, v_out) and SCOPE.2 (3 inputs: v_R1, v_L1, v_C1), connected to Voltmeter sensors.',
     content: THREE_SCOPES_RLC_IPES,
   },
   {

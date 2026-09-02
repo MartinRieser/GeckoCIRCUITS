@@ -483,6 +483,7 @@ export function App() {
             isOpen={simState.isOpen}
             onToggle={actions.toggleSimDrawer}
             circuitId={state.circuitId}
+            components={state.components}
             defaults={simState.defaults}
             status={simState.status}
             progress={simState.progress}

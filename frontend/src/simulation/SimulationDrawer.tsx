@@ -11,7 +11,7 @@
  */
 import { useState, useMemo, useRef, useEffect } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
-import type { SimulationDefaults, SimulationStatus } from '../model/types';
+import type { EditorComponent, SimulationDefaults, SimulationStatus } from '../model/types';
 import {
   parseEngineeringValue,
   formatEngineeringValue,
@@ -23,6 +23,7 @@ interface SimulationDrawerProps {
   isOpen: boolean;
   onToggle: () => void;
   circuitId: string | null;
+  components?: EditorComponent[];
   defaults: SimulationDefaults | null;
   onRunSimulation: (config: {
     simulationTime: number;
@@ -55,6 +56,7 @@ export function SimulationDrawer({
   isOpen,
   onToggle,
   circuitId,
+  components,
   defaults,
   onRunSimulation,
   onCancelSimulation,
@@ -142,13 +144,32 @@ export function SimulationDrawer({
     URL.revokeObjectURL(url);
   };
 
+  const scopeBlocks = useMemo(() => {
+    if (!components) return [];
+    return components.filter(
+      (c) =>
+        c.type === 5 ||
+        c.type === 1003 ||
+        c.name.toUpperCase().startsWith('SCOPE') ||
+        c.name.toUpperCase().startsWith('OSZI'),
+    );
+  }, [components]);
+
   const visibleSignals = useMemo(() => {
     if (selectedScopeTab === 'all' || selectedScopeTab === 'stacked') {
       return signalNames.filter((s) => !hiddenSignals[s]);
     }
-    // Single scope focused
+    // Check if selectedScopeTab matches a Scope instrument block name (e.g. SCOPE.1, SCOPE.2)
+    const matchingScope = scopeBlocks.find((sb) => sb.name === selectedScopeTab);
+    if (matchingScope) {
+      const channels = matchingScope.inputLabels.filter((l) => l && signalNames.includes(l));
+      if (channels.length > 0) {
+        return channels.filter((s) => !hiddenSignals[s]);
+      }
+    }
+    // Single signal focused
     return signalNames.includes(selectedScopeTab) ? [selectedScopeTab] : signalNames;
-  }, [selectedScopeTab, signalNames, hiddenSignals]);
+  }, [selectedScopeTab, signalNames, hiddenSignals, scopeBlocks]);
 
   return (
     <div className={`sim-drawer ${isOpen ? 'open' : 'closed'}`}>
@@ -370,8 +391,31 @@ export function SimulationDrawer({
                     📑 Stacked Scopes
                   </button>
 
+                  {/* Scope Instruments */}
+                  {scopeBlocks.length > 0 && (
+                    <>
+                      <span className="scope-tab-divider" />
+                      {scopeBlocks.map((sb) => {
+                        const isActive = selectedScopeTab === sb.name;
+                        const channels = sb.inputLabels.filter(Boolean);
+                        return (
+                          <button
+                            key={sb.name}
+                            type="button"
+                            className={`scope-tab-btn ${isActive ? 'active' : ''}`}
+                            onClick={() => setSelectedScopeTab(sb.name)}
+                            title={`Focus on ${sb.name} (${channels.join(', ')})`}
+                          >
+                            📺 {sb.name} {channels.length > 0 ? `(${channels.join(', ')})` : ''}
+                          </button>
+                        );
+                      })}
+                    </>
+                  )}
+
                   <span className="scope-tab-divider" />
 
+                  {/* Individual Signals */}
                   {signalNames.map((name, i) => {
                     const color = TRACE_COLORS[i % TRACE_COLORS.length];
                     const isActive = selectedScopeTab === name;
@@ -381,14 +425,14 @@ export function SimulationDrawer({
                         type="button"
                         className={`scope-tab-btn ${isActive ? 'active' : ''}`}
                         onClick={() => setSelectedScopeTab(name)}
-                        title={`Focus exclusively on Scope: ${name}`}
+                        title={`Focus exclusively on Signal: ${name}`}
                         style={{
                           borderColor: isActive ? color : undefined,
                           color: isActive ? color : undefined,
                         }}
                       >
                         <span className="legend-dot" style={{ backgroundColor: color }} />
-                        Scope: {name}
+                        {name}
                       </button>
                     );
                   })}
