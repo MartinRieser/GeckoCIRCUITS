@@ -66,7 +66,7 @@ export const KEYBINDINGS: KeyBinding[] = [
     action: 'toggle-inspector',
     key: 'i',
     modifiers: { ctrlOrMeta: true },
-    description: 'Toggle Inspector / Properties Panel',
+    description: 'Toggle Properties Panel',
     category: 'General',
   },
   {

@@ -35,6 +35,7 @@ interface SimulationPropertiesPanelProps {
   onResumeSimulation?: () => void;
   onCancelSimulation?: () => void;
   onExportCsv?: () => void;
+  onCollapse?: () => void;
 }
 
 export function SimulationPropertiesPanel({
@@ -54,6 +55,7 @@ export function SimulationPropertiesPanel({
   onResumeSimulation,
   onCancelSimulation,
   onExportCsv,
+  onCollapse,
 }: SimulationPropertiesPanelProps) {
   const [tEndStr, setTEndStr] = useState('20m');
   const [dtStr, setDtStr] = useState('1u');
@@ -135,11 +137,23 @@ export function SimulationPropertiesPanel({
       {/* Header */}
       <div className="properties-header-bar">
         <span className="properties-title">Simulation Settings</span>
-        {status && (
-          <span className={`sim-status-badge ${status.toLowerCase()}`}>
-            {status}
-          </span>
-        )}
+        <div className="properties-header-actions" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {status && (
+            <span className={`sim-status-badge ${status.toLowerCase()}`}>
+              {status}
+            </span>
+          )}
+          {onCollapse && (
+            <button
+              type="button"
+              className="action-icon-btn collapse-btn"
+              onClick={onCollapse}
+              title="Collapse simulation settings (Ctrl+I)"
+            >
+              ▶
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="properties-body">

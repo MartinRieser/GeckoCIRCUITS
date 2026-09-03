@@ -21,6 +21,7 @@ interface PanelProps {
   onRotate?: (name: string) => void;
   onDelete?: (name: string) => void;
   onOpenScopeTab?: (scopeName: string) => void;
+  onCollapse?: () => void;
 }
 
 export function PropertiesPanel({
@@ -31,6 +32,7 @@ export function PropertiesPanel({
   onRotate,
   onDelete,
   onOpenScopeTab,
+  onCollapse,
 }: PanelProps) {
   const [name, setName] = useState('');
   const [showRaw, setShowRaw] = useState(false);
@@ -49,6 +51,18 @@ export function PropertiesPanel({
       <div className="properties-container">
         <div className="properties-header-bar">
           <span className="properties-title">Properties</span>
+          {onCollapse && (
+            <div className="properties-header-actions">
+              <button
+                type="button"
+                className="action-icon-btn collapse-btn"
+                onClick={onCollapse}
+                title="Collapse properties panel (Ctrl+I)"
+              >
+                ▶
+              </button>
+            </div>
+          )}
         </div>
         <div className="properties-empty-state">
           <div className="empty-icon">&#9671;</div>
@@ -94,6 +108,16 @@ export function PropertiesPanel({
               title="Delete Component (Del)"
             >
               &#10005;
+            </button>
+          )}
+          {onCollapse && (
+            <button
+              type="button"
+              className="action-icon-btn collapse-btn"
+              onClick={onCollapse}
+              title="Collapse properties panel (Ctrl+I)"
+            >
+              ▶
             </button>
           )}
         </div>

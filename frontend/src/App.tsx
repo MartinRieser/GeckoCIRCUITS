@@ -32,6 +32,41 @@ export function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     return (localStorage.getItem('gecko-theme') as 'dark' | 'light') || 'dark';
   });
+  const [rightSidebarWidth, setRightSidebarWidth] = useState<number>(() => {
+    const saved = localStorage.getItem('gecko-right-sidebar-width');
+    return saved ? Math.max(260, Math.min(800, Number(saved))) : 320;
+  });
+  const [isResizingRight, setIsResizingRight] = useState(false);
+
+  // Resize handler for right properties sidebar
+  const handleStartResizeRight = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizingRight(true);
+  };
+
+  useEffect(() => {
+    if (!isResizingRight) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const newWidth = window.innerWidth - e.clientX;
+      const minW = 260;
+      const maxW = Math.min(800, Math.max(300, window.innerWidth - 300));
+      const clamped = Math.max(minW, Math.min(maxW, newWidth));
+      setRightSidebarWidth(clamped);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizingRight(false);
+      localStorage.setItem('gecko-right-sidebar-width', String(rightSidebarWidth));
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizingRight, rightSidebarWidth]);
 
   const openScopeTab = (scopeName: string) => {
     setSelectedScope(scopeName);
@@ -353,9 +388,9 @@ export function App() {
             type="button"
             className={`nav-btn ${rightSidebarOpen ? 'active' : ''}`}
             onClick={() => setRightSidebarOpen(!rightSidebarOpen)}
-            title="Toggle Inspector / Properties Panel (Ctrl+I)"
+            title="Toggle Properties Panel (Ctrl+I)"
           >
-            Inspector <span className="kbd-shortcut">Ctrl+I</span>
+            Properties <span className="kbd-shortcut">Ctrl+I</span>
           </button>
 
           <button
@@ -512,29 +547,23 @@ export function App() {
           )}
         </main>
 
+        {/* Right Sidebar Resizer Handle (Active only when expanded) */}
+        {rightSidebarOpen && (
+          <div
+            className={`sidebar-resizer right-resizer ${isResizingRight ? 'resizing' : ''}`}
+            onMouseDown={handleStartResizeRight}
+            title="Drag to resize properties panel"
+          />
+        )}
+
         {/* Right Sidebar: Component Properties or Simulation Properties Panel */}
         <aside
-          className={`sidebar right ${rightSidebarOpen ? '' : 'collapsed'}`}
+          className={`sidebar right ${rightSidebarOpen ? '' : 'collapsed'} ${isResizingRight ? 'resizing' : ''}`}
+          style={{ width: rightSidebarOpen ? rightSidebarWidth : undefined }}
           onClick={() => {
             if (!rightSidebarOpen) setRightSidebarOpen(true);
           }}
         >
-          <div className="sidebar-header">
-            <span className="sidebar-title">
-              {activeWorkspaceTab === 'schematic' ? 'Inspector' : 'Simulation Settings'}
-            </span>
-            <button
-              type="button"
-              className="sidebar-toggle-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                setRightSidebarOpen(!rightSidebarOpen);
-              }}
-              title={rightSidebarOpen ? 'Collapse panel (Ctrl+I)' : 'Expand panel (Ctrl+I)'}
-            >
-              {rightSidebarOpen ? '▶' : '◀'}
-            </button>
-          </div>
           {rightSidebarOpen ? (
             activeWorkspaceTab === 'schematic' ? (
               <PropertiesPanel
@@ -545,6 +574,7 @@ export function App() {
                 onRotate={actions.rotateComponent}
                 onDelete={actions.deleteComponent}
                 onOpenScopeTab={(name) => openScopeTab(name)}
+                onCollapse={() => setRightSidebarOpen(false)}
               />
             ) : (
               <SimulationPropertiesPanel
@@ -563,13 +593,25 @@ export function App() {
                 onPauseSimulation={actions.pauseSimulation}
                 onResumeSimulation={actions.resumeSimulation}
                 onCancelSimulation={actions.cancelSimulation}
+                onCollapse={() => setRightSidebarOpen(false)}
               />
             )
           ) : (
-            <div className="collapsed-strip" title="Click to expand (Ctrl+I)">
+            <div className="collapsed-strip" title="Click to expand Properties (Ctrl+I)">
+              <button
+                type="button"
+                className="sidebar-toggle-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setRightSidebarOpen(true);
+                }}
+                title="Expand Properties (Ctrl+I)"
+              >
+                ◀
+              </button>
               <span className="collapsed-strip-icon">⚙</span>
               <span className="collapsed-strip-text">
-                {activeWorkspaceTab === 'schematic' ? 'INSPECTOR' : 'SIMULATION'}
+                {activeWorkspaceTab === 'schematic' ? 'PROPERTIES' : 'SIMULATION'}
               </span>
             </div>
           )}
