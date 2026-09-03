@@ -58,7 +58,6 @@ export function SimulationPropertiesPanel({
   const [tEndStr, setTEndStr] = useState('20m');
   const [dtStr, setDtStr] = useState('1u');
   const [solverType, setSolverType] = useState('backward-euler');
-  const [backendEngine, setBackendEngine] = useState('headless');
 
   useEffect(() => {
     if (defaults) {
@@ -70,9 +69,6 @@ export function SimulationPropertiesPanel({
       }
       if (defaults.solverType) {
         setSolverType(defaults.solverType);
-      }
-      if ((defaults as { backend?: string }).backend) {
-        setBackendEngine((defaults as { backend?: string }).backend!);
       }
     }
   }, [defaults]);
@@ -107,7 +103,7 @@ export function SimulationPropertiesPanel({
       simulationTime: dur,
       timeStep: step,
       solverType,
-      backend: backendEngine,
+      backend: 'headless',
     });
   };
 
@@ -283,22 +279,6 @@ export function SimulationPropertiesPanel({
                 <option value="backward-euler">Backward Euler</option>
                 <option value="trapezoidal">Trapezoidal</option>
                 <option value="gear-shichman">Gear-Shichman</option>
-              </select>
-            </div>
-
-            <div className="prop-field">
-              <label className="prop-label" htmlFor="insp-backend">
-                Simulation Engine
-              </label>
-              <select
-                id="insp-backend"
-                className="prop-select"
-                value={backendEngine}
-                onChange={(e) => setBackendEngine(e.target.value)}
-                disabled={isRunning}
-              >
-                <option value="headless">Gecko Headless Core</option>
-                <option value="classic">Classic Simulation</option>
               </select>
             </div>
 
