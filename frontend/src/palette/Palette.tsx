@@ -120,7 +120,7 @@ export function Palette({ catalog, onArm }: PaletteProps) {
                 if (cat.id !== 'all' && count === 0) return null;
                 return (
                   <option key={cat.id} value={cat.id}>
-                    {cat.label} ({count})
+                    {cat.label}
                   </option>
                 );
               })}

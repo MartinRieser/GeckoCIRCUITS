@@ -171,6 +171,7 @@ export function SymbolByType({
       case 1014:
         return <MuxSymbol u={u} />;
       case CTRL_TYPE.LEGACY_JAVA_FUNCTION:
+        return <ScriptFunctionBlockSymbol u={u} label="JAVA" />;
       case CTRL_TYPE.SCRIPT:
         return <ScriptFunctionBlockSymbol u={u} label="f(x)" />;
       default:

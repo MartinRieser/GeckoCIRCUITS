@@ -1412,6 +1412,25 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
       output: [{ label: 'out', description: 'Signal output' }],
     },
   },
+
+  61: {
+    type: 61,
+    family: 'CONTROL',
+    name: 'C_JAVA_FUNCTION',
+    displayName: 'Java Block (Classic)',
+    category: 'control',
+    description: 'Classic GeckoCIRCUITS Java programmable function block',
+    defaultPrefix: 'JAVA',
+    parameters: [
+      { index: 0, key: 'sourceCode', label: 'Java Code', description: 'Calculates yOUT from xIN signals in Java syntax', defaultValue: 'yOUT[0] = xIN[0];' },
+      { index: 1, key: 'anzXIN', label: 'Inputs', description: 'Number of input signals', defaultValue: 1 },
+      { index: 2, key: 'anzYOUT', label: 'Outputs', description: 'Number of output signals', defaultValue: 1 },
+    ],
+    terminals: {
+      input: [{ label: 'in', description: 'Signal input' }],
+      output: [{ label: 'out', description: 'Signal output' }],
+    },
+  },
 };
 
 /**
@@ -1430,7 +1449,6 @@ export function getComponentMeta(
     else if (type === 4) lookupType = 1004; // Signal Source
     else if (type === 5) lookupType = 1003; // Scope
     else if (type === 6) lookupType = 1000; // Gate Driver
-    else if (type === 61) lookupType = 1016; // Classic Java Function Block
   }
   const existing = COMPONENT_METAS[lookupType] ?? COMPONENT_METAS[type];
   if (existing) {
