@@ -567,7 +567,13 @@ export function App() {
           {rightSidebarOpen ? (
             activeWorkspaceTab === 'schematic' ? (
               <PropertiesPanel
-                component={state.components.find((c) => c.name === state.panelFor) || null}
+                component={
+                  state.components.find(
+                    (c) =>
+                      c.name === state.panelFor ||
+                      (state.selection.length === 1 && c.name === state.selection[0]),
+                  ) || null
+                }
                 onRename={actions.rename}
                 onSetParameter={actions.setParameter}
                 onSetLabel={actions.setLabel}

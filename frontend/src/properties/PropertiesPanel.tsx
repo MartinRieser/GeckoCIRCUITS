@@ -415,9 +415,28 @@ function ScriptBlockEditor({
 
   useEffect(() => {
     setCode(String(component.parameters['sourceCode'] || 'yOUT[0] = xIN[0];'));
-    setInCount(Number(component.parameters['anzXIN'] || 1));
-    setOutCount(Number(component.parameters['anzYOUT'] || 1));
-  }, [component.name, component.parameters]);
+    const pIn = Number(component.parameters['anzXIN']);
+    if (!isNaN(pIn)) setInCount(pIn);
+    const pOut = Number(component.parameters['anzYOUT']);
+    if (!isNaN(pOut)) setOutCount(pOut);
+  }, [
+    component.name,
+    component.parameters['sourceCode'],
+    component.parameters['anzXIN'],
+    component.parameters['anzYOUT'],
+  ]);
+
+  const handleInCountChange = (val: number) => {
+    const clamped = Math.max(0, Math.min(16, val));
+    setInCount(clamped);
+    onSetParameter(component.name, 'anzXIN', clamped);
+  };
+
+  const handleOutCountChange = (val: number) => {
+    const clamped = Math.max(1, Math.min(16, val));
+    setOutCount(clamped);
+    onSetParameter(component.name, 'anzYOUT', clamped);
+  };
 
   const handleApply = () => {
     onSetParameter(component.name, 'sourceCode', code);
@@ -482,10 +501,14 @@ function ScriptBlockEditor({
             className="prop-input"
             value={inCount}
             onChange={(e) => {
-              const val = Math.max(0, parseInt(e.target.value) || 0);
-              setInCount(val);
-              onSetParameter(component.name, 'anzXIN', val);
+              const raw = parseInt(e.target.value, 10);
+              if (!isNaN(raw)) {
+                handleInCountChange(raw);
+              } else if (e.target.value === '') {
+                setInCount(0);
+              }
             }}
+            onBlur={() => handleInCountChange(inCount)}
           />
         </div>
         <div className="prop-field">
@@ -497,10 +520,14 @@ function ScriptBlockEditor({
             className="prop-input"
             value={outCount}
             onChange={(e) => {
-              const val = Math.max(1, parseInt(e.target.value) || 1);
-              setOutCount(val);
-              onSetParameter(component.name, 'anzYOUT', val);
+              const raw = parseInt(e.target.value, 10);
+              if (!isNaN(raw)) {
+                handleOutCountChange(raw);
+              } else if (e.target.value === '') {
+                setOutCount(1);
+              }
             }}
+            onBlur={() => handleOutCountChange(outCount)}
           />
         </div>
       </div>

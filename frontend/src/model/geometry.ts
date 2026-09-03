@@ -133,22 +133,27 @@ export function terminalPositions(component: {
     // Function Block / Classic Java Block: dynamic N inputs, M outputs
     if (component.type === CTRL_TYPE.SCRIPT || component.type === CTRL_TYPE.LEGACY_JAVA_FUNCTION) {
       const compParams = (component as any).parameters || {};
-      const inCount = Math.max(1, Number(compParams.anzXIN) || component.inputLabels?.length || 1);
+      const inCount = Math.max(0, Number(compParams.anzXIN) ?? (component.inputLabels?.length || 1));
       const outCount = Math.max(1, Number(compParams.anzYOUT) || 1);
+      const step = 2; // 2 grid units between pins
 
       const inputs: Point[] = [];
+      const inStart = inCount > 1 ? -((inCount - 1) * step) / 2 : 0;
       for (let i = 0; i < inCount; i++) {
+        const offset = inStart + i * step;
         inputs.push({
-          x: center.x - dir.x * TWO_PORT_DIST - dir.y * i,
-          y: center.y - dir.y * TWO_PORT_DIST + dir.x * i,
+          x: center.x - dir.x * TWO_PORT_DIST - dir.y * offset,
+          y: center.y - dir.y * TWO_PORT_DIST + dir.x * offset,
         });
       }
 
       const outputs: Point[] = [];
+      const outStart = outCount > 1 ? -((outCount - 1) * step) / 2 : 0;
       for (let j = 0; j < outCount; j++) {
+        const offset = outStart + j * step;
         outputs.push({
-          x: center.x + dir.x * TWO_PORT_DIST - dir.y * j,
-          y: center.y + dir.y * TWO_PORT_DIST + dir.x * j,
+          x: center.x + dir.x * TWO_PORT_DIST - dir.y * offset,
+          y: center.y + dir.y * TWO_PORT_DIST + dir.x * offset,
         });
       }
 

@@ -547,49 +547,59 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                     });
                   }}
                 >
-                  {/* Full-area hit target so clicking anywhere on the component bounding area selects it */}
-                  <rect
-                    x={-2.4 * dpix}
-                    y={-2.4 * dpix}
-                    width={4.8 * dpix}
-                    height={4.8 * dpix}
-                    className="component-hit-area"
-                    fill="transparent"
-                    stroke="none"
-                    pointerEvents="all"
-                    style={{ cursor: 'pointer' }}
-                  />
+                  {/* Dynamic bounding dimensions based on terminal count */}
+                  {(() => {
+                    const maxPins = Math.max(terminals.input.length, terminals.output.length, 1);
+                    const halfH = Math.max(2.4, (maxPins * 2.0 + 1.2) / 2) * dpix;
+                    const halfW = 2.4 * dpix;
+                    return (
+                      <>
+                        {/* Full-area hit target so clicking anywhere on the component bounding area selects it */}
+                        <rect
+                          x={-halfW}
+                          y={-halfH}
+                          width={halfW * 2}
+                          height={halfH * 2}
+                          className="component-hit-area"
+                          fill="transparent"
+                          stroke="none"
+                          pointerEvents="all"
+                          style={{ cursor: 'pointer' }}
+                        />
 
-                  {/* Selection box halo */}
-                  {selected && (
-                    <rect
-                      x={-2.4 * dpix}
-                      y={-2.4 * dpix}
-                      width={4.8 * dpix}
-                      height={4.8 * dpix}
-                      className="selection-box"
-                      rx={3}
-                      pointerEvents="none"
-                    />
-                  )}
+                        {/* Selection box halo */}
+                        {selected && (
+                          <rect
+                            x={-halfW}
+                            y={-halfH}
+                            width={halfW * 2}
+                            height={halfH * 2}
+                            className="selection-box"
+                            rx={4}
+                            pointerEvents="none"
+                          />
+                        )}
 
-                  <ComponentSymbol component={component} dpix={dpix} />
+                        <ComponentSymbol component={component} dpix={dpix} />
 
-                  {/* Terminals */}
-                  {[...terminals.input, ...terminals.output].map((t, i) => (
-                    <circle
-                      key={i}
-                      cx={t.x * dpix - component.position[0] * dpix}
-                      cy={t.y * dpix - component.position[1] * dpix}
-                      r={3}
-                      className="terminal"
-                    />
-                  ))}
+                        {/* Terminals */}
+                        {[...terminals.input, ...terminals.output].map((t, i) => (
+                          <circle
+                            key={i}
+                            cx={t.x * dpix - component.position[0] * dpix}
+                            cy={t.y * dpix - component.position[1] * dpix}
+                            r={3}
+                            className="terminal"
+                          />
+                        ))}
 
-                  {/* Component identifier label */}
-                  <text x={0} y={2.4 * dpix} className="component-name">
-                    {component.name}
-                  </text>
+                        {/* Component identifier label */}
+                        <text x={0} y={halfH + 12} className="component-name">
+                          {component.name}
+                        </text>
+                      </>
+                    );
+                  })()}
 
                   {/* Terminal net labels */}
                   {terminals.input

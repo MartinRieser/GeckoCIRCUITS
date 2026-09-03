@@ -7,6 +7,7 @@
  */
 import type { EditorComponent } from '../model/types';
 import { CTRL_TYPE } from '../model/componentSchema';
+import { TWO_PORT_DIST } from '../model/geometry';
 
 /** Rotation angle (deg) that maps WEST_EAST base orientation to the given code. */
 export function orientationAngle(orientation: number): number {
@@ -30,20 +31,25 @@ export function orientationAngle(orientation: number): number {
  */
 export function controlOrientationAngle(orientation: number): number {
   switch (orientation) {
-    case 504:
-      return 90; // EAST_WEST: flow south
     case 501:
-      return 180; // SOUTH_NORTH: flow west
+      return 180; // SOUTH_NORTH
     case 502:
-      return 270; // WEST_EAST: flow north
+      return 270; // WEST_EAST
+    case 504:
+      return 90; // EAST_WEST
     case 503:
     default:
-      return 0; // NORTH_SOUTH: flow east
+      return 0; // NORTH_SOUTH
   }
 }
 
 const LEAD = 2.0;
 
+/**
+ * Renders the component's body symbol, rotated to match its orientation.
+ * Terminals are rendered separately by the sheet so wiring hit-targets
+ * stay in sheet-space coordinates.
+ */
 export function ComponentSymbol({
   component,
   dpix,
@@ -55,10 +61,18 @@ export function ComponentSymbol({
   const angle = component.family === 'CONTROL'
     ? controlOrientationAngle(component.orientation)
     : orientationAngle(component.orientation);
-  const inputCount = component.inputLabels?.length || 1;
+  const compParams = component.parameters || {};
+  const inCount = Math.max(0, Number(compParams.anzXIN) ?? (component.inputLabels?.length || 1));
+  const outCount = Math.max(1, Number(compParams.anzYOUT) || 1);
   return (
     <g transform={`rotate(${angle})`}>
-      <SymbolByType type={component.type} u={u} family={component.family} inputCount={inputCount} />
+      <SymbolByType
+        type={component.type}
+        u={u}
+        family={component.family}
+        inputCount={inCount}
+        outputCount={outCount}
+      />
     </g>
   );
 }
@@ -96,11 +110,13 @@ export function SymbolByType({
   u,
   family = 'LK',
   inputCount = 1,
+  outputCount = 1,
 }: {
   type: number;
   u: number;
   family?: string;
   inputCount?: number;
+  outputCount?: number;
 }) {
   // CONTROL blocks come in two numbering ranges: legacy classic-editor
   // numbers (1-84) and web catalog numbers (1001+); see CTRL_TYPE. The case
@@ -171,9 +187,10 @@ export function SymbolByType({
       case 1014:
         return <MuxSymbol u={u} />;
       case CTRL_TYPE.LEGACY_JAVA_FUNCTION:
-        return <ScriptFunctionBlockSymbol u={u} label="JAVA" />;
-      case CTRL_TYPE.SCRIPT:
-        return <ScriptFunctionBlockSymbol u={u} label="f(x)" />;
+      case CTRL_TYPE.SCRIPT: {
+        const label = type === CTRL_TYPE.LEGACY_JAVA_FUNCTION ? 'JAVA' : 'f(x)';
+        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label={label} />;
+      }
       default:
         return <GenericBox u={u} family={family} type={type} />;
     }
@@ -892,30 +909,119 @@ function MuxSymbol({ u }: { u: number }) {
   );
 }
 
-function ScriptFunctionBlockSymbol({ u, label = 'f(x)' }: { u: number; label?: string }) {
-  const boxW = 1.6 * u;
-  const boxH = 1.6 * u;
+function ScriptFunctionBlockSymbol({
+  u,
+  inCount = 1,
+  outCount = 1,
+  label = 'f(x)',
+}: {
+  u: number;
+  inCount?: number;
+  outCount?: number;
+  label?: string;
+}) {
+  const step = 2.0; // 2 grid units between pins
+  const maxPins = Math.max(inCount, outCount, 1);
+  const totalPinSpan = (maxPins - 1) * step;
+  const boxH = Math.max(1.8 * u, (totalPinSpan + 1.6) * u);
+  const boxW = 2.0 * u;
+
+  const inStart = inCount > 1 ? -((inCount - 1) * step) / 2 : 0;
+  const outStart = outCount > 1 ? -((outCount - 1) * step) / 2 : 0;
+
   return (
     <g className="symbol-control-script">
-      <line x1={-LEAD * u} y1={0} x2={-boxW / 2} y2={0} stroke={CTRL_COLOR} />
-      <line x1={boxW / 2} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
+      {/* Input leads */}
+      {Array.from({ length: inCount }).map((_, i) => {
+        const yOffset = (inStart + i * step) * u;
+        return (
+          <line
+            key={`in-lead-${i}`}
+            x1={-TWO_PORT_DIST * u}
+            y1={yOffset}
+            x2={-boxW / 2}
+            y2={yOffset}
+            stroke={CTRL_COLOR}
+            strokeWidth={1.5}
+          />
+        );
+      })}
+
+      {/* Output leads */}
+      {Array.from({ length: outCount }).map((_, j) => {
+        const yOffset = (outStart + j * step) * u;
+        return (
+          <line
+            key={`out-lead-${j}`}
+            x1={boxW / 2}
+            y1={yOffset}
+            x2={TWO_PORT_DIST * u}
+            y2={yOffset}
+            stroke={CTRL_COLOR}
+            strokeWidth={1.5}
+          />
+        );
+      })}
+
+      {/* Main Function Chassis */}
       <rect
         x={-boxW / 2}
         y={-boxH / 2}
         width={boxW}
         height={boxH}
-        rx={3}
+        rx={4}
         stroke={CTRL_COLOR}
-        strokeWidth={1.5}
+        strokeWidth={1.6}
         fill="rgba(74,222,128,0.08)"
       />
+
+      {/* Pin index labels for multiple pins */}
+      {inCount > 1 &&
+        Array.from({ length: inCount }).map((_, i) => {
+          const yOffset = (inStart + i * step) * u;
+          return (
+            <text
+              key={`in-label-${i}`}
+              x={-boxW / 2 + 0.25 * u}
+              y={yOffset + 0.15 * u}
+              fontSize={0.45 * u}
+              fontFamily="monospace"
+              fill="rgba(74,222,128,0.7)"
+              stroke="none"
+              textAnchor="start"
+            >
+              {`u${i + 1}`}
+            </text>
+          );
+        })}
+
+      {outCount > 1 &&
+        Array.from({ length: outCount }).map((_, j) => {
+          const yOffset = (outStart + j * step) * u;
+          return (
+            <text
+              key={`out-label-${j}`}
+              x={boxW / 2 - 0.25 * u}
+              y={yOffset + 0.15 * u}
+              fontSize={0.45 * u}
+              fontFamily="monospace"
+              fill="rgba(74,222,128,0.7)"
+              stroke="none"
+              textAnchor="end"
+            >
+              {`y${j + 1}`}
+            </text>
+          );
+        })}
+
+      {/* Central Badge label e.g. f(x) or JAVA */}
       <text
         x={0}
         y={0.25 * u}
         fontSize={0.65 * u}
         fontFamily="monospace"
         fontWeight="bold"
-        fontStyle="italic"
+        fontStyle={label === 'f(x)' ? 'italic' : 'normal'}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="middle"
