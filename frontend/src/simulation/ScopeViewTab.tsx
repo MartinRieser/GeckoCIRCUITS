@@ -4,36 +4,18 @@
  * cursor measurements, stacked / overlay modes, channel toggles, and signal metrics.
  * Fully styled for both Dark and Light themes.
  */
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
-import type { EditorComponent, SimulationDefaults, SimulationStatus } from '../model/types';
-import {
-  parseEngineeringValue,
-  formatEngineeringValue,
-} from '../model/componentSchema';
+import type { EditorComponent } from '../model/types';
+import { formatEngineeringValue } from '../model/componentSchema';
 import { mapSimulationResults } from './chartData';
 
 interface ScopeViewTabProps {
   selectedScope: string; // 'all' or 'SCOPE.1', 'SCOPE.2', etc.
-  onSelectScope: (scope: string) => void;
   components: EditorComponent[];
   results: Record<string, number[]> | null;
-  status: SimulationStatus | null;
-  progress: number;
-  circuitId: string | null;
-  defaults?: SimulationDefaults | null;
-  errorMessage?: string | null;
+  displayLayout: 'overlay' | 'stacked';
   theme?: 'dark' | 'light';
-  onRunSimulation: (config?: {
-    simulationTime: number;
-    timeStep: number;
-    solverType: string;
-    backend?: string;
-    signals?: string[];
-  }) => void;
-  onPauseSimulation?: () => void;
-  onResumeSimulation?: () => void;
-  onCancelSimulation?: () => void;
 }
 
 const TRACE_COLORS_DARK = [
@@ -60,49 +42,16 @@ const TRACE_COLORS_LIGHT = [
 
 export function ScopeViewTab({
   selectedScope,
-  onSelectScope,
   components,
   results,
-  status,
-  progress,
-  circuitId,
-  defaults,
-  errorMessage,
+  displayLayout,
   theme = 'dark',
-  onRunSimulation,
-  onPauseSimulation,
-  onResumeSimulation,
-  onCancelSimulation,
 }: ScopeViewTabProps) {
-  const [displayLayout, setDisplayLayout] = useState<'overlay' | 'stacked'>('overlay');
   const [hiddenSignals, setHiddenSignals] = useState<Record<string, boolean>>({});
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const [cursorA, setCursorA] = useState<number | null>(null);
   const [cursorB, setCursorB] = useState<number | null>(null);
   const [channelSearch, setChannelSearch] = useState('');
-
-  // Simulation Parameters state
-  const [tEndStr, setTEndStr] = useState('20m');
-  const [dtStr, setDtStr] = useState('1u');
-  const [solverType, setSolverType] = useState('backward-euler');
-  const [backendEngine, setBackendEngine] = useState('headless');
-
-  useEffect(() => {
-    if (defaults) {
-      if (defaults.duration !== undefined) {
-        setTEndStr(formatEngineeringValue(defaults.duration, 's'));
-      }
-      if (defaults.timeStep !== undefined) {
-        setDtStr(formatEngineeringValue(defaults.timeStep, 's'));
-      }
-      if (defaults.solverType) {
-        setSolverType(defaults.solverType);
-      }
-      if ((defaults as { backend?: string }).backend) {
-        setBackendEngine((defaults as { backend?: string }).backend!);
-      }
-    }
-  }, [defaults]);
 
   const traceColors = theme === 'light' ? TRACE_COLORS_LIGHT : TRACE_COLORS_DARK;
 
@@ -149,46 +98,9 @@ export function ScopeViewTab({
     setHiddenSignals((prev) => ({ ...prev, [name]: !prev[name] }));
   };
 
-  const isRunning = status === 'PENDING' || status === 'RUNNING';
-  const isPaused = status === 'PAUSED';
-
-  const tEndNum = parseEngineeringValue(tEndStr);
-  const dtNum = parseEngineeringValue(dtStr);
-
-  const handleRun = () => {
-    const dur = tEndNum !== null && !isNaN(tEndNum) && tEndNum > 0 ? tEndNum : 0.02;
-    const step = dtNum !== null && !isNaN(dtNum) && dtNum > 0 ? dtNum : 1e-6;
-    onRunSimulation({
-      simulationTime: dur,
-      timeStep: step,
-      solverType,
-      backend: backendEngine,
-    });
-  };
-
-  const handleExportCsv = () => {
-    if (!results || !timeArray.length) return;
-    const exportSignals = visibleSignals.length > 0 ? visibleSignals : signalNames;
-    const headers = ['time', ...exportSignals];
-    const rows = [headers.join(',')];
-
-    for (let i = 0; i < timeArray.length; i++) {
-      const row = [timeArray[i], ...exportSignals.map((s) => results[s]?.[i] ?? 0)];
-      rows.push(row.join(','));
-    }
-
-    const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${selectedScope}_results_${Date.now()}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   return (
     <div className="scope-view-tab-container">
-      {/* Scope Header Toolbar */}
+      {/* Scope Header Bar */}
       <div className="scope-tab-header">
         <div className="scope-tab-title-group">
           <div className="scope-badge-icon">
@@ -204,170 +116,7 @@ export function ScopeViewTab({
             </div>
           </div>
         </div>
-
-        {/* Action Controls */}
-        <div className="scope-tab-actions">
-          {/* Scope Selector Dropdown */}
-          <div className="scope-selector-group">
-            <span className="scope-group-label">Scope:</span>
-            <select
-              className="scope-select"
-              value={selectedScope}
-              onChange={(e) => onSelectScope(e.target.value)}
-              title="Select Scope instrument or All Signals"
-            >
-              <option value="all">🌐 All Scopes & Signals ({signalNames.length})</option>
-              {scopeBlocks.map((sb) => {
-                const chCount = sb.inputLabels.filter(Boolean).length;
-                const labels = sb.inputLabels.filter(Boolean).join(', ');
-                return (
-                  <option key={sb.name} value={sb.name}>
-                    📺 {sb.name} ({chCount} ch{labels ? `: ${labels}` : ''})
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-
-          {/* Quick Scope Switcher Pills */}
-          <div className="scope-pills">
-            <button
-              type="button"
-              className={`scope-pill-btn ${selectedScope === 'all' ? 'active' : ''}`}
-              onClick={() => onSelectScope('all')}
-              title="Show all recorded signals"
-            >
-              All ({signalNames.length})
-            </button>
-            {scopeBlocks.map((sb) => {
-              const chCount = sb.inputLabels.filter(Boolean).length;
-              return (
-                <button
-                  key={sb.name}
-                  type="button"
-                  className={`scope-pill-btn ${selectedScope === sb.name ? 'active' : ''}`}
-                  onClick={() => onSelectScope(sb.name)}
-                  title={`Focus on ${sb.name}`}
-                >
-                  {sb.name} ({chCount})
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Display Mode Toggle */}
-          <div className="segmented-control">
-            <button
-              type="button"
-              className={`segmented-btn ${displayLayout === 'overlay' ? 'active' : ''}`}
-              onClick={() => setDisplayLayout('overlay')}
-              title="Overlay all channels on a single large graph"
-            >
-              📈 Overlay
-            </button>
-            <button
-              type="button"
-              className={`segmented-btn ${displayLayout === 'stacked' ? 'active' : ''}`}
-              onClick={() => setDisplayLayout('stacked')}
-              title={`Stack each channel in its own subplot lane (${scopeChannels.length} lanes)`}
-            >
-              📑 Stacked Lanes ({scopeChannels.length})
-            </button>
-          </div>
-
-          {/* Run / Pause / Cancel Controls */}
-          {!isRunning && !isPaused && (
-            <button
-              type="button"
-              className="sim-btn run"
-              onClick={handleRun}
-              disabled={!circuitId}
-              title="Run simulation"
-            >
-              ▶ Run Simulation
-            </button>
-          )}
-
-          {isRunning && (
-            <>
-              {onPauseSimulation && (
-                <button
-                  type="button"
-                  className="sim-btn pause"
-                  onClick={onPauseSimulation}
-                  title="Pause simulation"
-                >
-                  ⏸ Pause
-                </button>
-              )}
-              {onCancelSimulation && (
-                <button
-                  type="button"
-                  className="sim-btn cancel"
-                  onClick={onCancelSimulation}
-                  title="Cancel simulation"
-                >
-                  ⏹ Cancel
-                </button>
-              )}
-            </>
-          )}
-
-          {isPaused && (
-            <>
-              {onResumeSimulation && (
-                <button
-                  type="button"
-                  className="sim-btn resume"
-                  onClick={onResumeSimulation}
-                  title="Resume simulation"
-                >
-                  ▶ Resume
-                </button>
-              )}
-              {onCancelSimulation && (
-                <button
-                  type="button"
-                  className="sim-btn cancel"
-                  onClick={onCancelSimulation}
-                  title="Cancel simulation"
-                >
-                  ⏹ Cancel
-                </button>
-              )}
-            </>
-          )}
-
-          {results && signalNames.length > 0 && (
-            <button
-              type="button"
-              className="sim-btn export"
-              onClick={handleExportCsv}
-              title="Export visible channels to CSV"
-            >
-              Export CSV
-            </button>
-          )}
-        </div>
       </div>
-
-      {/* Progress track */}
-      {isRunning && (
-        <div className="sim-progress-track">
-          <div
-            className="sim-progress-bar"
-            style={{ width: `${Math.max(5, Math.min(100, progress * 100))}%` }}
-          />
-        </div>
-      )}
-
-      {/* Error message if any */}
-      {errorMessage && (
-        <div className="sim-error-banner">
-          <span className="error-icon">✕</span>
-          <span className="error-text">{errorMessage}</span>
-        </div>
-      )}
 
       {/* Channel Pills Legend */}
       <div className="scope-tab-legend-bar">
@@ -423,16 +172,7 @@ export function ScopeViewTab({
           <div className="scope-empty-state">
             <div className="empty-icon">{selectedScope === 'all' ? '📊' : '📺'}</div>
             <h3>No simulation data available</h3>
-            <p>Configure parameters above and click <strong>"Run Simulation"</strong> to calculate waveforms.</p>
-            <button
-              type="button"
-              className="sim-btn run"
-              onClick={handleRun}
-              disabled={!circuitId || isRunning}
-              style={{ marginTop: 12 }}
-            >
-              ▶ Run Simulation
-            </button>
+            <p>Configure parameters in the <strong>Simulation Settings</strong> panel on the right and click <strong>"▶ Run Simulation"</strong> to calculate waveforms.</p>
           </div>
         ) : (
           <div className="scope-tab-main-grid">

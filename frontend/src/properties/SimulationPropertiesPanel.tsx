@@ -1,8 +1,8 @@
 /**
- * Simulation Properties & Inspector Panel.
- * Rendered in the Inspector sidebar when the Simulation workspace tab is active.
- * Provides solver settings (tEnd, dt, solver method, backend engine),
- * run controls, scope / channel navigation, and statistical highlights.
+ * Simulation Properties & Settings Panel.
+ * Rendered in the right sidebar (Inspector) when the Simulation workspace tab is active.
+ * Houses all simulation controls, solver parameters, display layout options,
+ * scope instrument selectors, and CSV export.
  */
 import { useState, useEffect, useMemo } from 'react';
 import type { EditorComponent, SimulationDefaults, SimulationStatus } from '../model/types';
@@ -23,6 +23,8 @@ interface SimulationPropertiesPanelProps {
   results: Record<string, number[]> | null;
   selectedScope: string;
   onSelectScope: (scope: string) => void;
+  displayLayout: 'overlay' | 'stacked';
+  onDisplayLayoutChange: (layout: 'overlay' | 'stacked') => void;
   onRunSimulation: (config: {
     simulationTime: number;
     timeStep: number;
@@ -45,6 +47,8 @@ export function SimulationPropertiesPanel({
   results,
   selectedScope,
   onSelectScope,
+  displayLayout,
+  onDisplayLayoutChange,
   onRunSimulation,
   onPauseSimulation,
   onResumeSimulation,
@@ -125,7 +129,7 @@ export function SimulationPropertiesPanel({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `simulation_results_${Date.now()}.csv`;
+    a.download = `${selectedScope}_results_${Date.now()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -152,7 +156,7 @@ export function SimulationPropertiesPanel({
                 className="sim-btn run"
                 onClick={handleRun}
                 disabled={!circuitId}
-                style={{ width: '100%', justifyContent: 'center', padding: '8px 12px', fontSize: '13px' }}
+                style={{ width: '100%', justifyContent: 'center', padding: '9px 12px', fontSize: '13px' }}
                 title="Run circuit simulation"
               >
                 ▶ Run Simulation
@@ -314,9 +318,57 @@ export function SimulationPropertiesPanel({
           </div>
         </div>
 
-        {/* Scope Instruments & Filter */}
+        {/* Display Layout Mode Section */}
         <div className="prop-section">
-          <div className="prop-section-title">Scope Instruments</div>
+          <div className="prop-section-title">Display Layout</div>
+          <div className="segmented-control" style={{ width: '100%', display: 'flex' }}>
+            <button
+              type="button"
+              className={`segmented-btn ${displayLayout === 'overlay' ? 'active' : ''}`}
+              onClick={() => onDisplayLayoutChange('overlay')}
+              style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }}
+              title="Overlay all channels on a single combined graph"
+            >
+              📈 Overlay
+            </button>
+            <button
+              type="button"
+              className={`segmented-btn ${displayLayout === 'stacked' ? 'active' : ''}`}
+              onClick={() => onDisplayLayoutChange('stacked')}
+              style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }}
+              title="Stack each channel in its own subplot lane"
+            >
+              📑 Stacked Lanes
+            </button>
+          </div>
+        </div>
+
+        {/* Scope Selection & Instruments Section */}
+        <div className="prop-section">
+          <div className="prop-section-title">Scope Instrument</div>
+          {/* Scope Dropdown */}
+          <div style={{ marginBottom: 8 }}>
+            <select
+              id="insp-scope-select"
+              className="prop-select"
+              value={selectedScope}
+              onChange={(e) => onSelectScope(e.target.value)}
+              title="Select Scope instrument to view"
+            >
+              <option value="all">🌐 All Scopes & Signals ({signalNames.length})</option>
+              {scopeBlocks.map((sb) => {
+                const chCount = sb.inputLabels.filter(Boolean).length;
+                const labels = sb.inputLabels.filter(Boolean).join(', ');
+                return (
+                  <option key={sb.name} value={sb.name}>
+                    📺 {sb.name} ({chCount} ch{labels ? `: ${labels}` : ''})
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+
+          {/* Scope List Item Buttons */}
           <div className="prop-scopes-list" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <button
               type="button"

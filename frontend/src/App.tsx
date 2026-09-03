@@ -28,6 +28,7 @@ export function App() {
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<'schematic' | 'simulation'>('schematic');
   const [selectedScope, setSelectedScope] = useState<string>('all');
+  const [displayLayout, setDisplayLayout] = useState<'overlay' | 'stacked'>('overlay');
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     return (localStorage.getItem('gecko-theme') as 'dark' | 'light') || 'dark';
   });
@@ -378,19 +379,6 @@ export function App() {
 
         {/* Right Toolbar Actions */}
         <div className="nav-right">
-          {/* Prominent Simulation Overview Tab Button */}
-          <button
-            type="button"
-            className={`nav-btn-primary ${simState.status === 'RUNNING' ? 'simulating' : ''} ${activeWorkspaceTab === 'simulation' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveWorkspaceTab((prev) => (prev === 'schematic' ? 'simulation' : 'schematic'));
-            }}
-            disabled={!state.circuitId}
-            title="Switch between Schematic and Simulation Overview tab"
-          >
-            {simState.status === 'RUNNING' ? 'Simulating...' : '📊 Simulation'}
-          </button>
-
           <button
             type="button"
             className="nav-btn theme-toggle"
@@ -516,19 +504,10 @@ export function App() {
           ) : (
             <ScopeViewTab
               selectedScope={selectedScope}
-              onSelectScope={setSelectedScope}
               components={state.components}
               results={simState.results}
-              status={simState.status}
-              progress={simState.progress}
-              circuitId={state.circuitId}
-              defaults={simState.defaults}
-              errorMessage={simState.errorMessage}
+              displayLayout={displayLayout}
               theme={theme}
-              onRunSimulation={actions.runSimulation}
-              onPauseSimulation={actions.pauseSimulation}
-              onResumeSimulation={actions.resumeSimulation}
-              onCancelSimulation={actions.cancelSimulation}
             />
           )}
         </main>
@@ -578,6 +557,8 @@ export function App() {
                 results={simState.results}
                 selectedScope={selectedScope}
                 onSelectScope={setSelectedScope}
+                displayLayout={displayLayout}
+                onDisplayLayoutChange={setDisplayLayout}
                 onRunSimulation={actions.runSimulation}
                 onPauseSimulation={actions.pauseSimulation}
                 onResumeSimulation={actions.resumeSimulation}
