@@ -207,15 +207,37 @@ export function ScopeViewTab({
 
         {/* Action Controls */}
         <div className="scope-tab-actions">
-          {/* Quick Scope Switcher Pills / Dropdown */}
-          <div className="scope-pills" style={{ display: 'flex', gap: 4, marginRight: 8 }}>
+          {/* Scope Selector Dropdown */}
+          <div className="scope-selector-group">
+            <span className="scope-group-label">Scope:</span>
+            <select
+              className="scope-select"
+              value={selectedScope}
+              onChange={(e) => onSelectScope(e.target.value)}
+              title="Select Scope instrument or All Signals"
+            >
+              <option value="all">🌐 All Scopes & Signals ({signalNames.length})</option>
+              {scopeBlocks.map((sb) => {
+                const chCount = sb.inputLabels.filter(Boolean).length;
+                const labels = sb.inputLabels.filter(Boolean).join(', ');
+                return (
+                  <option key={sb.name} value={sb.name}>
+                    📺 {sb.name} ({chCount} ch{labels ? `: ${labels}` : ''})
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+
+          {/* Quick Scope Switcher Pills */}
+          <div className="scope-pills">
             <button
               type="button"
               className={`scope-pill-btn ${selectedScope === 'all' ? 'active' : ''}`}
               onClick={() => onSelectScope('all')}
               title="Show all recorded signals"
             >
-              🌐 All Signals ({signalNames.length})
+              All ({signalNames.length})
             </button>
             {scopeBlocks.map((sb) => {
               const chCount = sb.inputLabels.filter(Boolean).length;
@@ -227,7 +249,7 @@ export function ScopeViewTab({
                   onClick={() => onSelectScope(sb.name)}
                   title={`Focus on ${sb.name}`}
                 >
-                  📺 {sb.name} ({chCount})
+                  {sb.name} ({chCount})
                 </button>
               );
             })}

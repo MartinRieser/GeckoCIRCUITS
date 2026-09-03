@@ -2393,10 +2393,12 @@ polyline.wire.selected {
   align-items: center;
   background: var(--panel-header);
   border-bottom: 1px solid var(--border);
-  padding: 0 8px;
-  gap: 2px;
+  padding: 0 14px;
+  gap: 4px;
   height: 36px;
   min-height: 36px;
+  flex-shrink: 0;
+  z-index: 15;
   overflow-x: auto;
   user-select: none;
 }

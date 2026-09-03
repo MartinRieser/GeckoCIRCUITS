@@ -407,6 +407,27 @@ export function App() {
         </div>
       </header>
 
+      {/* Global Workspace Tab Bar: Full-width fixed position, never jumps or moves when switching tabs */}
+      <div className="workspace-tabs-bar">
+        <button
+          type="button"
+          className={`workspace-tab ${activeWorkspaceTab === 'schematic' ? 'active' : ''}`}
+          onClick={() => setActiveWorkspaceTab('schematic')}
+          title="Circuit Diagram Schematic Editor"
+        >
+          📐 Schematic
+        </button>
+
+        <button
+          type="button"
+          className={`workspace-tab ${activeWorkspaceTab === 'simulation' ? 'active' : ''}`}
+          onClick={() => setActiveWorkspaceTab('simulation')}
+          title="Circuit Simulation & Scope Waveforms"
+        >
+          📊 Simulation
+        </button>
+      </div>
+
       {/* Main Workspace (3-Column Layout) */}
       <div className="workspace">
         {/* Left Sidebar: Component Palette (Visible only in Schematic view) */}
@@ -444,27 +465,6 @@ export function App() {
 
         {/* Center: Canvas Schematic Sheet / Simulation Workspace */}
         <main className="sheet-viewport">
-          {/* Workspace Tab Bar: Clean 2-tab design */}
-          <div className="workspace-tabs-bar">
-            <button
-              type="button"
-              className={`workspace-tab ${activeWorkspaceTab === 'schematic' ? 'active' : ''}`}
-              onClick={() => setActiveWorkspaceTab('schematic')}
-              title="Circuit Diagram Schematic Editor"
-            >
-              📐 Schematic
-            </button>
-
-            <button
-              type="button"
-              className={`workspace-tab ${activeWorkspaceTab === 'simulation' ? 'active' : ''}`}
-              onClick={() => setActiveWorkspaceTab('simulation')}
-              title="Circuit Simulation & Scope Waveforms"
-            >
-              📊 Simulation
-            </button>
-          </div>
-
           {/* Active Tab Content */}
           {activeWorkspaceTab === 'schematic' ? (
             <>
