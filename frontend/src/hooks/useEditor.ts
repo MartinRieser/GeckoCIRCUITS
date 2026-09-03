@@ -452,7 +452,7 @@ export function useEditor() {
   );
 
   const setParameter = useCallback(
-    (name: string, key: string, value: number) => {
+    (name: string, key: string, value: number | string) => {
       const circuitId = stateRef.current.circuitId;
       if (!circuitId) return;
       api

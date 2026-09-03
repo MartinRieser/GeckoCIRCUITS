@@ -130,6 +130,31 @@ export function terminalPositions(component: {
         output: [],
       };
     }
+    // Function Block / Classic Java Block: dynamic N inputs, M outputs
+    if (component.type === CTRL_TYPE.SCRIPT || component.type === CTRL_TYPE.LEGACY_JAVA_FUNCTION) {
+      const compParams = (component as any).parameters || {};
+      const inCount = Math.max(1, Number(compParams.anzXIN) || component.inputLabels?.length || 1);
+      const outCount = Math.max(1, Number(compParams.anzYOUT) || 1);
+
+      const inputs: Point[] = [];
+      for (let i = 0; i < inCount; i++) {
+        inputs.push({
+          x: center.x - dir.x * TWO_PORT_DIST - dir.y * i,
+          y: center.y - dir.y * TWO_PORT_DIST + dir.x * i,
+        });
+      }
+
+      const outputs: Point[] = [];
+      for (let j = 0; j < outCount; j++) {
+        outputs.push({
+          x: center.x + dir.x * TWO_PORT_DIST - dir.y * j,
+          y: center.y + dir.y * TWO_PORT_DIST + dir.x * j,
+        });
+      }
+
+      return { input: inputs, output: outputs };
+    }
+
     // gate & other single-input control blocks: 1 input on the input side, 0 outputs
     if (CONTROL_INPUT_ONLY.has(component.type)) {
       return {

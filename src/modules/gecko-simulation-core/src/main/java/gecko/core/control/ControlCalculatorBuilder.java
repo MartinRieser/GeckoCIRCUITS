@@ -20,6 +20,7 @@ import gecko.core.control.calculators.AbstractControlCalculatable;
 import gecko.core.control.calculators.ConstantCalculator;
 import gecko.core.control.calculators.GateCalculator;
 import gecko.core.control.calculators.InitializableAtSimulationStart;
+import gecko.core.control.calculators.ScriptBlockCalculator;
 import gecko.core.control.calculators.SignalCalculatorRandom;
 import gecko.core.control.calculators.SignalCalculatorRectangle;
 import gecko.core.control.calculators.SignalCalculatorSinus;
@@ -81,6 +82,8 @@ public final class ControlCalculatorBuilder {
     private static final int TYP_SIGNAL_SOURCE = 4;
     private static final int TYP_SCOPE = 5;
     private static final int TYP_GATE = 6;
+    private static final int TYP_JAVA_FUNCTION = 61;
+    private static final int TYP_SCRIPT = 1016;
 
     /**
      * Terminal layout per classic control type: {inputs, outputs, output
@@ -249,7 +252,10 @@ public final class ControlCalculatorBuilder {
      * output terminal carries a user label ({@code labelEndKnoten}), logged
      * under that label like the classic scope curve (e.g. "gate").
      */
-    public record SignalTap(String name, AbstractControlCalculatable source) {
+    public record SignalTap(String name, AbstractControlCalculatable source, int outputIndex) {
+        public SignalTap(String name, AbstractControlCalculatable source) {
+            this(name, source, 0);
+        }
     }
 
     private ControlCalculatorBuilder() {
@@ -263,14 +269,16 @@ public final class ControlCalculatorBuilder {
     public static ControlCoupling build(CircuitModel model, CircuitNetlist netlist) {
         List<CircuitModel.ComponentData> controlComponents =
                 model != null ? model.getControlComponents() : List.of();
-        if (controlComponents.isEmpty() || netlist == null || netlist.getElementCount() == 0) {
+        if (controlComponents.isEmpty()) {
             return new ControlCoupling(List.of(), List.of(), List.of(), List.of());
         }
         Map<Long, Integer> elementIndexByUid = new HashMap<>();
-        for (int i = 0; i < netlist.getElementCount(); i++) {
-            long uid = netlist.getElementUids()[i];
-            if (uid != 0) {
-                elementIndexByUid.put(uid, i);
+        if (netlist != null) {
+            for (int i = 0; i < netlist.getElementCount(); i++) {
+                long uid = netlist.getElementUids()[i];
+                if (uid != 0) {
+                    elementIndexByUid.put(uid, i);
+                }
             }
         }
 
@@ -326,6 +334,17 @@ public final class ControlCalculatorBuilder {
                 String label = outputLabel(comp);
                 if (!label.equals(displayName(comp)) && usedTapNames.add(label)) {
                     signalTaps.add(new SignalTap(label, calculator));
+                }
+            } else if (comp.getType() == TYP_JAVA_FUNCTION || comp.getType() == TYP_SCRIPT) {
+                int[] layout = getTerminalLayout(comp);
+                String[] yLabels = comp.getTerminalYLabels();
+                for (int j = 0; j < (layout != null ? layout[1] : 1); j++) {
+                    String label = (yLabels != null && j < yLabels.length && yLabels[j] != null && !yLabels[j].trim().isEmpty() && !yLabels[j].equals("NIX_NIX_NIX"))
+                            ? yLabels[j].trim()
+                            : (displayName(comp) + (layout != null && layout[1] > 1 ? ("." + (j + 1)) : ""));
+                    if (usedTapNames.add(label)) {
+                        signalTaps.add(new SignalTap(label, calculator, j));
+                    }
                 }
             }
         }
@@ -409,7 +428,7 @@ public final class ControlCalculatorBuilder {
     }
 
     private static int nodeForLabel(CircuitNetlist netlist, String label) {
-        if (label == null) {
+        if (netlist == null || label == null) {
             return 0;
         }
         String trimmed = label.trim();
@@ -424,6 +443,9 @@ public final class ControlCalculatorBuilder {
     }
 
     private static Integer elementIndexByName(CircuitModel model, CircuitNetlist netlist, String name) {
+        if (model == null || netlist == null || name == null) {
+            return null;
+        }
         for (CircuitModel.ComponentData comp : model.getCircuitComponents()) {
             if (name.equals(comp.getName())) {
                 int index = netlist.indexOfUid(comp.getUniqueObjectIdentifier());
@@ -433,12 +455,58 @@ public final class ControlCalculatorBuilder {
         return null;
     }
 
+    private static int[] getTerminalLayout(CircuitModel.ComponentData comp) {
+        if (comp.getType() == TYP_JAVA_FUNCTION || comp.getType() == TYP_SCRIPT) {
+            int numIn = getIntParam(comp, "anzXIN", -1);
+            if (numIn < 0) {
+                numIn = getIntParam(comp, "numberInputTerminals", -1);
+            }
+            if (numIn < 0) {
+                String[] xLabels = comp.getRawTerminalXLabels();
+                numIn = (xLabels != null && xLabels.length > 0) ? xLabels.length : 1;
+            }
+
+            int numOut = getIntParam(comp, "anzYOUT", -1);
+            if (numOut < 0) {
+                numOut = getIntParam(comp, "numberOutputTerminals", -1);
+            }
+            if (numOut < 0) {
+                String[] yLabels = comp.getRawTerminalYLabels();
+                numOut = (yLabels != null && yLabels.length > 0) ? yLabels.length : 1;
+            }
+            return new int[]{Math.max(0, numIn), Math.max(1, numOut), 2};
+        }
+        return TERMINALS_BY_TYPE.get(comp.getType());
+    }
+
+    private static int getIntParam(CircuitModel.ComponentData comp, String key, int def) {
+        Object v = comp.getParameters().get(key);
+        if (v instanceof Number n) {
+            return n.intValue();
+        }
+        return def;
+    }
+
+    private static String getStringParam(CircuitModel.ComponentData comp, String key, String def) {
+        Object v = comp.getParameters().get(key);
+        if (v instanceof String s) {
+            return s;
+        }
+        return def;
+    }
+
     private static AbstractControlCalculatable createCalculator(CircuitModel.ComponentData comp) {
-        int[] layout = TERMINALS_BY_TYPE.get(comp.getType());
+        int[] layout = getTerminalLayout(comp);
         if (layout == null) {
             LOGGER.warn("Control block '{}' has unsupported typ {} - skipped",
                     comp.getName(), comp.getType());
             return null;
+        }
+        if (comp.getType() == TYP_JAVA_FUNCTION || comp.getType() == TYP_SCRIPT) {
+            String sourceCode = getStringParam(comp, "sourceCode", "");
+            String staticCode = getStringParam(comp, "staticCode", "");
+            String staticVariables = getStringParam(comp, "staticVariables", "");
+            return new ScriptBlockCalculator(layout[0], layout[1], sourceCode, staticCode, staticVariables);
         }
         double[] params = comp.getRawParameters();
         return switch (comp.getType()) {
@@ -481,7 +549,7 @@ public final class ControlCalculatorBuilder {
         // producer map: signal node -> (calculator, output index)
         Map<String, Object[]> producerByNode = new HashMap<>();
         for (CircuitModel.ComponentData comp : controlComponents) {
-            int[] layout = TERMINALS_BY_TYPE.get(comp.getType());
+            int[] layout = getTerminalLayout(comp);
             AbstractControlCalculatable calculator = calculatorByComp.get(keyOf(comp));
             if (layout == null || calculator == null || layout[1] == 0) {
                 continue;
@@ -494,7 +562,7 @@ public final class ControlCalculatorBuilder {
         }
 
         for (CircuitModel.ComponentData comp : controlComponents) {
-            int[] layout = TERMINALS_BY_TYPE.get(comp.getType());
+            int[] layout = getTerminalLayout(comp);
             AbstractControlCalculatable calculator = calculatorByComp.get(keyOf(comp));
             if (layout == null || calculator == null || layout[0] == 0) {
                 continue;

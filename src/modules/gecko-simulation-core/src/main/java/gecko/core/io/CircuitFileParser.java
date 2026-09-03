@@ -550,6 +550,28 @@ public class CircuitFileParser {
                     comp.setParameter(resolveParameterKey(type), params[0]);
                 }
 
+                // Parse script block parameters (sourceCode, staticCode, staticVariables, anzXIN, anzYOUT)
+                String sourceCode = elementBlock.createSubBlock("<sourceCode>", "<\\sourceCode>");
+                if (sourceCode != null && !sourceCode.isEmpty()) {
+                    comp.setParameter("sourceCode", sourceCode);
+                    String staticCode = elementBlock.createSubBlock("<staticCode>", "<\\staticCode>");
+                    if (staticCode != null) {
+                        comp.setParameter("staticCode", staticCode);
+                    }
+                    String staticVars = elementBlock.createSubBlock("<staticVariables>", "<\\staticVariables>");
+                    if (staticVars != null) {
+                        comp.setParameter("staticVariables", staticVars);
+                    }
+                }
+                int anzXIN = elementBlock.readDataLine("anzXIN", elementBlock.readDataLine("numberInputTerminals", -1));
+                if (anzXIN >= 0) {
+                    comp.setParameter("anzXIN", (double) anzXIN);
+                }
+                int anzYOUT = elementBlock.readDataLine("anzYOUT", elementBlock.readDataLine("numberOutputTerminals", -1));
+                if (anzYOUT >= 0) {
+                    comp.setParameter("anzYOUT", (double) anzYOUT);
+                }
+
                 // Preserve extra block lines (e.g. XML parameters, loss models, etc.)
                 if (elementBlock.asciiLines != null) {
                     for (String blockLine : elementBlock.asciiLines) {

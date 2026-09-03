@@ -22,6 +22,6 @@ public record ComponentPatchRequest(
     @Schema(description = "New component name (must stay unique)", example = "R_load")
     String newName,
 
-    @Schema(description = "Numeric parameters by index (merged into existing)", example = "{\"param0\": 47.0}")
-    Map<String, Double> parameters
+    @Schema(description = "Component parameters by key (numbers, strings, etc.)", example = "{\"param0\": 47.0, \"sourceCode\": \"yOUT[0]=xIN[0];\"}")
+    Map<String, Object> parameters
 ) {}

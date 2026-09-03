@@ -680,26 +680,44 @@ public class CircuitEditService {
         comp.setParameter(CircuitModel.ComponentData.resolveParameterKey(comp.getType()), defaults[0]);
     }
 
-    private static void applyParameterMap(CircuitModel.ComponentData comp, Map<String, Double> parameters) {
+    private static void applyParameterMap(CircuitModel.ComponentData comp, Map<String, Object> parameters) {
+        if (parameters == null || parameters.isEmpty()) {
+            return;
+        }
         int maxIndex = -1;
         for (String key : parameters.keySet()) {
             Integer idx = parameterIndex(key);
-            if (idx == null) {
+            if (idx != null) {
+                maxIndex = Math.max(maxIndex, idx);
+            } else if (!isNamedControlParameter(comp, key)) {
                 throw badRequest("Parameter keys must be 'param<index>', got: " + key);
             }
-            maxIndex = Math.max(maxIndex, idx);
         }
 
-        double[] raw = Arrays.copyOf(comp.getRawParameters(),
-                Math.max(comp.getRawParameters().length, maxIndex + 1));
-        for (Map.Entry<String, Double> entry : parameters.entrySet()) {
-            if (entry.getValue() == null) {
-                throw badRequest("Parameter value must not be null: " + entry.getKey());
+        if (maxIndex >= 0) {
+            double[] raw = Arrays.copyOf(comp.getRawParameters(),
+                    Math.max(comp.getRawParameters().length, maxIndex + 1));
+            for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+                Integer idx = parameterIndex(entry.getKey());
+                if (idx != null && entry.getValue() instanceof Number n) {
+                    raw[idx] = n.doubleValue();
+                }
             }
-            raw[parameterIndex(entry.getKey())] = entry.getValue();
+            comp.setRawParameters(raw);
         }
-        comp.setRawParameters(raw);
         parameters.forEach(comp::setParameter);
+    }
+
+    private static boolean isNamedControlParameter(CircuitModel.ComponentData comp, String key) {
+        return "CONTROL".equals(comp.getFamily()) && (
+                "sourceCode".equals(key) ||
+                "staticCode".equals(key) ||
+                "staticVariables".equals(key) ||
+                "anzXIN".equals(key) ||
+                "anzYOUT".equals(key) ||
+                "formula".equals(key) ||
+                "script".equals(key)
+        );
     }
 
     private static Integer parameterIndex(String key) {

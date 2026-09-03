@@ -117,7 +117,9 @@ public enum CircuitTypCore {
     CTRL_OR(1012),         // OR logic gate
     CTRL_NOT(1013),        // NOT logic gate
     CTRL_MUX(1014),        // Multiplexer
-    CTRL_DELAY(1015);      // Time delay
+    CTRL_DELAY(1015),      // Time delay
+    CTRL_SCRIPT(1016),     // Programmable function / script block
+    C_JAVA_FUNCTION(61);   // Classic Java function block
 
     private final int typeNumber;
 
@@ -240,7 +242,7 @@ public enum CircuitTypCore {
      * @return true if any CTRL_* type
      */
     public boolean isControl() {
-        return typeNumber >= 1001 && typeNumber <= 1099;
+        return (typeNumber >= 1001 && typeNumber <= 1099) || this == C_JAVA_FUNCTION;
     }
 
     /**

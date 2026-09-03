@@ -82,7 +82,7 @@ export interface ComponentCreate {
   x: number;
   y: number;
   orientation?: number;
-  parameters?: Record<string, number>;
+  parameters?: Record<string, number | string | boolean>;
 }
 
 export interface ComponentPatch {
@@ -90,7 +90,7 @@ export interface ComponentPatch {
   y?: number;
   orientation?: number;
   newName?: string;
-  parameters?: Record<string, number>;
+  parameters?: Record<string, number | string | boolean>;
 }
 
 export interface ConnectionCreate {

@@ -10,8 +10,8 @@ export interface ParameterDef {
   key: string;
   label: string;
   description: string;
-  defaultValue: number;
-  unit: string;
+  defaultValue: number | string;
+  unit?: string;
   min?: number;
   max?: number;
   step?: number;
@@ -75,6 +75,10 @@ export const CTRL_TYPE = {
   SIGNAL_SOURCE: 1004,
   /** Constant block, web catalog number (CircuitTypCore.CTRL_CONSTANT). */
   CONSTANT: 1005,
+  /** Classic Java code block, legacy classic-editor number. */
+  LEGACY_JAVA_FUNCTION: 61,
+  /** Script / Function block, web catalog number (CircuitTypCore.CTRL_SCRIPT). */
+  SCRIPT: 1016,
 } as const;
 
 export const COMPONENT_METAS: Record<number, ComponentMeta> = {
@@ -1389,6 +1393,25 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
       output: [{ label: 'out', description: 'Delayed output' }],
     },
   },
+
+  1016: {
+    type: 1016,
+    family: 'CONTROL',
+    name: 'CTRL_SCRIPT',
+    displayName: 'Function Block (Script)',
+    category: 'control',
+    description: 'Custom programmable function block executing math expressions or script logic',
+    defaultPrefix: 'FUNC',
+    parameters: [
+      { index: 0, key: 'sourceCode', label: 'Script / Formula', description: 'Calculates yOUT from xIN signals, t, dt, math functions', defaultValue: 'yOUT[0] = xIN[0];' },
+      { index: 1, key: 'anzXIN', label: 'Inputs', description: 'Number of input signals', defaultValue: 1 },
+      { index: 2, key: 'anzYOUT', label: 'Outputs', description: 'Number of output signals', defaultValue: 1 },
+    ],
+    terminals: {
+      input: [{ label: 'in', description: 'Signal input' }],
+      output: [{ label: 'out', description: 'Signal output' }],
+    },
+  },
 };
 
 /**
@@ -1407,6 +1430,7 @@ export function getComponentMeta(
     else if (type === 4) lookupType = 1004; // Signal Source
     else if (type === 5) lookupType = 1003; // Scope
     else if (type === 6) lookupType = 1000; // Gate Driver
+    else if (type === 61) lookupType = 1016; // Classic Java Function Block
   }
   const existing = COMPONENT_METAS[lookupType] ?? COMPONENT_METAS[type];
   if (existing) {

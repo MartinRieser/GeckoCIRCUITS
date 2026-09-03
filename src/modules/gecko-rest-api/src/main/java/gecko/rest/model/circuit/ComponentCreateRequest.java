@@ -33,6 +33,6 @@ public record ComponentCreateRequest(
     @Schema(description = "Orientation: 501 SOUTH_NORTH, 502 WEST_EAST, 503 NORTH_SOUTH (default), 504 EAST_WEST", example = "503")
     Integer orientation,
 
-    @Schema(description = "Numeric parameters by index", example = "{\"param0\": 100.0}")
-    Map<String, Double> parameters
+    @Schema(description = "Component parameters by key", example = "{\"param0\": 100.0, \"sourceCode\": \"yOUT[0]=xIN[0];\"}")
+    Map<String, Object> parameters
 ) {}

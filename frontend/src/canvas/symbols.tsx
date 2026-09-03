@@ -170,6 +170,9 @@ export function SymbolByType({
       case 84:
       case 1014:
         return <MuxSymbol u={u} />;
+      case CTRL_TYPE.LEGACY_JAVA_FUNCTION:
+      case CTRL_TYPE.SCRIPT:
+        return <ScriptFunctionBlockSymbol u={u} label="f(x)" />;
       default:
         return <GenericBox u={u} family={family} type={type} />;
     }
@@ -884,6 +887,40 @@ function MuxSymbol({ u }: { u: number }) {
         stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
       <text x={0} y={0.2 * u} fontSize={0.4 * u} fill={CTRL_COLOR} stroke="none"
             textAnchor="middle" fontWeight="bold">MUX</text>
+    </g>
+  );
+}
+
+function ScriptFunctionBlockSymbol({ u, label = 'f(x)' }: { u: number; label?: string }) {
+  const boxW = 1.6 * u;
+  const boxH = 1.6 * u;
+  return (
+    <g className="symbol-control-script">
+      <line x1={-LEAD * u} y1={0} x2={-boxW / 2} y2={0} stroke={CTRL_COLOR} />
+      <line x1={boxW / 2} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
+      <rect
+        x={-boxW / 2}
+        y={-boxH / 2}
+        width={boxW}
+        height={boxH}
+        rx={3}
+        stroke={CTRL_COLOR}
+        strokeWidth={1.5}
+        fill="rgba(74,222,128,0.08)"
+      />
+      <text
+        x={0}
+        y={0.25 * u}
+        fontSize={0.65 * u}
+        fontFamily="monospace"
+        fontWeight="bold"
+        fontStyle="italic"
+        fill={CTRL_COLOR}
+        stroke="none"
+        textAnchor="middle"
+      >
+        {label}
+      </text>
     </g>
   );
 }

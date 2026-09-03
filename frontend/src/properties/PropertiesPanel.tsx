@@ -16,7 +16,7 @@ import { SymbolPreview } from '../canvas/symbols';
 interface PanelProps {
   component: EditorComponent | null;
   onRename: (name: string, newName: string) => void;
-  onSetParameter: (name: string, key: string, value: number) => void;
+  onSetParameter: (name: string, key: string, value: number | string) => void;
   onSetLabel: (component: string, side: 'x' | 'y', label: string) => void;
   onRotate?: (name: string) => void;
   onDelete?: (name: string) => void;
@@ -147,25 +147,29 @@ export function PropertiesPanel({
           </div>
         </div>
 
-        {/* Semantic Parameters Section */}
-        {meta.parameters.length > 0 && (
-          <div className="prop-section">
-            <div className="prop-section-title">Electrical Parameters</div>
-            <div className="prop-fields-list">
-              {meta.parameters.map((def) => {
-                const currentVal =
-                  (component.parameters[def.key] as number) ?? def.defaultValue;
-                return (
-                  <SemanticParameterField
-                    key={def.key}
-                    def={def}
-                    value={currentVal}
-                    onCommit={(val) => onSetParameter(component.name, def.key, val)}
-                  />
-                );
-              })}
+        {/* Dedicated Script / Function Block Editor */}
+        {(component.type === 1016 || component.type === 61 || meta.name === 'CTRL_SCRIPT') ? (
+          <ScriptBlockEditor component={component} onSetParameter={onSetParameter} />
+        ) : (
+          meta.parameters.length > 0 && (
+            <div className="prop-section">
+              <div className="prop-section-title">Electrical Parameters</div>
+              <div className="prop-fields-list">
+                {meta.parameters.map((def) => {
+                  const currentVal =
+                    (component.parameters[def.key] as number) ?? def.defaultValue;
+                  return (
+                    <SemanticParameterField
+                      key={def.key}
+                      def={def}
+                      value={currentVal}
+                      onCommit={(val) => onSetParameter(component.name, def.key, val)}
+                    />
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )
         )}
 
         {/* Terminals & Net Labels */}
@@ -362,6 +366,165 @@ function TerminalLabelRow({
             ✕
           </button>
         )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Modern programmable Script / Function Block editor with code editor,
+ * terminal count adjustment, syntax quick-help, and live validation.
+ */
+function ScriptBlockEditor({
+  component,
+  onSetParameter,
+}: {
+  component: EditorComponent;
+  onSetParameter: (name: string, key: string, value: number | string) => void;
+}) {
+  const currentCode = String(component.parameters['sourceCode'] || 'yOUT[0] = xIN[0];');
+  const [code, setCode] = useState(currentCode);
+  const [inCount, setInCount] = useState(Number(component.parameters['anzXIN'] || 1));
+  const [outCount, setOutCount] = useState(Number(component.parameters['anzYOUT'] || 1));
+  const [syntaxOpen, setSyntaxOpen] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    setCode(String(component.parameters['sourceCode'] || 'yOUT[0] = xIN[0];'));
+    setInCount(Number(component.parameters['anzXIN'] || 1));
+    setOutCount(Number(component.parameters['anzYOUT'] || 1));
+  }, [component.name, component.parameters]);
+
+  const handleApply = () => {
+    onSetParameter(component.name, 'sourceCode', code);
+    onSetParameter(component.name, 'anzXIN', inCount);
+    onSetParameter(component.name, 'anzYOUT', outCount);
+    setIsSaved(true);
+    setTimeout(() => setIsSaved(false), 2000);
+  };
+
+  return (
+    <div className="prop-section script-block-editor">
+      <div className="prop-section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span>Script / Function Logic</span>
+        <button
+          type="button"
+          className="btn-script-syntax-help"
+          onClick={() => setSyntaxOpen(!syntaxOpen)}
+          style={{
+            fontSize: '11px',
+            background: 'none',
+            border: '1px solid var(--border-subtle, #374151)',
+            borderRadius: '4px',
+            color: 'var(--accent-primary, #60a5fa)',
+            cursor: 'pointer',
+            padding: '2px 6px',
+          }}
+        >
+          {syntaxOpen ? 'Hide Help' : 'Cheat Sheet'}
+        </button>
+      </div>
+
+      {syntaxOpen && (
+        <div
+          className="script-syntax-cheatsheet"
+          style={{
+            background: 'var(--surface-sunken, #1e293b)',
+            color: 'var(--text-primary, #f8fafc)',
+            padding: '10px 12px',
+            borderRadius: '6px',
+            fontSize: '11px',
+            marginBottom: '10px',
+            border: '1px solid var(--border-subtle, #334155)',
+            lineHeight: 1.6,
+          }}
+        >
+          <div style={{ color: 'var(--text-primary, #f8fafc)' }}><strong style={{ color: 'var(--accent-primary, #38bdf8)' }}>Inputs:</strong> <code style={{ color: '#fbbf24', background: 'rgba(251,191,36,0.1)', padding: '1px 4px', borderRadius: '3px' }}>xIN[0]</code>, <code style={{ color: '#fbbf24', background: 'rgba(251,191,36,0.1)', padding: '1px 4px', borderRadius: '3px' }}>u1</code></div>
+          <div style={{ color: 'var(--text-primary, #f8fafc)' }}><strong style={{ color: 'var(--accent-primary, #38bdf8)' }}>Outputs:</strong> <code style={{ color: '#4ade80', background: 'rgba(74,222,128,0.1)', padding: '1px 4px', borderRadius: '3px' }}>yOUT[0]</code>, <code style={{ color: '#4ade80', background: 'rgba(74,222,128,0.1)', padding: '1px 4px', borderRadius: '3px' }}>y1</code></div>
+          <div style={{ color: 'var(--text-primary, #f8fafc)' }}><strong style={{ color: 'var(--accent-primary, #38bdf8)' }}>Time:</strong> <code style={{ color: '#a78bfa', background: 'rgba(167,139,250,0.1)', padding: '1px 4px', borderRadius: '3px' }}>t</code> (s), <code style={{ color: '#a78bfa', background: 'rgba(167,139,250,0.1)', padding: '1px 4px', borderRadius: '3px' }}>dt</code> (step)</div>
+          <div style={{ color: 'var(--text-primary, #f8fafc)' }}><strong style={{ color: 'var(--accent-primary, #38bdf8)' }}>Math:</strong> <code style={{ color: '#38bdf8' }}>sin, cos, sqrt, abs, pow, min, max, PI</code></div>
+          <div style={{ color: 'var(--text-primary, #f8fafc)' }}><strong style={{ color: 'var(--accent-primary, #38bdf8)' }}>Logic:</strong> <code style={{ color: '#38bdf8' }}>if (cond) &#123; ... &#125; else &#123; ... &#125;</code>, <code style={{ color: '#38bdf8' }}>? :</code></div>
+          <div style={{ color: '#94a3b8', marginTop: '4px', fontStyle: 'italic' }}>State variables automatically persist across simulation time steps.</div>
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
+        <div className="prop-field">
+          <label className="prop-label">Input Terminals</label>
+          <input
+            type="number"
+            min={0}
+            max={16}
+            className="prop-input"
+            value={inCount}
+            onChange={(e) => {
+              const val = Math.max(0, parseInt(e.target.value) || 0);
+              setInCount(val);
+              onSetParameter(component.name, 'anzXIN', val);
+            }}
+          />
+        </div>
+        <div className="prop-field">
+          <label className="prop-label">Output Terminals</label>
+          <input
+            type="number"
+            min={1}
+            max={16}
+            className="prop-input"
+            value={outCount}
+            onChange={(e) => {
+              const val = Math.max(1, parseInt(e.target.value) || 1);
+              setOutCount(val);
+              onSetParameter(component.name, 'anzYOUT', val);
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="prop-field">
+        <label className="prop-label">Formula / Code (executed each dt)</label>
+        <textarea
+          className="script-code-editor-area"
+          rows={7}
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          onBlur={handleApply}
+          placeholder="yOUT[0] = xIN[0] * 2;"
+          style={{
+            width: '100%',
+            fontFamily: 'Consolas, "Fira Code", monospace',
+            fontSize: '12px',
+            backgroundColor: 'var(--surface-sunken, #0f172a)',
+            color: 'var(--text-primary, #f8fafc)',
+            border: '1px solid var(--border-subtle, #334155)',
+            borderRadius: '6px',
+            padding: '8px',
+            boxSizing: 'border-box',
+            resize: 'vertical',
+            lineHeight: 1.4,
+          }}
+        />
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
+        <button
+          type="button"
+          onClick={handleApply}
+          className="action-btn"
+          style={{
+            fontSize: '12px',
+            padding: '4px 12px',
+            backgroundColor: isSaved ? '#16a34a' : 'var(--accent-primary, #3b82f6)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontWeight: 500,
+            transition: 'background-color 0.2s',
+          }}
+        >
+          {isSaved ? '✓ Applied' : 'Apply Script'}
+        </button>
       </div>
     </div>
   );

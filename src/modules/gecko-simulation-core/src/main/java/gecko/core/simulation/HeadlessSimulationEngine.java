@@ -358,7 +358,9 @@ public class HeadlessSimulationEngine {
                 }
                 ControlCalculatorBuilder.SignalTap tap = signalTaps[sigIdx];
                 if (tap != null) {
-                    values[sigIdx] = (float) tap.source()._outputSignal[0][0];
+                    int outIdx = tap.outputIndex();
+                    values[sigIdx] = (float) (outIdx < tap.source()._outputSignal.length
+                            ? tap.source()._outputSignal[outIdx][0] : 0.0);
                     continue;
                 }
                 int node = signalNodes[sigIdx];
