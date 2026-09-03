@@ -19,19 +19,21 @@ export function Palette({ catalog, onArm }: PaletteProps) {
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  // Augment catalog entries with schema metadata
+  // Augment catalog entries with schema metadata (hide legacy Java block from new part palette)
   const catalogWithMeta = useMemo(() => {
-    return (catalog || []).map((entry) => {
-      const meta = getComponentMeta(entry.type, entry.family, entry.name);
-      return {
-        ...entry,
-        meta,
-        displayName: meta.displayName,
-        category: meta.category,
-        shortcut: meta.shortcut,
-        description: meta.description,
-      };
-    });
+    return (catalog || [])
+      .filter((entry) => entry.type !== 61 && entry.name !== 'C_JAVA_FUNCTION')
+      .map((entry) => {
+        const meta = getComponentMeta(entry.type, entry.family, entry.name);
+        return {
+          ...entry,
+          meta,
+          displayName: meta.displayName,
+          category: meta.category,
+          shortcut: meta.shortcut,
+          description: meta.description,
+        };
+      });
   }, [catalog]);
 
   // Category item counts

@@ -419,7 +419,7 @@ public class CircuitEditService {
         if (catalog == null) {
             List<CatalogResponse.CatalogEntry> entries = new ArrayList<>();
             for (CircuitTypCore typ : CircuitTypCore.values()) {
-                if (typ.isTerminal()) {
+                if (typ.isTerminal() || typ == CircuitTypCore.C_JAVA_FUNCTION) {
                     continue;
                 }
                 String family;
