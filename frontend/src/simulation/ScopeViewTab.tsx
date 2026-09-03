@@ -12,10 +12,10 @@ import {
   formatEngineeringValue,
 } from '../model/componentSchema';
 import { mapSimulationResults } from './chartData';
-import { estimateStepCount, STEP_WARNING_THRESHOLD } from './simSteps';
 
 interface ScopeViewTabProps {
-  scopeName: string; // 'all' or 'SCOPE.1', 'SCOPE.2', etc.
+  selectedScope: string; // 'all' or 'SCOPE.1', 'SCOPE.2', etc.
+  onSelectScope: (scope: string) => void;
   components: EditorComponent[];
   results: Record<string, number[]> | null;
   status: SimulationStatus | null;
@@ -34,8 +34,6 @@ interface ScopeViewTabProps {
   onPauseSimulation?: () => void;
   onResumeSimulation?: () => void;
   onCancelSimulation?: () => void;
-  onCloseTab?: () => void;
-  onSelectTab: (tabId: string) => void;
 }
 
 const TRACE_COLORS_DARK = [
@@ -61,7 +59,8 @@ const TRACE_COLORS_LIGHT = [
 ];
 
 export function ScopeViewTab({
-  scopeName,
+  selectedScope,
+  onSelectScope,
   components,
   results,
   status,
@@ -74,8 +73,6 @@ export function ScopeViewTab({
   onPauseSimulation,
   onResumeSimulation,
   onCancelSimulation,
-  onCloseTab,
-  onSelectTab,
 }: ScopeViewTabProps) {
   const [displayLayout, setDisplayLayout] = useState<'overlay' | 'stacked'>('overlay');
   const [hiddenSignals, setHiddenSignals] = useState<Record<string, boolean>>({});
@@ -120,9 +117,9 @@ export function ScopeViewTab({
   }, [components]);
 
   const activeScopeBlock = useMemo(() => {
-    if (scopeName === 'all') return null;
-    return scopeBlocks.find((sb) => sb.name === scopeName) || null;
-  }, [scopeBlocks, scopeName]);
+    if (selectedScope === 'all') return null;
+    return scopeBlocks.find((sb) => sb.name === selectedScope) || null;
+  }, [scopeBlocks, selectedScope]);
 
   const { signalNames, timeArray, signalStats } = useMemo(
     () => mapSimulationResults(results),
@@ -131,12 +128,12 @@ export function ScopeViewTab({
 
   // Channels that belong to this Scope
   const scopeChannels = useMemo(() => {
-    if (scopeName === 'all' || !activeScopeBlock) {
+    if (selectedScope === 'all' || !activeScopeBlock) {
       return signalNames;
     }
     const channels = activeScopeBlock.inputLabels.filter((l) => l && signalNames.includes(l));
     return channels.length > 0 ? channels : signalNames;
-  }, [scopeName, activeScopeBlock, signalNames]);
+  }, [selectedScope, activeScopeBlock, signalNames]);
 
   const filteredChannels = useMemo(() => {
     if (!channelSearch.trim()) return scopeChannels;
@@ -155,11 +152,8 @@ export function ScopeViewTab({
   const isRunning = status === 'PENDING' || status === 'RUNNING';
   const isPaused = status === 'PAUSED';
 
-  // Step warning
   const tEndNum = parseEngineeringValue(tEndStr);
   const dtNum = parseEngineeringValue(dtStr);
-  const estSteps = estimateStepCount(tEndNum ?? 0.02, dtNum ?? 1e-6);
-  const isHeavyRun = estSteps > STEP_WARNING_THRESHOLD;
 
   const handleRun = () => {
     const dur = tEndNum !== null && !isNaN(tEndNum) && tEndNum > 0 ? tEndNum : 0.02;
@@ -187,93 +181,22 @@ export function ScopeViewTab({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${scopeName}_results_${Date.now()}.csv`;
+    a.download = `${selectedScope}_results_${Date.now()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   return (
     <div className="scope-view-tab-container">
-      {/* Simulation Configuration Bar (Shown for Simulation Overview or collapsible) */}
-      <div className="sim-params-bar" style={{ padding: '8px 16px', background: 'var(--panel-header)', borderBottom: '1px solid var(--border)' }}>
-        <div className="sim-param-item">
-          <label htmlFor="tab-tend-input">Duration (tEnd):</label>
-          <input
-            id="tab-tend-input"
-            type="text"
-            className="sim-param-input"
-            value={tEndStr}
-            onChange={(e) => setTEndStr(e.target.value)}
-            placeholder="e.g. 20m, 0.05"
-            disabled={isRunning}
-          />
-        </div>
-
-        <div className="sim-param-item">
-          <label htmlFor="tab-dt-input">Time step (dt):</label>
-          <input
-            id="tab-dt-input"
-            type="text"
-            className="sim-param-input"
-            value={dtStr}
-            onChange={(e) => setDtStr(e.target.value)}
-            placeholder="e.g. 1u, 1e-6"
-            disabled={isRunning}
-          />
-        </div>
-
-        <div className="sim-param-item">
-          <label htmlFor="tab-solver-select">Solver:</label>
-          <select
-            id="tab-solver-select"
-            className="sim-param-select"
-            value={solverType}
-            onChange={(e) => setSolverType(e.target.value)}
-            disabled={isRunning}
-          >
-            <option value="backward-euler">Backward Euler</option>
-            <option value="trapezoidal">Trapezoidal</option>
-            <option value="gear-shichman">Gear-Shichman</option>
-          </select>
-        </div>
-
-        <div className="sim-param-item">
-          <label htmlFor="tab-backend-select">Engine:</label>
-          <select
-            id="tab-backend-select"
-            className="sim-param-select"
-            value={backendEngine}
-            onChange={(e) => setBackendEngine(e.target.value)}
-            disabled={isRunning}
-          >
-            <option value="headless">Gecko Headless Core</option>
-            <option value="classic">Classic Simulation</option>
-          </select>
-        </div>
-
-        {isHeavyRun && (
-          <span className="step-warning-badge" title={`${estSteps.toLocaleString()} steps computed`}>
-            ⚠ {estSteps.toLocaleString()} steps
-          </span>
-        )}
-
-        {/* Status Badge */}
-        {status && (
-          <span className={`sim-status-badge ${status.toLowerCase()}`}>
-            {status}
-          </span>
-        )}
-      </div>
-
       {/* Scope Header Toolbar */}
       <div className="scope-tab-header">
         <div className="scope-tab-title-group">
           <div className="scope-badge-icon">
-            {scopeName === 'all' ? '📊' : '📺'}
+            {selectedScope === 'all' ? '📊' : '📺'}
           </div>
           <div>
             <div className="scope-tab-title">
-              {scopeName === 'all' ? 'Simulation Overview (All Scopes & Signals)' : `Scope Instrument: ${scopeName}`}
+              {selectedScope === 'all' ? 'Simulation Overview (All Scopes & Signals)' : `Scope Instrument: ${selectedScope}`}
             </div>
             <div className="scope-tab-subtitle">
               {scopeChannels.length} channel{scopeChannels.length === 1 ? '' : 's'}:{' '}
@@ -284,21 +207,31 @@ export function ScopeViewTab({
 
         {/* Action Controls */}
         <div className="scope-tab-actions">
-          {/* Quick Scope Switcher */}
-          {scopeBlocks.length > 1 && (
-            <select
-              className="scope-select"
-              value={scopeName}
-              onChange={(e) => onSelectTab(e.target.value === 'all' ? 'simulation' : `scope:${e.target.value}`)}
+          {/* Quick Scope Switcher Pills / Dropdown */}
+          <div className="scope-pills" style={{ display: 'flex', gap: 4, marginRight: 8 }}>
+            <button
+              type="button"
+              className={`scope-pill-btn ${selectedScope === 'all' ? 'active' : ''}`}
+              onClick={() => onSelectScope('all')}
+              title="Show all recorded signals"
             >
-              {scopeBlocks.map((sb) => (
-                <option key={sb.name} value={sb.name}>
-                  📺 {sb.name} ({sb.inputLabels.filter(Boolean).length} ch)
-                </option>
-              ))}
-              <option value="all">🌐 All Scopes ({signalNames.length} ch)</option>
-            </select>
-          )}
+              🌐 All Signals ({signalNames.length})
+            </button>
+            {scopeBlocks.map((sb) => {
+              const chCount = sb.inputLabels.filter(Boolean).length;
+              return (
+                <button
+                  key={sb.name}
+                  type="button"
+                  className={`scope-pill-btn ${selectedScope === sb.name ? 'active' : ''}`}
+                  onClick={() => onSelectScope(sb.name)}
+                  title={`Focus on ${sb.name}`}
+                >
+                  📺 {sb.name} ({chCount})
+                </button>
+              );
+            })}
+          </div>
 
           {/* Display Mode Toggle */}
           <div className="segmented-control">
@@ -393,26 +326,6 @@ export function ScopeViewTab({
               Export CSV
             </button>
           )}
-
-          <button
-            type="button"
-            className="scope-btn-secondary"
-            onClick={() => onSelectTab('schematic')}
-            title="Switch to Circuit Schematic tab"
-          >
-            📐 Schematic
-          </button>
-
-          {onCloseTab && (
-            <button
-              type="button"
-              className="scope-close-tab-btn"
-              onClick={onCloseTab}
-              title="Close this Scope Tab"
-            >
-              ✕
-            </button>
-          )}
         </div>
       </div>
 
@@ -486,7 +399,7 @@ export function ScopeViewTab({
       <div className="scope-tab-body">
         {!results || signalNames.length === 0 ? (
           <div className="scope-empty-state">
-            <div className="empty-icon">{scopeName === 'all' ? '📊' : '📺'}</div>
+            <div className="empty-icon">{selectedScope === 'all' ? '📊' : '📺'}</div>
             <h3>No simulation data available</h3>
             <p>Configure parameters above and click <strong>"Run Simulation"</strong> to calculate waveforms.</p>
             <button

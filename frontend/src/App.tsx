@@ -6,11 +6,12 @@
  *
  * Central keyboard interaction layer (P3) powered by keybindings.ts.
  */
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useEditor } from './hooks/useEditor';
 import { Sheet } from './canvas/Sheet';
 import { Palette } from './palette/Palette';
 import { PropertiesPanel } from './properties/PropertiesPanel';
+import { SimulationPropertiesPanel } from './properties/SimulationPropertiesPanel';
 import { ScopeViewTab } from './simulation/ScopeViewTab';
 import { CommandPalette } from './palette/CommandPalette';
 import { EXAMPLES } from './model/examples';
@@ -25,43 +26,15 @@ export function App() {
   const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
-  const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<string>('schematic');
-  const [openScopeTabs, setOpenScopeTabs] = useState<string[]>([]);
+  const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<'schematic' | 'simulation'>('schematic');
+  const [selectedScope, setSelectedScope] = useState<string>('all');
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     return (localStorage.getItem('gecko-theme') as 'dark' | 'light') || 'dark';
   });
 
-  const scopeComponents = useMemo(() => {
-    return state.components.filter(
-      (c) =>
-        c.type === 5 ||
-        c.type === 1003 ||
-        c.name.toUpperCase().startsWith('SCOPE') ||
-        c.name.toUpperCase().startsWith('OSZI'),
-    );
-  }, [state.components]);
-
-  // When a new circuit is loaded, automatically add its Scope instruments as workspace tabs
-  useEffect(() => {
-    if (scopeComponents.length > 0) {
-      setOpenScopeTabs(scopeComponents.map((s) => s.name));
-    } else {
-      setOpenScopeTabs([]);
-    }
-  }, [state.circuitId, scopeComponents.length]);
-
   const openScopeTab = (scopeName: string) => {
-    if (!openScopeTabs.includes(scopeName)) {
-      setOpenScopeTabs((prev) => [...prev, scopeName]);
-    }
-    setActiveWorkspaceTab(`scope:${scopeName}`);
-  };
-
-  const closeScopeTab = (scopeName: string) => {
-    setOpenScopeTabs((prev) => prev.filter((s) => s !== scopeName));
-    if (activeWorkspaceTab === `scope:${scopeName}`) {
-      setActiveWorkspaceTab('schematic');
-    }
+    setSelectedScope(scopeName);
+    setActiveWorkspaceTab('simulation');
   };
 
   useEffect(() => {
@@ -436,40 +409,42 @@ export function App() {
 
       {/* Main Workspace (3-Column Layout) */}
       <div className="workspace">
-        {/* Left Sidebar: Component Palette */}
-        <aside
-          className={`sidebar left ${leftSidebarOpen ? '' : 'collapsed'}`}
-          onClick={() => {
-            if (!leftSidebarOpen) setLeftSidebarOpen(true);
-          }}
-        >
-          <div className="sidebar-header">
-            <span className="sidebar-title">Components</span>
-            <button
-              type="button"
-              className="sidebar-toggle-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                setLeftSidebarOpen(!leftSidebarOpen);
-              }}
-              title={leftSidebarOpen ? 'Collapse palette panel (Ctrl+B)' : 'Expand palette panel (Ctrl+B)'}
-            >
-              {leftSidebarOpen ? '◀' : '▶'}
-            </button>
-          </div>
-          {leftSidebarOpen ? (
-            <Palette catalog={catalog} onArm={actions.arm} />
-          ) : (
-            <div className="collapsed-strip" title="Click to expand Components Palette (Ctrl+B)">
-              <span className="collapsed-strip-icon">⊞</span>
-              <span className="collapsed-strip-text">COMPONENTS</span>
+        {/* Left Sidebar: Component Palette (Visible only in Schematic view) */}
+        {activeWorkspaceTab === 'schematic' && (
+          <aside
+            className={`sidebar left ${leftSidebarOpen ? '' : 'collapsed'}`}
+            onClick={() => {
+              if (!leftSidebarOpen) setLeftSidebarOpen(true);
+            }}
+          >
+            <div className="sidebar-header">
+              <span className="sidebar-title">Components</span>
+              <button
+                type="button"
+                className="sidebar-toggle-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLeftSidebarOpen(!leftSidebarOpen);
+                }}
+                title={leftSidebarOpen ? 'Collapse palette panel (Ctrl+B)' : 'Expand palette panel (Ctrl+B)'}
+              >
+                {leftSidebarOpen ? '◀' : '▶'}
+              </button>
             </div>
-          )}
-        </aside>
+            {leftSidebarOpen ? (
+              <Palette catalog={catalog} onArm={actions.arm} />
+            ) : (
+              <div className="collapsed-strip" title="Click to expand Components Palette (Ctrl+B)">
+                <span className="collapsed-strip-icon">⊞</span>
+                <span className="collapsed-strip-text">COMPONENTS</span>
+              </div>
+            )}
+          </aside>
+        )}
 
-        {/* Center: Canvas Schematic Sheet / Scope Instrument Tabs */}
+        {/* Center: Canvas Schematic Sheet / Simulation Workspace */}
         <main className="sheet-viewport">
-          {/* Workspace Tab Bar */}
+          {/* Workspace Tab Bar: Clean 2-tab design */}
           <div className="workspace-tabs-bar">
             <button
               type="button"
@@ -484,50 +459,10 @@ export function App() {
               type="button"
               className={`workspace-tab ${activeWorkspaceTab === 'simulation' ? 'active' : ''}`}
               onClick={() => setActiveWorkspaceTab('simulation')}
-              title="Full Simulation Overview Dashboard"
+              title="Circuit Simulation & Scope Waveforms"
             >
-              📊 Simulation Overview
+              📊 Simulation
             </button>
-
-            {openScopeTabs.map((scopeName) => {
-              const isActive = activeWorkspaceTab === `scope:${scopeName}`;
-              const sb = scopeComponents.find((s) => s.name === scopeName);
-              const chCount = sb ? sb.inputLabels.filter(Boolean).length : 0;
-              return (
-                <button
-                  key={scopeName}
-                  type="button"
-                  className={`workspace-tab ${isActive ? 'active' : ''}`}
-                  onClick={() => setActiveWorkspaceTab(`scope:${scopeName}`)}
-                  title={`Dedicated Full-Screen Scope View: ${scopeName}`}
-                >
-                  📺 {scopeName} {chCount > 0 && <span className="workspace-tab-badge">{chCount}</span>}
-                  <span
-                    className="workspace-tab-close"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      closeScopeTab(scopeName);
-                    }}
-                    title={`Close ${scopeName} tab`}
-                  >
-                    ×
-                  </span>
-                </button>
-              );
-            })}
-
-            {/* If there are unopened scopes, allow adding them as tabs */}
-            {scopeComponents.filter((sb) => !openScopeTabs.includes(sb.name)).map((sb) => (
-              <button
-                key={sb.name}
-                type="button"
-                className="workspace-add-tab-btn"
-                onClick={() => openScopeTab(sb.name)}
-                title={`Open dedicated tab for ${sb.name}`}
-              >
-                + 📺 {sb.name}
-              </button>
-            ))}
           </div>
 
           {/* Active Tab Content */}
@@ -580,7 +515,8 @@ export function App() {
             </>
           ) : (
             <ScopeViewTab
-              scopeName={activeWorkspaceTab === 'simulation' ? 'all' : activeWorkspaceTab.replace('scope:', '')}
+              selectedScope={selectedScope}
+              onSelectScope={setSelectedScope}
               components={state.components}
               results={simState.results}
               status={simState.status}
@@ -593,17 +529,11 @@ export function App() {
               onPauseSimulation={actions.pauseSimulation}
               onResumeSimulation={actions.resumeSimulation}
               onCancelSimulation={actions.cancelSimulation}
-              onCloseTab={
-                activeWorkspaceTab.startsWith('scope:')
-                  ? () => closeScopeTab(activeWorkspaceTab.replace('scope:', ''))
-                  : undefined
-              }
-              onSelectTab={(tabId) => setActiveWorkspaceTab(tabId)}
             />
           )}
         </main>
 
-        {/* Right Sidebar: Properties Panel */}
+        {/* Right Sidebar: Component Properties or Simulation Properties Panel */}
         <aside
           className={`sidebar right ${rightSidebarOpen ? '' : 'collapsed'}`}
           onClick={() => {
@@ -611,7 +541,9 @@ export function App() {
           }}
         >
           <div className="sidebar-header">
-            <span className="sidebar-title">Inspector</span>
+            <span className="sidebar-title">
+              {activeWorkspaceTab === 'schematic' ? 'Inspector' : 'Simulation Settings'}
+            </span>
             <button
               type="button"
               className="sidebar-toggle-btn"
@@ -619,25 +551,45 @@ export function App() {
                 e.stopPropagation();
                 setRightSidebarOpen(!rightSidebarOpen);
               }}
-              title={rightSidebarOpen ? 'Collapse inspector panel (Ctrl+I)' : 'Expand inspector panel (Ctrl+I)'}
+              title={rightSidebarOpen ? 'Collapse panel (Ctrl+I)' : 'Expand panel (Ctrl+I)'}
             >
               {rightSidebarOpen ? '▶' : '◀'}
             </button>
           </div>
           {rightSidebarOpen ? (
-            <PropertiesPanel
-              component={state.components.find((c) => c.name === state.panelFor) || null}
-              onRename={actions.rename}
-              onSetParameter={actions.setParameter}
-              onSetLabel={actions.setLabel}
-              onRotate={actions.rotateComponent}
-              onDelete={actions.deleteComponent}
-              onOpenScopeTab={(name) => openScopeTab(name)}
-            />
+            activeWorkspaceTab === 'schematic' ? (
+              <PropertiesPanel
+                component={state.components.find((c) => c.name === state.panelFor) || null}
+                onRename={actions.rename}
+                onSetParameter={actions.setParameter}
+                onSetLabel={actions.setLabel}
+                onRotate={actions.rotateComponent}
+                onDelete={actions.deleteComponent}
+                onOpenScopeTab={(name) => openScopeTab(name)}
+              />
+            ) : (
+              <SimulationPropertiesPanel
+                circuitId={state.circuitId}
+                status={simState.status}
+                progress={simState.progress}
+                defaults={simState.defaults}
+                errorMessage={simState.errorMessage}
+                components={state.components}
+                results={simState.results}
+                selectedScope={selectedScope}
+                onSelectScope={setSelectedScope}
+                onRunSimulation={actions.runSimulation}
+                onPauseSimulation={actions.pauseSimulation}
+                onResumeSimulation={actions.resumeSimulation}
+                onCancelSimulation={actions.cancelSimulation}
+              />
+            )
           ) : (
-            <div className="collapsed-strip" title="Click to expand Inspector / Properties (Ctrl+I)">
+            <div className="collapsed-strip" title="Click to expand (Ctrl+I)">
               <span className="collapsed-strip-icon">⚙</span>
-              <span className="collapsed-strip-text">INSPECTOR</span>
+              <span className="collapsed-strip-text">
+                {activeWorkspaceTab === 'schematic' ? 'INSPECTOR' : 'SIMULATION'}
+              </span>
             </div>
           )}
         </aside>
