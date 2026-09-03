@@ -122,13 +122,31 @@ export function useEditor() {
     await openContent(BLANK_CIRCUIT_IPES, 'Untitled.ipes');
   }, [openContent]);
 
-  const arm = useCallback((entry: CatalogEntry) => {
+  // Automatically initialize a blank workspace if none is loaded on initial page load / reload
+  useEffect(() => {
     if (!stateRef.current.circuitId) {
-      dispatch({ type: 'STATUS', status: 'Open a .ipes file first (Open... button)' });
-      return;
+      newCircuit().catch(console.error);
     }
-    dispatch({ type: 'ARM', componentType: entry.type, family: entry.family });
-  }, []);
+  }, [newCircuit]);
+
+  const arm = useCallback(
+    async (entry: CatalogEntry) => {
+      let circuitId = stateRef.current.circuitId;
+      if (!circuitId) {
+        try {
+          dispatch({ type: 'STATUS', status: 'Initializing workspace...' });
+          circuitId = await api.uploadIpesString(BLANK_CIRCUIT_IPES, 'Untitled.ipes');
+          attachSubscription(circuitId);
+          await refresh(circuitId);
+        } catch (e) {
+          reportError(e);
+          return;
+        }
+      }
+      dispatch({ type: 'ARM', componentType: entry.type, family: entry.family });
+    },
+    [attachSubscription, refresh, reportError],
+  );
 
   const cancel = useCallback(() => dispatch({ type: 'CANCEL' }), []);
   const toggleWireMode = useCallback(() => dispatch({ type: 'TOGGLE_WIRE_MODE' }), []);
