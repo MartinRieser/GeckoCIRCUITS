@@ -34,6 +34,15 @@ export function Palette({ catalog, onArm }: PaletteProps) {
     });
   }, [catalog]);
 
+  // Category item counts
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: catalogWithMeta.length };
+    for (const entry of catalogWithMeta) {
+      counts[entry.category] = (counts[entry.category] || 0) + 1;
+    }
+    return counts;
+  }, [catalogWithMeta]);
+
   // Filter and group
   const filteredEntries = useMemo(() => {
     const needle = filter.trim().toLowerCase();
@@ -97,17 +106,37 @@ export function Palette({ catalog, onArm }: PaletteProps) {
           )}
         </div>
 
-        <div className="palette-categories">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              type="button"
-              className={`category-pill ${selectedCategory === cat.id ? 'active' : ''}`}
-              onClick={() => setSelectedCategory(cat.id)}
+        <div className="palette-category-row">
+          <div className="palette-category-select-wrapper">
+            <select
+              id="palette-category-select"
+              className="palette-category-select"
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value as CategoryId)}
+              aria-label="Filter components by category"
             >
-              {cat.label}
+              {CATEGORIES.map((cat) => {
+                const count = categoryCounts[cat.id] ?? 0;
+                if (cat.id !== 'all' && count === 0) return null;
+                return (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.label} ({count})
+                  </option>
+                );
+              })}
+            </select>
+            <span className="palette-category-caret">▾</span>
+          </div>
+          {selectedCategory !== 'all' && (
+            <button
+              type="button"
+              className="palette-category-reset-btn"
+              onClick={() => setSelectedCategory('all')}
+              title="Reset to All Components"
+            >
+              All
             </button>
-          ))}
+          )}
         </div>
       </div>
 
