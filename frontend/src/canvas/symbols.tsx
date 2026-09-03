@@ -62,8 +62,16 @@ export function ComponentSymbol({
     ? controlOrientationAngle(component.orientation)
     : orientationAngle(component.orientation);
   const compParams = component.parameters || {};
-  const inCount = Math.max(0, Number(compParams.anzXIN) ?? (component.inputLabels?.length || 1));
-  const outCount = Math.max(1, Number(compParams.anzYOUT) || 1);
+  const rawIn = compParams.anzXIN;
+  const inCount =
+    rawIn !== undefined && rawIn !== null && rawIn !== '' && !isNaN(Number(rawIn))
+      ? Math.max(0, Number(rawIn))
+      : (component.inputLabels?.length || 1);
+  const rawOut = compParams.anzYOUT;
+  const outCount =
+    rawOut !== undefined && rawOut !== null && rawOut !== '' && !isNaN(Number(rawOut))
+      ? Math.max(1, Number(rawOut))
+      : 1;
   return (
     <g transform={`rotate(${angle})`}>
       <SymbolByType

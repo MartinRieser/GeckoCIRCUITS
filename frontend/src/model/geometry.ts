@@ -133,8 +133,16 @@ export function terminalPositions(component: {
     // Function Block / Classic Java Block: dynamic N inputs, M outputs
     if (component.type === CTRL_TYPE.SCRIPT || component.type === CTRL_TYPE.LEGACY_JAVA_FUNCTION) {
       const compParams = (component as any).parameters || {};
-      const inCount = Math.max(0, Number(compParams.anzXIN) ?? (component.inputLabels?.length || 1));
-      const outCount = Math.max(1, Number(compParams.anzYOUT) || 1);
+      const rawIn = compParams.anzXIN;
+      const inCount =
+        rawIn !== undefined && rawIn !== null && rawIn !== '' && !isNaN(Number(rawIn))
+          ? Math.max(0, Number(rawIn))
+          : (component.inputLabels?.length || 1);
+      const rawOut = compParams.anzYOUT;
+      const outCount =
+        rawOut !== undefined && rawOut !== null && rawOut !== '' && !isNaN(Number(rawOut))
+          ? Math.max(1, Number(rawOut))
+          : ((component as any).outputLabels?.length || 1);
       const step = 2; // 2 grid units between pins
 
       const inputs: Point[] = [];

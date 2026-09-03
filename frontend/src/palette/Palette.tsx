@@ -12,9 +12,10 @@ import { SymbolPreview } from '../canvas/symbols';
 interface PaletteProps {
   catalog: CatalogEntry[];
   onArm: (entry: CatalogEntry) => void;
+  onCollapse?: () => void;
 }
 
-export function Palette({ catalog, onArm }: PaletteProps) {
+export function Palette({ catalog, onArm, onCollapse }: PaletteProps) {
   const [filter, setFilter] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -68,23 +69,36 @@ export function Palette({ catalog, onArm }: PaletteProps) {
       <div className="palette-header">
         <div className="palette-title-row">
           <span className="palette-title">Components</span>
-          <div className="palette-view-toggle">
-            <button
-              type="button"
-              className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
-              onClick={() => setViewMode('grid')}
-              title="Grid view"
-            >
-              ⊞
-            </button>
-            <button
-              type="button"
-              className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
-              onClick={() => setViewMode('list')}
-              title="List view"
-            >
-              ☰
-            </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div className="palette-view-toggle">
+              <button
+                type="button"
+                className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                onClick={() => setViewMode('grid')}
+                title="Grid view"
+              >
+                ⊞
+              </button>
+              <button
+                type="button"
+                className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
+                onClick={() => setViewMode('list')}
+                title="List view"
+              >
+                ☰
+              </button>
+            </div>
+            {onCollapse && (
+              <button
+                type="button"
+                className="sidebar-toggle-btn"
+                onClick={onCollapse}
+                title="Collapse palette panel (Ctrl+B)"
+                style={{ height: '22px', padding: '0 6px', fontSize: '10px' }}
+              >
+                ◀
+              </button>
+            )}
           </div>
         </div>
 

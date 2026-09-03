@@ -461,22 +461,12 @@ export function App() {
               if (!leftSidebarOpen) setLeftSidebarOpen(true);
             }}
           >
-            <div className="sidebar-header">
-              <span className="sidebar-title">Components</span>
-              <button
-                type="button"
-                className="sidebar-toggle-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setLeftSidebarOpen(!leftSidebarOpen);
-                }}
-                title={leftSidebarOpen ? 'Collapse palette panel (Ctrl+B)' : 'Expand palette panel (Ctrl+B)'}
-              >
-                {leftSidebarOpen ? '◀' : '▶'}
-              </button>
-            </div>
             {leftSidebarOpen ? (
-              <Palette catalog={catalog} onArm={actions.arm} />
+              <Palette
+                catalog={catalog}
+                onArm={actions.arm}
+                onCollapse={() => setLeftSidebarOpen(false)}
+              />
             ) : (
               <div className="collapsed-strip" title="Click to expand Components Palette (Ctrl+B)">
                 <span className="collapsed-strip-icon">⊞</span>

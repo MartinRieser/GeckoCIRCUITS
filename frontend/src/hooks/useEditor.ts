@@ -143,6 +143,11 @@ export function useEditor() {
 
       if (type === undefined || !circuitId) return;
       dispatch({ type: 'CANCEL' });
+      const defaultParams =
+        type === 1016 || type === 61
+          ? { sourceCode: 'yOUT[0] = xIN[0];', anzXIN: 1, anzYOUT: 1 }
+          : undefined;
+
       api
         .createComponent(circuitId, {
           family,
@@ -150,6 +155,7 @@ export function useEditor() {
           x,
           y,
           orientation: orient,
+          parameters: defaultParams,
         })
         .then((msg) => {
           const payload = msg.payload as ComponentPayload;

@@ -667,8 +667,12 @@ public class CircuitEditService {
         return params;
     }
 
-    /** Seeds a fresh component with the classic defaults, like the Swing constructors do. */
     private static void applyDefaultParameters(CircuitModel.ComponentData comp) {
+        if (comp.getType() == 1016 || comp.getType() == 61) {
+            comp.setParameter("sourceCode", "yOUT[0] = xIN[0];");
+            comp.setParameter("anzXIN", 1);
+            comp.setParameter("anzYOUT", 1);
+        }
         double[] defaults = DEFAULT_PARAMETERS.get(comp.getType());
         if (defaults == null) {
             return;
