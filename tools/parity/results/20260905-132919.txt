@@ -1,0 +1,15 @@
+﻿GeckoCIRCUITS parity report 20260905-132919
+tolerances: rel=0.001 abs=0.005 (legacy scope path: float32 + decimation)
+
+rc-lowpass       ERROR
+rl-transient     ERROR
+rlc-series       ERROR
+buck_simple      ERROR
+boostPFC         ERROR
+thyristor_RL_3phBridge ERROR
+three-phase_VSR_250kW ERROR
+ex_1             ERROR
+ex_3_pwm         ERROR
+singlePhase_PWM_converter ERROR
+
+PARITY: FAIL

@@ -66,21 +66,24 @@ function Invoke-JavaBounded {
     # Runs java with a hard wall-clock bound; kills the process tree on
     # expiry and returns 124 (the conventional timeout exit code).
     param([string[]]$JavaArgs, [int]$TimeoutSec)
-    # Start-Process joins the array without quoting: preserve empty and
-    # whitespace-containing arguments (empty port/labels/tEnd markers).
+    # Preserve empty and whitespace-containing arguments (empty port/labels/
+    # tEnd markers).
     $quoted = $JavaArgs | ForEach-Object {
         if ($_ -eq '' -or $_ -match '\s') { '"' + $_ + '"' } else { $_ }
     }
-    $p = Start-Process -FilePath 'java' -ArgumentList $quoted -NoNewWindow -PassThru
+    # Windows PowerShell 5.1's Start-Process -PassThru does not populate
+    # ExitCode reliably (stays $null even after WaitForExit), so use the
+    # .NET API directly. Output is inherited since we do not redirect.
+    $psi = New-Object System.Diagnostics.ProcessStartInfo
+    $psi.FileName = 'java'
+    $psi.Arguments = $quoted -join ' '
+    $psi.UseShellExecute = $false
+    $p = [System.Diagnostics.Process]::Start($psi)
     if (-not $p.WaitForExit($TimeoutSec * 1000)) {
         Stop-JavaChildren $p.Id
         Write-Host "TIMEOUT after ${TimeoutSec}s: java $($quoted -join ' ')"
         return 124
     }
-    # WaitForExit(Int32) alone can leave ExitCode unset ($null); the
-    # parameterless overload flushes it. Without this every run looked
-    # "failed" because $null -eq 0 is false.
-    $p.WaitForExit()
     return $p.ExitCode
 }
 

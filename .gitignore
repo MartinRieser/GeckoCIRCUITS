@@ -80,3 +80,6 @@ src/modules/gecko-rest-api/src/main/resources/static/
 
 # P5 parity harness compiled classes
 tools/parity/classes/
+
+# maven-shade byproduct (fat jar build)
+src/modules/gecko-gui/dependency-reduced-pom.xml
