@@ -92,6 +92,120 @@ class ScriptBlockCalculatorTest {
     }
 
     @Test
+    void testStateVariablesWithReservedLikeNamesPersist() throws Exception {
+        // "integral" starts with "in", "ySum" starts with "y" - user variables must
+        // keep their state across steps despite the reserved-name exclusions
+        ScriptBlockCalculator calc = new ScriptBlockCalculator(1, 1, """
+            integral = integral + u1 * dt;
+            ySum = ySum + integral;
+            yOUT[0] = integral;
+            """, "integral = 0;\nySum = 0;", "");
+
+        calc.setInputSignal(0, new ConstantCalculator(1000.0), 0);
+        calc.initializeAtSimulationStart(1e-6);
+        calc.calculateYOUT(1e-6);
+        assertEquals(1e-3, calc._outputSignal[0][0], 1e-15);
+        calc.calculateYOUT(1e-6);
+        assertEquals(2e-3, calc._outputSignal[0][0], 1e-15);
+    }
+
+    @Test
+    void testInputAliasesStayInputs() throws Exception {
+        // "u1" resolves to input 1 even if a script assigns to it
+        ScriptBlockCalculator calc = new ScriptBlockCalculator(1, 1, """
+            u1 = 5;
+            yOUT[0] = u1;
+            """);
+        calc.setInputSignal(0, new ConstantCalculator(1000.0), 0);
+        calc.calculateYOUT(1e-6);
+        assertEquals(1000.0, calc._outputSignal[0][0], 1e-12);
+    }
+
+    @Test
+    void testArrayDeclarationDoesNotKillScript() throws Exception {
+        // Classic Java blocks declare scratch arrays; the declaration must not
+        // break compilation of the rest of the script
+        ScriptBlockCalculator calc = new ScriptBlockCalculator(0, 1, """
+            double buf[] = new double[4];
+            yOUT[0] = 42;
+            """);
+        calc.calculateYOUT(1e-6);
+        assertTrue(calc.isCompiled(), "compile error: " + calc.getCompileError());
+        assertEquals(42.0, calc._outputSignal[0][0], 1e-12);
+    }
+
+    @Test
+    void testDeclarationListDoesNotClobberOutput() throws Exception {
+        // `double a, b;` leaves stray `a; b;` statements after normalization;
+        // they must not overwrite outputs in a multi-statement script
+        ScriptBlockCalculator calc = new ScriptBlockCalculator(0, 1, """
+            double alpha, beta;
+            alpha = 7;
+            yOUT[0] = alpha;
+            """);
+        calc.calculateYOUT(1e-6);
+        assertEquals(7.0, calc._outputSignal[0][0], 1e-12);
+    }
+
+    @Test
+    void testCompileFailureIsReportedNotSilentlyZeroed() throws Exception {
+        ScriptBlockCalculator calc = new ScriptBlockCalculator(0, 1, "yOUT[0] = ;");
+        assertFalse(calc.isCompiled());
+        assertNotNull(calc.getCompileError());
+        // no exception thrown, output stays at its initial value
+        calc.calculateYOUT(1e-6);
+        assertEquals(0.0, calc._outputSignal[0][0], 1e-12);
+    }
+
+    @Test
+    void testUnknownFunctionEvaluatesToZero() throws Exception {
+        // documented deviation from Java semantics (a typo'd function name yields 0)
+        ScriptBlockCalculator calc = new ScriptBlockCalculator(0, 1, "yOUT[0] = sinus(0.5);");
+        calc.calculateYOUT(1e-6);
+        assertTrue(calc.isCompiled(), "unknown functions must not fail compilation");
+        assertEquals(0.0, calc._outputSignal[0][0], 1e-12);
+    }
+
+    @Test
+    void testDivideByZeroWarnsOncePerRun() throws Exception {
+        // documented deviation: division by zero yields 0 and warns (rate-limited
+        // to once per simulation run, since a control script runs every step)
+        ScriptBlockCalculator calc = new ScriptBlockCalculator(1, 1, "yOUT[0] = 10 / u1;");
+        calc.setInputSignal(0, new ConstantCalculator(0.0), 0);
+
+        calc.calculateYOUT(1e-6);
+        assertTrue(calc.hasWarnedDivideByZero(), "divide by zero must raise the warning flag");
+        assertEquals(0.0, calc._outputSignal[0][0], 1e-12);
+
+        // further occurrences stay silent - the flag remains set, no new log
+        calc.calculateYOUT(1e-6);
+        assertTrue(calc.hasWarnedDivideByZero());
+
+        // modulo by zero warns the same way
+        ScriptBlockCalculator mod = new ScriptBlockCalculator(0, 1, "yOUT[0] = 5 % 0;");
+        mod.calculateYOUT(1e-6);
+        assertTrue(mod.hasWarnedDivideByZero());
+
+        // a fresh simulation run resets the flag so the warning is repeated
+        ScriptBlockCalculator reset = new ScriptBlockCalculator(1, 1,
+                "yOUT[0] = 1 / u1;", "", "");
+        reset.setInputSignal(0, new ConstantCalculator(0.0), 0);
+        reset.initializeAtSimulationStart(1e-6);
+        assertFalse(reset.hasWarnedDivideByZero(), "flag must be clean after init");
+        reset.calculateYOUT(1e-6);
+        assertTrue(reset.hasWarnedDivideByZero());
+    }
+
+    @Test
+    void testDivisionWithoutZeroDoesNotWarn() throws Exception {
+        ScriptBlockCalculator calc = new ScriptBlockCalculator(1, 1, "yOUT[0] = 10 / u1;");
+        calc.setInputSignal(0, new ConstantCalculator(4.0), 0);
+        calc.calculateYOUT(1e-6);
+        assertFalse(calc.hasWarnedDivideByZero());
+        assertEquals(2.5, calc._outputSignal[0][0], 1e-12);
+    }
+
+    @Test
     void testClassicDemoJavaBlockExactSnippet() throws Exception {
         // Exact code snippet from demo_JAVA_Block.ipes
         String classicSnippet = """

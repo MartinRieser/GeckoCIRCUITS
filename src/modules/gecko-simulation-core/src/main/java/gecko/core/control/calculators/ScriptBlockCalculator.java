@@ -18,23 +18,39 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * High-performance, zero-dependency programmable function and script block calculator.
- * Evaluates mathematical expressions, piecewise functions, and multi-line control scripts.
- * 
- * <p>Supports:
+ * Interpreted function/script block for the web and headless engines. Evaluates the
+ * common subset of classic Java-block (typ 61) scripts without a Java compiler.
+ *
+ * <p>Supported:
  * <ul>
  *   <li>Inputs: {@code xIN[0..N]}, {@code u1..uN}, {@code in[0..N]}</li>
- *   <li>Outputs: {@code yOUT[0..M]}, {@code y[0..M]}, or direct return value</li>
- *   <li>Time: {@code t}, {@code time}, {@code dt}, {@code deltaT}</li>
+ *   <li>Outputs: {@code yOUT[0..M]}, {@code y[0..M]}, or a bare expression as the
+ *       script's single statement (formula mode writes {@code yOUT[0]})</li>
+ *   <li>Time: {@code t}, {@code time}, {@code dt}, {@code deltaT}; constants {@code PI}, {@code E}</li>
  *   <li>Math functions: {@code sin}, {@code cos}, {@code tan}, {@code asin}, {@code acos},
- *       {@code atan}, {@code sqrt}, {@code abs}, {@code exp}, {@code log}, {@code pow},
+ *       {@code atan}, {@code atan2}, {@code sinh}, {@code cosh}, {@code tanh}, {@code sqrt},
+ *       {@code cbrt}, {@code abs}, {@code exp}, {@code log}, {@code log10}, {@code pow},
  *       {@code min}, {@code max}, {@code floor}, {@code ceil}, {@code round}, {@code signum}</li>
- *   <li>Math constants: {@code PI}, {@code E}</li>
  *   <li>Conditionals: {@code if (cond) { ... } else { ... }} and ternary {@code ? :}</li>
  *   <li>Persistent state variables across simulation steps</li>
- *   <li>Classic Java block compatibility: automatically normalizes Java statements
- *       (e.g., {@code Math.sin}, type declarations like {@code double x = ...}, {@code return yOUT;})</li>
+ *   <li>Classic Java block normalization: {@code Math.} prefixes, type declarations
+ *       ({@code double x = ...; double buf[] = new double[N];}), and {@code return;}
+ *       statements are tolerated</li>
  * </ul>
+ *
+ * <p>Deliberate deviations from real Java semantics (this is an interpreter shim,
+ * not a Java compiler):
+ * <ul>
+ *   <li>{@code ==} / {@code !=} compare numerically with a 1e-12 tolerance</li>
+ *   <li>Division and modulo by zero yield 0 instead of Infinity/NaN and log a
+ *       warning once per simulation run (see {@code hasWarnedDivideByZero()})</li>
+ *   <li>No loops, no method definitions; user array declarations collapse to scalars
+ *       (element indexing works only for xIN/yOUT)</li>
+ *   <li>Unknown function names evaluate to 0</li>
+ * </ul>
+ *
+ * <p>Code that cannot be compiled keeps the block's outputs at their initial value;
+ * the error is logged once and available via {@link #getCompileError()}.
  */
 public class ScriptBlockCalculator extends AbstractControlCalculatable implements InitializableAtSimulationStart {
 
@@ -50,6 +66,8 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
     private List<Statement> compiledInitStatements = new ArrayList<>();
     private final Map<String, Double> stateVariables = new HashMap<>();
     private boolean hasLoggedError = false;
+    private boolean hasWarnedDivideByZero = false;
+    private String compileError = null;
 
     public ScriptBlockCalculator(int numInputs, int numOutputs, String sourceCode) {
         this(numInputs, numOutputs, sourceCode, "", "");
@@ -80,19 +98,58 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
                 compiledStatements = parseStatements(normalizedSource);
             }
         } catch (Exception e) {
-            LOGGER.error("Failed to compile script block: {}", e.getMessage());
+            compileError = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            LOGGER.error("Failed to compile script block, outputs stay at their initial value: {} -- source: {}",
+                    e.getMessage(), abbreviateSource(rawSourceCode));
         }
+    }
+
+    /** True when the script compiled without errors. */
+    public boolean isCompiled() {
+        return compileError == null;
+    }
+
+    /** Compile error message, or null when the script compiled. */
+    public String getCompileError() {
+        return compileError;
+    }
+
+    private static String abbreviateSource(String source) {
+        if (source == null) {
+            return "";
+        }
+        String flat = source.replaceAll("\\s+", " ").trim();
+        return flat.length() > 200 ? flat.substring(0, 200) + "..." : flat;
     }
 
     @Override
     public void initializeAtSimulationStart(double deltaT) {
         stateVariables.clear();
         hasLoggedError = false;
+        hasWarnedDivideByZero = false;
 
         ExecutionContext ctx = new ExecutionContext(_time, deltaT);
         executeStatements(compiledInitStatements, ctx);
         // Persist variables initialized in init block
         stateVariables.putAll(ctx.variables);
+    }
+
+    /**
+     * Logs a divide-by-zero warning once per simulation run (it would otherwise
+     * fire at every step and flood the log). The result of the operation is
+     * still forced to 0.
+     */
+    void warnDivideByZero() {
+        if (!hasWarnedDivideByZero) {
+            hasWarnedDivideByZero = true;
+            LOGGER.warn("Script block evaluated a division or modulo by zero (result forced to 0) -- source: {}",
+                    abbreviateSource(rawSourceCode));
+        }
+    }
+
+    /** True when a division or modulo by zero was evaluated since simulation start. */
+    public boolean hasWarnedDivideByZero() {
+        return hasWarnedDivideByZero;
     }
 
     @Override
@@ -158,8 +215,16 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
         cleaned = cleaned.replaceAll("\\b(double|int|float|long|boolean|final)\\s+", "");
         cleaned = cleaned.replaceAll("(\\[\\s*\\]\\s*)+([a-zA-Z_])", "$2");
 
-        // Remove new double[...] allocations
-        cleaned = cleaned.replaceAll("\\bnew\\s+[a-zA-Z0-9_]+\\s*\\[[^\\]]*\\]\\s*;", ";");
+        // Neutralize `new <type>[...]` array allocations. Initializer expressions
+        // become 0 (`double buf[] = new double[4];` -> `double buf[] = 0;`) and
+        // standalone allocation statements vanish (`new double[4];` -> `;`).
+        cleaned = cleaned.replaceAll("=\\s*new\\s+[a-zA-Z0-9_]+\\s*(?:\\s*\\[[^\\]]*\\])+", "= 0");
+        cleaned = cleaned.replaceAll("\\bnew\\s+[a-zA-Z0-9_]+\\s*(?:\\s*\\[[^\\]]*\\])+\\s*;", ";");
+
+        // Drop empty `[]` declarator suffixes left over from array declarations
+        // (`double buf[] = 0;` -> `buf = 0;`, including `m[][]`) so the statement
+        // parses as an assignment
+        cleaned = cleaned.replaceAll("\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?:\\[\\s*\\]\\s*)+(?==)", "$1 ");
 
         // Normalize array literal assignments like "= {{...}};" or "= {...};" to "= 0;"
         cleaned = cleaned.replaceAll("(?s)=\\s*\\{.*?\\}\\s*;", "= 0;");
@@ -192,10 +257,29 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
         return cleaned.trim();
     }
 
+    /**
+     * Names that can never be persistent user variables because reads resolve to
+     * time, constants, inputs, or outputs. Matched exactly (modulo case) so user
+     * variables like {@code integral}, {@code upper}, or {@code yRef} keep their state.
+     */
     private static boolean isReservedKeyword(String name) {
-        return name.equals("t") || name.equals("time") || name.equals("dt")
-                || name.equals("deltaT") || name.startsWith("xIN") || name.startsWith("yOUT")
-                || name.startsWith("u") || name.startsWith("in") || name.startsWith("y");
+        String lower = name.toLowerCase(Locale.ROOT);
+        if (lower.equals("t") || lower.equals("time") || lower.equals("dt")
+                || lower.equals("deltat") || lower.equals("pi") || lower.equals("e")
+                || lower.equals("xin") || lower.equals("in") || lower.equals("yout")
+                || lower.equals("y")) {
+            return true;
+        }
+        // u<N> aliases resolve to inputs, so they can never be variables either
+        if (lower.length() > 1 && lower.charAt(0) == 'u') {
+            for (int i = 1; i < lower.length(); i++) {
+                if (!Character.isDigit(lower.charAt(i))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     // =========================================================================
@@ -270,6 +354,10 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
             if (index >= 0 && index < outputs.length) {
                 outputs[index] = val;
             }
+        }
+
+        void warnDivideByZero() {
+            ScriptBlockCalculator.this.warnDivideByZero();
         }
     }
 
@@ -501,8 +589,8 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
                 case "+" -> l + r;
                 case "-" -> l - r;
                 case "*" -> l * r;
-                case "/" -> r != 0.0 ? l / r : 0.0;
-                case "%" -> r != 0.0 ? l % r : 0.0;
+                case "/" -> r != 0.0 ? l / r : warnAndZero(ctx);
+                case "%" -> r != 0.0 ? l % r : warnAndZero(ctx);
                 case "^" -> Math.pow(l, r);
                 case "<" -> l < r ? 1.0 : 0.0;
                 case "<=" -> l <= r ? 1.0 : 0.0;
@@ -514,6 +602,11 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
                 case "||" -> (l != 0.0 || r != 0.0) ? 1.0 : 0.0;
                 default -> 0.0;
             };
+        }
+
+        private static double warnAndZero(ExecutionContext ctx) {
+            ctx.warnDivideByZero();
+            return 0.0;
         }
     }
 
@@ -549,8 +642,19 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
                 statements.add(s);
             }
         }
+
+        // A bare expression writes yOUT[0] only in formula mode (the script's single
+        // statement). Stray statements left over from stripped declarations
+        // (`double alpha, beta;` -> `alpha; beta;`) must not clobber outputs in
+        // multi-statement scripts.
+        if (statements.size() > 1) {
+            statements.replaceAll(s -> s instanceof ExpressionStatement ? NO_OP : s);
+        }
         return statements;
     }
+
+    private static final Statement NO_OP = ctx -> {
+    };
 
     private enum TokenType {
         NUMBER, IDENTIFIER, OPERATOR, LPAREN, RPAREN, LBRACKET, RBRACKET,
