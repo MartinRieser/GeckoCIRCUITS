@@ -13,7 +13,13 @@ import gecko.core.io.CircuitModel;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,19 +29,28 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class ClassicJavaBlockIpesSimulationTest {
 
+    /** Locates a tutorials file regardless of the module directory the tests run from. */
+    private static File findTutorialFile(String relativePath) {
+        Path dir = Paths.get("").toAbsolutePath();
+        for (int i = 0; i < 4 && dir != null; i++) {
+            Path candidate = dir.resolve(relativePath);
+            if (Files.exists(candidate)) {
+                return candidate.toFile();
+            }
+            dir = dir.getParent();
+        }
+        return Paths.get(relativePath).toFile();
+    }
+
+    private static File tutorialFile(String relativePath) {
+        File file = findTutorialFile("resources/tutorials/" + relativePath);
+        assertTrue(file.exists(), "tutorial file must exist: " + file.getAbsolutePath());
+        return file;
+    }
+
     @Test
     void testDemoJavaBlockIpesRunsHeadlessly() throws Exception {
-        File ipesFile = new File("resources/tutorials/7xx_scripting_automation/704_java_blocks/demo_JAVA_Block.ipes");
-        if (!ipesFile.exists()) {
-            ipesFile = new File("../../../resources/tutorials/7xx_scripting_automation/704_java_blocks/demo_JAVA_Block.ipes");
-        }
-        if (!ipesFile.exists()) {
-            ipesFile = new File("../../resources/tutorials/7xx_scripting_automation/704_java_blocks/demo_JAVA_Block.ipes");
-        }
-        if (!ipesFile.exists()) {
-            ipesFile = new File("../resources/tutorials/7xx_scripting_automation/704_java_blocks/demo_JAVA_Block.ipes");
-        }
-        assertTrue(ipesFile.exists(), "demo_JAVA_Block.ipes must exist at " + ipesFile.getAbsolutePath());
+        File ipesFile = tutorialFile("7xx_scripting_automation/704_java_blocks/demo_JAVA_Block.ipes");
 
         CircuitFileParser parser = new CircuitFileParser();
         CircuitModel model = parser.parse(ipesFile.getAbsolutePath());
@@ -71,34 +86,17 @@ class ClassicJavaBlockIpesSimulationTest {
         String[] recordedSignals = result.getSignalNames();
         assertNotNull(recordedSignals);
 
-        boolean hasW1 = false;
-        boolean hasW2 = false;
-        boolean hasW5 = false;
-
-        for (String sig : recordedSignals) {
-            if (sig.contains("w1")) hasW1 = true;
-            if (sig.contains("w2")) hasW2 = true;
-            if (sig.contains("w5")) hasW5 = true;
-        }
-
-        assertTrue(hasW1, "Signal tap w1 must be recorded in results");
-        assertTrue(hasW2, "Signal tap w2 must be recorded in results");
-        assertTrue(hasW5, "Signal tap w5 must be recorded in results");
+        // tap labels are recorded verbatim, so match exactly ("w1" must not
+        // match a hypothetical "w10")
+        Set<String> names = new HashSet<>(Arrays.asList(recordedSignals));
+        assertTrue(names.contains("w1"), "Signal tap w1 must be recorded, got: " + names);
+        assertTrue(names.contains("w2"), "Signal tap w2 must be recorded, got: " + names);
+        assertTrue(names.contains("w5"), "Signal tap w5 must be recorded, got: " + names);
     }
 
     @Test
     void testJavaBlockPmsmIpesRunsHeadlessly() throws Exception {
-        File ipesFile = new File("resources/tutorials/7xx_scripting_automation/704_java_blocks/JavaBlockPMSM.ipes");
-        if (!ipesFile.exists()) {
-            ipesFile = new File("../../../resources/tutorials/7xx_scripting_automation/704_java_blocks/JavaBlockPMSM.ipes");
-        }
-        if (!ipesFile.exists()) {
-            ipesFile = new File("../../resources/tutorials/7xx_scripting_automation/704_java_blocks/JavaBlockPMSM.ipes");
-        }
-        if (!ipesFile.exists()) {
-            ipesFile = new File("../resources/tutorials/7xx_scripting_automation/704_java_blocks/JavaBlockPMSM.ipes");
-        }
-        assertTrue(ipesFile.exists(), "JavaBlockPMSM.ipes must exist at " + ipesFile.getAbsolutePath());
+        File ipesFile = tutorialFile("7xx_scripting_automation/704_java_blocks/JavaBlockPMSM.ipes");
 
         CircuitFileParser parser = new CircuitFileParser();
         CircuitModel model = parser.parse(ipesFile.getAbsolutePath());
