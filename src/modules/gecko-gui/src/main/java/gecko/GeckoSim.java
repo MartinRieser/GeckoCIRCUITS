@@ -425,21 +425,20 @@ public class GeckoSim {
         }
     }
 
-    // funktioniert nur, wenn Java 1.6 installiert ist ->
+    // works with any Java version; Runtime.version() exists since Java 9
     private void checkJavaVersion() {
         try {
-            Properties sysProp = System.getProperties();
-            String javaVersion = sysProp.getProperty("java.runtime.version");
-            double jV = Double.parseDouble(javaVersion.replace("+", ".").substring(0, 3));
+            int feature = Runtime.version().feature();
+            final int minimumFeature = 25;
 
-            if (jV < 1.6) {
-                StringBuffer errorMessage = new StringBuffer();
-                errorMessage.append(DialogAbout.VERSION + " needs Java 1.6 (or higher) to be installed\non your computer.");
-                errorMessage.append("Currently you employ Java " + javaVersion + " Currently you employ Java ");
+            if (feature < minimumFeature) {
+                String errorMessage = DialogAbout.VERSION + " needs Java "
+                        + minimumFeature + " (or higher) to be installed\non your computer."
+                        + " Currently you employ Java " + feature + ".";
 
                 JOptionPane.showMessageDialog(null,
-                        errorMessage.toString(),
-                        "Memory error!",
+                        errorMessage,
+                        "Incompatible Java version!",
                         JOptionPane.ERROR_MESSAGE);
 
                 if (operatingmode == OperatingMode.STANDALONE) {
