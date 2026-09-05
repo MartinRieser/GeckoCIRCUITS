@@ -91,7 +91,7 @@ afterEach(() => {
 });
 
 describe('App user flow', () => {
-  it('palette is armed only after a circuit is opened; then placing works end to end', async () => {
+  it('auto-creates a blank workspace on load, then palette arm + place works end to end', async () => {
     fetchMock.mockImplementation(routeFetch);
     const { container } = render(<App />);
 
@@ -100,25 +100,25 @@ describe('App user flow', () => {
       expect(container.querySelectorAll('.palette-entry')).toHaveLength(2);
     });
 
-    // clicking a palette entry without an open circuit shows a hint instead of arming
-    fireEvent.click(container.querySelectorAll('.palette-entry')[0]);
-    const svg = (container.querySelector('svg.sheet') || container.querySelector('svg'))!;
-    fireEvent.mouseMove(svg, { clientX: 64, clientY: 64, button: 0 });
-    expect(container.querySelector('g.ghost')).toBeNull();
-    expect(container.querySelector('.status-bar')!.textContent).toContain('Open a .ipes file');
-
-    // open a file through the hidden input
-    const fileInput = container.querySelector('input[type=file]') as HTMLInputElement;
-    fireEvent.change(fileInput, { target: { files: [new File(['x'], 'test.ipes')] } });
-
+    // a blank workspace auto-initializes on load, so the snapshot's
+    // resistor and wire render without any user file open
     await waitFor(() => {
       expect(container.querySelectorAll('g.component')).toHaveLength(1);
     });
-    // wires are rendered from the snapshot
     expect(container.querySelectorAll('polyline.wire')).toHaveLength(1);
 
-    // arm the resistor from the palette, then click the sheet to place
+    // arming a palette entry works right away on the auto-created workspace;
+    // arm() awaits workspace initialization (async) before dispatching, so
+    // retry until the ghost renders
     fireEvent.click(container.querySelectorAll('.palette-entry')[0]);
+    const svg = (container.querySelector('svg.sheet') || container.querySelector('svg'))!;
+    await waitFor(() => {
+      fireEvent.mouseMove(svg, { clientX: 100, clientY: 80, button: 0 });
+      expect(container.querySelector('g.ghost')).not.toBeNull();
+    });
+
+    // the ghost that appeared may carry ARM's default position; move it to the
+    // target cell now that placing mode is active, then click the sheet to place
     fireEvent.mouseMove(svg, { clientX: 100, clientY: 80, button: 0 });
     fireEvent.mouseUp(svg);
 
@@ -139,6 +139,16 @@ describe('App user flow', () => {
       y: 5,
       orientation: 503,
     });
+
+    // opening a file through the hidden input reloads the model from the server
+    const fileInput = container.querySelector('input[type=file]') as HTMLInputElement;
+    fireEvent.change(fileInput, { target: { files: [new File(['x'], 'test.ipes')] } });
+
+    await waitFor(() => {
+      expect(container.querySelector('.status-bar')!.textContent).toContain('Loaded test.ipes');
+    });
+    // the reload replaced the workspace with the file's snapshot content
+    expect(container.querySelectorAll('g.component')).toHaveLength(1);
   });
 
   it('toggles theme between dark and light', async () => {

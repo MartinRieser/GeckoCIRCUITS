@@ -14,6 +14,7 @@ import type {
   SimulationStatus,
 } from '../model/types';
 import { nextOrientation } from '../model/geometry';
+import { CTRL_TYPE } from '../model/componentSchema';
 import { BLANK_CIRCUIT_IPES } from '../model/examples';
 
 export function useEditor() {
@@ -122,30 +123,45 @@ export function useEditor() {
     await openContent(BLANK_CIRCUIT_IPES, 'Untitled.ipes');
   }, [openContent]);
 
-  // Automatically initialize a blank workspace if none is loaded on initial page load / reload
-  useEffect(() => {
-    if (!stateRef.current.circuitId) {
-      newCircuit().catch(console.error);
+  // Shared in-flight promise so the auto-init effect and a concurrent arm()
+  // create the blank workspace only once
+  const creatingWorkspaceRef = useRef<Promise<boolean> | null>(null);
+
+  const createBlankWorkspace = useCallback(async () => {
+    dispatch({ type: 'STATUS', status: 'Initializing workspace...' });
+    try {
+      const circuitId = await api.uploadIpesString(BLANK_CIRCUIT_IPES, 'Untitled.ipes');
+      attachSubscription(circuitId);
+      await refresh(circuitId);
+      return true;
+    } catch (e) {
+      reportError(e);
+      return false;
+    } finally {
+      creatingWorkspaceRef.current = null;
     }
-  }, [newCircuit]);
+  }, [attachSubscription, refresh, reportError]);
+
+  const ensureWorkspace = useCallback(() => {
+    if (stateRef.current.circuitId) {
+      return Promise.resolve(true);
+    }
+    creatingWorkspaceRef.current ??= createBlankWorkspace();
+    return creatingWorkspaceRef.current;
+  }, [createBlankWorkspace]);
+
+  // Automatically initialize a blank workspace on initial page load / reload
+  useEffect(() => {
+    void ensureWorkspace();
+  }, [ensureWorkspace]);
 
   const arm = useCallback(
     async (entry: CatalogEntry) => {
-      let circuitId = stateRef.current.circuitId;
-      if (!circuitId) {
-        try {
-          dispatch({ type: 'STATUS', status: 'Initializing workspace...' });
-          circuitId = await api.uploadIpesString(BLANK_CIRCUIT_IPES, 'Untitled.ipes');
-          attachSubscription(circuitId);
-          await refresh(circuitId);
-        } catch (e) {
-          reportError(e);
-          return;
-        }
-      }
+      const ready = await ensureWorkspace();
+      if (!ready) return;
       dispatch({ type: 'ARM', componentType: entry.type, family: entry.family });
     },
-    [attachSubscription, refresh, reportError],
+    [ensureWorkspace],
   );
 
   const cancel = useCallback(() => dispatch({ type: 'CANCEL' }), []);
@@ -162,7 +178,7 @@ export function useEditor() {
       if (type === undefined || !circuitId) return;
       dispatch({ type: 'CANCEL' });
       const defaultParams =
-        type === 1016 || type === 61
+        type === CTRL_TYPE.SCRIPT || type === CTRL_TYPE.LEGACY_JAVA_FUNCTION
           ? { sourceCode: 'yOUT[0] = xIN[0];', anzXIN: 1, anzYOUT: 1 }
           : undefined;
 
