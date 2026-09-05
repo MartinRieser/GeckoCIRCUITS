@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GeckoCIRCUITS — LLC Resonant Converter Designer & Simulator</title>
+  <meta name="description" content="Interactive LLC Resonant Converter design, simulation, and Zero Voltage Switching (ZVS) verification powered by GeckoCIRCUITS Model Context Protocol (MCP).">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="chart.umd.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Top Navigation Bar -->
+    <header class="top-header">
+      <div class="header-brand">
+        <div class="brand-logo">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">GeckoCIRCUITS</span>
+          <span class="brand-sub">LLC Resonant Converter Design Studio</span>
+        </div>
+      </div>
+
+      <div class="header-status">
+        <div class="status-indicator active" id="engine-status-badge">
+          <span class="pulse-dot"></span>
+          <span id="engine-status-text">Gecko Engine: Ready (JDK 25)</span>
+        </div>
+        <div class="mcp-pill">
+          <span class="mcp-icon">⚡</span>
+          <span>MCP Server Connected</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Left Column: Schematic & Circuit Inspector -->
+      <section class="circuit-section card">
+        <div class="section-header">
+          <div class="section-title-group">
+            <h2 class="section-title">Circuit Topology & Interactive Schematic</h2>
+            <p class="section-subtitle">400V DC Input · Half-Bridge MOSFET · Series Resonant Tank (Lr, Cr, Lm) · ZVS Clamp · Rectifier</p>
+          </div>
+          <div class="schematic-actions">
+            <button id="btn-toggle-animation" class="btn btn-secondary btn-sm" title="Toggle current flow animation">
+              <span class="btn-icon">⚡</span> Animation: Active
+            </button>
+            <button id="btn-reset-zoom" class="btn btn-secondary btn-sm" title="Reset diagram view">
+              Reset View
+            </button>
+          </div>
+        </div>
+
+        <!-- SVG Schematic Diagram -->
+        <div class="schematic-container" id="schematic-viewport">
+          <svg id="schematic-svg" viewBox="0 0 920 420" xmlns="http://www.w3.org/2000/svg">
+            <!-- Definitions for gradients and markers -->
+            <defs>
+              <linearGradient id="grad-bus-pos" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#ef4444" />
+                <stop offset="100%" stop-color="#f87171" />
+              </linearGradient>
+              <linearGradient id="grad-bus-neg" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#3b82f6" />
+                <stop offset="100%" stop-color="#60a5fa" />
+              </linearGradient>
+              <linearGradient id="grad-resonant" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#06b6d4" />
+                <stop offset="100%" stop-color="#3b82f6" />
+              </linearGradient>
+              <filter id="glow-cyan" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+              <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+                <polygon points="0 0, 6 3, 0 6" fill="#06b6d4" />
+              </marker>
+            </defs>
+
+            <!-- Background Grid -->
+            <g class="schematic-grid" opacity="0.15">
+              <pattern id="grid-pattern" width="20" height="20" patternUnits="userSpaceOnUse">
+                <circle cx="1" cy="1" r="1" fill="#94a3b8" />
+              </pattern>
+              <rect width="100%" height="100%" fill="url(#grid-pattern)" />
+            </g>
+
+            <!-- 1. DC Bus Input (Vin = 400V) -->
+            <g id="comp-vin" class="schematic-component" data-component="U.IN" data-type="DC Source" data-value="400.0 V">
+              <rect x="40" y="160" width="46" height="70" rx="6" class="comp-box" />
+              <circle cx="63" cy="195" r="22" class="comp-symbol-circle" />
+              <text x="63" y="188" class="comp-symbol-text plus">+</text>
+              <text x="63" y="206" class="comp-symbol-text minus">−</text>
+              <text x="63" y="248" class="comp-label">U.IN</text>
+              <text x="63" y="262" class="comp-sublabel">400V DC</text>
+            </g>
+
+            <!-- DC Rails -->
+            <path d="M 63 160 L 63 70 L 190 70" class="wire wire-pos" />
+            <path d="M 63 230 L 63 330 L 780 330" class="wire wire-neg" />
+            <circle cx="63" cy="70" r="3.5" class="junction-dot" />
+            <circle cx="63" cy="330" r="3.5" class="junction-dot" />
+
+            <!-- Rail Labels -->
+            <text x="85" y="62" class="rail-label rail-pos">+400V DC BUS</text>
+            <text x="85" y="345" class="rail-label rail-neg">0V GROUND</text>
+
+            <!-- 2. High-Side Switch S1 -->
+            <g id="comp-s1" class="schematic-component" data-component="S.1" data-type="SiC MOSFET (High-Side)" data-value="Ron = 2mΩ (650V/100A)">
+              <rect x="165" y="90" width="50" height="60" rx="6" class="comp-box" />
+              <path d="M 190 70 L 190 90" class="wire" />
+              <path d="M 190 150 L 190 200" class="wire" />
+              <!-- Switch contact / blade -->
+              <line x1="184" y1="105" x2="184" y2="135" class="switch-blade" id="blade-s1" />
+              <line x1="172" y1="120" x2="182" y2="120" class="gate-lead" />
+              <text x="155" y="124" class="gate-text">G1</text>
+              <text x="222" y="112" class="comp-label">S.1 (HS)</text>
+              <text x="222" y="126" class="comp-sublabel">SiC 2mΩ ZVS</text>
+            </g>
+
+            <!-- Body Diode D.B1 across S1 -->
+            <g class="subcomponent" id="comp-db1" data-component="D.B1">
+              <path d="M 205 85 L 205 145" class="wire-sub" />
+              <polygon points="201,120 209,120 205,110" class="diode-tri" />
+              <line x1="200" y1="110" x2="210" y2="110" class="diode-bar" />
+              <text x="218" y="96" class="diode-label">D.B1</text>
+            </g>
+
+            <!-- Switch Node SW -->
+            <circle cx="190" cy="200" r="5" class="junction-dot active" id="dot-sw" />
+            <text x="145" y="205" class="node-label">V_sw</text>
+
+            <!-- 3. Low-Side Switch S2 -->
+            <g id="comp-s2" class="schematic-component" data-component="S.2" data-type="SiC MOSFET (Low-Side)" data-value="Ron = 2mΩ (650V/100A)">
+              <rect x="165" y="240" width="50" height="60" rx="6" class="comp-box" />
+              <path d="M 190 200 L 190 240" class="wire" />
+              <path d="M 190 300 L 190 330" class="wire" />
+              <!-- Switch contact / blade -->
+              <line x1="184" y1="255" x2="184" y2="285" class="switch-blade" id="blade-s2" />
+              <line x1="172" y1="270" x2="182" y2="270" class="gate-lead" />
+              <text x="155" y="274" class="gate-text">G2</text>
+              <text x="222" y="262" class="comp-label">S.2 (LS)</text>
+              <text x="222" y="276" class="comp-sublabel">SiC 2mΩ ZVS</text>
+            </g>
+
+            <!-- Body Diode D.B2 across S2 -->
+            <g class="subcomponent" id="comp-db2" data-component="D.B2">
+              <path d="M 205 235 L 205 295" class="wire-sub" />
+              <polygon points="201,270 209,270 205,260" class="diode-tri" />
+              <line x1="200" y1="260" x2="210" y2="260" class="diode-bar" />
+              <text x="218" y="246" class="diode-label">D.B2</text>
+            </g>
+
+            <!-- Coss Snubber Capacitor -->
+            <g class="subcomponent" id="comp-coss" data-component="C.OSS" data-type="Coss Snubber" data-value="1.5 nF (High Power)">
+              <path d="M 125 100 L 125 290" class="wire-sub" />
+              <path d="M 125 100 L 190 70" class="wire-sub" />
+              <path d="M 125 290 L 190 330" class="wire-sub" />
+              <line x1="117" y1="192" x2="133" y2="192" class="cap-plate" />
+              <line x1="117" y1="198" x2="133" y2="198" class="cap-plate" />
+              <text x="95" y="198" class="cap-label">C.oss</text>
+            </g>
+
+            <!-- Resonant Tank Branch from SW Node -->
+            <path d="M 190 200 L 280 200" class="wire wire-resonant" id="wire-resonant-flow" />
+
+            <!-- 4. Resonant Capacitor Cr -->
+            <g id="comp-cr" class="schematic-component" data-component="C.R" data-type="Resonant Capacitor" data-value="1.15 μF (10 kW Tank)">
+              <rect x="280" y="175" width="55" height="50" rx="6" class="comp-box" />
+              <path d="M 280 200 L 297 200" class="wire" />
+              <line x1="297" y1="184" x2="297" y2="216" class="cap-plate" />
+              <line x1="305" y1="184" x2="305" y2="216" class="cap-plate" />
+              <path d="M 305 200 L 335 200" class="wire" />
+              <text x="307" y="166" class="comp-label">C.R</text>
+              <text x="307" y="238" class="comp-sublabel">1.15 μF</text>
+            </g>
+
+            <circle cx="335" cy="200" r="3.5" class="junction-dot" />
+
+            <!-- 5. Resonant Inductor Lr -->
+            <g id="comp-lr" class="schematic-component" data-component="L.R" data-type="Resonant Inductor" data-value="2.2 μH (120A pk)">
+              <rect x="360" y="175" width="65" height="50" rx="6" class="comp-box" />
+              <path d="M 335 200 L 360 200" class="wire" />
+              <!-- Inductor loops -->
+              <path d="M 365 200 C 365 186, 375 186, 375 200 C 375 186, 385 186, 385 200 C 385 186, 395 186, 395 200 C 395 186, 405 186, 405 200" class="inductor-coil" />
+              <path d="M 405 200 L 435 200" class="wire" />
+              <text x="392" y="166" class="comp-label">L.R</text>
+              <text x="392" y="238" class="comp-sublabel">2.2 μH</text>
+            </g>
+
+            <circle cx="435" cy="200" r="4.5" class="junction-dot" />
+            <text x="435" y="188" class="node-label">pri_p</text>
+
+            <!-- 6. Magnetizing Inductor Lm (Parallel) -->
+            <g id="comp-lm" class="schematic-component" data-component="L.M" data-type="Magnetizing Inductor" data-value="11.0 μH (k = 5.0)">
+              <rect x="420" y="225" width="50" height="75" rx="6" class="comp-box" />
+              <path d="M 435 200 L 435 230" class="wire" />
+              <path d="M 435 230 C 420 230, 420 242, 435 242 C 420 242, 420 254, 435 254 C 420 254, 420 266, 435 266 C 420 266, 420 278, 435 278" class="inductor-coil" />
+              <path d="M 435 278 L 435 330" class="wire" />
+              <circle cx="435" cy="330" r="3.5" class="junction-dot" />
+              <text x="475" y="255" class="comp-label">L.M</text>
+              <text x="475" y="270" class="comp-sublabel">11.0 μH</text>
+            </g>
+
+            <!-- Tank Envelope Box -->
+            <rect x="270" y="150" width="220" height="175" rx="10" class="tank-box" />
+            <text x="380" y="318" class="tank-badge">10 kW RESONANT TANK (f0 = 100.0 kHz)</text>
+
+            <!-- 7. High Frequency Rectifier Stage -->
+            <path d="M 435 200 L 530 200" class="wire" />
+            <g id="comp-rectifier" class="schematic-component" data-component="D.FWD" data-type="Schottky Rectifier" data-value="Vf = 0.7V (High Current)">
+              <rect x="530" y="175" width="55" height="50" rx="6" class="comp-box" />
+              <path d="M 530 200 L 545 200" class="wire" />
+              <polygon points="545,190 545,210 562,200" class="diode-tri main" />
+              <line x1="562" y1="188" x2="562" y2="212" class="diode-bar main" />
+              <path d="M 562 200 L 585 200" class="wire" />
+              <text x="557" y="166" class="comp-label">D.FWD</text>
+              <text x="557" y="238" class="comp-sublabel">Rectifier</text>
+            </g>
+
+            <circle cx="585" cy="200" r="4.5" class="junction-dot" />
+            <text x="585" y="186" class="node-label">V_out</text>
+
+            <!-- 8. Output Filter Capacitor Cout -->
+            <path d="M 585 200 L 670 200" class="wire" />
+            <g id="comp-cout" class="schematic-component" data-component="C.OUT" data-type="Output Capacitor" data-value="200.0 μF (Low ESR)">
+              <rect x="650" y="225" width="45" height="75" rx="6" class="comp-box" />
+              <path d="M 670 200 L 670 248" class="wire" />
+              <line x1="658" y1="248" x2="682" y2="248" class="cap-plate" />
+              <line x1="658" y1="254" x2="682" y2="254" class="cap-plate" />
+              <path d="M 670 254 L 670 330" class="wire" />
+              <circle cx="670" cy="200" r="3.5" class="junction-dot" />
+              <circle cx="670" cy="330" r="3.5" class="junction-dot" />
+              <text x="702" y="255" class="comp-label">C.OUT</text>
+              <text x="702" y="270" class="comp-sublabel">200 μF</text>
+            </g>
+
+            <!-- 9. DC Load Rload -->
+            <path d="M 670 200 L 760 200" class="wire" />
+            <g id="comp-rload" class="schematic-component" data-component="R.LOAD" data-type="Load Resistor" data-value="4.0 Ω (10 kW Rated)">
+              <rect x="745" y="225" width="40" height="75" rx="6" class="comp-box" />
+              <path d="M 760 200 L 760 235" class="wire" />
+              <rect x="752" y="235" width="16" height="40" class="resistor-box" />
+              <path d="M 760 275 L 760 330" class="wire" />
+              <circle cx="760" cy="200" r="3.5" class="junction-dot" />
+              <circle cx="760" cy="330" r="3.5" class="junction-dot" />
+              <text x="788" y="255" class="comp-label">R.LOAD</text>
+              <text x="788" y="270" class="comp-sublabel" id="schematic-rload-sub">4.0 Ω (10 kW)</text>
+            </g>
+
+            <!-- Ground Symbol -->
+            <g transform="translate(63, 330)">
+              <line x1="0" y1="0" x2="0" y2="16" class="wire" />
+              <line x1="-12" y1="16" x2="12" y2="16" class="ground-line" />
+              <line x1="-8" y1="20" x2="8" y2="20" class="ground-line" />
+              <line x1="-4" y1="24" x2="4" y2="24" class="ground-line" />
+            </g>
+
+            <!-- 10. Microcontroller Block (CTRL_MCU) -->
+            <g id="comp-mcu" class="schematic-component" data-component="CTRL_MCU" data-type="Microcontroller Block (typ 61)" data-value="PFM Gate Driver">
+              <rect x="20" y="20" width="125" height="35" rx="6" class="mcu-box" />
+              <text x="82" y="42" class="mcu-title">CTRL_MCU [typ 61]</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Selected Component Property Inspector -->
+        <div class="component-inspector" id="component-inspector-bar">
+          <div class="inspector-badge">Component Inspector</div>
+          <div class="inspector-name" id="insp-name">Click any component to inspect details</div>
+          <div class="inspector-type" id="insp-type">Hover over switches, resonant tank, or diodes</div>
+          <div class="inspector-value" id="insp-val">--</div>
+        </div>
+      </section>
+
+      <!-- Right Column: Control & Metrics Dashboard -->
+      <aside class="dashboard-sidebar">
+        <!-- Live KPI Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card" id="card-zvs">
+            <div class="kpi-label">ZVS Soft-Switching</div>
+            <div class="kpi-value text-emerald" id="kpi-zvs-status">VERIFIED</div>
+            <div class="kpi-sub" id="kpi-zvs-sub">Switch node turn-on: -0.85V</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-label">Resonant Freq (f0)</div>
+            <div class="kpi-value text-cyan" id="kpi-f0">100.0 kHz</div>
+            <div class="kpi-sub" id="kpi-kfactor">Inductance Ratio k = 5.0</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-label">Output DC Voltage</div>
+            <div class="kpi-value text-amber" id="kpi-vout">181.2 V</div>
+            <div class="kpi-sub" id="kpi-vout-sub">Ripple: 1.1 V (0.61%)</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-label">DC Output Power</div>
+            <div class="kpi-value text-emerald" id="kpi-pout">10.0 kW</div>
+            <div class="kpi-sub" id="kpi-pout-sub">Load: 4.0 Ω · 50.0 A DC</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-label">Resonant Current (Pk)</div>
+            <div class="kpi-value text-violet" id="kpi-ilr">111.6 A</div>
+            <div class="kpi-sub">Continuous Resonant AC</div>
+          </div>
+        </div>
+
+        <!-- Operating Presets -->
+        <div class="card preset-card">
+          <h3 class="card-title">Converter Operating Mode & Power Presets</h3>
+          <div class="preset-buttons">
+            <button class="btn btn-preset active" id="btn-preset-10kw" data-fsw="100000" data-pout="10000">
+              <span class="preset-mode">10 kW Rated Load (100 kHz)</span>
+              <span class="preset-desc">Full 10 kW · R_load = 4.0 Ω · ZVS</span>
+            </button>
+            <button class="btn btn-preset" id="btn-preset-5kw" data-fsw="105000" data-pout="5000">
+              <span class="preset-mode">5 kW Half Load (105 kHz)</span>
+              <span class="preset-desc">50% Load · R_load = 8.0 Ω</span>
+            </button>
+            <button class="btn btn-preset" id="btn-preset-1kw" data-fsw="115000" data-pout="1000">
+              <span class="preset-mode">1 kW Light Load (115 kHz)</span>
+              <span class="preset-desc">10% Load · R_load = 40.0 Ω</span>
+            </button>
+            <button class="btn btn-preset" id="btn-preset-resonance" data-fsw="100040" data-pout="10000">
+              <span class="preset-mode">At Resonance (f0 = 100.0 kHz)</span>
+              <span class="preset-desc">Unity Tank Gain · Pure Sine</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Parameter Tuning Controls -->
+        <div class="card controls-card">
+          <h3 class="card-title">Live Parameter Tuning (MCP Bridge)</h3>
+
+          <div class="control-group">
+            <div class="control-label-row">
+              <label for="slider-pout">Output Power Load (P_out)</label>
+              <span class="control-value text-emerald" id="val-pout">10.0 kW</span>
+            </div>
+            <input type="range" id="slider-pout" min="500" max="10000" step="500" value="10000" class="range-slider">
+          </div>
+
+          <div class="control-group">
+            <div class="control-label-row">
+              <label for="slider-fsw">Switching Frequency (f_sw)</label>
+              <span class="control-value" id="val-fsw">100.0 kHz</span>
+            </div>
+            <input type="range" id="slider-fsw" min="80000" max="140000" step="1000" value="100000" class="range-slider">
+          </div>
+
+          <div class="control-group">
+            <div class="control-label-row">
+              <label for="slider-deadtime">Dead Time (t_dead)</label>
+              <span class="control-value" id="val-deadtime">180 ns</span>
+            </div>
+            <input type="range" id="slider-deadtime" min="100" max="350" step="10" value="180" class="range-slider">
+          </div>
+
+          <div class="control-group">
+            <div class="control-label-row">
+              <label for="slider-vin">Input Voltage (V_in)</label>
+              <span class="control-value" id="val-vin">400 V</span>
+            </div>
+            <input type="range" id="slider-vin" min="300" max="450" step="10" value="400" class="range-slider">
+          </div>
+
+          <div class="action-row">
+            <button id="btn-simulate" class="btn btn-primary btn-block">
+              <span class="btn-spinner" id="sim-spinner"></span>
+              <span id="btn-simulate-text">Simulate with Gecko Engine (MCP)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- AI Engineering Discussion Card -->
+        <div class="card ai-card">
+          <div class="ai-header">
+            <span class="ai-sparkle">✨</span>
+            <h3 class="card-title">LLM Design Copilot &amp; Discussion</h3>
+            <span class="ai-live-badge">MCP Active</span>
+          </div>
+          <p class="ai-desc">Discuss design requirements with the LLM or click quick questions:</p>
+          <div class="ai-chips">
+            <button class="ai-chip" data-topic="sizing_10kw">⚡ Why Lr=2.2µH for 10kW?</button>
+            <button class="ai-chip" data-topic="zvs_margin">🛡️ Check ZVS margin at 10kW</button>
+            <button class="ai-chip" data-topic="power_scaling">📐 0 - 10kW Control Strategy</button>
+          </div>
+          <div class="ai-response-box" id="ai-response-box">
+            <div class="ai-response-content" id="ai-response-content">
+              <strong>LLC 10 kW Scaled:</strong> Primary load R_load = 4.0 Ω (Rac = 3.24 Ω). Resonant tank Lr = 2.2 µH, Cr = 1.15 µF, Lm = 11.0 µH. ZVS verified with 180 ns dead-time. You can talk to the LLM directly in chat to change any parameters!
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Waveform Analysis Section -->
+    <section class="waveforms-section card">
+      <div class="section-header">
+        <div class="section-title-group">
+          <h2 class="section-title">High-Resolution Simulation Waveforms</h2>
+          <p class="section-subtitle">Real-time GeckoHeadless transient simulation telemetry at 20 ns resolution</p>
+        </div>
+        <div class="chart-toggles">
+          <span class="badge badge-info">20,001 Simulated Steps</span>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <!-- Chart 1: ZVS Analysis (Vsw, Gate1, Gate2) -->
+        <div class="chart-wrapper">
+          <div class="chart-header">
+            <h3 class="chart-title">Zero Voltage Switching (ZVS) Verification</h3>
+            <span class="chart-legend-tag tag-sw">V_sw (0 - 400V)</span>
+            <span class="chart-legend-tag tag-g1">Gate 1</span>
+            <span class="chart-legend-tag tag-g2">Gate 2</span>
+          </div>
+          <div class="chart-canvas-container">
+            <canvas id="chart-zvs"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2: Resonant Tank Dynamics -->
+        <div class="chart-wrapper">
+          <div class="chart-header">
+            <h3 class="chart-title">Resonant Tank Dynamics (Lr &amp; Cr)</h3>
+            <span class="chart-legend-tag tag-ilr">i_Lr (Resonant Current)</span>
+            <span class="chart-legend-tag tag-vcr">V_pri (AC Voltage)</span>
+          </div>
+          <div class="chart-canvas-container">
+            <canvas id="chart-tank"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 3: DC Output Voltage & Ripple -->
+        <div class="chart-wrapper">
+          <div class="chart-header">
+            <h3 class="chart-title">DC Output Voltage &amp; Ripple (V_out)</h3>
+            <span class="chart-legend-tag tag-vout">V_out (DC Bus)</span>
+          </div>
+          <div class="chart-canvas-container">
+            <canvas id="chart-vout"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div>GeckoCIRCUITS Model Context Protocol (MCP) · Native Headless Simulation Engine</div>
+      <div class="footer-links">
+        <span>Java 25 LTS</span>
+        <span>•</span>
+        <span>FastMCP Remote Control</span>
+        <span>•</span>
+        <span>Cross-Platform (Windows/Linux/macOS)</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

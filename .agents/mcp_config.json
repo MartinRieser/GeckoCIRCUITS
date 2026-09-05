@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "gecko-circuits": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--with",
+        "mcp<2",
+        "python",
+        "tools/mcp/gecko_mcp/server.py"
+      ]
+    }
+  }
+}

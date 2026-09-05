@@ -61,36 +61,57 @@ if not exist "%JAR_FILE%" (
     exit /b 1
 )
 
-REM Check Java installation (prefer JAVA_HOME if valid, otherwise PATH)
+REM 1. Find Java 25 or later
 set "JAVA_EXE="
-if defined JAVA_HOME if exist "%JAVA_HOME%\bin\java.exe" set "JAVA_EXE=%JAVA_HOME%\bin\java.exe"
+set "JAVA_VER=0"
+
+REM Check JAVA_HOME first
+if defined JAVA_HOME if exist "%JAVA_HOME%\bin\java.exe" (
+    call :check_java "%JAVA_HOME%\bin\java.exe"
+)
+
+REM Search user .jdks directory
+if not defined JAVA_EXE (
+    for /f "delims=" %%D in ('dir /b /ad "%USERPROFILE%\.jdks\jdk-25*" 2^>nul') do (
+        if not defined JAVA_EXE if exist "%USERPROFILE%\.jdks\%%D\bin\java.exe" (
+            call :check_java "%USERPROFILE%\.jdks\%%D\bin\java.exe"
+        )
+    )
+)
+
+REM Search Program Files for Java 25
+if not defined JAVA_EXE (
+    for /f "delims=" %%D in ('dir /b /ad "%ProgramFiles%\Java\jdk-25*" 2^>nul') do (
+        if not defined JAVA_EXE if exist "%ProgramFiles%\Java\%%D\bin\java.exe" (
+            call :check_java "%ProgramFiles%\Java\%%D\bin\java.exe"
+        )
+    )
+)
+if not defined JAVA_EXE (
+    for /f "delims=" %%D in ('dir /b /ad "%ProgramFiles%\Eclipse Adoptium\jdk-25*" 2^>nul') do (
+        if not defined JAVA_EXE if exist "%ProgramFiles%\Eclipse Adoptium\%%D\bin\java.exe" (
+            call :check_java "%ProgramFiles%\Eclipse Adoptium\%%D\bin\java.exe"
+        )
+    )
+)
+
+REM Check PATH
 if not defined JAVA_EXE (
     where java >nul 2>&1
     if not errorlevel 1 (
-        for /f "delims=" %%I in ('where java 2^>nul') do if not defined JAVA_EXE set "JAVA_EXE=%%I"
+        for /f "delims=" %%I in ('where java 2^>nul') do (
+            if not defined JAVA_EXE call :check_java "%%I"
+        )
     )
 )
 
 if not defined JAVA_EXE (
-    echo Error: Java not found in PATH or JAVA_HOME
-    echo Please install Java 25 or later
+    echo Error: Java 25 or later is required, but none was found.
+    echo Please install JDK 25 or set JAVA_HOME to point to a JDK 25+ installation.
     exit /b 1
 )
 
-REM Verify Java version >= 25
-set "JAVA_VER=0"
-set "TMP_VER=%TEMP%\gecko_java_ver_%RANDOM%.tmp"
-"%JAVA_EXE%" -version 2> "%TMP_VER%"
-for /f "tokens=3" %%g in ('findstr /i "version" "%TMP_VER%" 2^>nul') do (
-    for /f "delims=." %%v in ("%%~g") do set "JAVA_VER=%%v"
-)
-if exist "%TMP_VER%" del "%TMP_VER%" >nul 2>&1
-
-if %JAVA_VER% lss 25 (
-    echo Error: Java 25 or later is required. Found: Java %JAVA_VER% [%JAVA_EXE%]
-    echo Please set JAVA_HOME or update PATH to point to JDK 25+.
-    exit /b 1
-)
+set "JAVA_HOME=%JAVA_EXE:\bin\java.exe=%"
 
 REM Display startup info
 echo ============================================
@@ -125,3 +146,19 @@ echo   run-gecko.bat my_circuit.ipes        Open a circuit file
 echo   run-gecko.bat --hidpi                Start with HiDPI scaling
 echo   run-gecko.bat --hidpi circuit.ipes   HiDPI with circuit file
 exit /b 0
+
+:check_java
+set "CAND_EXE=%~1"
+set "CAND_VER=0"
+set "TMP_VER=%TEMP%\gecko_java_ver_%RANDOM%.tmp"
+"%CAND_EXE%" -version 2> "%TMP_VER%"
+for /f "tokens=3" %%g in ('findstr /i "version" "%TMP_VER%" 2^>nul') do (
+    for /f "delims=." %%v in ("%%~g") do set "CAND_VER=%%v"
+)
+if exist "%TMP_VER%" del "%TMP_VER%" >nul 2>&1
+if !CAND_VER! geq 25 (
+    set "JAVA_EXE=%CAND_EXE%"
+    set "JAVA_VER=!CAND_VER!"
+)
+exit /b
+
