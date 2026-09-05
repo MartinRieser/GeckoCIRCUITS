@@ -1,0 +1,5 @@
+[package]
+name = "gecko-engine"
+version = "1.0.0"
+edition = "2021"
+description = "Pure-logic helpers for the GeckoCIRCUITS desktop shell: readiness handshake, engine process handling, filename sanitizing"

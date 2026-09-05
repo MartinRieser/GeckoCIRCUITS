@@ -16,7 +16,9 @@ Branch: `feature/tauri-desktop` off `feature/web-frontend` (after its merge to m
 **WP0.3 CORS** — new `gecko/rest/config/CorsConfig.java` (`WebMvcConfigurer`): allow origins `tauri://localhost`, `https://tauri.localhost`, `http://localhost:5173`, list overridable via `gecko.api.allowed-origins`. MockMvc tests: preflight OPTIONS + GET with Origin.
 **WP0.4 Script-block spike — DONE (2026-09-05):** no GraalVM needed. The headless engine executes typ-61 script blocks via the core's own interpreter (`ScriptBlockCalculator`); proven by `ScriptBlockSimulationTest` (differential assertion: blanking the script changes the waveforms). rest-api pom stays without polyglot deps; the sidecar JVM needs no `polyglot` flags for script circuits.
 
-## Phase 1 — Tauri shell MVP (`desktop/` crate)
+## Phase 1 — Tauri shell MVP (`desktop/` crate) — implemented 2026-09-05
+
+Status: `desktop/` workspace committed. Two crates: `engine` (pure logic: readiness handshake, engine process handling, filename sanitizing — 16 unit tests, std-only, builds on any toolchain) and `app` (Tauri 2 shell wiring: sidecar spawn, GECKO_READY wait, window with backend injection, download save dialog, commands). `clippy` and `rustfmt` clean; `cargo check` passes on windows-gnu locally (build.rs skips the broken windres resource step on that toolchain only; MSVC/CI uses full tauri_build). Icons generated from `_build/resources/GeckoCIRCUITS.png`. Java side: `EngineReadyLogger` + `ParentWatchdog` (exit 71 on parent death, `gecko.parent-pid=0` disables). Release bundling/installers = Phase 2 (`scripts/desktop/build-engine.py` + CI).
 
 Scaffold: `desktop/Cargo.toml` (tauri 2, `tauri-plugin-single-instance`, `tauri-plugin-dialog`, `tauri-plugin-opener`), `desktop/tauri.conf.json` (productName `GeckoCIRCUITS`, id `com.geckocircuits.desktop`, icons from `cargo tauri icon` reusing the existing app icon; CSP `connect-src 'self' http://127.0.0.1:* ws://127.0.0.1:*`).
 
