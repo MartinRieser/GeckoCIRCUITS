@@ -81,7 +81,7 @@
                 "clear": false
             },
             "problemMatcher": ["$junit"],
-            "detail": "Run Maven tests with Java 21"
+            "detail": "Run Maven tests with Java 25"
         },
         {
             "label": "Maven: Update Dependencies",

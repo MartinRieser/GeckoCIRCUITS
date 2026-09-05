@@ -5,7 +5,7 @@
     "java.errors.incompleteClasspath.severity": "ignore",
 
     // Project settings
-    "java.compliance": "21",
+    "java.compliance": "25",
     "java.autobuild.enabled": true,
 
     // Project paths
