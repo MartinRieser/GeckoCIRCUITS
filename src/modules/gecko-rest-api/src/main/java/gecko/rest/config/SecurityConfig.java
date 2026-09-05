@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
  * Spring Security configuration for the REST API.
@@ -21,10 +22,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final ApiKeyProperties apiKeyProperties;
+    private final UrlBasedCorsConfigurationSource corsConfigurationSource;
 
     @Autowired
-    public SecurityConfig(ApiKeyProperties apiKeyProperties) {
+    public SecurityConfig(ApiKeyProperties apiKeyProperties,
+                          UrlBasedCorsConfigurationSource corsConfigurationSource) {
         this.apiKeyProperties = apiKeyProperties;
+        this.corsConfigurationSource = corsConfigurationSource;
     }
 
     @Bean
@@ -35,6 +39,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
