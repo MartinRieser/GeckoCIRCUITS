@@ -37,29 +37,6 @@ services:
         reservations:
           memory: 1G
 
-  # ==========================================================================
-  # Development Service (with hot reload - requires source mount)
-  # ==========================================================================
-  gecko-api-dev:
-    profiles:
-      - dev
-    build:
-      context: ../src/modules
-      dockerfile: ../../docker/Dockerfile.dev
-    container_name: gecko-api-dev
-    ports:
-      - "8080:8080"
-      - "5005:5005"  # Debug port
-    environment:
-      - JAVA_OPTS=-Xmx2G -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-      - SPRING_PROFILES_ACTIVE=dev
-    volumes:
-      - ../gecko-simulation-core/src:/app/gecko-simulation-core/src:ro
-      - ../gecko-rest-api/src:/app/gecko-rest-api/src:ro
-      - ../circuits:/app/circuits:ro
-      - gecko-data:/app/data
-    restart: unless-stopped
-
 volumes:
   gecko-data:
     driver: local
