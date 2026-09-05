@@ -89,17 +89,17 @@ fi
 if ! command -v java &> /dev/null; then
     echo "Error: Java not found in PATH"
     echo ""
-    echo "Install Java 21:"
-    echo "  Ubuntu/Debian: sudo apt install openjdk-21-jdk"
-    echo "  Fedora:        sudo dnf install java-21-openjdk"
-    echo "  Arch:          sudo pacman -S jdk21-openjdk"
+    echo "Install Java 25:"
+    echo "  Ubuntu/Debian: sudo apt install openjdk-25-jdk"
+    echo "  Fedora:        sudo dnf install java-25-openjdk"
+    echo "  Arch:          sudo pacman -S jdk25-openjdk"
     exit 1
 fi
 
 # Check Java version
 JAVA_VERSION=$(java -version 2>&1 | head -1 | cut -d'"' -f2 | cut -d'.' -f1)
-if [[ "$JAVA_VERSION" -lt 21 ]]; then
-    echo "Warning: Java 21+ recommended (found: $JAVA_VERSION)"
+if [[ "$JAVA_VERSION" -lt 25 ]]; then
+    echo "Warning: Java 25+ recommended (found: $JAVA_VERSION)"
 fi
 
 # Check DISPLAY for GUI mode

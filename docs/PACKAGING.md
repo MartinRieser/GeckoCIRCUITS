@@ -21,7 +21,7 @@ GeckoCIRCUITS provides native, self-contained packages:
 | **macOS** (Apple Silicon & Intel) | `GeckoCIRCUITS-<version>.dmg` | `GeckoCIRCUITS-<version>-macos-app.zip` | Drag-and-Drop to Applications, Dock icon |
 | **Linux** (Debian/Ubuntu) | `geckocircuits_<version>-1_amd64.deb` | `GeckoCIRCUITS-<version>-linux-x64-portable.tar.gz` | App Menu (`Science;Electronics;Engineering`), `.desktop` file |
 | **Linux** (Fedora/RHEL) | `geckocircuits-<version>-1.x86_64.rpm` | `GeckoCIRCUITS-<version>-linux-x64-portable.tar.gz` | App Menu (`Science;Electronics;Engineering`), `.desktop` file |
-| **Universal (All OS)** | — | Fat JAR: `gecko-1.0-jar-with-dependencies.jar` | Run via `java -jar` (requires Java 21+) |
+| **Universal (All OS)** | — | Fat JAR: `gecko-1.0-jar-with-dependencies.jar` | Run via `java -jar` (requires Java 25+) |
 
 ---
 
@@ -30,7 +30,7 @@ GeckoCIRCUITS provides native, self-contained packages:
 You can package GeckoCIRCUITS locally on any OS.
 
 ### Prerequisites
-- **JDK 21+** (Adoptium Temurin or Oracle JDK) with `jpackage` in `PATH`
+- **JDK 25+** (Adoptium Temurin or Oracle JDK) with `jpackage` in `PATH`
 - **Maven 3.6+**
 - **Python 3.8+** with `Pillow` installed (`pip install Pillow`)
 - Platform-specific tools:

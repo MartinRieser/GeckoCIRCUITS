@@ -36,7 +36,7 @@ fi
 
 echo ""
 echo "This script will install:"
-echo "  - OpenJDK 21 (full JDK with GUI support)"
+echo "  - OpenJDK 25 (full JDK with GUI support)"
 echo "  - Maven 3.x"
 echo "  - Python 3 with pip"
 echo "  - X11 libraries"
@@ -55,9 +55,9 @@ echo "[1/5] Updating package lists..."
 sudo apt-get update -qq
 
 echo ""
-echo "[2/5] Installing Java 21 (full JDK with GUI support)..."
+echo "[2/5] Installing Java 25 (full JDK with GUI support)..."
 # Install full JDK (not headless) for GUI/X11 support
-sudo apt-get install -y openjdk-21-jdk
+sudo apt-get install -y openjdk-25-jdk
 
 # Verify Java installation
 echo ""
@@ -66,7 +66,7 @@ java -version 2>&1 | head -1
 echo "JAVA_HOME: ${JAVA_HOME:-not set}"
 
 # Check for X11 AWT library
-if [ -f "/usr/lib/jvm/java-21-openjdk-amd64/lib/libawt_xawt.so" ]; then
+if [ -f "/usr/lib/jvm/java-25-openjdk-amd64/lib/libawt_xawt.so" ]; then
     echo "X11 AWT library: OK"
 else
     echo "Warning: X11 AWT library not found. GUI may not work."

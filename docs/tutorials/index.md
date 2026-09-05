@@ -159,7 +159,7 @@ For batch simulations and external tool integration:
 ## Prerequisites
 
 - GeckoCIRCUITS 1.0 or later
-- Java 21 runtime
+- Java 25 runtime
 - For scripting tutorials: MATLAB/Simulink or Python (optional)
 
 ## Related Resources

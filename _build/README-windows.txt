@@ -5,7 +5,7 @@ Platform: Windows
 
 REQUIREMENTS
 ------------
-- Java 21 or later (https://adoptium.net/)
+- Java 25 or later (https://adoptium.net/)
 
 QUICK START
 -----------

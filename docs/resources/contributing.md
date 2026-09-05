@@ -21,7 +21,7 @@ Thank you for your interest in contributing! GeckoCIRCUITS is an open-source pow
 
 ### Prerequisites
 
-- **Java 21** (Temurin recommended)
+- **Java 25** (Temurin recommended)
 - **Maven 3.8+**
 - **Git**
 

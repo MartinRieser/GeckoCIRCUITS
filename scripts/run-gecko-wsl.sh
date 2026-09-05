@@ -11,7 +11,7 @@
 # Requirements:
 #   - WSL2 with WSLg (Windows 11 or Windows 10 with WSLg)
 #   - Or X server on Windows (VcXsrv, X410, etc.)
-#   - Java 21+ installed in WSL
+#   - Java 25+ installed in WSL
 
 set -e
 
@@ -108,14 +108,14 @@ if ! command -v java &> /dev/null; then
     echo "  ./scripts/setup-wsl.sh"
     echo ""
     echo "Or install manually:"
-    echo "  sudo apt install openjdk-21-jdk"
+    echo "  sudo apt install openjdk-25-jdk"
     exit 1
 fi
 
 # Check Java version
 JAVA_VERSION=$(java -version 2>&1 | head -1 | cut -d'"' -f2 | cut -d'.' -f1)
-if [[ "$JAVA_VERSION" -lt 21 ]]; then
-    echo "Warning: Java 21+ recommended (found: $JAVA_VERSION)"
+if [[ "$JAVA_VERSION" -lt 25 ]]; then
+    echo "Warning: Java 25+ recommended (found: $JAVA_VERSION)"
 fi
 
 # Configure DISPLAY for WSL

@@ -16,7 +16,7 @@ Write-Host "============================================" -ForegroundColor Cyan
 # 1. Check Java
 $javaCmd = Get-Command java -ErrorAction SilentlyContinue
 if (-not $javaCmd) {
-    Write-Host "[ERROR] Java is not found in PATH. Please install Java 21 or later." -ForegroundColor Red
+    Write-Host "[ERROR] Java is not found in PATH. Please install Java 25 or later." -ForegroundColor Red
     exit 1
 }
 

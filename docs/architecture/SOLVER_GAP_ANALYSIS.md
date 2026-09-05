@@ -401,5 +401,5 @@ class SampledControlExecutor {
 
 ### Java Native Integration
 - **JNA**: https://github.com/java-native-access/jna
-- **Project Panama (FFM)**: https://openjdk.org/projects/panama/ (Java 21+)
+- **Project Panama (FFM)**: https://openjdk.org/projects/panama/ (Java 25+)
 - **GraalVM Native Image**: https://www.graalvm.org/native-image/

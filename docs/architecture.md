@@ -8,7 +8,7 @@
 
 ## 1. System Overview
 
-GeckoCIRCUITS is a multi-domain circuit simulator built in Java 21. The architecture follows a dual-track approach: maintaining the mature Swing desktop application while extracting a GUI-free simulation core for headless/API use.
+GeckoCIRCUITS is a multi-domain circuit simulator built in Java 25. The architecture follows a dual-track approach: maintaining the mature Swing desktop application while extracting a GUI-free simulation core for headless/API use.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐

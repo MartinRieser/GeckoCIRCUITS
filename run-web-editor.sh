@@ -19,13 +19,13 @@ echo "============================================"
 
 # 1. Check Java
 if ! command -v java &> /dev/null; then
-    echo "[ERROR] Java is not found in PATH. Please install Java 21 or later."
+    echo "[ERROR] Java is not found in PATH. Please install Java 25 or later."
     exit 1
 fi
 
 JAVA_VERSION=$(java -version 2>&1 | head -1 | cut -d'"' -f2 | cut -d'.' -f1)
-if [[ "$JAVA_VERSION" -lt 21 ]]; then
-    echo "[WARNING] Java 21+ recommended (found: $JAVA_VERSION)"
+if [[ "$JAVA_VERSION" -lt 25 ]]; then
+    echo "[WARNING] Java 25+ recommended (found: $JAVA_VERSION)"
 fi
 
 # 2. Check and build REST JAR if missing

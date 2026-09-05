@@ -84,8 +84,8 @@ fi
 if ! command -v java &> /dev/null; then
     echo "Error: Java not found in PATH"
     echo ""
-    echo "Install Java 21 with Homebrew:"
-    echo "  brew install openjdk@21"
+    echo "Install Java 25 with Homebrew:"
+    echo "  brew install openjdk@25"
     echo ""
     echo "Or download from: https://adoptium.net/"
     exit 1
@@ -93,8 +93,8 @@ fi
 
 # Check Java version
 JAVA_VERSION=$(java -version 2>&1 | head -1 | cut -d'"' -f2 | cut -d'.' -f1)
-if [[ "$JAVA_VERSION" -lt 21 ]]; then
-    echo "Warning: Java 21+ recommended (found: $JAVA_VERSION)"
+if [[ "$JAVA_VERSION" -lt 25 ]]; then
+    echo "Warning: Java 25+ recommended (found: $JAVA_VERSION)"
 fi
 
 # Display startup info

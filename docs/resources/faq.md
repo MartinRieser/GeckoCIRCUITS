@@ -12,7 +12,7 @@ GeckoCIRCUITS is an open-source power electronics circuit simulator written in J
 
 ### What Java version do I need?
 
-**Java 21** or later. We recommend [Eclipse Temurin](https://adoptium.net/).
+**Java 25** or later. We recommend [Eclipse Temurin](https://adoptium.net/).
 
 ### Which operating systems are supported?
 

@@ -5,8 +5,8 @@ Platform: macOS
 
 REQUIREMENTS
 ------------
-- Java 21 or later
-  Install with Homebrew: brew install openjdk@21
+- Java 25 or later
+  Install with Homebrew: brew install openjdk@25
   Or download from: https://adoptium.net/
 
 QUICK START

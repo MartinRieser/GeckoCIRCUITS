@@ -28,7 +28,7 @@ Pre-built self-contained native installers and portable packages are available o
 
 See [docs/PACKAGING.md](docs/PACKAGING.md) for details on packaging and local build commands.
 
-### Running with Standalone JAR (Requires Java 21+)
+### Running with Standalone JAR (Requires Java 25+)
 
 1. Download `gecko-1.0-jar-with-dependencies.jar` from [Releases](https://github.com/tinix84/GeckoCIRCUITS/releases)
 2. Run:
@@ -82,7 +82,7 @@ java -Xmx3G -Dpolyglot.js.nashorn-compat=true -jar target/gecko-1.0-jar-with-dep
 mvn test
 ```
 
-Requires: Java 21 JDK + Maven 3.6+
+Requires: Java 25 JDK + Maven 3.6+
 
 ## Logging Configuration
 

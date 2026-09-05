@@ -15,7 +15,7 @@ Usage:
     python3 parameter_sweep.py --verbose
 
 Requirements:
-    - Java 21+
+    - Java 25+
     - GeckoCIRCUITS JAR (build with: mvn package assembly:single -DskipTests)
     - Display server (or Xvfb for headless)
 """

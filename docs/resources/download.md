@@ -14,7 +14,7 @@ description: Download GeckoCIRCUITS releases
 | Requirement | Minimum | Recommended |
 |-------------|---------|-------------|
 | **OS** | Windows 10, Linux, macOS 10.15+ | Windows 11, Ubuntu 22.04+, macOS 12+ |
-| **Java** | Java 21 | Java 21 (Temurin recommended) |
+| **Java** | Java 25 | Java 25 (Temurin recommended) |
 | **RAM** | 4 GB | 8 GB+ |
 | **Disk** | 500 MB | 1 GB |
 | **Display** | 1280x720 | 1920x1080+ |

@@ -9,7 +9,7 @@ Welcome to the GeckoCIRCUITS developer guide! This document explains how to exte
 
 ## Overview
 
-GeckoCIRCUITS is a Java 21 power electronics circuit simulator built on Modified Nodal Analysis (MNA) for electrical simulation. The architecture is modular and designed for extension. Before diving into specific extensions, read `/CLAUDE.md` in the repository root for architecture overview and build commands.
+GeckoCIRCUITS is a Java 25 power electronics circuit simulator built on Modified Nodal Analysis (MNA) for electrical simulation. The architecture is modular and designed for extension. Before diving into specific extensions, read `/CLAUDE.md` in the repository root for architecture overview and build commands.
 
 **Setup:** Clone the repository, run `mvn clean install`, then open the project in your IDE (NetBeans recommended for GUI development).
 

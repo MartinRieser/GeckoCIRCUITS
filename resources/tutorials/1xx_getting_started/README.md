@@ -29,7 +29,7 @@ Introduction to GeckoCIRCUITS for new users.
 
 - GeckoCIRCUITS installed and running
 - Basic understanding of electrical circuits
-- Java 21 runtime
+- Java 25 runtime
 
 ## What You'll Learn
 

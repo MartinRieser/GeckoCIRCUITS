@@ -7,7 +7,7 @@ REQUIREMENTS
 ------------
 - WSL2 with Ubuntu 22.04 or 24.04
 - WSLg (Windows 11) or X server on Windows
-- Java 21 or later
+- Java 25 or later
 
 FIRST TIME SETUP
 ----------------
@@ -15,7 +15,7 @@ Run the included setup script to install all dependencies:
   chmod +x setup-wsl.sh
   ./setup-wsl.sh
 
-This installs Java 21, X11 libraries, and Xvfb.
+This installs Java 25, X11 libraries, and Xvfb.
 
 QUICK START
 -----------

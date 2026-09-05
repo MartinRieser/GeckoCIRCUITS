@@ -18,7 +18,7 @@ java -version
 # Must show 21 or higher
 ```
 
-If Java is not installed or too old, install [Temurin JDK 21](https://adoptium.net/).
+If Java is not installed or too old, install [Temurin JDK 25](https://adoptium.net/).
 
 **Check the JAR exists:**
 ```bash
@@ -32,14 +32,14 @@ mvn clean package assembly:single -DskipTests
 
 ### "Unsupported class file major version 65" error
 
-Your Java version is too old. GeckoCIRCUITS requires **Java 21+**.
+Your Java version is too old. GeckoCIRCUITS requires **Java 25+**.
 
 ```bash
 # Check version
 java -version
 
-# Install Java 21 (Ubuntu/Debian)
-sudo apt install openjdk-21-jdk
+# Install Java 25 (Ubuntu/Debian)
+sudo apt install openjdk-25-jdk
 ```
 
 ### OutOfMemoryError

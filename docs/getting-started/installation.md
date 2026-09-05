@@ -9,13 +9,13 @@ GeckoCIRCUITS runs on Windows, Linux, and macOS. Follow the instructions for you
 
 ## Prerequisites
 
-### Java 21
+### Java 25
 
-GeckoCIRCUITS requires Java 21 or later.
+GeckoCIRCUITS requires Java 25 or later.
 
 === "Windows"
 
-    1. Download [Eclipse Temurin JDK 21](https://adoptium.net/temurin/releases/?version=21)
+    1. Download [Eclipse Temurin JDK 25](https://adoptium.net/temurin/releases/?version=25)
     2. Run the installer
     3. Verify installation:
     ```batch
@@ -26,14 +26,14 @@ GeckoCIRCUITS requires Java 21 or later.
 
     ```bash
     sudo apt update
-    sudo apt install openjdk-21-jdk
+    sudo apt install openjdk-25-jdk
     java -version
     ```
 
 === "Linux (Fedora/RHEL)"
 
     ```bash
-    sudo dnf install java-21-openjdk-devel
+    sudo dnf install java-25-openjdk-devel
     java -version
     ```
 
@@ -41,10 +41,10 @@ GeckoCIRCUITS requires Java 21 or later.
 
     ```bash
     # Using Homebrew
-    brew install openjdk@21
+    brew install openjdk@25
 
     # Add to PATH
-    echo 'export PATH="/opt/homebrew/opt/openjdk@21/bin:$PATH"' >> ~/.zshrc
+    echo 'export PATH="/opt/homebrew/opt/openjdk@25/bin:$PATH"' >> ~/.zshrc
     source ~/.zshrc
 
     java -version
@@ -52,9 +52,9 @@ GeckoCIRCUITS requires Java 21 or later.
 
 !!! note "Expected Output"
     ```
-    openjdk version "21.0.x" 2024-xx-xx
-    OpenJDK Runtime Environment (build 21.0.x+xx)
-    OpenJDK 64-Bit Server VM (build 21.0.x+xx, mixed mode)
+    openjdk version "25.0.x" 2024-xx-xx
+    OpenJDK Runtime Environment (build 25.0.x+xx)
+    OpenJDK 64-Bit Server VM (build 25.0.x+xx, mixed mode)
     ```
 
 ## Installation Methods
@@ -187,7 +187,7 @@ java -Xmx3G \
 
 | Problem | Solution |
 |---------|----------|
-| "Java not found" | Ensure Java 21 is installed and in PATH |
+| "Java not found" | Ensure Java 25 is installed and in PATH |
 | Application won't start | Check Java version: `java -version` |
 | Blank window on Linux | Install `libxrender1 libxtst6` |
 | Slow on 4K display | Add `--hidpi` flag or `-Dsun.java2d.uiScale=2` |

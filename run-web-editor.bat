@@ -20,7 +20,7 @@ REM 1. Check if Java is installed
 where java >nul 2>&1
 if errorlevel 1 (
     echo [ERROR] Java is not found in PATH.
-    echo Please install Java 21 or later.
+    echo Please install Java 25 or later.
     pause
     exit /b 1
 )

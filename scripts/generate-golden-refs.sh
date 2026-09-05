@@ -2,7 +2,7 @@
 # Generate golden reference CSVs from v2.02 baseline for regression testing.
 #
 # Prerequisites:
-#   - JDK 21 installed
+#   - JDK 25 installed
 #   - X display available (Xvfb or desktop)
 #   - Repository with v2.02 tag
 #

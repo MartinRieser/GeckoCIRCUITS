@@ -8,7 +8,7 @@
 
 ## 1. Product Vision
 
-GeckoCIRCUITS is an open-source, Java 21 circuit simulator for power electronics, originally developed at ETH Zurich. It provides multi-domain simulation (electrical, thermal, EMI) with integration support for MATLAB/Simulink. The project follows a **dual-track strategy**: maintaining the mature desktop application for power users while adding modern web/API accessibility for automation, cloud deployment, and education.
+GeckoCIRCUITS is an open-source, Java 25 circuit simulator for power electronics, originally developed at ETH Zurich. It provides multi-domain simulation (electrical, thermal, EMI) with integration support for MATLAB/Simulink. The project follows a **dual-track strategy**: maintaining the mature desktop application for power users while adding modern web/API accessibility for automation, cloud deployment, and education.
 
 ## 2. Target Users
 
@@ -29,7 +29,7 @@ GeckoCIRCUITS is an open-source, Java 21 circuit simulator for power electronics
 | WSL2 (Windows 11 WSLg) | `GeckoCIRCUITS-1.0-wsl.zip` | `run-gecko-wsl.sh` |
 
 ### System Requirements
-- **Java**: OpenJDK 21 or later
+- **Java**: OpenJDK 25 or later
 - **Memory**: 4 GB RAM (8 GB recommended)
 - **Storage**: 200 MB for application
 - **Display**: 1280x720 resolution (HiDPI supported via `--hidpi` flag)

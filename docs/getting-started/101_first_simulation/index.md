@@ -26,7 +26,7 @@ By the end of this tutorial, you will:
 ## Prerequisites
 
 - GeckoCIRCUITS installed (see installation guide in main README)
-- Java 21 runtime installed
+- Java 25 runtime installed
 - No prior circuit simulation experience required
 
 ## Materials
@@ -155,7 +155,7 @@ At this point, you should have:
 
 | Issue | Solution |
 |-------|----------|
-| Application won't start | Verify Java 21 is installed: `java -version` |
+| Application won't start | Verify Java 25 is installed: `java -version` |
 | Circuit file won't open | Ensure file exists and is not corrupted |
 | Simulation stuck | Check for circuit errors (short circuits, etc.) |
 | No waveforms in scope | Ensure signals are connected to scope inputs |

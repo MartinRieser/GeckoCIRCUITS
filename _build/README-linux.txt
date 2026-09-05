@@ -5,10 +5,10 @@ Platform: Linux
 
 REQUIREMENTS
 ------------
-- Java 21 or later
-  Ubuntu/Debian: sudo apt install openjdk-21-jdk
-  Fedora:        sudo dnf install java-21-openjdk
-  Arch:          sudo pacman -S jdk21-openjdk
+- Java 25 or later
+  Ubuntu/Debian: sudo apt install openjdk-25-jdk
+  Fedora:        sudo dnf install java-25-openjdk
+  Arch:          sudo pacman -S jdk25-openjdk
 
 QUICK START
 -----------

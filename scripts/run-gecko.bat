@@ -65,7 +65,7 @@ REM Check Java installation
 where java >nul 2>&1
 if errorlevel 1 (
     echo Error: Java not found in PATH
-    echo Please install Java 21 or later
+    echo Please install Java 25 or later
     exit /b 1
 )
 
