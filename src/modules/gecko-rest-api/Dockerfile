@@ -1,11 +1,11 @@
 # Multi-stage Dockerfile for GeckoCIRCUITS REST API
 # Stage 1: Build the application using Maven
-# Stage 2: Create minimal runtime image with JRE 21
+# Stage 2: Create minimal runtime image with JRE 25
 
 # =============================================================================
 # Stage 1: Build Stage
 # =============================================================================
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM eclipse-temurin:25-jdk-alpine AS builder
 
 # Install Maven
 RUN apk add --no-cache maven
@@ -33,7 +33,7 @@ RUN mvn clean package -DskipTests
 # =============================================================================
 # Stage 2: Runtime Stage
 # =============================================================================
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 
 # Metadata
 LABEL maintainer="GeckoCIRCUITS Team"
@@ -65,7 +65,7 @@ EXPOSE 8080
 
 # Health check (Spring Boot Actuator health endpoint)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/api/health || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/gecko/api/health || exit 1
 
 # Environment variables with defaults
 ENV JAVA_OPTS="-Xmx512m -Xms256m" \

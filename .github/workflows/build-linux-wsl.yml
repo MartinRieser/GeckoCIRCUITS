@@ -24,10 +24,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'temurin'
           cache: maven
 
@@ -82,10 +82,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'temurin'
           cache: maven
 
@@ -137,7 +137,7 @@ jobs:
           echo "#### Prerequisites:" >> $GITHUB_STEP_SUMMARY
           echo "- WSL 2 with Ubuntu/Debian" >> $GITHUB_STEP_SUMMARY
           echo "- X server (VcXsrv recommended) or WSLg" >> $GITHUB_STEP_SUMMARY
-          echo "- Java 21+ installed in WSL" >> $GITHUB_STEP_SUMMARY
+          echo "- Java 25+ installed in WSL" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "#### Installation:" >> $GITHUB_STEP_SUMMARY
           echo "1. Extract zip in WSL: \`unzip GeckoCIRCUITS-*-wsl.zip\`" >> $GITHUB_STEP_SUMMARY

@@ -4,7 +4,7 @@
 # =============================================================================
 # Stage 1: Build the gecko-simulation-core module
 # =============================================================================
-FROM eclipse-temurin:21-jdk-alpine AS core-builder
+FROM eclipse-temurin:25-jdk-alpine AS core-builder
 
 WORKDIR /build
 
@@ -22,7 +22,7 @@ RUN mvn clean install -DskipTests -q
 # =============================================================================
 # Stage 2: Build the REST API module
 # =============================================================================
-FROM eclipse-temurin:21-jdk-alpine AS api-builder
+FROM eclipse-temurin:25-jdk-alpine AS api-builder
 
 WORKDIR /build
 
@@ -43,7 +43,7 @@ RUN mvn clean package -DskipTests -q
 # =============================================================================
 # Stage 3: Runtime image (minimal JRE)
 # =============================================================================
-FROM eclipse-temurin:21-jre-alpine AS runtime
+FROM eclipse-temurin:25-jre-alpine AS runtime
 
 # Create non-root user for security
 RUN addgroup -g 1000 gecko && \
