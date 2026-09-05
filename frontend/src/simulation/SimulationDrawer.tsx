@@ -17,6 +17,7 @@ import {
   formatEngineeringValue,
 } from '../model/componentSchema';
 import { mapSimulationResults } from './chartData';
+import { findScopeBlocks, scopeChannels, filterChannels } from './scopes';
 import { estimateStepCount, STEP_WARNING_THRESHOLD } from './simSteps';
 
 interface SimulationDrawerProps {
@@ -80,16 +81,10 @@ export function SimulationDrawer({
   const [displayLayout, setDisplayLayout] = useState<'overlay' | 'stacked'>('overlay');
   const [channelSearch, setChannelSearch] = useState<string>('');
 
-  const scopeBlocks = useMemo(() => {
-    if (!components) return [];
-    return components.filter(
-      (c) =>
-        c.type === 5 ||
-        c.type === 1003 ||
-        c.name.toUpperCase().startsWith('SCOPE') ||
-        c.name.toUpperCase().startsWith('OSZI'),
-    );
-  }, [components]);
+  const scopeBlocks = useMemo(
+    () => (components ? findScopeBlocks(components) : []),
+    [components],
+  );
 
   // Re-seed the parameter inputs whenever another circuit is opened
   useEffect(() => {
@@ -160,24 +155,16 @@ export function SimulationDrawer({
   };
 
   // Active channels associated with currently selected Scope (or all signals)
-  const activeScopeChannels = useMemo(() => {
-    if (selectedScope === 'all') {
-      return signalNames;
-    }
-    const matchingScope = scopeBlocks.find((sb) => sb.name === selectedScope);
-    if (matchingScope) {
-      const channels = matchingScope.inputLabels.filter((l) => l && signalNames.includes(l));
-      if (channels.length > 0) return channels;
-    }
-    return signalNames;
-  }, [selectedScope, scopeBlocks, signalNames]);
+  const activeScopeChannels = useMemo(
+    () => scopeChannels(scopeBlocks.find((sb) => sb.name === selectedScope), signalNames),
+    [selectedScope, scopeBlocks, signalNames],
+  );
 
   // Filtered by search if provided
-  const filteredChannels = useMemo(() => {
-    if (!channelSearch.trim()) return activeScopeChannels;
-    const q = channelSearch.trim().toLowerCase();
-    return activeScopeChannels.filter((s) => s.toLowerCase().includes(q));
-  }, [activeScopeChannels, channelSearch]);
+  const filteredChannels = useMemo(
+    () => filterChannels(activeScopeChannels, channelSearch),
+    [activeScopeChannels, channelSearch],
+  );
 
   // Visible (unhidden) signals sent to the plot
   const visibleSignals = useMemo(() => {

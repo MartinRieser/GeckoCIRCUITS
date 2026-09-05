@@ -9,6 +9,7 @@ import type { EditorState, Action } from '../model/store';
 import { terminalPositions, terminalNear } from '../model/geometry';
 import { routeL, densePoints } from './WireRouter';
 import { ComponentSymbol } from './symbols';
+import { isScopeComponent } from '../simulation/scopes';
 import type { Point } from '../model/types';
 import { ContextMenu } from './ContextMenu';
 import type { ContextMenuTarget } from './ContextMenu';
@@ -519,12 +520,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                     dispatch({ type: 'DRAG_START', names, x: grid.x, y: grid.y });
                   }}
                   onDoubleClick={() => {
-                    if (
-                      component.type === 5 ||
-                      component.type === 1003 ||
-                      component.name.toUpperCase().startsWith('SCOPE') ||
-                      component.name.toUpperCase().startsWith('OSZI')
-                    ) {
+                    if (isScopeComponent(component)) {
                       actions.openScopeTab?.(component.name);
                     } else {
                       dispatch({ type: 'PANEL_FOR', name: component.name });

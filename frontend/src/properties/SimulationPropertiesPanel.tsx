@@ -11,6 +11,7 @@ import {
   formatEngineeringValue,
 } from '../model/componentSchema';
 import { mapSimulationResults } from '../simulation/chartData';
+import { findScopeBlocks } from '../simulation/scopes';
 import { estimateStepCount, STEP_WARNING_THRESHOLD } from '../simulation/simSteps';
 
 interface SimulationPropertiesPanelProps {
@@ -75,15 +76,7 @@ export function SimulationPropertiesPanel({
     }
   }, [defaults]);
 
-  const scopeBlocks = useMemo(() => {
-    return components.filter(
-      (c) =>
-        c.type === 5 ||
-        c.type === 1003 ||
-        c.name.toUpperCase().startsWith('SCOPE') ||
-        c.name.toUpperCase().startsWith('OSZI'),
-    );
-  }, [components]);
+  const scopeBlocks = useMemo(() => findScopeBlocks(components), [components]);
 
   const { signalNames, timeArray, signalStats } = useMemo(
     () => mapSimulationResults(results),

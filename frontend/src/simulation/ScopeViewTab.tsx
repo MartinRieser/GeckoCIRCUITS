@@ -4,11 +4,12 @@
  * cursor measurements, stacked / overlay modes, channel toggles, and signal metrics.
  * Fully styled for both Dark and Light themes.
  */
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import type { EditorComponent } from '../model/types';
 import { formatEngineeringValue } from '../model/componentSchema';
 import { mapSimulationResults } from './chartData';
+import { findScopeBlocks, scopeChannels, filterChannels } from './scopes';
 
 interface ScopeViewTabProps {
   selectedScope: string; // 'all' or 'SCOPE.1', 'SCOPE.2', etc.
@@ -40,6 +41,64 @@ const TRACE_COLORS_LIGHT = [
   '#0d9488', // Vibrant Teal
 ];
 
+/** Binary-searches the sample index closest to time t (time must be ascending). */
+function sampleIndexAt(time: number[], t: number): number {
+  let low = 0;
+  let high = time.length - 1;
+  while (low < high) {
+    const mid = Math.floor((low + high) / 2);
+    if (time[mid] < t) low = mid + 1;
+    else high = mid;
+  }
+  return low;
+}
+
+/** Cursor placement cycle: first click sets A, second B, further clicks move A. */
+function nextCursorSlot(cursorA: number | null, cursorB: number | null): 'A' | 'B' {
+  return cursorA === null ? 'A' : cursorB === null ? 'B' : 'A';
+}
+
+/** Floating hover tooltip shared by the overlay and stacked charts. */
+function WaveformTooltip({
+  time,
+  hoverIndex,
+  activeSignals,
+  signals,
+  allSignals,
+  traceColors,
+  hint,
+}: {
+  time: number[];
+  hoverIndex: number;
+  activeSignals: string[];
+  signals: Record<string, number[]>;
+  allSignals: string[];
+  traceColors: string[];
+  hint?: string;
+}) {
+  return (
+    <div className="waveform-tooltip">
+      <div className="tooltip-time">
+        t = {formatEngineeringValue(time[hoverIndex], 's')}
+      </div>
+      {activeSignals.map((name) => {
+        const val = signals[name]?.[hoverIndex];
+        if (val === undefined) return null;
+        const colorIdx = allSignals.indexOf(name);
+        const color = traceColors[colorIdx % traceColors.length];
+        return (
+          <div key={name} className="tooltip-signal-row">
+            <span className="tooltip-dot" style={{ backgroundColor: color }} />
+            <span className="tooltip-name">{name}:</span>
+            <span className="tooltip-val">{formatEngineeringValue(val)}</span>
+          </div>
+        );
+      })}
+      {hint && <div className="tooltip-hint">{hint}</div>}
+    </div>
+  );
+}
+
 export function ScopeViewTab({
   selectedScope,
   components,
@@ -55,15 +114,7 @@ export function ScopeViewTab({
 
   const traceColors = theme === 'light' ? TRACE_COLORS_LIGHT : TRACE_COLORS_DARK;
 
-  const scopeBlocks = useMemo(() => {
-    return components.filter(
-      (c) =>
-        c.type === 5 ||
-        c.type === 1003 ||
-        c.name.toUpperCase().startsWith('SCOPE') ||
-        c.name.toUpperCase().startsWith('OSZI'),
-    );
-  }, [components]);
+  const scopeBlocks = useMemo(() => findScopeBlocks(components), [components]);
 
   const activeScopeBlock = useMemo(() => {
     if (selectedScope === 'all') return null;
@@ -76,19 +127,15 @@ export function ScopeViewTab({
   );
 
   // Channels that belong to this Scope
-  const scopeChannels = useMemo(() => {
-    if (selectedScope === 'all' || !activeScopeBlock) {
-      return signalNames;
-    }
-    const channels = activeScopeBlock.inputLabels.filter((l) => l && signalNames.includes(l));
-    return channels.length > 0 ? channels : signalNames;
-  }, [selectedScope, activeScopeBlock, signalNames]);
+  const scopeChannelNames = useMemo(
+    () => scopeChannels(activeScopeBlock, signalNames),
+    [selectedScope, activeScopeBlock, signalNames],
+  );
 
-  const filteredChannels = useMemo(() => {
-    if (!channelSearch.trim()) return scopeChannels;
-    const q = channelSearch.trim().toLowerCase();
-    return scopeChannels.filter((s) => s.toLowerCase().includes(q));
-  }, [scopeChannels, channelSearch]);
+  const filteredChannels = useMemo(
+    () => filterChannels(scopeChannelNames, channelSearch),
+    [scopeChannelNames, channelSearch],
+  );
 
   const visibleSignals = useMemo(() => {
     return filteredChannels.filter((s) => !hiddenSignals[s]);
@@ -111,8 +158,8 @@ export function ScopeViewTab({
               {selectedScope === 'all' ? 'Simulation Overview (All Scopes & Signals)' : `Scope Instrument: ${selectedScope}`}
             </div>
             <div className="scope-tab-subtitle">
-              {scopeChannels.length} channel{scopeChannels.length === 1 ? '' : 's'}:{' '}
-              {scopeChannels.join(', ') || 'No signals registered'}
+              {scopeChannelNames.length} channel{scopeChannelNames.length === 1 ? '' : 's'}:{' '}
+              {scopeChannelNames.join(', ') || 'No signals registered'}
             </div>
           </div>
         </div>
@@ -144,7 +191,7 @@ export function ScopeViewTab({
           );
         })}
 
-        {scopeChannels.length > 6 && (
+        {scopeChannelNames.length > 6 && (
           <div className="scope-search-group" style={{ marginLeft: 'auto' }}>
             <input
               type="text"
@@ -336,7 +383,6 @@ function FullScreenOverlayChart({
   cursorB: number | null;
   onSetCursor: (type: 'A' | 'B', idx: number) => void;
 }) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const width = 1000;
   const height = 480;
   const padLeft = 70;
@@ -432,29 +478,16 @@ function FullScreenOverlayChart({
     }
 
     const t = minT + ((svgX - padLeft) / plotW) * (maxT - minT);
-    let low = 0;
-    let high = time.length - 1;
-    while (low < high) {
-      const mid = Math.floor((low + high) / 2);
-      if (time[mid] < t) low = mid + 1;
-      else high = mid;
-    }
-    onHoverIndex(low);
+    onHoverIndex(sampleIndexAt(time, t));
   };
 
   const handleClick = () => {
     if (hoverIndex === null) return;
-    if (cursorA === null) {
-      onSetCursor('A', hoverIndex);
-    } else if (cursorB === null) {
-      onSetCursor('B', hoverIndex);
-    } else {
-      onSetCursor('A', hoverIndex);
-    }
+    onSetCursor(nextCursorSlot(cursorA, cursorB), hoverIndex);
   };
 
   return (
-    <div className="full-waveform-wrap" ref={containerRef}>
+    <div className="full-waveform-wrap">
       <svg
         viewBox={`0 0 ${width} ${height}`}
         className="full-waveform-svg"
@@ -647,25 +680,15 @@ function FullScreenOverlayChart({
 
       {/* Floating Hover Tooltip */}
       {hoverIndex !== null && hoverIndex >= 0 && hoverIndex < time.length && (
-        <div className="waveform-tooltip">
-          <div className="tooltip-time">
-            t = {formatEngineeringValue(time[hoverIndex], 's')}
-          </div>
-          {activeSignals.map((name) => {
-            const val = signals[name]?.[hoverIndex];
-            if (val === undefined) return null;
-            const colorIdx = allSignals.indexOf(name);
-            const color = traceColors[colorIdx % traceColors.length];
-            return (
-              <div key={name} className="tooltip-signal-row">
-                <span className="tooltip-dot" style={{ backgroundColor: color }} />
-                <span className="tooltip-name">{name}:</span>
-                <span className="tooltip-val">{formatEngineeringValue(val)}</span>
-              </div>
-            );
-          })}
-          <div className="tooltip-hint">Click to place measurement cursor</div>
-        </div>
+        <WaveformTooltip
+          time={time}
+          hoverIndex={hoverIndex}
+          activeSignals={activeSignals}
+          signals={signals}
+          allSignals={allSignals}
+          traceColors={traceColors}
+          hint="Click to place measurement cursor"
+        />
       )}
     </div>
   );
@@ -695,7 +718,6 @@ function FullScreenStackedChart({
   cursorB: number | null;
   onSetCursor: (type: 'A' | 'B', idx: number) => void;
 }) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const width = 1000;
   const laneH = 120; // spacious 120px height per channel!
   const laneGap = 16;
@@ -725,29 +747,16 @@ function FullScreenStackedChart({
     }
 
     const t = t0 + ((svgX - padLeft) / plotW) * (t1 - t0);
-    let low = 0;
-    let high = time.length - 1;
-    while (low < high) {
-      const mid = Math.floor((low + high) / 2);
-      if (time[mid] < t) low = mid + 1;
-      else high = mid;
-    }
-    onHoverIndex(low);
+    onHoverIndex(sampleIndexAt(time, t));
   };
 
   const handleClick = () => {
     if (hoverIndex === null) return;
-    if (cursorA === null) {
-      onSetCursor('A', hoverIndex);
-    } else if (cursorB === null) {
-      onSetCursor('B', hoverIndex);
-    } else {
-      onSetCursor('A', hoverIndex);
-    }
+    onSetCursor(nextCursorSlot(cursorA, cursorB), hoverIndex);
   };
 
   return (
-    <div className="full-waveform-wrap" ref={containerRef}>
+    <div className="full-waveform-wrap">
       <svg
         viewBox={`0 0 ${width} ${totalH}`}
         className="full-waveform-svg"
@@ -941,24 +950,14 @@ function FullScreenStackedChart({
       </svg>
 
       {hoverIndex !== null && hoverIndex >= 0 && hoverIndex < time.length && (
-        <div className="waveform-tooltip">
-          <div className="tooltip-time">
-            t = {formatEngineeringValue(time[hoverIndex], 's')}
-          </div>
-          {activeSignals.map((name) => {
-            const val = signals[name]?.[hoverIndex];
-            if (val === undefined) return null;
-            const colorIdx = allSignals.indexOf(name);
-            const color = traceColors[colorIdx % traceColors.length];
-            return (
-              <div key={name} className="tooltip-signal-row">
-                <span className="tooltip-dot" style={{ backgroundColor: color }} />
-                <span className="tooltip-name">{name}:</span>
-                <span className="tooltip-val">{formatEngineeringValue(val)}</span>
-              </div>
-            );
-          })}
-        </div>
+        <WaveformTooltip
+          time={time}
+          hoverIndex={hoverIndex}
+          activeSignals={activeSignals}
+          signals={signals}
+          allSignals={allSignals}
+          traceColors={traceColors}
+        />
       )}
     </div>
   );

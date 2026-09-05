@@ -6,11 +6,13 @@
 import { useEffect, useState, useMemo } from 'react';
 import type { EditorComponent } from '../model/types';
 import {
+  CTRL_TYPE,
   getComponentMeta,
   parseEngineeringValue,
   formatEngineeringValue,
 } from '../model/componentSchema';
 import type { ParameterDef } from '../model/componentSchema';
+import { isScopeComponent } from '../simulation/scopes';
 import { SymbolPreview } from '../canvas/symbols';
 
 interface PanelProps {
@@ -141,7 +143,7 @@ export function PropertiesPanel({
         </div>
 
         {/* Scope Instrument Tab Action */}
-        {onOpenScopeTab && (component.type === 5 || component.type === 1003 || component.name.toUpperCase().startsWith('SCOPE')) && (
+        {onOpenScopeTab && isScopeComponent(component) && (
           <button
             type="button"
             className="sim-btn run"
@@ -172,7 +174,9 @@ export function PropertiesPanel({
         </div>
 
         {/* Dedicated Script / Function Block Editor */}
-        {(component.type === 1016 || component.type === 61 || meta.name === 'CTRL_SCRIPT') ? (
+        {(component.type === CTRL_TYPE.SCRIPT ||
+          component.type === CTRL_TYPE.LEGACY_JAVA_FUNCTION ||
+          meta.name === 'CTRL_SCRIPT') ? (
           <ScriptBlockEditor component={component} onSetParameter={onSetParameter} />
         ) : (
           meta.parameters.length > 0 && (
