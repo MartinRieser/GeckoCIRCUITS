@@ -668,7 +668,8 @@ public class CircuitEditService {
     }
 
     private static void applyDefaultParameters(CircuitModel.ComponentData comp) {
-        if (comp.getType() == 1016 || comp.getType() == 61) {
+        if (comp.getType() == CircuitTypCore.CTRL_SCRIPT.getTypeNumber()
+                || comp.getType() == CircuitTypCore.C_JAVA_FUNCTION.getTypeNumber()) {
             comp.setParameter("sourceCode", "yOUT[0] = xIN[0];");
             comp.setParameter("anzXIN", 1);
             comp.setParameter("anzYOUT", 1);
@@ -718,9 +719,7 @@ public class CircuitEditService {
                 "staticCode".equals(key) ||
                 "staticVariables".equals(key) ||
                 "anzXIN".equals(key) ||
-                "anzYOUT".equals(key) ||
-                "formula".equals(key) ||
-                "script".equals(key)
+                "anzYOUT".equals(key)
         );
     }
 
