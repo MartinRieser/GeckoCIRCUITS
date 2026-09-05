@@ -3,11 +3,12 @@ package gecko.rest.integration;
 import gecko.rest.model.SimulationRequest;
 import gecko.rest.model.circuit.CircuitLoadRequest;
 import gecko.rest.model.circuit.CircuitLoadResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -22,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * simulation by circuitId, pauses it mid-run, verifies that the simulation
  * time freezes, resumes it, and finally cancels it from the paused state.
  */
+@AutoConfigureTestRestTemplate
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class SimulationPauseResumeE2ETest {
 
@@ -151,7 +153,7 @@ class SimulationPauseResumeE2ETest {
     private double currentTime(String simulationId) throws Exception {
         String body = restTemplate.getForEntity(
                 "/api/v1/simulations/{id}", String.class, simulationId).getBody();
-        com.fasterxml.jackson.databind.JsonNode details = objectMapper.readTree(body)
+        tools.jackson.databind.JsonNode details = objectMapper.readTree(body)
                 .get("progressDetails");
         assertThat(details).isNotNull();
         return details.get("currentTime").asDouble();

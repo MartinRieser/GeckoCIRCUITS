@@ -4,11 +4,12 @@ import gecko.rest.model.SimulationRequest;
 import gecko.rest.model.circuit.CircuitLoadRequest;
 import gecko.rest.model.circuit.CircuitLoadResponse;
 import gecko.rest.model.circuit.ComponentListResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.http.*;
 
 import java.nio.file.Files;
@@ -22,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * verify persistence via the P0 round-trip endpoint, and simulate the
  * edited circuit by circuitId.
  */
+@AutoConfigureTestRestTemplate
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CircuitEditE2ETest {
 
