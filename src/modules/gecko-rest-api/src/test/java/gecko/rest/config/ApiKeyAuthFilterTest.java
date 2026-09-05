@@ -72,14 +72,14 @@ class ApiKeyAuthFilterTest {
         assertEquals(401, response.getStatus());
     }
 
-    // Test 4: Public path /api/v1/health → passes without key
+    // Test 4: Public path /api/health → passes without key
     @Test
     void testPublicPathHealthPassesWithoutKey() throws Exception {
         properties.setAuthEnabled(true);
         properties.setKeys("valid-key-123");
         
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/health");
-        request.setServletPath("/api/v1/health");
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/health");
+        request.setServletPath("/api/health");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         filter.doFilterInternal(request, response, filterChain);
@@ -117,19 +117,20 @@ class ApiKeyAuthFilterTest {
         assertNotEquals(401, response.getStatus());
     }
 
-    // Test 7: Public path /actuator/health → passes without key
+    // Test 7: Legacy wrong health path /api/v1/health → requires a key (only the
+    // real endpoint /api/health from HealthController is public)
     @Test
-    void testPublicPathActuatorHealthPassesWithoutKey() throws Exception {
+    void testLegacyHealthPathRequiresKey() throws Exception {
         properties.setAuthEnabled(true);
         properties.setKeys("valid-key-123");
         
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/actuator/health");
-        request.setServletPath("/actuator/health");
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/health");
+        request.setServletPath("/api/v1/health");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         filter.doFilterInternal(request, response, filterChain);
 
-        assertNotEquals(401, response.getStatus());
+        assertEquals(401, response.getStatus());
     }
 
     // Test 8: Public path /ws → passes without key

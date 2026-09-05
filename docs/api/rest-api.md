@@ -146,8 +146,7 @@ The following endpoints do not require API authentication:
 
 | Path | Description |
 |------|-------------|
-| `/api/v1/health` | Health check |
-| `/actuator/health` | Actuator health |
+| `/api/health` | Health check |
 | `/swagger-ui/**` | Swagger UI |
 | `/v3/api-docs/**` | OpenAPI specification |
 | `/ws/**` | WebSocket endpoint |

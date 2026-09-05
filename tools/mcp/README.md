@@ -135,7 +135,7 @@ In any MCP-compatible client config (Antigravity, Claude Desktop, Cursor, etc.):
 | `GECKO_HOME` / `--gecko-home` | Auto-detected | Root directory of the GeckoCIRCUITS repository. |
 | `GECKO_GUI_JAR` / `--gui-jar` | Auto-detected | Path to `gecko-1.0-jar-with-dependencies.jar` in `target/`. |
 | `GECKO_REST_PORT` | `8080` | Port for the optional Gecko REST API health check. |
-| `GECKO_REST_URL` | `http://localhost:8080/gecko/api/v1/health` | Full health-check endpoint for Gecko REST API. |
+| `GECKO_REST_URL` | `http://localhost:8080/gecko/api/health` | Full health-check endpoint for Gecko REST API. |
 | `MCP_TRANSPORT` / `--transport` | `stdio` | Transport type: `stdio` (local process) or `sse` / `streamable-http` (HTTP port). |
 | `MCP_HOST` / `--host` | `127.0.0.1` | Network host interface to bind in SSE mode (`0.0.0.0` for all interfaces). |
 | `MCP_PORT` / `--port` | `8000` | Network port to bind in SSE mode. |

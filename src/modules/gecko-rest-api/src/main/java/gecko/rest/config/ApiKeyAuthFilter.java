@@ -24,8 +24,7 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
     private static final Logger log = LoggerFactory.getLogger(ApiKeyAuthFilter.class);
 
     private static final Set<String> PUBLIC_PATH_PREFIXES = Set.of(
-            "/actuator/health",
-            "/api/v1/health",
+            "/api/health",
             "/swagger-ui",
             "/v3/api-docs",
             "/ws",

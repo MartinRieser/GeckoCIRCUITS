@@ -109,7 +109,7 @@ docker-compose up -d
 docker run -p 8080:8080 gecko-rest-api:latest
 
 # Verify it's running
-curl http://localhost:8080/api/v1/health
+curl http://localhost:8080/gecko/api/health
 ```
 
 See the [REST API documentation](../api/rest-api.md) for full endpoint reference.

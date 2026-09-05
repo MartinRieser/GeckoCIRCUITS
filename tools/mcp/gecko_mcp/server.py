@@ -61,7 +61,7 @@ REST_JAR = WORKSPACE_ROOT / "src" / "modules" / "gecko-rest-api" / "target" / "g
 
 # REST API Configuration (configurable via GECKO_REST_PORT / GECKO_REST_URL)
 REST_PORT = int(os.environ.get("GECKO_REST_PORT", "8080"))
-REST_BASE_URL = os.environ.get("GECKO_REST_URL", f"http://localhost:{REST_PORT}/gecko/api/v1/health")
+REST_BASE_URL = os.environ.get("GECKO_REST_URL", f"http://localhost:{REST_PORT}/gecko/api/health")
 
 
 def find_java_home() -> Optional[Path]:
