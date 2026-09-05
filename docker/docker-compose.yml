@@ -9,8 +9,8 @@ services:
   # ==========================================================================
   gecko-api:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile.api
+      context: ../src/modules
+      dockerfile: ../../docker/Dockerfile.api
     container_name: gecko-api
     ports:
       - "8080:8080"
@@ -24,7 +24,7 @@ services:
       # Mount data directory for simulation results
       - gecko-data:/app/data
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/gecko/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -44,8 +44,8 @@ services:
     profiles:
       - dev
     build:
-      context: ..
-      dockerfile: docker/Dockerfile.dev
+      context: ../src/modules
+      dockerfile: ../../docker/Dockerfile.dev
     container_name: gecko-api-dev
     ports:
       - "8080:8080"
