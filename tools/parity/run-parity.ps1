@@ -77,6 +77,10 @@ function Invoke-JavaBounded {
         Write-Host "TIMEOUT after ${TimeoutSec}s: java $($quoted -join ' ')"
         return 124
     }
+    # WaitForExit(Int32) alone can leave ExitCode unset ($null); the
+    # parameterless overload flushes it. Without this every run looked
+    # "failed" because $null -eq 0 is false.
+    $p.WaitForExit()
     return $p.ExitCode
 }
 
