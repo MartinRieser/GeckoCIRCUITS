@@ -17,15 +17,20 @@ echo "============================================"
 echo "  GeckoCIRCUITS Web Editor"
 echo "============================================"
 
-# 1. Check Java
-if ! command -v java &> /dev/null; then
-    echo "[ERROR] Java is not found in PATH. Please install Java 25 or later."
+# 1. Check Java (prefer JAVA_HOME if set, otherwise PATH)
+JAVA_BIN="java"
+if [[ -n "$JAVA_HOME" && -x "$JAVA_HOME/bin/java" ]]; then
+    JAVA_BIN="$JAVA_HOME/bin/java"
+elif ! command -v java &> /dev/null; then
+    echo "[ERROR] Java is not found in PATH or JAVA_HOME. Please install Java 25 or later."
     exit 1
 fi
 
-JAVA_VERSION=$(java -version 2>&1 | head -1 | cut -d'"' -f2 | cut -d'.' -f1)
+JAVA_VERSION=$("$JAVA_BIN" -version 2>&1 | head -1 | cut -d'"' -f2 | cut -d'.' -f1)
 if [[ "$JAVA_VERSION" -lt 25 ]]; then
-    echo "[WARNING] Java 25+ recommended (found: $JAVA_VERSION)"
+    echo "[ERROR] Java 25 or later is required (found: $JAVA_VERSION at $JAVA_BIN)."
+    echo "Please set JAVA_HOME or update PATH to point to JDK 25+."
+    exit 1
 fi
 
 # 2. Check and build REST JAR if missing
@@ -46,7 +51,7 @@ fi
 
 if [[ $SERVER_RUNNING -eq 0 ]]; then
     echo "[INFO] Starting GeckoCIRCUITS Server in background..."
-    nohup java -Xmx2g -jar "$REST_JAR" > /dev/null 2>&1 &
+    nohup "$JAVA_BIN" -Xmx2g -jar "$REST_JAR" > /dev/null 2>&1 &
     
     # Wait for server to become ready
     READY=0

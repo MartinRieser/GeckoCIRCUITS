@@ -85,9 +85,12 @@ if [[ ! -f "$JAR_FILE" ]]; then
     exit 1
 fi
 
-# Check Java installation
-if ! command -v java &> /dev/null; then
-    echo "Error: Java not found in PATH"
+# Check Java installation (prefer JAVA_HOME if set, otherwise PATH)
+JAVA_BIN="java"
+if [[ -n "$JAVA_HOME" && -x "$JAVA_HOME/bin/java" ]]; then
+    JAVA_BIN="$JAVA_HOME/bin/java"
+elif ! command -v java &> /dev/null; then
+    echo "Error: Java not found in PATH or JAVA_HOME"
     echo ""
     echo "Install Java 25:"
     echo "  Ubuntu/Debian: sudo apt install openjdk-25-jdk"
@@ -97,9 +100,10 @@ if ! command -v java &> /dev/null; then
 fi
 
 # Check Java version
-JAVA_VERSION=$(java -version 2>&1 | head -1 | cut -d'"' -f2 | cut -d'.' -f1)
+JAVA_VERSION=$("$JAVA_BIN" -version 2>&1 | head -1 | cut -d'"' -f2 | cut -d'.' -f1)
 if [[ "$JAVA_VERSION" -lt 25 ]]; then
-    echo "Warning: Java 25+ recommended (found: $JAVA_VERSION)"
+    echo "Error: Java 25 or later is required (found: $JAVA_VERSION at $JAVA_BIN)"
+    exit 1
 fi
 
 # Check DISPLAY for GUI mode
@@ -120,9 +124,9 @@ echo ""
 
 # Build command
 if [[ -n "$CIRCUIT_FILE" ]]; then
-    CMD="java $JVM_OPTS -jar \"$JAR_FILE\" \"$CIRCUIT_FILE\""
+    CMD="\"$JAVA_BIN\" $JVM_OPTS -jar \"$JAR_FILE\" \"$CIRCUIT_FILE\""
 else
-    CMD="java $JVM_OPTS -jar \"$JAR_FILE\""
+    CMD="\"$JAVA_BIN\" $JVM_OPTS -jar \"$JAR_FILE\""
 fi
 
 # Run GeckoCIRCUITS

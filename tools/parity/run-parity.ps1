@@ -49,6 +49,17 @@ $circuits = @(
     @{ Name = 'singlePhase_PWM_converter'; File = "$tutorials/4xx_dcac_inverters/401_single_phase_inverter/singlePhase_PWM_converter.ipes"; Signals = 'uA,uL,i,uDC'; TEnd = '2e-3' }
 )
 
+$javaBin = if ($env:JAVA_HOME -and (Test-Path (Join-Path $env:JAVA_HOME "bin\java.exe"))) {
+    Join-Path $env:JAVA_HOME "bin\java.exe"
+} else {
+    'java'
+}
+$javacBin = if ($env:JAVA_HOME -and (Test-Path (Join-Path $env:JAVA_HOME "bin\javac.exe"))) {
+    Join-Path $env:JAVA_HOME "bin\javac.exe"
+} else {
+    'javac'
+}
+
 function Stop-JavaChildren {
     param([int]$ProcId)
     try {
@@ -75,7 +86,7 @@ function Invoke-JavaBounded {
     # ExitCode reliably (stays $null even after WaitForExit), so use the
     # .NET API directly. Output is inherited since we do not redirect.
     $psi = New-Object System.Diagnostics.ProcessStartInfo
-    $psi.FileName = 'java'
+    $psi.FileName = $javaBin
     $psi.Arguments = $quoted -join ' '
     $psi.UseShellExecute = $false
     $p = [System.Diagnostics.Process]::Start($psi)
@@ -98,13 +109,13 @@ try {
     }
 
     Write-Host 'compiling harness tools...'
-    & javac '-proc:none' '-encoding' 'UTF-8' '-cp' $guiJar '-d' $classes `
+    & $javacBin '-proc:none' '-encoding' 'UTF-8' '-cp' $guiJar '-d' $classes `
         (Join-Path $tools 'ReferenceRunner.java') (Join-Path $tools 'NewEngineRunner.java') (Join-Path $tools 'CompareCsv.java')
     if ($LASTEXITCODE -ne 0) { throw 'javac failed' }
 
     # ---------- start REST server ----------
     Write-Host 'starting gecko-rest-api...'
-    $restProc = Start-Process -FilePath 'java' -ArgumentList '-Xmx1g', '-jar', $restJar `
+    $restProc = Start-Process -FilePath $javaBin -ArgumentList '-Xmx1g', '-jar', "`"$restJar`"" `
         -WindowStyle Hidden -PassThru
     $up = $false
     foreach ($i in 1..60) {

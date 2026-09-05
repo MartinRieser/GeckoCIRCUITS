@@ -13,11 +13,44 @@ Write-Host "============================================" -ForegroundColor Cyan
 Write-Host "  GeckoCIRCUITS Web Editor" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 
-# 1. Check Java
-$javaCmd = Get-Command java -ErrorAction SilentlyContinue
-if (-not $javaCmd) {
-    Write-Host "[ERROR] Java is not found in PATH. Please install Java 25 or later." -ForegroundColor Red
+# 1. Check Java (prefer JAVA_HOME if set, otherwise PATH)
+$javaExe = $null
+if ($env:JAVA_HOME -and (Test-Path (Join-Path $env:JAVA_HOME "bin\java.exe"))) {
+    $javaExe = Join-Path $env:JAVA_HOME "bin\java.exe"
+} else {
+    $javaCmd = Get-Command java -ErrorAction SilentlyContinue
+    if ($javaCmd) { $javaExe = $javaCmd.Source }
+}
+
+if (-not $javaExe) {
+    Write-Host "[ERROR] Java is not found in PATH or JAVA_HOME. Please install Java 25 or later." -ForegroundColor Red
     exit 1
+}
+
+# Verify Java version >= 25
+$psiVer = New-Object System.Diagnostics.ProcessStartInfo
+$psiVer.FileName = $javaExe
+$psiVer.Arguments = "-version"
+$psiVer.UseShellExecute = $false
+$psiVer.RedirectStandardError = $true
+$pVer = [System.Diagnostics.Process]::Start($psiVer)
+$rawVersion = $pVer.StandardError.ReadLine()
+$pVer.WaitForExit()
+
+$versionMatch = [regex]::Match($rawVersion, 'version "(\d+)')
+if ($versionMatch.Success) {
+    $major = [int]$versionMatch.Groups[1].Value
+    if ($major -lt 25) {
+        Write-Host "[ERROR] Java 25 or later is required. Found: Java $major ($javaExe)" -ForegroundColor Red
+        Write-Host "Please set JAVA_HOME or update PATH to point to JDK 25+." -ForegroundColor Red
+        exit 1
+    }
+}
+
+# Ensure JAVA_HOME matches the validated JDK for downstream tools (mvn)
+$jdkRoot = Split-Path (Split-Path $javaExe)
+if (-not $env:JAVA_HOME -or -not (Test-Path (Join-Path $env:JAVA_HOME "bin\java.exe"))) {
+    $env:JAVA_HOME = $jdkRoot
 }
 
 # 2. Check and build REST JAR if needed
@@ -41,7 +74,9 @@ try {
 
 if (-not $serverRunning) {
     Write-Host "[INFO] Starting GeckoCIRCUITS Server..." -ForegroundColor Green
-    Start-Process -FilePath "javaw" -ArgumentList "-Xmx2g", "-jar", "`"$RestJar`"" -WindowStyle Hidden
+    $javawExe = Join-Path (Split-Path $javaExe) "javaw.exe"
+    if (-not (Test-Path $javawExe)) { $javawExe = "javaw" }
+    Start-Process -FilePath $javawExe -ArgumentList "-Xmx2g", "-jar", "`"$RestJar`"" -WindowStyle Hidden
     
     # Wait for server to become ready
     $ready = $false

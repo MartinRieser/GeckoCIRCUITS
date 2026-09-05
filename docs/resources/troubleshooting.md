@@ -30,12 +30,12 @@ If missing, build it:
 mvn clean package assembly:single -DskipTests
 ```
 
-### "Unsupported class file major version 65" error
+### "Unsupported class file major version" error (e.g. version 69 or 65)
 
-Your Java version is too old. GeckoCIRCUITS requires **Java 25+**.
+Your Java runtime is older than the compiled bytecode. GeckoCIRCUITS is compiled with Java 25 (class file major version 69) and requires **Java 25+**.
 
 ```bash
-# Check version
+# Check version (must report 25 or higher)
 java -version
 
 # Install Java 25 (Ubuntu/Debian)

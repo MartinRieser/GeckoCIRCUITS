@@ -16,14 +16,41 @@ echo ============================================
 echo   GeckoCIRCUITS Web Editor
 echo ============================================
 
-REM 1. Check if Java is installed
-where java >nul 2>&1
-if errorlevel 1 (
-    echo [ERROR] Java is not found in PATH.
+REM 1. Check Java (prefer JAVA_HOME if valid, otherwise PATH)
+set "JAVA_EXE="
+if defined JAVA_HOME if exist "%JAVA_HOME%\bin\java.exe" set "JAVA_EXE=%JAVA_HOME%\bin\java.exe"
+if not defined JAVA_EXE (
+    where java >nul 2>&1
+    if not errorlevel 1 (
+        for /f "delims=" %%I in ('where java 2^>nul') do if not defined JAVA_EXE set "JAVA_EXE=%%I"
+    )
+)
+
+if not defined JAVA_EXE (
+    echo [ERROR] Java is not found in PATH or JAVA_HOME.
     echo Please install Java 25 or later.
     pause
     exit /b 1
 )
+
+REM Verify Java version >= 25
+set "JAVA_VER=0"
+set "TMP_VER=%TEMP%\gecko_java_ver_%RANDOM%.tmp"
+"%JAVA_EXE%" -version 2> "%TMP_VER%"
+for /f "tokens=3" %%g in ('findstr /i "version" "%TMP_VER%" 2^>nul') do (
+    for /f "delims=." %%v in ("%%~g") do set "JAVA_VER=%%v"
+)
+if exist "%TMP_VER%" del "%TMP_VER%" >nul 2>&1
+
+if !JAVA_VER! lss 25 (
+    echo [ERROR] Java 25 or later is required. Found: Java !JAVA_VER! [!JAVA_EXE!]
+    echo Please set JAVA_HOME or update PATH to point to JDK 25+.
+    pause
+    exit /b 1
+)
+
+set "JAVAW_EXE=%JAVA_EXE:java.exe=javaw.exe%"
+if not exist "%JAVAW_EXE%" set "JAVAW_EXE=javaw"
 
 REM 2. Check if JAR exists, build if missing
 if not exist "%REST_JAR%" (
@@ -40,7 +67,7 @@ REM 3. Check if server is already running on port 8080
 powershell -Command "try { $r = Invoke-WebRequest -UseBasicParsing -Uri 'http://localhost:%PORT%/gecko/api/v1/circuits/catalog' -TimeoutSec 1; if ($r.StatusCode -eq 200) { exit 0 } else { exit 1 } } catch { exit 1 }" >nul 2>&1
 if errorlevel 1 (
     echo [INFO] Starting GeckoCIRCUITS Server...
-    start /B "" javaw -Xmx2g -jar "%REST_JAR%" >nul 2>&1
+    start /B "" "%JAVAW_EXE%" -Xmx2g -jar "%REST_JAR%" >nul 2>&1
     
     REM Wait for server to become ready
     set "READY=0"

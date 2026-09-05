@@ -78,8 +78,10 @@ resources/validation_report.json
 # built web editor copied by frontend npm run build:spring
 src/modules/gecko-rest-api/src/main/resources/static/
 
-# P5 parity harness compiled classes
+# P5 parity harness compiled classes and run results
 tools/parity/classes/
+tools/parity/results/*.txt
+!tools/parity/results/20260905-133143.txt
 
 # maven-shade byproduct (fat jar build)
 src/modules/gecko-gui/dependency-reduced-pom.xml
