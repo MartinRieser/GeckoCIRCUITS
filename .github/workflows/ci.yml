@@ -36,23 +36,27 @@ jobs:
           chmod +x build_native_libraries.sh
           ./build_native_libraries.sh
 
-      - name: Run tests with coverage (all modules)
+      - name: Run engine & REST API tests (gating)
+        run: |
+          mvn test --no-transfer-progress -pl src/modules/gecko-simulation-core,src/modules/gecko-rest-api -am
+
+      - name: Run GUI tests with coverage (non-gating, needs display)
         run: |
           export DISPLAY=:99
           Xvfb :99 -screen 0 1024x768x24 &
           sleep 1
-          mvn test --no-transfer-progress -Dmaven.test.failure.ignore=true
+          mvn test --no-transfer-progress -pl src/modules/gecko-gui -Dmaven.test.failure.ignore=true
           mvn org.jacoco:jacoco-maven-plugin:report --no-transfer-progress
 
-      - name: Check test results
+      - name: Check GUI test results
         run: |
-          if grep -rq "Failures: [1-9]" src/modules/*/target/surefire-reports/*.txt 2>/dev/null; then
-            echo "::warning::Test failures detected"
-            grep "Failures: [1-9]" src/modules/*/target/surefire-reports/*.txt
+          if grep -rq "Failures: [1-9]" src/modules/gecko-gui/target/surefire-reports/*.txt 2>/dev/null; then
+            echo "::warning::GUI test failures detected"
+            grep "Failures: [1-9]" src/modules/gecko-gui/target/surefire-reports/*.txt
           fi
-          if grep -rq "Errors: [1-9]" src/modules/*/target/surefire-reports/*.txt 2>/dev/null; then
-            echo "::warning::Test errors detected (expected in CI for GUI/native tests)"
-            grep "Errors: [1-9]" src/modules/*/target/surefire-reports/*.txt
+          if grep -rq "Errors: [1-9]" src/modules/gecko-gui/target/surefire-reports/*.txt 2>/dev/null; then
+            echo "::warning::GUI test errors detected (expected in CI for GUI/native tests)"
+            grep "Errors: [1-9]" src/modules/gecko-gui/target/surefire-reports/*.txt
           fi
           echo "Build and test step completed"
 
