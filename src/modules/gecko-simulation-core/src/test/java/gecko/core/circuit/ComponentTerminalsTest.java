@@ -38,6 +38,13 @@ class ComponentTerminalsTest {
         return ComponentTerminals.terminalsOf(comp(family, type), new int[]{x, y}, orientation);
     }
 
+    private static List<int[]> terminals(String family, int type, int x, int y, int orientation,
+                                         String... inputLabels) {
+        CircuitModel.ComponentData comp = comp(family, type);
+        comp.setTerminalXLabels(inputLabels);
+        return ComponentTerminals.terminalsOf(comp, new int[]{x, y}, orientation);
+    }
+
     @Test
     void twoPortTerminals_allOrientations() {
         assertArrayEquals(new int[][]{{28, 30}, {32, 30}},
@@ -97,6 +104,28 @@ class ComponentTerminalsTest {
         assertArrayEquals(new int[][]{{8, 14}},
                 terminals("CONTROL", 1003, 10, 14, ComponentTerminals.NORTH_SOUTH).toArray(),
                 "catalog scope: input only");
+    }
+
+    @Test
+    void scopeTerminals_spreadOnePerInputLikeTheWebEditor() {
+        // real geometry of the Multi-Scope example: SCOPE.1 at (34,5), 2 inputs,
+        // NORTH_SOUTH (503) -> pins west of the body, 2 grid units apart
+        assertArrayEquals(new int[][]{{32, 4}, {32, 6}},
+                terminals("CONTROL", ComponentTerminals.CONTROL_SCOPE, 34, 5,
+                        ComponentTerminals.NORTH_SOUTH, "v_in", "v_out").toArray(),
+                "2-input scope: two terminals, vertically centered spread");
+
+        // SCOPE.2 at (34,12) with 3 inputs
+        assertArrayEquals(new int[][]{{32, 10}, {32, 12}, {32, 14}},
+                terminals("CONTROL", ComponentTerminals.CONTROL_SCOPE, 34, 12,
+                        ComponentTerminals.NORTH_SOUTH, "v_R1", "v_L1", "v_C1").toArray(),
+                "3-input scope: three terminals");
+
+        // spread follows the flow direction: EAST_WEST stacks horizontally
+        assertArrayEquals(new int[][]{{34, 5}, {32, 5}},
+                terminals("CONTROL", ComponentTerminals.CONTROL_SCOPE, 33, 7,
+                        ComponentTerminals.EAST_WEST, "a", "b").toArray(),
+                "EAST_WEST: input side north, spread along x");
     }
 
     @Test

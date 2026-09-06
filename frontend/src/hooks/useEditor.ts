@@ -41,6 +41,35 @@ export function useEditor() {
   const stateRef = useRef(state);
   stateRef.current = state;
 
+  const stopPolling = useCallback(() => {
+    if (simPollTimerRef.current !== null) {
+      clearInterval(simPollTimerRef.current);
+      simPollTimerRef.current = null;
+    }
+  }, []);
+
+  const stopStream = useCallback(() => {
+    simStreamStopRef.current?.();
+    simStreamStopRef.current = null;
+  }, []);
+
+  /** Clears simulation UI state and stops live updates; used when switching
+   *  circuits so results from the previous example never leak through. */
+  const resetSimulationState = useCallback(() => {
+    stopPolling();
+    stopStream();
+    if (currentSimIdRef.current) {
+      // cancel a still-running simulation of the old circuit (best effort)
+      void api.cancelSimulation(currentSimIdRef.current).catch(() => {});
+      currentSimIdRef.current = null;
+    }
+    setSimStatus(null);
+    setSimProgress(0);
+    setSimResults(null);
+    setSimError(null);
+    setSimDrawerOpen(false);
+  }, [stopPolling, stopStream]);
+
   useEffect(() => {
     api
       .getCatalog()
@@ -91,6 +120,7 @@ export function useEditor() {
 
   const open = useCallback(
     async (file: File) => {
+      resetSimulationState();
       dispatch({ type: 'STATUS', status: `Loading ${file.name}...` });
       try {
         const circuitId = await api.uploadIpes(file);
@@ -106,6 +136,7 @@ export function useEditor() {
 
   const openContent = useCallback(
     async (content: string, filename = 'circuit.ipes') => {
+      resetSimulationState();
       dispatch({ type: 'STATUS', status: `Loading ${filename}...` });
       try {
         const circuitId = await api.uploadIpesString(content, filename);
@@ -116,7 +147,7 @@ export function useEditor() {
         reportError(e);
       }
     },
-    [attachSubscription, refresh, reportError],
+    [attachSubscription, refresh, reportError, resetSimulationState],
   );
 
   const newCircuit = useCallback(async () => {
@@ -126,6 +157,7 @@ export function useEditor() {
   /** Opens a circuit the desktop shell handed over (base64 of gzip or plain). */
   const openBase64 = useCallback(
     async (base64: string, filename = 'circuit.ipes') => {
+      resetSimulationState();
       dispatch({ type: 'STATUS', status: `Loading ${filename}...` });
       try {
         const circuitId = await api.uploadIpesBase64(base64, filename);
@@ -558,18 +590,6 @@ export function useEditor() {
   );
 
   // ========== Simulation Actions ==========
-
-  const stopPolling = useCallback(() => {
-    if (simPollTimerRef.current !== null) {
-      clearInterval(simPollTimerRef.current);
-      simPollTimerRef.current = null;
-    }
-  }, []);
-
-  const stopStream = useCallback(() => {
-    simStreamStopRef.current?.();
-    simStreamStopRef.current = null;
-  }, []);
 
   /** REST polling fallback for when the SSE stream cannot be established. */
   const startPolling = useCallback((simId: string) => {
