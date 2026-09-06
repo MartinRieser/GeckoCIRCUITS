@@ -123,6 +123,22 @@ export function useEditor() {
     await openContent(BLANK_CIRCUIT_IPES, 'Untitled.ipes');
   }, [openContent]);
 
+  /** Opens a circuit the desktop shell handed over (base64 of gzip or plain). */
+  const openBase64 = useCallback(
+    async (base64: string, filename = 'circuit.ipes') => {
+      dispatch({ type: 'STATUS', status: `Loading ${filename}...` });
+      try {
+        const circuitId = await api.uploadIpesBase64(base64, filename);
+        attachSubscription(circuitId);
+        await refresh(circuitId);
+        dispatch({ type: 'STATUS', status: `Loaded ${filename}` });
+      } catch (e) {
+        reportError(e);
+      }
+    },
+    [attachSubscription, refresh, reportError],
+  );
+
   // Shared in-flight promise so the auto-init effect and a concurrent arm()
   // create the blank workspace only once
   const creatingWorkspaceRef = useRef<Promise<boolean> | null>(null);
@@ -714,6 +730,7 @@ export function useEditor() {
     actions: {
       open,
       openContent,
+      openBase64,
       newCircuit,
       arm,
       cancel,

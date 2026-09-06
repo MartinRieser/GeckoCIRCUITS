@@ -45,6 +45,14 @@ Release builds spawn the bundled engine on `127.0.0.1:<ephemeral port>`.
    if the engine dies, the shell shows an error dialog with the log path
    (`%APPDATA%/com.geckocircuits.desktop/logs/engine/engine.log` on Windows).
 
+## Opening circuits from the OS
+
+The installers register a file association for `.ipes`. Double-clicking a
+circuit (or "Open with", or a second launch while the app runs) forwards it
+to the running window: the shell validates + base64-encodes the file and
+hands it to the editor, which loads it through the normal upload flow.
+Saves route through a native save dialog (`save_file_dialog` command).
+
 ## LLM / MCP integration
 
 The engine ships with a bundled MCP server (stdio) so Claude Desktop, Cursor,

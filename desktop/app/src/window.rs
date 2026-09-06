@@ -3,8 +3,16 @@
 #[cfg(not(debug_assertions))]
 use std::time::Duration;
 use tauri::AppHandle;
+use tauri::Manager;
 use tauri::WebviewUrl;
 use tauri::WebviewWindowBuilder;
+
+/// Queue shim installed before any page script runs: payloads arriving before
+/// the editor registers its handler are buffered, not dropped.
+const OPEN_FILE_INIT: &str = "window.__geckoOpenFileQueue=window.__geckoOpenFileQueue||[];\
+window.__geckoOpenFile=function(p){\
+(window.__geckoOpenFileHandler?window.__geckoOpenFileHandler:\
+function(q){window.__geckoOpenFileQueue.push(q);})(p);};";
 
 #[cfg(not(debug_assertions))]
 use crate::download;
@@ -16,9 +24,6 @@ use gecko_engine::ready;
 use gecko_engine::sidecar;
 #[cfg(not(debug_assertions))]
 use std::path::Path;
-#[cfg(not(debug_assertions))]
-use tauri::Manager;
-
 #[cfg(not(debug_assertions))]
 const ENGINE_START_BUDGET: Duration = Duration::from_secs(90);
 
@@ -39,7 +44,9 @@ fn start_dev(app: AppHandle) -> Result<(), Box<dyn std::error::Error>> {
         .title("GeckoCIRCUITS (dev)")
         .inner_size(1400.0, 900.0)
         .min_inner_size(1024.0, 700.0)
+        .initialization_script(OPEN_FILE_INIT)
         .build()?;
+    open_files_from_args(&app);
     Ok(())
 }
 
@@ -74,6 +81,7 @@ fn start_release(app: AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     *state.engine.lock().unwrap() = Some(process);
 
     create_main_window(&app, &backend_url)?;
+    open_files_from_args(&app);
     Ok(())
 }
 
@@ -90,7 +98,7 @@ fn start_engine(app: &AppHandle, log_path: &Path) -> Result<sidecar::SpawnedEngi
 
 #[cfg(not(debug_assertions))]
 fn create_main_window(app: &AppHandle, backend_url: &str) -> Result<(), tauri::Error> {
-    let init_script = format!("window.__GECKO_BACKEND__ = '{backend_url}';");
+    let init_script = format!("window.__GECKO_BACKEND__ = '{backend_url}';{OPEN_FILE_INIT}");
     WebviewWindowBuilder::new(app, "main", WebviewUrl::App("index.html".into()))
         .title("GeckoCIRCUITS")
         .inner_size(1400.0, 900.0)
@@ -99,6 +107,34 @@ fn create_main_window(app: &AppHandle, backend_url: &str) -> Result<(), tauri::E
         .on_download(download::handle_download)
         .build()?;
     Ok(())
+}
+
+/// Opens `.ipes` paths given on the command line (double-click / "Open with").
+pub fn open_files_from_args(app: &AppHandle) {
+    open_file_paths(app, crate::commands::ipes_paths_from_args());
+}
+
+/// Forwards circuits to the editor; payloads queue in the webview until the
+/// frontend registers its handler.
+pub fn open_file_paths(app: &AppHandle, paths: Vec<String>) {
+    if paths.is_empty() {
+        return;
+    }
+    let Some(window) = app.get_webview_window("main") else {
+        return;
+    };
+    for path in paths {
+        match crate::commands::read_ipes_file(path) {
+            Ok(open_file) => {
+                let payload =
+                    serde_json::to_string(&open_file).unwrap_or_else(|_| "{}".to_string());
+                if let Err(error) = window.eval(format!("window.__geckoOpenFile({payload});")) {
+                    eprintln!("open-file forward failed: {error}");
+                }
+            }
+            Err(message) => eprintln!("open-file skipped: {message}"),
+        }
+    }
 }
 
 #[cfg(not(debug_assertions))]

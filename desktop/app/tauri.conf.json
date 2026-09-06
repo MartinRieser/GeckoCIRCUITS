@@ -10,6 +10,7 @@
     "frontendDist": "../frontend/dist"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [],
     "security": {
       "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' http://127.0.0.1:* ws://127.0.0.1:* ipc: http://ipc.localhost"
@@ -36,6 +37,14 @@
     ],
     "resources": [
       "engine/*"
+    ],
+    "fileAssociations": [
+      {
+        "ext": ["ipes"],
+        "name": "GeckoCIRCUITS Circuit",
+        "description": "GeckoCIRCUITS simulation project",
+        "mimeType": "application/x-gecko-ipes"
+      }
     ],
     "windows": {
       "webviewInstallMode": {

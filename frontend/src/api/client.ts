@@ -143,17 +143,27 @@ export function redo(circuitId: string): Promise<ChangeMessage> {
   return request(`/circuits/${circuitId}/redo`, { method: 'POST' });
 }
 
-/** Downloads the circuit as .ipes file (browser download). */
+/** Downloads the circuit as .ipes: native save dialog on the desktop,
+ *  browser blob download in the web deployment. */
 export async function downloadIpes(circuitId: string, filename: string): Promise<void> {
   const response = await fetch(API + `/circuits/${circuitId}/ipes`);
   if (!response.ok) {
     throw new Error(await errorMessage(response));
   }
   const blob = await response.blob();
+  const name = filename.endsWith('.ipes') ? filename : filename + '.ipes';
+  const desktop = (globalThis as {
+    __TAURI__?: { core?: { invoke?: (c: string, a?: Record<string, unknown>) => Promise<unknown> } };
+  }).__TAURI__?.core?.invoke;
+  if (desktop) {
+    const base64 = toBase64(new Uint8Array(await blob.arrayBuffer()));
+    await desktop('save_file_dialog', { base64, suggestedName: name });
+    return;
+  }
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = filename.endsWith('.ipes') ? filename : filename + '.ipes';
+  link.download = name;
   link.click();
   URL.revokeObjectURL(url);
 }

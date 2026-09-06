@@ -4,6 +4,7 @@
 //! be verified on any toolchain; the Tauri app crate (`gecko-desktop`) only
 //! wires these pieces into the window/event loop.
 
+pub mod circuit_files;
 pub mod ready;
 pub mod sanitize;
 pub mod sidecar;

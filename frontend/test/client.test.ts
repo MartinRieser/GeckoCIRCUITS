@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as client from '../src/api/client';
 
@@ -124,6 +125,54 @@ describe('api client', () => {
       jsonResponse({ status: 'failed', filename: 'x.ipes', errorMessage: 'bad gzip' }, 400),
     );
     await expect(client.uploadIpes(new File(['x'], 'x.ipes'))).rejects.toThrow();
+  });
+});
+
+describe('downloadIpes', () => {
+  afterEach(() => {
+    delete (globalThis as { __TAURI__?: unknown }).__TAURI__;
+  });
+
+  function blobResponse(): Response {
+    return {
+      ok: true,
+      status: 200,
+      blob: () => Promise.resolve(new Blob([new Uint8Array([1, 2, 3])])),
+    } as unknown as Response;
+  }
+
+  it('uses the browser anchor download without __TAURI__ (jsdom)', async () => {
+    URL.createObjectURL = vi.fn().mockReturnValue('blob:x');
+    URL.revokeObjectURL = vi.fn();
+    const clicks: string[] = [];
+    const originalCreate = document.createElement.bind(document);
+    vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+      const el = originalCreate(tag);
+      if (tag === 'a') {
+        const anchor = el as HTMLAnchorElement;
+        anchor.click = () => clicks.push(anchor.download);
+      }
+      return el;
+    });
+    fetchMock.mockResolvedValue(blobResponse());
+    await client.downloadIpes('c1', 'circ');
+    expect(fetchMock.mock.calls[0][0]).toBe('/gecko/api/v1/circuits/c1/ipes');
+    expect(clicks).toEqual(['circ.ipes']);
+    vi.restoreAllMocks();
+  });
+
+  it('routes through the native save dialog on the desktop', async () => {
+    const invoke = vi.fn().mockResolvedValue('C:/x/chosen.ipes');
+    (globalThis as { __TAURI__?: unknown }).__TAURI__ = {
+      core: { invoke: invoke as never },
+    };
+    fetchMock.mockResolvedValue(blobResponse());
+    await client.downloadIpes('c1', 'circ.ipes');
+    expect(invoke).toHaveBeenCalledWith('save_file_dialog', {
+      base64: expect.any(String),
+      suggestedName: 'circ.ipes',
+    });
+    expect(invoke.mock.calls[0][1].base64.length).toBeGreaterThan(0);
   });
 });
 

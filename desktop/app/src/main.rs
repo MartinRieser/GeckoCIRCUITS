@@ -25,9 +25,15 @@ pub struct AppState {
 
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            if let Some(window) = app.get_webview_window("main") {
-                let _ = window.set_focus();
+        .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+            let circuits: Vec<String> = args
+                .iter()
+                .filter(|arg| arg.to_lowercase().ends_with(".ipes"))
+                .cloned()
+                .collect();
+            window::open_file_paths(app, circuits);
+            if let Some(existing) = app.get_webview_window("main") {
+                let _ = existing.set_focus();
             }
         }))
         .plugin(tauri_plugin_dialog::init())
@@ -44,8 +50,25 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             commands::get_backend_url,
-            commands::open_logs_folder
+            commands::open_logs_folder,
+            commands::read_ipes_file,
+            commands::save_file_dialog
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running the GeckoCIRCUITS desktop shell");
+        .build(tauri::generate_context!())
+        .expect("error while building the GeckoCIRCUITS desktop shell")
+        .run(|app, event| {
+            // macOS: files opened via Finder while the app is running
+            #[cfg(target_os = "macos")]
+            if let tauri::RunEvent::Opened { files } = event {
+                let paths: Vec<String> = files
+                    .iter()
+                    .map(|path| path.to_string_lossy().into_owned())
+                    .collect();
+                window::open_file_paths(app, paths);
+            }
+            #[cfg(not(target_os = "macos"))]
+            {
+                let _ = (app, event);
+            }
+        });
 }

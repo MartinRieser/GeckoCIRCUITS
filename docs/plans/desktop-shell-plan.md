@@ -56,7 +56,10 @@ Tests: per-tool JUnit with fixture `.ipes` under `src/test/resources` (rc-lowpas
 
 Distribution: `gecko-mcp.jar` ships in `engine/`; `scripts/desktop/write-mcp-launchers.py` emits `gecko-mcp.bat`/`gecko-mcp` into the install dir; app Help menu shows copy-paste client JSON (Claude Desktop/Cursor/ZCode) with the absolute detected path. Python server in `tools/mcp/gecko_mcp` stays as-is for repo development.
 
-## Phase 4 — Desktop niceties
+## Phase 4 — Desktop niceties — implemented 2026-09-06
+
+Status: `.ipes` file association via `bundle.fileAssociations` (NSIS/MSI/DMG/DEB/RPM generate the OS hooks); double-click/second-launch/macOS `RunEvent::Opened` paths all forward through `window::open_file_paths` → `read_ipes_file` command → `window.__geckoOpenFile` queue shim (shell injects it before page scripts; payloads arriving before the editor mounts are buffered). Frontend bridge `desktop.ts` (zero npm deps, uses `withGlobalTauri`) registers the handler → `useEditor.openBase64` → existing upload flow. Save flow: `downloadIpes` now routes to the native save dialog via the `save_file_dialog` command on desktop, browser blob download otherwise. Pure logic (path validation, base64, arg filtering) lives in `engine/src/circuit_files.rs` — 20 engine tests total; the app crate stays thin Tauri wrappers (its test binary cannot run on the local windows-gnu toolchain: STATUS_ENTRYPOINT_NOT_FOUND from WebView2 loader DLLs; CI/MSVC covers it). Draft autosave (optional) deferred. Pending manual QA: open/save flows on real installers (WebView2/WKWebView/webkit2gtk).
+
 
 - Single-instance (focus existing window) + `.ipes` file association (tauri `fileAssociations`/macOS document types): second launch forwards the path; shell emits `open-file`; frontend listens → existing `uploadIpes` flow. Vitest for the frontend handler.
 - Save-flow QA across WebView2/WKWebView/webkit2gtk; fallback Tauri command `save_ipes(circuitId)` streaming `GET /circuits/{id}/ipes` to a chosen path if `on_download` proves unreliable on any engine.
