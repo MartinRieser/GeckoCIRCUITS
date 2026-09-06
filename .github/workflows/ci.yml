@@ -51,7 +51,7 @@ jobs:
 
       - name: Run engine & REST API tests (gating)
         run: |
-          mvn test --no-transfer-progress -pl src/modules/gecko-simulation-core,src/modules/gecko-mcp,src/modules/gecko-rest-api -am
+          mvn verify --no-transfer-progress -pl src/modules/gecko-simulation-core,src/modules/gecko-mcp,src/modules/gecko-rest-api -am
 
       - name: Run GUI tests with coverage (non-gating, needs display)
         run: |

@@ -93,3 +93,6 @@ desktop/app/engine/gecko-rest-api.jar
 # Desktop dist output (launchers etc.)
 desktop/dist/
 src/modules/gecko-mcp/dependency-reduced-pom.xml
+
+# local debugging scratch
+scratch/

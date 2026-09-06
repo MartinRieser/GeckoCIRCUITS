@@ -26,13 +26,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * JVM (with this test's classpath) and talks MCP to it, exactly like
  * Claude Desktop / Cursor would.
  */
-class StdioEndToEndTest {
+class StdioEndToEndIT {
 
     @Test
     void stdioRoundTripListToolsAndSimulate() throws IOException {
         Path circuit = tempFixture("rc-lowpass.ipes");
         String classpath = System.getProperty("java.class.path");
-        String java = Path.of(System.getProperty("java.home"), "bin",
+        String javaExe = Path.of(System.getProperty("java.home"), "bin",
                 System.getProperty("os.name").toLowerCase().contains("win") ? "java.exe" : "java")
                 .toString();
 
@@ -40,7 +40,7 @@ class StdioEndToEndTest {
         Files.writeString(argFile, "-cp\n\"" + classpath.replace("\\", "\\\\") + "\"\ngecko.mcp.GeckoMcpServer\n");
         argFile.toFile().deleteOnExit();
 
-        ServerParameters params = ServerParameters.builder(java)
+        ServerParameters params = ServerParameters.builder(javaExe)
                 .args(List.of("@" + argFile.toAbsolutePath()))
                 .build();
         McpSyncClient client = McpClient.sync(new StdioClientTransport(params,
@@ -75,7 +75,7 @@ class StdioEndToEndTest {
     }
 
     private static Path tempFixture(String name) throws IOException {
-        try (InputStream in = StdioEndToEndTest.class.getResourceAsStream("/fixtures/" + name)) {
+        try (InputStream in = StdioEndToEndIT.class.getResourceAsStream("/fixtures/" + name)) {
             Path file = Files.createTempFile("gecko-mcp-e2e-", "-" + name);
             Files.write(file, in.readAllBytes());
             file.toFile().deleteOnExit();

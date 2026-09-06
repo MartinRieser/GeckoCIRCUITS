@@ -86,7 +86,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Java tests (engine + REST API + MCP server)
-        run: mvn test --no-transfer-progress -pl src/modules/gecko-simulation-core,src/modules/gecko-mcp,src/modules/gecko-rest-api -am
+        run: mvn verify --no-transfer-progress -pl src/modules/gecko-simulation-core,src/modules/gecko-mcp,src/modules/gecko-rest-api -am
 
       - name: Install frontend dependencies
         run: npm --prefix frontend ci
