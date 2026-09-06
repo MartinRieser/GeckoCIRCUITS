@@ -25,20 +25,49 @@ The repo ships `gecko_c_block.h`; users `#include` it in their firmware project.
 *is* the interface description Gecko binds against:
 
 ```c
+// C and C++ both work: the boundary is a C ABI (extern "C"), the
+// implementation behind these hooks may be arbitrary C++.
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#if defined(_WIN32)
+  #define GECKO_EXPORT __declspec(dllexport)
+#else
+  #define GECKO_EXPORT __attribute__((visibility("default")))
+#endif
+
 // All functions optional except gecko_step. Symbols are resolved by name;
 // absent optional symbols are skipped.
 
 // Called once at simulation start (state reset / power-on equivalent).
-void gecko_init(void);
+GECKO_EXPORT void gecko_init(void);
 
 // Called once per simulation timestep with the block inputs/outputs.
-void gecko_step(const double* xIN, int n_in,
-                double* yOUT, int n_out,
-                double t, double dt);
+GECKO_EXPORT void gecko_step(const double* xIN, int n_in,
+                             double* yOUT, int n_out,
+                             double t, double dt);
 
 // Called at simulation end (cleanup).
-void gecko_deinit(void);
+GECKO_EXPORT void gecko_deinit(void);
+
+#ifdef __cplusplus
+}
+#endif
 ```
+
+**C++ rules of the boundary** (documented in the header comments):
+
+- Hooks must keep C linkage (`extern "C"` guard above) — mangled names cannot
+  be resolved; the implementation behind them is unrestricted C++ (classes,
+  templates, STL, RAII).
+- Exceptions must never escape `gecko_step` — wrap the body in `try/catch`
+  and write fallback outputs; an exception crossing the FFM boundary is
+  undefined behavior.
+- C++ static/global objects construct at library load; with the per-run copy
+  that is exactly the power-on-reset semantics of the target device.
+- Windows builds need the exports (`GECKO_EXPORT` handles MSVC and MinGW;
+  ELF/Mach-O default visibility is usually sufficient).
 
 - Inputs/outputs map to the block terminals like script blocks (`anzXIN` / `anzYOUT`).
 - The user's C statics hold state between steps; `gecko_init` gives deterministic
