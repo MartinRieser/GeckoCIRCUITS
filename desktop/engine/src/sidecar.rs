@@ -48,6 +48,8 @@ pub fn engine_paths(resource_dir: &Path) -> Result<EnginePaths, String> {
 pub fn build_java_args(jar: &Path, parent_pid: u32) -> Vec<String> {
     vec![
         "-Xmx2g".to_string(),
+        // C-library blocks (typ 88) bind native code via the FFM API
+        "--enable-native-access=ALL-UNNAMED".to_string(),
         "-jar".to_string(),
         jar.to_string_lossy().into_owned(),
         "--server.port=0".to_string(),

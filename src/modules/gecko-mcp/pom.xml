@@ -49,6 +49,7 @@
                     <forkedProcessTimeoutInSeconds>900</forkedProcessTimeoutInSeconds>
                     <!-- plain classpath in java.class.path, used by the stdio E2E test -->
                     <useSystemClassLoader>false</useSystemClassLoader>
+                    <argLine>--enable-native-access=ALL-UNNAMED -Xmx1g</argLine>
                 </configuration>
             </plugin>
             <plugin>
@@ -58,6 +59,7 @@
                 <configuration>
                     <!-- fresh JVM: in-suite state poisons the stdio E2E session -->
                     <useSystemClassLoader>false</useSystemClassLoader>
+                    <argLine>--enable-native-access=ALL-UNNAMED -Xmx1g</argLine>
                 </configuration>
                 <executions>
                     <execution>

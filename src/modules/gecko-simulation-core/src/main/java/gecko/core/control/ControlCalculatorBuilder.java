@@ -20,6 +20,7 @@ import gecko.core.control.calculators.AbstractControlCalculatable;
 import gecko.core.control.calculators.ConstantCalculator;
 import gecko.core.control.calculators.GateCalculator;
 import gecko.core.control.calculators.InitializableAtSimulationStart;
+import gecko.core.control.calculators.CLibraryCalculator;
 import gecko.core.control.calculators.ScriptBlockCalculator;
 import gecko.core.control.calculators.SignalCalculatorRandom;
 import gecko.core.control.calculators.SignalCalculatorRectangle;
@@ -84,6 +85,7 @@ public final class ControlCalculatorBuilder {
     private static final int TYP_GATE = 6;
     private static final int TYP_JAVA_FUNCTION = 61;
     private static final int TYP_SCRIPT = 1016;
+    private static final int TYP_NATIVE_C = 88;
 
     /**
      * Terminal layout per classic control type: {inputs, outputs, output
@@ -335,7 +337,8 @@ public final class ControlCalculatorBuilder {
                 if (!label.equals(displayName(comp)) && usedTapNames.add(label)) {
                     signalTaps.add(new SignalTap(label, calculator));
                 }
-            } else if (comp.getType() == TYP_JAVA_FUNCTION || comp.getType() == TYP_SCRIPT) {
+            } else if (comp.getType() == TYP_JAVA_FUNCTION || comp.getType() == TYP_SCRIPT
+                    || comp.getType() == TYP_NATIVE_C) {
                 int[] layout = getTerminalLayout(comp);
                 String[] yLabels = comp.getTerminalYLabels();
                 for (int j = 0; j < (layout != null ? layout[1] : 1); j++) {
@@ -455,7 +458,55 @@ public final class ControlCalculatorBuilder {
         return null;
     }
 
+    /**
+     * Resolves the typ-88 library path: new circuits carry it in the
+     * 'libraryPath' parameter; classic circuits store the selected library
+     * name in 'nativeCLibrary' and the candidate paths (';'-separated) in
+     * 'nativeCLibraries'.
+     */
+    private static String nativeLibraryPath(CircuitModel.ComponentData comp) {
+        String direct = getStringParam(comp, "libraryPath", "");
+        if (!direct.isBlank()) {
+            return direct;
+        }
+        String selected = getStringParam(comp, "nativeCLibrary", "");
+        String candidates = getStringParam(comp, "nativeCLibraries", "");
+        if (selected.isBlank() || candidates.isBlank()) {
+            return "";
+        }
+        for (String candidate : candidates.split(";")) {
+            if (candidate.isBlank()) {
+                continue;
+            }
+            String fileName = candidate.replace('\\', '/');
+            int slash = fileName.lastIndexOf('/');
+            if (slash >= 0) {
+                fileName = fileName.substring(slash + 1);
+            }
+            if (fileName.equals(selected)) {
+                return candidate;
+            }
+        }
+        // fall back to the selected name itself (classic behavior: it may be
+        // a bare file name resolved against the working directory)
+        return selected;
+    }
+
     private static int[] getTerminalLayout(CircuitModel.ComponentData comp) {
+        if (comp.getType() == TYP_NATIVE_C) {
+            // classic NativeC defaults: 3 inputs, 2 outputs
+            int numIn = getIntParam(comp, "anzXIN", -1);
+            int numOut = getIntParam(comp, "anzYOUT", -1);
+            if (numIn < 0) {
+                String[] xLabels = comp.getRawTerminalXLabels();
+                numIn = (xLabels != null && xLabels.length > 0) ? xLabels.length : 3;
+            }
+            if (numOut < 0) {
+                String[] yLabels = comp.getRawTerminalYLabels();
+                numOut = (yLabels != null && yLabels.length > 0) ? yLabels.length : 2;
+            }
+            return new int[]{Math.max(0, numIn), Math.max(1, numOut), 2};
+        }
         if (comp.getType() == TYP_JAVA_FUNCTION || comp.getType() == TYP_SCRIPT) {
             int numIn = getIntParam(comp, "anzXIN", -1);
             if (numIn < 0) {
@@ -501,6 +552,9 @@ public final class ControlCalculatorBuilder {
             LOGGER.warn("Control block '{}' has unsupported typ {} - skipped",
                     comp.getName(), comp.getType());
             return null;
+        }
+        if (comp.getType() == TYP_NATIVE_C) {
+            return new CLibraryCalculator(layout[0], layout[1], nativeLibraryPath(comp));
         }
         if (comp.getType() == TYP_JAVA_FUNCTION || comp.getType() == TYP_SCRIPT) {
             String sourceCode = getStringParam(comp, "sourceCode", "");
