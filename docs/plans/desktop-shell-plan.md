@@ -65,7 +65,10 @@ Status: `.ipes` file association via `bundle.fileAssociations` (NSIS/MSI/DMG/DEB
 - Save-flow QA across WebView2/WKWebView/webkit2gtk; fallback Tauri command `save_ipes(circuitId)` streaming `GET /circuits/{id}/ipes` to a chosen path if `on_download` proves unreliable on any engine.
 - Optional if time permits: draft autosave to app-data + restore prompt.
 
-## Phase 5 — Docs, versioning, release
+## Phase 5 — Docs, versioning, release — implemented 2026-09-06
+
+Status: `docs/desktop-app.md` (architecture, build, install matrix, versioning, CI, **11-point per-OS release QA checklist**, troubleshooting incl. engine-log locations and unsigned-binary notes) and `docs/mcp.md` (bundled-Java vs Python-dev server, client config, tool table, security) added and wired into the mkdocs nav as a "Desktop" section. README Quick Start now leads with the desktop app (Classic Swing installers demoted to a secondary section). PACKAGING.md and the desktop-packaging skill gained the Tauri flow (build-engine / build-all / set-version / write-mcp-launchers). Release template: `.github/release.yml` categories for conventional-commit labels. Version sync (`set-version.py`) was already wired into desktop.yml in Phase 2. Remaining manual step (inherently human): run the QA checklist against the first CI-built installers.
+
 
 `docs/desktop-app.md` (architecture, build, 10-point per-OS QA checklist, troubleshooting via engine logs), `docs/mcp.md`; README quick start leads with desktop installers; PACKAGING.md gains the Tauri section; `.agents/skills/desktop-packaging/SKILL.md` updated. `scripts/desktop/set-version.py <v>` syncs `tauri.conf.json` + `app.version` + frontend package.json; CI feeds it the tag. CHANGELOG + release template.
 

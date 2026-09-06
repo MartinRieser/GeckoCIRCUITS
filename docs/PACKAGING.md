@@ -25,7 +25,27 @@ GeckoCIRCUITS provides native, self-contained packages:
 
 ---
 
-## Building Packages Locally
+## Tauri Desktop App (new UI)
+
+The React-editor desktop app is packaged with Tauri 2 (separate from the
+jpackage/Classic flow below):
+
+```sh
+# engine bundle (jlink runtime + REST jar + MCP jar + smoke test)
+python3 scripts/desktop/build-engine.py
+
+# engine + installers in one go (needs Tauri CLI: npm i -g @tauri-apps/cli)
+scripts/desktop/build-all.bat|.sh
+
+# release version across tauri.conf.json / application.properties / package.json
+python3 scripts/desktop/set-version.py 1.2.3
+```
+
+Outputs land in `desktop/target/release/bundle/`. CI: `.github/workflows/desktop.yml`
+(3-OS matrix on `v*` tags, SHA256SUMS, GitHub release). Details, including the
+release QA checklist: [desktop-app.md](desktop-app.md).
+
+
 
 You can package GeckoCIRCUITS locally on any OS.
 

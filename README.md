@@ -18,9 +18,19 @@ Originally developed at ETH Zurich's Power Electronic Systems Laboratory by Andr
 
 ## Quick Start
 
-### Native Desktop Packages (No Java Installation Required)
+### GeckoCIRCUITS Desktop App (recommended)
 
-Pre-built self-contained native installers and portable packages are available on the [Releases](https://github.com/tinix84/GeckoCIRCUITS/releases) page:
+A native desktop application bundling the React editor, the simulation engine,
+and an MCP server for LLM tools — no Java installation required. Installers for
+Windows (`.exe`/`.msi`), macOS (`.dmg`), and Linux (`.deb`/`.rpm`/`.AppImage`)
+are on the [Releases](https://github.com/tinix84/GeckoCIRCUITS/releases) page.
+Double-clicking any `.ipes` circuit opens it. See the
+[Desktop App guide](docs/desktop-app.md) and the
+[MCP interface](docs/mcp.md) for LLM integration.
+
+### GeckoCIRCUITS Classic (Swing UI, jpackage)
+
+Pre-built self-contained installers and portable packages are on the [Releases](https://github.com/tinix84/GeckoCIRCUITS/releases) page:
 
 - **Windows**: `GeckoCIRCUITS-<version>.msi` (installer) or `*-windows-x64-portable.zip` (portable)
 - **macOS**: `GeckoCIRCUITS-<version>.dmg` (drag-and-drop installer) or `*-macos-app.zip`
