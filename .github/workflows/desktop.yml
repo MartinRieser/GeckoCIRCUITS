@@ -78,6 +78,9 @@ jobs:
       - name: Java tests (engine + REST API)
         run: mvn test --no-transfer-progress -pl src/modules/gecko-simulation-core,src/modules/gecko-rest-api -am
 
+      - name: Install frontend dependencies
+        run: npm --prefix frontend ci
+
       - name: Frontend lint
         run: npm --prefix frontend run lint
 

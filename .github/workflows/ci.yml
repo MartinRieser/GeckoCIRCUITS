@@ -21,9 +21,9 @@ jobs:
           cache: maven
 
       - name: Build
-        run: |
-          mvn clean install -DskipTests --no-transfer-progress
-          mvn assembly:single -DskipTests --no-transfer-progress
+        # the uploaded artifact is the shaded fat jar from `mvn package`;
+        # `assembly:single` needs a dist-* profile and would fail bare
+        run: mvn clean install -DskipTests --no-transfer-progress
 
       - name: Install test dependencies
         run: |
