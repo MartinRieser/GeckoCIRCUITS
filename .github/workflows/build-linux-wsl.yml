@@ -16,6 +16,13 @@ on:
         type: boolean
         default: true
 
+permissions:
+  contents: read
+
+concurrency:
+  group: build-linux-wsl-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-linux:
     if: ${{ github.event.inputs.platform == 'linux' || github.event.inputs.platform == 'both' }}
@@ -35,7 +42,7 @@ jobs:
         run: mvn clean install -DskipTests --no-transfer-progress
 
       - name: Build Linux distribution package
-        run: mvn clean package -Pdist-linux -DskipTests --no-transfer-progress
+        run: mvn package -Pdist-linux -DskipTests --no-transfer-progress
 
       - name: Verify Linux package
         id: verify
@@ -93,7 +100,7 @@ jobs:
         run: mvn clean install -DskipTests --no-transfer-progress
 
       - name: Build WSL distribution package
-        run: mvn clean package -Pdist-wsl -DskipTests --no-transfer-progress
+        run: mvn package -Pdist-wsl -DskipTests --no-transfer-progress
 
       - name: Verify WSL package
         id: verify
@@ -144,4 +151,3 @@ jobs:
           echo "2. Make launcher executable: \`chmod +x run-gecko-wsl.sh\`" >> $GITHUB_STEP_SUMMARY
           echo "3. Run setup (first time): \`./run-gecko-wsl.sh --setup\`" >> $GITHUB_STEP_SUMMARY
           echo "4. Run application: \`./run-gecko-wsl.sh\`" >> $GITHUB_STEP_SUMMARY
-

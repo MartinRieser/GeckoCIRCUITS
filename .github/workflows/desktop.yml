@@ -5,7 +5,9 @@ on:
     paths:
       - 'desktop/**'
       - 'frontend/**'
+      - 'src/modules/gecko-simulation-core/**'
       - 'src/modules/gecko-rest-api/**'
+      - 'src/modules/gecko-mcp/**'
       - 'scripts/desktop/**'
       - '.github/workflows/desktop.yml'
   push:
@@ -22,7 +24,11 @@ on:
         default: false
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: desktop-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/v') }}
 
 jobs:
   # ------------------------------------------------------------------
@@ -138,8 +144,8 @@ jobs:
       - name: Install Linux build dependencies
         if: matrix.artifact == 'linux'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev libfuse2
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev libfuse2
 
       - name: Install frontend dependencies
         run: npm --prefix frontend ci
@@ -175,6 +181,7 @@ jobs:
           path: |
             desktop/target/release/bundle/nsis/*.exe
             desktop/target/release/bundle/msi/*.msi
+          if-no-files-found: warn
 
       - name: Upload artifacts (macos)
         if: matrix.artifact == 'macos'
@@ -182,6 +189,7 @@ jobs:
         with:
           name: GeckoCIRCUITS-desktop-macos
           path: desktop/target/release/bundle/dmg/*.dmg
+          if-no-files-found: warn
 
       - name: Upload artifacts (linux)
         if: matrix.artifact == 'linux'
@@ -192,6 +200,7 @@ jobs:
             desktop/target/release/bundle/deb/*.deb
             desktop/target/release/bundle/rpm/*.rpm
             desktop/target/release/bundle/appimage/*.AppImage
+          if-no-files-found: warn
 
   # ------------------------------------------------------------------
   # Release: collect installers, checksums, publish on tag/dispatch.
@@ -200,6 +209,8 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v') || (inputs.upload_release == true && inputs.release_tag != '')
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Determine release tag
         id: release_tag

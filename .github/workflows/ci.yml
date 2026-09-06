@@ -3,8 +3,21 @@ name: CI
 on:
   push:
     branches: [ main, dev ]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   build:
@@ -100,8 +113,7 @@ jobs:
       - name: Validate example circuits
         continue-on-error: true
         run: |
-          export DISPLAY=:99
-          python3 scripts/run-examples.py
+          xvfb-run -a python3 scripts/run-examples.py
 
       - name: Upload JAR
         uses: actions/upload-artifact@v4
@@ -109,6 +121,7 @@ jobs:
           name: GeckoCIRCUITS-jar
           path: src/modules/gecko-gui/target/gecko-1.0-jar-with-dependencies.jar
           retention-days: 30
+          if-no-files-found: warn
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
@@ -117,4 +130,4 @@ jobs:
           name: coverage-report
           path: src/modules/gecko-gui/target/site/jacoco/
           retention-days: 30
-
+          if-no-files-found: ignore

@@ -8,6 +8,13 @@ on:
         type: boolean
         default: true
 
+permissions:
+  contents: read
+
+concurrency:
+  group: build-windows-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-windows:
     runs-on: ubuntu-latest
@@ -26,7 +33,7 @@ jobs:
         run: mvn clean install -DskipTests --no-transfer-progress
 
       - name: Build Windows distribution package
-        run: mvn clean package -Pdist-windows -DskipTests --no-transfer-progress
+        run: mvn package -Pdist-windows -DskipTests --no-transfer-progress
 
       - name: List generated files
         run: |
@@ -74,4 +81,3 @@ jobs:
           echo "- README.md with installation instructions" >> $GITHUB_STEP_SUMMARY
           echo "- Example circuits (optional)" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-
