@@ -5,7 +5,7 @@ on:
     branches:
       - 'feature/desktop-packaging-jpackage'
     tags:
-      - 'v*'
+      - 'classic-v*'
   workflow_dispatch:
     inputs:
       version:
@@ -92,7 +92,9 @@ jobs:
           echo "Building version: $VERSION"
 
       - name: Build with Maven
-        run: mvn clean package assembly:single -DskipTests --no-transfer-progress
+        # fat jar via maven-shade is all package-desktop.py needs;
+        # bare assembly:single has no descriptors outside the dist-* profiles
+        run: mvn clean package -DskipTests --no-transfer-progress
 
       - name: Run jpackage desktop packager
         shell: bash
