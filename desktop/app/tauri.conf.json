@@ -17,7 +17,15 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis", "msi", "dmg", "app", "deb", "rpm", "appimage"],
+    "targets": [
+      "nsis",
+      "msi",
+      "dmg",
+      "app",
+      "deb",
+      "rpm",
+      "appimage"
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -26,7 +34,9 @@
       "icons/icon.ico",
       "icons/icon.png"
     ],
-    "resources": ["engine/*"],
+    "resources": [
+      "engine/*"
+    ],
     "windows": {
       "webviewInstallMode": {
         "type": "downloadBootstrapper"

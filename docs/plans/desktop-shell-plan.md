@@ -35,7 +35,9 @@ Dev mode: `beforeDevCommand: npm run dev`, devUrl `:5173`; in `#[cfg(debug_asser
 
 Cargo tests: GECKO_READY parser (incl. garbage/noise lines), arg/path builders, sanitizer, kill test (spawn `ping`/`sleep`, assert exited).
 
-## Phase 2 — Bundling, packaging, CI
+## Phase 2 — Bundling, packaging, CI — implemented 2026-09-05
+
+Status: `scripts/desktop/build-engine.py` builds frontend + jar, derives jlink modules (jdeps ∪ pinned list: 13 modules incl. java.rmi for the legacy backend), creates the runtime image and runs a smoke test that simulates rc-lowpass through the Boot jar via `PropertiesLauncher -Dloader.main` (plain -cp cannot see Boot's nested jars). Bundle ≈ 52 MB runtime + 35 MB jar. `scripts/desktop/build-all.bat|.sh` chain engine + `cargo tauri build`. `.github/workflows/desktop.yml`: PR gates (Rust fmt/clippy/tests/check on MSVC windows runner; Java + frontend lint/tests on Linux) and a 3-OS installer matrix on tags/dispatch with `set-version.py` version sync, SHA256SUMS and GitHub release. `build:spring` now cleans stale hashed assets before copying. Frontend gained ESLint 9 + typescript-eslint 8 (dev-only); `terminalPositions` narrowed-type gained the optional fields it was accessing via `as any`.
 
 - `scripts/desktop/build-engine.py` (style of existing `package-desktop.py`): `mvn -pl src/modules/gecko-rest-api -am package -DskipTests` → `npm --prefix frontend run build:spring` → `jlink` (module list pinned in-script after one `jdeps` pass; `--strip-debug --no-man-pages --no-header-files --compress=zip-6`) → copy jar to `desktop/engine/gecko-rest-api.jar` + `VERSION`. Built-in smoke test: `runtime/bin/java -cp gecko-rest-api.jar gecko.core.GeckoHeadless --circuit tools/parity/circuits/rc-lowpass.ipes --output <tmp>` must exit 0 — catches jlink module gaps immediately.
 - `tauri.conf.json` bundle: `resources: ["engine/*"]`, targets `nsis,msi,dmg,app,deb,rpm,appimage`. Local one-shot: `scripts/desktop/build-all.bat|.sh` (engine → `cargo tauri build`).
