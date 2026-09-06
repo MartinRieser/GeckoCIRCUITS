@@ -4,12 +4,18 @@
  * cursor measurements, stacked / overlay modes, channel toggles, and signal metrics.
  * Fully styled for both Dark and Light themes.
  */
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import type { EditorComponent } from '../model/types';
 import { formatEngineeringValue } from '../model/componentSchema';
 import { mapSimulationResults } from './chartData';
 import { findScopeBlocks, scopeChannels, filterChannels } from './scopes';
+import {
+  effectiveWindow,
+  panWindow,
+  zoomWindow,
+  type ViewWindow,
+} from './viewWindow';
 
 interface ScopeViewTabProps {
   selectedScope: string; // 'all' or 'SCOPE.1', 'SCOPE.2', etc.
@@ -111,6 +117,8 @@ export function ScopeViewTab({
   const [cursorA, setCursorA] = useState<number | null>(null);
   const [cursorB, setCursorB] = useState<number | null>(null);
   const [channelSearch, setChannelSearch] = useState('');
+  // time-axis view window; null = fit whole simulation
+  const [view, setView] = useState<ViewWindow | null>(null);
 
   const traceColors = theme === 'light' ? TRACE_COLORS_LIGHT : TRACE_COLORS_DARK;
 
@@ -125,6 +133,32 @@ export function ScopeViewTab({
     () => mapSimulationResults(results),
     [results],
   );
+
+  // a new simulation resets the zoom window
+  useEffect(() => {
+    setView(null);
+  }, [results]);
+
+  const dataT0 = timeArray.length ? timeArray[0] : 0;
+  const dataT1 = timeArray.length ? timeArray[timeArray.length - 1] : 1;
+  const win = effectiveWindow(view, dataT0, dataT1);
+
+  const zoomAt = useCallback(
+    (factor: number, anchor: number) => {
+      setView(zoomWindow(effectiveWindow(view, dataT0, dataT1), factor, anchor, dataT0, dataT1));
+    },
+    [view, dataT0, dataT1],
+  );
+
+  const panBy = useCallback(
+    (fraction: number) => {
+      const span = win.end - win.start;
+      setView(panWindow(win, fraction * span, dataT0, dataT1));
+    },
+    [win, dataT0, dataT1],
+  );
+
+  const resetZoom = useCallback(() => setView(null), []);
 
   // Channels that belong to this Scope
   const scopeChannelNames = useMemo(
@@ -225,6 +259,16 @@ export function ScopeViewTab({
           <div className="scope-tab-main-grid">
             {/* Plot Area */}
             <div className="scope-tab-plot-area">
+              <div className="scope-zoom-toolbar" data-testid="scope-zoom-toolbar">
+                <span className="scope-window-label" data-testid="scope-window-label">
+                  {formatEngineeringValue(win.start, 's')} – {formatEngineeringValue(win.end, 's')}
+                </span>
+                <button type="button" aria-label="Zoom in" title="Zoom in" onClick={() => zoomAt(0.7, (win.start + win.end) / 2)}>+</button>
+                <button type="button" aria-label="Zoom out" title="Zoom out" onClick={() => zoomAt(1 / 0.7, (win.start + win.end) / 2)}>−</button>
+                <button type="button" aria-label="Pan left" title="Pan left" onClick={() => panBy(-0.25)}>◀</button>
+                <button type="button" aria-label="Pan right" title="Pan right" onClick={() => panBy(0.25)}>▶</button>
+                <button type="button" aria-label="Fit whole simulation" title="Fit" onClick={resetZoom}>⟲</button>
+              </div>
               {displayLayout === 'stacked' ? (
                 <FullScreenStackedChart
                   time={timeArray}
@@ -240,6 +284,10 @@ export function ScopeViewTab({
                     if (type === 'A') setCursorA(idx);
                     else setCursorB(idx);
                   }}
+                  viewStart={win.start}
+                  viewEnd={win.end}
+                  onZoomAt={zoomAt}
+                  onPanSeconds={(delta) => setView(panWindow(win, delta, dataT0, dataT1))}
                 />
               ) : (
                 <FullScreenOverlayChart
@@ -256,6 +304,10 @@ export function ScopeViewTab({
                     if (type === 'A') setCursorA(idx);
                     else setCursorB(idx);
                   }}
+                  viewStart={win.start}
+                  viewEnd={win.end}
+                  onZoomAt={zoomAt}
+                  onPanSeconds={(delta) => setView(panWindow(win, delta, dataT0, dataT1))}
                 />
               )}
             </div>
@@ -371,6 +423,10 @@ function FullScreenOverlayChart({
   cursorA,
   cursorB,
   onSetCursor,
+  viewStart,
+  viewEnd,
+  onZoomAt,
+  onPanSeconds,
 }: {
   time: number[];
   signals: Record<string, number[]>;
@@ -382,6 +438,10 @@ function FullScreenOverlayChart({
   cursorA: number | null;
   cursorB: number | null;
   onSetCursor: (type: 'A' | 'B', idx: number) => void;
+  viewStart: number;
+  viewEnd: number;
+  onZoomAt: (factor: number, anchor: number) => void;
+  onPanSeconds: (delta: number) => void;
 }) {
   const width = 1000;
   const height = 480;
@@ -393,28 +453,33 @@ function FullScreenOverlayChart({
   const plotW = width - padLeft - padRight;
   const plotH = height - padTop - padBottom;
 
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const panState = useRef<{ x0: number; t0: number; moved: boolean } | null>(null);
+  const timeRef = useRef(time);
+  timeRef.current = time;
+
   const traceColors = theme === 'light' ? TRACE_COLORS_LIGHT : TRACE_COLORS_DARK;
   const gridColor = theme === 'light' ? '#e2e8f0' : '#334155';
   const textColor = theme === 'light' ? '#64748b' : '#94a3b8';
   const zeroColor = theme === 'light' ? '#94a3b8' : '#64748b';
   const crosshairColor = theme === 'light' ? '#334155' : '#cbd5e1';
 
-  const { minT, maxT, minY, maxY } = useMemo(() => {
-    if (!time.length) return { minT: 0, maxT: 1, minY: -1, maxY: 1 };
-    const t0 = time[0];
-    const t1 = time[time.length - 1] || 1;
+  const minT = viewStart;
+  const maxT = viewEnd;
 
+  // Y-fit over the VISIBLE slice, so zooming rescales the value axis
+  const { minY, maxY } = useMemo(() => {
     let y0 = Infinity;
     let y1 = -Infinity;
-
+    const i0 = sampleIndexAt(time, minT);
+    const i1 = sampleIndexAt(time, maxT);
     for (const name of activeSignals) {
       const arr = signals[name] || [];
-      for (let i = 0; i < arr.length; i++) {
+      for (let i = i0; i <= i1 && i < arr.length; i++) {
         if (arr[i] < y0) y0 = arr[i];
         if (arr[i] > y1) y1 = arr[i];
       }
     }
-
     if (!Number.isFinite(y0) || !Number.isFinite(y1)) {
       y0 = -1;
       y1 = 1;
@@ -423,10 +488,24 @@ function FullScreenOverlayChart({
       y0 -= 1;
       y1 += 1;
     }
-
     const yPad = (y1 - y0) * 0.08;
-    return { minT: t0, maxT: t1, minY: y0 - yPad, maxY: y1 + yPad };
-  }, [time, signals, activeSignals]);
+    return { minY: y0 - yPad, maxY: y1 + yPad };
+  }, [time, signals, activeSignals, minT, maxT]);
+
+  // non-passive wheel zoom around the cursor position
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const rect = svg.getBoundingClientRect();
+      const svgX = ((e.clientX - rect.left) / rect.width) * width;
+      const anchor = minT + ((svgX - padLeft) / plotW) * (maxT - minT);
+      onZoomAt(Math.exp(e.deltaY / 500), anchor);
+    };
+    svg.addEventListener('wheel', onWheel, { passive: false });
+    return () => svg.removeEventListener('wheel', onWheel);
+  }, [minT, maxT, onZoomAt]);
 
   const mapX = (t: number) => padLeft + ((t - minT) / (maxT - minT || 1)) * plotW;
   const mapY = (v: number) => padTop + plotH - ((v - minY) / (maxY - minY || 1)) * plotH;
@@ -451,19 +530,23 @@ function FullScreenOverlayChart({
     return ticks;
   }, [minT, maxT, plotW, padLeft]);
 
+  // trace decimation limited to the visible slice
   const tracePaths = useMemo(() => {
+    const i0 = sampleIndexAt(time, minT);
+    const i1 = sampleIndexAt(time, maxT);
     return activeSignals.map((name) => {
       const arr = signals[name] || [];
-      const len = Math.min(time.length, arr.length);
-      if (len === 0) return { name, path: '' };
+      const iEnd = Math.min(i1, arr.length - 1);
+      const len = iEnd - i0 + 1;
+      if (len <= 0) return { name, path: '' };
 
       const step = Math.max(1, Math.floor(len / 3000));
-      let d = `M ${mapX(time[0])} ${mapY(arr[0])}`;
-      for (let i = step; i < len; i += step) {
+      let d = `M ${mapX(time[i0])} ${mapY(arr[i0])}`;
+      for (let i = i0 + step; i <= iEnd; i += step) {
         d += ` L ${mapX(time[i])} ${mapY(arr[i])}`;
       }
-      if ((len - 1) % step !== 0) {
-        d += ` L ${mapX(time[len - 1])} ${mapY(arr[len - 1])}`;
+      if ((iEnd - i0) % step !== 0) {
+        d += ` L ${mapX(time[iEnd])} ${mapY(arr[iEnd])}`;
       }
       return { name, path: d };
     });
@@ -482,18 +565,58 @@ function FullScreenOverlayChart({
   };
 
   const handleClick = () => {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      return;
+    }
     if (hoverIndex === null) return;
     onSetCursor(nextCursorSlot(cursorA, cursorB), hoverIndex);
+  };
+
+  // drag-pan: pointerdown starts a candidate pan; movement beyond 4px pans and
+  // cancels the pending cursor click
+  const suppressClickRef = useRef(false);
+  const handlePointerDown = (e: ReactMouseEvent<SVGSVGElement>) => {
+    if (e.button !== 0) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x0 = e.clientX;
+    const span = maxT - minT;
+    const svgPerScreen = width / (rect.width || 1);
+    panState.current = { x0: x0, t0: 0, moved: false };
+    suppressClickRef.current = false;
+    const onMove = (ev: PointerEvent) => {
+      const st = panState.current;
+      if (!st) return;
+      const dx = ev.clientX - st.x0;
+      if (!st.moved && Math.abs(dx) > 4) {
+        st.moved = true;
+        suppressClickRef.current = true;
+      }
+      if (st.moved) {
+        // content follows the cursor: drag right moves the window left
+        onPanSeconds(-(dx * svgPerScreen * span) / plotW);
+        st.x0 = ev.clientX;
+      }
+    };
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      panState.current = null;
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
   };
 
   return (
     <div className="full-waveform-wrap">
       <svg
+        ref={svgRef}
         viewBox={`0 0 ${width} ${height}`}
         className="full-waveform-svg"
         onMouseMove={handleMouseMove}
         onMouseLeave={() => onHoverIndex(null)}
         onClick={handleClick}
+        onPointerDown={handlePointerDown}
       >
         <rect width={width} height={height} className="waveform-bg" rx={8} />
         <rect
@@ -504,6 +627,12 @@ function FullScreenOverlayChart({
           className="waveform-plot-area"
           rx={4}
         />
+
+        <defs>
+          <clipPath id="overlay-plot-clip">
+            <rect x={padLeft} y={padTop} width={plotW} height={plotH} />
+          </clipPath>
+        </defs>
 
         {/* Y Gridlines */}
         {yTicks.map(({ val, y }, i) => (
@@ -565,7 +694,8 @@ function FullScreenOverlayChart({
           />
         )}
 
-        {/* Waveform Traces */}
+        {/* Waveform Traces (clipped to the visible window) */}
+        <g clipPath="url(#overlay-plot-clip)">
         {tracePaths.map(({ name, path }) => {
           const colorIdx = allSignals.indexOf(name);
           const color = traceColors[colorIdx % traceColors.length];
@@ -580,6 +710,7 @@ function FullScreenOverlayChart({
             />
           );
         })}
+        </g>
 
         {/* Cursor A */}
         {cursorA !== null && time[cursorA] !== undefined && (
@@ -706,6 +837,10 @@ function FullScreenStackedChart({
   cursorA,
   cursorB,
   onSetCursor,
+  viewStart,
+  viewEnd,
+  onZoomAt,
+  onPanSeconds,
 }: {
   time: number[];
   signals: Record<string, number[]>;
@@ -717,7 +852,14 @@ function FullScreenStackedChart({
   cursorA: number | null;
   cursorB: number | null;
   onSetCursor: (type: 'A' | 'B', idx: number) => void;
+  viewStart: number;
+  viewEnd: number;
+  onZoomAt: (factor: number, anchor: number) => void;
+  onPanSeconds: (delta: number) => void;
 }) {
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const panState = useRef<{ x0: number; moved: boolean } | null>(null);
+  const suppressClickRef = useRef(false);
   const width = 1000;
   const laneH = 120; // spacious 120px height per channel!
   const laneGap = 16;
@@ -733,10 +875,25 @@ function FullScreenStackedChart({
   const zeroColor = theme === 'light' ? '#cbd5e1' : '#475569';
   const crosshairColor = theme === 'light' ? '#334155' : '#cbd5e1';
 
-  const t0 = time[0] || 0;
-  const t1 = time[time.length - 1] || 1;
+  const t0 = viewStart;
+  const t1 = viewEnd;
 
   const mapX = (t: number) => padLeft + ((t - t0) / (t1 - t0 || 1)) * plotW;
+
+  // non-passive wheel zoom around the cursor position
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const rect = svg.getBoundingClientRect();
+      const svgX = ((e.clientX - rect.left) / rect.width) * width;
+      const anchor = t0 + ((svgX - padLeft) / plotW) * (t1 - t0);
+      onZoomAt(Math.exp(e.deltaY / 500), anchor);
+    };
+    svg.addEventListener('wheel', onWheel, { passive: false });
+    return () => svg.removeEventListener('wheel', onWheel);
+  }, [t0, t1, onZoomAt]);
 
   const handleMouseMove = (e: ReactMouseEvent<SVGSVGElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -751,21 +908,64 @@ function FullScreenStackedChart({
   };
 
   const handleClick = () => {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      return;
+    }
     if (hoverIndex === null) return;
     onSetCursor(nextCursorSlot(cursorA, cursorB), hoverIndex);
+  };
+
+  // drag-pan, same interaction as the overlay chart
+  const handlePointerDown = (e: ReactMouseEvent<SVGSVGElement>) => {
+    if (e.button !== 0) return;
+    const x0 = e.clientX;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const span = t1 - t0;
+    const svgPerScreen = width / (rect.width || 1);
+    panState.current = { x0: x0, moved: false };
+    suppressClickRef.current = false;
+    const onMove = (ev: PointerEvent) => {
+      const st = panState.current;
+      if (!st) return;
+      const dx = ev.clientX - st.x0;
+      if (!st.moved && Math.abs(dx) > 4) {
+        st.moved = true;
+        suppressClickRef.current = true;
+      }
+      if (st.moved) {
+        onPanSeconds(-(dx * svgPerScreen * span) / plotW);
+        st.x0 = ev.clientX;
+      }
+    };
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      panState.current = null;
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
   };
 
   return (
     <div className="full-waveform-wrap">
       <svg
+        ref={svgRef}
         viewBox={`0 0 ${width} ${totalH}`}
         className="full-waveform-svg"
         onMouseMove={handleMouseMove}
         onMouseLeave={() => onHoverIndex(null)}
         onClick={handleClick}
+        onPointerDown={handlePointerDown}
       >
         <rect width={width} height={totalH} className="waveform-bg" rx={8} />
 
+        <defs>
+          <clipPath id="stacked-plot-clip">
+            <rect x={padLeft} y={padTop} width={plotW} height={totalH - padTop - padBottom} />
+          </clipPath>
+        </defs>
+        <g clipPath="url(#stacked-plot-clip)">
         {activeSignals.map((name, k) => {
           const arr = signals[name] || [];
           const colorIdx = allSignals.indexOf(name);
@@ -793,16 +993,18 @@ function FullScreenStackedChart({
           const mapLaneY = (v: number) =>
             laneTop + laneH - ((v - minY) / (maxY - minY || 1)) * laneH;
 
-          const len = Math.min(time.length, arr.length);
+          const iWin0 = sampleIndexAt(time, t0);
+          const iWin1 = Math.min(sampleIndexAt(time, t1), arr.length - 1);
+          const len = iWin1 - iWin0 + 1;
           let pathD = '';
           if (len > 0) {
             const step = Math.max(1, Math.floor(len / 3000));
-            pathD = `M ${mapX(time[0])} ${mapLaneY(arr[0])}`;
-            for (let i = step; i < len; i += step) {
+            pathD = `M ${mapX(time[iWin0])} ${mapLaneY(arr[iWin0])}`;
+            for (let i = iWin0 + step; i <= iWin1; i += step) {
               pathD += ` L ${mapX(time[i])} ${mapLaneY(arr[i])}`;
             }
-            if ((len - 1) % step !== 0) {
-              pathD += ` L ${mapX(time[len - 1])} ${mapLaneY(arr[len - 1])}`;
+            if ((iWin1 - iWin0) % step !== 0) {
+              pathD += ` L ${mapX(time[iWin1])} ${mapLaneY(arr[iWin1])}`;
             }
           }
 
@@ -904,6 +1106,8 @@ function FullScreenStackedChart({
             </g>
           );
         })}
+
+        </g>
 
         {/* Global time axis */}
         <line
