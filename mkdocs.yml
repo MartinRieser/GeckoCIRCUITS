@@ -225,6 +225,10 @@ nav:
 
   - Roadmap: roadmap.md
 
+  - Desktop:
+    - Desktop App: desktop-app.md
+    - MCP Interface (LLM Tools): mcp.md
+
   - API Reference:
     - api/index.md
     - Core Module:

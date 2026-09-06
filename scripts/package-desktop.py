@@ -68,7 +68,7 @@ def build_maven(skip_tests=True):
     """Build the multi-module Maven project and assembly fat JAR."""
     print("\n=== Building GeckoCIRCUITS with Maven ===")
     mvn_cmd = "mvn.cmd" if platform.system() == "Windows" else "mvn"
-    cmd = [mvn_cmd, "clean", "package", "assembly:single"]
+    cmd = [mvn_cmd, "clean", "package"]
     if skip_tests:
         cmd.append("-DskipTests")
     cmd.append("--no-transfer-progress")
@@ -311,7 +311,7 @@ def main():
         jar_path = find_main_jar()
 
     if jar_path is None:
-        print(f"[ERROR] Could not find executable JAR. Run with --rebuild or run 'mvn clean package assembly:single' first.")
+        print(f"[ERROR] Could not find executable JAR. Run with --rebuild or run 'mvn clean package' first.")
         sys.exit(1)
 
     version = sanitize_version(args.version)

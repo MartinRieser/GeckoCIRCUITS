@@ -215,6 +215,34 @@ class CircuitEditServiceTest {
     }
 
     @Test
+    void patchComponent_moveShiftsAllTerminalsOfMultiInputScope() {
+        // regression: the Multi-Scope example's SCOPE.2 has three inputs whose
+        // pins are spread perpendicular to the flow direction; moving the scope
+        // used to shift only wires sitting on the single center terminal
+        service.createComponent(circuitId,
+                new ComponentCreateRequest("CONTROL", 1003, "SCOPE.X", 34, 5, 503, null));
+        service.setNodeLabel(circuitId, "SCOPE.X",
+                new NodeLabelRequest(0, "x", "v_in"));
+        service.setNodeLabel(circuitId, "SCOPE.X",
+                new NodeLabelRequest(1, "x", "v_out"));
+        // pins of a 2-input scope at (34,5), NORTH_SOUTH: (32,4) and (32,6)
+        service.createConnection(circuitId,
+                new ConnectionCreateRequest("CONTROL", new int[][]{{26, 4}, {32, 4}}, "v_in"));
+        service.createConnection(circuitId,
+                new ConnectionCreateRequest("CONTROL", new int[][]{{26, 6}, {32, 6}}, "v_out"));
+
+        service.patchComponent(circuitId, "SCOPE.X",
+                new ComponentPatchRequest(38, 5, null, null, null));
+
+        assertArrayEquals(new int[][]{{26, 4}, {36, 4}},
+                wireByLabel("v_in").getPoints(),
+                "upper input wire must follow the spread terminal");
+        assertArrayEquals(new int[][]{{26, 6}, {36, 6}},
+                wireByLabel("v_out").getPoints(),
+                "lower input wire must follow the spread terminal");
+    }
+
+    @Test
     void patchComponent_undoRedoRestoresAndReappliesWirePoints() {
         service.createComponent(circuitId,
                 new ComponentCreateRequest("LK", 1, "Ru2", 30, 30, 503, null));

@@ -90,7 +90,9 @@ export function terminalPositions(component: {
   position: number[];
   orientation: number;
   inputLabels?: string[];
+  outputLabels?: string[];
   inputs?: unknown[];
+  parameters?: Record<string, number | string | boolean>;
 }): TerminalPositions {
   const center = { x: component.position[0], y: component.position[1] };
   const family = component.family || 'LK';
@@ -132,7 +134,7 @@ export function terminalPositions(component: {
     }
     // Function Block / Classic Java Block: dynamic N inputs, M outputs
     if (component.type === CTRL_TYPE.SCRIPT || component.type === CTRL_TYPE.LEGACY_JAVA_FUNCTION) {
-      const compParams = (component as any).parameters || {};
+      const compParams = component.parameters ?? {};
       const rawIn = compParams.anzXIN;
       const inCount =
         rawIn !== undefined && rawIn !== null && rawIn !== '' && !isNaN(Number(rawIn))
@@ -142,7 +144,7 @@ export function terminalPositions(component: {
       const outCount =
         rawOut !== undefined && rawOut !== null && rawOut !== '' && !isNaN(Number(rawOut))
           ? Math.max(1, Number(rawOut))
-          : ((component as any).outputLabels?.length || 1);
+          : (component.outputLabels?.length || 1);
       const step = 2; // 2 grid units between pins
 
       const inputs: Point[] = [];

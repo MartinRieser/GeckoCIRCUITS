@@ -543,11 +543,13 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                     });
                   }}
                 >
-                  {/* Dynamic bounding dimensions based on terminal count */}
+                  {/* Bounding dimensions sized to the drawn symbol (not the
+                      terminal spread), so densely placed blocks do not
+                      visually overlap; multi-pin scopes grow to cover pins. */}
                   {(() => {
                     const maxPins = Math.max(terminals.input.length, terminals.output.length, 1);
-                    const halfH = Math.max(2.4, (maxPins * 2.0 + 1.2) / 2) * dpix;
-                    const halfW = 2.4 * dpix;
+                    const halfH = Math.max(1.3, maxPins - 1 + 0.8) * dpix;
+                    const halfW = 1.3 * dpix;
                     return (
                       <>
                         {/* Full-area hit target so clicking anywhere on the component bounding area selects it */}
@@ -589,8 +591,10 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                           />
                         ))}
 
-                        {/* Component identifier label */}
-                        <text x={0} y={halfH + 12} className="component-name">
+                        {/* Component identifier label: to the right of the
+                            symbol so labels of vertically stacked blocks
+                            cannot collide */}
+                        <text x={halfW + 5} y={4} textAnchor="start" className="component-name">
                           {component.name}
                         </text>
                       </>

@@ -3,6 +3,7 @@
  * no SDK generation. All functions throw Error with the server's detail
  * message on non-2xx responses.
  */
+import { isDesktop, saveFileNative } from '../desktop';
 import type {
   CatalogEntry,
   ChangeMessage,
@@ -15,7 +16,16 @@ import type {
   SimulationResponse,
 } from '../model/types';
 
-const API = '/gecko/api/v1';
+/**
+ * Backend origin injected by the desktop shell via initialization script
+ * (window.__GECKO_BACKEND__, e.g. "http://127.0.0.1:54321"). Empty string
+ * means same-origin, which is what the browser/web deployment uses.
+ */
+export function backendOrigin(): string {
+  return (globalThis as { __GECKO_BACKEND__?: string }).__GECKO_BACKEND__ ?? '';
+}
+
+const API = backendOrigin() + '/gecko/api/v1';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(API + path, {
@@ -134,17 +144,23 @@ export function redo(circuitId: string): Promise<ChangeMessage> {
   return request(`/circuits/${circuitId}/redo`, { method: 'POST' });
 }
 
-/** Downloads the circuit as .ipes file (browser download). */
+/** Downloads the circuit as .ipes: native save dialog on the desktop,
+ *  browser blob download in the web deployment. */
 export async function downloadIpes(circuitId: string, filename: string): Promise<void> {
   const response = await fetch(API + `/circuits/${circuitId}/ipes`);
   if (!response.ok) {
     throw new Error(await errorMessage(response));
   }
   const blob = await response.blob();
+  const name = filename.endsWith('.ipes') ? filename : filename + '.ipes';
+  if (isDesktop()) {
+    await saveFileNative(toBase64(new Uint8Array(await blob.arrayBuffer())), name);
+    return;
+  }
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = filename.endsWith('.ipes') ? filename : filename + '.ipes';
+  link.download = name;
   link.click();
   URL.revokeObjectURL(url);
 }
@@ -271,8 +287,7 @@ export function subscribeCircuitChanges(
 
   const connect = () => {
     if (disposed) return;
-    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-    socket = new WebSocket(`${proto}://${location.host}/gecko/ws-raw`);
+    socket = new WebSocket(wsOrigin() + '/gecko/ws-raw');
 
     socket.onopen = () => {
       attempt = 0;
@@ -311,6 +326,17 @@ export function subscribeCircuitChanges(
     disposed = true;
     socket?.close();
   };
+}
+
+/** WebSocket base for the STOMP raw endpoint: injected origin with ws(s) scheme,
+ *  or same-origin location host when no backend origin is set. */
+function wsOrigin(): string {
+  const base = backendOrigin();
+  if (base) {
+    return base.replace(/^http/, 'ws');
+  }
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  return `${proto}://${location.host}`;
 }
 
 function encodeFrame(command: string, headers: string, body = ''): string {

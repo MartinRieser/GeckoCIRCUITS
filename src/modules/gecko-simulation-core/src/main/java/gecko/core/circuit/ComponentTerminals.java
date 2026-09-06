@@ -111,10 +111,15 @@ public final class ComponentTerminals {
                     || type == CircuitTypCore.CTRL_CONSTANT.getTypeNumber()) {
                 return List.of(offset(x, y, dir, TERMINAL_DISTANCE));
             }
-            // gate and scope: 1 input on the input side, 0 outputs
-            if (type == CONTROL_GATE || type == CONTROL_SCOPE
-                    || type == CircuitTypCore.CTRL_SCOPE.getTypeNumber()) {
+            // gates: 1 input on the input side, 0 outputs
+            if (type == CONTROL_GATE) {
                 return List.of(offset(x, y, dir, -TERMINAL_DISTANCE));
+            }
+            // scopes: one input terminal per input label, spread perpendicular
+            // to the flow direction exactly like the web editor renders them
+            // (2 grid units apart, centered on the component)
+            if (type == CONTROL_SCOPE || type == CircuitTypCore.CTRL_SCOPE.getTypeNumber()) {
+                return scopeTerminals(comp, x, y, dir);
             }
         }
 
@@ -123,6 +128,26 @@ public final class ComponentTerminals {
 
     private static boolean isControlFamily(CircuitModel.ComponentData comp) {
         return comp.getFamily() != null && "CONTROL".equalsIgnoreCase(comp.getFamily());
+    }
+
+    /**
+     * Scope input terminals: one per input label (X labels), centered on the
+     * component and spread 2 grid units apart along the perpendicular of the
+     * flow direction — mirroring the web editor's scope pin layout, so wire
+     * endpoints land exactly on computed terminals.
+     */
+    private static List<int[]> scopeTerminals(CircuitModel.ComponentData comp, int x, int y, int[] dir) {
+        int count = Math.max(1, comp.getTerminalXLabels().length);
+        int[] perp = {-dir[1], dir[0]};
+        List<int[]> terminals = new ArrayList<>(count);
+        int start = -((count - 1) * 2) / 2;
+        for (int i = 0; i < count; i++) {
+            int spread = start + i * 2;
+            terminals.add(new int[]{
+                    x - dir[0] * TERMINAL_DISTANCE + perp[0] * spread,
+                    y - dir[1] * TERMINAL_DISTANCE + perp[1] * spread});
+        }
+        return terminals;
     }
 
     private static int[] offset(int x, int y, int[] dir, int distance) {

@@ -1,0 +1,30 @@
+[
+ {
+  "expr": "target_voltage",
+  "format": ".1f"
+ },
+ {
+  "expr": "t_step",
+  "format": ".3f"
+ },
+ {
+  "expr": "t_step",
+  "format": ".4f"
+ },
+ {
+  "expr": "f_grid",
+  "format": ".1f"
+ },
+ {
+  "expr": "f_grid",
+  "format": ".1f"
+ },
+ {
+  "expr": "f_sw",
+  "format": ".0f"
+ },
+ {
+  "expr": "f_sw",
+  "format": ".1f"
+ }
+]

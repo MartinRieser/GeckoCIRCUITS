@@ -1,0 +1,33 @@
+# Release notes configuration for GitHub's auto-generated notes
+# (generate_release_notes: true in desktop.yml). PRs are labeled by the
+# conventional-commit prefixes in their titles.
+
+categories:
+  - title: Desktop App
+    labels:
+      - desktop
+      - tauri
+      - shell
+  - title: MCP / LLM Integration
+    labels:
+      - mcp
+      - llm
+  - title: Simulation Engine
+    labels:
+      - core
+      - engine
+      - simulation
+  - title: REST API & Editor
+    labels:
+      - rest
+      - frontend
+      - editor
+      - api
+  - title: Packaging & CI
+    labels:
+      - ci
+      - build
+      - packaging
+      - docker
+  - title: Other Changes
+    labels: []

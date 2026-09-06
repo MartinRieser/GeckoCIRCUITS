@@ -1,0 +1,1 @@
+double v_int = 0.0;

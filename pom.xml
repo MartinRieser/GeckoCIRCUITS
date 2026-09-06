@@ -17,6 +17,7 @@
         <module>src/modules/gecko-simulation-core</module>
         <module>src/modules/gecko-gui</module>
         <module>src/modules/gecko-rest-api</module>
+        <module>src/modules/gecko-mcp</module>
     </modules>
 
     <build>

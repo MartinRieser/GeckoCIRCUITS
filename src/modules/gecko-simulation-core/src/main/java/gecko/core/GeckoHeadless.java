@@ -19,11 +19,11 @@ import gecko.core.allg.SolverSettingsCore;
 import gecko.core.allg.SolverType;
 import gecko.core.simulation.HeadlessSimulationEngine;
 import gecko.core.simulation.SimulationConfig;
+import gecko.core.simulation.SimulationCsv;
 import gecko.core.simulation.SimulationResult;
 
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.util.Arrays;
 
 /**
@@ -261,33 +261,7 @@ public class GeckoHeadless {
      * @throws IOException if writing fails
      */
     private void exportToCsv(SimulationResult result, String filename) throws IOException {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
-            // Header row
-            String[] signalNames = result.getSignalNames();
-            writer.print("time");
-            for (String name : signalNames) {
-                writer.print("," + name);
-            }
-            writer.println();
-
-            // Data rows
-            double[] times = result.getTimeArray();
-            float[][] signalData = new float[signalNames.length][];
-            for (int i = 0; i < signalNames.length; i++) {
-                signalData[i] = result.getSignalData(i);
-            }
-
-            for (int t = 0; t < times.length; t++) {
-                writer.print(times[t]);
-                for (int s = 0; s < signalNames.length; s++) {
-                    writer.print(",");
-                    if (signalData[s] != null && t < signalData[s].length) {
-                        writer.print(signalData[s][t]);
-                    }
-                }
-                writer.println();
-            }
-        }
+        SimulationCsv.write(result, Path.of(filename));
     }
 
     /**

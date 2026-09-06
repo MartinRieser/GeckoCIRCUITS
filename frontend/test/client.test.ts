@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+// @vitest-environment jsdom
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as client from '../src/api/client';
 
 const fetchMock = vi.fn();
@@ -124,5 +125,101 @@ describe('api client', () => {
       jsonResponse({ status: 'failed', filename: 'x.ipes', errorMessage: 'bad gzip' }, 400),
     );
     await expect(client.uploadIpes(new File(['x'], 'x.ipes'))).rejects.toThrow();
+  });
+});
+
+describe('downloadIpes', () => {
+  afterEach(() => {
+    delete (globalThis as { __TAURI__?: unknown }).__TAURI__;
+  });
+
+  function blobResponse(): Response {
+    return {
+      ok: true,
+      status: 200,
+      blob: () => Promise.resolve(new Blob([new Uint8Array([1, 2, 3])])),
+    } as unknown as Response;
+  }
+
+  it('uses the browser anchor download without __TAURI__ (jsdom)', async () => {
+    URL.createObjectURL = vi.fn().mockReturnValue('blob:x');
+    URL.revokeObjectURL = vi.fn();
+    const clicks: string[] = [];
+    const originalCreate = document.createElement.bind(document);
+    vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+      const el = originalCreate(tag);
+      if (tag === 'a') {
+        const anchor = el as HTMLAnchorElement;
+        anchor.click = () => clicks.push(anchor.download);
+      }
+      return el;
+    });
+    fetchMock.mockResolvedValue(blobResponse());
+    await client.downloadIpes('c1', 'circ');
+    expect(fetchMock.mock.calls[0][0]).toBe('/gecko/api/v1/circuits/c1/ipes');
+    expect(clicks).toEqual(['circ.ipes']);
+    vi.restoreAllMocks();
+  });
+
+  it('routes through the native save dialog on the desktop', async () => {
+    const invoke = vi.fn().mockResolvedValue('C:/x/chosen.ipes');
+    (globalThis as { __TAURI__?: unknown }).__TAURI__ = {
+      core: { invoke: invoke as never },
+    };
+    fetchMock.mockResolvedValue(blobResponse());
+    await client.downloadIpes('c1', 'circ.ipes');
+    expect(invoke).toHaveBeenCalledWith('save_file_dialog', {
+      base64: expect.any(String),
+      suggestedName: 'circ.ipes',
+    });
+    expect(invoke.mock.calls[0][1].base64.length).toBeGreaterThan(0);
+  });
+});
+
+describe('api client with injected backend origin', () => {
+  beforeEach(() => {
+    // API base is computed at module load; force re-evaluation per test
+    vi.resetModules();
+  });
+
+  afterEach(() => {
+    delete (globalThis as { __GECKO_BACKEND__?: string }).__GECKO_BACKEND__;
+    vi.resetModules();
+  });
+
+  it('prefixes API calls with the injected origin', async () => {
+    (globalThis as { __GECKO_BACKEND__?: string }).__GECKO_BACKEND__ = 'http://127.0.0.1:54321';
+    const injected = await import('../src/api/client');
+    fetchMock.mockResolvedValue(jsonResponse({ types: [] }));
+    await injected.getCatalog();
+    expect(fetchMock.mock.calls[0][0]).toBe('http://127.0.0.1:54321/gecko/api/v1/circuits/catalog');
+  });
+
+  it('keeps relative URLs when no origin is injected', async () => {
+    const injected = await import('../src/api/client');
+    fetchMock.mockResolvedValue(jsonResponse({ types: [] }));
+    await injected.getCatalog();
+    expect(fetchMock.mock.calls[0][0]).toBe('/gecko/api/v1/circuits/catalog');
+  });
+
+  it('derives the WS origin from the injected backend origin', async () => {
+    (globalThis as { __GECKO_BACKEND__?: string }).__GECKO_BACKEND__ = 'https://127.0.0.1:54321';
+    const injected = await import('../src/api/client');
+    const urls: string[] = [];
+    class FakeWebSocket {
+      constructor(url: string) {
+        urls.push(url);
+      }
+      onopen: (() => void) | null = null;
+      onmessage: ((event: unknown) => void) | null = null;
+      onclose: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      send() {}
+      close() {}
+    }
+    vi.stubGlobal('WebSocket', FakeWebSocket);
+    const dispose = injected.subscribeCircuitChanges('c1', () => {});
+    dispose();
+    expect(urls[0]).toBe('wss://127.0.0.1:54321/gecko/ws-raw');
   });
 });

@@ -17,9 +17,17 @@ import { CommandPalette } from './palette/CommandPalette';
 import { EXAMPLES } from './model/examples';
 import { resolveShortcut, KEYBINDINGS } from './model/keybindings';
 import { routeL, densePoints } from './canvas/WireRouter';
+import { registerOpenFileHandler } from './desktop';
 
 export function App() {
   const { state, dispatch, catalog, wsConnected, simState, actions } = useEditor();
+
+  // Desktop shell: circuits opened via double-click / "Open with" / second launch
+  useEffect(() => {
+    registerOpenFileHandler((payload) => {
+      void actions.openBase64(payload.base64, payload.name);
+    });
+  }, [actions.openBase64]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [examplesMenuOpen, setExamplesMenuOpen] = useState(false);

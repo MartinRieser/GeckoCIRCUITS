@@ -85,3 +85,11 @@ tools/parity/results/*.txt
 
 # maven-shade byproduct (fat jar build)
 src/modules/gecko-gui/dependency-reduced-pom.xml
+
+# Desktop engine bundle (build output of scripts/desktop/build-engine.py)
+desktop/app/engine/runtime/
+desktop/app/engine/gecko-rest-api.jar
+
+# Desktop dist output (launchers etc.)
+desktop/dist/
+src/modules/gecko-mcp/dependency-reduced-pom.xml

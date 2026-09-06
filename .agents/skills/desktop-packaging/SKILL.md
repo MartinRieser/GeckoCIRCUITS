@@ -5,6 +5,20 @@ description: Runbook for packaging GeckoCIRCUITS into native desktop installers 
 
 # GeckoCIRCUITS Desktop Packaging Guide
 
+## Tauri Desktop App (React UI — current primary app)
+
+```sh
+python3 scripts/desktop/build-engine.py      # engine bundle + smoke test
+scripts/desktop/build-all.bat|.sh            # engine + installers (needs tauri CLI)
+python3 scripts/desktop/set-version.py X.Y.Z # sync version files
+python3 scripts/desktop/write-mcp-launchers.py --dest <dir>  # MCP launchers
+```
+
+CI: `.github/workflows/desktop.yml` (PR gates + 3-OS installer matrix on `v*`).
+QA checklist and troubleshooting: `docs/desktop-app.md`. The jpackage flow
+below packages the **Classic Swing UI** and stays available in parallel.
+
+
 ## Quick Execution
 - **Windows**: `scripts\package-desktop.bat` (or `python scripts/package-desktop.py --type msi,portable`)
 - **Linux**: `./scripts/package-desktop.sh` (or `python3 scripts/package-desktop.py --type deb,rpm,portable`)

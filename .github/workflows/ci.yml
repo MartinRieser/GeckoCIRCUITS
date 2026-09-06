@@ -21,9 +21,9 @@ jobs:
           cache: maven
 
       - name: Build
-        run: |
-          mvn clean install -DskipTests --no-transfer-progress
-          mvn assembly:single -DskipTests --no-transfer-progress
+        # the uploaded artifact is the shaded fat jar from `mvn package`;
+        # `assembly:single` needs a dist-* profile and would fail bare
+        run: mvn clean install -DskipTests --no-transfer-progress
 
       - name: Install test dependencies
         run: |
@@ -38,7 +38,7 @@ jobs:
 
       - name: Run engine & REST API tests (gating)
         run: |
-          mvn test --no-transfer-progress -pl src/modules/gecko-simulation-core,src/modules/gecko-rest-api -am
+          mvn test --no-transfer-progress -pl src/modules/gecko-simulation-core,src/modules/gecko-mcp,src/modules/gecko-rest-api -am
 
       - name: Run GUI tests with coverage (non-gating, needs display)
         run: |
