@@ -28,8 +28,20 @@ public final class ComponentCatalog {
             String defaultPrefix,
             List<String> pins,
             List<ParameterDef> parameters,
-            String description
-    ) {}
+            String description,
+            /** Number of pins on the X (input / labelAnfangsKnoten) side;
+             *  the remaining pins go to the Y (output / labelEndKnoten) side. */
+            int xPinCount
+    ) {
+        /** Two-sided convenience used by most components: first pin on the X
+         *  side, the remaining pins on the Y side. */
+        public ComponentDef(
+                String id, String displayName, String domain, int typeNumber, String defaultPrefix,
+                List<String> pins, List<ParameterDef> parameters, String description) {
+            this(id, displayName, domain, typeNumber, defaultPrefix, pins, parameters, description,
+                    Math.min(1, pins.size()));
+        }
+    }
 
     private static final Map<String, ComponentDef> REGISTRY = new LinkedHashMap<>();
 
@@ -141,6 +153,17 @@ public final class ComponentCatalog {
                 "Insulated-Gate Bipolar Transistor driven by a coupled GATE signal."
         ));
 
+        register(new ComponentDef(
+                "PMSM_MOTOR", "Permanent Magnet Synchronous Motor", "POWER_LK", 15, "PMSM",
+                List.of("uA", "uB", "uC"),
+                List.of(),
+                "Three-terminal permanent magnet synchronous motor (all pins on the input side). "
+                        + "Ships with a typical 10 kW machine preset (from resources/articles/ipes_files/"
+                        + "dq_control_pmsm.ipes); override any slot with 'parameters_raw' copied from a "
+                        + "reference machine datasheet.",
+                3
+        ));
+
         // ====================================================================
         // Control Domain Components
         // ====================================================================
@@ -246,6 +269,8 @@ public final class ComponentCatalog {
             entry.put("type_number", def.typeNumber());
             entry.put("prefix", def.defaultPrefix());
             entry.put("pins", def.pins());
+            entry.put("input_pins", def.pins().subList(0, def.xPinCount()));
+            entry.put("output_pins", def.pins().subList(def.xPinCount(), def.pins().size()));
             entry.put("description", def.description());
 
             List<Map<String, Object>> params = new ArrayList<>();

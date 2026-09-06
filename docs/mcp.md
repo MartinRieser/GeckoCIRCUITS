@@ -128,6 +128,8 @@ It generates `gecko-mcp.bat` (Windows) or `gecko-mcp.sh` (Linux/macOS) which use
 ### 1. `gecko_create_circuit` (Universal Schematic Synthesizer)
 Allows an LLM to build **any arbitrary circuit topology** (multiphase PFC, Vienna rectifier, dual active bridge, resonant converters, motor drives, inverters) without requiring hardcoded templates.
 
+**N-terminal components**: each component's `nodes` array must match its catalog `pins` (see `gecko_catalog`); pins split into input/output sides automatically (e.g. `PMSM_MOTOR` takes three nodes for phases A/B/C and writes them as one input-side label array). Components without documented parameter names (motors) accept a numeric `parameters_raw` slot vector and ship sensible machine presets.
+
 #### Input Schema:
 ```json
 {

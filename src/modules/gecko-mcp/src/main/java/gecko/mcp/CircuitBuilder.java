@@ -71,12 +71,16 @@ public final class CircuitBuilder {
             }
 
             @SuppressWarnings("unchecked")
-            List<String> nodes = (List<String>) c.get("nodes");
-            if (nodes == null || nodes.size() < 2) {
-                throw new IllegalArgumentException("Component " + name + " must specify at least 2 nodes");
+            List<String> nodesRaw = (List<String>) c.get("nodes");
+            int expectedPins = def.pins().isEmpty() ? 2 : def.pins().size();
+            if (nodesRaw == null || nodesRaw.size() != expectedPins) {
+                throw new IllegalArgumentException("Component " + name + " (" + def.id() + ") requires "
+                        + expectedPins + " nodes " + def.pins() + ", got "
+                        + (nodesRaw == null ? 0 : nodesRaw.size()));
             }
-            String nodeA = nodes.get(0).trim();
-            String nodeB = nodes.get(1).trim();
+            List<String> nodes = nodesRaw.stream().map(String::trim).toList();
+            List<String> xNodes = nodes.subList(0, def.xPinCount());
+            List<String> yNodes = nodes.subList(def.xPinCount(), nodes.size());
 
             Object pObj = c.get("parameters");
             if (pObj == null) pObj = c.get("params");
@@ -99,21 +103,28 @@ public final class CircuitBuilder {
             }
             maxRowY = Math.max(maxRowY, posY);
 
-            // Compute terminals based on orientation
-            // flowVector: EAST_WEST=(-1,0), WEST_EAST=(1,0), SOUTH_NORTH=(0,-1), NORTH_SOUTH=(0,1)
-            Point termA = getTerminalA(posX, posY, orient);
-            Point termB = getTerminalB(posX, posY, orient);
+            // Terminals per side, spread perpendicular to the flow direction
+            // for multi-pin elements (2 grid units apart, centered) exactly
+            // like the classic editor's scopes and motors
+            List<Point> termA = spreadTerminals(getTerminalA(posX, posY, orient), posX, posY, xNodes.size());
+            List<Point> termB = spreadTerminals(getTerminalB(posX, posY, orient), posX, posY, yNodes.size());
 
-            netToPoints.computeIfAbsent(nodeA, k -> new LinkedHashSet<>()).add(termA);
-            netToPoints.computeIfAbsent(nodeB, k -> new LinkedHashSet<>()).add(termB);
+            for (int pin = 0; pin < xNodes.size(); pin++) {
+                netToPoints.computeIfAbsent(xNodes.get(pin), k -> new LinkedHashSet<>()).add(termA.get(pin));
+            }
+            for (int pin = 0; pin < yNodes.size(); pin++) {
+                netToPoints.computeIfAbsent(yNodes.get(pin), k -> new LinkedHashSet<>()).add(termB.get(pin));
+            }
 
             long uid = nextLkId++;
             componentIdMap.put(name, uid);
 
-            // Normalize parameter array
+            // Normalize parameter array; expert components may override raw
+            // slots directly (parameters_raw), e.g. motor machine data
             double[] paramArray = normalizeParams(def, params);
+            applyRawParameters(paramArray, c.get("parameters_raw"));
 
-            placedLk.add(new PlacedComponent(name, def, uid, posX, posY, orient, nodeA, nodeB, paramArray));
+            placedLk.add(new PlacedComponent(name, def, uid, posX, posY, orient, xNodes, yNodes, paramArray));
         }
 
         // Process control components
@@ -251,8 +262,8 @@ public final class CircuitBuilder {
             PlacedComponent pc = placedLk.get(i);
             sb.append("e (").append(i).append(")\n");
             sb.append("<ElementLK>\n");
-            sb.append("labelAnfangsKnoten[] /").append(pc.nodeA).append("\n");
-            sb.append("labelEndKnoten[] /").append(pc.nodeB).append("\n");
+            sb.append("labelAnfangsKnoten[] ").append(labelArray(pc.xNodes)).append("\n");
+            sb.append("labelEndKnoten[] ").append(labelArray(pc.yNodes)).append("\n");
             sb.append("enabledShorted 1\n");
             sb.append("typ ").append(pc.def.typeNumber()).append("\n");
             sb.append("uniqueObjectIdentifier ").append(pc.uid).append("\n");
@@ -351,7 +362,7 @@ public final class CircuitBuilder {
 
     private record PlacedComponent(
             String name, ComponentCatalog.ComponentDef def, long uid,
-            int x, int y, int orientation, String nodeA, String nodeB, double[] parameters
+            int x, int y, int orientation, List<String> xNodes, List<String> yNodes, double[] parameters
     ) {}
 
     private record PlacedControl(
@@ -376,6 +387,49 @@ public final class CircuitBuilder {
             case 504 -> new Point(x - 2, y);  // EAST_WEST:   flow (-1, 0), output (x-2, y)
             default  -> new Point(x, y + 2);  // NORTH_SOUTH: flow (0, 1),  output (x, y+2)
         };
+    }
+
+    /** .ipes label-array encoding: "/l1/l2/l3"; an empty side carries no labels. */
+    private static String labelArray(List<String> labels) {
+        if (labels == null || labels.isEmpty()) {
+            return "";
+        }
+        return "/" + String.join("/", labels);
+    }
+
+    /**
+     * Terminals of one component side for multi-pin elements: the side anchor
+     * plus pins spread perpendicular to the flow direction, 2 grid units
+     * apart, centered on the anchor (N pins at offsets -(N-1) .. +(N-1)).
+     */
+    private static List<Point> spreadTerminals(Point anchor, int cx, int cy, int count) {
+        List<Point> points = new ArrayList<>(count);
+        if (count <= 1) {
+            points.add(anchor);
+            return points;
+        }
+        int dx = (anchor.x() - cx) / 2; // 0 or +/-1 per axis
+        int dy = (anchor.y() - cy) / 2;
+        int perpX = -dy;
+        int perpY = dx;
+        for (int i = 0; i < count; i++) {
+            int offset = 2 * i - 2 * (count - 1) / 2; // 2 units apart, centered
+            points.add(new Point(anchor.x() + perpX * offset, anchor.y() + perpY * offset));
+        }
+        return points;
+    }
+
+    /** Overrides parameter slots with a raw numeric vector (expert escape
+     *  hatch for components without documented parameter names, e.g. motors). */
+    private static void applyRawParameters(double[] slots, Object raw) {
+        if (!(raw instanceof List<?> values)) {
+            return;
+        }
+        for (int i = 0; i < values.size() && i < slots.length; i++) {
+            if (values.get(i) instanceof Number n) {
+                slots[i] = n.doubleValue();
+            }
+        }
     }
 
     private static int getOrientation(Map<String, Object> c, ComponentCatalog.ComponentDef def) {
@@ -453,6 +507,16 @@ public final class CircuitBuilder {
                 out[1] = uF;
                 out[2] = rOn;
                 out[3] = rOff;
+            }
+            case "PMSM_MOTOR" -> {
+                // Typical 10 kW machine preset copied verbatim from the
+                // verified reference circuit dq_control_pmsm.ipes; every
+                // slot stays overridable via parameters_raw.
+                double[] preset = {
+                        7.552931615989641, -11.45789154912143, 3.904959933131788, 314.1492380776522,
+                        2999.9042465166613, 15.944421290389943, 10.012972849851, 0.191, 2.1e-4, 4.0e-4,
+                        10.0, 3.0, 1.0, 0.005, 0.005, 0.0, 0.0, 0.0, 0.0, -1.0, -1.0};
+                System.arraycopy(preset, 0, out, 0, preset.length);
             }
         }
 

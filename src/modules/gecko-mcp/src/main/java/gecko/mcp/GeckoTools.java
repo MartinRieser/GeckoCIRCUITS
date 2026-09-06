@@ -122,9 +122,12 @@ final class GeckoTools {
     private static ToolSpec createCircuit() {
         return new ToolSpec("gecko_create_circuit",
                 "Synthesize a new GeckoCIRCUITS (.ipes) model from a high-level schematic netlist. "
+                        + "Supports N-terminal components (e.g. the 3-phase PMSM_MOTOR): the 'nodes' array "
+                        + "must match the component's catalog pins, split into input and output sides. "
                         + "Automatically computes collision-free 2D schematic layouts, places components, "
                         + "routes net connections, wires control probes and gates, and normalizes companion "
-                        + "parameter slots for MNA numerical stability.",
+                        + "parameter slots for MNA numerical stability. Expert components without documented "
+                        + "parameter names accept 'parameters_raw' (numeric slot vector).",
                 objectSchema(properties(
                         Map.of("output_path", str("Output .ipes path relative to workspace (e.g. resources/projects/my_circuit.ipes)")),
                         Map.of("simulation", objectOf("Simulation parameters", properties(
