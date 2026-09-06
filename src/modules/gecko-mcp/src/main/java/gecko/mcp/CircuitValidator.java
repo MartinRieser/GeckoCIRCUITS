@@ -144,6 +144,23 @@ public final class CircuitValidator {
                                 "Gate " + name + " is coupled to non-switch component type: " + targetType));
                     }
                 }
+            } else if (typ == 88) { // NativeC C-library block
+                String libPath = "";
+                String classicSel = "";
+                for (String rawLine : block.split("\n")) {
+                    String line = rawLine.trim();
+                    if (line.startsWith("libraryPath ")) {
+                        libPath = line.substring("libraryPath ".length()).trim();
+                    } else if (line.startsWith("nativeCLibrary ")) {
+                        classicSel = line.substring("nativeCLibrary ".length()).trim();
+                    }
+                }
+                if (libPath.isEmpty() && classicSel.isEmpty()) {
+                    diagnostics.add(new Diagnostic("ERROR", "NATIVEC_NO_LIBRARY", name,
+                            "C library block " + name + " has no library configured (libraryPath)."));
+                }
+                // file existence is checked at simulation start by the engine
+                // (load errors surface as held outputs + logged error)
             } else if (typ == 61) { // ScriptBlock
                 int numIn = parseInt(group(block, "anzXIN\\s+([0-9]+)"), 0);
                 int numOut = parseInt(group(block, "anzYOUT\\s+([0-9]+)"), 1);

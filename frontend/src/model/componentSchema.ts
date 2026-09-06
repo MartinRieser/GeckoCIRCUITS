@@ -1431,6 +1431,24 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
       output: [{ label: 'out', description: 'Signal output' }],
     },
   },
+  88: {
+    type: 88,
+    family: 'CONTROL',
+    name: 'C_NATIVE_C_FUNCTION',
+    displayName: 'C Library Block (NativeC)',
+    category: 'control',
+    description: 'Firmware-in-the-loop: binds a self-built host shared library (dll/so/dylib) implementing the gecko_c_block.h contract (gecko_init/gecko_step/gecko_deinit). Build your MCU control code with your own toolchain; the library file is copied per simulation run, giving C statics a power-on reset.',
+    defaultPrefix: 'CNATC',
+    parameters: [
+      { index: 0, key: 'libraryPath', label: 'Library Path', description: 'Path to the shared library (dll/so/dylib) implementing gecko_step; relative paths resolve against the circuit file', defaultValue: '' },
+      { index: 1, key: 'anzXIN', label: 'Inputs', description: 'Number of input signals (n_in)', defaultValue: 3 },
+      { index: 2, key: 'anzYOUT', label: 'Outputs', description: 'Number of output signals (n_out)', defaultValue: 2 },
+    ],
+    terminals: {
+      input: [{ label: 'in', description: 'Signal input' }],
+      output: [{ label: 'out', description: 'Signal output' }],
+    },
+  },
 };
 
 /**
