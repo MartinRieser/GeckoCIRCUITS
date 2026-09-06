@@ -1,0 +1,10 @@
+[
+ {
+  "expr": "f_sw",
+  "format": ".1f"
+ },
+ {
+  "expr": "t_dead",
+  "format": ".3e"
+ }
+]

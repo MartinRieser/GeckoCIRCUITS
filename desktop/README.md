@@ -13,7 +13,8 @@ the editor window with the backend origin injected into the webview.
 | `engine/` | `gecko-engine` crate: pure logic (readiness handshake, engine process handling, filename sanitizing). Std-only, fully unit-tested, no Tauri dependency — builds on any Rust toolchain. |
 | `app/` | `gecko-desktop` crate: the Tauri shell (window, commands, download handling). Compiles with the official MSVC toolchain on Windows; CI gates it. |
 | `app/icons/` | Generated from `_build/resources/GeckoCIRCUITS.png`. |
-| `app/engine/` | Build output: `gecko-rest-api.jar` + jlink runtime (see Phase 2, `scripts/desktop/build-engine.py`). |
+| `app/engine/` | Build output: `gecko-rest-api.jar` + `gecko-mcp.jar` + jlink runtime (via `scripts/desktop/build-engine.py`). |
+| `src/modules/gecko-mcp/` | Bundled MCP server (10 tools, ported 1:1 from `tools/mcp/gecko_mcp`); Python original stays for repo development. |
 
 ## Build & test
 
@@ -43,3 +44,21 @@ Release builds spawn the bundled engine on `127.0.0.1:<ephemeral port>`.
 5. If the shell dies, the engine's `ParentWatchdog` exits the JVM (code 71);
    if the engine dies, the shell shows an error dialog with the log path
    (`%APPDATA%/com.geckocircuits.desktop/logs/engine/engine.log` on Windows).
+
+## LLM / MCP integration
+
+The engine ships with a bundled MCP server (stdio) so Claude Desktop, Cursor,
+ZCode & co. can drive simulations without any Python or Java installation:
+
+```sh
+# generate launchers + client config next to an installation
+python scripts/desktop/write-mcp-launchers.py --dest <install-dir>
+```
+
+Point your LLM client at `gecko-mcp.bat` / `gecko-mcp.sh` (config template:
+`mcp-client-config.json`). Tools: `gecko_server_status`, `gecko_catalog`,
+`gecko_setup_pfc_project`, `gecko_setup_llc_project`, `gecko_inspect_circuit`,
+`gecko_patch_component`, `gecko_set_script_code`, `gecko_simulate`,
+`gecko_get_waveforms`, `gecko_tune_pfc` — identical names and result shapes to
+the Python server in `tools/mcp/`, guarded by golden equivalence tests
+(`ProjectGoldenTest`, `ToolsTest`, `StdioEndToEndTest`).

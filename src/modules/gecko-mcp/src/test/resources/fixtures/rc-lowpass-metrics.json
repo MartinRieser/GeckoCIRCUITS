@@ -1,0 +1,18 @@
+{
+ "status": "SUCCESS",
+ "total_time_steps": 20001,
+ "returned_points": 2001,
+ "metrics": {
+  "output_voltage": {
+   "signal_name": "u_out",
+   "steady_state_dc_volts": 100.0,
+   "min_volts": 100.0,
+   "max_volts": 100.0,
+   "ripple_peak_to_peak_volts": 0.0,
+   "ripple_percentage": 0.0,
+   "output_power_watts": 2500.0,
+   "output_current_amps": 25.0,
+   "load_resistance_ohms": 4.0
+  }
+ }
+}

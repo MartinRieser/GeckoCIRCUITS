@@ -1,0 +1,74 @@
+[
+ {
+  "expr": "dt",
+  "format": "e"
+ },
+ {
+  "expr": "duration",
+  "format": ".6f"
+ },
+ {
+  "expr": "duration",
+  "format": ".6f"
+ },
+ {
+  "expr": "v_in",
+  "format": ".2f"
+ },
+ {
+  "expr": "r_on",
+  "format": ""
+ },
+ {
+  "expr": "r_on",
+  "format": ""
+ },
+ {
+  "expr": "r_on",
+  "format": ""
+ },
+ {
+  "expr": "r_on",
+  "format": ""
+ },
+ {
+  "expr": "c_oss",
+  "format": ".3e"
+ },
+ {
+  "expr": "c_r",
+  "format": ".6e"
+ },
+ {
+  "expr": "v_cr_init",
+  "format": ".2f"
+ },
+ {
+  "expr": "l_r",
+  "format": ".6e"
+ },
+ {
+  "expr": "l_m",
+  "format": ".6e"
+ },
+ {
+  "expr": "r_on",
+  "format": ""
+ },
+ {
+  "expr": "c_out",
+  "format": ".6e"
+ },
+ {
+  "expr": "v_out_init",
+  "format": ".2f"
+ },
+ {
+  "expr": "r_load",
+  "format": ".2f"
+ },
+ {
+  "expr": "script_source",
+  "format": ""
+ }
+]

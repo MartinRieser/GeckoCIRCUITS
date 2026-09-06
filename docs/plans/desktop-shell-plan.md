@@ -44,7 +44,9 @@ Status: `scripts/desktop/build-engine.py` builds frontend + jar, derives jlink m
 - CI `.github/workflows/desktop.yml`: on PR → `cargo fmt --check`, `cargo clippy -- -D warnings`, `cargo test`, frontend eslint+vitest, `mvn -pl gecko-rest-api,gecko-mcp test` + checkstyle/pmd on new code; on tag `v*`/manual(version) → 3-OS matrix (JDK 25, Node, rust, python) → build-engine → tauri build → upload `GeckoCIRCUITS-<v>-{win-setup.exe,.msi,.dmg,.AppImage,.deb,.rpm}` → release job with SHA256SUMS (mirrors existing `package-desktop.yml` pattern).
 - Acceptance: installers on all 3 OS run with **no Java preinstalled**; quitting the app leaves no `java` process; uninstall is clean.
 
-## Phase 3 — Bundled Java MCP module
+## Phase 3 — Bundled Java MCP module — implemented 2026-09-05
+
+Status: `src/modules/gecko-mcp` (Java 25, no Spring) on MCP Java SDK 2.0.1 (`mcp-core` + `mcp-json-jackson3`), shaded jar `gecko-mcp-1.0.0-jar-with-dependencies.jar`. All 10 Python tools ported 1:1 (identical names/params/result shapes); simulations run **in-process** through `HeadlessSimulationEngine` instead of the Python subprocess (CSV export factored into core `SimulationCsv`, now shared with `GeckoHeadless`). The two .ipes generators were extracted mechanically from the Python AST into template resources with numbered holes (`scripts/desktop/extract-templates.py`) — **byte-exact golden equivalence tests** over 10 parameter sets guard the port. Deviation from bug-for-bug: the patcher's block regex is tempered so it cannot match across element blocks (the Python regex could patch the wrong component); CRLF handling added in CSV parsing (Windows). Tests: 11 in gecko-mcp (goldens, patch→re-read, metrics vs Python-generated golden JSON, tool registry, **real stdio E2E** spawning the server JVM via the SDK client). `build-engine.py` bundles `gecko-mcp.jar`; `write-mcp-launchers.py` emits `gecko-mcp.bat`/`.sh` + client config.
 
 New Maven module `src/modules/gecko-mcp`: plain Java 25, no Spring. Deps: official `io.modelcontextprotocol.sdk:mcp` (stdio), jackson, `gecko-simulation-core`. Fat jar via shade; main `gecko.mcp.GeckoMcpServer`.
 

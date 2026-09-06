@@ -1,0 +1,54 @@
+[
+ {
+  "expr": "dt",
+  "format": "e"
+ },
+ {
+  "expr": "duration",
+  "format": ".4f"
+ },
+ {
+  "expr": "duration",
+  "format": ".4f"
+ },
+ {
+  "expr": "v_peak",
+  "format": ".4f"
+ },
+ {
+  "expr": "f_grid",
+  "format": ".1f"
+ },
+ {
+  "expr": "inductance",
+  "format": ".6e"
+ },
+ {
+  "expr": "inductance",
+  "format": ".6e"
+ },
+ {
+  "expr": "capacitance",
+  "format": ".6e"
+ },
+ {
+  "expr": "target_voltage",
+  "format": ".1f"
+ },
+ {
+  "expr": "r_load_base",
+  "format": ".2f"
+ },
+ {
+  "expr": "r_load_step",
+  "format": ".2f"
+ },
+ {
+  "expr": "script_source.strip()",
+  "format": ""
+ },
+ {
+  "expr": "static_vars.strip()",
+  "format": ""
+ }
+]

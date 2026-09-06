@@ -1,0 +1,362 @@
+GeckoSimulationProject
+version 2.0
+simulationParameters
+dt 2.000000e-08
+tend 0.000300
+dauer 0.000300
+solverType 0
+<\simulationParameters>
+
+verbindungLeistungskreisANZAHL 6
+
+verbindungLK (0)
+<Verbindung>
+label vin
+zeigerAktuell 4
+x[] 4 4 10 10
+y[] 9 6 6 6
+xPix[] 64 64 160 160
+yPix[] 144 96 96 96
+enabled true
+connectorType 0
+<\Verbindung>
+
+verbindungLK (1)
+<Verbindung>
+label 0
+zeigerAktuell 8
+x[] 4 4 10 10 20 20 28 28
+y[] 13 15 15 14 14 14 14 14
+xPix[] 64 64 160 160 320 320 448 448
+yPix[] 208 240 240 224 224 224 224 224
+enabled true
+connectorType 0
+<\Verbindung>
+
+verbindungLK (2)
+<Verbindung>
+label sw
+zeigerAktuell 4
+x[] 10 10 12 12
+y[] 10 10 10 10
+xPix[] 160 160 192 192
+yPix[] 160 160 160 160
+enabled true
+connectorType 0
+<\Verbindung>
+
+verbindungLK (3)
+<Verbindung>
+label cr_lr
+zeigerAktuell 2
+x[] 16 16
+y[] 10 10
+xPix[] 256 256
+yPix[] 160 160
+enabled true
+connectorType 0
+<\Verbindung>
+
+verbindungLK (4)
+<Verbindung>
+label pri_p
+zeigerAktuell 4
+x[] 20 20 22 22
+y[] 10 10 10 10
+xPix[] 320 320 352 352
+yPix[] 160 160 160 160
+enabled true
+connectorType 0
+<\Verbindung>
+
+verbindungLK (5)
+<Verbindung>
+label vout
+zeigerAktuell 6
+x[] 26 26 28 28 30 30
+y[] 10 10 10 10 10 10
+xPix[] 416 416 448 448 480 480
+yPix[] 160 160 160 160 160 160
+enabled true
+connectorType 0
+<\Verbindung>
+
+verbindungControlANZAHL 2
+
+verbindungCONTROL (0)
+<Connection>
+label gate1
+x[] 18 22
+y[] 30 30
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Connection>
+
+verbindungCONTROL (1)
+<Connection>
+label gate2
+x[] 18 22
+y[] 31 31
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Connection>
+
+ElementLKAnzahl 12
+
+e (0)
+<ElementLK>
+labelAnfangsKnoten[] /vin
+labelEndKnoten[] /0
+enabledShorted 1
+typ 4
+uniqueObjectIdentifier 1001
+x 4
+y 11
+parameter[] 401.0 400.00 0.0 0.0 0.0 0.5 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+orientierung 503
+idStringDialog U.IN
+<\ElementLK>
+
+e (1)
+<ElementLK>
+labelAnfangsKnoten[] /vin
+labelEndKnoten[] /sw
+enabledShorted 1
+typ 7
+uniqueObjectIdentifier 1002
+x 10
+y 8
+parameter[] 0.0 0.002 1.0E6 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+orientierung 503
+idStringDialog S.1
+<\ElementLK>
+
+e (2)
+<ElementLK>
+labelAnfangsKnoten[] /sw
+labelEndKnoten[] /0
+enabledShorted 1
+typ 7
+uniqueObjectIdentifier 1003
+x 10
+y 12
+parameter[] 0.0 0.002 1.0E6 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+orientierung 503
+idStringDialog S.2
+<\ElementLK>
+
+e (3)
+<ElementLK>
+labelAnfangsKnoten[] /sw
+labelEndKnoten[] /vin
+enabledShorted 1
+typ 6
+uniqueObjectIdentifier 1004
+x 8
+y 8
+parameter[] 1.0E7 0.7 0.002 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
+orientierung 501
+idStringDialog D.B1
+<\ElementLK>
+
+e (4)
+<ElementLK>
+labelAnfangsKnoten[] /0
+labelEndKnoten[] /sw
+enabledShorted 1
+typ 6
+uniqueObjectIdentifier 1005
+x 8
+y 12
+parameter[] 1.0E7 0.7 0.002 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
+orientierung 501
+idStringDialog D.B2
+<\ElementLK>
+
+e (5)
+<ElementLK>
+labelAnfangsKnoten[] /sw
+labelEndKnoten[] /0
+enabledShorted 1
+typ 3
+uniqueObjectIdentifier 1006
+x 10
+y 10
+parameter[] 1.500e-09 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+orientierung 503
+idStringDialog C.OSS
+<\ElementLK>
+
+e (6)
+<ElementLK>
+labelAnfangsKnoten[] /sw
+labelEndKnoten[] /cr_lr
+enabledShorted 1
+typ 3
+uniqueObjectIdentifier 1007
+x 14
+y 10
+parameter[] 1.150000e-06 200.00 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+orientierung 502
+idStringDialog C.R
+<\ElementLK>
+
+e (7)
+<ElementLK>
+labelAnfangsKnoten[] /cr_lr
+labelEndKnoten[] /pri_p
+enabledShorted 1
+typ 2
+uniqueObjectIdentifier 1008
+x 18
+y 10
+parameter[] 2.200000e-06 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+orientierung 502
+idStringDialog L.R
+<\ElementLK>
+
+e (8)
+<ElementLK>
+labelAnfangsKnoten[] /pri_p
+labelEndKnoten[] /0
+enabledShorted 1
+typ 2
+uniqueObjectIdentifier 1009
+x 20
+y 12
+parameter[] 1.100000e-05 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+orientierung 503
+idStringDialog L.M
+<\ElementLK>
+
+e (9)
+<ElementLK>
+labelAnfangsKnoten[] /pri_p
+labelEndKnoten[] /vout
+enabledShorted 1
+typ 6
+uniqueObjectIdentifier 1010
+x 24
+y 10
+parameter[] 1.0E7 0.7 0.002 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
+orientierung 502
+idStringDialog D.FWD
+<\ElementLK>
+
+e (10)
+<ElementLK>
+labelAnfangsKnoten[] /vout
+labelEndKnoten[] /0
+enabledShorted 1
+typ 3
+uniqueObjectIdentifier 1011
+x 28
+y 12
+parameter[] 2.000000e-05 24.00 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+orientierung 503
+idStringDialog C.OUT
+<\ElementLK>
+
+e (11)
+<ElementLK>
+labelAnfangsKnoten[] /vout
+labelEndKnoten[] /0
+enabledShorted 1
+typ 1
+uniqueObjectIdentifier 1012
+x 30
+y 12
+parameter[] 1.15 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+orientierung 503
+idStringDialog R.LOAD
+<\ElementLK>
+
+ElementControlAnzahl 4
+
+c (0)
+<ElementCONTROL>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /gate1/gate2
+enabledShorted 1
+parentSheetIdentifier 0
+typ 61
+uniqueObjectIdentifier 2001
+x 16
+y 30
+parameter[] 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+orientierung 503
+idStringDialog CTRL_MCU
+anzXIN 0
+anzYOUT 2
+showName true
+<sourceCode>
+// === Microcontroller Emulation: Half-Bridge LLC Resonant Controller ===
+double f_sw = 100000.0;
+double t_dead = 1.800e-07;
+double T_sw = 1.0 / f_sw;
+double t_phase = t - Math.floor(t / T_sw) * T_sw;
+
+// Complementary PWM outputs with dead-time for Zero-Voltage Switching (ZVS)
+boolean s1 = (t_phase >= t_dead) && (t_phase < (0.5 * T_sw));
+boolean s2 = (t_phase >= (0.5 * T_sw + t_dead)) && (t_phase < T_sw);
+
+yOUT[0] = s1 ? 1.0 : 0.0;
+yOUT[1] = s2 ? 1.0 : 0.0;
+return yOUT;
+<\sourceCode>
+<staticCode>
+<\staticCode>
+<importCode>
+<\importCode>
+<staticVariables>
+<\staticVariables>
+<\ElementCONTROL>
+
+c (1)
+<ElementCONTROL>
+labelAnfangsKnoten[] /gate1
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+typ 6
+uniqueObjectIdentifier 2002
+x 24
+y 30
+parameter[] 0.0 
+coupledReferenceID[] 1002
+orientierung 503
+idStringDialog GATE.1
+<\ElementCONTROL>
+
+c (2)
+<ElementCONTROL>
+labelAnfangsKnoten[] /gate2
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+typ 6
+uniqueObjectIdentifier 2003
+x 24
+y 31
+parameter[] 0.0 
+coupledReferenceID[] 1003
+orientierung 503
+idStringDialog GATE.2
+<\ElementCONTROL>
+
+c (3)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /i_lr
+enabledShorted 1
+typ 2
+uniqueObjectIdentifier 2004
+x 18
+y 8
+parameter[] 0.0 
+coupledReferenceID[] 1008
+orientierung 503
+idStringDialog AMM.LR
+<\ElementCONTROL>

@@ -24,6 +24,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 APP_DIR = REPO_ROOT / "desktop" / "app"
 ENGINE_DIR = APP_DIR / "engine"
 JAR_TARGET = REPO_ROOT / "src" / "modules" / "gecko-rest-api" / "target"
+MCP_TARGET = REPO_ROOT / "src" / "modules" / "gecko-mcp" / "target"
 JAR_NAME = "gecko-rest-api-1.0.0.jar"
 SMOKE_CIRCUIT = REPO_ROOT / "tools" / "parity" / "circuits" / "rc-lowpass.ipes"
 
@@ -89,13 +90,22 @@ def build_frontend():
 
 
 def build_jar():
-    print("== Building gecko-rest-api jar ==")
-    run(["mvn", "-pl", "src/modules/gecko-rest-api", "-am", "package",
-         "-DskipTests", "-q"], cwd=REPO_ROOT)
+    print("== Building gecko-rest-api + gecko-mcp jars ==")
+    run(["mvn", "-pl", "src/modules/gecko-rest-api,src/modules/gecko-mcp", "-am",
+         "package", "-DskipTests", "-q"], cwd=REPO_ROOT)
     jar = JAR_TARGET / JAR_NAME
     if not jar.is_file():
         raise SystemExit(f"ERROR: jar not found after build: {jar}")
     return jar
+
+
+def build_mcp_jar():
+    """The MCP server ships next to the engine; its main artifact is the
+    shaded jar-with-dependencies so LLM clients need nothing else installed."""
+    shaded = MCP_TARGET / "gecko-mcp-1.0.0-jar-with-dependencies.jar"
+    if not shaded.is_file():
+        raise SystemExit(f"ERROR: gecko-mcp shaded jar missing: {shaded}")
+    return shaded
 
 
 def derive_modules(jdk, jar):
@@ -135,6 +145,9 @@ def bundle(jar, version):
     target_jar = ENGINE_DIR / "gecko-rest-api.jar"
     print(f"== Copying {jar.name} -> {target_jar} ==")
     target_jar.write_bytes(jar.read_bytes())
+    mcp_jar = ENGINE_DIR / "gecko-mcp.jar"
+    print(f"== Copying gecko-mcp shaded jar -> {mcp_jar} ==")
+    mcp_jar.write_bytes(build_mcp_jar().read_bytes())
     (ENGINE_DIR / "VERSION").write_text(version + "\n")
 
 
