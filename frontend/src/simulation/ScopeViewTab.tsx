@@ -16,6 +16,7 @@ import {
   zoomWindow,
   type ViewWindow,
 } from './viewWindow';
+import { FftPanel } from './FftPanel';
 
 interface ScopeViewTabProps {
   selectedScope: string; // 'all' or 'SCOPE.1', 'SCOPE.2', etc.
@@ -119,6 +120,7 @@ export function ScopeViewTab({
   const [channelSearch, setChannelSearch] = useState('');
   // time-axis view window; null = fit whole simulation
   const [view, setView] = useState<ViewWindow | null>(null);
+  const [fftOpen, setFftOpen] = useState(false);
 
   const traceColors = theme === 'light' ? TRACE_COLORS_LIGHT : TRACE_COLORS_DARK;
 
@@ -268,6 +270,14 @@ export function ScopeViewTab({
                 <button type="button" aria-label="Pan left" title="Pan left" onClick={() => panBy(-0.25)}>◀</button>
                 <button type="button" aria-label="Pan right" title="Pan right" onClick={() => panBy(0.25)}>▶</button>
                 <button type="button" aria-label="Fit whole simulation" title="Fit" onClick={resetZoom}>⟲</button>
+                <button
+                  type="button"
+                  aria-label="Toggle FFT panel"
+                  title="FFT spectrum of the visible window"
+                  onClick={() => setFftOpen((prev) => !prev)}
+                >
+                  FFT
+                </button>
               </div>
               {displayLayout === 'stacked' ? (
                 <FullScreenStackedChart
@@ -308,6 +318,16 @@ export function ScopeViewTab({
                   viewEnd={win.end}
                   onZoomAt={zoomAt}
                   onPanSeconds={(delta) => setView(panWindow(win, delta, dataT0, dataT1))}
+                />
+              )}
+
+              {fftOpen && visibleSignals.length > 0 && (
+                <FftPanel
+                  time={timeArray}
+                  signals={results}
+                  activeSignals={visibleSignals}
+                  viewStart={win.start}
+                  viewEnd={win.end}
                 />
               )}
             </div>

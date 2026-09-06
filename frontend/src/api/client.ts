@@ -165,6 +165,36 @@ export async function downloadIpes(circuitId: string, filename: string): Promise
   URL.revokeObjectURL(url);
 }
 
+// ========== Analysis Endpoints ==========
+
+export interface FourierRequest {
+  data: number[];
+  sampleRate: number;
+  startTime?: number;
+  endTime?: number;
+}
+
+export interface FourierResult {
+  baseFrequency: number;
+  harmonics: number;
+  signalName: string;
+  anCoefficients: number[];
+  bnCoefficients: number[];
+  cnAmplitudes: number[];
+  jnPhases: number[];
+  dcComponent: number;
+  fundamentalAmplitude: number;
+  fundamentalPhaseDegrees: number;
+}
+
+/** Harmonic decomposition (An/Bn/Cn/Jn) of one signal window. */
+export function computeFourier(req: FourierRequest, harmonics: number): Promise<FourierResult> {
+  return request(`/analysis/fourier?harmonics=${harmonics}`, {
+    method: 'POST',
+    body: JSON.stringify(req),
+  });
+}
+
 // ========== Simulation Endpoints ==========
 
 export function submitSimulation(req: SimulationRequest): Promise<SimulationResponse> {
