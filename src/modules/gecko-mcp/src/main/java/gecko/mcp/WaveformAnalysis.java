@@ -83,6 +83,9 @@ final class WaveformAnalysis {
             }
         }
 
+        // Fixed load-step analysis windows (30-48 ms pre-step, 70-98 ms post-step)
+        // and 50 V target / 25 -> 12.5 Ohm loads: constants of the PFC reference
+        // project the Python tool was written against — ported unchanged.
         if (voutKey != null && time != null) {
             List<Double> vArr = parsed.get(voutKey);
             List<Double> preV = window(time, vArr, 0.03, 0.048);
@@ -110,6 +113,7 @@ final class WaveformAnalysis {
         if (vnKey != null && inKey != null) {
             List<Double> vn = parsed.get(vnKey);
             List<Double> inn = parsed.get(inKey);
+            // power-factor window: second half of the simulation
             int ssStart = (int) (vn.size() * 0.5);
             List<Double> vSs = vn.subList(ssStart, vn.size());
             List<Double> iSs = inn.subList(ssStart, inn.size());
@@ -157,6 +161,8 @@ final class WaveformAnalysis {
             double swMax = swSs.isEmpty() ? 0.0 : maxOf(swSs);
             double ilrPeak = ilrSs.isEmpty() ? 0.0
                     : Math.max(Math.abs(minOf(ilrSs)), Math.abs(maxOf(ilrSs)));
+            // ZVS means the switch node swings (near-)full rail: <5 V low level,
+            // >350 V high level for a 400 V input design
             boolean zvsOk = swMin < 5.0 && swMax > 350.0;
             Map<String, Object> llc = new LinkedHashMap<>();
             llc.put("zvs_soft_switching_achieved", zvsOk);

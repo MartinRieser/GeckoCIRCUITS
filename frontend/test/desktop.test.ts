@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   isDesktop,
+  openLogsFolder,
   registerOpenFileHandler,
   saveFileNative,
   type OpenFilePayload,
@@ -64,6 +65,19 @@ describe('registerOpenFileHandler', () => {
     const received: OpenFilePayload[] = [];
     registerOpenFileHandler((payload) => received.push(payload));
     expect(received).toHaveLength(1);
+  });
+});
+
+describe('openLogsFolder', () => {
+  it('is false in the browser', async () => {
+    await expect(openLogsFolder()).resolves.toBe(false);
+  });
+
+  it('invokes the shell command on the desktop', async () => {
+    const invoke = vi.fn().mockResolvedValue(null);
+    scope.__TAURI__ = { core: { invoke: invoke as never } };
+    await expect(openLogsFolder()).resolves.toBe(true);
+    expect(invoke).toHaveBeenCalledWith('open_logs_folder');
   });
 });
 

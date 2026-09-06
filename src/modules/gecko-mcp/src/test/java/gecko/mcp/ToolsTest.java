@@ -119,6 +119,32 @@ class ToolsTest {
     }
 
     @Test
+    void tunePfcEvaluatesRegulationAgainstTarget() throws Exception {
+        Path circuit = fixture("interleaved_pfc_50v.ipes");
+        GeckoTools.ToolSpec tune = GeckoTools.all().stream()
+                .filter(tool -> tool.name().equals("gecko_tune_pfc"))
+                .findFirst().orElseThrow();
+        Map<String, Object> args = new java.util.HashMap<>();
+        args.put("circuit_path", circuit.toString());
+        args.put("target_voltage", 50.0);
+        args.put("simulation_time", 0.02);
+        args.put("dt", 2e-6);
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> result = (Map<String, Object>) tune.handler().apply(args);
+        assertEquals(50.0, result.get("target_voltage_volts"));
+        double measured = ((Number) result.get("measured_voltage_volts")).doubleValue();
+        assertTrue(measured > 40.0 && measured < 65.0,
+                "boost output should be in a plausible DC-bus range at 20 ms: " + measured);
+        assertTrue(result.get("voltage_error_volts") instanceof Number);
+        @SuppressWarnings("unchecked")
+        java.util.List<String> evaluation = (java.util.List<String>) result.get("evaluation");
+        assertTrue(evaluation.stream().anyMatch(line -> line.contains("regulation accurate")
+                || line.contains("below target") || line.contains("above target")),
+                "evaluation should contain a regulation statement: " + evaluation);
+    }
+
+    @Test
     void registryHasExactlyThePythonToolNames() {
         List<String> names = GeckoTools.all().stream().map(GeckoTools.ToolSpec::name).toList();
         assertEquals(List.of(

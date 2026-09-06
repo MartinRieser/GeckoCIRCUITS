@@ -49,3 +49,14 @@ export async function saveFileNative(base64: string, suggestedName: string): Pro
   const result = await invoke('save_file_dialog', { base64, suggestedName });
   return result != null;
 }
+
+/** Opens the engine-log folder via the shell (Help/troubleshooting). Returns
+ *  false in the browser where there is nothing to open. */
+export async function openLogsFolder(): Promise<boolean> {
+  const invoke = tauri()?.invoke;
+  if (!invoke) {
+    return false;
+  }
+  await invoke('open_logs_folder');
+  return true;
+}

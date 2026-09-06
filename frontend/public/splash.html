@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>GeckoCIRCUITS</title>
+<style>
+  html, body { margin: 0; height: 100%; }
+  body {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; font-family: system-ui, sans-serif; background: #111827; color: #e5e7eb;
+  }
+  .spinner {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 3px solid #374151; border-top-color: #e5e7eb;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+  <div class="spinner"></div>
+  <div>Starting simulation engine&hellip;</div>
+</body>
+</html>

@@ -16,7 +16,6 @@ function(q){window.__geckoOpenFileQueue.push(q);})(p);};";
 
 #[cfg(not(debug_assertions))]
 use crate::download;
-#[cfg(not(debug_assertions))]
 use crate::AppState;
 #[cfg(not(debug_assertions))]
 use gecko_engine::ready;
@@ -50,10 +49,12 @@ fn start_dev(app: AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-/// Release mode: spawn the bundled engine, wait for its ready line, then
-/// open the editor window with the backend origin injected.
+/// Release mode: show a splash immediately (engine cold start takes seconds),
+/// spawn the bundled engine, wait for its ready line, then open the editor
+/// window with the backend origin injected.
 #[cfg(not(debug_assertions))]
 fn start_release(app: AppHandle) -> Result<(), Box<dyn std::error::Error>> {
+    show_splash(&app);
     let state: tauri::State<AppState> = app.state();
     let log_path = state.log_dir.join("engine.log");
 
@@ -65,6 +66,7 @@ fn start_release(app: AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     let (process, backend_url) = match startup {
         Ok(pair) => pair,
         Err(message) => {
+            close_splash(&app);
             fatal_dialog(
                 &app,
                 &format!(
@@ -76,12 +78,13 @@ fn start_release(app: AppHandle) -> Result<(), Box<dyn std::error::Error>> {
         }
     };
 
-    *state.backend_url.lock().unwrap() = Some(backend_url.clone());
     // EngineProcess moves into managed state; Drop kills it when the shell exits
     *state.engine.lock().unwrap() = Some(process);
 
     create_main_window(&app, &backend_url)?;
+    close_splash(&app);
     open_files_from_args(&app);
+    drain_pending_opens(&app);
     Ok(())
 }
 
@@ -109,18 +112,43 @@ fn create_main_window(app: &AppHandle, backend_url: &str) -> Result<(), tauri::E
     Ok(())
 }
 
+/// Small always-on-top notice shown while the engine cold-starts, so the user
+/// sees immediate feedback instead of a silent desktop. Static HTML from the
+/// frontend build (frontend/public/splash.html).
+#[cfg(not(debug_assertions))]
+fn show_splash(app: &AppHandle) {
+    let _ = WebviewWindowBuilder::new(app, "splash", WebviewUrl::App("splash.html".into()))
+        .title("GeckoCIRCUITS")
+        .inner_size(420.0, 150.0)
+        .resizable(false)
+        .maximizable(false)
+        .minimizable(false)
+        .focused(true)
+        .build();
+}
+
+#[cfg(not(debug_assertions))]
+fn close_splash(app: &AppHandle) {
+    if let Some(splash) = app.get_webview_window("splash") {
+        let _ = splash.close();
+    }
+}
+
 /// Opens `.ipes` paths given on the command line (double-click / "Open with").
 pub fn open_files_from_args(app: &AppHandle) {
     open_file_paths(app, crate::commands::ipes_paths_from_args());
 }
 
-/// Forwards circuits to the editor; payloads queue in the webview until the
-/// frontend registers its handler.
+/// Forwards circuits to the editor. If the main window is not up yet (the
+/// other instance won the startup race), paths are parked in app state and
+/// delivered once the window exists.
 pub fn open_file_paths(app: &AppHandle, paths: Vec<String>) {
     if paths.is_empty() {
         return;
     }
     let Some(window) = app.get_webview_window("main") else {
+        let state: tauri::State<AppState> = app.state();
+        state.pending_opens.lock().unwrap().extend(paths);
         return;
     };
     for path in paths {
@@ -135,6 +163,14 @@ pub fn open_file_paths(app: &AppHandle, paths: Vec<String>) {
             Err(message) => eprintln!("open-file skipped: {message}"),
         }
     }
+}
+
+/// Delivers circuits parked while the main window was still starting.
+#[cfg(not(debug_assertions))]
+pub fn drain_pending_opens(app: &AppHandle) {
+    let state: tauri::State<AppState> = app.state();
+    let pending: Vec<String> = std::mem::take(&mut *state.pending_opens.lock().unwrap());
+    open_file_paths(app, pending);
 }
 
 #[cfg(not(debug_assertions))]

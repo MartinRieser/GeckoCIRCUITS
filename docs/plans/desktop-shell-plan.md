@@ -72,6 +72,10 @@ Status: `docs/desktop-app.md` (architecture, build, install matrix, versioning, 
 
 `docs/desktop-app.md` (architecture, build, 10-point per-OS QA checklist, troubleshooting via engine logs), `docs/mcp.md`; README quick start leads with desktop installers; PACKAGING.md gains the Tauri section; `.agents/skills/desktop-packaging/SKILL.md` updated. `scripts/desktop/set-version.py <v>` syncs `tauri.conf.json` + `app.version` + frontend package.json; CI feeds it the tag. CHANGELOG + release template.
 
+## Post-completion deep review (2026-09-06) — findings fixed
+
+Dead code removed (`get_backend_url` command + `backend_url` state — the init-script injection made them unreachable; unused `Files` import in CircuitInspector); `client.ts` now reuses `desktop.ts::saveFileNative` instead of duplicating the invoke. Usability: release builds show a splash window during engine cold start; the startup-error screen's "open engine logs" is now a real button (`open_logs_folder` command); circuits arriving while the main window is still starting are parked in `pending_opens` and delivered once it exists (previously dropped when a second instance won the startup race). Ported fixed analysis windows/thresholds in `WaveformAnalysis` are now documented inline. Test coverage additions: `gecko_tune_pfc` handler test, `openLogsFolder` bridge tests (gecko-mcp 12, frontend 123, engine 20 — all green). Known acceptable gaps: Tauri-dialog wiring (`download.rs`, `save_file_dialog` dialog part) and window orchestration are compile-checked + CI-gated only — they need a display; `WaveformAnalysis` fixed windows stay magic-but-documented because they are bug-for-bug ports of the Python tool's reference-project constants.
+
 ## Test & static-analysis gates (summary)
 
 | Target | Tests | Static analysis |

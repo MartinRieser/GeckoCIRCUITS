@@ -3,6 +3,7 @@
  * no SDK generation. All functions throw Error with the server's detail
  * message on non-2xx responses.
  */
+import { isDesktop, saveFileNative } from '../desktop';
 import type {
   CatalogEntry,
   ChangeMessage,
@@ -152,12 +153,8 @@ export async function downloadIpes(circuitId: string, filename: string): Promise
   }
   const blob = await response.blob();
   const name = filename.endsWith('.ipes') ? filename : filename + '.ipes';
-  const desktop = (globalThis as {
-    __TAURI__?: { core?: { invoke?: (c: string, a?: Record<string, unknown>) => Promise<unknown> } };
-  }).__TAURI__?.core?.invoke;
-  if (desktop) {
-    const base64 = toBase64(new Uint8Array(await blob.arrayBuffer()));
-    await desktop('save_file_dialog', { base64, suggestedName: name });
+  if (isDesktop()) {
+    await saveFileNative(toBase64(new Uint8Array(await blob.arrayBuffer())), name);
     return;
   }
   const url = URL.createObjectURL(blob);

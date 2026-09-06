@@ -6,6 +6,7 @@
  * same origin and resolves on the first attempt.
  */
 import { backendOrigin } from './api/client';
+import { isDesktop, openLogsFolder } from './desktop';
 
 export const HEALTH_PATH = '/gecko/api/health';
 
@@ -76,24 +77,41 @@ export function EngineStartupError({ message }: { message: string }) {
       <h1 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Simulation engine failed to start</h1>
       <p style={{ maxWidth: '36rem', lineHeight: 1.5 }}>{message}</p>
       <p style={{ maxWidth: '36rem', lineHeight: 1.5, color: '#9ca3af' }}>
-        Desktop: quit the app and start it again; if it keeps failing, open the engine logs via
-        Help &gt; Open Logs Folder and include them in a bug report.
+        Desktop: open the engine logs below and include them in a bug report,
+        then quit the app and start it again.
       </p>
-      <button
-        type="button"
-        onClick={() => location.reload()}
-        style={{
-          marginTop: '1rem',
-          padding: '0.5rem 1.25rem',
-          cursor: 'pointer',
-          borderRadius: 6,
-          border: '1px solid #374151',
-          background: '#1f2937',
-          color: '#e5e7eb',
-        }}
-      >
-        Retry
-      </button>
+      <div style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem' }}>
+        {isDesktop() && (
+          <button
+            type="button"
+            onClick={() => void openLogsFolder()}
+            style={{
+              padding: '0.5rem 1.25rem',
+              cursor: 'pointer',
+              borderRadius: 6,
+              border: '1px solid #374151',
+              background: '#1f2937',
+              color: '#e5e7eb',
+            }}
+          >
+            Open engine logs
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => location.reload()}
+          style={{
+            padding: '0.5rem 1.25rem',
+            cursor: 'pointer',
+            borderRadius: 6,
+            border: '1px solid #374151',
+            background: '#1f2937',
+            color: '#e5e7eb',
+          }}
+        >
+          Retry
+        </button>
+      </div>
     </div>
   );
 }

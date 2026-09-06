@@ -10,14 +10,7 @@ use tauri_plugin_dialog::DialogExt;
 
 use crate::AppState;
 
-/// The engine's base URL (e.g. `http://127.0.0.1:54321/gecko`), as a
-/// fallback if the initialization script ever loses a race with page scripts.
-#[tauri::command]
-pub fn get_backend_url(state: State<'_, AppState>) -> Option<String> {
-    state.backend_url.lock().unwrap().clone()
-}
-
-/// Opens the folder holding the engine logs (used by Help > troubleshooting).
+/// Opens the folder holding the engine logs.
 #[tauri::command]
 pub fn open_logs_folder(app: AppHandle) -> Result<(), String> {
     use tauri_plugin_opener::OpenerExt;

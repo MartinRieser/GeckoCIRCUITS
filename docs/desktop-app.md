@@ -91,7 +91,7 @@ Run once per release, per OS, on a machine **without Java installed**
 | # | Check | All OS |
 |---|-------|--------|
 | 1 | Installer completes; app appears in start menu / Applications / menu | ✅ |
-| 2 | First launch shows the editor within ~20 s (engine cold start) | ✅ |
+| 2 | Launch shows a *Starting simulation engine…* splash immediately; editor ready within ~20 s | ✅ |
 | 3 | Blank workspace auto-loads; placing a component and a wire works | ✅ |
 | 4 | Loading an example and pressing *Run Simulation* draws waveforms | ✅ |
 | 5 | Double-clicking a `.ipes` file opens it in the app | ✅ |

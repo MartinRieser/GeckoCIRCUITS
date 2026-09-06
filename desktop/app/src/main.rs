@@ -18,8 +18,11 @@ use std::sync::Mutex;
 use tauri::Manager;
 
 pub struct AppState {
-    pub backend_url: Mutex<Option<String>>,
+    /// Circuits arriving before the main window exists (startup race with a
+    /// second instance / macOS Finder open).
+    pub pending_opens: Mutex<Vec<String>>,
     pub log_dir: PathBuf,
+    /// Holds the engine process; Drop kills it when the shell exits.
     pub engine: Mutex<Option<EngineProcess>>,
 }
 
@@ -42,14 +45,13 @@ fn main() {
             let log_dir = app.path().app_log_dir()?.join("engine");
             std::fs::create_dir_all(&log_dir)?;
             app.manage(AppState {
-                backend_url: Mutex::new(None),
+                pending_opens: Mutex::new(Vec::new()),
                 log_dir,
                 engine: Mutex::new(None),
             });
             window::start(app.handle().clone())
         })
         .invoke_handler(tauri::generate_handler![
-            commands::get_backend_url,
             commands::open_logs_folder,
             commands::read_ipes_file,
             commands::save_file_dialog
