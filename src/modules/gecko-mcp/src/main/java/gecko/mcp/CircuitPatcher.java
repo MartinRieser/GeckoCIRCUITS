@@ -99,12 +99,12 @@ final class CircuitPatcher {
         String block = matcher.group(1);
         String newBlock = block;
 
-        newBlock = replaceTag(newBlock, "sourceCode", sourceCode.strip());
+        newBlock = replaceOrInsertTag(newBlock, "sourceCode", sourceCode.strip());
         if (staticVariables != null && !staticVariables.isEmpty()) {
-            newBlock = replaceTag(newBlock, "staticVariables", staticVariables.strip());
+            newBlock = replaceOrInsertTag(newBlock, "staticVariables", staticVariables.strip());
         }
         if (staticCode != null && !staticCode.isEmpty()) {
-            newBlock = replaceTag(newBlock, "staticCode", staticCode.strip());
+            newBlock = replaceOrInsertTag(newBlock, "staticCode", staticCode.strip());
         }
 
         content = content.replace(block, newBlock);
@@ -113,11 +113,18 @@ final class CircuitPatcher {
         return Map.of("status", "SUCCESS", "block", blockName, "updated_file", target.toString());
     }
 
-    /** Replaces {@code <tag>...<\tag>} with {@code <tag>\ntext\n<\tag>}, like the Python tool. */
-    private static String replaceTag(String text, String tag, String newContent) {
+    /** Replaces {@code <tag>...<\tag>} with {@code <tag>\ntext\n<\tag>}, or inserts it before closing block tag if absent. */
+    private static String replaceOrInsertTag(String text, String tag, String newContent) {
         String replacement = "<" + tag + ">\n" + newContent + "\n<\\" + tag + ">";
-        return text.replaceAll("<" + tag + ">[\\s\\S]*?<\\\\" + tag + ">",
-                Matcher.quoteReplacement(replacement));
+        String tagRegex = "<" + tag + ">[\\s\\S]*?<\\\\" + tag + ">";
+        if (Pattern.compile(tagRegex).matcher(text).find()) {
+            return text.replaceAll(tagRegex, Matcher.quoteReplacement(replacement));
+        }
+        int insertPos = text.lastIndexOf("<\\ElementCONTROL>");
+        if (insertPos >= 0) {
+            return text.substring(0, insertPos) + replacement + "\n" + text.substring(insertPos);
+        }
+        return text + "\n" + replacement;
     }
 
     private static double asDouble(Object value) {

@@ -25,7 +25,23 @@ APP_DIR = REPO_ROOT / "desktop" / "app"
 ENGINE_DIR = APP_DIR / "engine"
 JAR_TARGET = REPO_ROOT / "src" / "modules" / "gecko-rest-api" / "target"
 MCP_TARGET = REPO_ROOT / "src" / "modules" / "gecko-mcp" / "target"
-JAR_NAME = "gecko-rest-api-1.0.0.jar"
+def find_rest_jar():
+    jars = [
+        j for j in JAR_TARGET.glob("gecko-rest-api-*.jar")
+        if not j.name.endswith("-sources.jar")
+        and not j.name.endswith("-javadoc.jar")
+        and not j.name.endswith(".original")
+    ]
+    if not jars:
+        raise SystemExit(f"ERROR: no rest-api jar found in {JAR_TARGET}")
+    return sorted(jars, key=lambda p: p.stat().st_mtime, reverse=True)[0]
+
+
+def find_mcp_jar():
+    jars = list(MCP_TARGET.glob("gecko-mcp-*-jar-with-dependencies.jar"))
+    if not jars:
+        raise SystemExit(f"ERROR: no shaded gecko-mcp jar found in {MCP_TARGET}")
+    return sorted(jars, key=lambda p: p.stat().st_mtime, reverse=True)[0]
 SMOKE_CIRCUIT = REPO_ROOT / "tools" / "parity" / "circuits" / "rc-lowpass.ipes"
 
 # Safety net on top of jdeps: Spring/tomcat/jackson load some modules
@@ -93,19 +109,13 @@ def build_jar():
     print("== Building gecko-rest-api + gecko-mcp jars ==")
     run(["mvn", "-pl", "src/modules/gecko-rest-api,src/modules/gecko-mcp", "-am",
          "package", "-DskipTests", "-q"], cwd=REPO_ROOT)
-    jar = JAR_TARGET / JAR_NAME
-    if not jar.is_file():
-        raise SystemExit(f"ERROR: jar not found after build: {jar}")
-    return jar
+    return find_rest_jar()
 
 
 def build_mcp_jar():
     """The MCP server ships next to the engine; its main artifact is the
     shaded jar-with-dependencies so LLM clients need nothing else installed."""
-    shaded = MCP_TARGET / "gecko-mcp-1.0.0-jar-with-dependencies.jar"
-    if not shaded.is_file():
-        raise SystemExit(f"ERROR: gecko-mcp shaded jar missing: {shaded}")
-    return shaded
+    return find_mcp_jar()
 
 
 def derive_modules(jdk, jar):
@@ -189,7 +199,7 @@ def main():
 
     if not args.skip_frontend:
         build_frontend()
-    jar = JAR_TARGET / JAR_NAME if args.skip_mvn else build_jar()
+    jar = find_rest_jar() if args.skip_mvn else build_jar()
 
     modules = derive_modules(jdk, jar)
     make_runtime(jdk, modules)

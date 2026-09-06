@@ -117,21 +117,30 @@ pub fn spawn(
     let stderr = child.stderr.take().expect("stderr was piped");
 
     let (sender, receiver) = channel();
-    let out_log = log_path.to_path_buf();
+    let log_file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(log_path)?;
+    let log_writer = std::sync::Arc::new(std::sync::Mutex::new(log_file));
+
+    let writer_out = std::sync::Arc::clone(&log_writer);
     thread::spawn(move || {
         let reader = BufReader::new(stdout);
         for line in reader.lines().map_while(Result::ok) {
-            if sender.send(line.clone()).is_err() {
-                break; // shell side went away
+            let _ = sender.send(line.clone());
+            if let Ok(mut file) = writer_out.lock() {
+                let _ = writeln!(file, "{line}");
             }
-            append_line(&out_log, &line);
         }
     });
-    let err_log = log_path.to_path_buf();
+
+    let writer_err = std::sync::Arc::clone(&log_writer);
     thread::spawn(move || {
         let reader = BufReader::new(stderr);
         for line in reader.lines().map_while(Result::ok) {
-            append_line(&err_log, &line);
+            if let Ok(mut file) = writer_err.lock() {
+                let _ = writeln!(file, "{line}");
+            }
         }
     });
 
@@ -141,15 +150,6 @@ pub fn spawn(
     })
 }
 
-fn append_line(log_path: &Path, line: &str) {
-    if let Ok(mut file) = std::fs::OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(log_path)
-    {
-        let _ = writeln!(file, "{line}");
-    }
-}
 
 #[cfg(test)]
 mod tests {

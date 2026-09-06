@@ -249,8 +249,12 @@ final class GeckoTools {
                     if (!Files.exists(path)) {
                         throw new IllegalArgumentException("Circuit file not found: " + path);
                     }
+                    Double duration = optionalDouble(args, "duration");
+                    if (duration == null) {
+                        duration = optionalDouble(args, "simulation_time");
+                    }
                     SimulationService.RunResult run = SimulationService.simulate(path,
-                            optionalDouble(args, "duration"), optionalDouble(args, "dt"),
+                            duration, optionalDouble(args, "dt"),
                             str_(args, "solver", "be"));
                     Map<String, Object> result = new LinkedHashMap<>();
                     result.put("status", "COMPLETED");
@@ -283,8 +287,12 @@ final class GeckoTools {
                         signals = list.stream().map(String::valueOf).toList();
                     }
                     int maxPoints = (int) num_(args, "max_points", 2000);
+                    Double duration = optionalDouble(args, "duration");
+                    if (duration == null) {
+                        duration = optionalDouble(args, "simulation_time");
+                    }
                     SimulationService.ParsedCsv csv =
-                            SimulationService.simulateToCsv(path, optionalDouble(args, "duration"),
+                            SimulationService.simulateToCsv(path, duration,
                                     optionalDouble(args, "dt"));
                     return WaveformAnalysis.analyse(csv, safeRead(path), signals, maxPoints);
                 });
@@ -358,9 +366,39 @@ final class GeckoTools {
             throw new IllegalArgumentException("Circuit file not found: " + path);
         }
         int maxPoints = (int) num_(args, "max_points", 2000);
-        SimulationService.ParsedCsv csv = SimulationService.simulateToCsv(path,
-                optionalDouble(args, "duration"), optionalDouble(args, "dt"));
-        return WaveformAnalysis.analyse(csv, safeRead(path), null, maxPoints);
+        Double duration = optionalDouble(args, "duration");
+        if (duration == null) {
+            duration = optionalDouble(args, "simulation_time");
+        }
+
+        Path runPath = path;
+        Path tempFile = null;
+        try {
+            Double kp = optionalDouble(args, "kp");
+            Double ki = optionalDouble(args, "ki");
+            if (kp != null || ki != null) {
+                String content = IpesSupport.readIpesText(path);
+                if (kp != null) {
+                    content = content.replaceAll("(?m)^(\\s*double\\s+Kp_v\\s*=\\s*)[0-9.eE+-]+;",
+                            "$1" + PyFormat.pyStr(kp) + ";");
+                }
+                if (ki != null) {
+                    content = content.replaceAll("(?m)^(\\s*double\\s+Ki_v\\s*=\\s*)[0-9.eE+-]+;",
+                            "$1" + PyFormat.pyStr(ki) + ";");
+                }
+                tempFile = Files.createTempFile("gecko-mcp-tune-", ".ipes");
+                IpesSupport.writeIpesText(tempFile, content, true);
+                runPath = tempFile;
+            }
+
+            SimulationService.ParsedCsv csv = SimulationService.simulateToCsv(runPath,
+                    duration, optionalDouble(args, "dt"));
+            return WaveformAnalysis.analyse(csv, safeRead(runPath), null, maxPoints);
+        } finally {
+            if (tempFile != null) {
+                Files.deleteIfExists(tempFile);
+            }
+        }
     }
 
     private static String safeRead(Path path) {

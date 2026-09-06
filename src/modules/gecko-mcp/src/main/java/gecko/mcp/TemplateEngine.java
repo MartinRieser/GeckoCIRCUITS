@@ -3,14 +3,17 @@ package gecko.mcp;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Loads the extracted .ipes templates and substitutes the numbered hole
- * markers (§0§, §1§, ...) in order. Templates and hole lists come from
- * scripts/desktop/extract-templates.py; golden equivalence tests guard
- * the port against drift.
+ * markers (§0§, §1§, ...). Single-pass regex substitution prevents sequential
+ * placeholder collisions.
  */
 final class TemplateEngine {
+
+    private static final Pattern HOLE_PATTERN = Pattern.compile("§(\\d+)§");
 
     private TemplateEngine() {
     }
@@ -24,12 +27,16 @@ final class TemplateEngine {
         }
     }
 
-    /** Replaces §N§ markers with the given values, in order. */
+    /** Replaces §N§ markers with the given values in a single pass. */
     static String substitute(String template, String... values) {
-        String result = template;
-        for (int i = 0; i < values.length; i++) {
-            result = result.replace("§" + i + "§", values[i]);
+        Matcher matcher = HOLE_PATTERN.matcher(template);
+        StringBuilder sb = new StringBuilder();
+        while (matcher.find()) {
+            int index = Integer.parseInt(matcher.group(1));
+            String replacement = index < values.length && values[index] != null ? values[index] : matcher.group(0);
+            matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
         }
-        return result;
+        matcher.appendTail(sb);
+        return sb.toString();
     }
 }

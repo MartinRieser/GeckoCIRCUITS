@@ -40,6 +40,8 @@ pub fn save_file_dialog(
         .dialog()
         .file()
         .set_file_name(&suggested)
+        .add_filter("GeckoCIRCUITS Circuit (*.ipes)", &["ipes"])
+        .add_filter("All Files (*.*)", &["*"])
         .blocking_save_file();
     let Some(path) = target else {
         return Ok(None);

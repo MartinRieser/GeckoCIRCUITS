@@ -50,41 +50,51 @@ fn start_dev(app: AppHandle) -> Result<(), Box<dyn std::error::Error>> {
 }
 
 /// Release mode: show a splash immediately (engine cold start takes seconds),
-/// spawn the bundled engine, wait for its ready line, then open the editor
-/// window with the backend origin injected.
+/// spawn the bundled engine in a background task, wait for its ready line,
+/// then open the editor window with the backend origin injected.
 #[cfg(not(debug_assertions))]
 fn start_release(app: AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     show_splash(&app);
-    let state: tauri::State<AppState> = app.state();
-    let log_path = state.log_dir.join("engine.log");
+    let app_handle = app.clone();
+    tauri::async_runtime::spawn(async move {
+        let state: tauri::State<AppState> = app_handle.state();
+        let log_path = state.log_dir.join("engine.log");
 
-    let startup = start_engine(&app, &log_path).and_then(|spawned| {
-        ready::wait_for_ready(&spawned.stdout_lines, ENGINE_START_BUDGET)
-            .map(|url| (spawned.process, url))
-    });
+        let startup = start_engine(&app_handle, &log_path).and_then(|spawned| {
+            ready::wait_for_ready(&spawned.stdout_lines, ENGINE_START_BUDGET)
+                .map(|url| (spawned.process, url))
+        });
 
-    let (process, backend_url) = match startup {
-        Ok(pair) => pair,
-        Err(message) => {
-            close_splash(&app);
-            fatal_dialog(
-                &app,
-                &format!(
-                    "The simulation engine failed to start.\n\n{message}\n\nEngine log: {}",
-                    log_path.display()
-                ),
-            );
-            std::process::exit(1);
+        match startup {
+            Ok((process, backend_url)) => {
+                *state.engine.lock().unwrap() = Some(process);
+                let app = app_handle.clone();
+                let _ = app_handle.run_on_main_thread(move || {
+                    if let Err(err) = create_main_window(&app, &backend_url) {
+                        eprintln!("failed to create main window: {err}");
+                        return;
+                    }
+                    close_splash(&app);
+                    open_files_from_args(&app);
+                    drain_pending_opens(&app);
+                });
+            }
+            Err(message) => {
+                let app = app_handle.clone();
+                let _ = app_handle.run_on_main_thread(move || {
+                    close_splash(&app);
+                    fatal_dialog(
+                        &app,
+                        &format!(
+                            "The simulation engine failed to start.\n\n{message}\n\nEngine log: {}",
+                            log_path.display()
+                        ),
+                    );
+                    std::process::exit(1);
+                });
+            }
         }
-    };
-
-    // EngineProcess moves into managed state; Drop kills it when the shell exits
-    *state.engine.lock().unwrap() = Some(process);
-
-    create_main_window(&app, &backend_url)?;
-    close_splash(&app);
-    open_files_from_args(&app);
-    drain_pending_opens(&app);
+    });
     Ok(())
 }
 

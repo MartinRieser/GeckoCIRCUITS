@@ -52,7 +52,7 @@ final class SimulationService {
         return new RunResult(result.getTotalTimeSteps(), names, result.getExecutionTimeMs());
     }
 
-    /** Runs a simulation and parses the exported CSV into per-signal series. */
+    /** Runs a simulation and constructs per-signal series directly from memory. */
     static ParsedCsv simulateToCsv(Path circuit, Double duration, Double dt) throws IOException {
         double simDuration = duration != null ? duration : 20e-3;
         double step = dt != null ? dt : 1e-6;
@@ -66,13 +66,36 @@ final class SimulationService {
         if (!result.isSuccess()) {
             throw new IllegalStateException("Simulation failed: " + result.getErrorMessage());
         }
-        Path csv = Files.createTempFile("gecko-mcp-", ".csv");
-        try {
-            SimulationCsv.write(result, csv);
-            return ParsedCsv.parse(Files.readString(csv));
-        } finally {
-            Files.deleteIfExists(csv);
+        return fromSimulationResult(result);
+    }
+
+    static ParsedCsv fromSimulationResult(SimulationResult result) {
+        String[] signalNames = result.getSignalNames();
+        List<String> header = new ArrayList<>(signalNames.length + 1);
+        header.add("time");
+        header.addAll(List.of(signalNames));
+
+        double[] times = result.getTimeArray();
+        int rowCount = times.length;
+        Map<String, List<Double>> columns = new LinkedHashMap<>();
+
+        List<Double> timeCol = new ArrayList<>(rowCount);
+        for (double t : times) {
+            timeCol.add(t);
         }
+        columns.put("time", timeCol);
+
+        for (int s = 0; s < signalNames.length; s++) {
+            float[] data = result.getSignalData(s);
+            List<Double> col = new ArrayList<>(rowCount);
+            if (data != null) {
+                for (int t = 0; t < Math.min(rowCount, data.length); t++) {
+                    col.add((double) data[t]);
+                }
+            }
+            columns.put(signalNames[s], col);
+        }
+        return new ParsedCsv(header, columns);
     }
 
     /** Column-wise CSV parse mirroring the Python tool's line parsing. */

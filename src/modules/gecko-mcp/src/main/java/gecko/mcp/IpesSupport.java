@@ -31,6 +31,9 @@ final class IpesSupport {
 
     /** Relative paths resolve against the workspace root, like the Python server. */
     static Path resolve(String path) {
+        if (path == null || path.isBlank()) {
+            throw new IllegalArgumentException("circuit_path is required");
+        }
         Path candidate = Path.of(path);
         return candidate.isAbsolute() ? candidate : workspaceRoot().resolve(candidate);
     }

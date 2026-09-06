@@ -164,4 +164,55 @@ class ToolsTest {
         SimulationService.RunResult run = SimulationService.simulate(output, 0.002, 1e-6, "be");
         assertTrue(run.totalSteps() >= 2000, "script-block PFC should simulate");
     }
+
+    @Test
+    void ipesSupportResolveRejectsNullAndBlank() {
+        IllegalArgumentException e1 = org.junit.jupiter.api.Assertions.assertThrows(
+                IllegalArgumentException.class, () -> IpesSupport.resolve(null));
+        assertTrue(e1.getMessage().contains("circuit_path is required"));
+
+        IllegalArgumentException e2 = org.junit.jupiter.api.Assertions.assertThrows(
+                IllegalArgumentException.class, () -> IpesSupport.resolve("   "));
+        assertTrue(e2.getMessage().contains("circuit_path is required"));
+    }
+
+    @Test
+    void tunePfcWithCustomGains() throws Exception {
+        Path circuit = fixture("interleaved_pfc_50v.ipes");
+        GeckoTools.ToolSpec tune = GeckoTools.all().stream()
+                .filter(tool -> tool.name().equals("gecko_tune_pfc"))
+                .findFirst().orElseThrow();
+        Map<String, Object> args = new java.util.HashMap<>();
+        args.put("circuit_path", circuit.toString());
+        args.put("target_voltage", 50.0);
+        args.put("simulation_time", 0.005);
+        args.put("kp", 0.025);
+        args.put("ki", 5.0);
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> result = (Map<String, Object>) tune.handler().apply(args);
+        assertEquals(50.0, result.get("target_voltage_volts"));
+        assertTrue(result.containsKey("measured_voltage_volts"));
+    }
+
+    @Test
+    void setScriptCodeInsertsMissingTags() throws IOException {
+        String minimalIpes = "<ElementCONTROL>\n"
+                + "typ 61\n"
+                + "idStringDialog CTRL_MIN\n"
+                + "<sourceCode>\nyOUT[0] = 1;\n<\\sourceCode>\n"
+                + "<\\ElementCONTROL>\n";
+        Path temp = Files.createTempFile("gecko-test-min-", ".ipes");
+        Files.writeString(temp, minimalIpes);
+        try {
+            CircuitPatcher.setScriptCode(temp.toString(), "CTRL_MIN", "yOUT[0] = 2;",
+                    "double v = 10.0;", "init();", null);
+            String updated = IpesSupport.readIpesText(temp);
+            assertTrue(updated.contains("<staticVariables>\ndouble v = 10.0;\n<\\staticVariables>"));
+            assertTrue(updated.contains("<staticCode>\ninit();\n<\\staticCode>"));
+            assertTrue(updated.contains("<sourceCode>\nyOUT[0] = 2;\n<\\sourceCode>"));
+        } finally {
+            Files.deleteIfExists(temp);
+        }
+    }
 }

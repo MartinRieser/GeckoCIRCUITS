@@ -19,6 +19,8 @@ pub fn handle_download(webview: Webview, event: DownloadEvent) -> bool {
                 .dialog()
                 .file()
                 .set_file_name(&suggested)
+                .add_filter("GeckoCIRCUITS Circuit (*.ipes)", &["ipes"])
+                .add_filter("All Files (*.*)", &["*"])
                 .blocking_save_file();
             match chosen.and_then(|path| path.into_path().ok()) {
                 Some(path) => {
