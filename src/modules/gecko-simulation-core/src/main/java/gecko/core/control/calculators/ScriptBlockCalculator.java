@@ -215,6 +215,12 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
         cleaned = cleaned.replaceAll("\\b(double|int|float|long|boolean|final)\\s+", "");
         cleaned = cleaned.replaceAll("(\\[\\s*\\]\\s*)+([a-zA-Z_])", "$2");
 
+        // Desugar compound assignments: `x += y;` -> `x = x + (y);`, etc.
+        cleaned = cleaned.replaceAll("\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\+=\\s*([^;]+);", "$1 = $1 + ($2);");
+        cleaned = cleaned.replaceAll("\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*-=\\s*([^;]+);", "$1 = $1 - ($2);");
+        cleaned = cleaned.replaceAll("\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\*=\\s*([^;]+);", "$1 = $1 * ($2);");
+        cleaned = cleaned.replaceAll("\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*/=\\s*([^;]+);", "$1 = $1 / ($2);");
+
         // Neutralize `new <type>[...]` array allocations. Initializer expressions
         // become 0 (`double buf[] = new double[4];` -> `double buf[] = 0;`) and
         // standalone allocation statements vanish (`new double[4];` -> `;`).

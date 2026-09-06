@@ -36,8 +36,12 @@ class StdioEndToEndTest {
                 System.getProperty("os.name").toLowerCase().contains("win") ? "java.exe" : "java")
                 .toString();
 
+        Path argFile = Files.createTempFile("mcp-args-", ".args");
+        Files.writeString(argFile, "-cp\n\"" + classpath.replace("\\", "\\\\") + "\"\ngecko.mcp.GeckoMcpServer\n");
+        argFile.toFile().deleteOnExit();
+
         ServerParameters params = ServerParameters.builder(java)
-                .args(List.of("-cp", classpath, "gecko.mcp.GeckoMcpServer"))
+                .args(List.of("@" + argFile.toAbsolutePath()))
                 .build();
         McpSyncClient client = McpClient.sync(new StdioClientTransport(params,
                 new JacksonMcpJsonMapper(JsonMapper.builder().build())))

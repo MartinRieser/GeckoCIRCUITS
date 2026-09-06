@@ -269,6 +269,33 @@ public final class ComponentCatalog {
 
         result.put("power_components", powerList);
         result.put("control_components", controlList);
+
+        Map<String, Object> scriptGuide = new LinkedHashMap<>();
+        scriptGuide.put("overview", "Script blocks (SCRIPT_BLOCK, type 61) execute C/Java-like control algorithms at each simulation time step.");
+        scriptGuide.put("input_signals", "Array xIN[0], xIN[1], ... or aliases u1, u2, ... populated from connected probes/signals.");
+        scriptGuide.put("output_signals", "Array yOUT[0], yOUT[1], ... driving connected gates or recorded signals.");
+        scriptGuide.put("time_variables", Map.of("t", "Current simulation time in seconds", "dt", "Current simulation time step (dt) in seconds"));
+        scriptGuide.put("constants", Map.of("PI", "Math.PI (3.141592653589793)", "E", "Math.E"));
+        scriptGuide.put("math_functions", List.of("sin(x)", "cos(x)", "tan(x)", "abs(x)", "sqrt(x)", "exp(x)", "log(x)", "pow(x, y)", "min(x, y)", "max(x, y)"));
+        scriptGuide.put("syntax_rules", List.of(
+                "Standard statements terminated by semicolons: 'double v = xIN[0];'",
+                "Persistent state across time steps MUST be declared in 'static_variables' (e.g. 'int step = 0; double integ = 0.0;')",
+                "Variable updates: 'v = v + ki * err * dt;' or 'v += ki * err * dt;'",
+                "Conditionals: 'if (cond) { ... } else { ... }' and ternary 'cond ? expr1 : expr2'",
+                "End of script: 'return yOUT;'"
+        ));
+        scriptGuide.put("safety_rules", List.of(
+                "Always guard divisions against 0: e.g. '(vDc > 50.0 ? vDc : 750.0)'",
+                "Always clamp integrator variables to prevent windup"
+        ));
+        result.put("script_block_guide", scriptGuide);
+
+        Map<String, Object> synthGuide = new LinkedHashMap<>();
+        synthGuide.put("probes", "VOLTMETER targets a power component (e.g. C_1) or node pair; AMMETER targets an inductor or switch branch. 'signal_name' assigns the net label.");
+        synthGuide.put("script_blocks", "'in_signals' list matching probe signal_names in order; 'out_signals' list driving gates.");
+        synthGuide.put("gates", "GATE couples an 'in_signal' to 'target_switch' by component name.");
+        result.put("circuit_synthesis_guide", synthGuide);
+
         return result;
     }
 }

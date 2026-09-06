@@ -145,12 +145,41 @@ public final class CircuitValidator {
                     }
                 }
             } else if (typ == 61) { // ScriptBlock
-                Matcher srcMatcher = Pattern.compile("<sourceCode>([\\s\\S]*?)<\\\\sourceCode>").matcher(block);
-                if (srcMatcher.find()) {
-                    String src = srcMatcher.group(1);
-                    // Rule 5: Script block linter
-                    checkScriptBlock(name, src, diagnostics);
+                int numIn = parseInt(group(block, "anzXIN\\s+([0-9]+)"), 0);
+                int numOut = parseInt(group(block, "anzYOUT\\s+([0-9]+)"), 1);
+                String src = named(group(block, "<sourceCode>([\\s\\S]*?)<\\\\sourceCode>"), "");
+                String staticCode = named(group(block, "<staticCode>([\\s\\S]*?)<\\\\staticCode>"), "");
+                String staticVars = named(group(block, "<staticVariables>([\\s\\S]*?)<\\\\staticVariables>"), "");
+
+                // Validate script compilation directly and identify failing statement
+                try {
+                    gecko.core.control.calculators.ScriptBlockCalculator calc =
+                            new gecko.core.control.calculators.ScriptBlockCalculator(numIn, numOut, src, staticCode, staticVars);
+                    if (!calc.isCompiled()) {
+                        // Pinpoint failing statement
+                        String failingStmt = "";
+                        String normalized = gecko.core.control.calculators.ScriptBlockCalculator.normalizeCode(staticVars + "\n" + src);
+                        for (String stmt : normalized.split(";")) {
+                            String trimmed = stmt.trim();
+                            if (trimmed.isEmpty()) continue;
+                            try {
+                                new gecko.core.control.calculators.ScriptBlockCalculator(numIn, numOut, trimmed + ";");
+                            } catch (Exception ex) {
+                                failingStmt = trimmed;
+                                break;
+                            }
+                        }
+                        String detail = failingStmt.isEmpty() ? "" : " at statement [" + failingStmt + "]";
+                        diagnostics.add(new Diagnostic("ERROR", "SCRIPT_COMPILE_ERROR", name,
+                                "Script block " + name + " compilation failed" + detail + ": " + calc.getCompileError()));
+                    }
+                } catch (Exception e) {
+                    diagnostics.add(new Diagnostic("ERROR", "SCRIPT_COMPILE_ERROR", name,
+                            "Script block " + name + " error: " + e.getMessage()));
                 }
+
+                // Rule 5: Script block linter
+                checkScriptBlock(name, src, diagnostics);
             }
 
             Map<String, Object> info = new HashMap<>();

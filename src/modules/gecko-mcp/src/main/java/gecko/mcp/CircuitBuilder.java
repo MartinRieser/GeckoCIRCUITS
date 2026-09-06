@@ -152,12 +152,17 @@ public final class CircuitBuilder {
         for (Map<String, Object> sb : rawScriptBlocks) {
             String name = (String) sb.getOrDefault("name", "CTRL_MCU");
             @SuppressWarnings("unchecked")
-            List<String> inputs = (List<String>) sb.getOrDefault("inputs", List.of());
+            List<String> inputs = (List<String>) sb.getOrDefault("inputs",
+                    sb.getOrDefault("in_signals", sb.getOrDefault("input_signals", List.of())));
             @SuppressWarnings("unchecked")
-            List<String> outputs = (List<String>) sb.getOrDefault("outputs", List.of());
-            String sourceCode = (String) sb.getOrDefault("source_code", "");
-            String staticVariables = (String) sb.getOrDefault("static_variables", "");
-            String staticCode = (String) sb.getOrDefault("static_code", "");
+            List<String> outputs = (List<String>) sb.getOrDefault("outputs",
+                    sb.getOrDefault("out_signals", sb.getOrDefault("output_signals", List.of())));
+            String sourceCode = (String) sb.getOrDefault("source_code",
+                    sb.getOrDefault("code", sb.getOrDefault("sourceCode", "")));
+            String staticVariables = (String) sb.getOrDefault("static_variables",
+                    sb.getOrDefault("staticVariables", ""));
+            String staticCode = (String) sb.getOrDefault("static_code",
+                    sb.getOrDefault("staticCode", ""));
 
             long uid = nextCtrlId++;
             // Script block placed at x=16, inputs at x=14, outputs at x=18
@@ -289,6 +294,7 @@ public final class CircuitBuilder {
             sb.append("idStringDialog ").append(ctl.name).append("\n");
 
             if (ctl.type == 61) {
+                sb.append("parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0\n");
                 sb.append("anzXIN ").append(ctl.inNodes.size()).append("\n");
                 sb.append("anzYOUT ").append(ctl.outNodes.size()).append("\n");
                 sb.append("showName true\n");
