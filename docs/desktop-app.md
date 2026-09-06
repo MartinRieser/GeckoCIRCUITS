@@ -99,7 +99,7 @@ Run once per release, per OS, on a machine **without Java installed**
 | 7 | *Save* shows a native dialog; the written file re-opens correctly | ✅ |
 | 8 | Quitting the app leaves **no** `java` process behind | ✅ |
 | 9 | Killing the app via task manager → engine exits within ~10 s | ✅ |
-| 10 | `gecko-mcp` launcher registers 10 tools in an LLM client (see [MCP](mcp.md)) | ✅ |
+| 10 | `gecko-mcp` launcher registers 13 tools in an LLM client (see [MCP](mcp.md)) | ✅ |
 | 11 | Uninstall removes files and the file association (Windows) | Win only |
 
 Log failures against the engine log (below) — it contains the engine's full

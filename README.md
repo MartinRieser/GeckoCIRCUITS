@@ -14,6 +14,7 @@ Originally developed at ETH Zurich's Power Electronic Systems Laboratory by Andr
 - **EMI filter design** -- common-mode/differential-mode filter analysis
 - **MATLAB/Simulink integration** -- remote control via RMI or memory-mapped files
 - **Scriptable** -- built-in JavaScript (GraalVM) and Java block scripting
+- **Model Context Protocol (MCP) Server** -- 13 tools for autonomous AI/LLM circuit synthesis, DRC validation with live script compilation, simulation, and power electronics analytics (Google Antigravity, Claude, Cursor, Copilot)
 - **Cross-platform** -- runs on Windows, Linux, and macOS
 
 ## Quick Start
@@ -27,6 +28,18 @@ are on the [Releases](https://github.com/tinix84/GeckoCIRCUITS/releases) page.
 Double-clicking any `.ipes` circuit opens it. See the
 [Desktop App guide](docs/desktop-app.md) and the
 [MCP interface](docs/mcp.md) for LLM integration.
+
+### AI & LLM Integration (MCP Server)
+
+GeckoCIRCUITS provides a native [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server enabling LLMs to autonomously design, validate, simulate, and optimize power electronics circuits without opening a GUI or reading simulator source code:
+
+- **Universal Circuit Authoring (`gecko_create_circuit`)**: Synthesizes complete `.ipes` circuit models from JSON netlists (power topologies, control blocks, MCU scripts, and collision-free layout).
+- **Deep Design Rule Validation (`gecko_validate_circuit`)**: Inspects terminal connectivity, floating subnets, and performs **in-memory compilation** of digital microcontroller script blocks (`ScriptBlockCalculator`), providing line-level syntax diagnostics.
+- **In-Memory Analytics (`gecko_measure_metrics`)**: Evaluates real-time power electronics figures of merit (efficiency $\eta$, power factor $\text{PF}$, THD, DC average, and peak-to-peak ripple $\Delta V_{pp}$) directly from simulation runs without downloading massive waveform files.
+- **Parametric Model Generators**: Instant turnkey generation of active PFC (`gecko_setup_pfc_project`) and resonant LLC converters (`gecko_setup_llc_project`).
+- **Autonomous Tuning**: Sweep and optimize PI loops and parameters with `gecko_tune_pfc` and `gecko_patch_component`.
+
+Connect your LLM agent (e.g. Google Antigravity, Claude Desktop, Cursor) using `scripts/desktop/launch-mcp.py` or the bundled desktop launcher. See the [full MCP Guide](docs/mcp.md) for tool documentation, JSON schemas, and client configuration.
 
 ### GeckoCIRCUITS Classic (Swing UI, jpackage)
 

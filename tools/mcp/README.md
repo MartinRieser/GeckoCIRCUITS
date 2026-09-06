@@ -8,68 +8,68 @@ Seamless integration between **GeckoCIRCUITS** and LLM harnesses:
 
 ## Capabilities
 
-The MCP server exposes high-level semantic tools for circuit design and closed-loop tuning:
+The GeckoCIRCUITS MCP suite exposes 13 high-level semantic tools for autonomous power electronics design, verification, and analytics:
+
 1. `gecko_server_status`: Verifies JDK 25 environment, simulation jar readiness, and engine health.
-2. `gecko_catalog`: Returns the library of power electronics components (sources, semiconductors, passives, transformers, sensors, script blocks) and parameter schemas.
-3. `gecko_inspect_circuit`: Parses `.ipes` circuit models, listing components, control blocks, wire topology, and simulation settings.
-4. `gecko_patch_component`: Modifies component parameters (inductance, capacitance, resistance, switching frequencies, voltages).
-5. `gecko_set_script_code`: Updates microcontroller control algorithms inside `CTRL_SCRIPT` (`TYP_JAVA_FUNCTION` / `TYP_SCRIPT`) blocks.
-6. `gecko_simulate`: Submits headless simulation runs and reports step count, simulation time, and execution performance.
-7. `gecko_get_waveforms`: Runs simulations and extracts time-series waveforms along with key power electronics metrics (steady-state DC output, ripple $\Delta V_{pp}$, RMS, power factor, THD).
-8. `gecko_tune_pfc`: Runs closed-loop tuning sweeps for active PFC controllers, adjusting PI gains to reach target voltage and minimize ripple.
+2. `gecko_catalog`: Returns the library of power electronics components and control blocks, with embedded guides for microcontroller scripting and netlist synthesis.
+3. `gecko_create_circuit`: **Universal circuit authoring** from a JSON netlist; generates complete `.ipes` projects with collision-free schematic layout.
+4. `gecko_validate_circuit`: **Design Rule Checker (DRC)** that checks topology continuity, floating subnetworks, and performs **live in-memory compilation** of microcontroller script blocks with line-exact error reporting.
+5. `gecko_measure_metrics`: **High-performance in-memory analytics**; extracts DC average, peak-to-peak ripple $\Delta V_{pp}$, RMS, power factor, real/apparent power, and efficiency $\eta$ without downloading large raw waveform arrays.
+6. `gecko_setup_pfc_project`: Generates a 2-phase interleaved boost PFC converter project with MCU digital controller and dynamic load step.
+7. `gecko_setup_llc_project`: Generates a half-bridge resonant LLC converter with ZVS snubber and tank design metrics ($f_0, Z_0, Q, k$).
+8. `gecko_inspect_circuit`: Parses `.ipes` circuit models, listing components, control blocks, wire topology, and simulation settings.
+9. `gecko_patch_component`: Modifies component parameters (inductance, capacitance, resistance, switching frequencies, voltages).
+10. `gecko_set_script_code`: Updates microcontroller control algorithms inside `CTRL_SCRIPT` (`TYP_SCRIPT`) blocks.
+11. `gecko_simulate`: Submits headless simulation runs and reports step count, simulation time, and execution performance.
+12. `gecko_get_waveforms`: Runs simulations and extracts downsampled time-series waveforms.
+13. `gecko_tune_pfc`: Runs closed-loop tuning sweeps for active PFC controllers, adjusting PI gains to reach target voltage and minimize ripple.
+
+For complete tool documentation, JSON netlist schemas, and scripting guides, see [docs/mcp.md](../../docs/mcp.md).
 
 ---
 
 ## Configuration Guide
 
+The recommended launcher is `scripts/desktop/launch-mcp.py`, which automatically locates the bundled runtime or installed JDK 25 and starts the high-performance Java MCP server over stdio.
+
 ### 1. Google Antigravity
-The server is automatically registered via `.agents/mcp_config.json` in the workspace root:
+The server is registered via `.agents/mcp_config.json` in the workspace root:
 ```json
 {
   "mcpServers": {
     "gecko-circuits": {
-      "command": "uv",
+      "command": "python",
       "args": [
-        "run",
-        "--with", "mcp<2",
-        "python",
-        "tools/mcp/gecko_mcp/server.py"
+        "scripts/desktop/launch-mcp.py"
       ]
     }
   }
 }
 ```
 
-Or in global Antigravity config (`~/.gemini/config/mcp_config.json`), specify the directory of your local checkout:
+Or in global Antigravity config (`~/.gemini/config/mcp_config.json`):
 ```json
 {
   "mcpServers": {
     "gecko-circuits": {
-      "command": "uv",
+      "command": "python",
       "args": [
-        "--directory", "/path/to/GeckoCIRCUITS",
-        "run",
-        "--with", "mcp<2",
-        "python",
-        "tools/mcp/gecko_mcp/server.py"
+        "C:/path/to/GeckoCIRCUITS/scripts/desktop/launch-mcp.py"
       ]
     }
   }
 }
 ```
 
-### 2. GitHub Copilot (VS Code)
+### 2. GitHub Copilot (VS Code Agent Mode)
 In `.vscode/settings.json`:
 ```json
 {
   "github.copilot.chat.mcp.servers": {
     "gecko-circuits": {
-      "command": "uv",
+      "command": "python",
       "args": [
-        "run",
-        "--with", "mcp<2",
-        "python",
-        "${workspaceFolder}/tools/mcp/gecko_mcp/server.py"
+        "${workspaceFolder}/scripts/desktop/launch-mcp.py"
       ]
     }
   }
@@ -82,9 +82,23 @@ In `claude_desktop_config.json`:
 {
   "mcpServers": {
     "gecko-circuits": {
+      "command": "python",
+      "args": [
+        "C:/path/to/GeckoCIRCUITS/scripts/desktop/launch-mcp.py"
+      ]
+    }
+  }
+}
+```
+
+### 4. Development Server (Python)
+If using the development Python server (`tools/mcp/gecko_mcp/server.py`):
+```json
+{
+  "mcpServers": {
+    "gecko-circuits": {
       "command": "uv",
       "args": [
-        "--directory", "/path/to/GeckoCIRCUITS",
         "run",
         "--with", "mcp<2",
         "python",
