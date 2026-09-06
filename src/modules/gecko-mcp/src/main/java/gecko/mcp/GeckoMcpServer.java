@@ -28,11 +28,19 @@ public final class GeckoMcpServer {
         var transport = new StdioServerTransportProvider(json);
         var builder = McpServer.sync(transport)
                 .serverInfo(SERVER_NAME, SERVER_VERSION)
-                .capabilities(McpSchema.ServerCapabilities.builder().tools(true).build());
+                .capabilities(McpSchema.ServerCapabilities.builder()
+                        .tools(true)
+                        .resources(true, false)
+                        .build());
 
         for (GeckoTools.ToolSpec tool : GeckoTools.all()) {
             builder.tools(toSpecification(json, tool));
             System.err.println("[gecko-mcp] registered tool: " + tool.name());
+        }
+
+        for (var res : McpResources.all()) {
+            builder.resources(res);
+            System.err.println("[gecko-mcp] registered resource: " + res.resource().uri());
         }
         builder.build();
         System.err.println("[gecko-mcp] server ready on stdio");

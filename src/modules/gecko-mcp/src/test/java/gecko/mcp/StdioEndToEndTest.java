@@ -48,7 +48,14 @@ class StdioEndToEndTest {
             client.initialize();
 
             McpSchema.ListToolsResult tools = client.listTools();
-            assertEquals(10, tools.tools().size(), "server should expose the 10 ported tools");
+            assertEquals(13, tools.tools().size(), "server should expose the 13 tools");
+
+            McpSchema.ListResourcesResult resources = client.listResources();
+            assertEquals(4, resources.resources().size(), "server should expose 4 MCP resources");
+
+            McpSchema.ReadResourceResult catRes = client.readResource(
+                    new McpSchema.ReadResourceRequest("gecko://catalog/components"));
+            assertFalse(catRes.contents().isEmpty(), "catalog resource should return content");
 
             McpSchema.CallToolResult result = client.callTool(new McpSchema.CallToolRequest(
                     "gecko_simulate",

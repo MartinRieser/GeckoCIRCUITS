@@ -30,7 +30,8 @@ final class GeckoTools {
 
     static List<ToolSpec> all() {
         return List.of(
-                serverStatus(), catalog(), setupPfc(), setupLlc(), inspectCircuit(),
+                serverStatus(), catalog(), createCircuit(), validateCircuit(), measureMetrics(),
+                setupPfc(), setupLlc(), inspectCircuit(),
                 patchComponent(), setScriptCode(), simulate(), getWaveforms(), tunePfc());
     }
 
@@ -54,9 +55,23 @@ final class GeckoTools {
         return Map.of("type", "number", "description", description);
     }
 
+    private static Map<String, Object> bool(String description) {
+        return Map.of("type", "boolean", "description", description);
+    }
+
     private static Map<String, Object> arrayOf(String description, String itemType) {
         return Map.of("type", "array", "description", description,
                 "items", Map.of("type", itemType));
+    }
+
+    private static Map<String, Object> objectOf(String description, Map<String, Object> properties) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("type", "object");
+        map.put("description", description);
+        if (properties != null) {
+            map.put("properties", properties);
+        }
+        return map;
     }
 
     private static Map<String, Object> properties(Map<String, Object>... entries) {
@@ -98,10 +113,104 @@ final class GeckoTools {
 
     private static ToolSpec catalog() {
         return new ToolSpec("gecko_catalog",
-                "Get the catalog of all placeable GeckoCIRCUITS components, types, and parameter "
-                        + "schemas. Use this to look up valid types when constructing or modifying circuits.",
+                "Get the complete, authoritative catalog of all GeckoCIRCUITS power and control components, "
+                        + "terminal pinouts, typed parameter definitions, units, defaults, and .ipes slot mappings.",
                 objectSchema(properties(), null),
-                args -> CatalogData.catalog());
+                args -> ComponentCatalog.toCatalogJson());
+    }
+
+    private static ToolSpec createCircuit() {
+        return new ToolSpec("gecko_create_circuit",
+                "Synthesize a new GeckoCIRCUITS (.ipes) model from a high-level schematic netlist. "
+                        + "Automatically computes collision-free 2D schematic layouts, places components, "
+                        + "routes net connections, wires control probes and gates, and normalizes companion "
+                        + "parameter slots for MNA numerical stability.",
+                objectSchema(properties(
+                        Map.of("output_path", str("Output .ipes path relative to workspace (e.g. resources/projects/my_circuit.ipes)")),
+                        Map.of("simulation", objectOf("Simulation parameters", properties(
+                                Map.of("duration", num("Simulation duration in seconds (default 0.05)")),
+                                Map.of("dt", num("Simulation timestep in seconds (default 1e-6)")),
+                                Map.of("solver", num("Solver algorithm: 0=Backward Euler (BE), 1=Trapezoidal (TRZ), 2=Gear-Shichman (GS)"))
+                        ))),
+                        Map.of("components", arrayOf("List of power circuit components to place and connect", "object")),
+                        Map.of("control", objectOf("Control domain definitions (probes, microcontroller script blocks, gates)", properties(
+                                Map.of("probes", arrayOf("Measurement probes (VOLTMETER, AMMETER) coupled to power components", "object")),
+                                Map.of("script_blocks", arrayOf("Microcontroller script blocks (PI loops, PWM generators)", "object")),
+                                Map.of("gates", arrayOf("Gate drivers coupling control signals to semiconductor switches", "object"))
+                        )))),
+                        List.of("output_path", "components")),
+                args -> CircuitBuilder.create(args));
+    }
+
+    private static ToolSpec validateCircuit() {
+        return new ToolSpec("gecko_validate_circuit",
+                "Design Rule Checker (DRC) and static circuit linter. Verifies circuit netlist and control "
+                        + "graph before running simulation: checks ground reference, floating nodes, short-circuited "
+                        + "components, dangling probes/gates, and microcontroller script block syntax/divide-by-zero risks.",
+                objectSchema(properties(
+                        Map.of("circuit_path", str("Path to the .ipes file to validate")),
+                        Map.of("content", str("Optional raw .ipes content string to lint without reading from disk"))),
+                        null),
+                args -> {
+                    String content = strOrNull(args, "content");
+                    if (content != null && !content.isBlank()) {
+                        return CircuitValidator.validateContent(content, "inline_circuit");
+                    }
+                    String pathStr = str_(args, "circuit_path", null);
+                    if (pathStr == null || pathStr.isBlank()) {
+                        throw new IllegalArgumentException("Either circuit_path or content must be provided");
+                    }
+                    Path path = IpesSupport.resolve(pathStr);
+                    if (!Files.exists(path)) {
+                        throw new IllegalArgumentException("Circuit file not found: " + path);
+                    }
+                    return CircuitValidator.validate(path);
+                });
+    }
+
+    private static ToolSpec measureMetrics() {
+        return new ToolSpec("gecko_measure_metrics",
+                "Compute comprehensive power electronics converter figures of merit (RMS, peak-to-peak ripple %, "
+                        + "average active power, apparent power, power factor, and conversion efficiency) directly "
+                        + "on simulation results without streaming massive raw time-series over stdio.",
+                objectSchema(properties(
+                        Map.of("circuit_path", str("Path to the .ipes file")),
+                        Map.of("duration", num("Simulation duration (s); default 20e-3")),
+                        Map.of("dt", num("Time step (s); default 1e-6")),
+                        Map.of("start_time", num("Start time for steady-state analysis window (s); default last 50%")),
+                        Map.of("signals", arrayOf("Signal names to calculate stats for; default all", "string")),
+                        Map.of("v_in_signal", str("Input voltage probe signal name (e.g. uIN, v_grid)")),
+                        Map.of("i_in_signal", str("Input current probe signal name (e.g. iIN, i_grid)")),
+                        Map.of("v_out_signal", str("Output voltage probe signal name (e.g. uOUT, v_dc)")),
+                        Map.of("i_out_signal", str("Output load current probe signal name (e.g. iOUT, i_load)")),
+                        Map.of("is_three_phase", bool("Set true if input is 3-phase AC; scales 1-phase reference power by 3"))),
+                        List.of("circuit_path")),
+                args -> {
+                    Path path = IpesSupport.resolve(str_(args, "circuit_path", null));
+                    if (!Files.exists(path)) {
+                        throw new IllegalArgumentException("Circuit file not found: " + path);
+                    }
+                    Double duration = optionalDouble(args, "duration");
+                    if (duration == null) {
+                        duration = optionalDouble(args, "simulation_time");
+                    }
+                    Double dt = optionalDouble(args, "dt");
+                    SimulationService.ParsedCsv csv = SimulationService.simulateToCsv(path, duration, dt);
+
+                    double startTime = num_(args, "start_time", -1.0);
+                    List<String> signals = null;
+                    if (args.get("signals") instanceof List<?> list) {
+                        signals = list.stream().map(String::valueOf).toList();
+                    }
+                    String vIn = strOrNull(args, "v_in_signal");
+                    String iIn = strOrNull(args, "i_in_signal");
+                    String vOut = strOrNull(args, "v_out_signal");
+                    String iOut = strOrNull(args, "i_out_signal");
+                    boolean threePhase = Boolean.TRUE.equals(args.get("is_three_phase"))
+                            || "true".equalsIgnoreCase(String.valueOf(args.get("is_three_phase")));
+
+                    return PowerMetricsCalculator.calculate(csv, startTime, signals, vIn, iIn, vOut, iOut, threePhase);
+                });
     }
 
     private static ToolSpec setupPfc() {

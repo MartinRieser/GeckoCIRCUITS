@@ -148,7 +148,8 @@ class ToolsTest {
     void registryHasExactlyThePythonToolNames() {
         List<String> names = GeckoTools.all().stream().map(GeckoTools.ToolSpec::name).toList();
         assertEquals(List.of(
-                "gecko_server_status", "gecko_catalog", "gecko_setup_pfc_project",
+                "gecko_server_status", "gecko_catalog", "gecko_create_circuit",
+                "gecko_validate_circuit", "gecko_measure_metrics", "gecko_setup_pfc_project",
                 "gecko_setup_llc_project", "gecko_inspect_circuit", "gecko_patch_component",
                 "gecko_set_script_code", "gecko_simulate", "gecko_get_waveforms",
                 "gecko_tune_pfc"), names);
