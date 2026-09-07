@@ -87,14 +87,12 @@ jobs:
             VERSION="${{ github.event.inputs.version }}"
           elif [[ "${GITHUB_REF}" == refs/tags/classic-v* ]]; then
             VERSION="${GITHUB_REF#refs/tags/classic-v}"
-          elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
-            VERSION="${GITHUB_REF#refs/tags/v}"
           elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             VERSION="${GITHUB_REF#refs/tags/}"
           else
             VERSION="1.0.0"
           fi
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Building version: $VERSION"
 
       - name: Build with Maven
@@ -146,19 +144,16 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             VERSION="${{ github.event.inputs.version }}"
-            TAG="v${VERSION}"
+            TAG="classic-v${VERSION}"
           elif [[ "${GITHUB_REF}" == refs/tags/classic-v* ]]; then
             VERSION="${GITHUB_REF#refs/tags/classic-v}"
             TAG="${GITHUB_REF#refs/tags/}"
-          elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
-            VERSION="${GITHUB_REF#refs/tags/v}"
-            TAG="${GITHUB_REF#refs/tags/}"
           else
             VERSION="1.0.0"
-            TAG="v1.0.0"
+            TAG="classic-v1.0.0"
           fi
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "TAG=$TAG" >> $GITHUB_OUTPUT
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "TAG=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -175,7 +170,7 @@ jobs:
           echo "Release files:"
           ls -lh
           
-          sha256sum * > SHA256SUMS.txt
+          sha256sum ./* > SHA256SUMS.txt
           echo "Generated SHA256SUMS.txt:"
           cat SHA256SUMS.txt
 
