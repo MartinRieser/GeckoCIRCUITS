@@ -61,9 +61,10 @@ fn main() {
         .run(|app, event| {
             // macOS: files opened via Finder while the app is running
             #[cfg(target_os = "macos")]
-            if let tauri::RunEvent::Opened { files } = event {
-                let paths: Vec<String> = files
-                    .iter()
+            if let tauri::RunEvent::Opened { urls } = event {
+                let paths: Vec<String> = urls
+                    .into_iter()
+                    .filter_map(|url| url.to_file_path().ok())
                     .map(|path| path.to_string_lossy().into_owned())
                     .collect();
                 window::open_file_paths(app, paths);

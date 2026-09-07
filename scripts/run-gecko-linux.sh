@@ -81,7 +81,7 @@ if [[ ! -f "$JAR_FILE" ]]; then
     echo ""
     echo "Please build the project first:"
     echo "  cd $PROJECT_DIR"
-    echo "  mvn clean package assembly:single -DskipTests"
+    echo "  mvn clean package -DskipTests"
     exit 1
 fi
 

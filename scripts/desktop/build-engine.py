@@ -72,7 +72,7 @@ def run(cmd, **kwargs):
 
 
 def find_jdk25(explicit=None):
-    """Locates a JDK 25 home: --jdk, JAVA_HOME, ~/.jdks, Program Files."""
+    """Locates a JDK 25 home: --jdk, JAVA_HOME, ~/.jdks, Program Files, macOS Homebrew/JVM."""
     candidates = []
     if explicit:
         candidates.append(Path(explicit))
@@ -86,8 +86,35 @@ def find_jdk25(explicit=None):
         base = Path("C:/") / program_dir
         if base.is_dir():
             candidates.extend(sorted(base.glob("jdk-25*"), reverse=True))
+    # Linux system and SDKMAN JVM paths
+    for linux_dir in (Path("/usr/lib/jvm"), Path("/usr/java"), Path("/opt/java")):
+        if linux_dir.is_dir():
+            candidates.extend(sorted(linux_dir.glob("*25*"), reverse=True))
+    sdkman_dir = Path.home() / ".sdkman" / "candidates" / "java"
+    if sdkman_dir.is_dir():
+        candidates.extend(sorted(sdkman_dir.glob("*25*"), reverse=True))
+    # macOS Homebrew and system JVM paths
+    for mac_dir in (
+        Path("/opt/homebrew/opt/openjdk"),
+        Path("/opt/homebrew/opt/openjdk@25"),
+        Path("/usr/local/opt/openjdk"),
+        Path("/usr/local/opt/openjdk@25"),
+    ):
+        if mac_dir.is_dir():
+            candidates.append(mac_dir)
+    jvm_dir = Path("/Library/Java/JavaVirtualMachines")
+    if jvm_dir.is_dir():
+        for jvm in sorted(jvm_dir.glob("*25*.jdk"), reverse=True):
+            candidates.append(jvm)
 
-    for candidate in candidates:
+    # Each candidate may be a JDK root or a macOS bundle needing Contents/Home
+    expanded = []
+    for c in candidates:
+        expanded.append(c)
+        expanded.append(c / "libexec" / "openjdk.jdk" / "Contents" / "Home")
+        expanded.append(c / "Contents" / "Home")
+
+    for candidate in expanded:
         if not candidate.is_dir():
             continue
         java_exe = candidate / "bin" / "java.exe"

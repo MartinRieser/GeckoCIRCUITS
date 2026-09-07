@@ -54,7 +54,14 @@ class CLibraryCalculatorTest {
     }
 
     private static Optional<Path> findOnPath(String executable) {
-        for (String dir : System.getenv("PATH").split(";")) {
+        String path = System.getenv("PATH");
+        if (path == null) {
+            return Optional.empty();
+        }
+        for (String dir : path.split(java.io.File.pathSeparator)) {
+            if (dir.isBlank()) {
+                continue;
+            }
             Path candidate = Path.of(dir.trim(), executable);
             if (Files.isRegularFile(candidate)) {
                 return Optional.of(candidate);

@@ -204,6 +204,7 @@ mod tests {
             args,
             vec![
                 "-Xmx2g".to_string(),
+                "--enable-native-access=ALL-UNNAMED".to_string(),
                 "-jar".to_string(),
                 "/opt/engine/gecko-rest-api.jar".to_string(),
                 "--server.port=0".to_string(),

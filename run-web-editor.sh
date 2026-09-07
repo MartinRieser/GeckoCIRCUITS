@@ -17,18 +17,52 @@ echo "============================================"
 echo "  GeckoCIRCUITS Web Editor"
 echo "============================================"
 
-# 1. Check Java (prefer JAVA_HOME if set, otherwise PATH)
-JAVA_BIN="java"
+# 1. Check Java (prefer JAVA_HOME if set, otherwise PATH or common JDK 25 locations)
+check_version() {
+    local bin="$1"
+    [[ -x "$bin" ]] && "$bin" -version 2>&1 | head -1 | cut -d'"' -f2 | cut -d'.' -f1
+}
+
+JAVA_BIN=""
 if [[ -n "$JAVA_HOME" && -x "$JAVA_HOME/bin/java" ]]; then
     JAVA_BIN="$JAVA_HOME/bin/java"
-elif ! command -v java &> /dev/null; then
-    echo "[ERROR] Java is not found in PATH or JAVA_HOME. Please install Java 25 or later."
-    exit 1
+elif command -v java &> /dev/null; then
+    JAVA_BIN="java"
 fi
 
-JAVA_VERSION=$("$JAVA_BIN" -version 2>&1 | head -1 | cut -d'"' -f2 | cut -d'.' -f1)
-if [[ "$JAVA_VERSION" -lt 25 ]]; then
-    echo "[ERROR] Java 25 or later is required (found: $JAVA_VERSION at $JAVA_BIN)."
+JAVA_VERSION=""
+if [[ -n "$JAVA_BIN" ]]; then
+    JAVA_VERSION=$(check_version "$JAVA_BIN")
+fi
+
+if [[ -z "$JAVA_VERSION" || "$JAVA_VERSION" -lt 25 ]]; then
+    for candidate in \
+        "/opt/homebrew/opt/openjdk/bin/java" \
+        "/opt/homebrew/opt/openjdk@25/bin/java" \
+        "/opt/homebrew/opt/openjdk/libexec/openjdk.jdk/Contents/Home/bin/java" \
+        "/usr/local/opt/openjdk/bin/java" \
+        "/usr/local/opt/openjdk@25/bin/java" \
+        /usr/lib/jvm/java-25-openjdk*/bin/java \
+        /usr/lib/jvm/jdk-25*/bin/java \
+        /usr/lib/jvm/*25*/bin/java \
+        /usr/java/jdk-25*/bin/java \
+        /opt/java/*25*/bin/java \
+        "$HOME/.sdkman/candidates/java"/*25*/bin/java \
+        "$HOME/.jdks"/jdk-25*/bin/java; do
+        if [[ -x "$candidate" ]]; then
+            cand_ver=$(check_version "$candidate")
+            if [[ -n "$cand_ver" && "$cand_ver" -ge 25 ]]; then
+                JAVA_BIN="$candidate"
+                JAVA_VERSION="$cand_ver"
+                export JAVA_HOME="$(cd "$(dirname "$candidate")/.." && pwd)"
+                break
+            fi
+        fi
+    done
+fi
+
+if [[ -z "$JAVA_VERSION" || "$JAVA_VERSION" -lt 25 ]]; then
+    echo "[ERROR] Java 25 or later is required (found: ${JAVA_VERSION:-none} at ${JAVA_BIN:-PATH})."
     echo "Please set JAVA_HOME or update PATH to point to JDK 25+."
     exit 1
 fi
