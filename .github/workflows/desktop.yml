@@ -239,6 +239,13 @@ jobs:
           path: dist
           merge-multiple: true
 
+      - name: Flatten release artifacts
+        working-directory: dist
+        run: |
+          find . -mindepth 2 -type f -exec mv -t . {} +
+          find . -type d -empty -delete
+          ls -la
+
       - name: Checksums
         working-directory: dist
         run: sha256sum * > SHA256SUMS.txt
