@@ -5,7 +5,7 @@ description: Learn to create circuits from scratch in GeckoCIRCUITS
 
 # Building Circuits
 
-Learn how to create power electronics circuits from scratch in the GeckoCIRCUITS editor.
+Create power electronics circuits from scratch in the editor.
 
 **Duration:** 20 minutes
 
@@ -13,166 +13,87 @@ Learn how to create power electronics circuits from scratch in the GeckoCIRCUITS
 
 ## Overview
 
-Building a circuit involves four steps:
+Building a circuit is four steps:
 
-1. **Place components** on the schematic
+1. **Place components** from the palette
 2. **Wire them together**
-3. **Set parameters** for each component
-4. **Add measurement** points (SCOPE)
+3. **Set parameters** in the properties panel
+4. **Add measurement** points (scopes, probes)
 
 ## Step 1: Start a New Circuit
 
-Go to **File > New** (++ctrl+n++) to create an empty schematic.
+**File ▸ New** creates an empty schematic (a blank workspace is also created
+automatically at app start).
 
 ## Step 2: Place Components
 
-### Adding Components
+1. Find a component in the **palette** on the left — filter by category or
+   search by name.
+2. Click it: the component becomes a "ghost" that follows the cursor.
+3. Move it to a grid position and **click** to place; press ++r++ to rotate
+   before placing.
+4. **Escape** cancels; after placing you can keep placing more of the same
+   type.
 
-1. Select a component from the component palette (left panel or menu)
-2. Click on the schematic to place it
-3. The component appears at the clicked location
+Useful while placing: arrow keys nudge the ghost by one grid unit.
 
-### Component Categories
+### What a Basic Circuit Needs
 
-Power electronics circuits typically need:
-
-| Category | What to Place | Why |
-|----------|--------------|-----|
+| Category | Components | Why |
+|----------|-----------|-----|
 | Sources | Voltage source | Provides input power |
-| Switches | MOSFET, IGBT, Diode | Switching elements |
+| Switches | MOSFET/IGBT + Diode | Switching elements |
 | Passive | L, C, R | Energy storage and filtering |
-| Ground | Ground symbol | **Required** - voltage reference |
-| Control | PWM, Constant | Switch gate signals |
-| Display | SCOPE | View simulation results |
+| Control | PWM/Constant/Script block | Gate signals |
+| Measurement | Scope, probes | View results |
 
-### Rotating and Flipping
+## Step 3: Wire the Components
 
-- **Right-click** a component for rotation options
-- Rotate to align terminals for clean wiring
+1. Press **W** (or click the wire-mode toggle) to enter wire mode.
+2. **Click** a component pin to start a wire.
+3. **Click** along the path to set waypoints (orthogonal routing is automatic;
+   arrow keys step the current waypoint on the grid).
+4. **Click** the destination pin to finish; **Escape** aborts.
 
-## Step 3: Wire Components
-
-### Making Connections
-
-1. Click on a component **terminal** (small square)
-2. Click to add wire waypoints (corners)
-3. Click the destination terminal to complete the connection
-
-### Wiring Tips
-
-!!! tip "Clean Schematics"
-    - Use horizontal and vertical wires only
-    - Align components on the grid
-    - Keep signal flow left-to-right, top-to-bottom
-
-### Common Wiring Mistakes
-
-| Mistake | Symptom | Fix |
-|---------|---------|-----|
-| Missing ground | Simulation fails | Add ground to return path |
-| Open node | "Floating node" warning | Connect all terminals |
-| Shorted source | Infinite current | Add series resistance/inductance |
+Wires attach to pins by **net label** — move a component later and its wires
+stay attached.
 
 ## Step 4: Set Parameters
 
-Double-click each component to set its values.
+Select a component and edit its parameters in the **properties panel** on the
+right. Values accept engineering notation; the panel shows units and valid
+ranges for every parameter.
 
-### Example: Buck Converter Parameters
+## Step 5: Add Measurement Points
 
-| Component | Parameter | Example Value |
-|-----------|-----------|---------------|
-| V_source | Voltage | 48 V |
-| MOSFET | (default) | - |
-| Diode | (default) | - |
-| Inductor | L | 100 uH |
-| Capacitor | C | 47 uF |
-| Resistor | R | 10 Ohm |
-| PWM | Frequency | 100 kHz |
-| PWM | Duty Cycle | 0.25 |
+- Place **VOLTMETER**/**AMMETER** probes and couple them to the component
+  they measure.
+- Place a **SCOPE** and wire probe outputs into its inputs.
+- Recorded signals appear in the **Simulation** view tab after the next run.
 
-### Unit Prefixes
+## Pre-Run Checklist
 
-GeckoCIRCUITS recognizes standard SI prefixes:
-
-| Prefix | Symbol | Value |
-|--------|--------|-------|
-| mega | M | 10^6 |
-| kilo | k | 10^3 |
-| milli | m | 10^-3 |
-| micro | u | 10^-6 |
-| nano | n | 10^-9 |
-| pico | p | 10^-12 |
-
-## Step 5: Add Measurements
-
-### Placing a SCOPE
-
-1. Add a **SCOPE** block from the control components
-2. Connect signals you want to measure to the scope inputs
-3. Each input becomes a channel in the oscilloscope
-
-### What to Measure
-
-For a typical power converter, measure:
-
-- **Output voltage** across the load
-- **Inductor current** through the inductor
-- **Switch node voltage** at the switching point
-
-### Using Voltage and Current Probes
-
-- **Voltage probe** - Measures voltage between two nodes
-- **Current probe** - Measures current through a component (place in series)
-
-## Example: Build a Buck Converter
-
-Follow these steps to build a basic buck converter from scratch:
-
-### Circuit Topology
-
-```
-    Vin ──[MOSFET]──●──[L]──●── Vout
-                    │        │
-                 [Diode]   [C]  [R]
-                    │        │    │
-                   GND ──────●────┘
-```
-
-### Step-by-Step
-
-1. **Place Vin** - DC voltage source, set to 48V
-2. **Place MOSFET** - Connect drain to Vin positive
-3. **Place Diode** - Cathode to MOSFET source, anode to ground
-4. **Place Inductor** - From switch node to output
-5. **Place Capacitor** - From output to ground
-6. **Place Resistor** - From output to ground (load)
-7. **Connect Ground** - To source negative, diode anode, capacitor, resistor
-8. **Add PWM** - Connect to MOSFET gate (100 kHz, D=0.25)
-9. **Add SCOPE** - Connect to output voltage node
-
-### Verify Before Running
-
-Checklist:
-
-- [ ] All nodes connected (no floating nodes)
-- [ ] Ground present
-- [ ] Source has a return path
-- [ ] Switch has a control signal
-- [ ] SCOPE connected to measurement points
-- [ ] Simulation time step appropriate (< 0.1 us for 100 kHz)
+- [ ] Every voltage source has a return path (ground/reference node)
+- [ ] Every switch has a gate signal
+- [ ] Scope/probe connected to the points you want to see
+- [ ] Time step appropriate (< T_sw / 100)
 
 ## Simulation Settings
 
-Before running, set appropriate simulation parameters:
+Set duration, dt, and solver in the **Simulation Settings** panel:
 
-| Parameter | Value | Why |
-|-----------|-------|-----|
-| Total time | 1 ms | ~100 switching periods |
+| Parameter | Example Value | Why |
+|-----------|---------------|-----|
+| Duration | 1 ms | ~100 switching periods |
 | Time step | 50 ns | 200 steps per period |
 | Solver | Backward Euler | Stable for switching circuits |
 
+## Undo / Redo
+
+Every edit is tracked by the engine: **Ctrl+Z** reverts, **Ctrl+Y** reapplies
+— including moves, parameter changes, and deletions.
+
 ## Next Steps
 
-- [PWM Basics](pwm-basics.md) - Understand PWM signals for switch control
-- [Running Simulations](running-simulations.md) - Simulation settings and modes
-- [Buck Converter Tutorial](../tutorials/dcdc/buck-converter.md) - Full design with theory
+- [Running Simulations](running-simulations.md) — solvers, settings, execution
+- [Analysis Tools](analysis-tools.md) — cursors, FFT, losses, export

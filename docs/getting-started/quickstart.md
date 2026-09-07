@@ -5,123 +5,94 @@ description: Run your first simulation in 5 minutes
 
 # Quick Start
 
-Get up and running with GeckoCIRCUITS in 5 minutes.
+Get from install to your first waveform in five minutes.
 
-## 1. Launch the Application
+## 1. Launch GeckoCIRCUITS
 
-=== "Linux / WSL"
+Start the **GeckoCIRCUITS** desktop app (see [Installation](installation.md)).
+The editor opens after a few seconds — the bundled simulation engine boots in
+the background.
 
-    ```bash
-    ./scripts/run-gecko-linux.sh
-    ```
-
-=== "Windows"
-
-    ```bat
-    scripts\run-gecko.bat
-    ```
-
-=== "macOS"
-
-    ```bash
-    ./scripts/run-gecko-macos.sh
-    ```
-
-Or run directly with Java:
-
-```bash
-java -Xmx3G -Dpolyglot.js.nashorn-compat=true \
-  -jar target/gecko-1.0-jar-with-dependencies.jar
-```
+!!! tip "No install? Use the web editor"
+    From a repository checkout, `run-web-editor.bat|.sh` starts the engine and
+    opens the same editor in your browser at `http://localhost:8080`.
 
 ## 2. Open an Example Circuit
 
-Go to **File > Open** and navigate to:
+Open the **Examples** menu in the top bar and pick **DC-DC Buck Converter**.
+A complete buck converter loads onto the schematic:
 
-```
-resources/tutorials/2xx_dcdc_converters/201_buck_converter/buck_simple.ipes
-```
+- **MOSFET switch** — controlled by a PWM signal
+- **Diode** — freewheeling path for inductor current
+- **Inductor (L)** and **capacitor (C)** — output filter
+- **Resistive load (R)**
+- A **scope** watching the output
 
-This opens a basic **buck converter** circuit - one of the most common DC-DC power topologies.
+Click any component to inspect and edit its parameters in the **properties
+panel** on the right.
 
-!!! tip "Quick Open"
-    You can also pass a circuit file as a command-line argument:
-    ```bash
-    java -jar target/gecko-1.0-jar-with-dependencies.jar \
-      resources/tutorials/2xx_dcdc_converters/201_buck_converter/buck_simple.ipes
-    ```
+## 3. Run the Simulation
 
-## 3. Explore the Schematic
+Open the **Simulation Settings** panel on the right sidebar and click the
+**▶ Run Simulation** button.
 
-The circuit editor shows the buck converter topology:
-
-- **MOSFET switch** - controlled by a PWM signal
-- **Diode** - freewheeling path for inductor current
-- **Inductor (L)** - energy storage element
-- **Capacitor (C)** - output voltage filter
-- **Resistive load (R)** - the load being powered
-- **SCOPE** - oscilloscope to view waveforms
-
-You can click on any component to see and edit its parameters.
-
-## 4. Run the Simulation
-
-Click the **Run** button in the toolbar or press ++f5++.
-
-The simulation will execute for the configured duration. You'll see the progress in the status bar.
-
-## 5. View Results
-
-Double-click the **SCOPE** component to open the oscilloscope window. You should see:
+The scope view switches to the simulation tab and shows live progress, then
+the waveforms:
 
 - **Output voltage** settling to the target value
-- **Inductor current** with triangular ripple waveform
-- **Switch node voltage** toggling between input voltage and ground
+- **Inductor current** with triangular ripple
+- **Switch node** toggling between input voltage and ground
 
-### Oscilloscope Controls
+## 4. Explore the Scope
+
+The scope view is a full instrument:
 
 | Action | How |
 |--------|-----|
-| Zoom in/out | Mouse scroll wheel |
-| Pan | Click and drag |
-| Auto-scale | Right-click > Auto Scale |
-| Measure | Right-click > Cursor |
+| Zoom in/out | Mouse wheel (zooms around the cursor) |
+| Pan | Left-click and drag |
+| Fit whole simulation | ⟲ button in the scope toolbar |
+| Measure Δt / frequency | Click to place cursors **A** and **B** |
+| Harmonics / THD | **FFT** button (analyzes the visible window) |
+| Export data | **CSV export** in the results drawer |
 
-## 6. Modify Parameters
+## 5. Modify the Circuit
 
-Try changing the duty cycle to see how it affects the output:
+Experiment — this is where the tool pays off:
 
-1. Click the **PWM** component
-2. Change the duty cycle parameter
-3. Re-run the simulation (++f5++)
-4. Compare the new output voltage
+1. Select the **switch** and change its switching frequency in the
+   properties panel.
+2. Re-run and compare: higher frequency ⇒ smaller output ripple.
+3. Try **Undo** (++ctrl+z++) / **Redo** (++ctrl+y++) — every edit is tracked
+   server-side.
 
-The buck converter relationship is: **V_out = D x V_in**, where D is the duty cycle (0-1).
+The buck relationship is **V_out = D × V_in**, where D is the duty cycle.
 
-## What's in a Circuit File?
+## 6. Save Your Work
 
-GeckoCIRCUITS uses `.ipes` files (gzip-compressed) that contain:
-
-- Component placement and connections
-- Parameter values for each component
-- Scope/measurement configuration
-- Simulation settings (time step, duration)
+**Save** writes your circuit as a `.ipes` file — in the desktop app a native
+save dialog appears, in the browser the file downloads. The `.ipes` format is
+fully portable between the desktop app, the web editor, and the classic UI.
 
 ## Try More Examples
 
-| Example | File | What You'll Learn |
-|---------|------|-------------------|
-| First steps | `1xx_getting_started/101_first_simulation/ex_1.ipes` | Basic simulation flow |
-| Buck converter | `2xx_dcdc_converters/201_buck_converter/buck_simple.ipes` | DC-DC conversion |
-| Boost converter | `2xx_dcdc_converters/202_boost_converter/boost_simple.ipes` | Step-up conversion |
-| Three-phase inverter | `4xx_dcac_inverters/402_three_phase_inverter/inverter.ipes` | AC power generation |
+The **Examples** menu includes ready-to-run circuits:
 
-All examples are in `resources/tutorials/`.
+| Example | What you'll learn |
+|---------|-------------------|
+| Multi-Scope RLC | Multi-channel scopes, transient oscillation |
+| RLC Resonant Circuit | Second-order step response |
+| RC Low-Pass Filter | First-order charging curve |
+
+Over 100 application circuits (converters, inverters, PFC, motor drives,
+thermal demos) are in the repository under `resources/tutorials/` and
+`resources/examples/` — open them with **File ▸ Open** or by double-clicking
+the `.ipes` file.
 
 ## Next Steps
 
-- [First Simulation Tutorial](first-simulation.md) - Detailed walkthrough with explanations
-- [Building Circuits](building-circuits.md) - Create your own circuits from scratch
-- [User Interface Guide](interface.md) - Learn the editor and toolbar
-- [Tutorials](../tutorials/index.md) - Complete tutorial library
-- [Examples](../examples/index.md) - Browse 100+ application examples
+- [First Simulation](first-simulation.md) — guided walkthrough
+- [Building Circuits](building-circuits.md) — create circuits from scratch
+- [User Interface](interface.md) — editor layout and shortcuts
+- [NativeC Blocks](../native-c-blocks.md) — run your real C/C++ control code
+- [MCP Interface](../mcp.md) — let an LLM drive the simulator

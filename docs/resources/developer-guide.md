@@ -2,6 +2,12 @@
 title: Developer Guide
 description: How to extend GeckoCIRCUITS with new components and features
 ---
+> **Note:** parts of this guide reference the classic Swing codebase. The
+> current product surfaces are the React editor (desktop/web), the REST API
+> (`gecko-rest-api`), and the MCP server (`gecko-mcp`); the simulation core
+> (`gecko-simulation-core`) is shared by all of them. See
+> [Desktop App](../desktop-app.md) and the
+> [classic parity plan](../plans/classic-parity-plan.md).
 
 # Developer Guide
 

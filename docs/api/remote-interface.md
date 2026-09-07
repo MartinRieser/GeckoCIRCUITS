@@ -2,6 +2,10 @@
 title: Remote Interface (RMI)
 description: Control GeckoCIRCUITS from MATLAB, Octave, or Java via RMI
 ---
+> **Legacy interface (Classic UI).** RMI remote control drives the classic
+> Swing application and requires it to run. New integrations should use the
+> [REST API](rest-api.md) or the [MCP interface](../mcp.md), which work
+> headless against the same engine — no GUI process needed.
 
 # Remote Interface (RMI)
 

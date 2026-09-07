@@ -1,213 +1,61 @@
 ---
 title: Installation
-description: Install GeckoCIRCUITS on Windows, Linux, or macOS
+description: Install the GeckoCIRCUITS desktop app on Windows, Linux, or macOS
 ---
 
-# Installation Guide
+# Installation
 
-GeckoCIRCUITS runs on Windows, Linux, and macOS. Follow the instructions for your operating system.
+GeckoCIRCUITS ships as a self-contained desktop application for Windows,
+Linux, and macOS. **No Java installation is required** — the simulation
+engine ships inside the app.
 
-## Prerequisites
+## Recommended: Desktop Installers
 
-### Java 25
+Download the installer for your operating system from the
+[Releases](https://github.com/MartinRieser/GeckoCIRCUITS/releases) page
+(assets named `GeckoCIRCUITS_<version>_*`):
 
-GeckoCIRCUITS requires Java 25 or later.
+| OS | File | Notes |
+|----|------|-------|
+| Windows | `GeckoCIRCUITS_<v>_x64-setup.exe` or `.msi` | WebView2 downloads automatically if missing; `.ipes` file association registered |
+| macOS | `GeckoCIRCUITS_<v>_x64.dmg` / `_aarch64.dmg` | Unsigned builds: right-click → **Open** on first start |
+| Linux | `gecko-circuits_<v>_amd64.deb`, `*.rpm`, or `*.AppImage` | deb/rpm register the `.ipes` file association |
 
-=== "Windows"
+After installing:
 
-    1. Download [Eclipse Temurin JDK 25](https://adoptium.net/temurin/releases/?version=25)
-    2. Run the installer
-    3. Verify installation:
-    ```batch
-    java -version
-    ```
+- Launch **GeckoCIRCUITS** from the start menu, Applications folder, or app
+  launcher. A *Starting simulation engine…* splash appears for a few seconds
+  while the bundled engine boots, then the editor opens.
+- Double-clicking any `.ipes` circuit file opens it in the app.
+- The **C library interface header** (`gecko_c_block.h`) ships in the
+  installation's `engine/` folder for [NativeC blocks](../native-c-blocks.md).
 
-=== "Linux (Ubuntu/Debian)"
+### First-launch troubleshooting
 
-    ```bash
-    sudo apt update
-    sudo apt install openjdk-25-jdk
-    java -version
-    ```
+| Symptom | Fix |
+|---------|-----|
+| Windows SmartScreen warning | *More info* → *Run anyway* (builds are not code-signed yet) |
+| macOS "cannot be opened" | Right-click the app → *Open*, or allow it in *System Settings → Privacy & Security* |
+| "Simulation engine failed to start" | Open the engine log via `Help ▸ Open Logs Folder`; details in the [Desktop App guide](../desktop-app.md) |
 
-=== "Linux (Fedora/RHEL)"
+## Alternative: Run from Source (Web Editor)
 
-    ```bash
-    sudo dnf install java-25-openjdk-devel
-    java -version
-    ```
-
-=== "macOS"
-
-    ```bash
-    # Using Homebrew
-    brew install openjdk@25
-
-    # Add to PATH
-    echo 'export PATH="/opt/homebrew/opt/openjdk@25/bin:$PATH"' >> ~/.zshrc
-    source ~/.zshrc
-
-    java -version
-    ```
-
-!!! note "Expected Output"
-    ```
-    openjdk version "25.0.x" 2024-xx-xx
-    OpenJDK Runtime Environment (build 25.0.x+xx)
-    OpenJDK 64-Bit Server VM (build 25.0.x+xx, mixed mode)
-    ```
-
-## Installation Methods
-
-### Method 1: Download Release (Recommended)
-
-1. Go to [Releases](https://github.com/tinix84/GeckoCIRCUITS/releases)
-2. Download the latest `GeckoCIRCUITS-x.x-<platform>.zip`
-3. Extract to your desired location
-4. Run the launcher script
-
-### Method 2: Build from Source
+Developers can run the editor + engine from a repository checkout. This needs
+**JDK 25**, **Node.js 22**, and **Maven**:
 
 ```bash
-# Clone repository
-git clone https://github.com/tinix84/GeckoCIRCUITS.git
-cd geckocircuits
-
-# Build with Maven
-mvn clean package assembly:single -DskipTests
-
-# The JAR is created at:
-# target/gecko-1.0-jar-with-dependencies.jar
+# builds the engine jar if missing, starts it on localhost:8080,
+# and opens the editor in your browser
+run-web-editor.bat        # Windows
+./run-web-editor.sh       # Linux / macOS
 ```
 
-!!! tip "Maven Installation"
-    If you don't have Maven installed:
+The web editor is the same React application the desktop app embeds, served
+against the same simulation engine — circuits and workflows are identical.
 
-    === "Windows"
-        Download from [maven.apache.org](https://maven.apache.org/download.cgi) and add to PATH
+## Classic Swing UI (legacy)
 
-    === "Linux"
-        ```bash
-        sudo apt install maven  # Debian/Ubuntu
-        sudo dnf install maven  # Fedora
-        ```
-
-    === "macOS"
-        ```bash
-        brew install maven
-        ```
-
-### Method 3: Docker (REST API only) {#docker}
-
-The REST API server can be run as a Docker container (no GUI required):
-
-```bash
-# Quick start with docker-compose
-docker-compose up -d
-
-# Or pull and run manually
-docker run -p 8080:8080 gecko-rest-api:latest
-
-# Verify it's running
-curl http://localhost:8080/gecko/api/health
-```
-
-See the [REST API documentation](../api/rest-api.md) for full endpoint reference.
-
-## Running GeckoCIRCUITS
-
-### Using Launcher Scripts
-
-=== "Windows"
-
-    ```batch
-    scripts\run-gecko.bat
-
-    :: With HiDPI support (4K displays)
-    scripts\run-gecko.bat --hidpi
-
-    :: Open specific circuit
-    scripts\run-gecko.bat path\to\circuit.ipes
-    ```
-
-=== "Linux"
-
-    ```bash
-    ./scripts/run-gecko-linux.sh
-
-    # With HiDPI support
-    ./scripts/run-gecko-linux.sh --hidpi
-
-    # Headless mode (for CI/servers)
-    ./scripts/run-gecko-linux.sh --headless
-    ```
-
-=== "macOS"
-
-    ```bash
-    ./scripts/run-gecko-macos.sh
-
-    # With Retina support
-    ./scripts/run-gecko-macos.sh --hidpi
-    ```
-
-=== "WSL"
-
-    ```bash
-    ./scripts/run-gecko-wsl.sh
-
-    # First time: run setup
-    ./scripts/setup-wsl.sh
-    ```
-
-### Direct Java Execution
-
-```bash
-java -Xmx3G \
-     -Dpolyglot.js.nashorn-compat=true \
-     -jar target/gecko-1.0-jar-with-dependencies.jar
-```
-
-!!! info "JVM Options"
-    - `-Xmx3G` - Allocate 3GB memory (adjust based on your system)
-    - `-Dpolyglot.js.nashorn-compat=true` - Enable JavaScript scripting
-    - `-Dsun.java2d.uiScale=2` - HiDPI scaling (add for 4K displays)
-
-## Verifying Installation
-
-1. Launch GeckoCIRCUITS
-2. Go to **Help > About** to verify version
-3. Open a sample circuit: **File > Open > resources/tutorials/1xx_getting_started/101_first_simulation/ex_1.ipes**
-4. Click **Run** (or press ++f5++)
-5. If waveforms appear in the scope, installation is successful!
-
-## Troubleshooting
-
-### Common Issues
-
-| Problem | Solution |
-|---------|----------|
-| "Java not found" | Ensure Java 25 is installed and in PATH |
-| Application won't start | Check Java version: `java -version` |
-| Blank window on Linux | Install `libxrender1 libxtst6` |
-| Slow on 4K display | Add `--hidpi` flag or `-Dsun.java2d.uiScale=2` |
-| Out of memory | Increase `-Xmx` value (e.g., `-Xmx4G`) |
-
-### WSL-Specific Issues
-
-```bash
-# Install X server support
-sudo apt install x11-apps
-
-# Set DISPLAY variable
-export DISPLAY=:0
-
-# Or for WSLg (Windows 11)
-export DISPLAY=:0
-export WAYLAND_DISPLAY=wayland-0
-```
-
-## Next Steps
-
-- [Quick Start](quickstart.md) - Run your first simulation
-- [User Interface](interface.md) - Learn the application layout
+The original Swing-based desktop UI is still available for existing users and
+ships as `GeckoCIRCUITS-<version>` installers and portable archives from the
+same Releases page. It requires **Java 25** and is started with
+`scripts/run-gecko.bat|.sh`. New users should start with the desktop app.

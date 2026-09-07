@@ -31,11 +31,11 @@ description: GeckoCIRCUITS - Power Electronics Circuit Simulator
 
     [:octicons-arrow-right-24: Examples](examples/index.md)
 
--   :material-code-braces:{ .lg .middle } **Automation & Integration**
+-   :material-code-braces:{ .lg .middle } **Desktop App + Automation**
 
     ---
 
-    Control simulations from MATLAB, Python, or via REST API for automated testing and optimization.
+    A self-contained desktop app — plus REST API and MCP tools to drive simulations from MATLAB, Python, or an LLM.
 
     [:octicons-arrow-right-24: API Reference](api/index.md)
 
@@ -45,11 +45,14 @@ description: GeckoCIRCUITS - Power Electronics Circuit Simulator
 
 GeckoCIRCUITS is an open-source circuit simulator specialized for power electronics. It provides:
 
+- **Desktop app + web editor** - Modern UI, no Java installation needed
 - **Multi-domain simulation** - Electrical, thermal, magnetic, and mechanical
-- **Real-time visualization** - Oscilloscope with live waveforms
-- **MATLAB/Simulink integration** - Co-simulation and parameter sweeps
+- **Real-time visualization** - Scope view with zoom, cursors, FFT, and THD
+- **Firmware-in-the-loop** - Run your real C/C++ control code via NativeC blocks
+- **MCP interface** - Let Claude, Cursor, or any LLM build and tune circuits
+- **Automation** - REST API for MATLAB, Python, and CI integration
 - **Extensive component library** - Switches, diodes, transformers, motors
-- **Advanced analysis** - Thermal modeling, loss calculation, EMI prediction
+- **Advanced analysis** - Thermal modeling and semiconductor loss calculation
 
 ## Quick Example
 
@@ -69,41 +72,25 @@ GeckoCIRCUITS is an open-source circuit simulator specialized for power electron
 
 ## Getting Started
 
-=== "Linux"
+=== "Desktop App (recommended)"
+
+    1. Download the installer for your OS from the
+       [Releases](https://github.com/MartinRieser/GeckoCIRCUITS/releases) page.
+    2. Install and launch **GeckoCIRCUITS** — no Java required.
+    3. Open an example from the **Examples** menu and press **Run**.
+
+=== "Build from Source"
 
     ```bash
-    # Clone and build
-    git clone https://github.com/tinix84/GeckoCIRCUITS.git
-    cd geckocircuits
-    mvn clean package assembly:single -DskipTests
+    git clone https://github.com/MartinRieser/GeckoCIRCUITS.git
+    cd GeckoCIRCUITS
 
-    # Run
-    ./scripts/run-gecko-linux.sh
+    # web editor: engine on localhost:8080 + editor in the browser
+    run-web-editor.bat        # Windows
+    ./run-web-editor.sh       # Linux / macOS
     ```
 
-=== "Windows"
-
-    ```batch
-    :: Clone and build
-    git clone https://github.com/tinix84/GeckoCIRCUITS.git
-    cd geckocircuits
-    mvn clean package assembly:single -DskipTests
-
-    :: Run
-    scripts\run-gecko.bat
-    ```
-
-=== "macOS"
-
-    ```bash
-    # Clone and build
-    git clone https://github.com/tinix84/GeckoCIRCUITS.git
-    cd geckocircuits
-    mvn clean package assembly:single -DskipTests
-
-    # Run
-    ./scripts/run-gecko-macos.sh
-    ```
+See the [Installation Guide](getting-started/installation.md) for details.
 
 ## Tutorial Roadmap
 
@@ -144,14 +131,14 @@ graph LR
 | Magnetic Domain | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
 | Mechanical Domain | ✅ | ✅ | ✅ | ✅ | ⚠️ Manual | ⚠️ Manual |
 | Motor Models (PMSM/BLDC/IM) | ✅ | ✅ | ✅ Add-on | ✅ | ⚠️ Manual | ⚠️ Manual |
-| MATLAB/Simulink Integration | ✅ RMI | ✅ Blockset | ✅ Co-sim | ❌ | ❌ | ❌ |
+| MATLAB/Python Integration | ✅ REST + RMI | ✅ Blockset | ✅ Co-sim | ✅ Python | ❌ | ❌ |
 | Python Scripting | ✅ | ✅ XML-RPC | ✅ API | ✅ Native | ❌ | ✅ |
-| C/C++ Custom Blocks | ✅ Java | ✅ C-Script | ✅ C-block | ✅ C-code | ❌ | ✅ C++/Verilog |
+| C/C++ Custom Blocks | ✅ FFM (dll/so/dylib) | ✅ C-Script | ✅ C-block | ✅ C-code | ❌ | ✅ C++/Verilog |
 | Code Generation | ❌ | ✅ Coder | ✅ | ❌ | ❌ | ❌ |
-| REST API | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| REST API + MCP (LLM) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Cloud/Online Version | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ |
 | Analysis Tools (Bode, SS) | ✅ | ✅ | ✅ | ✅ AC Sweep | ⚠️ AC | ⚠️ AC |
-| EMI/Conducted EMC | ✅ | ⚠️ Limited | ✅ | ⚠️ | ✅ | ✅ |
+| EMI/Conducted EMC | ⚠️ LISN models | ⚠️ Limited | ✅ | ⚠️ | ✅ | ✅ |
 | SiC/GaN Device Models | ✅ | ✅ | ✅ | ✅ | ⚠️ | ✅ Native |
 | PSIM Import | ❌ | ❌ | N/A | ✅ | ❌ | ❌ |
 

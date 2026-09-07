@@ -5,7 +5,7 @@ description: Simulation settings, solvers, and execution modes
 
 # Running Simulations
 
-How to configure and run simulations in GeckoCIRCUITS.
+How to configure and run simulations in the editor.
 
 **Duration:** 10 minutes
 
@@ -13,25 +13,26 @@ How to configure and run simulations in GeckoCIRCUITS.
 
 ## Simulation Settings
 
-Access via **Simulation > Settings** or the toolbar gear icon.
+Open the **Simulation Settings** panel on the right sidebar.
 
 ### Essential Parameters
 
 | Parameter | Description | How to Choose |
 |-----------|-------------|---------------|
-| **Total time (T_end)** | Simulation duration | 10-100x switching period |
+| **Duration (t_end)** | Simulation duration | 10–100× switching period |
 | **Time step (dt)** | Computation interval | < T_sw / 100 |
 | **Solver** | Numerical method | See solver table below |
 
 ### Time Step Selection
 
-The time step is the most critical setting. Too large causes errors; too small wastes computation time.
+The time step is the most critical setting. Too large causes errors; too
+small wastes computation time.
 
-**Rule of thumb:** dt < 1/(100 x f_sw)
+**Rule of thumb:** dt < 1/(100 × f_sw)
 
 | Switching Freq | Max Time Step | Recommended |
 |---------------|---------------|-------------|
-| 10 kHz | 1 us | 500 ns |
+| 10 kHz | 1 µs | 500 ns |
 | 50 kHz | 200 ns | 100 ns |
 | 100 kHz | 100 ns | 50 ns |
 | 500 kHz | 20 ns | 10 ns |
@@ -40,95 +41,52 @@ The time step is the most critical setting. Too large causes errors; too small w
 
 Choose enough time for the circuit to reach steady state:
 
-- **Fast circuits** (> 100 kHz): 0.1 - 1 ms
-- **Medium circuits** (10-100 kHz): 1 - 10 ms
-- **Slow circuits** (< 10 kHz, motors): 10 - 100 ms
-- **Thermal transients**: 1 - 100 s
+- **Fast circuits** (> 100 kHz): 0.1 – 1 ms
+- **Medium circuits** (10–100 kHz): 1 – 10 ms
+- **Slow circuits** (< 10 kHz, motors): 10 – 100 ms
 
-## Solvers
+### Solvers
 
-GeckoCIRCUITS offers three fixed-step solvers:
+| Solver | Best for | Notes |
+|--------|----------|-------|
+| **Backward Euler** (default) | Switching converters | Most stable, first-order accuracy |
+| **Trapezoidal** | Smooth waveforms | Less damping, can ring |
+| **Gear-Shichman** | Stiff circuits | Strong numerical damping |
 
-| Solver | Accuracy | Stability | Best For |
-|--------|----------|-----------|----------|
-| **Backward Euler (BE)** | 1st order | Very stable | Default choice, stiff circuits |
-| **Trapezoidal (TRZ)** | 2nd order | Can oscillate | Accuracy-critical circuits |
-| **Gear-Shichman (GS)** | Multi-step | Stable | Large circuits |
+## Running
 
-### Which Solver to Use?
+1. Click **▶ Run Simulation** in the settings panel.
+2. Live progress streams to the scope view (time, percentage, current step).
+3. Pause/resume a running simulation, or **cancel** it — controls appear next
+   to the progress display.
+4. When complete, the scope shows the recorded waveforms.
 
-```mermaid
-graph TD
-    A[Start] --> B{Circuit type?}
-    B -->|Switching converter| C[Backward Euler]
-    B -->|Linear/analog| D[Trapezoidal]
-    B -->|Large circuit| E[Gear-Shichman]
-    C --> F{Oscillations?}
-    F -->|Yes| G[Reduce time step]
-    F -->|No| H[Good to go]
-```
+!!! tip "Zoom into the interesting part"
+    After the run, use the mouse wheel to zoom into switching periods and
+    drag to pan — see [Analysis Tools](analysis-tools.md).
 
-!!! tip "Start with Backward Euler"
-    When in doubt, use Backward Euler. It's the most stable and works well for most power electronics circuits. Switch to Trapezoidal only if you need higher accuracy for resonant or filter circuits.
+## Results
 
-## Running a Simulation
+Results appear in the **Simulation** workspace tab:
 
-### Interactive Mode
+- **Scope view** with one lane per signal (or overlay mode)
+- **Cursor measurements** — place cursors A/B for Δt and frequency
+- **Statistics table** — min, max, peak-to-peak, RMS, mean per signal
+- **CSV export** of the full dataset
 
-1. Press ++f5++ or click **Run**
-2. Watch the progress bar
-3. Results appear in SCOPE windows when complete
-4. Press **Stop** to abort
+If a simulation fails (numerical breakdown, non-convergence), the scope shows
+the error and the values that triggered it — typically fixed by reducing dt.
 
-### Batch Mode
+## Steady State
 
-For automated runs (MATLAB, Python, GeckoSCRIPT):
+To see steady-state behavior:
 
-```bash
-java -jar gecko.jar --batch circuit.ipes
-```
-
-This runs the simulation without GUI and exits when complete.
-
-## Simulation Performance
-
-### Computation Time
-
-Approximate formula:
-
-```
-compute_time ~ (T_end / dt) × N_components × solver_cost
-```
-
-| Factor | Impact |
-|--------|--------|
-| Halving dt | 2x slower |
-| Doubling T_end | 2x slower |
-| Doubling components | ~2-4x slower |
-
-### Speeding Up Simulations
-
-1. **Increase time step** - As large as accuracy allows
-2. **Reduce simulation time** - Only simulate what you need
-3. **Simplify circuit** - Remove unused components
-4. **Close scope windows** - Real-time plotting costs CPU
-5. **Increase heap** - `java -Xmx4G` for large circuits
-
-## Initial Conditions
-
-By default, all voltages and currents start at zero. This means the circuit needs time to reach steady state.
-
-### Skipping Startup Transients
-
-Options:
-
-1. **Run longer** - Simply simulate enough cycles for settling
-2. **Set initial conditions** - Pre-set capacitor voltages and inductor currents
-3. **Use GeckoSCRIPT** - Programmatically set initial state
+1. **Run longer** — simulate enough cycles for settling
+2. **Set initial conditions** — pre-set capacitor voltages and inductor
+   currents on the components
+3. **Zoom** into the last few periods and read ripple/duty directly
 
 ## Convergence Issues
-
-If the simulation fails to converge:
 
 | Symptom | Cause | Solution |
 |---------|-------|----------|
@@ -139,6 +97,6 @@ If the simulation fails to converge:
 
 ## Next Steps
 
-- [Analysis Tools](analysis-tools.md) - Measuring and exporting results
-- [GeckoSCRIPT](../tutorials/scripting/geckoscript.md) - Automate simulation runs
-- [Tutorials](../tutorials/index.md) - Application-specific simulations
+- [Analysis Tools](analysis-tools.md) — measuring and exporting results
+- [NativeC Blocks](../native-c-blocks.md) — run your C/C++ control code
+- [Tutorials](../tutorials/index.md) — application-specific simulations
