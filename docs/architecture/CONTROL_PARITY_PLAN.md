@@ -151,11 +151,11 @@ headless engine (was 62). The 5 remaining failures share exactly two root
 causes: op-amp circuits (`opamp_3rdOrderBessel`, `opamp_frequency` - W2a
 missing VCVS/op-amp stamp) and JAVA_BLOCK circuits (`JavaBlockPMSM`,
 2 PMSM matrix variants - W4 JAVA_FUNCTION typ 61 execution). Full log:
-`tools/parity/results/20260830-tutorial-sweep.txt`.
+`tools/parity/results/20260830-tutorial-sweep.txt` (pruned from the tree; see git history).
 
 ---
 
-Baseline: LK parity is green (`tools/parity/results/20260828-165310.txt`,
+Baseline: LK parity is green (`tools/parity/results/20260828-165310.txt` (pruned; see git history),
 fix ee81cc5e "pin MNA island reference rows after stamping").
 
 ---
@@ -172,7 +172,7 @@ result classified). Outcome:
 | SIM FAILED — singular matrix | 9 | `204_analog_circuits/opamp_3rdOrderBessel`, `opamp_frequency`, `opamp_invertingDifferentiator`, `703_simulink_cosimulation/vr1_simulink`, `704_java_blocks/JavaBlockPMSM`, `802_motor_drives_pmsm/*` (2), `803_optimization/.../dmNoise`, `.../Swiss_Rect_2StageInputFilter` |
 | SIM OK — non-finite signals | 5 | `101_first_simulation/ex_1`, `103_pwm_basics/ex_3_pwm`, `401_single_phase_inverter/singlePhase_PWM_converter`, `702_matlab_integration/GeckoSCRIPT_ example_matlab`, `801_matrix_converters/..._junction_temperature` |
 
-Full list: `tools/parity/results/20260828-tutorial-sweep.txt`.
+Full list: `tools/parity/results/20260828-tutorial-sweep.txt` (pruned from the tree; see git history).
 
 Verified: the 9 singular failures behave identically with the solver from
 commit 51401230 (pre pin-fix) — they are pre-existing gaps, not regressions.

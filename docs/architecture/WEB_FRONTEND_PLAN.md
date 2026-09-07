@@ -373,7 +373,7 @@ Known limitation: the 15 CONTROL types are authoring/palette symbols only — no
 matrix stampers are registered for them (`StamperRegistry`), so the headless
 solver skips them during simulation. Control-domain headless parity is tracked
 in `docs/architecture/CONTROL_PARITY_PLAN.md` (evidence: tutorial sweep
-`tools/parity/results/20260828-tutorial-sweep.txt`; solver capability gaps in
+`tools/parity/results/20260828-tutorial-sweep.txt` (pruned; see git history); solver capability gaps in
 `docs/architecture/SOLVER_GAP_ANALYSIS.md`).
 
 ### P4 — Simulation & results in the web UI [COMPLETE]
@@ -420,7 +420,7 @@ chart, CSV export). Completed in P4:
    - `GeckoCustomRemote.java`: synchronized map supporting null placeholders for RMI callback client registrations.
 7. **Documentation**: written in `docs/architecture/PARITY_HARNESS.md`.
 
-Acceptance: green report committed in `tools/parity/results/20260822-200129.txt`.
+Acceptance: green report committed in `tools/parity/results/20260822-200129.txt` (pruned from the tree; see git history).
 
 ### P6 — Polish (acceptance gate passed) [COMPLETE]
 
