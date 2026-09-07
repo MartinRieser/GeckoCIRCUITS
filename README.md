@@ -26,8 +26,10 @@ and an MCP server for LLM tools — no Java installation required. Installers fo
 Windows (`.exe`/`.msi`), macOS (`.dmg`), and Linux (`.deb`/`.rpm`/`.AppImage`)
 are on the [Releases](https://github.com/tinix84/GeckoCIRCUITS/releases) page.
 Double-clicking any `.ipes` circuit opens it. See the
-[Desktop App guide](docs/desktop-app.md) and the
-[MCP interface](docs/mcp.md) for LLM integration.
+[Desktop App guide](docs/desktop-app.md), the
+[MCP interface](docs/mcp.md) for LLM integration, and the
+[NativeC guide](docs/native-c-blocks.md) for testing real C/C++
+microcontroller code in the simulation.
 
 ### AI & LLM Integration (MCP Server)
 

@@ -158,6 +158,12 @@ def bundle(jar, version):
     mcp_jar = ENGINE_DIR / "gecko-mcp.jar"
     print(f"== Copying gecko-mcp shaded jar -> {mcp_jar} ==")
     mcp_jar.write_bytes(build_mcp_jar().read_bytes())
+        # ship the NativeC C/C++ interface header so users can include it in
+    # their firmware projects without unpacking the jar
+    header_src = (REPO_ROOT / "src" / "modules" / "gecko-simulation-core" / "src"
+                  / "main" / "resources" / "gecko" / "nativec" / "gecko_c_block.h")
+    print(f"== Copying {header_src.name} -> {ENGINE_DIR} ==")
+    (ENGINE_DIR / header_src.name).write_bytes(header_src.read_bytes())
     (ENGINE_DIR / "VERSION").write_text(version + "\n")
 
 

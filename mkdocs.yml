@@ -228,6 +228,7 @@ nav:
   - Desktop:
     - Desktop App: desktop-app.md
     - MCP Interface (LLM Tools): mcp.md
+    - NativeC C/C++ Blocks: native-c-blocks.md
 
   - API Reference:
     - api/index.md
