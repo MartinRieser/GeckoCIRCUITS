@@ -1,6 +1,6 @@
 # Classic GUI Parity Plan — path to retiring the Swing UI
 
-Status: draft, 2026-09-06. Supersedes the NativeC portion of the earlier feature-review
+Status: **P0 and P1 implemented** (2026-09-06). P0: scope zoom/pan (80c48e7c), FFT frontend (fa3a98ff), NativeC v2 load-only C-library block (3cb96ec3 + abf4a842). P1: losses panel + thermal edit parity + parameter-audit decision (45a78bcf). Retirement deletions gated on the signed-off checklist — see docs/classic-retirement-checklist.md. Supersedes the NativeC portion of the earlier feature-review
 conversation: NativeC stays and is modernized as a **load-only** external-library block.
 
 Goal: the React desktop/web editor + headless engine cover the features people actually use,
@@ -117,11 +117,11 @@ GECKO_EXPORT void gecko_deinit(void);
 - Parity: one typ-88 circuit run through classic and headless engine in the parity
   harness; outputs must match.
 
-### Effort: M (calculator + builder wiring + FFM loader + properties UI + tests)
+### Status: DONE. Header shipped (core resources), CLibraryCalculator via FFM with per-run copies, typ 88 wired into ControlCalculatorBuilder incl. signal taps + classic path resolution, validator rule (NATIVEC_NO_LIBRARY), web schema entry, fixture-lib tests (gcc-compiled), native-access flags on surefire/failsafe/sidecar.
 
 ---
 
-## 2. Parity checklist (blocks classic removal)
+## 2. Parity checklist (blocks classic removal) — P0 items done
 
 ### P0 — must have
 
