@@ -29,12 +29,12 @@
 #ifndef GECKO_C_BLOCK_H
 #define GECKO_C_BLOCK_H
 
+/*
+ * This header exists to build the library, so exports are unconditional on
+ * Windows (dllexport). Never dllimport: users define these functions here.
+ */
 #if defined(_WIN32)
-  #if defined(GECKO_BUILD_LIBRARY)
-    #define GECKO_EXPORT __declspec(dllexport)
-  #else
-    #define GECKO_EXPORT __declspec(dllimport)
-  #endif
+  #define GECKO_EXPORT __declspec(dllexport)
 #else
   #define GECKO_EXPORT __attribute__((visibility("default")))
 #endif
