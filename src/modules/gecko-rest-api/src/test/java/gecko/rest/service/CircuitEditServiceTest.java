@@ -189,6 +189,19 @@ class CircuitEditServiceTest {
     }
 
     @Test
+    void thermalComponentsCreateAndPatchLikeLkComponents() {
+        // P1 parity: the thermal domain must be editable through the same
+        // REST paths as the electrical domain (classic UI parity)
+        CircuitChangeMessage created = service.createComponent(circuitId,
+                new ComponentCreateRequest("THERM", 46, "RTH1", 20, 40, 503, null));
+        assertEquals("createComponent", created.operation());
+
+        CircuitChangeMessage patched = service.patchComponent(circuitId, "RTH1",
+                new ComponentPatchRequest(22, 42, null, null, null));
+        assertEquals("patchComponent", patched.operation());
+    }
+
+    @Test
     void patchComponent_unknown_404() {
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> service.patchComponent(circuitId, "ghost", new ComponentPatchRequest(16, 16, null, null, null)));

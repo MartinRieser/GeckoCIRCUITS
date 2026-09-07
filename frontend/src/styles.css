@@ -2962,3 +2962,53 @@ polyline.wire.selected {
   border-bottom: 1px solid var(--border, #1e293b);
   color: var(--text-dim, #94a3b8);
 }
+
+/* --- Loss panel --- */
+.loss-panel {
+  margin: 0 14px 10px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border, #334155);
+  background: var(--panel-bg, rgba(15, 23, 42, 0.6));
+}
+.loss-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 6px 10px;
+  margin-bottom: 8px;
+}
+.loss-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--text-dim, #94a3b8);
+}
+.loss-grid input {
+  background: var(--panel-bg, #0f172a);
+  color: var(--text, #e2e8f0);
+  border: 1px solid var(--border, #334155);
+  border-radius: 4px;
+  padding: 3px 6px;
+}
+.loss-panel button {
+  padding: 4px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--border, #334155);
+  background: #1f2937;
+  color: var(--text, #e2e8f0);
+  cursor: pointer;
+}
+.loss-result {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text, #e2e8f0);
+}
+.loss-method {
+  font-weight: 400;
+  color: var(--text-dim, #94a3b8);
+}
