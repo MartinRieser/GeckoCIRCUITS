@@ -49,9 +49,9 @@ description: Downloads, FAQ, and additional resources
 
 ## External Links
 
-- [:material-github: GitHub Repository](https://github.com/tinix84/GeckoCIRCUITS)
-- [:material-bug: Issue Tracker](https://github.com/tinix84/GeckoCIRCUITS/issues)
-- [:material-forum: Discussions](https://github.com/tinix84/GeckoCIRCUITS/discussions)
+- [:material-github: GitHub Repository](https://github.com/MartinRieser/GeckoCIRCUITS)
+- [:material-bug: Issue Tracker](https://github.com/MartinRieser/GeckoCIRCUITS/issues)
+- [:material-forum: Discussions](https://github.com/MartinRieser/GeckoCIRCUITS/discussions)
 
 ## Related Tools
 

@@ -8,7 +8,7 @@ Complete history of GeckoCIRCUITS releases with download links, release notes, a
 
 The latest stable release is **v2.17.0** (released February 2026).
 
-[Download v2.17.0](https://github.com/tinix84/GeckoCIRCUITS/releases/tag/v2.17.0){ .md-button .md-button--primary }
+[Download v2.17.0](https://github.com/MartinRieser/GeckoCIRCUITS/releases/tag/v2.17.0){ .md-button .md-button--primary }
 [View Release Notes](./2170.md){ .md-button }
 
 ---
@@ -22,7 +22,7 @@ The latest stable release is **v2.17.0** (released February 2026).
 **Released:** 2026-02-15
 
 [Release Notes](./2170.md){ .md-button }
-[Download](https://github.com/tinix84/GeckoCIRCUITS/releases/tag/v2.17.0){ .md-button }
+[Download](https://github.com/MartinRieser/GeckoCIRCUITS/releases/tag/v2.17.0){ .md-button }
 
 ---
 
@@ -31,7 +31,7 @@ The latest stable release is **v2.17.0** (released February 2026).
 **Released:** 2026-02-14
 
 [Release Notes](./2160.md){ .md-button }
-[Download](https://github.com/tinix84/GeckoCIRCUITS/releases/tag/v2.16.0){ .md-button }
+[Download](https://github.com/MartinRieser/GeckoCIRCUITS/releases/tag/v2.16.0){ .md-button }
 
 ---
 
@@ -40,7 +40,7 @@ The latest stable release is **v2.17.0** (released February 2026).
 **Released:** 2026-02-14
 
 [Release Notes](./2150.md){ .md-button }
-[Download](https://github.com/tinix84/GeckoCIRCUITS/releases/tag/v2.15.0){ .md-button }
+[Download](https://github.com/MartinRieser/GeckoCIRCUITS/releases/tag/v2.15.0){ .md-button }
 
 ---
 
@@ -49,7 +49,7 @@ The latest stable release is **v2.17.0** (released February 2026).
 **Released:** 2026-02-14
 
 [Release Notes](./2140.md){ .md-button }
-[Download](https://github.com/tinix84/GeckoCIRCUITS/releases/tag/v2.14.0){ .md-button }
+[Download](https://github.com/MartinRieser/GeckoCIRCUITS/releases/tag/v2.14.0){ .md-button }
 
 ---
 
@@ -58,7 +58,7 @@ The latest stable release is **v2.17.0** (released February 2026).
 **Released:** 2026-02-13
 
 [Release Notes](./2130.md){ .md-button }
-[Download](https://github.com/tinix84/GeckoCIRCUITS/releases/tag/v2.13.0){ .md-button }
+[Download](https://github.com/MartinRieser/GeckoCIRCUITS/releases/tag/v2.13.0){ .md-button }
 
 ---
 
@@ -67,7 +67,7 @@ The latest stable release is **v2.17.0** (released February 2026).
 **Released:** 2026-02-12
 
 [Release Notes](./2120.md){ .md-button }
-[Download](https://github.com/tinix84/GeckoCIRCUITS/releases/tag/v2.12.0){ .md-button }
+[Download](https://github.com/MartinRieser/GeckoCIRCUITS/releases/tag/v2.12.0){ .md-button }
 
 ---
 
@@ -76,7 +76,7 @@ The latest stable release is **v2.17.0** (released February 2026).
 **Released:** 2026-02-12
 
 [Release Notes](./2110.md){ .md-button }
-[Download](https://github.com/tinix84/GeckoCIRCUITS/releases/tag/v2.11.0){ .md-button }
+[Download](https://github.com/MartinRieser/GeckoCIRCUITS/releases/tag/v2.11.0){ .md-button }
 
 ---
 
@@ -85,7 +85,7 @@ The latest stable release is **v2.17.0** (released February 2026).
 **Released:** 2025-08-24
 
 [Release Notes](./2100.md){ .md-button }
-[Download](https://github.com/tinix84/GeckoCIRCUITS/releases/tag/v2.10.0){ .md-button }
+[Download](https://github.com/MartinRieser/GeckoCIRCUITS/releases/tag/v2.10.0){ .md-button }
 
 ---
 
@@ -139,6 +139,6 @@ See the [Installation Guide](../getting-started/installation.md) for detailed in
 
 ## Support
 
-- **Documentation:** [tinix84.github.io/GeckoCIRCUITS](https://tinix84.github.io/GeckoCIRCUITS/)
-- **GitHub Issues:** [Report bugs or request features](https://github.com/tinix84/GeckoCIRCUITS/issues)
-- **GitHub Discussions:** [Ask questions and share ideas](https://github.com/tinix84/GeckoCIRCUITS/discussions)
+- **Documentation:** [MartinRieser.github.io/GeckoCIRCUITS](https://MartinRieser.github.io/GeckoCIRCUITS/)
+- **GitHub Issues:** [Report bugs or request features](https://github.com/MartinRieser/GeckoCIRCUITS/issues)
+- **GitHub Discussions:** [Ask questions and share ideas](https://github.com/MartinRieser/GeckoCIRCUITS/discussions)

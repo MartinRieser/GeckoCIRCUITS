@@ -24,7 +24,7 @@ Originally developed at ETH Zurich's Power Electronic Systems Laboratory by Andr
 A native desktop application bundling the React editor, the simulation engine,
 and an MCP server for LLM tools — no Java installation required. Installers for
 Windows (`.exe`/`.msi`), macOS (`.dmg`), and Linux (`.deb`/`.rpm`/`.AppImage`)
-are on the [Releases](https://github.com/tinix84/GeckoCIRCUITS/releases) page.
+are on the [Releases](https://github.com/MartinRieser/GeckoCIRCUITS/releases) page.
 Double-clicking any `.ipes` circuit opens it. See the
 [Desktop App guide](docs/desktop-app.md), the
 [MCP interface](docs/mcp.md) for LLM integration, and the
@@ -45,7 +45,7 @@ Connect your LLM agent (e.g. Google Antigravity, Claude Desktop, Cursor) using `
 
 ### GeckoCIRCUITS Classic (Swing UI, jpackage)
 
-Pre-built self-contained installers and portable packages are on the [Releases](https://github.com/tinix84/GeckoCIRCUITS/releases) page:
+Pre-built self-contained installers and portable packages are on the [Releases](https://github.com/MartinRieser/GeckoCIRCUITS/releases) page:
 
 - **Windows**: `GeckoCIRCUITS-<version>.msi` (installer) or `*-windows-x64-portable.zip` (portable)
 - **macOS**: `GeckoCIRCUITS-<version>.dmg` (drag-and-drop installer) or `*-macos-app.zip`
@@ -55,7 +55,7 @@ See [docs/PACKAGING.md](docs/PACKAGING.md) for details on packaging and local bu
 
 ### Running with Standalone JAR (Requires Java 25+)
 
-1. Download `gecko-1.0-jar-with-dependencies.jar` from [Releases](https://github.com/tinix84/GeckoCIRCUITS/releases)
+1. Download `gecko-1.0-jar-with-dependencies.jar` from [Releases](https://github.com/MartinRieser/GeckoCIRCUITS/releases)
 2. Run:
    ```bash
    java -Xmx3G -Dpolyglot.js.nashorn-compat=true -jar gecko-1.0-jar-with-dependencies.jar
@@ -94,7 +94,7 @@ The `resources/` directory contains ready-to-simulate circuits:
 
 ```bash
 # Clone
-git clone https://github.com/tinix84/GeckoCIRCUITS.git
+git clone https://github.com/MartinRieser/GeckoCIRCUITS.git
 cd GeckoCIRCUITS
 
 # Build (produces target/gecko-1.0-jar-with-dependencies.jar)
@@ -149,13 +149,13 @@ GeckoCIRCUITS
 
 ## Documentation
 
-Full documentation is available at **[tinix84.github.io/GeckoCIRCUITS](https://tinix84.github.io/GeckoCIRCUITS/)**:
+Full documentation is available at **[MartinRieser.github.io/GeckoCIRCUITS](https://MartinRieser.github.io/GeckoCIRCUITS/)**:
 
-- [Getting Started Guide](https://tinix84.github.io/GeckoCIRCUITS/getting-started/)
-- [Tutorials](https://tinix84.github.io/GeckoCIRCUITS/tutorials/) (DC-DC, AC-DC, DC-AC, thermal, scripting)
-- [Examples Library](https://tinix84.github.io/GeckoCIRCUITS/examples/) (125+ circuit files)
-- [API Reference](https://tinix84.github.io/GeckoCIRCUITS/api/) (GeckoSCRIPT, RMI, REST)
-- [Developer Guide](https://tinix84.github.io/GeckoCIRCUITS/resources/developer-guide/)
+- [Getting Started Guide](https://MartinRieser.github.io/GeckoCIRCUITS/getting-started/)
+- [Tutorials](https://MartinRieser.github.io/GeckoCIRCUITS/tutorials/) (DC-DC, AC-DC, DC-AC, thermal, scripting)
+- [Examples Library](https://MartinRieser.github.io/GeckoCIRCUITS/examples/) (125+ circuit files)
+- [API Reference](https://MartinRieser.github.io/GeckoCIRCUITS/api/) (GeckoSCRIPT, RMI, REST)
+- [Developer Guide](https://MartinRieser.github.io/GeckoCIRCUITS/resources/developer-guide/)
 
 ## Contributing
 
@@ -180,6 +180,6 @@ Copyright (c) ETH Zurich, Power Electronic Systems Laboratory. Originally develo
 
 ## Links
 
-- [Documentation](https://tinix84.github.io/GeckoCIRCUITS/)
+- [Documentation](https://MartinRieser.github.io/GeckoCIRCUITS/)
 - [Original SourceForge project](https://sourceforge.net/projects/geckocircuits/)
 - [Technokrat contributions](https://github.com/technokrat/gecko) (HiDPI support)

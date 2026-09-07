@@ -182,8 +182,8 @@ Component positions are saved in the .ipes file. If positions look wrong:
 ## Still Stuck?
 
 1. Check the [FAQ](faq.md)
-2. Search [existing issues](https://github.com/tinix84/GeckoCIRCUITS/issues)
-3. Open a [new issue](https://github.com/tinix84/GeckoCIRCUITS/issues/new/choose) with:
+2. Search [existing issues](https://github.com/MartinRieser/GeckoCIRCUITS/issues)
+3. Open a [new issue](https://github.com/MartinRieser/GeckoCIRCUITS/issues/new/choose) with:
    - Your OS and Java version
    - Steps to reproduce
    - Console output / error messages

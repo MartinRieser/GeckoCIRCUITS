@@ -91,8 +91,8 @@ gantt
 
 | Version | Source | Description |
 |---------|--------|-------------|
-| v2.04-repo-reorg | tinix84 fork | Repository reorganization, JDK 21 workflow |
-| v2.03-spotbugs-clean | tinix84 fork | All 1,096 SpotBugs violations fixed |
+| v2.04-repo-reorg | MartinRieser fork | Repository reorganization, JDK 21 workflow |
+| v2.03-spotbugs-clean | MartinRieser fork | All 1,096 SpotBugs violations fixed |
 | v2.02 | geckocircuits/GeckoCIRCUITS | Last upstream release |
 
 ---
@@ -101,30 +101,30 @@ gantt
 
 ### v3.1.0 — API Hardening & Security (Q2 2026)
 
-**Epic:** [#6](https://github.com/tinix84/GeckoCIRCUITS/issues/6) | **Milestone:** [v3.1.0](https://github.com/tinix84/GeckoCIRCUITS/milestone/1)
+**Epic:** [#6](https://github.com/MartinRieser/GeckoCIRCUITS/issues/6) | **Milestone:** [v3.1.0](https://github.com/MartinRieser/GeckoCIRCUITS/milestone/1)
 
 | Issue | Feature | Status |
 |-------|---------|--------|
-| [#13](https://github.com/tinix84/GeckoCIRCUITS/issues/13) | Rate limiting and request throttling | Planned |
-| [#14](https://github.com/tinix84/GeckoCIRCUITS/issues/14) | JWT token authentication | Planned |
-| [#15](https://github.com/tinix84/GeckoCIRCUITS/issues/15) | Pagination for list endpoints | Planned |
-| [#16](https://github.com/tinix84/GeckoCIRCUITS/issues/16) | WebSocket authentication | Planned |
-| [#17](https://github.com/tinix84/GeckoCIRCUITS/issues/17) | Enhanced circuit parsing | Planned |
-| [#18](https://github.com/tinix84/GeckoCIRCUITS/issues/18) | RBAC (Role-Based Access Control) | Planned |
-| [#19](https://github.com/tinix84/GeckoCIRCUITS/issues/19) | Client SDKs (Python, Java, JS) | Planned |
+| [#13](https://github.com/MartinRieser/GeckoCIRCUITS/issues/13) | Rate limiting and request throttling | Planned |
+| [#14](https://github.com/MartinRieser/GeckoCIRCUITS/issues/14) | JWT token authentication | Planned |
+| [#15](https://github.com/MartinRieser/GeckoCIRCUITS/issues/15) | Pagination for list endpoints | Planned |
+| [#16](https://github.com/MartinRieser/GeckoCIRCUITS/issues/16) | WebSocket authentication | Planned |
+| [#17](https://github.com/MartinRieser/GeckoCIRCUITS/issues/17) | Enhanced circuit parsing | Planned |
+| [#18](https://github.com/MartinRieser/GeckoCIRCUITS/issues/18) | RBAC (Role-Based Access Control) | Planned |
+| [#19](https://github.com/MartinRieser/GeckoCIRCUITS/issues/19) | Client SDKs (Python, Java, JS) | Planned |
 
 ---
 
 ### v3.2.0 — Web UI Launch (Q3 2026)
 
-**Epic:** [#7](https://github.com/tinix84/GeckoCIRCUITS/issues/7) | **Milestone:** [v3.2.0](https://github.com/tinix84/GeckoCIRCUITS/milestone/2)
+**Epic:** [#7](https://github.com/MartinRieser/GeckoCIRCUITS/issues/7) | **Milestone:** [v3.2.0](https://github.com/MartinRieser/GeckoCIRCUITS/milestone/2)
 
 | Issue | Feature | Status |
 |-------|---------|--------|
-| [#20](https://github.com/tinix84/GeckoCIRCUITS/issues/20) | React + TypeScript application scaffold | Planned |
-| [#21](https://github.com/tinix84/GeckoCIRCUITS/issues/21) | Circuit editor with drag-and-drop | Planned |
-| [#22](https://github.com/tinix84/GeckoCIRCUITS/issues/22) | Real-time oscilloscope visualization | Planned |
-| [#23](https://github.com/tinix84/GeckoCIRCUITS/issues/23) | PWA support for offline use | Planned |
+| [#20](https://github.com/MartinRieser/GeckoCIRCUITS/issues/20) | React + TypeScript application scaffold | Planned |
+| [#21](https://github.com/MartinRieser/GeckoCIRCUITS/issues/21) | Circuit editor with drag-and-drop | Planned |
+| [#22](https://github.com/MartinRieser/GeckoCIRCUITS/issues/22) | Real-time oscilloscope visualization | Planned |
+| [#23](https://github.com/MartinRieser/GeckoCIRCUITS/issues/23) | PWA support for offline use | Planned |
 
 **Technologies:** React 18, TypeScript, MUI, D3.js/WebGL, WebSocket/STOMP, Redux/Zustand
 
@@ -132,14 +132,14 @@ gantt
 
 ### v4.0.0 — Cloud Deployment (Q1 2027)
 
-**Epic:** [#8](https://github.com/tinix84/GeckoCIRCUITS/issues/8) | **Milestone:** [v4.0.0](https://github.com/tinix84/GeckoCIRCUITS/milestone/3)
+**Epic:** [#8](https://github.com/MartinRieser/GeckoCIRCUITS/issues/8) | **Milestone:** [v4.0.0](https://github.com/MartinRieser/GeckoCIRCUITS/milestone/3)
 
 | Issue | Feature | Status |
 |-------|---------|--------|
-| [#24](https://github.com/tinix84/GeckoCIRCUITS/issues/24) | Kubernetes orchestration (Helm charts) | Planned |
-| [#25](https://github.com/tinix84/GeckoCIRCUITS/issues/25) | Multi-tenant isolation + workspaces | Planned |
-| [#26](https://github.com/tinix84/GeckoCIRCUITS/issues/26) | Redis caching + PostgreSQL metadata | Planned |
-| [#27](https://github.com/tinix84/GeckoCIRCUITS/issues/27) | Prometheus metrics + Grafana dashboards | Planned |
+| [#24](https://github.com/MartinRieser/GeckoCIRCUITS/issues/24) | Kubernetes orchestration (Helm charts) | Planned |
+| [#25](https://github.com/MartinRieser/GeckoCIRCUITS/issues/25) | Multi-tenant isolation + workspaces | Planned |
+| [#26](https://github.com/MartinRieser/GeckoCIRCUITS/issues/26) | Redis caching + PostgreSQL metadata | Planned |
+| [#27](https://github.com/MartinRieser/GeckoCIRCUITS/issues/27) | Prometheus metrics + Grafana dashboards | Planned |
 
 **Infrastructure:** Kubernetes (EKS/AKS/GKE), Terraform/Pulumi, ArgoCD, Grafana + Prometheus
 
@@ -147,13 +147,13 @@ gantt
 
 ### v5.0.0 — Machine Learning Integration (Q3 2027)
 
-**Epic:** [#9](https://github.com/tinix84/GeckoCIRCUITS/issues/9) | **Milestone:** [v5.0.0](https://github.com/tinix84/GeckoCIRCUITS/milestone/4)
+**Epic:** [#9](https://github.com/MartinRieser/GeckoCIRCUITS/issues/9) | **Milestone:** [v5.0.0](https://github.com/MartinRieser/GeckoCIRCUITS/milestone/4)
 
 | Issue | Feature | Status |
 |-------|---------|--------|
-| [#28](https://github.com/tinix84/GeckoCIRCUITS/issues/28) | RL-based circuit optimization | Planned |
-| [#29](https://github.com/tinix84/GeckoCIRCUITS/issues/29) | Neural network surrogate models | Planned |
-| [#30](https://github.com/tinix84/GeckoCIRCUITS/issues/30) | Automated component selection | Planned |
+| [#28](https://github.com/MartinRieser/GeckoCIRCUITS/issues/28) | RL-based circuit optimization | Planned |
+| [#29](https://github.com/MartinRieser/GeckoCIRCUITS/issues/29) | Neural network surrogate models | Planned |
+| [#30](https://github.com/MartinRieser/GeckoCIRCUITS/issues/30) | Automated component selection | Planned |
 
 **Technologies:** TensorFlow/PyTorch, Python microservice, GPU (CUDA), MLflow, TorchServe
 
@@ -161,29 +161,29 @@ gantt
 
 ## Long-Term Vision (2027-2028)
 
-### Educational Platform Expansion — [#10](https://github.com/tinix84/GeckoCIRCUITS/issues/10)
+### Educational Platform Expansion — [#10](https://github.com/MartinRieser/GeckoCIRCUITS/issues/10)
 
 | Issue | Feature |
 |-------|---------|
-| [#31](https://github.com/tinix84/GeckoCIRCUITS/issues/31) | Interactive tutorials with embedded simulator |
-| [#32](https://github.com/tinix84/GeckoCIRCUITS/issues/32) | Virtual laboratory for universities |
-| [#33](https://github.com/tinix84/GeckoCIRCUITS/issues/33) | LMS integration (Moodle, Canvas, Blackboard) |
+| [#31](https://github.com/MartinRieser/GeckoCIRCUITS/issues/31) | Interactive tutorials with embedded simulator |
+| [#32](https://github.com/MartinRieser/GeckoCIRCUITS/issues/32) | Virtual laboratory for universities |
+| [#33](https://github.com/MartinRieser/GeckoCIRCUITS/issues/33) | LMS integration (Moodle, Canvas, Blackboard) |
 
 Also planned: certification programs, student competition platform, SCORM content packages.
 
-### Industry Partnerships — [#11](https://github.com/tinix84/GeckoCIRCUITS/issues/11)
+### Industry Partnerships — [#11](https://github.com/MartinRieser/GeckoCIRCUITS/issues/11)
 
 | Issue | Feature |
 |-------|---------|
-| [#34](https://github.com/tinix84/GeckoCIRCUITS/issues/34) | Semiconductor vendor component library integrations |
+| [#34](https://github.com/MartinRieser/GeckoCIRCUITS/issues/34) | Semiconductor vendor component library integrations |
 
 Also planned: enterprise licensing, professional support tiers, training & consulting.
 
-### Research Collaboration — [#12](https://github.com/tinix84/GeckoCIRCUITS/issues/12)
+### Research Collaboration — [#12](https://github.com/MartinRieser/GeckoCIRCUITS/issues/12)
 
 | Issue | Feature |
 |-------|---------|
-| [#35](https://github.com/tinix84/GeckoCIRCUITS/issues/35) | Reproducible research workflows (Docker + circuit files) |
+| [#35](https://github.com/MartinRieser/GeckoCIRCUITS/issues/35) | Reproducible research workflows (Docker + circuit files) |
 
 Also planned: citation tracking, dataset sharing, Jupyter/MATLAB integration, grant partnerships.
 
@@ -240,7 +240,7 @@ Want to contribute to the roadmap? We welcome:
 - Example circuits and tutorials
 - Code contributions
 
-See our [Contributing Guide](https://github.com/tinix84/GeckoCIRCUITS/blob/main/CONTRIBUTING.md) for details.
+See our [Contributing Guide](https://github.com/MartinRieser/GeckoCIRCUITS/blob/main/CONTRIBUTING.md) for details.
 
 ---
 
@@ -248,5 +248,5 @@ See our [Contributing Guide](https://github.com/tinix84/GeckoCIRCUITS/blob/main/
 
 Your feedback shapes the roadmap!
 
-- [GitHub Issues](https://github.com/tinix84/GeckoCIRCUITS/issues)
-- [Feature Requests](https://github.com/tinix84/GeckoCIRCUITS/issues/new?template=feature_request.md)
+- [GitHub Issues](https://github.com/MartinRieser/GeckoCIRCUITS/issues)
+- [Feature Requests](https://github.com/MartinRieser/GeckoCIRCUITS/issues/new?template=feature_request.md)

@@ -20,7 +20,7 @@ Headless REST API for circuit simulation using the GeckoCIRCUITS simulation engi
 
 **Step 1: Clone and Navigate**
 ```bash
-git clone https://github.com/tinix84/GeckoCIRCUITS.git
+git clone https://github.com/MartinRieser/GeckoCIRCUITS.git
 cd GeckoCIRCUITS
 ```
 
@@ -326,6 +326,6 @@ GPL v3 - See LICENSE file for details.
 
 ## Links
 
-- **Documentation**: https://tinix84.github.io/GeckoCIRCUITS/
-- **Main Repository**: https://github.com/tinix84/GeckoCIRCUITS
+- **Documentation**: https://MartinRieser.github.io/GeckoCIRCUITS/
+- **Main Repository**: https://github.com/MartinRieser/GeckoCIRCUITS
 - **Docker Hub**: (coming soon)

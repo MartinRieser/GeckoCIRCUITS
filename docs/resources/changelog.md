@@ -26,7 +26,7 @@ All notable changes to GeckoCIRCUITS.
 
 ### Changed
 - Updated README with documentation links, proper version references, and CONTRIBUTING.md pointer
-- Fixed download page URLs to point to correct GitHub repository (tinix84/GeckoCIRCUITS)
+- Fixed download page URLs to point to correct GitHub repository (MartinRieser/GeckoCIRCUITS)
 - Added version history table to download page
 - Production-ready documentation, examples, and developer onboarding
 

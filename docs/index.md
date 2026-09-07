@@ -148,7 +148,7 @@ graph LR
 
 | Tool | Best For | Website |
 |------|----------|---------|
-| **GeckoCIRCUITS** | Power electronics education, MATLAB integration, open-source | [GitHub](https://github.com/tinix84/GeckoCIRCUITS) |
+| **GeckoCIRCUITS** | Power electronics education, MATLAB integration, open-source | [GitHub](https://github.com/MartinRieser/GeckoCIRCUITS) |
 | **PLECS** | Professional power electronics, Simulink co-sim, code generation | [plexim.com](https://www.plexim.com) |
 | **PSIM** | Motor drives, SmartCtrl design, embedded code | [altair.com/psim](https://altair.com/psim) |
 | **SIMBA** | Modern UI, Python-first workflow, cloud simulation | [simba.io](https://www.simba.io) |
@@ -157,9 +157,9 @@ graph LR
 
 ## Community
 
-- :fontawesome-brands-github: [GitHub Repository](https://github.com/tinix84/GeckoCIRCUITS)
-- :material-bug: [Issue Tracker](https://github.com/tinix84/GeckoCIRCUITS/issues)
-- :material-forum: [Discussions](https://github.com/tinix84/GeckoCIRCUITS/discussions)
+- :fontawesome-brands-github: [GitHub Repository](https://github.com/MartinRieser/GeckoCIRCUITS)
+- :material-bug: [Issue Tracker](https://github.com/MartinRieser/GeckoCIRCUITS/issues)
+- :material-forum: [Discussions](https://github.com/MartinRieser/GeckoCIRCUITS/discussions)
 
 ## Citation
 
@@ -170,7 +170,7 @@ If you use GeckoCIRCUITS in your research, please cite:
   title = {GeckoCIRCUITS: Power Electronics Circuit Simulator},
   author = {GeckoCIRCUITS Team},
   year = {2024},
-  url = {https://github.com/tinix84/GeckoCIRCUITS}
+  url = {https://github.com/MartinRieser/GeckoCIRCUITS}
 }
 ```
 

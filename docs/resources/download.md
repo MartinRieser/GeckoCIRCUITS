@@ -7,7 +7,7 @@ description: Download GeckoCIRCUITS releases
 
 ## Latest Release
 
-[:material-download: Download GeckoCIRCUITS v1.0](https://github.com/tinix84/GeckoCIRCUITS/releases/latest){ .md-button .md-button--primary }
+[:material-download: Download GeckoCIRCUITS v1.0](https://github.com/MartinRieser/GeckoCIRCUITS/releases/latest){ .md-button .md-button--primary }
 
 ## System Requirements
 
@@ -70,7 +70,7 @@ description: Download GeckoCIRCUITS releases
 
 ## Examples Package
 
-[:material-folder-download: Download Examples (GeckoCIRCUITS-1.0-examples.zip)](https://github.com/tinix84/GeckoCIRCUITS/releases/latest){ .md-button }
+[:material-folder-download: Download Examples (GeckoCIRCUITS-1.0-examples.zip)](https://github.com/MartinRieser/GeckoCIRCUITS/releases/latest){ .md-button }
 
 Contains 100+ ready-to-run circuit files:
 
@@ -84,7 +84,7 @@ Contains 100+ ready-to-run circuit files:
 
 ```bash
 # Clone repository
-git clone https://github.com/tinix84/GeckoCIRCUITS.git
+git clone https://github.com/MartinRieser/GeckoCIRCUITS.git
 cd GeckoCIRCUITS
 
 # Build with Maven
@@ -112,5 +112,5 @@ See [Changelog](changelog.md) for detailed release notes.
 
 GeckoCIRCUITS is dual-licensed:
 
-- **Open Source**: [GNU General Public License v3.0](https://github.com/tinix84/GeckoCIRCUITS/blob/main/LICENSE) for academic, research, and open-source use
+- **Open Source**: [GNU General Public License v3.0](https://github.com/MartinRieser/GeckoCIRCUITS/blob/main/LICENSE) for academic, research, and open-source use
 - **Commercial**: Contact for commercial licensing terms

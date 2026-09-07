@@ -41,7 +41,7 @@ class LaunchBrowserTest {
     void testLaunchWithValidUrl() {
         // Note: This will attempt to launch a browser, but won't fail if browser unavailable
         // In CI/headless environments, this may fail silently which is acceptable
-        assertDoesNotThrow(() -> LaunchBrowser.launch("https://github.com/tinix84/GeckoCIRCUITS"));
+        assertDoesNotThrow(() -> LaunchBrowser.launch("https://github.com/MartinRieser/GeckoCIRCUITS"));
     }
 
     @Test

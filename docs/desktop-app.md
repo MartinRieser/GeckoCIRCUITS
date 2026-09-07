@@ -18,7 +18,7 @@ installation** — a trimmed Java runtime ships inside the app.
 ## Installing
 
 Download the installer for your OS from the
-[Releases](https://github.com/tinix84/GeckoCIRCUITS/releases) page (assets named
+[Releases](https://github.com/MartinRieser/GeckoCIRCUITS/releases) page (assets named
 `GeckoCIRCUITS_<version>_*` come from the desktop pipeline):
 
 | OS | File | Notes |

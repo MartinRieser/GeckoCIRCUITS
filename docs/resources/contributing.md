@@ -28,7 +28,7 @@ Thank you for your interest in contributing! GeckoCIRCUITS is an open-source pow
 ### Build from Source
 
 ```bash
-git clone https://github.com/tinix84/GeckoCIRCUITS.git
+git clone https://github.com/MartinRieser/GeckoCIRCUITS.git
 cd GeckoCIRCUITS
 mvn clean package -DskipTests
 ```
@@ -174,8 +174,8 @@ When reporting bugs, please include:
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the same [dual license](https://github.com/tinix84/GeckoCIRCUITS/blob/main/LICENSE) as the project.
+By contributing, you agree that your contributions will be licensed under the same [dual license](https://github.com/MartinRieser/GeckoCIRCUITS/blob/main/LICENSE) as the project.
 
 ## Questions?
 
-Open a [GitHub Discussion](https://github.com/tinix84/GeckoCIRCUITS/discussions) or file an issue.
+Open a [GitHub Discussion](https://github.com/MartinRieser/GeckoCIRCUITS/discussions) or file an issue.

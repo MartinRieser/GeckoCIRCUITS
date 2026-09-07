@@ -135,7 +135,7 @@ def generate_release_page(tag: str, info: Dict[str, str], prev_tag: Optional[str
     content = f"""# {tag} Release Notes
 
 **Release Date:** {info['date']}
-**Commit:** [{info['commit']}](https://github.com/tinix84/GeckoCIRCUITS/commit/{info['commit']})
+**Commit:** [{info['commit']}](https://github.com/MartinRieser/GeckoCIRCUITS/commit/{info['commit']})
 
 ---
 
@@ -178,7 +178,7 @@ Distribution packages for all platforms:
 
     ```bash
     # Download
-    wget https://github.com/tinix84/GeckoCIRCUITS/releases/download/{tag}/GeckoCIRCUITS-{tag_clean}-windows.zip
+    wget https://github.com/MartinRieser/GeckoCIRCUITS/releases/download/{tag}/GeckoCIRCUITS-{tag_clean}-windows.zip
 
     # Extract
     unzip GeckoCIRCUITS-{tag_clean}-windows.zip
@@ -191,7 +191,7 @@ Distribution packages for all platforms:
 
     ```bash
     # Download
-    wget https://github.com/tinix84/GeckoCIRCUITS/releases/download/{tag}/GeckoCIRCUITS-{tag_clean}-linux.zip
+    wget https://github.com/MartinRieser/GeckoCIRCUITS/releases/download/{tag}/GeckoCIRCUITS-{tag_clean}-linux.zip
 
     # Extract
     unzip GeckoCIRCUITS-{tag_clean}-linux.zip
@@ -207,7 +207,7 @@ Distribution packages for all platforms:
 
     ```bash
     # Download
-    wget https://github.com/tinix84/GeckoCIRCUITS/releases/download/{tag}/GeckoCIRCUITS-{tag_clean}-macos.zip
+    wget https://github.com/MartinRieser/GeckoCIRCUITS/releases/download/{tag}/GeckoCIRCUITS-{tag_clean}-macos.zip
 
     # Extract
     unzip GeckoCIRCUITS-{tag_clean}-macos.zip
@@ -223,7 +223,7 @@ Distribution packages for all platforms:
 
     ```bash
     # Download
-    wget https://github.com/tinix84/GeckoCIRCUITS/releases/download/{tag}/GeckoCIRCUITS-{tag_clean}-wsl.zip
+    wget https://github.com/MartinRieser/GeckoCIRCUITS/releases/download/{tag}/GeckoCIRCUITS-{tag_clean}-wsl.zip
 
     # Extract
     unzip GeckoCIRCUITS-{tag_clean}-wsl.zip
@@ -276,18 +276,18 @@ After installation, check out:
 
 ## Links
 
-- [GitHub Release](https://github.com/tinix84/GeckoCIRCUITS/releases/tag/{tag})
-- [All Releases](https://github.com/tinix84/GeckoCIRCUITS/releases)
-- [Source Code](https://github.com/tinix84/GeckoCIRCUITS/tree/{tag})
-- [Documentation](https://tinix84.github.io/GeckoCIRCUITS/)
+- [GitHub Release](https://github.com/MartinRieser/GeckoCIRCUITS/releases/tag/{tag})
+- [All Releases](https://github.com/MartinRieser/GeckoCIRCUITS/releases)
+- [Source Code](https://github.com/MartinRieser/GeckoCIRCUITS/tree/{tag})
+- [Documentation](https://MartinRieser.github.io/GeckoCIRCUITS/)
 
 ---
 
 ## Support
 
-- **Issues:** [GitHub Issues](https://github.com/tinix84/GeckoCIRCUITS/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/tinix84/GeckoCIRCUITS/discussions)
-- **Documentation:** [tinix84.github.io/GeckoCIRCUITS](https://tinix84.github.io/GeckoCIRCUITS/)
+- **Issues:** [GitHub Issues](https://github.com/MartinRieser/GeckoCIRCUITS/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/MartinRieser/GeckoCIRCUITS/discussions)
+- **Documentation:** [MartinRieser.github.io/GeckoCIRCUITS](https://MartinRieser.github.io/GeckoCIRCUITS/)
 """
 
     return content
@@ -305,7 +305,7 @@ Complete history of GeckoCIRCUITS releases with download links, release notes, a
 
 The latest stable release is **{current}** (released {date}).
 
-[Download {current}](https://github.com/tinix84/GeckoCIRCUITS/releases/tag/{current}){{ .md-button .md-button--primary }}
+[Download {current}](https://github.com/MartinRieser/GeckoCIRCUITS/releases/tag/{current}){{ .md-button .md-button--primary }}
 [View Release Notes](./{current_clean}.md){{ .md-button }}
 
 ---
@@ -334,7 +334,7 @@ The latest stable release is **{current}** (released {date}).
 **Released:** {info['date']}
 
 [Release Notes](./{tag_clean}.md){{ .md-button }}
-[Download](https://github.com/tinix84/GeckoCIRCUITS/releases/tag/{tag}){{ .md-button }}
+[Download](https://github.com/MartinRieser/GeckoCIRCUITS/releases/tag/{tag}){{ .md-button }}
 
 ---
 
@@ -390,9 +390,9 @@ See the [Installation Guide](../install/index.md) for detailed instructions.
 
 ## Support
 
-- **Documentation:** [tinix84.github.io/GeckoCIRCUITS](https://tinix84.github.io/GeckoCIRCUITS/)
-- **GitHub Issues:** [Report bugs or request features](https://github.com/tinix84/GeckoCIRCUITS/issues)
-- **GitHub Discussions:** [Ask questions and share ideas](https://github.com/tinix84/GeckoCIRCUITS/discussions)
+- **Documentation:** [MartinRieser.github.io/GeckoCIRCUITS](https://MartinRieser.github.io/GeckoCIRCUITS/)
+- **GitHub Issues:** [Report bugs or request features](https://github.com/MartinRieser/GeckoCIRCUITS/issues)
+- **GitHub Discussions:** [Ask questions and share ideas](https://github.com/MartinRieser/GeckoCIRCUITS/discussions)
 """
 
     return content
@@ -621,7 +621,7 @@ Want to contribute to the roadmap? We welcome:
 - Example circuits and tutorials
 - Code contributions
 
-See our [Contributing Guide](https://github.com/tinix84/GeckoCIRCUITS/blob/main/CONTRIBUTING.md) for details.
+See our [Contributing Guide](https://github.com/MartinRieser/GeckoCIRCUITS/blob/main/CONTRIBUTING.md) for details.
 
 ---
 
@@ -629,8 +629,8 @@ See our [Contributing Guide](https://github.com/tinix84/GeckoCIRCUITS/blob/main/
 
 Your feedback shapes the roadmap! Share your thoughts:
 
-- [GitHub Discussions](https://github.com/tinix84/GeckoCIRCUITS/discussions)
-- [Feature Requests](https://github.com/tinix84/GeckoCIRCUITS/issues/new?template=feature_request.md)
+- [GitHub Discussions](https://github.com/MartinRieser/GeckoCIRCUITS/discussions)
+- [Feature Requests](https://github.com/MartinRieser/GeckoCIRCUITS/issues/new?template=feature_request.md)
 - [Email](mailto:maintainer@geckocircuits.org) (if public)
 """
 

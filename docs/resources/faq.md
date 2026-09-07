@@ -119,10 +119,10 @@ See [Troubleshooting](troubleshooting.md) for common startup issues.
 
 ### Where do I report bugs?
 
-Open an issue on [GitHub](https://github.com/tinix84/GeckoCIRCUITS/issues) using the bug report template.
+Open an issue on [GitHub](https://github.com/MartinRieser/GeckoCIRCUITS/issues) using the bug report template.
 
 ### How do I get help?
 
-- [GitHub Issues](https://github.com/tinix84/GeckoCIRCUITS/issues) - Bug reports and feature requests
-- [GitHub Discussions](https://github.com/tinix84/GeckoCIRCUITS/discussions) - Questions and community help
+- [GitHub Issues](https://github.com/MartinRieser/GeckoCIRCUITS/issues) - Bug reports and feature requests
+- [GitHub Discussions](https://github.com/MartinRieser/GeckoCIRCUITS/discussions) - Questions and community help
 - [Tutorials](../tutorials/index.md) - Step-by-step learning guides

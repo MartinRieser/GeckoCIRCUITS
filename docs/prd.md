@@ -71,7 +71,7 @@ GeckoCIRCUITS is an open-source, Java 25 circuit simulator for power electronics
 - Docker packaging available (multi-stage Alpine JRE 21 build, ~180MB image)
 
 ### 4.4 Documentation Site (Live)
-- **URL:** https://tinix84.github.io/GeckoCIRCUITS/
+- **URL:** https://MartinRieser.github.io/GeckoCIRCUITS/
 - **Technology:** MkDocs with Material theme, deployed via GitHub Pages (gh-pages branch)
 - Content synced from `resources/` via `scripts/sync-docs.py`
 - Sections: Getting Started, Tutorials (9 series), Examples (6 categories), Articles (10 newsletters), API Reference
@@ -139,10 +139,10 @@ GeckoCIRCUITS is an open-source, Java 25 circuit simulator for power electronics
 
 | Version | Target | Epic | Features |
 |---------|--------|------|----------|
-| v3.1.0 | Q2 2026 | [#6](https://github.com/tinix84/GeckoCIRCUITS/issues/6) | Rate limiting [#13], JWT [#14], pagination [#15], WebSocket auth [#16], parsing [#17], RBAC [#18], SDKs [#19] |
-| v3.2.0 | Q3 2026 | [#7](https://github.com/tinix84/GeckoCIRCUITS/issues/7) | React app [#20], circuit editor [#21], oscilloscope [#22], PWA [#23] |
-| v4.0.0 | Q1 2027 | [#8](https://github.com/tinix84/GeckoCIRCUITS/issues/8) | Kubernetes [#24], multi-tenant [#25], Redis/Postgres [#26], observability [#27] |
-| v5.0.0 | Q3 2027 | [#9](https://github.com/tinix84/GeckoCIRCUITS/issues/9) | RL optimization [#28], surrogate models [#29], component selection [#30] |
+| v3.1.0 | Q2 2026 | [#6](https://github.com/MartinRieser/GeckoCIRCUITS/issues/6) | Rate limiting [#13], JWT [#14], pagination [#15], WebSocket auth [#16], parsing [#17], RBAC [#18], SDKs [#19] |
+| v3.2.0 | Q3 2026 | [#7](https://github.com/MartinRieser/GeckoCIRCUITS/issues/7) | React app [#20], circuit editor [#21], oscilloscope [#22], PWA [#23] |
+| v4.0.0 | Q1 2027 | [#8](https://github.com/MartinRieser/GeckoCIRCUITS/issues/8) | Kubernetes [#24], multi-tenant [#25], Redis/Postgres [#26], observability [#27] |
+| v5.0.0 | Q3 2027 | [#9](https://github.com/MartinRieser/GeckoCIRCUITS/issues/9) | RL optimization [#28], surrogate models [#29], component selection [#30] |
 
 **Long-term vision:** Educational platform [#10], industry partnerships [#11], research collaboration [#12]
 

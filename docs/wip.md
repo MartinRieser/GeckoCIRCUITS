@@ -50,9 +50,9 @@ This is an open-source project! If you'd like to contribute content:
 3. **💡 Suggest improvements** - Tell us what documentation you need
 
 **Get involved:**
-- [GitHub Issues](https://github.com/tinix84/GeckoCIRCUITS/issues) - Report missing content
-- [GitHub Discussions](https://github.com/tinix84/GeckoCIRCUITS/discussions) - Suggest new tutorials
-- [Contributing Guide](https://github.com/tinix84/GeckoCIRCUITS/blob/main/CONTRIBUTING.md) - Learn how to contribute
+- [GitHub Issues](https://github.com/MartinRieser/GeckoCIRCUITS/issues) - Report missing content
+- [GitHub Discussions](https://github.com/MartinRieser/GeckoCIRCUITS/discussions) - Suggest new tutorials
+- [Contributing Guide](https://github.com/MartinRieser/GeckoCIRCUITS/blob/main/CONTRIBUTING.md) - Learn how to contribute
 
 ---
 
@@ -86,7 +86,7 @@ While this page is being built, you might find these helpful:
 
 Want to know when this page is ready?
 
-- ⭐ **Star the repository** on [GitHub](https://github.com/tinix84/GeckoCIRCUITS)
+- ⭐ **Star the repository** on [GitHub](https://github.com/MartinRieser/GeckoCIRCUITS)
 - 👀 **Watch for releases** to get notified of documentation updates
 - 📢 **Follow discussions** to see what's being worked on
 
