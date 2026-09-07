@@ -6,7 +6,6 @@ on:
       - 'feature/desktop-packaging-jpackage'
     tags:
       - 'classic-v*'
-      - 'v*'
   workflow_dispatch:
     inputs:
       version:
@@ -48,7 +47,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDK 25
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '25'
           distribution: 'temurin'
@@ -134,7 +133,7 @@ jobs:
     name: Publish Release
     needs: build-packages
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/classic-v') || startsWith(github.ref, 'refs/tags/v') || github.event.inputs.upload_release == 'true'
+    if: startsWith(github.ref, 'refs/tags/classic-v') || github.event.inputs.upload_release == 'true'
     permissions:
       contents: write
 
