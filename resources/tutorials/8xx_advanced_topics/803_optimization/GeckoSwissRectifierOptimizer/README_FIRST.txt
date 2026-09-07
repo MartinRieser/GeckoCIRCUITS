@@ -75,7 +75,7 @@ In the graphs, you can zoom (right click, menu or left click, drag and make rect
 
 BEFORE USING THE PROGRAM, please go through the short introductory presentation included with this application (QuickIntro.pdf or QuickIntro.pptx).
 
-Report any bugs, errors, or general feedback to to andrija.stupar@gecko-simulations.com
+Report any bugs, errors, or general feedback at https://github.com/MartinRieser/GeckoCIRCUITS/issues
 
 
 ====================================================

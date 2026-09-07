@@ -3,7 +3,7 @@
     "gecko-circuits": {
       "command": "python",
       "args": [
-        "c:/Users/mhr/Documents/GeckoCIRCUITS/scripts/desktop/launch-mcp.py"
+        "scripts/desktop/launch-mcp.py"
       ]
     }
   }
