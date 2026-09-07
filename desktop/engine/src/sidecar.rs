@@ -152,7 +152,6 @@ pub fn spawn(
     })
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
