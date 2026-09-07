@@ -30,7 +30,7 @@ Thank you for your interest in contributing! GeckoCIRCUITS is an open-source pow
 ```bash
 git clone https://github.com/tinix84/GeckoCIRCUITS.git
 cd GeckoCIRCUITS
-mvn clean package assembly:single -DskipTests
+mvn clean package -DskipTests
 ```
 
 ### Run Tests

@@ -88,7 +88,7 @@ git clone https://github.com/tinix84/GeckoCIRCUITS.git
 cd GeckoCIRCUITS
 
 # Build with Maven
-mvn clean package assembly:single -DskipTests
+mvn clean package -DskipTests
 
 # Run
 java -Xmx3G -Dpolyglot.js.nashorn-compat=true \

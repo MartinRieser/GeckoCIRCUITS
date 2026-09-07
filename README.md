@@ -98,7 +98,7 @@ git clone https://github.com/tinix84/GeckoCIRCUITS.git
 cd GeckoCIRCUITS
 
 # Build (produces target/gecko-1.0-jar-with-dependencies.jar)
-mvn clean package assembly:single -DskipTests
+mvn clean package -DskipTests
 
 # Run
 java -Xmx3G -Dpolyglot.js.nashorn-compat=true -jar target/gecko-1.0-jar-with-dependencies.jar

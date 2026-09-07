@@ -375,7 +375,7 @@ TOPIC  /topic/simulations/{id}  Real-time simulation progress
 
 ### 7.1 Build Commands
 ```bash
-mvn clean package assembly:single          # Desktop JAR with dependencies
+mvn clean package -DskipTests              # All modules + fat JAR (shade plugin)
 mvn test                # All modules (reactor)
 mvn clean test jacoco:report               # Coverage report
 mvn clean package -Pdist-all -DskipTests   # Platform distributions

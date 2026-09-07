@@ -27,7 +27,7 @@ ls -la target/gecko-1.0-jar-with-dependencies.jar
 
 If missing, build it:
 ```bash
-mvn clean package assembly:single -DskipTests
+mvn clean package -DskipTests
 ```
 
 ### "Unsupported class file major version" error (e.g. version 69 or 65)
@@ -137,7 +137,7 @@ Usually caused by:
 **Clear cache and retry:**
 ```bash
 mvn clean
-mvn package assembly:single -DskipTests
+mvn package -DskipTests
 ```
 
 **If dependencies fail to download:**
