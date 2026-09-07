@@ -7,5 +7,15 @@ cd /d "%~dp0..\.."
 python scripts\desktop\build-engine.py %*
 if errorlevel 1 exit /b 1
 
-cargo tauri build
+where tauri >nul 2>nul
+if %errorlevel% equ 0 (
+    tauri build
+    exit /b %errorlevel%
+)
+where cargo-tauri >nul 2>nul
+if %errorlevel% equ 0 (
+    cargo tauri build
+    exit /b %errorlevel%
+)
+npx @tauri-apps/cli build
 exit /b %errorlevel%

@@ -5,4 +5,10 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 
 python3 scripts/desktop/build-engine.py "$@"
-cargo tauri build
+if command -v tauri &>/dev/null; then
+    tauri build
+elif command -v cargo-tauri &>/dev/null; then
+    cargo tauri build
+else
+    npx @tauri-apps/cli build
+fi
