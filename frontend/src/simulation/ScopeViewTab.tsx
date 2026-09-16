@@ -382,6 +382,9 @@ export function ScopeViewTab({
                       Clear Cursors
                     </button>
                   </div>
+                  <div className="cursor-delta-hint" style={{ marginTop: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>
+                    💡 <strong>Tip:</strong> Click plot to move Cursor A • <strong>Shift+Click</strong> or <strong>Right-Click</strong> to move Cursor B • Drag tabs (A / B) to slide
+                  </div>
                 </div>
               )}
 
@@ -596,13 +599,44 @@ function FullScreenOverlayChart({
     onHoverIndex(sampleIndexAt(time, t));
   };
 
-  const handleClick = () => {
+  const handleCursorDragStart = (e: React.PointerEvent, type: 'A' | 'B') => {
+    e.stopPropagation();
+    e.preventDefault();
+    const svg = svgRef.current;
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+
+    const onMove = (ev: PointerEvent) => {
+      const svgX = ((ev.clientX - rect.left) / rect.width) * width;
+      const clampedX = Math.max(padLeft, Math.min(width - padRight, svgX));
+      const t = minT + ((clampedX - padLeft) / plotW) * (maxT - minT);
+      const newIdx = sampleIndexAt(time, t);
+      onSetCursor(type, newIdx);
+    };
+
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  };
+
+  const handleClick = (e: ReactMouseEvent<SVGSVGElement>) => {
     if (suppressClickRef.current) {
       suppressClickRef.current = false;
       return;
     }
     if (hoverIndex === null) return;
-    onSetCursor(nextCursorSlot(cursorA, cursorB), hoverIndex);
+    const targetCursor: 'A' | 'B' = e.shiftKey ? 'B' : nextCursorSlot(cursorA, cursorB);
+    onSetCursor(targetCursor, hoverIndex);
+  };
+
+  const handleContextMenu = (e: ReactMouseEvent<SVGSVGElement>) => {
+    e.preventDefault();
+    if (hoverIndex === null) return;
+    onSetCursor('B', hoverIndex);
   };
 
   // drag-pan: pointerdown starts a candidate pan; movement beyond 4px pans and
@@ -648,6 +682,7 @@ function FullScreenOverlayChart({
         onMouseMove={handleMouseMove}
         onMouseLeave={() => onHoverIndex(null)}
         onClick={handleClick}
+        onContextMenu={handleContextMenu}
         onPointerDown={handlePointerDown}
       >
         <rect width={width} height={height} className="waveform-bg" rx={8} />
@@ -755,24 +790,30 @@ function FullScreenOverlayChart({
               stroke="#38bdf8"
               strokeWidth={1.5}
             />
-            <rect
-              x={mapX(time[cursorA]) - 14}
-              y={padTop - 18}
-              width={28}
-              height={16}
-              rx={3}
-              fill="#0284c7"
-            />
-            <text
-              x={mapX(time[cursorA])}
-              y={padTop - 6}
-              fill="#ffffff"
-              fontSize={10}
-              fontWeight={800}
-              textAnchor="middle"
+            <g
+              className="cursor-handle cursor-handle-a"
+              style={{ cursor: 'ew-resize', pointerEvents: 'auto' }}
+              onPointerDown={(e) => handleCursorDragStart(e, 'A')}
             >
-              A
-            </text>
+              <rect
+                x={mapX(time[cursorA]) - 14}
+                y={padTop - 18}
+                width={28}
+                height={16}
+                rx={3}
+                fill="#0284c7"
+              />
+              <text
+                x={mapX(time[cursorA])}
+                y={padTop - 6}
+                fill="#ffffff"
+                fontSize={10}
+                fontWeight={800}
+                textAnchor="middle"
+              >
+                A
+              </text>
+            </g>
           </g>
         )}
 
@@ -787,24 +828,30 @@ function FullScreenOverlayChart({
               stroke="#f43f5e"
               strokeWidth={1.5}
             />
-            <rect
-              x={mapX(time[cursorB]) - 14}
-              y={padTop - 18}
-              width={28}
-              height={16}
-              rx={3}
-              fill="#e11d48"
-            />
-            <text
-              x={mapX(time[cursorB])}
-              y={padTop - 6}
-              fill="#ffffff"
-              fontSize={10}
-              fontWeight={800}
-              textAnchor="middle"
+            <g
+              className="cursor-handle cursor-handle-b"
+              style={{ cursor: 'ew-resize', pointerEvents: 'auto' }}
+              onPointerDown={(e) => handleCursorDragStart(e, 'B')}
             >
-              B
-            </text>
+              <rect
+                x={mapX(time[cursorB]) - 14}
+                y={padTop - 18}
+                width={28}
+                height={16}
+                rx={3}
+                fill="#e11d48"
+              />
+              <text
+                x={mapX(time[cursorB])}
+                y={padTop - 6}
+                fill="#ffffff"
+                fontSize={10}
+                fontWeight={800}
+                textAnchor="middle"
+              >
+                B
+              </text>
+            </g>
           </g>
         )}
 
@@ -820,6 +867,22 @@ function FullScreenOverlayChart({
               strokeWidth={1}
               strokeDasharray="3 3"
             />
+            <rect
+              x={Math.max(padLeft, Math.min(width - padRight - 60, mapX(time[hoverIndex]) - 30))}
+              y={height - padBottom + 4}
+              width={60}
+              height={18}
+              rx={3}
+              className="hover-pill"
+            />
+            <text
+              x={Math.max(padLeft + 30, Math.min(width - padRight - 30, mapX(time[hoverIndex])))}
+              y={height - padBottom + 17}
+              textAnchor="middle"
+              className="hover-text"
+            >
+              {formatEngineeringValue(time[hoverIndex], 's')}
+            </text>
             {activeSignals.map((name) => {
               const val = signals[name]?.[hoverIndex];
               if (val === undefined) return null;
@@ -850,7 +913,13 @@ function FullScreenOverlayChart({
           signals={signals}
           allSignals={allSignals}
           traceColors={traceColors}
-          hint="Click to place measurement cursor"
+          hint={
+            cursorA === null
+              ? 'Click: place Cursor A • Shift+Click or Right-Click: place B'
+              : cursorB === null
+              ? 'Click: place Cursor B • Shift+Click or Right-Click: place B'
+              : 'Click: move A • Shift+Click / Right-Click: move B • Drag tabs to slide'
+          }
         />
       )}
     </div>
@@ -939,13 +1008,44 @@ function FullScreenStackedChart({
     onHoverIndex(sampleIndexAt(time, t));
   };
 
-  const handleClick = () => {
+  const handleCursorDragStart = (e: React.PointerEvent, type: 'A' | 'B') => {
+    e.stopPropagation();
+    e.preventDefault();
+    const svg = svgRef.current;
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+
+    const onMove = (ev: PointerEvent) => {
+      const svgX = ((ev.clientX - rect.left) / rect.width) * width;
+      const clampedX = Math.max(padLeft, Math.min(width - padRight, svgX));
+      const t = t0 + ((clampedX - padLeft) / plotW) * (t1 - t0);
+      const newIdx = sampleIndexAt(time, t);
+      onSetCursor(type, newIdx);
+    };
+
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  };
+
+  const handleClick = (e: ReactMouseEvent<SVGSVGElement>) => {
     if (suppressClickRef.current) {
       suppressClickRef.current = false;
       return;
     }
     if (hoverIndex === null) return;
-    onSetCursor(nextCursorSlot(cursorA, cursorB), hoverIndex);
+    const targetCursor: 'A' | 'B' = e.shiftKey ? 'B' : nextCursorSlot(cursorA, cursorB);
+    onSetCursor(targetCursor, hoverIndex);
+  };
+
+  const handleContextMenu = (e: ReactMouseEvent<SVGSVGElement>) => {
+    e.preventDefault();
+    if (hoverIndex === null) return;
+    onSetCursor('B', hoverIndex);
   };
 
   // drag-pan, same interaction as the overlay chart
@@ -988,6 +1088,7 @@ function FullScreenStackedChart({
         onMouseMove={handleMouseMove}
         onMouseLeave={() => onHoverIndex(null)}
         onClick={handleClick}
+        onContextMenu={handleContextMenu}
         onPointerDown={handlePointerDown}
       >
         <rect width={width} height={totalH} className="waveform-bg" rx={8} />
@@ -1170,6 +1271,82 @@ function FullScreenStackedChart({
           {formatEngineeringValue(t1, 's')}
         </text>
 
+        {/* Cursor A */}
+        {cursorA !== null && time[cursorA] !== undefined && (
+          <g className="cursor-line-a" pointerEvents="none">
+            <line
+              x1={mapX(time[cursorA])}
+              y1={padTop}
+              x2={mapX(time[cursorA])}
+              y2={totalH - padBottom}
+              stroke="#38bdf8"
+              strokeWidth={1.5}
+            />
+            <g
+              className="cursor-handle cursor-handle-a"
+              style={{ cursor: 'ew-resize', pointerEvents: 'auto' }}
+              onPointerDown={(e) => handleCursorDragStart(e, 'A')}
+            >
+              <rect
+                x={mapX(time[cursorA]) - 14}
+                y={padTop - 18}
+                width={28}
+                height={16}
+                rx={3}
+                fill="#0284c7"
+              />
+              <text
+                x={mapX(time[cursorA])}
+                y={padTop - 6}
+                fill="#ffffff"
+                fontSize={10}
+                fontWeight={800}
+                textAnchor="middle"
+              >
+                A
+              </text>
+            </g>
+          </g>
+        )}
+
+        {/* Cursor B */}
+        {cursorB !== null && time[cursorB] !== undefined && (
+          <g className="cursor-line-b" pointerEvents="none">
+            <line
+              x1={mapX(time[cursorB])}
+              y1={padTop}
+              x2={mapX(time[cursorB])}
+              y2={totalH - padBottom}
+              stroke="#f43f5e"
+              strokeWidth={1.5}
+            />
+            <g
+              className="cursor-handle cursor-handle-b"
+              style={{ cursor: 'ew-resize', pointerEvents: 'auto' }}
+              onPointerDown={(e) => handleCursorDragStart(e, 'B')}
+            >
+              <rect
+                x={mapX(time[cursorB]) - 14}
+                y={padTop - 18}
+                width={28}
+                height={16}
+                rx={3}
+                fill="#e11d48"
+              />
+              <text
+                x={mapX(time[cursorB])}
+                y={padTop - 6}
+                fill="#ffffff"
+                fontSize={10}
+                fontWeight={800}
+                textAnchor="middle"
+              >
+                B
+              </text>
+            </g>
+          </g>
+        )}
+
         {/* Crosshair Line */}
         {hoverIndex !== null && hoverIndex >= 0 && hoverIndex < time.length && (
           <line
@@ -1193,6 +1370,13 @@ function FullScreenStackedChart({
           signals={signals}
           allSignals={allSignals}
           traceColors={traceColors}
+          hint={
+            cursorA === null
+              ? 'Click: place Cursor A • Shift+Click or Right-Click: place B'
+              : cursorB === null
+              ? 'Click: place Cursor B • Shift+Click or Right-Click: place B'
+              : 'Click: move A • Shift+Click / Right-Click: move B • Drag tabs to slide'
+          }
         />
       )}
     </div>
