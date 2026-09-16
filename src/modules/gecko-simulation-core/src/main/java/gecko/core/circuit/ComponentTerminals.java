@@ -51,6 +51,10 @@ public final class ComponentTerminals {
     public static final int TERMINAL_DISTANCE = 2;
 
     // Legacy CONTROL block types of the classic editor (ControlTyp in gecko-gui)
+    /** Classic control block type: voltmeter probe. */
+    public static final int CONTROL_VOLTMETER = 1;
+    /** Classic control block type: ammeter probe. */
+    public static final int CONTROL_AMMETER = 2;
     /** Classic control block type: constant value output. */
     public static final int CONTROL_CONSTANT = 3;
     /** Classic control block type: signal source. */
@@ -105,10 +109,13 @@ public final class ComponentTerminals {
         int type = comp.getType();
 
         if (isControlFamily(comp)) {
-            // constant and signal source: 0 inputs, 1 output on the output side
+            // constant, signal source, voltmeter probe, ammeter probe: 0 schematic inputs, 1 output on the output side
             if (type == CONTROL_SIGNAL_SOURCE || type == CONTROL_CONSTANT
+                    || type == CONTROL_VOLTMETER || type == CONTROL_AMMETER
                     || type == CircuitTypCore.CTRL_SIGNAL.getTypeNumber()
-                    || type == CircuitTypCore.CTRL_CONSTANT.getTypeNumber()) {
+                    || type == CircuitTypCore.CTRL_CONSTANT.getTypeNumber()
+                    || type == CircuitTypCore.CTRL_VOLT.getTypeNumber()
+                    || type == CircuitTypCore.CTRL_AMP.getTypeNumber()) {
                 return List.of(offset(x, y, dir, TERMINAL_DISTANCE));
             }
             // gates: 1 input on the input side, 0 outputs

@@ -18,8 +18,12 @@ export const ORIENTATION_CYCLE = [503, 504, 501, 502] as const;
 
 export const TWO_PORT_DIST = 2;
 
-/** CONTROL types carrying a single output terminal (constant, signal source). */
+/** CONTROL types carrying a single output terminal (probes, constant, signal source). */
 const CONTROL_OUTPUT_ONLY = new Set<number>([
+  CTRL_TYPE.LEGACY_VOLTMETER,
+  CTRL_TYPE.VOLTMETER,
+  CTRL_TYPE.LEGACY_AMMETER,
+  CTRL_TYPE.AMMETER,
   CTRL_TYPE.LEGACY_SIGNAL_SOURCE,
   CTRL_TYPE.SIGNAL_SOURCE,
   CTRL_TYPE.LEGACY_CONSTANT,

@@ -656,8 +656,6 @@ function controlLeads(u: number) {
 function VoltmeterSymbol({ u }: { u: number }) {
   return (
     <g>
-      <line x1={-LEAD * u} y1={-0.4 * u} x2={-0.7 * u} y2={-0.4 * u} stroke={CTRL_COLOR} />
-      <line x1={-LEAD * u} y1={0.4 * u} x2={-0.7 * u} y2={0.4 * u} stroke={CTRL_COLOR} />
       <line x1={0.7 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
       <rect x={-0.7 * u} y={-0.7 * u} width={1.4 * u} height={1.4 * u} rx={3}
             stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.08)" />
@@ -670,8 +668,6 @@ function VoltmeterSymbol({ u }: { u: number }) {
 function AmmeterSymbol({ u }: { u: number }) {
   return (
     <g>
-      <line x1={-LEAD * u} y1={-0.4 * u} x2={-0.7 * u} y2={-0.4 * u} stroke={CTRL_COLOR} />
-      <line x1={-LEAD * u} y1={0.4 * u} x2={-0.7 * u} y2={0.4 * u} stroke={CTRL_COLOR} />
       <line x1={0.7 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
       <circle cx={0} cy={0} r={0.65 * u} stroke={CTRL_COLOR} strokeWidth={1.5}
               fill="rgba(74,222,128,0.08)" />

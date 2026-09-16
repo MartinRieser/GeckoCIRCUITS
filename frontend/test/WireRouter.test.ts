@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { routeL, densePoints } from '../src/canvas/WireRouter';
+import { routeL, densePoints, orthogonalizePolyline } from '../src/canvas/WireRouter';
 
 describe('routeL', () => {
   it('returns straight line for aligned points', () => {
@@ -98,3 +98,34 @@ describe('densePoints', () => {
     expect(dense).toContainEqual({ x: 10, y: 10 });
   });
 });
+
+describe('orthogonalizePolyline', () => {
+  it('leaves already-orthogonal segments intact', () => {
+    expect(orthogonalizePolyline([[0, 0], [10, 0], [10, 20]])).toEqual([
+      [0, 0],
+      [10, 0],
+      [10, 20],
+    ]);
+  });
+
+  it('inserts orthogonal elbow into diagonal segment', () => {
+    // Dominant horizontal
+    expect(orthogonalizePolyline([[0, 0], [20, 10]])).toEqual([
+      [0, 0],
+      [20, 0],
+      [20, 10],
+    ]);
+    // Dominant vertical
+    expect(orthogonalizePolyline([[0, 0], [5, 20]])).toEqual([
+      [0, 0],
+      [0, 20],
+      [5, 20],
+    ]);
+  });
+
+  it('handles empty and single-point lists gracefully', () => {
+    expect(orthogonalizePolyline([])).toEqual([]);
+    expect(orthogonalizePolyline([[5, 5]])).toEqual([[5, 5]]);
+  });
+});
+

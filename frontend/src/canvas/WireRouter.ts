@@ -47,3 +47,33 @@ export function densePoints(route: Point[]): Point[] {
   }
   return result;
 }
+
+/**
+ * Ensures any wire polyline is strictly orthogonal (Manhattan).
+ * If any adjacent points form a diagonal line, inserts an orthogonal corner
+ * so the rendered wire is always composed of clean horizontal and vertical lines.
+ */
+export function orthogonalizePolyline(points: number[][]): number[][] {
+  if (!points || points.length <= 1) {
+    return points || [];
+  }
+  const result: number[][] = [points[0]];
+  for (let i = 1; i < points.length; i++) {
+    const prev = result[result.length - 1];
+    const cur = points[i];
+    if (prev[0] === cur[0] || prev[1] === cur[1]) {
+      result.push(cur);
+    } else {
+      // Diagonal segment: insert orthogonal elbow
+      const horizontalFirst = Math.abs(cur[0] - prev[0]) >= Math.abs(cur[1] - prev[1]);
+      if (horizontalFirst) {
+        result.push([cur[0], prev[1]]);
+      } else {
+        result.push([prev[0], cur[1]]);
+      }
+      result.push(cur);
+    }
+  }
+  return result;
+}
+

@@ -61,6 +61,10 @@ export type CategoryId = (typeof CATEGORIES)[number]['id'];
  * scope a single input terminal (see terminalPositions in geometry.ts).
  */
 export const CTRL_TYPE = {
+  /** Voltmeter probe, legacy classic-editor number. */
+  LEGACY_VOLTMETER: 1,
+  /** Ammeter probe, legacy classic-editor number. */
+  LEGACY_AMMETER: 2,
   /** Constant block, legacy classic-editor number. */
   LEGACY_CONSTANT: 3,
   /** Signal source, legacy classic-editor number. */
@@ -69,6 +73,10 @@ export const CTRL_TYPE = {
   LEGACY_SCOPE: 5,
   /** Gate input, legacy classic-editor number. */
   LEGACY_GATE: 6,
+  /** Voltmeter probe, web catalog number (CircuitTypCore.CTRL_VOLT). */
+  VOLTMETER: 1001,
+  /** Ammeter probe, web catalog number (CircuitTypCore.CTRL_AMP). */
+  AMMETER: 1002,
   /** Scope, web catalog number (CircuitTypCore.CTRL_SCOPE). */
   SCOPE: 1003,
   /** Signal source, web catalog number (CircuitTypCore.CTRL_SIGNAL). */

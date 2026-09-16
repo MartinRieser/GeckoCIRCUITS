@@ -63,10 +63,16 @@ function sampleIndexAt(time: number[], t: number): number {
   return low;
 }
 
-/** Cursor placement cycle: first click sets A, second B, further clicks move A. */
-function nextCursorSlot(cursorA: number | null, cursorB: number | null): 'A' | 'B' {
-  return cursorA === null ? 'A' : cursorB === null ? 'B' : 'A';
+/** Infers physical SI engineering unit from the signal or probe name. */
+export function inferSignalUnit(name: string): string {
+  const lower = name.toLowerCase();
+  if (lower.startsWith('v') || lower.startsWith('u') || lower.includes('_v') || lower.includes('volt')) return 'V';
+  if (lower.startsWith('i') || lower.includes('_i') || lower.includes('curr') || lower.startsWith('amp')) return 'A';
+  if (lower.startsWith('p') || lower.includes('watt') || lower.includes('power')) return 'W';
+  if (lower.startsWith('temp') || lower.includes('th_') || lower.endsWith('_c')) return '°C';
+  return '';
 }
+
 
 /** Floating hover tooltip shared by the overlay and stacked charts. */
 function WaveformTooltip({
@@ -120,6 +126,7 @@ export function ScopeViewTab({
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const [cursorA, setCursorA] = useState<number | null>(null);
   const [cursorB, setCursorB] = useState<number | null>(null);
+  const [activeCursor, setActiveCursor] = useState<'A' | 'B'>('A');
   const [channelSearch, setChannelSearch] = useState('');
   // time-axis view window; null = fit whole simulation
   const [view, setView] = useState<ViewWindow | null>(null);
@@ -336,25 +343,81 @@ export function ScopeViewTab({
                   >
                     Losses
                   </button>
+                  <button
+                    type="button"
+                    className={`scope-action-btn ${activeCursor === 'A' ? 'active' : ''}`}
+                    style={activeCursor === 'A' ? { borderColor: '#38bdf8', color: '#38bdf8', background: 'rgba(56, 189, 248, 0.18)' } : {}}
+                    title="Cursor A (Click plot to place or move A)"
+                    onClick={() => {
+                      setActiveCursor('A');
+                      if (cursorA === null && timeArray.length > 0) {
+                        setCursorA(Math.floor(timeArray.length * 0.25));
+                      }
+                    }}
+                  >
+                    📍 Cursor [A]
+                  </button>
+                  <button
+                    type="button"
+                    className={`scope-action-btn ${activeCursor === 'B' ? 'active' : ''}`}
+                    style={activeCursor === 'B' ? { borderColor: '#f43f5e', color: '#f43f5e', background: 'rgba(244, 63, 94, 0.18)' } : {}}
+                    title="Cursor B (Click plot to place or move B)"
+                    onClick={() => {
+                      setActiveCursor('B');
+                      if (cursorB === null && timeArray.length > 0) {
+                        setCursorB(Math.floor(timeArray.length * 0.65));
+                      }
+                    }}
+                  >
+                    📍 Cursor [B]
+                  </button>
                 </div>
 
                 {/* Always-visible Cursor HUD: zero scrolling needed! */}
                 <div className="scope-cursor-hud">
                   {cursorA === null && cursorB === null ? (
-                    <span className="hud-hint">
-                      💡 Click: Cursor A • Shift+Click: Cursor B • Drag box to zoom
-                    </span>
+                    <div className="hud-cursor-chips">
+                      <button
+                        type="button"
+                        className="scope-action-btn"
+                        style={{ padding: '2px 8px', fontSize: '11px', borderColor: 'var(--accent)', color: 'var(--accent)' }}
+                        title="Place Cursors A & B across the waveform"
+                        onClick={() => {
+                          if (timeArray.length > 0) {
+                            setCursorA(Math.floor(timeArray.length * 0.25));
+                            setCursorB(Math.floor(timeArray.length * 0.65));
+                          }
+                        }}
+                      >
+                        📍 Place Cursors
+                      </button>
+                      <span className="hud-hint">
+                        💡 Click plot to set A • Shift+Click sets B
+                      </span>
+                    </div>
                   ) : (
                     <div className="hud-cursor-chips">
                       {cursorA !== null && timeArray[cursorA] !== undefined && (
-                        <span className="cursor-chip chip-a" title="Cursor A position">
+                        <button
+                          type="button"
+                          className={`cursor-chip chip-a ${activeCursor === 'A' ? 'selected' : ''}`}
+                          style={{ cursor: 'pointer' }}
+                          title="Cursor A (Click to select for moving)"
+                          onClick={() => setActiveCursor('A')}
+                        >
                           <strong>A:</strong> {formatEngineeringValue(timeArray[cursorA], 's')}
-                        </span>
+                        </button>
                       )}
                       {cursorB !== null && timeArray[cursorB] !== undefined && (
-                        <span className="cursor-chip chip-b" title="Cursor B position">
+                        <button
+                          type="button"
+                          className={`cursor-chip chip-b ${activeCursor === 'B' ? 'selected' : ''}`}
+                          style={{ cursor: 'pointer' }}
+                          title="Cursor B (Click to select for moving)"
+                          onClick={() => setActiveCursor('B')}
+                        >
                           <strong>B:</strong> {formatEngineeringValue(timeArray[cursorB], 's')}
-                        </span>
+                        </button>
                       )}
                       {cursorA !== null && cursorB !== null && timeArray[cursorA] !== undefined && timeArray[cursorB] !== undefined && (
                         <>
@@ -368,6 +431,34 @@ export function ScopeViewTab({
                           </span>
                         </>
                       )}
+                      {/* Active Signal Value & Delta Chips */}
+                      {visibleSignals.map((name) => {
+                        const valA = cursorA !== null && results?.[name]?.[cursorA] !== undefined ? results[name][cursorA] : null;
+                        const valB = cursorB !== null && results?.[name]?.[cursorB] !== undefined ? results[name][cursorB] : null;
+                        if (valA === null && valB === null) return null;
+                        const delta = valA !== null && valB !== null ? valB - valA : null;
+                        const unit = inferSignalUnit(name);
+                        const colorIdx = signalNames.indexOf(name);
+                        const color = traceColors[colorIdx >= 0 ? colorIdx % traceColors.length : 0];
+                        return (
+                          <span
+                            key={name}
+                            className="cursor-chip chip-signal"
+                            title={`${name}: A=${valA !== null ? formatEngineeringValue(valA, unit) : '—'}, B=${valB !== null ? formatEngineeringValue(valB, unit) : '—'}, Δ=${delta !== null ? formatEngineeringValue(delta, unit) : '—'}`}
+                            style={{ borderLeft: `3px solid ${color}` }}
+                          >
+                            <span className="signal-dot" style={{ backgroundColor: color }} />
+                            <strong style={{ color }}>{name}:</strong>
+                            {valA !== null && <span className="chip-sub">A:{formatEngineeringValue(valA, unit)}</span>}
+                            {valB !== null && <span className="chip-sub">B:{formatEngineeringValue(valB, unit)}</span>}
+                            {delta !== null && (
+                              <span className="chip-delta-val" title={`Δ${name} = B - A (${delta >= 0 ? '+' : ''}${delta})`}>
+                                Δ:{delta >= 0 ? '+' : ''}{formatEngineeringValue(delta, unit)}
+                              </span>
+                            )}
+                          </span>
+                        );
+                      })}
                       <button
                         type="button"
                         className="hud-clear-btn"
@@ -394,6 +485,8 @@ export function ScopeViewTab({
                   onHoverIndex={setHoverIndex}
                   cursorA={cursorA}
                   cursorB={cursorB}
+                  activeCursor={activeCursor}
+                  onSetActiveCursor={setActiveCursor}
                   onSetCursor={(type, idx) => {
                     if (type === 'A') setCursorA(idx);
                     else setCursorB(idx);
@@ -416,6 +509,8 @@ export function ScopeViewTab({
                   onHoverIndex={setHoverIndex}
                   cursorA={cursorA}
                   cursorB={cursorB}
+                  activeCursor={activeCursor}
+                  onSetActiveCursor={setActiveCursor}
                   onSetCursor={(type, idx) => {
                     if (type === 'A') setCursorA(idx);
                     else setCursorB(idx);
@@ -486,6 +581,52 @@ export function ScopeViewTab({
                   <div className="cursor-delta-hint" style={{ marginTop: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>
                     💡 <strong>Tip:</strong> Click plot to move Cursor A • <strong>Shift+Click</strong> or <strong>Right-Click</strong> to move Cursor B • Drag tabs (A / B) to slide
                   </div>
+
+                  {/* Per-signal Delta Breakdown */}
+                  {visibleSignals.length > 0 && (
+                    <div className="cursor-signal-delta-wrap" style={{ marginTop: '14px' }}>
+                      <table className="cursor-signal-table">
+                        <thead>
+                          <tr>
+                            <th>Signal Trace</th>
+                            <th>Value at A</th>
+                            <th>Value at B</th>
+                            <th>Delta (B − A)</th>
+                            <th>|Delta|</th>
+                            <th>Slew Rate (ΔY/Δt)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {visibleSignals.map((name) => {
+                            const valA = results?.[name]?.[cursorA] ?? 0;
+                            const valB = results?.[name]?.[cursorB] ?? 0;
+                            const dtVal = Math.abs(timeArray[cursorB] - timeArray[cursorA]);
+                            const dY = valB - valA;
+                            const absDY = Math.abs(dY);
+                            const slew = dtVal > 0 ? dY / dtVal : 0;
+                            const unit = inferSignalUnit(name);
+                            const colorIdx = signalNames.indexOf(name);
+                            const color = traceColors[colorIdx >= 0 ? colorIdx % traceColors.length : 0];
+                            return (
+                              <tr key={name}>
+                                <td>
+                                  <span className="signal-dot" style={{ backgroundColor: color, display: 'inline-block', width: 8, height: 8, borderRadius: '50%', marginRight: 6 }} />
+                                  <strong style={{ color }}>{name}</strong>
+                                </td>
+                                <td>{formatEngineeringValue(valA, unit)}</td>
+                                <td>{formatEngineeringValue(valB, unit)}</td>
+                                <td style={{ fontWeight: 700, color: dY >= 0 ? '#10b981' : '#f43f5e' }}>
+                                  {dY >= 0 ? '+' : ''}{formatEngineeringValue(dY, unit)}
+                                </td>
+                                <td>{formatEngineeringValue(absDY, unit)}</td>
+                                <td>{slew !== 0 ? formatEngineeringValue(slew, `${unit}/s`) : '—'}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -558,6 +699,8 @@ function FullScreenOverlayChart({
   onHoverIndex,
   cursorA,
   cursorB,
+  activeCursor,
+  onSetActiveCursor,
   onSetCursor,
   viewStart,
   viewEnd,
@@ -578,6 +721,8 @@ function FullScreenOverlayChart({
   onHoverIndex: (idx: number | null) => void;
   cursorA: number | null;
   cursorB: number | null;
+  activeCursor?: 'A' | 'B';
+  onSetActiveCursor?: (c: 'A' | 'B') => void;
   onSetCursor: (type: 'A' | 'B', idx: number) => void;
   viewStart: number;
   viewEnd: number;
@@ -752,6 +897,7 @@ function FullScreenOverlayChart({
   const handleCursorDragStart = (e: React.PointerEvent, type: 'A' | 'B') => {
     e.stopPropagation();
     e.preventDefault();
+    onSetActiveCursor?.(type);
     const svg = svgRef.current;
     if (!svg) return;
     const rect = svg.getBoundingClientRect();
@@ -778,15 +924,36 @@ function FullScreenOverlayChart({
       suppressClickRef.current = false;
       return;
     }
-    if (hoverIndex === null) return;
-    const targetCursor: 'A' | 'B' = e.shiftKey ? 'B' : nextCursorSlot(cursorA, cursorB);
-    onSetCursor(targetCursor, hoverIndex);
+    const rect = e.currentTarget.getBoundingClientRect();
+    const svgX = ((e.clientX - rect.left) / (rect.width || 1)) * width;
+    if (svgX < padLeft || svgX > width - padRight) return;
+    const t = minT + ((svgX - padLeft) / plotW) * (maxT - minT);
+    const targetIdx = sampleIndexAt(time, t);
+    let targetCursor: 'A' | 'B' = 'A';
+    if (e.shiftKey) {
+      targetCursor = 'B';
+      onSetActiveCursor?.('B');
+    } else if (cursorA === null) {
+      targetCursor = 'A';
+      onSetActiveCursor?.('B');
+    } else if (cursorB === null) {
+      targetCursor = 'B';
+      onSetActiveCursor?.('A');
+    } else {
+      targetCursor = activeCursor ?? 'A';
+    }
+    onSetCursor(targetCursor, targetIdx);
   };
 
   const handleContextMenu = (e: ReactMouseEvent<SVGSVGElement>) => {
     e.preventDefault();
-    if (hoverIndex === null) return;
-    onSetCursor('B', hoverIndex);
+    const rect = e.currentTarget.getBoundingClientRect();
+    const svgX = ((e.clientX - rect.left) / (rect.width || 1)) * width;
+    if (svgX < padLeft || svgX > width - padRight) return;
+    const t = minT + ((svgX - padLeft) / plotW) * (maxT - minT);
+    const targetIdx = sampleIndexAt(time, t);
+    onSetCursor('B', targetIdx);
+    onSetActiveCursor?.('B');
   };
 
   const [dragBox, setDragBox] = useState<{ startX: number; startY: number; currentX: number; currentY: number } | null>(null);
@@ -1088,28 +1255,47 @@ function FullScreenOverlayChart({
         )}
 
         {/* Delta badge between A and B in plot */}
-        {cursorA !== null && cursorB !== null && time[cursorA] !== undefined && time[cursorB] !== undefined && (
-          <g pointerEvents="none">
-            <rect
-              x={(mapX(time[cursorA]) + mapX(time[cursorB])) / 2 - 45}
-              y={padTop + 6}
-              width={90}
-              height={18}
-              rx={3}
-              fill="rgba(16, 185, 129, 0.85)"
-            />
-            <text
-              x={(mapX(time[cursorA]) + mapX(time[cursorB])) / 2}
-              y={padTop + 19}
-              fill="#ffffff"
-              fontSize={10}
-              fontWeight={800}
-              textAnchor="middle"
-            >
-              Δt: {formatEngineeringValue(Math.abs(time[cursorB] - time[cursorA]), 's')}
-            </text>
-          </g>
-        )}
+        {cursorA !== null && cursorB !== null && time[cursorA] !== undefined && time[cursorB] !== undefined && (() => {
+          const dt = Math.abs(time[cursorB] - time[cursorA]);
+          const midX = (mapX(time[cursorA]) + mapX(time[cursorB])) / 2;
+          const sigDeltas = activeSignals.slice(0, 2).map((sig) => {
+            const vA = signals[sig]?.[cursorA];
+            const vB = signals[sig]?.[cursorB];
+            if (vA === undefined || vB === undefined) return null;
+            const diff = vB - vA;
+            const u = inferSignalUnit(sig);
+            return `Δ${sig}: ${diff >= 0 ? '+' : ''}${formatEngineeringValue(diff, u)}`;
+          }).filter(Boolean);
+
+          const badgeText = `Δt: ${formatEngineeringValue(dt, 's')}${sigDeltas.length ? ' • ' + sigDeltas.join(' • ') : ''}`;
+          const badgeW = Math.max(90, badgeText.length * 6.5 + 18);
+
+          return (
+            <g pointerEvents="none">
+              <rect
+                x={midX - badgeW / 2}
+                y={padTop + 6}
+                width={badgeW}
+                height={20}
+                rx={4}
+                fill="rgba(15, 23, 42, 0.90)"
+                stroke="#10b981"
+                strokeWidth={1.2}
+              />
+              <text
+                x={midX}
+                y={padTop + 20}
+                fill="#34d399"
+                fontSize={10.5}
+                fontWeight={700}
+                fontFamily="monospace"
+                textAnchor="middle"
+              >
+                {badgeText}
+              </text>
+            </g>
+          );
+        })()}
 
         {/* Drag Box Zoom Selection (2D box or Time-only) */}
         {dragBox && (Math.abs(dragBox.currentX - dragBox.startX) > 5 || Math.abs(dragBox.currentY - dragBox.startY) > 5) && (() => {
@@ -1169,17 +1355,24 @@ function FullScreenOverlayChart({
               strokeDasharray="3 3"
             />
             <rect
-              x={Math.max(padLeft, Math.min(width - padRight - 60, mapX(time[hoverIndex]) - 30))}
+              x={Math.max(padLeft, Math.min(width - padRight - 72, mapX(time[hoverIndex]) - 36))}
               y={height - padBottom + 4}
-              width={60}
+              width={72}
               height={18}
-              rx={3}
+              rx={4}
+              fill="#0f172a"
+              stroke="#38bdf8"
+              strokeWidth={1.2}
               className="hover-pill"
             />
             <text
-              x={Math.max(padLeft + 30, Math.min(width - padRight - 30, mapX(time[hoverIndex])))}
+              x={Math.max(padLeft + 36, Math.min(width - padRight - 36, mapX(time[hoverIndex])))}
               y={height - padBottom + 17}
               textAnchor="middle"
+              fill="#38bdf8"
+              fontSize={10.5}
+              fontWeight={700}
+              fontFamily="monospace"
               className="hover-text"
             >
               {formatEngineeringValue(time[hoverIndex], 's')}
@@ -1238,6 +1431,8 @@ function FullScreenStackedChart({
   onHoverIndex,
   cursorA,
   cursorB,
+  activeCursor,
+  onSetActiveCursor,
   onSetCursor,
   viewStart,
   viewEnd,
@@ -1255,6 +1450,8 @@ function FullScreenStackedChart({
   onHoverIndex: (idx: number | null) => void;
   cursorA: number | null;
   cursorB: number | null;
+  activeCursor?: 'A' | 'B';
+  onSetActiveCursor?: (c: 'A' | 'B') => void;
   onSetCursor: (type: 'A' | 'B', idx: number) => void;
   viewStart: number;
   viewEnd: number;
@@ -1317,6 +1514,7 @@ function FullScreenStackedChart({
   const handleCursorDragStart = (e: React.PointerEvent, type: 'A' | 'B') => {
     e.stopPropagation();
     e.preventDefault();
+    onSetActiveCursor?.(type);
     const svg = svgRef.current;
     if (!svg) return;
     const rect = svg.getBoundingClientRect();
@@ -1343,15 +1541,37 @@ function FullScreenStackedChart({
       suppressClickRef.current = false;
       return;
     }
-    if (hoverIndex === null) return;
-    const targetCursor: 'A' | 'B' = e.shiftKey ? 'B' : nextCursorSlot(cursorA, cursorB);
-    onSetCursor(targetCursor, hoverIndex);
+    const rect = e.currentTarget.getBoundingClientRect();
+    const svgX = ((e.clientX - rect.left) / rect.width) * width;
+    if (svgX < padLeft || svgX > width - padRight) return;
+    const t = t0 + ((svgX - padLeft) / plotW) * (t1 - t0);
+    const targetIdx = sampleIndexAt(time, t);
+
+    let targetCursor: 'A' | 'B' = 'A';
+    if (e.shiftKey) {
+      targetCursor = 'B';
+      onSetActiveCursor?.('B');
+    } else if (cursorA === null) {
+      targetCursor = 'A';
+      onSetActiveCursor?.('B');
+    } else if (cursorB === null) {
+      targetCursor = 'B';
+      onSetActiveCursor?.('A');
+    } else {
+      targetCursor = activeCursor ?? 'A';
+    }
+    onSetCursor(targetCursor, targetIdx);
   };
 
   const handleContextMenu = (e: ReactMouseEvent<SVGSVGElement>) => {
     e.preventDefault();
-    if (hoverIndex === null) return;
-    onSetCursor('B', hoverIndex);
+    const rect = e.currentTarget.getBoundingClientRect();
+    const svgX = ((e.clientX - rect.left) / rect.width) * width;
+    if (svgX < padLeft || svgX > width - padRight) return;
+    const t = t0 + ((svgX - padLeft) / plotW) * (t1 - t0);
+    const targetIdx = sampleIndexAt(time, t);
+    onSetCursor('B', targetIdx);
+    onSetActiveCursor?.('B');
   };
 
   const handlePointerDown = (e: ReactMouseEvent<SVGSVGElement>) => {
@@ -1721,6 +1941,49 @@ function FullScreenStackedChart({
           </g>
         )}
 
+        {/* Delta badge between A and B in plot */}
+        {cursorA !== null && cursorB !== null && time[cursorA] !== undefined && time[cursorB] !== undefined && (() => {
+          const dt = Math.abs(time[cursorB] - time[cursorA]);
+          const midX = (mapX(time[cursorA]) + mapX(time[cursorB])) / 2;
+          const sigDeltas = activeSignals.slice(0, 2).map((sig) => {
+            const vA = signals[sig]?.[cursorA];
+            const vB = signals[sig]?.[cursorB];
+            if (vA === undefined || vB === undefined) return null;
+            const diff = vB - vA;
+            const u = inferSignalUnit(sig);
+            return `Δ${sig}: ${diff >= 0 ? '+' : ''}${formatEngineeringValue(diff, u)}`;
+          }).filter(Boolean);
+
+          const badgeText = `Δt: ${formatEngineeringValue(dt, 's')}${sigDeltas.length ? ' • ' + sigDeltas.join(' • ') : ''}`;
+          const badgeW = Math.max(90, badgeText.length * 6.5 + 18);
+
+          return (
+            <g pointerEvents="none">
+              <rect
+                x={midX - badgeW / 2}
+                y={padTop + 6}
+                width={badgeW}
+                height={20}
+                rx={4}
+                fill="rgba(15, 23, 42, 0.90)"
+                stroke="#10b981"
+                strokeWidth={1.2}
+              />
+              <text
+                x={midX}
+                y={padTop + 20}
+                fill="#34d399"
+                fontSize={10.5}
+                fontWeight={700}
+                fontFamily="monospace"
+                textAnchor="middle"
+              >
+                {badgeText}
+              </text>
+            </g>
+          );
+        })()}
+
         {/* Drag Box Zoom Selection */}
         {dragBox && Math.abs(dragBox.currentX - dragBox.startX) > 5 && (
           <g pointerEvents="none">
@@ -1755,18 +2018,42 @@ function FullScreenStackedChart({
           </g>
         )}
 
-        {/* Crosshair Line */}
+        {/* Crosshair Line & Pill */}
         {hoverIndex !== null && hoverIndex >= 0 && hoverIndex < time.length && (
-          <line
-            x1={mapX(time[hoverIndex])}
-            y1={padTop}
-            x2={mapX(time[hoverIndex])}
-            y2={totalH - padBottom}
-            stroke={crosshairColor}
-            strokeWidth={1}
-            strokeDasharray="3 3"
-            pointerEvents="none"
-          />
+          <g className="hover-crosshair" pointerEvents="none">
+            <line
+              x1={mapX(time[hoverIndex])}
+              y1={padTop}
+              x2={mapX(time[hoverIndex])}
+              y2={totalH - padBottom}
+              stroke={crosshairColor}
+              strokeWidth={1}
+              strokeDasharray="3 3"
+            />
+            <rect
+              x={Math.max(padLeft, Math.min(width - padRight - 72, mapX(time[hoverIndex]) - 36))}
+              y={totalH - padBottom + 4}
+              width={72}
+              height={18}
+              rx={4}
+              fill="#0f172a"
+              stroke="#38bdf8"
+              strokeWidth={1.2}
+              className="hover-pill"
+            />
+            <text
+              x={Math.max(padLeft + 36, Math.min(width - padRight - 36, mapX(time[hoverIndex])))}
+              y={totalH - padBottom + 17}
+              textAnchor="middle"
+              fill="#38bdf8"
+              fontSize={10.5}
+              fontWeight={700}
+              fontFamily="monospace"
+              className="hover-text"
+            >
+              {formatEngineeringValue(time[hoverIndex], 's')}
+            </text>
+          </g>
         )}
       </svg>
 

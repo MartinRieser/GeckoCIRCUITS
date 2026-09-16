@@ -7,7 +7,7 @@ import { useRef, useState, useMemo, useEffect } from 'react';
 import type { Dispatch, MouseEvent as ReactMouseEvent, WheelEvent as ReactWheelEvent, DragEvent as ReactDragEvent } from 'react';
 import type { EditorState, Action } from '../model/store';
 import { terminalPositions, terminalNear } from '../model/geometry';
-import { routeL, densePoints } from './WireRouter';
+import { routeL, densePoints, orthogonalizePolyline } from './WireRouter';
 import { ComponentSymbol } from './symbols';
 import { isScopeComponent } from '../simulation/scopes';
 import type { Point } from '../model/types';
@@ -446,21 +446,24 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
 
           {/* Wires */}
           <g className="wires" pointerEvents={interactiveLayer ? 'auto' : 'none'}>
-            {state.wires.map((wire) => (
-              <g key={wire.index}>
-                <polyline
-                  points={wire.points.map((p) => `${p[0] * dpix},${p[1] * dpix}`).join(' ')}
-                  className={`wire wire-${wire.type || 'LK'}${wire.index === state.selectedWire ? ' selected' : ''}`}
-                />
-                <polyline
-                  points={wire.points.map((p) => `${p[0] * dpix},${p[1] * dpix}`).join(' ')}
-                  className="wire-hit"
-                  onMouseDown={(e) => {
-                    if (e.button === 0) {
-                      e.stopPropagation();
-                      dispatch({ type: 'SELECT_WIRE', index: wire.index });
-                    }
-                  }}
+            {state.wires.map((wire) => {
+              const orthoPts = orthogonalizePolyline(wire.points);
+              const pointsStr = orthoPts.map((p) => `${p[0] * dpix},${p[1] * dpix}`).join(' ');
+              return (
+                <g key={wire.index}>
+                  <polyline
+                    points={pointsStr}
+                    className={`wire wire-${wire.type || 'LK'}${wire.index === state.selectedWire ? ' selected' : ''}`}
+                  />
+                  <polyline
+                    points={pointsStr}
+                    className="wire-hit"
+                    onMouseDown={(e) => {
+                      if (e.button === 0) {
+                        e.stopPropagation();
+                        dispatch({ type: 'SELECT_WIRE', index: wire.index });
+                      }
+                    }}
                   onContextMenu={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -478,7 +481,8 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                   }}
                 />
               </g>
-            ))}
+            );
+          })}
           </g>
 
           {/* Wire Junction Connection Dots */}
