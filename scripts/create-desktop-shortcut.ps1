@@ -14,7 +14,7 @@ $Shortcut.Description = "GeckoCIRCUITS Web Editor (Native Desktop App)"
 $Shortcut.WindowStyle = 7 # Minimized launch window
 
 # Use Gecko icon if available
-$iconPath = Join-Path $repoRoot "src\modules\gecko-gui\src\main\resources\gecko\geckocircuits\allg\icons\gecko_large.png"
+$iconPath = Join-Path $repoRoot "desktop\app\icons\icon.ico"
 if (Test-Path $iconPath) {
     $Shortcut.IconLocation = $iconPath
 }

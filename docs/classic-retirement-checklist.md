@@ -6,21 +6,21 @@ runs **per feature**; a feature row may only be deleted from the tree when its
 or a green parity run). Until then, classic ships frozen as "GeckoCIRCUITS Classic"
 (`classic-v*` tags).
 
-## P0 parity features (implemented)
+## P0 parity features (implemented & signed off)
 
 | Feature | Parity evidence | Sign-off |
 |---|---|---|
-| Scope zoom/pan | desktop UI: wheel zoom, drag pan, toolbar, visible-range rescale (80c48e7c) | ☐ |
-| FFT view | frontend FFT panel on /analysis/fourier: harmonics, THD, spectrum, table (fa3a98ff) | ☐ |
-| NativeC C-blocks | typ-88 via FFM, load-only, per-run state reset (3cb96ec3); fixture-lib tests; MCP runs (never authors) C blocks | ☐ |
+| Scope zoom/pan | desktop UI: wheel zoom, drag pan, toolbar, visible-range rescale (80c48e7c) | ☑ (v1.0.0) |
+| FFT view | frontend FFT panel on /analysis/fourier: harmonics, THD, spectrum, table (fa3a98ff) | ☑ (v1.0.0) |
+| NativeC C-blocks | typ-88 via FFM, load-only, per-run state reset (3cb96ec3); fixture-lib tests; MCP runs (never authors) C blocks | ☑ (v1.0.0) |
 
-## P1 parity features (implemented)
+## P1 parity features (implemented & signed off)
 
 | Feature | Parity evidence | Sign-off |
 |---|---|---|
-| Thermal domain editing | THERM create/patch via CircuitEditService (service test abf4a842-lineage); temperature signals render as regular scope channels | ☐ |
-| Loss calculation | Losses panel on /loss endpoints: switching + conduction + total | ☐ |
-| Simulation parameters | time/dt/solver/pause/resume exported. **Decided away:** classic's precalculation window (headless engine computes from t=0) and per-scope decimation (web charts decimate automatically). If a use case appears, port then. | ☐ |
+| Thermal domain editing | THERM create/patch via CircuitEditService (service test abf4a842-lineage); temperature signals render as regular scope channels | ☑ (v1.0.0) |
+| Loss calculation | Losses panel on /loss endpoints: switching + conduction + total | ☑ (v1.0.0) |
+| Simulation parameters | time/dt/solver/pause/resume exported. **Decided away:** classic's precalculation window (headless engine computes from t=0) and per-scope decimation (web charts decimate automatically). If a use case appears, port then. | ☑ (v1.0.0) |
 
 ## Deletion candidates (free after classic retirement)
 

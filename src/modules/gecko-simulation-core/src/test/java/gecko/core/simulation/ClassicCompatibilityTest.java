@@ -13,15 +13,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ClassicCompatibilityTest {
 
-    private static final String GUI_TEST_IPES_DIR = "../gecko-gui/src/test/resources/ipes";
+    private static final String CORE_TEST_IPES_DIR = "src/test/resources/ipes";
 
     private File resolveCircuit(String relativePath) {
-        Path path = Paths.get(GUI_TEST_IPES_DIR, relativePath);
+        Path path = Paths.get(CORE_TEST_IPES_DIR, relativePath);
         File file = path.toFile();
         if (!file.exists()) {
             // fallback if running from root
-            path = Paths.get("src/modules/gecko-gui/src/test/resources/ipes", relativePath);
+            path = Paths.get("src/modules/gecko-simulation-core/src/test/resources/ipes", relativePath);
             file = path.toFile();
+        }
+        if (!file.exists()) {
+            java.net.URL url = getClass().getResource("/ipes/" + relativePath);
+            if (url != null) {
+                try {
+                    file = new File(url.toURI());
+                } catch (Exception e) {
+                    file = new File(url.getPath());
+                }
+            }
         }
         assertTrue(file.exists(), "Circuit file not found: " + path.toAbsolutePath());
         return file;

@@ -88,8 +88,8 @@ public class LegacySimulationBackend {
     public String configurationHint() {
         return guiJar != null
                 ? "legacy engine: " + guiJar
-                : "legacy backend unavailable: set gecko.legacy.gui-jar to the gecko fat jar "
-                  + "(gecko-gui/target/gecko-1.0-jar-with-dependencies.jar)";
+                : "legacy backend unavailable: classic GeckoCIRCUITS Swing engine has been retired in v1.0.0. "
+                  + "Please use the headless engine (backend=core).";
     }
 
     private static String resolveGuiJar(String configured) {
