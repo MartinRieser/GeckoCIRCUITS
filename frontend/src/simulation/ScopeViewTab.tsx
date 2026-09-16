@@ -140,20 +140,33 @@ export function ScopeViewTab({
     [results],
   );
 
+  const [yView, setYView] = useState<{ min: number; max: number } | null>(null);
+  const [yScaleMode, setYScaleMode] = useState<'fixed' | 'auto'>('fixed');
+
   // a new simulation resets the zoom window
   useEffect(() => {
     setView(null);
+    setYView(null);
   }, [results]);
 
   const dataT0 = timeArray.length ? timeArray[0] : 0;
   const dataT1 = timeArray.length ? timeArray[timeArray.length - 1] : 1;
   const win = effectiveWindow(view, dataT0, dataT1);
+  const timePerDiv = (win.end - win.start) / 10;
 
   const zoomAt = useCallback(
     (factor: number, anchor: number) => {
       setView(zoomWindow(effectiveWindow(view, dataT0, dataT1), factor, anchor, dataT0, dataT1));
     },
     [view, dataT0, dataT1],
+  );
+
+  const stepTimebase = useCallback(
+    (direction: 'in' | 'out') => {
+      const center = (win.start + win.end) / 2;
+      zoomAt(direction === 'in' ? 0.5 : 2.0, center);
+    },
+    [win, zoomAt],
   );
 
   const zoomRange = useCallback(
@@ -174,7 +187,10 @@ export function ScopeViewTab({
     [win, dataT0, dataT1],
   );
 
-  const resetZoom = useCallback(() => setView(null), []);
+  const resetZoom = useCallback(() => {
+    setView(null);
+    setYView(null);
+  }, []);
 
   // Channels that belong to this Scope
   const scopeChannelNames = useMemo(
@@ -275,31 +291,97 @@ export function ScopeViewTab({
           <div className="scope-tab-main-grid">
             {/* Plot Area */}
             <div className="scope-tab-plot-area">
-              <div className="scope-zoom-toolbar" data-testid="scope-zoom-toolbar">
-                <span className="scope-window-label" data-testid="scope-window-label">
-                  {formatEngineeringValue(win.start, 's')} – {formatEngineeringValue(win.end, 's')}
-                </span>
-                <button type="button" aria-label="Zoom in" title="Zoom in" onClick={() => zoomAt(0.7, (win.start + win.end) / 2)}>+</button>
-                <button type="button" aria-label="Zoom out" title="Zoom out" onClick={() => zoomAt(1 / 0.7, (win.start + win.end) / 2)}>−</button>
-                <button type="button" aria-label="Pan left" title="Pan left" onClick={() => panBy(-0.25)}>◀</button>
-                <button type="button" aria-label="Pan right" title="Pan right" onClick={() => panBy(0.25)}>▶</button>
-                <button type="button" aria-label="Fit whole simulation" title="Fit" onClick={resetZoom}>⟲</button>
-                <button
-                  type="button"
-                  aria-label="Toggle FFT panel"
-                  title="FFT spectrum of the visible window"
-                  onClick={() => setFftOpen((prev) => !prev)}
-                >
-                  FFT
-                </button>
-                <button
-                  type="button"
-                  aria-label="Toggle loss panel"
-                  title="Semiconductor loss calculator"
-                  onClick={() => setLossOpen((prev) => !prev)}
-                >
-                  Losses
-                </button>
+              <div className="scope-control-bar" data-testid="scope-zoom-toolbar">
+                <div className="scope-tb-group">
+                  <span className="tb-badge" title="Horizontal Timebase per Division (10 graticule divisions)">
+                    ⏱ <strong>{formatEngineeringValue(timePerDiv, 's')}/div</strong>
+                  </span>
+                  <div className="tb-btn-group">
+                    <button type="button" title="Timebase: Zoom Out (−)" onClick={() => stepTimebase('out')}>−</button>
+                    <button type="button" title="Timebase: Zoom In (+)" onClick={() => stepTimebase('in')}>+</button>
+                  </div>
+                  <div className="tb-btn-group">
+                    <button type="button" title="Pan Left" onClick={() => panBy(-0.25)}>◀</button>
+                    <button type="button" title="Pan Right" onClick={() => panBy(0.25)}>▶</button>
+                  </div>
+                  <button
+                    type="button"
+                    className="scope-action-btn"
+                    title="Fit Full Simulation (Double-click plot or Esc)"
+                    onClick={resetZoom}
+                  >
+                    ⟲ Fit
+                  </button>
+                  <button
+                    type="button"
+                    className={`scope-action-btn ${yScaleMode === 'fixed' ? 'active' : ''}`}
+                    title={yScaleMode === 'fixed' ? 'Y-Scale is LOCKED: Zooming time does not rescale voltage' : 'Y-Scale is AUTO: Rescales voltage to fit visible time'}
+                    onClick={() => setYScaleMode((prev) => (prev === 'fixed' ? 'auto' : 'fixed'))}
+                  >
+                    ↕ Scale: {yScaleMode === 'fixed' ? 'Fixed' : 'Auto'}
+                  </button>
+                  <button
+                    type="button"
+                    className={`scope-action-btn ${fftOpen ? 'active' : ''}`}
+                    title="Toggle FFT spectrum of visible window"
+                    onClick={() => setFftOpen((prev) => !prev)}
+                  >
+                    FFT
+                  </button>
+                  <button
+                    type="button"
+                    className={`scope-action-btn ${lossOpen ? 'active' : ''}`}
+                    title="Toggle semiconductor loss calculator"
+                    onClick={() => setLossOpen((prev) => !prev)}
+                  >
+                    Losses
+                  </button>
+                </div>
+
+                {/* Always-visible Cursor HUD: zero scrolling needed! */}
+                <div className="scope-cursor-hud">
+                  {cursorA === null && cursorB === null ? (
+                    <span className="hud-hint">
+                      💡 Click: Cursor A • Shift+Click: Cursor B • Drag box to zoom
+                    </span>
+                  ) : (
+                    <div className="hud-cursor-chips">
+                      {cursorA !== null && timeArray[cursorA] !== undefined && (
+                        <span className="cursor-chip chip-a" title="Cursor A position">
+                          <strong>A:</strong> {formatEngineeringValue(timeArray[cursorA], 's')}
+                        </span>
+                      )}
+                      {cursorB !== null && timeArray[cursorB] !== undefined && (
+                        <span className="cursor-chip chip-b" title="Cursor B position">
+                          <strong>B:</strong> {formatEngineeringValue(timeArray[cursorB], 's')}
+                        </span>
+                      )}
+                      {cursorA !== null && cursorB !== null && timeArray[cursorA] !== undefined && timeArray[cursorB] !== undefined && (
+                        <>
+                          <span className="cursor-chip chip-delta" title="Delta Time (t_B - t_A)">
+                            <strong>Δt:</strong> {formatEngineeringValue(Math.abs(timeArray[cursorB] - timeArray[cursorA]), 's')}
+                          </span>
+                          <span className="cursor-chip chip-freq" title="Frequency (1/Δt)">
+                            <strong>f:</strong> {Math.abs(timeArray[cursorB] - timeArray[cursorA]) > 0
+                              ? formatEngineeringValue(1 / Math.abs(timeArray[cursorB] - timeArray[cursorA]), 'Hz')
+                              : '—'}
+                          </span>
+                        </>
+                      )}
+                      <button
+                        type="button"
+                        className="hud-clear-btn"
+                        title="Clear all measurement cursors"
+                        onClick={() => {
+                          setCursorA(null);
+                          setCursorB(null);
+                        }}
+                      >
+                        ✕ Clear Cursors
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
               {displayLayout === 'stacked' ? (
                 <FullScreenStackedChart
@@ -344,6 +426,9 @@ export function ScopeViewTab({
                   onZoomRange={zoomRange}
                   onResetZoom={resetZoom}
                   onPanSeconds={(delta) => setView(panWindow(win, delta, dataT0, dataT1))}
+                  yScaleMode={yScaleMode}
+                  yZoomRange={yView}
+                  onZoomYRange={setYView}
                 />
               )}
 
@@ -480,6 +565,9 @@ function FullScreenOverlayChart({
   onZoomRange,
   onResetZoom,
   onPanSeconds,
+  yScaleMode,
+  yZoomRange,
+  onZoomYRange,
 }: {
   time: number[];
   signals: Record<string, number[]>;
@@ -497,6 +585,9 @@ function FullScreenOverlayChart({
   onZoomRange: (start: number, end: number) => void;
   onResetZoom: () => void;
   onPanSeconds: (delta: number) => void;
+  yScaleMode: 'fixed' | 'auto';
+  yZoomRange: { min: number; max: number } | null;
+  onZoomYRange: (range: { min: number; max: number } | null) => void;
 }) {
   const width = 1000;
   const height = 480;
@@ -521,17 +612,18 @@ function FullScreenOverlayChart({
   const minT = viewStart;
   const maxT = viewEnd;
 
-  // Y-fit over the VISIBLE slice, so zooming rescales the value axis
-  const { minY, maxY } = useMemo(() => {
+  // Global min/max across all active signals over the entire simulation (rock-steady scale)
+  const { globalMinY, globalMaxY } = useMemo(() => {
     let y0 = Infinity;
     let y1 = -Infinity;
-    const i0 = sampleIndexAt(time, minT);
-    const i1 = sampleIndexAt(time, maxT);
     for (const name of activeSignals) {
       const arr = signals[name] || [];
-      for (let i = i0; i <= i1 && i < arr.length; i++) {
-        if (arr[i] < y0) y0 = arr[i];
-        if (arr[i] > y1) y1 = arr[i];
+      for (let i = 0; i < arr.length; i++) {
+        const v = arr[i];
+        if (v !== undefined) {
+          if (v < y0) y0 = v;
+          if (v > y1) y1 = v;
+        }
       }
     }
     if (!Number.isFinite(y0) || !Number.isFinite(y1)) {
@@ -543,8 +635,47 @@ function FullScreenOverlayChart({
       y1 += 1;
     }
     const yPad = (y1 - y0) * 0.08;
-    return { minY: y0 - yPad, maxY: y1 + yPad };
+    return { globalMinY: y0 - yPad, globalMaxY: y1 + yPad };
+  }, [activeSignals, signals]);
+
+  // Visible slice min/max (used only when user switches to 'auto' Y-scale)
+  const { sliceMinY, sliceMaxY } = useMemo(() => {
+    let y0 = Infinity;
+    let y1 = -Infinity;
+    const i0 = sampleIndexAt(time, minT);
+    const i1 = sampleIndexAt(time, maxT);
+    for (const name of activeSignals) {
+      const arr = signals[name] || [];
+      for (let i = i0; i <= i1 && i < arr.length; i++) {
+        const v = arr[i];
+        if (v !== undefined) {
+          if (v < y0) y0 = v;
+          if (v > y1) y1 = v;
+        }
+      }
+    }
+    if (!Number.isFinite(y0) || !Number.isFinite(y1)) {
+      y0 = -1;
+      y1 = 1;
+    }
+    if (y0 === y1) {
+      y0 -= 1;
+      y1 += 1;
+    }
+    const yPad = (y1 - y0) * 0.08;
+    return { sliceMinY: y0 - yPad, sliceMaxY: y1 + yPad };
   }, [time, signals, activeSignals, minT, maxT]);
+
+  // If 2D box zoomed, use yZoomRange; else fixed or slice
+  const { minY, maxY } = useMemo(() => {
+    if (yZoomRange) {
+      return { minY: yZoomRange.min, maxY: yZoomRange.max };
+    }
+    if (yScaleMode === 'auto') {
+      return { minY: sliceMinY, maxY: sliceMaxY };
+    }
+    return { minY: globalMinY, maxY: globalMaxY };
+  }, [yZoomRange, yScaleMode, sliceMinY, sliceMaxY, globalMinY, globalMaxY]);
 
   // non-passive wheel zoom around the cursor position
   useEffect(() => {
@@ -658,7 +789,7 @@ function FullScreenOverlayChart({
     onSetCursor('B', hoverIndex);
   };
 
-  const [dragBox, setDragBox] = useState<{ startX: number; currentX: number } | null>(null);
+  const [dragBox, setDragBox] = useState<{ startX: number; startY: number; currentX: number; currentY: number } | null>(null);
   const suppressClickRef = useRef(false);
 
   const handlePointerDown = (e: ReactMouseEvent<SVGSVGElement>) => {
@@ -687,7 +818,7 @@ function FullScreenOverlayChart({
       return;
     }
 
-    // Left click -> Box Zoom or Click
+    // Left click -> 2D Box Zoom or Click
     if (e.button === 0) {
       const svg = svgRef.current;
       if (!svg) return;
@@ -696,28 +827,50 @@ function FullScreenOverlayChart({
         const sx = ((clientX - rect.left) / (rect.width || 1)) * width;
         return Math.max(padLeft, Math.min(width - padRight, sx));
       };
+      const getSvgY = (clientY: number) => {
+        const sy = ((clientY - rect.top) / (rect.height || 1)) * height;
+        return Math.max(padTop, Math.min(height - padBottom, sy));
+      };
 
       const startSvgX = getSvgX(e.clientX);
+      const startSvgY = getSvgY(e.clientY);
       let currentSvgX = startSvgX;
+      let currentSvgY = startSvgY;
       suppressClickRef.current = false;
 
       const onMove = (ev: PointerEvent) => {
         currentSvgX = getSvgX(ev.clientX);
-        if (Math.abs(currentSvgX - startSvgX) > 5) {
+        currentSvgY = getSvgY(ev.clientY);
+        if (Math.abs(currentSvgX - startSvgX) > 5 || Math.abs(currentSvgY - startSvgY) > 5) {
           suppressClickRef.current = true;
-          setDragBox({ startX: startSvgX, currentX: currentSvgX });
+          setDragBox({ startX: startSvgX, startY: startSvgY, currentX: currentSvgX, currentY: currentSvgY });
         }
       };
 
       const onUp = () => {
         window.removeEventListener('pointermove', onMove);
         window.removeEventListener('pointerup', onUp);
-        if (Math.abs(currentSvgX - startSvgX) > 5) {
-          const xA = Math.min(startSvgX, currentSvgX);
-          const xB = Math.max(startSvgX, currentSvgX);
-          const tA = minT + ((xA - padLeft) / plotW) * (maxT - minT);
-          const tB = minT + ((xB - padLeft) / plotW) * (maxT - minT);
-          onZoomRange(tA, tB);
+        const dx = Math.abs(currentSvgX - startSvgX);
+        const dy = Math.abs(currentSvgY - startSvgY);
+        if (dx > 6 || dy > 6) {
+          if (dx > 6) {
+            const xA = Math.min(startSvgX, currentSvgX);
+            const xB = Math.max(startSvgX, currentSvgX);
+            const tA = minT + ((xA - padLeft) / plotW) * (maxT - minT);
+            const tB = minT + ((xB - padLeft) / plotW) * (maxT - minT);
+            onZoomRange(tA, tB);
+          }
+          if (dy > 12) {
+            const yA = Math.min(startSvgY, currentSvgY);
+            const yB = Math.max(startSvgY, currentSvgY);
+            const vTop = maxY - ((yA - padTop) / plotH) * (maxY - minY);
+            const vBottom = maxY - ((yB - padTop) / plotH) * (maxY - minY);
+            const vMin = Math.min(vTop, vBottom);
+            const vMax = Math.max(vTop, vBottom);
+            if (vMax - vMin > 1e-12) {
+              onZoomYRange({ min: vMin, max: vMax });
+            }
+          }
         }
         setDragBox(null);
       };
@@ -934,39 +1087,74 @@ function FullScreenOverlayChart({
           </g>
         )}
 
-        {/* Drag Box Zoom Selection */}
-        {dragBox && Math.abs(dragBox.currentX - dragBox.startX) > 5 && (
+        {/* Delta badge between A and B in plot */}
+        {cursorA !== null && cursorB !== null && time[cursorA] !== undefined && time[cursorB] !== undefined && (
           <g pointerEvents="none">
             <rect
-              x={Math.min(dragBox.startX, dragBox.currentX)}
-              y={padTop}
-              width={Math.abs(dragBox.currentX - dragBox.startX)}
-              height={plotH}
-              fill="rgba(56, 189, 248, 0.22)"
-              stroke="#38bdf8"
-              strokeWidth={1.5}
-              strokeDasharray="4 3"
-            />
-            <rect
-              x={Math.min(dragBox.startX, dragBox.currentX)}
-              y={padTop + 4}
-              width={Math.min(140, Math.abs(dragBox.currentX - dragBox.startX))}
+              x={(mapX(time[cursorA]) + mapX(time[cursorB])) / 2 - 45}
+              y={padTop + 6}
+              width={90}
               height={18}
               rx={3}
-              fill="#0284c7"
-              opacity={0.9}
+              fill="rgba(16, 185, 129, 0.85)"
             />
             <text
-              x={Math.min(dragBox.startX, dragBox.currentX) + 6}
-              y={padTop + 16}
+              x={(mapX(time[cursorA]) + mapX(time[cursorB])) / 2}
+              y={padTop + 19}
               fill="#ffffff"
               fontSize={10}
-              fontWeight={700}
+              fontWeight={800}
+              textAnchor="middle"
             >
-              🔍 Drag to Zoom
+              Δt: {formatEngineeringValue(Math.abs(time[cursorB] - time[cursorA]), 's')}
             </text>
           </g>
         )}
+
+        {/* Drag Box Zoom Selection (2D box or Time-only) */}
+        {dragBox && (Math.abs(dragBox.currentX - dragBox.startX) > 5 || Math.abs(dragBox.currentY - dragBox.startY) > 5) && (() => {
+          const bx = Math.min(dragBox.startX, dragBox.currentX);
+          const by = Math.min(dragBox.startY, dragBox.currentY);
+          const bw = Math.abs(dragBox.currentX - dragBox.startX);
+          const bh = Math.abs(dragBox.currentY - dragBox.startY);
+          const is2D = bh > 12;
+          const tA = minT + ((bx - padLeft) / plotW) * (maxT - minT);
+          const tB = minT + (((bx + bw) - padLeft) / plotW) * (maxT - minT);
+          const dt = tB - tA;
+
+          return (
+            <g pointerEvents="none">
+              <rect
+                x={bx}
+                y={is2D ? by : padTop}
+                width={bw}
+                height={is2D ? bh : plotH}
+                fill="rgba(56, 189, 248, 0.22)"
+                stroke="#38bdf8"
+                strokeWidth={1.5}
+                strokeDasharray="4 3"
+              />
+              <rect
+                x={bx}
+                y={Math.max(padTop, (is2D ? by : padTop) - 22)}
+                width={is2D ? 160 : 130}
+                height={18}
+                rx={3}
+                fill="#0284c7"
+                opacity={0.95}
+              />
+              <text
+                x={bx + 6}
+                y={Math.max(padTop, (is2D ? by : padTop) - 22) + 13}
+                fill="#ffffff"
+                fontSize={10}
+                fontWeight={700}
+              >
+                🔍 {is2D ? '2D Box Zoom' : 'Time Zoom'} ({formatEngineeringValue(dt, 's')})
+              </text>
+            </g>
+          );
+        })()}
 
         {/* Hover Crosshair & Values */}
         {hoverIndex !== null && hoverIndex >= 0 && hoverIndex < time.length && (
