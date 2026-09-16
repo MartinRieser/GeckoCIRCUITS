@@ -14,6 +14,8 @@ import {
   effectiveWindow,
   panWindow,
   zoomWindow,
+  clampWindow,
+  MIN_SPAN,
   type ViewWindow,
 } from './viewWindow';
 import { FftPanel } from './FftPanel';
@@ -152,6 +154,16 @@ export function ScopeViewTab({
       setView(zoomWindow(effectiveWindow(view, dataT0, dataT1), factor, anchor, dataT0, dataT1));
     },
     [view, dataT0, dataT1],
+  );
+
+  const zoomRange = useCallback(
+    (start: number, end: number) => {
+      const s = Math.min(start, end);
+      const e = Math.max(start, end);
+      if (e - s < MIN_SPAN) return;
+      setView(clampWindow({ start: s, end: e }, dataT0, dataT1));
+    },
+    [dataT0, dataT1],
   );
 
   const panBy = useCallback(
@@ -307,6 +319,8 @@ export function ScopeViewTab({
                   viewStart={win.start}
                   viewEnd={win.end}
                   onZoomAt={zoomAt}
+                  onZoomRange={zoomRange}
+                  onResetZoom={resetZoom}
                   onPanSeconds={(delta) => setView(panWindow(win, delta, dataT0, dataT1))}
                 />
               ) : (
@@ -327,6 +341,8 @@ export function ScopeViewTab({
                   viewStart={win.start}
                   viewEnd={win.end}
                   onZoomAt={zoomAt}
+                  onZoomRange={zoomRange}
+                  onResetZoom={resetZoom}
                   onPanSeconds={(delta) => setView(panWindow(win, delta, dataT0, dataT1))}
                 />
               )}
@@ -461,6 +477,8 @@ function FullScreenOverlayChart({
   viewStart,
   viewEnd,
   onZoomAt,
+  onZoomRange,
+  onResetZoom,
   onPanSeconds,
 }: {
   time: number[];
@@ -476,6 +494,8 @@ function FullScreenOverlayChart({
   viewStart: number;
   viewEnd: number;
   onZoomAt: (factor: number, anchor: number) => void;
+  onZoomRange: (start: number, end: number) => void;
+  onResetZoom: () => void;
   onPanSeconds: (delta: number) => void;
 }) {
   const width = 1000;
@@ -489,7 +509,6 @@ function FullScreenOverlayChart({
   const plotH = height - padTop - padBottom;
 
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const panState = useRef<{ x0: number; t0: number; moved: boolean } | null>(null);
   const timeRef = useRef(time);
   timeRef.current = time;
 
@@ -639,38 +658,73 @@ function FullScreenOverlayChart({
     onSetCursor('B', hoverIndex);
   };
 
-  // drag-pan: pointerdown starts a candidate pan; movement beyond 4px pans and
-  // cancels the pending cursor click
+  const [dragBox, setDragBox] = useState<{ startX: number; currentX: number } | null>(null);
   const suppressClickRef = useRef(false);
+
   const handlePointerDown = (e: ReactMouseEvent<SVGSVGElement>) => {
-    if (e.button !== 0) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x0 = e.clientX;
-    const span = maxT - minT;
-    const svgPerScreen = width / (rect.width || 1);
-    panState.current = { x0: x0, t0: 0, moved: false };
-    suppressClickRef.current = false;
-    const onMove = (ev: PointerEvent) => {
-      const st = panState.current;
-      if (!st) return;
-      const dx = ev.clientX - st.x0;
-      if (!st.moved && Math.abs(dx) > 4) {
-        st.moved = true;
-        suppressClickRef.current = true;
-      }
-      if (st.moved) {
-        // content follows the cursor: drag right moves the window left
+    // Middle click or Alt + Left click -> Pan
+    if (e.button === 1 || (e.button === 0 && e.altKey)) {
+      e.preventDefault();
+      const rect = e.currentTarget.getBoundingClientRect();
+      let lastX = e.clientX;
+      const span = maxT - minT;
+      const svgPerScreen = width / (rect.width || 1);
+      suppressClickRef.current = true;
+
+      const onMove = (ev: PointerEvent) => {
+        const dx = ev.clientX - lastX;
+        lastX = ev.clientX;
         onPanSeconds(-(dx * svgPerScreen * span) / plotW);
-        st.x0 = ev.clientX;
-      }
-    };
-    const onUp = () => {
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-      panState.current = null;
-    };
-    window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', onUp);
+      };
+
+      const onUp = () => {
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+      };
+
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+      return;
+    }
+
+    // Left click -> Box Zoom or Click
+    if (e.button === 0) {
+      const svg = svgRef.current;
+      if (!svg) return;
+      const rect = svg.getBoundingClientRect();
+      const getSvgX = (clientX: number) => {
+        const sx = ((clientX - rect.left) / (rect.width || 1)) * width;
+        return Math.max(padLeft, Math.min(width - padRight, sx));
+      };
+
+      const startSvgX = getSvgX(e.clientX);
+      let currentSvgX = startSvgX;
+      suppressClickRef.current = false;
+
+      const onMove = (ev: PointerEvent) => {
+        currentSvgX = getSvgX(ev.clientX);
+        if (Math.abs(currentSvgX - startSvgX) > 5) {
+          suppressClickRef.current = true;
+          setDragBox({ startX: startSvgX, currentX: currentSvgX });
+        }
+      };
+
+      const onUp = () => {
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+        if (Math.abs(currentSvgX - startSvgX) > 5) {
+          const xA = Math.min(startSvgX, currentSvgX);
+          const xB = Math.max(startSvgX, currentSvgX);
+          const tA = minT + ((xA - padLeft) / plotW) * (maxT - minT);
+          const tB = minT + ((xB - padLeft) / plotW) * (maxT - minT);
+          onZoomRange(tA, tB);
+        }
+        setDragBox(null);
+      };
+
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+    }
   };
 
   return (
@@ -682,6 +736,7 @@ function FullScreenOverlayChart({
         onMouseMove={handleMouseMove}
         onMouseLeave={() => onHoverIndex(null)}
         onClick={handleClick}
+        onDoubleClick={onResetZoom}
         onContextMenu={handleContextMenu}
         onPointerDown={handlePointerDown}
       >
@@ -713,14 +768,14 @@ function FullScreenOverlayChart({
               strokeDasharray="3 4"
             />
             <text
-              x={padLeft - 10}
+              x={padLeft - 8}
               y={y + 4}
+              textAnchor="end"
               fill={textColor}
               fontSize={11}
-              fontWeight={600}
-              textAnchor="end"
+              fontFamily="monospace"
             >
-              {formatEngineeringValue(val)}
+              {formatEngineeringValue(val, '')}
             </text>
           </g>
         ))}
@@ -781,7 +836,7 @@ function FullScreenOverlayChart({
 
         {/* Cursor A */}
         {cursorA !== null && time[cursorA] !== undefined && (
-          <g className="cursor-line-a" pointerEvents="none">
+          <g className="cursor-line-a">
             <line
               x1={mapX(time[cursorA])}
               y1={padTop}
@@ -789,23 +844,35 @@ function FullScreenOverlayChart({
               y2={height - padBottom}
               stroke="#38bdf8"
               strokeWidth={1.5}
+              pointerEvents="none"
+            />
+            {/* Wide grab area over entire vertical line */}
+            <line
+              x1={mapX(time[cursorA])}
+              y1={padTop}
+              x2={mapX(time[cursorA])}
+              y2={height - padBottom}
+              stroke="transparent"
+              strokeWidth={16}
+              style={{ cursor: 'ew-resize', pointerEvents: 'auto' }}
+              onPointerDown={(e) => handleCursorDragStart(e, 'A')}
             />
             <g
               className="cursor-handle cursor-handle-a"
-              style={{ cursor: 'ew-resize', pointerEvents: 'auto' }}
+              style={{ cursor: 'ew-resize', pointerEvents: 'auto', userSelect: 'none' }}
               onPointerDown={(e) => handleCursorDragStart(e, 'A')}
             >
               <rect
-                x={mapX(time[cursorA]) - 14}
-                y={padTop - 18}
-                width={28}
-                height={16}
-                rx={3}
+                x={mapX(time[cursorA]) - 16}
+                y={padTop - 20}
+                width={32}
+                height={18}
+                rx={4}
                 fill="#0284c7"
               />
               <text
                 x={mapX(time[cursorA])}
-                y={padTop - 6}
+                y={padTop - 7}
                 fill="#ffffff"
                 fontSize={10}
                 fontWeight={800}
@@ -819,7 +886,7 @@ function FullScreenOverlayChart({
 
         {/* Cursor B */}
         {cursorB !== null && time[cursorB] !== undefined && (
-          <g className="cursor-line-b" pointerEvents="none">
+          <g className="cursor-line-b">
             <line
               x1={mapX(time[cursorB])}
               y1={padTop}
@@ -827,23 +894,35 @@ function FullScreenOverlayChart({
               y2={height - padBottom}
               stroke="#f43f5e"
               strokeWidth={1.5}
+              pointerEvents="none"
+            />
+            {/* Wide grab area over entire vertical line */}
+            <line
+              x1={mapX(time[cursorB])}
+              y1={padTop}
+              x2={mapX(time[cursorB])}
+              y2={height - padBottom}
+              stroke="transparent"
+              strokeWidth={16}
+              style={{ cursor: 'ew-resize', pointerEvents: 'auto' }}
+              onPointerDown={(e) => handleCursorDragStart(e, 'B')}
             />
             <g
               className="cursor-handle cursor-handle-b"
-              style={{ cursor: 'ew-resize', pointerEvents: 'auto' }}
+              style={{ cursor: 'ew-resize', pointerEvents: 'auto', userSelect: 'none' }}
               onPointerDown={(e) => handleCursorDragStart(e, 'B')}
             >
               <rect
-                x={mapX(time[cursorB]) - 14}
-                y={padTop - 18}
-                width={28}
-                height={16}
-                rx={3}
+                x={mapX(time[cursorB]) - 16}
+                y={padTop - 20}
+                width={32}
+                height={18}
+                rx={4}
                 fill="#e11d48"
               />
               <text
                 x={mapX(time[cursorB])}
-                y={padTop - 6}
+                y={padTop - 7}
                 fill="#ffffff"
                 fontSize={10}
                 fontWeight={800}
@@ -852,6 +931,40 @@ function FullScreenOverlayChart({
                 B
               </text>
             </g>
+          </g>
+        )}
+
+        {/* Drag Box Zoom Selection */}
+        {dragBox && Math.abs(dragBox.currentX - dragBox.startX) > 5 && (
+          <g pointerEvents="none">
+            <rect
+              x={Math.min(dragBox.startX, dragBox.currentX)}
+              y={padTop}
+              width={Math.abs(dragBox.currentX - dragBox.startX)}
+              height={plotH}
+              fill="rgba(56, 189, 248, 0.22)"
+              stroke="#38bdf8"
+              strokeWidth={1.5}
+              strokeDasharray="4 3"
+            />
+            <rect
+              x={Math.min(dragBox.startX, dragBox.currentX)}
+              y={padTop + 4}
+              width={Math.min(140, Math.abs(dragBox.currentX - dragBox.startX))}
+              height={18}
+              rx={3}
+              fill="#0284c7"
+              opacity={0.9}
+            />
+            <text
+              x={Math.min(dragBox.startX, dragBox.currentX) + 6}
+              y={padTop + 16}
+              fill="#ffffff"
+              fontSize={10}
+              fontWeight={700}
+            >
+              🔍 Drag to Zoom
+            </text>
           </g>
         )}
 
@@ -941,6 +1054,8 @@ function FullScreenStackedChart({
   viewStart,
   viewEnd,
   onZoomAt,
+  onZoomRange,
+  onResetZoom,
   onPanSeconds,
 }: {
   time: number[];
@@ -956,10 +1071,12 @@ function FullScreenStackedChart({
   viewStart: number;
   viewEnd: number;
   onZoomAt: (factor: number, anchor: number) => void;
+  onZoomRange: (start: number, end: number) => void;
+  onResetZoom: () => void;
   onPanSeconds: (delta: number) => void;
 }) {
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const panState = useRef<{ x0: number; moved: boolean } | null>(null);
+  const [dragBox, setDragBox] = useState<{ startX: number; currentX: number } | null>(null);
   const suppressClickRef = useRef(false);
   const width = 1000;
   const laneH = 120; // spacious 120px height per channel!
@@ -970,6 +1087,7 @@ function FullScreenStackedChart({
   const padBottom = 35;
   const totalH = Math.max(480, padTop + padBottom + activeSignals.length * (laneH + laneGap) - laneGap);
   const plotW = width - padLeft - padRight;
+  const plotH = totalH - padTop - padBottom;
 
   const traceColors = theme === 'light' ? TRACE_COLORS_LIGHT : TRACE_COLORS_DARK;
   const textColor = theme === 'light' ? '#64748b' : '#94a3b8';
@@ -1048,36 +1166,126 @@ function FullScreenStackedChart({
     onSetCursor('B', hoverIndex);
   };
 
-  // drag-pan, same interaction as the overlay chart
   const handlePointerDown = (e: ReactMouseEvent<SVGSVGElement>) => {
-    if (e.button !== 0) return;
-    const x0 = e.clientX;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const span = t1 - t0;
-    const svgPerScreen = width / (rect.width || 1);
-    panState.current = { x0: x0, moved: false };
-    suppressClickRef.current = false;
-    const onMove = (ev: PointerEvent) => {
-      const st = panState.current;
-      if (!st) return;
-      const dx = ev.clientX - st.x0;
-      if (!st.moved && Math.abs(dx) > 4) {
-        st.moved = true;
-        suppressClickRef.current = true;
-      }
-      if (st.moved) {
+    // Middle click or Alt + Left click -> Pan
+    if (e.button === 1 || (e.button === 0 && e.altKey)) {
+      e.preventDefault();
+      const rect = e.currentTarget.getBoundingClientRect();
+      let lastX = e.clientX;
+      const span = t1 - t0;
+      const svgPerScreen = width / (rect.width || 1);
+      suppressClickRef.current = true;
+
+      const onMove = (ev: PointerEvent) => {
+        const dx = ev.clientX - lastX;
+        lastX = ev.clientX;
         onPanSeconds(-(dx * svgPerScreen * span) / plotW);
-        st.x0 = ev.clientX;
-      }
-    };
-    const onUp = () => {
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-      panState.current = null;
-    };
-    window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', onUp);
+      };
+
+      const onUp = () => {
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+      };
+
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+      return;
+    }
+
+    // Left click -> Box Zoom or Click
+    if (e.button === 0) {
+      const svg = svgRef.current;
+      if (!svg) return;
+      const rect = svg.getBoundingClientRect();
+      const getSvgX = (clientX: number) => {
+        const sx = ((clientX - rect.left) / (rect.width || 1)) * width;
+        return Math.max(padLeft, Math.min(width - padRight, sx));
+      };
+
+      const startSvgX = getSvgX(e.clientX);
+      let currentSvgX = startSvgX;
+      suppressClickRef.current = false;
+
+      const onMove = (ev: PointerEvent) => {
+        currentSvgX = getSvgX(ev.clientX);
+        if (Math.abs(currentSvgX - startSvgX) > 5) {
+          suppressClickRef.current = true;
+          setDragBox({ startX: startSvgX, currentX: currentSvgX });
+        }
+      };
+
+      const onUp = () => {
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+        if (Math.abs(currentSvgX - startSvgX) > 5) {
+          const xA = Math.min(startSvgX, currentSvgX);
+          const xB = Math.max(startSvgX, currentSvgX);
+          const tA = t0 + ((xA - padLeft) / plotW) * (t1 - t0);
+          const tB = t0 + ((xB - padLeft) / plotW) * (t1 - t0);
+          onZoomRange(tA, tB);
+        }
+        setDragBox(null);
+      };
+
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+    }
   };
+
+  const signalMinMax: Record<string, { min: number; max: number }> = {};
+  const lanePaths: Record<string, string> = {};
+
+  const iWin0 = sampleIndexAt(time, t0);
+  const iWin1 = Math.min(sampleIndexAt(time, t1), time.length - 1);
+  const winLen = Math.max(1, iWin1 - iWin0 + 1);
+  const step = Math.max(1, Math.floor(winLen / 3000));
+
+  for (let k = 0; k < activeSignals.length; k++) {
+    const name = activeSignals[k];
+    const arr = signals[name] || [];
+    const laneY = padTop + k * (laneH + laneGap);
+
+    let y0 = Infinity;
+    let y1 = -Infinity;
+    for (let i = iWin0; i <= iWin1; i++) {
+      const v = arr[i];
+      if (v !== undefined) {
+        if (v < y0) y0 = v;
+        if (v > y1) y1 = v;
+      }
+    }
+    if (!Number.isFinite(y0) || !Number.isFinite(y1)) {
+      y0 = -1;
+      y1 = 1;
+    }
+    if (y0 === y1) {
+      y0 -= 1;
+      y1 += 1;
+    }
+    const yPad = (y1 - y0) * 0.1;
+    const minY = y0 - yPad;
+    const maxY = y1 + yPad;
+    signalMinMax[name] = { min: minY, max: maxY };
+
+    const mapLaneY = (v: number) =>
+      laneY + laneH - ((v - minY) / (maxY - minY || 1)) * laneH;
+
+    let pathD = '';
+    if (winLen > 0 && arr.length > 0) {
+      const startIdx = Math.max(0, Math.min(iWin0, arr.length - 1));
+      const endIdx = Math.max(0, Math.min(iWin1, arr.length - 1));
+      if (startIdx <= endIdx) {
+        pathD = `M ${mapX(time[startIdx])} ${mapLaneY(arr[startIdx] ?? 0)}`;
+        for (let i = startIdx + step; i <= endIdx; i += step) {
+          pathD += ` L ${mapX(time[i])} ${mapLaneY(arr[i] ?? 0)}`;
+        }
+        if ((endIdx - startIdx) % step !== 0) {
+          pathD += ` L ${mapX(time[endIdx])} ${mapLaneY(arr[endIdx] ?? 0)}`;
+        }
+      }
+    }
+    lanePaths[name] = pathD;
+  }
 
   return (
     <div className="full-waveform-wrap">
@@ -1088,6 +1296,7 @@ function FullScreenStackedChart({
         onMouseMove={handleMouseMove}
         onMouseLeave={() => onHoverIndex(null)}
         onClick={handleClick}
+        onDoubleClick={onResetZoom}
         onContextMenu={handleContextMenu}
         onPointerDown={handlePointerDown}
       >
@@ -1098,63 +1307,32 @@ function FullScreenStackedChart({
             <rect x={padLeft} y={padTop} width={plotW} height={totalH - padTop - padBottom} />
           </clipPath>
         </defs>
-        <g clipPath="url(#stacked-plot-clip)">
-        {activeSignals.map((name, k) => {
-          const arr = signals[name] || [];
+
+        {/* Lanes */}
+        {activeSignals.map((name, i) => {
+          const laneY = padTop + i * (laneH + laneGap);
           const colorIdx = allSignals.indexOf(name);
           const color = traceColors[colorIdx % traceColors.length];
-          const laneTop = padTop + k * (laneH + laneGap);
-
-          let y0 = Infinity;
-          let y1 = -Infinity;
-          for (let i = 0; i < arr.length; i++) {
-            if (arr[i] < y0) y0 = arr[i];
-            if (arr[i] > y1) y1 = arr[i];
-          }
-          if (!Number.isFinite(y0) || !Number.isFinite(y1)) {
-            y0 = -1;
-            y1 = 1;
-          }
-          if (y0 === y1) {
-            y0 -= 1;
-            y1 += 1;
-          }
-          const yPad = (y1 - y0) * 0.1;
-          const minY = y0 - yPad;
-          const maxY = y1 + yPad;
-
-          const mapLaneY = (v: number) =>
-            laneTop + laneH - ((v - minY) / (maxY - minY || 1)) * laneH;
-
-          const iWin0 = sampleIndexAt(time, t0);
-          const iWin1 = Math.min(sampleIndexAt(time, t1), arr.length - 1);
-          const len = iWin1 - iWin0 + 1;
-          let pathD = '';
-          if (len > 0) {
-            const step = Math.max(1, Math.floor(len / 3000));
-            pathD = `M ${mapX(time[iWin0])} ${mapLaneY(arr[iWin0])}`;
-            for (let i = iWin0 + step; i <= iWin1; i += step) {
-              pathD += ` L ${mapX(time[i])} ${mapLaneY(arr[i])}`;
-            }
-            if ((iWin1 - iWin0) % step !== 0) {
-              pathD += ` L ${mapX(time[iWin1])} ${mapLaneY(arr[iWin1])}`;
-            }
-          }
-
-          const hasZero = minY <= 0 && maxY >= 0;
-          const zeroY = hasZero ? mapLaneY(0) : null;
+          const path = lanePaths[name];
+          const mm = signalMinMax[name] || { min: 0, max: 1 };
+          const zeroY =
+            mm.min <= 0 && mm.max >= 0
+              ? laneY + laneH - ((0 - mm.min) / (mm.max - mm.min || 1)) * laneH
+              : null;
 
           return (
             <g key={name} className="stacked-lane">
+              {/* Lane background */}
               <rect
                 x={padLeft}
-                y={laneTop}
+                y={laneY}
                 width={plotW}
                 height={laneH}
                 className="waveform-plot-area"
                 rx={4}
               />
 
+              {/* Zero line */}
               {zeroY !== null && (
                 <line
                   x1={padLeft}
@@ -1162,63 +1340,44 @@ function FullScreenStackedChart({
                   x2={width - padRight}
                   y2={zeroY}
                   stroke={zeroColor}
-                  strokeDasharray="3 3"
+                  strokeWidth={1}
                 />
               )}
 
-              {/* Y Ticks */}
+              {/* Y Axis Labels (Min / Max) */}
               <text
                 x={padLeft - 8}
-                y={laneTop + 14}
+                y={laneY + 12}
+                textAnchor="end"
                 fill={textColor}
                 fontSize={10}
-                fontWeight={600}
-                textAnchor="end"
+                fontFamily="monospace"
               >
-                {formatEngineeringValue(maxY)}
+                {formatEngineeringValue(mm.max, '')}
               </text>
               <text
                 x={padLeft - 8}
-                y={laneTop + laneH - 4}
+                y={laneY + laneH - 2}
+                textAnchor="end"
                 fill={textColor}
                 fontSize={10}
-                fontWeight={600}
-                textAnchor="end"
+                fontFamily="monospace"
               >
-                {formatEngineeringValue(minY)}
+                {formatEngineeringValue(mm.min, '')}
               </text>
 
-              {/* Path */}
-              {pathD && (
-                <path
-                  d={pathD}
-                  fill="none"
-                  stroke={color}
-                  strokeWidth={2.2}
-                  strokeLinejoin="round"
-                />
-              )}
-
-              {/* Lane Badge */}
+              {/* Channel Name Badge */}
               <rect
                 x={padLeft + 8}
-                y={laneTop + 6}
-                width={name.length * 8 + 24}
-                height={20}
-                rx={4}
-                fill={theme === 'light' ? '#f1f5f9' : '#0f172a'}
-                stroke={theme === 'light' ? '#cbd5e1' : '#334155'}
-                fillOpacity={0.9}
-              />
-              <circle
-                cx={padLeft + 16}
-                cy={laneTop + 16}
-                r={4}
-                fill={color}
+                y={laneY + 8}
+                width={Math.min(120, name.length * 8 + 16)}
+                height={18}
+                rx={3}
+                fill={theme === 'light' ? 'rgba(255,255,255,0.85)' : 'rgba(15,23,42,0.85)'}
               />
               <text
-                x={padLeft + 24}
-                y={laneTop + 20}
+                x={padLeft + 14}
+                y={laneY + 21}
                 fill={color}
                 fontSize={11}
                 fontWeight={700}
@@ -1226,54 +1385,57 @@ function FullScreenStackedChart({
                 {name}
               </text>
 
-              {hoverIndex !== null && hoverIndex >= 0 && hoverIndex < time.length && (
-                <circle
-                  cx={mapX(time[hoverIndex])}
-                  cy={mapLaneY(arr[hoverIndex] ?? 0)}
-                  r={4.5}
-                  fill={color}
-                  stroke="#ffffff"
-                  strokeWidth={1.5}
-                />
-              )}
+              {/* Waveform */}
+              <g clipPath="url(#stacked-plot-clip)">
+                {path && (
+                  <path
+                    d={path}
+                    fill="none"
+                    stroke={color}
+                    strokeWidth={2.0}
+                    strokeLinejoin="round"
+                  />
+                )}
+              </g>
             </g>
           );
         })}
 
-        </g>
-
-        {/* Global time axis */}
-        <line
-          x1={padLeft}
-          y1={totalH - padBottom}
-          x2={width - padRight}
-          y2={totalH - padBottom}
-          stroke={theme === 'light' ? '#cbd5e1' : '#475569'}
-        />
+        {/* Bottom Time Axis Labels */}
         <text
           x={padLeft}
-          y={totalH - padBottom + 18}
+          y={totalH - 12}
+          textAnchor="start"
           fill={textColor}
           fontSize={11}
-          fontWeight={600}
-          textAnchor="middle"
+          fontFamily="monospace"
         >
           {formatEngineeringValue(t0, 's')}
         </text>
         <text
-          x={width - padRight}
-          y={totalH - padBottom + 18}
+          x={padLeft + plotW / 2}
+          y={totalH - 12}
+          textAnchor="middle"
           fill={textColor}
           fontSize={11}
-          fontWeight={600}
-          textAnchor="middle"
+          fontFamily="monospace"
+        >
+          {formatEngineeringValue((t0 + t1) / 2, 's')}
+        </text>
+        <text
+          x={width - padRight}
+          y={totalH - 12}
+          textAnchor="end"
+          fill={textColor}
+          fontSize={11}
+          fontFamily="monospace"
         >
           {formatEngineeringValue(t1, 's')}
         </text>
 
         {/* Cursor A */}
         {cursorA !== null && time[cursorA] !== undefined && (
-          <g className="cursor-line-a" pointerEvents="none">
+          <g className="cursor-line-a">
             <line
               x1={mapX(time[cursorA])}
               y1={padTop}
@@ -1281,23 +1443,35 @@ function FullScreenStackedChart({
               y2={totalH - padBottom}
               stroke="#38bdf8"
               strokeWidth={1.5}
+              pointerEvents="none"
+            />
+            {/* Wide grab area over entire vertical line */}
+            <line
+              x1={mapX(time[cursorA])}
+              y1={padTop}
+              x2={mapX(time[cursorA])}
+              y2={totalH - padBottom}
+              stroke="transparent"
+              strokeWidth={16}
+              style={{ cursor: 'ew-resize', pointerEvents: 'auto' }}
+              onPointerDown={(e) => handleCursorDragStart(e, 'A')}
             />
             <g
               className="cursor-handle cursor-handle-a"
-              style={{ cursor: 'ew-resize', pointerEvents: 'auto' }}
+              style={{ cursor: 'ew-resize', pointerEvents: 'auto', userSelect: 'none' }}
               onPointerDown={(e) => handleCursorDragStart(e, 'A')}
             >
               <rect
-                x={mapX(time[cursorA]) - 14}
-                y={padTop - 18}
-                width={28}
-                height={16}
-                rx={3}
+                x={mapX(time[cursorA]) - 16}
+                y={padTop - 20}
+                width={32}
+                height={18}
+                rx={4}
                 fill="#0284c7"
               />
               <text
                 x={mapX(time[cursorA])}
-                y={padTop - 6}
+                y={padTop - 7}
                 fill="#ffffff"
                 fontSize={10}
                 fontWeight={800}
@@ -1311,7 +1485,7 @@ function FullScreenStackedChart({
 
         {/* Cursor B */}
         {cursorB !== null && time[cursorB] !== undefined && (
-          <g className="cursor-line-b" pointerEvents="none">
+          <g className="cursor-line-b">
             <line
               x1={mapX(time[cursorB])}
               y1={padTop}
@@ -1319,23 +1493,35 @@ function FullScreenStackedChart({
               y2={totalH - padBottom}
               stroke="#f43f5e"
               strokeWidth={1.5}
+              pointerEvents="none"
+            />
+            {/* Wide grab area over entire vertical line */}
+            <line
+              x1={mapX(time[cursorB])}
+              y1={padTop}
+              x2={mapX(time[cursorB])}
+              y2={totalH - padBottom}
+              stroke="transparent"
+              strokeWidth={16}
+              style={{ cursor: 'ew-resize', pointerEvents: 'auto' }}
+              onPointerDown={(e) => handleCursorDragStart(e, 'B')}
             />
             <g
               className="cursor-handle cursor-handle-b"
-              style={{ cursor: 'ew-resize', pointerEvents: 'auto' }}
+              style={{ cursor: 'ew-resize', pointerEvents: 'auto', userSelect: 'none' }}
               onPointerDown={(e) => handleCursorDragStart(e, 'B')}
             >
               <rect
-                x={mapX(time[cursorB]) - 14}
-                y={padTop - 18}
-                width={28}
-                height={16}
-                rx={3}
+                x={mapX(time[cursorB]) - 16}
+                y={padTop - 20}
+                width={32}
+                height={18}
+                rx={4}
                 fill="#e11d48"
               />
               <text
                 x={mapX(time[cursorB])}
-                y={padTop - 6}
+                y={padTop - 7}
                 fill="#ffffff"
                 fontSize={10}
                 fontWeight={800}
@@ -1344,6 +1530,40 @@ function FullScreenStackedChart({
                 B
               </text>
             </g>
+          </g>
+        )}
+
+        {/* Drag Box Zoom Selection */}
+        {dragBox && Math.abs(dragBox.currentX - dragBox.startX) > 5 && (
+          <g pointerEvents="none">
+            <rect
+              x={Math.min(dragBox.startX, dragBox.currentX)}
+              y={padTop}
+              width={Math.abs(dragBox.currentX - dragBox.startX)}
+              height={plotH}
+              fill="rgba(56, 189, 248, 0.22)"
+              stroke="#38bdf8"
+              strokeWidth={1.5}
+              strokeDasharray="4 3"
+            />
+            <rect
+              x={Math.min(dragBox.startX, dragBox.currentX)}
+              y={padTop + 4}
+              width={Math.min(140, Math.abs(dragBox.currentX - dragBox.startX))}
+              height={18}
+              rx={3}
+              fill="#0284c7"
+              opacity={0.9}
+            />
+            <text
+              x={Math.min(dragBox.startX, dragBox.currentX) + 6}
+              y={padTop + 16}
+              fill="#ffffff"
+              fontSize={10}
+              fontWeight={700}
+            >
+              🔍 Drag to Zoom
+            </text>
           </g>
         )}
 

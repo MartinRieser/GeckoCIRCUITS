@@ -1,5 +1,6 @@
-# GeckoCIRCUITS Web Editor - Native Desktop Launcher (PowerShell)
-# Launches the backend server and opens the web editor in a standalone desktop window.
+param(
+    [switch]$Rebuild
+)
 
 $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
@@ -53,8 +54,22 @@ if (-not $env:JAVA_HOME -or -not (Test-Path (Join-Path $env:JAVA_HOME "bin\java.
     $env:JAVA_HOME = $jdkRoot
 }
 
-# 2. Check and build REST JAR if needed
-if (-not (Test-Path $RestJar)) {
+# 2. Check and build REST JAR if needed (or if -Rebuild specified)
+if ($Rebuild) {
+    Write-Host "[INFO] Stopping running server on port $Port for rebuild..." -ForegroundColor Yellow
+    try {
+        $p = (Get-NetTCPConnection -LocalPort $Port -ErrorAction SilentlyContinue).OwningProcess
+        if ($p) { Stop-Process -Id $p -Force -ErrorAction SilentlyContinue }
+    } catch {}
+    if (Test-Path (Join-Path $ScriptDir "frontend\package.json")) {
+        Write-Host "[INFO] Building latest frontend static assets..." -ForegroundColor Yellow
+        Push-Location (Join-Path $ScriptDir "frontend")
+        & npm run build:spring
+        Pop-Location
+    }
+    Write-Host "[INFO] Packaging GeckoCIRCUITS REST JAR..." -ForegroundColor Yellow
+    & mvn -pl src/modules/gecko-rest-api -am package -DskipTests -q
+} elseif (-not (Test-Path $RestJar)) {
     Write-Host "[INFO] Building GeckoCIRCUITS Web Editor package..." -ForegroundColor Yellow
     & mvn -pl src/modules/gecko-rest-api -am package -DskipTests -q
     if ($LASTEXITCODE -ne 0) {

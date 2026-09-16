@@ -72,6 +72,29 @@ set "JAVA_HOME=%JAVA_EXE:\bin\java.exe=%"
 set "JAVAW_EXE=%JAVA_EXE:java.exe=javaw.exe%"
 if not exist "%JAVAW_EXE%" set "JAVAW_EXE=%JAVA_EXE%"
 
+set "REBUILD=0"
+if /i "%~1"=="-rebuild" set "REBUILD=1"
+if /i "%~1"=="--rebuild" set "REBUILD=1"
+if /i "%~1"=="/r" set "REBUILD=1"
+
+if !REBUILD! equ 1 (
+    echo [INFO] Stopping running server on port %PORT% for rebuild...
+    powershell -Command "$p = (Get-NetTCPConnection -LocalPort %PORT% -ErrorAction SilentlyContinue).OwningProcess; if ($p) { Stop-Process -Id $p -Force -ErrorAction SilentlyContinue }" >nul 2>&1
+    echo [INFO] Building latest frontend static assets...
+    if exist "%SCRIPT_DIR%frontend\package.json" (
+        cd /d "%SCRIPT_DIR%frontend"
+        call npm run build:spring
+        cd /d "%SCRIPT_DIR%"
+    )
+    echo [INFO] Packaging GeckoCIRCUITS REST JAR...
+    call mvn -pl src/modules/gecko-rest-api -am package -DskipTests -q
+    if errorlevel 1 (
+        echo [ERROR] Build failed. Please ensure Maven and JDK are installed.
+        pause
+        exit /b 1
+    )
+)
+
 REM 2. Check if JAR exists, build if missing
 if not exist "%REST_JAR%" (
     echo [INFO] Building GeckoCIRCUITS Web Editor package...
