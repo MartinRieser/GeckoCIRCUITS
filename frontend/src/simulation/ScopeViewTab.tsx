@@ -6,27 +6,30 @@
  */
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
-import type { EditorComponent } from '../model/types';
+import type { EditorComponent, SimulationStatus } from '../model/types';
 import { formatEngineeringValue } from '../model/componentSchema';
-import { mapSimulationResults } from './chartData';
-import { findScopeBlocks, scopeChannels, filterChannels } from './scopes';
 import {
   effectiveWindow,
   panWindow,
   zoomWindow,
   clampWindow,
   MIN_SPAN,
-  type ViewWindow,
 } from './viewWindow';
 import { FftPanel } from './FftPanel';
 import { LossPanel } from './LossPanel';
+import type { ScopeController } from './useScopeController';
+import { useScopeController } from './useScopeController';
 
-interface ScopeViewTabProps {
+export interface ScopeViewTabProps {
   selectedScope: string; // 'all' or 'SCOPE.1', 'SCOPE.2', etc.
   components: EditorComponent[];
   results: Record<string, number[]> | null;
   displayLayout: 'overlay' | 'stacked';
   theme?: 'dark' | 'light';
+  onDisplayLayoutChange?: (layout: 'overlay' | 'stacked') => void;
+  status?: SimulationStatus | null;
+  filename?: string | null;
+  scope?: ScopeController;
 }
 
 const TRACE_COLORS_DARK = [
@@ -82,7 +85,6 @@ function WaveformTooltip({
   signals,
   allSignals,
   traceColors,
-  hint,
 }: {
   time: number[];
   hoverIndex: number;
@@ -90,7 +92,6 @@ function WaveformTooltip({
   signals: Record<string, number[]>;
   allSignals: string[];
   traceColors: string[];
-  hint?: string;
 }) {
   return (
     <div className="waveform-tooltip">
@@ -110,9 +111,54 @@ function WaveformTooltip({
           </div>
         );
       })}
-      {hint && <div className="tooltip-hint">{hint}</div>}
     </div>
   );
+}
+/** Responsive container dimensions hook */
+function useContainerDimensions<T extends HTMLElement>() {
+  const ref = useRef<T | null>(null);
+  const [dimensions, setDimensions] = useState<{ width: number; height: number }>({
+    width: 1000,
+    height: 480,
+  });
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const update = () => {
+      const rect = el.getBoundingClientRect();
+      if (rect.width > 50 && rect.height > 50) {
+        setDimensions({
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+        });
+      }
+    };
+
+    update();
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const observer = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const { width, height } = entry.contentRect;
+          if (width > 50 && height > 50) {
+            setDimensions({
+              width: Math.round(width),
+              height: Math.round(height),
+            });
+          }
+        }
+      });
+      observer.observe(el);
+      return () => observer.disconnect();
+    } else {
+      window.addEventListener('resize', update);
+      return () => window.removeEventListener('resize', update);
+    }
+  }, []);
+
+  return [ref, dimensions] as const;
 }
 
 export function ScopeViewTab({
@@ -121,59 +167,59 @@ export function ScopeViewTab({
   results,
   displayLayout,
   theme = 'dark',
+  status,
+  filename,
+  scope,
 }: ScopeViewTabProps) {
-  const [hiddenSignals, setHiddenSignals] = useState<Record<string, boolean>>({});
+  const fallbackScope = useScopeController({
+    results,
+    components,
+    selectedScope,
+    theme,
+  });
+  const ctrl = scope ?? fallbackScope;
+
+  const {
+    view,
+    setView,
+    timePerDiv,
+    dataT0,
+    dataT1,
+    yScaleMode,
+    yView,
+    setYView,
+    signalNames,
+    timeArray,
+    signalStats,
+    scopeChannelNames,
+    hiddenSignals,
+    toggleSignal,
+    traceColors,
+    cursorA,
+    setCursorA,
+    cursorB,
+    setCursorB,
+    activeCursor,
+    setActiveCursor,
+    drawerTab,
+    setDrawerTab,
+  } = ctrl;
+
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
-  const [cursorA, setCursorA] = useState<number | null>(null);
-  const [cursorB, setCursorB] = useState<number | null>(null);
-  const [activeCursor, setActiveCursor] = useState<'A' | 'B'>('A');
-  const [channelSearch, setChannelSearch] = useState('');
-  // time-axis view window; null = fit whole simulation
-  const [view, setView] = useState<ViewWindow | null>(null);
-  const [fftOpen, setFftOpen] = useState(false);
-  const [lossOpen, setLossOpen] = useState(false);
+  const [currentLayout, setCurrentLayout] = useState<'overlay' | 'stacked'>(displayLayout);
+  const [chartContainerRef, chartDimensions] = useContainerDimensions<HTMLDivElement>();
 
-  const traceColors = theme === 'light' ? TRACE_COLORS_LIGHT : TRACE_COLORS_DARK;
-
-  const scopeBlocks = useMemo(() => findScopeBlocks(components), [components]);
-
-  const activeScopeBlock = useMemo(() => {
-    if (selectedScope === 'all') return null;
-    return scopeBlocks.find((sb) => sb.name === selectedScope) || null;
-  }, [scopeBlocks, selectedScope]);
-
-  const { signalNames, timeArray, signalStats } = useMemo(
-    () => mapSimulationResults(results),
-    [results],
-  );
-
-  const [yView, setYView] = useState<{ min: number; max: number } | null>(null);
-  const [yScaleMode, setYScaleMode] = useState<'fixed' | 'auto'>('fixed');
-
-  // a new simulation resets the zoom window
   useEffect(() => {
-    setView(null);
-    setYView(null);
-  }, [results]);
+    setCurrentLayout(displayLayout);
+  }, [displayLayout]);
 
-  const dataT0 = timeArray.length ? timeArray[0] : 0;
-  const dataT1 = timeArray.length ? timeArray[timeArray.length - 1] : 1;
   const win = effectiveWindow(view, dataT0, dataT1);
-  const timePerDiv = (win.end - win.start) / 10;
 
   const zoomAt = useCallback(
     (factor: number, anchor: number) => {
       setView(zoomWindow(effectiveWindow(view, dataT0, dataT1), factor, anchor, dataT0, dataT1));
     },
-    [view, dataT0, dataT1],
-  );
-
-  const stepTimebase = useCallback(
-    (direction: 'in' | 'out') => {
-      const center = (win.start + win.end) / 2;
-      zoomAt(direction === 'in' ? 0.5 : 2.0, center);
-    },
-    [win, zoomAt],
+    [view, dataT0, dataT1, setView],
   );
 
   const zoomRange = useCallback(
@@ -183,111 +229,52 @@ export function ScopeViewTab({
       if (e - s < MIN_SPAN) return;
       setView(clampWindow({ start: s, end: e }, dataT0, dataT1));
     },
-    [dataT0, dataT1],
-  );
-
-  const panBy = useCallback(
-    (fraction: number) => {
-      const span = win.end - win.start;
-      setView(panWindow(win, fraction * span, dataT0, dataT1));
-    },
-    [win, dataT0, dataT1],
+    [dataT0, dataT1, setView],
   );
 
   const resetZoom = useCallback(() => {
     setView(null);
     setYView(null);
-  }, []);
+  }, [setView, setYView]);
 
-  // Channels that belong to this Scope
-  const scopeChannelNames = useMemo(
-    () => scopeChannels(activeScopeBlock, signalNames),
-    [selectedScope, activeScopeBlock, signalNames],
-  );
-
-  const filteredChannels = useMemo(
-    () => filterChannels(scopeChannelNames, channelSearch),
-    [scopeChannelNames, channelSearch],
-  );
+  const filteredChannels = scopeChannelNames;
 
   const visibleSignals = useMemo(() => {
     return filteredChannels.filter((s) => !hiddenSignals[s]);
   }, [filteredChannels, hiddenSignals]);
 
-  const toggleSignal = (name: string) => {
-    setHiddenSignals((prev) => ({ ...prev, [name]: !prev[name] }));
-  };
+  const isRunning = status === 'RUNNING' || status === 'PENDING';
 
   return (
     <div className="scope-view-tab-container">
-      {/* Scope Header Bar */}
+      {/* Top Header Bar */}
       <div className="scope-tab-header">
         <div className="scope-tab-title-group">
           <div className="scope-badge-icon">
             {selectedScope === 'all' ? '📊' : '📺'}
           </div>
           <div>
-            <div className="scope-tab-title">
-              {selectedScope === 'all' ? 'Simulation Overview (All Scopes & Signals)' : `Scope Instrument: ${selectedScope}`}
-            </div>
-            <div className="scope-tab-subtitle">
-              {scopeChannelNames.length} channel{scopeChannelNames.length === 1 ? '' : 's'}:{' '}
-              {scopeChannelNames.join(', ') || 'No signals registered'}
-            </div>
+            <span className="scope-tab-title">
+              {selectedScope === 'all' ? 'Simulation Results (All Signals)' : `Scope: ${selectedScope}`}
+            </span>
+            <span className="scope-tab-subtitle">
+              {scopeChannelNames.length} trace{scopeChannelNames.length === 1 ? '' : 's'}
+              {filename ? ` • ${filename}` : ''}
+            </span>
+          </div>
+        </div>
+
+        <div className="scope-tab-actions">
+          {/* Acquisition Status Pill */}
+          <div className={`dso-status-pill ${isRunning ? 'running' : results ? 'auto' : 'stop'}`}>
+            <span className="dso-status-dot" />
+            {isRunning ? 'RUNNING' : results ? 'AUTO' : 'STOP'}
           </div>
         </div>
       </div>
 
-      {/* Channel Pills Legend */}
-      <div className="scope-tab-legend-bar">
-        <span className="legend-channels-label">Active Traces:</span>
-        {filteredChannels.map((name) => {
-          const colorIdx = signalNames.indexOf(name);
-          const color = traceColors[colorIdx >= 0 ? colorIdx % traceColors.length : 0];
-          const isHidden = !!hiddenSignals[name];
-          return (
-            <button
-              key={name}
-              type="button"
-              className={`legend-pill ${isHidden ? 'hidden' : 'active'}`}
-              onClick={() => toggleSignal(name)}
-              style={{
-                borderColor: color,
-                color: isHidden ? 'var(--text-dim)' : 'var(--text)',
-                backgroundColor: isHidden ? 'transparent' : `${color}22`,
-              }}
-              title={isHidden ? `Show ${name}` : `Hide ${name}`}
-            >
-              <span className="legend-dot" style={{ backgroundColor: color }} />
-              {name}
-            </button>
-          );
-        })}
-
-        {scopeChannelNames.length > 6 && (
-          <div className="scope-search-group" style={{ marginLeft: 'auto' }}>
-            <input
-              type="text"
-              className="scope-search-input"
-              placeholder="Search traces..."
-              value={channelSearch}
-              onChange={(e) => setChannelSearch(e.target.value)}
-            />
-            {channelSearch && (
-              <button
-                type="button"
-                className="scope-search-clear"
-                onClick={() => setChannelSearch('')}
-              >
-                ×
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Main Workspace Body */}
-      <div className="scope-tab-body">
+      {/* DSO Main Viewport (Screen Bezel + Optional Drawer) */}
+      <div className="dso-viewport">
         {!results || signalNames.length === 0 ? (
           <div className="scope-empty-state">
             <div className="empty-icon">{selectedScope === 'all' ? '📊' : '📺'}</div>
@@ -295,393 +282,239 @@ export function ScopeViewTab({
             <p>Configure parameters in the <strong>Simulation Settings</strong> panel on the right and click <strong>"▶ Run Simulation"</strong> to calculate waveforms.</p>
           </div>
         ) : (
-          <div className="scope-tab-main-grid">
-            {/* Plot Area */}
-            <div className="scope-tab-plot-area">
-              <div className="scope-control-bar" data-testid="scope-zoom-toolbar">
-                <div className="scope-tb-group">
-                  <span className="tb-badge" title="Horizontal Timebase per Division (10 graticule divisions)">
-                    ⏱ <strong>{formatEngineeringValue(timePerDiv, 's')}/div</strong>
+          <>
+            {/* The Oscilloscope Screen Bezel */}
+            <div className="dso-screen-bezel">
+              {/* On-Screen Display (OSD) Top Bar */}
+              <div className="dso-screen-osd">
+                <div className="dso-osd-left">
+                  <span className={`dso-status-pill ${isRunning ? 'running' : 'auto'}`}>
+                    <span className="dso-status-dot" />
+                    {isRunning ? 'RUN' : 'AUTO'}
                   </span>
-                  <div className="tb-btn-group">
-                    <button type="button" title="Timebase: Zoom Out (−)" onClick={() => stepTimebase('out')}>−</button>
-                    <button type="button" title="Timebase: Zoom In (+)" onClick={() => stepTimebase('in')}>+</button>
-                  </div>
-                  <div className="tb-btn-group">
-                    <button type="button" title="Pan Left" onClick={() => panBy(-0.25)}>◀</button>
-                    <button type="button" title="Pan Right" onClick={() => panBy(0.25)}>▶</button>
-                  </div>
-                  <button
-                    type="button"
-                    className="scope-action-btn"
-                    title="Fit Full Simulation (Double-click plot or Esc)"
-                    onClick={resetZoom}
-                  >
-                    ⟲ Fit
-                  </button>
-                  <button
-                    type="button"
-                    className={`scope-action-btn ${yScaleMode === 'fixed' ? 'active' : ''}`}
-                    title={yScaleMode === 'fixed' ? 'Y-Scale is LOCKED: Zooming time does not rescale voltage' : 'Y-Scale is AUTO: Rescales voltage to fit visible time'}
-                    onClick={() => setYScaleMode((prev) => (prev === 'fixed' ? 'auto' : 'fixed'))}
-                  >
-                    ↕ Scale: {yScaleMode === 'fixed' ? 'Fixed' : 'Auto'}
-                  </button>
-                  <button
-                    type="button"
-                    className={`scope-action-btn ${fftOpen ? 'active' : ''}`}
-                    title="Toggle FFT spectrum of visible window"
-                    onClick={() => setFftOpen((prev) => !prev)}
-                  >
-                    FFT
-                  </button>
-                  <button
-                    type="button"
-                    className={`scope-action-btn ${lossOpen ? 'active' : ''}`}
-                    title="Toggle semiconductor loss calculator"
-                    onClick={() => setLossOpen((prev) => !prev)}
-                  >
-                    Losses
-                  </button>
-                  <button
-                    type="button"
-                    className={`scope-action-btn ${activeCursor === 'A' ? 'active' : ''}`}
-                    style={activeCursor === 'A' ? { borderColor: '#38bdf8', color: '#38bdf8', background: 'rgba(56, 189, 248, 0.18)' } : {}}
-                    title="Cursor A (Click plot to place or move A)"
-                    onClick={() => {
-                      setActiveCursor('A');
-                      if (cursorA === null && timeArray.length > 0) {
-                        setCursorA(Math.floor(timeArray.length * 0.25));
-                      }
-                    }}
-                  >
-                    📍 Cursor [A]
-                  </button>
-                  <button
-                    type="button"
-                    className={`scope-action-btn ${activeCursor === 'B' ? 'active' : ''}`}
-                    style={activeCursor === 'B' ? { borderColor: '#f43f5e', color: '#f43f5e', background: 'rgba(244, 63, 94, 0.18)' } : {}}
-                    title="Cursor B (Click plot to place or move B)"
-                    onClick={() => {
-                      setActiveCursor('B');
-                      if (cursorB === null && timeArray.length > 0) {
-                        setCursorB(Math.floor(timeArray.length * 0.65));
-                      }
-                    }}
-                  >
-                    📍 Cursor [B]
-                  </button>
+                  <span className="dso-osd-item">
+                    <span>M:</span>
+                    <strong className="dso-osd-val">{formatEngineeringValue(timePerDiv, 's')}/div</strong>
+                  </span>
+                  <span className="dso-osd-item">
+                    <span>Delay:</span>
+                    <strong className="dso-osd-val">{formatEngineeringValue(win.start, 's')}</strong>
+                  </span>
+                  <span className="dso-osd-item">
+                    <span>Span:</span>
+                    <strong className="dso-osd-val">{formatEngineeringValue(win.end - win.start, 's')}</strong>
+                  </span>
                 </div>
 
-                {/* Always-visible Cursor HUD: zero scrolling needed! */}
-                <div className="scope-cursor-hud">
-                  {cursorA === null && cursorB === null ? (
-                    <div className="hud-cursor-chips">
-                      <button
-                        type="button"
-                        className="scope-action-btn"
-                        style={{ padding: '2px 8px', fontSize: '11px', borderColor: 'var(--accent)', color: 'var(--accent)' }}
-                        title="Place Cursors A & B across the waveform"
-                        onClick={() => {
-                          if (timeArray.length > 0) {
-                            setCursorA(Math.floor(timeArray.length * 0.25));
-                            setCursorB(Math.floor(timeArray.length * 0.65));
-                          }
-                        }}
-                      >
-                        📍 Place Cursors
-                      </button>
-                      <span className="hud-hint">
-                        💡 Click plot to set A • Shift+Click sets B
+                <div className="dso-osd-right">
+                  {visibleSignals.slice(0, 3).map((sig) => {
+                    const colorIdx = signalNames.indexOf(sig);
+                    const color = traceColors[colorIdx >= 0 ? colorIdx % traceColors.length : 0];
+                    return (
+                      <span key={sig} className="dso-osd-channel-tag" style={{ borderLeft: `3px solid ${color}` }}>
+                        <span style={{ color }}>{sig}</span>
                       </span>
-                    </div>
-                  ) : (
-                    <div className="hud-cursor-chips">
-                      {cursorA !== null && timeArray[cursorA] !== undefined && (
-                        <button
-                          type="button"
-                          className={`cursor-chip chip-a ${activeCursor === 'A' ? 'selected' : ''}`}
-                          style={{ cursor: 'pointer' }}
-                          title="Cursor A (Click to select for moving)"
-                          onClick={() => setActiveCursor('A')}
-                        >
-                          <strong>A:</strong> {formatEngineeringValue(timeArray[cursorA], 's')}
-                        </button>
-                      )}
-                      {cursorB !== null && timeArray[cursorB] !== undefined && (
-                        <button
-                          type="button"
-                          className={`cursor-chip chip-b ${activeCursor === 'B' ? 'selected' : ''}`}
-                          style={{ cursor: 'pointer' }}
-                          title="Cursor B (Click to select for moving)"
-                          onClick={() => setActiveCursor('B')}
-                        >
-                          <strong>B:</strong> {formatEngineeringValue(timeArray[cursorB], 's')}
-                        </button>
-                      )}
-                      {cursorA !== null && cursorB !== null && timeArray[cursorA] !== undefined && timeArray[cursorB] !== undefined && (
-                        <>
-                          <span className="cursor-chip chip-delta" title="Delta Time (t_B - t_A)">
-                            <strong>Δt:</strong> {formatEngineeringValue(Math.abs(timeArray[cursorB] - timeArray[cursorA]), 's')}
-                          </span>
-                          <span className="cursor-chip chip-freq" title="Frequency (1/Δt)">
-                            <strong>f:</strong> {Math.abs(timeArray[cursorB] - timeArray[cursorA]) > 0
-                              ? formatEngineeringValue(1 / Math.abs(timeArray[cursorB] - timeArray[cursorA]), 'Hz')
-                              : '—'}
-                          </span>
-                        </>
-                      )}
-                      {/* Active Signal Value & Delta Chips */}
-                      {visibleSignals.map((name) => {
-                        const valA = cursorA !== null && results?.[name]?.[cursorA] !== undefined ? results[name][cursorA] : null;
-                        const valB = cursorB !== null && results?.[name]?.[cursorB] !== undefined ? results[name][cursorB] : null;
-                        if (valA === null && valB === null) return null;
-                        const delta = valA !== null && valB !== null ? valB - valA : null;
-                        const unit = inferSignalUnit(name);
-                        const colorIdx = signalNames.indexOf(name);
-                        const color = traceColors[colorIdx >= 0 ? colorIdx % traceColors.length : 0];
-                        return (
-                          <span
-                            key={name}
-                            className="cursor-chip chip-signal"
-                            title={`${name}: A=${valA !== null ? formatEngineeringValue(valA, unit) : '—'}, B=${valB !== null ? formatEngineeringValue(valB, unit) : '—'}, Δ=${delta !== null ? formatEngineeringValue(delta, unit) : '—'}`}
-                            style={{ borderLeft: `3px solid ${color}` }}
-                          >
-                            <span className="signal-dot" style={{ backgroundColor: color }} />
-                            <strong style={{ color }}>{name}:</strong>
-                            {valA !== null && <span className="chip-sub">A:{formatEngineeringValue(valA, unit)}</span>}
-                            {valB !== null && <span className="chip-sub">B:{formatEngineeringValue(valB, unit)}</span>}
-                            {delta !== null && (
-                              <span className="chip-delta-val" title={`Δ${name} = B - A (${delta >= 0 ? '+' : ''}${delta})`}>
-                                Δ:{delta >= 0 ? '+' : ''}{formatEngineeringValue(delta, unit)}
-                              </span>
-                            )}
-                          </span>
-                        );
-                      })}
-                      <button
-                        type="button"
-                        className="hud-clear-btn"
-                        title="Clear all measurement cursors"
-                        onClick={() => {
-                          setCursorA(null);
-                          setCursorB(null);
-                        }}
-                      >
-                        ✕ Clear Cursors
-                      </button>
-                    </div>
-                  )}
+                    );
+                  })}
+                  <span className="dso-osd-item">
+                    <span>Pts:</span>
+                    <strong className="dso-osd-val">{timeArray.length}</strong>
+                  </span>
                 </div>
               </div>
-              {displayLayout === 'stacked' ? (
-                <FullScreenStackedChart
-                  time={timeArray}
-                  signals={results}
-                  activeSignals={visibleSignals}
-                  allSignals={signalNames}
-                  theme={theme}
-                  hoverIndex={hoverIndex}
-                  onHoverIndex={setHoverIndex}
-                  cursorA={cursorA}
-                  cursorB={cursorB}
-                  activeCursor={activeCursor}
-                  onSetActiveCursor={setActiveCursor}
-                  onSetCursor={(type, idx) => {
-                    if (type === 'A') setCursorA(idx);
-                    else setCursorB(idx);
-                  }}
-                  viewStart={win.start}
-                  viewEnd={win.end}
-                  onZoomAt={zoomAt}
-                  onZoomRange={zoomRange}
-                  onResetZoom={resetZoom}
-                  onPanSeconds={(delta) => setView(panWindow(win, delta, dataT0, dataT1))}
-                />
-              ) : (
-                <FullScreenOverlayChart
-                  time={timeArray}
-                  signals={results}
-                  activeSignals={visibleSignals}
-                  allSignals={signalNames}
-                  theme={theme}
-                  hoverIndex={hoverIndex}
-                  onHoverIndex={setHoverIndex}
-                  cursorA={cursorA}
-                  cursorB={cursorB}
-                  activeCursor={activeCursor}
-                  onSetActiveCursor={setActiveCursor}
-                  onSetCursor={(type, idx) => {
-                    if (type === 'A') setCursorA(idx);
-                    else setCursorB(idx);
-                  }}
-                  viewStart={win.start}
-                  viewEnd={win.end}
-                  onZoomAt={zoomAt}
-                  onZoomRange={zoomRange}
-                  onResetZoom={resetZoom}
-                  onPanSeconds={(delta) => setView(panWindow(win, delta, dataT0, dataT1))}
-                  yScaleMode={yScaleMode}
-                  yZoomRange={yView}
-                  onZoomYRange={setYView}
-                />
-              )}
 
-              {fftOpen && visibleSignals.length > 0 && (
-                <FftPanel
-                  time={timeArray}
-                  signals={results}
-                  activeSignals={visibleSignals}
-                  viewStart={win.start}
-                  viewEnd={win.end}
-                />
-              )}
+              {/* Central Chart Viewport with responsive ResizeObserver */}
+              <div className="dso-chart-container" ref={chartContainerRef}>
+                {currentLayout === 'stacked' ? (
+                  <FullScreenStackedChart
+                    width={chartDimensions.width}
+                    height={chartDimensions.height}
+                    time={timeArray}
+                    signals={results}
+                    activeSignals={visibleSignals}
+                    allSignals={signalNames}
+                    theme={theme}
+                    hoverIndex={hoverIndex}
+                    onHoverIndex={setHoverIndex}
+                    cursorA={cursorA}
+                    cursorB={cursorB}
+                    activeCursor={activeCursor}
+                    onSetActiveCursor={setActiveCursor}
+                    onSetCursor={(type, idx) => {
+                      if (type === 'A') setCursorA(idx);
+                      else setCursorB(idx);
+                    }}
+                    viewStart={win.start}
+                    viewEnd={win.end}
+                    onZoomAt={zoomAt}
+                    onZoomRange={zoomRange}
+                    onResetZoom={resetZoom}
+                    onPanSeconds={(delta) => setView(panWindow(win, delta, dataT0, dataT1))}
+                  />
+                ) : (
+                  <FullScreenOverlayChart
+                    width={chartDimensions.width}
+                    height={chartDimensions.height}
+                    time={timeArray}
+                    signals={results}
+                    activeSignals={visibleSignals}
+                    allSignals={signalNames}
+                    theme={theme}
+                    hoverIndex={hoverIndex}
+                    onHoverIndex={setHoverIndex}
+                    cursorA={cursorA}
+                    cursorB={cursorB}
+                    activeCursor={activeCursor}
+                    onSetActiveCursor={setActiveCursor}
+                    onSetCursor={(type, idx) => {
+                      if (type === 'A') setCursorA(idx);
+                      else setCursorB(idx);
+                    }}
+                    viewStart={win.start}
+                    viewEnd={win.end}
+                    onZoomAt={zoomAt}
+                    onZoomRange={zoomRange}
+                    onResetZoom={resetZoom}
+                    onPanSeconds={(delta) => setView(panWindow(win, delta, dataT0, dataT1))}
+                    yScaleMode={yScaleMode}
+                    yZoomRange={yView}
+                    onZoomYRange={setYView}
+                  />
+                )}
+              </div>
 
-              {lossOpen && <LossPanel />}
+              {/* Screen Bottom Quick-Measurement Strip */}
+              <div className="dso-quick-measure-bar">
+                <div className="dso-quick-tiles">
+                  {visibleSignals.slice(0, 3).map((name) => {
+                    const st = signalStats[name];
+                    if (!st) return null;
+                    const unit = inferSignalUnit(name);
+                    const colorIdx = signalNames.indexOf(name);
+                    const color = traceColors[colorIdx >= 0 ? colorIdx % traceColors.length : 0];
+                    return (
+                      <div key={name} className="dso-measure-tile" style={{ borderLeft: `3px solid ${color}` }}>
+                        <span style={{ color, fontWeight: 700 }}>{name}</span>
+                        <span>Vpp: <strong className="dso-measure-tile-val">{formatEngineeringValue(st.pkpk, unit)}</strong></span>
+                        <span>Vrms: <strong className="dso-measure-tile-val">{formatEngineeringValue(st.rms, unit)}</strong></span>
+                        <span>Mean: <strong className="dso-measure-tile-val">{formatEngineeringValue(st.mean, unit)}</strong></span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <button
+                  type="button"
+                  className="dso-drawer-toggle-btn"
+                  onClick={() => setDrawerTab((prev) => (prev ? null : 'metrics'))}
+                >
+                  📊 Analysis Drawer {drawerTab ? '▼' : '▲'}
+                </button>
+              </div>
             </div>
 
-            {/* Bottom Channel Metrics & Cursor Delta Measurements */}
-            <div className="scope-tab-metrics-panel">
-              {/* Cursor Measurement Delta */}
-              {cursorA !== null && cursorB !== null && timeArray[cursorA] !== undefined && timeArray[cursorB] !== undefined && (
-                <div className="cursor-delta-card">
-                  <div className="cursor-delta-title">📐 Cursor Measurement (A → B)</div>
-                  <div className="cursor-delta-grid">
-                    <div className="delta-item">
-                      <span className="delta-label">t_A:</span>
-                      <span className="delta-val">{formatEngineeringValue(timeArray[cursorA], 's')}</span>
-                    </div>
-                    <div className="delta-item">
-                      <span className="delta-label">t_B:</span>
-                      <span className="delta-val">{formatEngineeringValue(timeArray[cursorB], 's')}</span>
-                    </div>
-                    <div className="delta-item highlight">
-                      <span className="delta-label">Δt:</span>
-                      <span className="delta-val">{formatEngineeringValue(Math.abs(timeArray[cursorB] - timeArray[cursorA]), 's')}</span>
-                    </div>
-                    <div className="delta-item highlight">
-                      <span className="delta-label">Freq (1/Δt):</span>
-                      <span className="delta-val">
-                        {Math.abs(timeArray[cursorB] - timeArray[cursorA]) > 0
-                          ? formatEngineeringValue(1 / Math.abs(timeArray[cursorB] - timeArray[cursorA]), 'Hz')
-                          : '—'}
-                      </span>
-                    </div>
+            {/* Collapsible Bottom Analysis Drawer */}
+            {drawerTab && (
+              <div className="dso-bottom-drawer">
+                <div className="dso-drawer-tabs">
+                  <div className="dso-tab-group">
                     <button
                       type="button"
-                      className="delta-clear-btn"
-                      onClick={() => {
-                        setCursorA(null);
-                        setCursorB(null);
-                      }}
+                      className={`dso-tab-btn ${drawerTab === 'metrics' ? 'active' : ''}`}
+                      onClick={() => setDrawerTab('metrics')}
                     >
-                      Clear Cursors
+                      📊 Signal Statistics
+                    </button>
+                    <button
+                      type="button"
+                      className={`dso-tab-btn ${drawerTab === 'fft' ? 'active' : ''}`}
+                      onClick={() => setDrawerTab('fft')}
+                    >
+                      〰 FFT Spectrum
+                    </button>
+                    <button
+                      type="button"
+                      className={`dso-tab-btn ${drawerTab === 'losses' ? 'active' : ''}`}
+                      onClick={() => setDrawerTab('losses')}
+                    >
+                      ⚡ Semiconductor Losses
                     </button>
                   </div>
-                  <div className="cursor-delta-hint" style={{ marginTop: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>
-                    💡 <strong>Tip:</strong> Click plot to move Cursor A • <strong>Shift+Click</strong> or <strong>Right-Click</strong> to move Cursor B • Drag tabs (A / B) to slide
-                  </div>
-
-                  {/* Per-signal Delta Breakdown */}
-                  {visibleSignals.length > 0 && (
-                    <div className="cursor-signal-delta-wrap" style={{ marginTop: '14px' }}>
-                      <table className="cursor-signal-table">
-                        <thead>
-                          <tr>
-                            <th>Signal Trace</th>
-                            <th>Value at A</th>
-                            <th>Value at B</th>
-                            <th>Delta (B − A)</th>
-                            <th>|Delta|</th>
-                            <th>Slew Rate (ΔY/Δt)</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {visibleSignals.map((name) => {
-                            const valA = results?.[name]?.[cursorA] ?? 0;
-                            const valB = results?.[name]?.[cursorB] ?? 0;
-                            const dtVal = Math.abs(timeArray[cursorB] - timeArray[cursorA]);
-                            const dY = valB - valA;
-                            const absDY = Math.abs(dY);
-                            const slew = dtVal > 0 ? dY / dtVal : 0;
-                            const unit = inferSignalUnit(name);
-                            const colorIdx = signalNames.indexOf(name);
-                            const color = traceColors[colorIdx >= 0 ? colorIdx % traceColors.length : 0];
-                            return (
-                              <tr key={name}>
-                                <td>
-                                  <span className="signal-dot" style={{ backgroundColor: color, display: 'inline-block', width: 8, height: 8, borderRadius: '50%', marginRight: 6 }} />
-                                  <strong style={{ color }}>{name}</strong>
-                                </td>
-                                <td>{formatEngineeringValue(valA, unit)}</td>
-                                <td>{formatEngineeringValue(valB, unit)}</td>
-                                <td style={{ fontWeight: 700, color: dY >= 0 ? '#10b981' : '#f43f5e' }}>
-                                  {dY >= 0 ? '+' : ''}{formatEngineeringValue(dY, unit)}
-                                </td>
-                                <td>{formatEngineeringValue(absDY, unit)}</td>
-                                <td>{slew !== 0 ? formatEngineeringValue(slew, `${unit}/s`) : '—'}</td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
+                  <button
+                    type="button"
+                    className="dso-drawer-close-btn"
+                    onClick={() => setDrawerTab(null)}
+                    title="Minimize Analysis Drawer"
+                  >
+                    ✕ Minimize
+                  </button>
                 </div>
-              )}
 
-              {/* Statistics Table */}
-              <div className="scope-table-card">
-                <table className="scope-metrics-table">
-                  <thead>
-                    <tr>
-                      <th>Signal Trace</th>
-                      <th>Minimum</th>
-                      <th>Maximum</th>
-                      <th>Peak-to-Peak</th>
-                      <th>RMS</th>
-                      <th>Mean (Avg)</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredChannels.map((name) => {
-                      const st = signalStats[name];
-                      if (!st) return null;
-                      const colorIdx = signalNames.indexOf(name);
-                      const color = traceColors[colorIdx >= 0 ? colorIdx % traceColors.length : 0];
-                      const isHidden = !!hiddenSignals[name];
-                      const arr = results[name] || [];
-                      const mean = arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-                      return (
-                        <tr
-                          key={name}
-                          onClick={() => toggleSignal(name)}
-                          className={isHidden ? 'row-hidden' : ''}
-                          title="Click row to toggle trace visibility"
-                        >
-                          <td style={{ color, fontWeight: 700 }}>
-                            <span className="legend-dot" style={{ backgroundColor: color, marginRight: 6 }} />
-                            {name}
-                          </td>
-                          <td>{formatEngineeringValue(st.min)}</td>
-                          <td>{formatEngineeringValue(st.max)}</td>
-                          <td>{formatEngineeringValue(st.pkpk)}</td>
-                          <td>{formatEngineeringValue(st.rms)}</td>
-                          <td>{formatEngineeringValue(mean)}</td>
-                          <td>
-                            <span className={`channel-status-pill ${isHidden ? 'off' : 'on'}`}>
-                              {isHidden ? 'Hidden' : 'Active'}
-                            </span>
-                          </td>
+                <div className="dso-drawer-content">
+                  {drawerTab === 'metrics' && (
+                    <table className="scope-metrics-table">
+                      <thead>
+                        <tr>
+                          <th>Signal Trace</th>
+                          <th>Minimum</th>
+                          <th>Maximum</th>
+                          <th>Peak-to-Peak</th>
+                          <th>RMS</th>
+                          <th>Mean (Avg)</th>
+                          <th>Status</th>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                      </thead>
+                      <tbody>
+                        {filteredChannels.map((name) => {
+                          const st = signalStats[name];
+                          if (!st) return null;
+                          const colorIdx = signalNames.indexOf(name);
+                          const color = traceColors[colorIdx >= 0 ? colorIdx % traceColors.length : 0];
+                          const isHidden = !!hiddenSignals[name];
+                          const unit = inferSignalUnit(name);
+                          return (
+                            <tr
+                              key={name}
+                              onClick={() => toggleSignal(name)}
+                              className={isHidden ? 'row-hidden' : ''}
+                              title="Click row to toggle trace visibility"
+                            >
+                              <td style={{ color, fontWeight: 700 }}>
+                                <span className="dso-ch-led" style={{ backgroundColor: color, color, marginRight: 6 }} />
+                                {name}
+                              </td>
+                              <td>{formatEngineeringValue(st.min, unit)}</td>
+                              <td>{formatEngineeringValue(st.max, unit)}</td>
+                              <td>{formatEngineeringValue(st.pkpk, unit)}</td>
+                              <td>{formatEngineeringValue(st.rms, unit)}</td>
+                              <td>{formatEngineeringValue(st.mean, unit)}</td>
+                              <td>
+                                <span className={`channel-status-pill ${isHidden ? 'off' : 'on'}`}>
+                                  {isHidden ? 'Hidden' : 'Active'}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  )}
+
+                  {drawerTab === 'fft' && (
+                    <FftPanel
+                      time={timeArray}
+                      signals={results}
+                      activeSignals={visibleSignals}
+                      viewStart={win.start}
+                      viewEnd={win.end}
+                    />
+                  )}
+
+                  {drawerTab === 'losses' && <LossPanel />}
+                </div>
               </div>
-            </div>
-          </div>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -690,6 +523,8 @@ export function ScopeViewTab({
 
 /** Full-Screen Overlay Waveform Chart */
 function FullScreenOverlayChart({
+  width = 1000,
+  height = 480,
   time,
   signals,
   activeSignals,
@@ -712,6 +547,8 @@ function FullScreenOverlayChart({
   yZoomRange,
   onZoomYRange,
 }: {
+  width?: number;
+  height?: number;
   time: number[];
   signals: Record<string, number[]>;
   activeSignals: string[];
@@ -734,15 +571,13 @@ function FullScreenOverlayChart({
   yZoomRange: { min: number; max: number } | null;
   onZoomYRange: (range: { min: number; max: number } | null) => void;
 }) {
-  const width = 1000;
-  const height = 480;
-  const padLeft = 70;
-  const padRight = 30;
-  const padTop = 25;
-  const padBottom = 45;
+  const padLeft = 68;
+  const padRight = 24;
+  const padTop = 20;
+  const padBottom = 34;
 
-  const plotW = width - padLeft - padRight;
-  const plotH = height - padTop - padBottom;
+  const plotW = Math.max(100, width - padLeft - padRight);
+  const plotH = Math.max(100, height - padTop - padBottom);
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const timeRef = useRef(time);
@@ -841,7 +676,7 @@ function FullScreenOverlayChart({
   const mapY = (v: number) => padTop + plotH - ((v - minY) / (maxY - minY || 1)) * plotH;
 
   const yTicks = useMemo(() => {
-    const count = 7;
+    const count = 8;
     const ticks = [];
     for (let i = 0; i <= count; i++) {
       const val = minY + (i / count) * (maxY - minY);
@@ -851,7 +686,7 @@ function FullScreenOverlayChart({
   }, [minY, maxY, plotH, padTop]);
 
   const xTicks = useMemo(() => {
-    const count = 9;
+    const count = 10;
     const ticks = [];
     for (let i = 0; i <= count; i++) {
       const val = minT + (i / count) * (maxT - minT);
@@ -859,6 +694,31 @@ function FullScreenOverlayChart({
     }
     return ticks;
   }, [minT, maxT, plotW, padLeft]);
+
+  // Center axes sub-division tick marks (5 minor ticks per division)
+  const centerTicks = useMemo(() => {
+    const xMid = padLeft + plotW / 2;
+    const yMid = padTop + plotH / 2;
+    const ticks: { x1: number; y1: number; x2: number; y2: number }[] = [];
+
+    // Horizontal center line subdivision ticks (10 divisions * 5 sub = 50 intervals)
+    for (let div = 0; div < 10; div++) {
+      for (let sub = 1; sub < 5; sub++) {
+        const x = padLeft + ((div + sub / 5) / 10) * plotW;
+        ticks.push({ x1: x, y1: yMid - 3, x2: x, y2: yMid + 3 });
+      }
+    }
+
+    // Vertical center line subdivision ticks (8 divisions * 5 sub = 40 intervals)
+    for (let div = 0; div < 8; div++) {
+      for (let sub = 1; sub < 5; sub++) {
+        const y = padTop + ((div + sub / 5) / 8) * plotH;
+        ticks.push({ x1: xMid - 3, y1: y, x2: xMid + 3, y2: y });
+      }
+    }
+
+    return ticks;
+  }, [padLeft, padTop, plotW, plotH]);
 
   // trace decimation limited to the visible slice
   const tracePaths = useMemo(() => {
@@ -1085,14 +945,15 @@ function FullScreenOverlayChart({
               x2={width - padRight}
               y2={y}
               stroke={gridColor}
-              strokeDasharray="3 4"
+              strokeDasharray="2 3"
+              strokeWidth={i === 4 ? 1.2 : 0.75}
             />
             <text
               x={padLeft - 8}
               y={y + 4}
               textAnchor="end"
               fill={textColor}
-              fontSize={11}
+              fontSize={10}
               fontFamily="monospace"
             >
               {formatEngineeringValue(val, '')}
@@ -1109,19 +970,35 @@ function FullScreenOverlayChart({
               x2={x}
               y2={height - padBottom}
               stroke={gridColor}
-              strokeDasharray="3 4"
+              strokeDasharray="2 3"
+              strokeWidth={i === 5 ? 1.2 : 0.75}
             />
             <text
               x={x}
-              y={height - padBottom + 20}
+              y={height - padBottom + 16}
               fill={textColor}
-              fontSize={11}
+              fontSize={10}
               fontWeight={600}
               textAnchor="middle"
+              fontFamily="monospace"
             >
               {formatEngineeringValue(val, 's')}
             </text>
           </g>
+        ))}
+
+        {/* Center-Axis Subdivision Ticks (Classic DSO graticule) */}
+        {centerTicks.map((t, idx) => (
+          <line
+            key={`ct-${idx}`}
+            x1={t.x1}
+            y1={t.y1}
+            x2={t.x2}
+            y2={t.y2}
+            stroke={gridColor}
+            strokeWidth={1}
+            opacity={0.65}
+          />
         ))}
 
         {/* Zero Line */}
@@ -1135,6 +1012,35 @@ function FullScreenOverlayChart({
             strokeWidth={1.2}
           />
         )}
+
+        {/* Channel Ground Reference Markers on left axis */}
+        {activeSignals.map((name) => {
+          const colorIdx = allSignals.indexOf(name);
+          const color = traceColors[colorIdx >= 0 ? colorIdx % traceColors.length : 0];
+          const y0 = mapY(0);
+          if (y0 < padTop - 6 || y0 > height - padBottom + 6) return null;
+          const clampedY = Math.max(padTop + 6, Math.min(height - padBottom - 6, y0));
+          return (
+            <g key={`gnd-${name}`} className="channel-ground-marker">
+              <path
+                d={`M ${padLeft - 18} ${clampedY - 6} L ${padLeft - 5} ${clampedY - 6} L ${padLeft} ${clampedY} L ${padLeft - 5} ${clampedY + 6} L ${padLeft - 18} ${clampedY + 6} Z`}
+                fill={color}
+                opacity={0.9}
+              />
+              <text
+                x={padLeft - 11}
+                y={clampedY + 3.5}
+                fill="#ffffff"
+                fontSize={8.5}
+                fontWeight={800}
+                fontFamily="monospace"
+                textAnchor="middle"
+              >
+                {colorIdx + 1}
+              </text>
+            </g>
+          );
+        })}
 
         {/* Waveform Traces (clipped to the visible window) */}
         <g clipPath="url(#overlay-plot-clip)">
@@ -1254,49 +1160,6 @@ function FullScreenOverlayChart({
           </g>
         )}
 
-        {/* Delta badge between A and B in plot */}
-        {cursorA !== null && cursorB !== null && time[cursorA] !== undefined && time[cursorB] !== undefined && (() => {
-          const dt = Math.abs(time[cursorB] - time[cursorA]);
-          const midX = (mapX(time[cursorA]) + mapX(time[cursorB])) / 2;
-          const sigDeltas = activeSignals.slice(0, 2).map((sig) => {
-            const vA = signals[sig]?.[cursorA];
-            const vB = signals[sig]?.[cursorB];
-            if (vA === undefined || vB === undefined) return null;
-            const diff = vB - vA;
-            const u = inferSignalUnit(sig);
-            return `Δ${sig}: ${diff >= 0 ? '+' : ''}${formatEngineeringValue(diff, u)}`;
-          }).filter(Boolean);
-
-          const badgeText = `Δt: ${formatEngineeringValue(dt, 's')}${sigDeltas.length ? ' • ' + sigDeltas.join(' • ') : ''}`;
-          const badgeW = Math.max(90, badgeText.length * 6.5 + 18);
-
-          return (
-            <g pointerEvents="none">
-              <rect
-                x={midX - badgeW / 2}
-                y={padTop + 6}
-                width={badgeW}
-                height={20}
-                rx={4}
-                fill="rgba(15, 23, 42, 0.90)"
-                stroke="#10b981"
-                strokeWidth={1.2}
-              />
-              <text
-                x={midX}
-                y={padTop + 20}
-                fill="#34d399"
-                fontSize={10.5}
-                fontWeight={700}
-                fontFamily="monospace"
-                textAnchor="middle"
-              >
-                {badgeText}
-              </text>
-            </g>
-          );
-        })()}
-
         {/* Drag Box Zoom Selection (2D box or Time-only) */}
         {dragBox && (Math.abs(dragBox.currentX - dragBox.startX) > 5 || Math.abs(dragBox.currentY - dragBox.startY) > 5) && (() => {
           const bx = Math.min(dragBox.startX, dragBox.currentX);
@@ -1407,13 +1270,6 @@ function FullScreenOverlayChart({
           signals={signals}
           allSignals={allSignals}
           traceColors={traceColors}
-          hint={
-            cursorA === null
-              ? 'Click: place Cursor A • Shift+Click or Right-Click: place B'
-              : cursorB === null
-              ? 'Click: place Cursor B • Shift+Click or Right-Click: place B'
-              : 'Click: move A • Shift+Click / Right-Click: move B • Drag tabs to slide'
-          }
         />
       )}
     </div>
@@ -1422,6 +1278,8 @@ function FullScreenOverlayChart({
 
 /** Full-Screen Stacked Subplots Waveform Chart */
 function FullScreenStackedChart({
+  width = 1000,
+  height = 480,
   time,
   signals,
   activeSignals,
@@ -1441,6 +1299,8 @@ function FullScreenStackedChart({
   onResetZoom,
   onPanSeconds,
 }: {
+  width?: number;
+  height?: number;
   time: number[];
   signals: Record<string, number[]>;
   activeSignals: string[];
@@ -1463,15 +1323,17 @@ function FullScreenStackedChart({
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [dragBox, setDragBox] = useState<{ startX: number; currentX: number } | null>(null);
   const suppressClickRef = useRef(false);
-  const width = 1000;
-  const laneH = 120; // spacious 120px height per channel!
-  const laneGap = 16;
-  const padLeft = 70;
-  const padRight = 30;
-  const padTop = 25;
-  const padBottom = 35;
-  const totalH = Math.max(480, padTop + padBottom + activeSignals.length * (laneH + laneGap) - laneGap);
-  const plotW = width - padLeft - padRight;
+  const padLeft = 68;
+  const padRight = 24;
+  const padTop = 20;
+  const padBottom = 30;
+  const laneGap = 12;
+  const count = activeSignals.length || 1;
+  const availableH = height - padTop - padBottom;
+  const idealLaneH = Math.max(64, Math.floor((availableH - (count - 1) * laneGap) / count));
+  const laneH = idealLaneH;
+  const totalH = Math.max(height, padTop + padBottom + count * (laneH + laneGap) - laneGap);
+  const plotW = Math.max(100, width - padLeft - padRight);
   const plotH = totalH - padTop - padBottom;
 
   const traceColors = theme === 'light' ? TRACE_COLORS_LIGHT : TRACE_COLORS_DARK;
@@ -1941,49 +1803,6 @@ function FullScreenStackedChart({
           </g>
         )}
 
-        {/* Delta badge between A and B in plot */}
-        {cursorA !== null && cursorB !== null && time[cursorA] !== undefined && time[cursorB] !== undefined && (() => {
-          const dt = Math.abs(time[cursorB] - time[cursorA]);
-          const midX = (mapX(time[cursorA]) + mapX(time[cursorB])) / 2;
-          const sigDeltas = activeSignals.slice(0, 2).map((sig) => {
-            const vA = signals[sig]?.[cursorA];
-            const vB = signals[sig]?.[cursorB];
-            if (vA === undefined || vB === undefined) return null;
-            const diff = vB - vA;
-            const u = inferSignalUnit(sig);
-            return `Δ${sig}: ${diff >= 0 ? '+' : ''}${formatEngineeringValue(diff, u)}`;
-          }).filter(Boolean);
-
-          const badgeText = `Δt: ${formatEngineeringValue(dt, 's')}${sigDeltas.length ? ' • ' + sigDeltas.join(' • ') : ''}`;
-          const badgeW = Math.max(90, badgeText.length * 6.5 + 18);
-
-          return (
-            <g pointerEvents="none">
-              <rect
-                x={midX - badgeW / 2}
-                y={padTop + 6}
-                width={badgeW}
-                height={20}
-                rx={4}
-                fill="rgba(15, 23, 42, 0.90)"
-                stroke="#10b981"
-                strokeWidth={1.2}
-              />
-              <text
-                x={midX}
-                y={padTop + 20}
-                fill="#34d399"
-                fontSize={10.5}
-                fontWeight={700}
-                fontFamily="monospace"
-                textAnchor="middle"
-              >
-                {badgeText}
-              </text>
-            </g>
-          );
-        })()}
-
         {/* Drag Box Zoom Selection */}
         {dragBox && Math.abs(dragBox.currentX - dragBox.startX) > 5 && (
           <g pointerEvents="none">
@@ -2065,13 +1884,6 @@ function FullScreenStackedChart({
           signals={signals}
           allSignals={allSignals}
           traceColors={traceColors}
-          hint={
-            cursorA === null
-              ? 'Click: place Cursor A • Shift+Click or Right-Click: place B'
-              : cursorB === null
-              ? 'Click: place Cursor B • Shift+Click or Right-Click: place B'
-              : 'Click: move A • Shift+Click / Right-Click: move B • Drag tabs to slide'
-          }
         />
       )}
     </div>

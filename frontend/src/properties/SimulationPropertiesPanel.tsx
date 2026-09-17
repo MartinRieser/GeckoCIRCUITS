@@ -13,6 +13,7 @@ import {
 import { mapSimulationResults } from '../simulation/chartData';
 import { findScopeBlocks } from '../simulation/scopes';
 import { estimateStepCount, STEP_WARNING_THRESHOLD } from '../simulation/simSteps';
+import type { ScopeController } from '../simulation/useScopeController';
 
 interface SimulationPropertiesPanelProps {
   circuitId: string | null;
@@ -26,6 +27,7 @@ interface SimulationPropertiesPanelProps {
   onSelectScope: (scope: string) => void;
   displayLayout: 'overlay' | 'stacked';
   onDisplayLayoutChange: (layout: 'overlay' | 'stacked') => void;
+  scope?: ScopeController;
   onRunSimulation: (config: {
     simulationTime: number;
     timeStep: number;
@@ -51,6 +53,7 @@ export function SimulationPropertiesPanel({
   onSelectScope,
   displayLayout,
   onDisplayLayoutChange,
+  scope,
   onRunSimulation,
   onPauseSimulation,
   onResumeSimulation,
@@ -409,6 +412,282 @@ export function SimulationPropertiesPanel({
             })}
           </div>
         </div>
+
+        {/* Oscilloscope Settings & Controls */}
+        {scope && (
+          <div className="prop-section sim-oszi-section" data-testid="sidebar-oszi-controls">
+            <div className="prop-section-title">Oscilloscope Controls</div>
+
+            {/* Horizontal / Timebase */}
+            <div className="sim-sub-heading">Horizontal (Timebase)</div>
+            <div className="sim-oszi-row">
+              <span className="sim-oszi-badge" title="Time per major division">
+                ⏱ <strong>{formatEngineeringValue(scope.timePerDiv, 's')}/div</strong>
+              </span>
+              <button
+                type="button"
+                className="sim-mini-btn"
+                onClick={scope.fit}
+                title="Fit Full Simulation Waveform"
+              >
+                ⟲ Fit
+              </button>
+            </div>
+
+            <div className="sim-btn-row" style={{ marginTop: 6 }}>
+              <div className="sim-btn-group-2">
+                <button
+                  type="button"
+                  className="sim-mini-btn"
+                  onClick={() => scope.zoomAt(0.7, (scope.dataT0 + scope.dataT1) / 2)}
+                  title="Zoom In Timebase (+)"
+                >
+                  Zoom +
+                </button>
+                <button
+                  type="button"
+                  className="sim-mini-btn"
+                  onClick={() => scope.zoomAt(1.4, (scope.dataT0 + scope.dataT1) / 2)}
+                  title="Zoom Out Timebase (−)"
+                >
+                  Zoom −
+                </button>
+              </div>
+              <div className="sim-btn-group-2">
+                <button
+                  type="button"
+                  className="sim-mini-btn"
+                  onClick={() => scope.pan(-0.2)}
+                  title="Pan Left (◀)"
+                >
+                  ◀ Pan
+                </button>
+                <button
+                  type="button"
+                  className="sim-mini-btn"
+                  onClick={() => scope.pan(0.2)}
+                  title="Pan Right (▶)"
+                >
+                  Pan ▶
+                </button>
+              </div>
+            </div>
+
+            {/* Vertical & Channels */}
+            <div className="sim-sub-heading" style={{ marginTop: 12 }}>Vertical (Scale & Channels)</div>
+            <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+              <button
+                type="button"
+                className={`sim-toggle-btn ${scope.yScaleMode === 'fixed' ? 'active' : ''}`}
+                onClick={() => scope.setYScaleMode((prev) => (prev === 'fixed' ? 'auto' : 'fixed'))}
+                title={scope.yScaleMode === 'fixed' ? 'Locked: Zooming time preserves voltage scale' : 'Auto: Rescales voltage to fit visible points'}
+                style={{ flex: 1 }}
+              >
+                ↕ Scale: {scope.yScaleMode === 'fixed' ? 'Fixed' : 'Auto'}
+              </button>
+            </div>
+
+            {/* Channel toggles */}
+            <div className="sim-channels-list">
+              {scope.scopeChannelNames.map((name) => {
+                const colorIdx = scope.signalNames.indexOf(name);
+                const color = scope.traceColors[colorIdx >= 0 ? colorIdx % scope.traceColors.length : 0];
+                const isHidden = !!scope.hiddenSignals[name];
+                return (
+                  <button
+                    key={name}
+                    type="button"
+                    className={`sim-channel-badge ${isHidden ? 'hidden' : 'active'}`}
+                    onClick={() => scope.toggleSignal(name)}
+                    style={{
+                      borderColor: color,
+                      color: isHidden ? 'var(--text-dim)' : color,
+                    }}
+                    title={isHidden ? `Show ${name}` : `Hide ${name}`}
+                  >
+                    <span className="sim-ch-led" style={{ backgroundColor: color }} />
+                    {name}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Cursors & Measurements (The ONE Location!) */}
+            <div className="sim-sub-heading" style={{ marginTop: 12 }}>Cursors & Measurement</div>
+            <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+              <button
+                type="button"
+                className={`sim-toggle-btn ${scope.cursorsEnabled ? 'active' : ''}`}
+                onClick={() => {
+                  if (scope.cursorsEnabled) {
+                    scope.clearCursors();
+                  } else {
+                    scope.setCursorPreset();
+                  }
+                }}
+                style={{ flex: 1 }}
+              >
+                📍 Cursors: {scope.cursorsEnabled ? 'ON' : 'OFF'}
+              </button>
+            </div>
+
+            {scope.cursorsEnabled && (
+              <div className="sim-cursor-controls-box">
+                <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+                  <button
+                    type="button"
+                    className={`sim-mini-btn ${scope.activeCursor === 'A' ? 'active' : ''}`}
+                    onClick={() => scope.setActiveCursor('A')}
+                    style={{ flex: 1 }}
+                    title="Select Cursor A"
+                  >
+                    [A]
+                  </button>
+                  <button
+                    type="button"
+                    className={`sim-mini-btn ${scope.activeCursor === 'B' ? 'active' : ''}`}
+                    onClick={() => scope.setActiveCursor('B')}
+                    style={{ flex: 1 }}
+                    title="Select Cursor B"
+                  >
+                    [B]
+                  </button>
+                  <button
+                    type="button"
+                    className="sim-mini-btn"
+                    onClick={scope.setCursorPreset}
+                    title="Snap to 25% and 75% of waveform"
+                  >
+                    25/75%
+                  </button>
+                  <button
+                    type="button"
+                    className="sim-mini-btn"
+                    onClick={scope.clearCursors}
+                    title="Clear Cursors"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="sim-hint-text">
+                  💡 Drag [A] / [B] handles on plot, or click plot to position active cursor.
+                </div>
+
+                {/* THE SINGLE LOCATION FOR CURSOR MEASUREMENTS */}
+                {scope.cursorMeasurements && (
+                  <div className="sim-cursor-card">
+                    <div className="sim-cursor-time-grid">
+                      <div className="sim-cursor-time-item">
+                        <span className="sim-cursor-lbl">tA:</span>
+                        <span className="sim-cursor-val">
+                          {scope.cursorMeasurements.timeA !== null
+                            ? formatEngineeringValue(scope.cursorMeasurements.timeA, 's')
+                            : '—'}
+                        </span>
+                      </div>
+                      <div className="sim-cursor-time-item">
+                        <span className="sim-cursor-lbl">tB:</span>
+                        <span className="sim-cursor-val">
+                          {scope.cursorMeasurements.timeB !== null
+                            ? formatEngineeringValue(scope.cursorMeasurements.timeB, 's')
+                            : '—'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {scope.cursorMeasurements.dt !== null && (
+                      <div className="sim-cursor-delta-row">
+                        <div>
+                          <span className="sim-cursor-lbl">Δt: </span>
+                          <strong className="sim-cursor-highlight">
+                            {formatEngineeringValue(scope.cursorMeasurements.dt, 's')}
+                          </strong>
+                        </div>
+                        <div>
+                          <span className="sim-cursor-lbl">1/Δt: </span>
+                          <strong className="sim-cursor-highlight">
+                            {scope.cursorMeasurements.freq !== null
+                              ? formatEngineeringValue(scope.cursorMeasurements.freq, 'Hz')
+                              : '—'}
+                          </strong>
+                        </div>
+                      </div>
+                    )}
+
+                    {scope.cursorMeasurements.channels.length > 0 && (
+                      <div className="sim-cursor-table-wrap">
+                        <table className="sim-cursor-table">
+                          <thead>
+                            <tr>
+                              <th>Ch</th>
+                              <th>A</th>
+                              <th>B</th>
+                              <th>Δ</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {scope.cursorMeasurements.channels.map((ch) => {
+                              const isCurrent = ch.name.toLowerCase().startsWith('i');
+                              const unit = isCurrent ? 'A' : 'V';
+                              return (
+                                <tr key={ch.name}>
+                                  <td style={{ color: ch.color, fontWeight: 600 }}>
+                                    <span
+                                      className="sim-ch-led-mini"
+                                      style={{ backgroundColor: ch.color }}
+                                    />
+                                    {ch.name}
+                                  </td>
+                                  <td>{ch.valA !== null ? formatEngineeringValue(ch.valA, unit) : '—'}</td>
+                                  <td>{ch.valB !== null ? formatEngineeringValue(ch.valB, unit) : '—'}</td>
+                                  <td className="sim-delta-col">
+                                    {ch.delta !== null
+                                      ? `${ch.delta >= 0 ? '+' : ''}${formatEngineeringValue(ch.delta, unit)}`
+                                      : '—'}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Detailed Analysis Tools */}
+            <div className="sim-sub-heading" style={{ marginTop: 12 }}>Detailed Analysis</div>
+            <div className="sim-tools-row">
+              <button
+                type="button"
+                className={`sim-mini-btn ${scope.drawerTab === 'metrics' ? 'active' : ''}`}
+                onClick={() => scope.setDrawerTab((prev) => (prev === 'metrics' ? null : 'metrics'))}
+                title="View detailed signal statistics table in bottom drawer"
+              >
+                📊 Statistics
+              </button>
+              <button
+                type="button"
+                className={`sim-mini-btn ${scope.drawerTab === 'fft' ? 'active' : ''}`}
+                onClick={() => scope.setDrawerTab((prev) => (prev === 'fft' ? null : 'fft'))}
+                title="FFT Harmonic Spectrum Analyzer in bottom drawer"
+              >
+                〰 FFT
+              </button>
+              <button
+                type="button"
+                className={`sim-mini-btn ${scope.drawerTab === 'losses' ? 'active' : ''}`}
+                onClick={() => scope.setDrawerTab((prev) => (prev === 'losses' ? null : 'losses'))}
+                title="Semiconductor Loss Breakdown in bottom drawer"
+              >
+                ⚡ Losses
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Results & Export Summary */}
         {results && signalNames.length > 0 && (

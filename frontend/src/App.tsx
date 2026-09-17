@@ -13,6 +13,7 @@ import { Palette } from './palette/Palette';
 import { PropertiesPanel } from './properties/PropertiesPanel';
 import { SimulationPropertiesPanel } from './properties/SimulationPropertiesPanel';
 import { ScopeViewTab } from './simulation/ScopeViewTab';
+import { useScopeController } from './simulation/useScopeController';
 import { CommandPalette } from './palette/CommandPalette';
 import { EXAMPLES } from './model/examples';
 import { resolveShortcut, KEYBINDINGS } from './model/keybindings';
@@ -39,6 +40,12 @@ export function App() {
   const [displayLayout, setDisplayLayout] = useState<'overlay' | 'stacked'>('overlay');
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     return (localStorage.getItem('gecko-theme') as 'dark' | 'light') || 'dark';
+  });
+  const scope = useScopeController({
+    results: simState.results,
+    components: state.components,
+    selectedScope,
+    theme,
   });
   const [rightSidebarWidth, setRightSidebarWidth] = useState<number>(() => {
     const saved = localStorage.getItem('gecko-right-sidebar-width');
@@ -540,7 +547,11 @@ export function App() {
               components={state.components}
               results={simState.results}
               displayLayout={displayLayout}
+              onDisplayLayoutChange={setDisplayLayout}
               theme={theme}
+              status={simState.status}
+              filename={state.filename}
+              scope={scope}
             />
           )}
         </main>
@@ -593,6 +604,7 @@ export function App() {
                 onSelectScope={setSelectedScope}
                 displayLayout={displayLayout}
                 onDisplayLayoutChange={setDisplayLayout}
+                scope={scope}
                 onRunSimulation={actions.runSimulation}
                 onPauseSimulation={actions.pauseSimulation}
                 onResumeSimulation={actions.resumeSimulation}
