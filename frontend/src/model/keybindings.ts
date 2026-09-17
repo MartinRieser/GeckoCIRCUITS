@@ -119,14 +119,14 @@ export const KEYBINDINGS: KeyBinding[] = [
   {
     action: 'delete',
     key: 'Delete',
-    modes: ['idle', 'dragging'],
+    modes: ['idle', 'dragging', 'wiring'],
     description: 'Delete Selected Components / Wires',
     category: 'Editing',
   },
   {
     action: 'delete',
     key: 'Backspace',
-    modes: ['idle', 'dragging'],
+    modes: ['idle', 'dragging', 'wiring'],
     description: 'Delete Selected (Backspace)',
     category: 'Editing',
   },

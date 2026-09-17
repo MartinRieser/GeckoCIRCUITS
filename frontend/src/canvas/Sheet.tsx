@@ -7,7 +7,7 @@ import { useRef, useState, useMemo, useEffect } from 'react';
 import type { Dispatch, MouseEvent as ReactMouseEvent, WheelEvent as ReactWheelEvent, DragEvent as ReactDragEvent } from 'react';
 import type { EditorState, Action } from '../model/store';
 import { terminalPositions, terminalNear } from '../model/geometry';
-import { routeL, densePoints, orthogonalizePolyline } from './WireRouter';
+import { routeL, densePoints, orthogonalizePolyline, simplifyCorners, translateWireSegment } from './WireRouter';
 import { ComponentSymbol } from './symbols';
 import { isScopeComponent } from '../simulation/scopes';
 import type { Point } from '../model/types';
@@ -24,7 +24,12 @@ export interface SheetActions {
   ): void;
   finishWire(points: number[][]): void;
   labelWire?(index: number, label: string): void;
-  commitMove(moves: { name: string; x: number; y: number }[]): void;
+  patchWirePoints?(index: number, points: number[][]): void;
+  flipWire?(index: number): void;
+  commitMove(
+    moves: { name: string; x: number; y: number }[],
+    wirePatches?: { index: number; points: number[][] }[],
+  ): void;
   rotateComponent?: (name: string) => void;
   deleteComponent?: (name: string) => void;
   deleteWire?: (index: number) => void;
@@ -62,6 +67,16 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
 
   // Live cursor grid coordinate
   const [cursorCoord, setCursorCoord] = useState<Point | null>(null);
+
+  // Wire segment and endpoint drag state
+  const [wireDrag, setWireDrag] = useState<{
+    wireIndex: number;
+    segmentIndex?: number;
+    endpointIndex?: 0 | 1;
+    originalCorners: number[][];
+    startGrid: Point;
+    currentDensePoints?: number[][];
+  } | null>(null);
 
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{
@@ -159,9 +174,16 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
         return { name, x: comp.position[0], y: comp.position[1] };
       })
       .filter((m) => m.x !== drag.origins[m.name].x || m.y !== drag.origins[m.name].y);
+    const wirePatches = (drag.draggedWires || [])
+      .map((dw) => {
+        const wire = state.wires.find((w) => w.index === dw.wireIndex);
+        return wire ? { index: wire.index, points: wire.points } : null;
+      })
+      .filter((wp): wp is { index: number; points: number[][] } => wp !== null);
+
     dispatch({ type: 'DRAG_END' });
     if (moves.length) {
-      actions.commitMove(moves);
+      actions.commitMove(moves, wirePatches);
     }
   };
 
@@ -235,6 +257,46 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
     const near = terminalNear(state.components, p);
     setHoveredTerminal(near ? near.point : null);
 
+    if (wireDrag) {
+      const dx = p.x - wireDrag.startGrid.x;
+      const dy = p.y - wireDrag.startGrid.y;
+      let newCorners: number[][];
+      if (wireDrag.segmentIndex !== undefined) {
+        newCorners = translateWireSegment(wireDrag.originalCorners, wireDrag.segmentIndex, { dx, dy });
+      } else if (wireDrag.endpointIndex !== undefined) {
+        const ep = wireDrag.endpointIndex;
+        const target = snappedToTerminal(p);
+        newCorners = wireDrag.originalCorners.map((pt) => [...pt]);
+        if (ep === 0) {
+          newCorners[0] = [target.x, target.y];
+          if (newCorners.length > 2) {
+            if (newCorners[1][1] === wireDrag.originalCorners[0][1]) {
+              newCorners[1][1] = target.y;
+            } else {
+              newCorners[1][0] = target.x;
+            }
+          }
+        } else {
+          const lastIdx = newCorners.length - 1;
+          newCorners[lastIdx] = [target.x, target.y];
+          if (newCorners.length > 2) {
+            if (newCorners[lastIdx - 1][1] === wireDrag.originalCorners[lastIdx][1]) {
+              newCorners[lastIdx - 1][1] = target.y;
+            } else {
+              newCorners[lastIdx - 1][0] = target.x;
+            }
+          }
+        }
+        newCorners = simplifyCorners(newCorners);
+      } else {
+        newCorners = wireDrag.originalCorners;
+      }
+      const dense = densePoints(newCorners.map(([x, y]) => ({ x, y }))).map((pt) => [pt.x, pt.y]);
+      setWireDrag((prev) => (prev ? { ...prev, currentDensePoints: dense } : null));
+      dispatch({ type: 'WIRE_POINTS_UPDATE', index: wireDrag.wireIndex, points: dense });
+      return;
+    }
+
     switch (state.mode) {
       case 'placing':
         dispatch({ type: 'GHOST_MOVE', x: p.x, y: p.y });
@@ -256,6 +318,14 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
   const handleMouseUp = () => {
     if (isPanning) {
       setIsPanning(false);
+      return;
+    }
+
+    if (wireDrag) {
+      if (wireDrag.currentDensePoints) {
+        actions.patchWirePoints?.(wireDrag.wireIndex, wireDrag.currentDensePoints);
+      }
+      setWireDrag(null);
       return;
     }
 
@@ -330,7 +400,18 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
     setPan({ x: 20, y: 20 });
   };
 
-  const interactiveLayer = state.mode === 'idle';
+  const selectedWireObj = useMemo(() => {
+    if (state.selectedWire === null) return null;
+    return state.wires.find((w) => w.index === state.selectedWire) || null;
+  }, [state.selectedWire, state.wires]);
+
+  const pillCoord = useMemo(() => {
+    if (!selectedWireObj || !selectedWireObj.points || selectedWireObj.points.length === 0) return null;
+    const corners = simplifyCorners(selectedWireObj.points);
+    if (corners.length === 0) return null;
+    const midCorner = corners[Math.floor(corners.length / 2)];
+    return { x: midCorner[0], y: midCorner[1] };
+  }, [selectedWireObj]);
 
   const wireDraftPoints = state.wireDraft
     ? routeL(state.wireDraft.start, state.wireDraft.cursor, state.wireDraft.preferHorizontal)
@@ -445,15 +526,17 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
           />
 
           {/* Wires */}
-          <g className="wires" pointerEvents={interactiveLayer ? 'auto' : 'none'}>
+          <g className="wires">
             {state.wires.map((wire) => {
               const orthoPts = orthogonalizePolyline(wire.points);
               const pointsStr = orthoPts.map((p) => `${p[0] * dpix},${p[1] * dpix}`).join(' ');
+              const isSelected = wire.index === state.selectedWire;
+              const corners = isSelected ? simplifyCorners(wire.points) : [];
               return (
-                <g key={wire.index}>
+                <g key={wire.index} className={`wire-group${isSelected ? ' selected' : ''}`}>
                   <polyline
                     points={pointsStr}
-                    className={`wire wire-${wire.type || 'LK'}${wire.index === state.selectedWire ? ' selected' : ''}`}
+                    className={`wire wire-${wire.type || 'LK'}${isSelected ? ' selected' : ''}`}
                   />
                   <polyline
                     points={pointsStr}
@@ -461,28 +544,124 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                     onMouseDown={(e) => {
                       if (e.button === 0) {
                         e.stopPropagation();
-                        dispatch({ type: 'SELECT_WIRE', index: wire.index });
+                        if (state.mode === 'wiring' && state.wireDraft) {
+                          const end = toGrid(e);
+                          const route = routeL(state.wireDraft.start, end, state.wireDraft.preferHorizontal);
+                          dispatch({ type: 'WIRE_DRAFT_END' });
+                          actions.finishWire(densePoints(route).map((pt) => [pt.x, pt.y]));
+                        } else {
+                          dispatch({ type: 'SELECT_WIRE', index: wire.index });
+                        }
                       }
                     }}
-                  onContextMenu={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const p = toGrid(e);
-                    setContextMenu({
-                      x: e.clientX,
-                      y: e.clientY,
-                      target: {
-                        type: 'wire',
-                        wireIndex: wire.index,
-                        gridX: p.x,
-                        gridY: p.y,
-                      },
-                    });
-                  }}
-                />
-              </g>
-            );
-          })}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const p = toGrid(e);
+                      dispatch({ type: 'SELECT_WIRE', index: wire.index });
+                      setContextMenu({
+                        x: e.clientX,
+                        y: e.clientY,
+                        target: {
+                          type: 'wire',
+                          wireIndex: wire.index,
+                          gridX: p.x,
+                          gridY: p.y,
+                        },
+                      });
+                    }}
+                  />
+
+                  {/* Handles and Segment Drag Hit Bars for Selected Wire */}
+                  {isSelected && corners.length >= 2 && (
+                    <g className="wire-handles">
+                      {/* Segment hit bars for sliding orthogonal segments */}
+                      {corners.slice(0, -1).map((p1, segIdx) => {
+                        const p2 = corners[segIdx + 1];
+                        const isH = p1[1] === p2[1];
+                        return (
+                          <line
+                            key={`seg-${segIdx}`}
+                            x1={p1[0] * dpix}
+                            y1={p1[1] * dpix}
+                            x2={p2[0] * dpix}
+                            y2={p2[1] * dpix}
+                            className="wire-segment-drag-bar"
+                            stroke="transparent"
+                            strokeWidth={14}
+                            style={{ cursor: isH ? 'ns-resize' : 'ew-resize' }}
+                            onMouseDown={(e) => {
+                              if (e.button !== 0) return;
+                              e.stopPropagation();
+                              const grid = toGrid(e);
+                              setWireDrag({
+                                wireIndex: wire.index,
+                                segmentIndex: segIdx,
+                                originalCorners: corners,
+                                startGrid: grid,
+                              });
+                            }}
+                          />
+                        );
+                      })}
+
+                      {/* Intermediate corner handles */}
+                      {corners.slice(1, -1).map((pt, cIdx) => (
+                        <rect
+                          key={`corner-${cIdx}`}
+                          x={pt[0] * dpix - 3.5}
+                          y={pt[1] * dpix - 3.5}
+                          width={7}
+                          height={7}
+                          className="wire-corner-handle"
+                          pointerEvents="none"
+                        />
+                      ))}
+
+                      {/* Start Endpoint handle */}
+                      <circle
+                        cx={corners[0][0] * dpix}
+                        cy={corners[0][1] * dpix}
+                        r={5.5}
+                        className="wire-handle wire-endpoint-handle"
+                        style={{ cursor: 'move' }}
+                        onMouseDown={(e) => {
+                          if (e.button !== 0) return;
+                          e.stopPropagation();
+                          const grid = toGrid(e);
+                          setWireDrag({
+                            wireIndex: wire.index,
+                            endpointIndex: 0,
+                            originalCorners: corners,
+                            startGrid: grid,
+                          });
+                        }}
+                      />
+
+                      {/* End Endpoint handle */}
+                      <circle
+                        cx={corners[corners.length - 1][0] * dpix}
+                        cy={corners[corners.length - 1][1] * dpix}
+                        r={5.5}
+                        className="wire-handle wire-endpoint-handle"
+                        style={{ cursor: 'move' }}
+                        onMouseDown={(e) => {
+                          if (e.button !== 0) return;
+                          e.stopPropagation();
+                          const grid = toGrid(e);
+                          setWireDrag({
+                            wireIndex: wire.index,
+                            endpointIndex: 1,
+                            originalCorners: corners,
+                            startGrid: grid,
+                          });
+                        }}
+                      />
+                    </g>
+                  )}
+                </g>
+              );
+            })}
           </g>
 
           {/* Wire Junction Connection Dots */}
@@ -499,7 +678,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
           </g>
 
           {/* Components */}
-          <g className="components" pointerEvents={interactiveLayer ? 'auto' : 'none'}>
+          <g className="components" pointerEvents={state.mode === 'placing' ? 'none' : 'auto'}>
             {state.components.map((component) => {
               const selected = state.selection.includes(component.name);
               const terminals = terminalPositions(component);
@@ -510,6 +689,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                   className={`component family-${component.family || 'LK'}${selected ? ' selected' : ''}`}
                   onMouseDown={(e) => {
                     if (e.button !== 0) return;
+                    if (state.mode !== 'idle') return;
                     e.stopPropagation();
                     // note: while placing/dragging the components layer has
                     // pointer-events none, so this only fires in idle mode
@@ -584,16 +764,48 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
 
                         <ComponentSymbol component={component} dpix={dpix} />
 
-                        {/* Terminals */}
-                        {[...terminals.input, ...terminals.output].map((t, i) => (
-                          <circle
-                            key={i}
-                            cx={t.x * dpix - component.position[0] * dpix}
-                            cy={t.y * dpix - component.position[1] * dpix}
-                            r={3}
-                            className="terminal"
-                          />
-                        ))}
+                        {/* Interactive Terminals with direct wire drafting */}
+                        {[...terminals.input, ...terminals.output].map((t, i) => {
+                          const cx = t.x * dpix - component.position[0] * dpix;
+                          const cy = t.y * dpix - component.position[1] * dpix;
+                          return (
+                            <g key={i} className="terminal-pin-group">
+                              <circle
+                                cx={cx}
+                                cy={cy}
+                                r={2.5}
+                                className="terminal"
+                              />
+                              <circle
+                                cx={cx}
+                                cy={cy}
+                                r={8}
+                                fill="none"
+                                stroke="none"
+                                className="terminal-hit"
+                                style={{ cursor: 'crosshair', pointerEvents: 'all' }}
+                                onMouseDown={(e) => {
+                                  if (e.button !== 0) return;
+                                  e.stopPropagation();
+                                  if (state.mode === 'wiring' && state.wireDraft) {
+                                    const end = { x: t.x, y: t.y };
+                                    const route = routeL(state.wireDraft.start, end, state.wireDraft.preferHorizontal);
+                                    dispatch({ type: 'WIRE_DRAFT_END' });
+                                    actions.finishWire(densePoints(route).map((pt) => [pt.x, pt.y]));
+                                  } else {
+                                    dispatch({
+                                      type: 'WIRE_START',
+                                      x: t.x,
+                                      y: t.y,
+                                      family: component.family,
+                                      autoReturnToIdle: true,
+                                    });
+                                  }
+                                }}
+                              />
+                            </g>
+                          );
+                        })}
 
                         {/* Component identifier label: to the right of the
                             symbol so labels of vertically stacked blocks
@@ -708,6 +920,56 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
             />
           )}
         </svg>
+
+        {/* Floating Wire Action Pill */}
+        {selectedWireObj && pillCoord && (
+          <div
+            className="wire-action-pill"
+            style={{
+              left: `${pillCoord.x * dpix}px`,
+              top: `${pillCoord.y * dpix - 36}px`,
+            }}
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="wire-action-btn danger"
+              title="Delete Wire (Delete / Backspace)"
+              onClick={() => actions.deleteWire?.(selectedWireObj.index)}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+              <span>Delete</span>
+            </button>
+            <button
+              type="button"
+              className="wire-action-btn"
+              title="Flip Route Orientation (R)"
+              onClick={() => actions.flipWire?.(selectedWireObj.index)}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+              </svg>
+              <span>Flip</span>
+            </button>
+            <button
+              type="button"
+              className="wire-action-btn"
+              title="Set Net Label"
+              onClick={() => {
+                const label = window.prompt('Net label (empty = none, GND = ground):', selectedWireObj.label ?? '');
+                if (label !== null) {
+                  actions.labelWire?.(selectedWireObj.index, label.trim());
+                }
+              }}
+            >
+              <span>Label</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Floating Context Menu */}

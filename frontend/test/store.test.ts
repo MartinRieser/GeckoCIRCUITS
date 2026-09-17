@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { editorReducer, initialState } from '../src/model/store';
 import type { EditorSnapshot } from '../src/model/types';
+import { simplifyCorners } from '../src/canvas/WireRouter';
 
 const snapshot: EditorSnapshot = {
   circuitId: 'c1',
@@ -189,7 +190,10 @@ describe('store: wire points follow dragged and nudged components', () => {
   it('DRAG_MOVE shifts wire points captured on the dragged terminals', () => {
     let state = editorReducer(loaded, { type: 'DRAG_START', names: ['R1'], x: 12, y: 12 });
     state = editorReducer(state, { type: 'DRAG_MOVE', x: 15, y: 10 }); // dx=3, dy=-2
-    expect(state.wires[1].points).toEqual([[11, 8], [20, 10]]);
+    const corners = simplifyCorners(state.wires[1].points);
+    expect(corners[0]).toEqual([11, 8]);
+    expect(corners[corners.length - 1]).toEqual([20, 10]);
+    // W1 does not touch R1 terminals and is untouched
     expect(state.wires[0].points).toEqual([[10, 10], [20, 10], [20, 20]]);
   });
 
@@ -205,7 +209,7 @@ describe('store: wire points follow dragged and nudged components', () => {
     let state = editorReducer(loaded, { type: 'SELECT', name: 'R1', additive: false });
     state = editorReducer(state, { type: 'SELECTION_NUDGE', dx: 2, dy: 0 });
     expect(state.components[0].position).toEqual([12, 10]);
-    expect(state.wires[1].points).toEqual([[10, 10], [20, 10]]);
+    expect(simplifyCorners(state.wires[1].points)).toEqual([[10, 10], [20, 10]]);
     expect(state.wires[0].points).toEqual([[10, 10], [20, 10], [20, 20]]);
   });
 
@@ -281,9 +285,27 @@ describe('store: wiring', () => {
     expect(state.modelVersion).toBe(5);
   });
 
-  it('wire deleted removes by index', () => {
-    const state = editorReducer(loaded, { type: 'WIRE_DELETED', index: 0, version: 6 });
-    expect(state.wires).toHaveLength(0);
+  it('wire deleted removes by index and re-indexes remaining wires', () => {
+    let state = editorReducer(loaded, {
+      type: 'WIRE_CREATED',
+      wire: { index: 1, type: 'LK', label: 'w2', points: [[1, 1], [2, 1]] },
+      version: 5,
+    });
+    state = editorReducer(state, {
+      type: 'WIRE_CREATED',
+      wire: { index: 2, type: 'LK', label: 'w3', points: [[2, 1], [3, 1]] },
+      version: 6,
+    });
+    expect(state.wires).toHaveLength(3);
+
+    // Delete wire 0
+    state = editorReducer(state, { type: 'WIRE_DELETED', index: 0, version: 7 });
+    expect(state.wires).toHaveLength(2);
+    // Remaining wires should now have indices 0 and 1
+    expect(state.wires[0].index).toBe(0);
+    expect(state.wires[0].label).toBe('w2');
+    expect(state.wires[1].index).toBe(1);
+    expect(state.wires[1].label).toBe('w3');
   });
 
   it('toggle wire mode twice cancels an active draft', () => {

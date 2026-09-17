@@ -1080,13 +1080,26 @@ body,
 }
 
 .terminal {
-  fill: var(--accent);
-  stroke: none;
+  fill: var(--accent) !important;
+  stroke: none !important;
   transition: r 0.1s ease;
 }
 
-.terminal:hover {
-  r: 4.5;
+.terminal-pin-group:hover .terminal {
+  r: 3.5;
+  fill: var(--accent-light, #38bdf8) !important;
+}
+
+circle.terminal-hit,
+.component circle.terminal-hit,
+.component.family-LK circle.terminal-hit,
+.component.family-CONTROL circle.terminal-hit,
+.component.family-THERM circle.terminal-hit,
+.component.selected circle.terminal-hit {
+  stroke: none !important;
+  fill: none !important;
+  stroke-width: 0 !important;
+  pointer-events: all !important;
 }
 
 .terminal-snap-halo {
@@ -1153,6 +1166,97 @@ polyline.wire.selected {
   fill: none;
   stroke-width: 10;
   cursor: pointer;
+}
+
+.wire-segment-drag-bar {
+  pointer-events: stroke;
+}
+
+.wire-handle {
+  fill: var(--panel, #1e293b);
+  stroke: var(--selection, #38bdf8);
+  stroke-width: 2;
+  transition: transform 0.1s ease, fill 0.1s ease;
+}
+
+.wire-handle:hover {
+  fill: var(--selection, #38bdf8);
+  stroke: #ffffff;
+}
+
+.wire-endpoint-handle {
+  cursor: move;
+}
+
+.wire-corner-handle {
+  stroke-width: 1.5;
+}
+
+.wire-action-pill {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(15, 23, 42, 0.94);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 20px;
+  padding: 3px 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 0 0 10px rgba(56, 189, 248, 0.2);
+  z-index: 100;
+  backdrop-filter: blur(8px);
+  transform: translate(-50%, -100%);
+  pointer-events: auto;
+  user-select: none;
+  animation: pillFadeIn 0.15s ease-out;
+}
+
+@keyframes pillFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -85%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1);
+  }
+}
+
+.wire-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  color: var(--text, #e2e8f0);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.wire-action-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.wire-action-btn.danger {
+  color: #fb7185;
+}
+
+.wire-action-btn.danger:hover {
+  background: rgba(244, 63, 94, 0.25);
+  color: #fda4af;
+}
+
+.wire-action-btn svg {
+  display: block;
+}
+
+.terminal-pin-group:hover .terminal {
+  r: 4.5;
+  fill: var(--accent, #38bdf8);
 }
 
 .wire-draft {

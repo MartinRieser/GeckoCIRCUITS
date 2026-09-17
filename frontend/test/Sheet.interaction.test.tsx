@@ -47,7 +47,17 @@ const snapshot: EditorSnapshot = {
 const placeGhost = vi.fn();
 const finishWire = vi.fn();
 const commitMove = vi.fn();
-const actions: SheetActions = { placeGhost, finishWire, commitMove };
+const deleteWire = vi.fn();
+const patchWirePoints = vi.fn();
+const flipWire = vi.fn();
+const actions: SheetActions = {
+  placeGhost,
+  finishWire,
+  commitMove,
+  deleteWire,
+  patchWirePoints,
+  flipWire,
+};
 
 function Harness() {
   const [state, dispatch] = useReducer(editorReducer, initialState, (init) =>
@@ -80,6 +90,9 @@ afterEach(() => {
   placeGhost.mockClear();
   finishWire.mockClear();
   commitMove.mockClear();
+  deleteWire.mockClear();
+  patchWirePoints.mockClear();
+  flipWire.mockClear();
 });
 
 describe('Sheet rendering', () => {
@@ -246,7 +259,10 @@ describe('selection', () => {
     fireEvent.mouseMove(svg, { clientX: 208, clientY: 128, button: 0 });
     fireEvent.mouseUp(svg);
 
-    expect(commitMove).toHaveBeenCalledWith([{ name: 'R1', x: 13, y: 8 }]);
+    expect(commitMove).toHaveBeenCalledWith(
+      [{ name: 'R1', x: 13, y: 8 }],
+      expect.any(Array),
+    );
   });
 
   it('a plain click selects the component; releasing mouse does not drag unless mouse button is held', () => {
@@ -263,5 +279,74 @@ describe('selection', () => {
     const comp = container.querySelectorAll('g.component')[0];
     expect(comp.getAttribute('transform')).toBe('translate(160, 160)');
     expect(comp.classList.contains('selected')).toBe(true);
+  });
+});
+
+describe('direct pin-to-pin wiring and wire editing', () => {
+  it('direct click on terminal in idle mode starts wire without pressing wire button', () => {
+    const { container, svg } = setup();
+
+    // Find R1's terminal-hit element: R1 input is at grid (8,10)
+    const terminalHits = container.querySelectorAll('.terminal-hit');
+    expect(terminalHits.length).toBeGreaterThan(0);
+
+    // Click R1's first terminal directly in idle mode
+    fireEvent.mouseDown(terminalHits[0], { button: 0 });
+
+    // A wire draft should immediately appear
+    const wireDraft = container.querySelector('polyline.wire-draft');
+    expect(wireDraft).not.toBeNull();
+
+    // Move to grid (15, 10) = client (240, 160)
+    fireEvent.mouseMove(svg, { clientX: 240, clientY: 160, button: 0 });
+
+    // Click second terminal (C1 input at grid (28, 10))
+    fireEvent.mouseDown(terminalHits[2], { button: 0 });
+
+    // finishWire should be called directly!
+    expect(finishWire).toHaveBeenCalledTimes(1);
+    // After pin-to-pin wire completes, wire draft is gone
+    expect(container.querySelector('polyline.wire-draft')).toBeNull();
+  });
+
+  it('clicking a wire selects it and clicking delete in floating pill deletes it', () => {
+    const { container } = setup();
+
+    const wireHit = container.querySelector('.wire-hit')!;
+    expect(wireHit).toBeTruthy();
+
+    // Click on the wire
+    fireEvent.mouseDown(wireHit, { button: 0 });
+
+    // Floating action pill should appear
+    const pill = container.querySelector('.wire-action-pill');
+    expect(pill).not.toBeNull();
+
+    // Click the delete button on the floating pill
+    const delBtn = pill!.querySelector('.wire-action-btn.danger')!;
+    expect(delBtn).toBeTruthy();
+    fireEvent.click(delBtn);
+
+    expect(deleteWire).toHaveBeenCalledWith(0);
+  });
+
+  it('dragging a wire segment translates it and calls patchWirePoints', () => {
+    const { container, svg } = setup();
+
+    // Click wire to select it
+    const wireHit = container.querySelector('.wire-hit')!;
+    fireEvent.mouseDown(wireHit, { button: 0 });
+
+    // Find the segment drag bar
+    const segBar = container.querySelector('.wire-segment-drag-bar')!;
+    expect(segBar).toBeTruthy();
+
+    // Drag the segment in Y by 3 grid units (from y=10 to y=13 -> clientY 160 to 208)
+    fireEvent.mouseDown(segBar, { clientX: 160, clientY: 160, button: 0 });
+    fireEvent.mouseMove(svg, { clientX: 160, clientY: 208, button: 0 });
+    fireEvent.mouseUp(svg);
+
+    expect(patchWirePoints).toHaveBeenCalledTimes(1);
+    expect(patchWirePoints).toHaveBeenCalledWith(0, expect.any(Array));
   });
 });

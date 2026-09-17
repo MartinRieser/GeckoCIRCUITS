@@ -16,6 +16,7 @@ import type {
 import { nextOrientation } from '../model/geometry';
 import { CTRL_TYPE } from '../model/componentSchema';
 import { BLANK_CIRCUIT_IPES } from '../model/examples';
+import { flipRoute, densePoints } from '../canvas/WireRouter';
 
 export function useEditor() {
   const [state, dispatch] = useReducer(editorReducer, initialState);
@@ -273,7 +274,10 @@ export function useEditor() {
   );
 
   const commitMove = useCallback(
-    (moves: { name: string; x: number; y: number }[]) => {
+    (
+      moves: { name: string; x: number; y: number }[],
+      wirePatches?: { index: number; points: number[][] }[],
+    ) => {
       const circuitId = stateRef.current.circuitId;
       if (!circuitId) return;
       Promise.all(
@@ -284,8 +288,14 @@ export function useEditor() {
         .then(async (messages) => {
           const last = messages[messages.length - 1];
           versionRef.current = last.modelVersion;
-          // the server shifts wire points sitting on moved terminals; refetch
-          // the model so client-side wire geometry mirrors the server state
+          // persist any orthogonally adjusted wires before refreshing
+          if (wirePatches && wirePatches.length > 0) {
+            await Promise.all(
+              wirePatches.map((wp) =>
+                api.patchConnection(circuitId, wp.index, { points: wp.points }),
+              ),
+            );
+          }
           await refresh(circuitId);
           dispatch({ type: 'STATUS', status: `${moves.length} component(s) moved` });
         })
@@ -344,10 +354,47 @@ export function useEditor() {
         .then((msg) => {
           versionRef.current = msg.modelVersion;
           dispatch({ type: 'WIRE_DELETED', index, version: msg.modelVersion });
+          void refresh(circuitId);
         })
         .catch(reportError);
     },
-    [reportError],
+    [refresh, reportError],
+  );
+
+  const patchWirePoints = useCallback(
+    (index: number, points: number[][]) => {
+      const circuitId = stateRef.current.circuitId;
+      if (!circuitId) return;
+      api
+        .patchConnection(circuitId, index, { points })
+        .then((msg) => {
+          const payload = msg.payload as WirePayload;
+          versionRef.current = msg.modelVersion;
+          dispatch({
+            type: 'WIRE_PATCHED',
+            index,
+            points: payload.points,
+            label: payload.label,
+            version: msg.modelVersion,
+          });
+        })
+        .catch((e) => {
+          reportError(e);
+          void refresh(circuitId);
+        });
+    },
+    [refresh, reportError],
+  );
+
+  const flipWire = useCallback(
+    (index: number) => {
+      const wire = stateRef.current.wires.find((w) => w.index === index);
+      if (!wire) return;
+      const flipped = flipRoute(wire.points);
+      const dense = densePoints(flipped.map(([x, y]) => ({ x, y }))).map((pt) => [pt.x, pt.y]);
+      patchWirePoints(index, dense);
+    },
+    [patchWirePoints],
   );
 
   const labelWire = useCallback(
@@ -372,36 +419,34 @@ export function useEditor() {
     [reportError],
   );
 
-  const deleteSelection = useCallback(() => {
+  const deleteSelection = useCallback(async () => {
     const current = stateRef.current;
     const circuitId = current.circuitId;
     if (!circuitId) return;
-    const tasks: Promise<unknown>[] = [];
-    for (const name of current.selection) {
-      tasks.push(
-        api.deleteComponent(circuitId, name).then((msg) => {
-          versionRef.current = msg.modelVersion;
-          dispatch({ type: 'COMPONENT_DELETED', name, version: msg.modelVersion });
-        }),
-      );
-    }
-    if (current.selectedWire !== null) {
-      tasks.push(
-        api.deleteConnection(circuitId, current.selectedWire).then((msg) => {
-          versionRef.current = msg.modelVersion;
-          dispatch({
-            type: 'WIRE_DELETED',
-            index: current.selectedWire!,
-            version: msg.modelVersion,
-          });
-        }),
-      );
-    }
-    if (tasks.length) {
-      Promise.all(tasks).catch((e) => {
-        reportError(e);
-        refresh(circuitId);
-      });
+
+    const wireIndicesToDelete = current.selectedWires && current.selectedWires.length > 0
+      ? [...current.selectedWires]
+      : current.selectedWire !== null
+        ? [current.selectedWire]
+        : [];
+
+    wireIndicesToDelete.sort((a, b) => b - a);
+
+    try {
+      for (const name of current.selection) {
+        const msg = await api.deleteComponent(circuitId, name);
+        versionRef.current = msg.modelVersion;
+        dispatch({ type: 'COMPONENT_DELETED', name, version: msg.modelVersion });
+      }
+      for (const index of wireIndicesToDelete) {
+        const msg = await api.deleteConnection(circuitId, index);
+        versionRef.current = msg.modelVersion;
+        dispatch({ type: 'WIRE_DELETED', index, version: msg.modelVersion });
+      }
+    } catch (e) {
+      reportError(e);
+    } finally {
+      void refresh(circuitId);
     }
   }, [refresh, reportError]);
 
@@ -761,6 +806,8 @@ export function useEditor() {
       rotateComponent,
       deleteComponent,
       deleteWire,
+      patchWirePoints,
+      flipWire,
       labelWire,
       deleteSelection,
       duplicateSelection,

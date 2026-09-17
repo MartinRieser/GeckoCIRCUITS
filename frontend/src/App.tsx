@@ -145,7 +145,7 @@ export function App() {
           actions.redo();
           break;
         case 'delete':
-          if (state.selection.length || state.selectedWire !== null) {
+          if (state.selection.length || state.selectedWire !== null || (state.selectedWires && state.selectedWires.length > 0)) {
             e.preventDefault();
             actions.deleteSelection();
           }
@@ -157,6 +157,8 @@ export function App() {
         case 'rotate-selection':
           if (state.selection.length === 1) {
             actions.rotateComponent(state.selection[0]);
+          } else if (state.selectedWire !== null) {
+            actions.flipWire(state.selectedWire);
           }
           break;
         case 'toggle-wire-mode':
@@ -507,6 +509,8 @@ export function App() {
                   rotateComponent: actions.rotateComponent,
                   deleteComponent: actions.deleteComponent,
                   deleteWire: actions.deleteWire,
+                  patchWirePoints: actions.patchWirePoints,
+                  flipWire: actions.flipWire,
                   labelWire: actions.labelWire,
                   openProperties: (name: string) => {
                     actions.openProperties(name);

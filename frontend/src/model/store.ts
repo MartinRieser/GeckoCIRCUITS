@@ -10,6 +10,7 @@
  */
 import type { EditorComponent, EditorWire, Point, EditorSnapshot } from './types';
 import { ORIENTATION_CYCLE, terminalPositions } from './geometry';
+import { routeMovedWire } from '../canvas/WireRouter';
 
 export type Mode = 'idle' | 'placing' | 'wiring' | 'rubber' | 'dragging';
 export type EditorMode = Mode;
@@ -27,6 +28,7 @@ export interface WireDraft {
   cursor: Point;
   /** locked horizontal preference once draft moves away from start */
   preferHorizontal: boolean | null;
+  autoReturnToIdle?: boolean;
 }
 
 export interface RubberBand {
@@ -48,6 +50,13 @@ export interface ConnectedWirePoint {
   originalY: number;
 }
 
+export interface DraggedWireInfo {
+  wireIndex: number;
+  originalPoints: number[][];
+  startMoves: boolean;
+  endMoves: boolean;
+}
+
 export interface DragState {
   /** name -> original position (before the drag), for undo and delta math */
   origins: Record<string, { x: number; y: number }>;
@@ -55,6 +64,8 @@ export interface DragState {
   startY: number;
   /** wire points captured on drag terminals at their pre-drag coordinates */
   connectedWirePoints: ConnectedWirePoint[];
+  draggedWires?: DraggedWireInfo[];
+  originalWires?: EditorWire[];
 }
 
 export interface FocusedTerminal {
@@ -81,6 +92,7 @@ export interface EditorState {
   drag: DragState | null;
   selection: string[];
   selectedWire: number | null;
+  selectedWires: number[];
   panelFor: string | null;
   focusedTerminal: FocusedTerminal | null;
   status: string;
@@ -104,6 +116,7 @@ export const initialState: EditorState = {
   drag: null,
   selection: [],
   selectedWire: null,
+  selectedWires: [],
   panelFor: null,
   focusedTerminal: null,
   status: 'Open a .ipes file or example to begin',
@@ -124,12 +137,13 @@ export type Action =
   | { type: 'COMPONENT_DELETED'; name: string; version: number }
   | { type: 'WIRE_CREATED'; wire: EditorWire; version: number }
   | { type: 'WIRE_PATCHED'; index: number; points: number[][]; label: string; version: number }
+  | { type: 'WIRE_POINTS_UPDATE'; index: number; points: number[][] }
   | { type: 'WIRE_DELETED'; index: number; version: number }
   | { type: 'SELECT'; name: string; additive: boolean }
   | { type: 'SELECT_WIRE'; index: number | null }
   | { type: 'CLEAR_SELECTION' }
   | { type: 'SELECTION_NUDGE'; dx: number; dy: number }
-  | { type: 'WIRE_START'; x: number; y: number; family?: string }
+  | { type: 'WIRE_START'; x: number; y: number; family?: string; autoReturnToIdle?: boolean }
   | { type: 'WIRE_CURSOR'; x: number; y: number }
   | { type: 'WIRE_CURSOR_NUDGE'; dx: number; dy: number }
   | { type: 'TERMINAL_FOCUS_CYCLE'; reverse?: boolean }
@@ -179,6 +193,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         rubber: null,
         selection: state.selection.filter((n) => components.some((c) => c.name === n)),
         selectedWire: state.selectedWire,
+        selectedWires: state.selectedWires ? state.selectedWires.filter((idx) => wires.some((w) => w.index === idx)) : [],
         panelFor: components.some((c) => c.name === state.panelFor) ? state.panelFor : null,
         focusedTerminal: null,
         status: `Loaded ${(snap.filename as string) || 'circuit'} (${components.length} components)`,
@@ -244,19 +259,9 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
       // followed them to their pre-drag coordinates
       if (state.mode === 'dragging' && state.drag) {
         const origins = state.drag.origins;
-        const connected = state.drag.connectedWirePoints;
-        const wires = state.wires.map((wire, wireIndex) => {
-          const points = wire.points.map((pt) => [...pt]);
-          let changed = false;
-          for (const cp of connected) {
-            if (cp.wireIndex === wireIndex && points[cp.pointIndex]) {
-              points[cp.pointIndex][0] = cp.originalX;
-              points[cp.pointIndex][1] = cp.originalY;
-              changed = true;
-            }
-          }
-          return changed ? { ...wire, points } : wire;
-        });
+        const wires = state.drag.originalWires
+          ? state.drag.originalWires.map((w) => ({ ...w, points: w.points.map((p) => [...p]) }))
+          : state.wires;
 
         return {
           ...state,
@@ -270,7 +275,13 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         };
       }
       if (state.mode === 'wiring' && state.wireDraft) {
-        return { ...state, wireDraft: null, status: 'Wire mode — click a terminal or grid point to start a wire' };
+        const nextMode = state.wireDraft.autoReturnToIdle ? 'idle' : 'wiring';
+        return {
+          ...state,
+          mode: nextMode,
+          wireDraft: null,
+          status: nextMode === 'idle' ? '' : 'Wire mode — click a terminal or grid point to start a wire',
+        };
       }
       return {
         ...state,
@@ -325,14 +336,36 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         status: `Wire #${action.index} updated`,
       };
 
-    case 'WIRE_DELETED':
+    case 'WIRE_POINTS_UPDATE':
       return {
         ...state,
-        wires: state.wires.filter((w) => w.index !== action.index),
-        selectedWire: state.selectedWire === action.index ? null : state.selectedWire,
+        wires: state.wires.map((w) =>
+          w.index === action.index ? { ...w, points: action.points } : w,
+        ),
+      };
+
+    case 'WIRE_DELETED': {
+      const remainingWires = state.wires
+        .filter((w) => w.index !== action.index)
+        .map((w) => (w.index > action.index ? { ...w, index: w.index - 1 } : w));
+      const nextSelectedWire =
+        state.selectedWire === action.index
+          ? null
+          : state.selectedWire !== null && state.selectedWire > action.index
+            ? state.selectedWire - 1
+            : state.selectedWire;
+      const nextSelectedWires = (state.selectedWires || [])
+        .filter((idx) => idx !== action.index)
+        .map((idx) => (idx > action.index ? idx - 1 : idx));
+      return {
+        ...state,
+        wires: remainingWires,
+        selectedWire: nextSelectedWire,
+        selectedWires: nextSelectedWires,
         modelVersion: action.version,
         status: `Wire #${action.index} deleted`,
       };
+    }
 
     case 'SELECT': {
       const selection = action.additive
@@ -340,14 +373,19 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
           ? state.selection.filter((n) => n !== action.name)
           : [...state.selection, action.name]
         : [action.name];
-      return { ...state, selection, selectedWire: null };
+      return { ...state, selection, selectedWire: null, selectedWires: [] };
     }
 
     case 'SELECT_WIRE':
-      return { ...state, selectedWire: action.index, selection: [] };
+      return {
+        ...state,
+        selectedWire: action.index,
+        selectedWires: action.index !== null ? [action.index] : [],
+        selection: [],
+      };
 
     case 'CLEAR_SELECTION':
-      return { ...state, selection: [], selectedWire: null };
+      return { ...state, selection: [], selectedWire: null, selectedWires: [] };
 
     case 'SELECTION_NUDGE': {
       if (state.selection.length === 0) return state;
@@ -375,13 +413,18 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
       });
 
       const wires = state.wires.map((wire) => {
-        const points = wire.points.map((pt) => {
-          if (movedTerminalSet.has(`${pt[0]},${pt[1]}`)) {
-            return [pt[0] + action.dx, pt[1] + action.dy];
-          }
-          return pt;
-        });
-        return { ...wire, points };
+        if (!wire.points || wire.points.length === 0) return wire;
+        const startPt = wire.points[0];
+        const endPt = wire.points[wire.points.length - 1];
+        const startMoves = movedTerminalSet.has(`${startPt[0]},${startPt[1]}`);
+        const endMoves = movedTerminalSet.has(`${endPt[0]},${endPt[1]}`);
+        if (startMoves || endMoves) {
+          const startDelta = startMoves ? { dx: action.dx, dy: action.dy } : { dx: 0, dy: 0 };
+          const endDelta = endMoves ? { dx: action.dx, dy: action.dy } : { dx: 0, dy: 0 };
+          const newPoints = routeMovedWire(wire.points, startDelta, endDelta);
+          return { ...wire, points: newPoints };
+        }
+        return wire;
       });
 
       return { ...state, components, wires };
@@ -392,8 +435,13 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         ...state,
         mode: 'wiring',
         wireFamily: action.family || 'LK',
-        wireDraft: { start: { x: action.x, y: action.y }, cursor: { x: action.x, y: action.y }, preferHorizontal: null },
-        status: 'Wiring — click or press Enter to set end point, Esc to abort, W to leave wire mode',
+        wireDraft: {
+          start: { x: action.x, y: action.y },
+          cursor: { x: action.x, y: action.y },
+          preferHorizontal: null,
+          autoReturnToIdle: action.autoReturnToIdle ?? false,
+        },
+        status: 'Wiring — click or press Enter to set end point, Esc to abort',
       };
 
     case 'WIRE_CURSOR': {
@@ -477,13 +525,27 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
     case 'SET_FOCUSED_TERMINAL':
       return { ...state, focusedTerminal: action.terminal };
 
-    case 'WIRE_DRAFT_ABORT':
+    case 'WIRE_DRAFT_ABORT': {
       if (!state.wireDraft) return state;
-      return { ...state, wireDraft: null, status: 'Wire draft aborted' };
+      const nextMode = state.wireDraft.autoReturnToIdle ? 'idle' : 'wiring';
+      return {
+        ...state,
+        mode: nextMode,
+        wireDraft: null,
+        status: nextMode === 'idle' ? 'Wire draft aborted' : 'Wire mode — click a terminal or grid point to start a wire',
+      };
+    }
 
-    case 'WIRE_DRAFT_END':
+    case 'WIRE_DRAFT_END': {
       if (!state.wireDraft) return state;
-      return { ...state, wireDraft: null, status: 'Wire mode — click or press Enter to draw the next wire' };
+      const nextMode = state.wireDraft.autoReturnToIdle ? 'idle' : 'wiring';
+      return {
+        ...state,
+        mode: nextMode,
+        wireDraft: null,
+        status: nextMode === 'idle' ? '' : 'Wire mode — click or press Enter to draw the next wire',
+      };
+    }
 
     case 'RUBBER_START':
       return {
@@ -511,12 +573,30 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         .filter((c) => c.position[0] >= xMin && c.position[0] <= xMax && c.position[1] >= yMin && c.position[1] <= yMax)
         .map((c) => c.name);
 
+      const selectedWires = state.wires
+        .filter((w) => {
+          if (!w.points || w.points.length === 0) return false;
+          const p0 = w.points[0];
+          const pEnd = w.points[w.points.length - 1];
+          return (
+            p0[0] >= xMin && p0[0] <= xMax && p0[1] >= yMin && p0[1] <= yMax &&
+            pEnd[0] >= xMin && pEnd[0] <= xMax && pEnd[1] >= yMin && pEnd[1] <= yMax
+          );
+        })
+        .map((w) => w.index);
+
+      const statusParts: string[] = [];
+      if (selected.length) statusParts.push(`${selected.length} components`);
+      if (selectedWires.length) statusParts.push(`${selectedWires.length} wires`);
+
       return {
         ...state,
         mode: 'idle',
         rubber: null,
         selection: selected,
-        status: selected.length ? `${selected.length} components selected` : '',
+        selectedWire: selectedWires.length === 1 ? selectedWires[0] : null,
+        selectedWires,
+        status: statusParts.length ? `${statusParts.join(', ')} selected` : '',
       };
     }
 
@@ -537,7 +617,24 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
       }
 
       const connectedWirePoints: ConnectedWirePoint[] = [];
+      const draggedWires: DraggedWireInfo[] = [];
+
       state.wires.forEach((wire, wireIndex) => {
+        if (!wire.points || wire.points.length === 0) return;
+        const startPt = wire.points[0];
+        const endPt = wire.points[wire.points.length - 1];
+        const startMoves = movedTerminalSet.has(`${startPt[0]},${startPt[1]}`);
+        const endMoves = movedTerminalSet.has(`${endPt[0]},${endPt[1]}`);
+
+        if (startMoves || endMoves) {
+          draggedWires.push({
+            wireIndex: wire.index,
+            originalPoints: wire.points.map((pt) => [...pt]),
+            startMoves,
+            endMoves,
+          });
+        }
+
         wire.points.forEach((pt, pointIndex) => {
           if (movedTerminalSet.has(`${pt[0]},${pt[1]}`)) {
             connectedWirePoints.push({
@@ -553,7 +650,14 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
       return {
         ...state,
         mode: 'dragging',
-        drag: { origins, startX: action.x, startY: action.y, connectedWirePoints },
+        drag: {
+          origins,
+          startX: action.x,
+          startY: action.y,
+          connectedWirePoints,
+          draggedWires,
+          originalWires: state.wires.map((w) => ({ ...w, points: w.points.map((pt) => [...pt]) })),
+        },
       };
     }
 
@@ -562,6 +666,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
       const dx = action.x - state.drag.startX;
       const dy = action.y - state.drag.startY;
       const origins = state.drag.origins;
+      const draggedWires = state.drag.draggedWires || [];
       const connected = state.drag.connectedWirePoints;
 
       const components = state.components.map((c) => {
@@ -574,7 +679,20 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         return c;
       });
 
+      const draggedMap = new Map<number, DraggedWireInfo>();
+      for (const dw of draggedWires) {
+        draggedMap.set(dw.wireIndex, dw);
+      }
+
       const wires = state.wires.map((wire, wireIndex) => {
+        const dw = draggedMap.get(wire.index);
+        if (dw) {
+          const startDelta = dw.startMoves ? { dx, dy } : { dx: 0, dy: 0 };
+          const endDelta = dw.endMoves ? { dx, dy } : { dx: 0, dy: 0 };
+          const newPoints = routeMovedWire(dw.originalPoints, startDelta, endDelta);
+          return { ...wire, points: newPoints };
+        }
+
         const points = wire.points.map((pt) => [...pt]);
         let changed = false;
         for (const cp of connected) {
