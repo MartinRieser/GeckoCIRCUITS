@@ -134,6 +134,13 @@ export type Action =
   | { type: 'GHOST_ROTATE'; ccw?: boolean }
   | { type: 'CANCEL' }
   | { type: 'COMPONENT_UPSERT'; component: EditorComponent; version: number }
+  | {
+      type: 'ROTATE_COMPONENT';
+      name: string;
+      orientation: number;
+      wires?: EditorWire[];
+      version?: number;
+    }
   | { type: 'COMPONENT_DELETED'; name: string; version: number }
   | { type: 'WIRE_CREATED'; wire: EditorWire; version: number }
   | { type: 'WIRE_PATCHED'; index: number; points: number[][]; label: string; version: number }
@@ -304,6 +311,19 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         components,
         modelVersion: action.version,
         status: `${action.component.name} updated`,
+      };
+    }
+
+    case 'ROTATE_COMPONENT': {
+      const components = state.components.map((c) =>
+        c.name === action.name ? { ...c, orientation: action.orientation } : c,
+      );
+      return {
+        ...state,
+        components,
+        wires: action.wires ?? state.wires,
+        modelVersion: action.version ?? state.modelVersion,
+        status: `${action.name} rotated`,
       };
     }
 

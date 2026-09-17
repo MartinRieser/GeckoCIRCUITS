@@ -300,4 +300,74 @@ public class NetlistBuilderTest {
         assertEquals(netlist.getNodeY(0), netlist.getNodeY(1));
         assertEquals(1, netlist.getVoltageSourceMax());
     }
+
+    @Test
+    public void testOpticallyDisconnectedComponentWithStaleLabelsTreatsAsOpenCircuit() {
+        CircuitModel model = new CircuitModel();
+        // V1 at (10,10) WEST_EAST: terminals at (8,10) and (12,10)
+        CircuitModel.ComponentData v1 = component(4, "V1", 10, 10, 502);
+        v1.setTerminalXLabels(new String[]{"net_a"});
+        v1.setTerminalYLabels(new String[]{"0"});
+        model.addCircuitComponent(v1);
+
+        // R1 at (30,30) WEST_EAST: terminals at (28,30) and (32,30)
+        // R1 still has stale export labels matching V1
+        CircuitModel.ComponentData r1 = component(1, "R1", 30, 30, 502);
+        r1.setTerminalXLabels(new String[]{"net_a"});
+        r1.setTerminalYLabels(new String[]{"0"});
+        model.addCircuitComponent(r1);
+
+        // Schematic has LK wire connected only to V1
+        model.getConnections().add(new CircuitModel.ConnectionData("LK", dense("8 10 9 10 10 10 11 10 12 10")));
+
+        CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
+
+        // R1 is floating in space: its terminals have optically NO connection
+        assertNotEquals(netlist.getNodeX(0), netlist.getNodeX(1),
+                "Optically disconnected R1 must not connect to V1 via stale labels");
+        assertNotEquals(netlist.getNodeY(0), netlist.getNodeY(1),
+                "Optically disconnected terminal must not connect to ground via stale labels");
+    }
+
+    @Test
+    public void testCoincidentTerminalsWithoutWireConnectDirectly() {
+        CircuitModel model = new CircuitModel();
+        // R1 at (10,10) WEST_EAST: output at (12,10)
+        model.addCircuitComponent(component(1, "R1", 10, 10, 502));
+        // R2 at (14,10) WEST_EAST: input at (12,10) - touching R1's output directly
+        model.addCircuitComponent(component(1, "R2", 14, 10, 502));
+        // An LK wire touching R1's input at (8,10)
+        model.getConnections().add(new CircuitModel.ConnectionData("LK", dense("7 10 8 10")));
+
+        CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
+
+        assertEquals(netlist.getNodeY(0), netlist.getNodeX(1),
+                "Coincident pin-to-pin terminals must connect directly without wire");
+    }
+
+    @Test
+    public void testRotatingComponentAwayBreaksOpticalConnection() {
+        CircuitModel model = new CircuitModel();
+        // V1 at (10,10) WEST_EAST: output at (12,10)
+        CircuitModel.ComponentData v1 = component(4, "V1", 10, 10, 502);
+        v1.setTerminalXLabels(new String[]{"0"});
+        v1.setTerminalYLabels(new String[]{"net_out"});
+        model.addCircuitComponent(v1);
+
+        // Wire from V1 output (12,10) to (18,10)
+        model.getConnections().add(new CircuitModel.ConnectionData("LK", dense("12 10 13 10 14 10 15 10 16 10 17 10 18 10")));
+
+        // R1 rotated to NORTH_SOUTH (503) at (20,10): terminals at (20,8) and (20,12)
+        // Wire ends at (18,10), so R1's terminals no longer touch the wire
+        CircuitModel.ComponentData r1 = component(1, "R1", 20, 10, 503);
+        r1.setTerminalXLabels(new String[]{"net_out"});
+        r1.setTerminalYLabels(new String[]{"0"});
+        model.addCircuitComponent(r1);
+
+        CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
+
+        assertNotEquals(netlist.getNodeY(0), netlist.getNodeX(1),
+                "Rotated component whose terminals do not touch wire must be treated as open/interrupted");
+    }
 }
+

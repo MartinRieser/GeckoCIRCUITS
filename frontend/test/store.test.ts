@@ -110,6 +110,24 @@ describe('store: component upsert/delete', () => {
     expect(state.components.map((c) => c.name)).toEqual(['R1']);
     expect(state.selection).toEqual([]);
   });
+
+  it('rotates component and updates attached wires in store', () => {
+    const initialWithWire = {
+      ...snapshot,
+      wires: [{ index: 0, type: 'LK', points: [[10, 8], [5, 8]], label: '' }],
+    };
+    let state = editorReducer(initialState, { type: 'SNAPSHOT', snapshot: initialWithWire });
+    state = editorReducer(state, {
+      type: 'ROTATE_COMPONENT',
+      name: 'R1',
+      orientation: 502,
+      wires: [{ index: 0, type: 'LK', points: [[8, 10], [5, 8]], label: '' }],
+      version: 5,
+    });
+    expect(state.components.find((c) => c.name === 'R1')?.orientation).toBe(502);
+    expect(state.wires[0].points[0]).toEqual([8, 10]);
+    expect(state.modelVersion).toBe(5);
+  });
 });
 
 describe('store: selection and rubber band', () => {

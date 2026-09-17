@@ -275,6 +275,40 @@ class CircuitEditServiceTest {
     }
 
     @Test
+    void patchComponent_rotationShiftsWirePointsOnItsTerminals() {
+        // LK resistor at (30,30), orientation 503 (NORTH_SOUTH):
+        // terminals at (30,28) input and (30,32) output
+        service.createComponent(circuitId,
+                new ComponentCreateRequest("LK", 1, "R_rot", 30, 30, 503, null));
+        service.createConnection(circuitId,
+                new ConnectionCreateRequest("LK", new int[][]{{20, 28}, {30, 28}}, "w_in"));
+        service.createConnection(circuitId,
+                new ConnectionCreateRequest("LK", new int[][]{{30, 32}, {40, 32}}, "w_out"));
+
+        // Rotate to WEST_EAST (502): terminals become (28,30) input and (32,30) output
+        service.patchComponent(circuitId, "R_rot", new ComponentPatchRequest(null, null, 502, null, null));
+
+        assertArrayEquals(new int[][]{{20, 28}, {28, 30}}, wireByLabel("w_in").getPoints(),
+                "wire on input terminal must follow rotation to (28,30)");
+        assertArrayEquals(new int[][]{{32, 30}, {40, 32}}, wireByLabel("w_out").getPoints(),
+                "wire on output terminal must follow rotation to (32,30)");
+
+        // Undo restores pre-rotation positions
+        service.undo(circuitId);
+        assertArrayEquals(new int[][]{{20, 28}, {30, 28}}, wireByLabel("w_in").getPoints(),
+                "undo must restore input wire to (30,28)");
+        assertArrayEquals(new int[][]{{30, 32}, {40, 32}}, wireByLabel("w_out").getPoints(),
+                "undo must restore output wire to (30,32)");
+
+        // Redo re-applies rotation positions
+        service.redo(circuitId);
+        assertArrayEquals(new int[][]{{20, 28}, {28, 30}}, wireByLabel("w_in").getPoints(),
+                "redo must re-apply input wire to (28,30)");
+        assertArrayEquals(new int[][]{{32, 30}, {40, 32}}, wireByLabel("w_out").getPoints(),
+                "redo must re-apply output wire to (32,30)");
+    }
+
+    @Test
     void patchComponent_moveShiftsSingleTerminalControlWires() {
         // catalog signal source (1004) at (8,14), orientation 503: single
         // output terminal at (10,14) — control terminals flow horizontally

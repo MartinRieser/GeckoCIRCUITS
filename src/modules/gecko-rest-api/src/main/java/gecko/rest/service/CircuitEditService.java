@@ -86,17 +86,14 @@ public class CircuitEditService {
      * the owning connection and point index plus the pre-move coordinates,
      * so undo can restore and redo can re-apply the shift.
      */
-    record WirePointRef(int connectionIndex, int pointIndex, int originalX, int originalY) {}
+    record WirePointRef(int connectionIndex, int pointIndex, int originalX, int originalY, int newX, int newY) {}
 
     /**
      * Patches position, orientation, name and/or parameters of a component.
      *
-     * <p>When the component moves, wire points that sit exactly on one of its
-     * terminals (see {@link ComponentTerminals#terminalsOf}) are shifted by the
-     * same delta, keeping wires attached like in the classic editor. Undo
-     * restores both the component and the affected wire points; redo re-applies
-     * the move including the wire shift. Renaming requires the new name to be
-     * free; all position values are snapped to the circuit grid.</p>
+     * <p>When the component moves or rotates, wire points that sit exactly on one of its
+     * terminals (see {@link ComponentTerminals#terminalsOf}) are shifted to the new
+     * terminal positions.</p>
      */
     public CircuitChangeMessage patchComponent(String circuitId, String name, ComponentPatchRequest request) {
         CircuitState state = requireState(circuitId);
@@ -121,20 +118,26 @@ public class CircuitEditService {
 
             int dx = newX - beforePosition[0];
             int dy = newY - beforePosition[1];
+            boolean orientationChanged = newOrientation != beforeOrientation;
             List<WirePointRef> wireEdits = new ArrayList<>();
 
-            if (dx != 0 || dy != 0) {
+            if (dx != 0 || dy != 0 || orientationChanged) {
                 List<int[]> oldTerminals = ComponentTerminals.terminalsOf(comp, beforePosition, beforeOrientation);
-                for (int wIdx = 0; wIdx < model.getConnections().size(); wIdx++) {
-                    CircuitModel.ConnectionData conn = model.getConnections().get(wIdx);
-                    int[][] pts = conn.getPoints();
-                    if (pts == null) continue;
-                    for (int pIdx = 0; pIdx < pts.length; pIdx++) {
-                        for (int[] term : oldTerminals) {
-                            if (pts[pIdx][0] == term[0] && pts[pIdx][1] == term[1]) {
-                                wireEdits.add(new WirePointRef(wIdx, pIdx, pts[pIdx][0], pts[pIdx][1]));
-                                pts[pIdx][0] += dx;
-                                pts[pIdx][1] += dy;
+                List<int[]> newTerminals = ComponentTerminals.terminalsOf(comp, new int[]{newX, newY}, newOrientation);
+                for (int t = 0; t < oldTerminals.size() && t < newTerminals.size(); t++) {
+                    int[] oldT = oldTerminals.get(t);
+                    int[] newT = newTerminals.get(t);
+                    if (oldT[0] == newT[0] && oldT[1] == newT[1]) continue;
+
+                    for (int wIdx = 0; wIdx < model.getConnections().size(); wIdx++) {
+                        CircuitModel.ConnectionData conn = model.getConnections().get(wIdx);
+                        int[][] pts = conn.getPoints();
+                        if (pts == null) continue;
+                        for (int pIdx = 0; pIdx < pts.length; pIdx++) {
+                            if (pts[pIdx][0] == oldT[0] && pts[pIdx][1] == oldT[1]) {
+                                wireEdits.add(new WirePointRef(wIdx, pIdx, oldT[0], oldT[1], newT[0], newT[1]));
+                                pts[pIdx][0] = newT[0];
+                                pts[pIdx][1] = newT[1];
                                 break;
                             }
                         }
@@ -175,8 +178,8 @@ public class CircuitEditService {
                             if (ref.connectionIndex < model.getConnections().size()) {
                                 int[][] pts = model.getConnections().get(ref.connectionIndex).getPoints();
                                 if (pts != null && ref.pointIndex < pts.length) {
-                                    pts[ref.pointIndex][0] = ref.originalX + dx;
-                                    pts[ref.pointIndex][1] = ref.originalY + dy;
+                                    pts[ref.pointIndex][0] = ref.newX;
+                                    pts[ref.pointIndex][1] = ref.newY;
                                 }
                             }
                         }

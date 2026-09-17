@@ -605,19 +605,6 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                         );
                       })}
 
-                      {/* Intermediate corner handles */}
-                      {corners.slice(1, -1).map((pt, cIdx) => (
-                        <rect
-                          key={`corner-${cIdx}`}
-                          x={pt[0] * dpix - 3.5}
-                          y={pt[1] * dpix - 3.5}
-                          width={7}
-                          height={7}
-                          className="wire-corner-handle"
-                          pointerEvents="none"
-                        />
-                      ))}
-
                       {/* Start Endpoint handle */}
                       <circle
                         cx={corners[0][0] * dpix}

@@ -13,10 +13,10 @@ import type {
   SimulationDefaults,
   SimulationStatus,
 } from '../model/types';
-import { nextOrientation } from '../model/geometry';
+import { nextOrientation, terminalPositions } from '../model/geometry';
 import { CTRL_TYPE } from '../model/componentSchema';
 import { BLANK_CIRCUIT_IPES } from '../model/examples';
-import { flipRoute, densePoints } from '../canvas/WireRouter';
+import { flipRoute, densePoints, routeMovedWire } from '../canvas/WireRouter';
 
 export function useEditor() {
   const [state, dispatch] = useReducer(editorReducer, initialState);
@@ -315,19 +315,68 @@ export function useEditor() {
       if (!comp) return;
 
       const nextOrient = nextOrientation(comp.orientation);
+      const oldTerms = terminalPositions(comp);
+      const newTerms = terminalPositions({ ...comp, orientation: nextOrient });
+
+      const terminalDeltas = new Map<string, { dx: number; dy: number }>();
+      oldTerms.input.forEach((oldPt, i) => {
+        const newPt = newTerms.input[i];
+        if (newPt) {
+          terminalDeltas.set(`${oldPt.x},${oldPt.y}`, {
+            dx: newPt.x - oldPt.x,
+            dy: newPt.y - oldPt.y,
+          });
+        }
+      });
+      oldTerms.output.forEach((oldPt, j) => {
+        const newPt = newTerms.output[j];
+        if (newPt) {
+          terminalDeltas.set(`${oldPt.x},${oldPt.y}`, {
+            dx: newPt.x - oldPt.x,
+            dy: newPt.y - oldPt.y,
+          });
+        }
+      });
+
+      const wirePatches: { index: number; points: number[][] }[] = [];
+      const updatedWires = stateRef.current.wires.map((wire) => {
+        if (!wire.points || wire.points.length < 2) return wire;
+        const startPt = wire.points[0];
+        const endPt = wire.points[wire.points.length - 1];
+        const startDelta = terminalDeltas.get(`${startPt[0]},${startPt[1]}`) || { dx: 0, dy: 0 };
+        const endDelta = terminalDeltas.get(`${endPt[0]},${endPt[1]}`) || { dx: 0, dy: 0 };
+
+        if (startDelta.dx !== 0 || startDelta.dy !== 0 || endDelta.dx !== 0 || endDelta.dy !== 0) {
+          const newPoints = routeMovedWire(wire.points, startDelta, endDelta);
+          wirePatches.push({ index: wire.index, points: newPoints });
+          return { ...wire, points: newPoints };
+        }
+        return wire;
+      });
+
+      dispatch({
+        type: 'ROTATE_COMPONENT',
+        name,
+        orientation: nextOrient,
+        wires: updatedWires,
+      });
+
       api
         .patchComponent(circuitId, name, { orientation: nextOrient })
-        .then((msg) => {
+        .then(async (msg) => {
           versionRef.current = msg.modelVersion;
-          dispatch({
-            type: 'COMPONENT_UPSERT',
-            component: { ...comp, orientation: nextOrient },
-            version: msg.modelVersion,
-          });
+          if (wirePatches.length > 0) {
+            await Promise.all(
+              wirePatches.map((wp) =>
+                api.patchConnection(circuitId, wp.index, { points: wp.points }),
+              ),
+            );
+          }
+          await refresh(circuitId);
         })
         .catch(reportError);
     },
-    [reportError],
+    [refresh, reportError],
   );
 
   const deleteComponent = useCallback(

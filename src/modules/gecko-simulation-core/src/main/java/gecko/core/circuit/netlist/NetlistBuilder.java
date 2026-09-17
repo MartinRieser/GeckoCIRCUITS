@@ -125,19 +125,28 @@ public class NetlistBuilder {
             return buildEmpty(0, 0, 0);
         }
 
+        List<CircuitModel.ConnectionData> connections = model.getConnections();
+        boolean hasWires = hasSchematicWires(connections);
+        boolean hasComplexComponents = hasNonStandardPinComponents(allComponents) || !model.getThermalComponents().isEmpty();
+
+        // If circuit has schematic wires and only standard-pin electrical components,
+        // physical wire geometry strictly governs topology
+        if (hasWires && !hasComplexComponents) {
+            return buildFromWiresAndComponents(allComponents, connections);
+        }
+
         // Count how many terminals have real (non-sentinel) net labels from classic file export
         long explicitLabelCount = allComponents.stream()
                 .flatMap(c -> Stream.concat(Arrays.stream(c.getTerminalXLabels()), Arrays.stream(c.getTerminalYLabels())))
                 .filter(NetlistBuilder::isValidLabel)
                 .count();
 
-        // If circuit has explicit terminal labels on components (from classic GeckoCIRCUITS file export),
-        // use label matching with series terminal coordinate sharing
+        // If circuit has explicit terminal labels on components (from classic GeckoCIRCUITS file export)
+        // or complex-pin components, use label matching with series terminal coordinate sharing
         if (explicitLabelCount > 0) {
-            return buildFromComponentsWithLabels(allComponents, model.getConnections());
+            return buildFromComponentsWithLabels(allComponents, connections);
         }
 
-        List<CircuitModel.ConnectionData> connections = model.getConnections();
         if (connections != null && !connections.isEmpty()) {
             return buildFromWiresAndComponents(allComponents, connections);
         }
@@ -177,6 +186,15 @@ public class NetlistBuilder {
         }
 
         // 2. Map component terminals to points
+        // Count how many terminals reside at each GridPoint to detect coincident (pin-to-pin) terminals
+        Map<GridPoint, Integer> terminalUsageCount = new HashMap<>();
+        for (CircuitModel.ComponentData comp : components) {
+            GridPoint[] terms = computeComponentTerminals(comp);
+            for (int t = 0; t < 2; t++) {
+                terminalUsageCount.put(terms[t], terminalUsageCount.getOrDefault(terms[t], 0) + 1);
+            }
+        }
+
         List<CircuitModel.ComponentData> branchComponents = new ArrayList<>();
         for (CircuitModel.ComponentData comp : components) {
             int typ = comp.getType();
@@ -186,15 +204,24 @@ public class NetlistBuilder {
             for (int t = 0; t < 2; t++) {
                 String key = wireNets.netKey(terms[t]);
                 pointDs.find(key);
-                for (String l : t == 0 ? comp.getTerminalXLabels() : comp.getTerminalYLabels()) {
-                    if (isValidLabel(l)) {
-                        String lbl = l.trim();
-                        if (isGroundLabel(lbl)) {
-                            groundPoints.add(key);
-                        } else if (labelToKey.containsKey(lbl)) {
-                            pointDs.union(key, labelToKey.get(lbl));
-                        } else {
-                            labelToKey.put(lbl, key);
+
+                boolean touchesWire = wireNets.touchesWire(terms[t]);
+                boolean isCoincident = terminalUsageCount.getOrDefault(terms[t], 0) > 1;
+                boolean hasOpticalConnection = touchesWire || isCoincident;
+
+                // If terminal has no optical connection (floating in empty space), it must NOT be connected
+                // to any net by label! It remains an isolated open-circuit node.
+                if (hasOpticalConnection) {
+                    for (String l : t == 0 ? comp.getTerminalXLabels() : comp.getTerminalYLabels()) {
+                        if (isValidLabel(l)) {
+                            String lbl = l.trim();
+                            if (isGroundLabel(lbl)) {
+                                groundPoints.add(key);
+                            } else if (labelToKey.containsKey(lbl)) {
+                                pointDs.union(key, labelToKey.get(lbl));
+                            } else {
+                                labelToKey.put(lbl, key);
+                            }
                         }
                     }
                 }
@@ -359,6 +386,34 @@ public class NetlistBuilder {
             Integer wireId = pointToWireId.get(p);
             return wireId != null ? "W" + wireIds.find(wireId) : "P" + p.x + "," + p.y;
         }
+
+        boolean touchesWire(GridPoint p) {
+            return pointToWireId.containsKey(p);
+        }
+    }
+
+    private static boolean hasSchematicWires(List<CircuitModel.ConnectionData> connections) {
+        if (connections == null) return false;
+        for (CircuitModel.ConnectionData conn : connections) {
+            if (conn.getPoints() != null && conn.getPoints().length > 0) {
+                String type = conn.getType();
+                if (type == null || "LK".equalsIgnoreCase(type) || "THERMAL".equalsIgnoreCase(type)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasNonStandardPinComponents(List<CircuitModel.ComponentData> components) {
+        if (components == null) return false;
+        for (CircuitModel.ComponentData comp : components) {
+            // LK_OPV1 (22) is an op-amp with asymmetric 4-pin geometry that requires classic label mapping
+            if (comp.getType() == 22) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static WireNets buildWireNets(List<CircuitModel.ConnectionData> connections) {
@@ -368,7 +423,11 @@ public class NetlistBuilder {
         }
         List<List<GridPoint>> wires = new ArrayList<>();
         for (CircuitModel.ConnectionData conn : connections) {
-            if (!"LK".equalsIgnoreCase(conn.getType()) || conn.getPoints() == null) {
+            if (conn.getPoints() == null) {
+                continue;
+            }
+            String type = conn.getType();
+            if (type != null && !"LK".equalsIgnoreCase(type) && !"THERMAL".equalsIgnoreCase(type)) {
                 continue;
             }
             List<GridPoint> path = new ArrayList<>();

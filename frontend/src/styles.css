@@ -1188,10 +1188,6 @@ polyline.wire.selected {
   cursor: move;
 }
 
-.wire-corner-handle {
-  stroke-width: 1.5;
-}
-
 .wire-action-pill {
   position: absolute;
   display: flex;
