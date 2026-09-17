@@ -41,5 +41,6 @@ All packages are output to `dist/` at the repository root.
 ## CI Matrix Workflow
 The matrix packaging workflow is located at `.github/workflows/package-desktop.yml`.
 Triggers:
-- Tag push matching `v*` (automatically builds and publishes a GitHub Release).
-- Manual trigger via GitHub Actions `workflow_dispatch` (optional checkbox to publish release).
+- Tag push matching `classic-v*` (automatically builds and publishes a GitHub Release).
+- Push to branch `feature/desktop-packaging-jpackage`.
+- Manual trigger via GitHub Actions `workflow_dispatch` (requires a `version` input; optional `upload_release` checkbox to publish the release).

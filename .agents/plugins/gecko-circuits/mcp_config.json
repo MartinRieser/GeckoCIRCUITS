@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "gecko-mcp": {
+    "gecko-circuits": {
       "command": "python",
       "args": [
         "scripts/desktop/launch-mcp.py"

@@ -17,7 +17,7 @@
 - **Clean Refactoring**: Eliminate code duplication immediately (e.g., share utility methods across core and builders) rather than leaving duplicate logic in place.
 
 ## CI & GitHub Actions Standards
-- Maintain modern GitHub Actions compatible with Node 24 runners (`actions/checkout@v7`, `actions/setup-java@v5`, `actions/setup-python@v7`, `actions/upload-artifact@v7`, `actions/download-artifact@v8`, `softprops/action-gh-release@v3`).
+- Keep GitHub Actions consistent with current workflows (`actions/checkout@v4`, `actions/setup-java@v5`, `actions/setup-python@v5`, `actions/upload-artifact@v4`, `actions/download-artifact@v4`, `softprops/action-gh-release@v3`).
 
 ## Desktop Packaging
 - Local native packaging is executed via `scripts/package-desktop.bat` (Windows), `scripts/package-desktop.sh` (Linux/macOS), or `python scripts/package-desktop.py --type all`.
