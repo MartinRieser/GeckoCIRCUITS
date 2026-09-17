@@ -19,7 +19,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 GUI_MODULE_TARGET = PROJECT_ROOT / "src" / "modules" / "gecko-gui" / "target"
 ROOT_TARGET = PROJECT_ROOT / "target"
-RESOURCES_DIR = PROJECT_ROOT / "_build" / "resources"
+RESOURCES_DIR = PROJECT_ROOT / "resources" / "packaging"
 OUTPUT_DIR = PROJECT_ROOT / "dist"
 
 APP_NAME = "GeckoCIRCUITS"
