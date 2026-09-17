@@ -6,7 +6,7 @@
  *
  * Central keyboard interaction layer (P3) powered by keybindings.ts.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useEditor } from './hooks/useEditor';
 import { Sheet } from './canvas/Sheet';
 import { Palette } from './palette/Palette';
@@ -37,7 +37,13 @@ export function App() {
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<'schematic' | 'simulation'>('schematic');
   const [selectedScope, setSelectedScope] = useState<string>('all');
-  const [displayLayout, setDisplayLayout] = useState<'overlay' | 'stacked'>('overlay');
+  const [displayLayout, setDisplayLayout] = useState<'overlay' | 'stacked'>(() => {
+    return (localStorage.getItem('gecko-display-layout') as 'overlay' | 'stacked') || 'stacked';
+  });
+  const handleDisplayLayoutChange = useCallback((layout: 'overlay' | 'stacked') => {
+    setDisplayLayout(layout);
+    localStorage.setItem('gecko-display-layout', layout);
+  }, []);
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     return (localStorage.getItem('gecko-theme') as 'dark' | 'light') || 'dark';
   });
@@ -495,69 +501,90 @@ export function App() {
 
         {/* Center: Canvas Schematic Sheet / Simulation Workspace */}
         <main className="sheet-viewport">
-          {/* Active Tab Content */}
-          {activeWorkspaceTab === 'schematic' ? (
-            <>
-              <Sheet
-                state={state}
-                dispatch={dispatch}
-                actions={{
-                  placeGhost: actions.placeGhost,
-                  finishWire: actions.finishWire,
-                  commitMove: actions.commitMove,
-                  deleteSelection: actions.deleteSelection,
-                  rotateComponent: actions.rotateComponent,
-                  deleteComponent: actions.deleteComponent,
-                  deleteWire: actions.deleteWire,
-                  patchWirePoints: actions.patchWirePoints,
-                  flipWire: actions.flipWire,
-                  labelWire: actions.labelWire,
-                  openProperties: (name: string) => {
-                    actions.openProperties(name);
-                    setRightSidebarOpen(true);
-                  },
-                  openScopeTab: (name: string) => openScopeTab(name),
-                  toggleWireMode: actions.toggleWireMode,
-                  openCommandPalette: () => setCommandPaletteOpen(true),
-                }}
-              />
+          {/* Schematic Workspace Pane */}
+          <div
+            className="workspace-tab-pane"
+            style={{
+              display: activeWorkspaceTab === 'schematic' ? 'flex' : 'none',
+              flexDirection: 'column',
+              width: '100%',
+              height: '100%',
+              flex: 1,
+              minHeight: 0,
+            }}
+          >
+            <Sheet
+              state={state}
+              dispatch={dispatch}
+              actions={{
+                placeGhost: actions.placeGhost,
+                finishWire: actions.finishWire,
+                commitMove: actions.commitMove,
+                deleteSelection: actions.deleteSelection,
+                rotateComponent: actions.rotateComponent,
+                deleteComponent: actions.deleteComponent,
+                deleteWire: actions.deleteWire,
+                patchWirePoints: actions.patchWirePoints,
+                flipWire: actions.flipWire,
+                labelWire: actions.labelWire,
+                openProperties: (name: string) => {
+                  actions.openProperties(name);
+                  setRightSidebarOpen(true);
+                },
+                openScopeTab: (name: string) => openScopeTab(name),
+                toggleWireMode: actions.toggleWireMode,
+                openCommandPalette: () => setCommandPaletteOpen(true),
+              }}
+            />
 
-              {/* Quick Status Bar */}
-              <div className="status-bar">
-                <div className="status-left">
-                  <span className="status-circuit-name">
-                    {state.filename || 'No circuit open'}
+            {/* Quick Status Bar */}
+            <div className="status-bar">
+              <div className="status-left">
+                <span className="status-circuit-name">
+                  {state.filename || 'No circuit open'}
+                </span>
+                {state.modelVersion > 0 && (
+                  <span className="status-version">v{state.modelVersion}</span>
+                )}
+                {state.mode !== 'idle' && (
+                  <span className={`status-mode-pill ${state.mode}`}>
+                    {state.mode.toUpperCase()}
                   </span>
-                  {state.modelVersion > 0 && (
-                    <span className="status-version">v{state.modelVersion}</span>
-                  )}
-                  {state.mode !== 'idle' && (
-                    <span className={`status-mode-pill ${state.mode}`}>
-                      {state.mode.toUpperCase()}
-                    </span>
-                  )}
-                </div>
-                <div className="status-msg">{state.status}</div>
-                <div className="status-right">
-                  <span className="status-components-count">
-                    {state.components.length} components, {state.wires.length} wires
-                  </span>
-                </div>
+                )}
               </div>
-            </>
-          ) : (
+              <div className="status-msg">{state.status}</div>
+              <div className="status-right">
+                <span className="status-components-count">
+                  {state.components.length} components, {state.wires.length} wires
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Simulation & Scope Workspace Pane */}
+          <div
+            className="workspace-tab-pane"
+            style={{
+              display: activeWorkspaceTab === 'simulation' ? 'flex' : 'none',
+              flexDirection: 'column',
+              width: '100%',
+              height: '100%',
+              flex: 1,
+              minHeight: 0,
+            }}
+          >
             <ScopeViewTab
               selectedScope={selectedScope}
               components={state.components}
               results={simState.results}
               displayLayout={displayLayout}
-              onDisplayLayoutChange={setDisplayLayout}
+              onDisplayLayoutChange={handleDisplayLayoutChange}
               theme={theme}
               status={simState.status}
               filename={state.filename}
               scope={scope}
             />
-          )}
+          </div>
         </main>
 
         {/* Right Sidebar Resizer Handle (Active only when expanded) */}
@@ -578,44 +605,56 @@ export function App() {
           }}
         >
           {rightSidebarOpen ? (
-            activeWorkspaceTab === 'schematic' ? (
-              <PropertiesPanel
-                component={
-                  state.components.find(
-                    (c) =>
-                      c.name === state.panelFor ||
-                      (state.selection.length === 1 && c.name === state.selection[0]),
-                  ) || null
-                }
-                onRename={actions.rename}
-                onSetParameter={actions.setParameter}
-                onSetLabel={actions.setLabel}
-                onRotate={actions.rotateComponent}
-                onDelete={actions.deleteComponent}
-                onOpenScopeTab={(name) => openScopeTab(name)}
-                onCollapse={() => setRightSidebarOpen(false)}
-              />
-            ) : (
-              <SimulationPropertiesPanel
-                circuitId={state.circuitId}
-                status={simState.status}
-                progress={simState.progress}
-                defaults={simState.defaults}
-                errorMessage={simState.errorMessage}
-                components={state.components}
-                results={simState.results}
-                selectedScope={selectedScope}
-                onSelectScope={setSelectedScope}
-                displayLayout={displayLayout}
-                onDisplayLayoutChange={setDisplayLayout}
-                scope={scope}
-                onRunSimulation={actions.runSimulation}
-                onPauseSimulation={actions.pauseSimulation}
-                onResumeSimulation={actions.resumeSimulation}
-                onCancelSimulation={actions.cancelSimulation}
-                onCollapse={() => setRightSidebarOpen(false)}
-              />
-            )
+            <>
+              <div
+                style={{
+                  display: activeWorkspaceTab === 'schematic' ? 'contents' : 'none',
+                }}
+              >
+                <PropertiesPanel
+                  component={
+                    state.components.find(
+                      (c) =>
+                        c.name === state.panelFor ||
+                        (state.selection.length === 1 && c.name === state.selection[0]),
+                    ) || null
+                  }
+                  onRename={actions.rename}
+                  onSetParameter={actions.setParameter}
+                  onSetLabel={actions.setLabel}
+                  onRotate={actions.rotateComponent}
+                  onDelete={actions.deleteComponent}
+                  onOpenScopeTab={(name) => openScopeTab(name)}
+                  onCollapse={() => setRightSidebarOpen(false)}
+                />
+              </div>
+
+              <div
+                style={{
+                  display: activeWorkspaceTab === 'simulation' ? 'contents' : 'none',
+                }}
+              >
+                <SimulationPropertiesPanel
+                  circuitId={state.circuitId}
+                  status={simState.status}
+                  progress={simState.progress}
+                  defaults={simState.defaults}
+                  errorMessage={simState.errorMessage}
+                  components={state.components}
+                  results={simState.results}
+                  selectedScope={selectedScope}
+                  onSelectScope={setSelectedScope}
+                  displayLayout={displayLayout}
+                  onDisplayLayoutChange={handleDisplayLayoutChange}
+                  scope={scope}
+                  onRunSimulation={actions.runSimulation}
+                  onPauseSimulation={actions.pauseSimulation}
+                  onResumeSimulation={actions.resumeSimulation}
+                  onCancelSimulation={actions.cancelSimulation}
+                  onCollapse={() => setRightSidebarOpen(false)}
+                />
+              </div>
+            </>
           ) : (
             <div className="collapsed-strip" title="Click to expand Properties (Ctrl+I)">
               <button

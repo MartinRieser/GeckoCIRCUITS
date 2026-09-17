@@ -206,12 +206,7 @@ export function ScopeViewTab({
   } = ctrl;
 
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
-  const [currentLayout, setCurrentLayout] = useState<'overlay' | 'stacked'>(displayLayout);
   const [chartContainerRef, chartDimensions] = useContainerDimensions<HTMLDivElement>();
-
-  useEffect(() => {
-    setCurrentLayout(displayLayout);
-  }, [displayLayout]);
 
   const win = effectiveWindow(view, dataT0, dataT1);
 
@@ -325,7 +320,7 @@ export function ScopeViewTab({
 
               {/* Central Chart Viewport with responsive ResizeObserver */}
               <div className="dso-chart-container" ref={chartContainerRef}>
-                {currentLayout === 'stacked' ? (
+                {displayLayout === 'stacked' ? (
                   <FullScreenStackedChart
                     width={chartDimensions.width}
                     height={chartDimensions.height}
