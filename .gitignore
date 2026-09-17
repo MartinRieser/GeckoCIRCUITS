@@ -87,8 +87,13 @@ tools/parity/results/*.txt
 src/modules/gecko-gui/dependency-reduced-pom.xml
 
 # Desktop engine bundle (build output of scripts/desktop/build-engine.py)
+# (jars are covered by the global *.jar rule above)
 desktop/app/engine/runtime/
-desktop/app/engine/gecko-rest-api.jar
+desktop/app/engine/VERSION
+desktop/app/engine/gecko_c_block.h
+
+# Tauri generated ACL/capability schemas (regenerated on every build)
+desktop/app/gen/schemas/
 
 # Desktop dist output (launchers etc.)
 desktop/dist/

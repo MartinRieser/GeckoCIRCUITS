@@ -1236,7 +1236,6 @@ dependencies = [
 name = "gecko-desktop"
 version = "1.0.0"
 dependencies = [
- "base64 0.22.1",
  "gecko-engine",
  "serde",
  "serde_json",
