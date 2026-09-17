@@ -19,7 +19,7 @@ Deploy and test the REST API with Docker:
 docker-compose up -d
 
 # Check health
-curl http://localhost:8080/actuator/health
+curl http://localhost:8080/gecko/api/health
 
 # View API documentation
 # Open http://localhost:8080/swagger-ui.html in your browser
@@ -949,7 +949,7 @@ curl -X POST http://localhost:8080/api/v1/simulations \
 docker-compose up -d
 
 # Manual Docker run
-docker run -p 8080:8080 gecko-rest-api:latest
+docker run -p 8080:8080 geckocircuits/rest-api:latest
 ```
 
 ## See Also

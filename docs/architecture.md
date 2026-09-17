@@ -367,7 +367,7 @@ TOPIC  /topic/simulations/{id}  Real-time simulation progress
 - 224 tests passing
 
 **Docker Support:**
-- Multi-stage Dockerfile using Alpine JRE 21 (~180MB image)
+- Multi-stage Dockerfile using Alpine JRE 25 (~180MB image)
 - `docker-compose.yml` for local development
 - Production-ready for cloud deployment (AWS ECS, Kubernetes, Cloud Run)
 

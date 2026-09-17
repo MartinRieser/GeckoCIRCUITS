@@ -1,0 +1,11 @@
+# Docker build context for docker/Dockerfile.api (context: src/modules).
+# Whitelist only what the build needs; everything else stays out of the
+# context (keeps the daemon upload small and the build cache stable).
+*
+!gecko-simulation-core/pom.xml
+!gecko-simulation-core/src
+!gecko-rest-api/pom.xml
+!gecko-rest-api/src
+
+# never ship tests (inside the whitelisted module trees)
+**/src/test/
