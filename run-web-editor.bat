@@ -75,7 +75,12 @@ if not exist "%JAVAW_EXE%" set "JAVAW_EXE=%JAVA_EXE%"
 set "REBUILD=0"
 if /i "%~1"=="-rebuild" set "REBUILD=1"
 if /i "%~1"=="--rebuild" set "REBUILD=1"
-if /i "%~1"=="/r" set "REBUILD=1"
+set "CIRCUIT_FILE="
+if not "%~1"=="" if not "%~1"=="-rebuild" if not "%~1"=="--rebuild" if not "%~1"=="/r" (
+    set "CIRCUIT_FILE=%~1"
+    echo [INFO] Target circuit: %~1
+    echo [INFO] In the web editor window, select File ^> Open or drag-and-drop the file onto the canvas.
+)
 
 if !REBUILD! equ 1 (
     echo [INFO] Stopping running server on port %PORT% for rebuild...

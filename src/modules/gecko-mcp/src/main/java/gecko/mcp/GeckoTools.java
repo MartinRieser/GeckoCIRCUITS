@@ -90,16 +90,18 @@ final class GeckoTools {
                         + "Returns detected Java version, jar locations, and engine capabilities.",
                 objectSchema(properties(), null),
                 args -> {
-                    Path guiJar = Path.of("src", "modules", "gecko-gui", "target",
-                            "gecko-1.0-jar-with-dependencies.jar");
+                    Path engineJar = Path.of("src", "modules", "gecko-rest-api", "target",
+                            "gecko-rest-api-1.0.0.jar");
                     Map<String, Object> status = new LinkedHashMap<>();
                     status.put("status", "READY");
                     status.put("platform", System.getProperty("os.name"));
                     status.put("java_version", System.getProperty("java.version"));
                     status.put("java_home", System.getProperty("java.home"));
                     status.put("workspace_root", IpesSupport.workspaceRoot().toString());
-                    status.put("gui_jar_exists", Files.exists(guiJar));
-                    status.put("gui_jar_path", guiJar.toAbsolutePath().toString());
+                    status.put("gui_jar_exists", false);
+                    status.put("gui_jar_path", "retired");
+                    status.put("engine_jar_exists", Files.exists(engineJar));
+                    status.put("engine_jar_path", engineJar.toAbsolutePath().toString());
                     status.put("rest_api_url", "http://localhost:8080/gecko/api/health");
                     status.put("rest_api_status",
                             "Direct Headless Engine (bundled; REST not required)");

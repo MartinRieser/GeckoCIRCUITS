@@ -96,16 +96,6 @@ public class LegacySimulationBackend {
         if (configured != null && !configured.isBlank()) {
             return Files.isRegularFile(Path.of(configured)) ? configured : null;
         }
-        String[] candidates = {
-                "src/modules/gecko-gui/target/gecko-1.0-jar-with-dependencies.jar",
-                "../gecko-gui/target/gecko-1.0-jar-with-dependencies.jar",
-                "gecko-gui/target/gecko-1.0-jar-with-dependencies.jar"
-        };
-        for (String candidate : candidates) {
-            if (Files.isRegularFile(Path.of(candidate))) {
-                return candidate;
-            }
-        }
         return null;
     }
 

@@ -104,7 +104,7 @@ try {
     $restJar = Join-Path $script:RepoRoot 'src\modules\gecko-rest-api\target\gecko-rest-api-1.0.0.jar'
     if (-not (Test-Path $guiJar) -or -not (Test-Path $restJar)) {
         Write-Host 'building engine jars (skipping tests)...'
-        & mvn -q -f (Join-Path $script:RepoRoot 'pom.xml') package '-pl' 'src/modules/gecko-gui,src/modules/gecko-rest-api' '-am' '-DskipTests' '-Djacoco.skip=true' '-Dcheckstyle.skip=true' '-Dpmd.skip=true' '-Dspotbugs.skip=true' '-o'
+        & mvn -q -f (Join-Path $script:RepoRoot 'pom.xml') package '-pl' 'src/modules/gecko-rest-api' '-am' '-DskipTests' '-Djacoco.skip=true' '-Dcheckstyle.skip=true' '-Dpmd.skip=true' '-Dspotbugs.skip=true' '-o'
         if ($LASTEXITCODE -ne 0) { throw 'maven package failed' }
     }
 

@@ -65,6 +65,9 @@ if [[ -z "$JAVA_VERSION" || "$JAVA_VERSION" -lt 25 ]]; then
     echo "[ERROR] Java 25 or later is required (found: ${JAVA_VERSION:-none} at ${JAVA_BIN:-PATH})."
     echo "Please set JAVA_HOME or update PATH to point to JDK 25+."
     exit 1
+if [[ -n "$1" ]]; then
+    echo "[INFO] Target circuit: $1"
+    echo "[INFO] In the web editor window, select File > Open or drag-and-drop the file onto the canvas."
 fi
 
 # 2. Check and build REST JAR if missing

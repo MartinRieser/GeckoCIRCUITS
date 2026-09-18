@@ -392,16 +392,16 @@ mkdocs gh-deploy --force                   # Deploy to GitHub Pages
 - Checkstyle: Custom config `checkstyle.xml` (150-char lines, relaxed naming), 4,632 violations
 
 ### 7.3 Release Automation
-GitHub Actions workflows automate the release process:
-- **`release.yml`** - Automated release triggered by version tags (v*), builds all 5 platforms in parallel, creates GitHub release
-- **`build-windows.yml`**, **`build-macos.yml`**, **`build-linux-wsl.yml`** - Manual dispatch workflows for testing individual platform builds
+GitHub Actions workflows automate the release and CI process:
+- **`desktop.yml`** - Automated Tauri 2 desktop application matrix build (Windows NSIS/MSI, macOS DMG, Linux DEB/RPM/AppImage) with bundled Java sidecar runtime and MCP server.
+- **`ci.yml`** - Pull request and main branch automated test verification across `gecko-simulation-core`, `gecko-rest-api`, and `gecko-mcp`.
+- **`docs.yml`** - Documentation deployment to GitHub Pages via MkDocs Material.
 
-**Distribution packages:**
-- Windows: `GeckoCIRCUITS-*-windows.zip` (run-gecko.bat)
-- Linux: `GeckoCIRCUITS-*-linux.zip` (run-gecko-linux.sh)
-- macOS: `GeckoCIRCUITS-*-macos.zip` (run-gecko-macos.sh)
-- WSL: `GeckoCIRCUITS-*-wsl.zip` (run-gecko-wsl.sh with X11 support)
-- Examples: `GeckoCIRCUITS-*-examples.zip` (circuit files + tutorials)
+**Distribution Packages:**
+- Windows: `GeckoCIRCUITS_<version>_x64-setup.exe` (NSIS) and `.msi`
+- macOS: `GeckoCIRCUITS_<version>_x64.dmg` / `_aarch64.dmg`
+- Linux: `gecko-circuits_<version>_amd64.deb`, `*.rpm`, `*.AppImage`
+- Zero-install Web Editor: `run-web-editor.bat` (Windows) / `run-web-editor.sh` (Linux/macOS)
 
 For detailed release planning, version strategy, and issue tracking, see [Roadmap](roadmap.md).
 

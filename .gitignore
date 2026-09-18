@@ -84,7 +84,6 @@ tools/parity/results/*.txt
 !tools/parity/results/20260905-133143.txt
 
 # maven-shade byproduct (fat jar build)
-src/modules/gecko-gui/dependency-reduced-pom.xml
 
 # Desktop engine bundle (build output of scripts/desktop/build-engine.py)
 # (jars are covered by the global *.jar rule above)

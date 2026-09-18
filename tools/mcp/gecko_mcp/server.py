@@ -43,15 +43,10 @@ def find_gui_jar(workspace_root: Path) -> Path:
         if p.exists():
             return p
 
-    target_dir = workspace_root / "src" / "modules" / "gecko-gui" / "target"
-    default_jar = target_dir / "gecko-1.0-jar-with-dependencies.jar"
+    target_dir = workspace_root / "src" / "modules" / "gecko-rest-api" / "target"
+    default_jar = target_dir / "gecko-rest-api-1.0.0.jar"
     if default_jar.exists():
         return default_jar
-
-    if target_dir.exists():
-        jars = sorted(target_dir.glob("gecko-*-jar-with-dependencies.jar"), reverse=True)
-        if jars:
-            return jars[0]
 
     return default_jar
 
