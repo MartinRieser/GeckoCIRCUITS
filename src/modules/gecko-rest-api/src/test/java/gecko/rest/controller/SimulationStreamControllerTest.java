@@ -1,6 +1,7 @@
 package gecko.rest.controller;
 
 import gecko.rest.service.SimulationService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -20,6 +21,13 @@ public class SimulationStreamControllerTest {
     void setUp() {
         simulationService = new SimulationService(new gecko.rest.service.CircuitFileService());
         testSimulationId = "test-sim-123e4567-e89b-12d3-a456-426614174000";
+    }
+
+    @AfterEach
+    void tearDown() {
+        if (simulationService != null) {
+            simulationService.shutdown();
+        }
     }
 
     /**

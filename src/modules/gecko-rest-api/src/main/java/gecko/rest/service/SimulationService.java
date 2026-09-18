@@ -66,7 +66,6 @@ public class SimulationService {
     private final Map<String, SimulationResponse> simulationStore = new ConcurrentHashMap<>();
     private final Map<String, HeadlessSimulationEngine> runningEngines = new ConcurrentHashMap<>();
     private final Map<String, List<SseEmitter>> progressEmitters = new ConcurrentHashMap<>();
-    private final Map<String, Double> legacyProgress = new ConcurrentHashMap<>();
     private final Map<String, BatchSimulationResponse> batchStore = new ConcurrentHashMap<>();
     private final ExecutorService executorService = Executors.newFixedThreadPool(
             Math.max(2, Runtime.getRuntime().availableProcessors() - 1)
@@ -77,18 +76,10 @@ public class SimulationService {
     private WebSocketProgressService webSocketProgressService;
 
     private final CircuitFileService circuitFileService;
-    private final LegacySimulationBackend legacySimulationBackend;
 
     @Autowired
-    public SimulationService(CircuitFileService circuitFileService,
-                             @Autowired(required = false) LegacySimulationBackend legacySimulationBackend) {
-        this.circuitFileService = circuitFileService;
-        this.legacySimulationBackend = legacySimulationBackend;
-    }
-
-    /** Test convenience: no legacy backend. */
     public SimulationService(CircuitFileService circuitFileService) {
-        this(circuitFileService, null);
+        this.circuitFileService = circuitFileService;
     }
 
     /**
@@ -255,42 +246,41 @@ public class SimulationService {
                 return;
             }
 
-            boolean legacyBackend = "legacy".equalsIgnoreCase(request.getBackend());
+            if ("legacy".equalsIgnoreCase(request.getBackend())) {
+                applyFailureResult(response, "The classic GeckoCIRCUITS Swing backend has been retired in v1.0.0; please use the headless engine (backend=core)");
+                completeProgressStreams(simulationId, false);
+                return;
+            }
 
-            SimulationResult result;
-            if (legacyBackend) {
-                result = runLegacyBackend(simulationId, request, config);
-            } else {
-                // Create and run the simulation engine
-                HeadlessSimulationEngine engine = new HeadlessSimulationEngine();
-                runningEngines.put(simulationId, engine);
+            // Create and run the simulation engine
+            HeadlessSimulationEngine engine = new HeadlessSimulationEngine();
+            runningEngines.put(simulationId, engine);
 
-                // Wall-clock backstop: the listener cancels the engine when the
-                // run exceeds its budget instead of burning CPU forever (e.g.
-                // NaN loops). Not an exact progress measure.
-                final long deadline = System.currentTimeMillis() + HEADLESS_TIME_BUDGET_MS;
-                final boolean[] budgetExceeded = {false};
-                engine.setProgressListener((currentTime, endTime, currentStep) -> {
-                    if (System.currentTimeMillis() > deadline) {
-                        budgetExceeded[0] = true;
-                        engine.cancel();
-                    }
-                    double progress = endTime > 0 ? currentTime / endTime : 0;
-                    broadcastProgress(simulationId, progress, currentTime, endTime);
-                    logger.debug("Simulation {} progress: {:.1f}%", simulationId, (progress * 100));
-                });
-
-                logger.info("Starting simulation {} with dt={}, duration={}",
-                        simulationId, request.getTimeStep(), request.getSimulationTime());
-
-                // Run the simulation
-                result = engine.runSimulation(config);
-
-                if (budgetExceeded[0]) {
-                    result = SimulationResult.failed("Simulation exceeded its " 
-                            + (HEADLESS_TIME_BUDGET_MS / 1000) + " s time budget"
-                            + " - increase the time step (dt) or reduce the duration");
+            // Wall-clock backstop: the listener cancels the engine when the
+            // run exceeds its budget instead of burning CPU forever (e.g.
+            // NaN loops). Not an exact progress measure.
+            final long deadline = System.currentTimeMillis() + HEADLESS_TIME_BUDGET_MS;
+            final boolean[] budgetExceeded = {false};
+            engine.setProgressListener((currentTime, endTime, currentStep) -> {
+                if (System.currentTimeMillis() > deadline) {
+                    budgetExceeded[0] = true;
+                    engine.cancel();
                 }
+                double progress = endTime > 0 ? currentTime / endTime : 0;
+                broadcastProgress(simulationId, progress, currentTime, endTime);
+                logger.debug("Simulation {} progress: {:.1f}%", simulationId, (progress * 100));
+            });
+
+            logger.info("Starting simulation {} with dt={}, duration={}",
+                    simulationId, request.getTimeStep(), request.getSimulationTime());
+
+            // Run the simulation
+            SimulationResult result = engine.runSimulation(config);
+
+            if (budgetExceeded[0]) {
+                result = SimulationResult.failed("Simulation exceeded its " 
+                        + (HEADLESS_TIME_BUDGET_MS / 1000) + " s time budget"
+                        + " - increase the time step (dt) or reduce the duration");
             }
 
             // Process results
@@ -333,91 +323,7 @@ public class SimulationService {
         }
     }
 
-    /**
-     * Runs the circuit in the classic GeckoCIRCUITS engine (headless, RMI
-     * driven) - the backend of record for circuits the pure-headless engine
-     * cannot reproduce yet. Reuses the same result handling as the headless
-     * path.
-     */
-    private SimulationResult runLegacyBackend(String simulationId, SimulationRequest request,
-                                              SimulationConfig config) {
-        if (legacySimulationBackend == null) {
-            return SimulationResult.failed("Legacy backend not available in this context");
-        }
-        if (!legacySimulationBackend.isAvailable()) {
-            return SimulationResult.failed(legacySimulationBackend.configurationHint());
-        }
-        byte[] ipesBytes = resolveLegacyCircuitBytes(request);
-        if (ipesBytes == null) {
-            return SimulationResult.failed(
-                    "Legacy backend needs original .ipes bytes (circuitId or base64Circuit; "
-                    + "circuitFile paths are not readable server-side)");
-        }
 
-        legacyProgress.put(simulationId, 0.0);
-        logger.info("Starting simulation {} on the LEGACY backend: dt={}, duration={}, signals={}",
-                simulationId, config.getSolverSettings().getStepWidth(),
-                config.getSolverSettings().getSimulationDuration(), config.getSignals());
-
-        Thread progressPoller = startLegacyProgressPoller(simulationId);
-        try {
-            return legacySimulationBackend.run(ipesBytes, config.getCircuitModel(),
-                    config.getSolverSettings().getStepWidth(),
-                    config.getSolverSettings().getSimulationDuration(), config.getSignals());
-        } finally {
-            progressPoller.interrupt();
-            legacyProgress.remove(simulationId);
-        }
-    }
-
-    /** Polls the legacy backend progress and broadcasts it like headless runs. */
-    private Thread startLegacyProgressPoller(String simulationId) {
-        Thread poller = new Thread(() -> {
-            while (!Thread.currentThread().isInterrupted()) {
-                if (legacySimulationBackend != null) {
-                    double fraction = legacySimulationBackend.activeProgress();
-                    if (fraction >= 0) {
-                        legacyProgress.put(simulationId, fraction);
-                        broadcastProgress(simulationId, fraction, fraction, 1.0);
-                    }
-                }
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    return;
-                }
-            }
-        }, "legacy-progress-" + simulationId.substring(0, 8));
-        poller.setDaemon(true);
-        poller.start();
-        return poller;
-    }
-
-    /**
-     * Original .ipes bytes for the legacy backend: circuitId store content,
-     * inline base64, or a server-local file. Returns null when nothing
-     * readable is available.
-     */
-    private byte[] resolveLegacyCircuitBytes(SimulationRequest request) {
-        if (request.getCircuitId() != null && !request.getCircuitId().isBlank()) {
-            return circuitFileService.getOriginalBytes(request.getCircuitId());
-        }
-        if (request.getBase64Circuit() != null && !request.getBase64Circuit().isBlank()) {
-            try {
-                return Base64.getDecoder().decode(request.getBase64Circuit());
-            } catch (IllegalArgumentException e) {
-                return null;
-            }
-        }
-        if (request.getCircuitFile() != null && !request.getCircuitFile().isBlank()) {
-            try {
-                return java.nio.file.Files.readAllBytes(java.nio.file.Path.of(request.getCircuitFile()));
-            } catch (IOException e) {
-                return null;
-            }
-        }
-        return null;
-    }
 
     /**
      * Get simulation by ID.
@@ -523,9 +429,6 @@ public class SimulationService {
         if (engine != null) {
             engine.cancel();
             logger.info("Cancellation requested for simulation {}", simulationId);
-        } else if (legacySimulationBackend != null && legacyProgress.containsKey(simulationId)) {
-            legacySimulationBackend.cancelActive();
-            logger.info("Cancellation requested for legacy simulation {}", simulationId);
         }
 
         SimulationResponse response = simulationStore.get(simulationId);
@@ -545,10 +448,6 @@ public class SimulationService {
         HeadlessSimulationEngine engine = runningEngines.get(simulationId);
         if (engine != null) {
             return engine.getProgress() * 100.0;
-        }
-        Double legacy = legacyProgress.get(simulationId);
-        if (legacy != null) {
-            return legacy * 100.0;
         }
         SimulationResponse response = simulationStore.get(simulationId);
         if (response == null) {

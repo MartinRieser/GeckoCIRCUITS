@@ -5,6 +5,7 @@ import gecko.core.simulation.SimulationResult;
 import gecko.rest.model.SimulationRequest;
 import gecko.rest.model.SimulationResponse;
 import gecko.rest.model.SimulationResponse.SimulationStatus;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -26,6 +27,13 @@ class SimulationServiceTest {
     void setUp() {
         simulationService = new SimulationService(new CircuitFileService());
         simulationService.clearAll();
+    }
+
+    @AfterEach
+    void tearDown() {
+        if (simulationService != null) {
+            simulationService.shutdown();
+        }
     }
 
     @Test

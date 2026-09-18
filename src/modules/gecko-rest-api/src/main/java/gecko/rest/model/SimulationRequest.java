@@ -38,7 +38,7 @@ public class SimulationRequest {
 
     private List<String> signals;  // Optional, overrides the file's dataContainerSignals
 
-    private String backend;  // Optional: "headless" (default) or "legacy" (real GeckoSim via RMI)
+    private String backend;  // Optional: "core" / "headless" (default). Note: classic Swing backend is retired.
 
     public SimulationRequest() {
     }
