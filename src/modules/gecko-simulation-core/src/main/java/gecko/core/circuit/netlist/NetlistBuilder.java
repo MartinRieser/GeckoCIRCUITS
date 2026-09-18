@@ -127,13 +127,6 @@ public class NetlistBuilder {
 
         List<CircuitModel.ConnectionData> connections = model.getConnections();
         boolean hasWires = hasSchematicWires(connections);
-        boolean hasComplexComponents = hasNonStandardPinComponents(allComponents) || !model.getThermalComponents().isEmpty();
-
-        // If circuit has schematic wires and only standard-pin electrical components,
-        // physical wire geometry strictly governs topology
-        if (hasWires && !hasComplexComponents) {
-            return buildFromWiresAndComponents(allComponents, connections);
-        }
 
         // Count how many terminals have real (non-sentinel) net labels from classic file export
         long explicitLabelCount = allComponents.stream()
@@ -147,7 +140,7 @@ public class NetlistBuilder {
             return buildFromComponentsWithLabels(allComponents, connections);
         }
 
-        if (connections != null && !connections.isEmpty()) {
+        if (hasWires) {
             return buildFromWiresAndComponents(allComponents, connections);
         }
 
@@ -471,7 +464,7 @@ public class NetlistBuilder {
     private static boolean isGroundLabel(String label) {
         if (label == null) return false;
         String trimmed = label.trim().toLowerCase();
-        return trimmed.equals("0") || trimmed.equals("gnd") || trimmed.equals("ground");
+        return trimmed.equals("0") || trimmed.equals("/0") || trimmed.equals("gnd") || trimmed.equals("ground");
     }
 
     private static boolean isNonBranchComponent(int typ) {
@@ -485,24 +478,9 @@ public class NetlistBuilder {
      */
     private static CircuitNetlist buildFromComponentsWithLabels(List<CircuitModel.ComponentData> components,
                                                                 List<CircuitModel.ConnectionData> connections) {
-        Map<String, Integer> labelToNode = new LinkedHashMap<>();
-        labelToNode.put("0", 0);
-        labelToNode.put("GND", 0);
-        labelToNode.put("gnd", 0);
-        int nextNode = 1;
-
-        for (CircuitModel.ComponentData comp : components) {
-            for (String label : comp.getTerminalXLabels()) {
-                if (isValidLabel(label) && !isGroundLabel(label) && !labelToNode.containsKey(label)) {
-                    labelToNode.put(label, nextNode++);
-                }
-            }
-            for (String label : comp.getTerminalYLabels()) {
-                if (isValidLabel(label) && !isGroundLabel(label) && !labelToNode.containsKey(label)) {
-                    labelToNode.put(label, nextNode++);
-                }
-            }
-        }
+        boolean hasWires = hasSchematicWires(connections);
+        boolean hasComplex = hasNonStandardPinComponents(components)
+                || components.stream().anyMatch(c -> c.getType() >= 40 && c.getType() <= 49);
 
         List<CircuitModel.ComponentData> branchComponents = new ArrayList<>();
         for (CircuitModel.ComponentData comp : components) {
@@ -521,10 +499,57 @@ public class NetlistBuilder {
         // not only through coincident terminal coordinates
         WireNets wireNets = buildWireNets(connections);
 
+        Map<GridPoint, Integer> terminalUsageCount = new HashMap<>();
+        for (CircuitModel.ComponentData comp : components) {
+            GridPoint[] terms = computeComponentTerminals(comp);
+            for (int t = 0; t < 2; t++) {
+                terminalUsageCount.put(terms[t], terminalUsageCount.getOrDefault(terms[t], 0) + 1);
+            }
+        }
+
+        boolean[] isConnected = new boolean[elementCount];
+        for (int i = 0; i < elementCount; i++) {
+            if (!hasWires || hasComplex) {
+                isConnected[i] = true;
+            } else {
+                boolean touchesWire = wireNets.touchesWire(compTerminals[i][0]) || wireNets.touchesWire(compTerminals[i][1]);
+                boolean isCoincident = terminalUsageCount.getOrDefault(compTerminals[i][0], 0) > 1
+                        || terminalUsageCount.getOrDefault(compTerminals[i][1], 0) > 1;
+                isConnected[i] = touchesWire || isCoincident;
+            }
+        }
+
+        Map<String, Integer> labelToNode = new LinkedHashMap<>();
+        labelToNode.put("0", 0);
+        labelToNode.put("/0", 0);
+        labelToNode.put("GND", 0);
+        labelToNode.put("gnd", 0);
+        int nextNode = 1;
+
+        for (int i = 0; i < elementCount; i++) {
+            if (hasWires && !isConnected[i]) {
+                continue;
+            }
+            CircuitModel.ComponentData comp = branchComponents.get(i);
+            for (String label : comp.getTerminalXLabels()) {
+                if (isValidLabel(label) && !isGroundLabel(label) && !labelToNode.containsKey(label)) {
+                    labelToNode.put(label, nextNode++);
+                }
+            }
+            for (String label : comp.getTerminalYLabels()) {
+                if (isValidLabel(label) && !isGroundLabel(label) && !labelToNode.containsKey(label)) {
+                    labelToNode.put(label, nextNode++);
+                }
+            }
+        }
+
         // Map net identities (wire nets and unattached terminal points) to node
         // indices. Two labels sharing one wire net alias to the same node (first wins).
         Map<String, Integer> rootToNode = new HashMap<>();
         for (int i = 0; i < elementCount; i++) {
+            if (hasWires && !isConnected[i]) {
+                continue;
+            }
             CircuitModel.ComponentData comp = branchComponents.get(i);
             String[] xLabels = comp.getTerminalXLabels();
             if (xLabels.length > 0 && isValidLabel(xLabels[0])) {
@@ -545,6 +570,9 @@ public class NetlistBuilder {
         }
 
         for (int i = 0; i < elementCount; i++) {
+            if (hasWires && !isConnected[i]) {
+                continue;
+            }
             CircuitModel.ComponentData comp = branchComponents.get(i);
             String[] xLabels = comp.getTerminalXLabels();
             if (xLabels.length == 0 || !isValidLabel(xLabels[0])) {
@@ -561,8 +589,6 @@ public class NetlistBuilder {
                 }
             }
         }
-
-        int nodeCount = Math.max(nextNode, 1);
 
         int voltageSourceCount = 0;
         int[] voltageSourceNumbers = new int[elementCount];
@@ -592,18 +618,23 @@ public class NetlistBuilder {
         for (int i = 0; i < elementCount; i++) {
             CircuitModel.ComponentData comp = branchComponents.get(i);
 
-            String[] xLabels = comp.getTerminalXLabels();
-            if (xLabels.length > 0 && isValidLabel(xLabels[0])) {
-                nodeX[i] = isGroundLabel(xLabels[0]) ? 0 : labelToNode.getOrDefault(xLabels[0], 0);
+            if (hasWires && !isConnected[i]) {
+                nodeX[i] = nextNode++;
+                nodeY[i] = nextNode++;
             } else {
-                nodeX[i] = rootToNode.getOrDefault(wireNets.netKey(compTerminals[i][0]), 0);
-            }
+                String[] xLabels = comp.getTerminalXLabels();
+                if (xLabels.length > 0 && isValidLabel(xLabels[0])) {
+                    nodeX[i] = isGroundLabel(xLabels[0]) ? 0 : labelToNode.getOrDefault(xLabels[0], 0);
+                } else {
+                    nodeX[i] = rootToNode.getOrDefault(wireNets.netKey(compTerminals[i][0]), 0);
+                }
 
-            String[] yLabels = comp.getTerminalYLabels();
-            if (yLabels.length > 0 && isValidLabel(yLabels[0])) {
-                nodeY[i] = isGroundLabel(yLabels[0]) ? 0 : labelToNode.getOrDefault(yLabels[0], 0);
-            } else {
-                nodeY[i] = rootToNode.getOrDefault(wireNets.netKey(compTerminals[i][1]), 0);
+                String[] yLabels = comp.getTerminalYLabels();
+                if (yLabels.length > 0 && isValidLabel(yLabels[0])) {
+                    nodeY[i] = isGroundLabel(yLabels[0]) ? 0 : labelToNode.getOrDefault(yLabels[0], 0);
+                } else {
+                    nodeY[i] = rootToNode.getOrDefault(wireNets.netKey(compTerminals[i][1]), 0);
+                }
             }
 
             if (comp.getRawParameters() != null) {
@@ -623,6 +654,8 @@ public class NetlistBuilder {
                 }
             }
         }
+
+        int nodeCount = Math.max(nextNode, 1);
 
         int maxNodeIndex = nodeCount > 0 ? nodeCount - 1 : 0;
         CircuitNetlist netlist = new CircuitNetlist();
