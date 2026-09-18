@@ -26,9 +26,11 @@ The forward converter is an isolated version of the buck converter:
 
 ## Circuit Files
 
-- `forward_basic.ipes` - Basic forward converter
-- `forward_rcd_reset.ipes` - RCD clamp reset
-- `forward_active_clamp.ipes` - Active clamp reset
+The following transformer and isolated DC-DC converter models are available in the repository:
+
+- `resources/projects/llc_resonant_400v_24v.ipes` - Isolated DC-DC converter with high-frequency transformer stage
+- `resources/tutorials/2xx_dcdc_converters/201_buck_converter/A_Buck.ipes` - Step-down inductor-capacitor output stage
+- `resources/tutorials/3xx_acdc_rectifiers/301_diode_rectifier/diode_RL_singlePH_trafo.ipes` - Transformer-isolated rectifier stage
 
 ## Theory
 

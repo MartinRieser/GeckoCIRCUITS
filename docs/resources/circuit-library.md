@@ -9,11 +9,20 @@ GeckoCIRCUITS includes 100+ circuit example files (`.ipes`) organized by topic.
 
 ## How to Open
 
-**File > Open** and navigate to `resources/`, or from command line:
+### In the Desktop App
+- **Double-click** any `.ipes` file in your file manager to open it directly.
+- Or launch **GeckoCIRCUITS**, choose **File > Open**, and select the file from `resources/` (or drag-and-drop onto the canvas).
 
+### From Source (Web Editor)
 ```bash
-java -jar target/gecko-1.0-jar-with-dependencies.jar resources/tutorials/2xx_dcdc_converters/201_buck_converter/buck_simple.ipes
+# Windows
+run-web-editor.bat
+
+# Linux / macOS
+./run-web-editor.sh
 ```
+Inside the editor window, click **File > Open** or drag-and-drop the `.ipes` file directly onto the canvas.
+
 
 ## Getting Started
 
@@ -38,38 +47,52 @@ java -jar target/gecko-1.0-jar-with-dependencies.jar resources/tutorials/2xx_dcd
 
 | File | Topology |
 |------|----------|
-| `3xx.../301.../diode_bridge.ipes` | Diode bridge rectifier |
-| `3xx.../302.../PFC_boost.ipes` | PFC boost converter |
-| `3xx.../303.../Vienna_rectifier.ipes` | Vienna rectifier (250kW) |
+| `3xx.../301.../2phaseDiodeBridge_AC-Inductor.ipes` | Single-phase diode bridge rectifier with AC inductor |
+| `3xx.../301.../2phaseDiodeBridge_DC-Inductor.ipes` | Single-phase diode bridge rectifier with DC inductor |
+| `3xx.../301.../A_Rectifier.ipes` | Uncontrolled full-wave rectifier |
+| `3xx.../302.../boostPFC.ipes` | Single-phase boost PFC open-loop stage |
+| `3xx.../302.../boostPFC_currentControl.ipes` | Boost PFC with average current mode control |
+| `3xx.../303.../three-phase_ViennaRectifier_simpleControl_250kW.ipes` | Three-phase Vienna rectifier (250 kW) |
+
+## Automotive & Battery Charging
+
+| File | Description |
+|------|-------------|
+| `resources/examples/automotive/dc_fast_charger/11kw_three_phase_vienna_charger.ipes` | 11 kW 3-phase Vienna active PFC DC fast charger |
+| `resources/projects/interleaved_pfc_50v.ipes` | Interleaved boost PFC converter stage |
+| `resources/projects/llc_resonant_400v_24v.ipes` | 400V to 24V isolated LLC resonant DC-DC converter |
 
 ## DC-AC Inverters
 
 | File | Topology |
 |------|----------|
 | `4xx.../401.../singlePhase_PWM_converter.ipes` | Single-phase inverter |
-| `4xx.../402.../inverter.ipes` | Three-phase inverter |
-| `4xx.../402.../three-phase_VSR_simpleControl_250kW.ipes` | Three-phase VSR (250kW) |
+| `4xx.../402.../inverter.ipes` | Three-phase PWM inverter |
+| `4xx.../402.../three-phase_VSR_simpleControl_250kW.ipes` | Three-phase VSR (250 kW) |
 
 ## Thermal Simulation
 
 | File | Description |
 |------|-------------|
 | `5xx.../501.../BuckBoost_thermal.ipes` | Buck-boost with thermal model |
-| `5xx.../502.../ThreePhase_thermal.ipes` | Three-phase thermal analysis |
+| `5xx.../502.../ThreePhase-VSR_10kW_thermal.ipes` | Three-phase thermal loss analysis |
+| `5xx.../502.../ThreePhase-VSR_10kW_thermal_with_java.ipes` | Thermal simulation with Java coupling |
 
 ## EMI Filters
 
 | File | Description |
 |------|-------------|
-| `6xx.../602.../CM_filter_*.ipes` | Common-mode filter topologies |
-| `6xx.../602.../DM_filter_*.ipes` | Differential-mode filters |
+| `6xx.../602.../CMFilter1Stage.ipes` | Common-mode filter (1-stage) |
+| `6xx.../602.../CMFilter2Stage.ipes` | Common-mode filter (2-stage) |
+| `6xx.../602.../DMFilter1Stage.ipes` | Differential-mode filter (1-stage) |
+| `6xx.../602.../DMFilter2Stage.ipes` | Differential-mode filter (2-stage) |
 
 ## Scripting Examples
 
 | File | Description |
 |------|-------------|
 | `7xx.../701.../GeckoSCRIPT.ipes` | GeckoSCRIPT demo |
-| `7xx.../701.../buck_control.ipes` | Script-controlled buck |
+| `7xx.../701.../buck_control.ipes` | Script-controlled buck converter |
 | `7xx.../704.../demo_JAVA_Block.ipes` | Java block demo |
 | `7xx.../704.../JavaBlockPMSM.ipes` | PMSM with Java control |
 
@@ -77,18 +100,21 @@ java -jar target/gecko-1.0-jar-with-dependencies.jar resources/tutorials/2xx_dcd
 
 | File | Description |
 |------|-------------|
-| `8xx.../801.../sparse_matrix_*.ipes` | Matrix converter topologies |
-| `8xx.../802.../PMSM_control.ipes` | PMSM motor control |
-| `8xx.../803.../SwissRectifier_*.ipes` | Swiss rectifier optimization |
-| `8xx.../804.../thyristor_*.ipes` | Thyristor control circuits (11 files) |
+| `8xx.../801.../UltraSparseMatrixConverter.ipes` | Ultra-sparse matrix converter |
+| `8xx.../802.../indirect_matrix_java_with_PMSM_control.ipes` | Indirect matrix converter PMSM control |
+| `8xx.../802.../sparseMatrix_java_with_PMSM_control.ipes` | Sparse matrix PMSM control |
+| `8xx.../803.../Swiss_Rect.ipes` | Swiss rectifier optimization model |
+| `8xx.../804.../ThyristorControlBlock.ipes` | Thyristor control block circuit |
+| `8xx.../804.../thyristor_RL_3phBridge.ipes` | Three-phase thyristor bridge rectifier |
 
 ## Analog Circuits
 
 | File | Description |
 |------|-------------|
-| `2xx.../204.../OpAmp_inverting.ipes` | Inverting amplifier |
-| `2xx.../204.../OpAmp_noninverting.ipes` | Non-inverting amplifier |
-| `2xx.../204.../OpAmp_integrator.ipes` | Op-amp integrator |
+| `2xx.../204.../OpAmp.ipes` | Operational amplifier basic circuits |
+| `2xx.../204.../opamp_invertingIntegrator.ipes` | Op-amp inverting integrator |
+| `2xx.../204.../opamp_invertingDifferentiator.ipes` | Op-amp inverting differentiator |
+| `2xx.../204.../opamp_3rdOrderBessel.ipes` | 3rd-order Bessel active filter |
 
 ## Contributing Circuits
 

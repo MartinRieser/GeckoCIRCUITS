@@ -15,10 +15,13 @@ PFC converters shape input current to be sinusoidal, achieving:
 
 ## Circuit Files
 
-- `pfc_boost_ccm.ipes` - CCM boost PFC
-- `pfc_boost_crm.ipes` - Critical conduction mode
-- `pfc_interleaved.ipes` - Two-phase interleaved
-- `pfc_bridgeless.ipes` - Totem-pole bridgeless
+The following verified PFC simulation models are available in the repository:
+
+- `resources/tutorials/3xx_acdc_rectifiers/302_pfc_basics/boostPFC.ipes` - CCM single-phase boost PFC
+- `resources/tutorials/3xx_acdc_rectifiers/302_pfc_basics/boostPFC_currentControl.ipes` - Boost PFC with active closed-loop current control
+- `resources/projects/interleaved_pfc_50v.ipes` - Two-phase interleaved PFC converter
+- `resources/articles/ipes_files/bridgeLessBoost.ipes` - Bridgeless boost PFC topology
+- `resources/tutorials/3xx_acdc_rectifiers/303_vienna_rectifier/three-phase_ViennaRectifier_simpleControl_250kW.ipes` - Three-phase Vienna active PFC rectifier
 
 ## Specifications
 

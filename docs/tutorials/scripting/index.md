@@ -1,129 +1,59 @@
 ---
-title: 7xx - Scripting & Automation
+title: Scripting & Automation
+description: Programmatic simulation control, scripting, and external tool integration
 ---
 
-# 7xx - Scripting & Automation
+# Scripting & Automation
 
-Programmatic control and external tool integration.
+Programmatic control and external tool integration with GeckoCIRCUITS.
 
-| Tutorial | Title | Difficulty | Status |
-|----------|-------|------------|--------|
-| [701](701_gecko_script_basics/) | GeckoSCRIPT Basics | 2/3 | Available |
-| [702](702_matlab_integration/) | MATLAB Integration | 2/3 | Available |
-| [703](703_simulink_cosimulation/) | Simulink Co-Simulation | 3/3 | Available |
-| [704](704_java_blocks/) | Java Blocks | 3/3 | Available |
-| [705](705_api_integration/) | API Integration | 3/3 | Available |
-| [706](706_python_integration/) | Python Integration | 2/3 | Placeholder |
+## Available Tutorials
+
+| Tutorial | Title | Difficulty | Description |
+|----------|-------|------------|-------------|
+| [701](geckoscript.md) | [GeckoSCRIPT Basics](geckoscript.md) | Intermediate | Built-in JavaScript scripting for parameter sweeps and optimization |
+| [702](matlab.md) | [MATLAB Integration](matlab.md) | Intermediate | Interfacing MATLAB with GeckoCIRCUITS for automated analysis |
+| [703](python.md) | [Python Integration](python.md) | Intermediate | Controlling simulations via Python, NumPy, SciPy, and REST API |
+| [704](java-blocks.md) | [Java Blocks](java-blocks.md) | Advanced | Implementing custom compiled algorithmic control blocks |
 
 ## Learning Objectives
 
-- Automate simulations with GeckoSCRIPT
-- Integrate with MATLAB for parameter sweeps
-- Co-simulate with Simulink models
-- Create custom Java control blocks
-- Use the REST API for remote control
-- Control simulations from Python scripts
+- Automate batch simulations with GeckoSCRIPT
+- Integrate with MATLAB for parameter optimization
+- Control simulations and analyze output waveforms in Python
+- Create custom Java control blocks for specialized algorithms
+- Leverage the modern REST API and MCP server for remote simulation
 
 ## Integration Options Overview
 
-| Method | Best For | Complexity |
-|--------|----------|------------|
-| GeckoSCRIPT | Built-in automation | Low |
-| MATLAB | Control design, data analysis | Medium |
-| Simulink | Real-time HIL, system models | Medium |
-| Java Blocks | Custom components | Medium-High |
-| Python | Optimization, machine learning | Medium |
-| REST API | Web integration, remote control | High |
+| Method | Best For | Complexity | Interface |
+|--------|----------|------------|-----------|
+| **GeckoSCRIPT** | Quick in-editor sweeps | Low | Built-in engine |
+| **Python** | Data science, machine learning, optimization | Medium | REST API / CLI |
+| **MATLAB** | Control engineering, matrix analysis | Medium | REST API / Scripting |
+| **Java Blocks** | High-performance custom components | Advanced | Java / JVM |
+| **REST API** | CI/CD pipelines, web apps, microservices | Medium | HTTP / WebSocket |
+| **MCP Server** | LLM assistants (Claude, Cursor, etc.) | Low | JSON-RPC standard |
 
-## Contents
+## Quick Start: Python Automation Example
 
-### 701 - GeckoSCRIPT Basics
-- `GeckoSCRIPT.pdf` - Complete scripting guide
-- `GeckoSCRIPT.ipes` - Example script-controlled circuit
-- `buck_control.ipes` / `buck_control_tuning.m` - Control tuning example
-
-### 702 - MATLAB Integration
-- `GeckoSCRIPT_ example_matlab/` - MATLAB integration examples
-- Loss calculation scripts (`.scl`)
-- RMI interface for bidirectional communication
-
-### 703 - Simulink Co-Simulation
-- `GeckoCIRCUITS_simulink_tutorial.pdf` - Tutorial guide
-- `Gecko_VR1.mdl` - Simulink model
-- `s_GeckoCIRCUITS.c` - S-function source
-- MEX files for various platforms
-
-### 704 - Java Blocks
-- `demo_JAVA_Block.ipes` - Java block introduction
-- `JavaBlockPMSM.ipes` - PMSM control with Java
-- Custom component development guide
-
-### 705 - API Integration
-- `SIGNAL_ANALYSIS_API.md` - API documentation
-- `websocket-client.html` - WebSocket test client
-- External signal source examples
-
-### 706 - Python Integration (New)
-- Parameter sweep automation
-- Optimization with SciPy
-- Data analysis with NumPy/Pandas
-- Parallel simulation execution
-
-## Quick Start: Automation
-
-### GeckoSCRIPT (Built-in)
-```javascript
-// Simple parameter sweep
-for (D = 0.2; D <= 0.8; D += 0.1) {
-    setParameter("PWM.1", "dutyCycle", D);
-    runSimulation();
-    Vout = getMeasurement("SCOPE.1", "ch1_avg");
-    print("D=" + D + ", Vout=" + Vout);
-}
-```
-
-### MATLAB (RMI Interface)
-```matlab
-% Connect to GeckoCIRCUITS
-gecko = GeckoRemoteInterface('localhost', 1099);
-
-% Run parameter sweep
-D_values = 0.2:0.1:0.8;
-for i = 1:length(D_values)
-    gecko.setParameter('PWM.1', 'dutyCycle', D_values(i));
-    gecko.runSimulation();
-    Vout(i) = gecko.getMeasurement('SCOPE.1', 'ch1_avg');
-end
-```
-
-### Python (File-based or API)
 ```python
-import subprocess
+import requests
 import numpy as np
 
-# Parameter sweep
-D_values = np.linspace(0.2, 0.8, 7)
-for D in D_values:
-    # Run simulation
-    subprocess.run(['java', '-jar', 'gecko.jar',
-                   '--param', f'D={D}', 'buck.ipes'])
-    # Analyze results
-    results = np.loadtxt('output.csv')
-    print(f"D={D:.1f}, Vout={results[:,1].mean():.2f}")
+# Trigger simulation via REST API
+response = requests.post("http://localhost:8080/api/v1/simulations/run", json={
+    "circuitPath": "circuits/buck.ipes",
+    "parameters": {"dutyCycle": 0.5}
+})
+
+data = response.json()
+print(f"Simulation completed with status: {data['status']}")
 ```
 
-## Use Case Selection Guide
+## Related Resources
 
-| Task | Recommended Tool |
-|------|------------------|
-| Quick parameter check | GeckoSCRIPT |
-| Control loop design | MATLAB |
-| System-level simulation | Simulink |
-| Custom algorithms | Java Blocks |
-| Optimization/ML | Python |
-| Web dashboard | REST API |
-
-## Related Tutorials
-
-- [104 - Running Simulations](/wip/#104_running_simulations/index.md) - Batch mode basics
-- [105 - Analysis Tools](/wip/#105_analysis_tools/index.md) - Automated analysis
+- [Running Simulations](../../getting-started/running-simulations.md) — Solver configurations
+- [Analysis Tools](../../getting-started/analysis-tools.md) — Waveform post-processing
+- [REST API Reference](../../api/rest-api.md) — Comprehensive API documentation
+- [MCP Interface](../../mcp.md) — Model Context Protocol tools

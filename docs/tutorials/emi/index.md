@@ -1,31 +1,39 @@
 ---
-title: 6xx - EMI/EMC
+title: EMI/EMC
+description: Electromagnetic interference and filter design
 ---
 
-# 6xx - EMI/EMC
+# EMI/EMC
 
-Electromagnetic interference and filter design.
+Electromagnetic interference and filter design in GeckoCIRCUITS.
 
-| Tutorial | Title | Difficulty |
-|----------|-------|------------|
-| [601](601_emi_filter_basics/) | EMI Filter Basics | 2/3 |
-| [602](602_cm_dm_filters/) | CM/DM Filters | 3/3 |
+## Overview
+
+| Section | Title | Difficulty |
+|---------|-------|------------|
+| [601](#601-emi-filter-basics) | EMI Filter Basics | Intermediate |
+| [602](#602-cmdm-filters) | CM/DM Filters | Advanced |
 
 ## Learning Objectives
 
-- Understand common-mode (CM) and differential-mode (DM) noise
-- Design multi-stage EMI filters
-- Use the EMI Filter Optimizer tool
-- Analyze filter attenuation characteristics
+- Understand common-mode (CM) and differential-mode (DM) noise generation
+- Design multi-stage EMI filters for power converters
+- Use Line Impedance Stabilization Network (LISN) models
+- Analyze filter insertion loss and attenuation characteristics
 
 ## Contents
 
 ### 601 - EMI Filter Basics
-- `EMIFilterOptimizerManual.pdf` - Complete optimizer documentation
-- `QuickIntroduction.pdf` / `.pptx` - Quick start guide
-- `samples/` - Example filter configurations
+- Principles of conducted emissions and frequency spectra
+- Insertion loss definition and measurement methods
+- Inductor parasitics (parallel capacitance) and capacitor ESR/ESL effects
 
 ### 602 - CM/DM Filters
-- `CMFilter1Stage.ipes` through `CMFilter4Stage.ipes` - Common-mode filters
-- `DMFilter1Stage.ipes` through `DMFilter4Stage.ipes` - Differential-mode filters
-- Swiss rectifier data files (`.dat`) for advanced analysis
+- Common-mode chokes and differential-mode filtering stages
+- Damping resistors to prevent filter resonance
+- LISN circuit modeling for standard conducted emission compliance
+
+## Related Resources
+
+- [AC-DC Rectifiers Tutorial Series](../acdc/index.md)
+- [DC-AC Inverters Tutorial Series](../dcac/index.md)

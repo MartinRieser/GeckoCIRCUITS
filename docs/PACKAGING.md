@@ -45,9 +45,11 @@ Outputs land in `desktop/target/release/bundle/`. CI: `.github/workflows/desktop
 (3-OS matrix on `v*` tags, SHA256SUMS, GitHub release). Details, including the
 release QA checklist: [desktop-app.md](desktop-app.md).
 
+---
 
+## Classic Desktop Packaging (jpackage)
 
-You can package GeckoCIRCUITS locally on any OS.
+You can package GeckoCIRCUITS classic desktop distributions locally on any OS:
 
 ### Prerequisites
 - **JDK 25+** (Adoptium Temurin or Oracle JDK) with `jpackage` in `PATH`

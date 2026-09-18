@@ -34,11 +34,12 @@ BLDC motors provide:
 
 ## Circuit Files
 
-- `bldc_six_step_basic.ipes` - Basic six-step commutation with PWM speed control
-- `bldc_hall_sensors.ipes` - Hall sensor decoding and commutation switching
-- `bldc_speed_control.ipes` - Speed loop with PI controller
-- `bldc_current_limiting.ipes` - Current limit protection during startup
-- `bldc_sensorless.ipes` - Back-EMF zero-crossing detection (advanced)
+The following verified motor drive and three-phase inverter models are available in the repository:
+
+- `resources/tutorials/4xx_dcac_inverters/402_three_phase_inverter/inverter.ipes` - Three-phase PWM voltage source inverter bridge
+- `resources/tutorials/7xx_scripting_automation/704_java_blocks/JavaBlockPMSM.ipes` - Permanent-magnet motor drive with custom control algorithm
+- `resources/tutorials/8xx_advanced_topics/802_motor_drives_pmsm/sparseMatrix_java_with_PMSM_control.ipes` - Direct drive motor control with speed and current feedback
+- `resources/articles/ipes_files/dq_control_pmsm.ipes` - Machine dq-axis current control implementation
 
 ## BLDC Motor Fundamentals
 

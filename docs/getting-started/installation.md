@@ -53,9 +53,21 @@ run-web-editor.bat        # Windows
 The web editor is the same React application the desktop app embeds, served
 against the same simulation engine — circuits and workflows are identical.
 
-## Classic Swing UI (legacy)
+## Classic Swing UI (Deprecated / Slated for Removal)
 
-The original Swing-based desktop UI is still available for existing users and
-ships as `GeckoCIRCUITS-<version>` installers and portable archives from the
-same Releases page. It requires **Java 25** and is started with
-`scripts/run-gecko.bat|.sh`. New users should start with the desktop app.
+The original Swing-based desktop UI is legacy and being phased out. All active development, new UI features, and current `.ipes` format workflows are centered on the modern **GeckoCIRCUITS Desktop App** (Tauri 2 + React Canvas) and **Web Editor**. The legacy launcher scripts (`scripts/run-gecko.bat|.sh`) do not support newer editor workflows and will be retired. All users should use the modern desktop app or `run-web-editor.bat|.sh`.
+
+## Docker
+
+The headless REST API and simulation engine can be run as a containerized service using the provided Docker configuration:
+
+```bash
+# Build and start the REST API container via Compose
+docker compose -f docker/docker-compose.yml up -d
+
+# Or build and run the image directly
+docker build -f docker/Dockerfile.api -t geckocircuits-api:latest .
+docker run -p 8080:8080 geckocircuits-api:latest
+```
+
+Once running, the API is available at `http://localhost:8080/api/v1/`. See the [REST API Reference](../api/rest-api.md) for endpoint details.

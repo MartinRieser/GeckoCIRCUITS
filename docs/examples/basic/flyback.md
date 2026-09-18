@@ -27,10 +27,11 @@ The flyback converter provides:
 
 ## Circuit Files
 
-- `flyback_basic.ipes` - Basic flyback operation
-- `flyback_ccm.ipes` - Continuous conduction mode
-- `flyback_dcm.ipes` - Discontinuous conduction mode
-- `flyback_snubber.ipes` - With RCD snubber
+The following transformer and isolated converter simulation models are available in the repository:
+
+- `resources/archive/GeckoMAGNETICStutorials/GeckoMAGNETICS_fly.ipes` - Flyback converter with magnetic transformer coupling model
+- `resources/projects/llc_resonant_400v_24v.ipes` - Isolated resonant DC-DC converter with HF transformer
+- `resources/tutorials/3xx_acdc_rectifiers/301_diode_rectifier/diode_RL_singlePH_trafo.ipes` - Transformer-isolated rectifier circuit
 
 ## Theory
 

@@ -94,10 +94,8 @@ Voltage (V)
 
 ## Circuit Files
 
-> **Status:** Placeholder
-> - `dcfc_module.ipes` - Single 50kW module
-> - `dcfc_vienna_pfc.ipes` - Vienna front-end
-> - `dcfc_paralleled.ipes` - Paralleled modules
+The following verified circuit files are included:
 
----
-*Placeholder - Details to be added*
+- `11kw_three_phase_vienna_charger.ipes` - Complete 11 kW 3-phase Vienna active PFC DC fast charger with closed-loop voltage/current regulation
+- `../../../tutorials/3xx_acdc_rectifiers/303_vienna_rectifier/three-phase_ViennaRectifier_simpleControl_250kW.ipes` - 250 kW Vienna rectifier with control
+

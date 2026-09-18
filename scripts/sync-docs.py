@@ -171,19 +171,12 @@ def main():
     print("GeckoCIRCUITS Documentation Sync")
     print("=" * 60)
 
-    # Sync each mapped directory
-    for src_rel, dst_rel in SYNC_MAP.items():
-        src_dir = RESOURCES_DIR / src_rel
-        dst_dir = DOCS_DIR / dst_rel
-        sync_directory(src_dir, dst_dir)
+    # NOTE: tutorials and examples are hand-maintained directly in docs/
+    # with clean kebab-case filenames matching the MkDocs navigation.
+    # The resources/ READMEs use old legacy folder structures.
+    print("\nSkipping legacy tutorials and examples directory sync (hand-maintained in docs/)")
 
-    # NOTE: tutorials/index.md and examples/index.md are hand-maintained in docs/
-    # because the resources/ READMEs use old-format paths (1xx_getting_started/,
-    # basic_topologies/) that don't match the docs site structure (dcdc/, basic/).
-    # Do NOT sync them automatically.
-    print("\nSkipping tutorials/index.md and examples/index.md (hand-maintained)")
-
-    # Sync articles
+    # Sync articles from resources/articles/ to docs/articles/
     sync_articles()
 
     print("\n" + "=" * 60)

@@ -1,52 +1,45 @@
 ---
 title: Basic Topologies Examples
+description: Fundamental DC-DC converter circuits demonstrating essential power conversion principles
 ---
 
 # Basic Topologies Examples
 
-Fundamental DC-DC converter circuits demonstrating essential power conversion principles.
+Fundamental DC-DC converter circuits demonstrating essential power conversion principles in GeckoCIRCUITS.
 
-## Examples
+## Available Examples
 
-| Example | Description | Difficulty |
-|---------|-------------|------------|
-| [Buck Converter](buck_converter/) | Step-down DC-DC | Beginner |
-| [Boost Converter](boost_converter/) | Step-up DC-DC | Beginner |
-| [Buck-Boost](buck_boost_converter/) | Inverting DC-DC | Intermediate |
-| [Flyback](flyback_converter/) | Isolated step-up/down | Intermediate |
-| [Forward](forward_converter/) | Isolated step-down | Intermediate |
-| [Full Bridge](full_bridge/) | High-power isolated | Advanced |
+| Example | Description | Difficulty | Documentation |
+|---------|-------------|------------|---------------|
+| [Buck Converter](buck.md) | Step-down DC-DC converter with current mode control | Beginner | [View Example](buck.md) |
+| [Boost Converter](boost.md) | Step-up DC-DC converter with CCM/DCM operation | Beginner | [View Example](boost.md) |
+| [Buck-Boost](../../tutorials/dcdc/buck-boost.md) | Inverting buck-boost, SEPIC, and Cuk topologies | Intermediate | [View Tutorial](../../tutorials/dcdc/buck-boost.md) |
+| [Flyback](flyback.md) | Isolated step-up/down with coupled inductor storage | Intermediate | [View Example](flyback.md) |
+| [Forward](forward.md) | Isolated step-down with tertiary reset winding | Intermediate | [View Example](forward.md) |
 
 ## Quick Reference
 
 ### Non-Isolated Topologies
 
-| Topology | Conversion | Vout/Vin | Key Characteristic |
-|----------|------------|----------|-------------------|
-| Buck | Step-down | D | Continuous input current |
-| Boost | Step-up | 1/(1-D) | Continuous output current |
-| Buck-Boost | Inverting | -D/(1-D) | Inverted polarity |
-| Cuk | Inverting | -D/(1-D) | Continuous I/O current |
-| SEPIC | Non-inverting | D/(1-D) | Same polarity as boost |
+| Topology | Conversion | Voltage Gain ($V_{out}/V_{in}$) | Key Characteristic |
+|----------|------------|---------------------------------|-------------------|
+| Buck | Step-down | $D$ | Continuous output current |
+| Boost | Step-up | $\frac{1}{1-D}$ | Continuous input current |
+| Buck-Boost | Inverting | $-\frac{D}{1-D}$ | Inverted polarity, step-up/down |
+| Cuk | Inverting | $-\frac{D}{1-D}$ | Continuous input and output current |
+| SEPIC | Non-inverting | $\frac{D}{1-D}$ | Non-inverting step-up/down |
 
 ### Isolated Topologies
 
-| Topology | Conversion | Vout/Vin | Power Range |
-|----------|------------|----------|-------------|
-| Flyback | Up/Down | n×D/(1-D) | 5-150W |
-| Forward | Down | n×D | 50-500W |
-| Half-Bridge | Up/Down | n×D | 100-500W |
-| Full-Bridge | Up/Down | n×D | 500W+ |
-
-## Learning Path
-
-1. Start with **Buck** and **Boost** to understand basic principles
-2. Progress to **Buck-Boost** for inverting operation
-3. Study **Flyback** for isolation and coupled inductors
-4. Explore **Forward** and **Full Bridge** for higher power
+| Topology | Conversion | Voltage Gain ($V_{out}/V_{in}$) | Power Range |
+|----------|------------|---------------------------------|-------------|
+| Flyback | Step-up/down | $\frac{N_s}{N_p} \cdot \frac{D}{1-D}$ | 5–150 W |
+| Forward | Step-down | $\frac{N_s}{N_p} \cdot D$ | 50–500 W |
 
 ## Related Tutorials
 
-- [201 - Buck Converter](../tutorials/2xx_dcdc_converters/201_buck_converter/index.md)
-- [202 - Boost Converter](../tutorials/2xx_dcdc_converters/202_boost_converter/index.md)
-- [203 - Buck-Boost Topologies](../tutorials/2xx_dcdc_converters/203_buck_boost/index.md)
+- [Tutorial 201: Buck Converter](../../tutorials/dcdc/buck-converter.md)
+- [Tutorial 202: Boost Converter](../../tutorials/dcdc/boost-converter.md)
+- [Tutorial 203: Buck-Boost Topologies](../../tutorials/dcdc/buck-boost.md)
+- [Tutorial 204: Flyback Converter](../../tutorials/dcdc/flyback.md)
+- [Tutorial 205: Forward Converter](../../tutorials/dcdc/forward.md)

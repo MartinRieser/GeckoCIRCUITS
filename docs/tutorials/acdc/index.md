@@ -1,36 +1,29 @@
 ---
-title: 3xx - AC-DC Rectifiers
+title: AC-DC Rectifiers
+description: AC to DC power conversion and power factor correction
 ---
 
-# 3xx - AC-DC Rectifiers
+# AC-DC Rectifiers
 
-AC to DC power conversion and power factor correction.
+AC to DC power conversion, harmonic reduction, and active power factor correction (PFC).
 
-| Tutorial | Title | Difficulty |
-|----------|-------|------------|
-| [301](301_diode_rectifier/) | Diode Rectifier | 2/3 |
-| [302](302_pfc_basics/) | PFC Basics | 2/3 |
-| [303](303_vienna_rectifier/) | Vienna Rectifier | 3/3 |
+## Available Tutorials
+
+| Tutorial | Title | Difficulty | Description |
+|----------|-------|------------|-------------|
+| [301](diode-rectifier.md) | [Diode Rectifiers](diode-rectifier.md) | Beginner | Single-phase and three-phase uncontrolled diode bridges |
+| [302](pfc-basics.md) | [PFC Basics](pfc-basics.md) | Intermediate | Active boost PFC, average current mode control, THD |
+| [303](vienna-rectifier.md) | [Vienna Rectifier](vienna-rectifier.md) | Advanced | Three-phase three-level active boost rectifier |
 
 ## Learning Objectives
 
-- Analyze diode bridge rectifier behavior
-- Understand power factor correction principles
-- Design boost PFC with current control
-- Study three-phase Vienna rectifier topology
+- Analyze single-phase and three-phase diode bridge rectifier behavior
+- Understand power factor, displacement factor, and total harmonic distortion (THD)
+- Design boost PFC pre-regulators compliant with IEC 61000-3-2 standards
+- Study three-phase Vienna rectifier topology and neutral-point balance control
 
-## Contents
+## Related Resources
 
-### 301 - Diode Rectifier
-- Single and two-phase diode bridges
-- AC/DC inductor placement analysis
-- Transformer-coupled rectifiers
-
-### 302 - PFC Basics
-- `B_pfc.ipes`, `C_pfc.ipes` - PFC circuit examples
-- `boostPFC.ipes`, `boostPFC_currentControl.ipes` - Controlled PFC
-- `PFC_Exercise.pdf` / `PFC_Solution.pdf` - Exercises
-
-### 303 - Vienna Rectifier
-- Three-phase Vienna rectifier with simple control
-- 250kW design example
+- [Power Supply Examples](../../examples/power-supplies/pfc.md)
+- [DC-AC Inverters Series](../dcac/index.md)
+- [Thermal Loss Calculation](../thermal/loss-calculation.md)

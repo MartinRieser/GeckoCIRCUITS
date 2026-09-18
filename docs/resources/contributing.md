@@ -50,8 +50,9 @@ mvn clean test jacoco:report
 ### Run the Application
 
 ```bash
-java -Xmx3G -Dpolyglot.js.nashorn-compat=true \
-  -jar target/gecko-1.0-jar-with-dependencies.jar
+# Starts the simulation engine on localhost:8080 and opens the web editor
+run-web-editor.bat        # Windows
+./run-web-editor.sh       # Linux / macOS
 ```
 
 ## Code Architecture

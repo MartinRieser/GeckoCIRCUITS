@@ -1,5 +1,6 @@
 ---
 title: GeckoCIRCUITS Tutorials
+description: Comprehensive power electronics simulation tutorials
 ---
 
 # GeckoCIRCUITS Tutorials
@@ -12,161 +13,119 @@ Comprehensive tutorials for learning power electronics simulation with GeckoCIRC
 
 ## Tutorial Series Overview
 
-| Series | Topic | Tutorials | Difficulty |
-|--------|-------|-----------|------------|
-| **[1xx](../getting-started/index.md)** | Getting Started | 7 tutorials | Beginner-Intermediate |
-| **[2xx](dcdc/)** | DC-DC Converters | 4 tutorials | Intermediate |
-| **[3xx](acdc/)** | AC-DC Rectifiers | 3 tutorials | Intermediate |
-| **[4xx](dcac/)** | DC-AC Inverters | 3 tutorials | Intermediate-Advanced |
-| **[5xx](thermal/)** | Thermal Simulation | 3 tutorials | Advanced |
-| **[6xx](emi/)** | EMI/EMC | 2 tutorials | Advanced |
-| **[7xx](scripting/)** | Scripting & Automation | 6 tutorials | Intermediate-Advanced |
-| **[8xx](advanced/)** | Advanced Topics | 4 tutorials | Advanced |
-| **[9xx](magnetics/)** | Magnetics & Mechanical | 4 tutorials | Advanced |
+| Series | Topic | Highlights | Difficulty |
+|--------|-------|------------|------------|
+| **[Getting Started](../getting-started/index.md)** | Simulator Fundamentals | Installation, interface, first simulation, PWM | Beginner |
+| **[DC-DC](dcdc/index.md)** | DC-DC Converters | Buck, Boost, Buck-Boost, Flyback, Forward | Beginner-Intermediate |
+| **[AC-DC](acdc/index.md)** | AC-DC Rectifiers | Diode Rectifiers, Boost PFC, Vienna Rectifier | Intermediate |
+| **[DC-AC](dcac/index.md)** | DC-AC Inverters | Single-Phase, Three-Phase VSI, NPC, MMC | Intermediate-Advanced |
+| **[Thermal](thermal/index.md)** | Thermal Simulation | Conduction/switching loss, Tj calculation, heatsink design | Intermediate-Advanced |
+| **[Magnetics](magnetics/index.md)** | Magnetics & Mechanical | Magnetic domain, transformer design, saturation, mechanical | Advanced |
+| **[Scripting](scripting/index.md)** | Scripting & Automation | GeckoSCRIPT, MATLAB, Python, Java blocks | Intermediate-Advanced |
+| **[EMI/EMC](emi/index.md)** | EMI & Filtering | CM and DM filter design, optimizer | Advanced |
+| **[Advanced](advanced/index.md)** | Advanced Topologies | Matrix converters, PMSM motor drives, thyristor rectifiers | Advanced |
 
 ## Learning Paths
 
 ### Path 1: Power Electronics Fundamentals
 For students and engineers new to power electronics simulation:
 
-```
-101 → 102 → 103 → 104 → 201 → 202 → 203
-```
-
-1. [101 - First Simulation](../getting-started/first-simulation.md)
-2. [102 - Basic Circuits](../getting-started/building-circuits.md)
-3. [103 - PWM Basics](../getting-started/pwm-basics.md)
-4. [104 - Running Simulations](../getting-started/running-simulations.md)
-5. [201 - Buck Converter](dcdc/buck-converter.md)
-6. [202 - Boost Converter](dcdc/boost-converter.md)
-7. [203 - Buck-Boost](dcdc/buck-boost.md)
+1. [First Simulation](../getting-started/first-simulation.md)
+2. [Building Circuits](../getting-started/building-circuits.md)
+3. [PWM Basics](../getting-started/pwm-basics.md)
+4. [Running Simulations](../getting-started/running-simulations.md)
+5. [Buck Converter](dcdc/buck-converter.md)
+6. [Boost Converter](dcdc/boost-converter.md)
+7. [Buck-Boost Topologies](dcdc/buck-boost.md)
 
 ### Path 2: Grid-Tied Power Conversion
 For inverter and rectifier applications:
 
-```
-201 → 301 → 302 → 401 → 402 → 403
-```
+1. [Diode Rectifier](acdc/diode-rectifier.md)
+2. [PFC Basics](acdc/pfc-basics.md)
+3. [Vienna Rectifier](acdc/vienna-rectifier.md)
+4. [Single-Phase Inverter](dcac/single-phase.md)
+5. [Three-Phase Inverter](dcac/three-phase.md)
+6. [NPC Multilevel Inverter](dcac/npc-inverter.md)
 
 ### Path 3: Thermal & Reliability Design
-For thermal management focus:
+For thermal management and loss analysis:
 
-```
-201 → 501 → 502 → 503 → 901
-```
+1. [Buck Converter](dcdc/buck-converter.md)
+2. [Loss Calculation](thermal/loss-calculation.md)
+3. [Junction Temperature](thermal/junction-temperature.md)
+4. [Heatsink Design](thermal/heatsink-design.md)
+5. [Magnetic Domain](magnetics/magnetic-domain.md)
 
-### Path 4: Advanced Analysis
-For control design and optimization:
+### Path 4: Automation & Scripting
+For batch simulations, optimization, and external tool integration:
 
-```
-104 → 105 → 106 → 701 → 706
-```
-
-### Path 5: Automation & Integration
-For batch simulations and external tool integration:
-
-```
-104 → 701 → 702 → 706 → 705
-```
+1. [Running Simulations](../getting-started/running-simulations.md)
+2. [GeckoSCRIPT Basics](scripting/geckoscript.md)
+3. [MATLAB Integration](scripting/matlab.md)
+4. [Python Integration](scripting/python.md)
+5. [Java Blocks](scripting/java-blocks.md)
 
 ## Complete Tutorial Index
 
-### 1xx - Getting Started
-| # | Title | Description |
-|---|-------|-------------|
-| [101](../getting-started/first-simulation.md) | First Simulation | Launch, open, run, view results |
-| [102](../getting-started/building-circuits.md) | Basic Circuits | Component library, wiring |
-| [103](../getting-started/pwm-basics.md) | PWM Basics | Duty cycle, control signals |
-| [104](../getting-started/running-simulations.md) | Running Simulations | Solvers, time step, export |
-| [105](../getting-started/analysis-tools.md) | Analysis Tools | Steady-state, Bode plots |
-| 106 | State Machines | Control sequencing |
-| 107 | Component Libraries | Custom components |
+### Getting Started
+| Topic | Guide | Description |
+|---|---|-------------|
+| 101 | [First Simulation](../getting-started/first-simulation.md) | Launch, open, run, view results |
+| 102 | [Building Circuits](../getting-started/building-circuits.md) | Component library, wiring |
+| 103 | [PWM Basics](../getting-started/pwm-basics.md) | Duty cycle, carrier comparison |
+| 104 | [Running Simulations](../getting-started/running-simulations.md) | Solvers, time step, export |
+| 105 | [Analysis Tools](../getting-started/analysis-tools.md) | Oscilloscope, FFT, cursors |
 
-### 2xx - DC-DC Converters
-| # | Title | Description |
-|---|-------|-------------|
-| [201](dcdc/buck-converter.md) | Buck Converter | Step-down, CCM/DCM |
-| [202](dcdc/boost-converter.md) | Boost Converter | Step-up, RHPZ |
-| [203](dcdc/buck-boost.md) | Buck-Boost | SEPIC, Cuk, inverting |
-| [204](dcdc/) | Analog Circuits | Op-amp controllers |
+### DC-DC Converters
+| Topic | Guide | Description |
+|---|---|-------------|
+| 201 | [Buck Converter](dcdc/buck-converter.md) | Step-down, CCM/DCM |
+| 202 | [Boost Converter](dcdc/boost-converter.md) | Step-up, RHP zero |
+| 203 | [Buck-Boost Topologies](dcdc/buck-boost.md) | SEPIC, Cuk, inverting |
+| 204 | [Flyback Converter](dcdc/flyback.md) | Isolated buck-boost, transformer storage |
+| 205 | [Forward Converter](dcdc/forward.md) | Isolated step-down, core reset |
 
-### 3xx - AC-DC Rectifiers
-| # | Title | Description |
-|---|-------|-------------|
-| [301](acdc/diode-rectifier.md) | Diode Rectifier | Single/three-phase bridges |
-| [302](acdc/pfc-basics.md) | PFC Basics | Boost PFC, current control |
-| [303](acdc/vienna-rectifier.md) | Vienna Rectifier | Three-level PFC |
+### AC-DC Rectifiers
+| Topic | Guide | Description |
+|---|---|-------------|
+| 301 | [Diode Rectifiers](acdc/diode-rectifier.md) | Single/three-phase bridges |
+| 302 | [PFC Basics](acdc/pfc-basics.md) | Boost PFC, current control |
+| 303 | [Vienna Rectifier](acdc/vienna-rectifier.md) | Three-phase, three-level PFC |
 
-### 4xx - DC-AC Inverters
-| # | Title | Description |
-|---|-------|-------------|
-| [401](dcac/single-phase.md) | Single-Phase Inverter | PWM inverter basics |
-| [402](dcac/three-phase.md) | Three-Phase Inverter | VSI, VSR control |
-| [403](dcac/npc-inverter.md) | NPC Inverter | 3-level multilevel |
+### DC-AC Inverters
+| Topic | Guide | Description |
+|---|---|-------------|
+| 401 | [Single-Phase Inverter](dcac/single-phase.md) | H-bridge PWM inverter |
+| 402 | [Three-Phase Inverter](dcac/three-phase.md) | VSI, SPWM, and space-vector |
+| 403 | [NPC Inverter](dcac/npc-inverter.md) | 3-level neutral-point-clamped |
+| 404 | [MMC Converter](dcac/mmc-converter.md) | Modular multilevel for HVDC |
 
-### 5xx - Thermal Simulation
-| # | Title | Description |
-|---|-------|-------------|
-| [501](thermal/loss-calculation.md) | Loss Calculation | Conduction, switching |
-| [502](thermal/junction-temperature.md) | Junction Temperature | Thermal networks |
-| [503](thermal/heatsink-design.md) | Heatsink Design | Thermal resistance |
+### Thermal Simulation
+| Topic | Guide | Description |
+|---|---|-------------|
+| 501 | [Loss Calculation](thermal/loss-calculation.md) | Conduction and switching losses |
+| 502 | [Junction Temperature](thermal/junction-temperature.md) | Thermal networks, Foster/Cauer models |
+| 503 | [Heatsink Design](thermal/heatsink-design.md) | Thermal resistance budget, cooling |
 
-### 6xx - EMI/EMC
-| # | Title | Description |
-|---|-------|-------------|
-| [601](emi/) | EMI Filter Basics | Filter design |
-| [602](emi/) | CM/DM Filters | Common/differential mode |
+### Magnetics & Mechanical
+| Topic | Guide | Description |
+|---|---|-------------|
+| 901 | [Magnetic Domain](magnetics/magnetic-domain.md) | Permeance-capacitance analogy |
+| 902 | [Transformer Design](magnetics/transformer-design.md) | High-frequency transformer modeling |
+| 903 | [Inductor Saturation](magnetics/inductor-saturation.md) | Non-linear inductance characteristics |
+| 904 | [Mechanical Systems](magnetics/mechanical-systems.md) | Motor-load electromechanical dynamics |
 
-### 7xx - Scripting & Automation
-| # | Title | Description |
-|---|-------|-------------|
-| [701](scripting/geckoscript.md) | GeckoSCRIPT Basics | Scripting language |
-| [702](scripting/matlab.md) | MATLAB Integration | RMI interface |
-| 703 | Simulink Co-simulation | S-Function block |
-| [704](scripting/java-blocks.md) | Java Blocks | Custom components |
-| 705 | API Integration | External signals |
-| [706](scripting/python.md) | Python Integration | NumPy, SciPy automation |
-
-### 8xx - Advanced Topics
-| # | Title | Description |
-|---|-------|-------------|
-| [801](advanced/) | Matrix Converters | Direct AC-AC |
-| [802](advanced/) | Motor Drives (PMSM) | FOC control |
-| [803](advanced/) | Optimization | Swiss rectifier |
-| [804](advanced/) | Thyristor Control | Phase-controlled |
-
-### 9xx - Magnetics & Mechanical
-| # | Title | Description |
-|---|-------|-------------|
-| [901](magnetics/magnetic-domain.md) | Magnetic Domain | Permeance modeling |
-| [902](magnetics/transformer-design.md) | Transformer Design | HF transformer |
-| [903](magnetics/inductor-saturation.md) | Inductor Saturation | Non-linear inductance |
-| [904](magnetics/mechanical-systems.md) | Mechanical Systems | Motor-load dynamics |
-
-## PLECS Equivalent Mapping
-
-| PLECS Tutorial | GeckoCIRCUITS Equivalent |
-|----------------|-------------------------|
-| 101 Introduction | 101-102 First Simulation + Basic Circuits |
-| 103 SMPS | Flyback, Forward examples |
-| 104 Thermal | 501-503 Thermal series |
-| 105 Magnetic | 901-903 Magnetics series |
-| 110 PWM | 103 PWM Basics |
-| 112 State Machine | 106 State Machines |
-| 113 Python | 706 Python Integration |
-| 114 Analysis Tools | 105 Analysis Tools |
-
-## Prerequisites
-
-- GeckoCIRCUITS 1.0 or later
-- Java 25 runtime
-- For scripting tutorials: MATLAB/Simulink or Python (optional)
+### Scripting & Automation
+| Topic | Guide | Description |
+|---|---|-------------|
+| 701 | [GeckoSCRIPT Basics](scripting/geckoscript.md) | Built-in JavaScript automation |
+| 702 | [MATLAB Integration](scripting/matlab.md) | Scripting and co-simulation |
+| 703 | [Python Integration](scripting/python.md) | Parameter sweeps with NumPy/SciPy |
+| 704 | [Java Blocks](scripting/java-blocks.md) | Custom algorithmic components |
 
 ## Related Resources
 
-- [**Examples**](../examples/index.md) - Complete application examples
-- [**Articles**](../articles/index.md) - Technical papers and notes
-
----
-*GeckoCIRCUITS Tutorials v1.0*
-*Last updated: 2026-02*
+- [**Examples**](../examples/index.md) — Complete circuit applications
+- [**Articles**](../articles/index.md) — Technical papers and design notes
+- [**API Reference**](../api/index.md) — REST API and automation endpoints

@@ -205,21 +205,31 @@ nav:
 
   - Articles:
     - articles/index.md
+    - The Swiss Rectifier: articles/20120705-the-swiss-rectifier.md
+    - 5kW Aircraft Power System: articles/20091120-aircraft-power-system.md
+    - Text and Comments in Worksheet: articles/20091029-text.md
+    - Sunday Morning Laboratory Meeting: articles/20090908-sunday-morning-meeting.md
+    - Debugging a Complex Topology: articles/20090826-debugging-a-complex-topology.md
+    - Non-Linear Inductor Simulation: articles/20090810-how-to-simulate-non-linear-inductors.md
+    - Teaching Power Electronics: articles/20090731-how-do-you-teach-power.md
+    - AC/AC Conversion (Part 1): articles/20090611-acac-part-1.md
+    - AC/DC Conversion (Part 2): articles/20090522-acdc-part2.md
+    - AC/DC Conversion (Part 1): articles/20090522-acdc-part-1.md
 
   - Releases:
     - releases/index.md
-    - v2.21.0: releases/2210.md
     - v3.0.0 (Latest): releases/3000.md
-    - v2.22.0: releases/2220.md
-    - v2.20.0: releases/2200.md
-    - v2.19.0: releases/2190.md
-    - v2.18.0: releases/2180.md
-    - v2.17.0 - Distributions: releases/2170.md
+    - v2.22.0 - Security: releases/2220.md
+    - v2.21.0 - Analysis: releases/2210.md
+    - v2.20.0 - Streaming: releases/2200.md
+    - v2.19.0 - Batch: releases/2190.md
+    - v2.18.0 - Parameters: releases/2180.md
+    - v2.17.0 - Packaging: releases/2170.md
     - v2.16.0 - REST API: releases/2160.md
     - v2.15.0 - Loss Calc: releases/2150.md
     - v2.14.0 - GeckoFile: releases/2140.md
     - v2.13.0 - Terminal: releases/2130.md
-    - v2.12.0 - Analysis: releases/2120.md
+    - v2.12.0 - Quality: releases/2120.md
     - v2.11.0 - Core Module: releases/2110.md
     - v2.10.0 - Ground Zero: releases/2100.md
 
@@ -229,6 +239,7 @@ nav:
     - Desktop App: desktop-app.md
     - MCP Interface (LLM Tools): mcp.md
     - NativeC C/C++ Blocks: native-c-blocks.md
+    - Desktop Packaging: PACKAGING.md
 
   - API Reference:
     - api/index.md
@@ -244,6 +255,7 @@ nav:
   - Resources:
     - resources/index.md
     - Download: resources/download.md
+    - Architecture: architecture.md
     - Circuit Library: resources/circuit-library.md
     - FAQ: resources/faq.md
     - Troubleshooting: resources/troubleshooting.md

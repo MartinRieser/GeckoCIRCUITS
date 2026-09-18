@@ -27,9 +27,11 @@ The DAB converter provides:
 
 ## Circuit Files
 
-- `dab_basic.ipes` - Basic DAB operation
-- `dab_bidirectional.ipes` - Forward and reverse power flow
-- `dab_sps.ipes` - Single phase shift modulation
+The following related H-bridge and isolated converter models are available in the repository:
+
+- `resources/projects/llc_resonant_400v_24v.ipes` - Isolated DC-DC converter with high-frequency transformer stage
+- `resources/tutorials/4xx_dcac_inverters/401_single_phase_inverter/singlePhase_PWM_converter.ipes` - Full-bridge H-bridge PWM converter
+- `resources/tutorials/3xx_acdc_rectifiers/301_diode_rectifier/diode_RL_singlePH_trafo.ipes` - Transformer-coupled bridge rectifier circuit
 
 ## Theory
 

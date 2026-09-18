@@ -31,10 +31,10 @@ The LLC resonant converter offers:
 
 ## Circuit Files
 
-- `llc_basic_operation.ipes` - Basic LLC resonant tank operation
-- `llc_frequency_sweep.ipes` - Gain vs frequency analysis
-- `llc_load_variation.ipes` - Efficiency across load range
-- `llc_zvs_verification.ipes` - Switch voltage and current waveforms
+The following verified LLC resonant converter models are available in the repository:
+
+- `resources/projects/llc_resonant_400v_24v.ipes` - Full 400V to 24V isolated LLC resonant converter model with resonant tank parameters and load regulation
+- `src/modules/gecko-mcp/src/test/resources/golden/llc_0.ipes` - Parametric LLC resonant converter simulation test model
 
 ## LLC Tank Topology
 

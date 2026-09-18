@@ -1,39 +1,33 @@
 ---
-title: 2xx - DC-DC Converters
+title: DC-DC Converters
+description: DC-DC power conversion topologies, simulation, and control
 ---
 
-# 2xx - DC-DC Converters
+# DC-DC Converters
 
-DC-DC power conversion topologies and control.
+DC-DC power conversion topologies and control techniques in GeckoCIRCUITS.
 
-| Tutorial | Title | Difficulty |
-|----------|-------|------------|
-| [201](201_buck_converter/) | Buck Converter | 2/3 |
-| [202](202_boost_converter/) | Boost Converter | 2/3 |
-| [203](203_buck_boost/) | Buck-Boost Topologies | 2/3 |
-| [204](204_analog_circuits/) | Analog Circuits (Op-Amp) | 2/3 |
+## Available Tutorials
+
+| Tutorial | Title | Difficulty | Description |
+|----------|-------|------------|-------------|
+| [201](buck-converter.md) | [Buck Converter](buck-converter.md) | Beginner | Step-down converter, CCM/DCM modes, ripple calculation |
+| [202](boost-converter.md) | [Boost Converter](boost-converter.md) | Intermediate | Step-up conversion, right-half-plane zero, current control |
+| [203](buck-boost.md) | [Buck-Boost Topologies](buck-boost.md) | Intermediate | Inverting buck-boost, SEPIC, and Cuk topologies |
+| [204](flyback.md) | [Flyback Converter](flyback.md) | Intermediate | Isolated buck-boost with coupled inductor storage |
+| [205](forward.md) | [Forward Converter](forward.md) | Intermediate | Isolated step-down with tertiary reset winding |
 
 ## Learning Objectives
 
-- Understand step-down (buck) conversion principles
-- Analyze step-up (boost) converter operation
-- Compare SEPIC, Cuk, and buck-boost topologies
-- Design feedback control with operational amplifiers
+- Understand step-down (buck) and step-up (boost) conversion principles
+- Analyze continuous conduction mode (CCM) vs. discontinuous conduction mode (DCM)
+- Compare non-isolated (buck, boost, SEPIC, Cuk) and isolated (flyback, forward) topologies
+- Design closed-loop voltage and current feedback controllers
+- Model component parasitics and evaluate efficiency
 
-## Contents
+## Related Examples
 
-### 201 - Buck Converter
-- `A_Buck.ipes` - Basic buck converter
-- `buck_simple.ipes` - Simplified model
-- `Buck_Exercise.pdf` / `Buck_Solution.pdf` - Exercises
-
-### 202 - Boost Converter
-- `B_Boost.ipes` - Basic boost converter
-- `boost_simple.ipes` - Simplified model
-
-### 203 - Buck-Boost Topologies
-- `BuckBoost_const_dutyCycle.ipes` - Constant duty cycle operation
-- `buckBoost_simple.ipes`, `cuk_simple.ipes`, `sepic_simple.ipes` - Topology variants
-
-### 204 - Analog Circuits
-- Op-amp based controllers and filters
+- [Buck Converter Example](../../examples/basic/buck.md)
+- [Boost Converter Example](../../examples/basic/boost.md)
+- [Flyback Example](../../examples/basic/flyback.md)
+- [Forward Example](../../examples/basic/forward.md)

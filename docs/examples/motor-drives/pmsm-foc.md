@@ -28,9 +28,12 @@ Field-Oriented Control (FOC) provides:
 
 ## Circuit Files
 
-- `pmsm_foc_basic.ipes` - Basic FOC implementation
-- `pmsm_foc_mtpa.ipes` - Maximum torque per ampere
-- `pmsm_sensorless.ipes` - Sensorless FOC
+The following verified PMSM drive models are available in the repository:
+
+- `resources/articles/ipes_files/dq_control_pmsm.ipes` - dq-frame vector control of PMSM
+- `resources/tutorials/7xx_scripting_automation/704_java_blocks/JavaBlockPMSM.ipes` - PMSM drive with Java controller block
+- `resources/tutorials/8xx_advanced_topics/802_motor_drives_pmsm/indirect_matrix_java_with_PMSM_control.ipes` - Indirect matrix converter PMSM drive
+- `resources/tutorials/8xx_advanced_topics/802_motor_drives_pmsm/sparseMatrix_java_with_PMSM_control.ipes` - Sparse matrix converter PMSM drive
 
 ## Theory
 

@@ -26,9 +26,12 @@ Modern wind turbines use variable-speed operation:
 
 ## Circuit Files
 
-- `wind_pmsg_basic.ipes` - PMSG with back-to-back converter
-- `wind_dfig.ipes` - Doubly-fed induction generator
-- `wind_mppt.ipes` - With tip speed ratio MPPT
+The following verified grid-tied converter and AC machine models are available in the repository:
+
+- `resources/tutorials/4xx_dcac_inverters/402_three_phase_inverter/three-phase_VSR_simpleControl_250kW.ipes` - High-power 250 kW three-phase grid-connected voltage source converter
+- `resources/tutorials/4xx_dcac_inverters/402_three_phase_inverter/inverter.ipes` - Three-phase PWM converter for machine/grid interface
+- `resources/tutorials/7xx_scripting_automation/704_java_blocks/JavaBlockPMSM.ipes` - Permanent magnet synchronous machine model with control
+- `resources/tutorials/8xx_advanced_topics/801_matrix_converters/UltraSparseMatrixConverter.ipes` - AC-AC matrix converter topology for direct grid coupling
 
 ## System Architecture (Type 4 - Full Converter)
 

@@ -1,76 +1,61 @@
 ---
-title: 1xx - Getting Started
+title: Getting Started
+description: Introduction to GeckoCIRCUITS for new users
 ---
 
-# 1xx - Getting Started
+# Getting Started with GeckoCIRCUITS
 
-Introduction to GeckoCIRCUITS for new users.
+Welcome to GeckoCIRCUITS! Whether you are designing power supplies, motor drives, or renewable energy converters, this series guides you through installation, interface navigation, and your first simulation.
 
-| Tutorial | Title | Difficulty | Duration |
-|----------|-------|------------|----------|
-| [101](101_first_simulation/) | First Simulation | 1/3 | 15-20 min |
-| [102](102_basic_circuits/) | Basic Circuits | 1/3 | 25-30 min |
-| [103](103_pwm_basics/) | PWM Basics | 2/3 | 30-35 min |
-| [104](104_running_simulations/) | Running Simulations | 2/3 | 25-30 min |
-| [105](105_analysis_tools/) | Analysis Tools | 2/3 | 40-50 min |
-| [106](106_state_machines/) | State Machines | 2/3 | 35-45 min |
-| [107](107_component_libraries/) | Component Libraries | 2/3 | 30-40 min |
+## Overview & Guides
+
+| Guide | Description | Duration |
+|-------|-------------|----------|
+| [Installation](installation.md) | Install desktop app or build web editor from source | 5 min |
+| [Quick Start](quickstart.md) | 5-minute hands-on intro to running a simulation | 5 min |
+| [User Interface](interface.md) | Tour of the schematic editor, component palette, and scope | 10 min |
+| [First Simulation](first-simulation.md) | Step-by-step walkthrough running a buck converter | 15-20 min |
+| [Building Circuits](building-circuits.md) | Placing components, wiring, setting parameters, and ground | 20-25 min |
+| [PWM Basics](pwm-basics.md) | Pulse-width modulation, duty cycle control, carrier comparison | 25-30 min |
+| [Running Simulations](running-simulations.md) | Solver settings, time step selection, convergence, export | 20-25 min |
+| [Analysis Tools](analysis-tools.md) | Oscilloscope measurements, FFT spectrum, THD, and loss analysis | 25-30 min |
 
 ## Learning Path
 
-**Core Path (Required):**
-1. **101 - First Simulation**: Launch the app, open a circuit, run simulation, view results
-2. **102 - Basic Circuits**: Build circuits from scratch, component library, wiring
-3. **103 - PWM Basics**: Pulse-width modulation, duty cycle, control-power interface
-4. **104 - Running Simulations**: Solver settings, time step, troubleshooting, data export
-
-**Extended Topics (Optional):**
-5. **105 - Analysis Tools**: Steady-state analysis, Bode plots, frequency response
-6. **106 - State Machines**: Complex control sequences, startup/shutdown, fault handling
-7. **107 - Component Libraries**: Create and manage custom component libraries
-
-## Prerequisites
-
-- GeckoCIRCUITS installed and running
-- Basic understanding of electrical circuits
-- Java 25 runtime
+1. **Setup & Basics**: Install via [Installation](installation.md) and take the [Quick Start](quickstart.md) tour.
+2. **Schematic & Simulation**: Follow [User Interface](interface.md), run your [First Simulation](first-simulation.md), and learn [Building Circuits](building-circuits.md).
+3. **Control & Analysis**: Understand [PWM Basics](pwm-basics.md), configure solvers in [Running Simulations](running-simulations.md), and analyze results with [Analysis Tools](analysis-tools.md).
 
 ## What You'll Learn
 
-By completing this series, you will be able to:
-- Navigate the GeckoCIRCUITS interface
-- Build and modify circuit schematics
-- Configure and run simulations
-- View and analyze results in the oscilloscope
-- Export data for external analysis
-- Understand PWM control basics
-- Perform frequency-domain analysis
-- Implement state-based control logic
-- Create reusable component libraries
-
-## Estimated Total Time
-
-- Core tutorials (101-104): 1.5-2 hours
-- Extended tutorials (105-107): 2-2.5 hours
-- Complete series: 3.5-4.5 hours
+By completing the Getting Started series, you will be able to:
+- Install and launch the GeckoCIRCUITS desktop app or web editor
+- Navigate the schematic editor and component palettes
+- Build, wire, and modify power electronic circuits
+- Configure numerical solver settings (backward Euler, trapezoidal, Gear-Shichman)
+- Use the oscilloscope for signal visualization, zoom/pan, FFT, and cursor measurements
+- Export simulation waveforms as CSV or PNG images
 
 ## Next Steps
 
-After completing the Getting Started series:
-- **DC-DC Converters:** [2xx Series](../2xx_dcdc_converters/index.md) - Buck, Boost, Buck-Boost
-- **Rectifiers:** [3xx Series](../3xx_acdc_rectifiers/index.md) - Diode bridges, PFC
-- **Magnetics:** [9xx Series](../9xx_magnetics_mechanical/index.md) - Transformer, inductor modeling
-- **Examples:** [Basic Topologies](../examples/basic_topologies/index.md) - Reference designs
+After completing Getting Started, explore our topic-focused tutorials and application examples:
 
-## Quick Reference
+- **DC-DC Converters:** [DC-DC Series](../tutorials/dcdc/index.md) — Buck, Boost, Buck-Boost, Flyback, Forward
+- **AC-DC Rectifiers:** [AC-DC Series](../tutorials/acdc/index.md) — Diode bridges, PFC, Vienna rectifier
+- **DC-AC Inverters:** [DC-AC Series](../tutorials/dcac/index.md) — Single-phase, three-phase, NPC, MMC
+- **Thermal Simulation:** [Thermal Series](../tutorials/thermal/index.md) — Loss calculations and heatsink design
+- **Magnetics:** [Magnetics Series](../tutorials/magnetics/index.md) — Transformer and inductor saturation modeling
+- **Examples:** [Basic Topologies](../examples/basic/index.md) — Complete ready-to-run circuit examples
+
+## Keyboard Shortcuts Quick Reference
 
 | Action | Shortcut |
 |--------|----------|
-| Open file | Ctrl+O |
-| Save | Ctrl+S |
-| Run simulation | F5 |
-| Stop simulation | Escape |
-| Simulation settings | F9 |
+| Open file | `Ctrl+O` |
+| Save | `Ctrl+S` |
+| Run simulation | `F5` / Space |
+| Stop simulation | `Escape` |
 | Zoom in/out | Scroll wheel |
-| Rotate component | R |
-| Delete | Delete |
+| Rotate component | `R` |
+| Delete component | `Delete` / `Backspace` |
+| Command palette | `Ctrl+K` |

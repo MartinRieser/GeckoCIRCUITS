@@ -1,82 +1,48 @@
 ---
-title: 5xx - Thermal Simulation
+title: Thermal Simulation
+description: Semiconductor loss calculation, thermal modeling, and heatsink design
 ---
 
-# 5xx - Thermal Simulation
+# Thermal Simulation
 
-Power loss calculation and thermal analysis for reliable converter design.
+Power semiconductor loss calculation and thermal modeling for reliable converter design in GeckoCIRCUITS.
 
-| Tutorial | Title | Difficulty | Materials |
-|----------|-------|------------|-----------|
-| [501](501_loss_calculation/) | Loss Calculation | 2/3 | circuit |
-| [502](502_junction_temperature/) | Junction Temperature | 3/3 | circuits |
-| [503](503_heatsink_design/) | Heatsink Design | 3/3 | README |
+## Available Tutorials
+
+| Tutorial | Title | Difficulty | Description |
+|----------|-------|------------|-------------|
+| [501](loss-calculation.md) | [Loss Calculation](loss-calculation.md) | Intermediate | Semiconductor conduction and switching loss estimation |
+| [502](junction-temperature.md) | [Junction Temperature](junction-temperature.md) | Advanced | Dynamic thermal impedance networks (Foster/Cauer) |
+| [503](heatsink-design.md) | [Heatsink Design](heatsink-design.md) | Advanced | Thermal resistance budgeting and cooling system selection |
 
 ## Learning Objectives
 
-- Calculate conduction and switching losses in semiconductors
-- Model thermal impedance networks (Foster/Cauer)
-- Estimate junction temperatures during operation
-- Design cooling systems for target reliability
-- Analyze transient thermal behavior
-
-## Contents
-
-### 501 - Loss Calculation
-- `BuckBoost_thermal.ipes` - Thermal model of buck-boost converter
-- Conduction loss: I²R, Vce×Ic
-- Switching loss: Eon + Eoff at fsw
-
-### 502 - Junction Temperature
-- `BuckBoost_thermal_with_java.ipes` - Advanced thermal with Java blocks
-- `ThreePhase-VSR_10kW_thermal.ipes` - 10kW VSR thermal analysis
-- `ThreePhase-VSR_10kW_thermal_with_java.ipes` - Enhanced thermal model
-
-### 503 - Heatsink Design
-- Comprehensive README with design methodology
-- Thermal resistance calculations
-- Heatsink selection guidelines
-- Transient thermal analysis
+- Calculate conduction and switching losses in IGBTs, MOSFETs, and diodes
+- Model thermal impedance networks (Foster and Cauer representations)
+- Simulate transient and steady-state semiconductor junction temperatures
+- Size heatsinks for natural and forced-air convection cooling
 
 ## Quick Reference
 
 ### Thermal Resistance Chain
 
 ```
-Junction → [Rth,jc] → Case → [Rth,ch] → Heatsink → [Rth,ha] → Ambient
+Junction ──[Rth,jc]──► Case ──[Rth,ch]──► Heatsink ──[Rth,ha]──► Ambient
 ```
 
-Tj = Ta + Ploss × (Rth,jc + Rth,ch + Rth,ha)
-
-### Typical Thermal Resistances
-
-| Component | Rth (K/W) | Notes |
-|-----------|-----------|-------|
-| IGBT module | 0.1-0.5 | Junction to case |
-| Thermal grease | 0.05-0.2 | Case to heatsink |
-| Small heatsink | 2-5 | Natural convection |
-| Large heatsink | 0.2-1 | Forced air |
+$$T_j = T_a + P_{loss} \cdot (R_{th,jc} + R_{th,ch} + R_{th,ha})$$
 
 ### Loss Equations
 
-**Conduction:**
-```
-IGBT: Pcond = Vce0×Ic + Ron×Ic²
-Diode: Pcond = Vf×Id + Rd×Id²
-```
+**Conduction Loss:**
+- IGBT: $P_{cond} = V_{ce0} \cdot I_c + R_{on} \cdot I_c^2$
+- Diode: $P_{cond} = V_f \cdot I_d + R_d \cdot I_d^2$
 
-**Switching:**
-```
-Psw = (Eon + Eoff) × fsw × (Vdc/Vref) × (Ic/Iref)
-```
+**Switching Loss:**
+$$P_{sw} = (E_{on} + E_{off}) \cdot f_{sw} \cdot \left(\frac{V_{dc}}{V_{ref}}\right) \cdot \left(\frac{I_c}{I_{ref}}\right)$$
 
-## Prerequisites
+## Related Resources
 
-- Complete 2xx DC-DC Converters (base circuits)
-- Understanding of power semiconductor operation
-- Basic heat transfer concepts
-
-## Related Examples
-
-- [Thermal Examples](/wip/#index.md)
-- [Loss Calculation](501_loss_calculation/)
+- [DC-DC Converter Tutorials](../dcdc/index.md)
+- [DC-AC Inverter Tutorials](../dcac/index.md)
+- [Analysis Tools in Getting Started](../../getting-started/analysis-tools.md)

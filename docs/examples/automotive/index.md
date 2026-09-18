@@ -1,79 +1,43 @@
 ---
 title: Automotive Examples
+description: Power electronics for electric vehicles, hybrid vehicles, and charging infrastructure
 ---
 
 # Automotive Examples
 
-Power electronics for electric vehicles, hybrid vehicles, and charging infrastructure.
+Power electronics for electric vehicles (EV), hybrid vehicles (HEV), and EV charging infrastructure in GeckoCIRCUITS.
 
-## Examples
+## Available Examples
 
-| Example | Description | Difficulty |
-|---------|-------------|------------|
-| [EV Charger](ev_charger/) | Level 2 AC charging | Intermediate |
-| [Onboard Charger](onboard_charger/) | OBC with PFC and isolation | Advanced |
-| [DC Fast Charger](dc_fast_charger/) | Level 3 DC charging station | Advanced |
-| [Traction Inverter](traction_inverter/) | EV motor drive inverter | Advanced |
+| Example | Description | Difficulty | Documentation |
+|---------|-------------|------------|---------------|
+| [EV Charger (Level 2)](ev-charger.md) | Single-phase and three-phase AC Level 2 charging infrastructure | Intermediate | [View Example](ev-charger.md) |
+| [Onboard Charger (OBC)](obc.md) | Bidirectional OBC with PFC front-end and isolated DC-DC resonant stage | Advanced | [View Example](obc.md) |
+| [DC Fast Charger (Level 3)](dcfc.md) | High-power (50–350 kW) modular DC fast charging station | Advanced | [View Example](dcfc.md) |
+| [Traction Inverter](traction.md) | 400V/800V SiC traction inverter with field-oriented PMSM control | Advanced | [View Example](traction.md) |
 
 ## Quick Reference
 
 ### EV Charging Levels
 
-| Level | Voltage | Power | Connector | Time (0-80%) |
-|-------|---------|-------|-----------|--------------|
-| Level 1 | 120V AC | 1.4 kW | J1772 | 20+ hours |
-| Level 2 | 240V AC | 7-19 kW | J1772 | 4-8 hours |
-| Level 3 DC | 200-1000V DC | 50-350 kW | CCS/CHAdeMO | 20-40 min |
+| Level | Voltage | Power | Standard Connector | Charging Time (0–80%) |
+|-------|---------|-------|--------------------|-----------------------|
+| Level 1 | 120 VAC (1φ) | 1.4–1.9 kW | J1772 | 15–25 hours |
+| Level 2 | 208–240 VAC (1φ/3φ) | 3.3–19.2 kW | J1772 / Type 2 | 4–8 hours |
+| Level 3 (DCFC) | 200–1000 VDC | 50–350 kW | CCS / NACS / CHAdeMO | 15–30 minutes |
 
-### Typical EV Power Architecture
+### Vehicle Powertrain Architecture
 
 ```
-                                    ┌─────────────┐
-Grid ───[OBC]───┐                   │   Motor     │
-                │   ┌─────────┐     │  (PMSM)     │
-                ├──►│ Battery ├────►│ ┌─────────┐ │
-DC Charger ─────┘   │ 400-800V│     │ │Inverter │ │
-                    └────┬────┘     │ └─────────┘ │
-                         │          └─────────────┘
-                    ┌────▼────┐
-                    │ DC-DC   │──► 12V Auxiliary
-                    │ (LV)    │
-                    └─────────┘
+Grid ──► [OBC / DCFC] ──► [HV Battery: 400V/800V] ──► [Traction Inverter] ──► [PMSM Motor]
+                                   │
+                                   ▼
+                           [HV to LV DC-DC] ──► 12V / 48V Auxiliary Systems
 ```
-
-### Key Specifications
-
-| System | Voltage | Power | Efficiency |
-|--------|---------|-------|------------|
-| Onboard Charger | 400V/800V | 11-22 kW | >94% |
-| Traction Inverter | 400V/800V | 100-300 kW | >97% |
-| DC-DC Converter | 400V→12V | 2-3 kW | >95% |
-| DC Fast Charger | 200-1000V | 50-350 kW | >95% |
-
-## Design Considerations
-
-### Automotive Requirements
-
-| Requirement | Specification |
-|-------------|---------------|
-| Operating temp | -40°C to +85°C (ambient) |
-| EMC | CISPR 25 Class 5 |
-| Safety | ISO 26262 (ASIL B-D) |
-| Efficiency | DoE Level VI minimum |
-| Power density | >3 kW/L target |
-
-### Isolation Requirements
-
-| Application | Isolation | Standard |
-|-------------|-----------|----------|
-| OBC (AC-DC) | Required | IEC 61851 |
-| Traction inverter | Not required | - |
-| DC-DC (HV-LV) | Required | ISO 6469 |
-| Charging coupler | Required | IEC 62196 |
 
 ## Related Tutorials
 
-- [302 - PFC Basics](../tutorials/3xx_acdc_rectifiers/302_pfc_basics/index.md)
-- [Flyback Converter](../basic/flyback_converter/index.md)
-- [LLC Resonant](../power-supplies/llc_resonant/index.md)
-- [Motor Drives](../motor-drives/index.md)
+- [PFC Basics Tutorial](../../tutorials/acdc/pfc-basics.md)
+- [Three-Phase Inverter Tutorial](../../tutorials/dcac/three-phase.md)
+- [LLC Resonant Converter Example](../power-supplies/llc.md)
+- [Motor Drive Examples](../motor-drives/index.md)

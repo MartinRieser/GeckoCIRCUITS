@@ -32,10 +32,38 @@ A Level 2 EV charger provides:
 
 ## Circuit Files
 
-- `ev_charger_pfc_boost.ipes` - Single-phase PFC boost stage
-- `ev_charger_isolated_dcdc.ipes` - Full-bridge isolated converter
-- `ev_charger_complete.ipes` - Complete system with control
-- `ev_charger_cpcv_control.ipes` - Charging profile implementation
+The following verified simulation models are available in the repository for EV battery charging, active PFC, and isolated DC-DC stages:
+
+| Circuit File | Description | Repository Path |
+|---|---|---|
+| `11kw_three_phase_vienna_charger.ipes` | 11 kW 3-phase Vienna active PFC DC fast charger with closed-loop voltage and current regulation for EV battery charging | `resources/examples/automotive/dc_fast_charger/` |
+| `three-phase_ViennaRectifier_simpleControl_250kW.ipes` | 250 kW 3-phase Vienna active rectifier with voltage regulation | `resources/tutorials/3xx_acdc_rectifiers/303_vienna_rectifier/` |
+| `boostPFC_currentControl.ipes` | Single-phase active PFC boost converter with cascaded voltage regulation and inner average current control loop | `resources/tutorials/3xx_acdc_rectifiers/302_pfc_basics/` |
+| `boostPFC.ipes` | Single-phase PFC boost power stage demonstrating sinusoidal input current shaping | `resources/tutorials/3xx_acdc_rectifiers/302_pfc_basics/` |
+| `interleaved_pfc_50v.ipes` | Interleaved boost PFC converter stage with reduced input ripple | `resources/projects/` |
+| `llc_resonant_400v_24v.ipes` | Isolated 400V LLC resonant DC-DC converter stage providing galvanic isolation | `resources/projects/` |
+
+### Opening the Circuits in the New GUI
+
+To open and simulate these circuits in the new GeckoCIRCUITS GUI:
+
+1. **Desktop App**:
+   - Double-click the `.ipes` file in Windows Explorer, macOS Finder, or Linux file manager (file association opens the new GUI directly).
+   - Or launch **GeckoCIRCUITS**, select **File > Open**, and select the `.ipes` file (or drag and drop it onto the canvas).
+
+2. **Web Editor (from repository checkout)**:
+   - Start the local editor and engine:
+     ```bash
+     # Windows
+     run-web-editor.bat
+
+     # Linux / macOS
+     ./run-web-editor.sh
+     ```
+   - In the opened editor window, click **File > Open** or drag-and-drop the `.ipes` file directly onto the canvas.
+   - Click **▶ Run Simulation** in the sidebar to view waveforms in the integrated oscilloscope.
+
+
 
 ## System Architecture
 

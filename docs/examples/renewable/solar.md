@@ -34,11 +34,12 @@ Grid-tied solar inverters convert DC power from PV arrays to AC power synchroniz
 
 ## Circuit Files
 
-- `pv_inverter_basic.ipes` - Single-phase full-bridge inverter
-- `pv_inverter_mppt.ips` - With Perturb & Observe MPPT control
-- `pv_inverter_grid_sync.ipes` - PLL-based grid synchronization
-- `pv_inverter_complete.ipes` - Full system with all controls
-- `pv_array_model.ipes` - PV cell and array characteristics
+The following verified inverter and DC-DC converter simulation models are available in the repository:
+
+- `resources/tutorials/4xx_dcac_inverters/401_single_phase_inverter/singlePhase_PWM_converter.ipes` - Single-phase H-bridge PWM inverter connected to AC grid/filter
+- `resources/tutorials/4xx_dcac_inverters/402_three_phase_inverter/inverter.ipes` - Three-phase PWM voltage source inverter
+- `resources/tutorials/2xx_dcdc_converters/202_boost_converter/boost_simple.ipes` - Boost converter stage for PV voltage step-up
+- `resources/tutorials/2xx_dcdc_converters/202_boost_converter/B_Boost.ipes` - Boost converter with control stage
 
 ## System Architecture
 

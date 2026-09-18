@@ -36,9 +36,10 @@ AC ─[EMI]─[Rectifier]─[Boost PFC]─[DC Link]─[Full Bridge]─[Transform
 
 ## Circuit Files
 
-> **Status:** Placeholder
-> - `ev_charger_pfc.ipes` - PFC front-end
-> - `ev_charger_complete.ipes` - Full charger
+The following verified simulation models in the repository implement the EV charger front-end and full battery charging topologies:
 
----
-*Placeholder - Details to be added*
+- `../../automotive/dc_fast_charger/11kw_three_phase_vienna_charger.ipes` - Complete 11 kW 3-phase Vienna active PFC charger
+- `../../../tutorials/3xx_acdc_rectifiers/303_vienna_rectifier/three-phase_ViennaRectifier_simpleControl_250kW.ipes` - 250 kW Vienna active rectifier
+- `../../../tutorials/3xx_acdc_rectifiers/302_pfc_basics/boostPFC_currentControl.ipes` - Single-phase boost PFC with closed-loop current control
+- `../../../projects/llc_resonant_400v_24v.ipes` - Isolated resonant DC-DC converter stage
+

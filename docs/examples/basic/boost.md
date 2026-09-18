@@ -27,9 +27,12 @@ The boost converter steps up DC voltage, commonly used in:
 
 ## Circuit Files
 
-- `boost_basic.ipes` - Open-loop boost converter
-- `boost_current_mode.ipes` - Average current mode control
-- `boost_pfc.ipes` - PFC application
+The following simulation models are available in the repository:
+
+- `resources/tutorials/2xx_dcdc_converters/202_boost_converter/boost_simple.ipes` - Open-loop step-up boost converter
+- `resources/tutorials/2xx_dcdc_converters/202_boost_converter/B_Boost.ipes` - Boost converter circuit model
+- `resources/tutorials/3xx_acdc_rectifiers/302_pfc_basics/boostPFC.ipes` - Boost PFC application
+- `resources/tutorials/3xx_acdc_rectifiers/302_pfc_basics/boostPFC_currentControl.ipes` - Boost PFC with closed-loop current control
 
 ## Theory
 

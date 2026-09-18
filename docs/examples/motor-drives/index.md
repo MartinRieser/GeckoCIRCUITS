@@ -1,49 +1,46 @@
 ---
 title: Motor Drive Examples
+description: Electric motor control systems for industrial, automotive, and robotic applications
 ---
 
 # Motor Drive Examples
 
-Electric motor control systems for industrial, automotive, and renewable energy applications.
+Electric motor control systems for industrial, automotive, and renewable energy applications in GeckoCIRCUITS.
 
-## Examples
+## Available Examples
 
-| Example | Description | Difficulty |
-|---------|-------------|------------|
-| [BLDC Control](bldc_control/) | Brushless DC with trapezoidal | Intermediate |
-| [PMSM FOC](pmsm_foc/) | Field-oriented control | Advanced |
-| [Induction Motor](induction_motor/) | V/f and vector control | Advanced |
+| Example | Description | Difficulty | Documentation |
+|---------|-------------|------------|---------------|
+| [BLDC Control](bldc.md) | Brushless DC motor with 6-step trapezoidal commutation | Intermediate | [View Example](bldc.md) |
+| [PMSM FOC](pmsm-foc.md) | Permanent Magnet Synchronous Motor with Field-Oriented Control | Advanced | [View Example](pmsm-foc.md) |
+| [Induction Motor](induction.md) | Three-phase induction motor with scalar (V/f) and vector control | Advanced | [View Example](induction.md) |
 
 ## Quick Reference
 
 ### Motor Types Comparison
 
-| Motor | Control | Sensors | Efficiency | Cost |
-|-------|---------|---------|------------|------|
-| BLDC | Trapezoidal | Hall | Good | Low |
-| PMSM | FOC | Encoder | Excellent | High |
-| IM | V/f or FOC | None/Encoder | Good | Low |
+| Motor | Commutation / Control | Sensor Feedback | Efficiency | Relative Cost |
+|-------|----------------------|-----------------|------------|---------------|
+| **BLDC** | 6-step trapezoidal | Hall sensors (or sensorless) | Good (85–90%) | Low |
+| **PMSM** | Field-Oriented Control (dq) | Encoder / Resolver | High (92–97%) | Medium–High |
+| **Induction Motor (IM)** | V/f scalar or FOC | None or encoder | Good (85–94%) | Low–Medium |
 
-### Control Strategies
-
-| Strategy | Description | Complexity | Performance |
-|----------|-------------|------------|-------------|
-| Trapezoidal | 6-step commutation | Low | Torque ripple |
-| SPWM | Sinusoidal PWM | Medium | Good |
-| FOC | Field-oriented (dq) | High | Excellent |
-| DTC | Direct torque control | High | Fast response |
-
-### FOC Block Diagram
+### Field-Oriented Control (FOC) Architecture
 
 ```
-Speed Ref → [PI] → Id/Iq Ref → [PI×2] → Vd/Vq → [Inverse Park] → Va,Vb,Vc → [PWM] → Inverter
-                      ↑                                               ↑
-               [Park Transform] ← [Clarke] ← [Current Sense]          │
-                      ↑                                               │
-               [Position/Speed] ←────────────────────────────────── Motor
+Speed Ref ──►[PI]──► Iq_ref ──►[PI]──► Vq ──►[Inverse]──► Va,Vb,Vc ──►[SVPWM]──► Inverter
+                       │                 │     Park                       │
+             Id_ref=0  │                 │                                │
+               ──────►[PI]──► Vd ────────┘                                │
+                       │                                                  │
+                       └◄───────[Park]◄───────[Clarke]◄───────[Current]◄──┘
+                                  dq             αβ           Sense
+                                   │
+                              θe ──┘ (from resolver/encoder)
 ```
 
 ## Related Tutorials
 
-- [802 - Motor Drives PMSM](../tutorials/8xx_advanced_topics/802_motor_drives_pmsm/index.md)
-- [402 - Three-Phase Inverter](../tutorials/4xx_dcac_inverters/402_three_phase_inverter/index.md)
+- [Three-Phase Inverter Tutorial](../../tutorials/dcac/three-phase.md)
+- [Mechanical Systems Simulation](../../tutorials/magnetics/mechanical-systems.md)
+- [Advanced Motor Drives Guide](../../tutorials/advanced/index.md#802-motor-drives-pmsm)

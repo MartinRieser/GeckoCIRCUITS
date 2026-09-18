@@ -1,57 +1,38 @@
 ---
 title: Renewable Energy Examples
+description: Power electronics for solar PV, wind turbines, and grid-connected energy storage
 ---
 
 # Renewable Energy Examples
 
-Power electronics for solar, wind, and energy storage applications.
+Power electronics for solar, wind, and energy storage applications in GeckoCIRCUITS.
 
-## Examples
+## Available Examples
 
-| Example | Description | Difficulty |
-|---------|-------------|------------|
-| [Solar Inverter](solar_inverter/) | PV grid-tied inverter | Advanced |
-| [Wind Converter](wind_converter/) | PMSG wind turbine | Advanced |
+| Example | Description | Difficulty | Documentation |
+|---------|-------------|------------|---------------|
+| [Solar PV Inverter](solar.md) | Grid-tied photovoltaic inverter with Maximum Power Point Tracking (MPPT) | Advanced | [View Example](solar.md) |
+| [Wind Turbine Converter](wind.md) | Permanent Magnet Synchronous Generator (PMSG) back-to-back converter | Advanced | [View Example](wind.md) |
 
 ## Quick Reference
 
-### Solar PV System
+### Solar PV Power Flow
 
 ```
-PV Array → [DC-DC (MPPT)] → DC Bus → [Inverter] → Grid
-                                   ↓
-                            [Battery] (optional)
+PV Array ──► [DC-DC Boost (MPPT)] ──► DC Bus ──► [Grid Inverter] ──► AC Grid
+                                         │
+                                         ▼
+                               [Battery Storage / BMS]
 ```
 
-**Key Blocks:**
-- **MPPT:** Maximum Power Point Tracking (P&O, IC algorithms)
-- **Boost DC-DC:** Step up panel voltage to DC bus
-- **Inverter:** DC to AC grid-synchronized
-
-### Wind Power System
+### Wind Power Conversion Architecture
 
 ```
-Wind → Turbine → PMSG → [Active Rectifier] → DC Bus → [Inverter] → Grid
-                              ↓
-                      [Generator Control]
+Wind Turbine ──► [PMSG Generator] ──► [Active Rectifier] ──► DC Bus ──► [Grid Inverter] ──► AC Grid
 ```
-
-**Control Objectives:**
-- Extract maximum wind power (MPPT)
-- Control generator torque/speed
-- Grid synchronization and power quality
-
-### Grid Requirements
-
-| Parameter | Typical Requirement |
-|-----------|---------------------|
-| Power Factor | >0.9 (often >0.95) |
-| THD | <5% (current) |
-| DC Injection | <0.5% of rated |
-| Anti-islanding | Required |
-| Voltage ride-through | Per grid code |
 
 ## Related Tutorials
 
-- [402 - Three-Phase Inverter](../tutorials/4xx_dcac_inverters/402_three_phase_inverter/index.md)
-- [302 - PFC Basics](../tutorials/3xx_acdc_rectifiers/302_pfc_basics/index.md)
+- [Three-Phase Inverter Tutorial](../../tutorials/dcac/three-phase.md)
+- [PFC Basics Tutorial](../../tutorials/acdc/pfc-basics.md)
+- [MMC Converter Tutorial](../../tutorials/dcac/mmc-converter.md)

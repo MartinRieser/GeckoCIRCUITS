@@ -23,9 +23,11 @@ The buck converter is the fundamental step-down topology, converting a higher DC
 
 ## Circuit Files
 
-- `buck_basic.ipes` - Open-loop buck converter
-- `buck_voltage_mode.ipes` - Voltage mode control
-- `buck_current_mode.ipes` - Peak current mode control
+The following simulation models are available in the repository:
+
+- `resources/tutorials/2xx_dcdc_converters/201_buck_converter/buck_simple.ipes` - Open-loop step-down buck converter
+- `resources/tutorials/2xx_dcdc_converters/201_buck_converter/A_Buck.ipes` - Buck converter with detailed component and load modeling
+- `resources/tutorials/7xx_scripting_automation/701_gecko_script_basics/buck_control.ipes` - Closed-loop buck converter with GeckoSCRIPT feedback control
 
 ## Theory
 

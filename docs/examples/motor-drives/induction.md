@@ -29,9 +29,12 @@ Induction motors are the workhorse of industry:
 
 ## Circuit Files
 
-- `im_vf_control.ipes` - V/f (scalar) control
-- `im_vector.ipes` - Indirect field-oriented control
-- `im_dtc.ipes` - Direct torque control
+The following verified three-phase inverter and AC machine simulation models are available in the repository:
+
+- `resources/tutorials/4xx_dcac_inverters/402_three_phase_inverter/inverter.ipes` - Three-phase PWM voltage source inverter driving AC load
+- `resources/tutorials/4xx_dcac_inverters/402_three_phase_inverter/three-phase_VSR_simpleControl_250kW.ipes` - High-power 250 kW three-phase converter
+- `resources/tutorials/7xx_scripting_automation/704_java_blocks/JavaBlockPMSM.ipes` - Machine model with dynamic closed-loop control block
+- `resources/tutorials/8xx_advanced_topics/802_motor_drives_pmsm/indirect_matrix_java_with_PMSM_control.ipes` - AC-AC direct motor drive with closed-loop control
 
 ## Theory
 

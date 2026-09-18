@@ -1,116 +1,95 @@
 ---
 title: Download
-description: Download GeckoCIRCUITS releases
+description: Download GeckoCIRCUITS installers, packages, and examples
 ---
 
 # Download GeckoCIRCUITS
 
 ## Latest Release
 
-[:material-download: Download GeckoCIRCUITS v1.0](https://github.com/MartinRieser/GeckoCIRCUITS/releases/latest){ .md-button .md-button--primary }
+[:material-download: Download GeckoCIRCUITS v3.0.0](https://github.com/MartinRieser/GeckoCIRCUITS/releases/latest){ .md-button .md-button--primary }
+[:material-file-document: View Release Notes](../releases/3000.md){ .md-button }
 
 ## System Requirements
 
 | Requirement | Minimum | Recommended |
 |-------------|---------|-------------|
-| **OS** | Windows 10, Linux, macOS 10.15+ | Windows 11, Ubuntu 22.04+, macOS 12+ |
-| **Java** | Java 25 | Java 25 (Temurin recommended) |
+| **OS** | Windows 10 (x64), Linux (x86_64 / arm64), macOS 11+ | Windows 11, Ubuntu 22.04+, macOS 12+ (Apple Silicon or Intel) |
+| **Java** | *Bundled with desktop app* (No installation needed) | Java 25 (if building from source) |
 | **RAM** | 4 GB | 8 GB+ |
 | **Disk** | 500 MB | 1 GB |
 | **Display** | 1280x720 | 1920x1080+ |
 
-## Platform Downloads
+## Platform Packages
+
+Installers and portable bundles are published on the [GitHub Releases](https://github.com/MartinRieser/GeckoCIRCUITS/releases) page:
 
 === "Windows"
 
-    **GeckoCIRCUITS-1.0-windows.zip**
+    **Installer:** `GeckoCIRCUITS_<version>_x64-setup.exe` or `.msi`
+    
+    1. Download the installer.
+    2. Run the setup wizard (Start Menu, Desktop shortcut, and `.ipes` file association are configured automatically).
+    3. Launch **GeckoCIRCUITS**.
 
-    1. Download the Windows package
-    2. Extract to desired location
-    3. Run `run-gecko.bat`
+    **Portable (Classic GUI):** `GeckoCIRCUITS-<version>-windows-x64-portable.zip`
+    - Legacy zero-install archive with `run-gecko.bat`. For the new GUI, use the installer above or `run-web-editor.bat`.
 
-    ```batch
-    scripts\run-gecko.bat
-    ```
-
-=== "Linux"
-
-    **GeckoCIRCUITS-1.0-linux.zip**
-
-    1. Download the Linux package
-    2. Extract: `unzip GeckoCIRCUITS-1.0-linux.zip`
-    3. Make executable: `chmod +x scripts/run-gecko-linux.sh`
-    4. Run: `./scripts/run-gecko-linux.sh`
-
-    ```bash
-    chmod +x scripts/run-gecko-linux.sh
-    ./scripts/run-gecko-linux.sh
-    ```
 
 === "macOS"
 
-    **GeckoCIRCUITS-1.0-macos.zip**
+    **Disk Image:** `GeckoCIRCUITS_<version>_x64.dmg` (Intel) or `_aarch64.dmg` (Apple Silicon)
+    
+    1. Open the `.dmg` image and drag **GeckoCIRCUITS** to Applications.
+    2. On first launch, right-click the app and choose **Open** if prompted by Gatekeeper.
 
-    1. Download the macOS package
-    2. Extract the archive
-    3. Run `run-gecko-macos.sh`
+=== "Linux"
 
+    **Packages:** `gecko-circuits_<version>_amd64.deb`, `*.rpm`, or `*.AppImage`
+    
     ```bash
-    ./scripts/run-gecko-macos.sh
+    # Debian / Ubuntu
+    sudo dpkg -i gecko-circuits_<version>_amd64.deb
+
+    # Fedora / RHEL
+    sudo rpm -i gecko-circuits-<version>-1.x86_64.rpm
     ```
 
-=== "WSL"
+    **Portable:** `GeckoCIRCUITS-<version>-linux-x64-portable.tar.gz`
 
-    **GeckoCIRCUITS-1.0-wsl.zip**
+## Run from Source (Web Editor)
 
-    1. Download the WSL package
-    2. Extract in WSL filesystem
-    3. Run setup: `./scripts/setup-wsl.sh`
-    4. Run: `./scripts/run-gecko-wsl.sh`
-
-## Examples Package
-
-[:material-folder-download: Download Examples (GeckoCIRCUITS-1.0-examples.zip)](https://github.com/MartinRieser/GeckoCIRCUITS/releases/latest){ .md-button }
-
-Contains 100+ ready-to-run circuit files:
-
-- Basic topologies (Buck, Boost, Flyback, Forward)
-- Power supplies (LLC, DAB, PFC)
-- Motor drives (BLDC, PMSM, Induction)
-- Automotive (EV Charger, OBC, Traction)
-- Thermal analysis examples
-
-## Build from Source
+For contributors and developers who want to run from source:
 
 ```bash
-# Clone repository
 git clone https://github.com/MartinRieser/GeckoCIRCUITS.git
 cd GeckoCIRCUITS
 
-# Build with Maven
-mvn clean package -DskipTests
-
-# Run
-java -Xmx3G -Dpolyglot.js.nashorn-compat=true \
-  -jar target/gecko-1.0-jar-with-dependencies.jar
+# Starts the simulation engine on localhost:8080 and opens the web editor
+run-web-editor.bat        # Windows
+./run-web-editor.sh       # Linux / macOS
 ```
 
-## Version History
+Requirements for running from source: JDK 25, Maven 3.8+, and Node.js 22+.
 
-| Version | Date | Highlights |
-|---------|------|------------|
-| 1.0 | 2026-02 | Production release with comprehensive docs, 125+ examples, developer guide |
-| 0.5.0 | 2026-02 | Developer guide, contributor onboarding |
-| 0.4.0 | 2026-02 | JaCoCo coverage enforcement, 125 new tests |
-| 0.3.0 | 2026-02 | Scripting tutorials (GeckoSCRIPT, MATLAB, Python, Java Blocks) |
-| 0.2.0 | 2026-02 | Documentation site, getting started guides, tutorials |
-| 0.1.0 | 2026-02 | Initial open-source release with CI, packaging, launcher scripts |
+## Examples Package
 
-See [Changelog](changelog.md) for detailed release notes.
+Download ready-to-run circuit examples directly from GitHub:
+
+[:material-folder-download: Browse Circuit Examples on GitHub](https://github.com/MartinRieser/GeckoCIRCUITS/tree/main/resources/examples){ .md-button }
+
+The library contains 100+ circuits covering:
+- Basic topologies (Buck, Boost, Flyback, Forward)
+- Power supplies (LLC, DAB, PFC)
+- Motor drives (BLDC, PMSM FOC, Induction)
+- Automotive systems (EV Charger, OBC, DCFC, Traction)
+- Thermal loss and heatsink design
+
+See the [Circuit Library Guide](circuit-library.md) for full descriptions.
 
 ## License
 
-GeckoCIRCUITS is dual-licensed:
+GeckoCIRCUITS is open source software:
 
-- **Open Source**: [GNU General Public License v3.0](https://github.com/MartinRieser/GeckoCIRCUITS/blob/main/LICENSE) for academic, research, and open-source use
-- **Commercial**: Contact for commercial licensing terms
+- **Open Source License**: [GNU General Public License v3.0](https://github.com/MartinRieser/GeckoCIRCUITS/blob/main/LICENSE) for academic, research, and open-source applications.
+- **Commercial Licensing**: Contact the GeckoCIRCUITS team for commercial licensing options.

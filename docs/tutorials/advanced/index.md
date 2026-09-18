@@ -1,41 +1,52 @@
 ---
-title: 8xx - Advanced Topics
+title: Advanced Topics
+description: Complex converter topologies, motor drives, and optimization techniques
 ---
 
-# 8xx - Advanced Topics
+# Advanced Topics
 
-Complex topologies and optimization techniques.
+Complex power electronic topologies, advanced motor drives, and optimization in GeckoCIRCUITS.
 
-| Tutorial | Title | Difficulty |
-|----------|-------|------------|
-| [801](801_matrix_converters/) | Matrix Converters | 3/3 |
-| [802](802_motor_drives_pmsm/) | Motor Drives (PMSM) | 3/3 |
-| [803](803_optimization/) | Optimization | 3/3 |
-| [804](804_thyristor_control/) | Thyristor Control | 3/3 |
+## Overview
+
+| Section | Title | Difficulty | Reference |
+|---------|-------|------------|-----------|
+| [801](#801-matrix-converters) | Matrix Converters | Advanced | [AC/AC Conversion Article](../../articles/20090611-acac-part-1.md) |
+| [802](#802-motor-drives-pmsm) | Motor Drives (PMSM) | Advanced | [PMSM FOC Example](../../examples/motor-drives/pmsm-foc.md) |
+| [803](#803-optimization) | Optimization | Advanced | [Swiss Rectifier Article](../../articles/20120705-the-swiss-rectifier.md) |
+| [804](#804-thyristor-control) | Thyristor Control | Advanced | Phase-controlled rectifiers |
 
 ## Learning Objectives
 
-- Understand direct AC-AC conversion with matrix converters
-- Implement field-oriented control for PMSM
-- Optimize converter designs using GeckoSCRIPT
-- Control thyristor-based rectifiers
+- Understand direct AC-AC conversion with sparse and matrix converters
+- Implement field-oriented control (FOC) for permanent magnet synchronous motors (PMSM)
+- Optimize converter designs using automated scripting workflows
+- Control thyristor-based line-commutated rectifiers and evaluate commutation margins
 
 ## Contents
 
 ### 801 - Matrix Converters
-- `UltraSparseMatrixConverter.ipes` - Ultra-sparse topology
-- `three-phase_ACAC_sparsematrixConverter_junction_temperature.ipes` - Thermal analysis
+- Direct AC-AC conversion without bulky electrolytic DC-link capacitors
+- Venturini and space-vector modulation algorithms
+- Thermal analysis under varying output frequencies
 
 ### 802 - Motor Drives (PMSM)
-- `indirect_matrix_java_with_PMSM_control.ipes` - Indirect matrix with PMSM
-- `sparseMatrix_java_with_PMSM_control.ipes` - Sparse matrix with PMSM
+- Field-oriented current and torque control ($i_d = 0$ and MTPA)
+- Resolver and encoder feedback modeling
+- Inverter dead-time effects and compensation
 
 ### 803 - Optimization
-- `GeckoSwissRectifierOptimizer/` - Swiss rectifier optimization toolkit
-- MATLAB scripts for automated design sweeps
+- Automated multi-objective design optimization
+- Pare-to-front trade-offs between efficiency, volume, and THD
+- Swiss rectifier topology optimization
 
 ### 804 - Thyristor Control
-- Comprehensive thyristor circuit examples
-- Single-phase, two-phase, and three-phase bridges
-- Commutation and loss-of-commutation analysis
-- Transformer-coupled configurations
+- Line-commutated single-phase and three-phase thyristor bridges
+- Firing angle control ($\alpha$) and commutation overlap ($\mu$)
+- Inverter operation and loss-of-commutation protection
+
+## Related Resources
+
+- [DC-AC Inverters Tutorial Series](../dcac/index.md)
+- [Motor Drive Examples](../../examples/motor-drives/index.md)
+- [Technical Articles Archive](../../articles/index.md)

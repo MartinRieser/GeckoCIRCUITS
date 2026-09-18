@@ -17,12 +17,12 @@ A comprehensive collection of power electronics circuit examples demonstrating r
 
 | Category | Description | Examples |
 |----------|-------------|----------|
-| [**Basic Topologies**](basic/) | Fundamental DC-DC converter circuits | Buck, Boost, Flyback, Forward |
-| [**Power Supplies**](power-supplies/) | Isolated and regulated power supplies | LLC, DAB, PFC |
-| [**Motor Drives**](motor-drives/) | Electric motor control systems | BLDC, PMSM FOC, Induction |
-| [**Thermal**](thermal/) | Thermal analysis and design | Loss Calculation, Heatsink |
-| [**Automotive**](automotive/) | EV and charging applications | OBC, DC Fast Charger, Traction |
-| [**Renewable Energy**](renewable/) | Solar and wind applications | PV Inverter, Wind Converter |
+| [**Basic Topologies**](basic/index.md) | Fundamental DC-DC converter circuits | Buck, Boost, Flyback, Forward |
+| [**Power Supplies**](power-supplies/index.md) | Isolated and regulated power supplies | LLC, DAB, PFC |
+| [**Motor Drives**](motor-drives/index.md) | Electric motor control systems | BLDC, PMSM FOC, Induction |
+| [**Thermal**](thermal/index.md) | Thermal analysis and design | Loss Calculation, Heatsink |
+| [**Automotive**](automotive/index.md) | EV and charging applications | OBC, DC Fast Charger, Traction |
+| [**Renewable Energy**](renewable/index.md) | Solar and wind applications | PV Inverter, Wind Converter |
 
 ## Examples by Difficulty
 
@@ -64,24 +64,28 @@ example_name/
 
 ## Running Examples
 
-### Using Launcher Scripts
-```bash
-# Linux
-./scripts/run-gecko-linux.sh resources/examples/basic_topologies/buck_converter/buck_basic.ipes
+All examples run in the modern GeckoCIRCUITS GUI (Desktop App or Web Editor).
 
+### 1. In the Desktop App
+- **Double-click** any `.ipes` circuit file in your system file manager to open it directly.
+- Or launch **GeckoCIRCUITS**, select **File > Open**, and browse to the circuit file in `resources/`.
+- You can also **drag and drop** any `.ipes` file directly onto the editor canvas.
+
+### 2. Running from Source (Web Editor)
+If running from a repository checkout, start the local editor and engine:
+
+```bash
 # Windows
-scripts\run-gecko.bat resources\examples\basic_topologies\buck_converter\buck_basic.ipes
+run-web-editor.bat
 
-# macOS
-./scripts/run-gecko-macos.sh resources/examples/basic_topologies/buck_converter/buck_basic.ipes
+# Linux / macOS
+./run-web-editor.sh
 ```
 
-### Direct Java Execution
-```bash
-java -Xmx3G -Dpolyglot.js.nashorn-compat=true \
-  -jar target/gecko-1.0-jar-with-dependencies.jar \
-  resources/examples/basic_topologies/buck_converter/buck_basic.ipes
-```
+Once the editor opens in your browser or application window:
+- Click **File > Open** or drag-and-drop any `.ipes` file onto the canvas.
+- Or browse built-in circuits under the **Examples** menu in the top toolbar.
+- Click **▶ Run Simulation** in the right sidebar to run the solver and view waveforms.
 
 ## Related Resources
 
