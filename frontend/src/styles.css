@@ -1123,17 +1123,28 @@ circle.terminal-hit,
 
 .component-name {
   fill: var(--text);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  text-anchor: middle;
-  stroke: none;
+  paint-order: stroke fill;
+  stroke: var(--bg-surface, #0b0f19);
+  stroke-width: 2.5px;
+  stroke-linejoin: round;
+  user-select: none;
+}
+
+.node-label-pill-bg {
+  fill: rgba(15, 23, 42, 0.88);
+  stroke: rgba(56, 189, 248, 0.35);
+  stroke-width: 0.75;
 }
 
 .node-label {
-  fill: var(--accent);
-  font-size: 10px;
-  font-weight: 500;
+  fill: var(--accent, #38bdf8);
+  font-size: 8.5px;
+  font-weight: 600;
   stroke: none;
+  user-select: none;
+  letter-spacing: 0.2px;
 }
 
 /* Wires */
@@ -3811,5 +3822,210 @@ polyline.wire.selected {
 .sim-tools-row .sim-mini-btn {
   flex: 1;
 }
+
+/* ==========================================================================
+   Hardware / Control Software Coupling Inspector & Guidelines
+   ========================================================================== */
+.coupling-section {
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.prop-desc-hint {
+  font-size: 11px;
+  color: var(--text-dim, #94a3b8);
+  line-height: 1.4;
+  margin: 4px 0 8px 0;
+}
+
+.link-action-btn {
+  background: transparent;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: var(--accent, #38bdf8);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-left: auto;
+}
+
+.link-action-btn:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--accent, #38bdf8);
+}
+
+.coupling-control-row {
+  margin-bottom: 8px;
+}
+
+.coupling-select {
+  width: 100%;
+  font-family: var(--font-sans);
+  background: #0b1120;
+  border: 1px solid #334155;
+  color: #f1f5f9;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.coupling-select:focus {
+  border-color: var(--accent, #38bdf8);
+  outline: none;
+}
+
+.coupling-status-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(148, 163, 184, 0.08);
+  color: #94a3b8;
+}
+
+.coupling-status-pill.active {
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.coupling-status-pill.warning {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.coupling-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 6px #38bdf8;
+}
+
+/* ==========================================================================
+   Scope Channels Inspector
+   ========================================================================== */
+.scope-channels-section {
+  background: rgba(15, 23, 42, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.scope-channels-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.scope-channel-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scope-channel-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 22px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-mono, monospace);
+  background: #0f172a;
+  border: 1.5px solid #38bdf8;
+  border-radius: 4px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.channel-remove-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: 3px;
+  transition: all 0.15s ease;
+}
+
+.channel-remove-btn:hover {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.15);
+}
+
+.add-channel-btn {
+  width: 100%;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px dashed rgba(56, 189, 248, 0.35);
+  color: var(--accent, #38bdf8);
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.add-channel-btn:hover {
+  background: rgba(56, 189, 248, 0.16);
+  border-color: var(--accent, #38bdf8);
+}
+
+/* ==========================================================================
+   Canvas Coupling Guidelines & Symbol Badges
+   ========================================================================== */
+.coupling-guideline {
+  transition: stroke 0.2s ease, stroke-width 0.2s ease;
+}
+
+.coupling-guideline.active {
+  animation: couplingDashFlow 1s linear infinite;
+}
+
+@keyframes couplingDashFlow {
+  from {
+    stroke-dashoffset: 20;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.coupling-symbol-badge {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+  transition: transform 0.15s ease;
+}
+
+.coupling-symbol-badge:hover {
+  transform: scale(1.06);
+}
+
+.coupling-pill-bg {
+  fill: #0f172a;
+  stroke: #38bdf8;
+  stroke-width: 1.2;
+}
+
+.coupling-pill-text {
+  fill: #38bdf8;
+  font-size: 8.5px;
+  font-weight: 700;
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 0.2px;
+}
+
 
 

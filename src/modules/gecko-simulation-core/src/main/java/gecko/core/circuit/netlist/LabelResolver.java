@@ -117,16 +117,12 @@ public class LabelResolver {
         // Remove old mapping if label was used elsewhere
         if (labelToIndex.containsKey(label)) {
             int oldIndex = labelToIndex.get(label);
-            indexToLabel.remove(oldIndex);
-            if (oldIndex >= 0 && oldIndex < labelList.length) {
+            if (label.equals(indexToLabel.get(oldIndex))) {
+                indexToLabel.remove(oldIndex);
+            }
+            if (oldIndex >= 0 && oldIndex < labelList.length && label.equals(labelList[oldIndex])) {
                 labelList[oldIndex] = null;
             }
-        }
-
-        // Remove old label at this index
-        if (indexToLabel.containsKey(index)) {
-            String oldLabel = indexToLabel.get(index);
-            labelToIndex.remove(oldLabel);
         }
 
         ensureLabelListCapacity(index);
@@ -142,8 +138,26 @@ public class LabelResolver {
      * @return the index, or -1 if not found
      */
     public int getIndex(String label) {
-        Integer index = labelToIndex.get(label);
-        return index != null ? index : -1;
+        if (label == null) {
+            return -1;
+        }
+        String trimmed = label.trim();
+        Integer index = labelToIndex.get(trimmed);
+        if (index != null) {
+            return index;
+        }
+        if (trimmed.startsWith("/")) {
+            index = labelToIndex.get(trimmed.substring(1));
+            if (index != null) {
+                return index;
+            }
+        } else {
+            index = labelToIndex.get("/" + trimmed);
+            if (index != null) {
+                return index;
+            }
+        }
+        return -1;
     }
 
     /**

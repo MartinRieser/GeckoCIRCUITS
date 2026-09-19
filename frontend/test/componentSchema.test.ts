@@ -4,6 +4,10 @@ import {
   parseEngineeringValue,
   formatEngineeringValue,
   COMPONENT_METAS,
+  isGateDriver,
+  isSwitchComponent,
+  getCoupledComponentName,
+  extractAvailableSignals,
 } from '../src/model/componentSchema';
 
 describe('componentSchema', () => {
@@ -78,4 +82,40 @@ describe('componentSchema', () => {
       expect(formatEngineeringValue(0)).toBe('0');
     });
   });
+
+  describe('coupling and signal helpers', () => {
+    it('identifies gate drivers and switches', () => {
+      expect(isGateDriver({ type: 1000, name: 'GATE.1' })).toBe(true);
+      expect(isGateDriver({ type: 6, family: 'CONTROL', name: 'GATE.1' })).toBe(true);
+      expect(isGateDriver({ type: 1, name: 'R.1' })).toBe(false);
+
+      expect(isSwitchComponent({ type: 7, name: 'S.1' })).toBe(true);
+      expect(isSwitchComponent({ type: 8, name: 'TH.1' })).toBe(true);
+      expect(isSwitchComponent({ type: 1, name: 'R.1' })).toBe(false);
+    });
+
+    it('extracts coupled component name normalizing leading slash', () => {
+      expect(getCoupledComponentName({ parameters: { coupledComponent: '/S.1' } })).toBe('S.1');
+      expect(getCoupledComponentName({ parameters: { coupledComponent: 'GATE.1' } })).toBe('GATE.1');
+      expect(getCoupledComponentName({ parameters: { coupledComponent: 'none' } })).toBe('');
+      expect(getCoupledComponentName(null)).toBe('');
+    });
+
+    it('extracts unique available signals from components and wires', () => {
+      const components = [
+        { name: 'GATE.1', inputLabels: ['gt'], outputLabels: [] },
+        { name: 'VOLT.1', type: 1001, inputLabels: [], outputLabels: ['uOUT'] },
+        { name: 'AMP.1', type: 1002, inputLabels: [], outputLabels: ['il1'] },
+      ];
+      const wires = [{ label: 'uIN' }];
+      const signals = extractAvailableSignals(components, wires);
+      expect(signals).toContain('gt');
+      expect(signals).toContain('uOUT');
+      expect(signals).toContain('il1');
+      expect(signals).toContain('uIN');
+      expect(signals).toContain('VOLT.1');
+      expect(signals).toContain('AMP.1');
+    });
+  });
 });
+

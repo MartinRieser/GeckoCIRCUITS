@@ -210,39 +210,53 @@ public final class TokenMap {
                     if (_specialTokens.containsKey(lineToken)) {
                         final SpecialPair pair = _specialTokens.get(lineToken);
 
+                        if (readLineNumber + 1 >= ascii.length) {
+                            readLineNumber++;
+                            continue;
+                        }
                         final String nextLine = ascii[readLineNumber + 1];
                         if (nextLine.equals(pair._startToken)
                                 || (pair._startToken.equals("<Connection>") && nextLine.equals("<Verbindung>"))
                                 || (pair._startToken.equals("<Verbindung>") && nextLine.equals("<Connection>"))) {
-                            final String endToken = nextLine.equals("<Verbindung>") ? "<\\Verbindung>" : pair._stopToken;
-                            int j = readLineNumber;
-                            for (; j < ascii.length && (ascii[j].isEmpty()
-                                    || ascii[j].charAt(0) != '<'
-                                    || !ascii[j].startsWith(endToken)); j++) {
-                                continue; // scan forward to find end token
-                            }
-
-                            final BlockInfo blockInfo = new BlockInfo(readLineNumber, j, this);
-                            if (_specialMap.containsKey(lineToken)) {
-                                _specialMap.get(lineToken).add(blockInfo);
-                            } else {
-                                Deque<BlockInfo> list = new LinkedList<BlockInfo>();
-                                list.add(blockInfo);
-                                _specialMap.put(lineToken, list);
-                            }
-
-                            readLineNumber = j;
+                            final String endToken1 = nextLine.equals("<Verbindung>") ? "<\\Verbindung>" : pair._stopToken;
+                            final String endToken2 = endToken1.replace("<\\", "<\\\\");
+                        int j = readLineNumber;
+                        for (; j < ascii.length && (ascii[j].isEmpty()
+                                || ascii[j].charAt(0) != '<'
+                                || (!ascii[j].startsWith(endToken1) && !ascii[j].startsWith(endToken2))); j++) {
+                            continue; // scan forward to find end token
                         }
+                        if (j >= ascii.length) {
+                            readLineNumber++;
+                            continue;
+                        }
+
+                        final BlockInfo blockInfo = new BlockInfo(readLineNumber, j, this);
+                        if (_specialMap.containsKey(lineToken)) {
+                            _specialMap.get(lineToken).add(blockInfo);
+                        } else {
+                            Deque<BlockInfo> list = new LinkedList<BlockInfo>();
+                            list.add(blockInfo);
+                            _specialMap.put(lineToken, list);
+                        }
+
+                        readLineNumber = j;
                     }
-                } else {
-                    try {
+                }
+            } else {
+                try {
                     if (lineToken.charAt(0) == '<' && lineToken.length() > 1 && lineToken.charAt(1) != '\\') {
-                        final String endToken = "<\\" + lineToken.substring(1, lineToken.length());
+                        final String endToken1 = "<\\" + lineToken.substring(1);
+                        final String endToken2 = "<\\\\" + lineToken.substring(1);
                         int j = readLineNumber;
                         for (; j < ascii.length
                                 && (ascii[j].isEmpty() || ascii[j].charAt(0) != '<'
-                                || !ascii[j].startsWith(endToken)); j++) {
+                                || (!ascii[j].startsWith(endToken1) && !ascii[j].startsWith(endToken2))); j++) {
                             continue; // scan forward to find end token
+                        }
+                        if (j >= ascii.length) {
+                            readLineNumber++;
+                            continue;
                         }
 
                         final BlockInfo tmpBlockInfo = new BlockInfo(readLineNumber, j, this, false);
@@ -255,11 +269,11 @@ public final class TokenMap {
                             _duplicateMap.put(lineToken, list);
                         }
                     }
-                    } catch (Exception ex) {
-                        LOGGER.error("Failed to parse line token: " + lineToken, ex);
-                    }
+                } catch (Exception ex) {
+                    LOGGER.error("Failed to parse line token: " + lineToken, ex);
                 }
-                readTokenLine(lineToken, readLineNumber, _map);
+            }
+            readTokenLine(lineToken, readLineNumber, _map);
 
 
             }

@@ -14,7 +14,13 @@ import type {
   SimulationStatus,
 } from '../model/types';
 import { nextOrientation, terminalPositions } from '../model/geometry';
-import { CTRL_TYPE } from '../model/componentSchema';
+import {
+  CTRL_TYPE,
+  isVoltmeterComponent,
+  isAmmeterComponent,
+  getCoupledComponentName,
+} from '../model/componentSchema';
+import { isScopeComponent } from '../simulation/scopes';
 import { BLANK_CIRCUIT_IPES } from '../model/examples';
 import { flipRoute, densePoints, routeMovedWire } from '../canvas/WireRouter';
 
@@ -256,6 +262,186 @@ export function useEditor() {
     [reportError],
   );
 
+  const setLabel = useCallback(
+    (component: string, side: 'x' | 'y', indexOrLabel: number | string, maybeLabel?: string) => {
+      const circuitId = stateRef.current.circuitId;
+      if (!circuitId) return;
+      const index = typeof indexOrLabel === 'number' ? indexOrLabel : 0;
+      const label = typeof indexOrLabel === 'number' ? (maybeLabel ?? '') : indexOrLabel;
+
+      const existing = stateRef.current.components.find((c) => c.name === component);
+      const oldLabel = existing
+        ? (side === 'x' ? existing.inputLabels?.[index] : existing.outputLabels?.[index]) || ''
+        : '';
+
+      api
+        .setNodeLabel(circuitId, component, index, side, label)
+        .then((msg) => {
+          versionRef.current = msg.modelVersion;
+          if (existing) {
+            const arr = side === 'x' ? [...(existing.inputLabels ?? [])] : [...(existing.outputLabels ?? [])];
+            while (arr.length <= index) {
+              arr.push('');
+            }
+            arr[index] = label;
+            const updated =
+              side === 'x'
+                ? { ...existing, inputLabels: arr }
+                : { ...existing, outputLabels: arr };
+            dispatch({ type: 'COMPONENT_UPSERT', component: updated, version: msg.modelVersion });
+
+            // If an output signal / probe terminal is renamed, automatically propagate to consumer Scope channels & wires
+            if (side === 'y' && oldLabel && label && oldLabel !== label) {
+              for (const other of stateRef.current.components) {
+                if (isScopeComponent(other) && other.inputLabels) {
+                  other.inputLabels.forEach((chSig, chIdx) => {
+                    if (chSig === oldLabel) {
+                      setLabel(other.name, 'x', chIdx, label);
+                    }
+                  });
+                }
+              }
+              stateRef.current.wires.forEach((w, wIdx) => {
+                if (w.label === oldLabel) {
+                  api
+                    .patchConnection(circuitId, wIdx, { label })
+                    .then((wireMsg) => {
+                      const payload = wireMsg.payload as WirePayload;
+                      dispatch({
+                        type: 'WIRE_PATCHED',
+                        index: wIdx,
+                        points: payload.points,
+                        label: payload.label,
+                        version: wireMsg.modelVersion,
+                      });
+                    })
+                    .catch(() => {});
+                }
+              });
+            }
+          }
+        })
+        .catch(reportError);
+    },
+    [reportError],
+  );
+
+  const checkAndPropagateScopeWire = useCallback(
+    (points: number[][]) => {
+      if (!points || points.length < 2) return;
+      const pStart = { x: points[0][0], y: points[0][1] };
+      const pEnd = { x: points[points.length - 1][0], y: points[points.length - 1][1] };
+      const components = stateRef.current.components;
+
+      let scopeComp: (typeof components)[number] | null = null;
+      let scopeChannel = -1;
+      let otherPoint: { x: number; y: number } | null = null;
+
+      for (const comp of components) {
+        if (isScopeComponent(comp)) {
+          const terms = terminalPositions(comp);
+          for (let i = 0; i < terms.input.length; i++) {
+            const pin = terms.input[i];
+            if (Math.hypot(pin.x - pEnd.x, pin.y - pEnd.y) < 0.25) {
+              scopeComp = comp;
+              scopeChannel = i;
+              otherPoint = pStart;
+              break;
+            } else if (Math.hypot(pin.x - pStart.x, pin.y - pStart.y) < 0.25) {
+              scopeComp = comp;
+              scopeChannel = i;
+              otherPoint = pEnd;
+              break;
+            }
+          }
+          if (scopeComp) break;
+        }
+      }
+
+      if (!scopeComp || scopeChannel < 0 || !otherPoint) return;
+
+      // Detect signal at otherPoint
+      let detectedSignal = '';
+
+      // 1. Check other components' outputs
+      for (const comp of components) {
+        if (comp.name === scopeComp.name) continue;
+        const terms = terminalPositions(comp);
+        for (let i = 0; i < terms.output.length; i++) {
+          const pin = terms.output[i];
+          if (Math.hypot(pin.x - otherPoint.x, pin.y - otherPoint.y) < 0.25) {
+            const outLabel = comp.outputLabels?.[i];
+            if (outLabel && outLabel.trim() && outLabel !== 'NIX_NIX_NIX') {
+              detectedSignal = outLabel.trim();
+            } else if (isVoltmeterComponent(comp)) {
+              const coupled = getCoupledComponentName(comp);
+              const nodeA = comp.parameters?.nodeA as string;
+              const target = coupled || nodeA || comp.name;
+              detectedSignal = `u_${target.replace(/[^a-zA-Z0-9]/g, '')}`;
+              setLabel(comp.name, 'y', 0, detectedSignal);
+            } else if (isAmmeterComponent(comp)) {
+              const coupled = getCoupledComponentName(comp);
+              const target = coupled || comp.name;
+              detectedSignal = `i_${target.replace(/[^a-zA-Z0-9]/g, '')}`;
+              setLabel(comp.name, 'y', 0, detectedSignal);
+            } else {
+              detectedSignal = comp.name;
+            }
+            break;
+          }
+        }
+        if (detectedSignal) break;
+      }
+
+      // 2. Check labeled wires
+      if (!detectedSignal) {
+        for (const wire of stateRef.current.wires) {
+          if (wire.label && wire.label.trim() && wire.label !== 'NIX_NIX_NIX') {
+            for (const pt of wire.points) {
+              if (Math.hypot(pt[0] - otherPoint.x, pt[1] - otherPoint.y) < 0.25) {
+                detectedSignal = wire.label.trim();
+                break;
+              }
+            }
+          }
+          if (detectedSignal) break;
+        }
+      }
+
+      // 3. Check labeled terminals of power/control components
+      if (!detectedSignal) {
+        for (const comp of components) {
+          const terms = terminalPositions(comp);
+          for (let i = 0; i < terms.input.length; i++) {
+            if (Math.hypot(terms.input[i].x - otherPoint.x, terms.input[i].y - otherPoint.y) < 0.25) {
+              const lbl = comp.inputLabels?.[i];
+              if (lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX') detectedSignal = lbl.trim();
+              break;
+            }
+          }
+          if (detectedSignal) break;
+          for (let i = 0; i < terms.output.length; i++) {
+            if (Math.hypot(terms.output[i].x - otherPoint.x, terms.output[i].y - otherPoint.y) < 0.25) {
+              const lbl = comp.outputLabels?.[i];
+              if (lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX') detectedSignal = lbl.trim();
+              break;
+            }
+          }
+          if (detectedSignal) break;
+        }
+      }
+
+      if (detectedSignal) {
+        setLabel(scopeComp.name, 'x', scopeChannel, detectedSignal);
+        dispatch({
+          type: 'STATUS',
+          status: `Connected signal '${detectedSignal}' to ${scopeComp.name} CH${scopeChannel + 1}`,
+        });
+      }
+    },
+    [setLabel],
+  );
+
   const finishWire = useCallback(
     (points: number[][]) => {
       const circuitId = stateRef.current.circuitId;
@@ -267,10 +453,11 @@ export function useEditor() {
           const payload = msg.payload as WirePayload;
           versionRef.current = msg.modelVersion;
           dispatch({ type: 'WIRE_CREATED', wire: payload, version: msg.modelVersion });
+          checkAndPropagateScopeWire(points);
         })
         .catch(reportError);
     },
-    [reportError],
+    [checkAndPropagateScopeWire, reportError],
   );
 
   const commitMove = useCallback(
@@ -661,28 +848,6 @@ export function useEditor() {
     [reportError],
   );
 
-  const setLabel = useCallback(
-    (component: string, side: 'x' | 'y', label: string) => {
-      const circuitId = stateRef.current.circuitId;
-      if (!circuitId) return;
-      api
-        .setNodeLabel(circuitId, component, 0, side, label)
-        .then((msg) => {
-          versionRef.current = msg.modelVersion;
-          const existing = stateRef.current.components.find((c) => c.name === component);
-          if (existing) {
-            const updated =
-              side === 'x'
-                ? { ...existing, inputLabels: [label] }
-                : { ...existing, outputLabels: [label] };
-            dispatch({ type: 'COMPONENT_UPSERT', component: updated, version: msg.modelVersion });
-          }
-        })
-        .catch(reportError);
-    },
-    [reportError],
-  );
-
   // ========== Simulation Actions ==========
 
   /** REST polling fallback for when the SSE stream cannot be established. */
@@ -756,6 +921,35 @@ export function useEditor() {
       const tStep = config?.timeStep ?? simDefaultsRef.current?.timeStep ?? 1e-6;
       const solver = config?.solverType ?? simDefaultsRef.current?.solverType ?? 'backward-euler';
 
+      // Dynamically collect active signals from scope channels, probe output labels, and wire labels
+      const activeSignals = new Set<string>();
+      if (config?.signals && config.signals.length > 0) {
+        config.signals.forEach((s) => s && s.trim() && activeSignals.add(s.trim()));
+      } else if (simDefaultsRef.current?.signals) {
+        simDefaultsRef.current.signals.forEach((s) => s && s.trim() && activeSignals.add(s.trim()));
+      }
+
+      for (const comp of stateRef.current.components) {
+        if (isScopeComponent(comp)) {
+          comp.inputLabels?.forEach((lbl) => {
+            if (lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX') activeSignals.add(lbl.trim());
+          });
+        }
+        if (isVoltmeterComponent(comp) || isAmmeterComponent(comp)) {
+          comp.outputLabels?.forEach((lbl) => {
+            if (lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX') activeSignals.add(lbl.trim());
+          });
+        }
+      }
+
+      for (const wire of stateRef.current.wires) {
+        if (wire.label && wire.label.trim() && wire.label !== 'NIX_NIX_NIX') {
+          activeSignals.add(wire.label.trim());
+        }
+      }
+
+      const signalsToSimulate = activeSignals.size > 0 ? Array.from(activeSignals) : undefined;
+
       stopPolling();
       stopStream();
 
@@ -771,7 +965,7 @@ export function useEditor() {
           timeStep: tStep,
           solverType: solver,
           backend: config?.backend,
-          signals: config?.signals,
+          signals: signalsToSimulate,
         });
         currentSimIdRef.current = sim.simulationId;
 

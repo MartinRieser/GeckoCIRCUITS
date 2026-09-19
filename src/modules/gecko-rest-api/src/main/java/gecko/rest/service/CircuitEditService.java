@@ -57,12 +57,15 @@ public class CircuitEditService {
     public CircuitChangeMessage createComponent(String circuitId, ComponentCreateRequest request) {
         CircuitState state = requireState(circuitId);
         synchronized (state) {
-            String family = validateFamilyAndType(request.family(), request.type());
+            int reqType = (request.type() != null && request.type() == 6 && "CONTROL".equalsIgnoreCase(request.family()))
+                    ? CircuitTypCore.CTRL_GATE.getTypeNumber()
+                    : (request.type() != null ? request.type() : 0);
+            String family = validateFamilyAndType(request.family(), reqType);
             CircuitModel model = state.model;
 
             CircuitModel.ComponentData comp = new CircuitModel.ComponentData(
-                    request.type(),
-                    uniqueName(model, request.name(), baseName(request.type())),
+                    reqType,
+                    uniqueName(model, request.name(), baseName(reqType)),
                     snap(model, request.x()),
                     snap(model, request.y()),
                     normalizeOrientation(request.orientation()));
@@ -70,7 +73,7 @@ public class CircuitEditService {
             comp.setUniqueObjectIdentifier(nextUid(model));
             applyDefaultParameters(comp);
             if (request.parameters() != null && !request.parameters().isEmpty()) {
-                applyParameterMap(comp, request.parameters());
+                applyParameterMap(comp, request.parameters(), model);
             }
 
             List<CircuitModel.ComponentData> list = familyList(model, family);
@@ -150,7 +153,7 @@ public class CircuitEditService {
             comp.setOrientation(newOrientation);
             comp.setName(newName);
             if (request.parameters() != null && !request.parameters().isEmpty()) {
-                applyParameterMap(comp, request.parameters());
+                applyParameterMap(comp, request.parameters(), model);
             }
 
             state.recordEdit(
@@ -172,7 +175,7 @@ public class CircuitEditService {
                         comp.setOrientation(newOrientation);
                         comp.setName(newName);
                         if (request.parameters() != null && !request.parameters().isEmpty()) {
-                            applyParameterMap(comp, request.parameters());
+                            applyParameterMap(comp, request.parameters(), model);
                         }
                         for (WirePointRef ref : wireEdits) {
                             if (ref.connectionIndex < model.getConnections().size()) {
@@ -408,9 +411,38 @@ public class CircuitEditService {
     private static void appendComponents(List<EditorModelResponse.Component> target,
                                          List<CircuitModel.ComponentData> source, String family) {
         for (CircuitModel.ComponentData comp : source) {
+            Map<String, Object> params = new LinkedHashMap<>(comp.getParameters());
+            String[] pStrings = comp.getParameterStrings();
+            if (pStrings != null && pStrings.length > 0 && pStrings[0] != null) {
+                String first = pStrings[0].trim();
+                if (first.startsWith("/")) first = first.substring(1);
+                if (!first.isEmpty() && !first.equalsIgnoreCase("NIX_NIX_NIX")) {
+                    if (comp.getType() == 1 || comp.getType() == 1001 || (comp.getName() != null && comp.getName().startsWith("VOLT"))) {
+                        String second = pStrings.length > 1 && pStrings[1] != null ? pStrings[1].trim() : "";
+                        if (second.startsWith("/")) second = second.substring(1);
+                        if (!second.isEmpty() && !second.equalsIgnoreCase("NIX_NIX_NIX")) {
+                            params.put("nodeA", first);
+                            params.put("nodeB", second);
+                        } else {
+                            params.put("coupledComponent", first);
+                        }
+                    } else {
+                        params.put("coupledComponent", first);
+                    }
+                }
+            }
+            if (comp.getParameters().containsKey("nodeA")) {
+                params.put("nodeA", comp.getParameters().get("nodeA"));
+            }
+            if (comp.getParameters().containsKey("nodeB")) {
+                params.put("nodeB", comp.getParameters().get("nodeB"));
+            }
+            if (comp.getParameters().containsKey("coupledComponent")) {
+                params.put("coupledComponent", comp.getParameters().get("coupledComponent"));
+            }
             target.add(new EditorModelResponse.Component(
                     comp.getType(), comp.getName(), family, comp.getPosition(), comp.getOrientation(),
-                    comp.getParameters(), comp.getTerminalXLabels(), comp.getTerminalYLabels()));
+                    params, comp.getTerminalXLabels(), comp.getTerminalYLabels()));
         }
     }
 
@@ -473,7 +505,14 @@ public class CircuitEditService {
                 return "THERM";
             }
             case "CONTROL" -> {
-                if (!CircuitTypCore.isValidTypeNumber(type) || !CircuitTypCore.fromTypeNumber(type).isControl()) {
+                int effType = switch (type) {
+                    case 1 -> CircuitTypCore.CTRL_VOLT.getTypeNumber();
+                    case 2 -> CircuitTypCore.CTRL_AMP.getTypeNumber();
+                    case 3, 6 -> CircuitTypCore.CTRL_GATE.getTypeNumber();
+                    case 5 -> CircuitTypCore.CTRL_SCOPE.getTypeNumber();
+                    default -> type;
+                };
+                if (!CircuitTypCore.isValidTypeNumber(effType) || !CircuitTypCore.fromTypeNumber(effType).isControl()) {
                     throw badRequest("Unknown control type number: " + type);
                 }
                 return "CONTROL";
@@ -497,7 +536,7 @@ public class CircuitEditService {
 
     private static String baseName(int type) {
         String name = CircuitTypCore.fromTypeNumber(type).name();
-        for (String prefix : new String[] {"LK_", "TH_", "REL_"}) {
+        for (String prefix : new String[] {"LK_", "TH_", "REL_", "CTRL_"}) {
             if (name.startsWith(prefix)) {
                 return name.substring(prefix.length());
             }
@@ -659,7 +698,8 @@ public class CircuitEditService {
             Map.entry(42, new double[]{1.0, 25.0}),
             Map.entry(43, new double[]{401.0, 25.0}),
             Map.entry(44, new double[]{401.0, 10.0}),
-            Map.entry(46, new double[]{401.0, 25.0}));
+            Map.entry(46, new double[]{401.0, 25.0}),
+            Map.entry(1000, new double[]{0.0}));
 
     private static double[] sourceDefaults(double dcValue, double amplitude) {
         double[] params = new double[21];
@@ -688,7 +728,7 @@ public class CircuitEditService {
         comp.setParameter(CircuitModel.ComponentData.resolveParameterKey(comp.getType()), defaults[0]);
     }
 
-    private static void applyParameterMap(CircuitModel.ComponentData comp, Map<String, Object> parameters) {
+    private static void applyParameterMap(CircuitModel.ComponentData comp, Map<String, Object> parameters, CircuitModel model) {
         if (parameters == null || parameters.isEmpty()) {
             return;
         }
@@ -697,7 +737,7 @@ public class CircuitEditService {
             Integer idx = parameterIndex(key);
             if (idx != null) {
                 maxIndex = Math.max(maxIndex, idx);
-            } else if (!isNamedControlParameter(comp, key)) {
+            } else if (!isNamedControlParameter(comp, key) && !"coupledComponent".equals(key)) {
                 throw badRequest("Parameter keys must be 'param<index>', got: " + key);
             }
         }
@@ -714,6 +754,55 @@ public class CircuitEditService {
             comp.setRawParameters(raw);
         }
         parameters.forEach(comp::setParameter);
+        if (parameters.containsKey("nodeA") || parameters.containsKey("nodeB")
+                || parameters.containsKey("positiveNode") || parameters.containsKey("negativeNode")) {
+            String nA = parameters.containsKey("nodeA")
+                    ? String.valueOf(parameters.get("nodeA"))
+                    : String.valueOf(parameters.getOrDefault("positiveNode", ""));
+            String nB = parameters.containsKey("nodeB")
+                    ? String.valueOf(parameters.get("nodeB"))
+                    : String.valueOf(parameters.getOrDefault("negativeNode", "0"));
+            if (nA == null || nA.equals("null")) nA = "";
+            if (nB == null || nB.equals("null")) nB = "0";
+            comp.setParameter("nodeA", nA);
+            comp.setParameter("nodeB", nB);
+            comp.setParameterStrings(new String[]{nA, nB, "0"});
+            comp.setCoupledReferenceID(0);
+            comp.setParameter("coupledComponent", "");
+        } else if (parameters.containsKey("coupledComponent") || parameters.containsKey("measuredComponent")) {
+            Object val = parameters.containsKey("coupledComponent")
+                    ? parameters.get("coupledComponent")
+                    : parameters.get("measuredComponent");
+            String coupled = val == null ? "" : val.toString().trim();
+            if (coupled.isEmpty() || coupled.equalsIgnoreCase("none") || coupled.equalsIgnoreCase("NIX_NIX_NIX")) {
+                comp.setParameter("coupledComponent", "");
+                comp.setCoupledReferenceID(0);
+                if (comp.getParameterStrings() != null && comp.getParameterStrings().length > 0) {
+                    comp.getParameterStrings()[0] = "NIX_NIX_NIX";
+                }
+            } else {
+                comp.setParameter("coupledComponent", coupled);
+                comp.setParameter("nodeA", "");
+                comp.setParameter("nodeB", "");
+                String[] pStrings = comp.getParameterStrings();
+                if (pStrings == null || pStrings.length == 0) {
+                    comp.setParameterStrings(new String[]{coupled, "NIX_NIX_NIX", "0"});
+                } else {
+                    pStrings[0] = coupled;
+                    if (pStrings.length > 1) {
+                        pStrings[1] = "NIX_NIX_NIX";
+                    }
+                }
+                if (model != null) {
+                    CircuitModel.ComponentData target = findComponentOrNull(model, coupled);
+                    if (target != null) {
+                        comp.setCoupledReferenceID(target.getUniqueObjectIdentifier());
+                    } else {
+                        comp.setCoupledReferenceID(0);
+                    }
+                }
+            }
+        }
     }
 
     private static boolean isNamedControlParameter(CircuitModel.ComponentData comp, String key) {
@@ -722,7 +811,12 @@ public class CircuitEditService {
                 "staticCode".equals(key) ||
                 "staticVariables".equals(key) ||
                 "anzXIN".equals(key) ||
-                "anzYOUT".equals(key)
+                "anzYOUT".equals(key) ||
+                "nodeA".equals(key) ||
+                "nodeB".equals(key) ||
+                "positiveNode".equals(key) ||
+                "negativeNode".equals(key) ||
+                "measuredComponent".equals(key)
         );
     }
 

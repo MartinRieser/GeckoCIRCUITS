@@ -228,8 +228,13 @@ public final class ControlCalculatorBuilder {
      * node labels. Its output array is written from the solved circuit each
      * step (voltage across the element / nodes, current through it).
      */
-    public record Probe(int elementIndex, boolean current, String name,
+    public record Probe(int elementIndex, boolean current, String name, String componentName,
                         AbstractControlCalculatable outputHolder, int nodeX, int nodeY) {
+
+        public Probe(int elementIndex, boolean current, String name,
+                     AbstractControlCalculatable outputHolder, int nodeX, int nodeY) {
+            this(elementIndex, current, name, name, outputHolder, nodeX, nodeY);
+        }
 
         private void update(CircuitNetlist netlist, double[] nodeVoltages) {
             double value;
@@ -383,17 +388,36 @@ public final class ControlCalculatorBuilder {
     private static Integer resolveCoupledElementIndex(CircuitModel.ComponentData comp,
                                                       CircuitModel model, CircuitNetlist netlist,
                                                       Map<Long, Integer> elementIndexByUid) {
+        String[] measured = comp.getParameterStrings();
+        if (measured != null && measured.length > 0) {
+            String target = measured[0] == null ? "" : measured[0].trim();
+            if (target.startsWith("/")) {
+                target = target.substring(1);
+            }
+            if (!target.isEmpty() && !target.equalsIgnoreCase("NIX_NIX_NIX")) {
+                Integer byName = elementIndexByName(model, netlist, target);
+                if (byName != null) {
+                    return byName;
+                }
+            }
+        }
         if (comp.getCoupledReferenceID() != 0) {
             Integer byUid = elementIndexByUid.get(comp.getCoupledReferenceID());
             if (byUid != null) {
                 return byUid;
             }
         }
-        String[] measured = comp.getParameterStrings();
-        if (measured != null && measured.length > 0) {
-            String target = measured[0] == null ? "" : measured[0].trim();
-            if (!target.isEmpty() && !target.equals("NIX_NIX_NIX")) {
-                return elementIndexByName(model, netlist, target);
+        Object coupledParam = comp.getParameters().get("coupledComponent");
+        if (coupledParam != null) {
+            String target = coupledParam.toString().trim();
+            if (target.startsWith("/")) {
+                target = target.substring(1);
+            }
+            if (!target.isEmpty() && !target.equalsIgnoreCase("NIX_NIX_NIX")) {
+                Integer byName = elementIndexByName(model, netlist, target);
+                if (byName != null) {
+                    return byName;
+                }
             }
         }
         return null;
@@ -410,22 +434,30 @@ public final class ControlCalculatorBuilder {
                                     CircuitModel model, CircuitNetlist netlist) {
         boolean current = comp.getType() == TYP_AMMETER;
         String name = outputLabel(comp);
+        String compName = comp.getName() != null ? comp.getName().trim() : "";
         Integer coupled = resolveCoupledElementIndex(comp, model, netlist, elementIndexByUid);
         if (current) {
             if (coupled != null) {
-                return new Probe(coupled, true, name, calculator, -1, -1);
+                return new Probe(coupled, true, name, compName, calculator, -1, -1);
             }
             return null;
         }
         if (coupled != null) {
-            return new Probe(coupled, false, name, calculator, -1, -1);
+            return new Probe(coupled, false, name, compName, calculator, -1, -1);
         }
         String[] measured = comp.getParameterStrings() != null
                 ? comp.getParameterStrings() : new String[0];
+        if (measured.length < 2) {
+            Object nA = comp.getParameters().get("nodeA");
+            Object nB = comp.getParameters().get("nodeB");
+            if (nA != null && nB != null) {
+                measured = new String[]{nA.toString(), nB.toString()};
+            }
+        }
         if (measured.length >= 2) {
             int nodeX = nodeForLabel(netlist, measured[0]);
             int nodeY = nodeForLabel(netlist, measured[1]);
-            return new Probe(-1, false, name, calculator, nodeX, nodeY);
+            return new Probe(-1, false, name, compName, calculator, nodeX, nodeY);
         }
         return null;
     }

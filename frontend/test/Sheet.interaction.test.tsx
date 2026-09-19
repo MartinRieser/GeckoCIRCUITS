@@ -349,4 +349,104 @@ describe('direct pin-to-pin wiring and wire editing', () => {
     expect(patchWirePoints).toHaveBeenCalledTimes(1);
     expect(patchWirePoints).toHaveBeenCalledWith(0, expect.any(Array));
   });
+
+  it('deduplicates coincident terminal net labels and renders them with contrast pill backgrounds', () => {
+    const snapWithLabels: EditorSnapshot = {
+      ...snapshot,
+      components: [
+        {
+          type: 1,
+          name: 'R4',
+          family: 'LK',
+          position: [27, 9],
+          orientation: 503,
+          parameters: {},
+          inputLabels: ['z1'],
+          outputLabels: ['z1c'],
+        },
+        {
+          type: 3,
+          name: 'C1',
+          family: 'LK',
+          position: [27, 13],
+          orientation: 503,
+          parameters: {},
+          inputLabels: ['z1c'], // shares (27, 11) with R4 output!
+          outputLabels: ['0'],
+        },
+      ],
+    };
+
+    function LabelWrapper() {
+      const [state, dispatch] = useReducer(editorReducer, {
+        ...initialState,
+        circuitId: snapWithLabels.circuitId,
+        components: snapWithLabels.components,
+        wires: snapWithLabels.connections || [],
+        dpix: snapWithLabels.dpix,
+      });
+      return <Sheet state={state} dispatch={dispatch} actions={actions} />;
+    }
+
+    const { container } = render(<LabelWrapper />);
+
+    // Check that z1c is only rendered ONCE in the deduplicated layer
+    const labelTexts = Array.from(container.querySelectorAll('.node-label')).map((el) => el.textContent);
+    const z1cCount = labelTexts.filter((t) => t === 'z1c').length;
+    expect(z1cCount).toBe(1);
+
+    // Check that node-label-pill-bg rect exists behind labels
+    const pills = container.querySelectorAll('.node-label-pill-bg');
+    expect(pills.length).toBeGreaterThan(0);
+  });
+
+  it('renders coupling badge for Ammeter and places switch gate badge on the left side', () => {
+    const snapCoupled: EditorSnapshot = {
+      ...snapshot,
+      components: [
+        {
+          type: 1002,
+          name: 'AMP.1',
+          family: 'CONTROL',
+          position: [20, 20],
+          orientation: 503,
+          parameters: { coupledComponent: 'L.1' },
+          inputLabels: [],
+          outputLabels: ['iL1'],
+        },
+        {
+          type: 7,
+          name: 'S.1',
+          family: 'LK',
+          position: [16, 5],
+          orientation: 503,
+          parameters: { coupledComponent: 'GATE.1' },
+          inputLabels: ['in'],
+          outputLabels: [],
+        },
+      ],
+    };
+
+    function CoupledWrapper() {
+      const [state, dispatch] = useReducer(editorReducer, {
+        ...initialState,
+        circuitId: snapCoupled.circuitId,
+        components: snapCoupled.components,
+        wires: snapCoupled.connections || [],
+        dpix: snapCoupled.dpix,
+      });
+      return <Sheet state={state} dispatch={dispatch} actions={actions} />;
+    }
+
+    const { container } = render(<CoupledWrapper />);
+
+    // Ammeter badge should read "➔ i(L.1)"
+    expect(container.textContent).toContain('➔ i(L.1)');
+
+    // Switch badge should read "⮡ gate: GATE.1" and have transform with negative X (left side)
+    const switchBadge = container.querySelector('.component.family-LK .coupling-symbol-badge');
+    expect(switchBadge).not.toBeNull();
+    const transform = switchBadge?.getAttribute('transform') || '';
+    expect(transform).toMatch(/translate\(-/);
+  });
 });

@@ -619,9 +619,15 @@ export function App() {
                         (state.selection.length === 1 && c.name === state.selection[0]),
                     ) || null
                   }
+                  allComponents={state.components}
+                  wires={state.wires}
                   onRename={actions.rename}
                   onSetParameter={actions.setParameter}
                   onSetLabel={actions.setLabel}
+                  onSelectComponent={(targetName) => {
+                    dispatch({ type: 'SELECT', name: targetName, additive: false });
+                    dispatch({ type: 'PANEL_FOR', name: targetName });
+                  }}
                   onRotate={actions.rotateComponent}
                   onDelete={actions.deleteComponent}
                   onOpenScopeTab={(name) => openScopeTab(name)}

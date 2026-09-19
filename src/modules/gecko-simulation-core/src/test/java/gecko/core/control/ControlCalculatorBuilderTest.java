@@ -13,6 +13,7 @@
  */
 package gecko.core.control;
 
+import gecko.core.allg.SolverType;
 import gecko.core.circuit.circuitcomponents.CircuitTypCore;
 import gecko.core.circuit.netlist.CircuitNetlist;
 import gecko.core.circuit.netlist.NetlistBuilder;
@@ -21,6 +22,9 @@ import gecko.core.control.calculators.GateCalculator;
 import gecko.core.control.calculators.SignalCalculatorRectangle;
 import gecko.core.io.CircuitFileParser;
 import gecko.core.io.CircuitModel;
+import gecko.core.simulation.HeadlessSimulationEngine;
+import gecko.core.simulation.SimulationConfig;
+import gecko.core.simulation.SimulationResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -29,6 +33,7 @@ import java.io.StringReader;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -204,6 +209,89 @@ class ControlCalculatorBuilderTest {
         coupling.updateProbes(netlist, nodeVoltages);
         assertEquals(50.0, probe.outputHolder()._outputSignal[0][0], 1e-12);
         assertTrue(coupling.probeSignalNames().contains("VOLT.1"));
+    }
+
+    @Test
+    void ammeterProbe_readsCurrentThroughCoupledResistor() throws Exception {
+        String content = BUCK_WITH_CONTROL.replace("typ 1\r\nuniqueObjectIdentifier 202", "typ 2\r\nuniqueObjectIdentifier 202")
+                .replace("typ 1\nuniqueObjectIdentifier 202", "typ 2\nuniqueObjectIdentifier 202")
+                .replace("idStringDialog VOLT.1", "idStringDialog AMP.1");
+        CircuitModel ammeterModel = new CircuitFileParser().parse(
+                new BufferedReader(new StringReader(content)), "test.ipes");
+        CircuitNetlist ammeterNetlist = NetlistBuilder.buildFromCircuitModel(ammeterModel);
+        ControlCalculatorBuilder.ControlCoupling ammeterCoupling = ControlCalculatorBuilder.build(ammeterModel, ammeterNetlist);
+
+        assertEquals(1, ammeterCoupling.probes().size());
+        ControlCalculatorBuilder.Probe probe = ammeterCoupling.probes().get(0);
+        assertTrue(probe.current());
+        assertEquals(2, probe.elementIndex());
+        assertEquals("AMP.1", probe.name());
+
+        HeadlessSimulationEngine engine = new HeadlessSimulationEngine();
+        SimulationConfig config = SimulationConfig.builder()
+                .circuitModel(ammeterModel)
+                .stepWidth(1e-6)
+                .simulationDuration(0.005)
+                .solverType(SolverType.SOLVER_BE)
+                .build();
+        SimulationResult result = engine.runSimulation(config);
+        assertTrue(result.isSuccess());
+        String[] sigs = result.getSignalNames();
+        assertTrue(java.util.Arrays.asList(sigs).contains("AMP.1"));
+        int ampIdx = java.util.Arrays.asList(sigs).indexOf("AMP.1");
+        float[] values = result.getSignalData(ampIdx);
+        assertNotNull(values);
+        float maxI = 0f;
+        for (float v : values) {
+            if (v > maxI) maxI = v;
+        }
+        System.out.println("AMP.1 max current through R.1: " + maxI);
+        assertTrue(maxI > 0.1f, "Expected non-zero current through resistor, got " + maxI);
+    }
+
+    @Test
+    void buckConverterWeb_simulatesWithAmmeterOnRL() throws Exception {
+        java.io.InputStream is = getClass().getResourceAsStream("/ipes/buck_converter_web.ipes");
+        assertNotNull(is);
+        CircuitModel buckModel = new CircuitFileParser().parse(new BufferedReader(new java.io.InputStreamReader(is)), "buck.ipes");
+
+        // First simulate as-is (AMP.1 on L.1)
+        HeadlessSimulationEngine engine1 = new HeadlessSimulationEngine();
+        SimulationResult res1 = engine1.runSimulation(SimulationConfig.builder()
+                .circuitModel(buckModel)
+                .stepWidth(1e-6)
+                .simulationDuration(0.005)
+                .solverType(SolverType.SOLVER_BE)
+                .build());
+        assertTrue(res1.isSuccess());
+        int iL1Idx = java.util.Arrays.asList(res1.getSignalNames()).indexOf("iL1");
+        assertTrue(iL1Idx >= 0);
+        float[] iL1Values = res1.getSignalData(iL1Idx);
+        float maxIL1 = 0f;
+        for (float v : iL1Values) if (v > maxIL1) maxIL1 = v;
+
+        // Now patch AMP.1 to couple to R.L
+        for (CircuitModel.ComponentData c : buckModel.getControlComponents()) {
+            if ("AMP.1".equals(c.getName())) {
+                c.getParameterStrings()[0] = "R.L";
+            }
+        }
+
+        HeadlessSimulationEngine engine2 = new HeadlessSimulationEngine();
+        SimulationResult res2 = engine2.runSimulation(SimulationConfig.builder()
+                .circuitModel(buckModel)
+                .stepWidth(1e-6)
+                .simulationDuration(0.005)
+                .solverType(SolverType.SOLVER_BE)
+                .build());
+        assertTrue(res2.isSuccess());
+        int rlIdx = java.util.Arrays.asList(res2.getSignalNames()).indexOf("iL1");
+        assertTrue(rlIdx >= 0, "Signal iL1 should be recorded: " + java.util.Arrays.toString(res2.getSignalNames()));
+        float[] rlValues = res2.getSignalData(rlIdx);
+        float maxRL = 0f;
+        for (float v : rlValues) if (Math.abs(v) > maxRL) maxRL = Math.abs(v);
+        System.out.println("Buck AMP.1 on R.L max magnitude: " + maxRL);
+        assertEquals(maxIL1, maxRL, 0.05f, "Current through series resistor R.L must match inductor current iL1!");
     }
 
     @Test

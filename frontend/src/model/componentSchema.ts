@@ -73,6 +73,8 @@ export const CTRL_TYPE = {
   LEGACY_SCOPE: 5,
   /** Gate input, legacy classic-editor number. */
   LEGACY_GATE: 6,
+  /** Gate driver, web catalog number (CircuitTypCore.CTRL_GATE). */
+  GATE: 1000,
   /** Voltmeter probe, web catalog number (CircuitTypCore.CTRL_VOLT). */
   VOLTMETER: 1001,
   /** Ammeter probe, web catalog number (CircuitTypCore.CTRL_AMP). */
@@ -1607,3 +1609,118 @@ function roundDec(val: number, decimals: number): number {
   const factor = 10 ** decimals;
   return Math.round(val * factor) / factor;
 }
+
+export function isGateDriver(component: { type: number; family?: string; name?: string } | null | undefined): boolean {
+  if (!component) return false;
+  return (
+    component.type === CTRL_TYPE.GATE ||
+    component.type === 1000 ||
+    (component.family === 'CONTROL' && component.type === CTRL_TYPE.LEGACY_GATE) ||
+    component.name?.startsWith('GATE') === true
+  );
+}
+
+export function isSwitchComponent(component: { type: number; family?: string; name?: string } | null | undefined): boolean {
+  if (!component) return false;
+  return (
+    component.type === 7 ||
+    component.type === 8 ||
+    component.type === 10 ||
+    component.type === 11 ||
+    component.type === 9 ||
+    component.name?.startsWith('S.') === true ||
+    component.name?.startsWith('S_') === true ||
+    component.name?.startsWith('TH.') === true ||
+    component.name?.startsWith('IGBT') === true ||
+    component.name?.startsWith('MOS') === true
+  );
+}
+
+export function isAmmeterComponent(component: { type: number; family?: string; name?: string } | null | undefined): boolean {
+  if (!component) return false;
+  return (
+    component.type === CTRL_TYPE.AMMETER ||
+    component.type === 1002 ||
+    (component.family === 'CONTROL' && (component.type === CTRL_TYPE.LEGACY_AMMETER || component.type === 2)) ||
+    component.name?.startsWith('AMP') === true ||
+    component.name?.startsWith('AMR') === true
+  );
+}
+
+export function isVoltmeterComponent(component: { type: number; family?: string; name?: string } | null | undefined): boolean {
+  if (!component) return false;
+  return (
+    component.type === CTRL_TYPE.VOLTMETER ||
+    component.type === 1001 ||
+    (component.family === 'CONTROL' && (component.type === CTRL_TYPE.LEGACY_VOLTMETER || component.type === 1)) ||
+    component.name?.startsWith('VOLT') === true ||
+    component.name?.startsWith('V_meas') === true
+  );
+}
+
+export function getCoupledComponentName(component: { parameters?: Record<string, unknown> } | null | undefined): string {
+  if (!component?.parameters) return '';
+  const val = component.parameters.coupledComponent;
+  if (!val) return '';
+  let str = String(val).trim();
+  if (str.startsWith('/')) {
+    str = str.substring(1);
+  }
+  if (str === 'none' || str === 'NIX_NIX_NIX') return '';
+  return str;
+}
+
+export function extractAvailableSignals(
+  components: Array<{
+    name: string;
+    type?: number;
+    family?: string;
+    inputLabels?: string[];
+    outputLabels?: string[];
+  }>,
+  wires?: Array<{ label?: string }>,
+): string[] {
+  const set = new Set<string>();
+
+  for (const comp of components) {
+    if (comp.inputLabels) {
+      for (const lbl of comp.inputLabels) {
+        const trimmed = lbl?.trim();
+        if (trimmed && trimmed !== 'NIX_NIX_NIX') set.add(trimmed);
+      }
+    }
+    if (comp.outputLabels) {
+      for (const lbl of comp.outputLabels) {
+        const trimmed = lbl?.trim();
+        if (trimmed && trimmed !== 'NIX_NIX_NIX') set.add(trimmed);
+      }
+    }
+    if (
+      comp.type === CTRL_TYPE.VOLTMETER ||
+      comp.type === CTRL_TYPE.LEGACY_VOLTMETER ||
+      comp.type === CTRL_TYPE.AMMETER ||
+      comp.type === CTRL_TYPE.LEGACY_AMMETER ||
+      comp.type === CTRL_TYPE.SIGNAL_SOURCE ||
+      comp.type === CTRL_TYPE.LEGACY_SIGNAL_SOURCE ||
+      comp.name.startsWith('V_meas') ||
+      comp.name.startsWith('VOLT') ||
+      comp.name.startsWith('AMP') ||
+      comp.name.startsWith('SIGNAL')
+    ) {
+      set.add(comp.name);
+    }
+  }
+
+  if (wires) {
+    for (const wire of wires) {
+      const trimmed = wire.label?.trim();
+      if (trimmed && trimmed !== 'NIX_NIX_NIX') {
+        set.add(trimmed);
+      }
+    }
+  }
+
+  set.add('0');
+  return Array.from(set).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+}
+

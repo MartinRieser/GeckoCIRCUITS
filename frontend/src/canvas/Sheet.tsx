@@ -10,6 +10,13 @@ import { terminalPositions, terminalNear } from '../model/geometry';
 import { routeL, densePoints, orthogonalizePolyline, simplifyCorners, translateWireSegment } from './WireRouter';
 import { ComponentSymbol } from './symbols';
 import { isScopeComponent } from '../simulation/scopes';
+import {
+  isGateDriver,
+  isSwitchComponent,
+  isAmmeterComponent,
+  isVoltmeterComponent,
+  getCoupledComponentName,
+} from '../model/componentSchema';
 import type { Point } from '../model/types';
 import { ContextMenu } from './ContextMenu';
 import type { ContextMenuTarget } from './ContextMenu';
@@ -67,6 +74,111 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
 
   // Live cursor grid coordinate
   const [cursorCoord, setCursorCoord] = useState<Point | null>(null);
+
+  // Hovered component for guideline emphasis
+  const [hoveredComponentName, setHoveredComponentName] = useState<string | null>(null);
+
+  // Net label visibility mode: 'smart' (virtual always show; wired on hover/selection), 'all' (always show all), or 'hover' (only on hover/selection)
+  const [labelDisplayMode, setLabelDisplayMode] = useState<'smart' | 'all' | 'hover'>(() => {
+    try {
+      return (localStorage.getItem('gecko_label_mode') as 'smart' | 'all' | 'hover') || 'smart';
+    } catch {
+      return 'smart';
+    }
+  });
+
+  // Active software coupling pairs (Gate Driver ➔ Switch, Ammeter ➔ Target Component)
+  const couplingPairs = useMemo(() => {
+    const pairs: Array<{
+      sourceComp: (typeof state.components)[0];
+      targetComp: (typeof state.components)[0];
+      label: string;
+      isHoveredOrSelected: boolean;
+    }> = [];
+
+    for (const comp of state.components) {
+      if (isGateDriver(comp) || isAmmeterComponent(comp)) {
+        const targetName = getCoupledComponentName(comp);
+        if (targetName) {
+          const target = state.components.find((c) => c.name === targetName);
+          if (target) {
+            const isHoveredOrSelected =
+              state.selection.includes(comp.name) ||
+              state.selection.includes(target.name) ||
+              hoveredComponentName === comp.name ||
+              hoveredComponentName === target.name;
+            const label = isGateDriver(comp) ? 'GATE DRIVE ➔' : 'MEASURE I ➔';
+            pairs.push({ sourceComp: comp, targetComp: target, label, isHoveredOrSelected });
+          }
+        }
+      }
+    }
+    return pairs;
+  }, [state.components, state.selection, hoveredComponentName]);
+
+  // Pre-computed, deduplicated terminal net labels across all circuit components
+  const terminalLabelItems = useMemo(() => {
+    const items: Array<{
+      key: string;
+      label: string;
+      gx: number;
+      gy: number;
+      componentName: string;
+      dirX: number;
+      dirY: number;
+      isWired: boolean;
+    }> = [];
+    const seen = new Set<string>();
+
+    for (const component of state.components) {
+      const terminals = terminalPositions(component);
+      const inLabels = component.inputLabels || [];
+      const outLabels = component.outputLabels || [];
+
+      terminals.input.forEach((t, i) => {
+        const raw = inLabels[i]?.trim();
+        if (!raw || raw === 'NIX_NIX_NIX') return;
+        const pointKey = `${t.x},${t.y}:${raw}`;
+        if (seen.has(pointKey)) return;
+        seen.add(pointKey);
+        const isWired = state.wires.some((w) =>
+          w.points.some((p) => Math.hypot(p[0] - t.x, p[1] - t.y) < 0.25),
+        );
+        items.push({
+          key: `in-${component.name}-${i}-${raw}`,
+          label: raw,
+          gx: t.x,
+          gy: t.y,
+          componentName: component.name,
+          dirX: t.x - component.position[0],
+          dirY: t.y - component.position[1],
+          isWired,
+        });
+      });
+
+      terminals.output.forEach((t, i) => {
+        const raw = outLabels[i]?.trim();
+        if (!raw || raw === 'NIX_NIX_NIX') return;
+        const pointKey = `${t.x},${t.y}:${raw}`;
+        if (seen.has(pointKey)) return;
+        seen.add(pointKey);
+        const isWired = state.wires.some((w) =>
+          w.points.some((p) => Math.hypot(p[0] - t.x, p[1] - t.y) < 0.25),
+        );
+        items.push({
+          key: `out-${component.name}-${i}-${raw}`,
+          label: raw,
+          gx: t.x,
+          gy: t.y,
+          componentName: component.name,
+          dirX: t.x - component.position[0],
+          dirY: t.y - component.position[1],
+          isWired,
+        });
+      });
+    }
+    return items;
+  }, [state.components, state.wires]);
 
   // Wire segment and endpoint drag state
   const [wireDrag, setWireDrag] = useState<{
@@ -480,6 +592,29 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
         >
           #
         </button>
+        <button
+          type="button"
+          className={`canvas-ctrl-btn ${labelDisplayMode === 'smart' ? 'active' : ''}`}
+          onClick={() => {
+            const next = labelDisplayMode === 'smart' ? 'all' : labelDisplayMode === 'all' ? 'hover' : 'smart';
+            setLabelDisplayMode(next);
+            try {
+              localStorage.setItem('gecko_label_mode', next);
+            } catch {
+              // ignore
+            }
+          }}
+          title={`Net Labels: ${
+            labelDisplayMode === 'smart'
+              ? 'Smart Mode (Virtual labels always visible; wired labels on hover/select)'
+              : labelDisplayMode === 'all'
+              ? 'All Labels Visible (click to show on hover only)'
+              : 'On Hover / Selection Only (click for Smart mode)'
+          }`}
+          style={{ fontSize: '11px', minWidth: '32px' }}
+        >
+          {labelDisplayMode === 'smart' ? '🏷️' : labelDisplayMode === 'all' ? '🏷️⁺' : '🏷️⋯'}
+        </button>
         {cursorCoord && (
           <>
             <div className="canvas-ctrl-sep" />
@@ -516,6 +651,17 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
             >
               <circle cx={1} cy={1} r={1} />
             </pattern>
+            <marker
+              id="coupling-arrow"
+              viewBox="0 0 10 10"
+              refX="8"
+              refY="5"
+              markerWidth="6"
+              markerHeight="6"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#38bdf8" />
+            </marker>
           </defs>
 
           {/* Grid Background */}
@@ -664,6 +810,54 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
             ))}
           </g>
 
+          {/* Active Software Coupling Guidelines (Gate Driver ➔ Switch, Ammeter ➔ Component) */}
+          <g className="coupling-guides-layer" pointerEvents="none">
+            {couplingPairs.map(({ sourceComp, targetComp, label, isHoveredOrSelected }, i) => {
+              const x1 = sourceComp.position[0] * dpix;
+              const y1 = sourceComp.position[1] * dpix;
+              const x2 = targetComp.position[0] * dpix;
+              const y2 = targetComp.position[1] * dpix;
+              const dx = x2 - x1;
+              const cx1 = x1 + dx * 0.4;
+              const cy1 = y1;
+              const cx2 = x1 + dx * 0.6;
+              const cy2 = y2;
+              const pathD = `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
+              const badgeW = Math.max(label.length * 6.5 + 16, 80);
+
+              return (
+                <g key={`coupling-${i}`} className={`coupling-guide-group${isHoveredOrSelected ? ' active' : ''}`}>
+                  {isHoveredOrSelected && (
+                    <path
+                      d={pathD}
+                      fill="none"
+                      stroke="rgba(56, 189, 248, 0.25)"
+                      strokeWidth={8}
+                      strokeLinecap="round"
+                    />
+                  )}
+                  <path
+                    d={pathD}
+                    fill="none"
+                    stroke={isHoveredOrSelected ? '#38bdf8' : 'rgba(56, 189, 248, 0.45)'}
+                    strokeWidth={isHoveredOrSelected ? 2.5 : 1.5}
+                    strokeDasharray={isHoveredOrSelected ? '6 4' : '4 4'}
+                    className={isHoveredOrSelected ? 'coupling-guideline active' : 'coupling-guideline'}
+                    markerEnd="url(#coupling-arrow)"
+                  />
+                  {isHoveredOrSelected && (
+                    <g transform={`translate(${(x1 + x2) / 2}, ${(y1 + y2) / 2})`}>
+                      <rect x={-badgeW / 2} y={-10} width={badgeW} height={20} rx={4} fill="#0f172a" stroke="#38bdf8" strokeWidth={1} />
+                      <text x={0} y={3.5} textAnchor="middle" fill="#38bdf8" fontSize={9} fontWeight="bold">
+                        {label}
+                      </text>
+                    </g>
+                  )}
+                </g>
+              );
+            })}
+          </g>
+
           {/* Components */}
           <g className="components" pointerEvents={state.mode === 'placing' ? 'none' : 'auto'}>
             {state.components.map((component) => {
@@ -674,6 +868,8 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                   key={component.name}
                   transform={`translate(${component.position[0] * dpix}, ${component.position[1] * dpix})`}
                   className={`component family-${component.family || 'LK'}${selected ? ' selected' : ''}`}
+                  onMouseEnter={() => setHoveredComponentName(component.name)}
+                  onMouseLeave={() => setHoveredComponentName((curr) => (curr === component.name ? null : curr))}
                   onMouseDown={(e) => {
                     if (e.button !== 0) return;
                     if (state.mode !== 'idle') return;
@@ -794,43 +990,195 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                           );
                         })}
 
-                        {/* Component identifier label: to the right of the
-                            symbol so labels of vertically stacked blocks
-                            cannot collide */}
-                        <text x={halfW + 5} y={4} textAnchor="start" className="component-name">
-                          {component.name}
-                        </text>
+                        {/* Component identifier label */}
+                        {(() => {
+                          const isCtrlProbe = isVoltmeterComponent(component) || isAmmeterComponent(component);
+                          const isControlBlock = component.family === 'CONTROL';
+                          const isHorizontalTwoPort =
+                            (component.orientation === 502 || component.orientation === 504) && !isCtrlProbe;
+
+                          if (isCtrlProbe) {
+                            // Probes: place identifier to the left of the symbol so output labels to the right never collide
+                            return (
+                              <text x={-halfW - 6} y={4} textAnchor="end" className="component-name">
+                                {component.name}
+                              </text>
+                            );
+                          }
+                          if (isControlBlock || isHorizontalTwoPort) {
+                            // Control blocks (SIGNAL.1, etc.) & Horizontal components (L.1, horizontal resistors): place name centered above
+                            return (
+                              <text x={0} y={-halfH - 5} textAnchor="middle" className="component-name">
+                                {component.name}
+                              </text>
+                            );
+                          }
+                          // Vertical LK / default components: to the right
+                          return (
+                            <text x={halfW + 6} y={4} textAnchor="start" className="component-name">
+                              {component.name}
+                            </text>
+                          );
+                        })()}
+
+                        {/* Coupling Badge Tag on Component */}
+                        {(() => {
+                          const coupled = getCoupledComponentName(component);
+                          const isSw = isSwitchComponent(component);
+                          const isGd = isGateDriver(component);
+                          const isAm = isAmmeterComponent(component);
+                          const isVm = isVoltmeterComponent(component);
+
+                          if (!isSw && !isGd && !isAm && !isVm) return null;
+
+                          let badgeText = '';
+                          const clickTarget: string | null = coupled || null;
+
+                          if (isSw && coupled) {
+                            badgeText = `⮡ gate: ${coupled}`;
+                          } else if (isAm && coupled) {
+                            badgeText = `➔ i(${coupled})`;
+                          } else if (isGd && coupled) {
+                            badgeText = `➔ ${coupled}`;
+                          } else if (isVm) {
+                            if (coupled) {
+                              badgeText = `➔ u(${coupled})`;
+                            } else {
+                              const nodeA =
+                                (component.parameters?.nodeA as string) ||
+                                (component.parameters?.positiveNode as string);
+                              const nodeB =
+                                (component.parameters?.nodeB as string) ||
+                                (component.parameters?.negativeNode as string) ||
+                                '0';
+                              if (nodeA) {
+                                badgeText = `➔ V(${nodeA}, ${nodeB})`;
+                              }
+                            }
+                          }
+
+                          if (!badgeText) return null;
+
+                          const badgeW = Math.max(badgeText.length * 6.2 + 14, 52);
+
+                          // Position:
+                          // For switches: place on the left (gate pin) side so it never collides with bottom wire/diode!
+                          // For gate drivers, ammeters & voltmeters: place below the block
+                          const badgeTransform = isSw
+                            ? `translate(${-halfW - badgeW / 2 - 4}, 0)`
+                            : `translate(0, ${halfH + 12})`;
+
+                          return (
+                            <g
+                              className="coupling-symbol-badge"
+                              transform={badgeTransform}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (clickTarget) {
+                                  dispatch({ type: 'SELECT', name: clickTarget, additive: false });
+                                  dispatch({ type: 'PANEL_FOR', name: clickTarget });
+                                } else {
+                                  dispatch({ type: 'SELECT', name: component.name, additive: false });
+                                  dispatch({ type: 'PANEL_FOR', name: component.name });
+                                }
+                              }}
+                              style={{ cursor: 'pointer' }}
+                            >
+                              <rect
+                                x={-badgeW / 2}
+                                y={-8}
+                                width={badgeW}
+                                height={16}
+                                rx={8}
+                                className="coupling-pill-bg"
+                              />
+                              <text
+                                x={0}
+                                y={3.5}
+                                textAnchor="middle"
+                                className="coupling-pill-text"
+                              >
+                                {badgeText}
+                              </text>
+                            </g>
+                          );
+                        })()}
                       </>
                     );
                   })()}
+                </g>
+              );
+            })}
+          </g>
 
-                  {/* Terminal net labels */}
-                  {terminals.input
-                    .map((t, i) => ({ t, label: component.inputLabels[i] }))
-                    .filter(({ label }) => label)
-                    .map(({ t, label }, i) => (
-                      <text
-                        key={'in' + i}
-                        x={(t.x - component.position[0]) * dpix - 4}
-                        y={(t.y - component.position[1]) * dpix - 6}
-                        className="node-label"
-                      >
-                        {label}
-                      </text>
-                    ))}
-                  {terminals.output
-                    .map((t, i) => ({ t, label: component.outputLabels[i] }))
-                    .filter(({ label }) => label)
-                    .map(({ t, label }, i) => (
-                      <text
-                        key={'out' + i}
-                        x={(t.x - component.position[0]) * dpix + 4}
-                        y={(t.y - component.position[1]) * dpix - 6}
-                        className="node-label"
-                      >
-                        {label}
-                      </text>
-                    ))}
+          {/* Deduplicated Terminal Net Labels Layer */}
+          <g className="terminal-net-labels-layer" pointerEvents="none">
+            {terminalLabelItems.map((item) => {
+              const isCompHoveredOrSelected =
+                state.selection.includes(item.componentName) ||
+                hoveredComponentName === item.componentName;
+              const isVisible =
+                labelDisplayMode === 'all' ||
+                (labelDisplayMode === 'smart' && !item.isWired) ||
+                isCompHoveredOrSelected;
+              if (!isVisible) return null;
+
+              const px = item.gx * dpix;
+              const py = item.gy * dpix;
+              let textX = px + 4;
+              let textY = py - 4;
+              let anchor: 'start' | 'end' | 'middle' = 'start';
+
+              if (item.dirX > 0) {
+                // Terminal on the right of component
+                textX = px + 4;
+                textY = py + 3;
+                anchor = 'start';
+              } else if (item.dirX < 0) {
+                // Terminal on the left of component
+                textX = px - 4;
+                textY = py + 3;
+                anchor = 'end';
+              } else if (item.dirY < 0) {
+                // Terminal on top of component
+                textX = px;
+                textY = py - 6;
+                anchor = 'middle';
+              } else if (item.dirY > 0) {
+                // Terminal on bottom of component
+                textX = px;
+                textY = py + 12;
+                anchor = 'middle';
+              }
+
+              const rectW = Math.max(item.label.length * 5.8 + 6, 14);
+              const rectH = 13;
+              const rectY = textY - 9.5;
+              let rectX = textX - 3;
+              if (anchor === 'end') {
+                rectX = textX - rectW + 3;
+              } else if (anchor === 'middle') {
+                rectX = textX - rectW / 2;
+              }
+
+              return (
+                <g key={item.key} className="terminal-net-label-pill">
+                  <rect
+                    x={rectX}
+                    y={rectY}
+                    width={rectW}
+                    height={rectH}
+                    rx={3}
+                    className="node-label-pill-bg"
+                  />
+                  <text
+                    x={textX}
+                    y={textY}
+                    textAnchor={anchor}
+                    className="node-label"
+                  >
+                    {item.label}
+                  </text>
                 </g>
               );
             })}

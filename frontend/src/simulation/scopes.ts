@@ -5,8 +5,9 @@
 import type { EditorComponent } from '../model/types';
 
 /** Scope blocks: classic scope (typ 5), web scope (typ 1003), or SCOPE/OSZI name prefixes. */
-export function isScopeComponent(component: EditorComponent): boolean {
-  const name = component.name.toUpperCase();
+export function isScopeComponent(component: EditorComponent | null | undefined): boolean {
+  if (!component) return false;
+  const name = (component.name || '').toUpperCase();
   return (
     component.type === 5 ||
     component.type === 1003 ||

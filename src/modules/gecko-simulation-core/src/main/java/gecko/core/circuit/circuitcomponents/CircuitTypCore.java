@@ -103,6 +103,7 @@ public enum CircuitTypCore {
     NONLIN_REL(52),    // Non-linear reluctance
 
     // Control-domain blocks — IDs in 1000+ range to avoid collision with LK/THERM
+    CTRL_GATE(1000),       // Gate driver
     CTRL_VOLT(1001),       // Voltage measurement
     CTRL_AMP(1002),        // Current measurement
     CTRL_SCOPE(1003),      // Oscilloscope / scope display
@@ -242,7 +243,7 @@ public enum CircuitTypCore {
      * @return true if any CTRL_* type
      */
     public boolean isControl() {
-        return (typeNumber >= 1001 && typeNumber <= 1099) || this == C_JAVA_FUNCTION;
+        return (typeNumber >= 1000 && typeNumber <= 1099) || this == C_JAVA_FUNCTION;
     }
 
     /**

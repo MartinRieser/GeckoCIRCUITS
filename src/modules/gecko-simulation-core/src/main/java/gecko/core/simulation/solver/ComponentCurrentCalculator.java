@@ -28,7 +28,7 @@ import gecko.core.circuit.netlist.INetList;
 @SuppressWarnings("fallthrough")
 public class ComponentCurrentCalculator {
 
-    private static final double FAST_NULL_R = 1.0e-12;
+    private static final double FAST_NULL_R = 1.0e-9;
     private static final double FAST_NULL_L = 1.0e-12;
 
     /** Above this resistance a semiconductor branch counts as blocking (legacy rDoffDEFAULT). */

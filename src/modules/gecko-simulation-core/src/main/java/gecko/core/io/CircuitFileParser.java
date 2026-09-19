@@ -494,6 +494,57 @@ public class CircuitFileParser {
         parseComponentsForDomain(tokenMap, "sp", "SPECIAL", model);
         parseComponentsForDomain(tokenMap, "ElementSPECIAL", "SPECIAL", model);
         parseComponentsForDomain(tokenMap, "ElementSpecial", "SPECIAL", model);
+        resolveComponentCouplings(model);
+    }
+
+    private void resolveComponentCouplings(CircuitModel model) {
+        List<CircuitModel.ComponentData> all = new ArrayList<>();
+        all.addAll(model.getCircuitComponents());
+        all.addAll(model.getControlComponents());
+        all.addAll(model.getThermalComponents());
+        all.addAll(model.getSpecialComponents());
+
+        Map<Long, CircuitModel.ComponentData> byUid = new HashMap<>();
+        Map<String, CircuitModel.ComponentData> byName = new HashMap<>();
+        for (CircuitModel.ComponentData c : all) {
+            if (c.getUniqueObjectIdentifier() != 0) {
+                byUid.put(c.getUniqueObjectIdentifier(), c);
+            }
+            if (c.getName() != null && !c.getName().isBlank()) {
+                byName.put(c.getName(), c);
+            }
+        }
+
+        for (CircuitModel.ComponentData c : all) {
+            Object val = c.getParameters().get("coupledComponent");
+            String coupledName = val != null ? val.toString().trim() : "";
+            if (coupledName.startsWith("/")) {
+                coupledName = coupledName.substring(1);
+                c.setParameter("coupledComponent", coupledName);
+            }
+            if (coupledName.isEmpty() && c.getCoupledReferenceID() != 0) {
+                CircuitModel.ComponentData target = byUid.get(c.getCoupledReferenceID());
+                if (target != null && target.getName() != null && !target.getName().isBlank()) {
+                    coupledName = target.getName();
+                    c.setParameter("coupledComponent", coupledName);
+                }
+            }
+            if (!coupledName.isEmpty()) {
+                CircuitModel.ComponentData target = byName.get(coupledName);
+                if (target != null) {
+                    Object targetVal = target.getParameters().get("coupledComponent");
+                    String targetCoupled = targetVal != null ? targetVal.toString().trim() : "";
+                    if (targetCoupled.startsWith("/")) {
+                        targetCoupled = targetCoupled.substring(1);
+                    }
+                    // Only Gate Drivers set a reverse coupling onto Switches; measurement blocks (probes) must not!
+                    boolean isGateDriver = c.getType() == 3 || (c.getName() != null && c.getName().startsWith("GATE"));
+                    if (targetCoupled.isEmpty() && isGateDriver) {
+                        target.setParameter("coupledComponent", c.getName());
+                    }
+                }
+            }
+        }
     }
 
     private void parseComponentsForDomain(TokenMap tokenMap, String tokenKey, String family, CircuitModel model) {
@@ -548,6 +599,26 @@ public class CircuitFileParser {
                 }
                 if (params.length > 0) {
                     comp.setParameter(resolveParameterKey(type), params[0]);
+                }
+                if (paramStrings != null && paramStrings.length > 0 && paramStrings[0] != null) {
+                    String first = paramStrings[0].trim();
+                    if (first.startsWith("/")) {
+                        first = first.substring(1);
+                    }
+                    if (type == 1 || type == 1001 || (name != null && name.startsWith("VOLT"))) {
+                        String second = paramStrings.length > 1 && paramStrings[1] != null ? paramStrings[1].trim() : "";
+                        if (second.startsWith("/")) {
+                            second = second.substring(1);
+                        }
+                        if (!second.isEmpty() && !second.equalsIgnoreCase("NIX_NIX_NIX")) {
+                            comp.setParameter("nodeA", first);
+                            comp.setParameter("nodeB", second);
+                        } else if (!first.isEmpty() && !first.equalsIgnoreCase("NIX_NIX_NIX")) {
+                            comp.setParameter("coupledComponent", first);
+                        }
+                    } else if (!first.isEmpty() && !first.equalsIgnoreCase("NIX_NIX_NIX")) {
+                        comp.setParameter("coupledComponent", first);
+                    }
                 }
 
                 // Parse script block parameters (sourceCode, staticCode, staticVariables, anzXIN, anzYOUT)

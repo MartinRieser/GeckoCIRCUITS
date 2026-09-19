@@ -526,6 +526,16 @@ public class NetlistBuilder {
         labelToNode.put("gnd", 0);
         int nextNode = 1;
 
+        if (connections != null) {
+            for (CircuitModel.ConnectionData conn : connections) {
+                if (conn == null) continue;
+                String lbl = conn.getLabel();
+                if (isValidLabel(lbl) && !isGroundLabel(lbl) && !labelToNode.containsKey(lbl.trim())) {
+                    labelToNode.put(lbl.trim(), nextNode++);
+                }
+            }
+        }
+
         for (int i = 0; i < elementCount; i++) {
             if (hasWires && !isConnected[i]) {
                 continue;
@@ -546,6 +556,23 @@ public class NetlistBuilder {
         // Map net identities (wire nets and unattached terminal points) to node
         // indices. Two labels sharing one wire net alias to the same node (first wins).
         Map<String, Integer> rootToNode = new HashMap<>();
+
+        if (connections != null) {
+            for (CircuitModel.ConnectionData conn : connections) {
+                if (conn == null) continue;
+                String lbl = conn.getLabel();
+                int[][] pts = conn.getPoints();
+                if (isValidLabel(lbl) && pts != null && pts.length > 0) {
+                    int node = isGroundLabel(lbl) ? 0 : labelToNode.getOrDefault(lbl.trim(), 0);
+                    String root = wireNets.netKey(new GridPoint(pts[0][0], pts[0][1]));
+                    Integer existing = rootToNode.putIfAbsent(root, node);
+                    if (existing != null && !lbl.trim().isEmpty()) {
+                        labelToNode.put(lbl.trim(), existing);
+                    }
+                }
+            }
+        }
+
         for (int i = 0; i < elementCount; i++) {
             if (hasWires && !isConnected[i]) {
                 continue;
@@ -565,6 +592,21 @@ public class NetlistBuilder {
                 Integer existing = rootToNode.putIfAbsent(wireNets.netKey(compTerminals[i][1]), node);
                 if (existing != null && !yLabels[0].trim().isEmpty()) {
                     labelToNode.put(yLabels[0].trim(), existing);
+                }
+            }
+        }
+
+        if (connections != null) {
+            for (CircuitModel.ConnectionData conn : connections) {
+                if (conn == null) continue;
+                String lbl = conn.getLabel();
+                int[][] pts = conn.getPoints();
+                if (isValidLabel(lbl) && pts != null && pts.length > 0) {
+                    String root = wireNets.netKey(new GridPoint(pts[0][0], pts[0][1]));
+                    Integer resolved = rootToNode.get(root);
+                    if (resolved != null && !isGroundLabel(lbl)) {
+                        labelToNode.put(lbl.trim(), resolved);
+                    }
                 }
             }
         }

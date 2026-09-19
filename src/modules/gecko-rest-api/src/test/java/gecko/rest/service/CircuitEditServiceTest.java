@@ -577,6 +577,40 @@ class CircuitEditServiceTest {
         assertThat(defaults.signals()).contains("dc_link").doesNotContain("gnd");
     }
 
+    @Test
+    void coupledComponentExposedInEditorModelAndPatchable() {
+        service.createComponent(circuitId, new ComponentCreateRequest("CONTROL", 6, "GATE.X", 10, 10, null, null));
+        service.patchComponent(circuitId, "GATE.X", new ComponentPatchRequest(null, null, null, null,
+                Map.of("coupledComponent", "S.1")));
+
+        EditorModelResponse snapshot = service.getEditorModel(circuitId);
+        EditorModelResponse.Component gateComp = snapshot.components().stream()
+                .filter(c -> "GATE.X".equals(c.name())).findFirst().orElseThrow();
+        assertEquals("S.1", gateComp.parameters().get("coupledComponent"));
+
+        CircuitModel.ComponentData raw = findByName("GATE.X");
+        assertTrue(raw.getParameterStrings().length > 0);
+        assertEquals("S.1", raw.getParameterStrings()[0]);
+    }
+
+    @Test
+    void voltmeterNodeAAndNodeBPatchableAndExposedInEditorModel() {
+        service.createComponent(circuitId, new ComponentCreateRequest("CONTROL", 1, "VOLT.TEST", 15, 15, null, null));
+        service.patchComponent(circuitId, "VOLT.TEST", new ComponentPatchRequest(null, null, null, null,
+                Map.of("nodeA", "z1", "nodeB", "0")));
+
+        EditorModelResponse snapshot = service.getEditorModel(circuitId);
+        EditorModelResponse.Component voltComp = snapshot.components().stream()
+                .filter(c -> "VOLT.TEST".equals(c.name())).findFirst().orElseThrow();
+        assertEquals("z1", voltComp.parameters().get("nodeA"));
+        assertEquals("0", voltComp.parameters().get("nodeB"));
+
+        CircuitModel.ComponentData raw = findByName("VOLT.TEST");
+        assertTrue(raw.getParameterStrings().length >= 2);
+        assertEquals("z1", raw.getParameterStrings()[0]);
+        assertEquals("0", raw.getParameterStrings()[1]);
+    }
+
     // ========== Catalog ==========
 
     @Test

@@ -4,22 +4,43 @@
  * unit badges, terminal net label manager, and quick actions (Rotate, Delete, Duplicate).
  */
 import { useEffect, useState, useMemo } from 'react';
-import type { EditorComponent } from '../model/types';
+import type { EditorComponent, EditorWire } from '../model/types';
 import {
   CTRL_TYPE,
   getComponentMeta,
   parseEngineeringValue,
   formatEngineeringValue,
+  isGateDriver,
+  isSwitchComponent,
+  isAmmeterComponent,
+  isVoltmeterComponent,
+  getCoupledComponentName,
+  extractAvailableSignals,
+  type ParameterDef,
 } from '../model/componentSchema';
-import type { ParameterDef } from '../model/componentSchema';
 import { isScopeComponent } from '../simulation/scopes';
+import { terminalPositions } from '../model/geometry';
 import { SymbolPreview } from '../canvas/symbols';
+
+const CHANNEL_COLORS = [
+  '#38bdf8', // Cyan
+  '#4ade80', // Green
+  '#f59e0b', // Amber
+  '#c084fc', // Purple
+  '#f43f5e', // Rose
+  '#06b6d4', // Teal
+  '#a855f7', // Violet
+  '#fb923c', // Orange
+];
 
 interface PanelProps {
   component: EditorComponent | null;
+  allComponents?: EditorComponent[];
+  wires?: EditorWire[];
   onRename: (name: string, newName: string) => void;
   onSetParameter: (name: string, key: string, value: number | string) => void;
-  onSetLabel: (component: string, side: 'x' | 'y', label: string) => void;
+  onSetLabel: (component: string, side: 'x' | 'y', indexOrLabel: number | string, maybeLabel?: string) => void;
+  onSelectComponent?: (name: string) => void;
   onRotate?: (name: string) => void;
   onDelete?: (name: string) => void;
   onOpenScopeTab?: (scopeName: string) => void;
@@ -28,9 +49,12 @@ interface PanelProps {
 
 export function PropertiesPanel({
   component,
+  allComponents,
+  wires,
   onRename,
   onSetParameter,
   onSetLabel,
+  onSelectComponent,
   onRotate,
   onDelete,
   onOpenScopeTab,
@@ -47,6 +71,37 @@ export function PropertiesPanel({
     if (!component) return null;
     return getComponentMeta(component.type, component.family, component.name);
   }, [component]);
+
+  const isGate = isGateDriver(component);
+  const isSwitch = isSwitchComponent(component);
+  const isAmmeter = isAmmeterComponent(component);
+  const isVoltmeter = isVoltmeterComponent(component);
+  const isScope = component ? isScopeComponent(component) : false;
+  const coupledTarget = getCoupledComponentName(component);
+
+  const availableSignals = useMemo(() => {
+    return extractAvailableSignals(allComponents || [], wires || []);
+  }, [allComponents, wires]);
+
+  const availableSwitches = useMemo(() => {
+    return (allComponents || []).filter((c) => isSwitchComponent(c) && c.name !== component?.name);
+  }, [allComponents, component?.name]);
+
+  const availableGateDrivers = useMemo(() => {
+    return (allComponents || []).filter((c) => isGateDriver(c) && c.name !== component?.name);
+  }, [allComponents, component?.name]);
+
+  const availableCurrentTargets = useMemo(() => {
+    return (allComponents || []).filter(
+      (c) =>
+        c.name !== component?.name &&
+        (c.family === 'LK' ||
+          c.family === 'CIRCUIT' ||
+          c.family === 'THERMAL' ||
+          (c.family !== 'CONTROL' && c.type < 100) ||
+          isSwitchComponent(c)),
+    );
+  }, [allComponents, component?.name]);
 
   if (!component || !meta) {
     return (
@@ -173,6 +228,348 @@ export function PropertiesPanel({
           </div>
         </div>
 
+        {/* Gate Driver to Switch Coupling */}
+        {isGate && (
+          <div className="prop-section coupling-section">
+            <div className="prop-section-title">
+              <span>⚡ Switch Coupling</span>
+              {coupledTarget && onSelectComponent && (
+                <button
+                  type="button"
+                  className="link-action-btn"
+                  onClick={() => onSelectComponent(coupledTarget)}
+                  title={`Select ${coupledTarget} on schematic`}
+                >
+                  Go to {coupledTarget} ↗
+                </button>
+              )}
+            </div>
+            <div className="prop-desc-hint">
+              Select which semiconductor switch is controlled by this gate driver.
+            </div>
+            <div className="coupling-control-row">
+              <select
+                className="prop-input coupling-select"
+                value={coupledTarget}
+                onChange={(e) => {
+                  const target = e.target.value;
+                  onSetParameter(component.name, 'coupledComponent', target);
+                  if (target) {
+                    onSetParameter(target, 'coupledComponent', component.name);
+                  }
+                }}
+              >
+                <option value="">-- No Switch Coupled --</option>
+                {availableSwitches.map((sw) => (
+                  <option key={sw.name} value={sw.name}>
+                    {sw.name} ({getComponentMeta(sw.type, sw.family, sw.name)?.displayName || 'Switch'})
+                  </option>
+                ))}
+              </select>
+            </div>
+            {coupledTarget ? (
+              <div className="coupling-status-pill active">
+                <span className="coupling-status-dot" />
+                <span>Controls switch <strong>{coupledTarget}</strong></span>
+              </div>
+            ) : (
+              <div className="coupling-status-pill warning">
+                <span>⚠️ Gate driver is uncoupled (select a switch above)</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Switch to Gate Driver Coupling */}
+        {isSwitch && (
+          <div className="prop-section coupling-section">
+            <div className="prop-section-title">
+              <span>⚡ Gate Drive Coupling</span>
+              {coupledTarget && onSelectComponent && (
+                <button
+                  type="button"
+                  className="link-action-btn"
+                  onClick={() => onSelectComponent(coupledTarget)}
+                  title={`Select ${coupledTarget} on schematic`}
+                >
+                  Go to {coupledTarget} ↗
+                </button>
+              )}
+            </div>
+            <div className="prop-desc-hint">
+              Gate driver block that commands this switch's conduction state.
+            </div>
+            <div className="coupling-control-row">
+              <select
+                className="prop-input coupling-select"
+                value={coupledTarget}
+                onChange={(e) => {
+                  const target = e.target.value;
+                  onSetParameter(component.name, 'coupledComponent', target);
+                  if (target) {
+                    onSetParameter(target, 'coupledComponent', component.name);
+                  }
+                }}
+              >
+                <option value="">-- Direct / Uncoupled --</option>
+                {availableGateDrivers.map((gd) => (
+                  <option key={gd.name} value={gd.name}>
+                    {gd.name} (Gate Driver)
+                  </option>
+                ))}
+              </select>
+            </div>
+            {coupledTarget ? (
+              <div className="coupling-status-pill active">
+                <span className="coupling-status-dot" />
+                <span>Driven by gate driver <strong>{coupledTarget}</strong></span>
+              </div>
+            ) : (
+              <div className="coupling-status-pill">
+                <span>Direct switching (no gate driver block attached)</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Ammeter Current Measurement Target Selection */}
+        {isAmmeter && (
+          <div className="prop-section coupling-section">
+            <div className="prop-section-title">
+              <span>⚡ Current Measurement Target</span>
+              {coupledTarget && onSelectComponent && (
+                <button
+                  type="button"
+                  className="link-action-btn"
+                  onClick={() => onSelectComponent(coupledTarget)}
+                  title={`Select ${coupledTarget} on schematic`}
+                >
+                  Go to {coupledTarget} ↗
+                </button>
+              )}
+            </div>
+            <div className="prop-desc-hint">
+              Select which circuit component this ammeter measures branch current through.
+            </div>
+            <div className="coupling-control-row">
+              <select
+                className="prop-input coupling-select"
+                value={coupledTarget}
+                onChange={(e) => {
+                  const target = e.target.value;
+                  onSetParameter(component.name, 'coupledComponent', target);
+                  // Update signal label automatically if empty or starting with i
+                  const currentOut = component.outputLabels?.[0] || '';
+                  if (target && (!currentOut || currentOut.startsWith('i'))) {
+                    const cleanTarget = target.replace(/[^a-zA-Z0-9]/g, '');
+                    onSetLabel(component.name, 'y', 0, `i${cleanTarget}`);
+                  }
+                }}
+              >
+                <option value="">-- Select Component to Measure --</option>
+                {availableCurrentTargets.map((comp) => {
+                  const m = getComponentMeta(comp.type, comp.family, comp.name);
+                  return (
+                    <option key={comp.name} value={comp.name}>
+                      {comp.name} ({m?.displayName || comp.family})
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+            {coupledTarget ? (
+              <div className="coupling-status-pill active">
+                <span className="coupling-status-dot" />
+                <span>
+                  Measures branch current through <strong>{coupledTarget}</strong> (Signal: <code>{component.outputLabels?.[0] || 'i' + coupledTarget}</code>)
+                </span>
+              </div>
+            ) : (
+              <div className="coupling-status-pill warning">
+                <span>⚠️ No component selected to measure (pick an inductor, resistor, diode, etc.)</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Voltmeter Measurement Target (Component vs Nodes) */}
+        {isVoltmeter && (
+          <div className="prop-section coupling-section">
+            <div className="prop-section-title">
+              <span>⚡ Voltage Measurement Target</span>
+              {coupledTarget && onSelectComponent && (
+                <button
+                  type="button"
+                  className="link-action-btn"
+                  onClick={() => onSelectComponent(coupledTarget)}
+                  title={`Select ${coupledTarget} on schematic`}
+                >
+                  Go to {coupledTarget} ↗
+                </button>
+              )}
+            </div>
+            <div className="prop-desc-hint">
+              Measure voltage across a circuit component or differentially between two named nodes.
+            </div>
+
+            {/* Mode Toggle: Component vs Differential Nodes */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+              <button
+                type="button"
+                className={`secondary-btn ${!component.parameters?.nodeA && !component.parameters?.nodeB ? 'active' : ''}`}
+                style={{
+                  flex: 1,
+                  padding: '5px 8px',
+                  fontSize: '11px',
+                  background: (!component.parameters?.nodeA && !component.parameters?.nodeB) ? '#1e293b' : 'transparent',
+                  border: (!component.parameters?.nodeA && !component.parameters?.nodeB) ? '1px solid #38bdf8' : '1px solid #334155',
+                  color: (!component.parameters?.nodeA && !component.parameters?.nodeB) ? '#38bdf8' : '#94a3b8',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontWeight: (!component.parameters?.nodeA && !component.parameters?.nodeB) ? 'bold' : 'normal',
+                }}
+                onClick={() => {
+                  onSetParameter(component.name, 'nodeA', '');
+                  onSetParameter(component.name, 'nodeB', '');
+                }}
+              >
+                Across Component
+              </button>
+              <button
+                type="button"
+                className={`secondary-btn ${(component.parameters?.nodeA || component.parameters?.nodeB) ? 'active' : ''}`}
+                style={{
+                  flex: 1,
+                  padding: '5px 8px',
+                  fontSize: '11px',
+                  background: (component.parameters?.nodeA || component.parameters?.nodeB) ? '#1e293b' : 'transparent',
+                  border: (component.parameters?.nodeA || component.parameters?.nodeB) ? '1px solid #38bdf8' : '1px solid #334155',
+                  color: (component.parameters?.nodeA || component.parameters?.nodeB) ? '#38bdf8' : '#94a3b8',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontWeight: (component.parameters?.nodeA || component.parameters?.nodeB) ? 'bold' : 'normal',
+                }}
+                onClick={() => {
+                  onSetParameter(component.name, 'coupledComponent', '');
+                  if (!component.parameters?.nodeA) {
+                    const firstSig = availableSignals.find((s) => s !== '0') || 'z1';
+                    onSetParameter(component.name, 'nodeA', firstSig);
+                  }
+                  if (!component.parameters?.nodeB) {
+                    onSetParameter(component.name, 'nodeB', '0');
+                  }
+                }}
+              >
+                Between Two Nodes
+              </button>
+            </div>
+
+            {!(component.parameters?.nodeA || component.parameters?.nodeB) ? (
+              /* Mode A: Across Component */
+              <>
+                <div className="coupling-control-row">
+                  <select
+                    className="prop-input coupling-select"
+                    value={coupledTarget}
+                    onChange={(e) => {
+                      const target = e.target.value;
+                      onSetParameter(component.name, 'coupledComponent', target);
+                      onSetParameter(component.name, 'nodeA', '');
+                      onSetParameter(component.name, 'nodeB', '');
+                      const currentOut = component.outputLabels?.[0] || '';
+                      if (target && (!currentOut || currentOut.startsWith('u') || currentOut.startsWith('v'))) {
+                        const cleanTarget = target.replace(/[^a-zA-Z0-9]/g, '');
+                        onSetLabel(component.name, 'y', 0, `u_${cleanTarget}`);
+                      }
+                    }}
+                  >
+                    <option value="">-- Select Component to Measure Across --</option>
+                    {availableCurrentTargets.map((comp) => {
+                      const m = getComponentMeta(comp.type, comp.family, comp.name);
+                      return (
+                        <option key={comp.name} value={comp.name}>
+                          {comp.name} ({m?.displayName || comp.family})
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+                {coupledTarget ? (
+                  <div className="coupling-status-pill active" style={{ marginTop: '8px' }}>
+                    <span className="coupling-status-dot" />
+                    <span>
+                      Measures voltage across <strong>{coupledTarget}</strong> (Signal: <code>{component.outputLabels?.[0] || 'u_' + coupledTarget}</code>)
+                    </span>
+                  </div>
+                ) : (
+                  <div className="coupling-status-pill warning" style={{ marginTop: '8px' }}>
+                    <span>⚠️ Select a circuit component (e.g. R.Last, C.1, D.1)</span>
+                  </div>
+                )}
+              </>
+            ) : (
+              /* Mode B: Between Nodes / Wire Labels */
+              <>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
+                  <div className="prop-field">
+                    <label className="prop-label" style={{ fontSize: '11px' }}>Positive Node (+)</label>
+                    <input
+                      type="text"
+                      className="prop-input"
+                      list="circuit-available-signals"
+                      placeholder="e.g. z1, in"
+                      value={String(component.parameters?.nodeA ?? '')}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        onSetParameter(component.name, 'nodeA', val);
+                        onSetParameter(component.name, 'coupledComponent', '');
+                        const currentOut = component.outputLabels?.[0] || '';
+                        if (val && (!currentOut || currentOut.startsWith('u') || currentOut.startsWith('v'))) {
+                          onSetLabel(component.name, 'y', 0, `u_${val}`);
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className="prop-field">
+                    <label className="prop-label" style={{ fontSize: '11px' }}>Negative Node (-)</label>
+                    <input
+                      type="text"
+                      className="prop-input"
+                      list="circuit-available-signals"
+                      placeholder="0 (GND)"
+                      value={String(component.parameters?.nodeB ?? '0')}
+                      onChange={(e) => {
+                        onSetParameter(component.name, 'nodeB', e.target.value);
+                        onSetParameter(component.name, 'coupledComponent', '');
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="coupling-status-pill active">
+                  <span className="coupling-status-dot" />
+                  <span>
+                    Measures V(<code>{String(component.parameters?.nodeA || '?')}</code>) − V(<code>{String(component.parameters?.nodeB || '0')}</code>) (Signal: <code>{component.outputLabels?.[0] || 'u_' + (component.parameters?.nodeA || 'meas')}</code>)
+                  </span>
+                </div>
+              </>
+            )}
+
+            {/* Emitted Output Signal Name Field */}
+            <div className="prop-field" style={{ marginTop: '10px' }}>
+              <label className="prop-label" style={{ fontSize: '11px' }}>Emitted Signal Name</label>
+              <input
+                type="text"
+                className="prop-input"
+                placeholder="e.g. uOUT, u_RLast"
+                value={component.outputLabels?.[0] || ''}
+                onChange={(e) => {
+                  onSetLabel(component.name, 'y', 0, e.target.value);
+                }}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Dedicated Script / Function Block Editor */}
         {(component.type === CTRL_TYPE.SCRIPT ||
           component.type === CTRL_TYPE.LEGACY_JAVA_FUNCTION ||
@@ -200,24 +597,162 @@ export function PropertiesPanel({
           )
         )}
 
-        {/* Terminals & Net Labels */}
-        <div className="prop-section">
-          <div className="prop-section-title">Terminal Net Labels</div>
-          <div className="terminal-labels-list">
-            <TerminalLabelRow
-              sideLabel={meta.terminals.input[0]?.label || 'Input / T1'}
-              desc={meta.terminals.input[0]?.description || 'Terminal 1'}
-              currentLabel={component.inputLabels[0] || ''}
-              onCommit={(lbl) => onSetLabel(component.name, 'x', lbl)}
-            />
-            <TerminalLabelRow
-              sideLabel={meta.terminals.output[0]?.label || 'Output / T2'}
-              desc={meta.terminals.output[0]?.description || 'Terminal 2'}
-              currentLabel={component.outputLabels[0] || ''}
-              onCommit={(lbl) => onSetLabel(component.name, 'y', lbl)}
-            />
+        {/* Dedicated Scope Channels Inspector */}
+        {isScope ? (
+          <div className="prop-section scope-channels-section">
+            <div className="prop-section-title">
+              <span>Scope Channels ({component.inputLabels.length})</span>
+              {onOpenScopeTab && (
+                <button
+                  type="button"
+                  className="link-action-btn"
+                  onClick={() => onOpenScopeTab(component.name)}
+                  title="Open Oscilloscope Viewer tab"
+                >
+                  Open Scope Tab ↗
+                </button>
+              )}
+            </div>
+            <div className="prop-desc-hint">
+              Select or type circuit signals recorded on each channel. Wires connected to scope pins bind signals automatically.
+            </div>
+            <div className="scope-channels-list">
+              {(component.inputLabels.length > 0 ? component.inputLabels : ['']).map((lbl, idx) => {
+                const color = CHANNEL_COLORS[idx % CHANNEL_COLORS.length];
+                const terms = terminalPositions(component);
+                const pin = terms.input[idx];
+                const isWired = pin && wires
+                  ? wires.some((w) => w.points.some((p) => Math.hypot(p[0] - pin.x, p[1] - pin.y) < 0.25))
+                  : false;
+
+                return (
+                  <div key={idx} className="scope-channel-row">
+                    <span
+                      className="scope-channel-badge"
+                      style={{ borderColor: color, color }}
+                      title={`Oscilloscope Channel ${idx + 1}`}
+                    >
+                      CH{idx + 1}
+                    </span>
+                    <div className="terminal-input-wrap">
+                      <input
+                        type="text"
+                        list="circuit-available-signals"
+                        className="prop-input terminal-input"
+                        value={lbl || ''}
+                        placeholder={`Signal for CH${idx + 1} (e.g. uOUT, il1)`}
+                        onChange={(e) => onSetLabel(component.name, 'x', idx, e.target.value)}
+                      />
+                      {isWired && (
+                        <span
+                          style={{
+                            fontSize: '9px',
+                            color: '#38bdf8',
+                            background: '#0f172a',
+                            border: '1px solid #0284c7',
+                            borderRadius: '3px',
+                            padding: '1px 5px',
+                            marginRight: '4px',
+                            whiteSpace: 'nowrap',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '2px',
+                          }}
+                          title="Physically wired on the schematic"
+                        >
+                          ⚡ Wired
+                        </span>
+                      )}
+                      {lbl && (
+                        <button
+                          type="button"
+                          className="terminal-clear-btn"
+                          title="Clear channel signal"
+                          onClick={() => onSetLabel(component.name, 'x', idx, '')}
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                    {component.inputLabels.length > 1 && (
+                      <button
+                        type="button"
+                        className="channel-remove-btn"
+                        title={`Remove Channel ${idx + 1}`}
+                        onClick={() => {
+                          const remaining = component.inputLabels.filter((_, i) => i !== idx);
+                          for (let i = 0; i < Math.max(remaining.length, component.inputLabels.length); i++) {
+                            onSetLabel(component.name, 'x', i, remaining[i] || '');
+                          }
+                        }}
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              className="add-channel-btn"
+              onClick={() => {
+                const nextIdx = component.inputLabels.length;
+                onSetLabel(component.name, 'x', nextIdx, '');
+              }}
+            >
+              + Add Channel (CH{component.inputLabels.length + 1})
+            </button>
           </div>
-        </div>
+        ) : (
+          /* General Component Terminal Net Labels */
+          <div className="prop-section">
+            <div className="prop-section-title">Terminal Net Labels</div>
+            <div className="prop-desc-hint">
+              Assign net names to connect terminals across the circuit without wires.
+            </div>
+            <div className="terminal-labels-list">
+              {Array.from({ length: Math.max(meta.terminals.input.length, component.inputLabels.length) }).map(
+                (_, idx) => {
+                  const terminalDef = meta.terminals.input[idx];
+                  const sideLabel =
+                    terminalDef?.label || (meta.terminals.input.length > 1 ? `In ${idx + 1}` : 'Input / T1');
+                  const desc = terminalDef?.description || `Input Terminal ${idx + 1}`;
+                  const currentLabel = component.inputLabels[idx] || '';
+                  return (
+                    <TerminalLabelRow
+                      key={`in-${idx}`}
+                      sideLabel={sideLabel}
+                      desc={desc}
+                      currentLabel={currentLabel}
+                      datalistId="circuit-available-signals"
+                      onCommit={(lbl) => onSetLabel(component.name, 'x', idx, lbl)}
+                    />
+                  );
+                },
+              )}
+              {Array.from({ length: Math.max(meta.terminals.output.length, component.outputLabels.length) }).map(
+                (_, idx) => {
+                  const terminalDef = meta.terminals.output[idx];
+                  const sideLabel =
+                    terminalDef?.label || (meta.terminals.output.length > 1 ? `Out ${idx + 1}` : 'Output / T2');
+                  const desc = terminalDef?.description || `Output Terminal ${idx + 1}`;
+                  const currentLabel = component.outputLabels[idx] || '';
+                  return (
+                    <TerminalLabelRow
+                      key={`out-${idx}`}
+                      sideLabel={sideLabel}
+                      desc={desc}
+                      currentLabel={currentLabel}
+                      datalistId="circuit-available-signals"
+                      onCommit={(lbl) => onSetLabel(component.name, 'y', idx, lbl)}
+                    />
+                  );
+                },
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Collapsible Advanced / Raw Parameters */}
         <div className="prop-section advanced">
@@ -242,6 +777,11 @@ export function PropertiesPanel({
             </div>
           )}
         </div>
+        <datalist id="circuit-available-signals">
+          {availableSignals.map((sig) => (
+            <option key={sig} value={sig} />
+          ))}
+        </datalist>
       </div>
     </div>
   );
@@ -306,13 +846,19 @@ function SemanticParameterField({
             type="text"
             className="prop-input"
             value={text}
-            onChange={(e) => {
+            onFocus={() => {
               setIsEditing(true);
-              setText(e.target.value);
+              setText(String(value));
             }}
+            onChange={(e) => setText(e.target.value)}
             onBlur={handleCommit}
-            onKeyDown={(e) => e.key === 'Enter' && handleCommit()}
-            placeholder={`e.g. ${def.defaultValue}`}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleCommit();
+              if (e.key === 'Escape') {
+                setIsEditing(false);
+                setText(formatEngineeringValue(value));
+              }
+            }}
           />
           {/* Quick multiplier buttons */}
           <div className="prop-stepper-actions">
@@ -346,11 +892,13 @@ function TerminalLabelRow({
   sideLabel,
   desc,
   currentLabel,
+  datalistId,
   onCommit,
 }: {
   sideLabel: string;
   desc: string;
   currentLabel: string;
+  datalistId?: string;
   onCommit: (lbl: string) => void;
 }) {
   const [label, setLabel] = useState(currentLabel);
@@ -374,6 +922,7 @@ function TerminalLabelRow({
       <div className="terminal-input-wrap">
         <input
           type="text"
+          list={datalistId}
           className="prop-input terminal-input"
           value={label}
           onChange={(e) => setLabel(e.target.value)}

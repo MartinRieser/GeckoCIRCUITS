@@ -230,7 +230,8 @@ public class HeadlessSimulationEngine {
                     ? circuitNetlist.getLabelResolver().getIndex(signalNames[i]) : -1;
             if (signalNodes[i] < 0) {
                 for (ControlCalculatorBuilder.Probe probe : controlCoupling.probes()) {
-                    if (probe.name().equals(signalNames[i])) {
+                    if (probe.name().equals(signalNames[i])
+                            || (probe.componentName() != null && probe.componentName().equals(signalNames[i]))) {
                         signalProbes[i] = probe;
                         break;
                     }
@@ -622,41 +623,80 @@ public class HeadlessSimulationEngine {
     private static String[] resolveSignalNames(SimulationConfig config, CircuitModel circuitModel,
                                               CircuitNetlist circuitNetlist,
                                               ControlCalculatorBuilder.ControlCoupling controlCoupling) {
+        java.util.LinkedHashSet<String> names = new java.util.LinkedHashSet<>();
+
+        // 1. Explicit request signals (from frontend or API caller)
         if (config.getSignals() != null && !config.getSignals().isEmpty()) {
-            return config.getSignals().toArray(new String[0]);
-        }
-        if (circuitModel != null && circuitModel.getDataContainerSignals() != null) {
-            // skip positional placeholders ("", NIX-mapped) and the "[]" empty-list marker
-            String[] cleaned = java.util.Arrays.stream(circuitModel.getDataContainerSignals())
-                    .filter(s -> s != null && !s.isBlank() && !s.equals("[]"))
-                    .toArray(String[]::new);
-            if (cleaned.length > 0) {
-                return cleaned;
-            }
-        }
-        List<String> names = new ArrayList<>();
-        if (circuitNetlist != null && circuitNetlist.getLabelResolver() != null) {
-            for (String label : circuitNetlist.getLabelResolver().getAllLabels()) {
-                if (label != null && !label.isBlank() && !label.equalsIgnoreCase("GND") && !label.startsWith("NIX")) {
-                    names.add(label);
+            for (String s : config.getSignals()) {
+                if (isValidSignalName(s)) {
+                    names.add(s.trim());
                 }
             }
         }
+
+        // 2. All Scope channels from all Scope blocks in the circuit model
+        if (circuitModel != null) {
+            for (CircuitModel.ComponentData comp : circuitModel.getControlComponents()) {
+                if (comp.getType() == 5 || comp.getType() == 1003
+                        || (comp.getName() != null && (comp.getName().startsWith("SCOPE") || comp.getName().startsWith("OSZI")))) {
+                    String[] inLabels = comp.getTerminalXLabels();
+                    if (inLabels != null) {
+                        for (String l : inLabels) {
+                            if (isValidSignalName(l)) {
+                                names.add(l.trim());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3. Measurement probes (Voltmeters, Ammeters) and signal taps
         if (controlCoupling != null) {
             for (ControlCalculatorBuilder.Probe probe : controlCoupling.probes()) {
-                if (!names.contains(probe.name())) {
-                    names.add(probe.name());
+                if (isValidSignalName(probe.name())) {
+                    names.add(probe.name().trim());
                 }
             }
             for (ControlCalculatorBuilder.SignalTap tap : controlCoupling.signalTaps()) {
-                if (!names.contains(tap.name())) {
-                    names.add(tap.name());
+                if (isValidSignalName(tap.name())) {
+                    names.add(tap.name().trim());
                 }
             }
         }
+
+        // 4. Stored data container signals from original file
+        if (circuitModel != null && circuitModel.getDataContainerSignals() != null) {
+            for (String s : circuitModel.getDataContainerSignals()) {
+                if (isValidSignalName(s)) {
+                    names.add(s.trim());
+                }
+            }
+        }
+
+        // 5. Net labels from netlist
+        if (circuitNetlist != null && circuitNetlist.getLabelResolver() != null) {
+            for (String label : circuitNetlist.getLabelResolver().getAllLabels()) {
+                if (isValidSignalName(label)) {
+                    names.add(label.trim());
+                }
+            }
+        }
+
         if (!names.isEmpty()) {
             return names.toArray(new String[0]);
         }
         return new String[] {"V_out", "I_in", "P_loss"};
+    }
+
+    private static boolean isValidSignalName(String s) {
+        if (s == null) return false;
+        String trimmed = s.trim();
+        return !trimmed.isEmpty()
+                && !trimmed.equals("[]")
+                && !trimmed.equals("NIX")
+                && !trimmed.equalsIgnoreCase("NIX_NIX_NIX")
+                && !trimmed.equals("0")
+                && !trimmed.equalsIgnoreCase("GND");
     }
 }
