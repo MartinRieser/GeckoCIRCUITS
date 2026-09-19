@@ -54,6 +54,11 @@ if (-not $env:JAVA_HOME -or -not (Test-Path (Join-Path $env:JAVA_HOME "bin\java.
     $env:JAVA_HOME = $jdkRoot
 }
 
+# Configure Guice to use child class loaders instead of deprecated sun.misc.Unsafe
+if (-not $env:MAVEN_OPTS -or $env:MAVEN_OPTS -notmatch "guice_custom_class_loading") {
+    $env:MAVEN_OPTS = "-Dguice_custom_class_loading=CHILD $env:MAVEN_OPTS".Trim()
+}
+
 # 2. Check and build REST JAR if needed (or if -Rebuild specified)
 if ($Rebuild) {
     Write-Host "[INFO] Stopping running server on port $Port for rebuild..." -ForegroundColor Yellow

@@ -72,6 +72,13 @@ set "JAVA_HOME=%JAVA_EXE:\bin\java.exe=%"
 set "JAVAW_EXE=%JAVA_EXE:java.exe=javaw.exe%"
 if not exist "%JAVAW_EXE%" set "JAVAW_EXE=%JAVA_EXE%"
 
+REM Configure Guice to use child class loaders instead of deprecated sun.misc.Unsafe
+if not defined MAVEN_OPTS (
+    set "MAVEN_OPTS=-Dguice_custom_class_loading=CHILD"
+) else (
+    echo !MAVEN_OPTS! | findstr /i "guice_custom_class_loading" >nul || set "MAVEN_OPTS=-Dguice_custom_class_loading=CHILD !MAVEN_OPTS!"
+)
+
 set "REBUILD=0"
 if /i "%~1"=="-rebuild" set "REBUILD=1"
 if /i "%~1"=="--rebuild" set "REBUILD=1"

@@ -65,6 +65,13 @@ if [[ -z "$JAVA_VERSION" || "$JAVA_VERSION" -lt 25 ]]; then
     echo "[ERROR] Java 25 or later is required (found: ${JAVA_VERSION:-none} at ${JAVA_BIN:-PATH})."
     echo "Please set JAVA_HOME or update PATH to point to JDK 25+."
     exit 1
+fi
+
+# Configure Guice to use child class loaders instead of deprecated sun.misc.Unsafe
+if [[ -z "$MAVEN_OPTS" || "$MAVEN_OPTS" != *"guice_custom_class_loading"* ]]; then
+    export MAVEN_OPTS="-Dguice_custom_class_loading=CHILD ${MAVEN_OPTS:-}"
+fi
+
 if [[ -n "$1" ]]; then
     echo "[INFO] Target circuit: $1"
     echo "[INFO] In the web editor window, select File > Open or drag-and-drop the file onto the canvas."
