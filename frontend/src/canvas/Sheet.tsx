@@ -8,6 +8,7 @@ import type { Dispatch, MouseEvent as ReactMouseEvent, WheelEvent as ReactWheelE
 import type { EditorState, Action } from '../model/store';
 import { terminalPositions, terminalNear } from '../model/geometry';
 import { routeAvoidingObstacles, routingBlockedCells, densePoints, orthogonalizePolyline, simplifyCorners, translateWireSegment } from './WireRouter';
+import { isWireEndPointConnected } from '../model/validation';
 import { ComponentSymbol } from './symbols';
 import { isScopeComponent } from '../simulation/scopes';
 import {
@@ -338,8 +339,16 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
             state.wireDraft.start, end,
             routingBlockedCells(state.components),
             state.wireDraft.preferHorizontal);
+          const dense = densePoints(route).map((pt) => [pt.x, pt.y] as [number, number]);
           dispatch({ type: 'WIRE_DRAFT_END' });
-          actions.finishWire(densePoints(route).map((pt) => [pt.x, pt.y]));
+          actions.finishWire(dense);
+          const endPoint = { x: dense[dense.length - 1][0], y: dense[dense.length - 1][1] };
+          if (!isWireEndPointConnected(endPoint, state.components, state.wires)) {
+            dispatch({
+              type: 'STATUS',
+              status: `⚠️ Wire end (${endPoint.x}, ${endPoint.y}) is not connected to a terminal or wire — it will not conduct`,
+            });
+          }
         }
         break;
       case 'dragging':

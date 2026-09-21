@@ -385,3 +385,31 @@ describe('store: P3 keyboard actions', () => {
     expect(state.wireDraft?.preferHorizontal).toBe(true);
   });
 });
+
+describe('store: sticky wire warning status', () => {
+  const loaded = editorReducer(initialState, { type: 'SNAPSHOT', snapshot });
+
+  it('preserves a wire warning across snapshots of the same circuit', () => {
+    const warned = editorReducer(loaded, {
+      type: 'STATUS',
+      status: '⚠️ Wire end (5, 5) is not connected to a terminal or wire',
+    } as never);
+    const after = editorReducer(warned, {
+      type: 'SNAPSHOT',
+      snapshot: { ...snapshot, modelVersion: 7 },
+    });
+    expect(after.status.startsWith('⚠️')).toBe(true);
+  });
+
+  it('clears the warning when a different circuit is loaded', () => {
+    const warned = editorReducer(loaded, {
+      type: 'STATUS',
+      status: '⚠️ Wire end (5, 5) is not connected',
+    } as never);
+    const after = editorReducer(warned, {
+      type: 'SNAPSHOT',
+      snapshot: { ...snapshot, circuitId: 'c2', modelVersion: 7 },
+    });
+    expect(after.status.startsWith('⚠️')).toBe(false);
+  });
+});

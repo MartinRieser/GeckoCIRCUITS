@@ -1574,6 +1574,32 @@ polyline.wire.selected {
   box-shadow: 0 0 0 2px rgba(224, 82, 82, 0.25);
 }
 
+.sim-warnings {
+  margin-top: 2px;
+  padding: 9px 10px;
+  border: 1px solid rgba(244, 63, 94, 0.45);
+  border-radius: 6px;
+  background: rgba(244, 63, 94, 0.08);
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.sim-warnings-title {
+  font-weight: 700;
+  color: var(--danger, #f43f5e);
+  margin-bottom: 4px;
+}
+
+.sim-warnings ul {
+  margin: 0 0 8px;
+  padding-left: 16px;
+}
+
+.sim-warnings .sim-btn.run {
+  margin-top: 2px;
+}
+
 .prop-field-error {
   margin-top: 3px;
   font-size: 11px;

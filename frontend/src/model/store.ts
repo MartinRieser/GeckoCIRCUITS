@@ -203,7 +203,13 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         selectedWires: state.selectedWires ? state.selectedWires.filter((idx) => wires.some((w) => w.index === idx)) : [],
         panelFor: components.some((c) => c.name === state.panelFor) ? state.panelFor : null,
         focusedTerminal: null,
-        status: `Loaded ${(snap.filename as string) || 'circuit'} (${components.length} components)`,
+        // Keep a sticky wire warning visible: routine model refreshes (WS
+        // broadcast, placement echo) must not clobber it. It clears when the
+        // circuit changes or the next user action reports a new status.
+        status:
+          state.status?.startsWith('⚠️') && snap.circuitId === state.circuitId
+            ? state.status
+            : `Loaded ${(snap.filename as string) || 'circuit'} (${components.length} components)`,
         busy: false,
       };
     }
@@ -343,7 +349,10 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         ...state,
         wires: [...state.wires, action.wire],
         modelVersion: action.version,
-        status: `Wire #${action.wire.index} added`,
+        // Keep a sticky wire warning (set right before this dispatch) visible.
+        status: state.status?.startsWith('⚠️')
+          ? state.status
+          : `Wire #${action.wire.index} added`,
       };
 
     case 'WIRE_PATCHED':

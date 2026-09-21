@@ -5,7 +5,8 @@
  * scope instrument selectors, and CSV export.
  */
 import { useState, useEffect, useMemo } from 'react';
-import type { EditorComponent, SimulationDefaults, SimulationStatus } from '../model/types';
+import type { EditorComponent, EditorWire, SimulationDefaults, SimulationStatus } from '../model/types';
+import { validateCircuitForSimulation } from '../model/validation';
 import {
   parseEngineeringValue,
   formatEngineeringValue,
@@ -22,6 +23,7 @@ interface SimulationPropertiesPanelProps {
   defaults?: SimulationDefaults | null;
   errorMessage?: string | null;
   components: EditorComponent[];
+  wires?: EditorWire[];
   results: Record<string, number[]> | null;
   selectedScope: string;
   onSelectScope: (scope: string) => void;
@@ -48,6 +50,7 @@ export function SimulationPropertiesPanel({
   defaults,
   errorMessage,
   components,
+  wires,
   results,
   selectedScope,
   onSelectScope,
@@ -94,7 +97,22 @@ export function SimulationPropertiesPanel({
   const estSteps = estimateStepCount(tEndNum ?? 0.02, dtNum ?? 1e-6);
   const isHeavyRun = estSteps > STEP_WARNING_THRESHOLD;
 
+  // Pre-run validation: first click on "Run Simulation" surfaces likely circuit
+  // mistakes (dangling wires, missing source, unsupported components); a second
+  // click ("Run Anyway") starts the run regardless.
+  const [pendingWarnings, setPendingWarnings] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    setPendingWarnings(null);
+  }, [circuitId]);
+
   const handleRun = () => {
+    const warnings = validateCircuitForSimulation(components, wires ?? []);
+    if (warnings.length > 0 && pendingWarnings === null) {
+      setPendingWarnings(warnings);
+      return;
+    }
+    setPendingWarnings(null);
     const dur = tEndNum !== null && !isNaN(tEndNum) && tEndNum > 0 ? tEndNum : 0.02;
     const step = dtNum !== null && !isNaN(dtNum) && dtNum > 0 ? dtNum : 1e-6;
     onRunSimulation({
@@ -167,6 +185,26 @@ export function SimulationPropertiesPanel({
               >
                 ▶ Run Simulation
               </button>
+            )}
+
+            {pendingWarnings && pendingWarnings.length > 0 && !isRunning && (
+              <div className="sim-warnings" role="alert">
+                <div className="sim-warnings-title">Check before running:</div>
+                <ul>
+                  {pendingWarnings.map((w) => (
+                    <li key={w}>{w}</li>
+                  ))}
+                </ul>
+                <button
+                  type="button"
+                  className="sim-btn run"
+                  onClick={handleRun}
+                  style={{ width: '100%', justifyContent: 'center', padding: '7px 12px', fontSize: '12px' }}
+                  title="Ignore the warnings above and start the simulation"
+                >
+                  Run Anyway
+                </button>
+              </div>
             )}
 
             {isRunning && (

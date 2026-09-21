@@ -18,6 +18,7 @@ import { CommandPalette } from './palette/CommandPalette';
 import { EXAMPLES } from './model/examples';
 import { resolveShortcut, KEYBINDINGS } from './model/keybindings';
 import { routeAvoidingObstacles, routingBlockedCells, densePoints } from './canvas/WireRouter';
+import { isWireEndPointConnected } from './model/validation';
 import { registerOpenFileHandler } from './desktop';
 
 export function App() {
@@ -222,8 +223,16 @@ export function App() {
                 state.wireDraft.start, state.wireDraft.cursor,
                 routingBlockedCells(state.components),
                 state.wireDraft.preferHorizontal);
+              const dense = densePoints(route).map((pt) => [pt.x, pt.y] as [number, number]);
               dispatch({ type: 'WIRE_DRAFT_END' });
-              actions.finishWire(densePoints(route).map((pt) => [pt.x, pt.y]));
+              actions.finishWire(dense);
+              const endPoint = { x: dense[dense.length - 1][0], y: dense[dense.length - 1][1] };
+              if (!isWireEndPointConnected(endPoint, state.components, state.wires)) {
+                dispatch({
+                  type: 'STATUS',
+                  status: `⚠️ Wire end (${endPoint.x}, ${endPoint.y}) is not connected to a terminal or wire — it will not conduct`,
+                });
+              }
             }
           }
           break;
@@ -650,6 +659,7 @@ export function App() {
                   defaults={simState.defaults}
                   errorMessage={simState.errorMessage}
                   components={state.components}
+                  wires={state.wires}
                   results={simState.results}
                   selectedScope={selectedScope}
                   onSelectScope={setSelectedScope}
