@@ -694,11 +694,17 @@ public class CircuitEditService {
             Map.entry(5, sourceDefaults(1.0, 1.0)),
             Map.entry(6, new double[]{10.0e-3, 0.6, 10.0e-3, 1.0e7}),
             Map.entry(7, new double[]{1.0e7, 10.0e-3, 1.0e7}),
-            Map.entry(41, new double[]{1.0}),
-            Map.entry(42, new double[]{1.0, 25.0}),
-            Map.entry(43, new double[]{401.0, 25.0}),
+            // Thermal & reluctance domain defaults follow CircuitTypCore numbering:
+            // 41=TH_PvCHIP (Pv chip loss), 42=TH_MODUL (Rth/Cth), 44=TH_FLOW,
+            // 45=TH_TEMP (temperature source), 46=TH_RTH (thermal resistance),
+            // 47=TH_CTH (thermal capacitance), 48=TH_AMBIENT
+            Map.entry(41, new double[]{10.0}),
+            Map.entry(42, new double[]{1.0, 1.0}),
             Map.entry(44, new double[]{401.0, 10.0}),
-            Map.entry(46, new double[]{401.0, 25.0}),
+            Map.entry(45, new double[]{401.0, 25.0}),
+            Map.entry(46, new double[]{1.0}),
+            Map.entry(47, new double[]{1.0, 25.0}),
+            Map.entry(48, new double[]{401.0, 25.0}),
             Map.entry(1000, new double[]{0.0}));
 
     private static double[] sourceDefaults(double dcValue, double amplitude) {
@@ -752,6 +758,12 @@ public class CircuitEditService {
                 }
             }
             comp.setRawParameters(raw);
+            // Keep the semantic primary alias (resistance/inductance/capacitance)
+            // in sync with param0 so consumers of the named key never see a stale value.
+            int typ = comp.getType();
+            if (raw.length > 0 && (typ == 1 || typ == 2 || typ == 3)) {
+                comp.setParameter(CircuitModel.ComponentData.resolveParameterKey(typ), raw[0]);
+            }
         }
         parameters.forEach(comp::setParameter);
         if (parameters.containsKey("nodeA") || parameters.containsKey("nodeB")

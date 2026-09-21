@@ -9,6 +9,7 @@
  * sent to the server when the wire is committed.
  */
 import type { Point } from '../model/types';
+import { terminalPositions } from '../model/geometry';
 
 export function routeL(start: Point, end: Point, preferHorizontal: boolean | null = null): Point[] {
   if (start.x === end.x && start.y === end.y) {
@@ -23,6 +24,88 @@ export function routeL(start: Point, end: Point, preferHorizontal: boolean | nul
     return [start, { x: end.x, y: start.y }, end];
   }
   return [start, { x: start.x, y: end.y }, end];
+}
+
+/** Grid cell key used by the obstacle-aware router. */
+function cellKey(p: Point): string {
+  return `${p.x},${p.y}`;
+}
+
+/**
+ * Computes the grid cells a wire must not cross: every component's body cells
+ * and terminal cells. Passing through any of these would visually overlay the
+ * component and, per .ipes connectivity semantics, silently short its pins.
+ */
+export function routingBlockedCells(
+  components: Array<{
+    type: number;
+    family?: string;
+    position: number[];
+    orientation: number;
+    inputLabels?: string[];
+    outputLabels?: string[];
+    inputs?: unknown[];
+    parameters?: Record<string, number | string | boolean>;
+  }>,
+): Set<string> {
+  const blocked = new Set<string>();
+  for (const c of components) {
+    const center = { x: c.position[0], y: c.position[1] };
+    const markSpoke = (term: Point) => {
+      const dx = Math.sign(term.x - center.x);
+      const dy = Math.sign(term.y - center.y);
+      let x = center.x + dx;
+      let y = center.y + dy;
+      while (x !== term.x || y !== term.y) {
+        blocked.add(cellKey({ x, y }));
+        x += dx;
+        y += dy;
+      }
+      blocked.add(cellKey(term));
+    };
+    const t = terminalPositions(c);
+    t.input.forEach(markSpoke);
+    t.output.forEach(markSpoke);
+    blocked.add(cellKey(center));
+  }
+  return blocked;
+}
+
+/**
+ * Routes a wire between two endpoints while avoiding blocked cells (component
+ * bodies and foreign terminals). Tries both L orientations first, then stepped
+ * detours that leave the direct band; falls back to the plain L route when
+ * everything is blocked so wiring never becomes impossible.
+ */
+export function routeAvoidingObstacles(
+  start: Point,
+  end: Point,
+  blocked: ReadonlySet<string>,
+  preferHorizontal: boolean | null = null,
+): Point[] {
+  if (start.x === end.x && start.y === end.y) {
+    return [start];
+  }
+  const endpoints = new Set([cellKey(start), cellKey(end)]);
+  const hits = (pts: Point[]) =>
+    pts.some((p) => !endpoints.has(cellKey(p)) && blocked.has(cellKey(p)));
+
+  const candidates: Point[][] = [];
+  if (preferHorizontal !== null) {
+    candidates.push(routeL(start, end, preferHorizontal));
+  }
+  candidates.push(routeL(start, end, true));
+  candidates.push(routeL(start, end, false));
+  for (const off of [1, -1, 2, -2, 3, -3, 5, -5, 8, -8]) {
+    candidates.push([start, { x: start.x, y: start.y + off }, { x: end.x, y: start.y + off }, end]);
+    candidates.push([start, { x: start.x + off, y: start.y }, { x: start.x + off, y: end.y }, end]);
+  }
+  for (const candidate of candidates) {
+    if (candidate.length >= 2 && !hits(densePoints(candidate))) {
+      return candidate;
+    }
+  }
+  return routeL(start, end, preferHorizontal);
 }
 
 /** Expands a corner polyline into the classic dense per-raster-step point list. */

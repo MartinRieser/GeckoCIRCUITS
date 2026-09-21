@@ -473,9 +473,9 @@ export function PropertiesPanel({
                     value={coupledTarget}
                     onChange={(e) => {
                       const target = e.target.value;
+                      // The server's coupledComponent branch clears nodeA/nodeB
+                      // itself; sending them here would race and wipe the target.
                       onSetParameter(component.name, 'coupledComponent', target);
-                      onSetParameter(component.name, 'nodeA', '');
-                      onSetParameter(component.name, 'nodeB', '');
                       const currentOut = component.outputLabels?.[0] || '';
                       if (target && (!currentOut || currentOut.startsWith('u') || currentOut.startsWith('v'))) {
                         const cleanTarget = target.replace(/[^a-zA-Z0-9]/g, '');
@@ -539,8 +539,8 @@ export function PropertiesPanel({
                       placeholder="0 (GND)"
                       value={String(component.parameters?.nodeB ?? '0')}
                       onChange={(e) => {
+                        // The server's nodeA/nodeB branch clears any coupling itself.
                         onSetParameter(component.name, 'nodeB', e.target.value);
-                        onSetParameter(component.name, 'coupledComponent', '');
                       }}
                     />
                   </div>
@@ -801,6 +801,7 @@ function SemanticParameterField({
 }) {
   const [text, setText] = useState(() => formatEngineeringValue(value));
   const [isEditing, setIsEditing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isEditing) {
@@ -811,7 +812,20 @@ function SemanticParameterField({
   const handleCommit = () => {
     setIsEditing(false);
     const parsed = parseEngineeringValue(text);
-    if (parsed !== null && Number.isFinite(parsed) && parsed !== value) {
+    if (parsed === null || !Number.isFinite(parsed)) {
+      setError(`"${text}" is not a valid number — try e.g. 4.7, 10k, 4k7, 100n`);
+      return;
+    }
+    if (def.min !== undefined && parsed < def.min) {
+      setError(`Minimum is ${formatEngineeringValue(def.min)}${def.unit ? ' ' + def.unit : ''}`);
+      return;
+    }
+    if (def.max !== undefined && parsed > def.max) {
+      setError(`Maximum is ${formatEngineeringValue(def.max)}${def.unit ? ' ' + def.unit : ''}`);
+      return;
+    }
+    setError(null);
+    if (parsed !== value) {
       onCommit(parsed);
       setText(formatEngineeringValue(parsed));
     } else {
@@ -841,45 +855,51 @@ function SemanticParameterField({
           ))}
         </select>
       ) : (
-        <div className="prop-input-wrap">
-          <input
-            type="text"
-            className="prop-input"
-            value={text}
-            onFocus={() => {
-              setIsEditing(true);
-              setText(String(value));
-            }}
-            onChange={(e) => setText(e.target.value)}
-            onBlur={handleCommit}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleCommit();
-              if (e.key === 'Escape') {
-                setIsEditing(false);
-                setText(formatEngineeringValue(value));
-              }
-            }}
-          />
-          {/* Quick multiplier buttons */}
-          <div className="prop-stepper-actions">
-            <button
-              type="button"
-              className="step-btn"
-              onClick={() => onCommit(value * 10)}
-              title="Multiply by 10 (×10)"
-            >
-              ×10
-            </button>
-            <button
-              type="button"
-              className="step-btn"
-              onClick={() => onCommit(value / 10)}
-              title="Divide by 10 (÷10)"
-            >
-              ÷10
-            </button>
+        <>
+          <div className="prop-input-wrap">
+            <input
+              type="text"
+              className={error ? 'prop-input prop-input-error' : 'prop-input'}
+              value={text}
+              title={error ?? undefined}
+              onFocus={() => {
+                setIsEditing(true);
+                setError(null);
+                setText(String(value));
+              }}
+              onChange={(e) => setText(e.target.value)}
+              onBlur={handleCommit}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleCommit();
+                if (e.key === 'Escape') {
+                  setIsEditing(false);
+                  setError(null);
+                  setText(formatEngineeringValue(value));
+                }
+              }}
+            />
+            {/* Quick multiplier buttons */}
+            <div className="prop-stepper-actions">
+              <button
+                type="button"
+                className="step-btn"
+                onClick={() => onCommit(value * 10)}
+                title="Multiply by 10 (×10)"
+              >
+                ×10
+              </button>
+              <button
+                type="button"
+                className="step-btn"
+                onClick={() => onCommit(value / 10)}
+                title="Divide by 10 (÷10)"
+              >
+                ÷10
+              </button>
+            </div>
           </div>
-        </div>
+          {error && <div className="prop-field-error">{error}</div>}
+        </>
       )}
     </div>
   );

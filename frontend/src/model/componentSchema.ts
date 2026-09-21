@@ -538,14 +538,14 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     },
   },
 
-  // Coupable Inductor
-  24: {
-    type: 24,
+  // Coupable Inductor (LKOP2) — engine: inductor stamper
+  12: {
+    type: 12,
     family: 'LK',
-    name: 'LK_LKOP',
+    name: 'LK_LKOP2',
     displayName: 'Coupled Inductor',
     category: 'transformers',
-    description: 'Inductor supporting mutual magnetic coupling matrix',
+    description: 'Inductor supporting mutual magnetic coupling matrix (couple via the coupledComponent parameter)',
     defaultPrefix: 'Lcop',
     parameters: [
       {
@@ -560,7 +560,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
       {
         index: 1,
         key: 'param1',
-        label: 'Initial Current (iL₀)',
+        label: 'Initial Current (iL0)',
         description: 'Initial current in Amperes',
         defaultValue: 0,
         unit: 'A',
@@ -572,32 +572,245 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     },
   },
 
-  // Mutual Inductance Coupling
-  25: {
-    type: 25,
+  // LISN — Line Impedance Stabilization Network (not yet stamped by the core engine)
+  13: {
+    type: 13,
     family: 'LK',
-    name: 'LK_MKOP',
-    displayName: 'Mutual Coupling (M)',
+    name: 'LK_LISN',
+    displayName: 'LISN',
+    category: 'passives',
+    description: 'Line Impedance Stabilization Network for conducted EMC measurements (not yet simulated by the web engine)',
+    defaultPrefix: 'LISN',
+    parameters: [],
+    terminals: {
+      input: [{ label: '1', description: 'Line Input' }],
+      output: [{ label: '2', description: 'Equipment Under Test' }],
+    },
+  },
+
+  // Separately / series excited DC motor (not yet stamped by the core engine)
+  14: {
+    type: 14,
+    family: 'LK',
+    name: 'LK_MOTOR',
+    displayName: 'DC Motor (Excited)',
+    category: 'machines',
+    description: 'Separately or series excited DC machine (not yet simulated by the web engine)',
+    defaultPrefix: 'M_DC',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'A1', description: 'Armature +' }],
+      output: [{ label: 'A2', description: 'Armature −' }],
+    },
+  },
+
+  // Permanent Magnet Synchronous Machine (not yet stamped by the core engine)
+  15: {
+    type: 15,
+    family: 'LK',
+    name: 'LK_MOTOR_PMSM',
+    displayName: 'PMSM Motor',
+    category: 'machines',
+    description: 'Permanent Magnet Synchronous Machine, dq model (not yet simulated by the web engine)',
+    defaultPrefix: 'PMSM',
+    parameters: [
+      { index: 0, key: 'param0', label: 'Stator Resistance (Rs)', description: 'Stator phase resistance in Ohms', defaultValue: 0.2, unit: 'Ω' },
+      { index: 1, key: 'param1', label: 'd-axis Inductance (Ld)', description: 'Direct-axis inductance in Henrys', defaultValue: 1e-3, unit: 'H' },
+      { index: 2, key: 'param2', label: 'q-axis Inductance (Lq)', description: 'Quadrature-axis inductance in Henrys', defaultValue: 1.5e-3, unit: 'H' },
+    ],
+    terminals: {
+      input: [{ label: 'U', description: 'Phase U' }],
+      output: [{ label: 'V', description: 'Phase V' }],
+    },
+  },
+
+  // Synchronous machine, salient pole (not yet stamped by the core engine)
+  16: {
+    type: 16,
+    family: 'LK',
+    name: 'LK_MOTOR_SMSALIENT',
+    displayName: 'Sync Motor (Salient)',
+    category: 'machines',
+    description: 'Synchronous machine with salient poles (not yet simulated by the web engine)',
+    defaultPrefix: 'SM',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'U', description: 'Phase U' }],
+      output: [{ label: 'V', description: 'Phase V' }],
+    },
+  },
+
+  // Synchronous machine, round rotor (not yet stamped by the core engine)
+  17: {
+    type: 17,
+    family: 'LK',
+    name: 'LK_MOTOR_SMROUND',
+    displayName: 'Sync Motor (Round)',
+    category: 'machines',
+    description: 'Synchronous machine with round rotor (not yet simulated by the web engine)',
+    defaultPrefix: 'SM',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'U', description: 'Phase U' }],
+      output: [{ label: 'V', description: 'Phase V' }],
+    },
+  },
+
+  // Induction machine, cage rotor (not yet stamped by the core engine)
+  18: {
+    type: 18,
+    family: 'LK',
+    name: 'LK_MOTOR_IMA',
+    displayName: 'Induction Motor (Cage)',
+    category: 'machines',
+    description: 'Induction machine with cage rotor (not yet simulated by the web engine)',
+    defaultPrefix: 'IM',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'U', description: 'Phase U' }],
+      output: [{ label: 'V', description: 'Phase V' }],
+    },
+  },
+
+  // Induction machine, generic (not yet stamped by the core engine)
+  20: {
+    type: 20,
+    family: 'LK',
+    name: 'LK_MOTOR_IMC',
+    displayName: 'Induction Motor',
+    category: 'machines',
+    description: 'Generic induction machine (not yet simulated by the web engine)',
+    defaultPrefix: 'IM',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'U', description: 'Phase U' }],
+      output: [{ label: 'V', description: 'Phase V' }],
+    },
+  },
+
+  // Induction machine with saturation (not yet stamped by the core engine)
+  21: {
+    type: 21,
+    family: 'LK',
+    name: 'LK_MOTOR_IMSAT',
+    displayName: 'Induction Motor (Sat.)',
+    category: 'machines',
+    description: 'Induction machine with magnetic saturation (not yet simulated by the web engine)',
+    defaultPrefix: 'IM',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'U', description: 'Phase U' }],
+      output: [{ label: 'V', description: 'Phase V' }],
+    },
+  },
+
+  // Operational amplifier (OPV1) — not yet stamped by the core engine
+  22: {
+    type: 22,
+    family: 'LK',
+    name: 'LK_OPV1',
+    displayName: 'Op-Amp',
+    category: 'machines',
+    description: 'Macro-model operational amplifier with input/output impedance & limits (not yet simulated by the web engine)',
+    defaultPrefix: 'OP',
+    parameters: [
+      { index: 0, key: 'param0', label: 'Input Resistance (rIN)', description: 'Differential input resistance in Ohms', defaultValue: 90000, unit: 'Ω' },
+      { index: 1, key: 'param1', label: 'Output Resistance (rOUT)', description: 'Output series resistance in Ohms', defaultValue: 0.12, unit: 'Ω' },
+      { index: 4, key: 'param4', label: 'Corner Frequency (fp)', description: 'Open loop dominant pole frequency parameter', defaultValue: 1e5, unit: 'Hz' },
+      { index: 5, key: 'param5', label: 'Open-Loop DC Gain (Av)', description: 'Differential open-loop DC voltage gain', defaultValue: 10000, unit: 'V/V' },
+      { index: 7, key: 'param7', label: 'Max Output Voltage (U_max)', description: 'Positive saturation output rail limit', defaultValue: 12.0, unit: 'V' },
+      { index: 8, key: 'param8', label: 'Min Output Voltage (U_min)', description: 'Negative saturation output rail limit', defaultValue: -12.0, unit: 'V' },
+    ],
+    terminals: {
+      input: [{ label: '+', description: 'Non-Inverting Input' }],
+      output: [{ label: 'out', description: 'Amplifier Output' }],
+    },
+  },
+
+  // Ideal transformer (LK_TRANS) — not yet stamped by the core engine
+  23: {
+    type: 23,
+    family: 'LK',
+    name: 'LK_TRANS',
+    displayName: 'Ideal Transformer (TRANS)',
     category: 'transformers',
-    description: 'Mutual coupling between two coupled inductors',
-    defaultPrefix: 'M',
+    description: 'Lossless two-winding ideal transformer, N1:N2 (not yet simulated by the web engine; type 9 "Ideal Transformer" simulates as mutual inductance)',
+    defaultPrefix: 'TR',
+    parameters: [
+      { index: 0, key: 'param0', label: 'Primary Turns (n1)', description: 'Number of turns on primary winding', defaultValue: 10, unit: 'turns', min: 1 },
+      { index: 1, key: 'param1', label: 'Secondary Turns (n2)', description: 'Number of turns on secondary winding', defaultValue: 2, unit: 'turns', min: 1 },
+    ],
+    terminals: {
+      input: [{ label: 'P1', description: 'Primary Top' }],
+      output: [{ label: 'S1', description: 'Secondary Top' }],
+    },
+  },
+
+  // Magnetic reluctance (REL_RELUCTANCE) — engine: resistor stamper
+  24: {
+    type: 24,
+    family: 'LK',
+    name: 'REL_RELUCTANCE',
+    displayName: 'Reluctance',
+    category: 'transformers',
+    description: 'Magnetic reluctance element of the reluctance network (Rm = F / Φ)',
+    defaultPrefix: 'Rm',
     parameters: [
       {
         index: 0,
         key: 'param0',
-        label: 'Coupling Factor (k) / M',
-        description: 'Mutual inductance in Henrys or coupling factor',
-        defaultValue: 0.98,
-        unit: '',
+        label: 'Reluctance (Rm)',
+        description: 'Magnetic reluctance in inverse Henrys',
+        defaultValue: 1.0,
+        unit: '1/H',
+        min: 1e-9,
       },
     ],
     terminals: {
-      input: [{ label: 'L1', description: 'Coil 1' }],
-      output: [{ label: 'L2', description: 'Coil 2' }],
+      input: [{ label: '1', description: 'Reluctance Terminal 1' }],
+      output: [{ label: '2', description: 'Reluctance Terminal 2' }],
     },
   },
 
-  // MOSFET
+  // Reluctance network coil (REL_INDUCTOR) — not yet stamped by the core engine
+  25: {
+    type: 25,
+    family: 'LK',
+    name: 'REL_INDUCTOR',
+    displayName: 'Reluctance Coil',
+    category: 'transformers',
+    description: 'Inductor winding coupled into the reluctance network',
+    defaultPrefix: 'Lrel',
+    parameters: [
+      { index: 0, key: 'param0', label: 'Inductance (L)', description: 'Winding inductance in Henrys', defaultValue: 1e-3, unit: 'H', min: 1e-12 },
+      { index: 1, key: 'param1', label: 'Initial Current (iL0)', description: 'Initial winding current in Amperes', defaultValue: 0, unit: 'A' },
+    ],
+    terminals: {
+      input: [{ label: '1', description: 'Coil Terminal 1' }],
+      output: [{ label: '2', description: 'Coil Terminal 2' }],
+    },
+  },
+
+  // Magnetomotive force source (REL_MMF) — engine: voltage source stamper
+  26: {
+    type: 26,
+    family: 'LK',
+    name: 'REL_MMF',
+    displayName: 'MMF Source',
+    category: 'transformers',
+    description: 'Magnetomotive force source of the reluctance network (Θ = N·I)',
+    defaultPrefix: 'MMF',
+    parameters: [
+      { index: 0, key: 'param0', label: 'Source Type', description: 'MMF source mode (401 = constant)', defaultValue: 401, unit: '' },
+      { index: 1, key: 'param1', label: 'MMF (Θ)', description: 'Magnetomotive force in ampere-turns', defaultValue: 100, unit: 'A' },
+    ],
+    terminals: {
+      input: [{ label: '1', description: 'MMF Entry' }],
+      output: [{ label: '2', description: 'MMF Exit' }],
+    },
+  },
+
+  // Power MOSFET with antiparallel body diode — engine: MOSFET stamper
   28: {
     type: 28,
     family: 'LK',
@@ -641,7 +854,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     },
   },
 
-  // Subcircuit Terminal
+  // Subcircuit terminal
   29: {
     type: 29,
     family: 'LK',
@@ -657,73 +870,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     },
   },
 
-  // Operational Amplifier
-  30: {
-    type: 30,
-    family: 'LK',
-    name: 'LK_OPAMP',
-    displayName: 'Op-Amp',
-    category: 'machines',
-    description: 'Macro-model operational amplifier with input/output impedance & limits',
-    shortcut: 'O',
-    defaultPrefix: 'OP',
-    parameters: [
-      {
-        index: 0,
-        key: 'param0',
-        label: 'Input Resistance (rIN)',
-        description: 'Differential input resistance in Ohms',
-        defaultValue: 90000,
-        unit: 'Ω',
-      },
-      {
-        index: 1,
-        key: 'param1',
-        label: 'Output Resistance (rOUT)',
-        description: 'Output series resistance in Ohms',
-        defaultValue: 0.12,
-        unit: 'Ω',
-      },
-      {
-        index: 4,
-        key: 'param4',
-        label: 'Corner Frequency (fp)',
-        description: 'Open loop dominant pole frequency parameter',
-        defaultValue: 1e5,
-        unit: 'Hz',
-      },
-      {
-        index: 5,
-        key: 'param5',
-        label: 'Open-Loop DC Gain (Av)',
-        description: 'Differential open-loop DC voltage gain',
-        defaultValue: 10000,
-        unit: 'V/V',
-      },
-      {
-        index: 7,
-        key: 'param7',
-        label: 'Max Output Voltage (U_max)',
-        description: 'Positive saturation output rail limit',
-        defaultValue: 12.0,
-        unit: 'V',
-      },
-      {
-        index: 8,
-        key: 'param8',
-        label: 'Min Output Voltage (U_min)',
-        description: 'Negative saturation output rail limit',
-        defaultValue: -12.0,
-        unit: 'V',
-      },
-    ],
-    terminals: {
-      input: [{ label: '+', description: 'Non-Inverting Input' }],
-      output: [{ label: 'out', description: 'Amplifier Output' }],
-    },
-  },
-
-  // Global Terminal / Net Label
+  // Global terminal / net label
   31: {
     type: 31,
     family: 'LK',
@@ -731,7 +878,6 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     displayName: 'Global Net / Ground',
     category: 'terminals',
     description: 'Global named circuit net or reference node (e.g. GND)',
-    shortcut: 'G',
     defaultPrefix: 'GND',
     parameters: [],
     terminals: {
@@ -740,14 +886,14 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     },
   },
 
-  // BJT Transistor
+  // BJT transistor — not yet stamped by the core engine
   33: {
     type: 33,
     family: 'LK',
     name: 'LK_BJT',
     displayName: 'BJT Transistor',
     category: 'semiconductors',
-    description: 'Bipolar Junction Transistor (NPN/PNP switch model)',
+    description: 'Bipolar Junction Transistor switch model (not yet simulated by the web engine)',
     shortcut: 'B',
     defaultPrefix: 'Q',
     parameters: [
@@ -782,11 +928,102 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     },
   },
 
-  // Thermal Resistor
+  // Reluctance network terminal
+  30: {
+    type: 30,
+    family: 'LK',
+    name: 'REL_TERMINAL',
+    displayName: 'Reluctance Terminal',
+    category: 'terminals',
+    description: 'Reluctance network boundary terminal pin',
+    defaultPrefix: 'RPIN',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'in', description: 'Terminal Pin' }],
+      output: [{ label: 'out', description: 'Terminal Pin' }],
+    },
+  },
+
+  // Thermal chip loss (TH_PvCHIP) — not yet stamped by the core engine
   41: {
     type: 41,
     family: 'THERM',
-    name: 'THERM_R',
+    name: 'TH_PvCHIP',
+    displayName: 'Thermal Chip (Pv)',
+    category: 'thermal',
+    description: 'Chip-level power loss injection of a semiconductor module (not yet simulated by the web engine)',
+    defaultPrefix: 'Pv',
+    parameters: [
+      { index: 0, key: 'param0', label: 'Chip Power Loss (Pv)', description: 'Dissipated chip power in Watts', defaultValue: 10.0, unit: 'W', min: 0 },
+    ],
+    terminals: {
+      input: [{ label: '1', description: 'Thermal Node 1' }],
+      output: [{ label: '2', description: 'Thermal Node 2' }],
+    },
+  },
+
+  // Thermal module (TH_MODUL) — not yet stamped by the core engine
+  42: {
+    type: 42,
+    family: 'THERM',
+    name: 'TH_MODUL',
+    displayName: 'Thermal Module',
+    category: 'thermal',
+    description: 'Module housing thermal model: Rth/Cth pair between chip and heatsink (not yet simulated by the web engine)',
+    defaultPrefix: 'MOD',
+    parameters: [
+      { index: 0, key: 'param0', label: 'Thermal Resistance (Rth)', description: 'Module thermal resistance in Kelvin per Watt', defaultValue: 1.0, unit: 'K/W', min: 1e-6 },
+      { index: 1, key: 'param1', label: 'Thermal Capacitance (Cth)', description: 'Module heat capacity in Joules per Kelvin', defaultValue: 1.0, unit: 'J/K', min: 1e-6 },
+    ],
+    terminals: {
+      input: [{ label: '1', description: 'Chip Side' }],
+      output: [{ label: '2', description: 'Heatsink Side' }],
+    },
+  },
+
+  // Thermal heat flow source (TH_FLOW) — engine: current source stamper
+  44: {
+    type: 44,
+    family: 'THERM',
+    name: 'TH_FLOW',
+    displayName: 'Heat Flow Source (Ploss)',
+    category: 'thermal',
+    description: 'Injected heat power source in Watts',
+    defaultPrefix: 'Ploss',
+    parameters: [
+      { index: 0, key: 'param0', label: 'Source Type', description: 'Heat flow source mode (401 = constant)', defaultValue: 401, unit: '' },
+      { index: 1, key: 'param1', label: 'Power Loss (P)', description: 'Heat dissipation power in Watts', defaultValue: 10.0, unit: 'W' },
+    ],
+    terminals: {
+      input: [{ label: 'in', description: 'Heat Flow Entry' }],
+      output: [{ label: 'out', description: 'Heat Flow Exit' }],
+    },
+  },
+
+  // Thermal temperature source (TH_TEMP) — engine: voltage source stamper
+  45: {
+    type: 45,
+    family: 'THERM',
+    name: 'TH_TEMP',
+    displayName: 'Temperature Source',
+    category: 'thermal',
+    description: 'Fixed or modulated temperature boundary condition',
+    defaultPrefix: 'Tsrc',
+    parameters: [
+      { index: 0, key: 'param0', label: 'Source Type', description: 'Temperature source mode (401 = constant)', defaultValue: 401, unit: '' },
+      { index: 1, key: 'param1', label: 'Temperature (T)', description: 'Fixed temperature in °C or K', defaultValue: 25.0, unit: '°C' },
+    ],
+    terminals: {
+      input: [{ label: '+', description: 'Temperature Output' }],
+      output: [{ label: '−', description: 'Thermal Reference' }],
+    },
+  },
+
+  // Thermal resistance (TH_RTH) — engine: resistor stamper
+  46: {
+    type: 46,
+    family: 'THERM',
+    name: 'TH_RTH',
     displayName: 'Thermal Resistor',
     category: 'thermal',
     description: 'Thermal resistance for heat conduction (ΔT = P · Rth)',
@@ -808,11 +1045,11 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     },
   },
 
-  // Thermal Capacitor
-  42: {
-    type: 42,
+  // Thermal capacitance (TH_CTH) — engine: capacitor stamper
+  47: {
+    type: 47,
     family: 'THERM',
-    name: 'THERM_C',
+    name: 'TH_CTH',
     displayName: 'Thermal Capacitor',
     category: 'thermal',
     description: 'Thermal heat capacitance (P = Cth · dT/dt)',
@@ -830,7 +1067,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
       {
         index: 1,
         key: 'param1',
-        label: 'Initial Temp (T₀)',
+        label: 'Initial Temp (T0)',
         description: 'Initial temperature in °C or K',
         defaultValue: 25.0,
         unit: '°C',
@@ -842,98 +1079,18 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     },
   },
 
-  // Temperature Source
-  43: {
-    type: 43,
+  // Ambient temperature (TH_AMBIENT) — not yet stamped by the core engine
+  48: {
+    type: 48,
     family: 'THERM',
-    name: 'THERM_T',
-    displayName: 'Temperature Source',
-    category: 'thermal',
-    description: 'Fixed or modulated temperature boundary condition',
-    defaultPrefix: 'Tsrc',
-    parameters: [
-      {
-        index: 0,
-        key: 'param0',
-        label: 'Source Type',
-        description: 'Thermal source mode (401=Constant)',
-        defaultValue: 401,
-        unit: '',
-      },
-      {
-        index: 1,
-        key: 'param1',
-        label: 'Temperature (T)',
-        description: 'Fixed temperature in °C or K',
-        defaultValue: 25.0,
-        unit: '°C',
-      },
-    ],
-    terminals: {
-      input: [{ label: '+', description: 'Temperature Output' }],
-      output: [{ label: '−', description: 'Thermal Reference' }],
-    },
-  },
-
-  // Thermal Loss / Heat Flow Source
-  44: {
-    type: 44,
-    family: 'THERM',
-    name: 'THERM_P',
-    displayName: 'Heat Flow Source (Ploss)',
-    category: 'thermal',
-    description: 'Injected heat power source in Watts',
-    defaultPrefix: 'Ploss',
-    parameters: [
-      {
-        index: 0,
-        key: 'param0',
-        label: 'Source Type',
-        description: 'Heat flow source mode (401=Constant)',
-        defaultValue: 401,
-        unit: '',
-      },
-      {
-        index: 1,
-        key: 'param1',
-        label: 'Power Loss (P)',
-        description: 'Heat dissipation power in Watts',
-        defaultValue: 10.0,
-        unit: 'W',
-      },
-    ],
-    terminals: {
-      input: [{ label: 'in', description: 'Heat Flow Entry' }],
-      output: [{ label: 'out', description: 'Heat Flow Exit' }],
-    },
-  },
-
-  // Ambient Temperature
-  46: {
-    type: 46,
-    family: 'THERM',
-    name: 'THERM_AMBIENT',
+    name: 'TH_AMBIENT',
     displayName: 'Ambient Temperature',
     category: 'thermal',
     description: 'Ambient environment temperature boundary reference',
     defaultPrefix: 'Tamb',
     parameters: [
-      {
-        index: 0,
-        key: 'param0',
-        label: 'Source Type',
-        description: 'Ambient temperature type (401=Constant)',
-        defaultValue: 401,
-        unit: '',
-      },
-      {
-        index: 1,
-        key: 'param1',
-        label: 'Ambient Temp (Tamb)',
-        description: 'Ambient environment temperature in °C or K',
-        defaultValue: 25.0,
-        unit: '°C',
-      },
+      { index: 0, key: 'param0', label: 'Source Type', description: 'Ambient temperature type (401 = constant)', defaultValue: 401, unit: '' },
+      { index: 1, key: 'param1', label: 'Ambient Temp (Tamb)', description: 'Ambient environment temperature in °C or K', defaultValue: 25.0, unit: '°C' },
     ],
     terminals: {
       input: [{ label: '1', description: 'Ambient Reference' }],
@@ -941,66 +1098,19 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     },
   },
 
-  // Reluctance Inductor
-  50: {
-    type: 50,
-    family: 'LK',
-    name: 'LK_RELUCTANCE_L',
-    displayName: 'Reluctance Inductor',
-    category: 'transformers',
-    description: 'Magnetic reluctance coupled inductor coil',
-    defaultPrefix: 'Lrel',
-    parameters: [
-      {
-        index: 0,
-        key: 'param0',
-        label: 'Number of Turns (N)',
-        description: 'Winding turns count',
-        defaultValue: 50,
-        unit: 'turns',
-        min: 1,
-      },
-    ],
-    terminals: {
-      input: [{ label: '1', description: 'Coil Terminal 1' }],
-      output: [{ label: '2', description: 'Coil Terminal 2' }],
-    },
-  },
-
-  // DC Machine / Motor
+  // Permanent magnet DC motor (LK_MOTOR_PERM) — not yet stamped by the core engine
   51: {
     type: 51,
     family: 'LK',
-    name: 'LK_MOTOR_DC',
-    displayName: 'DC Motor',
+    name: 'LK_MOTOR_PERM',
+    displayName: 'DC Motor (PM)',
     category: 'machines',
-    description: 'Permanent Magnet or Separately Excited DC Machine',
+    description: 'Permanent magnet DC machine (not yet simulated by the web engine)',
     defaultPrefix: 'M_DC',
     parameters: [
-      {
-        index: 0,
-        key: 'param0',
-        label: 'Armature Resistance (Ra)',
-        description: 'Armature circuit resistance in Ohms',
-        defaultValue: 0.5,
-        unit: 'Ω',
-      },
-      {
-        index: 1,
-        key: 'param1',
-        label: 'Armature Inductance (La)',
-        description: 'Armature circuit inductance in Henrys',
-        defaultValue: 2e-3,
-        unit: 'H',
-      },
-      {
-        index: 2,
-        key: 'param2',
-        label: 'Torque Constant (Km)',
-        description: 'Back-EMF and torque constant (V·s/rad or N·m/A)',
-        defaultValue: 0.1,
-        unit: 'N·m/A',
-      },
+      { index: 0, key: 'param0', label: 'Armature Resistance (Ra)', description: 'Armature circuit resistance in Ohms', defaultValue: 0.5, unit: 'Ω' },
+      { index: 1, key: 'param1', label: 'Armature Inductance (La)', description: 'Armature circuit inductance in Henrys', defaultValue: 2e-3, unit: 'H' },
+      { index: 2, key: 'param2', label: 'Torque Constant (Km)', description: 'Back-EMF and torque constant (V·s/rad or N·m/A)', defaultValue: 0.1, unit: 'N·m/A' },
     ],
     terminals: {
       input: [{ label: 'A1', description: 'Armature +' }],
@@ -1008,44 +1118,21 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     },
   },
 
-  // Permanent Magnet Synchronous Machine (PMSM)
+  // Non-linear reluctance (NONLIN_REL) — not yet stamped by the core engine
   52: {
     type: 52,
     family: 'LK',
-    name: 'LK_MOTOR_PMSM',
-    displayName: 'PMSM Motor',
-    category: 'machines',
-    description: 'Permanent Magnet Synchronous Machine (dq motor model)',
-    defaultPrefix: 'PMSM',
+    name: 'NONLIN_REL',
+    displayName: 'Non-linear Reluctance',
+    category: 'transformers',
+    description: 'Reluctance element with non-linear B-H characteristic (not yet simulated by the web engine)',
+    defaultPrefix: 'RmNL',
     parameters: [
-      {
-        index: 0,
-        key: 'param0',
-        label: 'Stator Resistance (Rs)',
-        description: 'Stator phase resistance in Ohms',
-        defaultValue: 0.2,
-        unit: 'Ω',
-      },
-      {
-        index: 1,
-        key: 'param1',
-        label: 'd-axis Inductance (Ld)',
-        description: 'Direct-axis inductance in Henrys',
-        defaultValue: 1e-3,
-        unit: 'H',
-      },
-      {
-        index: 2,
-        key: 'param2',
-        label: 'q-axis Inductance (Lq)',
-        description: 'Quadrature-axis inductance in Henrys',
-        defaultValue: 1.5e-3,
-        unit: 'H',
-      },
+      { index: 0, key: 'param0', label: 'Nominal Reluctance (Rm)', description: 'Reluctance at the linear operating point', defaultValue: 1.0, unit: '1/H', min: 1e-9 },
     ],
     terminals: {
-      input: [{ label: 'U', description: 'Phase U' }],
-      output: [{ label: 'V', description: 'Phase V' }],
+      input: [{ label: '1', description: 'Reluctance Terminal 1' }],
+      output: [{ label: '2', description: 'Reluctance Terminal 2' }],
     },
   },
 
@@ -1550,8 +1637,20 @@ export function parseEngineeringValue(input: string): number | null {
     return num;
   }
 
+  // Engineering shorthand with implicit decimal point: 4k7 = 4.7k = 4700,
+  // 100n1 = 100.1n. The digit after the SI prefix is the first decimal.
+  const shorthand = /^([+-]?[0-9]+)([fpnuµmkKMGT])([0-9])([0-9]*)$/.exec(trimmed);
+  if (shorthand) {
+    const baseVal = Number(shorthand[1]);
+    const prefix = shorthand[2];
+    const decimals = Number("0." + shorthand[3] + (shorthand[4] || ""));
+    if (Number.isFinite(baseVal) && SI_PREFIXES[prefix] !== undefined) {
+      return (baseVal + decimals) * SI_PREFIXES[prefix];
+    }
+  }
+
   // Check for number + optional SI prefix + optional unit (e.g. 10k, 10kΩ, 100uF, 24V, 50Hz, 10A)
-  const match = /^([+-]?[0-9]*\.?[0-9]+(?:[eE][+-]?[0-9]+)?)([fpnuµmkKMGT])?([a-zA-ZΩ°%].*)?$/.exec(trimmed);
+  const match = /^([+-]?[0-9]*\.?[0-9]+(?:[eE][+-]?[0-9]+)?)([fpnuµmkKMGT])?([a-zA-ZΩ°%]+)?$/.exec(trimmed);
   if (match) {
     const baseVal = Number(match[1]);
     const prefix = match[2];
@@ -1627,7 +1726,8 @@ export function isSwitchComponent(component: { type: number; family?: string; na
     component.type === 8 ||
     component.type === 10 ||
     component.type === 11 ||
-    component.type === 9 ||
+    // type 9 (LK_M mutual inductance / transformer) is NOT a gate-controlled
+    // switch and must not show the gate-drive coupling section.
     component.name?.startsWith('S.') === true ||
     component.name?.startsWith('S_') === true ||
     component.name?.startsWith('TH.') === true ||

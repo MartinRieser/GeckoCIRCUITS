@@ -17,7 +17,7 @@ import { useScopeController } from './simulation/useScopeController';
 import { CommandPalette } from './palette/CommandPalette';
 import { EXAMPLES } from './model/examples';
 import { resolveShortcut, KEYBINDINGS } from './model/keybindings';
-import { routeL, densePoints } from './canvas/WireRouter';
+import { routeAvoidingObstacles, routingBlockedCells, densePoints } from './canvas/WireRouter';
 import { registerOpenFileHandler } from './desktop';
 
 export function App() {
@@ -218,7 +218,10 @@ export function App() {
             if (!state.wireDraft && state.focusedTerminal) {
               dispatch({ type: 'WIRE_START', x: state.focusedTerminal.x, y: state.focusedTerminal.y });
             } else if (state.wireDraft) {
-              const route = routeL(state.wireDraft.start, state.wireDraft.cursor, state.wireDraft.preferHorizontal);
+              const route = routeAvoidingObstacles(
+                state.wireDraft.start, state.wireDraft.cursor,
+                routingBlockedCells(state.components),
+                state.wireDraft.preferHorizontal);
               dispatch({ type: 'WIRE_DRAFT_END' });
               actions.finishWire(densePoints(route).map((pt) => [pt.x, pt.y]));
             }

@@ -1568,6 +1568,19 @@ polyline.wire.selected {
   box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
+.prop-input-error,
+.prop-input-error:focus {
+  border-color: var(--danger, #e05252);
+  box-shadow: 0 0 0 2px rgba(224, 82, 82, 0.25);
+}
+
+.prop-field-error {
+  margin-top: 3px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--danger, #e05252);
+}
+
 .name-input {
   font-family: var(--font-sans);
   font-weight: 600;

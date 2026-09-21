@@ -320,7 +320,7 @@ public class NetlistBuilder {
         CircuitNetlist netlist = new CircuitNetlist();
         netlist.initNetlist(types, nodeX, nodeY, voltageSourceNumbers, params,
                 maxNodeIndex, voltageSourceCount, elementCount);
-        netlist.setSingularityEntries(calculateSingularityEntries(maxNodeIndex, elementCount, nodeX, nodeY));
+        netlist.setSingularityEntries(calculateSingularityEntries(maxNodeIndex, elementCount, nodeX, nodeY, types, voltageSourceNumbers));
         long[] uids = new long[elementCount];
         for (int i = 0; i < elementCount; i++) {
             uids[i] = branchComponents.get(i).getUniqueObjectIdentifier();
@@ -703,7 +703,7 @@ public class NetlistBuilder {
         CircuitNetlist netlist = new CircuitNetlist();
         netlist.initNetlist(types, nodeX, nodeY, voltageSourceNumbers, params,
                 maxNodeIndex, voltageSourceCount, elementCount);
-        netlist.setSingularityEntries(calculateSingularityEntries(maxNodeIndex, elementCount, nodeX, nodeY));
+        netlist.setSingularityEntries(calculateSingularityEntries(maxNodeIndex, elementCount, nodeX, nodeY, types, voltageSourceNumbers));
         long[] uids = new long[elementCount];
         for (int i = 0; i < elementCount; i++) {
             uids[i] = branchComponents.get(i).getUniqueObjectIdentifier();
@@ -722,6 +722,25 @@ public class NetlistBuilder {
      * Calculates reference node indices (singularity entries) for all connected subcircuits.
      */
     public static int[] calculateSingularityEntries(int maxNodeIndex, int elementCount, int[] nodeX, int[] nodeY) {
+        return calculateSingularityEntries(maxNodeIndex, elementCount, nodeX, nodeY, null, null);
+    }
+
+    /**
+     * Calculates reference node indices (singularity entries) for all connected subcircuits.
+     *
+     * Each galvanic island gets exactly one pinned node acting as its 0 V
+     * reference. The choice is semantic, not arbitrary, because measured
+     * label signals are read relative to it:
+     * <ol>
+     *   <li>an island containing node 0 pins node 0,</li>
+     *   <li>otherwise an island containing the return (nodeY) terminal of a
+     *       voltage source pins that terminal, so source-driven potentials
+     *       read positive as users expect,</li>
+     *   <li>otherwise the lowest-indexed member is pinned (legacy behavior).</li>
+     * </ol>
+     */
+    public static int[] calculateSingularityEntries(int maxNodeIndex, int elementCount, int[] nodeX, int[] nodeY,
+                                                    CircuitTypCore[] types, int[] voltageSourceNumbers) {
         if (maxNodeIndex < 0) {
             return new int[]{0};
         }
@@ -741,6 +760,27 @@ public class NetlistBuilder {
             int r = ds.find(i);
             if (!groupToRepresentative.containsKey(r)) {
                 groupToRepresentative.put(r, i);
+            }
+        }
+        // Prefer a voltage source's return terminal as the island reference so
+        // source-driven nets measure positive instead of the reference falling
+        // on an arbitrary measured node
+        java.util.Set<Integer> overriddenRoots = new java.util.HashSet<>();
+        if (types != null && voltageSourceNumbers != null) {
+            for (int i = 0; i < elementCount; i++) {
+                if (voltageSourceNumbers[i] <= 0 || types[i] == null) {
+                    continue;
+                }
+                int returnNode = nodeY[i];
+                if (returnNode <= 0 || returnNode > maxNodeIndex) {
+                    continue;
+                }
+                int r = ds.find(returnNode);
+                if (r == root0 || overriddenRoots.contains(r) || !groupToRepresentative.containsKey(r)) {
+                    continue;
+                }
+                groupToRepresentative.put(r, returnNode);
+                overriddenRoots.add(r);
             }
         }
         return groupToRepresentative.values().stream().mapToInt(Integer::intValue).toArray();

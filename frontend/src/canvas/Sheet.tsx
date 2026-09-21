@@ -7,7 +7,7 @@ import { useRef, useState, useMemo, useEffect } from 'react';
 import type { Dispatch, MouseEvent as ReactMouseEvent, WheelEvent as ReactWheelEvent, DragEvent as ReactDragEvent } from 'react';
 import type { EditorState, Action } from '../model/store';
 import { terminalPositions, terminalNear } from '../model/geometry';
-import { routeL, densePoints, orthogonalizePolyline, simplifyCorners, translateWireSegment } from './WireRouter';
+import { routeAvoidingObstacles, routingBlockedCells, densePoints, orthogonalizePolyline, simplifyCorners, translateWireSegment } from './WireRouter';
 import { ComponentSymbol } from './symbols';
 import { isScopeComponent } from '../simulation/scopes';
 import {
@@ -334,7 +334,10 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
           dispatch({ type: 'WIRE_START', x: snapped.x, y: snapped.y, family });
         } else {
           const end = snappedToTerminal(p);
-          const route = routeL(state.wireDraft.start, end, state.wireDraft.preferHorizontal);
+          const route = routeAvoidingObstacles(
+            state.wireDraft.start, end,
+            routingBlockedCells(state.components),
+            state.wireDraft.preferHorizontal);
           dispatch({ type: 'WIRE_DRAFT_END' });
           actions.finishWire(densePoints(route).map((pt) => [pt.x, pt.y]));
         }
@@ -526,7 +529,10 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
   }, [selectedWireObj]);
 
   const wireDraftPoints = state.wireDraft
-    ? routeL(state.wireDraft.start, state.wireDraft.cursor, state.wireDraft.preferHorizontal)
+    ? routeAvoidingObstacles(
+          state.wireDraft.start, state.wireDraft.cursor,
+          routingBlockedCells(state.components),
+          state.wireDraft.preferHorizontal)
         .map((p) => `${p.x * dpix},${p.y * dpix}`)
         .join(' ')
     : null;
@@ -692,7 +698,10 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                         e.stopPropagation();
                         if (state.mode === 'wiring' && state.wireDraft) {
                           const end = toGrid(e);
-                          const route = routeL(state.wireDraft.start, end, state.wireDraft.preferHorizontal);
+                          const route = routeAvoidingObstacles(
+                            state.wireDraft.start, end,
+                            routingBlockedCells(state.components),
+                            state.wireDraft.preferHorizontal);
                           dispatch({ type: 'WIRE_DRAFT_END' });
                           actions.finishWire(densePoints(route).map((pt) => [pt.x, pt.y]));
                         } else {
@@ -972,7 +981,10 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                                   e.stopPropagation();
                                   if (state.mode === 'wiring' && state.wireDraft) {
                                     const end = { x: t.x, y: t.y };
-                                    const route = routeL(state.wireDraft.start, end, state.wireDraft.preferHorizontal);
+                                    const route = routeAvoidingObstacles(
+                                      state.wireDraft.start, end,
+                                      routingBlockedCells(state.components),
+                                      state.wireDraft.preferHorizontal);
                                     dispatch({ type: 'WIRE_DRAFT_END' });
                                     actions.finishWire(densePoints(route).map((pt) => [pt.x, pt.y]));
                                   } else {
