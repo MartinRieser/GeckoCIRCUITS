@@ -25,6 +25,9 @@ export interface ComponentMeta {
   displayName: string;
   category: 'passives' | 'sources' | 'semiconductors' | 'switches' | 'transformers' | 'machines' | 'thermal' | 'terminals' | 'measurement' | 'control' | 'logic';
   description: string;
+  /** Not simulated by the engine yet: shown greyed out in the palette and
+   *  cannot be armed/placed until implemented. */
+  disabled?: boolean;
   shortcut?: string;
   defaultPrefix: string;
   parameters: ParameterDef[];
@@ -578,6 +581,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     displayName: 'DC Motor (Excited)',
     category: 'machines',
     description: 'Separately or series excited DC machine (not yet simulated by the web engine)',
+    disabled: true,
     defaultPrefix: 'M_DC',
     parameters: [],
     terminals: {
@@ -594,6 +598,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     displayName: 'PMSM Motor',
     category: 'machines',
     description: 'Permanent Magnet Synchronous Machine, dq model (not yet simulated by the web engine)',
+    disabled: true,
     defaultPrefix: 'PMSM',
     parameters: [
       { index: 0, key: 'param0', label: 'Stator Resistance (Rs)', description: 'Stator phase resistance in Ohms', defaultValue: 0.2, unit: 'Ω' },
@@ -614,6 +619,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     displayName: 'Sync Motor (Salient)',
     category: 'machines',
     description: 'Synchronous machine with salient poles (not yet simulated by the web engine)',
+    disabled: true,
     defaultPrefix: 'SM',
     parameters: [],
     terminals: {
@@ -630,6 +636,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     displayName: 'Sync Motor (Round)',
     category: 'machines',
     description: 'Synchronous machine with round rotor (not yet simulated by the web engine)',
+    disabled: true,
     defaultPrefix: 'SM',
     parameters: [],
     terminals: {
@@ -646,6 +653,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     displayName: 'Induction Motor (Cage)',
     category: 'machines',
     description: 'Induction machine with cage rotor (not yet simulated by the web engine)',
+    disabled: true,
     defaultPrefix: 'IM',
     parameters: [],
     terminals: {
@@ -662,6 +670,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     displayName: 'Induction Motor',
     category: 'machines',
     description: 'Generic induction machine (not yet simulated by the web engine)',
+    disabled: true,
     defaultPrefix: 'IM',
     parameters: [],
     terminals: {
@@ -678,6 +687,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     displayName: 'Induction Motor (Sat.)',
     category: 'machines',
     description: 'Induction machine with magnetic saturation (not yet simulated by the web engine)',
+    disabled: true,
     defaultPrefix: 'IM',
     parameters: [],
     terminals: {
@@ -959,6 +969,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     displayName: 'Thermal Chip (Pv)',
     category: 'thermal',
     description: 'Chip-level power loss injection of a semiconductor module (not yet simulated by the web engine)',
+    disabled: true,
     defaultPrefix: 'Pv',
     parameters: [
       { index: 0, key: 'param0', label: 'Chip Power Loss (Pv)', description: 'Dissipated chip power in Watts', defaultValue: 10.0, unit: 'W', min: 0 },
@@ -977,6 +988,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     displayName: 'Thermal Module',
     category: 'thermal',
     description: 'Module housing thermal model: Rth/Cth pair between chip and heatsink (not yet simulated by the web engine)',
+    disabled: true,
     defaultPrefix: 'MOD',
     parameters: [
       { index: 0, key: 'param0', label: 'Thermal Resistance (Rth)', description: 'Module thermal resistance in Kelvin per Watt', defaultValue: 1.0, unit: 'K/W', min: 1e-6 },
@@ -1093,7 +1105,8 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     name: 'TH_AMBIENT',
     displayName: 'Ambient Temperature',
     category: 'thermal',
-    description: 'Ambient environment temperature boundary reference',
+    description: 'Ambient environment temperature boundary reference (not yet simulated by the web engine)',
+    disabled: true,
     defaultPrefix: 'Tamb',
     parameters: [
       { index: 0, key: 'param0', label: 'Source Type', description: 'Ambient temperature type (401 = constant)', defaultValue: 401, unit: '' },
@@ -1113,6 +1126,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     displayName: 'DC Motor (PM)',
     category: 'machines',
     description: 'Permanent magnet DC machine (not yet simulated by the web engine)',
+    disabled: true,
     defaultPrefix: 'M_DC',
     parameters: [
       { index: 0, key: 'param0', label: 'Armature Resistance (Ra)', description: 'Armature circuit resistance in Ohms', defaultValue: 0.5, unit: 'Ω' },

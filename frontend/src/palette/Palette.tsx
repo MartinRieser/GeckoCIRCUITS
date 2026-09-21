@@ -175,40 +175,51 @@ export function Palette({ catalog, onArm, onCollapse }: PaletteProps) {
           </div>
         ) : (
           <div className={`palette-${viewMode}`}>
-            {filteredEntries.map((entry) => (
-              <button
-                key={`${entry.family}-${entry.type}`}
-                type="button"
-                className="component-card palette-entry"
-                onClick={() => onArm(entry)}
-                draggable
-                onDragStart={(e) => {
-                  e.dataTransfer.setData('text/plain', JSON.stringify(entry));
-                  onArm(entry);
-                }}
-                title={`${entry.displayName} — click to arm, then click the sheet; or drag onto the sheet`}
-              >
-                <div className="card-symbol-wrap">
-                  <SymbolPreview
-                    type={entry.type}
-                    family={entry.family}
-                    size={viewMode === 'grid' ? 44 : 32}
-                    color={entry.family === 'CONTROL' ? '#4ade80' : entry.family === 'THERM' ? '#fb923c' : undefined}
-                  />
-                </div>
-                <div className="card-info">
-                  <div className="card-name-row">
-                    <span className="card-name">{entry.displayName}</span>
-                    {entry.shortcut && (
-                      <kbd className="card-shortcut">{entry.shortcut}</kbd>
+            {filteredEntries.map((entry) => {
+              const disabled = entry.meta?.disabled ?? false;
+              return (
+                <button
+                  key={`${entry.family}-${entry.type}`}
+                  type="button"
+                  className={`component-card palette-entry${disabled ? ' disabled' : ''}`}
+                  onClick={() => onArm(entry)}
+                  draggable={!disabled}
+                  onDragStart={(e) => {
+                    if (disabled) {
+                      e.preventDefault();
+                      return;
+                    }
+                    e.dataTransfer.setData('text/plain', JSON.stringify(entry));
+                    onArm(entry);
+                  }}
+                  title={disabled
+                    ? `${entry.displayName} — not available yet (planned): the engine cannot simulate this component at the moment`
+                    : `${entry.displayName} — click to arm, then click the sheet; or drag onto the sheet`}
+                >
+                  <div className="card-symbol-wrap">
+                    <SymbolPreview
+                      type={entry.type}
+                      family={entry.family}
+                      size={viewMode === 'grid' ? 44 : 32}
+                      color={entry.family === 'CONTROL' ? '#4ade80' : entry.family === 'THERM' ? '#fb923c' : undefined}
+                    />
+                  </div>
+                  <div className="card-info">
+                    <div className="card-name-row">
+                      <span className="card-name">{entry.displayName}</span>
+                      {disabled ? (
+                        <span className="card-soon-badge">planned</span>
+                      ) : (
+                        entry.shortcut && <kbd className="card-shortcut">{entry.shortcut}</kbd>
+                      )}
+                    </div>
+                    {viewMode === 'list' && (
+                      <span className="card-desc">{entry.description}</span>
                     )}
                   </div>
-                  {viewMode === 'list' && (
-                    <span className="card-desc">{entry.description}</span>
-                  )}
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         )}
       </div>

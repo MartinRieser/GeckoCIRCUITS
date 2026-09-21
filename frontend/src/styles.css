@@ -853,6 +853,37 @@ body,
   color: var(--text-dim);
 }
 
+/* Components without an engine model yet: greyed out, clearly not placeable */
+.component-card.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(0.7);
+}
+
+.component-card.disabled:hover {
+  background: var(--surface);
+  border-color: var(--border);
+  transform: none;
+  box-shadow: none;
+}
+
+.component-card.disabled:active {
+  cursor: not-allowed;
+}
+
+.card-soon-badge {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: rgba(148, 163, 184, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  border-radius: 3px;
+  padding: 0 4px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
 /* List View */
 .palette-list {
   display: flex;

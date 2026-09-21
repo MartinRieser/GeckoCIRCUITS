@@ -114,9 +114,12 @@ export function CommandPalette({
                   <div className="command-item-info">
                     <div className="command-item-name-row">
                       <span className="command-item-name">{meta.displayName}</span>
+                      {meta.disabled && <span className="card-soon-badge">planned</span>}
                       <span className="command-item-category">{meta.category}</span>
                     </div>
-                    <span className="command-item-desc">{meta.description}</span>
+                    <span className="command-item-desc">
+                      {meta.disabled ? `${meta.description} — not placeable yet` : meta.description}
+                    </span>
                   </div>
                   {meta.shortcut && (
                     <kbd className="command-item-shortcut">{meta.shortcut}</kbd>

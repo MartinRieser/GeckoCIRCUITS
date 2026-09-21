@@ -117,5 +117,24 @@ describe('componentSchema', () => {
       expect(signals).toContain('AMP.1');
     });
   });
+
+  it('marks motors and unsimulated thermal modules as disabled', () => {
+    const disabledTypes = Object.values(COMPONENT_METAS)
+      .filter((m) => m.disabled)
+      .map((m) => m.type)
+      .sort((a, b) => a - b);
+    // all motors (types 14-21 except 19 which does not exist, plus 51) and
+    // the thermal components without an engine model (41 PvCHIP, 42 MODUL,
+    // 48 AMBIENT)
+    expect(disabledTypes).toEqual([14, 15, 16, 17, 18, 20, 21, 41, 42, 48, 51]);
+
+    // nothing that the engine actually simulates may be disabled
+    const simulated = new Set([1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 23, 24, 26, 28, 33, 44, 45, 46, 47]);
+    for (const meta of Object.values(COMPONENT_METAS)) {
+      if (meta.disabled) {
+        expect(simulated.has(meta.type)).toBe(false);
+      }
+    }
+  });
 });
 

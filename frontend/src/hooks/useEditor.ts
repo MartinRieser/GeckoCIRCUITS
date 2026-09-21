@@ -19,6 +19,7 @@ import {
   isVoltmeterComponent,
   isAmmeterComponent,
   getCoupledComponentName,
+  getComponentMeta,
 } from '../model/componentSchema';
 import { isScopeComponent } from '../simulation/scopes';
 import { BLANK_CIRCUIT_IPES } from '../model/examples';
@@ -214,6 +215,16 @@ export function useEditor() {
 
   const arm = useCallback(
     async (entry: CatalogEntry) => {
+      // Components flagged disabled in the schema (motors, thermal modules)
+      // have no engine model yet — refuse to arm them so nobody expects a
+      // working simulation from a placed part.
+      if (getComponentMeta(entry.type, entry.family, entry.name).disabled) {
+        dispatch({
+          type: 'STATUS',
+          status: `⚠️ ${getComponentMeta(entry.type, entry.family, entry.name).displayName} is not available yet — this component type is planned, but the engine cannot simulate it at the moment`,
+        });
+        return;
+      }
       const ready = await ensureWorkspace();
       if (!ready) return;
       dispatch({ type: 'ARM', componentType: entry.type, family: entry.family });
