@@ -713,6 +713,7 @@ public class SimulationService {
             response.addResult("time", result.getTimeArray());
             response.setStatus(SimulationResponse.SimulationStatus.COMPLETED);
             response.setErrorMessage(null);
+            response.setWarnings(result.getWarnings());
             response.setEndTime(Instant.now());
             return true;
         }

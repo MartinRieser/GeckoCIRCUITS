@@ -84,9 +84,9 @@ describe('validateCircuitForSimulation', () => {
     const bjt = comp({ name: 'Q', type: 33, displayName: 'BJT Transistor', position: [18, 10] });
     const warnings = validateCircuitForSimulation([source, motor, bjt], []);
     expect(warnings.some((w) => /not yet simulated/i.test(w))).toBe(true);
-    expect(warnings.some((w) => w.includes('PMSM Motor') && w.includes('BJT Transistor'))).toBe(
-      true,
-    );
+    expect(warnings.some((w) => w.includes('PMSM Motor'))).toBe(true);
+    // the BJT is simulated by the core engine (hidden-subcircuit expansion)
+    expect(warnings.some((w) => w.includes('BJT Transistor'))).toBe(false);
   });
 
   it('does not flag control blocks as unsupported', () => {

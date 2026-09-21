@@ -705,6 +705,11 @@ public class CircuitEditService {
             Map.entry(46, new double[]{1.0}),
             Map.entry(47, new double[]{1.0, 25.0}),
             Map.entry(48, new double[]{401.0, 25.0}),
+            // 9 = mutual coupling k; 23 = ideal transformer n1/n2/polarity;
+            // 33 = BJT betaF/betaR/rBase/polarity (param0 unused)
+            Map.entry(9, new double[]{0.98}),
+            Map.entry(23, new double[]{10.0, 2.0, -1.0}),
+            Map.entry(33, new double[]{0.0, 100.0, 60.0, 0.1, 1.0}),
             Map.entry(1000, new double[]{0.0}));
 
     private static double[] sourceDefaults(double dcValue, double amplitude) {

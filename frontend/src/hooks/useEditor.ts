@@ -13,7 +13,7 @@ import type {
   SimulationDefaults,
   SimulationStatus,
 } from '../model/types';
-import { nextOrientation, terminalPositions } from '../model/geometry';
+import { nextOrientation, terminalPositions, findPlacementConflict } from '../model/geometry';
 import {
   CTRL_TYPE,
   isVoltmeterComponent,
@@ -36,6 +36,7 @@ export function useEditor() {
   const [simProgress, setSimProgress] = useState(0);
   const [simResults, setSimResults] = useState<Record<string, number[]> | null>(null);
   const [simError, setSimError] = useState<string | null>(null);
+  const [simWarnings, setSimWarnings] = useState<string[]>([]);
   const [simDrawerOpen, setSimDrawerOpen] = useState(false);
   const [simDefaults, setSimDefaults] = useState<SimulationDefaults | null>(null);
   const simPollTimerRef = useRef<number | null>(null);
@@ -74,6 +75,7 @@ export function useEditor() {
     setSimProgress(0);
     setSimResults(null);
     setSimError(null);
+    setSimWarnings([]);
     setSimDrawerOpen(false);
   }, [stopPolling, stopStream]);
 
@@ -231,6 +233,22 @@ export function useEditor() {
       const orient = orientation !== undefined ? orientation : (ghost?.orientation || 503);
 
       if (type === undefined || !circuitId) return;
+
+      // Block body-on-body / terminal-in-body placements: stacked components
+      // silently short in the netlist. The ghost stays armed so the user can
+      // reposition instead of re-selecting from the palette.
+      const conflict = findPlacementConflict(
+        { type, family, position: [x, y], orientation: orient },
+        stateRef.current.components,
+      );
+      if (conflict) {
+        dispatch({
+          type: 'STATUS',
+          status: `⚠️ Cannot place here — overlaps ${conflict}. Move to a free spot.`,
+        });
+        return;
+      }
+
       dispatch({ type: 'CANCEL' });
       const defaultParams =
         type === CTRL_TYPE.SCRIPT || type === CTRL_TYPE.LEGACY_JAVA_FUNCTION
@@ -872,6 +890,7 @@ export function useEditor() {
           simPollTimerRef.current = null;
           setSimProgress(1.0);
           setSimResults(current.results || (await api.getSimulationResults(simId)));
+          setSimWarnings(current.warnings || []);
         } else if (current.status === 'FAILED' || current.status === 'CANCELLED') {
           clearInterval(pollInterval);
           simPollTimerRef.current = null;
@@ -895,6 +914,7 @@ export function useEditor() {
       if (current.status === 'COMPLETED') {
         setSimProgress(1.0);
         setSimResults(current.results || (await api.getSimulationResults(simId)));
+        setSimWarnings(current.warnings || []);
       } else if (current.status === 'FAILED' || current.status === 'CANCELLED') {
         setSimError(current.errorMessage || 'Simulation failed or was cancelled');
       } else {
@@ -956,6 +976,7 @@ export function useEditor() {
       setSimStatus('RUNNING');
       setSimProgress(0.05);
       setSimError(null);
+      setSimWarnings([]);
       setSimDrawerOpen(true);
 
       try {
@@ -1032,6 +1053,7 @@ export function useEditor() {
       progress: simProgress,
       results: simResults,
       errorMessage: simError,
+      warnings: simWarnings,
       isOpen: simDrawerOpen,
       defaults: simDefaults,
     },

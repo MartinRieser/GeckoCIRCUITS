@@ -22,6 +22,7 @@ interface SimulationPropertiesPanelProps {
   progress: number;
   defaults?: SimulationDefaults | null;
   errorMessage?: string | null;
+  engineWarnings?: string[];
   components: EditorComponent[];
   wires?: EditorWire[];
   results: Record<string, number[]> | null;
@@ -49,6 +50,7 @@ export function SimulationPropertiesPanel({
   progress,
   defaults,
   errorMessage,
+  engineWarnings,
   components,
   wires,
   results,
@@ -274,6 +276,19 @@ export function SimulationPropertiesPanel({
               <div className="sim-error-banner" style={{ marginTop: 6, fontSize: '11px' }}>
                 <span className="error-icon">✕</span>
                 <span className="error-text">{errorMessage}</span>
+              </div>
+            )}
+
+            {!isRunning && engineWarnings && engineWarnings.length > 0 && (
+              <div className="sim-warnings" style={{ marginTop: 6 }}>
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>
+                  ⚠️ Simulation ran, but:
+                </div>
+                <ul style={{ margin: '0 0 0 16px', padding: 0 }}>
+                  {engineWarnings.map((w, i) => (
+                    <li key={i} style={{ fontSize: '11px' }}>{w}</li>
+                  ))}
+                </ul>
               </div>
             )}
           </div>

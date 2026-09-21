@@ -55,6 +55,10 @@ public class MatrixSolver {
     private Matrix matrixSolverA;     // Cached Matrix wrapper for A
     private boolean matrixChanged;    // Flag to indicate A matrix needs refactorization
 
+    // Elements whose type has no registered stamper; they stamp nothing and
+    // behave as open circuits. Recorded so runs can surface what was skipped.
+    private final java.util.List<String> skippedElements = new java.util.ArrayList<>();
+
     /**
      * Constructs a MatrixSolver with specified solver type.
      *
@@ -96,6 +100,13 @@ public class MatrixSolver {
         iALT = new double[elementCount];
         iALTALT = new double[elementCount];
         iALTALTALT = new double[elementCount];
+
+        skippedElements.clear();
+    }
+
+    /** Warnings for elements skipped during stamping (no stamper for their type). */
+    public java.util.List<String> getSkippedElementWarnings() {
+        return skippedElements;
     }
 
     // Getters for matrix components
@@ -259,29 +270,77 @@ public class MatrixSolver {
             IMatrixStamper stamper = registry.getStamper(componentType);
             if (stamper != null) {
                 stamper.stampMatrixA(a, nodeX, nodeY, nodeZ, parameters, dt);
+            } else {
+                skippedElements.add(componentType + " (element " + elementIndex
+                        + ") has no simulation model and is treated as an open circuit");
             }
-            // If no stamper is registered, component is skipped (e.g., terminals, unimplemented types)
         }
 
-        // Voltage-controlled voltage sources (e.g. from the op-amp hidden-
-        // subcircuit expansion): constrain v(x) - v(y) = gain * V(measured).
-        // The source's z-row gets the sensing terms; the through-current
-        // column already came from the element's own stamper.
+        // Voltage-controlled voltage sources (e.g. ideal-transformer primary):
+        // constrain v(x) - v(y) = gain * V(measured). The element's own
+        // VoltageSourceStamper already provided the z-row terms a[z][x] += 1,
+        // a[z][y] -= 1 and the through-current column a[x][z], a[y][z]; only
+        // the sensing terms are added here.
         for (gecko.core.circuit.netlist.CircuitNetlist.VcvsCoupling vc : netlist.getVcvsCouplings()) {
-            int p = netlist.getNodeX(vc.sourceElement());
-            int n = netlist.getNodeY(vc.sourceElement());
-            int z = netlist.getNodeMax() + netlist.getVoltageSourceNumber(vc.sourceElement());
             int mx = netlist.getNodeX(vc.measuredElement());
             int my = netlist.getNodeY(vc.measuredElement());
+            int z = netlist.getNodeMax() + netlist.getVoltageSourceNumber(vc.sourceElement());
             if (z < 0 || z >= matrixSize) {
                 continue;
             }
-            a[p][z] += 1.0;
-            a[n][z] -= 1.0;
-            a[z][p] -= 1.0;
-            a[z][n] += 1.0;
-            a[z][mx] += vc.gain();
-            a[z][my] -= vc.gain();
+            a[z][mx] -= vc.gain();
+            a[z][my] += vc.gain();
+        }
+
+        // Voltage-controlled current sources (e.g. BJT collector/emitter
+        // current sources): the source element carries
+        // i = gain * V(measured) from its nodeX into its nodeY, so the KCL
+        // rows of the source element get gain-weighted entries on the
+        // measured node potentials.
+        for (gecko.core.circuit.netlist.CircuitNetlist.VccsCoupling vc : netlist.getVccsCouplings()) {
+            int xs = netlist.getNodeX(vc.sourceElement());
+            int ys = netlist.getNodeY(vc.sourceElement());
+            int xm = netlist.getNodeX(vc.measuredElement());
+            int ym = netlist.getNodeY(vc.measuredElement());
+            double gain = vc.gain();
+            a[xs][xm] += gain;
+            a[ys][ym] += gain;
+            a[xs][ym] -= gain;
+            a[ys][xm] -= gain;
+        }
+
+        // Ideal-transformer secondary: enforce i_f = -gain * i_d between the
+        // follower and driver z-currents. The follower's own stamper provided
+        // only the KCL column (no z-row voltage equation).
+        for (gecko.core.circuit.netlist.CircuitNetlist.ZCurrentMirrorCoupling zc
+                : netlist.getZCurrentMirrorCouplings()) {
+            int zf = netlist.getNodeMax() + netlist.getVoltageSourceNumber(zc.followerElement());
+            int zd = netlist.getNodeMax() + netlist.getVoltageSourceNumber(zc.driverElement());
+            if (zf < 0 || zf >= matrixSize || zd < 0 || zd >= matrixSize) {
+                continue;
+            }
+            a[zf][zf] += 1.0 / zc.gain();
+            a[zf][zd] += 1.0;
+        }
+
+        // Mutual inductance between coupled inductors: v_i = L_i di_i/dt +
+        // M di_j/dt. The partner's current is a same-step unknown, so its
+        // coefficient goes into the A matrix off-diagonal z-cross terms
+        // (port of the legacy zuLKOP2gehoerigeM coupling stamps).
+        double couplingFactor = switch (solverType) {
+            case SOLVER_TRZ -> 2.0;
+            case SOLVER_GS -> 1.5;
+            default -> 1.0;
+        };
+        for (gecko.core.circuit.netlist.MutualCouplingRegistry.Coupling c : netlist.getAllCouplings()) {
+            int zi = netlist.getNodeMax() + netlist.getVoltageSourceNumber(c.getInductor1Index());
+            int zj = netlist.getNodeMax() + netlist.getVoltageSourceNumber(c.getInductor2Index());
+            if (zi < 0 || zi >= matrixSize || zj < 0 || zj >= matrixSize) {
+                continue;
+            }
+            double mOverDt = couplingFactor * c.getMutualInductance() / dt;
+            a[zi][zj] -= mOverDt;
+            a[zj][zi] -= mOverDt;
         }
 
         // Note: Magnetic coupling (mutual inductance) handling is deferred for future refinement.
@@ -414,8 +473,26 @@ public class MatrixSolver {
 
                     bVector[voltageSourceIdx] += bContribution;
 
-                    // Apply mutual inductance coupling terms if present
-                    // (zuLKOP2gehoerigeM_spgQnr and zuLKOP2gehoerigeM_kWerte would be passed separately)
+                    // Mutual inductance: partner's previous-step current is
+                    // history here; its same-step coefficient went into A.
+                    double couplingFactorB = switch (solverType) {
+                        case SOLVER_TRZ -> 2.0;
+                        case SOLVER_GS -> 1.5;
+                        default -> 1.0;
+                    };
+                    for (gecko.core.circuit.netlist.MutualCouplingRegistry.Coupling c
+                            : netlist.getCouplingsFor(elementIdx)) {
+                        int partner = c.involves(elementIdx)
+                                ? (c.getInductor1Index() == elementIdx
+                                        ? c.getInductor2Index() : c.getInductor1Index())
+                                : -1;
+                        if (partner < 0 || partner >= netlist.getElementCount()) {
+                            continue;
+                        }
+                        int zPartner = netlist.getNodeMax() + netlist.getVoltageSourceNumber(partner);
+                        bVector[voltageSourceIdx] -= couplingFactorB * c.getMutualInductance() / dt
+                                * iALT[partner];
+                    }
                     break;
 
                 // ===== Capacitors (with history terms) =====

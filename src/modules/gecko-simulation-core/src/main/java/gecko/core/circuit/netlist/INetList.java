@@ -87,6 +87,27 @@ public interface INetList {
     /** All registered VCVS couplings. */
     java.util.List<CircuitNetlist.VcvsCoupling> getVcvsCouplings();
 
+    /** Registers a voltage-controlled current source: element
+     *  {@code sourceElement} carries i = {@code gain} * v(nodeX - nodeY of
+     *  {@code measuredElement}) from its nodeX into its nodeY. */
+    void registerVccs(int sourceElement, int measuredElement, double gain);
+
+    /** All registered VCCS couplings. */
+    java.util.List<CircuitNetlist.VccsCoupling> getVccsCouplings();
+
+    /** Registers an ideal-transformer current constraint:
+     *  i(follower) = -{@code gain} * i(driver). */
+    void registerZCurrentMirror(int followerElement, int driverElement, double gain);
+
+    /** All registered z-current mirror couplings. */
+    java.util.List<CircuitNetlist.ZCurrentMirrorCoupling> getZCurrentMirrorCouplings();
+
+    /** All registered mutual-inductance couplings. */
+    java.util.List<gecko.core.circuit.netlist.MutualCouplingRegistry.Coupling> getAllCouplings();
+
+    /** Mutual-inductance couplings involving the given inductor element. */
+    java.util.List<gecko.core.circuit.netlist.MutualCouplingRegistry.Coupling> getCouplingsFor(int inductorIndex);
+
     /**
      * Gets the parameters for an element at the given index.
      * Parameter layout depends on element type:

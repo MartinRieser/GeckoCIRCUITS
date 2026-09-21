@@ -402,12 +402,28 @@ public class HeadlessSimulationEngine {
                 .executionTimeMs(executionTimeMs)
                 .totalTimeSteps(currentStep)
                 .simulatedTime(currentTime)
+                .warnings(collectEngineWarnings())
                 .metadata("solver", settings.getSolverType().toString())
                 .metadata("dt", dt)
                 .metadata("circuitFile", config.getCircuitFilePath() != null
                         ? config.getCircuitFilePath() : "in-memory model")
                 .metadata("parameterOverrides", config.getParameterOverrides().size())
                 .build();
+    }
+
+    /**
+     * Non-fatal issues from netlist build and matrix stamping: unknown type
+     * numbers, transformers without a model, element types with no stamper.
+     */
+    private java.util.List<String> collectEngineWarnings() {
+        java.util.List<String> warnings = new ArrayList<>();
+        if (circuitNetlist != null) {
+            warnings.addAll(circuitNetlist.getBuildWarnings());
+        }
+        if (matrixSolver != null) {
+            warnings.addAll(matrixSolver.getSkippedElementWarnings());
+        }
+        return warnings;
     }
 
     /**

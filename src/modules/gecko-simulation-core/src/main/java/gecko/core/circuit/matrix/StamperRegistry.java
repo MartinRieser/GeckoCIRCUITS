@@ -71,6 +71,7 @@ public class StamperRegistry {
         // Sources
         register(CircuitTypCore.LK_U, new VoltageSourceStamper());
         register(CircuitTypCore.LK_I, new CurrentSourceStamper());
+        register(CircuitTypCore.LK_TRANS, new TransformerSecondaryStamper());
 
         // Semiconductor switches
         register(CircuitTypCore.LK_D, new DiodeStamper());

@@ -284,11 +284,21 @@ export function App() {
 
   const handleSelectExample = (exampleId: string) => {
     const ex = EXAMPLES.find((e) => e.id === exampleId);
-    if (ex) {
+    if (ex && confirmDiscardCircuit()) {
       actions.openContent(ex.content, `${ex.name}.ipes`);
     }
     setExamplesMenuOpen(false);
   };
+
+  // New / Open / Examples replace whatever is in the editor. The circuit
+  // auto-syncs to the workspace on the server, but anything not downloaded
+  // as .ipes is gone from the user's view — ask before discarding content.
+  function confirmDiscardCircuit(): boolean {
+    if (state.components.length === 0 && state.wires.length === 0) return true;
+    return window.confirm(
+      'Replace the current circuit? Changes not saved as a .ipes file will be lost.',
+    );
+  }
 
   return (
     <div className="app">
@@ -309,7 +319,9 @@ export function App() {
           <button
             type="button"
             className="nav-btn"
-            onClick={() => actions.newCircuit()}
+            onClick={() => {
+              if (confirmDiscardCircuit()) actions.newCircuit();
+            }}
             title="Create blank circuit"
           >
             New
@@ -331,7 +343,7 @@ export function App() {
             hidden
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (file) {
+              if (file && confirmDiscardCircuit()) {
                 actions.open(file);
               }
               e.target.value = '';
@@ -658,6 +670,7 @@ export function App() {
                   progress={simState.progress}
                   defaults={simState.defaults}
                   errorMessage={simState.errorMessage}
+                  engineWarnings={simState.warnings}
                   components={state.components}
                   wires={state.wires}
                   results={simState.results}

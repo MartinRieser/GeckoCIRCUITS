@@ -100,6 +100,58 @@ public class CircuitNetlist implements INetList {
         return vcvsCouplings;
     }
 
+    /**
+     * A voltage-controlled current source: element {@code sourceElement}
+     * carries the through-current i = {@code gain} * v(nodeX - nodeY of
+     * {@code measuredElement}), from its nodeX into its nodeY. Stamped into
+     * the KCL rows of the source element; no z-slot needed.
+     */
+    public record VccsCoupling(int sourceElement, int measuredElement, double gain) {
+    }
+
+    private final List<VccsCoupling> vccsCouplings = new ArrayList<>();
+
+    public void registerVccs(int sourceElement, int measuredElement, double gain) {
+        vccsCouplings.add(new VccsCoupling(sourceElement, measuredElement, gain));
+    }
+
+    public List<VccsCoupling> getVccsCouplings() {
+        return vccsCouplings;
+    }
+
+    /**
+     * Ideal-transformer secondary current constraint: the follower element's
+     * z-current obeys i_f = -{@code gain} * i_d, stamped as
+     * a[z_f][z_f] += 1/gain, a[z_f][z_d] += 1. Both elements must be
+     * voltage-source-type elements with z-slots.
+     */
+    public record ZCurrentMirrorCoupling(int followerElement, int driverElement, double gain) {
+    }
+
+    private final List<ZCurrentMirrorCoupling> zCurrentMirrorCouplings = new ArrayList<>();
+
+    public void registerZCurrentMirror(int followerElement, int driverElement, double gain) {
+        zCurrentMirrorCouplings.add(new ZCurrentMirrorCoupling(followerElement, driverElement, gain));
+    }
+
+    public List<ZCurrentMirrorCoupling> getZCurrentMirrorCouplings() {
+        return zCurrentMirrorCouplings;
+    }
+
+    // Non-fatal issues found while building the netlist (unknown type numbers
+    // falling back to resistor, etc.), surfaced in the simulation result.
+    private final List<String> buildWarnings = new ArrayList<>();
+
+    /** Records a non-fatal netlist build issue. */
+    public void addBuildWarning(String warning) {
+        buildWarnings.add(warning);
+    }
+
+    /** Warnings collected while building this netlist. */
+    public List<String> getBuildWarnings() {
+        return buildWarnings;
+    }
+
 
     // Node labels for signal resolution (scope/probe lookups by name)
     private final LabelResolver labelResolver = new LabelResolver();

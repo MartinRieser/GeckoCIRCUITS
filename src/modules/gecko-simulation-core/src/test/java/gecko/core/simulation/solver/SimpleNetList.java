@@ -80,4 +80,34 @@ public class SimpleNetList implements INetList {
     public java.util.List<gecko.core.circuit.netlist.CircuitNetlist.VcvsCoupling> getVcvsCouplings() {
         return java.util.List.of();
     }
+
+    @Override
+    public void registerVccs(int sourceElement, int measuredElement, double gain) {
+        // not needed by this test stub
+    }
+
+    @Override
+    public java.util.List<gecko.core.circuit.netlist.CircuitNetlist.VccsCoupling> getVccsCouplings() {
+        return java.util.List.of();
+    }
+
+    @Override
+    public void registerZCurrentMirror(int followerElement, int driverElement, double gain) {
+        // not needed by this test stub
+    }
+
+    @Override
+    public java.util.List<gecko.core.circuit.netlist.CircuitNetlist.ZCurrentMirrorCoupling> getZCurrentMirrorCouplings() {
+        return java.util.List.of();
+    }
+
+    @Override
+    public java.util.List<gecko.core.circuit.netlist.MutualCouplingRegistry.Coupling> getAllCouplings() {
+        return java.util.List.of();
+    }
+
+    @Override
+    public java.util.List<gecko.core.circuit.netlist.MutualCouplingRegistry.Coupling> getCouplingsFor(int inductorIndex) {
+        return java.util.List.of();
+    }
 }

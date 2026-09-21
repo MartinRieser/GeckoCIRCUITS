@@ -37,6 +37,7 @@ public class SimulationResponse {
     private final Map<String, double[]> results;
     private volatile String errorMessage;
     private volatile ProgressDetails progressDetails;
+    private volatile java.util.List<String> warnings = java.util.List.of();
 
     // Constructors
     public SimulationResponse() {
@@ -108,6 +109,15 @@ public class SimulationResponse {
 
     public void setProgressDetails(ProgressDetails progressDetails) {
         this.progressDetails = progressDetails;
+    }
+
+    /** Non-fatal engine warnings (skipped component types, etc.). */
+    public java.util.List<String> getWarnings() {
+        return warnings;
+    }
+
+    public void setWarnings(java.util.List<String> warnings) {
+        this.warnings = warnings == null ? java.util.List.of() : java.util.List.copyOf(warnings);
     }
 
     public void addResult(String signalName, double[] signalData) {

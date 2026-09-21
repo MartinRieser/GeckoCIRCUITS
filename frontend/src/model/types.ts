@@ -126,6 +126,8 @@ export interface SimulationResponse {
   errorMessage?: string;
   results?: Record<string, number[]>;
   executionTimeMs?: number;
+  /** Non-fatal engine warnings (component types skipped during simulation). */
+  warnings?: string[];
   progressDetails?: {
     currentStep: number;
     totalSteps: number;

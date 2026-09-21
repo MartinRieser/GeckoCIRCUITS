@@ -20,9 +20,11 @@ export const SIMULATED_LK_TYPES: ReadonlySet<number> = new Set([
   8, // LK_THYR thyristor
   10, // LK_IGBT
   12, // LK_LKOP2 coupable inductor
+  23, // LK_TRANS ideal transformer (expanded to a winding pair)
   24, // REL_RELUCTANCE
   26, // REL_MMF
   28, // LK_MOSFET
+  33, // LK_BJT (expanded to its subcircuit elements)
   44, // TH_FLOW heat flow source
   45, // TH_TEMP temperature source
   46, // TH_RTH thermal resistance

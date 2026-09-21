@@ -183,10 +183,56 @@ export function terminalPositions(component: {
     }
   }
 
+  // Ideal Transformer (classic LK_TRANS): four pins — primary pair one grid
+  // pitch against the flow, secondary pair one pitch along it. Pin offsets
+  // follow the classic TerminalRelativePosition rotation.
+  if (component.type === 23 && family !== 'CONTROL') {
+    return {
+      input: [
+        classicPinOffset(center, component.orientation, -1, 2),
+        classicPinOffset(center, component.orientation, -1, -2),
+      ],
+      output: [
+        classicPinOffset(center, component.orientation, 1, 2),
+        classicPinOffset(center, component.orientation, 1, -2),
+      ],
+    };
+  }
+
+  // BJT (classic LK_BJT): collector at the two-port input, base sticking out
+  // sideways at (-2, 0), emitter at the two-port output.
+  if (component.type === 33 && family !== 'CONTROL') {
+    return {
+      input: [
+        { x: center.x - dir.x * TWO_PORT_DIST, y: center.y - dir.y * TWO_PORT_DIST },
+        classicPinOffset(center, component.orientation, -2, 0),
+      ],
+      output: [{ x: center.x + dir.x * TWO_PORT_DIST, y: center.y + dir.y * TWO_PORT_DIST }],
+    };
+  }
+
   return {
     input: [{ x: center.x - dir.x * TWO_PORT_DIST, y: center.y - dir.y * TWO_PORT_DIST }],
     output: [{ x: center.x + dir.x * TWO_PORT_DIST, y: center.y + dir.y * TWO_PORT_DIST }],
   };
+}
+
+/**
+ * Absolute grid point of a classic TerminalRelativePosition pin offset
+ * (posX, posY with posY pointing "up") for the given LK orientation.
+ * Must stay in sync with the core's rotatePinOffset (NetlistBuilder).
+ */
+function classicPinOffset(center: Point, orientation: number, posX: number, posY: number): Point {
+  switch (orientation) {
+    case 504: // EAST_WEST
+      return { x: center.x + posY, y: center.y + posX };
+    case 501: // SOUTH_NORTH
+      return { x: center.x - posX, y: center.y + posY };
+    case 502: // WEST_EAST
+      return { x: center.x - posY, y: center.y - posX };
+    default: // 503 NORTH_SOUTH
+      return { x: center.x + posX, y: center.y - posY };
+  }
 }
 
 /** All terminals of all components as a flat, point-addressable list. */
@@ -227,4 +273,39 @@ export function terminalNear(
     }
   }
   return best;
+}
+
+const sameGridPoint = (a: Point, b: Point) => a.x === b.x && a.y === b.y;
+
+/**
+ * Name of an existing component the candidate placement collides with, or null.
+ * A collision is a body-on-body or terminal-in-body overlap (same center, or a
+ * terminal sitting on another component's center) — such stacks silently short
+ * connections in the netlist. Terminal-to-terminal coincidence is NOT a
+ * conflict: pin-to-pin placement is a legitimate way to join two components.
+ */
+export function findPlacementConflict(
+  candidate: { type: number; family?: string; position: number[]; orientation: number },
+  existing: EditorComponent[],
+): string | null {
+  const candCenter = { x: candidate.position[0], y: candidate.position[1] };
+  const candTerms = terminalPositions({ ...candidate, position: candidate.position });
+  const candTermPoints = [...candTerms.input, ...candTerms.output];
+
+  for (const other of existing) {
+    const otherCenter = { x: other.position[0], y: other.position[1] };
+    if (sameGridPoint(candCenter, otherCenter)) {
+      return other.name;
+    }
+    const otherTerms = terminalPositions(other);
+    if (
+      [...otherTerms.input, ...otherTerms.output].some((t) => sameGridPoint(t, candCenter))
+    ) {
+      return other.name;
+    }
+    if (candTermPoints.some((t) => sameGridPoint(t, otherCenter))) {
+      return other.name;
+    }
+  }
+  return null;
 }

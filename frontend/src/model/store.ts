@@ -209,7 +209,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         status:
           state.status?.startsWith('⚠️') && snap.circuitId === state.circuitId
             ? state.status
-            : `Loaded ${(snap.filename as string) || 'circuit'} (${components.length} components)`,
+            : `Loaded ${(snap.filename as string) || 'circuit'} (${components.length} ${components.length === 1 ? 'component' : 'components'})`,
         busy: false,
       };
     }

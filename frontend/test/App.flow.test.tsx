@@ -140,13 +140,16 @@ describe('App user flow', () => {
       orientation: 503,
     });
 
-    // opening a file through the hidden input reloads the model from the server
+    // opening a file through the hidden input reloads the model from the
+    // server; the app asks for confirmation because the workspace has content
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     const fileInput = container.querySelector('input[type=file]') as HTMLInputElement;
     fireEvent.change(fileInput, { target: { files: [new File(['x'], 'test.ipes')] } });
 
     await waitFor(() => {
       expect(container.querySelector('.status-bar')!.textContent).toContain('Loaded test.ipes');
     });
+    confirmSpy.mockRestore();
     // the reload replaced the workspace with the file's snapshot content
     expect(container.querySelectorAll('g.component')).toHaveLength(1);
   });
