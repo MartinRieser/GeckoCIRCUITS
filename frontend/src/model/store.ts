@@ -10,7 +10,7 @@
  */
 import type { EditorComponent, EditorWire, Point, EditorSnapshot } from './types';
 import { ORIENTATION_CYCLE, terminalPositions } from './geometry';
-import { routeMovedWire } from '../canvas/WireRouter';
+import { routeMovedWire, densePoints, simplifyCorners } from '../canvas/WireRouter';
 
 export type Mode = 'idle' | 'placing' | 'wiring' | 'rubber' | 'dragging';
 export type EditorMode = Mode;
@@ -731,7 +731,11 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
             changed = true;
           }
         }
-        return changed ? { ...wire, points } : wire;
+        if (changed) {
+          const ortho = densePoints(simplifyCorners(points).map(([x, y]: number[]) => ({ x, y }))).map((p: Point) => [p.x, p.y]);
+          return { ...wire, points: ortho.length >= 2 ? ortho : points };
+        }
+        return wire;
       });
 
       return { ...state, components, wires };

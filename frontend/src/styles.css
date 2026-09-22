@@ -888,20 +888,41 @@ body,
 .palette-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .palette-list .component-card {
   flex-direction: row;
   justify-content: flex-start;
-  padding: 6px 8px;
+  align-items: center;
+  padding: 4px 8px;
   gap: 10px;
   text-align: left;
 }
 
+/* Fixed-size square symbol box — same 44 px as the old grid cards */
 .palette-list .card-symbol-wrap {
-  height: auto;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
   margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Allow text block to shrink so ellipsis fires correctly */
+.palette-list .card-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.palette-list .card-name-row {
+  justify-content: flex-start;
+}
+
+.palette-list .card-name {
+  max-width: 100%;
 }
 
 .card-desc {

@@ -292,5 +292,50 @@ describe('routeMovedWire', () => {
     expect(corners[0]).toEqual([30, 16]);
     expect(corners[corners.length - 1]).toEqual([4, 4]);
   });
+
+  it('keeps valid at-least-2-point wire when terminal moves to exact same point as other end', () => {
+    const pts = [
+      [10, 6],
+      [14, 6],
+    ];
+    // Start moves right by 4, landing exactly at (14, 6)
+    const moved = routeMovedWire(pts, { dx: 4, dy: 0 }, { dx: 0, dy: 0 });
+    expect(moved.length).toBeGreaterThanOrEqual(2);
+    expect(moved[0]).toEqual([14, 6]);
+    expect(moved[moved.length - 1]).toEqual([14, 6]);
+  });
+
+  it('routes cleanly when moving component past the connected terminal horizontally', () => {
+    const pts = [
+      [10, 6],
+      [14, 6],
+    ];
+    // Start moves right by 8, landing at (18, 6) past the end at (14, 6)
+    const moved = routeMovedWire(pts, { dx: 8, dy: 0 }, { dx: 0, dy: 0 });
+    const corners = simplifyCorners(moved);
+    expect(corners).toEqual([[18, 6], [14, 6]]);
+  });
+
+  it('maintains clean orthogonal Manhattan geometry over consecutive movements', () => {
+    const pts = [
+      [12, 6],
+      [14, 6],
+    ];
+    // First move: dy = 2
+    const m1 = routeMovedWire(pts, { dx: 0, dy: 2 }, { dx: 0, dy: 0 });
+    const c1 = simplifyCorners(m1);
+    expect(c1).toEqual([[12, 8], [13, 8], [13, 6], [14, 6]]);
+
+    // Second move: dx = 2, dy = 0
+    const m2 = routeMovedWire(m1, { dx: 2, dy: 0 }, { dx: 0, dy: 0 });
+    const c2 = simplifyCorners(m2);
+    // Every segment must be strictly orthogonal
+    for (let i = 0; i < c2.length - 1; i++) {
+      expect(c2[i][0] === c2[i + 1][0] || c2[i][1] === c2[i + 1][1]).toBe(true);
+    }
+    // Start must be at (14, 8) and end at (14, 6)
+    expect(c2[0]).toEqual([14, 8]);
+    expect(c2[c2.length - 1]).toEqual([14, 6]);
+  });
 });
 

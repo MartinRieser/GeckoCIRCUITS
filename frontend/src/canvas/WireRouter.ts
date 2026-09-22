@@ -293,7 +293,14 @@ export function routeMovedWire(
   startDelta: { dx: number; dy: number },
   endDelta: { dx: number; dy: number },
 ): number[][] {
-  if (!rawPoints || rawPoints.length < 2) return rawPoints || [];
+  if (!rawPoints || rawPoints.length === 0) return rawPoints || [];
+  if (rawPoints.length === 1) {
+    const p = rawPoints[0];
+    return [
+      [p[0] + startDelta.dx, p[1] + startDelta.dy],
+      [p[0] + startDelta.dx, p[1] + startDelta.dy],
+    ];
+  }
 
   // If neither end moved, return original
   if (startDelta.dx === 0 && startDelta.dy === 0 && endDelta.dx === 0 && endDelta.dy === 0) {
@@ -308,40 +315,81 @@ export function routeMovedWire(
   }
 
   const corners = simplifyCorners(rawPoints);
-  if (corners.length < 2) {
-    return rawPoints.map(([x, y]) => [x + endDelta.dx, y + endDelta.dy]);
+  const startPt = corners[0];
+  const endPt = corners[corners.length - 1];
+  const newStart: [number, number] = [startPt[0] + startDelta.dx, startPt[1] + startDelta.dy];
+  const newEnd: [number, number] = [endPt[0] + endDelta.dx, endPt[1] + endDelta.dy];
+
+  // If newStart and newEnd are identical (wire collapsed to 0 length):
+  if (newStart[0] === newEnd[0] && newStart[1] === newEnd[1]) {
+    return [newStart, newEnd];
   }
 
+  // If wire was a straight 2-point wire originally
+  if (corners.length === 2) {
+    const wasHorizontal = startPt[1] === endPt[1];
+    let routeCorners: number[][];
+
+    if (newStart[1] === newEnd[1] || newStart[0] === newEnd[0]) {
+      // Direct straight line
+      routeCorners = [newStart, newEnd];
+    } else if (wasHorizontal) {
+      // Originally horizontal: turn vertically in the middle
+      let midX = Math.round((newStart[0] + newEnd[0]) / 2);
+      const minX = Math.min(newStart[0], newEnd[0]);
+      const maxX = Math.max(newStart[0], newEnd[0]);
+      // Small deterministic offset to separate parallel horizontal wires when there is ample room
+      if (maxX - minX >= 4) {
+        const stagger = (startPt[1] % 8 === 0 ? -1 : 1) * (newEnd[1] > newStart[1] ? 1 : -1);
+        const candidateX = midX + stagger;
+        if (candidateX > minX && candidateX < maxX) {
+          midX = candidateX;
+        }
+      }
+      routeCorners = [newStart, [midX, newStart[1]], [midX, newEnd[1]], newEnd];
+    } else {
+      // Originally vertical: turn horizontally in the middle
+      let midY = Math.round((newStart[1] + newEnd[1]) / 2);
+      const minY = Math.min(newStart[1], newEnd[1]);
+      const maxY = Math.max(newStart[1], newEnd[1]);
+      if (maxY - minY >= 4) {
+        const stagger = (startPt[0] % 8 === 0 ? -1 : 1) * (newEnd[0] > newStart[0] ? 1 : -1);
+        const candidateY = midY + stagger;
+        if (candidateY > minY && candidateY < maxY) {
+          midY = candidateY;
+        }
+      }
+      routeCorners = [newStart, [newStart[0], midY], [newEnd[0], midY], newEnd];
+    }
+
+    const simplified = simplifyCorners(routeCorners);
+    const dense = densePoints(simplified.map(([x, y]) => ({ x, y }))).map((p) => [p.x, p.y]);
+    return dense.length >= 2 ? dense : [newStart, newEnd];
+  }
+
+  // Multi-segment wire (corners.length >= 3)
   let updatedCorners = corners.map((pt) => [...pt]);
 
-  // Case: only start moves, end is stationary
-  if (
-    (startDelta.dx !== 0 || startDelta.dy !== 0) &&
-    endDelta.dx === 0 &&
-    endDelta.dy === 0
-  ) {
-    const reversed = updatedCorners.reverse();
+  // Case: only start moves
+  if ((startDelta.dx !== 0 || startDelta.dy !== 0) && endDelta.dx === 0 && endDelta.dy === 0) {
+    const reversed = [...updatedCorners].reverse();
     const moved = adjustEndpoint(reversed, startDelta);
-    updatedCorners = moved.reverse();
+    updatedCorners = [...moved].reverse();
   }
-  // Case: only end moves, start is stationary
-  else if (
-    (endDelta.dx !== 0 || endDelta.dy !== 0) &&
-    startDelta.dx === 0 &&
-    startDelta.dy === 0
-  ) {
+  // Case: only end moves
+  else if ((endDelta.dx !== 0 || endDelta.dy !== 0) && startDelta.dx === 0 && startDelta.dy === 0) {
     updatedCorners = adjustEndpoint(updatedCorners, endDelta);
   }
   // Case: both move by different deltas
   else {
-    const rev = updatedCorners.reverse();
-    const afterStart = adjustEndpoint(rev, startDelta).reverse();
+    const reversed = [...updatedCorners].reverse();
+    const afterStart = [...adjustEndpoint(reversed, startDelta)].reverse();
     updatedCorners = adjustEndpoint(afterStart, endDelta);
   }
 
-  // Convert corners back to dense points
-  const dense = densePoints(updatedCorners.map(([x, y]) => ({ x, y }))).map((p) => [p.x, p.y]);
-  return dense;
+  const simplified = simplifyCorners(updatedCorners);
+  const dense = densePoints(simplified.map(([x, y]) => ({ x, y }))).map((p) => [p.x, p.y]);
+  return dense.length >= 2 ? dense : [newStart, newEnd];
 }
 
 function adjustEndpoint(corners: number[][], delta: { dx: number; dy: number }): number[][] {
@@ -350,7 +398,9 @@ function adjustEndpoint(corners: number[][], delta: { dx: number; dy: number }):
   const c = corners.map((pt) => [...pt]);
   const pLast = c[n - 1];
   const pPrev = c[n - 2];
-  const targetEnd = [pLast[0] + delta.dx, pLast[1] + delta.dy];
+  const targetEnd: [number, number] = [pLast[0] + delta.dx, pLast[1] + delta.dy];
+
+  if (delta.dx === 0 && delta.dy === 0) return corners;
 
   const isHorizontal = pPrev[1] === pLast[1];
   const isVertical = pPrev[0] === pLast[0];
@@ -361,64 +411,84 @@ function adjustEndpoint(corners: number[][], delta: { dx: number; dy: number }):
       c[n - 1] = targetEnd;
       return simplifyCorners(c);
     }
-    // Terminal moved vertically (and maybe horizontally)
+    // Terminal moved vertically (and possibly horizontally)
     if (n >= 3) {
-      // Multi-segment wire: slide the preceding corner vertically
-      c[n - 2][1] = pPrev[1] + delta.dy;
-      c[n - 1] = targetEnd;
-      return simplifyCorners(c);
+      const newPrevY = pPrev[1] + delta.dy;
+      const prevPrevY = c[n - 3][1];
+      const hadDir = Math.sign(pPrev[1] - prevPrevY);
+      const newDir = Math.sign(newPrevY - prevPrevY);
+
+      if (hadDir === 0 || newDir === hadDir || newDir === 0) {
+        c[n - 2][1] = newPrevY;
+        c[n - 1] = targetEnd;
+        return simplifyCorners(c);
+      }
+      return simplifyCorners([...c.slice(0, n - 1), [pLast[0], targetEnd[1]], targetEnd]);
     }
+
     // Single straight horizontal segment [pPrev, pLast]:
     const x0 = pPrev[0];
     const y0 = pPrev[1];
     const x1 = targetEnd[0];
     const y1 = targetEnd[1];
 
-    if (x0 === x1) {
+    if (x0 === x1 || y0 === y1) {
       return simplifyCorners([pPrev, targetEnd]);
     }
 
-    // Stagger turn position based on pin y0 so parallel horizontal wires don't collapse onto the same line
-    const stagger = (y0 % 8 === 0 ? -2 : 2) * (delta.dy > 0 ? 1 : -1);
-    let xTurn = Math.round((x0 + x1) / 2) + stagger;
-    const minX = Math.min(x0, x1) + 1;
-    const maxX = Math.max(x0, x1) - 1;
-    if (minX <= maxX) {
-      xTurn = Math.max(minX, Math.min(maxX, xTurn));
+    let midX = Math.round((x0 + x1) / 2);
+    const minX = Math.min(x0, x1);
+    const maxX = Math.max(x0, x1);
+    if (maxX - minX >= 4) {
+      const stagger = (y0 % 8 === 0 ? -1 : 1) * (delta.dy > 0 ? 1 : -1);
+      const candidateX = midX + stagger;
+      if (candidateX > minX && candidateX < maxX) {
+        midX = candidateX;
+      }
     }
-    return simplifyCorners([pPrev, [xTurn, y0], [xTurn, y1], targetEnd]);
+    return simplifyCorners([pPrev, [midX, y0], [midX, y1], targetEnd]);
   } else if (isVertical) {
     if (delta.dx === 0) {
       // Moved only vertically along the lead axis
       c[n - 1] = targetEnd;
       return simplifyCorners(c);
     }
-    // Terminal moved horizontally (and maybe vertically)
+    // Terminal moved horizontally (and possibly vertically)
     if (n >= 3) {
-      // Multi-segment wire: slide the preceding corner horizontally
-      c[n - 2][0] = pPrev[0] + delta.dx;
-      c[n - 1] = targetEnd;
-      return simplifyCorners(c);
+      const newPrevX = pPrev[0] + delta.dx;
+      const prevPrevX = c[n - 3][0];
+      const hadDir = Math.sign(pPrev[0] - prevPrevX);
+      const newDir = Math.sign(newPrevX - prevPrevX);
+
+      if (hadDir === 0 || newDir === hadDir || newDir === 0) {
+        c[n - 2][0] = newPrevX;
+        c[n - 1] = targetEnd;
+        return simplifyCorners(c);
+      }
+      return simplifyCorners([...c.slice(0, n - 1), [targetEnd[0], pLast[1]], targetEnd]);
     }
+
     // Single straight vertical segment [pPrev, pLast]:
     const x0 = pPrev[0];
     const y0 = pPrev[1];
     const x1 = targetEnd[0];
     const y1 = targetEnd[1];
 
-    if (y0 === y1) {
+    if (x0 === x1 || y0 === y1) {
       return simplifyCorners([pPrev, targetEnd]);
     }
 
-    // Stagger turn position based on pin x0 so parallel vertical wires don't collapse onto the same line
-    const stagger = (x0 % 8 === 0 ? -2 : 2) * (delta.dx > 0 ? 1 : -1);
-    let yTurn = Math.round((y0 + y1) / 2) + stagger;
-    const minY = Math.min(y0, y1) + 1;
-    const maxY = Math.max(y0, y1) - 1;
-    if (minY <= maxY) {
-      yTurn = Math.max(minY, Math.min(maxY, yTurn));
+    let midY = Math.round((y0 + y1) / 2);
+    const minY = Math.min(y0, y1);
+    const maxY = Math.max(y0, y1);
+    if (maxY - minY >= 4) {
+      const stagger = (x0 % 8 === 0 ? -1 : 1) * (delta.dx > 0 ? 1 : -1);
+      const candidateY = midY + stagger;
+      if (candidateY > minY && candidateY < maxY) {
+        midY = candidateY;
+      }
     }
-    return simplifyCorners([pPrev, [x0, yTurn], [x1, yTurn], targetEnd]);
+    return simplifyCorners([pPrev, [x0, midY], [x1, midY], targetEnd]);
   }
 
   // Fallback if not strictly orthogonal initially

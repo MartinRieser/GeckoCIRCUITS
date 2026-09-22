@@ -18,7 +18,7 @@ interface PaletteProps {
 export function Palette({ catalog, onArm, onCollapse }: PaletteProps) {
   const [filter, setFilter] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const viewMode = 'list';
 
   // Augment catalog entries with schema metadata (hide legacy Java block from new part palette)
   const catalogWithMeta = useMemo(() => {
@@ -69,37 +69,17 @@ export function Palette({ catalog, onArm, onCollapse }: PaletteProps) {
       <div className="palette-header">
         <div className="palette-title-row">
           <span className="palette-title">Components</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div className="palette-view-toggle">
-              <button
-                type="button"
-                className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
-                onClick={() => setViewMode('grid')}
-                title="Grid view"
-              >
-                ⊞
-              </button>
-              <button
-                type="button"
-                className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
-                onClick={() => setViewMode('list')}
-                title="List view"
-              >
-                ☰
-              </button>
-            </div>
-            {onCollapse && (
-              <button
-                type="button"
-                className="sidebar-toggle-btn"
-                onClick={onCollapse}
-                title="Collapse palette panel (Ctrl+B)"
-                style={{ height: '22px', padding: '0 6px', fontSize: '10px' }}
-              >
-                ◀
-              </button>
-            )}
-          </div>
+          {onCollapse && (
+            <button
+              type="button"
+              className="sidebar-toggle-btn"
+              onClick={onCollapse}
+              title="Collapse palette panel (Ctrl+B)"
+              style={{ height: '22px', padding: '0 6px', fontSize: '10px' }}
+            >
+              ◀
+            </button>
+          )}
         </div>
 
         <div className="palette-search-box">
@@ -200,7 +180,7 @@ export function Palette({ catalog, onArm, onCollapse }: PaletteProps) {
                     <SymbolPreview
                       type={entry.type}
                       family={entry.family}
-                      size={viewMode === 'grid' ? 44 : 32}
+                      size={44}
                       color={entry.family === 'CONTROL' ? '#4ade80' : entry.family === 'THERM' ? '#fb923c' : undefined}
                     />
                   </div>
