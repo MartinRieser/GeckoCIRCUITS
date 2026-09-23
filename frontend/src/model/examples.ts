@@ -469,7 +469,7 @@ enabledShorted 1
 typ 1
 uniqueObjectIdentifier -673981939
 x 20
-y 16
+y 14
 parameter[] 5.032120523973914 
 parameterString[] /z1/0/0
 nameOpt[] null
@@ -519,7 +519,7 @@ enabledShorted 1
 typ 2
 uniqueObjectIdentifier -942935446
 x 20
-y 20
+y 22
 parameter[] 
 parameterString[] /L.1/NIX_NIX_NIX/0
 nameOpt[] null
@@ -542,7 +542,7 @@ enabledShorted 1
 typ 5
 uniqueObjectIdentifier -703889290
 x 32
-y 18
+y 19
 parameter[] 
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] null

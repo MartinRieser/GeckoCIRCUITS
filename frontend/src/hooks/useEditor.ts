@@ -856,7 +856,27 @@ export function useEditor() {
         }));
         pendingNudgesRef.current = {};
         if (moves.length > 0) {
-          commitMove(moves);
+          // SELECTION_NUDGE already slid wire ends along with the moved
+          // components in local state — persist them, or the post-commit
+          // refresh would snap the wires back to their pre-nudge routes.
+          const movedNames = new Set(moves.map((m) => m.name));
+          const terminalSet = new Set<string>();
+          for (const comp of stateRef.current.components) {
+            if (!movedNames.has(comp.name)) continue;
+            const terms = terminalPositions(comp);
+            for (const t of [...terms.input, ...terms.output]) {
+              terminalSet.add(`${t.x},${t.y}`);
+            }
+          }
+          const wirePatches = stateRef.current.wires
+            .filter((w) => {
+              if (!w.points || w.points.length < 2) return false;
+              const startKey = `${w.points[0][0]},${w.points[0][1]}`;
+              const endKey = `${w.points[w.points.length - 1][0]},${w.points[w.points.length - 1][1]}`;
+              return terminalSet.has(startKey) || terminalSet.has(endKey);
+            })
+            .map((w) => ({ index: w.index, points: w.points }));
+          commitMove(moves, wirePatches);
         }
       }, 400);
     },
