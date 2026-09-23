@@ -34,6 +34,7 @@ export const SIMULATED_LK_TYPES: ReadonlySet<number> = new Set([
 
 export interface WireLike {
   points?: number[][];
+  type?: string;
 }
 
 export interface ComponentLike {
@@ -195,11 +196,15 @@ export function validateCircuitForSimulation(
     return warnings;
   }
 
-  // Unconnected wire ends create invisible open circuits.
-  const dangling: string[] = [];
+  // Unconnected power wire ends create invisible open circuits. Free ends on
+  // CONTROL wires are a different matter: control/scope inputs bind by signal
+  // name, so a dangling control wire is unused geometry, not a broken circuit.
+  const danglingPower: string[] = [];
+  const danglingControl: string[] = [];
   wires.forEach((w, index) => {
     const pts = w.points ?? [];
     if (pts.length === 0) return;
+    const isControl = w.type === 'CONTROL';
     const ends: Array<{ x: number; y: number; pointIndex: number }> = [
       { x: pts[0][0], y: pts[0][1], pointIndex: 0 },
       { x: pts[pts.length - 1][0], y: pts[pts.length - 1][1], pointIndex: pts.length - 1 },
@@ -213,14 +218,22 @@ export function validateCircuitForSimulation(
         pointIndex: end.pointIndex,
       });
       if (!onTerminal && !onWire) {
-        dangling.push(`wire ${index + 1} ends free at (${end.x}, ${end.y})`);
+        const where = `wire ${index + 1} ends free at (${end.x}, ${end.y})`;
+        (isControl ? danglingControl : danglingPower).push(where);
         break; // one report per wire is enough
       }
     }
   });
-  if (dangling.length > 0) {
+  if (danglingPower.length > 0) {
     warnings.push(
-      `Unconnected wire end${dangling.length > 1 ? 's' : ''} (open circuit): ${dangling.join('; ')}.`,
+      `Unconnected wire end${danglingPower.length > 1 ? 's' : ''} (open circuit): ${danglingPower.join('; ')}.`,
+    );
+  }
+  if (danglingControl.length > 0) {
+    warnings.push(
+      `Control wire${danglingControl.length > 1 ? 's' : ''} with a free end (${danglingControl.join('; ')}): ` +
+        'scope and control inputs bind by signal name, so the channel still records — ' +
+        'the wire only matters when you want the pin physically wired. Reconnect or delete it.',
     );
   }
 

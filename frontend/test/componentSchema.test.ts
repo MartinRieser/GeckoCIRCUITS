@@ -113,8 +113,19 @@ describe('componentSchema', () => {
       expect(signals).toContain('uOUT');
       expect(signals).toContain('il1');
       expect(signals).toContain('uIN');
-      expect(signals).toContain('VOLT.1');
-      expect(signals).toContain('AMP.1');
+    });
+
+    it('offers a measurement component name only when it has no output label', () => {
+      const components = [
+        { name: 'VOLT.1', type: 1001, inputLabels: [], outputLabels: ['uOUT'] },
+        { name: 'VOLT.2', type: 1001, inputLabels: [], outputLabels: [] },
+      ];
+      const signals = extractAvailableSignals(components, []);
+      // VOLT.1's canonical signal name is its output label; adding the
+      // component name too made the identical curve appear under two names
+      expect(signals).not.toContain('VOLT.1');
+      // label-less blocks fall back to their component name
+      expect(signals).toContain('VOLT.2');
     });
   });
 

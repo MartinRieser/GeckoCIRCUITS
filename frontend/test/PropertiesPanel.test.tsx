@@ -341,11 +341,12 @@ describe('PropertiesPanel Overhaul', () => {
     expect(select).not.toBeNull();
     expect(select.value).toBe('R.Last');
 
-    // Switch to differential nodes
+    // Switch to differential nodes: nodeA prefills with the first available
+    // signal (the resistor's name is deliberately NOT a signal candidate)
     const nodeBtn = screen.getByRole('button', { name: /Between Two Nodes/i });
     fireEvent.click(nodeBtn);
     expect(onSetParameter).toHaveBeenCalledWith('VOLT.1', 'coupledComponent', '');
-    expect(onSetParameter).toHaveBeenCalledWith('VOLT.1', 'nodeA', 'R.Last');
+    expect(onSetParameter).toHaveBeenCalledWith('VOLT.1', 'nodeA', 'u_RLast');
     expect(onSetParameter).toHaveBeenCalledWith('VOLT.1', 'nodeB', '0');
   });
 

@@ -1817,18 +1817,32 @@ export function extractAvailableSignals(
       }
     }
     if (
-      comp.type === CTRL_TYPE.VOLTMETER ||
-      comp.type === CTRL_TYPE.LEGACY_VOLTMETER ||
-      comp.type === CTRL_TYPE.AMMETER ||
-      comp.type === CTRL_TYPE.LEGACY_AMMETER ||
-      comp.type === CTRL_TYPE.SIGNAL_SOURCE ||
-      comp.type === CTRL_TYPE.LEGACY_SIGNAL_SOURCE ||
-      comp.name.startsWith('V_meas') ||
-      comp.name.startsWith('VOLT') ||
-      comp.name.startsWith('AMP') ||
-      comp.name.startsWith('SIGNAL')
+      // legacy .ipes type numbers collide with LK types (1 = resistor AND
+      // voltmeter) - without the family guard every R/L/C name leaked into
+      // the signal list
+      (!comp.family || comp.family === 'CONTROL') &&
+      (comp.type === CTRL_TYPE.VOLTMETER ||
+        comp.type === CTRL_TYPE.LEGACY_VOLTMETER ||
+        comp.type === CTRL_TYPE.AMMETER ||
+        comp.type === CTRL_TYPE.LEGACY_AMMETER ||
+        comp.type === CTRL_TYPE.SIGNAL_SOURCE ||
+        comp.type === CTRL_TYPE.LEGACY_SIGNAL_SOURCE ||
+        comp.name.startsWith('V_meas') ||
+        comp.name.startsWith('VOLT') ||
+        comp.name.startsWith('AMP') ||
+        comp.name.startsWith('SIGNAL'))
     ) {
-      set.add(comp.name);
+      // A measurement block is reachable under its component name too, but
+      // when it has an output label that label is the canonical signal name.
+      // Offering both lets the identical curve show up twice under different
+      // names in scope-channel pickers, so only label-less blocks fall back
+      // to their component name.
+      const hasOutputLabel = (comp.outputLabels ?? []).some(
+        (l) => l?.trim() && l.trim() !== 'NIX_NIX_NIX',
+      );
+      if (!hasOutputLabel) {
+        set.add(comp.name);
+      }
     }
   }
 

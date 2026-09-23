@@ -57,6 +57,19 @@ describe('validateCircuitForSimulation', () => {
     expect(warnings.some((w) => /\(16, 10\)/.test(w))).toBe(true);
   });
 
+  it('treats a dangling CONTROL wire as unused geometry, not an open circuit', () => {
+    const resistor = comp({ name: 'R', type: 1, position: [18, 9], orientation: 504 });
+    const scope = comp({ name: 'SCOPE', type: 1003, family: 'CONTROL', position: [30, 20] });
+    const wires = [
+      { type: 'LK', points: [[16, 9], [16, 10]] }, // power: genuinely dangling
+      { type: 'CONTROL', points: [[28, 20], [26, 25]] }, // control: free end
+    ];
+    const warnings = validateCircuitForSimulation([resistor, scope], wires);
+    expect(warnings.some((w) => /open circuit/i.test(w) && /\(16, 10\)/.test(w))).toBe(true);
+    expect(warnings.some((w) => /Control wire/.test(w) && /\(26, 25\)/.test(w))).toBe(true);
+    expect(warnings.some((w) => /open circuit/i.test(w) && /\(26, 25\)/.test(w))).toBe(false);
+  });
+
   it('is happy with a fully wired sourced loop', () => {
     const source = comp({ name: 'U', type: 4, position: [20, 14] }); // terminals (20,12)/(20,16)
     const resistor = comp({ name: 'R', type: 1, position: [18, 9], orientation: 504 }); // (16,9)/(20,9)

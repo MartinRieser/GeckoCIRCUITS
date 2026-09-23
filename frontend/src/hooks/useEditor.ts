@@ -319,6 +319,40 @@ export function useEditor() {
                 : { ...existing, outputLabels: arr };
             dispatch({ type: 'COMPONENT_UPSERT', component: updated, version: msg.modelVersion });
 
+            // Adding a scope channel shifts every input pin one row (the pin
+            // block is centered on the symbol), which would silently orphan
+            // the wires attached to the old pin positions. Re-bind wire ends
+            // from the old pin grid to the new one so the wiring follows.
+            if (side === 'x' && isScopeComponent(existing) && arr.length > (existing.inputLabels ?? []).length) {
+              const oldPins = terminalPositions(existing).input;
+              const newPins = terminalPositions(updated).input;
+              stateRef.current.wires.forEach((w, wIdx) => {
+                const pts = w.points ?? [];
+                if (pts.length < 2) return;
+                const endIndices = [0, pts.length - 1];
+                for (const pi of endIndices) {
+                  const oldPinIdx = oldPins.findIndex((p) => p.x === pts[pi][0] && p.y === pts[pi][1]);
+                  if (oldPinIdx < 0 || oldPinIdx >= newPins.length) continue;
+                  const np = newPins[oldPinIdx];
+                  if (np.x === pts[pi][0] && np.y === pts[pi][1]) continue;
+                  const newPoints = pts.map((q, qi) => (qi === pi ? [np.x, np.y] : q));
+                  api
+                    .patchConnection(circuitId, wIdx, { points: newPoints })
+                    .then((wireMsg) => {
+                      const payload = wireMsg.payload as WirePayload;
+                      dispatch({
+                        type: 'WIRE_PATCHED',
+                        index: wIdx,
+                        points: payload.points,
+                        label: payload.label,
+                        version: wireMsg.modelVersion,
+                      });
+                    })
+                    .catch(() => {});
+                }
+              });
+            }
+
             // If an output signal / probe terminal is renamed, automatically propagate to consumer Scope channels & wires
             if (side === 'y' && oldLabel && label && oldLabel !== label) {
               for (const other of stateRef.current.components) {
