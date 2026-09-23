@@ -19,19 +19,13 @@ import {
   type ParameterDef,
 } from '../model/componentSchema';
 import { isScopeComponent } from '../simulation/scopes';
+import { CHANNEL_TRACE_COLORS } from '../simulation/traceColors';
 import { terminalPositions } from '../model/geometry';
 import { SymbolPreview } from '../canvas/symbols';
 
-const CHANNEL_COLORS = [
-  '#38bdf8', // Cyan
-  '#4ade80', // Green
-  '#f59e0b', // Amber
-  '#c084fc', // Purple
-  '#f43f5e', // Rose
-  '#06b6d4', // Teal
-  '#a855f7', // Violet
-  '#fb923c', // Orange
-];
+// Same palette the scope view uses for its traces, so a channel's badge
+// color matches its waveform color everywhere.
+const CHANNEL_COLORS = CHANNEL_TRACE_COLORS;
 
 interface PanelProps {
   component: EditorComponent | null;

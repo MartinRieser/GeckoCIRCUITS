@@ -8,7 +8,9 @@ import {
   zoomWindow,
   type ViewWindow,
 } from './viewWindow';
+import { signalColorInList, type TraceTheme } from './traceColors';
 
+/** @deprecated canonical colors come from colorOf(name) — kept for tests. */
 export const TRACE_COLORS_DARK = [
   '#38bdf8', // Light blue / Cyan
   '#f43f5e', // Rose / Red
@@ -20,6 +22,7 @@ export const TRACE_COLORS_DARK = [
   '#e879f9', // Fuchsia
 ];
 
+/** @deprecated canonical colors come from colorOf(name) — kept for tests. */
 export const TRACE_COLORS_LIGHT = [
   '#0284c7', // Sky blue
   '#e11d48', // Crimson
@@ -78,7 +81,9 @@ export interface ScopeController {
   scopeChannelNames: string[];
   hiddenSignals: Record<string, boolean>;
   toggleSignal: (name: string) => void;
-  traceColors: string[];
+  /** Canonical trace color for a signal: channel order when a scope is
+   *  selected, result column order in the combined view. */
+  colorOf: (name: string) => string;
 
   // Cursors & Single Measurement Location
   cursorsEnabled: boolean;
@@ -115,8 +120,6 @@ export function useScopeController({
   const [view, setView] = useState<ViewWindow | null>(null);
   const [yView, setYView] = useState<{ min: number; max: number } | null>(null);
   const [yScaleMode, setYScaleMode] = useState<'fixed' | 'auto'>('fixed');
-
-  const traceColors = theme === 'light' ? TRACE_COLORS_LIGHT : TRACE_COLORS_DARK;
 
   const scopeBlocks = useMemo(() => findScopeBlocks(components), [components]);
 
@@ -165,6 +168,14 @@ export function useScopeController({
     [activeScopeBlock, signalNames],
   );
 
+  // One canonical color per signal: channel order when a scope is selected
+  // (CH1 = first palette entry, matching the properties badges), result
+  // column order in the combined "All Scopes & Signals" view.
+  const colorOf = useCallback(
+    (name: string) => signalColorInList(name, scopeChannelNames, theme as TraceTheme),
+    [scopeChannelNames, theme],
+  );
+
   const toggleSignal = useCallback((name: string) => {
     setHiddenSignals((prev) => ({ ...prev, [name]: !prev[name] }));
   }, []);
@@ -195,8 +206,7 @@ export function useScopeController({
     const freq = dt && dt > 0 ? 1 / dt : null;
 
     const channels: CursorMeasurementChannel[] = scopeChannelNames.map((name) => {
-      const colorIdx = signalNames.indexOf(name);
-      const color = traceColors[colorIdx >= 0 ? colorIdx % traceColors.length : 0];
+      const color = colorOf(name);
       const valA = cursorA !== null && results?.[name]?.[cursorA] !== undefined ? results[name][cursorA] : null;
       const valB = cursorB !== null && results?.[name]?.[cursorB] !== undefined ? results[name][cursorB] : null;
       const delta = valA !== null && valB !== null ? valB - valA : null;
@@ -216,7 +226,7 @@ export function useScopeController({
       freq,
       channels,
     };
-  }, [cursorsEnabled, cursorA, cursorB, timeArray, scopeChannelNames, signalNames, traceColors, results]);
+  }, [cursorsEnabled, cursorA, cursorB, timeArray, scopeChannelNames, colorOf, results]);
 
   return {
     view,
@@ -237,7 +247,7 @@ export function useScopeController({
     scopeChannelNames,
     hiddenSignals,
     toggleSignal,
-    traceColors,
+    colorOf,
     cursorsEnabled,
     setCursorsEnabled,
     cursorA,

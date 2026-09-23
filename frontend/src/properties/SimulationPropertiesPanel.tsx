@@ -543,8 +543,7 @@ export function SimulationPropertiesPanel({
             {/* Channel toggles */}
             <div className="sim-channels-list">
               {scope.scopeChannelNames.map((name) => {
-                const colorIdx = scope.signalNames.indexOf(name);
-                const color = scope.traceColors[colorIdx >= 0 ? colorIdx % scope.traceColors.length : 0];
+                const color = scope.colorOf(name);
                 const isHidden = !!scope.hiddenSignals[name];
                 return (
                   <button

@@ -32,28 +32,6 @@ export interface ScopeViewTabProps {
   scope?: ScopeController;
 }
 
-const TRACE_COLORS_DARK = [
-  '#38bdf8', // Sky blue
-  '#f43f5e', // Rose
-  '#10b981', // Emerald
-  '#fbbf24', // Amber
-  '#a855f7', // Purple
-  '#3b82f6', // Blue
-  '#ec4899', // Pink
-  '#14b8a6', // Teal
-];
-
-const TRACE_COLORS_LIGHT = [
-  '#0284c7', // Vibrant Sky blue
-  '#e11d48', // Vibrant Rose/red
-  '#16a34a', // Vibrant Emerald/green
-  '#d97706', // Vibrant Amber/orange
-  '#9333ea', // Vibrant Purple
-  '#2563eb', // Vibrant Blue
-  '#db2777', // Vibrant Pink
-  '#0d9488', // Vibrant Teal
-];
-
 /** Binary-searches the sample index closest to time t (time must be ascending). */
 function sampleIndexAt(time: number[], t: number): number {
   let low = 0;
@@ -83,15 +61,13 @@ function WaveformTooltip({
   hoverIndex,
   activeSignals,
   signals,
-  allSignals,
-  traceColors,
+  colorOf,
 }: {
   time: number[];
   hoverIndex: number;
   activeSignals: string[];
   signals: Record<string, number[]>;
-  allSignals: string[];
-  traceColors: string[];
+  colorOf: (name: string) => string;
 }) {
   return (
     <div className="waveform-tooltip">
@@ -101,8 +77,7 @@ function WaveformTooltip({
       {activeSignals.map((name) => {
         const val = signals[name]?.[hoverIndex];
         if (val === undefined) return null;
-        const colorIdx = allSignals.indexOf(name);
-        const color = traceColors[colorIdx % traceColors.length];
+        const color = colorOf(name);
         return (
           <div key={name} className="tooltip-signal-row">
             <span className="tooltip-dot" style={{ backgroundColor: color }} />
@@ -194,7 +169,7 @@ export function ScopeViewTab({
     scopeChannelNames,
     hiddenSignals,
     toggleSignal,
-    traceColors,
+    colorOf,
     cursorA,
     setCursorA,
     cursorB,
@@ -303,8 +278,7 @@ export function ScopeViewTab({
 
                 <div className="dso-osd-right">
                   {visibleSignals.slice(0, 3).map((sig) => {
-                    const colorIdx = signalNames.indexOf(sig);
-                    const color = traceColors[colorIdx >= 0 ? colorIdx % traceColors.length : 0];
+                    const color = colorOf(sig);
                     return (
                       <span key={sig} className="dso-osd-channel-tag" style={{ borderLeft: `3px solid ${color}` }}>
                         <span style={{ color }}>{sig}</span>
@@ -327,7 +301,7 @@ export function ScopeViewTab({
                     time={timeArray}
                     signals={results}
                     activeSignals={visibleSignals}
-                    allSignals={signalNames}
+                    colorOf={colorOf}
                     theme={theme}
                     hoverIndex={hoverIndex}
                     onHoverIndex={setHoverIndex}
@@ -353,7 +327,7 @@ export function ScopeViewTab({
                     time={timeArray}
                     signals={results}
                     activeSignals={visibleSignals}
-                    allSignals={signalNames}
+                    colorOf={colorOf}
                     theme={theme}
                     hoverIndex={hoverIndex}
                     onHoverIndex={setHoverIndex}
@@ -385,8 +359,7 @@ export function ScopeViewTab({
                     const st = signalStats[name];
                     if (!st) return null;
                     const unit = inferSignalUnit(name);
-                    const colorIdx = signalNames.indexOf(name);
-                    const color = traceColors[colorIdx >= 0 ? colorIdx % traceColors.length : 0];
+                    const color = colorOf(name);
                     return (
                       <div key={name} className="dso-measure-tile" style={{ borderLeft: `3px solid ${color}` }}>
                         <span style={{ color, fontWeight: 700 }}>{name}</span>
@@ -463,8 +436,7 @@ export function ScopeViewTab({
                         {filteredChannels.map((name) => {
                           const st = signalStats[name];
                           if (!st) return null;
-                          const colorIdx = signalNames.indexOf(name);
-                          const color = traceColors[colorIdx >= 0 ? colorIdx % traceColors.length : 0];
+                          const color = colorOf(name);
                           const isHidden = !!hiddenSignals[name];
                           const unit = inferSignalUnit(name);
                           return (
@@ -523,7 +495,7 @@ function FullScreenOverlayChart({
   time,
   signals,
   activeSignals,
-  allSignals,
+  colorOf,
   theme,
   hoverIndex,
   onHoverIndex,
@@ -547,7 +519,7 @@ function FullScreenOverlayChart({
   time: number[];
   signals: Record<string, number[]>;
   activeSignals: string[];
-  allSignals: string[];
+  colorOf: (name: string) => string;
   theme: 'dark' | 'light';
   hoverIndex: number | null;
   onHoverIndex: (idx: number | null) => void;
@@ -578,7 +550,6 @@ function FullScreenOverlayChart({
   const timeRef = useRef(time);
   timeRef.current = time;
 
-  const traceColors = theme === 'light' ? TRACE_COLORS_LIGHT : TRACE_COLORS_DARK;
   const gridColor = theme === 'light' ? '#e2e8f0' : '#334155';
   const textColor = theme === 'light' ? '#64748b' : '#94a3b8';
   const zeroColor = theme === 'light' ? '#94a3b8' : '#64748b';
@@ -1010,8 +981,7 @@ function FullScreenOverlayChart({
 
         {/* Channel Ground Reference Markers on left axis */}
         {activeSignals.map((name) => {
-          const colorIdx = allSignals.indexOf(name);
-          const color = traceColors[colorIdx >= 0 ? colorIdx % traceColors.length : 0];
+          const color = colorOf(name);
           const y0 = mapY(0);
           if (y0 < padTop - 6 || y0 > height - padBottom + 6) return null;
           const clampedY = Math.max(padTop + 6, Math.min(height - padBottom - 6, y0));
@@ -1031,7 +1001,7 @@ function FullScreenOverlayChart({
                 fontFamily="monospace"
                 textAnchor="middle"
               >
-                {colorIdx + 1}
+                {activeSignals.indexOf(name) + 1}
               </text>
             </g>
           );
@@ -1040,8 +1010,7 @@ function FullScreenOverlayChart({
         {/* Waveform Traces (clipped to the visible window) */}
         <g clipPath="url(#overlay-plot-clip)">
         {tracePaths.map(({ name, path }) => {
-          const colorIdx = allSignals.indexOf(name);
-          const color = traceColors[colorIdx % traceColors.length];
+          const color = colorOf(name);
           return (
             <path
               key={name}
@@ -1238,8 +1207,7 @@ function FullScreenOverlayChart({
             {activeSignals.map((name) => {
               const val = signals[name]?.[hoverIndex];
               if (val === undefined) return null;
-              const colorIdx = allSignals.indexOf(name);
-              const color = traceColors[colorIdx % traceColors.length];
+              const color = colorOf(name);
               return (
                 <circle
                   key={name}
@@ -1263,8 +1231,7 @@ function FullScreenOverlayChart({
           hoverIndex={hoverIndex}
           activeSignals={activeSignals}
           signals={signals}
-          allSignals={allSignals}
-          traceColors={traceColors}
+          colorOf={colorOf}
         />
       )}
     </div>
@@ -1278,7 +1245,7 @@ function FullScreenStackedChart({
   time,
   signals,
   activeSignals,
-  allSignals,
+  colorOf,
   theme,
   hoverIndex,
   onHoverIndex,
@@ -1299,7 +1266,7 @@ function FullScreenStackedChart({
   time: number[];
   signals: Record<string, number[]>;
   activeSignals: string[];
-  allSignals: string[];
+  colorOf: (name: string) => string;
   theme: 'dark' | 'light';
   hoverIndex: number | null;
   onHoverIndex: (idx: number | null) => void;
@@ -1331,7 +1298,6 @@ function FullScreenStackedChart({
   const plotW = Math.max(100, width - padLeft - padRight);
   const plotH = totalH - padTop - padBottom;
 
-  const traceColors = theme === 'light' ? TRACE_COLORS_LIGHT : TRACE_COLORS_DARK;
   const textColor = theme === 'light' ? '#64748b' : '#94a3b8';
   const zeroColor = theme === 'light' ? '#cbd5e1' : '#475569';
   const crosshairColor = theme === 'light' ? '#334155' : '#cbd5e1';
@@ -1576,8 +1542,7 @@ function FullScreenStackedChart({
         {/* Lanes */}
         {activeSignals.map((name, i) => {
           const laneY = padTop + i * (laneH + laneGap);
-          const colorIdx = allSignals.indexOf(name);
-          const color = traceColors[colorIdx % traceColors.length];
+          const color = colorOf(name);
           const path = lanePaths[name];
           const mm = signalMinMax[name] || { min: 0, max: 1 };
           const zeroY =
@@ -1877,8 +1842,7 @@ function FullScreenStackedChart({
           hoverIndex={hoverIndex}
           activeSignals={activeSignals}
           signals={signals}
-          allSignals={allSignals}
-          traceColors={traceColors}
+          colorOf={colorOf}
         />
       )}
     </div>
