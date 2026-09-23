@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { editorReducer, initialState } from '../src/model/store';
 import type { EditorSnapshot } from '../src/model/types';
-import { simplifyCorners } from '../src/canvas/WireRouter';
+import { simplifyCorners, denseCellsOf } from '../src/canvas/WireRouter';
 
 const snapshot: EditorSnapshot = {
   circuitId: 'c1',
@@ -227,7 +227,9 @@ describe('store: wire points follow dragged and nudged components', () => {
     let state = editorReducer(loaded, { type: 'SELECT', name: 'R1', additive: false });
     state = editorReducer(state, { type: 'SELECTION_NUDGE', dx: 2, dy: 0 });
     expect(state.components[0].position).toEqual([12, 10]);
-    expect(simplifyCorners(state.wires[1].points)).toEqual([[10, 10], [20, 10]]);
+    // The slid straight route would run through R1's body (now at (12,10)),
+    // so the deconfliction pass routes w2 around it on a free lane.
+    expect(simplifyCorners(state.wires[1].points)).toEqual([[10, 10], [10, 9], [20, 9], [20, 10]]);
     expect(state.wires[0].points).toEqual([[10, 10], [20, 10], [20, 20]]);
   });
 
@@ -245,6 +247,32 @@ describe('store: wire points follow dragged and nudged components', () => {
     expect(state.components[0].position).toEqual([14, 13]);
     expect(state.components[1].position).toEqual([34, 13]);
     expect(state.wires[0].points).toEqual([[12, 13], [34, 11]]);
+  });
+});
+
+describe('store: DRAG_MOVE deconflicts moved wires against untouched wires', () => {  // The reported bug: dragging R1 down onto the bottom rail row slid its
+  // wire along the rail, so distinct nets were drawn as one line.
+  const railSnap: EditorSnapshot = {
+    ...snapshot,
+    components: [{ ...snapshot.components[0], position: [16, 10] }], // R1, terminals (14,10)/(18,10)
+    connections: [
+      { index: 0, type: 'LK', label: 'rail', points: [[4, 16], [28, 16]] },
+      { index: 1, type: 'LK', label: 'w1', points: [[14, 10], [20, 10]] },
+    ],
+  };
+
+  it('routes the moved wire onto a free lane instead of along the rail', () => {
+    let state = editorReducer(initialState, { type: 'SNAPSHOT', snapshot: railSnap });
+    state = editorReducer(state, { type: 'DRAG_START', names: ['R1'], x: 16, y: 10 });
+    state = editorReducer(state, { type: 'DRAG_MOVE', x: 16, y: 16 }); // dy=+6 onto the rail row
+    expect(state.components[0].position).toEqual([16, 16]);
+    expect(simplifyCorners(state.wires[1].points)).toEqual([[14, 16], [14, 10], [20, 10]]);
+    // untouched rail stays put
+    expect(state.wires[0].points).toEqual([[4, 16], [28, 16]]);
+    // the moved wire touches the rail at its pinned endpoint only
+    const railCells = denseCellsOf(state.wires[0].points);
+    const shared = [...denseCellsOf(state.wires[1].points)].filter((c) => railCells.has(c));
+    expect(shared).toEqual(['14,16']);
   });
 });
 
@@ -411,5 +439,44 @@ describe('store: sticky wire warning status', () => {
       snapshot: { ...snapshot, circuitId: 'c2', modelVersion: 7 },
     });
     expect(after.status.startsWith('⚠️')).toBe(false);
+  });
+});
+
+describe('store: dragging a multi-channel scope does not hang (crash regression)', () => {
+  // The user repro: open the Multi-Scope RLC example ("two scope example")
+  // and try to move SCOPE.2 — the editor froze on the first mouse move.
+  // A 2+ input scope has terminals DIAGONAL from its center; the blocked-cell
+  // spoke walker looped forever on them once drag started running it.
+  const scopeSnap: EditorSnapshot = {
+    ...snapshot,
+    components: [
+      {
+        type: 1003,
+        name: 'SCOPE.2',
+        family: 'CONTROL',
+        position: [30, 20],
+        orientation: 503,
+        parameters: {},
+        inputLabels: ['v_R1', 'v_L1'],
+        outputLabels: [],
+      },
+    ],
+    connections: [
+      { index: 0, type: 'CONTROL', label: 'sig', points: [[12, 10], [28, 10], [28, 19]] },
+    ],
+  };
+
+  it('DRAG_MOVE of a wired scope completes and the wire follows', () => {
+    let state = editorReducer(initialState, { type: 'SNAPSHOT', snapshot: scopeSnap });
+    state = editorReducer(state, { type: 'DRAG_START', names: ['SCOPE.2'], x: 30, y: 20 });
+    state = editorReducer(state, { type: 'DRAG_MOVE', x: 33, y: 20 });
+    expect(state.components[0].position).toEqual([33, 20]);
+    const corners = simplifyCorners(state.wires[0].points);
+    expect(corners[0]).toEqual([12, 10]);
+    expect(corners[corners.length - 1]).toEqual([31, 19]);
+    // strictly orthogonal result
+    for (let i = 0; i < corners.length - 1; i++) {
+      expect(corners[i][0] === corners[i + 1][0] || corners[i][1] === corners[i + 1][1]).toBe(true);
+    }
   });
 });

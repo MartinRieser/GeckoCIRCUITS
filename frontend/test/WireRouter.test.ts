@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { routeL, densePoints, orthogonalizePolyline, simplifyCorners, flipRoute, translateWireSegment, routeMovedWire } from '../src/canvas/WireRouter';
+import { routeL, densePoints, orthogonalizePolyline, simplifyCorners, flipRoute, translateWireSegment, routeMovedWire, deconflictMovedWires, denseCellsOf, routingBlockedCells } from '../src/canvas/WireRouter';
 
 describe('routeL', () => {
   it('returns straight line for aligned points', () => {
@@ -96,6 +96,19 @@ describe('densePoints', () => {
     ]);
     expect(dense).toHaveLength(5);
     expect(dense).toContainEqual({ x: 10, y: 10 });
+  });
+
+  it('skips duplicate consecutive points instead of looping forever (crash regression)', () => {
+    // Hand-edited .ipes data and collapsed drag segments can contain
+    // zero-length steps; the old while-loop hung the renderer on them.
+    const dense = densePoints([
+      { x: 1, y: 1 },
+      { x: 1, y: 1 },
+      { x: 3, y: 1 },
+      { x: 3, y: 1 },
+    ]);
+    expect(dense).toEqual([{ x: 1, y: 1 }, { x: 2, y: 1 }, { x: 3, y: 1 }]);
+    expect([...denseCellsOf([[1, 1], [1, 1], [3, 1]])].sort()).toEqual(['1,1', '2,1', '3,1']);
   });
 });
 
@@ -336,6 +349,105 @@ describe('routeMovedWire', () => {
     // Start must be at (14, 8) and end at (14, 6)
     expect(c2[0]).toEqual([14, 8]);
     expect(c2[c2.length - 1]).toEqual([14, 6]);
+  });
+});
+
+describe('routingBlockedCells', () => {
+  it('terminates on multi-channel scope terminals that sit diagonally off-center (crash regression)', () => {
+    // The Multi-Scope RLC repro: dragging any component ran the spoke-blocker
+    // over the 2-input scope, whose terminals are offset (-2,-1)/(-2,+1) from
+    // the center — the old diagonal walker never landed exactly on them and
+    // hung the editor on the first mouse move.
+    const scope = {
+      type: 1003,
+      family: 'CONTROL',
+      position: [30, 20],
+      orientation: 503,
+      inputLabels: ['a', 'b'],
+    };
+    const blocked = routingBlockedCells([scope]);
+    expect(blocked.has('28,19')).toBe(true);
+    expect(blocked.has('28,21')).toBe(true);
+    expect(blocked.has('30,20')).toBe(true);
+  });
+});
+
+describe('denseCellsOf', () => {
+  it('lists every raster cell an orthogonal polyline covers', () => {
+    const cells = denseCellsOf([[2, 1], [4, 1], [4, 3]]);
+    expect([...cells].sort()).toEqual(['2,1', '3,1', '4,1', '4,2', '4,3']);
+  });
+
+  it('orthogonalizes diagonal input first, matching what is rendered', () => {
+    const cells = denseCellsOf([[0, 0], [4, 2]]);
+    expect(cells.has('2,0')).toBe(true);
+    expect(cells.has('4,2')).toBe(true);
+  });
+});
+
+describe('deconflictMovedWires', () => {
+  // The reported bug, distilled: a source-resistor-capacitor row over a
+  // U-shaped bottom rail; dragging the resistor down by 6 slid its wires
+  // onto the rail row, so three different nets drew as one line.
+  const rail = [[4, 10], [4, 16], [28, 16], [28, 10]];
+  const resistor = { type: 1, family: 'LK', position: [16, 16], orientation: 502 };
+  const toDense = (route: { x: number; y: number }[]) =>
+    densePoints(route).map((p) => [p.x, p.y]);
+  // routeMovedWire output for w1 (end followed R's left terminal down by 6)
+  const slidW1 = toDense([
+    { x: 8, y: 10 }, { x: 12, y: 10 }, { x: 12, y: 16 }, { x: 14, y: 16 },
+  ]);
+  // ...and for w2 (start followed R's right terminal down by 6)
+  const slidW2 = toDense([
+    { x: 18, y: 16 }, { x: 20, y: 16 }, { x: 20, y: 10 }, { x: 24, y: 10 },
+  ]);
+
+  it('re-routes a slid wire that runs along a foreign wire', () => {
+    const [fixed] = deconflictMovedWires([slidW1], [rail], [resistor]);
+    const railCells = denseCellsOf(rail);
+    const shared = [...denseCellsOf(fixed)].filter((c) => railCells.has(c));
+    // Only the pinned endpoint may touch the rail — the approach must come
+    // from a free lane, not along it.
+    expect(shared).toEqual(['14,16']);
+    const corners = simplifyCorners(fixed);
+    expect(corners[0]).toEqual([8, 10]);
+    expect(corners[corners.length - 1]).toEqual([14, 16]);
+  });
+
+  it('re-routes a wire slid onto the rail from the other side as well', () => {
+    const [fixed] = deconflictMovedWires([slidW2], [rail], [resistor]);
+    const railCells = denseCellsOf(rail);
+    const shared = [...denseCellsOf(fixed)].filter((c) => railCells.has(c));
+    expect(shared).toEqual(['18,16']);
+    expect(simplifyCorners(fixed)[simplifyCorners(fixed).length - 1]).toEqual([24, 10]);
+  });
+
+  it('deconflicts two moved wires against each other too', () => {
+    const [fixed1, fixed2] = deconflictMovedWires([slidW1, slidW2], [rail], [resistor]);
+    const cells1 = denseCellsOf(fixed1);
+    const cells2 = denseCellsOf(fixed2);
+    const shared = [...cells1].filter((c) => cells2.has(c));
+    expect(shared).toEqual([]);
+  });
+
+  it('returns a clean slid route unchanged (shape memory)', () => {
+    const clean = toDense([{ x: 2, y: 2 }, { x: 6, y: 2 }, { x: 6, y: 5 }]);
+    const [out] = deconflictMovedWires([clean], [rail], [resistor]);
+    expect(out).toBe(clean);
+  });
+
+  it('keeps the slid route when every candidate lane is blocked', () => {
+    const slid = toDense([{ x: 10, y: 10 }, { x: 14, y: 10 }]);
+    // Rows covering every Z-detour lane the router knows about
+    const walls = [2, 5, 7, 8, 9, 10, 11, 12, 13, 15, 18].map((y) => [[0, y], [20, y]]);
+    const [out] = deconflictMovedWires([slid], walls, []);
+    expect(out).toBe(slid);
+  });
+
+  it('leaves legacy diagonal wires alone', () => {
+    const diagonal = [[12, 13], [34, 11]];
+    const [out] = deconflictMovedWires([diagonal], [], [{ ...resistor, position: [14, 13] }]);
+    expect(out).toBe(diagonal);
   });
 });
 

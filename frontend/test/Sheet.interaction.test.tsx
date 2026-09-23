@@ -262,6 +262,7 @@ describe('selection', () => {
     expect(commitMove).toHaveBeenCalledWith(
       [{ name: 'R1', x: 13, y: 8 }],
       expect.any(Array),
+      undefined, // no geometry warning for this clean drag
     );
   });
 

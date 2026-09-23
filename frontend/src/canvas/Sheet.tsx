@@ -6,9 +6,9 @@
 import { useRef, useState, useMemo, useEffect } from 'react';
 import type { Dispatch, MouseEvent as ReactMouseEvent, WheelEvent as ReactWheelEvent, DragEvent as ReactDragEvent } from 'react';
 import type { EditorState, Action } from '../model/store';
-import { terminalPositions, terminalNear } from '../model/geometry';
-import { routeAvoidingObstacles, routingBlockedCells, densePoints, orthogonalizePolyline, simplifyCorners, translateWireSegment } from './WireRouter';
-import { isWireEndPointConnected } from '../model/validation';
+import { terminalPositions, terminalNear, findPlacementConflict } from '../model/geometry';
+import { routeAvoidingObstacles, routingBlockedCells, densePoints, denseCellsOf, orthogonalizePolyline, simplifyCorners, translateWireSegment } from './WireRouter';
+import { isWireEndPointConnected, findWireGeometryWarnings } from '../model/validation';
 import { ComponentSymbol } from './symbols';
 import { isScopeComponent } from '../simulation/scopes';
 import {
@@ -37,6 +37,7 @@ export interface SheetActions {
   commitMove(
     moves: { name: string; x: number; y: number }[],
     wirePatches?: { index: number; points: number[][] }[],
+    postStatus?: string,
   ): void;
   rotateComponent?: (name: string) => void;
   deleteComponent?: (name: string) => void;
@@ -243,7 +244,11 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
     return near ? near.point : point;
   };
 
-  // Find wire junction connection dots (nodes where 3 or more wire endpoints meet)
+  // Find wire junction connection dots:
+  // - nodes where 3 or more wire points coincide (drawn junctions), and
+  // - endpoint taps: a wire end lying on another wire's interior. Those are
+  //   electrically junctions too, and after a move they are the only visible
+  //   hint that two wires touch at all.
   const junctionDots = useMemo(() => {
     const pointCounts = new Map<string, { pt: Point; count: number }>();
     for (const wire of state.wires) {
@@ -257,13 +262,39 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
         }
       }
     }
-    // Also consider points where a wire touches a component terminal
     const dots: Point[] = [];
+    const seen = new Set<string>();
+    const addDot = (pt: Point) => {
+      const key = `${pt.x},${pt.y}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        dots.push(pt);
+      }
+    };
     for (const entry of pointCounts.values()) {
       if (entry.count >= 3) {
-        dots.push(entry.pt);
+        addDot(entry.pt);
       }
     }
+    // Endpoint-on-interior taps (endpoint-on-endpoint is a plain butt joint)
+    const interiors = state.wires.map((w) => {
+      const cells = denseCellsOf(w.points);
+      if (w.points.length >= 2) {
+        for (const end of [w.points[0], w.points[w.points.length - 1]]) {
+          cells.delete(`${end[0]},${end[1]}`);
+        }
+      }
+      return cells;
+    });
+    state.wires.forEach((w, i) => {
+      if (!w.points || w.points.length < 2) return;
+      for (const end of [w.points[0], w.points[w.points.length - 1]]) {
+        const key = `${end[0]},${end[1]}`;
+        if (interiors.some((cells, j) => j !== i && cells.has(key))) {
+          addDot({ x: end[0], y: end[1] });
+        }
+      }
+    });
     return dots;
   }, [state.wires]);
 
@@ -281,6 +312,21 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
   const commitDrag = () => {
     const drag = state.drag;
     if (!drag) return;
+    // Same body-on-body guard as placement: dropping a moved component on top
+    // of another one would silently short pins, so the move bounces back.
+    const staticComponents = state.components.filter((c) => !drag.origins[c.name]);
+    const conflicts = Object.keys(drag.origins).filter((name) => {
+      const comp = state.components.find((c) => c.name === name);
+      return comp ? findPlacementConflict(comp, staticComponents) !== null : false;
+    });
+    if (conflicts.length > 0) {
+      dispatch({ type: 'CANCEL' }); // dragging mode: restores origins and original wires
+      dispatch({
+        type: 'STATUS',
+        status: `⚠️ Move blocked — ${conflicts.join(', ')} would sit on top of another component`,
+      });
+      return;
+    }
     const moves = Object.entries(drag.origins)
       .map(([name]) => {
         const comp = state.components.find((c) => c.name === name)!;
@@ -294,9 +340,17 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
       })
       .filter((wp): wp is { index: number; points: number[][] } => wp !== null);
 
+    // Residual geometry defects (e.g. a terminal the user dropped onto a wire)
+    // become a sticky status warning instead of failing the move.
+    const geometryWarnings = findWireGeometryWarnings(state.components, state.wires);
+    const postStatus =
+      geometryWarnings.length > 0
+        ? `⚠️ ${geometryWarnings[0]}${geometryWarnings.length > 1 ? ` (+${geometryWarnings.length - 1} more)` : ''}`
+        : undefined;
+
     dispatch({ type: 'DRAG_END' });
     if (moves.length) {
-      actions.commitMove(moves, wirePatches);
+      actions.commitMove(moves, wirePatches, postStatus);
     }
   };
 
@@ -688,6 +742,20 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
 
           {/* Wires */}
           <g className="wires">
+            {/* Casing pass: a sheet-colored underlay under every wire, so two
+                wires that do overlap read as a stroke/casing/stroke sandwich
+                instead of one line. Painted before all visible strokes. */}
+            {state.wires.map((wire) => {
+              const casingPts = orthogonalizePolyline(wire.points);
+              const casingStr = casingPts.map((p) => `${p[0] * dpix},${p[1] * dpix}`).join(' ');
+              return (
+                <polyline
+                  key={`casing-${wire.index}`}
+                  points={casingStr}
+                  className="wire-casing"
+                />
+              );
+            })}
             {state.wires.map((wire) => {
               const orthoPts = orthogonalizePolyline(wire.points);
               const pointsStr = orthoPts.map((p) => `${p[0] * dpix},${p[1] * dpix}`).join(' ');

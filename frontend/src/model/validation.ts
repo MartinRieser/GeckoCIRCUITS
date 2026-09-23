@@ -7,6 +7,7 @@
  * editor surfaces these problems before the user wastes a run.
  */
 import { allTerminals } from './geometry';
+import { denseCellsOf } from '../canvas/WireRouter';
 
 /** Component type numbers the core engine can currently stamp and solve. */
 export const SIMULATED_LK_TYPES: ReadonlySet<number> = new Set([
@@ -97,6 +98,88 @@ function labelOf(comp: ComponentLike): string {
 }
 
 /**
+ * Wire-geometry defects that make a schematic lie about its own topology.
+ * These appear when components are moved and their wires are re-routed onto
+ * untouched wires, so they are checked both after a move and before a run:
+ *
+ * 1. Overlap — two different wires share two or more raster cells (they run
+ *    along each other). They are drawn as one line, so the user cannot see
+ *    that there are two separate connections.
+ * 2. Hidden short — a wire's interior sweeps through a component terminal
+ *    that another wire explicitly connects. Per .ipes connectivity semantics
+ *    the passing wire merges with that terminal's net, silently shorting the
+ *    two nets. A rail passing through a terminal with no other wire attached
+ *    is the classic way to hook up a bottom rail, so that case stays silent.
+ *
+ * Returns human-readable warnings; an empty array means the geometry is clean.
+ * Capped so a mangled sheet cannot flood the pre-run panel.
+ */
+export function findWireGeometryWarnings(
+  components: ComponentLike[],
+  wires: WireLike[],
+): string[] {
+  const found: string[] = [];
+  const cellsPerWire = wires.map((w) => denseCellsOf(w.points ?? []));
+  const fmtKey = (key: string) => key.replace(',', ', ');
+
+  // 1. Pairwise overlap: >= 2 shared cells means the wires run along each other
+  for (let i = 0; i < wires.length; i++) {
+    for (let j = i + 1; j < wires.length; j++) {
+      let shared = 0;
+      let first: string | null = null;
+      for (const key of cellsPerWire[j]) {
+        if (cellsPerWire[i].has(key)) {
+          shared += 1;
+          if (!first) first = key;
+        }
+      }
+      if (shared >= 2) {
+        found.push(
+          `Wires ${i + 1} and ${j + 1} overlap across ${shared} cells from (${fmtKey(first as string)}) — two separate connections are drawn as one line`,
+        );
+      }
+    }
+  }
+
+  // 2. A wire interior through a terminal that another wire explicitly wires
+  const endpointWires = new Map<string, number[]>(); // "x,y" -> wire indices ending there
+  wires.forEach((w, i) => {
+    const pts = w.points ?? [];
+    if (pts.length === 0) return;
+    for (const end of [pts[0], pts[pts.length - 1]]) {
+      const key = `${end[0]},${end[1]}`;
+      const list = endpointWires.get(key) ?? [];
+      list.push(i);
+      endpointWires.set(key, list);
+    }
+  });
+  for (let i = 0; i < wires.length; i++) {
+    const pts = wires[i].points ?? [];
+    if (pts.length < 2) continue;
+    const ownEnds = new Set([
+      `${pts[0][0]},${pts[0][1]}`,
+      `${pts[pts.length - 1][0]},${pts[pts.length - 1][1]}`,
+    ]);
+    for (const t of allTerminals(components)) {
+      const key = `${t.point.x},${t.point.y}`;
+      if (ownEnds.has(key) || !cellsPerWire[i].has(key)) continue;
+      const wiredBy = (endpointWires.get(key) ?? []).filter((v) => v !== i);
+      if (wiredBy.length > 0) {
+        found.push(
+          `Wire ${i + 1} passes through the ${t.component} terminal at (${fmtKey(key)}) that wire ${wiredBy[0] + 1} also connects — this may short two nets`,
+        );
+      }
+    }
+  }
+
+  const cap = 6;
+  if (found.length > cap) {
+    return [...found.slice(0, cap), `…and ${found.length - cap} more wire geometry warnings`];
+  }
+  return found;
+}
+
+/**
  * Pre-simulation validation. Returns human-readable warnings; an empty array
  * means nothing suspicious was found. Deliberately conservative: everything
  * reported here is a likely mistake, not a hard error.
@@ -172,6 +255,10 @@ export function validateCircuitForSimulation(
       `${unsupported.length} component${unsupported.length > 1 ? 's are' : ' is'} not yet simulated by the engine and will be ignored: ${summary}.`,
     );
   }
+
+  // Wire geometry: overlapping wires and hidden terminal shorts (typically
+  // introduced by moving components).
+  warnings.push(...findWireGeometryWarnings(components, wires));
 
   return warnings;
 }

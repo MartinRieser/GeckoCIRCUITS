@@ -23,7 +23,7 @@ import {
 } from '../model/componentSchema';
 import { isScopeComponent } from '../simulation/scopes';
 import { BLANK_CIRCUIT_IPES } from '../model/examples';
-import { flipRoute, densePoints, routeMovedWire } from '../canvas/WireRouter';
+import { flipRoute, densePoints, routeMovedWire, deconflictMovedWires } from '../canvas/WireRouter';
 
 export function useEditor() {
   const [state, dispatch] = useReducer(editorReducer, initialState);
@@ -493,6 +493,7 @@ export function useEditor() {
     (
       moves: { name: string; x: number; y: number }[],
       wirePatches?: { index: number; points: number[][] }[],
+      postStatus?: string,
     ) => {
       const circuitId = stateRef.current.circuitId;
       if (!circuitId) return;
@@ -513,7 +514,10 @@ export function useEditor() {
             );
           }
           await refresh(circuitId);
-          dispatch({ type: 'STATUS', status: `${moves.length} component(s) moved` });
+          dispatch({
+            type: 'STATUS',
+            status: postStatus ?? `${moves.length} component(s) moved`,
+          });
         })
         .catch((e) => {
           reportError(e);
@@ -569,6 +573,33 @@ export function useEditor() {
         }
         return wire;
       });
+
+      // Rotation slides corners locally; re-check the changed wires against
+      // component bodies and untouched wires so they do not land on top of them.
+      const changedIdx: number[] = [];
+      updatedWires.forEach((w, i) => {
+        if (w !== stateRef.current.wires[i]) {
+          changedIdx.push(i);
+        }
+      });
+      if (changedIdx.length > 0) {
+        const rotatedComponents = stateRef.current.components.map((c) =>
+          c.name === name ? { ...c, orientation: nextOrient } : c,
+        );
+        const changed = new Set(changedIdx);
+        const slidRoutes = changedIdx.map((i) => updatedWires[i].points);
+        const staticRoutes = updatedWires
+          .filter((_, i) => !changed.has(i))
+          .map((w) => w.points);
+        const deconflicted = deconflictMovedWires(slidRoutes, staticRoutes, rotatedComponents);
+        changedIdx.forEach((wi, k) => {
+          const previous = wirePatches.find((wp) => wp.index === updatedWires[wi].index);
+          if (previous) {
+            previous.points = deconflicted[k];
+          }
+          updatedWires[wi] = { ...updatedWires[wi], points: deconflicted[k] };
+        });
+      }
 
       dispatch({
         type: 'ROTATE_COMPONENT',

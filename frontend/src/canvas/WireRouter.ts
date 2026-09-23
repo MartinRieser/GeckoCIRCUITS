@@ -31,35 +31,52 @@ function cellKey(p: Point): string {
   return `${p.x},${p.y}`;
 }
 
+/** Minimal component shape needed by the obstacle router. */
+export interface RoutingComponent {
+  type: number;
+  family?: string;
+  position: number[];
+  orientation: number;
+  inputLabels?: string[];
+  outputLabels?: string[];
+  inputs?: unknown[];
+  parameters?: Record<string, number | string | boolean>;
+}
+
 /**
  * Computes the grid cells a wire must not cross: every component's body cells
  * and terminal cells. Passing through any of these would visually overlay the
  * component and, per .ipes connectivity semantics, silently short its pins.
  */
-export function routingBlockedCells(
-  components: Array<{
-    type: number;
-    family?: string;
-    position: number[];
-    orientation: number;
-    inputLabels?: string[];
-    outputLabels?: string[];
-    inputs?: unknown[];
-    parameters?: Record<string, number | string | boolean>;
-  }>,
-): Set<string> {
+export function routingBlockedCells(components: RoutingComponent[]): Set<string> {
   const blocked = new Set<string>();
   for (const c of components) {
     const center = { x: c.position[0], y: c.position[1] };
+    // Block an L-shaped spoke between the component center and each terminal.
+    // Multi-channel pins (scopes, function blocks, 4-pin transformers) sit
+    // DIAGONALLY off the center; the naive diagonal walk never lands exactly
+    // on such a terminal and hangs, so walk each axis monotonically instead.
     const markSpoke = (term: Point) => {
-      const dx = Math.sign(term.x - center.x);
-      const dy = Math.sign(term.y - center.y);
-      let x = center.x + dx;
-      let y = center.y + dy;
-      while (x !== term.x || y !== term.y) {
-        blocked.add(cellKey({ x, y }));
-        x += dx;
-        y += dy;
+      let x = center.x;
+      let y = center.y;
+      const walkX = () => {
+        while (x !== term.x) {
+          x += Math.sign(term.x - x);
+          blocked.add(cellKey({ x, y }));
+        }
+      };
+      const walkY = () => {
+        while (y !== term.y) {
+          y += Math.sign(term.y - y);
+          blocked.add(cellKey({ x, y }));
+        }
+      };
+      if (Math.abs(term.x - center.x) >= Math.abs(term.y - center.y)) {
+        walkX();
+        walkY();
+      } else {
+        walkY();
+        walkX();
       }
       blocked.add(cellKey(term));
     };
@@ -69,6 +86,25 @@ export function routingBlockedCells(
     blocked.add(cellKey(center));
   }
   return blocked;
+}
+
+/**
+ * Ordered route candidates between two endpoints: both L orientations, then
+ * stepped Z detours that leave the direct band. Shared by the interactive
+ * obstacle router and the post-move deconfliction pass.
+ */
+function routeCandidates(start: Point, end: Point, preferHorizontal: boolean | null = null): Point[][] {
+  const candidates: Point[][] = [];
+  if (preferHorizontal !== null) {
+    candidates.push(routeL(start, end, preferHorizontal));
+  }
+  candidates.push(routeL(start, end, true));
+  candidates.push(routeL(start, end, false));
+  for (const off of [1, -1, 2, -2, 3, -3, 5, -5, 8, -8]) {
+    candidates.push([start, { x: start.x, y: start.y + off }, { x: end.x, y: start.y + off }, end]);
+    candidates.push([start, { x: start.x + off, y: start.y }, { x: start.x + off, y: end.y }, end]);
+  }
+  return candidates;
 }
 
 /**
@@ -90,22 +126,102 @@ export function routeAvoidingObstacles(
   const hits = (pts: Point[]) =>
     pts.some((p) => !endpoints.has(cellKey(p)) && blocked.has(cellKey(p)));
 
-  const candidates: Point[][] = [];
-  if (preferHorizontal !== null) {
-    candidates.push(routeL(start, end, preferHorizontal));
-  }
-  candidates.push(routeL(start, end, true));
-  candidates.push(routeL(start, end, false));
-  for (const off of [1, -1, 2, -2, 3, -3, 5, -5, 8, -8]) {
-    candidates.push([start, { x: start.x, y: start.y + off }, { x: end.x, y: start.y + off }, end]);
-    candidates.push([start, { x: start.x + off, y: start.y }, { x: start.x + off, y: end.y }, end]);
-  }
-  for (const candidate of candidates) {
+  for (const candidate of routeCandidates(start, end, preferHorizontal)) {
     if (candidate.length >= 2 && !hits(densePoints(candidate))) {
       return candidate;
     }
   }
   return routeL(start, end, preferHorizontal);
+}
+
+/**
+ * Dense raster cells a stored wire polyline covers (orthogonalized first, as
+ * rendered), keyed "x,y". Connectivity semantics: anything touching a listed
+ * raster point is connected.
+ */
+export function denseCellsOf(points: number[][]): Set<string> {
+  const cells = new Set<string>();
+  if (!points || points.length < 2) {
+    return cells;
+  }
+  const corners = simplifyCorners(points);
+  for (const p of densePoints(corners.map(([x, y]) => ({ x, y })))) {
+    cells.add(cellKey(p));
+  }
+  return cells;
+}
+
+/**
+ * Post-move deconfliction: after routeMovedWire slid each wire to follow its
+ * terminals, re-check every slid route against component bodies AND every
+ * other wire's raster cells — routeMovedWire is purely local and cannot see
+ * either, which is how moved wires used to land exactly on top of untouched
+ * wires. A slid route that is already clean is returned unchanged (shape
+ * memory is preserved); a dirty one is replaced by the first clean L/Z
+ * candidate between its (pinned) endpoints. Only the two endpoint cells may
+ * touch foreign wires or terminals — that is a legal tap. When no candidate
+ * is clean the slid route is kept so a move never becomes impossible; the
+ * pre-run validation surfaces the residual overlap instead.
+ */
+export function deconflictMovedWires(
+  slidDenseRoutes: number[][][],
+  staticRoutes: number[][][],
+  components: RoutingComponent[],
+): number[][][] {
+  const componentCells = routingBlockedCells(components);
+  const staticCells = new Set<string>();
+  for (const route of staticRoutes) {
+    for (const c of denseCellsOf(route)) {
+      staticCells.add(c);
+    }
+  }
+
+  return slidDenseRoutes.map((slid, i) => {
+    if (!slid || slid.length < 2) {
+      return slid;
+    }
+    // Legacy diagonal wires (e.g. rigidly translated fixtures) are left as-is.
+    const orthogonal = slid.every(
+      (p, k) => k === 0 || p[0] === slid[k - 1][0] || p[1] === slid[k - 1][1],
+    );
+    if (!orthogonal) {
+      return slid;
+    }
+
+    const corners = simplifyCorners(slid);
+    const start = { x: corners[0][0], y: corners[0][1] };
+    const end = { x: corners[corners.length - 1][0], y: corners[corners.length - 1][1] };
+    if (start.x === end.x && start.y === end.y) {
+      return slid;
+    }
+
+    const blocked = new Set<string>(componentCells);
+    for (const c of staticCells) {
+      blocked.add(c);
+    }
+    slidDenseRoutes.forEach((other, j) => {
+      if (j === i) {
+        return;
+      }
+      for (const c of denseCellsOf(other)) {
+        blocked.add(c);
+      }
+    });
+
+    const endpoints = new Set([cellKey(start), cellKey(end)]);
+    const dirty = (pts: Point[]) =>
+      pts.some((p) => !endpoints.has(cellKey(p)) && blocked.has(cellKey(p)));
+    if (!dirty(densePoints(corners.map(([x, y]) => ({ x, y }))))) {
+      return slid;
+    }
+
+    for (const candidate of routeCandidates(start, end)) {
+      if (candidate.length >= 2 && !dirty(densePoints(candidate))) {
+        return densePoints(candidate).map((p) => [p.x, p.y]);
+      }
+    }
+    return slid;
+  });
 }
 
 /** Expands a corner polyline into the classic dense per-raster-step point list. */
@@ -118,6 +234,11 @@ export function densePoints(route: Point[]): Point[] {
       continue;
     }
     const prev = route[i - 1];
+    // Duplicate consecutive corners (hand-edited files, collapsed segments)
+    // are zero-length steps: skip instead of looping forever below.
+    if (cur.x === prev.x && cur.y === prev.y) {
+      continue;
+    }
     const dx = Math.sign(cur.x - prev.x);
     const dy = Math.sign(cur.y - prev.y);
     let x = prev.x;

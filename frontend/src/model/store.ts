@@ -9,8 +9,8 @@
  * - 'dragging': moving selected components on grid
  */
 import type { EditorComponent, EditorWire, Point, EditorSnapshot } from './types';
-import { ORIENTATION_CYCLE, terminalPositions } from './geometry';
-import { routeMovedWire, densePoints, simplifyCorners } from '../canvas/WireRouter';
+import { ORIENTATION_CYCLE, terminalPositions, findPlacementConflict } from './geometry';
+import { routeMovedWire, densePoints, simplifyCorners, deconflictMovedWires } from '../canvas/WireRouter';
 
 export type Mode = 'idle' | 'placing' | 'wiring' | 'rubber' | 'dragging';
 export type EditorMode = Mode;
@@ -165,6 +165,37 @@ export type Action =
   | { type: 'DRAG_END' }
   | { type: 'PANEL_FOR'; name: string | null }
   | { type: 'TOGGLE_WIRE_MODE' };
+
+/**
+ * Re-routes the wires a move just changed so they dodge component bodies and
+ * every other wire on the sheet (routeMovedWire only slides corners and
+ * cannot see either). Clean slid routes pass through unchanged, keeping the
+ * user's shape memory; only colliding routes are replaced.
+ */
+function deconflictChangedWires(
+  previousWires: EditorWire[],
+  wires: EditorWire[],
+  components: EditorComponent[],
+): EditorWire[] {
+  const changedIdx: number[] = [];
+  wires.forEach((w, i) => {
+    if (w !== previousWires[i]) {
+      changedIdx.push(i);
+    }
+  });
+  if (changedIdx.length === 0) {
+    return wires;
+  }
+  const changed = new Set(changedIdx);
+  const slidRoutes = changedIdx.map((i) => wires[i].points);
+  const staticRoutes = wires.filter((_, i) => !changed.has(i)).map((w) => w.points);
+  const deconflicted = deconflictMovedWires(slidRoutes, staticRoutes, components);
+  const next = [...wires];
+  changedIdx.forEach((wi, k) => {
+    next[wi] = { ...next[wi], points: deconflicted[k] };
+  });
+  return next;
+}
 
 export function editorReducer(state: EditorState, action: Action): EditorState {
   switch (action.type) {
@@ -421,12 +452,30 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
       const maxWidth = state.sheetWidth || 600;
       const maxHeight = state.sheetHeight || 600;
       const set = new Set(state.selection);
+      const untouched = state.components.filter((c) => !set.has(c.name));
+
+      // Same body-on-body guard as placement: components whose nudged
+      // position would land on an untouched component stay put instead.
+      const clampedTarget = (c: EditorComponent): number[] => [
+        Math.max(2, Math.min(maxWidth - 2, c.position[0] + action.dx)),
+        Math.max(2, Math.min(maxHeight - 2, c.position[1] + action.dy)),
+      ];
+      const movable = new Set(
+        state.components
+          .filter(
+            (c) =>
+              set.has(c.name) &&
+              !findPlacementConflict({ ...c, position: clampedTarget(c) }, untouched),
+          )
+          .map((c) => c.name),
+      );
+      if (movable.size === 0) return state;
 
       // wire points on terminals of the nudged components (at their
       // pre-nudge positions) travel along with the selection
       const movedTerminalSet = new Set<string>();
       for (const comp of state.components) {
-        if (set.has(comp.name)) {
+        if (movable.has(comp.name)) {
           const terms = terminalPositions(comp);
           for (const t of [...terms.input, ...terms.output]) {
             movedTerminalSet.add(`${t.x},${t.y}`);
@@ -435,13 +484,12 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
       }
 
       const components = state.components.map((c) => {
-        if (!set.has(c.name)) return c;
-        const x = Math.max(2, Math.min(maxWidth - 2, c.position[0] + action.dx));
-        const y = Math.max(2, Math.min(maxHeight - 2, c.position[1] + action.dy));
+        if (!movable.has(c.name)) return c;
+        const [x, y] = clampedTarget(c);
         return { ...c, position: [x, y] };
       });
 
-      const wires = state.wires.map((wire) => {
+      const slidWires = state.wires.map((wire) => {
         if (!wire.points || wire.points.length === 0) return wire;
         const startPt = wire.points[0];
         const endPt = wire.points[wire.points.length - 1];
@@ -455,6 +503,8 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         }
         return wire;
       });
+
+      const wires = deconflictChangedWires(state.wires, slidWires, components);
 
       return { ...state, components, wires };
     }
@@ -713,7 +763,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         draggedMap.set(dw.wireIndex, dw);
       }
 
-      const wires = state.wires.map((wire, wireIndex) => {
+      const slidWires = state.wires.map((wire, wireIndex) => {
         const dw = draggedMap.get(wire.index);
         if (dw) {
           const startDelta = dw.startMoves ? { dx, dy } : { dx: 0, dy: 0 };
@@ -737,6 +787,8 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         }
         return wire;
       });
+
+      const wires = deconflictChangedWires(state.wires, slidWires, components);
 
       return { ...state, components, wires };
     }
