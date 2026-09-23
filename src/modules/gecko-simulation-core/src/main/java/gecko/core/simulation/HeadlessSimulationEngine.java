@@ -226,18 +226,18 @@ public class HeadlessSimulationEngine {
         ControlCalculatorBuilder.Probe[] signalProbes = new ControlCalculatorBuilder.Probe[signalNames.length];
         ControlCalculatorBuilder.SignalTap[] signalTaps = new ControlCalculatorBuilder.SignalTap[signalNames.length];
         for (int i = 0; i < signalNames.length; i++) {
-            signalNodes[i] = circuitNetlist != null
-                    ? circuitNetlist.getLabelResolver().getIndex(signalNames[i]) : -1;
-            if (signalNodes[i] < 0) {
-                for (ControlCalculatorBuilder.Probe probe : controlCoupling.probes()) {
-                    if (probe.name().equals(signalNames[i])
-                            || (probe.componentName() != null && probe.componentName().equals(signalNames[i]))) {
-                        signalProbes[i] = probe;
-                        break;
-                    }
+            // Probes and taps first: voltmeter output labels (e.g. "v_in")
+            // usually also exist as CONTROL wire labels, and the netlist label
+            // resolver indexes those too - resolving them as power nodes first
+            // shadows the probe with a bogus node index and logs flat zeros.
+            for (ControlCalculatorBuilder.Probe probe : controlCoupling.probes()) {
+                if (probe.name().equals(signalNames[i])
+                        || (probe.componentName() != null && probe.componentName().equals(signalNames[i]))) {
+                    signalProbes[i] = probe;
+                    break;
                 }
             }
-            if (signalNodes[i] < 0 && signalProbes[i] == null) {
+            if (signalProbes[i] == null) {
                 for (ControlCalculatorBuilder.SignalTap tap : controlCoupling.signalTaps()) {
                     if (tap.name().equals(signalNames[i])) {
                         signalTaps[i] = tap;
@@ -245,6 +245,8 @@ public class HeadlessSimulationEngine {
                     }
                 }
             }
+            signalNodes[i] = signalProbes[i] == null && signalTaps[i] == null && circuitNetlist != null
+                    ? circuitNetlist.getLabelResolver().getIndex(signalNames[i]) : -1;
             if (signalNodes[i] >= 0 || signalProbes[i] != null || signalTaps[i] != null) {
                 resolvedNames.add(signalNames[i]);
                 resolvedIndices.add(i);
