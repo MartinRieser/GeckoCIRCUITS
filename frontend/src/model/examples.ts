@@ -1288,8 +1288,8 @@ verbindungLeistungskreisANZAHL 4
 verbindungLK (0)
 <Verbindung>
 label V_in
-x[] 4 5 6 7 8 
-y[] 6 6 6 6 6 
+x[] 2 3 4 5 6 
+y[] 3 3 3 3 3 
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -1297,8 +1297,8 @@ connectorType 0
 verbindungLK (1)
 <Verbindung>
 label n_mid
-x[] 12 13 14 
-y[] 6 6 6 
+x[] 10 11 12 
+y[] 3 3 3 
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -1306,8 +1306,8 @@ connectorType 0
 verbindungLK (2)
 <Verbindung>
 label V_out
-x[] 18 19 20 21 22 
-y[] 6 6 6 6 6 
+x[] 16 17 18 
+y[] 3 3 3 
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -1315,8 +1315,8 @@ connectorType 0
 verbindungLK (3)
 <Verbindung>
 label 0
-x[] 22 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 
-y[] 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 
+x[] 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 
+y[] 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -1325,8 +1325,8 @@ verbindungControlANZAHL 5
 verbindungCONTROL (0)
 <Verbindung>
 label v_in
-x[] 26 27 28 29 30 31 32 
-y[] 4 4 4 4 4 4 4 
+x[] 17 18 19 20 20 20 
+y[] 9 9 9 9 10 11 
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1334,8 +1334,8 @@ connectorType 1
 verbindungCONTROL (1)
 <Verbindung>
 label v_out
-x[] 26 27 28 29 30 31 32 
-y[] 6 6 6 6 6 6 6 
+x[] 17 18 19 20 20 
+y[] 14 14 14 14 13 
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1343,8 +1343,8 @@ connectorType 1
 verbindungCONTROL (2)
 <Verbindung>
 label v_R1
-x[] 26 27 28 29 30 31 32 
-y[] 10 10 10 10 10 10 10 
+x[] 17 18 19 20 21 22 23 24 25 26 26 26 26 26 26 26 
+y[] 19 19 19 19 19 19 19 19 19 19 20 21 22 23 24 25 
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1352,8 +1352,8 @@ connectorType 1
 verbindungCONTROL (3)
 <Verbindung>
 label v_L1
-x[] 26 27 28 29 30 31 32 
-y[] 12 12 12 12 12 12 12 
+x[] 17 18 19 20 21 21 21 21 22 23 24 25 26 
+y[] 24 24 24 24 24 25 26 27 27 27 27 27 27 
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1361,8 +1361,8 @@ connectorType 1
 verbindungCONTROL (4)
 <Verbindung>
 label v_C1
-x[] 26 27 28 29 30 31 32 
-y[] 14 14 14 14 14 14 14 
+x[] 17 18 19 20 21 22 23 24 25 26 
+y[] 29 29 29 29 29 29 29 29 29 29 
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1376,8 +1376,8 @@ labelEndKnoten[] /0
 enabledShorted 1
 typ 4
 uniqueObjectIdentifier 1001
-x 4
-y 8
+x 2
+y 5
 parameter[] 401.0 24.0 50.0 0.0 0.0 0.5 0.0 24.0 0.0 -24.0 0.0 1.0 1.7976931348623157E308 0.0 0.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
@@ -1392,8 +1392,8 @@ labelEndKnoten[] /n_mid
 enabledShorted 1
 typ 1
 uniqueObjectIdentifier 1002
-x 10
-y 6
+x 8
+y 3
 parameter[] 5.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
@@ -1408,8 +1408,8 @@ labelEndKnoten[] /V_out
 enabledShorted 1
 typ 2
 uniqueObjectIdentifier 1003
-x 16
-y 6
+x 14
+y 3
 parameter[] 0.001 0.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
@@ -1424,8 +1424,8 @@ labelEndKnoten[] /0
 enabledShorted 1
 typ 3
 uniqueObjectIdentifier 1004
-x 22
-y 8
+x 18
+y 5
 parameter[] 0.00001 0.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
@@ -1442,8 +1442,8 @@ labelEndKnoten[] /v_in
 enabledShorted 1
 typ 1
 uniqueObjectIdentifier 2001
-x 24
-y 4
+x 15
+y 9
 parameter[] 0.0
 parameterString[] /V_in/0/0
 nameOpt[] 
@@ -1458,8 +1458,8 @@ labelEndKnoten[] /v_out
 enabledShorted 1
 typ 1
 uniqueObjectIdentifier 2002
-x 24
-y 6
+x 15
+y 14
 parameter[] 0.0
 parameterString[] /V_out/0/0
 nameOpt[] 
@@ -1474,8 +1474,8 @@ labelEndKnoten[]
 enabledShorted 1
 typ 5
 uniqueObjectIdentifier 2003
-x 34
-y 5
+x 22
+y 12
 parameter[] 
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] 
@@ -1490,8 +1490,8 @@ labelEndKnoten[] /v_R1
 enabledShorted 1
 typ 1
 uniqueObjectIdentifier 2004
-x 24
-y 10
+x 15
+y 19
 parameter[] 0.0
 parameterString[] /V_in/n_mid/0
 nameOpt[] 
@@ -1506,8 +1506,8 @@ labelEndKnoten[] /v_L1
 enabledShorted 1
 typ 1
 uniqueObjectIdentifier 2005
-x 24
-y 12
+x 15
+y 24
 parameter[] 0.0
 parameterString[] /n_mid/V_out/0
 nameOpt[] 
@@ -1522,8 +1522,8 @@ labelEndKnoten[] /v_C1
 enabledShorted 1
 typ 1
 uniqueObjectIdentifier 2006
-x 24
-y 14
+x 15
+y 29
 parameter[] 0.0
 parameterString[] /V_out/0/0
 nameOpt[] 
@@ -1538,8 +1538,8 @@ labelEndKnoten[]
 enabledShorted 1
 typ 5
 uniqueObjectIdentifier 2007
-x 34
-y 12
+x 28
+y 27
 parameter[] 
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] 
@@ -1556,7 +1556,7 @@ solverType 0
 dpix 16
 fontSize 12
 fontTyp Dialog
-worksheetSize 700_600
+worksheetSize 600_800
 FileVersion 1
 DtStor 2026-08-16
 dataContainerSignals[] /v_in/v_out/v_R1/v_L1/v_C1
