@@ -470,10 +470,18 @@ public final class ControlCalculatorBuilder {
         if (trimmed.isEmpty() || trimmed.equals("NIX_NIX_NIX")) {
             return 0;
         }
-        if (trimmed.equals("0") || trimmed.equalsIgnoreCase("gnd") || trimmed.equalsIgnoreCase("ground")) {
+        // .ipes writes labels with a leading '/' (parameterString[] /V_in/0/0)
+        // while the label resolver keys them bare, so a verbatim lookup always
+        // missed and every voltmeter probed 0-0. Prefer the bare form, keep the
+        // raw form as fallback for labels genuinely stored with the slash.
+        String bare = trimmed.startsWith("/") ? trimmed.substring(1).trim() : trimmed;
+        if (bare.isEmpty() || bare.equals("0") || bare.equalsIgnoreCase("gnd") || bare.equalsIgnoreCase("ground")) {
             return 0;
         }
-        int index = netlist.getLabelResolver().getIndex(trimmed);
+        int index = netlist.getLabelResolver().getIndex(bare);
+        if (index < 0 && !bare.equals(trimmed)) {
+            index = netlist.getLabelResolver().getIndex(trimmed);
+        }
         return index >= 0 ? index : 0;
     }
 
