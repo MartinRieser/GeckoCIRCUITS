@@ -26,3 +26,14 @@
 
 ## Desktop Packaging
 - Local native packaging is executed via `scripts/package-desktop.bat` (Windows), `scripts/package-desktop.sh` (Linux/macOS), or `python scripts/package-desktop.py --type all`.
+
+## Systematic Code Review & Refactoring Invariants
+When conducting codebase reviews or refactorings across GeckoCIRCUITS (frontend or backend):
+- **Documentation**: Every class, interface, enum, and method must have complete Javadoc/TSDoc detailing parameters, return values, exceptions, and physical/electrical meaning.
+- **No Magic Numbers**: Numeric literals (tolerances, port IDs, solver codes, step counts) and sentinel strings must be centralized as typed enums or named constants in dedicated constants classes.
+- **No Ad-Hoc Heuristics**: Prefer typed polymorphism, component schemas, or explicit metadata over fragile name-prefix checking.
+- **No Unfinished Implementations**: Never leave stub methods or incomplete downstream consumers. Ensure full end-to-end integration.
+- **Zero Duplication**: Extract shared algorithms and utilities to common packages immediately.
+- **High Test Coverage**: Every refactored or new class must be paired with comprehensive unit tests achieving maximum feasible coverage (>90%).
+- **Phased Commit Cadence**: Maintain an active review plan markdown document, verify clean test runs at each phase (zero javac warnings, zero test failures), and commit progress progressively.
+
