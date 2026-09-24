@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
@@ -13,6 +13,16 @@ export default defineConfig({
         target: 'http://localhost:8080',
         ws: true,
       },
+    },
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/main.tsx', 'src/**/*.d.ts'],
     },
   },
 });

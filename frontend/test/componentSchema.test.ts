@@ -6,22 +6,30 @@ import {
   COMPONENT_METAS,
   isGateDriver,
   isSwitchComponent,
+  isAmmeterComponent,
+  isVoltmeterComponent,
   getCoupledComponentName,
   extractAvailableSignals,
+  resolveComponentPinCounts,
 } from '../src/model/componentSchema';
+import {
+  LkComponentType,
+  ControlComponentType,
+  SENTINEL_UNSET,
+} from '../src/model/constants';
 
 describe('componentSchema', () => {
   it('defines metadata for all standard component types', () => {
-    expect(COMPONENT_METAS[1]).toBeDefined(); // Resistor
-    expect(COMPONENT_METAS[1].displayName).toBe('Resistor');
-    expect(COMPONENT_METAS[1].category).toBe('passives');
+    expect(COMPONENT_METAS[LkComponentType.RESISTOR]).toBeDefined();
+    expect(COMPONENT_METAS[LkComponentType.RESISTOR].displayName).toBe('Resistor');
+    expect(COMPONENT_METAS[LkComponentType.RESISTOR].category).toBe('passives');
 
-    expect(COMPONENT_METAS[2]).toBeDefined(); // Inductor
-    expect(COMPONENT_METAS[3]).toBeDefined(); // Capacitor
-    expect(COMPONENT_METAS[4]).toBeDefined(); // Voltage source
-    expect(COMPONENT_METAS[6]).toBeDefined(); // Diode
-    expect(COMPONENT_METAS[7]).toBeDefined(); // Switch
-    expect(COMPONENT_METAS[28]).toBeDefined(); // MOSFET
+    expect(COMPONENT_METAS[LkComponentType.INDUCTOR]).toBeDefined();
+    expect(COMPONENT_METAS[LkComponentType.CAPACITOR]).toBeDefined();
+    expect(COMPONENT_METAS[LkComponentType.VOLTAGE_SOURCE]).toBeDefined();
+    expect(COMPONENT_METAS[LkComponentType.DIODE]).toBeDefined();
+    expect(COMPONENT_METAS[LkComponentType.IDEAL_SWITCH]).toBeDefined();
+    expect(COMPONENT_METAS[LkComponentType.MOSFET]).toBeDefined();
   });
 
   it('provides fallback metadata for unknown component types', () => {
@@ -29,6 +37,41 @@ describe('componentSchema', () => {
     expect(meta).toBeDefined();
     expect(meta.type).toBe(999);
     expect(meta.parameters.length).toBeGreaterThan(0);
+  });
+
+  describe('resolveComponentPinCounts', () => {
+    it('resolves defaults for components without explicit pin counts', () => {
+      const pins = resolveComponentPinCounts({});
+      expect(pins.inputCount).toBe(1);
+      expect(pins.outputCount).toBe(1);
+    });
+
+    it('resolves pins from inputLabels and outputLabels', () => {
+      const pins = resolveComponentPinCounts({
+        inputLabels: ['IN1', 'IN2', 'IN3'],
+        outputLabels: ['OUT1', 'OUT2'],
+      });
+      expect(pins.inputCount).toBe(3);
+      expect(pins.outputCount).toBe(2);
+    });
+
+    it('prefers anzXIN and anzYOUT parameters when present', () => {
+      const pins = resolveComponentPinCounts({
+        parameters: { anzXIN: 4, anzYOUT: 2 },
+        inputLabels: ['L1'],
+        outputLabels: ['L2'],
+      });
+      expect(pins.inputCount).toBe(4);
+      expect(pins.outputCount).toBe(2);
+    });
+
+    it('safely handles zero or negative pin counts', () => {
+      const pins = resolveComponentPinCounts({
+        parameters: { anzXIN: 0, anzYOUT: -1 },
+      });
+      expect(pins.inputCount).toBe(0);
+      expect(pins.outputCount).toBe(1); // Min 1 output
+    });
   });
 
   describe('parseEngineeringValue', () => {
@@ -85,46 +128,58 @@ describe('componentSchema', () => {
 
   describe('coupling and signal helpers', () => {
     it('identifies gate drivers and switches', () => {
-      expect(isGateDriver({ type: 1000, name: 'GATE.1' })).toBe(true);
-      expect(isGateDriver({ type: 6, family: 'CONTROL', name: 'GATE.1' })).toBe(true);
-      expect(isGateDriver({ type: 1, name: 'R.1' })).toBe(false);
+      expect(isGateDriver({ type: ControlComponentType.GATE, name: 'GATE.1' })).toBe(true);
+      expect(isGateDriver({ type: ControlComponentType.LEGACY_GATE, family: 'CONTROL', name: 'GATE.1' })).toBe(true);
+      expect(isGateDriver({ type: LkComponentType.RESISTOR, name: 'R.1' })).toBe(false);
 
-      expect(isSwitchComponent({ type: 7, name: 'S.1' })).toBe(true);
-      expect(isSwitchComponent({ type: 8, name: 'TH.1' })).toBe(true);
-      expect(isSwitchComponent({ type: 1, name: 'R.1' })).toBe(false);
+      expect(isSwitchComponent({ type: LkComponentType.IDEAL_SWITCH, name: 'S.1' })).toBe(true);
+      expect(isSwitchComponent({ type: LkComponentType.THYRISTOR, name: 'TH.1' })).toBe(true);
+      expect(isSwitchComponent({ type: LkComponentType.IGBT, name: 'IGBT.1' })).toBe(true);
+      expect(isSwitchComponent({ type: LkComponentType.MOSFET, name: 'MOS.1' })).toBe(true);
+      expect(isSwitchComponent({ type: LkComponentType.BJT, name: 'BJT.1' })).toBe(true);
+      expect(isSwitchComponent({ type: LkComponentType.RESISTOR, name: 'R.1' })).toBe(false);
     });
 
-    it('extracts coupled component name normalizing leading slash', () => {
+    it('identifies ammeters and voltmeters', () => {
+      expect(isAmmeterComponent({ type: ControlComponentType.AMMETER, name: 'AMP.1' })).toBe(true);
+      expect(isAmmeterComponent({ type: ControlComponentType.LEGACY_AMMETER, family: 'CONTROL' })).toBe(true);
+      expect(isAmmeterComponent({ type: LkComponentType.RESISTOR, name: 'R.1' })).toBe(false);
+
+      expect(isVoltmeterComponent({ type: ControlComponentType.VOLTMETER, name: 'VOLT.1' })).toBe(true);
+      expect(isVoltmeterComponent({ type: ControlComponentType.LEGACY_VOLTMETER, family: 'CONTROL' })).toBe(true);
+      expect(isVoltmeterComponent({ type: LkComponentType.RESISTOR, name: 'R.1' })).toBe(false);
+    });
+
+    it('extracts coupled component name normalizing leading slash and ignoring sentinel values', () => {
       expect(getCoupledComponentName({ parameters: { coupledComponent: '/S.1' } })).toBe('S.1');
       expect(getCoupledComponentName({ parameters: { coupledComponent: 'GATE.1' } })).toBe('GATE.1');
       expect(getCoupledComponentName({ parameters: { coupledComponent: 'none' } })).toBe('');
+      expect(getCoupledComponentName({ parameters: { coupledComponent: SENTINEL_UNSET } })).toBe('');
       expect(getCoupledComponentName(null)).toBe('');
     });
 
-    it('extracts unique available signals from components and wires', () => {
+    it('extracts unique available signals from components and wires ignoring SENTINEL_UNSET', () => {
       const components = [
-        { name: 'GATE.1', inputLabels: ['gt'], outputLabels: [] },
-        { name: 'VOLT.1', type: 1001, inputLabels: [], outputLabels: ['uOUT'] },
-        { name: 'AMP.1', type: 1002, inputLabels: [], outputLabels: ['il1'] },
+        { name: 'GATE.1', inputLabels: ['gt', SENTINEL_UNSET], outputLabels: [] },
+        { name: 'VOLT.1', type: ControlComponentType.VOLTMETER, inputLabels: [], outputLabels: ['uOUT'] },
+        { name: 'AMP.1', type: ControlComponentType.AMMETER, inputLabels: [], outputLabels: ['il1'] },
       ];
-      const wires = [{ label: 'uIN' }];
+      const wires = [{ label: 'uIN' }, { label: SENTINEL_UNSET }];
       const signals = extractAvailableSignals(components, wires);
       expect(signals).toContain('gt');
       expect(signals).toContain('uOUT');
       expect(signals).toContain('il1');
       expect(signals).toContain('uIN');
+      expect(signals).not.toContain(SENTINEL_UNSET);
     });
 
     it('offers a measurement component name only when it has no output label', () => {
       const components = [
-        { name: 'VOLT.1', type: 1001, inputLabels: [], outputLabels: ['uOUT'] },
-        { name: 'VOLT.2', type: 1001, inputLabels: [], outputLabels: [] },
+        { name: 'VOLT.1', type: ControlComponentType.VOLTMETER, inputLabels: [], outputLabels: ['uOUT'] },
+        { name: 'VOLT.2', type: ControlComponentType.VOLTMETER, inputLabels: [], outputLabels: [] },
       ];
       const signals = extractAvailableSignals(components, []);
-      // VOLT.1's canonical signal name is its output label; adding the
-      // component name too made the identical curve appear under two names
       expect(signals).not.toContain('VOLT.1');
-      // label-less blocks fall back to their component name
       expect(signals).toContain('VOLT.2');
     });
   });
@@ -134,12 +189,8 @@ describe('componentSchema', () => {
       .filter((m) => m.disabled)
       .map((m) => m.type)
       .sort((a, b) => a - b);
-    // all motors (types 14-21 except 19 which does not exist, plus 51) and
-    // the thermal components without an engine model (41 PvCHIP, 42 MODUL,
-    // 48 AMBIENT)
     expect(disabledTypes).toEqual([14, 15, 16, 17, 18, 20, 21, 41, 42, 48, 51]);
 
-    // nothing that the engine actually simulates may be disabled
     const simulated = new Set([1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 23, 24, 26, 28, 33, 44, 45, 46, 47]);
     for (const meta of Object.values(COMPONENT_METAS)) {
       if (meta.disabled) {
@@ -148,4 +199,3 @@ describe('componentSchema', () => {
     }
   });
 });
-

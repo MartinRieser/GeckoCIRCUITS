@@ -5,6 +5,15 @@
  * Mapped to GeckoCIRCUITS classic parameter indexing, types and units.
  */
 
+import {
+  CTRL_TYPE,
+  ControlComponentType,
+  LkComponentType,
+  SENTINEL_UNSET,
+} from './constants';
+
+export { CTRL_TYPE };
+
 export interface ParameterDef {
   index: number;
   key: string;
@@ -55,44 +64,29 @@ export const CATEGORIES = [
 export type CategoryId = (typeof CATEGORIES)[number]['id'];
 
 /**
- * CONTROL block type numbers with special terminal geometry.
- *
- * The classic editor serializes control blocks with legacy numbers
- * (ControlTyp in the Swing code); the web catalog uses the 1001+ range
- * (CircuitTypCore on the server). Both ranges must render and connect:
- * constant and signal source have a single output terminal, gate and
- * scope a single input terminal (see terminalPositions in geometry.ts).
+ * Resolves the number of input and output terminals for a component, handling
+ * dynamic multi-port components like function blocks (anzXIN, anzYOUT) and scopes.
+ * Single source of truth shared between geometry calculations and symbol SVG rendering.
  */
-export const CTRL_TYPE = {
-  /** Voltmeter probe, legacy classic-editor number. */
-  LEGACY_VOLTMETER: 1,
-  /** Ammeter probe, legacy classic-editor number. */
-  LEGACY_AMMETER: 2,
-  /** Constant block, legacy classic-editor number. */
-  LEGACY_CONSTANT: 3,
-  /** Signal source, legacy classic-editor number. */
-  LEGACY_SIGNAL_SOURCE: 4,
-  /** Scope, legacy classic-editor number. */
-  LEGACY_SCOPE: 5,
-  /** Gate input, legacy classic-editor number. */
-  LEGACY_GATE: 6,
-  /** Gate driver, web catalog number (CircuitTypCore.CTRL_GATE). */
-  GATE: 1000,
-  /** Voltmeter probe, web catalog number (CircuitTypCore.CTRL_VOLT). */
-  VOLTMETER: 1001,
-  /** Ammeter probe, web catalog number (CircuitTypCore.CTRL_AMP). */
-  AMMETER: 1002,
-  /** Scope, web catalog number (CircuitTypCore.CTRL_SCOPE). */
-  SCOPE: 1003,
-  /** Signal source, web catalog number (CircuitTypCore.CTRL_SIGNAL). */
-  SIGNAL_SOURCE: 1004,
-  /** Constant block, web catalog number (CircuitTypCore.CTRL_CONSTANT). */
-  CONSTANT: 1005,
-  /** Classic Java code block, legacy classic-editor number. */
-  LEGACY_JAVA_FUNCTION: 61,
-  /** Script / Function block, web catalog number (CircuitTypCore.CTRL_SCRIPT). */
-  SCRIPT: 1016,
-} as const;
+export function resolveComponentPinCounts(component: {
+  parameters?: Record<string, unknown>;
+  inputLabels?: string[];
+  outputLabels?: string[];
+  inputs?: unknown[];
+}): { inputCount: number; outputCount: number } {
+  const compParams = component.parameters ?? {};
+  const rawIn = compParams.anzXIN;
+  const inCount =
+    rawIn !== undefined && rawIn !== null && rawIn !== '' && !isNaN(Number(rawIn))
+      ? Math.max(0, Number(rawIn))
+      : (component.inputLabels?.length || component.inputs?.length || 1);
+  const rawOut = compParams.anzYOUT;
+  const outCount =
+    rawOut !== undefined && rawOut !== null && rawOut !== '' && !isNaN(Number(rawOut))
+      ? Math.max(1, Number(rawOut))
+      : (component.outputLabels?.length || 1);
+  return { inputCount: inCount, outputCount: outCount };
+}
 
 export const COMPONENT_METAS: Record<number, ComponentMeta> = {
   // Resistor
@@ -1743,10 +1737,11 @@ export function isGateDriver(component: { type: number; family?: string; name?: 
 export function isSwitchComponent(component: { type: number; family?: string; name?: string } | null | undefined): boolean {
   if (!component) return false;
   return (
-    component.type === 7 ||
-    component.type === 8 ||
-    component.type === 10 ||
-    component.type === 11 ||
+    component.type === LkComponentType.IDEAL_SWITCH ||
+    component.type === LkComponentType.THYRISTOR ||
+    component.type === LkComponentType.IGBT ||
+    component.type === LkComponentType.MOSFET ||
+    component.type === LkComponentType.BJT ||
     // type 9 (LK_M mutual inductance / transformer) is NOT a gate-controlled
     // switch and must not show the gate-drive coupling section.
     component.name?.startsWith('S.') === true ||
@@ -1760,9 +1755,8 @@ export function isSwitchComponent(component: { type: number; family?: string; na
 export function isAmmeterComponent(component: { type: number; family?: string; name?: string } | null | undefined): boolean {
   if (!component) return false;
   return (
-    component.type === CTRL_TYPE.AMMETER ||
-    component.type === 1002 ||
-    (component.family === 'CONTROL' && (component.type === CTRL_TYPE.LEGACY_AMMETER || component.type === 2)) ||
+    component.type === ControlComponentType.AMMETER ||
+    (component.family === 'CONTROL' && component.type === ControlComponentType.LEGACY_AMMETER) ||
     component.name?.startsWith('AMP') === true ||
     component.name?.startsWith('AMR') === true
   );
@@ -1771,9 +1765,8 @@ export function isAmmeterComponent(component: { type: number; family?: string; n
 export function isVoltmeterComponent(component: { type: number; family?: string; name?: string } | null | undefined): boolean {
   if (!component) return false;
   return (
-    component.type === CTRL_TYPE.VOLTMETER ||
-    component.type === 1001 ||
-    (component.family === 'CONTROL' && (component.type === CTRL_TYPE.LEGACY_VOLTMETER || component.type === 1)) ||
+    component.type === ControlComponentType.VOLTMETER ||
+    (component.family === 'CONTROL' && component.type === ControlComponentType.LEGACY_VOLTMETER) ||
     component.name?.startsWith('VOLT') === true ||
     component.name?.startsWith('V_meas') === true
   );
@@ -1787,7 +1780,7 @@ export function getCoupledComponentName(component: { parameters?: Record<string,
   if (str.startsWith('/')) {
     str = str.substring(1);
   }
-  if (str === 'none' || str === 'NIX_NIX_NIX') return '';
+  if (str === 'none' || str === SENTINEL_UNSET) return '';
   return str;
 }
 
@@ -1807,13 +1800,13 @@ export function extractAvailableSignals(
     if (comp.inputLabels) {
       for (const lbl of comp.inputLabels) {
         const trimmed = lbl?.trim();
-        if (trimmed && trimmed !== 'NIX_NIX_NIX') set.add(trimmed);
+        if (trimmed && trimmed !== SENTINEL_UNSET) set.add(trimmed);
       }
     }
     if (comp.outputLabels) {
       for (const lbl of comp.outputLabels) {
         const trimmed = lbl?.trim();
-        if (trimmed && trimmed !== 'NIX_NIX_NIX') set.add(trimmed);
+        if (trimmed && trimmed !== SENTINEL_UNSET) set.add(trimmed);
       }
     }
     if (
@@ -1821,12 +1814,12 @@ export function extractAvailableSignals(
       // voltmeter) - without the family guard every R/L/C name leaked into
       // the signal list
       (!comp.family || comp.family === 'CONTROL') &&
-      (comp.type === CTRL_TYPE.VOLTMETER ||
-        comp.type === CTRL_TYPE.LEGACY_VOLTMETER ||
-        comp.type === CTRL_TYPE.AMMETER ||
-        comp.type === CTRL_TYPE.LEGACY_AMMETER ||
-        comp.type === CTRL_TYPE.SIGNAL_SOURCE ||
-        comp.type === CTRL_TYPE.LEGACY_SIGNAL_SOURCE ||
+      (comp.type === ControlComponentType.VOLTMETER ||
+        comp.type === ControlComponentType.LEGACY_VOLTMETER ||
+        comp.type === ControlComponentType.AMMETER ||
+        comp.type === ControlComponentType.LEGACY_AMMETER ||
+        comp.type === ControlComponentType.SIGNAL_SOURCE ||
+        comp.type === ControlComponentType.LEGACY_SIGNAL_SOURCE ||
         comp.name.startsWith('V_meas') ||
         comp.name.startsWith('VOLT') ||
         comp.name.startsWith('AMP') ||
@@ -1838,7 +1831,7 @@ export function extractAvailableSignals(
       // names in scope-channel pickers, so only label-less blocks fall back
       // to their component name.
       const hasOutputLabel = (comp.outputLabels ?? []).some(
-        (l) => l?.trim() && l.trim() !== 'NIX_NIX_NIX',
+        (l) => l?.trim() && l.trim() !== SENTINEL_UNSET,
       );
       if (!hasOutputLabel) {
         set.add(comp.name);
@@ -1849,7 +1842,7 @@ export function extractAvailableSignals(
   if (wires) {
     for (const wire of wires) {
       const trimmed = wire.label?.trim();
-      if (trimmed && trimmed !== 'NIX_NIX_NIX') {
+      if (trimmed && trimmed !== SENTINEL_UNSET) {
         set.add(trimmed);
       }
     }
@@ -1858,4 +1851,5 @@ export function extractAvailableSignals(
   set.add('0');
   return Array.from(set).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 }
+
 

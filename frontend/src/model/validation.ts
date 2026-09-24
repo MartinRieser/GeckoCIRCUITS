@@ -2,35 +2,51 @@
  * Client-side circuit validation used for wire-commit feedback and the
  * pre-simulation check in the Simulation tab. Pure functions, no React.
  *
- * The engine silently ignores what it cannot stamp (e.g. motors without a
- * stamper yet) and dangling wire ends create invisible open circuits, so the
- * editor surfaces these problems before the user wastes a run.
+ * Surfaces missing sources, unsupported stamped components, dangling open power
+ * leads, overlapping wire geometry, and accidental terminal shorts before runs.
  */
 import { allTerminals } from './geometry';
 import { denseCellsOf } from '../canvas/WireRouter';
+import { LkComponentType } from './constants';
 
-/** Component type numbers the core engine can currently stamp and solve. */
+/**
+ * Component type numbers the core engine can currently stamp and solve.
+ */
 export const SIMULATED_LK_TYPES: ReadonlySet<number> = new Set([
-  1, // LK_R resistor
-  2, // LK_L inductor
-  3, // LK_C capacitor
-  4, // LK_U voltage source
-  5, // LK_I current source
-  6, // LK_D diode
-  7, // LK_S ideal switch
-  8, // LK_THYR thyristor
-  10, // LK_IGBT
-  12, // LK_LKOP2 coupable inductor
-  23, // LK_TRANS ideal transformer (expanded to a winding pair)
-  24, // REL_RELUCTANCE
-  26, // REL_MMF
-  28, // LK_MOSFET
-  33, // LK_BJT (expanded to its subcircuit elements)
-  44, // TH_FLOW heat flow source
-  45, // TH_TEMP temperature source
-  46, // TH_RTH thermal resistance
-  47, // TH_CTH thermal capacitance
+  LkComponentType.RESISTOR,
+  LkComponentType.INDUCTOR,
+  LkComponentType.CAPACITOR,
+  LkComponentType.VOLTAGE_SOURCE,
+  LkComponentType.CURRENT_SOURCE,
+  LkComponentType.DIODE,
+  LkComponentType.IDEAL_SWITCH,
+  LkComponentType.THYRISTOR,
+  LkComponentType.IGBT,
+  LkComponentType.COUPLED_INDUCTOR,
+  LkComponentType.TRANSFORMER,
+  LkComponentType.RELUCTANCE,
+  LkComponentType.MMF,
+  LkComponentType.MOSFET,
+  LkComponentType.BJT,
+  LkComponentType.THERMAL_FLOW,
+  LkComponentType.THERMAL_TEMP,
+  LkComponentType.THERMAL_RTH,
+  LkComponentType.THERMAL_CTH,
 ]);
+
+/**
+ * Component types acting as energy sources in the schematic.
+ */
+const SOURCE_COMPONENT_TYPES: ReadonlySet<number> = new Set([
+  LkComponentType.VOLTAGE_SOURCE,
+  LkComponentType.CURRENT_SOURCE,
+  LkComponentType.MMF,
+  LkComponentType.THERMAL_TEMP,
+  LkComponentType.THERMAL_FLOW,
+]);
+
+/** Maximum number of individual wire warnings to display before capping summary output. */
+const MAX_WIRE_WARNINGS_CAP = 6;
 
 export interface WireLike {
   points?: number[][];
@@ -52,8 +68,13 @@ export interface ComponentLike {
 }
 
 /**
- * True when the grid point terminates on a component terminal or on any
- * point of an existing wire (endpoints AND interior raster points conduct).
+ * Checks whether a given grid raster coordinate connects directly to a component
+ * terminal or coincides with any existing wire raster point.
+ *
+ * @param point Coordinates to test
+ * @param components Placed schematic components
+ * @param wires Placed connection wires
+ * @returns True if point is incident on a terminal or wire conductor
  */
 export function isWireEndPointConnected(
   point: { x: number; y: number },
@@ -68,9 +89,7 @@ export function isWireEndPointConnected(
 }
 
 /**
- * True when the point lies on any raster point of any wire. When checking a
- * wire's own end, pass its index and the end's point index so the endpoint
- * does not trivially match itself.
+ * Checks if a coordinate lies on any raster point of any wire in the list.
  */
 function pointOnAnyWire(
   point: { x: number; y: number },
@@ -93,27 +112,18 @@ function pointOnAnyWire(
 
 /** Human label for a component, matching the palette naming. */
 function labelOf(comp: ComponentLike): string {
-  // displayName lives on the palette-augmented entries; fall back to raw name
   const withMeta = comp as ComponentLike & { displayName?: string };
   return withMeta.displayName ?? comp.name;
 }
 
 /**
- * Wire-geometry defects that make a schematic lie about its own topology.
- * These appear when components are moved and their wires are re-routed onto
- * untouched wires, so they are checked both after a move and before a run:
+ * Inspects wires for geometric flaws that distort schematic topology:
+ * 1. Overlap: two wires sharing >= 2 raster cells drawn as one ambiguous line.
+ * 2. Hidden terminal short: a wire interior traversing a terminal explicitly wired by another wire.
  *
- * 1. Overlap — two different wires share two or more raster cells (they run
- *    along each other). They are drawn as one line, so the user cannot see
- *    that there are two separate connections.
- * 2. Hidden short — a wire's interior sweeps through a component terminal
- *    that another wire explicitly connects. Per .ipes connectivity semantics
- *    the passing wire merges with that terminal's net, silently shorting the
- *    two nets. A rail passing through a terminal with no other wire attached
- *    is the classic way to hook up a bottom rail, so that case stays silent.
- *
- * Returns human-readable warnings; an empty array means the geometry is clean.
- * Capped so a mangled sheet cannot flood the pre-run panel.
+ * @param components Placed schematic components
+ * @param wires Placed connection wires
+ * @returns Array of warning strings, or empty array if clean
  */
 export function findWireGeometryWarnings(
   components: ComponentLike[],
@@ -142,7 +152,7 @@ export function findWireGeometryWarnings(
     }
   }
 
-  // 2. A wire interior through a terminal that another wire explicitly wires
+  // 2. A wire interior passing through a terminal that another wire explicitly wires
   const endpointWires = new Map<string, number[]>(); // "x,y" -> wire indices ending there
   wires.forEach((w, i) => {
     const pts = w.points ?? [];
@@ -154,6 +164,7 @@ export function findWireGeometryWarnings(
       endpointWires.set(key, list);
     }
   });
+
   for (let i = 0; i < wires.length; i++) {
     const pts = wires[i].points ?? [];
     if (pts.length < 2) continue;
@@ -173,17 +184,22 @@ export function findWireGeometryWarnings(
     }
   }
 
-  const cap = 6;
-  if (found.length > cap) {
-    return [...found.slice(0, cap), `…and ${found.length - cap} more wire geometry warnings`];
+  if (found.length > MAX_WIRE_WARNINGS_CAP) {
+    return [
+      ...found.slice(0, MAX_WIRE_WARNINGS_CAP),
+      `…and ${found.length - MAX_WIRE_WARNINGS_CAP} more wire geometry warnings`,
+    ];
   }
   return found;
 }
 
 /**
- * Pre-simulation validation. Returns human-readable warnings; an empty array
- * means nothing suspicious was found. Deliberately conservative: everything
- * reported here is a likely mistake, not a hard error.
+ * Pre-simulation validation pass executed before dispatching a simulation run.
+ * Returns human-readable warnings; an empty array indicates a clean, runnable circuit.
+ *
+ * @param components Placed schematic components
+ * @param wires Placed connection wires
+ * @returns Array of warning strings
  */
 export function validateCircuitForSimulation(
   components: ComponentLike[],
@@ -196,9 +212,7 @@ export function validateCircuitForSimulation(
     return warnings;
   }
 
-  // Unconnected power wire ends create invisible open circuits. Free ends on
-  // CONTROL wires are a different matter: control/scope inputs bind by signal
-  // name, so a dangling control wire is unused geometry, not a broken circuit.
+  // Check for open power circuit leads
   const danglingPower: string[] = [];
   const danglingControl: string[] = [];
   wires.forEach((w, index) => {
@@ -220,10 +234,11 @@ export function validateCircuitForSimulation(
       if (!onTerminal && !onWire) {
         const where = `wire ${index + 1} ends free at (${end.x}, ${end.y})`;
         (isControl ? danglingControl : danglingPower).push(where);
-        break; // one report per wire is enough
+        break;
       }
     }
   });
+
   if (danglingPower.length > 0) {
     warnings.push(
       `Unconnected wire end${danglingPower.length > 1 ? 's' : ''} (open circuit): ${danglingPower.join('; ')}.`,
@@ -237,22 +252,15 @@ export function validateCircuitForSimulation(
     );
   }
 
-  // A circuit nothing drives will solve to zero everywhere.
-  const hasElectricalSource = components.some(
-    (c) =>
-      c.type === 4 ||
-      c.type === 5 ||
-      c.type === 26 ||
-      c.type === 45 ||
-      c.type === 44,
-  );
+  // Ensure circuit contains at least one driver / source
+  const hasElectricalSource = components.some((c) => SOURCE_COMPONENT_TYPES.has(c.type));
   if (!hasElectricalSource) {
     warnings.push(
       'No source found (voltage source, current source, MMF or thermal source) — all signals will stay zero.',
     );
   }
 
-  // Components the core engine cannot stamp yet are silently skipped there.
+  // Identify unsupported components that the engine does not stamp
   const unsupported = components.filter(
     (c) => c.family !== 'CONTROL' && !SIMULATED_LK_TYPES.has(c.type),
   );
@@ -269,8 +277,7 @@ export function validateCircuitForSimulation(
     );
   }
 
-  // Wire geometry: overlapping wires and hidden terminal shorts (typically
-  // introduced by moving components).
+  // Wire geometry warnings (overlaps and inadvertent shorts)
   warnings.push(...findWireGeometryWarnings(components, wires));
 
   return warnings;
