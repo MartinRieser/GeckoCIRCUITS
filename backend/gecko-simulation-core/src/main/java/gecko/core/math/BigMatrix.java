@@ -271,10 +271,10 @@ public class BigMatrix implements java.io.Serializable {
    }
 
 
-   /** C = A + B
-   @param B    another matrix
-   @return     A + B
-   */
+//   /** C = A + B
+//   @param B    another matrix
+//   @return     A + B
+//   */
 //   public Matrix plus (BigMatrix B) {
 //      checkMatrixDimensions(B);
 //      Matrix X = new Matrix(m,n);
@@ -287,10 +287,10 @@ public class BigMatrix implements java.io.Serializable {
 //      return X;
 //   }
 
-   /** A = A + B
-   @param B    another matrix
-   @return     A + B
-   */
+//   /** A = A + B
+//   @param B    another matrix
+//   @return     A + B
+//   */
 //   public Matrix plusEquals (Matrix B) {
 //      checkMatrixDimensions(B);
 //      for (int i = 0; i < m; i++) {
@@ -301,10 +301,10 @@ public class BigMatrix implements java.io.Serializable {
 //      return this;
 //   }
 
-   /** C = A - B
-   @param B    another matrix
-   @return     A - B
-   */
+//   /** C = A - B
+//   @param B    another matrix
+//   @return     A - B
+//   */
 
 //   public Matrix minus (Matrix B) {
 //      checkMatrixDimensions(B);
@@ -318,10 +318,10 @@ public class BigMatrix implements java.io.Serializable {
 //      return X;
 //   }
 
-   /** A = A - B
-   @param B    another matrix
-   @return     A - B
-   */
+//   /** A = A - B
+//   @param B    another matrix
+//   @return     A - B
+//   */
 
 //   public Matrix minusEquals (Matrix B) {
 //      checkMatrixDimensions(B);
@@ -333,10 +333,10 @@ public class BigMatrix implements java.io.Serializable {
 //      return this;
 //   }
 
-   /** Element-by-element multiplication, C = A.*B
-   @param B    another matrix
-   @return     A.*B
-   */
+//   /** Element-by-element multiplication, C = A.*B
+//   @param B    another matrix
+//   @return     A.*B
+//   */
 
 //   public Matrix arrayTimes (Matrix B) {
 //      checkMatrixDimensions(B);
@@ -350,10 +350,10 @@ public class BigMatrix implements java.io.Serializable {
 //      return X;
 //   }
 
-   /** Element-by-element multiplication in place, A = A.*B
-   @param B    another matrix
-   @return     A.*B
-   */
+//   /** Element-by-element multiplication in place, A = A.*B
+//   @param B    another matrix
+//   @return     A.*B
+//   */
 
 //   public Matrix arrayTimesEquals (Matrix B) {
 //      checkMatrixDimensions(B);
@@ -365,10 +365,10 @@ public class BigMatrix implements java.io.Serializable {
 //      return this;
 //   }
 
-   /** Element-by-element right division, C = A./B
-   @param B    another matrix
-   @return     A./B
-   */
+//   /** Element-by-element right division, C = A./B
+//   @param B    another matrix
+//   @return     A./B
+//   */
 
 //   public Matrix arrayRightDivide (Matrix B) {
 //      checkMatrixDimensions(B);
@@ -382,10 +382,10 @@ public class BigMatrix implements java.io.Serializable {
 //      return X;
 //   }
 
-   /** Element-by-element right division in place, A = A./B
-   @param B    another matrix
-   @return     A./B
-   */
+//   /** Element-by-element right division in place, A = A./B
+//   @param B    another matrix
+//   @return     A./B
+//   */
 
 //   public Matrix arrayRightDivideEquals (Matrix B) {
 //      checkMatrixDimensions(B);
@@ -397,10 +397,10 @@ public class BigMatrix implements java.io.Serializable {
 //      return this;
 //   }
 
-   /** Element-by-element left division, C = A.\B
-   @param B    another matrix
-   @return     A.\B
-   */
+//   /** Element-by-element left division, C = A.\B
+//   @param B    another matrix
+//   @return     A.\B
+//   */
 
 //   public Matrix arrayLeftDivide (Matrix B) {
 //      checkMatrixDimensions(B);
@@ -414,10 +414,10 @@ public class BigMatrix implements java.io.Serializable {
 //      return X;
 //   }
 
-   /** Element-by-element left division in place, A = A.\B
-   @param B    another matrix
-   @return     A.\B
-   */
+//   /** Element-by-element left division in place, A = A.\B
+//   @param B    another matrix
+//   @return     A.\B
+//   */
 
 //   public Matrix arrayLeftDivideEquals (Matrix B) {
 //      checkMatrixDimensions(B);
@@ -429,10 +429,10 @@ public class BigMatrix implements java.io.Serializable {
 //      return this;
 //   }
 
-   /** Multiply a matrix by a scalar, C = s*A
-   @param s    scalar
-   @return     s*A
-   */
+//   /** Multiply a matrix by a scalar, C = s*A
+//   @param s    scalar
+//   @return     s*A
+//   */
 
 //   public Matrix times (double s) {
 //      Matrix X = new Matrix(m,n);
@@ -493,19 +493,19 @@ public class BigMatrix implements java.io.Serializable {
       return new BigLUDecomposition(this);
    }
 
-   /** QR Decomposition
-   @return     QRDecomposition
-   @see QRDecomposition
-   */
+//   /** QR Decomposition
+//   @return     QRDecomposition
+//   @see QRDecomposition
+//   */
 
 //   public QRDecomposition qr () {
 //      return new QRDecomposition(this);
 //   }
 
-   /** Cholesky Decomposition
-   @return     CholeskyDecomposition
-   @see CholeskyDecomposition
-   */
+//   /** Cholesky Decomposition
+//   @return     CholeskyDecomposition
+//   @see CholeskyDecomposition
+//   */
 
 //   public CholeskyDecomposition chol () {
 //      return new CholeskyDecomposition(this);
@@ -518,10 +518,10 @@ public class BigMatrix implements java.io.Serializable {
 //      return new SingularValueDecomposition(this);
 //   }
 
-   /** Eigenvalue Decomposition
-   @return     EigenvalueDecomposition
-   @see EigenvalueDecomposition
-   */
+//   /** Eigenvalue Decomposition
+//   @return     EigenvalueDecomposition
+//   @see EigenvalueDecomposition
+//   */
 
 //   public EigenvalueDecomposition eig () {
 //      return new EigenvalueDecomposition(this);

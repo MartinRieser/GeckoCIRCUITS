@@ -469,12 +469,6 @@ public final class GeckoFile {
     }
 
     /**
-     * for saving in applet mode
-     *
-     * @param ascii
-     */
-
-    /**
      * get the file contents as a String
      *
      * @return

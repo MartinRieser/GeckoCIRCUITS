@@ -51,6 +51,7 @@ public class NativeCWrapper implements InterfaceNativeCWrapper {
      * @param name the full path and name of the native library
      */
     @Override
+    @SuppressWarnings("restricted") // System.load of the per-run library copy is intentional
     public void loadLibrary(String name) {
         try {
             System.load(copyToTemp(name).toAbsolutePath().toString());

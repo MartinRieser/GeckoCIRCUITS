@@ -11,17 +11,14 @@
  *  You should have received a copy of the GNU General Public License along with
  *  GeckoCIRCUITS.  If not, see <http://www.gnu.org/licenses/>.
  */
+package gecko.core.datacontainer;
+
+
 /**
  * a data junk is a block of data, that can be used within a DataContainer.
  * It is useful to split the whole data into smaller junks, since then
  * we can grow the Data size dynamically, or we can compress the single
  * data junks.
- */
-
-package gecko.core.datacontainer;
-
-
-/**
  *
  * @author andy
  */

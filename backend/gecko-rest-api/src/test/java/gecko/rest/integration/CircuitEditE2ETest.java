@@ -57,7 +57,7 @@ class CircuitEditE2ETest {
         assertThat(versionAfterCreate).isEqualTo(1);
 
         String createdName = objectMapper.readTree(created.getBody())
-                .get("payload").get("name").asText();
+                .get("payload").get("name").asString();
         assertThat(componentCount(circuitId)).isEqualTo(before + 1);
 
         // Undo via REST
@@ -110,7 +110,7 @@ class CircuitEditE2ETest {
                 String.class);
         assertThat(submitted.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         String simulationId = objectMapper.readTree(submitted.getBody())
-                .get("simulationId").asText();
+                .get("simulationId").asString();
 
         awaitCompletion(simulationId);
         ResponseEntity<String> results = restTemplate.getForEntity(
@@ -150,7 +150,7 @@ class CircuitEditE2ETest {
             try {
                 String body = restTemplate.getForEntity(
                         "/api/v1/simulations/{id}", String.class, simulationId).getBody();
-                String status = objectMapper.readTree(body).get("status").asText();
+                String status = objectMapper.readTree(body).get("status").asString();
                 if ("COMPLETED".equals(status)) {
                     return;
                 }

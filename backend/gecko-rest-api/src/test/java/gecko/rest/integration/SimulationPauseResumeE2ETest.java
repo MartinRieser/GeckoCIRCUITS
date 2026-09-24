@@ -53,13 +53,13 @@ class SimulationPauseResumeE2ETest {
                 "/api/v1/simulations", request, String.class);
         assertThat(submitted.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         String simulationId = objectMapper.readTree(submitted.getBody())
-                .get("simulationId").asText();
+                .get("simulationId").asString();
 
         assertThat(waitForRunning(simulationId)).isTrue();
 
         ResponseEntity<String> paused = pauseWithRetry(simulationId);
         assertThat(paused.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(objectMapper.readTree(paused.getBody()).get("status").asText())
+        assertThat(objectMapper.readTree(paused.getBody()).get("status").asString())
                 .isEqualTo("PAUSED");
 
         double timeWhenPaused = currentTime(simulationId);
@@ -69,7 +69,7 @@ class SimulationPauseResumeE2ETest {
         ResponseEntity<String> resumed = restTemplate.postForEntity(
                 "/api/v1/simulations/{id}/resume", null, String.class, simulationId);
         assertThat(resumed.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(objectMapper.readTree(resumed.getBody()).get("status").asText())
+        assertThat(objectMapper.readTree(resumed.getBody()).get("status").asString())
                 .isEqualTo("RUNNING");
 
         // Re-pause and cancel from the paused state to bound the test runtime
@@ -100,7 +100,7 @@ class SimulationPauseResumeE2ETest {
         ResponseEntity<String> submitted = restTemplate.postForEntity(
                 "/api/v1/simulations", request, String.class);
         String simulationId = objectMapper.readTree(submitted.getBody())
-                .get("simulationId").asText();
+                .get("simulationId").asString();
 
         assertThat(awaitStatus(simulationId, "COMPLETED")).isTrue();
 
@@ -138,7 +138,7 @@ class SimulationPauseResumeE2ETest {
         while (System.currentTimeMillis() < deadline) {
             String body = restTemplate.getForEntity(
                     "/api/v1/simulations/{id}", String.class, simulationId).getBody();
-            String status = objectMapper.readTree(body).get("status").asText();
+            String status = objectMapper.readTree(body).get("status").asString();
             if (expected.equals(status)) {
                 return true;
             }
