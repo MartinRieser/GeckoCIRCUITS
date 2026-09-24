@@ -8,7 +8,7 @@ setlocal enabledelayedexpansion
 set "SCRIPT_DIR=%~dp0"
 cd /d "%SCRIPT_DIR%"
 
-set "REST_JAR=%SCRIPT_DIR%src\modules\gecko-rest-api\target\gecko-rest-api-1.0.0.jar"
+set "REST_JAR=%SCRIPT_DIR%backend\gecko-rest-api\target\gecko-rest-api-1.0.0.jar"
 set "PORT=8080"
 set "URL=http://localhost:%PORT%/gecko/"
 
@@ -99,7 +99,7 @@ if !REBUILD! equ 1 (
         cd /d "%SCRIPT_DIR%"
     )
     echo [INFO] Packaging GeckoCIRCUITS REST JAR...
-    call mvn -pl src/modules/gecko-rest-api -am package -DskipTests -q
+    call mvn -pl backend/gecko-rest-api -am package -DskipTests -q
     if errorlevel 1 (
         echo [ERROR] Build failed. Please ensure Maven and JDK are installed.
         pause
@@ -110,7 +110,7 @@ if !REBUILD! equ 1 (
 REM 2. Check if JAR exists, build if missing
 if not exist "%REST_JAR%" (
     echo [INFO] Building GeckoCIRCUITS Web Editor package...
-    call mvn -pl src/modules/gecko-rest-api -am package -DskipTests -q
+    call mvn -pl backend/gecko-rest-api -am package -DskipTests -q
     if errorlevel 1 (
         echo [ERROR] Build failed. Please ensure Maven and JDK are installed.
         pause

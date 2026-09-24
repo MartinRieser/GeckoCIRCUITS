@@ -9,7 +9,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-REST_JAR="$SCRIPT_DIR/src/modules/gecko-rest-api/target/gecko-rest-api-1.0.0.jar"
+REST_JAR="$SCRIPT_DIR/backend/gecko-rest-api/target/gecko-rest-api-1.0.0.jar"
 PORT=8080
 URL="http://localhost:${PORT}/gecko/"
 
@@ -80,7 +80,7 @@ fi
 # 2. Check and build REST JAR if missing
 if [[ ! -f "$REST_JAR" ]]; then
     echo "[INFO] Building GeckoCIRCUITS Web Editor package..."
-    mvn -pl src/modules/gecko-rest-api -am package -DskipTests -q
+    mvn -pl backend/gecko-rest-api -am package -DskipTests -q
     if [[ $? -ne 0 ]]; then
         echo "[ERROR] Build failed. Please ensure Maven and JDK are installed."
         exit 1

@@ -7,7 +7,7 @@ services:
   # ==========================================================================
   gecko-api:
     build:
-      context: ../src/modules
+      context: ../backend
       dockerfile: ../../docker/Dockerfile.api
     image: geckocircuits/rest-api:latest
     container_name: gecko-api

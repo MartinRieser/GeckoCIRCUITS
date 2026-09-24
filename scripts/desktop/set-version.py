@@ -4,7 +4,7 @@
 Usage: python scripts/desktop/set-version.py 1.2.3
 
 Updates desktop/app/tauri.conf.json, desktop Cargo.toml files, pom.xml files,
-src/modules/gecko-rest-api application properties (app.version),
+backend/gecko-rest-api application properties (app.version),
 and frontend/package.json. CI calls this with the v* tag before building installers.
 """
 
@@ -16,14 +16,14 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 TAURI_CONF = REPO_ROOT / "desktop" / "app" / "tauri.conf.json"
 APP_PROPERTIES = (
-    REPO_ROOT / "src" / "modules" / "gecko-rest-api" / "src" / "main" / "resources" / "application.properties"
+    REPO_ROOT / "backend" / "gecko-rest-api" / "src" / "main" / "resources" / "application.properties"
 )
 PACKAGE_JSON = REPO_ROOT / "frontend" / "package.json"
 CARGO_APP = REPO_ROOT / "desktop" / "app" / "Cargo.toml"
 CARGO_ENGINE = REPO_ROOT / "desktop" / "engine" / "Cargo.toml"
 POM_ROOT = REPO_ROOT / "pom.xml"
-POM_REST_API = REPO_ROOT / "src" / "modules" / "gecko-rest-api" / "pom.xml"
-POM_MCP = REPO_ROOT / "src" / "modules" / "gecko-mcp" / "pom.xml"
+POM_REST_API = REPO_ROOT / "backend" / "gecko-rest-api" / "pom.xml"
+POM_MCP = REPO_ROOT / "backend" / "gecko-mcp" / "pom.xml"
 
 
 def update_pom_artifact_version(pom_path: Path, artifact_id: str, new_version: str):

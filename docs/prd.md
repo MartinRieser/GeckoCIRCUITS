@@ -45,7 +45,7 @@ GeckoCIRCUITS is an open-source, Java 25 circuit simulator for power electronics
 - Supports `.ipes` circuit files (gzip-compressed XML)
 
 ### 4.2 Simulation Core Module (Production)
-- **Location:** `src/modules/gecko-simulation-core/`
+- **Location:** `backend/gecko-simulation-core/`
 - GUI-free simulation engine suitable for headless operation (216 source classes, 80 test files, 1,837 tests)
 - 30% JaCoCo coverage enforced via CI (exceeds threshold)
 - Key packages: `circuit.matrix`, `circuit.netlist`, `simulation`, `circuit.terminal`, `circuit.component`, `circuit.losscalculation`, `control.calculators`, `math`, `datacontainer`, `allg`, `io`, `signal`, `nativec`
@@ -54,7 +54,7 @@ GeckoCIRCUITS is an open-source, Java 25 circuit simulator for power electronics
 - Validated by `CorePackageValidationTest` (zero GUI imports)
 
 ### 4.3 REST API (v3.0.0 — Production Ready)
-- **Location:** `src/modules/gecko-rest-api/`
+- **Location:** `backend/gecko-rest-api/`
 - Spring Boot 3.2.1 with OpenAPI/Swagger documentation, Spring Security API key auth
 - **Live Endpoints (32 total):**
   - **Loss Calculation (3):** switching, conduction, detailed (bilinear interpolation)

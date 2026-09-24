@@ -35,7 +35,7 @@ GeckoCIRCUITS is a multi-domain circuit simulator built in Java 25. The architec
 ```
 gecko/
 ├── pom.xml                          # Parent build (all modules)
-├── src/modules/
+├── backend/
 │   ├── gecko-simulation-core/       # GUI-free simulation engine
 │   │   ├── pom.xml
 │   │   └── src/main/java/gecko/core/
@@ -44,8 +44,11 @@ gecko/
 │   │       ├── datacontainer/       # Signal storage (11 classes)
 │   │       ├── math/               # Matrix operations, LU decomposition
 │   │       └── api/                # Public interfaces
-│   └── gecko-rest-api/              # Spring Boot REST API (v3.0.0, 32 endpoints)
-│       ├── pom.xml                  # Spring Boot 3.2.1, WebSocket, Security
+│   ├── gecko-rest-api/              # Spring Boot REST API (v3.0.0, 32 endpoints)
+│   │   ├── pom.xml                  # Spring Boot 3.2.1, WebSocket, Security
+│   │   └── src/
+│   └── gecko-mcp/                   # Native Model Context Protocol (MCP) server
+│       ├── pom.xml
 │       └── src/
 ```
 

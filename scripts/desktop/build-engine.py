@@ -23,8 +23,8 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 APP_DIR = REPO_ROOT / "desktop" / "app"
 ENGINE_DIR = APP_DIR / "engine"
-JAR_TARGET = REPO_ROOT / "src" / "modules" / "gecko-rest-api" / "target"
-MCP_TARGET = REPO_ROOT / "src" / "modules" / "gecko-mcp" / "target"
+JAR_TARGET = REPO_ROOT / "backend" / "gecko-rest-api" / "target"
+MCP_TARGET = REPO_ROOT / "backend" / "gecko-mcp" / "target"
 def find_rest_jar():
     jars = [
         j for j in JAR_TARGET.glob("gecko-rest-api-*.jar")
@@ -134,7 +134,7 @@ def build_frontend():
 
 def build_jar():
     print("== Building gecko-rest-api + gecko-mcp jars ==")
-    run(["mvn", "-pl", "src/modules/gecko-rest-api,src/modules/gecko-mcp", "-am",
+    run(["mvn", "-pl", "backend/gecko-rest-api,backend/gecko-mcp", "-am",
          "package", "-DskipTests", "-q"], cwd=REPO_ROOT)
     return find_rest_jar()
 

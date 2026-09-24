@@ -34,7 +34,7 @@ The LLC resonant converter offers:
 The following verified LLC resonant converter models are available in the repository:
 
 - `resources/projects/llc_resonant_400v_24v.ipes` - Full 400V to 24V isolated LLC resonant converter model with resonant tank parameters and load regulation
-- `src/modules/gecko-mcp/src/test/resources/golden/llc_0.ipes` - Parametric LLC resonant converter simulation test model
+- `backend/gecko-mcp/src/test/resources/golden/llc_0.ipes` - Parametric LLC resonant converter simulation test model
 
 ## LLC Tank Topology
 

@@ -1,4 +1,4 @@
-# Docker build context for docker/Dockerfile.api (context: src/modules).
+# Docker build context for docker/Dockerfile.api (context: backend).
 # Whitelist only what the build needs; everything else stays out of the
 # context (keeps the daemon upload small and the build cache stable).
 *

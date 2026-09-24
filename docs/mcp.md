@@ -8,7 +8,7 @@ GeckoCIRCUITS ships a native [Model Context Protocol (MCP)](https://modelcontext
 
 | Attribute | Bundled Production Server (Java) | Development Server (Python) |
 |---|---|---|
-| **Location** | `src/modules/gecko-mcp` | `tools/mcp/gecko_mcp` |
+| **Location** | `backend/gecko-mcp` | `tools/mcp/gecko_mcp` |
 | **Packaging** | Shaded into `desktop/app/engine/gecko-mcp.jar` | Standalone Python module (`uv run`) |
 | **Requirements** | Bundled Java 25 runtime (zero external dependencies) | Python 3 + `uv`, JDK 25 for engine |
 | **Transports** | `stdio` | `stdio`, `sse`, `streamable-http` |

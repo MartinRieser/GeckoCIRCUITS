@@ -1,6 +1,6 @@
 #!/bin/bash
 # Build Docker image for GeckoCIRCUITS REST API
-# Uses docker/Dockerfile.api (multi-stage, context: src/modules) via docker/docker-compose.yml
+# Uses docker/Dockerfile.api (multi-stage, context: backend) via docker/docker-compose.yml
 
 set -e
 
@@ -16,7 +16,7 @@ echo "========================================"
 # Image tag
 IMAGE_NAME="geckocircuits/rest-api"
 # Module version from rest-api pom (first <version> after the parent block)
-VERSION="$(awk '/<\/parent>/{f=1;next} f && /<version>/{gsub(/.*<version>|<\/version>.*/,""); print; exit}' src/modules/gecko-rest-api/pom.xml)"
+VERSION="$(awk '/<\/parent>/{f=1;next} f && /<version>/{gsub(/.*<version>|<\/version>.*/,""); print; exit}' backend/gecko-rest-api/pom.xml)"
 TAG="${IMAGE_NAME}:${VERSION}"
 LATEST_TAG="${IMAGE_NAME}:latest"
 

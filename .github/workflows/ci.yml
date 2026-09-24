@@ -40,13 +40,13 @@ jobs:
 
       - name: Run engine, MCP & REST API tests (gating)
         run: |
-          mvn verify --no-transfer-progress -pl src/modules/gecko-simulation-core,src/modules/gecko-mcp,src/modules/gecko-rest-api -am
+          mvn verify --no-transfer-progress -pl backend/gecko-simulation-core,backend/gecko-mcp,backend/gecko-rest-api -am
 
       - name: Upload REST API Engine JAR
         uses: actions/upload-artifact@v7
         with:
           name: gecko-rest-api-jar
-          path: src/modules/gecko-rest-api/target/gecko-rest-api-*.jar
+          path: backend/gecko-rest-api/target/gecko-rest-api-*.jar
           retention-days: 30
           if-no-files-found: warn
 
@@ -54,7 +54,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: gecko-mcp-jar
-          path: src/modules/gecko-mcp/target/gecko-mcp-*.jar
+          path: backend/gecko-mcp/target/gecko-mcp-*.jar
           retention-days: 30
           if-no-files-found: warn
 

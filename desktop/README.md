@@ -14,7 +14,7 @@ the editor window with the backend origin injected into the webview.
 | `app/` | `gecko-desktop` crate: the Tauri shell (window, commands, download handling). Compiles with the official MSVC toolchain on Windows; CI gates it. |
 | `app/icons/` | Generated from `resources/packaging/GeckoCIRCUITS.png`. |
 | `app/engine/` | Build output: `gecko-rest-api.jar` + `gecko-mcp.jar` + jlink runtime (via `scripts/desktop/build-engine.py`). |
-| `src/modules/gecko-mcp/` | Bundled MCP server (10 tools, ported 1:1 from `tools/mcp/gecko_mcp`); Python original stays for repo development. |
+| `backend/gecko-mcp/` | Bundled MCP server (10 tools, ported 1:1 from `tools/mcp/gecko_mcp`); Python original stays for repo development. |
 
 ## Build & test
 

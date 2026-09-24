@@ -20,7 +20,7 @@ public class ClassicCompatibilityTest {
         File file = path.toFile();
         if (!file.exists()) {
             // fallback if running from root
-            path = Paths.get("src/modules/gecko-simulation-core/src/test/resources/ipes", relativePath);
+            path = Paths.get("backend/gecko-simulation-core/src/test/resources/ipes", relativePath);
             file = path.toFile();
         }
         if (!file.exists()) {

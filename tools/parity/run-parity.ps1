@@ -101,10 +101,10 @@ function Invoke-JavaBounded {
 try {
     # ---------- locate / build artifacts ----------
     $guiJar = Join-Path $script:RepoRoot 'src\modules\gecko-gui\target\gecko-1.0-jar-with-dependencies.jar'
-    $restJar = Join-Path $script:RepoRoot 'src\modules\gecko-rest-api\target\gecko-rest-api-1.0.0.jar'
+    $restJar = Join-Path $script:RepoRoot 'backend\gecko-rest-api\target\gecko-rest-api-1.0.0.jar'
     if (-not (Test-Path $guiJar) -or -not (Test-Path $restJar)) {
         Write-Host 'building engine jars (skipping tests)...'
-        & mvn -q -f (Join-Path $script:RepoRoot 'pom.xml') package '-pl' 'src/modules/gecko-rest-api' '-am' '-DskipTests' '-Djacoco.skip=true' '-Dcheckstyle.skip=true' '-Dpmd.skip=true' '-Dspotbugs.skip=true' '-o'
+        & mvn -q -f (Join-Path $script:RepoRoot 'pom.xml') package '-pl' 'backend/gecko-rest-api' '-am' '-DskipTests' '-Djacoco.skip=true' '-Dcheckstyle.skip=true' '-Dpmd.skip=true' '-Dspotbugs.skip=true' '-o'
         if ($LASTEXITCODE -ne 0) { throw 'maven package failed' }
     }
 

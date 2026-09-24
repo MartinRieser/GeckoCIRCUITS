@@ -5,9 +5,9 @@ on:
     paths:
       - 'desktop/**'
       - 'frontend/**'
-      - 'src/modules/gecko-simulation-core/**'
-      - 'src/modules/gecko-rest-api/**'
-      - 'src/modules/gecko-mcp/**'
+      - 'backend/gecko-simulation-core/**'
+      - 'backend/gecko-rest-api/**'
+      - 'backend/gecko-mcp/**'
       - 'scripts/desktop/**'
       - '.github/workflows/desktop.yml'
   push:
@@ -86,7 +86,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Java tests (engine + REST API + MCP server)
-        run: mvn verify --no-transfer-progress -pl src/modules/gecko-simulation-core,src/modules/gecko-mcp,src/modules/gecko-rest-api -am
+        run: mvn verify --no-transfer-progress -pl backend/gecko-simulation-core,backend/gecko-mcp,backend/gecko-rest-api -am
 
       - name: Install frontend dependencies
         run: npm --prefix frontend ci

@@ -15,7 +15,7 @@ where it belongs — with your firmware project.
 
 ## The interface contract
 
-The repository ships the header [`gecko_c_block.h`](https://github.com/MartinRieser/GeckoCIRCUITS/blob/main/src/modules/gecko-simulation-core/src/main/resources/gecko/nativec/gecko_c_block.h)
+The repository ships the header [`gecko_c_block.h`](https://github.com/MartinRieser/GeckoCIRCUITS/blob/main/backend/gecko-simulation-core/src/main/resources/gecko/nativec/gecko_c_block.h)
 (it is also copied into every desktop installation under `engine/gecko_c_block.h`).
 Include it in your project; it provides the `GECKO_EXPORT` macro and the
 `extern "C"` guards so the same file works from C and C++.
