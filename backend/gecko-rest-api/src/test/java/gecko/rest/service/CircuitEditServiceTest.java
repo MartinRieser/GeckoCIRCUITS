@@ -611,6 +611,43 @@ class CircuitEditServiceTest {
         assertEquals("0", raw.getParameterStrings()[1]);
     }
 
+    @Test
+    void patchComponent_capacitorInitialVoltageSyncsLegacySlots() {
+        service.createComponent(circuitId,
+                new ComponentCreateRequest("LK", 3, "C_test", 20, 20, null, null));
+        CircuitModel.ComponentData comp = findByName("C_test");
+        // Preload old simulation cache slots as if loaded from a previous run
+        comp.setRawParameters(new double[]{1e-4, 5.0, 1.2, 5.0, 5.0, 0.0});
+
+        // Patch initial voltage (param1) to 0.0
+        service.patchComponent(circuitId, "C_test",
+                new ComponentPatchRequest(null, null, null, null, Map.of("param1", 0.0)));
+
+        double[] raw = comp.getRawParameters();
+        assertEquals(0.0, raw[1], 1e-12, "param1 should be 0.0");
+        assertEquals(0.0, raw[2], 1e-12, "current cache slot 2 should be cleared to 0.0");
+        assertEquals(0.0, raw[3], 1e-12, "voltage cache slot 3 should be set to 0.0");
+        assertEquals(0.0, raw[4], 1e-12, "node X cache slot 4 should be set to 0.0");
+        assertEquals(0.0, raw[5], 1e-12, "node Y cache slot 5 should be cleared to 0.0");
+    }
+
+    @Test
+    void patchComponent_inductorInitialCurrentSyncsLegacySlots() {
+        service.createComponent(circuitId,
+                new ComponentCreateRequest("LK", 2, "L_test", 20, 20, null, null));
+        CircuitModel.ComponentData comp = findByName("L_test");
+        // Preload old simulation cache slot 2
+        comp.setRawParameters(new double[]{1e-3, 4.25, 4.25});
+
+        // Patch initial current (param1) to 0.0
+        service.patchComponent(circuitId, "L_test",
+                new ComponentPatchRequest(null, null, null, null, Map.of("param1", 0.0)));
+
+        double[] raw = comp.getRawParameters();
+        assertEquals(0.0, raw[1], 1e-12, "param1 should be 0.0");
+        assertEquals(0.0, raw[2], 1e-12, "current cache slot 2 should be synchronized to 0.0");
+    }
+
     // ========== Catalog ==========
 
     @Test

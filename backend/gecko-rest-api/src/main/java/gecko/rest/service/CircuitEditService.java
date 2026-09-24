@@ -762,10 +762,23 @@ public class CircuitEditService {
                     raw[idx] = n.doubleValue();
                 }
             }
+            int typ = comp.getType();
+            // When initial condition (param1) is modified, synchronize/clear legacy operating-point cache slots
+            // so stale state from previously loaded or paused runs never overrides the user's setting.
+            if (parameters.containsKey("param1") && parameters.get("param1") instanceof Number n) {
+                double val = n.doubleValue();
+                if (typ == 3) { // Capacitor: raw[1]=uC0, raw[2]=i0, raw[3]=uC, raw[4]=pX, raw[5]=pY
+                    if (raw.length > 2) raw[2] = 0.0;
+                    if (raw.length > 3) raw[3] = val;
+                    if (raw.length > 4) raw[4] = val;
+                    if (raw.length > 5) raw[5] = 0.0;
+                } else if (typ == 2) { // Inductor: raw[1]=iL0, raw[2]=i0
+                    if (raw.length > 2) raw[2] = val;
+                }
+            }
             comp.setRawParameters(raw);
             // Keep the semantic primary alias (resistance/inductance/capacitance)
             // in sync with param0 so consumers of the named key never see a stale value.
-            int typ = comp.getType();
             if (raw.length > 0 && (typ == 1 || typ == 2 || typ == 3)) {
                 comp.setParameter(CircuitModel.ComponentData.resolveParameterKey(typ), raw[0]);
             }

@@ -146,7 +146,7 @@ public class InitialConditionSolver {
 
             if (type == CircuitTypCore.LK_C || type == CircuitTypCore.TH_CTH) {
                 // Capacitor: dialog initial voltage is in param[1], saved state in param[4]/[5]
-                double u0 = (params.length > 1 && Double.isFinite(params[1]) && params[1] != 0.0)
+                double u0 = (params.length > 1 && Double.isFinite(params[1]))
                         ? params[1] : (stateSlot(params, 4) - stateSlot(params, 5));
                 if (nodeY == 0 && nodeX < pALT.length) {
                     pALT[nodeX] = u0;
@@ -215,7 +215,7 @@ public class InitialConditionSolver {
                 iALT[i] = stateSlot(params, 2);
             } else if (type == CircuitTypCore.LK_L || type == CircuitTypCore.NONLIN_REL) {
                 // Inductor: dialog initial current is in param[1], saved current in param[2]
-                double i0 = (params.length > 1 && Double.isFinite(params[1]) && params[1] != 0.0)
+                double i0 = (params.length > 1 && Double.isFinite(params[1]))
                         ? params[1] : stateSlot(params, 2);
                 iALT[i] = i0;
                 iALTALT[i] = i0;
@@ -224,7 +224,7 @@ public class InitialConditionSolver {
                 }
             } else if (type == CircuitTypCore.LK_LKOP2) {
                 // Coupled inductor: restore initial current
-                double i0 = (params.length > 1 && Double.isFinite(params[1]) && params[1] != 0.0)
+                double i0 = (params.length > 1 && Double.isFinite(params[1]))
                         ? params[1] : stateSlot(params, 2);
                 iALT[i] = i0;
                 iALTALT[i] = i0;
@@ -234,7 +234,7 @@ public class InitialConditionSolver {
             } else if (type == CircuitTypCore.LK_I || type == CircuitTypCore.TH_FLOW) {
                 // Current source: restore initial current
                 // param[6] = saved current value
-                double i0 = (params.length > 1 && Double.isFinite(params[1]) && params[1] != 0.0)
+                double i0 = (params.length > 1 && Double.isFinite(params[1]))
                         ? params[1] : stateSlot(params, 6);
                 iALT[i] = i0;
             }
