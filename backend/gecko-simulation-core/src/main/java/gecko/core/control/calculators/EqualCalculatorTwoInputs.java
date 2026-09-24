@@ -13,14 +13,14 @@
  */
 package gecko.core.control.calculators;
 
-public final class EqualCalculatorTwoInputs extends AbstractTwoInputsOneOutputCalculator {    
+public final class EqualCalculatorTwoInputs extends EqualCalculatorMultiInput {
+
+    public EqualCalculatorTwoInputs() {
+        super(2);
+    }
 
     @Override
     public void calculateYOUT(final double deltaT) {
-        if(_inputSignal[0][0] == _inputSignal[1][0]) {
-            _outputSignal[0][0] = 1;
-        } else {
-            _outputSignal[0][0] = 0;
-        }                
+        _outputSignal[0][0] = (_inputSignal[0][0] == _inputSignal[1][0]) ? 1.0 : 0.0;
     }
 }

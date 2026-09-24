@@ -16,10 +16,7 @@ package gecko.core.datacontainer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import java.util.Observer;
-import java.util.Observable;
 
-@SuppressWarnings("deprecation")
 class DataContainerGlobalTest {
 
     private DataContainerGlobal global;
@@ -165,8 +162,8 @@ class DataContainerGlobalTest {
         String[] signalNames = {"Signal"};
         global.init(1, signalNames, "Time");
 
-        TestObserver testObserver = new TestObserver();
-        global.addObserver(testObserver);
+        TestDataListener testListener = new TestDataListener();
+        global.addListener(testListener);
 
         float[] values = {1.0f};
         for (int i = 0; i < 5000; i++) {
@@ -440,13 +437,13 @@ class DataContainerGlobalTest {
     }
 
     /**
-     * Helper class for testing observer notifications.
+     * Helper class for testing listener notifications.
      */
-    private static class TestObserver implements Observer {
+    private static class TestDataListener implements DataContainerListener {
         int notificationCount = 0;
 
         @Override
-        public void update(Observable o, Object arg) {
+        public void onDataContainerUpdate(AbstractDataContainer container, Object eventData) {
             notificationCount++;
         }
     }

@@ -41,7 +41,6 @@ import org.apache.logging.log4j.Logger;
  * or a required symbol cannot be loaded, outputs hold at their initial values,
  * the error is logged once and available via {@link #getLoadError()}.</p>
  */
-@SuppressWarnings("restricted") // FFM downcall/libraryLookup is the purpose of this block
 public final class CLibraryCalculator extends AbstractControlCalculatable
         implements InitializableAtSimulationStart {
 

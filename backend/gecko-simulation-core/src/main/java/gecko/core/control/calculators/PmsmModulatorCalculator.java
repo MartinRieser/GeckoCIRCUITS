@@ -17,7 +17,6 @@ package gecko.core.control.calculators;
  * TODO: beautify this mess!
  * @author andreas
  */
-@SuppressWarnings("PMD")
 public final class PmsmModulatorCalculator extends AbstractControlCalculatable {
 
     private static final int NO_INPUTS = 4;

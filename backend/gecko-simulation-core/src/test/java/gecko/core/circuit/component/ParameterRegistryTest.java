@@ -29,7 +29,7 @@ class ParameterRegistryTest {
 
     @BeforeEach
     void setUp() {
-        registry = new ParameterRegistry<>();
+        registry = ParameterRegistry.createDefault();
     }
 
     // ===== Registration Tests =====

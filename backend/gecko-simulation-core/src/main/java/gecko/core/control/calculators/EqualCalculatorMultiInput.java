@@ -13,7 +13,7 @@
  */
 package gecko.core.control.calculators;
 
-public final class EqualCalculatorMultiInput extends AbstractControlCalculatable {
+public class EqualCalculatorMultiInput extends AbstractControlCalculatable {
 
     public EqualCalculatorMultiInput(final int intputSize) {
         super(intputSize, 1);

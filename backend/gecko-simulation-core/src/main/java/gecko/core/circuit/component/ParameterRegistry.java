@@ -103,12 +103,13 @@ public class ParameterRegistry<P> {
     }
 
     /**
-     * Creates an empty parameter registry with a default string-based adapter.
-     * Used for simple testing scenarios.
+     * Creates a type-safe parameter registry with a default {@link SimpleParameterAdapter}.
+     * Used for testing scenarios and standalone parameter collections.
+     *
+     * @return a new ParameterRegistry configured for SimpleParameter
      */
-    @SuppressWarnings("unchecked")
-    public ParameterRegistry() {
-        this((ParameterAdapter<P>) new SimpleParameterAdapter());
+    public static ParameterRegistry<SimpleParameter> createDefault() {
+        return new ParameterRegistry<>(new SimpleParameterAdapter());
     }
 
     /**

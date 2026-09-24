@@ -13,18 +13,7 @@
  */
 package gecko.core.datacontainer;
 
-import java.util.Observable;
-import java.util.Observer;
-
-/**
- * Global data container that wraps another data container and provides
- * a unified interface for accessing simulation results.
- *
- * This is a simplified GUI-free version for use in headless simulation core.
- * It uses DataContainerSimple as the underlying storage.
- */
-@SuppressWarnings("deprecation")
-public final class DataContainerGlobal extends AbstractDataContainer implements Observer, DataContainerValuesSettable {
+public final class DataContainerGlobal extends AbstractDataContainer implements DataContainerListener, DataContainerValuesSettable {
 
     private AbstractDataContainer _data;
     private DataContainerValuesSettable _settable;
@@ -61,7 +50,7 @@ public final class DataContainerGlobal extends AbstractDataContainer implements 
 
         _settable = data;
         _data = data;
-        _data.addObserver(this);
+        _data.addListener(this);
     }
 
     /**
@@ -142,7 +131,7 @@ public final class DataContainerGlobal extends AbstractDataContainer implements 
     public void clear() {
         if (_data != null) {
             _data.setContainerStatus(ContainerStatus.DELETED);
-            _data.deleteObservers();
+            _data.removeListener(this);
         }
         _settable = null;
         _data = null;
@@ -220,10 +209,10 @@ public final class DataContainerGlobal extends AbstractDataContainer implements 
     }
 
     @Override
-    public void update(final Observable observable, final Object arg) {
+    public void onDataContainerUpdate(final AbstractDataContainer container, final Object arg) {
         if (_data != null && getMaximumTimeIndex(0) != _lastDataIndex) {
             this.setChanged();
-            this.notifyObservers();
+            this.notifyListeners(arg);
             _lastDataIndex = getMaximumTimeIndex(0);
         }
     }

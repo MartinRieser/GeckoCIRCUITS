@@ -13,7 +13,7 @@
  */
 package gecko.core.control.calculators;
 
-public final class OrCalculatorMultipleInputs extends AbstractControlCalculatable {
+public class OrCalculatorMultipleInputs extends AbstractControlCalculatable {
 
     public OrCalculatorMultipleInputs(final int noInputs) {
         super(noInputs, 1);

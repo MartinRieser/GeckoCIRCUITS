@@ -44,7 +44,6 @@ public class NativeCBlock {
         _customCClassLoader = new NativeCClassLoader();
     }
 
-    @SuppressWarnings({"PMD.SignatureDeclareThrowsException", "PMD.AvoidArrayLoops"})
     void calculateYOUT(final double time, final double deltaT, final double[][] inputSignals,
             final double[][] outputSignals) throws Exception {
 

@@ -35,21 +35,26 @@ import gecko.core.io.SerializationUtils;
 public final class UserParameterCoreImpl<T> implements UserParameterCore<T> {
 
     private T _value;
+    private final Class<T> _typeClass;
     private final String _identifier;
     private final String _shortName;
     private final String _longName;
     private final String _unit;
 
-    private UserParameterCoreImpl(String identifier, T initialValue, String shortName, String longName, String unit) {
+    private UserParameterCoreImpl(String identifier, T initialValue, Class<T> typeClass, String shortName, String longName, String unit) {
         if (identifier == null || identifier.trim().isEmpty()) {
             throw new IllegalArgumentException("Parameter identifier cannot be null or empty");
         }
         if (initialValue == null) {
             throw new IllegalArgumentException("Initial value cannot be null");
         }
+        if (typeClass == null) {
+            throw new IllegalArgumentException("Type class cannot be null");
+        }
 
         this._identifier = identifier;
         this._value = initialValue;
+        this._typeClass = typeClass;
         this._shortName = shortName != null ? shortName : identifier;
         this._longName = longName != null ? longName : identifier;
         this._unit = unit != null ? unit : "";
@@ -78,24 +83,16 @@ public final class UserParameterCoreImpl<T> implements UserParameterCore<T> {
 
     @Override
     public void readFromTokenMap(TokenMap tokenMap) {
-        if (_value instanceof Double) {
-            @SuppressWarnings("unchecked")
-            T newValue = (T) Double.valueOf(tokenMap.readDataLine(_identifier, (Double) _value));
-            _value = newValue;
-        } else if (_value instanceof Integer) {
-            @SuppressWarnings("unchecked")
-            T newValue = (T) Integer.valueOf(tokenMap.readDataLine(_identifier, (Integer) _value));
-            _value = newValue;
-        } else if (_value instanceof Boolean) {
-            @SuppressWarnings("unchecked")
-            T newValue = (T) Boolean.valueOf(tokenMap.readDataLine(_identifier, (Boolean) _value));
-            _value = newValue;
-        } else if (_value instanceof String) {
-            @SuppressWarnings("unchecked")
-            T newValue = (T) tokenMap.readDataLine(_identifier, (String) _value);
-            _value = newValue;
+        if (_typeClass == Double.class) {
+            _value = _typeClass.cast(tokenMap.readDataLine(_identifier, (Double) _value));
+        } else if (_typeClass == Integer.class) {
+            _value = _typeClass.cast(tokenMap.readDataLine(_identifier, (Integer) _value));
+        } else if (_typeClass == Boolean.class) {
+            _value = _typeClass.cast(tokenMap.readDataLine(_identifier, (Boolean) _value));
+        } else if (_typeClass == String.class) {
+            _value = _typeClass.cast(tokenMap.readDataLine(_identifier, (String) _value));
         } else {
-            throw new UnsupportedOperationException("Unsupported parameter type: " + _value.getClass().getSimpleName());
+            throw new UnsupportedOperationException("Unsupported parameter type: " + _typeClass.getSimpleName());
         }
     }
 
@@ -131,24 +128,67 @@ public final class UserParameterCoreImpl<T> implements UserParameterCore<T> {
     public static final class Builder<T> {
         private final String identifier;
         private final T initialValue;
+        private final Class<T> typeClass;
         private String shortName;
         private String longName;
         private String unit;
 
-        private Builder(String identifier, T initialValue) {
+        private Builder(String identifier, T initialValue, Class<T> typeClass) {
             this.identifier = identifier;
             this.initialValue = initialValue;
+            this.typeClass = typeClass;
         }
 
         /**
-         * Start building a new parameter.
+         * Start building a new Double parameter.
          * @param identifier Unique save identifier (e.g., "tj", "uBlock")
          * @param initialValue Initial parameter value
-         * @param <T> Parameter type (Double, Integer, Boolean, String)
          * @return Builder instance
          */
-        public static <T> Builder<T> start(String identifier, T initialValue) {
-            return new Builder<>(identifier, initialValue);
+        public static Builder<Double> start(String identifier, Double initialValue) {
+            return new Builder<>(identifier, initialValue, Double.class);
+        }
+
+        /**
+         * Start building a new Integer parameter.
+         * @param identifier Unique save identifier
+         * @param initialValue Initial parameter value
+         * @return Builder instance
+         */
+        public static Builder<Integer> start(String identifier, Integer initialValue) {
+            return new Builder<>(identifier, initialValue, Integer.class);
+        }
+
+        /**
+         * Start building a new Boolean parameter.
+         * @param identifier Unique save identifier
+         * @param initialValue Initial parameter value
+         * @return Builder instance
+         */
+        public static Builder<Boolean> start(String identifier, Boolean initialValue) {
+            return new Builder<>(identifier, initialValue, Boolean.class);
+        }
+
+        /**
+         * Start building a new String parameter.
+         * @param identifier Unique save identifier
+         * @param initialValue Initial parameter value
+         * @return Builder instance
+         */
+        public static Builder<String> start(String identifier, String initialValue) {
+            return new Builder<>(identifier, initialValue, String.class);
+        }
+
+        /**
+         * Start building a new parameter with explicit type token.
+         * @param identifier Unique save identifier
+         * @param initialValue Initial parameter value
+         * @param typeClass Type token class
+         * @param <T> Parameter type
+         * @return Builder instance
+         */
+        public static <T> Builder<T> start(String identifier, T initialValue, Class<T> typeClass) {
+            return new Builder<>(identifier, initialValue, typeClass);
         }
 
         /**
@@ -186,7 +226,7 @@ public final class UserParameterCoreImpl<T> implements UserParameterCore<T> {
          * @return New UserParameterCoreImpl instance
          */
         public UserParameterCoreImpl<T> build() {
-            return new UserParameterCoreImpl<>(identifier, initialValue, shortName, longName, unit);
+            return new UserParameterCoreImpl<>(identifier, initialValue, typeClass, shortName, longName, unit);
         }
     }
 }

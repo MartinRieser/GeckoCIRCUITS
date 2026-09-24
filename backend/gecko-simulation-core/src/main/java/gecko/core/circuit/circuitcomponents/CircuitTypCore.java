@@ -13,6 +13,7 @@
  */
 package gecko.core.circuit.circuitcomponents;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -124,7 +125,15 @@ public enum CircuitTypCore {
 
     private final int typeNumber;
 
-    private static Map<Integer, CircuitTypCore> lookupMap;
+    private static final Map<Integer, CircuitTypCore> LOOKUP_MAP;
+
+    static {
+        Map<Integer, CircuitTypCore> map = new HashMap<>();
+        for (CircuitTypCore type : values()) {
+            map.put(type.typeNumber, type);
+        }
+        LOOKUP_MAP = Collections.unmodifiableMap(map);
+    }
 
     CircuitTypCore(int typeNumber) {
         this.typeNumber = typeNumber;
@@ -141,6 +150,16 @@ public enum CircuitTypCore {
     }
 
     /**
+     * Finds the CircuitTypCore enum value from an integer type number, returning null if unknown.
+     *
+     * @param typeNumber the integer type identifier
+     * @return the corresponding enum value, or null if unknown
+     */
+    public static CircuitTypCore findByTypeNumber(int typeNumber) {
+        return LOOKUP_MAP.get(typeNumber);
+    }
+
+    /**
      * Gets the CircuitTypCore enum value from an integer type number.
      *
      * @param typeNumber the integer type identifier
@@ -148,14 +167,7 @@ public enum CircuitTypCore {
      * @throws IllegalArgumentException if no type exists for the given number
      */
     public static CircuitTypCore fromTypeNumber(int typeNumber) {
-        if (lookupMap == null) {
-            lookupMap = new HashMap<>();
-            for (CircuitTypCore type : values()) {
-                lookupMap.put(type.typeNumber, type);
-            }
-        }
-
-        CircuitTypCore result = lookupMap.get(typeNumber);
+        CircuitTypCore result = LOOKUP_MAP.get(typeNumber);
         if (result == null) {
             throw new IllegalArgumentException("Unknown circuit type number: " + typeNumber);
         }
@@ -169,10 +181,7 @@ public enum CircuitTypCore {
      * @return true if the type number corresponds to a known component type
      */
     public static boolean isValidTypeNumber(int typeNumber) {
-        if (lookupMap == null) {
-            fromTypeNumber(1); // Initialize the map
-        }
-        return lookupMap.containsKey(typeNumber);
+        return LOOKUP_MAP.containsKey(typeNumber);
     }
 
     /**
@@ -266,5 +275,39 @@ public enum CircuitTypCore {
     public boolean requiresVoltageSourceHandling() {
         return this == LK_U || this == LK_LKOP2 || this == LK_TRANS ||
                this == REL_MMF || this == TH_TEMP;
+    }
+
+    /**
+     * Checks if this component forms an electrical, thermal, or magnetic branch element
+     * in the MNA matrix equation. Non-branch components include mutual couplings,
+     * terminals, and non-simulated module placeholders.
+     *
+     * @return true if this type forms a matrix branch element
+     */
+    public boolean isBranchComponent() {
+        return switch (this) {
+            case LK_M, REL_TERMINAL, LK_GLOBAL_TERMINAL, REL_GLOBAL_TERMINAL,
+                 TH_TERMINAL, TH_GLOBAL_TERMINAL, LK_TERMINAL, TH_PvCHIP, TH_MODUL -> false;
+            default -> true;
+        };
+    }
+
+    /**
+     * Checks if this component is expanded into an internal subcircuit macro-model
+     * before matrix assembly (e.g. BJT, ideal transformer).
+     *
+     * @return true if this component undergoes subcircuit macro-expansion
+     */
+    public boolean isSubcircuitExpansionTarget() {
+        return this == LK_BJT || this == LK_TRANS;
+    }
+
+    /**
+     * Checks if this component has more than two terminals in the schematic layout.
+     *
+     * @return true if this component has 3 or more pins
+     */
+    public boolean isMultiTerminal() {
+        return this == LK_BJT || this == LK_TRANS || this == LK_OPV1;
     }
 }

@@ -97,17 +97,21 @@ The `resources/` directory contains ready-to-simulate circuits:
 git clone https://github.com/MartinRieser/GeckoCIRCUITS.git
 cd GeckoCIRCUITS
 
-# Build (produces target/gecko-1.0-jar-with-dependencies.jar)
+# Build (simulation core, REST API, and MCP server)
 mvn clean package -DskipTests
 
-# Run
-java -Xmx3G -Dpolyglot.js.nashorn-compat=true -jar target/gecko-1.0-jar-with-dependencies.jar
+# Run the web editor (serves http://localhost:8080/gecko/)
+run-web-editor.bat    &:: Windows
+./run-web-editor.sh   # Linux / macOS
 
 # Run tests
 mvn test
 ```
 
 Requires: Java 25 JDK + Maven 3.6+
+
+> If the build fails with `error: release version 25 not supported`, Maven is running on an older JDK.
+> Point `JAVA_HOME` at a JDK 25 installation and verify with `mvn -version` (it prints the Java version Maven uses).
 
 ## Logging Configuration
 

@@ -30,20 +30,32 @@ public class BVector {
     private final ArrayList<BStampable> _isNotBasisStampables = new ArrayList<BStampable>();
     private boolean updateAllFlag = true;
 
-    @SuppressWarnings("this-escape")
     public BVector(final int size, final List<BStampable> bstampables) {
         b = new double[size];
         basisB = new double[size];
 
         for (BStampable bstampable : bstampables) {
-                _bStampables.add(bstampable);
-                if (bstampable.isBasisStampable()) {
-                    _isBasisStampable.add(bstampable);
-                    bstampable.registerBVector(this);
-                } else {
-                    _isNotBasisStampables.add(bstampable);
-                }
+            _bStampables.add(bstampable);
+            if (bstampable.isBasisStampable()) {
+                _isBasisStampable.add(bstampable);
+            } else {
+                _isNotBasisStampables.add(bstampable);
+            }
         }
+    }
+
+    /**
+     * Factory method that creates and fully initializes a BVector instance.
+     * Registers all basis-stampable components after object construction completes.
+     *
+     * @param size size of the vector
+     * @param bstampables stampable elements
+     * @return fully initialized BVector
+     */
+    public static BVector create(final int size, final List<BStampable> bstampables) {
+        BVector vector = new BVector(size, bstampables);
+        vector.registerBVector();
+        return vector;
     }
 
     //constructor for creating a copy of a BVector

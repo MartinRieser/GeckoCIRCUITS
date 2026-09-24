@@ -13,19 +13,14 @@
  */
 package gecko.core.control.calculators;
 
-/**
- * Logic AND for two input signals
- * @author andreas
- */
-public final class AndTwoPortCalculator extends AbstractTwoInputsOneOutputCalculator {
+public final class AndTwoPortCalculator extends AndMultiInputCalculator {
+
+    public AndTwoPortCalculator() {
+        super(2);
+    }
 
     @Override
     public void calculateYOUT(final double deltaT) {
-        if (_inputSignal[0][0] > SIGNAL_THRESHOLD && _inputSignal[1][0] > SIGNAL_THRESHOLD) {
-            _outputSignal[0][0] = 1;
-        } else {
-            _outputSignal[0][0] = 0;
-        }
-
+        _outputSignal[0][0] = (_inputSignal[0][0] > SIGNAL_THRESHOLD && _inputSignal[1][0] > SIGNAL_THRESHOLD) ? 1.0 : 0.0;
     }
 }

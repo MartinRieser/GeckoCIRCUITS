@@ -47,14 +47,24 @@ public class StamperRegistry {
     }
 
     /**
-     * Creates a registry initialized with all standard stampers.
+     * Creates a registry initialized with all standard stampers for the specified solver type.
+     *
+     * @param solverType numerical integration method
+     * @return a new registry with default stampers registered
+     */
+    public static StamperRegistry createDefault(final gecko.core.allg.SolverType solverType) {
+        StamperRegistry registry = new StamperRegistry();
+        registry.registerDefaults(solverType);
+        return registry;
+    }
+
+    /**
+     * Creates a registry initialized with all standard stampers using Backward Euler.
      *
      * @return a new registry with default stampers registered
      */
     public static StamperRegistry createDefault() {
-        StamperRegistry registry = new StamperRegistry();
-        registry.registerDefaults();
-        return registry;
+        return createDefault(gecko.core.allg.SolverType.SOLVER_BE);
     }
 
     /**
@@ -62,11 +72,15 @@ public class StamperRegistry {
      * Includes passive components, sources, and semiconductor switches.
      */
     private void registerDefaults() {
+        registerDefaults(gecko.core.allg.SolverType.SOLVER_BE);
+    }
+
+    private void registerDefaults(final gecko.core.allg.SolverType solverType) {
         // Passive components
         register(CircuitTypCore.LK_R, new ResistorStamper());
         register(CircuitTypCore.LK_C, new CapacitorStamper());
         register(CircuitTypCore.LK_L, new InductorStamper());
-        register(CircuitTypCore.LK_LKOP2, new InductorStamper());
+        register(CircuitTypCore.LK_LKOP2, new CoupledInductorStamper(solverType));
 
         // Sources
         register(CircuitTypCore.LK_U, new VoltageSourceStamper());

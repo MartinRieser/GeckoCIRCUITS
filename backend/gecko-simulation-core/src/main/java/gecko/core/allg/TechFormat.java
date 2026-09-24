@@ -15,12 +15,11 @@ package gecko.core.allg;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import java.text.NumberFormat;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Locale;
 import java.io.Serializable;
 
-@SuppressWarnings("serial")
 public class TechFormat implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LogManager.getLogger(TechFormat.class);
@@ -30,7 +29,7 @@ public class TechFormat implements Serializable {
     //
     private int anzDigits = 4;  // default
     //
-    private DecimalFormat df;
+    private transient DecimalFormat df;
     //------------------------------
     private String[] abk = new String[]{"p", "n", "u", "m", "k", "M"};  // possible technical number inputs
     private int[] hoch = new int[]{-12, -9, -6, -3, +3, +6};   // corresponding exponents
@@ -40,7 +39,14 @@ public class TechFormat implements Serializable {
     //------------------------------
 
     public TechFormat() {
-        df = (DecimalFormat) (NumberFormat.getNumberInstance(Locale.of("en", "US")));
+        df = (DecimalFormat) NumberFormat.getNumberInstance(Locale.of("en", "US"));
+    }
+
+    private DecimalFormat getDecimalFormat() {
+        if (df == null) {
+            df = (DecimalFormat) NumberFormat.getNumberInstance(Locale.of("en", "US"));
+        }
+        return df;
     }
 
     public void setMaximumDigits(int anzDigits) {
@@ -126,8 +132,9 @@ public class TechFormat implements Serializable {
         if (pattern.equals(TechFormat.FORMAT_AUTO)) {
             return this.formatENG(x, anzDigits);
         } else {
-            df.applyPattern(pattern);
-            StringBuffer sb = new StringBuffer(df.format(x));
+            DecimalFormat fmt = getDecimalFormat();
+            fmt.applyPattern(pattern);
+            StringBuffer sb = new StringBuffer(fmt.format(x));
             for (int i1 = 0; i1 < sb.length(); i1++) {
                 if (sb.charAt(i1) == 'E') {
                     sb.setCharAt(i1, 'e');  // 'e' is visually more appealing than 'E'

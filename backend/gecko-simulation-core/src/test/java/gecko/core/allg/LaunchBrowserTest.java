@@ -17,12 +17,11 @@ class LaunchBrowserTest {
     }
 
     @Test
-    @SuppressWarnings("deprecation")
     void testUtilityClassCannotBeInstantiated() {
         // Verify the private constructor exists
         Constructor<?>[] constructors = LaunchBrowser.class.getDeclaredConstructors();
         assertEquals(1, constructors.length, "Should have exactly one constructor");
-        assertFalse(constructors[0].isAccessible(), "Constructor should be private");
+        assertTrue(java.lang.reflect.Modifier.isPrivate(constructors[0].getModifiers()), "Constructor should be private");
     }
 
     @Test

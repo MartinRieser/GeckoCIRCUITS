@@ -17,6 +17,12 @@ import gecko.core.allg.SolverType;
 import gecko.core.circuit.SourceType;
 import gecko.core.circuit.circuitcomponents.CircuitTypCore;
 import gecko.core.circuit.netlist.INetList;
+import gecko.core.circuit.parameters.CapacitorParameters;
+import gecko.core.circuit.parameters.DiodeParameters;
+import gecko.core.circuit.parameters.InductorParameters;
+import gecko.core.circuit.parameters.ResistorParameters;
+import gecko.core.circuit.parameters.SourceParameters;
+import gecko.core.circuit.parameters.SwitchParameters;
 
 /**
  * Calculates component currents from node potentials after solving Ax=b system.
@@ -25,14 +31,13 @@ import gecko.core.circuit.netlist.INetList;
  * This class implements the current calculation phase of the circuit simulation,
  * computing branch currents based on component types and node voltages.
  */
-@SuppressWarnings("fallthrough")
 public class ComponentCurrentCalculator {
 
-    private static final double FAST_NULL_R = 1.0e-9;
-    private static final double FAST_NULL_L = 1.0e-12;
+    private static final double FAST_NULL_R = SolverConstants.FAST_NULL_R;
+    private static final double FAST_NULL_L = SolverConstants.FAST_NULL_L;
 
     /** Above this resistance a semiconductor branch counts as blocking (legacy rDoffDEFAULT). */
-    private static final double RD_OFF_THRESHOLD = 1.0e7;
+    private static final double RD_OFF_THRESHOLD = SolverConstants.RD_OFF_THRESHOLD;
 
     /**
      * Calculates component currents after solving the MNA system Ax=b.
@@ -76,7 +81,10 @@ public class ComponentCurrentCalculator {
         }
 
         boolean stepBack = false;
-        double acceptanceThreshold = errorCounter > 600 ? 0.2 : errorCounter > 300 ? 0.1 : 0.0;
+        double acceptanceThreshold = errorCounter > SolverConstants.RELAXATION_THRESHOLD_TIER_2
+                ? SolverConstants.RELAXATION_VOLTAGE_TIER_2
+                : (errorCounter > SolverConstants.RELAXATION_THRESHOLD_TIER_1
+                        ? SolverConstants.RELAXATION_VOLTAGE_TIER_1 : 0.0);
 
         double[] p = matrixSolver.getP();
         double[] pALT = matrixSolver.getPALT();
@@ -94,219 +102,182 @@ public class ComponentCurrentCalculator {
 
             switch (componentType) {
 
-                case LK_R:
-                case REL_RELUCTANCE:
-                case TH_RTH:
-                case TH_AMBIENT: {
-                    double resistance = parameters[0];
+                case LK_R, REL_RELUCTANCE, TH_RTH, TH_AMBIENT -> {
+                    double resistance = parameters[ResistorParameters.INDEX_RESISTANCE];
                     if (resistance < FAST_NULL_R) {
                         resistance = FAST_NULL_R;
                     }
-                    parameters[1] = (p[nodeX] - p[nodeY]) / resistance;
-                    break;
+                    parameters[ResistorParameters.INDEX_CURRENT] = (p[nodeX] - p[nodeY]) / resistance;
                 }
 
-                case LK_S:
-                case LK_MOSFET: {
-                    double resistance = parameters[0];
+                case LK_S, LK_MOSFET -> {
+                    double resistance = parameters[SwitchParameters.INDEX_CURRENT_RESISTANCE];
                     if (resistance < FAST_NULL_R) {
                         resistance = FAST_NULL_R;
                     }
                     // legacy storage: LK_S -> [3]=i,[4]=u; MOSFET -> [4]=i,[5]=u.
                     // params[1] holds the rOn slot of LK_S and must not be clobbered.
-                    writeCurrentAndVoltage(parameters, 4,
+                    writeCurrentAndVoltage(parameters, SwitchParameters.INDEX_CURRENT,
                             (p[nodeX] - p[nodeY]) / resistance, p[nodeX] - p[nodeY]);
-                    break;
                 }
 
-                case LK_L:
-                case NONLIN_REL: {
-                    double inductance = parameters[0];
+                case LK_L, NONLIN_REL -> {
+                    double inductance = parameters[InductorParameters.INDEX_INDUCTANCE];
                     double voltage = p[nodeX] - p[nodeY];
 
                     if (inductance < FAST_NULL_L) {
                         if (solverType == SolverType.SOLVER_BE) {
-                            parameters[1] = iALT[elementIdx] + dt / FAST_NULL_L * voltage;
+                            parameters[InductorParameters.INDEX_INITIAL_CURRENT] = iALT[elementIdx] + dt / FAST_NULL_L * voltage;
                         } else if (solverType == SolverType.SOLVER_TRZ) {
-                            parameters[1] = iALT[elementIdx] + dt / (2 * FAST_NULL_L) *
+                            parameters[InductorParameters.INDEX_INITIAL_CURRENT] = iALT[elementIdx] + dt / (2 * FAST_NULL_L) *
                                     (voltage + (pALT[nodeX] - pALT[nodeY]));
                         } else if (solverType == SolverType.SOLVER_GS) {
-                            parameters[1] = 2.0 / 3.0 * dt / FAST_NULL_L * voltage +
-                                    4.0 / 3.0 * iALT[elementIdx] - 1.0 / 3.0 * iALTALT[elementIdx];
+                            parameters[InductorParameters.INDEX_INITIAL_CURRENT] = SolverConstants.GEAR_SHICHMAN_COEFF_2_3 * dt / FAST_NULL_L * voltage +
+                                    SolverConstants.GEAR_SHICHMAN_COEFF_4_3 * iALT[elementIdx] - SolverConstants.GEAR_SHICHMAN_COEFF_1_3 * iALTALT[elementIdx];
                         }
                     } else {
                         if (solverType == SolverType.SOLVER_BE) {
-                            parameters[1] = iALT[elementIdx] + dt / inductance * voltage;
+                            parameters[InductorParameters.INDEX_INITIAL_CURRENT] = iALT[elementIdx] + dt / inductance * voltage;
                         } else if (solverType == SolverType.SOLVER_TRZ) {
-                            parameters[1] = iALT[elementIdx] + dt / (2 * inductance) *
+                            parameters[InductorParameters.INDEX_INITIAL_CURRENT] = iALT[elementIdx] + dt / (2 * inductance) *
                                     (voltage + (pALT[nodeX] - pALT[nodeY]));
                         } else if (solverType == SolverType.SOLVER_GS) {
-                            parameters[1] = 2.0 / 3.0 * dt / inductance * voltage +
-                                    4.0 / 3.0 * iALT[elementIdx] - 1.0 / 3.0 * iALTALT[elementIdx];
+                            parameters[InductorParameters.INDEX_INITIAL_CURRENT] = SolverConstants.GEAR_SHICHMAN_COEFF_2_3 * dt / inductance * voltage +
+                                    SolverConstants.GEAR_SHICHMAN_COEFF_4_3 * iALT[elementIdx] - SolverConstants.GEAR_SHICHMAN_COEFF_1_3 * iALTALT[elementIdx];
                         }
                     }
-                    break;
                 }
 
-                case TH_CTH:
-                    parameters[6] = parameters[0];
-                    parameters[7] = parameters[0];
-                    /* falls through */
-                case LK_C: {
-                    double capacitance = parameters[6];
-                    double nonlinearFactor = parameters[7];
+                case TH_CTH, LK_C -> {
+                    if (componentType == CircuitTypCore.TH_CTH) {
+                        parameters[CapacitorParameters.INDEX_EFFECTIVE_C] = parameters[CapacitorParameters.INDEX_CAPACITANCE];
+                        parameters[CapacitorParameters.INDEX_NONLINEAR_FACTOR] = parameters[CapacitorParameters.INDEX_CAPACITANCE];
+                    }
+                    double capacitance = parameters[CapacitorParameters.INDEX_EFFECTIVE_C];
+                    double nonlinearFactor = parameters[CapacitorParameters.INDEX_NONLINEAR_FACTOR];
                     double fac = 1.0 - nonlinearFactor / capacitance;
-                    double nonLinearCorrectionCurrent = -fac * parameters[10];
+                    double nonLinearCorrectionCurrent = -fac * parameters[CapacitorParameters.INDEX_COMPANION_CURRENT];
 
                     double voltage = p[nodeX] - p[nodeY];
                     double previousVoltage = pALT[nodeX] - pALT[nodeY];
 
-                    if (isNewIteration) {
-                        if (solverType == SolverType.SOLVER_BE) {
-                            parameters[1] = capacitance / dt * (voltage - previousVoltage);
-                        } else if (solverType == SolverType.SOLVER_TRZ) {
-                            parameters[1] = 2 * capacitance / dt * (voltage - previousVoltage) - iALT[elementIdx];
-                        } else if (solverType == SolverType.SOLVER_GS) {
-                            double twoStepsBack = pALTALT[nodeX] - pALTALT[nodeY];
-                            parameters[1] = capacitance / dt * (1.5 * voltage - 2 * previousVoltage + 0.5 * twoStepsBack);
-                        }
-                        parameters[10] = parameters[1];
-                        parameters[1] += nonLinearCorrectionCurrent;
-                    } else {
-                        if (solverType == SolverType.SOLVER_BE) {
-                            parameters[1] = capacitance / dt * (voltage - previousVoltage);
-                        } else if (solverType == SolverType.SOLVER_TRZ) {
-                            parameters[1] = 2 * capacitance / dt * (voltage - previousVoltage) - iALT[elementIdx];
-                        } else if (solverType == SolverType.SOLVER_GS) {
-                            double twoStepsBack = pALTALT[nodeX] - pALTALT[nodeY];
-                            parameters[1] = capacitance / dt * (1.5 * voltage - 2 * previousVoltage + 0.5 * twoStepsBack);
-                        }
-                        parameters[10] = parameters[1];
-                        parameters[1] += nonLinearCorrectionCurrent;
+                    if (solverType == SolverType.SOLVER_BE) {
+                        parameters[CapacitorParameters.INDEX_INITIAL_VOLTAGE] = capacitance / dt * (voltage - previousVoltage);
+                    } else if (solverType == SolverType.SOLVER_TRZ) {
+                        parameters[CapacitorParameters.INDEX_INITIAL_VOLTAGE] = 2 * capacitance / dt * (voltage - previousVoltage) - iALT[elementIdx];
+                    } else if (solverType == SolverType.SOLVER_GS) {
+                        double twoStepsBack = pALTALT[nodeX] - pALTALT[nodeY];
+                        parameters[CapacitorParameters.INDEX_INITIAL_VOLTAGE] = capacitance / dt * (1.5 * voltage - 2 * previousVoltage + 0.5 * twoStepsBack);
                     }
-                    break;
+                    parameters[CapacitorParameters.INDEX_COMPANION_CURRENT] = parameters[CapacitorParameters.INDEX_INITIAL_VOLTAGE];
+                    parameters[CapacitorParameters.INDEX_INITIAL_VOLTAGE] += nonLinearCorrectionCurrent;
                 }
 
-                case LK_I:
-                case TH_FLOW: {
-                    int sourceType = (int) parameters[0];
+                case LK_I, TH_FLOW -> {
+                    int sourceType = (int) parameters[SourceParameters.INDEX_SOURCE_TYPE];
                     switch (sourceType) {
-                        case SourceType.QUELLE_DC_NEW:
-                        case SourceType.QUELLE_DC:
-                            parameters[1] = parameters[1];
-                            break;
-                        case SourceType.QUELLE_SIGNALGESTEUERT_NEW:
-                        case SourceType.QUELLE_SIGNALGESTEUERT:
-                            parameters[1] = parameters[1];
-                            break;
-                        case SourceType.QUELLE_SIN_NEW:
-                        case SourceType.QUELLE_SIN: {
-                            double amplitude = parameters[20];
-                            double frequency = parameters[2];
-                            double phase = parameters[4];
-                            double offset = parameters[3];
-                            parameters[1] = amplitude * Math.sin(2 * Math.PI * frequency * time -
-                                    Math.toRadians(phase)) + offset;
-                            break;
+                        case SourceType.QUELLE_DC_NEW, SourceType.QUELLE_DC,
+                             SourceType.QUELLE_SIGNALGESTEUERT_NEW, SourceType.QUELLE_SIGNALGESTEUERT -> {
+                            parameters[SourceParameters.INDEX_VALUE_DC] = parameters[SourceParameters.INDEX_VALUE_DC];
                         }
-                        case SourceType.QUELLE_VOLTAGECONTROLLED_DIRECTLY_NEW:
-                        case SourceType.QUELLE_VOLTAGECONTROLLED_DIRECTLY:
-                            parameters[1] = 0.0;
-                            break;
-                        default:
-                            break;
+                        case SourceType.QUELLE_SIN_NEW, SourceType.QUELLE_SIN -> {
+                            double amplitude = parameters[SourceParameters.INDEX_AMPLITUDE_SIN];
+                            double frequency = parameters[SourceParameters.INDEX_FREQUENCY];
+                            double phase = parameters[SourceParameters.INDEX_PHASE_DEG];
+                            double offset = parameters[SourceParameters.INDEX_OFFSET];
+                            parameters[SourceParameters.INDEX_VALUE_DC] = amplitude * Math.sin(2 * Math.PI * frequency * time -
+                                    Math.toRadians(phase)) + offset;
+                        }
+                        case SourceType.QUELLE_VOLTAGECONTROLLED_DIRECTLY_NEW,
+                             SourceType.QUELLE_VOLTAGECONTROLLED_DIRECTLY -> {
+                            parameters[SourceParameters.INDEX_VALUE_DC] = 0.0;
+                        }
+                        default -> {
+                        }
                     }
-                    break;
                 }
 
-                case LK_U:
-                case REL_MMF:
-                case TH_TEMP:
-                    break;
+                case LK_U, REL_MMF, TH_TEMP -> {
+                }
 
-                case LK_D: {
+                case LK_D -> {
                     // Port of the legacy diode model: params[0]=current rD, [1]=uF,
                     // [2]=rOn, [3]=rOff, [4]=i, [5]=u. The piecewise-linear state
                     // flip sets [0] and requests a re-solve of this time step.
-                    double rD = parameters[0];
-                    double uf = parameters[1];
+                    double rD = parameters[DiodeParameters.INDEX_CURRENT_RESISTANCE];
+                    double uf = parameters[DiodeParameters.INDEX_FORWARD_VOLTAGE];
                     double voltage = p[nodeX] - p[nodeY];
-                    writeCurrentAndVoltage(parameters, 4, (voltage - uf) / rD, voltage);
+                    writeCurrentAndVoltage(parameters, DiodeParameters.INDEX_CURRENT, (voltage - uf) / rD, voltage);
                     boolean conducting = rD < RD_OFF_THRESHOLD;
                     if (conducting && voltage < stoergroesse * uf + acceptanceThreshold) {
-                        parameters[0] = parameters[3];
+                        parameters[DiodeParameters.INDEX_CURRENT_RESISTANCE] = parameters[DiodeParameters.INDEX_R_OFF];
                         stepBack = true;
                     } else if (!conducting && rD >= RD_OFF_THRESHOLD
                             && voltage > stoergroesse * uf - acceptanceThreshold) {
-                        parameters[0] = parameters[2];
+                        parameters[DiodeParameters.INDEX_CURRENT_RESISTANCE] = parameters[DiodeParameters.INDEX_R_ON];
                         stepBack = true;
                     }
-                    break;
                 }
-
-                case LK_THYR: {
-                    double rD = parameters[0];
-                    double uf = parameters[1];
+                case LK_THYR -> {
+                    double rD = parameters[DiodeParameters.INDEX_CURRENT_RESISTANCE];
+                    double uf = parameters[DiodeParameters.INDEX_FORWARD_VOLTAGE];
                     double voltage = p[nodeX] - p[nodeY];
-                    writeCurrentAndVoltage(parameters, 4, (voltage - uf) / rD, voltage);
-                    if (voltage < stoergroesse * uf + acceptanceThreshold && rD < 0.5 * parameters[3]) {
-                        if (time - parameters[11] > 3 * parameters[9]) {
-                            parameters[11] = time;
+                    writeCurrentAndVoltage(parameters, DiodeParameters.INDEX_CURRENT, (voltage - uf) / rD, voltage);
+                    if (voltage < stoergroesse * uf + acceptanceThreshold
+                            && rD < 0.5 * parameters[DiodeParameters.INDEX_R_OFF]) {
+                        if (time - parameters[DiodeParameters.INDEX_LAST_CROSSING_TIME]
+                                > 3 * parameters[DiodeParameters.INDEX_TURN_OFF_DELAY]) {
+                            parameters[DiodeParameters.INDEX_LAST_CROSSING_TIME] = time;
                         }
-                        if (time - parameters[11] >= parameters[9]) {
-                            parameters[0] = parameters[3];
+                        if (time - parameters[DiodeParameters.INDEX_LAST_CROSSING_TIME]
+                                >= parameters[DiodeParameters.INDEX_TURN_OFF_DELAY]) {
+                            parameters[DiodeParameters.INDEX_CURRENT_RESISTANCE] = parameters[DiodeParameters.INDEX_R_OFF];
                             stepBack = true;
                         }
                     }
-                    if (parameters[8] == 1 && voltage > stoergroesse * uf - acceptanceThreshold
+                    if (parameters[DiodeParameters.INDEX_GATE_SIGNAL] == 1.0
+                            && voltage > stoergroesse * uf - acceptanceThreshold
                             && rD >= RD_OFF_THRESHOLD) {
-                        parameters[0] = parameters[2];
+                        parameters[DiodeParameters.INDEX_CURRENT_RESISTANCE] = parameters[DiodeParameters.INDEX_R_ON];
                         stepBack = true;
                     }
-                    break;
                 }
 
-                case LK_IGBT: {
-                    double rD = parameters[0];
-                    double uf = parameters[1];
+                case LK_IGBT -> {
+                    double rD = parameters[DiodeParameters.INDEX_CURRENT_RESISTANCE];
+                    double uf = parameters[DiodeParameters.INDEX_FORWARD_VOLTAGE];
                     double voltage = p[nodeX] - p[nodeY];
-                    writeCurrentAndVoltage(parameters, 4, (voltage - uf) / rD, voltage);
+                    writeCurrentAndVoltage(parameters, DiodeParameters.INDEX_CURRENT, (voltage - uf) / rD, voltage);
                     boolean conducting = rD < RD_OFF_THRESHOLD;
-                    if (conducting && parameters[8] == 1
+                    if (conducting && parameters[DiodeParameters.INDEX_GATE_SIGNAL] == 1.0
                             && voltage < stoergroesse * uf + acceptanceThreshold) {
-                        parameters[0] = parameters[3];
+                        parameters[DiodeParameters.INDEX_CURRENT_RESISTANCE] = parameters[DiodeParameters.INDEX_R_OFF];
                         stepBack = true;
                     }
-                    if (parameters[8] == 1 && !conducting
+                    if (parameters[DiodeParameters.INDEX_GATE_SIGNAL] == 1.0 && !conducting
                             && voltage > stoergroesse * uf - acceptanceThreshold) {
-                        parameters[0] = parameters[2];
+                        parameters[DiodeParameters.INDEX_CURRENT_RESISTANCE] = parameters[DiodeParameters.INDEX_R_ON];
                         stepBack = true;
                     }
-                    if (parameters[8] == 0 && parameters[0] == parameters[2]) {
-                        parameters[0] = parameters[3];
+                    if (parameters[DiodeParameters.INDEX_GATE_SIGNAL] == 0.0
+                            && parameters[DiodeParameters.INDEX_CURRENT_RESISTANCE] == parameters[DiodeParameters.INDEX_R_ON]) {
+                        parameters[DiodeParameters.INDEX_CURRENT_RESISTANCE] = parameters[DiodeParameters.INDEX_R_OFF];
                         stepBack = true;
                     }
-                    break;
                 }
 
-                case LK_LKOP2: {
+                case LK_LKOP2 -> {
                     int voltageSourceNumber = netlist.getVoltageSourceNumber(elementIdx);
                     int voltageSourceIdx = netlist.getNodeMax() + voltageSourceNumber;
-                    parameters[1] = p[voltageSourceIdx];
-                    break;
+                    parameters[InductorParameters.INDEX_INITIAL_CURRENT] = p[voltageSourceIdx];
                 }
 
-                case LK_TERMINAL:
-                case TH_TERMINAL:
-                case REL_TERMINAL:
-                case LK_GLOBAL_TERMINAL:
-                case TH_GLOBAL_TERMINAL:
-                case REL_GLOBAL_TERMINAL:
-                case LK_M:
-                    break;
+                case LK_TERMINAL, TH_TERMINAL, REL_TERMINAL, LK_GLOBAL_TERMINAL,
+                     TH_GLOBAL_TERMINAL, REL_GLOBAL_TERMINAL, LK_M -> {
+                }
 
-                default:
-                    break;
+                default -> {
+                }
             }
 
             // Legacy stores the element current in a type-specific parameter slot;
@@ -314,8 +285,8 @@ public class ComponentCurrentCalculator {
             // shift promotes it to iALT (inductor/cap history terms depend on it).
             if (parameters.length > 1) {
                 int currentSlot = switch (componentType) {
-                    case LK_S, LK_MOSFET, LK_D, LK_THYR, LK_IGBT -> 4;
-                    default -> 1;
+                    case LK_S, LK_MOSFET, LK_D, LK_THYR, LK_IGBT -> DiodeParameters.INDEX_CURRENT;
+                    default -> ResistorParameters.INDEX_CURRENT;
                 };
                 iCurrent[elementIdx] = parameters[Math.min(currentSlot, parameters.length - 1)];
             }

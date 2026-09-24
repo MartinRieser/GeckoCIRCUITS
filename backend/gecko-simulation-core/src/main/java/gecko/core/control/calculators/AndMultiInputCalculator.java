@@ -17,7 +17,7 @@ package gecko.core.control.calculators;
  * Multiple inputs means: more than two signals can tested for the "AND" logic.
  * @author andreas
  */
-public final class AndMultiInputCalculator extends AbstractControlCalculatable {
+public class AndMultiInputCalculator extends AbstractControlCalculatable {
 
     public AndMultiInputCalculator(final int inputNumber) {
         super(inputNumber, 1);

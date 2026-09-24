@@ -43,8 +43,7 @@ public final class FourierGUIless {
         _baseFreq = 1.0 / (_rng2 - _rng1);
     }
 
-   @SuppressWarnings("PMD")
-   public double[][][] doFourier() throws GeckoInvalidArgumentException {
+    public double[][][] doFourier() throws GeckoInvalidArgumentException {
         if ((_nMin < 0) || (_nMax < 0) || (_nMin > _nMax)) {
               throw new GeckoInvalidArgumentException("Invalid harmonics value for Fourier analysis.");
         }

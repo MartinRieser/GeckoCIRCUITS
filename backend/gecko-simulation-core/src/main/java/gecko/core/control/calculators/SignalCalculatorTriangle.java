@@ -19,32 +19,9 @@ public final class SignalCalculatorTriangle extends AbstractSignalCalculatorPeri
         super(noInputs, amplitudeAC, frequency, phase, dcOffset, duty);        
     }    
     
-    /**
-     * Todo: this function is duplicated @see SignalCalculatorRectangle     
-     */
     @Override
     protected void calculateStartSignal(final double dtx, final double txEnd, final double phaseX) {
-        double txValue = 0;
-        while (txValue < (txEnd * phaseX / (2 * Math.PI))) {
-            final double dyUPx = (_amplitudeAC * 2 * _frequency * dtx) / _dutyRatio;
-            final double dyDOWNx = (_amplitudeAC * 2 * _frequency * dtx) / (1 - _dutyRatio);
-                        
-            if (_aufsteigend) {
-                _triangle += dyUPx;
-            } else {
-                _triangle -= dyDOWNx;
-            }
-            if (_amplitudeAC != 0) {  // bei t==0 kann es hier Verwirrung geben!
-                if (_triangle >= _amplitudeAC) {
-                    _triangle = _amplitudeAC;
-                    _aufsteigend = false;
-                } else if (_triangle <= -_amplitudeAC) {
-                    _triangle = -_amplitudeAC;
-                    _aufsteigend = true;
-                }
-            }
-            txValue += dtx;
-        }
+        integrateTriangleCarrier(dtx, txEnd * phaseX / (2 * Math.PI), _dutyRatio, _amplitudeAC);
         _triangle = -_triangle;
     }
 

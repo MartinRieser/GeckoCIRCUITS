@@ -16,32 +16,19 @@ package gecko.core.simulation.solver;
 import gecko.core.allg.SolverType;
 import gecko.core.circuit.circuitcomponents.CircuitTypCore;
 import gecko.core.circuit.netlist.INetList;
+import gecko.core.circuit.parameters.CapacitorParameters;
+import gecko.core.circuit.parameters.InductorParameters;
+import gecko.core.circuit.parameters.SourceParameters;
 
 /**
  * Solver for setting initial conditions in circuit simulation.
  *
- * This class extracts the initial condition logic from LKMatrices (lines 1290-1503)
- * to provide a GUI-free, testable initial condition solver for headless operation.
- *
- * Responsibilities:
- * 1. Setting initial node potentials (voltages) from capacitors and sources
- * 2. Setting initial element currents (inductors, current sources)
- * 3. Supporting different initialization modes (dialog vs. continue)
- *
- * Key simplifications for core module:
- * - Uses INetList interface instead of concrete NetListLK
- * - Works with MatrixSolver which provides getter/setter access
- * - Throws exceptions instead of showing GUI dialogs
- * - Foundational version (full logic can be added as netlist integration complete)
- *
- * @author GeckoCIRCUITS Team
+ * <p>Initializes node potentials and component currents for MNA simulation,
+ * supporting both dialog presets and continuation from previous states.</p>
  */
 public class InitialConditionSolver {
 
     private final SolverType solverType;
-
-    /** Threshold for treating inductance as zero */
-    private static final double FAST_NULL_L = 1e-10;
 
     /**
      * Constructs an InitialConditionSolver with the specified solver type.
@@ -146,8 +133,8 @@ public class InitialConditionSolver {
 
             if (type == CircuitTypCore.LK_C || type == CircuitTypCore.TH_CTH) {
                 // Capacitor: dialog initial voltage is in param[1], saved state in param[4]/[5]
-                double u0 = (params.length > 1 && Double.isFinite(params[1]))
-                        ? params[1] : (stateSlot(params, 4) - stateSlot(params, 5));
+                double u0 = (params.length > CapacitorParameters.INDEX_INITIAL_VOLTAGE && Double.isFinite(params[CapacitorParameters.INDEX_INITIAL_VOLTAGE]))
+                        ? params[CapacitorParameters.INDEX_INITIAL_VOLTAGE] : (stateSlot(params, CapacitorParameters.INDEX_SAVED_VX) - stateSlot(params, CapacitorParameters.INDEX_SAVED_VY));
                 if (nodeY == 0 && nodeX < pALT.length) {
                     pALT[nodeX] = u0;
                 } else if (nodeX == 0 && nodeY < pALT.length) {
@@ -159,14 +146,14 @@ public class InitialConditionSolver {
             } else if (type == CircuitTypCore.REL_MMF || type == CircuitTypCore.TH_TEMP) {
                 // MMF/Temperature source: restore potentials
                 // param[8] = voltage at X node, param[9] = voltage at Y node
-                if (nodeX < pALT.length) pALT[nodeX] = stateSlot(params, 8);
-                if (nodeY < pALT.length) pALT[nodeY] = stateSlot(params, 9);
+                if (nodeX < pALT.length) pALT[nodeX] = stateSlot(params, SourceParameters.INDEX_SAVED_VX);
+                if (nodeY < pALT.length) pALT[nodeY] = stateSlot(params, SourceParameters.INDEX_SAVED_VY);
             } else if (type == CircuitTypCore.LK_LKOP2) {
                 // Coupled inductor: restore source current in potential vector
                 // param[2] = source current
                 int voltageSourceNumber = netlist.getVoltageSourceNumber(i);
                 if (voltageSourceNumber > 0 && netlist.getNodeMax() + voltageSourceNumber < pALT.length) {
-                    pALT[netlist.getNodeMax() + voltageSourceNumber] = stateSlot(params, 2);
+                    pALT[netlist.getNodeMax() + voltageSourceNumber] = stateSlot(params, InductorParameters.INDEX_SAVED_CURRENT);
                 }
             }
         }
@@ -211,12 +198,11 @@ public class InitialConditionSolver {
 
             if (type == CircuitTypCore.LK_C || type == CircuitTypCore.TH_CTH) {
                 // Capacitor: restore initial current
-                // param[2] = initial current
-                iALT[i] = stateSlot(params, 2);
+                iALT[i] = stateSlot(params, CapacitorParameters.INDEX_SAVED_CURRENT);
             } else if (type == CircuitTypCore.LK_L || type == CircuitTypCore.NONLIN_REL) {
                 // Inductor: dialog initial current is in param[1], saved current in param[2]
-                double i0 = (params.length > 1 && Double.isFinite(params[1]))
-                        ? params[1] : stateSlot(params, 2);
+                double i0 = (params.length > InductorParameters.INDEX_INITIAL_CURRENT && Double.isFinite(params[InductorParameters.INDEX_INITIAL_CURRENT]))
+                        ? params[InductorParameters.INDEX_INITIAL_CURRENT] : stateSlot(params, InductorParameters.INDEX_SAVED_CURRENT);
                 iALT[i] = i0;
                 iALTALT[i] = i0;
                 if (iALTALTALT != null && i < iALTALTALT.length) {
@@ -224,8 +210,8 @@ public class InitialConditionSolver {
                 }
             } else if (type == CircuitTypCore.LK_LKOP2) {
                 // Coupled inductor: restore initial current
-                double i0 = (params.length > 1 && Double.isFinite(params[1]))
-                        ? params[1] : stateSlot(params, 2);
+                double i0 = (params.length > InductorParameters.INDEX_INITIAL_CURRENT && Double.isFinite(params[InductorParameters.INDEX_INITIAL_CURRENT]))
+                        ? params[InductorParameters.INDEX_INITIAL_CURRENT] : stateSlot(params, InductorParameters.INDEX_SAVED_CURRENT);
                 iALT[i] = i0;
                 iALTALT[i] = i0;
                 if (iALTALTALT != null && i < iALTALTALT.length) {
@@ -233,9 +219,8 @@ public class InitialConditionSolver {
                 }
             } else if (type == CircuitTypCore.LK_I || type == CircuitTypCore.TH_FLOW) {
                 // Current source: restore initial current
-                // param[6] = saved current value
-                double i0 = (params.length > 1 && Double.isFinite(params[1]))
-                        ? params[1] : stateSlot(params, 6);
+                double i0 = (params.length > SourceParameters.INDEX_VALUE_DC && Double.isFinite(params[SourceParameters.INDEX_VALUE_DC]))
+                        ? params[SourceParameters.INDEX_VALUE_DC] : stateSlot(params, SourceParameters.INDEX_SAVED_CURRENT);
                 iALT[i] = i0;
             }
         }
@@ -253,28 +238,12 @@ public class InitialConditionSolver {
      * @return the calculated coefficient aW for matrix stamping
      */
     public double getAWForInductance(double inductance, double timeStep) {
-        double aW = 0;
-
-        if (inductance < FAST_NULL_L) {
-            // Inductance is near zero - use threshold value
-            if (solverType == SolverType.SOLVER_BE) {
-                aW = timeStep / FAST_NULL_L;
-            } else if (solverType == SolverType.SOLVER_TRZ) {
-                aW = 0.5 * timeStep / FAST_NULL_L;
-            } else if (solverType == SolverType.SOLVER_GS) {
-                aW = 2.0 / 3.0 * (timeStep / FAST_NULL_L);
-            }
-        } else {
-            // Normal inductance value
-            if (solverType == SolverType.SOLVER_BE) {
-                aW = timeStep / inductance;
-            } else if (solverType == SolverType.SOLVER_TRZ) {
-                aW = 0.5 * timeStep / inductance;
-            } else if (solverType == SolverType.SOLVER_GS) {
-                aW = 2.0 / 3.0 * (timeStep / inductance);
-            }
-        }
-
-        return aW;
+        final double effectiveL = Math.max(inductance, SolverConstants.FAST_NULL_L);
+        return switch (solverType) {
+            case SOLVER_BE -> timeStep / effectiveL;
+            case SOLVER_TRZ -> SolverConstants.TRAPEZOIDAL_INTEGRATION_FACTOR * timeStep / effectiveL;
+            case SOLVER_GS -> SolverConstants.GEAR_SHICHMAN_MAIN_COEFF * (timeStep / effectiveL);
+            default -> timeStep / effectiveL;
+        };
     }
 }

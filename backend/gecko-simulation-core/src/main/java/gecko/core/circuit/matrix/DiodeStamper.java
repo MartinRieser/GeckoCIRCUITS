@@ -13,6 +13,9 @@
  */
 package gecko.core.circuit.matrix;
 
+import gecko.core.circuit.parameters.DiodeParameters;
+import gecko.core.simulation.solver.SolverConstants;
+
 /**
  * Matrix stamper implementation for diode components.
  *
@@ -45,22 +48,22 @@ package gecko.core.circuit.matrix;
 public class DiodeStamper implements IStatefulStamper {
 
     /** Parameter index of the CURRENT resistance (legacy netlist slot 0) */
-    public static final int PARAM_R_ON = 0;
+    public static final int PARAM_R_ON = DiodeParameters.INDEX_CURRENT_RESISTANCE;
 
-    /** Parameter index for OFF resistance */
+    /** Legacy 3-element parameter index for OFF resistance */
     public static final int PARAM_R_OFF = 1;
 
-    /** Parameter index for forward voltage threshold */
+    /** Legacy 3-element parameter index for forward voltage threshold */
     public static final int PARAM_U_FORWARD = 2;
 
     /** Default ON resistance (very low) */
-    public static final double DEFAULT_R_ON = 1e-3;
+    public static final double DEFAULT_R_ON = DiodeParameters.DEFAULT_R_ON;
 
     /** Default OFF resistance (very high) */
-    public static final double DEFAULT_R_OFF = 1e9;
+    public static final double DEFAULT_R_OFF = DiodeParameters.DEFAULT_R_OFF;
 
     /** Default forward voltage threshold */
-    public static final double DEFAULT_U_FORWARD = 0.7;
+    public static final double DEFAULT_U_FORWARD = DiodeParameters.DEFAULT_U_FORWARD;
 
     /** Minimum resistance to avoid numerical issues */
     private static final double MIN_RESISTANCE = 1e-12;
@@ -232,8 +235,14 @@ public class DiodeStamper implements IStatefulStamper {
      * @return forward voltage threshold
      */
     private double getUForward(double[] parameter) {
-        if (parameter != null && parameter.length > PARAM_U_FORWARD) {
-            return parameter[PARAM_U_FORWARD];
+        if (parameter != null) {
+            if (parameter.length >= 4) {
+                // Standard netlist layout: [current_rD, uF, rOn, rOff]
+                return parameter[DiodeParameters.INDEX_FORWARD_VOLTAGE];
+            } else if (parameter.length > PARAM_U_FORWARD) {
+                // Legacy 3-element test array: [rOn, rOff, uF]
+                return parameter[PARAM_U_FORWARD];
+            }
         }
         return uForward;
     }

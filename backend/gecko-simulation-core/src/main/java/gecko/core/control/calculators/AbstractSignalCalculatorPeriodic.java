@@ -64,6 +64,39 @@ public abstract class AbstractSignalCalculatorPeriodic extends AbstractSignalCal
         return phaseX;
     }
 
+    /**
+     * Integrates the internal triangle carrier state up to a target time horizon.
+     * Shared implementation for periodic waveform generators (triangle, rectangle).
+     *
+     * @param dtx step size for carrier advancement
+     * @param txTarget target time horizon
+     * @param effectiveDutyRatio duty ratio used for slope calculation
+     * @param maxAmplitude upper and lower saturation threshold
+     */
+    protected void integrateTriangleCarrier(final double dtx, final double txTarget,
+                                            final double effectiveDutyRatio, final double maxAmplitude) {
+        double txValue = 0;
+        final double dyUPx = (maxAmplitude * 2 * _frequency * dtx) / effectiveDutyRatio;
+        final double dyDOWNx = (maxAmplitude * 2 * _frequency * dtx) / (1 - effectiveDutyRatio);
+        while (txValue < txTarget) {
+            if (_aufsteigend) {
+                _triangle += dyUPx;
+            } else {
+                _triangle -= dyDOWNx;
+            }
+            if (maxAmplitude != 0) {
+                if (_triangle >= maxAmplitude) {
+                    _triangle = maxAmplitude;
+                    _aufsteigend = false;
+                } else if (_triangle <= -maxAmplitude) {
+                    _triangle = -maxAmplitude;
+                    _aufsteigend = true;
+                }
+            }
+            txValue += dtx;
+        }
+    }
+
     final void setDuty(final double value) {
         // limit between 0 and 1!
         _dutyRatio = Math.min(1, Math.max(0, value));

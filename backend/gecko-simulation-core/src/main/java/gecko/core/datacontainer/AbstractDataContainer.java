@@ -13,7 +13,8 @@
  */
 package gecko.core.datacontainer;
 
-import java.util.Observable;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * A powerful data storage object, keeps data information as e.g.
@@ -21,8 +22,85 @@ import java.util.Observable;
  *
  * GUI-free version for use in headless simulation core.
  */
-@SuppressWarnings("deprecation")
-public abstract class AbstractDataContainer extends Observable {
+public abstract class AbstractDataContainer {
+
+    private final List<DataContainerListener> listeners = new CopyOnWriteArrayList<>();
+    private boolean changed = false;
+
+    /**
+     * Registers a listener to be notified when this container updates.
+     *
+     * @param listener the listener to register
+     */
+    public void addListener(final DataContainerListener listener) {
+        if (listener != null && !listeners.contains(listener)) {
+            listeners.add(listener);
+        }
+    }
+
+    /**
+     * Unregisters a previously registered listener.
+     *
+     * @param listener the listener to remove
+     */
+    public void removeListener(final DataContainerListener listener) {
+        listeners.remove(listener);
+    }
+
+    /**
+     * Removes all registered listeners from this container.
+     */
+    public void clearListeners() {
+        listeners.clear();
+    }
+
+    /**
+     * Marks this data container as having been changed.
+     */
+    public synchronized void setChanged() {
+        changed = true;
+    }
+
+    /**
+     * Clears the changed state of this container.
+     */
+    public synchronized void clearChanged() {
+        changed = false;
+    }
+
+    /**
+     * Tests if this container has changed.
+     *
+     * @return true if changed, false otherwise
+     */
+    public synchronized boolean hasChanged() {
+        return changed;
+    }
+
+    /**
+     * Notifies all registered listeners if the container state has changed.
+     */
+    public void notifyListeners() {
+        notifyListeners(null);
+    }
+
+    /**
+     * Notifies all registered listeners if the container state has changed, passing the event argument.
+     *
+     * @param eventData the event argument
+     */
+    public void notifyListeners(final Object eventData) {
+        synchronized (this) {
+            if (!changed) {
+                return;
+            }
+            changed = false;
+        }
+        for (DataContainerListener listener : listeners) {
+            listener.onDataContainerUpdate(this, eventData);
+        }
+    }
+
 
     /**
      * Gets the minimum and maximum values in the specified column range.

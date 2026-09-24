@@ -13,7 +13,12 @@
  */
 package gecko.core.control.calculators;
 
-public final class MaxCalculatorTwoInputs extends AbstractTwoInputsOneOutputCalculator {    
+public final class MaxCalculatorTwoInputs extends MaxCalculatorMultiInputs {
+
+    public MaxCalculatorTwoInputs() {
+        super(2);
+    }
+
     @Override
     public void calculateYOUT(final double deltaT) {
         _outputSignal[0][0] = Math.max(_inputSignal[0][0], _inputSignal[1][0]);

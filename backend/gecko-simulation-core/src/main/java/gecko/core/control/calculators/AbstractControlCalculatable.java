@@ -18,7 +18,6 @@ package gecko.core.control.calculators;
  *
  * @author andreas
  */
-@SuppressWarnings("this-escape")
 public abstract class AbstractControlCalculatable {
     public static final double SIGNAL_THRESHOLD = 0.5;
     public static double _time = 0;
@@ -33,7 +32,7 @@ public abstract class AbstractControlCalculatable {
     public AbstractControlCalculatable(final int noInputs, final int noOutputs) {        
         _inputSignal = new double[noInputs][]; // careful: the array value of the input
         // signal is set when all components are connected within the netlist.
-        _outputSignal = createOutputSignal(noOutputs);
+        _outputSignal = new double[noOutputs][1];
     }
 
     public abstract void calculateYOUT(final double deltaT);
@@ -66,9 +65,5 @@ public abstract class AbstractControlCalculatable {
      * Intended to be overwritten by subclasses to free resources if necessary.
      */
     public void tearDownOnPause() {
-    }
-
-    protected double[][] createOutputSignal(final int noOutputs) {
-        return new double[noOutputs][1];
     }
 }

@@ -14,7 +14,7 @@
 package gecko.core.control.calculators;
 
 
-public final class MaxCalculatorMultiInputs extends AbstractControlCalculatable {
+public class MaxCalculatorMultiInputs extends AbstractControlCalculatable {
 
     public MaxCalculatorMultiInputs(final int noInputs) {
         super(noInputs, 1);

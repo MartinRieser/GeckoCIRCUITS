@@ -19,6 +19,10 @@ import gecko.core.circuit.circuitcomponents.CircuitTypCore;
 import gecko.core.circuit.matrix.IMatrixStamper;
 import gecko.core.circuit.matrix.StamperRegistry;
 import gecko.core.circuit.netlist.INetList;
+import gecko.core.circuit.parameters.CapacitorParameters;
+import gecko.core.circuit.parameters.DiodeParameters;
+import gecko.core.circuit.parameters.InductorParameters;
+import gecko.core.circuit.parameters.SourceParameters;
 import gecko.core.math.Matrix;
 
 /**
@@ -33,7 +37,6 @@ import gecko.core.math.Matrix;
  * - Node potentials (p, pALT, pALTALT, pALTALTALT) for time-stepping methods
  * - Component currents (iALT, iALTALT, iALTALTALT) for multi-step integration
  */
-@SuppressWarnings("fallthrough")
 public class MatrixSolver {
     private int matrixSize;           // Matrix order (node count + voltage source count + 1)
     private double[][] a;            // System matrix A for MNA
@@ -55,6 +58,9 @@ public class MatrixSolver {
     private Matrix matrixSolverA;     // Cached Matrix wrapper for A
     private boolean matrixChanged;    // Flag to indicate A matrix needs refactorization
 
+    // Cached stamper registry to avoid allocating registries each time step
+    private final StamperRegistry stamperRegistry;
+
     // Elements whose type has no registered stamper; they stamp nothing and
     // behave as open circuits. Recorded so runs can surface what was skipped.
     private final java.util.List<String> skippedElements = new java.util.ArrayList<>();
@@ -68,6 +74,7 @@ public class MatrixSolver {
         this.solverType = solverType;
         this.matrixSolverA = null;
         this.matrixChanged = true;
+        this.stamperRegistry = StamperRegistry.createDefault(solverType);
     }
 
     /**
@@ -233,8 +240,8 @@ public class MatrixSolver {
             }
         }
 
-        // Create stamper registry for component contributions
-        StamperRegistry registry = StamperRegistry.createDefault();
+        // Step 2: Use cached stamper registry for component contributions
+        StamperRegistry registry = this.stamperRegistry;
 
         // Step 2: Iterate through all components in the netlist
         int elementCount = netlist.getElementCount();
@@ -245,26 +252,6 @@ public class MatrixSolver {
             int voltageSourceNumber = netlist.getVoltageSourceNumber(elementIndex);
             int nodeZ = netlist.getNodeMax() + voltageSourceNumber;
             double[] parameters = netlist.getParameter(elementIndex);
-
-            // Coupled inductors use the extended MNA formulation (current as
-            // unknown); the registry's InductorStamper cannot express the
-            // z-row. Port of the legacy LKMatrices case LK_LKOP2; mutual
-            // coupling (M) terms are deferred like in the legacy port.
-            if (componentType == CircuitTypCore.LK_LKOP2) {
-                double inductance = parameters[0];
-                parameters[10] = inductance;
-                a[nodeX][nodeZ] += 1.0;
-                a[nodeY][nodeZ] -= 1.0;
-                a[nodeZ][nodeX] += 1.0;
-                a[nodeZ][nodeY] -= 1.0;
-                double companion = switch (solverType) {
-                    case SOLVER_TRZ -> -2 * inductance / dt;
-                    case SOLVER_GS -> -1.5 * inductance / dt;
-                    default -> -inductance / dt;
-                };
-                a[nodeZ][nodeZ] += companion;
-                continue;
-            }
 
             // Step 3: Get stamper for this component type and stamp matrix A
             IMatrixStamper stamper = registry.getStamper(componentType);
@@ -401,7 +388,7 @@ public class MatrixSolver {
      * @param capacitorError flag for capacitor error correction (reserved for future use)
      */
     public void buildVectorB(INetList netlist, double dt, double time, boolean capacitorError) {
-        final double FAST_NULL_L = 1e-12;  // Threshold for negligible inductance
+        final double FAST_NULL_L = SolverConstants.FAST_NULL_L;  // Threshold for negligible inductance
 
         // Clear vector b for accumulation
         for (int i = 0; i < matrixSize; i++) {
@@ -420,20 +407,14 @@ public class MatrixSolver {
 
             switch (componentType) {
                 // ===== Resistors and passive components (no b-vector contribution) =====
-                case LK_R:
-                case REL_RELUCTANCE:
-                case TH_RTH:
-                case TH_AMBIENT:
-                case LK_S:  // Ideal switch behaves like very high/low resistance
-                case LK_MOSFET:
+                case LK_R, REL_RELUCTANCE, TH_RTH, TH_AMBIENT, LK_S, LK_MOSFET -> {
                     // No contribution to b-vector (handled in matrix A)
-                    break;
+                }
 
                 // ===== Inductors (with history terms) =====
-                case LK_L:
-                case NONLIN_REL:
+                case LK_L, NONLIN_REL -> {
                     double[] params = netlist.getParameter(elementIdx);
-                    double inductance = params[0];
+                    double inductance = params[InductorParameters.INDEX_INDUCTANCE];
 
                     if (inductance < FAST_NULL_L) {
                         // Nearly-zero inductance: treat as connection
@@ -442,7 +423,8 @@ public class MatrixSolver {
                         } else if (solverType == SolverType.SOLVER_TRZ) {
                             bContribution = -iALT[elementIdx] - dt * (pALT[nodeX] - pALT[nodeY]) / (2 * FAST_NULL_L);
                         } else if (solverType == SolverType.SOLVER_GS) {
-                            bContribution = -4.0 / 3.0 * iALT[elementIdx] + 1.0 / 3.0 * iALTALT[elementIdx];
+                            bContribution = -SolverConstants.GEAR_SHICHMAN_COEFF_4_3 * iALT[elementIdx]
+                                    + SolverConstants.GEAR_SHICHMAN_COEFF_1_3 * iALTALT[elementIdx];
                         }
                     } else {
                         // Standard inductor history term
@@ -451,17 +433,18 @@ public class MatrixSolver {
                         } else if (solverType == SolverType.SOLVER_TRZ) {
                             bContribution = -iALT[elementIdx] - dt * (pALT[nodeX] - pALT[nodeY]) / (2 * inductance);
                         } else if (solverType == SolverType.SOLVER_GS) {
-                            bContribution = -4.0 / 3.0 * iALT[elementIdx] + 1.0 / 3.0 * iALTALT[elementIdx];
+                            bContribution = -SolverConstants.GEAR_SHICHMAN_COEFF_4_3 * iALT[elementIdx]
+                                    + SolverConstants.GEAR_SHICHMAN_COEFF_1_3 * iALTALT[elementIdx];
                         }
                     }
                     bVector[nodeX] += bContribution;
                     bVector[nodeY] -= bContribution;
-                    break;
+                }
 
                 // ===== Coupled Inductors (LKOP2 with mutual inductance) =====
-                case LK_LKOP2:
-                    params = netlist.getParameter(elementIdx);
-                    double inductanceInAMatrix = params[10];  // Inductance stored in parameter[10]
+                case LK_LKOP2 -> {
+                    double[] params = netlist.getParameter(elementIdx);
+                    double inductanceInAMatrix = params[InductorParameters.INDEX_EFFECTIVE_L];
 
                     if (solverType == SolverType.SOLVER_BE) {
                         bContribution = -iALT[elementIdx] * (inductanceInAMatrix / dt);
@@ -493,117 +476,97 @@ public class MatrixSolver {
                         bVector[voltageSourceIdx] -= couplingFactorB * c.getMutualInductance() / dt
                                 * iALT[partner];
                     }
-                    break;
+                }
 
                 // ===== Capacitors (with history terms) =====
-                case TH_CTH:
-                    // Thermal capacitance: ensure parameters are set correctly
-                    params = netlist.getParameter(elementIdx);
-                    params[6] = params[0];
-                    params[7] = params[0];
-                    // Falls through to LK_C handling
-                    /* falls through */
-                case LK_C:
-                    params = netlist.getParameter(elementIdx);
-                    double capacitance = params[6];
-                    double nonlinearFactor = params[7];
+                case TH_CTH, LK_C -> {
+                    double[] params = netlist.getParameter(elementIdx);
+                    if (componentType == CircuitTypCore.TH_CTH) {
+                        params[CapacitorParameters.INDEX_EFFECTIVE_C] = params[CapacitorParameters.INDEX_CAPACITANCE];
+                        params[CapacitorParameters.INDEX_NONLINEAR_FACTOR] = params[CapacitorParameters.INDEX_CAPACITANCE];
+                    }
+                    double capacitance = params[CapacitorParameters.INDEX_EFFECTIVE_C];
+                    double nonlinearFactor = params[CapacitorParameters.INDEX_NONLINEAR_FACTOR];
                     double fac = 1.0 - nonlinearFactor / capacitance;
 
                     if (solverType == SolverType.SOLVER_BE) {
-                        bContribution = capacitance / dt * (pALT[nodeX] - pALT[nodeY]) + fac * params[10];
+                        bContribution = capacitance / dt * (pALT[nodeX] - pALT[nodeY]) + fac * params[CapacitorParameters.INDEX_COMPANION_CURRENT];
                     } else if (solverType == SolverType.SOLVER_TRZ) {
-                        bContribution = 2 * capacitance / dt * (pALT[nodeX] - pALT[nodeY]) + iALT[elementIdx] + fac * params[10];
+                        bContribution = 2 * capacitance / dt * (pALT[nodeX] - pALT[nodeY]) + iALT[elementIdx] + fac * params[CapacitorParameters.INDEX_COMPANION_CURRENT];
                     } else if (solverType == SolverType.SOLVER_GS) {
-                        bContribution = capacitance / dt * (2 * (pALT[nodeX] - pALT[nodeY]) - 0.5 * (pALTALT[nodeX] - pALTALT[nodeY])) + fac * params[10];
+                        bContribution = capacitance / dt * (2 * (pALT[nodeX] - pALT[nodeY]) - 0.5 * (pALTALT[nodeX] - pALTALT[nodeY])) + fac * params[CapacitorParameters.INDEX_COMPANION_CURRENT];
                     }
                     bVector[nodeX] += bContribution;
                     bVector[nodeY] -= bContribution;
-                    break;
+                }
 
                 // ===== Nonlinear Semiconductors (Diodes, IGBTs, Thyristors) =====
-                case LK_IGBT:
-                case LK_D:
-                case LK_THYR:
-                    params = netlist.getParameter(elementIdx);
-                    if (params[0] < 10000) {
+                case LK_IGBT, LK_D, LK_THYR -> {
+                    double[] params = netlist.getParameter(elementIdx);
+                    if (params[DiodeParameters.INDEX_CURRENT_RESISTANCE] < SolverConstants.RD_OFF_THRESHOLD) {
                         // ON-state resistance component
-                        bContribution = params[1] / params[0];
+                        bContribution = params[DiodeParameters.INDEX_FORWARD_VOLTAGE] / params[DiodeParameters.INDEX_CURRENT_RESISTANCE];
                         bVector[nodeX] += bContribution;
                         bVector[nodeY] -= bContribution;
                     }
-                    break;
+                }
 
                 // ===== Current Sources (independent and controlled) =====
-                case LK_I:
-                case TH_FLOW: {
-                    params = netlist.getParameter(elementIdx);
-                    int sourceType = (int) params[0];
+                case LK_I, TH_FLOW -> {
+                    double[] params = netlist.getParameter(elementIdx);
+                    int sourceType = (int) params[SourceParameters.INDEX_SOURCE_TYPE];
                     double amplitude;
                     double frequency;
                     double phase;
                     double offset;
 
                     switch (sourceType) {
-                        case SourceType.QUELLE_DC_NEW:
-                        case SourceType.QUELLE_DC:
-                            bContribution = -params[1];
-                            break;
-                        case SourceType.QUELLE_SIGNALGESTEUERT_NEW:
-                        case SourceType.QUELLE_SIGNALGESTEUERT:
-                            bContribution = -params[1];
-                            break;
-                        case SourceType.QUELLE_SIN_NEW:
-                        case SourceType.QUELLE_SIN:
+                        case SourceType.QUELLE_DC_NEW, SourceType.QUELLE_DC,
+                             SourceType.QUELLE_SIGNALGESTEUERT_NEW, SourceType.QUELLE_SIGNALGESTEUERT -> {
+                            bContribution = -params[SourceParameters.INDEX_VALUE_DC];
+                        }
+                        case SourceType.QUELLE_SIN_NEW, SourceType.QUELLE_SIN -> {
                             // Sinusoidal source: amplitude * sin(2*pi*f*t - phase) + offset
-                            amplitude = params[20];
-                            frequency = params[2];
-                            phase = params[4];
-                            offset = params[3];
+                            amplitude = params[SourceParameters.INDEX_AMPLITUDE_SIN];
+                            frequency = params[SourceParameters.INDEX_FREQUENCY];
+                            phase = params[SourceParameters.INDEX_PHASE_DEG];
+                            offset = params[SourceParameters.INDEX_OFFSET];
                             bContribution = -amplitude * Math.sin(2 * Math.PI * frequency * time - Math.toRadians(phase)) + offset;
-                            break;
-                        case SourceType.QUELLE_VOLTAGECONTROLLED_DIRECTLY_NEW:
-                        case SourceType.QUELLE_VOLTAGECONTROLLED_DIRECTLY:
+                        }
+                        case SourceType.QUELLE_VOLTAGECONTROLLED_DIRECTLY_NEW,
+                             SourceType.QUELLE_VOLTAGECONTROLLED_DIRECTLY -> {
                             // Voltage-controlled current sources are handled via matrix A
                             bContribution = 0.0;
-                            break;
-                        default:
+                        }
+                        default -> {
                             bContribution = 0.0;
-                            break;
+                        }
                     }
 
                     bVector[nodeX] += bContribution;
                     bVector[nodeY] -= bContribution;
-                    break;
                 }
 
                 // ===== Voltage Sources (independent and controlled) =====
-                case LK_U:
-                case REL_MMF:
-                case TH_TEMP: {
-                    params = netlist.getParameter(elementIdx);
-                    int sourceType = (int) params[0];
+                case LK_U, REL_MMF, TH_TEMP -> {
+                    double[] params = netlist.getParameter(elementIdx);
+                    int sourceType = (int) params[SourceParameters.INDEX_SOURCE_TYPE];
 
                     switch (sourceType) {
-                        case SourceType.QUELLE_DC_NEW:
-                        case SourceType.QUELLE_DC:
-                            bVector[voltageSourceIdx] += params[1];
-                            break;
-                        case SourceType.QUELLE_SIGNALGESTEUERT_NEW:
-                        case SourceType.QUELLE_SIGNALGESTEUERT:
-                            bVector[voltageSourceIdx] += params[1];
-                            break;
-                        case SourceType.QUELLE_SIN_NEW:
-                        case SourceType.QUELLE_SIN: {
-                            // Sinusoidal voltage source
-                            double amplitude = params[20];
-                            double frequency = params[2];
-                            double phase = params[4];
-                            double offset = params[3];
-                            bVector[voltageSourceIdx] += amplitude * Math.sin(2 * Math.PI * frequency * time - Math.toRadians(phase)) + offset;
-                            break;
+                        case SourceType.QUELLE_DC_NEW, SourceType.QUELLE_DC,
+                             SourceType.QUELLE_SIGNALGESTEUERT_NEW, SourceType.QUELLE_SIGNALGESTEUERT -> {
+                            bVector[voltageSourceIdx] += params[SourceParameters.INDEX_VALUE_DC];
                         }
-                        case SourceType.QUELLE_VOLTAGECONTROLLED_DIRECTLY_NEW:
-                        case SourceType.QUELLE_VOLTAGECONTROLLED_DIRECTLY:
+                        case SourceType.QUELLE_SIN_NEW, SourceType.QUELLE_SIN -> {
+                            // Sinusoidal voltage source
+                            double amplitude = params[SourceParameters.INDEX_AMPLITUDE_SIN];
+                            double frequency = params[SourceParameters.INDEX_FREQUENCY];
+                            double phase = params[SourceParameters.INDEX_PHASE_DEG];
+                            double offset = params[SourceParameters.INDEX_OFFSET];
+                            bVector[voltageSourceIdx] += amplitude * Math.sin(2 * Math.PI * frequency * time - Math.toRadians(phase)) + offset;
+                        }
+                        case SourceType.QUELLE_VOLTAGECONTROLLED_DIRECTLY_NEW,
+                             SourceType.QUELLE_VOLTAGECONTROLLED_DIRECTLY -> {
                             // Voltage-controlled voltage source
                             if (params[14] == -1) {
                                 bVector[voltageSourceIdx] += params[12];
@@ -611,45 +574,38 @@ public class MatrixSolver {
                             if (params[14] == 1) {
                                 bVector[voltageSourceIdx] += params[13];
                             }
-                            break;
-                        case SourceType.QUELLE_VOLTAGECONTROLLED_TRANSFORMER_NEW:
-                        case SourceType.QUELLE_VOLTAGECONTROLLED_TRANSFORMER:
-                        case SourceType.QUELLE_CURRENTCONTROLLED_DIRECTLY_NEW:
-                        case SourceType.QUELLE_CURRENTCONTROLLED_DIRECTLY:
-                            // These are handled via matrix A (voltage is function of node potentials)
-                            break;
-                        case SourceType.QUELLE_DIDTCURRENTCONTROLLED_NEW:
-                        case SourceType.QUELLE_DIDTCURRENTCONTROLLED: {
+                        }
+                        case SourceType.QUELLE_VOLTAGECONTROLLED_TRANSFORMER_NEW,
+                             SourceType.QUELLE_VOLTAGECONTROLLED_TRANSFORMER,
+                             SourceType.QUELLE_CURRENTCONTROLLED_DIRECTLY_NEW,
+                             SourceType.QUELLE_CURRENTCONTROLLED_DIRECTLY -> {
+                            // Handled via matrix A
+                        }
+                        case SourceType.QUELLE_DIDTCURRENTCONTROLLED_NEW,
+                             SourceType.QUELLE_DIDTCURRENTCONTROLLED -> {
                             // dI/dt controlled source
-                            double gain = params[11];
+                            double gain = params[SourceParameters.INDEX_GAIN];
                             if (time <= 0) {
                                 bVector[voltageSourceIdx] += 2 * gain * params[15] / dt;
                             } else {
                                 bVector[voltageSourceIdx] += gain * pALT[voltageSourceIdx + 1] / dt;
                             }
-                            break;
                         }
-                        default:
-                            break;
+                        default -> {
+                        }
                     }
-                    break;
                 }
 
                 // ===== Terminal Elements and Special Components =====
-                case LK_TERMINAL:
-                case TH_TERMINAL:
-                case REL_TERMINAL:
-                case LK_GLOBAL_TERMINAL:
-                case TH_GLOBAL_TERMINAL:
-                case REL_GLOBAL_TERMINAL:
-                case LK_M:
+                case LK_TERMINAL, TH_TERMINAL, REL_TERMINAL, LK_GLOBAL_TERMINAL,
+                     TH_GLOBAL_TERMINAL, REL_GLOBAL_TERMINAL, LK_M -> {
                     // No b-vector contribution for terminals or mutual inductance elements
-                    break;
+                }
 
                 // ===== Unknown or unsupported component types =====
-                default:
+                default -> {
                     // Silently ignore unknown types (already reported at circuit build time)
-                    break;
+                }
             }
         }
 

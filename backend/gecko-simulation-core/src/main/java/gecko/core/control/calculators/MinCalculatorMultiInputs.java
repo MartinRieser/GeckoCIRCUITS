@@ -13,7 +13,7 @@
  */
 package gecko.core.control.calculators;
 
-public final class MinCalculatorMultiInputs extends AbstractControlCalculatable {        
+public class MinCalculatorMultiInputs extends AbstractControlCalculatable {        
         public MinCalculatorMultiInputs(final int inputSize) {
             super(inputSize, 1);
         }

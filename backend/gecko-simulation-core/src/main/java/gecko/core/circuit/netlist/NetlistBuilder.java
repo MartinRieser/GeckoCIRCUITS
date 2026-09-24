@@ -14,7 +14,13 @@
 package gecko.core.circuit.netlist;
 
 import gecko.core.circuit.ComponentTerminals;
+import gecko.core.circuit.SourceType;
 import gecko.core.circuit.circuitcomponents.CircuitTypCore;
+import gecko.core.circuit.parameters.BjtParameters;
+import gecko.core.circuit.parameters.InductorParameters;
+import gecko.core.circuit.parameters.ResistorParameters;
+import gecko.core.circuit.parameters.SourceParameters;
+import gecko.core.circuit.parameters.TransformerParameters;
 import gecko.core.io.CircuitModel;
 
 import java.util.*;
@@ -124,7 +130,7 @@ public class NetlistBuilder {
         allComponents = expansion.components();
         List<CircuitModel.ComponentData> mutualCouplers = new ArrayList<>();
         for (CircuitModel.ComponentData comp : allComponents) {
-            if (comp.getType() == 9) {
+            if (comp.getType() == CircuitTypCore.LK_M.getTypeNumber()) {
                 mutualCouplers.add(comp);
             }
         }
@@ -193,12 +199,12 @@ public class NetlistBuilder {
     }
 
     /**
-     * Terminal points for components with more than two pins. BJT (33):
+     * Terminal points for components with more than two pins. BJT:
      * collector = two-port input, base = classic offset (-2, 0), emitter =
      * two-port output.
      */
     private static GridPoint[] computeComponentTerminalsAny(CircuitModel.ComponentData comp) {
-        if (comp.getType() == 33) {
+        if (comp.getType() == CircuitTypCore.LK_BJT.getTypeNumber()) {
             GridPoint[] ce = computeComponentTerminals(comp);
             return new GridPoint[]{ce[0], rotatePinOffset(comp, -2, 0), ce[1]};
         }
@@ -213,7 +219,7 @@ public class NetlistBuilder {
     }
 
     /**
-     * Replaces every ideal transformer (classic LK_TRANS, type 23) with its
+     * Replaces every ideal transformer (classic LK_TRANS) with its
      * hidden subcircuit: two two-terminal voltage-source windings placed so
      * their pins coincide with the transformer's four schematic pins for any
      * orientation. The primary is an LK_U with the controlled-source type
@@ -226,16 +232,17 @@ public class NetlistBuilder {
         List<CircuitModel.ComponentData> result = new ArrayList<>(components.size());
         List<WindingPair> pairs = new ArrayList<>();
         for (CircuitModel.ComponentData comp : components) {
-            if (comp.getType() != 23) {
+            if (comp.getType() != CircuitTypCore.LK_TRANS.getTypeNumber()) {
                 result.add(comp);
                 continue;
             }
 
-            double n1 = positiveParameter(comp, 0, 10.0);
-            double n2 = positiveParameter(comp, 1, 2.0);
-            double polarity = comp.getParameters().get("param2") instanceof Number p ? p.doubleValue() : -1.0;
+            double n1 = positiveParameter(comp, TransformerParameters.INDEX_N1, TransformerParameters.DEFAULT_N1);
+            double n2 = positiveParameter(comp, TransformerParameters.INDEX_N2, TransformerParameters.DEFAULT_N2);
+            double polarity = comp.getParameters().get("param" + TransformerParameters.INDEX_POLARITY) instanceof Number p
+                    ? p.doubleValue() : TransformerParameters.DEFAULT_POLARITY;
             if (polarity == 0.0) {
-                polarity = -1.0;
+                polarity = TransformerParameters.DEFAULT_POLARITY;
             }
             double gain = polarity * n1 / n2;
 
@@ -279,7 +286,7 @@ public class NetlistBuilder {
             CircuitModel.ComponentData prim = new CircuitModel.ComponentData(
                     CircuitTypCore.LK_U.getTypeNumber(), comp.getName() + " prim", primX, primY, primOrient);
             prim.setRawParameters(new double[21]);
-            prim.setParameter("param0", 399.0); // QUELLE_VOLTAGECONTROLLED_DIRECTLY
+            prim.setParameter("param" + SourceParameters.INDEX_SOURCE_TYPE, (double) SourceType.QUELLE_VOLTAGECONTROLLED_DIRECTLY);
             prim.setParameter("param14", 0.0);
             prim.setTerminalXLabels(new String[]{xl0});
             prim.setTerminalYLabels(new String[]{xl1});
@@ -369,8 +376,8 @@ public class NetlistBuilder {
                         + "' (mutual inductance) could not be resolved to two coupled inductors and is ignored");
                 continue;
             }
-            double l1 = netlist.getParameter(idx1)[0];
-            double l2 = netlist.getParameter(idx2)[0];
+            double l1 = netlist.getParameter(idx1)[InductorParameters.INDEX_INDUCTANCE];
+            double l2 = netlist.getParameter(idx2)[InductorParameters.INDEX_INDUCTANCE];
             if (l1 <= 0 || l2 <= 0) {
                 buildWarnings.add("Component '" + coupler.getName()
                         + "' (mutual inductance) references inductors with invalid inductance and is ignored");
@@ -456,16 +463,16 @@ public class NetlistBuilder {
                 }
             }
 
-            if (typ == 31) {
+            if (typ == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber()) {
                 groundPoints.add(wireNets.netKey(terms[0]));
                 groundPoints.add(wireNets.netKey(terms[1]));
             }
 
             // Only electrical/thermal branches are added to MNA netlist elements;
-            // BJTs (33) are collected for the hidden-subcircuit expansion below
-            if (!isNonBranchComponent(typ) && typ != 33) {
+            // BJTs are collected for the hidden-subcircuit expansion below
+            if (!isNonBranchComponent(typ) && typ != CircuitTypCore.LK_BJT.getTypeNumber()) {
                 branchComponents.add(comp);
-            } else if (typ == 9) {
+            } else if (typ == CircuitTypCore.LK_M.getTypeNumber()) {
                 // only reachable if transformer expansion did not run — flag it
                 buildWarnings.add("Component '" + comp.getName()
                         + "' (transformer) has no simulation model and is ignored");
@@ -474,7 +481,7 @@ public class NetlistBuilder {
 
         List<CircuitModel.ComponentData> bjts = new ArrayList<>();
         for (CircuitModel.ComponentData comp : components) {
-            if (comp.getType() == 33) {
+            if (comp.getType() == CircuitTypCore.LK_BJT.getTypeNumber()) {
                 bjts.add(comp);
             }
         }
@@ -523,17 +530,15 @@ public class NetlistBuilder {
 
         for (int i = 0; i < elementCount; i++) {
             CircuitModel.ComponentData comp = branchComponents.get(i);
-            CircuitTypCore typ;
-            try {
-                typ = CircuitTypCore.fromTypeNumber(comp.getType());
-            } catch (IllegalArgumentException e) {
+            CircuitTypCore typ = CircuitTypCore.findByTypeNumber(comp.getType());
+            if (typ == null) {
                 typ = CircuitTypCore.LK_R;
                 buildWarnings.add("Component '" + comp.getName() + "' has unknown type "
                         + comp.getType() + " and is simulated as a resistor");
             }
             types[i] = typ;
 
-            if (typ == CircuitTypCore.LK_U || typ == CircuitTypCore.LK_LKOP2 || typ == CircuitTypCore.LK_TRANS) {
+            if (typ.requiresVoltageSourceHandling()) {
                 voltageSourceNumbers[i] = ++voltageSourceCount;
             } else {
                 voltageSourceNumbers[i] = -1;
@@ -548,23 +553,7 @@ public class NetlistBuilder {
             CircuitModel.ComponentData comp = branchComponents.get(i);
             nodeX[i] = rootToNode.getOrDefault(pointDs.find(wireNets.netKey(compTerminals[i][0])), 0);
             nodeY[i] = rootToNode.getOrDefault(pointDs.find(wireNets.netKey(compTerminals[i][1])), 0);
-
-            if (comp.getRawParameters() != null) {
-                int copyLen = Math.min(comp.getRawParameters().length, 40);
-                System.arraycopy(comp.getRawParameters(), 0, params[i], 0, copyLen);
-            }
-            for (int p = 0; p < 40; p++) {
-                Object val = comp.getParameters().get("param" + p);
-                if (val instanceof Number) {
-                    params[i][p] = ((Number) val).doubleValue();
-                }
-            }
-            if (params[i][0] == 0.0) {
-                Object primary = comp.getParameters().get(CircuitModel.ComponentData.resolveParameterKey(comp.getType()));
-                if (primary instanceof Number) {
-                    params[i][0] = ((Number) primary).doubleValue();
-                }
-            }
+            params[i] = extractComponentParameters(comp);
         }
 
         // ===== BJT hidden-subcircuit expansion =====
@@ -577,7 +566,7 @@ public class NetlistBuilder {
         List<Double> vccsGains = new ArrayList<>();
         List<Long> bjtUids = new ArrayList<>();
         if (!bjts.isEmpty()) {
-            int extra = bjts.size() * 5;
+            int extra = bjts.size() * BjtParameters.SUBCIRCUIT_ELEMENT_COUNT;
             types = Arrays.copyOf(types, elementCount + extra);
             nodeX = Arrays.copyOf(nodeX, elementCount + extra);
             nodeY = Arrays.copyOf(nodeY, elementCount + extra);
@@ -586,15 +575,15 @@ public class NetlistBuilder {
             System.arraycopy(params, 0, grownParams, 0, elementCount);
             params = grownParams;
 
-            double rOn = 10e-3;
-            double uF = 0.6;
-            double rOff = 1e7;
+            double rOn = BjtParameters.JUNCTION_R_ON;
+            double uF = BjtParameters.JUNCTION_U_FORWARD;
+            double rOff = BjtParameters.JUNCTION_R_OFF;
 
             for (CircuitModel.ComponentData bjt : bjts) {
-                double betaF = positiveParameter(bjt, 1, 100.0);
-                double betaB = positiveParameter(bjt, 2, 60.0);
-                double rBase = positiveParameter(bjt, 3, 0.1);
-                boolean npn = positiveParameter(bjt, 4, 1.0) >= 0;
+                double betaF = positiveParameter(bjt, BjtParameters.INDEX_BETA_F, BjtParameters.DEFAULT_BETA_F);
+                double betaB = positiveParameter(bjt, BjtParameters.INDEX_BETA_B, BjtParameters.DEFAULT_BETA_B);
+                double rBase = positiveParameter(bjt, BjtParameters.INDEX_R_BASE, BjtParameters.DEFAULT_R_BASE);
+                boolean npn = positiveParameter(bjt, BjtParameters.INDEX_POLARITY, 1.0) >= 0;
 
                 GridPoint[] pins = computeComponentTerminalsAny(bjt); // C, B, E
                 int[] pinNodes = new int[3];
@@ -622,7 +611,7 @@ public class NetlistBuilder {
                 nodeY[rbIdx] = mid;
                 voltageSourceNumbers[rbIdx] = -1;
                 params[rbIdx] = new double[40];
-                params[rbIdx][0] = rBase;
+                params[rbIdx][ResistorParameters.INDEX_RESISTANCE] = rBase;
 
                 int dcIdx = elementCount++;
                 types[dcIdx] = CircuitTypCore.LK_D;
@@ -644,7 +633,7 @@ public class NetlistBuilder {
                 nodeY[fcIdx] = npn ? mid : cNode;
                 voltageSourceNumbers[fcIdx] = -1;
                 params[fcIdx] = new double[40];
-                params[fcIdx][0] = 399; // QUELLE_VOLTAGECONTROLLED_DIRECTLY: b-side stays 0
+                params[fcIdx][SourceParameters.INDEX_SOURCE_TYPE] = SourceType.QUELLE_VOLTAGECONTROLLED_DIRECTLY;
 
                 int feIdx = elementCount++;
                 types[feIdx] = CircuitTypCore.LK_I;
@@ -652,14 +641,14 @@ public class NetlistBuilder {
                 nodeY[feIdx] = npn ? mid : eNode;
                 voltageSourceNumbers[feIdx] = -1;
                 params[feIdx] = new double[40];
-                params[feIdx][0] = 399;
+                params[feIdx][SourceParameters.INDEX_SOURCE_TYPE] = SourceType.QUELLE_VOLTAGECONTROLLED_DIRECTLY;
 
                 vccsPairs.add(new int[]{fcIdx, rbIdx});
                 vccsPairs.add(new int[]{feIdx, rbIdx});
                 vccsGains.add(betaF / rBase);
                 vccsGains.add(betaB / rBase);
                 long uid = bjt.getUniqueObjectIdentifier();
-                for (int k = 1; k <= 5; k++) {
+                for (int k = 1; k <= BjtParameters.SUBCIRCUIT_ELEMENT_COUNT; k++) {
                     bjtUids.add(uid + k);
                 }
             }
@@ -745,8 +734,8 @@ public class NetlistBuilder {
     private static boolean hasNonStandardPinComponents(List<CircuitModel.ComponentData> components) {
         if (components == null) return false;
         for (CircuitModel.ComponentData comp : components) {
-            // LK_OPV1 (22) is an op-amp with asymmetric 4-pin geometry that requires classic label mapping
-            if (comp.getType() == 22) {
+            // LK_OPV1 is an op-amp with asymmetric 4-pin geometry that requires classic label mapping
+            if (comp.getType() == CircuitTypCore.LK_OPV1.getTypeNumber()) {
                 return true;
             }
         }
@@ -812,7 +801,37 @@ public class NetlistBuilder {
     }
 
     private static boolean isNonBranchComponent(int typ) {
-        return typ == 9 || typ == 30 || typ == 31 || typ == 41 || typ == 42;
+        CircuitTypCore type = CircuitTypCore.findByTypeNumber(typ);
+        return type != null && !type.isBranchComponent();
+    }
+
+    /**
+     * Extracts simulation parameter array (up to 40 parameters) for a circuit element.
+     * Merges raw parameters array, indexed map parameters ("param0".."param39"),
+     * and named primary parameters.
+     *
+     * @param comp component data from the circuit model
+     * @return array of 40 parameters ready for MNA matrix stamping
+     */
+    private static double[] extractComponentParameters(CircuitModel.ComponentData comp) {
+        double[] paramArray = new double[40];
+        if (comp.getRawParameters() != null) {
+            int copyLen = Math.min(comp.getRawParameters().length, 40);
+            System.arraycopy(comp.getRawParameters(), 0, paramArray, 0, copyLen);
+        }
+        for (int p = 0; p < 40; p++) {
+            Object val = comp.getParameters().get("param" + p);
+            if (val instanceof Number) {
+                paramArray[p] = ((Number) val).doubleValue();
+            }
+        }
+        if (paramArray[0] == 0.0) {
+            Object primary = comp.getParameters().get(CircuitModel.ComponentData.resolveParameterKey(comp.getType()));
+            if (primary instanceof Number) {
+                paramArray[0] = ((Number) primary).doubleValue();
+            }
+        }
+        return paramArray;
     }
 
     /**
@@ -826,14 +845,17 @@ public class NetlistBuilder {
                                                                 List<CircuitModel.ComponentData> mutualCouplers) {
         boolean hasWires = hasSchematicWires(connections);
         boolean hasComplex = hasNonStandardPinComponents(components)
-                || components.stream().anyMatch(c -> c.getType() >= 40 && c.getType() <= 49);
+                || components.stream().anyMatch(c -> {
+                    CircuitTypCore t = CircuitTypCore.findByTypeNumber(c.getType());
+                    return t != null && t.isThermal();
+                });
 
         List<String> buildWarnings = new ArrayList<>();
         List<CircuitModel.ComponentData> branchComponents = new ArrayList<>();
         for (CircuitModel.ComponentData comp : components) {
             if (!isNonBranchComponent(comp.getType())) {
                 branchComponents.add(comp);
-            } else if (comp.getType() == 9) {
+            } else if (comp.getType() == CircuitTypCore.LK_M.getTypeNumber()) {
                 // the only electrical branch element silently dropped — flag it
                 buildWarnings.add("Component '" + comp.getName()
                         + "' (transformer) has no simulation model and is ignored");
@@ -989,17 +1011,15 @@ public class NetlistBuilder {
 
         for (int i = 0; i < elementCount; i++) {
             CircuitModel.ComponentData comp = branchComponents.get(i);
-            CircuitTypCore typ;
-            try {
-                typ = CircuitTypCore.fromTypeNumber(comp.getType());
-            } catch (IllegalArgumentException e) {
+            CircuitTypCore typ = CircuitTypCore.findByTypeNumber(comp.getType());
+            if (typ == null) {
                 typ = CircuitTypCore.LK_R;
                 buildWarnings.add("Component '" + comp.getName() + "' has unknown type "
                         + comp.getType() + " and is simulated as a resistor");
             }
             types[i] = typ;
 
-            if (typ == CircuitTypCore.LK_U || typ == CircuitTypCore.LK_LKOP2 || typ == CircuitTypCore.LK_TRANS) {
+            if (typ.requiresVoltageSourceHandling()) {
                 voltageSourceNumbers[i] = ++voltageSourceCount;
             } else {
                 voltageSourceNumbers[i] = -1;
@@ -1032,22 +1052,7 @@ public class NetlistBuilder {
                 }
             }
 
-            if (comp.getRawParameters() != null) {
-                int copyLen = Math.min(comp.getRawParameters().length, 40);
-                System.arraycopy(comp.getRawParameters(), 0, params[i], 0, copyLen);
-            }
-            for (int p = 0; p < 40; p++) {
-                Object val = comp.getParameters().get("param" + p);
-                if (val instanceof Number) {
-                    params[i][p] = ((Number) val).doubleValue();
-                }
-            }
-            if (params[i][0] == 0.0) {
-                Object primary = comp.getParameters().get(CircuitModel.ComponentData.resolveParameterKey(comp.getType()));
-                if (primary instanceof Number) {
-                    params[i][0] = ((Number) primary).doubleValue();
-                }
-            }
+            params[i] = extractComponentParameters(comp);
         }
 
         int nodeCount = Math.max(nextNode, 1);

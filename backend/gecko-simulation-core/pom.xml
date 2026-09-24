@@ -85,7 +85,7 @@
                 <configuration>
                     <release>25</release>
                     <compilerArgs>
-                        <arg>-Xlint:all,-processing,-serial,-rawtypes,-unchecked,-varargs,-deprecation,-cast,-this-escape,-static,-lossy-conversions,-dep-ann,-removal,-classfile</arg>
+                        <arg>-Xlint:all,-processing,-serial,-rawtypes,-unchecked,-varargs,-deprecation,-cast,-this-escape,-static,-lossy-conversions,-dep-ann,-removal,-classfile,-restricted</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>

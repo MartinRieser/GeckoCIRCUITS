@@ -11,17 +11,22 @@
  *  You should have received a copy of the GNU General Public License along with
  *  GeckoCIRCUITS.  If not, see <http://www.gnu.org/licenses/>.
  */
-package gecko.core.control.calculators;
+package gecko.core.datacontainer;
 
+/**
+ * Listener interface for notifications about data container updates.
+ * Provides a type-safe, decoupled replacement for {@code java.util.Observer}.
+ *
+ * @author GeckoCIRCUITS Core Team
+ */
+@FunctionalInterface
+public interface DataContainerListener {
 
-public final class MinCalculatorTwoInputs extends MinCalculatorMultiInputs {
-
-    public MinCalculatorTwoInputs() {
-        super(2);
-    }
-
-    @Override
-    public void calculateYOUT(final double deltaT) {
-        _outputSignal[0][0] = Math.min(_inputSignal[0][0], _inputSignal[1][0]);
-    }
+    /**
+     * Invoked when the observed data container has been updated.
+     *
+     * @param container the data container that triggered the event
+     * @param eventData optional event payload or metadata, or {@code null}
+     */
+    void onDataContainerUpdate(AbstractDataContainer container, Object eventData);
 }

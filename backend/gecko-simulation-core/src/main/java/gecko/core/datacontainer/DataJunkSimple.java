@@ -43,7 +43,6 @@ public final class DataJunkSimple implements DataJunk {
         _data[row][column - _startIndex] = value;
     }
 
-    @SuppressWarnings("PMD")
     @Override
     public void setValues(final float[] values, final int column) {
         for(int row = 0; row < values.length; row++) {
