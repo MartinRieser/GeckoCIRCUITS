@@ -102,12 +102,14 @@ frontend/src/
   - Refactored `src/properties/PropertiesPanel.tsx` (exported `PropertiesPanelProps`, full TSDoc); expanded `test/PropertiesPanel.test.tsx` to 10 tests covering rename, rotate, delete, collapse, and ScriptBlockEditor
   - Refactored `src/properties/SimulationPropertiesPanel.tsx` (exported `SimulationPropertiesPanelProps`, full TSDoc); created `test/SimulationPropertiesPanel.test.tsx` (6 tests, 94% coverage)
   - Passed all 29 test suites (287 tests) with 0 lint errors
-- [ ] **Phase 5: Simulation & Waveforms**
-  - Review `src/simulation/simSteps.ts`, `scopes.ts`, `chartData.ts`, `traceColors.ts`, `viewWindow.ts`, `useScopeController.ts`
-  - Create missing test suites: `scopes.test.ts`, `traceColors.test.ts`, `useScopeController.test.ts`
-  - Review `src/simulation/FftPanel.tsx` & `src/simulation/LossPanel.tsx`
-  - Modularize `src/simulation/ScopeViewTab.tsx` (WaveformCanvas, ScopeCursors, ChannelConfigTable)
-  - Review `src/simulation/SimulationDrawer.tsx`; create `test/SimulationDrawer.test.tsx`
+- [x] **Phase 5: Simulation & Waveforms**
+  - Refactored `src/simulation/scopes.ts` (replaced magic numbers with `ControlComponentType` enums, added full TSDoc); created `test/scopes.test.ts` (12 tests, 100% coverage)
+  - Refactored `src/simulation/traceColors.ts` (added full TSDoc, verified negative index handling); created `test/traceColors.test.ts` (6 tests, 100% coverage)
+  - Refactored `src/simulation/useScopeController.ts` (full TSDoc on interfaces and hook); created `test/useScopeController.test.ts` (7 tests, 100% coverage)
+  - Refactored `src/simulation/ScopeViewTab.tsx` (exported `sampleIndexAt`, documented `ScopeViewTabProps` and `inferSignalUnit`); expanded `test/ScopeViewTab.test.tsx` to 13 tests
+  - Refactored `src/simulation/SimulationDrawer.tsx` (shared canonical `CHANNEL_TRACE_COLORS`, exported `SimulationDrawerProps`, full TSDoc); created `test/SimulationDrawer.test.tsx` (5 tests, 66% coverage)
+  - Verified 100% statement coverage across `chartData.ts`, `scopes.ts`, `simSteps.ts`, `traceColors.ts`, `useScopeController.ts`, `viewWindow.ts`, and `LossPanel.tsx`
+  - Passed all 33 test suites (325 tests) with 0 lint errors
 - [ ] **Phase 6: Shell, Styles & Bootstrap**
   - Review `src/App.tsx`, `src/bootstrap.tsx`, `src/main.tsx`
   - Audit `src/styles.css` for semantic token consistency

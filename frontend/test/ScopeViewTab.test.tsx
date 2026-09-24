@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, renderHook } from '@testing-library/react';
-import { ScopeViewTab } from '../src/simulation/ScopeViewTab';
+import { ScopeViewTab, sampleIndexAt, inferSignalUnit } from '../src/simulation/ScopeViewTab';
 import { SimulationPropertiesPanel } from '../src/properties/SimulationPropertiesPanel';
 import { useScopeController } from '../src/simulation/useScopeController';
 import type { EditorComponent } from '../src/model/types';
@@ -205,4 +205,53 @@ describe('Oscilloscope GUI & Controls', () => {
     expect(container.querySelector('.sim-cursor-table')?.textContent).toContain('V_out');
     expect(container.querySelector('.sim-cursor-table')?.textContent).toContain('I_L');
   });
+
+  describe('sampleIndexAt', () => {
+    const time = [0, 0.1, 0.2, 0.3, 0.4, 0.5];
+
+    it('finds exact sample match', () => {
+      expect(sampleIndexAt(time, 0.2)).toBe(2);
+    });
+
+    it('returns boundary indices when t is outside range', () => {
+      expect(sampleIndexAt(time, -1.0)).toBe(0);
+      expect(sampleIndexAt(time, 10.0)).toBe(5);
+    });
+
+    it('finds nearest sample in between timestamps', () => {
+      expect(sampleIndexAt(time, 0.24)).toBe(3);
+    });
+  });
+
+  describe('inferSignalUnit', () => {
+    it('infers Volts for voltage signals', () => {
+      expect(inferSignalUnit('V_out')).toBe('V');
+      expect(inferSignalUnit('u_in')).toBe('V');
+      expect(inferSignalUnit('probe_voltage')).toBe('V');
+    });
+
+    it('infers Amperes for current signals', () => {
+      expect(inferSignalUnit('i_inductor')).toBe('A');
+      expect(inferSignalUnit('current_shunt')).toBe('A');
+      expect(inferSignalUnit('amp_meter')).toBe('A');
+    });
+
+    it('infers Watts for power signals', () => {
+      expect(inferSignalUnit('Power_loss')).toBe('W');
+      expect(inferSignalUnit('p_total')).toBe('W');
+      expect(inferSignalUnit('watt_meter')).toBe('W');
+    });
+
+    it('infers degrees Celsius for temperature signals', () => {
+      expect(inferSignalUnit('temperature_junction')).toBe('°C');
+      expect(inferSignalUnit('th_heatsink')).toBe('°C');
+      expect(inferSignalUnit('chip_c')).toBe('°C');
+    });
+
+    it('returns empty string for unrecognized signals', () => {
+      expect(inferSignalUnit('duty_cycle')).toBe('');
+      expect(inferSignalUnit('status_flag')).toBe('');
+    });
+  });
 });
+

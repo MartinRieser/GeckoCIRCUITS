@@ -19,13 +19,23 @@ import {
 import { mapSimulationResults } from './chartData';
 import { findScopeBlocks, scopeChannels, filterChannels } from './scopes';
 import { estimateStepCount, STEP_WARNING_THRESHOLD } from './simSteps';
+import { CHANNEL_TRACE_COLORS } from './traceColors';
 
-interface SimulationDrawerProps {
+/**
+ * Properties for the {@link SimulationDrawer} bottom results panel.
+ */
+export interface SimulationDrawerProps {
+  /** Whether the collapsible drawer is open and expanded. */
   isOpen: boolean;
+  /** Callback to toggle drawer open/closed state. */
   onToggle: () => void;
+  /** Active circuit workspace identifier, or null. */
   circuitId: string | null;
+  /** Circuit schematic components for scope block and probe resolution. */
   components?: EditorComponent[];
+  /** Default simulation configuration parameters from circuit file metadata. */
   defaults: SimulationDefaults | null;
+  /** Callback to launch simulation with configured parameters. */
   onRunSimulation: (config: {
     simulationTime: number;
     timeStep: number;
@@ -33,26 +43,28 @@ interface SimulationDrawerProps {
     backend?: string;
     signals?: string[];
   }) => void;
+  /** Callback to abort or cancel a running simulation. */
   onCancelSimulation?: () => void;
+  /** Callback to pause simulation execution. */
   onPauseSimulation?: () => void;
+  /** Callback to resume paused simulation execution. */
   onResumeSimulation?: () => void;
+  /** Current simulation status. */
   status: SimulationStatus | null;
+  /** Normalized progress from 0.0 to 1.0. */
   progress: number;
+  /** Time series simulation results mapping. */
   results: Record<string, number[]> | null;
+  /** Optional error message if simulation run failed. */
   errorMessage?: string | null;
 }
 
-const TRACE_COLORS = [
-  '#38bdf8', // Sky blue
-  '#f43f5e', // Rose
-  '#10b981', // Emerald
-  '#fbbf24', // Amber
-  '#a855f7', // Purple
-  '#3b82f6', // Blue
-  '#ec4899', // Pink
-  '#14b8a6', // Teal
-];
+const TRACE_COLORS = CHANNEL_TRACE_COLORS;
 
+/**
+ * Collapsible bottom drawer for running circuit simulations, inspecting live progress,
+ * and analyzing interactive multi-trace SVG waveforms, stacked lanes, and signal metrics.
+ */
 export function SimulationDrawer({
   isOpen,
   onToggle,

@@ -3,19 +3,32 @@
  * simulation drawer, and scope tabs.
  */
 import type { EditorComponent } from '../model/types';
+import { ControlComponentType } from '../model/constants';
 
-/** Scope blocks: classic scope (typ 5), web scope (typ 1003), or SCOPE/OSZI name prefixes. */
+/**
+ * Checks whether a given circuit component is an oscilloscope instrument block,
+ * either by type (legacy typ 5 or modern typ 1003) or by conventional prefix ('SCOPE', 'OSZI').
+ *
+ * @param component The schematic component to test, or null/undefined.
+ * @returns True if the component represents an oscilloscope instrument.
+ */
 export function isScopeComponent(component: EditorComponent | null | undefined): boolean {
   if (!component) return false;
   const name = (component.name || '').toUpperCase();
   return (
-    component.type === 5 ||
-    component.type === 1003 ||
+    component.type === ControlComponentType.LEGACY_SCOPE ||
+    component.type === ControlComponentType.SCOPE ||
     name.startsWith('SCOPE') ||
     name.startsWith('OSZI')
   );
 }
 
+/**
+ * Filters a list of circuit components down to only the oscilloscope instrument blocks.
+ *
+ * @param components Array of schematic components.
+ * @returns Array of oscilloscope instrument components.
+ */
 export function findScopeBlocks(components: EditorComponent[]): EditorComponent[] {
   return components.filter(isScopeComponent);
 }

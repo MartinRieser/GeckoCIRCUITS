@@ -4,6 +4,7 @@
  * color everywhere. Index = channel number (CH1 = first entry).
  */
 
+/** Palette of distinct vibrant high-contrast colors for dark themes. */
 export const CHANNEL_TRACE_COLORS = [
   '#38bdf8', // Cyan
   '#4ade80', // Green
@@ -13,8 +14,9 @@ export const CHANNEL_TRACE_COLORS = [
   '#06b6d4', // Teal
   '#a855f7', // Violet
   '#fb923c', // Orange
-];
+] as const;
 
+/** Palette of distinct high-contrast colors calibrated for light backgrounds. */
 export const CHANNEL_TRACE_COLORS_LIGHT = [
   '#0284c7', // Cyan
   '#16a34a', // Green
@@ -24,10 +26,19 @@ export const CHANNEL_TRACE_COLORS_LIGHT = [
   '#0f766e', // Teal
   '#7e22ce', // Violet
   '#c2410c', // Orange
-];
+] as const;
 
+/** Color theme for waveform traces and legend badges. */
 export type TraceTheme = 'dark' | 'light';
 
+/**
+ * Returns the color assigned to a channel index, wrapping periodically if there
+ * are more channels than palette colors. Correctly handles negative indices.
+ *
+ * @param index 0-based channel index.
+ * @param theme Color theme ('dark' or 'light'). Defaults to 'dark'.
+ * @returns Hex color string.
+ */
 export function channelColorByIndex(index: number, theme: TraceTheme = 'dark'): string {
   const palette = theme === 'light' ? CHANNEL_TRACE_COLORS_LIGHT : CHANNEL_TRACE_COLORS;
   return palette[((index % palette.length) + palette.length) % palette.length];

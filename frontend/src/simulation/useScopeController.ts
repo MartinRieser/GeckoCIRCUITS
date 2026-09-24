@@ -34,29 +34,47 @@ export const TRACE_COLORS_LIGHT = [
   '#c026d3', // Magenta
 ];
 
+/** Measurement details for a single channel evaluated at the cursor positions. */
 export interface CursorMeasurementChannel {
+  /** Signal / channel identifier. */
   name: string;
+  /** Display color matching waveform trace. */
   color: string;
+  /** Signal value at Cursor A time position, or null. */
   valA: number | null;
+  /** Signal value at Cursor B time position, or null. */
   valB: number | null;
+  /** Difference (valB - valA), or null. */
   delta: number | null;
 }
 
+/** Comprehensive cursor measurement readout across time and all active scope channels. */
 export interface CursorMeasurements {
+  /** Timestamp at Cursor A in seconds. */
   timeA: number | null;
+  /** Timestamp at Cursor B in seconds. */
   timeB: number | null;
+  /** Time delta (|timeB - timeA|) in seconds. */
   dt: number | null;
+  /** Frequency equivalent (1 / dt) in Hertz. */
   freq: number | null;
+  /** Per-channel values and deltas. */
   channels: CursorMeasurementChannel[];
 }
 
+/** Properties for the {@link useScopeController} hook. */
 export interface UseScopeControllerProps {
+  /** Simulation results time-series mapping, or null. */
   results: Record<string, number[]> | null;
+  /** Schematic components used for scope block detection. */
   components?: EditorComponent[];
+  /** Identifier of the selected scope, or 'all'. */
   selectedScope?: string;
+  /** UI theme for waveform coloring ('dark' or 'light'). */
   theme?: 'dark' | 'light';
 }
 
+/** State and actions returned by {@link useScopeController} to control oscilloscope views. */
 export interface ScopeController {
   // Horizontal / View Window
   view: ViewWindow | null;

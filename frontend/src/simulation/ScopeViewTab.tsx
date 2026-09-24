@@ -20,20 +20,38 @@ import { LossPanel } from './LossPanel';
 import type { ScopeController } from './useScopeController';
 import { useScopeController } from './useScopeController';
 
+/**
+ * Properties for the {@link ScopeViewTab} full-viewport oscilloscope view.
+ */
 export interface ScopeViewTabProps {
-  selectedScope: string; // 'all' or 'SCOPE.1', 'SCOPE.2', etc.
+  /** Identifier of the selected scope ('all' or specific scope block name). */
+  selectedScope: string;
+  /** Schematic components. */
   components: EditorComponent[];
+  /** Results time series dictionary. */
   results: Record<string, number[]> | null;
+  /** Waveform chart display layout ('overlay' or 'stacked'). */
   displayLayout: 'overlay' | 'stacked';
+  /** UI theme ('dark' or 'light'). */
   theme?: 'dark' | 'light';
+  /** Callback to change display layout. */
   onDisplayLayoutChange?: (layout: 'overlay' | 'stacked') => void;
+  /** Optional current simulation execution status. */
   status?: SimulationStatus | null;
+  /** Optional loaded circuit filename. */
   filename?: string | null;
+  /** Optional scope controller instance. */
   scope?: ScopeController;
 }
 
-/** Binary-searches the sample index closest to time t (time must be ascending). */
-function sampleIndexAt(time: number[], t: number): number {
+/**
+ * Binary-searches the sample index closest to time t (time must be sorted in ascending order).
+ *
+ * @param time Array of timestamps in ascending order.
+ * @param t Target timestamp in seconds.
+ * @returns Index of the nearest sample.
+ */
+export function sampleIndexAt(time: number[], t: number): number {
   let low = 0;
   let high = time.length - 1;
   while (low < high) {
@@ -44,7 +62,12 @@ function sampleIndexAt(time: number[], t: number): number {
   return low;
 }
 
-/** Infers physical SI engineering unit from the signal or probe name. */
+/**
+ * Infers physical SI engineering unit from the signal or probe name convention.
+ *
+ * @param name Signal name (e.g. 'V_out', 'i_inductor', 'Power_loss', 'Temp_junction').
+ * @returns Appropriate SI unit string ('V', 'A', 'W', '°C', or empty string).
+ */
 export function inferSignalUnit(name: string): string {
   const lower = name.toLowerCase();
   if (lower.startsWith('v') || lower.startsWith('u') || lower.includes('_v') || lower.includes('volt')) return 'V';
