@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi, afterEach } from 'vitest';
-import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, waitFor, act } from '@testing-library/react';
 import { App } from '../src/App';
 
 const fetchMock = vi.fn();
@@ -219,15 +219,23 @@ describe('Keyboard-first navigation and workflows (P3)', () => {
     fetchMock.mockImplementation(routeFetch);
     const { container } = render(<App />);
 
+    await waitFor(() => {
+      expect(container.querySelector('.sheet-scroll')).not.toBeNull();
+    });
+
     expect(container.querySelector('.shortcuts-modal')).toBeNull();
 
     // Press ?
-    fireEvent.keyDown(window, { key: '?' });
+    act(() => {
+      fireEvent.keyDown(window, { key: '?' });
+    });
     expect(container.querySelector('.shortcuts-modal')).not.toBeNull();
     expect(container.textContent).toContain('Keyboard Shortcuts Cheatsheet');
 
     // Press Escape to close
-    fireEvent.keyDown(window, { key: 'Escape' });
+    act(() => {
+      fireEvent.keyDown(window, { key: 'Escape' });
+    });
     expect(container.querySelector('.shortcuts-modal')).toBeNull();
   });
 });

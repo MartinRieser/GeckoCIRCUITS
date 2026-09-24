@@ -52,4 +52,30 @@ describe('EngineStartupError', () => {
     expect(screen.getByText(/Engine API not ready after 60 s/)).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Retry' })).toBeTruthy();
   });
+
+  it('triggers location.reload on Retry button click', () => {
+    const reloadMock = vi.fn();
+    Object.defineProperty(window, 'location', {
+      value: { reload: reloadMock },
+      writable: true,
+    });
+
+    render(<EngineStartupError message="Failure" />);
+    const retryBtn = screen.getByRole('button', { name: 'Retry' });
+    retryBtn.click();
+    expect(reloadMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders Open engine logs button when running in desktop mode', () => {
+    (globalThis as { __TAURI__?: { core?: { invoke?: () => Promise<unknown> } } }).__TAURI__ = {
+      core: { invoke: vi.fn().mockResolvedValue(undefined) },
+    };
+
+    render(<EngineStartupError message="Desktop Failure" />);
+    const logsBtn = screen.getByRole('button', { name: 'Open engine logs' });
+    expect(logsBtn).toBeTruthy();
+    logsBtn.click();
+
+    delete (globalThis as { __TAURI__?: object }).__TAURI__;
+  });
 });

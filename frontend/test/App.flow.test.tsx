@@ -5,7 +5,7 @@
  * live subscription is not under test here).
  */
 import { describe, expect, it, vi, afterEach } from 'vitest';
-import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, waitFor, act } from '@testing-library/react';
 import { App } from '../src/App';
 
 const fetchMock = vi.fn();
@@ -161,6 +161,11 @@ describe('App user flow', () => {
     });
 
     const { container } = render(<App />);
+
+    await waitFor(() => {
+      expect(container.querySelector('.nav-btn.theme-toggle')).not.toBeNull();
+    });
+
     const themeBtn = container.querySelector('.nav-btn.theme-toggle') as HTMLButtonElement;
     expect(themeBtn).toBeDefined();
 
@@ -168,12 +173,16 @@ describe('App user flow', () => {
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
 
     // Click to toggle to light
-    fireEvent.click(themeBtn);
+    act(() => {
+      fireEvent.click(themeBtn);
+    });
     expect(document.documentElement.getAttribute('data-theme')).toBe('light');
     expect(localStorage.getItem('gecko-theme')).toBe('light');
 
     // Click to toggle back to dark
-    fireEvent.click(themeBtn);
+    act(() => {
+      fireEvent.click(themeBtn);
+    });
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
     expect(localStorage.getItem('gecko-theme')).toBe('dark');
   });

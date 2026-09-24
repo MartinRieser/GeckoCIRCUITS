@@ -110,11 +110,15 @@ frontend/src/
   - Refactored `src/simulation/SimulationDrawer.tsx` (shared canonical `CHANNEL_TRACE_COLORS`, exported `SimulationDrawerProps`, full TSDoc); created `test/SimulationDrawer.test.tsx` (5 tests, 66% coverage)
   - Verified 100% statement coverage across `chartData.ts`, `scopes.ts`, `simSteps.ts`, `traceColors.ts`, `useScopeController.ts`, `viewWindow.ts`, and `LossPanel.tsx`
   - Passed all 33 test suites (325 tests) with 0 lint errors
-- [ ] **Phase 6: Shell, Styles & Bootstrap**
-  - Review `src/App.tsx`, `src/bootstrap.tsx`, `src/main.tsx`
-  - Audit `src/styles.css` for semantic token consistency
-  - Create `test/main.test.tsx`
+- [x] **Phase 6: Shell, Styles & Bootstrap**
+  - Refactored `src/main.tsx` (parameterized root target container with null safety, exported `start`, full TSDoc)
+  - Created `test/main.test.tsx` (3 tests testing null container, backend startup failures, and app mounting)
+  - Expanded `test/bootstrap.test.tsx` to 6 tests (tested `Retry` reload and desktop `Open engine logs` button)
+  - Audited `src/styles.css` for semantic token consistency across dark and light modes
+  - Cleaned up React test `act(...)` warnings in `test/App.flow.test.tsx` and `test/Sheet.keyboard.test.tsx`
+  - Reached **100%** statement and branch coverage on `bootstrap.tsx` and `desktop.ts`
+  - Passed all 34 test suites (330 tests) with 0 lint errors
 - [ ] **Phase 7: Full Verification & Coverage Audit**
-  - Run `npm test -- --coverage`
-  - Run `npm run lint`
-  - Ensure zero lint errors, 100% test pass rate, and coverage meets or exceeds 90% threshold
+  - Run full test suite with coverage (`npm run test:coverage`)
+  - Run linter verification (`npm run lint`)
+  - Summarize completed code improvements, zero magic numbers, modularity, and test metrics
