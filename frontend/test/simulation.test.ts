@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { EXAMPLES, BLANK_CIRCUIT_IPES } from '../src/model/examples';
+import { VALID_SIMULATION_STATUSES, isValidSimulationStatus } from '../src/model/types';
 
 /** Extracts the block bodies of a given tag from an .ipes ASCII document. */
 function blocks(content: string, tag: string): string[] {
@@ -57,5 +58,26 @@ describe('built-in example circuits', () => {
     const types = elements.map((e) => field(e, 'typ'));
     // voltage source (4), resistor (1), capacitor (3)
     expect(types).toEqual(['4', '1', '3']);
+  });
+});
+
+describe('SimulationStatus state machine invariants', () => {
+  it('validates canonical SimulationStatus values', () => {
+    const expectedStatuses = ['PENDING', 'RUNNING', 'PAUSED', 'COMPLETED', 'FAILED', 'CANCELLED'];
+    expect([...VALID_SIMULATION_STATUSES]).toEqual(expectedStatuses);
+
+    for (const status of expectedStatuses) {
+      expect(isValidSimulationStatus(status)).toBe(true);
+    }
+  });
+
+  it('rejects invalid or legacy status strings', () => {
+    expect(isValidSimulationStatus('IDLE')).toBe(false);
+    expect(isValidSimulationStatus('FINISHED')).toBe(false);
+    expect(isValidSimulationStatus('ERROR')).toBe(false);
+    expect(isValidSimulationStatus('')).toBe(false);
+    expect(isValidSimulationStatus(null)).toBe(false);
+    expect(isValidSimulationStatus(undefined)).toBe(false);
+    expect(isValidSimulationStatus(123)).toBe(false);
   });
 });

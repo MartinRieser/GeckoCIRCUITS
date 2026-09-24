@@ -191,8 +191,23 @@ export interface SimulationRequest {
   signals?: string[];
 }
 
+/** Valid execution status state machine states for simulation runs. */
+export const VALID_SIMULATION_STATUSES = [
+  'PENDING',
+  'RUNNING',
+  'PAUSED',
+  'COMPLETED',
+  'FAILED',
+  'CANCELLED',
+] as const;
+
 /** Execution status state machine states for simulation runs. */
-export type SimulationStatus = 'PENDING' | 'RUNNING' | 'PAUSED' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
+export type SimulationStatus = (typeof VALID_SIMULATION_STATUSES)[number];
+
+/** Runtime type guard checking if a string is a valid SimulationStatus. */
+export function isValidSimulationStatus(value: unknown): value is SimulationStatus {
+  return typeof value === 'string' && (VALID_SIMULATION_STATUSES as readonly string[]).includes(value);
+}
 
 /** Simulation progress and result payload returned by backend endpoints. */
 export interface SimulationResponse {

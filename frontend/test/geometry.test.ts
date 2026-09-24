@@ -203,6 +203,43 @@ describe('terminalNear and allTerminals', () => {
     expect(terminalNear(components, { x: 20, y: 20 })).toBeNull();
   });
 
+  it('respects custom maxDistance thresholds (tighter and wider)', () => {
+    // Distance from (12.3, 10.4) to (12, 10) is sqrt(0.09 + 0.16) = 0.5
+    // With tight maxDistance = 0.4 -> should be null
+    expect(terminalNear(components, { x: 12.3, y: 10.4 }, 0.4)).toBeNull();
+
+    // With wide maxDistance = 0.6 -> should hit R1
+    const hit = terminalNear(components, { x: 12.3, y: 10.4 }, 0.6);
+    expect(hit).not.toBeNull();
+    expect(hit!.component).toBe('R1');
+  });
+
+  it('selects the strictly closer terminal when multiple candidates are in range', () => {
+    // Terminals of R1 are at (8, 10) and (12, 10).
+    // Test point at (10.1, 10):
+    // Distance to (12, 10) is 1.9, distance to (8, 10) is 2.1. Both within maxDistance = 3.0.
+    const hitCloserRight = terminalNear(components, { x: 10.1, y: 10 }, 3.0);
+    expect(hitCloserRight).not.toBeNull();
+    expect(hitCloserRight!.point).toEqual({ x: 12, y: 10 });
+
+    // Test point at (9.9, 10):
+    // Distance to (8, 10) is 1.9, distance to (12, 10) is 2.1.
+    const hitCloserLeft = terminalNear(components, { x: 9.9, y: 10 }, 3.0);
+    expect(hitCloserLeft).not.toBeNull();
+    expect(hitCloserLeft!.point).toEqual({ x: 8, y: 10 });
+  });
+
+  it('correctly handles boundary conditions around maxDistance', () => {
+    // Terminal at (12, 10). Point at (12, 10.5) has exact distance 0.5.
+    const exactHit = terminalNear(components, { x: 12, y: 10.5 }, 0.5);
+    expect(exactHit).not.toBeNull();
+    expect(exactHit!.point).toEqual({ x: 12, y: 10 });
+
+    // Point at (12, 10.501) exceeds distance 0.5
+    const outside = terminalNear(components, { x: 12, y: 10.501 }, 0.5);
+    expect(outside).toBeNull();
+  });
+
   it('allTerminals covers both sides of all components', () => {
     const refs = allTerminals(components);
     expect(refs).toHaveLength(4);

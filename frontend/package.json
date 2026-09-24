@@ -7,8 +7,10 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "build:spring": "npm run build && node -e \"fs.rmSync('../backend/gecko-rest-api/src/main/resources/static',{recursive:true,force:true}); fs.cpSync('dist','../backend/gecko-rest-api/src/main/resources/static',{recursive:true})\"",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "test": "tsc --noEmit && vitest run",
+    "test:unit": "vitest run",
+    "test:coverage": "tsc --noEmit && vitest run --coverage",
     "preview": "vite preview",
     "lint": "eslint src test"
   },

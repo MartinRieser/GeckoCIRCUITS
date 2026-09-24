@@ -35,5 +35,6 @@ When conducting codebase reviews or refactorings across GeckoCIRCUITS (frontend 
 - **No Unfinished Implementations**: Never leave stub methods or incomplete downstream consumers. Ensure full end-to-end integration.
 - **Zero Duplication**: Extract shared algorithms and utilities to common packages immediately.
 - **High Test Coverage**: Every refactored or new class must be paired with comprehensive unit tests achieving maximum feasible coverage (>90%).
+- **Strict Typechecking Gate**: In TypeScript frontend modules, test verification must enforce full compiler typechecking (`tsc --noEmit`) in addition to runtime unit tests, ensuring no literal type narrowing, invalid props, or mock type mismatches go undetected.
 - **Phased Commit Cadence**: Maintain an active review plan markdown document, verify clean test runs at each phase (zero javac warnings, zero test failures), and commit progress progressively.
 
