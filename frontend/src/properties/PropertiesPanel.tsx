@@ -27,20 +27,38 @@ import { SymbolPreview } from '../canvas/symbols';
 // color matches its waveform color everywhere.
 const CHANNEL_COLORS = CHANNEL_TRACE_COLORS;
 
-interface PanelProps {
+/**
+ * Properties for the {@link PropertiesPanel} inspector sidebar.
+ */
+export interface PropertiesPanelProps {
+  /** The currently selected schematic component, or null if none selected. */
   component: EditorComponent | null;
+  /** Complete list of schematic components for coupling and signal reference resolution. */
   allComponents?: EditorComponent[];
+  /** Schematic wires for signal extraction. */
   wires?: EditorWire[];
+  /** Callback to rename a component. */
   onRename: (name: string, newName: string) => void;
+  /** Callback to set or update a component parameter value. */
   onSetParameter: (name: string, key: string, value: number | string) => void;
+  /** Callback to update a terminal net label. */
   onSetLabel: (component: string, side: 'x' | 'y', indexOrLabel: number | string, maybeLabel?: string) => void;
+  /** Callback to select a coupled or referenced component. */
   onSelectComponent?: (name: string) => void;
+  /** Callback to rotate the currently selected component. */
   onRotate?: (name: string) => void;
+  /** Callback to delete the currently selected component. */
   onDelete?: (name: string) => void;
+  /** Callback to switch to the Oscilloscope view tab for a specific scope block. */
   onOpenScopeTab?: (scopeName: string) => void;
+  /** Callback to collapse the properties panel. */
   onCollapse?: () => void;
 }
 
+/**
+ * Structured Properties Inspector panel for viewing and editing schematic component parameters,
+ * terminal labels, switch coupling, probe bindings, and engineering notations.
+ */
 export function PropertiesPanel({
   component,
   allComponents,
@@ -53,7 +71,7 @@ export function PropertiesPanel({
   onDelete,
   onOpenScopeTab,
   onCollapse,
-}: PanelProps) {
+}: PropertiesPanelProps) {
   const [name, setName] = useState('');
   const [showRaw, setShowRaw] = useState(false);
 

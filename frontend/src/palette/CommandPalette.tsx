@@ -7,13 +7,24 @@ import type { CatalogEntry } from '../model/types';
 import { getComponentMeta } from '../model/componentSchema';
 import { SymbolPreview } from '../canvas/symbols';
 
-interface CommandPaletteProps {
+/**
+ * Properties for the {@link CommandPalette} modal.
+ */
+export interface CommandPaletteProps {
+  /** Whether the modal is currently visible. */
   isOpen: boolean;
+  /** Callback to close the modal (e.g. on Esc key or clicking backdrop). */
   onClose: () => void;
+  /** Catalog of components to search through. */
   catalog: CatalogEntry[];
+  /** Callback invoked when a component is selected from the list. */
   onSelect: (entry: CatalogEntry) => void;
 }
 
+/**
+ * Fast keyboard-driven command palette modal for searching and selecting circuit components.
+ * Supports up/down arrow key navigation, Enter to choose, and Esc to dismiss.
+ */
 export function CommandPalette({
   isOpen,
   onClose,
@@ -134,7 +145,16 @@ export function CommandPalette({
   );
 }
 
-function getMatchScore(displayName: string, name: string, desc: string, q: string): number {
+/**
+ * Computes a relevance match score between a search query and a component's name/description.
+ *
+ * @param displayName User-friendly label of the component.
+ * @param name Engine or schematic identifier name.
+ * @param desc Explanatory description text.
+ * @param q Lowercase search query string.
+ * @returns Score higher than 0 if matching; 0 if no match.
+ */
+export function getMatchScore(displayName: string, name: string, desc: string, q: string): number {
   if (!q) return 1;
   const d = displayName.toLowerCase();
   const n = name.toLowerCase();

@@ -16,34 +16,61 @@ import { findScopeBlocks } from '../simulation/scopes';
 import { estimateStepCount, STEP_WARNING_THRESHOLD } from '../simulation/simSteps';
 import type { ScopeController } from '../simulation/useScopeController';
 
-interface SimulationPropertiesPanelProps {
+/**
+ * Properties for the {@link SimulationPropertiesPanel} sidebar component.
+ */
+export interface SimulationPropertiesPanelProps {
+  /** Identifier of the currently loaded circuit workspace, or null. */
   circuitId: string | null;
+  /** Current simulation execution status (e.g. RUNNING, FINISHED, FAILED). */
   status: SimulationStatus | null;
+  /** Simulation progress from 0.0 to 1.0. */
   progress: number;
+  /** Engine simulation defaults (tend, dt, etc.). */
   defaults?: SimulationDefaults | null;
+  /** Error message if simulation failed. */
   errorMessage?: string | null;
+  /** Circuit validation warnings produced before running. */
   engineWarnings?: string[];
+  /** Schematic components. */
   components: EditorComponent[];
+  /** Schematic wires. */
   wires?: EditorWire[];
+  /** Simulation results time-series mapping, if available. */
   results: Record<string, number[]> | null;
+  /** Currently selected scope block identifier. */
   selectedScope: string;
+  /** Callback when user changes the active oscilloscope block. */
   onSelectScope: (scope: string) => void;
+  /** Waveform chart display layout mode. */
   displayLayout: 'overlay' | 'stacked';
+  /** Callback to change waveform display layout mode. */
   onDisplayLayoutChange: (layout: 'overlay' | 'stacked') => void;
+  /** Optional oscilloscope controller instance. */
   scope?: ScopeController;
+  /** Callback invoked to start simulation run with specified configuration parameters. */
   onRunSimulation: (config: {
     simulationTime: number;
     timeStep: number;
     solverType: string;
     backend?: string;
   }) => void;
+  /** Callback to pause simulation. */
   onPauseSimulation?: () => void;
+  /** Callback to resume simulation. */
   onResumeSimulation?: () => void;
+  /** Callback to cancel running simulation. */
   onCancelSimulation?: () => void;
+  /** Callback to export results as CSV. */
   onExportCsv?: () => void;
+  /** Callback to collapse the simulation panel. */
   onCollapse?: () => void;
 }
 
+/**
+ * Inspector panel for simulation configuration, solver selection, scope instrument switching,
+ * time-step warnings, and run/pause/resume/cancel controls.
+ */
 export function SimulationPropertiesPanel({
   circuitId,
   status,

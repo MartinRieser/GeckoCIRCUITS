@@ -96,11 +96,12 @@ frontend/src/
   - Refactored `src/hooks/useEditor.ts` (replaced poll interval with `SIMULATION_DEFAULTS.POLL_INTERVAL_MS`); created comprehensive hook test suite `test/useEditor.test.ts`
   - Created `test/symbols.test.tsx` testing symbol rendering, preview, angles, and pin distributions
   - Passed all 26 test suites (258 tests) with 0 lint errors
-- [ ] **Phase 4: Tooling & Properties Panels**
-  - Review `src/palette/Palette.tsx`; create `test/Palette.test.tsx`
-  - Review `src/palette/CommandPalette.tsx`; create `test/CommandPalette.test.tsx`
-  - Modularize `src/properties/PropertiesPanel.tsx`; expand tests
-  - Review `src/properties/SimulationPropertiesPanel.tsx`; create `test/SimulationPropertiesPanel.test.tsx`
+- [x] **Phase 4: Tooling & Properties Panels**
+  - Refactored `src/palette/Palette.tsx` (replaced magic number `61` with `ControlComponentType.LEGACY_JAVA_FUNCTION`, full TSDoc); created `test/Palette.test.tsx` (7 tests, 97% coverage)
+  - Refactored `src/palette/CommandPalette.tsx` (exported `getMatchScore`, full TSDoc); created `test/CommandPalette.test.tsx` (14 tests, 100% coverage)
+  - Refactored `src/properties/PropertiesPanel.tsx` (exported `PropertiesPanelProps`, full TSDoc); expanded `test/PropertiesPanel.test.tsx` to 10 tests covering rename, rotate, delete, collapse, and ScriptBlockEditor
+  - Refactored `src/properties/SimulationPropertiesPanel.tsx` (exported `SimulationPropertiesPanelProps`, full TSDoc); created `test/SimulationPropertiesPanel.test.tsx` (6 tests, 94% coverage)
+  - Passed all 29 test suites (287 tests) with 0 lint errors
 - [ ] **Phase 5: Simulation & Waveforms**
   - Review `src/simulation/simSteps.ts`, `scopes.ts`, `chartData.ts`, `traceColors.ts`, `viewWindow.ts`, `useScopeController.ts`
   - Create missing test suites: `scopes.test.ts`, `traceColors.test.ts`, `useScopeController.test.ts`

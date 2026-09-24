@@ -7,14 +7,25 @@ import { useMemo, useState } from 'react';
 import type { CatalogEntry } from '../model/types';
 import { CATEGORIES, getComponentMeta } from '../model/componentSchema';
 import type { CategoryId } from '../model/componentSchema';
+import { ControlComponentType } from '../model/constants';
 import { SymbolPreview } from '../canvas/symbols';
 
-interface PaletteProps {
+/**
+ * Properties for the {@link Palette} component.
+ */
+export interface PaletteProps {
+  /** List of available catalog entries from engine or standard component library. */
   catalog: CatalogEntry[];
+  /** Callback invoked when the user selects or drags a component to place it on the canvas. */
   onArm: (entry: CatalogEntry) => void;
+  /** Optional callback invoked when the user clicks the collapse button. */
   onCollapse?: () => void;
 }
 
+/**
+ * Component palette sidebar with categorized component lists, search filtering,
+ * instant keyboard shortcut indicators, and drag-and-drop / click-to-arm workflows.
+ */
 export function Palette({ catalog, onArm, onCollapse }: PaletteProps) {
   const [filter, setFilter] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>('all');
@@ -23,7 +34,11 @@ export function Palette({ catalog, onArm, onCollapse }: PaletteProps) {
   // Augment catalog entries with schema metadata (hide legacy Java block from new part palette)
   const catalogWithMeta = useMemo(() => {
     return (catalog || [])
-      .filter((entry) => entry.type !== 61 && entry.name !== 'C_JAVA_FUNCTION')
+      .filter(
+        (entry) =>
+          entry.type !== ControlComponentType.LEGACY_JAVA_FUNCTION &&
+          entry.name !== 'C_JAVA_FUNCTION',
+      )
       .map((entry) => {
         const meta = getComponentMeta(entry.type, entry.family, entry.name);
         return {

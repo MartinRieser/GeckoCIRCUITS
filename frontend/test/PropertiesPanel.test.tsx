@@ -377,4 +377,102 @@ describe('PropertiesPanel Overhaul', () => {
     expect(screen.getByDisplayValue('z1')).not.toBeNull();
     expect(screen.getByDisplayValue('z1c')).not.toBeNull();
   });
+
+  it('handles component rename, rotate, delete, and collapse actions', () => {
+    const onRename = vi.fn();
+    const onRotate = vi.fn();
+    const onDelete = vi.fn();
+    const onCollapse = vi.fn();
+
+    const resistorComp: EditorComponent = {
+      type: 1,
+      family: 'LK',
+      name: 'R.1',
+      position: [10, 10],
+      orientation: 502,
+      parameters: { R: 100 },
+      inputLabels: [],
+      outputLabels: [],
+    };
+
+    render(
+      <PropertiesPanel
+        component={resistorComp}
+        allComponents={[resistorComp]}
+        wires={[]}
+        onRename={onRename}
+        onSetParameter={vi.fn()}
+        onSetLabel={vi.fn()}
+        onRotate={onRotate}
+        onDelete={onDelete}
+        onCollapse={onCollapse}
+      />,
+    );
+
+    // Rename
+    const nameInput = screen.getByDisplayValue('R.1');
+    fireEvent.change(nameInput, { target: { value: 'R.Renamed' } });
+    fireEvent.blur(nameInput);
+    expect(onRename).toHaveBeenCalledWith('R.1', 'R.Renamed');
+
+    // Rotate
+    const rotateBtn = screen.getByTitle(/Rotate/i);
+    fireEvent.click(rotateBtn);
+    expect(onRotate).toHaveBeenCalledWith('R.1');
+
+    // Delete
+    const deleteBtn = screen.getByTitle(/Delete Component/i);
+    fireEvent.click(deleteBtn);
+    expect(onDelete).toHaveBeenCalledWith('R.1');
+
+    // Collapse
+    const collapseBtn = screen.getByTitle(/Collapse properties/i);
+    fireEvent.click(collapseBtn);
+    expect(onCollapse).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders ScriptBlockEditor for SCRIPT component and handles code and terminal adjustment', () => {
+    const onSetParameter = vi.fn();
+    const scriptComp: EditorComponent = {
+      type: 1016, // ControlComponentType.SCRIPT
+      family: 'CONTROL',
+      name: 'CTRL_SCRIPT',
+      position: [10, 10],
+      orientation: 503,
+      parameters: {
+        sourceCode: 'yOUT[0] = sin(t);',
+        anzXIN: 1,
+        anzYOUT: 1,
+      },
+      inputLabels: [],
+      outputLabels: [],
+    };
+
+    render(
+      <PropertiesPanel
+        component={scriptComp}
+        allComponents={[scriptComp]}
+        wires={[]}
+        onRename={vi.fn()}
+        onSetParameter={onSetParameter}
+        onSetLabel={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Script / Function Logic')).not.toBeNull();
+
+    // Toggle cheat sheet
+    const cheatSheetBtn = screen.getByRole('button', { name: /Cheat Sheet/i });
+    fireEvent.click(cheatSheetBtn);
+    expect(screen.getByText(/State variables automatically persist/i)).not.toBeNull();
+
+    // Apply code changes
+    const applyBtn = screen.getByRole('button', { name: /Apply Script/i });
+    fireEvent.click(applyBtn);
+
+    expect(onSetParameter).toHaveBeenCalledWith('CTRL_SCRIPT', 'sourceCode', 'yOUT[0] = sin(t);');
+    expect(onSetParameter).toHaveBeenCalledWith('CTRL_SCRIPT', 'anzXIN', 1);
+    expect(onSetParameter).toHaveBeenCalledWith('CTRL_SCRIPT', 'anzYOUT', 1);
+  });
 });
+
