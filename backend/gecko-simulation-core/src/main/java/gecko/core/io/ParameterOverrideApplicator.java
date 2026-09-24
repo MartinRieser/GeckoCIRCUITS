@@ -93,29 +93,16 @@ public final class ParameterOverrideApplicator {
             String path = entry.getKey();
             Double value = entry.getValue();
 
-            if (path == null || !path.contains(".")) {
+            ComponentParam cp = resolveComponentParam(model, path);
+            if (cp == null) {
                 unmatchedPaths.add(path != null ? path : "<null>");
                 continue;
             }
 
-            int dotIndex = path.indexOf('.');
-            String componentName = path.substring(0, dotIndex);
-            String parameterKey = path.substring(dotIndex + 1);
-
-            if (componentName.isEmpty() || parameterKey.isEmpty()) {
-                unmatchedPaths.add(path);
-                continue;
-            }
-
-            CircuitModel.ComponentData found = findComponent(model, componentName);
-            if (found == null) {
-                unmatchedPaths.add(path);
-                continue;
-            }
-
-            // Only override if the parameter key already exists (avoid introducing phantom keys)
-            if (found.getParameters().containsKey(parameterKey)) {
-                found.setParameter(parameterKey, value);
+            // Override if the parameter key already exists or is a recognized semantic alias
+            if (cp.component().getParameters().containsKey(cp.parameterKey())
+                    || isKnownSemanticAlias(cp.component(), cp.parameterKey())) {
+                cp.component().setParameter(cp.parameterKey(), value);
                 appliedPaths.add(path);
             } else {
                 unmatchedPaths.add(path);
@@ -150,31 +137,69 @@ public final class ParameterOverrideApplicator {
             String path = entry.getKey();
             Double value = entry.getValue();
 
-            if (path == null || !path.contains(".")) {
+            ComponentParam cp = resolveComponentParam(model, path);
+            if (cp == null) {
                 unmatchedPaths.add(path != null ? path : "<null>");
                 continue;
             }
 
-            int dotIndex = path.indexOf('.');
-            String componentName = path.substring(0, dotIndex);
-            String parameterKey = path.substring(dotIndex + 1);
-
-            if (componentName.isEmpty() || parameterKey.isEmpty()) {
-                unmatchedPaths.add(path);
-                continue;
-            }
-
-            CircuitModel.ComponentData found = findComponent(model, componentName);
-            if (found == null) {
-                unmatchedPaths.add(path);
-                continue;
-            }
-
-            found.setParameter(parameterKey, value);
+            cp.component().setParameter(cp.parameterKey(), value);
             appliedPaths.add(path);
         }
 
         return new OverrideResult(appliedPaths.size(), unmatchedPaths.size(), appliedPaths, unmatchedPaths);
+    }
+
+    private record ComponentParam(CircuitModel.ComponentData component, String parameterKey) {}
+
+    private static ComponentParam resolveComponentParam(CircuitModel model, String path) {
+        if (path == null || !path.contains(".")) {
+            return null;
+        }
+        // Try lastDot first (handles classic Gecko names like C.1, L.1, SIGNAL.1)
+        int lastDot = path.lastIndexOf('.');
+        String compName = path.substring(0, lastDot);
+        String paramKey = path.substring(lastDot + 1);
+        CircuitModel.ComponentData found = findComponent(model, compName);
+        if (found != null && !paramKey.isEmpty()) {
+            return new ComponentParam(found, paramKey);
+        }
+        // Fallback to firstDot if lastDot didn't match (for single-dot R1.resistance)
+        int firstDot = path.indexOf('.');
+        if (firstDot != lastDot) {
+            compName = path.substring(0, firstDot);
+            paramKey = path.substring(firstDot + 1);
+            found = findComponent(model, compName);
+            if (found != null && !paramKey.isEmpty()) {
+                return new ComponentParam(found, paramKey);
+            }
+        }
+        return null;
+    }
+
+    private static boolean isKnownSemanticAlias(CircuitModel.ComponentData comp, String key) {
+        if (key == null || comp == null) return false;
+        int typ = comp.getType();
+        String family = comp.getFamily();
+        if ("CONTROL".equals(family)) {
+            if (typ == 4) { // TYP_SIGNAL_SOURCE
+                return switch (key) {
+                    case "duty", "tastverhaeltnis", "frequency", "frequenz", "amplitude", "offset" -> true;
+                    default -> false;
+                };
+            }
+        } else {
+            return switch (key) {
+                case "initialVoltage", "uC0" -> typ == 3;
+                case "initialCurrent", "iL0" -> typ == 2;
+                case "resistance" -> typ == 1 || typ == 7;
+                case "inductance" -> typ == 2;
+                case "capacitance" -> typ == 3;
+                case "voltage" -> typ == 4;
+                default -> false;
+            };
+        }
+        return false;
     }
 
     /**

@@ -216,6 +216,10 @@ public final class SimulationConfig {
             return this;
         }
 
+        public Builder parameterOverride(String parameterName, double value) {
+            return withParameter(parameterName, value);
+        }
+
         /**
          * Sets all parameter overrides.
          *
@@ -225,6 +229,10 @@ public final class SimulationConfig {
         public Builder withParameters(Map<String, Double> parameters) {
             this.parameterOverrides.putAll(parameters);
             return this;
+        }
+
+        public Builder parameterOverrides(Map<String, Double> parameters) {
+            return withParameters(parameters);
         }
 
         /**
