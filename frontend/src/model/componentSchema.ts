@@ -1664,16 +1664,21 @@ export function parseEngineeringValue(input: string): number | null {
     }
   }
 
-  // Check for number + optional SI prefix + optional unit (e.g. 10k, 10kΩ, 100uF, 24V, 50Hz, 10A)
+  // Check for number + optional SI prefix + optional unit (e.g. 10k, 10kΩ, 100uF, 24V, 50Hz, 10A, 20%)
   const match = /^([+-]?[0-9]*\.?[0-9]+(?:[eE][+-]?[0-9]+)?)([fpnuµmkKMGT])?([a-zA-ZΩ°%]+)?$/.exec(trimmed);
   if (match) {
     const baseVal = Number(match[1]);
     const prefix = match[2];
+    const unit = match[3];
     if (Number.isFinite(baseVal)) {
+      let val = baseVal;
       if (prefix && SI_PREFIXES[prefix] !== undefined) {
-        return baseVal * SI_PREFIXES[prefix];
+        val *= SI_PREFIXES[prefix];
       }
-      return baseVal;
+      if (unit === '%') {
+        val /= 100;
+      }
+      return val;
     }
   }
 

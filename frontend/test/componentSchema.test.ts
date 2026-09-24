@@ -106,6 +106,10 @@ describe('componentSchema', () => {
       expect(parseEngineeringValue('100uF')).toBeCloseTo(1e-4);
       expect(parseEngineeringValue('24V')).toBe(24);
       expect(parseEngineeringValue('50Hz')).toBe(50);
+      expect(parseEngineeringValue('20%')).toBeCloseTo(0.2);
+      expect(parseEngineeringValue('50%')).toBeCloseTo(0.5);
+      expect(parseEngineeringValue('0.5%')).toBeCloseTo(0.005);
+      expect(parseEngineeringValue('100%')).toBe(1.0);
     });
 
     it('returns null for invalid inputs', () => {
