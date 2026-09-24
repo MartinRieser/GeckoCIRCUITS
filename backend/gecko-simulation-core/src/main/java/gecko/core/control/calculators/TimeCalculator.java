@@ -21,7 +21,7 @@ public final class TimeCalculator extends AbstractControlCalculatable {
     
     @Override
     public void calculateYOUT(final double deltaT) {
-        _outputSignal[0][0] = _time;
+        _outputSignal[0][0] = getSimulationTime();
     }
     
 }

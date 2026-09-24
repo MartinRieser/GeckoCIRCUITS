@@ -35,7 +35,8 @@ public final class SignalCalculatorImport extends AbstractSignalCalculator imple
 
     @Override
     public void initializeAtSimulationStart(final double deltaT) {
-        while (_tSigStart + _signalDuration < _time) {
+        final double time = getSimulationTime();
+        while (_tSigStart + _signalDuration < time) {
             _tSigStart += _signalDuration;
         }
         doDataTests();
@@ -43,30 +44,30 @@ public final class SignalCalculatorImport extends AbstractSignalCalculator imple
 
     @Override
     public void calculateYOUT(final double deltaT) {
-
-        if (_tSigStart > _time) {
+        final double time = getSimulationTime();
+        if (_tSigStart > time) {
             _tSigStart = 0;  // zB. bei Neustarten der Simulation
         }
 
-        calculateSigStartTimeEstimation();
+        calculateSigStartTimeEstimation(time);
                         // ungefaehre Position bestimmen:
         
-        final int timePointer = calculateAccurateTimePointer();
+        final int timePointer = calculateAccurateTimePointer(time);
         if (timePointer == 0) {
             _outputSignal[0][0] = _xy[1][0];
-        } else if (_tSigStart + _xy[0][timePointer] >= _time) {
+        } else if (_tSigStart + _xy[0][timePointer] >= time) {
             final double time1 = _xy[0][timePointer - 1];
             final double time2 = _xy[0][timePointer];
             final double value1 = _xy[1][timePointer - 1];
             final double value2 = _xy[1][timePointer];
-            _outputSignal[0][0] = value1 + (value2 - value1) * (_time - _tSigStart - time1) / (time2 - time1);
+            _outputSignal[0][0] = value1 + (value2 - value1) * (time - _tSigStart - time1) / (time2 - time1);
         } else {
             final double time1 = _xy[0][timePointer];
             final double time2 = _xy[0][timePointer + 1];
             final double value1 = _xy[1][timePointer];
             final double value2 = _xy[1][timePointer + 1];
 
-            _outputSignal[0][0] = value1 + (value2 - value1) * (_time - _tSigStart - time1) / (time2 - time1);
+            _outputSignal[0][0] = value1 + (value2 - value1) * (time - _tSigStart - time1) / (time2 - time1);
         }
     }
 
@@ -86,21 +87,21 @@ public final class SignalCalculatorImport extends AbstractSignalCalculator imple
         }
     }
 
-    private void calculateSigStartTimeEstimation() {
-        while (_tSigStart + _signalDuration < _time) {
+    private void calculateSigStartTimeEstimation(final double time) {
+        while (_tSigStart + _signalDuration < time) {
             _tSigStart += _signalDuration;  // tLokal 'zeigt' immer auf den Zeitpunkt des Beginns einer Signal-Periode
         }
     }
 
-    private int calculateAccurateTimePointer() {
-        int timePointer = (int) (_xy[0].length * ((_time - _tSigStart) / _signalDuration));
+    private int calculateAccurateTimePointer(final double time) {
+        int timePointer = (int) (_xy[0].length * ((time - _tSigStart) / _signalDuration));
         // Feinadjustierung: jetzt die exakte Posistion bestimmen
-        if (_tSigStart + _xy[0][timePointer] < _time) {
-            while ((timePointer < _xy[0].length - 1) && (_tSigStart + _xy[0][timePointer] < _time)) {
+        if (_tSigStart + _xy[0][timePointer] < time) {
+            while ((timePointer < _xy[0].length - 1) && (_tSigStart + _xy[0][timePointer] < time)) {
                 timePointer++;  // Erg. -->  xy[0][zeiger] >= t  oder  zeiger ==> xy[0][end]
             }
         } else {
-            while ((timePointer > 0) && (_tSigStart + _xy[0][timePointer] > _time)) {
+            while ((timePointer > 0) && (_tSigStart + _xy[0][timePointer] > time)) {
                 timePointer--;  // Erg. -->  xy[0][zeiger] <= t  oder  zeiger ==> xy[0][0]
             }
         }

@@ -150,7 +150,7 @@ public final class CLibraryCalculator extends AbstractControlCalculatable
         }
         try {
             stepHandle.invokeExact(xSegment, nIn, ySegment, _outputSignal.length,
-                    AbstractControlCalculatable._time, deltaT);
+                    getSimulationTime(), deltaT);
         } catch (Throwable t) {
             LOGGER.warn("gecko_step invocation failed: {}", t.getMessage(), t);
             return;

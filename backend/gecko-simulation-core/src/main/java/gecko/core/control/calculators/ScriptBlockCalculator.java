@@ -128,7 +128,7 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
         hasLoggedError = false;
         hasWarnedDivideByZero = false;
 
-        ExecutionContext ctx = new ExecutionContext(_time, deltaT);
+        ExecutionContext ctx = new ExecutionContext(getSimulationTime(), deltaT);
         executeStatements(compiledInitStatements, ctx);
         // Persist variables initialized in init block
         stateVariables.putAll(ctx.variables);
@@ -154,7 +154,7 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
 
     @Override
     public void calculateYOUT(double deltaT) {
-        ExecutionContext ctx = new ExecutionContext(_time, deltaT);
+        ExecutionContext ctx = new ExecutionContext(getSimulationTime(), deltaT);
         // Load persistent state
         ctx.variables.putAll(stateVariables);
 

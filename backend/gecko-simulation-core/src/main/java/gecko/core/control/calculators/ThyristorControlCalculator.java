@@ -60,19 +60,20 @@ public final class ThyristorControlCalculator extends AbstractControlCalculatabl
 
     @Override
     public void calculateYOUT(final double deltaT) {
+        final double time = getSimulationTime();
         if (_synchOld <= 0 && _inputSignal[1][0] >= 0 && _synchOld != _inputSignal[1][0]) {
-            _synchTime = _time;
+            _synchTime = time;
 
 
-            if (_lastFallingZero > 0 && (_time - _lastFallingZero) != 0) {
-                _synchFreq = 1.0 / (_time - _lastFallingZero);
+            if (_lastFallingZero > 0 && (time - _lastFallingZero) != 0) {
+                _synchFreq = 1.0 / (time - _lastFallingZero);
             }
 
             if (-1 > _lastFallingZero) {
-                _synchFreq = 1 / (2.0 * (_time - -1));
+                _synchFreq = 1 / (2.0 * (time - -1));
             }
 
-            _lastFallingZero = _time;
+            _lastFallingZero = time;
         }
 
 
@@ -96,7 +97,7 @@ public final class ThyristorControlCalculator extends AbstractControlCalculatabl
 
         final List<GateEvent> removeEvents = new ArrayList<GateEvent>();
         for (GateEvent ge : _gateEvents) {
-            final GateEvent toRemove = ge.processEvent(_time, _outputSignal);
+            final GateEvent toRemove = ge.processEvent(time, _outputSignal);
             if (toRemove != null) {
                 removeEvents.add(toRemove);
             }
@@ -117,12 +118,13 @@ public final class ThyristorControlCalculator extends AbstractControlCalculatabl
         public GateEvent(final double onTime, final double offTime, final int gateNumber) {
             double tmpOnTime = onTime;
             double tmpOffTime = offTime;
+            final double time = getSimulationTime();
 
-            if (tmpOnTime <= 0 && _time == 0) {
+            if (tmpOnTime <= 0 && time == 0) {
                 _gateEvents.add(new GateEvent(SMALL_VALUE, offTime - onTime, gateNumber));
             }
 
-            while (_time > tmpOnTime + EPSILON) {
+            while (time > tmpOnTime + EPSILON) {
                 tmpOnTime += 1.0 / _synchFreq;
                 tmpOffTime += 1.0 / _synchFreq;
             }

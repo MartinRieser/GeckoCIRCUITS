@@ -74,9 +74,11 @@ public class ControlNetlist {
      */
     public void executeTimeStep(double dt, double time) {
         this.simulationTime = time;
+        // Retained for backward compatibility with legacy calculators and test suites that read legacy static time
         AbstractControlCalculatable.setTime(time);
         for (AbstractControlCalculatable calc : sortedCalculators) {
             if (calc != null) {
+                calc.setSimulationTime(time);
                 calc.calculateYOUT(dt);
             }
         }

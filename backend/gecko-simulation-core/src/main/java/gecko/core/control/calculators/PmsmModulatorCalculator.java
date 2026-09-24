@@ -14,13 +14,39 @@
 package gecko.core.control.calculators;
 
 /**
- * TODO: beautify this mess!
- * @author andreas
+ * Two-level, three-phase Space Vector Pulse-Width Modulation (SVPWM) calculator for
+ * Permanent Magnet Synchronous Machines (PMSM) and AC drives.
+ *
+ * <p><strong>Input Signals:</strong></p>
+ * <ul>
+ *   <li>Signal 0: {@code v_alpha} - Stationary alpha-axis reference voltage</li>
+ *   <li>Signal 1: {@code v_beta} - Stationary beta-axis reference voltage</li>
+ *   <li>Signal 2: {@code triangle} - Triangular carrier wave (range [0.0, 1.0])</li>
+ *   <li>Signal 3: {@code v_dc} - DC-link voltage</li>
+ * </ul>
+ *
+ * <p><strong>Output Signals:</strong></p>
+ * <ul>
+ *   <li>Signal 0: {@code U} - Phase U gate signal (0.0 or 1.0)</li>
+ *   <li>Signal 1: {@code V} - Phase V gate signal (0.0 or 1.0)</li>
+ *   <li>Signal 2: {@code W} - Phase W gate signal (0.0 or 1.0)</li>
+ * </ul>
+ *
+ * <p>The modulator determines the reference voltage vector magnitude and angle in the
+ * stationary alpha-beta frame, identifies the active 60-degree sector (0 to 5),
+ * computes the dwell times of the adjacent active space vectors and zero vectors,
+ * and generates complementary switching commands via triangular carrier comparison.</p>
  */
 public final class PmsmModulatorCalculator extends AbstractControlCalculatable {
 
     private static final int NO_INPUTS = 4;
     private static final int NO_OUTPUTS = 3;
+
+    private static final double SECTOR_ANGLE = Math.PI / 3.0; // 60 degrees
+    private static final double TWO_PI = 2.0 * Math.PI;
+    private static final double SQRT_3 = Math.sqrt(3.0);
+    private static final double SQRT_3_DIV_2 = SQRT_3 / 2.0;
+    private static final int MAX_SECTOR_INDEX = 5;
 
     public PmsmModulatorCalculator() {
         super(NO_INPUTS, NO_OUTPUTS);
@@ -33,107 +59,93 @@ public final class PmsmModulatorCalculator extends AbstractControlCalculatable {
         final double triangle = _inputSignal[2][0];
         final double vdc = _inputSignal[3][0];
 
-        int sector = 0;
+        // Guard against non-positive or non-finite DC-link voltage
+        if (vdc <= 0.0 || !Double.isFinite(vdc)) {
+            _outputSignal[0][0] = 0.0;
+            _outputSignal[1][0] = 0.0;
+            _outputSignal[2][0] = 0.0;
+            return;
+        }
 
         double vabs = Math.sqrt(valpha * valpha + vbeta * vbeta);
-        double ang = Math.atan2(vbeta, valpha);
-
         if (vabs >= vdc) {
-            vabs = vdc;
+            vabs = vdc; // Overmodulation clamp
         }
 
-        double M_u = 2 * vabs / (Math.sqrt(3) * vdc); //modulation index
+        final double modulationIndex = 2.0 * vabs / (SQRT_3 * vdc);
 
-        double ang_add = 0;
-
-        if (ang >= 0 && ang < Math.PI / 3) {
-            sector = 0;
-            ang_add = 0;
+        // Normalize angle to [0, 2*pi)
+        double angle = Math.atan2(vbeta, valpha);
+        if (angle < 0.0) {
+            angle += TWO_PI;
         }
 
-        if (ang >= Math.PI / 3 && ang < 2 * Math.PI / 3) {
-            sector = 1;
-            ang_add = -Math.PI / 3;
+        int sector = (int) (angle / SECTOR_ANGLE);
+        if (sector > MAX_SECTOR_INDEX) {
+            sector = MAX_SECTOR_INDEX;
         }
 
-        if (ang >= 2 * Math.PI / 3 && ang < Math.PI) {
-            sector = 2;
-            ang_add = -2 * Math.PI / 3;
-        }
+        final double angleRel = angle - sector * SECTOR_ANGLE;
 
-        if (ang >= -Math.PI && ang < -2 * Math.PI / 3) {
-            sector = 3;
-            ang_add = Math.PI;
-        }
+        // Relative dwell times of the active space vectors in a switching half-period
+        final double deltaVector1 = SQRT_3_DIV_2 * modulationIndex * Math.sin(SECTOR_ANGLE - angleRel);
+        final double deltaVector2 = SQRT_3_DIV_2 * modulationIndex * Math.sin(angleRel);
+        final double deltaZero = 0.5 * (1.0 - deltaVector1 - deltaVector2); // Symmetrical zero-vector allocation
 
-        if (ang >= -2 * Math.PI / 3 && ang < -Math.PI / 3) {
-            sector = 4;
-            ang_add = 2 * Math.PI / 3;
-        }
+        final double comp0 = deltaZero;
+        final double comp1a = deltaZero + deltaVector1;
+        final double comp1b = deltaZero + deltaVector2;
+        final double comp2 = deltaZero + deltaVector1 + deltaVector2;
 
-        if (ang >= -Math.PI / 3 && ang < 0) {
-            sector = 5;
-            ang_add = Math.PI / 3;
-        }
+        final double pwm0 = (triangle >= comp0) ? 0.0 : 1.0;
+        final double pwm1a = (triangle >= comp1a) ? 0.0 : 1.0;
+        final double pwm1b = (triangle >= comp1b) ? 0.0 : 1.0;
+        final double pwm2 = (triangle >= comp2) ? 0.0 : 1.0;
 
-        double ang_rel = ang + ang_add;
-
-//relative times a vector is applied in a switching half-period:
-        double delta_vector1 = Math.sqrt(3) / 2 * M_u * Math.sin(Math.PI / 3 - ang_rel);
-        double delta_vector2 = Math.sqrt(3) / 2 * M_u * Math.sin(ang_rel);
-        double delta_fw = 0.5 * (1 - delta_vector1 - delta_vector2); //assuming symmetrical fw
-
-        double comp0 = delta_fw;
-        double comp1a = delta_fw + delta_vector1;
-        double comp1b = delta_fw + delta_vector2;
-        double comp2 = delta_fw + delta_vector1 + delta_vector2;
-
-        double pwm0 = (triangle >= comp0) ? 0 : 1;
-        double pwm1a = (triangle >= comp1a) ? 0 : 1;
-        double pwm1b = (triangle >= comp1b) ? 0 : 1;
-        double pwm2 = (triangle >= comp2) ? 0 : 1;
-
-        double U = 0;
-        double V = 0;
-        double W = 0;
-
+        final double u;
+        final double v;
+        final double w;
 
         switch (sector) {
-
-            case 0:
-                U = pwm0;
-                V = pwm1a;
-                W = pwm2;
-                break;
-            case 1:
-                U = pwm1b;
-                V = pwm0;
-                W = pwm2;
-                break;
-            case 2:
-                U = pwm2;
-                V = pwm0;
-                W = pwm1a;
-                break;
-            case 3:
-                U = pwm2;
-                V = pwm1b;
-                W = pwm0;
-                break;
-            case 4:
-                U = pwm1a;
-                V = pwm2;
-                W = pwm0;
-                break;
-            case 5:
-                U = pwm0;
-                V = pwm2;
-                W = pwm1b;
-                break;
+            case 0 -> {
+                u = pwm0;
+                v = pwm1a;
+                w = pwm2;
+            }
+            case 1 -> {
+                u = pwm1b;
+                v = pwm0;
+                w = pwm2;
+            }
+            case 2 -> {
+                u = pwm2;
+                v = pwm0;
+                w = pwm1a;
+            }
+            case 3 -> {
+                u = pwm2;
+                v = pwm1b;
+                w = pwm0;
+            }
+            case 4 -> {
+                u = pwm1a;
+                v = pwm2;
+                w = pwm0;
+            }
+            case 5 -> {
+                u = pwm0;
+                v = pwm2;
+                w = pwm1b;
+            }
+            default -> {
+                u = 0.0;
+                v = 0.0;
+                w = 0.0;
+            }
         }
 
-        _outputSignal[0][0] = U;
-        _outputSignal[1][0] = V;
-        _outputSignal[2][0] = W;
+        _outputSignal[0][0] = u;
+        _outputSignal[1][0] = v;
+        _outputSignal[2][0] = w;
     }
 }

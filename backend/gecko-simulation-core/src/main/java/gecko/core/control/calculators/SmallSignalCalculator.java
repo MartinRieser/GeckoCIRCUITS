@@ -107,16 +107,21 @@ public class SmallSignalCalculator extends AbstractControlCalculatable
         }
     }
 
+    @Override
+    public void setSimulationTime(final double time) {
+        super.setSimulationTime(time);
+        if (AbstractControlCalculatable != null) {
+            AbstractControlCalculatable.setSimulationTime(time);
+        }
+    }
+
     /**
      * Sets the time externally (for synchronized operation).
      *
      * @param time the simulation time
      */
     public void externalSetTime(double time) {
-        _time = time;
-        if (AbstractControlCalculatable != null) {
-            gecko.core.control.calculators.AbstractControlCalculatable._time = time;
-        }
+        setSimulationTime(time);
     }
 
     @Override
@@ -197,7 +202,7 @@ public class SmallSignalCalculator extends AbstractControlCalculatable
         switch (_signalType) {
             case SINE:
                 for (int i = 0; i < _bode[0].length; i++) {
-                    returnValue += _amplitude * Math.sin(TWO_PI * _bode[0][i] * _time);
+                    returnValue += _amplitude * Math.sin(TWO_PI * _bode[0][i] * getSimulationTime());
                 }
                 break;
             case RECTANGLE:

@@ -19,11 +19,46 @@ package gecko.core.control.calculators;
  * @author andreas
  */
 public abstract class AbstractControlCalculatable {
+    /** Threshold for binary control signal comparisons. */
     public static final double SIGNAL_THRESHOLD = 0.5;
-    public static double _time = 0;
-    
+
+    /** Legacy static time used as fallback for standalone calculators in legacy unit tests. */
+    private static volatile double legacyStaticTime = 0.0;
+
+    /** Current simulation time for this calculator instance in seconds. */
+    private double _time = 0.0;
+    private boolean timeExplicitlySet = false;
+
+    /**
+     * Gets the current simulation time for this calculator instance.
+     *
+     * @return simulation time in seconds
+     */
+    public double getSimulationTime() {
+        return timeExplicitlySet ? _time : legacyStaticTime;
+    }
+
+    /**
+     * Sets the simulation time for this calculator instance.
+     *
+     * <p><strong>Note for composite/delegating calculators:</strong> If a subclass wraps or delegates
+     * calculation to another {@link AbstractControlCalculatable} instance, it must override this method
+     * to forward the simulation time to all wrapped child calculators that evaluate time-dependent signals.</p>
+     *
+     * @param time simulation time in seconds
+     */
+    public void setSimulationTime(final double time) {
+        this._time = time;
+        this.timeExplicitlySet = true;
+    }
+
+    /**
+     * Legacy time setter retained for backward compatibility with standalone unit tests.
+     *
+     * @param time simulation time in seconds
+     */
     public static void setTime(final double time) {
-        _time = time;
+        legacyStaticTime = time;
     }
     
     public final double[][] _inputSignal;
