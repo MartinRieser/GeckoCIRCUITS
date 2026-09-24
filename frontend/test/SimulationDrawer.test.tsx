@@ -48,7 +48,7 @@ describe('SimulationDrawer Component', () => {
         components={dummyComponents}
         defaults={{ duration: 0.01, timeStep: 1e-6, solverType: 'TRAPEZOIDAL', signals: [] }}
         onRunSimulation={vi.fn()}
-        status="IDLE"
+        status={null}
         progress={0}
         results={null}
       />,
@@ -70,7 +70,7 @@ describe('SimulationDrawer Component', () => {
         components={dummyComponents}
         defaults={{ duration: 0.01, timeStep: 1e-6, solverType: 'TRAPEZOIDAL', signals: [] }}
         onRunSimulation={onRun}
-        status="IDLE"
+        status={null}
         progress={0}
         results={null}
       />,
@@ -168,7 +168,7 @@ describe('SimulationDrawer Component', () => {
         components={dummyComponents}
         defaults={null}
         onRunSimulation={vi.fn()}
-        status="FINISHED"
+        status="COMPLETED"
         progress={1.0}
         results={dummyResults}
       />,

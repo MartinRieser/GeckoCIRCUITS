@@ -38,7 +38,7 @@ describe('SimulationPropertiesPanel Component', () => {
     render(
       <SimulationPropertiesPanel
         circuitId="test-circuit"
-        status="IDLE"
+        status={null}
         progress={0}
         defaults={{ duration: 0.01, timeStep: 1e-6, solverType: 'backward-euler', signals: [] }}
         components={dummyComponents}
@@ -148,7 +148,7 @@ describe('SimulationPropertiesPanel Component', () => {
     render(
       <SimulationPropertiesPanel
         circuitId="test-circuit"
-        status="FINISHED"
+        status="COMPLETED"
         progress={1.0}
         components={dummyComponents}
         results={{ time: [0, 1], 'R.1:i': [0, 2] }}
@@ -172,7 +172,7 @@ describe('SimulationPropertiesPanel Component', () => {
     render(
       <SimulationPropertiesPanel
         circuitId="test-circuit"
-        status="FINISHED"
+        status="COMPLETED"
         progress={1.0}
         components={dummyComponents}
         results={{ time: [0, 1], 'R.1:i': [0, 2] }}
@@ -195,7 +195,7 @@ describe('SimulationPropertiesPanel Component', () => {
     render(
       <SimulationPropertiesPanel
         circuitId="test-circuit"
-        status="IDLE"
+        status={null}
         progress={0}
         components={dummyComponents}
         results={null}

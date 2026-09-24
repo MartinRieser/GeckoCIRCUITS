@@ -307,10 +307,10 @@ export function allTerminals(components: EditorComponent[]): TerminalRef[] {
 export function terminalNear(
   components: EditorComponent[],
   point: Point,
-  maxDistance = CANVAS_METRICS.DEFAULT_SNAP_DISTANCE,
+  maxDistance: number = CANVAS_METRICS.DEFAULT_SNAP_DISTANCE,
 ): TerminalRef | null {
   let best: TerminalRef | null = null;
-  let bestDist = maxDistance;
+  let bestDist: number = maxDistance;
   for (const ref of allTerminals(components)) {
     const d = Math.hypot(ref.point.x - point.x, ref.point.y - point.y);
     if (d <= bestDist) {
