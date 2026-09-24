@@ -81,11 +81,13 @@ frontend/src/
   - Created `test/constants.test.ts`
   - Expanded `test/geometry.test.ts`, `test/componentSchema.test.ts`, `test/validation.test.ts`
   - Model coverage reached **98.18%** statements, **100%** functions, **82.3%** branches
-- [ ] **Phase 2: Client & State Layer**
-  - Refactor `src/api/client.ts` (dynamic origin, typed errors, abort handling)
-  - Review `src/desktop.ts`
-  - Refactor `src/model/store.ts` (bounded history, strict reducer contracts)
-  - Add test suite `test/examples.test.ts` for all pre-defined circuits in `src/model/examples.ts`
+- [x] **Phase 2: Client & State Layer**
+  - Refactored `src/api/client.ts` (dynamic origin resolution `apiBase()`, strongly typed `ApiError` class, full TSDoc, constants for chunking & reconnection)
+  - Reviewed `src/desktop.ts` (100% covered, clean IPC bridge)
+  - Refactored `src/model/store.ts` (Orientation enums, zero magic numbers)
+  - Created `test/examples.test.ts` (verifying all pre-defined templates in `src/model/examples.ts`)
+  - Expanded `test/client.test.ts` (ApiError, pause/resume/cancel simulation endpoints)
+  - Passed all 23 test suites (241 tests) with 0 lint errors
 - [ ] **Phase 3: Canvas Engine & Schematic Graphics**
   - Review `src/canvas/WireRouter.ts` (obstacle avoidance, corner simplification)
   - Deduplicate & document `src/canvas/symbols.tsx`; create `test/symbols.test.tsx`

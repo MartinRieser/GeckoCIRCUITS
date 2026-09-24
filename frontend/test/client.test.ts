@@ -222,4 +222,35 @@ describe('api client with injected backend origin', () => {
     dispose();
     expect(urls[0]).toBe('wss://127.0.0.1:54321/gecko/ws-raw');
   });
+
+  it('throws ApiError with HTTP status code and endpoint path on failures', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ detail: 'Simulation failed to initialize' }, 400));
+    try {
+      await client.getSimulation('sim-bad');
+      expect.unreachable('Should have thrown ApiError');
+    } catch (err) {
+      expect(err).toBeInstanceOf(client.ApiError);
+      const apiErr = err as client.ApiError;
+      expect(apiErr.status).toBe(400);
+      expect(apiErr.endpoint).toBe('/simulations/sim-bad');
+      expect(apiErr.message).toBe('Simulation failed to initialize');
+    }
+  });
+
+  it('supports pause, resume, and cancel simulation lifecycle endpoints', async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ simulationId: 's1', status: 'PAUSED' }));
+    const paused = await client.pauseSimulation('s1');
+    expect(paused.status).toBe('PAUSED');
+    expect(fetchMock.mock.calls[0][0]).toContain('/simulations/s1/pause');
+
+    fetchMock.mockResolvedValueOnce(jsonResponse({ simulationId: 's1', status: 'RUNNING' }));
+    const resumed = await client.resumeSimulation('s1');
+    expect(resumed.status).toBe('RUNNING');
+    expect(fetchMock.mock.calls[1][0]).toContain('/simulations/s1/resume');
+
+    fetchMock.mockResolvedValueOnce(jsonResponse({}));
+    await client.cancelSimulation('s1');
+    expect(fetchMock.mock.calls[2][0]).toContain('/simulations/s1');
+    expect(fetchMock.mock.calls[2][1].method).toBe('DELETE');
+  });
 });

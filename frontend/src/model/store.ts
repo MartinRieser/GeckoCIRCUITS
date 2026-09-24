@@ -10,6 +10,7 @@
  */
 import type { EditorComponent, EditorWire, Point, EditorSnapshot } from './types';
 import { ORIENTATION_CYCLE, terminalPositions, findPlacementConflict } from './geometry';
+import { Orientation } from './constants';
 import { routeMovedWire, densePoints, simplifyCorners, deconflictMovedWires } from '../canvas/WireRouter';
 
 export type Mode = 'idle' | 'placing' | 'wiring' | 'rubber' | 'dragging';
@@ -260,7 +261,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
           family: action.family,
           x: 10,
           y: 10,
-          orientation: 503,
+          orientation: Orientation.NORTH_SOUTH,
         },
         wireDraft: null,
         rubber: null,
