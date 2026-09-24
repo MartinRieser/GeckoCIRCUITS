@@ -88,12 +88,14 @@ frontend/src/
   - Created `test/examples.test.ts` (verifying all pre-defined templates in `src/model/examples.ts`)
   - Expanded `test/client.test.ts` (ApiError, pause/resume/cancel simulation endpoints)
   - Passed all 23 test suites (241 tests) with 0 lint errors
-- [ ] **Phase 3: Canvas Engine & Schematic Graphics**
-  - Review `src/canvas/WireRouter.ts` (obstacle avoidance, corner simplification)
-  - Deduplicate & document `src/canvas/symbols.tsx`; create `test/symbols.test.tsx`
-  - Review `src/canvas/ContextMenu.tsx`; create `test/ContextMenu.test.tsx`
-  - Modularize `src/canvas/Sheet.tsx` (CanvasGrid, CanvasWires, CanvasOverlays)
-  - Decompose `src/hooks/useEditor.ts`; create `test/useEditor.test.ts`
+- [x] **Phase 3: Canvas Engine & Schematic Graphics**
+  - Refactored `src/canvas/WireRouter.ts` (extracted `ROUTE_DETOUR_OFFSETS` constant, verified obstacle avoidance & wire deconfliction)
+  - Deduplicated & documented `src/canvas/symbols.tsx` (re-used `resolveComponentPinCounts`, replaced magic numbers with `Orientation` and `CANVAS_METRICS`)
+  - Reviewed & unit-tested `src/canvas/ContextMenu.tsx` with dedicated test suite `test/ContextMenu.test.tsx`
+  - Refactored `src/canvas/Sheet.tsx` (replaced magic orientation and zoom scaling numbers with `Orientation` and `CANVAS_METRICS`)
+  - Refactored `src/hooks/useEditor.ts` (replaced poll interval with `SIMULATION_DEFAULTS.POLL_INTERVAL_MS`); created comprehensive hook test suite `test/useEditor.test.ts`
+  - Created `test/symbols.test.tsx` testing symbol rendering, preview, angles, and pin distributions
+  - Passed all 26 test suites (258 tests) with 0 lint errors
 - [ ] **Phase 4: Tooling & Properties Panels**
   - Review `src/palette/Palette.tsx`; create `test/Palette.test.tsx`
   - Review `src/palette/CommandPalette.tsx`; create `test/CommandPalette.test.tsx`

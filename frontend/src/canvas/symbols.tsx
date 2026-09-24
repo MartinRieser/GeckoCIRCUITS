@@ -6,21 +6,22 @@
  * via an SVG transform.
  */
 import type { EditorComponent } from '../model/types';
-import { CTRL_TYPE } from '../model/componentSchema';
+import { CTRL_TYPE, resolveComponentPinCounts } from '../model/componentSchema';
+import { Orientation, CANVAS_METRICS } from '../model/constants';
 import { TWO_PORT_DIST } from '../model/geometry';
 
 /** Rotation angle (deg) that maps WEST_EAST base orientation to the given code. */
 export function orientationAngle(orientation: number): number {
   switch (orientation) {
-    case 504:
-      return 180; // EAST_WEST
-    case 503:
-      return 90; // NORTH_SOUTH
-    case 501:
-      return 270; // SOUTH_NORTH
-    case 502:
+    case Orientation.EAST_WEST:
+      return 180;
+    case Orientation.NORTH_SOUTH:
+      return 90;
+    case Orientation.SOUTH_NORTH:
+      return 270;
+    case Orientation.WEST_EAST:
     default:
-      return 0; // WEST_EAST
+      return 0;
   }
 }
 
@@ -31,19 +32,19 @@ export function orientationAngle(orientation: number): number {
  */
 export function controlOrientationAngle(orientation: number): number {
   switch (orientation) {
-    case 501:
-      return 180; // SOUTH_NORTH
-    case 502:
-      return 270; // WEST_EAST
-    case 504:
-      return 90; // EAST_WEST
-    case 503:
+    case Orientation.SOUTH_NORTH:
+      return 180;
+    case Orientation.WEST_EAST:
+      return 270;
+    case Orientation.EAST_WEST:
+      return 90;
+    case Orientation.NORTH_SOUTH:
     default:
-      return 0; // NORTH_SOUTH
+      return 0;
   }
 }
 
-const LEAD = 2.0;
+const LEAD = CANVAS_METRICS.LEAD_LENGTH;
 
 /**
  * Renders the component's body symbol, rotated to match its orientation.
@@ -61,25 +62,15 @@ export function ComponentSymbol({
   const angle = component.family === 'CONTROL'
     ? controlOrientationAngle(component.orientation)
     : orientationAngle(component.orientation);
-  const compParams = component.parameters || {};
-  const rawIn = compParams.anzXIN;
-  const inCount =
-    rawIn !== undefined && rawIn !== null && rawIn !== '' && !isNaN(Number(rawIn))
-      ? Math.max(0, Number(rawIn))
-      : (component.inputLabels?.length || 1);
-  const rawOut = compParams.anzYOUT;
-  const outCount =
-    rawOut !== undefined && rawOut !== null && rawOut !== '' && !isNaN(Number(rawOut))
-      ? Math.max(1, Number(rawOut))
-      : 1;
+  const { inputCount, outputCount } = resolveComponentPinCounts(component);
   return (
     <g transform={`rotate(${angle})`}>
       <SymbolByType
         type={component.type}
         u={u}
         family={component.family}
-        inputCount={inCount}
-        outputCount={outCount}
+        inputCount={inputCount}
+        outputCount={outputCount}
       />
     </g>
   );
@@ -97,7 +88,7 @@ export function SymbolPreview({
   size?: number;
   color?: string;
 }) {
-  const u = 10;
+  const u = CANVAS_METRICS.PREVIEW_SYMBOL_U;
   return (
     <svg
       width={size}

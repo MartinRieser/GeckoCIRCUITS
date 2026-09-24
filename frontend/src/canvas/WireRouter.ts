@@ -88,6 +88,9 @@ export function routingBlockedCells(components: RoutingComponent[]): Set<string>
   return blocked;
 }
 
+/** Stepped detour offsets (in grid units) tested when routing around obstacles. */
+const ROUTE_DETOUR_OFFSETS = [1, -1, 2, -2, 3, -3, 5, -5, 8, -8] as const;
+
 /**
  * Ordered route candidates between two endpoints: both L orientations, then
  * stepped Z detours that leave the direct band. Shared by the interactive
@@ -100,7 +103,7 @@ function routeCandidates(start: Point, end: Point, preferHorizontal: boolean | n
   }
   candidates.push(routeL(start, end, true));
   candidates.push(routeL(start, end, false));
-  for (const off of [1, -1, 2, -2, 3, -3, 5, -5, 8, -8]) {
+  for (const off of ROUTE_DETOUR_OFFSETS) {
     candidates.push([start, { x: start.x, y: start.y + off }, { x: end.x, y: start.y + off }, end]);
     candidates.push([start, { x: start.x + off, y: start.y }, { x: start.x + off, y: end.y }, end]);
   }

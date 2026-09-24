@@ -21,6 +21,7 @@ import {
 import type { Point } from '../model/types';
 import { ContextMenu } from './ContextMenu';
 import type { ContextMenuTarget } from './ContextMenu';
+import { Orientation, CANVAS_METRICS } from '../model/constants';
 
 export interface SheetActions {
   placeGhost(
@@ -553,15 +554,15 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
       const data = JSON.parse(e.dataTransfer.getData('text/plain'));
       if (data && data.type !== undefined) {
         const p = toGrid(e as unknown as ReactMouseEvent);
-        actions.placeGhost(p.x, p.y, 503, data.type, data.family || 'LK');
+        actions.placeGhost(p.x, p.y, Orientation.NORTH_SOUTH, data.type, data.family || 'LK');
       }
     } catch {
       // ignore
     }
   };
 
-  const handleZoomIn = () => setZoom((prev) => Math.min(3.0, prev * 1.2));
-  const handleZoomOut = () => setZoom((prev) => Math.max(0.3, prev / 1.2));
+  const handleZoomIn = () => setZoom((prev) => Math.min(CANVAS_METRICS.MAX_ZOOM, prev * CANVAS_METRICS.ZOOM_STEP_FACTOR));
+  const handleZoomOut = () => setZoom((prev) => Math.max(CANVAS_METRICS.MIN_ZOOM, prev / CANVAS_METRICS.ZOOM_STEP_FACTOR));
   const handleZoomReset = () => {
     setZoom(1.0);
     setPan({ x: 0, y: 0 });
@@ -1084,7 +1085,9 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                           const isCtrlProbe = isVoltmeterComponent(component) || isAmmeterComponent(component);
                           const isControlBlock = component.family === 'CONTROL';
                           const isHorizontalTwoPort =
-                            (component.orientation === 502 || component.orientation === 504) && !isCtrlProbe;
+                            (component.orientation === Orientation.WEST_EAST ||
+                              component.orientation === Orientation.EAST_WEST) &&
+                            !isCtrlProbe;
 
                           if (isCtrlProbe) {
                             // Probes: place identifier to the left of the symbol so output labels to the right never collide

@@ -23,6 +23,7 @@ import {
 } from '../model/componentSchema';
 import { isScopeComponent } from '../simulation/scopes';
 import { BLANK_CIRCUIT_IPES } from '../model/examples';
+import { SIMULATION_DEFAULTS } from '../model/constants';
 import { flipRoute, densePoints, routeMovedWire, deconflictMovedWires } from '../canvas/WireRouter';
 
 export function useEditor() {
@@ -998,7 +999,7 @@ export function useEditor() {
         setSimStatus('FAILED');
         setSimError((err as Error).message);
       }
-    }, 300);
+    }, SIMULATION_DEFAULTS.POLL_INTERVAL_MS);
     simPollTimerRef.current = pollInterval;
   }, [stopPolling]);
 
