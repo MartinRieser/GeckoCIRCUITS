@@ -28,6 +28,7 @@ import gecko.core.circuit.netlist.NetlistBuilder;
 import gecko.core.control.ControlCalculatorBuilder;
 import gecko.core.simulation.ControlNetlist;
 import gecko.core.simulation.DomainCoupler;
+import gecko.core.circuit.losscalculation.SemiconductorLossEngine;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -117,6 +118,18 @@ public class HeadlessSimulationEngine {
     // Domain coupling orchestrator
     private DomainCoupler domainCoupler;
 
+    // Semiconductor loss calculation engine
+    private SemiconductorLossEngine lossEngine;
+
+    /**
+     * Gets the semiconductor loss calculation engine.
+     *
+     * @return loss engine instance, or null if no simulation has been initialized
+     */
+    public SemiconductorLossEngine getLossEngine() {
+        return lossEngine;
+    }
+
     /**
      * Creates a new HeadlessSimulationEngine.
      */
@@ -199,6 +212,9 @@ public class HeadlessSimulationEngine {
         // Initialize domain coupler for orchestrating LK, CONTROL, THERM domains
         domainCoupler = new DomainCoupler();
 
+        // Initialize semiconductor loss engine
+        lossEngine = new SemiconductorLossEngine().initializeFromNetlist(circuitNetlist);
+
         // Re-initialize matrix solver with real netlist dimensions
         if (circuitNetlist.getElementCount() > 0) {
             matrixSolver.initializeMatrices(
@@ -225,6 +241,7 @@ public class HeadlessSimulationEngine {
         int[] signalNodes = new int[signalNames.length];
         ControlCalculatorBuilder.Probe[] signalProbes = new ControlCalculatorBuilder.Probe[signalNames.length];
         ControlCalculatorBuilder.SignalTap[] signalTaps = new ControlCalculatorBuilder.SignalTap[signalNames.length];
+        boolean[] signalIsLoss = new boolean[signalNames.length];
         for (int i = 0; i < signalNames.length; i++) {
             // Probes and taps first: voltmeter output labels (e.g. "v_in")
             // usually also exist as CONTROL wire labels, and the netlist label
@@ -247,12 +264,17 @@ public class HeadlessSimulationEngine {
             }
             signalNodes[i] = signalProbes[i] == null && signalTaps[i] == null && circuitNetlist != null
                     ? circuitNetlist.getLabelResolver().getIndex(signalNames[i]) : -1;
-            if (signalNodes[i] >= 0 || signalProbes[i] != null || signalTaps[i] != null) {
+
+            if (signalProbes[i] == null && signalTaps[i] == null && signalNodes[i] < 0 && lossEngine != null) {
+                signalIsLoss[i] = lossEngine.hasLossSignal(signalNames[i]);
+            }
+
+            if (signalNodes[i] >= 0 || signalProbes[i] != null || signalTaps[i] != null || signalIsLoss[i]) {
                 resolvedNames.add(signalNames[i]);
                 resolvedIndices.add(i);
             } else {
-                LOGGER.warn("Signal '{}' cannot be resolved to a node, measurement probe or "
-                        + "labeled control output - not recorded", signalNames[i]);
+                LOGGER.warn("Signal '{}' cannot be resolved to a node, measurement probe, "
+                        + "labeled control output, or loss channel - not recorded", signalNames[i]);
             }
         }
         if (resolvedIndices.size() < signalNames.length) {
@@ -260,15 +282,18 @@ public class HeadlessSimulationEngine {
             int[] keptNodes = new int[signalNames.length];
             ControlCalculatorBuilder.Probe[] keptProbes = new ControlCalculatorBuilder.Probe[signalNames.length];
             ControlCalculatorBuilder.SignalTap[] keptTaps = new ControlCalculatorBuilder.SignalTap[signalNames.length];
+            boolean[] keptLoss = new boolean[signalNames.length];
             for (int k = 0; k < resolvedIndices.size(); k++) {
                 int i = resolvedIndices.get(k);
                 keptNodes[k] = signalNodes[i];
                 keptProbes[k] = signalProbes[i];
                 keptTaps[k] = signalTaps[i];
+                keptLoss[k] = signalIsLoss[i];
             }
             signalNodes = keptNodes;
             signalProbes = keptProbes;
             signalTaps = keptTaps;
+            signalIsLoss = keptLoss;
         }
 
         // Create data container for results
@@ -348,12 +373,21 @@ public class HeadlessSimulationEngine {
 
                 // Refresh CONTROL measurement probes (voltmeter/ammeter)
                 controlCoupling.updateProbes(circuitNetlist, matrixSolver.getP());
+
+                // Calculate semiconductor conduction and switching losses and couple to thermal domain
+                if (lossEngine != null) {
+                    lossEngine.calculateStep(circuitNetlist, domainCoupler, dt, currentTime);
+                }
             }
 
             // Sample the CURRENT state for data logging AFTER the solve: like
             // the classic engine, the row logged at time t holds the state of
             // the solve for [t-dt, t].
             for (int sigIdx = 0; sigIdx < values.length; sigIdx++) {
+                if (signalIsLoss[sigIdx]) {
+                    values[sigIdx] = (float) lossEngine.evaluateLossSignal(signalNames[sigIdx]);
+                    continue;
+                }
                 ControlCalculatorBuilder.Probe probe = signalProbes[sigIdx];
                 if (probe != null) {
                     values[sigIdx] = (float) probe.outputHolder()._outputSignal[0][0];
@@ -410,6 +444,9 @@ public class HeadlessSimulationEngine {
                 .metadata("circuitFile", config.getCircuitFilePath() != null
                         ? config.getCircuitFilePath() : "in-memory model")
                 .metadata("parameterOverrides", config.getParameterOverrides().size())
+                .metadata("totalConductionLoss", lossEngine != null ? lossEngine.getTotalConductionLosses() : 0.0)
+                .metadata("totalSwitchingLoss", lossEngine != null ? lossEngine.getTotalSwitchingLosses() : 0.0)
+                .metadata("totalLossEnergy", lossEngine != null ? lossEngine.getCumulativeEnergy() : 0.0)
                 .build();
     }
 

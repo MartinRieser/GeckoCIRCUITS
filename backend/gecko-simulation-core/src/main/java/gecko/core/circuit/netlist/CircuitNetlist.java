@@ -570,6 +570,16 @@ public class CircuitNetlist implements INetList {
         return parameters[index];
     }
 
+    /**
+     * Gets the full parameter array for an element.
+     *
+     * @param index element index
+     * @return parameter array
+     */
+    public double[] getParameters(int index) {
+        return getParameter(index);
+    }
+
     @Override
     public int getVoltageSourceNumber(int index) {
         if (index < 0 || index >= elementCount) {

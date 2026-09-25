@@ -219,6 +219,29 @@ public class DomainCoupler {
     }
 
     /**
+     * Sets the power loss for a specific component (LK → THERM).
+     *
+     * @param index component loss index
+     * @param powerLoss dissipated power in watts [W]
+     */
+    public void setLkPowerLoss(int index, double powerLoss) {
+        if (index >= 0 && index < lkPowerLosses.length) {
+            lkPowerLosses[index] = powerLoss;
+        }
+    }
+
+    /**
+     * Sets the complete power loss array (LK → THERM).
+     *
+     * @param powerLosses array of component power losses in watts [W]
+     */
+    public void setLkPowerLosses(double[] powerLosses) {
+        if (powerLosses != null) {
+            this.lkPowerLosses = powerLosses.clone();
+        }
+    }
+
+    /**
      * Configure temperature array size for THERM→LK transfer.
      *
      * @param nodeCount number of thermal nodes

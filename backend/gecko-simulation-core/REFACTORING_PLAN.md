@@ -340,19 +340,21 @@ The following large subsystems represent major multi-phase engineering tasks bey
 
 ---
 
-### Task L2: Comprehensive Loss Calculation Subsystem (`gecko.core.circuit.losscalculation`)
-*Current state: Classes exist but are detached from headless simulation execution.*
+### Task L2: Comprehensive Loss Calculation Subsystem (`gecko.core.circuit.losscalculation`) [COMPLETED]
+*Current state: Fully implemented, tested, and integrated into HeadlessSimulationEngine and DomainCoupler.*
 
-- [ ] **L2.1 Semiconductor Conduction Loss Engine**:
-  - Evaluate instantaneous $p(t) = v(t) \cdot i(t)$ across conducting switches (`LK_D`, `LK_IGBT`, `LK_MOSFET`).
-  - Support piecewise linear $V_{on} + R_{on} \cdot I$ models as well as polynomial/spline curve lookup (`ConductionLossMeasurementCurve`).
-- [ ] **L2.2 Semiconductor Switching Loss Engine**:
-  - Detect switching transitions (turn-on and turn-off events) using `ZeroCrossingDetector`.
-  - Interpolate 3D lookup tables ($E_{on}(V, I, T)$, $E_{off}(V, I, T)$, $E_{rr}(V, I, T)$) from device datasheets.
-  - Average power losses over user-specified thermal averaging windows.
-- [ ] **L2.3 Loss Data Pipeline Integration**:
-  - Stream loss curves directly into `DataContainerGlobal` for frontend visualization.
-  - Feed power losses dynamically into `DomainCoupler` for thermal co-simulation.
+- [x] **L2.1 Semiconductor Conduction Loss Engine**:
+  - Implemented `SemiconductorDeviceLossModel` supporting piecewise-linear ($V_{th} + R_{on}(T) \cdot I^2$), instantaneous product ($v(t) \cdot i(t)$), and 3D lookup table ($V_{on}(I, T)$ from `DetailedLossLookupTable` and `ConductionLossMeasurementCurve`) conduction loss modeling.
+  - Automatically extracts forward drop, $R_{on}$, current, and voltage parameters from netlist components (`LK_D`, `LK_S`, `LK_THYR`, `LK_IGBT`, `LK_MOSFET`, `LK_BJT`).
+- [x] **L2.2 Semiconductor Switching Loss Engine**:
+  - Implemented switching transition detection (turn-on and turn-off events) across time steps tracking voltage and conduction status.
+  - Supports datasheet energy-scaled models ($E_{on}, E_{off}$ scaled with voltage and current) and 2D/3D table interpolation from measurement curves.
+  - Configurable rolling thermal averaging window with exact sliding-time energy sum maintenance.
+- [x] **L2.3 Loss Data Pipeline Integration**:
+  - Implemented `SemiconductorLossEngine` orchestrating discovery of switches across `CircuitNetlist`, step-by-step loss evaluation, and query evaluation of loss signals (`P_loss_total`, `P_cond_total`, `P_sw_total`, `E_loss_total`, `P_loss_<name>`, `P_cond_<name>`, `P_sw_<name>`, `P_loss[idx]`).
+  - Integrated with `DomainCoupler`: pipes component power losses into `DomainCoupler.setLkPowerLosses(...)` for thermal co-simulation.
+  - Integrated into `HeadlessSimulationEngine`: dynamically resolves loss signal channels, logs loss data into `DataContainerGlobal`, and exposes summary metadata (`totalConductionLoss`, `totalSwitchingLoss`, `totalLossEnergy`).
+  - Comprehensive unit test coverage in `SemiconductorDeviceLossModelTest` (7 tests) and `SemiconductorLossEngineTest` (4 tests), bringing `gecko-simulation-core` to 2,006 tests with 0 failures and 0 compiler warnings.
 
 ---
 
