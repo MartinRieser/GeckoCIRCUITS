@@ -323,7 +323,7 @@ graph TD
 The following large subsystems represent major multi-phase engineering tasks beyond basic code cleanups. Each has an independent task list below:
 
 ### Task L1: Full Multi-Domain Coupling Architecture (`DomainCoupler`)
-*Current state: DomainCoupler is wired for LK $\leftrightarrow$ CONTROL, the closed electro-thermal loop LK $\leftrightarrow$ THERM (Steps 1-2) and the magnetic reluctance domain (Step 3); Step 4 (engine integration of the magnetic domain, multi-domain data logging, end-to-end verification) remains.*
+*Current state: COMPLETED - DomainCoupler orchestrates LK $\leftrightarrow$ CONTROL, the closed electro-thermal loop LK $\leftrightarrow$ THERM, and the magnetic reluctance domain with electrical winding coupling; thermal and magnetic channels are logged in the shared data container and verified end-to-end.*
 
 - [x] **L1.1 Thermal Domain Solver Integration** - COMPLETED:
   - [x] `ThermalNode` value record (ambient reference singleton, compile-safe node addressing).
@@ -348,7 +348,13 @@ The following large subsystems represent major multi-phase engineering tasks bey
   - [x] `NonlinearReluctance`: saturating $\Phi(\mathcal{F})$ characteristics - Froelich, arctangent, tanh and piecewise-linear - all parameterized by the unsaturated permeance $P_0$ and the saturation flux $\Phi_{sat}$, with the Newton-Raphson differential permeance $P_{diff} = d\Phi/d\mathcal{F}$ (numerically floored to keep stamps finite).
   - [x] `MagneticWinding` + `MagneticNetworkSolver`: dedicated magnetic MNA on the `MnaSolver` seam - REL_MMF winding sources enforce $\mathcal{F} = N \cdot i$ (Ampere's law), REL_RELUCTANCE stamps carry the permeance, and nonlinear branches are converged per step by a proper Newton iteration (tangent permeance stamp + Newton companion offset current). The winding flux $\Phi$ and the induced EMF $v = N \cdot d\Phi/dt$ (Faraday's law) are exposed per winding; the network is algebraic, so the time dependence enters through the winding currents and the EMF difference quotient.
   - [x] Verified: air-gapped inductance $L = N^2/(\mathcal{R}_{core} + \mathcal{R}_{gap})$, ideal-transformer MMF balance with the current ratio $I_1/I_2 = N_2/N_1$ nulling the core flux, voltage ratio $v_2/v_1 = N_2/N_1$ on a sinusoidally magnetized transformer, and saturation compressing the flux toward $\Phi_{sat}$ while collapsing the differential inductance.
-  - [ ] Electrical-side coupling of the winding EMF into `HeadlessSimulationEngine` circuits and `REL_INDUCTOR` (winding seen from the electrical side) - Step 4; the legacy electrical `NONLIN_REL` handling stays untouched (the magnetic domain realizes its semantics through Newton-updated REL_RELUCTANCE stamps).
+  - [x] Electrical-side coupling of the winding EMF into `HeadlessSimulationEngine` circuits (Step 4): the coupled electrical inductor's inductance is updated to the differential inductance $L_{diff} = N \cdot d\Phi/di$ of the solved operating point, realizing $v = N \, d\Phi/dt = L_{diff} \cdot di/dt$ through the implicit inductor companion (a naive one-step-staggered EMF source proved numerically unstable for inductor-like windings and was rejected); the legacy electrical `NONLIN_REL` handling stays untouched (the magnetic domain realizes its semantics through Newton-updated REL_RELUCTANCE stamps), and `REL_INDUCTOR` remains reserved for future multi-winding electrical coupling.
+
+- [x] **Task L1 Step 4: Engine Integration, Data Logging & End-to-End Verification** - COMPLETED:
+  - [x] `SimulationConfig`: `enableMagneticDomain(boolean)` and `magneticNetwork(...)` attachment - winding names bind to electrical LK_L inductors by component name; a network instance is consumed by a single run (flux history carries run state).
+  - [x] `HeadlessSimulationEngine`: per-step closed magnetic loop - winding currents picked up from the solved inductor branches, reluctance networks stepped with Newton-converged saturable cores, and the coupled inductors updated with $L_{diff}$ evaluated by a unit-MMF tangent-solve pair (the difference of two linearized solves cancels the Newton companion offsets exactly; the converged potentials and winding MMF are restored, so the readout is side-effect free).
+  - [x] Multi-domain logging channels: `Tj_<device>` (junction temperature of a coupled device) and `Phi_<winding>` (winding flux) resolve as first-class signals next to node labels, measurement probes and loss channels; run metadata gains `peakFlux` alongside `maxJunctionTemperature`.
+  - [x] `MultiDomainEngineTest`: one run couples all three domains - a self-heating resistor (LK $\rightarrow$ THERM $\rightarrow$ LK resistance feedback) in series with a saturating choke (LK $\rightarrow$ REL $\rightarrow$ LK differential-inductance feedback). The simultaneously logged electrical, thermal and magnetic channels share one logging grid and converge to the analytic coupled equilibrium: the saturated choke releases its EMF ($u \rightarrow 0$), the junction temperature settles at the electro-thermal fixed point and the core flux follows the saturation curve at $\mathcal{F} = N \cdot i^*$, driving the core deep past the knee current. Disabled-by-default behavior and wrong-element-type binding validation are covered.
 
 ---
 
@@ -445,13 +451,14 @@ During source reading, the following architectural opportunities were identified
 | **Task L1 (Step 1)** | Thermal domain engine: `ThermalNode`, `ThermalRCModel` (Foster/Cauer + transformation), `ThermalNetworkSolver` on the shared MNA seam, solver-aware companion models. | **COMPLETED** | 2,107 / 2,107 tests pass. |
 | **Task L1 (Step 2)** | Electro-thermal closed loop: loss-to-heat-flow pipeline, `TemperatureDependentResistor`/`Diode` feedback, `ThermalCoupling` + `SimulationConfig` options, instantaneous-product default loss model. | **COMPLETED** | 2,120 / 2,120 tests pass. |
 | **Task L1 (Step 3)** | Magnetic domain engine: `MagneticNode`, `ReluctanceBranch`, `NonlinearReluctance` (4 saturation curves), `MagneticWinding`, `MagneticNetworkSolver` with Newton differential-permeance convergence. | **COMPLETED** | 2,160 / 2,160 tests pass. |
+| **Task L1 (Step 4)** | Multi-domain engine integration: magnetic winding-to-inductor binding with differential-inductance feedback, `Tj_`/`Phi_` logging channels, `peakFlux` metadata, three-domain end-to-end verification. | **COMPLETED** | 2,163 / 2,163 tests pass. |
 
 ### 6.2 Test & Compilation Audit
 
 - **Compilation**: `mvn clean test-compile -pl backend/gecko-simulation-core`
   - Output: `BUILD SUCCESS` (0 warnings, 0 errors, release 25).
 - **Core Module Tests**: `mvn test -pl backend/gecko-simulation-core`
-  - Output: **2,160 tests run, 0 failures, 0 errors, 0 skipped**.
+  - Output: **2,163 tests run, 0 failures, 0 errors, 0 skipped**.
 - **REST API Integration Tests**: `mvn test -pl backend/gecko-rest-api`
   - Output: **318 tests run, 0 failures, 0 errors, 0 skipped**.
 - **Total Suite**: **2,478 tests passing (100% pass rate)** (2,511 across all reactor modules).

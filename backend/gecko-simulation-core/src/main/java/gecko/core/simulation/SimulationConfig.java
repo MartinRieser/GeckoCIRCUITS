@@ -16,6 +16,7 @@ package gecko.core.simulation;
 import gecko.core.allg.SolverSettingsCore;
 import gecko.core.allg.SolverType;
 import gecko.core.io.CircuitModel;
+import gecko.core.magnetic.MagneticNetworkSolver;
 import gecko.core.thermal.ThermalCoupling;
 
 import java.util.ArrayList;
@@ -52,6 +53,8 @@ public final class SimulationConfig {
     private final boolean thermalDomainEnabled;
     private final double ambientTemperature;
     private final List<ThermalCoupling> thermalCouplings;
+    private final boolean magneticDomainEnabled;
+    private final List<MagneticNetworkSolver> magneticNetworks;
 
     private SimulationConfig(Builder builder) {
         this.solverSettings = builder.solverSettings.copy();
@@ -70,6 +73,8 @@ public final class SimulationConfig {
         this.thermalDomainEnabled = builder.thermalDomainEnabled;
         this.ambientTemperature = builder.ambientTemperature;
         this.thermalCouplings = List.copyOf(builder.thermalCouplings);
+        this.magneticDomainEnabled = builder.magneticDomainEnabled;
+        this.magneticNetworks = List.copyOf(builder.magneticNetworks);
     }
 
     /**
@@ -221,6 +226,28 @@ public final class SimulationConfig {
     }
 
     /**
+     * Checks if the magnetic co-simulation domain is enabled.
+     *
+     * @return true if the configured magnetic networks are stepped and their
+     *         induced EMFs drive the coupled electrical windings
+     */
+    public boolean isMagneticDomainEnabled() {
+        return magneticDomainEnabled;
+    }
+
+    /**
+     * Gets the magnetic networks of the co-simulation. Each winding of a
+     * network binds to the electrical component carrying its name (an LK_L
+     * inductor whose inductance the network updates to the differential
+     * inductance of the solved operating point).
+     *
+     * @return unmodifiable list of magnetic networks
+     */
+    public List<MagneticNetworkSolver> getMagneticNetworks() {
+        return magneticNetworks;
+    }
+
+    /**
      * Creates a new builder for SimulationConfig.
      *
      * @return new builder instance
@@ -249,6 +276,8 @@ public final class SimulationConfig {
         private boolean thermalDomainEnabled;
         private double ambientTemperature = DEFAULT_AMBIENT_TEMPERATURE;
         private final List<ThermalCoupling> thermalCouplings = new ArrayList<>();
+        private boolean magneticDomainEnabled;
+        private final List<MagneticNetworkSolver> magneticNetworks = new ArrayList<>();
 
         private Builder() {
         }
@@ -505,6 +534,41 @@ public final class SimulationConfig {
         }
 
         /**
+         * Enables the magnetic co-simulation domain. With magnetic networks
+         * configured, the engine feeds each winding's electrical current into
+         * its network, steps it with the electrical time step and drives the
+         * coupled electrical winding source with the induced EMF
+         * {@code v = N * dPhi/dt}.
+         *
+         * @param enable true to simulate the magnetic domain
+         * @return this builder
+         */
+        public Builder enableMagneticDomain(boolean enable) {
+            this.magneticDomainEnabled = enable;
+            return this;
+        }
+
+        /**
+         * Adds a magnetic network to the co-simulation. The network's windings
+         * bind by name to electrical LK_L inductors; a network instance is
+         * consumed by a single simulation run (its flux history carries run
+         * state).
+         *
+         * @param network fully assembled magnetic network (branches and
+         *                windings registered before the run)
+         * @return this builder
+         *
+         * @throws IllegalArgumentException if the network is null
+         */
+        public Builder magneticNetwork(MagneticNetworkSolver network) {
+            if (network == null) {
+                throw new IllegalArgumentException("Magnetic network must not be null");
+            }
+            this.magneticNetworks.add(network);
+            return this;
+        }
+
+        /**
          * Builds the SimulationConfig instance.
          *
          * @return new SimulationConfig
@@ -517,6 +581,10 @@ public final class SimulationConfig {
             if (thermalDomainEnabled && thermalCouplings.isEmpty()) {
                 throw new IllegalArgumentException(
                         "Thermal domain enabled but no thermal couplings configured");
+            }
+            if (magneticDomainEnabled && magneticNetworks.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Magnetic domain enabled but no magnetic networks configured");
             }
             return new SimulationConfig(this);
         }

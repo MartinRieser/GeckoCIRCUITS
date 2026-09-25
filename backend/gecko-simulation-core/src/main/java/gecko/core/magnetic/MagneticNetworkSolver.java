@@ -93,6 +93,7 @@ public final class MagneticNetworkSolver {
     private CircuitNetlist netlist;
     private boolean matricesInitialized;
     private int maxNodeIndex = -1;
+    private double lastStepWidth;
 
     /**
      * Creates a magnetic network solver.
@@ -280,6 +281,7 @@ public final class MagneticNetworkSolver {
      * @param dt accepted time step width in seconds
      */
     private void finalizeStep(final double dt) {
+        lastStepWidth = dt;
         for (final WindingRuntime winding : windings.values()) {
             winding.flux = -matrixSolver.getP()[winding.zRow];
             winding.inducedVoltage = winding.turns * (winding.flux - winding.previousFlux) / dt;
@@ -403,6 +405,57 @@ public final class MagneticNetworkSolver {
     }
 
     /**
+     * Gets the differential inductance of a winding at the operating point of
+     * the last step, {@code L_diff = N * dPhi/di}. The network sensitivity is
+     * evaluated by two extra solves of the tangent-permeance (linearized)
+     * network with winding MMFs {@code N} and {@code 0} - their difference
+     * cancels the Newton companion offsets - ; the converged potentials and
+     * the winding MMF are restored afterwards, so the readout has no side
+     * effects.
+     *
+     * <p>For a winding coupled to an electrical inductor,
+     * {@code N * dPhi/dt = L_diff * di/dt} - the induced EMF along the
+     * saturation curve - so {@code L_diff} is the inductance the electrical
+     * domain must present for the coupled dynamics.
+     *
+     * @param name winding name
+     * @return differential inductance in henrys
+     *
+     * @throws IllegalArgumentException if the winding name is unknown
+     * @throws IllegalStateException if no step has been performed yet
+     */
+    public double getWindingDifferentialInductance(final String name) {
+        final WindingRuntime winding = requireWinding(name);
+        if (!matricesInitialized) {
+            throw new IllegalStateException("Differential inductance requires a completed step");
+        }
+        final double[] potentials = matrixSolver.getP();
+        final double[] saved = potentials.clone();
+
+        // tangent network response to a unit winding current: the nonlinear
+        // branch stamps still carry the converged tangent permeances and the
+        // Newton companion offsets, so the solve is the exact linearization
+        // at the operating point; the offset contribution is identical in
+        // both solves and cancels in the difference
+        final double[] fluxAtMMF = new double[2];
+        for (int solve = 0; solve < 2; solve++) {
+            final double mmfFactor = solve;
+            netlist.getParameter(winding.elementIndex)[SourceParameters.INDEX_VALUE_DC] =
+                    mmfFactor * winding.turns;
+            matrixSolver.buildMatrixA(netlist, lastStepWidth, 0.0, false);
+            matrixSolver.buildVectorB(netlist, lastStepWidth, 0.0, false);
+            matrixSolver.solve();
+            fluxAtMMF[solve] = -matrixSolver.getP()[winding.zRow];
+        }
+
+        // restore the converged state and the winding MMF
+        System.arraycopy(saved, 0, potentials, 0, saved.length);
+        netlist.getParameter(winding.elementIndex)[SourceParameters.INDEX_VALUE_DC] =
+                winding.turns * winding.current;
+        return winding.turns * (fluxAtMMF[1] - fluxAtMMF[0]);
+    }
+
+    /**
      * Gets the scalar magnetic potential (MMF) of a node, relative to the
      * reference node of its magnetic island.
      *
@@ -458,6 +511,15 @@ public final class MagneticNetworkSolver {
      */
     public int getWindingCount() {
         return windings.size();
+    }
+
+    /**
+     * Gets the names of all registered windings in registration order.
+     *
+     * @return winding names
+     */
+    public java.util.Set<String> getWindingNames() {
+        return java.util.Collections.unmodifiableSet(windings.keySet());
     }
 
     /**

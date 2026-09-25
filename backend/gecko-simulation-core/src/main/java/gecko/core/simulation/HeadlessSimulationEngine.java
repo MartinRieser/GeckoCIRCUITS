@@ -30,12 +30,15 @@ import gecko.core.circuit.circuitcomponents.CircuitTypCore;
 import gecko.core.circuit.netlist.CircuitNetlist;
 import gecko.core.circuit.netlist.INetList;
 import gecko.core.circuit.parameters.DiodeParameters;
+import gecko.core.circuit.parameters.InductorParameters;
 import gecko.core.circuit.parameters.ResistorParameters;
+import gecko.core.circuit.parameters.SourceParameters;
 import gecko.core.circuit.netlist.NetlistBuilder;
 import gecko.core.control.ControlCalculatorBuilder;
 import gecko.core.simulation.ControlNetlist;
 import gecko.core.simulation.DomainCoupler;
 import gecko.core.circuit.losscalculation.SemiconductorDeviceLossModel;
+import gecko.core.magnetic.MagneticNetworkSolver;
 import gecko.core.circuit.losscalculation.SemiconductorLossEngine;
 import gecko.core.simulation.solver.sparse.SparseMatrixSolver;
 import gecko.core.thermal.TemperatureDependentDiode;
@@ -149,6 +152,12 @@ public class HeadlessSimulationEngine {
     /** Highest junction temperature over all thermal couplings of the current run [C]. */
     private double maxJunctionTemperature;
 
+    // Magnetically coupled networks resolved from the configuration
+    private final List<MagneticRuntime> magneticRuntimes = new ArrayList<>();
+
+    /** Highest flux magnitude over all magnetic windings of the current run [Wb]. */
+    private double peakFlux;
+
     /**
      * Gets the semiconductor loss calculation engine.
      *
@@ -257,6 +266,10 @@ public class HeadlessSimulationEngine {
         // flow mapping and temperature feedback (Task L1 Step 2)
         initializeThermalDomain(config, circuitModel, settings.getSolverType());
 
+        // Magnetic couplings (opt-in): winding-current pickup, reluctance
+        // networks and induced-EMF feedback (Task L1 Step 3/4)
+        initializeMagneticDomain(config, circuitModel);
+
         // Re-initialize matrix solver with real netlist dimensions
         if (circuitNetlist.getElementCount() > 0) {
             matrixSolver.initializeMatrices(
@@ -284,6 +297,11 @@ public class HeadlessSimulationEngine {
         ControlCalculatorBuilder.Probe[] signalProbes = new ControlCalculatorBuilder.Probe[signalNames.length];
         ControlCalculatorBuilder.SignalTap[] signalTaps = new ControlCalculatorBuilder.SignalTap[signalNames.length];
         boolean[] signalIsLoss = new boolean[signalNames.length];
+        boolean[] signalIsThermal = new boolean[signalNames.length];
+        int[] thermalSignalCoupling = new int[signalNames.length];
+        boolean[] signalIsMagnetic = new boolean[signalNames.length];
+        int[] magneticSignalNetwork = new int[signalNames.length];
+        String[] magneticSignalWinding = new String[signalNames.length];
         for (int i = 0; i < signalNames.length; i++) {
             // Probes and taps first: voltmeter output labels (e.g. "v_in")
             // usually also exist as CONTROL wire labels, and the netlist label
@@ -307,11 +325,38 @@ public class HeadlessSimulationEngine {
             signalNodes[i] = signalProbes[i] == null && signalTaps[i] == null && circuitNetlist != null
                     ? circuitNetlist.getLabelResolver().getIndex(signalNames[i]) : -1;
 
+            // Domain channels take precedence: "Tj_<device>" logs the junction
+            // temperature of a coupled device, "Phi_<winding>" the flux linked
+            // by a magnetic winding
+            if (signalProbes[i] == null && signalTaps[i] == null
+                    && signalNames[i].startsWith("Tj_")) {
+                for (int c = 0; c < thermalCouplings.size(); c++) {
+                    if (("Tj_" + thermalCouplings.get(c).deviceName).equals(signalNames[i])) {
+                        signalIsThermal[i] = true;
+                        thermalSignalCoupling[i] = c;
+                        break;
+                    }
+                }
+            } else if (signalProbes[i] == null && signalTaps[i] == null
+                    && signalNames[i].startsWith("Phi_")) {
+                for (int n = 0; n < magneticRuntimes.size(); n++) {
+                    final MagneticRuntime runtime = magneticRuntimes.get(n);
+                    final String windingName = signalNames[i].substring("Phi_".length());
+                    if (runtime.windingBindings.containsKey(windingName)) {
+                        signalIsMagnetic[i] = true;
+                        magneticSignalNetwork[i] = n;
+                        magneticSignalWinding[i] = windingName;
+                        break;
+                    }
+                }
+            }
+
             if (signalProbes[i] == null && signalTaps[i] == null && signalNodes[i] < 0 && lossEngine != null) {
                 signalIsLoss[i] = lossEngine.hasLossSignal(signalNames[i]);
             }
 
-            if (signalNodes[i] >= 0 || signalProbes[i] != null || signalTaps[i] != null || signalIsLoss[i]) {
+            if (signalNodes[i] >= 0 || signalProbes[i] != null || signalTaps[i] != null
+                    || signalIsLoss[i] || signalIsThermal[i] || signalIsMagnetic[i]) {
                 resolvedNames.add(signalNames[i]);
                 resolvedIndices.add(i);
             } else {
@@ -537,12 +582,28 @@ public class HeadlessSimulationEngine {
                 if (!thermalCouplings.isEmpty()) {
                     stepThermalDomain(attemptDt, currentTime);
                 }
+
+                // Closed magnetic loop: winding currents -> reluctance solve ->
+                // induced EMF into the coupled electrical winding sources
+                if (!magneticRuntimes.isEmpty()) {
+                    stepMagneticDomain(attemptDt);
+                }
             }
 
             // Sample the CURRENT state for data logging AFTER the solve: like
             // the classic engine, the row logged at time t holds the state of
             // the solve for [t-dt, t].
             for (int sigIdx = 0; sigIdx < values.length; sigIdx++) {
+                if (signalIsThermal[sigIdx]) {
+                    values[sigIdx] = (float) thermalCouplings.get(thermalSignalCoupling[sigIdx])
+                            .solver.getJunctionTemperature();
+                    continue;
+                }
+                if (signalIsMagnetic[sigIdx]) {
+                    values[sigIdx] = (float) magneticRuntimes.get(magneticSignalNetwork[sigIdx])
+                            .solver.getWindingFlux(magneticSignalWinding[sigIdx]);
+                    continue;
+                }
                 if (signalIsLoss[sigIdx]) {
                     values[sigIdx] = (float) lossEngine.evaluateLossSignal(signalNames[sigIdx]);
                     continue;
@@ -645,6 +706,7 @@ public class HeadlessSimulationEngine {
                 .metadata("totalLossEnergy", lossEngine != null ? lossEngine.getCumulativeEnergy() : 0.0)
                 .metadata("maxJunctionTemperature",
                         thermalCouplings.isEmpty() ? 0.0 : maxJunctionTemperature)
+                .metadata("peakFlux", magneticRuntimes.isEmpty() ? 0.0 : peakFlux)
                 .build();
     }
 
@@ -859,6 +921,111 @@ public class HeadlessSimulationEngine {
             this.lossDeviceIndex = lossDeviceIndex;
             this.resistorFeedback = resistorFeedback;
             this.diodeFeedback = diodeFeedback;
+        }
+    }
+
+
+    /**
+     * Initializes the magnetic co-simulation networks: binds every winding to
+     * the electrical component carrying its name (an LK_U voltage source
+     * acting as the EMF-driven winding terminal) and requires unique winding
+     * names across networks so the logging channels are unambiguous.
+     *
+     * @param config simulation configuration
+     * @param circuitModel parsed circuit model (winding name resolution)
+     *
+     * @throws IllegalArgumentException if a winding has no electrical
+     *         component, the component is not an LK_U voltage source, or a
+     *         winding name is duplicated across networks
+     */
+    private void initializeMagneticDomain(final SimulationConfig config,
+                                          final CircuitModel circuitModel) {
+        magneticRuntimes.clear();
+        peakFlux = 0.0;
+        if (!config.isMagneticDomainEnabled() || circuitNetlist == null
+                || circuitNetlist.getElementCount() == 0 || circuitModel == null) {
+            return;
+        }
+
+        final Map<String, Long> uidsByComponentName = new HashMap<>();
+        for (final CircuitModel.ComponentData component : circuitModel.getCircuitComponents()) {
+            uidsByComponentName.put(component.getName(), component.getUniqueObjectIdentifier());
+        }
+
+        final Map<String, MagneticRuntime> windingOwner = new HashMap<>();
+        for (final MagneticNetworkSolver network : config.getMagneticNetworks()) {
+            final MagneticRuntime runtime = new MagneticRuntime(network);
+            for (final String windingName : network.getWindingNames()) {
+                final Long uid = uidsByComponentName.get(windingName);
+                int elementIndex = uid != null && uid != 0 ? circuitNetlist.indexOfUid(uid) : -1;
+                if (elementIndex < 0) {
+                    elementIndex = circuitNetlist.indexOfElementName(windingName);
+                }
+                if (elementIndex < 0) {
+                    throw new IllegalArgumentException("Magnetic winding '" + windingName
+                            + "' has no electrical component");
+                }
+                if (circuitNetlist.getType(elementIndex) != CircuitTypCore.LK_L) {
+                    throw new IllegalArgumentException("Magnetic winding '" + windingName
+                            + "' must bind to an LK_L inductor, got "
+                            + circuitNetlist.getType(elementIndex));
+                }
+                runtime.windingBindings.put(windingName, new int[]{elementIndex});
+                final MagneticRuntime previous = windingOwner.put(windingName, runtime);
+                if (previous != null) {
+                    throw new IllegalArgumentException("Winding name '" + windingName
+                            + "' is used by multiple magnetic networks");
+                }
+            }
+            magneticRuntimes.add(runtime);
+        }
+    }
+
+    /**
+     * Runs one closed magnetic coupling cycle for an accepted time step: picks
+     * the electrical winding currents from the solved inductor branches, steps
+     * the reluctance networks (converging saturable cores) and updates the
+     * coupled electrical inductors with the differential inductance
+     * {@code L_diff = N * dPhi/di} of the solved operating point. Along the
+     * saturation curve {@code N * dPhi/dt = L_diff * di/dt}, so the induced
+     * EMF acts on the electrical domain through the inductor companion model -
+     * an implicit, stable coupling.
+     *
+     * @param dt accepted time step width in seconds
+     */
+    private void stepMagneticDomain(final double dt) {
+        for (final MagneticRuntime runtime : magneticRuntimes) {
+            for (final Map.Entry<String, int[]> binding : runtime.windingBindings.entrySet()) {
+                final double windingCurrent = circuitNetlist.getParameter(binding.getValue()[0])
+                        [InductorParameters.INDEX_INITIAL_CURRENT];
+                runtime.solver.setWindingCurrent(binding.getKey(), windingCurrent);
+            }
+        }
+        for (final MagneticRuntime runtime : magneticRuntimes) {
+            runtime.solver.step(dt, currentTime);
+        }
+        for (final MagneticRuntime runtime : magneticRuntimes) {
+            for (final Map.Entry<String, int[]> binding : runtime.windingBindings.entrySet()) {
+                final double differentialInductance =
+                        runtime.solver.getWindingDifferentialInductance(binding.getKey());
+                circuitNetlist.getParameter(binding.getValue()[0])
+                        [InductorParameters.INDEX_INDUCTANCE] = differentialInductance;
+                peakFlux = Math.max(peakFlux,
+                        Math.abs(runtime.solver.getWindingFlux(binding.getKey())));
+            }
+        }
+    }
+
+    /**
+     * Runtime binding of one magnetic network: the solver plus the electrical
+     * inductor element of each winding ({@code name -> elementIndex}).
+     */
+    private static final class MagneticRuntime {
+        private final MagneticNetworkSolver solver;
+        private final Map<String, int[]> windingBindings = new HashMap<>();
+
+        MagneticRuntime(final MagneticNetworkSolver solver) {
+            this.solver = solver;
         }
     }
 
