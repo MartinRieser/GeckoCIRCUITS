@@ -14,6 +14,9 @@
 package gecko.core.circuit.netlist;
 
 import gecko.core.circuit.circuitcomponents.CircuitTypCore;
+import gecko.core.circuit.topology.ElementId;
+import gecko.core.circuit.topology.NodeId;
+import gecko.core.circuit.topology.TerminalPair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -512,5 +515,74 @@ public class CircuitNetlistTest {
                 "getLastNodeVoltagesRef() should return same reference on multiple calls");
         assertEquals(5.0, refVoltages[1], 0.0001);
         assertEquals(0.1, refCurrents[0], 0.0001);
+    }
+
+    // ========== Typed Topology Accessor Tests ==========
+
+    private void initTwoElementNetlist() {
+        CircuitTypCore[] types = {CircuitTypCore.LK_R, CircuitTypCore.LK_L};
+        int[] nodeX = {1, 2};
+        int[] nodeY = {0, 1};
+        int[] voltageSourceNr = {-1, -1};
+        double[][] params = {new double[]{100.0}, new double[]{0.001}};
+
+        netlist.initNetlist(types, nodeX, nodeY, voltageSourceNr, params, 2, 0, 2);
+    }
+
+    @Test
+    public void testTypedAccessorsReturnElementTopology() {
+        initTwoElementNetlist();
+
+        assertEquals(NodeId.of(1), netlist.getNodeXId(ElementId.of(0)),
+                "Typed node accessor must match the element's X terminal");
+        assertEquals(NodeId.of(0), netlist.getNodeYId(ElementId.of(0)),
+                "Typed node accessor must match the element's Y terminal");
+        assertEquals(new TerminalPair(NodeId.of(2), NodeId.of(1)),
+                netlist.getTerminals(ElementId.of(1)),
+                "Typed terminal accessor must return both terminals");
+        assertFalse(netlist.getTerminals(ElementId.of(0)).isShorted(),
+                "Element 0 spans nodes 1 and 0, so it is not shorted");
+        assertTrue(netlist.getTerminals(ElementId.of(0)).positiveNode().value() == 1);
+        assertEquals(CircuitTypCore.LK_L, netlist.getType(ElementId.of(1)),
+                "Typed type accessor must match the element type");
+        assertEquals(0.001, netlist.getParameters(ElementId.of(1))[0], 0.0001,
+                "Typed parameter accessor must return the element parameters");
+    }
+
+    @Test
+    public void testTypedAccessorsMatchPrimitiveAccessors() {
+        initTwoElementNetlist();
+
+        for (int i = 0; i < netlist.getElementCount(); i++) {
+            ElementId element = ElementId.of(i);
+            assertEquals(netlist.getNodeX(i), netlist.getNodeXId(element).value(),
+                    "Typed X accessor must mirror the primitive accessor");
+            assertEquals(netlist.getNodeY(i), netlist.getNodeYId(element).value(),
+                    "Typed Y accessor must mirror the primitive accessor");
+            assertArrayEquals(netlist.getParameter(i), netlist.getParameters(element), 0.0,
+                    "Typed parameter accessor must mirror the primitive accessor");
+        }
+    }
+
+    @Test
+    public void testTypedAccessorsRejectOutOfRangeElementId() {
+        initTwoElementNetlist();
+
+        assertThrows(IndexOutOfBoundsException.class, () -> netlist.getNodeXId(ElementId.of(2)));
+        assertThrows(IndexOutOfBoundsException.class, () -> netlist.getNodeYId(ElementId.of(2)));
+        assertThrows(IndexOutOfBoundsException.class, () -> netlist.getTerminals(ElementId.of(2)));
+        assertThrows(IndexOutOfBoundsException.class, () -> netlist.getType(ElementId.of(2)));
+        assertThrows(IndexOutOfBoundsException.class, () -> netlist.getParameters(ElementId.of(2)));
+    }
+
+    @Test
+    public void testTypedAccessorsRejectNullElementId() {
+        initTwoElementNetlist();
+
+        assertThrows(NullPointerException.class, () -> netlist.getNodeXId(null));
+        assertThrows(NullPointerException.class, () -> netlist.getNodeYId(null));
+        assertThrows(NullPointerException.class, () -> netlist.getTerminals(null));
+        assertThrows(NullPointerException.class, () -> netlist.getType(null));
+        assertThrows(NullPointerException.class, () -> netlist.getParameters(null));
     }
 }

@@ -22,8 +22,14 @@ public abstract class AbstractControlCalculatable {
     /** Threshold for binary control signal comparisons. */
     public static final double SIGNAL_THRESHOLD = 0.5;
 
-    /** Legacy static time used as fallback for standalone calculators in legacy unit tests. */
-    private static volatile double legacyStaticTime = 0.0;
+    /**
+     * Legacy time fallback for standalone calculators in legacy unit tests.
+     * Thread-local so parallel simulations in one JVM (one thread per engine
+     * instance) cannot observe or overwrite each other's fallback time; the
+     * per-instance time set via {@link #setSimulationTime(double)} always
+     * takes precedence anyway.
+     */
+    private static final ThreadLocal<Double> legacyStaticTime = ThreadLocal.withInitial(() -> 0.0);
 
     /** Current simulation time for this calculator instance in seconds. */
     private double _time = 0.0;
@@ -35,7 +41,7 @@ public abstract class AbstractControlCalculatable {
      * @return simulation time in seconds
      */
     public double getSimulationTime() {
-        return timeExplicitlySet ? _time : legacyStaticTime;
+        return timeExplicitlySet ? _time : legacyStaticTime.get();
     }
 
     /**
@@ -55,10 +61,14 @@ public abstract class AbstractControlCalculatable {
     /**
      * Legacy time setter retained for backward compatibility with standalone unit tests.
      *
+     * <p>Writes the calling thread's legacy fallback time only: parallel
+     * simulations running on different threads of the same JVM are isolated
+     * from each other.
+     *
      * @param time simulation time in seconds
      */
     public static void setTime(final double time) {
-        legacyStaticTime = time;
+        legacyStaticTime.set(time);
     }
     
     public final double[][] _inputSignal;

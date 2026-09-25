@@ -14,6 +14,9 @@
 package gecko.core.circuit.netlist;
 
 import gecko.core.circuit.circuitcomponents.CircuitTypCore;
+import gecko.core.circuit.topology.ElementId;
+import gecko.core.circuit.topology.NodeId;
+import gecko.core.circuit.topology.TerminalPair;
 import java.util.*;
 
 /**
@@ -586,6 +589,100 @@ public class CircuitNetlist implements INetList {
             throw new IndexOutOfBoundsException("Element index: " + index);
         }
         return voltageSourceNumbers[index];
+    }
+
+    // ============================================================================
+    // Typed topology accessors
+    // ============================================================================
+
+    /**
+     * Validates a typed element identifier and returns its raw index.
+     *
+     * <p>The hot MNA solver loops keep using the primitive index accessors
+     * above; these typed convenience methods add identity safety for code
+     * that resolves elements by identifier.
+     *
+     * @param element typed element identifier
+     * @return the wrapped raw element index
+     *
+     * @throws NullPointerException if the element identifier is null
+     * @throws IndexOutOfBoundsException if the element index is out of range
+     */
+    private int requireValid(final ElementId element) {
+        Objects.requireNonNull(element, "Element identifier must not be null");
+        if (element.value() >= elementCount) {
+            throw new IndexOutOfBoundsException("Element index: " + element.value());
+        }
+        return element.value();
+    }
+
+    /**
+     * Gets the positive (X) terminal node of an element as a typed identifier.
+     *
+     * @param element typed element identifier
+     * @return the element's positive (X) terminal node
+     *
+     * @throws NullPointerException if the element identifier is null
+     * @throws IndexOutOfBoundsException if the element index is out of range
+     */
+    public NodeId getNodeXId(final ElementId element) {
+        return NodeId.of(nodeX[requireValid(element)]);
+    }
+
+    /**
+     * Gets the negative (Y) terminal node of an element as a typed identifier.
+     *
+     * @param element typed element identifier
+     * @return the element's negative (Y) terminal node
+     *
+     * @throws NullPointerException if the element identifier is null
+     * @throws IndexOutOfBoundsException if the element index is out of range
+     */
+    public NodeId getNodeYId(final ElementId element) {
+        return NodeId.of(nodeY[requireValid(element)]);
+    }
+
+    /**
+     * Gets both terminals of an element as a typed (X, Y) pair.
+     *
+     * @param element typed element identifier
+     * @return the element's terminal pair (positive X node, negative Y node)
+     *
+     * @throws NullPointerException if the element identifier is null
+     * @throws IndexOutOfBoundsException if the element index is out of range
+     */
+    public TerminalPair getTerminals(
+            final ElementId element) {
+        final int index = requireValid(element);
+        return TerminalPair.of(
+                NodeId.of(nodeX[index]),
+                NodeId.of(nodeY[index]));
+    }
+
+    /**
+     * Gets the component type of an element.
+     *
+     * @param element typed element identifier
+     * @return the element's component type
+     *
+     * @throws NullPointerException if the element identifier is null
+     * @throws IndexOutOfBoundsException if the element index is out of range
+     */
+    public CircuitTypCore getType(final ElementId element) {
+        return componentTypes[requireValid(element)];
+    }
+
+    /**
+     * Gets the full parameter array of an element.
+     *
+     * @param element typed element identifier
+     * @return the element's parameter array
+     *
+     * @throws NullPointerException if the element identifier is null
+     * @throws IndexOutOfBoundsException if the element index is out of range
+     */
+    public double[] getParameters(final ElementId element) {
+        return parameters[requireValid(element)];
     }
 
     @Override
