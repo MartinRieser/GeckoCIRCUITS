@@ -142,4 +142,91 @@ class DomainCouplerTest {
             coupler.coupleDomainsForTimeStep(circuitNetlist, controlNetlist, 1e-6, 0.0);
         }, "coupleDomainsForTimeStep should handle empty control netlist");
     }
+
+    /**
+     * Test 9: configureThermToLkDeviceMapping() + getDeviceTemperature() resolve
+     * the junction temperature through the configured thermal node index, and
+     * unmapped devices fall back to the supplied default.
+     */
+    @Test
+    void testConfigureThermToLkDeviceMapping() {
+        coupler.configureThermArray(2);
+        coupler.setThermNodeTemperature(0, 25.0);
+        coupler.setThermNodeTemperature(1, 125.0);
+        coupler.configureThermToLkDeviceMapping(new int[] {1, -1});
+
+        assertEquals(125.0, coupler.getDeviceTemperature(0, 25.0), 1e-9,
+            "Device 0 mapped to node 1 should read node 1's temperature");
+        assertEquals(25.0, coupler.getDeviceTemperature(1, 25.0), 1e-9,
+            "Device 1 unmapped (-1) should fall back to the default temperature");
+    }
+
+    /**
+     * Test 10: getDeviceTemperature() returns the fallback for a negative device
+     * index, a device index beyond the mapping, a mapping entry pointing beyond
+     * the thermal node array, and a coupler without any configured mapping.
+     */
+    @Test
+    void testGetDeviceTemperatureFallbacks() {
+        coupler.configureThermArray(1);
+        coupler.setThermNodeTemperature(0, 90.0);
+        coupler.configureThermToLkDeviceMapping(new int[] {0, 5});
+
+        assertEquals(25.0, coupler.getDeviceTemperature(-1, 25.0), 1e-9,
+            "Negative device index should fall back");
+        assertEquals(25.0, coupler.getDeviceTemperature(2, 25.0), 1e-9,
+            "Device index beyond the mapping length should fall back");
+        assertEquals(25.0, coupler.getDeviceTemperature(1, 25.0), 1e-9,
+            "Mapping entry pointing beyond the thermal node array should fall back");
+
+        DomainCoupler unmappedCoupler = new DomainCoupler();
+        assertEquals(25.0, unmappedCoupler.getDeviceTemperature(0, 25.0), 1e-9,
+            "Coupler without configured mapping should fall back");
+    }
+
+    /**
+     * Test 11: the configured mapping is a defensive copy - mutating the
+     * caller's array afterwards must not change the resolution.
+     */
+    @Test
+    void testConfigureThermToLkDeviceMappingDefensiveCopy() {
+        coupler.configureThermArray(2);
+        coupler.setThermNodeTemperature(0, 40.0);
+        coupler.setThermNodeTemperature(1, 140.0);
+
+        int[] mapping = {0, 1};
+        coupler.configureThermToLkDeviceMapping(mapping);
+        mapping[0] = 1;
+
+        assertEquals(40.0, coupler.getDeviceTemperature(0, 25.0), 1e-9,
+            "Mapping must be stored as a defensive copy");
+    }
+
+    /**
+     * Test 12: a null thermal node mapping is rejected.
+     */
+    @Test
+    void testConfigureThermToLkDeviceMappingNullRejected() {
+        assertThrows(IllegalArgumentException.class,
+            () -> coupler.configureThermToLkDeviceMapping(null),
+            "Null mapping must be rejected");
+    }
+
+    /**
+     * Test 13: setThermNodeTemperature() writes in-range nodes and silently
+     * ignores out-of-range indices (same contract as setLkPowerLoss()).
+     */
+    @Test
+    void testSetThermNodeTemperatureBoundsCheck() {
+        coupler.configureThermArray(1);
+
+        assertDoesNotThrow(() -> coupler.setThermNodeTemperature(-1, 100.0),
+            "Out-of-range node index should be ignored");
+        assertDoesNotThrow(() -> coupler.setThermNodeTemperature(5, 100.0),
+            "Out-of-range node index should be ignored");
+
+        coupler.setThermNodeTemperature(0, 75.0);
+        assertEquals(75.0, coupler.getThermTemperatures()[0], 1e-9,
+            "In-range node temperature should be stored");
+    }
 }

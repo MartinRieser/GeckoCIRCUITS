@@ -54,6 +54,11 @@ public class DomainCoupler {
     // Temperatures from THERM fed to LK (temperature-dependent components)
     private double[] thermTemperatures = new double[0];
 
+    // Junction temperature mapping for loss devices (THERM → LK):
+    // element k = thermal node index supplying the junction temperature of
+    // loss device k (same ordering as the lkPowerLosses array); negative = unmapped
+    private int[] thermNodeForLossDevice = new int[0];
+
     /**
      * Creates a DomainCoupler with no coupling (all domains independent).
      * Suitable for pure electrical circuits with no control or thermal.
@@ -248,5 +253,54 @@ public class DomainCoupler {
      */
     public void configureThermArray(int nodeCount) {
         this.thermTemperatures = new double[nodeCount];
+    }
+
+    /**
+     * Sets the temperature of a single thermal node (THERM domain side).
+     *
+     * @param nodeIndex thermal node index
+     * @param temperature node temperature in degrees Celsius [°C]
+     */
+    public void setThermNodeTemperature(int nodeIndex, double temperature) {
+        if (nodeIndex >= 0 && nodeIndex < thermTemperatures.length) {
+            thermTemperatures[nodeIndex] = temperature;
+        }
+    }
+
+    /**
+     * Configures the THERM→LK junction temperature mapping for loss devices.
+     *
+     * <p>Element k of the mapping array names the thermal node supplying the junction
+     * temperature of loss device k, where the device ordering is the same one in which
+     * power losses are pushed back via {@link #setLkPowerLosses}. A negative entry marks
+     * a device without a thermal model, which then evaluates at its fallback temperature.</p>
+     *
+     * @param thermNodeIndices mapping from loss device index to thermal node index
+     * @throws IllegalArgumentException if thermNodeIndices is null
+     */
+    public void configureThermToLkDeviceMapping(int[] thermNodeIndices) {
+        if (thermNodeIndices == null) {
+            throw new IllegalArgumentException("Thermal node mapping must not be null");
+        }
+        this.thermNodeForLossDevice = thermNodeIndices.clone();
+    }
+
+    /**
+     * Resolves the junction temperature of a loss device via the configured
+     * {@link #configureThermToLkDeviceMapping mapping}.
+     *
+     * @param deviceIndex loss device index (same ordering as the power loss array)
+     * @param fallbackTemperature value when the device has no mapped thermal node
+     * @return junction temperature in degrees Celsius [°C]
+     */
+    public double getDeviceTemperature(int deviceIndex, double fallbackTemperature) {
+        if (deviceIndex < 0 || deviceIndex >= thermNodeForLossDevice.length) {
+            return fallbackTemperature;
+        }
+        final int nodeIndex = thermNodeForLossDevice[deviceIndex];
+        if (nodeIndex < 0 || nodeIndex >= thermTemperatures.length) {
+            return fallbackTemperature;
+        }
+        return thermTemperatures[nodeIndex];
     }
 }

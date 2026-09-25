@@ -352,9 +352,9 @@ The following large subsystems represent major multi-phase engineering tasks bey
   - Configurable rolling thermal averaging window with exact sliding-time energy sum maintenance.
 - [x] **L2.3 Loss Data Pipeline Integration**:
   - Implemented `SemiconductorLossEngine` orchestrating discovery of switches across `CircuitNetlist`, step-by-step loss evaluation, and query evaluation of loss signals (`P_loss_total`, `P_cond_total`, `P_sw_total`, `E_loss_total`, `P_loss_<name>`, `P_cond_<name>`, `P_sw_<name>`, `P_loss[idx]`).
-  - Integrated with `DomainCoupler`: pipes component power losses into `DomainCoupler.setLkPowerLosses(...)` for thermal co-simulation.
+  - Integrated with `DomainCoupler`: pipes component power losses into `DomainCoupler.setLkPowerLosses(...)` for thermal co-simulation, and resolves per-device junction temperatures through the explicit device→thermal-node mapping (`DomainCoupler.configureThermToLkDeviceMapping` / `getDeviceTemperature`) instead of positional indexing; devices without a thermal model evaluate at the default junction temperature.
   - Integrated into `HeadlessSimulationEngine`: dynamically resolves loss signal channels, logs loss data into `DataContainerGlobal`, and exposes summary metadata (`totalConductionLoss`, `totalSwitchingLoss`, `totalLossEnergy`).
-  - Comprehensive unit test coverage in `SemiconductorDeviceLossModelTest` (7 tests) and `SemiconductorLossEngineTest` (5 tests), bringing `gecko-simulation-core` to 2,007 tests with 0 failures and 0 compiler warnings.
+  - Comprehensive unit test coverage in `SemiconductorDeviceLossModelTest` (7 tests), `SemiconductorLossEngineTest` (6 tests, including thermal mapping verification), and `DomainCouplerTest` (13 tests), bringing `gecko-simulation-core` to 2,013 tests with 0 failures and 0 compiler warnings.
 
 ---
 

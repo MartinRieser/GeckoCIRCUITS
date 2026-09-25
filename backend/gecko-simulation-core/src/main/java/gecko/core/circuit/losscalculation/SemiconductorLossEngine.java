@@ -144,9 +144,11 @@ public final class SemiconductorLossEngine {
     /**
      * Evaluates conduction and switching losses across all registered devices for one time step.
      *
-     * <p>Device temperatures are read from the thermal domain array by device list
-     * position - the same ordering in which power losses are pushed back via
-     * {@link DomainCoupler#setLkPowerLosses}. Devices without a thermal entry fall
+     * <p>Junction temperatures are resolved per device through the explicit
+     * device→thermal-node mapping configured via
+     * {@link DomainCoupler#configureThermToLkDeviceMapping}; the device ordering is the
+     * same one in which power losses are pushed back via
+     * {@link DomainCoupler#setLkPowerLosses}. Devices without a mapped thermal node fall
      * back to the default junction temperature.</p>
      *
      * @param netlist circuit netlist containing the latest solver voltages and currents
@@ -164,8 +166,6 @@ public final class SemiconductorLossEngine {
             return;
         }
 
-        final double[] thermTemps = domainCoupler != null ? domainCoupler.getThermTemperatures() : new double[0];
-
         for (int i = 0; i < deviceList.size(); i++) {
             final SemiconductorDeviceLossModel model = deviceList.get(i);
             final int elemIdx = model.getElementIndex();
@@ -174,7 +174,8 @@ public final class SemiconductorLossEngine {
             final double current = extractCurrent(parameters);
             final double voltage = extractVoltage(parameters);
             final boolean conducting = isConducting(model.getComponentType(), parameters, voltage, current);
-            final double temperature = i < thermTemps.length ? thermTemps[i]
+            final double temperature = domainCoupler != null
+                    ? domainCoupler.getDeviceTemperature(i, SemiconductorDeviceLossModel.DEFAULT_TEMPERATURE)
                     : SemiconductorDeviceLossModel.DEFAULT_TEMPERATURE;
 
             model.calculateStep(current, voltage, conducting, temperature, dt, time);

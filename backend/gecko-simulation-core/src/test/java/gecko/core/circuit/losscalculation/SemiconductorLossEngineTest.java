@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -118,6 +119,54 @@ class SemiconductorLossEngineTest {
         double[] couplerLosses = coupler.getLkPowerLosses();
         assertEquals(1, couplerLosses.length);
         assertEquals(8.0, couplerLosses[0], EPSILON);
+    }
+
+    @Test
+    @DisplayName("Junction temperatures resolve through the explicit device-to-thermal-node mapping")
+    void thermalMappingResolvesPerDeviceTemperatures() {
+        CircuitTypCore[] types = {CircuitTypCore.LK_D, CircuitTypCore.LK_D};
+        int[] nodeX = new int[2];
+        int[] nodeY = new int[2];
+        int[] vsNr = {-1, -1};
+        double[][] parameters = new double[2][15];
+
+        for (int i = 0; i < 2; i++) {
+            parameters[i][DiodeParameters.INDEX_CURRENT_RESISTANCE] = 0.01; // Conducting
+            parameters[i][DiodeParameters.INDEX_FORWARD_VOLTAGE] = 0.7;
+            parameters[i][DiodeParameters.INDEX_R_ON] = 0.01;
+            parameters[i][DiodeParameters.INDEX_CURRENT] = 10.0;
+            parameters[i][DiodeParameters.INDEX_VOLTAGE] = 0.8;
+        }
+
+        CircuitNetlist netlist = new CircuitNetlist();
+        netlist.initNetlist(types, nodeX, nodeY, vsNr, parameters, 2, 0, 2);
+
+        SemiconductorLossEngine engine = new SemiconductorLossEngine().initializeFromNetlist(netlist);
+
+        // Reconfigure with temperature-dependent R_on (alpha = 1 %/°C) and no switching losses
+        for (SemiconductorDeviceLossModel model : engine.getDeviceList()) {
+            model.configurePiecewiseLinearConduction(0.7, 0.01, 0.01);
+            model.configureScaledEnergySwitching(0.0, 0.0, 10.0, 600.0, 0.0);
+        }
+
+        DomainCoupler coupler = new DomainCoupler();
+        coupler.configureThermArray(1);
+        coupler.setThermNodeTemperature(0, 125.0);
+        // Device 0 mapped to the 125 °C thermal node, device 1 without a thermal model
+        coupler.configureThermToLkDeviceMapping(new int[] {0, -1});
+
+        engine.calculateStep(netlist, coupler, 1e-4, 1e-4);
+
+        // Device 0 at 125 °C: R_on(T) = 0.01 * (1 + 0.01 * 100) = 0.02 Ohm
+        // P_cond = 0.7 * 10 + 0.02 * 10^2 = 9.0 W
+        assertEquals(9.0, engine.getModel(0).getConductionLoss(), EPSILON,
+                "Mapped device must evaluate at its thermal node's temperature");
+        // Device 1 unmapped: default 25 °C -> R_on = 0.01 Ohm -> P_cond = 8.0 W
+        assertEquals(8.0, engine.getModel(1).getConductionLoss(), EPSILON,
+                "Unmapped device must evaluate at the default junction temperature");
+
+        assertArrayEquals(new double[] {9.0, 8.0}, engine.getAllPowerLosses(), EPSILON);
+        assertArrayEquals(new double[] {9.0, 8.0}, coupler.getLkPowerLosses(), EPSILON);
     }
 
     @Test
