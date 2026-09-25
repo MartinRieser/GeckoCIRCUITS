@@ -39,12 +39,25 @@ public class ComponentCurrentCalculator {
     /** Above this resistance a semiconductor branch counts as blocking (legacy rDoffDEFAULT). */
     private static final double RD_OFF_THRESHOLD = SolverConstants.RD_OFF_THRESHOLD;
 
+    /** When true, the Shockley Newton-Raphson controller owns the LK_D slots. */
+    private boolean diodesHandledByNewtonRaphson;
+
+    /**
+     * Hands the diode parameter slots to the Newton-Raphson controller for
+     * the current time step; the piecewise-linear machine skips LK_D then.
+     *
+     * @param handledByNewton true to skip diodes in the state machine
+     */
+    public void setDiodesHandledByNewtonRaphson(final boolean handledByNewton) {
+        this.diodesHandledByNewtonRaphson = handledByNewton;
+    }
+
     /**
      * Calculates component currents after solving the MNA system Ax=b.
      * Legacy-compatible overload with default disturbance and error counter.
      */
     public boolean calculateComponentCurrents(
-            MatrixSolver matrixSolver,
+            MnaSolver matrixSolver,
             INetList netlist,
             double perturbation,
             double dt,
@@ -65,7 +78,7 @@ public class ComponentCurrentCalculator {
      *         re-build and re-solve the same time step (legacy einSchrittZurueck)
      */
     public boolean calculateComponentCurrents(
-            MatrixSolver matrixSolver,
+            MnaSolver matrixSolver,
             INetList netlist,
             double stoergroesse,
             double dt,
@@ -201,6 +214,11 @@ public class ComponentCurrentCalculator {
                 }
 
                 case LK_D -> {
+                    if (diodesHandledByNewtonRaphson) {
+                        // The Newton-Raphson controller owns the diode slots
+                        // (resistance, forward voltage, current, voltage)
+                        break;
+                    }
                     // Port of the legacy diode model: params[0]=current rD, [1]=uF,
                     // [2]=rOn, [3]=rOff, [4]=i, [5]=u. The piecewise-linear state
                     // flip sets [0] and requests a re-solve of this time step.

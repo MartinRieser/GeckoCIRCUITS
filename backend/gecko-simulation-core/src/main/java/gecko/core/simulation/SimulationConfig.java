@@ -28,6 +28,9 @@ import java.util.Map;
  */
 public final class SimulationConfig {
 
+    /** Default relative LTE tolerance of the adaptive step controller. */
+    public static final double DEFAULT_RELATIVE_TOLERANCE = 1e-3;
+
     private final SolverSettingsCore solverSettings;
     private final String circuitFilePath;
     private final CircuitModel circuitModel;
@@ -35,6 +38,12 @@ public final class SimulationConfig {
     private final boolean enableDataLogging;
     private final int dataLoggingInterval;
     private final List<String> signals;
+    private final MatrixSolverKind matrixSolverKind;
+    private final boolean adaptiveStepSize;
+    private final double relativeTolerance;
+    private final double minStepWidth;
+    private final double maxStepWidth;
+    private final SemiconductorModelKind semiconductorModel;
 
     private SimulationConfig(Builder builder) {
         this.solverSettings = builder.solverSettings.copy();
@@ -44,6 +53,12 @@ public final class SimulationConfig {
         this.enableDataLogging = builder.enableDataLogging;
         this.dataLoggingInterval = builder.dataLoggingInterval;
         this.signals = builder.signals == null ? null : List.copyOf(builder.signals);
+        this.matrixSolverKind = builder.matrixSolverKind;
+        this.adaptiveStepSize = builder.adaptiveStepSize;
+        this.relativeTolerance = builder.relativeTolerance;
+        this.minStepWidth = builder.minStepWidth;
+        this.maxStepWidth = builder.maxStepWidth;
+        this.semiconductorModel = builder.semiconductorModel;
     }
 
     /**
@@ -112,6 +127,60 @@ public final class SimulationConfig {
     }
 
     /**
+     * Gets the MNA linear-algebra backend selection.
+     *
+     * @return matrix solver kind (AUTO resolves by matrix size in the engine)
+     */
+    public MatrixSolverKind getMatrixSolverKind() {
+        return matrixSolverKind;
+    }
+
+    /**
+     * Checks whether adaptive step-size control is enabled.
+     *
+     * @return true when the engine adapts dt from the local truncation error
+     */
+    public boolean isAdaptiveStepSize() {
+        return adaptiveStepSize;
+    }
+
+    /**
+     * Gets the relative LTE tolerance of the adaptive step controller.
+     *
+     * @return relative tolerance
+     */
+    public double getRelativeTolerance() {
+        return relativeTolerance;
+    }
+
+    /**
+     * Gets the lower step-size bound of the adaptive controller.
+     *
+     * @return minimum step width; {@code <= 0} derives stepWidth/100
+     */
+    public double getMinStepWidth() {
+        return minStepWidth;
+    }
+
+    /**
+     * Gets the upper step-size bound of the adaptive controller.
+     *
+     * @return maximum step width; {@code <= 0} derives from stepWidth
+     */
+    public double getMaxStepWidth() {
+        return maxStepWidth;
+    }
+
+    /**
+     * Gets the semiconductor convergence model.
+     *
+     * @return piecewise-linear state machine or Shockley Newton-Raphson
+     */
+    public SemiconductorModelKind getSemiconductorModel() {
+        return semiconductorModel;
+    }
+
+    /**
      * Creates a new builder for SimulationConfig.
      *
      * @return new builder instance
@@ -131,6 +200,12 @@ public final class SimulationConfig {
         private boolean enableDataLogging = true;
         private int dataLoggingInterval = 1;
         private List<String> signals;
+        private MatrixSolverKind matrixSolverKind = MatrixSolverKind.AUTO;
+        private boolean adaptiveStepSize = false;
+        private double relativeTolerance = DEFAULT_RELATIVE_TOLERANCE;
+        private double minStepWidth;
+        private double maxStepWidth;
+        private SemiconductorModelKind semiconductorModel = SemiconductorModelKind.CLASSIC_PIECEWISE_LINEAR;
 
         private Builder() {
         }
@@ -269,11 +344,83 @@ public final class SimulationConfig {
         }
 
         /**
+         * Selects the MNA linear-algebra backend.
+         *
+         * @param kind DENSE, SPARSE, or AUTO (default)
+         * @return this builder
+         */
+        public Builder matrixSolverKind(MatrixSolverKind kind) {
+            this.matrixSolverKind = kind != null ? kind : MatrixSolverKind.AUTO;
+            return this;
+        }
+
+        /**
+         * Enables adaptive step-size control based on the local truncation
+         * error between the configured solver and the complementary method.
+         *
+         * @param adaptive true to adapt dt within [minStepWidth, maxStepWidth]
+         * @return this builder
+         */
+        public Builder adaptiveStepSize(boolean adaptive) {
+            this.adaptiveStepSize = adaptive;
+            return this;
+        }
+
+        /**
+         * Sets the relative LTE tolerance of the adaptive step controller.
+         *
+         * @param tolerance relative tolerance (must be positive)
+         * @return this builder
+         */
+        public Builder relativeTolerance(double tolerance) {
+            this.relativeTolerance = tolerance;
+            return this;
+        }
+
+        /**
+         * Sets the lower step-size bound of the adaptive controller.
+         *
+         * @param minStep minimum step width; {@code <= 0} derives stepWidth/100
+         * @return this builder
+         */
+        public Builder minStepWidth(double minStep) {
+            this.minStepWidth = minStep;
+            return this;
+        }
+
+        /**
+         * Sets the upper step-size bound of the adaptive controller.
+         *
+         * @param maxStep maximum step width; {@code <= 0} derives from stepWidth
+         * @return this builder
+         */
+        public Builder maxStepWidth(double maxStep) {
+            this.maxStepWidth = maxStep;
+            return this;
+        }
+
+        /**
+         * Selects the semiconductor convergence model.
+         *
+         * @param model piecewise-linear state machine (default) or Shockley
+         *              Newton-Raphson
+         * @return this builder
+         */
+        public Builder semiconductorModel(SemiconductorModelKind model) {
+            this.semiconductorModel = model != null ? model : SemiconductorModelKind.CLASSIC_PIECEWISE_LINEAR;
+            return this;
+        }
+
+        /**
          * Builds the SimulationConfig instance.
          *
          * @return new SimulationConfig
          */
         public SimulationConfig build() {
+            if (relativeTolerance <= 0.0) {
+                throw new IllegalArgumentException(
+                        "Relative tolerance must be positive, got: " + relativeTolerance);
+            }
             return new SimulationConfig(this);
         }
     }

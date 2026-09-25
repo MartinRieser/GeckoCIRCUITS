@@ -19,16 +19,22 @@ import gecko.core.datacontainer.DataContainerGlobal;
 import gecko.core.io.CircuitFileParser;
 import gecko.core.io.CircuitModel;
 import gecko.core.io.ParameterOverrideApplicator;
-import gecko.core.simulation.solver.MatrixSolver;
+import gecko.core.simulation.solver.AdaptiveStepController;
+import gecko.core.simulation.solver.MnaSolver;
+import gecko.core.simulation.solver.MnaSolverFactory;
+import gecko.core.simulation.solver.NonlinearConvergenceController;
 import gecko.core.simulation.solver.ComponentCurrentCalculator;
 import gecko.core.simulation.solver.InitialConditionSolver;
 import gecko.core.circuit.circuitcomponents.CircuitTypCore;
 import gecko.core.circuit.netlist.CircuitNetlist;
+import gecko.core.circuit.netlist.INetList;
+import gecko.core.circuit.parameters.DiodeParameters;
 import gecko.core.circuit.netlist.NetlistBuilder;
 import gecko.core.control.ControlCalculatorBuilder;
 import gecko.core.simulation.ControlNetlist;
 import gecko.core.simulation.DomainCoupler;
 import gecko.core.circuit.losscalculation.SemiconductorLossEngine;
+import gecko.core.simulation.solver.sparse.SparseMatrixSolver;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -102,11 +108,16 @@ public class HeadlessSimulationEngine {
     /** Minimum wall-clock time between two throttled progress callbacks, in ms. */
     private static final long PROGRESS_MIN_INTERVAL_MS = 50;
 
-    /** Max semiconductor state re-solves per time step (legacy limit). */
+    /** Grid-alignment tolerance of the adaptive logging, relative to dt. */
+    private static final double GRID_ALIGNMENT_EPSILON = 1e-9;
+
+    /** Absolute floor of the LTE error-norm scale (mixed abs/rel norm). */
+    private static final double LTE_ABSOLUTE_FLOOR = 1e-3;
+
     private static final int MAX_SEMICONDUCTOR_ITERATIONS = 10_000;
 
     // Solver components
-    private MatrixSolver matrixSolver;
+    private MnaSolver matrixSolver;
     private ComponentCurrentCalculator componentCurrentCalculator;
     private InitialConditionSolver initialConditionSolver;
 
@@ -204,10 +215,20 @@ public class HeadlessSimulationEngine {
         // node labels and probe names (classic-like default logging)
         String[] signalNames = resolveSignalNames(config, circuitModel, circuitNetlist, controlCoupling);
 
-        // Initialize matrix solver
-        matrixSolver = new MatrixSolver(settings.getSolverType());
+        // Initialize matrix solver (dense reference or sparse backend by kind)
+        final int expectedNodes = circuitNetlist != null ? circuitNetlist.getNodeMax() : signalNames.length;
+        final int expectedVoltageSources = circuitNetlist != null ? circuitNetlist.getVoltageSourceMax() : 0;
+        matrixSolver = MnaSolverFactory.create(settings.getSolverType(), config.getMatrixSolverKind(),
+                expectedNodes + expectedVoltageSources + 1);
         componentCurrentCalculator = new ComponentCurrentCalculator();
         initialConditionSolver = new InitialConditionSolver(settings.getSolverType());
+        // Shockley Newton-Raphson mode (opt-in): the controller owns the diode
+        // slots; the piecewise-linear machine keeps thyristors and IGBTs
+        final NonlinearConvergenceController nrController =
+                config.getSemiconductorModel() == SemiconductorModelKind.SHOCKLEY_NEWTON_RAPHSON
+                        && circuitNetlist != null
+                        ? NonlinearConvergenceController.createFromNetlist(circuitNetlist)
+                        : null;
 
         // Initialize domain coupler for orchestrating LK, CONTROL, THERM domains
         domainCoupler = new DomainCoupler();
@@ -296,13 +317,49 @@ public class HeadlessSimulationEngine {
             signalIsLoss = keptLoss;
         }
 
-        // Create data container for results
+        // Adaptive step-size control (opt-in): a shadow solver of the
+        // complementary integration method provides the LTE estimate; it is
+        // seeded with the primary solver's history and the converged switch
+        // states each step, so the primary state is never rolled back
+        final AdaptiveStepController stepController;
+        final MnaSolver shadowSolver;
+        if (config.isAdaptiveStepSize() && circuitNetlist != null
+                && circuitNetlist.getElementCount() > 0) {
+            final int solverMatrixSize = circuitNetlist.getNodeMax()
+                    + circuitNetlist.getVoltageSourceMax() + 1;
+            stepController = new AdaptiveStepController(
+                    config.getRelativeTolerance(),
+                    config.getMinStepWidth() > 0
+                            ? config.getMinStepWidth()
+                            : dt / AdaptiveStepController.DEFAULT_MIN_STEP_DIVISOR,
+                    config.getMaxStepWidth() > 0 ? Math.min(config.getMaxStepWidth(), dt) : dt,
+                    dt);
+            shadowSolver = MnaSolverFactory.create(
+                    AdaptiveStepController.complementaryType(settings.getSolverType()),
+                    matrixSolver instanceof SparseMatrixSolver
+                            ? MatrixSolverKind.SPARSE : MatrixSolverKind.DENSE,
+                    solverMatrixSize);
+            shadowSolver.initializeMatrices(circuitNetlist.getNodeMax(),
+                    circuitNetlist.getVoltageSourceMax(), circuitNetlist.getElementCount());
+        } else {
+            stepController = null;
+            shadowSolver = null;
+        }
+
+        // Create data container for results (adaptive mode logs on the same
+        // uniform base grid as fixed-dt mode; only the step trajectory differs)
         DataContainerGlobal dataContainer = new DataContainerGlobal();
         dataContainer.init(signalNames.length, expectedSteps + 1, signalNames, "time [s]");
         dataContainer.setContainerStatus(ContainerStatus.RUNNING);
 
         // Main simulation loop
         float[] values = new float[signalNames.length];
+
+        // Adaptive mode: number of base-grid rows already logged; the last
+        // grid row is the last grid point at or before the duration (the
+        // fixed-dt loop logs exactly the same rows)
+        int loggedGridRows = 0;
+        final int lastGridRow = (int) Math.floor(duration / dt + GRID_ALIGNMENT_EPSILON);
 
         // Initial conditions (legacy semantics): inductor initial current and
         // capacitor initial voltage from parameters seed the solver history,
@@ -328,45 +385,119 @@ public class HeadlessSimulationEngine {
                         .build();
             }
 
-            // Phase 4: Execute domain coupling (LK → CONTROL → LK)
+            // Determine this step's width: adaptive controller or the fixed dt
+            // Adaptive mode refines dt within the base grid; fixed mode
+            // keeps the legacy constant dt. Adaptive steps never cross a
+            // logging-grid point: each step ends on the grid (or mid-cell for
+            // a finer requested width), so the row logged at grid time t holds
+            // the exact state at t like the classic fixed-dt engine.
+            double attemptDt = stepController != null ? stepController.getCurrentStepWidth() : dt;
+            if (stepController != null) {
+                // Distance to the next grid point strictly after currentTime
+                // (the row at a grid point we are sitting on logs at the end
+                // of this very iteration)
+                final double nextGridIndex =
+                        Math.floor(currentTime / dt + GRID_ALIGNMENT_EPSILON) + 1.0;
+                final double dtToNextGrid = nextGridIndex * dt - currentTime;
+                attemptDt = Math.min(attemptDt,
+                        Math.max(dtToNextGrid, dt * GRID_ALIGNMENT_EPSILON));
+            }
+
+            // Phase 4: Execute domain coupling (LK → CONTROL → LK) once per
+            // step; rejected adaptive attempts re-solve only the power domain
             // Orchestrates data transfer between circuit, control, and thermal domains
-            domainCoupler.coupleDomainsForTimeStep(circuitNetlist, controlNetlist, dt, currentTime);
+            domainCoupler.coupleDomainsForTimeStep(circuitNetlist, controlNetlist, attemptDt, currentTime);
 
             // Gate-driven switches: rewrite the switch resistance from the
             // current control signals before the matrix is built
             controlCoupling.applyGateSignals(circuitNetlist);
 
-            // Real MNA solver: build and solve circuit matrices
-            if (circuitNetlist != null && circuitNetlist.getElementCount() > 0) {
-                matrixSolver.buildMatrixA(circuitNetlist, dt, currentTime, false);
-                matrixSolver.buildVectorB(circuitNetlist, dt, currentTime, false);
-                matrixSolver.solve();
+            // Step-start element state for adaptive rollback / shadow evaluation
+            final double[][] preAttemptParameters = stepController != null && circuitNetlist != null
+                    && circuitNetlist.getElementCount() > 0
+                    ? snapshotElementParameters(circuitNetlist) : null;
 
-                // Semiconductor state machine (port of legacy
-                // doDiodeErrorsRecalculations): flip diode/thyristor/IGBT states
-                // until stable, re-solving the SAME time step (history is not
-                // shifted between iterations).
-                double stoergroesse = 1.0;
-                boolean isNewIteration = false;
-                int errorCounter = 0;
-                while (componentCurrentCalculator.calculateComponentCurrents(
-                        matrixSolver, circuitNetlist, stoergroesse, dt, currentTime,
-                        isNewIteration, errorCounter)) {
-                    isNewIteration = true;
-                    if (++errorCounter > MAX_SEMICONDUCTOR_ITERATIONS) {
-                        throw new IllegalStateException(
-                                "Numerical instability of switch states at t=" + currentTime);
-                    }
-                    if (errorCounter > 2) {
-                        stoergroesse *= 0.99;
-                    }
-                    matrixSolver.buildMatrixA(circuitNetlist, dt, currentTime, false);
-                    matrixSolver.buildVectorB(circuitNetlist, dt, currentTime, false);
+            if (nrController != null) {
+                nrController.beginStep();
+                componentCurrentCalculator.setDiodesHandledByNewtonRaphson(true);
+            }
+
+            boolean accepted = false;
+            while (!accepted) {
+                // Real MNA solver: build and solve circuit matrices
+                if (circuitNetlist != null && circuitNetlist.getElementCount() > 0) {
+                    matrixSolver.buildMatrixA(circuitNetlist, attemptDt, currentTime, false);
+                    matrixSolver.buildVectorB(circuitNetlist, attemptDt, currentTime, false);
                     matrixSolver.solve();
+
+                    // Semiconductor state machine (port of legacy
+                    // doDiodeErrorsRecalculations): flip diode/thyristor/IGBT states
+                    // until stable, re-solving the SAME time step (history is not
+                    // shifted between iterations).
+                    double stoergroesse = 1.0;
+                    boolean isNewIteration = false;
+                    int errorCounter = 0;
+                    boolean converged = false;
+                    while (!converged) {
+                        boolean statesChanged = componentCurrentCalculator.calculateComponentCurrents(
+                                matrixSolver, circuitNetlist, stoergroesse, attemptDt, currentTime,
+                                isNewIteration, errorCounter);
+                        boolean diodesConverged = true;
+                        if (nrController != null) {
+                            if (nrController.isFallbackToPiecewiseLinear()) {
+                                // Newton gave up for this step: the piecewise-linear
+                                // machine takes the diode slots back
+                                componentCurrentCalculator.setDiodesHandledByNewtonRaphson(false);
+                            }
+                            diodesConverged = nrController.updateDiodeStamps(
+                                    matrixSolver.getP(), circuitNetlist);
+                        }
+                        converged = !statesChanged && diodesConverged;
+                        if (converged) {
+                            break;
+                        }
+                        isNewIteration = true;
+                        if (++errorCounter > MAX_SEMICONDUCTOR_ITERATIONS) {
+                            throw new IllegalStateException(
+                                    "Numerical instability of switch states at t=" + currentTime);
+                        }
+                        if (errorCounter > 2) {
+                            stoergroesse *= 0.99;
+                        }
+                        matrixSolver.buildMatrixA(circuitNetlist, attemptDt, currentTime, false);
+                        matrixSolver.buildVectorB(circuitNetlist, attemptDt, currentTime, false);
+                        matrixSolver.solve();
+                    }
                 }
 
+                if (stepController == null || circuitNetlist == null
+                        || circuitNetlist.getElementCount() == 0) {
+                    accepted = true;
+                    break;
+                }
+
+                // Adaptive error test: LTE estimate from the complementary
+                // integration method decides acceptance and the next width
+                final double errorNorm = estimateLocalTruncationError(
+                        shadowSolver, attemptDt, currentTime, preAttemptParameters);
+                if (LOGGER.isDebugEnabled() && currentStep < 40) {
+                    LOGGER.debug("step={} t={} tryDt={} err={}", currentStep, currentTime,
+                            attemptDt, errorNorm);
+                }
+                final AdaptiveStepController.StepDecision decision =
+                        stepController.evaluate(errorNorm, attemptDt);
+                if (decision.accepted()) {
+                    accepted = true;
+                } else {
+                    // Roll back the element state and retry with the smaller width
+                    restoreElementParameters(circuitNetlist, preAttemptParameters);
+                    attemptDt = decision.nextStepWidth();
+                }
+            }
+
+            if (circuitNetlist != null && circuitNetlist.getElementCount() > 0) {
                 // Shift history for next time step
-                matrixSolver.updateNodePotentials(dt, currentTime);
+                matrixSolver.updateNodePotentials(attemptDt, currentTime);
 
                 // Store results back into netlist
                 circuitNetlist.storeResults(matrixSolver.getP(), matrixSolver.getIALT());
@@ -376,7 +507,7 @@ public class HeadlessSimulationEngine {
 
                 // Calculate semiconductor conduction and switching losses and couple to thermal domain
                 if (lossEngine != null) {
-                    lossEngine.calculateStep(circuitNetlist, domainCoupler, dt, currentTime);
+                    lossEngine.calculateStep(circuitNetlist, domainCoupler, attemptDt, currentTime);
                 }
             }
 
@@ -406,12 +537,32 @@ public class HeadlessSimulationEngine {
                         ? (float) matrixSolver.getP()[node] : 0.0f;
             }
 
-            if (config.isDataLoggingEnabled() &&
-                    (currentStep % config.getDataLoggingInterval() == 0)) {
-                dataContainer.insertValuesAtEnd(values, currentTime);
+            if (config.isDataLoggingEnabled()) {
+                if (stepController == null) {
+                    if (currentStep % config.getDataLoggingInterval() == 0) {
+                        dataContainer.insertValuesAtEnd(values, currentTime);
+                    }
+                } else {
+                    // Log on the uniform base grid: each accepted step (dt <=
+                    // base dt) crosses at most one grid point; the row logged
+                    // at grid time t holds the state of the step covering it
+                    if (LOGGER.isDebugEnabled() && currentStep < 40) {
+                        LOGGER.debug("step={} t={} gridRow={} threshold={} expectedSteps={}",
+                                currentStep, currentTime, loggedGridRows,
+                                (loggedGridRows * dt - GRID_ALIGNMENT_EPSILON * dt),
+                                expectedSteps);
+                    }
+                    while (loggedGridRows <= lastGridRow
+                            && currentTime >= loggedGridRows * dt - GRID_ALIGNMENT_EPSILON * dt) {
+                        if (loggedGridRows % config.getDataLoggingInterval() == 0) {
+                            dataContainer.insertValuesAtEnd(values, loggedGridRows * dt);
+                        }
+                        loggedGridRows++;
+                    }
+                }
             }
 
-            currentTime += dt;
+            currentTime += attemptDt;
             currentStep++;
 
             // Report progress: candidates every PROGRESS_TICK_STEPS steps, throttled
@@ -429,6 +580,19 @@ public class HeadlessSimulationEngine {
             }
         }
 
+        // Adaptive mode: the run may end between grid points; the remaining
+        // grid rows are logged with the final state so the container always
+        // carries the full expectedSteps + 1 uniform rows
+        if (stepController != null) {
+            while (loggedGridRows <= lastGridRow) {
+                if (config.isDataLoggingEnabled()
+                        && loggedGridRows % config.getDataLoggingInterval() == 0) {
+                    dataContainer.insertValuesAtEnd(values, loggedGridRows * dt);
+                }
+                loggedGridRows++;
+            }
+        }
+
         dataContainer.setContainerStatus(ContainerStatus.FINISHED);
         long executionTimeMs = System.currentTimeMillis() - startTime;
 
@@ -440,6 +604,10 @@ public class HeadlessSimulationEngine {
                 .simulatedTime(currentTime)
                 .warnings(collectEngineWarnings())
                 .metadata("solver", settings.getSolverType().toString())
+                .metadata("matrixSolver", matrixSolver.getClass().getSimpleName())
+                .metadata("adaptive", stepController != null)
+                .metadata("rejectedSteps", stepController != null
+                        ? stepController.getRejectedSteps() : 0)
                 .metadata("dt", dt)
                 .metadata("circuitFile", config.getCircuitFilePath() != null
                         ? config.getCircuitFilePath() : "in-memory model")
@@ -639,6 +807,76 @@ public class HeadlessSimulationEngine {
     }
 
 
+
+    /**
+     * Deep-copies every element's parameter array (companion currents,
+     * switch states) so a rejected adaptive attempt can roll back.
+     */
+    private static double[][] snapshotElementParameters(final INetList netlist) {
+        final int count = netlist.getElementCount();
+        final double[][] snapshot = new double[count][];
+        for (int i = 0; i < count; i++) {
+            snapshot[i] = netlist.getParameter(i).clone();
+        }
+        return snapshot;
+    }
+
+    /**
+     * Restores a snapshot taken by {@link #snapshotElementParameters(INetList)}.
+     */
+    private static void restoreElementParameters(final INetList netlist,
+                                                 final double[][] snapshot) {
+        for (int i = 0; i < snapshot.length; i++) {
+            System.arraycopy(snapshot[i], 0, netlist.getParameter(i), 0, snapshot[i].length);
+        }
+    }
+
+    /**
+     * Estimates the local truncation error of the attempted step by
+     * re-solving the same step on a shadow solver of the complementary
+     * integration method. The shadow sees the step-start companion state
+     * (from the snapshot) combined with the switch states converged by the
+     * attempt; the primary's post-attempt state is put back afterwards.
+     *
+     * @param attemptDt the attempted step width
+     * @param time the current simulation time
+     * @param preAttemptParameters element state snapshot from the step start
+     * @return relative mixed error norm over all node potentials and z-currents
+     */
+    private double estimateLocalTruncationError(final MnaSolver shadowSolver,
+                                                final double attemptDt, final double time,
+                                                final double[][] preAttemptParameters) {
+        // Seed the shadow with the primary's un-shifted history vectors
+        System.arraycopy(matrixSolver.getPALT(), 0, shadowSolver.getPALT(), 0, matrixSolver.getMatrixSize());
+        System.arraycopy(matrixSolver.getPALTALT(), 0, shadowSolver.getPALTALT(), 0, matrixSolver.getMatrixSize());
+        System.arraycopy(matrixSolver.getPALTALTALT(), 0, shadowSolver.getPALTALTALT(), 0, matrixSolver.getMatrixSize());
+        System.arraycopy(matrixSolver.getIALT(), 0, shadowSolver.getIALT(), 0, matrixSolver.getIALT().length);
+        System.arraycopy(matrixSolver.getIALTALT(), 0, shadowSolver.getIALTALT(), 0, matrixSolver.getIALT().length);
+        System.arraycopy(matrixSolver.getIALTALTALT(), 0, shadowSolver.getIALTALTALT(), 0, matrixSolver.getIALT().length);
+
+        // Shadow state: step-start companion values + converged switch states
+        final double[][] postAttemptParameters = snapshotElementParameters(circuitNetlist);
+        restoreElementParameters(circuitNetlist, preAttemptParameters);
+        for (int i = 0; i < postAttemptParameters.length; i++) {
+            circuitNetlist.getParameter(i)[DiodeParameters.INDEX_CURRENT_RESISTANCE]
+                    = postAttemptParameters[i][DiodeParameters.INDEX_CURRENT_RESISTANCE];
+        }
+        shadowSolver.buildMatrixA(circuitNetlist, attemptDt, time, false);
+        shadowSolver.buildVectorB(circuitNetlist, attemptDt, time, false);
+        shadowSolver.solve();
+        final double[] shadowPotentials = shadowSolver.getP().clone();
+        restoreElementParameters(circuitNetlist, postAttemptParameters);
+
+        // Relative mixed norm: per-entry error over max(|primary|, floor)
+        final double[] primaryPotentials = matrixSolver.getP();
+        double maxError = 0.0;
+        for (int i = 0; i < primaryPotentials.length; i++) {
+            final double scale = Math.max(Math.abs(primaryPotentials[i]), LTE_ABSOLUTE_FLOOR);
+            maxError = Math.max(maxError,
+                    Math.abs(primaryPotentials[i] - shadowPotentials[i]) / scale);
+        }
+        return maxError;
+    }
 
     private static int calculateExpectedSteps(double dt, double duration) {
         double rawSteps = Math.ceil(duration / dt);

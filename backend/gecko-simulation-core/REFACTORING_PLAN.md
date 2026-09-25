@@ -359,16 +359,23 @@ The following large subsystems represent major multi-phase engineering tasks bey
 ---
 
 ### Task L3: High-Performance Solver & Advanced Numerics
-*Current state: Standard dense $N \times N$ matrix with LU factorization.*
+*Status: COMPLETED. Pure-Java sparse LU, LTE-based adaptive stepping, and Shockley Newton-Raphson iteration, all verified against the dense reference and selectable per run; full unit test coverage.*
 
-- [ ] **L3.1 Sparse Matrix Solver Integration**:
-  - Implement sparse MNA matrix storage (Compressed Sparse Column / Row) using a high-performance solver (e.g., Sparse LU / SuiteSparse / CSparse).
-  - Eliminates $O(N^3)$ dense matrix factorization overhead for large power electronic networks ($N > 50$).
-- [ ] **L3.2 Adaptive Step-Size Control**:
-  - Implement automatic time-step adaptation based on local truncation error (LTE) between Trapezoidal and Backward Euler / Gear-Shichman estimates.
-  - Dynamically shrink $\Delta t$ during sharp switching transients and expand $\Delta t$ during steady state.
-- [ ] **L3.3 True Newton-Raphson Non-linear Solver**:
-  - Implement full Newton-Raphson iteration for non-linear components (smooth diode Shockley equation, non-linear capacitance $C(V)$) to complement the existing piecewise-linear state machine.
+- [x] **L3.1 Sparse Matrix Solver Integration**:
+  - Extracted the `MnaSolver` interface from the concrete `MatrixSolver` and introduced the `MatrixAccumulator` write-through seam (all 12 component stampers and the coupling/pinning stamps now stream into either the dense matrix or a sparse triplet collector).
+  - Implemented pure-Java compressed sparse column storage (`SparseMatrix` with duplicate summation) and a left-looking LU factorization with partial pivoting and full row-interchange bookkeeping (`SparseLU`), plus the drop-in `SparseMatrixSolver` that inherits all stamping orchestration, the b-vector, and history handling unchanged.
+  - Backend selection via `SimulationConfig.Builder.matrixSolverKind(DENSE | SPARSE | AUTO)`; AUTO switches to sparse at matrix order >= 50 (`MnaSolverFactory.SPARSE_AUTO_SIZE_THRESHOLD`), keeping every existing golden run on the dense reference. Result metadata reports the backend.
+  - Eliminates the O(N^3) dense factorization and O(N^2) dense storage for large networks (N > 50). Verified bit-near parity: sparse reproduces dense waveforms on the buck converter within 1e-6 relative and matches dense solutions to 1e-9 in unit tests.
+- [x] **L3.2 Adaptive Step-Size Control**:
+  - Implemented `AdaptiveStepController` (I-controller: step scales with sqrt(tolerance/error), clamped to [0.2x, 5x] and to `[minStepWidth, maxStepWidth]`; rejection retries at half width; the minimum-width floor accepts to guarantee progress).
+  - LTE estimate: each attempted step is re-solved on a shadow `MnaSolver` of the complementary integration method (BE <-> TRZ, GS -> BE), seeded with the primary history and the converged switch states; the primary state is never rolled back.
+  - Engine integration is opt-in (`adaptiveStepSize(true)`, `relativeTolerance`, `minStepWidth`, `maxStepWidth`); adaptive steps never cross a logging-grid point, so rows stay on the exact uniform base grid with classic row semantics, and a huge tolerance reproduces the fixed-dt run bit-near identically. Result metadata reports `adaptive` and `rejectedSteps`.
+  - Known limitation (documented): the CONTROL domain steps once per accepted step, so legacy fixed-dt-oriented control blocks make switched-mode accuracy comparisons circuit-dependent; the verified accuracy test uses a passive RC transient.
+- [x] **L3.3 True Newton-Raphson Non-linear Solver**:
+  - Implemented the smooth `ShockleyDiodeModel` (exponential junction law with overflow-clamped exponent), auto-calibrated to pass through each diode's classic operating point (rated current at forward voltage) so no new user inputs are needed.
+  - `NonlinearConvergenceController` re-linearizes every LK_D diode after each solve by writing `(rD = 1/g, uF = v0 - i0/g)` into the existing parameter slots - the classic diode stamps then implement the Newton tangent exactly. Converged when the junction voltage change falls below 1e-6 V; on non-convergence within 50 iterations the piecewise-linear state machine takes the diodes back for that step (warned once).
+  - Latching thyristors and gated IGBTs keep the piecewise-linear state machine. Opt-in via `semiconductorModel(SHOCKLEY_NEWTON_RAPHSON)`; the default `CLASSIC_PIECEWISE_LINEAR` preserves legacy behavior exactly.
+  - Verified end-to-end: a source-diode-resistor circuit settles at the analytically solved Shockley operating point (0.5794 V junction drop) under Newton-Raphson and at the classic piecewise-linear point (0.7000 V) in the default mode.
 
 ---
 
@@ -421,15 +428,17 @@ During source reading, the following architectural opportunities were identified
 | **Milestone 5** | Public API documentation: Javadoc with physical units, companion equations, and parameter descriptions across all newly added and refactored interfaces and classes. | **COMPLETED** | Javadoc compliant. |
 | **Milestone 6** | Verification gate & large subsystem architectural roadmap (Task L1 through L4 detailed in Section 4). | **COMPLETED** | Zero regressions. |
 | **Task L4** | Modernization of legacy monolith control calculators (`SparseMatrixCalculator`, `PmsmModulatorCalculator`, `PmsmControlCalculator`, `ClarkeTransform`, `ParkTransform`, `SpaceVectorSector`). | **COMPLETED** | 2,313 / 2,313 tests pass. |
+| **Task L2** | Comprehensive semiconductor loss calculation subsystem (conduction/switching models, loss engine, signal channels, thermal coupling). | **COMPLETED** | 100% pass rate. |
+| **Task L3** | High-performance solver & advanced numerics: `MnaSolver` abstraction, sparse CSC/LU backend with partial pivoting, LTE-based adaptive step control, Shockley Newton-Raphson diode convergence. | **COMPLETED** | 2,076 / 2,076 tests pass. |
 
 ### 6.2 Test & Compilation Audit
 
 - **Compilation**: `mvn clean test-compile -pl backend/gecko-simulation-core`
   - Output: `BUILD SUCCESS` (0 warnings, 0 errors, release 25).
 - **Core Module Tests**: `mvn test -pl backend/gecko-simulation-core`
-  - Output: **1,995 tests run, 0 failures, 0 errors, 0 skipped**.
+  - Output: **2,076 tests run, 0 failures, 0 errors, 0 skipped**.
 - **REST API Integration Tests**: `mvn test -pl backend/gecko-rest-api`
   - Output: **318 tests run, 0 failures, 0 errors, 0 skipped**.
-- **Total Suite**: **2,313 tests passing (100% pass rate)**.
+- **Total Suite**: **2,394 tests passing (100% pass rate)**.
 - **Suppression Audit**: Exactly **0 `@SuppressWarnings`** remain in `src/main` and `src/test`.
 

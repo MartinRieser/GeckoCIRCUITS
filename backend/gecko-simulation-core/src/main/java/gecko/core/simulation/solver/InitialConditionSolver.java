@@ -53,12 +53,12 @@ public class InitialConditionSolver {
      * @throws IllegalStateException if initialization fails
      */
     public void setInitialConditions(
-        MatrixSolver matrixSolver,
+        MnaSolver matrixSolver,
         INetList netlist,
         SolverType solverType
     ) {
         if (matrixSolver == null) {
-            throw new IllegalStateException("MatrixSolver cannot be null");
+            throw new IllegalStateException("MnaSolver cannot be null");
         }
         if (netlist == null) {
             throw new IllegalStateException("INetList cannot be null");
@@ -82,7 +82,7 @@ public class InitialConditionSolver {
      *
      * @param matrixSolver the matrix solver
      */
-    private void initializePotentials(MatrixSolver matrixSolver) {
+    private void initializePotentials(MnaSolver matrixSolver) {
         double[] pALT = matrixSolver.getPALT();
         double[] pALTALT = matrixSolver.getPALTALT();
         double[] pALTALTALT = matrixSolver.getPALTALTALT();
@@ -100,7 +100,7 @@ public class InitialConditionSolver {
      * @param matrixSolver the matrix solver
      * @param netlist the circuit netlist
      */
-    private void initializeCurrents(MatrixSolver matrixSolver, INetList netlist) {
+    private void initializeCurrents(MnaSolver matrixSolver, INetList netlist) {
         double[] iALT = matrixSolver.getIALT();
         double[] iALTALT = matrixSolver.getIALTALT();
         double[] iALTALTALT = matrixSolver.getIALTALTALT();
@@ -120,7 +120,7 @@ public class InitialConditionSolver {
      * @param matrixSolver the matrix solver
      * @param netlist the circuit netlist
      */
-    private void restorePotentialsFromNetlist(MatrixSolver matrixSolver, INetList netlist) {
+    private void restorePotentialsFromNetlist(MnaSolver matrixSolver, INetList netlist) {
         double[] pALT = matrixSolver.getPALT();
         double[] pALTALT = matrixSolver.getPALTALT();
         double[] pALTALTALT = matrixSolver.getPALTALTALT();
@@ -187,7 +187,7 @@ public class InitialConditionSolver {
      * @param matrixSolver the matrix solver
      * @param netlist the circuit netlist
      */
-    private void restoreCurrentsFromNetlist(MatrixSolver matrixSolver, INetList netlist) {
+    private void restoreCurrentsFromNetlist(MnaSolver matrixSolver, INetList netlist) {
         double[] iALT = matrixSolver.getIALT();
         double[] iALTALT = matrixSolver.getIALTALT();
         double[] iALTALTALT = matrixSolver.getIALTALTALT();

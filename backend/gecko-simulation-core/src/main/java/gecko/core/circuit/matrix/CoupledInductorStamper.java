@@ -47,23 +47,23 @@ public final class CoupledInductorStamper implements IMatrixStamper {
     }
 
     @Override
-    public void stampMatrixA(final double[][] a, final int nodeX, final int nodeY, final int nodeZ,
+    public void stampMatrixA(final MatrixAccumulator a, final int nodeX, final int nodeY, final int nodeZ,
                              final double[] parameter, final double dt) {
         final double inductance = parameter[InductorParameters.INDEX_INDUCTANCE];
         parameter[InductorParameters.INDEX_EFFECTIVE_L] = inductance;
 
         // KCL contributions (columns) and branch voltage equation (rows)
-        a[nodeX][nodeZ] += 1.0;
-        a[nodeY][nodeZ] -= 1.0;
-        a[nodeZ][nodeX] += 1.0;
-        a[nodeZ][nodeY] -= 1.0;
+        a.add(nodeX, nodeZ, 1.0);
+        a.add(nodeY, nodeZ, -(1.0));
+        a.add(nodeZ, nodeX, 1.0);
+        a.add(nodeZ, nodeY, -(1.0));
 
         final double companion = switch (solverType) {
             case SOLVER_TRZ -> -2.0 * inductance / dt;
             case SOLVER_GS -> -1.5 * inductance / dt;
             default -> -inductance / dt;
         };
-        a[nodeZ][nodeZ] += companion;
+        a.add(nodeZ, nodeZ, companion);
     }
 
     @Override

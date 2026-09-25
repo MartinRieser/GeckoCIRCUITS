@@ -16,7 +16,9 @@ package gecko.core.simulation.solver;
 import gecko.core.allg.SolverType;
 import gecko.core.circuit.SourceType;
 import gecko.core.circuit.circuitcomponents.CircuitTypCore;
+import gecko.core.circuit.matrix.DenseMatrixAccumulator;
 import gecko.core.circuit.matrix.IMatrixStamper;
+import gecko.core.circuit.matrix.MatrixAccumulator;
 import gecko.core.circuit.matrix.StamperRegistry;
 import gecko.core.circuit.netlist.INetList;
 import gecko.core.circuit.parameters.CapacitorParameters;
@@ -37,7 +39,7 @@ import gecko.core.math.Matrix;
  * - Node potentials (p, pALT, pALTALT, pALTALTALT) for time-stepping methods
  * - Component currents (iALT, iALTALT, iALTALTALT) for multi-step integration
  */
-public class MatrixSolver {
+public class MatrixSolver implements MnaSolver {
     private int matrixSize;           // Matrix order (node count + voltage source count + 1)
     private double[][] a;            // System matrix A for MNA
     private double[] bVector;         // Right-hand side vector b
@@ -57,6 +59,10 @@ public class MatrixSolver {
     // LU decomposition solver state
     private Matrix matrixSolverA;     // Cached Matrix wrapper for A
     private boolean matrixChanged;    // Flag to indicate A matrix needs refactorization
+
+    // Write-through target for the per-element stamps; dense by default,
+    // replaced by a triplet collector in the sparse subclass
+    private MatrixAccumulator matrixAccumulator;
 
     // Cached stamper registry to avoid allocating registries each time step
     private final StamperRegistry stamperRegistry;
@@ -92,8 +98,10 @@ public class MatrixSolver {
         // Matrix size includes all nodes, voltage source variables, plus ground reference
         matrixSize = nodeCount + voltageSourceCount + 1;
 
-        // Allocate system matrix A and solution vector b
-        a = new double[matrixSize][matrixSize];
+        // Allocate system matrix A storage and its stamp accumulator; the
+        // sparse subclass replaces the dense storage with null
+        a = createSystemMatrixStorage(matrixSize);
+        matrixAccumulator = createMatrixAccumulator(matrixSize);
         bVector = new double[matrixSize];
 
         // Allocate node potential vectors for multi-step integration methods
@@ -109,6 +117,36 @@ public class MatrixSolver {
         iALTALTALT = new double[elementCount];
 
         skippedElements.clear();
+        matrixSolverA = null;
+        matrixChanged = true;
+    }
+
+    /**
+     * Creates the system-matrix storage for this solver.
+     *
+     * <p>The dense reference implementation allocates the full
+     * {@code size x size} array; a sparse subclass returns {@code null} and
+     * keeps the matrix purely in its accumulator.
+     *
+     * @param size matrix order
+     * @return dense system-matrix storage, or {@code null} for sparse backends
+     */
+    protected double[][] createSystemMatrixStorage(final int size) {
+        return new double[size][size];
+    }
+
+    /**
+     * Creates the stamp accumulator feeding {@link #buildMatrixA}.
+     *
+     * <p>The default writes through to the dense storage created by
+     * {@link #createSystemMatrixStorage(int)}; a sparse subclass overrides
+     * this to collect coordinate triplets instead.
+     *
+     * @param size matrix order
+     * @return accumulator receiving the component stamps
+     */
+    protected MatrixAccumulator createMatrixAccumulator(final int size) {
+        return new DenseMatrixAccumulator(a, size);
     }
 
     /** Warnings for elements skipped during stamping (no stamper for their type). */
@@ -121,6 +159,12 @@ public class MatrixSolver {
         return matrixSize;
     }
 
+    /**
+     * Gets the dense system-matrix storage.
+     *
+     * @return the dense A storage; {@code null} for sparse subclasses that
+     *         keep the matrix in their accumulator
+     */
     public double[][] getSystemMatrix() {
         return a;
     }
@@ -232,13 +276,7 @@ public class MatrixSolver {
         }
 
         // Step 1: Clear matrix A (set all entries to 0)
-        if (a != null) {
-            for (int i = 0; i < matrixSize; i++) {
-                for (int j = 0; j < matrixSize; j++) {
-                    a[i][j] = 0.0;
-                }
-            }
-        }
+        matrixAccumulator.reset();
 
         // Step 2: Use cached stamper registry for component contributions
         StamperRegistry registry = this.stamperRegistry;
@@ -256,7 +294,7 @@ public class MatrixSolver {
             // Step 3: Get stamper for this component type and stamp matrix A
             IMatrixStamper stamper = registry.getStamper(componentType);
             if (stamper != null) {
-                stamper.stampMatrixA(a, nodeX, nodeY, nodeZ, parameters, dt);
+                stamper.stampMatrixA(matrixAccumulator, nodeX, nodeY, nodeZ, parameters, dt);
             } else {
                 skippedElements.add(componentType + " (element " + elementIndex
                         + ") has no simulation model and is treated as an open circuit");
@@ -275,8 +313,8 @@ public class MatrixSolver {
             if (z < 0 || z >= matrixSize) {
                 continue;
             }
-            a[z][mx] -= vc.gain();
-            a[z][my] += vc.gain();
+            matrixAccumulator.add(z, mx, -vc.gain());
+            matrixAccumulator.add(z, my, vc.gain());
         }
 
         // Voltage-controlled current sources (e.g. BJT collector/emitter
@@ -290,10 +328,10 @@ public class MatrixSolver {
             int xm = netlist.getNodeX(vc.measuredElement());
             int ym = netlist.getNodeY(vc.measuredElement());
             double gain = vc.gain();
-            a[xs][xm] += gain;
-            a[ys][ym] += gain;
-            a[xs][ym] -= gain;
-            a[ys][xm] -= gain;
+            matrixAccumulator.add(xs, xm, gain);
+            matrixAccumulator.add(ys, ym, gain);
+            matrixAccumulator.add(xs, ym, -gain);
+            matrixAccumulator.add(ys, xm, -gain);
         }
 
         // Ideal-transformer secondary: enforce i_f = -gain * i_d between the
@@ -306,8 +344,8 @@ public class MatrixSolver {
             if (zf < 0 || zf >= matrixSize || zd < 0 || zd >= matrixSize) {
                 continue;
             }
-            a[zf][zf] += 1.0 / zc.gain();
-            a[zf][zd] += 1.0;
+            matrixAccumulator.add(zf, zf, 1.0 / zc.gain());
+            matrixAccumulator.add(zf, zd, 1.0);
         }
 
         // Mutual inductance between coupled inductors: v_i = L_i di_i/dt +
@@ -326,8 +364,8 @@ public class MatrixSolver {
                 continue;
             }
             double mOverDt = couplingFactor * c.getMutualInductance() / dt;
-            a[zi][zj] -= mOverDt;
-            a[zj][zi] -= mOverDt;
+            matrixAccumulator.add(zi, zj, -mOverDt);
+            matrixAccumulator.add(zj, zi, -mOverDt);
         }
 
         // Note: Magnetic coupling (mutual inductance) handling is deferred for future refinement.
@@ -350,10 +388,8 @@ public class MatrixSolver {
             if (index < 0 || index >= matrixSize) {
                 continue;
             }
-            for (int j = 0; j < matrixSize; j++) {
-                a[index][j] = 0.0;
-            }
-            a[index][index] = 1.0;
+            matrixAccumulator.zeroRow(index);
+            matrixAccumulator.add(index, index, 1.0);
             pinnedRows[pinnedCount++] = index;
         }
         if (pinnedCount < pinnedRows.length) {
@@ -650,41 +686,62 @@ public class MatrixSolver {
      */
     public void solve() {
         // Validate that matrices are initialized
-        if (a == null || bVector == null) {
+        if (bVector == null || p == null) {
             throw new IllegalStateException(
                     "Matrices not initialized. Call initializeMatrices() first.");
         }
 
-        // Step 1: Create or update Matrix wrapper for A (only if matrix changed)
+        // Step 1: Factorize A (only if the matrix changed since the last solve)
+        if (matrixChanged) {
+            factorize();
+            matrixChanged = false;
+        }
+
+        // Step 2: Substitute the right-hand side into the factorization
+        substitute();
+    }
+
+    /**
+     * Factorizes the accumulated system matrix A.
+     *
+     * <p>The dense reference implementation wraps the storage in a
+     * {@link Matrix} and delegates to its lazily cached LU decomposition; a
+     * sparse subclass replaces this with its own factorization. Called only
+     * when {@code matrixChanged} is set.
+     */
+    protected void factorize() {
         if (matrixSolverA == null) {
             // First time: create Matrix wrapper from a[][]
             matrixSolverA = new Matrix(a, matrixSize, matrixSize);
-        } else if (matrixChanged) {
+        } else {
             // Matrix changed: reset cached LU decomposition and update wrapper
             matrixSolverA.resetLUDecomp();
             // The underlying a[][] is already modified by buildMatrixA(),
             // so Matrix wrapper points to updated data
         }
+    }
 
-        // Step 2: Create column vector B from b[] (nx1 matrix)
+    /**
+     * Solves A x = b using the factorization from {@link #factorize()} and
+     * stores the node potentials in {@code p}.
+     */
+    protected void substitute() {
+        // Create column vector B from b[] (nx1 matrix)
         double[][] bArray = new double[matrixSize][1];
         for (int i = 0; i < matrixSize; i++) {
             bArray[i][0] = bVector[i];
         }
         Matrix bMatrix = new Matrix(bArray);
 
-        // Step 3: Solve Ax=b using LU decomposition
+        // Solve Ax=b using LU decomposition
         // This internally caches the LU decomposition on first call,
         // and reuses it on subsequent calls (efficient for multiple RHS)
         Matrix xMatrix = matrixSolverA.solve(bMatrix);
 
-        // Step 4: Extract solution back to p[] array
+        // Extract solution back to p[] array
         double[][] x = xMatrix.getArray();
         for (int i = 0; i < matrixSize; i++) {
             p[i] = x[i][0];
         }
-
-        // Mark that matrix is no longer changed (until next buildMatrixA or explicit flag)
-        matrixChanged = false;
     }
 }

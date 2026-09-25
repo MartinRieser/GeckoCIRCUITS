@@ -32,10 +32,10 @@ package gecko.core.circuit.matrix;
 public class TransformerSecondaryStamper implements IMatrixStamper {
 
     @Override
-    public void stampMatrixA(double[][] a, int nodeX, int nodeY, int nodeZ,
+    public void stampMatrixA(MatrixAccumulator a, int nodeX, int nodeY, int nodeZ,
                              double[] parameter, double dt) {
-        a[nodeX][nodeZ] += 1.0;
-        a[nodeY][nodeZ] -= 1.0;
+        a.add(nodeX, nodeZ, 1.0);
+        a.add(nodeY, nodeZ, -(1.0));
     }
 
     @Override

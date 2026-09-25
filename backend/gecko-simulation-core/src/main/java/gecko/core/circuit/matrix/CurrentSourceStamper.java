@@ -50,7 +50,7 @@ public class CurrentSourceStamper implements IMatrixStamper {
     public static final int SOURCE_AC = 1;
 
     @Override
-    public void stampMatrixA(double[][] a, int nodeX, int nodeY, int nodeZ,
+    public void stampMatrixA(MatrixAccumulator a, int nodeX, int nodeY, int nodeZ,
                              double[] parameter, double dt) {
         // Ideal current source has infinite impedance - no A matrix contribution
     }

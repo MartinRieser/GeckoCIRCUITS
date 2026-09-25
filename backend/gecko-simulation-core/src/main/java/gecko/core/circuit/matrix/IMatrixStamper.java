@@ -42,14 +42,14 @@ public interface IMatrixStamper {
      * - a[x][y] -= 1/R
      * - a[y][x] -= 1/R
      *
-     * @param a the A matrix to stamp into
+     * @param a the matrix accumulator to stamp into
      * @param nodeX first node index
      * @param nodeY second node index
      * @param nodeZ auxiliary node index (for voltage sources, inductors with LKOP2)
      * @param parameter component parameters array
      * @param dt time step size
      */
-    void stampMatrixA(double[][] a, int nodeX, int nodeY, int nodeZ, double[] parameter, double dt);
+    void stampMatrixA(MatrixAccumulator a, int nodeX, int nodeY, int nodeZ, double[] parameter, double dt);
 
     /**
      * Stamps the component's contribution into the b vector (sources).

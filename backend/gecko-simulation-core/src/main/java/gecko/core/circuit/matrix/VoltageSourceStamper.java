@@ -56,18 +56,18 @@ public class VoltageSourceStamper implements IMatrixStamper {
     public static final int SOURCE_AC = 1;
 
     @Override
-    public void stampMatrixA(double[][] a, int nodeX, int nodeY, int nodeZ,
+    public void stampMatrixA(MatrixAccumulator a, int nodeX, int nodeY, int nodeZ,
                              double[] parameter, double dt) {
         // nodeZ is the index for the additional current variable
 
         // Voltage equation row: Vx - Vy = Vsource
-        a[nodeZ][nodeX] += 1.0;
-        a[nodeZ][nodeY] -= 1.0;
+        a.add(nodeZ, nodeX, 1.0);
+        a.add(nodeZ, nodeY, -(1.0));
 
         // KCL equations: include the source current
         // Current flows from nodeX to nodeY (positive current out of + terminal)
-        a[nodeX][nodeZ] += 1.0;
-        a[nodeY][nodeZ] -= 1.0;
+        a.add(nodeX, nodeZ, 1.0);
+        a.add(nodeY, nodeZ, -(1.0));
     }
 
     @Override
@@ -138,12 +138,12 @@ public class VoltageSourceStamper implements IMatrixStamper {
      * @param nodeX the non-ground node
      * @param nodeZ the current variable index
      */
-    public void stampMatrixAGrounded(double[][] a, int nodeX, int nodeZ) {
+    public void stampMatrixAGrounded(MatrixAccumulator a, int nodeX, int nodeZ) {
         // Voltage equation: Vx - 0 = Vsource -> Vx = Vsource
-        a[nodeZ][nodeX] += 1.0;
+        a.add(nodeZ, nodeX, 1.0);
 
         // KCL at nodeX: include source current
-        a[nodeX][nodeZ] += 1.0;
+        a.add(nodeX, nodeZ, 1.0);
     }
 
     /**
