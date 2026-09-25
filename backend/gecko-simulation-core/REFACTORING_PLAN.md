@@ -323,19 +323,25 @@ graph TD
 The following large subsystems represent major multi-phase engineering tasks beyond basic code cleanups. Each has an independent task list below:
 
 ### Task L1: Full Multi-Domain Coupling Architecture (`DomainCoupler`)
-*Current state: DomainCoupler is partially wired for LK $\leftrightarrow$ CONTROL; Task L1 Step 1 (thermal domain engine, `gecko.core.thermal`) is implemented and verified; the loss-pipeline wiring, electro-thermal feedback loop, and the reluctance domain follow in the remaining steps.*
+*Current state: DomainCoupler is wired for LK $\leftrightarrow$ CONTROL and the closed electro-thermal loop LK $\leftrightarrow$ THERM (Steps 1-2 implemented and verified); the reluctance domain follows in Step 3.*
 
-- [x] **L1.1 Thermal Domain Solver Integration** - core engine COMPLETED (Step 1); the `lkPowerLosses` pipeline lands with the Step 2 closed-loop coupling:
+- [x] **L1.1 Thermal Domain Solver Integration** - COMPLETED:
   - [x] `ThermalNode` value record (ambient reference singleton, compile-safe node addressing).
   - [x] `ThermalRCModel`: immutable Foster/Cauer network container with datasheet fit factories ($C_i = \tau_i / R_i$) and the Foster-to-Cauer continued-fraction transformation of $Z_{th}(s)$ (verified against the driving-point impedance on the imaginary axis to $10^{-9}$ relative).
   - [x] `ThermalNetworkSolver`: dedicated MNA thermal solver built on the `MnaSolver` seam - assembles TH_RTH/TH_CTH/TH_FLOW/TH_TEMP netlists (heat-flow analogy: temperature $\leftrightarrow$ voltage, heat flow [W] $\leftrightarrow$ current), shares BE/TRZ/GS integration with the electrical domain, seeds ambient initial temperatures, and exposes junction/node temperatures plus the total heat flow into ambient.
   - [x] Named device heat sources (`addHeatSource` / `setDeviceHeatFlow`) with per-device thermal-node mapping, ready for the `SemiconductorLossEngine.getAllPowerLosses()` coupling.
   - [x] Solver-aware companion models: `CapacitorStamper`/`InductorStamper` now stamp the integration-method-specific companion conductances (TRZ $2C/\Delta t$, GS $1.5C/\Delta t$; inductors $\Delta t/2L$, $2\Delta t/3L$) matching the `buildVectorB` history terms - fixing a latent BE-only assumption in the shared core.
-  - [ ] Connect `lkPowerLosses` from electrical semiconductor losses directly into thermal heat flow sources (`TH_FLOW`) via `DomainCoupler` (Step 2).
-- [ ] **L1.2 Temperature Feedback to Electrical Domain**:
-  - Implement temperature-dependent resistance updates: $R(T) = R_0 \cdot (1 + \alpha \cdot (T - T_0))$.
-  - Implement temperature-dependent diode forward voltage and semiconductor switching losses.
-  - In `DomainCoupler`, execute bidirectional closed-loop iteration at each time step.
+  - [x] Heat flow injection pipeline (Step 2): the loss engine pushes per-device losses into `DomainCoupler.setLkPowerLosses(...)` and the engine feeds them (plus ohmic $I^2 R$ for coupled resistors) into the thermal networks' `TH_FLOW` sources each accepted step.
+
+- [x] **L1.2 Temperature Feedback to Electrical Domain** - COMPLETED (Step 2):
+  - [x] `TemperatureDependentResistor`: $R(T) = R_0 \cdot (1 + \alpha (T - T_0))$, recomputed statelessly from the reference values each step.
+  - [x] `TemperatureDependentDiode`: $V_f(T) = V_{f0} - k_T (T - T_0)$ and the Shockley thermal voltage $V_t(T) = k_B (T + 273.15)/q$; the PWL diode state machine and the solved branch voltage track the updated $V_f$ automatically.
+  - [x] Closed-loop coupling in `HeadlessSimulationEngine` + `DomainCoupler` per step: LK solve $\rightarrow$ loss evaluation $\rightarrow$ thermal solve with injected heat flows $\rightarrow$ feedback of the solved junction temperatures into the netlist parameters and back to the loss models through the coupler's device-to-thermal-node mapping.
+  - [x] `ThermalCoupling` configuration (device name + thermal RC model + feedback law) with `SimulationConfig` options `enableThermalDomain(boolean)` and `ambientTemperature(double)` (fallback junction temperature of unmapped loss devices); default configuration preserves pure-electrical behavior exactly.
+  - [x] Loss engine: the default device model now evaluates the instantaneous product $v(t) \cdot i(t)$ from the solved branch values each step (previously the forward threshold was cached at initialization, which would freeze out the temperature feedback); datasheet PWL/table models remain available via `registerDeviceModel`.
+  - [x] `ElectroThermalFeedbackTest`: resistor self-heating converges to the analytic divider equilibrium; diode self-heating shows the negative tempco (loss and forward drop decrease to the closed-form equilibrium); unknown coupling devices fail the run with a named error.
+  - [ ] Multi-rate thermal stepping (thermal sub-cycling with a larger thermal dt) - deferred; the thermal solver API already accepts per-step widths.
+
 - [ ] **L1.3 Reluctance / Magnetic Domain Coupling**:
   - Wire `REL_MMF` and `REL_RELUCTANCE` into a magnetic MNA system.
   - Couple magnetic flux $\Phi$ and magnetomotive force $\mathcal{F}$ with electric winding currents via Faraday's law of induction ($v = N \frac{d\Phi}{dt}$).
@@ -434,15 +440,16 @@ During source reading, the following architectural opportunities were identified
 | **Task L2** | Comprehensive semiconductor loss calculation subsystem (conduction/switching models, loss engine, signal channels, thermal coupling). | **COMPLETED** | 100% pass rate. |
 | **Task L3** | High-performance solver & advanced numerics: `MnaSolver` abstraction, sparse CSC/LU backend with partial pivoting, LTE-based adaptive step control, Shockley Newton-Raphson diode convergence. | **COMPLETED** | 2,076 / 2,076 tests pass. |
 | **Task L1 (Step 1)** | Thermal domain engine: `ThermalNode`, `ThermalRCModel` (Foster/Cauer + transformation), `ThermalNetworkSolver` on the shared MNA seam, solver-aware companion models. | **COMPLETED** | 2,107 / 2,107 tests pass. |
+| **Task L1 (Step 2)** | Electro-thermal closed loop: loss-to-heat-flow pipeline, `TemperatureDependentResistor`/`Diode` feedback, `ThermalCoupling` + `SimulationConfig` options, instantaneous-product default loss model. | **COMPLETED** | 2,120 / 2,120 tests pass. |
 
 ### 6.2 Test & Compilation Audit
 
 - **Compilation**: `mvn clean test-compile -pl backend/gecko-simulation-core`
   - Output: `BUILD SUCCESS` (0 warnings, 0 errors, release 25).
 - **Core Module Tests**: `mvn test -pl backend/gecko-simulation-core`
-  - Output: **2,107 tests run, 0 failures, 0 errors, 0 skipped**.
+  - Output: **2,120 tests run, 0 failures, 0 errors, 0 skipped**.
 - **REST API Integration Tests**: `mvn test -pl backend/gecko-rest-api`
   - Output: **318 tests run, 0 failures, 0 errors, 0 skipped**.
-- **Total Suite**: **2,394 tests passing (100% pass rate)**.
+- **Total Suite**: **2,438 tests passing (100% pass rate)** (2,471 across all reactor modules).
 - **Suppression Audit**: Exactly **0 `@SuppressWarnings`** remain in `src/main` and `src/test`.
 

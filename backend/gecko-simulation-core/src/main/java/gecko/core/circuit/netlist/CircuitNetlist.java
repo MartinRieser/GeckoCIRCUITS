@@ -82,6 +82,11 @@ public class CircuitNetlist implements INetList {
     // non-branch components were filtered from the element list
     private long[] elementUids = new long[0];
 
+    // Component name per element (null for synthesized elements like the BJT
+    // macro expansion); enables name-based element resolution for cross-domain
+    // coupling configuration
+    private String[] elementNames = new String[0];
+
     // Voltage-controlled voltage sources: the source element enforces
     // v(nodeX) - v(nodeY) = gain * v(measured element)
     private final List<VcvsCoupling> vcvsCouplings = new ArrayList<>();
@@ -179,6 +184,32 @@ public class CircuitNetlist implements INetList {
 
     public void setElementUids(long[] elementUids) {
         this.elementUids = elementUids != null ? elementUids : new long[0];
+    }
+
+    /** Component names per element (null entries for synthesized elements). */
+    public String[] getElementNames() {
+        return elementNames;
+    }
+
+    public void setElementNames(String[] elementNames) {
+        this.elementNames = elementNames != null ? elementNames : new String[0];
+    }
+
+    /**
+     * First element index carrying the given component name, or -1.
+     *
+     * @param name component name to look up
+     * @return element index or -1 when no element carries the name
+     */
+    public int indexOfElementName(final String name) {
+        if (name != null) {
+            for (int i = 0; i < elementNames.length; i++) {
+                if (name.equals(elementNames[i])) {
+                    return i;
+                }
+            }
+        }
+        return -1;
     }
 
     /** Element index for a source file uid, or -1. */

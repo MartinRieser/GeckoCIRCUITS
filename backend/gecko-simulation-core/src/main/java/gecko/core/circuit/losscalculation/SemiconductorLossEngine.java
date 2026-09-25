@@ -16,7 +16,6 @@ package gecko.core.circuit.losscalculation;
 import gecko.core.circuit.circuitcomponents.CircuitTypCore;
 import gecko.core.circuit.netlist.CircuitNetlist;
 import gecko.core.circuit.parameters.DiodeParameters;
-import gecko.core.circuit.parameters.SwitchParameters;
 import gecko.core.simulation.DomainCoupler;
 import gecko.core.simulation.solver.SolverConstants;
 
@@ -62,9 +61,6 @@ public final class SemiconductorLossEngine {
 
     /** Indexed loss signal prefix followed by the device list index in brackets. */
     public static final String PREFIX_INDEXED_LOSS = "P_loss[";
-
-    /** Default on-resistance for auto-created models when the netlist supplies none [Ohms]. */
-    private static final double DEFAULT_ON_RESISTANCE = 10e-3;
 
     /** Default turn-on reference energy for auto-created models [J]. */
     private static final double DEFAULT_TURN_ON_ENERGY = 1e-3;
@@ -162,6 +158,29 @@ public final class SemiconductorLossEngine {
         final double dt,
         final double time
     ) {
+        calculateStep(netlist, domainCoupler, dt, time,
+                SemiconductorDeviceLossModel.DEFAULT_TEMPERATURE);
+    }
+
+    /**
+     * Calculates conduction and switching losses of all devices for one time
+     * step with a configurable fallback junction temperature for devices
+     * without a thermal coupling.
+     *
+     * @param netlist circuit netlist after the solve
+     * @param domainCoupler domain coupler for reading temperatures and pushing power losses (can be null)
+     * @param dt time step in seconds
+     * @param time current simulation time in seconds
+     * @param defaultTemperature fallback junction temperature in degrees
+     *        Celsius for devices without a thermal coupling
+     */
+    public void calculateStep(
+        final CircuitNetlist netlist,
+        final DomainCoupler domainCoupler,
+        final double dt,
+        final double time,
+        final double defaultTemperature
+    ) {
         if (netlist == null || deviceList.isEmpty()) {
             return;
         }
@@ -175,8 +194,8 @@ public final class SemiconductorLossEngine {
             final double voltage = extractVoltage(parameters);
             final boolean conducting = isConducting(model.getComponentType(), parameters, voltage, current);
             final double temperature = domainCoupler != null
-                    ? domainCoupler.getDeviceTemperature(i, SemiconductorDeviceLossModel.DEFAULT_TEMPERATURE)
-                    : SemiconductorDeviceLossModel.DEFAULT_TEMPERATURE;
+                    ? domainCoupler.getDeviceTemperature(i, defaultTemperature)
+                    : defaultTemperature;
 
             model.calculateStep(current, voltage, conducting, temperature, dt, time);
             powerLossArray[i] = model.getTotalLoss();
@@ -298,25 +317,13 @@ public final class SemiconductorLossEngine {
         final CircuitNetlist netlist
     ) {
         final SemiconductorDeviceLossModel model = new SemiconductorDeviceLossModel(index, name, type);
-        final double[] parameters = netlist.getParameters(index);
 
-        double threshold = 0.0;
-        double onResistance = DEFAULT_ON_RESISTANCE;
-
-        if (type == CircuitTypCore.LK_D || type == CircuitTypCore.LK_THYR || type == CircuitTypCore.LK_IGBT) {
-            if (parameters.length > DiodeParameters.INDEX_FORWARD_VOLTAGE) {
-                threshold = parameters[DiodeParameters.INDEX_FORWARD_VOLTAGE];
-            }
-            if (parameters.length > DiodeParameters.INDEX_R_ON && parameters[DiodeParameters.INDEX_R_ON] > 0.0) {
-                onResistance = parameters[DiodeParameters.INDEX_R_ON];
-            }
-        } else if (type == CircuitTypCore.LK_MOSFET || type == CircuitTypCore.LK_S) {
-            if (parameters.length > SwitchParameters.INDEX_R_ON && parameters[SwitchParameters.INDEX_R_ON] > 0.0) {
-                onResistance = parameters[SwitchParameters.INDEX_R_ON];
-            }
-        }
-
-        model.configurePiecewiseLinearConduction(threshold, onResistance, 0.0);
+        // Default conduction loss is the instantaneous product of the solved
+        // branch voltage and current, so the loss always reflects the current
+        // netlist state (including electro-thermal parameter feedback).
+        // Datasheet PWL or lookup-table models should be registered per device
+        // via registerDeviceModel for calibrated results.
+        model.configureInstantaneousProductConduction();
 
         // Neutral default switching energies: real datasheet values should be
         // configured per device via registerDeviceModel for accurate results

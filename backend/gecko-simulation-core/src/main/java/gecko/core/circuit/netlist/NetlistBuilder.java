@@ -348,6 +348,11 @@ public class NetlistBuilder {
             uids[regularElementCount + i] = extraUids[i];
         }
         netlist.setElementUids(uids);
+        String[] names = new String[elementCount];
+        for (int i = 0; i < regularElementCount && i < elementCount; i++) {
+            names[i] = branchComponents.get(i).getName();
+        }
+        netlist.setElementNames(names);
         registerMutualCouplers(netlist, mutualCouplers, buildWarnings);
         return netlist;
     }

@@ -16,7 +16,9 @@ package gecko.core.simulation;
 import gecko.core.allg.SolverSettingsCore;
 import gecko.core.allg.SolverType;
 import gecko.core.io.CircuitModel;
+import gecko.core.thermal.ThermalCoupling;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +33,9 @@ public final class SimulationConfig {
     /** Default relative LTE tolerance of the adaptive step controller. */
     public static final double DEFAULT_RELATIVE_TOLERANCE = 1e-3;
 
+    /** Default ambient temperature of the thermal domain in degrees Celsius. */
+    public static final double DEFAULT_AMBIENT_TEMPERATURE = 25.0;
+
     private final SolverSettingsCore solverSettings;
     private final String circuitFilePath;
     private final CircuitModel circuitModel;
@@ -44,6 +49,9 @@ public final class SimulationConfig {
     private final double minStepWidth;
     private final double maxStepWidth;
     private final SemiconductorModelKind semiconductorModel;
+    private final boolean thermalDomainEnabled;
+    private final double ambientTemperature;
+    private final List<ThermalCoupling> thermalCouplings;
 
     private SimulationConfig(Builder builder) {
         this.solverSettings = builder.solverSettings.copy();
@@ -59,6 +67,9 @@ public final class SimulationConfig {
         this.minStepWidth = builder.minStepWidth;
         this.maxStepWidth = builder.maxStepWidth;
         this.semiconductorModel = builder.semiconductorModel;
+        this.thermalDomainEnabled = builder.thermalDomainEnabled;
+        this.ambientTemperature = builder.ambientTemperature;
+        this.thermalCouplings = List.copyOf(builder.thermalCouplings);
     }
 
     /**
@@ -181,6 +192,35 @@ public final class SimulationConfig {
     }
 
     /**
+     * Checks if the thermal co-simulation domain is enabled.
+     *
+     * @return true if the configured thermal couplings are simulated and their
+     *         temperatures feed back into the electrical domain
+     */
+    public boolean isThermalDomainEnabled() {
+        return thermalDomainEnabled;
+    }
+
+    /**
+     * Gets the ambient temperature of the thermal domain.
+     *
+     * @return ambient temperature in degrees Celsius; also the fallback
+     *         junction temperature of loss devices without a thermal model
+     */
+    public double getAmbientTemperature() {
+        return ambientTemperature;
+    }
+
+    /**
+     * Gets the electro-thermal device couplings.
+     *
+     * @return unmodifiable list of thermal couplings
+     */
+    public List<ThermalCoupling> getThermalCouplings() {
+        return thermalCouplings;
+    }
+
+    /**
      * Creates a new builder for SimulationConfig.
      *
      * @return new builder instance
@@ -206,6 +246,9 @@ public final class SimulationConfig {
         private double minStepWidth;
         private double maxStepWidth;
         private SemiconductorModelKind semiconductorModel = SemiconductorModelKind.CLASSIC_PIECEWISE_LINEAR;
+        private boolean thermalDomainEnabled;
+        private double ambientTemperature = DEFAULT_AMBIENT_TEMPERATURE;
+        private final List<ThermalCoupling> thermalCouplings = new ArrayList<>();
 
         private Builder() {
         }
@@ -412,6 +455,56 @@ public final class SimulationConfig {
         }
 
         /**
+         * Enables the thermal co-simulation domain. With thermal couplings
+         * configured, the engine feeds each coupled device's dissipation into
+         * its thermal RC network, steps it with the electrical time step and
+         * applies the solved temperatures back to the electrical parameters.
+         *
+         * @param enable true to simulate the thermal domain
+         * @return this builder
+         */
+        public Builder enableThermalDomain(boolean enable) {
+            this.thermalDomainEnabled = enable;
+            return this;
+        }
+
+        /**
+         * Sets the ambient temperature of the thermal domain. Also serves as
+         * the fallback junction temperature of loss devices without a thermal
+         * model.
+         *
+         * @param ambientTemperatureC ambient temperature in degrees Celsius
+         * @return this builder
+         *
+         * @throws IllegalArgumentException if the temperature is not finite
+         */
+        public Builder ambientTemperature(double ambientTemperatureC) {
+            if (!Double.isFinite(ambientTemperatureC)) {
+                throw new IllegalArgumentException("Ambient temperature must be finite, got: "
+                        + ambientTemperatureC);
+            }
+            this.ambientTemperature = ambientTemperatureC;
+            return this;
+        }
+
+        /**
+         * Adds an electro-thermal device coupling.
+         *
+         * @param coupling coupling between an electrical component and a
+         *                 thermal RC model
+         * @return this builder
+         *
+         * @throws IllegalArgumentException if the coupling is null
+         */
+        public Builder thermalCoupling(ThermalCoupling coupling) {
+            if (coupling == null) {
+                throw new IllegalArgumentException("Thermal coupling must not be null");
+            }
+            this.thermalCouplings.add(coupling);
+            return this;
+        }
+
+        /**
          * Builds the SimulationConfig instance.
          *
          * @return new SimulationConfig
@@ -420,6 +513,10 @@ public final class SimulationConfig {
             if (relativeTolerance <= 0.0) {
                 throw new IllegalArgumentException(
                         "Relative tolerance must be positive, got: " + relativeTolerance);
+            }
+            if (thermalDomainEnabled && thermalCouplings.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Thermal domain enabled but no thermal couplings configured");
             }
             return new SimulationConfig(this);
         }

@@ -14,6 +14,7 @@
 package gecko.core.simulation;
 
 import gecko.core.allg.SolverSettingsCore;
+import gecko.core.allg.SolverType;
 import gecko.core.datacontainer.ContainerStatus;
 import gecko.core.datacontainer.DataContainerGlobal;
 import gecko.core.io.CircuitFileParser;
@@ -29,19 +30,29 @@ import gecko.core.circuit.circuitcomponents.CircuitTypCore;
 import gecko.core.circuit.netlist.CircuitNetlist;
 import gecko.core.circuit.netlist.INetList;
 import gecko.core.circuit.parameters.DiodeParameters;
+import gecko.core.circuit.parameters.ResistorParameters;
 import gecko.core.circuit.netlist.NetlistBuilder;
 import gecko.core.control.ControlCalculatorBuilder;
 import gecko.core.simulation.ControlNetlist;
 import gecko.core.simulation.DomainCoupler;
+import gecko.core.circuit.losscalculation.SemiconductorDeviceLossModel;
 import gecko.core.circuit.losscalculation.SemiconductorLossEngine;
 import gecko.core.simulation.solver.sparse.SparseMatrixSolver;
+import gecko.core.thermal.TemperatureDependentDiode;
+import gecko.core.thermal.TemperatureDependentResistor;
+import gecko.core.thermal.ThermalCoupling;
+import gecko.core.thermal.ThermalNetworkSolver;
+import gecko.core.thermal.ThermalNode;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -131,6 +142,12 @@ public class HeadlessSimulationEngine {
 
     // Semiconductor loss calculation engine
     private SemiconductorLossEngine lossEngine;
+
+    // Electro-thermal couplings resolved from the configuration
+    private final List<ThermalCouplingRuntime> thermalCouplings = new ArrayList<>();
+
+    /** Highest junction temperature over all thermal couplings of the current run [C]. */
+    private double maxJunctionTemperature;
 
     /**
      * Gets the semiconductor loss calculation engine.
@@ -235,6 +252,10 @@ public class HeadlessSimulationEngine {
 
         // Initialize semiconductor loss engine
         lossEngine = new SemiconductorLossEngine().initializeFromNetlist(circuitNetlist);
+
+        // Electro-thermal couplings (opt-in): thermal networks, loss-to-heat
+        // flow mapping and temperature feedback (Task L1 Step 2)
+        initializeThermalDomain(config, circuitModel, settings.getSolverType());
 
         // Re-initialize matrix solver with real netlist dimensions
         if (circuitNetlist.getElementCount() > 0) {
@@ -507,7 +528,14 @@ public class HeadlessSimulationEngine {
 
                 // Calculate semiconductor conduction and switching losses and couple to thermal domain
                 if (lossEngine != null) {
-                    lossEngine.calculateStep(circuitNetlist, domainCoupler, attemptDt, currentTime);
+                    lossEngine.calculateStep(circuitNetlist, domainCoupler, attemptDt, currentTime,
+                            config.getAmbientTemperature());
+                }
+
+                // Closed electro-thermal loop: losses -> heat flows -> thermal
+                // solve -> temperature feedback into the electrical parameters
+                if (!thermalCouplings.isEmpty()) {
+                    stepThermalDomain(attemptDt, currentTime);
                 }
             }
 
@@ -615,7 +643,223 @@ public class HeadlessSimulationEngine {
                 .metadata("totalConductionLoss", lossEngine != null ? lossEngine.getTotalConductionLosses() : 0.0)
                 .metadata("totalSwitchingLoss", lossEngine != null ? lossEngine.getTotalSwitchingLosses() : 0.0)
                 .metadata("totalLossEnergy", lossEngine != null ? lossEngine.getCumulativeEnergy() : 0.0)
+                .metadata("maxJunctionTemperature",
+                        thermalCouplings.isEmpty() ? 0.0 : maxJunctionTemperature)
                 .build();
+    }
+
+
+    /** Thermal node index of a thermal network solver's junction (ambient = 0). */
+    private static final int THERMAL_JUNCTION_NODE = 1;
+
+    /**
+     * Initializes the electro-thermal couplings from the configuration:
+     * resolves each coupled device name to its netlist element and loss
+     * engine device, builds the per-coupling thermal network solver and
+     * wires the solved junction temperatures into the domain coupler so the
+     * loss models evaluate at the simulated temperatures.
+     *
+     * @param config simulation configuration
+     * @param circuitModel parsed circuit model (device name resolution)
+     * @param solverType integration method shared with the thermal domain
+     *
+     * @throws IllegalArgumentException if a coupled device does not exist,
+     *         is not a simulated branch element, or its type does not match
+     *         the configured feedback law
+     */
+    private void initializeThermalDomain(final SimulationConfig config, final CircuitModel circuitModel,
+                                         final SolverType solverType) {
+        thermalCouplings.clear();
+        maxJunctionTemperature = 0.0;
+        if (!config.isThermalDomainEnabled() || circuitNetlist == null
+                || circuitNetlist.getElementCount() == 0 || circuitModel == null) {
+            return;
+        }
+
+        final Map<String, Long> uidsByComponentName = new HashMap<>();
+        for (final CircuitModel.ComponentData component : circuitModel.getCircuitComponents()) {
+            uidsByComponentName.put(component.getName(), component.getUniqueObjectIdentifier());
+        }
+
+        int totalThermalNodes = 0;
+        for (final ThermalCoupling coupling : config.getThermalCouplings()) {
+            final Long uid = uidsByComponentName.get(coupling.getDeviceName());
+            if (uid == null) {
+                throw new IllegalArgumentException("Thermal coupling device '"
+                        + coupling.getDeviceName() + "' not found in the circuit");
+            }
+            // Programmatic circuit models carry no source uids (uid 0), so
+            // the element is resolved by component name as a fallback
+            int elementIndex = uid != 0 ? circuitNetlist.indexOfUid(uid) : -1;
+            if (elementIndex < 0) {
+                elementIndex = circuitNetlist.indexOfElementName(coupling.getDeviceName());
+            }
+            if (elementIndex < 0) {
+                throw new IllegalArgumentException("Thermal coupling device '"
+                        + coupling.getDeviceName() + "' has no simulated branch element");
+            }
+            final CircuitTypCore elementType = circuitNetlist.getType(elementIndex);
+            switch (coupling.getFeedbackKind()) {
+                case RESISTOR -> {
+                    if (elementType != CircuitTypCore.LK_R) {
+                        throw new IllegalArgumentException("Resistor thermal coupling device '"
+                                + coupling.getDeviceName() + "' is a " + elementType);
+                    }
+                }
+                case DIODE -> {
+                    if (elementType != CircuitTypCore.LK_D) {
+                        throw new IllegalArgumentException("Diode thermal coupling device '"
+                                + coupling.getDeviceName() + "' is a " + elementType);
+                    }
+                }
+            }
+
+            int lossDeviceIndex = -1;
+            if (lossEngine != null) {
+                final List<SemiconductorDeviceLossModel> devices = lossEngine.getDeviceList();
+                for (int i = 0; i < devices.size(); i++) {
+                    if (devices.get(i).getElementIndex() == elementIndex) {
+                        lossDeviceIndex = i;
+                        break;
+                    }
+                }
+            }
+            if (coupling.getFeedbackKind() == ThermalCoupling.FeedbackKind.DIODE && lossDeviceIndex < 0) {
+                throw new IllegalArgumentException("Diode thermal coupling device '"
+                        + coupling.getDeviceName() + "' has no semiconductor loss model");
+            }
+
+            final ThermalNetworkSolver solver = new ThermalNetworkSolver(coupling.getModel(), solverType);
+            solver.addHeatSource(coupling.getDeviceName(), solver.getJunctionNode());
+
+            final double referenceTemperature = coupling.getModel().getAmbientTemperature();
+            final TemperatureDependentResistor resistorFeedback;
+            final TemperatureDependentDiode diodeFeedback;
+            if (coupling.getFeedbackKind() == ThermalCoupling.FeedbackKind.RESISTOR) {
+                resistorFeedback = new TemperatureDependentResistor(
+                        circuitNetlist.getParameter(elementIndex)[ResistorParameters.INDEX_RESISTANCE],
+                        coupling.getTemperatureCoefficient(), referenceTemperature);
+                diodeFeedback = null;
+            } else {
+                resistorFeedback = null;
+                diodeFeedback = new TemperatureDependentDiode(
+                        circuitNetlist.getParameter(elementIndex)[DiodeParameters.INDEX_FORWARD_VOLTAGE],
+                        coupling.getTemperatureCoefficient(), referenceTemperature);
+            }
+            thermalCouplings.add(new ThermalCouplingRuntime(solver, coupling.getDeviceName(),
+                    coupling.getFeedbackKind(), elementIndex, lossDeviceIndex, resistorFeedback,
+                    diodeFeedback));
+            totalThermalNodes += solver.getThermalNodeCount();
+        }
+
+        // Domain coupler wiring: flat thermal node array across all couplings
+        // plus the loss-device to junction-node mapping for the loss models
+        domainCoupler.configureThermArray(totalThermalNodes);
+        if (lossEngine != null && !lossEngine.getDeviceList().isEmpty()) {
+            final int[] deviceToThermalNode = new int[lossEngine.getDeviceList().size()];
+            Arrays.fill(deviceToThermalNode, -1);
+            int nodeOffset = 0;
+            for (final ThermalCouplingRuntime coupling : thermalCouplings) {
+                if (coupling.lossDeviceIndex >= 0) {
+                    deviceToThermalNode[coupling.lossDeviceIndex] = nodeOffset + THERMAL_JUNCTION_NODE;
+                }
+                nodeOffset += coupling.solver.getThermalNodeCount();
+            }
+            domainCoupler.configureThermToLkDeviceMapping(deviceToThermalNode);
+        }
+    }
+
+    /**
+     * Runs one closed electro-thermal coupling cycle for an accepted time
+     * step: pushes each device's dissipation into its thermal network
+     * (semiconductor losses from the loss engine, ohmic dissipation
+     * I^2 R for resistors), steps the thermal networks with the
+     * electrical time step, applies the solved junction temperatures to the
+     * electrical parameters (resistance or forward voltage) and publishes
+     * all node temperatures to the domain coupler.
+     *
+     * @param dt accepted time step width in seconds
+     * @param time current simulation time in seconds
+     */
+    private void stepThermalDomain(final double dt, final double time) {
+        final double[] deviceLosses = lossEngine != null ? lossEngine.getAllPowerLosses() : null;
+
+        for (final ThermalCouplingRuntime coupling : thermalCouplings) {
+            final double power;
+            if (coupling.lossDeviceIndex >= 0 && deviceLosses != null) {
+                power = deviceLosses[coupling.lossDeviceIndex];
+            } else {
+                final double[] parameters = circuitNetlist.getParameter(coupling.elementIndex);
+                final double current = parameters[ResistorParameters.INDEX_CURRENT];
+                power = current * current * parameters[ResistorParameters.INDEX_RESISTANCE];
+            }
+            coupling.solver.setDeviceHeatFlow(coupling.deviceName, power);
+        }
+
+        for (final ThermalCouplingRuntime coupling : thermalCouplings) {
+            coupling.solver.step(dt, time);
+        }
+
+        int nodeOffset = 0;
+        double junctionMaximum = Double.NEGATIVE_INFINITY;
+        for (final ThermalCouplingRuntime coupling : thermalCouplings) {
+            final double junctionTemperature = coupling.solver.getJunctionTemperature();
+            final double[] parameters = circuitNetlist.getParameter(coupling.elementIndex);
+            switch (coupling.kind) {
+                case RESISTOR -> parameters[ResistorParameters.INDEX_RESISTANCE] =
+                        coupling.resistorFeedback.resistanceAt(junctionTemperature);
+                case DIODE -> parameters[DiodeParameters.INDEX_FORWARD_VOLTAGE] =
+                        coupling.diodeFeedback.forwardVoltageAt(junctionTemperature);
+            }
+            for (int node = 0; node < coupling.solver.getThermalNodeCount(); node++) {
+                domainCoupler.setThermNodeTemperature(nodeOffset + node,
+                        coupling.solver.getTemperature(ThermalNode.of(node)));
+            }
+            nodeOffset += coupling.solver.getThermalNodeCount();
+            junctionMaximum = Math.max(junctionMaximum, junctionTemperature);
+        }
+        maxJunctionTemperature = junctionMaximum;
+    }
+
+    /**
+     * Runtime binding of one configured thermal coupling: the thermal network
+     * solver, the coupled netlist element, its loss engine device and the
+     * temperature feedback model.
+     */
+    private static final class ThermalCouplingRuntime {
+        private final ThermalNetworkSolver solver;
+        private final String deviceName;
+        private final ThermalCoupling.FeedbackKind kind;
+        private final int elementIndex;
+        private final int lossDeviceIndex;
+        private final TemperatureDependentResistor resistorFeedback;
+        private final TemperatureDependentDiode diodeFeedback;
+
+        /**
+         * Creates a resolved thermal coupling binding.
+         *
+         * @param solver thermal network solver of the coupling
+         * @param deviceName coupled electrical component name
+         * @param kind feedback law of the coupling
+         * @param elementIndex netlist element index of the coupled device
+         * @param lossDeviceIndex loss engine device index, or -1 when the
+         *        device has no semiconductor loss model (resistors)
+         * @param resistorFeedback resistance feedback model, or null for diodes
+         * @param diodeFeedback forward-voltage feedback model, or null for resistors
+         */
+        ThermalCouplingRuntime(final ThermalNetworkSolver solver, final String deviceName,
+                               final ThermalCoupling.FeedbackKind kind, final int elementIndex,
+                               final int lossDeviceIndex,
+                               final TemperatureDependentResistor resistorFeedback,
+                               final TemperatureDependentDiode diodeFeedback) {
+            this.solver = solver;
+            this.deviceName = deviceName;
+            this.kind = kind;
+            this.elementIndex = elementIndex;
+            this.lossDeviceIndex = lossDeviceIndex;
+            this.resistorFeedback = resistorFeedback;
+            this.diodeFeedback = diodeFeedback;
+        }
     }
 
     /**
