@@ -76,10 +76,11 @@ public class StamperRegistry {
     }
 
     private void registerDefaults(final gecko.core.allg.SolverType solverType) {
-        // Passive components
+        // Passive components (dynamic elements receive the solver type so
+        // their companion models match the b-vector history terms)
         register(CircuitTypCore.LK_R, new ResistorStamper());
-        register(CircuitTypCore.LK_C, new CapacitorStamper());
-        register(CircuitTypCore.LK_L, new InductorStamper());
+        register(CircuitTypCore.LK_C, new CapacitorStamper(solverType));
+        register(CircuitTypCore.LK_L, new InductorStamper(solverType));
         register(CircuitTypCore.LK_LKOP2, new CoupledInductorStamper(solverType));
 
         // Sources
@@ -96,7 +97,7 @@ public class StamperRegistry {
 
         // Thermal resistor/capacitor use same stampers as electrical
         register(CircuitTypCore.TH_RTH, new ResistorStamper());
-        register(CircuitTypCore.TH_CTH, new CapacitorStamper());
+        register(CircuitTypCore.TH_CTH, new CapacitorStamper(solverType));
         register(CircuitTypCore.TH_FLOW, new CurrentSourceStamper());
         register(CircuitTypCore.TH_TEMP, new VoltageSourceStamper());
 

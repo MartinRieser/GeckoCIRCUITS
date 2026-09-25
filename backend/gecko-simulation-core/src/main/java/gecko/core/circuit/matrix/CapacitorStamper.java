@@ -13,27 +13,25 @@
  */
 package gecko.core.circuit.matrix;
 
+import gecko.core.allg.SolverType;
+
 /**
  * Matrix stamper implementation for capacitor components.
  *
- * A capacitor C between nodes x and y is modeled using the companion model.
- * Using Backward Euler integration:
- *   i(t) = C * (v(t) - v(t-dt)) / dt
- *   i(t) = (C/dt) * v(t) - (C/dt) * v(t-dt)
- *
- * This gives an equivalent conductance G = C/dt and a current source I = G * v_prev.
+ * A capacitor C between nodes x and y is modeled using the companion model of
+ * the configured integration method, matching the b-vector history terms of
+ * {@code MatrixSolver.buildVectorB}:
+ * <ul>
+ *   <li>Backward Euler: G = C/dt</li>
+ *   <li>Trapezoidal: G = 2C/dt</li>
+ *   <li>Gear-Shichman (BDF2): G = 1.5C/dt</li>
+ * </ul>
  *
  * A matrix stamps (conductance):
- * - a[x][x] += C/dt
- * - a[y][y] += C/dt
- * - a[x][y] -= C/dt
- * - a[y][x] -= C/dt
- *
- * B vector stamps (history current source):
- * - b[x] += (C/dt) * v_prev
- * - b[y] -= (C/dt) * v_prev
- *
- * Current through capacitor: I = G * (Vx - Vy) - I_history
+ * - a[x][x] += G
+ * - a[y][y] += G
+ * - a[x][y] -= G
+ * - a[y][x] -= G
  *
  * GUI-free version for use in headless simulation core.
  */
@@ -50,6 +48,29 @@ public class CapacitorStamper implements IMatrixStamper {
 
     /** Index for previous current in previousValues array */
     private static final int PREV_CURRENT = 1;
+
+    /** Companion-model factor of the configured integration method (G = factor * C/dt). */
+    private final double companionFactor;
+
+    /**
+     * Creates a backward-Euler capacitor stamper.
+     */
+    public CapacitorStamper() {
+        this(SolverType.SOLVER_BE);
+    }
+
+    /**
+     * Creates a capacitor stamper for the given integration method.
+     *
+     * @param solverType integration method whose companion model is stamped
+     */
+    public CapacitorStamper(final SolverType solverType) {
+        this.companionFactor = switch (solverType) {
+            case SOLVER_TRZ -> 2.0;
+            case SOLVER_GS -> 1.5;
+            default -> 1.0;
+        };
+    }
 
     @Override
     public void stampMatrixA(MatrixAccumulator a, int nodeX, int nodeY, int nodeZ,
@@ -104,8 +125,7 @@ public class CapacitorStamper implements IMatrixStamper {
     public double getAdmittanceWeight(double capacitance, double dt) {
         // Clamp capacitance to minimum value
         double safeCapacitance = Math.max(capacitance, MIN_CAPACITANCE);
-        // Backward Euler: G = C/dt
-        return safeCapacitance / dt;
+        return companionFactor * safeCapacitance / dt;
     }
 
     /**

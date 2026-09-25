@@ -13,10 +13,20 @@
  */
 package gecko.core.circuit.matrix;
 
+import gecko.core.allg.SolverType;
+
 /**
  * Matrix stamper implementation for inductor components.
  *
- * An inductor L between nodes x and y is modeled using the companion model.
+ * An inductor L between nodes x and y is modeled using the companion model
+ * of the configured integration method, matching the b-vector history terms
+ * of {@code MatrixSolver.buildVectorB}:
+ * <ul>
+ *   <li>Backward Euler: G = dt/L</li>
+ *   <li>Trapezoidal: G = dt/(2L)</li>
+ *   <li>Gear-Shichman (BDF2): G = 2dt/(3L)</li>
+ * </ul>
+ *
  * Using Backward Euler integration:
  *   v(t) = L * (i(t) - i(t-dt)) / dt
  *   i(t) = i(t-dt) + (dt/L) * v(t)
@@ -51,6 +61,29 @@ public class InductorStamper implements IMatrixStamper {
 
     /** Index for previous voltage in previousValues array */
     private static final int PREV_VOLTAGE = 1;
+
+    /** Companion-model factor of the configured integration method (G = factor * dt/L). */
+    private final double companionFactor;
+
+    /**
+     * Creates a backward-Euler inductor stamper.
+     */
+    public InductorStamper() {
+        this(SolverType.SOLVER_BE);
+    }
+
+    /**
+     * Creates an inductor stamper for the given integration method.
+     *
+     * @param solverType integration method whose companion model is stamped
+     */
+    public InductorStamper(final SolverType solverType) {
+        this.companionFactor = switch (solverType) {
+            case SOLVER_TRZ -> 0.5;
+            case SOLVER_GS -> 2.0 / 3.0;
+            default -> 1.0;
+        };
+    }
 
     @Override
     public void stampMatrixA(MatrixAccumulator a, int nodeX, int nodeY, int nodeZ,
@@ -95,8 +128,7 @@ public class InductorStamper implements IMatrixStamper {
     public double getAdmittanceWeight(double inductance, double dt) {
         // Clamp inductance to minimum value
         double safeInductance = Math.max(inductance, MIN_INDUCTANCE);
-        // Backward Euler: G = dt/L
-        return dt / safeInductance;
+        return companionFactor * dt / safeInductance;
     }
 
     /**
