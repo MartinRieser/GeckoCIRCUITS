@@ -354,7 +354,7 @@ The following large subsystems represent major multi-phase engineering tasks bey
   - Implemented `SemiconductorLossEngine` orchestrating discovery of switches across `CircuitNetlist`, step-by-step loss evaluation, and query evaluation of loss signals (`P_loss_total`, `P_cond_total`, `P_sw_total`, `E_loss_total`, `P_loss_<name>`, `P_cond_<name>`, `P_sw_<name>`, `P_loss[idx]`).
   - Integrated with `DomainCoupler`: pipes component power losses into `DomainCoupler.setLkPowerLosses(...)` for thermal co-simulation.
   - Integrated into `HeadlessSimulationEngine`: dynamically resolves loss signal channels, logs loss data into `DataContainerGlobal`, and exposes summary metadata (`totalConductionLoss`, `totalSwitchingLoss`, `totalLossEnergy`).
-  - Comprehensive unit test coverage in `SemiconductorDeviceLossModelTest` (7 tests) and `SemiconductorLossEngineTest` (4 tests), bringing `gecko-simulation-core` to 2,006 tests with 0 failures and 0 compiler warnings.
+  - Comprehensive unit test coverage in `SemiconductorDeviceLossModelTest` (7 tests) and `SemiconductorLossEngineTest` (5 tests), bringing `gecko-simulation-core` to 2,007 tests with 0 failures and 0 compiler warnings.
 
 ---
 

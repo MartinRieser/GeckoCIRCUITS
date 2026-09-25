@@ -34,6 +34,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SemiconductorLossEngineTest {
@@ -129,25 +130,58 @@ class SemiconductorLossEngineTest {
         SemiconductorLossEngine engine = new SemiconductorLossEngine();
         engine.registerDeviceModel(model);
 
+        // Device name containing an underscore must round-trip through both
+        // recognition and evaluation with identical prefix handling
+        SemiconductorDeviceLossModel underscoreModel =
+                new SemiconductorDeviceLossModel(1, "T1_low", CircuitTypCore.LK_IGBT);
+        underscoreModel.configurePiecewiseLinearConduction(1.0, 0.1, 0.0);
+        underscoreModel.calculateStep(10.0, 1.5, true, 25.0, 1e-4, 1e-4); // P = 10 + 10 = 20 W
+        engine.registerDeviceModel(underscoreModel);
+
         assertTrue(engine.hasLossSignal("P_loss_total"));
         assertTrue(engine.hasLossSignal("P_cond_total"));
         assertTrue(engine.hasLossSignal("P_sw_total"));
         assertTrue(engine.hasLossSignal("E_loss_total"));
         assertTrue(engine.hasLossSignal("P_loss_D1"));
         assertTrue(engine.hasLossSignal("P_cond_D1"));
+        assertTrue(engine.hasLossSignal("P_loss_T1_low"), "Device names with underscores must be recognized");
         assertTrue(engine.hasLossSignal("P_loss[0]"));
         assertFalse(engine.hasLossSignal("unknown_signal"));
 
-        assertEquals(8.0, engine.evaluateLossSignal("P_loss_total"), EPSILON);
-        assertEquals(8.0, engine.evaluateLossSignal("P_cond_total"), EPSILON);
+        // Aggregates span both devices: D1 8 W + T1_low 20 W = 28 W
+        assertEquals(28.0, engine.evaluateLossSignal("P_loss_total"), EPSILON);
+        assertEquals(28.0, engine.evaluateLossSignal("P_cond_total"), EPSILON);
         assertEquals(0.0, engine.evaluateLossSignal("P_sw_total"), EPSILON);
-        assertEquals(8.0 * 1e-4, engine.evaluateLossSignal("E_loss_total"), EPSILON);
+        assertEquals(28.0 * 1e-4, engine.evaluateLossSignal("E_loss_total"), EPSILON);
         assertEquals(8.0, engine.evaluateLossSignal("P_loss_D1"), EPSILON);
         assertEquals(8.0, engine.evaluateLossSignal("P_loss[0]"), EPSILON);
+        assertEquals(20.0, engine.evaluateLossSignal("P_loss_T1_low"), EPSILON);
 
         Map<String, LossContainer> breakdown = engine.getLossBreakdown();
         assertTrue(breakdown.containsKey("D1"));
         assertEquals(8.0, breakdown.get("D1").getTotalLosses(), EPSILON);
+    }
+
+    @Test
+    @DisplayName("Re-registering a model replaces the previous entry for the same device")
+    void reRegistrationReplacesPreviousModel() {
+        SemiconductorDeviceLossModel original = new SemiconductorDeviceLossModel(0, "D1", CircuitTypCore.LK_D);
+        original.configurePiecewiseLinearConduction(0.7, 0.01, 0.0);
+        original.calculateStep(10.0, 0.8, true, 25.0, 1e-4, 1e-4); // P = 7 + 1 = 8 W
+
+        SemiconductorLossEngine engine = new SemiconductorLossEngine();
+        engine.registerDeviceModel(original);
+
+        SemiconductorDeviceLossModel replacement = new SemiconductorDeviceLossModel(0, "D1", CircuitTypCore.LK_D);
+        replacement.configurePiecewiseLinearConduction(0.7, 0.02, 0.0);
+        replacement.calculateStep(10.0, 0.8, true, 25.0, 1e-4, 1e-4); // P = 7 + 2 = 9 W
+        engine.registerDeviceModel(replacement);
+
+        assertEquals(1, engine.getDeviceList().size(), "Device list must not keep the stale model");
+        assertSame(replacement, engine.getModel(0));
+        assertSame(replacement, engine.getModel("D1"));
+        assertEquals(9.0, engine.getTotalLosses(), EPSILON);
+        assertEquals(9.0, engine.evaluateLossSignal("P_loss_D1"), EPSILON);
     }
 
     @Test

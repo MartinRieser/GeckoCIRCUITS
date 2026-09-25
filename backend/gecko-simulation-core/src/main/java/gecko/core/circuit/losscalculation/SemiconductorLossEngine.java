@@ -39,6 +39,45 @@ import java.util.Map;
  */
 public final class SemiconductorLossEngine {
 
+    /** Aggregate loss signal: total power loss of all registered devices [W]. */
+    public static final String SIGNAL_TOTAL_LOSS = "P_loss_total";
+
+    /** Aggregate loss signal: total conduction power loss of all registered devices [W]. */
+    public static final String SIGNAL_TOTAL_CONDUCTION = "P_cond_total";
+
+    /** Aggregate loss signal: total switching power loss of all registered devices [W]. */
+    public static final String SIGNAL_TOTAL_SWITCHING = "P_sw_total";
+
+    /** Aggregate loss signal: cumulative energy of all registered devices [J]. */
+    public static final String SIGNAL_TOTAL_ENERGY = "E_loss_total";
+
+    /** Per-device loss signal prefix followed by the device name (total power). */
+    public static final String PREFIX_DEVICE_LOSS = "P_loss_";
+
+    /** Per-device loss signal prefix followed by the device name (conduction power). */
+    public static final String PREFIX_DEVICE_CONDUCTION = "P_cond_";
+
+    /** Per-device loss signal prefix followed by the device name (switching power). */
+    public static final String PREFIX_DEVICE_SWITCHING = "P_sw_";
+
+    /** Indexed loss signal prefix followed by the device list index in brackets. */
+    public static final String PREFIX_INDEXED_LOSS = "P_loss[";
+
+    /** Default on-resistance for auto-created models when the netlist supplies none [Ohms]. */
+    private static final double DEFAULT_ON_RESISTANCE = 10e-3;
+
+    /** Default turn-on reference energy for auto-created models [J]. */
+    private static final double DEFAULT_TURN_ON_ENERGY = 1e-3;
+
+    /** Default turn-off reference energy for auto-created models [J]. */
+    private static final double DEFAULT_TURN_OFF_ENERGY = 1e-3;
+
+    /** Default reference current for auto-created switching energy models [A]. */
+    private static final double DEFAULT_SWITCHING_REFERENCE_CURRENT = 10.0;
+
+    /** Default reference voltage for auto-created switching energy models [V]. */
+    private static final double DEFAULT_SWITCHING_REFERENCE_VOLTAGE = 600.0;
+
     private final Map<Integer, SemiconductorDeviceLossModel> modelsByIndex = new LinkedHashMap<>();
     private final Map<String, SemiconductorDeviceLossModel> modelsByName = new LinkedHashMap<>();
     private final List<SemiconductorDeviceLossModel> deviceList = new ArrayList<>();
@@ -84,7 +123,9 @@ public final class SemiconductorLossEngine {
     }
 
     /**
-     * Registers a custom loss model for a device.
+     * Registers a custom loss model for a device. Re-registering a model with an
+     * element index or name that is already registered replaces the previous entry,
+     * so lookups, step evaluation, and aggregate totals always refer to the same model.
      *
      * @param model configured device loss model
      */
@@ -92,16 +133,21 @@ public final class SemiconductorLossEngine {
         if (model == null) {
             throw new IllegalArgumentException("Device loss model must not be null");
         }
+        deviceList.removeIf(existing -> existing.getElementIndex() == model.getElementIndex()
+                || existing.getName().equals(model.getName()));
         modelsByIndex.put(model.getElementIndex(), model);
         modelsByName.put(model.getName(), model);
-        if (!deviceList.contains(model)) {
-            deviceList.add(model);
-        }
+        deviceList.add(model);
         powerLossArray = new double[deviceList.size()];
     }
 
     /**
      * Evaluates conduction and switching losses across all registered devices for one time step.
+     *
+     * <p>Device temperatures are read from the thermal domain array by device list
+     * position - the same ordering in which power losses are pushed back via
+     * {@link DomainCoupler#setLkPowerLosses}. Devices without a thermal entry fall
+     * back to the default junction temperature.</p>
      *
      * @param netlist circuit netlist containing the latest solver voltages and currents
      * @param domainCoupler domain coupler for reading temperatures and pushing power losses (can be null)
@@ -125,10 +171,11 @@ public final class SemiconductorLossEngine {
             final int elemIdx = model.getElementIndex();
             final double[] parameters = netlist.getParameters(elemIdx);
 
-            final double current = extractCurrent(model.getComponentType(), parameters);
-            final double voltage = extractVoltage(model.getComponentType(), parameters);
+            final double current = extractCurrent(parameters);
+            final double voltage = extractVoltage(parameters);
             final boolean conducting = isConducting(model.getComponentType(), parameters, voltage, current);
-            final double temperature = i < thermTemps.length ? thermTemps[i] : 25.0;
+            final double temperature = i < thermTemps.length ? thermTemps[i]
+                    : SemiconductorDeviceLossModel.DEFAULT_TEMPERATURE;
 
             model.calculateStep(current, voltage, conducting, temperature, dt, time);
             powerLossArray[i] = model.getTotalLoss();
@@ -150,17 +197,23 @@ public final class SemiconductorLossEngine {
         if (signalName == null || signalName.isBlank()) {
             return false;
         }
-        if (signalName.equals("P_loss_total") || signalName.equals("P_cond_total") || signalName.equals("P_sw_total")
-                || signalName.equals("E_loss_total")) {
+        if (signalName.equals(SIGNAL_TOTAL_LOSS) || signalName.equals(SIGNAL_TOTAL_CONDUCTION)
+                || signalName.equals(SIGNAL_TOTAL_SWITCHING) || signalName.equals(SIGNAL_TOTAL_ENERGY)) {
             return true;
         }
-        if (signalName.startsWith("P_loss_") || signalName.startsWith("P_cond_") || signalName.startsWith("P_sw_")) {
-            final String deviceName = signalName.substring(signalName.lastIndexOf('_') + 1);
-            return modelsByName.containsKey(deviceName);
+        if (signalName.startsWith(PREFIX_DEVICE_LOSS)) {
+            return modelsByName.containsKey(signalName.substring(PREFIX_DEVICE_LOSS.length()));
         }
-        if (signalName.startsWith("P_loss[") && signalName.endsWith("]")) {
+        if (signalName.startsWith(PREFIX_DEVICE_CONDUCTION)) {
+            return modelsByName.containsKey(signalName.substring(PREFIX_DEVICE_CONDUCTION.length()));
+        }
+        if (signalName.startsWith(PREFIX_DEVICE_SWITCHING)) {
+            return modelsByName.containsKey(signalName.substring(PREFIX_DEVICE_SWITCHING.length()));
+        }
+        if (signalName.startsWith(PREFIX_INDEXED_LOSS) && signalName.endsWith("]")) {
             try {
-                final int idx = Integer.parseInt(signalName.substring(7, signalName.length() - 1));
+                final int idx = Integer.parseInt(signalName.substring(PREFIX_INDEXED_LOSS.length(),
+                        signalName.length() - 1));
                 return idx >= 0 && idx < deviceList.size();
             } catch (NumberFormatException e) {
                 return false;
@@ -179,38 +232,39 @@ public final class SemiconductorLossEngine {
         if (signalName == null) {
             return 0.0;
         }
-        if (signalName.equals("P_loss_total")) {
+        if (signalName.equals(SIGNAL_TOTAL_LOSS)) {
             return getTotalLosses();
         }
-        if (signalName.equals("P_cond_total")) {
+        if (signalName.equals(SIGNAL_TOTAL_CONDUCTION)) {
             return getTotalConductionLosses();
         }
-        if (signalName.equals("P_sw_total")) {
+        if (signalName.equals(SIGNAL_TOTAL_SWITCHING)) {
             return getTotalSwitchingLosses();
         }
-        if (signalName.equals("E_loss_total")) {
+        if (signalName.equals(SIGNAL_TOTAL_ENERGY)) {
             return getCumulativeEnergy();
         }
 
-        if (signalName.startsWith("P_loss_")) {
-            final String name = signalName.substring("P_loss_".length());
-            final SemiconductorDeviceLossModel model = modelsByName.get(name);
+        if (signalName.startsWith(PREFIX_DEVICE_LOSS)) {
+            final SemiconductorDeviceLossModel model =
+                    modelsByName.get(signalName.substring(PREFIX_DEVICE_LOSS.length()));
             return model != null ? model.getTotalLoss() : 0.0;
         }
-        if (signalName.startsWith("P_cond_")) {
-            final String name = signalName.substring("P_cond_".length());
-            final SemiconductorDeviceLossModel model = modelsByName.get(name);
+        if (signalName.startsWith(PREFIX_DEVICE_CONDUCTION)) {
+            final SemiconductorDeviceLossModel model =
+                    modelsByName.get(signalName.substring(PREFIX_DEVICE_CONDUCTION.length()));
             return model != null ? model.getConductionLoss() : 0.0;
         }
-        if (signalName.startsWith("P_sw_")) {
-            final String name = signalName.substring("P_sw_".length());
-            final SemiconductorDeviceLossModel model = modelsByName.get(name);
+        if (signalName.startsWith(PREFIX_DEVICE_SWITCHING)) {
+            final SemiconductorDeviceLossModel model =
+                    modelsByName.get(signalName.substring(PREFIX_DEVICE_SWITCHING.length()));
             return model != null ? model.getSwitchingLoss() : 0.0;
         }
 
-        if (signalName.startsWith("P_loss[") && signalName.endsWith("]")) {
+        if (signalName.startsWith(PREFIX_INDEXED_LOSS) && signalName.endsWith("]")) {
             try {
-                final int idx = Integer.parseInt(signalName.substring(7, signalName.length() - 1));
+                final int idx = Integer.parseInt(signalName.substring(PREFIX_INDEXED_LOSS.length(),
+                        signalName.length() - 1));
                 if (idx >= 0 && idx < deviceList.size()) {
                     return deviceList.get(idx).getTotalLoss();
                 }
@@ -246,7 +300,7 @@ public final class SemiconductorLossEngine {
         final double[] parameters = netlist.getParameters(index);
 
         double threshold = 0.0;
-        double onResistance = 10e-3;
+        double onResistance = DEFAULT_ON_RESISTANCE;
 
         if (type == CircuitTypCore.LK_D || type == CircuitTypCore.LK_THYR || type == CircuitTypCore.LK_IGBT) {
             if (parameters.length > DiodeParameters.INDEX_FORWARD_VOLTAGE) {
@@ -263,20 +317,22 @@ public final class SemiconductorLossEngine {
 
         model.configurePiecewiseLinearConduction(threshold, onResistance, 0.0);
 
-        // Default switching loss model: 1 mJ turn-on, 1 mJ turn-off @ 600V, 10A
-        model.configureScaledEnergySwitching(1e-3, 1e-3, 10.0, 600.0, 0.0);
+        // Neutral default switching energies: real datasheet values should be
+        // configured per device via registerDeviceModel for accurate results
+        model.configureScaledEnergySwitching(DEFAULT_TURN_ON_ENERGY, DEFAULT_TURN_OFF_ENERGY,
+                DEFAULT_SWITCHING_REFERENCE_CURRENT, DEFAULT_SWITCHING_REFERENCE_VOLTAGE, 0.0);
 
         return model;
     }
 
-    private static double extractCurrent(final CircuitTypCore type, final double[] parameters) {
+    private static double extractCurrent(final double[] parameters) {
         if (parameters == null || parameters.length <= DiodeParameters.INDEX_CURRENT) {
             return 0.0;
         }
         return parameters[DiodeParameters.INDEX_CURRENT];
     }
 
-    private static double extractVoltage(final CircuitTypCore type, final double[] parameters) {
+    private static double extractVoltage(final double[] parameters) {
         if (parameters == null || parameters.length <= DiodeParameters.INDEX_VOLTAGE) {
             return 0.0;
         }

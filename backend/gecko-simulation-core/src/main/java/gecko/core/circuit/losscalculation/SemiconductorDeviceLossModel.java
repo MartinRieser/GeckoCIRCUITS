@@ -51,8 +51,14 @@ public final class SemiconductorDeviceLossModel {
         LOOKUP_TABLE
     }
 
-    private static final double DEFAULT_TEMPERATURE = 25.0; // °C
+    /** Default junction temperature used when no thermal domain temperature is available [°C]. */
+    static final double DEFAULT_TEMPERATURE = 25.0;
+
+    /** Conduction loss gating threshold below which a device is treated as non-conducting [A]. */
     private static final double CURRENT_NOISE_FLOOR = 1e-4; // 0.1 mA
+
+    /** Tolerance for sliding-window cutoff time comparisons [s]. */
+    private static final double WINDOW_CUTOFF_EPSILON = 1e-12;
 
     private final int elementIndex;
     private final String name;
@@ -179,16 +185,23 @@ public final class SemiconductorDeviceLossModel {
     }
 
     /**
-     * Configures lookup-table-based switching loss modeling.
+     * Configures lookup-table-based switching loss modeling. The tables are expected to
+     * hold switching energies normalized to the measurement blocking voltage (energy per
+     * volt), which is the convention of {@link DetailedLossLookupTable#fabric} for
+     * {@link SwitchingLossCurve}s; the actual blocking voltage is multiplied in at
+     * evaluation time.
      *
-     * @param turnOnTable table for E_on(I, T)
-     * @param turnOffTable table for E_off(I, T)
+     * @param turnOnTable table for E_on(I, T) per volt of blocking voltage
+     * @param turnOffTable table for E_off(I, T) per volt of blocking voltage
      * @return this model for fluent configuration
      */
     public SemiconductorDeviceLossModel configureLookupTableSwitching(
         final DetailedLossLookupTable turnOnTable,
         final DetailedLossLookupTable turnOffTable
     ) {
+        if (turnOnTable == null || turnOffTable == null) {
+            throw new IllegalArgumentException("Turn-on and turn-off lookup tables must not be null");
+        }
         this.turnOnTable = turnOnTable;
         this.turnOffTable = turnOffTable;
         this.switchingModelType = SwitchingModelType.LOOKUP_TABLE;
@@ -265,21 +278,33 @@ public final class SemiconductorDeviceLossModel {
         }
 
         return switch (conductionModelType) {
-            case INSTANTANEOUS_PRODUCT -> Math.max(0.0, voltage * current);
+            case INSTANTANEOUS_PRODUCT -> instantaneousProduct(voltage, current);
             case PIECEWISE_LINEAR -> {
                 if (conductionCalculator != null) {
                     yield conductionCalculator.calculateLoss(current, temperature);
                 }
-                yield Math.max(0.0, voltage * current);
+                yield instantaneousProduct(voltage, current);
             }
             case LOOKUP_TABLE -> {
                 if (conductionTable != null) {
                     final double vOn = conductionTable.getInterpolatedYValue(temperature, current);
                     yield Math.abs(vOn * current);
                 }
-                yield Math.max(0.0, voltage * current);
+                yield instantaneousProduct(voltage, current);
             }
         };
+    }
+
+    /**
+     * Fallback conduction loss when no dedicated model is configured: forward power
+     * p(t) = v(t) * i(t), clamped to non-negative values.
+     *
+     * @param voltage device voltage [V]
+     * @param current device current [A]
+     * @return non-negative instantaneous power [W]
+     */
+    private static double instantaneousProduct(final double voltage, final double current) {
+        return Math.max(0.0, voltage * current);
     }
 
     private double calculateSwitchingLoss(
@@ -342,7 +367,7 @@ public final class SemiconductorDeviceLossModel {
         windowEnergySum += loss * dt;
 
         final double cutoffTime = time - averagingWindowDuration;
-        while (!windowSamples.isEmpty() && windowSamples.peekFirst().time() <= cutoffTime + 1e-12) {
+        while (!windowSamples.isEmpty() && windowSamples.peekFirst().time() <= cutoffTime + WINDOW_CUTOFF_EPSILON) {
             final TimeLossSample oldest = windowSamples.removeFirst();
             windowEnergySum -= oldest.totalLoss() * oldest.duration();
         }

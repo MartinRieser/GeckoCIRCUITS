@@ -151,5 +151,7 @@ class SemiconductorDeviceLossModelTest {
             () -> model.calculateStep(1.0, 1.0, true, 25.0, 0.0, 1.0));
         assertThrows(IllegalArgumentException.class,
             () -> model.calculateStep(1.0, 1.0, true, 25.0, -1e-4, 1.0));
+        assertThrows(IllegalArgumentException.class,
+            () -> model.configureLookupTableSwitching(null, null));
     }
 }
