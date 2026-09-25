@@ -323,7 +323,7 @@ graph TD
 The following large subsystems represent major multi-phase engineering tasks beyond basic code cleanups. Each has an independent task list below:
 
 ### Task L1: Full Multi-Domain Coupling Architecture (`DomainCoupler`)
-*Current state: DomainCoupler is wired for LK $\leftrightarrow$ CONTROL and the closed electro-thermal loop LK $\leftrightarrow$ THERM (Steps 1-2 implemented and verified); the reluctance domain follows in Step 3.*
+*Current state: DomainCoupler is wired for LK $\leftrightarrow$ CONTROL, the closed electro-thermal loop LK $\leftrightarrow$ THERM (Steps 1-2) and the magnetic reluctance domain (Step 3); Step 4 (engine integration of the magnetic domain, multi-domain data logging, end-to-end verification) remains.*
 
 - [x] **L1.1 Thermal Domain Solver Integration** - COMPLETED:
   - [x] `ThermalNode` value record (ambient reference singleton, compile-safe node addressing).
@@ -342,10 +342,13 @@ The following large subsystems represent major multi-phase engineering tasks bey
   - [x] `ElectroThermalFeedbackTest`: resistor self-heating converges to the analytic divider equilibrium; diode self-heating shows the negative tempco (loss and forward drop decrease to the closed-form equilibrium); unknown coupling devices fail the run with a named error.
   - [ ] Multi-rate thermal stepping (thermal sub-cycling with a larger thermal dt) - deferred; the thermal solver API already accepts per-step widths.
 
-- [ ] **L1.3 Reluctance / Magnetic Domain Coupling**:
-  - Wire `REL_MMF` and `REL_RELUCTANCE` into a magnetic MNA system.
-  - Couple magnetic flux $\Phi$ and magnetomotive force $\mathcal{F}$ with electric winding currents via Faraday's law of induction ($v = N \frac{d\Phi}{dt}$).
-  - Implement non-linear saturation curves ($B$-$H$ curves) in `NONLIN_REL`.
+- [x] **L1.3 Reluctance / Magnetic Domain Coupling** - COMPLETED (Step 3, `gecko.core.magnetic`):
+  - [x] `MagneticNode` value record (MMF reference singleton at index 0; the solver pins one node per connected magnetic island automatically).
+  - [x] `ReluctanceBranch`: immutable linear reluctance with geometry factories $\mathcal{R} = l/(\mu_0 \mu_r A)$ for core sections and $\mathcal{R}_{gap} = l_g/(\mu_0 A)$ for air gaps.
+  - [x] `NonlinearReluctance`: saturating $\Phi(\mathcal{F})$ characteristics - Froelich, arctangent, tanh and piecewise-linear - all parameterized by the unsaturated permeance $P_0$ and the saturation flux $\Phi_{sat}$, with the Newton-Raphson differential permeance $P_{diff} = d\Phi/d\mathcal{F}$ (numerically floored to keep stamps finite).
+  - [x] `MagneticWinding` + `MagneticNetworkSolver`: dedicated magnetic MNA on the `MnaSolver` seam - REL_MMF winding sources enforce $\mathcal{F} = N \cdot i$ (Ampere's law), REL_RELUCTANCE stamps carry the permeance, and nonlinear branches are converged per step by a proper Newton iteration (tangent permeance stamp + Newton companion offset current). The winding flux $\Phi$ and the induced EMF $v = N \cdot d\Phi/dt$ (Faraday's law) are exposed per winding; the network is algebraic, so the time dependence enters through the winding currents and the EMF difference quotient.
+  - [x] Verified: air-gapped inductance $L = N^2/(\mathcal{R}_{core} + \mathcal{R}_{gap})$, ideal-transformer MMF balance with the current ratio $I_1/I_2 = N_2/N_1$ nulling the core flux, voltage ratio $v_2/v_1 = N_2/N_1$ on a sinusoidally magnetized transformer, and saturation compressing the flux toward $\Phi_{sat}$ while collapsing the differential inductance.
+  - [ ] Electrical-side coupling of the winding EMF into `HeadlessSimulationEngine` circuits and `REL_INDUCTOR` (winding seen from the electrical side) - Step 4; the legacy electrical `NONLIN_REL` handling stays untouched (the magnetic domain realizes its semantics through Newton-updated REL_RELUCTANCE stamps).
 
 ---
 
@@ -441,15 +444,16 @@ During source reading, the following architectural opportunities were identified
 | **Task L3** | High-performance solver & advanced numerics: `MnaSolver` abstraction, sparse CSC/LU backend with partial pivoting, LTE-based adaptive step control, Shockley Newton-Raphson diode convergence. | **COMPLETED** | 2,076 / 2,076 tests pass. |
 | **Task L1 (Step 1)** | Thermal domain engine: `ThermalNode`, `ThermalRCModel` (Foster/Cauer + transformation), `ThermalNetworkSolver` on the shared MNA seam, solver-aware companion models. | **COMPLETED** | 2,107 / 2,107 tests pass. |
 | **Task L1 (Step 2)** | Electro-thermal closed loop: loss-to-heat-flow pipeline, `TemperatureDependentResistor`/`Diode` feedback, `ThermalCoupling` + `SimulationConfig` options, instantaneous-product default loss model. | **COMPLETED** | 2,120 / 2,120 tests pass. |
+| **Task L1 (Step 3)** | Magnetic domain engine: `MagneticNode`, `ReluctanceBranch`, `NonlinearReluctance` (4 saturation curves), `MagneticWinding`, `MagneticNetworkSolver` with Newton differential-permeance convergence. | **COMPLETED** | 2,160 / 2,160 tests pass. |
 
 ### 6.2 Test & Compilation Audit
 
 - **Compilation**: `mvn clean test-compile -pl backend/gecko-simulation-core`
   - Output: `BUILD SUCCESS` (0 warnings, 0 errors, release 25).
 - **Core Module Tests**: `mvn test -pl backend/gecko-simulation-core`
-  - Output: **2,120 tests run, 0 failures, 0 errors, 0 skipped**.
+  - Output: **2,160 tests run, 0 failures, 0 errors, 0 skipped**.
 - **REST API Integration Tests**: `mvn test -pl backend/gecko-rest-api`
   - Output: **318 tests run, 0 failures, 0 errors, 0 skipped**.
-- **Total Suite**: **2,438 tests passing (100% pass rate)** (2,471 across all reactor modules).
+- **Total Suite**: **2,478 tests passing (100% pass rate)** (2,511 across all reactor modules).
 - **Suppression Audit**: Exactly **0 `@SuppressWarnings`** remain in `src/main` and `src/test`.
 
