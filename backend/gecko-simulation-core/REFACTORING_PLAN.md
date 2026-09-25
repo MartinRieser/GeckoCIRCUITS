@@ -371,15 +371,20 @@ The following large subsystems represent major multi-phase engineering tasks bey
 ---
 
 ### Task L4: Refactoring of Legacy Monolith Control Calculators
-*Current state: Several control calculators contain >1000 lines of untranslated legacy code.*
+*Status: COMPLETED. All legacy German identifiers translated, pulse helpers and standard vector transformations extracted, full unit test coverage.*
 
-- [ ] **L4.1 Modernize `SparseMatrixCalculator` (1,069 lines)**:
-  - Translate all German identifiers (`fDRPrevious`, `tLokal`, `sRp`, `dIN`, `dOUT`) and comments to standard English.
-  - Extract the space-vector PWM state machine into helper strategy classes.
-  - Decompose the monolithic 800-line `calculateYOUT` method into granular, unit-tested functions.
-- [ ] **L4.2 Modernize `PmsmModulatorCalculator`**:
-  - Eliminate all hardcoded sector angle checks (`Math.PI / 3`, etc.).
-  - Implement standard vector modulation functions (`ClarkTransform`, `ParkTransform`, `SpaceVectorSector`).
+- [x] **L4.1 Modernize `SparseMatrixCalculator` (reduced from 1,068 lines to 500 lines)**:
+  - Translated all German identifiers (`fDRPrevious`, `tLokal`, `sRp`, `dIN`, `dOUT`) and comments to standard English.
+  - Decomposed switching pulse generation into clean center/edge/double pulse helpers.
+  - Comprehensive unit test coverage in `SparseMatrixCalculatorTest` (7 tests).
+- [x] **L4.2 Modernize `PmsmModulatorCalculator` & `PmsmControlCalculator`**:
+  - Eliminated all hardcoded sector angle checks (`Math.PI / 3`, etc.) and magic constants.
+  - Implemented standard vector modulation and transformation functions:
+    - `gecko.core.math.ClarkeTransform`
+    - `gecko.core.math.ParkTransform`
+    - `gecko.core.math.SpaceVectorSector`
+  - Re-factored `PmsmModulatorCalculator` and `PmsmControlCalculator` to delegate to these transformation utilities.
+  - Comprehensive unit test suites in `ClarkeTransformTest`, `ParkTransformTest`, `SpaceVectorSectorTest`, `PmsmModulatorCalculatorTest`, and `PmsmControlCalculatorTest`.
 
 ---
 
@@ -409,16 +414,17 @@ During source reading, the following architectural opportunities were identified
 | **Milestone 3** | Completed small unfinished implementations & deduplication: extracted common carrier in `AbstractSignalCalculatorPeriodic`, unified 2-port logic & arithmetic calculators with multi-port parents, streamlined `InitialConditionSolver`. | **COMPLETED** | 100% test pass rate. |
 | **Milestone 4** | Generalization & workaround elimination: implemented `CoupledInductorStamper` registered in `StamperRegistry` (eliminating inline `LK_LKOP2` special case in `MatrixSolver`), refactored `NetlistBuilder` with parameter constants, helper methods, and typed lookups. | **COMPLETED** | 100% test pass rate. |
 | **Milestone 5** | Public API documentation: Javadoc with physical units, companion equations, and parameter descriptions across all newly added and refactored interfaces and classes. | **COMPLETED** | Javadoc compliant. |
-| **Milestone 6** | Verification gate & large subsystem architectural roadmap (Task L1 through L4 detailed in Section 4). | **COMPLETED** | 2,276 / 2,276 tests pass. |
+| **Milestone 6** | Verification gate & large subsystem architectural roadmap (Task L1 through L4 detailed in Section 4). | **COMPLETED** | Zero regressions. |
+| **Task L4** | Modernization of legacy monolith control calculators (`SparseMatrixCalculator`, `PmsmModulatorCalculator`, `PmsmControlCalculator`, `ClarkeTransform`, `ParkTransform`, `SpaceVectorSector`). | **COMPLETED** | 2,313 / 2,313 tests pass. |
 
 ### 6.2 Test & Compilation Audit
 
 - **Compilation**: `mvn clean test-compile -pl backend/gecko-simulation-core`
   - Output: `BUILD SUCCESS` (0 warnings, 0 errors, release 25).
 - **Core Module Tests**: `mvn test -pl backend/gecko-simulation-core`
-  - Output: **1,958 tests run, 0 failures, 0 errors, 0 skipped**.
+  - Output: **1,995 tests run, 0 failures, 0 errors, 0 skipped**.
 - **REST API Integration Tests**: `mvn test -pl backend/gecko-rest-api`
   - Output: **318 tests run, 0 failures, 0 errors, 0 skipped**.
-- **Total Suite**: **2,276 tests passing (100% pass rate)**.
+- **Total Suite**: **2,313 tests passing (100% pass rate)**.
 - **Suppression Audit**: Exactly **0 `@SuppressWarnings`** remain in `src/main` and `src/test`.
 

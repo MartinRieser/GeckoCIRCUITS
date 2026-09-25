@@ -13,21 +13,69 @@
  */
 package gecko.core.control.calculators;
 
+import gecko.core.math.ClarkeTransform;
+import gecko.core.math.ParkTransform;
 
-public class PmsmControlCalculator extends AbstractControlCalculatable {
+/**
+ * Field-Oriented Control (FOC) calculator for Permanent Magnet Synchronous Machines (PMSM).
+ *
+ * <p>Implements cascaded speed and direct/quadrature current loops using PI controllers,
+ * transforming phase currents via Clarke and Park transformations, and producing voltage
+ * references via inverse Park transformation.</p>
+ *
+ * <p><strong>Input Signals (12):</strong></p>
+ * <ul>
+ *   <li>Signal 0: {@code ia} - Stator phase A instantaneous current [A]</li>
+ *   <li>Signal 1: {@code ib} - Stator phase B instantaneous current [A]</li>
+ *   <li>Signal 2: {@code w} - Rotor mechanical angular speed [rad/s]</li>
+ *   <li>Signal 3: {@code phi} - Rotor electrical angle [rad]</li>
+ *   <li>Signal 4: {@code n_ref} - Reference speed [rpm]</li>
+ *   <li>Signal 5: {@code Kp_n} - Speed PI controller proportional gain</li>
+ *   <li>Signal 6: {@code T_n} - Speed PI controller integral time constant [s]</li>
+ *   <li>Signal 7: {@code n_limit} - Speed controller output saturation limit (max iq_ref)</li>
+ *   <li>Signal 8: {@code Kp_i} - Current PI controller proportional gain</li>
+ *   <li>Signal 9: {@code T_i} - Current PI controller integral time constant [s]</li>
+ *   <li>Signal 10: {@code i_limit} - Current controller output saturation limit (max voltage)</li>
+ *   <li>Signal 11: {@code fP} - Sampling / pulse period latch trigger flag</li>
+ * </ul>
+ *
+ * <p><strong>Output Signals (8):</strong></p>
+ * <ul>
+ *   <li>Signal 0: {@code valpha} - Alpha-axis voltage command [V]</li>
+ *   <li>Signal 1: {@code vbeta} - Beta-axis voltage command [V]</li>
+ *   <li>Signal 2: {@code vq_ref} - Synchronous q-axis voltage command [V]</li>
+ *   <li>Signal 3: {@code vd_ref} - Synchronous d-axis voltage command [V]</li>
+ *   <li>Signal 4: {@code iq_ref} - Synchronous q-axis current reference [A]</li>
+ *   <li>Signal 5: {@code id_ref} - Synchronous d-axis current reference [A]</li>
+ *   <li>Signal 6: {@code iq} - Measured synchronous q-axis current [A]</li>
+ *   <li>Signal 7: {@code id} - Measured synchronous d-axis current [A]</li>
+ * </ul>
+ *
+ * @author GeckoCIRCUITS Team
+ * @since v2.18.0 Task L4
+ */
+public final class PmsmControlCalculator extends AbstractControlCalculatable {
 
-    // State variables for PI controllers and last values
-    double valpha_last = 0;
-    double vbeta_last = 0;
-    double int_n_last = 0;
-    double int_iq_last = 0;
-    double int_id_last = 0;
-    double x_n_last = 0;
-    double x_iq_last = 0;
-    double x_id_last = 0;
+    private static final int NO_INPUTS = 12;
+    private static final int NO_OUTPUTS = 8;
+
+    private static final double SECONDS_PER_MINUTE = 60.0;
+    private static final double TWO_PI = 2.0 * Math.PI;
+    private static final double INTEGRATOR_WEIGHT = 0.5;
+    private static final double PULSE_TRIGGER_THRESHOLD = 0.999;
+
+    // State variables for PI controllers and latched outputs
+    private double valphaLast = 0.0;
+    private double vbetaLast = 0.0;
+    private double intNLast = 0.0;
+    private double intIqLast = 0.0;
+    private double intIdLast = 0.0;
+    private double xNLast = 0.0;
+    private double xIqLast = 0.0;
+    private double xIdLast = 0.0;
 
     public PmsmControlCalculator() {
-        super(12, 8);
+        super(NO_INPUTS, NO_OUTPUTS);
     }
 
     @Override
@@ -36,107 +84,99 @@ public class PmsmControlCalculator extends AbstractControlCalculatable {
         final double ib = _inputSignal[1][0];
         final double w = _inputSignal[2][0];
         final double phi = _inputSignal[3][0];
-        final double n_ref = _inputSignal[4][0];
-        final double Kp_n = _inputSignal[5][0];
-        final double T_n = _inputSignal[6][0];
-        final double n_limit = _inputSignal[7][0];
-        final double Kp_i = _inputSignal[8][0];
-        final double T_i = _inputSignal[9][0];
-        final double i_limit = _inputSignal[10][0];
+        final double nRef = _inputSignal[4][0];
+        final double kpN = _inputSignal[5][0];
+        final double tN = _inputSignal[6][0];
+        final double nLimit = _inputSignal[7][0];
+        final double kpI = _inputSignal[8][0];
+        final double tI = _inputSignal[9][0];
+        final double iLimit = _inputSignal[10][0];
         final double fP = _inputSignal[11][0];
 
+        final double a1N = (tN > 0.0) ? kpN / tN : 0.0;
+        final double a1I = (tI > 0.0) ? kpI / tI : 0.0;
+        final double wRef = (nRef / SECONDS_PER_MINUTE) * TWO_PI;
 
-        final double a1_n = Kp_n / T_n;
-        final double a1_i = Kp_i / T_i;
+        // Clarke transformation (3-phase balanced to stationary orthogonal alpha-beta)
+        final ClarkeTransform.AlphaBeta iAlphaBeta = ClarkeTransform.forwardBalanced(ia, ib);
 
-        final double w_ref = n_ref / 60 * 2 * Math.PI;
+        // Park transformation (alpha-beta to synchronous rotating d-q frame)
+        final ParkTransform.DirectQuadrature iDq = ParkTransform.forward(iAlphaBeta.alpha(), iAlphaBeta.beta(), phi);
+        final double id = iDq.d();
+        final double iq = iDq.q();
 
-
-        final double delta_t = deltaT;
-
-//*** Abort if sample time not expired (functionality not implemented)
-
-        final double ialpha = ia;
-        final double ibeta = 1 / Math.sqrt(3) * (2 * ib + ia);
-
-//Park transformation:
-        final double id = ialpha * Math.cos(phi) + ibeta * Math.sin(phi);
-        final double iq = -ialpha * Math.sin(phi) + ibeta * Math.cos(phi);
-
-//Speed control:
-        final double x_n = w_ref - w;
-        double int_n = int_n_last + a1_n * delta_t * 0.5 * (x_n + x_n_last);
-        if (int_n > n_limit) {
-            int_n = n_limit;
-        }
-        if (int_n < -n_limit) {
-            int_n = -n_limit;
-        }
-        double iq_ref = Kp_n * x_n + int_n;
-        if (iq_ref > n_limit) {
-            iq_ref = n_limit;
-        }
-        if (iq_ref < -n_limit) {
-            iq_ref = -n_limit;
+        // Speed control loop (PI with trapezoidal integration)
+        final double xN = wRef - w;
+        double intN = intNLast + a1N * deltaT * INTEGRATOR_WEIGHT * (xN + xNLast);
+        if (intN > nLimit) {
+            intN = nLimit;
+        } else if (intN < -nLimit) {
+            intN = -nLimit;
         }
 
-//Iq control:
-        final double x_iq = iq_ref - iq;
-        double int_iq = int_iq_last + a1_i * delta_t * 0.5 * (x_iq + x_iq_last);
-        if (int_iq > i_limit) {
-            int_iq = i_limit;
-        }
-        if (int_iq < -i_limit) {
-            int_iq = -i_limit;
-        }
-        double vq_ref = Kp_i * x_iq + int_iq;
-        if (vq_ref > i_limit) {
-            vq_ref = i_limit;
-        }
-        if (vq_ref < -i_limit) {
-            vq_ref = -i_limit;
+        double iqRef = kpN * xN + intN;
+        if (iqRef > nLimit) {
+            iqRef = nLimit;
+        } else if (iqRef < -nLimit) {
+            iqRef = -nLimit;
         }
 
-//Id control:
-        final double id_ref = 0;
-        final double x_id = id_ref - id;
-        double int_id = int_id_last + a1_i * delta_t * 0.5 * (x_id + x_id_last);
-        if (int_id > i_limit) {
-            int_id = i_limit;
-        }
-        if (int_id < -i_limit) {
-            int_id = -i_limit;
-        }
-        double vd_ref = Kp_i * x_id + int_id;
-        if (vd_ref > i_limit) {
-            vd_ref = i_limit;
-        }
-        if (vd_ref < -i_limit) {
-            vd_ref = -i_limit;
+        // Iq current control loop
+        final double xIq = iqRef - iq;
+        double intIq = intIqLast + a1I * deltaT * INTEGRATOR_WEIGHT * (xIq + xIqLast);
+        if (intIq > iLimit) {
+            intIq = iLimit;
+        } else if (intIq < -iLimit) {
+            intIq = -iLimit;
         }
 
-//Inverse park transformation:
-        final double valpha = vd_ref * Math.cos(phi) - vq_ref * Math.sin(phi);
-        final double vbeta = vd_ref * Math.sin(phi) + vq_ref * Math.cos(phi);       
-
-        if (fP > 999e-3) {
-            valpha_last = valpha;
-            vbeta_last = vbeta;
+        double vqRef = kpI * xIq + intIq;
+        if (vqRef > iLimit) {
+            vqRef = iLimit;
+        } else if (vqRef < -iLimit) {
+            vqRef = -iLimit;
         }
 
-        x_n_last = x_n;
-        int_n_last = int_n;
-        x_iq_last = x_iq;
-        int_iq_last = int_iq;
-        x_id_last = x_id;
-        int_id_last = int_id;
+        // Id current control loop (idRef = 0 for standard surface-mounted PMSM)
+        final double idRef = 0.0;
+        final double xId = idRef - id;
+        double intId = intIdLast + a1I * deltaT * INTEGRATOR_WEIGHT * (xId + xIdLast);
+        if (intId > iLimit) {
+            intId = iLimit;
+        } else if (intId < -iLimit) {
+            intId = -iLimit;
+        }
 
-        _outputSignal[0][0] = valpha_last;
-        _outputSignal[1][0] = vbeta_last;
-        _outputSignal[2][0] = vq_ref;
-        _outputSignal[3][0] = vd_ref;
-        _outputSignal[4][0] = iq_ref;
-        _outputSignal[5][0] = id_ref;
+        double vdRef = kpI * xId + intId;
+        if (vdRef > iLimit) {
+            vdRef = iLimit;
+        } else if (vdRef < -iLimit) {
+            vdRef = -iLimit;
+        }
+
+        // Inverse Park transformation (rotating d-q back to stationary alpha-beta)
+        final ClarkeTransform.AlphaBeta vAlphaBeta = ParkTransform.inverse(vdRef, vqRef, phi);
+        final double valpha = vAlphaBeta.alpha();
+        final double vbeta = vAlphaBeta.beta();
+
+        if (fP > PULSE_TRIGGER_THRESHOLD) {
+            valphaLast = valpha;
+            vbetaLast = vbeta;
+        }
+
+        xNLast = xN;
+        intNLast = intN;
+        xIqLast = xIq;
+        intIqLast = intIq;
+        xIdLast = xId;
+        intIdLast = intId;
+
+        _outputSignal[0][0] = valphaLast;
+        _outputSignal[1][0] = vbetaLast;
+        _outputSignal[2][0] = vqRef;
+        _outputSignal[3][0] = vdRef;
+        _outputSignal[4][0] = iqRef;
+        _outputSignal[5][0] = idRef;
         _outputSignal[6][0] = iq;
         _outputSignal[7][0] = id;
     }

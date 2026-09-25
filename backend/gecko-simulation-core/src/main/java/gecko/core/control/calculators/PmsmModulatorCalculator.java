@@ -13,6 +13,8 @@
  */
 package gecko.core.control.calculators;
 
+import gecko.core.math.SpaceVectorSector;
+
 /**
  * Two-level, three-phase Space Vector Pulse-Width Modulation (SVPWM) calculator for
  * Permanent Magnet Synchronous Machines (PMSM) and AC drives.
@@ -42,12 +44,6 @@ public final class PmsmModulatorCalculator extends AbstractControlCalculatable {
     private static final int NO_INPUTS = 4;
     private static final int NO_OUTPUTS = 3;
 
-    private static final double SECTOR_ANGLE = Math.PI / 3.0; // 60 degrees
-    private static final double TWO_PI = 2.0 * Math.PI;
-    private static final double SQRT_3 = Math.sqrt(3.0);
-    private static final double SQRT_3_DIV_2 = SQRT_3 / 2.0;
-    private static final int MAX_SECTOR_INDEX = 5;
-
     public PmsmModulatorCalculator() {
         super(NO_INPUTS, NO_OUTPUTS);
     }
@@ -67,85 +63,11 @@ public final class PmsmModulatorCalculator extends AbstractControlCalculatable {
             return;
         }
 
-        double vabs = Math.sqrt(valpha * valpha + vbeta * vbeta);
-        if (vabs >= vdc) {
-            vabs = vdc; // Overmodulation clamp
-        }
+        final SpaceVectorSector.DwellTimes dwell = SpaceVectorSector.calculateDwellTimes(valpha, vbeta, vdc);
+        final SpaceVectorSector.SwitchingStates states = SpaceVectorSector.computeSwitchingCommands(dwell, triangle);
 
-        final double modulationIndex = 2.0 * vabs / (SQRT_3 * vdc);
-
-        // Normalize angle to [0, 2*pi)
-        double angle = Math.atan2(vbeta, valpha);
-        if (angle < 0.0) {
-            angle += TWO_PI;
-        }
-
-        int sector = (int) (angle / SECTOR_ANGLE);
-        if (sector > MAX_SECTOR_INDEX) {
-            sector = MAX_SECTOR_INDEX;
-        }
-
-        final double angleRel = angle - sector * SECTOR_ANGLE;
-
-        // Relative dwell times of the active space vectors in a switching half-period
-        final double deltaVector1 = SQRT_3_DIV_2 * modulationIndex * Math.sin(SECTOR_ANGLE - angleRel);
-        final double deltaVector2 = SQRT_3_DIV_2 * modulationIndex * Math.sin(angleRel);
-        final double deltaZero = 0.5 * (1.0 - deltaVector1 - deltaVector2); // Symmetrical zero-vector allocation
-
-        final double comp0 = deltaZero;
-        final double comp1a = deltaZero + deltaVector1;
-        final double comp1b = deltaZero + deltaVector2;
-        final double comp2 = deltaZero + deltaVector1 + deltaVector2;
-
-        final double pwm0 = (triangle >= comp0) ? 0.0 : 1.0;
-        final double pwm1a = (triangle >= comp1a) ? 0.0 : 1.0;
-        final double pwm1b = (triangle >= comp1b) ? 0.0 : 1.0;
-        final double pwm2 = (triangle >= comp2) ? 0.0 : 1.0;
-
-        final double u;
-        final double v;
-        final double w;
-
-        switch (sector) {
-            case 0 -> {
-                u = pwm0;
-                v = pwm1a;
-                w = pwm2;
-            }
-            case 1 -> {
-                u = pwm1b;
-                v = pwm0;
-                w = pwm2;
-            }
-            case 2 -> {
-                u = pwm2;
-                v = pwm0;
-                w = pwm1a;
-            }
-            case 3 -> {
-                u = pwm2;
-                v = pwm1b;
-                w = pwm0;
-            }
-            case 4 -> {
-                u = pwm1a;
-                v = pwm2;
-                w = pwm0;
-            }
-            case 5 -> {
-                u = pwm0;
-                v = pwm2;
-                w = pwm1b;
-            }
-            default -> {
-                u = 0.0;
-                v = 0.0;
-                w = 0.0;
-            }
-        }
-
-        _outputSignal[0][0] = u;
-        _outputSignal[1][0] = v;
-        _outputSignal[2][0] = w;
+        _outputSignal[0][0] = states.u();
+        _outputSignal[1][0] = states.v();
+        _outputSignal[2][0] = states.w();
     }
 }
