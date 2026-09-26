@@ -17,15 +17,25 @@ import gecko.core.circuit.ComponentTerminals;
 import gecko.core.circuit.circuitcomponents.CircuitTypCore;
 import gecko.core.circuit.netlist.CircuitNetlist;
 import gecko.core.control.calculators.AbstractControlCalculatable;
+import gecko.core.control.calculators.AndTwoPortCalculator;
 import gecko.core.control.calculators.ConstantCalculator;
+import gecko.core.control.calculators.DelayCalculator;
+import gecko.core.control.calculators.GainCalculator;
 import gecko.core.control.calculators.GateCalculator;
+import gecko.core.control.calculators.GreaterThanCalculator;
 import gecko.core.control.calculators.InitializableAtSimulationStart;
+import gecko.core.control.calculators.IntegratorCalculation;
 import gecko.core.control.calculators.CLibraryCalculator;
+import gecko.core.control.calculators.NotCalculator;
+import gecko.core.control.calculators.OrCalculatorTwoInputs;
+import gecko.core.control.calculators.PICalculator;
+import gecko.core.control.calculators.PT1Calculator;
 import gecko.core.control.calculators.ScriptBlockCalculator;
 import gecko.core.control.calculators.SignalCalculatorRandom;
 import gecko.core.control.calculators.SignalCalculatorRectangle;
 import gecko.core.control.calculators.SignalCalculatorSinus;
 import gecko.core.control.calculators.SignalCalculatorTriangle;
+import gecko.core.control.calculators.SignalSelectorCalculator;
 import gecko.core.io.CircuitModel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -87,18 +97,79 @@ public final class ControlCalculatorBuilder {
     private static final int TYP_SCRIPT = 1016;
     private static final int TYP_NATIVE_C = 88;
 
+    // Web catalog control block types (CircuitTypCore CTRL_* range); the web
+    // editor places these type numbers, the classic editor used 1..6. Literal
+    // values (switch-case constants) — kept in sync with the enum by
+    // NativeControlBlockTest.
+    private static final int TYP_GATE_WEB = 1000;
+    private static final int TYP_VOLT_WEB = 1001;
+    private static final int TYP_AMP_WEB = 1002;
+    private static final int TYP_SCOPE_WEB = 1003;
+    private static final int TYP_SIGNAL_WEB = 1004;
+    private static final int TYP_CONSTANT_WEB = 1005;
+    private static final int TYP_GAIN = 1006;
+    private static final int TYP_PI = 1007;
+    private static final int TYP_PT1 = 1008;
+    private static final int TYP_INTEGRATOR = 1009;
+    private static final int TYP_COMPARATOR = 1010;
+    private static final int TYP_AND = 1011;
+    private static final int TYP_OR = 1012;
+    private static final int TYP_NOT = 1013;
+    private static final int TYP_SELECTOR = 1014;
+    private static final int TYP_DELAY = 1015;
+
+    // Parameter slot layouts of the web catalog control blocks
+    /** CTRL_CONSTANT: constant output value. */
+    private static final int CONSTANT_VALUE = 0;
+    /** CTRL_GAIN: multiplication factor. */
+    private static final int GAIN_FACTOR = 0;
+    /** CTRL_PI: proportional gain Kp (series form y = Kp·(x + 1/Ti·∫x dt)). */
+    private static final int PI_PROPORTIONAL_GAIN = 0;
+    /** CTRL_PI: integration time Ti in seconds; a non-positive Ti degrades to P-only. */
+    private static final int PI_INTEGRATION_TIME = 1;
+    /** CTRL_PT1: filter time constant in seconds (unity DC gain). */
+    private static final int PT1_TIME_CONSTANT = 0;
+    /** CTRL_PT1: the web catalog exposes only the time constant; DC gain is fixed. */
+    private static final double PT1_DC_GAIN = 1.0;
+    /** CTRL_INTEGRATOR: initial integrator state. */
+    private static final int INTEGRATOR_INITIAL_VALUE = 0;
+    /** CTRL_INTEGRATOR: integration gain a1 of G(s) = a1/s (classic default). */
+    private static final double INTEGRATOR_GAIN = 1.0;
+    /** CTRL_INTEGRATOR: symmetric bound making the classic limiter ineffective. */
+    private static final double UNLIMITED_INTEGRATOR_BOUND = Double.MAX_VALUE;
+    /** CTRL_DELAY: transport delay time in seconds. */
+    private static final int DELAY_TIME = 0;
+
     /**
-     * Terminal layout per classic control type: {inputs, outputs, output
-     * x-offset}. Inputs sit at rel (-2, -i); outputs at (xPos, -j) — the xPos=1
-     * cases follow {@code RegelBlock}'s 1-in/1-out and 2-in/1-out rules.
+     * Terminal layout per control type: {inputs, outputs, output x-offset}.
+     * Inputs sit at rel (-2, -i); outputs at (xPos, -j) — the xPos=2 cases
+     * follow {@code RegelBlock}'s classic rules. The web catalog integrator
+     * declares two inputs: input 1 is the optional reset (a value &ge; 1
+     * resets the state to the initial value; unwired resets to 0).
      */
-    private static final Map<Integer, int[]> TERMINALS_BY_TYPE = Map.of(
-            TYP_VOLTMEETER, new int[]{0, 1, 2},
-            TYP_AMMETER, new int[]{0, 1, 2},
-            TYP_CONSTANT, new int[]{0, 1, 2},
-            TYP_SIGNAL_SOURCE, new int[]{0, 1, 2},
-            TYP_SCOPE, new int[]{3, 0, 2},
-            TYP_GATE, new int[]{1, 0, 2});
+    private static final Map<Integer, int[]> TERMINALS_BY_TYPE = Map.ofEntries(
+            Map.entry(TYP_VOLTMEETER, new int[]{0, 1, 2}),
+            Map.entry(TYP_AMMETER, new int[]{0, 1, 2}),
+            Map.entry(TYP_CONSTANT, new int[]{0, 1, 2}),
+            Map.entry(TYP_SIGNAL_SOURCE, new int[]{0, 1, 2}),
+            Map.entry(TYP_SCOPE, new int[]{3, 0, 2}),
+            Map.entry(TYP_GATE, new int[]{1, 0, 2}),
+            Map.entry(TYP_GATE_WEB, new int[]{1, 0, 2}),
+            Map.entry(TYP_VOLT_WEB, new int[]{0, 1, 2}),
+            Map.entry(TYP_AMP_WEB, new int[]{0, 1, 2}),
+            Map.entry(TYP_SCOPE_WEB, new int[]{3, 0, 2}),
+            Map.entry(TYP_SIGNAL_WEB, new int[]{0, 1, 2}),
+            Map.entry(TYP_CONSTANT_WEB, new int[]{0, 1, 2}),
+            Map.entry(TYP_GAIN, new int[]{1, 1, 2}),
+            Map.entry(TYP_PI, new int[]{1, 1, 2}),
+            Map.entry(TYP_PT1, new int[]{1, 1, 2}),
+            Map.entry(TYP_INTEGRATOR, new int[]{2, 1, 2}),
+            Map.entry(TYP_COMPARATOR, new int[]{2, 1, 2}),
+            Map.entry(TYP_AND, new int[]{2, 1, 2}),
+            Map.entry(TYP_OR, new int[]{2, 1, 2}),
+            Map.entry(TYP_NOT, new int[]{1, 1, 2}),
+            Map.entry(TYP_SELECTOR, new int[]{3, 1, 2}),
+            Map.entry(TYP_DELAY, new int[]{1, 1, 2}));
 
     /**
      * Wired control domain plus its LK couplings, ready to be driven by the
@@ -326,7 +397,7 @@ public final class ControlCalculatorBuilder {
                     LOGGER.warn("Gate '{}' references unknown power component", comp.getName());
                 }
             }
-            if (comp.getType() == TYP_VOLTMEETER || comp.getType() == TYP_AMMETER) {
+            if (isVoltageProbe(comp.getType()) || isCurrentProbe(comp.getType())) {
                 Probe probe = buildProbe(comp, calculator, elementIndexByUid, model, netlist);
                 if (probe != null) {
                     probes.add(probe);
@@ -337,7 +408,7 @@ public final class ControlCalculatorBuilder {
             }
             // recordable outputs: like the classic scope, the exported name is
             // the block's output terminal label (labelEndKnoten)
-            if (comp.getType() == TYP_SIGNAL_SOURCE || comp.getType() == TYP_CONSTANT) {
+            if (isLabeledTapType(comp.getType())) {
                 String label = outputLabel(comp);
                 if (!label.equals(displayName(comp)) && usedTapNames.add(label)) {
                     signalTaps.add(new SignalTap(label, calculator));
@@ -432,7 +503,7 @@ public final class ControlCalculatorBuilder {
                                     AbstractControlCalculatable calculator,
                                     Map<Long, Integer> elementIndexByUid,
                                     CircuitModel model, CircuitNetlist netlist) {
-        boolean current = comp.getType() == TYP_AMMETER;
+        boolean current = isCurrentProbe(comp.getType());
         String name = outputLabel(comp);
         String compName = comp.getName() != null ? comp.getName().trim() : "";
         Integer coupled = resolveCoupledElementIndex(comp, model, netlist, elementIndexByUid);
@@ -611,8 +682,57 @@ public final class ControlCalculatorBuilder {
             case TYP_VOLTMEETER, TYP_AMMETER -> new ConstantCalculator(0);
             // scopes only display; nothing to calculate headlessly
             case TYP_SCOPE -> null;
+            // --- web catalog range (CircuitTypCore CTRL_*) ---
+            case TYP_GATE_WEB -> new GateCalculator();
+            case TYP_VOLT_WEB, TYP_AMP_WEB -> new ConstantCalculator(0);
+            case TYP_SCOPE_WEB -> null;
+            case TYP_SIGNAL_WEB -> createSignalSource(params);
+            case TYP_CONSTANT_WEB -> new ConstantCalculator(param(params, CONSTANT_VALUE));
+            case TYP_GAIN -> new GainCalculator(param(params, GAIN_FACTOR));
+            case TYP_PI -> createPiCalculator(params);
+            case TYP_PT1 -> new PT1Calculator(param(params, PT1_TIME_CONSTANT), PT1_DC_GAIN);
+            case TYP_INTEGRATOR -> createIntegrator(params);
+            case TYP_COMPARATOR -> new GreaterThanCalculator();
+            case TYP_AND -> new AndTwoPortCalculator();
+            case TYP_OR -> new OrCalculatorTwoInputs();
+            case TYP_NOT -> new NotCalculator();
+            case TYP_SELECTOR -> new SignalSelectorCalculator();
+            case TYP_DELAY -> createDelayCalculator(params);
             default -> null;
         };
+    }
+
+    /**
+     * Creates the CTRL_PI calculator from its web catalog slots. The block
+     * implements the series form {@code y = Kp·(x + (1/Ti)·∫x dt)}: slot 0
+     * carries Kp, slot 1 the integration time Ti in seconds. A non-positive
+     * Ti degrades the block to pure proportional action.
+     */
+    private static AbstractControlCalculatable createPiCalculator(double[] params) {
+        double proportionalGain = param(params, PI_PROPORTIONAL_GAIN);
+        double integrationTime = param(params, PI_INTEGRATION_TIME);
+        double integralGain = integrationTime > 0.0 ? proportionalGain / integrationTime : 0.0;
+        return new PICalculator(proportionalGain, integralGain);
+    }
+
+    /**
+     * Creates the CTRL_INTEGRATOR calculator: {@code G(s) = 1/s} with the
+     * initial state from slot 0 and no limiting. Input 1 is the optional
+     * reset (a value &ge; 1 resets the state); unwired resets stay 0.
+     */
+    private static AbstractControlCalculatable createIntegrator(double[] params) {
+        return new IntegratorCalculation(INTEGRATOR_GAIN, param(params, INTEGRATOR_INITIAL_VALUE),
+                -UNLIMITED_INTEGRATOR_BOUND, UNLIMITED_INTEGRATOR_BOUND);
+    }
+
+    /** Creates the CTRL_DELAY calculator, degrading invalid delay times to a zero source. */
+    private static AbstractControlCalculatable createDelayCalculator(double[] params) {
+        try {
+            return new DelayCalculator(param(params, DELAY_TIME));
+        } catch (IllegalArgumentException e) {
+            LOGGER.warn("Invalid delay time: {}", e.getMessage());
+            return new ConstantCalculator(0);
+        }
     }
 
     private static AbstractControlCalculatable createSignalSource(double[] params) {
@@ -772,6 +892,31 @@ public final class ControlCalculatorBuilder {
     private static boolean isSwitch(CircuitTypCore type) {
         return type == CircuitTypCore.LK_S || type == CircuitTypCore.LK_IGBT
                 || type == CircuitTypCore.LK_MOSFET || type == CircuitTypCore.LK_THYR;
+    }
+
+    /** Voltage probe blocks: the classic type 1 and the web catalog CTRL_VOLT. */
+    private static boolean isVoltageProbe(int type) {
+        return type == TYP_VOLTMEETER || type == TYP_VOLT_WEB;
+    }
+
+    /** Current probe blocks: the classic type 2 and the web catalog CTRL_AMP. */
+    private static boolean isCurrentProbe(int type) {
+        return type == TYP_AMMETER || type == TYP_AMP_WEB;
+    }
+
+    /**
+     * Control blocks whose labeled output becomes a recordable signal tap:
+     * sources/constants (classic + web) and the web catalog blocks with a
+     * single executable output. Latching on an explicit output label keeps
+     * unlabeled internal blocks out of the signal list.
+     */
+    private static boolean isLabeledTapType(int type) {
+        return type == TYP_SIGNAL_SOURCE || type == TYP_SIGNAL_WEB
+                || type == TYP_CONSTANT || type == TYP_CONSTANT_WEB
+                || type == TYP_GAIN || type == TYP_PI || type == TYP_PT1
+                || type == TYP_INTEGRATOR || type == TYP_COMPARATOR
+                || type == TYP_AND || type == TYP_OR || type == TYP_NOT
+                || type == TYP_SELECTOR || type == TYP_DELAY;
     }
 
     private static String displayName(CircuitModel.ComponentData comp) {
