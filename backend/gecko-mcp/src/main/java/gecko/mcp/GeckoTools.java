@@ -148,17 +148,27 @@ final class GeckoTools {
 
     private static ToolSpec validateCircuit() {
         return new ToolSpec("gecko_validate_circuit",
-                "Design Rule Checker (DRC) and static circuit linter. Verifies circuit netlist and control "
-                        + "graph before running simulation: checks ground reference, floating nodes, short-circuited "
-                        + "components, dangling probes/gates, and microcontroller script block syntax/divide-by-zero risks.",
+                "Design Rule Checker (DRC), static circuit linter, and real compilation check. "
+                        + "level 'lint' checks ground reference, floating nodes, short circuits, dangling "
+                        + "probes/gates and script syntax; level 'compile' (default) additionally parses the "
+                        + "file with the engine parser, builds the MNA netlist and CONTROL graph, and runs a "
+                        + "two-step test solve to catch singular matrices before any real simulation.",
                 objectSchema(properties(
                         Map.of("circuit_path", str("Path to the .ipes file to validate")),
-                        Map.of("content", str("Optional raw .ipes content string to lint without reading from disk"))),
+                        Map.of("content", str("Optional raw .ipes content string to validate without reading from disk")),
+                        Map.of("level", str("lint | compile (default compile)"))),
                         null),
                 args -> {
+                    String level = str_(args, "level", "compile");
                     String content = strOrNull(args, "content");
                     if (content != null && !content.isBlank()) {
-                        return CircuitValidator.validateContent(content, "inline_circuit");
+                        Path tempFile = Files.createTempFile("gecko-mcp-validate-", ".ipes");
+                        try {
+                            IpesSupport.writeIpesText(tempFile, content, false);
+                            return CircuitValidator.validate(tempFile, level);
+                        } finally {
+                            Files.deleteIfExists(tempFile);
+                        }
                     }
                     String pathStr = str_(args, "circuit_path", null);
                     if (pathStr == null || pathStr.isBlank()) {
@@ -168,7 +178,7 @@ final class GeckoTools {
                     if (!Files.exists(path)) {
                         throw new IllegalArgumentException("Circuit file not found: " + path);
                     }
-                    return CircuitValidator.validate(path);
+                    return CircuitValidator.validate(path, level);
                 });
     }
 

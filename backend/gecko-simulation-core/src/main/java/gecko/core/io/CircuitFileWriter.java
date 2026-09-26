@@ -251,6 +251,31 @@ public final class CircuitFileWriter {
             sb.append("\nidStringDialog");
             SerializationUtils.appendAsString(sb, comp.getName());
 
+            // Script block source (ScriptBlockCalculator / Java function
+            // blocks): the parser reads these sub-blocks into the parameter
+            // map, so a round-trip must emit them again — but only for
+            // programmatically-created blocks; classic files carry the script
+            // in their preserved extraLines already.
+            Map<String, Object> parameters = comp.getParameters();
+            boolean scriptInExtraLines = comp.getExtraLines().stream()
+                    .anyMatch(line -> line.trim().startsWith("<sourceCode>"));
+            if (parameters.containsKey("sourceCode") && !scriptInExtraLines) {
+                sb.append("\n<sourceCode>\n").append(parameters.getOrDefault("sourceCode", ""))
+                        .append("\n<\\sourceCode>");
+                sb.append("\n<staticCode>\n").append(parameters.getOrDefault("staticCode", ""))
+                        .append("\n<\\staticCode>");
+                sb.append("\n<importCode>\n").append(parameters.getOrDefault("importCode", ""))
+                        .append("\n<\\importCode>");
+                sb.append("\n<staticVariables>\n").append(parameters.getOrDefault("staticVariables", ""))
+                        .append("\n<\\staticVariables>");
+                if (parameters.containsKey("anzXIN")) {
+                    sb.append("\nanzXIN ").append(parameters.get("anzXIN"));
+                }
+                if (parameters.containsKey("anzYOUT")) {
+                    sb.append("\nanzYOUT ").append(parameters.get("anzYOUT"));
+                }
+            }
+
             for (String extraLine : comp.getExtraLines()) {
                 sb.append("\n").append(extraLine);
             }

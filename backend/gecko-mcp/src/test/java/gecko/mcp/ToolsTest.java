@@ -29,7 +29,7 @@ class ToolsTest {
     }
 
     @Test
-    void inspectParsesScriptCircuit() throws IOException {
+    void inspectParsesScriptCircuit() throws Exception {
         Map<String, Object> result = CircuitInspector.inspect(fixture("interleaved_pfc_50v.ipes"));
         assertEquals(15, result.get("lk_component_count"));
         assertEquals(5, result.get("control_component_count"));
@@ -42,7 +42,7 @@ class ToolsTest {
     }
 
     @Test
-    void patchComponentUpdatesParameterAndRereads() throws IOException {
+    void patchComponentUpdatesParameterAndRereads() throws Exception {
         Path circuit = fixture("rc-lowpass.ipes");
         Map<String, Object> result = CircuitPatcher.patchComponent(
                 circuit.toString(), "R.1", Map.of("param0", 25.0), null);
@@ -61,7 +61,7 @@ class ToolsTest {
     }
 
     @Test
-    void setScriptCodeReplacesSourceAndSurvivesReparsing() throws IOException {
+    void setScriptCodeReplacesSourceAndSurvivesReparsing() throws Exception {
         Path circuit = fixture("interleaved_pfc_50v.ipes");
         String newCode = "yOUT[0] = xIN[0] * 2.0;";
         CircuitPatcher.setScriptCode(circuit.toString(), "CTRL_MCU", newCode, "", "", null);
@@ -197,10 +197,21 @@ class ToolsTest {
     }
 
     @Test
-    void setScriptCodeInsertsMissingTags() throws IOException {
-        String minimalIpes = "<ElementCONTROL>\n"
+    void setScriptCodeInsertsMissingTags() throws Exception {
+        String minimalIpes = "c (0)\n"
+                + "<ElementCONTROL>\n"
+                + "labelAnfangsKnoten[] /NIX_NIX_NIX\n"
+                + "labelEndKnoten[] /NIX_NIX_NIX\n"
+                + "enabledShorted 1\n"
                 + "typ 61\n"
+                + "uniqueObjectIdentifier 5001\n"
+                + "x 10\n"
+                + "y 10\n"
+                + "parameter[] 0.0\n"
+                + "orientierung 503\n"
                 + "idStringDialog CTRL_MIN\n"
+                + "anzXIN 1\n"
+                + "anzYOUT 1\n"
                 + "<sourceCode>\nyOUT[0] = 1;\n<\\sourceCode>\n"
                 + "<\\ElementCONTROL>\n";
         Path temp = Files.createTempFile("gecko-test-min-", ".ipes");

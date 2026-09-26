@@ -1,130 +1,181 @@
+/*  This file is part of GeckoCIRCUITS. Copyright (C) ETH Zurich, Gecko-Simulations AG
+ *
+ *  GeckoCIRCUITS is free software: you can redistribute it and/or modify it under
+ *  the terms of the GNU General Public License as published by the Free Software
+ *  Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  GeckoCIRCUITS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ *  GeckoCIRCUITS.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package gecko.mcp;
+
+import gecko.core.circuit.circuitcomponents.CircuitTypCore;
+import gecko.core.io.CircuitFileParser;
+import gecko.core.io.CircuitFileWriter;
+import gecko.core.io.CircuitModel;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
- * .ipes patching — faithful port of the Python {@code gecko_patch_component}
- * and {@code gecko_set_script_code} tools.
+ * .ipes patching through the full-fidelity model path: the file is parsed
+ * with the engine's {@link CircuitFileParser}, modified on the
+ * {@link CircuitModel}, and rewritten with {@link CircuitFileWriter} — so a
+ * patch is correct by construction instead of regex-based, and accepts
+ * catalog parameter names ({"resistance": 25}) in addition to raw slots
+ * ({"param0": 25}).
  */
 final class CircuitPatcher {
 
     private CircuitPatcher() {
     }
 
-    // Tempered block pattern: unlike the Python original, it cannot skip past
-    // other element blocks, so the FIRST parameter[] in the match really
-    // belongs to the named component (the Python regex patched the wrong
-    // element when the target was not the first block).
-    private static final String GUARD = "(?:(?!<Element(?:LK|CONTROL)>|<\\\\Element(?:LK|CONTROL)>)[\\s\\S])*?";
-
-    private static Pattern blockPattern(String kind, String componentName) {
-        return Pattern.compile("(<Element" + kind + ">(" + GUARD + ")idStringDialog\\s+"
-                + Pattern.quote(componentName) + "[\\s\\S]*?<\\\\Element" + kind + ">)");
-    }
-
     static Map<String, Object> patchComponent(String circuitPath, String componentName,
                                               Map<String, Object> parameters,
-                                              String outputPath) throws IOException {
+                                              String outputPath) throws IOException,
+            CircuitFileParser.CircuitParseException {
         Path path = IpesSupport.resolve(circuitPath);
         if (!IpesSupport.exists(path)) {
             throw new IllegalArgumentException("Circuit file not found: " + path);
         }
-        String content = IpesSupport.readIpesText(path);
-
-        Matcher matcher = blockPattern("(?:LK|CONTROL)", componentName).matcher(content);
-        if (!matcher.find()) {
+        CircuitModel model = new CircuitFileParser().parse(path.toString());
+        CircuitModel.ComponentData component = findComponent(model, componentName);
+        if (component == null) {
             throw new IllegalArgumentException("Component '" + componentName + "' not found in circuit");
         }
-        String block = matcher.group(1);
 
-        Matcher paramMatch = Pattern.compile("parameter\\[\\]\\s+([^\\r\\n]+)").matcher(block);
-        String newBlock = block;
-        if (paramMatch.find()) {
-            String[] tokens = paramMatch.group(1).trim().split("\\s+");
-            double[] params = new double[tokens.length];
-            for (int i = 0; i < tokens.length; i++) {
-                params[i] = Double.parseDouble(tokens[i]);
+        int applied = 0;
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+            String key = entry.getKey();
+            double value = asDouble(entry.getValue());
+            if (key.startsWith("param")) {
+                component.setParameter(key, value);
+                applied++;
+                continue;
             }
-            for (Map.Entry<String, Object> entry : parameters.entrySet()) {
-                String key = entry.getKey();
-                double value = asDouble(entry.getValue());
-                if (key.startsWith("param")) {
-                    try {
-                        int index = Integer.parseInt(key.substring(5));
-                        if (index < params.length) {
-                            params[index] = value;
-                        }
-                    } catch (NumberFormatException e) {
-                        // Python port: int() failure is ignored
-                    }
-                } else if (key.equals("resistance") || key.equals("inductance")
-                        || key.equals("capacitance") || key.equals("amplitude")) {
-                    if (params.length > 0) {
-                        params[0] = value;
-                    }
-                }
+            Integer slot = catalogSlot(component, key);
+            if (slot != null) {
+                component.setParameter("param" + slot, value);
+                applied++;
+                continue;
             }
-            StringBuilder line = new StringBuilder("parameter[] ");
-            for (double param : params) {
-                line.append(PyFormat.pyStr(param)).append(' ');
-            }
-            newBlock = newBlock.replaceFirst("parameter\\[\\]\\s+[^\\r\\n]+",
-                    Matcher.quoteReplacement(line.toString()));
+            throw new IllegalArgumentException("Unknown parameter '" + key + "' for component '"
+                    + componentName + "' (type " + component.getType() + "); use param<slot> "
+                    + "or a catalog parameter name");
+        }
+        if (applied == 0) {
+            throw new IllegalArgumentException("no parameter updates provided");
         }
 
-        content = content.replace(block, newBlock);
         Path target = outputPath != null ? IpesSupport.resolve(outputPath) : path;
-        IpesSupport.writeIpesText(target, content, true);
-        return Map.of("status", "SUCCESS", "component", componentName, "updated_file", target.toString());
+        CircuitFileWriter.write(model, target, true);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("status", "SUCCESS");
+        result.put("component", componentName);
+        result.put("applied", applied);
+        result.put("updated_file", target.toString());
+        return result;
+    }
+
+    /** Resolves a catalog parameter name to its raw slot for the component's type. */
+    private static Integer catalogSlot(CircuitModel.ComponentData component, String name) {
+        for (ComponentCatalog.ComponentDef def : ComponentCatalog.all().values()) {
+            if (def.typeNumber() != component.getType()) {
+                continue;
+            }
+            for (ComponentCatalog.ParameterDef parameter : def.parameters()) {
+                if (parameter.name().equalsIgnoreCase(name)
+                        || parameter.name().toLowerCase(Locale.ROOT)
+                                .equals(name.toLowerCase(Locale.ROOT).replace("_", ""))) {
+                    return parameter.targetSlot();
+                }
+            }
+        }
+        return null;
+    }
+
+    private static CircuitModel.ComponentData findComponent(CircuitModel model, String componentName) {
+        for (CircuitModel.ComponentData comp : model.getAllComponents()) {
+            if (componentName.equals(comp.getName())) {
+                return comp;
+            }
+        }
+        return null;
     }
 
     static Map<String, Object> setScriptCode(String circuitPath, String blockName, String sourceCode,
                                              String staticVariables, String staticCode,
-                                             String outputPath) throws IOException {
+                                             String outputPath) throws IOException,
+            CircuitFileParser.CircuitParseException {
         Path path = IpesSupport.resolve(circuitPath);
         if (!IpesSupport.exists(path)) {
             throw new IllegalArgumentException("Circuit file not found: " + path);
         }
-        String content = IpesSupport.readIpesText(path);
-
-        Pattern pattern = blockPattern("CONTROL", blockName);
-        Matcher matcher = pattern.matcher(content);
-        if (!matcher.find()) {
+        CircuitModel model = new CircuitFileParser().parse(path.toString());
+        CircuitModel.ComponentData block = findComponent(model, blockName);
+        if (block == null) {
             throw new IllegalArgumentException("Script block '" + blockName + "' not found in circuit");
         }
-        String block = matcher.group(1);
-        String newBlock = block;
+        if (block.getType() != CircuitTypCore.C_JAVA_FUNCTION.getTypeNumber()
+                && block.getType() != CircuitTypCore.CTRL_SCRIPT.getTypeNumber()) {
+            throw new IllegalArgumentException("Component '" + blockName + "' is not a script block "
+                    + "(typ " + block.getType() + ")");
+        }
 
-        newBlock = replaceOrInsertTag(newBlock, "sourceCode", sourceCode.strip());
+        block.setParameter("sourceCode", sourceCode.strip());
         if (staticVariables != null && !staticVariables.isEmpty()) {
-            newBlock = replaceOrInsertTag(newBlock, "staticVariables", staticVariables.strip());
+            block.setParameter("staticVariables", staticVariables.strip());
         }
         if (staticCode != null && !staticCode.isEmpty()) {
-            newBlock = replaceOrInsertTag(newBlock, "staticCode", staticCode.strip());
+            block.setParameter("staticCode", staticCode.strip());
         }
+        stripScriptExtraLines(block);
 
-        content = content.replace(block, newBlock);
         Path target = outputPath != null ? IpesSupport.resolve(outputPath) : path;
-        IpesSupport.writeIpesText(target, content, true);
-        return Map.of("status", "SUCCESS", "block", blockName, "updated_file", target.toString());
+        CircuitFileWriter.write(model, target, true);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("status", "SUCCESS");
+        result.put("block", blockName);
+        result.put("updated_file", target.toString());
+        return result;
     }
 
-    /** Replaces {@code <tag>...<\tag>} with {@code <tag>\ntext\n<\tag>}, or inserts it before closing block tag if absent. */
-    private static String replaceOrInsertTag(String text, String tag, String newContent) {
-        String replacement = "<" + tag + ">\n" + newContent + "\n<\\" + tag + ">";
-        String tagRegex = "<" + tag + ">[\\s\\S]*?<\\\\" + tag + ">";
-        if (Pattern.compile(tagRegex).matcher(text).find()) {
-            return text.replaceAll(tagRegex, Matcher.quoteReplacement(replacement));
+    /**
+     * Removes the script sub-block lines (sourceCode/staticCode/importCode/
+     * staticVariables) a classic file keeps in the component's extraLines:
+     * the parameters map is now authoritative, and the writer would otherwise
+     * emit the stale script next to (or instead of) the updated one.
+     */
+    private static void stripScriptExtraLines(CircuitModel.ComponentData block) {
+        List<String> stripped = new ArrayList<>();
+        boolean insideScriptTag = false;
+        for (String line : block.getExtraLines()) {
+            String trimmed = line.trim();
+            if (trimmed.startsWith("<sourceCode>") || trimmed.startsWith("<staticCode>")
+                    || trimmed.startsWith("<importCode>") || trimmed.startsWith("<staticVariables>")) {
+                insideScriptTag = true;
+                continue;
+            }
+            if (insideScriptTag && (trimmed.startsWith("<\\sourceCode>") || trimmed.startsWith("<\\staticCode>")
+                    || trimmed.startsWith("<\\importCode>") || trimmed.startsWith("<\\staticVariables>"))) {
+                insideScriptTag = false;
+                continue;
+            }
+            if (!insideScriptTag) {
+                stripped.add(line);
+            }
         }
-        int insertPos = text.lastIndexOf("<\\ElementCONTROL>");
-        if (insertPos >= 0) {
-            return text.substring(0, insertPos) + replacement + "\n" + text.substring(insertPos);
-        }
-        return text + "\n" + replacement;
+        block.getExtraLines().clear();
+        block.getExtraLines().addAll(stripped);
     }
 
     private static double asDouble(Object value) {

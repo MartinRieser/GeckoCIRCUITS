@@ -1,6 +1,18 @@
 package gecko.mcp;
 
+import gecko.core.allg.SolverType;
+import gecko.core.circuit.netlist.CircuitNetlist;
+import gecko.core.circuit.netlist.NetlistBuilder;
+import gecko.core.control.ControlCalculatorBuilder;
+import gecko.core.io.CircuitFileParser;
+import gecko.core.io.CircuitModel;
+import gecko.core.simulation.HeadlessSimulationEngine;
+import gecko.core.simulation.SimulationConfig;
+import gecko.core.simulation.SimulationResult;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -37,8 +49,90 @@ public final class CircuitValidator {
     }
 
     public static Map<String, Object> validate(Path ipesPath) throws IOException {
-        String content = IpesSupport.readIpesText(ipesPath);
-        return validateContent(content, ipesPath.getFileName().toString());
+        return validate(ipesPath, "compile");
+    }
+
+    /**
+     * Validates a circuit at the given level: {@code "lint"} runs only the
+     * regex design rules; {@code "compile"} (default) additionally parses the
+     * file with the engine parser, builds the real MNA netlist and CONTROL
+     * graph, and performs a two-step test solve to catch singular matrices
+     * and broken couplings before an expensive run.
+     */
+    public static Map<String, Object> validate(Path ipesPath, String level) throws IOException {
+        Map<String, Object> result = validate(ipesPath, IpesSupport.readIpesText(ipesPath), level);
+        result.put("file", ipesPath.toString());
+        return result;
+    }
+
+    private static Map<String, Object> validate(Path ipesPath, String content, String level) {
+        Map<String, Object> result = new LinkedHashMap<>(validateContent(content,
+                ipesPath != null ? ipesPath.getFileName().toString() : "inline_circuit"));
+        if (level == null || !"compile".equalsIgnoreCase(level)) {
+            return result;
+        }
+        List<Map<String, Object>> compileChecks = new ArrayList<>();
+        boolean compileOk = true;
+        try {
+            CircuitModel model = ipesPath != null
+                    ? new CircuitFileParser().parse(ipesPath.toString())
+                    : new CircuitFileParser().parse(
+                            new BufferedReader(new StringReader(content)), "inline_circuit");
+            try {
+                CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
+                for (String warning : netlist.getBuildWarnings()) {
+                    compileChecks.add(compileEntry("WARNING", "NETLIST_WARNING", warning));
+                }
+                ControlCalculatorBuilder.ControlCoupling coupling =
+                        ControlCalculatorBuilder.build(model, netlist);
+                result.put("control_calculators", coupling.calculators().size());
+                result.put("probes", coupling.probes().size());
+                result.put("gates", coupling.gateDrives().size());
+                result.put("signal_taps", coupling.signalTaps().size());
+                compileOk &= testSolve(model, compileChecks);
+            } catch (RuntimeException e) {
+                compileOk = false;
+                compileChecks.add(compileEntry("ERROR", "NETLIST_BUILD", String.valueOf(e.getMessage())));
+            }
+        } catch (Exception e) {
+            compileOk = false;
+            compileChecks.add(compileEntry("ERROR", "PARSE", String.valueOf(e.getMessage())));
+        }
+        result.put("compile_checks", compileChecks);
+        result.put("compile_level", "compile");
+        boolean lintValid = Boolean.TRUE.equals(result.get("valid"));
+        result.put("valid", lintValid && compileOk);
+        return result;
+    }
+
+    /**
+     * Two-step test solve: catches singular matrices, invalid parameter
+     * values and nonlinear solver failures cheaply, before any real run.
+     */
+    private static boolean testSolve(CircuitModel model, List<Map<String, Object>> checks) {
+        SimulationConfig config = SimulationConfig.builder()
+                .circuitModel(model)
+                .solverType(SolverType.SOLVER_BE)
+                .stepWidth(Math.max(model.getTimeStep(), 1e-9))
+                .simulationDuration(2 * Math.max(model.getTimeStep(), 1e-9))
+                .enableDataLogging(false)
+                .build();
+        SimulationResult result = new HeadlessSimulationEngine().runSimulation(config);
+        if (result.isSuccess()) {
+            checks.add(compileEntry("INFO", "TEST_SOLVE", "two-step test solve passed"));
+            return true;
+        }
+        checks.add(compileEntry("ERROR", "TEST_SOLVE",
+                String.valueOf(result.getErrorMessage())));
+        return false;
+    }
+
+    private static Map<String, Object> compileEntry(String severity, String code, String message) {
+        Map<String, Object> entry = new LinkedHashMap<>();
+        entry.put("severity", severity);
+        entry.put("code", code);
+        entry.put("message", message);
+        return entry;
     }
 
     public static Map<String, Object> validateContent(String content, String circuitName) {
