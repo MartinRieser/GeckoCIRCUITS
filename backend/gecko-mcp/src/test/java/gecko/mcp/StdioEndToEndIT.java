@@ -58,22 +58,24 @@ class StdioEndToEndIT {
             assertEquals(7, resources.resources().size(), "server should expose 7 MCP resources");
 
             McpSchema.ReadResourceResult catRes = client.readResource(
-                    new McpSchema.ReadResourceRequest("gecko://catalog/components"));
+                    McpSchema.ReadResourceRequest.builder("gecko://catalog/components").build());
             assertFalse(catRes.contents().isEmpty(), "catalog resource should return content");
 
-            McpSchema.CallToolResult result = client.callTool(new McpSchema.CallToolRequest(
-                    "gecko_simulate",
-                    Map.of("circuit_path", circuit.toString(),
-                            "duration", 0.002, "dt", 1e-6)));
+            McpSchema.CallToolResult result = client.callTool(McpSchema.CallToolRequest.builder(
+                    "gecko_simulate")
+                    .arguments(Map.of("circuit_path", circuit.toString(),
+                            "duration", 0.002, "dt", 1e-6))
+                    .build());
             assertFalse(Boolean.TRUE.equals(result.isError()));
             String json = ((McpSchema.TextContent) result.content().get(0)).text();
             assertTrue(json.contains("\"status\":\"COMPLETED\""), "simulate result: " + json);
             assertTrue(json.contains("u_out"), "signal names should be present");
             assertTrue(json.contains("\"metadata\""), "engine metadata should be present");
 
-            McpSchema.CallToolResult signals = client.callTool(new McpSchema.CallToolRequest(
-                    "gecko_list_signals",
-                    Map.of("circuit_path", circuit.toString())));
+            McpSchema.CallToolResult signals = client.callTool(McpSchema.CallToolRequest.builder(
+                    "gecko_list_signals")
+                    .arguments(Map.of("circuit_path", circuit.toString()))
+                    .build());
             assertFalse(Boolean.TRUE.equals(signals.isError()), "list_signals result: "
                     + ((McpSchema.TextContent) signals.content().get(0)).text());
         } finally {

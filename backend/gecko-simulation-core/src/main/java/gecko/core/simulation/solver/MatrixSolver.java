@@ -508,7 +508,6 @@ public class MatrixSolver implements MnaSolver {
                         if (partner < 0 || partner >= netlist.getElementCount()) {
                             continue;
                         }
-                        int zPartner = netlist.getNodeMax() + netlist.getVoltageSourceNumber(partner);
                         bVector[voltageSourceIdx] -= couplingFactorB * c.getMutualInductance() / dt
                                 * iALT[partner];
                     }

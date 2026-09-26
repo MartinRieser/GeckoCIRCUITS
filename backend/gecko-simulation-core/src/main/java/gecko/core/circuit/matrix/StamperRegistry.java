@@ -67,14 +67,6 @@ public class StamperRegistry {
         return createDefault(gecko.core.allg.SolverType.SOLVER_BE);
     }
 
-    /**
-     * Registers all default stamper implementations.
-     * Includes passive components, sources, and semiconductor switches.
-     */
-    private void registerDefaults() {
-        registerDefaults(gecko.core.allg.SolverType.SOLVER_BE);
-    }
-
     private void registerDefaults(final gecko.core.allg.SolverType solverType) {
         // Passive components (dynamic elements receive the solver type so
         // their companion models match the b-vector history terms)

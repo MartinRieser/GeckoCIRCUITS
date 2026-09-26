@@ -17,7 +17,6 @@ import gecko.core.allg.SolverType;
 import gecko.core.circuit.SourceType;
 import gecko.core.circuit.circuitcomponents.CircuitTypCore;
 import gecko.core.circuit.netlist.CircuitNetlist;
-import gecko.core.circuit.parameters.SourceParameters;
 import gecko.core.simulation.MatrixSolverKind;
 import gecko.core.simulation.solver.MatrixSolver;
 import gecko.core.simulation.solver.MnaSolverFactory;

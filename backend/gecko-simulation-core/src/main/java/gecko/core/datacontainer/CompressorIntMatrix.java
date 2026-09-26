@@ -74,25 +74,23 @@ public final class CompressorIntMatrix {
     }
 
     public int[][] deCompress() {
-        Inflater decompresser = new Inflater();
-
         int bytesToDecompress = 4 * _m * _n;
         int bytesDecompressed = 0;
 
         byte[] result = new byte[bytesToDecompress];
-        for (int i = 0; i < byteContainer.size(); i++) {
-            try {
-                int length = Math.min(BYTE_BLOCK_SIZE, bytesToDecompress);
-                decompresser.setInput(byteContainer.get(i), 0, length);
-                int localDecompressed = decompresser.inflate(result, bytesDecompressed, bytesToDecompress);
-                bytesToDecompress -= localDecompressed;
-                bytesDecompressed += localDecompressed;
-            } catch (DataFormatException ex) {
-                LOGGER.error("Failed to decompress byte block", ex);
+        try (Inflater decompresser = new Inflater()) {
+            for (int i = 0; i < byteContainer.size(); i++) {
+                try {
+                    int length = Math.min(BYTE_BLOCK_SIZE, bytesToDecompress);
+                    decompresser.setInput(byteContainer.get(i), 0, length);
+                    int localDecompressed = decompresser.inflate(result, bytesDecompressed, bytesToDecompress);
+                    bytesToDecompress -= localDecompressed;
+                    bytesDecompressed += localDecompressed;
+                } catch (DataFormatException ex) {
+                    LOGGER.error("Failed to decompress byte block", ex);
+                }
             }
         }
-
-        decompresser.end();
 
         // Decode the bytes into a String
         return convertByteArrayToInt(result, _m, _n);

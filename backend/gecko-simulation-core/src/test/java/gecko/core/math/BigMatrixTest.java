@@ -21,7 +21,6 @@ import java.text.DecimalFormat;
 import java.io.PrintWriter;
 
 class BigMatrixTest {
-    private static final BigDecimal TOLERANCE = new BigDecimal("1e-10");
 
     // ==================== CONSTRUCTOR TESTS ====================
 

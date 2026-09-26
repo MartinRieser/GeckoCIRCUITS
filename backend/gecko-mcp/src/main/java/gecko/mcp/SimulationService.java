@@ -3,11 +3,9 @@ package gecko.mcp;
 import gecko.core.allg.SolverType;
 import gecko.core.simulation.HeadlessSimulationEngine;
 import gecko.core.simulation.SimulationConfig;
-import gecko.core.simulation.SimulationCsv;
 import gecko.core.simulation.SimulationResult;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

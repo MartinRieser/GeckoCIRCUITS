@@ -18,18 +18,14 @@ import gecko.core.simulation.HeadlessSimulationEngine;
 import gecko.core.simulation.SimulationConfig;
 import gecko.core.simulation.SimulationResult;
 import gecko.rest.model.SimulationRequest;
-import gecko.rest.model.SimulationResponse;
 import gecko.rest.model.circuit.ComponentPatchRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import gecko.core.io.CircuitModel;
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Map;
 

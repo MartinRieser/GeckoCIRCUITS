@@ -3,7 +3,7 @@ package gecko.rest.controller;
 import gecko.rest.model.BatchJobStatus;
 import gecko.rest.model.BatchSimulationResponse;
 import gecko.rest.service.SimulationService;
-import tools.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +34,6 @@ class BatchJobControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @MockitoBean
     private SimulationService simulationService;

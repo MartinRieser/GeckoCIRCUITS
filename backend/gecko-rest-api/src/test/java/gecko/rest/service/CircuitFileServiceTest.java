@@ -148,8 +148,8 @@ class CircuitFileServiceTest {
     @Test
     void testGetAllCircuits() {
         // Load multiple circuits
-        CircuitLoadResponse response1 = service.loadCircuit(validIpesBase64, "circuit1.ipes");
-        CircuitLoadResponse response2 = service.loadCircuit(validIpesBase64, "circuit2.ipes");
+        service.loadCircuit(validIpesBase64, "circuit1.ipes");
+        service.loadCircuit(validIpesBase64, "circuit2.ipes");
 
         // Get all circuits
         CircuitListResponse listResponse = service.getAllCircuits();

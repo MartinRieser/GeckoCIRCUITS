@@ -76,6 +76,7 @@ final class GeckoTools {
         return map;
     }
 
+    @SafeVarargs
     private static Map<String, Object> properties(Map<String, Object>... entries) {
         Map<String, Object> properties = new LinkedHashMap<>();
         for (Map<String, Object> entry : entries) {

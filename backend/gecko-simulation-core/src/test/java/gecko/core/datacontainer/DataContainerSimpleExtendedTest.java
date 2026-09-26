@@ -225,10 +225,9 @@ class DataContainerSimpleExtendedTest {
     void testGetSignalName_Default() {
         DataContainerSimple container = new DataContainerSimple(3, 10);
 
-        String name = container.getSignalName(0);
-
-        // Should return some name (null or default string)
+        // Should return some name (null or default string) without throwing
         // Actual behavior depends on implementation
+        container.getSignalName(0);
     }
 
     // ====================================================

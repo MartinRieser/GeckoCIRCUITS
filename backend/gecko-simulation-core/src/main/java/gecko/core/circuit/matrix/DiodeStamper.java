@@ -14,7 +14,6 @@
 package gecko.core.circuit.matrix;
 
 import gecko.core.circuit.parameters.DiodeParameters;
-import gecko.core.simulation.solver.SolverConstants;
 
 /**
  * Matrix stamper implementation for diode components.

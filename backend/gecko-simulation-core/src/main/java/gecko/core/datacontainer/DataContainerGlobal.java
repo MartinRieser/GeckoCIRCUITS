@@ -18,7 +18,6 @@ public final class DataContainerGlobal extends AbstractDataContainer implements 
     private AbstractDataContainer _data;
     private DataContainerValuesSettable _settable;
     private int _lastDataIndex = -1;
-    private String[] _signalNames;
     private String _xDataName = "time [s]";
 
     public DataContainerGlobal() {
@@ -38,7 +37,6 @@ public final class DataContainerGlobal extends AbstractDataContainer implements 
      */
     public void init(final int rows, final int columns, final String[] signalNames, final String xDataName) {
         DataContainerSimple data = DataContainerSimple.fabricConstantDtTimeSeries(rows, columns);
-        _signalNames = signalNames;
         _xDataName = xDataName;
 
         // Set signal names

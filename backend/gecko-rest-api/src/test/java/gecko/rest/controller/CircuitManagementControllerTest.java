@@ -11,8 +11,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.context.annotation.Import;
 
-import java.util.List;
-import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
@@ -60,7 +58,7 @@ class CircuitManagementControllerTest {
     void testCloneCircuit_notFound() throws Exception {
         // Mock service throwing 404
         when(circuitFileService.cloneCircuit(eq("nonexistent"), any()))
-            .thenThrow(new org.springframework.web.server.ResponseStatusException(
+            .thenThrow(new ResponseStatusException(
                 org.springframework.http.HttpStatus.NOT_FOUND,
                 "Circuit not found"
             ));
@@ -175,7 +173,7 @@ class CircuitManagementControllerTest {
     void testUpdateCircuitParameters_notFound() throws Exception {
         // Mock service throwing 404
         when(circuitFileService.updateCircuitParameters(eq("nonexistent"), any()))
-            .thenThrow(new org.springframework.web.server.ResponseStatusException(
+            .thenThrow(new ResponseStatusException(
                 org.springframework.http.HttpStatus.NOT_FOUND,
                 "Circuit not found"
             ));

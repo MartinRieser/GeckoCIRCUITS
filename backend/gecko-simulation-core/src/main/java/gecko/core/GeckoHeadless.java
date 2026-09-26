@@ -15,7 +15,6 @@ package gecko.core;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import gecko.core.allg.SolverSettingsCore;
 import gecko.core.allg.SolverType;
 import gecko.core.simulation.HeadlessSimulationEngine;
 import gecko.core.simulation.SimulationConfig;
@@ -24,7 +23,6 @@ import gecko.core.simulation.SimulationResult;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
 
 /**
  * Headless entry point for GeckoCIRCUITS simulation engine.

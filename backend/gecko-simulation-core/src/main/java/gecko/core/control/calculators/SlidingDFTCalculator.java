@@ -15,7 +15,6 @@ package gecko.core.control.calculators;
 
 import gecko.core.control.FrequencyDataCore;
 import gecko.core.control.IsDtChangeSensitive;
-import gecko.core.control.OutputDataType;
 
 import java.util.ArrayList;
 import java.util.List;

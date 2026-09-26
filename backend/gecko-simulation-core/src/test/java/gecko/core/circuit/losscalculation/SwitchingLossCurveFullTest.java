@@ -192,7 +192,6 @@ class SwitchingLossCurveFullTest {
         // Store copy values
         double copyTj = copy.tj.getValue();
         double copyUBlock = copy._uBlock.getValue();
-        double[][] copyData = copy.getCurveData();
 
         // Modify original
         curve.tj.setValueWithoutUndo(999.0);

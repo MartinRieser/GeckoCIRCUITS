@@ -48,10 +48,8 @@ public final class GeckoMcpServer {
 
     private static McpServerFeatures.SyncToolSpecification toSpecification(
             JacksonMcpJsonMapper json, GeckoTools.ToolSpec tool) {
-        McpSchema.Tool schema = McpSchema.Tool.builder()
-                .name(tool.name())
+        McpSchema.Tool schema = McpSchema.Tool.builder(tool.name(), tool.inputSchema())
                 .description(tool.description())
-                .inputSchema(tool.inputSchema())
                 .build();
         return McpServerFeatures.SyncToolSpecification.builder()
                 .tool(schema)

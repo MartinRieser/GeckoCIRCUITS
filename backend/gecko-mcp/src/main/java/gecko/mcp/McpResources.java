@@ -23,6 +23,13 @@ public final class McpResources {
     private McpResources() {
     }
 
+    /** Single-text-content resource result via the non-deprecated builder APIs. */
+    private static McpSchema.ReadResourceResult textResult(String uri, String mimeType, String text) {
+        return McpSchema.ReadResourceResult.builder(List.of(
+                McpSchema.TextResourceContents.builder(uri, text).mimeType(mimeType).build()
+        )).build();
+    }
+
     public static List<SyncResourceSpecification> all() {
         return List.of(
                 componentCatalogResource(),
@@ -45,13 +52,9 @@ public final class McpResources {
         return new SyncResourceSpecification(resource, (exchange, req) -> {
             try {
                 String text = JSON.writeValueAsString(ComponentCatalog.toCatalogJson());
-                return new McpSchema.ReadResourceResult(List.of(
-                        new McpSchema.TextResourceContents(uri, "application/json", text)
-                ));
+                return textResult(uri, "application/json", text);
             } catch (Exception e) {
-                return new McpSchema.ReadResourceResult(List.of(
-                        new McpSchema.TextResourceContents(uri, "text/plain", "Error: " + e.getMessage())
-                ));
+                return textResult(uri, "text/plain", "Error: " + e.getMessage());
             }
         });
     }
@@ -107,9 +110,7 @@ public final class McpResources {
                 """;
 
         return new SyncResourceSpecification(resource, (exchange, req) ->
-                new McpSchema.ReadResourceResult(List.of(
-                        new McpSchema.TextResourceContents(uri, "text/markdown", doc)
-                ))
+                textResult(uri, "text/markdown", doc)
         );
     }
 
@@ -179,9 +180,7 @@ public final class McpResources {
                 """;
 
         return new SyncResourceSpecification(resource, (exchange, req) ->
-                new McpSchema.ReadResourceResult(List.of(
-                        new McpSchema.TextResourceContents(uri, "text/markdown", doc)
-                ))
+                textResult(uri, "text/markdown", doc)
         );
     }
 
@@ -293,9 +292,7 @@ public final class McpResources {
                 """;
 
         return new SyncResourceSpecification(resource, (exchange, req) ->
-                new McpSchema.ReadResourceResult(List.of(
-                        new McpSchema.TextResourceContents(uri, "text/markdown", doc)
-                ))
+                textResult(uri, "text/markdown", doc)
         );
     }
 
@@ -385,9 +382,7 @@ public final class McpResources {
                 """;
 
         return new SyncResourceSpecification(resource, (exchange, req) ->
-                new McpSchema.ReadResourceResult(List.of(
-                        new McpSchema.TextResourceContents(uri, "text/markdown", doc)
-                ))
+                textResult(uri, "text/markdown", doc)
         );
     }
 
@@ -422,9 +417,7 @@ public final class McpResources {
                 """;
 
         return new SyncResourceSpecification(resource, (exchange, req) ->
-                new McpSchema.ReadResourceResult(List.of(
-                        new McpSchema.TextResourceContents(uri, "text/markdown", doc)
-                ))
+                textResult(uri, "text/markdown", doc)
         );
     }
 
@@ -456,13 +449,9 @@ public final class McpResources {
                 }
 
                 String text = JSON.writeValueAsString(examples);
-                return new McpSchema.ReadResourceResult(List.of(
-                        new McpSchema.TextResourceContents(uri, "application/json", text)
-                ));
+                return textResult(uri, "application/json", text);
             } catch (Exception e) {
-                return new McpSchema.ReadResourceResult(List.of(
-                        new McpSchema.TextResourceContents(uri, "text/plain", "Error listing examples: " + e.getMessage())
-                ));
+                return textResult(uri, "text/plain", "Error listing examples: " + e.getMessage());
             }
         });
     }

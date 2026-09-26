@@ -15,7 +15,6 @@ package gecko.core.circuit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import gecko.core.circuit.CircuitFileConstants;
 import gecko.core.datacontainer.HiLoData;
 import java.util.*;
 /**

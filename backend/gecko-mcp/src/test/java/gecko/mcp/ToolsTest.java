@@ -55,7 +55,8 @@ class ToolsTest {
         double resistance = components.stream()
                 .filter(c -> "R.1".equals(c.get("name")))
                 .findFirst()
-                .map(c -> ((List<Double>) c.get("parameters")).get(0))
+                .map(c -> (List<?>) c.get("parameters"))
+                .map(params -> ((Number) params.get(0)).doubleValue())
                 .orElseThrow();
         assertEquals(25.0, resistance, 1e-9, "param0 of R.1 should now be 25");
     }
@@ -89,7 +90,7 @@ class ToolsTest {
         String golden = new String(ToolsTest.class.getResourceAsStream(
                 "/fixtures/rc-lowpass-metrics.json").readAllBytes(), StandardCharsets.UTF_8);
         Map<String, Object> expected = new tools.jackson.databind.json.JsonMapper()
-                .readValue(golden, Map.class);
+                .readValue(golden, new tools.jackson.core.type.TypeReference<Map<String, Object>>() { });
 
         assertEquals("SUCCESS", result.get("status"));
         assertEquals(20001, result.get("total_time_steps"));

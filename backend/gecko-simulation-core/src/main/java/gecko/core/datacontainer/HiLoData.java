@@ -26,8 +26,6 @@ import java.util.List;
  */
 public final class HiLoData {
 
-    private static final float LARGE_VALUE = 1E30f;
-
     // This is a final class with only final members
     public final float _yLo;
     public final float _yHi;

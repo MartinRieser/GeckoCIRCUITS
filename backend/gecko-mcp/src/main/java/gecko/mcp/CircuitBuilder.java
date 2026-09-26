@@ -6,7 +6,6 @@ import gecko.core.io.CircuitFileWriter;
 import gecko.core.io.CircuitModel;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -46,7 +45,6 @@ public final class CircuitBuilder {
     private static final int TYP_PROBE_AMP = CircuitTypCore.CTRL_AMP.getTypeNumber();
     private static final int TYP_SCRIPT = CircuitTypCore.CTRL_SCRIPT.getTypeNumber();
     private static final int TYP_GATE = CircuitTypCore.CTRL_GATE.getTypeNumber();
-    private static final int TYP_CLASSIC_SCRIPT = 61;
 
     public static Map<String, Object> create(Map<String, Object> request) throws IOException {
         String outputPathStr = (String) request.get("output_path");

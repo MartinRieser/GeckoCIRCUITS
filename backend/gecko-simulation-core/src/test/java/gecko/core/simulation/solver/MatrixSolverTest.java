@@ -14,7 +14,6 @@
 package gecko.core.simulation.solver;
 
 import gecko.core.allg.SolverType;
-import gecko.core.math.Matrix;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

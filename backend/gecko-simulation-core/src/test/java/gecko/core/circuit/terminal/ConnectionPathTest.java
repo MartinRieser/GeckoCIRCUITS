@@ -23,8 +23,6 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class ConnectionPathTest {
 
-    private static final double TOLERANCE = 1e-10;
-
     // ===========================================
     // Path Creation Tests
     // ===========================================

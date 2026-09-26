@@ -26,7 +26,7 @@ public abstract class LossCurve {
     public double[][] data;
 
     public final UserParameterCore<Double> tj = UserParameterCoreImpl.Builder.
-            <Double>start("tj", 0.0).
+            start("tj", 0.0).
             longName("Temperature at which loss curve is valid").
             shortName("curveTemperature").
             unit("C").

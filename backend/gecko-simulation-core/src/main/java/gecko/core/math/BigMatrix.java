@@ -674,18 +674,4 @@ public class BigMatrix implements java.io.Serializable {
       rows.toArray(A);  // copy the rows out of the list
       return new Matrix(A);
    }
-
-
-/* ------------------------
-   Private Methods
- * ------------------------ */
-
-   /** Check if size(A) == size(B) **/
-
-   private void checkMatrixDimensions (BigMatrix B) {
-      if (B.m != m || B.n != n) {
-         throw new IllegalArgumentException("Matrix dimensions must agree.");
-      }
-   }
-
 }

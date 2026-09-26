@@ -7,7 +7,6 @@
 package gecko.core.simulation;
 
 import gecko.core.control.ControlCalculatorBuilder;
-import gecko.core.control.calculators.AbstractControlCalculatable;
 import gecko.core.io.CircuitFileParser;
 import gecko.core.io.CircuitModel;
 import org.junit.jupiter.api.Test;

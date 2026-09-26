@@ -672,9 +672,8 @@ public class NetlistBuilder {
                 netlist.getLabelResolver().addLabel(entry.getKey(), node);
             }
         }
-        for (String gk : groundPoints) {
+        if (!groundPoints.isEmpty()) {
             netlist.getLabelResolver().addLabel("GND", 0);
-            break;
         }
         return netlist;
     }

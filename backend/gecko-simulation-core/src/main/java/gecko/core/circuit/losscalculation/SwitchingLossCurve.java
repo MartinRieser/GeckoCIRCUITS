@@ -25,7 +25,7 @@ public class SwitchingLossCurve extends LossCurve implements Serializable {
     private static final double DEFAULT_BLOCKING_VOLTAGE = 300;
 
     public final transient UserParameterCore<Double> _uBlock = UserParameterCoreImpl.Builder.
-            <Double>start("uBlock", DEFAULT_BLOCKING_VOLTAGE).
+            start("uBlock", DEFAULT_BLOCKING_VOLTAGE).
             longName("Curve measured at blocking voltage").
             shortName("uMeasure").
             unit("V").

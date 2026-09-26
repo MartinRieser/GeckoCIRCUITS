@@ -46,9 +46,6 @@ public class CapacitorStamper implements IMatrixStamper {
     /** Index for previous voltage in previousValues array */
     private static final int PREV_VOLTAGE = 0;
 
-    /** Index for previous current in previousValues array */
-    private static final int PREV_CURRENT = 1;
-
     /** Companion-model factor of the configured integration method (G = factor * C/dt). */
     private final double companionFactor;
 

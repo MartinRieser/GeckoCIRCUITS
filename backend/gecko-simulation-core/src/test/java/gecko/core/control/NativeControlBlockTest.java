@@ -799,7 +799,6 @@ class NativeControlBlockTest {
     void closedLoopBuck_bangBangComparatorRegulatesToTheReference() throws Exception {
         CircuitModel model = new CircuitFileParser().parse(
                 new BufferedReader(new StringReader(CLOSED_LOOP_BUCK)), "buck.ipes");
-        CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
 
         HeadlessSimulationEngine engine = new HeadlessSimulationEngine();
         SimulationResult result = engine.runSimulation(SimulationConfig.builder()

@@ -420,9 +420,9 @@ class DataContainerGlobalTest {
     @Test
     void testHashCode() {
         DataContainerGlobal global2 = new DataContainerGlobal();
-        int hash1 = global.hashCode();
-        int hash2 = global2.hashCode();
-        // Just verify it doesn't throw
+        // Just verify the calls don't throw
+        global.hashCode();
+        global2.hashCode();
         assertTrue(true);
     }
 
@@ -440,11 +440,9 @@ class DataContainerGlobalTest {
      * Helper class for testing listener notifications.
      */
     private static class TestDataListener implements DataContainerListener {
-        int notificationCount = 0;
-
         @Override
         public void onDataContainerUpdate(AbstractDataContainer container, Object eventData) {
-            notificationCount++;
+            // notifications must survive mass insertion without throwing; count is not asserted
         }
     }
 }
