@@ -494,11 +494,9 @@ public class MatrixSolver implements MnaSolver {
 
                     // Mutual inductance: partner's previous-step current is
                     // history here; its same-step coefficient went into A.
-                    double couplingFactorB = switch (solverType) {
-                        case SOLVER_TRZ -> 2.0;
-                        case SOLVER_GS -> 1.5;
-                        default -> 1.0;
-                    };
+                    // GS history must mirror the self-term's BDF2 pair
+                    // (-2, +0.5) as in the legacy LKMatrices port source;
+                    // the 1.5 factor belongs to the A matrix only.
                     for (gecko.core.circuit.netlist.MutualCouplingRegistry.Coupling c
                             : netlist.getCouplingsFor(elementIdx)) {
                         int partner = c.involves(elementIdx)
@@ -508,8 +506,14 @@ public class MatrixSolver implements MnaSolver {
                         if (partner < 0 || partner >= netlist.getElementCount()) {
                             continue;
                         }
-                        bVector[voltageSourceIdx] -= couplingFactorB * c.getMutualInductance() / dt
-                                * iALT[partner];
+                        if (solverType == SolverType.SOLVER_GS) {
+                            bVector[voltageSourceIdx] -= (2.0 * iALT[partner]
+                                    - 0.5 * iALTALT[partner]) * (c.getMutualInductance() / dt);
+                        } else {
+                            double couplingFactorB = solverType == SolverType.SOLVER_TRZ ? 2.0 : 1.0;
+                            bVector[voltageSourceIdx] -= couplingFactorB
+                                    * c.getMutualInductance() / dt * iALT[partner];
+                        }
                     }
                 }
 

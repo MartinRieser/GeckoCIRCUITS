@@ -5,6 +5,7 @@ import gecko.core.circuit.circuitcomponents.CircuitTypCore;
 import gecko.core.circuit.netlist.CircuitNetlist;
 import gecko.core.circuit.netlist.NetlistBuilder;
 import gecko.core.io.CircuitModel;
+import gecko.core.simulation.solver.ComponentCurrentCalculator;
 import gecko.core.simulation.solver.MatrixSolver;
 import org.junit.jupiter.api.Test;
 
@@ -19,20 +20,31 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class TransformerBJTExpansionTest {
 
-    /** Runs a netlist to steady state and returns the solver. */
-    private MatrixSolver runToSteadyState(CircuitNetlist netlist, int steps) {
-        MatrixSolver solver = new MatrixSolver(SolverType.SOLVER_BE);
+    /**
+     * Runs the full production step sequence (matrix, RHS, solve, component
+     * currents, history shift). Skipping the component-current step would
+     * freeze iALT at zero and simulate a quasi-static non-solution.
+     */
+    private MatrixSolver runSteps(CircuitNetlist netlist, SolverType solverType, int steps) {
+        MatrixSolver solver = new MatrixSolver(solverType);
         solver.initializeMatrices(netlist.getNodeMax(), netlist.getVoltageSourceMax(), netlist.getElementCount());
+        ComponentCurrentCalculator currents = new ComponentCurrentCalculator();
         double dt = 1e-6;
         double t = 0;
         for (int step = 0; step <= steps; step++) {
             solver.buildMatrixA(netlist, dt, t, false);
             solver.buildVectorB(netlist, dt, t, false);
             solver.solve();
+            currents.calculateComponentCurrents(solver, netlist, 1.0, dt, t, false, 0);
             solver.updateNodePotentials(dt, t);
             t += dt;
         }
         return solver;
+    }
+
+    /** Runs a netlist to steady state and returns the solver. */
+    private MatrixSolver runToSteadyState(CircuitNetlist netlist, int steps) {
+        return runSteps(netlist, SolverType.SOLVER_BE, steps);
     }
 
     // ===== Ideal transformer =====
@@ -191,6 +203,44 @@ class TransformerBJTExpansionTest {
      */
     @Test
     void mutualCouplingTransfersEnergyBetweenInductors() {
+        CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(coupledInductorModel());
+        assertTrue(!netlist.getAllCouplings().isEmpty(), "mutual coupling must be registered");
+
+        MatrixSolver solver = runToSteadyState(netlist, 2000);
+
+        int rIdx = netlist.indexOfUid(600);
+        assertTrue(rIdx >= 0, "load resistor missing from netlist");
+        double vLoad = Math.abs(solver.getP()[netlist.getNodeX(rIdx)] - solver.getP()[netlist.getNodeY(rIdx)]);
+        assertTrue(vLoad > 1e-6, "coupled secondary must drive the load, got " + vLoad);
+        assertTrue(Double.isFinite(vLoad), "coupled solve must stay finite");
+    }
+
+    /**
+     * Regression: the Gear-Shichman mutual-coupling history term must mirror
+     * the self-term's BDF2 pair (-2*iALT + 0.5*iALTALT), as in the legacy
+     * LKMatrices source. Reusing the same-step factor (1.5) on the history
+     * overestimates the induced voltage by ~50% on this ramp-driven circuit.
+     */
+    @Test
+    void gsAndBeAgreeOnCoupledInductorTransient() {
+        CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(coupledInductorModel());
+        double vLoadBe = secondaryLoadVoltageAfterSteps(netlist, SolverType.SOLVER_BE, 300);
+        double vLoadGs = secondaryLoadVoltageAfterSteps(netlist, SolverType.SOLVER_GS, 300);
+        assertTrue(Double.isFinite(vLoadBe) && vLoadBe > 1e-6, "BE coupled response must exist");
+        assertTrue(Double.isFinite(vLoadGs), "GS coupled solve must stay finite");
+        assertEquals(vLoadBe, vLoadGs, Math.abs(vLoadBe) * 0.05,
+                "GS mutual-coupling history must track BE on a linear-current ramp");
+    }
+
+    /** Secondary load voltage of the coupled-inductor model after a fixed number of steps. */
+    private double secondaryLoadVoltageAfterSteps(CircuitNetlist netlist, SolverType solverType, int steps) {
+        MatrixSolver solver = runSteps(netlist, solverType, steps);
+        int rIdx = netlist.indexOfUid(600);
+        return Math.abs(solver.getP()[netlist.getNodeX(rIdx)] - solver.getP()[netlist.getNodeY(rIdx)]);
+    }
+
+    /** 10 V source loop on a 1 mH primary, k=0.9 coupling to a 1 mH secondary with a 10 ohm load. */
+    private CircuitModel coupledInductorModel() {
         CircuitModel model = new CircuitModel();
 
         // Primary inductor Lp 1 mH at (24,10) vertical: terminals (24,8)/(24,12)
@@ -231,15 +281,6 @@ class TransformerBJTExpansionTest {
         // close the secondary loop back to the top of Ls
         model.addConnection(new CircuitModel.ConnectionData("LK", new int[][]{{30, 18}, {29, 18}, {28, 18}, {28, 17}, {28, 16}, {28, 15}, {28, 14}, {28, 13}, {28, 12}, {28, 11}, {28, 10}, {28, 9}, {28, 8}, {29, 8}, {30, 8}}));
 
-        CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
-        assertTrue(!netlist.getAllCouplings().isEmpty(), "mutual coupling must be registered");
-
-        MatrixSolver solver = runToSteadyState(netlist, 2000);
-
-        int rIdx = netlist.indexOfUid(600);
-        assertTrue(rIdx >= 0, "load resistor missing from netlist");
-        double vLoad = Math.abs(solver.getP()[netlist.getNodeX(rIdx)] - solver.getP()[netlist.getNodeY(rIdx)]);
-        assertTrue(vLoad > 1e-6, "coupled secondary must drive the load, got " + vLoad);
-        assertTrue(Double.isFinite(vLoad), "coupled solve must stay finite");
+        return model;
     }
 }
