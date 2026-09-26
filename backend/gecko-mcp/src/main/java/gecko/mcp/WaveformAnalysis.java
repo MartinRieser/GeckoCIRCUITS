@@ -173,10 +173,34 @@ final class WaveformAnalysis {
             metrics.put("llc_resonant", llc);
         }
 
+        // Generic per-signal statistics over the steady-state (second half)
+        // window. Additive to the legacy special-purpose metric blocks above.
+        Map<String, Object> signalStats = new LinkedHashMap<>();
+        for (Map.Entry<String, List<Double>> column : parsed.entrySet()) {
+            if ("time".equals(column.getKey())) {
+                continue;
+            }
+            List<Double> values = column.getValue();
+            List<Double> ss = values.subList(values.size() / 2, values.size());
+            if (ss.isEmpty()) {
+                continue;
+            }
+            double min = minOf(ss);
+            double max = maxOf(ss);
+            Map<String, Object> stat = new LinkedHashMap<>();
+            stat.put("min", round(min, 4));
+            stat.put("max", round(max, 4));
+            stat.put("mean", round(mean(ss), 4));
+            stat.put("rms", round(sqrt(meanSquares(ss)), 4));
+            stat.put("peak_to_peak", round(max - min, 4));
+            signalStats.put(column.getKey(), stat);
+        }
+
         result.put("status", "SUCCESS");
         result.put("total_time_steps", totalRows);
         result.put("returned_points", filtered.getOrDefault("time", List.of()).size());
         result.put("metrics", metrics);
+        result.put("signal_statistics", signalStats);
         result.put("waveforms", filtered);
         return result;
     }

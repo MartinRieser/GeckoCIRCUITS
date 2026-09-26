@@ -458,44 +458,54 @@ public class CircuitModel {
                     try {
                         int idx = Integer.parseInt(key.substring("param".length()));
                         if (idx >= 0 && idx < rawParameters.length) {
-                            rawParameters[idx] = num.doubleValue();
+                            setRawSlot(idx, num.doubleValue());
                             if (idx == 1) {
                                 if (type == 3) { // Capacitor
-                                    if (rawParameters.length > 2) { rawParameters[2] = 0.0; parameters.put("param2", 0.0); }
-                                    if (rawParameters.length > 3) { rawParameters[3] = num.doubleValue(); parameters.put("param3", num.doubleValue()); }
-                                    if (rawParameters.length > 4) { rawParameters[4] = num.doubleValue(); parameters.put("param4", num.doubleValue()); }
-                                    if (rawParameters.length > 5) { rawParameters[5] = 0.0; parameters.put("param5", 0.0); }
+                                    if (rawParameters.length > 2) { setRawSlot(2, 0.0); }
+                                    if (rawParameters.length > 3) { setRawSlot(3, num.doubleValue()); }
+                                    if (rawParameters.length > 4) { setRawSlot(4, num.doubleValue()); }
+                                    if (rawParameters.length > 5) { setRawSlot(5, 0.0); }
                                 } else if (type == 2) { // Inductor
-                                    if (rawParameters.length > 2) { rawParameters[2] = num.doubleValue(); parameters.put("param2", num.doubleValue()); }
+                                    if (rawParameters.length > 2) { setRawSlot(2, num.doubleValue()); }
                                 }
                             }
                         }
                     } catch (NumberFormatException ignored) {
                     }
                 } else if (key.equals(resolveParameterKey(type))) {
-                    rawParameters[0] = num.doubleValue();
+                    setRawSlot(0, num.doubleValue());
                 } else if (("initialVoltage".equals(key) || "uC0".equals(key)) && type == 3) {
-                    if (rawParameters.length > 1) rawParameters[1] = num.doubleValue();
-                    if (rawParameters.length > 2) rawParameters[2] = 0.0;
-                    if (rawParameters.length > 3) rawParameters[3] = num.doubleValue();
-                    if (rawParameters.length > 4) rawParameters[4] = num.doubleValue();
-                    if (rawParameters.length > 5) rawParameters[5] = 0.0;
+                    if (rawParameters.length > 1) setRawSlot(1, num.doubleValue());
+                    if (rawParameters.length > 2) setRawSlot(2, 0.0);
+                    if (rawParameters.length > 3) setRawSlot(3, num.doubleValue());
+                    if (rawParameters.length > 4) setRawSlot(4, num.doubleValue());
+                    if (rawParameters.length > 5) setRawSlot(5, 0.0);
                 } else if (("initialCurrent".equals(key) || "iL0".equals(key)) && type == 2) {
-                    if (rawParameters.length > 1) rawParameters[1] = num.doubleValue();
-                    if (rawParameters.length > 2) rawParameters[2] = num.doubleValue();
+                    if (rawParameters.length > 1) setRawSlot(1, num.doubleValue());
+                    if (rawParameters.length > 2) setRawSlot(2, num.doubleValue());
                 } else if ("CONTROL".equals(family) && type == 4) { // Signal source
                     if (("duty".equals(key) || "tastverhaeltnis".equals(key)) && rawParameters.length > 5) {
-                        rawParameters[5] = num.doubleValue();
+                        setRawSlot(5, num.doubleValue());
                     } else if (("frequency".equals(key) || "frequenz".equals(key)) && rawParameters.length > 2) {
-                        rawParameters[2] = num.doubleValue();
+                        setRawSlot(2, num.doubleValue());
                     } else if (("amplitude".equals(key) || "amplitudeAC".equals(key)) && rawParameters.length > 1) {
-                        rawParameters[1] = num.doubleValue();
+                        setRawSlot(1, num.doubleValue());
                     }
                 } else if ("voltage".equals(key) && type == 4 && "LK".equals(family)) {
-                    if (rawParameters.length > 1) rawParameters[1] = num.doubleValue();
-                    if (rawParameters.length > 7) rawParameters[7] = num.doubleValue();
+                    if (rawParameters.length > 1) setRawSlot(1, num.doubleValue());
+                    if (rawParameters.length > 7) setRawSlot(7, num.doubleValue());
                 }
             }
+        }
+
+        /**
+         * Writes a raw parameter slot and keeps the mirrored {@code param<idx>}
+         * map entry consistent: the netlist extraction merges both sources and
+         * would otherwise read a stale named value after a semantic override.
+         */
+        private void setRawSlot(int index, double value) {
+            rawParameters[index] = value;
+            parameters.put("param" + index, value);
         }
 
         public double[] getRawParameters() {

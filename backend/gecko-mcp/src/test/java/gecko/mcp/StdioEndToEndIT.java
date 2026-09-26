@@ -52,10 +52,10 @@ class StdioEndToEndIT {
             client.initialize();
 
             McpSchema.ListToolsResult tools = client.listTools();
-            assertEquals(13, tools.tools().size(), "server should expose the 13 tools");
+            assertEquals(14, tools.tools().size(), "server should expose the 14 tools");
 
             McpSchema.ListResourcesResult resources = client.listResources();
-            assertEquals(4, resources.resources().size(), "server should expose 4 MCP resources");
+            assertEquals(7, resources.resources().size(), "server should expose 7 MCP resources");
 
             McpSchema.ReadResourceResult catRes = client.readResource(
                     new McpSchema.ReadResourceRequest("gecko://catalog/components"));
@@ -69,6 +69,13 @@ class StdioEndToEndIT {
             String json = ((McpSchema.TextContent) result.content().get(0)).text();
             assertTrue(json.contains("\"status\":\"COMPLETED\""), "simulate result: " + json);
             assertTrue(json.contains("u_out"), "signal names should be present");
+            assertTrue(json.contains("\"metadata\""), "engine metadata should be present");
+
+            McpSchema.CallToolResult signals = client.callTool(new McpSchema.CallToolRequest(
+                    "gecko_list_signals",
+                    Map.of("circuit_path", circuit.toString())));
+            assertFalse(Boolean.TRUE.equals(signals.isError()), "list_signals result: "
+                    + ((McpSchema.TextContent) signals.content().get(0)).text());
         } finally {
             client.closeGracefully();
         }

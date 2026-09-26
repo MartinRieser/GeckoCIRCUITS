@@ -69,6 +69,18 @@ final class SimulationService {
         return fromSimulationResult(result);
     }
 
+    /**
+     * Runs a simulation with the full {@link RunOptions} argument surface and
+     * constructs per-signal series directly from memory.
+     */
+    static ParsedCsv simulateToCsv(Path circuit, Map<String, Object> args) {
+        SimulationResult result = RunOptions.runRaw(circuit, args);
+        if (!result.isSuccess()) {
+            throw new IllegalStateException("Simulation failed: " + result.getErrorMessage());
+        }
+        return fromSimulationResult(result);
+    }
+
     static ParsedCsv fromSimulationResult(SimulationResult result) {
         String[] signalNames = result.getSignalNames();
         List<String> header = new ArrayList<>(signalNames.length + 1);

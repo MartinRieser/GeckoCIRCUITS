@@ -9,9 +9,10 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * The 10 GeckoCIRCUITS tools, ported 1:1 from the Python server (same names,
- * parameters, and result shapes). Handlers return plain Maps/Lists; the MCP
- * layer serializes them to JSON.
+ * The GeckoCIRCUITS tool surface. The original ten tools were ported 1:1 from
+ * the Python server; the registry has since grown to fourteen with full
+ * simulation-config exposure (RunOptions) and signal discovery. Handlers
+ * return plain Maps/Lists; the MCP layer serializes them to JSON.
  */
 final class GeckoTools {
 
@@ -32,7 +33,8 @@ final class GeckoTools {
         return List.of(
                 serverStatus(), catalog(), createCircuit(), validateCircuit(), measureMetrics(),
                 setupPfc(), setupLlc(), inspectCircuit(),
-                patchComponent(), setScriptCode(), simulate(), getWaveforms(), tunePfc());
+                patchComponent(), setScriptCode(), simulate(), getWaveforms(), tunePfc(),
+                listSignals());
     }
 
     // ---------- schemas ----------
@@ -87,28 +89,25 @@ final class GeckoTools {
     private static ToolSpec serverStatus() {
         return new ToolSpec("gecko_server_status",
                 "Check GeckoCIRCUITS simulation engine and Java environment status. "
-                        + "Returns detected Java version, jar locations, and engine capabilities.",
+                        + "Returns detected Java version, workspace root, and engine capabilities.",
                 objectSchema(properties(), null),
                 args -> {
-                    Path engineJar = Path.of("src", "modules", "gecko-rest-api", "target",
-                            "gecko-rest-api-1.0.0.jar");
                     Map<String, Object> status = new LinkedHashMap<>();
                     status.put("status", "READY");
                     status.put("platform", System.getProperty("os.name"));
                     status.put("java_version", System.getProperty("java.version"));
                     status.put("java_home", System.getProperty("java.home"));
                     status.put("workspace_root", IpesSupport.workspaceRoot().toString());
-                    status.put("gui_jar_exists", false);
-                    status.put("gui_jar_path", "retired");
-                    status.put("engine_jar_exists", Files.exists(engineJar));
-                    status.put("engine_jar_path", engineJar.toAbsolutePath().toString());
-                    status.put("rest_api_url", "http://localhost:8080/gecko/api/health");
-                    status.put("rest_api_status",
-                            "Direct Headless Engine (bundled; REST not required)");
+                    status.put("engine", "in-process headless engine (gecko-simulation-core)");
+                    status.put("catalog_component_count", ComponentCatalog.all().size());
                     status.put("capabilities", List.of(
                             "headless_simulation", "microcontroller_script_blocks",
-                            "active_interleaved_pfc", "dynamic_load_simulation",
-                            "fast_waveform_analysis", "closed_loop_tuning"));
+                            "native_control_blocks", "power_metrics",
+                            "fast_waveform_analysis", "parameter_overrides",
+                            "matrix_solver_selection", "adaptive_step_size",
+                            "shockley_newton_raphson_diodes",
+                            "electro_thermal_feedback", "magnetic_reluctance_networks",
+                            "loss_calculation", "closed_loop_tuning"));
                     return status;
                 });
     }
@@ -183,24 +182,19 @@ final class GeckoTools {
                         Map.of("duration", num("Simulation duration (s); default 20e-3")),
                         Map.of("dt", num("Time step (s); default 1e-6")),
                         Map.of("start_time", num("Start time for steady-state analysis window (s); default last 50%")),
-                        Map.of("signals", arrayOf("Signal names to calculate stats for; default all", "string")),
                         Map.of("v_in_signal", str("Input voltage probe signal name (e.g. uIN, v_grid)")),
                         Map.of("i_in_signal", str("Input current probe signal name (e.g. iIN, i_grid)")),
                         Map.of("v_out_signal", str("Output voltage probe signal name (e.g. uOUT, v_dc)")),
                         Map.of("i_out_signal", str("Output load current probe signal name (e.g. iOUT, i_load)")),
-                        Map.of("is_three_phase", bool("Set true if input is 3-phase AC; scales 1-phase reference power by 3"))),
+                        Map.of("is_three_phase", bool("Set true if input is 3-phase AC; scales 1-phase reference power by 3")),
+                        runOptionsSchemaProperties()),
                         List.of("circuit_path")),
                 args -> {
                     Path path = IpesSupport.resolve(str_(args, "circuit_path", null));
                     if (!Files.exists(path)) {
                         throw new IllegalArgumentException("Circuit file not found: " + path);
                     }
-                    Double duration = optionalDouble(args, "duration");
-                    if (duration == null) {
-                        duration = optionalDouble(args, "simulation_time");
-                    }
-                    Double dt = optionalDouble(args, "dt");
-                    SimulationService.ParsedCsv csv = SimulationService.simulateToCsv(path, duration, dt);
+                    SimulationService.ParsedCsv csv = SimulationService.simulateToCsv(path, args);
 
                     double startTime = num_(args, "start_time", -1.0);
                     List<String> signals = null;
@@ -269,6 +263,8 @@ final class GeckoTools {
                         Map.of("t_dead", num("Gate dead time (s)")),
                         Map.of("r_load", num("Load resistance (Ohm); default derived from v_out/p_out")),
                         Map.of("c_out", num("Output capacitance (F); default by power class")),
+                        Map.of("r_on", num("Switch ON-state resistance (Ohm); default 2e-3")),
+                        Map.of("c_oss", num("MOSFET output capacitance for the ZVS snubber (F); default 1.5e-9")),
                         Map.of("duration", num("Simulation duration (s)")),
                         Map.of("dt", num("Simulation time step (s)"))), null),
                 args -> LlcProject.setup(
@@ -351,45 +347,96 @@ final class GeckoTools {
     private static ToolSpec simulate() {
         return new ToolSpec("gecko_simulate",
                 "Run headless simulation of a GeckoCIRCUITS .ipes circuit file. Returns status, "
-                        + "step count, signal names, and wall-clock execution time.",
+                        + "step count, signal names, execution time, engine metadata (solver, matrix "
+                        + "solver, loss totals, max junction temperature, peak flux) and warnings. "
+                        + "Supports the full simulation surface: explicit signals, parameter "
+                        + "overrides (dotted paths '<component>.<param>'), matrix solver selection, "
+                        + "adaptive step size, semiconductor modeling, and per-run electro-thermal "
+                        + "(thermal) and magnetic (magnetic) domain configuration.",
                 objectSchema(properties(
                         Map.of("circuit_path", str("Path to the .ipes file")),
                         Map.of("duration", num("Simulation duration (s); default 20e-3")),
                         Map.of("dt", num("Time step (s); default 1e-6")),
-                        Map.of("solver", str("Solver: be | trz | gs"))),
+                        Map.of("solver", str("Solver: be | trz | gs (default be)")),
+                        Map.of("signals", arrayOf("Signal names to record; default auto-resolved", "string")),
+                        Map.of("parameter_overrides", objectOf("Parameter overrides applied before the run, "
+                                + "keyed '<component>.<param>': {\"R.load.resistance\": 4.0}", null)),
+                        Map.of("matrix_solver", str("Linear solver: auto (default) | dense | sparse")),
+                        Map.of("adaptive", objectOf("Adaptive step size control: "
+                                + "{enabled, relative_tolerance, min_step, max_step}", null)),
+                        Map.of("semiconductor_model", str("classic_pwl (default) | shockley_nr")),
+                        Map.of("data_logging_interval", num("Log every Nth step (default 1)")),
+                        Map.of("thermal", objectOf("Electro-thermal domain: {ambient_temperature, couplings: "
+                                + "[{device, kind: resistor|diode, model: {kind: foster|cauer, r_th: [], tau: [] or c_th: []}, "
+                                + "temperature_coefficient | forward_voltage_slope}]}; logs Tj_<device> channels", null)),
+                        Map.of("magnetic", objectOf("Magnetic reluctance domain: {networks: [{windings: "
+                                + "[{name, turns, node_a, node_b}], branches: [{name, node_a, node_b, "
+                                + "reluctance | air_gap | core | nonlinear}]}]}; windings bind by name to "
+                                + "LK_L inductors; logs Phi_<winding> channels", null))),
                         List.of("circuit_path")),
                 args -> {
                     Path path = IpesSupport.resolve(str_(args, "circuit_path", null));
                     if (!Files.exists(path)) {
                         throw new IllegalArgumentException("Circuit file not found: " + path);
                     }
-                    Double duration = optionalDouble(args, "duration");
-                    if (duration == null) {
-                        duration = optionalDouble(args, "simulation_time");
-                    }
-                    SimulationService.RunResult run = SimulationService.simulate(path,
-                            duration, optionalDouble(args, "dt"),
-                            str_(args, "solver", "be"));
+                    RunOptions.RunResult run = RunOptions.run(path, args);
                     Map<String, Object> result = new LinkedHashMap<>();
                     result.put("status", "COMPLETED");
                     result.put("total_steps", run.totalSteps());
                     result.put("signal_names", run.signalNames());
                     result.put("execution_time_ms", run.executionTimeMs());
+                    result.put("metadata", run.metadata());
+                    result.put("warnings", run.warnings());
                     return result;
+                });
+    }
+
+    /** Schema fragment shared by the waveform/metrics tool family. */
+    private static Map<String, Object> runOptionsSchemaProperties() {
+        return properties(
+                Map.of("signals", arrayOf("Signal names to record; default auto-resolved", "string")),
+                Map.of("parameter_overrides", objectOf("Parameter overrides applied before the run, "
+                        + "keyed '<component>.<param>': {\"R.load.resistance\": 4.0}", null)),
+                Map.of("matrix_solver", str("Linear solver: auto (default) | dense | sparse")),
+                Map.of("adaptive", objectOf("Adaptive step size control: "
+                        + "{enabled, relative_tolerance, min_step, max_step}", null)),
+                Map.of("semiconductor_model", str("classic_pwl (default) | shockley_nr")),
+                Map.of("thermal", objectOf("Electro-thermal domain configuration (see gecko_simulate)", null)),
+                Map.of("magnetic", objectOf("Magnetic reluctance domain configuration (see gecko_simulate)", null)));
+    }
+
+    private static ToolSpec listSignals() {
+        return new ToolSpec("gecko_list_signals",
+                "List all recordable signal channels of a circuit without running it: probe outputs, "
+                        + "labeled control taps, node labels, semiconductor loss channels, and the "
+                        + "Tj_*/Phi_* channels implied by the optional thermal/magnetic configuration.",
+                objectSchema(properties(
+                        Map.of("circuit_path", str("Path to the .ipes file")),
+                        Map.of("thermal", objectOf("Optional electro-thermal configuration (see gecko_simulate)", null)),
+                        Map.of("magnetic", objectOf("Optional magnetic configuration (see gecko_simulate)", null))),
+                        List.of("circuit_path")),
+                args -> {
+                    Path path = IpesSupport.resolve(str_(args, "circuit_path", null));
+                    if (!Files.exists(path)) {
+                        throw new IllegalArgumentException("Circuit file not found: " + path);
+                    }
+                    return RunOptions.listSignals(path, args);
                 });
     }
 
     private static ToolSpec getWaveforms() {
         return new ToolSpec("gecko_get_waveforms",
-                "Run simulation and retrieve time-series waveforms along with key power electronics "
-                        + "metrics: steady-state DC voltage, peak-to-peak ripple, RMS values, power "
-                        + "factor, and LLC ZVS detection.",
+                "Run simulation and retrieve time-series waveforms along with per-signal window "
+                        + "statistics (min/max/mean/RMS/peak-to-peak) and key power electronics "
+                        + "metrics: steady-state DC voltage, ripple, power factor, and LLC ZVS "
+                        + "detection. Accepts the full run option surface (signals, parameter "
+                        + "overrides, matrix solver, adaptive stepping, thermal/magnetic domains).",
                 objectSchema(properties(
                         Map.of("circuit_path", str("Path to the .ipes file")),
                         Map.of("duration", num("Simulation duration (s); default 20e-3")),
                         Map.of("dt", num("Time step (s); default 1e-6")),
-                        Map.of("signals", arrayOf("Signal names to return; default all", "string")),
-                        Map.of("max_points", num("Downsampling target (default 2000)"))),
+                        Map.of("max_points", num("Downsampling target (default 2000)")),
+                        runOptionsSchemaProperties()),
                         List.of("circuit_path")),
                 args -> {
                     Path path = IpesSupport.resolve(str_(args, "circuit_path", null));
@@ -401,22 +448,18 @@ final class GeckoTools {
                         signals = list.stream().map(String::valueOf).toList();
                     }
                     int maxPoints = (int) num_(args, "max_points", 2000);
-                    Double duration = optionalDouble(args, "duration");
-                    if (duration == null) {
-                        duration = optionalDouble(args, "simulation_time");
-                    }
                     SimulationService.ParsedCsv csv =
-                            SimulationService.simulateToCsv(path, duration,
-                                    optionalDouble(args, "dt"));
+                            SimulationService.simulateToCsv(path, args);
                     return WaveformAnalysis.analyse(csv, safeRead(path), signals, maxPoints);
                 });
     }
 
     private static ToolSpec tunePfc() {
         return new ToolSpec("gecko_tune_pfc",
-                "Evaluate and tune active PFC controller PI gains (Kp, Ki) on the given circuit. "
-                        + "Simulates, checks DC regulation against target_voltage, analyzes ripple, "
-                        + "and returns a tuning evaluation report.",
+                "Evaluate a single PFC operating point: simulates the circuit (optionally with "
+                        + "the given Kp/Ki gains patched into the controller for this run only), checks "
+                        + "DC regulation against target_voltage, analyzes ripple, and returns a tuning "
+                        + "evaluation report. For gain sweeps use parameter_overrides with gecko_simulate.",
                 objectSchema(properties(
                         Map.of("circuit_path", str("Path to the .ipes file")),
                         Map.of("target_voltage", num("Target DC voltage (V); default 50")),

@@ -290,7 +290,7 @@ public final class McpResources {
                 - Keep wire polylines of different nets disjoint (no shared grid points).
                 - Transformers are 4-terminal: nodes order [p1, p2, s1, s2].
                 - Motors ship with `parameters_raw` presets; copy slot vectors from datasheets.
-                """
+                """;
 
         return new SyncResourceSpecification(resource, (exchange, req) ->
                 new McpSchema.ReadResourceResult(List.of(
@@ -382,7 +382,7 @@ public final class McpResources {
                 per-device `P_loss_<name>`, `P_cond_<name>`, `P_sw_<name>`; totals
                 `P_loss_total`, `P_cond_total`, `P_sw_total`, `E_loss_total`.
                 The loss engine accepts the ambient temperature from `thermal.ambient_temperature`.
-                """
+                """;
 
         return new SyncResourceSpecification(resource, (exchange, req) ->
                 new McpSchema.ReadResourceResult(List.of(
