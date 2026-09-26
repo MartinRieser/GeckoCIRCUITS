@@ -100,3 +100,6 @@ backend/gecko-mcp/dependency-reduced-pom.xml
 
 # local debugging scratch
 scratch/
+
+# runtime log artifacts from headless test runs
+backend/gecko-mcp/logs/
