@@ -1,5 +1,7 @@
 package gecko.mcp;
 
+import gecko.core.circuit.circuitcomponents.CircuitTypCore;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -146,7 +148,8 @@ public final class CircuitBuilder {
             }
             String signal = (String) p.getOrDefault("signal_name", p.getOrDefault("signal", name.toLowerCase(Locale.ROOT)));
 
-            int typeNum = "AMMETER".equalsIgnoreCase(type) || "AMP".equalsIgnoreCase(type) ? 2 : 1;
+            int typeNum = "AMMETER".equalsIgnoreCase(type) || "AMP".equalsIgnoreCase(type)
+                    ? CircuitTypCore.CTRL_AMP.getTypeNumber() : CircuitTypCore.CTRL_VOLT.getTypeNumber();
             long uid = nextCtrlId++;
 
             // Control probe placed at x=10, output terminal at (12, probeY)
@@ -186,7 +189,7 @@ public final class CircuitBuilder {
                 ctrlNetToPoints.computeIfAbsent(sig, k -> new LinkedHashSet<>()).add(new Point(18, mcuY + outIdx));
             }
 
-            placedCtrl.add(new PlacedControl(name, 61, uid, 16, mcuY, 503, 0L,
+            placedCtrl.add(new PlacedControl(name, CircuitTypCore.CTRL_SCRIPT.getTypeNumber(), uid, 16, mcuY, 503, 0L,
                     inputs, outputs, sourceCode, staticVariables, staticCode));
             mcuY += Math.max(inputs.size(), outputs.size()) + 2;
         }
@@ -208,7 +211,7 @@ public final class CircuitBuilder {
                 ctrlNetToPoints.computeIfAbsent(signal, k -> new LinkedHashSet<>()).add(new Point(24, gateY));
             }
 
-            placedCtrl.add(new PlacedControl(name, 6, uid, 26, gateY, 503, targetUid,
+            placedCtrl.add(new PlacedControl(name, CircuitTypCore.CTRL_GATE.getTypeNumber(), uid, 26, gateY, 503, targetUid,
                     List.of(signal != null ? signal : "NIX_NIX_NIX"), List.of("NIX_NIX_NIX"), "", "", ""));
             gateY++;
         }
@@ -476,19 +479,26 @@ public final class CircuitBuilder {
                 out[6] = cap; // MNA companion model slot
                 out[7] = cap; // nonlinear factor
             }
-            case "VOLTAGE_SOURCE_AC" -> {
+            case "VOLTAGE_SOURCE_AC", "CURRENT_SOURCE_AC" -> {
                 out[0] = 402.0; // SourceType.QUELLE_SIN
                 out[20] = out[1]; // Amplitude slot 20
             }
-            case "VOLTAGE_SOURCE_DC" -> {
+            case "VOLTAGE_SOURCE_DC", "CURRENT_SOURCE_DC" -> {
                 out[0] = 401.0; // SourceType.QUELLE_DC
             }
-            case "DIODE" -> {
+            case "DIODE", "THYRISTOR" -> {
                 double uF = out[1] > 0 ? out[1] : 0.7;
                 double rOn = out[2] > 0 ? out[2] : 0.005;
                 double rOff = out[3] > 0 ? out[3] : 1e7;
                 out[0] = rOff; // Initial resistance rD
                 out[1] = uF;
+                out[2] = rOn;
+                out[3] = rOff;
+            }
+            case "MOSFET" -> {
+                double rOn = out[2] > 0 ? out[2] : 0.005;
+                double rOff = out[3] > 0 ? out[3] : 1e7;
+                out[0] = rOff; // initial blocking state resistance
                 out[2] = rOn;
                 out[3] = rOff;
             }
