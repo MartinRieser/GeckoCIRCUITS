@@ -11,6 +11,7 @@ import type {
   ComponentPayload,
   WirePayload,
   SimulationDefaults,
+  SimRunSettings,
   SimulationStatus,
 } from '../model/types';
 import { nextOrientation, terminalPositions, findPlacementConflict } from '../model/geometry';
@@ -46,6 +47,9 @@ export function useEditor() {
   const [scriptBreakpoints, setScriptBreakpointsState] = useState<Record<string, number[]>>({});
   const [debugPause, setDebugPause] = useState<api.ScriptDebugSnapshot | null>(null);
   const [debugState, setDebugState] = useState<api.ScriptDebugState | null>(null);
+  // Simulation run settings as displayed (engineering strings); null until the
+  // user edits them, so a newly loaded circuit's own defaults show through
+  const [simSettings, setSimSettings] = useState<SimRunSettings | null>(null);
   const simPollTimerRef = useRef<number | null>(null);
   const simStreamStopRef = useRef<(() => void) | null>(null);
   const currentSimIdRef = useRef<string | null>(null);
@@ -92,6 +96,9 @@ export function useEditor() {
     setDebugState(null);
     setScriptBreakpointsState({});
     scriptBreakpointsRef.current = {};
+    // A new circuit brings its own stored defaults: drop the previous
+    // circuit's user-edited run settings so they don't leak through
+    setSimSettings(null);
   }, [stopPolling, stopStream]);
 
   useEffect(() => {
@@ -1208,6 +1215,11 @@ export function useEditor() {
     }
   }, []);
 
+  /** Stores user-edited simulation run settings (duration, dt, solver). */
+  const updateSimSettings = useCallback((settings: SimRunSettings) => {
+    setSimSettings(settings);
+  }, []);
+
   // Poll the script debug state while a run is active: this drives the watch
   // panel while the simulation runs and recovers the paused state when the
   // SSE 'debug' event was missed (e.g. breakpoint hit before subscribing)
@@ -1252,6 +1264,7 @@ export function useEditor() {
       warnings: simWarnings,
       isOpen: simDrawerOpen,
       defaults: simDefaults,
+      simSettings,
       scriptBreakpoints,
       debugPause,
       debugState,
@@ -1290,6 +1303,7 @@ export function useEditor() {
       toggleScriptBreakpoint,
       debugStep,
       debugResume,
+      updateSimSettings,
       toggleSimDrawer: () => setSimDrawerOpen((prev) => !prev),
     },
   };

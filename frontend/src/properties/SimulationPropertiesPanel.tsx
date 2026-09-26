@@ -5,7 +5,7 @@
  * scope instrument selectors, and CSV export.
  */
 import { useState, useEffect, useMemo } from 'react';
-import type { EditorComponent, EditorWire, SimulationDefaults, SimulationStatus } from '../model/types';
+import type { EditorComponent, EditorWire, SimulationDefaults, SimulationStatus, SimRunSettings } from '../model/types';
 import { validateCircuitForSimulation } from '../model/validation';
 import {
   parseEngineeringValue,
@@ -28,6 +28,12 @@ export interface SimulationPropertiesPanelProps {
   progress: number;
   /** Engine simulation defaults (tend, dt, etc.). */
   defaults?: SimulationDefaults | null;
+  /** User-edited run settings (lifted to the editor state so they survive tab
+   *  switches and panel remounts); null when the user has not overridden the
+   *  circuit defaults yet. */
+  settings?: SimRunSettings | null;
+  /** Called when the user edits duration, time step, or solver. */
+  onSettingsChange?: (settings: SimRunSettings) => void;
   /** Error message if simulation failed. */
   errorMessage?: string | null;
   /** Circuit validation warnings produced before running. */
@@ -76,6 +82,8 @@ export function SimulationPropertiesPanel({
   status,
   progress,
   defaults,
+  settings: liftedSettings,
+  onSettingsChange,
   errorMessage,
   engineWarnings,
   components,
@@ -93,23 +101,25 @@ export function SimulationPropertiesPanel({
   onExportCsv,
   onCollapse,
 }: SimulationPropertiesPanelProps) {
-  const [tEndStr, setTEndStr] = useState('20m');
-  const [dtStr, setDtStr] = useState('1u');
-  const [solverType, setSolverType] = useState('backward-euler');
+  // User-edited run settings. When the settings are lifted to the editor
+  // state (onSettingsChange provided), they survive tab switches and panel
+  // remounts; otherwise they fall back to local component state. Editing
+  // never re-syncs from `defaults` - the defaults only apply while the user
+  // has not overridden them.
+  const [localSettings, setLocalSettings] = useState<SimRunSettings | null>(null);
+  const settings = liftedSettings !== undefined ? liftedSettings : localSettings;
 
-  useEffect(() => {
-    if (defaults) {
-      if (defaults.duration !== undefined) {
-        setTEndStr(formatEngineeringValue(defaults.duration, 's'));
-      }
-      if (defaults.timeStep !== undefined) {
-        setDtStr(formatEngineeringValue(defaults.timeStep, 's'));
-      }
-      if (defaults.solverType) {
-        setSolverType(defaults.solverType);
-      }
-    }
-  }, [defaults]);
+  const effTEnd = settings?.tEnd
+    ?? (defaults?.duration !== undefined ? formatEngineeringValue(defaults.duration, 's') : '20m');
+  const effDt = settings?.dt
+    ?? (defaults?.timeStep !== undefined ? formatEngineeringValue(defaults.timeStep, 's') : '1u');
+  const effSolver = settings?.solver ?? defaults?.solverType ?? 'backward-euler';
+
+  const changeSettings = (patch: Partial<SimRunSettings>) => {
+    const next: SimRunSettings = { tEnd: effTEnd, dt: effDt, solver: effSolver, ...patch };
+    setLocalSettings(next);
+    onSettingsChange?.(next);
+  };
 
   const scopeBlocks = useMemo(() => findScopeBlocks(components), [components]);
 
@@ -121,8 +131,8 @@ export function SimulationPropertiesPanel({
   const isRunning = status === 'PENDING' || status === 'RUNNING';
   const isPaused = status === 'PAUSED';
 
-  const tEndNum = parseEngineeringValue(tEndStr);
-  const dtNum = parseEngineeringValue(dtStr);
+  const tEndNum = parseEngineeringValue(effTEnd);
+  const dtNum = parseEngineeringValue(effDt);
   const estSteps = estimateStepCount(tEndNum ?? 0.02, dtNum ?? 1e-6);
   const isHeavyRun = estSteps > STEP_WARNING_THRESHOLD;
 
@@ -133,7 +143,9 @@ export function SimulationPropertiesPanel({
 
   useEffect(() => {
     setPendingWarnings(null);
+    setLocalSettings(null);
   }, [circuitId]);
+
 
   const handleRun = () => {
     const warnings = validateCircuitForSimulation(components, wires ?? []);
@@ -147,7 +159,7 @@ export function SimulationPropertiesPanel({
     onRunSimulation({
       simulationTime: dur,
       timeStep: step,
-      solverType,
+      solverType: effSolver,
       backend: 'headless',
     });
   };
@@ -333,8 +345,8 @@ export function SimulationPropertiesPanel({
                 id="insp-tend"
                 type="text"
                 className="prop-input"
-                value={tEndStr}
-                onChange={(e) => setTEndStr(e.target.value)}
+                value={effTEnd}
+                onChange={(e) => changeSettings({ tEnd: e.target.value })}
                 placeholder="e.g. 20m, 0.05"
                 disabled={isRunning}
               />
@@ -348,8 +360,8 @@ export function SimulationPropertiesPanel({
                 id="insp-dt"
                 type="text"
                 className="prop-input"
-                value={dtStr}
-                onChange={(e) => setDtStr(e.target.value)}
+                value={effDt}
+                onChange={(e) => changeSettings({ dt: e.target.value })}
                 placeholder="e.g. 1u, 1e-6"
                 disabled={isRunning}
               />
@@ -362,8 +374,8 @@ export function SimulationPropertiesPanel({
               <select
                 id="insp-solver"
                 className="prop-select"
-                value={solverType}
-                onChange={(e) => setSolverType(e.target.value)}
+                value={effSolver}
+                onChange={(e) => changeSettings({ solver: e.target.value })}
                 disabled={isRunning}
               >
                 <option value="backward-euler">Backward Euler</option>

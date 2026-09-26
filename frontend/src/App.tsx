@@ -678,6 +678,8 @@ export function App() {
                   status={simState.status}
                   progress={simState.progress}
                   defaults={simState.defaults}
+                  settings={simState.simSettings}
+                  onSettingsChange={actions.updateSimSettings}
                   errorMessage={simState.errorMessage}
                   engineWarnings={simState.warnings}
                   components={state.components}

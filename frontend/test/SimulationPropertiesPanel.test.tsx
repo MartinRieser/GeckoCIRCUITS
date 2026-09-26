@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { SimulationPropertiesPanel } from '../src/properties/SimulationPropertiesPanel';
-import type { EditorComponent } from '../src/model/types';
+import type { EditorComponent, SimRunSettings } from '../src/model/types';
 import { LkComponentType, ControlComponentType } from '../src/model/constants';
 
 describe('SimulationPropertiesPanel Component', () => {
@@ -212,4 +212,155 @@ describe('SimulationPropertiesPanel Component', () => {
     fireEvent.click(collapseBtn);
     expect(onCollapse).toHaveBeenCalledTimes(1);
   });
+
+  it('keeps user-edited settings when the defaults object changes identity', () => {
+    // Regression: a server refresh re-creates the defaults object, which used
+    // to re-sync the inputs and wipe the user's edits (e.g. after switching
+    // workspace tabs or applying a script edit)
+    const defaults = { duration: 0.02, timeStep: 1e-6, solverType: 'backward-euler', signals: [] };
+    const { rerender } = render(
+      <SimulationPropertiesPanel
+        circuitId="test-circuit"
+        status={null}
+        progress={0}
+        defaults={defaults}
+        components={dummyComponents}
+        results={null}
+        selectedScope="SCOPE.1"
+        onSelectScope={vi.fn()}
+        displayLayout="overlay"
+        onDisplayLayoutChange={vi.fn()}
+        onRunSimulation={vi.fn()}
+      />,
+    );
+
+    const tEnd = screen.getByLabelText(/Duration \(tEnd\)/i) as HTMLInputElement;
+    const dt = screen.getByLabelText(/Time Step \(dt\)/i) as HTMLInputElement;
+    fireEvent.change(tEnd, { target: { value: '5m' } });
+    fireEvent.change(dt, { target: { value: '500n' } });
+    expect(tEnd.value).toBe('5m');
+    expect(dt.value).toBe('500n');
+
+    // New defaults object (same values, new identity as after a refresh)
+    rerender(
+      <SimulationPropertiesPanel
+        circuitId="test-circuit"
+        status={null}
+        progress={0}
+        defaults={{ ...defaults }}
+        components={dummyComponents}
+        results={null}
+        selectedScope="SCOPE.1"
+        onSelectScope={vi.fn()}
+        displayLayout="overlay"
+        onDisplayLayoutChange={vi.fn()}
+        onRunSimulation={vi.fn()}
+      />,
+    );
+
+    expect((screen.getByLabelText(/Duration \(tEnd\)/i) as HTMLInputElement).value).toBe('5m');
+    expect((screen.getByLabelText(/Time Step \(dt\)/i) as HTMLInputElement).value).toBe('500n');
+  });
+
+  it('reports edited settings upward and displays lifted settings', () => {
+    const onSettingsChange = vi.fn();
+    const { rerender } = render(
+      <SimulationPropertiesPanel
+        circuitId="test-circuit"
+        status={null}
+        progress={0}
+        defaults={{ duration: 0.02, timeStep: 1e-6, solverType: 'backward-euler', signals: [] }}
+        settings={null}
+        onSettingsChange={onSettingsChange}
+        components={dummyComponents}
+        results={null}
+        selectedScope="SCOPE.1"
+        onSelectScope={vi.fn()}
+        displayLayout="overlay"
+        onDisplayLayoutChange={vi.fn()}
+        onRunSimulation={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText(/Duration \(tEnd\)/i), { target: { value: '5m' } });
+    expect(onSettingsChange).toHaveBeenCalledWith({
+      tEnd: '5m',
+      dt: expect.any(String),
+      solver: 'backward-euler',
+    });
+
+    // Editor state applies the change: the lifted settings come back down
+    rerender(
+      <SimulationPropertiesPanel
+        circuitId="test-circuit"
+        status={null}
+        progress={0}
+        defaults={{ duration: 0.02, timeStep: 1e-6, solverType: 'backward-euler', signals: [] }}
+        settings={{ tEnd: '5m', dt: '500n', solver: 'trapezoidal' }}
+        onSettingsChange={onSettingsChange}
+        components={dummyComponents}
+        results={null}
+        selectedScope="SCOPE.1"
+        onSelectScope={vi.fn()}
+        displayLayout="overlay"
+        onDisplayLayoutChange={vi.fn()}
+        onRunSimulation={vi.fn()}
+      />,
+    );
+
+    expect((screen.getByLabelText(/Duration \(tEnd\)/i) as HTMLInputElement).value).toBe('5m');
+    expect((screen.getByLabelText(/Time Step \(dt\)/i) as HTMLInputElement).value).toBe('500n');
+    expect((screen.getByLabelText(/Integration Method/i) as HTMLSelectElement).value).toBe('trapezoidal');
+  });
+
+  it('resets to new circuit defaults when switching circuits', () => {
+    let currentSettings: SimRunSettings | null = null;
+    const onSettingsChange = vi.fn((next: SimRunSettings) => {
+      currentSettings = next;
+    });
+
+    const { rerender } = render(
+      <SimulationPropertiesPanel
+        circuitId="test-circuit-1"
+        status={null}
+        progress={0}
+        defaults={{ duration: 0.02, timeStep: 1e-6, solverType: 'backward-euler', signals: [] }}
+        settings={currentSettings}
+        onSettingsChange={onSettingsChange}
+        components={dummyComponents}
+        results={null}
+        selectedScope="SCOPE.1"
+        onSelectScope={vi.fn()}
+        displayLayout="overlay"
+        onDisplayLayoutChange={vi.fn()}
+        onRunSimulation={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText(/Duration \(tEnd\)/i), { target: { value: '5m' } });
+    expect(onSettingsChange).toHaveBeenCalled();
+
+    // In useEditor, loading a new circuit calls resetSimulationState() -> setSimSettings(null)
+    currentSettings = null;
+    rerender(
+      <SimulationPropertiesPanel
+        circuitId="test-circuit-2"
+        status={null}
+        progress={0}
+        defaults={{ duration: 0.1, timeStep: 5e-6, solverType: 'trapezoidal', signals: [] }}
+        settings={currentSettings}
+        onSettingsChange={onSettingsChange}
+        components={dummyComponents}
+        results={null}
+        selectedScope="SCOPE.1"
+        onSelectScope={vi.fn()}
+        displayLayout="overlay"
+        onDisplayLayoutChange={vi.fn()}
+        onRunSimulation={vi.fn()}
+      />,
+    );
+
+    expect((screen.getByLabelText(/Duration \(tEnd\)/i) as HTMLInputElement).value).toBe('100 m s');
+  });
 });
+

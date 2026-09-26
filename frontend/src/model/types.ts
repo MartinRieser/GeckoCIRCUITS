@@ -85,6 +85,20 @@ export interface SimulationDefaults {
 }
 
 /**
+ * User-edited simulation run settings in their displayed (engineering-notation)
+ * string form. Lives in the editor state so the settings survive workspace tab
+ * switches and panel remounts; null means "follow the circuit's defaults".
+ */
+export interface SimRunSettings {
+  /** Simulation duration string, e.g. "5m" or "0.01". */
+  tEnd: string;
+  /** Time step string, e.g. "500n" or "1e-6". */
+  dt: string;
+  /** Solver integration method, e.g. "backward-euler". */
+  solver: string;
+}
+
+/**
  * Complete snapshot of a circuit's editor model serialized by the REST backend.
  */
 export interface EditorSnapshot {
