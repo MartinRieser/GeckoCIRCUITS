@@ -671,7 +671,10 @@ public final class ControlCalculatorBuilder {
             String sourceCode = getStringParam(comp, "sourceCode", "");
             String staticCode = getStringParam(comp, "staticCode", "");
             String staticVariables = getStringParam(comp, "staticVariables", "");
-            return new ScriptBlockCalculator(layout[0], layout[1], sourceCode, staticCode, staticVariables);
+            ScriptBlockCalculator script =
+                    new ScriptBlockCalculator(layout[0], layout[1], sourceCode, staticCode, staticVariables);
+            script.setBlockName(comp.getName());
+            return script;
         }
         double[] params = comp.getRawParameters();
         return switch (comp.getType()) {

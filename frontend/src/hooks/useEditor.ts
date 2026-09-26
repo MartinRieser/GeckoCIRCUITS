@@ -41,6 +41,11 @@ export function useEditor() {
   const [simWarnings, setSimWarnings] = useState<string[]>([]);
   const [simDrawerOpen, setSimDrawerOpen] = useState(false);
   const [simDefaults, setSimDefaults] = useState<SimulationDefaults | null>(null);
+  // Script debugging: breakpoints per block name, the SSE pause event, and
+  // the polled watch/debug state of the active run
+  const [scriptBreakpoints, setScriptBreakpointsState] = useState<Record<string, number[]>>({});
+  const [debugPause, setDebugPause] = useState<api.ScriptDebugSnapshot | null>(null);
+  const [debugState, setDebugState] = useState<api.ScriptDebugState | null>(null);
   const simPollTimerRef = useRef<number | null>(null);
   const simStreamStopRef = useRef<(() => void) | null>(null);
   const currentSimIdRef = useRef<string | null>(null);
@@ -50,6 +55,10 @@ export function useEditor() {
   // latest state for callbacks that need current values without re-creating
   const stateRef = useRef(state);
   stateRef.current = state;
+  const scriptBreakpointsRef = useRef(scriptBreakpoints);
+  scriptBreakpointsRef.current = scriptBreakpoints;
+  const simStatusRef = useRef(simStatus);
+  simStatusRef.current = simStatus;
 
   const stopPolling = useCallback(() => {
     if (simPollTimerRef.current !== null) {
@@ -79,6 +88,10 @@ export function useEditor() {
     setSimError(null);
     setSimWarnings([]);
     setSimDrawerOpen(false);
+    setDebugPause(null);
+    setDebugState(null);
+    setScriptBreakpointsState({});
+    scriptBreakpointsRef.current = {};
   }, [stopPolling, stopStream]);
 
   useEffect(() => {
@@ -1005,6 +1018,8 @@ export function useEditor() {
 
   const finalizeSimulation = useCallback(async (simId: string) => {
     stopStream();
+    setDebugPause(null);
+    setDebugState(null);
     try {
       const current = await api.getSimulation(simId);
       setSimStatus(current.status);
@@ -1075,6 +1090,8 @@ export function useEditor() {
       setSimError(null);
       setSimWarnings([]);
       setSimDrawerOpen(true);
+      setDebugPause(null);
+      setDebugState(null);
 
       try {
         const sim = await api.submitSimulation({
@@ -1084,6 +1101,9 @@ export function useEditor() {
           solverType: solver,
           backend: config?.backend,
           signals: signalsToSimulate,
+          breakpoints: Object.keys(scriptBreakpointsRef.current).length > 0
+            ? scriptBreakpointsRef.current
+            : undefined,
         });
         currentSimIdRef.current = sim.simulationId;
 
@@ -1093,6 +1113,7 @@ export function useEditor() {
           onComplete: () => void finalizeSimulation(sim.simulationId),
           onSimError: () => void finalizeSimulation(sim.simulationId),
           onConnectionError: () => startPolling(sim.simulationId),
+          onDebugPaused: (snapshot) => setDebugPause(snapshot),
         });
       } catch (err) {
         setSimStatus('FAILED');
@@ -1140,6 +1161,84 @@ export function useEditor() {
     }
   }, []);
 
+  /** Toggles a breakpoint line of a script block; live-updates a running sim. */
+  const toggleScriptBreakpoint = useCallback((blockName: string, line: number) => {
+    const current = scriptBreakpointsRef.current[blockName] ?? [];
+    const next = current.includes(line)
+      ? current.filter((l) => l !== line)
+      : [...current, line].sort((a, b) => a - b);
+    const updated = { ...scriptBreakpointsRef.current };
+    if (next.length > 0) {
+      updated[blockName] = next;
+    } else {
+      delete updated[blockName];
+    }
+    scriptBreakpointsRef.current = updated;
+    setScriptBreakpointsState(updated);
+
+    // Push the new breakpoint set to a debug session of an active run
+    const simId = currentSimIdRef.current;
+    const status = simStatusRef.current;
+    if (simId && (status === 'RUNNING' || status === 'PAUSED')) {
+      void api.setScriptBreakpoints(simId, updated).catch(() => {});
+    }
+  }, []);
+
+  /** Steps one statement of the script block paused at a breakpoint. */
+  const debugStep = useCallback(async () => {
+    const simId = currentSimIdRef.current;
+    if (!simId) return;
+    setDebugPause(null);
+    try {
+      await api.debugStep(simId);
+    } catch (err) {
+      setSimError((err as Error).message);
+    }
+  }, []);
+
+  /** Continues the script paused at a breakpoint until the next one. */
+  const debugResume = useCallback(async () => {
+    const simId = currentSimIdRef.current;
+    if (!simId) return;
+    setDebugPause(null);
+    try {
+      await api.debugResume(simId);
+    } catch (err) {
+      setSimError((err as Error).message);
+    }
+  }, []);
+
+  // Poll the script debug state while a run is active: this drives the watch
+  // panel while the simulation runs and recovers the paused state when the
+  // SSE 'debug' event was missed (e.g. breakpoint hit before subscribing)
+  useEffect(() => {
+    if (simStatus !== 'RUNNING' && simStatus !== 'PAUSED') {
+      setDebugState(null);
+      return;
+    }
+    const simId = currentSimIdRef.current;
+    if (!simId) {
+      return;
+    }
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const next = await api.getScriptDebugState(simId);
+        if (!cancelled) {
+          setDebugState(next);
+        }
+      } catch {
+        // run finished between polls; the next tick or status change cleans up
+      }
+    };
+    void poll();
+    const timer = window.setInterval(() => void poll(), 800);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [simStatus]);
+
   return {
     state,
     dispatch,
@@ -1153,6 +1252,9 @@ export function useEditor() {
       warnings: simWarnings,
       isOpen: simDrawerOpen,
       defaults: simDefaults,
+      scriptBreakpoints,
+      debugPause,
+      debugState,
     },
     actions: {
       open,
@@ -1185,6 +1287,9 @@ export function useEditor() {
       cancelSimulation,
       pauseSimulation,
       resumeSimulation,
+      toggleScriptBreakpoint,
+      debugStep,
+      debugResume,
       toggleSimDrawer: () => setSimDrawerOpen((prev) => !prev),
     },
   };

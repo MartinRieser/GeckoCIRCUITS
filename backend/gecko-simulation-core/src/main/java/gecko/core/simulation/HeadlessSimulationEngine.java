@@ -34,6 +34,10 @@ import gecko.core.circuit.parameters.InductorParameters;
 import gecko.core.circuit.parameters.ResistorParameters;
 import gecko.core.circuit.netlist.NetlistBuilder;
 import gecko.core.control.ControlCalculatorBuilder;
+import gecko.core.control.calculators.AbstractControlCalculatable;
+import gecko.core.control.calculators.ScriptBlockCalculator;
+import gecko.core.control.calculators.ScriptDebugHook;
+import gecko.core.control.calculators.ScriptDebugSnapshot;
 import gecko.core.circuit.losscalculation.SemiconductorDeviceLossModel;
 import gecko.core.magnetic.MagneticNetworkSolver;
 import gecko.core.circuit.losscalculation.SemiconductorLossEngine;
@@ -96,6 +100,8 @@ public class HeadlessSimulationEngine {
 
     private final AtomicReference<EngineState> state = new AtomicReference<>(EngineState.IDLE);
     private final AtomicBoolean cancelRequested = new AtomicBoolean(false);
+    private final java.util.concurrent.atomic.AtomicLong pausedWallTimeMs =
+            new java.util.concurrent.atomic.AtomicLong();
 
     // Progress tracking
     private volatile double currentTime = 0;
@@ -105,6 +111,13 @@ public class HeadlessSimulationEngine {
 
     // Event listener
     private SimulationProgressListener progressListener;
+
+    /**
+     * Optional script debug hook attached to every script block of the run.
+     * When set, script breakpoints/stepping pause the simulation loop by
+     * blocking inside the hook until released.
+     */
+    private volatile ScriptDebugHook scriptDebugHook;
 
     /** Candidate progress tick interval, in simulation steps. */
     private static final int PROGRESS_TICK_STEPS = 100;
@@ -233,6 +246,7 @@ public class HeadlessSimulationEngine {
         controlNetlist = ControlNetlist.createEmpty();
         controlNetlist.setSortedCalculators(controlCoupling.calculators());
         controlCoupling.initialize(dt);
+        attachScriptDebugHook();
 
         // Signal selection: explicit request > file's stored signals >
         // node labels and probe names (classic-like default logging)
@@ -1044,9 +1058,14 @@ public class HeadlessSimulationEngine {
     /**
      * Blocks while the simulation is paused. An interrupt while parked
      * is treated as a cancellation request (e.g. executor shutdown).
+     * Paused wall time is accumulated and excluded from the run budget.
      */
     private void awaitResumeOrCancel() {
+        long enteredPauseAt = 0;
         while (state.get() == EngineState.PAUSED && !cancelRequested.get()) {
+            if (enteredPauseAt == 0) {
+                enteredPauseAt = System.currentTimeMillis();
+            }
             try {
                 Thread.sleep(50);
             } catch (InterruptedException e) {
@@ -1054,6 +1073,20 @@ public class HeadlessSimulationEngine {
                 cancelRequested.set(true);
             }
         }
+        if (enteredPauseAt != 0) {
+            pausedWallTimeMs.addAndGet(System.currentTimeMillis() - enteredPauseAt);
+        }
+    }
+
+    /**
+     * Wall-clock time in milliseconds this run has spent paused at time-step
+     * boundaries. Budget checks add it to the deadline so interactive pauses
+     * (pause button) do not consume the run's time budget.
+     *
+     * @return accumulated paused wall time in milliseconds
+     */
+    public long getPausedWallTimeMs() {
+        return pausedWallTimeMs.get();
     }
 
     /**
@@ -1064,6 +1097,61 @@ public class HeadlessSimulationEngine {
         EngineState current = state.get();
         if (current == EngineState.RUNNING || current == EngineState.PAUSED) {
             cancelRequested.set(true);
+        }
+    }
+
+    /**
+     * True when cancellation has been requested but not yet observed by the
+     * simulation loop. Debug hooks blocking the simulation thread poll this
+     * so a cancelled run is released from a breakpoint instead of parking.
+     *
+     * @return true when {@link #cancel()} was requested
+     */
+    public boolean isCancelRequested() {
+        return cancelRequested.get();
+    }
+
+    /**
+     * Attaches a script debug hook that is forwarded to every script block
+     * built for the next simulation run.
+     *
+     * @param hook the debug hook, or null to run without script debugging
+     */
+    public void setScriptDebugHook(ScriptDebugHook hook) {
+        this.scriptDebugHook = hook;
+    }
+
+    /**
+     * Captures the current state of every script block of the most recent
+     * run (watch view for debug endpoints).
+     *
+     * @return one snapshot per script block; empty when no run was started
+     */
+    public List<ScriptDebugSnapshot> getScriptBlockSnapshots() {
+        List<ScriptDebugSnapshot> snapshots = new ArrayList<>();
+        if (controlCoupling == null) {
+            return snapshots;
+        }
+        for (AbstractControlCalculatable calculator : controlCoupling.calculators()) {
+            if (calculator instanceof ScriptBlockCalculator script) {
+                snapshots.add(script.snapshot());
+            }
+        }
+        return snapshots;
+    }
+
+    /**
+     * Forwards the debug hook to all script block calculators of the current
+     * control coupling. Called once after the calculators are built.
+     */
+    private void attachScriptDebugHook() {
+        if (scriptDebugHook == null || controlCoupling == null) {
+            return;
+        }
+        for (AbstractControlCalculatable calculator : controlCoupling.calculators()) {
+            if (calculator instanceof ScriptBlockCalculator script) {
+                script.setDebugHook(scriptDebugHook);
+            }
         }
     }
 

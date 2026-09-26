@@ -40,6 +40,12 @@ public class SimulationRequest {
 
     private String backend;  // Optional: "core" / "headless" (default). Note: classic Swing backend is retired.
 
+    /**
+     * Optional script debug breakpoints active from the first step: maps a
+     * script block (component) name to the 1-based source lines to break on.
+     */
+    private Map<String, List<Integer>> breakpoints;
+
     public SimulationRequest() {
     }
 
@@ -119,6 +125,14 @@ public class SimulationRequest {
 
     public void setBackend(String backend) {
         this.backend = backend;
+    }
+
+    public Map<String, List<Integer>> getBreakpoints() {
+        return breakpoints;
+    }
+
+    public void setBreakpoints(Map<String, List<Integer>> breakpoints) {
+        this.breakpoints = breakpoints;
     }
 
     @Override

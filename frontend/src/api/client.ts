@@ -389,12 +389,94 @@ export function resumeSimulation(simulationId: string): Promise<SimulationRespon
   return request(`/simulations/${simulationId}/resume`, { method: 'POST' });
 }
 
+// ========== Script Debug Endpoints ==========
+
+/** Immutable snapshot of one script block's state (breakpoint pause or watch). */
+export interface ScriptDebugSnapshot {
+  /** Script block (component) name. */
+  blockName: string;
+  /** 1-based paused source line, -1 when not paused at a statement. */
+  line: number;
+  /** Simulation time in seconds. */
+  time: number;
+  /** Time step width in seconds. */
+  dt: number;
+  /** User (persistent state) variables. */
+  variables: Record<string, number>;
+  /** Input signal values u1..uN. */
+  inputs: number[];
+  /** Output signal values y1..yN. */
+  outputs: number[];
+}
+
+/** Full script debug state of a simulation run. */
+export interface ScriptDebugState {
+  simulationId: string;
+  /** True while the run is paused at a script breakpoint. */
+  paused: boolean;
+  /** Snapshot of the breakpoint pause, present only while paused. */
+  pausedAt?: ScriptDebugSnapshot | null;
+  /** Live watch snapshot of every script block. */
+  blocks: ScriptDebugSnapshot[];
+}
+
+/** Breakpoint map: script block name to 1-based breakpoint source lines. */
+export type ScriptBreakpointPatch = Record<string, number[]>;
+
+/**
+ * Replaces the script breakpoints of a running simulation's debug session.
+ *
+ * @param simulationId Simulation run ID
+ * @param breakpoints Block name to breakpoint source lines
+ */
+export function setScriptBreakpoints(
+  simulationId: string,
+  breakpoints: ScriptBreakpointPatch,
+): Promise<void> {
+  return request(`/simulations/${simulationId}/debug/breakpoints`, {
+    method: 'POST',
+    body: JSON.stringify(breakpoints),
+  });
+}
+
+/**
+ * Releases a simulation paused at a script breakpoint, running to the next
+ * breakpoint or the end of the run.
+ *
+ * @param simulationId Simulation run ID
+ */
+export function debugResume(simulationId: string): Promise<void> {
+  return request(`/simulations/${simulationId}/debug/resume`, { method: 'POST' });
+}
+
+/**
+ * Steps a simulation paused at a script breakpoint by exactly one statement
+ * of the paused block, then pauses again.
+ *
+ * @param simulationId Simulation run ID
+ */
+export function debugStep(simulationId: string): Promise<void> {
+  return request(`/simulations/${simulationId}/debug/step`, { method: 'POST' });
+}
+
+/**
+ * Gets the script debug state: paused-at-breakpoint snapshot plus a live
+ * watch snapshot of every script block.
+ *
+ * @param simulationId Simulation run ID
+ */
+export function getScriptDebugState(simulationId: string): Promise<ScriptDebugState> {
+  return request(`/simulations/${simulationId}/debug/state`);
+}
+
 export interface SimulationStreamHandlers {
   onProgress?: (progress: number, currentTime: number, endTime: number) => void;
   onComplete?: () => void;
   onSimError?: (message: string) => void;
   /** Called when the SSE connection itself fails (simulation outcome unknown). */
   onConnectionError?: () => void;
+  /** Called when the run pauses at a script breakpoint. */
+  onDebugPaused?: (snapshot: ScriptDebugSnapshot) => void;
 }
 
 /**
@@ -425,6 +507,15 @@ export function streamSimulationProgress(
         data.currentTime ?? 0,
         data.endTime ?? 0,
       );
+    } catch {
+      // ignore malformed payloads
+    }
+  });
+
+  source.addEventListener('debug', (event) => {
+    try {
+      const snapshot = JSON.parse((event as MessageEvent).data) as ScriptDebugSnapshot;
+      handlers.onDebugPaused?.(snapshot);
     } catch {
       // ignore malformed payloads
     }

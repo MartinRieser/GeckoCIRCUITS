@@ -4132,3 +4132,260 @@ polyline.wire.selected {
 
 
 
+
+/* ================= Script Block Code Editor & Debugging ================= */
+
+.script-editor {
+  display: flex;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--chart-bg);
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+/* Gutter: breakpoint dots + line numbers */
+.script-editor-gutter {
+  flex: 0 0 38px;
+  overflow: hidden;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  user-select: none;
+}
+
+.script-gutter-line {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  padding-right: 6px;
+  cursor: pointer;
+  color: var(--text-dim);
+}
+
+.script-gutter-line:hover {
+  color: var(--text-muted);
+  background: var(--surface-hover);
+}
+
+.breakpoint-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: transparent;
+  flex: 0 0 auto;
+}
+
+.script-gutter-line.has-breakpoint .breakpoint-dot {
+  background: var(--danger);
+  box-shadow: 0 0 4px rgba(244, 63, 94, 0.6);
+}
+
+.script-gutter-line.paused .breakpoint-dot {
+  background: var(--accent);
+}
+
+.script-gutter-line.paused .gutter-line-number {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* Body: scrolling textarea over a transformed highlight layer */
+.script-editor-body {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.script-editor-layer {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.script-editor-highlight {
+  margin: 0;
+  padding: 8px;
+  white-space: pre;
+  font: inherit;
+  color: var(--text);
+  pointer-events: none;
+  min-width: 100%;
+  box-sizing: border-box;
+}
+
+.script-editor-paused-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  border-top: 1px solid var(--accent);
+  border-bottom: 1px solid var(--accent);
+  pointer-events: none;
+}
+
+.script-editor-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 8px;
+  border: none;
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--accent);
+  white-space: pre;
+  overflow: auto;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.script-editor-input::placeholder {
+  color: var(--text-dim);
+}
+
+.script-editor-input::selection {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+/* Syntax token colors (readable on both dark and light chart backgrounds) */
+.tok-comment {
+  color: var(--text-dim);
+  font-style: italic;
+}
+.tok-number {
+  color: #d97706;
+}
+.tok-keyword {
+  color: #a855f7;
+  font-weight: 600;
+}
+.tok-func {
+  color: #38bdf8;
+}
+.tok-input {
+  color: #f97316;
+}
+.tok-output {
+  color: #22c55e;
+}
+.tok-time {
+  color: #14b8a6;
+}
+.tok-const {
+  color: #ec4899;
+}
+.tok-op {
+  color: var(--text-muted);
+}
+
+/* Debug toolbar between editor and Apply button */
+.script-debug-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  padding: 6px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.script-debug-breakpoint-hint {
+  color: var(--text-muted);
+}
+
+.script-debug-paused-info {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.script-debug-actions {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.script-debug-btn {
+  font-size: 11px;
+  padding: 3px 10px;
+  background: var(--panel-header);
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.script-debug-btn:hover:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.script-debug-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Variable watch panel */
+.script-watch-panel {
+  margin-top: 8px;
+  padding: 8px;
+  background: var(--chart-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.script-watch-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.script-watch-table {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.script-watch-row {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.script-watch-row:hover {
+  background: var(--surface-hover);
+}
+
+.script-watch-name {
+  color: var(--accent);
+}
+
+.script-watch-value {
+  color: var(--text);
+}
+
+.script-watch-empty {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-style: italic;
+}

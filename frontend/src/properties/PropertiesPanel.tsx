@@ -4,7 +4,9 @@
  * unit badges, terminal net label manager, and quick actions (Rotate, Delete, Duplicate).
  */
 import { useEffect, useState, useMemo } from 'react';
-import type { EditorComponent, EditorWire } from '../model/types';
+import type { EditorComponent, EditorWire, SimulationStatus } from '../model/types';
+import type { ScriptDebugSnapshot, ScriptDebugState } from '../api/client';
+import { ScriptCodeEditor } from './ScriptCodeEditor';
 import {
   CTRL_TYPE,
   getComponentMeta,
@@ -28,6 +30,29 @@ import { SymbolPreview } from '../canvas/symbols';
 const CHANNEL_COLORS = CHANNEL_TRACE_COLORS;
 
 /**
+ * Script debug session state and actions shared with the script block editor:
+ * breakpoints per block, the paused-at-breakpoint snapshot, and the polled
+ * watch state of the active run. Optional; the editor hides its debug UI
+ * when absent.
+ */
+export interface ScriptDebugPanelState {
+  /** Current simulation status (null when no run was started yet). */
+  status: SimulationStatus | null;
+  /** Breakpoint source lines per script block (component) name. */
+  breakpoints: Record<string, number[]>;
+  /** Snapshot of the current breakpoint pause (SSE), or null. */
+  debugPause: ScriptDebugSnapshot | null;
+  /** Polled script debug/watch state of the active run, or null. */
+  debugState: ScriptDebugState | null;
+  /** Toggles a breakpoint line of a script block. */
+  onToggleBreakpoint: (blockName: string, line: number) => void;
+  /** Continues the paused run to the next breakpoint. */
+  onDebugResume: () => void;
+  /** Executes one statement of the paused block, then pauses again. */
+  onDebugStep: () => void;
+}
+
+/**
  * Properties for the {@link PropertiesPanel} inspector sidebar.
  */
 export interface PropertiesPanelProps {
@@ -37,6 +62,8 @@ export interface PropertiesPanelProps {
   allComponents?: EditorComponent[];
   /** Schematic wires for signal extraction. */
   wires?: EditorWire[];
+  /** Script debug session state; omit to hide the script debugging UI. */
+  scriptDebug?: ScriptDebugPanelState;
   /** Callback to rename a component. */
   onRename: (name: string, newName: string) => void;
   /** Callback to set or update a component parameter value. */
@@ -63,6 +90,7 @@ export function PropertiesPanel({
   component,
   allComponents,
   wires,
+  scriptDebug,
   onRename,
   onSetParameter,
   onSetLabel,
@@ -586,7 +614,7 @@ export function PropertiesPanel({
         {(component.type === CTRL_TYPE.SCRIPT ||
           component.type === CTRL_TYPE.LEGACY_JAVA_FUNCTION ||
           meta.name === 'CTRL_SCRIPT') ? (
-          <ScriptBlockEditor component={component} onSetParameter={onSetParameter} />
+          <ScriptBlockEditor component={component} onSetParameter={onSetParameter} debug={scriptDebug} />
         ) : (
           meta.parameters.length > 0 && (
             <div className="prop-section">
@@ -981,15 +1009,20 @@ function TerminalLabelRow({
 }
 
 /**
- * Modern programmable Script / Function Block editor with code editor,
- * terminal count adjustment, syntax quick-help, and live validation.
+ * Modern programmable Script / Function Block editor with syntax-highlighted
+ * code editor, breakpoint gutter, debug toolbar (continue/step), variable
+ * watch panel, terminal count adjustment, syntax quick-help, and live
+ * validation. The debug parts are only rendered when a scriptDebug session
+ * is provided.
  */
 function ScriptBlockEditor({
   component,
   onSetParameter,
+  debug,
 }: {
   component: EditorComponent;
   onSetParameter: (name: string, key: string, value: number | string) => void;
+  debug?: ScriptDebugPanelState;
 }) {
   const currentCode = String(component.parameters['sourceCode'] || 'yOUT[0] = xIN[0];');
   const [code, setCode] = useState(currentCode);
@@ -997,6 +1030,41 @@ function ScriptBlockEditor({
   const [outCount, setOutCount] = useState(Number(component.parameters['anzYOUT'] || 1));
   const [syntaxOpen, setSyntaxOpen] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+
+  const breakpoints = debug?.breakpoints[component.name] ?? [];
+  const simActive = debug?.status === 'RUNNING' || debug?.status === 'PAUSED';
+  const debugPausedAnywhere = Boolean(debug?.debugState?.paused) || Boolean(debug?.debugPause);
+
+  // This block's pause: the SSE event first, the polled state as fallback
+  // (covers a breakpoint hit before the SSE stream was subscribed)
+  const pausedSnapshot: ScriptDebugSnapshot | null =
+    debug?.debugPause && debug.debugPause.blockName === component.name
+      ? debug.debugPause
+      : debug?.debugState?.pausedAt && debug.debugState.pausedAt.blockName === component.name
+        ? debug.debugState.pausedAt
+        : null;
+
+  // Watch values: paused snapshot when available, else the live poll snapshot
+  const watchSnapshot: ScriptDebugSnapshot | null =
+    pausedSnapshot ??
+    debug?.debugState?.blocks.find((b) => b.blockName === component.name) ??
+    null;
+
+  const watchRows = useMemo(() => {
+    if (!watchSnapshot) {
+      return [];
+    }
+    const rows: { name: string; value: number; hint: string }[] = [
+      { name: 't', value: watchSnapshot.time, hint: 'simulation time (s)' },
+      { name: 'dt', value: watchSnapshot.dt, hint: 'time step (s)' },
+    ];
+    watchSnapshot.inputs.forEach((value, i) => rows.push({ name: `u${i + 1}`, value, hint: 'input' }));
+    watchSnapshot.outputs.forEach((value, i) => rows.push({ name: `y${i + 1}`, value, hint: 'output' }));
+    Object.entries(watchSnapshot.variables)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .forEach(([name, value]) => rows.push({ name, value, hint: 'state variable' }));
+    return rows;
+  }, [watchSnapshot]);
 
   useEffect(() => {
     setCode(String(component.parameters['sourceCode'] || 'yOUT[0] = xIN[0];'));
@@ -1119,28 +1187,71 @@ function ScriptBlockEditor({
 
       <div className="prop-field">
         <label className="prop-label">Formula / Code (executed each dt)</label>
-        <textarea
-          className="script-code-editor-area"
-          rows={7}
+        <ScriptCodeEditor
           value={code}
-          onChange={(e) => setCode(e.target.value)}
+          onChange={setCode}
+          breakpoints={breakpoints}
+          onToggleBreakpoint={(line) => debug?.onToggleBreakpoint(component.name, line)}
+          pausedLine={pausedSnapshot?.line ?? null}
           onBlur={handleApply}
-          placeholder="yOUT[0] = xIN[0] * 2;"
-          style={{
-            width: '100%',
-            fontFamily: 'Consolas, "Fira Code", monospace',
-            fontSize: '12px',
-            backgroundColor: 'var(--surface-sunken, #0f172a)',
-            color: 'var(--text-primary, #f8fafc)',
-            border: '1px solid var(--border-subtle, #334155)',
-            borderRadius: '6px',
-            padding: '8px',
-            boxSizing: 'border-box',
-            resize: 'vertical',
-            lineHeight: 1.4,
-          }}
         />
       </div>
+
+      {debug && (
+        <div className="script-debug-bar">
+          <span
+            className="script-debug-breakpoint-hint"
+            title="Click a line number in the gutter to toggle a breakpoint"
+          >
+            {breakpoints.length > 0
+              ? `⏺ ${breakpoints.length} breakpoint${breakpoints.length > 1 ? 's' : ''}`
+              : 'Click a line number to add a breakpoint'}
+          </span>
+          {pausedSnapshot && (
+            <span className="script-debug-paused-info">
+              Paused at line {pausedSnapshot.line} · t = {formatEngineeringValue(pausedSnapshot.time)} s
+            </span>
+          )}
+          <div className="script-debug-actions">
+            <button
+              type="button"
+              className="script-debug-btn"
+              onClick={debug.onDebugResume}
+              disabled={!debugPausedAnywhere}
+              title="Continue until the next breakpoint"
+            >
+              ▶ Continue
+            </button>
+            <button
+              type="button"
+              className="script-debug-btn"
+              onClick={debug.onDebugStep}
+              disabled={!debugPausedAnywhere}
+              title="Execute one statement, then pause again"
+            >
+              ↳ Step
+            </button>
+          </div>
+        </div>
+      )}
+
+      {debug && simActive && (
+        <div className="script-watch-panel">
+          <div className="script-watch-title">Watch</div>
+          {watchRows.length > 0 ? (
+            <div className="script-watch-table">
+              {watchRows.map((row) => (
+                <div key={row.name} className="script-watch-row" title={row.hint}>
+                  <span className="script-watch-name">{row.name}</span>
+                  <span className="script-watch-value">{formatEngineeringValue(row.value)}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="script-watch-empty">Waiting for simulation state…</div>
+          )}
+        </div>
+      )}
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
         <button

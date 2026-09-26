@@ -645,6 +645,15 @@ export function App() {
                   }
                   allComponents={state.components}
                   wires={state.wires}
+                  scriptDebug={{
+                    status: simState.status,
+                    breakpoints: simState.scriptBreakpoints,
+                    debugPause: simState.debugPause,
+                    debugState: simState.debugState,
+                    onToggleBreakpoint: actions.toggleScriptBreakpoint,
+                    onDebugResume: actions.debugResume,
+                    onDebugStep: actions.debugStep,
+                  }}
                   onRename={actions.rename}
                   onSetParameter={actions.setParameter}
                   onSetLabel={actions.setLabel}

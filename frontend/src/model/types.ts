@@ -189,6 +189,8 @@ export interface SimulationRequest {
   backend?: string;
   parameters?: Record<string, number>;
   signals?: string[];
+  /** Script debug breakpoints active from the first step: block name to 1-based source lines. */
+  breakpoints?: Record<string, number[]>;
 }
 
 /** Valid execution status state machine states for simulation runs. */

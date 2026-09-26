@@ -474,5 +474,72 @@ describe('PropertiesPanel Overhaul', () => {
     expect(onSetParameter).toHaveBeenCalledWith('CTRL_SCRIPT', 'anzXIN', 1);
     expect(onSetParameter).toHaveBeenCalledWith('CTRL_SCRIPT', 'anzYOUT', 1);
   });
+
+  it('renders script debug bar and watch panel when a debug session is provided', () => {
+    const onToggleBreakpoint = vi.fn();
+    const onDebugResume = vi.fn();
+    const onDebugStep = vi.fn();
+    const scriptComp: EditorComponent = {
+      type: 1016, // ControlComponentType.SCRIPT
+      family: 'CONTROL',
+      name: 'CTRL_SCRIPT',
+      position: [10, 10],
+      orientation: 503,
+      parameters: {
+        sourceCode: 'yOUT[0] = xIN[0];',
+        anzXIN: 1,
+        anzYOUT: 1,
+      },
+      inputLabels: [],
+      outputLabels: [],
+    };
+
+    render(
+      <PropertiesPanel
+        component={scriptComp}
+        allComponents={[scriptComp]}
+        wires={[]}
+        onRename={vi.fn()}
+        onSetParameter={vi.fn()}
+        onSetLabel={vi.fn()}
+        scriptDebug={{
+          status: 'PAUSED',
+          breakpoints: { CTRL_SCRIPT: [2] },
+          debugPause: {
+            blockName: 'CTRL_SCRIPT',
+            line: 2,
+            time: 0.004,
+            dt: 1e-6,
+            variables: { acc: 2.5 },
+            inputs: [1.5],
+            outputs: [0],
+          },
+          debugState: null,
+          onToggleBreakpoint,
+          onDebugResume,
+          onDebugStep,
+        }}
+      />,
+    );
+
+    // Breakpoint hint counts the breakpoint of this block
+    expect(screen.getByText('⏺ 1 breakpoint')).not.toBeNull();
+    // Paused state is shown with the paused line and time
+    expect(screen.getByText(/Paused at line 2/)).not.toBeNull();
+    // Watch panel lists time, inputs, outputs, and state variables
+    expect(screen.getByText('Watch')).not.toBeNull();
+    expect(screen.getByText('acc')).not.toBeNull();
+    expect(screen.getByText('u1')).not.toBeNull();
+
+    // Debug actions delegate to the provided callbacks
+    fireEvent.click(screen.getByRole('button', { name: /Continue/i }));
+    expect(onDebugResume).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole('button', { name: /Step/i }));
+    expect(onDebugStep).toHaveBeenCalledTimes(1);
+
+    // Clicking a gutter line toggles a breakpoint for this block
+    fireEvent.click(screen.getByText('1'));
+    expect(onToggleBreakpoint).toHaveBeenCalledWith('CTRL_SCRIPT', 1);
+  });
 });
 

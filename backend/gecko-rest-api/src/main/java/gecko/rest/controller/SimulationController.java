@@ -346,6 +346,88 @@ public class SimulationController {
     }
 
     /**
+     * Replace the script debug breakpoints of a running simulation.
+     * Body: map of script block (component) name to breakpoint source lines,
+     * e.g. {@code {"CTRL_SCRIPT": [1, 4]}}.
+     *
+     * @param simulationId ID of the running simulation
+     * @param breakpoints block name to 1-based source lines
+     * @return OK when applied
+     */
+    @PostMapping("/{simulationId}/debug/breakpoints")
+    @Operation(summary = "Set script breakpoints",
+            description = "Replace the breakpoint lines per script block of a running simulation")
+    @ApiResponse(responseCode = "200", description = "Breakpoints applied")
+    @ApiResponse(responseCode = "404", description = "Simulation not found")
+    @ApiResponse(responseCode = "409", description = "No debuggable simulation running")
+    public ResponseEntity<Map<String, Object>> setScriptBreakpoints(
+            @Parameter(description = "Simulation ID") @PathVariable String simulationId,
+            @RequestBody Map<String, List<Integer>> breakpoints) {
+
+        simulationService.setScriptBreakpoints(simulationId, breakpoints);
+        return ResponseEntity.ok(Map.of("status", "ok"));
+    }
+
+    /**
+     * Release a simulation paused at a script breakpoint, running to the
+     * next breakpoint or the end of the run.
+     *
+     * @param simulationId ID of the paused simulation
+     * @return OK when released
+     */
+    @PostMapping("/{simulationId}/debug/resume")
+    @Operation(summary = "Resume from script breakpoint",
+            description = "Continue a simulation paused at a script breakpoint until the next breakpoint")
+    @ApiResponse(responseCode = "200", description = "Released")
+    @ApiResponse(responseCode = "404", description = "Simulation not found")
+    @ApiResponse(responseCode = "409", description = "Not paused at a script breakpoint")
+    public ResponseEntity<Void> debugResume(
+            @Parameter(description = "Simulation ID") @PathVariable String simulationId) {
+
+        simulationService.debugResume(simulationId, false);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Step a simulation paused at a script breakpoint by exactly one
+     * statement of the paused block, then pause again.
+     *
+     * @param simulationId ID of the paused simulation
+     * @return OK when the step was accepted
+     */
+    @PostMapping("/{simulationId}/debug/step")
+    @Operation(summary = "Step one script statement",
+            description = "Execute one statement of the paused script block, then pause again")
+    @ApiResponse(responseCode = "200", description = "Step accepted")
+    @ApiResponse(responseCode = "404", description = "Simulation not found")
+    @ApiResponse(responseCode = "409", description = "Not paused at a script breakpoint")
+    public ResponseEntity<Void> debugStep(
+            @Parameter(description = "Simulation ID") @PathVariable String simulationId) {
+
+        simulationService.debugResume(simulationId, true);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Get the script debug state: whether the run is paused at a breakpoint
+     * (including the pause snapshot with all variable values) and a watch
+     * snapshot of every script block.
+     *
+     * @param simulationId ID of the simulation
+     * @return Debug state with paused flag and per-block snapshots
+     */
+    @GetMapping("/{simulationId}/debug/state")
+    @Operation(summary = "Get script debug state",
+            description = "Paused-at-breakpoint snapshot plus a live watch snapshot of every script block")
+    @ApiResponse(responseCode = "200", description = "Debug state retrieved")
+    @ApiResponse(responseCode = "404", description = "Simulation not found")
+    public ResponseEntity<Map<String, Object>> getScriptDebugState(
+            @Parameter(description = "Simulation ID") @PathVariable String simulationId) {
+
+        return ResponseEntity.ok(simulationService.getScriptDebugState(simulationId));
+    }
+
+    /**
      * Export simulation results as CSV.
      *
      * @param simulationId ID of the simulation

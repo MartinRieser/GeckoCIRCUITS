@@ -14,6 +14,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -50,6 +53,13 @@ import java.util.regex.Pattern;
  *
  * <p>Code that cannot be compiled keeps the block's outputs at their initial value;
  * the error is logged once and available via {@link #getCompileError()}.
+ *
+ * <p>Debugging: statements carry 1-based line numbers referring to the original
+ * (un-normalized) source code. When a {@link ScriptDebugHook} is attached via
+ * {@link #setDebugHook(ScriptDebugHook)}, it is consulted before every step-code
+ * statement, enabling breakpoints and single stepping; {@link #snapshot()}
+ * exposes the live variables for watch views. Normalization preserves the
+ * source's line structure so the reported lines match the editor.
  */
 public class ScriptBlockCalculator extends AbstractControlCalculatable implements InitializableAtSimulationStart {
 
@@ -61,12 +71,20 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
     private final int numInputs;
     private final int numOutputs;
 
+    /** Guards {@link #stateVariables} against concurrent watch queries from REST threads. */
+    private final Object stateLock = new Object();
+
     private List<Statement> compiledStatements = new ArrayList<>();
     private List<Statement> compiledInitStatements = new ArrayList<>();
     private final Map<String, Double> stateVariables = new HashMap<>();
     private boolean hasLoggedError = false;
     private boolean hasWarnedDivideByZero = false;
     private String compileError = null;
+
+    /** Name of the owning component (debug/reporting identity), set by the calculator builder. */
+    private volatile String blockName = "";
+    private volatile ScriptDebugHook debugHook;
+    private volatile double lastDeltaT = 0.0;
 
     public ScriptBlockCalculator(int numInputs, int numOutputs, String sourceCode) {
         this(numInputs, numOutputs, sourceCode, "", "");
@@ -123,14 +141,22 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
 
     @Override
     public void initializeAtSimulationStart(double deltaT) {
-        stateVariables.clear();
+        synchronized (stateLock) {
+            stateVariables.clear();
+        }
         hasLoggedError = false;
         hasWarnedDivideByZero = false;
+        lastDeltaT = deltaT;
 
         ExecutionContext ctx = new ExecutionContext(getSimulationTime(), deltaT);
+        // Init/static code is not debuggable: its combined line numbers do not
+        // refer to the step code's source lines the breakpoints anchor to
+        ctx.debugEnabled = false;
         executeStatements(compiledInitStatements, ctx);
         // Persist variables initialized in init block
-        stateVariables.putAll(ctx.variables);
+        synchronized (stateLock) {
+            stateVariables.putAll(ctx.variables);
+        }
     }
 
     /**
@@ -153,9 +179,14 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
 
     @Override
     public void calculateYOUT(double deltaT) {
+        lastDeltaT = deltaT;
         ExecutionContext ctx = new ExecutionContext(getSimulationTime(), deltaT);
+        ctx.hook = debugHook;
+        ctx.debugEnabled = true;
         // Load persistent state
-        ctx.variables.putAll(stateVariables);
+        synchronized (stateLock) {
+            ctx.variables.putAll(stateVariables);
+        }
 
         try {
             executeStatements(compiledStatements, ctx);
@@ -166,10 +197,12 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
             }
 
             // Update persistent variables (excluding inputs/outputs/time)
-            for (Map.Entry<String, Double> entry : ctx.variables.entrySet()) {
-                String key = entry.getKey();
-                if (!isReservedKeyword(key)) {
-                    stateVariables.put(key, entry.getValue());
+            synchronized (stateLock) {
+                for (Map.Entry<String, Double> entry : ctx.variables.entrySet()) {
+                    String key = entry.getKey();
+                    if (!isReservedKeyword(key)) {
+                        stateVariables.put(key, entry.getValue());
+                    }
                 }
             }
         } catch (Exception e) {
@@ -178,6 +211,58 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
                 hasLoggedError = true;
             }
         }
+    }
+
+    /**
+     * Attaches a debug hook consulted before every step-code statement.
+     *
+     * @param hook the hook, or null to detach and run without debug overhead
+     */
+    public void setDebugHook(ScriptDebugHook hook) {
+        this.debugHook = hook;
+    }
+
+    /**
+     * Sets the block identity reported to debug hooks and snapshots.
+     *
+     * @param name owning component name, or null for an unnamed block
+     */
+    public void setBlockName(String name) {
+        this.blockName = name != null ? name : "";
+    }
+
+    /**
+     * Captures the block's current state (variables, inputs, outputs, time)
+     * as an immutable snapshot for watch/inspection endpoints. Safe to call
+     * from a non-simulation thread; the state variables are read under lock.
+     *
+     * @return snapshot of the current state, with the paused line set to -1
+     */
+    public ScriptDebugSnapshot snapshot() {
+        synchronized (stateLock) {
+            return new ScriptDebugSnapshot(blockName, -1, getSimulationTime(), lastDeltaT,
+                    new HashMap<>(stateVariables), inputValues(), outputValues());
+        }
+    }
+
+    private double[] inputValues() {
+        double[] values = new double[numInputs];
+        for (int i = 0; i < numInputs; i++) {
+            if (_inputSignal != null && i < _inputSignal.length && _inputSignal[i] != null) {
+                values[i] = _inputSignal[i][0];
+            }
+        }
+        return values;
+    }
+
+    private double[] outputValues() {
+        double[] values = new double[numOutputs];
+        for (int i = 0; i < numOutputs; i++) {
+            if (_outputSignal != null && i < _outputSignal.length && _outputSignal[i] != null) {
+                values[i] = _outputSignal[i][0];
+            }
+        }
+        return values;
     }
 
     public int getNumInputs() {
@@ -196,43 +281,91 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
     // Code Normalization for Classic Java Block Compatibility
     // =========================================================================
 
+    /**
+     * Replaces every match of the pattern, re-inserting the match's newline
+     * count after the replacement so that statement line numbers - the
+     * breakpoint anchors reported to the debug hook - keep referring to the
+     * original source lines.
+     *
+     * @param input text to transform
+     * @param pattern pattern to replace
+     * @param replacement match-to-replacement function; newlines in the
+     *        result are collapsed to spaces
+     * @return transformed text with the same line structure
+     */
+    private static String replaceAllKeepLines(String input, Pattern pattern,
+                                              Function<MatchResult, String> replacement) {
+        Matcher matcher = pattern.matcher(input);
+        StringBuffer result = new StringBuffer();
+        while (matcher.find()) {
+            String replacementText = replacement.apply(matcher).replaceAll("[\\r\\n]", " ");
+            int newlineCount = 0;
+            for (int i = 0; i < matcher.group().length(); i++) {
+                if (matcher.group().charAt(i) == '\n') {
+                    newlineCount++;
+                }
+            }
+            matcher.appendReplacement(result,
+                    Matcher.quoteReplacement(replacementText) + "\n".repeat(newlineCount));
+        }
+        matcher.appendTail(result);
+        return result.toString();
+    }
+
     public static String normalizeCode(String code) {
         if (code == null) {
             return "";
         }
 
-        // Remove comments
-        String cleaned = code.replaceAll("//.*", "");
-        cleaned = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL).matcher(cleaned).replaceAll("");
+        // Remove comments (block comments may span lines)
+        String cleaned = replaceAllKeepLines(code, Pattern.compile("//.*"), match -> "");
+        cleaned = replaceAllKeepLines(cleaned, Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL), match -> "");
 
         // Normalize Math.method calls to direct method calls
-        cleaned = cleaned.replaceAll("\\bMath\\.", "");
+        cleaned = replaceAllKeepLines(cleaned, Pattern.compile("\\bMath\\."), match -> "");
 
         // Remove Java type keywords: double, int, float, final, etc.
-        cleaned = cleaned.replaceAll("\\b(double|int|float|long|boolean|final)\\s*\\[\\s*\\]\\s*\\[\\s*\\]", "");
-        cleaned = cleaned.replaceAll("\\b(double|int|float|long|boolean|final)\\s*\\[\\s*\\]", "");
-        cleaned = cleaned.replaceAll("\\b(double|int|float|long|boolean|final)\\s+", "");
-        cleaned = cleaned.replaceAll("(\\[\\s*\\]\\s*)+([a-zA-Z_])", "$2");
+        cleaned = replaceAllKeepLines(cleaned,
+                Pattern.compile("\\b(double|int|float|long|boolean|final)\\s*\\[\\s*\\]\\s*\\[\\s*\\]"), match -> "");
+        cleaned = replaceAllKeepLines(cleaned,
+                Pattern.compile("\\b(double|int|float|long|boolean|final)\\s*\\[\\s*\\]"), match -> "");
+        cleaned = replaceAllKeepLines(cleaned,
+                Pattern.compile("\\b(double|int|float|long|boolean|final)\\s+"), match -> "");
+        cleaned = replaceAllKeepLines(cleaned,
+                Pattern.compile("(\\[\\s*\\]\\s*)+([a-zA-Z_])"), match -> match.group(2));
 
         // Desugar compound assignments: `x += y;` -> `x = x + (y);`, etc.
-        cleaned = cleaned.replaceAll("\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\+=\\s*([^;]+);", "$1 = $1 + ($2);");
-        cleaned = cleaned.replaceAll("\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*-=\\s*([^;]+);", "$1 = $1 - ($2);");
-        cleaned = cleaned.replaceAll("\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\*=\\s*([^;]+);", "$1 = $1 * ($2);");
-        cleaned = cleaned.replaceAll("\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*/=\\s*([^;]+);", "$1 = $1 / ($2);");
+        cleaned = replaceAllKeepLines(cleaned,
+                Pattern.compile("\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\+=\\s*([^;]+);"),
+                match -> match.group(1) + " = " + match.group(1) + " + (" + match.group(2) + ");");
+        cleaned = replaceAllKeepLines(cleaned,
+                Pattern.compile("\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*-=\\s*([^;]+);"),
+                match -> match.group(1) + " = " + match.group(1) + " - (" + match.group(2) + ");");
+        cleaned = replaceAllKeepLines(cleaned,
+                Pattern.compile("\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\*=\\s*([^;]+);"),
+                match -> match.group(1) + " = " + match.group(1) + " * (" + match.group(2) + ");");
+        cleaned = replaceAllKeepLines(cleaned,
+                Pattern.compile("\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*/=\\s*([^;]+);"),
+                match -> match.group(1) + " = " + match.group(1) + " / (" + match.group(2) + ");");
 
         // Neutralize `new <type>[...]` array allocations. Initializer expressions
         // become 0 (`double buf[] = new double[4];` -> `double buf[] = 0;`) and
         // standalone allocation statements vanish (`new double[4];` -> `;`).
-        cleaned = cleaned.replaceAll("=\\s*new\\s+[a-zA-Z0-9_]+\\s*(?:\\s*\\[[^\\]]*\\])+", "= 0");
-        cleaned = cleaned.replaceAll("\\bnew\\s+[a-zA-Z0-9_]+\\s*(?:\\s*\\[[^\\]]*\\])+\\s*;", ";");
+        cleaned = replaceAllKeepLines(cleaned,
+                Pattern.compile("=\\s*new\\s+[a-zA-Z0-9_]+\\s*(?:\\s*\\[[^\\]]*\\])+"), match -> "= 0");
+        cleaned = replaceAllKeepLines(cleaned,
+                Pattern.compile("\\bnew\\s+[a-zA-Z0-9_]+\\s*(?:\\s*\\[[^\\]]*\\])+\\s*;"), match -> ";");
 
         // Drop empty `[]` declarator suffixes left over from array declarations
         // (`double buf[] = 0;` -> `buf = 0;`, including `m[][]`) so the statement
         // parses as an assignment
-        cleaned = cleaned.replaceAll("\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?:\\[\\s*\\]\\s*)+(?==)", "$1 ");
+        cleaned = replaceAllKeepLines(cleaned,
+                Pattern.compile("\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?:\\[\\s*\\]\\s*)+(?==)"),
+                match -> match.group(1) + " ");
 
         // Normalize array literal assignments like "= {{...}};" or "= {...};" to "= 0;"
-        cleaned = cleaned.replaceAll("(?s)=\\s*\\{.*?\\}\\s*;", "= 0;");
+        cleaned = replaceAllKeepLines(cleaned,
+                Pattern.compile("=\\s*\\{.*?\\}\\s*;", Pattern.DOTALL), match -> "= 0;");
 
         // Replace top-level commas (outside parentheses, brackets, braces) with semicolons
         StringBuilder splitComma = new StringBuilder();
@@ -256,10 +389,12 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
         cleaned = splitComma.toString();
 
         // Remove return statements like "return yOUT;" or "return;"
-        cleaned = cleaned.replaceAll("\\breturn\\s+[^;]*;", "");
-        cleaned = cleaned.replaceAll("\\breturn\\s*;", "");
+        cleaned = replaceAllKeepLines(cleaned, Pattern.compile("\\breturn\\s+[^;]*;"), match -> "");
+        cleaned = replaceAllKeepLines(cleaned, Pattern.compile("\\breturn\\s*;"), match -> "");
 
-        return cleaned.trim();
+        // Only spaces/tabs are trimmed: newline runs must survive so statement
+        // line numbers keep matching the original source (breakpoint anchors)
+        return cleaned.replaceAll("^[ \\t]+", "").replaceAll("[ \\t]+$", "");
     }
 
     /**
@@ -291,12 +426,14 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
     // Execution Context
     // =========================================================================
 
-    private class ExecutionContext {
+    private class ExecutionContext implements ScriptDebugContext {
         final double time;
         final double dt;
         final double[] inputs;
         final double[] outputs;
         final Map<String, Double> variables = new HashMap<>();
+        ScriptDebugHook hook;
+        boolean debugEnabled;
 
         ExecutionContext(double time, double dt) {
             this.time = time;
@@ -364,10 +501,60 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
         void warnDivideByZero() {
             ScriptBlockCalculator.this.warnDivideByZero();
         }
+
+        @Override
+        public String blockName() {
+            return ScriptBlockCalculator.this.blockName;
+        }
+
+        @Override
+        public double timeSeconds() {
+            return time;
+        }
+
+        @Override
+        public double stepWidth() {
+            return dt;
+        }
+
+        @Override
+        public Map<String, Double> userVariables() {
+            return variables;
+        }
+
+        @Override
+        public double[] inputSignals() {
+            return inputs;
+        }
+
+        @Override
+        public double[] outputSignals() {
+            return outputs;
+        }
+
+        /**
+         * Notifies the debug hook before a statement executes (no-op when
+         * debugging is off, no hook is attached, or the statement carries no
+         * line number). Called for top-level and if-branch statements alike.
+         */
+        void beforeStatement(Statement stmt) {
+            if (debugEnabled && hook != null && stmt.line() > 0) {
+                hook.beforeStatement(this, stmt.line());
+            }
+        }
     }
 
+    /**
+     * Executes the statements in order, notifying the debug hook before each
+     * statement when debug mode is active. Also used for the branches of
+     * {@link IfStatement} so nested statements pause at their own lines.
+     *
+     * @param statements compiled statements to execute
+     * @param ctx execution context carrying the debug hook and mode
+     */
     private void executeStatements(List<Statement> statements, ExecutionContext ctx) {
         for (Statement stmt : statements) {
+            ctx.beforeStatement(stmt);
             stmt.execute(ctx);
         }
     }
@@ -378,6 +565,9 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
 
     private interface Statement {
         void execute(ExecutionContext ctx);
+
+        /** 1-based source line of the statement (0 for synthetic no-ops). */
+        int line();
     }
 
     private interface Expr {
@@ -390,14 +580,21 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
         final Expr valueExpr;
         final boolean isOutputArray;
         final boolean isInputArray;
+        final int line;
 
-        AssignmentStatement(String varName, Expr indexExpr, Expr valueExpr) {
+        AssignmentStatement(String varName, Expr indexExpr, Expr valueExpr, int line) {
             this.varName = varName;
             this.indexExpr = indexExpr;
             this.valueExpr = valueExpr;
+            this.line = line;
             String lower = varName.toLowerCase(Locale.ROOT);
             this.isOutputArray = lower.equals("yout") || lower.equals("y");
             this.isInputArray = lower.equals("xin") || lower.equals("in");
+        }
+
+        @Override
+        public int line() {
+            return line;
         }
 
         @Override
@@ -427,32 +624,44 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
         final Expr condition;
         final List<Statement> thenBranch;
         final List<Statement> elseBranch;
+        final int line;
 
-        IfStatement(Expr condition, List<Statement> thenBranch, List<Statement> elseBranch) {
+        IfStatement(Expr condition, List<Statement> thenBranch, List<Statement> elseBranch, int line) {
             this.condition = condition;
             this.thenBranch = thenBranch;
             this.elseBranch = elseBranch != null ? elseBranch : List.of();
+            this.line = line;
+        }
+
+        @Override
+        public int line() {
+            return line;
         }
 
         @Override
         public void execute(ExecutionContext ctx) {
-            if (condition.eval(ctx) != 0.0) {
-                for (Statement s : thenBranch) {
-                    s.execute(ctx);
-                }
-            } else {
-                for (Statement s : elseBranch) {
-                    s.execute(ctx);
-                }
+            List<Statement> branch = condition.eval(ctx) != 0.0 ? thenBranch : elseBranch;
+            for (Statement statement : branch) {
+                // Route through the context so branch statements also hit
+                // breakpoints on their own lines
+                ctx.beforeStatement(statement);
+                statement.execute(ctx);
             }
         }
     }
 
     private static class ExpressionStatement implements Statement {
         final Expr expr;
+        final int line;
 
-        ExpressionStatement(Expr expr) {
+        ExpressionStatement(Expr expr, int line) {
             this.expr = expr;
+            this.line = line;
+        }
+
+        @Override
+        public int line() {
+            return line;
         }
 
         @Override
@@ -658,8 +867,19 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
         return statements;
     }
 
-    private static final Statement NO_OP = ctx -> {
-    };
+    /** Synthetic no-op for stripped statements that must not clobber outputs. */
+    private static final class NoOpStatement implements Statement {
+        @Override
+        public void execute(ExecutionContext ctx) {
+        }
+
+        @Override
+        public int line() {
+            return 0;
+        }
+    }
+
+    private static final Statement NO_OP = new NoOpStatement();
 
     private enum TokenType {
         NUMBER, IDENTIFIER, OPERATOR, LPAREN, RPAREN, LBRACKET, RBRACKET,
@@ -670,15 +890,17 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
         final TokenType type;
         final String text;
         final double numberValue;
+        final int line;
 
         Token(TokenType type, String text) {
-            this(type, text, 0.0);
+            this(type, text, 0.0, 1);
         }
 
-        Token(TokenType type, String text, double numberValue) {
+        Token(TokenType type, String text, double numberValue, int line) {
             this.type = type;
             this.text = text;
             this.numberValue = numberValue;
+            this.line = line;
         }
 
         boolean isEOF() {
@@ -689,6 +911,7 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
     private static class Lexer {
         private final String input;
         private int pos = 0;
+        private int line = 1;
 
         Lexer(String input) {
             this.input = input;
@@ -697,8 +920,10 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
         Token nextToken() {
             skipWhitespace();
             if (pos >= input.length()) {
-                return new Token(TokenType.EOF, "");
+                return new Token(TokenType.EOF, "", 0.0, line);
             }
+            // Tokens never span lines (comments are stripped during normalization)
+            final int tokenLine = line;
 
             char c = input.charAt(pos);
 
@@ -720,7 +945,7 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
                 }
                 String text = input.substring(start, pos);
                 double val = Double.parseDouble(text);
-                return new Token(TokenType.NUMBER, text, val);
+                return new Token(TokenType.NUMBER, text, val, tokenLine);
             }
 
             // Identifiers / Keywords
@@ -731,12 +956,12 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
                 }
                 String id = input.substring(start, pos);
                 if (id.equals("if")) {
-                    return new Token(TokenType.IF, id);
+                    return new Token(TokenType.IF, id, 0.0, tokenLine);
                 }
                 if (id.equals("else")) {
-                    return new Token(TokenType.ELSE, id);
+                    return new Token(TokenType.ELSE, id, 0.0, tokenLine);
                 }
-                return new Token(TokenType.IDENTIFIER, id);
+                return new Token(TokenType.IDENTIFIER, id, 0.0, tokenLine);
             }
 
             // Multi-char operators
@@ -745,30 +970,34 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
                 if (twoChar.equals("==") || twoChar.equals("!=") || twoChar.equals("<=")
                         || twoChar.equals(">=") || twoChar.equals("&&") || twoChar.equals("||")) {
                     pos += 2;
-                    return new Token(TokenType.OPERATOR, twoChar);
+                    return new Token(TokenType.OPERATOR, twoChar, 0.0, tokenLine);
                 }
             }
 
             // Single-char operators and punctuation
             pos++;
             return switch (c) {
-                case '(' -> new Token(TokenType.LPAREN, "(");
-                case ')' -> new Token(TokenType.RPAREN, ")");
-                case '[' -> new Token(TokenType.LBRACKET, "[");
-                case ']' -> new Token(TokenType.RBRACKET, "]");
-                case '{' -> new Token(TokenType.LBRACE, "{");
-                case '}' -> new Token(TokenType.RBRACE, "}");
-                case ',' -> new Token(TokenType.COMMA, ",");
-                case ';' -> new Token(TokenType.SEMICOLON, ";");
-                case '?' -> new Token(TokenType.QUESTION, "?");
-                case ':' -> new Token(TokenType.COLON, ":");
-                case '+', '-', '*', '/', '%', '^', '<', '>', '=', '!' -> new Token(TokenType.OPERATOR, String.valueOf(c));
-                default -> new Token(TokenType.OPERATOR, String.valueOf(c));
+                case '(' -> new Token(TokenType.LPAREN, "(", 0.0, tokenLine);
+                case ')' -> new Token(TokenType.RPAREN, ")", 0.0, tokenLine);
+                case '[' -> new Token(TokenType.LBRACKET, "[", 0.0, tokenLine);
+                case ']' -> new Token(TokenType.RBRACKET, "]", 0.0, tokenLine);
+                case '{' -> new Token(TokenType.LBRACE, "{", 0.0, tokenLine);
+                case '}' -> new Token(TokenType.RBRACE, "}", 0.0, tokenLine);
+                case ',' -> new Token(TokenType.COMMA, ",", 0.0, tokenLine);
+                case ';' -> new Token(TokenType.SEMICOLON, ";", 0.0, tokenLine);
+                case '?' -> new Token(TokenType.QUESTION, "?", 0.0, tokenLine);
+                case ':' -> new Token(TokenType.COLON, ":", 0.0, tokenLine);
+                case '+', '-', '*', '/', '%', '^', '<', '>', '=', '!' ->
+                    new Token(TokenType.OPERATOR, String.valueOf(c), 0.0, tokenLine);
+                default -> new Token(TokenType.OPERATOR, String.valueOf(c), 0.0, tokenLine);
             };
         }
 
         private void skipWhitespace() {
             while (pos < input.length() && Character.isWhitespace(input.charAt(pos))) {
+                if (input.charAt(pos) == '\n') {
+                    line++;
+                }
                 pos++;
             }
         }
@@ -815,13 +1044,14 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
         }
 
         Statement parseStatement() {
+            final int statementLine = peek().line;
             if (peek().type == TokenType.SEMICOLON) {
                 consume();
                 return null;
             }
 
             if (peek().type == TokenType.IF) {
-                return parseIfStatement();
+                return parseIfStatement(statementLine);
             }
 
             // Check for comma-separated identifier declarations (e.g. "alpha, beta, d, q, theta;")
@@ -849,7 +1079,7 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
                 if (peek().type == TokenType.SEMICOLON) {
                     consume();
                 }
-                return new AssignmentStatement(id.text, indexExpr, value);
+                return new AssignmentStatement(id.text, indexExpr, value, id.line);
             }
 
             // General expression statement
@@ -857,7 +1087,7 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
             if (peek().type == TokenType.SEMICOLON) {
                 consume();
             }
-            return new ExpressionStatement(expr);
+            return new ExpressionStatement(expr, statementLine);
         }
 
         private boolean isAssignment() {
@@ -886,7 +1116,7 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
             return false;
         }
 
-        private Statement parseIfStatement() {
+        private Statement parseIfStatement(int statementLine) {
             consume(TokenType.IF);
             consume(TokenType.LPAREN);
             Expr condition = parseExpression();
@@ -900,7 +1130,7 @@ public class ScriptBlockCalculator extends AbstractControlCalculatable implement
                 elseBranch = parseBlockOrStatement();
             }
 
-            return new IfStatement(condition, thenBranch, elseBranch);
+            return new IfStatement(condition, thenBranch, elseBranch, statementLine);
         }
 
         private List<Statement> parseBlockOrStatement() {

@@ -1,6 +1,7 @@
 package gecko.rest.service;
 
 import gecko.core.allg.SolverType;
+import gecko.core.control.calculators.ScriptDebugSnapshot;
 import gecko.core.datacontainer.DataContainerGlobal;
 import gecko.core.io.CircuitFileParser;
 import gecko.core.io.CircuitModel;
@@ -21,9 +22,10 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -67,6 +69,7 @@ public class SimulationService {
     private final Map<String, HeadlessSimulationEngine> runningEngines = new ConcurrentHashMap<>();
     private final Map<String, List<SseEmitter>> progressEmitters = new ConcurrentHashMap<>();
     private final Map<String, BatchSimulationResponse> batchStore = new ConcurrentHashMap<>();
+    private final Map<String, ScriptDebugSession> debugSessions = new ConcurrentHashMap<>();
     private final ExecutorService executorService = Executors.newFixedThreadPool(
             Math.max(2, Runtime.getRuntime().availableProcessors() - 1)
     );
@@ -256,13 +259,23 @@ public class SimulationService {
             HeadlessSimulationEngine engine = new HeadlessSimulationEngine();
             runningEngines.put(simulationId, engine);
 
+            // Script debug session: breakpoint/step hook blocking the engine
+            // thread; released via the REST debug endpoints or cancellation
+            ScriptDebugSession debugSession = new ScriptDebugSession(request.getBreakpoints(),
+                    snapshot -> broadcastDebugPause(simulationId, snapshot), engine::isCancelRequested);
+            debugSessions.put(simulationId, debugSession);
+            engine.setScriptDebugHook(debugSession);
+
             // Wall-clock backstop: the listener cancels the engine when the
             // run exceeds its budget instead of burning CPU forever (e.g.
-            // NaN loops). Not an exact progress measure.
+            // NaN loops). Not an exact progress measure. Paused wall time -
+            // manual pause and script-debug breakpoints - is excluded so
+            // interactive debugging does not consume the budget.
             final long deadline = System.currentTimeMillis() + HEADLESS_TIME_BUDGET_MS;
             final boolean[] budgetExceeded = {false};
             engine.setProgressListener((currentTime, endTime, currentStep) -> {
-                if (System.currentTimeMillis() > deadline) {
+                long pausedMs = engine.getPausedWallTimeMs() + debugSession.getTotalPausedTimeMs();
+                if (System.currentTimeMillis() > deadline + pausedMs) {
                     budgetExceeded[0] = true;
                     engine.cancel();
                 }
@@ -320,6 +333,7 @@ public class SimulationService {
             }
         } finally {
             runningEngines.remove(simulationId);
+            debugSessions.remove(simulationId);
         }
     }
 
@@ -436,6 +450,114 @@ public class SimulationService {
             markCancelled(response);
         }
         return response;
+    }
+
+    // ========== Script Debugging ==========
+
+    /** Serializes debug snapshots for the 'debug' SSE event payload. */
+    private static final com.fasterxml.jackson.databind.ObjectMapper DEBUG_SNAPSHOT_JSON =
+            new com.fasterxml.jackson.databind.ObjectMapper();
+
+    /**
+     * Replaces the script breakpoints of a running simulation's debug session.
+     *
+     * @param simulationId simulation identifier
+     * @param linesByBlock block name to 1-based breakpoint source lines
+     * @throws ResponseStatusException 404 if the simulation is unknown,
+     *         409 if no debuggable simulation is running
+     */
+    public void setScriptBreakpoints(String simulationId, Map<String, List<Integer>> linesByBlock) {
+        ScriptDebugSession session = requireDebugSession(simulationId);
+        session.setBreakpoints(linesByBlock);
+        logger.info("Updated script breakpoints for simulation {}: {}", simulationId, linesByBlock);
+    }
+
+    /**
+     * Releases a simulation paused at a script breakpoint.
+     *
+     * @param simulationId simulation identifier
+     * @param step true to execute exactly one more statement of the paused
+     *        block and pause again, false to run to the next breakpoint
+     * @throws ResponseStatusException 404/409 when the simulation is unknown
+     *         or not paused at a script breakpoint
+     */
+    public void debugResume(String simulationId, boolean step) {
+        ScriptDebugSession session = requireDebugSession(simulationId);
+        if (!session.isPaused() || !session.release(step)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Simulation is not paused at a script breakpoint: " + simulationId);
+        }
+        logger.info("{} script debug for simulation {}", step ? "Stepped" : "Resumed", simulationId);
+    }
+
+    /**
+     * Gets the current script debug state: whether the run is paused at a
+     * breakpoint (with the pause snapshot) and a watch snapshot of every
+     * script block.
+     *
+     * @param simulationId simulation identifier
+     * @return map with {@code paused}, optional {@code pausedAt}, and {@code blocks}
+     * @throws ResponseStatusException 404 if the simulation is unknown
+     */
+    public Map<String, Object> getScriptDebugState(String simulationId) {
+        SimulationResponse response = simulationStore.get(simulationId);
+        if (response == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Simulation not found: " + simulationId);
+        }
+        ScriptDebugSession session = debugSessions.get(simulationId);
+        HeadlessSimulationEngine engine = runningEngines.get(simulationId);
+        Map<String, Object> state = new LinkedHashMap<>();
+        state.put("simulationId", simulationId);
+        ScriptDebugSnapshot paused = session != null ? session.pausedSnapshot() : null;
+        state.put("paused", paused != null);
+        if (paused != null) {
+            state.put("pausedAt", paused);
+        }
+        state.put("blocks", engine != null ? engine.getScriptBlockSnapshots() : List.of());
+        return state;
+    }
+
+    private ScriptDebugSession requireDebugSession(String simulationId) {
+        if (simulationStore.get(simulationId) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Simulation not found: " + simulationId);
+        }
+        ScriptDebugSession session = debugSessions.get(simulationId);
+        if (session == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "No debuggable simulation is running: " + simulationId);
+        }
+        return session;
+    }
+
+    /**
+     * Broadcasts a 'debug' SSE event carrying the snapshot of a script
+     * breakpoint pause. Called on the simulation thread while it is blocked
+     * in the debug hook.
+     *
+     * @param simulationId simulation identifier
+     * @param snapshot pause snapshot of the script block
+     */
+    public void broadcastDebugPause(String simulationId, ScriptDebugSnapshot snapshot) {
+        List<SseEmitter> emitters = progressEmitters.get(simulationId);
+        if (emitters == null || emitters.isEmpty()) {
+            return;
+        }
+        String data;
+        try {
+            data = DEBUG_SNAPSHOT_JSON.writeValueAsString(snapshot);
+        } catch (Exception e) {
+            logger.warn("Failed to serialize script debug snapshot: {}", e.getMessage());
+            return;
+        }
+        List<SseEmitter> dead = new ArrayList<>();
+        for (SseEmitter emitter : emitters) {
+            try {
+                emitter.send(SseEmitter.event().name("debug").data(data));
+            } catch (Exception e) {
+                dead.add(emitter);
+            }
+        }
+        dead.forEach(e -> removeEmitter(simulationId, e));
     }
 
     /**
