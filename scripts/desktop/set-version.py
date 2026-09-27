@@ -6,6 +6,8 @@ Usage: python scripts/desktop/set-version.py 1.2.3
 Updates desktop/app/tauri.conf.json, desktop Cargo.toml files, pom.xml files,
 backend/gecko-rest-api application properties (app.version),
 and frontend/package.json. CI calls this with the v* tag before building installers.
+Accepts an optional semver pre-release suffix (e.g. 1.2.3-rc.1) so release
+candidate tags can be built without a separate versioning scheme.
 """
 
 import json
@@ -43,9 +45,18 @@ def update_cargo_version(cargo_path: Path, new_version: str):
     cargo_path.write_text(new_text, encoding="utf-8")
 
 
+# Semver with an optional pre-release suffix, e.g. 1.2.3 or 1.2.3-rc.1.
+# Every version-carrying file updated below accepts semver pre-release
+# identifiers (tauri.conf.json / package.json / Cargo.toml require them,
+# Maven is lenient), so release candidates like v3.1.0-rc.1 work end to end.
+VERSION_PATTERN = r"\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
+
+
 def main():
-    if len(sys.argv) != 2 or not re.fullmatch(r"\d+\.\d+\.\d+", sys.argv[1].strip().lstrip("v")):
-        raise SystemExit("usage: set-version.py <major.minor.patch> (optional leading 'v')")
+    if len(sys.argv) != 2 or not re.fullmatch(VERSION_PATTERN, sys.argv[1].strip().lstrip("v")):
+        raise SystemExit(
+            "usage: set-version.py <major.minor.patch>[-pre-release] (optional leading 'v')"
+        )
     version = sys.argv[1].strip().lstrip("v")
 
     conf = json.loads(TAURI_CONF.read_text(encoding="utf-8"))
