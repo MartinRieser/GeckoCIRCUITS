@@ -209,9 +209,15 @@ def smoke_test():
              "--circuit", SMOKE_CIRCUIT, "--output", output, "--quiet"])
         with output.open() as handle:
             rows = list(csv.reader(handle))
-        if len(rows) < 1000 or rows[0] != ["time", "u_out"]:
-            raise SystemExit(f"ERROR: unexpected smoke output ({len(rows)} rows)")
-        print(f"  {len(rows) - 1} data rows, header {rows[0]}")
+        # The engine exports all node voltages in addition to labeled probe
+        # signals, so match the columns we depend on instead of the exact
+        # header: time first, and the scope signal u_out somewhere after it.
+        header = rows[0] if rows else []
+        if len(rows) < 1000 or not header or header[0] != "time" or "u_out" not in header:
+            raise SystemExit(
+                f"ERROR: unexpected smoke output (header={header}, {len(rows)} rows)"
+            )
+        print(f"  {len(rows) - 1} data rows, header {header}")
 
 
 def main():
