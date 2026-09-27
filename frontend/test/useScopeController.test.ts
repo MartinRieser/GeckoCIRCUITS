@@ -182,4 +182,57 @@ describe('useScopeController hook', () => {
     });
     expect(result.current.drawerTab).toBeNull();
   });
+
+  it('loads persisted per-scope settings and resets them symmetrically when switching scopes', () => {
+    const scopeWithSettings: EditorComponent = {
+      ...dummyComponents[0],
+      name: 'SCOPE.A',
+      parameters: { yScaleMode: 'auto', hiddenSignals: 'v_out', cursorsEnabled: true },
+    };
+    const scopeWithoutSettings: EditorComponent = {
+      ...dummyComponents[0],
+      name: 'SCOPE.B',
+      parameters: {},
+    };
+
+    const props = { results: dummyResults, components: [scopeWithSettings, scopeWithoutSettings] };
+    const { result, rerender } = renderHook(
+      (selectedScope: string) => useScopeController({ ...props, selectedScope }),
+      { initialProps: 'SCOPE.A' },
+    );
+
+    // Persisted settings of SCOPE.A are applied
+    expect(result.current.yScaleMode).toBe('auto');
+    expect(result.current.hiddenSignals).toEqual({ v_out: true });
+    expect(result.current.cursorsEnabled).toBe(true);
+
+    // Switching to SCOPE.B, which has no saved values, resets every
+    // per-scope setting to its default instead of leaking SCOPE.A's state
+    rerender('SCOPE.B');
+    expect(result.current.yScaleMode).toBe('fixed');
+    expect(result.current.hiddenSignals).toEqual({});
+    expect(result.current.cursorsEnabled).toBe(false);
+
+    // Switching back re-applies the persisted values
+    rerender('SCOPE.A');
+    expect(result.current.yScaleMode).toBe('auto');
+    expect(result.current.hiddenSignals).toEqual({ v_out: true });
+    expect(result.current.cursorsEnabled).toBe(true);
+  });
+
+  it('accepts legacy string cursorsEnabled values from persisted parameters', () => {
+    const scopeWithStringFlag: EditorComponent = {
+      ...dummyComponents[0],
+      name: 'SCOPE.C',
+      parameters: { cursorsEnabled: 'true' },
+    };
+    const { result } = renderHook(() =>
+      useScopeController({
+        results: dummyResults,
+        components: [scopeWithStringFlag],
+        selectedScope: 'SCOPE.C',
+      }),
+    );
+    expect(result.current.cursorsEnabled).toBe(true);
+  });
 });

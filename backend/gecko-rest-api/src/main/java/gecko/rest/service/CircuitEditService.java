@@ -3,6 +3,7 @@ package gecko.rest.service;
 import gecko.core.circuit.ComponentTerminals;
 import gecko.core.circuit.circuitcomponents.CircuitTypCore;
 import gecko.core.io.CircuitModel;
+import gecko.core.io.ScopeSettingsKeys;
 import gecko.rest.model.circuit.CatalogResponse;
 import gecko.rest.model.circuit.CircuitChangeMessage;
 import gecko.rest.model.circuit.ComponentCreateRequest;
@@ -835,8 +836,28 @@ public class CircuitEditService {
         }
     }
 
+    /**
+     * Classic .ipes CONTROL-family scope type number. Kept as a local constant
+     * because the unified {@link CircuitTypCore} namespace already assigns 5 to
+     * the electrical current source LK_I; the CONTROL family only reuses the
+     * number inside its own blocks.
+     */
+    private static final int LEGACY_CONTROL_SCOPE_TYPE = 5;
+
+    /**
+     * Named (non {@code param<index>}) parameters accepted by
+     * {@link #applyParameterMap}. Only control/scope blocks may carry them:
+     * modern catalog scopes ({@link CircuitTypCore#CTRL_SCOPE}), classic
+     * CONTROL typ-5 scopes, any CONTROL-family block, and blocks following the
+     * conventional SCOPE/OSZI name prefix used by imported legacy files (the
+     * same detection heuristic the frontend applies).
+     */
     private static boolean isNamedControlParameter(CircuitModel.ComponentData comp, String key) {
-        return "CONTROL".equals(comp.getFamily()) && (
+        boolean isControlOrScope = "CONTROL".equalsIgnoreCase(comp.getFamily())
+                || comp.getType() == CircuitTypCore.CTRL_SCOPE.getTypeNumber()
+                || comp.getType() == LEGACY_CONTROL_SCOPE_TYPE
+                || (comp.getName() != null && (comp.getName().startsWith("SCOPE") || comp.getName().startsWith("OSZI")));
+        return isControlOrScope && (
                 "sourceCode".equals(key) ||
                 "staticCode".equals(key) ||
                 "staticVariables".equals(key) ||
@@ -846,7 +867,8 @@ public class CircuitEditService {
                 "nodeB".equals(key) ||
                 "positiveNode".equals(key) ||
                 "negativeNode".equals(key) ||
-                "measuredComponent".equals(key)
+                "measuredComponent".equals(key) ||
+                ScopeSettingsKeys.ALL_KEYS.contains(key)
         );
     }
 

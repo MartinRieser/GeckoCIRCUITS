@@ -6,6 +6,15 @@
 import { useEffect, useState, useMemo } from 'react';
 import type { EditorComponent, EditorWire, SimulationStatus } from '../model/types';
 import type { ScriptDebugSnapshot, ScriptDebugState } from '../api/client';
+import {
+  buildScriptWatchRows,
+  clampInputTerminalCount,
+  clampOutputTerminalCount,
+  isDebugPausedAnywhere,
+  resolveScriptPauseSnapshot,
+  resolveScriptWatchSnapshot,
+  useScriptBlockEditorState,
+} from './scriptBlockShared';
 import { ScriptCodeEditor } from './ScriptCodeEditor';
 import {
   CTRL_TYPE,
@@ -1024,69 +1033,33 @@ function ScriptBlockEditor({
   onSetParameter: (name: string, key: string, value: number | string) => void;
   debug?: ScriptDebugPanelState;
 }) {
-  const currentCode = String(component.parameters['sourceCode'] || 'yOUT[0] = xIN[0];');
-  const [code, setCode] = useState(currentCode);
-  const [inCount, setInCount] = useState(Number(component.parameters['anzXIN'] || 1));
-  const [outCount, setOutCount] = useState(Number(component.parameters['anzYOUT'] || 1));
+  const { code, setCode, inCount, setInCount, outCount, setOutCount } =
+    useScriptBlockEditorState(component);
   const [syntaxOpen, setSyntaxOpen] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
   const breakpoints = debug?.breakpoints[component.name] ?? [];
   const simActive = debug?.status === 'RUNNING' || debug?.status === 'PAUSED';
-  const debugPausedAnywhere = Boolean(debug?.debugState?.paused) || Boolean(debug?.debugPause);
+  const debugPausedAnywhere = isDebugPausedAnywhere(debug);
 
-  // This block's pause: the SSE event first, the polled state as fallback
-  // (covers a breakpoint hit before the SSE stream was subscribed)
-  const pausedSnapshot: ScriptDebugSnapshot | null =
-    debug?.debugPause && debug.debugPause.blockName === component.name
-      ? debug.debugPause
-      : debug?.debugState?.pausedAt && debug.debugState.pausedAt.blockName === component.name
-        ? debug.debugState.pausedAt
-        : null;
+  // This block's pause and watch snapshots resolved via the shared helpers
+  // (SSE pause first, polled state as fallback)
+  const pausedSnapshot: ScriptDebugSnapshot | null = resolveScriptPauseSnapshot(debug, component.name);
+  const watchSnapshot: ScriptDebugSnapshot | null = resolveScriptWatchSnapshot(debug, component.name);
 
-  // Watch values: paused snapshot when available, else the live poll snapshot
-  const watchSnapshot: ScriptDebugSnapshot | null =
-    pausedSnapshot ??
-    debug?.debugState?.blocks.find((b) => b.blockName === component.name) ??
-    null;
-
-  const watchRows = useMemo(() => {
-    if (!watchSnapshot) {
-      return [];
-    }
-    const rows: { name: string; value: number; hint: string }[] = [
-      { name: 't', value: watchSnapshot.time, hint: 'simulation time (s)' },
-      { name: 'dt', value: watchSnapshot.dt, hint: 'time step (s)' },
-    ];
-    watchSnapshot.inputs.forEach((value, i) => rows.push({ name: `u${i + 1}`, value, hint: 'input' }));
-    watchSnapshot.outputs.forEach((value, i) => rows.push({ name: `y${i + 1}`, value, hint: 'output' }));
-    Object.entries(watchSnapshot.variables)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .forEach(([name, value]) => rows.push({ name, value, hint: 'state variable' }));
-    return rows;
-  }, [watchSnapshot]);
-
-  useEffect(() => {
-    setCode(String(component.parameters['sourceCode'] || 'yOUT[0] = xIN[0];'));
-    const pIn = Number(component.parameters['anzXIN']);
-    if (!isNaN(pIn)) setInCount(pIn);
-    const pOut = Number(component.parameters['anzYOUT']);
-    if (!isNaN(pOut)) setOutCount(pOut);
-  }, [
-    component.name,
-    component.parameters['sourceCode'],
-    component.parameters['anzXIN'],
-    component.parameters['anzYOUT'],
-  ]);
+  const watchRows = useMemo(
+    () => (watchSnapshot ? buildScriptWatchRows(watchSnapshot) : []),
+    [watchSnapshot],
+  );
 
   const handleInCountChange = (val: number) => {
-    const clamped = Math.max(0, Math.min(16, val));
+    const clamped = clampInputTerminalCount(val);
     setInCount(clamped);
     onSetParameter(component.name, 'anzXIN', clamped);
   };
 
   const handleOutCountChange = (val: number) => {
-    const clamped = Math.max(1, Math.min(16, val));
+    const clamped = clampOutputTerminalCount(val);
     setOutCount(clamped);
     onSetParameter(component.name, 'anzYOUT', clamped);
   };

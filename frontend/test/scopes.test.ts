@@ -3,6 +3,7 @@ import {
   isScopeComponent,
   findScopeBlocks,
   scopeChannels,
+  strictScopeChannels,
   filterChannels,
 } from '../src/simulation/scopes';
 import type { EditorComponent } from '../src/model/types';
@@ -102,6 +103,29 @@ describe('scopes helpers', () => {
         inputLabels: ['unconnected_net_1', 'unconnected_net_2'],
       };
       expect(scopeChannels(scopeUnconnected, signals)).toEqual(signals);
+    });
+  });
+
+  describe('strictScopeChannels', () => {
+    const signals = ['v_out', 'i_l', 'v_bulk'];
+
+    it('returns only the wired labels that match recorded signals', () => {
+      expect(strictScopeChannels(scope1, signals)).toEqual(['v_out', 'i_l']);
+      expect(strictScopeChannels({ ...scope1, inputLabels: ['i_l', 'missing'] }, signals)).toEqual([
+        'i_l',
+      ]);
+    });
+
+    it('returns an empty list when no labels match — never another scope\'s signals', () => {
+      const scopeUnconnected: EditorComponent = {
+        ...scope1,
+        inputLabels: ['unconnected_net_1', 'unconnected_net_2'],
+      };
+      expect(strictScopeChannels(scopeUnconnected, signals)).toEqual([]);
+    });
+
+    it('returns an empty list for a missing scope block', () => {
+      expect(strictScopeChannels(null, signals)).toEqual([]);
     });
   });
 

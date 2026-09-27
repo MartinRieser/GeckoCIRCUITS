@@ -28,6 +28,8 @@ export interface ScriptCodeEditorProps {
   onToggleBreakpoint: (line: number) => void;
   /** 1-based line the debugger is paused on, or null. */
   pausedLine?: number | null;
+  /** Optional custom container height (defaults to EDITOR_HEIGHT). */
+  height?: number | string;
   /** Blur callback (e.g. apply the script when the editor loses focus). */
   onBlur?: () => void;
 }
@@ -60,6 +62,7 @@ export function ScriptCodeEditor({
   breakpoints,
   onToggleBreakpoint,
   pausedLine = null,
+  height,
   onBlur,
 }: ScriptCodeEditorProps) {
   const [scroll, setScroll] = useState({ top: 0, left: 0 });
@@ -101,7 +104,7 @@ export function ScriptCodeEditor({
   };
 
   return (
-    <div className="script-editor" style={{ height: EDITOR_HEIGHT }}>
+    <div className="script-editor" style={{ height: height ?? EDITOR_HEIGHT }}>
       <div className="script-editor-gutter">
         <div style={{ transform: `translateY(${-scroll.top}px)` }}>
           {Array.from({ length: lineCount }, (_, i) => {

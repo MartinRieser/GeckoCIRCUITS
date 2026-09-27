@@ -6,12 +6,14 @@
  *
  * Central keyboard interaction layer (P3) powered by keybindings.ts.
  */
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import type { EditorComponent } from './model/types';
 import { useEditor } from './hooks/useEditor';
 import { Sheet } from './canvas/Sheet';
 import { Palette } from './palette/Palette';
 import { PropertiesPanel } from './properties/PropertiesPanel';
 import { SimulationPropertiesPanel } from './properties/SimulationPropertiesPanel';
+import { ScopePropertiesPanel } from './properties/ScopePropertiesPanel';
 import { ScopeViewTab } from './simulation/ScopeViewTab';
 import { useScopeController } from './simulation/useScopeController';
 import { CommandPalette } from './palette/CommandPalette';
@@ -20,6 +22,19 @@ import { resolveShortcut, KEYBINDINGS } from './model/keybindings';
 import { routeAvoidingObstacles, routingBlockedCells, densePoints } from './canvas/WireRouter';
 import { isWireEndPointConnected } from './model/validation';
 import { registerOpenFileHandler } from './desktop';
+import { findScopeBlocks, findScriptBlocks, isScopeComponent, isScriptComponent } from './simulation/scopes';
+import { SimConfigModal } from './simulation/SimConfigModal';
+import { ScriptViewTab } from './properties/ScriptViewTab';
+import { resolveActiveSimSettings } from './simulation/simSettings';
+import { SCOPE_SETTING_KEYS } from './model/constants';
+import {
+  SCOPE_TAB_PREFIX,
+  SCRIPT_TAB_PREFIX,
+  scopeTabId,
+  scriptTabId,
+  tabTargetName,
+  detectRename,
+} from './model/workspaceTabs';
 
 export function App() {
   const { state, dispatch, catalog, wsConnected, simState, actions } = useEditor();
@@ -36,22 +51,99 @@ export function App() {
   const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
-  const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<'schematic' | 'simulation'>('schematic');
+  const [activeTabId, setActiveTabId] = useState<string>('schematic');
+  const [simConfigOpen, setSimConfigOpen] = useState(false);
   const [selectedScope, setSelectedScope] = useState<string>('all');
   const [displayLayout, setDisplayLayout] = useState<'overlay' | 'stacked'>(() => {
     return (localStorage.getItem('gecko-display-layout') as 'overlay' | 'stacked') || 'stacked';
   });
-  const handleDisplayLayoutChange = useCallback((layout: 'overlay' | 'stacked') => {
-    setDisplayLayout(layout);
-    localStorage.setItem('gecko-display-layout', layout);
-  }, []);
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     return (localStorage.getItem('gecko-theme') as 'dark' | 'light') || 'dark';
   });
+
+  // Dynamic scope and script blocks discovered from schematic components
+  const scopeBlocks = useMemo(() => findScopeBlocks(state.components), [state.components]);
+  const scriptBlocks = useMemo(() => findScriptBlocks(state.components), [state.components]);
+
+  const activeScriptComponent = useMemo(() => {
+    const targetName = tabTargetName(activeTabId, SCRIPT_TAB_PREFIX);
+    if (!targetName) return null;
+    return state.components.find((c) => c.name === targetName) || null;
+  }, [activeTabId, state.components]);
+
+  const activeScopeComponent = useMemo(() => {
+    const targetName = tabTargetName(activeTabId, SCOPE_TAB_PREFIX);
+    if (!targetName) return null;
+    return state.components.find((c) => c.name === targetName) || null;
+  }, [activeTabId, state.components]);
+
+  // Single derived value for "which scope is inspected": the scope tab target
+  // when one is active, else the scope picked in the combined simulation view.
+  const activeSelectedScope = tabTargetName(activeTabId, SCOPE_TAB_PREFIX) ?? selectedScope;
+
+  const currentDisplayLayout =
+    (activeScopeComponent?.parameters?.[SCOPE_SETTING_KEYS.scopeLayout] as 'overlay' | 'stacked') ||
+    displayLayout;
+
+  const handleDisplayLayoutChange = useCallback(
+    (layout: 'overlay' | 'stacked') => {
+      setDisplayLayout(layout);
+      localStorage.setItem('gecko-display-layout', layout);
+      if (activeScopeComponent) {
+        actions.setParameter(activeScopeComponent.name, SCOPE_SETTING_KEYS.scopeLayout, layout);
+      }
+    },
+    [activeScopeComponent, actions],
+  );
+
+  useEffect(() => {
+    const saved = activeScopeComponent?.parameters?.[SCOPE_SETTING_KEYS.scopeLayout];
+    if (saved) {
+      setDisplayLayout(saved as 'overlay' | 'stacked');
+    }
+  }, [activeScopeComponent?.name, activeScopeComponent?.parameters?.[SCOPE_SETTING_KEYS.scopeLayout]]);
+
+  // Follow component renames (keep the active tab on the renamed block) and
+  // fall back to the schematic when the active tab's component was deleted.
+  const prevComponentsRef = useRef<EditorComponent[]>(state.components);
+  useEffect(() => {
+    const rename = detectRename(
+      prevComponentsRef.current.map((c) => c.name),
+      state.components.map((c) => c.name),
+    );
+    if (rename) {
+      const before = prevComponentsRef.current.find((c) => c.name === rename.from);
+      const after = state.components.find((c) => c.name === rename.to);
+      const sameKind =
+        !!before &&
+        !!after &&
+        isScopeComponent(before) === isScopeComponent(after) &&
+        isScriptComponent(before) === isScriptComponent(after);
+      if (sameKind) {
+        setActiveTabId((tab) =>
+          tab === scopeTabId(rename.from)
+            ? scopeTabId(rename.to)
+            : tab === scriptTabId(rename.from)
+              ? scriptTabId(rename.to)
+              : tab,
+        );
+        setSelectedScope((s) => (s === rename.from ? rename.to : s));
+        prevComponentsRef.current = state.components;
+        return;
+      }
+    }
+    prevComponentsRef.current = state.components;
+    if (activeTabId.startsWith(SCRIPT_TAB_PREFIX) && !activeScriptComponent) {
+      setActiveTabId('schematic');
+    } else if (activeTabId.startsWith(SCOPE_TAB_PREFIX) && !activeScopeComponent) {
+      setActiveTabId('schematic');
+    }
+  }, [state.components, activeTabId, activeScriptComponent, activeScopeComponent]);
+
   const scope = useScopeController({
     results: simState.results,
     components: state.components,
-    selectedScope,
+    selectedScope: activeSelectedScope,
     theme,
   });
   const [rightSidebarWidth, setRightSidebarWidth] = useState<number>(() => {
@@ -92,8 +184,28 @@ export function App() {
 
   const openScopeTab = (scopeName: string) => {
     setSelectedScope(scopeName);
-    setActiveWorkspaceTab('simulation');
+    setActiveTabId(scopeTabId(scopeName));
   };
+
+  const openScriptTab = (scriptName: string) => {
+    setActiveTabId(scriptTabId(scriptName));
+  };
+
+  const isSimRunning = simState.status === 'RUNNING' || simState.status === 'PENDING';
+
+  // F5 / ▶ Run: execute immediately with the effective settings. Ignored while
+  // a run is active so the shortcut can never double-start a simulation.
+  const handleQuickRun = useCallback(() => {
+    if (!state.circuitId) return;
+    if (simState.status === 'RUNNING' || simState.status === 'PENDING') return;
+    const { tEnd, dt, solver } = resolveActiveSimSettings(simState.defaults, simState.simSettings);
+    actions.runSimulation({
+      simulationTime: tEnd,
+      timeStep: dt,
+      solverType: solver,
+      backend: 'headless',
+    });
+  }, [state.circuitId, simState.status, simState.defaults, simState.simSettings, actions]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -108,6 +220,12 @@ export function App() {
         e.target instanceof HTMLTextAreaElement ||
         e.target instanceof HTMLSelectElement
       ) {
+        return;
+      }
+
+      if (e.key === 'F5' || ((e.ctrlKey || e.metaKey) && e.key === 'Enter')) {
+        e.preventDefault();
+        handleQuickRun();
         return;
       }
 
@@ -133,7 +251,13 @@ export function App() {
           break;
         case 'toggle-simulation':
           e.preventDefault();
-          setActiveWorkspaceTab((prev) => (prev === 'schematic' ? 'simulation' : 'schematic'));
+          setActiveTabId((prev) => {
+            if (prev === 'schematic') {
+              const firstScope = scopeBlocks[0]?.name;
+              return firstScope ? scopeTabId(firstScope) : 'simulation';
+            }
+            return 'schematic';
+          });
           break;
         case 'save':
           e.preventDefault();
@@ -422,6 +546,58 @@ export function App() {
 
           <span className="nav-separator" />
 
+          {/* Global Simulation Actions (Option B: Direct Run + Parameters Setup Modal) */}
+          <div className="nav-sim-group">
+            {isSimRunning ? (
+              <>
+                <div className="nav-sim-progress" title="Simulation progress">
+                  <span className="nav-sim-spinner" />
+                  <span>{Math.round(simState.progress * 100)}%</span>
+                </div>
+                <button
+                  type="button"
+                  className="nav-btn"
+                  onClick={simState.status === 'PAUSED' ? actions.resumeSimulation : actions.pauseSimulation}
+                  title={simState.status === 'PAUSED' ? 'Resume Simulation' : 'Pause Simulation'}
+                >
+                  {simState.status === 'PAUSED' ? '▶' : '⏸'}
+                </button>
+                <button
+                  type="button"
+                  className="nav-btn danger"
+                  onClick={actions.cancelSimulation}
+                  title="Cancel Simulation"
+                >
+                  ⏹
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="nav-btn primary-run-btn"
+                  onClick={handleQuickRun}
+                  disabled={!state.circuitId}
+                  title="Run Simulation with current parameters (F5)"
+                >
+                  ▶ Run <span className="kbd-shortcut run-kbd">F5</span>
+                </button>
+                <button
+                  type="button"
+                  className="nav-btn icon-only"
+                  onClick={() => setSimConfigOpen(true)}
+                  disabled={!state.circuitId}
+                  title="Simulation Parameters & Solver Setup"
+                  aria-label="Simulation Parameters Setup"
+                >
+                  ⚙
+                </button>
+              </>
+            )}
+          </div>
+
+          <span className="nav-separator" />
+
           {/* Panel Toggle Shortcuts */}
           <button
             type="button"
@@ -477,31 +653,79 @@ export function App() {
         </div>
       </header>
 
-      {/* Global Workspace Tab Bar: Full-width fixed position, never jumps or moves when switching tabs */}
+      {/* Global Workspace Tab Bar: Dynamically populated from circuit components */}
       <div className="workspace-tabs-bar">
         <button
           type="button"
-          className={`workspace-tab ${activeWorkspaceTab === 'schematic' ? 'active' : ''}`}
-          onClick={() => setActiveWorkspaceTab('schematic')}
+          className={`workspace-tab ${activeTabId === 'schematic' ? 'active' : ''}`}
+          onClick={() => setActiveTabId('schematic')}
           title="Circuit Diagram Schematic Editor"
         >
           📐 Schematic
         </button>
 
-        <button
-          type="button"
-          className={`workspace-tab ${activeWorkspaceTab === 'simulation' ? 'active' : ''}`}
-          onClick={() => setActiveWorkspaceTab('simulation')}
-          title="Circuit Simulation & Scope Waveforms"
-        >
-          📊 Simulation
-        </button>
+        {scopeBlocks.map((sb) => {
+          const tabId = scopeTabId(sb.name);
+          const isActive = activeTabId === tabId;
+          const hasData = !!(
+            simState.results &&
+            (sb.inputLabels || []).some((lbl) => lbl && simState.results?.[lbl])
+          );
+          return (
+            <button
+              key={tabId}
+              type="button"
+              className={`workspace-tab ${isActive ? 'active' : ''}`}
+              onClick={() => {
+                setSelectedScope(sb.name);
+                setActiveTabId(tabId);
+              }}
+              title={`Oscilloscope Instrument: ${sb.name}`}
+            >
+              <span>📺</span>
+              <span>{sb.name}</span>
+              {hasData && <span className="tab-data-dot" title="Waveform data available" />}
+            </button>
+          );
+        })}
+
+        {scriptBlocks.map((scr) => {
+          const tabId = scriptTabId(scr.name);
+          const isActive = activeTabId === tabId;
+          return (
+            <button
+              key={tabId}
+              type="button"
+              className={`workspace-tab ${isActive ? 'active' : ''}`}
+              onClick={() => setActiveTabId(tabId)}
+              title={`Script IDE Editor: ${scr.name}`}
+            >
+              <span>💻</span>
+              <span>{scr.name}</span>
+            </button>
+          );
+        })}
+
+        {/* Generic simulation tab if results exist without scope blocks */}
+        {scopeBlocks.length === 0 && simState.results && (
+          <button
+            type="button"
+            className={`workspace-tab ${activeTabId === 'simulation' ? 'active' : ''}`}
+            onClick={() => {
+              setSelectedScope('all');
+              setActiveTabId('simulation');
+            }}
+            title="Circuit Simulation & Scope Waveforms"
+          >
+            📊 Simulation
+          </button>
+        )}
       </div>
 
       {/* Main Workspace (3-Column Layout) */}
       <div className="workspace">
         {/* Left Sidebar: Component Palette (Visible only in Schematic view) */}
-        {activeWorkspaceTab === 'schematic' && (
+        {activeTabId === 'schematic' && (
           <aside
             className={`sidebar left ${leftSidebarOpen ? '' : 'collapsed'}`}
             onClick={() => {
@@ -529,7 +753,7 @@ export function App() {
           <div
             className="workspace-tab-pane"
             style={{
-              display: activeWorkspaceTab === 'schematic' ? 'flex' : 'none',
+              display: activeTabId === 'schematic' ? 'flex' : 'none',
               flexDirection: 'column',
               width: '100%',
               height: '100%',
@@ -556,6 +780,7 @@ export function App() {
                   setRightSidebarOpen(true);
                 },
                 openScopeTab: (name: string) => openScopeTab(name),
+                openScriptTab: (name: string) => openScriptTab(name),
                 toggleWireMode: actions.toggleWireMode,
                 openCommandPalette: () => setCommandPaletteOpen(true),
               }}
@@ -589,7 +814,7 @@ export function App() {
           <div
             className="workspace-tab-pane"
             style={{
-              display: activeWorkspaceTab === 'simulation' ? 'flex' : 'none',
+              display: (activeTabId.startsWith(SCOPE_TAB_PREFIX) || activeTabId === 'simulation') ? 'flex' : 'none',
               flexDirection: 'column',
               width: '100%',
               height: '100%',
@@ -598,10 +823,10 @@ export function App() {
             }}
           >
             <ScopeViewTab
-              selectedScope={selectedScope}
+              selectedScope={activeSelectedScope}
               components={state.components}
               results={simState.results}
-              displayLayout={displayLayout}
+              displayLayout={currentDisplayLayout}
               onDisplayLayoutChange={handleDisplayLayoutChange}
               theme={theme}
               status={simState.status}
@@ -609,115 +834,168 @@ export function App() {
               scope={scope}
             />
           </div>
+
+          {/* Dedicated Full-Viewport Script IDE Pane */}
+          <div
+            className="workspace-tab-pane"
+            style={{
+              display: activeTabId.startsWith(SCRIPT_TAB_PREFIX) ? 'flex' : 'none',
+              flexDirection: 'column',
+              width: '100%',
+              height: '100%',
+              flex: 1,
+              minHeight: 0,
+            }}
+          >
+            <ScriptViewTab
+              component={activeScriptComponent}
+              allComponents={state.components}
+              wires={state.wires}
+              scriptDebug={{
+                status: simState.status,
+                breakpoints: simState.scriptBreakpoints,
+                debugPause: simState.debugPause,
+                debugState: simState.debugState,
+                onToggleBreakpoint: actions.toggleScriptBreakpoint,
+                onDebugResume: actions.debugResume,
+                onDebugStep: actions.debugStep,
+              }}
+              onSetParameter={actions.setParameter}
+              onSetLabel={actions.setLabel}
+              theme={theme}
+            />
+          </div>
         </main>
 
-        {/* Right Sidebar Resizer Handle (Active only when expanded) */}
-        {rightSidebarOpen && (
-          <div
-            className={`sidebar-resizer right-resizer ${isResizingRight ? 'resizing' : ''}`}
-            onMouseDown={handleStartResizeRight}
-            title="Drag to resize properties panel"
-          />
+        {/* Right Sidebar: Shown in Schematic and Scope tabs (Script tab has full internal IDE layout) */}
+        {!activeTabId.startsWith(SCRIPT_TAB_PREFIX) && (
+          <>
+            {/* Right Sidebar Resizer Handle (Active only when expanded) */}
+            {rightSidebarOpen && (
+              <div
+                className={`sidebar-resizer right-resizer ${isResizingRight ? 'resizing' : ''}`}
+                onMouseDown={handleStartResizeRight}
+                title="Drag to resize properties panel"
+              />
+            )}
+
+            {/* Right Sidebar: Component Properties or Simulation Properties Panel */}
+            <aside
+              className={`sidebar right ${rightSidebarOpen ? '' : 'collapsed'} ${isResizingRight ? 'resizing' : ''}`}
+              style={{ width: rightSidebarOpen ? rightSidebarWidth : undefined }}
+              onClick={() => {
+                if (!rightSidebarOpen) setRightSidebarOpen(true);
+              }}
+            >
+              {rightSidebarOpen ? (
+                <>
+                  <div
+                    style={{
+                      display: activeTabId === 'schematic' ? 'contents' : 'none',
+                    }}
+                  >
+                    <PropertiesPanel
+                      component={
+                        state.components.find(
+                          (c) =>
+                            c.name === state.panelFor ||
+                            (state.selection.length === 1 && c.name === state.selection[0]),
+                        ) || null
+                      }
+                      allComponents={state.components}
+                      wires={state.wires}
+                      scriptDebug={{
+                        status: simState.status,
+                        breakpoints: simState.scriptBreakpoints,
+                        debugPause: simState.debugPause,
+                        debugState: simState.debugState,
+                        onToggleBreakpoint: actions.toggleScriptBreakpoint,
+                        onDebugResume: actions.debugResume,
+                        onDebugStep: actions.debugStep,
+                      }}
+                      onRename={actions.rename}
+                      onSetParameter={actions.setParameter}
+                      onSetLabel={actions.setLabel}
+                      onSelectComponent={(targetName) => {
+                        dispatch({ type: 'SELECT', name: targetName, additive: false });
+                        dispatch({ type: 'PANEL_FOR', name: targetName });
+                      }}
+                      onRotate={actions.rotateComponent}
+                      onDelete={actions.deleteComponent}
+                      onOpenScopeTab={(name) => openScopeTab(name)}
+                      onCollapse={() => setRightSidebarOpen(false)}
+                    />
+                  </div>
+
+                  {activeScopeComponent ? (
+                    <ScopePropertiesPanel
+                      scopeComponent={activeScopeComponent}
+                      allComponents={state.components}
+                      results={simState.results}
+                      displayLayout={currentDisplayLayout}
+                      onDisplayLayoutChange={handleDisplayLayoutChange}
+                      scope={scope}
+                      onSetParameter={actions.setParameter}
+                      onCollapse={() => setRightSidebarOpen(false)}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        display: activeTabId !== 'schematic' ? 'contents' : 'none',
+                      }}
+                    >
+                      <SimulationPropertiesPanel
+                        circuitId={state.circuitId}
+                        status={simState.status}
+                        progress={simState.progress}
+                        defaults={simState.defaults}
+                        settings={simState.simSettings}
+                        onSettingsChange={actions.updateSimSettings}
+                        errorMessage={simState.errorMessage}
+                        engineWarnings={simState.warnings}
+                        components={state.components}
+                        wires={state.wires}
+                        results={simState.results}
+                        selectedScope={activeSelectedScope}
+                        onSelectScope={(sc) => openScopeTab(sc)}
+                        displayLayout={displayLayout}
+                        onDisplayLayoutChange={handleDisplayLayoutChange}
+                        scope={scope}
+                        onRunSimulation={actions.runSimulation}
+                        onPauseSimulation={actions.pauseSimulation}
+                        onResumeSimulation={actions.resumeSimulation}
+                        onCancelSimulation={actions.cancelSimulation}
+                        onCollapse={() => setRightSidebarOpen(false)}
+                      />
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="collapsed-strip" title="Click to expand Properties (Ctrl+I)">
+                  <button
+                    type="button"
+                    className="sidebar-toggle-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setRightSidebarOpen(true);
+                    }}
+                    title="Expand Properties (Ctrl+I)"
+                  >
+                    ◀
+                  </button>
+                  <span className="collapsed-strip-icon">⚙</span>
+                  <span className="collapsed-strip-text">
+                    {activeTabId === 'schematic'
+                      ? 'PROPERTIES'
+                      : activeScopeComponent
+                        ? `SCOPE: ${activeScopeComponent.name}`
+                        : 'SIMULATION'}
+                  </span>
+                </div>
+              )}
+            </aside>
+          </>
         )}
-
-        {/* Right Sidebar: Component Properties or Simulation Properties Panel */}
-        <aside
-          className={`sidebar right ${rightSidebarOpen ? '' : 'collapsed'} ${isResizingRight ? 'resizing' : ''}`}
-          style={{ width: rightSidebarOpen ? rightSidebarWidth : undefined }}
-          onClick={() => {
-            if (!rightSidebarOpen) setRightSidebarOpen(true);
-          }}
-        >
-          {rightSidebarOpen ? (
-            <>
-              <div
-                style={{
-                  display: activeWorkspaceTab === 'schematic' ? 'contents' : 'none',
-                }}
-              >
-                <PropertiesPanel
-                  component={
-                    state.components.find(
-                      (c) =>
-                        c.name === state.panelFor ||
-                        (state.selection.length === 1 && c.name === state.selection[0]),
-                    ) || null
-                  }
-                  allComponents={state.components}
-                  wires={state.wires}
-                  scriptDebug={{
-                    status: simState.status,
-                    breakpoints: simState.scriptBreakpoints,
-                    debugPause: simState.debugPause,
-                    debugState: simState.debugState,
-                    onToggleBreakpoint: actions.toggleScriptBreakpoint,
-                    onDebugResume: actions.debugResume,
-                    onDebugStep: actions.debugStep,
-                  }}
-                  onRename={actions.rename}
-                  onSetParameter={actions.setParameter}
-                  onSetLabel={actions.setLabel}
-                  onSelectComponent={(targetName) => {
-                    dispatch({ type: 'SELECT', name: targetName, additive: false });
-                    dispatch({ type: 'PANEL_FOR', name: targetName });
-                  }}
-                  onRotate={actions.rotateComponent}
-                  onDelete={actions.deleteComponent}
-                  onOpenScopeTab={(name) => openScopeTab(name)}
-                  onCollapse={() => setRightSidebarOpen(false)}
-                />
-              </div>
-
-              <div
-                style={{
-                  display: activeWorkspaceTab === 'simulation' ? 'contents' : 'none',
-                }}
-              >
-                <SimulationPropertiesPanel
-                  circuitId={state.circuitId}
-                  status={simState.status}
-                  progress={simState.progress}
-                  defaults={simState.defaults}
-                  settings={simState.simSettings}
-                  onSettingsChange={actions.updateSimSettings}
-                  errorMessage={simState.errorMessage}
-                  engineWarnings={simState.warnings}
-                  components={state.components}
-                  wires={state.wires}
-                  results={simState.results}
-                  selectedScope={selectedScope}
-                  onSelectScope={setSelectedScope}
-                  displayLayout={displayLayout}
-                  onDisplayLayoutChange={handleDisplayLayoutChange}
-                  scope={scope}
-                  onRunSimulation={actions.runSimulation}
-                  onPauseSimulation={actions.pauseSimulation}
-                  onResumeSimulation={actions.resumeSimulation}
-                  onCancelSimulation={actions.cancelSimulation}
-                  onCollapse={() => setRightSidebarOpen(false)}
-                />
-              </div>
-            </>
-          ) : (
-            <div className="collapsed-strip" title="Click to expand Properties (Ctrl+I)">
-              <button
-                type="button"
-                className="sidebar-toggle-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setRightSidebarOpen(true);
-                }}
-                title="Expand Properties (Ctrl+I)"
-              >
-                ◀
-              </button>
-              <span className="collapsed-strip-icon">⚙</span>
-              <span className="collapsed-strip-text">
-                {activeWorkspaceTab === 'schematic' ? 'PROPERTIES' : 'SIMULATION'}
-              </span>
-            </div>
-          )}
-        </aside>
       </div>
 
       {/* Command Palette (Ctrl+K) */}
@@ -729,6 +1007,20 @@ export function App() {
           actions.arm(entry);
           setCommandPaletteOpen(false);
         }}
+      />
+
+      {/* Simulation Configuration Modal */}
+      <SimConfigModal
+        isOpen={simConfigOpen}
+        onClose={() => setSimConfigOpen(false)}
+        circuitId={state.circuitId}
+        defaults={simState.defaults}
+        settings={simState.simSettings}
+        onSettingsChange={actions.updateSimSettings}
+        onRunSimulation={actions.runSimulation}
+        components={state.components}
+        wires={state.wires}
+        engineWarnings={simState.warnings}
       />
 
       {/* Keyboard Shortcuts Help Modal */}

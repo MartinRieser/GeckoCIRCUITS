@@ -643,6 +643,28 @@ public class CircuitFileParser {
                     comp.setParameter("anzYOUT", (double) anzYOUT);
                 }
 
+                // Parse per-scope display settings. Keys and markers live in
+                // ScopeSettingsKeys so parser, writer and REST whitelist share
+                // one definition. hiddenSignals arrives as a comma-separated
+                // name list and is kept in that string form.
+                String scopeSettings = elementBlock.createSubBlock(ScopeSettingsKeys.BLOCK_START, ScopeSettingsKeys.BLOCK_END);
+                if (scopeSettings != null && !scopeSettings.isEmpty()) {
+                    for (String line : scopeSettings.split("\n")) {
+                        String trimmedLine = line.trim();
+                        for (String key : ScopeSettingsKeys.ALL_KEYS) {
+                            if (trimmedLine.startsWith(key + " ")) {
+                                String rawValue = trimmedLine.substring(key.length() + 1).trim();
+                                if (ScopeSettingsKeys.BOOLEAN_KEYS.contains(key)) {
+                                    comp.setParameter(key, Boolean.parseBoolean(rawValue));
+                                } else {
+                                    comp.setParameter(key, rawValue);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+
                 // Preserve extra block lines (e.g. XML parameters, loss models, etc.)
                 if (elementBlock.asciiLines != null) {
                     for (String blockLine : elementBlock.asciiLines) {
@@ -651,7 +673,7 @@ public class CircuitFileParser {
                             continue;
                         }
                         String token = trimmed.split("\\s+")[0];
-                        if (!KNOWN_ELEMENT_TOKENS.contains(token)) {
+                        if (!KNOWN_ELEMENT_TOKENS.contains(token) && !isScopeSettingsLine(trimmed)) {
                             comp.addExtraLine(blockLine);
                         }
                     }
@@ -666,6 +688,26 @@ public class CircuitFileParser {
             } catch (Exception ignored) {
             }
         }
+    }
+
+    /**
+     * Guards the extra-line passthrough: lines belonging to the persisted
+     * {@code <scopeSettings>} sub-block must not be duplicated into extraLines
+     * because {@code createSubBlock} reads the block without consuming its
+     * lines from {@code asciiLines}. Prefix-matches the key names the same way
+     * the writer emits them.
+     */
+    private static boolean isScopeSettingsLine(String trimmed) {
+        if (trimmed.startsWith(ScopeSettingsKeys.BLOCK_START)
+                || trimmed.startsWith(ScopeSettingsKeys.BLOCK_END)) {
+            return true;
+        }
+        for (String key : ScopeSettingsKeys.ALL_KEYS) {
+            if (trimmed.startsWith(key)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

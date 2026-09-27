@@ -146,6 +146,26 @@ export const CANVAS_METRICS = {
 export const SENTINEL_UNSET = 'NIX_NIX_NIX';
 
 /**
+ * Component parameter keys used to persist per-scope display settings into
+ * the circuit file (.ipes <scopeSettings> sub-block). Must stay in sync with
+ * the backend's ScopeSettingsKeys — the parser, writer and REST whitelist
+ * all derive from that single definition.
+ */
+export const SCOPE_SETTING_KEYS = {
+  /** Display layout mode: 'overlay' or 'stacked'. */
+  scopeLayout: 'scopeLayout',
+  /** Vertical scale mode: 'auto' or 'fixed'. */
+  yScaleMode: 'yScaleMode',
+  /** Comma-separated list of hidden channel names. */
+  hiddenSignals: 'hiddenSignals',
+  /** Whether measurement cursors are enabled. */
+  cursorsEnabled: 'cursorsEnabled',
+} as const;
+
+/** Maximum number of terminals a script/function block can expose per side. */
+export const SCRIPT_TERMINAL_LIMIT = 16;
+
+/**
  * Simulation runner default settings.
  */
 export const SIMULATION_DEFAULTS = {

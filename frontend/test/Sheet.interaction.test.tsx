@@ -50,6 +50,8 @@ const commitMove = vi.fn();
 const deleteWire = vi.fn();
 const patchWirePoints = vi.fn();
 const flipWire = vi.fn();
+const openScopeTab = vi.fn();
+const openScriptTab = vi.fn();
 const actions: SheetActions = {
   placeGhost,
   finishWire,
@@ -57,6 +59,8 @@ const actions: SheetActions = {
   deleteWire,
   patchWirePoints,
   flipWire,
+  openScopeTab,
+  openScriptTab,
 };
 
 function Harness() {
@@ -449,5 +453,59 @@ describe('direct pin-to-pin wiring and wire editing', () => {
     expect(switchBadge).not.toBeNull();
     const transform = switchBadge?.getAttribute('transform') || '';
     expect(transform).toMatch(/translate\(-/);
+  });
+
+  it('triggers openScopeTab and openScriptTab when double-clicking respective components', () => {
+    openScopeTab.mockClear();
+    openScriptTab.mockClear();
+
+    const snapInteractive: EditorSnapshot = {
+      ...snapshot,
+      components: [
+        {
+          type: 1003,
+          name: 'SCOPE.1',
+          family: 'CONTROL',
+          position: [10, 10],
+          orientation: 502,
+          parameters: {},
+          inputLabels: [],
+          outputLabels: [],
+        },
+        {
+          type: 1016,
+          name: 'SCRIPT.1',
+          family: 'CONTROL',
+          position: [20, 10],
+          orientation: 502,
+          parameters: {},
+          inputLabels: [],
+          outputLabels: [],
+        },
+      ],
+    };
+
+    function InteractiveWrapper() {
+      const [state, dispatch] = useReducer(editorReducer, {
+        ...initialState,
+        circuitId: snapInteractive.circuitId,
+        components: snapInteractive.components,
+        wires: [],
+        dpix: snapInteractive.dpix,
+      });
+      return <Sheet state={state} dispatch={dispatch} actions={actions} />;
+    }
+
+    const { container } = render(<InteractiveWrapper />);
+
+    const scopeComp = container.querySelector('.component[data-name="SCOPE.1"]');
+    expect(scopeComp).not.toBeNull();
+    fireEvent.doubleClick(scopeComp!);
+    expect(openScopeTab).toHaveBeenCalledWith('SCOPE.1');
+
+    const scriptComp = container.querySelector('.component[data-name="SCRIPT.1"]');
+    expect(scriptComp).not.toBeNull();
+    fireEvent.doubleClick(scriptComp!);
+    expect(openScriptTab).toHaveBeenCalledWith('SCRIPT.1');
   });
 });

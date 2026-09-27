@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import type { EditorComponent } from '../model/types';
 import { mapSimulationResults } from './chartData';
 import { findScopeBlocks, scopeChannels } from './scopes';
+import { SCOPE_SETTING_KEYS } from '../model/constants';
 import {
   effectiveWindow,
   panWindow,
@@ -156,6 +157,41 @@ export function useScopeController({
     setView(null);
     setYView(null);
   }, [results]);
+
+  // Synchronize per-scope saved settings from component parameters. Every
+  // setting without a persisted value resets to its default, so switching
+  // scopes never leaks the previous scope's view state. hiddenSignals is the
+  // persisted comma-separated channel list (see SCOPE_SETTING_KEYS).
+  useEffect(() => {
+    if (!activeScopeBlock) {
+      setHiddenSignals({});
+      return;
+    }
+    const params = activeScopeBlock.parameters ?? {};
+    setYScaleMode(params[SCOPE_SETTING_KEYS.yScaleMode] === 'auto' ? 'auto' : 'fixed');
+    const hidden = params[SCOPE_SETTING_KEYS.hiddenSignals];
+    if (typeof hidden === 'string') {
+      const set: Record<string, boolean> = {};
+      hidden
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .forEach((s) => {
+          set[s] = true;
+        });
+      setHiddenSignals(set);
+    } else {
+      setHiddenSignals({});
+    }
+    const cursors = params[SCOPE_SETTING_KEYS.cursorsEnabled];
+    // Accept both the parsed boolean and legacy string forms
+    setCursorsEnabled(cursors === true || cursors === 'true');
+  }, [
+    activeScopeBlock?.name,
+    activeScopeBlock?.parameters?.[SCOPE_SETTING_KEYS.yScaleMode],
+    activeScopeBlock?.parameters?.[SCOPE_SETTING_KEYS.hiddenSignals],
+    activeScopeBlock?.parameters?.[SCOPE_SETTING_KEYS.cursorsEnabled],
+  ]);
 
   const dataT0 = timeArray.length ? timeArray[0] : 0;
   const dataT1 = timeArray.length ? timeArray[timeArray.length - 1] : 1;

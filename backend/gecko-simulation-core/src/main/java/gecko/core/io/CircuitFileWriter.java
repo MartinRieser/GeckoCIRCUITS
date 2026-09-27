@@ -276,6 +276,24 @@ public final class CircuitFileWriter {
                 }
             }
 
+            // Per-scope display settings, emitted in ScopeSettingsKeys.ORDERED_KEYS
+            // order. hiddenSignals is a comma-separated signal-name list, so
+            // signal names containing commas would corrupt the round trip
+            // (net labels never contain commas). The extra-lines guard prevents
+            // double emission when a parsed model still carries the raw block.
+            boolean scopeInExtraLines = comp.getExtraLines().stream()
+                    .anyMatch(line -> line.trim().startsWith(ScopeSettingsKeys.BLOCK_START));
+            boolean hasScopeSetting = ScopeSettingsKeys.ALL_KEYS.stream().anyMatch(parameters::containsKey);
+            if (hasScopeSetting && !scopeInExtraLines) {
+                sb.append("\n").append(ScopeSettingsKeys.BLOCK_START);
+                for (String key : ScopeSettingsKeys.ORDERED_KEYS) {
+                    if (parameters.containsKey(key)) {
+                        sb.append("\n").append(key).append(" ").append(parameters.get(key));
+                    }
+                }
+                sb.append("\n").append(ScopeSettingsKeys.BLOCK_END);
+            }
+
             for (String extraLine : comp.getExtraLines()) {
                 sb.append("\n").append(extraLine);
             }

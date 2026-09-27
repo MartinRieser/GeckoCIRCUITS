@@ -10,7 +10,7 @@ import { terminalPositions, terminalNear, findPlacementConflict } from '../model
 import { routeAvoidingObstacles, routingBlockedCells, densePoints, denseCellsOf, orthogonalizePolyline, simplifyCorners, translateWireSegment } from './WireRouter';
 import { isWireEndPointConnected, findWireGeometryWarnings } from '../model/validation';
 import { ComponentSymbol } from './symbols';
-import { isScopeComponent } from '../simulation/scopes';
+import { isScopeComponent, isScriptComponent } from '../simulation/scopes';
 import {
   isGateDriver,
   isSwitchComponent,
@@ -46,6 +46,7 @@ export interface SheetActions {
   deleteSelection?: () => void;
   openProperties?: (name: string) => void;
   openScopeTab?: (name: string) => void;
+  openScriptTab?: (name: string) => void;
   toggleWireMode?: () => void;
   openCommandPalette?: () => void;
 }
@@ -954,6 +955,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                 <g
                   key={component.name}
                   transform={`translate(${component.position[0] * dpix}, ${component.position[1] * dpix})`}
+                  data-name={component.name}
                   className={`component family-${component.family || 'LK'}${selected ? ' selected' : ''}`}
                   onMouseEnter={() => setHoveredComponentName(component.name)}
                   onMouseLeave={() => setHoveredComponentName((curr) => (curr === component.name ? null : curr))}
@@ -976,6 +978,8 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                   onDoubleClick={() => {
                     if (isScopeComponent(component)) {
                       actions.openScopeTab?.(component.name);
+                    } else if (isScriptComponent(component)) {
+                      actions.openScriptTab?.(component.name);
                     } else {
                       dispatch({ type: 'PANEL_FOR', name: component.name });
                     }

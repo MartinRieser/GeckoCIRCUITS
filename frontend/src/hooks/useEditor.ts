@@ -956,7 +956,7 @@ export function useEditor() {
   );
 
   const setParameter = useCallback(
-    (name: string, key: string, value: number | string) => {
+    (name: string, key: string, value: number | string | boolean) => {
       const circuitId = stateRef.current.circuitId;
       if (!circuitId) return;
       api

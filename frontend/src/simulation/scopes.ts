@@ -33,16 +33,36 @@ export function findScopeBlocks(components: EditorComponent[]): EditorComponent[
   return components.filter(isScopeComponent);
 }
 
-/** Channels of a scope: its wired input labels that match recorded signals. */
-export function scopeChannels(
+/**
+ * Channels strictly wired to one scope: its input labels that match recorded
+ * signals. Unlike {@link scopeChannels} there is no fallback — an unwired
+ * scope yields an empty list, which is what persistence and per-scope
+ * isolation logic need (never touch another scope's signals).
+ */
+export function strictScopeChannels(
   scopeBlock: EditorComponent | null | undefined,
   signalNames: string[],
 ): string[] {
   if (!scopeBlock) {
-    return signalNames;
+    return [];
   }
-  const channels = scopeBlock.inputLabels.filter((l) => l && signalNames.includes(l));
-  return channels.length > 0 ? channels : signalNames;
+  return scopeBlock.inputLabels.filter((l) => l && signalNames.includes(l));
+}
+
+/**
+ * Channels of a scope for display: its wired input labels that match recorded
+ * signals, falling back to all recorded signals when nothing matches so an
+ * unwired scope still shows the run results.
+ */
+export function scopeChannels(
+  scopeBlock: EditorComponent | null | undefined,
+  signalNames: string[],
+): string[] {
+  const channels = strictScopeChannels(scopeBlock, signalNames);
+  if (channels.length > 0) {
+    return channels;
+  }
+  return signalNames;
 }
 
 /** Case-insensitive substring filter; empty or blank query returns all channels. */
@@ -52,4 +72,32 @@ export function filterChannels(channels: string[], query: string): string[] {
     return channels;
   }
   return channels.filter((s) => s.toLowerCase().includes(q));
+}
+
+/**
+ * Checks whether a given circuit component is a script/function block,
+ * either by type (modern 1016 or legacy 61) or by conventional prefix ('SCRIPT').
+ *
+ * @param component The schematic component to test, or null/undefined.
+ * @returns True if the component represents a script block.
+ */
+export function isScriptComponent(component: EditorComponent | null | undefined): boolean {
+  if (!component) return false;
+  const name = (component.name || '').toUpperCase();
+  return (
+    component.type === ControlComponentType.SCRIPT ||
+    component.type === ControlComponentType.LEGACY_JAVA_FUNCTION ||
+    name.startsWith('SCRIPT') ||
+    name.startsWith('JAVA_')
+  );
+}
+
+/**
+ * Filters a list of circuit components down to only the script/function blocks.
+ *
+ * @param components Array of schematic components.
+ * @returns Array of script/function block components.
+ */
+export function findScriptBlocks(components: EditorComponent[]): EditorComponent[] {
+  return components.filter(isScriptComponent);
 }

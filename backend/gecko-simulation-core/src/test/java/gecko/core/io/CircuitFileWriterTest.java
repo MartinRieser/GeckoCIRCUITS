@@ -325,4 +325,48 @@ class CircuitFileWriterTest {
             }
         }
     }
+
+    @Test
+    void roundTrip_scopeSettings_preservesSettings() throws Exception {
+        CircuitModel model = new CircuitModel();
+        model.setSimulationDuration(0.01);
+        model.setTimeStep(1e-6);
+
+        CircuitModel.ComponentData scope1 = new CircuitModel.ComponentData(5, "SCOPE.1", 10, 20, 503);
+        scope1.setFamily("CONTROL");
+        scope1.setParameter("scopeLayout", "stacked");
+        scope1.setParameter("yScaleMode", "fixed");
+        scope1.setParameter("hiddenSignals", "sig1,sig2");
+        scope1.setParameter("cursorsEnabled", true);
+        model.addControlComponent(scope1);
+
+        CircuitModel.ComponentData scope2 = new CircuitModel.ComponentData(5, "SCOPE.2", 30, 20, 503);
+        scope2.setFamily("CONTROL");
+        scope2.setParameter("scopeLayout", "overlay");
+        scope2.setParameter("yScaleMode", "auto");
+        scope2.setParameter("hiddenSignals", "sig3");
+        model.addControlComponent(scope2);
+
+        String ipesContent = CircuitFileWriter.writeToString(model);
+        assertTrue(ipesContent.contains("<scopeSettings>"));
+        assertTrue(ipesContent.contains("scopeLayout stacked"));
+        assertTrue(ipesContent.contains("scopeLayout overlay"));
+
+        byte[] gzippedBytes = CircuitFileWriter.write(model, true);
+        CircuitModel parsed = new CircuitFileParser().parse(new ByteArrayInputStream(gzippedBytes), "scope_test.ipes");
+        assertEquals(2, parsed.getControlComponents().size());
+
+        CircuitModel.ComponentData parsedScope1 = parsed.getControlComponents().get(0);
+        assertEquals("SCOPE.1", parsedScope1.getName());
+        assertEquals("stacked", parsedScope1.getParameters().get("scopeLayout"));
+        assertEquals("fixed", parsedScope1.getParameters().get("yScaleMode"));
+        assertEquals("sig1,sig2", parsedScope1.getParameters().get("hiddenSignals"));
+        assertEquals(true, parsedScope1.getParameters().get("cursorsEnabled"));
+
+        CircuitModel.ComponentData parsedScope2 = parsed.getControlComponents().get(1);
+        assertEquals("SCOPE.2", parsedScope2.getName());
+        assertEquals("overlay", parsedScope2.getParameters().get("scopeLayout"));
+        assertEquals("auto", parsedScope2.getParameters().get("yScaleMode"));
+        assertEquals("sig3", parsedScope2.getParameters().get("hiddenSignals"));
+    }
 }
