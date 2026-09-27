@@ -40,6 +40,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # desktop/app/engine/ is gitignored build output of build-engine.py;
+      # tauri_build validates the "engine/*" resources glob even for compile
+      # checks, so seed a placeholder here. The real bundle is built in the
+      # build job; this stub never ships.
+      - name: Stub engine bundle for compile checks
+        shell: bash
+        run: |
+          mkdir -p desktop/app/engine
+          echo "compile-check-stub" > desktop/app/engine/VERSION
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:
