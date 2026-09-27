@@ -60,7 +60,11 @@ def main():
     version = sys.argv[1].strip().lstrip("v")
 
     conf = json.loads(TAURI_CONF.read_text(encoding="utf-8"))
-    conf["version"] = version
+    # The MSI bundler enforces WiX ProductVersion rules: the pre-release
+    # identifier must be numeric-only, so "3.1.0-rc.1" is rejected. The
+    # installer/bundler version therefore carries the base release only;
+    # the full version string (incl. -rc.N) stays in the files below.
+    conf["version"] = version.split("-", 1)[0]
     TAURI_CONF.write_text(json.dumps(conf, indent=2) + "\n", encoding="utf-8")
 
     text = APP_PROPERTIES.read_text(encoding="utf-8")
