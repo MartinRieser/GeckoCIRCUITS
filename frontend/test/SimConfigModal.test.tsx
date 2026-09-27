@@ -143,4 +143,162 @@ describe('SimConfigModal Component', () => {
     const startBtn = screen.getByRole('button', { name: /Start Simulation/i });
     expect((startBtn as HTMLButtonElement).disabled).toBe(true);
   });
+
+  it('does NOT close modal when text selection drag starts inside input and releases on backdrop', () => {
+    const onClose = vi.fn();
+    const { container } = render(
+      <SimConfigModal
+        isOpen={true}
+        onClose={onClose}
+        circuitId="c1"
+        defaults={{ duration: 0.02, timeStep: 1e-6, solverType: 'backward-euler', signals: [] }}
+        components={dummyComponents}
+        onRunSimulation={vi.fn()}
+      />,
+    );
+
+    const tEndInput = screen.getByLabelText(/Total Duration/i);
+    const backdrop = container.querySelector('.sim-config-modal-backdrop')!;
+    expect(backdrop).not.toBeNull();
+
+    // User starts mouse selection inside text input
+    fireEvent.mouseDown(tEndInput);
+    // User drags and releases mouse outside the dialog on the backdrop
+    fireEvent.mouseUp(backdrop);
+    fireEvent.click(backdrop);
+
+    // Modal must NOT close!
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('does NOT close modal when an abandoned backdrop press is followed by a drag from inside the dialog', () => {
+    const onClose = vi.fn();
+    const { container } = render(
+      <SimConfigModal
+        isOpen={true}
+        onClose={onClose}
+        circuitId="c1"
+        defaults={{ duration: 0.02, timeStep: 1e-6, solverType: 'backward-euler', signals: [] }}
+        components={dummyComponents}
+        onRunSimulation={vi.fn()}
+      />,
+    );
+
+    const dialog = container.querySelector('.sim-config-dialog')!;
+    const backdrop = container.querySelector('.sim-config-modal-backdrop')!;
+    expect(dialog).not.toBeNull();
+    expect(backdrop).not.toBeNull();
+
+    // Backdrop press abandoned without a click (e.g. mouse released outside
+    // the window) — must not arm a later backdrop click
+    fireEvent.mouseDown(backdrop);
+    // A new press starts inside the dialog (e.g. text selection in an input)
+    // and its drag releases on the backdrop
+    fireEvent.mouseDown(dialog);
+    fireEvent.click(backdrop);
+
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('closes modal when backdrop itself is deliberately clicked', () => {
+    const onClose = vi.fn();
+    const { container } = render(
+      <SimConfigModal
+        isOpen={true}
+        onClose={onClose}
+        circuitId="c1"
+        defaults={{ duration: 0.02, timeStep: 1e-6, solverType: 'backward-euler', signals: [] }}
+        components={dummyComponents}
+        onRunSimulation={vi.fn()}
+      />,
+    );
+
+    const backdrop = container.querySelector('.sim-config-modal-backdrop')!;
+    expect(backdrop).not.toBeNull();
+
+    // Mouse down directly on backdrop, followed by click on backdrop
+    fireEvent.mouseDown(backdrop);
+    fireEvent.click(backdrop);
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('supports Enter key inside duration input to trigger simulation execution', () => {
+    const onRun = vi.fn();
+    const onSettingsChange = vi.fn();
+    const onClose = vi.fn();
+
+    render(
+      <SimConfigModal
+        isOpen={true}
+        onClose={onClose}
+        circuitId="c1"
+        defaults={{ duration: 0.02, timeStep: 1e-6, solverType: 'backward-euler', signals: [] }}
+        components={[]}
+        onSettingsChange={onSettingsChange}
+        onRunSimulation={onRun}
+      />,
+    );
+
+    const tEndInput = screen.getByLabelText(/Total Duration/i);
+    fireEvent.change(tEndInput, { target: { value: '50m' } });
+
+    // First Enter surfaces circuit validation warnings (e.g. empty circuit)
+    fireEvent.keyDown(tEndInput, { key: 'Enter' });
+    expect(screen.getByText(/Circuit Validation Notice/i)).not.toBeNull();
+
+    // Second Enter confirms and runs simulation
+    fireEvent.keyDown(tEndInput, { key: 'Enter' });
+
+    expect(onSettingsChange).toHaveBeenCalledWith(
+      expect.objectContaining({ tEnd: '50m' }),
+    );
+    expect(onRun).toHaveBeenCalledWith(
+      expect.objectContaining({ simulationTime: 0.05 }),
+    );
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('handles intermediate keystrokes and edge cases when changing total duration without crashing', () => {
+    render(
+      <SimConfigModal
+        isOpen={true}
+        onClose={vi.fn()}
+        circuitId="c1"
+        defaults={{ duration: 0.02, timeStep: 1e-6, solverType: 'backward-euler', signals: [] }}
+        components={dummyComponents}
+        onRunSimulation={vi.fn()}
+      />,
+    );
+
+    const tEndInput = screen.getByLabelText(/Total Duration/i);
+
+    // Simulate clearing input
+    fireEvent.change(tEndInput, { target: { value: '' } });
+    expect(screen.getByText(/Enter valid time/i)).not.toBeNull();
+
+    // Simulate intermediate '.' character
+    fireEvent.change(tEndInput, { target: { value: '.' } });
+    expect(screen.getByText(/Enter valid time/i)).not.toBeNull();
+
+    // Non-numerical string
+    fireEvent.change(tEndInput, { target: { value: 'abc' } });
+    expect(screen.getByText(/Enter valid time/i)).not.toBeNull();
+
+    // Valid exponential notation
+    fireEvent.change(tEndInput, { target: { value: '1e-3' } });
+    expect(screen.getByText(/1 ms/i)).not.toBeNull();
+
+    // Zero
+    fireEvent.change(tEndInput, { target: { value: '0' } });
+    expect(screen.getByText(/Enter valid time/i)).not.toBeNull();
+
+    // Negative value
+    fireEvent.change(tEndInput, { target: { value: '-20m' } });
+    expect(screen.getByText(/Enter valid time/i)).not.toBeNull();
+
+    // Large number with SI prefix
+    fireEvent.change(tEndInput, { target: { value: '500m' } });
+    expect(screen.getByText(/500 ms/i)).not.toBeNull();
+  });
 });

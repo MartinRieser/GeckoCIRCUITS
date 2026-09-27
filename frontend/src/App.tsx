@@ -215,6 +215,21 @@ export function App() {
   // Global Keyboard Shortcuts (Central Dispatcher)
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      // Modals manage their own keybindings; suspend global schematic shortcuts
+      if (simConfigOpen) {
+        return;
+      }
+      if (shortcutsHelpOpen) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          setShortcutsHelpOpen(false);
+        }
+        return;
+      }
+      if (commandPaletteOpen) {
+        return;
+      }
+
       if (
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement ||
@@ -404,7 +419,7 @@ export function App() {
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [actions, commandPaletteOpen, dispatch, state.focusedTerminal, state.ghost, state.mode, state.selection, state.selectedWire, state.wireDraft]);
+  }, [actions, commandPaletteOpen, dispatch, shortcutsHelpOpen, simConfigOpen, state.focusedTerminal, state.ghost, state.mode, state.selection, state.selectedWire, state.wireDraft]);
 
   const handleSelectExample = (exampleId: string) => {
     const ex = EXAMPLES.find((e) => e.id === exampleId);
@@ -1025,7 +1040,14 @@ export function App() {
 
       {/* Keyboard Shortcuts Help Modal */}
       {shortcutsHelpOpen && (
-        <div className="modal-backdrop" onClick={() => setShortcutsHelpOpen(false)}>
+        <div
+          className="modal-backdrop"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShortcutsHelpOpen(false);
+            }
+          }}
+        >
           <div className="shortcuts-modal" onClick={(e) => e.stopPropagation()}>
             <div className="shortcuts-modal-header">
               <div className="shortcuts-modal-title">Keyboard Shortcuts Cheatsheet</div>

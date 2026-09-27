@@ -4,7 +4,7 @@
  * inspecting workload estimates, reviewing connected scopes & signals,
  * and performing circuit pre-run validation checks before starting.
  */
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import type {
   EditorComponent,
   EditorWire,
@@ -75,28 +75,60 @@ export function SimConfigModal({
   );
   const [pendingWarnings, setPendingWarnings] = useState<string[] | null>(null);
 
-  // Sync inputs whenever modal opens or lifted settings change
+  // Sync inputs only when modal transitions from closed to open,
+  // preventing user keystrokes from being overwritten during active editing.
+  const prevIsOpenRef = useRef(false);
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !prevIsOpenRef.current) {
       setTEndInput(liftedSettings?.tEnd ?? defaultDurationStr);
       setDtInput(liftedSettings?.dt ?? defaultDtStr);
       setSolverInput(liftedSettings?.solver ?? defaultSolver);
       setPendingWarnings(null);
     }
+    prevIsOpenRef.current = isOpen;
   }, [isOpen, liftedSettings, defaultDurationStr, defaultDtStr, defaultSolver]);
 
-  // Numerical parsing
-  const tEndNum = parseEngineeringValue(tEndInput);
-  const dtNum = parseEngineeringValue(dtInput);
+  // Track backdrop mouse-down to distinguish genuine outside clicks from
+  // text-selection drag releases starting inside input fields.
+  const isBackdropMouseDownRef = useRef(false);
 
-  const isValidTEnd = tEndNum !== null && !isNaN(tEndNum) && tEndNum > 0;
-  const isValidDt = dtNum !== null && !isNaN(dtNum) && dtNum > 0;
-  const isValidTimeRatio = isValidTEnd && isValidDt && dtNum <= tEndNum;
+  const handleBackdropMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    isBackdropMouseDownRef.current = e.target === e.currentTarget;
+  };
 
-  const estSteps = useMemo(() => {
-    if (!isValidTEnd || !isValidDt) return 0;
-    return estimateStepCount(tEndNum, dtNum);
-  }, [isValidTEnd, isValidDt, tEndNum, dtNum]);
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isBackdropMouseDownRef.current && e.target === e.currentTarget) {
+      onClose();
+    }
+    isBackdropMouseDownRef.current = false;
+  };
+
+  // Any press inside the dialog clears the backdrop flag, so a drag starting
+  // in an input can never be mistaken for a deliberate backdrop click — even
+  // after an earlier backdrop press was abandoned without a click (e.g. the
+  // mouse was released outside the window).
+  const handleDialogMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    isBackdropMouseDownRef.current = false;
+    e.stopPropagation();
+  };
+
+  // Numerical parsing: valid means parseable, finite, and strictly positive.
+  // Invalid input collapses to null so downstream code never re-checks.
+  const parsedTEnd = parseEngineeringValue(tEndInput);
+  const parsedDt = parseEngineeringValue(dtInput);
+  const tEndNum =
+    parsedTEnd !== null && Number.isFinite(parsedTEnd) && parsedTEnd > 0 ? parsedTEnd : null;
+  const dtNum =
+    parsedDt !== null && Number.isFinite(parsedDt) && parsedDt > 0 ? parsedDt : null;
+
+  const isValidTEnd = tEndNum !== null;
+  const isValidDt = dtNum !== null;
+  const isValidTimeRatio = tEndNum !== null && dtNum !== null && dtNum <= tEndNum;
+
+  const estSteps = useMemo(
+    () => (tEndNum !== null && dtNum !== null ? estimateStepCount(tEndNum, dtNum) : 0),
+    [tEndNum, dtNum],
+  );
 
   const isHeavyRun = estSteps > STEP_WARNING_THRESHOLD;
 
@@ -126,7 +158,7 @@ export function SimConfigModal({
   if (!isOpen) return null;
 
   const handleStartRun = () => {
-    if (!isValidTEnd || !isValidDt || !isValidTimeRatio) return;
+    if (tEndNum === null || dtNum === null || dtNum > tEndNum) return;
 
     // Check circuit validation
     if (allWarnings.length > 0 && pendingWarnings === null) {
@@ -151,15 +183,27 @@ export function SimConfigModal({
     onClose();
   };
 
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleStartRun();
+    }
+  };
+
   return (
     <div
       className="modal-backdrop sim-config-modal-backdrop"
-      onClick={onClose}
+      onMouseDown={handleBackdropMouseDown}
+      onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
       aria-labelledby="sim-config-modal-title"
     >
-      <div className="shortcuts-modal sim-config-dialog" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="shortcuts-modal sim-config-dialog"
+        onMouseDown={handleDialogMouseDown}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="shortcuts-modal-header">
           <div className="shortcuts-modal-title" id="sim-config-modal-title">
@@ -196,6 +240,7 @@ export function SimConfigModal({
                   className={`prop-input ${!isValidTEnd ? 'input-invalid' : ''}`}
                   value={tEndInput}
                   onChange={(e) => setTEndInput(e.target.value)}
+                  onKeyDown={handleInputKeyDown}
                   placeholder="e.g. 20m, 100m, 1.5s"
                 />
                 <span className="prop-unit-hint">
@@ -213,6 +258,7 @@ export function SimConfigModal({
                   className={`prop-input ${!isValidDt ? 'input-invalid' : ''}`}
                   value={dtInput}
                   onChange={(e) => setDtInput(e.target.value)}
+                  onKeyDown={handleInputKeyDown}
                   placeholder="e.g. 1u, 100n, 10u"
                 />
                 <span className="prop-unit-hint">
