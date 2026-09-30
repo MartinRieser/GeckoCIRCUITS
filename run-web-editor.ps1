@@ -74,12 +74,21 @@ if ($Rebuild) {
     }
     Write-Host "[INFO] Packaging GeckoCIRCUITS REST JAR..." -ForegroundColor Yellow
     & mvn -pl backend/gecko-rest-api -am package -DskipTests -q
-} elseif (-not (Test-Path $RestJar)) {
-    Write-Host "[INFO] Building GeckoCIRCUITS Web Editor package..." -ForegroundColor Yellow
-    & mvn -pl backend/gecko-rest-api -am package -DskipTests -q
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "[ERROR] Build failed. Please verify Maven and JDK." -ForegroundColor Red
-        exit 1
+} else {
+    $staticIndex = Join-Path $ScriptDir "backend\gecko-rest-api\src\main\resources\static\index.html"
+    if (-not (Test-Path $staticIndex) -and (Test-Path (Join-Path $ScriptDir "frontend\package.json"))) {
+        Write-Host "[INFO] Frontend static assets not found. Building latest frontend static assets..." -ForegroundColor Yellow
+        Push-Location (Join-Path $ScriptDir "frontend")
+        & npm run build:spring
+        Pop-Location
+    }
+    if (-not (Test-Path $RestJar)) {
+        Write-Host "[INFO] Building GeckoCIRCUITS Web Editor package..." -ForegroundColor Yellow
+        & mvn -pl backend/gecko-rest-api -am package -DskipTests -q
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "[ERROR] Build failed. Please verify Maven and JDK." -ForegroundColor Red
+            exit 1
+        }
     }
 }
 

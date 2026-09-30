@@ -107,7 +107,16 @@ if !REBUILD! equ 1 (
     )
 )
 
-REM 2. Check if JAR exists, build if missing
+REM 2. Check if JAR exists or frontend static assets missing, build if needed
+set "STATIC_INDEX=%SCRIPT_DIR%backend\gecko-rest-api\src\main\resources\static\index.html"
+if not exist "%STATIC_INDEX%" (
+    echo [INFO] Frontend static assets not found. Building latest frontend static assets...
+    if exist "%SCRIPT_DIR%frontend\package.json" (
+        cd /d "%SCRIPT_DIR%frontend"
+        call npm run build:spring
+        cd /d "%SCRIPT_DIR%"
+    )
+)
 if not exist "%REST_JAR%" (
     echo [INFO] Building GeckoCIRCUITS Web Editor package...
     call mvn -pl backend/gecko-rest-api -am package -DskipTests -q
