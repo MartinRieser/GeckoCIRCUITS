@@ -131,7 +131,7 @@ REM 3. Check if server is already running on port 8080
 powershell -Command "try { $r = Invoke-WebRequest -UseBasicParsing -Uri 'http://localhost:%PORT%/gecko/api/v1/circuits/catalog' -TimeoutSec 1; if ($r.StatusCode -eq 200) { exit 0 } else { exit 1 } } catch { exit 1 }" >nul 2>&1
 if errorlevel 1 (
     echo [INFO] Starting GeckoCIRCUITS Server...
-    start /B "" "%JAVAW_EXE%" -Xmx2g -jar "%REST_JAR%" >nul 2>&1
+    start /B "" "%JAVAW_EXE%" -Duser.language=en -Duser.country=US -Xmx2g -jar "%REST_JAR%" >nul 2>&1
     
     REM Wait for server to become ready
     set "READY=0"

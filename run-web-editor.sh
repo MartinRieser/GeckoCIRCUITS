@@ -172,7 +172,7 @@ else
 
     echo "[INFO] Starting GeckoCIRCUITS Server in background..."
     mkdir -p "$SCRIPT_DIR/logs"
-    nohup "$JAVA_BIN" -Xmx2g -jar "$REST_JAR" > "$SCRIPT_DIR/logs/gecko-web-server.log" 2>&1 &
+    nohup "$JAVA_BIN" -Duser.language=en -Duser.country=US -Xmx2g -jar "$REST_JAR" > "$SCRIPT_DIR/logs/gecko-web-server.log" 2>&1 &
 
     # Wait for server to become ready
     READY=0
