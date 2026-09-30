@@ -3565,19 +3565,263 @@ polyline.wire.selected {
 }
 
 /* --- Loss panel --- */
+/* --- Loss panel & Waveform Power Analysis --- */
 .loss-panel {
   margin: 0 14px 10px;
-  padding: 10px;
+  padding: 12px;
   border-radius: 8px;
   border: 1px solid var(--border, #334155);
   background: var(--panel-bg, rgba(15, 23, 42, 0.6));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
+
+.loss-waveform-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.loss-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.loss-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.loss-title-icon {
+  font-size: 18px;
+}
+
+.loss-subtitle {
+  display: block;
+  font-size: 11px;
+  color: var(--text-dim, #94a3b8);
+  font-weight: 400;
+  margin-top: 1px;
+}
+
+.loss-selectors-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.loss-select-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted, #94a3b8);
+}
+
+.loss-probe-select {
+  background: var(--bg, #0f172a);
+  color: var(--text, #f8fafc);
+  border: 1px solid var(--border, #334155);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+
+.loss-range-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+}
+
+.loss-range-label {
+  color: var(--text-dim, #94a3b8);
+  font-weight: 600;
+}
+
+.loss-range-pills {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.loss-range-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid var(--border, #334155);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  color: var(--text-muted, #94a3b8);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.loss-range-pill:hover:not(:disabled) {
+  background: rgba(51, 65, 85, 0.8);
+  color: var(--text, #f8fafc);
+}
+
+.loss-range-pill.active {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--accent, #38bdf8);
+  color: var(--accent, #38bdf8);
+  font-weight: 600;
+}
+
+.loss-range-pill:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.loss-range-badge {
+  background: rgba(15, 23, 42, 0.8);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+}
+
+.loss-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.loss-stat-card {
+  display: flex;
+  flex-direction: column;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border, #334155);
+  border-radius: 6px;
+  padding: 8px 10px;
+  gap: 2px;
+}
+
+.loss-stat-card.primary {
+  border-color: rgba(56, 189, 248, 0.4);
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.loss-stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim, #94a3b8);
+}
+
+.loss-stat-val {
+  font-family: var(--font-mono, monospace);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text, #f8fafc);
+}
+
+.loss-stat-val.primary {
+  color: #38bdf8;
+}
+
+.loss-stat-val.highlight {
+  color: #34d399;
+}
+
+.loss-stat-val.warning {
+  color: #fb923c;
+}
+
+.loss-stat-sub {
+  font-size: 10px;
+  color: var(--text-dim, #64748b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.loss-power-chart-wrap {
+  display: flex;
+  flex-direction: column;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid var(--border, #334155);
+  border-radius: 6px;
+  padding: 8px 10px;
+  gap: 6px;
+}
+
+.loss-power-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted, #94a3b8);
+}
+
+.loss-power-chart-legend {
+  font-size: 10px;
+  font-family: var(--font-mono, monospace);
+  color: var(--text-dim, #94a3b8);
+}
+
+.loss-power-chart-legend strong {
+  color: #fb923c;
+}
+
+.loss-power-svg {
+  width: 100%;
+  height: 64px;
+  display: block;
+}
+
+.loss-datasheet-details {
+  border-top: 1px solid var(--border, #334155);
+  padding-top: 8px;
+}
+
+.loss-datasheet-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted, #94a3b8);
+  cursor: pointer;
+  user-select: none;
+  padding: 4px 0;
+}
+
+.loss-autofill-btn {
+  background: rgba(56, 189, 248, 0.15) !important;
+  border-color: rgba(56, 189, 248, 0.4) !important;
+  color: #38bdf8 !important;
+  font-size: 10px !important;
+  padding: 2px 8px !important;
+  border-radius: 4px !important;
+  cursor: pointer;
+}
+
+.loss-autofill-btn:hover {
+  background: rgba(56, 189, 248, 0.25) !important;
+}
+
 .loss-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   gap: 6px 10px;
-  margin-bottom: 8px;
+  margin: 8px 0;
 }
+
 .loss-grid label {
   display: flex;
   flex-direction: column;
@@ -3585,6 +3829,7 @@ polyline.wire.selected {
   font-size: 11px;
   color: var(--text-dim, #94a3b8);
 }
+
 .loss-grid input {
   background: var(--panel-bg, #0f172a);
   color: var(--text, #e2e8f0);
@@ -3592,14 +3837,23 @@ polyline.wire.selected {
   border-radius: 4px;
   padding: 3px 6px;
 }
-.loss-panel button {
-  padding: 4px 12px;
+
+.loss-calc-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.loss-submit-btn {
+  padding: 4px 14px;
   border-radius: 4px;
   border: 1px solid var(--border, #334155);
   background: #1f2937;
   color: var(--text, #e2e8f0);
   cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
 }
+
 .loss-result {
   display: flex;
   gap: 16px;
@@ -3609,9 +3863,18 @@ polyline.wire.selected {
   font-weight: 600;
   color: var(--text, #e2e8f0);
 }
+
 .loss-method {
   font-weight: 400;
   color: var(--text-dim, #94a3b8);
+}
+
+.loss-empty-hint {
+  font-size: 12px;
+  color: var(--text-dim, #94a3b8);
+  padding: 12px;
+  text-align: center;
+  font-style: italic;
 }
 
 /* Hover crosshair time pill */

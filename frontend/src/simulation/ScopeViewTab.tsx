@@ -548,7 +548,16 @@ export function ScopeViewTab({
                     />
                   )}
 
-                  {drawerTab === 'losses' && <LossPanel />}
+                  {drawerTab === 'losses' && (
+                    <LossPanel
+                      time={timeArray}
+                      signals={results || undefined}
+                      activeSignals={visibleSignals}
+                      cursorA={cursorA}
+                      cursorB={cursorB}
+                      colorOf={colorOf}
+                    />
+                  )}
                 </div>
               </div>
             )}

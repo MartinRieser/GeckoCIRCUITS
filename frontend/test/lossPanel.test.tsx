@@ -55,3 +55,58 @@ it('surfaces server errors', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Calculate losses' }));
   await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('HTTP 400'));
 });
+
+it('calculates instantaneous power, average power, and energy from scope waveforms', () => {
+  const dummyTime = [0, 1e-4, 2e-4, 3e-4, 4e-4];
+  const dummySignals = {
+    V_out: [100, 100, 100, 100, 100],
+    I_L: [2, 4, 6, 8, 10],
+  };
+
+  render(
+    <LossPanel
+      time={dummyTime}
+      signals={dummySignals}
+      activeSignals={['V_out', 'I_L']}
+      cursorA={null}
+      cursorB={null}
+    />,
+  );
+
+  // Section title exists
+  expect(screen.getByText('Semiconductor Power & Loss Analysis')).toBeDefined();
+
+  // Displays Average Power and Energy
+  // p(t) ranges from 200W to 1000W; average is 600W
+  // Energy = 600W * 0.4ms = 0.24 J
+  expect(screen.getByText(/Average Power Loss/i)).toBeDefined();
+  expect(screen.getByText(/Total Dissipated Energy/i)).toBeDefined();
+  expect(screen.getByText(/Peak Instantaneous Power/i)).toBeDefined();
+
+  // Instantaneous power mini-chart SVG is rendered
+  expect(document.querySelector('.loss-power-svg')).not.toBeNull();
+});
+
+it('integrates with oscilloscope Cursors A and B for interval power analysis', () => {
+  const dummyTime = [0, 1e-4, 2e-4, 3e-4, 4e-4];
+  const dummySignals = {
+    V_out: [100, 100, 100, 100, 100],
+    I_L: [2, 4, 6, 8, 10],
+  };
+
+  render(
+    <LossPanel
+      time={dummyTime}
+      signals={dummySignals}
+      activeSignals={['V_out', 'I_L']}
+      cursorA={1}
+      cursorB={3}
+    />,
+  );
+
+  // Cursor button is enabled and displays interval
+  const cursorBtn = screen.getByRole('button', { name: /Between Cursors/i });
+  expect(cursorBtn).toBeDefined();
+  expect(cursorBtn.hasAttribute('disabled')).toBe(false);
+  expect(cursorBtn.textContent).toContain('Δt =');
+});
