@@ -294,6 +294,38 @@ describe('Oscilloscope GUI & Controls', () => {
     expect(container.querySelector('.sim-cursor-card')).not.toBeNull();
   });
 
+  it('renders a single clean zero ground marker and direct trace name badges instead of duplicate channel numbers', () => {
+    const { container } = render(
+      <ScopeViewTab
+        selectedScope="SCOPE.1"
+        components={dummyComponents}
+        results={dummyResults}
+        displayLayout="overlay"
+      />,
+    );
+
+    // Old confusing stacked channel markers (with numbers 1, 2, 3...) are removed
+    expect(container.querySelector('.channel-ground-marker')).toBeNull();
+
+    // Single common ground/zero marker "0" is present
+    const zeroMarker = container.querySelector('.zero-ground-marker');
+    expect(zeroMarker).not.toBeNull();
+    expect(zeroMarker?.textContent?.trim()).toBe('0');
+
+    // Direct trace name badges with signal names exist on the waveform plot
+    const traceBadges = container.querySelectorAll('.trace-end-badge');
+    expect(traceBadges.length).toBe(2);
+    const badgeTexts = Array.from(traceBadges).map((b) => b.querySelector('text')?.textContent?.trim());
+    expect(badgeTexts).toContain('V_out');
+    expect(badgeTexts).toContain('I_L');
+
+    // Hovering over a trace badge highlights it
+    fireEvent.mouseEnter(traceBadges[0]);
+    expect(container.querySelector('.trace-end-badge.hovered')).not.toBeNull();
+    fireEvent.mouseLeave(traceBadges[0]);
+    expect(container.querySelector('.trace-end-badge.hovered')).toBeNull();
+  });
+
   describe('sampleIndexAt', () => {
     const time = [0, 0.1, 0.2, 0.3, 0.4, 0.5];
 

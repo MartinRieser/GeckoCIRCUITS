@@ -211,6 +211,7 @@ export function ScopeViewTab({
   } = ctrl;
 
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [hoveredSignal, setHoveredSignal] = useState<string | null>(null);
   const [chartContainerRef, chartDimensions] = useContainerDimensions<HTMLDivElement>();
 
   const win = effectiveWindow(view, dataT0, dataT1);
@@ -307,11 +308,26 @@ export function ScopeViewTab({
                 </div>
 
                 <div className="dso-osd-right">
-                  {visibleSignals.slice(0, 3).map((sig) => {
+                  {visibleSignals.map((sig) => {
                     const color = colorOf(sig);
+                    const isHovered = hoveredSignal === sig;
                     return (
-                      <span key={sig} className="dso-osd-channel-tag" style={{ borderLeft: `3px solid ${color}` }}>
-                        <span style={{ color }}>{sig}</span>
+                      <span
+                        key={sig}
+                        className={`dso-osd-channel-tag ${isHovered ? 'highlighted' : ''}`}
+                        style={{
+                          borderLeft: `3px solid ${color}`,
+                          background: isHovered
+                            ? (theme === 'light' ? 'rgba(226, 232, 240, 0.95)' : 'rgba(51, 65, 85, 0.95)')
+                            : undefined,
+                          boxShadow: isHovered ? `0 0 8px ${color}80` : undefined,
+                        }}
+                        onMouseEnter={() => setHoveredSignal(sig)}
+                        onMouseLeave={() => setHoveredSignal(null)}
+                        onClick={() => toggleSignal(sig)}
+                        title={`Click to hide/show ${sig}. Hover to highlight trace.`}
+                      >
+                        <span style={{ color, fontWeight: isHovered ? 700 : 500 }}>{sig}</span>
                       </span>
                     );
                   })}
@@ -390,6 +406,9 @@ export function ScopeViewTab({
                     yScaleMode={yScaleMode}
                     yZoomRange={yView}
                     onZoomYRange={setYView}
+                    hoveredSignal={hoveredSignal}
+                    onHoverSignal={setHoveredSignal}
+                    onToggleSignal={toggleSignal}
                   />
                 )}
               </div>
@@ -397,13 +416,23 @@ export function ScopeViewTab({
               {/* Screen Bottom Quick-Measurement Strip */}
               <div className="dso-quick-measure-bar">
                 <div className="dso-quick-tiles">
-                  {visibleSignals.slice(0, 3).map((name) => {
+                  {visibleSignals.map((name) => {
                     const st = signalStats[name];
                     if (!st) return null;
                     const unit = inferSignalUnit(name);
                     const color = colorOf(name);
+                    const isHovered = hoveredSignal === name;
                     return (
-                      <div key={name} className="dso-measure-tile" style={{ borderLeft: `3px solid ${color}` }}>
+                      <div
+                        key={name}
+                        className={`dso-measure-tile ${isHovered ? 'highlighted' : ''}`}
+                        style={{
+                          borderLeft: `3px solid ${color}`,
+                          boxShadow: isHovered ? `0 0 8px ${color}60` : undefined,
+                        }}
+                        onMouseEnter={() => setHoveredSignal(name)}
+                        onMouseLeave={() => setHoveredSignal(null)}
+                      >
                         <span style={{ color, fontWeight: 700 }}>{name}</span>
                         <span>Vpp: <strong className="dso-measure-tile-val">{formatEngineeringValue(st.pkpk, unit)}</strong></span>
                         <span>Vrms: <strong className="dso-measure-tile-val">{formatEngineeringValue(st.rms, unit)}</strong></span>
@@ -556,6 +585,9 @@ function FullScreenOverlayChart({
   yScaleMode,
   yZoomRange,
   onZoomYRange,
+  hoveredSignal,
+  onHoverSignal,
+  onToggleSignal,
 }: {
   width?: number;
   height?: number;
@@ -581,11 +613,18 @@ function FullScreenOverlayChart({
   yScaleMode: 'fixed' | 'auto';
   yZoomRange: { min: number; max: number } | null;
   onZoomYRange: (range: { min: number; max: number } | null) => void;
+  hoveredSignal?: string | null;
+  onHoverSignal?: (name: string | null) => void;
+  onToggleSignal?: (name: string) => void;
 }) {
   const padLeft = 68;
   const padRight = 24;
   const padTop = 20;
   const padBottom = 34;
+
+  const [internalHoveredSignal, setInternalHoveredSignal] = useState<string | null>(null);
+  const currentHoveredSignal = hoveredSignal !== undefined ? hoveredSignal : internalHoveredSignal;
+  const setHovered = onHoverSignal || setInternalHoveredSignal;
 
   const plotW = Math.max(100, width - padLeft - padRight);
   const plotH = Math.max(100, height - padTop - padBottom);
@@ -751,6 +790,46 @@ function FullScreenOverlayChart({
       return { name, path: d };
     });
   }, [activeSignals, time, signals, minT, maxT, minY, maxY]);
+
+  // Compute collision-free direct trace end badges at right plot edge
+  const traceBadges = useMemo(() => {
+    if (activeSignals.length === 0 || time.length === 0) return [];
+    const iEnd = sampleIndexAt(time, maxT);
+
+    const list = activeSignals.map((name) => {
+      const arr = signals[name] || [];
+      const val = arr.length > 0 ? (iEnd >= 0 && iEnd < arr.length ? arr[iEnd] : arr[arr.length - 1]) : 0;
+      const rawY = mapY(val);
+      const clampedY = Math.max(padTop + 10, Math.min(height - padBottom - 10, rawY));
+      return {
+        name,
+        color: colorOf(name),
+        val,
+        y: clampedY,
+        targetY: clampedY,
+      };
+    });
+
+    list.sort((a, b) => a.y - b.y);
+
+    const minSpacing = 20;
+    for (let i = 1; i < list.length; i++) {
+      if (list[i].y - list[i - 1].y < minSpacing) {
+        list[i].y = list[i - 1].y + minSpacing;
+      }
+    }
+    const bottomBound = height - padBottom - 10;
+    if (list.length > 0 && list[list.length - 1].y > bottomBound) {
+      list[list.length - 1].y = bottomBound;
+      for (let i = list.length - 2; i >= 0; i--) {
+        if (list[i + 1].y - list[i].y < minSpacing) {
+          list[i].y = list[i + 1].y - minSpacing;
+        }
+      }
+    }
+
+    return list;
+  }, [activeSignals, signals, time, maxT, padTop, height, padBottom, mapY, colorOf]);
 
   const handleMouseMove = (e: ReactMouseEvent<SVGSVGElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -1023,50 +1102,117 @@ function FullScreenOverlayChart({
           />
         )}
 
-        {/* Channel Ground Reference Markers on left axis */}
-        {activeSignals.map((name) => {
-          const color = colorOf(name);
+        {/* Common Zero / Ground Reference Marker on left axis */}
+        {minY <= 0 && maxY >= 0 && (() => {
           const y0 = mapY(0);
           if (y0 < padTop - 6 || y0 > height - padBottom + 6) return null;
           const clampedY = Math.max(padTop + 6, Math.min(height - padBottom - 6, y0));
           return (
-            <g key={`gnd-${name}`} className="channel-ground-marker">
+            <g className="zero-ground-marker" pointerEvents="none">
               <path
-                d={`M ${padLeft - 18} ${clampedY - 6} L ${padLeft - 5} ${clampedY - 6} L ${padLeft} ${clampedY} L ${padLeft - 5} ${clampedY + 6} L ${padLeft - 18} ${clampedY + 6} Z`}
-                fill={color}
-                opacity={0.9}
+                d={`M ${padLeft - 20} ${clampedY - 6} L ${padLeft - 5} ${clampedY - 6} L ${padLeft} ${clampedY} L ${padLeft - 5} ${clampedY + 6} L ${padLeft - 20} ${clampedY + 6} Z`}
+                fill={zeroColor}
+                opacity={0.85}
               />
               <text
-                x={padLeft - 11}
+                x={padLeft - 12}
                 y={clampedY + 3.5}
                 fill="#ffffff"
                 fontSize={8.5}
-                fontWeight={800}
+                fontWeight={700}
                 fontFamily="monospace"
                 textAnchor="middle"
               >
-                {activeSignals.indexOf(name) + 1}
+                0
               </text>
             </g>
           );
-        })}
+        })()}
 
         {/* Waveform Traces (clipped to the visible window) */}
         <g clipPath="url(#overlay-plot-clip)">
         {tracePaths.map(({ name, path }) => {
           const color = colorOf(name);
+          const isHighlighted = currentHoveredSignal === name;
+          const isDimmed = currentHoveredSignal !== null && !isHighlighted;
           return (
             <path
               key={name}
               d={path}
               fill="none"
               stroke={color}
-              strokeWidth={2.2}
+              strokeWidth={isHighlighted ? 3.2 : 2.2}
+              opacity={isDimmed ? 0.25 : 1}
               strokeLinejoin="round"
+              style={{ transition: 'opacity 0.15s ease, stroke-width 0.15s ease' }}
             />
           );
         })}
         </g>
+
+        {/* Signal End-Trace Badges (Direct Signal Identification by Name) */}
+        {traceBadges.map(({ name, color, y, targetY, val }) => {
+          const isHovered = currentHoveredSignal === name;
+          const isDimmed = currentHoveredSignal !== null && !isHovered;
+          const badgeWidth = Math.max(46, Math.min(110, name.length * 7.5 + 16));
+          const badgeHeight = 18;
+          const badgeX = width - padRight - badgeWidth - 4;
+          const badgeY = y - badgeHeight / 2;
+
+          return (
+            <g
+              key={`trace-badge-${name}`}
+              className={`trace-end-badge ${isHovered ? 'hovered' : ''}`}
+              style={{ cursor: 'pointer', transition: 'opacity 0.15s ease' }}
+              opacity={isDimmed ? 0.35 : 1}
+              onMouseEnter={() => setHovered(name)}
+              onMouseLeave={() => setHovered(null)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleSignal?.(name);
+              }}
+            >
+              <title>{`${name}: ${formatEngineeringValue(val)} (Click to toggle)`}</title>
+              {Math.abs(y - targetY) > 2 && (
+                <line
+                  x1={width - padRight}
+                  y1={targetY}
+                  x2={width - padRight - 4}
+                  y2={y}
+                  stroke={color}
+                  strokeWidth={1.2}
+                  strokeDasharray="2 2"
+                  opacity={0.7}
+                />
+              )}
+              <polygon
+                points={`${width - padRight},${targetY} ${width - padRight - 5},${targetY - 3} ${width - padRight - 5},${targetY + 3}`}
+                fill={color}
+              />
+              <rect
+                x={badgeX}
+                y={badgeY}
+                width={badgeWidth}
+                height={badgeHeight}
+                rx={4}
+                fill={theme === 'light' ? 'rgba(255, 255, 255, 0.92)' : 'rgba(15, 23, 42, 0.92)'}
+                stroke={color}
+                strokeWidth={isHovered ? 2 : 1.2}
+              />
+              <circle cx={badgeX + 8} cy={y} r={3} fill={color} />
+              <text
+                x={badgeX + 15}
+                y={y + 3.5}
+                fill={color}
+                fontSize={10}
+                fontWeight={700}
+                fontFamily="sans-serif"
+              >
+                {name}
+              </text>
+            </g>
+          );
+        })}
 
         {/* Cursor A */}
         {cursorsEnabled && cursorA !== null && time[cursorA] !== undefined && (
@@ -1610,14 +1756,34 @@ function FullScreenStackedChart({
 
               {/* Zero line */}
               {zeroY !== null && (
-                <line
-                  x1={padLeft}
-                  y1={zeroY}
-                  x2={width - padRight}
-                  y2={zeroY}
-                  stroke={zeroColor}
-                  strokeWidth={1}
-                />
+                <>
+                  <line
+                    x1={padLeft}
+                    y1={zeroY}
+                    x2={width - padRight}
+                    y2={zeroY}
+                    stroke={zeroColor}
+                    strokeWidth={1}
+                  />
+                  <g className="zero-ground-marker" pointerEvents="none">
+                    <path
+                      d={`M ${padLeft - 18} ${zeroY - 5} L ${padLeft - 4} ${zeroY - 5} L ${padLeft} ${zeroY} L ${padLeft - 4} ${zeroY + 5} L ${padLeft - 18} ${zeroY + 5} Z`}
+                      fill={zeroColor}
+                      opacity={0.8}
+                    />
+                    <text
+                      x={padLeft - 10}
+                      y={zeroY + 3}
+                      fill="#ffffff"
+                      fontSize={8}
+                      fontWeight={700}
+                      fontFamily="monospace"
+                      textAnchor="middle"
+                    >
+                      0
+                    </text>
+                  </g>
+                </>
               )}
 
               {/* Y Axis Labels (Min / Max) */}

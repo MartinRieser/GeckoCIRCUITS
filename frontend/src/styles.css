@@ -3089,11 +3089,34 @@ polyline.wire.selected {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  padding: 1px 5px;
+  padding: 1px 6px;
   border-radius: 3px;
   font-size: 10px;
   background: rgba(30, 41, 59, 0.7);
   border: 1px solid rgba(51, 65, 85, 0.6);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.dso-osd-channel-tag:hover,
+.dso-osd-channel-tag.highlighted {
+  background: rgba(51, 65, 85, 0.95);
+  transform: translateY(-1px);
+}
+
+.trace-end-badge {
+  transition: opacity 0.15s ease, filter 0.15s ease;
+  user-select: none;
+}
+
+.trace-end-badge:hover,
+.trace-end-badge.hovered {
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
+}
+
+.zero-ground-marker {
+  user-select: none;
 }
 
 /* Waveform Chart Canvas Container */
