@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, expect, it, afterEach } from 'vitest';
+import { describe, expect, it, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, cleanup, renderHook } from '@testing-library/react';
 import { ScopeViewTab, sampleIndexAt, inferSignalUnit } from '../src/simulation/ScopeViewTab';
 import { SimulationPropertiesPanel } from '../src/properties/SimulationPropertiesPanel';
@@ -204,6 +204,94 @@ describe('Oscilloscope GUI & Controls', () => {
     // Channel delta measurements in single table
     expect(container.querySelector('.sim-cursor-table')?.textContent).toContain('V_out');
     expect(container.querySelector('.sim-cursor-table')?.textContent).toContain('I_L');
+  });
+
+  it('enables cursors and displays measurements in sidebar when user sets cursor on the plot', () => {
+    const { result } = renderHook(() =>
+      useScopeController({
+        results: dummyResults,
+        components: dummyComponents,
+        selectedScope: 'SCOPE.1',
+      }),
+    );
+
+    const { container, rerender } = render(
+      <div>
+        <ScopeViewTab
+          selectedScope="SCOPE.1"
+          components={dummyComponents}
+          results={dummyResults}
+          displayLayout="overlay"
+          scope={result.current}
+        />
+        <SimulationPropertiesPanel
+          circuitId="test-circuit"
+          status={null}
+          progress={0}
+          components={dummyComponents}
+          results={dummyResults}
+          selectedScope="SCOPE.1"
+          onSelectScope={() => {}}
+          displayLayout="overlay"
+          onDisplayLayoutChange={() => {}}
+          scope={result.current}
+          onRunSimulation={() => {}}
+        />
+      </div>,
+    );
+
+    // Initially cursors are OFF
+    expect(result.current.cursorsEnabled).toBe(false);
+    expect(screen.getByText('📍 Cursors: OFF')).toBeDefined();
+
+    // Click SVG plot to place cursor
+    const svg = container.querySelector('.full-waveform-svg');
+    expect(svg).not.toBeNull();
+    vi.spyOn(svg!, 'getBoundingClientRect').mockReturnValue({
+      left: 0,
+      top: 0,
+      width: 1000,
+      height: 480,
+      right: 1000,
+      bottom: 480,
+      x: 0,
+      y: 0,
+      toJSON: () => {},
+    });
+    fireEvent.click(svg!, { clientX: 200, clientY: 200 });
+
+    // Setting a cursor auto-enables cursors in the controller
+    expect(result.current.cursorsEnabled).toBe(true);
+    expect(result.current.cursorA).not.toBeNull();
+
+    // Re-render and verify right sidebar shows Cursors: ON and measurements
+    rerender(
+      <div>
+        <ScopeViewTab
+          selectedScope="SCOPE.1"
+          components={dummyComponents}
+          results={dummyResults}
+          displayLayout="overlay"
+          scope={result.current}
+        />
+        <SimulationPropertiesPanel
+          circuitId="test-circuit"
+          status={null}
+          progress={0}
+          components={dummyComponents}
+          results={dummyResults}
+          selectedScope="SCOPE.1"
+          onSelectScope={() => {}}
+          displayLayout="overlay"
+          onDisplayLayoutChange={() => {}}
+          scope={result.current}
+          onRunSimulation={() => {}}
+        />
+      </div>,
+    );
+
+    expect(screen.getByText('📍 Cursors: ON')).toBeDefined();
+    expect(container.querySelector('.sim-cursor-card')).not.toBeNull();
   });
 
   describe('sampleIndexAt', () => {

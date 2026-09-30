@@ -145,6 +145,7 @@ export function App() {
     components: state.components,
     selectedScope: activeSelectedScope,
     theme,
+    onSetParameter: actions.setParameter,
   });
   const [rightSidebarWidth, setRightSidebarWidth] = useState<number>(() => {
     const saved = localStorage.getItem('gecko-right-sidebar-width');
@@ -847,6 +848,7 @@ export function App() {
               status={simState.status}
               filename={state.filename}
               scope={scope}
+              onSetParameter={actions.setParameter}
             />
           </div>
 

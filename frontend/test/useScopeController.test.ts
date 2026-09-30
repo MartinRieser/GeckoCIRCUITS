@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useScopeController } from '../src/simulation/useScopeController';
 import type { EditorComponent } from '../src/model/types';
@@ -156,6 +156,50 @@ describe('useScopeController hook', () => {
     expect(result.current.cursorA).toBeNull();
     expect(result.current.cursorB).toBeNull();
     expect(result.current.cursorMeasurements).toBeNull();
+  });
+
+  it('automatically enables cursors when setting cursorA, cursorB, or calling setCursor', () => {
+    const onSetParameter = vi.fn();
+    const { result } = renderHook(() =>
+      useScopeController({
+        results: dummyResults,
+        components: dummyComponents,
+        selectedScope: 'SCOPE.1',
+        onSetParameter,
+      }),
+    );
+
+    expect(result.current.cursorsEnabled).toBe(false);
+    expect(result.current.cursorMeasurements).toBeNull();
+
+    // Setting cursor A directly enables cursors
+    act(() => {
+      result.current.setCursorA(2);
+    });
+    expect(result.current.cursorsEnabled).toBe(true);
+    expect(result.current.cursorA).toBe(2);
+    expect(result.current.cursorMeasurements).not.toBeNull();
+    expect(result.current.cursorMeasurements?.timeA).toBe(0.002);
+    expect(onSetParameter).toHaveBeenCalledWith('SCOPE.1', 'cursorsEnabled', true);
+
+    // Setting cursor B via setCursor maintains enabled and computes delta
+    act(() => {
+      result.current.setCursor('B', 4);
+    });
+    expect(result.current.cursorsEnabled).toBe(true);
+    expect(result.current.cursorB).toBe(4);
+    expect(result.current.cursorMeasurements?.timeB).toBe(0.004);
+    expect(result.current.cursorMeasurements?.dt).toBeCloseTo(0.002);
+
+    // Clearing cursors disables cursors and persists false
+    act(() => {
+      result.current.clearCursors();
+    });
+    expect(result.current.cursorsEnabled).toBe(false);
+    expect(result.current.cursorA).toBeNull();
+    expect(result.current.cursorB).toBeNull();
+    expect(result.current.cursorMeasurements).toBeNull();
+    expect(onSetParameter).toHaveBeenCalledWith('SCOPE.1', 'cursorsEnabled', false);
   });
 
   it('allows switching drawerTab', () => {

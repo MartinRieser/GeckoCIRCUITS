@@ -72,6 +72,7 @@ describe('ScopePropertiesPanel Component', () => {
     setCursorB: vi.fn(),
     activeCursor: 'A',
     setActiveCursor: vi.fn(),
+    setCursor: vi.fn(),
     setCursorPreset: vi.fn(),
     clearCursors: vi.fn(),
     cursorMeasurements: null,

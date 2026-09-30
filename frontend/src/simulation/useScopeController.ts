@@ -73,6 +73,8 @@ export interface UseScopeControllerProps {
   selectedScope?: string;
   /** UI theme for waveform coloring ('dark' or 'light'). */
   theme?: 'dark' | 'light';
+  /** Optional callback to persist scope parameters to circuit components. */
+  onSetParameter?: (name: string, key: string, value: number | string | boolean) => void;
 }
 
 /** State and actions returned by {@link useScopeController} to control oscilloscope views. */
@@ -113,6 +115,7 @@ export interface ScopeController {
   setCursorB: React.Dispatch<React.SetStateAction<number | null>>;
   activeCursor: 'A' | 'B';
   setActiveCursor: React.Dispatch<React.SetStateAction<'A' | 'B'>>;
+  setCursor: (type: 'A' | 'B', index: number | null) => void;
   setCursorPreset: () => void;
   clearCursors: () => void;
   cursorMeasurements: CursorMeasurements | null;
@@ -127,6 +130,7 @@ export function useScopeController({
   components = [],
   selectedScope = 'all',
   theme = 'dark',
+  onSetParameter,
 }: UseScopeControllerProps): ScopeController {
   const [hiddenSignals, setHiddenSignals] = useState<Record<string, boolean>>({});
   const [cursorA, setCursorA] = useState<number | null>(null);
@@ -234,19 +238,74 @@ export function useScopeController({
     setHiddenSignals((prev) => ({ ...prev, [name]: !prev[name] }));
   }, []);
 
+  const setCursorAWithEnable = useCallback(
+    (action: React.SetStateAction<number | null>) => {
+      setCursorA((prev) => {
+        const next = typeof action === 'function' ? action(prev) : action;
+        if (next !== null) {
+          setCursorsEnabled(true);
+          if (activeScopeBlock && onSetParameter) {
+            onSetParameter(activeScopeBlock.name, SCOPE_SETTING_KEYS.cursorsEnabled, true);
+          }
+        }
+        return next;
+      });
+    },
+    [activeScopeBlock, onSetParameter],
+  );
+
+  const setCursorBWithEnable = useCallback(
+    (action: React.SetStateAction<number | null>) => {
+      setCursorB((prev) => {
+        const next = typeof action === 'function' ? action(prev) : action;
+        if (next !== null) {
+          setCursorsEnabled(true);
+          if (activeScopeBlock && onSetParameter) {
+            onSetParameter(activeScopeBlock.name, SCOPE_SETTING_KEYS.cursorsEnabled, true);
+          }
+        }
+        return next;
+      });
+    },
+    [activeScopeBlock, onSetParameter],
+  );
+
+  const setCursor = useCallback(
+    (type: 'A' | 'B', idx: number | null) => {
+      if (idx !== null) {
+        setCursorsEnabled(true);
+        if (activeScopeBlock && onSetParameter) {
+          onSetParameter(activeScopeBlock.name, SCOPE_SETTING_KEYS.cursorsEnabled, true);
+        }
+      }
+      if (type === 'A') {
+        setCursorA(idx);
+      } else {
+        setCursorB(idx);
+      }
+    },
+    [activeScopeBlock, onSetParameter],
+  );
+
   const setCursorPreset = useCallback(() => {
     setCursorsEnabled(true);
     if (timeArray.length > 0) {
       setCursorA(Math.floor(timeArray.length * 0.25));
       setCursorB(Math.floor(timeArray.length * 0.75));
     }
-  }, [timeArray]);
+    if (activeScopeBlock && onSetParameter) {
+      onSetParameter(activeScopeBlock.name, SCOPE_SETTING_KEYS.cursorsEnabled, true);
+    }
+  }, [timeArray, activeScopeBlock, onSetParameter]);
 
   const clearCursors = useCallback(() => {
     setCursorA(null);
     setCursorB(null);
     setCursorsEnabled(false);
-  }, []);
+    if (activeScopeBlock && onSetParameter) {
+      onSetParameter(activeScopeBlock.name, SCOPE_SETTING_KEYS.cursorsEnabled, false);
+    }
+  }, [activeScopeBlock, onSetParameter]);
 
   // Compute the single source of truth for cursor measurements
   const cursorMeasurements = useMemo<CursorMeasurements | null>(() => {
@@ -305,11 +364,12 @@ export function useScopeController({
     cursorsEnabled,
     setCursorsEnabled,
     cursorA,
-    setCursorA,
+    setCursorA: setCursorAWithEnable,
     cursorB,
-    setCursorB,
+    setCursorB: setCursorBWithEnable,
     activeCursor,
     setActiveCursor,
+    setCursor,
     setCursorPreset,
     clearCursors,
     cursorMeasurements,

@@ -42,6 +42,8 @@ export interface ScopeViewTabProps {
   filename?: string | null;
   /** Optional scope controller instance. */
   scope?: ScopeController;
+  /** Optional callback to persist scope parameters to circuit components. */
+  onSetParameter?: (name: string, key: string, value: number | string | boolean) => void;
 }
 
 /**
@@ -168,12 +170,14 @@ export function ScopeViewTab({
   status,
   filename,
   scope,
+  onSetParameter,
 }: ScopeViewTabProps) {
   const fallbackScope = useScopeController({
     results,
     components,
     selectedScope,
     theme,
+    onSetParameter,
   });
   const ctrl = scope ?? fallbackScope;
 
@@ -193,12 +197,15 @@ export function ScopeViewTab({
     hiddenSignals,
     toggleSignal,
     colorOf,
+    cursorsEnabled,
+    setCursorsEnabled,
     cursorA,
     setCursorA,
     cursorB,
     setCursorB,
     activeCursor,
     setActiveCursor,
+    setCursor,
     drawerTab,
     setDrawerTab,
   } = ctrl;
@@ -330,11 +337,17 @@ export function ScopeViewTab({
                     onHoverIndex={setHoverIndex}
                     cursorA={cursorA}
                     cursorB={cursorB}
+                    cursorsEnabled={cursorsEnabled}
                     activeCursor={activeCursor}
                     onSetActiveCursor={setActiveCursor}
                     onSetCursor={(type, idx) => {
-                      if (type === 'A') setCursorA(idx);
-                      else setCursorB(idx);
+                      if (setCursor) {
+                        setCursor(type, idx);
+                      } else {
+                        setCursorsEnabled(true);
+                        if (type === 'A') setCursorA(idx);
+                        else setCursorB(idx);
+                      }
                     }}
                     viewStart={win.start}
                     viewEnd={win.end}
@@ -356,11 +369,17 @@ export function ScopeViewTab({
                     onHoverIndex={setHoverIndex}
                     cursorA={cursorA}
                     cursorB={cursorB}
+                    cursorsEnabled={cursorsEnabled}
                     activeCursor={activeCursor}
                     onSetActiveCursor={setActiveCursor}
                     onSetCursor={(type, idx) => {
-                      if (type === 'A') setCursorA(idx);
-                      else setCursorB(idx);
+                      if (setCursor) {
+                        setCursor(type, idx);
+                      } else {
+                        setCursorsEnabled(true);
+                        if (type === 'A') setCursorA(idx);
+                        else setCursorB(idx);
+                      }
                     }}
                     viewStart={win.start}
                     viewEnd={win.end}
@@ -524,6 +543,7 @@ function FullScreenOverlayChart({
   onHoverIndex,
   cursorA,
   cursorB,
+  cursorsEnabled,
   activeCursor,
   onSetActiveCursor,
   onSetCursor,
@@ -548,6 +568,7 @@ function FullScreenOverlayChart({
   onHoverIndex: (idx: number | null) => void;
   cursorA: number | null;
   cursorB: number | null;
+  cursorsEnabled?: boolean;
   activeCursor?: 'A' | 'B';
   onSetActiveCursor?: (c: 'A' | 'B') => void;
   onSetCursor: (type: 'A' | 'B', idx: number) => void;
@@ -782,7 +803,7 @@ function FullScreenOverlayChart({
     if (e.shiftKey) {
       targetCursor = 'B';
       onSetActiveCursor?.('B');
-    } else if (cursorA === null) {
+    } else if (cursorA === null || !cursorsEnabled) {
       targetCursor = 'A';
       onSetActiveCursor?.('B');
     } else if (cursorB === null) {
@@ -1048,7 +1069,7 @@ function FullScreenOverlayChart({
         </g>
 
         {/* Cursor A */}
-        {cursorA !== null && time[cursorA] !== undefined && (
+        {cursorsEnabled && cursorA !== null && time[cursorA] !== undefined && (
           <g className="cursor-line-a">
             <line
               x1={mapX(time[cursorA])}
@@ -1098,7 +1119,7 @@ function FullScreenOverlayChart({
         )}
 
         {/* Cursor B */}
-        {cursorB !== null && time[cursorB] !== undefined && (
+        {cursorsEnabled && cursorB !== null && time[cursorB] !== undefined && (
           <g className="cursor-line-b">
             <line
               x1={mapX(time[cursorB])}
@@ -1274,6 +1295,7 @@ function FullScreenStackedChart({
   onHoverIndex,
   cursorA,
   cursorB,
+  cursorsEnabled,
   activeCursor,
   onSetActiveCursor,
   onSetCursor,
@@ -1295,6 +1317,7 @@ function FullScreenStackedChart({
   onHoverIndex: (idx: number | null) => void;
   cursorA: number | null;
   cursorB: number | null;
+  cursorsEnabled?: boolean;
   activeCursor?: 'A' | 'B';
   onSetActiveCursor?: (c: 'A' | 'B') => void;
   onSetCursor: (type: 'A' | 'B', idx: number) => void;
@@ -1397,7 +1420,7 @@ function FullScreenStackedChart({
     if (e.shiftKey) {
       targetCursor = 'B';
       onSetActiveCursor?.('B');
-    } else if (cursorA === null) {
+    } else if (cursorA === null || !cursorsEnabled) {
       targetCursor = 'A';
       onSetActiveCursor?.('B');
     } else if (cursorB === null) {
@@ -1687,7 +1710,7 @@ function FullScreenStackedChart({
         </text>
 
         {/* Cursor A */}
-        {cursorA !== null && time[cursorA] !== undefined && (
+        {cursorsEnabled && cursorA !== null && time[cursorA] !== undefined && (
           <g className="cursor-line-a">
             <line
               x1={mapX(time[cursorA])}
@@ -1737,7 +1760,7 @@ function FullScreenStackedChart({
         )}
 
         {/* Cursor B */}
-        {cursorB !== null && time[cursorB] !== undefined && (
+        {cursorsEnabled && cursorB !== null && time[cursorB] !== undefined && (
           <g className="cursor-line-b">
             <line
               x1={mapX(time[cursorB])}
