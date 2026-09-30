@@ -294,7 +294,7 @@ describe('Oscilloscope GUI & Controls', () => {
     expect(container.querySelector('.sim-cursor-card')).not.toBeNull();
   });
 
-  it('renders a single clean zero ground marker and direct trace name badges instead of duplicate channel numbers', () => {
+  it('renders clean waveform grid without confusing axis markers, using direct trace name badges', () => {
     const { container } = render(
       <ScopeViewTab
         selectedScope="SCOPE.1"
@@ -304,13 +304,9 @@ describe('Oscilloscope GUI & Controls', () => {
       />,
     );
 
-    // Old confusing stacked channel markers (with numbers 1, 2, 3...) are removed
+    // No confusing stacked channel markers or redundant zero arrow labels on the axis
     expect(container.querySelector('.channel-ground-marker')).toBeNull();
-
-    // Single common ground/zero marker "0" is present
-    const zeroMarker = container.querySelector('.zero-ground-marker');
-    expect(zeroMarker).not.toBeNull();
-    expect(zeroMarker?.textContent?.trim()).toBe('0');
+    expect(container.querySelector('.zero-ground-marker')).toBeNull();
 
     // Direct trace name badges with signal names exist on the waveform plot
     const traceBadges = container.querySelectorAll('.trace-end-badge');

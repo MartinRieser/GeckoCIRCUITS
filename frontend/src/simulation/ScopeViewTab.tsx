@@ -1102,33 +1102,6 @@ function FullScreenOverlayChart({
           />
         )}
 
-        {/* Common Zero / Ground Reference Marker on left axis */}
-        {minY <= 0 && maxY >= 0 && (() => {
-          const y0 = mapY(0);
-          if (y0 < padTop - 6 || y0 > height - padBottom + 6) return null;
-          const clampedY = Math.max(padTop + 6, Math.min(height - padBottom - 6, y0));
-          return (
-            <g className="zero-ground-marker" pointerEvents="none">
-              <path
-                d={`M ${padLeft - 20} ${clampedY - 6} L ${padLeft - 5} ${clampedY - 6} L ${padLeft} ${clampedY} L ${padLeft - 5} ${clampedY + 6} L ${padLeft - 20} ${clampedY + 6} Z`}
-                fill={zeroColor}
-                opacity={0.85}
-              />
-              <text
-                x={padLeft - 12}
-                y={clampedY + 3.5}
-                fill="#ffffff"
-                fontSize={8.5}
-                fontWeight={700}
-                fontFamily="monospace"
-                textAnchor="middle"
-              >
-                0
-              </text>
-            </g>
-          );
-        })()}
-
         {/* Waveform Traces (clipped to the visible window) */}
         <g clipPath="url(#overlay-plot-clip)">
         {tracePaths.map(({ name, path }) => {
@@ -1756,34 +1729,14 @@ function FullScreenStackedChart({
 
               {/* Zero line */}
               {zeroY !== null && (
-                <>
-                  <line
-                    x1={padLeft}
-                    y1={zeroY}
-                    x2={width - padRight}
-                    y2={zeroY}
-                    stroke={zeroColor}
-                    strokeWidth={1}
-                  />
-                  <g className="zero-ground-marker" pointerEvents="none">
-                    <path
-                      d={`M ${padLeft - 18} ${zeroY - 5} L ${padLeft - 4} ${zeroY - 5} L ${padLeft} ${zeroY} L ${padLeft - 4} ${zeroY + 5} L ${padLeft - 18} ${zeroY + 5} Z`}
-                      fill={zeroColor}
-                      opacity={0.8}
-                    />
-                    <text
-                      x={padLeft - 10}
-                      y={zeroY + 3}
-                      fill="#ffffff"
-                      fontSize={8}
-                      fontWeight={700}
-                      fontFamily="monospace"
-                      textAnchor="middle"
-                    >
-                      0
-                    </text>
-                  </g>
-                </>
+                <line
+                  x1={padLeft}
+                  y1={zeroY}
+                  x2={width - padRight}
+                  y2={zeroY}
+                  stroke={zeroColor}
+                  strokeWidth={1}
+                />
               )}
 
               {/* Y Axis Labels (Min / Max) */}
