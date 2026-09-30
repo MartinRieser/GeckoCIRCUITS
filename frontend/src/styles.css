@@ -3323,9 +3323,72 @@ polyline.wire.selected {
   border-color: var(--accent, #38bdf8);
 }
 
+/* --- Resizable Divider Splitter between Scope Graph & Drawer --- */
+.dso-drawer-splitter {
+  height: 10px;
+  margin: -3px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: row-resize;
+  z-index: 15;
+  user-select: none;
+  touch-action: none;
+  position: relative;
+  transition: background-color 0.15s ease;
+  border-radius: 4px;
+}
+
+.dso-drawer-splitter:hover,
+.dso-drawer-splitter.dragging {
+  background: rgba(56, 189, 248, 0.18);
+}
+
+.dso-splitter-handle {
+  width: 52px;
+  height: 4px;
+  background: var(--border, #334155);
+  border-radius: 2px;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dso-drawer-splitter:hover .dso-splitter-handle,
+.dso-drawer-splitter.dragging .dso-splitter-handle {
+  width: 76px;
+  height: 5px;
+  background: var(--accent, #38bdf8);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.65);
+}
+
+.dso-splitter-grip {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.dso-viewport.dragging-drawer {
+  user-select: none !important;
+  cursor: row-resize !important;
+}
+
+.dso-viewport.dragging-drawer * {
+  user-select: none !important;
+  pointer-events: none !important;
+}
+
+.dso-viewport.dragging-drawer .dso-drawer-splitter {
+  pointer-events: auto !important;
+}
+
 /* --- Collapsible Bottom Analysis Drawer --- */
 .dso-bottom-drawer {
-  height: 220px;
+  min-height: 140px;
+  max-height: calc(100% - 150px);
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -3334,17 +3397,17 @@ polyline.wire.selected {
   border-radius: 6px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-  animation: dsoDrawerSlideUp 0.2s ease-out;
+  animation: dsoDrawerSlideUp 0.18s ease-out;
 }
 
 @keyframes dsoDrawerSlideUp {
   from {
-    height: 0;
     opacity: 0;
+    transform: translateY(8px);
   }
   to {
-    height: 220px;
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -3388,6 +3451,30 @@ polyline.wire.selected {
   box-shadow: inset 0 -2px 0 var(--accent, #38bdf8);
 }
 
+.dso-drawer-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dso-drawer-size-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dso-drawer-size-btn:hover {
+  color: var(--accent, #38bdf8);
+  border-color: var(--accent, #38bdf8);
+  background: rgba(56, 189, 248, 0.1);
+}
+
 .dso-drawer-close-btn {
   background: transparent;
   border: 1px solid var(--border);
@@ -3396,6 +3483,7 @@ polyline.wire.selected {
   padding: 2px 8px;
   font-size: 10px;
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .dso-drawer-close-btn:hover {

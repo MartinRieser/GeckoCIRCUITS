@@ -46,6 +46,9 @@ export interface ScopeViewTabProps {
   onSetParameter?: (name: string, key: string, value: number | string | boolean) => void;
 }
 
+export const DEFAULT_DRAWER_HEIGHT = 280;
+export const MIN_DRAWER_HEIGHT = 140;
+
 /**
  * Binary-searches the sample index closest to time t (time must be sorted in ascending order).
  *
@@ -246,6 +249,90 @@ export function ScopeViewTab({
 
   const isRunning = status === 'RUNNING' || status === 'PENDING';
 
+  // Analysis drawer resizable height state
+  const [drawerHeight, setDrawerHeight] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('gecko.scope.drawerHeight');
+      if (saved) {
+        const val = parseInt(saved, 10);
+        if (Number.isFinite(val) && val >= MIN_DRAWER_HEIGHT && val <= 1400) {
+          return val;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return DEFAULT_DRAWER_HEIGHT;
+  });
+
+  const [isDraggingDrawer, setIsDraggingDrawer] = useState(false);
+  const dragStartYRef = useRef<number>(0);
+  const startHeightRef = useRef<number>(DEFAULT_DRAWER_HEIGHT);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('gecko.scope.drawerHeight', String(drawerHeight));
+    } catch {
+      // ignore
+    }
+  }, [drawerHeight]);
+
+  const handleSplitterMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDraggingDrawer(true);
+    dragStartYRef.current = e.clientY;
+    startHeightRef.current = drawerHeight;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const deltaY = moveEvent.clientY - dragStartYRef.current;
+      // Dragging UP decreases clientY (deltaY < 0), expanding drawer height
+      const newHeight = startHeightRef.current - deltaY;
+      const viewportEl = chartContainerRef.current?.closest('.dso-viewport');
+      const maxH = viewportEl ? Math.max(220, viewportEl.clientHeight - 150) : 800;
+      const clamped = Math.max(MIN_DRAWER_HEIGHT, Math.min(maxH, newHeight));
+      setDrawerHeight(clamped);
+    };
+
+    const onMouseUp = () => {
+      setIsDraggingDrawer(false);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  }, [drawerHeight, chartContainerRef]);
+
+  const handleSplitterTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 0) return;
+    setIsDraggingDrawer(true);
+    dragStartYRef.current = e.touches[0].clientY;
+    startHeightRef.current = drawerHeight;
+
+    const onTouchMove = (moveEvent: TouchEvent) => {
+      if (moveEvent.touches.length === 0) return;
+      const deltaY = moveEvent.touches[0].clientY - dragStartYRef.current;
+      const newHeight = startHeightRef.current - deltaY;
+      const viewportEl = chartContainerRef.current?.closest('.dso-viewport');
+      const maxH = viewportEl ? Math.max(220, viewportEl.clientHeight - 150) : 800;
+      const clamped = Math.max(MIN_DRAWER_HEIGHT, Math.min(maxH, newHeight));
+      setDrawerHeight(clamped);
+    };
+
+    const onTouchEnd = () => {
+      setIsDraggingDrawer(false);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+    };
+
+    window.addEventListener('touchmove', onTouchMove);
+    window.addEventListener('touchend', onTouchEnd);
+  }, [drawerHeight, chartContainerRef]);
+
+  const handleSplitterDoubleClick = useCallback(() => {
+    setDrawerHeight((prev) => (prev > 360 ? DEFAULT_DRAWER_HEIGHT : 480));
+  }, []);
+
   return (
     <div className="scope-view-tab-container">
       {/* Top Header Bar */}
@@ -275,7 +362,7 @@ export function ScopeViewTab({
       </div>
 
       {/* DSO Main Viewport (Screen Bezel + Optional Drawer) */}
-      <div className="dso-viewport">
+      <div className={`dso-viewport ${isDraggingDrawer ? 'dragging-drawer' : ''}`}>
         {!results || signalNames.length === 0 ? (
           <div className="scope-empty-state">
             <div className="empty-icon">{selectedScope === 'all' ? '📊' : '📺'}</div>
@@ -452,9 +539,30 @@ export function ScopeViewTab({
               </div>
             </div>
 
+            {/* Draggable Divider Splitter between Scope Graph & Analysis Drawer */}
+            {drawerTab && (
+              <div
+                className={`dso-drawer-splitter ${isDraggingDrawer ? 'dragging' : ''}`}
+                onMouseDown={handleSplitterMouseDown}
+                onTouchStart={handleSplitterTouchStart}
+                onDoubleClick={handleSplitterDoubleClick}
+                title="Drag to resize analysis drawer vs. scope graph (Double-click to toggle height)"
+                role="separator"
+                aria-orientation="horizontal"
+                aria-label="Resize Analysis Drawer"
+              >
+                <div className="dso-splitter-handle">
+                  <span className="dso-splitter-grip" />
+                </div>
+              </div>
+            )}
+
             {/* Collapsible Bottom Analysis Drawer */}
             {drawerTab && (
-              <div className="dso-bottom-drawer">
+              <div
+                className="dso-bottom-drawer"
+                style={{ height: `${drawerHeight}px` }}
+              >
                 <div className="dso-drawer-tabs">
                   <div className="dso-tab-group">
                     <button
@@ -480,14 +588,24 @@ export function ScopeViewTab({
                       ⚡ Power & Losses
                     </button>
                   </div>
-                  <button
-                    type="button"
-                    className="dso-drawer-close-btn"
-                    onClick={() => setDrawerTab(null)}
-                    title="Minimize Analysis Drawer"
-                  >
-                    ✕ Minimize
-                  </button>
+                  <div className="dso-drawer-actions">
+                    <button
+                      type="button"
+                      className="dso-drawer-size-btn"
+                      onClick={() => setDrawerHeight((prev) => (prev > 360 ? DEFAULT_DRAWER_HEIGHT : 480))}
+                      title={drawerHeight > 360 ? 'Compact drawer height' : 'Enlarge drawer height'}
+                    >
+                      {drawerHeight > 360 ? '⤡ Compact' : '⤢ Enlarge'}
+                    </button>
+                    <button
+                      type="button"
+                      className="dso-drawer-close-btn"
+                      onClick={() => setDrawerTab(null)}
+                      title="Minimize Analysis Drawer"
+                    >
+                      ✕ Minimize
+                    </button>
+                  </div>
                 </div>
 
                 <div className="dso-drawer-content">

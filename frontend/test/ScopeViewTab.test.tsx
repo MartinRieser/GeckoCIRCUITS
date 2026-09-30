@@ -94,6 +94,20 @@ describe('Oscilloscope GUI & Controls', () => {
     expect(screen.getByText('⚡ Power & Losses')).toBeDefined();
     expect(screen.getByText('✕ Minimize')).toBeDefined();
 
+    // Resizable divider splitter and size toggle button are present
+    const splitter = container.querySelector('.dso-drawer-splitter');
+    expect(splitter).not.toBeNull();
+    const sizeBtn = screen.getByRole('button', { name: /Enlarge/i });
+    expect(sizeBtn).toBeDefined();
+
+    // Toggle drawer size via button
+    fireEvent.click(sizeBtn);
+    expect(screen.getByRole('button', { name: /Compact/i })).toBeDefined();
+
+    // Double-clicking splitter toggles height back
+    fireEvent.doubleClick(splitter!);
+    expect(screen.getByRole('button', { name: /Enlarge/i })).toBeDefined();
+
     // No duplicate cursor breakdown tab in drawer
     expect(screen.queryByText('📐 Cursor Breakdown')).toBeNull();
 
@@ -102,6 +116,7 @@ describe('Oscilloscope GUI & Controls', () => {
 
     // Drawer should be collapsed
     expect(screen.queryByText('✕ Minimize')).toBeNull();
+    expect(container.querySelector('.dso-drawer-splitter')).toBeNull();
   });
 
   it('renders oscilloscope controls in the right sidebar below simulation settings', () => {
