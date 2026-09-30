@@ -772,9 +772,9 @@ export function SimulationPropertiesPanel({
                 type="button"
                 className={`sim-mini-btn ${scope.drawerTab === 'losses' ? 'active' : ''}`}
                 onClick={() => scope.setDrawerTab((prev) => (prev === 'losses' ? null : 'losses'))}
-                title="Semiconductor Loss Breakdown in bottom drawer"
+                title="Waveform Power (p = v · i) and Semiconductor Loss Analysis in bottom drawer"
               >
-                ⚡ Losses
+                ⚡ Power & Losses
               </button>
             </div>
           </div>

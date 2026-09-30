@@ -475,8 +475,9 @@ export function ScopeViewTab({
                       type="button"
                       className={`dso-tab-btn ${drawerTab === 'losses' ? 'active' : ''}`}
                       onClick={() => setDrawerTab('losses')}
+                      title="Waveform Power (p = v · i) and Semiconductor Loss Analysis"
                     >
-                      ⚡ Semiconductor Losses
+                      ⚡ Power & Losses
                     </button>
                   </div>
                   <button
@@ -556,6 +557,7 @@ export function ScopeViewTab({
                       cursorA={cursorA}
                       cursorB={cursorB}
                       colorOf={colorOf}
+                      components={components}
                     />
                   )}
                 </div>

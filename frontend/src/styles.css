@@ -3877,6 +3877,129 @@ polyline.wire.selected {
   font-style: italic;
 }
 
+.loss-circuit-notice {
+  display: flex;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.loss-circuit-notice.passive {
+  background: rgba(14, 116, 144, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: #bae6fd;
+}
+
+.loss-circuit-notice.active {
+  background: rgba(234, 88, 12, 0.12);
+  border: 1px solid rgba(249, 115, 22, 0.25);
+  color: #fed7aa;
+}
+
+.loss-notice-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.loss-notice-content strong {
+  display: block;
+  font-size: 12.5px;
+  margin-bottom: 2px;
+}
+
+.loss-notice-content p {
+  margin: 0 0 4px 0;
+}
+
+.loss-notice-hint {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.loss-warning-box {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px dashed rgba(245, 158, 11, 0.4);
+  color: #fde68a;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.loss-warning-box strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12.5px;
+}
+
+.loss-warning-box p {
+  margin: 0;
+}
+
+.formula {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 600;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.loss-explainer-details {
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid var(--border, #334155);
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+
+.loss-explainer-summary {
+  padding: 8px 12px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+  color: var(--text-dim, #94a3b8);
+  transition: color 0.15s ease;
+}
+
+.loss-explainer-summary:hover {
+  color: var(--text, #e2e8f0);
+}
+
+.loss-explainer-body {
+  padding: 10px 14px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  line-height: 1.5;
+  color: var(--text-dim, #cbd5e1);
+}
+
+.loss-explainer-item h6 {
+  margin: 0 0 4px 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #38bdf8;
+}
+
+.loss-explainer-item p {
+  margin: 0 0 6px 0;
+}
+
+.loss-explainer-item ul {
+  margin: 4px 0 0 16px;
+  padding: 0;
+}
+
+.loss-explainer-item li {
+  margin-bottom: 4px;
+}
+
 /* Hover crosshair time pill */
 .hover-pill {
   fill: #0f172a;

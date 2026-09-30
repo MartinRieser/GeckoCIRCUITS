@@ -91,7 +91,7 @@ describe('Oscilloscope GUI & Controls', () => {
     // Drawer should open with tab buttons
     expect(screen.getByText('📊 Signal Statistics')).toBeDefined();
     expect(screen.getByText('〰 FFT Spectrum')).toBeDefined();
-    expect(screen.getByText('⚡ Semiconductor Losses')).toBeDefined();
+    expect(screen.getByText('⚡ Power & Losses')).toBeDefined();
     expect(screen.getByText('✕ Minimize')).toBeDefined();
 
     // No duplicate cursor breakdown tab in drawer
