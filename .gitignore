@@ -84,6 +84,8 @@ tools/parity/results/*.txt
 !tools/parity/results/20260905-133143.txt
 
 # maven-shade byproduct (fat jar build)
+dependency-reduced-pom.xml
+**/dependency-reduced-pom.xml
 
 # Desktop engine bundle (build output of scripts/desktop/build-engine.py)
 # (jars are covered by the global *.jar rule above)
@@ -96,10 +98,13 @@ desktop/app/gen/schemas/
 
 # Desktop dist output (launchers etc.)
 desktop/dist/
-backend/gecko-mcp/dependency-reduced-pom.xml
 
 # local debugging scratch
 scratch/
 
 # runtime log artifacts from headless test runs
-backend/gecko-mcp/logs/
+logs/
+**/logs/
+
+# legacy pre-refactor root directory leftover
+/src/
