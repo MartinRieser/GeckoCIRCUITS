@@ -933,6 +933,7 @@ export function App() {
                       onRename={actions.rename}
                       onSetParameter={actions.setParameter}
                       onSetLabel={actions.setLabel}
+                      onRemoveLabel={actions.removeLabel}
                       onSelectComponent={(targetName) => {
                         dispatch({ type: 'SELECT', name: targetName, additive: false });
                         dispatch({ type: 'PANEL_FOR', name: targetName });

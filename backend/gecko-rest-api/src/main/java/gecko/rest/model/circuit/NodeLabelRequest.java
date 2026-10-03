@@ -19,5 +19,15 @@ public record NodeLabelRequest(
     String side,
 
     @Schema(description = "Node label; equal labels connect terminals", example = "dc_link")
-    String label
-) {}
+    String label,
+
+    @Schema(description = "When true, remove the terminal label at terminalIndex instead of "
+            + "setting it; labels above shift down and the label array shrinks (used to drop "
+            + "scope channels). The last remaining label of a side cannot be removed.")
+    Boolean remove
+) {
+    /** Convenience constructor for the plain set-label request. */
+    public NodeLabelRequest(Integer terminalIndex, String side, String label) {
+        this(terminalIndex, side, label, null);
+    }
+}

@@ -410,6 +410,74 @@ export function useEditor() {
     [reportError],
   );
 
+  /**
+   * Removes a terminal label entirely (e.g. dropping a scope channel): the
+   * labels above shift down and the label array shrinks by one, on both the
+   * optimistic copy and the server model.
+   */
+  const removeLabel = useCallback(
+    (component: string, side: 'x' | 'y', index: number) => {
+      const circuitId = stateRef.current.circuitId;
+      if (!circuitId) return;
+      const existing = stateRef.current.components.find((c) => c.name === component);
+      if (!existing) return;
+      const labels = side === 'x' ? existing.inputLabels ?? [] : existing.outputLabels ?? [];
+      if (labels.length <= 1 || index < 0 || index >= labels.length) return;
+
+      const remaining = labels.filter((_, i) => i !== index);
+      const updated =
+        side === 'x'
+          ? { ...existing, inputLabels: remaining }
+          : { ...existing, outputLabels: remaining };
+      dispatch({ type: 'COMPONENT_UPSERT', component: updated, version: versionRef.current });
+
+      // Removing a scope input channel shifts the pins below it up one row
+      // (the pin block is centered on the symbol), so re-bind wire ends from
+      // the old pin grid to the new one. Ends on the removed pin are left in
+      // place and dangle, matching how component deletion leaves its wires.
+      if (side === 'x' && isScopeComponent(existing)) {
+        const oldPins = terminalPositions(existing).input;
+        const newPins = terminalPositions(updated).input;
+        stateRef.current.wires.forEach((w, wIdx) => {
+          const pts = w.points ?? [];
+          if (pts.length < 2) return;
+          for (const pi of [0, pts.length - 1]) {
+            const oldPinIdx = oldPins.findIndex((p) => p.x === pts[pi][0] && p.y === pts[pi][1]);
+            if (oldPinIdx < 0 || oldPinIdx === index) continue;
+            const newPinIdx = oldPinIdx > index ? oldPinIdx - 1 : oldPinIdx;
+            const np = newPins[newPinIdx];
+            if (!np || (np.x === pts[pi][0] && np.y === pts[pi][1])) continue;
+            const newPoints = pts.map((q, qi) => (qi === pi ? [np.x, np.y] : q));
+            api
+              .patchConnection(circuitId, wIdx, { points: newPoints })
+              .then((wireMsg) => {
+                const payload = wireMsg.payload as WirePayload;
+                dispatch({
+                  type: 'WIRE_PATCHED',
+                  index: wIdx,
+                  points: payload.points,
+                  label: payload.label,
+                  version: wireMsg.modelVersion,
+                });
+              })
+              .catch(() => {});
+          }
+        });
+      }
+
+      api
+        .removeNodeLabel(circuitId, component, index, side)
+        .then((msg) => {
+          versionRef.current = msg.modelVersion;
+        })
+        .catch((e) => {
+          reportError(e);
+          void refresh(circuitId);
+        });
+    },
+    [refresh, reportError],
+  );
+
   const checkAndPropagateScopeWire = useCallback(
     (points: number[][]) => {
       if (!points || points.length < 2) return;
@@ -1295,6 +1363,7 @@ export function useEditor() {
       rename,
       setParameter,
       setLabel,
+      removeLabel,
       openProperties: (name: string) => dispatch({ type: 'PANEL_FOR', name }),
       runSimulation,
       cancelSimulation,

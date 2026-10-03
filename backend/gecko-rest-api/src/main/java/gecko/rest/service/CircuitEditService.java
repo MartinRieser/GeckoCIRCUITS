@@ -295,6 +295,26 @@ public class CircuitEditService {
             }
             String label = request.label() != null ? request.label() : "";
 
+            if (Boolean.TRUE.equals(request.remove())) {
+                String[] beforeRaw = sideArray(comp, inputSide, true).clone();
+                String[] beforeSemantic = sideArray(comp, inputSide, false).clone();
+                int count = Math.max(beforeRaw.length, beforeSemantic.length);
+                if (index >= count) {
+                    throw badRequest("terminalIndex " + index + " has no label to remove");
+                }
+                if (count <= 1) {
+                    throw badRequest("cannot remove the last terminal label of a side");
+                }
+
+                removeAndShift(comp, inputSide, index);
+                state.recordEdit(
+                        () -> restoreSide(comp, inputSide, beforeRaw, beforeSemantic),
+                        () -> removeAndShift(comp, inputSide, index));
+                return change(state, circuitId, "removeNodeLabel", Map.of(
+                        "component", componentName, "terminalIndex", index,
+                        "side", inputSide ? "x" : "y"));
+            }
+
             String[] beforeRaw = sideArray(comp, inputSide, true).clone();
             String[] beforeSemantic = sideArray(comp, inputSide, false).clone();
 
@@ -941,6 +961,30 @@ public class CircuitEditService {
     private static String[] grown(String[] array, int index, String label) {
         String[] result = Arrays.copyOf(array, Math.max(array.length, index + 1));
         result[index] = label;
+        return result;
+    }
+
+    /**
+     * Removes the label at {@code index} from both label arrays of the given
+     * side, shifting the labels above down by one so the array shrinks.
+     */
+    private static void removeAndShift(CircuitModel.ComponentData comp, boolean inputSide, int index) {
+        if (inputSide) {
+            comp.setRawTerminalXLabels(removed(sideArray(comp, inputSide, true), index));
+            comp.setTerminalXLabels(removed(sideArray(comp, inputSide, false), index));
+        } else {
+            comp.setRawTerminalYLabels(removed(sideArray(comp, inputSide, true), index));
+            comp.setTerminalYLabels(removed(sideArray(comp, inputSide, false), index));
+        }
+    }
+
+    private static String[] removed(String[] array, int index) {
+        if (index >= array.length) {
+            return array;
+        }
+        String[] result = new String[array.length - 1];
+        System.arraycopy(array, 0, result, 0, index);
+        System.arraycopy(array, index + 1, result, index, array.length - index - 1);
         return result;
     }
 

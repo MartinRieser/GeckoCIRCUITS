@@ -251,6 +251,27 @@ export function setNodeLabel(
 }
 
 /**
+ * Removes a terminal net label entirely, shifting the labels above it down so
+ * the terminal label array shrinks by one (e.g. dropping a scope channel).
+ *
+ * @param circuitId Active circuit ID
+ * @param componentName Target component name
+ * @param terminalIndex Zero-based terminal index to remove
+ * @param side Terminal port side ('x' for input, 'y' for output)
+ */
+export function removeNodeLabel(
+  circuitId: string,
+  componentName: string,
+  terminalIndex: number,
+  side: 'x' | 'y',
+): Promise<ChangeMessage> {
+  return request(`/circuits/${circuitId}/nodes/${encodeURIComponent(componentName)}`, {
+    method: 'PUT',
+    body: JSON.stringify({ terminalIndex, side, label: '', remove: true }),
+  });
+}
+
+/**
  * Reverts the most recent model mutation on the server.
  *
  * @param circuitId Active circuit ID

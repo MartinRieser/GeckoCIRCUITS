@@ -79,6 +79,8 @@ export interface PropertiesPanelProps {
   onSetParameter: (name: string, key: string, value: number | string) => void;
   /** Callback to update a terminal net label. */
   onSetLabel: (component: string, side: 'x' | 'y', indexOrLabel: number | string, maybeLabel?: string) => void;
+  /** Callback to remove a terminal label entirely, shrinking the label array (scope channels). */
+  onRemoveLabel?: (component: string, side: 'x' | 'y', index: number) => void;
   /** Callback to select a coupled or referenced component. */
   onSelectComponent?: (name: string) => void;
   /** Callback to rotate the currently selected component. */
@@ -103,6 +105,7 @@ export function PropertiesPanel({
   onRename,
   onSetParameter,
   onSetLabel,
+  onRemoveLabel,
   onSelectComponent,
   onRotate,
   onDelete,
@@ -723,17 +726,12 @@ export function PropertiesPanel({
                         </button>
                       )}
                     </div>
-                    {component.inputLabels.length > 1 && (
+                    {component.inputLabels.length > 1 && onRemoveLabel && (
                       <button
                         type="button"
                         className="channel-remove-btn"
                         title={`Remove Channel ${idx + 1}`}
-                        onClick={() => {
-                          const remaining = component.inputLabels.filter((_, i) => i !== idx);
-                          for (let i = 0; i < Math.max(remaining.length, component.inputLabels.length); i++) {
-                            onSetLabel(component.name, 'x', i, remaining[i] || '');
-                          }
-                        }}
+                        onClick={() => onRemoveLabel(component.name, 'x', idx)}
                       >
                         ✕
                       </button>

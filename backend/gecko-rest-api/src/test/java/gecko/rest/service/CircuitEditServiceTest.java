@@ -492,6 +492,47 @@ class CircuitEditServiceTest {
         assertEquals(400, ex.getStatusCode().value());
     }
 
+    @Test
+    void setNodeLabel_removeShrinksArraysAndUndoRedoRestores() {
+        // three-channel scope: removing the middle channel shifts the last down
+        service.createComponent(circuitId,
+                new ComponentCreateRequest("CONTROL", 1003, "SCOPE.R", 34, 5, 503, null));
+        service.setNodeLabel(circuitId, "SCOPE.R", new NodeLabelRequest(0, "x", "u1"));
+        service.setNodeLabel(circuitId, "SCOPE.R", new NodeLabelRequest(1, "x", "u2"));
+        service.setNodeLabel(circuitId, "SCOPE.R", new NodeLabelRequest(2, "x", "u3"));
+
+        CircuitChangeMessage result = service.setNodeLabel(circuitId, "SCOPE.R",
+                new NodeLabelRequest(1, "x", null, true));
+        assertEquals("removeNodeLabel", result.operation());
+
+        CircuitModel.ComponentData comp = findByName("SCOPE.R");
+        assertArrayEquals(new String[]{"u1", "u3"}, comp.getTerminalXLabels());
+        assertArrayEquals(new String[]{"u1", "u3"}, comp.getRawTerminalXLabels());
+
+        service.undo(circuitId);
+        assertArrayEquals(new String[]{"u1", "u2", "u3"}, comp.getTerminalXLabels(),
+                "undo restores the full channel list");
+        service.redo(circuitId);
+        assertArrayEquals(new String[]{"u1", "u3"}, comp.getTerminalXLabels(),
+                "redo re-applies the removal");
+    }
+
+    @Test
+    void setNodeLabel_removeValidation() {
+        service.createComponent(circuitId, new ComponentCreateRequest("LK", 1, "Rrm", 16, 16, null, null));
+
+        ResponseStatusException outOfRange = assertThrows(ResponseStatusException.class,
+                () -> service.setNodeLabel(circuitId, "Rrm", new NodeLabelRequest(3, "x", null, true)));
+        assertEquals(400, outOfRange.getStatusCode().value());
+
+        service.setNodeLabel(circuitId, "Rrm", new NodeLabelRequest(0, "x", "n1"));
+        ResponseStatusException lastLabel = assertThrows(ResponseStatusException.class,
+                () -> service.setNodeLabel(circuitId, "Rrm", new NodeLabelRequest(0, "x", null, true)));
+        assertEquals(400, lastLabel.getStatusCode().value());
+        assertEquals("n1", findByName("Rrm").getTerminalXLabels()[0],
+                "a rejected removal leaves the label intact");
+    }
+
     // ========== Serializability after mutations (P1 acceptance) ==========
 
     @Test
