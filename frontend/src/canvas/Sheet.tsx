@@ -18,6 +18,16 @@ import {
   isVoltmeterComponent,
   getCoupledComponentName,
 } from '../model/componentSchema';
+import {
+  buildCouplingPairs,
+  buildNetTerminalPoints,
+  buildVoltmeterGuides,
+  buildSignalEmitters,
+  buildSignalDescriptions,
+  buildNetWirePoints,
+  buildScopeGuides,
+  buildTerminalLabelItems,
+} from './sheetGuides';
 import type { Point } from '../model/types';
 import { ContextMenu } from './ContextMenu';
 import type { ContextMenuTarget } from './ContextMenu';
@@ -92,158 +102,54 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
   });
 
   // Active software coupling pairs (Gate Driver ➔ Switch, Ammeter ➔ Target Component)
-  const couplingPairs = useMemo(() => {
-    const pairs: Array<{
-      sourceComp: (typeof state.components)[0];
-      targetComp: (typeof state.components)[0];
-      label: string;
-      isHoveredOrSelected: boolean;
-    }> = [];
-
-    for (const comp of state.components) {
-      const isVmWithTarget =
-        isVoltmeterComponent(comp) && !!getCoupledComponentName(comp);
-      if (isGateDriver(comp) || isAmmeterComponent(comp) || isVmWithTarget) {
-        const targetName = getCoupledComponentName(comp);
-        if (targetName) {
-          const target = state.components.find((c) => c.name === targetName);
-          if (target) {
-            const isHoveredOrSelected =
-              state.selection.includes(comp.name) ||
-              state.selection.includes(target.name) ||
-              hoveredComponentName === comp.name ||
-              hoveredComponentName === target.name;
-            const label = isGateDriver(comp)
-              ? 'GATE DRIVE ➔'
-              : isVmWithTarget
-                ? 'MEASURE U ➔'
-                : 'MEASURE I ➔';
-            pairs.push({ sourceComp: comp, targetComp: target, label, isHoveredOrSelected });
-          }
-        }
-      }
-    }
-    return pairs;
-  }, [state.components, state.selection, hoveredComponentName]);
+  const couplingPairs = useMemo(
+    () => buildCouplingPairs(state.components, state.selection, hoveredComponentName),
+    [state.components, state.selection, hoveredComponentName],
+  );
 
   // First terminal position per net label — used to aim voltmeter
   // measurement guides at the nodes they measure.
-  const netTerminalPoints = useMemo(() => {
-    const map = new Map<string, { x: number; y: number }>();
-    for (const comp of state.components) {
-      if (comp.family === 'CONTROL') continue;
-      const terminals = terminalPositions(comp);
-      terminals.input.forEach((t, i) => {
-        const raw = comp.inputLabels[i]?.trim();
-        if (raw && raw !== 'NIX_NIX_NIX' && !map.has(raw)) map.set(raw, t);
-      });
-      terminals.output.forEach((t, i) => {
-        const raw = comp.outputLabels[i]?.trim();
-        if (raw && raw !== 'NIX_NIX_NIX' && !map.has(raw)) map.set(raw, t);
-      });
-    }
-    return map;
-  }, [state.components]);
+  const netTerminalPoints = useMemo(
+    () => buildNetTerminalPoints(state.components),
+    [state.components],
+  );
 
   // Voltmeter ➔ measured-node guides, shown on hover/selection instead of
   // the permanent badge text. Lines are coloured by polarity: red for the
   // positive node, brown for the negative node.
-  const voltmeterGuides = useMemo(() => {
-    const guides: Array<{
-      key: string;
-      source: (typeof state.components)[0];
-      points: { x: number; y: number; polarity: 'pos' | 'neg' }[];
-      isHoveredOrSelected: boolean;
-    }> = [];
-    for (const comp of state.components) {
-      if (!isVoltmeterComponent(comp)) continue;
-      const nodeA =
-        (comp.parameters?.nodeA as string) || (comp.parameters?.positiveNode as string);
-      const nodeB =
-        (comp.parameters?.nodeB as string) || (comp.parameters?.negativeNode as string);
-      const points = (
-        [
-          { node: nodeA, polarity: 'pos' as const },
-          { node: nodeB, polarity: 'neg' as const },
-        ] as const
-      )
-        .filter(({ node }) => !!node)
-        .map(({ node, polarity }) => ({ point: netTerminalPoints.get(node), polarity }))
-        .filter((e): e is { point: { x: number; y: number }; polarity: 'pos' | 'neg' } => !!e.point)
-        .map(({ point, polarity }) => ({ ...point, polarity }));
-      // If both nodes resolve to the same terminal, one line suffices
-      const unique = new Map(points.map((p) => [`${p.x},${p.y}`, p]));
-      guides.push({
-        key: comp.name,
-        source: comp,
-        points: [...unique.values()],
-        isHoveredOrSelected:
-          state.selection.includes(comp.name) || hoveredComponentName === comp.name,
-      });
-    }
-    return guides;
-  }, [state.components, state.selection, hoveredComponentName, netTerminalPoints]);
+  const voltmeterGuides = useMemo(
+    () =>
+      buildVoltmeterGuides(
+        state.components,
+        state.selection,
+        hoveredComponentName,
+        netTerminalPoints,
+      ),
+    [state.components, state.selection, hoveredComponentName, netTerminalPoints],
+  );
 
   // Emitted meter signal → the meter that emits it (for tracing scope channels
   // back to their measurement point)
-  const signalEmitters = useMemo(() => {
-    const map = new Map<string, (typeof state.components)[0]>();
-    for (const comp of state.components) {
-      if (comp.family !== 'CONTROL') continue;
-      if (!isVoltmeterComponent(comp) && !isAmmeterComponent(comp)) continue;
-      for (const l of comp.outputLabels || []) {
-        const raw = l?.trim();
-        if (raw && raw !== 'NIX_NIX_NIX' && !map.has(raw)) map.set(raw, comp);
-      }
-    }
-    return map;
-  }, [state.components]);
+  const signalEmitters = useMemo(
+    () => buildSignalEmitters(state.components),
+    [state.components],
+  );
 
   // Emitted meter signal → human-readable measurement description, so scope
   // channel pills show WHAT is measured ("V(out)", "I(L.1)"), not just the
   // raw signal name. Nets that only exist on LK terminals are node voltages.
-  const signalDescriptions = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const comp of state.components) {
-      if (comp.family !== 'CONTROL') continue;
-      const isVm = isVoltmeterComponent(comp);
-      const isAm = isAmmeterComponent(comp);
-      if (!isVm && !isAm) continue;
-      const coupled = getCoupledComponentName(comp);
-      const nodeA =
-        (comp.parameters?.nodeA as string) || (comp.parameters?.positiveNode as string);
-      const nodeB =
-        (comp.parameters?.nodeB as string) || (comp.parameters?.negativeNode as string);
-      let detail: string | null = null;
-      if (coupled) detail = coupled;
-      else if (isVm && nodeA) detail = nodeB && nodeB !== '0' ? `${nodeA}-${nodeB}` : nodeA;
-      if (!detail) continue;
-      const prefix = isAm ? 'I' : 'V';
-      for (const l of comp.outputLabels || []) {
-        const raw = l?.trim();
-        if (raw && raw !== 'NIX_NIX_NIX') map.set(raw, `${prefix}(${detail})`);
-      }
-    }
-    return map;
-  }, [state.components]);
+  const signalDescriptions = useMemo(
+    () => buildSignalDescriptions(state.components),
+    [state.components],
+  );
 
   // Net label → all grid points of the wires carrying that net, so guides can
   // aim at the nearest point of the actual rail instead of an arbitrary pin
   // at the far end of the circuit.
-  const netWirePoints = useMemo(() => {
-    const map = new Map<string, { x: number; y: number }[]>();
-    for (const w of state.wires) {
-      const label = w.label?.trim();
-      if (!label || label === 'NIX_NIX_NIX') continue;
-      let pts = map.get(label);
-      if (!pts) {
-        pts = [];
-        map.set(label, pts);
-      }
-      for (const p of w.points) pts.push({ x: p[0], y: p[1] });
-    }
-    return map;
-  }, [state.wires]);
+  const netWirePoints = useMemo(
+    () => buildNetWirePoints(state.wires),
+    [state.wires],
+  );
 
   // Scope ➔ measurement-point guides, shown on hover/selection, decided per
   // input pin: pins with a real wire show the connection already; unwired
@@ -251,187 +157,41 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
   // get a dashed line to the point they measure — aiming at the nearest
   // point of that net's wiring. Each line keeps its channel's trace color
   // and a label at the target so the fan of lines stays attributable.
-  const scopeGuides = useMemo(() => {
-    const nearest = (label: string, from: { x: number; y: number }) => {
-      const wirePts = netWirePoints.get(label);
-      if (wirePts && wirePts.length > 0) {
-        let best = wirePts[0];
-        let bestD = Infinity;
-        for (const p of wirePts) {
-          const d = (p.x - from.x) ** 2 + (p.y - from.y) ** 2;
-          if (d < bestD) {
-            bestD = d;
-            best = p;
-          }
-        }
-        return best;
-      }
-      return netTerminalPoints.get(label);
-    };
-    const guides: Array<{
-      key: string;
-      source: (typeof state.components)[0];
-      lines: Array<{
-        origin: { x: number; y: number };
-        target: { x: number; y: number };
-        text: string;
-        colorIndex: number;
-      }>;
-      isHoveredOrSelected: boolean;
-    }> = [];
-    for (const comp of state.components) {
-      if (!isScopeComponent(comp)) continue;
-      const lines: Array<{
-        origin: { x: number; y: number };
-        target: { x: number; y: number };
-        text: string;
-        colorIndex: number;
-      }> = [];
-      const terminals = terminalPositions(comp);
-      terminals.input.forEach((t, i) => {
-        const raw = comp.inputLabels[i]?.trim();
-        if (!raw || raw === 'NIX_NIX_NIX') return;
-        // physically wired pins need no guide
-        const isWired = state.wires.some((w) =>
-          w.points.some((p) => Math.hypot(p[0] - t.x, p[1] - t.y) < 0.25),
-        );
-        if (isWired) return;
-        // bare power net: aim at the nearest point of the net's wiring
-        const netPoint = nearest(raw, { x: comp.position[0], y: comp.position[1] });
-        if (netPoint) {
-          lines.push({
-            origin: t,
-            target: netPoint,
-            text: `V(${raw})`,
-            colorIndex: i,
-          });
-          return;
-        }
-        // meter-emitted signal: aim at the meter's measurement point
-        const emitter = signalEmitters.get(raw);
-        if (!emitter) return;
-        const text = signalDescriptions.get(raw) ?? raw;
-        if (isAmmeterComponent(emitter)) {
-          const targetName = getCoupledComponentName(emitter);
-          const target = (
-            targetName ? state.components.find((c) => c.name === targetName) : undefined
-          ) ?? emitter;
-          lines.push({
-            origin: t,
-            target: { x: target.position[0], y: target.position[1] },
-            text,
-            colorIndex: i,
-          });
-        } else if (isVoltmeterComponent(emitter)) {
-          const nodeA =
-            (emitter.parameters?.nodeA as string) || (emitter.parameters?.positiveNode as string);
-          const nodeB =
-            (emitter.parameters?.nodeB as string) || (emitter.parameters?.negativeNode as string);
-          const nodePoints = [nodeA, nodeB]
-            .map((n) => (n ? netTerminalPoints.get(n) : undefined))
-            .filter((p): p is { x: number; y: number } => !!p);
-          const target = nodePoints[0] ?? (() => {
-            const targetName = getCoupledComponentName(emitter);
-            const targetComp =
-              (targetName ? state.components.find((c) => c.name === targetName) : undefined) ??
-              emitter;
-            return { x: targetComp.position[0], y: targetComp.position[1] };
-          })();
-          lines.push({
-            origin: t,
-            target,
-            text,
-            colorIndex: i,
-          });
-        }
-      });
-      guides.push({
-        key: comp.name,
-        source: comp,
-        lines,
-        isHoveredOrSelected:
-          state.selection.includes(comp.name) || hoveredComponentName === comp.name,
-      });
-    }
-    return guides;
-  }, [state.components, state.wires, state.selection, hoveredComponentName, netTerminalPoints, netWirePoints, signalEmitters, signalDescriptions]);
+  const scopeGuides = useMemo(
+    () =>
+      buildScopeGuides({
+        components: state.components,
+        wires: state.wires,
+        selection: state.selection,
+        hoveredComponentName,
+        netTerminalPoints,
+        netWirePoints,
+        signalEmitters,
+        signalDescriptions,
+      }),
+    [
+      state.components,
+      state.wires,
+      state.selection,
+      hoveredComponentName,
+      netTerminalPoints,
+      netWirePoints,
+      signalEmitters,
+      signalDescriptions,
+    ],
+  );
 
   // Pre-computed, deduplicated terminal net labels across all circuit components
-  const terminalLabelItems = useMemo(() => {
-    const items: Array<{
-      key: string;
-      label: string;
-      displayLabel: string;
-      gx: number;
-      gy: number;
-      componentName: string;
-      dirX: number;
-      dirY: number;
-      isWired: boolean;
-    }> = [];
-    const seen = new Set<string>();
-
-    for (const component of state.components) {
-      const terminals = terminalPositions(component);
-      const inLabels = component.inputLabels || [];
-      const outLabels = component.outputLabels || [];
-      // Scope inputs: annotate the channel with what is measured — a meter's
-      // emitted signal resolves to V(point)/I(point); a bare LK net name is a
-      // node voltage.
-      const channelInfo = (raw: string): string => {
-        if (!isScopeComponent(component)) return raw;
-        return (
-          signalDescriptions.get(raw) ??
-          (netTerminalPoints.has(raw) ? `V(${raw})` : raw)
-        );
-      };
-
-      terminals.input.forEach((t, i) => {
-        const raw = inLabels[i]?.trim();
-        if (!raw || raw === 'NIX_NIX_NIX') return;
-        const pointKey = `${t.x},${t.y}:${raw}`;
-        if (seen.has(pointKey)) return;
-        seen.add(pointKey);
-        const isWired = state.wires.some((w) =>
-          w.points.some((p) => Math.hypot(p[0] - t.x, p[1] - t.y) < 0.25),
-        );
-        items.push({
-          key: `in-${component.name}-${i}-${raw}`,
-          label: raw,
-          displayLabel: channelInfo(raw),
-          gx: t.x,
-          gy: t.y,
-          componentName: component.name,
-          dirX: t.x - component.position[0],
-          dirY: t.y - component.position[1],
-          isWired,
-        });
-      });
-
-      terminals.output.forEach((t, i) => {
-        const raw = outLabels[i]?.trim();
-        if (!raw || raw === 'NIX_NIX_NIX') return;
-        const pointKey = `${t.x},${t.y}:${raw}`;
-        if (seen.has(pointKey)) return;
-        seen.add(pointKey);
-        const isWired = state.wires.some((w) =>
-          w.points.some((p) => Math.hypot(p[0] - t.x, p[1] - t.y) < 0.25),
-        );
-        items.push({
-          key: `out-${component.name}-${i}-${raw}`,
-          label: raw,
-          displayLabel: raw,
-          gx: t.x,
-          gy: t.y,
-          componentName: component.name,
-          dirX: t.x - component.position[0],
-          dirY: t.y - component.position[1],
-          isWired,
-        });
-      });
-    }
-    return items;
-  }, [state.components, state.wires, signalDescriptions, netTerminalPoints]);
+  const terminalLabelItems = useMemo(
+    () =>
+      buildTerminalLabelItems(
+        state.components,
+        state.wires,
+        signalDescriptions,
+        netTerminalPoints,
+      ),
+    [state.components, state.wires, signalDescriptions, netTerminalPoints],
+  );
 
   // Wire segment and endpoint drag state
   const [wireDrag, setWireDrag] = useState<{

@@ -513,6 +513,8 @@ describe('direct pin-to-pin wiring and wire editing', () => {
     // Unwired scope inputs: one dashed guide per distinct measurement point
     const first = render(<ScopeWrapper wires={[]} />);
     expect(first.container.querySelectorAll('path.coupling-guideline.active')).toHaveLength(2);
+    expect(first.container.textContent).toContain('V(out)');
+    expect(first.container.textContent).toContain('I(L.1)');
     first.unmount();
 
     // A net carried by a wire is aimed at its point nearest to the scope
@@ -535,6 +537,63 @@ describe('direct pin-to-pin wiring and wire editing', () => {
     ];
     const second = render(<ScopeWrapper wires={wired} />);
     expect(second.container.querySelectorAll('path.coupling-guideline.active')).toHaveLength(1);
+  });
+
+  it('draws voltmeter guides with polarity colors when voltmeter is selected', () => {
+    const vmSnap: EditorSnapshot = {
+      ...snapshot,
+      connections: [],
+      components: [
+        {
+          type: 1, // Resistor
+          name: 'R.1',
+          family: 'LK',
+          position: [20, 10],
+          orientation: 502,
+          parameters: {},
+          inputLabels: ['node_pos'],
+          outputLabels: ['node_neg'],
+        },
+        {
+          type: 1001, // Voltmeter
+          name: 'VOLT.1',
+          family: 'CONTROL',
+          position: [20, 30],
+          orientation: 503,
+          parameters: {
+            positiveNode: 'node_pos',
+            negativeNode: 'node_neg',
+          },
+          inputLabels: [],
+          outputLabels: [],
+        },
+      ],
+    };
+
+    function VmWrapper({ selected }: { selected: boolean }) {
+      const [state, dispatch] = useReducer(editorReducer, {
+        ...initialState,
+        circuitId: vmSnap.circuitId,
+        components: vmSnap.components,
+        wires: [],
+        dpix: vmSnap.dpix,
+        selection: selected ? ['VOLT.1'] : [],
+      });
+      return <Sheet state={state} dispatch={dispatch} actions={actions} />;
+    }
+
+    // Unselected: no voltmeter guides visible
+    const unselectedRender = render(<VmWrapper selected={false} />);
+    expect(unselectedRender.container.querySelectorAll('.coupling-guides-layer path')).toHaveLength(0);
+    unselectedRender.unmount();
+
+    // Selected: draws 2 polarity-colored guidelines (pos: #f87171, neg: #cd7f32)
+    const selectedRender = render(<VmWrapper selected={true} />);
+    const guidePaths = selectedRender.container.querySelectorAll('g[class*="coupling-guide-group"] path.coupling-guideline');
+    expect(guidePaths).toHaveLength(2);
+    const strokes = [...guidePaths].map((p) => p.getAttribute('stroke'));
+    expect(strokes).toContain('#f87171');
+    expect(strokes).toContain('#cd7f32');
   });
 
   it('triggers openScopeTab and openScriptTab when double-clicking respective components', () => {

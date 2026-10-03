@@ -121,6 +121,8 @@ export const CANVAS_METRICS = {
   MULTI_PIN_STEP: 2,
   /** Max Euclidean distance (in grid units) to snap wire cursor or candidate placement to a terminal. */
   DEFAULT_SNAP_DISTANCE: 0.75,
+  /** Distance threshold (in grid units) to consider a wire vertex coincident with a terminal or point. */
+  TERMINAL_TOUCH_TOLERANCE: 0.25,
   /** Standard lead line length in symbol rendering (grid units). */
   LEAD_LENGTH: 2.0,
   /** Default scale factor for standalone preview symbols in palette/dialogs (pixels). */

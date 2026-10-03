@@ -62,6 +62,7 @@ describe('Model Constants & Enums', () => {
     expect(CANVAS_METRICS.TWO_PORT_DIST).toBe(2);
     expect(CANVAS_METRICS.MULTI_PIN_STEP).toBe(2);
     expect(CANVAS_METRICS.DEFAULT_SNAP_DISTANCE).toBeGreaterThan(0);
+    expect(CANVAS_METRICS.TERMINAL_TOUCH_TOLERANCE).toBe(0.25);
     expect(CANVAS_METRICS.MIN_ZOOM).toBeLessThan(CANVAS_METRICS.MAX_ZOOM);
     expect(CANVAS_METRICS.ZOOM_STEP_FACTOR).toBeGreaterThan(1.0);
   });

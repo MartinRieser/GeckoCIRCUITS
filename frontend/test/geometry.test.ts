@@ -99,6 +99,18 @@ describe('terminalPositions: Special LK Components (Transformer & BJT)', () => {
     // Collector at input lead (-2, 0), Base at (-2, 0) offset, Emitter at (+2, 0)
     expect(t.output[0]).toEqual({ x: 52, y: 50 });
   });
+
+  it('returns empty terminals for Mutual Inductance coupler (LkComponentType.MUTUAL_INDUCTANCE)', () => {
+    const coupler = {
+      type: LkComponentType.MUTUAL_INDUCTANCE,
+      family: 'LK',
+      position: [50, 50],
+      orientation: Orientation.NORTH_SOUTH,
+    };
+    const t = terminalPositions(coupler);
+    expect(t.input).toEqual([]);
+    expect(t.output).toEqual([]);
+  });
 });
 
 describe('terminalPositions: CONTROL blocks', () => {
