@@ -1324,9 +1324,9 @@ function FullScreenOverlayChart({
               y1={padTop}
               x2={mapX(time[cursorA])}
               y2={height - padBottom}
-              stroke="#38bdf8"
               strokeWidth={1.5}
               pointerEvents="none"
+              style={{ stroke: 'var(--accent)' }}
             />
             {/* Wide grab area over entire vertical line */}
             <line
@@ -1350,7 +1350,7 @@ function FullScreenOverlayChart({
                 width={32}
                 height={18}
                 rx={4}
-                fill="#0284c7"
+                style={{ fill: 'var(--accent)' }}
               />
               <text
                 x={mapX(time[cursorA])}
@@ -1435,7 +1435,7 @@ function FullScreenOverlayChart({
                 width={bw}
                 height={is2D ? bh : plotH}
                 fill="rgba(56, 189, 248, 0.22)"
-                stroke="#38bdf8"
+                style={{ stroke: 'var(--accent)' }}
                 strokeWidth={1.5}
                 strokeDasharray="4 3"
               />
@@ -1445,7 +1445,7 @@ function FullScreenOverlayChart({
                 width={is2D ? 160 : 130}
                 height={18}
                 rx={3}
-                fill="#0284c7"
+                style={{ fill: 'var(--accent)' }}
                 opacity={0.95}
               />
               <text
@@ -1965,9 +1965,9 @@ function FullScreenStackedChart({
               y1={padTop}
               x2={mapX(time[cursorA])}
               y2={totalH - padBottom}
-              stroke="#38bdf8"
               strokeWidth={1.5}
               pointerEvents="none"
+              style={{ stroke: 'var(--accent)' }}
             />
             {/* Wide grab area over entire vertical line */}
             <line
@@ -1991,7 +1991,7 @@ function FullScreenStackedChart({
                 width={32}
                 height={18}
                 rx={4}
-                fill="#0284c7"
+                style={{ fill: 'var(--accent)' }}
               />
               <text
                 x={mapX(time[cursorA])}
@@ -2066,7 +2066,7 @@ function FullScreenStackedChart({
               width={Math.abs(dragBox.currentX - dragBox.startX)}
               height={plotH}
               fill="rgba(56, 189, 248, 0.22)"
-              stroke="#38bdf8"
+              style={{ stroke: 'var(--accent)' }}
               strokeWidth={1.5}
               strokeDasharray="4 3"
             />
@@ -2076,7 +2076,7 @@ function FullScreenStackedChart({
               width={Math.min(140, Math.abs(dragBox.currentX - dragBox.startX))}
               height={18}
               rx={3}
-              fill="#0284c7"
+              style={{ fill: 'var(--accent)' }}
               opacity={0.9}
             />
             <text

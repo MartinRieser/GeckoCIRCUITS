@@ -495,7 +495,7 @@ export function SimulationDrawer({
                         onClick={() => toggleSignal(name)}
                         style={{
                           borderColor: color,
-                          color: isHidden ? '#64748b' : '#f8fafc',
+                          color: isHidden ? 'var(--text-dim)' : 'var(--text)',
                           backgroundColor: isHidden ? 'transparent' : `${color}22`,
                         }}
                         title={isHidden ? `Show ${name}` : `Hide ${name}`}
@@ -740,7 +740,7 @@ function StackedWaveformChart({
                   y1={zeroY}
                   x2={width - padRight}
                   y2={zeroY}
-                  stroke="#475569"
+                  style={{ stroke: 'var(--chart-zero)' }}
                   strokeDasharray="3 3"
                 />
               )}
@@ -749,7 +749,7 @@ function StackedWaveformChart({
               <text
                 x={padLeft - 6}
                 y={laneTop + 10}
-                fill="#94a3b8"
+                style={{ fill: 'var(--chart-text)' }}
                 fontSize={9}
                 textAnchor="end"
               >
@@ -758,7 +758,7 @@ function StackedWaveformChart({
               <text
                 x={padLeft - 6}
                 y={laneTop + laneH - 2}
-                fill="#94a3b8"
+                style={{ fill: 'var(--chart-text)' }}
                 fontSize={9}
                 textAnchor="end"
               >
@@ -783,7 +783,7 @@ function StackedWaveformChart({
                 width={name.length * 7 + 18}
                 height={16}
                 rx={3}
-                fill="#0f172a"
+                style={{ fill: 'var(--pill-bg)' }}
                 fillOpacity={0.85}
               />
               <circle
@@ -809,7 +809,7 @@ function StackedWaveformChart({
                   cy={mapLaneY(arr[hoverIndex] ?? 0)}
                   r={3.5}
                   fill={color}
-                  stroke="#ffffff"
+                  style={{ stroke: 'var(--bg)' }}
                   strokeWidth={1.2}
                 />
               )}
@@ -823,12 +823,12 @@ function StackedWaveformChart({
           y1={totalH - padBottom}
           x2={width - padRight}
           y2={totalH - padBottom}
-          stroke="#475569"
+          style={{ stroke: 'var(--chart-zero)' }}
         />
         <text
           x={padLeft}
           y={totalH - padBottom + 16}
-          fill="#94a3b8"
+          style={{ fill: 'var(--chart-text)' }}
           fontSize={10}
           textAnchor="middle"
         >
@@ -837,7 +837,7 @@ function StackedWaveformChart({
         <text
           x={width - padRight}
           y={totalH - padBottom + 16}
-          fill="#94a3b8"
+          style={{ fill: 'var(--chart-text)' }}
           fontSize={10}
           textAnchor="middle"
         >
@@ -1036,13 +1036,13 @@ function WaveformChart({
               y1={y}
               x2={width - padRight}
               y2={y}
-              stroke="#334155"
+              style={{ stroke: 'var(--chart-grid)' }}
               strokeDasharray="2 3"
             />
             <text
               x={padLeft - 8}
               y={y + 3}
-              fill="#94a3b8"
+              style={{ fill: 'var(--chart-text)' }}
               fontSize={10}
               textAnchor="end"
             >
@@ -1059,13 +1059,13 @@ function WaveformChart({
               y1={padTop}
               x2={x}
               y2={height - padBottom}
-              stroke="#334155"
+              style={{ stroke: 'var(--chart-grid)' }}
               strokeDasharray="2 3"
             />
             <text
               x={x}
               y={height - padBottom + 16}
-              fill="#94a3b8"
+              style={{ fill: 'var(--chart-text)' }}
               fontSize={10}
               textAnchor="middle"
             >
@@ -1117,7 +1117,7 @@ function WaveformChart({
                   cy={mapY(val)}
                   r={4}
                   fill={color}
-                  stroke="#ffffff"
+                  style={{ stroke: 'var(--bg)' }}
                   strokeWidth={1.5}
                 />
               );

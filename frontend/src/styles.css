@@ -213,7 +213,7 @@ body,
 }
 
 .nav-btn.search-btn {
-  background: rgba(30, 41, 59, 0.8);
+  background: var(--surface);
   border-style: dashed;
   color: var(--text-muted);
 }
@@ -1295,6 +1295,11 @@ polyline.wire.selected {
   animation: pillFadeIn 0.15s ease-out;
 }
 
+:root[data-theme='light'] .wire-action-pill {
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.15), 0 0 10px rgba(2, 132, 199, 0.12);
+}
+
 @keyframes pillFadeIn {
   from {
     opacity: 0;
@@ -2028,7 +2033,7 @@ polyline.wire.selected {
 
 .sim-progress-track {
   height: 2px;
-  background: #1e293b;
+  background: var(--surface);
   width: 100%;
 }
 
@@ -2305,7 +2310,7 @@ polyline.wire.selected {
 
 .legend-pill.hidden {
   opacity: 0.45;
-  border-color: #334155 !important;
+  border-color: var(--border) !important;
 }
 
 .legend-dot {
@@ -2865,6 +2870,10 @@ polyline.wire.selected {
   flex-shrink: 0;
 }
 
+:root[data-theme='light'] .dso-module {
+  background: rgba(241, 245, 249, 0.9);
+}
+
 .dso-module-label {
   font-size: 9px;
   font-weight: 800;
@@ -2991,6 +3000,11 @@ polyline.wire.selected {
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
 }
 
+:root[data-theme='light'] .dso-ch-btn.active {
+  background: var(--surface-hover);
+  box-shadow: none;
+}
+
 .dso-ch-btn.hidden {
   opacity: 0.35;
   border-style: dashed;
@@ -3030,6 +3044,12 @@ polyline.wire.selected {
   position: relative;
 }
 
+:root[data-theme='light'] .dso-screen-bezel {
+  background: #ffffff;
+  border-color: var(--border);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+}
+
 /* On-Screen Display (OSD) Header Bar */
 .dso-screen-osd {
   height: 26px;
@@ -3045,6 +3065,12 @@ polyline.wire.selected {
   user-select: none;
   z-index: 5;
   flex-shrink: 0;
+}
+
+:root[data-theme='light'] .dso-screen-osd {
+  background: var(--panel-header);
+  border-bottom-color: var(--border);
+  color: var(--text-muted);
 }
 
 .dso-osd-left,
@@ -3113,10 +3139,20 @@ polyline.wire.selected {
   user-select: none;
 }
 
+:root[data-theme='light'] .dso-osd-channel-tag {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
 .dso-osd-channel-tag:hover,
 .dso-osd-channel-tag.highlighted {
   background: rgba(51, 65, 85, 0.95);
   transform: translateY(-1px);
+}
+
+:root[data-theme='light'] .dso-osd-channel-tag:hover,
+:root[data-theme='light'] .dso-osd-channel-tag.highlighted {
+  background: var(--surface-hover);
 }
 
 .trace-end-badge {
@@ -3162,6 +3198,14 @@ polyline.wire.selected {
   fill: #080d1a;
 }
 
+:root[data-theme='light'] .full-waveform-svg rect.waveform-bg {
+  fill: var(--panel);
+}
+
+:root[data-theme='light'] .full-waveform-svg rect.waveform-plot-area {
+  fill: var(--chart-plot-bg);
+}
+
 /* Floating On-Screen DSO Cursor HUD Box */
 .dso-screen-cursor-hud {
   position: absolute;
@@ -3180,6 +3224,12 @@ polyline.wire.selected {
   pointer-events: auto;
   backdrop-filter: blur(8px);
   color: #e2e8f0;
+}
+
+:root[data-theme='light'] .dso-screen-cursor-hud {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.15);
+  color: var(--text);
 }
 
 .dso-hud-header {
@@ -3283,6 +3333,11 @@ polyline.wire.selected {
   scrollbar-width: none;
 }
 
+:root[data-theme='light'] .dso-quick-measure-bar {
+  background: var(--panel-header);
+  border-top-color: var(--border);
+}
+
 .dso-quick-tiles {
   display: flex;
   align-items: center;
@@ -3305,6 +3360,12 @@ polyline.wire.selected {
   white-space: nowrap;
 }
 
+:root[data-theme='light'] .dso-measure-tile {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+
 .dso-measure-tile strong {
   color: #94a3b8;
   font-weight: 600;
@@ -3313,6 +3374,14 @@ polyline.wire.selected {
 .dso-measure-tile-val {
   color: #f8fafc;
   font-weight: 700;
+}
+
+:root[data-theme='light'] .dso-measure-tile strong {
+  color: var(--text-muted);
+}
+
+:root[data-theme='light'] .dso-measure-tile-val {
+  color: var(--text);
 }
 
 .dso-drawer-toggle-btn {
@@ -3627,7 +3696,7 @@ polyline.wire.selected {
   padding: 4px 12px;
   border-radius: 4px;
   border: 1px solid var(--border, #334155);
-  background: #1f2937;
+  background: var(--surface);
   color: var(--text, #e2e8f0);
   cursor: pointer;
 }
@@ -3770,9 +3839,17 @@ polyline.wire.selected {
   transition: all 0.15s ease;
 }
 
+:root[data-theme='light'] .loss-range-pill {
+  background: var(--surface);
+}
+
 .loss-range-pill:hover:not(:disabled) {
   background: rgba(51, 65, 85, 0.8);
   color: var(--text, #f8fafc);
+}
+
+:root[data-theme='light'] .loss-range-pill:hover:not(:disabled) {
+  background: var(--surface-hover);
 }
 
 .loss-range-pill.active {
@@ -3795,6 +3872,10 @@ polyline.wire.selected {
   font-size: 10px;
 }
 
+:root[data-theme='light'] .loss-range-badge {
+  background: var(--surface);
+}
+
 .loss-metrics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -3809,6 +3890,10 @@ polyline.wire.selected {
   border-radius: 6px;
   padding: 8px 10px;
   gap: 2px;
+}
+
+:root[data-theme='light'] .loss-stat-card {
+  background: #ffffff;
 }
 
 .loss-stat-card.primary {
@@ -3835,8 +3920,16 @@ polyline.wire.selected {
   color: #38bdf8;
 }
 
+:root[data-theme='light'] .loss-stat-val.primary {
+  color: var(--accent);
+}
+
 .loss-stat-val.highlight {
   color: #34d399;
+}
+
+:root[data-theme='light'] .loss-stat-val.highlight {
+  color: var(--success);
 }
 
 .loss-stat-val.warning {
@@ -3859,6 +3952,10 @@ polyline.wire.selected {
   border-radius: 6px;
   padding: 8px 10px;
   gap: 6px;
+}
+
+:root[data-theme='light'] .loss-power-chart-wrap {
+  background: #ffffff;
 }
 
 .loss-power-chart-header {
@@ -3949,7 +4046,7 @@ polyline.wire.selected {
   padding: 4px 14px;
   border-radius: 4px;
   border: 1px solid var(--border, #334155);
-  background: #1f2937;
+  background: var(--surface);
   color: var(--text, #e2e8f0);
   cursor: pointer;
   font-size: 11px;
@@ -4059,6 +4156,10 @@ polyline.wire.selected {
   font-size: 12px;
 }
 
+:root[data-theme='light'] .loss-explainer-details {
+  background: var(--surface);
+}
+
 .loss-explainer-summary {
   padding: 8px 12px;
   cursor: pointer;
@@ -4105,11 +4206,16 @@ polyline.wire.selected {
 /* Hover crosshair time pill */
 .hover-pill {
   fill: #0f172a;
-  stroke: #38bdf8;
+  stroke: var(--accent);
   stroke-width: 1.2px;
 }
+
+:root[data-theme='light'] .hover-pill {
+  fill: var(--pill-bg);
+  stroke: var(--accent);
+}
 .hover-text {
-  fill: #38bdf8;
+  fill: var(--accent);
   font-size: 10.5px;
   font-weight: 700;
   font-family: var(--font-mono, monospace);
@@ -4126,6 +4232,10 @@ polyline.wire.selected {
   padding: 2px 8px;
   border-radius: 4px;
   font-size: 11px;
+}
+
+:root[data-theme='light'] .chip-signal {
+  background: rgba(255, 255, 255, 0.9);
 }
 .signal-dot {
   width: 7px;
@@ -4334,6 +4444,10 @@ polyline.wire.selected {
   border-radius: 6px;
   padding: 8px;
   margin-top: 6px;
+}
+
+:root[data-theme='light'] .sim-cursor-controls-box {
+  background: var(--surface);
 }
 
 .sim-hint-text {
@@ -5109,6 +5223,15 @@ polyline.wire.selected {
   background: var(--accent, #2563eb);
   color: #ffffff;
   border: none;
+}
+
+/* Re-assert the accent fill on hover/active: the generic .nav-btn:hover
+   surface background has higher specificity and would repaint the button
+   light grey behind its fixed white label, hiding it in the light theme. */
+.nav-btn.primary-run-btn:hover:not(:disabled),
+.nav-btn.primary-run-btn:active:not(:disabled) {
+  background: var(--accent-hover, #2563eb);
+  color: #ffffff;
 }
 
 .primary-run-btn:hover {

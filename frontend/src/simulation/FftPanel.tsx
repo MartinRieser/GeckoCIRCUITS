@@ -126,7 +126,7 @@ export function FftPanel({
                   y={130 - h}
                   width={Math.max(1, barW)}
                   height={Math.max(0, h)}
-                  fill={idx === 1 ? '#38bdf8' : '#64748b'}
+                  style={{ fill: idx === 1 ? 'var(--accent)' : 'var(--text-dim)' }}
                 />
               );
             })}

@@ -595,9 +595,9 @@ export function LossPanel({
                     </span>
                   </div>
                   <svg viewBox={`0 0 ${plotW} ${plotH}`} className="loss-power-svg" preserveAspectRatio="none">
-                    <rect width={plotW} height={plotH} fill="rgba(15, 23, 42, 0.4)" rx={4} />
+                    <rect width={plotW} height={plotH} style={{ fill: 'var(--chart-plot-bg)' }} rx={4} />
                     {zeroY >= 0 && zeroY <= plotH && (
-                      <line x1={0} y1={zeroY} x2={plotW} y2={zeroY} stroke="#475569" strokeDasharray="3 3" strokeWidth={1} />
+                      <line x1={0} y1={zeroY} x2={plotW} y2={zeroY} style={{ stroke: 'var(--chart-zero)' }} strokeDasharray="3 3" strokeWidth={1} />
                     )}
                     <path d={d} fill="none" stroke="#f59e0b" strokeWidth={1.8} strokeLinejoin="round" />
                   </svg>
