@@ -5,16 +5,30 @@
  * with in-memory fallback. Stores circuit content for instant offline/browser re-opening.
  */
 
+/**
+ * Represents a stored circuit file entry in the recent files cache.
+ */
 export interface RecentFileEntry {
+  /** Unique entry identifier. */
   id: string;
+  /** Display name of the circuit file (e.g. "buck_converter.ipes"). */
   name: string;
+  /** Raw text or Base64 encoded .ipes file content for offline loading. */
   content: string;
+  /** Unix timestamp in milliseconds when the file was last opened or saved. */
   timestamp: number;
+  /** Optional count of schematic components in the circuit snapshot. */
   componentCount?: number;
 }
 
 const STORAGE_KEY = 'gecko-recent-files';
 export const MAX_RECENT_FILES = 8;
+
+const SECONDS_JUST_NOW = 45;
+const SECONDS_PER_MINUTE = 60;
+const MINUTES_PER_HOUR = 60;
+const HOURS_PER_DAY = 24;
+const DAYS_PER_WEEK = 7;
 
 let memoryCache: RecentFileEntry[] | null = null;
 
@@ -111,25 +125,28 @@ export function clearRecentFiles(): void {
 }
 
 /**
- * Formats a unix timestamp into a human-friendly relative time string.
+ * Formats a unix timestamp into a human-friendly relative time string (e.g. "Just now", "5m ago").
+ *
+ * @param timestamp Unix timestamp in milliseconds
+ * @returns Human-readable relative time representation
  */
 export function formatRelativeTime(timestamp: number): string {
   const now = Date.now();
   const diffSec = Math.max(0, Math.floor((now - timestamp) / 1000));
 
-  if (diffSec < 45) {
+  if (diffSec < SECONDS_JUST_NOW) {
     return 'Just now';
   }
-  const diffMin = Math.floor(diffSec / 60);
-  if (diffMin < 60) {
+  const diffMin = Math.floor(diffSec / SECONDS_PER_MINUTE);
+  if (diffMin < MINUTES_PER_HOUR) {
     return `${diffMin}m ago`;
   }
-  const diffHours = Math.floor(diffMin / 60);
-  if (diffHours < 24) {
+  const diffHours = Math.floor(diffMin / MINUTES_PER_HOUR);
+  if (diffHours < HOURS_PER_DAY) {
     return `${diffHours}h ago`;
   }
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 7) {
+  const diffDays = Math.floor(diffHours / HOURS_PER_DAY);
+  if (diffDays < DAYS_PER_WEEK) {
     return `${diffDays}d ago`;
   }
   const date = new Date(timestamp);

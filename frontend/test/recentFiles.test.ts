@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   getRecentFiles,
   addRecentFile,
@@ -94,5 +94,27 @@ describe('recentFiles store', () => {
     expect(formatRelativeTime(now - 5 * 60 * 1000)).toBe('5m ago');
     expect(formatRelativeTime(now - 2 * 3600 * 1000)).toBe('2h ago');
     expect(formatRelativeTime(now - 3 * 86400 * 1000)).toBe('3d ago');
+
+    // Date > 7 days ago formats with month and day
+    const oldTimestamp = new Date(2026, 0, 15).getTime();
+    const formatted = formatRelativeTime(oldTimestamp);
+    expect(formatted).toContain('Jan');
+    expect(formatted).toContain('15');
+  });
+
+  it('recovers gracefully from corrupted JSON in localStorage', () => {
+    clearRecentFiles();
+    localStorage.setItem('gecko-recent-files', '{invalid json');
+    expect(getRecentFiles()).toEqual([]);
+  });
+
+  it('survives localStorage setItem failure (e.g. quota exceeded / private mode)', () => {
+    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('QuotaExceededError');
+    });
+    const result = addRecentFile('fallback.ipes', 'test-content');
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe('fallback.ipes');
+    setItemSpy.mockRestore();
   });
 });

@@ -1,23 +1,36 @@
 /**
  * Desktop-grade File Menu (VSCode / Microsoft Word style).
- * Replaces the top-bar New / Open / Save buttons with a unified menu bar item,
- * featuring cascading flyout submenus for Open Recent (last 8 files) and Built-in Examples.
+ * Replaces top-bar New / Open / Save buttons with a unified menu bar item,
+ * featuring a cascading flyout submenu for Open Recent (caching the last 8 files).
  */
 import { useEffect, useRef, useState, useCallback } from 'react';
 import {
   getRecentFiles,
   clearRecentFiles,
   formatRelativeTime,
+  MAX_RECENT_FILES,
   type RecentFileEntry,
 } from '../model/recentFiles';
 
+const SUBMENU_CLOSE_DELAY_MS = 220;
+
+/**
+ * Properties for the {@link FileMenu} component.
+ */
 export interface FileMenuProps {
+  /** Callback to create a new blank circuit diagram. */
   onNew: () => void;
+  /** Callback to trigger local file picker dialog (.ipes/.txt). */
   onOpen: () => void;
+  /** Callback to save/download active circuit with current file name. */
   onSave: () => void;
+  /** Callback to open Save As modal for naming and saving the circuit. */
   onSaveAs: () => void;
+  /** Callback to load a previously opened circuit from the recent files list. */
   onOpenRecent: (entry: RecentFileEntry) => void;
+  /** Whether save actions are currently permitted (requires active circuitId). */
   canSave: boolean;
+  /** Whether the editor is currently busy with asynchronous I/O. */
   busy?: boolean;
 }
 
@@ -87,7 +100,7 @@ export function FileMenu({
   const handleRecentMouseLeave = () => {
     submenuCloseTimerRef.current = window.setTimeout(() => {
       setRecentSubmenuOpen(false);
-    }, 220);
+    }, SUBMENU_CLOSE_DELAY_MS);
   };
 
   const handleClearRecent = (e: React.MouseEvent) => {
@@ -176,7 +189,7 @@ export function FileMenu({
                   <div className="file-menu-empty">No recent files</div>
                 ) : (
                   <>
-                    {recentList.slice(0, 8).map((file, idx) => (
+                    {recentList.slice(0, MAX_RECENT_FILES).map((file, idx) => (
                       <button
                         key={file.id || `${file.name}_${idx}`}
                         type="button"

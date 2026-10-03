@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { FileMenu } from '../src/nav/FileMenu';
 import { addRecentFile, clearRecentFiles } from '../src/model/recentFiles';
 
@@ -207,5 +207,58 @@ describe('FileMenu Component', () => {
 
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(screen.queryByRole('menu')).toBeNull();
+  });
+
+  it('closes when clicking outside the menu', () => {
+    render(
+      <div>
+        <div data-testid="outside-area">Outside</div>
+        <FileMenu
+          onNew={vi.fn()}
+          onOpen={vi.fn()}
+          onSave={vi.fn()}
+          onSaveAs={vi.fn()}
+          onOpenRecent={vi.fn()}
+          canSave={true}
+        />
+      </div>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /file/i }));
+    expect(screen.getByRole('menu')).toBeDefined();
+
+    fireEvent.mouseDown(screen.getByTestId('outside-area'));
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
+
+  it('handles mouse enter and mouse leave on Open Recent submenu with timer', () => {
+    vi.useFakeTimers();
+    render(
+      <FileMenu
+        onNew={vi.fn()}
+        onOpen={vi.fn()}
+        onSave={vi.fn()}
+        onSaveAs={vi.fn()}
+        onOpenRecent={vi.fn()}
+        canSave={true}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /file/i }));
+
+    const submenuWrap = screen.getByText('Open Recent').closest('.file-menu-submenu-wrap')!;
+    fireEvent.mouseEnter(submenuWrap);
+    expect(screen.getByText('No recent files')).toBeDefined();
+
+    // Mouse leave triggers timeout
+    fireEvent.mouseLeave(submenuWrap);
+    // Before timeout expires, still visible
+    expect(screen.getByText('No recent files')).toBeDefined();
+
+    // Fast forward timer past 220ms
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+    expect(screen.queryByText('No recent files')).toBeNull();
+
+    vi.useRealTimers();
   });
 });

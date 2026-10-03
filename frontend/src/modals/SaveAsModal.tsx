@@ -5,10 +5,19 @@
  */
 import { useEffect, useRef, useState } from 'react';
 
+const INPUT_FOCUS_DELAY_MS = 50;
+
+/**
+ * Properties for the {@link SaveAsModal} dialog.
+ */
 export interface SaveAsModalProps {
+  /** Whether the modal is currently displayed. */
   isOpen: boolean;
+  /** Initial suggested file name (defaults to active circuit name or Untitled.ipes). */
   defaultFilename: string;
+  /** Callback invoked when the user confirms save with a valid file name. */
   onSave: (filename: string) => void;
+  /** Callback invoked when the user cancels or closes the dialog. */
   onClose: () => void;
 }
 
@@ -35,7 +44,7 @@ export function SaveAsModal({
             inputRef.current.select();
           }
         }
-      }, 50);
+      }, INPUT_FOCUS_DELAY_MS);
     }
   }, [isOpen, defaultFilename]);
 
