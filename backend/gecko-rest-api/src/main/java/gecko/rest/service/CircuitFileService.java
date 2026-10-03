@@ -493,6 +493,13 @@ public class CircuitFileService {
         byte[] originalContent;
         final Instant loadedAt;
         final AtomicLong version = new AtomicLong();
+        /**
+         * Monotonic uid allocator. Unlike max+1 allocation this never reuses a
+         * uid after the highest-uid component is deleted — a stale reference
+         * (e.g. a mutual coupler's raw slot) must never silently rebind to a
+         * newly created component.
+         */
+        private final AtomicLong uidCeiling;
         private final Deque<Edit> undoStack = new ArrayDeque<>();
         private final Deque<Edit> redoStack = new ArrayDeque<>();
 
@@ -500,6 +507,19 @@ public class CircuitFileService {
             this.filename = filename;
             this.model = model;
             this.loadedAt = loadedAt;
+            long max = 0;
+            for (CircuitModel.ComponentData comp : model.getAllComponents()) {
+                max = Math.max(max, comp.getUniqueObjectIdentifier());
+            }
+            for (CircuitModel.ConnectionData conn : model.getConnections()) {
+                max = Math.max(max, conn.getUniqueObjectIdentifier());
+            }
+            this.uidCeiling = new AtomicLong(max + 1);
+        }
+
+        /** Next never-before-used uid for a new component or connection. */
+        long nextUid() {
+            return uidCeiling.getAndIncrement();
         }
 
         /**

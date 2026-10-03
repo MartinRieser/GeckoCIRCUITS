@@ -182,7 +182,23 @@ public final class ControlCalculatorBuilder {
             List<AbstractControlCalculatable> calculators,
             List<GateDrive> gateDrives,
             List<Probe> probes,
-            List<SignalTap> signalTaps) {
+            List<SignalTap> signalTaps,
+            List<String> warnings) {
+
+        public ControlCoupling {
+            warnings = warnings != null ? warnings : List.of();
+        }
+
+        /**
+         * Convenience constructor for couplings without build issues
+         * (empty control section, tests).
+         */
+        public ControlCoupling(List<AbstractControlCalculatable> calculators,
+                               List<GateDrive> gateDrives,
+                               List<Probe> probes,
+                               List<SignalTap> signalTaps) {
+            this(calculators, gateDrives, probes, signalTaps, List.of());
+        }
 
         /** Prepares stateful calculators (periodic signal sources) for a run. */
         public void initialize(double dt) {
@@ -382,10 +398,15 @@ public final class ControlCalculatorBuilder {
         List<Probe> probes = new ArrayList<>();
         List<SignalTap> signalTaps = new ArrayList<>();
         Set<String> usedTapNames = new HashSet<>();
+        // Dropped gates/probes and unknown voltmeter nodes are user-visible
+        // degradation, not internal errors — collect them so the engine can
+        // surface them with the other run warnings.
+        List<String> warnings = new ArrayList<>();
 
         for (CircuitModel.ComponentData comp : controlComponents) {
             AbstractControlCalculatable calculator = createCalculator(comp);
             if (calculator == null) {
+                warnings.add("Control block '" + comp.getName() + "' has an unsupported type and is skipped");
                 continue;
             }
             calculatorByComp.put(keyOf(comp), calculator);
@@ -394,14 +415,19 @@ public final class ControlCalculatorBuilder {
                 if (elementIndex != null && isSwitch(netlist.getType(elementIndex))) {
                     gateDrives.add(new GateDrive(elementIndex, netlist.getType(elementIndex), gate0(comp, calculatorByComp)));
                 } else {
+                    String msg = "Gate '" + comp.getName() + "' references an unknown or non-switch power component and never switches";
+                    warnings.add(msg);
                     LOGGER.warn("Gate '{}' references unknown power component", comp.getName());
                 }
             }
             if (isVoltageProbe(comp.getType()) || isCurrentProbe(comp.getType())) {
-                Probe probe = buildProbe(comp, calculator, elementIndexByUid, model, netlist);
+                Probe probe = buildProbe(comp, calculator, elementIndexByUid, model, netlist, warnings);
                 if (probe != null) {
                     probes.add(probe);
                 } else {
+                    String msg = "Measurement '" + comp.getName()
+                            + "' references an unknown power component or labels and exports 0";
+                    warnings.add(msg);
                     LOGGER.warn("Measurement '{}' references unknown power component or labels",
                             comp.getName());
                 }
@@ -431,7 +457,7 @@ public final class ControlCalculatorBuilder {
         wireInputs(controlComponents, calculatorByComp, parent);
 
         return new ControlCoupling(topologicalOrder(calculatorByComp), gateDrives, probes,
-                signalTaps);
+                signalTaps, warnings);
     }
 
     /** Output terminal label ({@code labelEndKnoten}) or the block name fallback. */
@@ -502,7 +528,8 @@ public final class ControlCalculatorBuilder {
     private static Probe buildProbe(CircuitModel.ComponentData comp,
                                     AbstractControlCalculatable calculator,
                                     Map<Long, Integer> elementIndexByUid,
-                                    CircuitModel model, CircuitNetlist netlist) {
+                                    CircuitModel model, CircuitNetlist netlist,
+                                    List<String> warnings) {
         boolean current = isCurrentProbe(comp.getType());
         String name = outputLabel(comp);
         String compName = comp.getName() != null ? comp.getName().trim() : "";
@@ -528,6 +555,13 @@ public final class ControlCalculatorBuilder {
         if (measured.length >= 2) {
             int nodeX = nodeForLabel(netlist, measured[0]);
             int nodeY = nodeForLabel(netlist, measured[1]);
+            if (nodeX < 0 || nodeY < 0) {
+                String bad = nodeX < 0 ? measured[0] : measured[1];
+                warnings.add("Voltmeter '" + comp.getName() + "' references unknown node label '"
+                        + bareLabel(bad) + "' — treated as ground, so it reads 0");
+                return new Probe(-1, false, name, compName, calculator,
+                        Math.max(nodeX, 0), Math.max(nodeY, 0));
+            }
             return new Probe(-1, false, name, compName, calculator, nodeX, nodeY);
         }
         return null;
@@ -545,7 +579,7 @@ public final class ControlCalculatorBuilder {
         // while the label resolver keys them bare, so a verbatim lookup always
         // missed and every voltmeter probed 0-0. Prefer the bare form, keep the
         // raw form as fallback for labels genuinely stored with the slash.
-        String bare = trimmed.startsWith("/") ? trimmed.substring(1).trim() : trimmed;
+        String bare = bareLabel(trimmed);
         if (bare.isEmpty() || bare.equals("0") || bare.equalsIgnoreCase("gnd") || bare.equalsIgnoreCase("ground")) {
             return 0;
         }
@@ -553,7 +587,15 @@ public final class ControlCalculatorBuilder {
         if (index < 0 && !bare.equals(trimmed)) {
             index = netlist.getLabelResolver().getIndex(trimmed);
         }
-        return index >= 0 ? index : 0;
+        // -1 marks an unknown label so the caller can warn; ground and unset
+        // sentinels stay 0 by design.
+        return index;
+    }
+
+    /** Leading-'/' classic label token ("/V_in") → bare form ("V_in"). */
+    private static String bareLabel(String label) {
+        String trimmed = label.trim();
+        return trimmed.startsWith("/") ? trimmed.substring(1).trim() : trimmed;
     }
 
     private static Integer elementIndexByName(CircuitModel model, CircuitNetlist netlist, String name) {

@@ -231,6 +231,10 @@ public class NetlistBuilder {
             List<CircuitModel.ComponentData> components) {
         List<CircuitModel.ComponentData> result = new ArrayList<>(components.size());
         List<WindingPair> pairs = new ArrayList<>();
+        // Synthetic winding uids start above every real uid so they can never
+        // collide with a component's own uniqueObjectIdentifier (probe/gate
+        // references resolve by uid and first-match wins).
+        long syntheticUid = nextSyntheticUid(components);
         for (CircuitModel.ComponentData comp : components) {
             if (comp.getType() != CircuitTypCore.LK_TRANS.getTypeNumber()) {
                 result.add(comp);
@@ -299,9 +303,8 @@ public class NetlistBuilder {
             sec.setTerminalXLabels(new String[]{yl0});
             sec.setTerminalYLabels(new String[]{yl1});
 
-            long uid = comp.getUniqueObjectIdentifier();
-            prim.setUniqueObjectIdentifier(uid + 1);
-            sec.setUniqueObjectIdentifier(uid + 2);
+            prim.setUniqueObjectIdentifier(syntheticUid++);
+            sec.setUniqueObjectIdentifier(syntheticUid++);
 
             result.add(prim);
             result.add(sec);
@@ -328,7 +331,6 @@ public class NetlistBuilder {
         netlist.initNetlist(types, nodeX, nodeY, voltageSourceNumbers, params,
                 maxNodeIndex, voltageSourceCount, elementCount);
         netlist.setSingularityEntries(calculateSingularityEntries(maxNodeIndex, elementCount, nodeX, nodeY, types, voltageSourceNumbers));
-        buildWarnings.forEach(netlist::addBuildWarning);
         for (int i = 0; i < vccsPairs.size(); i++) {
             netlist.registerVccs(vccsPairs.get(i)[0], vccsPairs.get(i)[1], vccsGains.get(i));
         }
@@ -354,6 +356,9 @@ public class NetlistBuilder {
         }
         netlist.setElementNames(names);
         registerMutualCouplers(netlist, mutualCouplers, buildWarnings);
+        // Coupler registration appends its drop warnings to buildWarnings, so
+        // the copy into the netlist must happen after it, not before.
+        buildWarnings.forEach(netlist::addBuildWarning);
         return netlist;
     }
 
@@ -362,6 +367,11 @@ public class NetlistBuilder {
      * k between two coupled inductors, identified by their unique object ids
      * (raw parameters 1 and 2). M = k * sqrt(L1 * L2) lands in the solver's
      * z-row cross terms.
+     *
+     * <p>Legacy classic files (pre-uid export) store classic-internal indices
+     * in the raw slots, which never resolve; those carry the two coupled
+     * winding names in parameterString slots 0 and 1, so name lookup serves
+     * as the fallback.</p>
      */
     private static void registerMutualCouplers(CircuitNetlist netlist,
                                                List<CircuitModel.ComponentData> mutualCouplers,
@@ -369,11 +379,26 @@ public class NetlistBuilder {
         for (CircuitModel.ComponentData coupler : mutualCouplers) {
             double[] raw = coupler.getRawParameters();
             if (raw == null || raw.length < 3) {
+                buildWarnings.add("Component '" + coupler.getName()
+                        + "' (mutual inductance) carries no inductor references (needs k and two ids) and is ignored");
                 continue;
             }
             double k = raw[0];
             int idx1 = netlist.indexOfUid((long) raw[1]);
             int idx2 = netlist.indexOfUid((long) raw[2]);
+            if (idx1 < 0 || idx2 < 0) {
+                // Legacy export: slots held classic-internal indices, not uids;
+                // the winding names in parameterString[] still identify the pair.
+                String[] names = coupler.getParameterStrings();
+                String name1 = names != null && names.length > 0 ? stripLabelPrefix(names[0]) : "";
+                String name2 = names != null && names.length > 1 ? stripLabelPrefix(names[1]) : "";
+                if (idx1 < 0 && !name1.isEmpty()) {
+                    idx1 = netlist.indexOfElementName(name1);
+                }
+                if (idx2 < 0 && !name2.isEmpty()) {
+                    idx2 = netlist.indexOfElementName(name2);
+                }
+            }
             if (k <= 0 || k > 1 || idx1 < 0 || idx2 < 0
                     || netlist.getType(idx1) != CircuitTypCore.LK_LKOP2
                     || netlist.getType(idx2) != CircuitTypCore.LK_LKOP2) {
@@ -390,6 +415,15 @@ public class NetlistBuilder {
             }
             netlist.registerMutualCoupling(idx1, idx2, k, l1, l2);
         }
+    }
+
+    /** Classic label tokens may carry a leading '/' ("/Lc.1") — drop it. */
+    private static String stripLabelPrefix(String label) {
+        if (label == null) {
+            return "";
+        }
+        String trimmed = label.trim();
+        return trimmed.startsWith("/") ? trimmed.substring(1) : trimmed;
     }
 
     /**
@@ -474,13 +508,12 @@ public class NetlistBuilder {
             }
 
             // Only electrical/thermal branches are added to MNA netlist elements;
-            // BJTs are collected for the hidden-subcircuit expansion below
+            // BJTs are collected for the hidden-subcircuit expansion below.
+            // Mutual couplers (type 9) are registered separately by
+            // registerMutualCouplers, which emits its own precise warnings
+            // when a coupler fails to resolve.
             if (!isNonBranchComponent(typ) && typ != CircuitTypCore.LK_BJT.getTypeNumber()) {
                 branchComponents.add(comp);
-            } else if (typ == CircuitTypCore.LK_M.getTypeNumber()) {
-                // only reachable if transformer expansion did not run — flag it
-                buildWarnings.add("Component '" + comp.getName()
-                        + "' (transformer) has no simulation model and is ignored");
             }
         }
 
@@ -570,6 +603,10 @@ public class NetlistBuilder {
         List<int[]> vccsPairs = new ArrayList<>();
         List<Double> vccsGains = new ArrayList<>();
         List<Long> bjtUids = new ArrayList<>();
+        // components already includes any expanded transformer windings, so
+        // this base sits above every real AND synthetic uid in play; the
+        // running counter keeps subcircuit uids unique across multiple BJTs.
+        long syntheticUid = nextSyntheticUid(components);
         if (!bjts.isEmpty()) {
             int extra = bjts.size() * BjtParameters.SUBCIRCUIT_ELEMENT_COUNT;
             types = Arrays.copyOf(types, elementCount + extra);
@@ -652,9 +689,8 @@ public class NetlistBuilder {
                 vccsPairs.add(new int[]{feIdx, rbIdx});
                 vccsGains.add(betaF / rBase);
                 vccsGains.add(betaB / rBase);
-                long uid = bjt.getUniqueObjectIdentifier();
                 for (int k = 1; k <= BjtParameters.SUBCIRCUIT_ELEMENT_COUNT; k++) {
-                    bjtUids.add(uid + k);
+                    bjtUids.add(syntheticUid++);
                 }
             }
         }
@@ -804,6 +840,19 @@ public class NetlistBuilder {
         return trimmed.equals("0") || trimmed.equals("/0") || trimmed.equals("gnd") || trimmed.equals("ground");
     }
 
+    /**
+     * First synthetic uid for hidden expansion elements: one above every uid
+     * in the given list (which may already contain earlier synthetic
+     * elements), so references by uid can never mis-target.
+     */
+    private static long nextSyntheticUid(List<CircuitModel.ComponentData> components) {
+        long max = 0;
+        for (CircuitModel.ComponentData comp : components) {
+            max = Math.max(max, comp.getUniqueObjectIdentifier());
+        }
+        return max + 1;
+    }
+
     private static boolean isNonBranchComponent(int typ) {
         CircuitTypCore type = CircuitTypCore.findByTypeNumber(typ);
         return type != null && !type.isBranchComponent();
@@ -859,11 +908,10 @@ public class NetlistBuilder {
         for (CircuitModel.ComponentData comp : components) {
             if (!isNonBranchComponent(comp.getType())) {
                 branchComponents.add(comp);
-            } else if (comp.getType() == CircuitTypCore.LK_M.getTypeNumber()) {
-                // the only electrical branch element silently dropped — flag it
-                buildWarnings.add("Component '" + comp.getName()
-                        + "' (transformer) has no simulation model and is ignored");
             }
+            // Non-branch types (mutual couplers, terminals) carry no MNA row of
+            // their own; couplers are registered by registerMutualCouplers,
+            // which warns precisely when one fails to resolve.
         }
 
         int elementCount = branchComponents.size();

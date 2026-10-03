@@ -22,6 +22,9 @@ export const SIMULATED_LK_TYPES: ReadonlySet<number> = new Set([
   LkComponentType.IDEAL_SWITCH,
   LkComponentType.THYRISTOR,
   LkComponentType.IGBT,
+  // Type 9 couples two type-12 inductors through the mutual-coupling
+  // registry (M = k*sqrt(L1*L2)) — it IS simulated, only pinless.
+  LkComponentType.MUTUAL_INDUCTANCE,
   LkComponentType.COUPLED_INDUCTOR,
   LkComponentType.TRANSFORMER,
   LkComponentType.RELUCTANCE,
@@ -279,6 +282,57 @@ export function validateCircuitForSimulation(
 
   // Wire geometry warnings (overlaps and inadvertent shorts)
   warnings.push(...findWireGeometryWarnings(components, wires));
+
+  // Voltmeters bound to node labels that exist nowhere in the circuit read a
+  // silent 0 (the engine grounds unknown labels) — flag them pre-run.
+  const knownNets = new Set<string>(['0', 'gnd', 'ground']);
+  for (const c of components) {
+    for (const l of [...(c.inputLabels ?? []), ...(c.outputLabels ?? [])]) {
+      const raw = l?.trim();
+      if (raw && raw !== 'NIX_NIX_NIX') knownNets.add(raw.toLowerCase());
+    }
+  }
+  for (const w of wires) {
+    const raw = w.type === 'CONTROL' ? undefined : (w as { label?: string }).label?.trim();
+    if (raw && raw !== 'NIX_NIX_NIX') knownNets.add(raw.toLowerCase());
+  }
+  const unknownNodes: string[] = [];
+  for (const c of components) {
+    if (c.family !== 'CONTROL') continue;
+    if (c.type !== 1001 && c.type !== 1) continue; // voltmeter (new + legacy numbering)
+    if (c.parameters?.coupledComponent) continue; // measures across a component instead
+    for (const key of ['nodeA', 'nodeB', 'positiveNode', 'negativeNode']) {
+      const node = String(c.parameters?.[key] ?? '').trim();
+      if (node && node !== 'NIX_NIX_NIX' && !knownNets.has(node.toLowerCase())
+          && !unknownNodes.some((u) => u.includes(`'${node}'`))) {
+        unknownNodes.push(`${c.name}: '${node}'`);
+      }
+    }
+  }
+  if (unknownNodes.length > 0) {
+    warnings.push(
+      `Voltmeter${unknownNodes.length > 1 ? 's' : ''} reference${unknownNodes.length > 1 ? '' : 's'} ` +
+        `node label${unknownNodes.length > 1 ? 's' : ''} that exist${unknownNodes.length > 1 ? '' : 's'} nowhere in the circuit ` +
+        `(treated as ground, reads 0): ${unknownNodes.join(', ')}.`,
+    );
+  }
+
+  // Couplings pointing at components that no longer exist: the reference is
+  // dead — gates never switch, ammeters export 0.
+  const knownNames = new Set(components.map((c) => c.name));
+  const danglingCouplings: string[] = [];
+  for (const c of components) {
+    const target = String(c.parameters?.coupledComponent ?? '').trim();
+    if (target && target !== 'NIX_NIX_NIX' && !knownNames.has(target)) {
+      danglingCouplings.push(`${c.name} ➔ ${target}`);
+    }
+  }
+  if (danglingCouplings.length > 0) {
+    warnings.push(
+      `Coupling${danglingCouplings.length > 1 ? 's' : ''} to a deleted component ` +
+        `(gate never switches / meter reads 0): ${danglingCouplings.join(', ')}.`,
+    );
+  }
 
   return warnings;
 }

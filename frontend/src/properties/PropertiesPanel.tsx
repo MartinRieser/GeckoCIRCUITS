@@ -138,6 +138,10 @@ export function PropertiesPanel({
   const isCoupler = isMutualCoupler(component);
   const isScope = component ? isScopeComponent(component) : false;
   const coupledTarget = getCoupledComponentName(component);
+  // A name reference that resolves to nothing on the sheet is dead (its
+  // target was deleted): the pill must say so instead of showing green.
+  const coupledTargetMissing =
+    !!coupledTarget && !(allComponents || []).some((c) => c.name === coupledTarget);
 
   const availableSignals = useMemo(() => {
     return extractAvailableSignals(allComponents || [], wires || []);
@@ -299,7 +303,7 @@ export function PropertiesPanel({
           <div className="prop-section coupling-section">
             <div className="prop-section-title">
               <span>⚡ Switch Coupling</span>
-              {coupledTarget && onSelectComponent && (
+              {coupledTarget && !coupledTargetMissing && onSelectComponent && (
                 <button
                   type="button"
                   className="link-action-btn"
@@ -334,10 +338,18 @@ export function PropertiesPanel({
               </select>
             </div>
             {coupledTarget ? (
-              <div className="coupling-status-pill active">
-                <span className="coupling-status-dot" />
-                <span>Controls switch <strong>{coupledTarget}</strong></span>
-              </div>
+              coupledTargetMissing ? (
+                <div className="coupling-status-pill warning">
+                  <span>
+                    ⚠️ References missing component <strong>{coupledTarget}</strong> (deleted?) — pick a switch above
+                  </span>
+                </div>
+              ) : (
+                <div className="coupling-status-pill active">
+                  <span className="coupling-status-dot" />
+                  <span>Controls switch <strong>{coupledTarget}</strong></span>
+                </div>
+              )
             ) : (
               <div className="coupling-status-pill warning">
                 <span>⚠️ Gate driver is uncoupled (select a switch above)</span>
@@ -351,7 +363,7 @@ export function PropertiesPanel({
           <div className="prop-section coupling-section">
             <div className="prop-section-title">
               <span>⚡ Gate Drive Coupling</span>
-              {coupledTarget && onSelectComponent && (
+              {coupledTarget && !coupledTargetMissing && onSelectComponent && (
                 <button
                   type="button"
                   className="link-action-btn"
@@ -386,10 +398,18 @@ export function PropertiesPanel({
               </select>
             </div>
             {coupledTarget ? (
-              <div className="coupling-status-pill active">
-                <span className="coupling-status-dot" />
-                <span>Driven by gate driver <strong>{coupledTarget}</strong></span>
-              </div>
+              coupledTargetMissing ? (
+                <div className="coupling-status-pill warning">
+                  <span>
+                    ⚠️ Gate driver <strong>{coupledTarget}</strong> is gone (deleted?) — recouple this switch
+                  </span>
+                </div>
+              ) : (
+                <div className="coupling-status-pill active">
+                  <span className="coupling-status-dot" />
+                  <span>Driven by gate driver <strong>{coupledTarget}</strong></span>
+                </div>
+              )
             ) : (
               <div className="coupling-status-pill">
                 <span>Direct switching (no gate driver block attached)</span>
@@ -403,7 +423,7 @@ export function PropertiesPanel({
           <div className="prop-section coupling-section">
             <div className="prop-section-title">
               <span>⚡ Current Measurement Target</span>
-              {coupledTarget && onSelectComponent && (
+              {coupledTarget && !coupledTargetMissing && onSelectComponent && (
                 <button
                   type="button"
                   className="link-action-btn"
@@ -444,12 +464,20 @@ export function PropertiesPanel({
               </select>
             </div>
             {coupledTarget ? (
-              <div className="coupling-status-pill active">
-                <span className="coupling-status-dot" />
-                <span>
-                  Measures branch current through <strong>{coupledTarget}</strong> (Signal: <code>{component.outputLabels?.[0] || 'i' + coupledTarget}</code>)
-                </span>
-              </div>
+              coupledTargetMissing ? (
+                <div className="coupling-status-pill warning">
+                  <span>
+                    ⚠️ Measured component <strong>{coupledTarget}</strong> is gone (deleted?) — exports 0
+                  </span>
+                </div>
+              ) : (
+                <div className="coupling-status-pill active">
+                  <span className="coupling-status-dot" />
+                  <span>
+                    Measures branch current through <strong>{coupledTarget}</strong> (Signal: <code>{component.outputLabels?.[0] || 'i' + coupledTarget}</code>)
+                  </span>
+                </div>
+              )
             ) : (
               <div className="coupling-status-pill warning">
                 <span>⚠️ No component selected to measure (pick an inductor, resistor, diode, etc.)</span>
@@ -463,7 +491,7 @@ export function PropertiesPanel({
           <div className="prop-section coupling-section">
             <div className="prop-section-title">
               <span>⚡ Voltage Measurement Target</span>
-              {coupledTarget && onSelectComponent && (
+              {coupledTarget && !coupledTargetMissing && onSelectComponent && (
                 <button
                   type="button"
                   className="link-action-btn"
@@ -561,12 +589,20 @@ export function PropertiesPanel({
                   </select>
                 </div>
                 {coupledTarget ? (
-                  <div className="coupling-status-pill active" style={{ marginTop: '8px' }}>
-                    <span className="coupling-status-dot" />
-                    <span>
-                      Measures voltage across <strong>{coupledTarget}</strong> (Signal: <code>{component.outputLabels?.[0] || 'u_' + coupledTarget}</code>)
-                    </span>
-                  </div>
+                  coupledTargetMissing ? (
+                    <div className="coupling-status-pill warning" style={{ marginTop: '8px' }}>
+                      <span>
+                        ⚠️ Measured component <strong>{coupledTarget}</strong> is gone (deleted?) — exports 0
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="coupling-status-pill active" style={{ marginTop: '8px' }}>
+                      <span className="coupling-status-dot" />
+                      <span>
+                        Measures voltage across <strong>{coupledTarget}</strong> (Signal: <code>{component.outputLabels?.[0] || 'u_' + coupledTarget}</code>)
+                      </span>
+                    </div>
+                  )
                 ) : (
                   <div className="coupling-status-pill warning" style={{ marginTop: '8px' }}>
                     <span>⚠️ Select a circuit component (e.g. R.Last, C.1, D.1)</span>

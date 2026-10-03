@@ -200,7 +200,7 @@ describe('componentSchema', () => {
       .filter((m) => m.disabled)
       .map((m) => m.type)
       .sort((a, b) => a - b);
-    expect(disabledTypes).toEqual([14, 15, 16, 17, 18, 20, 21, 41, 42, 48, 51]);
+    expect(disabledTypes).toEqual([14, 15, 16, 17, 18, 20, 21, 25, 41, 42, 48, 51, 52]);
 
     const simulated = new Set([1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 23, 24, 26, 28, 33, 44, 45, 46, 47]);
     for (const meta of Object.values(COMPONENT_METAS)) {

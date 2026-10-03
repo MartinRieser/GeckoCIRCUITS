@@ -4,8 +4,9 @@
  * execution and polling, and keeps the WebSocket subscription alive.
  */
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import type { Dispatch } from 'react';
 import * as api from '../api/client';
-import { initialState, editorReducer } from '../model/store';
+import { initialState, editorReducer, type Action as EditorAction } from '../model/store';
 import type {
   CatalogEntry,
   ComponentPayload,
@@ -1143,10 +1144,13 @@ export function useEditor() {
           setSimProgress(1.0);
           setSimResults(current.results || (await api.getSimulationResults(simId)));
           setSimWarnings(current.warnings || []);
+          announceCompletionWarnings(current.warnings, dispatch);
         } else if (current.status === 'FAILED' || current.status === 'CANCELLED') {
           clearInterval(pollInterval);
           simPollTimerRef.current = null;
           setSimError(current.errorMessage || 'Simulation failed or was cancelled');
+          // Failed runs keep their engine warnings too — they often explain why.
+          setSimWarnings(current.warnings || []);
         }
       } catch (err) {
         clearInterval(pollInterval);
@@ -1169,8 +1173,10 @@ export function useEditor() {
         setSimProgress(1.0);
         setSimResults(current.results || (await api.getSimulationResults(simId)));
         setSimWarnings(current.warnings || []);
+        announceCompletionWarnings(current.warnings, dispatch);
       } else if (current.status === 'FAILED' || current.status === 'CANCELLED') {
         setSimError(current.errorMessage || 'Simulation failed or was cancelled');
+        setSimWarnings(current.warnings || []);
       } else {
         startPolling(simId);
       }
@@ -1459,4 +1465,22 @@ function toEditorComponent(payload: ComponentPayload, family: string) {
     inputLabels: [],
     outputLabels: [],
   };
+}
+
+/**
+ * A run that finishes with engine warnings (dropped couplers, skipped
+ * elements) looks identical to a clean one unless the status bar says
+ * otherwise — point the user at the Simulation panel warning list.
+ */
+function announceCompletionWarnings(
+  warnings: string[] | undefined,
+  dispatch: Dispatch<EditorAction>,
+) {
+  const count = warnings?.length ?? 0;
+  if (count > 0) {
+    dispatch({
+      type: 'STATUS',
+      status: `⚠️ Simulation completed with ${count} warning${count > 1 ? 's' : ''} — see the Simulation panel for details`,
+    });
+  }
 }

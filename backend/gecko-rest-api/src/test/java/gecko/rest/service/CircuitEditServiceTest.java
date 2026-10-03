@@ -700,6 +700,87 @@ class CircuitEditServiceTest {
         assertTrue(catalog.types().stream().noneMatch(t -> "LK_TERMINAL".equals(t.name())), "terminals excluded");
     }
 
+    // ========== Reference lifecycle (rename / delete / uid reuse) ==========
+
+    @Test
+    void renameRemapsCoupledNameReferences() {
+        service.createComponent(circuitId, new ComponentCreateRequest("CONTROL", 6, "GATE.X", 10, 10, null, null));
+        service.patchComponent(circuitId, "GATE.X", new ComponentPatchRequest(null, null, null, null,
+                Map.of("coupledComponent", "S.1")));
+        service.createComponent(circuitId, new ComponentCreateRequest("LK", 7, "S.1", 20, 10, null, null));
+
+        service.patchComponent(circuitId, "S.1", new ComponentPatchRequest(null, null, null, "S.9", null));
+
+        CircuitModel.ComponentData gate = findByName("GATE.X");
+        assertEquals("S.9", gate.getParameters().get("coupledComponent"),
+                "rename must retarget the gate's coupledComponent");
+        assertEquals("S.9", gate.getParameterStrings()[0],
+                "rename must retarget the name slot the simulator reads");
+
+        service.undo(circuitId);
+        assertEquals("S.1", findByName("GATE.X").getParameters().get("coupledComponent"),
+                "undo must restore the reference");
+        service.redo(circuitId);
+        assertEquals("S.9", findByName("GATE.X").getParameters().get("coupledComponent"),
+                "redo must re-apply the remap");
+    }
+
+    @Test
+    void deleteClearsCoupledNameReferences() {
+        service.createComponent(circuitId, new ComponentCreateRequest("CONTROL", 6, "GATE.X", 10, 10, null, null));
+        service.patchComponent(circuitId, "GATE.X", new ComponentPatchRequest(null, null, null, null,
+                Map.of("coupledComponent", "S.1")));
+        service.createComponent(circuitId, new ComponentCreateRequest("LK", 7, "S.1", 20, 10, null, null));
+
+        service.deleteComponent(circuitId, "S.1");
+
+        CircuitModel.ComponentData gate = findByName("GATE.X");
+        assertEquals("", gate.getParameters().get("coupledComponent"),
+                "deleting the target must clear the name reference");
+        assertEquals("NIX_NIX_NIX", gate.getParameterStrings()[0]);
+
+        service.undo(circuitId);
+        assertEquals("S.1", findByName("GATE.X").getParameters().get("coupledComponent"),
+                "undo must restore both the component and the reference");
+        assertNotNull(findByNameOrNull("S.1"), "undo must restore the deleted component");
+    }
+
+    @Test
+    void deleteClearsMutualCouplerUidSlots() {
+        service.createComponent(circuitId, new ComponentCreateRequest("LK", 12, "Lp", 20, 10, null, null));
+        service.createComponent(circuitId, new ComponentCreateRequest("LK", 12, "Ls", 26, 10, null, null));
+        long lpUid = findByName("Lp").getUniqueObjectIdentifier();
+        long lsUid = findByName("Ls").getUniqueObjectIdentifier();
+        service.createComponent(circuitId, new ComponentCreateRequest("LK", 9, "K", 23, 7, null, null));
+        service.patchComponent(circuitId, "K", new ComponentPatchRequest(null, null, null, null,
+                Map.of("param0", 0.999, "param1", (double) lpUid, "param2", (double) lsUid)));
+
+        CircuitModel.ComponentData coupler = findByName("K");
+        assertEquals(lpUid, (long) coupler.getRawParameters()[1]);
+        assertEquals(lsUid, (long) coupler.getRawParameters()[2]);
+
+        service.deleteComponent(circuitId, "Lp");
+        coupler = findByName("K");
+        assertEquals(0.0, coupler.getRawParameters()[1],
+                "deleting a coupled inductor must clear the coupler's uid slot");
+
+        service.undo(circuitId);
+        coupler = findByName("K");
+        assertEquals(lpUid, (long) coupler.getRawParameters()[1],
+                "undo must restore the coupler reference");
+    }
+
+    @Test
+    void uidNeverReusedAfterDelete() {
+        service.createComponent(circuitId, new ComponentCreateRequest("LK", 1, "Rtmp", 16, 16, null, null));
+        long firstUid = findByName("Rtmp").getUniqueObjectIdentifier();
+        service.deleteComponent(circuitId, "Rtmp");
+        service.createComponent(circuitId, new ComponentCreateRequest("LK", 1, "Rnew", 16, 16, null, null));
+        long secondUid = findByName("Rnew").getUniqueObjectIdentifier();
+        assertNotEquals(firstUid, secondUid,
+                "a deleted component's uid must never be handed to a new component");
+    }
+
     // ========== Helpers ==========
 
     private CircuitModel.ConnectionData wireByLabel(String label) {

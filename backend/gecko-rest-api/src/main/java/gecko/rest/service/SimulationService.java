@@ -314,7 +314,7 @@ public class SimulationService {
                             simulationId);
                 }
             } else {
-                if (applyFailureResult(response, result.getErrorMessage())) {
+                if (applyFailureResult(response, result.getErrorMessage(), result)) {
                     completeProgressStreams(simulationId, false);
                     logger.error("Simulation {} failed: {}", simulationId, result.getErrorMessage());
                 }
@@ -842,12 +842,26 @@ public class SimulationService {
     }
 
     boolean applyFailureResult(SimulationResponse response, String errorMessage) {
+        return applyFailureResult(response, errorMessage, null);
+    }
+
+    /**
+     * Failed runs can still carry engine warnings collected before the failure
+     * (dropped couplers, skipped elements) — losing them would hide the reason
+     * a circuit misbehaved on top of failing.
+     */
+    boolean applyFailureResult(SimulationResponse response, String errorMessage,
+                               SimulationResult partialResult) {
         synchronized (response) {
             if (isCancelled(response)) {
                 return false;
             }
             response.setStatus(SimulationResponse.SimulationStatus.FAILED);
             response.setErrorMessage(errorMessage);
+            if (partialResult != null && partialResult.getWarnings() != null
+                    && !partialResult.getWarnings().isEmpty()) {
+                response.setWarnings(partialResult.getWarnings());
+            }
             response.setEndTime(Instant.now());
             return true;
         }

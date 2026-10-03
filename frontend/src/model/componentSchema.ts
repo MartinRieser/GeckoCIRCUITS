@@ -775,8 +775,9 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     name: 'REL_INDUCTOR',
     displayName: 'Reluctance Coil',
     category: 'transformers',
-    description: 'Inductor winding coupled into the reluctance network',
+    description: 'Inductor winding coupled into the reluctance network (not yet simulated by the web engine)',
     defaultPrefix: 'Lrel',
+    disabled: true,
     parameters: [
       { index: 0, key: 'param0', label: 'Inductance (L)', description: 'Winding inductance in Henrys', defaultValue: 1e-3, unit: 'H', min: 1e-12 },
       { index: 1, key: 'param1', label: 'Initial Current (iL0)', description: 'Initial winding current in Amperes', defaultValue: 0, unit: 'A' },
@@ -1145,6 +1146,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     category: 'transformers',
     description: 'Reluctance element with non-linear B-H characteristic (not yet simulated by the web engine)',
     defaultPrefix: 'RmNL',
+    disabled: true,
     parameters: [
       { index: 0, key: 'param0', label: 'Nominal Reluctance (Rm)', description: 'Reluctance at the linear operating point', defaultValue: 1.0, unit: '1/H', min: 1e-9 },
     ],

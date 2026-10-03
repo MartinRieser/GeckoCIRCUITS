@@ -1052,6 +1052,9 @@ public class HeadlessSimulationEngine {
         if (matrixSolver != null) {
             warnings.addAll(matrixSolver.getSkippedElementWarnings());
         }
+        if (controlCoupling != null) {
+            warnings.addAll(controlCoupling.warnings());
+        }
         return warnings;
     }
 

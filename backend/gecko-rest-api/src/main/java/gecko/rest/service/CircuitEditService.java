@@ -71,7 +71,7 @@ public class CircuitEditService {
                     snap(model, request.y()),
                     normalizeOrientation(request.orientation()));
             comp.setFamily(family);
-            comp.setUniqueObjectIdentifier(nextUid(model));
+            comp.setUniqueObjectIdentifier(state.nextUid());
             applyDefaultParameters(comp);
             if (request.parameters() != null && !request.parameters().isEmpty()) {
                 applyParameterMap(comp, request.parameters(), model);
@@ -91,6 +91,142 @@ public class CircuitEditService {
      * so undo can restore and redo can re-apply the shift.
      */
     record WirePointRef(int connectionIndex, int pointIndex, int originalX, int originalY, int newX, int newY) {}
+
+    /**
+     * Snapshot of one component's name-based coupling state (coupledComponent
+     * parameter + parameterString[0] + coupledReferenceID + raw uid slots for
+     * mutual couplers), taken before a rename remap or delete cleanup so the
+     * reference edit is undoable.
+     */
+    private record CouplingRefSnapshot(
+            CircuitModel.ComponentData holder,
+            String oldCoupledParam,
+            boolean hadCoupledParam,
+            String[] oldParamStrings,
+            long oldCoupledReferenceId,
+            double[] oldRawParameters) {
+
+        static CouplingRefSnapshot of(CircuitModel.ComponentData holder) {
+            Object coupled = holder.getParameters().get("coupledComponent");
+            return new CouplingRefSnapshot(
+                    holder,
+                    coupled != null ? coupled.toString() : null,
+                    coupled != null,
+                    holder.getParameterStrings() != null ? holder.getParameterStrings().clone() : null,
+                    holder.getCoupledReferenceID(),
+                    holder.getRawParameters() != null ? holder.getRawParameters().clone() : null);
+        }
+
+        void restore() {
+            if (hadCoupledParam) {
+                holder.setParameter("coupledComponent", oldCoupledParam);
+            } else {
+                holder.getParameters().remove("coupledComponent");
+            }
+            if (oldParamStrings != null) {
+                holder.setParameterStrings(oldParamStrings.clone());
+            }
+            holder.setCoupledReferenceID(oldCoupledReferenceId);
+            if (oldRawParameters != null) {
+                holder.setRawParameters(oldRawParameters.clone());
+            }
+        }
+    }
+
+    /**
+     * True when the component carries a name reference to {@code targetName}:
+     * either the coupledComponent parameter or parameterString[0] (the slot
+     * {@code ControlCalculatorBuilder.resolveCoupledElementIndex} reads by name).
+     */
+    private static boolean referencesName(CircuitModel.ComponentData comp, String targetName) {
+        Object coupled = comp.getParameters().get("coupledComponent");
+        if (coupled != null && targetName.contentEquals(coupled.toString())) {
+            return true;
+        }
+        String[] ps = comp.getParameterStrings();
+        return ps != null && ps.length > 0 && targetName.equals(ps[0]);
+    }
+
+    /**
+     * Remaps every name reference to {@code oldName} onto {@code newName}
+     * (gate drivers, switch back-references, ammeter/voltmeter targets).
+     * Returns snapshots of every touched component for undo.
+     */
+    private static List<CouplingRefSnapshot> remapNameReferences(
+            CircuitModel model, String oldName, String newName) {
+        List<CouplingRefSnapshot> touched = new ArrayList<>();
+        for (CircuitModel.ComponentData other : model.getAllComponents()) {
+            if (!referencesName(other, oldName)) {
+                continue;
+            }
+            touched.add(CouplingRefSnapshot.of(other));
+            Object coupled = other.getParameters().get("coupledComponent");
+            if (coupled != null && oldName.contentEquals(coupled.toString())) {
+                other.setParameter("coupledComponent", newName);
+            }
+            String[] ps = other.getParameterStrings();
+            if (ps != null && ps.length > 0 && oldName.equals(ps[0])) {
+                ps[0] = newName;
+            }
+        }
+        return touched;
+    }
+
+    private static void restoreNameReferences(List<CouplingRefSnapshot> snapshots) {
+        for (CouplingRefSnapshot snap : snapshots) {
+            snap.restore();
+        }
+    }
+
+    /**
+     * Clears every reference to the component being deleted so no gate,
+     * meter, or mutual coupler is left pointing at a nonexistent target.
+     * Returns snapshots of every touched component for undo.
+     */
+    private static List<CouplingRefSnapshot> clearReferencesTo(CircuitModel model, CircuitModel.ComponentData target) {
+        String targetName = target.getName();
+        long targetUid = target.getUniqueObjectIdentifier();
+        List<CouplingRefSnapshot> touched = new ArrayList<>();
+        for (CircuitModel.ComponentData other : model.getAllComponents()) {
+            if (other == target) {
+                continue;
+            }
+            boolean byName = targetName != null && !targetName.isBlank()
+                    && referencesName(other, targetName);
+            boolean byUid = targetUid != 0 && other.getCoupledReferenceID() == targetUid;
+            boolean couplerSlot = false;
+            double[] raw = other.getRawParameters();
+            if (targetUid != 0
+                    && other.getType() == CircuitTypCore.LK_M.getTypeNumber()
+                    && raw != null && raw.length >= 3
+                    && ((long) raw[1] == targetUid || (long) raw[2] == targetUid)) {
+                couplerSlot = true;
+            }
+            if (!byName && !byUid && !couplerSlot) {
+                continue;
+            }
+            touched.add(CouplingRefSnapshot.of(other));
+            if (byName || byUid) {
+                other.setParameter("coupledComponent", "");
+                other.setCoupledReferenceID(0);
+                String[] ps = other.getParameterStrings();
+                if (ps != null && ps.length > 0 && targetName != null && targetName.equals(ps[0])) {
+                    ps[0] = "NIX_NIX_NIX";
+                }
+            }
+            if (couplerSlot) {
+                if ((long) raw[1] == targetUid) {
+                    raw[1] = 0.0;
+                    other.setParameter("param1", 0.0);
+                }
+                if ((long) raw[2] == targetUid) {
+                    raw[2] = 0.0;
+                    other.setParameter("param2", 0.0);
+                }
+            }
+        }
+        return touched;
+    }
 
     /**
      * Patches position, orientation, name and/or parameters of a component.
@@ -153,6 +289,11 @@ public class CircuitEditService {
             comp.getPosition()[1] = newY;
             comp.setOrientation(newOrientation);
             comp.setName(newName);
+            // Renaming must retarget every name reference (gate drivers, switch
+            // back-references, meter targets) or they dangle while the uid
+            // fallback masks it — until the stale name is recycled.
+            List<CouplingRefSnapshot> refEdits = newName.equals(beforeName)
+                    ? List.of() : remapNameReferences(model, beforeName, newName);
             if (request.parameters() != null && !request.parameters().isEmpty()) {
                 applyParameterMap(comp, request.parameters(), model);
             }
@@ -160,6 +301,7 @@ public class CircuitEditService {
             state.recordEdit(
                     () -> {
                         restoreComponent(comp, beforePosition, beforeOrientation, beforeName, beforeParams);
+                        restoreNameReferences(refEdits);
                         for (WirePointRef ref : wireEdits) {
                             if (ref.connectionIndex < model.getConnections().size()) {
                                 int[][] pts = model.getConnections().get(ref.connectionIndex).getPoints();
@@ -175,6 +317,9 @@ public class CircuitEditService {
                         comp.getPosition()[1] = newY;
                         comp.setOrientation(newOrientation);
                         comp.setName(newName);
+                        if (!refEdits.isEmpty()) {
+                            remapNameReferences(model, beforeName, newName);
+                        }
                         if (request.parameters() != null && !request.parameters().isEmpty()) {
                             applyParameterMap(comp, request.parameters(), model);
                         }
@@ -201,9 +346,20 @@ public class CircuitEditService {
             List<CircuitModel.ComponentData> list = containingList(model, comp);
 
             CircuitModel.ComponentData snapshot = copyComponent(comp);
+            // Clear references to the doomed component (gates, meters, K coupler
+            // uid slots) so nothing dangles; snapshots make the cleanup undoable.
+            List<CouplingRefSnapshot> refEdits = clearReferencesTo(model, comp);
             list.remove(comp);
 
-            state.recordEdit(() -> list.add(snapshot), () -> list.remove(snapshot));
+            state.recordEdit(
+                    () -> {
+                        list.add(snapshot);
+                        restoreNameReferences(refEdits);
+                    },
+                    () -> {
+                        clearReferencesTo(model, comp);
+                        list.remove(snapshot);
+                    });
             return change(state, circuitId, "deleteComponent", Map.of("name", name));
         }
     }
@@ -904,16 +1060,6 @@ public class CircuitEditService {
         }
     }
 
-    private static long nextUid(CircuitModel model) {
-        long max = 0;
-        for (CircuitModel.ComponentData comp : model.getAllComponents()) {
-            max = Math.max(max, comp.getUniqueObjectIdentifier());
-        }
-        for (CircuitModel.ConnectionData conn : model.getConnections()) {
-            max = Math.max(max, conn.getUniqueObjectIdentifier());
-        }
-        return max + 1;
-    }
 
     private static void restoreComponent(CircuitModel.ComponentData comp, int[] position, int orientation,
                                          String name, double[] params) {

@@ -211,3 +211,67 @@ describe('findWireGeometryWarnings', () => {
     expect(() => findWireGeometryWarnings([], [dup, w([[5, 7], [9, 7]])])).not.toThrow();
   });
 });
+
+describe('validateCircuitForSimulation: couplings and node labels', () => {
+  it('does not flag the pinless mutual coupler as unsupported (it IS simulated)', () => {
+    const coupler = comp({ name: 'K_coupler', type: LkComponentType.MUTUAL_INDUCTANCE });
+    const source = comp({ name: 'U', type: LkComponentType.VOLTAGE_SOURCE });
+    const warnings = validateCircuitForSimulation([coupler, source], []);
+    expect(warnings.some((x) => /not yet simulated/.test(x))).toBe(false);
+  });
+
+  it('flags voltmeters bound to node labels that exist nowhere in the circuit', () => {
+    const vm = comp({
+      name: 'VOLT.1',
+      type: ControlComponentType.VOLTMETER,
+      family: 'CONTROL',
+      parameters: { nodeA: 'ghost_node', nodeB: '0' },
+    });
+    const source = comp({ name: 'U', type: LkComponentType.VOLTAGE_SOURCE });
+    const warnings = validateCircuitForSimulation([vm, source], []);
+    expect(warnings.some((x) => /ghost_node/.test(x) && /reads 0/.test(x))).toBe(true);
+  });
+
+  it('accepts voltmeters measuring nets that exist as terminal labels or ground', () => {
+    const r = comp({
+      name: 'R',
+      type: LkComponentType.RESISTOR,
+      inputLabels: ['real_net'],
+      outputLabels: ['0'],
+    });
+    const vm = comp({
+      name: 'VOLT.1',
+      type: ControlComponentType.VOLTMETER,
+      family: 'CONTROL',
+      parameters: { nodeA: 'real_net', nodeB: '0' },
+    });
+    const source = comp({ name: 'U', type: LkComponentType.VOLTAGE_SOURCE });
+    const warnings = validateCircuitForSimulation([r, vm, source], []);
+    expect(warnings.some((x) => /ghost|reads 0|nowhere/.test(x))).toBe(false);
+  });
+
+  it('flags couplings pointing at a deleted component', () => {
+    const gate = comp({
+      name: 'GATE.1',
+      type: ControlComponentType.GATE,
+      family: 'CONTROL',
+      parameters: { coupledComponent: 'S.gone' },
+    });
+    const source = comp({ name: 'U', type: LkComponentType.VOLTAGE_SOURCE });
+    const warnings = validateCircuitForSimulation([gate, source], []);
+    expect(warnings.some((x) => /S\.gone/.test(x) && /deleted/.test(x))).toBe(true);
+  });
+
+  it('stays silent for couplings whose target exists', () => {
+    const sw = comp({ name: 'S.1', type: LkComponentType.IDEAL_SWITCH });
+    const gate = comp({
+      name: 'GATE.1',
+      type: ControlComponentType.GATE,
+      family: 'CONTROL',
+      parameters: { coupledComponent: 'S.1' },
+    });
+    const source = comp({ name: 'U', type: LkComponentType.VOLTAGE_SOURCE });
+    const warnings = validateCircuitForSimulation([sw, gate, source], []);
+    expect(warnings.some((x) => /deleted/.test(x))).toBe(false);
+  });
+});
