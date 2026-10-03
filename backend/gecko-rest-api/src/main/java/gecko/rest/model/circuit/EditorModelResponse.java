@@ -65,6 +65,10 @@ public record EditorModelResponse(
         @Schema(description = "Component name (unique)", example = "R1")
         String name,
 
+        @Schema(description = "Unique object identifier used by reference-style couplings "
+                + "(e.g. the mutual inductance LK_M references the uids of its two coupled inductors)")
+        long uid,
+
         @Schema(description = "Family: LK, CONTROL, THERM or SPECIAL")
         String family,
 

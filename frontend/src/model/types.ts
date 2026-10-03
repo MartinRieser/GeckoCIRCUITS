@@ -40,6 +40,8 @@ export interface EditorComponent {
   type: number | LkComponentType | ControlComponentType;
   /** Unique instance name in the circuit (e.g., "R.1", "D.2", "SCOPE.1"). */
   name: string;
+  /** Backend uniqueObjectIdentifier; reference-style couplings (LK_M) point at these. */
+  uid?: number;
   /** Domain family ('LK', 'CONTROL', 'THERMAL'). */
   family: string;
   /** Center position [x, y] in integer grid raster units. */
@@ -145,6 +147,8 @@ export interface ComponentPayload {
   type: number | LkComponentType | ControlComponentType;
   name: string;
   domain: string;
+  /** Backend uniqueObjectIdentifier; reference-style couplings (LK_M) point at these. */
+  uid?: number;
   position: number[];
   orientation: number | Orientation;
   parameters: Record<string, number | string | boolean>;

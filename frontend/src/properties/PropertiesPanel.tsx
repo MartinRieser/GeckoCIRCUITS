@@ -25,6 +25,9 @@ import {
   isSwitchComponent,
   isAmmeterComponent,
   isVoltmeterComponent,
+  isMutualCoupler,
+  isCoupledInductor,
+  getMutualCouplingUids,
   getCoupledComponentName,
   extractAvailableSignals,
   type ParameterDef,
@@ -132,6 +135,7 @@ export function PropertiesPanel({
   const isSwitch = isSwitchComponent(component);
   const isAmmeter = isAmmeterComponent(component);
   const isVoltmeter = isVoltmeterComponent(component);
+  const isCoupler = isMutualCoupler(component);
   const isScope = component ? isScopeComponent(component) : false;
   const coupledTarget = getCoupledComponentName(component);
 
@@ -158,6 +162,12 @@ export function PropertiesPanel({
           isSwitchComponent(c)),
     );
   }, [allComponents, component?.name]);
+
+  // LK_M couples exactly two coupled inductors (LK_LKOP2); both selects
+  // below offer only those, keyed by their backend uid.
+  const availableCoupledInductors = useMemo(() => {
+    return (allComponents || []).filter((c) => isCoupledInductor(c) && c.uid != null);
+  }, [allComponents]);
 
   if (!component || !meta) {
     return (
@@ -625,6 +635,83 @@ export function PropertiesPanel({
             </div>
           </div>
         )}
+
+        {/* Mutual Coupling (LK_M) target inductors. The coupler is pinless by
+            design: it couples by uid reference, not by wires. */}
+        {isCoupler &&
+          (() => {
+            const [uidA, uidB] = getMutualCouplingUids(component);
+            const targetA = availableCoupledInductors.find((c) => c.uid === uidA);
+            const targetB = availableCoupledInductors.find((c) => c.uid === uidB);
+            const k = Number(component.parameters?.param0 ?? 0.98);
+            const lA = Number(targetA?.parameters?.param0);
+            const lB = Number(targetB?.parameters?.param0);
+            const m =
+              targetA && targetB && lA > 0 && lB > 0 ? k * Math.sqrt(lA * lB) : null;
+            const resolved = !!targetA && !!targetB;
+
+            const inductorSelect = (
+              label: string,
+              selected: number,
+              onPick: (uid: number) => void,
+            ) => (
+              <div className="prop-field">
+                <label className="prop-label" style={{ fontSize: '11px' }}>{label}</label>
+                <select
+                  className="prop-input coupling-select"
+                  value={selected > 0 ? String(selected) : ''}
+                  onChange={(e) => onPick(e.target.value === '' ? 0 : Number(e.target.value))}
+                >
+                  <option value="">-- Not assigned --</option>
+                  {availableCoupledInductors.map((ind) => (
+                    <option key={ind.name} value={String(ind.uid)}>
+                      {ind.name} ({formatEngineeringValue(Number(ind.parameters?.param0 ?? 0))}H)
+                    </option>
+                  ))}
+                </select>
+              </div>
+            );
+
+            return (
+              <div className="prop-section coupling-section">
+                <div className="prop-section-title">
+                  <span>🧲 Coupled Inductors</span>
+                </div>
+                <div className="prop-desc-hint">
+                  This element is pinless by design — like a SPICE K statement it couples two
+                  Coupled Inductors by reference, not by wires. The sheet draws the link as
+                  dashed violet lines.
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
+                  {inductorSelect('Inductor 1', uidA, (uid) =>
+                    onSetParameter(component.name, 'param1', uid),
+                  )}
+                  {inductorSelect('Inductor 2', uidB, (uid) =>
+                    onSetParameter(component.name, 'param2', uid),
+                  )}
+                </div>
+                {resolved ? (
+                  <div className="coupling-status-pill active">
+                    <span className="coupling-status-dot" />
+                    <span>
+                      Couples <strong>{targetA!.name}</strong> ⟷ <strong>{targetB!.name}</strong>
+                      {' '}with k = {k}
+                      {m != null && <> · M = k·√(L₁·L₂) ≈ <strong>{formatEngineeringValue(m)}H</strong></>}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="coupling-status-pill warning">
+                    <span>
+                      ⚠️ Both slots must reference Coupled Inductors — an unresolvable coupler is
+                      ignored by the simulation
+                      {availableCoupledInductors.length === 0 &&
+                        ' (none on the sheet yet: place two LK_LKOP2 Coupled Inductors first)'}
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
         {/* Dedicated Script / Function Block Editor */}
         {(component.type === CTRL_TYPE.SCRIPT ||

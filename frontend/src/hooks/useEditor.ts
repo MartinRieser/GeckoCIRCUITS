@@ -1451,6 +1451,7 @@ function toEditorComponent(payload: ComponentPayload, family: string) {
   return {
     type: payload.type,
     name: payload.name,
+    uid: payload.uid,
     family,
     position: payload.position,
     orientation: payload.orientation,

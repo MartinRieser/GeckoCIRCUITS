@@ -123,7 +123,7 @@ class CircuitFileControllerTest {
     void testGetComponents_found() throws Exception {
         // Mock service response
         ComponentInfo comp1 = new ComponentInfo(
-            1, "R1", "circuit",
+            1, "R1", "circuit", 1001,
             new int[]{100, 200}, 0,
             java.util.Map.of("resistance", 10.0)
         );

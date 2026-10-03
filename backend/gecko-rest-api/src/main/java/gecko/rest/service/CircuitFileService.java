@@ -446,6 +446,7 @@ public class CircuitFileService {
             comp.getType(),
             comp.getName(),
             domain,
+            comp.getUniqueObjectIdentifier(),
             comp.getPosition(),
             comp.getOrientation(),
             comp.getParameters()

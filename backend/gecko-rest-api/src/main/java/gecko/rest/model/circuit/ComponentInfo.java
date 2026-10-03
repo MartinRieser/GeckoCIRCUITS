@@ -17,6 +17,10 @@ public record ComponentInfo(
     @Schema(description = "Simulation domain", example = "circuit", allowableValues = {"circuit", "control", "thermal"})
     String domain,
 
+    @Schema(description = "Unique object identifier used by reference-style couplings "
+            + "(e.g. the mutual inductance LK_M references the uids of its two coupled inductors)")
+    long uid,
+
     @Schema(description = "X-Y position in schematic", example = "[100, 200]")
     int[] position,
 

@@ -453,7 +453,10 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     name: 'LK_M',
     displayName: 'Mutual Coupling (k)',
     category: 'transformers',
-    description: 'Declares magnetic coupling factor k between two coupled inductors (classic LK_M). Mainly from imported classic circuits.',
+    description:
+      'Declares the magnetic coupling factor k between two coupled inductors (LK_LKOP2). ' +
+      'Pinless by design — like a SPICE K statement it connects by reference, not by wires: ' +
+      'choose the two inductors in Properties and the sheet draws dashed coupling guides.',
     shortcut: 'T',
     defaultPrefix: 'K',
     parameters: [
@@ -1708,6 +1711,11 @@ export function formatEngineeringValue(value: number, unit = ''): string {
   if (abs >= 1) {
     return `${sign}${roundDec(abs, 3)}${unit ? ' ' + unit : ''}`;
   }
+  // 0.1 … 1 stays a plain decimal: these are usually dimensionless ratios
+  // (coupling factor k, duty cycle) where "999 m" would read as milli-units.
+  if (abs >= 0.1) {
+    return `${sign}${roundDec(abs, 3)}${unit ? ' ' + unit : ''}`;
+  }
   if (abs >= 1e-3) {
     return `${sign}${roundDec(abs * 1e3, 3)} m${unit ? ' ' + unit : ''}`;
   }
@@ -1787,6 +1795,42 @@ export function getCoupledComponentName(component: { parameters?: Record<string,
   }
   if (str === 'none' || str === SENTINEL_UNSET) return '';
   return str;
+}
+
+/**
+ * True for the classic mutual-inductance coupler (LK_M, type 9). It is a
+ * pinless declaration element — like a SPICE `K` statement, it has no wires;
+ * it references the uids of two coupled inductors in raw parameter slots
+ * 1 and 2 and declares the coupling factor k in slot 0.
+ */
+export function isMutualCoupler(
+  component: { type: number; family?: string } | null | undefined,
+): boolean {
+  if (!component) return false;
+  return component.family !== 'CONTROL' && component.type === LkComponentType.MUTUAL_INDUCTANCE;
+}
+
+/**
+ * True for the coupled inductor (LK_LKOP2, type 12), the only element the
+ * netlist accepts as a target of a mutual coupler.
+ */
+export function isCoupledInductor(
+  component: { type: number; family?: string } | null | undefined,
+): boolean {
+  if (!component) return false;
+  return component.family !== 'CONTROL' && component.type === LkComponentType.COUPLED_INDUCTOR;
+}
+
+/**
+ * Raw-parameter uids of the two inductors a mutual coupler references
+ * ([param1, param2]). Zeros mean "not configured".
+ */
+export function getMutualCouplingUids(
+  component: { parameters?: Record<string, unknown> } | null | undefined,
+): [number, number] {
+  const a = Number(component?.parameters?.param1);
+  const b = Number(component?.parameters?.param2);
+  return [Number.isFinite(a) ? a : 0, Number.isFinite(b) ? b : 0];
 }
 
 export function extractAvailableSignals(

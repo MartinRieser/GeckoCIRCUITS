@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   isTerminalWired,
   buildCouplingPairs,
+  buildMutualCouplingGuides,
   buildNetTerminalPoints,
   buildVoltmeterGuides,
   buildSignalEmitters,
@@ -172,6 +173,75 @@ describe('sheetGuides: buildCouplingPairs', () => {
 
     const hoverTarget = buildCouplingPairs(components, [], 'L.1');
     expect(hoverTarget[1].isHoveredOrSelected).toBe(true);
+  });
+});
+
+describe('sheetGuides: buildMutualCouplingGuides', () => {
+  const flybackCoupler = makeComp({
+    type: LkComponentType.MUTUAL_INDUCTANCE,
+    name: 'K_coupler',
+    family: 'LK',
+    position: [19, 5],
+    orientation: Orientation.WEST_EAST,
+    parameters: { param0: 0.999, param1: 1003, param2: 1004 },
+  });
+  const primary = makeComp({
+    type: LkComponentType.COUPLED_INDUCTOR,
+    name: 'L_p',
+    family: 'LK',
+    uid: 1003,
+    position: [14, 5],
+    orientation: Orientation.NORTH_SOUTH,
+    parameters: { param0: 1e-4, param1: 0 },
+  });
+  const secondary = makeComp({
+    type: LkComponentType.COUPLED_INDUCTOR,
+    name: 'L_s',
+    family: 'LK',
+    uid: 1004,
+    position: [24, 5],
+    orientation: Orientation.NORTH_SOUTH,
+    parameters: { param0: 1e-4, param1: 0 },
+  });
+
+  it('resolves both uid references to the coupled inductors', () => {
+    const guides = buildMutualCouplingGuides([flybackCoupler, primary, secondary], [], null);
+    expect(guides).toHaveLength(1);
+
+    const guide = guides[0];
+    expect(guide.key).toBe('K_coupler');
+    expect(guide.k).toBe(0.999);
+    expect(guide.refs[0].target?.name).toBe('L_p');
+    expect(guide.refs[1].target?.name).toBe('L_s');
+    expect(guide.isResolved).toBe(true);
+    expect(guide.isHoveredOrSelected).toBe(false);
+  });
+
+  it('flags guides whose references are unassigned or dangling', () => {
+    const fresh = makeComp({
+      ...flybackCoupler,
+      parameters: { param0: 0.98, param1: 0, param2: 0 },
+    });
+    expect(buildMutualCouplingGuides([fresh, primary, secondary], [], null)[0].isResolved).toBe(false);
+
+    const dangling = makeComp({
+      ...flybackCoupler,
+      parameters: { param0: 0.999, param1: 1003, param2: 9999 },
+    });
+    const guide = buildMutualCouplingGuides([dangling, primary, secondary], [], null)[0];
+    expect(guide.refs[1].target).toBeNull();
+    expect(guide.isResolved).toBe(false);
+  });
+
+  it('marks guide hovered/selected when the coupler or a target is active', () => {
+    const components = [flybackCoupler, primary, secondary];
+    expect(buildMutualCouplingGuides(components, ['K_coupler'], null)[0].isHoveredOrSelected).toBe(true);
+    expect(buildMutualCouplingGuides(components, [], 'L_s')[0].isHoveredOrSelected).toBe(true);
+    expect(buildMutualCouplingGuides(components, [], null)[0].isHoveredOrSelected).toBe(false);
+  });
+
+  it('ignores non-coupler components', () => {
+    expect(buildMutualCouplingGuides([primary, secondary], [], null)).toHaveLength(0);
   });
 });
 

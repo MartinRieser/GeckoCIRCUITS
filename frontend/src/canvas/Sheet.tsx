@@ -20,6 +20,7 @@ import {
 } from '../model/componentSchema';
 import {
   buildCouplingPairs,
+  buildMutualCouplingGuides,
   buildNetTerminalPoints,
   buildVoltmeterGuides,
   buildSignalEmitters,
@@ -32,6 +33,11 @@ import type { Point } from '../model/types';
 import { ContextMenu } from './ContextMenu';
 import type { ContextMenuTarget } from './ContextMenu';
 import { Orientation, CANVAS_METRICS } from '../model/constants';
+import {
+  isMutualCoupler,
+  isCoupledInductor,
+  getMutualCouplingUids,
+} from '../model/componentSchema';
 
 export interface SheetActions {
   placeGhost(
@@ -104,6 +110,14 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
   // Active software coupling pairs (Gate Driver ➔ Switch, Ammeter ➔ Target Component)
   const couplingPairs = useMemo(
     () => buildCouplingPairs(state.components, state.selection, hoveredComponentName),
+    [state.components, state.selection, hoveredComponentName],
+  );
+
+  // Mutual couplers (LK_M) are pinless: their uid references to the two
+  // coupled inductors are their only "wiring", so these guides stay visible
+  // in the idle sheet, not just on hover.
+  const mutualCouplingGuides = useMemo(
+    () => buildMutualCouplingGuides(state.components, state.selection, hoveredComponentName),
     [state.components, state.selection, hoveredComponentName],
   );
 
@@ -742,6 +756,17 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
             >
               <path d="M 0 1.5 L 9 5 L 0 8.5 z" style={{ fill: 'var(--accent)' }} />
             </marker>
+            <marker
+              id="mutual-coupling-arrow"
+              viewBox="0 0 10 10"
+              refX="8"
+              refY="5"
+              markerWidth="6"
+              markerHeight="6"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#a78bfa" />
+            </marker>
           </defs>
 
           {/* Grid Background */}
@@ -906,6 +931,116 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                 className="junction-dot"
               />
             ))}
+          </g>
+
+          {/* Mutual coupler (LK_M) ➔ coupled inductor guides. Always visible:
+              the coupler is pinless by design (SPICE K-statement semantics),
+              so these dashed references are the only visualization of its
+              "wiring". Violet distinguishes magnetic coupling from electrical
+              wires and from the blue software-coupling guides. */}
+          <g className="coupling-guides-layer mutual-coupling-guides" pointerEvents="none">
+            {mutualCouplingGuides.map((guide) => {
+              const sx = guide.source.position[0] * dpix;
+              const sy = guide.source.position[1] * dpix;
+              const stroke = guide.isHoveredOrSelected ? '#c084fc' : '#a78bfa';
+              const halo = guide.isHoveredOrSelected ? 'rgba(192, 132, 252, 0.28)' : 'rgba(167, 139, 250, 0.14)';
+              const warn = !guide.isResolved;
+
+              return (
+                <g key={`mutual-${guide.key}`}>
+                  {guide.refs.map((ref) => {
+                    if (!ref.target) return null;
+                    const tx = ref.target.position[0] * dpix;
+                    const ty = ref.target.position[1] * dpix;
+                    // Trim both ends so the curve leaves the coupler below its
+                    // badges and stops short of the target's name label.
+                    const t0 = 0.18;
+                    const t1 = 0.86;
+                    const x1 = sx + (tx - sx) * t0;
+                    const y1 = sy + (ty - sy) * t0;
+                    const x2 = sx + (tx - sx) * t1;
+                    const y2 = sy + (ty - sy) * t1;
+                    const pathD = `M ${x1} ${y1} C ${x1 + (x2 - x1) * 0.4} ${y1}, ${x1 + (x2 - x1) * 0.6} ${y2}, ${x2} ${y2}`;
+                    const pillW = Math.max(ref.target.name.length * 5.8 + 12, 34);
+                    return (
+                      <g key={`${guide.key}-${ref.uid}`}>
+                        <path d={pathD} fill="none" stroke={halo} strokeWidth={8} strokeLinecap="round" />
+                        <path
+                          d={pathD}
+                          fill="none"
+                          stroke={stroke}
+                          strokeWidth={guide.isHoveredOrSelected ? 2.5 : 1.8}
+                          strokeDasharray="6 4"
+                          className="coupling-guideline"
+                          markerEnd="url(#mutual-coupling-arrow)"
+                          style={guide.isHoveredOrSelected ? { animation: 'couplingDashFlow 1s linear infinite' } : undefined}
+                        />
+                        <g transform={`translate(${tx}, ${ty - 12})`}>
+                          <rect
+                            x={-pillW / 2}
+                            y={-8}
+                            width={pillW}
+                            height={15}
+                            rx={7}
+                            style={{ fill: 'var(--pill-bg)' }}
+                            stroke={stroke}
+                            strokeWidth={1}
+                          />
+                          <text
+                            x={0}
+                            y={3}
+                            textAnchor="middle"
+                            fill={stroke}
+                            fontSize={8.5}
+                            fontWeight="700"
+                            fontFamily="var(--font-mono, monospace)"
+                          >
+                            {ref.target.name}
+                          </text>
+                        </g>
+                      </g>
+                    );
+                  })}
+
+                  {/* k badge above the coupler (its guides leave downward);
+                      amber when a reference is missing */}
+                  <g transform={`translate(${sx}, ${sy - 2.2 * dpix})`}>
+                    {(() => {
+                      const text = warn
+                        ? `k=${guide.k} · ⚠ assign inductors`
+                        : `k=${guide.k}`;
+                      const w = Math.max(text.length * 5.6 + 12, 40);
+                      const c = warn ? '#f59e0b' : stroke;
+                      return (
+                        <>
+                          <rect
+                            x={-w / 2}
+                            y={-8}
+                            width={w}
+                            height={15}
+                            rx={7}
+                            style={{ fill: 'var(--pill-bg)' }}
+                            stroke={c}
+                            strokeWidth={1}
+                          />
+                          <text
+                            x={0}
+                            y={3}
+                            textAnchor="middle"
+                            fill={c}
+                            fontSize={8.5}
+                            fontWeight="700"
+                            fontFamily="var(--font-mono, monospace)"
+                          >
+                            {text}
+                          </text>
+                        </>
+                      );
+                    })()}
+                  </g>
+                </g>
+              );
+            })}
           </g>
 
           {/* Active Software Coupling Guidelines (Gate Driver ➔ Switch, Ammeter ➔ Component) */}
@@ -1250,6 +1385,37 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                             </text>
                           );
                         })()}
+
+                        {/* Mutual coupler badge: unlike the transient gate-driver
+                            badges above, this one is permanent — the coupler has
+                            no wires, so naming its two inductors here is the
+                            at-a-glance answer to "what does this element do". */}
+                        {isMutualCoupler(component) &&
+                          (() => {
+                            const [uidA, uidB] = getMutualCouplingUids(component);
+                            const tA = state.components.find(
+                              (c) => c.uid === uidA && isCoupledInductor(c),
+                            );
+                            const tB = state.components.find(
+                              (c) => c.uid === uidB && isCoupledInductor(c),
+                            );
+                            const ok = !!tA && !!tB;
+                            return (
+                              <text
+                                y={-2.2 * dpix - 16}
+                                textAnchor="middle"
+                                className="coupling-pill-text"
+                                style={{ fill: ok ? '#a78bfa' : '#f59e0b', cursor: 'pointer' }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  dispatch({ type: 'SELECT', name: component.name, additive: false });
+                                  dispatch({ type: 'PANEL_FOR', name: component.name });
+                                }}
+                              >
+                                {ok ? `${tA!.name} ⟷ ${tB!.name}` : '⚠ assign inductors in Properties'}
+                              </text>
+                            );
+                          })()}
 
                         {/* Coupling Badge Tag on Control Blocks (Gate Driver, Ammeter, Voltmeter) */}
                         {(() => {

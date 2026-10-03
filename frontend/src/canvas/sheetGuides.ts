@@ -16,6 +16,9 @@ import {
   isAmmeterComponent,
   isVoltmeterComponent,
   getCoupledComponentName,
+  isMutualCoupler,
+  isCoupledInductor,
+  getMutualCouplingUids,
 } from '../model/componentSchema';
 import { CANVAS_METRICS, SENTINEL_UNSET } from '../model/constants';
 
@@ -192,6 +195,87 @@ export function buildCouplingPairs(
   }
 
   return pairs;
+}
+
+/**
+ * One reference of a mutual coupler: the raw uid it stores and the component
+ * that uid resolves to (null when the reference is unset or dangling).
+ */
+export interface MutualCouplingRef {
+  /** Raw uid as stored in the coupler's parameter slot 1 or 2. */
+  uid: number;
+  /** Component carrying that uid, or null when unassigned/dangling. */
+  target: EditorComponent | null;
+}
+
+/**
+ * Visual wiring of a pinless mutual coupler (LK_M): which two inductors its
+ * hidden uid references actually point at. Rendered as dashed guides because
+ * the coupler deliberately has no electrical pins — the reference IS its wiring.
+ */
+export interface MutualCouplingGuide {
+  /** Unique key (coupler component name). */
+  key: string;
+  /** The coupler component itself. */
+  source: EditorComponent;
+  /** Coupling factor k from parameter slot 0. */
+  k: number;
+  /** The two uid references, in slot order. */
+  refs: [MutualCouplingRef, MutualCouplingRef];
+  /** True when both refs resolve to coupled inductors on the sheet. */
+  isResolved: boolean;
+  /** True when the coupler or one of its targets is hovered/selected. */
+  isHoveredOrSelected: boolean;
+}
+
+/**
+ * Builds the mutual-coupling guide set: for every LK_M coupler on the sheet,
+ * resolves its two uid references (parameter slots 1 and 2) to components.
+ *
+ * @param components All components on the sheet.
+ * @param selection Currently selected component names.
+ * @param hoveredComponentName Name of the component currently under the pointer.
+ * @returns One guide per mutual coupler.
+ */
+export function buildMutualCouplingGuides(
+  components: EditorComponent[],
+  selection: string[],
+  hoveredComponentName: string | null,
+): MutualCouplingGuide[] {
+  const guides: MutualCouplingGuide[] = [];
+
+  for (const comp of components) {
+    if (!isMutualCoupler(comp)) continue;
+
+    const [uidA, uidB] = getMutualCouplingUids(comp);
+    const resolve = (uid: number): MutualCouplingRef => ({
+      uid,
+      target: uid > 0 ? components.find((c) => c.uid === uid) ?? null : null,
+    });
+    const refA = resolve(uidA);
+    const refB = resolve(uidB);
+    const k = Number(comp.parameters?.param0);
+
+    guides.push({
+      key: comp.name,
+      source: comp,
+      k: Number.isFinite(k) ? k : 0,
+      refs: [refA, refB],
+      isResolved:
+        !!refA.target &&
+        !!refB.target &&
+        isCoupledInductor(refA.target) &&
+        isCoupledInductor(refB.target),
+      isHoveredOrSelected:
+        selection.includes(comp.name) ||
+        hoveredComponentName === comp.name ||
+        [refA.target, refB.target].some(
+          (t) => !!t && (selection.includes(t.name) || hoveredComponentName === t.name),
+        ),
+    });
+  }
+
+  return guides;
 }
 
 /**

@@ -34,7 +34,7 @@ class CircuitEditControllerTest {
 
     private static final CircuitChangeMessage CHANGE =
             new CircuitChangeMessage("circuit-1", 3, "createComponent",
-                    new gecko.rest.model.circuit.ComponentInfo(1, "R1", "LK", new int[]{96, 48}, 0, java.util.Map.of()));
+                    new gecko.rest.model.circuit.ComponentInfo(1, "R1", "LK", 1001, new int[]{96, 48}, 0, java.util.Map.of()));
 
     @Test
     void createComponent_returns201() throws Exception {

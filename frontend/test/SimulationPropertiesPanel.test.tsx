@@ -360,7 +360,7 @@ describe('SimulationPropertiesPanel Component', () => {
       />,
     );
 
-    expect((screen.getByLabelText(/Duration \(tEnd\)/i) as HTMLInputElement).value).toBe('100 m s');
+    expect((screen.getByLabelText(/Duration \(tEnd\)/i) as HTMLInputElement).value).toBe('0.1 s');
   });
 });
 

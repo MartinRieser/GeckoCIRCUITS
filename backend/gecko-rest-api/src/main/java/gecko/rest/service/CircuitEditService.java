@@ -462,7 +462,8 @@ public class CircuitEditService {
                 params.put("coupledComponent", comp.getParameters().get("coupledComponent"));
             }
             target.add(new EditorModelResponse.Component(
-                    comp.getType(), comp.getName(), family, comp.getPosition(), comp.getOrientation(),
+                    comp.getType(), comp.getName(), comp.getUniqueObjectIdentifier(), family,
+                    comp.getPosition(), comp.getOrientation(),
                     params, comp.getTerminalXLabels(), comp.getTerminalYLabels()));
         }
     }
@@ -726,9 +727,9 @@ public class CircuitEditService {
             Map.entry(46, new double[]{1.0}),
             Map.entry(47, new double[]{1.0, 25.0}),
             Map.entry(48, new double[]{401.0, 25.0}),
-            // 9 = mutual coupling k; 23 = ideal transformer n1/n2/polarity;
+            // 9 = mutual coupling [k, uid of first coupled inductor, uid of second]; 23 = ideal transformer n1/n2/polarity;
             // 33 = BJT betaF/betaR/rBase/polarity (param0 unused)
-            Map.entry(9, new double[]{0.98}),
+            Map.entry(9, new double[]{0.98, 0.0, 0.0}),
             Map.entry(23, new double[]{10.0, 2.0, -1.0}),
             Map.entry(33, new double[]{0.0, 100.0, 60.0, 0.1, 1.0}),
             Map.entry(1000, new double[]{0.0}));
@@ -1009,7 +1010,7 @@ public class CircuitEditService {
     }
 
     private static ComponentInfo toInfo(CircuitModel.ComponentData comp, String family) {
-        return new ComponentInfo(comp.getType(), comp.getName(), family,
+        return new ComponentInfo(comp.getType(), comp.getName(), family, comp.getUniqueObjectIdentifier(),
                 comp.getPosition(), comp.getOrientation(), comp.getParameters());
     }
 

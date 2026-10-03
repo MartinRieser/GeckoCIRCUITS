@@ -128,6 +128,13 @@ describe('componentSchema', () => {
       expect(formatEngineeringValue(24, 'V')).toBe('24 V');
       expect(formatEngineeringValue(0)).toBe('0');
     });
+
+    it('keeps dimensionless ratios 0.1..1 as plain decimals (k, duty)', () => {
+      expect(formatEngineeringValue(0.999)).toBe('0.999');
+      expect(formatEngineeringValue(0.98)).toBe('0.98');
+      expect(formatEngineeringValue(0.4)).toBe('0.4');
+      expect(formatEngineeringValue(0.05)).toBe('50 m');
+    });
   });
 
   describe('coupling and signal helpers', () => {

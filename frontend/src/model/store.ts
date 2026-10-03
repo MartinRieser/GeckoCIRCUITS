@@ -345,12 +345,18 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
 
     case 'COMPONENT_UPSERT': {
       const exists = state.components.some((c) => c.name === action.component.name);
-      const components = exists
-        ? state.components.map((c) => (c.name === action.component.name ? action.component : c))
+      // Payloads built from patch responses may omit the uid; keep the
+      // backend-assigned one so reference couplings (LK_M) keep resolving.
+      const upserted = exists
+        ? state.components.map((c) =>
+            c.name === action.component.name
+              ? { ...action.component, uid: action.component.uid ?? c.uid }
+              : c,
+          )
         : [...state.components, action.component];
       return {
         ...state,
-        components,
+        components: upserted,
         modelVersion: action.version,
         status: `${action.component.name} updated`,
       };
