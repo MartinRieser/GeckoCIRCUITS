@@ -1828,8 +1828,8 @@ connectorType 1
 verbindungCONTROL (1)
 <Verbindung>
 label pwm_lo
-x[] 10 11 12 
-y[] 22 22 22 
+x[] 10 10 11 12 
+y[] 22 23 23 23 
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -2079,7 +2079,7 @@ enabledShorted 1
 typ 6
 uniqueObjectIdentifier 2004
 x 14
-y 22
+y 23
 parameter[] 0.0
 parameterString[] /S_lo/NIX_NIX_NIX/0
 nameOpt[] null
@@ -2574,8 +2574,8 @@ connectorType 1
 verbindungCONTROL (2)
 <Verbindung>
 label pwm_b
-x[] 10 11 12
-y[] 27 27 27
+x[] 10 11 11 12 
+y[] 27 27 28 28 
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -2583,8 +2583,8 @@ connectorType 1
 verbindungCONTROL (3)
 <Verbindung>
 label pwm_b
-x[] 10 10 10 10 10 11 12 13 14 15 16 17 18 18 18 18 18
-y[] 27 28 29 30 31 31 31 31 31 31 31 31 31 30 29 28 27
+x[] 10 10 10 10 10 11 12 13 14 15 16 17 18 18 18 18
+y[] 27 28 29 30 31 31 31 31 31 31 31 31 31 30 29 28
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -2956,7 +2956,7 @@ enabledShorted 1
 typ 6
 uniqueObjectIdentifier 2004
 x 14
-y 27
+y 28
 parameter[] 0.0
 parameterString[] /S.2/NIX_NIX_NIX/0
 nameOpt[] null
@@ -2974,7 +2974,7 @@ enabledShorted 1
 typ 6
 uniqueObjectIdentifier 2009
 x 20
-y 27
+y 28
 parameter[] 0.0
 parameterString[] /S.3/NIX_NIX_NIX/0
 nameOpt[] null

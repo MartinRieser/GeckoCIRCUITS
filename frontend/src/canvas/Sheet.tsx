@@ -11,6 +11,7 @@ import { routeAvoidingObstacles, routingBlockedCells, densePoints, denseCellsOf,
 import { isWireEndPointConnected, findWireGeometryWarnings } from '../model/validation';
 import { ComponentSymbol } from './symbols';
 import { isScopeComponent, isScriptComponent } from '../simulation/scopes';
+import { channelColorByIndex } from '../simulation/traceColors';
 import {
   isGateDriver,
   isAmmeterComponent,
@@ -100,7 +101,9 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
     }> = [];
 
     for (const comp of state.components) {
-      if (isGateDriver(comp) || isAmmeterComponent(comp)) {
+      const isVmWithTarget =
+        isVoltmeterComponent(comp) && !!getCoupledComponentName(comp);
+      if (isGateDriver(comp) || isAmmeterComponent(comp) || isVmWithTarget) {
         const targetName = getCoupledComponentName(comp);
         if (targetName) {
           const target = state.components.find((c) => c.name === targetName);
@@ -110,7 +113,11 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
               state.selection.includes(target.name) ||
               hoveredComponentName === comp.name ||
               hoveredComponentName === target.name;
-            const label = isGateDriver(comp) ? 'GATE DRIVE ➔' : 'MEASURE I ➔';
+            const label = isGateDriver(comp)
+              ? 'GATE DRIVE ➔'
+              : isVmWithTarget
+                ? 'MEASURE U ➔'
+                : 'MEASURE I ➔';
             pairs.push({ sourceComp: comp, targetComp: target, label, isHoveredOrSelected });
           }
         }
@@ -119,11 +126,242 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
     return pairs;
   }, [state.components, state.selection, hoveredComponentName]);
 
+  // First terminal position per net label — used to aim voltmeter
+  // measurement guides at the nodes they measure.
+  const netTerminalPoints = useMemo(() => {
+    const map = new Map<string, { x: number; y: number }>();
+    for (const comp of state.components) {
+      if (comp.family === 'CONTROL') continue;
+      const terminals = terminalPositions(comp);
+      terminals.input.forEach((t, i) => {
+        const raw = comp.inputLabels[i]?.trim();
+        if (raw && raw !== 'NIX_NIX_NIX' && !map.has(raw)) map.set(raw, t);
+      });
+      terminals.output.forEach((t, i) => {
+        const raw = comp.outputLabels[i]?.trim();
+        if (raw && raw !== 'NIX_NIX_NIX' && !map.has(raw)) map.set(raw, t);
+      });
+    }
+    return map;
+  }, [state.components]);
+
+  // Voltmeter ➔ measured-node guides, shown on hover/selection instead of
+  // the permanent badge text. Lines are coloured by polarity: red for the
+  // positive node, brown for the negative node.
+  const voltmeterGuides = useMemo(() => {
+    const guides: Array<{
+      key: string;
+      source: (typeof state.components)[0];
+      points: { x: number; y: number; polarity: 'pos' | 'neg' }[];
+      isHoveredOrSelected: boolean;
+    }> = [];
+    for (const comp of state.components) {
+      if (!isVoltmeterComponent(comp)) continue;
+      const nodeA =
+        (comp.parameters?.nodeA as string) || (comp.parameters?.positiveNode as string);
+      const nodeB =
+        (comp.parameters?.nodeB as string) || (comp.parameters?.negativeNode as string);
+      const points = (
+        [
+          { node: nodeA, polarity: 'pos' as const },
+          { node: nodeB, polarity: 'neg' as const },
+        ] as const
+      )
+        .filter(({ node }) => !!node)
+        .map(({ node, polarity }) => ({ point: netTerminalPoints.get(node), polarity }))
+        .filter((e): e is { point: { x: number; y: number }; polarity: 'pos' | 'neg' } => !!e.point)
+        .map(({ point, polarity }) => ({ ...point, polarity }));
+      // If both nodes resolve to the same terminal, one line suffices
+      const unique = new Map(points.map((p) => [`${p.x},${p.y}`, p]));
+      guides.push({
+        key: comp.name,
+        source: comp,
+        points: [...unique.values()],
+        isHoveredOrSelected:
+          state.selection.includes(comp.name) || hoveredComponentName === comp.name,
+      });
+    }
+    return guides;
+  }, [state.components, state.selection, hoveredComponentName, netTerminalPoints]);
+
+  // Emitted meter signal → the meter that emits it (for tracing scope channels
+  // back to their measurement point)
+  const signalEmitters = useMemo(() => {
+    const map = new Map<string, (typeof state.components)[0]>();
+    for (const comp of state.components) {
+      if (comp.family !== 'CONTROL') continue;
+      if (!isVoltmeterComponent(comp) && !isAmmeterComponent(comp)) continue;
+      for (const l of comp.outputLabels || []) {
+        const raw = l?.trim();
+        if (raw && raw !== 'NIX_NIX_NIX' && !map.has(raw)) map.set(raw, comp);
+      }
+    }
+    return map;
+  }, [state.components]);
+
+  // Emitted meter signal → human-readable measurement description, so scope
+  // channel pills show WHAT is measured ("V(out)", "I(L.1)"), not just the
+  // raw signal name. Nets that only exist on LK terminals are node voltages.
+  const signalDescriptions = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const comp of state.components) {
+      if (comp.family !== 'CONTROL') continue;
+      const isVm = isVoltmeterComponent(comp);
+      const isAm = isAmmeterComponent(comp);
+      if (!isVm && !isAm) continue;
+      const coupled = getCoupledComponentName(comp);
+      const nodeA =
+        (comp.parameters?.nodeA as string) || (comp.parameters?.positiveNode as string);
+      const nodeB =
+        (comp.parameters?.nodeB as string) || (comp.parameters?.negativeNode as string);
+      let detail: string | null = null;
+      if (coupled) detail = coupled;
+      else if (isVm && nodeA) detail = nodeB && nodeB !== '0' ? `${nodeA}-${nodeB}` : nodeA;
+      if (!detail) continue;
+      const prefix = isAm ? 'I' : 'V';
+      for (const l of comp.outputLabels || []) {
+        const raw = l?.trim();
+        if (raw && raw !== 'NIX_NIX_NIX') map.set(raw, `${prefix}(${detail})`);
+      }
+    }
+    return map;
+  }, [state.components]);
+
+  // Net label → all grid points of the wires carrying that net, so guides can
+  // aim at the nearest point of the actual rail instead of an arbitrary pin
+  // at the far end of the circuit.
+  const netWirePoints = useMemo(() => {
+    const map = new Map<string, { x: number; y: number }[]>();
+    for (const w of state.wires) {
+      const label = w.label?.trim();
+      if (!label || label === 'NIX_NIX_NIX') continue;
+      let pts = map.get(label);
+      if (!pts) {
+        pts = [];
+        map.set(label, pts);
+      }
+      for (const p of w.points) pts.push({ x: p[0], y: p[1] });
+    }
+    return map;
+  }, [state.wires]);
+
+  // Scope ➔ measurement-point guides, shown on hover/selection, decided per
+  // input pin: pins with a real wire show the connection already; unwired
+  // pins bound by net name (bare power net, or a meter's emitted signal)
+  // get a dashed line to the point they measure — aiming at the nearest
+  // point of that net's wiring. Each line keeps its channel's trace color
+  // and a label at the target so the fan of lines stays attributable.
+  const scopeGuides = useMemo(() => {
+    const nearest = (label: string, from: { x: number; y: number }) => {
+      const wirePts = netWirePoints.get(label);
+      if (wirePts && wirePts.length > 0) {
+        let best = wirePts[0];
+        let bestD = Infinity;
+        for (const p of wirePts) {
+          const d = (p.x - from.x) ** 2 + (p.y - from.y) ** 2;
+          if (d < bestD) {
+            bestD = d;
+            best = p;
+          }
+        }
+        return best;
+      }
+      return netTerminalPoints.get(label);
+    };
+    const guides: Array<{
+      key: string;
+      source: (typeof state.components)[0];
+      lines: Array<{
+        origin: { x: number; y: number };
+        target: { x: number; y: number };
+        text: string;
+        colorIndex: number;
+      }>;
+      isHoveredOrSelected: boolean;
+    }> = [];
+    for (const comp of state.components) {
+      if (!isScopeComponent(comp)) continue;
+      const lines: Array<{
+        origin: { x: number; y: number };
+        target: { x: number; y: number };
+        text: string;
+        colorIndex: number;
+      }> = [];
+      const terminals = terminalPositions(comp);
+      terminals.input.forEach((t, i) => {
+        const raw = comp.inputLabels[i]?.trim();
+        if (!raw || raw === 'NIX_NIX_NIX') return;
+        // physically wired pins need no guide
+        const isWired = state.wires.some((w) =>
+          w.points.some((p) => Math.hypot(p[0] - t.x, p[1] - t.y) < 0.25),
+        );
+        if (isWired) return;
+        // bare power net: aim at the nearest point of the net's wiring
+        const netPoint = nearest(raw, { x: comp.position[0], y: comp.position[1] });
+        if (netPoint) {
+          lines.push({
+            origin: t,
+            target: netPoint,
+            text: `V(${raw})`,
+            colorIndex: i,
+          });
+          return;
+        }
+        // meter-emitted signal: aim at the meter's measurement point
+        const emitter = signalEmitters.get(raw);
+        if (!emitter) return;
+        const text = signalDescriptions.get(raw) ?? raw;
+        if (isAmmeterComponent(emitter)) {
+          const targetName = getCoupledComponentName(emitter);
+          const target = (
+            targetName ? state.components.find((c) => c.name === targetName) : undefined
+          ) ?? emitter;
+          lines.push({
+            origin: t,
+            target: { x: target.position[0], y: target.position[1] },
+            text,
+            colorIndex: i,
+          });
+        } else if (isVoltmeterComponent(emitter)) {
+          const nodeA =
+            (emitter.parameters?.nodeA as string) || (emitter.parameters?.positiveNode as string);
+          const nodeB =
+            (emitter.parameters?.nodeB as string) || (emitter.parameters?.negativeNode as string);
+          const nodePoints = [nodeA, nodeB]
+            .map((n) => (n ? netTerminalPoints.get(n) : undefined))
+            .filter((p): p is { x: number; y: number } => !!p);
+          const target = nodePoints[0] ?? (() => {
+            const targetName = getCoupledComponentName(emitter);
+            const targetComp =
+              (targetName ? state.components.find((c) => c.name === targetName) : undefined) ??
+              emitter;
+            return { x: targetComp.position[0], y: targetComp.position[1] };
+          })();
+          lines.push({
+            origin: t,
+            target,
+            text,
+            colorIndex: i,
+          });
+        }
+      });
+      guides.push({
+        key: comp.name,
+        source: comp,
+        lines,
+        isHoveredOrSelected:
+          state.selection.includes(comp.name) || hoveredComponentName === comp.name,
+      });
+    }
+    return guides;
+  }, [state.components, state.wires, state.selection, hoveredComponentName, netTerminalPoints, netWirePoints, signalEmitters, signalDescriptions]);
+
   // Pre-computed, deduplicated terminal net labels across all circuit components
   const terminalLabelItems = useMemo(() => {
     const items: Array<{
       key: string;
       label: string;
+      displayLabel: string;
       gx: number;
       gy: number;
       componentName: string;
@@ -137,6 +375,16 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
       const terminals = terminalPositions(component);
       const inLabels = component.inputLabels || [];
       const outLabels = component.outputLabels || [];
+      // Scope inputs: annotate the channel with what is measured — a meter's
+      // emitted signal resolves to V(point)/I(point); a bare LK net name is a
+      // node voltage.
+      const channelInfo = (raw: string): string => {
+        if (!isScopeComponent(component)) return raw;
+        return (
+          signalDescriptions.get(raw) ??
+          (netTerminalPoints.has(raw) ? `V(${raw})` : raw)
+        );
+      };
 
       terminals.input.forEach((t, i) => {
         const raw = inLabels[i]?.trim();
@@ -150,6 +398,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
         items.push({
           key: `in-${component.name}-${i}-${raw}`,
           label: raw,
+          displayLabel: channelInfo(raw),
           gx: t.x,
           gy: t.y,
           componentName: component.name,
@@ -171,6 +420,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
         items.push({
           key: `out-${component.name}-${i}-${raw}`,
           label: raw,
+          displayLabel: raw,
           gx: t.x,
           gy: t.y,
           componentName: component.name,
@@ -181,7 +431,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
       });
     }
     return items;
-  }, [state.components, state.wires]);
+  }, [state.components, state.wires, signalDescriptions, netTerminalPoints]);
 
   // Wire segment and endpoint drag state
   const [wireDrag, setWireDrag] = useState<{
@@ -900,6 +1150,8 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
           {/* Active Software Coupling Guidelines (Gate Driver ➔ Switch, Ammeter ➔ Component) */}
           <g className="coupling-guides-layer" pointerEvents="none">
             {couplingPairs.map(({ sourceComp, targetComp, label, isHoveredOrSelected }, i) => {
+              // Guides are selection feedback: draw nothing for idle blocks
+              if (!isHoveredOrSelected) return null;
               const x1 = sourceComp.position[0] * dpix;
               const y1 = sourceComp.position[1] * dpix;
               const x2 = targetComp.position[0] * dpix;
@@ -913,37 +1165,153 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
               const badgeW = Math.max(label.length * 6.5 + 16, 80);
 
               return (
-                <g key={`coupling-${i}`} className={`coupling-guide-group${isHoveredOrSelected ? ' active' : ''}`}>
-                  {isHoveredOrSelected && (
-                    <path
-                      d={pathD}
-                      fill="none"
-                      stroke="rgba(56, 189, 248, 0.25)"
-                      strokeWidth={8}
-                      strokeLinecap="round"
-                    />
-                  )}
+                <g key={`coupling-${i}`} className="coupling-guide-group active">
                   <path
                     d={pathD}
                     fill="none"
-                    stroke={isHoveredOrSelected ? '#38bdf8' : 'rgba(56, 189, 248, 0.45)'}
-                    strokeWidth={isHoveredOrSelected ? 2.5 : 1.5}
-                    strokeDasharray={isHoveredOrSelected ? '6 4' : '4 4'}
-                    className={isHoveredOrSelected ? 'coupling-guideline active' : 'coupling-guideline'}
+                    stroke="rgba(56, 189, 248, 0.25)"
+                    strokeWidth={8}
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d={pathD}
+                    fill="none"
+                    stroke="#38bdf8"
+                    strokeWidth={2.5}
+                    strokeDasharray="6 4"
+                    className="coupling-guideline active"
                     markerEnd="url(#coupling-arrow)"
                   />
-                  {isHoveredOrSelected && (
-                    <g transform={`translate(${(x1 + x2) / 2}, ${(y1 + y2) / 2})`}>
-                      <rect x={-badgeW / 2} y={-10} width={badgeW} height={20} rx={4} fill="#0f172a" stroke="#38bdf8" strokeWidth={1} />
-                      <text x={0} y={3.5} textAnchor="middle" fill="#38bdf8" fontSize={9} fontWeight="bold">
-                        {label}
-                      </text>
-                    </g>
-                  )}
+                  <g transform={`translate(${(x1 + x2) / 2}, ${(y1 + y2) / 2})`}>
+                    <rect x={-badgeW / 2} y={-10} width={badgeW} height={20} rx={4} fill="#0f172a" stroke="#38bdf8" strokeWidth={1} />
+                    <text x={0} y={3.5} textAnchor="middle" fill="#38bdf8" fontSize={9} fontWeight="bold">
+                      {label}
+                    </text>
+                  </g>
                 </g>
               );
             })}
           </g>
+
+          {/* Voltmeter ➔ measured-node guides (hover/selection only).
+              Polarity colours picked for contrast on the dark sheet:
+              red = positive node, brown = negative node. */}
+          {voltmeterGuides.map(({ key, source, points, isHoveredOrSelected }) => {
+            if (!isHoveredOrSelected || points.length === 0) return null;
+            const x1 = source.position[0] * dpix;
+            const y1 = source.position[1] * dpix;
+            return (
+              <g key={`voltmeter-guide-${key}`} className="coupling-guide-group active">
+                {points.map((p, j) => {
+                  const x2 = p.x * dpix;
+                  const y2 = p.y * dpix;
+                  const dx = x2 - x1;
+                  const cx1 = x1 + dx * 0.4;
+                  const cy1 = y1;
+                  const cx2 = x1 + dx * 0.6;
+                  const cy2 = y2;
+                  const pathD = `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
+                  const stroke = p.polarity === 'pos' ? '#f87171' : '#cd7f32';
+                  const halo = p.polarity === 'pos' ? 'rgba(248, 113, 113, 0.25)' : 'rgba(205, 127, 50, 0.25)';
+                  return (
+                    <g key={`voltmeter-guide-${key}-${j}`}>
+                      <path
+                        d={pathD}
+                        fill="none"
+                        stroke={halo}
+                        strokeWidth={8}
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d={pathD}
+                        fill="none"
+                        stroke={stroke}
+                        strokeWidth={2.5}
+                        strokeDasharray="6 4"
+                        className="coupling-guideline active"
+                        markerEnd="url(#coupling-arrow)"
+                      />
+                    </g>
+                  );
+                })}
+              </g>
+            );
+          })}
+
+          {/* Scope ➔ measurement-point guides (hover/selection only).
+              Each channel keeps its trace color from the scope view and a
+              label pill at the target point, so the fan of lines stays
+              attributable to its channel. */}
+          {scopeGuides.map(({ key, lines, isHoveredOrSelected }) => {
+            if (!isHoveredOrSelected || lines.length === 0) return null;
+            return (
+              <g key={`scope-guide-${key}`} className="coupling-guide-group active">
+                {lines.map((line, j) => {
+                  const x1 = line.origin.x * dpix;
+                  const y1 = line.origin.y * dpix;
+                  const x2 = line.target.x * dpix;
+                  const y2 = line.target.y * dpix;
+                  const dx = x2 - x1;
+                  const cx1 = x1 + dx * 0.4;
+                  const cy1 = y1;
+                  const cx2 = x1 + dx * 0.6;
+                  const cy2 = y2;
+                  const pathD = `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
+                  const color = channelColorByIndex(line.colorIndex);
+                  const m = color.match(/^#(..)(..)(..)$/);
+                  const halo = m
+                    ? `rgba(${parseInt(m[1], 16)}, ${parseInt(m[2], 16)}, ${parseInt(m[3], 16)}, 0.22)`
+                    : 'rgba(56, 189, 248, 0.22)';
+                  const pillW = Math.max(line.text.length * 5.8 + 10, 30);
+                  // keep the label inside the sheet when the target is at the edge
+                  const pillX = Math.min(Math.max(x2, pillW / 2 + 2), 600 * dpix - pillW / 2 - 2);
+                  return (
+                    <g key={`scope-guide-${key}-${j}`}>
+                      <path
+                        d={pathD}
+                        fill="none"
+                        stroke={halo}
+                        strokeWidth={8}
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d={pathD}
+                        fill="none"
+                        stroke={color}
+                        strokeWidth={2.5}
+                        strokeDasharray="6 4"
+                        className="coupling-guideline active"
+                      />
+                      <circle cx={x2} cy={y2} r={3.5} fill={color} />
+                      <g transform={`translate(${pillX}, ${y2 - 12})`}>
+                        <rect
+                          x={-pillW / 2}
+                          y={-8}
+                          width={pillW}
+                          height={15}
+                          rx={7}
+                          fill="#0f172a"
+                          stroke={color}
+                          strokeWidth={1}
+                        />
+                        <text
+                          x={0}
+                          y={3}
+                          textAnchor="middle"
+                          fill={color}
+                          fontSize={8.5}
+                          fontWeight="700"
+                          fontFamily="var(--font-mono, monospace)"
+                        >
+                          {line.text}
+                        </text>
+                      </g>
+                    </g>
+                  );
+                })}
+              </g>
+            );
+          })}
 
           {/* Components */}
           <g className="components" pointerEvents={state.mode === 'placing' ? 'none' : 'auto'}>
@@ -1149,9 +1517,13 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                             }
                           }
 
-                          if (!badgeText) return null;
+                          // Badge text is transient guidance: show it only
+                          // while the block is hovered or selected, and rely
+                          // on the dashed coupling lines otherwise.
+                          const badgeVisible =
+                            selected || hoveredComponentName === component.name;
+                          if (!badgeText || !badgeVisible) return null;
 
-                          const badgeW = Math.max(badgeText.length * 6.2 + 14, 52);
                           const badgeTransform = `translate(0, ${halfH + 12})`;
 
                           return (
@@ -1170,14 +1542,9 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                               }}
                               style={{ cursor: 'pointer' }}
                             >
-                              <rect
-                                x={-badgeW / 2}
-                                y={-8}
-                                width={badgeW}
-                                height={16}
-                                rx={8}
-                                className="coupling-pill-bg"
-                              />
+                              {/* No pill background: the outline read as a
+                                  selection indicator on some blocks and was
+                                  easily occluded by neighbour name labels */}
                               <text
                                 x={0}
                                 y={3.5}
@@ -1237,7 +1604,8 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                 anchor = 'middle';
               }
 
-              const rectW = Math.max(item.label.length * 5.8 + 6, 14);
+              const shown = item.displayLabel || item.label;
+              const rectW = Math.max(shown.length * 5.8 + 6, 14);
               const rectH = 13;
               const rectY = textY - 9.5;
               let rectX = textX - 3;
@@ -1263,7 +1631,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                     textAnchor={anchor}
                     className="node-label"
                   >
-                    {item.label}
+                    {shown}
                   </text>
                 </g>
               );

@@ -230,6 +230,52 @@ describe('Example wire connectivity (no visually broken schematics)', () => {
           );
         }
       }
+
+      // 7. No badge text rect is covered by another component's name label
+      //    (GATE_LO's above-centred name label once landed exactly on
+      //    GATE_HI's "➔ S_hi" badge and its dark halo erased the text)
+      const nameRects: { text: string; x0: number; x1: number; y0: number; y1: number }[] = [];
+      for (const c of components) {
+        const [cx, cy] = c.position;
+        const isCtrlProbe =
+          c.family === 'CONTROL' && [1, 2, 1001, 1002].includes(c.type);
+        const isHorizontal = c.orientation === 502 || c.orientation === 504;
+        const w = (c.name.length * 6.5 + 4) / dpix;
+        if (c.family === 'CONTROL' && !isCtrlProbe) {
+          // control blocks: name centred above the symbol (Sheet.tsx)
+          const yMid = cy - 1.3 - 5 / dpix;
+          nameRects.push({ text: c.name, x0: cx - w / 2, x1: cx + w / 2, y0: yMid - 8 / dpix, y1: yMid + 2 / dpix });
+        } else if (isCtrlProbe) {
+          // probes: name to the left of the symbol
+          nameRects.push({ text: c.name, x0: cx - 1.3 - 6 / dpix - w, x1: cx - 1.3 - 6 / dpix, y0: cy - 8 / dpix, y1: cy + 8 / dpix });
+        } else if (c.family === 'LK' && isHorizontal) {
+          // horizontal two-ports: name centred above the symbol
+          const yMid = cy - 1.3 - 5 / dpix;
+          nameRects.push({ text: c.name, x0: cx - w / 2, x1: cx + w / 2, y0: yMid - 8 / dpix, y1: yMid + 2 / dpix });
+        }
+        // vertical LK components draw their name to the right, where badges never reach
+      }
+      for (const c of components) {
+        if (c.family !== 'CONTROL') continue;
+        const [cx, cy] = c.position;
+        const tokens = c.paramStringTokens.filter((t) => t && t !== 'NIX_NIX_NIX');
+        let text = '';
+        if ((c.type === 6 || c.type === 1000) && tokens[0]) text = `➔ ${tokens[0]}`;
+        else if ((c.type === 2 || c.type === 1002) && tokens[0]) text = `➔ i(${tokens[0]})`;
+        else if ((c.type === 1 || c.type === 1001) && tokens[0]) text = `➔ V(${tokens[0]}, ${tokens[1] ?? '0'})`;
+        if (!text) continue;
+        const halfW = Math.max(text.length * 6.2 + 14, 52) / 2 / dpix;
+        for (const n of nameRects) {
+          const overlaps =
+            cx - halfW < n.x1 && n.x0 < cx + halfW &&
+            cy + 1.3 + 4 / dpix < n.y1 && n.y0 < cy + 1.3 + 20 / dpix;
+          if (overlaps) {
+            problems.push(
+              `${ex.id}: name label "${n.text}" overlaps badge "${text}" of ${c.name}`,
+            );
+          }
+        }
+      }
     }
     expect(problems, `${problems.length} wiring problem(s):\n${problems.join('\n')}`).toHaveLength(0);
   });

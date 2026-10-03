@@ -11,7 +11,8 @@ import { cleanup, fireEvent, render } from '@testing-library/react';
 import { Sheet } from '../src/canvas/Sheet';
 import type { SheetActions } from '../src/canvas/Sheet';
 import { editorReducer, initialState } from '../src/model/store';
-import type { EditorSnapshot } from '../src/model/types';
+import type { EditorSnapshot, EditorWire } from '../src/model/types';
+import { terminalPositions } from '../src/model/geometry';
 
 const snapshot: EditorSnapshot = {
   circuitId: 'c1',
@@ -439,18 +440,101 @@ describe('direct pin-to-pin wiring and wire editing', () => {
         components: snapCoupled.components,
         wires: snapCoupled.connections || [],
         dpix: snapCoupled.dpix,
+        // Badge text is hover/selection-only now; select the ammeter so it shows
+        selection: ['AMP.1'],
       });
       return <Sheet state={state} dispatch={dispatch} actions={actions} />;
     }
 
     const { container } = render(<CoupledWrapper />);
 
-    // Ammeter badge should read "➔ i(L.1)"
+    // Selected ammeter badge should read "➔ i(L.1)"
     expect(container.textContent).toContain('➔ i(L.1)');
+
+    // Unselected blocks show no badge text (dashed coupling guides only)
+    expect(container.querySelectorAll('.coupling-symbol-badge').length).toBe(1);
 
     // Switches in the power circuit do not render bulky gate label badges (leaving switches clean & uncluttered)
     const switchBadge = container.querySelector('.component.family-LK .coupling-symbol-badge');
     expect(switchBadge).toBeNull();
+  });
+
+
+  it('draws scope guides from unwired net-label inputs to their measurement points', () => {
+    const scopeSnap: EditorSnapshot = {
+      ...snapshot,
+      connections: [],
+      components: [
+        {
+          type: 2,
+          name: 'L.1',
+          family: 'LK',
+          position: [26, 6],
+          orientation: 502,
+          parameters: {},
+          inputLabels: ['sw_node'],
+          outputLabels: ['out'],
+        },
+        {
+          type: 1002,
+          name: 'AMP.1',
+          family: 'CONTROL',
+          position: [20, 20],
+          orientation: 503,
+          parameters: { coupledComponent: 'L.1' },
+          inputLabels: [],
+          outputLabels: ['i_L'],
+        },
+        {
+          type: 5,
+          name: 'SCOPE.1',
+          family: 'CONTROL',
+          position: [36, 22],
+          orientation: 503,
+          parameters: {},
+          inputLabels: ['out', 'i_L'],
+          outputLabels: [],
+        },
+      ],
+    };
+
+    function ScopeWrapper(props: { wires: EditorWire[] }) {
+      const [state, dispatch] = useReducer(editorReducer, {
+        ...initialState,
+        circuitId: scopeSnap.circuitId,
+        components: scopeSnap.components,
+        wires: props.wires,
+        dpix: scopeSnap.dpix,
+        selection: ['SCOPE.1'],
+      });
+      return <Sheet state={state} dispatch={dispatch} actions={actions} />;
+    }
+
+    // Unwired scope inputs: one dashed guide per distinct measurement point
+    const first = render(<ScopeWrapper wires={[]} />);
+    expect(first.container.querySelectorAll('path.coupling-guideline.active')).toHaveLength(2);
+    first.unmount();
+
+    // A net carried by a wire is aimed at its point nearest to the scope
+    // (the "out" rail here spans 28..40 at y=6; the scope sits at x=36)
+    const rail = [
+      { index: 0, type: 'LK' as const, label: 'out', points: [[28, 6], [32, 6], [36, 6], [40, 6]] },
+    ];
+    const railRender = render(<ScopeWrapper wires={rail} />);
+    const railGuides = [...railRender.container.querySelectorAll('path.coupling-guideline.active')]
+      .map((p) => p.getAttribute('d') ?? '');
+    expect(railGuides).toHaveLength(2);
+    expect(railGuides.some((d) => d.includes('576 96'))).toBe(true);
+    railRender.unmount();
+
+    // A real wire touching the first scope pin replaces its guide
+    const scope = scopeSnap.components[2];
+    const pin = terminalPositions(scope).input[0];
+    const wired = [
+      { index: 0, type: 'CONTROL' as const, label: 'w1', points: [[pin.x, pin.y], [pin.x - 2, pin.y]] },
+    ];
+    const second = render(<ScopeWrapper wires={wired} />);
+    expect(second.container.querySelectorAll('path.coupling-guideline.active')).toHaveLength(1);
   });
 
   it('triggers openScopeTab and openScriptTab when double-clicking respective components', () => {
