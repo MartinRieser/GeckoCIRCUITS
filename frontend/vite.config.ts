@@ -6,6 +6,9 @@ export default defineConfig({
   // relative asset paths so the built SPA also works when served by
   // Spring Boot under the context path /gecko
   base: './',
+  build: {
+    chunkSizeWarningLimit: 1000,
+  },
   server: {
     proxy: {
       // Backend: Spring Boot app with context path /gecko on port 8080
