@@ -448,11 +448,9 @@ describe('direct pin-to-pin wiring and wire editing', () => {
     // Ammeter badge should read "➔ i(L.1)"
     expect(container.textContent).toContain('➔ i(L.1)');
 
-    // Switch badge should read "⮡ gate: GATE.1" and have transform with negative X (left side)
+    // Switches in the power circuit do not render bulky gate label badges (leaving switches clean & uncluttered)
     const switchBadge = container.querySelector('.component.family-LK .coupling-symbol-badge');
-    expect(switchBadge).not.toBeNull();
-    const transform = switchBadge?.getAttribute('transform') || '';
-    expect(transform).toMatch(/translate\(-/);
+    expect(switchBadge).toBeNull();
   });
 
   it('triggers openScopeTab and openScriptTab when double-clicking respective components', () => {

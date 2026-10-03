@@ -13,7 +13,6 @@ import { ComponentSymbol } from './symbols';
 import { isScopeComponent, isScriptComponent } from '../simulation/scopes';
 import {
   isGateDriver,
-  isSwitchComponent,
   isAmmeterComponent,
   isVoltmeterComponent,
   getCoupledComponentName,
@@ -1117,22 +1116,19 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                           );
                         })()}
 
-                        {/* Coupling Badge Tag on Component */}
+                        {/* Coupling Badge Tag on Control Blocks (Gate Driver, Ammeter, Voltmeter) */}
                         {(() => {
                           const coupled = getCoupledComponentName(component);
-                          const isSw = isSwitchComponent(component);
                           const isGd = isGateDriver(component);
                           const isAm = isAmmeterComponent(component);
                           const isVm = isVoltmeterComponent(component);
 
-                          if (!isSw && !isGd && !isAm && !isVm) return null;
+                          if (!isGd && !isAm && !isVm) return null;
 
                           let badgeText = '';
                           const clickTarget: string | null = coupled || null;
 
-                          if (isSw && coupled) {
-                            badgeText = `⮡ gate: ${coupled}`;
-                          } else if (isAm && coupled) {
+                          if (isAm && coupled) {
                             badgeText = `➔ i(${coupled})`;
                           } else if (isGd && coupled) {
                             badgeText = `➔ ${coupled}`;
@@ -1156,18 +1152,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                           if (!badgeText) return null;
 
                           const badgeW = Math.max(badgeText.length * 6.2 + 14, 52);
-
-                          // Position:
-                          // For vertical switches (501/503): place on the left side away from top/bottom power wires.
-                          // For horizontal switches (502/504): place below the switch away from left/right power wires.
-                          // For gate drivers, ammeters & voltmeters: place below the block
-                          const isHorizontal =
-                            component.orientation === 502 || component.orientation === 504;
-                          const badgeTransform = isSw
-                            ? isHorizontal
-                              ? `translate(0, ${halfH + 12})`
-                              : `translate(${-halfW - badgeW / 2 - 4}, 0)`
-                            : `translate(0, ${halfH + 12})`;
+                          const badgeTransform = `translate(0, ${halfH + 12})`;
 
                           return (
                             <g
