@@ -693,8 +693,8 @@ connectorType 0
 verbindungLK (5)
 <Verbindung>
 label dc_plus
-x[] 30 30 30 30 30 
-y[] 6 7 8 9 10 
+x[] 30 30 30 30 30 36 36 36 36 36 
+y[] 6 7 8 9 10 6 7 8 9 10 
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -702,8 +702,8 @@ connectorType 0
 verbindungLK (6)
 <Verbindung>
 label 0
-x[] 30 30 30 30 30 
-y[] 14 15 16 17 18 
+x[] 30 30 30 30 30 36 36 36 36 36 
+y[] 14 15 16 17 18 14 15 16 17 18 
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -1760,12 +1760,12 @@ dataContainerSignals[] /u_out
 
 
 export const SYNC_BUCK_IPES = `
-verbindungLeistungskreisANZAHL 11
+verbindungLeistungskreisANZAHL 4
 verbindungLK (0)
 <Verbindung>
 label in
-x[] 6 6 7 8 9 10 11 12 
-y[] 8 6 6 6 6 6 6 6 
+x[] 6 7 8 9 10 
+y[] 6 6 6 6 6 
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -1773,89 +1773,26 @@ connectorType 0
 verbindungLK (1)
 <Verbindung>
 label sw_node
-x[] 16 17 18 19 20 21 22 23 24 25 26 27 28 
-y[] 6 6 6 6 6 6 6 6 6 6 6 6 6 
+x[] 14 15 16 17 18 19 20 21 22 23 24 
+y[] 6 6 6 6 6 6 6 6 6 6 6 
 enabled true
 connectorType 0
 <\\Verbindung>
 
 verbindungLK (2)
 <Verbindung>
-label sw_node
-x[] 18 18 
-y[] 6 8 
+label out
+x[] 28 29 30 31 32 33 34 35 36 37 38 39 40 
+y[] 6 6 6 6 6 6 6 6 6 6 6 6 6 
 enabled true
 connectorType 0
 <\\Verbindung>
 
 verbindungLK (3)
 <Verbindung>
-label sw_node
-x[] 22 22 
-y[] 6 8 
-enabled true
-connectorType 0
-<\\Verbindung>
-
-verbindungLK (4)
-<Verbindung>
-label out
-x[] 32 33 34 35 36 37 38 39 40 41 42 43 44 
-y[] 6 6 6 6 6 6 6 6 6 6 6 6 6 
-enabled true
-connectorType 0
-<\\Verbindung>
-
-verbindungLK (5)
-<Verbindung>
-label out
-x[] 38 38 
-y[] 6 8 
-enabled true
-connectorType 0
-<\\Verbindung>
-
-verbindungLK (6)
-<Verbindung>
-label out
-x[] 44 44 
-y[] 6 8 
-enabled true
-connectorType 0
-<\\Verbindung>
-
-verbindungLK (7)
-<Verbindung>
 label 0
-x[] 6 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 
-y[] 12 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 
-enabled true
-connectorType 0
-<\\Verbindung>
-
-verbindungLK (8)
-<Verbindung>
-label 0
-x[] 18 18 
-y[] 12 14 
-enabled true
-connectorType 0
-<\\Verbindung>
-
-verbindungLK (9)
-<Verbindung>
-label 0
-x[] 22 22 
-y[] 12 14 
-enabled true
-connectorType 0
-<\\Verbindung>
-
-verbindungLK (10)
-<Verbindung>
-label 0
-x[] 38 38 
-y[] 12 14 
+x[] 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 
+y[] 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -1864,8 +1801,8 @@ verbindungControlANZAHL 5
 verbindungCONTROL (0)
 <Verbindung>
 label pwm_hi
-x[] 10 11 12 13 14 
-y[] 20 20 20 20 20 
+x[] 10 11 12 
+y[] 18 18 18 
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1873,8 +1810,8 @@ connectorType 1
 verbindungCONTROL (1)
 <Verbindung>
 label pwm_lo
-x[] 10 11 12 13 14 
-y[] 24 24 24 24 24 
+x[] 10 11 12 
+y[] 22 22 22 
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1882,8 +1819,8 @@ connectorType 1
 verbindungCONTROL (2)
 <Verbindung>
 label v_out
-x[] 28 29 30 31 32 33 34 34 
-y[] 20 20 20 20 20 20 20 22 
+x[] 26 27 28 29 30 31 32 33 34 
+y[] 18 18 18 18 18 18 18 18 20 
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1891,8 +1828,8 @@ connectorType 1
 verbindungCONTROL (3)
 <Verbindung>
 label v_sw
-x[] 28 29 30 31 32 33 34 
-y[] 24 24 24 24 24 24 24 
+x[] 26 27 28 29 30 31 32 33 34 
+y[] 22 22 22 22 22 22 22 22 22 
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1900,8 +1837,8 @@ connectorType 1
 verbindungCONTROL (4)
 <Verbindung>
 label i_L
-x[] 28 29 30 31 32 33 34 34 
-y[] 28 28 28 28 28 28 28 26 
+x[] 26 27 28 29 30 31 32 33 34 
+y[] 26 26 26 26 26 26 26 26 24 
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1916,7 +1853,7 @@ enabledShorted 1
 typ 4
 uniqueObjectIdentifier 1001
 x 6
-y 10
+y 8
 parameter[] 401.0 24.0 50.0 0.0 0.0 0.5 0.0 24.0 0.0 -24.0 0.0 1.0 1.7976931348623157E308 0.0 0.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
@@ -1931,7 +1868,7 @@ labelEndKnoten[] /sw_node
 enabledShorted 1
 typ 7
 uniqueObjectIdentifier 1002
-x 14
+x 12
 y 6
 parameter[] 1.0E7 0.01 1.0E7 0.0 0.0 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0
 parameterString[] /GATE_HI/NIX_NIX_NIX/0
@@ -1960,7 +1897,7 @@ enabledShorted 1
 typ 7
 uniqueObjectIdentifier 1003
 x 18
-y 10
+y 8
 parameter[] 1.0E7 0.01 1.0E7 0.0 0.0 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0
 parameterString[] /GATE_LO/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
@@ -1988,7 +1925,7 @@ enabledShorted 1
 typ 6
 uniqueObjectIdentifier 1007
 x 22
-y 10
+y 8
 parameter[] 0.01 0.7 0.01 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
@@ -2003,7 +1940,7 @@ labelEndKnoten[] /out
 enabledShorted 1
 typ 2
 uniqueObjectIdentifier 1004
-x 30
+x 26
 y 6
 parameter[] 1.0E-4 0.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
@@ -2019,8 +1956,8 @@ labelEndKnoten[] /0
 enabledShorted 1
 typ 3
 uniqueObjectIdentifier 1005
-x 38
-y 10
+x 34
+y 8
 parameter[] 4.7E-5 0.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
@@ -2035,8 +1972,8 @@ labelEndKnoten[] /0
 enabledShorted 1
 typ 1
 uniqueObjectIdentifier 1006
-x 44
-y 10
+x 40
+y 8
 parameter[] 4.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
@@ -2054,7 +1991,7 @@ enabledShorted 1
 typ 4
 uniqueObjectIdentifier 2001
 x 8
-y 20
+y 18
 parameter[] 404.0 1.0 50000.0 0.0 0.0 0.5 0.0 0.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] null
@@ -2079,8 +2016,8 @@ labelEndKnoten[]
 enabledShorted 1
 typ 6
 uniqueObjectIdentifier 2002
-x 16
-y 20
+x 14
+y 18
 parameter[] 0.0
 parameterString[] /S_hi/NIX_NIX_NIX/0
 nameOpt[] null
@@ -2098,8 +2035,8 @@ enabledShorted 1
 typ 4
 uniqueObjectIdentifier 2003
 x 8
-y 24
-parameter[] 404.0 1.0 50000.0 0.0 3.141592653589793 0.5 0.0 0.0
+y 22
+parameter[] 404.0 1.0 50000.0 0.0 3.141592653589793 0.48 0.0 0.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] null
 orientierung 503
@@ -2109,7 +2046,7 @@ typQuelle 404
 anteilDC 0.0
 amplitudeAC 1.0
 frequenz 50000.0
-tastverhaeltnis 0.45
+tastverhaeltnis 0.48
 phase 3.141592653589793
 datnamXY not_defined
 externalDataFileHashValue 0
@@ -2123,8 +2060,8 @@ labelEndKnoten[]
 enabledShorted 1
 typ 6
 uniqueObjectIdentifier 2004
-x 16
-y 24
+x 14
+y 22
 parameter[] 0.0
 parameterString[] /S_lo/NIX_NIX_NIX/0
 nameOpt[] null
@@ -2141,8 +2078,8 @@ labelEndKnoten[] /v_out
 enabledShorted 1
 typ 1
 uniqueObjectIdentifier 2005
-x 26
-y 20
+x 24
+y 18
 parameter[] 0.0
 parameterString[] /out/0/0
 nameOpt[] null
@@ -2157,8 +2094,8 @@ labelEndKnoten[] /v_sw
 enabledShorted 1
 typ 1
 uniqueObjectIdentifier 2006
-x 26
-y 24
+x 24
+y 22
 parameter[] 0.0
 parameterString[] /sw_node/0/0
 nameOpt[] null
@@ -2173,8 +2110,8 @@ labelEndKnoten[] /i_L
 enabledShorted 1
 typ 2
 uniqueObjectIdentifier 2007
-x 26
-y 28
+x 24
+y 26
 parameter[] 0.0
 parameterString[] /L.1/NIX_NIX_NIX/0
 nameOpt[] null
@@ -2192,7 +2129,7 @@ enabledShorted 1
 typ 5
 uniqueObjectIdentifier 2008
 x 36
-y 24
+y 22
 parameter[] 
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] null
@@ -2205,7 +2142,7 @@ savedSignalNames[] /v_out/v_sw/i_L
 <\\detail>
 <\\ElementCONTROL>
 
-tDURATION 0.005
+tDURATION 0.001
 dt 2.0E-7
 solverType 0
 FileVersion 1
@@ -2637,8 +2574,8 @@ connectorType 1
 verbindungCONTROL (2)
 <Verbindung>
 label v_ac
-x[] 36 37 38 39 40 
-y[] 23 23 23 23 23 
+x[] 36 37 38 39 40 40 40 
+y[] 23 23 23 23 23 24 25 
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -2655,8 +2592,8 @@ connectorType 1
 verbindungCONTROL (4)
 <Verbindung>
 label i_load
-x[] 36 37 38 39 40 
-y[] 31 31 31 31 31 
+x[] 36 37 38 39 40 40 40 
+y[] 31 31 31 31 31 30 29 
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -3167,8 +3104,8 @@ connectorType 1
 verbindungCONTROL (1)
 <Verbindung>
 label v_out
-x[] 28 29 30 31 32 33 34 
-y[] 16 16 16 16 16 16 18 
+x[] 28 29 30 31 32 33 34 34 
+y[] 16 16 16 16 16 16 16 17 
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -3176,8 +3113,8 @@ connectorType 1
 verbindungCONTROL (2)
 <Verbindung>
 label v_sw
-x[] 28 29 30 31 32 33 34 
-y[] 20 20 20 20 20 20 20 
+x[] 28 29 30 31 32 33 34 34 
+y[] 20 20 20 20 20 20 20 19 
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -3730,8 +3667,8 @@ verbindungLeistungskreisANZAHL 7
 verbindungLK (0)
 <Verbindung>
 label ac1
-x[] 2 3 4 5 6 7 8 8 
-y[] 7 7 7 7 7 7 7 8 
+x[] 2 3 4 5 6 7 8 8 8 8 
+y[] 7 7 7 7 7 7 7 8 9 10 
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -3739,8 +3676,8 @@ connectorType 0
 verbindungLK (1)
 <Verbindung>
 label ac2
-x[] 2 3 4 5 6 7 8 9 10 11 12 13 14 14 
-y[] 11 11 11 11 11 11 11 11 11 11 11 11 11 8 
+x[] 2 3 4 5 6 7 8 9 10 11 12 13 14 14 14 14 
+y[] 11 11 11 11 11 11 11 11 11 11 11 11 11 10 9 8 
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -3766,7 +3703,7 @@ connectorType 0
 verbindungLK (4)
 <Verbindung>
 label sw_node
-x[] 22 23 24 25 26 27 28 24 24 
+x[] 22 23 24 25 26 27 28 24 24 24 
 y[] 4 4 4 4 4 4 4 5 6 7 
 enabled true
 connectorType 0
@@ -3775,8 +3712,8 @@ connectorType 0
 verbindungLK (5)
 <Verbindung>
 label 0
-x[] 24 24 24 
-y[] 11 12 13 
+x[] 24 24 24 36 36 36 42 42 42 
+y[] 11 12 13 11 12 13 11 12 13 
 enabled true
 connectorType 0
 <\\Verbindung>

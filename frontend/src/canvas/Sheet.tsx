@@ -1158,10 +1158,15 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                           const badgeW = Math.max(badgeText.length * 6.2 + 14, 52);
 
                           // Position:
-                          // For switches: place on the left (gate pin) side so it never collides with bottom wire/diode!
+                          // For vertical switches (501/503): place on the left side away from top/bottom power wires.
+                          // For horizontal switches (502/504): place below the switch away from left/right power wires.
                           // For gate drivers, ammeters & voltmeters: place below the block
+                          const isHorizontal =
+                            component.orientation === 502 || component.orientation === 504;
                           const badgeTransform = isSw
-                            ? `translate(${-halfW - badgeW / 2 - 4}, 0)`
+                            ? isHorizontal
+                              ? `translate(0, ${halfH + 12})`
+                              : `translate(${-halfW - badgeW / 2 - 4}, 0)`
                             : `translate(0, ${halfH + 12})`;
 
                           return (

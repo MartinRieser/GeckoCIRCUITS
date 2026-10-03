@@ -238,6 +238,14 @@ export function terminalPositions(component: {
     };
   }
 
+  // Mutual Inductance Coupler (classic LK_M): magnetic coupling declaration without electrical wire pins
+  if (component.type === LkComponentType.MUTUAL_INDUCTANCE && family !== 'CONTROL') {
+    return {
+      input: [],
+      output: [],
+    };
+  }
+
   // Standard two-port component fallback
   return {
     input: [{ x: center.x - dir.x * TWO_PORT_DIST, y: center.y - dir.y * TWO_PORT_DIST }],
