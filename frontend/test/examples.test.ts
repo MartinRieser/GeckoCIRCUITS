@@ -9,6 +9,12 @@ import {
   RC_FILTER_IPES,
   RC_CLASSIC_IPES,
   THREE_SCOPES_RLC_IPES,
+  SYNC_BUCK_IPES,
+  BUCK_BOOST_IPES,
+  INVERTER_IPES,
+  FLYBACK_IPES,
+  CLOSED_LOOP_BUCK_IPES,
+  PFC_BOOST_IPES,
 } from '../src/model/examples';
 import { findPlacementConflict } from '../src/model/geometry';
 import type { EditorComponent } from '../src/model/types';
@@ -57,6 +63,12 @@ describe('Circuit Examples (.ipes templates)', () => {
       RC_FILTER_IPES,
       RC_CLASSIC_IPES,
       THREE_SCOPES_RLC_IPES,
+      SYNC_BUCK_IPES,
+      BUCK_BOOST_IPES,
+      INVERTER_IPES,
+      FLYBACK_IPES,
+      CLOSED_LOOP_BUCK_IPES,
+      PFC_BOOST_IPES,
     ];
 
     for (const t of templates) {
@@ -68,7 +80,7 @@ describe('Circuit Examples (.ipes templates)', () => {
   });
 
   it('provides a catalog of curated educational examples in EXAMPLES registry', () => {
-    expect(EXAMPLES.length).toBeGreaterThanOrEqual(6);
+    expect(EXAMPLES.length).toBe(13);
 
     const ids = new Set<string>();
     for (const eg of EXAMPLES) {
@@ -84,12 +96,15 @@ describe('Circuit Examples (.ipes templates)', () => {
     }
   });
 
-  it('includes key topologies: Buck, Boost, Rectifier, and RLC circuits', () => {
+  it('includes key topologies: Buck, Boost, Rectifier, Inverter, Flyback, and PFC circuits', () => {
     const exampleNames = EXAMPLES.map((e) => e.name.toLowerCase());
     expect(exampleNames.some((n) => n.includes('buck'))).toBe(true);
     expect(exampleNames.some((n) => n.includes('boost'))).toBe(true);
     expect(exampleNames.some((n) => n.includes('rectifier'))).toBe(true);
     expect(exampleNames.some((n) => n.includes('rlc'))).toBe(true);
+    expect(exampleNames.some((n) => n.includes('inverter'))).toBe(true);
+    expect(exampleNames.some((n) => n.includes('flyback'))).toBe(true);
+    expect(exampleNames.some((n) => n.includes('pfc'))).toBe(true);
   });
 
   it('guarantees ZERO overlapping components across all example circuits', () => {
