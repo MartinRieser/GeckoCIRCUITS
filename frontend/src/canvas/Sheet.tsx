@@ -740,7 +740,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
               markerHeight="6"
               orient="auto-start-reverse"
             >
-              <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#38bdf8" />
+              <path d="M 0 1.5 L 9 5 L 0 8.5 z" style={{ fill: 'var(--accent)' }} />
             </marker>
           </defs>
 
@@ -748,7 +748,8 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
           <rect
             width={rawWidth}
             height={rawHeight}
-            fill={showGrid ? 'url(#grid-dots)' : '#1e2227'}
+            fill={showGrid ? 'url(#grid-dots)' : undefined}
+            style={showGrid ? undefined : { fill: 'var(--bg)' }}
           />
 
           {/* Wires */}
@@ -943,8 +944,8 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                     markerEnd="url(#coupling-arrow)"
                   />
                   <g transform={`translate(${(x1 + x2) / 2}, ${(y1 + y2) / 2})`}>
-                    <rect x={-badgeW / 2} y={-10} width={badgeW} height={20} rx={4} fill="#0f172a" stroke="#38bdf8" strokeWidth={1} />
-                    <text x={0} y={3.5} textAnchor="middle" fill="#38bdf8" fontSize={9} fontWeight="bold">
+                    <rect x={-badgeW / 2} y={-10} width={badgeW} height={20} rx={4} style={{ fill: 'var(--pill-bg)' }} stroke="var(--accent)" strokeWidth={1} />
+                    <text x={0} y={3.5} textAnchor="middle" fill="var(--accent)" fontSize={9} fontWeight="bold">
                       {label}
                     </text>
                   </g>
@@ -1017,7 +1018,13 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                   const cx2 = x1 + dx * 0.6;
                   const cy2 = y2;
                   const pathD = `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
-                  const color = channelColorByIndex(line.colorIndex);
+                  const color = channelColorByIndex(
+                    line.colorIndex,
+                    typeof document !== 'undefined' &&
+                      document.documentElement.getAttribute('data-theme') === 'light'
+                      ? 'light'
+                      : 'dark',
+                  );
                   const m = color.match(/^#(..)(..)(..)$/);
                   const halo = m
                     ? `rgba(${parseInt(m[1], 16)}, ${parseInt(m[2], 16)}, ${parseInt(m[3], 16)}, 0.22)`
@@ -1050,7 +1057,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                           width={pillW}
                           height={15}
                           rx={7}
-                          fill="#0f172a"
+                          style={{ fill: 'var(--pill-bg)' }}
                           stroke={color}
                           strokeWidth={1}
                         />
@@ -1416,10 +1423,10 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
               transform={`translate(${state.focusedTerminal.x * dpix}, ${state.focusedTerminal.y * dpix})`}
               pointerEvents="none"
             >
-              <circle r={8} fill="none" stroke="#38bdf8" strokeWidth={2} strokeDasharray="3 2" />
-              <circle r={3} fill="#38bdf8" />
-              <rect x={10} y={-8} width={24} height={15} rx={3} fill="rgba(15, 23, 42, 0.9)" stroke="#38bdf8" strokeWidth={1} />
-              <text x={22} y={3} textAnchor="middle" fill="#38bdf8" fontSize={9} fontWeight="bold">
+              <circle r={8} fill="none" stroke="var(--accent)" strokeWidth={2} strokeDasharray="3 2" />
+              <circle r={3} fill="var(--accent)" />
+              <rect x={10} y={-8} width={24} height={15} rx={3} style={{ fill: 'var(--pill-bg)' }} stroke="var(--accent)" strokeWidth={1} />
+              <text x={22} y={3} textAnchor="middle" fill="var(--accent)" fontSize={9} fontWeight="bold">
                 {state.focusedTerminal.label}
               </text>
             </g>

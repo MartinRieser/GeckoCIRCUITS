@@ -30,13 +30,13 @@ import {
   type ParameterDef,
 } from '../model/componentSchema';
 import { isScopeComponent } from '../simulation/scopes';
-import { CHANNEL_TRACE_COLORS } from '../simulation/traceColors';
+import { CHANNEL_TRACE_COLORS, CHANNEL_TRACE_COLORS_LIGHT } from '../simulation/traceColors';
 import { terminalPositions } from '../model/geometry';
 import { SymbolPreview } from '../canvas/symbols';
 
 // Same palette the scope view uses for its traces, so a channel's badge
 // color matches its waveform color everywhere.
-const CHANNEL_COLORS = CHANNEL_TRACE_COLORS;
+const CHANNEL_COLORS_DARK = CHANNEL_TRACE_COLORS;
 
 /**
  * Script debug session state and actions shared with the script block editor:
@@ -91,6 +91,8 @@ export interface PropertiesPanelProps {
   onOpenScopeTab?: (scopeName: string) => void;
   /** Callback to collapse the properties panel. */
   onCollapse?: () => void;
+  /** Active UI theme; picks the light-calibrated channel badge palette. */
+  theme?: 'dark' | 'light';
 }
 
 /**
@@ -111,7 +113,9 @@ export function PropertiesPanel({
   onDelete,
   onOpenScopeTab,
   onCollapse,
+  theme = 'dark',
 }: PropertiesPanelProps) {
+  const CHANNEL_COLORS = theme === 'light' ? CHANNEL_TRACE_COLORS_LIGHT : CHANNEL_COLORS_DARK;
   const [name, setName] = useState('');
   const [showRaw, setShowRaw] = useState(false);
 

@@ -942,6 +942,7 @@ export function App() {
                       onDelete={actions.deleteComponent}
                       onOpenScopeTab={(name) => openScopeTab(name)}
                       onCollapse={() => setRightSidebarOpen(false)}
+                      theme={theme}
                     />
                   </div>
 

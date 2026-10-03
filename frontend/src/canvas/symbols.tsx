@@ -445,7 +445,7 @@ function MutualCouplingSymbol({ u }: { u: number }) {
       <line x1={-3} y1={-1.2 * u} x2={-3} y2={1.2 * u} stroke="currentColor" strokeWidth={2} strokeLinecap="round" />
       <line x1={3} y1={-1.2 * u} x2={3} y2={1.2 * u} stroke="currentColor" strokeWidth={2} strokeLinecap="round" />
       {/* Magnetic coupling core badge */}
-      <rect x={-0.45 * u} y={-0.3 * u} width={0.9 * u} height={0.6 * u} rx={3} fill="#0f172a" stroke="currentColor" strokeWidth={1} />
+      <rect x={-0.45 * u} y={-0.3 * u} width={0.9 * u} height={0.6 * u} rx={3} style={{ fill: 'var(--pill-bg)' }} stroke="currentColor" strokeWidth={1} />
       <text x={0} y={0.14 * u} textAnchor="middle" fontSize={0.38 * u} fill="currentColor" stroke="none" fontWeight="bold">
         k
       </text>
