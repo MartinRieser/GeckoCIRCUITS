@@ -213,7 +213,7 @@ export function SymbolByType({
     case 8:
       return <Thyristor u={u} />;
     case 9:
-      return <CoupledInductor u={u} />;
+      return <MutualCouplingSymbol u={u} />;
     case 10:
     case 28:
     case 33:
@@ -438,12 +438,17 @@ function Transistor({ type, u }: { type: number; u: number }) {
   );
 }
 
-function CoupledInductor({ u }: { u: number }) {
+function MutualCouplingSymbol({ u }: { u: number }) {
   return (
-    <g>
-      <Inductor u={u} />
-      <line x1={-0.7 * u} y1={0.45 * u} x2={0.7 * u} y2={0.45 * u} strokeWidth={1.5} />
-      <line x1={-0.7 * u} y1={0.6 * u} x2={0.7 * u} y2={0.6 * u} strokeWidth={1.5} />
+    <g className="symbol-mutual-coupling">
+      {/* Two parallel magnetic core lines */}
+      <line x1={-3} y1={-1.2 * u} x2={-3} y2={1.2 * u} stroke="currentColor" strokeWidth={2} strokeLinecap="round" />
+      <line x1={3} y1={-1.2 * u} x2={3} y2={1.2 * u} stroke="currentColor" strokeWidth={2} strokeLinecap="round" />
+      {/* Magnetic coupling core badge */}
+      <rect x={-0.45 * u} y={-0.3 * u} width={0.9 * u} height={0.6 * u} rx={3} fill="#0f172a" stroke="currentColor" strokeWidth={1} />
+      <text x={0} y={0.14 * u} textAnchor="middle" fontSize={0.38 * u} fill="currentColor" stroke="none" fontWeight="bold">
+        k
+      </text>
     </g>
   );
 }

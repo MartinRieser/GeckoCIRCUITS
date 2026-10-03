@@ -469,8 +469,8 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
       },
     ],
     terminals: {
-      input: [{ label: 'k', description: 'Coupling declaration' }],
-      output: [{ label: 'k', description: 'Coupling declaration' }],
+      input: [],
+      output: [],
     },
   },
 
