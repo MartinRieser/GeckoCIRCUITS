@@ -24,6 +24,8 @@ import { isWireEndPointConnected } from './model/validation';
 import { registerOpenFileHandler } from './desktop';
 import { findScopeBlocks, findScriptBlocks, isScopeComponent, isScriptComponent } from './simulation/scopes';
 import { SimConfigModal } from './simulation/SimConfigModal';
+import { SaveAsModal } from './modals/SaveAsModal';
+import { FileMenu } from './nav/FileMenu';
 import { ScriptViewTab } from './properties/ScriptViewTab';
 import { resolveActiveSimSettings } from './simulation/simSettings';
 import { SCOPE_SETTING_KEYS } from './model/constants';
@@ -53,6 +55,7 @@ export function App() {
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [activeTabId, setActiveTabId] = useState<string>('schematic');
   const [simConfigOpen, setSimConfigOpen] = useState(false);
+  const [saveAsOpen, setSaveAsOpen] = useState(false);
   const [selectedScope, setSelectedScope] = useState<string>('all');
   const [displayLayout, setDisplayLayout] = useState<'overlay' | 'stacked'>(() => {
     return (localStorage.getItem('gecko-display-layout') as 'overlay' | 'stacked') || 'stacked';
@@ -217,7 +220,7 @@ export function App() {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       // Modals manage their own keybindings; suspend global schematic shortcuts
-      if (simConfigOpen) {
+      if (simConfigOpen || saveAsOpen) {
         return;
       }
       if (shortcutsHelpOpen) {
@@ -278,6 +281,20 @@ export function App() {
         case 'save':
           e.preventDefault();
           actions.save();
+          break;
+        case 'save-as':
+          e.preventDefault();
+          setSaveAsOpen(true);
+          break;
+        case 'open':
+          e.preventDefault();
+          fileInputRef.current?.click();
+          break;
+        case 'new-circuit':
+          e.preventDefault();
+          if (confirmDiscardCircuit()) {
+            actions.newCircuit();
+          }
           break;
         case 'show-shortcuts-help':
           e.preventDefault();
@@ -456,26 +473,19 @@ export function App() {
 
         {/* File & Edit Actions */}
         <div className="nav-actions">
-          <button
-            type="button"
-            className="nav-btn"
-            onClick={() => {
+          <FileMenu
+            onNew={() => {
               if (confirmDiscardCircuit()) actions.newCircuit();
             }}
-            title="Create blank circuit"
-          >
-            New
-          </button>
-
-          <button
-            type="button"
-            className="nav-btn"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={state.busy}
-            title="Open local .ipes file"
-          >
-            Open...
-          </button>
+            onOpen={() => fileInputRef.current?.click()}
+            onSave={actions.save}
+            onSaveAs={() => setSaveAsOpen(true)}
+            onOpenRecent={(entry) => {
+              if (confirmDiscardCircuit()) actions.openRecent(entry);
+            }}
+            canSave={!!state.circuitId}
+            busy={state.busy}
+          />
           <input
             ref={fileInputRef}
             type="file"
@@ -489,16 +499,6 @@ export function App() {
               e.target.value = '';
             }}
           />
-
-          <button
-            type="button"
-            className="nav-btn"
-            onClick={actions.save}
-            disabled={!state.circuitId}
-            title="Download circuit as .ipes file (Ctrl+S)"
-          >
-            Save .ipes
-          </button>
 
           {/* Examples Dropdown */}
           <div className="dropdown-wrap">
@@ -1085,6 +1085,14 @@ export function App() {
           </div>
         </div>
       )}
+
+      {/* Save As Modal Dialog */}
+      <SaveAsModal
+        isOpen={saveAsOpen}
+        defaultFilename={state.filename || 'circuit.ipes'}
+        onSave={(filename) => actions.saveAs(filename)}
+        onClose={() => setSaveAsOpen(false)}
+      />
     </div>
   );
 }

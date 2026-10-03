@@ -165,7 +165,8 @@ export type Action =
   | { type: 'DRAG_MOVE'; x: number; y: number }
   | { type: 'DRAG_END' }
   | { type: 'PANEL_FOR'; name: string | null }
-  | { type: 'TOGGLE_WIRE_MODE' };
+  | { type: 'TOGGLE_WIRE_MODE' }
+  | { type: 'SET_FILENAME'; filename: string };
 
 /**
  * Re-routes the wires a move just changed so they dodge component bodies and
@@ -248,6 +249,9 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
 
     case 'STATUS':
       return { ...state, status: action.status };
+
+    case 'SET_FILENAME':
+      return { ...state, filename: action.filename };
 
     case 'BUSY':
       return { ...state, busy: action.busy };

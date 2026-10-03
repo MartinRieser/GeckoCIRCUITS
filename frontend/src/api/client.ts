@@ -570,7 +570,7 @@ export function streamSimulationProgress(
 /**
  * Converts a byte array to Base64 encoded string using chunked processing.
  */
-function toBase64(bytes: Uint8Array): string {
+export function toBase64(bytes: Uint8Array): string {
   let binary = '';
   const chunk = BASE64_CHUNK_SIZE;
   for (let i = 0; i < bytes.length; i += chunk) {
@@ -582,7 +582,7 @@ function toBase64(bytes: Uint8Array): string {
 /**
  * Reads a File object as a Base64-encoded string.
  */
-async function fileToBase64(file: File): Promise<string> {
+export async function fileToBase64(file: File): Promise<string> {
   return toBase64(new Uint8Array(await file.arrayBuffer()));
 }
 

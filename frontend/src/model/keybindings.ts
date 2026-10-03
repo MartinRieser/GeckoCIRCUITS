@@ -35,6 +35,9 @@ export type ActionId =
   | 'toggle-wire-mode'
   | 'rotate-selection'
   | 'save'
+  | 'save-as'
+  | 'open'
+  | 'new-circuit'
   | 'toggle-inspector'
   | 'toggle-palette'
   | 'toggle-simulation'
@@ -81,6 +84,27 @@ export const KEYBINDINGS: KeyBinding[] = [
     key: 's',
     modifiers: { ctrlOrMeta: true },
     description: 'Save Circuit File (.ipes)',
+    category: 'General',
+  },
+  {
+    action: 'save-as',
+    key: 's',
+    modifiers: { ctrlOrMeta: true, shift: true },
+    description: 'Save Circuit As...',
+    category: 'General',
+  },
+  {
+    action: 'open',
+    key: 'o',
+    modifiers: { ctrlOrMeta: true },
+    description: 'Open Local Circuit File (.ipes)',
+    category: 'General',
+  },
+  {
+    action: 'new-circuit',
+    key: 'n',
+    modifiers: { ctrlOrMeta: true },
+    description: 'Create Blank Circuit',
     category: 'General',
   },
   {

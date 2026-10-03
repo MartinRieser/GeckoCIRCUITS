@@ -26,6 +26,7 @@ import { isScopeComponent } from '../simulation/scopes';
 import { BLANK_CIRCUIT_IPES } from '../model/examples';
 import { SIMULATION_DEFAULTS } from '../model/constants';
 import { flipRoute, densePoints, routeMovedWire, deconflictMovedWires } from '../canvas/WireRouter';
+import { addRecentFile, type RecentFileEntry } from '../model/recentFiles';
 
 export function useEditor() {
   const [state, dispatch] = useReducer(editorReducer, initialState);
@@ -154,15 +155,17 @@ export function useEditor() {
       resetSimulationState();
       dispatch({ type: 'STATUS', status: `Loading ${file.name}...` });
       try {
-        const circuitId = await api.uploadIpes(file);
+        const base64 = await api.fileToBase64(file);
+        const circuitId = await api.uploadIpesBase64(base64, file.name);
         attachSubscription(circuitId);
         await refresh(circuitId);
+        addRecentFile(file.name, base64, stateRef.current.components.length);
         dispatch({ type: 'STATUS', status: `Loaded ${file.name}` });
       } catch (e) {
         reportError(e);
       }
     },
-    [attachSubscription, refresh, reportError],
+    [attachSubscription, refresh, reportError, resetSimulationState],
   );
 
   const openContent = useCallback(
@@ -173,6 +176,7 @@ export function useEditor() {
         const circuitId = await api.uploadIpesString(content, filename);
         attachSubscription(circuitId);
         await refresh(circuitId);
+        addRecentFile(filename, content, stateRef.current.components.length);
         dispatch({ type: 'STATUS', status: `Loaded ${filename}` });
       } catch (e) {
         reportError(e);
@@ -194,12 +198,36 @@ export function useEditor() {
         const circuitId = await api.uploadIpesBase64(base64, filename);
         attachSubscription(circuitId);
         await refresh(circuitId);
+        addRecentFile(filename, base64, stateRef.current.components.length);
         dispatch({ type: 'STATUS', status: `Loaded ${filename}` });
       } catch (e) {
         reportError(e);
       }
     },
-    [attachSubscription, refresh, reportError],
+    [attachSubscription, refresh, reportError, resetSimulationState],
+  );
+
+  /** Opens a circuit from the Recent Files list. */
+  const openRecent = useCallback(
+    async (entry: RecentFileEntry) => {
+      resetSimulationState();
+      dispatch({ type: 'STATUS', status: `Loading ${entry.name}...` });
+      try {
+        let circuitId: string;
+        if (entry.content.startsWith('GECKO') || entry.content.includes('\n')) {
+          circuitId = await api.uploadIpesString(entry.content, entry.name);
+        } else {
+          circuitId = await api.uploadIpesBase64(entry.content, entry.name);
+        }
+        attachSubscription(circuitId);
+        await refresh(circuitId);
+        addRecentFile(entry.name, entry.content, stateRef.current.components.length);
+        dispatch({ type: 'STATUS', status: `Loaded ${entry.name}` });
+      } catch (e) {
+        reportError(e);
+      }
+    },
+    [attachSubscription, refresh, reportError, resetSimulationState],
   );
 
   // Shared in-flight promise so the auto-init effect and a concurrent arm()
@@ -1001,12 +1029,51 @@ export function useEditor() {
   const save = useCallback(async () => {
     const current = stateRef.current;
     if (!current.circuitId) return;
+    const name = current.filename || 'circuit.ipes';
     try {
-      await api.downloadIpes(current.circuitId, current.filename || 'circuit.ipes');
+      await api.downloadIpes(current.circuitId, name);
+      try {
+        const resp = await fetch(api.apiBase() + `/circuits/${current.circuitId}/ipes`);
+        if (resp.ok) {
+          const blob = await resp.blob();
+          const base64 = api.toBase64(new Uint8Array(await blob.arrayBuffer()));
+          addRecentFile(name, base64, current.components.length);
+        }
+      } catch {
+        // best effort cache update
+      }
+      dispatch({ type: 'STATUS', status: `Saved ${name}` });
     } catch (e) {
       reportError(e);
     }
   }, [reportError]);
+
+  const saveAs = useCallback(
+    async (suggestedName: string) => {
+      const current = stateRef.current;
+      if (!current.circuitId) return;
+      const cleanName = suggestedName.trim();
+      const name = cleanName.endsWith('.ipes') ? cleanName : `${cleanName}.ipes`;
+      try {
+        await api.downloadIpes(current.circuitId, name);
+        dispatch({ type: 'SET_FILENAME', filename: name });
+        try {
+          const resp = await fetch(api.apiBase() + `/circuits/${current.circuitId}/ipes`);
+          if (resp.ok) {
+            const blob = await resp.blob();
+            const base64 = api.toBase64(new Uint8Array(await blob.arrayBuffer()));
+            addRecentFile(name, base64, current.components.length);
+          }
+        } catch {
+          // best effort cache update
+        }
+        dispatch({ type: 'STATUS', status: `Saved as ${name}` });
+      } catch (e) {
+        reportError(e);
+      }
+    },
+    [reportError],
+  );
 
   const rename = useCallback(
     (name: string, newName: string) => {
@@ -1341,6 +1408,7 @@ export function useEditor() {
       open,
       openContent,
       openBase64,
+      openRecent,
       newCircuit,
       arm,
       cancel,
@@ -1360,6 +1428,7 @@ export function useEditor() {
       undo,
       redo,
       save,
+      saveAs,
       rename,
       setParameter,
       setLabel,
