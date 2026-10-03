@@ -644,7 +644,7 @@ dataContainerSignals[] /v_in/v_out/i_L
 `;
 
 export const RECTIFIER_CIRCUIT_IPES = `
-verbindungLeistungskreisANZAHL 7
+verbindungLeistungskreisANZAHL 9
 verbindungLK (0)
 <Verbindung>
 label ac1
@@ -693,17 +693,35 @@ connectorType 0
 verbindungLK (5)
 <Verbindung>
 label dc_plus
-x[] 30 30 30 30 30 36 36 36 36 36 
-y[] 6 7 8 9 10 6 7 8 9 10 
+x[] 30 30 30 30 30
+y[] 6 7 8 9 10
 enabled true
 connectorType 0
 <\\Verbindung>
 
 verbindungLK (6)
 <Verbindung>
+label dc_plus
+x[] 36 36 36 36 36
+y[] 6 7 8 9 10
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (7)
+<Verbindung>
 label 0
-x[] 30 30 30 30 30 36 36 36 36 36 
-y[] 14 15 16 17 18 14 15 16 17 18 
+x[] 30 30 30 30 30
+y[] 14 15 16 17 18
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (8)
+<Verbindung>
+label 0
+x[] 36 36 36 36 36
+y[] 14 15 16 17 18
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -1819,8 +1837,8 @@ connectorType 1
 verbindungCONTROL (2)
 <Verbindung>
 label v_out
-x[] 26 27 28 29 30 31 32 33 34 
-y[] 18 18 18 18 18 18 18 18 20 
+x[] 26 27 28 29 30 31 32 33 34 34 34
+y[] 18 18 18 18 18 18 18 18 18 19 20
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1828,8 +1846,8 @@ connectorType 1
 verbindungCONTROL (3)
 <Verbindung>
 label v_sw
-x[] 26 27 28 29 30 31 32 33 34 
-y[] 22 22 22 22 22 22 22 22 22 
+x[] 26 27 28 29 30 31 32 33 34
+y[] 22 22 22 22 22 22 22 22 22
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1837,8 +1855,8 @@ connectorType 1
 verbindungCONTROL (4)
 <Verbindung>
 label i_L
-x[] 26 27 28 29 30 31 32 33 34 
-y[] 26 26 26 26 26 26 26 26 24 
+x[] 26 27 28 29 30 31 32 33 34 34 34
+y[] 26 26 26 26 26 26 26 26 26 25 24
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -2150,12 +2168,12 @@ dataContainerSignals[] /v_out/v_sw/i_L
 `;
 
 export const BUCK_BOOST_IPES = `
-verbindungLeistungskreisANZAHL 6
+verbindungLeistungskreisANZAHL 4
 verbindungLK (0)
 <Verbindung>
 label in
-x[] 6 7 8 9 10 11 12 
-y[] 6 6 6 6 6 6 6 
+x[] 6 7 8 9 10 11 12
+y[] 6 6 6 6 6 6 6
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -2163,8 +2181,8 @@ connectorType 0
 verbindungLK (1)
 <Verbindung>
 label sw_node
-x[] 16 17 18 19 20 21 22 
-y[] 6 6 6 6 6 6 6 
+x[] 16 17 18 19 20 21 22
+y[] 6 6 6 6 6 6 6
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -2172,8 +2190,8 @@ connectorType 0
 verbindungLK (2)
 <Verbindung>
 label v_neg
-x[] 26 27 28 29 30 31 32 33 34 35 36 
-y[] 6 6 6 6 6 6 6 6 6 6 6 
+x[] 26 27 28 29 30 31 32 33 34 35 36
+y[] 6 6 6 6 6 6 6 6 6 6 6
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -2181,26 +2199,8 @@ connectorType 0
 verbindungLK (3)
 <Verbindung>
 label 0
-x[] 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 
-y[] 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 
-enabled true
-connectorType 0
-<\\Verbindung>
-
-verbindungLK (4)
-<Verbindung>
-label sw_node
-x[] 18 
-y[] 6 
-enabled true
-connectorType 0
-<\\Verbindung>
-
-verbindungLK (5)
-<Verbindung>
-label v_neg
-x[] 30 36 
-y[] 6 6 
+x[] 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36
+y[] 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -2488,12 +2488,12 @@ dataContainerSignals[] /v_in/v_out/i_L
 `;
 
 export const INVERTER_IPES = `
-verbindungLeistungskreisANZAHL 7
+verbindungLeistungskreisANZAHL 8
 verbindungLK (0)
 <Verbindung>
 label dc_pos
-x[] 6 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 
-y[] 9 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 
+x[] 6 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26
+y[] 9 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -2501,8 +2501,8 @@ connectorType 0
 verbindungLK (1)
 <Verbindung>
 label 0
-x[] 6 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 
-y[] 13 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 
+x[] 6 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26
+y[] 13 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -2510,17 +2510,17 @@ connectorType 0
 verbindungLK (2)
 <Verbindung>
 label out_a
-x[] 16 15 14 13 12 11 10 10 10 10 10 10 10 10 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 
-y[] 11 11 11 11 11 11 11 10 9 8 7 6 5 4 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 
+x[] 16 15 14 13 12 11 10 10 10 10 10 10 10 10 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32
+y[] 11 11 11 11 11 11 11 10 9 8 7 6 5 4 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
 enabled true
 connectorType 0
 <\\Verbindung>
 
 verbindungLK (3)
 <Verbindung>
-label out_a
-x[] 12 16 
-y[] 11 11 
+label out_b
+x[] 26 25 24 23 22 21 20 20 20 20 20 20 20 20 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 44 44 44 44 44 44
+y[] 11 11 11 11 11 11 11 12 13 14 15 16 17 18 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 18 17 16 15 14 13
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -2528,17 +2528,17 @@ connectorType 0
 verbindungLK (4)
 <Verbindung>
 label out_b
-x[] 26 25 24 23 22 21 20 20 20 20 20 20 20 20 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 38 38 38 38 38 38 39 40 41 42 43 44 44 44 44 44 44 44 
-y[] 11 11 11 11 11 11 11 12 13 14 15 16 17 18 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 18 17 16 15 14 13 19 19 19 19 19 19 18 17 16 15 14 13 
+x[] 38 38 38 38 38 38 38
+y[] 19 18 17 16 15 14 13
 enabled true
 connectorType 0
 <\\Verbindung>
 
 verbindungLK (5)
 <Verbindung>
-label out_b
-x[] 22 23 24 25 26 
-y[] 11 11 11 11 11 
+label load_p
+x[] 36 37 38 39 40 41 42 43 44 44 44 44 44 44 44
+y[] 3 3 3 3 3 3 3 3 3 4 5 6 7 8 9
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -2546,54 +2546,72 @@ connectorType 0
 verbindungLK (6)
 <Verbindung>
 label load_p
-x[] 36 37 38 38 38 38 38 38 38 39 40 41 42 43 44 44 44 44 44 44 44 
-y[] 3 3 3 4 5 6 7 8 9 3 3 3 3 3 3 4 5 6 7 8 9 
+x[] 38 38 38 38 38 38 38
+y[] 3 4 5 6 7 8 9
 enabled true
 connectorType 0
 <\\Verbindung>
 
-verbindungControlANZAHL 5
+verbindungControlANZAHL 7
 verbindungCONTROL (0)
 <Verbindung>
 label pwm_a
-x[] 10 11 12 10 10 10 11 12 13 14 15 16 17 18 18 18 
-y[] 23 23 23 23 22 21 21 21 21 21 21 21 21 21 22 23 
+x[] 10 11 12
+y[] 23 23 23
 enabled true
 connectorType 1
 <\\Verbindung>
 
 verbindungCONTROL (1)
 <Verbindung>
-label pwm_b
-x[] 10 11 12 10 10 10 11 12 13 14 15 16 17 18 18 18 
-y[] 27 27 27 27 28 29 29 29 29 29 29 29 29 29 28 27 
+label pwm_a
+x[] 10 10 10 10 11 12 13 14 15 16 17 18 18 18 18
+y[] 23 22 21 20 20 20 20 20 20 20 20 20 21 22 23
 enabled true
 connectorType 1
 <\\Verbindung>
 
 verbindungCONTROL (2)
 <Verbindung>
-label v_ac
-x[] 36 37 38 39 40 40 40 
-y[] 23 23 23 23 23 24 25 
+label pwm_b
+x[] 10 11 12
+y[] 27 27 27
 enabled true
 connectorType 1
 <\\Verbindung>
 
 verbindungCONTROL (3)
 <Verbindung>
-label v_ab
-x[] 36 37 38 39 40 
-y[] 27 27 27 27 27 
+label pwm_b
+x[] 10 10 10 10 10 11 12 13 14 15 16 17 18 18 18 18 18
+y[] 27 28 29 30 31 31 31 31 31 31 31 31 31 30 29 28 27
 enabled true
 connectorType 1
 <\\Verbindung>
 
 verbindungCONTROL (4)
 <Verbindung>
+label v_ac
+x[] 36 37 38 39 40 40 40
+y[] 23 23 23 23 23 24 25
+enabled true
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (5)
+<Verbindung>
+label v_ab
+x[] 36 37 38 39 40
+y[] 27 27 27 27 27
+enabled true
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (6)
+<Verbindung>
 label i_load
-x[] 36 37 38 39 40 40 40 
-y[] 31 31 31 31 31 30 29 
+x[] 36 37 38 39 40 40 40
+y[] 31 31 31 31 31 30 29
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -3368,12 +3386,12 @@ dataContainerSignals[] /v_out/v_sw
 `;
 
 export const CLOSED_LOOP_BUCK_IPES = `
-verbindungLeistungskreisANZAHL 5
+verbindungLeistungskreisANZAHL 4
 verbindungLK (0)
 <Verbindung>
 label in
-x[] 6 7 8 9 10 
-y[] 6 6 6 6 6 
+x[] 6 7 8 9 10
+y[] 6 6 6 6 6
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -3381,8 +3399,8 @@ connectorType 0
 verbindungLK (1)
 <Verbindung>
 label sw_node
-x[] 14 15 16 17 18 19 20 
-y[] 6 6 6 6 6 6 6 
+x[] 14 15 16 17 18 19 20
+y[] 6 6 6 6 6 6 6
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -3390,8 +3408,8 @@ connectorType 0
 verbindungLK (2)
 <Verbindung>
 label out
-x[] 24 25 26 27 28 29 30 31 32 33 34 
-y[] 6 6 6 6 6 6 6 6 6 6 6 
+x[] 24 25 26 27 28 29 30 31 32 33 34
+y[] 6 6 6 6 6 6 6 6 6 6 6
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -3399,17 +3417,8 @@ connectorType 0
 verbindungLK (3)
 <Verbindung>
 label 0
-x[] 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 
-y[] 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 
-enabled true
-connectorType 0
-<\\Verbindung>
-
-verbindungLK (4)
-<Verbindung>
-label 0
-x[] 16 
-y[] 10 
+x[] 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34
+y[] 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -3436,8 +3445,8 @@ connectorType 1
 verbindungCONTROL (2)
 <Verbindung>
 label v_out_scope
-x[] 10 10 10 10 26 27 28 29 30 31 32 
-y[] 16 18 20 22 22 22 22 22 22 22 22 
+x[] 10 10 11 12 12 12 12 12 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32
+y[] 16 17 17 17 18 19 20 21 22 22 22 22 22 22 22 22 22 22 22 22 22 22 22 22 22 22 22 22 22
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -3663,12 +3672,12 @@ dataContainerSignals[] /v_out_scope
 `;
 
 export const PFC_BOOST_IPES = `
-verbindungLeistungskreisANZAHL 7
+verbindungLeistungskreisANZAHL 10
 verbindungLK (0)
 <Verbindung>
 label ac1
-x[] 2 3 4 5 6 7 8 8 8 8 
-y[] 7 7 7 7 7 7 7 8 9 10 
+x[] 2 3 4 5 6 7 8 8 8 8
+y[] 7 7 7 7 7 7 7 8 9 10
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -3676,8 +3685,8 @@ connectorType 0
 verbindungLK (1)
 <Verbindung>
 label ac2
-x[] 2 3 4 5 6 7 8 9 10 11 12 13 14 14 14 14 
-y[] 11 11 11 11 11 11 11 11 11 11 11 11 11 10 9 8 
+x[] 2 3 4 5 6 7 8 9 10 11 12 13 14 14 14 14
+y[] 11 11 11 11 11 11 11 11 11 11 11 11 11 10 9 8
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -3685,8 +3694,8 @@ connectorType 0
 verbindungLK (2)
 <Verbindung>
 label rect_pos
-x[] 8 9 10 11 12 13 14 15 16 17 18 
-y[] 4 4 4 4 4 4 4 4 4 4 4 
+x[] 8 9 10 11 12 13 14 15 16 17 18
+y[] 4 4 4 4 4 4 4 4 4 4 4
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -3694,8 +3703,8 @@ connectorType 0
 verbindungLK (3)
 <Verbindung>
 label 0
-x[] 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 
-y[] 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 
+x[] 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42
+y[] 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -3703,26 +3712,71 @@ connectorType 0
 verbindungLK (4)
 <Verbindung>
 label sw_node
-x[] 22 23 24 25 26 27 28 24 24 24 
-y[] 4 4 4 4 4 4 4 5 6 7 
+x[] 22 23 24 25 26 27 28
+y[] 4 4 4 4 4 4 4
 enabled true
 connectorType 0
 <\\Verbindung>
 
 verbindungLK (5)
 <Verbindung>
-label 0
-x[] 24 24 24 36 36 36 42 42 42 
-y[] 11 12 13 11 12 13 11 12 13 
+label sw_node
+x[] 24 24 24 24
+y[] 4 5 6 7
 enabled true
 connectorType 0
 <\\Verbindung>
 
 verbindungLK (6)
 <Verbindung>
+label 0
+x[] 24 24 24 24
+y[] 11 12 13 14
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (7)
+<Verbindung>
+label 0
+x[] 36 36 36 36
+y[] 11 12 13 14
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (8)
+<Verbindung>
+label 0
+x[] 42 42 42 42
+y[] 11 12 13 14
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (9)
+<Verbindung>
 label v_dc
-x[] 32 33 34 35 36 37 38 39 40 41 42 36 36 36 42 42 42 
-y[] 4 4 4 4 4 4 4 4 4 4 4 5 6 7 5 6 7 
+x[] 32 33 34 35 36 37 38 39 40 41 42
+y[] 4 4 4 4 4 4 4 4 4 4 4
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (10)
+<Verbindung>
+label v_dc
+x[] 36 36 36 36
+y[] 4 5 6 7
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (11)
+<Verbindung>
+label v_dc
+x[] 42 42 42 42
+y[] 4 5 6 7
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -4031,8 +4085,8 @@ connectorType 1
 verbindungCONTROL (2)
 <Verbindung>
 label v_dc_meas
-x[] 12 12 12 36 36 36 
-y[] 20 24 26 26 24 20 
+x[] 12 12 13 14 14 14 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 36 36 36 36
+y[] 20 21 21 21 22 23 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 23 22 21 20
 enabled true
 connectorType 1
 <\\Verbindung>
