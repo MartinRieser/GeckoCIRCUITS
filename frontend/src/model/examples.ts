@@ -3205,7 +3205,7 @@ enabledShorted 1
 typ 9
 uniqueObjectIdentifier 1005
 x 19
-y 8
+y 5
 parameter[] 0.999 1003.0 1004.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
