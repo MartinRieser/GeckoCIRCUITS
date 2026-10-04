@@ -16,6 +16,17 @@
 - **Exhaustive Field Fidelity**: When implementing parsers, serializers, or data models, tests must assert exact equality for every single modeled attribute, array, connection, identifier, flag, and metadata field. Never settle for superficial smoke checks.
 - **Complete Downstream Integration**: When adding core capabilities (e.g., serialization, new model types), always complete the integration in downstream consumers (services, controllers, netlist builders) and add full test coverage across all layers.
 
+## Example-Circuit Quality Gate (MANDATORY before declaring example work done)
+Bundled examples in `frontend/src/model/examples.ts` are user-facing products, not test fixtures. A change to an example (or to any engine semantics an example depends on) is **not done** until ALL of the following pass:
+
+1. **Headless simulation gate**: `python scripts/verify-examples.py` (all examples, exit 0). It runs every example through the REST engine and asserts structural validity (COMPLETED, all `dataContainerSignals[]` recorded, finite, non-degenerate) plus per-example physics plausibility (steady-state windows, ripple bounds, power factor) in its `ASSERTIONS` table.
+2. **New examples get assertions**: When adding an example, add its entry to the `ASSERTIONS` table in `scripts/verify-examples.py` with windows derived from circuit theory (V = Vin·D, 1/(1−D), τ = RC, P/(ω·C·V) ripple, diode drops), not from eyeballing the simulation output. Ranges ±20% or generous — the gate catches broken physics, not engineering taste.
+3. **Frontend suite**: `npx vitest run` + `npx tsc --noEmit` in `frontend/` (includes `examples.connectivity.test.ts`: orthogonal wires, pins touched, no badge/label collisions).
+4. **GUI smoke test**: Load the changed example in the web editor (Examples menu → run F5) and confirm the scope renders the promised channels with plausible shapes. Static tests cannot catch a flat-lined scope channel.
+5. **Name-coupling rule**: every scope input label, `dataContainerSignals[]` entry, and `savedSignalNames[]` entry must exactly match a producer's output label (`labelEndKnoten[]`). A mismatch records a dangling constant-zero signal — the signature bug of example breakage (caught by check 1's stuck-at-zero rule).
+
+Known-good reference values live in the `ASSERTIONS` table; if physics-verification fails, fix the example (or the engine), never the window — windows are derived from theory, and widening one requires a stated physical justification in the commit message.
+
 ## Task Completeness & Definition of Done
 - **No Premature Completion**: Never declare a task, goal, or milestone complete until all subtasks, edge cases, downstream integrations, and architectural plan requirements are fully implemented and verified.
 - **Plan Cross-Check**: Before finishing any phase or task, explicitly review the requirements checklist in the plan/specification document line-by-line.
