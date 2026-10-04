@@ -624,8 +624,9 @@ export function PropertiesPanel({
                       value={String(component.parameters?.nodeA ?? '')}
                       onChange={(e) => {
                         const val = e.target.value;
+                        // The server's nodeA/nodeB branch clears any coupling itself;
+                        // sending coupledComponent here too would race the nodeA patch.
                         onSetParameter(component.name, 'nodeA', val);
-                        onSetParameter(component.name, 'coupledComponent', '');
                         const currentOut = component.outputLabels?.[0] || '';
                         if (val && (!currentOut || currentOut.startsWith('u') || currentOut.startsWith('v'))) {
                           onSetLabel(component.name, 'y', 0, `u_${val}`);

@@ -652,6 +652,48 @@ class CircuitEditServiceTest {
     }
 
     @Test
+    void voltmeterPartialNodePatchKeepsOtherNode() {
+        // Regression: clearing one node field to retype it must not wipe the
+        // other node — the inspector patches one field at a time, and blanking
+        // nodeA flipped the voltmeter back into across-component mode.
+        service.createComponent(circuitId, new ComponentCreateRequest("CONTROL", 1, "VOLT.PART", 15, 15, null, null));
+        service.patchComponent(circuitId, "VOLT.PART", new ComponentPatchRequest(null, null, null, null,
+                Map.of("nodeA", "z1", "nodeB", "0")));
+
+        // User deletes the '0' in the Negative Node field
+        service.patchComponent(circuitId, "VOLT.PART", new ComponentPatchRequest(null, null, null, null,
+                Map.of("nodeB", "")));
+        CircuitModel.ComponentData raw = findByName("VOLT.PART");
+        assertEquals("z1", raw.getParameters().get("nodeA"), "clearing nodeB must keep nodeA");
+        assertEquals("", raw.getParameters().get("nodeB"));
+        assertEquals("z1", raw.getParameterStrings()[0]);
+        assertEquals("", raw.getParameterStrings()[1]);
+
+        // User types the new negative node name
+        service.patchComponent(circuitId, "VOLT.PART", new ComponentPatchRequest(null, null, null, null,
+                Map.of("nodeB", "mid")));
+        assertEquals("z1", raw.getParameters().get("nodeA"));
+        assertEquals("mid", raw.getParameters().get("nodeB"));
+        assertEquals("mid", raw.getParameterStrings()[1]);
+
+        // Same guarantee for the positive node field
+        service.patchComponent(circuitId, "VOLT.PART", new ComponentPatchRequest(null, null, null, null,
+                Map.of("nodeA", "")));
+        assertEquals("", raw.getParameters().get("nodeA"));
+        assertEquals("mid", raw.getParameters().get("nodeB"));
+
+        // A redundant clear-coupling patch while in node mode must not
+        // clobber the positive node parked in parameterStrings[0].
+        service.patchComponent(circuitId, "VOLT.PART", new ComponentPatchRequest(null, null, null, null,
+                Map.of("nodeA", "z2")));
+        service.patchComponent(circuitId, "VOLT.PART", new ComponentPatchRequest(null, null, null, null,
+                Map.of("coupledComponent", "")));
+        assertEquals("z2", raw.getParameters().get("nodeA"));
+        assertEquals("mid", raw.getParameters().get("nodeB"));
+        assertEquals("z2", raw.getParameterStrings()[0]);
+    }
+
+    @Test
     void patchComponent_capacitorInitialVoltageSyncsLegacySlots() {
         service.createComponent(circuitId,
                 new ComponentCreateRequest("LK", 3, "C_test", 20, 20, null, null));

@@ -296,6 +296,18 @@ describe('PropertiesPanel Overhaul', () => {
     expect(posInput).not.toBeNull();
     fireEvent.change(posInput, { target: { value: 'in' } });
     expect(onSetParameter).toHaveBeenCalledWith('VOLT.1', 'nodeA', 'in');
+    // Editing the positive node must not also fire a coupling clear: the
+    // server's node branch clears the coupling itself, and a second racing
+    // patch could clobber the node parked in parameterStrings[0].
+    expect(onSetParameter).not.toHaveBeenCalledWith('VOLT.1', 'coupledComponent', expect.anything());
+
+    // Clearing the negative node to retype it sends only nodeB — the server
+    // keeps nodeA, so the meter must stay in node mode.
+    const negInput = screen.getByDisplayValue('0');
+    expect(negInput).not.toBeNull();
+    fireEvent.change(negInput, { target: { value: '' } });
+    expect(onSetParameter).toHaveBeenCalledWith('VOLT.1', 'nodeB', '');
+    expect(onSetParameter).toHaveBeenCalledTimes(2);
   });
 
   it('renders Voltage Measurement Target section for Voltmeter in component mode and allows selection', () => {

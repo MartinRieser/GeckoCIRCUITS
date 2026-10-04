@@ -964,14 +964,13 @@ public class CircuitEditService {
         parameters.forEach(comp::setParameter);
         if (parameters.containsKey("nodeA") || parameters.containsKey("nodeB")
                 || parameters.containsKey("positiveNode") || parameters.containsKey("negativeNode")) {
-            String nA = parameters.containsKey("nodeA")
-                    ? String.valueOf(parameters.get("nodeA"))
-                    : String.valueOf(parameters.getOrDefault("positiveNode", ""));
-            String nB = parameters.containsKey("nodeB")
-                    ? String.valueOf(parameters.get("nodeB"))
-                    : String.valueOf(parameters.getOrDefault("negativeNode", "0"));
-            if (nA == null || nA.equals("null")) nA = "";
-            if (nB == null || nB.equals("null")) nB = "0";
+            // The inspector patches one field at a time, so a request usually
+            // carries only nodeA or only nodeB. The omitted node must keep its
+            // stored value — blanking it would flip the voltmeter back into
+            // across-component mode the moment the user clears a field to
+            // retype it.
+            String nA = resolveNodeName(parameters, comp, "nodeA", "positiveNode", "");
+            String nB = resolveNodeName(parameters, comp, "nodeB", "negativeNode", "0");
             comp.setParameter("nodeA", nA);
             comp.setParameter("nodeB", nB);
             comp.setParameterStrings(new String[]{nA, nB, "0"});
@@ -985,7 +984,11 @@ public class CircuitEditService {
             if (coupled.isEmpty() || coupled.equalsIgnoreCase("none") || coupled.equalsIgnoreCase("NIX_NIX_NIX")) {
                 comp.setParameter("coupledComponent", "");
                 comp.setCoupledReferenceID(0);
-                if (comp.getParameterStrings() != null && comp.getParameterStrings().length > 0) {
+                // In node mode parameterStrings[0] holds the positive node label,
+                // not a coupled component name — the clear-coupling patch (which
+                // the node branch fires implicitly) must not clobber it.
+                if (!isNodeModeActive(comp)
+                        && comp.getParameterStrings() != null && comp.getParameterStrings().length > 0) {
                     comp.getParameterStrings()[0] = "NIX_NIX_NIX";
                 }
             } else {
@@ -1011,6 +1014,39 @@ public class CircuitEditService {
                 }
             }
         }
+    }
+
+    /**
+     * Resolves a voltmeter node name from a parameter patch: the request's own
+     * key wins, then its legacy alias, then the component's stored value so a
+     * single-field patch never wipes the other node mid-edit. The fallback
+     * applies only when the component carries no stored value yet (a fresh
+     * voltmeter, whose negative node defaults to ground "0").
+     */
+    private static String resolveNodeName(Map<String, Object> request, CircuitModel.ComponentData comp,
+                                          String key, String legacyKey, String fallback) {
+        Object value;
+        if (request.containsKey(key)) {
+            value = request.get(key);
+        } else if (request.containsKey(legacyKey)) {
+            value = request.get(legacyKey);
+        } else {
+            value = comp.getParameters().get(key);
+            if (value == null) {
+                return fallback;
+            }
+        }
+        String s = String.valueOf(value);
+        return s.equals("null") ? fallback : s;
+    }
+
+    /**
+     * True when the voltmeter measures between two node labels (nodeA set)
+     * rather than across a coupled component.
+     */
+    private static boolean isNodeModeActive(CircuitModel.ComponentData comp) {
+        Object nA = comp.getParameters().get("nodeA");
+        return nA != null && !String.valueOf(nA).isBlank() && !"null".equals(nA);
     }
 
     /**
