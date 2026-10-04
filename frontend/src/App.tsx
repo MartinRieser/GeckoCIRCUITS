@@ -463,10 +463,7 @@ export function App() {
       <header className="navbar">
         <div className="nav-brand">
           <div className="nav-logo">
-            <span className="logo-symbol">G</span>
-          </div>
-          <div className="nav-title-group">
-            <span className="nav-title">GeckoCIRCUITS</span>
+            <span className="logo-symbol">GeckoCIRCUITS</span>
           </div>
         </div>
 

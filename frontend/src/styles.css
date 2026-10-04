@@ -142,27 +142,17 @@ body,
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
   height: 28px;
+  padding: 0 12px;
   background: linear-gradient(135deg, #0284c7, #38bdf8);
   border-radius: 6px;
   box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
 }
 
 .logo-symbol {
-  font-size: 16px;
-  color: #ffffff;
-}
-
-.nav-title-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.nav-title {
-  font-weight: 700;
   font-size: 13px;
-  letter-spacing: 0.3px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
   color: #ffffff;
 }
 
