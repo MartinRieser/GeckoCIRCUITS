@@ -2,12 +2,19 @@ import { describe, expect, it } from 'vitest';
 import {
   nextOrientation,
   terminalPositions,
+  legacyTerminalPositions,
   terminalNear,
   allTerminals,
   findPlacementConflict,
   flowVector,
   controlFlowVector,
   rebindWireEndpointOrthogonally,
+  rebindWireEndpointToPin,
+  anchoredPinOffsets,
+  legacyCenteredPinOffsets,
+  planChannelRemovalWireEdits,
+  planTerminalCountWireEdits,
+  normalizeLegacyMultiPinWires,
 } from '../src/model/geometry';
 import { Orientation, LkComponentType, ControlComponentType } from '../src/model/constants';
 
@@ -315,7 +322,7 @@ describe('findPlacementConflict', () => {
   });
 });
 
-describe('rebindWireEndpointOrthogonally (scope channel add/remove wire re-bind)', () => {
+describe('rebindWireEndpointOrthogonally (anchored pin-block wire re-bind)', () => {
   it('returns the same array when the endpoint already sits on the new pin', () => {
     const pts = [
       [10, 5],
@@ -324,17 +331,18 @@ describe('rebindWireEndpointOrthogonally (scope channel add/remove wire re-bind)
     expect(rebindWireEndpointOrthogonally(pts, pts.length - 1, [14, 5])).toBe(pts);
   });
 
-  it('inserts an L-jog when a horizontally approached pin shifts one row (add channel)', () => {
-    // Scope pin block grows 2 -> 3 channels: every existing pin moves up one
-    // row. The wire approached horizontally, so the endpoint must gain a
-    // corner instead of a diagonal final segment.
+  it('jogs at the neighbor column, never on the pin column (horizontal approach)', () => {
+    // Removing a scope channel shifts the pins below it up one slot. The
+    // wire approached the pin horizontally; the vertical jog must happen on
+    // the APPROACH column (x=10), because a jog on the pin column (x=14)
+    // would run along the pin block and electrically touch other pins.
     const pts = [
       [10, 5],
       [14, 5],
     ];
     expect(rebindWireEndpointOrthogonally(pts, 1, [14, 4])).toEqual([
       [10, 5],
-      [14, 5],
+      [10, 4],
       [14, 4],
     ]);
   });
@@ -357,7 +365,7 @@ describe('rebindWireEndpointOrthogonally (scope channel add/remove wire re-bind)
     ];
     expect(rebindWireEndpointOrthogonally(pts, 0, [14, 4])).toEqual([
       [14, 4],
-      [14, 5],
+      [10, 4],
       [10, 5],
     ]);
   });
@@ -377,7 +385,8 @@ describe('rebindWireEndpointOrthogonally (scope channel add/remove wire re-bind)
 
   it('inserts the corner for a long horizontal approach across intermediate points', () => {
     // Fan-out wires typically run several points horizontally into a scope
-    // pin; the last segment is horizontal, the pin shifts up one row.
+    // pin; the last segment is horizontal, the pin shifts up one row. The
+    // jog turns at the last intermediate point, then runs clean into the pin.
     const pts = [
       [12, 21],
       [14, 21],
@@ -388,7 +397,7 @@ describe('rebindWireEndpointOrthogonally (scope channel add/remove wire re-bind)
       [12, 21],
       [14, 21],
       [18, 21],
-      [36, 21],
+      [18, 20],
       [36, 20],
     ]);
   });
@@ -400,21 +409,286 @@ describe('rebindWireEndpointOrthogonally (scope channel add/remove wire re-bind)
     ];
     expect(rebindWireEndpointOrthogonally(pts, 1, [14, 4])).toEqual([
       [10, 9],
-      [10, 4],
+      [14, 9],
       [14, 4],
     ]);
   });
 
-  it('collapses a corner that coincides with the neighbor point', () => {
+  it('inserts a clean corner when the endpoint moves sideways off a vertical run', () => {
     const pts = [
       [14, 5],
       [14, 8],
     ];
-    // new pin (10,8): corner would be (14,8) == neighbor -> deduplicated
     expect(rebindWireEndpointOrthogonally(pts, 1, [10, 8])).toEqual([
       [14, 5],
-      [14, 8],
+      [10, 5],
       [10, 8],
     ]);
+  });
+});
+
+describe('anchored multi-pin layout (append-only channel blocks)', () => {
+  it('anchoredPinOffsets starts at 0 and steps by the given step', () => {
+    expect(anchoredPinOffsets(1, 2)).toEqual([0]);
+    expect(anchoredPinOffsets(3, 2)).toEqual([0, 2, 4]);
+    expect(anchoredPinOffsets(3, 1)).toEqual([0, 1, 2]);
+    expect(anchoredPinOffsets(0, 2)).toEqual([]);
+  });
+
+  it('legacyCenteredPinOffsets mirrors the pre-anchoring symmetric block', () => {
+    expect(legacyCenteredPinOffsets(1, 2)).toEqual([0]);
+    expect(legacyCenteredPinOffsets(2, 2)).toEqual([-1, 1]);
+    expect(legacyCenteredPinOffsets(3, 2)).toEqual([-2, 0, 2]);
+  });
+
+  it('adding a scope channel never moves an existing pin (the original wire-corruption bug)', () => {
+    const base = {
+      family: 'CONTROL',
+      type: ControlComponentType.SCOPE,
+      position: [30, 20],
+      orientation: Orientation.NORTH_SOUTH,
+    };
+    const pinsFor = (n: number) =>
+      terminalPositions({ ...base, inputLabels: Array.from({ length: n }, (_, i) => `s${i}`) }).input;
+    for (let n = 1; n <= 5; n++) {
+      const fewer = pinsFor(n);
+      const more = pinsFor(n + 1);
+      // every pin of the smaller block keeps its exact position
+      fewer.forEach((p, i) => {
+        expect(more[i], `pin ${i} at count ${n} -> ${n + 1}`).toEqual(p);
+      });
+    }
+    // channel 1 sits on the anchor row, channels append downward
+    expect(pinsFor(3)).toEqual([
+      { x: 28, y: 20 },
+      { x: 28, y: 22 },
+      { x: 28, y: 24 },
+    ]);
+  });
+
+  it('script pins coincide with the simulation core terminal grid in every orientation', () => {
+    // Engine (ControlCalculatorBuilder.terminalPoint): input i at rel
+    // (-2, -i), output j at rel (+2, -j), rotated by orientation.
+    const cases: { ori: number; inPin: (x: number, y: number, i: number) => { x: number; y: number }; outPin: (x: number, y: number, j: number) => { x: number; y: number } }[] = [
+      {
+        ori: Orientation.NORTH_SOUTH,
+        inPin: (x, y, i) => ({ x: x - 2, y: y + i }),
+        outPin: (x, y, j) => ({ x: x + 2, y: y + j }),
+      },
+      {
+        ori: Orientation.SOUTH_NORTH,
+        inPin: (x, y, i) => ({ x: x + 2, y: y - i }),
+        outPin: (x, y, j) => ({ x: x - 2, y: y - j }),
+      },
+      {
+        ori: Orientation.WEST_EAST,
+        inPin: (x, y, i) => ({ x: x + i, y: y + 2 }),
+        outPin: (x, y, j) => ({ x: x + j, y: y - 2 }),
+      },
+      {
+        ori: Orientation.EAST_WEST,
+        inPin: (x, y, i) => ({ x: x - i, y: y - 2 }),
+        outPin: (x, y, j) => ({ x: x - j, y: y + 2 }),
+      },
+    ];
+    for (const { ori, inPin, outPin } of cases) {
+      const t = terminalPositions({
+        family: 'CONTROL',
+        type: ControlComponentType.SCRIPT,
+        position: [40, 30],
+        orientation: ori,
+        parameters: { anzXIN: 3, anzYOUT: 2 },
+      });
+      expect(t.input).toEqual([inPin(40, 30, 0), inPin(40, 30, 1), inPin(40, 30, 2)]);
+      expect(t.output).toEqual([outPin(40, 30, 0), outPin(40, 30, 1)]);
+    }
+  });
+
+  it('planChannelRemovalWireEdits deletes the removed channel wire and shifts the ones below', () => {
+    const scope = {
+      family: 'CONTROL',
+      type: ControlComponentType.SCOPE,
+      position: [30, 20],
+      orientation: Orientation.NORTH_SOUTH,
+      inputLabels: ['a', 'b', 'c'],
+    };
+    // before-pins: (28,20) (28,22) (28,24); wires approach horizontally
+    const wires = [
+      { points: [[10, 20], [27, 20], [28, 20]] }, // channel 1
+      { points: [[10, 22], [27, 22], [28, 22]] }, // channel 2 (removed)
+      { points: [[10, 24], [27, 24], [28, 24]] }, // channel 3
+    ];
+    const plan = planChannelRemovalWireEdits(scope, 1, wires);
+    expect(plan.deletions).toEqual([1]);
+    expect(plan.rebinds).toHaveLength(1);
+    expect(plan.rebinds[0].index).toBe(2);
+    // channel 3's wire now ends on the new channel-2 pin (28,22),
+    // approaching orthogonally without touching any other pin
+    const pts = plan.rebinds[0].points;
+    expect(pts[pts.length - 1]).toEqual([28, 22]);
+    const touched = new Set(pts.map((p) => `${p[0]},${p[1]}`));
+    expect(touched.has('28,20')).toBe(false);
+    expect(touched.has('28,24')).toBe(false);
+  });
+
+  it('planTerminalCountWireEdits only deletes wires of the pins that cease to exist', () => {
+    const script = {
+      family: 'CONTROL',
+      type: ControlComponentType.SCRIPT,
+      position: [20, 10],
+      orientation: Orientation.NORTH_SOUTH,
+      parameters: { anzXIN: 3, anzYOUT: 1 },
+    };
+    const wires = [
+      { points: [[12, 10], [17, 10], [18, 10]] }, // input 1
+      { points: [[12, 12], [17, 12], [18, 12]] }, // input 3 (dies when 3 -> 2)
+    ];
+    const shrink = planTerminalCountWireEdits(script, 'x', 2, wires);
+    expect(shrink.deletions).toEqual([1]);
+    expect(shrink.rebinds).toEqual([]);
+    const grow = planTerminalCountWireEdits(script, 'x', 4, wires);
+    expect(grow.deletions).toEqual([]);
+    expect(grow.rebinds).toEqual([]);
+  });
+
+  it('normalizeLegacyMultiPinWires rebinds legacy centered endpoints and is idempotent', () => {
+    const scope = {
+      family: 'CONTROL',
+      type: ControlComponentType.SCOPE,
+      position: [36, 20],
+      orientation: Orientation.NORTH_SOUTH,
+      inputLabels: ['a', 'b', 'c'],
+    };
+    // legacy pins: (34,18) (34,20) (34,22) -> anchored: (34,20) (34,22) (34,24)
+    const wires = [{ points: [[20, 18], [33, 18], [34, 18]] }];
+    const edits = normalizeLegacyMultiPinWires([scope], wires);
+    expect(edits).toHaveLength(1);
+    const pts = edits[0].points;
+    expect(pts[pts.length - 1]).toEqual([34, 20]);
+    // no diagonal segments and no crossing of the other new pins
+    const touched = new Set(pts.map((p) => `${p[0]},${p[1]}`));
+    expect(touched.has('34,22')).toBe(false);
+    // second pass over the migrated geometry is a no-op
+    expect(normalizeLegacyMultiPinWires([scope], [{ points: pts }])).toEqual([]);
+  });
+
+  it('legacyTerminalPositions reproduces the centered layout for n>=2', () => {
+    const scope = {
+      family: 'CONTROL',
+      type: ControlComponentType.SCOPE,
+      position: [36, 20],
+      orientation: Orientation.NORTH_SOUTH,
+      inputLabels: ['a', 'b', 'c'],
+    };
+    expect(legacyTerminalPositions(scope).input.map((p) => [p.x, p.y])).toEqual([
+      [34, 18],
+      [34, 20],
+      [34, 22],
+    ]);
+  });
+});
+
+describe('rebindWireEndpointToPin (no wire may touch a foreign pin)', () => {
+  // Scope at (36,22): anchored pins (34,22) (34,24) (34,26) (34,28)
+  const pins = [
+    { x: 34, y: 22 },
+    { x: 34, y: 24 },
+    { x: 34, y: 26 },
+    { x: 34, y: 28 },
+  ];
+  const center = { x: 36, y: 25 };
+
+  const foreignTouches = (pts: number[][]) => {
+    const cells = new Set<string>();
+    cells.add(`${pts[0][0]},${pts[0][1]}`);
+    for (let i = 1; i < pts.length; i++) {
+      let x = pts[i - 1][0];
+      let y = pts[i - 1][1];
+      const tx = pts[i][0];
+      const ty = pts[i][1];
+      while (x !== tx || y !== ty) {
+        if (x !== tx) x += Math.sign(tx - x);
+        else y += Math.sign(ty - y);
+        cells.add(`${x},${y}`);
+      }
+    }
+    return pins.filter((p) => cells.has(`${p.x},${p.y}`));
+  };
+
+  it('keeps the generic orthogonal result when it crosses no pin', () => {
+    const pts = [
+      [26, 26],
+      [30, 26],
+      [33, 26],
+      [34, 26],
+    ];
+    const out = rebindWireEndpointToPin(pts, pts.length - 1, { x: 34, y: 24 }, pins, center);
+    expect(out).toEqual([
+      [26, 26],
+      [30, 26],
+      [33, 26],
+      [33, 24],
+      [34, 24],
+    ]);
+    expect(foreignTouches(out)).toEqual([{ x: 34, y: 24 }]);
+  });
+
+  it('rebuilds the tail off the pin column when a vertical approach would cross sibling pins', () => {
+    // Wire approached down the pin column: [...,(34,18),(34,26)] — moving the
+    // endpoint to (34,24) must not leave the run crossing (34,22).
+    const pts = [
+      [26, 18],
+      [33, 18],
+      [34, 18],
+      [34, 26],
+    ];
+    const out = rebindWireEndpointToPin(pts, pts.length - 1, { x: 34, y: 24 }, pins, center);
+    expect(out[out.length - 1]).toEqual([34, 24]);
+    expect(foreignTouches(out)).toEqual([{ x: 34, y: 24 }]);
+    // strictly orthogonal
+    for (let i = 0; i < out.length - 1; i++) {
+      expect(out[i][0] === out[i + 1][0] || out[i][1] === out[i + 1][1]).toBe(true);
+    }
+  });
+
+  it('handles a dirty tail that retraces on the pin column (the false-Wired repro)', () => {
+    // Stored shape seen in the wild: ...(33,26),(34,26),(34,25),(34,26).
+    // Re-binding to (34,24) must produce a clean off-column approach.
+    const pts = [
+      [26, 26],
+      [30, 26],
+      [33, 26],
+      [34, 26],
+      [34, 25],
+      [34, 26],
+    ];
+    const out = rebindWireEndpointToPin(pts, pts.length - 1, { x: 34, y: 24 }, pins, center);
+    expect(out[out.length - 1]).toEqual([34, 24]);
+    expect(foreignTouches(out)).toEqual([{ x: 34, y: 24 }]);
+    // the vertical jog happens on the entry column (33), never on x=34
+    expect(out.some((p, i) => i > 0 && p[0] === 34 && out[i - 1][0] === 34 && p[1] !== out[i - 1][1] && p[1] !== 24)).toBe(false);
+  });
+
+  it('planChannelRemovalWireEdits produces pin-clean rebinds for a dirty vertical tail', () => {
+    const scope = {
+      family: 'CONTROL',
+      type: ControlComponentType.SCOPE,
+      position: [36, 22],
+      orientation: Orientation.NORTH_SOUTH,
+      inputLabels: ['a', 'b', 'c'],
+    };
+    // channel 2's wire approaches down the pin column from above
+    const wires = [
+      { points: [[10, 20], [33, 20], [34, 22]] },
+      { points: [[10, 18], [33, 18], [34, 18], [34, 24]] },
+    ];
+    const plan = planChannelRemovalWireEdits(scope, 0, wires);
+    expect(plan.deletions).toEqual([0]);
+    expect(plan.rebinds).toHaveLength(1);
+    const pts = plan.rebinds[0].points;
+    expect(pts[pts.length - 1]).toEqual([34, 22]); // new channel-1 pin
+    // new pin set after removal: (34,22) (34,24) — the path may touch (34,22) only
+    const cells = new Set(pts.map((p) => `${p[0]},${p[1]}`));
+    expect(cells.has('34,24')).toBe(false);
   });
 });

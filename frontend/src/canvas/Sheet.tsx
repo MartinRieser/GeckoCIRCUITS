@@ -1272,19 +1272,25 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                 >
                   {/* Bounding dimensions sized to the drawn symbol (not the
                       terminal spread), so densely placed blocks do not
-                      visually overlap; multi-pin scopes grow to cover pins. */}
+                      visually overlap. Multi-pin blocks are TOP-ANCHORED
+                      (channel 1 on the anchor row, block grows downward), so
+                      the bounding box extends asymmetrically downward. */}
                   {(() => {
                     const maxPins = Math.max(terminals.input.length, terminals.output.length, 1);
-                    const halfH = Math.max(1.3, maxPins - 1 + 0.8) * dpix;
+                    // Single-pin blocks keep the classic symmetric extent
+                    // (name label + coupling badge offsets depend on it);
+                    // anchored multi-pin blocks extend downward only.
+                    const top = (maxPins > 1 ? -0.9 : -1.3) * dpix;
+                    const bottom = (maxPins > 1 ? maxPins - 1 + 0.9 : 1.3) * dpix;
                     const halfW = 1.3 * dpix;
                     return (
                       <>
                         {/* Full-area hit target so clicking anywhere on the component bounding area selects it */}
                         <rect
                           x={-halfW}
-                          y={-halfH}
+                          y={top}
                           width={halfW * 2}
-                          height={halfH * 2}
+                          height={bottom - top}
                           className="component-hit-area"
                           fill="transparent"
                           stroke="none"
@@ -1296,9 +1302,9 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                         {selected && (
                           <rect
                             x={-halfW}
-                            y={-halfH}
+                            y={top}
                             width={halfW * 2}
-                            height={halfH * 2}
+                            height={bottom - top}
                             className="selection-box"
                             rx={4}
                             pointerEvents="none"
@@ -1373,7 +1379,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                           if (isControlBlock || isHorizontalTwoPort) {
                             // Control blocks (SIGNAL.1, etc.) & Horizontal components (L.1, horizontal resistors): place name centered above
                             return (
-                              <text x={0} y={-halfH - 5} textAnchor="middle" className="component-name">
+                              <text x={0} y={top - 5} textAnchor="middle" className="component-name">
                                 {component.name}
                               </text>
                             );
@@ -1457,7 +1463,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                             selected || hoveredComponentName === component.name;
                           if (!badgeText || !badgeVisible) return null;
 
-                          const badgeTransform = `translate(0, ${halfH + 12})`;
+                          const badgeTransform = `translate(0, ${bottom + 12})`;
 
                           return (
                             <g

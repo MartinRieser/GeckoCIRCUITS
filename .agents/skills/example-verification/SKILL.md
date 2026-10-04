@@ -55,11 +55,24 @@ Checklist, in order:
    `signals: ["node_x", "pwm", ...]` — node voltages and all taps are always
    recordable.
 3. **Geometry**: control wiring is resolved by exact grid points (union-find
-   over wire geometry, engine) AND by centered multi-pin layout (frontend,
-   step 2). Script with N inputs has pins at (x−2, y−(i−(N−1))); a scope with
-   C channels likewise. Two wires may share at most ONE raster cell unless
-   identical. Probe name labels need ≥4 grid rows from badges below them.
-   `frontend/test/examples.connectivity.test.ts` encodes all of this — run it.
+   over wire vertices, engine) and the frontend multi-pin blocks are
+   ANCHORED and append-only. Scope with C channels: pins at
+   (x−2, y+2·i), i = 0..C−1 (step 2, channel 1 on the component's anchor
+   row). Script/function block with N inputs / M outputs: pins at
+   (x−2, y+i) / (x+2, y+j) — unit step, BIT-IDENTICAL to the engine's
+   terminal grid (`ControlCalculatorBuilder.terminalPoint`, rel (−2,−i) /
+   (+2,−j)), so a wire drawn to a script pin is the wire the simulation
+   binds. Consequences: adding a channel/pin moves NOTHING (append-only);
+   removing channel k deletes k's wire and shifts wires below up one slot
+   (`planChannelRemovalWireEdits`); a wire may touch a pin cell only at its
+   terminating endpoint (`rebindWireEndpointToPin` enforces the canonical
+   off-pin-column approach — never route a wire vertically along a pin
+   column, it would cross sibling pins). Never author hairpins/retraces.
+   Legacy centered-layout files are migrated on load
+   (`normalizeLegacyMultiPinWires`). Two wires may share at most ONE raster
+   cell unless identical. Probe name labels need ≥4 grid rows from badges
+   below them. `frontend/test/examples.connectivity.test.ts` encodes all of
+   this — run it.
 4. **tDURATION / dt**: simulate long enough for steady state (or state clearly
    it shows a transient). Boost-style converters overshoot at startup; a
    window ending mid-overshoot lies to the user.
@@ -98,6 +111,7 @@ Then compute over the steady-state tail (skip startup):
 | "AC" example shows DC | source parameter[0]=401 (DC) instead of 402 (SIN) (rectifier, fixed 2026-10) |
 | Scope shows wrong voltage | tDURATION ends inside the startup overshoot (boost at 2 ms → 31–42 V, fixed by 12 ms) |
 | Scope shows violent 100 Hz limit cycle | control script with proportional term on ripple-hungry feedback and no current loop (pfc-boost, rebuilt 2026-10) |
+| Adding a scope channel mangles connected wires; one signal seems tied to two inputs | legacy CENTERED pin block moved every pin when the channel count changed, and re-binds jogged along the pin column crossing sibling pins (rebuilt as anchored append-only layout + `rebindWireEndpointToPin`, 2026-10) |
 
 ## Committing
 

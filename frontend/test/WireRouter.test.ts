@@ -353,11 +353,11 @@ describe('routeMovedWire', () => {
 });
 
 describe('routingBlockedCells', () => {
-  it('terminates on multi-channel scope terminals that sit diagonally off-center (crash regression)', () => {
+  it('terminates on multi-channel scope terminals that sit off-center (crash regression)', () => {
     // The Multi-Scope RLC repro: dragging any component ran the spoke-blocker
-    // over the 2-input scope, whose terminals are offset (-2,-1)/(-2,+1) from
-    // the center — the old diagonal walker never landed exactly on them and
-    // hung the editor on the first mouse move.
+    // over the 2-input scope — the old diagonal walker never landed exactly
+    // on off-axis terminals and hung the editor on the first mouse move.
+    // Anchored layout: channel 1 on the anchor row, channel 2 one slot below.
     const scope = {
       type: 1003,
       family: 'CONTROL',
@@ -366,8 +366,8 @@ describe('routingBlockedCells', () => {
       inputLabels: ['a', 'b'],
     };
     const blocked = routingBlockedCells([scope]);
-    expect(blocked.has('28,19')).toBe(true);
-    expect(blocked.has('28,21')).toBe(true);
+    expect(blocked.has('28,20')).toBe(true);
+    expect(blocked.has('28,22')).toBe(true);
     expect(blocked.has('30,20')).toBe(true);
   });
 });

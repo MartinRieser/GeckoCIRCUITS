@@ -25,6 +25,41 @@ import {
 export { ORIENTATION_CYCLE };
 
 /**
+ * Pin step (grid units) for multi-terminal SCRIPT / function blocks.
+ * The simulation core places script inputs at rel (-2, -i) — one row per
+ * input, anchored at the block's center row (ControlCalculatorBuilder.
+ * terminalPoint). Using the same unit step here makes the editor's pins and
+ * the engine's electrical pins the SAME grid points, so a wire that visibly
+ * reaches a pin is also the wire the simulation uses. Scopes keep the wider
+ * MULTI_PIN_STEP: their pins are a visual affordance only (channels bind by
+ * signal name), so their spacing is free.
+ */
+export const SCRIPT_PIN_STEP = 1;
+
+/**
+ * Offsets of a multi-pin block whose FIRST pin sits on the anchor row and
+ * further pins extend in +perp direction: adding a channel appends a pin and
+ * NEVER moves existing pins, so wires never need re-binding when a block
+ * grows.
+ */
+export function anchoredPinOffsets(count: number, step: number): number[] {
+  return Array.from({ length: Math.max(0, count) }, (_, i) => i * step);
+}
+
+/**
+ * Offsets of the LEGACY (pre-anchoring) centered block: pins symmetric about
+ * the anchor row. Kept only to migrate stored circuits — adding or removing a
+ * channel shifted EVERY pin, which repeatedly corrupted attached wires.
+ */
+export function legacyCenteredPinOffsets(count: number, step: number): number[] {
+  if (count <= 1) {
+    return [0];
+  }
+  const start = -((count - 1) * step) / 2;
+  return Array.from({ length: count }, (_, i) => start + i * step);
+}
+
+/**
  * Distance in grid units from component origin to terminals for standard two-port components.
  */
 export const TWO_PORT_DIST = CANVAS_METRICS.TWO_PORT_DIST;
@@ -133,11 +168,31 @@ export function terminalPositions(component: {
   inputs?: unknown[];
   parameters?: Record<string, number | string | boolean>;
 }): TerminalPositions {
+  return terminalPositionsWithPinMode(component, 'anchored');
+}
+
+/**
+ * Legacy multi-pin layout (centered block) of a component, used exclusively
+ * by {@link normalizeLegacyMultiPinWires} to migrate stored circuits whose
+ * wires end on the pre-anchoring pin positions.
+ */
+export function legacyTerminalPositions(component: Parameters<typeof terminalPositions>[0]): TerminalPositions {
+  return terminalPositionsWithPinMode(component, 'legacy-centered');
+}
+
+function terminalPositionsWithPinMode(
+  component: Parameters<typeof terminalPositions>[0],
+  pinMode: 'anchored' | 'legacy-centered',
+): TerminalPositions {
   const center = { x: component.position[0], y: component.position[1] };
   const family = component.family || 'LK';
   const dir = family === 'CONTROL'
     ? controlFlowVector(component.orientation)
     : flowVector(component.orientation);
+  const offsetsFor = (count: number, step: number) =>
+    pinMode === 'anchored'
+      ? anchoredPinOffsets(count, step)
+      : legacyCenteredPinOffsets(count, step);
 
   if (family === 'CONTROL') {
     // Constant & signal sources: 0 inputs, 1 output on the output side
@@ -148,55 +203,40 @@ export function terminalPositions(component: {
       };
     }
 
-    // Oscilloscope probe: can have dynamic multiple inputs!
+    // Oscilloscope: dynamic channel count. Pins are a visual affordance —
+    // channels bind by signal NAME — but they must stay put when a channel
+    // is added, hence the anchored block (channel 1 on the anchor row,
+    // further channels appended in +perp direction).
     if (component.type === CTRL_TYPE.SCOPE || component.type === CTRL_TYPE.LEGACY_SCOPE) {
       const count = Math.max(1, component.inputLabels?.length || component.inputs?.length || 1);
-      if (count <= 1) {
-        return {
-          input: [{ x: center.x - dir.x * TWO_PORT_DIST, y: center.y - dir.y * TWO_PORT_DIST }],
-          output: [],
-        };
-      }
-      const inputs: Point[] = [];
-      const step = CANVAS_METRICS.MULTI_PIN_STEP;
-      const startOffset = -((count - 1) * step) / 2;
-      for (let i = 0; i < count; i++) {
-        const offset = startOffset + i * step;
-        inputs.push({
+      const offsets = offsetsFor(count, CANVAS_METRICS.MULTI_PIN_STEP);
+      return {
+        input: offsets.map((offset) => ({
           x: center.x - dir.x * TWO_PORT_DIST - dir.y * offset,
           y: center.y - dir.y * TWO_PORT_DIST + dir.x * offset,
-        });
-      }
-      return {
-        input: inputs,
+        })),
         output: [],
       };
     }
 
-    // Function Block / Classic Java Block: dynamic N inputs, M outputs
+    // Function Block / Classic Java Block: dynamic N inputs, M outputs.
+    // Unit step, anchored — bit-identical to the core engine's terminal
+    // grid (inputs rel (-2, -i), outputs rel (+2, -j)), so wires drawn to
+    // these pins are the wires the simulation connects. (The legacy editor
+    // centered these pins with step 2 — the migration layout.)
     if (component.type === CTRL_TYPE.SCRIPT || component.type === CTRL_TYPE.LEGACY_JAVA_FUNCTION) {
       const { inputCount, outputCount } = resolveComponentPinCounts(component);
-      const step = CANVAS_METRICS.MULTI_PIN_STEP;
+      const step = pinMode === 'anchored' ? SCRIPT_PIN_STEP : CANVAS_METRICS.MULTI_PIN_STEP;
 
-      const inputs: Point[] = [];
-      const inStart = inputCount > 1 ? -((inputCount - 1) * step) / 2 : 0;
-      for (let i = 0; i < inputCount; i++) {
-        const offset = inStart + i * step;
-        inputs.push({
-          x: center.x - dir.x * TWO_PORT_DIST - dir.y * offset,
-          y: center.y - dir.y * TWO_PORT_DIST + dir.x * offset,
-        });
-      }
+      const inputs: Point[] = offsetsFor(inputCount, step).map((offset) => ({
+        x: center.x - dir.x * TWO_PORT_DIST - dir.y * offset,
+        y: center.y - dir.y * TWO_PORT_DIST + dir.x * offset,
+      }));
 
-      const outputs: Point[] = [];
-      const outStart = outputCount > 1 ? -((outputCount - 1) * step) / 2 : 0;
-      for (let j = 0; j < outputCount; j++) {
-        const offset = outStart + j * step;
-        outputs.push({
-          x: center.x + dir.x * TWO_PORT_DIST - dir.y * offset,
-          y: center.y + dir.y * TWO_PORT_DIST + dir.x * offset,
-        });
-      }
+      const outputs: Point[] = offsetsFor(outputCount, step).map((offset) => ({
+        x: center.x + dir.x * TWO_PORT_DIST - dir.y * offset,
+        y: center.y + dir.y * TWO_PORT_DIST + dir.x * offset,
+      }));
 
       return { input: inputs, output: outputs };
     }
@@ -408,14 +448,16 @@ export function rebindWireEndpointOrthogonally(
     // keeps everything orthogonal.
     replacement = [[newPoint[0], newPoint[1]]];
   } else {
-    // Insert a corner. Keep the travel axis of the original final segment
-    // (prev -> old) so the wire keeps approaching the pin from the same
-    // direction; an already-diagonal segment falls back to turning at the
-    // neighbor's column.
+    // Insert a corner NEXT TO THE NEIGHBOR, so the segment adjacent to the
+    // endpoint stays on the endpoint's own axis. Turning at the neighbor —
+    // not at the endpoint's column/row — keeps the jog off a pin column the
+    // wire may terminate on: a vertical jog on the pin column would cross
+    // every other pin of the block (electrically tying one signal to
+    // several inputs).
     const corner =
       prev[1] === old[1]
-        ? [newPoint[0], prev[1]]
-        : [prev[0], newPoint[1]];
+        ? [prev[0], newPoint[1]]
+        : [newPoint[0], prev[1]];
     replacement =
       endIndex === 0
         ? [[newPoint[0], newPoint[1]], corner]
@@ -438,4 +480,305 @@ export function rebindWireEndpointOrthogonally(
     }
   }
   return out.length >= 2 ? out : [merged[0], merged[merged.length - 1]];
+}
+
+/**
+ * Dense raster cells a stored polyline covers, stepping one axis at a time
+ * (x first, like the renderer's elbow insertion). Used for pin-crossing
+ * checks; input is expected orthogonal or near-orthogonal.
+ */
+function denseCellsOfPolyline(points: number[][]): Set<string> {
+  const cells = new Set<string>();
+  if (points.length === 0) {
+    return cells;
+  }
+  cells.add(`${points[0][0]},${points[0][1]}`);
+  for (let i = 1; i < points.length; i++) {
+    let x = points[i - 1][0];
+    let y = points[i - 1][1];
+    const tx = points[i][0];
+    const ty = points[i][1];
+    while (x !== tx || y !== ty) {
+      if (x !== tx) {
+        x += Math.sign(tx - x);
+      } else {
+        y += Math.sign(ty - y);
+      }
+      cells.add(`${x},${y}`);
+    }
+  }
+  return cells;
+}
+
+/**
+ * Re-binds a wire endpoint onto a multi-pin block pin, guaranteeing the
+ * wiring invariant: the wire touches no pin cell except the one it
+ * terminates on. The generic orthogonal rebind is used when its result is
+ * clean; if the result would run along the pin line (e.g. a dirty tail with
+ * a retrace, or a vertical approach down the pin column — which crosses
+ * sibling pins, renders phantom junctions and falsely lights their
+ * "wired" badges), the tail is rebuilt canonically: vertical jog on the
+ * entry column adjacent to the pin block, then a single-cell entry into
+ * the pin.
+ *
+ * @param points Wire polyline in grid raster units.
+ * @param endIndex Which endpoint moves: 0 or {@code points.length - 1}.
+ * @param newPin The pin the endpoint must terminate on.
+ * @param siblingPins All pins of the block after the change (may include
+ *                    {@code newPin}); the result may touch only {@code newPin}.
+ * @param center Component center, to pick the entry side away from the body.
+ */
+export function rebindWireEndpointToPin(
+  points: number[][],
+  endIndex: number,
+  newPin: Point,
+  siblingPins: Point[],
+  center: Point,
+): number[][] {
+  const candidate = rebindWireEndpointOrthogonally(points, endIndex, [newPin.x, newPin.y]);
+  if (candidate === points) {
+    return points;
+  }
+
+  const foreign = siblingPins.filter((p) => !(p.x === newPin.x && p.y === newPin.y));
+  const cells = denseCellsOfPolyline(candidate);
+  if (!foreign.some((p) => cells.has(`${p.x},${p.y}`))) {
+    return candidate;
+  }
+
+  // Canonical rebuild: approach the pin through the entry cell one step
+  // beyond the pin, away from the component body.
+  const verticalStack = foreign.length === 0 || foreign.every((p) => p.x === newPin.x);
+  const entryX = verticalStack
+    ? newPin.x + (Math.sign(newPin.x - center.x) || -1)
+    : newPin.x;
+  const entryY = verticalStack
+    ? newPin.y
+    : newPin.y + (Math.sign(newPin.y - center.y) || -1);
+
+  const body = endIndex === 0 ? candidate.slice(1) : candidate.slice(0, -1);
+  const onPinLine = (p: number[]) => (verticalStack ? p[0] === newPin.x : p[1] === newPin.y);
+  while (body.length > 1 && onPinLine(endIndex === 0 ? body[0] : body[body.length - 1])) {
+    if (endIndex === 0) {
+      body.shift();
+    } else {
+      body.pop();
+    }
+  }
+  const anchor = endIndex === 0 ? body[0] : body[body.length - 1];
+  if (!anchor) {
+    return candidate;
+  }
+
+  // anchor -> (jog on the entry line) -> single-cell entry into the pin
+  const approach: number[][] = [];
+  const ap = (p: number[]) => {
+    const last = approach[approach.length - 1];
+    if (!last || last[0] !== p[0] || last[1] !== p[1]) {
+      approach.push(p);
+    }
+  };
+  if (verticalStack) {
+    ap([entryX, anchor[1]]);
+    ap([entryX, entryY]);
+  } else {
+    ap([anchor[0], entryY]);
+    ap([entryX, entryY]);
+  }
+  ap([newPin.x, newPin.y]);
+
+  const rebuilt =
+    endIndex === 0
+      ? [...approach.reverse(), ...body.map((p) => [p[0], p[1]])]
+      : [...body.map((p) => [p[0], p[1]]), ...approach];
+  const out: number[][] = [];
+  for (const p of rebuilt) {
+    const last = out[out.length - 1];
+    if (!last || last[0] !== p[0] || last[1] !== p[1]) {
+      out.push(p);
+    }
+  }
+  return out.length >= 2 ? out : candidate;
+}
+
+/* ------------------------------------------------------------------ */
+/* Multi-pin channel surgery: deterministic wire edits for adding and  */
+/* removing channels / terminals of scopes and script blocks.          */
+/*                                                                     */
+/* Invariant these helpers maintain: every wire touches a multi-pin    */
+/* block's pin cells only at its terminating endpoint, and every pin   */
+/* is terminated by at most one wire. Because the anchored layout is   */
+/* append-only, GROWING a block requires no wire edits at all.         */
+/* ------------------------------------------------------------------ */
+
+/** Minimal wire shape the pin-surgery helpers operate on. */
+export interface WireLike {
+  points: number[][];
+}
+
+/** Wire edits a channel/terminal-count change prescribes. */
+export interface MultiPinWirePlan {
+  /** Indices of wires to delete entirely (they fed removed pins). */
+  deletions: number[];
+  /** Wires whose endpoint must move to a shifted pin, with new geometry. */
+  rebinds: { index: number; points: number[][] }[];
+}
+
+const EMPTY_PLAN: MultiPinWirePlan = { deletions: [], rebinds: [] };
+
+const samePoint = (a: number[], b: Point) => a[0] === b.x && a[1] === b.y;
+
+/**
+ * Wire edits for removing input channel {@code removedIndex} of a multi-pin
+ * component: the removed channel's own wire is deleted; wires on the pins
+ * BELOW it shift up one slot (the anchored block compacts). Wires on pins
+ * above the removed slot are untouched — nothing above ever moves.
+ */
+export function planChannelRemovalWireEdits(
+  component: Parameters<typeof terminalPositions>[0],
+  removedIndex: number,
+  wires: WireLike[],
+): MultiPinWirePlan {
+  const before = terminalPositions(component).input;
+  const count = before.length;
+  if (removedIndex < 0 || removedIndex >= count || count <= 1) {
+    return EMPTY_PLAN;
+  }
+  const after = pinsWithCount(component, count - 1).input;
+
+  const deletions: number[] = [];
+  const rebinds: { index: number; points: number[][] }[] = [];
+  const center = { x: component.position[0], y: component.position[1] };
+  wires.forEach((w, index) => {
+    const pts = w.points ?? [];
+    if (pts.length < 2) return;
+    for (const end of [0, pts.length - 1] as const) {
+      if (samePoint(pts[end], before[removedIndex])) {
+        deletions.push(index);
+        return;
+      }
+      for (let i = removedIndex + 1; i < count; i++) {
+        if (samePoint(pts[end], before[i])) {
+          const next = after[i - 1];
+          const updated = rebindWireEndpointToPin(pts, end, next, after, center);
+          if (updated !== pts) {
+            rebinds.push({ index, points: updated });
+          }
+          return;
+        }
+      }
+    }
+  });
+  return { deletions, rebinds };
+}
+
+/**
+ * Wire edits for changing a script block's terminal count (anzXIN /
+ * anzYOUT). The anchored block is append-only, so growing changes nothing;
+ * shrinking deletes only the wires of the pins that cease to exist.
+ */
+export function planTerminalCountWireEdits(
+  component: Parameters<typeof terminalPositions>[0],
+  side: 'x' | 'y',
+  newCount: number,
+  wires: WireLike[],
+): MultiPinWirePlan {
+  const before = side === 'x' ? terminalPositions(component).input : terminalPositions(component).output;
+  if (newCount >= before.length || before.length <= 1) {
+    return EMPTY_PLAN;
+  }
+  const deadPins: Point[] = before.slice(newCount);
+  const deletions: number[] = [];
+  wires.forEach((w, index) => {
+    const pts = w.points ?? [];
+    if (pts.length < 2) return;
+    for (const end of [0, pts.length - 1] as const) {
+      if (deadPins.some((p) => samePoint(pts[end], p))) {
+        deletions.push(index);
+        return;
+      }
+    }
+  });
+  return { deletions, rebinds: [] };
+}
+
+/**
+ * Migrates wires of stored circuits from the legacy centered multi-pin
+ * layout to the anchored one: a wire endpoint sitting exactly on a legacy
+ * pin moves to the same channel's anchored pin, orthogonally. Index-
+ * preserving, idempotent (anchored endpoints no longer match legacy pins),
+ * and conservative — only endpoints ON legacy pins are touched.
+ */
+export function normalizeLegacyMultiPinWires(
+  components: Parameters<typeof terminalPositions>[0][],
+  wires: WireLike[],
+): { index: number; points: number[][] }[] {
+  const moves: { from: Point; to: Point; siblings: Point[]; center: Point }[] = [];
+  const anchoredAll = new Set<string>();
+  for (const c of components) {
+    const anchored = terminalPositions(c);
+    [...anchored.input, ...anchored.output].forEach((p) => anchoredAll.add(`${p.x},${p.y}`));
+  }
+  for (const c of components) {
+    const anchored = terminalPositions(c);
+    const legacy = legacyTerminalPositions(c);
+    if (legacy.input.length < 2 && legacy.output.length < 2) {
+      continue;
+    }
+    const center = { x: c.position[0], y: c.position[1] };
+    const siblings = [...anchored.input, ...anchored.output];
+    const addMove = (from: Point, to: Point | undefined) => {
+      if (!to || (from.x === to.x && from.y === to.y)) return;
+      // Legacy pin j of the centered layout can coincide with anchored
+      // pin j-1. A wire endpoint already sitting on a VALID anchored pin
+      // is never migrated — that both resolves the ambiguity for the
+      // (already migrated) wire and keeps this pass idempotent.
+      if (anchoredAll.has(`${from.x},${from.y}`)) return;
+      moves.push({ from, to, siblings, center });
+    };
+    legacy.input.forEach((from, i) => addMove(from, anchored.input[i]));
+    legacy.output.forEach((from, i) => addMove(from, anchored.output[i]));
+  }
+  if (moves.length === 0) {
+    return [];
+  }
+
+  const edits: { index: number; points: number[][] }[] = [];
+  wires.forEach((w, index) => {
+    let pts = w.points ?? [];
+    if (pts.length < 2) return;
+    for (const end of [0, pts.length - 1] as const) {
+      const move = moves.find((m) => samePoint(pts[end], m.from));
+      if (!move) continue;
+      const updated = rebindWireEndpointToPin(
+        pts, end, move.to, move.siblings, move.center,
+      );
+      if (updated !== pts) {
+        pts = updated;
+      }
+    }
+    if (pts !== w.points) {
+      edits.push({ index, points: pts });
+    }
+  });
+  return edits;
+}
+
+/** terminalPositions with an explicit input-pin count override. */
+function pinsWithCount(
+  component: Parameters<typeof terminalPositions>[0],
+  inputCount: number,
+): TerminalPositions {
+  if (component.type === CTRL_TYPE.SCOPE || component.type === CTRL_TYPE.LEGACY_SCOPE) {
+    const labels = Array.from({ length: Math.max(1, inputCount) }, (_, i) =>
+      component.inputLabels?.[i] ?? '');
+    return terminalPositions({ ...component, inputLabels: labels });
+  }
+  if (component.type === CTRL_TYPE.SCRIPT || component.type === CTRL_TYPE.LEGACY_JAVA_FUNCTION) {
+    return terminalPositions({
+      ...component,
+      parameters: { ...(component.parameters ?? {}), anzXIN: inputCount },
+    });
+  }
+  return terminalPositions(component);
 }

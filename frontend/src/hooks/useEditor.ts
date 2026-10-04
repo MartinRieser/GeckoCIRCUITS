@@ -15,7 +15,14 @@ import type {
   SimRunSettings,
   SimulationStatus,
 } from '../model/types';
-import { nextOrientation, terminalPositions, findPlacementConflict, rebindWireEndpointOrthogonally } from '../model/geometry';
+import {
+  nextOrientation,
+  terminalPositions,
+  findPlacementConflict,
+  normalizeLegacyMultiPinWires,
+  planChannelRemovalWireEdits,
+  planTerminalCountWireEdits,
+} from '../model/geometry';
 import {
   CTRL_TYPE,
   isVoltmeterComponent,
@@ -23,7 +30,7 @@ import {
   getCoupledComponentName,
   getComponentMeta,
 } from '../model/componentSchema';
-import { isScopeComponent } from '../simulation/scopes';
+import { isScopeComponent, isScriptComponent } from '../simulation/scopes';
 import { BLANK_CIRCUIT_IPES } from '../model/examples';
 import { SIMULATION_DEFAULTS } from '../model/constants';
 import { flipRoute, densePoints, routeMovedWire, deconflictMovedWires } from '../canvas/WireRouter';
@@ -126,6 +133,34 @@ export function useEditor() {
       versionRef.current = snapshot.modelVersion;
       setSimDefaults(snapshot.simulationDefaults ?? null);
       dispatch({ type: 'SNAPSHOT', snapshot });
+
+      // One-time legacy migration: circuits stored with the old CENTERED
+      // multi-pin layout get their scope/script wire endpoints re-bound to
+      // the anchored pins (same channel index), then persisted back so the
+      // file converges to the current layout. Idempotent — already-migrated
+      // endpoints sit on anchored pins and match no legacy pin.
+      const legacyEdits = normalizeLegacyMultiPinWires(snapshot.components, snapshot.wires ?? []);
+      for (const edit of legacyEdits) {
+        api
+          .patchConnection(circuitId, edit.index, { points: edit.points })
+          .then((wireMsg) => {
+            const payload = wireMsg.payload as WirePayload;
+            dispatch({
+              type: 'WIRE_PATCHED',
+              index: edit.index,
+              points: payload.points,
+              label: payload.label,
+              version: wireMsg.modelVersion,
+            });
+          })
+          .catch(() => {});
+      }
+      if (legacyEdits.length > 0) {
+        dispatch({
+          type: 'STATUS',
+          status: `Migrated ${legacyEdits.length} wire${legacyEdits.length === 1 ? '' : 's'} to the new anchored multi-pin layout`,
+        });
+      }
     } catch (e) {
       dispatch({ type: 'STATUS', status: `Refresh failed: ${(e as Error).message}` });
     }
@@ -369,42 +404,10 @@ export function useEditor() {
                 : { ...existing, outputLabels: arr };
             dispatch({ type: 'COMPONENT_UPSERT', component: updated, version: msg.modelVersion });
 
-            // Adding a scope channel shifts every input pin one row (the pin
-            // block is centered on the symbol), which would silently orphan
-            // the wires attached to the old pin positions. Re-bind wire ends
-            // from the old pin grid to the new one so the wiring follows —
-            // orthogonally, so the pin's one-row shift cannot leave a
-            // diagonal segment behind.
-            if (side === 'x' && isScopeComponent(existing) && arr.length > (existing.inputLabels ?? []).length) {
-              const oldPins = terminalPositions(existing).input;
-              const newPins = terminalPositions(updated).input;
-              stateRef.current.wires.forEach((w, wIdx) => {
-                const pts = w.points ?? [];
-                if (pts.length < 2) return;
-                const endIndices = [0, pts.length - 1];
-                for (const pi of endIndices) {
-                  const oldPinIdx = oldPins.findIndex((p) => p.x === pts[pi][0] && p.y === pts[pi][1]);
-                  if (oldPinIdx < 0 || oldPinIdx >= newPins.length) continue;
-                  const np = newPins[oldPinIdx];
-                  if (np.x === pts[pi][0] && np.y === pts[pi][1]) continue;
-                  const newPoints = rebindWireEndpointOrthogonally(pts, pi, [np.x, np.y]);
-                  if (newPoints === pts) continue;
-                  api
-                    .patchConnection(circuitId, wIdx, { points: newPoints })
-                    .then((wireMsg) => {
-                      const payload = wireMsg.payload as WirePayload;
-                      dispatch({
-                        type: 'WIRE_PATCHED',
-                        index: wIdx,
-                        points: payload.points,
-                        label: payload.label,
-                        version: wireMsg.modelVersion,
-                      });
-                    })
-                    .catch(() => {});
-                }
-              });
-            }
+            // NOTE: no wire re-binding on scope channel changes. Multi-pin
+            // blocks are ANCHORED and append-only (channel 1 on the anchor
+            // row, further channels below), so adding a channel appends a
+            // new pin and never moves — or re-jogs — any existing wire.
 
             // If an output signal / probe terminal is renamed, automatically propagate to consumer Scope channels & wires
             if (side === 'y' && oldLabel && label && oldLabel !== label) {
@@ -445,7 +448,10 @@ export function useEditor() {
   /**
    * Removes a terminal label entirely (e.g. dropping a scope channel): the
    * labels above shift down and the label array shrinks by one, on both the
-   * optimistic copy and the server model.
+   * optimistic copy and the server model. The attached wiring follows the
+   * anchored pin block deterministically: the removed channel's own wire is
+   * deleted, wires on the pins BELOW shift up one slot, and nothing above
+   * the removed slot moves at all.
    */
   const removeLabel = useCallback(
     (component: string, side: 'x' | 'y', index: number) => {
@@ -456,6 +462,13 @@ export function useEditor() {
       const labels = side === 'x' ? existing.inputLabels ?? [] : existing.outputLabels ?? [];
       if (labels.length <= 1 || index < 0 || index >= labels.length) return;
 
+      // Plan the wire edits against the PRE-removal component (its pin
+      // count defines the "before" grid), then apply: patches first (wire
+      // indices stay valid), deletions last, highest index first.
+      const plan = side === 'x' && isScopeComponent(existing)
+        ? planChannelRemovalWireEdits(existing, index, stateRef.current.wires)
+        : { deletions: [], rebinds: [] };
+
       const remaining = labels.filter((_, i) => i !== index);
       const updated =
         side === 'x'
@@ -463,41 +476,32 @@ export function useEditor() {
           : { ...existing, outputLabels: remaining };
       dispatch({ type: 'COMPONENT_UPSERT', component: updated, version: versionRef.current });
 
-      // Removing a scope input channel shifts the pins below it up one row
-      // (the pin block is centered on the symbol), so re-bind wire ends from
-      // the old pin grid to the new one — orthogonally, keeping the wire
-      // axis-parallel. Ends on the removed pin are left in place and dangle,
-      // matching how component deletion leaves its wires.
-      if (side === 'x' && isScopeComponent(existing)) {
-        const oldPins = terminalPositions(existing).input;
-        const newPins = terminalPositions(updated).input;
-        stateRef.current.wires.forEach((w, wIdx) => {
-          const pts = w.points ?? [];
-          if (pts.length < 2) return;
-          for (const pi of [0, pts.length - 1]) {
-            const oldPinIdx = oldPins.findIndex((p) => p.x === pts[pi][0] && p.y === pts[pi][1]);
-            if (oldPinIdx < 0 || oldPinIdx === index) continue;
-            const newPinIdx = oldPinIdx > index ? oldPinIdx - 1 : oldPinIdx;
-            const np = newPins[newPinIdx];
-            if (!np || (np.x === pts[pi][0] && np.y === pts[pi][1])) continue;
-            const newPoints = rebindWireEndpointOrthogonally(pts, pi, [np.x, np.y]);
-            if (newPoints === pts) continue;
-            api
-              .patchConnection(circuitId, wIdx, { points: newPoints })
-              .then((wireMsg) => {
-                const payload = wireMsg.payload as WirePayload;
-                dispatch({
-                  type: 'WIRE_PATCHED',
-                  index: wIdx,
-                  points: payload.points,
-                  label: payload.label,
-                  version: wireMsg.modelVersion,
-                });
-              })
-              .catch(() => {});
+      const applyWirePlan = async () => {
+        for (const rebind of plan.rebinds) {
+          try {
+            const wireMsg = await api.patchConnection(circuitId, rebind.index, { points: rebind.points });
+            const payload = wireMsg.payload as WirePayload;
+            dispatch({
+              type: 'WIRE_PATCHED',
+              index: rebind.index,
+              points: payload.points,
+              label: payload.label,
+              version: wireMsg.modelVersion,
+            });
+          } catch {
+            /* the label removal refresh below reconciles on failure */
           }
-        });
-      }
+        }
+        for (const wireIdx of [...plan.deletions].sort((a, b) => b - a)) {
+          try {
+            const msg = await api.deleteConnection(circuitId, wireIdx);
+            dispatch({ type: 'WIRE_DELETED', index: wireIdx, version: msg.modelVersion });
+          } catch {
+            /* ignore */
+          }
+        }
+      };
+      void applyWirePlan();
 
       api
         .removeNodeLabel(circuitId, component, index, side)
@@ -1117,6 +1121,31 @@ export function useEditor() {
               },
               version: msg.modelVersion,
             });
+
+            // Script terminal-count change: the anchored pin block is
+            // append-only — growing appends pins below (no wire edits);
+            // shrinking deletes only the wires of the pins that cease to
+            // exist. Wires on surviving pins never move.
+            if (
+              isScriptComponent(existing) &&
+              (key === 'anzXIN' || key === 'anzYOUT') &&
+              typeof value === 'number'
+            ) {
+              const plan = planTerminalCountWireEdits(
+                existing,
+                key === 'anzXIN' ? 'x' : 'y',
+                value,
+                stateRef.current.wires,
+              );
+              for (const wireIdx of [...plan.deletions].sort((a, b) => b - a)) {
+                api
+                  .deleteConnection(circuitId, wireIdx)
+                  .then((delMsg) => {
+                    dispatch({ type: 'WIRE_DELETED', index: wireIdx, version: delMsg.modelVersion });
+                  })
+                  .catch(() => {});
+              }
+            }
           }
         })
         .catch(reportError);

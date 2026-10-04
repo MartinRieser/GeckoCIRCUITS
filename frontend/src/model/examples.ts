@@ -79,8 +79,8 @@ connectorType 1
 verbindungCONTROL (1)
 <Verbindung>
 label v_out
-x[] 28 29 30 31 32 32 
-y[] 16 16 16 16 16 17 
+x[] 28 29 30 31 32 32
+y[] 16 16 16 16 16 18
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -88,8 +88,8 @@ connectorType 1
 verbindungCONTROL (2)
 <Verbindung>
 label i_L
-x[] 28 29 30 31 32 32 
-y[] 20 20 20 20 20 19 
+x[] 28 29 30 31 32
+y[] 20 20 20 20 20
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -374,8 +374,8 @@ connectorType 1
 verbindungCONTROL (1)
 <Verbindung>
 label v_in
-x[] 28 29 30 31 32 33 34 34 
-y[] 16 16 16 16 16 16 16 18 
+x[] 28 29 30 31 32 33 34 34
+y[] 16 16 16 16 16 16 16 20
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -383,8 +383,8 @@ connectorType 1
 verbindungCONTROL (2)
 <Verbindung>
 label v_out
-x[] 28 29 30 31 32 33 34 
-y[] 20 20 20 20 20 20 20 
+x[] 28 29 30 31 32 33 33 34
+y[] 20 20 20 20 20 20 22 22
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -392,8 +392,8 @@ connectorType 1
 verbindungCONTROL (3)
 <Verbindung>
 label i_L
-x[] 28 29 30 31 32 33 34 34 
-y[] 24 24 24 24 24 24 24 22 
+x[] 28 29 30 31 32 33 34
+y[] 24 24 24 24 24 24 24
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -730,8 +730,8 @@ verbindungControlANZAHL 3
 verbindungCONTROL (0)
 <Verbindung>
 label v_ac
-x[] 16 17 18 19 20 21 22 22 
-y[] 24 24 24 24 24 24 24 26 
+x[] 16 17 18 19 20 21 22 22
+y[] 24 24 24 24 24 24 24 28
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -739,8 +739,8 @@ connectorType 1
 verbindungCONTROL (1)
 <Verbindung>
 label v_dc
-x[] 16 17 18 19 20 21 22 
-y[] 28 28 28 28 28 28 28 
+x[] 16 17 18 19 20 21 21 22
+y[] 28 28 28 28 28 28 30 30
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -748,8 +748,8 @@ connectorType 1
 verbindungCONTROL (2)
 <Verbindung>
 label i_load
-x[] 16 17 18 19 20 21 22 22 
-y[] 32 32 32 32 32 32 32 30 
+x[] 16 17 18 19 20 21 22
+y[] 32 32 32 32 32 32 32
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1034,8 +1034,8 @@ verbindungControlANZAHL 5
 verbindungCONTROL (0)
 <Verbindung>
 label v_in
-x[] 16 17 18 19 20 21 22 22 
-y[] 16 16 16 16 16 16 16 17 
+x[] 16 17 18 19 20 21 22 22
+y[] 16 16 16 16 16 16 16 18
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1043,8 +1043,8 @@ connectorType 1
 verbindungCONTROL (1)
 <Verbindung>
 label v_out
-x[] 16 17 18 19 20 21 22 22 
-y[] 20 20 20 20 20 20 20 19 
+x[] 16 17 18 19 20 21 22
+y[] 20 20 20 20 20 20 20
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1052,8 +1052,8 @@ connectorType 1
 verbindungCONTROL (2)
 <Verbindung>
 label v_R1
-x[] 16 17 18 19 20 21 22 23 24 24 
-y[] 26 26 26 26 26 26 26 26 26 28 
+x[] 16 17 18 19 20 21 22 23 24 24
+y[] 26 26 26 26 26 26 26 26 26 30
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1061,8 +1061,8 @@ connectorType 1
 verbindungCONTROL (3)
 <Verbindung>
 label v_L1
-x[] 16 17 18 19 20 21 22 23 24 
-y[] 30 30 30 30 30 30 30 30 30 
+x[] 16 17 18 19 20 21 22 23 23 24
+y[] 30 30 30 30 30 30 30 30 32 32
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1070,8 +1070,8 @@ connectorType 1
 verbindungCONTROL (4)
 <Verbindung>
 label v_C1
-x[] 16 17 18 19 20 21 22 23 24 24 
-y[] 34 34 34 34 34 34 34 34 34 32 
+x[] 16 17 18 19 20 21 22 23 24
+y[] 34 34 34 34 34 34 34 34 34
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1305,8 +1305,8 @@ verbindungControlANZAHL 3
 verbindungCONTROL (0)
 <Verbindung>
 label v_in
-x[] 16 17 18 19 20 21 22 22 
-y[] 16 16 16 16 16 16 16 18 
+x[] 16 17 18 19 20 21 22 22
+y[] 16 16 16 16 16 16 16 20
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1314,8 +1314,8 @@ connectorType 1
 verbindungCONTROL (1)
 <Verbindung>
 label v_out
-x[] 16 17 18 19 20 21 22 
-y[] 20 20 20 20 20 20 20 
+x[] 16 17 18 19 20 21 21 22
+y[] 20 20 20 20 20 20 22 22
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1323,8 +1323,8 @@ connectorType 1
 verbindungCONTROL (2)
 <Verbindung>
 label i_L
-x[] 16 17 18 19 20 21 22 22 
-y[] 24 24 24 24 24 24 24 22 
+x[] 16 17 18 19 20 21 22
+y[] 24 24 24 24 24 24 24
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1508,8 +1508,8 @@ verbindungControlANZAHL 2
 verbindungCONTROL (0)
 <Verbindung>
 label v_in
-x[] 14 15 16 17 18 18 
-y[] 16 16 16 16 16 17 
+x[] 14 15 16 17 18 18
+y[] 16 16 16 16 16 18
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1517,8 +1517,8 @@ connectorType 1
 verbindungCONTROL (1)
 <Verbindung>
 label v_out
-x[] 14 15 16 17 18 18 
-y[] 20 20 20 20 20 19 
+x[] 14 15 16 17 18
+y[] 20 20 20 20 20
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1838,7 +1838,7 @@ verbindungCONTROL (2)
 <Verbindung>
 label v_out
 x[] 26 27 28 29 30 31 32 33 34 34 34
-y[] 18 18 18 18 18 18 18 18 18 19 20
+y[] 18 18 18 18 18 18 18 18 18 19 22
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1846,8 +1846,8 @@ connectorType 1
 verbindungCONTROL (3)
 <Verbindung>
 label v_sw
-x[] 26 27 28 29 30 31 32 33 34
-y[] 22 22 22 22 22 22 22 22 22
+x[] 26 27 28 29 30 31 32 33 33 34
+y[] 22 22 22 22 22 22 22 22 24 24
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -1855,8 +1855,8 @@ connectorType 1
 verbindungCONTROL (4)
 <Verbindung>
 label i_L
-x[] 26 27 28 29 30 31 32 33 34 34 34
-y[] 26 26 26 26 26 26 26 26 26 25 24
+x[] 26 27 28 29 30 31 32 33 34
+y[] 26 26 26 26 26 26 26 26 26
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -2218,8 +2218,8 @@ connectorType 1
 verbindungCONTROL (1)
 <Verbindung>
 label v_in
-x[] 28 29 30 31 32 33 34 34 
-y[] 16 16 16 16 16 16 16 18 
+x[] 28 29 30 31 32 33 34 34
+y[] 16 16 16 16 16 16 16 20
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -2227,8 +2227,8 @@ connectorType 1
 verbindungCONTROL (2)
 <Verbindung>
 label v_out
-x[] 28 29 30 31 32 33 34 
-y[] 20 20 20 20 20 20 20 
+x[] 28 29 30 31 32 33 33 34
+y[] 20 20 20 20 20 20 22 22
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -2236,8 +2236,8 @@ connectorType 1
 verbindungCONTROL (3)
 <Verbindung>
 label i_L
-x[] 28 29 30 31 32 33 34 34 
-y[] 24 24 24 24 24 24 24 22 
+x[] 28 29 30 31 32 33 34
+y[] 24 24 24 24 24 24 24
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -2593,7 +2593,7 @@ verbindungCONTROL (4)
 <Verbindung>
 label v_ac
 x[] 36 37 38 39 40 40 40
-y[] 23 23 23 23 23 24 25
+y[] 23 23 23 23 23 24 27
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -2601,8 +2601,8 @@ connectorType 1
 verbindungCONTROL (5)
 <Verbindung>
 label v_ab
-x[] 36 37 38 39 40
-y[] 27 27 27 27 27
+x[] 36 37 38 39 39 40
+y[] 27 27 27 27 29 29
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -2610,8 +2610,8 @@ connectorType 1
 verbindungCONTROL (6)
 <Verbindung>
 label i_load
-x[] 36 37 38 39 40 40 40
-y[] 31 31 31 31 31 30 29
+x[] 36 37 38 39 40
+y[] 31 31 31 31 31
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -3122,8 +3122,8 @@ connectorType 1
 verbindungCONTROL (1)
 <Verbindung>
 label v_out
-x[] 28 29 30 31 32 33 34 34 
-y[] 16 16 16 16 16 16 16 17 
+x[] 28 29 30 31 32 33 34 34
+y[] 16 16 16 16 16 16 16 18
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -3131,8 +3131,8 @@ connectorType 1
 verbindungCONTROL (2)
 <Verbindung>
 label v_sw
-x[] 28 29 30 31 32 33 34 34 
-y[] 20 20 20 20 20 20 20 19 
+x[] 28 29 30 31 32 33 34
+y[] 20 20 20 20 20 20 20
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -4149,8 +4149,8 @@ verbindungControlANZAHL 6
 verbindungCONTROL (0)
 <Verbindung>
 label v_dc_meas
-x[] 12 13 14 15 16 17 18 18
-y[] 20 20 20 20 20 20 20 19
+x[] 12 13 14 15 16 17 18
+y[] 20 20 20 20 20 20 20
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -4177,7 +4177,7 @@ verbindungCONTROL (3)
 <Verbindung>
 label v_dc_meas
 x[] 13 13 13 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 36
-y[] 20 19 18 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 18
+y[] 20 19 18 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 20
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -4185,8 +4185,8 @@ connectorType 1
 verbindungCONTROL (4)
 <Verbindung>
 label i_l
-x[] 13 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 35 35 35 35 35 36
-y[] 24 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 24 23 22 21 20 20
+x[] 13 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 35 35 35 36
+y[] 24 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 24 23 22 22
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -4194,8 +4194,8 @@ connectorType 1
 verbindungCONTROL (5)
 <Verbindung>
 label u_grid
-x[] 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 36 36 36 36 36 36
-y[] 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 27 26 25 24 23 22
+x[] 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 36 36 36 36
+y[] 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 27 26 25 24
 enabled true
 connectorType 1
 <\\Verbindung>

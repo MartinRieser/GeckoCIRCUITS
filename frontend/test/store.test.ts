@@ -462,7 +462,7 @@ describe('store: dragging a multi-channel scope does not hang (crash regression)
       },
     ],
     connections: [
-      { index: 0, type: 'CONTROL', label: 'sig', points: [[12, 10], [28, 10], [28, 19]] },
+      { index: 0, type: 'CONTROL', label: 'sig', points: [[12, 10], [28, 10], [28, 20]] },
     ],
   };
 
@@ -473,7 +473,7 @@ describe('store: dragging a multi-channel scope does not hang (crash regression)
     expect(state.components[0].position).toEqual([33, 20]);
     const corners = simplifyCorners(state.wires[0].points);
     expect(corners[0]).toEqual([12, 10]);
-    expect(corners[corners.length - 1]).toEqual([31, 19]);
+    expect(corners[corners.length - 1]).toEqual([31, 20]);
     // strictly orthogonal result
     for (let i = 0; i < corners.length - 1; i++) {
       expect(corners[i][0] === corners[i + 1][0] || corners[i][1] === corners[i + 1][1]).toBe(true);

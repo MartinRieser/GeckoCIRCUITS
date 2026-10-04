@@ -674,32 +674,23 @@ function AmmeterSymbol({ u }: { u: number }) {
 }
 
 function ScopeSymbol({ u, inputCount = 1 }: { u: number; inputCount?: number }) {
-  if (inputCount <= 1) {
-    return (
-      <g>
-        {controlLeads(u)}
-        <rect x={-0.75 * u} y={-0.65 * u} width={1.5 * u} height={1.3 * u} rx={3}
-              stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
-        {/* Mini waveform inside */}
-        <path
-          d={`M ${-0.5 * u} 0 Q ${-0.25 * u} ${-0.4 * u} 0 0 Q ${0.25 * u} ${0.4 * u} ${0.5 * u} 0`}
-          stroke={CTRL_COLOR} strokeWidth={1.2} fill="none" />
-      </g>
-    );
-  }
-
-  // Multi-input Scope
-  const step = 2.0; // 2 grid units between input pins
-  const totalH = (inputCount - 1) * step;
-  const bodyH = Math.max(1.8 * u, (totalH + 1.4) * u);
-  const startOffset = -((inputCount - 1) * step) / 2;
+  // Anchored pin block, in lockstep with terminalPositions: channel 1 sits
+  // on the component's anchor row, further channels extend downward (step
+  // MULTI_PIN_STEP). The chassis is top-anchored too, so adding a channel
+  // appends a pin + chassis row without moving anything above.
+  const step = CANVAS_METRICS.MULTI_PIN_STEP;
+  const span = (inputCount - 1) * step; // y-offset of the last pin
+  const top = -0.9 * u;
+  const bottom = (span + 0.9) * u;
+  const bodyH = bottom - top;
+  const midY = (top + bottom) / 2;
 
   return (
     <g>
       {/* Main Scope Chassis */}
       <rect
         x={-0.9 * u}
-        y={-bodyH / 2}
+        y={top}
         width={1.8 * u}
         height={bodyH}
         rx={4}
@@ -711,7 +702,7 @@ function ScopeSymbol({ u, inputCount = 1 }: { u: number; inputCount?: number }) 
       {/* Screen Area */}
       <rect
         x={-0.45 * u}
-        y={-bodyH / 2 + 0.3 * u}
+        y={top + 0.3 * u}
         width={1.15 * u}
         height={bodyH - 0.6 * u}
         rx={2}
@@ -723,7 +714,7 @@ function ScopeSymbol({ u, inputCount = 1 }: { u: number; inputCount?: number }) 
 
       {/* Mini display waveform */}
       <path
-        d={`M ${-0.35 * u} 0 Q ${-0.15 * u} ${-0.35 * u} 0.1 * u 0 Q ${0.35 * u} ${0.35 * u} 0.55 * u 0`}
+        d={`M ${-0.35 * u} ${midY} Q ${-0.15 * u} ${midY - 0.35 * u} ${0.1 * u} ${midY} Q ${0.35 * u} ${midY + 0.35 * u} ${0.55 * u} ${midY}`}
         stroke={CTRL_COLOR}
         strokeWidth={1.2}
         fill="none"
@@ -731,7 +722,7 @@ function ScopeSymbol({ u, inputCount = 1 }: { u: number; inputCount?: number }) 
 
       {/* Input pins and channel labels */}
       {Array.from({ length: inputCount }).map((_, i) => {
-        const offset = (startOffset + i * step) * u;
+        const offset = i * step * u;
         return (
           <g key={i}>
             <line
@@ -920,20 +911,23 @@ function ScriptFunctionBlockSymbol({
   outCount?: number;
   label?: string;
 }) {
-  const step = 2.0; // 2 grid units between pins
+  // Anchored unit-step pin block, in lockstep with terminalPositions and
+  // the simulation core's terminal grid: input i on row i, output j on row
+  // j, first pin on the component's anchor row, the block grows downward.
+  const step = 1.0; // must match SCRIPT_PIN_STEP in model/geometry.ts
   const maxPins = Math.max(inCount, outCount, 1);
-  const totalPinSpan = (maxPins - 1) * step;
-  const boxH = Math.max(1.8 * u, (totalPinSpan + 1.6) * u);
+  const span = (maxPins - 1) * step;
+  const top = -0.8 * u;
+  const bottom = (span + 0.8) * u;
+  const boxH = Math.max(1.6 * u, bottom - top);
   const boxW = 2.0 * u;
-
-  const inStart = inCount > 1 ? -((inCount - 1) * step) / 2 : 0;
-  const outStart = outCount > 1 ? -((outCount - 1) * step) / 2 : 0;
+  const midY = (top + bottom) / 2;
 
   return (
     <g className="symbol-control-script">
       {/* Input leads */}
       {Array.from({ length: inCount }).map((_, i) => {
-        const yOffset = (inStart + i * step) * u;
+        const yOffset = i * step * u;
         return (
           <line
             key={`in-lead-${i}`}
@@ -949,7 +943,7 @@ function ScriptFunctionBlockSymbol({
 
       {/* Output leads */}
       {Array.from({ length: outCount }).map((_, j) => {
-        const yOffset = (outStart + j * step) * u;
+        const yOffset = j * step * u;
         return (
           <line
             key={`out-lead-${j}`}
@@ -966,7 +960,7 @@ function ScriptFunctionBlockSymbol({
       {/* Main Function Chassis */}
       <rect
         x={-boxW / 2}
-        y={-boxH / 2}
+        y={top}
         width={boxW}
         height={boxH}
         rx={4}
@@ -978,13 +972,13 @@ function ScriptFunctionBlockSymbol({
       {/* Pin index labels for multiple pins */}
       {inCount > 1 &&
         Array.from({ length: inCount }).map((_, i) => {
-          const yOffset = (inStart + i * step) * u;
+          const yOffset = i * step * u;
           return (
             <text
               key={`in-label-${i}`}
               x={-boxW / 2 + 0.25 * u}
               y={yOffset + 0.15 * u}
-              fontSize={0.45 * u}
+              fontSize={0.4 * u}
               fontFamily="monospace"
               fill="rgba(74,222,128,0.7)"
               stroke="none"
@@ -997,13 +991,13 @@ function ScriptFunctionBlockSymbol({
 
       {outCount > 1 &&
         Array.from({ length: outCount }).map((_, j) => {
-          const yOffset = (outStart + j * step) * u;
+          const yOffset = j * step * u;
           return (
             <text
               key={`out-label-${j}`}
               x={boxW / 2 - 0.25 * u}
               y={yOffset + 0.15 * u}
-              fontSize={0.45 * u}
+              fontSize={0.4 * u}
               fontFamily="monospace"
               fill="rgba(74,222,128,0.7)"
               stroke="none"
@@ -1017,7 +1011,7 @@ function ScriptFunctionBlockSymbol({
       {/* Central Badge label e.g. f(x) or JAVA */}
       <text
         x={0}
-        y={0.25 * u}
+        y={midY + 0.25 * u}
         fontSize={0.65 * u}
         fontFamily="monospace"
         fontWeight="bold"
