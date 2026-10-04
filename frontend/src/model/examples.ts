@@ -3794,7 +3794,7 @@ x 2
 y 9
 parameter[] 402.0 33.94 50.0 0.0 0.0 0.5 0.0 0.0 0.0 0.0 0.0 1.0 1.7976931348623157E308 0.0 0.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
-nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 503
 idStringDialog U_grid
 <\\ElementLK>
@@ -3810,7 +3810,7 @@ x 8
 y 6
 parameter[] 0.01 0.7 0.01 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
-nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 501
 idStringDialog D.1
 <\\ElementLK>
@@ -3826,7 +3826,7 @@ x 14
 y 6
 parameter[] 0.01 0.7 0.01 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
-nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 501
 idStringDialog D.2
 <\\ElementLK>
@@ -3842,7 +3842,7 @@ x 8
 y 12
 parameter[] 0.01 0.7 0.01 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
-nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 501
 idStringDialog D.3
 <\\ElementLK>
@@ -3858,7 +3858,7 @@ x 14
 y 12
 parameter[] 0.01 0.7 0.01 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
-nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 501
 idStringDialog D.4
 <\\ElementLK>
@@ -3890,10 +3890,10 @@ x 24
 y 9
 parameter[] 1.0E7 0.01 1.0E7 0.0 0.0 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0
 parameterString[] /GATE.1/NIX_NIX_NIX/0
-nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 503
 idStringDialog S.1
-coupledReferenceID[] 2004
+coupledReferenceID[] 2003
 <Verluste>
 verlustTyp 1
 rON 0.01
@@ -3918,7 +3918,7 @@ x 30
 y 4
 parameter[] 0.01 0.7 0.01 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
-nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 502
 idStringDialog D_boost
 <\\ElementLK>
@@ -3950,16 +3950,16 @@ x 42
 y 9
 parameter[] 25.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
-nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 503
 idStringDialog R_load
 <\\ElementLK>
 
-controlANZAHL 4
+controlANZAHL 6
 
 c (0)
 <ElementCONTROL>
-labelAnfangsKnoten[] 
+labelAnfangsKnoten[]
 labelEndKnoten[] /v_dc_meas
 enabledShorted 1
 typ 1
@@ -3975,43 +3975,123 @@ idStringDialog VOLT_DC
 
 c (1)
 <ElementCONTROL>
-labelAnfangsKnoten[] /v_dc_meas
+labelAnfangsKnoten[]
+labelEndKnoten[] /i_l
+enabledShorted 1
+typ 2
+uniqueObjectIdentifier 2005
+x 10
+y 24
+parameter[] 0.0
+parameterString[] /L_boost/NIX_NIX_NIX/0
+nameOpt[] null
+orientierung 503
+idStringDialog AMP_IL
+coupledReferenceID[] 1006
+copyCoupledReferenceID[] 1006
+<\\ElementCONTROL>
+
+c (2)
+<ElementCONTROL>
+labelAnfangsKnoten[]
+labelEndKnoten[] /u_grid
+enabledShorted 1
+typ 1
+uniqueObjectIdentifier 2006
+x 10
+y 28
+parameter[] 0.0
+parameterString[] /ac1/ac2/0
+nameOpt[] null
+orientierung 503
+idStringDialog VOLT_GRID
+<\\ElementCONTROL>
+
+c (3)
+<ElementCONTROL>
+labelAnfangsKnoten[] /v_dc_meas/i_l
 labelEndKnoten[] /pwm
 enabledShorted 1
 typ 61
 uniqueObjectIdentifier 2002
 x 20
 y 20
-parameter[] 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameter[] 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 orientierung 503
 idStringDialog CTRL_PFC
-anzXIN 1
+anzXIN 2
 anzYOUT 1
 showName true
 <sourceCode>
-double v_ref = 50.0;
-double v_out = xIN[0];
+// =====================================================================
+//  Active-PFC boost control - runs once per simulation step (dt = 1 us)
+//
+//  Structure (average-current-mode PFC, textbook two-loop control):
+//
+//    v_dc --> [outer voltage loop: slow integrator] --> i_amp
+//             (amplitude of the grid-current reference, ~5.9 A)
+//    i_amp * |sin(wt)| --> i_ref  (rectified-sine current template)
+//    i_ref, i_l --> [inner current loop: duty feedforward + PI] --> duty
+//    duty --> [50 kHz PWM comparator] --> gate signal for S.1
+//
+//  The rectified-sine template forces the mains current to follow the
+//  shape of the grid voltage, so the converter draws its current in
+//  phase with the mains (power factor near 1).
+// =====================================================================
 
-double e_v = v_ref - v_out;
-v_int = v_int + 5.0 * e_v * dt;
-if (v_int < -0.30) v_int = -0.30;
-if (v_int > 0.30) v_int = 0.30;
+// ---- parameters ------------------------------------------------------
+double v_ref = 50.0;               // DC bus setpoint [V]
+double v_pk  = 33.94;              // grid peak voltage [V] (24 Vrms * sqrt(2))
+double f_sw  = 50000.0;            // PWM switching frequency [Hz]
+double omega = 2.0 * PI * 50.0;    // grid angular frequency [rad/s]
 
-double duty = 0.35 + 0.015 * e_v + v_int;
-double omega = 2.0 * PI * 50.0;
-double grid_phase = abs(sin(omega * t));
-double duty_mod = duty * (0.88 + 0.12 * (1.0 - grid_phase));
-if (duty_mod < 0.05) duty_mod = 0.05;
-if (duty_mod > 0.70) duty_mod = 0.70;
+// ---- measured inputs (wired to the block inputs) ----------------------
+double v_dc = xIN[0];              // DC bus voltage, from VOLT_DC probe
+double i_l  = xIN[1];              // inductor current, from AMP_IL probe
 
-double f_sw = 50000.0;
-double T_sw = 1.0 / f_sw;
-double t_cycle = t % T_sw;
-if (t_cycle < duty_mod * T_sw) {
-    yOUT[0] = 1.0;
+// ---- 1) outer voltage loop: bus regulation -> current amplitude -------
+// Integral-only and deliberately SLOW: it must not react to the
+// unavoidable 100 Hz bus ripple. (The previous version of this example
+// fed the ripple straight into the duty cycle through a proportional
+// term, which drove the bus into a 31..89 V limit cycle.)
+double e_v = v_ref - v_dc;         // bus voltage error [V]
+i_amp = i_amp + 40.0 * e_v * dt;   // integral action [A]
+if (i_amp < 0.0) {
+    i_amp = 0.0;                   // anti-windup: a diode rectifier
+}
+if (i_amp > 12.0) {
+    i_amp = 12.0;                  // cannot push power back upstream
+}
+
+// ---- 2) current reference: rectified sine, in phase with the grid -----
+double shape = abs(sin(omega * t));       // |sin| template, phase-locked
+                                          // to the 50 Hz grid
+double i_ref = i_amp * shape;             // instantaneous current ref [A]
+
+// ---- 3) inner current loop: duty feedforward + PI ----------------------
+// Averaged boost stage: L*di/dt = |v_grid| - (1-duty)*v_dc.
+// The steady-state duty  d_ff = 1 - |v_grid|/v_dc  is fed forward, so
+// the PI only trims the remaining error and the loop gain stays
+// roughly constant over the grid period.
+double v_rec = v_pk * shape;              // rectified grid voltage [V]
+double d_ff  = 1.0 - v_rec / max(v_dc, 1.0);
+double e_i  = i_ref - i_l;                // current tracking error [A]
+i_int = i_int + 3000.0 * e_i * dt;        // PI integral term
+double duty = d_ff + 0.1 * e_i + i_int;   // PI output = total duty cycle
+if (duty < 0.0) {
+    duty = 0.0;                           // duty limits: 0 = diode-only
+}
+if (duty > 0.95) {
+    duty = 0.95;                          // 0.95 leaves off-time remaining
+}
+
+// ---- 4) PWM generation at f_sw -----------------------------------------
+double t_cycle = t % (1.0 / f_sw);        // position within switching period
+if (t_cycle < duty / f_sw) {
+    yOUT[0] = 1.0;    // switch ON : inductor charges, current rises
 } else {
-    yOUT[0] = 0.0;
+    yOUT[0] = 0.0;    // switch OFF: inductor + grid feed C_dc and load
 }
 return yOUT;
 <\\sourceCode>
@@ -4020,14 +4100,16 @@ return yOUT;
 <importCode>
 <\\importCode>
 <staticVariables>
-double v_int = 0.0;
+double i_amp = 6.0;   // outer-loop state: grid current amplitude [A],
+                      // starts near the operating point sqrt(2)*P/Vrms = 5.9 A
+double i_int = 0.0;   // inner-loop state: PI integrator
 <\\staticVariables>
 <\\ElementCONTROL>
 
-c (2)
+c (4)
 <ElementCONTROL>
 labelAnfangsKnoten[] /pwm
-labelEndKnoten[] 
+labelEndKnoten[]
 enabledShorted 1
 typ 6
 uniqueObjectIdentifier 2003
@@ -4042,51 +4124,78 @@ coupledReferenceID[] 1007
 copyCoupledReferenceID[] 1007
 <\\ElementCONTROL>
 
-c (3)
+c (5)
 <ElementCONTROL>
-labelAnfangsKnoten[] /v_dc_meas
-labelEndKnoten[] 
+labelAnfangsKnoten[] /v_dc_meas/i_l/u_grid
+labelEndKnoten[]
 enabledShorted 1
 typ 5
 uniqueObjectIdentifier 2004
 x 38
 y 20
-parameter[] 
+parameter[]
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] null
 orientierung 503
 idStringDialog SCOPE.1
 <detail>
-tn 1
+tn 3
 isShowName false
-savedSignalNames[] /v_dc_meas
+savedSignalNames[] /v_dc_meas/i_l/u_grid
 <\\detail>
 <\\ElementCONTROL>
 
-verbindungControlANZAHL 3
+verbindungControlANZAHL 6
 verbindungCONTROL (0)
 <Verbindung>
 label v_dc_meas
-x[] 12 13 14 15 16 17 18 
-y[] 20 20 20 20 20 20 20 
+x[] 12 13 14 15 16 17 18 18
+y[] 20 20 20 20 20 20 20 19
 enabled true
 connectorType 1
 <\\Verbindung>
 
 verbindungCONTROL (1)
 <Verbindung>
-label pwm
-x[] 22 23 24 25 26 
-y[] 20 20 20 20 20 
+label i_l
+x[] 12 13 14 14 14 14 15 16 17 18
+y[] 24 24 24 23 22 21 21 21 21 21
 enabled true
 connectorType 1
 <\\Verbindung>
 
 verbindungCONTROL (2)
 <Verbindung>
+label pwm
+x[] 22 23 24 25 26
+y[] 20 20 20 20 20
+enabled true
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (3)
+<Verbindung>
 label v_dc_meas
-x[] 12 12 13 14 14 14 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 36 36 36 36
-y[] 20 21 21 21 22 23 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 23 22 21 20
+x[] 13 13 13 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 36
+y[] 20 19 18 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 18
+enabled true
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (4)
+<Verbindung>
+label i_l
+x[] 13 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 35 35 35 35 35 36
+y[] 24 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 24 23 22 21 20 20
+enabled true
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (5)
+<Verbindung>
+label u_grid
+x[] 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 36 36 36 36 36 36
+y[] 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 27 26 25 24 23 22
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -4095,7 +4204,7 @@ tDURATION 0.060
 dt 1.0E-6
 solverType 0
 FileVersion 1
-dataContainerSignals[] /v_dc_meas
+dataContainerSignals[] /v_dc_meas/i_l/u_grid
 `;
 
 export const EXAMPLES: CircuitExample[] = [
@@ -4152,7 +4261,7 @@ export const EXAMPLES: CircuitExample[] = [
     id: 'pfc-boost',
     name: 'Active PFC Boost Pre-Regulator (50 Hz)',
     category: 'Power Electronics',
-    description: 'Power Factor Correction circuit with diode bridge, boost inductor, active MOSFET, and microcontroller duty shaping drawing in-phase AC mains current.',
+    description: 'Power Factor Correction circuit: diode bridge, 800 µH boost inductor, 50 kHz MOSFET, and a two-loop controller (slow bus-voltage loop + sinusoidal current loop) regulating 24 V AC to a 50 V DC bus at near-unity power factor. Scope shows bus voltage, inductor current, and grid voltage.',
     content: PFC_BOOST_IPES,
   },
   {
