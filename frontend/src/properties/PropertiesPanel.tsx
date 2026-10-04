@@ -30,6 +30,8 @@ import {
   getMutualCouplingUids,
   getCoupledComponentName,
   extractAvailableSignals,
+  isParameterVisible,
+  resolveParameterDef,
   type ParameterDef,
 } from '../model/componentSchema';
 import { isScopeComponent } from '../simulation/scopes';
@@ -759,18 +761,21 @@ export function PropertiesPanel({
             <div className="prop-section">
               <div className="prop-section-title">Electrical Parameters</div>
               <div className="prop-fields-list">
-                {meta.parameters.map((def) => {
-                  const currentVal =
-                    (component.parameters[def.key] as number) ?? def.defaultValue;
-                  return (
-                    <SemanticParameterField
-                      key={def.key}
-                      def={def}
-                      value={currentVal}
-                      onCommit={(val) => onSetParameter(component.name, def.key, val)}
-                    />
-                  );
-                })}
+                {meta.parameters
+                  .filter((def) => isParameterVisible(def, component.parameters))
+                  .map((def) => {
+                    const resolved = resolveParameterDef(def, component.parameters);
+                    const currentVal =
+                      (component.parameters[resolved.key] as number) ?? resolved.defaultValue;
+                    return (
+                      <SemanticParameterField
+                        key={resolved.key}
+                        def={resolved}
+                        value={currentVal}
+                        onCommit={(val) => onSetParameter(component.name, resolved.key, val)}
+                      />
+                    );
+                  })}
               </div>
             </div>
           )
@@ -1017,17 +1022,27 @@ function SemanticParameterField({
       </div>
 
       {def.options ? (
-        <select
-          className="prop-select"
-          value={value}
-          onChange={(e) => onCommit(Number(e.target.value))}
-        >
-          {def.options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+        <>
+          <select
+            className="prop-select"
+            value={Number(value)}
+            onChange={(e) => onCommit(Number(e.target.value))}
+          >
+            {def.options.map((opt) => (
+              <option key={opt.value} value={opt.value} title={opt.hint}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          {(() => {
+            const selected = def.options.find((opt) => opt.value === Number(value));
+            return selected?.hint ? (
+              <div className="prop-desc-hint" style={{ margin: '2px 0 0 0' }}>
+                {selected.hint}
+              </div>
+            ) : null;
+          })()}
+        </>
       ) : (
         <>
           <div className="prop-input-wrap">

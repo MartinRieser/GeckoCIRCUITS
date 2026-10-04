@@ -14,6 +14,14 @@ import {
 
 export { CTRL_TYPE };
 
+export interface ParameterOption {
+  label: string;
+  value: number;
+  /** Short explanation shown under the select while this option is active
+   *  (e.g. what a controlled source mode actually does in the engine). */
+  hint?: string;
+}
+
 export interface ParameterDef {
   index: number;
   key: string;
@@ -24,7 +32,56 @@ export interface ParameterDef {
   min?: number;
   max?: number;
   step?: number;
-  options?: { label: string; value: number }[];
+  options?: ParameterOption[];
+  /** Show this field only when the referenced sibling parameter currently
+   *  holds one of the listed values (e.g. AC fields only for Sinusoidal AC
+   *  sources). Absent = always visible. */
+  visibleWhen?: { key: string; values: (number | string)[] };
+  /** Mode-dependent display override for one storage slot: when the sibling
+   *  parameter `key` holds one of the numeric map keys, label/description
+   *  replace the base ones. Classic behavior: source slot 1 is the DC value
+   *  in DC mode and the peak amplitude in Sinusoidal mode. */
+  labelByOption?: { key: string; labels: Record<number, { label: string; description?: string }> };
+}
+
+/**
+ * Whether a parameter field should be rendered for the given component
+ * parameter map, evaluating its {@link ParameterDef.visibleWhen} constraint.
+ */
+export function isParameterVisible(
+  def: ParameterDef,
+  parameters: Record<string, unknown> | undefined,
+): boolean {
+  if (!def.visibleWhen || !parameters) {
+    return true;
+  }
+  if (parameters[def.visibleWhen.key] === undefined) {
+    // Mode selector value unknown — show everything rather than hide fields.
+    return true;
+  }
+  const current = Number(parameters[def.visibleWhen.key]);
+  return def.visibleWhen.values.some((v) => Number(v) === current);
+}
+
+/**
+ * Applies a parameter's {@link ParameterDef.labelByOption} override for the
+ * currently selected mode, returning the def to render. Falls back to the
+ * base label/description when the mode value has no override (or the mode
+ * selector value is not stored yet).
+ */
+export function resolveParameterDef(
+  def: ParameterDef,
+  parameters: Record<string, unknown> | undefined,
+): ParameterDef {
+  if (!def.labelByOption || !parameters) {
+    return def;
+  }
+  const mode = Number(parameters[def.labelByOption.key]);
+  const override = def.labelByOption.labels[mode];
+  if (!override) {
+    return def;
+  }
+  return { ...def, label: override.label, description: override.description ?? def.description };
 }
 
 export interface ComponentMeta {
@@ -208,19 +265,34 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
         defaultValue: 401,
         unit: '',
         options: [
-          { label: 'DC Voltage (401)', value: 401 },
-          { label: 'Sinusoidal AC (402)', value: 402 },
-          { label: 'Signal Controlled (400)', value: 400 },
-          { label: 'Voltage Controlled (399)', value: 399 },
+          { label: 'DC Voltage', value: 401 },
+          { label: 'Sinusoidal AC', value: 402 },
+          {
+            label: 'Signal Controlled',
+            value: 400,
+            hint: 'Value is meant to be driven by a control signal (classic Gecko). This engine currently outputs the constant value below.',
+          },
+          {
+            label: 'Voltage Controlled',
+            value: 399,
+            hint: 'Advanced: follows the sensed voltage of a referenced element (used internally by the Ideal Transformer). A standalone source in this mode outputs 0 V.',
+          },
         ],
       },
       {
         index: 1,
         key: 'param1',
-        label: 'Voltage (Vdc / Vpk)',
-        description: 'DC voltage or AC peak amplitude in Volts',
+        label: 'Voltage (Vdc)',
+        description: 'Constant DC output voltage (fallback value in signal-controlled mode)',
         defaultValue: 10,
         unit: 'V',
+        visibleWhen: { key: 'param0', values: [401, 400, 402] },
+        labelByOption: {
+          key: 'param0',
+          labels: {
+            402: { label: 'Amplitude (Vpk)', description: 'Sinusoidal peak amplitude in Volts' },
+          },
+        },
       },
       {
         index: 2,
@@ -230,14 +302,16 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
         defaultValue: 50,
         unit: 'Hz',
         min: 0,
+        visibleWhen: { key: 'param0', values: [402] },
       },
       {
         index: 3,
         key: 'param3',
         label: 'DC Offset (Voffset)',
-        description: 'Constant DC offset added to waveform',
+        description: 'Constant DC offset added to the AC waveform',
         defaultValue: 0,
         unit: 'V',
+        visibleWhen: { key: 'param0', values: [402] },
       },
       {
         index: 4,
@@ -246,6 +320,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
         description: 'Phase shift in degrees',
         defaultValue: 0,
         unit: '°',
+        visibleWhen: { key: 'param0', values: [402] },
       },
     ],
     terminals: {
@@ -273,18 +348,28 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
         defaultValue: 401,
         unit: '',
         options: [
-          { label: 'DC Current (401)', value: 401 },
-          { label: 'Sinusoidal AC (402)', value: 402 },
-          { label: 'Signal Controlled (400)', value: 400 },
+          { label: 'DC Current', value: 401 },
+          { label: 'Sinusoidal AC', value: 402 },
+          {
+            label: 'Signal Controlled',
+            value: 400,
+            hint: 'Value is meant to be driven by a control signal (classic Gecko). This engine currently outputs the constant value below.',
+          },
         ],
       },
       {
         index: 1,
         key: 'param1',
-        label: 'Current (Idc / Ipk)',
-        description: 'DC current or AC peak amplitude in Amperes',
+        label: 'Current (Idc)',
+        description: 'Constant DC output current (fallback value in signal-controlled mode)',
         defaultValue: 1,
         unit: 'A',
+        labelByOption: {
+          key: 'param0',
+          labels: {
+            402: { label: 'Amplitude (Apk)', description: 'Sinusoidal peak amplitude in Amperes' },
+          },
+        },
       },
       {
         index: 2,
@@ -294,14 +379,16 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
         defaultValue: 50,
         unit: 'Hz',
         min: 0,
+        visibleWhen: { key: 'param0', values: [402] },
       },
       {
         index: 3,
         key: 'param3',
         label: 'DC Offset (Ioffset)',
-        description: 'Constant DC offset added to current',
+        description: 'Constant DC offset added to the AC waveform',
         defaultValue: 0,
         unit: 'A',
+        visibleWhen: { key: 'param0', values: [402] },
       },
       {
         index: 4,
@@ -310,6 +397,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
         description: 'Phase shift in degrees',
         defaultValue: 0,
         unit: '°',
+        visibleWhen: { key: 'param0', values: [402] },
       },
     ],
     terminals: {
@@ -1257,10 +1345,14 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
         defaultValue: 404,
         unit: '',
         options: [
-          { label: 'Rectangle / PWM (404)', value: 404 },
-          { label: 'Sine (402)', value: 402 },
-          { label: 'Triangle (403)', value: 403 },
-          { label: 'Random Noise (405)', value: 405 },
+          { label: 'Rectangle / PWM', value: 404 },
+          { label: 'Sine', value: 402 },
+          { label: 'Triangle', value: 403 },
+          {
+            label: 'Random Noise',
+            value: 405,
+            hint: 'Random noise ignores amplitude, frequency, offset, phase, and duty cycle.',
+          },
         ],
       },
       {
@@ -1271,6 +1363,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
         defaultValue: 1.0,
         unit: 'V',
         step: 0.1,
+        visibleWhen: { key: 'param0', values: [402, 403, 404] },
       },
       {
         index: 2,
@@ -1281,6 +1374,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
         unit: 'Hz',
         min: 1e-3,
         step: 1000,
+        visibleWhen: { key: 'param0', values: [402, 403, 404] },
       },
       {
         index: 3,
@@ -1290,6 +1384,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
         defaultValue: 0.0,
         unit: 'V',
         step: 0.1,
+        visibleWhen: { key: 'param0', values: [402, 403, 404] },
       },
       {
         index: 4,
@@ -1299,17 +1394,19 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
         defaultValue: 0.0,
         unit: 'rad',
         step: 0.1,
+        visibleWhen: { key: 'param0', values: [402, 403, 404] },
       },
       {
         index: 5,
         key: 'param5',
         label: 'Duty Cycle (D)',
-        description: 'Pulse duty ratio (0..1) for PWM rectangle signal',
+        description: 'Pulse duty ratio (0..1) for PWM rectangle, rise fraction for triangle',
         defaultValue: 0.5,
         unit: '',
         min: 0.0,
         max: 1.0,
         step: 0.01,
+        visibleWhen: { key: 'param0', values: [403, 404] },
       },
     ],
     terminals: {

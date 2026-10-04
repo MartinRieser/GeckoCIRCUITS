@@ -859,17 +859,18 @@ public class CircuitEditService {
     /**
      * Default parameter arrays for new components, mirroring the classic GUI's
      * constructor defaults (see AbstractResistor, AbstractCapacitor, AbstractCircuitSource,
-     * AbstractSemiconductor, AbstractSwitch). Sources carry the full classic layout:
-     * [0]=source type code, [1]=DC value, [2]=frequency, [3]=offset, [4]=phase,
-     * [20]=sinus amplitude. Switches/diodes: [0]=dynamic resistance (state),
-     * then type-specific values.
+     * AbstractSemiconductor, AbstractSwitch). Sources carry the classic layout:
+     * [0]=source type code, [1]=DC value / SIN peak amplitude, [2]=frequency,
+     * [3]=offset, [4]=phase. Switches/diodes: [0]=dynamic resistance (state),
+     * then type-specific values. The SIN amplitude lives in slot [1]; the
+     * solver's amplitude slot [20] is derived from it at netlist build time.
      */
     private static final Map<Integer, double[]> DEFAULT_PARAMETERS = Map.ofEntries(
             Map.entry(1, new double[]{1000.0}),
             Map.entry(2, new double[]{3.0e-4, 0.0}),
             Map.entry(3, new double[]{100.0e-9, 0.0}),
-            Map.entry(4, sourceDefaults(10.0, 325.0)),
-            Map.entry(5, sourceDefaults(1.0, 1.0)),
+            Map.entry(4, sourceDefaults(10.0)),
+            Map.entry(5, sourceDefaults(1.0)),
             Map.entry(6, new double[]{10.0e-3, 0.6, 10.0e-3, 1.0e7}),
             Map.entry(7, new double[]{1.0e7, 10.0e-3, 1.0e7}),
             // Thermal & reluctance domain defaults follow CircuitTypCore numbering:
@@ -890,12 +891,11 @@ public class CircuitEditService {
             Map.entry(33, new double[]{0.0, 100.0, 60.0, 0.1, 1.0}),
             Map.entry(1000, new double[]{0.0}));
 
-    private static double[] sourceDefaults(double dcValue, double amplitude) {
-        double[] params = new double[21];
+    private static double[] sourceDefaults(double dcValue) {
+        double[] params = new double[5];
         params[0] = 401.0;   // QUELLE_DC
-        params[1] = dcValue;
+        params[1] = dcValue; // DC value, or peak amplitude when switched to SIN
         params[2] = 50.0;    // frequency
-        params[20] = amplitude;
         return params;
     }
 

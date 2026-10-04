@@ -90,13 +90,12 @@ class CircuitEditServiceTest {
                 payloadComponent(r).parameters());
         assertArrayEquals(new double[]{1000.0}, findByName("R_def").getRawParameters(), 1e-12);
 
-        // voltage source: classic layout [0]=401 (DC), [1]=10 V, [2]=50 Hz, [20]=325 V amplitude
+        // voltage source: classic layout [0]=401 (DC), [1]=10 V, [2]=50 Hz
         service.createComponent(circuitId, new ComponentCreateRequest("LK", 4, "U_def", 16, 16, null, null));
         CircuitModel.ComponentData source = findByName("U_def");
         assertEquals(401.0, source.getRawParameters()[0], 1e-12);
         assertEquals(10.0, source.getRawParameters()[1], 1e-12);
         assertEquals(50.0, source.getRawParameters()[2], 1e-12);
-        assertEquals(325.0, source.getRawParameters()[20], 1e-12);
 
         // explicit parameters override the defaults
         service.createComponent(circuitId,

@@ -7,7 +7,10 @@ import { ControlComponentType } from '../model/constants';
 
 /**
  * Checks whether a given circuit component is an oscilloscope instrument block,
- * either by type (legacy typ 5 or modern typ 1003) or by conventional prefix ('SCOPE', 'OSZI').
+ * either by CONTROL-domain type (legacy typ 5 or modern typ 1003) or by
+ * conventional prefix ('SCOPE', 'OSZI'). The type check requires the CONTROL
+ * family: the legacy scope shares typ 5 with the LK current source, which must
+ * not be mistaken for an instrument.
  *
  * @param component The schematic component to test, or null/undefined.
  * @returns True if the component represents an oscilloscope instrument.
@@ -15,11 +18,13 @@ import { ControlComponentType } from '../model/constants';
 export function isScopeComponent(component: EditorComponent | null | undefined): boolean {
   if (!component) return false;
   const name = (component.name || '').toUpperCase();
+  if (name.startsWith('SCOPE') || name.startsWith('OSZI')) {
+    return true;
+  }
   return (
-    component.type === ControlComponentType.LEGACY_SCOPE ||
-    component.type === ControlComponentType.SCOPE ||
-    name.startsWith('SCOPE') ||
-    name.startsWith('OSZI')
+    component.family === 'CONTROL' &&
+    (component.type === ControlComponentType.LEGACY_SCOPE ||
+      component.type === ControlComponentType.SCOPE)
   );
 }
 

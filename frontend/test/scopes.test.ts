@@ -70,6 +70,15 @@ describe('scopes helpers', () => {
     it('returns false for regular components', () => {
       expect(isScopeComponent(resistor)).toBe(false);
     });
+
+    it('does not mistake the LK current source (shared legacy typ 5) for a scope', () => {
+      const currentSource: EditorComponent = {
+        ...resistor,
+        type: LkComponentType.CURRENT_SOURCE,
+        name: 'I',
+      };
+      expect(isScopeComponent(currentSource)).toBe(false);
+    });
   });
 
   describe('findScopeBlocks', () => {
