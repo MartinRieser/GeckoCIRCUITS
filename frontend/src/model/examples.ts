@@ -636,7 +636,7 @@ savedSignalNames[] /v_in/v_out/i_L
 <\\detail>
 <\\ElementCONTROL>
 
-tDURATION 0.002
+tDURATION 0.012
 dt 2.0E-7
 solverType 0
 FileVersion 1
@@ -765,7 +765,7 @@ typ 4
 uniqueObjectIdentifier 1001
 x 6
 y 12
-parameter[] 401.0 34.0 50.0 0.0 0.0 0.5 0.0 34.0 0.0 -34.0 0.0 1.0 1.7976931348623157E308 0.0 0.0
+parameter[] 402.0 34.0 50.0 0.0 0.0 0.5 0.0 34.0 0.0 -34.0 0.0 1.0 1.7976931348623157E308 0.0 0.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 503
@@ -3426,9 +3426,9 @@ connectorType 0
 verbindungControlANZAHL 3
 verbindungCONTROL (0)
 <Verbindung>
-label v_meas
-x[] 10 11 12 13 14 
-y[] 16 16 16 16 16 
+label v_out_scope
+x[] 10 11 12 13 14
+y[] 16 16 16 16 16
 enabled true
 connectorType 1
 <\\Verbindung>
@@ -3565,8 +3565,8 @@ controlANZAHL 4
 
 c (0)
 <ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_meas
+labelAnfangsKnoten[]
+labelEndKnoten[] /v_out_scope
 enabledShorted 1
 typ 1
 uniqueObjectIdentifier 2001
@@ -3581,7 +3581,7 @@ idStringDialog VOLT_OUT
 
 c (1)
 <ElementCONTROL>
-labelAnfangsKnoten[] /v_meas
+labelAnfangsKnoten[] /v_out_scope
 labelEndKnoten[] /pwm
 enabledShorted 1
 typ 61
