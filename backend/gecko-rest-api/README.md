@@ -212,12 +212,12 @@ mvn test
 mvn clean package
 ```
 
-Output: `target/gecko-rest-api-1.0.0.jar`
+Output: `target/gecko-rest-api.jar`
 
 ### Run JAR
 
 ```bash
-java -jar target/gecko-rest-api-1.0.0.jar
+java -jar target/gecko-rest-api.jar
 ```
 
 ## Architecture

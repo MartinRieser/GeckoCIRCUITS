@@ -33,7 +33,7 @@ Installers and portable bundles are published on the [GitHub Releases](https://g
     3. Launch **GeckoCIRCUITS**.
 
     **Portable (Classic GUI):** `GeckoCIRCUITS-<version>-windows-x64-portable.zip`
-    - Legacy zero-install archive with `run-gecko.bat`. For the new GUI, use the installer above or `run-web-editor.bat`.
+    - Legacy zero-install archive with `run-gecko.bat`. For the new GUI, use the installer above or `run-gecko.bat`.
 
 
 === "macOS"
@@ -57,7 +57,7 @@ Installers and portable bundles are published on the [GitHub Releases](https://g
 
     **Portable:** `GeckoCIRCUITS-<version>-linux-x64-portable.tar.gz`
 
-## Run from Source (Web Editor)
+## Run from Source
 
 For contributors and developers who want to run from source:
 
@@ -65,9 +65,9 @@ For contributors and developers who want to run from source:
 git clone https://github.com/MartinRieser/GeckoCIRCUITS.git
 cd GeckoCIRCUITS
 
-# Starts the simulation engine on localhost:8080 and opens the web editor
-run-web-editor.bat        # Windows
-./run-web-editor.sh       # Linux / macOS
+# Starts the simulation engine on localhost:8080 and opens the editor
+run-gecko.bat        # Windows
+./run-gecko.sh       # Linux / macOS
 ```
 
 Requirements for running from source: JDK 25, Maven 3.8+, and Node.js 22+.

@@ -3,13 +3,13 @@
 ## Document Information
 * **File Location**: `frontend/MULTI_TAB_WORKSPACE_PLAN.md`
 * **Status**: Approved Implementation Plan (Ready for Execution)
-* **Target Version**: GeckoCIRCUITS Web EDA v1.1
+* **Target Version**: GeckoCIRCUITS v1.1
 
 ---
 
 ## 1. Overview & Goals
 
-This plan outlines the architecture, UX design, and step-by-step implementation for upgrading the GeckoCIRCUITS Web Editor from a 2-tab layout into a professional, multi-tab EDA workstation.
+This plan outlines the architecture, UX design, and step-by-step implementation for upgrading the GeckoCIRCUITS editor from a 2-tab layout into a professional, multi-tab EDA workstation.
 
 ### Key Objectives:
 1. **Dynamic Tab Bar**: Automatically creates and maintains dedicated tabs for:

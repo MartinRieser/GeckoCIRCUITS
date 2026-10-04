@@ -404,6 +404,11 @@ public final class ControlCalculatorBuilder {
         List<String> warnings = new ArrayList<>();
 
         for (CircuitModel.ComponentData comp : controlComponents) {
+            // scopes are pure display instruments with nothing to calculate —
+            // skipping them is expected behavior, not degradation worth a warning
+            if (isDisplayOnlyType(comp.getType())) {
+                continue;
+            }
             AbstractControlCalculatable calculator = createCalculator(comp);
             if (calculator == null) {
                 warnings.add("Control block '" + comp.getName() + "' has an unsupported type and is skipped");
@@ -947,6 +952,11 @@ public final class ControlCalculatorBuilder {
     /** Current probe blocks: the classic type 2 and the web catalog CTRL_AMP. */
     private static boolean isCurrentProbe(int type) {
         return type == TYP_AMMETER || type == TYP_AMP_WEB;
+    }
+
+    /** Display-only blocks: the classic scope type 5 and the web catalog CTRL_SCOPE. */
+    private static boolean isDisplayOnlyType(int type) {
+        return type == TYP_SCOPE || type == TYP_SCOPE_WEB;
     }
 
     /**

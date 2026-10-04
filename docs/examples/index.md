@@ -64,22 +64,22 @@ example_name/
 
 ## Running Examples
 
-All examples run in the modern GeckoCIRCUITS GUI (Desktop App or Web Editor).
+All examples run in the modern GeckoCIRCUITS GUI (desktop app or from source).
 
 ### 1. In the Desktop App
 - **Double-click** any `.ipes` circuit file in your system file manager to open it directly.
 - Or launch **GeckoCIRCUITS**, select **File > Open**, and browse to the circuit file in `resources/`.
 - You can also **drag and drop** any `.ipes` file directly onto the editor canvas.
 
-### 2. Running from Source (Web Editor)
+### 2. Running from Source
 If running from a repository checkout, start the local editor and engine:
 
 ```bash
 # Windows
-run-web-editor.bat
+run-gecko.bat
 
 # Linux / macOS
-./run-web-editor.sh
+./run-gecko.sh
 ```
 
 Once the editor opens in your browser or application window:

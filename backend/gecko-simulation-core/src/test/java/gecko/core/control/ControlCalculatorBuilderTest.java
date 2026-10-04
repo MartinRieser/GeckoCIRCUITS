@@ -307,6 +307,56 @@ class ControlCalculatorBuilderTest {
         assertEquals(1, result.probes().size());
     }
 
+    private static String withControlBlock(String base, String typ, String name) {
+        return base.replace("verbindungCONTROL (0)", ""
+                + "c (3)\n"
+                + "<ElementCONTROL>\n"
+                + "typ " + typ + "\n"
+                + "uniqueObjectIdentifier 203\n"
+                + "x 80\n"
+                + "y 21\n"
+                + "parameter[] 0.0\n"
+                + "orientierung 503\n"
+                + "idStringDialog " + name + "\n"
+                + "<\\ElementCONTROL>\n"
+                + "verbindungCONTROL (0)");
+    }
+
+    @Test
+    void scopeBlock_isDisplayOnlyAndWarnsNothing() throws Exception {
+        // a scope is a pure display instrument: skipping it in the calculator
+        // chain is expected, so it must not surface as an "unsupported type" notice
+        CircuitModel scopeModel = new CircuitFileParser().parse(
+                new BufferedReader(new StringReader(withControlBlock(BUCK_WITH_CONTROL, "5", "SCOPE.1"))),
+                "test.ipes");
+        CircuitNetlist scopeNetlist = NetlistBuilder.buildFromCircuitModel(scopeModel);
+
+        ControlCalculatorBuilder.ControlCoupling result =
+                ControlCalculatorBuilder.build(scopeModel, scopeNetlist);
+
+        assertTrue(result.warnings().isEmpty(),
+                "display-only scope must not warn: " + result.warnings());
+        assertEquals(1, result.calculators().size(),
+                "the scope must not add an executable calculator");
+        assertEquals(1, result.gateDrives().size());
+        assertEquals(1, result.probes().size());
+    }
+
+    @Test
+    void unknownControlType_stillWarnsAsUnsupported() throws Exception {
+        CircuitModel mysteryModel = new CircuitFileParser().parse(
+                new BufferedReader(new StringReader(withControlBlock(BUCK_WITH_CONTROL, "9999", "MYSTERY.1"))),
+                "test.ipes");
+        CircuitNetlist mysteryNetlist = NetlistBuilder.buildFromCircuitModel(mysteryModel);
+
+        ControlCalculatorBuilder.ControlCoupling result =
+                ControlCalculatorBuilder.build(mysteryModel, mysteryNetlist);
+
+        assertEquals(1, result.warnings().size());
+        assertTrue(result.warnings().get(0).contains("MYSTERY.1"));
+        assertTrue(result.warnings().get(0).contains("unsupported type"));
+    }
+
     @Test
     void emptyModel_yieldsEmptyCoupling() {
         ControlCalculatorBuilder.ControlCoupling result =

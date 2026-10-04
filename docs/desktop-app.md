@@ -64,7 +64,7 @@ simulation must run through the bundled runtime and the Boot jar
 
 **Dev mode** never spawns the sidecar: `cargo tauri dev` (in `desktop/app`)
 loads the Vite dev server, which proxies to an engine started separately via
-`run-web-editor.bat|.sh`.
+`run-gecko.bat|.sh`.
 
 ### Versioning
 

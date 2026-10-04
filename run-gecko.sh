@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ============================================================================
-# GeckoCIRCUITS Web Editor - Launcher for macOS & Linux
-# Launches the backend server and opens the web editor in a standalone app window.
+# GeckoCIRCUITS - Launcher for macOS & Linux
+# Launches the backend server and opens the editor in a standalone app window.
 # ============================================================================
 
 set -e
@@ -9,13 +9,13 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-REST_JAR="$SCRIPT_DIR/backend/gecko-rest-api/target/gecko-rest-api-1.0.0.jar"
+REST_JAR="$SCRIPT_DIR/backend/gecko-rest-api/target/gecko-rest-api.jar"
 STATIC_INDEX="$SCRIPT_DIR/backend/gecko-rest-api/src/main/resources/static/index.html"
 PORT=8080
 URL="http://localhost:${PORT}/gecko/"
 
 echo "============================================"
-echo "  GeckoCIRCUITS Web Editor"
+echo "  GeckoCIRCUITS"
 echo "============================================"
 
 # Stop running server on specified port
@@ -39,7 +39,7 @@ stop_server_on_port() {
     fi
 }
 
-# Check if server is running AND serving the web editor
+# Check if server is running AND serving the editor
 is_server_ready() {
     curl -s -f -m 1 "http://localhost:${PORT}/gecko/api/health" > /dev/null 2>&1 && \
     curl -s -f -m 1 "http://localhost:${PORT}/gecko/" > /dev/null 2>&1
@@ -127,7 +127,7 @@ fi
 
 if [[ -n "$CIRCUIT_FILE" ]]; then
     echo "[INFO] Target circuit: $CIRCUIT_FILE"
-    echo "[INFO] In the web editor window, select File > Open or drag-and-drop the file onto the canvas."
+    echo "[INFO] In the editor window, select File > Open or drag-and-drop the file onto the canvas."
 fi
 
 # 2. Build or Rebuild if requested or if missing
@@ -154,7 +154,7 @@ else
 
     # Ensure backend JAR exists
     if [[ ! -f "$REST_JAR" ]]; then
-        echo "[INFO] Building GeckoCIRCUITS Web Editor package..."
+        echo "[INFO] Building GeckoCIRCUITS package..."
         mvn -pl backend/gecko-rest-api -am package -DskipTests -q
         if [[ $? -ne 0 ]]; then
             echo "[ERROR] Build failed. Please ensure Maven and JDK are installed."
@@ -172,7 +172,7 @@ else
 
     echo "[INFO] Starting GeckoCIRCUITS Server in background..."
     mkdir -p "$SCRIPT_DIR/logs"
-    nohup "$JAVA_BIN" -Duser.language=en -Duser.country=US -Xmx2g -jar "$REST_JAR" > "$SCRIPT_DIR/logs/gecko-web-server.log" 2>&1 &
+    nohup "$JAVA_BIN" -Duser.language=en -Duser.country=US -Xmx2g -jar "$REST_JAR" > "$SCRIPT_DIR/logs/gecko-server.log" 2>&1 &
 
     # Wait for server to become ready
     READY=0
@@ -194,7 +194,7 @@ echo "[INFO] Launching GeckoCIRCUITS window..."
 LAUNCHED=0
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    PROFILE_DIR="$HOME/Library/Application Support/GeckoCIRCUITS/web-editor-profile"
+    PROFILE_DIR="$HOME/Library/Application Support/GeckoCIRCUITS/app-profile"
     mkdir -p "$PROFILE_DIR"
 
     MACOS_BROWSERS=(
@@ -223,7 +223,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         open "$URL"
     fi
 elif command -v xdg-open &> /dev/null || [[ "$OSTYPE" == "linux"* ]]; then
-    PROFILE_DIR="$HOME/.config/geckocircuits/web-editor-profile"
+    PROFILE_DIR="$HOME/.config/geckocircuits/app-profile"
     mkdir -p "$PROFILE_DIR"
 
     for bin in google-chrome google-chrome-stable chromium chromium-browser brave-browser microsoft-edge-stable; do
@@ -246,4 +246,4 @@ else
     echo "[INFO] Please open your browser and navigate to: $URL"
 fi
 
-echo "[INFO] GeckoCIRCUITS Web Editor started."
+echo "[INFO] GeckoCIRCUITS started."

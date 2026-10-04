@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Smoke gate for two-terminal power components in the WEB writer dialect:
  * every component is exercised in a minimal series circuit (V source -
  * component - R load with GND return) built from SHORT parameter arrays and
- * wire connectivity - exactly what web-editor-authored circuits look like.
+ * wire connectivity - exactly what editor-authored circuits look like.
  * This is the path that silently produced all-NaN results before the
  * parameter normalization (see CircuitNetlist.normalizeParameters), so each
  * palette component must keep simulating finite here.

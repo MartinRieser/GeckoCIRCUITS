@@ -138,7 +138,7 @@ The authoritative token list for READING is `CircuitFileParser` + `TokenMap`
 (`.../core/circuit/TokenMap.java:25-52`). The writer must emit exactly the tokens the
 reader knows; anything else is a bug.
 
-### Existing GUI interaction reference (behavioral spec for the web editor)
+### Existing GUI interaction reference (behavioral spec for the editor)
 
 - Placement: palette click arms type, component follows cursor, left-click places,
   right-click rotates, Esc cancels (`SchematicEditor2.java`: placement :192/:520,
@@ -159,12 +159,12 @@ reader knows; anything else is a bug.
 ```
 [Swing UI (unchanged)] ──opens/saves──┐
                                       ├── .ipes file  (single source of truth)
-[Web editor (new)] ◄──REST/WS── [extended gecko-rest-api] ──► [gecko-simulation-core]
+[Editor (new)] ◄──REST/WS── [extended gecko-rest-api] ──► [gecko-simulation-core]
 ```
 
 - The `.ipes` file is the only interchange format. No live model sharing between the
   two frontends, no shared event bus between JVMs. Sync = save + reload (+ WS model
-  version notifications inside the web editor session).
+  version notifications inside the editor session).
 - The web frontend is a static SPA (Vite build output) served from Spring Boot's
   static resources in production; during development it runs on the Vite dev server
   with a proxy to `:8080/gecko`.
@@ -260,7 +260,7 @@ Tests: API-level CRUD tests for every endpoint (happy path + one error case each
 every mutation leaves the model serializable (assert via P0 writer round-trip call in
 the test).
 
-### P2 — Web editor MVP (mouse parity)
+### P2 — Editor MVP (mouse parity)
 
 **Goal:** the editor can do what the Swing sheet can do with the mouse: place, move,
 rotate, wire, save, open.
@@ -439,7 +439,7 @@ Completed in P6:
 
 ## 4. What we deliberately do NOT build
 
-- No live model sync between Swing UI and web editor (files are the interface).
+- No live model sync between Swing UI and the editor (files are the interface).
 - No general plugin/extension system for the editor.
 - No SPICE netlist import/export (possible future phase; the label-based format makes
   it feasible, but it is out of scope).

@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Voltmeter probes recorded flat zero in the web editor: the classic .ipes
+ * Voltmeter probes recorded flat zero in the editor: the classic .ipes
  * dialect writes measurement labels with a leading '/' (parameterString[]
  * /V_in/0/0) while the label resolver keys them bare, so nodeForLabel missed
  * for both measured nodes and every probe evaluated 0-0 = 0. Scope channels

@@ -3,7 +3,7 @@
 Status: HANDOFF (2026-08-30, evening) — **T1 is RESOLVED for real .ipes
 files** (read §0.2 "T1 resolution"); the open work is the headless engine
 gaps (§0.3) and web-authored example content (§0.2 "Web-native circuits").
-Owner workstream referenced by `WEB_FRONTEND_PLAN.md` decision 3
+Owner workstream referenced by `FRONTEND_PLAN.md` decision 3
 ("Control-domain headless parity is a separate future workstream").
 
 ## 0. State for handoff
@@ -36,7 +36,7 @@ convention, hence `skipFirstRow=true` in the orchestrator.
 
 ### 0.2 The legacy RMI backend — implemented, ONE open blocker (task T1)
 
-**Goal:** the web GUI gets legacy-correct results by driving the REAL classic
+**Goal:** the editor gets legacy-correct results by driving the REAL classic
 engine (`gecko-gui`'s `gecko.GeckoSim`) headlessly via its RMI remote control —
 the exact path `tools/parity/ReferenceRunner.java` proves works for all
 tutorials — as an opt-in backend of `gecko-rest-api`.
@@ -89,7 +89,7 @@ before the RMI server came up — see `gecko.HeadlessDialogs`), and
 `ReferenceRunner` sets the same flag.
 
 **Web-native circuits — NOT classic-compatible (documented, do not hand-patch).**
-Circuits authored in the web editor (e.g. the built-in Examples) use a writer
+Circuits authored in the editor (e.g. the built-in Examples) use a writer
 dialect the classic GUI only partially imports. Empirically confirmed gaps:
 classic reads `enabledShorted` as the Enabled enum ordinal (0 = DISABLED,
 classic files write 1), its SpecialPair end tags differ from the raw `\\`
@@ -131,7 +131,7 @@ rejected by the product owner)
 3. W2 items (op-amp hidden subcircuit, LKOP2 mutual M-terms) as detailed in
    §3 W2 below.
 
-### Engineering rules (binding, from `WEB_FRONTEND_PLAN.md` §0)
+### Engineering rules (binding, from `FRONTEND_PLAN.md` §0)
 
 `mvn verify` green after every task; conventional commits
 (`feat(rest): ...`); no speculative abstraction; update
@@ -139,7 +139,7 @@ rejected by the product owner)
 commit secrets. When debugging long-running scenarios: kill order matters —
 the Spring Boot repackage fails if the server jar file is locked by a running
 server (stop the server BEFORE `mvn package`; a leftover server from an
-earlier session lingers as a stray `java.exe -jar ...gecko-rest-api-1.0.0.jar`
+earlier session lingers as a stray `java.exe -jar ...gecko-rest-api.jar`
 — kill it, or every later `mvn verify` dies in repackage while all tests
 pass).
 
@@ -282,7 +282,7 @@ a ReferenceRunner export.
 JAVA_FUNCTION, ToEXT/FROMEXT (Simulink), CISPR16, script blocks:
 either implement the calculator in core (pure-Java ones first: MUL typ 14
 is trivial) or make the engine fail FAST with a clear message naming the
-unsupported block (surfaced through REST to the web GUI status bar) instead
+unsupported block (surfaced through REST to the editor status bar) instead
 of "matrix singular". No silent skipping.
 Acceptance: every tutorial file either simulates finite or reports a
 precise unsupported-block error; zero "Matrix ... is singular" surprises.
@@ -303,7 +303,7 @@ precise unsupported-block error; zero "Matrix ... is singular" surprises.
 
 1. Sweep: 76/76 tutorials either CLEAN or precise unsupported-block error.
 2. Parity harness green on the curated table above (LK + gate-driven).
-3. `docs/api/rest-api.md` + web GUI list remaining known-unsupported
+3. `docs/api/rest-api.md` + editor list remaining known-unsupported
    blocks explicitly.
 4. `mvn verify` green; no new code-size outliers (principle 1 of
-   WEB_FRONTEND_PLAN).
+   FRONTEND_PLAN).

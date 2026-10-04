@@ -1,6 +1,6 @@
 # Classic Swing UI — Retirement Checklist
 
-Status: **COMPLETED**. The classic Swing UI has been retired. Historical state is preserved in git tag `classic-v1.0-final`. The repository build reactor, CI pipelines, and desktop distribution now compile and ship exclusively the modern stack (React/Tauri desktop app, Web Editor, REST API, and headless simulation core).
+Status: **COMPLETED**. The classic Swing UI has been retired. Historical state is preserved in git tag `classic-v1.0-final`. The repository build reactor, CI pipelines, and desktop distribution now compile and ship exclusively the modern stack (React/Tauri desktop app, editor, REST API, and headless simulation core).
 
 ## P0 parity features (implemented & signed off)
 

@@ -123,7 +123,7 @@ public final class ComponentTerminals {
                 return List.of(offset(x, y, dir, -TERMINAL_DISTANCE));
             }
             // scopes: one input terminal per input label, spread perpendicular
-            // to the flow direction exactly like the web editor renders them
+            // to the flow direction exactly like the editor renders them
             // (2 grid units apart, centered on the component)
             if (type == CONTROL_SCOPE || type == CircuitTypCore.CTRL_SCOPE.getTypeNumber()) {
                 return scopeTerminals(comp, x, y, dir);
@@ -140,7 +140,7 @@ public final class ComponentTerminals {
     /**
      * Scope input terminals: one per input label (X labels), centered on the
      * component and spread 2 grid units apart along the perpendicular of the
-     * flow direction — mirroring the web editor's scope pin layout, so wire
+     * flow direction — mirroring the editor's scope pin layout, so wire
      * endpoints land exactly on computed terminals.
      */
     private static List<int[]> scopeTerminals(CircuitModel.ComponentData comp, int x, int y, int[] dir) {

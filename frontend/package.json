@@ -1,7 +1,6 @@
 {
-  "name": "geckocircuits-web-editor",
+  "name": "geckocircuits",
   "private": true,
-  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -3,7 +3,7 @@
 Status: **P0 and P1 implemented** (2026-09-06). P0: scope zoom/pan (80c48e7c), FFT frontend (fa3a98ff), NativeC v2 load-only C-library block (3cb96ec3 + abf4a842). P1: losses panel + thermal edit parity + parameter-audit decision (45a78bcf). Retirement deletions gated on the signed-off checklist — see docs/classic-retirement-checklist.md. Supersedes the NativeC portion of the earlier feature-review
 conversation: NativeC stays and is modernized as a **load-only** external-library block.
 
-Goal: the React desktop/web editor + headless engine cover the features people actually use,
+Goal: the React editor + headless engine cover the features people actually use,
 so the classic Swing UI can be frozen and eventually removed. Hard requirement from product
 owner: **NativeC blocks must work in the new stack** — use case is firmware-in-the-loop
 (test real microcontroller control code in simulation before flashing the device).
@@ -93,11 +93,11 @@ GECKO_EXPORT void gecko_deinit(void);
 - Replaces the dormant `gecko.core.nativec` copy semantics; classic GUI keeps its own
   path untouched (works today via `System.load`).
 - Failure contract mirrors script blocks: missing library/symbol → outputs hold at initial
-  values, one logged error, surfaced through `gecko_validate_circuit` and the web editor.
+  values, one logged error, surfaced through `gecko_validate_circuit` and the editor.
 
 ### Editor + MCP surface
 
-- Web editor properties panel: library path (native picker on desktop), entry symbol
+- Editor properties panel: library path (native picker on desktop), entry symbol
   (default `gecko_step`), input/output counts. Validation shows load errors inline.
 - MCP may **run and validate** circuits containing C blocks; it must **not author** them
   (no library-path writing through `gecko_set_script_code` — prompt-injection into native

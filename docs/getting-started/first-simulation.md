@@ -13,7 +13,7 @@ This walkthrough opens, runs, and analyzes a buck converter simulation.
 
 ## Step 1: Launch GeckoCIRCUITS
 
-Start the desktop app (or open the web editor). After a few seconds the
+Start the desktop app (or the editor from a source checkout). After a few seconds the
 editor opens with an empty schematic.
 
 ## Step 2: Open the Example Circuit

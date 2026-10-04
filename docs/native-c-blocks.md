@@ -148,7 +148,7 @@ On Windows the file must be 64-bit to match the application. If your firmware
 is C++, compile the *same* control source files you target the MCU with —
 only the hardware-access layer is replaced by the three exported functions.
 
-## Using the block in the web GUI
+## Using the block in the editor
 
 1. Open the **control palette** and place a **C Library Block (NativeC)**
    (the palette entry `C_NATIVE_C_FUNCTION`, typ 88).

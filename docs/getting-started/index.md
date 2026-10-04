@@ -11,7 +11,7 @@ Welcome to GeckoCIRCUITS! Whether you are designing power supplies, motor drives
 
 | Guide | Description | Duration |
 |-------|-------------|----------|
-| [Installation](installation.md) | Install desktop app or build web editor from source | 5 min |
+| [Installation](installation.md) | Install desktop app or run from source | 5 min |
 | [Quick Start](quickstart.md) | 5-minute hands-on intro to running a simulation | 5 min |
 | [User Interface](interface.md) | Tour of the schematic editor, component palette, and scope | 10 min |
 | [First Simulation](first-simulation.md) | Step-by-step walkthrough running a buck converter | 15-20 min |
@@ -29,7 +29,7 @@ Welcome to GeckoCIRCUITS! Whether you are designing power supplies, motor drives
 ## What You'll Learn
 
 By completing the Getting Started series, you will be able to:
-- Install and launch the GeckoCIRCUITS desktop app or web editor
+- Install and launch the GeckoCIRCUITS desktop app
 - Navigate the schematic editor and component palettes
 - Build, wire, and modify power electronic circuits
 - Configure numerical solver settings (backward Euler, trapezoidal, Gear-Shichman)

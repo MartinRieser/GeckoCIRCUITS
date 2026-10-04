@@ -3,9 +3,13 @@
 
 Usage: python scripts/desktop/set-version.py 1.2.3
 
-Updates desktop/app/tauri.conf.json, desktop Cargo.toml files, pom.xml files,
-backend/gecko-rest-api application properties (app.version),
-and frontend/package.json. CI calls this with the v* tag before building installers.
+Updates desktop/app/tauri.conf.json (installer version), the desktop Cargo.toml
+files, and backend/gecko-rest-api application.properties (app.version).
+CI calls this with the v* tag before building installers.
+
+Build artifact file names never contain the version: the Maven modules build
+as gecko-rest-api.jar / gecko-mcp.jar / gecko-simulation-core.jar (pom
+finalName) and are not touched here.
 Accepts an optional semver pre-release suffix (e.g. 1.2.3-rc.1) so release
 candidate tags can be built without a separate versioning scheme.
 """
@@ -20,21 +24,8 @@ TAURI_CONF = REPO_ROOT / "desktop" / "app" / "tauri.conf.json"
 APP_PROPERTIES = (
     REPO_ROOT / "backend" / "gecko-rest-api" / "src" / "main" / "resources" / "application.properties"
 )
-PACKAGE_JSON = REPO_ROOT / "frontend" / "package.json"
 CARGO_APP = REPO_ROOT / "desktop" / "app" / "Cargo.toml"
 CARGO_ENGINE = REPO_ROOT / "desktop" / "engine" / "Cargo.toml"
-POM_ROOT = REPO_ROOT / "pom.xml"
-POM_REST_API = REPO_ROOT / "backend" / "gecko-rest-api" / "pom.xml"
-POM_MCP = REPO_ROOT / "backend" / "gecko-mcp" / "pom.xml"
-
-
-def update_pom_artifact_version(pom_path: Path, artifact_id: str, new_version: str):
-    text = pom_path.read_text(encoding="utf-8")
-    pattern = rf"(<artifactId>{re.escape(artifact_id)}</artifactId>\s*<version>)[^<]+(</version>)"
-    new_text, count = re.subn(pattern, rf"\g<1>{new_version}\g<2>", text)
-    if count == 0:
-        raise ValueError(f"Could not find artifactId {artifact_id} with version in {pom_path}")
-    pom_path.write_text(new_text, encoding="utf-8")
 
 
 def update_cargo_version(cargo_path: Path, new_version: str):
@@ -47,8 +38,8 @@ def update_cargo_version(cargo_path: Path, new_version: str):
 
 # Semver with an optional pre-release suffix, e.g. 1.2.3 or 1.2.3-rc.1.
 # Every version-carrying file updated below accepts semver pre-release
-# identifiers (tauri.conf.json / package.json / Cargo.toml require them,
-# Maven is lenient), so release candidates like v3.1.0-rc.1 work end to end.
+# identifiers (tauri.conf.json / Cargo.toml require them, Maven is lenient),
+# so release candidates like v3.1.0-rc.1 work end to end.
 VERSION_PATTERN = r"\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
 
 
@@ -73,18 +64,10 @@ def main():
         encoding="utf-8",
     )
 
-    package = json.loads(PACKAGE_JSON.read_text(encoding="utf-8"))
-    package["version"] = version
-    PACKAGE_JSON.write_text(json.dumps(package, indent=2) + "\n", encoding="utf-8")
-
     update_cargo_version(CARGO_APP, version)
     update_cargo_version(CARGO_ENGINE, version)
 
-    update_pom_artifact_version(POM_ROOT, "gecko-parent", version)
-    update_pom_artifact_version(POM_REST_API, "gecko-rest-api", version)
-    update_pom_artifact_version(POM_MCP, "gecko-mcp", version)
-
-    print(f"version set to {version} in tauri.conf.json, application.properties, package.json, Cargo.toml, pom.xml")
+    print(f"version set to {version} in tauri.conf.json, application.properties, Cargo.toml")
 
 
 if __name__ == "__main__":

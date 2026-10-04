@@ -47,7 +47,7 @@ The `gecko-simulation-core` module provides GUI-free simulation classes for head
 <dependency>
     <groupId>gecko</groupId>
     <artifactId>gecko-simulation-core</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
 </dependency>
 ```
 

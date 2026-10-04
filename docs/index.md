@@ -45,7 +45,7 @@ description: GeckoCIRCUITS - Power Electronics Circuit Simulator
 
 GeckoCIRCUITS is an open-source circuit simulator specialized for power electronics. It provides:
 
-- **Desktop app + web editor** - Modern UI, no Java installation needed
+- **Desktop app** - Modern UI, no Java installation needed
 - **Multi-domain simulation** - Electrical, thermal, magnetic, and mechanical
 - **Real-time visualization** - Scope view with zoom, cursors, FFT, and THD
 - **Firmware-in-the-loop** - Run your real C/C++ control code via NativeC blocks
@@ -85,9 +85,9 @@ GeckoCIRCUITS is an open-source circuit simulator specialized for power electron
     git clone https://github.com/MartinRieser/GeckoCIRCUITS.git
     cd GeckoCIRCUITS
 
-    # web editor: engine on localhost:8080 + editor in the browser
-    run-web-editor.bat        # Windows
-    ./run-web-editor.sh       # Linux / macOS
+    # starts the engine on localhost:8080 and opens the editor
+    run-gecko.bat        # Windows
+    ./run-gecko.sh       # Linux / macOS
     ```
 
 See the [Installation Guide](getting-started/installation.md) for details.

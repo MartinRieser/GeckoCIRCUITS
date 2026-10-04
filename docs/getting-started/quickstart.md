@@ -13,8 +13,8 @@ Start the **GeckoCIRCUITS** desktop app (see [Installation](installation.md)).
 The editor opens after a few seconds — the bundled simulation engine boots in
 the background.
 
-!!! tip "No install? Use the web editor"
-    From a repository checkout, `run-web-editor.bat|.sh` starts the engine and
+!!! tip "No install? Run from source"
+    From a repository checkout, `run-gecko.bat|.sh` starts the engine and
     opens the same editor in your browser at `http://localhost:8080`.
 
 ## 2. Open an Example Circuit
@@ -72,7 +72,7 @@ The buck relationship is **V_out = D × V_in**, where D is the duty cycle.
 
 **Save** writes your circuit as a `.ipes` file — in the desktop app a native
 save dialog appears, in the browser the file downloads. The `.ipes` format is
-fully portable between the desktop app, the web editor, and the classic UI.
+fully portable between the desktop app and the editor.
 
 ## Try More Examples
 

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Full editor snapshot of a loaded circuit: everything the web editor
+ * Full editor snapshot of a loaded circuit: everything the editor
  * renders, in one response. Polled on load and after external change events.
  */
 @Schema(description = "Editor model snapshot")

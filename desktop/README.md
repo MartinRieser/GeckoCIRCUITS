@@ -23,12 +23,12 @@ the editor window with the backend origin injected into the webview.
 cargo test -p gecko-engine
 
 # compile / run the shell in dev mode (needs tauri CLI: cargo install tauri-cli --version "^2")
-cargo tauri dev    # debug: no sidecar; talks to Vite dev server + engine from run-web-editor
+cargo tauri dev    # debug: no sidecar; talks to Vite dev server + engine from run-gecko
 cargo tauri build  # release: full installer (engine bundling lands in Phase 2)
 ```
 
 Debug builds never spawn the engine: the window loads `http://localhost:5173`
-(Vite) and talks to an engine started separately (`run-web-editor.bat`).
+(Vite) and talks to an engine started separately (`run-gecko.bat`).
 Release builds spawn the bundled engine on `127.0.0.1:<ephemeral port>`.
 
 ## Startup handshake

@@ -50,9 +50,9 @@ mvn clean test jacoco:report
 ### Run the Application
 
 ```bash
-# Starts the simulation engine on localhost:8080 and opens the web editor
-run-web-editor.bat        # Windows
-./run-web-editor.sh       # Linux / macOS
+# Starts the simulation engine on localhost:8080 and opens the editor
+run-gecko.bat        # Windows
+./run-gecko.sh       # Linux / macOS
 ```
 
 ## Code Architecture

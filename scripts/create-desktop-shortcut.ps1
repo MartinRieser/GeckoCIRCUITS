@@ -1,16 +1,16 @@
-# Creates a Windows Desktop shortcut to launch GeckoCIRCUITS Web Editor as a standalone desktop app
+# Creates a Windows Desktop shortcut to launch GeckoCIRCUITS as a standalone desktop app
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $repoRoot = Split-Path -Parent $scriptDir
-$batPath = Join-Path $repoRoot "run-web-editor.bat"
+$batPath = Join-Path $repoRoot "run-gecko.bat"
 $desktop = [Environment]::GetFolderPath("Desktop")
-$shortcutPath = Join-Path $desktop "GeckoCIRCUITS Web Editor.lnk"
+$shortcutPath = Join-Path $desktop "GeckoCIRCUITS.lnk"
 
 $WshShell = New-Object -ComObject WScript.Shell
 $Shortcut = $WshShell.CreateShortcut($shortcutPath)
 $Shortcut.TargetPath = $batPath
 $Shortcut.WorkingDirectory = $repoRoot
-$Shortcut.Description = "GeckoCIRCUITS Web Editor (Native Desktop App)"
+$Shortcut.Description = "GeckoCIRCUITS (Native Desktop App)"
 $Shortcut.WindowStyle = 7 # Minimized launch window
 
 # Use Gecko icon if available

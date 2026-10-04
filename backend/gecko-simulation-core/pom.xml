@@ -6,7 +6,7 @@
 
     <groupId>gecko</groupId>
     <artifactId>gecko-simulation-core</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <packaging>jar</packaging>
 
     <name>GeckoCIRCUITS Simulation Core</name>
@@ -76,6 +76,9 @@
     </dependencies>
 
     <build>
+        <!-- Build artifacts carry no version suffix; the release version lives
+             in the desktop shell and is set from the git tag by set-version.py. -->
+        <finalName>gecko-simulation-core</finalName>
         <plugins>
             <!-- Compiler plugin -->
             <plugin>

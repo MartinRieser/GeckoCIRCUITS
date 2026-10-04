@@ -404,7 +404,7 @@ GitHub Actions workflows automate the release and CI process:
 - Windows: `GeckoCIRCUITS_<version>_x64-setup.exe` (NSIS) and `.msi`
 - macOS: `GeckoCIRCUITS_<version>_x64.dmg` / `_aarch64.dmg`
 - Linux: `gecko-circuits_<version>_amd64.deb`, `*.rpm`, `*.AppImage`
-- Zero-install Web Editor: `run-web-editor.bat` (Windows) / `run-web-editor.sh` (Linux/macOS)
+- Zero-install launcher (from source): `run-gecko.bat` (Windows) / `run-gecko.sh` (Linux/macOS)
 
 For detailed release planning, version strategy, and issue tracking, see [Roadmap](roadmap.md).
 

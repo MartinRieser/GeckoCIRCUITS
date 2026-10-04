@@ -25,23 +25,28 @@ APP_DIR = REPO_ROOT / "desktop" / "app"
 ENGINE_DIR = APP_DIR / "engine"
 JAR_TARGET = REPO_ROOT / "backend" / "gecko-rest-api" / "target"
 MCP_TARGET = REPO_ROOT / "backend" / "gecko-mcp" / "target"
+def read_app_version():
+    """Engine version from app.version; CI syncs it from the git tag via set-version.py."""
+    props = (REPO_ROOT / "backend" / "gecko-rest-api" / "src" / "main"
+             / "resources" / "application.properties")
+    for line in props.read_text(encoding="utf-8").splitlines():
+        if line.startswith("app.version="):
+            return line.split("=", 1)[1].strip()
+    raise SystemExit(f"ERROR: app.version missing in {props}")
+
+
 def find_rest_jar():
-    jars = [
-        j for j in JAR_TARGET.glob("gecko-rest-api-*.jar")
-        if not j.name.endswith("-sources.jar")
-        and not j.name.endswith("-javadoc.jar")
-        and not j.name.endswith(".original")
-    ]
-    if not jars:
-        raise SystemExit(f"ERROR: no rest-api jar found in {JAR_TARGET}")
-    return sorted(jars, key=lambda p: p.stat().st_mtime, reverse=True)[0]
+    jar = JAR_TARGET / "gecko-rest-api.jar"
+    if not jar.is_file():
+        raise SystemExit(f"ERROR: {jar} not found (run: mvn -pl backend/gecko-rest-api -am package)")
+    return jar
 
 
 def find_mcp_jar():
-    jars = list(MCP_TARGET.glob("gecko-mcp-*-jar-with-dependencies.jar"))
-    if not jars:
-        raise SystemExit(f"ERROR: no shaded gecko-mcp jar found in {MCP_TARGET}")
-    return sorted(jars, key=lambda p: p.stat().st_mtime, reverse=True)[0]
+    jar = MCP_TARGET / "gecko-mcp.jar"
+    if not jar.is_file():
+        raise SystemExit(f"ERROR: {jar} not found (run: mvn -pl backend/gecko-mcp -am package)")
+    return jar
 SMOKE_CIRCUIT = REPO_ROOT / "tools" / "parity" / "circuits" / "rc-lowpass.ipes"
 
 # Safety net on top of jdeps: Spring/tomcat/jackson load some modules
@@ -141,7 +146,7 @@ def build_jar():
 
 def build_mcp_jar():
     """The MCP server ships next to the engine; its main artifact is the
-    shaded jar-with-dependencies so LLM clients need nothing else installed."""
+    shaded jar so LLM clients need nothing else installed."""
     return find_mcp_jar()
 
 
@@ -223,11 +228,13 @@ def smoke_test():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--jdk", help="JDK 25 home for jlink/jdeps")
-    parser.add_argument("--version", default="1.0.0", help="engine version string")
+    parser.add_argument("--version", default=None,
+                        help="engine version string (default: app.version from application.properties)")
     parser.add_argument("--skip-frontend", action="store_true", help="skip npm build")
     parser.add_argument("--skip-mvn", action="store_true", help="reuse existing jar")
     args = parser.parse_args()
 
+    version = args.version or read_app_version()
     jdk = find_jdk25(args.jdk)
     print(f"== Using JDK 25: {jdk} ==")
     # mvn must compile with JDK 25 (class file 69); the machine default may be older
@@ -242,7 +249,7 @@ def main():
 
     modules = derive_modules(jdk, jar)
     make_runtime(jdk, modules)
-    bundle(jar, args.version)
+    bundle(jar, version)
     smoke_test()
     print("== Engine bundle OK ==")
 

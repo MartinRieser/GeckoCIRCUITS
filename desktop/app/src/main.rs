@@ -3,7 +3,7 @@
 //! the engine's local REST API.
 //!
 //! Debug builds do not spawn the engine — `tauri dev` talks to the Vite dev
-//! server and an engine started separately (e.g. `run-web-editor.bat`).
+//! server and an engine started separately (e.g. `run-gecko.bat`).
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 

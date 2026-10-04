@@ -467,7 +467,6 @@ export function App() {
           </div>
           <div className="nav-title-group">
             <span className="nav-title">GeckoCIRCUITS</span>
-            <span className="nav-subtitle">Web EDA & Simulation</span>
           </div>
         </div>
 

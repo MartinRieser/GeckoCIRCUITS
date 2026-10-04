@@ -65,16 +65,17 @@ See [docs/PACKAGING.md](docs/PACKAGING.md) for details on packaging and local bu
 
 ### Platform Launcher Scripts
 
-Convenience scripts are provided in `scripts/`:
+Run from a repository checkout with the launcher in the repository root — it
+builds the engine jar if needed, starts it on localhost:8080, and opens the
+editor in a standalone app window:
 
 | Platform | Command |
 |----------|---------|
-| Windows | `scripts\run-gecko.bat` |
-| Linux | `./scripts/run-gecko-linux.sh` |
-| macOS | `./scripts/run-gecko-macos.sh` |
-| WSL | `./scripts/run-gecko-wsl.sh` |
+| Windows | `run-gecko.bat` |
+| Linux / macOS / WSL | `./run-gecko.sh` |
 
-Add `--hidpi` for high-DPI / Retina displays.
+The `scripts/run-gecko*` scripts are convenience bridges that simply forward
+to the root launcher.
 
 ## Examples
 
@@ -100,9 +101,9 @@ cd GeckoCIRCUITS
 # Build (simulation core, REST API, and MCP server)
 mvn clean package -DskipTests
 
-# Run the web editor (serves http://localhost:8080/gecko/)
-run-web-editor.bat    &:: Windows
-./run-web-editor.sh   # Linux / macOS
+# Run GeckoCIRCUITS (serves http://localhost:8080/gecko/)
+run-gecko.bat    &:: Windows
+./run-gecko.sh   # Linux / macOS
 
 # Run tests
 mvn test

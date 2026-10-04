@@ -13,13 +13,13 @@ GeckoCIRCUITS includes 100+ circuit example files (`.ipes`) organized by topic.
 - **Double-click** any `.ipes` file in your file manager to open it directly.
 - Or launch **GeckoCIRCUITS**, choose **File > Open**, and select the file from `resources/` (or drag-and-drop onto the canvas).
 
-### From Source (Web Editor)
+### From Source
 ```bash
 # Windows
-run-web-editor.bat
+run-gecko.bat
 
 # Linux / macOS
-./run-web-editor.sh
+./run-gecko.sh
 ```
 Inside the editor window, click **File > Open** or drag-and-drop the `.ipes` file directly onto the canvas.
 

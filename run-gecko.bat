@@ -1,19 +1,19 @@
 @echo off
 REM ============================================================================
-REM GeckoCIRCUITS Web Editor - Native Desktop Launcher
-REM Launches the backend server and opens the web editor in a native app window.
+REM GeckoCIRCUITS - Launcher (from source)
+REM Launches the backend server and opens the editor in a native app window.
 REM ============================================================================
 setlocal enabledelayedexpansion
 
 set "SCRIPT_DIR=%~dp0"
 cd /d "%SCRIPT_DIR%"
 
-set "REST_JAR=%SCRIPT_DIR%backend\gecko-rest-api\target\gecko-rest-api-1.0.0.jar"
+set "REST_JAR=%SCRIPT_DIR%backend\gecko-rest-api\target\gecko-rest-api.jar"
 set "PORT=8080"
 set "URL=http://localhost:%PORT%/gecko/"
 
 echo ============================================
-echo   GeckoCIRCUITS Web Editor
+echo   GeckoCIRCUITS
 echo ============================================
 
 REM 1. Find Java 25 or later
@@ -86,7 +86,7 @@ set "CIRCUIT_FILE="
 if not "%~1"=="" if not "%~1"=="-rebuild" if not "%~1"=="--rebuild" if not "%~1"=="/r" (
     set "CIRCUIT_FILE=%~1"
     echo [INFO] Target circuit: %~1
-    echo [INFO] In the web editor window, select File ^> Open or drag-and-drop the file onto the canvas.
+    echo [INFO] In the editor window, select File ^> Open or drag-and-drop the file onto the canvas.
 )
 
 if !REBUILD! equ 1 (
@@ -118,7 +118,7 @@ if not exist "%STATIC_INDEX%" (
     )
 )
 if not exist "%REST_JAR%" (
-    echo [INFO] Building GeckoCIRCUITS Web Editor package...
+    echo [INFO] Building GeckoCIRCUITS package...
     call mvn -pl backend/gecko-rest-api -am package -DskipTests -q
     if errorlevel 1 (
         echo [ERROR] Build failed. Please ensure Maven and JDK are installed.
@@ -198,7 +198,7 @@ REM Fallback to default browser
 start "" "%URL%"
 
 :done
-echo [INFO] GeckoCIRCUITS Web Editor started.
+echo [INFO] GeckoCIRCUITS started.
 exit /b 0
 
 :check_java

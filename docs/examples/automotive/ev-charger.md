@@ -51,14 +51,14 @@ To open and simulate these circuits in the new GeckoCIRCUITS GUI:
    - Double-click the `.ipes` file in Windows Explorer, macOS Finder, or Linux file manager (file association opens the new GUI directly).
    - Or launch **GeckoCIRCUITS**, select **File > Open**, and select the `.ipes` file (or drag and drop it onto the canvas).
 
-2. **Web Editor (from repository checkout)**:
+2. **From repository checkout**
    - Start the local editor and engine:
      ```bash
      # Windows
-     run-web-editor.bat
+     run-gecko.bat
 
      # Linux / macOS
-     ./run-web-editor.sh
+     ./run-gecko.sh
      ```
    - In the opened editor window, click **File > Open** or drag-and-drop the `.ipes` file directly onto the canvas.
    - Click **▶ Run Simulation** in the sidebar to view waveforms in the integrated oscilloscope.

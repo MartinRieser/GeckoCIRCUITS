@@ -5,7 +5,7 @@ Decisions: bundled **Java MCP server**, **GraalVM JS included**, new app takes t
 
 ## Architecture
 
-Tauri 2 shell (Rust, budget ≤ ~700 LOC) bundles the React UI as static assets and spawns the existing Spring Boot jar (`gecko-rest-api-1.0.0.jar`, which already embeds the UI and serves `/gecko/api/...`, SSE, STOMP-WS) on a bundled jlink Java-25 runtime, bound to `127.0.0.1` with `--server.port=0`. The shell reads the actual port from a `GECKO_READY` line the Java side prints on startup, then injects `window.__GECKO_BACKEND__` into the webview so the frontend's relative URLs (`/gecko/api/v1`, `location.host` WS) become absolute. MCP is a second jar (`gecko-mcp`) run by the same bundled runtime as a stdio command for LLM clients. No engine, REST, or frontend-feature code is rewritten.
+Tauri 2 shell (Rust, budget ≤ ~700 LOC) bundles the React UI as static assets and spawns the existing Spring Boot jar (`gecko-rest-api.jar`, which already embeds the UI and serves `/gecko/api/...`, SSE, STOMP-WS) on a bundled jlink Java-25 runtime, bound to `127.0.0.1` with `--server.port=0`. The shell reads the actual port from a `GECKO_READY` line the Java side prints on startup, then injects `window.__GECKO_BACKEND__` into the webview so the frontend's relative URLs (`/gecko/api/v1`, `location.host` WS) become absolute. MCP is a second jar (`gecko-mcp`) run by the same bundled runtime as a stdio command for LLM clients. No engine, REST, or frontend-feature code is rewritten.
 
 Branch: `feature/tauri-desktop` off `feature/web-frontend` (after its merge to main).
 
@@ -31,7 +31,7 @@ Rust modules, one concern each, all unit-tested:
 
 Java additions (small, tested): `EngineReadyLogger` (`ApplicationListener<WebServerInitializedEvent>` printing the GECKO_READY line; OutputCaptureExtension test) and `ParentWatchdog` (`@Scheduled` every 5 s: `ProcessHandle.of(parentPid)` empty → `System.exit(71)`; exit strategy injectable for the unit test) so a crashed shell never leaves an orphan JVM.
 
-Dev mode: `beforeDevCommand: npm run dev`, devUrl `:5173`; in `#[cfg(debug_assertions)]` the shell does **not** spawn the sidecar — the existing Vite proxy + `run-web-editor` backend on 8080 keep working unchanged.
+Dev mode: `beforeDevCommand: npm run dev`, devUrl `:5173`; in `#[cfg(debug_assertions)]` the shell does **not** spawn the sidecar — the existing Vite proxy + `run-gecko` backend on 8080 keep working unchanged.
 
 Cargo tests: GECKO_READY parser (incl. garbage/noise lines), arg/path builders, sanitizer, kill test (spawn `ping`/`sleep`, assert exited).
 
@@ -46,7 +46,7 @@ Status: `scripts/desktop/build-engine.py` builds frontend + jar, derives jlink m
 
 ## Phase 3 — Bundled Java MCP module — implemented 2026-09-05
 
-Status: `src/modules/gecko-mcp` (Java 25, no Spring) on MCP Java SDK 2.0.1 (`mcp-core` + `mcp-json-jackson3`), shaded jar `gecko-mcp-1.0.0-jar-with-dependencies.jar`. All 10 Python tools ported 1:1 (identical names/params/result shapes); simulations run **in-process** through `HeadlessSimulationEngine` instead of the Python subprocess (CSV export factored into core `SimulationCsv`, now shared with `GeckoHeadless`). The two .ipes generators were extracted mechanically from the Python AST into template resources with numbered holes (`scripts/desktop/extract-templates.py`) — **byte-exact golden equivalence tests** over 10 parameter sets guard the port. Deviation from bug-for-bug: the patcher's block regex is tempered so it cannot match across element blocks (the Python regex could patch the wrong component); CRLF handling added in CSV parsing (Windows). Tests: 11 in gecko-mcp (goldens, patch→re-read, metrics vs Python-generated golden JSON, tool registry, **real stdio E2E** spawning the server JVM via the SDK client). `build-engine.py` bundles `gecko-mcp.jar`; `write-mcp-launchers.py` emits `gecko-mcp.bat`/`.sh` + client config.
+Status: `src/modules/gecko-mcp` (Java 25, no Spring) on MCP Java SDK 2.0.1 (`mcp-core` + `mcp-json-jackson3`), shaded jar `gecko-mcp-jar-with-dependencies.jar`. All 10 Python tools ported 1:1 (identical names/params/result shapes); simulations run **in-process** through `HeadlessSimulationEngine` instead of the Python subprocess (CSV export factored into core `SimulationCsv`, now shared with `GeckoHeadless`). The two .ipes generators were extracted mechanically from the Python AST into template resources with numbered holes (`scripts/desktop/extract-templates.py`) — **byte-exact golden equivalence tests** over 10 parameter sets guard the port. Deviation from bug-for-bug: the patcher's block regex is tempered so it cannot match across element blocks (the Python regex could patch the wrong component); CRLF handling added in CSV parsing (Windows). Tests: 11 in gecko-mcp (goldens, patch→re-read, metrics vs Python-generated golden JSON, tool registry, **real stdio E2E** spawning the server JVM via the SDK client). `build-engine.py` bundles `gecko-mcp.jar`; `write-mcp-launchers.py` emits `gecko-mcp.bat`/`.sh` + client config.
 
 New Maven module `src/modules/gecko-mcp`: plain Java 25, no Spring. Deps: official `io.modelcontextprotocol.sdk:mcp` (stdio), jackson, `gecko-simulation-core`. Fat jar via shade; main `gecko.mcp.GeckoMcpServer`.
 

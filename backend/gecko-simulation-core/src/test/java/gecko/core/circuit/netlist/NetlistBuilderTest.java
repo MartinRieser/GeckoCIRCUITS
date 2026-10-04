@@ -205,7 +205,7 @@ public class NetlistBuilderTest {
         }
     }
 
-    // ========== Wire-tracing topology (web editor circuits without labels) ==========
+    // ========== Wire-tracing topology (editor circuits without labels) ==========
 
     private static CircuitModel.ComponentData component(int type, String name, int x, int y, int orientation) {
         CircuitModel.ComponentData comp = new CircuitModel.ComponentData(type, name, x, y, orientation);

@@ -38,7 +38,7 @@ After installing:
 | macOS "cannot be opened" | Right-click the app → *Open*, or allow it in *System Settings → Privacy & Security* |
 | "Simulation engine failed to start" | Open the engine log via `Help ▸ Open Logs Folder`; details in the [Desktop App guide](../desktop-app.md) |
 
-## Alternative: Run from Source (Web Editor)
+## Alternative: Run from Source
 
 Developers can run the editor + engine from a repository checkout. This needs
 **JDK 25**, **Node.js 22**, and **Maven**:
@@ -46,16 +46,16 @@ Developers can run the editor + engine from a repository checkout. This needs
 ```bash
 # builds the engine jar if missing, starts it on localhost:8080,
 # and opens the editor in your browser
-run-web-editor.bat        # Windows
-./run-web-editor.sh       # Linux / macOS
+run-gecko.bat        # Windows
+./run-gecko.sh       # Linux / macOS
 ```
 
-The web editor is the same React application the desktop app embeds, served
+This is the same React application the desktop app embeds, served
 against the same simulation engine — circuits and workflows are identical.
 
 ## Classic Swing UI (Deprecated / Slated for Removal)
 
-The original Swing-based desktop UI is legacy and being phased out. All active development, new UI features, and current `.ipes` format workflows are centered on the modern **GeckoCIRCUITS Desktop App** (Tauri 2 + React Canvas) and **Web Editor**. The legacy launcher scripts (`scripts/run-gecko.bat|.sh`) do not support newer editor workflows and will be retired. All users should use the modern desktop app or `run-web-editor.bat|.sh`.
+The original Swing-based desktop UI is legacy and being phased out. All active development, new UI features, and current `.ipes` format workflows are centered on the modern **GeckoCIRCUITS Desktop App** (Tauri 2 + React Canvas). The `scripts/run-gecko*` scripts are convenience bridges that simply forward to the root launcher `run-gecko.bat|.sh`.
 
 ## Docker
 

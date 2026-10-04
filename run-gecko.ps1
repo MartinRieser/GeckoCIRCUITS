@@ -6,12 +6,12 @@ $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 Set-Location $ScriptDir
 
-$RestJar = Join-Path $ScriptDir "backend\gecko-rest-api\target\gecko-rest-api-1.0.0.jar"
+$RestJar = Join-Path $ScriptDir "backend\gecko-rest-api\target\gecko-rest-api.jar"
 $Port = 8080
 $Url = "http://localhost:$Port/gecko/"
 
 Write-Host "============================================" -ForegroundColor Cyan
-Write-Host "  GeckoCIRCUITS Web Editor" -ForegroundColor Cyan
+Write-Host "  GeckoCIRCUITS" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 
 # 1. Check Java (prefer JAVA_HOME if set, otherwise PATH)
@@ -83,7 +83,7 @@ if ($Rebuild) {
         Pop-Location
     }
     if (-not (Test-Path $RestJar)) {
-        Write-Host "[INFO] Building GeckoCIRCUITS Web Editor package..." -ForegroundColor Yellow
+        Write-Host "[INFO] Building GeckoCIRCUITS package..." -ForegroundColor Yellow
         & mvn -pl backend/gecko-rest-api -am package -DskipTests -q
         if ($LASTEXITCODE -ne 0) {
             Write-Host "[ERROR] Build failed. Please verify Maven and JDK." -ForegroundColor Red
@@ -152,4 +152,4 @@ if (-not $launched) {
     Start-Process $Url
 }
 
-Write-Host "[INFO] GeckoCIRCUITS Web Editor started." -ForegroundColor Green
+Write-Host "[INFO] GeckoCIRCUITS started." -ForegroundColor Green

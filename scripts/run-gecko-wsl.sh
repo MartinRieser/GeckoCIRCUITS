@@ -3,7 +3,7 @@
 # GeckoCIRCUITS Launcher Bridge (WSL)
 #
 # NOTE: The classic Swing GUI has been retired.
-# This script delegates to the modern GeckoCIRCUITS Web Editor / Desktop App.
+# This script delegates to the modern GeckoCIRCUITS launcher / Desktop App.
 # ============================================================================
 set -e
 
@@ -13,7 +13,7 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 echo "============================================================================"
 echo "  GeckoCIRCUITS"
 echo "  [NOTE] The classic Swing GUI has been retired."
-echo "  Forwarding to the modern GeckoCIRCUITS Web Editor..."
+echo "  Forwarding to the modern GeckoCIRCUITS launcher..."
 echo "============================================================================"
 
-exec "$PROJECT_DIR/run-web-editor.sh" "$@"
+exec "$PROJECT_DIR/run-gecko.sh" "$@"

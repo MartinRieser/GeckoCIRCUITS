@@ -166,11 +166,6 @@ body,
   color: #ffffff;
 }
 
-.nav-subtitle {
-  font-size: 10px;
-  color: var(--text-dim);
-}
-
 .nav-actions {
   display: flex;
   align-items: center;

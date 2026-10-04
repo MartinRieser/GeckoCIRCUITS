@@ -44,7 +44,7 @@ def find_gui_jar(workspace_root: Path) -> Path:
             return p
 
     target_dir = workspace_root / "src" / "modules" / "gecko-rest-api" / "target"
-    default_jar = target_dir / "gecko-rest-api-1.0.0.jar"
+    default_jar = target_dir / "gecko-rest-api.jar"
     if default_jar.exists():
         return default_jar
 
@@ -52,7 +52,7 @@ def find_gui_jar(workspace_root: Path) -> Path:
 
 
 GUI_JAR = find_gui_jar(WORKSPACE_ROOT)
-REST_JAR = WORKSPACE_ROOT / "src" / "modules" / "gecko-rest-api" / "target" / "gecko-rest-api-1.0.0.jar"
+REST_JAR = WORKSPACE_ROOT / "src" / "modules" / "gecko-rest-api" / "target" / "gecko-rest-api.jar"
 
 # REST API Configuration (configurable via GECKO_REST_PORT / GECKO_REST_URL)
 REST_PORT = int(os.environ.get("GECKO_REST_PORT", "8080"))
