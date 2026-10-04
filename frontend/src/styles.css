@@ -156,6 +156,21 @@ body,
   color: #ffffff;
 }
 
+/* Shipped application version next to the brand logo (fetched from the
+   engine health endpoint; absent while loading or unreachable). */
+.nav-version-badge {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: var(--text-muted, #94a3b8);
+  background: var(--surface, #1e293b);
+  border: 1px solid var(--border-subtle, #334155);
+  border-radius: 4px;
+  padding: 2px 6px;
+  white-space: nowrap;
+  user-select: none;
+}
+
 .nav-actions {
   display: flex;
   align-items: center;

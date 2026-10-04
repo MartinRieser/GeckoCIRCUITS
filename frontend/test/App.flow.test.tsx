@@ -70,6 +70,9 @@ function jsonResponse(body: unknown, status = 200): Response {
 }
 
 function routeFetch(url: string, init?: RequestInit): Promise<Response> {
+  if (url.endsWith('/gecko/api/health')) {
+    return Promise.resolve(jsonResponse({ status: 'UP', version: '3.1.0-rc.2' }));
+  }
   if (url.endsWith('/circuits/catalog')) {
     return Promise.resolve(jsonResponse(catalogBody));
   }
@@ -152,6 +155,28 @@ describe('App user flow', () => {
     confirmSpy.mockRestore();
     // the reload replaced the workspace with the file's snapshot content
     expect(container.querySelectorAll('g.component')).toHaveLength(1);
+  });
+
+  it('shows the engine version badge in the header when health reports one', async () => {
+    fetchMock.mockImplementation(routeFetch);
+    const { container } = render(<App />);
+
+    await waitFor(() => {
+      expect(container.querySelector('.nav-version-badge')?.textContent).toBe('v3.1.0-rc.2');
+    });
+  });
+
+  it('hides the version badge when the health endpoint is unreachable', async () => {
+    fetchMock.mockImplementation((url: string | URL | RequestInfo | undefined, init?: RequestInit) =>
+      routeFetch(String(url).replace('/gecko/api/health', '/unmocked'), init),
+    );
+    const { container } = render(<App />);
+
+    // give the health probe a chance to settle before asserting absence
+    await waitFor(() => {
+      expect(container.querySelectorAll('.palette-entry').length).toBeGreaterThanOrEqual(0);
+    });
+    expect(container.querySelector('.nav-version-badge')).toBeNull();
   });
 
   it('toggles theme between dark and light', async () => {

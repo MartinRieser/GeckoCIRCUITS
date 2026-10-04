@@ -101,6 +101,24 @@ export function getCatalog(): Promise<{ types: CatalogEntry[] }> {
 }
 
 /**
+ * Engine/application version reported by the backend health endpoint.
+ * The value is kept in sync with the release tag by scripts/desktop/set-version.py
+ * (application.properties app.version), so the GUI shows exactly what was shipped.
+ * Resolves to null instead of throwing so callers can hide the version badge
+ * when the engine is unreachable.
+ */
+export async function getEngineVersion(): Promise<string | null> {
+  try {
+    const response = await fetch(backendOrigin() + '/gecko/api/health', { cache: 'no-store' });
+    if (!response.ok) return null;
+    const body = (await response.json()) as { version?: unknown };
+    return typeof body.version === 'string' && body.version.trim() !== '' ? body.version : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Fetches the complete editor model snapshot for an active circuit session.
  *
  * @param circuitId Unique circuit session identifier

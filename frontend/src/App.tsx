@@ -22,6 +22,7 @@ import { resolveShortcut, KEYBINDINGS } from './model/keybindings';
 import { routeAvoidingObstacles, routingBlockedCells, densePoints } from './canvas/WireRouter';
 import { isWireEndPointConnected } from './model/validation';
 import { registerOpenFileHandler } from './desktop';
+import { getEngineVersion } from './api/client';
 import { findScopeBlocks, findScriptBlocks, isScopeComponent, isScriptComponent } from './simulation/scopes';
 import { SimConfigModal } from './simulation/SimConfigModal';
 import { SaveAsModal } from './modals/SaveAsModal';
@@ -49,6 +50,20 @@ export function App() {
   }, [actions.openBase64]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [engineVersion, setEngineVersion] = useState<string | null>(null);
+
+  // Shipped version from the engine's health endpoint (synced to the release
+  // tag at build time); null while loading or when unreachable, in which case
+  // the header simply shows no version badge.
+  useEffect(() => {
+    let cancelled = false;
+    void getEngineVersion().then((version) => {
+      if (!cancelled && version) setEngineVersion(version);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const [examplesMenuOpen, setExamplesMenuOpen] = useState(false);
   const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
@@ -465,6 +480,14 @@ export function App() {
           <div className="nav-logo">
             <span className="logo-symbol">GeckoCIRCUITS</span>
           </div>
+          {engineVersion && (
+            <span
+              className="nav-version-badge"
+              title="GeckoCIRCUITS application version (from the simulation engine)"
+            >
+              v{engineVersion}
+            </span>
+          )}
         </div>
 
         {/* File & Edit Actions */}
