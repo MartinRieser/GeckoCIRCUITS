@@ -1811,46 +1811,6 @@ polyline.wire.selected {
   cursor: pointer;
 }
 
-/* Collapsible Raw Parameters */
-.prop-section.advanced {
-  margin-top: 4px;
-}
-
-.advanced-toggle-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-dim);
-  font-size: 11px;
-  cursor: pointer;
-  padding: 4px 0;
-  text-align: left;
-}
-
-.advanced-toggle-btn:hover {
-  color: var(--text);
-}
-
-.raw-params-table {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 6px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-}
-
-.raw-param-row {
-  display: flex;
-  justify-content: space-between;
-}
-
-.raw-param-key {
-  color: var(--text-dim);
-}
-
 /* ========== Simulation Drawer ========== */
 .sim-drawer {
   position: absolute;

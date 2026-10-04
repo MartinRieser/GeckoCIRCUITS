@@ -122,7 +122,6 @@ export function PropertiesPanel({
 }: PropertiesPanelProps) {
   const CHANNEL_COLORS = theme === 'light' ? CHANNEL_TRACE_COLORS_LIGHT : CHANNEL_COLORS_DARK;
   const [name, setName] = useState('');
-  const [showRaw, setShowRaw] = useState(false);
 
   useEffect(() => {
     setName(component?.name ?? '');
@@ -933,29 +932,6 @@ export function PropertiesPanel({
           </div>
         )}
 
-        {/* Collapsible Advanced / Raw Parameters */}
-        <div className="prop-section advanced">
-          <button
-            type="button"
-            className="advanced-toggle-btn"
-            onClick={() => setShowRaw(!showRaw)}
-          >
-            <span>{showRaw ? '▼' : '►'} Advanced / Raw Parameters</span>
-          </button>
-          {showRaw && (
-            <div className="raw-params-table">
-              {Object.entries(component.parameters)
-                .filter(([k]) => k.startsWith('param') && typeof component.parameters[k] === 'number')
-                .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
-                .map(([key, val]) => (
-                  <div key={key} className="raw-param-row">
-                    <span className="raw-param-key">{key}</span>
-                    <span className="raw-param-val">{String(val)}</span>
-                  </div>
-                ))}
-            </div>
-          )}
-        </div>
         <datalist id="circuit-available-signals">
           {availableSignals.map((sig) => (
             <option key={sig} value={sig} />
