@@ -7,6 +7,7 @@ import {
   findPlacementConflict,
   flowVector,
   controlFlowVector,
+  rebindWireEndpointOrthogonally,
 } from '../src/model/geometry';
 import { Orientation, LkComponentType, ControlComponentType } from '../src/model/constants';
 
@@ -311,5 +312,109 @@ describe('findPlacementConflict', () => {
       orientation: Orientation.WEST_EAST,
     };
     expect(findPlacementConflict(candidate, existing)).toBeNull();
+  });
+});
+
+describe('rebindWireEndpointOrthogonally (scope channel add/remove wire re-bind)', () => {
+  it('returns the same array when the endpoint already sits on the new pin', () => {
+    const pts = [
+      [10, 5],
+      [14, 5],
+    ];
+    expect(rebindWireEndpointOrthogonally(pts, pts.length - 1, [14, 5])).toBe(pts);
+  });
+
+  it('inserts an L-jog when a horizontally approached pin shifts one row (add channel)', () => {
+    // Scope pin block grows 2 -> 3 channels: every existing pin moves up one
+    // row. The wire approached horizontally, so the endpoint must gain a
+    // corner instead of a diagonal final segment.
+    const pts = [
+      [10, 5],
+      [14, 5],
+    ];
+    expect(rebindWireEndpointOrthogonally(pts, 1, [14, 4])).toEqual([
+      [10, 5],
+      [14, 5],
+      [14, 4],
+    ]);
+  });
+
+  it('keeps a straight swap when the neighbor already shares an axis with the new pin', () => {
+    const pts = [
+      [14, 8],
+      [14, 5],
+    ];
+    expect(rebindWireEndpointOrthogonally(pts, 1, [14, 4])).toEqual([
+      [14, 8],
+      [14, 4],
+    ]);
+  });
+
+  it('rebounds the START endpoint with the corner in the right order', () => {
+    const pts = [
+      [14, 5],
+      [10, 5],
+    ];
+    expect(rebindWireEndpointOrthogonally(pts, 0, [14, 4])).toEqual([
+      [14, 4],
+      [14, 5],
+      [10, 5],
+    ]);
+  });
+
+  it('preserves interior points of longer wires', () => {
+    const pts = [
+      [10, 9],
+      [14, 9],
+      [14, 5],
+    ];
+    expect(rebindWireEndpointOrthogonally(pts, 2, [14, 4])).toEqual([
+      [10, 9],
+      [14, 9],
+      [14, 4],
+    ]);
+  });
+
+  it('inserts the corner for a long horizontal approach across intermediate points', () => {
+    // Fan-out wires typically run several points horizontally into a scope
+    // pin; the last segment is horizontal, the pin shifts up one row.
+    const pts = [
+      [12, 21],
+      [14, 21],
+      [18, 21],
+      [36, 21],
+    ];
+    expect(rebindWireEndpointOrthogonally(pts, 3, [36, 20])).toEqual([
+      [12, 21],
+      [14, 21],
+      [18, 21],
+      [36, 21],
+      [36, 20],
+    ]);
+  });
+
+  it('repairs an already-diagonal final segment instead of keeping it diagonal', () => {
+    const pts = [
+      [10, 9],
+      [14, 5],
+    ];
+    expect(rebindWireEndpointOrthogonally(pts, 1, [14, 4])).toEqual([
+      [10, 9],
+      [10, 4],
+      [14, 4],
+    ]);
+  });
+
+  it('collapses a corner that coincides with the neighbor point', () => {
+    const pts = [
+      [14, 5],
+      [14, 8],
+    ];
+    // new pin (10,8): corner would be (14,8) == neighbor -> deduplicated
+    expect(rebindWireEndpointOrthogonally(pts, 1, [10, 8])).toEqual([
+      [14, 5],
+      [14, 8],
+      [10, 8],
+    ]);
   });
 });

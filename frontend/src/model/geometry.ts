@@ -360,7 +360,7 @@ export function findPlacementConflict(
     }
     const otherTerms = terminalPositions(other);
     if (
-      [...otherTerms.input, ...otherTerms.output].some((t) => sameGridPoint(t, candCenter))
+      [...otherTerms.input, ...otherTerms.output].some((t) => sameGridPoint(t, otherCenter))
     ) {
       return other.name;
     }
@@ -369,4 +369,73 @@ export function findPlacementConflict(
     }
   }
   return null;
+}
+
+/**
+ * Re-binds one endpoint of a wire polyline to a new grid point while keeping
+ * every segment axis-parallel. Rewriting only the endpoint coordinate (a
+ * plain map) turns the final segment diagonal whenever the pin moved
+ * perpendicular to the wire's approach — exactly what happens when a scope
+ * channel is added or removed and the centered pin block shifts every pin by
+ * one grid row. This helper instead inserts the missing corner point,
+ * preserving the axis of the original final segment.
+ *
+ * @param points Wire polyline in grid raster units (length >= 2).
+ * @param endIndex Which endpoint moves: 0 or {@code points.length - 1}.
+ * @param newPoint New grid position for that endpoint.
+ * @returns New polyline with the endpoint re-bound orthogonally and
+ *          consecutive duplicate points collapsed; the SAME array reference
+ *          when the endpoint already sits at {@code newPoint}.
+ */
+export function rebindWireEndpointOrthogonally(
+  points: number[][],
+  endIndex: number,
+  newPoint: number[],
+): number[][] {
+  const old = points[endIndex];
+  if (!old || (old[0] === newPoint[0] && old[1] === newPoint[1])) {
+    return points;
+  }
+  const neighborIdx = endIndex === 0 ? 1 : points.length - 2;
+  const prev = points[neighborIdx];
+
+  // Replacement tail (end) respectively head (start) of the polyline.
+  let replacement: number[][];
+  if (!prev) {
+    replacement = [[newPoint[0], newPoint[1]]];
+  } else if (prev[0] === newPoint[0] || prev[1] === newPoint[1]) {
+    // The neighbor already shares an axis with the target: a straight swap
+    // keeps everything orthogonal.
+    replacement = [[newPoint[0], newPoint[1]]];
+  } else {
+    // Insert a corner. Keep the travel axis of the original final segment
+    // (prev -> old) so the wire keeps approaching the pin from the same
+    // direction; an already-diagonal segment falls back to turning at the
+    // neighbor's column.
+    const corner =
+      prev[1] === old[1]
+        ? [newPoint[0], prev[1]]
+        : [prev[0], newPoint[1]];
+    replacement =
+      endIndex === 0
+        ? [[newPoint[0], newPoint[1]], corner]
+        : [corner, [newPoint[0], newPoint[1]]];
+  }
+
+  const body =
+    endIndex === 0 ? points.slice(1) : points.slice(0, -1);
+  const merged =
+    endIndex === 0
+      ? [...replacement, ...body.map((p) => [p[0], p[1]])]
+      : [...body.map((p) => [p[0], p[1]]), ...replacement];
+
+  // Collapse consecutive duplicates (e.g. corner coinciding with the neighbor).
+  const out: number[][] = [];
+  for (const p of merged) {
+    const last = out[out.length - 1];
+    if (!last || last[0] !== p[0] || last[1] !== p[1]) {
+      out.push(p);
+    }
+  }
+  return out.length >= 2 ? out : [merged[0], merged[merged.length - 1]];
 }

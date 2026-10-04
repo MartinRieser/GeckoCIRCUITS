@@ -15,7 +15,7 @@ import type {
   SimRunSettings,
   SimulationStatus,
 } from '../model/types';
-import { nextOrientation, terminalPositions, findPlacementConflict } from '../model/geometry';
+import { nextOrientation, terminalPositions, findPlacementConflict, rebindWireEndpointOrthogonally } from '../model/geometry';
 import {
   CTRL_TYPE,
   isVoltmeterComponent,
@@ -372,7 +372,9 @@ export function useEditor() {
             // Adding a scope channel shifts every input pin one row (the pin
             // block is centered on the symbol), which would silently orphan
             // the wires attached to the old pin positions. Re-bind wire ends
-            // from the old pin grid to the new one so the wiring follows.
+            // from the old pin grid to the new one so the wiring follows —
+            // orthogonally, so the pin's one-row shift cannot leave a
+            // diagonal segment behind.
             if (side === 'x' && isScopeComponent(existing) && arr.length > (existing.inputLabels ?? []).length) {
               const oldPins = terminalPositions(existing).input;
               const newPins = terminalPositions(updated).input;
@@ -385,7 +387,8 @@ export function useEditor() {
                   if (oldPinIdx < 0 || oldPinIdx >= newPins.length) continue;
                   const np = newPins[oldPinIdx];
                   if (np.x === pts[pi][0] && np.y === pts[pi][1]) continue;
-                  const newPoints = pts.map((q, qi) => (qi === pi ? [np.x, np.y] : q));
+                  const newPoints = rebindWireEndpointOrthogonally(pts, pi, [np.x, np.y]);
+                  if (newPoints === pts) continue;
                   api
                     .patchConnection(circuitId, wIdx, { points: newPoints })
                     .then((wireMsg) => {
@@ -462,8 +465,9 @@ export function useEditor() {
 
       // Removing a scope input channel shifts the pins below it up one row
       // (the pin block is centered on the symbol), so re-bind wire ends from
-      // the old pin grid to the new one. Ends on the removed pin are left in
-      // place and dangle, matching how component deletion leaves its wires.
+      // the old pin grid to the new one — orthogonally, keeping the wire
+      // axis-parallel. Ends on the removed pin are left in place and dangle,
+      // matching how component deletion leaves its wires.
       if (side === 'x' && isScopeComponent(existing)) {
         const oldPins = terminalPositions(existing).input;
         const newPins = terminalPositions(updated).input;
@@ -476,7 +480,8 @@ export function useEditor() {
             const newPinIdx = oldPinIdx > index ? oldPinIdx - 1 : oldPinIdx;
             const np = newPins[newPinIdx];
             if (!np || (np.x === pts[pi][0] && np.y === pts[pi][1])) continue;
-            const newPoints = pts.map((q, qi) => (qi === pi ? [np.x, np.y] : q));
+            const newPoints = rebindWireEndpointOrthogonally(pts, pi, [np.x, np.y]);
+            if (newPoints === pts) continue;
             api
               .patchConnection(circuitId, wIdx, { points: newPoints })
               .then((wireMsg) => {
