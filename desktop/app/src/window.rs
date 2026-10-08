@@ -68,9 +68,18 @@ fn start_release(app: AppHandle) -> Result<(), Box<dyn std::error::Error>> {
         match startup {
             Ok((process, backend_url)) => {
                 *state.engine.lock().unwrap() = Some(process);
+                // The frontend contract for __GECKO_BACKEND__ is origin-only;
+                // the ready URL carries the /gecko context path, which the
+                // editor appends itself (see gecko_engine::ready::origin_only).
+                let backend_origin = ready::origin_only(&backend_url);
                 let app = app_handle.clone();
                 let _ = app_handle.run_on_main_thread(move || {
-                    if let Err(err) = create_main_window(&app, &backend_url) {
+                    if let Err(err) = create_main_window(&app, &backend_origin) {
+                        let state: tauri::State<AppState> = app.state();
+                        let _ = std::fs::write(
+                            state.log_dir.join("shell_error.log"),
+                            format!("create_main_window error: {err}"),
+                        );
                         eprintln!("failed to create main window: {err}");
                         return;
                     }
@@ -80,6 +89,11 @@ fn start_release(app: AppHandle) -> Result<(), Box<dyn std::error::Error>> {
                 });
             }
             Err(message) => {
+                let state: tauri::State<AppState> = app_handle.state();
+                let _ = std::fs::write(
+                    state.log_dir.join("shell_error.log"),
+                    format!("start_engine error: {message}"),
+                );
                 let app = app_handle.clone();
                 let _ = app_handle.run_on_main_thread(move || {
                     close_splash(&app);
@@ -111,11 +125,45 @@ fn start_engine(app: &AppHandle, log_path: &Path) -> Result<sidecar::SpawnedEngi
 
 #[cfg(not(debug_assertions))]
 fn create_main_window(app: &AppHandle, backend_url: &str) -> Result<(), tauri::Error> {
-    let init_script = format!("window.__GECKO_BACKEND__ = '{backend_url}';{OPEN_FILE_INIT}");
+    let init_script = format!(
+        "window.__GECKO_BACKEND__ = '{backend_url}';\
+        {OPEN_FILE_INIT}\
+        (function() {{\
+          function send(lvl, msg) {{\
+            try {{\
+              if (window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke) {{\
+                window.__TAURI__.core.invoke('log_webview_message', {{ level: lvl, message: String(msg) }});\
+              }}\
+            }} catch (_) {{}}\
+          }}\
+          send('BOOT', 'Webview initialized. Backend: ' + window.__GECKO_BACKEND__ + ', URL: ' + location.href);\
+          window.addEventListener('error', function(e) {{\
+            send('ERROR', (e.message || 'unknown error') + ' at ' + (e.filename || '') + ':' + (e.lineno || 0) + ':' + (e.colno || 0) + '\\n' + (e.error ? e.error.stack : ''));\
+          }});\
+          window.addEventListener('unhandledrejection', function(e) {{\
+            var reason = e.reason && e.reason.stack ? e.reason.stack : String(e.reason);\
+            send('REJECTION', reason);\
+          }});\
+          var origLog = console.log, origErr = console.error, origWarn = console.warn;\
+          console.log = function() {{\
+            origLog.apply(console, arguments);\
+            send('CONSOLE_LOG', Array.from(arguments).map(String).join(' '));\
+          }};\
+          console.warn = function() {{\
+            origWarn.apply(console, arguments);\
+            send('CONSOLE_WARN', Array.from(arguments).map(String).join(' '));\
+          }};\
+          console.error = function() {{\
+            origErr.apply(console, arguments);\
+            send('CONSOLE_ERROR', Array.from(arguments).map(String).join(' '));\
+          }};\
+        }})();"
+    );
     WebviewWindowBuilder::new(app, "main", WebviewUrl::App("index.html".into()))
         .title("GeckoCIRCUITS")
         .inner_size(1400.0, 900.0)
         .min_inner_size(1024.0, 700.0)
+        .devtools(true)
         .initialization_script(&init_script)
         .on_download(download::handle_download)
         .build()?;

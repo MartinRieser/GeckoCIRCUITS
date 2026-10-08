@@ -54,7 +54,8 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             commands::open_logs_folder,
             commands::read_ipes_file,
-            commands::save_file_dialog
+            commands::save_file_dialog,
+            commands::log_webview_message
         ])
         .build(tauri::generate_context!())
         .expect("error while building the GeckoCIRCUITS desktop shell")

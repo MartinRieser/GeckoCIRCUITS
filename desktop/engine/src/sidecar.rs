@@ -108,7 +108,10 @@ pub fn spawn(
         // Route the engine's rolling rest-api.log next to engine.log instead
         // of a CWD-relative path (which may be an unwritable install dir) —
         // "Open engine logs" then shows both files.
-        .env("GECKO_LOG_DIR", log_path.parent().unwrap_or_else(|| Path::new(".")))
+        .env(
+            "GECKO_LOG_DIR",
+            log_path.parent().unwrap_or_else(|| Path::new(".")),
+        )
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
     #[cfg(windows)]

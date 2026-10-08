@@ -41,9 +41,9 @@ jobs:
       - uses: actions/checkout@v7
 
       # desktop/app/engine/ is gitignored build output of build-engine.py;
-      # tauri_build validates the "engine/*" resources glob even for compile
-      # checks, so seed a placeholder here. The real bundle is built in the
-      # build job; this stub never ships.
+      # tauri_build validates the "engine" resources directory even for
+      # compile checks, so seed a placeholder here. The real bundle is built
+      # in the build job; this stub never ships.
       - name: Stub engine bundle for compile checks
         shell: bash
         run: |
@@ -190,6 +190,21 @@ jobs:
       - name: Build installers
         working-directory: desktop/app
         run: npx @tauri-apps/cli@^2 build
+
+      # Guard against resource-mapping regressions (e.g. a glob pattern that
+      # silently drops directories would ship installers without the JRE).
+      # tauri-build stages bundle resources into target/release/, the same
+      # enumeration the installers are built from, on every OS.
+      - name: Verify bundled engine runtime is staged
+        shell: bash
+        run: |
+          staged="desktop/target/release/engine/runtime/bin"
+          if [ ! -f "$staged/java.exe" ] && [ ! -f "$staged/java" ]; then
+            echo "ERROR: bundled JRE missing from staged resources under $staged" >&2
+            find desktop/target/release/engine -maxdepth 3 >&2 || true
+            exit 1
+          fi
+          echo "engine runtime staged: $(ls "$staged" | head -3 | tr '\n' ' ')..."
 
       - name: Upload artifacts (windows)
         if: matrix.artifact == 'windows'

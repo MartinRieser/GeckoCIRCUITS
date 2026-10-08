@@ -24,6 +24,21 @@ pub fn open_logs_folder(app: AppHandle) -> Result<(), String> {
         .map_err(|error| error.to_string())
 }
 
+/// Logs messages from webview to webview.log.
+#[tauri::command]
+pub fn log_webview_message(app: AppHandle, level: String, message: String) {
+    let state: State<AppState> = app.state();
+    let log_file = state.log_dir.join("webview.log");
+    use std::io::Write;
+    if let Ok(mut f) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(log_file)
+    {
+        let _ = writeln!(f, "[{level}] {message}");
+    }
+}
+
 /// Native save dialog + file write for `.ipes` downloads. The frontend keeps
 /// doing the HTTP fetch (it owns the backend URL); the shell only does the
 /// dialog and the bytes. Returns the chosen path, or None on cancel.

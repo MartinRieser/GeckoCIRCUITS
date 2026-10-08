@@ -19,6 +19,20 @@ pub fn parse_ready_line(line: &str) -> Option<String> {
     }
 }
 
+/// Reduces a ready base URL to its origin (`scheme://host[:port]`), dropping
+/// any context path. `window.__GECKO_BACKEND__` is an origin by contract: the
+/// web editor appends the `/gecko` context path itself, so injecting the full
+/// ready URL (which carries `/gecko`) would double it into
+/// `/gecko/gecko/api/...` and every request would 404.
+pub fn origin_only(url: &str) -> String {
+    let authority_start = url.find("://").map(|i| i + 3).unwrap_or(0);
+    let end = url[authority_start..]
+        .find('/')
+        .map(|i| authority_start + i)
+        .unwrap_or(url.len());
+    url[..end].to_string()
+}
+
 /// Waits for the ready line on the engine's stdout, with an overall budget.
 /// Engine stdout ends (channel disconnects) if the process dies, which is
 /// reported as an error, not as a timeout.
@@ -69,6 +83,23 @@ mod tests {
             parse_ready_line("2026-09-05 18:00:00 - g.r.config.EngineReadyLogger - GECKO_READY http://127.0.0.1:8080/gecko\r\n"),
             Some("http://127.0.0.1:8080/gecko".to_string())
         );
+    }
+
+    #[test]
+    fn origin_only_strips_context_path() {
+        assert_eq!(
+            origin_only("http://127.0.0.1:54321/gecko"),
+            "http://127.0.0.1:54321"
+        );
+    }
+
+    #[test]
+    fn origin_only_keeps_plain_origin() {
+        assert_eq!(
+            origin_only("http://127.0.0.1:54321"),
+            "http://127.0.0.1:54321"
+        );
+        assert_eq!(origin_only("http://localhost/"), "http://localhost");
     }
 
     #[test]

@@ -32,7 +32,7 @@ public class CorsConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource(
             @Value("${" + ALLOWED_ORIGINS_PROPERTY
-                    + ":tauri://localhost,https://tauri.localhost,http://localhost:5173}")
+                    + ":tauri://localhost,https://tauri.localhost,http://tauri.localhost,http://localhost:5173,http://127.0.0.1:5173}")
             String allowedOrigins) {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(Arrays.stream(allowedOrigins.split(","))
@@ -45,6 +45,7 @@ public class CorsConfig {
         config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
         source.registerCorsConfiguration("/api/**", config);
         return source;
     }

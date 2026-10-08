@@ -172,9 +172,16 @@ def derive_modules(jdk, jar):
 def make_runtime(jdk, modules):
     print("== Creating jlink runtime ==")
     runtime = ENGINE_DIR / "runtime"
+    java_exe = runtime / "bin" / ("java.exe" if sys.platform == "win32" else "java")
     if runtime.exists():
         import shutil
-        shutil.rmtree(runtime)
+        try:
+            shutil.rmtree(runtime)
+        except OSError as e:
+            if java_exe.is_file():
+                print(f"  Existing runtime in use ({e}); reusing valid runtime at {runtime}")
+                return
+            raise
     run([jdk / "bin" / "jlink",
          "--add-modules", ",".join(modules),
          "--output", runtime,

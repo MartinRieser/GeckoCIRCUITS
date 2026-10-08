@@ -109,7 +109,7 @@ stdout/stderr including the `GECKO_READY` handshake line.
 
 **Where are the engine logs?** `<app log dir>/logs/engine/engine.log`:
 
-- Windows: `%APPDATA%\com.geckocircuits.desktop\logs\engine\`
+- Windows: `%LOCALAPPDATA%\com.geckocircuits.desktop\logs\engine\`
 - macOS: `~/Library/Logs/com.geckocircuits.desktop/logs/engine/`
 - Linux: `~/.local/share/com.geckocircuits.desktop/logs/engine/`
 

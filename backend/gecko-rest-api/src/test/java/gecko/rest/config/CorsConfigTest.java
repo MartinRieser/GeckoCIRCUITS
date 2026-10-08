@@ -42,6 +42,15 @@ class CorsConfigTest {
     }
 
     @Test
+    void preflightFromWindowsHttpShellOriginIsAllowed() throws Exception {
+        mockMvc.perform(options("/api/health")
+                        .header(HttpHeaders.ORIGIN, "http://tauri.localhost")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://tauri.localhost"));
+    }
+
+    @Test
     void preflightFromViteDevServerIsAllowed() throws Exception {
         mockMvc.perform(options("/api/health")
                         .header(HttpHeaders.ORIGIN, "http://localhost:5173")
