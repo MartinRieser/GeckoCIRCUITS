@@ -5,6 +5,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 
 python3 scripts/desktop/build-engine.py "$@"
+export NO_STRIP=true
 if command -v tauri &>/dev/null; then
     tauri build
 elif command -v cargo-tauri &>/dev/null; then

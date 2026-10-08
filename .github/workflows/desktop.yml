@@ -121,7 +121,7 @@ jobs:
             artifact: windows
           - os: macos-latest
             artifact: macos
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             artifact: linux
     runs-on: ${{ matrix.os }}
     steps:
@@ -155,7 +155,7 @@ jobs:
         if: matrix.artifact == 'linux'
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq --no-install-recommends libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev libfuse2 rpm fakeroot
+          sudo apt-get install -y -qq --no-install-recommends libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev libfuse2 patchelf rpm fakeroot
 
       - name: Ensure WiX Toolset (Windows)
         if: matrix.artifact == 'windows'
@@ -189,6 +189,8 @@ jobs:
 
       - name: Build installers
         working-directory: desktop/app
+        env:
+          NO_STRIP: "true"
         run: npx @tauri-apps/cli@^2 build
 
       # Guard against resource-mapping regressions (e.g. a glob pattern that
