@@ -227,6 +227,42 @@ body,
   color: var(--text-dim);
 }
 
+.nav-wire-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+
+.nav-wire-btn .nav-wire-icon {
+  flex-shrink: 0;
+}
+
+.nav-wire-btn .nav-wire-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-muted, #94a3b8);
+  font-family: inherit;
+  line-height: 1;
+}
+
+.nav-wire-btn.active {
+  background: var(--accent, #38bdf8) !important;
+  color: #fff !important;
+  border-color: var(--accent, #38bdf8) !important;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+}
+
+.nav-wire-btn.active .nav-wire-badge {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+
 .nav-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
@@ -1150,6 +1186,103 @@ body,
 .terminal-pin-group:hover .terminal {
   r: 3.5;
   fill: var(--accent-light, #38bdf8) !important;
+}
+
+/* LTspice-style unconnected component pin box */
+.terminal-open-box {
+  fill: var(--bg, #0f172a) !important;
+  stroke: var(--accent, #38bdf8) !important;
+  stroke-width: 1.5px !important;
+  vector-effect: non-scaling-stroke;
+  transition: stroke 0.15s ease, stroke-width 0.15s ease;
+}
+
+.terminal-pin-group:hover .terminal-open-box {
+  stroke: var(--accent-light, #7dd3fc) !important;
+  stroke-width: 2px !important;
+  filter: drop-shadow(0 0 3px var(--accent-light, #38bdf8));
+}
+
+/* Dangling (open-circuit) wire endpoints */
+.dangling-endpoints {
+  pointer-events: none;
+}
+
+.wire-dangling-box {
+  fill: rgba(239, 68, 68, 0.15);
+  stroke: #ef4444;
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+  animation: pulse-dangling 1.8s infinite ease-in-out;
+}
+
+.wire-dangling-cross {
+  stroke: #ef4444;
+  stroke-width: 1.2px;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+@keyframes pulse-dangling {
+  0%, 100% {
+    stroke-opacity: 0.95;
+    fill-opacity: 0.18;
+  }
+  50% {
+    stroke-opacity: 0.45;
+    fill-opacity: 0.05;
+  }
+}
+
+/* Canvas Wire Mode feedback */
+.sheet-scroll.mode-wiring,
+.sheet-scroll.mode-wiring svg {
+  cursor: crosshair !important;
+}
+
+.canvas-wire-mode-banner {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid var(--accent, #38bdf8);
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45), 0 0 10px rgba(56, 189, 248, 0.2);
+  color: var(--text, #f1f5f9);
+  font-size: 12px;
+  font-weight: 500;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+  pointer-events: auto;
+  user-select: none;
+  animation: fadeInBanner 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.canvas-wire-mode-banner .banner-icon {
+  color: var(--accent, #38bdf8);
+  font-size: 14px;
+}
+
+.canvas-wire-mode-banner .banner-exit-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text, #fff);
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.canvas-wire-mode-banner .banner-exit-btn:hover {
+  background: rgba(239, 68, 68, 0.35);
+  border-color: rgba(239, 68, 68, 0.6);
+  color: #fff;
 }
 
 circle.terminal-hit,

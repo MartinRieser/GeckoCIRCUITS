@@ -53,6 +53,7 @@ const patchWirePoints = vi.fn();
 const flipWire = vi.fn();
 const openScopeTab = vi.fn();
 const openScriptTab = vi.fn();
+const toggleWireMode = vi.fn();
 const actions: SheetActions = {
   placeGhost,
   finishWire,
@@ -62,6 +63,7 @@ const actions: SheetActions = {
   flipWire,
   openScopeTab,
   openScriptTab,
+  toggleWireMode,
 };
 
 function Harness() {
@@ -648,5 +650,70 @@ describe('direct pin-to-pin wiring and wire editing', () => {
     expect(scriptComp).not.toBeNull();
     fireEvent.doubleClick(scriptComp!);
     expect(openScriptTab).toHaveBeenCalledWith('SCRIPT.1');
+  });
+
+  describe('visual connection indicators & wire tool feedback (Phase 1)', () => {
+    it('renders LTspice-style open boxes on unconnected terminals and solid dots on connected terminals', () => {
+      const { container } = setup();
+      // In setup(), R1 terminals (8,10) and (12,10) are wired by w1 -> connected
+      // C1 terminals (28,10) and (32,10) are unwired -> unconnected
+      const openBoxes = container.querySelectorAll('.terminal-open-box');
+      expect(openBoxes).toHaveLength(2);
+
+      const connectedDots = container.querySelectorAll('.terminal-connected');
+      expect(connectedDots).toHaveLength(2);
+    });
+
+    it('renders dangling endpoint box for free wire ends', () => {
+      const snapDangling: EditorSnapshot = {
+        ...snapshot,
+        connections: [
+          // Wire free-floating in empty space (dangling at both ends)
+          { index: 0, type: 'LK', label: 'w_open', points: [[50, 50], [55, 50]] },
+        ],
+      };
+
+      function DanglingHarness() {
+        const [state, dispatch] = useReducer(editorReducer, {
+          ...initialState,
+          circuitId: snapDangling.circuitId,
+          components: snapDangling.components,
+          wires: (snapDangling.connections || []).map((c) => ({
+            index: c.index,
+            type: c.type,
+            points: c.points,
+            label: c.label,
+          })),
+          dpix: snapDangling.dpix,
+        });
+        return <Sheet state={state} dispatch={dispatch} actions={actions} />;
+      }
+
+      const { container } = render(<DanglingHarness />);
+      const danglingBoxes = container.querySelectorAll('.wire-dangling-box');
+      expect(danglingBoxes).toHaveLength(2);
+    });
+
+    it('shows floating banner and crosshair in wire mode and clicking exit toggles it', () => {
+      const { container, getByTestId } = setup();
+
+      // Initially idle: no banner
+      expect(container.querySelector('.canvas-wire-mode-banner')).toBeNull();
+      expect(container.querySelector('.sheet-scroll.mode-wiring')).toBeNull();
+
+      // Enter wire mode
+      fireEvent.click(getByTestId('wiremode'));
+
+      expect(container.querySelector('.canvas-wire-mode-banner')).not.toBeNull();
+      expect(container.querySelector('.sheet-scroll.mode-wiring')).not.toBeNull();
+      expect(container.querySelector('.canvas-wire-mode-banner')?.textContent).toContain('Wire Tool Active');
+
+      // Click Exit button on banner
+      const exitBtn = container.querySelector('.canvas-wire-mode-banner .banner-exit-btn');
+      expect(exitBtn).not.toBeNull();
+      fireEvent.click(exitBtn!);
+
+      expect(toggleWireMode).toHaveBeenCalled();
+    });
   });
 });

@@ -571,12 +571,28 @@ export function App() {
 
           <button
             type="button"
-            className={`nav-btn ${state.mode === 'wiring' ? 'active' : ''}`}
+            className={`nav-btn nav-wire-btn ${state.mode === 'wiring' ? 'active' : ''}`}
             onClick={actions.toggleWireMode}
             disabled={!state.circuitId}
-            title="Toggle Wire Tool (W)"
+            title={state.mode === 'wiring' ? 'Exit Wire Tool (Esc or W)' : 'Wire Tool (W) — Draw connections between terminals'}
           >
-            Wire
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="nav-wire-icon"
+            >
+              <polyline points="3 19 8 8 16 14 21 5" />
+              <circle cx="3" cy="19" r="2" fill="currentColor" />
+              <circle cx="21" cy="5" r="2" fill="currentColor" />
+            </svg>
+            <span>Wire</span>
+            <span className="nav-wire-badge">W</span>
           </button>
 
           <span className="nav-separator" />

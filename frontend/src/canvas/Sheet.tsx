@@ -323,6 +323,65 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
     return dots;
   }, [state.wires]);
 
+  // Set of terminal coordinates "x,y" that are connected (LTspice-style):
+  // A terminal is connected if a wire touches it or another component's terminal is coincident.
+  const connectedTerminalKeys = useMemo(() => {
+    const keys = new Set<string>();
+    // 1. All wire raster points
+    for (const wire of state.wires) {
+      if (!wire.points || wire.points.length === 0) continue;
+      for (const p of wire.points) {
+        keys.add(`${p[0]},${p[1]}`);
+      }
+    }
+    // 2. Coincident component terminals (pin-to-pin abutment)
+    const pinCounts = new Map<string, number>();
+    for (const comp of state.components) {
+      const terms = terminalPositions(comp);
+      for (const t of [...terms.input, ...terms.output]) {
+        const k = `${t.x},${t.y}`;
+        pinCounts.set(k, (pinCounts.get(k) || 0) + 1);
+      }
+    }
+    for (const [k, count] of pinCounts.entries()) {
+      if (count > 1) {
+        keys.add(k);
+      }
+    }
+    return keys;
+  }, [state.wires, state.components]);
+
+  // Free (open-circuit) wire endpoints that touch neither a terminal nor any other wire.
+  const danglingEndpoints = useMemo(() => {
+    const terminalKeys = new Set<string>();
+    for (const comp of state.components) {
+      const terms = terminalPositions(comp);
+      for (const t of [...terms.input, ...terms.output]) {
+        terminalKeys.add(`${t.x},${t.y}`);
+      }
+    }
+
+    const wireCells = state.wires.map((w) => denseCellsOf(w.points || []));
+    const dangling: Point[] = [];
+    const seen = new Set<string>();
+
+    state.wires.forEach((w, i) => {
+      if (!w.points || w.points.length < 2) return;
+      const ends = [w.points[0], w.points[w.points.length - 1]];
+      ends.forEach((end) => {
+        const key = `${end[0]},${end[1]}`;
+        if (terminalKeys.has(key)) return;
+        const touchesOther = wireCells.some((cells, j) => j !== i && cells.has(key));
+        if (!touchesOther && !seen.has(key)) {
+          seen.add(key);
+          dangling.push({ x: end[0], y: end[1] });
+        }
+      });
+    });
+
+    return dangling;
+  }, [state.wires, state.components]);
+
   const handleWheel = (e: ReactWheelEvent) => {
     if (e.ctrlKey || e.metaKey || isSpacePressed) {
       e.preventDefault();
@@ -554,6 +613,14 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
       dispatch({ type: 'GHOST_ROTATE' });
       return;
     }
+    if (state.mode === 'wiring') {
+      if (state.wireDraft) {
+        dispatch({ type: 'WIRE_DRAFT_ABORT' });
+      } else {
+        actions.toggleWireMode?.();
+      }
+      return;
+    }
 
     const p = toGrid(e);
     setContextMenu({
@@ -627,13 +694,36 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
 
   return (
     <div
-      className={`sheet-scroll ${isSpacePressed ? 'space-grab' : ''} ${isPanning ? 'panning' : ''}`}
+      className={`sheet-scroll ${isSpacePressed ? 'space-grab' : ''} ${isPanning ? 'panning' : ''} ${state.mode === 'wiring' ? 'mode-wiring' : ''}`}
       ref={containerRef}
       onWheel={handleWheel}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
       onMouseLeave={() => setCursorCoord(null)}
     >
+      {/* Active Wire Mode Floating Banner */}
+      {state.mode === 'wiring' && (
+        <div className="canvas-wire-mode-banner">
+          <span className="banner-icon">⚡</span>
+          <span className="banner-text">
+            {state.wireDraft ? 'Drafting Wire — Click destination terminal or wire' : 'Wire Tool Active — Click terminal to start wire'}
+          </span>
+          <button
+            type="button"
+            className="banner-exit-btn"
+            onClick={() => {
+              if (state.wireDraft) {
+                dispatch({ type: 'WIRE_DRAFT_ABORT' });
+              }
+              actions.toggleWireMode?.();
+            }}
+            title="Exit Wire Tool (Esc)"
+          >
+            Exit (Esc)
+          </button>
+        </div>
+      )}
+
       {/* Floating Canvas View Controls */}
       <div className="canvas-view-controls">
         <button
@@ -930,6 +1020,24 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                 r={3.6}
                 className="junction-dot"
               />
+            ))}
+          </g>
+
+          {/* Dangling (Unconnected Open-Circuit) Wire Endpoints */}
+          <g className="dangling-endpoints" pointerEvents="none">
+            {danglingEndpoints.map((pt, i) => (
+              <g key={`dangling-${i}`} transform={`translate(${pt.x * dpix}, ${pt.y * dpix})`}>
+                <rect
+                  x={-4}
+                  y={-4}
+                  width={8}
+                  height={8}
+                  rx={1.5}
+                  className="wire-dangling-box"
+                />
+                <line x1={-2.5} y1={-2.5} x2={2.5} y2={2.5} className="wire-dangling-cross" />
+                <line x1={-2.5} y1={2.5} x2={2.5} y2={-2.5} className="wire-dangling-cross" />
+              </g>
             ))}
           </g>
 
@@ -1317,14 +1425,25 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                         {[...terminals.input, ...terminals.output].map((t, i) => {
                           const cx = t.x * dpix - component.position[0] * dpix;
                           const cy = t.y * dpix - component.position[1] * dpix;
+                          const isConnected = connectedTerminalKeys.has(`${t.x},${t.y}`);
                           return (
-                            <g key={i} className="terminal-pin-group">
+                            <g key={i} className={`terminal-pin-group ${isConnected ? 'connected' : 'unconnected'}`}>
                               <circle
                                 cx={cx}
                                 cy={cy}
-                                r={2.5}
-                                className="terminal"
+                                r={isConnected ? 2.5 : 0}
+                                className={`terminal ${isConnected ? 'terminal-connected' : 'terminal-unconnected'}`}
                               />
+                              {!isConnected && (
+                                <rect
+                                  x={cx - 3.5}
+                                  y={cy - 3.5}
+                                  width={7}
+                                  height={7}
+                                  rx={1}
+                                  className="terminal-open-box"
+                                />
+                              )}
                               <circle
                                 cx={cx}
                                 cy={cy}
