@@ -254,11 +254,11 @@ describe('store: wire points follow dragged and nudged components', () => {
     // S1 at (14,6) [terms (12,6)/(16,6)], D1 at (18,8) [terms (18,6)/(18,10)], L1 at (24,6) [terms (22,6)/(26,6)]
     // w1 runs from (16,6) across D1 at (18,6) to (22,6)
     const buckLikeSnap: EditorSnapshot = {
-      circuitId: 'c-test',
+      ...snapshot,
       components: [
-        { name: 'S1', type: 7, family: 'LK', position: [14, 6], orientation: 502, parameters: {} },
-        { name: 'D1', type: 6, family: 'LK', position: [18, 8], orientation: 501, parameters: {} },
-        { name: 'L1', type: 2, family: 'LK', position: [24, 6], orientation: 502, parameters: {} },
+        { name: 'S1', type: 7, family: 'LK', position: [14, 6], orientation: 502, parameters: {}, inputLabels: [], outputLabels: [] },
+        { name: 'D1', type: 6, family: 'LK', position: [18, 8], orientation: 501, parameters: {}, inputLabels: [], outputLabels: [] },
+        { name: 'L1', type: 2, family: 'LK', position: [24, 6], orientation: 502, parameters: {}, inputLabels: [], outputLabels: [] },
       ],
       connections: [
         {
