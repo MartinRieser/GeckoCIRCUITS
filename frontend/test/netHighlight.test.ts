@@ -31,6 +31,7 @@ describe('netHighlight: analyzeElectricalNets', () => {
       {
         index: 0,
         type: 'LK',
+        label: '',
         points: [
           [12, 10],
           [18, 10],
@@ -53,6 +54,7 @@ describe('netHighlight: analyzeElectricalNets', () => {
     const wire1: EditorWire = {
       index: 0,
       type: 'LK',
+      label: '',
       points: [
         [10, 10],
         [15, 10],
@@ -61,6 +63,7 @@ describe('netHighlight: analyzeElectricalNets', () => {
     const wire2: EditorWire = {
       index: 1,
       type: 'LK',
+      label: '',
       points: [
         [15, 10],
         [20, 10],
@@ -69,6 +72,7 @@ describe('netHighlight: analyzeElectricalNets', () => {
     const wire3Branch: EditorWire = {
       index: 2,
       type: 'LK',
+      label: '',
       points: [
         [15, 10],
         [15, 20],
@@ -88,6 +92,7 @@ describe('netHighlight: analyzeElectricalNets', () => {
     const wire1: EditorWire = {
       index: 0,
       type: 'LK',
+      label: '',
       points: [
         [5, 5],
         [10, 5],
@@ -96,6 +101,7 @@ describe('netHighlight: analyzeElectricalNets', () => {
     const wire2: EditorWire = {
       index: 1,
       type: 'LK',
+      label: '',
       points: [
         [5, 15],
         [10, 15],
