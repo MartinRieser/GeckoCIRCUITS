@@ -29,6 +29,7 @@ import {
   buildScopeGuides,
   buildTerminalLabelItems,
 } from './sheetGuides';
+import { analyzeElectricalNets } from './netHighlight';
 import type { Point } from '../model/types';
 import { ContextMenu } from './ContextMenu';
 import type { ContextMenuTarget } from './ContextMenu';
@@ -97,6 +98,32 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
 
   // Hovered component for guideline emphasis
   const [hoveredComponentName, setHoveredComponentName] = useState<string | null>(null);
+
+  // Hovered wire index for whole-net highlighting (Phase 3)
+  const [hoveredWireIndex, setHoveredWireIndex] = useState<number | null>(null);
+
+  // Electrical net topological analysis (Phase 3 net highlighting)
+  const netAnalysis = useMemo(
+    () => analyzeElectricalNets(state.wires, state.components),
+    [state.wires, state.components],
+  );
+
+  // Currently active electrical net to highlight across schematic
+  const activeNet = useMemo(() => {
+    if (hoveredWireIndex !== null) {
+      return netAnalysis.wireIndexToNet.get(hoveredWireIndex) || null;
+    }
+    if (state.selectedWire !== null) {
+      return netAnalysis.wireIndexToNet.get(state.selectedWire) || null;
+    }
+    if (hoveredTerminal !== null) {
+      return netAnalysis.terminalKeyToNet.get(`${hoveredTerminal.x},${hoveredTerminal.y}`) || null;
+    }
+    if (state.focusedTerminal !== null) {
+      return netAnalysis.terminalKeyToNet.get(`${state.focusedTerminal.x},${state.focusedTerminal.y}`) || null;
+    }
+    return null;
+  }, [hoveredWireIndex, state.selectedWire, hoveredTerminal, state.focusedTerminal, netAnalysis]);
 
   // Net label visibility mode: 'smart' (virtual always show; wired on hover/selection), 'all' (always show all), or 'hover' (only on hover/selection)
   const [labelDisplayMode, setLabelDisplayMode] = useState<'smart' | 'all' | 'hover'>(() => {
@@ -807,6 +834,17 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
             </span>
           </>
         )}
+        {activeNet && (
+          <>
+            <div className="canvas-ctrl-sep" />
+            <span
+              className="canvas-net-badge"
+              title={`Electrical Net: ${activeNet.label || activeNet.id} (${activeNet.wireIndices.size} wires, ${activeNet.terminalKeys.size} pins connected)`}
+            >
+              Net: {activeNet.label || activeNet.id}
+            </span>
+          </>
+        )}
       </div>
 
       <div
@@ -875,11 +913,12 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
             {state.wires.map((wire) => {
               const casingPts = orthogonalizePolyline(wire.points);
               const casingStr = casingPts.map((p) => `${p[0] * dpix},${p[1] * dpix}`).join(' ');
+              const isNetHighlighted = activeNet?.wireIndices.has(wire.index) ?? false;
               return (
                 <polyline
                   key={`casing-${wire.index}`}
                   points={casingStr}
-                  className="wire-casing"
+                  className={`wire-casing${isNetHighlighted ? ' net-highlighted' : ''}`}
                 />
               );
             })}
@@ -887,16 +926,19 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
               const orthoPts = orthogonalizePolyline(wire.points);
               const pointsStr = orthoPts.map((p) => `${p[0] * dpix},${p[1] * dpix}`).join(' ');
               const isSelected = wire.index === state.selectedWire;
+              const isNetHighlighted = activeNet?.wireIndices.has(wire.index) ?? false;
               const corners = isSelected ? simplifyCorners(wire.points) : [];
               return (
-                <g key={wire.index} className={`wire-group${isSelected ? ' selected' : ''}`}>
+                <g key={wire.index} className={`wire-group${isSelected ? ' selected' : ''}${isNetHighlighted ? ' net-highlighted' : ''}`}>
                   <polyline
                     points={pointsStr}
-                    className={`wire wire-${wire.type || 'LK'}${isSelected ? ' selected' : ''}`}
+                    className={`wire wire-${wire.type || 'LK'}${isSelected ? ' selected' : ''}${isNetHighlighted ? ' net-highlighted' : ''}`}
                   />
                   <polyline
                     points={pointsStr}
                     className="wire-hit"
+                    onMouseEnter={() => setHoveredWireIndex(wire.index)}
+                    onMouseLeave={() => setHoveredWireIndex((cur) => (cur === wire.index ? null : cur))}
                     onMouseDown={(e) => {
                       if (e.button === 0) {
                         e.stopPropagation();
@@ -1012,15 +1054,18 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
 
           {/* Wire Junction Connection Dots */}
           <g className="junction-dots" pointerEvents="none">
-            {junctionDots.map((pt, i) => (
-              <circle
-                key={i}
-                cx={pt.x * dpix}
-                cy={pt.y * dpix}
-                r={3.6}
-                className="junction-dot"
-              />
-            ))}
+            {junctionDots.map((pt, i) => {
+              const isNetHighlighted = activeNet?.pointKeys.has(`${pt.x},${pt.y}`) ?? false;
+              return (
+                <circle
+                  key={i}
+                  cx={pt.x * dpix}
+                  cy={pt.y * dpix}
+                  r={isNetHighlighted ? 4.5 : 3.6}
+                  className={`junction-dot${isNetHighlighted ? ' net-highlighted' : ''}`}
+                />
+              );
+            })}
           </g>
 
           {/* Dangling (Unconnected Open-Circuit) Wire Endpoints */}
@@ -1426,8 +1471,9 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                           const cx = t.x * dpix - component.position[0] * dpix;
                           const cy = t.y * dpix - component.position[1] * dpix;
                           const isConnected = connectedTerminalKeys.has(`${t.x},${t.y}`);
+                          const isNetHighlighted = activeNet?.terminalKeys.has(`${t.x},${t.y}`) ?? false;
                           return (
-                            <g key={i} className={`terminal-pin-group ${isConnected ? 'connected' : 'unconnected'}`}>
+                            <g key={i} className={`terminal-pin-group ${isConnected ? 'connected' : 'unconnected'}${isNetHighlighted ? ' net-highlighted' : ''}`}>
                               <circle
                                 cx={cx}
                                 cy={cy}
@@ -1452,6 +1498,8 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                                 stroke="none"
                                 className="terminal-hit"
                                 style={{ cursor: 'crosshair', pointerEvents: 'all' }}
+                                onMouseEnter={() => setHoveredTerminal({ x: t.x, y: t.y })}
+                                onMouseLeave={() => setHoveredTerminal((cur) => (cur && cur.x === t.x && cur.y === t.y ? null : cur))}
                                 onMouseDown={(e) => {
                                   if (e.button !== 0) return;
                                   e.stopPropagation();
@@ -1673,8 +1721,13 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                 rectX = textX - rectW / 2;
               }
 
+              const isNetHighlighted =
+                activeNet !== null &&
+                (activeNet.terminalKeys.has(`${item.gx},${item.gy}`) ||
+                  (!!activeNet.label && activeNet.label === (item.displayLabel || item.label)));
+
               return (
-                <g key={item.key} className="terminal-net-label-pill">
+                <g key={item.key} className={`terminal-net-label-pill${isNetHighlighted ? ' net-highlighted' : ''}`}>
                   <rect
                     x={rectX}
                     y={rectY}

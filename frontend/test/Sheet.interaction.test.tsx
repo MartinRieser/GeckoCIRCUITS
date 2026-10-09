@@ -716,4 +716,57 @@ describe('direct pin-to-pin wiring and wire editing', () => {
       expect(toggleWireMode).toHaveBeenCalled();
     });
   });
+
+  describe('Phase 3: Interactive net highlighting', () => {
+    it('highlights entire net on wire hover and clears on mouse leave', () => {
+      const { container } = setup();
+      // Initially, no wire or terminal is net-highlighted
+      expect(container.querySelectorAll('.wire.net-highlighted')).toHaveLength(0);
+      expect(container.querySelectorAll('.terminal-pin-group.net-highlighted')).toHaveLength(0);
+      expect(container.querySelector('.canvas-net-badge')).toBeNull();
+
+      // Find first wire hit polyline
+      const wireHits = container.querySelectorAll('.wire-hit');
+      expect(wireHits.length).toBeGreaterThan(0);
+
+      // Hover over the wire
+      fireEvent.mouseEnter(wireHits[0]);
+
+      // Wire and its connected terminals must now be net-highlighted
+      const highlightedWires = container.querySelectorAll('.wire.net-highlighted');
+      expect(highlightedWires.length).toBeGreaterThanOrEqual(1);
+
+      const highlightedPins = container.querySelectorAll('.terminal-pin-group.net-highlighted');
+      expect(highlightedPins.length).toBeGreaterThanOrEqual(1);
+
+      // Toolbar net badge is displayed
+      const netBadge = container.querySelector('.canvas-net-badge');
+      expect(netBadge).not.toBeNull();
+      expect(netBadge?.textContent).toContain('Net:');
+
+      // Mouse leave clears highlighting
+      fireEvent.mouseLeave(wireHits[0]);
+      expect(container.querySelectorAll('.wire.net-highlighted')).toHaveLength(0);
+      expect(container.querySelectorAll('.terminal-pin-group.net-highlighted')).toHaveLength(0);
+      expect(container.querySelector('.canvas-net-badge')).toBeNull();
+    });
+
+    it('highlights net when wire is selected', () => {
+      const { container } = setup();
+
+      // Find wire hit polyline and click to select wire
+      const wireHits = container.querySelectorAll('.wire-hit');
+      expect(wireHits.length).toBeGreaterThan(0);
+      fireEvent.mouseDown(wireHits[0], { button: 0 });
+
+      const highlightedWires = container.querySelectorAll('.wire.net-highlighted');
+      expect(highlightedWires.length).toBeGreaterThanOrEqual(1);
+
+      const highlightedPins = container.querySelectorAll('.terminal-pin-group.net-highlighted');
+      expect(highlightedPins.length).toBeGreaterThanOrEqual(1);
+
+      const netBadge = container.querySelector('.canvas-net-badge');
+      expect(netBadge).not.toBeNull();
+    });
+  });
 });

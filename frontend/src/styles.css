@@ -1383,6 +1383,72 @@ polyline.wire.selected {
   stroke-width: 2.2;
 }
 
+/* Phase 3: Interactive Net / Signal Highlighting */
+polyline.wire.net-highlighted {
+  stroke: #38bdf8 !important;
+  stroke-width: 3.2px !important;
+  filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.85));
+  transition: stroke 0.12s ease, stroke-width 0.12s ease;
+}
+
+polyline.wire-casing.net-highlighted {
+  stroke: rgba(56, 189, 248, 0.22) !important;
+  stroke-width: 7.5px !important;
+}
+
+:root[data-theme='light'] polyline.wire.net-highlighted {
+  stroke: #0284c7 !important;
+  filter: drop-shadow(0 0 3px rgba(2, 132, 199, 0.65));
+}
+
+.terminal-pin-group.net-highlighted circle.terminal {
+  fill: #38bdf8 !important;
+  stroke: #e0f2fe !important;
+  stroke-width: 1.5px !important;
+  r: 4.5px !important;
+  filter: drop-shadow(0 0 5px #38bdf8);
+}
+
+.terminal-pin-group.net-highlighted .terminal-open-box {
+  stroke: #38bdf8 !important;
+  stroke-width: 2.2px !important;
+  filter: drop-shadow(0 0 5px #38bdf8);
+}
+
+circle.junction-dot.net-highlighted {
+  fill: #38bdf8 !important;
+  stroke: #f0f9ff !important;
+  stroke-width: 1.2px !important;
+  r: 4.8px !important;
+  filter: drop-shadow(0 0 5px #38bdf8);
+}
+
+.terminal-net-label-pill.net-highlighted .node-label-pill-bg {
+  stroke: #38bdf8 !important;
+  stroke-width: 1.5px !important;
+  fill: rgba(56, 189, 248, 0.2) !important;
+  filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.5));
+}
+
+.terminal-net-label-pill.net-highlighted .node-label {
+  fill: #38bdf8 !important;
+  font-weight: 700 !important;
+}
+
+.canvas-net-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  padding: 1px 7px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  letter-spacing: 0.2px;
+}
+
 .wire-hit {
   stroke: transparent;
   fill: none;
