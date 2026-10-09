@@ -56,3 +56,17 @@ When conducting codebase reviews or refactorings across GeckoCIRCUITS (frontend 
 - **Defensive Action & Concurrency Guards**: Any action that launches asynchronous execution, simulation runs, or server operations (including keyboard shortcuts like `F5` or toolbar buttons) must guard against concurrent re-entry or double-submission (e.g., verifying `!isSimRunning`).
 - **Zero Inline Layout Styling**: Avoid inline JSX `style={{ ... }}` objects for layout containers, progress bars, spinners, or indicators. Define explicit CSS classes in `styles.css` using theme design tokens.
 
+## Component Terminal & Geometry Parity Standards (Cross-Layer)
+- **Explicit Terminal Cardinality**: When creating or modifying single-terminal or multi-terminal components (e.g., `LK_GLOBAL_TERMINAL`, measurement probes, couplers), explicitly specify terminal arrays in `geometry.ts` (`terminalPositionsWithPinMode`), `componentSchema.ts`, and `ComponentTerminals.java`. Never allow single-terminal components to fall through to standard two-port defaults (`±TWO_PORT_DIST`), which leaves phantom unconnected terminals on canvas.
+- **Base Orientation & Visual Rotation Alignment**: In `symbols.tsx`, the base SVG orientation of an upright component (such as Ground with stem pointing up) must correspond to orientation angle 0° at default `NORTH_SOUTH` (503). Ensure 90° clockwise rotation steps match `flowVector` so drawn leads and electrical pin hit-targets stay synchronized in all 4 orientations.
+- **Netlist Terminal Bounds**: In `NetlistBuilder.java`, loops mapping component terminals must strictly respect each component's terminal count (`termCount = 1` for single-port components) to prevent phantom ground node stamping.
+- **Schematic Label Clearance**: For single-port components with vertical connection stems, position component text labels offset to the side of the symbol body rather than centered above/below the terminal stem to prevent collisions with connected wires.
+
+## Electrical Simulation & Power Supply Modeling Invariants
+- **Peak Amplitude vs. RMS Invariant**: Sinusoidal source parameters in GeckoCIRCUITS (`LK_U`, `LK_I`, subtype 402) are **Peak Amplitude ($V_{\text{peak}}$)**, NOT RMS voltage. When modeling AC mains (e.g. 230 V RMS), always use $V_{\text{RMS}} \cdot \sqrt{2} \approx 325.27\text{ V}$.
+- **Mains Rectifier Bulk Capacitance Sizing**: In offline AC-DC circuits with 50 Hz full-bridge rectification (100 Hz ripple, $\Delta t \approx 8\text{–}10\text{ ms}$ discharge interval), bulk filter capacitors must be sized for load hold-up: $C_{\text{bulk}} \ge (I_{\text{dc}} \cdot \Delta t) / \Delta V_{\text{ripple}}$. Open-loop buck converters directly reflect DC-bus sag; undersized capacitors collapse intermediate voltage and reduce average output voltage proportionally.
+
+## Schematic Validation & Diagnostic Usability
+- **Named Component Context in Coordinate Warnings**: When emitting validation notices citing schematic grid coordinates `(x, y)` (such as duplicate overlapping wires or unconnected ends), always resolve the nearest named component (e.g., `near 'D_3'`) so diagnostics are immediately human-actionable without grid hunting.
+- **Orthogonal Crossing Net Isolation**: Wires that merely cross orthogonally without terminating at the crossing point must remain isolated electrical nets.
+
