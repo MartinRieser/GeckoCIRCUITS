@@ -177,6 +177,14 @@ describe('findWireGeometryWarnings', () => {
     expect(warnings[0]).toContain('(12, 16)');
   });
 
+  it('identifies nearby component name when wires overlap near a component', () => {
+    const rail = w([[12, 14], [20, 14]]);
+    const dup = w([[14, 14], [16, 14]]);
+    const warnings = findWireGeometryWarnings([resistor], [rail, dup]);
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain("near 'R1'");
+  });
+
   it('flags a wire passing through a terminal that another wire wires (hidden short)', () => {
     const rail = w([[4, 16], [28, 16]]);
     const wired = w([[14, 10], [14, 16]]);

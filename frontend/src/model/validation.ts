@@ -136,6 +136,26 @@ export function findWireGeometryWarnings(
   const cellsPerWire = wires.map((w) => denseCellsOf(w.points ?? []));
   const fmtKey = (key: string) => key.replace(',', ', ');
 
+  // Helper to locate the nearest named component so coordinates are human-actionable
+  const findNearbyContext = (coordKey: string): string => {
+    const [x, y] = coordKey.split(',').map(Number);
+    let bestComp: ComponentLike | null = null;
+    let bestDist = Infinity;
+    for (const c of components) {
+      const pos = c.position;
+      if (!pos || pos.length < 2) continue;
+      const dist = Math.hypot(pos[0] - x, pos[1] - y);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestComp = c;
+      }
+    }
+    if (bestComp && bestDist <= 4) {
+      return `near '${bestComp.name}' `;
+    }
+    return '';
+  };
+
   // 1. Pairwise overlap: >= 2 shared cells means the wires run along each other
   for (let i = 0; i < wires.length; i++) {
     for (let j = i + 1; j < wires.length; j++) {
@@ -148,8 +168,9 @@ export function findWireGeometryWarnings(
         }
       }
       if (shared >= 2) {
+        const near = findNearbyContext(first as string);
         found.push(
-          `Wires ${i + 1} and ${j + 1} overlap across ${shared} cells from (${fmtKey(first as string)}) — two separate connections are drawn as one line`,
+          `Wires ${i + 1} and ${j + 1} overlap ${near}across ${shared} cells from (${fmtKey(first as string)}) — two separate connections are drawn as one line (duplicate wire segment)`,
         );
       }
     }

@@ -33,7 +33,7 @@ import { analyzeElectricalNets } from './netHighlight';
 import type { Point } from '../model/types';
 import { ContextMenu } from './ContextMenu';
 import type { ContextMenuTarget } from './ContextMenu';
-import { Orientation, CANVAS_METRICS } from '../model/constants';
+import { Orientation, CANVAS_METRICS, LkComponentType } from '../model/constants';
 import {
   isMutualCoupler,
   isCoupledInductor,
@@ -1429,13 +1429,23 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                       (channel 1 on the anchor row, block grows downward), so
                       the bounding box extends asymmetrically downward. */}
                   {(() => {
+                    const isTransformer =
+                      (component.family === 'LK' || !component.family) &&
+                      (component.type === 23 || component.type === LkComponentType.TRANSFORMER);
                     const maxPins = Math.max(terminals.input.length, terminals.output.length, 1);
                     // Single-pin blocks keep the classic symmetric extent
                     // (name label + coupling badge offsets depend on it);
                     // anchored multi-pin blocks extend downward only.
-                    const top = (maxPins > 1 ? -0.9 : -1.3) * dpix;
-                    const bottom = (maxPins > 1 ? maxPins - 1 + 0.9 : 1.3) * dpix;
-                    const halfW = 1.3 * dpix;
+                    // Transformers are symmetric 4-terminal elements spanning ±2 grid units.
+                    const top = isTransformer
+                      ? -2.2 * dpix
+                      : (maxPins > 1 ? -0.9 : -1.3) * dpix;
+                    const bottom = isTransformer
+                      ? 2.2 * dpix
+                      : (maxPins > 1 ? maxPins - 1 + 0.9 : 1.3) * dpix;
+                    const halfW = isTransformer
+                      ? 2.2 * dpix
+                      : 1.3 * dpix;
                     return (
                       <>
                         {/* Full-area hit target so clicking anywhere on the component bounding area selects it */}
@@ -1543,7 +1553,8 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                               </text>
                             );
                           }
-                          if (isControlBlock || isHorizontalTwoPort) {
+                          const isGround = component.type === 31;
+                          if (!isGround && (isControlBlock || isHorizontalTwoPort)) {
                             // Control blocks (SIGNAL.1, etc.) & Horizontal components (L.1, horizontal resistors): place name centered above
                             return (
                               <text x={0} y={top - 5} textAnchor="middle" className="component-name">

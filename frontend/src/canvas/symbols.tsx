@@ -7,7 +7,7 @@
  */
 import type { EditorComponent } from '../model/types';
 import { CTRL_TYPE, resolveComponentPinCounts } from '../model/componentSchema';
-import { Orientation, CANVAS_METRICS } from '../model/constants';
+import { Orientation, CANVAS_METRICS, LkComponentType } from '../model/constants';
 import { TWO_PORT_DIST } from '../model/geometry';
 
 /** Rotation angle (deg) that maps WEST_EAST base orientation to the given code. */
@@ -44,6 +44,30 @@ export function controlOrientationAngle(orientation: number): number {
   }
 }
 
+/**
+ * Rotation angle for TRANSFORMER: the base symbol is drawn in NORTH_SOUTH (503)
+ * (upright: primary winding on the left at x=-1, secondary on the right at x=+1).
+ * The rotation cycle 503 -> 504 -> 501 -> 502 steps clockwise by 90°:
+ * - 503 (NORTH_SOUTH): 0° (leads at (-1, ±2) and (+1, ±2))
+ * - 504 (EAST_WEST):   90° (leads at (±2, -1) and (±2, +1))
+ * - 501 (SOUTH_NORTH): 180° (leads at (+1, ±2) and (-1, ±2))
+ * - 502 (WEST_EAST):   270° (leads at (±2, +1) and (±2, -1))
+ * Matches classicPinOffset in geometry.ts and NetlistBuilder in backend.
+ */
+export function transformerOrientationAngle(orientation: number): number {
+  switch (orientation) {
+    case Orientation.EAST_WEST:
+      return 90;
+    case Orientation.SOUTH_NORTH:
+      return 180;
+    case Orientation.WEST_EAST:
+      return 270;
+    case Orientation.NORTH_SOUTH:
+    default:
+      return 0;
+  }
+}
+
 const LEAD = CANVAS_METRICS.LEAD_LENGTH;
 
 /**
@@ -59,9 +83,17 @@ export function ComponentSymbol({
   dpix: number;
 }) {
   const u = dpix;
-  const angle = component.family === 'CONTROL'
+  const isTransformer =
+    (component.family === 'LK' || !component.family) &&
+    (component.type === 23 || component.type === LkComponentType.TRANSFORMER);
+  const isGlobalTerminal =
+    (component.family === 'LK' || !component.family) &&
+    (component.type === 31 || component.type === LkComponentType.GLOBAL_TERMINAL);
+  const angle = component.family === 'CONTROL' || isGlobalTerminal
     ? controlOrientationAngle(component.orientation)
-    : orientationAngle(component.orientation);
+    : isTransformer
+      ? transformerOrientationAngle(component.orientation)
+      : orientationAngle(component.orientation);
   const { inputCount, outputCount } = resolveComponentPinCounts(component);
   return (
     <g transform={`rotate(${angle})`}>
@@ -89,11 +121,17 @@ export function SymbolPreview({
   color?: string;
 }) {
   const u = CANVAS_METRICS.PREVIEW_SYMBOL_U;
+  const isTransformer =
+    (family === 'LK' || !family) &&
+    (type === 23 || type === LkComponentType.TRANSFORMER);
+  const viewBox = isTransformer
+    ? `-${2.2 * u} -${2.2 * u} ${4.4 * u} ${4.4 * u}`
+    : `-${2.4 * u} -${1.8 * u} ${4.8 * u} ${3.6 * u}`;
   return (
     <svg
       width={size}
       height={size}
-      viewBox={`-${2.4 * u} -${1.8 * u} ${4.8 * u} ${3.6 * u}`}
+      viewBox={viewBox}
       style={{ display: 'block', overflow: 'visible', color }}
       className="symbol-preview-svg"
     >
@@ -454,19 +492,77 @@ function MutualCouplingSymbol({ u }: { u: number }) {
 }
 
 function Transformer({ u }: { u: number }) {
+  const arcRadiusX = 0.35 * u;
+  const arcRadiusY = 0.3 * u;
+  const primArcs = [];
+  const secArcs = [];
+
+  for (let i = 0; i < 4; i++) {
+    const yStart = (-1.2 + i * 0.6) * u;
+    const yEnd = (-0.6 + i * 0.6) * u;
+    // Primary (left): starts at x = -1*u, bulges inward towards core (sweep-flag 0)
+    primArcs.push(
+      <path
+        key={`p-${i}`}
+        d={`M ${-1 * u} ${yStart} A ${arcRadiusX} ${arcRadiusY} 0 0 0 ${-1 * u} ${yEnd}`}
+        strokeLinecap="round"
+      />,
+    );
+    // Secondary (right): starts at x = 1*u, bulges inward towards core (sweep-flag 1)
+    secArcs.push(
+      <path
+        key={`s-${i}`}
+        d={`M ${1 * u} ${yStart} A ${arcRadiusX} ${arcRadiusY} 0 0 1 ${1 * u} ${yEnd}`}
+        strokeLinecap="round"
+      />,
+    );
+  }
+
   return (
     <g>
-      <line x1={-LEAD * u} y1={-0.45 * u} x2={-0.65 * u} y2={-0.45 * u} />
-      <line x1={-LEAD * u} y1={0.45 * u} x2={-0.65 * u} y2={0.45 * u} />
-      <line x1={0.65 * u} y1={-0.45 * u} x2={LEAD * u} y2={-0.45 * u} />
-      <line x1={0.65 * u} y1={0.45 * u} x2={LEAD * u} y2={0.45 * u} />
-      {/* Primary windings */}
-      <path d={`M ${-0.65 * u} ${-0.45 * u} A ${0.2 * u} ${0.2 * u} 0 0 1 ${-0.65 * u} 0 A ${0.2 * u} ${0.2 * u} 0 0 1 ${-0.65 * u} ${0.45 * u}`} />
-      {/* Secondary windings */}
-      <path d={`M ${0.65 * u} ${-0.45 * u} A ${0.2 * u} ${0.2 * u} 0 0 0 ${0.65 * u} 0 A ${0.2 * u} ${0.2 * u} 0 0 0 ${0.65 * u} ${0.45 * u}`} />
-      {/* Core lines */}
-      <line x1={-0.1 * u} y1={-0.55 * u} x2={-0.1 * u} y2={0.55 * u} strokeWidth={1.5} />
-      <line x1={0.1 * u} y1={-0.55 * u} x2={0.1 * u} y2={0.55 * u} strokeWidth={1.5} />
+      {/* Primary leads connecting exactly to terminals at (-1*u, ±2*u) */}
+      <line x1={-1 * u} y1={-2 * u} x2={-1 * u} y2={-1.2 * u} />
+      <line x1={-1 * u} y1={1.2 * u} x2={-1 * u} y2={2 * u} />
+      {primArcs}
+
+      {/* Secondary leads connecting exactly to terminals at (1*u, ±2*u) */}
+      <line x1={1 * u} y1={-2 * u} x2={1 * u} y2={-1.2 * u} />
+      <line x1={1 * u} y1={1.2 * u} x2={1 * u} y2={2 * u} />
+      {secArcs}
+
+      {/* Magnetic core lines */}
+      <line x1={-0.12 * u} y1={-1.3 * u} x2={-0.12 * u} y2={1.3 * u} strokeWidth={1.5} />
+      <line x1={0.12 * u} y1={-1.3 * u} x2={0.12 * u} y2={1.3 * u} strokeWidth={1.5} />
+
+      {/* Polarity dots at top pins (P1 and S1) */}
+      <circle cx={-0.65 * u} cy={-1.6 * u} r={0.12 * u} fill="currentColor" stroke="none" />
+      <circle cx={0.65 * u} cy={-1.6 * u} r={0.12 * u} fill="currentColor" stroke="none" />
+
+      {/* Winding indicator labels */}
+      <text
+        x={-1.45 * u}
+        y={0.15 * u}
+        textAnchor="middle"
+        fontSize={0.45 * u}
+        fill="currentColor"
+        stroke="none"
+        opacity={0.65}
+        fontWeight="bold"
+      >
+        P
+      </text>
+      <text
+        x={1.45 * u}
+        y={0.15 * u}
+        textAnchor="middle"
+        fontSize={0.45 * u}
+        fill="currentColor"
+        stroke="none"
+        opacity={0.65}
+        fontWeight="bold"
+      >
+        S
+      </text>
     </g>
   );
 }

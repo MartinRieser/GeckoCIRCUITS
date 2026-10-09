@@ -130,6 +130,10 @@ public final class ComponentTerminals {
             }
         }
 
+        if (type == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber()) {
+            return List.of(offset(x, y, dir, -TERMINAL_DISTANCE));
+        }
+
         return List.of(offset(x, y, dir, -TERMINAL_DISTANCE), offset(x, y, dir, TERMINAL_DISTANCE));
     }
 

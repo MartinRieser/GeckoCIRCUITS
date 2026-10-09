@@ -47,6 +47,7 @@ export enum LkComponentType {
   RELUCTANCE = 24,
   MMF = 26,
   MOSFET = 28,
+  GLOBAL_TERMINAL = 31,
   BJT = 33,
   THERMAL_FLOW = 44,
   THERMAL_TEMP = 45,

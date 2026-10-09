@@ -169,4 +169,58 @@ describe('netHighlight: analyzeElectricalNets', () => {
     expect(net.label).toBe('NET_A');
     expect(net.terminalKeys.size).toBe(2);
   });
+
+  it('keeps perpendicular crossover wires separate when neither ends at the intersection', () => {
+    // Horizontal wire from (5, 10) to (25, 10)
+    const horizWire: EditorWire = {
+      index: 0,
+      type: 'LK',
+      label: '',
+      points: [
+        [5, 10],
+        [25, 10],
+      ],
+    };
+    // Vertical wire from (15, 0) to (15, 20) crossing at (15, 10)
+    const vertWire: EditorWire = {
+      index: 1,
+      type: 'LK',
+      label: '',
+      points: [
+        [15, 0],
+        [15, 20],
+      ],
+    };
+
+    const result = analyzeElectricalNets([horizWire, vertWire], []);
+    expect(result.nets).toHaveLength(2);
+    expect(result.wireIndexToNet.get(0)).not.toBe(result.wireIndexToNet.get(1));
+  });
+
+  it('unions wires when an endpoint touches another wire interior (T-junction)', () => {
+    // Horizontal wire from (5, 10) to (25, 10)
+    const horizWire: EditorWire = {
+      index: 0,
+      type: 'LK',
+      label: '',
+      points: [
+        [5, 10],
+        [25, 10],
+      ],
+    };
+    // Branch wire starting AT (15, 10) and ending at (15, 20)
+    const branchWire: EditorWire = {
+      index: 1,
+      type: 'LK',
+      label: '',
+      points: [
+        [15, 10],
+        [15, 20],
+      ],
+    };
+
+    const result = analyzeElectricalNets([horizWire, branchWire], []);
+    expect(result.nets).toHaveLength(1);
+    expect(result.wireIndexToNet.get(0)).toBe(result.wireIndexToNet.get(1));
+  });
 });

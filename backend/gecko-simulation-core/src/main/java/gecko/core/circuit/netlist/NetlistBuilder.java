@@ -464,7 +464,8 @@ public class NetlistBuilder {
         Map<GridPoint, Integer> terminalUsageCount = new HashMap<>();
         for (CircuitModel.ComponentData comp : components) {
             GridPoint[] terms = computeComponentTerminals(comp);
-            for (int t = 0; t < 2; t++) {
+            int termCount = comp.getType() == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber() ? 1 : 2;
+            for (int t = 0; t < termCount; t++) {
                 terminalUsageCount.put(terms[t], terminalUsageCount.getOrDefault(terms[t], 0) + 1);
             }
         }
@@ -474,9 +475,10 @@ public class NetlistBuilder {
         for (CircuitModel.ComponentData comp : components) {
             int typ = comp.getType();
             GridPoint[] terms = computeComponentTerminals(comp);
+            int termCount = typ == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber() ? 1 : 2;
 
             // Register labels / grounds
-            for (int t = 0; t < 2; t++) {
+            for (int t = 0; t < termCount; t++) {
                 String key = wireNets.netKey(terms[t]);
                 pointDs.find(key);
 
@@ -504,7 +506,6 @@ public class NetlistBuilder {
 
             if (typ == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber()) {
                 groundPoints.add(wireNets.netKey(terms[0]));
-                groundPoints.add(wireNets.netKey(terms[1]));
             }
 
             // Only electrical/thermal branches are added to MNA netlist elements;
@@ -927,7 +928,8 @@ public class NetlistBuilder {
         Map<GridPoint, Integer> terminalUsageCount = new HashMap<>();
         for (CircuitModel.ComponentData comp : components) {
             GridPoint[] terms = computeComponentTerminals(comp);
-            for (int t = 0; t < 2; t++) {
+            int termCount = comp.getType() == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber() ? 1 : 2;
+            for (int t = 0; t < termCount; t++) {
                 terminalUsageCount.put(terms[t], terminalUsageCount.getOrDefault(terms[t], 0) + 1);
             }
         }
@@ -981,6 +983,13 @@ public class NetlistBuilder {
         // Map net identities (wire nets and unattached terminal points) to node
         // indices. Two labels sharing one wire net alias to the same node (first wins).
         Map<String, Integer> rootToNode = new HashMap<>();
+
+        for (CircuitModel.ComponentData comp : components) {
+            if (comp.getType() == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber()) {
+                GridPoint[] terms = computeComponentTerminals(comp);
+                rootToNode.put(wireNets.netKey(terms[0]), 0);
+            }
+        }
 
         if (connections != null) {
             for (CircuitModel.ConnectionData conn : connections) {

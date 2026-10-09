@@ -966,8 +966,8 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     defaultPrefix: 'GND',
     parameters: [],
     terminals: {
-      input: [{ label: '1', description: 'Net Connection Pin' }],
-      output: [{ label: '1', description: 'Net Connection Pin' }],
+      input: [{ label: '1', description: 'Ground Connection Pin' }],
+      output: [],
     },
   },
 

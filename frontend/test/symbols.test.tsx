@@ -4,6 +4,7 @@ import { render } from '@testing-library/react';
 import {
   orientationAngle,
   controlOrientationAngle,
+  transformerOrientationAngle,
   ComponentSymbol,
   SymbolPreview,
   SymbolByType,
@@ -28,6 +29,13 @@ describe('symbols: Orientation Angles', () => {
     expect(controlOrientationAngle(Orientation.EAST_WEST)).toBe(90);
     expect(controlOrientationAngle(Orientation.SOUTH_NORTH)).toBe(180);
     expect(controlOrientationAngle(Orientation.WEST_EAST)).toBe(270);
+  });
+
+  it('maps transformer orientations (upright base NORTH_SOUTH) to degrees correctly', () => {
+    expect(transformerOrientationAngle(Orientation.NORTH_SOUTH)).toBe(0);
+    expect(transformerOrientationAngle(Orientation.EAST_WEST)).toBe(90);
+    expect(transformerOrientationAngle(Orientation.SOUTH_NORTH)).toBe(180);
+    expect(transformerOrientationAngle(Orientation.WEST_EAST)).toBe(270);
   });
 });
 
@@ -108,6 +116,47 @@ describe('symbols: ComponentSymbol SVG rendering', () => {
     const texts = Array.from(scriptContainer.querySelectorAll('text')).map((t) => t.textContent);
     expect(texts).toContain('f(x)');
   });
+
+  it('renders transformer with upright base orientation (503 -> 0deg), P/S labels, and 90deg steps', () => {
+    const orientations = [
+      { code: Orientation.NORTH_SOUTH, expectedAngle: 0 },
+      { code: Orientation.EAST_WEST, expectedAngle: 90 },
+      { code: Orientation.SOUTH_NORTH, expectedAngle: 180 },
+      { code: Orientation.WEST_EAST, expectedAngle: 270 },
+    ];
+
+    for (const { code, expectedAngle } of orientations) {
+      const comp = makeComp({
+        type: LkComponentType.TRANSFORMER,
+        name: 'TR.1',
+        orientation: code,
+      });
+      const { container } = render(
+        <svg>
+          <ComponentSymbol component={comp} dpix={10} />
+        </svg>,
+      );
+      const rootG = container.querySelector('g[transform]');
+      expect(rootG?.getAttribute('transform')).toBe(`rotate(${expectedAngle})`);
+    }
+
+    const defaultComp = makeComp({
+      type: LkComponentType.TRANSFORMER,
+      name: 'TR.1',
+      orientation: Orientation.NORTH_SOUTH,
+    });
+    const { container } = render(
+      <svg>
+        <ComponentSymbol component={defaultComp} dpix={10} />
+      </svg>,
+    );
+    const textLabels = Array.from(container.querySelectorAll('text')).map((t) => t.textContent?.trim());
+    expect(textLabels).toContain('P');
+    expect(textLabels).toContain('S');
+    // 4 primary winding paths + 4 secondary winding paths
+    const paths = container.querySelectorAll('path');
+    expect(paths.length).toBe(8);
+  });
 });
 
 describe('symbols: SymbolPreview and SymbolByType fallback', () => {
@@ -117,6 +166,13 @@ describe('symbols: SymbolPreview and SymbolByType fallback', () => {
     expect(svg).toBeTruthy();
     expect(svg?.getAttribute('width')).toBe('48');
     expect(svg?.getAttribute('height')).toBe('48');
+  });
+
+  it('renders transformer preview icon with square viewBox', () => {
+    const { container } = render(<SymbolPreview type={LkComponentType.TRANSFORMER} size={48} />);
+    const svg = container.querySelector('svg.symbol-preview-svg');
+    expect(svg).toBeTruthy();
+    expect(svg?.getAttribute('viewBox')).toBe('-22 -22 44 44');
   });
 
   it('renders fallback generic box for unknown component types', () => {

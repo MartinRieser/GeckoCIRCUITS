@@ -81,11 +81,20 @@ export function analyzeElectricalNets(
     }
   }
 
-  for (const list of cellToWires.values()) {
-    if (list.length > 1) {
-      const first = list[0];
-      for (let k = 1; k < list.length; k++) {
-        union(first, list[k]);
+  // 1. Group wires: an electrical connection exists when at least one wire has
+  // an endpoint touching another wire (endpoint-to-endpoint butt joint or
+  // endpoint-to-interior T-junction tap). Perpendicular crossovers where both
+  // wires pass through on their interior without an endpoint do NOT connect.
+  for (const wire of wires) {
+    if (!wire.points || wire.points.length === 0) continue;
+    const ends = [wire.points[0], wire.points[wire.points.length - 1]];
+    for (const end of ends) {
+      const endKey = `${end[0]},${end[1]}`;
+      const touching = cellToWires.get(endKey);
+      if (touching) {
+        for (const otherIndex of touching) {
+          union(wire.index, otherIndex);
+        }
       }
     }
   }
