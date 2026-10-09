@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { editorReducer, initialState } from '../src/model/store';
 import type { EditorSnapshot } from '../src/model/types';
 import { simplifyCorners, denseCellsOf } from '../src/canvas/WireRouter';
+import { terminalPositions } from '../src/model/geometry';
 
 const snapshot: EditorSnapshot = {
   circuitId: 'c1',
@@ -478,5 +479,60 @@ describe('store: dragging a multi-channel scope does not hang (crash regression)
     for (let i = 0; i < corners.length - 1; i++) {
       expect(corners[i][0] === corners[i + 1][0] || corners[i][1] === corners[i + 1][1]).toBe(true);
     }
+  });
+
+  it('assigns unique lane offsets and separates parallel channel wires during drag', () => {
+    const scopeComp = {
+      type: 1003,
+      name: 'SCOPE.3',
+      family: 'CONTROL',
+      position: [30, 20],
+      orientation: 503,
+      parameters: {},
+      inputLabels: ['ch1', 'ch2', 'ch3'],
+      outputLabels: [],
+    };
+    const terms = terminalPositions(scopeComp).input;
+    expect(terms.length).toBe(3);
+
+    // Create 3 parallel horizontal wires coming from x=10 to each scope terminal
+    const connections = terms.map((t, idx) => ({
+      index: idx,
+      type: 'CONTROL',
+      label: `wire${idx}`,
+      points: [
+        [10, t.y],
+        [t.x, t.y],
+      ],
+    }));
+
+    const snap: EditorSnapshot = {
+      ...snapshot,
+      components: [scopeComp],
+      connections,
+    };
+
+    let state = editorReducer(initialState, { type: 'SNAPSHOT', snapshot: snap });
+    // Start drag
+    state = editorReducer(state, { type: 'DRAG_START', names: ['SCOPE.3'], x: 30, y: 20 });
+
+    // Verify lane offsets were assigned to all 3 wires
+    const draggedWires = state.drag?.draggedWires;
+    expect(draggedWires).toBeDefined();
+    expect(draggedWires).toHaveLength(3);
+    const offsets = draggedWires!.map((dw) => dw.laneOffset);
+    // Unique lane offsets
+    expect(new Set(offsets).size).toBe(3);
+
+    // Move scope by dx=5, dy=10
+    state = editorReducer(state, { type: 'DRAG_MOVE', x: 35, y: 30 });
+
+    // Verify each moved wire has a distinct vertical corridor (midX)
+    const midXs = state.wires.map((w) => {
+      const corners = simplifyCorners(w.points);
+      // For a moved horizontal wire, corners are [start, [midX, startY], [midX, newEndY], newEnd]
+      return corners[1][0];
+    });
+    expect(new Set(midXs).size).toBe(3);
   });
 });

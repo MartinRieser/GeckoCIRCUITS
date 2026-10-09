@@ -56,6 +56,7 @@ export interface DraggedWireInfo {
   originalPoints: number[][];
   startMoves: boolean;
   endMoves: boolean;
+  laneOffset?: number;
 }
 
 export interface DragState {
@@ -167,6 +168,59 @@ export type Action =
   | { type: 'PANEL_FOR'; name: string | null }
   | { type: 'TOGGLE_WIRE_MODE' }
   | { type: 'SET_FILENAME'; filename: string };
+
+/**
+ * Assigns discrete lane offsets (in grid units) to wires belonging to multi-wire
+ * bundles arriving at or leaving moved components (e.g. multi-channel oscilloscopes).
+ * Spreading parallel wires across distinct corridor lanes prevents them from collapsing
+ * onto each other when the component is dragged or nudged.
+ */
+function computeBundleLaneOffsets(
+  wires: { index: number; points: number[][] }[],
+  terminalToComp: Map<string, string>,
+): Map<number, number> {
+  const laneOffsets = new Map<number, number>();
+  const compIncoming = new Map<string, { index: number; pt: number[] }[]>();
+  const compOutgoing = new Map<string, { index: number; pt: number[] }[]>();
+
+  for (const wire of wires) {
+    if (!wire.points || wire.points.length < 2) continue;
+    const startPt = wire.points[0];
+    const endPt = wire.points[wire.points.length - 1];
+    const startComp = terminalToComp.get(`${startPt[0]},${startPt[1]}`);
+    const endComp = terminalToComp.get(`${endPt[0]},${endPt[1]}`);
+
+    // Rigidly moved internal wires keep their original shape
+    if (startComp && endComp) continue;
+
+    if (endComp) {
+      if (!compIncoming.has(endComp)) compIncoming.set(endComp, []);
+      compIncoming.get(endComp)!.push({ index: wire.index, pt: endPt });
+    }
+    if (startComp) {
+      if (!compOutgoing.has(startComp)) compOutgoing.set(startComp, []);
+      compOutgoing.get(startComp)!.push({ index: wire.index, pt: startPt });
+    }
+  }
+
+  const assignLanes = (groups: Map<string, { index: number; pt: number[] }[]>) => {
+    for (const [, list] of groups) {
+      if (list.length <= 1) continue;
+      // Sort primarily by Y, then by X
+      list.sort((a, b) => (a.pt[1] !== b.pt[1] ? a.pt[1] - b.pt[1] : a.pt[0] - b.pt[0]));
+      const n = list.length;
+      list.forEach((item, idx) => {
+        const offset = Math.round((idx - (n - 1) / 2) * 2);
+        laneOffsets.set(item.index, offset);
+      });
+    }
+  };
+
+  assignLanes(compIncoming);
+  assignLanes(compOutgoing);
+
+  return laneOffsets;
+}
 
 /**
  * Re-routes the wires a move just changed so they dodge component bodies and
@@ -485,14 +539,19 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
       // wire points on terminals of the nudged components (at their
       // pre-nudge positions) travel along with the selection
       const movedTerminalSet = new Set<string>();
+      const terminalToComp = new Map<string, string>();
       for (const comp of state.components) {
         if (movable.has(comp.name)) {
           const terms = terminalPositions(comp);
           for (const t of [...terms.input, ...terms.output]) {
-            movedTerminalSet.add(`${t.x},${t.y}`);
+            const key = `${t.x},${t.y}`;
+            movedTerminalSet.add(key);
+            terminalToComp.set(key, comp.name);
           }
         }
       }
+
+      const laneOffsets = computeBundleLaneOffsets(state.wires, terminalToComp);
 
       const components = state.components.map((c) => {
         if (!movable.has(c.name)) return c;
@@ -509,7 +568,8 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         if (startMoves || endMoves) {
           const startDelta = startMoves ? { dx: action.dx, dy: action.dy } : { dx: 0, dy: 0 };
           const endDelta = endMoves ? { dx: action.dx, dy: action.dy } : { dx: 0, dy: 0 };
-          const newPoints = routeMovedWire(wire.points, startDelta, endDelta);
+          const laneOffset = laneOffsets.get(wire.index) || 0;
+          const newPoints = routeMovedWire(wire.points, startDelta, endDelta, laneOffset);
           return { ...wire, points: newPoints };
         }
         return wire;
@@ -695,17 +755,21 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
       // dragged components, so DRAG_MOVE/CANCEL can shift or restore them
       const origins: Record<string, { x: number; y: number }> = {};
       const movedTerminalSet = new Set<string>();
+      const terminalToComp = new Map<string, string>();
       for (const name of action.names) {
         const comp = state.components.find((c) => c.name === name);
         if (comp) {
           origins[name] = { x: comp.position[0], y: comp.position[1] };
           const terms = terminalPositions(comp);
           for (const t of [...terms.input, ...terms.output]) {
-            movedTerminalSet.add(`${t.x},${t.y}`);
+            const key = `${t.x},${t.y}`;
+            movedTerminalSet.add(key);
+            terminalToComp.set(key, comp.name);
           }
         }
       }
 
+      const laneOffsets = computeBundleLaneOffsets(state.wires, terminalToComp);
       const connectedWirePoints: ConnectedWirePoint[] = [];
       const draggedWires: DraggedWireInfo[] = [];
 
@@ -722,6 +786,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
             originalPoints: wire.points.map((pt) => [...pt]),
             startMoves,
             endMoves,
+            laneOffset: laneOffsets.get(wire.index) || 0,
           });
         }
 
@@ -779,7 +844,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         if (dw) {
           const startDelta = dw.startMoves ? { dx, dy } : { dx: 0, dy: 0 };
           const endDelta = dw.endMoves ? { dx, dy } : { dx: 0, dy: 0 };
-          const newPoints = routeMovedWire(dw.originalPoints, startDelta, endDelta);
+          const newPoints = routeMovedWire(dw.originalPoints, startDelta, endDelta, dw.laneOffset || 0);
           return { ...wire, points: newPoints };
         }
 

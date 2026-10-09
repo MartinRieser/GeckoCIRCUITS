@@ -103,9 +103,26 @@ function routeCandidates(start: Point, end: Point, preferHorizontal: boolean | n
   }
   candidates.push(routeL(start, end, true));
   candidates.push(routeL(start, end, false));
+
+  // Mid-way Z-detour corridors between endpoints
+  const midX = Math.round((start.x + end.x) / 2);
+  const midY = Math.round((start.y + end.y) / 2);
+  if (midX !== start.x && midX !== end.x) {
+    candidates.push([start, { x: midX, y: start.y }, { x: midX, y: end.y }, end]);
+  }
+  if (midY !== start.y && midY !== end.y) {
+    candidates.push([start, { x: start.x, y: midY }, { x: end.x, y: midY }, end]);
+  }
+
   for (const off of ROUTE_DETOUR_OFFSETS) {
     candidates.push([start, { x: start.x, y: start.y + off }, { x: end.x, y: start.y + off }, end]);
     candidates.push([start, { x: start.x + off, y: start.y }, { x: start.x + off, y: end.y }, end]);
+    if (midX !== start.x && midX !== end.x) {
+      candidates.push([start, { x: midX + off, y: start.y }, { x: midX + off, y: end.y }, end]);
+    }
+    if (midY !== start.y && midY !== end.y) {
+      candidates.push([start, { x: start.x, y: midY + off }, { x: end.x, y: midY + off }, end]);
+    }
   }
   return candidates;
 }
@@ -179,30 +196,35 @@ export function deconflictMovedWires(
     }
   }
 
-  return slidDenseRoutes.map((slid, i) => {
+  // Work on a mutable copy so that when wire i finds a clean route,
+  // subsequent wires i+1, i+2... deconflict against the newly resolved route.
+  const result = [...slidDenseRoutes];
+
+  for (let i = 0; i < result.length; i++) {
+    const slid = result[i];
     if (!slid || slid.length < 2) {
-      return slid;
+      continue;
     }
     // Legacy diagonal wires (e.g. rigidly translated fixtures) are left as-is.
     const orthogonal = slid.every(
       (p, k) => k === 0 || p[0] === slid[k - 1][0] || p[1] === slid[k - 1][1],
     );
     if (!orthogonal) {
-      return slid;
+      continue;
     }
 
     const corners = simplifyCorners(slid);
     const start = { x: corners[0][0], y: corners[0][1] };
     const end = { x: corners[corners.length - 1][0], y: corners[corners.length - 1][1] };
     if (start.x === end.x && start.y === end.y) {
-      return slid;
+      continue;
     }
 
     const blocked = new Set<string>(componentCells);
     for (const c of staticCells) {
       blocked.add(c);
     }
-    slidDenseRoutes.forEach((other, j) => {
+    result.forEach((other, j) => {
       if (j === i) {
         return;
       }
@@ -215,16 +237,18 @@ export function deconflictMovedWires(
     const dirty = (pts: Point[]) =>
       pts.some((p) => !endpoints.has(cellKey(p)) && blocked.has(cellKey(p)));
     if (!dirty(densePoints(corners.map(([x, y]) => ({ x, y }))))) {
-      return slid;
+      continue;
     }
 
     for (const candidate of routeCandidates(start, end)) {
       if (candidate.length >= 2 && !dirty(densePoints(candidate))) {
-        return densePoints(candidate).map((p) => [p.x, p.y]);
+        result[i] = densePoints(candidate).map((p) => [p.x, p.y]);
+        break;
       }
     }
-    return slid;
-  });
+  }
+
+  return result;
 }
 
 /** Expands a corner polyline into the classic dense per-raster-step point list. */
@@ -416,6 +440,7 @@ export function routeMovedWire(
   rawPoints: number[][],
   startDelta: { dx: number; dy: number },
   endDelta: { dx: number; dy: number },
+  laneOffset: number = 0,
 ): number[][] {
   if (!rawPoints || rawPoints.length === 0) return rawPoints || [];
   if (rawPoints.length === 1) {
@@ -462,8 +487,16 @@ export function routeMovedWire(
       let midX = Math.round((newStart[0] + newEnd[0]) / 2);
       const minX = Math.min(newStart[0], newEnd[0]);
       const maxX = Math.max(newStart[0], newEnd[0]);
-      // Small deterministic offset to separate parallel horizontal wires when there is ample room
-      if (maxX - minX >= 4) {
+
+      if (laneOffset !== 0) {
+        const candidateX = midX + laneOffset;
+        if (candidateX > minX && candidateX < maxX) {
+          midX = candidateX;
+        } else {
+          const outwardSign = Math.sign(newEnd[0] - newStart[0]) || 1;
+          midX = midX + (laneOffset * outwardSign);
+        }
+      } else if (maxX - minX >= 4) {
         const stagger = (startPt[1] % 8 === 0 ? -1 : 1) * (newEnd[1] > newStart[1] ? 1 : -1);
         const candidateX = midX + stagger;
         if (candidateX > minX && candidateX < maxX) {
@@ -476,7 +509,16 @@ export function routeMovedWire(
       let midY = Math.round((newStart[1] + newEnd[1]) / 2);
       const minY = Math.min(newStart[1], newEnd[1]);
       const maxY = Math.max(newStart[1], newEnd[1]);
-      if (maxY - minY >= 4) {
+
+      if (laneOffset !== 0) {
+        const candidateY = midY + laneOffset;
+        if (candidateY > minY && candidateY < maxY) {
+          midY = candidateY;
+        } else {
+          const outwardSign = Math.sign(newEnd[1] - newStart[1]) || 1;
+          midY = midY + (laneOffset * outwardSign);
+        }
+      } else if (maxY - minY >= 4) {
         const stagger = (startPt[0] % 8 === 0 ? -1 : 1) * (newEnd[0] > newStart[0] ? 1 : -1);
         const candidateY = midY + stagger;
         if (candidateY > minY && candidateY < maxY) {
@@ -497,18 +539,18 @@ export function routeMovedWire(
   // Case: only start moves
   if ((startDelta.dx !== 0 || startDelta.dy !== 0) && endDelta.dx === 0 && endDelta.dy === 0) {
     const reversed = [...updatedCorners].reverse();
-    const moved = adjustEndpoint(reversed, startDelta);
+    const moved = adjustEndpoint(reversed, startDelta, laneOffset);
     updatedCorners = [...moved].reverse();
   }
   // Case: only end moves
   else if ((endDelta.dx !== 0 || endDelta.dy !== 0) && startDelta.dx === 0 && startDelta.dy === 0) {
-    updatedCorners = adjustEndpoint(updatedCorners, endDelta);
+    updatedCorners = adjustEndpoint(updatedCorners, endDelta, laneOffset);
   }
   // Case: both move by different deltas
   else {
     const reversed = [...updatedCorners].reverse();
-    const afterStart = [...adjustEndpoint(reversed, startDelta)].reverse();
-    updatedCorners = adjustEndpoint(afterStart, endDelta);
+    const afterStart = [...adjustEndpoint(reversed, startDelta, laneOffset)].reverse();
+    updatedCorners = adjustEndpoint(afterStart, endDelta, laneOffset);
   }
 
   const simplified = simplifyCorners(updatedCorners);
@@ -516,7 +558,11 @@ export function routeMovedWire(
   return dense.length >= 2 ? dense : [newStart, newEnd];
 }
 
-function adjustEndpoint(corners: number[][], delta: { dx: number; dy: number }): number[][] {
+function adjustEndpoint(
+  corners: number[][],
+  delta: { dx: number; dy: number },
+  laneOffset: number = 0,
+): number[][] {
   const n = corners.length;
   if (n < 2) return corners;
   const c = corners.map((pt) => [...pt]);
@@ -563,7 +609,15 @@ function adjustEndpoint(corners: number[][], delta: { dx: number; dy: number }):
     let midX = Math.round((x0 + x1) / 2);
     const minX = Math.min(x0, x1);
     const maxX = Math.max(x0, x1);
-    if (maxX - minX >= 4) {
+    if (laneOffset !== 0) {
+      const candidateX = midX + laneOffset;
+      if (candidateX > minX && candidateX < maxX) {
+        midX = candidateX;
+      } else {
+        const outwardSign = Math.sign(x1 - x0) || 1;
+        midX = midX + (laneOffset * outwardSign);
+      }
+    } else if (maxX - minX >= 4) {
       const stagger = (y0 % 8 === 0 ? -1 : 1) * (delta.dy > 0 ? 1 : -1);
       const candidateX = midX + stagger;
       if (candidateX > minX && candidateX < maxX) {
@@ -605,7 +659,15 @@ function adjustEndpoint(corners: number[][], delta: { dx: number; dy: number }):
     let midY = Math.round((y0 + y1) / 2);
     const minY = Math.min(y0, y1);
     const maxY = Math.max(y0, y1);
-    if (maxY - minY >= 4) {
+    if (laneOffset !== 0) {
+      const candidateY = midY + laneOffset;
+      if (candidateY > minY && candidateY < maxY) {
+        midY = candidateY;
+      } else {
+        const outwardSign = Math.sign(y1 - y0) || 1;
+        midY = midY + (laneOffset * outwardSign);
+      }
+    } else if (maxY - minY >= 4) {
       const stagger = (x0 % 8 === 0 ? -1 : 1) * (delta.dx > 0 ? 1 : -1);
       const candidateY = midY + stagger;
       if (candidateY > minY && candidateY < maxY) {
