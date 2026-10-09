@@ -234,6 +234,7 @@ function deconflictChangedWires(
   previousWires: EditorWire[],
   wires: EditorWire[],
   components: EditorComponent[],
+  originalWires?: EditorWire[],
 ): EditorWire[] {
   const changedIdx: number[] = [];
   wires.forEach((w, i) => {
@@ -249,9 +250,11 @@ function deconflictChangedWires(
   const staticRoutes = wires.filter((_, i) => !changed.has(i)).map((w) => w.points);
   // Collect terminals that each changed wire touched prior to the move so they are not
   // treated as illegal obstacle collisions by the deconfliction pass
+  const anchorSource = originalWires || previousWires;
   const pinnedAnchorSets = changedIdx.map((i) => {
     const set = new Set<string>();
-    for (const p of previousWires[i].points || []) {
+    const pts = anchorSource[i]?.points || previousWires[i]?.points || [];
+    for (const p of pts) {
       set.add(`${p[0]},${p[1]}`);
     }
     return set;
@@ -917,7 +920,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         return wire;
       });
 
-      const wires = deconflictChangedWires(state.wires, slidWires, components);
+      const wires = deconflictChangedWires(state.wires, slidWires, components, state.drag?.originalWires);
 
       return { ...state, components, wires };
     }

@@ -96,6 +96,12 @@ if !REBUILD! equ 1 (
     if exist "%SCRIPT_DIR%frontend\package.json" (
         cd /d "%SCRIPT_DIR%frontend"
         call npm run build:spring
+        if errorlevel 1 (
+            cd /d "%SCRIPT_DIR%"
+            echo [ERROR] Frontend build failed.
+            pause
+            exit /b 1
+        )
         cd /d "%SCRIPT_DIR%"
     )
     echo [INFO] Packaging GeckoCIRCUITS REST JAR...
@@ -114,6 +120,12 @@ if not exist "%STATIC_INDEX%" (
     if exist "%SCRIPT_DIR%frontend\package.json" (
         cd /d "%SCRIPT_DIR%frontend"
         call npm run build:spring
+        if errorlevel 1 (
+            cd /d "%SCRIPT_DIR%"
+            echo [ERROR] Frontend build failed.
+            pause
+            exit /b 1
+        )
         cd /d "%SCRIPT_DIR%"
     )
 )

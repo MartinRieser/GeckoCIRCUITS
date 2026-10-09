@@ -769,4 +769,72 @@ describe('direct pin-to-pin wiring and wire editing', () => {
       expect(netBadge).not.toBeNull();
     });
   });
+
+  describe('Buck Converter component dragging', () => {
+    it('dragging L.1 does not cause dangling endpoints or disconnect D.1 and C.1', () => {
+      const buckSnap: EditorSnapshot = {
+        circuitId: 'buck-test',
+        modelVersion: 0,
+        filename: 'buck.ipes',
+        dpix: 16,
+        worksheetSize: '600x600',
+        components: [
+          { name: 'V_in', type: 4, family: 'LK', position: [6, 8], orientation: 503, parameters: {}, inputLabels: [], outputLabels: [] },
+          { name: 'S.1', type: 7, family: 'LK', position: [14, 6], orientation: 502, parameters: {}, inputLabels: [], outputLabels: [] },
+          { name: 'D.1', type: 6, family: 'LK', position: [18, 8], orientation: 501, parameters: {}, inputLabels: [], outputLabels: [] },
+          { name: 'L.1', type: 2, family: 'LK', position: [24, 6], orientation: 502, parameters: {}, inputLabels: [], outputLabels: [] },
+          { name: 'C.1', type: 3, family: 'LK', position: [32, 8], orientation: 503, parameters: {}, inputLabels: [], outputLabels: [] },
+          { name: 'R_load', type: 1, family: 'LK', position: [38, 8], orientation: 503, parameters: {}, inputLabels: [], outputLabels: [] },
+        ],
+        connections: [
+          { index: 0, type: 'LK', label: 'in', points: [[6, 6], [12, 6]] },
+          { index: 1, type: 'LK', label: 'sw_node', points: [[16, 6], [17, 6], [18, 6]] },
+          { index: 2, type: 'LK', label: 'sw_node', points: [[18, 6], [19, 6], [20, 6], [21, 6], [22, 6]] },
+          { index: 3, type: 'LK', label: 'out', points: [[26, 6], [27, 6], [28, 6], [29, 6], [30, 6], [31, 6], [32, 6]] },
+          { index: 4, type: 'LK', label: 'out', points: [[32, 6], [33, 6], [34, 6], [35, 6], [36, 6], [37, 6], [38, 6]] },
+          { index: 5, type: 'LK', label: '0', points: [[6, 10], [18, 10]] },
+          { index: 6, type: 'LK', label: '0', points: [[18, 10], [32, 10]] },
+          { index: 7, type: 'LK', label: '0', points: [[32, 10], [38, 10]] },
+        ],
+      };
+
+      function BuckWrapper() {
+        const [state, dispatch] = useReducer(editorReducer, {
+          ...initialState,
+          circuitId: buckSnap.circuitId,
+          components: buckSnap.components,
+          wires: buckSnap.connections as EditorWire[],
+          dpix: 16,
+        });
+        return <Sheet state={state} dispatch={dispatch} actions={actions} />;
+      }
+
+      const { container } = render(<BuckWrapper />);
+
+      // Initial state: 0 dangling endpoints
+      expect(container.querySelectorAll('.wire-dangling-box')).toHaveLength(0);
+
+      // Find L.1 component group
+      const l1Group = container.querySelector('g.component[data-name="L.1"]');
+      expect(l1Group).not.toBeNull();
+
+      // Mouse down on L.1 at (24 * 16, 6 * 16) = (384, 96)
+      fireEvent.mouseDown(l1Group!, { clientX: 384, clientY: 96, button: 0 });
+
+      // Move mouse to (384, 64) -> y = 4 (up by 2 grid steps)
+      const svg = container.querySelector('svg.sheet');
+      expect(svg).not.toBeNull();
+      fireEvent.mouseMove(svg!, { clientX: 384, clientY: 64 });
+
+      // During drag: NO dangling endpoints!
+      expect(container.querySelectorAll('.wire-dangling-box')).toHaveLength(0);
+
+      // Release mouse
+      fireEvent.mouseUp(svg!);
+
+      // After drop: NO dangling endpoints!
+      expect(container.querySelectorAll('.wire-dangling-box')).toHaveLength(0);
+      expect(commitMove).toHaveBeenCalled();
+    });
+  });
 });
