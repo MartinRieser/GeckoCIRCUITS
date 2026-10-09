@@ -29,7 +29,7 @@ dataContainerSignals[] V_out
 `;
 
 export const BUCK_CONVERTER_IPES = `
-verbindungLeistungskreisANZAHL 4
+verbindungLeistungskreisANZAHL 8
 verbindungLK (0)
 <Verbindung>
 label in
@@ -42,26 +42,62 @@ connectorType 0
 verbindungLK (1)
 <Verbindung>
 label sw_node
-x[] 16 17 18 19 20 21 22 
-y[] 6 6 6 6 6 6 6 
+x[] 16 17 18 
+y[] 6 6 6 
 enabled true
 connectorType 0
 <\\Verbindung>
 
 verbindungLK (2)
 <Verbindung>
-label out
-x[] 26 27 28 29 30 31 32 33 34 35 36 37 38 
-y[] 6 6 6 6 6 6 6 6 6 6 6 6 6 
+label sw_node
+x[] 18 19 20 21 22 
+y[] 6 6 6 6 6 
 enabled true
 connectorType 0
 <\\Verbindung>
 
 verbindungLK (3)
 <Verbindung>
+label out
+x[] 26 27 28 29 30 31 32 
+y[] 6 6 6 6 6 6 6 
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (4)
+<Verbindung>
+label out
+x[] 32 33 34 35 36 37 38 
+y[] 6 6 6 6 6 6 6 
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (5)
+<Verbindung>
 label 0
-x[] 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 
-y[] 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 
+x[] 6 7 8 9 10 11 12 13 14 15 16 17 18 
+y[] 10 10 10 10 10 10 10 10 10 10 10 10 10 
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (6)
+<Verbindung>
+label 0
+x[] 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 
+y[] 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (7)
+<Verbindung>
+label 0
+x[] 32 33 34 35 36 37 38 
+y[] 10 10 10 10 10 10 10 
 enabled true
 connectorType 0
 <\\Verbindung>
@@ -324,7 +360,7 @@ dataContainerSignals[] /v_out/i_L
 `;
 
 export const BOOST_CONVERTER_IPES = `
-verbindungLeistungskreisANZAHL 4
+verbindungLeistungskreisANZAHL 8
 verbindungLK (0)
 <Verbindung>
 label in
@@ -337,26 +373,62 @@ connectorType 0
 verbindungLK (1)
 <Verbindung>
 label sw_node
-x[] 16 17 18 19 20 21 22 
-y[] 6 6 6 6 6 6 6 
+x[] 16 17 18 
+y[] 6 6 6 
 enabled true
 connectorType 0
 <\\Verbindung>
 
 verbindungLK (2)
 <Verbindung>
-label out
-x[] 26 27 28 29 30 31 32 33 34 35 36 
-y[] 6 6 6 6 6 6 6 6 6 6 6 
+label sw_node
+x[] 18 19 20 21 22 
+y[] 6 6 6 6 6 
 enabled true
 connectorType 0
 <\\Verbindung>
 
 verbindungLK (3)
 <Verbindung>
+label out
+x[] 26 27 28 29 30 
+y[] 6 6 6 6 6 
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (4)
+<Verbindung>
+label out
+x[] 30 31 32 33 34 35 36 
+y[] 6 6 6 6 6 6 6 
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (5)
+<Verbindung>
 label 0
-x[] 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 
-y[] 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 
+x[] 6 7 8 9 10 11 12 13 14 15 16 17 18 
+y[] 10 10 10 10 10 10 10 10 10 10 10 10 10 
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (6)
+<Verbindung>
+label 0
+x[] 18 19 20 21 22 23 24 25 26 27 28 29 30 
+y[] 10 10 10 10 10 10 10 10 10 10 10 10 10 
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (7)
+<Verbindung>
+label 0
+x[] 30 31 32 33 34 35 36 
+y[] 10 10 10 10 10 10 10 
 enabled true
 connectorType 0
 <\\Verbindung>

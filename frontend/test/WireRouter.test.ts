@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { routeL, densePoints, orthogonalizePolyline, simplifyCorners, flipRoute, translateWireSegment, routeMovedWire, deconflictMovedWires, denseCellsOf, routingBlockedCells } from '../src/canvas/WireRouter';
+import { routeL, densePoints, orthogonalizePolyline, simplifyCorners, flipRoute, translateWireSegment, routeMovedWire, routeWireWithAnchors, deconflictMovedWires, denseCellsOf, routingBlockedCells } from '../src/canvas/WireRouter';
 
 describe('routeL', () => {
   it('returns straight line for aligned points', () => {
@@ -450,4 +450,89 @@ describe('deconflictMovedWires', () => {
     expect(out).toBe(diagonal);
   });
 });
+
+describe('routeWireWithAnchors (intermediate pin preservation)', () => {
+  it('preserves intermediate static pins when one endpoint moves', () => {
+    // Wire originally runs straight from (16,6) [S.1] across (18,6) [D.1] to (22,6) [L.1]
+    const wirePoints = [
+      [16, 6], [17, 6], [18, 6], [19, 6], [20, 6], [21, 6], [22, 6],
+    ];
+    // L.1 at (22,6) moves upwards by (0, -2) to (22,4)
+    const terminalDeltas = new Map<string, { dx: number; dy: number }>([
+      ['22,6', { dx: 0, dy: -2 }],
+    ]);
+    // D.1 at (18,6) and S.1 at (16,6) are stationary
+    const staticTerminalSet = new Set<string>(['16,6', '18,6']);
+
+    const routed = routeWireWithAnchors(wirePoints, terminalDeltas, staticTerminalSet);
+    const cellSet = new Set(routed.map(([x, y]) => `${x},${y}`));
+
+    // S.1 pin remains connected
+    expect(cellSet.has('16,6')).toBe(true);
+    // Intermediate D.1 pin remains firmly connected (no open box)
+    expect(cellSet.has('18,6')).toBe(true);
+    // Wire prefix between stationary S.1 and stationary D.1 is completely untouched
+    expect(cellSet.has('17,6')).toBe(true);
+    // L.1 pin reaches target at (22,4)
+    expect(cellSet.has('22,4')).toBe(true);
+    // The previous un-moved L.1 pin at (22,6) is no longer the end
+    expect(routed[routed.length - 1]).toEqual([22, 4]);
+  });
+
+  it('preserves intermediate static pins when the start endpoint moves', () => {
+    // Wire originally runs from (26,6) [L.1] across (32,6) [C.1] to (38,6) [R_load]
+    const wirePoints = [
+      [26, 6], [27, 6], [28, 6], [29, 6], [30, 6], [31, 6], [32, 6],
+      [33, 6], [34, 6], [35, 6], [36, 6], [37, 6], [38, 6],
+    ];
+    // L.1 at (26,6) moves upwards by (0, -2) to (26,4)
+    const terminalDeltas = new Map<string, { dx: number; dy: number }>([
+      ['26,6', { dx: 0, dy: -2 }],
+    ]);
+    const staticTerminalSet = new Set<string>(['32,6', '38,6']);
+
+    const routed = routeWireWithAnchors(wirePoints, terminalDeltas, staticTerminalSet);
+    const cellSet = new Set(routed.map(([x, y]) => `${x},${y}`));
+
+    // Start reaches new position of L.1
+    expect(routed[0]).toEqual([26, 4]);
+    // Intermediate C.1 pin remains firmly connected
+    expect(cellSet.has('32,6')).toBe(true);
+    // Static suffix from C.1 to R_load is untouched
+    expect(cellSet.has('35,6')).toBe(true);
+    expect(cellSet.has('38,6')).toBe(true);
+  });
+
+  it('manhattan-stretches both sides when an intermediate pin moves', () => {
+    // S.1 (16,6) static, D.1 (18,6) moving down to (18,8), L.1 (22,6) static
+    const wirePoints = [
+      [16, 6], [17, 6], [18, 6], [19, 6], [20, 6], [21, 6], [22, 6],
+    ];
+    const terminalDeltas = new Map<string, { dx: number; dy: number }>([
+      ['18,6', { dx: 0, dy: 2 }],
+    ]);
+    const staticTerminalSet = new Set<string>(['16,6', '22,6']);
+
+    const routed = routeWireWithAnchors(wirePoints, terminalDeltas, staticTerminalSet);
+    const cellSet = new Set(routed.map(([x, y]) => `${x},${y}`));
+
+    expect(routed[0]).toEqual([16, 6]);
+    expect(routed[routed.length - 1]).toEqual([22, 6]);
+    // Touches D.1 at its new location (18,8)
+    expect(cellSet.has('18,8')).toBe(true);
+  });
+
+  it('rigidly translates when all touched terminals move by the same delta', () => {
+    const wirePoints = [[10, 10], [20, 10]];
+    const terminalDeltas = new Map<string, { dx: number; dy: number }>([
+      ['10,10', { dx: 3, dy: 5 }],
+      ['20,10', { dx: 3, dy: 5 }],
+    ]);
+    const staticTerminalSet = new Set<string>();
+
+    const routed = routeWireWithAnchors(wirePoints, terminalDeltas, staticTerminalSet);
+    expect(routed).toEqual([[13, 15], [23, 15]]);
+  });
+});
+
 

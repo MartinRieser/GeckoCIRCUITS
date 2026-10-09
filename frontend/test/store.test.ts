@@ -249,6 +249,41 @@ describe('store: wire points follow dragged and nudged components', () => {
     expect(state.components[1].position).toEqual([34, 13]);
     expect(state.wires[0].points).toEqual([[12, 13], [34, 11]]);
   });
+
+  it('dragging an endpoint component preserves intermediate static component terminals', () => {
+    // S1 at (14,6) [terms (12,6)/(16,6)], D1 at (18,8) [terms (18,6)/(18,10)], L1 at (24,6) [terms (22,6)/(26,6)]
+    // w1 runs from (16,6) across D1 at (18,6) to (22,6)
+    const buckLikeSnap: EditorSnapshot = {
+      circuitId: 'c-test',
+      components: [
+        { name: 'S1', type: 7, family: 'LK', position: [14, 6], orientation: 502, parameters: {} },
+        { name: 'D1', type: 6, family: 'LK', position: [18, 8], orientation: 501, parameters: {} },
+        { name: 'L1', type: 2, family: 'LK', position: [24, 6], orientation: 502, parameters: {} },
+      ],
+      connections: [
+        {
+          index: 0,
+          type: 'LK',
+          label: 'sw_node',
+          points: [[16, 6], [17, 6], [18, 6], [19, 6], [20, 6], [21, 6], [22, 6]],
+        },
+      ],
+    };
+    let state = editorReducer(initialState, { type: 'SNAPSHOT', snapshot: buckLikeSnap });
+    // Drag L1 upwards by (0, -2)
+    state = editorReducer(state, { type: 'DRAG_START', names: ['L1'], x: 24, y: 6 });
+    state = editorReducer(state, { type: 'DRAG_MOVE', x: 24, y: 4 });
+
+    const wirePoints = state.wires[0].points;
+    const wireKeys = new Set(wirePoints.map(([x, y]) => `${x},${y}`));
+
+    // S1 terminal at (16,6) must still be connected
+    expect(wireKeys.has('16,6')).toBe(true);
+    // Intermediate D1 terminal at (18,6) MUST NOT be disconnected (no open square)
+    expect(wireKeys.has('18,6')).toBe(true);
+    // Wire must reach L1's new terminal position at (22,4)
+    expect(wireKeys.has('22,4')).toBe(true);
+  });
 });
 
 describe('store: DRAG_MOVE deconflicts moved wires against untouched wires', () => {  // The reported bug: dragging R1 down onto the bottom rail row slid its

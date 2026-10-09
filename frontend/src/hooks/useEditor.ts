@@ -33,7 +33,7 @@ import {
 import { isScopeComponent, isScriptComponent } from '../simulation/scopes';
 import { BLANK_CIRCUIT_IPES } from '../model/examples';
 import { SIMULATION_DEFAULTS } from '../model/constants';
-import { flipRoute, densePoints, routeMovedWire, deconflictMovedWires } from '../canvas/WireRouter';
+import { flipRoute, densePoints, routeWireWithAnchors, deconflictMovedWires } from '../canvas/WireRouter';
 import { addRecentFile, type RecentFileEntry } from '../model/recentFiles';
 
 export function useEditor() {
@@ -719,16 +719,30 @@ export function useEditor() {
         }
       });
 
+      const staticTerminalSet = new Set<string>();
+      for (const c of stateRef.current.components) {
+        if (c.name === name) continue;
+        const terms = terminalPositions(c);
+        for (const t of [...terms.input, ...terms.output]) {
+          staticTerminalSet.add(`${t.x},${t.y}`);
+        }
+      }
+      for (const w of stateRef.current.wires) {
+        if (!w.points || w.points.length === 0) continue;
+        const p0 = `${w.points[0][0]},${w.points[0][1]}`;
+        const pEnd = `${w.points[w.points.length - 1][0]},${w.points[w.points.length - 1][1]}`;
+        if (!terminalDeltas.has(p0) && !terminalDeltas.has(pEnd)) {
+          staticTerminalSet.add(p0);
+          staticTerminalSet.add(pEnd);
+        }
+      }
+
       const wirePatches: { index: number; points: number[][] }[] = [];
       const updatedWires = stateRef.current.wires.map((wire) => {
         if (!wire.points || wire.points.length < 2) return wire;
-        const startPt = wire.points[0];
-        const endPt = wire.points[wire.points.length - 1];
-        const startDelta = terminalDeltas.get(`${startPt[0]},${startPt[1]}`) || { dx: 0, dy: 0 };
-        const endDelta = terminalDeltas.get(`${endPt[0]},${endPt[1]}`) || { dx: 0, dy: 0 };
-
-        if (startDelta.dx !== 0 || startDelta.dy !== 0 || endDelta.dx !== 0 || endDelta.dy !== 0) {
-          const newPoints = routeMovedWire(wire.points, startDelta, endDelta);
+        const touchesRotated = wire.points.some((pt) => terminalDeltas.has(`${pt[0]},${pt[1]}`));
+        if (touchesRotated) {
+          const newPoints = routeWireWithAnchors(wire.points, terminalDeltas, staticTerminalSet, 0);
           wirePatches.push({ index: wire.index, points: newPoints });
           return { ...wire, points: newPoints };
         }
@@ -752,7 +766,14 @@ export function useEditor() {
         const staticRoutes = updatedWires
           .filter((_, i) => !changed.has(i))
           .map((w) => w.points);
-        const deconflicted = deconflictMovedWires(slidRoutes, staticRoutes, rotatedComponents);
+        const pinnedAnchorSets = changedIdx.map((i) => {
+          const set = new Set<string>();
+          for (const p of stateRef.current.wires[i]?.points || []) {
+            set.add(`${p[0]},${p[1]}`);
+          }
+          return set;
+        });
+        const deconflicted = deconflictMovedWires(slidRoutes, staticRoutes, rotatedComponents, pinnedAnchorSets);
         changedIdx.forEach((wi, k) => {
           const previous = wirePatches.find((wp) => wp.index === updatedWires[wi].index);
           if (previous) {

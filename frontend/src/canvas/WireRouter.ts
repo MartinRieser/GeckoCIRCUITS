@@ -187,6 +187,7 @@ export function deconflictMovedWires(
   slidDenseRoutes: number[][][],
   staticRoutes: number[][][],
   components: RoutingComponent[],
+  pinnedAnchorSets?: (ReadonlySet<string> | undefined)[],
 ): number[][][] {
   const componentCells = routingBlockedCells(components);
   const staticCells = new Set<string>();
@@ -234,6 +235,12 @@ export function deconflictMovedWires(
     });
 
     const endpoints = new Set([cellKey(start), cellKey(end)]);
+    const legalAnchors = pinnedAnchorSets?.[i];
+    if (legalAnchors) {
+      for (const k of legalAnchors) {
+        endpoints.add(k);
+      }
+    }
     const dirty = (pts: Point[]) =>
       pts.some((p) => !endpoints.has(cellKey(p)) && blocked.has(cellKey(p)));
     if (!dirty(densePoints(corners.map(([x, y]) => ({ x, y }))))) {
@@ -556,6 +563,119 @@ export function routeMovedWire(
   const simplified = simplifyCorners(updatedCorners);
   const dense = densePoints(simplified.map(([x, y]) => ({ x, y }))).map((p) => [p.x, p.y]);
   return dense.length >= 2 ? dense : [newStart, newEnd];
+}
+
+/**
+ * Routes a wire when components move, preserving intermediate static pins/anchors.
+ *
+ * In schematics where multiple components share a wire run (e.g. S.1 -> D.1 -> L.1),
+ * moving one component (such as L.1) must not pull the wire off stationary pins (such as D.1).
+ * Intermediate static pins act as anchors: the portion of the wire between static pins
+ * remains completely untouched, and only the segment connecting to the moving component
+ * is Manhattan-rerouted.
+ */
+export function routeWireWithAnchors(
+  rawPoints: number[][],
+  terminalDeltas: Map<string, { dx: number; dy: number }>,
+  staticTerminalSet: Set<string>,
+  laneOffset: number = 0,
+): number[][] {
+  if (!rawPoints || rawPoints.length < 2) return rawPoints || [];
+
+  const p0Key = `${rawPoints[0][0]},${rawPoints[0][1]}`;
+  const pEndKey = `${rawPoints[rawPoints.length - 1][0]},${rawPoints[rawPoints.length - 1][1]}`;
+  const startDelta = terminalDeltas.get(p0Key) || { dx: 0, dy: 0 };
+  const endDelta = terminalDeltas.get(pEndKey) || { dx: 0, dy: 0 };
+
+  // If neither endpoint moved and no intermediate points moved, wire is static
+  if (startDelta.dx === 0 && startDelta.dy === 0 && endDelta.dx === 0 && endDelta.dy === 0) {
+    const hasMovingPoint = rawPoints.some((p) => {
+      const d = terminalDeltas.get(`${p[0]},${p[1]}`);
+      return d && (d.dx !== 0 || d.dy !== 0);
+    });
+    if (!hasMovingPoint) return rawPoints;
+  }
+
+  // If both endpoints move by the exact same delta (rigid translation of the entire wire):
+  if (
+    startDelta.dx === endDelta.dx &&
+    startDelta.dy === endDelta.dy &&
+    (startDelta.dx !== 0 || startDelta.dy !== 0)
+  ) {
+    const hasStaticAnchor = rawPoints.some((p) => staticTerminalSet.has(`${p[0]},${p[1]}`));
+    const hasDifferingMoving = rawPoints.some((p) => {
+      const d = terminalDeltas.get(`${p[0]},${p[1]}`);
+      return d && (d.dx !== startDelta.dx || d.dy !== startDelta.dy);
+    });
+    if (!hasStaticAnchor && !hasDifferingMoving) {
+      return rawPoints.map(([x, y]) => [x + startDelta.dx, y + startDelta.dy]);
+    }
+  }
+
+  // Ensure dense raster points so any intermediate pin/anchor lying on the wire is indexed
+  const dense = densePoints(simplifyCorners(rawPoints).map(([x, y]) => ({ x, y }))).map((p) => [p.x, p.y]);
+  if (dense.length < 2) return rawPoints;
+
+  // Identify all pinned points along the wire:
+  // - First point (dense[0])
+  // - Last point (dense[dense.length - 1])
+  // - Any intermediate point that is either in terminalDeltas (moving pin) or staticTerminalSet (stationary pin/junction)
+  const pinnedIndices: number[] = [0];
+  for (let i = 1; i < dense.length - 1; i++) {
+    const key = `${dense[i][0]},${dense[i][1]}`;
+    if (terminalDeltas.has(key) || staticTerminalSet.has(key)) {
+      pinnedIndices.push(i);
+    }
+  }
+  pinnedIndices.push(dense.length - 1);
+
+  // If no intermediate anchors exist, route directly using standard routeMovedWire
+  if (pinnedIndices.length === 2) {
+    const p0 = `${dense[0][0]},${dense[0][1]}`;
+    const pEnd = `${dense[dense.length - 1][0]},${dense[dense.length - 1][1]}`;
+    const startDelta = terminalDeltas.get(p0) || { dx: 0, dy: 0 };
+    const endDelta = terminalDeltas.get(pEnd) || { dx: 0, dy: 0 };
+    return routeMovedWire(dense, startDelta, endDelta, laneOffset);
+  }
+
+  // For each sub-segment between consecutive pinned indices, route according to its endpoint deltas
+  const resultPoints: number[][] = [];
+  for (let segIdx = 0; segIdx < pinnedIndices.length - 1; segIdx++) {
+    const fromIdx = pinnedIndices[segIdx];
+    const toIdx = pinnedIndices[segIdx + 1];
+    const segPoints = dense.slice(fromIdx, toIdx + 1);
+
+    const fromKey = `${segPoints[0][0]},${segPoints[0][1]}`;
+    const toKey = `${segPoints[segPoints.length - 1][0]},${segPoints[segPoints.length - 1][1]}`;
+
+    const startDelta = terminalDeltas.get(fromKey) || { dx: 0, dy: 0 };
+    const endDelta = terminalDeltas.get(toKey) || { dx: 0, dy: 0 };
+
+    let routedSegment: number[][];
+    if (startDelta.dx === 0 && startDelta.dy === 0 && endDelta.dx === 0 && endDelta.dy === 0) {
+      // Entire segment is stationary
+      routedSegment = segPoints;
+    } else if (startDelta.dx === endDelta.dx && startDelta.dy === endDelta.dy) {
+      // Rigid translation
+      const dx = startDelta.dx;
+      const dy = startDelta.dy;
+      routedSegment = segPoints.map(([x, y]) => [x + dx, y + dy]);
+    } else {
+      // Reroute this segment
+      routedSegment = routeMovedWire(segPoints, startDelta, endDelta, laneOffset);
+    }
+
+    if (resultPoints.length === 0) {
+      resultPoints.push(...routedSegment);
+    } else {
+      // Avoid duplicating the shared vertex point
+      resultPoints.push(...routedSegment.slice(1));
+    }
+  }
+
+  const simplified = simplifyCorners(resultPoints);
+  const denseFinal = densePoints(simplified.map(([x, y]) => ({ x, y }))).map((p) => [p.x, p.y]);
+  return denseFinal.length >= 2 ? denseFinal : resultPoints;
 }
 
 function adjustEndpoint(

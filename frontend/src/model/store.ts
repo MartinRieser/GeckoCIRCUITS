@@ -11,7 +11,7 @@
 import type { EditorComponent, EditorWire, Point, EditorSnapshot } from './types';
 import { ORIENTATION_CYCLE, terminalPositions, findPlacementConflict } from './geometry';
 import { Orientation } from './constants';
-import { routeMovedWire, densePoints, simplifyCorners, deconflictMovedWires } from '../canvas/WireRouter';
+import { routeWireWithAnchors, densePoints, simplifyCorners, deconflictMovedWires } from '../canvas/WireRouter';
 
 export type Mode = 'idle' | 'placing' | 'wiring' | 'rubber' | 'dragging';
 export type EditorMode = Mode;
@@ -67,6 +67,8 @@ export interface DragState {
   /** wire points captured on drag terminals at their pre-drag coordinates */
   connectedWirePoints: ConnectedWirePoint[];
   draggedWires?: DraggedWireInfo[];
+  movedTerminals?: string[];
+  staticTerminals?: string[];
   originalWires?: EditorWire[];
 }
 
@@ -245,7 +247,16 @@ function deconflictChangedWires(
   const changed = new Set(changedIdx);
   const slidRoutes = changedIdx.map((i) => wires[i].points);
   const staticRoutes = wires.filter((_, i) => !changed.has(i)).map((w) => w.points);
-  const deconflicted = deconflictMovedWires(slidRoutes, staticRoutes, components);
+  // Collect terminals that each changed wire touched prior to the move so they are not
+  // treated as illegal obstacle collisions by the deconfliction pass
+  const pinnedAnchorSets = changedIdx.map((i) => {
+    const set = new Set<string>();
+    for (const p of previousWires[i].points || []) {
+      set.add(`${p[0]},${p[1]}`);
+    }
+    return set;
+  });
+  const deconflicted = deconflictMovedWires(slidRoutes, staticRoutes, components, pinnedAnchorSets);
   const next = [...wires];
   changedIdx.forEach((wi, k) => {
     next[wi] = { ...next[wi], points: deconflicted[k] };
@@ -551,6 +562,29 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         }
       }
 
+      const terminalDeltas = new Map<string, { dx: number; dy: number }>();
+      for (const key of movedTerminalSet) {
+        terminalDeltas.set(key, { dx: action.dx, dy: action.dy });
+      }
+
+      const staticTerminalSet = new Set<string>();
+      for (const comp of state.components) {
+        if (movable.has(comp.name)) continue;
+        const terms = terminalPositions(comp);
+        for (const t of [...terms.input, ...terms.output]) {
+          staticTerminalSet.add(`${t.x},${t.y}`);
+        }
+      }
+      for (const w of state.wires) {
+        if (!w.points || w.points.length === 0) continue;
+        const p0 = `${w.points[0][0]},${w.points[0][1]}`;
+        const pEnd = `${w.points[w.points.length - 1][0]},${w.points[w.points.length - 1][1]}`;
+        if (!movedTerminalSet.has(p0) && !movedTerminalSet.has(pEnd)) {
+          staticTerminalSet.add(p0);
+          staticTerminalSet.add(pEnd);
+        }
+      }
+
       const laneOffsets = computeBundleLaneOffsets(state.wires, terminalToComp);
 
       const components = state.components.map((c) => {
@@ -561,15 +595,10 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
 
       const slidWires = state.wires.map((wire) => {
         if (!wire.points || wire.points.length === 0) return wire;
-        const startPt = wire.points[0];
-        const endPt = wire.points[wire.points.length - 1];
-        const startMoves = movedTerminalSet.has(`${startPt[0]},${startPt[1]}`);
-        const endMoves = movedTerminalSet.has(`${endPt[0]},${endPt[1]}`);
-        if (startMoves || endMoves) {
-          const startDelta = startMoves ? { dx: action.dx, dy: action.dy } : { dx: 0, dy: 0 };
-          const endDelta = endMoves ? { dx: action.dx, dy: action.dy } : { dx: 0, dy: 0 };
+        const touchesMoved = wire.points.some((pt) => movedTerminalSet.has(`${pt[0]},${pt[1]}`));
+        if (touchesMoved) {
           const laneOffset = laneOffsets.get(wire.index) || 0;
-          const newPoints = routeMovedWire(wire.points, startDelta, endDelta, laneOffset);
+          const newPoints = routeWireWithAnchors(wire.points, terminalDeltas, staticTerminalSet, laneOffset);
           return { ...wire, points: newPoints };
         }
         return wire;
@@ -769,23 +798,37 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         }
       }
 
+      const staticTerminalSet = new Set<string>();
+      for (const comp of state.components) {
+        if (origins[comp.name]) continue;
+        const terms = terminalPositions(comp);
+        for (const t of [...terms.input, ...terms.output]) {
+          staticTerminalSet.add(`${t.x},${t.y}`);
+        }
+      }
+      for (const w of state.wires) {
+        if (!w.points || w.points.length === 0) continue;
+        const p0 = `${w.points[0][0]},${w.points[0][1]}`;
+        const pEnd = `${w.points[w.points.length - 1][0]},${w.points[w.points.length - 1][1]}`;
+        if (!movedTerminalSet.has(p0) && !movedTerminalSet.has(pEnd)) {
+          staticTerminalSet.add(p0);
+          staticTerminalSet.add(pEnd);
+        }
+      }
+
       const laneOffsets = computeBundleLaneOffsets(state.wires, terminalToComp);
       const connectedWirePoints: ConnectedWirePoint[] = [];
       const draggedWires: DraggedWireInfo[] = [];
 
       state.wires.forEach((wire, wireIndex) => {
         if (!wire.points || wire.points.length === 0) return;
-        const startPt = wire.points[0];
-        const endPt = wire.points[wire.points.length - 1];
-        const startMoves = movedTerminalSet.has(`${startPt[0]},${startPt[1]}`);
-        const endMoves = movedTerminalSet.has(`${endPt[0]},${endPt[1]}`);
-
-        if (startMoves || endMoves) {
+        const touchesMoved = wire.points.some((pt) => movedTerminalSet.has(`${pt[0]},${pt[1]}`));
+        if (touchesMoved) {
           draggedWires.push({
             wireIndex: wire.index,
             originalPoints: wire.points.map((pt) => [...pt]),
-            startMoves,
-            endMoves,
+            startMoves: movedTerminalSet.has(`${wire.points[0][0]},${wire.points[0][1]}`),
+            endMoves: movedTerminalSet.has(`${wire.points[wire.points.length - 1][0]},${wire.points[wire.points.length - 1][1]}`),
             laneOffset: laneOffsets.get(wire.index) || 0,
           });
         }
@@ -811,6 +854,8 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
           startY: action.y,
           connectedWirePoints,
           draggedWires,
+          movedTerminals: Array.from(movedTerminalSet),
+          staticTerminals: Array.from(staticTerminalSet),
           originalWires: state.wires.map((w) => ({ ...w, points: w.points.map((pt) => [...pt]) })),
         },
       };
@@ -823,6 +868,11 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
       const origins = state.drag.origins;
       const draggedWires = state.drag.draggedWires || [];
       const connected = state.drag.connectedWirePoints;
+      const staticTerminalSet = new Set<string>(state.drag.staticTerminals || []);
+      const terminalDeltas = new Map<string, { dx: number; dy: number }>();
+      for (const key of state.drag.movedTerminals || []) {
+        terminalDeltas.set(key, { dx, dy });
+      }
 
       const components = state.components.map((c) => {
         if (origins[c.name]) {
@@ -842,9 +892,12 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
       const slidWires = state.wires.map((wire, wireIndex) => {
         const dw = draggedMap.get(wire.index);
         if (dw) {
-          const startDelta = dw.startMoves ? { dx, dy } : { dx: 0, dy: 0 };
-          const endDelta = dw.endMoves ? { dx, dy } : { dx: 0, dy: 0 };
-          const newPoints = routeMovedWire(dw.originalPoints, startDelta, endDelta, dw.laneOffset || 0);
+          const newPoints = routeWireWithAnchors(
+            dw.originalPoints,
+            terminalDeltas,
+            staticTerminalSet,
+            dw.laneOffset || 0,
+          );
           return { ...wire, points: newPoints };
         }
 
