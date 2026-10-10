@@ -171,9 +171,7 @@ export function buildCouplingPairs(
   const pairs: CouplingPair[] = [];
 
   for (const comp of components) {
-    const isVmWithTarget =
-      isVoltmeterComponent(comp) && !!getCoupledComponentName(comp);
-    if (isGateDriver(comp) || isAmmeterComponent(comp) || isVmWithTarget) {
+    if (isGateDriver(comp) || isAmmeterComponent(comp)) {
       const targetName = getCoupledComponentName(comp);
       if (targetName) {
         const target = components.find((c) => c.name === targetName);
@@ -183,11 +181,7 @@ export function buildCouplingPairs(
             selection.includes(target.name) ||
             hoveredComponentName === comp.name ||
             hoveredComponentName === target.name;
-          const label = isGateDriver(comp)
-            ? 'GATE DRIVE ➔'
-            : isVmWithTarget
-              ? 'MEASURE U ➔'
-              : 'MEASURE I ➔';
+          const label = isGateDriver(comp) ? 'GATE DRIVE ➔' : 'MEASURE I ➔';
           pairs.push({ sourceComp: comp, targetComp: target, label, isHoveredOrSelected });
         }
       }
@@ -195,6 +189,130 @@ export function buildCouplingPairs(
   }
 
   return pairs;
+}
+
+/**
+ * Reference direction of the branch current an ammeter reports for its
+ * measured two-terminal component.
+ *
+ * Engine convention (verified headlessly for R, current and voltage sources):
+ * the reading is positive when current flows through the component from its
+ * input terminal (X, `terminalPositions().input[0]`) to its output terminal
+ * (Y, `terminalPositions().output[0]`) — i.e. along the component's flow
+ * vector. Rotating a part by 180° therefore flips the sign of the reading.
+ */
+export interface CurrentDirectionHint {
+  /** Unique key (ammeter name). */
+  key: string;
+  /** Ammeter that reports the current. */
+  ammeter: EditorComponent;
+  /** Measured two-terminal component. */
+  target: EditorComponent;
+  /** Terminal where positive current enters the component (grid units). */
+  from: Point;
+  /** Terminal where positive current leaves the component (grid units). */
+  to: Point;
+  /** Arrow tail, drawn beside the component body (grid units). */
+  arrowStart: Point;
+  /** Arrow head, drawn beside the component body (grid units). */
+  arrowEnd: Point;
+  /** Human-readable direction, e.g. "left → right". */
+  directionText: string;
+}
+
+/** Half length of the direction arrow along the component axis, in grid units. */
+const CURRENT_ARROW_HALF_LENGTH = 1.2;
+/** Sideways distance of the direction arrow from the component axis, in grid units. */
+const CURRENT_ARROW_OFFSET = 1.1;
+
+/**
+ * Describes a schematic direction vector in words (screen coordinates, y down).
+ *
+ * @param from Start point.
+ * @param to End point.
+ * @returns e.g. "left → right", "top → bottom".
+ */
+export function describeDirection(from: Point, to: Point): string {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  if (Math.abs(dx) >= Math.abs(dy)) {
+    return dx >= 0 ? 'left → right' : 'right → left';
+  }
+  return dy >= 0 ? 'top → bottom' : 'bottom → top';
+}
+
+/**
+ * Computes the reference current direction of an ammeter's measured
+ * component, or null when the target is not a plain two-terminal part
+ * (multi-pin devices have no single unambiguous branch axis).
+ *
+ * @param ammeter The ammeter component.
+ * @param target The measured component it is coupled to.
+ * @returns The direction hint, or null.
+ */
+export function computeCurrentDirectionHint(
+  ammeter: EditorComponent,
+  target: EditorComponent,
+): CurrentDirectionHint | null {
+  const pins = terminalPositions(target);
+  if (pins.input.length !== 1 || pins.output.length !== 1) return null;
+  const from = pins.input[0];
+  const to = pins.output[0];
+  const len = Math.hypot(to.x - from.x, to.y - from.y);
+  if (len === 0) return null;
+  const ux = (to.x - from.x) / len;
+  const uy = (to.y - from.y) / len;
+  // Keep clear of the name label: horizontal parts carry it above, vertical
+  // parts to the right — so draw the arrow below / to the left.
+  const horizontal = Math.abs(ux) >= Math.abs(uy);
+  const ox = horizontal ? 0 : -CURRENT_ARROW_OFFSET;
+  const oy = horizontal ? CURRENT_ARROW_OFFSET : 0;
+  const cx = (from.x + to.x) / 2 + ox;
+  const cy = (from.y + to.y) / 2 + oy;
+  return {
+    key: ammeter.name,
+    ammeter,
+    target,
+    from,
+    to,
+    arrowStart: { x: cx - ux * CURRENT_ARROW_HALF_LENGTH, y: cy - uy * CURRENT_ARROW_HALF_LENGTH },
+    arrowEnd: { x: cx + ux * CURRENT_ARROW_HALF_LENGTH, y: cy + uy * CURRENT_ARROW_HALF_LENGTH },
+    directionText: describeDirection(from, to),
+  };
+}
+
+/**
+ * Builds the current reference-direction arrows for every ammeter that is
+ * hovered or selected (or whose measured component is), so the user can see
+ * which way a positive reading flows before simulating.
+ *
+ * @param components All components on the sheet.
+ * @param selection Currently selected component names.
+ * @param hoveredComponentName Name of component currently under the pointer.
+ * @returns Direction hints for the active ammeters.
+ */
+export function buildCurrentDirectionHints(
+  components: EditorComponent[],
+  selection: string[],
+  hoveredComponentName: string | null,
+): CurrentDirectionHint[] {
+  const hints: CurrentDirectionHint[] = [];
+  for (const comp of components) {
+    if (!isAmmeterComponent(comp)) continue;
+    const targetName = getCoupledComponentName(comp);
+    if (!targetName) continue;
+    const active =
+      selection.includes(comp.name) ||
+      selection.includes(targetName) ||
+      hoveredComponentName === comp.name ||
+      hoveredComponentName === targetName;
+    if (!active) continue;
+    const target = components.find((c) => c.name === targetName);
+    if (!target) continue;
+    const hint = computeCurrentDirectionHint(comp, target);
+    if (hint) hints.push(hint);
+  }
+  return hints;
 }
 
 /**
@@ -323,6 +441,37 @@ export function buildVoltmeterGuides(
 
   for (const comp of components) {
     if (!isVoltmeterComponent(comp)) continue;
+
+    // Mode A: Component-coupled voltmeter (e.g. u(C_1))
+    // Positive terminal is pin 1 (input terminal), negative terminal is pin 2 (output terminal).
+    const coupledName = getCoupledComponentName(comp);
+    if (coupledName) {
+      const target = components.find((c) => c.name === coupledName);
+      if (target) {
+        const pins = terminalPositions(target);
+        if (pins.input.length >= 1 && pins.output.length >= 1) {
+          const from = pins.input[0];
+          const to = pins.output[0];
+          const isHoveredOrSelected =
+            selection.includes(comp.name) ||
+            selection.includes(target.name) ||
+            hoveredComponentName === comp.name ||
+            hoveredComponentName === target.name;
+          guides.push({
+            key: comp.name,
+            source: comp,
+            points: [
+              { x: from.x, y: from.y, polarity: 'pos' },
+              { x: to.x, y: to.y, polarity: 'neg' },
+            ],
+            isHoveredOrSelected,
+          });
+          continue;
+        }
+      }
+    }
+
+    // Mode B: Differential named nodes (nodeA / nodeB)
     const nodeA =
       (comp.parameters?.nodeA as string) || (comp.parameters?.positiveNode as string);
     const nodeB =

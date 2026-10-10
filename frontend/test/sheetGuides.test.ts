@@ -12,6 +12,9 @@ import {
   buildScopeGuides,
   resolveChannelDisplayLabel,
   buildTerminalLabelItems,
+  describeDirection,
+  computeCurrentDirectionHint,
+  buildCurrentDirectionHints,
 } from '../src/canvas/sheetGuides';
 import type { EditorComponent, EditorWire } from '../src/model/types';
 import { Orientation, LkComponentType, ControlComponentType } from '../src/model/constants';
@@ -146,9 +149,9 @@ describe('sheetGuides: buildCouplingPairs', () => {
     capacitorComp,
   ];
 
-  it('constructs coupling pairs for gate driver, ammeter, and coupled voltmeter', () => {
+  it('constructs coupling pairs for gate driver and ammeter', () => {
     const pairs = buildCouplingPairs(components, [], null);
-    expect(pairs).toHaveLength(3);
+    expect(pairs).toHaveLength(2);
 
     expect(pairs[0].label).toBe('GATE DRIVE ➔');
     expect(pairs[0].sourceComp.name).toBe('GATE.1');
@@ -158,10 +161,6 @@ describe('sheetGuides: buildCouplingPairs', () => {
     expect(pairs[1].label).toBe('MEASURE I ➔');
     expect(pairs[1].sourceComp.name).toBe('AMP.1');
     expect(pairs[1].targetComp.name).toBe('L.1');
-
-    expect(pairs[2].label).toBe('MEASURE U ➔');
-    expect(pairs[2].sourceComp.name).toBe('VOLT.1');
-    expect(pairs[2].targetComp.name).toBe('C.1');
   });
 
   it('marks pair as hovered/selected when source or target is selected or hovered', () => {
@@ -339,6 +338,34 @@ describe('sheetGuides: buildVoltmeterGuides', () => {
 
     const guides = buildVoltmeterGuides([vm], [], null, netPoints);
     expect(guides[0].points).toHaveLength(1);
+  });
+
+  it('resolves component-coupled voltmeter into positive (pin 1) and negative (pin 2) points', () => {
+    const capacitor = makeComp({
+      type: LkComponentType.CAPACITOR,
+      name: 'C.1',
+      family: 'LK',
+      position: [50, 10],
+      orientation: Orientation.NORTH_SOUTH,
+    });
+    // NORTH_SOUTH (dir 0, +1): input terminal at (50, 8), output at (50, 12)
+    const vm = makeComp({
+      type: ControlComponentType.VOLTMETER,
+      name: 'VOLT.1',
+      family: 'CONTROL',
+      position: [10, 20],
+      orientation: Orientation.WEST_EAST,
+      parameters: { coupledComponent: 'C.1' },
+    });
+
+    const guides = buildVoltmeterGuides([vm, capacitor], ['VOLT.1'], null, new Map());
+    expect(guides).toHaveLength(1);
+    expect(guides[0].key).toBe('VOLT.1');
+    expect(guides[0].isHoveredOrSelected).toBe(true);
+    expect(guides[0].points).toEqual([
+      { x: 50, y: 8, polarity: 'pos' },
+      { x: 50, y: 12, polarity: 'neg' },
+    ]);
   });
 });
 
@@ -589,3 +616,117 @@ describe('sheetGuides: resolveChannelDisplayLabel & buildTerminalLabelItems', ()
     expect(outItem?.isWired).toBe(false);
   });
 });
+
+describe('sheetGuides: current direction hints', () => {
+  const ammeter = makeComp({
+    type: ControlComponentType.AMMETER,
+    name: 'AMP.1',
+    family: 'CONTROL',
+    position: [10, 20],
+    orientation: Orientation.WEST_EAST,
+    parameters: { coupledComponent: 'R.1' },
+  });
+
+  it('describes 4-way screen directions correctly', () => {
+    expect(describeDirection({ x: 0, y: 0 }, { x: 5, y: 0 })).toBe('left → right');
+    expect(describeDirection({ x: 5, y: 0 }, { x: 0, y: 0 })).toBe('right → left');
+    expect(describeDirection({ x: 0, y: 0 }, { x: 0, y: 5 })).toBe('top → bottom');
+    expect(describeDirection({ x: 0, y: 5 }, { x: 0, y: 0 })).toBe('bottom → top');
+  });
+
+  it('computes correct reference flow direction for horizontal resistor (WEST_EAST)', () => {
+    // WEST_EAST flow vector is (+1, 0): input terminal at center - 2 (18, 10), output at (22, 10)
+    const resistorWE = makeComp({
+      type: LkComponentType.RESISTOR,
+      name: 'R.1',
+      family: 'LK',
+      position: [20, 10],
+      orientation: Orientation.WEST_EAST,
+    });
+
+    const hint = computeCurrentDirectionHint(ammeter, resistorWE);
+    expect(hint).not.toBeNull();
+    expect(hint?.from).toEqual({ x: 18, y: 10 });
+    expect(hint?.to).toEqual({ x: 22, y: 10 });
+    expect(hint?.directionText).toBe('left → right');
+    // arrow points in the +x direction
+    expect(hint!.arrowEnd.x).toBeGreaterThan(hint!.arrowStart.x);
+  });
+
+  it('flips direction when resistor is rotated 180° (EAST_WEST)', () => {
+    // EAST_WEST flow vector is (-1, 0): input terminal at (22, 10), output at (18, 10)
+    const resistorEW = makeComp({
+      type: LkComponentType.RESISTOR,
+      name: 'R.1',
+      family: 'LK',
+      position: [20, 10],
+      orientation: Orientation.EAST_WEST,
+    });
+
+    const hint = computeCurrentDirectionHint(ammeter, resistorEW);
+    expect(hint).not.toBeNull();
+    expect(hint?.from).toEqual({ x: 22, y: 10 });
+    expect(hint?.to).toEqual({ x: 18, y: 10 });
+    expect(hint?.directionText).toBe('right → left');
+    // arrow points in the -x direction
+    expect(hint!.arrowEnd.x).toBeLessThan(hint!.arrowStart.x);
+  });
+
+  it('computes correct reference flow direction for vertical resistor (NORTH_SOUTH)', () => {
+    // NORTH_SOUTH flow vector is (0, +1): input terminal at (20, 8), output at (20, 12)
+    const resistorNS = makeComp({
+      type: LkComponentType.RESISTOR,
+      name: 'R.1',
+      family: 'LK',
+      position: [20, 10],
+      orientation: Orientation.NORTH_SOUTH,
+    });
+
+    const hint = computeCurrentDirectionHint(ammeter, resistorNS);
+    expect(hint).not.toBeNull();
+    expect(hint?.from).toEqual({ x: 20, y: 8 });
+    expect(hint?.to).toEqual({ x: 20, y: 12 });
+    expect(hint?.directionText).toBe('top → bottom');
+  });
+
+  it('buildCurrentDirectionHints shows hints only when ammeter or target is selected/hovered', () => {
+    const resistor = makeComp({
+      type: LkComponentType.RESISTOR,
+      name: 'R.1',
+      family: 'LK',
+      position: [20, 10],
+      orientation: Orientation.WEST_EAST,
+    });
+    const comps = [ammeter, resistor];
+
+    // Idle sheet (nothing selected, nothing hovered) -> empty
+    expect(buildCurrentDirectionHints(comps, [], null)).toEqual([]);
+
+    // Ammeter selected -> shows hint
+    const hintsOnAmmeterSelect = buildCurrentDirectionHints(comps, ['AMP.1'], null);
+    expect(hintsOnAmmeterSelect).toHaveLength(1);
+    expect(hintsOnAmmeterSelect[0].key).toBe('AMP.1');
+    expect(hintsOnAmmeterSelect[0].target.name).toBe('R.1');
+
+    // Target resistor selected -> also shows hint
+    const hintsOnTargetSelect = buildCurrentDirectionHints(comps, ['R.1'], null);
+    expect(hintsOnTargetSelect).toHaveLength(1);
+
+    // Ammeter hovered -> shows hint
+    const hintsOnHover = buildCurrentDirectionHints(comps, [], 'AMP.1');
+    expect(hintsOnHover).toHaveLength(1);
+  });
+
+  it('returns empty array when ammeter has no target or target does not exist', () => {
+    const orphanAmmeter = makeComp({
+      type: ControlComponentType.AMMETER,
+      name: 'AMP.2',
+      family: 'CONTROL',
+      position: [10, 20],
+      orientation: Orientation.WEST_EAST,
+      parameters: { coupledComponent: 'GHOST_R' },
+    });
+    expect(buildCurrentDirectionHints([orphanAmmeter], ['AMP.2'], null)).toEqual([]);
+  });
+});
+

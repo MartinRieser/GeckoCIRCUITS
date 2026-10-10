@@ -38,6 +38,7 @@ import { isScopeComponent } from '../simulation/scopes';
 import { CHANNEL_TRACE_COLORS, CHANNEL_TRACE_COLORS_LIGHT } from '../simulation/traceColors';
 import { terminalPositions } from '../model/geometry';
 import { SymbolPreview } from '../canvas/symbols';
+import { computeCurrentDirectionHint } from '../canvas/sheetGuides';
 
 // Same palette the scope view uses for its traces, so a channel's badge
 // color matches its waveform color everywhere.
@@ -167,6 +168,20 @@ export function PropertiesPanel({
           isSwitchComponent(c)),
     );
   }, [allComponents, component?.name]);
+
+  const currentDirectionHint = useMemo(() => {
+    if (!isAmmeter || !component || !coupledTarget) return null;
+    const targetComp = (allComponents || []).find((c) => c.name === coupledTarget);
+    if (!targetComp) return null;
+    return computeCurrentDirectionHint(component, targetComp);
+  }, [isAmmeter, component, coupledTarget, allComponents]);
+
+  const voltmeterTargetHint = useMemo(() => {
+    if (!isVoltmeter || !component || !coupledTarget) return null;
+    const targetComp = (allComponents || []).find((c) => c.name === coupledTarget);
+    if (!targetComp) return null;
+    return computeCurrentDirectionHint(component, targetComp);
+  }, [isVoltmeter, component, coupledTarget, allComponents]);
 
   // LK_M couples exactly two coupled inductors (LK_LKOP2); both selects
   // below offer only those, keyed by their backend uid.
@@ -472,11 +487,21 @@ export function PropertiesPanel({
                   </span>
                 </div>
               ) : (
-                <div className="coupling-status-pill active">
-                  <span className="coupling-status-dot" />
-                  <span>
-                    Measures branch current through <strong>{coupledTarget}</strong> (Signal: <code>{component.outputLabels?.[0] || 'i' + coupledTarget}</code>)
-                  </span>
+                <div className="coupling-status-pill active" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span className="coupling-status-dot" />
+                    <span>
+                      Measures branch current through <strong>{coupledTarget}</strong> (Signal: <code>{component.outputLabels?.[0] || 'i' + coupledTarget}</code>)
+                    </span>
+                  </div>
+                  {currentDirectionHint && (
+                    <div style={{ fontSize: '11px', color: '#cbd5e1', paddingLeft: '14px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <span style={{ color: '#f59e0b', fontWeight: 'bold' }}>➔ Reference:</span>
+                      <span>
+                        Positive when flowing <strong>{currentDirectionHint.directionText}</strong> (pin 1 → pin 2)
+                      </span>
+                    </div>
+                  )}
                 </div>
               )
             ) : (
@@ -597,11 +622,21 @@ export function PropertiesPanel({
                       </span>
                     </div>
                   ) : (
-                    <div className="coupling-status-pill active" style={{ marginTop: '8px' }}>
-                      <span className="coupling-status-dot" />
-                      <span>
-                        Measures voltage across <strong>{coupledTarget}</strong> (Signal: <code>{component.outputLabels?.[0] || 'u_' + coupledTarget}</code>)
-                      </span>
+                    <div className="coupling-status-pill active" style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span className="coupling-status-dot" />
+                        <span>
+                          Measures voltage across <strong>{coupledTarget}</strong> (Signal: <code>{component.outputLabels?.[0] || 'u_' + coupledTarget}</code>)
+                        </span>
+                      </div>
+                      {voltmeterTargetHint && (
+                        <div style={{ fontSize: '11px', color: '#cbd5e1', paddingLeft: '14px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <span style={{ color: '#f87171', fontWeight: 'bold' }}>+ at pin 1</span>
+                          <span style={{ color: '#94a3b8' }}>➔</span>
+                          <span style={{ color: '#cd7f32', fontWeight: 'bold' }}>− at pin 2</span>
+                          <span style={{ color: '#94a3b8' }}>({voltmeterTargetHint.directionText})</span>
+                        </div>
+                      )}
                     </div>
                   )
                 ) : (

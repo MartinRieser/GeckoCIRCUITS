@@ -20,6 +20,7 @@ import {
 } from '../model/componentSchema';
 import {
   buildCouplingPairs,
+  buildCurrentDirectionHints,
   buildMutualCouplingGuides,
   buildNetTerminalPoints,
   buildVoltmeterGuides,
@@ -137,6 +138,12 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
   // Active software coupling pairs (Gate Driver ➔ Switch, Ammeter ➔ Target Component)
   const couplingPairs = useMemo(
     () => buildCouplingPairs(state.components, state.selection, hoveredComponentName),
+    [state.components, state.selection, hoveredComponentName],
+  );
+
+  // Ammeter reference current direction hints on measured components
+  const currentDirectionHints = useMemo(
+    () => buildCurrentDirectionHints(state.components, state.selection, hoveredComponentName),
     [state.components, state.selection, hoveredComponentName],
   );
 
@@ -895,6 +902,27 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
             >
               <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#a78bfa" />
             </marker>
+            <marker
+              id="coupling-dot"
+              viewBox="0 0 10 10"
+              refX="5"
+              refY="5"
+              markerWidth="6"
+              markerHeight="6"
+            >
+              <circle cx="5" cy="5" r="4" style={{ fill: 'var(--accent)' }} />
+            </marker>
+            <marker
+              id="current-direction-arrow"
+              viewBox="0 0 10 10"
+              refX="8"
+              refY="5"
+              markerWidth="6"
+              markerHeight="6"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#f59e0b" />
+            </marker>
           </defs>
 
           {/* Grid Background */}
@@ -1196,178 +1224,6 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
             })}
           </g>
 
-          {/* Active Software Coupling Guidelines (Gate Driver ➔ Switch, Ammeter ➔ Component) */}
-          <g className="coupling-guides-layer" pointerEvents="none">
-            {couplingPairs.map(({ sourceComp, targetComp, label, isHoveredOrSelected }, i) => {
-              // Guides are selection feedback: draw nothing for idle blocks
-              if (!isHoveredOrSelected) return null;
-              const x1 = sourceComp.position[0] * dpix;
-              const y1 = sourceComp.position[1] * dpix;
-              const x2 = targetComp.position[0] * dpix;
-              const y2 = targetComp.position[1] * dpix;
-              const dx = x2 - x1;
-              const cx1 = x1 + dx * 0.4;
-              const cy1 = y1;
-              const cx2 = x1 + dx * 0.6;
-              const cy2 = y2;
-              const pathD = `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
-              const badgeW = Math.max(label.length * 6.5 + 16, 80);
-
-              return (
-                <g key={`coupling-${i}`} className="coupling-guide-group active">
-                  <path
-                    d={pathD}
-                    fill="none"
-                    stroke="rgba(56, 189, 248, 0.25)"
-                    strokeWidth={8}
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d={pathD}
-                    fill="none"
-                    stroke="#38bdf8"
-                    strokeWidth={2.5}
-                    strokeDasharray="6 4"
-                    className="coupling-guideline active"
-                    markerEnd="url(#coupling-arrow)"
-                  />
-                  <g transform={`translate(${(x1 + x2) / 2}, ${(y1 + y2) / 2})`}>
-                    <rect x={-badgeW / 2} y={-10} width={badgeW} height={20} rx={4} style={{ fill: 'var(--pill-bg)' }} stroke="var(--accent)" strokeWidth={1} />
-                    <text x={0} y={3.5} textAnchor="middle" fill="var(--accent)" fontSize={9} fontWeight="bold">
-                      {label}
-                    </text>
-                  </g>
-                </g>
-              );
-            })}
-          </g>
-
-          {/* Voltmeter ➔ measured-node guides (hover/selection only).
-              Polarity colours picked for contrast on the dark sheet:
-              red = positive node, brown = negative node. */}
-          {voltmeterGuides.map(({ key, source, points, isHoveredOrSelected }) => {
-            if (!isHoveredOrSelected || points.length === 0) return null;
-            const x1 = source.position[0] * dpix;
-            const y1 = source.position[1] * dpix;
-            return (
-              <g key={`voltmeter-guide-${key}`} className="coupling-guide-group active">
-                {points.map((p, j) => {
-                  const x2 = p.x * dpix;
-                  const y2 = p.y * dpix;
-                  const dx = x2 - x1;
-                  const cx1 = x1 + dx * 0.4;
-                  const cy1 = y1;
-                  const cx2 = x1 + dx * 0.6;
-                  const cy2 = y2;
-                  const pathD = `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
-                  const stroke = p.polarity === 'pos' ? '#f87171' : '#cd7f32';
-                  const halo = p.polarity === 'pos' ? 'rgba(248, 113, 113, 0.25)' : 'rgba(205, 127, 50, 0.25)';
-                  return (
-                    <g key={`voltmeter-guide-${key}-${j}`}>
-                      <path
-                        d={pathD}
-                        fill="none"
-                        stroke={halo}
-                        strokeWidth={8}
-                        strokeLinecap="round"
-                      />
-                      <path
-                        d={pathD}
-                        fill="none"
-                        stroke={stroke}
-                        strokeWidth={2.5}
-                        strokeDasharray="6 4"
-                        className="coupling-guideline active"
-                        markerEnd="url(#coupling-arrow)"
-                      />
-                    </g>
-                  );
-                })}
-              </g>
-            );
-          })}
-
-          {/* Scope ➔ measurement-point guides (hover/selection only).
-              Each channel keeps its trace color from the scope view and a
-              label pill at the target point, so the fan of lines stays
-              attributable to its channel. */}
-          {scopeGuides.map(({ key, lines, isHoveredOrSelected }) => {
-            if (!isHoveredOrSelected || lines.length === 0) return null;
-            return (
-              <g key={`scope-guide-${key}`} className="coupling-guide-group active">
-                {lines.map((line, j) => {
-                  const x1 = line.origin.x * dpix;
-                  const y1 = line.origin.y * dpix;
-                  const x2 = line.target.x * dpix;
-                  const y2 = line.target.y * dpix;
-                  const dx = x2 - x1;
-                  const cx1 = x1 + dx * 0.4;
-                  const cy1 = y1;
-                  const cx2 = x1 + dx * 0.6;
-                  const cy2 = y2;
-                  const pathD = `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
-                  const color = channelColorByIndex(
-                    line.colorIndex,
-                    typeof document !== 'undefined' &&
-                      document.documentElement.getAttribute('data-theme') === 'light'
-                      ? 'light'
-                      : 'dark',
-                  );
-                  const m = color.match(/^#(..)(..)(..)$/);
-                  const halo = m
-                    ? `rgba(${parseInt(m[1], 16)}, ${parseInt(m[2], 16)}, ${parseInt(m[3], 16)}, 0.22)`
-                    : 'rgba(56, 189, 248, 0.22)';
-                  const pillW = Math.max(line.text.length * 5.8 + 10, 30);
-                  // keep the label inside the sheet when the target is at the edge
-                  const pillX = Math.min(Math.max(x2, pillW / 2 + 2), 600 * dpix - pillW / 2 - 2);
-                  return (
-                    <g key={`scope-guide-${key}-${j}`}>
-                      <path
-                        d={pathD}
-                        fill="none"
-                        stroke={halo}
-                        strokeWidth={8}
-                        strokeLinecap="round"
-                      />
-                      <path
-                        d={pathD}
-                        fill="none"
-                        stroke={color}
-                        strokeWidth={2.5}
-                        strokeDasharray="6 4"
-                        className="coupling-guideline active"
-                      />
-                      <circle cx={x2} cy={y2} r={3.5} fill={color} />
-                      <g transform={`translate(${pillX}, ${y2 - 12})`}>
-                        <rect
-                          x={-pillW / 2}
-                          y={-8}
-                          width={pillW}
-                          height={15}
-                          rx={7}
-                          style={{ fill: 'var(--pill-bg)' }}
-                          stroke={color}
-                          strokeWidth={1}
-                        />
-                        <text
-                          x={0}
-                          y={3}
-                          textAnchor="middle"
-                          fill={color}
-                          fontSize={8.5}
-                          fontWeight="700"
-                          fontFamily="var(--font-mono, monospace)"
-                        >
-                          {line.text}
-                        </text>
-                      </g>
-                    </g>
-                  );
-                })}
-              </g>
-            );
-          })}
-
           {/* Components */}
           <g className="components" pointerEvents={state.mode === 'placing' ? 'none' : 'auto'}>
             {state.components.map((component) => {
@@ -1659,9 +1515,16 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                               }}
                               style={{ cursor: 'pointer' }}
                             >
-                              {/* No pill background: the outline read as a
-                                  selection indicator on some blocks and was
-                                  easily occluded by neighbour name labels */}
+                              <rect
+                                x={-Math.max(badgeText.length * 6.5 + 12, 36) / 2}
+                                y={-8}
+                                width={Math.max(badgeText.length * 6.5 + 12, 36)}
+                                height={16}
+                                rx={3}
+                                style={{ fill: 'var(--pill-bg)' }}
+                                stroke="rgba(56, 189, 248, 0.4)"
+                                strokeWidth={1}
+                              />
                               <text
                                 x={0}
                                 y={3.5}
@@ -1680,6 +1543,264 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
               );
             })}
           </g>
+
+          {/* Active Software Coupling Guidelines (Gate Driver ➔ Switch, Ammeter ➔ Component) */}
+          <g className="coupling-guides-layer" pointerEvents="none">
+            {couplingPairs.map(({ sourceComp, targetComp, label, isHoveredOrSelected }, i) => {
+              // Guides are selection feedback: draw nothing for idle blocks
+              if (!isHoveredOrSelected) return null;
+              const x1 = sourceComp.position[0] * dpix;
+              const y1 = sourceComp.position[1] * dpix;
+              const x2 = targetComp.position[0] * dpix;
+              const y2 = targetComp.position[1] * dpix;
+              const dx = x2 - x1;
+              const cx1 = x1 + dx * 0.4;
+              const cy1 = y1;
+              const cx2 = x1 + dx * 0.6;
+              const cy2 = y2;
+              const pathD = `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
+              const badgeW = Math.max(label.length * 6.5 + 16, 80);
+              const isAm = isAmmeterComponent(sourceComp);
+
+              return (
+                <g key={`coupling-${i}`} className="coupling-guide-group active">
+                  <path
+                    d={pathD}
+                    fill="none"
+                    stroke="rgba(56, 189, 248, 0.25)"
+                    strokeWidth={8}
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d={pathD}
+                    fill="none"
+                    stroke="#38bdf8"
+                    strokeWidth={2.5}
+                    strokeDasharray="6 4"
+                    className="coupling-guideline active"
+                    markerEnd={isAm ? "url(#coupling-dot)" : "url(#coupling-arrow)"}
+                  />
+                  <g transform={`translate(${(x1 + x2) / 2}, ${(y1 + y2) / 2})`}>
+                    <rect
+                      x={-badgeW / 2}
+                      y={-10}
+                      width={badgeW}
+                      height={20}
+                      rx={4}
+                      style={{ fill: 'var(--pill-bg)' }}
+                      stroke="var(--accent)"
+                      strokeWidth={1}
+                    />
+                    <text x={0} y={3.5} textAnchor="middle" fill="var(--accent)" fontSize={9} fontWeight="bold">
+                      {label}
+                    </text>
+                  </g>
+                </g>
+              );
+            })}
+          </g>
+
+          {/* Reference Current Direction Hint for Ammeters (Amber arrow alongside measured component) */}
+          <g className="current-direction-layer" pointerEvents="none">
+            {currentDirectionHints.map((hint) => {
+              const x1 = hint.arrowStart.x * dpix;
+              const y1 = hint.arrowStart.y * dpix;
+              const x2 = hint.arrowEnd.x * dpix;
+              const y2 = hint.arrowEnd.y * dpix;
+              const midX = (x1 + x2) / 2;
+              const midY = (y1 + y2) / 2;
+              const len = Math.hypot(x2 - x1, y2 - y1) || 1;
+              const nx = -(y2 - y1) / len;
+              const ny = (x2 - x1) / len;
+              const labelX = midX + nx * 10;
+              const labelY = midY + ny * 10;
+              const labelText = `+i(${hint.target.name})`;
+              const badgeW = labelText.length * 6.5 + 10;
+
+              return (
+                <g key={`current-dir-${hint.key}`} className="current-direction-hint active">
+                  {/* Glow underlay */}
+                  <line
+                    x1={x1}
+                    y1={y1}
+                    x2={x2}
+                    y2={y2}
+                    stroke="rgba(245, 158, 11, 0.3)"
+                    strokeWidth={7}
+                    strokeLinecap="round"
+                  />
+                  {/* Direction arrow line */}
+                  <line
+                    x1={x1}
+                    y1={y1}
+                    x2={x2}
+                    y2={y2}
+                    stroke="#f59e0b"
+                    strokeWidth={2.5}
+                    markerEnd="url(#current-direction-arrow)"
+                  />
+                  {/* Direction badge tag */}
+                  <g transform={`translate(${labelX}, ${labelY})`}>
+                    <rect
+                      x={-badgeW / 2}
+                      y={-8}
+                      width={badgeW}
+                      height={16}
+                      rx={3}
+                      style={{ fill: 'var(--pill-bg)' }}
+                      stroke="#f59e0b"
+                      strokeWidth={1}
+                    />
+                    <text
+                      x={0}
+                      y={3.5}
+                      textAnchor="middle"
+                      fill="#f59e0b"
+                      fontSize={9}
+                      fontWeight="bold"
+                    >
+                      {labelText}
+                    </text>
+                  </g>
+                </g>
+              );
+            })}
+          </g>
+
+          {/* Voltmeter ➔ measured-node / measured-component guides (hover/selection only) */}
+          {voltmeterGuides.map(({ key, source, points, isHoveredOrSelected }) => {
+            if (!isHoveredOrSelected || points.length === 0) return null;
+            const x1 = source.position[0] * dpix;
+            const y1 = source.position[1] * dpix;
+            return (
+              <g key={`voltmeter-guide-${key}`} className="coupling-guide-group active">
+                {points.map((p, j) => {
+                  const x2 = p.x * dpix;
+                  const y2 = p.y * dpix;
+                  const dx = x2 - x1;
+                  const cx1 = x1 + dx * 0.4;
+                  const cy1 = y1;
+                  const cx2 = x1 + dx * 0.6;
+                  const cy2 = y2;
+                  const pathD = `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
+                  const stroke = p.polarity === 'pos' ? '#f87171' : '#cd7f32';
+                  const halo = p.polarity === 'pos' ? 'rgba(248, 113, 113, 0.25)' : 'rgba(205, 127, 50, 0.25)';
+                  return (
+                    <g key={`voltmeter-guide-${key}-${j}`}>
+                      <path
+                        d={pathD}
+                        fill="none"
+                        stroke={halo}
+                        strokeWidth={8}
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d={pathD}
+                        fill="none"
+                        stroke={stroke}
+                        strokeWidth={2.5}
+                        strokeDasharray="6 4"
+                        className="coupling-guideline active"
+                      />
+                      {/* Polarity + / − indicator badge at target terminal */}
+                      <g transform={`translate(${x2}, ${y2})`}>
+                        <circle r={6.5} style={{ fill: 'var(--pill-bg)' }} stroke={stroke} strokeWidth={1.5} />
+                        <text
+                          x={0}
+                          y={3.5}
+                          textAnchor="middle"
+                          fill={stroke}
+                          fontSize={11}
+                          fontWeight="bold"
+                          fontFamily="monospace"
+                        >
+                          {p.polarity === 'pos' ? '+' : '−'}
+                        </text>
+                      </g>
+                    </g>
+                  );
+                })}
+              </g>
+            );
+          })}
+
+          {/* Scope ➔ measurement-point guides (hover/selection only) */}
+          {scopeGuides.map(({ key, lines, isHoveredOrSelected }) => {
+            if (!isHoveredOrSelected || lines.length === 0) return null;
+            return (
+              <g key={`scope-guide-${key}`} className="coupling-guide-group active">
+                {lines.map((line, j) => {
+                  const x1 = line.origin.x * dpix;
+                  const y1 = line.origin.y * dpix;
+                  const x2 = line.target.x * dpix;
+                  const y2 = line.target.y * dpix;
+                  const dx = x2 - x1;
+                  const cx1 = x1 + dx * 0.4;
+                  const cy1 = y1;
+                  const cx2 = x1 + dx * 0.6;
+                  const cy2 = y2;
+                  const pathD = `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
+                  const color = channelColorByIndex(
+                    line.colorIndex,
+                    typeof document !== 'undefined' &&
+                      document.documentElement.getAttribute('data-theme') === 'light'
+                      ? 'light'
+                      : 'dark',
+                  );
+                  const m = color.match(/^#(..)(..)(..)$/);
+                  const halo = m
+                    ? `rgba(${parseInt(m[1], 16)}, ${parseInt(m[2], 16)}, ${parseInt(m[3], 16)}, 0.22)`
+                    : 'rgba(56, 189, 248, 0.22)';
+                  const pillW = Math.max(line.text.length * 5.8 + 10, 30);
+                  // keep the label inside the sheet when the target is at the edge
+                  const pillX = Math.min(Math.max(x2, pillW / 2 + 2), 600 * dpix - pillW / 2 - 2);
+                  return (
+                    <g key={`scope-guide-${key}-${j}`}>
+                      <path
+                        d={pathD}
+                        fill="none"
+                        stroke={halo}
+                        strokeWidth={8}
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d={pathD}
+                        fill="none"
+                        stroke={color}
+                        strokeWidth={2.5}
+                        strokeDasharray="6 4"
+                        className="coupling-guideline active"
+                      />
+                      <circle cx={x2} cy={y2} r={3.5} fill={color} />
+                      <g transform={`translate(${pillX}, ${y2 - 12})`}>
+                        <rect
+                          x={-pillW / 2}
+                          y={-8}
+                          width={pillW}
+                          height={15}
+                          rx={7}
+                          style={{ fill: 'var(--pill-bg)' }}
+                          stroke={color}
+                          strokeWidth={1}
+                        />
+                        <text
+                          x={0}
+                          y={3}
+                          textAnchor="middle"
+                          fill={color}
+                          fontSize={8.5}
+                          fontWeight="700"
+                          fontFamily="var(--font-mono, monospace)"
+                        >
+                          {line.text}
+                        </text>
+                      </g>
+                    </g>
+                  );
+                })}
+              </g>
+            );
+          })}
 
           {/* Deduplicated Terminal Net Labels Layer */}
           <g className="terminal-net-labels-layer" pointerEvents="none">
