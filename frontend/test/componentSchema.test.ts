@@ -209,4 +209,68 @@ describe('componentSchema', () => {
       }
     }
   });
+
+  describe('Control Blocks 1017..1037', () => {
+    it('defines metadata for all 21 restored control blocks', () => {
+      const types = [
+        ControlComponentType.SUB,
+        ControlComponentType.ADD,
+        ControlComponentType.MUL,
+        ControlComponentType.DIV,
+        ControlComponentType.LIMIT,
+        ControlComponentType.ABS,
+        ControlComponentType.SQRT,
+        ControlComponentType.EXP,
+        ControlComponentType.LN,
+        ControlComponentType.SIN,
+        ControlComponentType.COS,
+        ControlComponentType.MIN,
+        ControlComponentType.MAX,
+        ControlComponentType.HYS,
+        ControlComponentType.PT2,
+        ControlComponentType.PD,
+        ControlComponentType.SAMPLEHOLD,
+        ControlComponentType.TIME,
+        ControlComponentType.XOR,
+        ControlComponentType.GE,
+        ControlComponentType.DEADTIME,
+      ];
+
+      for (const t of types) {
+        const meta = COMPONENT_METAS[t];
+        expect(meta, `Metadata for type ${t} should exist`).toBeDefined();
+        expect(meta.family).toBe('CONTROL');
+        expect(meta.displayName.length).toBeGreaterThan(0);
+        expect(['control', 'logic']).toContain(meta.category);
+      }
+    });
+
+    it('configures SUB block with 2 inputs (+, −) for error calculation and 1 output', () => {
+      const meta = COMPONENT_METAS[ControlComponentType.SUB];
+      expect(meta.terminals.input).toHaveLength(2);
+      expect(meta.terminals.output).toHaveLength(1);
+      expect(meta.terminals.input[0].label).toBe('+');
+      expect(meta.terminals.input[1].label).toBe('−');
+    });
+
+    it('configures DEADTIME block with 1 PWM input, 2 outputs (hi, lo), and t_dead parameter', () => {
+      const meta = COMPONENT_METAS[ControlComponentType.DEADTIME];
+      expect(meta.terminals.input).toHaveLength(1);
+      expect(meta.terminals.output).toHaveLength(2);
+      expect(meta.terminals.output[0].label).toBe('hi');
+      expect(meta.terminals.output[1].label).toBe('lo');
+      expect(meta.parameters).toHaveLength(1);
+      expect(meta.parameters[0].key).toBe('param0');
+    });
+
+    it('maps legacy control types through getComponentMeta', () => {
+      expect(getComponentMeta(13, 'CONTROL').type).toBe(ControlComponentType.SUB);
+      expect(getComponentMeta(12, 'CONTROL').type).toBe(ControlComponentType.ADD);
+      expect(getComponentMeta(14, 'CONTROL').type).toBe(ControlComponentType.MUL);
+      expect(getComponentMeta(15, 'CONTROL').type).toBe(ControlComponentType.DIV);
+      expect(getComponentMeta(27, 'CONTROL').type).toBe(ControlComponentType.LIMIT);
+      expect(getComponentMeta(21, 'CONTROL').type).toBe(ControlComponentType.XOR);
+      expect(getComponentMeta(58, 'CONTROL').type).toBe(ControlComponentType.TIME);
+    });
+  });
 });

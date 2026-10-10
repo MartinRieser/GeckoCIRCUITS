@@ -109,17 +109,19 @@ public final class ComponentTerminals {
         int type = comp.getType();
 
         if (isControlFamily(comp)) {
-            // constant, signal source, voltmeter probe, ammeter probe: 0 schematic inputs, 1 output on the output side
+            // constant, signal source, voltmeter probe, ammeter probe, time source: 0 schematic inputs, 1 output on the output side
             if (type == CONTROL_SIGNAL_SOURCE || type == CONTROL_CONSTANT
                     || type == CONTROL_VOLTMETER || type == CONTROL_AMMETER
                     || type == CircuitTypCore.CTRL_SIGNAL.getTypeNumber()
                     || type == CircuitTypCore.CTRL_CONSTANT.getTypeNumber()
                     || type == CircuitTypCore.CTRL_VOLT.getTypeNumber()
-                    || type == CircuitTypCore.CTRL_AMP.getTypeNumber()) {
+                    || type == CircuitTypCore.CTRL_AMP.getTypeNumber()
+                    || type == CircuitTypCore.CTRL_TIME.getTypeNumber()
+                    || type == 58) {
                 return List.of(offset(x, y, dir, TERMINAL_DISTANCE));
             }
             // gates: 1 input on the input side, 0 outputs
-            if (type == CONTROL_GATE) {
+            if (type == CONTROL_GATE || type == CircuitTypCore.CTRL_GATE.getTypeNumber()) {
                 return List.of(offset(x, y, dir, -TERMINAL_DISTANCE));
             }
             // scopes: one input terminal per input label, spread perpendicular
@@ -128,6 +130,33 @@ public final class ComponentTerminals {
             if (type == CONTROL_SCOPE || type == CircuitTypCore.CTRL_SCOPE.getTypeNumber()) {
                 return scopeTerminals(comp, x, y, dir);
             }
+            // Dead-time block: 1 input on the input side, 2 outputs on the output side
+            if (type == CircuitTypCore.CTRL_DEADTIME.getTypeNumber()) {
+                return multiControlTerminals(1, 2, x, y, dir);
+            }
+            // 3-input multiplexer
+            if (type == CircuitTypCore.CTRL_MUX.getTypeNumber() || type == 84) {
+                return multiControlTerminals(3, 1, x, y, dir);
+            }
+            // 2-input control blocks (comparator, logic gates, math operations)
+            if (type == CircuitTypCore.CTRL_COMPARATOR.getTypeNumber()
+                    || type == CircuitTypCore.CTRL_AND.getTypeNumber()
+                    || type == CircuitTypCore.CTRL_OR.getTypeNumber()
+                    || type == CircuitTypCore.CTRL_SUB.getTypeNumber()
+                    || type == CircuitTypCore.CTRL_ADD.getTypeNumber()
+                    || type == CircuitTypCore.CTRL_MUL.getTypeNumber()
+                    || type == CircuitTypCore.CTRL_DIV.getTypeNumber()
+                    || type == CircuitTypCore.CTRL_MIN.getTypeNumber()
+                    || type == CircuitTypCore.CTRL_MAX.getTypeNumber()
+                    || type == CircuitTypCore.CTRL_SAMPLEHOLD.getTypeNumber()
+                    || type == CircuitTypCore.CTRL_XOR.getTypeNumber()
+                    || type == CircuitTypCore.CTRL_GE.getTypeNumber()
+                    || type == CircuitTypCore.CTRL_INTEGRATOR.getTypeNumber()
+                    || type == 10 || type == 12 || type == 13 || type == 14 || type == 15
+                    || type == 19 || type == 20 || type == 21 || type == 26 || type == 45
+                    || type == 46 || type == 49 || type == 50 || type == 64) {
+                return multiControlTerminals(2, 1, x, y, dir);
+            }
         }
 
         if (type == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber()) {
@@ -135,6 +164,22 @@ public final class ComponentTerminals {
         }
 
         return List.of(offset(x, y, dir, -TERMINAL_DISTANCE), offset(x, y, dir, TERMINAL_DISTANCE));
+    }
+
+    private static List<int[]> multiControlTerminals(int inCount, int outCount, int x, int y, int[] dir) {
+        int[] perp = {-dir[1], dir[0]};
+        List<int[]> terminals = new ArrayList<>(inCount + outCount);
+        for (int i = 0; i < inCount; i++) {
+            terminals.add(new int[]{
+                    x - dir[0] * TERMINAL_DISTANCE + perp[0] * i,
+                    y - dir[1] * TERMINAL_DISTANCE + perp[1] * i});
+        }
+        for (int j = 0; j < outCount; j++) {
+            terminals.add(new int[]{
+                    x + dir[0] * TERMINAL_DISTANCE + perp[0] * j,
+                    y + dir[1] * TERMINAL_DISTANCE + perp[1] * j});
+        }
+        return terminals;
     }
 
     private static boolean isControlFamily(CircuitModel.ComponentData comp) {

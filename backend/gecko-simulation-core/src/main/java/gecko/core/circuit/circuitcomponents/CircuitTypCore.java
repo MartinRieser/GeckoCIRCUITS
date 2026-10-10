@@ -121,6 +121,27 @@ public enum CircuitTypCore {
     CTRL_MUX(1014),        // Multiplexer
     CTRL_DELAY(1015),      // Time delay
     CTRL_SCRIPT(1016),     // Programmable function / script block
+    CTRL_SUB(1017),        // Subtraction / Error (in0 - in1)
+    CTRL_ADD(1018),        // Addition (in0 + in1)
+    CTRL_MUL(1019),        // Multiplication (in0 * in1)
+    CTRL_DIV(1020),        // Division (in0 / in1)
+    CTRL_LIMIT(1021),      // Limiter / Saturation
+    CTRL_ABS(1022),        // Absolute value |x|
+    CTRL_SQRT(1023),       // Square root sqrt(x)
+    CTRL_EXP(1024),        // Exponential exp(x)
+    CTRL_LN(1025),         // Natural logarithm ln(x)
+    CTRL_SIN(1026),        // Sine sin(x)
+    CTRL_COS(1027),        // Cosine cos(x)
+    CTRL_MIN(1028),        // Minimum min(in0, in1)
+    CTRL_MAX(1029),        // Maximum max(in0, in1)
+    CTRL_HYS(1030),        // Hysteresis threshold
+    CTRL_PT2(1031),        // PT2 2nd-order low-pass filter
+    CTRL_PD(1032),         // PD controller
+    CTRL_SAMPLEHOLD(1033), // Sample and hold
+    CTRL_TIME(1034),       // Simulation time generator (t)
+    CTRL_XOR(1035),        // XOR logic gate
+    CTRL_GE(1036),         // Greater or equal (in0 >= in1)
+    CTRL_DEADTIME(1037),   // Dead-time generator for complementary bridge gates
     C_JAVA_FUNCTION(61);   // Classic Java function block
 
     private final int typeNumber;

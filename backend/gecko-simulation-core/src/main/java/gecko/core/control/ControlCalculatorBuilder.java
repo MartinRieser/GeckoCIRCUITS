@@ -16,26 +16,47 @@ package gecko.core.control;
 import gecko.core.circuit.ComponentTerminals;
 import gecko.core.circuit.circuitcomponents.CircuitTypCore;
 import gecko.core.circuit.netlist.CircuitNetlist;
+import gecko.core.control.calculators.AbsCalculator;
 import gecko.core.control.calculators.AbstractControlCalculatable;
+import gecko.core.control.calculators.AddCalculator;
 import gecko.core.control.calculators.AndTwoPortCalculator;
 import gecko.core.control.calculators.ConstantCalculator;
+import gecko.core.control.calculators.CosCalculator;
+import gecko.core.control.calculators.DeadTimeCalculator;
 import gecko.core.control.calculators.DelayCalculator;
+import gecko.core.control.calculators.DivCalculator;
+import gecko.core.control.calculators.ExpCalculator;
 import gecko.core.control.calculators.GainCalculator;
 import gecko.core.control.calculators.GateCalculator;
+import gecko.core.control.calculators.GreaterEqualCalculator;
 import gecko.core.control.calculators.GreaterThanCalculator;
+import gecko.core.control.calculators.HysteresisCalculatorInternal;
 import gecko.core.control.calculators.InitializableAtSimulationStart;
 import gecko.core.control.calculators.IntegratorCalculation;
 import gecko.core.control.calculators.CLibraryCalculator;
+import gecko.core.control.calculators.LimitCalculatorInternal;
+import gecko.core.control.calculators.LnCalculator;
+import gecko.core.control.calculators.MaxCalculatorTwoInputs;
+import gecko.core.control.calculators.MinCalculatorTwoInputs;
+import gecko.core.control.calculators.MulCalculator;
 import gecko.core.control.calculators.NotCalculator;
 import gecko.core.control.calculators.OrCalculatorTwoInputs;
+import gecko.core.control.calculators.PDCalculator;
 import gecko.core.control.calculators.PICalculator;
 import gecko.core.control.calculators.PT1Calculator;
+import gecko.core.control.calculators.PT2Calculator;
+import gecko.core.control.calculators.SampleHoldCalculator;
 import gecko.core.control.calculators.ScriptBlockCalculator;
 import gecko.core.control.calculators.SignalCalculatorRandom;
 import gecko.core.control.calculators.SignalCalculatorRectangle;
 import gecko.core.control.calculators.SignalCalculatorSinus;
 import gecko.core.control.calculators.SignalCalculatorTriangle;
 import gecko.core.control.calculators.SignalSelectorCalculator;
+import gecko.core.control.calculators.SinCalculator;
+import gecko.core.control.calculators.SqrtCalculator;
+import gecko.core.control.calculators.SubtractionTwoParameter;
+import gecko.core.control.calculators.TimeCalculator;
+import gecko.core.control.calculators.XORCalculator;
 import gecko.core.io.CircuitModel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -93,6 +114,35 @@ public final class ControlCalculatorBuilder {
     private static final int TYP_SIGNAL_SOURCE = 4;
     private static final int TYP_SCOPE = 5;
     private static final int TYP_GATE = 6;
+    private static final int TYP_LEGACY_GAIN = 7;
+    private static final int TYP_LEGACY_PT1 = 8;
+    private static final int TYP_LEGACY_PT2 = 9;
+    private static final int TYP_LEGACY_PI = 10;
+    private static final int TYP_LEGACY_HYS = 11;
+    private static final int TYP_LEGACY_ADD = 12;
+    private static final int TYP_LEGACY_SUB = 13;
+    private static final int TYP_LEGACY_MUL = 14;
+    private static final int TYP_LEGACY_DIV = 15;
+    private static final int TYP_LEGACY_NOT = 18;
+    private static final int TYP_LEGACY_AND = 19;
+    private static final int TYP_LEGACY_OR = 20;
+    private static final int TYP_LEGACY_XOR = 21;
+    private static final int TYP_LEGACY_DELAY = 25;
+    private static final int TYP_LEGACY_SAMPLEHOLD = 26;
+    private static final int TYP_LEGACY_LIMIT = 27;
+    private static final int TYP_LEGACY_PD = 29;
+    private static final int TYP_LEGACY_ABS = 32;
+    private static final int TYP_LEGACY_SIN = 34;
+    private static final int TYP_LEGACY_COS = 36;
+    private static final int TYP_LEGACY_EXP = 40;
+    private static final int TYP_LEGACY_LN = 41;
+    private static final int TYP_LEGACY_SQRT = 43;
+    private static final int TYP_LEGACY_GE = 45;
+    private static final int TYP_LEGACY_GT = 46;
+    private static final int TYP_LEGACY_MIN = 49;
+    private static final int TYP_LEGACY_MAX = 50;
+    private static final int TYP_LEGACY_TIME = 58;
+    private static final int TYP_LEGACY_INT = 64;
     private static final int TYP_JAVA_FUNCTION = 61;
     private static final int TYP_SCRIPT = 1016;
     private static final int TYP_NATIVE_C = 88;
@@ -117,6 +167,27 @@ public final class ControlCalculatorBuilder {
     private static final int TYP_NOT = 1013;
     private static final int TYP_SELECTOR = 1014;
     private static final int TYP_DELAY = 1015;
+    private static final int TYP_SUB = 1017;
+    private static final int TYP_ADD = 1018;
+    private static final int TYP_MUL = 1019;
+    private static final int TYP_DIV = 1020;
+    private static final int TYP_LIMIT = 1021;
+    private static final int TYP_ABS = 1022;
+    private static final int TYP_SQRT = 1023;
+    private static final int TYP_EXP = 1024;
+    private static final int TYP_LN = 1025;
+    private static final int TYP_SIN = 1026;
+    private static final int TYP_COS = 1027;
+    private static final int TYP_MIN = 1028;
+    private static final int TYP_MAX = 1029;
+    private static final int TYP_HYS = 1030;
+    private static final int TYP_PT2 = 1031;
+    private static final int TYP_PD = 1032;
+    private static final int TYP_SAMPLEHOLD = 1033;
+    private static final int TYP_TIME = 1034;
+    private static final int TYP_XOR = 1035;
+    private static final int TYP_GE = 1036;
+    private static final int TYP_DEADTIME = 1037;
 
     // Parameter slot layouts of the web catalog control blocks
     /** CTRL_CONSTANT: constant output value. */
@@ -148,12 +219,44 @@ public final class ControlCalculatorBuilder {
      * resets the state to the initial value; unwired resets to 0).
      */
     private static final Map<Integer, int[]> TERMINALS_BY_TYPE = Map.ofEntries(
+            // Classic blocks
             Map.entry(TYP_VOLTMEETER, new int[]{0, 1, 2}),
             Map.entry(TYP_AMMETER, new int[]{0, 1, 2}),
             Map.entry(TYP_CONSTANT, new int[]{0, 1, 2}),
             Map.entry(TYP_SIGNAL_SOURCE, new int[]{0, 1, 2}),
             Map.entry(TYP_SCOPE, new int[]{3, 0, 2}),
             Map.entry(TYP_GATE, new int[]{1, 0, 2}),
+            Map.entry(TYP_LEGACY_GAIN, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_PT1, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_PT2, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_PI, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_HYS, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_ADD, new int[]{2, 1, 2}),
+            Map.entry(TYP_LEGACY_SUB, new int[]{2, 1, 2}),
+            Map.entry(TYP_LEGACY_MUL, new int[]{2, 1, 2}),
+            Map.entry(TYP_LEGACY_DIV, new int[]{2, 1, 2}),
+            Map.entry(TYP_LEGACY_NOT, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_AND, new int[]{2, 1, 2}),
+            Map.entry(TYP_LEGACY_OR, new int[]{2, 1, 2}),
+            Map.entry(TYP_LEGACY_XOR, new int[]{2, 1, 2}),
+            Map.entry(TYP_LEGACY_DELAY, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_SAMPLEHOLD, new int[]{2, 1, 2}),
+            Map.entry(TYP_LEGACY_LIMIT, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_PD, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_ABS, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_SIN, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_COS, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_EXP, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_LN, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_SQRT, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_GE, new int[]{2, 1, 2}),
+            Map.entry(TYP_LEGACY_GT, new int[]{2, 1, 2}),
+            Map.entry(TYP_LEGACY_MIN, new int[]{2, 1, 2}),
+            Map.entry(TYP_LEGACY_MAX, new int[]{2, 1, 2}),
+            Map.entry(TYP_LEGACY_TIME, new int[]{0, 1, 2}),
+            Map.entry(TYP_LEGACY_INT, new int[]{2, 1, 2}),
+
+            // Web catalog blocks
             Map.entry(TYP_GATE_WEB, new int[]{1, 0, 2}),
             Map.entry(TYP_VOLT_WEB, new int[]{0, 1, 2}),
             Map.entry(TYP_AMP_WEB, new int[]{0, 1, 2}),
@@ -169,7 +272,28 @@ public final class ControlCalculatorBuilder {
             Map.entry(TYP_OR, new int[]{2, 1, 2}),
             Map.entry(TYP_NOT, new int[]{1, 1, 2}),
             Map.entry(TYP_SELECTOR, new int[]{3, 1, 2}),
-            Map.entry(TYP_DELAY, new int[]{1, 1, 2}));
+            Map.entry(TYP_DELAY, new int[]{1, 1, 2}),
+            Map.entry(TYP_SUB, new int[]{2, 1, 2}),
+            Map.entry(TYP_ADD, new int[]{2, 1, 2}),
+            Map.entry(TYP_MUL, new int[]{2, 1, 2}),
+            Map.entry(TYP_DIV, new int[]{2, 1, 2}),
+            Map.entry(TYP_LIMIT, new int[]{1, 1, 2}),
+            Map.entry(TYP_ABS, new int[]{1, 1, 2}),
+            Map.entry(TYP_SQRT, new int[]{1, 1, 2}),
+            Map.entry(TYP_EXP, new int[]{1, 1, 2}),
+            Map.entry(TYP_LN, new int[]{1, 1, 2}),
+            Map.entry(TYP_SIN, new int[]{1, 1, 2}),
+            Map.entry(TYP_COS, new int[]{1, 1, 2}),
+            Map.entry(TYP_MIN, new int[]{2, 1, 2}),
+            Map.entry(TYP_MAX, new int[]{2, 1, 2}),
+            Map.entry(TYP_HYS, new int[]{1, 1, 2}),
+            Map.entry(TYP_PT2, new int[]{1, 1, 2}),
+            Map.entry(TYP_PD, new int[]{1, 1, 2}),
+            Map.entry(TYP_SAMPLEHOLD, new int[]{2, 1, 2}),
+            Map.entry(TYP_TIME, new int[]{0, 1, 2}),
+            Map.entry(TYP_XOR, new int[]{2, 1, 2}),
+            Map.entry(TYP_GE, new int[]{2, 1, 2}),
+            Map.entry(TYP_DEADTIME, new int[]{1, 2, 2}));
 
     /**
      * Wired control domain plus its LK couplings, ready to be driven by the
@@ -445,7 +569,7 @@ public final class ControlCalculatorBuilder {
                     signalTaps.add(new SignalTap(label, calculator));
                 }
             } else if (comp.getType() == TYP_JAVA_FUNCTION || comp.getType() == TYP_SCRIPT
-                    || comp.getType() == TYP_NATIVE_C) {
+                    || comp.getType() == TYP_NATIVE_C || comp.getType() == TYP_DEADTIME) {
                 int[] layout = getTerminalLayout(comp);
                 String[] yLabels = comp.getTerminalYLabels();
                 for (int j = 0; j < (layout != null ? layout[1] : 1); j++) {
@@ -743,13 +867,82 @@ public final class ControlCalculatorBuilder {
             case TYP_PT1 -> new PT1Calculator(param(params, PT1_TIME_CONSTANT), PT1_DC_GAIN);
             case TYP_INTEGRATOR -> createIntegrator(params);
             case TYP_COMPARATOR -> new GreaterThanCalculator();
-            case TYP_AND -> new AndTwoPortCalculator();
-            case TYP_OR -> new OrCalculatorTwoInputs();
-            case TYP_NOT -> new NotCalculator();
+            case TYP_AND, TYP_LEGACY_AND -> new AndTwoPortCalculator();
+            case TYP_OR, TYP_LEGACY_OR -> new OrCalculatorTwoInputs();
+            case TYP_NOT, TYP_LEGACY_NOT -> new NotCalculator();
             case TYP_SELECTOR -> new SignalSelectorCalculator();
-            case TYP_DELAY -> createDelayCalculator(params);
+            case TYP_DELAY, TYP_LEGACY_DELAY -> createDelayCalculator(params);
+            case TYP_SUB, TYP_LEGACY_SUB -> new SubtractionTwoParameter();
+            case TYP_ADD, TYP_LEGACY_ADD -> new AddCalculator();
+            case TYP_MUL, TYP_LEGACY_MUL -> new MulCalculator();
+            case TYP_DIV, TYP_LEGACY_DIV -> new DivCalculator();
+            case TYP_LIMIT, TYP_LEGACY_LIMIT -> createLimitCalculator(params);
+            case TYP_ABS, TYP_LEGACY_ABS -> new AbsCalculator();
+            case TYP_SQRT, TYP_LEGACY_SQRT -> new SqrtCalculator();
+            case TYP_EXP, TYP_LEGACY_EXP -> new ExpCalculator();
+            case TYP_LN, TYP_LEGACY_LN -> new LnCalculator();
+            case TYP_SIN, TYP_LEGACY_SIN -> new SinCalculator();
+            case TYP_COS, TYP_LEGACY_COS -> new CosCalculator();
+            case TYP_MIN, TYP_LEGACY_MIN -> new MinCalculatorTwoInputs();
+            case TYP_MAX, TYP_LEGACY_MAX -> new MaxCalculatorTwoInputs();
+            case TYP_HYS, TYP_LEGACY_HYS -> createHysteresisCalculator(params);
+            case TYP_PT2, TYP_LEGACY_PT2 -> createPt2Calculator(params);
+            case TYP_PD, TYP_LEGACY_PD -> createPdCalculator(params);
+            case TYP_SAMPLEHOLD, TYP_LEGACY_SAMPLEHOLD -> new SampleHoldCalculator();
+            case TYP_TIME, TYP_LEGACY_TIME -> new TimeCalculator();
+            case TYP_XOR, TYP_LEGACY_XOR -> new XORCalculator();
+            case TYP_GE, TYP_LEGACY_GE -> new GreaterEqualCalculator();
+            case TYP_DEADTIME -> createDeadTimeCalculator(params);
+            case TYP_LEGACY_GAIN -> new GainCalculator(param(params, GAIN_FACTOR));
+            case TYP_LEGACY_PT1 -> new PT1Calculator(param(params, PT1_TIME_CONSTANT), PT1_DC_GAIN);
+            case TYP_LEGACY_PI -> createPiCalculator(params);
+            case TYP_LEGACY_GT -> new GreaterThanCalculator();
+            case TYP_LEGACY_INT -> createIntegrator(params);
             default -> null;
         };
+    }
+
+    private static AbstractControlCalculatable createLimitCalculator(double[] params) {
+        double min = params != null && params.length > 0 ? params[0] : -1.0;
+        double max = params != null && params.length > 1 ? params[1] : 1.0;
+        if (min >= max) {
+            min = -1.0;
+            max = 1.0;
+        }
+        return new LimitCalculatorInternal(min, max);
+    }
+
+    private static AbstractControlCalculatable createHysteresisCalculator(double[] params) {
+        double h = param(params, 0);
+        if (h <= 0.0) {
+            h = 0.1;
+        }
+        return new HysteresisCalculatorInternal(h);
+    }
+
+    private static AbstractControlCalculatable createPt2Calculator(double[] params) {
+        double tau = param(params, 0);
+        if (tau <= 0.0) {
+            tau = 0.001;
+        }
+        double gain = params != null && params.length > 1 ? params[1] : 1.0;
+        return new PT2Calculator(tau, gain);
+    }
+
+    private static AbstractControlCalculatable createPdCalculator(double[] params) {
+        double gain = param(params, 0);
+        if (gain == 0.0 && (params == null || params.length == 0)) {
+            gain = 1.0;
+        }
+        return new PDCalculator(gain);
+    }
+
+    private static AbstractControlCalculatable createDeadTimeCalculator(double[] params) {
+        double tDead = param(params, 0);
+        if (tDead <= 0.0 && (params == null || params.length == 0)) {
+            tDead = 200e-9;
+        }
+        return new DeadTimeCalculator(tDead);
     }
 
     /**
@@ -968,10 +1161,35 @@ public final class ControlCalculatorBuilder {
     private static boolean isLabeledTapType(int type) {
         return type == TYP_SIGNAL_SOURCE || type == TYP_SIGNAL_WEB
                 || type == TYP_CONSTANT || type == TYP_CONSTANT_WEB
-                || type == TYP_GAIN || type == TYP_PI || type == TYP_PT1
-                || type == TYP_INTEGRATOR || type == TYP_COMPARATOR
-                || type == TYP_AND || type == TYP_OR || type == TYP_NOT
-                || type == TYP_SELECTOR || type == TYP_DELAY;
+                || type == TYP_GAIN || type == TYP_LEGACY_GAIN
+                || type == TYP_PI || type == TYP_LEGACY_PI
+                || type == TYP_PT1 || type == TYP_LEGACY_PT1
+                || type == TYP_INTEGRATOR || type == TYP_LEGACY_INT
+                || type == TYP_COMPARATOR || type == TYP_LEGACY_GT
+                || type == TYP_AND || type == TYP_LEGACY_AND
+                || type == TYP_OR || type == TYP_LEGACY_OR
+                || type == TYP_NOT || type == TYP_LEGACY_NOT
+                || type == TYP_SELECTOR || type == TYP_DELAY || type == TYP_LEGACY_DELAY
+                || type == TYP_SUB || type == TYP_LEGACY_SUB
+                || type == TYP_ADD || type == TYP_LEGACY_ADD
+                || type == TYP_MUL || type == TYP_LEGACY_MUL
+                || type == TYP_DIV || type == TYP_LEGACY_DIV
+                || type == TYP_LIMIT || type == TYP_LEGACY_LIMIT
+                || type == TYP_ABS || type == TYP_LEGACY_ABS
+                || type == TYP_SQRT || type == TYP_LEGACY_SQRT
+                || type == TYP_EXP || type == TYP_LEGACY_EXP
+                || type == TYP_LN || type == TYP_LEGACY_LN
+                || type == TYP_SIN || type == TYP_LEGACY_SIN
+                || type == TYP_COS || type == TYP_LEGACY_COS
+                || type == TYP_MIN || type == TYP_LEGACY_MIN
+                || type == TYP_MAX || type == TYP_LEGACY_MAX
+                || type == TYP_HYS || type == TYP_LEGACY_HYS
+                || type == TYP_PT2 || type == TYP_LEGACY_PT2
+                || type == TYP_PD || type == TYP_LEGACY_PD
+                || type == TYP_SAMPLEHOLD || type == TYP_LEGACY_SAMPLEHOLD
+                || type == TYP_TIME || type == TYP_LEGACY_TIME
+                || type == TYP_XOR || type == TYP_LEGACY_XOR
+                || type == TYP_GE || type == TYP_LEGACY_GE;
     }
 
     private static String displayName(CircuitModel.ComponentData comp) {

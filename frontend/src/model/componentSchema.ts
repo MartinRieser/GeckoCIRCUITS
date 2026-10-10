@@ -1627,6 +1627,363 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     },
   },
 
+  1017: {
+    type: 1017,
+    family: 'CONTROL',
+    name: 'CTRL_SUB',
+    displayName: 'Subtract',
+    category: 'control',
+    description: 'Subtracts input 1 from input 0: out = in0 − in1 (ideal for error calculation)',
+    defaultPrefix: 'SUB',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: '+', description: 'Minuend (reference/target)' },
+        { label: '−', description: 'Subtrahend (actual/feedback)' },
+      ],
+      output: [{ label: 'out', description: 'Difference / Error signal' }],
+    },
+  },
+
+  1018: {
+    type: 1018,
+    family: 'CONTROL',
+    name: 'CTRL_ADD',
+    displayName: 'Add',
+    category: 'control',
+    description: 'Adds two signals: out = in0 + in1',
+    defaultPrefix: 'ADD',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'in0', description: 'Input 0' },
+        { label: 'in1', description: 'Input 1' },
+      ],
+      output: [{ label: 'out', description: 'Sum output' }],
+    },
+  },
+
+  1019: {
+    type: 1019,
+    family: 'CONTROL',
+    name: 'CTRL_MUL',
+    displayName: 'Multiply',
+    category: 'control',
+    description: 'Multiplies two signals: out = in0 × in1',
+    defaultPrefix: 'MUL',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'in0', description: 'Input 0' },
+        { label: 'in1', description: 'Input 1' },
+      ],
+      output: [{ label: 'out', description: 'Product output' }],
+    },
+  },
+
+  1020: {
+    type: 1020,
+    family: 'CONTROL',
+    name: 'CTRL_DIV',
+    displayName: 'Divide',
+    category: 'control',
+    description: 'Divides input 0 by input 1: out = in0 / in1',
+    defaultPrefix: 'DIV',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'num', description: 'Numerator (in0)' },
+        { label: 'den', description: 'Denominator (in1)' },
+      ],
+      output: [{ label: 'out', description: 'Quotient output' }],
+    },
+  },
+
+  1021: {
+    type: 1021,
+    family: 'CONTROL',
+    name: 'CTRL_LIMIT',
+    displayName: 'Limiter',
+    category: 'control',
+    description: 'Limits signal amplitude between Min and Max bounds',
+    defaultPrefix: 'LIM',
+    parameters: [
+      { index: 0, key: 'param0', label: 'Min', description: 'Lower limit bound', defaultValue: -1, unit: '' },
+      { index: 1, key: 'param1', label: 'Max', description: 'Upper limit bound', defaultValue: 1, unit: '' },
+    ],
+    terminals: {
+      input: [{ label: 'in', description: 'Signal input' }],
+      output: [{ label: 'out', description: 'Limited output' }],
+    },
+  },
+
+  1022: {
+    type: 1022,
+    family: 'CONTROL',
+    name: 'CTRL_ABS',
+    displayName: 'Absolute Value',
+    category: 'control',
+    description: 'Computes absolute value: out = |in|',
+    defaultPrefix: 'ABS',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'in', description: 'Signal input' }],
+      output: [{ label: 'out', description: 'Absolute output' }],
+    },
+  },
+
+  1023: {
+    type: 1023,
+    family: 'CONTROL',
+    name: 'CTRL_SQRT',
+    displayName: 'Square Root',
+    category: 'control',
+    description: 'Computes square root: out = √(in)',
+    defaultPrefix: 'SQRT',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'in', description: 'Signal input' }],
+      output: [{ label: 'out', description: 'Square root output' }],
+    },
+  },
+
+  1024: {
+    type: 1024,
+    family: 'CONTROL',
+    name: 'CTRL_EXP',
+    displayName: 'Exponential',
+    category: 'control',
+    description: 'Natural exponential function: out = e^(in)',
+    defaultPrefix: 'EXP',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'in', description: 'Signal input' }],
+      output: [{ label: 'out', description: 'Exponential output' }],
+    },
+  },
+
+  1025: {
+    type: 1025,
+    family: 'CONTROL',
+    name: 'CTRL_LN',
+    displayName: 'Natural Log',
+    category: 'control',
+    description: 'Natural logarithm: out = ln(in)',
+    defaultPrefix: 'LN',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'in', description: 'Signal input' }],
+      output: [{ label: 'out', description: 'Logarithmic output' }],
+    },
+  },
+
+  1026: {
+    type: 1026,
+    family: 'CONTROL',
+    name: 'CTRL_SIN',
+    displayName: 'Sine',
+    category: 'control',
+    description: 'Trigonometric sine: out = sin(in)',
+    defaultPrefix: 'SIN',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'in', description: 'Input angle (rad)' }],
+      output: [{ label: 'out', description: 'Sine output' }],
+    },
+  },
+
+  1027: {
+    type: 1027,
+    family: 'CONTROL',
+    name: 'CTRL_COS',
+    displayName: 'Cosine',
+    category: 'control',
+    description: 'Trigonometric cosine: out = cos(in)',
+    defaultPrefix: 'COS',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'in', description: 'Input angle (rad)' }],
+      output: [{ label: 'out', description: 'Cosine output' }],
+    },
+  },
+
+  1028: {
+    type: 1028,
+    family: 'CONTROL',
+    name: 'CTRL_MIN',
+    displayName: 'Minimum',
+    category: 'control',
+    description: 'Selects the smaller of two signals: out = min(in0, in1)',
+    defaultPrefix: 'MIN',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'in0', description: 'Input 0' },
+        { label: 'in1', description: 'Input 1' },
+      ],
+      output: [{ label: 'out', description: 'Minimum output' }],
+    },
+  },
+
+  1029: {
+    type: 1029,
+    family: 'CONTROL',
+    name: 'CTRL_MAX',
+    displayName: 'Maximum',
+    category: 'control',
+    description: 'Selects the larger of two signals: out = max(in0, in1)',
+    defaultPrefix: 'MAX',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'in0', description: 'Input 0' },
+        { label: 'in1', description: 'Input 1' },
+      ],
+      output: [{ label: 'out', description: 'Maximum output' }],
+    },
+  },
+
+  1030: {
+    type: 1030,
+    family: 'CONTROL',
+    name: 'CTRL_HYS',
+    displayName: 'Hysteresis',
+    category: 'control',
+    description: 'Hysteresis comparator with threshold window ±H',
+    defaultPrefix: 'HYS',
+    parameters: [
+      { index: 0, key: 'param0', label: 'Hysteresis (H)', description: 'Switching threshold window', defaultValue: 0.1, unit: '' },
+    ],
+    terminals: {
+      input: [{ label: 'in', description: 'Signal input' }],
+      output: [{ label: 'out', description: 'Hysteresis output' }],
+    },
+  },
+
+  1031: {
+    type: 1031,
+    family: 'CONTROL',
+    name: 'CTRL_PT2',
+    displayName: 'PT2 Filter',
+    category: 'control',
+    description: 'Second-order low-pass filter element',
+    defaultPrefix: 'PT2',
+    parameters: [
+      { index: 0, key: 'param0', label: 'Time Constant (τ)', description: 'Filter time constant', defaultValue: 0.001, unit: 's' },
+      { index: 1, key: 'param1', label: 'Gain', description: 'DC Gain', defaultValue: 1, unit: '' },
+    ],
+    terminals: {
+      input: [{ label: 'in', description: 'Signal input' }],
+      output: [{ label: 'out', description: 'Filtered output' }],
+    },
+  },
+
+  1032: {
+    type: 1032,
+    family: 'CONTROL',
+    name: 'CTRL_PD',
+    displayName: 'PD Controller',
+    category: 'control',
+    description: 'Proportional-Derivative controller',
+    defaultPrefix: 'PD',
+    parameters: [
+      { index: 0, key: 'param0', label: 'Gain (Kp)', description: 'Proportional gain', defaultValue: 1, unit: '' },
+    ],
+    terminals: {
+      input: [{ label: 'in', description: 'Signal input' }],
+      output: [{ label: 'out', description: 'Controller output' }],
+    },
+  },
+
+  1033: {
+    type: 1033,
+    family: 'CONTROL',
+    name: 'CTRL_SAMPLEHOLD',
+    displayName: 'Sample & Hold',
+    category: 'control',
+    description: 'Samples input signal on rising edge of clock: in0=data, in1=clock',
+    defaultPrefix: 'SH',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'd', description: 'Data input' },
+        { label: 'clk', description: 'Clock / Trigger' },
+      ],
+      output: [{ label: 'out', description: 'Sampled output' }],
+    },
+  },
+
+  1034: {
+    type: 1034,
+    family: 'CONTROL',
+    name: 'CTRL_TIME',
+    displayName: 'Simulation Time',
+    category: 'control',
+    description: 'Outputs current simulation elapsed time t in seconds',
+    defaultPrefix: 'TIME',
+    parameters: [],
+    terminals: {
+      input: [],
+      output: [{ label: 't', description: 'Current simulation time (s)' }],
+    },
+  },
+
+  1035: {
+    type: 1035,
+    family: 'CONTROL',
+    name: 'CTRL_XOR',
+    displayName: 'XOR Gate',
+    category: 'logic',
+    description: 'Logical XOR — output = 1 when inputs differ',
+    defaultPrefix: 'XOR',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'A', description: 'Input A' },
+        { label: 'B', description: 'Input B' },
+      ],
+      output: [{ label: 'Q', description: 'XOR output' }],
+    },
+  },
+
+  1036: {
+    type: 1036,
+    family: 'CONTROL',
+    name: 'CTRL_GE',
+    displayName: 'Greater-or-Equal (≥)',
+    category: 'control',
+    description: 'Compares two signals — outputs 1 if in0 ≥ in1, else 0',
+    defaultPrefix: 'GE',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'in0', description: 'Input 0' },
+        { label: 'in1', description: 'Input 1' },
+      ],
+      output: [{ label: 'out', description: 'Binary output (0 or 1)' }],
+    },
+  },
+
+  1037: {
+    type: 1037,
+    family: 'CONTROL',
+    name: 'CTRL_DEADTIME',
+    displayName: 'PWM Dead-Time',
+    category: 'control',
+    description: 'Generates complementary high-side and low-side gate signals with dead-time band',
+    defaultPrefix: 'DT',
+    parameters: [
+      { index: 0, key: 'param0', label: 'Dead Time (t_dead)', description: 'Dead time window in seconds', defaultValue: 200e-9, unit: 's' },
+    ],
+    terminals: {
+      input: [{ label: 'pwm', description: 'Input PWM signal' }],
+      output: [
+        { label: 'hi', description: 'High-side gate drive' },
+        { label: 'lo', description: 'Low-side gate drive' },
+      ],
+    },
+  },
+
   61: {
     type: 61,
     family: 'CONTROL',
@@ -1681,6 +2038,35 @@ export function getComponentMeta(
     else if (type === 4) lookupType = 1004; // Signal Source
     else if (type === 5) lookupType = 1003; // Scope
     else if (type === 6) lookupType = 1000; // Gate Driver
+    else if (type === 7) lookupType = 1006; // Gain
+    else if (type === 8) lookupType = 1008; // PT1
+    else if (type === 9) lookupType = 1031; // PT2
+    else if (type === 10) lookupType = 1007; // PI
+    else if (type === 11) lookupType = 1030; // Hysteresis
+    else if (type === 12) lookupType = 1018; // Add
+    else if (type === 13) lookupType = 1017; // Sub
+    else if (type === 14) lookupType = 1019; // Mul
+    else if (type === 15) lookupType = 1020; // Div
+    else if (type === 18) lookupType = 1013; // Not
+    else if (type === 19) lookupType = 1011; // And
+    else if (type === 20) lookupType = 1012; // Or
+    else if (type === 21) lookupType = 1035; // Xor
+    else if (type === 25) lookupType = 1015; // Delay
+    else if (type === 26) lookupType = 1033; // SampleHold
+    else if (type === 27) lookupType = 1021; // Limit
+    else if (type === 29) lookupType = 1032; // PD
+    else if (type === 32) lookupType = 1022; // Abs
+    else if (type === 34) lookupType = 1026; // Sin
+    else if (type === 36) lookupType = 1027; // Cos
+    else if (type === 40) lookupType = 1024; // Exp
+    else if (type === 41) lookupType = 1025; // Ln
+    else if (type === 43) lookupType = 1023; // Sqrt
+    else if (type === 45) lookupType = 1036; // GE
+    else if (type === 46) lookupType = 1010; // GT
+    else if (type === 49) lookupType = 1028; // Min
+    else if (type === 50) lookupType = 1029; // Max
+    else if (type === 58) lookupType = 1034; // Time
+    else if (type === 64) lookupType = 1009; // Integrator
   }
   const existing = COMPONENT_METAS[lookupType] ?? COMPONENT_METAS[type];
   if (existing) {

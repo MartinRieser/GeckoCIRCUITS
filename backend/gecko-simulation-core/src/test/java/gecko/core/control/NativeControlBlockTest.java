@@ -18,11 +18,15 @@ import gecko.core.circuit.circuitcomponents.CircuitTypCore;
 import gecko.core.circuit.netlist.CircuitNetlist;
 import gecko.core.circuit.netlist.NetlistBuilder;
 import gecko.core.control.calculators.AbstractControlCalculatable;
+import gecko.core.control.calculators.AddCalculator;
+import gecko.core.control.calculators.DeadTimeCalculator;
 import gecko.core.control.calculators.DelayCalculator;
 import gecko.core.control.calculators.GainCalculator;
 import gecko.core.control.calculators.GreaterThanCalculator;
 import gecko.core.control.calculators.IntegratorCalculation;
+import gecko.core.control.calculators.MulCalculator;
 import gecko.core.control.calculators.NotCalculator;
+import gecko.core.control.calculators.SubtractionTwoParameter;
 import gecko.core.control.calculators.PICalculator;
 import gecko.core.control.calculators.PT1Calculator;
 import gecko.core.control.calculators.SignalSelectorCalculator;
@@ -76,6 +80,108 @@ class NativeControlBlockTest {
         assertEquals(1013, CircuitTypCore.CTRL_NOT.getTypeNumber());
         assertEquals(1014, CircuitTypCore.CTRL_MUX.getTypeNumber());
         assertEquals(1015, CircuitTypCore.CTRL_DELAY.getTypeNumber());
+        assertEquals(1017, CircuitTypCore.CTRL_SUB.getTypeNumber());
+        assertEquals(1018, CircuitTypCore.CTRL_ADD.getTypeNumber());
+        assertEquals(1019, CircuitTypCore.CTRL_MUL.getTypeNumber());
+        assertEquals(1020, CircuitTypCore.CTRL_DIV.getTypeNumber());
+        assertEquals(1021, CircuitTypCore.CTRL_LIMIT.getTypeNumber());
+        assertEquals(1022, CircuitTypCore.CTRL_ABS.getTypeNumber());
+        assertEquals(1023, CircuitTypCore.CTRL_SQRT.getTypeNumber());
+        assertEquals(1024, CircuitTypCore.CTRL_EXP.getTypeNumber());
+        assertEquals(1025, CircuitTypCore.CTRL_LN.getTypeNumber());
+        assertEquals(1026, CircuitTypCore.CTRL_SIN.getTypeNumber());
+        assertEquals(1027, CircuitTypCore.CTRL_COS.getTypeNumber());
+        assertEquals(1028, CircuitTypCore.CTRL_MIN.getTypeNumber());
+        assertEquals(1029, CircuitTypCore.CTRL_MAX.getTypeNumber());
+        assertEquals(1030, CircuitTypCore.CTRL_HYS.getTypeNumber());
+        assertEquals(1031, CircuitTypCore.CTRL_PT2.getTypeNumber());
+        assertEquals(1032, CircuitTypCore.CTRL_PD.getTypeNumber());
+        assertEquals(1033, CircuitTypCore.CTRL_SAMPLEHOLD.getTypeNumber());
+        assertEquals(1034, CircuitTypCore.CTRL_TIME.getTypeNumber());
+        assertEquals(1035, CircuitTypCore.CTRL_XOR.getTypeNumber());
+        assertEquals(1036, CircuitTypCore.CTRL_GE.getTypeNumber());
+        assertEquals(1037, CircuitTypCore.CTRL_DEADTIME.getTypeNumber());
+    }
+
+    @Test
+    void addCalculator_computesSum() {
+        AddCalculator add = new AddCalculator();
+        add._inputSignal[0] = new double[]{3.5};
+        add._inputSignal[1] = new double[]{2.5};
+        add.calculateYOUT(1e-6);
+        assertEquals(6.0, add._outputSignal[0][0], 1e-9);
+    }
+
+    @Test
+    void mulCalculator_computesProduct() {
+        MulCalculator mul = new MulCalculator();
+        mul._inputSignal[0] = new double[]{3.0};
+        mul._inputSignal[1] = new double[]{4.0};
+        mul.calculateYOUT(1e-6);
+        assertEquals(12.0, mul._outputSignal[0][0], 1e-9);
+    }
+
+    @Test
+    void subCalculator_computesDifference() {
+        SubtractionTwoParameter sub = new SubtractionTwoParameter();
+        sub._inputSignal[0] = new double[]{10.0};
+        sub._inputSignal[1] = new double[]{8.5};
+        sub.calculateYOUT(1e-6);
+        assertEquals(1.5, sub._outputSignal[0][0], 1e-9);
+    }
+
+    @Test
+    void deadTimeCalculator_insertsDeadBandBetweenHighAndLowOutputs() {
+        double tDead = 10e-6;
+        double dt = 1e-6;
+        DeadTimeCalculator dtCalc = new DeadTimeCalculator(tDead);
+        double[] pwmSignal = new double[]{0.0};
+        dtCalc._inputSignal[0] = pwmSignal;
+
+        // Initially PWM = 0: G_hi = 0, G_lo = 1
+        dtCalc.calculateYOUT(dt);
+        assertEquals(0.0, dtCalc._outputSignal[0][0]);
+        assertEquals(1.0, dtCalc._outputSignal[1][0]);
+
+        // Step 1: PWM transitions from 0 to 1
+        pwmSignal[0] = 1.0;
+        dtCalc.calculateYOUT(dt);
+        // Low side must immediately drop to 0
+        assertEquals(0.0, dtCalc._outputSignal[1][0], "Low side must turn OFF immediately on PWM rising edge");
+        // High side must stay 0 during the dead-time window
+        assertEquals(0.0, dtCalc._outputSignal[0][0], "High side must remain OFF during dead time");
+
+        // Advance through dead-time window (10 us total)
+        for (int i = 0; i < 9; i++) {
+            dtCalc.calculateYOUT(dt);
+            assertEquals(0.0, dtCalc._outputSignal[0][0], "High side must not turn ON before dead time elapses");
+            assertEquals(0.0, dtCalc._outputSignal[1][0], "Low side must remain OFF");
+        }
+
+        // At 10th step (10 us elapsed), High side turns ON
+        dtCalc.calculateYOUT(dt);
+        assertEquals(1.0, dtCalc._outputSignal[0][0], "High side turns ON after tDead");
+        assertEquals(0.0, dtCalc._outputSignal[1][0]);
+
+        // Transition back from 1 to 0
+        pwmSignal[0] = 0.0;
+        dtCalc.calculateYOUT(dt);
+        // High side turns OFF immediately
+        assertEquals(0.0, dtCalc._outputSignal[0][0], "High side turns OFF immediately on PWM falling edge");
+        // Low side remains OFF during dead-time
+        assertEquals(0.0, dtCalc._outputSignal[1][0], "Low side remains OFF during dead time");
+
+        // Advance through falling dead-time window
+        for (int i = 0; i < 9; i++) {
+            dtCalc.calculateYOUT(dt);
+            assertEquals(0.0, dtCalc._outputSignal[0][0]);
+            assertEquals(0.0, dtCalc._outputSignal[1][0]);
+        }
+
+        // Low side turns ON after dead time
+        dtCalc.calculateYOUT(dt);
+        assertEquals(0.0, dtCalc._outputSignal[0][0]);
+        assertEquals(1.0, dtCalc._outputSignal[1][0], "Low side turns ON after tDead");
     }
 
     // ------------------------------------------------------------------

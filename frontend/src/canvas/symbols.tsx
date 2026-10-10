@@ -184,21 +184,26 @@ export function SymbolByType({
       case 1008:
         return <ControlBlockLabel u={u} label="PT1" />;
       case 9:
+      case 1031:
         return <ControlBlockLabel u={u} label="PT2" />;
       case 10:
       case 1007:
         return <ControlBlockLabel u={u} label="PI" />;
       case 11:
-      case 1010:
-        return <ComparatorSymbol u={u} />;
+      case 1030:
+        return <ControlBlockLabel u={u} label="HYS" />;
       case 12:
-        return <ControlBlockLabel u={u} label="+" />;
+      case 1018:
+        return <TwoInputControlSymbol u={u} label="+" />;
       case 13:
-        return <ControlBlockLabel u={u} label="−" />;
+      case 1017:
+        return <TwoInputControlSymbol u={u} label="−" in0Label="+" in1Label="−" />;
       case 14:
-        return <ControlBlockLabel u={u} label="×" />;
+      case 1019:
+        return <TwoInputControlSymbol u={u} label="×" />;
       case 15:
-        return <ControlBlockLabel u={u} label="÷" />;
+      case 1020:
+        return <TwoInputControlSymbol u={u} label="÷" in0Label="num" in1Label="den" />;
       case 18:
       case 1013:
         return <NotGateSymbol u={u} />;
@@ -209,20 +214,61 @@ export function SymbolByType({
       case 1012:
         return <OrGateSymbol u={u} />;
       case 21:
-        return <ControlBlockLabel u={u} label="XOR" />;
+      case 1035:
+        return <XorGateSymbol u={u} />;
       case 25:
       case 1015:
         return <ControlBlockLabel u={u} label="τ" />;
       case 26:
-        return <ControlBlockLabel u={u} label="S/H" />;
+      case 1033:
+        return <TwoInputControlSymbol u={u} label="S/H" in0Label="d" in1Label="clk" />;
       case 27:
+      case 1021:
         return <ControlBlockLabel u={u} label="LIM" />;
+      case 29:
+      case 1032:
+        return <ControlBlockLabel u={u} label="PD" />;
+      case 32:
+      case 1022:
+        return <ControlBlockLabel u={u} label="|x|" />;
+      case 34:
+      case 1026:
+        return <ControlBlockLabel u={u} label="sin" />;
+      case 36:
+      case 1027:
+        return <ControlBlockLabel u={u} label="cos" />;
+      case 40:
+      case 1024:
+        return <ControlBlockLabel u={u} label="exp" />;
+      case 41:
+      case 1025:
+        return <ControlBlockLabel u={u} label="ln" />;
+      case 43:
+      case 1023:
+        return <ControlBlockLabel u={u} label="√" />;
+      case 45:
+      case 1036:
+        return <TwoInputControlSymbol u={u} label="≥" />;
+      case 46:
+      case 1010:
+        return <ComparatorSymbol u={u} />;
+      case 49:
+      case 1028:
+        return <TwoInputControlSymbol u={u} label="min" />;
+      case 50:
+      case 1029:
+        return <TwoInputControlSymbol u={u} label="max" />;
+      case 58:
+      case 1034:
+        return <TimeSourceSymbol u={u} />;
       case 64:
       case 1009:
         return <ControlBlockLabel u={u} label="∫" />;
       case 84:
       case 1014:
         return <MuxSymbol u={u} />;
+      case 1037:
+        return <DeadTimeSymbol u={u} />;
       case CTRL_TYPE.LEGACY_JAVA_FUNCTION:
       case CTRL_TYPE.SCRIPT: {
         const label = type === CTRL_TYPE.LEGACY_JAVA_FUNCTION ? 'JAVA' : 'f(x)';
@@ -917,6 +963,123 @@ function ControlBlockLabel({ u, label }: { u: number; label: string }) {
             stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
       <text x={0} y={0.25 * u} fontSize={0.55 * u} fill={CTRL_COLOR} stroke="none"
             textAnchor="middle" fontWeight="bold">{label}</text>
+    </g>
+  );
+}
+
+function TwoInputControlSymbol({
+  u,
+  label,
+  in0Label,
+  in1Label,
+}: {
+  u: number;
+  label: string;
+  in0Label?: string;
+  in1Label?: string;
+}) {
+  return (
+    <g>
+      <line x1={-LEAD * u} y1={0} x2={-0.75 * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={-LEAD * u} y1={1 * u} x2={-0.75 * u} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={0.75 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <rect
+        x={-0.75 * u}
+        y={-0.55 * u}
+        width={1.5 * u}
+        height={2.1 * u}
+        rx={3}
+        stroke={CTRL_COLOR}
+        strokeWidth={1.5}
+        fill="rgba(74,222,128,0.06)"
+      />
+      <text
+        x={0}
+        y={0.7 * u}
+        fontSize={0.6 * u}
+        fill={CTRL_COLOR}
+        stroke="none"
+        textAnchor="middle"
+        fontWeight="bold"
+      >
+        {label}
+      </text>
+      {in0Label && (
+        <text x={-0.45 * u} y={0.25 * u} fontSize={0.35 * u} fill={CTRL_COLOR} stroke="none" fontWeight="bold">
+          {in0Label}
+        </text>
+      )}
+      {in1Label && (
+        <text x={-0.45 * u} y={1.25 * u} fontSize={0.35 * u} fill={CTRL_COLOR} stroke="none" fontWeight="bold">
+          {in1Label}
+        </text>
+      )}
+    </g>
+  );
+}
+
+function DeadTimeSymbol({ u }: { u: number }) {
+  return (
+    <g>
+      <line x1={-LEAD * u} y1={0} x2={-0.75 * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={0.75 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={0.75 * u} y1={1 * u} x2={LEAD * u} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <rect
+        x={-0.75 * u}
+        y={-0.55 * u}
+        width={1.5 * u}
+        height={2.1 * u}
+        rx={3}
+        stroke={CTRL_COLOR}
+        strokeWidth={1.5}
+        fill="rgba(74,222,128,0.06)"
+      />
+      <text
+        x={-0.15 * u}
+        y={0.65 * u}
+        fontSize={0.45 * u}
+        fill={CTRL_COLOR}
+        stroke="none"
+        textAnchor="middle"
+        fontWeight="bold"
+      >
+        DT
+      </text>
+      <text x={0.48 * u} y={0.25 * u} fontSize={0.32 * u} fill={CTRL_COLOR} stroke="none" textAnchor="end" fontWeight="bold">
+        H
+      </text>
+      <text x={0.48 * u} y={1.25 * u} fontSize={0.32 * u} fill={CTRL_COLOR} stroke="none" textAnchor="end" fontWeight="bold">
+        L
+      </text>
+    </g>
+  );
+}
+
+function TimeSourceSymbol({ u }: { u: number }) {
+  return (
+    <g>
+      <line x1={0.75 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <circle cx={0} cy={0} r={0.75 * u} stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
+      <text x={0} y={0.28 * u} fontSize={0.65 * u} fill={CTRL_COLOR} stroke="none"
+            textAnchor="middle" fontWeight="bold">t</text>
+    </g>
+  );
+}
+
+function XorGateSymbol({ u }: { u: number }) {
+  return (
+    <g>
+      <line x1={-LEAD * u} y1={0} x2={-0.45 * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={-LEAD * u} y1={1 * u} x2={-0.45 * u} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={0.65 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <path
+        d={`M ${-0.55 * u} ${-0.45 * u} Q ${-0.3 * u} ${0.5 * u} ${-0.55 * u} ${1.45 * u}`}
+        stroke={CTRL_COLOR} strokeWidth={1.5} fill="none" />
+      <path
+        d={`M ${-0.45 * u} ${-0.45 * u} Q 0 ${-0.45 * u} ${0.65 * u} 0 Q 0 ${1.45 * u} ${-0.45 * u} ${1.45 * u} Q ${-0.2 * u} ${0.5 * u} ${-0.45 * u} ${-0.45 * u} z`}
+        stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
+      <text x={0} y={0.65 * u} fontSize={0.4 * u} fill={CTRL_COLOR} stroke="none"
+            textAnchor="middle" fontWeight="bold">=1</text>
     </g>
   );
 }

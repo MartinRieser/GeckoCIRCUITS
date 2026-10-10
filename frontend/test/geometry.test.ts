@@ -724,4 +724,57 @@ describe('rebindWireEndpointToPin (no wire may touch a foreign pin)', () => {
     const cells = new Set(pts.map((p) => `${p[0]},${p[1]}`));
     expect(cells.has('34,24')).toBe(false);
   });
+
+  describe('terminalPositions for Restored Control Blocks', () => {
+    it('places SUB (error calculation) terminals correctly: 2 inputs, 1 output', () => {
+      const sub = {
+        family: 'CONTROL',
+        type: ControlComponentType.SUB,
+        position: [20, 30],
+        orientation: Orientation.NORTH_SOUTH,
+      };
+      const t = terminalPositions(sub);
+      // Flow is NORTH_SOUTH -> control dir is {x: 1, y: 0}
+      // inputs at center - dir*2 + perp*i -> x = 20 - 2 = 18, y = 30 + i
+      expect(t.input).toEqual([
+        { x: 18, y: 30 },
+        { x: 18, y: 31 },
+      ]);
+      // outputs at center + dir*2 -> x = 20 + 2 = 22, y = 30
+      expect(t.output).toEqual([
+        { x: 22, y: 30 },
+      ]);
+    });
+
+    it('places DEADTIME terminals correctly: 1 input, 2 outputs', () => {
+      const dt = {
+        family: 'CONTROL',
+        type: ControlComponentType.DEADTIME,
+        position: [40, 50],
+        orientation: Orientation.NORTH_SOUTH,
+      };
+      const t = terminalPositions(dt);
+      expect(t.input).toEqual([
+        { x: 38, y: 50 },
+      ]);
+      expect(t.output).toEqual([
+        { x: 42, y: 50 }, // high-side output
+        { x: 42, y: 51 }, // low-side output
+      ]);
+    });
+
+    it('places TIME terminals correctly: 0 inputs, 1 output', () => {
+      const timeComp = {
+        family: 'CONTROL',
+        type: ControlComponentType.TIME,
+        position: [10, 15],
+        orientation: Orientation.NORTH_SOUTH,
+      };
+      const t = terminalPositions(timeComp);
+      expect(t.input).toEqual([]);
+      expect(t.output).toEqual([
+        { x: 12, y: 15 },
+      ]);
+    });
+  });
 });

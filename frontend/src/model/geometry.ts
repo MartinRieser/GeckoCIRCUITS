@@ -74,6 +74,8 @@ const CONTROL_OUTPUT_ONLY = new Set<number>([
   CTRL_TYPE.SIGNAL_SOURCE,
   CTRL_TYPE.LEGACY_CONSTANT,
   CTRL_TYPE.CONSTANT,
+  CTRL_TYPE.TIME,
+  58,
 ]);
 
 /** CONTROL types carrying a single input terminal (gate, scope). */

@@ -89,6 +89,48 @@ export enum ControlComponentType {
   CONSTANT = 1005,
   /** Script / Function block (modern catalog CircuitTypCore.CTRL_SCRIPT). */
   SCRIPT = 1016,
+  /** Subtraction / Error calculation block (CTRL_SUB). */
+  SUB = 1017,
+  /** Addition block (CTRL_ADD). */
+  ADD = 1018,
+  /** Multiplication block (CTRL_MUL). */
+  MUL = 1019,
+  /** Division block (CTRL_DIV). */
+  DIV = 1020,
+  /** Limiter block (CTRL_LIMIT). */
+  LIMIT = 1021,
+  /** Absolute value block (CTRL_ABS). */
+  ABS = 1022,
+  /** Square root block (CTRL_SQRT). */
+  SQRT = 1023,
+  /** Exponential block (CTRL_EXP). */
+  EXP = 1024,
+  /** Natural logarithm block (CTRL_LN). */
+  LN = 1025,
+  /** Sine function block (CTRL_SIN). */
+  SIN = 1026,
+  /** Cosine function block (CTRL_COS). */
+  COS = 1027,
+  /** Minimum function block (CTRL_MIN). */
+  MIN = 1028,
+  /** Maximum function block (CTRL_MAX). */
+  MAX = 1029,
+  /** Hysteresis block (CTRL_HYS). */
+  HYS = 1030,
+  /** PT2 second-order filter block (CTRL_PT2). */
+  PT2 = 1031,
+  /** PD controller block (CTRL_PD). */
+  PD = 1032,
+  /** Sample & Hold block (CTRL_SAMPLEHOLD). */
+  SAMPLEHOLD = 1033,
+  /** Simulation time source block (CTRL_TIME). */
+  TIME = 1034,
+  /** XOR logic gate block (CTRL_XOR). */
+  XOR = 1035,
+  /** Greater or equal comparator block (CTRL_GE). */
+  GE = 1036,
+  /** PWM dead-time generator block (CTRL_DEADTIME). */
+  DEADTIME = 1037,
 }
 
 /**
@@ -110,6 +152,27 @@ export const CTRL_TYPE = {
   CONSTANT: ControlComponentType.CONSTANT,
   LEGACY_JAVA_FUNCTION: ControlComponentType.LEGACY_JAVA_FUNCTION,
   SCRIPT: ControlComponentType.SCRIPT,
+  SUB: ControlComponentType.SUB,
+  ADD: ControlComponentType.ADD,
+  MUL: ControlComponentType.MUL,
+  DIV: ControlComponentType.DIV,
+  LIMIT: ControlComponentType.LIMIT,
+  ABS: ControlComponentType.ABS,
+  SQRT: ControlComponentType.SQRT,
+  EXP: ControlComponentType.EXP,
+  LN: ControlComponentType.LN,
+  SIN: ControlComponentType.SIN,
+  COS: ControlComponentType.COS,
+  MIN: ControlComponentType.MIN,
+  MAX: ControlComponentType.MAX,
+  HYS: ControlComponentType.HYS,
+  PT2: ControlComponentType.PT2,
+  PD: ControlComponentType.PD,
+  SAMPLEHOLD: ControlComponentType.SAMPLEHOLD,
+  TIME: ControlComponentType.TIME,
+  XOR: ControlComponentType.XOR,
+  GE: ControlComponentType.GE,
+  DEADTIME: ControlComponentType.DEADTIME,
 } as const;
 
 /**
