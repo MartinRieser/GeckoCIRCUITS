@@ -4279,7 +4279,671 @@ FileVersion 1
 dataContainerSignals[] /v_dc_meas/i_l/u_grid
 `;
 
+export const SPWM_INVERTER_DEADTIME_IPES = `
+verbindungLeistungskreisANZAHL 7
+verbindungLK (0)
+<Verbindung>
+label dc_pos
+x[] 6 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26
+y[] 9 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (1)
+<Verbindung>
+label 0
+x[] 6 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26
+y[] 13 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (2)
+<Verbindung>
+label out_a
+x[] 16 15 14 13 12 11 10 10 10 10 10 10 10 10 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32
+y[] 11 11 11 11 11 11 11 10 9 8 7 6 5 4 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (3)
+<Verbindung>
+label out_b
+x[] 26 25 24 23 22 21 20 20 20 20 20 20 20 20 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 44 44 44 44 44 44
+y[] 11 11 11 11 11 11 11 12 13 14 15 16 17 18 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 18 17 16 15 14 13
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (4)
+<Verbindung>
+label out_b
+x[] 38 38 38 38 38 38 38
+y[] 19 18 17 16 15 14 13
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (5)
+<Verbindung>
+label load_p
+x[] 36 37 38 39 40 41 42 43 44 44 44 44 44 44 44
+y[] 3 3 3 3 3 3 3 3 3 4 5 6 7 8 9
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungLK (6)
+<Verbindung>
+label load_p
+x[] 38 38 38 38 38 38 38
+y[] 3 4 5 6 7 8 9
+enabled true
+connectorType 0
+<\\Verbindung>
+
+verbindungControlANZAHL 11
+verbindungCONTROL (0)
+<Verbindung>
+label v_ref
+x[] 8 9 10
+y[] 20 20 20
+enabled true
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (1)
+<Verbindung>
+label v_meas
+x[] 8 9 10 10
+y[] 24 24 24 21
+enabled true
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (2)
+<Verbindung>
+label v_err
+x[] 14 15 16
+y[] 20 20 20
+enabled true
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (3)
+<Verbindung>
+label v_ctrl
+x[] 20 21 22
+y[] 20 20 20
+enabled true
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (4)
+<Verbindung>
+label v_mod
+x[] 26 27 28
+y[] 20 20 20
+enabled true
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (5)
+<Verbindung>
+label v_tri
+x[] 26 27 28 28
+y[] 26 26 26 21
+enabled true
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (6)
+<Verbindung>
+label pwm
+x[] 32 33 34
+y[] 20 20 20
+enabled true
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (7)
+<Verbindung>
+label gate_hi
+x[] 38 39 40 41 42 43 44 45 46
+y[] 20 20 20 20 20 20 20 20 20
+enabled true
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (8)
+<Verbindung>
+label gate_hi
+x[] 44 44 44 44 44 44 44 45 46
+y[] 20 21 22 23 24 25 26 26 26
+enabled true
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (9)
+<Verbindung>
+label gate_lo
+x[] 38 39 39 39 39 39 39 39 39 39 39 39 39 40 41 42 43 44 45 46
+y[] 21 21 22 23 24 25 26 27 28 29 30 31 32 32 32 32 32 32 32 32
+enabled true
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (10)
+<Verbindung>
+label gate_lo
+x[] 44 44 44 44 44 44 44 45 46
+y[] 32 33 34 35 36 37 38 38 38
+enabled true
+connectorType 1
+<\\Verbindung>
+
+elementANZAHL 12
+
+e (0)
+<ElementLK>
+labelAnfangsKnoten[] /dc_pos
+labelEndKnoten[] /0
+enabledShorted 1
+typ 4
+uniqueObjectIdentifier 1001
+x 6
+y 11
+parameter[] 401.0 40.0 50.0 0.0 0.0 0.5 0.0 40.0 0.0 -40.0 0.0 1.0 1.7976931348623157E308 0.0 0.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog V_dc
+<\\ElementLK>
+
+e (1)
+<ElementLK>
+labelAnfangsKnoten[] /dc_pos
+labelEndKnoten[] /out_a
+enabledShorted 1
+typ 7
+uniqueObjectIdentifier 1002
+x 12
+y 9
+parameter[] 1.0E7 0.01 1.0E7 0.0 0.0 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0
+parameterString[] /GATE.1/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog S.1
+coupledReferenceID[] 2002
+<Verluste>
+verlustTyp 1
+rON 0.01
+uf 0.0
+kON 3.0E-5
+kOFF 1.5E-5
+uSWnorm 400.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\\Verluste>
+<\\ElementLK>
+
+e (2)
+<ElementLK>
+labelAnfangsKnoten[] /out_a
+labelEndKnoten[] /0
+enabledShorted 1
+typ 7
+uniqueObjectIdentifier 1003
+x 12
+y 13
+parameter[] 1.0E7 0.01 1.0E7 0.0 0.0 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0
+parameterString[] /GATE.2/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog S.2
+coupledReferenceID[] 2004
+<Verluste>
+verlustTyp 1
+rON 0.01
+uf 0.0
+kON 3.0E-5
+kOFF 1.5E-5
+uSWnorm 400.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\\Verluste>
+<\\ElementLK>
+
+e (3)
+<ElementLK>
+labelAnfangsKnoten[] /dc_pos
+labelEndKnoten[] /out_b
+enabledShorted 1
+typ 7
+uniqueObjectIdentifier 1004
+x 22
+y 9
+parameter[] 1.0E7 0.01 1.0E7 0.0 0.0 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0
+parameterString[] /GATE.3/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog S.3
+coupledReferenceID[] 2009
+<Verluste>
+verlustTyp 1
+rON 0.01
+uf 0.0
+kON 3.0E-5
+kOFF 1.5E-5
+uSWnorm 400.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\\Verluste>
+<\\ElementLK>
+
+e (4)
+<ElementLK>
+labelAnfangsKnoten[] /out_b
+labelEndKnoten[] /0
+enabledShorted 1
+typ 7
+uniqueObjectIdentifier 1005
+x 22
+y 13
+parameter[] 1.0E7 0.01 1.0E7 0.0 0.0 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0
+parameterString[] /GATE.4/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog S.4
+coupledReferenceID[] 2008
+<Verluste>
+verlustTyp 1
+rON 0.01
+uf 0.0
+kON 3.0E-5
+kOFF 1.5E-5
+uSWnorm 400.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\\Verluste>
+<\\ElementLK>
+
+e (5)
+<ElementLK>
+labelAnfangsKnoten[] /dc_pos
+labelEndKnoten[] /out_a
+enabledShorted 1
+typ 6
+uniqueObjectIdentifier 1006
+x 16
+y 9
+parameter[] 1.0E7 0.001 0.7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog D.1
+<Verluste>
+verlustTyp 1
+rON 0.001
+uf 0.7
+kON 0.0
+kOFF 0.0
+uSWnorm 400.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\\Verluste>
+<\\ElementLK>
+
+e (6)
+<ElementLK>
+labelAnfangsKnoten[] /out_a
+labelEndKnoten[] /0
+enabledShorted 1
+typ 6
+uniqueObjectIdentifier 1007
+x 16
+y 13
+parameter[] 1.0E7 0.001 0.7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog D.2
+<Verluste>
+verlustTyp 1
+rON 0.001
+uf 0.7
+kON 0.0
+kOFF 0.0
+uSWnorm 400.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\\Verluste>
+<\\ElementLK>
+
+e (7)
+<ElementLK>
+labelAnfangsKnoten[] /dc_pos
+labelEndKnoten[] /out_b
+enabledShorted 1
+typ 6
+uniqueObjectIdentifier 1008
+x 26
+y 9
+parameter[] 1.0E7 0.001 0.7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog D.3
+<Verluste>
+verlustTyp 1
+rON 0.001
+uf 0.7
+kON 0.0
+kOFF 0.0
+uSWnorm 400.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\\Verluste>
+<\\ElementLK>
+
+e (8)
+<ElementLK>
+labelAnfangsKnoten[] /out_b
+labelEndKnoten[] /0
+enabledShorted 1
+typ 6
+uniqueObjectIdentifier 1009
+x 26
+y 13
+parameter[] 1.0E7 0.001 0.7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog D.4
+<Verluste>
+verlustTyp 1
+rON 0.001
+uf 0.7
+kON 0.0
+kOFF 0.0
+uSWnorm 400.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\\Verluste>
+<\\ElementLK>
+
+e (9)
+<ElementLK>
+labelAnfangsKnoten[] /out_a
+labelEndKnoten[] /load_p
+enabledShorted 1
+typ 2
+uniqueObjectIdentifier 1010
+x 34
+y 3
+parameter[] 0.001 0.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 502
+idStringDialog L_filter
+<\\ElementLK>
+
+e (10)
+<ElementLK>
+labelAnfangsKnoten[] /load_p
+labelEndKnoten[] /out_b
+enabledShorted 1
+typ 3
+uniqueObjectIdentifier 1011
+x 38
+y 11
+parameter[] 2.0E-5 0.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog C_filter
+<\\ElementLK>
+
+e (11)
+<ElementLK>
+labelAnfangsKnoten[] /load_p
+labelEndKnoten[] /out_b
+enabledShorted 1
+typ 1
+uniqueObjectIdentifier 1012
+x 44
+y 11
+parameter[] 10.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog R_load
+<\\ElementLK>
+
+controlANZAHL 12
+
+c (0)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /v_ref
+enabledShorted 1
+typ 1004
+uniqueObjectIdentifier 2001
+x 6
+y 20
+parameter[] 402.0 20.0 50.0 0.0 0.0 0.5 0.0 0.0
+orientierung 503
+idStringDialog V_REF
+<detail>
+typQuelle 402
+anteilDC 0.0
+amplitudeAC 20.0
+frequenz 50.0
+tastverhaeltnis 0.5
+phase 0.0
+<\\detail>
+<\\ElementCONTROL>
+
+c (1)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /v_meas
+enabledShorted 1
+typ 1001
+uniqueObjectIdentifier 2005
+x 6
+y 24
+parameter[] 0.0
+parameterString[] /load_p/out_b/0
+orientierung 503
+idStringDialog VOLT_AC
+<\\ElementCONTROL>
+
+c (2)
+<ElementCONTROL>
+labelAnfangsKnoten[] /v_ref/v_meas
+labelEndKnoten[] /v_err
+enabledShorted 1
+typ 1017
+uniqueObjectIdentifier 2011
+x 12
+y 20
+parameter[] 0.0
+orientierung 503
+idStringDialog CTRL_SUB
+<\\ElementCONTROL>
+
+c (3)
+<ElementCONTROL>
+labelAnfangsKnoten[] /v_err
+labelEndKnoten[] /v_ctrl
+enabledShorted 1
+typ 1007
+uniqueObjectIdentifier 2012
+x 18
+y 20
+parameter[] 0.04 0.005
+orientierung 503
+idStringDialog CTRL_PI
+<\\ElementCONTROL>
+
+c (4)
+<ElementCONTROL>
+labelAnfangsKnoten[] /v_ctrl
+labelEndKnoten[] /v_mod
+enabledShorted 1
+typ 1021
+uniqueObjectIdentifier 2013
+x 24
+y 20
+parameter[] -0.95 0.95
+orientierung 503
+idStringDialog CTRL_LIM
+<\\ElementCONTROL>
+
+c (5)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /v_tri
+enabledShorted 1
+typ 1004
+uniqueObjectIdentifier 2014
+x 24
+y 26
+parameter[] 403.0 1.0 5000.0 0.0 0.0 0.5 0.0 0.0
+orientierung 503
+idStringDialog V_CARRIER
+<detail>
+typQuelle 403
+anteilDC 0.0
+amplitudeAC 1.0
+frequenz 5000.0
+tastverhaeltnis 0.5
+phase 0.0
+<\\detail>
+<\\ElementCONTROL>
+
+c (6)
+<ElementCONTROL>
+labelAnfangsKnoten[] /v_mod/v_tri
+labelEndKnoten[] /pwm
+enabledShorted 1
+typ 1010
+uniqueObjectIdentifier 2015
+x 30
+y 20
+parameter[] 0.0
+orientierung 503
+idStringDialog CTRL_CMP
+<\\ElementCONTROL>
+
+c (7)
+<ElementCONTROL>
+labelAnfangsKnoten[] /pwm
+labelEndKnoten[] /gate_hi/gate_lo
+enabledShorted 1
+typ 1037
+uniqueObjectIdentifier 2016
+x 36
+y 20
+parameter[] 1.0E-6
+orientierung 503
+idStringDialog CTRL_DT
+<\\ElementCONTROL>
+
+c (8)
+<ElementCONTROL>
+labelAnfangsKnoten[] /gate_hi
+labelEndKnoten[] 
+enabledShorted 1
+typ 6
+uniqueObjectIdentifier 2002
+x 48
+y 20
+parameter[] 0.0
+parameterString[] /S.1/NIX_NIX_NIX/0
+orientierung 503
+idStringDialog GATE.1
+coupledReferenceID[] 1002
+copyCoupledReferenceID[] 1002
+<\\ElementCONTROL>
+
+c (9)
+<ElementCONTROL>
+labelAnfangsKnoten[] /gate_hi
+labelEndKnoten[] 
+enabledShorted 1
+typ 6
+uniqueObjectIdentifier 2008
+x 48
+y 26
+parameter[] 0.0
+parameterString[] /S.4/NIX_NIX_NIX/0
+orientierung 503
+idStringDialog GATE.4
+coupledReferenceID[] 1005
+copyCoupledReferenceID[] 1005
+<\\ElementCONTROL>
+
+c (10)
+<ElementCONTROL>
+labelAnfangsKnoten[] /gate_lo
+labelEndKnoten[] 
+enabledShorted 1
+typ 6
+uniqueObjectIdentifier 2004
+x 48
+y 32
+parameter[] 0.0
+parameterString[] /S.2/NIX_NIX_NIX/0
+orientierung 503
+idStringDialog GATE.2
+coupledReferenceID[] 1003
+copyCoupledReferenceID[] 1003
+<\\ElementCONTROL>
+
+c (11)
+<ElementCONTROL>
+labelAnfangsKnoten[] /gate_lo
+labelEndKnoten[] 
+enabledShorted 1
+typ 6
+uniqueObjectIdentifier 2009
+x 48
+y 38
+parameter[] 0.0
+parameterString[] /S.3/NIX_NIX_NIX/0
+orientierung 503
+idStringDialog GATE.3
+coupledReferenceID[] 1004
+copyCoupledReferenceID[] 1004
+<\\ElementCONTROL>
+
+tDURATION 0.04
+dt 1.0E-6
+solverType 0
+FileVersion 1
+dataContainerSignals[] /v_ref/v_meas/v_err/gate_hi/gate_lo
+`;
+
 export const EXAMPLES: CircuitExample[] = [
+  {
+    id: 'spwm-inverter-deadtime',
+    name: 'Closed-Loop SPWM Inverter with Dead-Time (50 Hz)',
+    category: 'Power Electronics',
+    description: 'Sinusoidal PWM full-bridge inverter demonstrating restored control blocks: CTRL_SUB for error calculation (v_ref - v_meas), CTRL_PI voltage regulator, CTRL_LIMIT modulation clamp, CTRL_COMPARATOR carrier modulator, and CTRL_DEADTIME shoot-through prevention inserting 1.0 µs dead-time between complementary gate drives.',
+    content: SPWM_INVERTER_DEADTIME_IPES,
+  },
   {
     id: 'buck',
     name: 'DC-DC Buck Converter (50 kHz PWM)',

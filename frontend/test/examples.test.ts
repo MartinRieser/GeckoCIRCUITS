@@ -15,6 +15,7 @@ import {
   FLYBACK_IPES,
   CLOSED_LOOP_BUCK_IPES,
   PFC_BOOST_IPES,
+  SPWM_INVERTER_DEADTIME_IPES,
 } from '../src/model/examples';
 import { findPlacementConflict } from '../src/model/geometry';
 import type { EditorComponent } from '../src/model/types';
@@ -69,6 +70,7 @@ describe('Circuit Examples (.ipes templates)', () => {
       FLYBACK_IPES,
       CLOSED_LOOP_BUCK_IPES,
       PFC_BOOST_IPES,
+      SPWM_INVERTER_DEADTIME_IPES,
     ];
 
     for (const t of templates) {
@@ -80,7 +82,7 @@ describe('Circuit Examples (.ipes templates)', () => {
   });
 
   it('provides a catalog of curated educational examples in EXAMPLES registry', () => {
-    expect(EXAMPLES.length).toBe(13);
+    expect(EXAMPLES.length).toBe(14);
 
     const ids = new Set<string>();
     for (const eg of EXAMPLES) {

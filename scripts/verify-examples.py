@@ -100,6 +100,14 @@ ASSERTIONS = {
         ("v_dc_meas", 0.6, _pp, 0.1, 20.0, "100 Hz ripple bounded (<20 Vpp)"),
         ("i_l", 0.6, _mean, 3.0, 6.0, "mean rectified current ~P/V_rec"),
     ],
+    # closed-loop SPWM inverter: 50 Hz sine reference 20 Vpk, output regulated with dead-time
+    "spwm-inverter-deadtime": [
+        ("v_ref", 0.5, _pp, 35.0, 45.0, "v_ref 50 Hz swing ~40 Vpp"),
+        ("v_meas", 0.5, _pp, 25.0, 40.0, "v_meas filtered AC swing ~32 Vpp"),
+        ("v_err", 0.5, _pp, 10.0, 30.0, "v_err dynamic regulation error bounded"),
+        ("gate_hi", 0.1, lambda x: max(x), 0.9, 1.1, "gate_hi switching"),
+        ("gate_lo", 0.1, lambda x: max(x), 0.9, 1.1, "gate_lo switching"),
+    ],
 }
 
 
