@@ -14,7 +14,7 @@
  * - Standard rotation cycle: NORTH_SOUTH (503) -> EAST_WEST (504) -> SOUTH_NORTH (501) -> WEST_EAST (502).
  */
 import type { EditorComponent, Point } from './types';
-import { CTRL_TYPE, resolveComponentPinCounts } from './componentSchema';
+import { CTRL_TYPE, resolveComponentPinCounts, COMPONENT_METAS } from './componentSchema';
 import {
   Orientation,
   ORIENTATION_CYCLE,
@@ -79,6 +79,7 @@ const CONTROL_OUTPUT_ONLY = new Set<number>([
 /** CONTROL types carrying a single input terminal (gate, scope). */
 const CONTROL_INPUT_ONLY = new Set<number>([
   CTRL_TYPE.LEGACY_GATE,
+  CTRL_TYPE.GATE,
   CTRL_TYPE.LEGACY_SCOPE,
   CTRL_TYPE.SCOPE,
 ]);
@@ -248,6 +249,27 @@ function terminalPositionsWithPinMode(
         output: [],
       };
     }
+
+    // Standard / multi-terminal CONTROL blocks (Comparator, Logic gates, MUX, Regulators, etc.):
+    // Position terminal pins using SCRIPT_PIN_STEP (1 grid unit) anchored from pin 0,
+    // bit-identical to the simulation engine's ControlCalculatorBuilder.terminalPoint layout
+    // (inputs rel (-2, -i), outputs rel (+2, -j)).
+    const meta = COMPONENT_METAS[component.type];
+    const inputCount = meta?.terminals?.input?.length ?? 1;
+    const outputCount = meta?.terminals?.output?.length ?? 1;
+    const step = SCRIPT_PIN_STEP;
+
+    const inputs: Point[] = offsetsFor(inputCount, step).map((offset) => ({
+      x: center.x - dir.x * TWO_PORT_DIST - dir.y * offset,
+      y: center.y - dir.y * TWO_PORT_DIST + dir.x * offset,
+    }));
+
+    const outputs: Point[] = offsetsFor(outputCount, step).map((offset) => ({
+      x: center.x + dir.x * TWO_PORT_DIST - dir.y * offset,
+      y: center.y + dir.y * TWO_PORT_DIST + dir.x * offset,
+    }));
+
+    return { input: inputs, output: outputs };
   }
 
   // Ideal Transformer (classic LK_TRANS): four pins — primary pair one grid

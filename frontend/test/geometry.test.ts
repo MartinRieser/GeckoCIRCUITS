@@ -137,9 +137,10 @@ describe('terminalPositions: CONTROL blocks', () => {
     }
   });
 
-  it('legacy gate and single-channel scope have a single input terminal', () => {
+  it('gate driver (legacy and modern) and single-channel scope have a single input terminal', () => {
     for (const type of [
       ControlComponentType.LEGACY_GATE,
+      ControlComponentType.GATE,
       ControlComponentType.LEGACY_SCOPE,
       ControlComponentType.SCOPE,
     ]) {
@@ -148,12 +149,6 @@ describe('terminalPositions: CONTROL blocks', () => {
       expect(t.input[0]).toEqual({ x: 98, y: 200 });
       expect(t.output).toEqual([]);
     }
-  });
-
-  it('modern gate driver (1000) operates as a standard two-port control element', () => {
-    const t = terminalPositions({ ...control, type: ControlComponentType.GATE });
-    expect(t.input).toEqual([{ x: 98, y: 200 }]);
-    expect(t.output).toEqual([{ x: 102, y: 200 }]);
   });
 
   it('renders multi-channel scope inputs spaced evenly across the input side', () => {
@@ -185,6 +180,44 @@ describe('terminalPositions: CONTROL blocks', () => {
     const t = terminalPositions(scriptBlock);
     expect(t.input).toHaveLength(2);
     expect(t.output).toHaveLength(3);
+  });
+
+  it('handles Comparator (1010) with 2 input pins spaced at unit step matching simulation engine', () => {
+    // Comparator at (53, 29) in NORTH_SOUTH orientation
+    const comp = {
+      ...control,
+      type: 1010,
+      position: [53, 29],
+      orientation: Orientation.NORTH_SOUTH,
+    };
+    const t = terminalPositions(comp);
+    expect(t.input).toEqual([
+      { x: 51, y: 29 }, // (+) input 0 at (x-2, y)
+      { x: 51, y: 30 }, // (-) input 1 at (x-2, y+1)
+    ]);
+    expect(t.output).toEqual([
+      { x: 55, y: 29 }, // output at (x+2, y)
+    ]);
+  });
+
+  it('handles AND Gate (1011) and MUX (1014) with correct multi-pin terminal layout', () => {
+    const andGate = { ...control, type: 1011, position: [50, 50], orientation: Orientation.NORTH_SOUTH };
+    const tAnd = terminalPositions(andGate);
+    expect(tAnd.input).toEqual([
+      { x: 48, y: 50 },
+      { x: 48, y: 51 },
+    ]);
+    expect(tAnd.output).toEqual([{ x: 52, y: 50 }]);
+
+    const mux = { ...control, type: 1014, position: [50, 50], orientation: Orientation.NORTH_SOUTH };
+    const tMux = terminalPositions(mux);
+    expect(tMux.input).toHaveLength(3);
+    expect(tMux.input).toEqual([
+      { x: 48, y: 50 },
+      { x: 48, y: 51 },
+      { x: 48, y: 52 },
+    ]);
+    expect(tMux.output).toEqual([{ x: 52, y: 50 }]);
   });
 });
 
