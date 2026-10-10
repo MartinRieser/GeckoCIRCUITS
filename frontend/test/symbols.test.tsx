@@ -117,6 +117,41 @@ describe('symbols: ComponentSymbol SVG rendering', () => {
     expect(texts).toContain('f(x)');
   });
 
+  it('renders Comparator with input lead lines aligned to integer grid rows (y=0 and y=1*u)', () => {
+    const comp = makeComp({
+      type: 1010,
+      name: 'CMP.1',
+      family: 'CONTROL',
+      orientation: Orientation.NORTH_SOUTH,
+    });
+
+    const { container } = render(
+      <svg>
+        <ComponentSymbol component={comp} dpix={10} />
+      </svg>,
+    );
+
+    const lines = Array.from(container.querySelectorAll('line'));
+    expect(lines.length).toBe(3); // 2 inputs + 1 output
+    const lineCoords = lines.map((l) => ({
+      x1: Number(l.getAttribute('x1')),
+      y1: Number(l.getAttribute('y1')),
+      x2: Number(l.getAttribute('x2')),
+      y2: Number(l.getAttribute('y2')),
+    }));
+
+    // Input 0 (+) lead: along y=0 from -20 to -6.5
+    expect(lineCoords).toContainEqual({ x1: -20, y1: 0, x2: -6.5, y2: 0 });
+    // Input 1 (-) lead: along y=10 from -20 to -6.5
+    expect(lineCoords).toContainEqual({ x1: -20, y1: 10, x2: -6.5, y2: 10 });
+    // Output lead: along y=0 from 6.5 to 20
+    expect(lineCoords).toContainEqual({ x1: 6.5, y1: 0, x2: 20, y2: 0 });
+
+    const texts = Array.from(container.querySelectorAll('text')).map((t) => t.textContent);
+    expect(texts).toContain('+');
+    expect(texts).toContain('−');
+  });
+
   it('renders transformer with upright base orientation (503 -> 0deg), P/S labels, and 90deg steps', () => {
     const orientations = [
       { code: Orientation.NORTH_SOUTH, expectedAngle: 0 },

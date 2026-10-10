@@ -924,14 +924,14 @@ function ControlBlockLabel({ u, label }: { u: number; label: string }) {
 function ComparatorSymbol({ u }: { u: number }) {
   return (
     <g>
-      <line x1={-LEAD * u} y1={-0.35 * u} x2={-0.65 * u} y2={-0.35 * u} stroke={CTRL_COLOR} />
-      <line x1={-LEAD * u} y1={0.35 * u} x2={-0.65 * u} y2={0.35 * u} stroke={CTRL_COLOR} />
-      <line x1={0.65 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
+      <line x1={-LEAD * u} y1={0} x2={-0.65 * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={-LEAD * u} y1={1 * u} x2={-0.65 * u} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={0.65 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
       <path
-        d={`M ${-0.65 * u} ${-0.7 * u} L ${-0.65 * u} ${0.7 * u} L ${0.65 * u} 0 z`}
+        d={`M ${-0.65 * u} ${-0.45 * u} L ${-0.65 * u} ${1.45 * u} L ${0.65 * u} 0 z`}
         stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
-      <text x={-0.35 * u} y={-0.15 * u} fontSize={0.4 * u} fill={CTRL_COLOR} stroke="none" fontWeight="bold">+</text>
-      <text x={-0.35 * u} y={0.5 * u} fontSize={0.4 * u} fill={CTRL_COLOR} stroke="none" fontWeight="bold">−</text>
+      <text x={-0.38 * u} y={0.25 * u} fontSize={0.38 * u} fill={CTRL_COLOR} stroke="none" fontWeight="bold">+</text>
+      <text x={-0.38 * u} y={0.9 * u} fontSize={0.38 * u} fill={CTRL_COLOR} stroke="none" fontWeight="bold">−</text>
     </g>
   );
 }
@@ -939,13 +939,13 @@ function ComparatorSymbol({ u }: { u: number }) {
 function AndGateSymbol({ u }: { u: number }) {
   return (
     <g>
-      <line x1={-LEAD * u} y1={-0.35 * u} x2={-0.5 * u} y2={-0.35 * u} stroke={CTRL_COLOR} />
-      <line x1={-LEAD * u} y1={0.35 * u} x2={-0.5 * u} y2={0.35 * u} stroke={CTRL_COLOR} />
-      <line x1={0.6 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
+      <line x1={-LEAD * u} y1={0} x2={-0.5 * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={-LEAD * u} y1={1 * u} x2={-0.5 * u} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={0.6 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
       <path
-        d={`M ${-0.5 * u} ${-0.6 * u} L ${-0.5 * u} ${0.6 * u} L 0 ${0.6 * u} A ${0.6 * u} ${0.6 * u} 0 0 0 0 ${-0.6 * u} z`}
+        d={`M ${-0.5 * u} ${-0.45 * u} L ${-0.5 * u} ${1.45 * u} L 0 ${1.45 * u} Q ${0.7 * u} ${1.45 * u} ${0.6 * u} 0 Q ${0.7 * u} ${-0.45 * u} 0 ${-0.45 * u} z`}
         stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
-      <text x={-0.1 * u} y={0.2 * u} fontSize={0.4 * u} fill={CTRL_COLOR} stroke="none"
+      <text x={-0.1 * u} y={0.65 * u} fontSize={0.4 * u} fill={CTRL_COLOR} stroke="none"
             textAnchor="middle" fontWeight="bold">&amp;</text>
     </g>
   );
@@ -954,13 +954,13 @@ function AndGateSymbol({ u }: { u: number }) {
 function OrGateSymbol({ u }: { u: number }) {
   return (
     <g>
-      <line x1={-LEAD * u} y1={-0.35 * u} x2={-0.35 * u} y2={-0.35 * u} stroke={CTRL_COLOR} />
-      <line x1={-LEAD * u} y1={0.35 * u} x2={-0.35 * u} y2={0.35 * u} stroke={CTRL_COLOR} />
-      <line x1={0.65 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
+      <line x1={-LEAD * u} y1={0} x2={-0.35 * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={-LEAD * u} y1={1 * u} x2={-0.35 * u} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={0.65 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
       <path
-        d={`M ${-0.45 * u} ${-0.6 * u} Q ${0.1 * u} ${-0.6 * u} ${0.65 * u} 0 Q ${0.1 * u} ${0.6 * u} ${-0.45 * u} ${0.6 * u} Q ${-0.15 * u} 0 ${-0.45 * u} ${-0.6 * u} z`}
+        d={`M ${-0.45 * u} ${-0.45 * u} Q 0 ${-0.45 * u} ${0.65 * u} 0 Q 0 ${1.45 * u} ${-0.45 * u} ${1.45 * u} Q ${-0.2 * u} ${0.5 * u} ${-0.45 * u} ${-0.45 * u} z`}
         stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
-      <text x={0} y={0.2 * u} fontSize={0.4 * u} fill={CTRL_COLOR} stroke="none"
+      <text x={0} y={0.65 * u} fontSize={0.4 * u} fill={CTRL_COLOR} stroke="none"
             textAnchor="middle" fontWeight="bold">≥1</text>
     </g>
   );
@@ -983,14 +983,15 @@ function NotGateSymbol({ u }: { u: number }) {
 function MuxSymbol({ u }: { u: number }) {
   return (
     <g>
-      <line x1={-LEAD * u} y1={-0.35 * u} x2={-0.55 * u} y2={-0.35 * u} stroke={CTRL_COLOR} />
-      <line x1={-LEAD * u} y1={0.35 * u} x2={-0.55 * u} y2={0.35 * u} stroke={CTRL_COLOR} />
-      <line x1={0.55 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
+      <line x1={-LEAD * u} y1={0} x2={-0.55 * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={-LEAD * u} y1={1 * u} x2={-0.55 * u} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={-LEAD * u} y1={2 * u} x2={-0.55 * u} y2={2 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={0.55 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
       {/* Trapezoid shape */}
       <path
-        d={`M ${-0.55 * u} ${-0.65 * u} L ${0.55 * u} ${-0.4 * u} L ${0.55 * u} ${0.4 * u} L ${-0.55 * u} ${0.65 * u} z`}
+        d={`M ${-0.55 * u} ${-0.45 * u} L ${0.55 * u} ${-0.45 * u} L ${0.55 * u} ${0.45 * u} L ${-0.55 * u} ${2.45 * u} z`}
         stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
-      <text x={0} y={0.2 * u} fontSize={0.4 * u} fill={CTRL_COLOR} stroke="none"
+      <text x={0} y={0.7 * u} fontSize={0.38 * u} fill={CTRL_COLOR} stroke="none"
             textAnchor="middle" fontWeight="bold">MUX</text>
     </g>
   );
