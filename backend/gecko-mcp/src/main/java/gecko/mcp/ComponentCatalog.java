@@ -413,6 +413,152 @@ public final class ComponentCatalog {
                 1, true
         ));
 
+        register(new ComponentDef(
+                "ASIN", "Arc Sine", "CONTROL", 1038, "ASIN",
+                List.of("in", "out"),
+                List.of(),
+                "Trigonometric arc sine: y = asin(u) in radians."
+        ));
+
+        register(new ComponentDef(
+                "ACOS", "Arc Cosine", "CONTROL", 1039, "ACOS",
+                List.of("in", "out"),
+                List.of(),
+                "Trigonometric arc cosine: y = acos(u) in radians."
+        ));
+
+        register(new ComponentDef(
+                "TAN", "Tangent", "CONTROL", 1040, "TAN",
+                List.of("in", "out"),
+                List.of(),
+                "Trigonometric tangent: y = tan(u)."
+        ));
+
+        register(new ComponentDef(
+                "ATAN", "Arc Tangent", "CONTROL", 1041, "ATAN",
+                List.of("in", "out"),
+                List.of(),
+                "Trigonometric arc tangent: y = atan(u) in radians."
+        ));
+
+        register(new ComponentDef(
+                "SQR", "Square", "CONTROL", 1042, "SQR",
+                List.of("in", "out"),
+                List.of(),
+                "Square of input signal: y = u^2."
+        ));
+
+        register(new ComponentDef(
+                "POW", "Power", "CONTROL", 1043, "POW",
+                List.of("in0", "in1", "out"),
+                List.of(),
+                "Power of input signals: y = (in0)^(in1).",
+                2
+        ));
+
+        register(new ComponentDef(
+                "ROUND", "Round", "CONTROL", 1044, "ROUND",
+                List.of("in", "out"),
+                List.of(),
+                "Rounds input signal to nearest integer: y = round(u)."
+        ));
+
+        register(new ComponentDef(
+                "SIGN", "Signum", "CONTROL", 1045, "SIGN",
+                List.of("in", "out"),
+                List.of(),
+                "Signum function: returns 1 if u > 0, -1 if u < 0, 0 if u == 0."
+        ));
+
+        register(new ComponentDef(
+                "EQ", "Equal", "CONTROL", 1046, "EQ",
+                List.of("in0", "in1", "out"),
+                List.of(),
+                "Equality comparator: y = 1 if in0 == in1 else 0.",
+                2
+        ));
+
+        register(new ComponentDef(
+                "NE", "Not Equal", "CONTROL", 1047, "NE",
+                List.of("in0", "in1", "out"),
+                List.of(),
+                "Inequality comparator: y = 1 if in0 != in1 else 0.",
+                2
+        ));
+
+        register(new ComponentDef(
+                "COUNTER", "Counter", "CONTROL", 1048, "COUNTER",
+                List.of("in", "reset", "out"),
+                List.of(),
+                "Pulse counter: increments on rising edges, reset resets count to zero.",
+                2
+        ));
+
+        register(new ComponentDef(
+                "ABCDQ", "abc to dq Transformation", "CONTROL", 1049, "ABCDQ",
+                List.of("a", "b", "c", "theta", "d", "q", "zero"),
+                List.of(),
+                "Park/Clarke abc to dq0 coordinate transformation.",
+                4
+        ));
+
+        register(new ComponentDef(
+                "DQABC", "dq to abc Transformation", "CONTROL", 1050, "DQABC",
+                List.of("d", "q", "zero", "theta", "a", "b", "c"),
+                List.of(),
+                "Inverse Park/Clarke dq0 to abc coordinate transformation.",
+                4
+        ));
+
+        register(new ComponentDef(
+                "THYR_CTRL", "Thyristor Control", "CONTROL", 1051, "THYR_CTRL",
+                List.of("uSync", "alpha", "gate1", "gate2", "gate3", "gate4", "gate5", "gate6"),
+                List.of(),
+                "Firing angle generator for line-commutated thyristor bridges.",
+                2
+        ));
+
+        register(new ComponentDef(
+                "PMSM_CONTROL", "PMSM Control", "CONTROL", 1052, "PMSM_CTRL",
+                List.of("idRef", "iqRef", "omega", "theta", "vd", "vq"),
+                List.of(),
+                "Field-oriented current and speed controller for PMSM machines.",
+                4
+        ));
+
+        register(new ComponentDef(
+                "PMSM_MODULATOR", "PMSM Modulator", "CONTROL", 1053, "PMSM_MOD",
+                List.of("vd", "vq", "theta", "sA", "sB", "sC"),
+                List.of(),
+                "Modulator / space-vector transform for PMSM machines.",
+                3
+        ));
+
+        register(new ComponentDef(
+                "DEMUX", "Demultiplexer / Vector Splitter", "CONTROL", 1054, "DEMUX",
+                List.of("in", "out0", "out1"),
+                List.of(),
+                "Splits a vector control signal into scalar components.",
+                1
+        ));
+
+        register(new ComponentDef(
+                "SPACE_VECTOR", "Space Vector Modulator", "CONTROL", 1055, "SVM",
+                List.of("valpha", "vbeta", "sA", "sB", "sC"),
+                List.of(),
+                "Space vector PWM modulator.",
+                2
+        ));
+
+        register(new ComponentDef(
+                "SDFT", "Sliding DFT", "CONTROL", 1056, "SDFT",
+                List.of("in", "mag"),
+                List.of(
+                        new ParameterDef("frequency", "number", "Hz", 50.0, 0, "Fundamental tracking frequency in Hertz")
+                ),
+                "Sliding Discrete Fourier Transform for real-time fundamental harmonic tracking."
+        ));
+
         // ====================================================================
         // Thermal Domain Components (classic .ipes heat network)
         // ====================================================================
@@ -503,7 +649,22 @@ public final class ComponentCatalog {
             Map.entry("THERMAL_CAPACITANCE", "TH_CTH"),
             Map.entry("HEAT_FLOW", "TH_FLOW"),
             Map.entry("TEMPERATURE_SOURCE", "TH_TEMP"),
-            Map.entry("AMBIENT", "TH_AMBIENT")
+            Map.entry("AMBIENT", "TH_AMBIENT"),
+            Map.entry("ARCSIN", "ASIN"),
+            Map.entry("ARCCOS", "ACOS"),
+            Map.entry("ARCTAN", "ATAN"),
+            Map.entry("SQUARE", "SQR"),
+            Map.entry("POWER", "POW"),
+            Map.entry("SIGNUM", "SIGN"),
+            Map.entry("EQUAL", "EQ"),
+            Map.entry("NOTEQUAL", "NE"),
+            Map.entry("COUNT", "COUNTER"),
+            Map.entry("ABC_DQ", "ABCDQ"),
+            Map.entry("DQ_ABC", "DQABC"),
+            Map.entry("THYRISTOR_CONTROL", "THYR_CTRL"),
+            Map.entry("PMSM_CTRL", "PMSM_CONTROL"),
+            Map.entry("PMSM_MOD", "PMSM_MODULATOR"),
+            Map.entry("SVM", "SPACE_VECTOR")
     );
 
     private static void register(ComponentDef def) {
@@ -524,13 +685,34 @@ public final class ComponentCatalog {
     }
 
     /** Legacy classic-editor type numbers of the control blocks (classic -> web). */
-    private static final Map<Integer, Integer> LEGACY_CONTROL_TYPES = Map.of(
-            1, 1001,   // voltmeter
-            2, 1002,   // ammeter
-            3, 1005,   // constant
-            4, 1004,   // signal source
-            5, 1003,   // scope
-            6, 1000);  // gate
+    private static final Map<Integer, Integer> LEGACY_CONTROL_TYPES = Map.ofEntries(
+            Map.entry(1, 1001),   // voltmeter
+            Map.entry(2, 1002),   // ammeter
+            Map.entry(3, 1005),   // constant
+            Map.entry(4, 1004),   // signal source
+            Map.entry(5, 1003),   // scope
+            Map.entry(6, 1000),   // gate
+            Map.entry(33, 1038),  // ASIN
+            Map.entry(35, 1039),  // ACOS
+            Map.entry(37, 1040),  // TAN
+            Map.entry(38, 1041),  // ATAN
+            Map.entry(39, 1042),  // SQR
+            Map.entry(42, 1043),  // POW
+            Map.entry(44, 1044),  // ROUND
+            Map.entry(47, 1045),  // SIGN
+            Map.entry(48, 1046),  // EQ
+            Map.entry(51, 1047),  // NE
+            Map.entry(53, 1048),  // COUNTER
+            Map.entry(59, 1049),  // ABCDQ
+            Map.entry(63, 1050),  // DQABC
+            Map.entry(65, 1051),  // THYR_CTRL
+            Map.entry(66, 1052),  // PMSM_CONTROL
+            Map.entry(72, 1053),  // PMSM_MODULATOR
+            Map.entry(76, 1054),  // DEMUX
+            Map.entry(77, 1055),  // SPACE_VECTOR
+            Map.entry(82, 1056),  // SDFT
+            Map.entry(85, 1058)   // SPARSEMATRIX
+    );
 
     public static Map<String, Object> toCatalogJson() {
         Map<String, Object> result = new LinkedHashMap<>();

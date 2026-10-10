@@ -50,12 +50,58 @@ describe('Model Constants & Enums', () => {
     expect(ControlComponentType.SCOPE).toBe(1003);
     expect(ControlComponentType.SIGNAL_SOURCE).toBe(1004);
     expect(ControlComponentType.CONSTANT).toBe(1005);
+    expect(ControlComponentType.ASIN).toBe(1038);
+    expect(ControlComponentType.ACOS).toBe(1039);
+    expect(ControlComponentType.TAN).toBe(1040);
+    expect(ControlComponentType.ATAN).toBe(1041);
+    expect(ControlComponentType.SQR).toBe(1042);
+    expect(ControlComponentType.POW).toBe(1043);
+    expect(ControlComponentType.ROUND).toBe(1044);
+    expect(ControlComponentType.SIGN).toBe(1045);
+    expect(ControlComponentType.EQ).toBe(1046);
+    expect(ControlComponentType.NE).toBe(1047);
+    expect(ControlComponentType.COUNTER).toBe(1048);
+    expect(ControlComponentType.ABCDQ).toBe(1049);
+    expect(ControlComponentType.DQABC).toBe(1050);
+    expect(ControlComponentType.THYR_CTRL).toBe(1051);
+    expect(ControlComponentType.PMSM_CONTROL).toBe(1052);
+    expect(ControlComponentType.PMSM_MODULATOR).toBe(1053);
+    expect(ControlComponentType.DEMUX).toBe(1054);
+    expect(ControlComponentType.SPACE_VECTOR).toBe(1055);
+    expect(ControlComponentType.SDFT).toBe(1056);
+    expect(ControlComponentType.SPARSEMATRIX).toBe(1058);
+
+    expect(ControlComponentType.LEGACY_ASIN).toBe(33);
+    expect(ControlComponentType.LEGACY_ACOS).toBe(35);
+    expect(ControlComponentType.LEGACY_TAN).toBe(37);
+    expect(ControlComponentType.LEGACY_ATAN).toBe(38);
+    expect(ControlComponentType.LEGACY_SQR).toBe(39);
+    expect(ControlComponentType.LEGACY_POW).toBe(42);
+    expect(ControlComponentType.LEGACY_ROUND).toBe(44);
+    expect(ControlComponentType.LEGACY_SIGN).toBe(47);
+    expect(ControlComponentType.LEGACY_EQ).toBe(48);
+    expect(ControlComponentType.LEGACY_NE).toBe(51);
+    expect(ControlComponentType.LEGACY_COUNTER).toBe(53);
+    expect(ControlComponentType.LEGACY_ABCDQ).toBe(59);
+    expect(ControlComponentType.LEGACY_DQABC).toBe(63);
+    expect(ControlComponentType.LEGACY_THYR_CTRL).toBe(65);
+    expect(ControlComponentType.LEGACY_PMSM_CONTROL).toBe(66);
+    expect(ControlComponentType.LEGACY_PMSM_MODULATOR).toBe(72);
+    expect(ControlComponentType.LEGACY_DEMUX).toBe(76);
+    expect(ControlComponentType.LEGACY_SPACE_VECTOR).toBe(77);
+    expect(ControlComponentType.LEGACY_SDFT).toBe(82);
+    expect(ControlComponentType.LEGACY_SPARSEMATRIX).toBe(85);
   });
 
   it('provides backwards-compatible CTRL_TYPE mapping object', () => {
     expect(CTRL_TYPE.VOLTMETER).toBe(1001);
     expect(CTRL_TYPE.AMMETER).toBe(1002);
     expect(CTRL_TYPE.SCOPE).toBe(1003);
+    expect(CTRL_TYPE.ASIN).toBe(1038);
+    expect(CTRL_TYPE.ABCDQ).toBe(1049);
+    expect(CTRL_TYPE.DQABC).toBe(1050);
+    expect(CTRL_TYPE.DEMUX).toBe(1054);
+    expect(CTRL_TYPE.SDFT).toBe(1056);
   });
 
   it('defines valid canvas metric dimensions and thresholds', () => {

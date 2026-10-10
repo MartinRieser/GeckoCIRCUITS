@@ -2020,6 +2020,355 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
       output: [{ label: 'out', description: 'Signal output' }],
     },
   },
+
+  1038: {
+    type: 1038,
+    family: 'CONTROL',
+    name: 'CTRL_ASIN',
+    displayName: 'Arc Sine (asin)',
+    category: 'control',
+    description: 'Trigonometric arc sine function: y = asin(u) in radians',
+    defaultPrefix: 'ASIN',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'in', description: 'Input signal [-1..1]' }],
+      output: [{ label: 'out', description: 'Output angle in radians' }],
+    },
+  },
+  1039: {
+    type: 1039,
+    family: 'CONTROL',
+    name: 'CTRL_ACOS',
+    displayName: 'Arc Cosine (acos)',
+    category: 'control',
+    description: 'Trigonometric arc cosine function: y = acos(u) in radians',
+    defaultPrefix: 'ACOS',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'in', description: 'Input signal [-1..1]' }],
+      output: [{ label: 'out', description: 'Output angle in radians' }],
+    },
+  },
+  1040: {
+    type: 1040,
+    family: 'CONTROL',
+    name: 'CTRL_TAN',
+    displayName: 'Tangent (tan)',
+    category: 'control',
+    description: 'Trigonometric tangent function: y = tan(u)',
+    defaultPrefix: 'TAN',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'in', description: 'Input angle in radians' }],
+      output: [{ label: 'out', description: 'Tangent output' }],
+    },
+  },
+  1041: {
+    type: 1041,
+    family: 'CONTROL',
+    name: 'CTRL_ATAN',
+    displayName: 'Arc Tangent (atan)',
+    category: 'control',
+    description: 'Trigonometric arc tangent function: y = atan(u) in radians',
+    defaultPrefix: 'ATAN',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'in', description: 'Input signal' }],
+      output: [{ label: 'out', description: 'Output angle in radians' }],
+    },
+  },
+  1042: {
+    type: 1042,
+    family: 'CONTROL',
+    name: 'CTRL_SQR',
+    displayName: 'Square (x²)',
+    category: 'control',
+    description: 'Square function: y = u²',
+    defaultPrefix: 'SQR',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'in', description: 'Input signal' }],
+      output: [{ label: 'out', description: 'Squared output' }],
+    },
+  },
+  1043: {
+    type: 1043,
+    family: 'CONTROL',
+    name: 'CTRL_POW',
+    displayName: 'Power (xʸ)',
+    category: 'control',
+    description: 'Power function: y = in0^in1',
+    defaultPrefix: 'POW',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'in0', description: 'Base input' },
+        { label: 'in1', description: 'Exponent input' },
+      ],
+      output: [{ label: 'out', description: 'Power output' }],
+    },
+  },
+  1044: {
+    type: 1044,
+    family: 'CONTROL',
+    name: 'CTRL_ROUND',
+    displayName: 'Round',
+    category: 'control',
+    description: 'Rounds input signal to the nearest integer: y = round(u)',
+    defaultPrefix: 'RND',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'in', description: 'Input signal' }],
+      output: [{ label: 'out', description: 'Rounded integer output' }],
+    },
+  },
+  1045: {
+    type: 1045,
+    family: 'CONTROL',
+    name: 'CTRL_SIGN',
+    displayName: 'Signum (sgn)',
+    category: 'control',
+    description: 'Sign function: returns 1 for u > 0, -1 for u < 0, 0 for u == 0',
+    defaultPrefix: 'SGN',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'in', description: 'Input signal' }],
+      output: [{ label: 'out', description: 'Sign output (-1, 0, 1)' }],
+    },
+  },
+  1046: {
+    type: 1046,
+    family: 'CONTROL',
+    name: 'CTRL_EQ',
+    displayName: 'Equal (==)',
+    category: 'control',
+    description: 'Equality comparator: outputs 1 if in0 == in1, else 0',
+    defaultPrefix: 'EQ',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'in0', description: 'Input 0' },
+        { label: 'in1', description: 'Input 1' },
+      ],
+      output: [{ label: 'out', description: 'Binary output (0 or 1)' }],
+    },
+  },
+  1047: {
+    type: 1047,
+    family: 'CONTROL',
+    name: 'CTRL_NE',
+    displayName: 'Not Equal (!=)',
+    category: 'control',
+    description: 'Inequality comparator: outputs 1 if in0 != in1, else 0',
+    defaultPrefix: 'NE',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'in0', description: 'Input 0' },
+        { label: 'in1', description: 'Input 1' },
+      ],
+      output: [{ label: 'out', description: 'Binary output (0 or 1)' }],
+    },
+  },
+  1048: {
+    type: 1048,
+    family: 'CONTROL',
+    name: 'CTRL_COUNTER',
+    displayName: 'Counter',
+    category: 'control',
+    description: 'Pulse counter: increments on rising edges, resets to zero when reset > 0.5',
+    defaultPrefix: 'CNT',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'in', description: 'Pulse count input' },
+        { label: 'reset', description: 'Reset trigger input' },
+      ],
+      output: [{ label: 'out', description: 'Counter value output' }],
+    },
+  },
+  1049: {
+    type: 1049,
+    family: 'CONTROL',
+    name: 'CTRL_ABCDQ',
+    displayName: 'abc → dq0 Transform',
+    category: 'control',
+    description: 'Park/Clarke abc to dq0 coordinate transformation',
+    defaultPrefix: 'DQ',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'a', description: 'Phase a input' },
+        { label: 'b', description: 'Phase b input' },
+        { label: 'c', description: 'Phase c input' },
+        { label: 'theta', description: 'Rotor angle theta in radians' },
+      ],
+      output: [
+        { label: 'd', description: 'Direct axis output' },
+        { label: 'q', description: 'Quadrature axis output' },
+        { label: 'zero', description: 'Zero sequence output' },
+      ],
+    },
+  },
+  1050: {
+    type: 1050,
+    family: 'CONTROL',
+    name: 'CTRL_DQABC',
+    displayName: 'dq0 → abc Transform',
+    category: 'control',
+    description: 'Inverse Park/Clarke dq0 to abc coordinate transformation',
+    defaultPrefix: 'IQ',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'd', description: 'Direct axis input' },
+        { label: 'q', description: 'Quadrature axis input' },
+        { label: 'zero', description: 'Zero sequence input' },
+        { label: 'theta', description: 'Rotor angle theta in radians' },
+      ],
+      output: [
+        { label: 'a', description: 'Phase a output' },
+        { label: 'b', description: 'Phase b output' },
+        { label: 'c', description: 'Phase c output' },
+      ],
+    },
+  },
+  1051: {
+    type: 1051,
+    family: 'CONTROL',
+    name: 'CTRL_THYR_CTRL',
+    displayName: 'Thyristor Control',
+    category: 'control',
+    description: 'Firing angle generator for line-commutated thyristor bridge converter',
+    defaultPrefix: 'THC',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'uSync', description: 'Line synchronization voltage' },
+        { label: 'alpha', description: 'Firing angle alpha' },
+      ],
+      output: [
+        { label: 'gate1', description: 'Thyristor 1 gate pulse' },
+        { label: 'gate2', description: 'Thyristor 2 gate pulse' },
+        { label: 'gate3', description: 'Thyristor 3 gate pulse' },
+        { label: 'gate4', description: 'Thyristor 4 gate pulse' },
+        { label: 'gate5', description: 'Thyristor 5 gate pulse' },
+        { label: 'gate6', description: 'Thyristor 6 gate pulse' },
+      ],
+    },
+  },
+  1052: {
+    type: 1052,
+    family: 'CONTROL',
+    name: 'CTRL_PMSM_CONTROL',
+    displayName: 'PMSM FOC Controller',
+    category: 'control',
+    description: 'Field-oriented current and speed controller for permanent magnet synchronous machines',
+    defaultPrefix: 'FOC',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'idRef', description: 'd-axis current reference' },
+        { label: 'iqRef', description: 'q-axis current reference' },
+        { label: 'omega', description: 'Mechanical rotor speed' },
+        { label: 'theta', description: 'Electrical rotor angle' },
+      ],
+      output: [
+        { label: 'vd', description: 'd-axis voltage command' },
+        { label: 'vq', description: 'q-axis voltage command' },
+      ],
+    },
+  },
+  1053: {
+    type: 1053,
+    family: 'CONTROL',
+    name: 'CTRL_PMSM_MODULATOR',
+    displayName: 'PMSM Modulator',
+    category: 'control',
+    description: 'Modulator and space vector transformation for PMSM machines',
+    defaultPrefix: 'MOD',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'vd', description: 'd-axis voltage command' },
+        { label: 'vq', description: 'q-axis voltage command' },
+        { label: 'theta', description: 'Electrical rotor angle' },
+      ],
+      output: [
+        { label: 'sA', description: 'Switching state phase A' },
+        { label: 'sB', description: 'Switching state phase B' },
+        { label: 'sC', description: 'Switching state phase C' },
+      ],
+    },
+  },
+  1054: {
+    type: 1054,
+    family: 'CONTROL',
+    name: 'CTRL_DEMUX',
+    displayName: 'Demultiplexer (Demux)',
+    category: 'control',
+    description: 'Splits a multiplexed vector control signal into scalar components',
+    defaultPrefix: 'DMX',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'in', description: 'Vector input signal' }],
+      output: [
+        { label: 'out0', description: 'Channel 0 output' },
+        { label: 'out1', description: 'Channel 1 output' },
+      ],
+    },
+  },
+  1055: {
+    type: 1055,
+    family: 'CONTROL',
+    name: 'CTRL_SPACE_VECTOR',
+    displayName: 'Space Vector Modulator',
+    category: 'control',
+    description: 'Space vector PWM modulator for three-phase inverters',
+    defaultPrefix: 'SVM',
+    parameters: [],
+    terminals: {
+      input: [
+        { label: 'valpha', description: 'Stationary alpha voltage' },
+        { label: 'vbeta', description: 'Stationary beta voltage' },
+      ],
+      output: [
+        { label: 'sA', description: 'Gate phase A' },
+        { label: 'sB', description: 'Gate phase B' },
+        { label: 'sC', description: 'Gate phase C' },
+      ],
+    },
+  },
+  1056: {
+    type: 1056,
+    family: 'CONTROL',
+    name: 'CTRL_SDFT',
+    displayName: 'Sliding DFT',
+    category: 'control',
+    description: 'Sliding Discrete Fourier Transform for real-time fundamental harmonic tracking',
+    defaultPrefix: 'SDFT',
+    parameters: [
+      { index: 0, key: 'frequency', label: 'Frequency (f0)', description: 'Fundamental harmonic frequency in Hz', defaultValue: 50.0, unit: 'Hz' },
+    ],
+    terminals: {
+      input: [{ label: 'in', description: 'Input signal' }],
+      output: [{ label: 'mag', description: 'Magnitude of fundamental harmonic' }],
+    },
+  },
+  1058: {
+    type: 1058,
+    family: 'CONTROL',
+    name: 'CTRL_SPARSEMATRIX',
+    displayName: 'Sparse State-Space Matrix',
+    category: 'control',
+    description: 'Sparse state-space matrix dynamic system calculator',
+    defaultPrefix: 'SPM',
+    parameters: [],
+    terminals: {
+      input: [{ label: 'in', description: 'State input signal' }],
+      output: [{ label: 'out', description: 'State output signal' }],
+    },
+  },
 };
 
 /**
@@ -2056,17 +2405,37 @@ export function getComponentMeta(
     else if (type === 27) lookupType = 1021; // Limit
     else if (type === 29) lookupType = 1032; // PD
     else if (type === 32) lookupType = 1022; // Abs
+    else if (type === 33) lookupType = 1038; // ASIN
     else if (type === 34) lookupType = 1026; // Sin
+    else if (type === 35) lookupType = 1039; // ACOS
     else if (type === 36) lookupType = 1027; // Cos
+    else if (type === 37) lookupType = 1040; // TAN
+    else if (type === 38) lookupType = 1041; // ATAN
+    else if (type === 39) lookupType = 1042; // SQR
     else if (type === 40) lookupType = 1024; // Exp
     else if (type === 41) lookupType = 1025; // Ln
+    else if (type === 42) lookupType = 1043; // POW
     else if (type === 43) lookupType = 1023; // Sqrt
+    else if (type === 44) lookupType = 1044; // ROUND
     else if (type === 45) lookupType = 1036; // GE
     else if (type === 46) lookupType = 1010; // GT
+    else if (type === 47) lookupType = 1045; // SIGN
+    else if (type === 48) lookupType = 1046; // EQ
     else if (type === 49) lookupType = 1028; // Min
     else if (type === 50) lookupType = 1029; // Max
+    else if (type === 51) lookupType = 1047; // NE
+    else if (type === 53) lookupType = 1048; // COUNTER
     else if (type === 58) lookupType = 1034; // Time
+    else if (type === 59) lookupType = 1049; // ABCDQ
+    else if (type === 63) lookupType = 1050; // DQABC
     else if (type === 64) lookupType = 1009; // Integrator
+    else if (type === 65) lookupType = 1051; // THYR_CTRL
+    else if (type === 66) lookupType = 1052; // PMSM_CONTROL
+    else if (type === 72) lookupType = 1053; // PMSM_MODULATOR
+    else if (type === 76) lookupType = 1054; // DEMUX
+    else if (type === 77) lookupType = 1055; // SPACE_VECTOR
+    else if (type === 82) lookupType = 1056; // SDFT
+    else if (type === 85) lookupType = 1058; // SPARSEMATRIX
   }
   const existing = COMPONENT_METAS[lookupType] ?? COMPONENT_METAS[type];
   if (existing) {

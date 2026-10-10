@@ -142,6 +142,26 @@ public enum CircuitTypCore {
     CTRL_XOR(1035),        // XOR logic gate
     CTRL_GE(1036),         // Greater or equal (in0 >= in1)
     CTRL_DEADTIME(1037),   // Dead-time generator for complementary bridge gates
+    CTRL_ASIN(1038),       // Arc sine asin(x)
+    CTRL_ACOS(1039),       // Arc cosine acos(x)
+    CTRL_TAN(1040),        // Tangent tan(x)
+    CTRL_ATAN(1041),       // Arc tangent atan(x)
+    CTRL_SQR(1042),        // Square x^2
+    CTRL_POW(1043),        // Power in0 ^ in1
+    CTRL_ROUND(1044),      // Round to nearest integer round(x)
+    CTRL_SIGN(1045),       // Signum sgn(x)
+    CTRL_EQ(1046),         // Equality in0 == in1
+    CTRL_NE(1047),         // Inequality in0 != in1
+    CTRL_COUNTER(1048),    // Clock / edge counter
+    CTRL_ABCDQ(1049),      // Clarke/Park transform abc -> dq0
+    CTRL_DQABC(1050),      // Inverse Park transform dq0 -> abc
+    CTRL_THYR_CTRL(1051),  // 6-pulse Thyristor firing angle controller
+    CTRL_PMSM_CONTROL(1052), // PMSM Field-Oriented Controller
+    CTRL_PMSM_MODULATOR(1053), // PMSM Space Vector Modulator (SVPWM)
+    CTRL_DEMUX(1054),      // Demultiplexer
+    CTRL_SPACE_VECTOR(1055), // Space Vector display
+    CTRL_SDFT(1056),       // Sliding Discrete Fourier Transform harmonic analyzer
+    CTRL_SPARSEMATRIX(1058), // Indirect Sparse Matrix Converter modulator
     C_JAVA_FUNCTION(61);   // Classic Java function block
 
     private final int typeNumber;

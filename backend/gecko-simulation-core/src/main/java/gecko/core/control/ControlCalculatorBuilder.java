@@ -16,12 +16,68 @@ package gecko.core.control;
 import gecko.core.circuit.ComponentTerminals;
 import gecko.core.circuit.circuitcomponents.CircuitTypCore;
 import gecko.core.circuit.netlist.CircuitNetlist;
+import gecko.core.control.FrequencyDataCore;
+import gecko.core.control.OutputDataType;
+import gecko.core.control.calculators.ABCDQCalculator;
+import gecko.core.control.calculators.ACosCalculator;
+import gecko.core.control.calculators.ASinCalculator;
+import gecko.core.control.calculators.ATanCalculator;
 import gecko.core.control.calculators.AbsCalculator;
 import gecko.core.control.calculators.AbstractControlCalculatable;
 import gecko.core.control.calculators.AddCalculator;
 import gecko.core.control.calculators.AndTwoPortCalculator;
 import gecko.core.control.calculators.ConstantCalculator;
 import gecko.core.control.calculators.CosCalculator;
+import gecko.core.control.calculators.CounterCalculatable;
+import gecko.core.control.calculators.DQABCDCalculator;
+import gecko.core.control.calculators.DeadTimeCalculator;
+import gecko.core.control.calculators.DelayCalculator;
+import gecko.core.control.calculators.DemuxCalculator;
+import gecko.core.control.calculators.DivCalculator;
+import gecko.core.control.calculators.EqualCalculatorTwoInputs;
+import gecko.core.control.calculators.ExpCalculator;
+import gecko.core.control.calculators.GainCalculator;
+import gecko.core.control.calculators.GateCalculator;
+import gecko.core.control.calculators.GreaterEqualCalculator;
+import gecko.core.control.calculators.GreaterThanCalculator;
+import gecko.core.control.calculators.HysteresisCalculatorInternal;
+import gecko.core.control.calculators.InitializableAtSimulationStart;
+import gecko.core.control.calculators.IntegratorCalculation;
+import gecko.core.control.calculators.CLibraryCalculator;
+import gecko.core.control.calculators.LimitCalculatorInternal;
+import gecko.core.control.calculators.LnCalculator;
+import gecko.core.control.calculators.MaxCalculatorTwoInputs;
+import gecko.core.control.calculators.MinCalculatorTwoInputs;
+import gecko.core.control.calculators.MulCalculator;
+import gecko.core.control.calculators.NotCalculator;
+import gecko.core.control.calculators.NotEqualCalculator;
+import gecko.core.control.calculators.OrCalculatorTwoInputs;
+import gecko.core.control.calculators.PDCalculator;
+import gecko.core.control.calculators.PICalculator;
+import gecko.core.control.calculators.PT1Calculator;
+import gecko.core.control.calculators.PT2Calculator;
+import gecko.core.control.calculators.PmsmControlCalculator;
+import gecko.core.control.calculators.PmsmModulatorCalculator;
+import gecko.core.control.calculators.PowerCalculator;
+import gecko.core.control.calculators.RoundCalculator;
+import gecko.core.control.calculators.SampleHoldCalculator;
+import gecko.core.control.calculators.ScriptBlockCalculator;
+import gecko.core.control.calculators.SignalCalculatorRandom;
+import gecko.core.control.calculators.SignalCalculatorRectangle;
+import gecko.core.control.calculators.SignalCalculatorSinus;
+import gecko.core.control.calculators.SignalCalculatorTriangle;
+import gecko.core.control.calculators.SignalSelectorCalculator;
+import gecko.core.control.calculators.SignumCalculator;
+import gecko.core.control.calculators.SinCalculator;
+import gecko.core.control.calculators.SlidingDFTCalculator;
+import gecko.core.control.calculators.SparseMatrixCalculator;
+import gecko.core.control.calculators.SqrtCalculator;
+import gecko.core.control.calculators.SquareCalculator;
+import gecko.core.control.calculators.SubtractionTwoParameter;
+import gecko.core.control.calculators.TanCalculator;
+import gecko.core.control.calculators.ThyristorControlCalculator;
+import gecko.core.control.calculators.TimeCalculator;
+import gecko.core.control.calculators.XORCalculator;
 import gecko.core.control.calculators.DeadTimeCalculator;
 import gecko.core.control.calculators.DelayCalculator;
 import gecko.core.control.calculators.DivCalculator;
@@ -132,17 +188,37 @@ public final class ControlCalculatorBuilder {
     private static final int TYP_LEGACY_LIMIT = 27;
     private static final int TYP_LEGACY_PD = 29;
     private static final int TYP_LEGACY_ABS = 32;
+    private static final int TYP_LEGACY_ROUND = 33;
     private static final int TYP_LEGACY_SIN = 34;
+    private static final int TYP_LEGACY_ASIN = 35;
     private static final int TYP_LEGACY_COS = 36;
+    private static final int TYP_LEGACY_ACOS = 37;
+    private static final int TYP_LEGACY_TAN = 38;
+    private static final int TYP_LEGACY_ATAN = 39;
     private static final int TYP_LEGACY_EXP = 40;
     private static final int TYP_LEGACY_LN = 41;
+    private static final int TYP_LEGACY_SQR = 42;
     private static final int TYP_LEGACY_SQRT = 43;
+    private static final int TYP_LEGACY_POW = 44;
     private static final int TYP_LEGACY_GE = 45;
     private static final int TYP_LEGACY_GT = 46;
+    private static final int TYP_LEGACY_EQ = 47;
+    private static final int TYP_LEGACY_NE = 48;
     private static final int TYP_LEGACY_MIN = 49;
     private static final int TYP_LEGACY_MAX = 50;
+    private static final int TYP_LEGACY_SIGN = 51;
+    private static final int TYP_LEGACY_COUNTER = 53;
     private static final int TYP_LEGACY_TIME = 58;
+    private static final int TYP_LEGACY_SPARSEMATRIX = 59;
+    private static final int TYP_LEGACY_SPACE_VECTOR = 63;
     private static final int TYP_LEGACY_INT = 64;
+    private static final int TYP_LEGACY_ABCDQ = 65;
+    private static final int TYP_LEGACY_DQABC = 66;
+    private static final int TYP_LEGACY_THYR_CTRL = 72;
+    private static final int TYP_LEGACY_PMSM_CONTROL = 76;
+    private static final int TYP_LEGACY_PMSM_MODULATOR = 77;
+    private static final int TYP_LEGACY_SDFT = 82;
+    private static final int TYP_LEGACY_DEMUX = 85;
     private static final int TYP_JAVA_FUNCTION = 61;
     private static final int TYP_SCRIPT = 1016;
     private static final int TYP_NATIVE_C = 88;
@@ -188,6 +264,26 @@ public final class ControlCalculatorBuilder {
     private static final int TYP_XOR = 1035;
     private static final int TYP_GE = 1036;
     private static final int TYP_DEADTIME = 1037;
+    private static final int TYP_ASIN = 1038;
+    private static final int TYP_ACOS = 1039;
+    private static final int TYP_TAN = 1040;
+    private static final int TYP_ATAN = 1041;
+    private static final int TYP_SQR = 1042;
+    private static final int TYP_POW = 1043;
+    private static final int TYP_ROUND = 1044;
+    private static final int TYP_SIGN = 1045;
+    private static final int TYP_EQ = 1046;
+    private static final int TYP_NE = 1047;
+    private static final int TYP_COUNTER = 1048;
+    private static final int TYP_ABCDQ = 1049;
+    private static final int TYP_DQABC = 1050;
+    private static final int TYP_THYR_CTRL = 1051;
+    private static final int TYP_PMSM_CONTROL = 1052;
+    private static final int TYP_PMSM_MODULATOR = 1053;
+    private static final int TYP_DEMUX = 1054;
+    private static final int TYP_SPACE_VECTOR = 1055;
+    private static final int TYP_SDFT = 1056;
+    private static final int TYP_SPARSEMATRIX = 1058;
 
     // Parameter slot layouts of the web catalog control blocks
     /** CTRL_CONSTANT: constant output value. */
@@ -244,17 +340,37 @@ public final class ControlCalculatorBuilder {
             Map.entry(TYP_LEGACY_LIMIT, new int[]{1, 1, 2}),
             Map.entry(TYP_LEGACY_PD, new int[]{1, 1, 2}),
             Map.entry(TYP_LEGACY_ABS, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_ROUND, new int[]{1, 1, 2}),
             Map.entry(TYP_LEGACY_SIN, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_ASIN, new int[]{1, 1, 2}),
             Map.entry(TYP_LEGACY_COS, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_ACOS, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_TAN, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_ATAN, new int[]{1, 1, 2}),
             Map.entry(TYP_LEGACY_EXP, new int[]{1, 1, 2}),
             Map.entry(TYP_LEGACY_LN, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_SQR, new int[]{1, 1, 2}),
             Map.entry(TYP_LEGACY_SQRT, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_POW, new int[]{2, 1, 2}),
             Map.entry(TYP_LEGACY_GE, new int[]{2, 1, 2}),
             Map.entry(TYP_LEGACY_GT, new int[]{2, 1, 2}),
+            Map.entry(TYP_LEGACY_EQ, new int[]{2, 1, 2}),
+            Map.entry(TYP_LEGACY_NE, new int[]{2, 1, 2}),
             Map.entry(TYP_LEGACY_MIN, new int[]{2, 1, 2}),
             Map.entry(TYP_LEGACY_MAX, new int[]{2, 1, 2}),
+            Map.entry(TYP_LEGACY_SIGN, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_COUNTER, new int[]{2, 1, 2}),
             Map.entry(TYP_LEGACY_TIME, new int[]{0, 1, 2}),
+            Map.entry(TYP_LEGACY_SPARSEMATRIX, new int[]{8, 9, 2}),
+            Map.entry(TYP_LEGACY_SPACE_VECTOR, new int[]{9, 0, 2}),
             Map.entry(TYP_LEGACY_INT, new int[]{2, 1, 2}),
+            Map.entry(TYP_LEGACY_ABCDQ, new int[]{4, 2, 2}),
+            Map.entry(TYP_LEGACY_DQABC, new int[]{3, 3, 2}),
+            Map.entry(TYP_LEGACY_THYR_CTRL, new int[]{2, 6, 2}),
+            Map.entry(TYP_LEGACY_PMSM_CONTROL, new int[]{12, 8, 2}),
+            Map.entry(TYP_LEGACY_PMSM_MODULATOR, new int[]{4, 3, 2}),
+            Map.entry(TYP_LEGACY_SDFT, new int[]{1, 1, 2}),
+            Map.entry(TYP_LEGACY_DEMUX, new int[]{1, 3, 2}),
 
             // Web catalog blocks
             Map.entry(TYP_GATE_WEB, new int[]{1, 0, 2}),
@@ -293,7 +409,27 @@ public final class ControlCalculatorBuilder {
             Map.entry(TYP_TIME, new int[]{0, 1, 2}),
             Map.entry(TYP_XOR, new int[]{2, 1, 2}),
             Map.entry(TYP_GE, new int[]{2, 1, 2}),
-            Map.entry(TYP_DEADTIME, new int[]{1, 2, 2}));
+            Map.entry(TYP_DEADTIME, new int[]{1, 2, 2}),
+            Map.entry(TYP_ASIN, new int[]{1, 1, 2}),
+            Map.entry(TYP_ACOS, new int[]{1, 1, 2}),
+            Map.entry(TYP_TAN, new int[]{1, 1, 2}),
+            Map.entry(TYP_ATAN, new int[]{1, 1, 2}),
+            Map.entry(TYP_SQR, new int[]{1, 1, 2}),
+            Map.entry(TYP_POW, new int[]{2, 1, 2}),
+            Map.entry(TYP_ROUND, new int[]{1, 1, 2}),
+            Map.entry(TYP_SIGN, new int[]{1, 1, 2}),
+            Map.entry(TYP_EQ, new int[]{2, 1, 2}),
+            Map.entry(TYP_NE, new int[]{2, 1, 2}),
+            Map.entry(TYP_COUNTER, new int[]{2, 1, 2}),
+            Map.entry(TYP_ABCDQ, new int[]{4, 2, 2}),
+            Map.entry(TYP_DQABC, new int[]{3, 3, 2}),
+            Map.entry(TYP_THYR_CTRL, new int[]{2, 6, 2}),
+            Map.entry(TYP_PMSM_CONTROL, new int[]{12, 8, 2}),
+            Map.entry(TYP_PMSM_MODULATOR, new int[]{4, 3, 2}),
+            Map.entry(TYP_DEMUX, new int[]{1, 3, 2}),
+            Map.entry(TYP_SPACE_VECTOR, new int[]{9, 0, 2}),
+            Map.entry(TYP_SDFT, new int[]{1, 1, 2}),
+            Map.entry(TYP_SPARSEMATRIX, new int[]{8, 9, 2}));
 
     /**
      * Wired control domain plus its LK couplings, ready to be driven by the
@@ -893,6 +1029,26 @@ public final class ControlCalculatorBuilder {
             case TYP_XOR, TYP_LEGACY_XOR -> new XORCalculator();
             case TYP_GE, TYP_LEGACY_GE -> new GreaterEqualCalculator();
             case TYP_DEADTIME -> createDeadTimeCalculator(params);
+            case TYP_ASIN, TYP_LEGACY_ASIN -> new ASinCalculator();
+            case TYP_ACOS, TYP_LEGACY_ACOS -> new ACosCalculator();
+            case TYP_TAN, TYP_LEGACY_TAN -> new TanCalculator();
+            case TYP_ATAN, TYP_LEGACY_ATAN -> new ATanCalculator();
+            case TYP_SQR, TYP_LEGACY_SQR -> new SquareCalculator();
+            case TYP_POW, TYP_LEGACY_POW -> new PowerCalculator();
+            case TYP_ROUND, TYP_LEGACY_ROUND -> new RoundCalculator();
+            case TYP_SIGN, TYP_LEGACY_SIGN -> new SignumCalculator();
+            case TYP_EQ, TYP_LEGACY_EQ -> new EqualCalculatorTwoInputs();
+            case TYP_NE, TYP_LEGACY_NE -> new NotEqualCalculator();
+            case TYP_COUNTER, TYP_LEGACY_COUNTER -> new CounterCalculatable();
+            case TYP_ABCDQ, TYP_LEGACY_ABCDQ -> new ABCDQCalculator();
+            case TYP_DQABC, TYP_LEGACY_DQABC -> new DQABCDCalculator();
+            case TYP_THYR_CTRL, TYP_LEGACY_THYR_CTRL -> createThyristorControl(params);
+            case TYP_PMSM_CONTROL, TYP_LEGACY_PMSM_CONTROL -> new PmsmControlCalculator();
+            case TYP_PMSM_MODULATOR, TYP_LEGACY_PMSM_MODULATOR -> new PmsmModulatorCalculator();
+            case TYP_DEMUX, TYP_LEGACY_DEMUX -> new DemuxCalculator(layout[1]);
+            case TYP_SPACE_VECTOR, TYP_LEGACY_SPACE_VECTOR -> null;
+            case TYP_SDFT, TYP_LEGACY_SDFT -> createSdft(params);
+            case TYP_SPARSEMATRIX, TYP_LEGACY_SPARSEMATRIX -> new SparseMatrixCalculator();
             case TYP_LEGACY_GAIN -> new GainCalculator(param(params, GAIN_FACTOR));
             case TYP_LEGACY_PT1 -> new PT1Calculator(param(params, PT1_TIME_CONSTANT), PT1_DC_GAIN);
             case TYP_LEGACY_PI -> createPiCalculator(params);
@@ -900,6 +1056,35 @@ public final class ControlCalculatorBuilder {
             case TYP_LEGACY_INT -> createIntegrator(params);
             default -> null;
         };
+    }
+
+    private static AbstractControlCalculatable createThyristorControl(double[] params) {
+        double onTime = param(params, 0);
+        if (onTime <= 0.0) {
+            onTime = 4e-3;
+        }
+        double initFreq = param(params, 1);
+        if (initFreq <= 0.0) {
+            initFreq = 50.0;
+        }
+        double phaseShift = param(params, 2);
+        if (phaseShift == 0.0 && (params == null || params.length <= 2)) {
+            phaseShift = 30.0;
+        }
+        return new ThyristorControlCalculator(phaseShift, initFreq, onTime);
+    }
+
+    private static AbstractControlCalculatable createSdft(double[] params) {
+        double avgSpan = param(params, 0);
+        if (avgSpan <= 0.0) {
+            avgSpan = 0.02;
+        }
+        double freq = param(params, 1);
+        if (freq <= 0.0) {
+            freq = 50.0;
+        }
+        List<FrequencyDataCore> freqData = List.of(new FrequencyDataCore(freq, OutputDataType.ABS));
+        return new SlidingDFTCalculator(1, avgSpan, freqData);
     }
 
     private static AbstractControlCalculatable createLimitCalculator(double[] params) {

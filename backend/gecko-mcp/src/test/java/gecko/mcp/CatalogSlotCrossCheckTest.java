@@ -157,6 +157,25 @@ class CatalogSlotCrossCheckTest {
         expected.put("DELAY", CircuitTypCore.CTRL_DELAY);
         expected.put("SCRIPT_BLOCK", CircuitTypCore.CTRL_SCRIPT);
         expected.put("JAVA_BLOCK", CircuitTypCore.C_JAVA_FUNCTION);
+        expected.put("ASIN", CircuitTypCore.CTRL_ASIN);
+        expected.put("ACOS", CircuitTypCore.CTRL_ACOS);
+        expected.put("TAN", CircuitTypCore.CTRL_TAN);
+        expected.put("ATAN", CircuitTypCore.CTRL_ATAN);
+        expected.put("SQR", CircuitTypCore.CTRL_SQR);
+        expected.put("POW", CircuitTypCore.CTRL_POW);
+        expected.put("ROUND", CircuitTypCore.CTRL_ROUND);
+        expected.put("SIGN", CircuitTypCore.CTRL_SIGN);
+        expected.put("EQ", CircuitTypCore.CTRL_EQ);
+        expected.put("NE", CircuitTypCore.CTRL_NE);
+        expected.put("COUNTER", CircuitTypCore.CTRL_COUNTER);
+        expected.put("ABCDQ", CircuitTypCore.CTRL_ABCDQ);
+        expected.put("DQABC", CircuitTypCore.CTRL_DQABC);
+        expected.put("THYR_CTRL", CircuitTypCore.CTRL_THYR_CTRL);
+        expected.put("PMSM_CONTROL", CircuitTypCore.CTRL_PMSM_CONTROL);
+        expected.put("PMSM_MODULATOR", CircuitTypCore.CTRL_PMSM_MODULATOR);
+        expected.put("DEMUX", CircuitTypCore.CTRL_DEMUX);
+        expected.put("SPACE_VECTOR", CircuitTypCore.CTRL_SPACE_VECTOR);
+        expected.put("SDFT", CircuitTypCore.CTRL_SDFT);
 
         for (Map.Entry<String, CircuitTypCore> entry : expected.entrySet()) {
             ComponentCatalog.ComponentDef def = ComponentCatalog.get(entry.getKey());

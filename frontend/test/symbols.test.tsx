@@ -219,4 +219,38 @@ describe('symbols: SymbolPreview and SymbolByType fallback', () => {
     expect(container.querySelector('rect')).toBeTruthy();
     expect(container.textContent).toContain('CUSTOM');
   });
+
+  it('renders specialized symbols for all newly added control blocks', () => {
+    const typesWithExpectedText: [number, string][] = [
+      [ControlComponentType.ASIN, 'asin'],
+      [ControlComponentType.ACOS, 'acos'],
+      [ControlComponentType.TAN, 'tan'],
+      [ControlComponentType.ATAN, 'atan'],
+      [ControlComponentType.SQR, 'x²'],
+      [ControlComponentType.POW, 'xʸ'],
+      [ControlComponentType.ROUND, 'rnd'],
+      [ControlComponentType.SIGN, 'sgn'],
+      [ControlComponentType.EQ, '=='],
+      [ControlComponentType.NE, '!='],
+      [ControlComponentType.COUNTER, 'CNT'],
+      [ControlComponentType.ABCDQ, 'abc→dq'],
+      [ControlComponentType.DQABC, 'dq→abc'],
+      [ControlComponentType.THYR_CTRL, 'ThyrCtrl'],
+      [ControlComponentType.PMSM_CONTROL, 'FOC'],
+      [ControlComponentType.PMSM_MODULATOR, 'PWM'],
+      [ControlComponentType.DEMUX, 'DEMUX'],
+      [ControlComponentType.SPACE_VECTOR, 'SVPWM'],
+      [ControlComponentType.SDFT, 'SDFT'],
+      [ControlComponentType.SPARSEMATRIX, 'SPM'],
+    ];
+
+    for (const [type, expectedText] of typesWithExpectedText) {
+      const { container } = render(
+        <svg>
+          <SymbolByType type={type} u={10} family="CONTROL" />
+        </svg>,
+      );
+      expect(container.textContent).toContain(expectedText);
+    }
+  });
 });

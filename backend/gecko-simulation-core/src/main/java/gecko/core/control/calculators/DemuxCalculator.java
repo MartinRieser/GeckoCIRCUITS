@@ -13,14 +13,21 @@
  */
 package gecko.core.control.calculators;
 
-public final class ASinCalculator extends AbstractSingleInputSingleOutputCalculator {
+/**
+ * Demultiplexer block extracting individual scalar output channels from an input vector signal.
+ */
+public final class DemuxCalculator extends AbstractControlCalculatable {
+
+    public DemuxCalculator(int numOutputs) {
+        super(1, Math.max(1, numOutputs));
+    }
 
     @Override
     public void calculateYOUT(final double deltaT) {
-        assert _inputSignal[0][0] <= 1.0 : "Illegal argument of input signal: "
-                + _inputSignal[0][0] + " must be <= 1.0";
-        assert _inputSignal[0][0] >= -1.0 : "Illegal argument of input signal: "
-                + _inputSignal[0][0] + " must be >= -1.0";
-        _outputSignal[0][0] = Math.asin(_inputSignal[0][0]);
+        if (_inputSignal[0] != null) {
+            for (int i = 0; i < _outputSignal.length; i++) {
+                _outputSignal[i][0] = (i < _inputSignal[0].length) ? _inputSignal[0][i] : 0.0;
+            }
+        }
     }
 }

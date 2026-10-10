@@ -234,6 +234,26 @@ describe('componentSchema', () => {
         ControlComponentType.XOR,
         ControlComponentType.GE,
         ControlComponentType.DEADTIME,
+        ControlComponentType.ASIN,
+        ControlComponentType.ACOS,
+        ControlComponentType.TAN,
+        ControlComponentType.ATAN,
+        ControlComponentType.SQR,
+        ControlComponentType.POW,
+        ControlComponentType.ROUND,
+        ControlComponentType.SIGN,
+        ControlComponentType.EQ,
+        ControlComponentType.NE,
+        ControlComponentType.COUNTER,
+        ControlComponentType.ABCDQ,
+        ControlComponentType.DQABC,
+        ControlComponentType.THYR_CTRL,
+        ControlComponentType.PMSM_CONTROL,
+        ControlComponentType.PMSM_MODULATOR,
+        ControlComponentType.DEMUX,
+        ControlComponentType.SPACE_VECTOR,
+        ControlComponentType.SDFT,
+        ControlComponentType.SPARSEMATRIX,
       ];
 
       for (const t of types) {
@@ -263,6 +283,26 @@ describe('componentSchema', () => {
       expect(meta.parameters[0].key).toBe('param0');
     });
 
+    it('configures ABCDQ and DQABC transforms with correct pin counts', () => {
+      const abcdq = COMPONENT_METAS[ControlComponentType.ABCDQ];
+      expect(abcdq.terminals.input).toHaveLength(4);
+      expect(abcdq.terminals.output).toHaveLength(3);
+
+      const dqabc = COMPONENT_METAS[ControlComponentType.DQABC];
+      expect(dqabc.terminals.input).toHaveLength(4);
+      expect(dqabc.terminals.output).toHaveLength(3);
+    });
+
+    it('configures THYR_CTRL and PMSM_CONTROL blocks with correct pin counts', () => {
+      const thc = COMPONENT_METAS[ControlComponentType.THYR_CTRL];
+      expect(thc.terminals.input).toHaveLength(2);
+      expect(thc.terminals.output).toHaveLength(6);
+
+      const foc = COMPONENT_METAS[ControlComponentType.PMSM_CONTROL];
+      expect(foc.terminals.input).toHaveLength(4);
+      expect(foc.terminals.output).toHaveLength(2);
+    });
+
     it('maps legacy control types through getComponentMeta', () => {
       expect(getComponentMeta(13, 'CONTROL').type).toBe(ControlComponentType.SUB);
       expect(getComponentMeta(12, 'CONTROL').type).toBe(ControlComponentType.ADD);
@@ -270,7 +310,27 @@ describe('componentSchema', () => {
       expect(getComponentMeta(15, 'CONTROL').type).toBe(ControlComponentType.DIV);
       expect(getComponentMeta(27, 'CONTROL').type).toBe(ControlComponentType.LIMIT);
       expect(getComponentMeta(21, 'CONTROL').type).toBe(ControlComponentType.XOR);
+      expect(getComponentMeta(33, 'CONTROL').type).toBe(ControlComponentType.ASIN);
+      expect(getComponentMeta(35, 'CONTROL').type).toBe(ControlComponentType.ACOS);
+      expect(getComponentMeta(37, 'CONTROL').type).toBe(ControlComponentType.TAN);
+      expect(getComponentMeta(38, 'CONTROL').type).toBe(ControlComponentType.ATAN);
+      expect(getComponentMeta(39, 'CONTROL').type).toBe(ControlComponentType.SQR);
+      expect(getComponentMeta(42, 'CONTROL').type).toBe(ControlComponentType.POW);
+      expect(getComponentMeta(44, 'CONTROL').type).toBe(ControlComponentType.ROUND);
+      expect(getComponentMeta(47, 'CONTROL').type).toBe(ControlComponentType.SIGN);
+      expect(getComponentMeta(48, 'CONTROL').type).toBe(ControlComponentType.EQ);
+      expect(getComponentMeta(51, 'CONTROL').type).toBe(ControlComponentType.NE);
+      expect(getComponentMeta(53, 'CONTROL').type).toBe(ControlComponentType.COUNTER);
       expect(getComponentMeta(58, 'CONTROL').type).toBe(ControlComponentType.TIME);
+      expect(getComponentMeta(59, 'CONTROL').type).toBe(ControlComponentType.ABCDQ);
+      expect(getComponentMeta(63, 'CONTROL').type).toBe(ControlComponentType.DQABC);
+      expect(getComponentMeta(65, 'CONTROL').type).toBe(ControlComponentType.THYR_CTRL);
+      expect(getComponentMeta(66, 'CONTROL').type).toBe(ControlComponentType.PMSM_CONTROL);
+      expect(getComponentMeta(72, 'CONTROL').type).toBe(ControlComponentType.PMSM_MODULATOR);
+      expect(getComponentMeta(76, 'CONTROL').type).toBe(ControlComponentType.DEMUX);
+      expect(getComponentMeta(77, 'CONTROL').type).toBe(ControlComponentType.SPACE_VECTOR);
+      expect(getComponentMeta(82, 'CONTROL').type).toBe(ControlComponentType.SDFT);
+      expect(getComponentMeta(85, 'CONTROL').type).toBe(ControlComponentType.SPARSEMATRIX);
     });
   });
 });

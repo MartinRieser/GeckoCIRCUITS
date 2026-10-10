@@ -269,6 +269,66 @@ export function SymbolByType({
         return <MuxSymbol u={u} />;
       case 1037:
         return <DeadTimeSymbol u={u} />;
+      case 33:
+      case 1038:
+        return <ControlBlockLabel u={u} label="asin" />;
+      case 35:
+      case 1039:
+        return <ControlBlockLabel u={u} label="acos" />;
+      case 37:
+      case 1040:
+        return <ControlBlockLabel u={u} label="tan" />;
+      case 38:
+      case 1041:
+        return <ControlBlockLabel u={u} label="atan" />;
+      case 39:
+      case 1042:
+        return <ControlBlockLabel u={u} label="x²" />;
+      case 42:
+      case 1043:
+        return <TwoInputControlSymbol u={u} label="xʸ" in0Label="x" in1Label="y" />;
+      case 44:
+      case 1044:
+        return <ControlBlockLabel u={u} label="rnd" />;
+      case 47:
+      case 1045:
+        return <ControlBlockLabel u={u} label="sgn" />;
+      case 48:
+      case 1046:
+        return <TwoInputControlSymbol u={u} label="==" />;
+      case 51:
+      case 1047:
+        return <TwoInputControlSymbol u={u} label="!=" />;
+      case 53:
+      case 1048:
+        return <TwoInputControlSymbol u={u} label="CNT" in0Label="+" in1Label="rst" />;
+      case 59:
+      case 1049:
+        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="abc→dq" />;
+      case 63:
+      case 1050:
+        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="dq→abc" />;
+      case 65:
+      case 1051:
+        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="ThyrCtrl" />;
+      case 66:
+      case 1052:
+        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="FOC" />;
+      case 72:
+      case 1053:
+        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="PWM" />;
+      case 76:
+      case 1054:
+        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="DEMUX" />;
+      case 77:
+      case 1055:
+        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="SVPWM" />;
+      case 82:
+      case 1056:
+        return <ControlBlockLabel u={u} label="SDFT" />;
+      case 85:
+      case 1058:
+        return <ControlBlockLabel u={u} label="SPM" />;
       case CTRL_TYPE.LEGACY_JAVA_FUNCTION:
       case CTRL_TYPE.SCRIPT: {
         const label = type === CTRL_TYPE.LEGACY_JAVA_FUNCTION ? 'JAVA' : 'f(x)';

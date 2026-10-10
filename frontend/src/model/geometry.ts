@@ -14,7 +14,7 @@
  * - Standard rotation cycle: NORTH_SOUTH (503) -> EAST_WEST (504) -> SOUTH_NORTH (501) -> WEST_EAST (502).
  */
 import type { EditorComponent, Point } from './types';
-import { CTRL_TYPE, resolveComponentPinCounts, COMPONENT_METAS } from './componentSchema';
+import { CTRL_TYPE, resolveComponentPinCounts, COMPONENT_METAS, getComponentMeta } from './componentSchema';
 import {
   Orientation,
   ORIENTATION_CYCLE,
@@ -256,7 +256,7 @@ function terminalPositionsWithPinMode(
     // Position terminal pins using SCRIPT_PIN_STEP (1 grid unit) anchored from pin 0,
     // bit-identical to the simulation engine's ControlCalculatorBuilder.terminalPoint layout
     // (inputs rel (-2, -i), outputs rel (+2, -j)).
-    const meta = COMPONENT_METAS[component.type];
+    const meta = COMPONENT_METAS[component.type] ?? getComponentMeta(component.type, 'CONTROL');
     const inputCount = meta?.terminals?.input?.length ?? 1;
     const outputCount = meta?.terminals?.output?.length ?? 1;
     const step = SCRIPT_PIN_STEP;

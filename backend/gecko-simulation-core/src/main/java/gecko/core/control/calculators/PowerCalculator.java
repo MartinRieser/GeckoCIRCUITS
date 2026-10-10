@@ -13,14 +13,17 @@
  */
 package gecko.core.control.calculators;
 
-public final class ASinCalculator extends AbstractSingleInputSingleOutputCalculator {
+/**
+ * Calculator computing the power function: y = in0 ^ in1.
+ */
+public final class PowerCalculator extends AbstractTwoInputsOneOutputCalculator {
+
+    public PowerCalculator() {
+        super();
+    }
 
     @Override
     public void calculateYOUT(final double deltaT) {
-        assert _inputSignal[0][0] <= 1.0 : "Illegal argument of input signal: "
-                + _inputSignal[0][0] + " must be <= 1.0";
-        assert _inputSignal[0][0] >= -1.0 : "Illegal argument of input signal: "
-                + _inputSignal[0][0] + " must be >= -1.0";
-        _outputSignal[0][0] = Math.asin(_inputSignal[0][0]);
+        _outputSignal[0][0] = Math.pow(_inputSignal[0][0], _inputSignal[1][0]);
     }
 }

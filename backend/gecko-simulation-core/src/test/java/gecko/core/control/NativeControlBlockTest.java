@@ -101,6 +101,216 @@ class NativeControlBlockTest {
         assertEquals(1035, CircuitTypCore.CTRL_XOR.getTypeNumber());
         assertEquals(1036, CircuitTypCore.CTRL_GE.getTypeNumber());
         assertEquals(1037, CircuitTypCore.CTRL_DEADTIME.getTypeNumber());
+        assertEquals(1038, CircuitTypCore.CTRL_ASIN.getTypeNumber());
+        assertEquals(1039, CircuitTypCore.CTRL_ACOS.getTypeNumber());
+        assertEquals(1040, CircuitTypCore.CTRL_TAN.getTypeNumber());
+        assertEquals(1041, CircuitTypCore.CTRL_ATAN.getTypeNumber());
+        assertEquals(1042, CircuitTypCore.CTRL_SQR.getTypeNumber());
+        assertEquals(1043, CircuitTypCore.CTRL_POW.getTypeNumber());
+        assertEquals(1044, CircuitTypCore.CTRL_ROUND.getTypeNumber());
+        assertEquals(1045, CircuitTypCore.CTRL_SIGN.getTypeNumber());
+        assertEquals(1046, CircuitTypCore.CTRL_EQ.getTypeNumber());
+        assertEquals(1047, CircuitTypCore.CTRL_NE.getTypeNumber());
+        assertEquals(1048, CircuitTypCore.CTRL_COUNTER.getTypeNumber());
+        assertEquals(1049, CircuitTypCore.CTRL_ABCDQ.getTypeNumber());
+        assertEquals(1050, CircuitTypCore.CTRL_DQABC.getTypeNumber());
+        assertEquals(1051, CircuitTypCore.CTRL_THYR_CTRL.getTypeNumber());
+        assertEquals(1052, CircuitTypCore.CTRL_PMSM_CONTROL.getTypeNumber());
+        assertEquals(1053, CircuitTypCore.CTRL_PMSM_MODULATOR.getTypeNumber());
+        assertEquals(1054, CircuitTypCore.CTRL_DEMUX.getTypeNumber());
+        assertEquals(1055, CircuitTypCore.CTRL_SPACE_VECTOR.getTypeNumber());
+        assertEquals(1056, CircuitTypCore.CTRL_SDFT.getTypeNumber());
+        assertEquals(1058, CircuitTypCore.CTRL_SPARSEMATRIX.getTypeNumber());
+    }
+
+    @Test
+    void asinCalculator_computesArcSine() {
+        var calc = new gecko.core.control.calculators.ASinCalculator();
+        calc._inputSignal[0] = new double[]{0.5};
+        calc.calculateYOUT(1e-6);
+        assertEquals(Math.PI / 6.0, calc._outputSignal[0][0], 1e-9);
+    }
+
+    @Test
+    void acosCalculator_computesArcCosine() {
+        var calc = new gecko.core.control.calculators.ACosCalculator();
+        calc._inputSignal[0] = new double[]{0.5};
+        calc.calculateYOUT(1e-6);
+        assertEquals(Math.PI / 3.0, calc._outputSignal[0][0], 1e-9);
+    }
+
+    @Test
+    void tanCalculator_computesTangent() {
+        var calc = new gecko.core.control.calculators.TanCalculator();
+        calc._inputSignal[0] = new double[]{Math.PI / 4.0};
+        calc.calculateYOUT(1e-6);
+        assertEquals(1.0, calc._outputSignal[0][0], 1e-9);
+    }
+
+    @Test
+    void atanCalculator_computesArcTangent() {
+        var calc = new gecko.core.control.calculators.ATanCalculator();
+        calc._inputSignal[0] = new double[]{1.0};
+        calc.calculateYOUT(1e-6);
+        assertEquals(Math.PI / 4.0, calc._outputSignal[0][0], 1e-9);
+    }
+
+    @Test
+    void sqrCalculator_computesSquare() {
+        var calc = new gecko.core.control.calculators.SquareCalculator();
+        calc._inputSignal[0] = new double[]{-4.0};
+        calc.calculateYOUT(1e-6);
+        assertEquals(16.0, calc._outputSignal[0][0], 1e-9);
+    }
+
+    @Test
+    void powCalculator_computesPower() {
+        var calc = new gecko.core.control.calculators.PowerCalculator();
+        calc._inputSignal[0] = new double[]{2.0};
+        calc._inputSignal[1] = new double[]{8.0};
+        calc.calculateYOUT(1e-6);
+        assertEquals(256.0, calc._outputSignal[0][0], 1e-9);
+    }
+
+    @Test
+    void roundCalculator_computesRounding() {
+        var calc = new gecko.core.control.calculators.RoundCalculator();
+        calc._inputSignal[0] = new double[]{3.7};
+        calc.calculateYOUT(1e-6);
+        assertEquals(4.0, calc._outputSignal[0][0], 1e-9);
+
+        calc._inputSignal[0] = new double[]{3.2};
+        calc.calculateYOUT(1e-6);
+        assertEquals(3.0, calc._outputSignal[0][0], 1e-9);
+    }
+
+    @Test
+    void signumCalculator_computesSign() {
+        var calc = new gecko.core.control.calculators.SignumCalculator();
+        calc._inputSignal[0] = new double[]{-12.5};
+        calc.calculateYOUT(1e-6);
+        assertEquals(-1.0, calc._outputSignal[0][0], 1e-9);
+
+        calc._inputSignal[0] = new double[]{0.0};
+        calc.calculateYOUT(1e-6);
+        assertEquals(0.0, calc._outputSignal[0][0], 1e-9);
+
+        calc._inputSignal[0] = new double[]{42.0};
+        calc.calculateYOUT(1e-6);
+        assertEquals(1.0, calc._outputSignal[0][0], 1e-9);
+    }
+
+    @Test
+    void eqCalculator_computesEquality() {
+        var calc = new gecko.core.control.calculators.EqualCalculatorTwoInputs();
+        calc._inputSignal[0] = new double[]{5.0};
+        calc._inputSignal[1] = new double[]{5.0};
+        calc.calculateYOUT(1e-6);
+        assertEquals(1.0, calc._outputSignal[0][0], 1e-9);
+
+        calc._inputSignal[1] = new double[]{5.1};
+        calc.calculateYOUT(1e-6);
+        assertEquals(0.0, calc._outputSignal[0][0], 1e-9);
+    }
+
+    @Test
+    void neCalculator_computesInequality() {
+        var calc = new gecko.core.control.calculators.NotEqualCalculator();
+        calc._inputSignal[0] = new double[]{5.0};
+        calc._inputSignal[1] = new double[]{6.0};
+        calc.calculateYOUT(1e-6);
+        assertEquals(1.0, calc._outputSignal[0][0], 1e-9);
+
+        calc._inputSignal[1] = new double[]{5.0};
+        calc.calculateYOUT(1e-6);
+        assertEquals(0.0, calc._outputSignal[0][0], 1e-9);
+    }
+
+    @Test
+    void counterCalculator_incrementsOnRisingEdge() {
+        var calc = new gecko.core.control.calculators.CounterCalculatable();
+        calc._inputSignal[0] = new double[]{0.0}; // clock
+        calc._inputSignal[1] = new double[]{0.0}; // reset
+        calc.calculateYOUT(1e-6);
+        assertEquals(0.0, calc._outputSignal[0][0], 1e-9);
+
+        // Rising edge
+        calc._inputSignal[0] = new double[]{1.0};
+        calc.calculateYOUT(1e-6);
+        assertEquals(1.0, calc._outputSignal[0][0], 1e-9);
+
+        // Still high: no increment
+        calc._inputSignal[0] = new double[]{1.0};
+        calc.calculateYOUT(1e-6);
+        assertEquals(1.0, calc._outputSignal[0][0], 1e-9);
+
+        // Falling edge
+        calc._inputSignal[0] = new double[]{0.0};
+        calc.calculateYOUT(1e-6);
+        assertEquals(1.0, calc._outputSignal[0][0], 1e-9);
+
+        // Second rising edge
+        calc._inputSignal[0] = new double[]{1.0};
+        calc.calculateYOUT(1e-6);
+        assertEquals(2.0, calc._outputSignal[0][0], 1e-9);
+
+        // Reset
+        calc._inputSignal[1] = new double[]{1.0};
+        calc.calculateYOUT(1e-6);
+        assertEquals(0.0, calc._outputSignal[0][0], 1e-9);
+    }
+
+    @Test
+    void abcdqAndDqabc_roundTripTransformation() {
+        var abcdq = new gecko.core.control.calculators.ABCDQCalculator();
+        var dqabc = new gecko.core.control.calculators.DQABCDCalculator();
+
+        double theta = Math.PI / 5.0;
+        // Balanced 3-phase set: a=10, b=-5, c=-5
+        abcdq._inputSignal[0] = new double[]{10.0};
+        abcdq._inputSignal[1] = new double[]{-5.0};
+        abcdq._inputSignal[2] = new double[]{-5.0};
+        abcdq._inputSignal[3] = new double[]{theta};
+        abcdq.calculateYOUT(1e-6);
+
+        double d = abcdq._outputSignal[0][0];
+        double q = abcdq._outputSignal[1][0];
+
+        // Feed into inverse transform
+        dqabc._inputSignal[0] = new double[]{d};
+        dqabc._inputSignal[1] = new double[]{q};
+        dqabc._inputSignal[2] = new double[]{theta};
+        dqabc.calculateYOUT(1e-6);
+
+        assertEquals(10.0, dqabc._outputSignal[0][0], 1e-7);
+        assertEquals(-5.0, dqabc._outputSignal[1][0], 1e-7);
+        assertEquals(-5.0, dqabc._outputSignal[2][0], 1e-7);
+    }
+
+    @Test
+    void demuxCalculator_splitsVectorSignals() {
+        var demux = new gecko.core.control.calculators.DemuxCalculator(3);
+        demux._inputSignal[0] = new double[]{11.0, 22.0, 33.0};
+        demux.calculateYOUT(1e-6);
+
+        assertEquals(11.0, demux._outputSignal[0][0], 1e-9);
+        assertEquals(22.0, demux._outputSignal[1][0], 1e-9);
+        assertEquals(33.0, demux._outputSignal[2][0], 1e-9);
+    }
+
+    @Test
+    void pmsmModulator_generatesGateOutputs() {
+        var mod = new gecko.core.control.calculators.PmsmModulatorCalculator();
+        mod._inputSignal[0] = new double[]{100.0}; // v_alpha
+        mod._inputSignal[1] = new double[]{50.0};  // v_beta
+        mod._inputSignal[2] = new double[]{0.5};   // carrier triangle
+        mod._inputSignal[3] = new double[]{400.0}; // v_dc
+        mod.calculateYOUT(1e-6);
+
+        // Outputs should be boolean logic 0 or 1
+        assertTrue(mod._outputSignal[0][0] == 0.0 || mod._outputSignal[0][0] == 1.0);
+        assertTrue(mod._outputSignal[1][0] == 0.0 || mod._outputSignal[1][0] == 1.0);
+        assertTrue(mod._outputSignal[2][0] == 0.0 || mod._outputSignal[2][0] == 1.0);
     }
 
     @Test
