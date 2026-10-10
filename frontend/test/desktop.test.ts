@@ -4,6 +4,10 @@ import {
   openLogsFolder,
   registerOpenFileHandler,
   saveFileNative,
+  openFileNative,
+  saveFileDirectNative,
+  setWindowTitleNative,
+  confirmDialogNative,
   type OpenFilePayload,
 } from '../src/desktop';
 
@@ -82,22 +86,95 @@ describe('openLogsFolder', () => {
 });
 
 describe('saveFileNative', () => {
-  it('is false in the browser', async () => {
-    await expect(saveFileNative('AAA=', 'c.ipes')).resolves.toBe(false);
+  it('is null in the browser', async () => {
+    await expect(saveFileNative('AAA=', 'c.ipes')).resolves.toBeNull();
   });
 
-  it('invokes the shell command and reports the dialog outcome', async () => {
+  it('invokes the shell command and reports the chosen path', async () => {
     const invoke = vi.fn().mockResolvedValue('C:/circuits/chosen.ipes');
     scope.__TAURI__ = { core: { invoke: invoke as never } };
-    await expect(saveFileNative('AAA=', 'c.ipes')).resolves.toBe(true);
+    await expect(saveFileNative('AAA=', 'c.ipes')).resolves.toBe('C:/circuits/chosen.ipes');
     expect(invoke).toHaveBeenCalledWith('save_file_dialog', {
       base64: 'AAA=',
       suggestedName: 'c.ipes',
     });
   });
 
-  it('reports false when the user cancels the dialog', async () => {
+  it('passes currentPath when provided', async () => {
+    const invoke = vi.fn().mockResolvedValue('C:/circuits/saved.ipes');
+    scope.__TAURI__ = { core: { invoke: invoke as never } };
+    await expect(saveFileNative('AAA=', 'c.ipes', 'C:/circuits/prev.ipes')).resolves.toBe('C:/circuits/saved.ipes');
+    expect(invoke).toHaveBeenCalledWith('save_file_dialog', {
+      base64: 'AAA=',
+      suggestedName: 'c.ipes',
+      currentPath: 'C:/circuits/prev.ipes',
+    });
+  });
+
+  it('reports null when the user cancels the dialog', async () => {
     scope.__TAURI__ = { core: { invoke: async () => null } };
-    await expect(saveFileNative('AAA=', 'c.ipes')).resolves.toBe(false);
+    await expect(saveFileNative('AAA=', 'c.ipes')).resolves.toBeNull();
   });
 });
+
+describe('openFileNative', () => {
+  it('is null in the browser', async () => {
+    await expect(openFileNative()).resolves.toBeNull();
+  });
+
+  it('invokes the shell command and reports payload', async () => {
+    const payload = { name: 'test.ipes', base64: 'QUJD', path: 'C:/test.ipes' };
+    const invoke = vi.fn().mockResolvedValue(payload);
+    scope.__TAURI__ = { core: { invoke: invoke as never } };
+    await expect(openFileNative('C:/prev.ipes')).resolves.toEqual(payload);
+    expect(invoke).toHaveBeenCalledWith('open_file_dialog', { currentPath: 'C:/prev.ipes' });
+  });
+
+  it('reports null when cancelled', async () => {
+    scope.__TAURI__ = { core: { invoke: async () => null } };
+    await expect(openFileNative()).resolves.toBeNull();
+  });
+});
+
+describe('saveFileDirectNative', () => {
+  it('is false in the browser', async () => {
+    await expect(saveFileDirectNative('C:/test.ipes', 'QUJD')).resolves.toBe(false);
+  });
+
+  it('invokes save_file_direct on desktop', async () => {
+    const invoke = vi.fn().mockResolvedValue(null);
+    scope.__TAURI__ = { core: { invoke: invoke as never } };
+    await expect(saveFileDirectNative('C:/test.ipes', 'QUJD')).resolves.toBe(true);
+    expect(invoke).toHaveBeenCalledWith('save_file_direct', { path: 'C:/test.ipes', base64: 'QUJD' });
+  });
+});
+
+describe('setWindowTitleNative', () => {
+  it('does nothing in browser', async () => {
+    await expect(setWindowTitleNative('test')).resolves.toBeUndefined();
+  });
+
+  it('invokes set_window_title on desktop', async () => {
+    const invoke = vi.fn().mockResolvedValue(null);
+    scope.__TAURI__ = { core: { invoke: invoke as never } };
+    await setWindowTitleNative('My Title');
+    expect(invoke).toHaveBeenCalledWith('set_window_title', { title: 'My Title' });
+  });
+});
+
+describe('confirmDialogNative', () => {
+  it('falls back to window.confirm in browser', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    await expect(confirmDialogNative('Are you sure?')).resolves.toBe(true);
+    expect(confirmSpy).toHaveBeenCalledWith('Are you sure?');
+  });
+
+  it('invokes confirm_dialog on desktop', async () => {
+    const invoke = vi.fn().mockResolvedValue(true);
+    scope.__TAURI__ = { core: { invoke: invoke as never } };
+    await expect(confirmDialogNative('Discard?', 'Gecko')).resolves.toBe(true);
+    expect(invoke).toHaveBeenCalledWith('confirm_dialog', { message: 'Discard?', title: 'Gecko' });
+  });
+});
+
+

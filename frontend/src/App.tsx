@@ -21,7 +21,13 @@ import { EXAMPLES } from './model/examples';
 import { resolveShortcut, KEYBINDINGS } from './model/keybindings';
 import { routeAvoidingObstacles, routingBlockedCells, densePoints } from './canvas/WireRouter';
 import { isWireEndPointConnected } from './model/validation';
-import { registerOpenFileHandler } from './desktop';
+import {
+  registerOpenFileHandler,
+  isDesktop,
+  openFileNative,
+  confirmDialogNative,
+  setWindowTitleNative,
+} from './desktop';
 import { getEngineVersion } from './api/client';
 import { findScopeBlocks, findScriptBlocks, isScopeComponent, isScriptComponent } from './simulation/scopes';
 import { SimConfigModal } from './simulation/SimConfigModal';
@@ -45,9 +51,16 @@ export function App() {
   // Desktop shell: circuits opened via double-click / "Open with" / second launch
   useEffect(() => {
     registerOpenFileHandler((payload) => {
-      void actions.openBase64(payload.base64, payload.name);
+      void actions.openBase64(payload.base64, payload.name, payload.path);
     });
   }, [actions.openBase64]);
+
+  // Synchronize browser and desktop window title with current circuit file
+  useEffect(() => {
+    const title = state.filename ? `${state.filename} - GeckoCIRCUITS` : 'GeckoCIRCUITS';
+    document.title = title;
+    void setWindowTitleNative(title);
+  }, [state.filename]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [engineVersion, setEngineVersion] = useState<string | null>(null);
@@ -231,6 +244,46 @@ export function App() {
     localStorage.setItem('gecko-theme', theme);
   }, [theme]);
 
+  // New / Open / Examples replace whatever is in the editor.
+  const confirmDiscardCircuit = useCallback(async (): Promise<boolean> => {
+    if (state.components.length === 0 && state.wires.length === 0) return true;
+    if (isDesktop()) {
+      return await confirmDialogNative(
+        'Replace the current circuit? Changes not saved as a .ipes file will be lost.',
+        'GeckoCIRCUITS',
+      );
+    }
+    return window.confirm(
+      'Replace the current circuit? Changes not saved as a .ipes file will be lost.',
+    );
+  }, [state.components.length, state.wires.length]);
+
+  const handleOpenCircuit = useCallback(async () => {
+    if (isDesktop()) {
+      if (!(await confirmDiscardCircuit())) return;
+      const payload = await openFileNative(state.filePath);
+      if (payload) {
+        void actions.openBase64(payload.base64, payload.name, payload.path);
+      }
+    } else {
+      fileInputRef.current?.click();
+    }
+  }, [confirmDiscardCircuit, state.filePath, actions]);
+
+  const handleSaveAs = useCallback(() => {
+    if (isDesktop()) {
+      void actions.saveAs();
+    } else {
+      setSaveAsOpen(true);
+    }
+  }, [actions]);
+
+  const handleNewCircuit = useCallback(async () => {
+    if (await confirmDiscardCircuit()) {
+      actions.newCircuit();
+    }
+  }, [confirmDiscardCircuit, actions]);
+
   // Global Keyboard Shortcuts (Central Dispatcher)
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -295,21 +348,19 @@ export function App() {
           break;
         case 'save':
           e.preventDefault();
-          actions.save();
+          void actions.save();
           break;
         case 'save-as':
           e.preventDefault();
-          setSaveAsOpen(true);
+          handleSaveAs();
           break;
         case 'open':
           e.preventDefault();
-          fileInputRef.current?.click();
+          void handleOpenCircuit();
           break;
         case 'new-circuit':
           e.preventDefault();
-          if (confirmDiscardCircuit()) {
-            actions.newCircuit();
-          }
+          void handleNewCircuit();
           break;
         case 'show-shortcuts-help':
           e.preventDefault();
@@ -452,25 +503,15 @@ export function App() {
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [actions, commandPaletteOpen, dispatch, shortcutsHelpOpen, simConfigOpen, state.focusedTerminal, state.ghost, state.mode, state.selection, state.selectedWire, state.wireDraft]);
+  }, [actions, commandPaletteOpen, dispatch, handleNewCircuit, handleOpenCircuit, handleQuickRun, handleSaveAs, shortcutsHelpOpen, simConfigOpen, state.focusedTerminal, state.ghost, state.mode, state.selection, state.selectedWire, state.wireDraft]);
 
-  const handleSelectExample = (exampleId: string) => {
+  const handleSelectExample = async (exampleId: string) => {
     const ex = EXAMPLES.find((e) => e.id === exampleId);
-    if (ex && confirmDiscardCircuit()) {
+    if (ex && (await confirmDiscardCircuit())) {
       actions.openContent(ex.content, `${ex.name}.ipes`);
     }
     setExamplesMenuOpen(false);
   };
-
-  // New / Open / Examples replace whatever is in the editor. The circuit
-  // auto-syncs to the workspace on the server, but anything not downloaded
-  // as .ipes is gone from the user's view — ask before discarding content.
-  function confirmDiscardCircuit(): boolean {
-    if (state.components.length === 0 && state.wires.length === 0) return true;
-    return window.confirm(
-      'Replace the current circuit? Changes not saved as a .ipes file will be lost.',
-    );
-  }
 
   return (
     <div className="app">
@@ -493,14 +534,12 @@ export function App() {
         {/* File & Edit Actions */}
         <div className="nav-actions">
           <FileMenu
-            onNew={() => {
-              if (confirmDiscardCircuit()) actions.newCircuit();
-            }}
-            onOpen={() => fileInputRef.current?.click()}
+            onNew={handleNewCircuit}
+            onOpen={handleOpenCircuit}
             onSave={actions.save}
-            onSaveAs={() => setSaveAsOpen(true)}
-            onOpenRecent={(entry) => {
-              if (confirmDiscardCircuit()) actions.openRecent(entry);
+            onSaveAs={handleSaveAs}
+            onOpenRecent={async (entry) => {
+              if (await confirmDiscardCircuit()) actions.openRecent(entry);
             }}
             canSave={!!state.circuitId}
             busy={state.busy}
@@ -510,9 +549,9 @@ export function App() {
             type="file"
             accept=".ipes,.txt"
             hidden
-            onChange={(e) => {
+            onChange={async (e) => {
               const file = e.target.files?.[0];
-              if (file && confirmDiscardCircuit()) {
+              if (file && (await confirmDiscardCircuit())) {
                 actions.open(file);
               }
               e.target.value = '';

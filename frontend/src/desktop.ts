@@ -8,6 +8,7 @@
 export interface OpenFilePayload {
   name: string;
   base64: string;
+  path?: string;
 }
 
 interface TauriGlobal {
@@ -39,15 +40,81 @@ export function registerOpenFileHandler(handler: (payload: OpenFilePayload) => v
   }
 }
 
-/** Native save dialog + write. Returns false when not on desktop or when the
- *  user cancels the dialog; the caller can then fall back to browser download. */
-export async function saveFileNative(base64: string, suggestedName: string): Promise<boolean> {
+/**
+ * Native open file dialog. Returns the opened file payload or null on cancel.
+ * Returns null if not running in Tauri or user cancelled.
+ */
+export async function openFileNative(currentPath?: string | null): Promise<OpenFilePayload | null> {
+  const invoke = tauri()?.invoke;
+  if (!invoke) return null;
+  return (await invoke('open_file_dialog', { currentPath: currentPath ?? null })) as OpenFilePayload | null;
+}
+
+/**
+ * Native save dialog + write. Returns chosen path string, or null on cancel / not on desktop.
+ */
+export async function saveFileNative(
+  base64: string,
+  suggestedName: string,
+  currentPath?: string | null,
+): Promise<string | null> {
+  const invoke = tauri()?.invoke;
+  if (!invoke) return null;
+  const args: Record<string, unknown> = {
+    base64,
+    suggestedName,
+  };
+  if (currentPath !== undefined && currentPath !== null) {
+    args.currentPath = currentPath;
+  }
+  const result = await invoke('save_file_dialog', args);
+  return (result as string | null) ?? null;
+}
+
+/**
+ * Direct save overwriting the file at path without a dialog.
+ */
+export async function saveFileDirectNative(path: string, base64: string): Promise<boolean> {
+  const invoke = tauri()?.invoke;
+  if (!invoke) return false;
+  await invoke('save_file_direct', { path, base64 });
+  return true;
+}
+
+/**
+ * Synchronizes the native desktop window title.
+ */
+export async function setWindowTitleNative(title: string): Promise<void> {
+  const invoke = tauri()?.invoke;
+  if (!invoke) return;
+  try {
+    await invoke('set_window_title', { title });
+  } catch {
+    // fallback gracefully
+  }
+}
+
+/**
+ * Displays a native confirmation dialog box.
+ */
+export async function confirmDialogNative(message: string, title?: string): Promise<boolean> {
   const invoke = tauri()?.invoke;
   if (!invoke) {
-    return false;
+    try {
+      return window.confirm(message);
+    } catch {
+      return true;
+    }
   }
-  const result = await invoke('save_file_dialog', { base64, suggestedName });
-  return result != null;
+  try {
+    return (await invoke('confirm_dialog', { message, title: title ?? 'GeckoCIRCUITS' })) as boolean;
+  } catch {
+    try {
+      return window.confirm(message);
+    } catch {
+      return true;
+    }
+  }
 }
 
 /** Opens the engine-log folder via the shell (Help/troubleshooting). Returns

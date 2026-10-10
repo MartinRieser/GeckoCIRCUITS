@@ -6,9 +6,10 @@ use serde::Serialize;
 use std::path::PathBuf;
 
 /// Payload handed to the frontend for "open circuit" flows.
-#[derive(Serialize)]
+#[derive(Serialize, Clone, Debug, PartialEq, Eq)]
 pub struct OpenIpesFile {
     pub name: String,
+    pub path: String,
     pub base64: String,
 }
 
@@ -18,10 +19,10 @@ pub fn validate_ipes_path(path: &str) -> Result<PathBuf, String> {
     let is_ipes = path
         .extension()
         .and_then(|extension| extension.to_str())
-        .map(|extension| extension.eq_ignore_ascii_case("ipes"))
+        .map(|ext| ext.eq_ignore_ascii_case("ipes") || ext.eq_ignore_ascii_case("txt"))
         .unwrap_or(false);
     if !is_ipes {
-        return Err(format!("not a .ipes circuit: {}", path.display()));
+        return Err(format!("not a .ipes or .txt circuit: {}", path.display()));
     }
     if !path.is_file() {
         return Err(format!("file not found: {}", path.display()));
@@ -52,6 +53,7 @@ pub fn load_ipes_file(path: &str) -> Result<OpenIpesFile, String> {
     let bytes = std::fs::read(&path).map_err(|error| error.to_string())?;
     Ok(OpenIpesFile {
         name,
+        path: path.to_string_lossy().into_owned(),
         base64: encode(&bytes),
     })
 }
@@ -84,9 +86,9 @@ mod tests {
                 .unwrap_err()
                 .contains("file not found")
         );
-        assert!(validate_ipes_path(dir.join("other.txt").to_str().unwrap())
+        assert!(validate_ipes_path(dir.join("other.bin").to_str().unwrap())
             .unwrap_err()
-            .contains("not a .ipes"));
+            .contains("not a .ipes or .txt"));
         assert!(validate_ipes_path(dir.join("noext").to_str().unwrap())
             .unwrap_err()
             .contains("not a .ipes"));
@@ -120,8 +122,9 @@ mod tests {
 
         let loaded = load_ipes_file(circuit.to_str().unwrap()).unwrap();
         assert_eq!(loaded.name, "my.ipes");
+        assert_eq!(loaded.path, circuit.to_string_lossy().into_owned());
         assert_eq!(decode(&loaded.base64).unwrap(), b"content");
-        assert!(load_ipes_file(dir.join("x.txt").to_str().unwrap()).is_err());
+        assert!(load_ipes_file(dir.join("x.bin").to_str().unwrap()).is_err());
         let _ = std::fs::remove_dir_all(&dir);
     }
 }

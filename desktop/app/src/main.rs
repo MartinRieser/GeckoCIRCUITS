@@ -53,8 +53,12 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             commands::open_logs_folder,
-            commands::read_ipes_file,
+            commands::open_file_dialog,
             commands::save_file_dialog,
+            commands::save_file_direct,
+            commands::set_window_title,
+            commands::confirm_dialog,
+            commands::read_ipes_file,
             commands::log_webview_message
         ])
         .build(tauri::generate_context!())

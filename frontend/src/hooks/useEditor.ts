@@ -35,6 +35,7 @@ import { BLANK_CIRCUIT_IPES } from '../model/examples';
 import { SIMULATION_DEFAULTS } from '../model/constants';
 import { flipRoute, densePoints, routeWireWithAnchors, deconflictMovedWires } from '../canvas/WireRouter';
 import { addRecentFile, type RecentFileEntry } from '../model/recentFiles';
+import { isDesktop, saveFileNative, saveFileDirectNative } from '../desktop';
 
 export function useEditor() {
   const [state, dispatch] = useReducer(editorReducer, initialState);
@@ -195,6 +196,7 @@ export function useEditor() {
         const circuitId = await api.uploadIpesBase64(base64, file.name);
         attachSubscription(circuitId);
         await refresh(circuitId);
+        dispatch({ type: 'SET_FILENAME', filename: file.name, filePath: null });
         addRecentFile(file.name, base64, stateRef.current.components.length);
         dispatch({ type: 'STATUS', status: `Loaded ${file.name}` });
       } catch (e) {
@@ -212,6 +214,7 @@ export function useEditor() {
         const circuitId = await api.uploadIpesString(content, filename);
         attachSubscription(circuitId);
         await refresh(circuitId);
+        dispatch({ type: 'SET_FILENAME', filename, filePath: null });
         addRecentFile(filename, content, stateRef.current.components.length);
         dispatch({ type: 'STATUS', status: `Loaded ${filename}` });
       } catch (e) {
@@ -227,13 +230,14 @@ export function useEditor() {
 
   /** Opens a circuit the desktop shell handed over (base64 of gzip or plain). */
   const openBase64 = useCallback(
-    async (base64: string, filename = 'circuit.ipes') => {
+    async (base64: string, filename = 'circuit.ipes', path: string | null = null) => {
       resetSimulationState();
       dispatch({ type: 'STATUS', status: `Loading ${filename}...` });
       try {
         const circuitId = await api.uploadIpesBase64(base64, filename);
         attachSubscription(circuitId);
         await refresh(circuitId);
+        dispatch({ type: 'SET_FILENAME', filename, filePath: path });
         addRecentFile(filename, base64, stateRef.current.components.length);
         dispatch({ type: 'STATUS', status: `Loaded ${filename}` });
       } catch (e) {
@@ -1057,37 +1061,29 @@ export function useEditor() {
     }
   }, [refresh, reportError]);
 
-  const save = useCallback(async () => {
-    const current = stateRef.current;
-    if (!current.circuitId) return;
-    const name = current.filename || 'circuit.ipes';
-    try {
-      await api.downloadIpes(current.circuitId, name);
-      try {
-        const resp = await fetch(api.apiBase() + `/circuits/${current.circuitId}/ipes`);
-        if (resp.ok) {
-          const blob = await resp.blob();
-          const base64 = api.toBase64(new Uint8Array(await blob.arrayBuffer()));
-          addRecentFile(name, base64, current.components.length);
-        }
-      } catch {
-        // best effort cache update
-      }
-      dispatch({ type: 'STATUS', status: `Saved ${name}` });
-    } catch (e) {
-      reportError(e);
-    }
-  }, [reportError]);
-
   const saveAs = useCallback(
-    async (suggestedName: string) => {
+    async (suggestedName?: string) => {
       const current = stateRef.current;
       if (!current.circuitId) return;
-      const cleanName = suggestedName.trim();
+      const cleanName = (suggestedName || current.filename || 'circuit.ipes').trim();
       const name = cleanName.endsWith('.ipes') ? cleanName : `${cleanName}.ipes`;
       try {
+        if (isDesktop()) {
+          const resp = await fetch(api.apiBase() + `/circuits/${current.circuitId}/ipes`);
+          if (!resp.ok) throw new Error('Failed to export circuit');
+          const blob = await resp.blob();
+          const base64 = api.toBase64(new Uint8Array(await blob.arrayBuffer()));
+          const chosenPath = await saveFileNative(base64, name, current.filePath);
+          if (chosenPath) {
+            const newFilename = chosenPath.split(/[/\\]/).pop() || name;
+            dispatch({ type: 'SET_FILENAME', filename: newFilename, filePath: chosenPath });
+            addRecentFile(newFilename, base64, current.components.length);
+            dispatch({ type: 'STATUS', status: `Saved as ${newFilename}` });
+          }
+          return;
+        }
         await api.downloadIpes(current.circuitId, name);
-        dispatch({ type: 'SET_FILENAME', filename: name });
+        dispatch({ type: 'SET_FILENAME', filename: name, filePath: null });
         try {
           const resp = await fetch(api.apiBase() + `/circuits/${current.circuitId}/ipes`);
           if (resp.ok) {
@@ -1105,6 +1101,27 @@ export function useEditor() {
     },
     [reportError],
   );
+
+  const save = useCallback(async () => {
+    const current = stateRef.current;
+    if (!current.circuitId) return;
+    if (isDesktop() && current.filePath) {
+      try {
+        const resp = await fetch(api.apiBase() + `/circuits/${current.circuitId}/ipes`);
+        if (!resp.ok) throw new Error('Failed to export circuit');
+        const blob = await resp.blob();
+        const base64 = api.toBase64(new Uint8Array(await blob.arrayBuffer()));
+        await saveFileDirectNative(current.filePath, base64);
+        addRecentFile(current.filename, base64, current.components.length);
+        dispatch({ type: 'STATUS', status: `Saved ${current.filename}` });
+        return;
+      } catch (e) {
+        reportError(e);
+        return;
+      }
+    }
+    await saveAs(current.filename || 'circuit.ipes');
+  }, [reportError, saveAs]);
 
   const rename = useCallback(
     (name: string, newName: string) => {

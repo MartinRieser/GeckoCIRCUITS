@@ -83,6 +83,7 @@ export interface FocusedTerminal {
 export interface EditorState {
   circuitId: string | null;
   filename: string;
+  filePath: string | null;
   modelVersion: number;
   dpix: number;
   sheetWidth: number;
@@ -107,6 +108,7 @@ export interface EditorState {
 export const initialState: EditorState = {
   circuitId: null,
   filename: '',
+  filePath: null,
   modelVersion: 0,
   dpix: 16,
   sheetWidth: 600,
@@ -169,7 +171,7 @@ export type Action =
   | { type: 'DRAG_END' }
   | { type: 'PANEL_FOR'; name: string | null }
   | { type: 'TOGGLE_WIRE_MODE' }
-  | { type: 'SET_FILENAME'; filename: string };
+  | { type: 'SET_FILENAME'; filename: string; filePath?: string | null };
 
 /**
  * Assigns discrete lane offsets (in grid units) to wires belonging to multi-wire
@@ -288,7 +290,8 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
       return {
         ...state,
         circuitId: (snap.circuitId as string) || null,
-        filename: (snap.filename as string) || '',
+        filename: (snap.filename as string) || state.filename || '',
+        filePath: snap.circuitId === state.circuitId ? state.filePath : null,
         modelVersion: typeof snap.modelVersion === 'number' ? snap.modelVersion : 0,
         dpix: typeof snap.dpix === 'number' ? snap.dpix : 16,
         sheetWidth,
@@ -319,7 +322,11 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
       return { ...state, status: action.status };
 
     case 'SET_FILENAME':
-      return { ...state, filename: action.filename };
+      return {
+        ...state,
+        filename: action.filename,
+        filePath: action.filePath !== undefined ? action.filePath : state.filePath,
+      };
 
     case 'BUSY':
       return { ...state, busy: action.busy };
