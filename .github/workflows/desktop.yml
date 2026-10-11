@@ -189,6 +189,7 @@ jobs:
 
       - name: Build installers
         working-directory: desktop/app
+        shell: bash
         env:
           NO_STRIP: "true"
           APPIMAGE_EXTRACT_AND_RUN: "1"
