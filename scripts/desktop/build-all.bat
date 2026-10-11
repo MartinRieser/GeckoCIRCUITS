@@ -17,6 +17,7 @@ if %errorlevel% equ 0 (
 python scripts\desktop\build-engine.py %*
 if errorlevel 1 exit /b 1
 
+cd desktop\app
 where tauri >nul 2>nul
 if %errorlevel% equ 0 (
     tauri build

@@ -44,7 +44,9 @@ pub fn log_webview_message(app: AppHandle, level: String, message: String) {
 #[tauri::command]
 pub fn set_window_title(app: AppHandle, title: String) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("main") {
-        window.set_title(&title).map_err(|error| error.to_string())?;
+        window
+            .set_title(&title)
+            .map_err(|error| error.to_string())?;
     }
     Ok(())
 }
