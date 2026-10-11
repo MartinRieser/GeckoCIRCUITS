@@ -121,7 +121,7 @@ jobs:
             artifact: windows
           - os: macos-latest
             artifact: macos
-          - os: ubuntu-22.04
+          - os: ubuntu-latest
             artifact: linux
     runs-on: ${{ matrix.os }}
     steps:
@@ -191,7 +191,16 @@ jobs:
         working-directory: desktop/app
         env:
           NO_STRIP: "true"
-        run: npx @tauri-apps/cli@^2 build
+          APPIMAGE_EXTRACT_AND_RUN: "1"
+        run: |
+          npx @tauri-apps/cli@^2 build || {
+            if [ "${{ matrix.artifact }}" = "linux" ]; then
+              echo "Retrying Linux bundle with deb and rpm..."
+              npx @tauri-apps/cli@^2 build --bundles deb,rpm
+            else
+              exit 1
+            fi
+          }
 
       # Guard against resource-mapping regressions (e.g. a glob pattern that
       # silently drops directories would ship installers without the JRE).
