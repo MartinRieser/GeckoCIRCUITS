@@ -17,6 +17,7 @@ import {
   isAmmeterComponent,
   isVoltmeterComponent,
   getCoupledComponentName,
+  getComponentMeta,
 } from '../model/componentSchema';
 import {
   buildCouplingPairs,
@@ -91,8 +92,8 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
   const [isSpacePressed, setIsSpacePressed] = useState(false);
   const [showGrid, setShowGrid] = useState(true);
 
-  // Near-terminal hover snap halo
-  const [hoveredTerminal, setHoveredTerminal] = useState<Point | null>(null);
+  // Near-terminal hover snap halo and tooltip info
+  const [hoveredTerminal, setHoveredTerminal] = useState<(Point & { label?: string; desc?: string; compName?: string }) | null>(null);
 
   // Live cursor grid coordinate
   const [cursorCoord, setCursorCoord] = useState<Point | null>(null);
@@ -1338,8 +1339,18 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                           const cy = t.y * dpix - component.position[1] * dpix;
                           const isConnected = connectedTerminalKeys.has(`${t.x},${t.y}`);
                           const isNetHighlighted = activeNet?.terminalKeys.has(`${t.x},${t.y}`) ?? false;
+                          const isInput = i < terminals.input.length;
+                          const pinIdx = isInput ? i : i - terminals.input.length;
+                          const meta = getComponentMeta(component.type, component.family, component.name);
+                          const termDef = isInput ? meta?.terminals?.input?.[pinIdx] : meta?.terminals?.output?.[pinIdx];
+                          const termLabel = isInput
+                            ? (component.inputLabels?.[pinIdx] || termDef?.label || `In ${pinIdx + 1}`)
+                            : (component.outputLabels?.[pinIdx] || termDef?.label || `Out ${pinIdx + 1}`);
+                          const termDesc = termDef?.description || `${isInput ? 'Input' : 'Output'} pin ${pinIdx + 1}`;
+                          const pinTitle = `${component.name} · ${termLabel}: ${termDesc} (${isInput ? 'Input' : 'Output'} ${pinIdx + 1})`;
                           return (
                             <g key={i} className={`terminal-pin-group ${isConnected ? 'connected' : 'unconnected'}${isNetHighlighted ? ' net-highlighted' : ''}`}>
+                              <title>{pinTitle}</title>
                               <circle
                                 cx={cx}
                                 cy={cy}
@@ -1364,7 +1375,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                                 stroke="none"
                                 className="terminal-hit"
                                 style={{ cursor: 'crosshair', pointerEvents: 'all' }}
-                                onMouseEnter={() => setHoveredTerminal({ x: t.x, y: t.y })}
+                                onMouseEnter={() => setHoveredTerminal({ x: t.x, y: t.y, label: termLabel, desc: termDesc, compName: component.name })}
                                 onMouseLeave={() => setHoveredTerminal((cur) => (cur && cur.x === t.x && cur.y === t.y ? null : cur))}
                                 onMouseDown={(e) => {
                                   if (e.button !== 0) return;
@@ -1881,15 +1892,39 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
             })}
           </g>
 
-          {/* Terminal Snap Hover Halo */}
+          {/* Terminal Snap Hover Halo & Info Callout */}
           {hoveredTerminal && (
-            <circle
-              cx={hoveredTerminal.x * dpix}
-              cy={hoveredTerminal.y * dpix}
-              r={7}
-              className="terminal-snap-halo"
-              pointerEvents="none"
-            />
+            <g className="hovered-terminal-callout" pointerEvents="none">
+              <circle
+                cx={hoveredTerminal.x * dpix}
+                cy={hoveredTerminal.y * dpix}
+                r={7}
+                className="terminal-snap-halo"
+              />
+              {(hoveredTerminal.label || hoveredTerminal.desc) && (
+                <g transform={`translate(${hoveredTerminal.x * dpix + 10}, ${hoveredTerminal.y * dpix - 20})`}>
+                  <rect
+                    x={-4}
+                    y={-14}
+                    width={Math.max(64, Math.min(260, (hoveredTerminal.label?.length ?? 0) * 8 + (hoveredTerminal.desc ? hoveredTerminal.desc.length * 5.8 : 0) + 16))}
+                    height={hoveredTerminal.desc ? 30 : 20}
+                    rx={4}
+                    fill="#090d16"
+                    stroke="var(--accent, #4ade80)"
+                    strokeWidth={1.2}
+                    filter="drop-shadow(0 3px 8px rgba(0,0,0,0.6))"
+                  />
+                  <text x={4} y={-1} fill="#4ade80" fontSize={11} fontWeight="bold" fontFamily="monospace">
+                    {hoveredTerminal.label}
+                  </text>
+                  {hoveredTerminal.desc && (
+                    <text x={4} y={11} fill="#94a3b8" fontSize={9.5} fontFamily="sans-serif">
+                      {hoveredTerminal.desc.length > 38 ? hoveredTerminal.desc.slice(0, 36) + '…' : hoveredTerminal.desc}
+                    </text>
+                  )}
+                </g>
+              )}
+            </g>
           )}
 
           {/* Focused Terminal indicator (Keyboard Tab navigation) */}

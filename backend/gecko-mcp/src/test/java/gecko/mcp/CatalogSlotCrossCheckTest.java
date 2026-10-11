@@ -134,6 +134,19 @@ class CatalogSlotCrossCheckTest {
         assertEquals(3, slotOf("SIGNAL_SOURCE", "offset"));
         assertEquals(4, slotOf("SIGNAL_SOURCE", "phase_rad"));
         assertEquals(5, slotOf("SIGNAL_SOURCE", "duty"));
+        assertEquals(0, slotOf("THYR_CTRL", "on_time"));
+        assertEquals(1, slotOf("THYR_CTRL", "init_freq"));
+        assertEquals(2, slotOf("THYR_CTRL", "phase_shift"));
+        assertEquals(0, slotOf("SDFT", "avg_span"));
+        assertEquals(1, slotOf("SDFT", "frequency"));
+        assertEquals(0, slotOf("PMSM_CONTROL", "kp_n"));
+        assertEquals(1, slotOf("PMSM_CONTROL", "t_n"));
+        assertEquals(2, slotOf("PMSM_CONTROL", "n_limit"));
+        assertEquals(3, slotOf("PMSM_CONTROL", "kp_i"));
+        assertEquals(4, slotOf("PMSM_CONTROL", "t_i"));
+        assertEquals(5, slotOf("PMSM_CONTROL", "i_limit"));
+        assertEquals(0, slotOf("PMSM_MODULATOR", "vdc"));
+        assertEquals(0, slotOf("DEMUX", "num_outputs"));
     }
 
     @Test
@@ -176,6 +189,7 @@ class CatalogSlotCrossCheckTest {
         expected.put("DEMUX", CircuitTypCore.CTRL_DEMUX);
         expected.put("SPACE_VECTOR", CircuitTypCore.CTRL_SPACE_VECTOR);
         expected.put("SDFT", CircuitTypCore.CTRL_SDFT);
+        expected.put("SPARSEMATRIX", CircuitTypCore.CTRL_SPARSEMATRIX);
 
         for (Map.Entry<String, CircuitTypCore> entry : expected.entrySet()) {
             ComponentCatalog.ComponentDef def = ComponentCatalog.get(entry.getKey());

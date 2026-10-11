@@ -126,6 +126,9 @@ export type CategoryId = (typeof CATEGORIES)[number]['id'];
  * Single source of truth shared between geometry calculations and symbol SVG rendering.
  */
 export function resolveComponentPinCounts(component: {
+  type?: number;
+  family?: string;
+  name?: string;
   parameters?: Record<string, unknown>;
   inputLabels?: string[];
   outputLabels?: string[];
@@ -133,17 +136,45 @@ export function resolveComponentPinCounts(component: {
 }): { inputCount: number; outputCount: number } {
   const compParams = component.parameters ?? {};
   const rawIn = compParams.anzXIN;
+  const rawOut = compParams.anzYOUT;
+
+  // Resolve static terminal counts from component metadata if available
+  const meta = component.type != null ? getComponentMeta(component.type, component.family, component.name) : null;
+  const metaIn = meta?.terminals?.input?.length;
+  const metaOut = meta?.terminals?.output?.length;
+
   const inCount =
     rawIn !== undefined && rawIn !== null && rawIn !== '' && !isNaN(Number(rawIn))
       ? Math.max(0, Number(rawIn))
-      : (component.inputLabels?.length || component.inputs?.length || 1);
-  const rawOut = compParams.anzYOUT;
-  const outCount =
+      : (component.inputLabels && component.inputLabels.length > 0
+          ? component.inputLabels.length
+          : (component.inputs && component.inputs.length > 0
+              ? component.inputs.length
+              : (metaIn ?? 1)));
+
+  let outCount =
     rawOut !== undefined && rawOut !== null && rawOut !== '' && !isNaN(Number(rawOut))
       ? Math.max(1, Number(rawOut))
-      : (component.outputLabels?.length || 1);
+      : (component.outputLabels && component.outputLabels.length > 0
+          ? component.outputLabels.length
+          : (metaOut ?? 1));
+
+  // Dynamic output count for DEMUX (modern 1054 / legacy 85)
+  if (
+    component.type === ControlComponentType.DEMUX ||
+    component.type === ControlComponentType.LEGACY_DEMUX ||
+    component.type === 85 ||
+    component.type === 1054
+  ) {
+    const demuxOut = compParams.param0 ?? compParams.num_outputs;
+    if (demuxOut !== undefined && demuxOut !== null && !isNaN(Number(demuxOut))) {
+      outCount = Math.max(1, Math.min(32, Math.round(Number(demuxOut))));
+    }
+  }
+
   return { inputCount: inCount, outputCount: outCount };
 }
+
 
 export const COMPONENT_METAS: Record<number, ComponentMeta> = {
   // Resistor
@@ -1490,14 +1521,17 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     name: 'CTRL_INTEGRATOR',
     displayName: 'Integrator',
     category: 'control',
-    description: 'Time integration of input signal (∫)',
+    description: 'Time integration of input signal (∫): y = y0 + ∫ in dt. Input 0 is the signal to integrate; Input 1 is the reset trigger (when rst >= 1, output resets to initial value; unwired resets stay 0).',
     defaultPrefix: 'INT',
     parameters: [
-      { index: 0, key: 'param0', label: 'Initial Value', description: 'Initial integrator state', defaultValue: 0, unit: '' },
+      { index: 0, key: 'param0', label: 'Initial Value (y0)', description: 'Initial integrator state upon simulation start or reset', defaultValue: 0, unit: '' },
     ],
     terminals: {
-      input: [{ label: 'in', description: 'Signal input' }],
-      output: [{ label: 'out', description: 'Integrated output' }],
+      input: [
+        { label: 'in', description: 'Signal to integrate' },
+        { label: 'rst', description: 'Reset trigger (resets state to initial value when >= 1; unwired stays 0)' },
+      ],
+      output: [{ label: 'out', description: 'Integrated output signal' }],
     },
   },
 
@@ -1576,18 +1610,18 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     type: 1014,
     family: 'CONTROL',
     name: 'CTRL_MUX',
-    displayName: 'Multiplexer',
+    displayName: 'Multiplexer (2-to-1)',
     category: 'control',
-    description: 'Selects one of N inputs based on a selector signal',
+    description: '2-to-1 multiplexer / signal selector: switches between two data inputs based on the selector control signal. When sel < 0.5, passes in0; when sel >= 0.5, passes in1.',
     defaultPrefix: 'MUX',
     parameters: [],
     terminals: {
       input: [
-        { label: 'sel', description: 'Selector' },
-        { label: 'in0', description: 'Input 0' },
-        { label: 'in1', description: 'Input 1' },
+        { label: 'sel', description: 'Selector control input (< 0.5 selects in0, >= 0.5 selects in1)' },
+        { label: 'in0', description: 'Data input 0 (passed to output when sel < 0.5)' },
+        { label: 'in1', description: 'Data input 1 (passed to output when sel >= 0.5)' },
       ],
-      output: [{ label: 'out', description: 'Selected output' }],
+      output: [{ label: 'out', description: 'Selected output signal' }],
     },
   },
 
@@ -1849,14 +1883,14 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     name: 'CTRL_HYS',
     displayName: 'Hysteresis',
     category: 'control',
-    description: 'Hysteresis comparator with threshold window ±H',
+    description: 'Hysteresis comparator with threshold window ±H: outputs +1 when in > +H, -1 when in < -H, and retains previous state inside the [-H, +H] deadband.',
     defaultPrefix: 'HYS',
     parameters: [
-      { index: 0, key: 'param0', label: 'Hysteresis (H)', description: 'Switching threshold window', defaultValue: 0.1, unit: '' },
+      { index: 0, key: 'param0', label: 'Hysteresis Window (H)', description: 'Switching threshold window (switches at +H and -H)', defaultValue: 0.1, unit: '' },
     ],
     terminals: {
-      input: [{ label: 'in', description: 'Signal input' }],
-      output: [{ label: 'out', description: 'Hysteresis output' }],
+      input: [{ label: 'in', description: 'Signal input to compare' }],
+      output: [{ label: 'out', description: 'Hysteresis state output (+1, -1, or latched)' }],
     },
   },
 
@@ -1866,11 +1900,11 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     name: 'CTRL_PT2',
     displayName: 'PT2 Filter',
     category: 'control',
-    description: 'Second-order low-pass filter element',
+    description: 'Second-order low-pass filter element: G(s) = K / (1 + (τ·s)²).',
     defaultPrefix: 'PT2',
     parameters: [
       { index: 0, key: 'param0', label: 'Time Constant (τ)', description: 'Filter time constant', defaultValue: 0.001, unit: 's' },
-      { index: 1, key: 'param1', label: 'Gain', description: 'DC Gain', defaultValue: 1, unit: '' },
+      { index: 1, key: 'param1', label: 'Gain (K)', description: 'DC Gain', defaultValue: 1, unit: '' },
     ],
     terminals: {
       input: [{ label: 'in', description: 'Signal input' }],
@@ -1882,16 +1916,16 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     type: 1032,
     family: 'CONTROL',
     name: 'CTRL_PD',
-    displayName: 'PD Controller',
+    displayName: 'Derivative / PD Element',
     category: 'control',
-    description: 'Proportional-Derivative controller',
+    description: 'Discrete derivative differentiator: computes discrete time derivative y = (Kd / Δt) · (in - in_old).',
     defaultPrefix: 'PD',
     parameters: [
-      { index: 0, key: 'param0', label: 'Gain (Kp)', description: 'Proportional gain', defaultValue: 1, unit: '' },
+      { index: 0, key: 'param0', label: 'Derivative Gain (Kd)', description: 'Gain for discrete derivative calculation: y = Kd · dx/dt', defaultValue: 1, unit: '' },
     ],
     terminals: {
       input: [{ label: 'in', description: 'Signal input' }],
-      output: [{ label: 'out', description: 'Controller output' }],
+      output: [{ label: 'out', description: 'Differentiated output' }],
     },
   },
 
@@ -2176,15 +2210,15 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     name: 'CTRL_COUNTER',
     displayName: 'Counter',
     category: 'control',
-    description: 'Pulse counter: increments on rising edges, resets to zero when reset > 0.5',
+    description: 'Digital pulse counter: increments on rising edges of clock (threshold 0.5); resets to zero when reset > 0.5.',
     defaultPrefix: 'CNT',
     parameters: [],
     terminals: {
       input: [
-        { label: 'in', description: 'Pulse count input' },
-        { label: 'reset', description: 'Reset trigger input' },
+        { label: 'clk', description: 'Clock / pulse input (increments count on rising edge >= 0.5)' },
+        { label: 'reset', description: 'Reset trigger input (resets count to 0 when > 0.5)' },
       ],
-      output: [{ label: 'out', description: 'Counter value output' }],
+      output: [{ label: 'cnt', description: 'Integer counter value output' }],
     },
   },
   1049: {
@@ -2193,20 +2227,20 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     name: 'CTRL_ABCDQ',
     displayName: 'abc → dq0 Transform',
     category: 'control',
-    description: 'Park/Clarke abc to dq0 coordinate transformation',
+    description: 'Park/Clarke transformation from 3-phase stationary coordinates (a, b, c) to rotating orthogonal coordinates (d, q, 0) using rotor angle theta.',
     defaultPrefix: 'DQ',
     parameters: [],
     terminals: {
       input: [
-        { label: 'a', description: 'Phase a input' },
-        { label: 'b', description: 'Phase b input' },
-        { label: 'c', description: 'Phase c input' },
-        { label: 'theta', description: 'Rotor angle theta in radians' },
+        { label: 'a', description: 'Phase a input signal' },
+        { label: 'b', description: 'Phase b input signal' },
+        { label: 'c', description: 'Phase c input signal' },
+        { label: 'theta', description: 'Rotor transformation angle theta in radians' },
       ],
       output: [
-        { label: 'd', description: 'Direct axis output' },
-        { label: 'q', description: 'Quadrature axis output' },
-        { label: 'zero', description: 'Zero sequence output' },
+        { label: 'd', description: 'Direct-axis output (d)' },
+        { label: 'q', description: 'Quadrature-axis output (q)' },
+        { label: 'zero', description: 'Zero-sequence output (0)' },
       ],
     },
   },
@@ -2216,20 +2250,20 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     name: 'CTRL_DQABC',
     displayName: 'dq0 → abc Transform',
     category: 'control',
-    description: 'Inverse Park/Clarke dq0 to abc coordinate transformation',
+    description: 'Inverse Park/Clarke transformation reconstructing 3-phase stationary signals (a, b, c) from rotating orthogonal coordinates (d, q, 0) using rotor angle theta.',
     defaultPrefix: 'IQ',
     parameters: [],
     terminals: {
       input: [
-        { label: 'd', description: 'Direct axis input' },
-        { label: 'q', description: 'Quadrature axis input' },
-        { label: 'zero', description: 'Zero sequence input' },
-        { label: 'theta', description: 'Rotor angle theta in radians' },
+        { label: 'd', description: 'Direct-axis input (d)' },
+        { label: 'q', description: 'Quadrature-axis input (q)' },
+        { label: 'zero', description: 'Zero-sequence input (0)' },
+        { label: 'theta', description: 'Rotor transformation angle theta in radians' },
       ],
       output: [
-        { label: 'a', description: 'Phase a output' },
-        { label: 'b', description: 'Phase b output' },
-        { label: 'c', description: 'Phase c output' },
+        { label: 'a', description: 'Phase a reconstructed output' },
+        { label: 'b', description: 'Phase b reconstructed output' },
+        { label: 'c', description: 'Phase c reconstructed output' },
       ],
     },
   },
@@ -2239,21 +2273,52 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     name: 'CTRL_THYR_CTRL',
     displayName: 'Thyristor Control',
     category: 'control',
-    description: 'Firing angle generator for line-commutated thyristor bridge converter',
+    description: 'Firing angle generator for line-commutated 3-phase thyristor bridge (B6C). Synchronizes to AC mains via uSync and outputs 6 gate pulses for thyristors 1 to 6.',
     defaultPrefix: 'THC',
-    parameters: [],
+    parameters: [
+      {
+        index: 0,
+        key: 'param0',
+        label: 'Gate On Time',
+        description: 'Duration of gate firing pulses in seconds',
+        defaultValue: 0.004,
+        unit: 's',
+        min: 0.0001,
+        max: 0.1,
+      },
+      {
+        index: 1,
+        key: 'param1',
+        label: 'Line Frequency',
+        description: 'AC mains synchronization frequency in Hertz',
+        defaultValue: 50.0,
+        unit: 'Hz',
+        min: 1.0,
+        max: 1000.0,
+      },
+      {
+        index: 2,
+        key: 'param2',
+        label: 'Phase Shift',
+        description: 'Synchronization phase shift angle in degrees',
+        defaultValue: 30.0,
+        unit: 'deg',
+        min: -180.0,
+        max: 180.0,
+      },
+    ],
     terminals: {
       input: [
-        { label: 'uSync', description: 'Line synchronization voltage' },
-        { label: 'alpha', description: 'Firing angle alpha' },
+        { label: 'uSync', description: 'Line synchronization phase voltage (e.g. Thyristor A1 phase voltage)' },
+        { label: 'alpha', description: 'Firing delay angle alpha in degrees' },
       ],
       output: [
-        { label: 'gate1', description: 'Thyristor 1 gate pulse' },
-        { label: 'gate2', description: 'Thyristor 2 gate pulse' },
-        { label: 'gate3', description: 'Thyristor 3 gate pulse' },
-        { label: 'gate4', description: 'Thyristor 4 gate pulse' },
-        { label: 'gate5', description: 'Thyristor 5 gate pulse' },
-        { label: 'gate6', description: 'Thyristor 6 gate pulse' },
+        { label: 'gate1', description: 'Thyristor 1 (Phase A positive) gate pulse' },
+        { label: 'gate2', description: 'Thyristor 2 (Phase B positive) gate pulse' },
+        { label: 'gate3', description: 'Thyristor 3 (Phase C positive) gate pulse' },
+        { label: 'gate4', description: 'Thyristor 4 (Phase A negative) gate pulse' },
+        { label: 'gate5', description: 'Thyristor 5 (Phase B negative) gate pulse' },
+        { label: 'gate6', description: 'Thyristor 6 (Phase C negative) gate pulse' },
       ],
     },
   },
@@ -2263,19 +2328,86 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     name: 'CTRL_PMSM_CONTROL',
     displayName: 'PMSM FOC Controller',
     category: 'control',
-    description: 'Field-oriented current and speed controller for permanent magnet synchronous machines',
+    description: 'Field-Oriented Control (FOC) for permanent magnet synchronous machines. Cascaded speed and d-q current PI loops with Clarke & Park transformations. Gains can be wired or set via parameters.',
     defaultPrefix: 'FOC',
-    parameters: [],
+    parameters: [
+      {
+        index: 0,
+        key: 'param0',
+        label: 'Speed Kp (kpN)',
+        description: 'Speed PI controller proportional gain (used if pin kpN unwired)',
+        defaultValue: 2.0,
+        min: 0,
+      },
+      {
+        index: 1,
+        key: 'param1',
+        label: 'Speed Tn (tN)',
+        description: 'Speed PI controller integral time constant in seconds (used if pin tN unwired)',
+        defaultValue: 0.05,
+        unit: 's',
+        min: 0.0001,
+      },
+      {
+        index: 2,
+        key: 'param2',
+        label: 'Iq Limit (nLimit)',
+        description: 'Speed controller output limit / maximum q-axis reference current in Amperes',
+        defaultValue: 20.0,
+        unit: 'A',
+        min: 0,
+      },
+      {
+        index: 3,
+        key: 'param3',
+        label: 'Current Kp (kpI)',
+        description: 'Current PI controller proportional gain (used if pin kpI unwired)',
+        defaultValue: 5.0,
+        min: 0,
+      },
+      {
+        index: 4,
+        key: 'param4',
+        label: 'Current Ti (tI)',
+        description: 'Current PI controller integral time constant in seconds (used if pin tI unwired)',
+        defaultValue: 0.01,
+        unit: 's',
+        min: 0.0001,
+      },
+      {
+        index: 5,
+        key: 'param5',
+        label: 'Voltage Limit (iLimit)',
+        description: 'Current controller output limit / maximum voltage command in Volts',
+        defaultValue: 400.0,
+        unit: 'V',
+        min: 0,
+      },
+    ],
     terminals: {
       input: [
-        { label: 'idRef', description: 'd-axis current reference' },
-        { label: 'iqRef', description: 'q-axis current reference' },
-        { label: 'omega', description: 'Mechanical rotor speed' },
-        { label: 'theta', description: 'Electrical rotor angle' },
+        { label: 'ia', description: 'Stator current phase A (A)' },
+        { label: 'ib', description: 'Stator current phase B (A)' },
+        { label: 'omega', description: 'Mechanical rotor speed ω in rad/s' },
+        { label: 'phi', description: 'Electrical rotor angle φ in radians' },
+        { label: 'nRef', description: 'Rotor speed setpoint n* in rpm' },
+        { label: 'kpN', description: 'Speed PI proportional gain (or configure via Parameters)' },
+        { label: 'tN', description: 'Speed PI integration time Tn in s (or configure via Parameters)' },
+        { label: 'nLim', description: 'Speed controller output limit / Iq max in A' },
+        { label: 'kpI', description: 'Current PI proportional gain (or configure via Parameters)' },
+        { label: 'tI', description: 'Current PI integration time Ti in s (or configure via Parameters)' },
+        { label: 'iLim', description: 'Current controller output limit / V max in V' },
+        { label: 'fP', description: 'Controller enable flag (> 0.999 = active, <= 0.999 = freeze)' },
       ],
       output: [
-        { label: 'vd', description: 'd-axis voltage command' },
-        { label: 'vq', description: 'q-axis voltage command' },
+        { label: 'valpha', description: 'Stator voltage command v_alpha (V)' },
+        { label: 'vbeta', description: 'Stator voltage command v_beta (V)' },
+        { label: 'vqRef', description: 'q-axis voltage command Vq* (V)' },
+        { label: 'vdRef', description: 'd-axis voltage command Vd* (V)' },
+        { label: 'iqRef', description: 'q-axis current setpoint Iq* (A)' },
+        { label: 'idRef', description: 'd-axis current setpoint Id* = 0 (A)' },
+        { label: 'iq', description: 'Measured q-axis current Iq (A)' },
+        { label: 'id', description: 'Measured d-axis current Id (A)' },
       ],
     },
   },
@@ -2285,19 +2417,30 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     name: 'CTRL_PMSM_MODULATOR',
     displayName: 'PMSM Modulator',
     category: 'control',
-    description: 'Modulator and space vector transformation for PMSM machines',
+    description: 'Space vector PWM modulator for three-phase PMSM inverters. Compares sector dwell times against triangular carrier to synthesize switching commands.',
     defaultPrefix: 'MOD',
-    parameters: [],
+    parameters: [
+      {
+        index: 0,
+        key: 'param0',
+        label: 'DC-Link Voltage (Vdc)',
+        description: 'DC link voltage in Volts (used if vdc pin is unwired)',
+        defaultValue: 600.0,
+        unit: 'V',
+        min: 1.0,
+      },
+    ],
     terminals: {
       input: [
-        { label: 'vd', description: 'd-axis voltage command' },
-        { label: 'vq', description: 'q-axis voltage command' },
-        { label: 'theta', description: 'Electrical rotor angle' },
+        { label: 'valpha', description: 'Stationary alpha voltage command (V)' },
+        { label: 'vbeta', description: 'Stationary beta voltage command (V)' },
+        { label: 'tri', description: 'Triangular carrier waveform (-1 to +1)' },
+        { label: 'vdc', description: 'DC-link voltage Vdc in Volts' },
       ],
       output: [
-        { label: 'sA', description: 'Switching state phase A' },
-        { label: 'sB', description: 'Switching state phase B' },
-        { label: 'sC', description: 'Switching state phase C' },
+        { label: 'sA', description: 'Phase A / U gate switching command (0 or 1)' },
+        { label: 'sB', description: 'Phase B / V gate switching command (0 or 1)' },
+        { label: 'sC', description: 'Phase C / W gate switching command (0 or 1)' },
       ],
     },
   },
@@ -2307,14 +2450,25 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     name: 'CTRL_DEMUX',
     displayName: 'Demultiplexer (Demux)',
     category: 'control',
-    description: 'Splits a multiplexed vector control signal into scalar components',
+    description: 'Demultiplexer / bus splitter: extracts individual scalar output channels from an input vector signal (from script blocks or multi-channel buses).',
     defaultPrefix: 'DMX',
-    parameters: [],
+    parameters: [
+      {
+        index: 0,
+        key: 'param0',
+        label: 'Output Channels',
+        description: 'Number of scalar output channels extracted from the input vector',
+        defaultValue: 3,
+        min: 1,
+        max: 16,
+      },
+    ],
     terminals: {
-      input: [{ label: 'in', description: 'Vector input signal' }],
+      input: [{ label: 'in', description: 'Multiplexed vector input signal' }],
       output: [
-        { label: 'out0', description: 'Channel 0 output' },
-        { label: 'out1', description: 'Channel 1 output' },
+        { label: 'out0', description: 'Channel 0 scalar output' },
+        { label: 'out1', description: 'Channel 1 scalar output' },
+        { label: 'out2', description: 'Channel 2 scalar output' },
       ],
     },
   },
@@ -2324,18 +2478,18 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     name: 'CTRL_SPACE_VECTOR',
     displayName: 'Space Vector Modulator',
     category: 'control',
-    description: 'Space vector PWM modulator for three-phase inverters',
+    description: 'Space vector PWM modulator for three-phase converter systems: converts stationary orthogonal alpha-beta voltage commands into inverter gate switching states.',
     defaultPrefix: 'SVM',
     parameters: [],
     terminals: {
       input: [
-        { label: 'valpha', description: 'Stationary alpha voltage' },
-        { label: 'vbeta', description: 'Stationary beta voltage' },
+        { label: 'valpha', description: 'Stationary alpha voltage command (V)' },
+        { label: 'vbeta', description: 'Stationary beta voltage command (V)' },
       ],
       output: [
-        { label: 'sA', description: 'Gate phase A' },
-        { label: 'sB', description: 'Gate phase B' },
-        { label: 'sC', description: 'Gate phase C' },
+        { label: 'sA', description: 'Phase A gate switching command' },
+        { label: 'sB', description: 'Phase B gate switching command' },
+        { label: 'sC', description: 'Phase C gate switching command' },
       ],
     },
   },
@@ -2345,28 +2499,65 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     name: 'CTRL_SDFT',
     displayName: 'Sliding DFT',
     category: 'control',
-    description: 'Sliding Discrete Fourier Transform for real-time fundamental harmonic tracking',
+    description: 'Sliding Discrete Fourier Transform (SDFT) tracking the fundamental harmonic amplitude in real time with single-step circular buffer recursion.',
     defaultPrefix: 'SDFT',
     parameters: [
-      { index: 0, key: 'frequency', label: 'Frequency (f0)', description: 'Fundamental harmonic frequency in Hz', defaultValue: 50.0, unit: 'Hz' },
+      {
+        index: 0,
+        key: 'param0',
+        label: 'Averaging Span',
+        description: 'Sliding window integration time span in seconds (typically 1 / f0 = 0.02s)',
+        defaultValue: 0.02,
+        unit: 's',
+        min: 0.0001,
+      },
+      {
+        index: 1,
+        key: 'param1',
+        label: 'Frequency (f0)',
+        description: 'Fundamental tracking harmonic frequency in Hertz',
+        defaultValue: 50.0,
+        unit: 'Hz',
+        min: 1.0,
+        max: 10000.0,
+      },
     ],
     terminals: {
-      input: [{ label: 'in', description: 'Input signal' }],
-      output: [{ label: 'mag', description: 'Magnitude of fundamental harmonic' }],
+      input: [{ label: 'in', description: 'Input signal to analyze' }],
+      output: [{ label: 'mag', description: 'Fundamental harmonic magnitude output' }],
     },
   },
   1058: {
     type: 1058,
     family: 'CONTROL',
     name: 'CTRL_SPARSEMATRIX',
-    displayName: 'Sparse State-Space Matrix',
+    displayName: 'Sparse Matrix Converter Modulator',
     category: 'control',
-    description: 'Sparse state-space matrix dynamic system calculator',
+    description: 'Space Vector PWM Modulator for Indirect Sparse Matrix Converters (ISMC). Generates 6 rectifier and 3 inverter switching commands with zero-current switching (ZCS).',
     defaultPrefix: 'SPM',
     parameters: [],
     terminals: {
-      input: [{ label: 'in', description: 'State input signal' }],
-      output: [{ label: 'out', description: 'State output signal' }],
+      input: [
+        { label: 'fDR', description: 'Carrier / switching frequency reference' },
+        { label: 'ur', description: 'Input mains phase R voltage' },
+        { label: 'us', description: 'Input mains phase S voltage' },
+        { label: 'ut', description: 'Input mains phase T voltage' },
+        { label: 'uNmax', description: 'Input AC mains peak amplitude' },
+        { label: 'uOUTmax', description: 'Desired peak output voltage amplitude' },
+        { label: 'fOUT', description: 'Desired output frequency in Hz' },
+        { label: 'phi2', description: 'Output vector reference angle in radians' },
+      ],
+      output: [
+        { label: 'sRp', description: 'Rectifier stage R positive switch' },
+        { label: 'sSp', description: 'Rectifier stage S positive switch' },
+        { label: 'sTp', description: 'Rectifier stage T positive switch' },
+        { label: 'sRm', description: 'Rectifier stage R negative switch' },
+        { label: 'sSm', description: 'Rectifier stage S negative switch' },
+        { label: 'sTm', description: 'Rectifier stage T negative switch' },
+        { label: 's1', description: 'Inverter stage phase 1 switch' },
+        { label: 's2', description: 'Inverter stage phase 2 switch' },
+        { label: 's3', description: 'Inverter stage phase 3 switch' },
+      ],
     },
   },
 };
@@ -2405,37 +2596,38 @@ export function getComponentMeta(
     else if (type === 27) lookupType = 1021; // Limit
     else if (type === 29) lookupType = 1032; // PD
     else if (type === 32) lookupType = 1022; // Abs
-    else if (type === 33) lookupType = 1038; // ASIN
+    else if (type === 33) lookupType = 1044; // Round
     else if (type === 34) lookupType = 1026; // Sin
-    else if (type === 35) lookupType = 1039; // ACOS
+    else if (type === 35) lookupType = 1038; // ASIN
     else if (type === 36) lookupType = 1027; // Cos
-    else if (type === 37) lookupType = 1040; // TAN
-    else if (type === 38) lookupType = 1041; // ATAN
-    else if (type === 39) lookupType = 1042; // SQR
+    else if (type === 37) lookupType = 1039; // ACOS
+    else if (type === 38) lookupType = 1040; // TAN
+    else if (type === 39) lookupType = 1041; // ATAN
     else if (type === 40) lookupType = 1024; // Exp
     else if (type === 41) lookupType = 1025; // Ln
-    else if (type === 42) lookupType = 1043; // POW
+    else if (type === 42) lookupType = 1042; // SQR
     else if (type === 43) lookupType = 1023; // Sqrt
-    else if (type === 44) lookupType = 1044; // ROUND
+    else if (type === 44) lookupType = 1043; // POW
     else if (type === 45) lookupType = 1036; // GE
-    else if (type === 46) lookupType = 1010; // GT
-    else if (type === 47) lookupType = 1045; // SIGN
-    else if (type === 48) lookupType = 1046; // EQ
+    else if (type === 46) lookupType = 1010; // GT (Comparator)
+    else if (type === 47) lookupType = 1046; // EQ
+    else if (type === 48) lookupType = 1047; // NE
     else if (type === 49) lookupType = 1028; // Min
     else if (type === 50) lookupType = 1029; // Max
-    else if (type === 51) lookupType = 1047; // NE
+    else if (type === 51) lookupType = 1045; // SIGN
     else if (type === 53) lookupType = 1048; // COUNTER
     else if (type === 58) lookupType = 1034; // Time
-    else if (type === 59) lookupType = 1049; // ABCDQ
-    else if (type === 63) lookupType = 1050; // DQABC
+    else if (type === 59) lookupType = 1058; // SPARSEMATRIX
+    else if (type === 63) lookupType = 1055; // SPACE_VECTOR
     else if (type === 64) lookupType = 1009; // Integrator
-    else if (type === 65) lookupType = 1051; // THYR_CTRL
-    else if (type === 66) lookupType = 1052; // PMSM_CONTROL
-    else if (type === 72) lookupType = 1053; // PMSM_MODULATOR
-    else if (type === 76) lookupType = 1054; // DEMUX
-    else if (type === 77) lookupType = 1055; // SPACE_VECTOR
+    else if (type === 65) lookupType = 1049; // ABCDQ
+    else if (type === 66) lookupType = 1050; // DQABC
+    else if (type === 72) lookupType = 1051; // THYR_CTRL
+    else if (type === 76) lookupType = 1052; // PMSM_CONTROL
+    else if (type === 77) lookupType = 1053; // PMSM_MODULATOR
     else if (type === 82) lookupType = 1056; // SDFT
-    else if (type === 85) lookupType = 1058; // SPARSEMATRIX
+    else if (type === 84) lookupType = 1014; // Selector / Mux
+    else if (type === 85) lookupType = 1054; // DEMUX
   }
   const existing = COMPONENT_METAS[lookupType] ?? COMPONENT_METAS[type];
   if (existing) {

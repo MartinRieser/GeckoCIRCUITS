@@ -87,6 +87,26 @@ export enum ControlComponentType {
   SIGNAL_SOURCE = 1004,
   /** Constant source (modern catalog CircuitTypCore.CTRL_CONSTANT). */
   CONSTANT = 1005,
+  /** Gain block (CTRL_GAIN). */
+  GAIN = 1006,
+  /** PI controller block (CTRL_PI). */
+  PI = 1007,
+  /** PT1 filter block (CTRL_PT1). */
+  PT1 = 1008,
+  /** Integrator block (CTRL_INTEGRATOR). */
+  INTEGRATOR = 1009,
+  /** Comparator block (CTRL_COMPARATOR). */
+  COMPARATOR = 1010,
+  /** AND logic gate block (CTRL_AND). */
+  AND = 1011,
+  /** OR logic gate block (CTRL_OR). */
+  OR = 1012,
+  /** NOT logic gate block (CTRL_NOT). */
+  NOT = 1013,
+  /** Multiplexer / Selector block (CTRL_MUX). */
+  MUX = 1014,
+  /** Time delay block (CTRL_DELAY). */
+  DELAY = 1015,
   /** Script / Function block (modern catalog CircuitTypCore.CTRL_SCRIPT). */
   SCRIPT = 1016,
   /** Subtraction / Error calculation block (CTRL_SUB). */
@@ -172,46 +192,68 @@ export enum ControlComponentType {
   /** Sparse state-space matrix block (CTRL_SPARSEMATRIX). */
   SPARSEMATRIX = 1058,
 
-  /** Legacy ASIN block code. */
-  LEGACY_ASIN = 33,
-  /** Legacy ACOS block code. */
-  LEGACY_ACOS = 35,
-  /** Legacy TAN block code. */
-  LEGACY_TAN = 37,
-  /** Legacy ATAN block code. */
-  LEGACY_ATAN = 38,
-  /** Legacy SQR block code. */
-  LEGACY_SQR = 39,
-  /** Legacy POW block code. */
-  LEGACY_POW = 42,
   /** Legacy ROUND block code. */
-  LEGACY_ROUND = 44,
-  /** Legacy SIGN block code. */
-  LEGACY_SIGN = 47,
+  LEGACY_ROUND = 33,
+  /** Legacy SIN block code. */
+  LEGACY_SIN = 34,
+  /** Legacy ASIN block code. */
+  LEGACY_ASIN = 35,
+  /** Legacy COS block code. */
+  LEGACY_COS = 36,
+  /** Legacy ACOS block code. */
+  LEGACY_ACOS = 37,
+  /** Legacy TAN block code. */
+  LEGACY_TAN = 38,
+  /** Legacy ATAN block code. */
+  LEGACY_ATAN = 39,
+  /** Legacy EXP block code. */
+  LEGACY_EXP = 40,
+  /** Legacy LN block code. */
+  LEGACY_LN = 41,
+  /** Legacy SQR block code. */
+  LEGACY_SQR = 42,
+  /** Legacy SQRT block code. */
+  LEGACY_SQRT = 43,
+  /** Legacy POW block code. */
+  LEGACY_POW = 44,
+  /** Legacy GE block code. */
+  LEGACY_GE = 45,
+  /** Legacy GT block code. */
+  LEGACY_GT = 46,
   /** Legacy EQ block code. */
-  LEGACY_EQ = 48,
+  LEGACY_EQ = 47,
   /** Legacy NE block code. */
-  LEGACY_NE = 51,
+  LEGACY_NE = 48,
+  /** Legacy MIN block code. */
+  LEGACY_MIN = 49,
+  /** Legacy MAX block code. */
+  LEGACY_MAX = 50,
+  /** Legacy SIGN block code. */
+  LEGACY_SIGN = 51,
   /** Legacy COUNTER block code. */
   LEGACY_COUNTER = 53,
-  /** Legacy ABCDQ block code. */
-  LEGACY_ABCDQ = 59,
-  /** Legacy DQABC block code. */
-  LEGACY_DQABC = 63,
-  /** Legacy THYR_CTRL block code. */
-  LEGACY_THYR_CTRL = 65,
-  /** Legacy PMSM_CONTROL block code. */
-  LEGACY_PMSM_CONTROL = 66,
-  /** Legacy PMSM_MODULATOR block code. */
-  LEGACY_PMSM_MODULATOR = 72,
-  /** Legacy DEMUX block code. */
-  LEGACY_DEMUX = 76,
+  /** Legacy TIME block code. */
+  LEGACY_TIME = 58,
+  /** Legacy SPARSEMATRIX block code. */
+  LEGACY_SPARSEMATRIX = 59,
   /** Legacy SPACE_VECTOR block code. */
-  LEGACY_SPACE_VECTOR = 77,
+  LEGACY_SPACE_VECTOR = 63,
+  /** Legacy INT (Integrator) block code. */
+  LEGACY_INT = 64,
+  /** Legacy ABCDQ block code. */
+  LEGACY_ABCDQ = 65,
+  /** Legacy DQABC block code. */
+  LEGACY_DQABC = 66,
+  /** Legacy THYR_CTRL block code. */
+  LEGACY_THYR_CTRL = 72,
+  /** Legacy PMSM_CONTROL block code. */
+  LEGACY_PMSM_CONTROL = 76,
+  /** Legacy PMSM_MODULATOR block code. */
+  LEGACY_PMSM_MODULATOR = 77,
   /** Legacy SDFT block code. */
   LEGACY_SDFT = 82,
-  /** Legacy SPARSEMATRIX block code. */
-  LEGACY_SPARSEMATRIX = 85,
+  /** Legacy DEMUX block code. */
+  LEGACY_DEMUX = 85,
 }
 
 /**
@@ -231,6 +273,16 @@ export const CTRL_TYPE = {
   SCOPE: ControlComponentType.SCOPE,
   SIGNAL_SOURCE: ControlComponentType.SIGNAL_SOURCE,
   CONSTANT: ControlComponentType.CONSTANT,
+  GAIN: ControlComponentType.GAIN,
+  PI: ControlComponentType.PI,
+  PT1: ControlComponentType.PT1,
+  INTEGRATOR: ControlComponentType.INTEGRATOR,
+  COMPARATOR: ControlComponentType.COMPARATOR,
+  AND: ControlComponentType.AND,
+  OR: ControlComponentType.OR,
+  NOT: ControlComponentType.NOT,
+  MUX: ControlComponentType.MUX,
+  DELAY: ControlComponentType.DELAY,
   LEGACY_JAVA_FUNCTION: ControlComponentType.LEGACY_JAVA_FUNCTION,
   SCRIPT: ControlComponentType.SCRIPT,
   SUB: ControlComponentType.SUB,
@@ -274,26 +326,37 @@ export const CTRL_TYPE = {
   SPACE_VECTOR: ControlComponentType.SPACE_VECTOR,
   SDFT: ControlComponentType.SDFT,
   SPARSEMATRIX: ControlComponentType.SPARSEMATRIX,
+  LEGACY_ROUND: ControlComponentType.LEGACY_ROUND,
+  LEGACY_SIN: ControlComponentType.LEGACY_SIN,
   LEGACY_ASIN: ControlComponentType.LEGACY_ASIN,
+  LEGACY_COS: ControlComponentType.LEGACY_COS,
   LEGACY_ACOS: ControlComponentType.LEGACY_ACOS,
   LEGACY_TAN: ControlComponentType.LEGACY_TAN,
   LEGACY_ATAN: ControlComponentType.LEGACY_ATAN,
+  LEGACY_EXP: ControlComponentType.LEGACY_EXP,
+  LEGACY_LN: ControlComponentType.LEGACY_LN,
   LEGACY_SQR: ControlComponentType.LEGACY_SQR,
+  LEGACY_SQRT: ControlComponentType.LEGACY_SQRT,
   LEGACY_POW: ControlComponentType.LEGACY_POW,
-  LEGACY_ROUND: ControlComponentType.LEGACY_ROUND,
-  LEGACY_SIGN: ControlComponentType.LEGACY_SIGN,
+  LEGACY_GE: ControlComponentType.LEGACY_GE,
+  LEGACY_GT: ControlComponentType.LEGACY_GT,
   LEGACY_EQ: ControlComponentType.LEGACY_EQ,
   LEGACY_NE: ControlComponentType.LEGACY_NE,
+  LEGACY_MIN: ControlComponentType.LEGACY_MIN,
+  LEGACY_MAX: ControlComponentType.LEGACY_MAX,
+  LEGACY_SIGN: ControlComponentType.LEGACY_SIGN,
   LEGACY_COUNTER: ControlComponentType.LEGACY_COUNTER,
+  LEGACY_TIME: ControlComponentType.LEGACY_TIME,
+  LEGACY_SPARSEMATRIX: ControlComponentType.LEGACY_SPARSEMATRIX,
+  LEGACY_SPACE_VECTOR: ControlComponentType.LEGACY_SPACE_VECTOR,
+  LEGACY_INT: ControlComponentType.LEGACY_INT,
   LEGACY_ABCDQ: ControlComponentType.LEGACY_ABCDQ,
   LEGACY_DQABC: ControlComponentType.LEGACY_DQABC,
   LEGACY_THYR_CTRL: ControlComponentType.LEGACY_THYR_CTRL,
   LEGACY_PMSM_CONTROL: ControlComponentType.LEGACY_PMSM_CONTROL,
   LEGACY_PMSM_MODULATOR: ControlComponentType.LEGACY_PMSM_MODULATOR,
-  LEGACY_DEMUX: ControlComponentType.LEGACY_DEMUX,
-  LEGACY_SPACE_VECTOR: ControlComponentType.LEGACY_SPACE_VECTOR,
   LEGACY_SDFT: ControlComponentType.LEGACY_SDFT,
-  LEGACY_SPARSEMATRIX: ControlComponentType.LEGACY_SPARSEMATRIX,
+  LEGACY_DEMUX: ControlComponentType.LEGACY_DEMUX,
 } as const;
 
 /**

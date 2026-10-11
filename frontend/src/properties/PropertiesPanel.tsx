@@ -19,6 +19,7 @@ import { ScriptCodeEditor } from './ScriptCodeEditor';
 import {
   CTRL_TYPE,
   getComponentMeta,
+  resolveComponentPinCounts,
   parseEngineeringValue,
   formatEngineeringValue,
   isGateDriver,
@@ -132,6 +133,11 @@ export function PropertiesPanel({
     if (!component) return null;
     return getComponentMeta(component.type, component.family, component.name);
   }, [component]);
+
+  const pinCounts = useMemo(
+    () => (component ? resolveComponentPinCounts(component) : { inputCount: 1, outputCount: 1 }),
+    [component],
+  );
 
   const isGate = isGateDriver(component);
   const isSwitch = isSwitchComponent(component);
@@ -282,6 +288,37 @@ export function PropertiesPanel({
             </div>
           </div>
         </div>
+
+        {/* Informative component explanation & how-to-use hints */}
+        {meta.description && (
+          <div className="component-help-card">
+            <div className="component-help-header">
+              <span className="help-icon">💡</span>
+              <span className="help-title">About this Component</span>
+            </div>
+            <div className="component-help-text">{meta.description}</div>
+            {((meta.terminals?.input && meta.terminals.input.length > 0) ||
+              (meta.terminals?.output && meta.terminals.output.length > 0)) && (
+              <div className="component-help-pins">
+                <div className="help-pins-title">Terminal Connections & Functions</div>
+                <div className="help-pins-grid">
+                  {meta.terminals?.input?.map((t, idx) => (
+                    <div key={`help-in-${idx}`} className="help-pin-row">
+                      <span className="help-pin-badge in">IN {t.label}</span>
+                      <span className="help-pin-desc">{t.description || `Input ${idx + 1}`}</span>
+                    </div>
+                  ))}
+                  {meta.terminals?.output?.map((t, idx) => (
+                    <div key={`help-out-${idx}`} className="help-pin-row">
+                      <span className="help-pin-badge out">OUT {t.label}</span>
+                      <span className="help-pin-desc">{t.description || `Output ${idx + 1}`}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Scope Instrument Tab Action */}
         {onOpenScopeTab && isScopeComponent(component) && (
@@ -794,7 +831,9 @@ export function PropertiesPanel({
         ) : (
           meta.parameters.length > 0 && (
             <div className="prop-section">
-              <div className="prop-section-title">Electrical Parameters</div>
+              <div className="prop-section-title">
+                {component.family === 'CONTROL' ? 'Control Parameters' : component.family === 'THERM' ? 'Thermal Parameters' : 'Electrical Parameters'}
+              </div>
               <div className="prop-fields-list">
                 {meta.parameters
                   .filter((def) => isParameterVisible(def, component.parameters))
@@ -926,44 +965,54 @@ export function PropertiesPanel({
               Assign net names to connect terminals across the circuit without wires.
             </div>
             <div className="terminal-labels-list">
-              {Array.from({ length: Math.max(meta.terminals.input.length, component.inputLabels.length) }).map(
-                (_, idx) => {
-                  const terminalDef = meta.terminals.input[idx];
-                  const sideLabel =
-                    terminalDef?.label || (meta.terminals.input.length > 1 ? `In ${idx + 1}` : 'Input / T1');
-                  const desc = terminalDef?.description || `Input Terminal ${idx + 1}`;
-                  const currentLabel = component.inputLabels[idx] || '';
-                  return (
-                    <TerminalLabelRow
-                      key={`in-${idx}`}
-                      sideLabel={sideLabel}
-                      desc={desc}
-                      currentLabel={currentLabel}
-                      datalistId="circuit-available-signals"
-                      onCommit={(lbl) => onSetLabel(component.name, 'x', idx, lbl)}
-                    />
-                  );
-                },
-              )}
-              {Array.from({ length: Math.max(meta.terminals.output.length, component.outputLabels.length) }).map(
-                (_, idx) => {
-                  const terminalDef = meta.terminals.output[idx];
-                  const sideLabel =
-                    terminalDef?.label || (meta.terminals.output.length > 1 ? `Out ${idx + 1}` : 'Output / T2');
-                  const desc = terminalDef?.description || `Output Terminal ${idx + 1}`;
-                  const currentLabel = component.outputLabels[idx] || '';
-                  return (
-                    <TerminalLabelRow
-                      key={`out-${idx}`}
-                      sideLabel={sideLabel}
-                      desc={desc}
-                      currentLabel={currentLabel}
-                      datalistId="circuit-available-signals"
-                      onCommit={(lbl) => onSetLabel(component.name, 'y', idx, lbl)}
-                    />
-                  );
-                },
-              )}
+              {Array.from({
+                length: Math.max(
+                  pinCounts.inputCount,
+                  meta.terminals?.input?.length ?? 0,
+                  component.inputLabels.length,
+                ),
+              }).map((_, idx) => {
+                const terminalDef = meta.terminals?.input?.[idx];
+                const sideLabel =
+                  terminalDef?.label ||
+                  (pinCounts.inputCount > 1 ? `In ${idx + 1}` : 'Input / T1');
+                const desc = terminalDef?.description || `Input Terminal ${idx + 1}`;
+                const currentLabel = component.inputLabels[idx] || '';
+                return (
+                  <TerminalLabelRow
+                    key={`in-${idx}`}
+                    sideLabel={sideLabel}
+                    desc={desc}
+                    currentLabel={currentLabel}
+                    datalistId="circuit-available-signals"
+                    onCommit={(lbl) => onSetLabel(component.name, 'x', idx, lbl)}
+                  />
+                );
+              })}
+              {Array.from({
+                length: Math.max(
+                  pinCounts.outputCount,
+                  meta.terminals?.output?.length ?? 0,
+                  component.outputLabels.length,
+                ),
+              }).map((_, idx) => {
+                const terminalDef = meta.terminals?.output?.[idx];
+                const sideLabel =
+                  terminalDef?.label ||
+                  (pinCounts.outputCount > 1 ? `Out ${idx + 1}` : 'Output / T2');
+                const desc = terminalDef?.description || `Output Terminal ${idx + 1}`;
+                const currentLabel = component.outputLabels[idx] || '';
+                return (
+                  <TerminalLabelRow
+                    key={`out-${idx}`}
+                    sideLabel={sideLabel}
+                    desc={desc}
+                    currentLabel={currentLabel}
+                    datalistId="circuit-available-signals"
+                    onCommit={(lbl) => onSetLabel(component.name, 'y', idx, lbl)}
+                  />
+                );
+              })}
             </div>
           </div>
         )}
@@ -1139,6 +1188,11 @@ function TerminalLabelRow({
     <div className="terminal-row">
       <div className="terminal-meta" title={desc}>
         <span className="terminal-badge">{sideLabel}</span>
+        {desc && desc !== sideLabel && (
+          <span className="terminal-desc-text" title={desc}>
+            {desc}
+          </span>
+        )}
       </div>
       <div className="terminal-input-wrap">
         <input

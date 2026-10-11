@@ -513,31 +513,51 @@ public final class ComponentCatalog {
         register(new ComponentDef(
                 "THYR_CTRL", "Thyristor Control", "CONTROL", 1051, "THYR_CTRL",
                 List.of("uSync", "alpha", "gate1", "gate2", "gate3", "gate4", "gate5", "gate6"),
-                List.of(),
+                List.of(
+                        new ParameterDef("on_time", "number", "s", 4e-3, 0, "Gate pulse duration in seconds"),
+                        new ParameterDef("init_freq", "number", "Hz", 50.0, 1, "Initial / line synchronization frequency in Hertz"),
+                        new ParameterDef("phase_shift", "number", "deg", 30.0, 2, "Synchronization phase shift in degrees")
+                ),
                 "Firing angle generator for line-commutated thyristor bridges.",
                 2
         ));
 
         register(new ComponentDef(
                 "PMSM_CONTROL", "PMSM Control", "CONTROL", 1052, "PMSM_CTRL",
-                List.of("idRef", "iqRef", "omega", "theta", "vd", "vq"),
-                List.of(),
+                List.of(
+                        "ia", "ib", "omega", "phi", "nRef",
+                        "kpN", "tN", "nLim", "kpI", "tI", "iLim", "fP",
+                        "valpha", "vbeta", "vqRef", "vdRef",
+                        "iqRef", "idRef", "iq", "id"
+                ),
+                List.of(
+                        new ParameterDef("kp_n", "number", "", 2.0, 0, "Speed PI controller proportional gain"),
+                        new ParameterDef("t_n", "number", "s", 0.05, 1, "Speed PI controller integral time constant"),
+                        new ParameterDef("n_limit", "number", "A", 20.0, 2, "Speed controller saturation limit / max Iq reference"),
+                        new ParameterDef("kp_i", "number", "", 5.0, 3, "Current PI controller proportional gain"),
+                        new ParameterDef("t_i", "number", "s", 0.01, 4, "Current PI controller integral time constant"),
+                        new ParameterDef("i_limit", "number", "V", 400.0, 5, "Current controller saturation limit / max voltage")
+                ),
                 "Field-oriented current and speed controller for PMSM machines.",
-                4
+                12
         ));
 
         register(new ComponentDef(
                 "PMSM_MODULATOR", "PMSM Modulator", "CONTROL", 1053, "PMSM_MOD",
-                List.of("vd", "vq", "theta", "sA", "sB", "sC"),
-                List.of(),
+                List.of("valpha", "vbeta", "tri", "vdc", "sA", "sB", "sC"),
+                List.of(
+                        new ParameterDef("vdc", "number", "V", 600.0, 0, "DC link voltage in Volts (used if vdc pin unwired)")
+                ),
                 "Modulator / space-vector transform for PMSM machines.",
-                3
+                4
         ));
 
         register(new ComponentDef(
                 "DEMUX", "Demultiplexer / Vector Splitter", "CONTROL", 1054, "DEMUX",
-                List.of("in", "out0", "out1"),
-                List.of(),
+                List.of("in", "out0", "out1", "out2"),
+                List.of(
+                        new ParameterDef("num_outputs", "number", "", 3, 0, "Number of scalar output channels extracted from the vector")
+                ),
                 "Splits a vector control signal into scalar components.",
                 1
         ));
@@ -554,9 +574,21 @@ public final class ComponentCatalog {
                 "SDFT", "Sliding DFT", "CONTROL", 1056, "SDFT",
                 List.of("in", "mag"),
                 List.of(
-                        new ParameterDef("frequency", "number", "Hz", 50.0, 0, "Fundamental tracking frequency in Hertz")
+                        new ParameterDef("avg_span", "number", "s", 0.02, 0, "Averaging window span duration in seconds"),
+                        new ParameterDef("frequency", "number", "Hz", 50.0, 1, "Fundamental tracking frequency in Hertz")
                 ),
                 "Sliding Discrete Fourier Transform for real-time fundamental harmonic tracking."
+        ));
+
+        register(new ComponentDef(
+                "SPARSEMATRIX", "Sparse Matrix Modulator", "CONTROL", 1058, "SPM",
+                List.of(
+                        "fDR", "ur", "us", "ut", "uNmax", "uOUTmax", "fOUT", "phi2",
+                        "sRp", "sSp", "sTp", "sRm", "sSm", "sTm", "s1", "s2", "s3"
+                ),
+                List.of(),
+                "Space Vector PWM Modulator for Indirect Sparse Matrix Converters (ISMC).",
+                8
         ));
 
         // ====================================================================
@@ -692,26 +724,56 @@ public final class ComponentCatalog {
             Map.entry(4, 1004),   // signal source
             Map.entry(5, 1003),   // scope
             Map.entry(6, 1000),   // gate
-            Map.entry(33, 1038),  // ASIN
-            Map.entry(35, 1039),  // ACOS
-            Map.entry(37, 1040),  // TAN
-            Map.entry(38, 1041),  // ATAN
-            Map.entry(39, 1042),  // SQR
-            Map.entry(42, 1043),  // POW
-            Map.entry(44, 1044),  // ROUND
-            Map.entry(47, 1045),  // SIGN
-            Map.entry(48, 1046),  // EQ
-            Map.entry(51, 1047),  // NE
+            Map.entry(7, 1006),   // gain
+            Map.entry(8, 1008),   // pt1
+            Map.entry(9, 1031),   // pt2
+            Map.entry(10, 1007),  // pi
+            Map.entry(11, 1030),  // hys
+            Map.entry(12, 1018),  // add
+            Map.entry(13, 1017),  // sub
+            Map.entry(14, 1019),  // mul
+            Map.entry(15, 1020),  // div
+            Map.entry(18, 1013),  // not
+            Map.entry(19, 1011),  // and
+            Map.entry(20, 1012),  // or
+            Map.entry(21, 1035),  // xor
+            Map.entry(25, 1015),  // delay
+            Map.entry(26, 1033),  // samplehold
+            Map.entry(27, 1021),  // limit
+            Map.entry(29, 1032),  // pd
+            Map.entry(32, 1022),  // abs
+            Map.entry(33, 1044),  // ROUND
+            Map.entry(34, 1026),  // SIN
+            Map.entry(35, 1038),  // ASIN
+            Map.entry(36, 1027),  // COS
+            Map.entry(37, 1039),  // ACOS
+            Map.entry(38, 1040),  // TAN
+            Map.entry(39, 1041),  // ATAN
+            Map.entry(40, 1024),  // EXP
+            Map.entry(41, 1025),  // LN
+            Map.entry(42, 1042),  // SQR
+            Map.entry(43, 1023),  // SQRT
+            Map.entry(44, 1043),  // POW
+            Map.entry(45, 1036),  // GE
+            Map.entry(46, 1010),  // GT
+            Map.entry(47, 1046),  // EQ
+            Map.entry(48, 1047),  // NE
+            Map.entry(49, 1028),  // MIN
+            Map.entry(50, 1029),  // MAX
+            Map.entry(51, 1045),  // SIGN
             Map.entry(53, 1048),  // COUNTER
-            Map.entry(59, 1049),  // ABCDQ
-            Map.entry(63, 1050),  // DQABC
-            Map.entry(65, 1051),  // THYR_CTRL
-            Map.entry(66, 1052),  // PMSM_CONTROL
-            Map.entry(72, 1053),  // PMSM_MODULATOR
-            Map.entry(76, 1054),  // DEMUX
-            Map.entry(77, 1055),  // SPACE_VECTOR
+            Map.entry(58, 1034),  // TIME
+            Map.entry(59, 1058),  // SPARSEMATRIX
+            Map.entry(63, 1055),  // SPACE_VECTOR
+            Map.entry(64, 1009),  // INTEGRATOR
+            Map.entry(65, 1049),  // ABCDQ
+            Map.entry(66, 1050),  // DQABC
+            Map.entry(72, 1051),  // THYR_CTRL
+            Map.entry(76, 1052),  // PMSM_CONTROL
+            Map.entry(77, 1053),  // PMSM_MODULATOR
             Map.entry(82, 1056),  // SDFT
-            Map.entry(85, 1058)   // SPARSEMATRIX
+            Map.entry(84, 1014),  // MUX
+            Map.entry(85, 1054)   // DEMUX
     );
 
     public static Map<String, Object> toCatalogJson() {

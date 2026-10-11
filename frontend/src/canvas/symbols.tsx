@@ -6,7 +6,7 @@
  * via an SVG transform.
  */
 import type { EditorComponent } from '../model/types';
-import { CTRL_TYPE, resolveComponentPinCounts } from '../model/componentSchema';
+import { CTRL_TYPE, resolveComponentPinCounts, getComponentMeta } from '../model/componentSchema';
 import { Orientation, CANVAS_METRICS, LkComponentType } from '../model/constants';
 import { TWO_PORT_DIST } from '../model/geometry';
 
@@ -95,6 +95,14 @@ export function ComponentSymbol({
       ? transformerOrientationAngle(component.orientation)
       : orientationAngle(component.orientation);
   const { inputCount, outputCount } = resolveComponentPinCounts(component);
+  const meta = getComponentMeta(component.type, component.family, component.name);
+  const inLabels = component.inputLabels && component.inputLabels.length > 0
+    ? component.inputLabels
+    : meta?.terminals?.input?.map((t) => t.label);
+  const outLabels = component.outputLabels && component.outputLabels.length > 0
+    ? component.outputLabels
+    : meta?.terminals?.output?.map((t) => t.label);
+
   return (
     <g transform={`rotate(${angle})`}>
       <SymbolByType
@@ -103,6 +111,8 @@ export function ComponentSymbol({
         family={component.family}
         inputCount={inputCount}
         outputCount={outputCount}
+        inLabels={inLabels}
+        outLabels={outLabels}
       />
     </g>
   );
@@ -124,9 +134,16 @@ export function SymbolPreview({
   const isTransformer =
     (family === 'LK' || !family) &&
     (type === 23 || type === LkComponentType.TRANSFORMER);
+  const meta = getComponentMeta(type, family);
+  const inCount = meta?.terminals?.input?.length ?? 1;
+  const outCount = meta?.terminals?.output?.length ?? 1;
+  const maxPins = Math.max(inCount, outCount, 1);
+  const heightSpan = (maxPins - 1) * 1.0;
   const viewBox = isTransformer
     ? `-${2.2 * u} -${2.2 * u} ${4.4 * u} ${4.4 * u}`
-    : `-${2.4 * u} -${1.8 * u} ${4.8 * u} ${3.6 * u}`;
+    : maxPins > 1
+      ? `-${2.4 * u} -${1.8 * u} ${4.8 * u} ${(3.6 + heightSpan) * u}`
+      : `-${2.4 * u} -${1.8 * u} ${4.8 * u} ${3.6 * u}`;
   return (
     <svg
       width={size}
@@ -136,7 +153,15 @@ export function SymbolPreview({
       className="symbol-preview-svg"
     >
       <g stroke={color} strokeWidth={1.4} fill="none">
-        <SymbolByType type={type} u={u} family={family} />
+        <SymbolByType
+          type={type}
+          u={u}
+          family={family}
+          inputCount={inCount}
+          outputCount={outCount}
+          inLabels={meta?.terminals?.input?.map((t) => t.label)}
+          outLabels={meta?.terminals?.output?.map((t) => t.label)}
+        />
       </g>
     </svg>
   );
@@ -148,12 +173,16 @@ export function SymbolByType({
   family = 'LK',
   inputCount = 1,
   outputCount = 1,
+  inLabels,
+  outLabels,
 }: {
   type: number;
   u: number;
   family?: string;
   inputCount?: number;
   outputCount?: number;
+  inLabels?: string[];
+  outLabels?: string[];
 }) {
   // CONTROL blocks come in two numbering ranges: legacy classic-editor
   // numbers (1-84) and web catalog numbers (1001+); see CTRL_TYPE. The case
@@ -176,6 +205,8 @@ export function SymbolByType({
       case CTRL_TYPE.SCOPE:
         return <ScopeSymbol u={u} inputCount={inputCount} />;
       case CTRL_TYPE.LEGACY_GATE:
+      case CTRL_TYPE.GATE:
+      case 1000:
         return <GateSymbol u={u} />;
       case 7:
       case 1006:
@@ -248,91 +279,91 @@ export function SymbolByType({
         return <ControlBlockLabel u={u} label="√" />;
       case 45:
       case 1036:
-        return <TwoInputControlSymbol u={u} label="≥" />;
+        return <TwoInputControlSymbol u={u} label="≥" in0Label="a" in1Label="b" />;
       case 46:
       case 1010:
         return <ComparatorSymbol u={u} />;
       case 49:
       case 1028:
-        return <TwoInputControlSymbol u={u} label="min" />;
+        return <TwoInputControlSymbol u={u} label="min" in0Label="a" in1Label="b" />;
       case 50:
       case 1029:
-        return <TwoInputControlSymbol u={u} label="max" />;
+        return <TwoInputControlSymbol u={u} label="max" in0Label="a" in1Label="b" />;
       case 58:
       case 1034:
         return <TimeSourceSymbol u={u} />;
       case 64:
       case 1009:
-        return <ControlBlockLabel u={u} label="∫" />;
+        return <TwoInputControlSymbol u={u} label="∫" in0Label="in" in1Label="rst" />;
       case 84:
       case 1014:
         return <MuxSymbol u={u} />;
       case 1037:
         return <DeadTimeSymbol u={u} />;
-      case 33:
+      case 35:
       case 1038:
         return <ControlBlockLabel u={u} label="asin" />;
-      case 35:
+      case 37:
       case 1039:
         return <ControlBlockLabel u={u} label="acos" />;
-      case 37:
+      case 38:
       case 1040:
         return <ControlBlockLabel u={u} label="tan" />;
-      case 38:
+      case 39:
       case 1041:
         return <ControlBlockLabel u={u} label="atan" />;
-      case 39:
+      case 42:
       case 1042:
         return <ControlBlockLabel u={u} label="x²" />;
-      case 42:
+      case 44:
       case 1043:
         return <TwoInputControlSymbol u={u} label="xʸ" in0Label="x" in1Label="y" />;
-      case 44:
+      case 33:
       case 1044:
         return <ControlBlockLabel u={u} label="rnd" />;
-      case 47:
+      case 51:
       case 1045:
         return <ControlBlockLabel u={u} label="sgn" />;
-      case 48:
+      case 47:
       case 1046:
-        return <TwoInputControlSymbol u={u} label="==" />;
-      case 51:
+        return <TwoInputControlSymbol u={u} label="==" in0Label="a" in1Label="b" />;
+      case 48:
       case 1047:
-        return <TwoInputControlSymbol u={u} label="!=" />;
+        return <TwoInputControlSymbol u={u} label="!=" in0Label="a" in1Label="b" />;
       case 53:
       case 1048:
-        return <TwoInputControlSymbol u={u} label="CNT" in0Label="+" in1Label="rst" />;
-      case 59:
-      case 1049:
-        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="abc→dq" />;
-      case 63:
-      case 1050:
-        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="dq→abc" />;
+        return <TwoInputControlSymbol u={u} label="CNT" in0Label="clk" in1Label="rst" />;
       case 65:
-      case 1051:
-        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="ThyrCtrl" />;
+      case 1049:
+        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="abc→dq" inLabels={inLabels} outLabels={outLabels} />;
       case 66:
-      case 1052:
-        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="FOC" />;
+      case 1050:
+        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="dq→abc" inLabels={inLabels} outLabels={outLabels} />;
       case 72:
-      case 1053:
-        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="PWM" />;
+      case 1051:
+        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="ThyrCtrl" inLabels={inLabels} outLabels={outLabels} />;
       case 76:
-      case 1054:
-        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="DEMUX" />;
+      case 1052:
+        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="FOC" inLabels={inLabels} outLabels={outLabels} />;
       case 77:
+      case 1053:
+        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="PWM" inLabels={inLabels} outLabels={outLabels} />;
+      case 85:
+      case 1054:
+        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="DEMUX" inLabels={inLabels} outLabels={outLabels} />;
+      case 63:
       case 1055:
-        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="SVPWM" />;
+        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="SVPWM" inLabels={inLabels} outLabels={outLabels} />;
       case 82:
       case 1056:
         return <ControlBlockLabel u={u} label="SDFT" />;
-      case 85:
+      case 59:
       case 1058:
-        return <ControlBlockLabel u={u} label="SPM" />;
+        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="SPM" inLabels={inLabels} outLabels={outLabels} />;
       case CTRL_TYPE.LEGACY_JAVA_FUNCTION:
       case CTRL_TYPE.SCRIPT: {
         const label = type === CTRL_TYPE.LEGACY_JAVA_FUNCTION ? 'JAVA' : 'f(x)';
-        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label={label} />;
+        return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label={label} inLabels={inLabels} outLabels={outLabels} />;
       }
       default:
         return <GenericBox u={u} family={family} type={type} />;
@@ -1214,7 +1245,16 @@ function MuxSymbol({ u }: { u: number }) {
       <path
         d={`M ${-0.55 * u} ${-0.45 * u} L ${0.55 * u} ${-0.45 * u} L ${0.55 * u} ${0.45 * u} L ${-0.55 * u} ${2.45 * u} z`}
         stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
-      <text x={0} y={0.7 * u} fontSize={0.38 * u} fill={CTRL_COLOR} stroke="none"
+      {/* Pin function labels */}
+      <text x={-0.45 * u} y={0.12 * u} fontSize={0.28 * u} fill={CTRL_COLOR} stroke="none"
+            textAnchor="start" fontWeight="bold">sel</text>
+      <text x={-0.45 * u} y={1.12 * u} fontSize={0.28 * u} fill={CTRL_COLOR} stroke="none"
+            textAnchor="start" fontWeight="bold">0</text>
+      <text x={-0.45 * u} y={2.12 * u} fontSize={0.28 * u} fill={CTRL_COLOR} stroke="none"
+            textAnchor="start" fontWeight="bold">1</text>
+      <text x={0.45 * u} y={0.12 * u} fontSize={0.28 * u} fill={CTRL_COLOR} stroke="none"
+            textAnchor="end" fontWeight="bold">y</text>
+      <text x={0.06 * u} y={1.05 * u} fontSize={0.34 * u} fill={CTRL_COLOR} stroke="none"
             textAnchor="middle" fontWeight="bold">MUX</text>
     </g>
   );
@@ -1225,11 +1265,15 @@ function ScriptFunctionBlockSymbol({
   inCount = 1,
   outCount = 1,
   label = 'f(x)',
+  inLabels,
+  outLabels,
 }: {
   u: number;
   inCount?: number;
   outCount?: number;
   label?: string;
+  inLabels?: string[];
+  outLabels?: string[];
 }) {
   // Anchored unit-step pin block, in lockstep with terminalPositions and
   // the simulation core's terminal grid: input i on row i, output j on row
@@ -1240,12 +1284,12 @@ function ScriptFunctionBlockSymbol({
   const top = -0.8 * u;
   const bottom = (span + 0.8) * u;
   const boxH = Math.max(1.6 * u, bottom - top);
-  const boxW = 2.0 * u;
+  const boxW = 2.2 * u;
   const midY = (top + bottom) / 2;
 
   return (
     <g className="symbol-control-script">
-      {/* Input leads */}
+      {/* Input leads connecting from terminal at -2u to box chassis at -boxW/2 */}
       {Array.from({ length: inCount }).map((_, i) => {
         const yOffset = i * step * u;
         return (
@@ -1261,7 +1305,7 @@ function ScriptFunctionBlockSymbol({
         );
       })}
 
-      {/* Output leads */}
+      {/* Output leads connecting from box chassis at boxW/2 to terminal at +2u */}
       {Array.from({ length: outCount }).map((_, j) => {
         const yOffset = j * step * u;
         return (
@@ -1289,59 +1333,63 @@ function ScriptFunctionBlockSymbol({
         fill="rgba(74,222,128,0.08)"
       />
 
-      {/* Pin index labels for multiple pins */}
-      {inCount > 1 &&
-        Array.from({ length: inCount }).map((_, i) => {
-          const yOffset = i * step * u;
-          return (
-            <text
-              key={`in-label-${i}`}
-              x={-boxW / 2 + 0.25 * u}
-              y={yOffset + 0.15 * u}
-              fontSize={0.4 * u}
-              fontFamily="monospace"
-              fill="rgba(74,222,128,0.7)"
-              stroke="none"
-              textAnchor="start"
-            >
-              {`u${i + 1}`}
-            </text>
-          );
-        })}
-
-      {outCount > 1 &&
-        Array.from({ length: outCount }).map((_, j) => {
-          const yOffset = j * step * u;
-          return (
-            <text
-              key={`out-label-${j}`}
-              x={boxW / 2 - 0.25 * u}
-              y={yOffset + 0.15 * u}
-              fontSize={0.4 * u}
-              fontFamily="monospace"
-              fill="rgba(74,222,128,0.7)"
-              stroke="none"
-              textAnchor="end"
-            >
-              {`y${j + 1}`}
-            </text>
-          );
-        })}
-
-      {/* Central Badge label e.g. f(x) or JAVA */}
+      {/* Central Badge label e.g. f(x), JAVA, FOC, PWM, SPM */}
       <text
         x={0}
         y={midY + 0.25 * u}
-        fontSize={0.65 * u}
+        fontSize={maxPins > 4 ? 0.75 * u : 0.65 * u}
         fontFamily="monospace"
         fontWeight="bold"
         fontStyle={label === 'f(x)' ? 'italic' : 'normal'}
-        fill={CTRL_COLOR}
+        fill={maxPins > 3 ? 'rgba(74,222,128,0.35)' : CTRL_COLOR}
         stroke="none"
         textAnchor="middle"
       >
         {label}
       </text>
+
+      {/* Pin function labels displayed right next to terminals inside the chassis */}
+      {Array.from({ length: inCount }).map((_, i) => {
+        const yOffset = i * step * u;
+        const pinName = inLabels?.[i] || (inCount > 1 ? `u${i + 1}` : '');
+        if (!pinName) return null;
+        return (
+          <text
+            key={`in-label-${i}`}
+            x={-boxW / 2 + 0.18 * u}
+            y={yOffset + 0.12 * u}
+            fontSize={pinName.length > 3 ? 0.3 * u : 0.36 * u}
+            fontFamily="monospace"
+            fill="rgba(74,222,128,0.95)"
+            stroke="none"
+            textAnchor="start"
+            fontWeight="bold"
+          >
+            {pinName}
+          </text>
+        );
+      })}
+
+      {Array.from({ length: outCount }).map((_, j) => {
+        const yOffset = j * step * u;
+        const pinName = outLabels?.[j] || (outCount > 1 ? `y${j + 1}` : '');
+        if (!pinName) return null;
+        return (
+          <text
+            key={`out-label-${j}`}
+            x={boxW / 2 - 0.18 * u}
+            y={yOffset + 0.12 * u}
+            fontSize={pinName.length > 3 ? 0.3 * u : 0.36 * u}
+            fontFamily="monospace"
+            fill="rgba(74,222,128,0.95)"
+            stroke="none"
+            textAnchor="end"
+            fontWeight="bold"
+          >
+            {pinName}
+          </text>
+        );
+      })}
     </g>
   );
 }
