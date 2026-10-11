@@ -36,38 +36,58 @@ def update_cargo_version(cargo_path: Path, new_version: str):
     cargo_path.write_text(new_text, encoding="utf-8")
 
 
-# Semver with an optional pre-release suffix, e.g. 1.2.3 or 1.2.3-rc.1.
-# Every version-carrying file updated below accepts semver pre-release
-# identifiers (tauri.conf.json / Cargo.toml require them, Maven is lenient),
-# so release candidates like v3.1.0-rc.1 work end to end.
-VERSION_PATTERN = r"\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
+# Semver with an optional pre-release suffix, e.g. 1.2.3 or 1.2.3-rc.1,
+# or calendar week format, e.g. 41-2026 (week-year).
+SEMVER_PATTERN = r"^\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$"
+CALVER_PATTERN = r"^(\d{1,2})-(\d{4})$"
 
 
 def main():
-    if len(sys.argv) != 2 or not re.fullmatch(VERSION_PATTERN, sys.argv[1].strip().lstrip("v")):
+    if len(sys.argv) != 2:
         raise SystemExit(
-            "usage: set-version.py <major.minor.patch>[-pre-release] (optional leading 'v')"
+            "usage: set-version.py <major.minor.patch>[-pre-release] | <week>-<year> (optional leading 'v')"
         )
-    version = sys.argv[1].strip().lstrip("v")
+    raw = sys.argv[1].strip().lstrip("v")
+
+    calver_match = re.match(CALVER_PATTERN, raw)
+    semver_match = re.match(SEMVER_PATTERN, raw)
+
+    if calver_match:
+        week, year = calver_match.group(1), calver_match.group(2)
+        app_version = f"{week}-{year}"
+        # WiX ProductVersion limits: major <= 255, minor <= 255, build <= 65535.
+        # Week (1..53) fits in major, 0 fits in minor, and year fits in build.
+        cargo_tauri_version = f"{week}.0.{year}"
+    elif semver_match:
+        app_version = raw
+        # The MSI bundler enforces WiX ProductVersion rules: the pre-release
+        # identifier must be numeric-only, so "3.1.0-rc.1" is rejected. The
+        # installer/bundler version therefore carries the base release only;
+        # the full version string (incl. -rc.N) stays in the files below.
+        cargo_tauri_version = raw.split("-", 1)[0]
+    else:
+        raise SystemExit(
+            "usage: set-version.py <major.minor.patch>[-pre-release] | <week>-<year> (optional leading 'v')"
+        )
 
     conf = json.loads(TAURI_CONF.read_text(encoding="utf-8"))
-    # The MSI bundler enforces WiX ProductVersion rules: the pre-release
-    # identifier must be numeric-only, so "3.1.0-rc.1" is rejected. The
-    # installer/bundler version therefore carries the base release only;
-    # the full version string (incl. -rc.N) stays in the files below.
-    conf["version"] = version.split("-", 1)[0]
+    conf["version"] = cargo_tauri_version
     TAURI_CONF.write_text(json.dumps(conf, indent=2) + "\n", encoding="utf-8")
 
     text = APP_PROPERTIES.read_text(encoding="utf-8")
     APP_PROPERTIES.write_text(
-        re.sub(r"(?m)^app\.version=.*$", f"app.version={version}", text),
+        re.sub(r"(?m)^app\.version=.*$", f"app.version={app_version}", text),
         encoding="utf-8",
     )
 
-    update_cargo_version(CARGO_APP, version)
-    update_cargo_version(CARGO_ENGINE, version)
+    cargo_version = cargo_tauri_version if calver_match else app_version
+    update_cargo_version(CARGO_APP, cargo_version)
+    update_cargo_version(CARGO_ENGINE, cargo_version)
 
-    print(f"version set to {version} in tauri.conf.json, application.properties, Cargo.toml")
+    print(
+        f"version set to {app_version} (bundler/cargo: {cargo_version}) in "
+        f"tauri.conf.json, application.properties, Cargo.toml"
+    )
 
 
 if __name__ == "__main__":

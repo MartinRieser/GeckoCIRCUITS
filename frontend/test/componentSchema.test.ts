@@ -359,10 +359,14 @@ describe('componentSchema', () => {
 
     it('identifies textbox components with isTextboxComponent helper', async () => {
       const { isTextboxComponent } = await import('../src/model/componentSchema');
-      expect(isTextboxComponent({ type: 2001, family: 'SPECIAL' } as any)).toBe(true);
-      expect(isTextboxComponent({ type: 2001, family: 'LK' } as any)).toBe(true);
-      expect(isTextboxComponent({ type: 1, family: 'LK' } as any)).toBe(false);
+      const specialBox = { id: 't1', name: 'NOTE.1', type: 2001, family: 'SPECIAL', x: 0, y: 0, orientation: 0, parameters: {} } as const;
+      const legacyBox = { id: 't2', name: 'NOTE.2', type: 2001, family: 'LK', x: 0, y: 0, orientation: 0, parameters: {} } as const;
+      const resistor = { id: 'r1', name: 'R.1', type: 1, family: 'LK', x: 0, y: 0, orientation: 0, parameters: {} } as const;
+      expect(isTextboxComponent(specialBox)).toBe(true);
+      expect(isTextboxComponent(legacyBox)).toBe(true);
+      expect(isTextboxComponent(resistor)).toBe(false);
       expect(isTextboxComponent(null)).toBe(false);
+      expect(isTextboxComponent(undefined)).toBe(false);
     });
   });
 });
