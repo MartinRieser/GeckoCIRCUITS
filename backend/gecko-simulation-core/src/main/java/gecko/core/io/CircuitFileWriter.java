@@ -294,6 +294,20 @@ public final class CircuitFileWriter {
                 sb.append("\n").append(ScopeSettingsKeys.BLOCK_END);
             }
 
+            if (parameters.containsKey("width")) {
+                sb.append("\nboxWidth ").append(parameters.get("width"));
+            }
+            if (parameters.containsKey("height")) {
+                sb.append("\nboxHeight ").append(parameters.get("height"));
+            }
+
+            boolean markdownInExtraLines = comp.getExtraLines().stream()
+                    .anyMatch(line -> line.trim().startsWith("<markdownText>"));
+            if (parameters.containsKey("text") && !markdownInExtraLines) {
+                sb.append("\n<markdownText>\n").append(parameters.get("text"))
+                        .append("\n<\\markdownText>");
+            }
+
             for (String extraLine : comp.getExtraLines()) {
                 sb.append("\n").append(extraLine);
             }

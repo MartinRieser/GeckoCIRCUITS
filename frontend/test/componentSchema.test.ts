@@ -344,4 +344,26 @@ describe('componentSchema', () => {
       expect(getComponentMeta(85, 'CONTROL').type).toBe(ControlComponentType.DEMUX);
     });
   });
+
+  describe('Special Components (Documentation & Notes)', () => {
+    it('registers TEXTBOX (type 2001) in COMPONENT_METAS with 0 terminals and note parameters', () => {
+      const meta = getComponentMeta(2001, 'SPECIAL');
+      expect(meta).toBeDefined();
+      expect(meta.name).toBe('TEXTBOX');
+      expect(meta.category).toBe('documentation');
+      expect(meta.defaultPrefix).toBe('NOTE');
+      expect(meta.terminals.input).toHaveLength(0);
+      expect(meta.terminals.output).toHaveLength(0);
+      expect(meta.parameters.map((p) => p.key)).toEqual(['text', 'width', 'height']);
+    });
+
+    it('identifies textbox components with isTextboxComponent helper', async () => {
+      const { isTextboxComponent } = await import('../src/model/componentSchema');
+      expect(isTextboxComponent({ type: 2001, family: 'SPECIAL' } as any)).toBe(true);
+      expect(isTextboxComponent({ type: 2001, family: 'LK' } as any)).toBe(true);
+      expect(isTextboxComponent({ type: 1, family: 'LK' } as any)).toBe(false);
+      expect(isTextboxComponent(null)).toBe(false);
+    });
+  });
 });
+

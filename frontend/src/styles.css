@@ -6088,3 +6088,369 @@ circle.junction-dot.net-highlighted {
     transform: translateY(0);
   }
 }
+
+/* ==========================================================================
+   Schematic Documentation Note / Textbox Component
+   ========================================================================== */
+.schematic-note-card {
+  background: rgba(15, 23, 42, 0.94);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), 0 0 1px rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #cbd5e1;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  user-select: text;
+}
+
+.schematic-note-card.is-selected {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 1px #38bdf8, 0 6px 24px rgba(56, 189, 248, 0.35);
+}
+
+.note-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  background: rgba(30, 41, 59, 0.85);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  user-select: none;
+}
+
+.note-card-header-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.note-card-name {
+  color: #38bdf8;
+  font-weight: 700;
+}
+
+.note-card-badge {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.note-card-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 10px;
+  font-size: 11px;
+  line-height: 1.45;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.3) transparent;
+}
+
+.note-card-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.note-card-body::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.3);
+  border-radius: 2px;
+}
+
+.note-h1 {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 2px 0 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding-bottom: 3px;
+}
+
+.note-h2 {
+  font-size: 12px;
+  font-weight: 700;
+  color: #38bdf8;
+  margin: 5px 0 3px 0;
+}
+
+.note-h3 {
+  font-size: 11px;
+  font-weight: 600;
+  color: #7dd3fc;
+  margin: 4px 0 2px 0;
+}
+
+.note-h4 {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin: 3px 0 2px 0;
+}
+
+.note-p {
+  margin: 0 0 5px 0;
+  color: #e2e8f0;
+}
+
+.note-strong {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.note-em {
+  font-style: italic;
+  color: #93c5fd;
+}
+
+.note-inline-code {
+  background: rgba(30, 41, 59, 0.95);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #34d399;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+}
+
+.note-pre {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(51, 65, 85, 0.8);
+  border-radius: 4px;
+  padding: 5px 8px;
+  margin: 3px 0 6px 0;
+  overflow-x: auto;
+}
+
+.note-block-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+  color: #a7f3d0;
+}
+
+.note-ul, .note-ol {
+  margin: 0 0 5px 0;
+  padding-left: 15px;
+}
+
+.note-ul li, .note-ol li {
+  margin-bottom: 2px;
+}
+
+.note-blockquote {
+  border-left: 2.5px solid #38bdf8;
+  padding-left: 7px;
+  margin: 3px 0 5px 0;
+  color: #94a3b8;
+  background: rgba(56, 189, 248, 0.05);
+  border-radius: 0 4px 4px 0;
+}
+
+.note-hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  margin: 5px 0;
+}
+
+.note-table-wrap {
+  overflow-x: auto;
+  margin: 3px 0 6px 0;
+}
+
+.note-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9.5px;
+}
+
+.note-table th {
+  background: rgba(30, 41, 59, 0.9);
+  color: #38bdf8;
+  padding: 2px 5px;
+  text-align: left;
+  border: 1px solid #334155;
+  font-weight: 600;
+}
+
+.note-table td {
+  padding: 2px 5px;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+}
+
+.note-link-chip {
+  background: rgba(56, 189, 248, 0.18);
+  color: #38bdf8;
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-size: 9.5px;
+  font-weight: 600;
+}
+
+.note-math {
+  font-family: 'Cambria Math', 'STIX Two Math', 'KaTeX_Math', 'Times New Roman', Georgia, serif;
+  font-size: 1.05em;
+  letter-spacing: 0.02em;
+  color: #38bdf8;
+  display: inline;
+}
+
+.note-math-inline {
+  display: inline;
+  padding: 0 1px;
+}
+
+.note-math-block {
+  display: block;
+  text-align: center;
+  margin: 4px 0;
+  padding: 3px 6px;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 4px;
+}
+
+.note-math-block-wrap {
+  margin: 4px 0;
+}
+
+.note-sub {
+  font-size: 0.72em;
+  line-height: 0;
+  position: relative;
+  bottom: -0.22em;
+  font-style: italic;
+  color: #7dd3fc;
+}
+
+.note-sup {
+  font-size: 0.72em;
+  line-height: 0;
+  position: relative;
+  top: -0.42em;
+  font-style: normal;
+  color: #7dd3fc;
+}
+
+.math-var-sub,
+.math-var-sup {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.math-base {
+  font-style: italic;
+}
+
+.note-empty-placeholder {
+  color: #64748b;
+  font-style: italic;
+  font-size: 10.5px;
+}
+
+/* ==========================================================================
+   Properties Panel - Textbox / Note Editor
+   ========================================================================== */
+.textbox-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.textbox-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  background: var(--input-bg, #0f172a);
+  border: 1px solid var(--border, #334155);
+  border-radius: 4px;
+}
+
+.textbox-tool-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-dim, #94a3b8);
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  font-family: inherit;
+}
+
+.textbox-tool-btn:hover {
+  background: var(--surface-hover, #1e293b);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.textbox-textarea {
+  width: 100%;
+  min-height: 180px;
+  max-height: 380px;
+  background: var(--input-bg, #0f172a);
+  border: 1px solid var(--border, #334155);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--text, #f8fafc);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11.5px;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.textbox-textarea:focus {
+  border-color: var(--accent, #38bdf8);
+  box-shadow: 0 0 0 1px var(--accent, #38bdf8);
+}
+
+.textbox-dims-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.textbox-dim-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.textbox-dim-label {
+  font-size: 10.5px;
+  color: var(--text-dim, #94a3b8);
+  font-weight: 500;
+}
+
+.textbox-dim-input {
+  background: var(--input-bg, #0f172a);
+  border: 1px solid var(--border, #334155);
+  border-radius: 4px;
+  padding: 4px 8px;
+  color: var(--text, #f8fafc);
+  font-size: 11px;
+  outline: none;
+}
+
+.textbox-dim-input:focus {
+  border-color: var(--accent, #38bdf8);
+}
+
+.textbox-preview-box {
+  border: 1px solid var(--border, #334155);
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: rgba(15, 23, 42, 0.95);
+  max-height: 200px;
+  overflow-y: auto;
+}
+

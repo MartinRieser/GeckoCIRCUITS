@@ -3,7 +3,7 @@
  * editing, persistence, and simulation endpoints.
  */
 
-import type { Orientation, LkComponentType, ControlComponentType } from './constants';
+import type { Orientation, LkComponentType, ControlComponentType, SpecialComponentType } from './constants';
 
 /**
  * 2D cartesian coordinate point in integer grid raster units (or canvas pixels when explicitly noted).
@@ -25,7 +25,7 @@ export type PointTuple = [x: number, y: number];
  */
 export interface CatalogEntry {
   /** Numeric component type ID. */
-  type: number | LkComponentType | ControlComponentType;
+  type: number | LkComponentType | ControlComponentType | SpecialComponentType;
   /** Canonical component class name (e.g., "Resistor", "Voltmeter"). */
   name: string;
   /** Domain family: 'LK' (electric), 'CONTROL' (signal/control), or 'THERMAL'. */
@@ -36,8 +36,8 @@ export interface CatalogEntry {
  * In-memory representation of a schematic circuit component on the canvas.
  */
 export interface EditorComponent {
-  /** Numeric component type ID (from LK or CONTROL catalogs). */
-  type: number | LkComponentType | ControlComponentType;
+  /** Numeric component type ID (from LK, CONTROL, or SPECIAL catalogs). */
+  type: number | LkComponentType | ControlComponentType | SpecialComponentType;
   /** Unique instance name in the circuit (e.g., "R.1", "D.2", "SCOPE.1"). */
   name: string;
   /** Backend uniqueObjectIdentifier; reference-style couplings (LK_M) point at these. */

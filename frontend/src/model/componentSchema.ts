@@ -9,10 +9,12 @@ import {
   CTRL_TYPE,
   ControlComponentType,
   LkComponentType,
+  SpecialComponentType,
+  SPECIAL_TYPE,
   SENTINEL_UNSET,
 } from './constants';
 
-export { CTRL_TYPE };
+export { CTRL_TYPE, SPECIAL_TYPE, SpecialComponentType };
 
 export interface ParameterOption {
   label: string;
@@ -89,7 +91,7 @@ export interface ComponentMeta {
   family: string;
   name: string;
   displayName: string;
-  category: 'passives' | 'sources' | 'semiconductors' | 'switches' | 'transformers' | 'machines' | 'thermal' | 'terminals' | 'measurement' | 'control' | 'logic';
+  category: 'passives' | 'sources' | 'semiconductors' | 'switches' | 'transformers' | 'machines' | 'thermal' | 'terminals' | 'measurement' | 'control' | 'logic' | 'documentation';
   description: string;
   /** Not simulated by the engine yet: shown greyed out in the palette and
    *  cannot be armed/placed until implemented. */
@@ -105,6 +107,7 @@ export interface ComponentMeta {
 
 export const CATEGORIES = [
   { id: 'all', label: 'All Components' },
+  { id: 'documentation', label: 'Documentation & Notes' },
   { id: 'passives', label: 'Passives' },
   { id: 'sources', label: 'Sources' },
   { id: 'semiconductors', label: 'Semiconductors' },
@@ -2560,7 +2563,68 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
       ],
     },
   },
+  2001: {
+    type: 2001,
+    family: 'SPECIAL',
+    name: 'TEXTBOX',
+    displayName: 'Note / Textbox',
+    category: 'documentation',
+    description: 'Rich Markdown documentation note rendered directly on the schematic canvas for circuit explanations and diagrams.',
+    shortcut: 'N',
+    defaultPrefix: 'NOTE',
+    parameters: [
+      {
+        index: 0,
+        key: 'text',
+        label: 'Markdown Text',
+        description: 'Formatted markdown documentation content displayed inside the note card.',
+        defaultValue: '## Circuit Notes\nWrite markdown documentation here.',
+      },
+      {
+        index: 1,
+        key: 'width',
+        label: 'Box Width',
+        description: 'Card width in grid units.',
+        defaultValue: 26,
+        min: 6,
+        max: 100,
+        step: 1,
+      },
+      {
+        index: 2,
+        key: 'height',
+        label: 'Box Height',
+        description: 'Card height in grid units.',
+        defaultValue: 14,
+        min: 4,
+        max: 80,
+        step: 1,
+      },
+    ],
+    terminals: {
+      input: [],
+      output: [],
+    },
+  },
 };
+
+/**
+ * Checks whether a component is a rich Markdown documentation note / textbox.
+ */
+export function isTextboxComponent(component: {
+  type: number;
+  family?: string;
+  name?: string;
+} | null | undefined): boolean {
+  if (!component) return false;
+  return (
+    component.type === 2001 ||
+    component.type === SpecialComponentType.TEXTBOX ||
+    component.family === 'SPECIAL' ||
+    component.family === 'ANNOTATION' ||
+    (typeof component.name === 'string' && component.name.startsWith('NOTE'))
+  );
+}
 
 /**
  * Returns metadata for a component, falling back to a generic definition if unknown.
@@ -2571,7 +2635,9 @@ export function getComponentMeta(
   nameHint: string = '',
 ): ComponentMeta {
   let lookupType = type;
-  if (family === 'CONTROL') {
+  if (family === 'SPECIAL' || family === 'ANNOTATION' || (nameHint && nameHint.startsWith('NOTE'))) {
+    lookupType = 2001;
+  } else if (family === 'CONTROL') {
     if (type === 1) lookupType = 1001; // Voltmeter
     else if (type === 2) lookupType = 1002; // Ammeter
     else if (type === 3) lookupType = 1005; // Constant

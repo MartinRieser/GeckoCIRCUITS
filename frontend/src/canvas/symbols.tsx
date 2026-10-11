@@ -167,6 +167,64 @@ export function SymbolPreview({
   );
 }
 
+/**
+ * Clean SVG symbol preview for the Note / Textbox component in palette and dialogs.
+ */
+export function TextboxPreviewSymbol({ u }: { u: number }) {
+  const w = 2.4 * u;
+  const h = 2.0 * u;
+  return (
+    <g className="symbol-textbox">
+      <rect
+        x={-w / 2}
+        y={-h / 2}
+        width={w}
+        height={h}
+        rx={3}
+        fill="rgba(30, 41, 59, 0.95)"
+        stroke="#38bdf8"
+        strokeWidth={1.5}
+      />
+      <rect
+        x={-w / 2}
+        y={-h / 2}
+        width={w}
+        height={0.55 * u}
+        rx={2}
+        fill="rgba(56, 189, 248, 0.25)"
+      />
+      <circle cx={-w / 2 + 0.3 * u} cy={-h / 2 + 0.28 * u} r={0.12 * u} fill="#38bdf8" />
+      <line
+        x1={-w / 2 + 0.3 * u}
+        y1={-h / 2 + 0.95 * u}
+        x2={w / 2 - 0.3 * u}
+        y2={-h / 2 + 0.95 * u}
+        stroke="#94a3b8"
+        strokeWidth={1.2}
+        strokeLinecap="round"
+      />
+      <line
+        x1={-w / 2 + 0.3 * u}
+        y1={-h / 2 + 1.35 * u}
+        x2={w / 2 - 0.5 * u}
+        y2={-h / 2 + 1.35 * u}
+        stroke="#64748b"
+        strokeWidth={1.2}
+        strokeLinecap="round"
+      />
+      <line
+        x1={-w / 2 + 0.3 * u}
+        y1={-h / 2 + 1.7 * u}
+        x2={w / 2 - 0.8 * u}
+        y2={-h / 2 + 1.7 * u}
+        stroke="#38bdf8"
+        strokeWidth={1.2}
+        strokeLinecap="round"
+      />
+    </g>
+  );
+}
+
 export function SymbolByType({
   type,
   u,
@@ -184,6 +242,10 @@ export function SymbolByType({
   inLabels?: string[];
   outLabels?: string[];
 }) {
+  if (type === 2001 || family === 'SPECIAL' || family === 'ANNOTATION') {
+    return <TextboxPreviewSymbol u={u} />;
+  }
+
   // CONTROL blocks come in two numbering ranges: legacy classic-editor
   // numbers (1-84) and web catalog numbers (1001+); see CTRL_TYPE. The case
   // labels below are .ipes type keys, not free-form constants.

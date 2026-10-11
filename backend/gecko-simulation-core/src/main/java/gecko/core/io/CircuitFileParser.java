@@ -52,7 +52,11 @@ public class CircuitFileParser {
             "nameOpt[]",
             "nameOpt",
             "orientierung",
-            "idStringDialog"
+            "idStringDialog",
+            "boxWidth",
+            "boxHeight",
+            "anzXIN",
+            "anzYOUT"
     );
 
     /**
@@ -643,6 +647,20 @@ public class CircuitFileParser {
                     comp.setParameter("anzYOUT", (double) anzYOUT);
                 }
 
+                // Parse markdown documentation note parameters (text, width, height)
+                String markdownText = elementBlock.createSubBlock("<markdownText>", "<\\markdownText>");
+                if (markdownText != null && !markdownText.isEmpty()) {
+                    comp.setParameter("text", markdownText);
+                }
+                double boxWidth = elementBlock.readDataLine("boxWidth", -1.0);
+                if (boxWidth > 0) {
+                    comp.setParameter("width", boxWidth);
+                }
+                double boxHeight = elementBlock.readDataLine("boxHeight", -1.0);
+                if (boxHeight > 0) {
+                    comp.setParameter("height", boxHeight);
+                }
+
                 // Parse per-scope display settings. Keys and markers live in
                 // ScopeSettingsKeys so parser, writer and REST whitelist share
                 // one definition. hiddenSignals arrives as a comma-separated
@@ -673,7 +691,7 @@ public class CircuitFileParser {
                             continue;
                         }
                         String token = trimmed.split("\\s+")[0];
-                        if (!KNOWN_ELEMENT_TOKENS.contains(token) && !isScopeSettingsLine(trimmed)) {
+                        if (!KNOWN_ELEMENT_TOKENS.contains(token) && !isScopeSettingsLine(trimmed) && !isMarkdownTextLine(trimmed)) {
                             comp.addExtraLine(blockLine);
                         }
                     }
@@ -708,6 +726,10 @@ public class CircuitFileParser {
             }
         }
         return false;
+    }
+
+    private static boolean isMarkdownTextLine(String trimmed) {
+        return trimmed.startsWith("<markdownText>") || trimmed.startsWith("<\\markdownText>");
     }
 
     /**

@@ -163,6 +163,11 @@ public final class ComponentTerminals {
             return List.of(offset(x, y, dir, -TERMINAL_DISTANCE));
         }
 
+        if (type == CircuitTypCore.TEXTBOX.getTypeNumber()
+                || (comp.getFamily() != null && "SPECIAL".equalsIgnoreCase(comp.getFamily()))) {
+            return List.of();
+        }
+
         return List.of(offset(x, y, dir, -TERMINAL_DISTANCE), offset(x, y, dir, TERMINAL_DISTANCE));
     }
 

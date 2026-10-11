@@ -641,6 +641,8 @@ public class CircuitEditService {
                     family = "THERM";
                 } else if (typ.isControl()) {
                     family = "CONTROL";
+                } else if (typ.isSpecial()) {
+                    family = "SPECIAL";
                 } else {
                     family = "LK";
                 }
@@ -696,8 +698,15 @@ public class CircuitEditService {
                 }
                 return "CONTROL";
             }
+            case "SPECIAL", "ANNOTATION" -> {
+                if (type == CircuitTypCore.TEXTBOX.getTypeNumber()
+                        || (CircuitTypCore.isValidTypeNumber(type) && CircuitTypCore.fromTypeNumber(type).isSpecial())) {
+                    return "SPECIAL";
+                }
+                throw badRequest("Unknown special type number: " + type);
+            }
             default -> throw badRequest(
-                    "family must be LK, THERM or CONTROL");
+                    "family must be LK, THERM, CONTROL or SPECIAL");
         }
     }
 
@@ -715,7 +724,7 @@ public class CircuitEditService {
 
     private static String baseName(int type) {
         String name = CircuitTypCore.fromTypeNumber(type).name();
-        for (String prefix : new String[] {"LK_", "TH_", "REL_", "CTRL_"}) {
+        for (String prefix : new String[] {"LK_", "TH_", "REL_", "CTRL_", "SPECIAL_"}) {
             if (name.startsWith(prefix)) {
                 return name.substring(prefix.length());
             }
@@ -927,7 +936,7 @@ public class CircuitEditService {
             Integer idx = parameterIndex(key);
             if (idx != null) {
                 maxIndex = Math.max(maxIndex, idx);
-            } else if (!isNamedControlParameter(comp, key) && !"coupledComponent".equals(key)) {
+            } else if (!isNamedControlParameter(comp, key) && !isNamedAnnotationParameter(comp, key) && !"coupledComponent".equals(key)) {
                 throw badRequest("Parameter keys must be 'param<index>', got: " + key);
             }
         }
@@ -1084,6 +1093,14 @@ public class CircuitEditService {
                 "measuredComponent".equals(key) ||
                 ScopeSettingsKeys.ALL_KEYS.contains(key)
         );
+    }
+
+    private static boolean isNamedAnnotationParameter(CircuitModel.ComponentData comp, String key) {
+        boolean isAnnotation = comp.getType() == CircuitTypCore.TEXTBOX.getTypeNumber()
+                || "SPECIAL".equalsIgnoreCase(comp.getFamily())
+                || "ANNOTATION".equalsIgnoreCase(comp.getFamily())
+                || (comp.getName() != null && comp.getName().startsWith("NOTE"));
+        return isAnnotation && ("text".equals(key) || "width".equals(key) || "height".equals(key));
     }
 
     private static Integer parameterIndex(String key) {

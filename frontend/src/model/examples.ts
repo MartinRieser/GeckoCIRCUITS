@@ -349,8 +349,38 @@ idStringDialog SCOPE.1
 tn 2
 isShowName false
 savedSignalNames[] /v_out/i_L
-<\\detail>
 <\\ElementCONTROL>
+
+sp (0)
+<ElementSPECIAL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+typ 2001
+uniqueObjectIdentifier 9001
+x 44
+y 4
+parameter[] 
+orientierung 501
+idStringDialog NOTE.1
+boxWidth 28
+boxHeight 18
+<markdownText>
+# DC-DC Buck Converter (50 kHz PWM)
+
+Step-down topology stepping down **24 V DC** to **12 V DC** at a nominal duty ratio $D = 0.50$.
+
+### Circuit Architecture
+- **Switch S.1**: Ideal bilateral switch driven at 50 kHz ($T = 20\\text{ µs}$) with 50% duty cycle.
+- **Freewheel Diode D.1**: Clamps switch node to GND during switch OFF intervals.
+- **Output Filter (L.1, C.1)**: $100\\text{ µH}$ and $47\\text{ µF}$ smooth the switching ripple.
+- **Load R_load**: $5.0\\text{ }\\Omega$ carrying $2.4\\text{ A}$ nominal DC load.
+
+### Recorded Waveforms (SCOPE.1)
+- **CH1 (v_out)**: Filtered DC output voltage settling to 12.0 V.
+- **CH2 (i_L)**: Inductor current ripple $\\Delta I_L = \\frac{(V_{in} - V_{out})D}{f_s L} \\approx 1.2\\text{ A}$.
+<\\markdownText>
+<\\ElementSPECIAL>
 
 tDURATION 0.001
 dt 2.0E-7
@@ -708,6 +738,39 @@ savedSignalNames[] /v_in/v_out/i_L
 <\\detail>
 <\\ElementCONTROL>
 
+sp (0)
+<ElementSPECIAL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+typ 2001
+uniqueObjectIdentifier 9001
+x 44
+y 4
+parameter[] 
+orientierung 501
+idStringDialog NOTE.1
+boxWidth 28
+boxHeight 18
+<markdownText>
+# DC-DC Boost Converter (Step-Up)
+
+Step-up converter boosting **12 V DC** input to **24 V DC** output at a nominal duty ratio $D = 0.50$.
+
+### Circuit Architecture
+- **Energy Storage L.1**: $200\\text{ µH}$ inductor stores magnetic energy during switch ON interval.
+- **Switch S.1**: 50 kHz switching with 50% duty ratio.
+- **Diode D.1**: Fast freewheeling diode delivers inductor energy into the load when S.1 turns OFF.
+- **Output Capacitor C.1**: $100\\text{ µF}$ reservoir filter maintaining steady 24 V DC.
+- **Load R_load**: $10.0\\text{ }\\Omega$ ($2.4\\text{ A}$ nominal load).
+
+### Monitored Waveforms (SCOPE.1)
+- **CH1 (v_in)**: 12.0 V DC input voltage.
+- **CH2 (v_out)**: Stepped-up 24.0 V DC output voltage.
+- **CH3 (i_L)**: Inductor charging/discharging triangular current ripple.
+<\\markdownText>
+<\\ElementSPECIAL>
+
 tDURATION 0.012
 dt 2.0E-7
 solverType 0
@@ -1057,6 +1120,38 @@ savedSignalNames[] /v_ac/v_dc/i_load
 <\\detail>
 <\\ElementCONTROL>
 
+sp (0)
+<ElementSPECIAL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+typ 2001
+uniqueObjectIdentifier 9001
+x 36
+y 6
+parameter[] 
+orientierung 501
+idStringDialog NOTE.1
+boxWidth 28
+boxHeight 18
+<markdownText>
+# Diode Bridge Rectifier (AC to DC)
+
+Full-wave Graetz diode bridge converting **50 Hz AC mains** into a smoothed **DC bus voltage**.
+
+### Operating Principles
+- **AC Mains (V_ac)**: 230 V rms (325 V peak), 50 Hz sinusoidal source.
+- **Bridge Diodes (D.1–D.4)**: Alternating pairs conduct during positive and negative AC half-cycles.
+- **Filter Capacitor C.1**: $470\\text{ µF}$ reservoir smoothing the 100 Hz rectified voltage ripple.
+- **Load Resistor R_load**: $50\\text{ }\\Omega$ DC load drawing ~6 A nominal.
+
+### Monitored Waveforms (SCOPE.1)
+- **CH1 (v_ac)**: 50 Hz sinusoidal AC mains voltage.
+- **CH2 (v_dc)**: Smoothed DC bus voltage with ripple $\\Delta V_{dc} \\approx \\frac{I_{load}}{2 f C}$.
+- **CH3 (i_load)**: Continuous DC output current through \`R_load\`.
+<\\markdownText>
+<\\ElementSPECIAL>
+
 tDURATION 0.04
 dt 2.0E-6
 solverType 0
@@ -1328,6 +1423,38 @@ orientierung 503
 idStringDialog SCOPE.2
 <\\ElementCONTROL>
 
+sp (0)
+<ElementSPECIAL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+typ 2001
+uniqueObjectIdentifier 9001
+x 36
+y 6
+parameter[] 
+orientierung 501
+idStringDialog NOTE.1
+boxWidth 28
+boxHeight 18
+<markdownText>
+# Multi-Scope RLC Circuit (SCOPE.1 & SCOPE.2)
+
+Demonstrates multiple oscilloscope instruments monitoring complementary sections of a second-order series RLC resonator.
+
+### Circuit Topology
+- **Step Source (V_in)**: Step voltage from 0 V to 10 V at $t = 0$.
+- **Series Resistor R.1**: $2.0\\text{ }\\Omega$ damping resistance.
+- **Series Inductor L.1**: $1.0\\text{ mH}$ energy storage.
+- **Capacitor C.1**: $10\\text{ µF}$ resonator capacitance.
+- Characteristic resonant frequency: $\\omega_0 = \\frac{1}{\\sqrt{LC}} \\approx 10\\text{ krad/s}$ ($f_0 \\approx 1.59\\text{ kHz}$).
+
+### Instrument Assignments
+- **SCOPE.1**: Global input step (\`v_in\`) vs output capacitor voltage (\`v_out\`).
+- **SCOPE.2**: Differential component voltages (\`v_R1\`, \`v_L1\`, \`v_C1\`) confirming Kirchhoff's Voltage Law: $V_{in}(t) = v_R(t) + v_L(t) + v_C(t)$.
+<\\markdownText>
+<\\ElementSPECIAL>
+
 tDURATION 0.01
 dt 1e-06
 solverType 0
@@ -1540,6 +1667,40 @@ savedSignalNames[] /v_in/v_out/i_L
 <\\detail>
 <\\ElementCONTROL>
 
+sp (0)
+<ElementSPECIAL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+typ 2001
+uniqueObjectIdentifier 9001
+x 36
+y 6
+parameter[] 
+orientierung 501
+idStringDialog NOTE.1
+boxWidth 26
+boxHeight 18
+<markdownText>
+# RLC Resonant Circuit
+
+Second-order series RLC resonator demonstrating underdamped transient step response.
+
+### Parameters & Resonance
+- **Step Input**: 24 V DC step excitation.
+- **Resistor R.1**: 2.0 Ω series damping.
+- **Inductor L.1**: 1.0 mH series inductance.
+- **Capacitor C.1**: 10 µF tank capacitance.
+- **Damping Factor**: $\\zeta = \\frac{R}{2}\\sqrt{\\frac{C}{L}} \\approx 0.10$ (strongly underdamped).
+- **Ringing Frequency**: $f_d \\approx 1.58\\text{ kHz}$.
+
+### Signals Tracked in SCOPE.1
+- **CH1 (v_in)**: 24 V step stimulus.
+- **CH2 (v_out)**: Underdamped ringing voltage across \`C.1\` with ~73% overshoot.
+- **CH3 (i_L)**: Resonant tank current flowing through \`L.1\`.
+<\\markdownText>
+<\\ElementSPECIAL>
+
 tDURATION 0.005
 dt 1e-06
 solverType 0
@@ -1700,6 +1861,39 @@ savedSignalNames[] /v_in/v_out
 <\\detail>
 <\\ElementCONTROL>
 
+sp (0)
+<ElementSPECIAL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+typ 2001
+uniqueObjectIdentifier 9001
+x 32
+y 6
+parameter[] 
+orientierung 501
+idStringDialog NOTE.1
+boxWidth 28
+boxHeight 18
+<markdownText>
+# RC Low-Pass Filter
+
+First-order passive RC filter demonstrating step response and exponential capacitor charging curve.
+
+### Circuit Parameters
+- **Input Source (V_step)**: 10 V DC step input.
+- **Series Resistor R1**: $1.0\\text{ k}\\Omega$.
+- **Shunt Capacitor C1**: $1.0\\text{ µF}$.
+- **Time Constant**: $\\tau = R \\cdot C = 1.0\\text{ ms}$.
+- **Cutoff Frequency**: $f_c = \\frac{1}{2\\pi R C} \\approx 159.2\\text{ Hz}$.
+
+### Observed Response (SCOPE.1)
+- **CH1 (v_in)**: Instantaneous 10 V step voltage.
+- **CH2 (v_out)**: Classic capacitor exponential charging: $v_C(t) = V_{in}(1 - e^{-t/\\tau})$.
+- At $t = \\tau = 1.0\\text{ ms}$, $v_C \\approx 6.32\\text{ V}$ ($63.2\\%$ of final value).
+<\\markdownText>
+<\\ElementSPECIAL>
+
 tDURATION 0.01
 dt 1e-06
 solverType 0
@@ -1838,8 +2032,37 @@ parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] 
 orientierung 503
 idStringDialog SCOPE.1
-shiftLabelsIn[] true
 <\\ElementCONTROL>
+
+sp (0)
+<ElementSPECIAL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+typ 2001
+uniqueObjectIdentifier 9001
+x 40
+y 6
+parameter[] 
+orientierung 501
+idStringDialog NOTE.1
+boxWidth 28
+boxHeight 18
+<markdownText>
+# RC Low-Pass Filter (Classic Benchmark)
+
+Legacy benchmark circuit verifying bit-identical backward compatibility with classic GeckoCIRCUITS solver engines.
+
+### Specifications
+- **Voltage Source (V.1)**: AC excitation $10\\text{ V}$ peak, $50\\text{ Hz}$.
+- **Resistor R.1**: $100\\text{ }\\Omega$.
+- **Capacitor C.1**: $10\\text{ µF}$.
+- **Time Constant**: $\\tau = R \\cdot C = 1.0\\text{ ms}$.
+
+### Verification Target
+- Validates numerical state-space trapezoidal integration and matrix stamp consistency against historical solver reference benches.
+<\\markdownText>
+<\\ElementSPECIAL>
 
 tDURATION 5.0E-3
 dt 1.0E-6
@@ -2232,6 +2455,39 @@ savedSignalNames[] /v_out/v_sw/i_L
 <\\detail>
 <\\ElementCONTROL>
 
+sp (0)
+<ElementSPECIAL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+typ 2001
+uniqueObjectIdentifier 9001
+x 44
+y 4
+parameter[] 
+orientierung 501
+idStringDialog NOTE.1
+boxWidth 28
+boxHeight 18
+<markdownText>
+# Synchronous Buck Converter (50 kHz)
+
+High-efficiency step-down converter using an active low-side MOSFET switch instead of a freewheeling diode.
+
+### Circuit Topology
+- **Input (V_in)**: 24 V DC bus.
+- **High-Side Switch (S_hi)**: Driven at 50 kHz ($D = 0.48$).
+- **Low-Side Switch (S_lo)**: Complementary active freewheeling ($1 - D = 0.48$ with dead-band).
+- **Body Diodes (D_hi, D_lo)**: Prevent shoot-through and handle dead-time commutation.
+- **Output Filter**: $L_1 = 100\\text{ µH}$, $C_1 = 47\\text{ µF}$, $R_{load} = 5.0\\text{ }\\Omega$.
+
+### Signals in SCOPE.1
+- **CH1 (v_out)**: Regulated ~11.5 V DC output voltage.
+- **CH2 (v_sw)**: Switch node square wave switching between 0 V and 24 V.
+- **CH3 (i_L)**: Inductor current ripple through $L_1$.
+<\\markdownText>
+<\\ElementSPECIAL>
+
 tDURATION 0.001
 dt 2.0E-7
 solverType 0
@@ -2551,6 +2807,39 @@ isShowName false
 savedSignalNames[] /v_in/v_out/i_L
 <\\detail>
 <\\ElementCONTROL>
+
+sp (0)
+<ElementSPECIAL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+typ 2001
+uniqueObjectIdentifier 9001
+x 44
+y 4
+parameter[] 
+orientierung 501
+idStringDialog NOTE.1
+boxWidth 28
+boxHeight 18
+<markdownText>
+# Inverting Buck-Boost Converter (-16V)
+
+Negative-voltage step-up/step-down converter producing **-16 V DC** from a **+24 V DC** input.
+
+### Operating Principles
+- **Voltage Transfer Ratio**: $V_{out} = -V_{in} \\frac{D}{1 - D} = -24\\text{ V} \\cdot \\frac{0.40}{0.60} = -16.0\\text{ V}$.
+- **Switch S.1**: Closed during interval $D T$, energizing inductor \`L.1\` from \`V_in\`.
+- **Diode D.1**: Forward-biased during $(1-D) T$, discharging \`L.1\` into \`C.1\` and \`R_load\` with reversed polarity.
+- **Filter (L.1, C.1)**: $L_1 = 200\\text{ µH}$, $C_1 = 100\\text{ µF}$.
+- **Load R_load**: $10.0\\text{ }\\Omega$ carrying $-1.6\\text{ A}$ load current.
+
+### Monitored Waveforms (SCOPE.1)
+- **CH1 (v_in)**: +24.0 V input rail.
+- **CH2 (v_out)**: Inverted -16.0 V steady-state output.
+- **CH3 (i_L)**: Inductor triangular energy ramp.
+<\\markdownText>
+<\\ElementSPECIAL>
 
 tDURATION 0.005
 dt 2.0E-7
@@ -3127,6 +3416,38 @@ savedSignalNames[] /v_ac/v_ab/i_load
 <\\detail>
 <\\ElementCONTROL>
 
+sp (0)
+<ElementSPECIAL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+typ 2001
+uniqueObjectIdentifier 9001
+x 52
+y 4
+parameter[] 
+orientierung 501
+idStringDialog NOTE.1
+boxWidth 28
+boxHeight 18
+<markdownText>
+# Single-Phase H-Bridge Inverter (50 Hz)
+
+Full-bridge DC-AC inverter converting **40 V DC** into **50 Hz sinusoidal AC** across a second-order LC low-pass filter.
+
+### Topology & Switching
+- **H-Bridge (S.1–S.4)**: Four controlled switches in bridge legs A and B.
+- **Modulation**: Complementary 50 Hz square waves driving diagonal pairs (S.1+S.4 vs S.2+S.3).
+- **LC Filter**: $L = 1.0\\text{ mH}$, $C = 20\\text{ µF}$ with corner frequency $f_c \\approx 1.1\\text{ kHz}$.
+- **AC Load**: $10.0\\text{ }\\Omega$ resistive load.
+
+### Observed Signals in SCOPE.1
+- **CH1 (v_ac)**: Filtered 50 Hz AC sinusoidal load voltage.
+- **CH2 (v_ab)**: Unfiltered two-level switching voltage (+40 V / -40 V) between bridge legs.
+- **CH3 (i_load)**: Sinusoidal load current through \`L_filter\`.
+<\\markdownText>
+<\\ElementSPECIAL>
+
 tDURATION 0.04
 dt 2.0E-6
 solverType 0
@@ -3450,6 +3771,37 @@ savedSignalNames[] /v_out/v_sw
 <\\detail>
 <\\ElementCONTROL>
 
+sp (0)
+<ElementSPECIAL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+typ 2001
+uniqueObjectIdentifier 9001
+x 46
+y 4
+parameter[] 
+orientierung 501
+idStringDialog NOTE.1
+boxWidth 28
+boxHeight 18
+<markdownText>
+# Flyback Isolated DC-DC Converter
+
+Galvanically isolated buck-boost topology using magnetically coupled inductors ($k = 0.999$).
+
+### Topology & Operation
+- **Primary Switch S.1**: High-side 50 kHz switch charging primary magnetizing inductance $L_p = 250\\text{ µH}$.
+- **Coupled Inductor K.1**: Magnetic coupling ($k = 0.999$) between $L_p$ and secondary $L_s = 250\\text{ µH}$ ($1:1$ turns ratio).
+- **Secondary Diode D.1**: Conduction occurs only when primary switch S.1 turns OFF, dumping stored magnetic flux into output capacitor $C_1 = 100\\text{ µF}$.
+- **Load R_load**: $10.0\\text{ }\\Omega$ isolated load.
+
+### Recorded Signals in SCOPE.1
+- **CH1 (v_out)**: Isolated DC output voltage.
+- **CH2 (v_sw)**: Primary switch drain node displaying flyback inductive voltage spike.
+<\\markdownText>
+<\\ElementSPECIAL>
+
 tDURATION 0.005
 dt 2.0E-7
 solverType 0
@@ -3735,6 +4087,39 @@ isShowName false
 savedSignalNames[] /v_out_scope
 <\\detail>
 <\\ElementCONTROL>
+
+sp (0)
+<ElementSPECIAL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+typ 2001
+uniqueObjectIdentifier 9001
+x 44
+y 4
+parameter[] 
+orientierung 501
+idStringDialog NOTE.1
+boxWidth 28
+boxHeight 18
+<markdownText>
+# Closed-Loop Regulated Buck (PI Control)
+
+Voltage-mode closed-loop DC-DC converter featuring an embedded microcontroller **PI controller script block** regulating output voltage to **12.0 V DC**.
+
+### Control Loop Architecture
+- **Reference Target**: Desired voltage $V_{ref} = 12.0\\text{ V}$.
+- **Feedback Sensor**: \`VOLT_OUT\` samples output capacitor voltage.
+- **Microcontroller Script (CTRL_PI)**:
+  - Calculates error $e(t) = V_{ref} - v_{meas}(t)$.
+  - Executes discrete proportional-integral regulator: $u(t) = K_p \\cdot e(t) + K_i \\int e \\, dt$.
+  - Generates PWM duty cycle clamped between 5% and 95%.
+- **Gate Driver (GATE.1)**: Drives power MOSFET switch \`S.1\` at 50 kHz.
+
+### Scope Verification (SCOPE.1)
+- Shows fast closed-loop step tracking with minimal overshoot and zero steady-state error.
+<\\markdownText>
+<\\ElementSPECIAL>
 
 tDURATION 0.003
 dt 2.0E-7
@@ -4271,6 +4656,39 @@ y[] 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 2
 enabled true
 connectorType 1
 <\\Verbindung>
+
+sp (0)
+<ElementSPECIAL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+typ 2001
+uniqueObjectIdentifier 9001
+x 46
+y 4
+parameter[] 
+orientierung 501
+idStringDialog NOTE.1
+boxWidth 28
+boxHeight 18
+<markdownText>
+# Active PFC Boost Pre-Regulator (50 Hz)
+
+Power Factor Correction circuit shaping AC line current into a clean sinusoid in-phase with grid voltage.
+
+### Architecture & Control Loops
+- **Diode Bridge & Boost Stage**: Full-wave bridge rectifier feeding an $800\\text{ µH}$ boost inductor switched at 50 kHz.
+- **Two-Loop Cascaded Controller**:
+  1. **Outer Voltage Loop**: Slow PI controller maintaining $50\\text{ V DC}$ output across bulk capacitor.
+  2. **Inner Current Loop**: Fast controller forcing inductor current to track rectified grid voltage shape $|\\sin(\\omega t)|$.
+- **Result**: Unity power factor ($\text{PF} > 0.99$) with minimal harmonic distortion (THD).
+
+### Waveforms in SCOPE.1
+- **CH1 (v_dc_meas)**: Regulated 50 V DC bus voltage.
+- **CH2 (i_l)**: High-frequency boost inductor current tracking sinusoidal envelope.
+- **CH3 (u_grid)**: 50 Hz AC grid voltage reference.
+<\\markdownText>
+<\\ElementSPECIAL>
 
 tDURATION 0.060
 dt 1.0E-6
@@ -4929,6 +5347,38 @@ coupledReferenceID[] 1004
 copyCoupledReferenceID[] 1004
 <\\ElementCONTROL>
 
+sp (0)
+<ElementSPECIAL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+typ 2001
+uniqueObjectIdentifier 9001
+x 52
+y 4
+parameter[] 
+orientierung 501
+idStringDialog NOTE.1
+boxWidth 28
+boxHeight 18
+<markdownText>
+# Closed-Loop SPWM Inverter with Dead-Time (50 Hz)
+
+Sinusoidal PWM (SPWM) full-bridge inverter converting **40 V DC** into **50 Hz AC** with closed-loop voltage regulation and hardware dead-time protection.
+
+### Control Pipeline Architecture
+1. **Reference & Feedback**: \`V_REF\` generates a 50 Hz sinusoidal reference (20 V pk). \`VOLT_LOAD\` samples load voltage.
+2. **Error & Regulation**: \`CTRL_SUB\` computes error $(v_{ref} - v_{meas})$, fed to \`CTRL_PI\` ($K_p=0.45, T_i=2\\text{ ms}$) and \`CTRL_LIM\` clamped to $[-1, 1]$.
+3. **Modulation**: \`CTRL_CMP\` compares modulation signal with 10 kHz triangle carrier \`V_CARRIER\`.
+4. **Shoot-Through Protection**: \`CTRL_DEADTIME\` inserts **1.0 µs dead-time** between complementary gate drives (\`gate_hi\` and \`gate_lo\`).
+
+### Key Waveforms in SCOPE.1
+- **CH1 (v_ref)**: 50 Hz reference wave.
+- **CH2 (v_meas)**: Filtered AC output voltage.
+- **CH3 (gate_hi / gate_lo)**: Non-overlapping gate drives preventing DC bus cross-conduction.
+<\\markdownText>
+<\\ElementSPECIAL>
+
 tDURATION 0.04
 dt 1.0E-6
 solverType 0
@@ -4941,98 +5391,98 @@ export const EXAMPLES: CircuitExample[] = [
     id: 'spwm-inverter-deadtime',
     name: 'Closed-Loop SPWM Inverter with Dead-Time (50 Hz)',
     category: 'Power Electronics',
-    description: 'Sinusoidal PWM full-bridge inverter demonstrating restored control blocks: CTRL_SUB for error calculation (v_ref - v_meas), CTRL_PI voltage regulator, CTRL_LIMIT modulation clamp, CTRL_COMPARATOR carrier modulator, and CTRL_DEADTIME shoot-through prevention inserting 1.0 µs dead-time between complementary gate drives.',
+    description: 'Full-bridge 50 Hz inverter with PI regulator and 1.0 µs dead-time shoot-through prevention.',
     content: SPWM_INVERTER_DEADTIME_IPES,
   },
   {
     id: 'buck',
     name: 'DC-DC Buck Converter (50 kHz PWM)',
     category: 'Power Electronics',
-    description: 'Step-down converter (24V to 12V) with controlled switch, freewheeling diode, LC filter, load resistor, and oscilloscope tracking V_out and I_L.',
+    description: 'Step-down converter (24V to 12V) with LC output filter and oscilloscope.',
     content: BUCK_CONVERTER_IPES,
   },
   {
     id: 'sync-buck',
     name: 'Synchronous Buck Converter (50 kHz)',
     category: 'Power Electronics',
-    description: 'High-efficiency step-down converter with complementary high-side and low-side active switches, body-diode freewheeling, and output filter.',
+    description: 'High-efficiency step-down converter with complementary active MOSFET switching.',
     content: SYNC_BUCK_IPES,
   },
   {
     id: 'boost',
     name: 'DC-DC Boost Converter (Step-Up)',
     category: 'Power Electronics',
-    description: 'Step-up converter (12V to 24V) with boost inductor, switch, diode, output filter capacitor, and oscilloscope tracking V_in, V_out, and I_L.',
+    description: 'Step-up converter (12V to 24V) with boost inductor and fast recovery diode.',
     content: BOOST_CONVERTER_IPES,
   },
   {
     id: 'buck-boost',
     name: 'Inverting Buck-Boost Converter (-16V)',
     category: 'Power Electronics',
-    description: 'Negative voltage step-up/step-down converter (24V to -16V at D=0.40) with single inductor energy storage and diode-swapped polarity.',
+    description: 'Negative voltage step-up/step-down converter (24V to -16V) with single inductor.',
     content: BUCK_BOOST_IPES,
   },
   {
     id: 'flyback',
     name: 'Flyback Isolated DC-DC Converter',
     category: 'Power Electronics',
-    description: 'Galvanically isolated converter with coupled inductors (k=0.999), primary high-side switch, secondary fast-recovery diode, and bulk filter.',
+    description: 'Galvanically isolated converter with magnetically coupled inductors (k=0.999).',
     content: FLYBACK_IPES,
   },
   {
     id: 'closed-loop-buck',
     name: 'Closed-Loop Regulated Buck (PI Control)',
     category: 'Power Electronics',
-    description: 'Voltage-mode closed-loop DC-DC converter featuring an embedded microcontroller PI control script block maintaining 12.0V output under regulation.',
+    description: 'Voltage-mode DC-DC converter regulated to 12.0V by embedded PI script block.',
     content: CLOSED_LOOP_BUCK_IPES,
   },
   {
     id: 'inverter',
     name: 'Single-Phase H-Bridge Inverter (50 Hz)',
     category: 'Power Electronics',
-    description: 'Full-bridge DC-AC inverter with complementary gate pulses converting 40V DC bus into 50 Hz sinusoidal AC across an LC filter and 10 ohm load.',
+    description: 'Full-bridge DC-AC inverter converting 40V DC bus into 50 Hz sinusoidal AC.',
     content: INVERTER_IPES,
   },
   {
     id: 'pfc-boost',
     name: 'Active PFC Boost Pre-Regulator (50 Hz)',
     category: 'Power Electronics',
-    description: 'Power Factor Correction circuit: diode bridge, 800 µH boost inductor, 50 kHz MOSFET, and a two-loop controller (slow bus-voltage loop + sinusoidal current loop) regulating 24 V AC to a 50 V DC bus at near-unity power factor. Scope shows bus voltage, inductor current, and grid voltage.',
+    description: 'Active Power Factor Correction converter regulating 24V AC to 50V DC bus.',
     content: PFC_BOOST_IPES,
   },
   {
     id: 'rectifier',
     name: 'Diode Bridge Rectifier (AC to DC)',
     category: 'Power Electronics',
-    description: 'Full-bridge diode rectifier (Graetz bridge) converting 50 Hz AC mains to smoothed DC bus voltage across a reservoir capacitor and resistive load.',
+    description: 'Full-bridge Graetz diode rectifier with capacitive reservoir smoothing filter.',
     content: RECTIFIER_CIRCUIT_IPES,
   },
   {
     id: 'three-scopes',
     name: 'Multi-Scope RLC (SCOPE.1 & SCOPE.2)',
     category: 'Analog & Filter',
-    description: 'Multi-instrument demonstration: SCOPE.1 (V_in, V_out) and SCOPE.2 (V_R1, V_L1, V_C1) across a second-order series RLC resonator.',
+    description: 'Second-order series RLC resonator with multi-instrument oscilloscope monitoring.',
     content: THREE_SCOPES_RLC_IPES,
   },
   {
     id: 'rlc',
     name: 'RLC Resonant Circuit',
     category: 'Analog & Filter',
-    description: 'Step response of a second-order RLC series resonator demonstrating underdamped transient oscillation and exponential decay.',
+    description: 'Underdamped second-order series RLC transient step response.',
     content: RLC_CIRCUIT_IPES,
   },
   {
     id: 'rc',
     name: 'RC Low-Pass Filter',
     category: 'Analog & Filter',
-    description: 'First-order RC low-pass filter demonstrating step response and exponential capacitor charging curve with oscilloscope.',
+    description: 'First-order RC filter demonstrating step response and exponential charging.',
     content: RC_FILTER_IPES,
   },
   {
     id: 'rc-classic',
     name: 'RC Low-Pass (Classic Reference)',
     category: 'Analog & Filter',
-    description: 'Bit-identical classic reference circuit matching legacy GeckoCIRCUITS solver benchmarks.',
+    description: 'Classic reference benchmark matching legacy GeckoCIRCUITS solver engines.',
     content: RC_CLASSIC_IPES,
   },
 ];

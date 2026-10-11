@@ -197,6 +197,15 @@ function terminalPositionsWithPinMode(
       ? anchoredPinOffsets(count, step)
       : legacyCenteredPinOffsets(count, step);
 
+  if (
+    component.type === 2001 ||
+    family === 'SPECIAL' ||
+    family === 'ANNOTATION' ||
+    ('name' in component && typeof (component as { name?: string }).name === 'string' && (component as { name: string }).name.startsWith('NOTE'))
+  ) {
+    return { input: [], output: [] };
+  }
+
   if (family === 'CONTROL') {
     // Constant & signal sources: 0 inputs, 1 output on the output side
     if (CONTROL_OUTPUT_ONLY.has(component.type)) {
@@ -419,11 +428,16 @@ export function findPlacementConflict(
   candidate: { type: number; family?: string; position: number[]; orientation: number },
   existing: EditorComponent[],
 ): string | null {
+  const isCandNote = candidate.type === 2001 || candidate.family === 'SPECIAL' || candidate.family === 'ANNOTATION';
   const candCenter = { x: candidate.position[0], y: candidate.position[1] };
   const candTerms = terminalPositions({ ...candidate, position: candidate.position });
   const candTermPoints = [...candTerms.input, ...candTerms.output];
 
   for (const other of existing) {
+    const isOtherNote = other.type === 2001 || other.family === 'SPECIAL' || other.family === 'ANNOTATION';
+    if (isCandNote !== isOtherNote) {
+      continue;
+    }
     const otherCenter = { x: other.position[0], y: other.position[1] };
     if (sameGridPoint(candCenter, otherCenter)) {
       return other.name;

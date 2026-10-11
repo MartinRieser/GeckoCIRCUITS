@@ -33,6 +33,7 @@ import {
   extractAvailableSignals,
   isParameterVisible,
   resolveParameterDef,
+  isTextboxComponent,
   type ParameterDef,
 } from '../model/componentSchema';
 import { isScopeComponent } from '../simulation/scopes';
@@ -828,6 +829,8 @@ export function PropertiesPanel({
           component.type === CTRL_TYPE.LEGACY_JAVA_FUNCTION ||
           meta.name === 'CTRL_SCRIPT') ? (
           <ScriptBlockEditor component={component} onSetParameter={onSetParameter} debug={scriptDebug} />
+        ) : isTextboxComponent(component) ? (
+          <TextboxEditor component={component} onSetParameter={onSetParameter} />
         ) : (
           meta.parameters.length > 0 && (
             <div className="prop-section">
@@ -957,7 +960,7 @@ export function PropertiesPanel({
               + Add Channel (CH{component.inputLabels.length + 1})
             </button>
           </div>
-        ) : (
+        ) : !isTextboxComponent(component) ? (
           /* General Component Terminal Net Labels */
           <div className="prop-section">
             <div className="prop-section-title">Terminal Net Labels</div>
@@ -1015,7 +1018,7 @@ export function PropertiesPanel({
               })}
             </div>
           </div>
-        )}
+        ) : null}
 
         <datalist id="circuit-available-signals">
           {availableSignals.map((sig) => (
@@ -1455,3 +1458,273 @@ function ScriptBlockEditor({
     </div>
   );
 }
+
+/**
+ * Inspector and live editor for Markdown Documentation notes (TEXTBOX / NOTE).
+ * Supports Markdown formatting, width/height grid sizing, and quick syntax insertion.
+ */
+export function TextboxEditor({
+  component,
+  onSetParameter,
+}: {
+  component: EditorComponent;
+  onSetParameter: (name: string, key: string, value: number | string) => void;
+}) {
+  const initialText =
+    typeof component.parameters?.text === 'string'
+      ? component.parameters.text
+      : '# Documentation\n\nEnter markdown notes here.';
+  const [text, setText] = useState(initialText);
+  const [isSaved, setIsSaved] = useState(false);
+  const [cheatsheetOpen, setCheatsheetOpen] = useState(false);
+
+  useEffect(() => {
+    setText(
+      typeof component.parameters?.text === 'string'
+        ? component.parameters.text
+        : '# Documentation\n\nEnter markdown notes here.',
+    );
+  }, [component.parameters?.text]);
+
+  const width =
+    typeof component.parameters?.width === 'number'
+      ? component.parameters.width
+      : 24;
+  const height =
+    typeof component.parameters?.height === 'number'
+      ? component.parameters.height
+      : 14;
+
+  const handleApply = () => {
+    onSetParameter(component.name, 'text', text);
+    setIsSaved(true);
+    setTimeout(() => setIsSaved(false), 2000);
+  };
+
+  const insertSnippet = (before: string, after: string = '') => {
+    const textarea = document.getElementById('textbox-markdown-area') as HTMLTextAreaElement | null;
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = text.substring(start, end);
+    const replacement = `${before}${selected || 'text'}${after}`;
+    const newText = text.substring(0, start) + replacement + text.substring(end);
+    setText(newText);
+    onSetParameter(component.name, 'text', newText);
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(
+        start + before.length,
+        start + before.length + (selected ? selected.length : 4),
+      );
+    }, 0);
+  };
+
+  return (
+    <div className="prop-section textbox-editor-section">
+      <div
+        className="prop-section-title"
+        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+      >
+        <span>📝 Markdown Documentation Note</span>
+        <button
+          type="button"
+          className="link-action-btn"
+          onClick={() => setCheatsheetOpen(!cheatsheetOpen)}
+          style={{ fontSize: '11px' }}
+        >
+          {cheatsheetOpen ? 'Hide Help ▲' : 'Markdown Help ▼'}
+        </button>
+      </div>
+
+      {cheatsheetOpen && (
+        <div
+          className="markdown-syntax-cheatsheet"
+          style={{
+            background: 'var(--surface-sunken, #1e293b)',
+            color: 'var(--text-primary, #f8fafc)',
+            padding: '10px 12px',
+            borderRadius: '6px',
+            fontSize: '11px',
+            marginBottom: '10px',
+            border: '1px solid var(--border-subtle, #334155)',
+            lineHeight: 1.6,
+          }}
+        >
+          <div>
+            <strong style={{ color: 'var(--accent-primary, #38bdf8)' }}># Headings:</strong>{' '}
+            <code># Title</code>, <code>## Section</code>, <code>### Subtitle</code>
+          </div>
+          <div>
+            <strong style={{ color: 'var(--accent-primary, #38bdf8)' }}>Formatting:</strong>{' '}
+            <code>**bold**</code>, <code>*italic*</code>, <code>`code`</code>
+          </div>
+          <div>
+            <strong style={{ color: 'var(--accent-primary, #38bdf8)' }}>Lists:</strong>{' '}
+            <code>- Bullet point</code> or <code>1. Numbered item</code>
+          </div>
+          <div>
+            <strong style={{ color: 'var(--accent-primary, #38bdf8)' }}>Quotes & Rules:</strong>{' '}
+            <code>&gt; Quote / Tip</code>, <code>---</code> for divider
+          </div>
+          <div>
+            <strong style={{ color: 'var(--accent-primary, #38bdf8)' }}>Tables:</strong>{' '}
+            <code>| Param | Value |</code> followed by <code>|---|---|</code>
+          </div>
+        </div>
+      )}
+
+      {/* Sizing Grid: Width & Height */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
+        <div className="prop-field">
+          <label className="prop-label">Box Width (grid units)</label>
+          <input
+            type="number"
+            min={8}
+            max={80}
+            step={1}
+            className="prop-input"
+            value={width}
+            onChange={(e) => {
+              const val = Math.max(8, Math.min(80, parseInt(e.target.value, 10) || 24));
+              onSetParameter(component.name, 'width', val);
+            }}
+          />
+        </div>
+        <div className="prop-field">
+          <label className="prop-label">Box Height (grid units)</label>
+          <input
+            type="number"
+            min={4}
+            max={60}
+            step={1}
+            className="prop-input"
+            value={height}
+            onChange={(e) => {
+              const val = Math.max(4, Math.min(60, parseInt(e.target.value, 10) || 14));
+              onSetParameter(component.name, 'height', val);
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Quick Syntax Toolbar */}
+      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '6px' }}>
+        <button
+          type="button"
+          className="secondary-btn"
+          style={{ padding: '2px 6px', fontSize: '11px' }}
+          onClick={() => insertSnippet('## ', '')}
+          title="Insert Heading"
+        >
+          H2
+        </button>
+        <button
+          type="button"
+          className="secondary-btn"
+          style={{ padding: '2px 6px', fontSize: '11px' }}
+          onClick={() => insertSnippet('**', '**')}
+          title="Bold text"
+        >
+          <b>B</b>
+        </button>
+        <button
+          type="button"
+          className="secondary-btn"
+          style={{ padding: '2px 6px', fontSize: '11px' }}
+          onClick={() => insertSnippet('*', '*')}
+          title="Italic text"
+        >
+          <i>I</i>
+        </button>
+        <button
+          type="button"
+          className="secondary-btn"
+          style={{ padding: '2px 6px', fontSize: '11px' }}
+          onClick={() => insertSnippet('`', '`')}
+          title="Inline code"
+        >
+          &lt;/&gt;
+        </button>
+        <button
+          type="button"
+          className="secondary-btn"
+          style={{ padding: '2px 6px', fontSize: '11px' }}
+          onClick={() => insertSnippet('- ', '')}
+          title="Bullet list"
+        >
+          • List
+        </button>
+        <button
+          type="button"
+          className="secondary-btn"
+          style={{ padding: '2px 6px', fontSize: '11px' }}
+          onClick={() => insertSnippet('> ', '')}
+          title="Blockquote / Note"
+        >
+          ❝ Note
+        </button>
+        <button
+          type="button"
+          className="secondary-btn"
+          style={{ padding: '2px 6px', fontSize: '11px' }}
+          onClick={() => insertSnippet('| Param | Value |\n|---|---|\n| ', ' |')}
+          title="Table"
+        >
+          ⊞ Table
+        </button>
+      </div>
+
+      <div className="prop-field">
+        <label className="prop-label" htmlFor="textbox-markdown-area">
+          Markdown Documentation Content
+        </label>
+        <textarea
+          id="textbox-markdown-area"
+          className="prop-input"
+          style={{
+            minHeight: '220px',
+            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+            fontSize: '12px',
+            lineHeight: '1.5',
+            resize: 'vertical',
+            padding: '8px',
+            whiteSpace: 'pre-wrap',
+          }}
+          value={text}
+          onChange={(e) => {
+            setText(e.target.value);
+            onSetParameter(component.name, 'text', e.target.value);
+          }}
+          onBlur={handleApply}
+          placeholder="# Circuit Description&#10;&#10;Explain topology, specs, control principles..."
+        />
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+        <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+          Rendered directly on schematic sheet
+        </span>
+        <button
+          type="button"
+          onClick={handleApply}
+          className="action-btn"
+          style={{
+            fontSize: '12px',
+            padding: '4px 12px',
+            backgroundColor: isSaved ? '#16a34a' : 'var(--accent-primary, #3b82f6)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontWeight: 500,
+            transition: 'background-color 0.2s',
+          }}
+        >
+          {isSaved ? '✓ Applied' : 'Apply Text'}
+        </button>
+      </div>
+    </div>
+  );
+}
+

@@ -360,6 +360,18 @@ export const CTRL_TYPE = {
 } as const;
 
 /**
+ * Special / Annotation domain component type IDs.
+ */
+export enum SpecialComponentType {
+  /** Rich markdown documentation note and text box component. */
+  TEXTBOX = 2001,
+}
+
+export const SPECIAL_TYPE = {
+  TEXTBOX: SpecialComponentType.TEXTBOX,
+} as const;
+
+/**
  * Grid raster, geometry, hit-testing, and rendering dimensions.
  */
 export const CANVAS_METRICS = {

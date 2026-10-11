@@ -16,9 +16,11 @@ import {
   isGateDriver,
   isAmmeterComponent,
   isVoltmeterComponent,
+  isTextboxComponent,
   getCoupledComponentName,
   getComponentMeta,
 } from '../model/componentSchema';
+import { SchematicNoteCard } from './SchematicNoteCard';
 import {
   buildCouplingPairs,
   buildCurrentDirectionHints,
@@ -1286,6 +1288,55 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                       (channel 1 on the anchor row, block grows downward), so
                       the bounding box extends asymmetrically downward. */}
                   {(() => {
+                    const isTextbox = isTextboxComponent(component);
+                    if (isTextbox) {
+                      const boxW = (Number(component.parameters?.width) || 26) * dpix;
+                      const boxH = (Number(component.parameters?.height) || 14) * dpix;
+                      return (
+                        <>
+                          {/* Full-area hit target for note card */}
+                          <rect
+                            x={0}
+                            y={0}
+                            width={boxW}
+                            height={boxH}
+                            className="component-hit-area textbox-hit-area"
+                            fill="transparent"
+                            stroke="none"
+                            pointerEvents="all"
+                            style={{ cursor: 'pointer' }}
+                          />
+                          {/* Selection box halo */}
+                          {selected && (
+                            <rect
+                              x={-2}
+                              y={-2}
+                              width={boxW + 4}
+                              height={boxH + 4}
+                              className="selection-box textbox-selection-box"
+                              rx={8}
+                              pointerEvents="none"
+                            />
+                          )}
+                          <foreignObject
+                            x={0}
+                            y={0}
+                            width={boxW}
+                            height={boxH}
+                            style={{ pointerEvents: 'none', overflow: 'hidden' }}
+                          >
+                            <SchematicNoteCard
+                              name={component.name}
+                              text={String(component.parameters?.text ?? '')}
+                              selected={selected}
+                              width={boxW}
+                              height={boxH}
+                            />
+                          </foreignObject>
+                        </>
+                      );
+                    }
+
                     const isTransformer =
                       (component.family === 'LK' || !component.family) &&
                       (component.type === 23 || component.type === LkComponentType.TRANSFORMER);
@@ -1405,6 +1456,9 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
 
                         {/* Component identifier label */}
                         {(() => {
+                          if (isTextboxComponent(component)) {
+                            return null;
+                          }
                           const isCtrlProbe = isVoltmeterComponent(component) || isAmmeterComponent(component);
                           const isControlBlock = component.family === 'CONTROL';
                           const isHorizontalTwoPort =
@@ -1959,19 +2013,33 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
               pointerEvents="none"
               className="ghost"
             >
-              <ComponentSymbol
-                component={{
-                  type: state.ghost.type,
-                  name: '',
-                  family: state.ghost.family,
-                  position: [0, 0],
-                  orientation: state.ghost.orientation,
-                  parameters: {},
-                  inputLabels: [],
-                  outputLabels: [],
-                }}
-                dpix={dpix}
-              />
+              {isTextboxComponent(state.ghost) ? (
+                <rect
+                  x={0}
+                  y={0}
+                  width={26 * dpix}
+                  height={14 * dpix}
+                  rx={8}
+                  fill="rgba(56, 189, 248, 0.15)"
+                  stroke="#38bdf8"
+                  strokeWidth={1.5}
+                  strokeDasharray="4 3"
+                />
+              ) : (
+                <ComponentSymbol
+                  component={{
+                    type: state.ghost.type,
+                    name: '',
+                    family: state.ghost.family,
+                    position: [0, 0],
+                    orientation: state.ghost.orientation,
+                    parameters: {},
+                    inputLabels: [],
+                    outputLabels: [],
+                  }}
+                  dpix={dpix}
+                />
+              )}
             </g>
           )}
 

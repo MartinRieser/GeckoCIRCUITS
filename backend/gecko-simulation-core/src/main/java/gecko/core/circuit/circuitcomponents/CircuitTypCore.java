@@ -162,7 +162,10 @@ public enum CircuitTypCore {
     CTRL_SPACE_VECTOR(1055), // Space Vector display
     CTRL_SDFT(1056),       // Sliding Discrete Fourier Transform harmonic analyzer
     CTRL_SPARSEMATRIX(1058), // Indirect Sparse Matrix Converter modulator
-    C_JAVA_FUNCTION(61);   // Classic Java function block
+    C_JAVA_FUNCTION(61),   // Classic Java function block
+
+    // Documentation / Annotation components
+    TEXTBOX(2001);         // Markdown documentation note / textbox
 
     private final int typeNumber;
 
@@ -350,5 +353,14 @@ public enum CircuitTypCore {
      */
     public boolean isMultiTerminal() {
         return this == LK_BJT || this == LK_TRANS || this == LK_OPV1;
+    }
+
+    /**
+     * Checks if this component is a special/annotation element (e.g. documentation textbox).
+     *
+     * @return true if this is a non-simulated special or annotation element
+     */
+    public boolean isSpecial() {
+        return this == TEXTBOX;
     }
 }
