@@ -90,14 +90,14 @@ flowchart TD
 ### Phase 3: Bundled Example Circuit Physical Plausibility Gate
 *Objective: Guarantee that every bundled example in `frontend/src/model/examples.ts` simulates to steady state with physically validated results.*
 
-- [ ] **Task 3.1: Execute Headless Example Verification**
+- [x] **Task 3.1: Execute Headless Example Verification**
   - Run `python scripts/verify-examples.py` across all bundled circuits.
   - Verify:
     - Exit code 0 (all circuits complete without solver errors).
     - Duration reaches `tDURATION`.
     - No signals are unexpectedly flat zero.
 
-- [ ] **Task 3.2: Expand Physical Theory Assertions (`ASSERTIONS` table)**
+- [x] **Task 3.2: Expand Physical Theory Assertions (`ASSERTIONS` table)**
   - For each topology, assert theoretical bounds (steady-state window):
     - **Buck Converter**: $V_{\text{out}} \approx V_{\text{in}} \cdot D \pm 5\%$
     - **Boost Converter**: $V_{\text{out}} \approx \frac{V_{\text{in}}}{1 - D} \pm 5\%$
@@ -105,7 +105,7 @@ flowchart TD
     - **Inverter (SPWM)**: Fundamental AC frequency matches modulation index; THD within theoretical envelope.
     - **Thermal Networks**: Junction temperature rise $\Delta T = P_{\text{loss}} \cdot R_{\text{th}} \pm 5\%$.
 
-- [ ] **Task 3.3: Scope Signal Binding Cross-Check**
+- [x] **Task 3.3: Scope Signal Binding Cross-Check**
   - Verify that every scope channel in every example file matches an actual producer (`labelEndKnoten` or probe signal). Any unmapped channel fails CI.
 
 ---

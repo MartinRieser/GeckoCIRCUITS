@@ -78,10 +78,11 @@ ASSERTIONS = {
     "buck-boost": [("v_out", 0.4, _mean, -19.0, -13.0, "steady-state mean ~-16 V")],
     # closed-loop PI regulates 12.0 V
     "closed-loop-buck": [("v_out_scope", 0.5, _mean, 11.0, 13.0, "regulated 12 V")],
-    # Graetz bridge on 24 Vrms (34 Vpk): bus sits just below the rectified peak
+    # Graetz bridge on 24 Vrms (34 Vpk): bus sits just below the rectified peak with ~10 Vpp ripple
     "rectifier": [
         ("v_ac", 1.0, _pp, 60.0, 70.0, "AC swing ~68 Vpp (34 Vpk sine)"),
-        ("v_dc", 0.3, _mean, 29.0, 34.0, "bus ~32.6 V (peak - 2 diode drops)"),
+        ("v_dc", 0.3, _mean, 21.0, 28.0, "bus mean under 50 Ohm load (with 100 Hz ripple)"),
+        ("v_dc", 0.3, lambda x: max(x), 29.0, 33.0, "bus peak ~30..32 V (peak - diode drops)"),
     ],
     # second-order RLC step: capacitor charges to the 24 V step (with ringing)
     "rlc": [("v_out", 0.2, _mean, 21.0, 27.0, "settles to 24 V step")],
@@ -187,9 +188,14 @@ def check_example(ex, results):
             problems.append(f"time span {t[-1]:.4g}s << tDURATION {ex['duration']:.4g}s")
 
     for sig in ex["signals"]:
-        data = results.get(sig)
-        if data is None:
+        raw_data = results.get(sig)
+        if raw_data is None:
             problems.append(f"recorded signal '{sig}' missing from results")
+            continue
+        try:
+            data = [float(v) for v in raw_data]
+        except (ValueError, TypeError):
+            problems.append(f"signal '{sig}' contains non-numeric data")
             continue
         if any(not math.isfinite(v) for v in data):
             problems.append(f"signal '{sig}' contains NaN/inf")

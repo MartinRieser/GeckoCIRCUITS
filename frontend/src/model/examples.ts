@@ -4698,6 +4698,7 @@ dataContainerSignals[] /v_dc_meas/i_l/u_grid
 `;
 
 export const SPWM_INVERTER_DEADTIME_IPES = `
+
 verbindungLeistungskreisANZAHL 7
 verbindungLK (0)
 <Verbindung>
@@ -4994,14 +4995,14 @@ lossFileHashValue 0
 
 e (5)
 <ElementLK>
-labelAnfangsKnoten[] /dc_pos
-labelEndKnoten[] /out_a
+labelAnfangsKnoten[] /out_a
+labelEndKnoten[] /dc_pos
 enabledShorted 1
 typ 6
 uniqueObjectIdentifier 1006
 x 16
 y 9
-parameter[] 1.0E7 0.001 0.7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
+parameter[] 1.0E7 0.7 0.001 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 501
@@ -5021,14 +5022,14 @@ lossFileHashValue 0
 
 e (6)
 <ElementLK>
-labelAnfangsKnoten[] /out_a
-labelEndKnoten[] /0
+labelAnfangsKnoten[] /0
+labelEndKnoten[] /out_a
 enabledShorted 1
 typ 6
 uniqueObjectIdentifier 1007
 x 16
 y 13
-parameter[] 1.0E7 0.001 0.7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
+parameter[] 1.0E7 0.7 0.001 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 501
@@ -5048,14 +5049,14 @@ lossFileHashValue 0
 
 e (7)
 <ElementLK>
-labelAnfangsKnoten[] /dc_pos
-labelEndKnoten[] /out_b
+labelAnfangsKnoten[] /out_b
+labelEndKnoten[] /dc_pos
 enabledShorted 1
 typ 6
 uniqueObjectIdentifier 1008
 x 26
 y 9
-parameter[] 1.0E7 0.001 0.7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
+parameter[] 1.0E7 0.7 0.001 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 501
@@ -5075,14 +5076,14 @@ lossFileHashValue 0
 
 e (8)
 <ElementLK>
-labelAnfangsKnoten[] /out_b
-labelEndKnoten[] /0
+labelAnfangsKnoten[] /0
+labelEndKnoten[] /out_b
 enabledShorted 1
 typ 6
 uniqueObjectIdentifier 1009
 x 26
 y 13
-parameter[] 1.0E7 0.001 0.7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
+parameter[] 1.0E7 0.7 0.001 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 501

@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -60,6 +61,33 @@ class WebEditorExampleSimulationTest {
             assertTrue(result.isSuccess(), () -> "simulation failed: " + result.getErrorMessage());
             assertTrue(result.getWarnings().isEmpty(),
                     () -> "a healthy example circuit must run warning-free: " + result.getWarnings());
+        }
+    }
+
+    @Test
+    void spwmInverterExample_simulatesSuccessfully() throws Exception {
+        try (InputStream is = getClass().getResourceAsStream("/ipes/spwm_inverter_deadtime.ipes")) {
+            assertNotNull(is, "spwm_inverter_deadtime.ipes must be on the test classpath");
+            CircuitModel model = new CircuitFileParser().parse(
+                    new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)),
+                    "spwm_inverter_deadtime.ipes");
+
+            SimulationConfig config = SimulationConfig.builder()
+                    .circuitFile("spwm_inverter_deadtime.ipes")
+                    .circuitModel(model)
+                    .stepWidth(1e-6)
+                    .simulationDuration(0.04)
+                    .signals(java.util.List.of("v_meas", "v_ref", "v_err", "gate_hi", "gate_lo"))
+                    .solverType(SolverType.SOLVER_BE)
+                    .build();
+            SimulationResult result = new HeadlessSimulationEngine().runSimulation(config);
+
+            assertTrue(result.isSuccess(), () -> "simulation failed: " + result.getErrorMessage());
+            float[] vMeas = result.getSignalData(0);
+            assertNotNull(vMeas, "v_meas signal data must exist");
+            for (int i = 0; i < vMeas.length; i++) {
+                assertFalse(Float.isNaN(vMeas[i]), "v_meas at step " + i + " must not be NaN");
+            }
         }
     }
 }
