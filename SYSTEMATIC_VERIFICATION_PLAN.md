@@ -130,15 +130,15 @@ flowchart TD
 ### Phase 5: Topology & Wiring Fuzz Testing
 *Objective: Stress-test wire routing and netlist resolution against adversarial and complex geometry.*
 
-- [ ] **Task 5.1: Wire Router Obstacle Avoidance Fuzzing**
+- [x] **Task 5.1: Wire Router Obstacle Avoidance Fuzzing**
   - Fuzz test `WireRouter.ts` with randomized component placements and pin connections.
   - Assert: No wire passes through unassociated component bodies or foreign terminal pins.
 
-- [ ] **Task 5.2: Collinear & Orthogonal Crossings Stress Test**
+- [x] **Task 5.2: Collinear & Orthogonal Crossings Stress Test**
   - Generate schematics with high wire densities: multiple horizontal and vertical crossing lines, overlapping grid rows, and collinear components.
   - Assert: Perpendicular crossings never create accidental shorts; only explicit T-junction vertices merge signals.
 
-- [ ] **Task 5.3: Domain Cross-Talk Stress Test**
+- [x] **Task 5.3: Domain Cross-Talk Stress Test**
   - Generate interleaved electrical (`LK`), thermal (`THERMAL`), and control (`CONTROL`) nets sharing coordinates and labels.
   - Assert: 100% domain isolation; zero cross-talk in MNA matrices.
 
