@@ -355,6 +355,18 @@ public class NetlistBuilder {
             names[i] = branchComponents.get(i).getName();
         }
         netlist.setElementNames(names);
+
+        // DRC: Detect branch components that are short-circuited across their terminals
+        for (int i = 0; i < regularElementCount && i < elementCount; i++) {
+            CircuitModel.ComponentData comp = branchComponents.get(i);
+            CircuitTypCore typ = types[i];
+            if (nodeX[i] == nodeY[i] && !typ.isThermal() && !typ.isReluctance() && typ != CircuitTypCore.LK_GLOBAL_TERMINAL) {
+                buildWarnings.add("DRC: Branch component '" + comp.getName() + "' ("
+                        + typ.name() + ") has both terminals connected to node " + nodeX[i]
+                        + "; the component is short-circuited across itself.");
+            }
+        }
+
         registerMutualCouplers(netlist, mutualCouplers, buildWarnings);
         // Coupler registration appends its drop warnings to buildWarnings, so
         // the copy into the netlist must happen after it, not before.
@@ -1150,6 +1162,7 @@ public class NetlistBuilder {
         for (int i = 0; i < elementCount; i++) {
             maxNodeIndex = Math.max(maxNodeIndex, Math.max(nodeX[i], nodeY[i]));
         }
+
         CircuitNetlist netlist = finishNetlist(types, nodeX, nodeY, voltageSourceNumbers, params,
                 maxNodeIndex, voltageSourceCount, elementCount, buildWarnings,
                 branchComponents, branchComponents.size(), new long[0],

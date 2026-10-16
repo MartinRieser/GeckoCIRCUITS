@@ -118,13 +118,11 @@ class MutualCouplingResolutionTest {
         rLoad.setUniqueObjectIdentifier(11);
         model.addCircuitComponent(rLoad);
 
-        // Wire primary pins (23,8)/(23,16) and secondary pins (25,8)/(25,16) to the resistor
+        // Wire secondary pins (25,8)/(25,12) to the load resistor pins (30,8)/(30,12)
         model.addConnection(new CircuitModel.ConnectionData("LK",
-                new int[][]{{23, 8}, {24, 8}, {25, 8}, {25, 12}, {25, 16}}));
+                new int[][]{{25, 8}, {30, 8}}));
         model.addConnection(new CircuitModel.ConnectionData("LK",
-                new int[][]{{23, 16}, {24, 16}, {28, 16}, {29, 16}, {30, 16}}));
-        model.addConnection(new CircuitModel.ConnectionData("LK",
-                new int[][]{{30, 8}, {29, 8}, {28, 8}, {27, 8}, {26, 8}, {25, 8}}));
+                new int[][]{{25, 12}, {30, 12}}));
 
         CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
 

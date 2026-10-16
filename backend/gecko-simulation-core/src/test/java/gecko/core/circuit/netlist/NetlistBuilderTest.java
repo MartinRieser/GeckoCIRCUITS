@@ -407,5 +407,31 @@ public class NetlistBuilderTest {
         assertEquals(netlist.getNodeX(0), netlist.getNodeX(2), "V1.X and R1.X must be on Wire 1 node");
         assertEquals(netlist.getNodeX(1), netlist.getNodeY(2), "D1.X and R1.Y must be on Wire 2 node");
     }
+
+    @Test
+    public void testBranchShortCircuitDetectorEmitsDRCWarning() {
+        CircuitModel model = new CircuitModel();
+        // R1 placed at (10, 10) NORTH_SOUTH: term X at (10, 8), term Y at (10, 12)
+        CircuitModel.ComponentData r1 = component(1, "R1", 10, 10, 503);
+        model.addCircuitComponent(r1);
+
+        // A wire that loops from term X (10, 8) to term Y (10, 12), shorting R1 across itself
+        model.getConnections().add(new CircuitModel.ConnectionData("LK",
+                new int[][]{{10, 8}, {14, 8}, {14, 12}, {10, 12}}));
+
+        CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
+
+        // Verify that both terminals are indeed on the same node
+        assertEquals(netlist.getNodeX(0), netlist.getNodeY(0),
+                "R1 terminals are physically shorted by the loop wire");
+
+        // Verify that NetlistBuilder detected this and emitted the DRC warning
+        boolean hasShortWarning = netlist.getBuildWarnings().stream()
+                .anyMatch(w -> w.contains("DRC: Branch component 'R1'") && w.contains("short-circuited across itself"));
+        assertTrue(hasShortWarning,
+                "NetlistBuilder must emit DRC warning for short-circuited branch component, got: "
+                        + netlist.getBuildWarnings());
+    }
 }
+
 
