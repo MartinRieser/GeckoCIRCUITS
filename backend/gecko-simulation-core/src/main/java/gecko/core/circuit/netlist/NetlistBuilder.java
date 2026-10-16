@@ -495,7 +495,10 @@ public class NetlistBuilder {
                             if (isGroundLabel(lbl)) {
                                 groundPoints.add(key);
                             } else if (labelToKey.containsKey(lbl)) {
-                                pointDs.union(key, labelToKey.get(lbl));
+                                String otherKey = labelToKey.get(lbl);
+                                if (!wouldShortCircuitBranchInDisjointSet(key, otherKey, pointDs, branchComponents, wireNets)) {
+                                    pointDs.union(key, otherKey);
+                                }
                             } else {
                                 labelToKey.put(lbl, key);
                             }
@@ -1014,18 +1017,26 @@ public class NetlistBuilder {
             CircuitModel.ComponentData comp = branchComponents.get(i);
             String[] xLabels = comp.getTerminalXLabels();
             if (xLabels.length > 0 && isValidLabel(xLabels[0])) {
+                String netKey = wireNets.netKey(compTerminals[i][0]);
                 int node = isGroundLabel(xLabels[0]) ? 0 : labelToNode.getOrDefault(xLabels[0], 0);
-                Integer existing = rootToNode.putIfAbsent(wireNets.netKey(compTerminals[i][0]), node);
-                if (existing != null && !xLabels[0].trim().isEmpty()) {
-                    labelToNode.put(xLabels[0].trim(), existing);
+                if (!rootToNode.containsKey(netKey)) {
+                    if (node != 0 && wouldShortCircuitBranchInMap(netKey, node, rootToNode, branchComponents, compTerminals, wireNets)) {
+                        rootToNode.put(netKey, nextNode++);
+                    } else {
+                        rootToNode.put(netKey, node);
+                    }
                 }
             }
             String[] yLabels = comp.getTerminalYLabels();
             if (yLabels.length > 0 && isValidLabel(yLabels[0])) {
+                String netKey = wireNets.netKey(compTerminals[i][1]);
                 int node = isGroundLabel(yLabels[0]) ? 0 : labelToNode.getOrDefault(yLabels[0], 0);
-                Integer existing = rootToNode.putIfAbsent(wireNets.netKey(compTerminals[i][1]), node);
-                if (existing != null && !yLabels[0].trim().isEmpty()) {
-                    labelToNode.put(yLabels[0].trim(), existing);
+                if (!rootToNode.containsKey(netKey)) {
+                    if (node != 0 && wouldShortCircuitBranchInMap(netKey, node, rootToNode, branchComponents, compTerminals, wireNets)) {
+                        rootToNode.put(netKey, nextNode++);
+                    } else {
+                        rootToNode.put(netKey, node);
+                    }
                 }
             }
         }
@@ -1099,14 +1110,18 @@ public class NetlistBuilder {
                 nodeY[i] = nextNode++;
             } else {
                 String[] xLabels = comp.getTerminalXLabels();
-                if (xLabels.length > 0 && isValidLabel(xLabels[0])) {
+                if (wireNets.touchesWire(compTerminals[i][0])) {
+                    nodeX[i] = rootToNode.getOrDefault(wireNets.netKey(compTerminals[i][0]), 0);
+                } else if (xLabels.length > 0 && isValidLabel(xLabels[0])) {
                     nodeX[i] = isGroundLabel(xLabels[0]) ? 0 : labelToNode.getOrDefault(xLabels[0], 0);
                 } else {
                     nodeX[i] = rootToNode.getOrDefault(wireNets.netKey(compTerminals[i][0]), 0);
                 }
 
                 String[] yLabels = comp.getTerminalYLabels();
-                if (yLabels.length > 0 && isValidLabel(yLabels[0])) {
+                if (wireNets.touchesWire(compTerminals[i][1])) {
+                    nodeY[i] = rootToNode.getOrDefault(wireNets.netKey(compTerminals[i][1]), 0);
+                } else if (yLabels.length > 0 && isValidLabel(yLabels[0])) {
                     nodeY[i] = isGroundLabel(yLabels[0]) ? 0 : labelToNode.getOrDefault(yLabels[0], 0);
                 } else {
                     nodeY[i] = rootToNode.getOrDefault(wireNets.netKey(compTerminals[i][1]), 0);
@@ -1119,6 +1134,9 @@ public class NetlistBuilder {
         int nodeCount = Math.max(nextNode, 1);
 
         int maxNodeIndex = nodeCount > 0 ? nodeCount - 1 : 0;
+        for (int i = 0; i < elementCount; i++) {
+            maxNodeIndex = Math.max(maxNodeIndex, Math.max(nodeX[i], nodeY[i]));
+        }
         CircuitNetlist netlist = finishNetlist(types, nodeX, nodeY, voltageSourceNumbers, params,
                 maxNodeIndex, voltageSourceCount, elementCount, buildWarnings,
                 branchComponents, branchComponents.size(), new long[0],
@@ -1198,6 +1216,54 @@ public class NetlistBuilder {
             }
         }
         return groupToRepresentative.values().stream().mapToInt(Integer::intValue).toArray();
+    }
+
+    private static boolean wouldShortCircuitBranchInDisjointSet(String key, String otherKey,
+                                                                DisjointSet<String> ds,
+                                                                List<CircuitModel.ComponentData> branchComponents,
+                                                                WireNets wireNets) {
+        String setA = ds.find(key);
+        String setB = ds.find(otherKey);
+        if (setA.equals(setB)) {
+            return false;
+        }
+        for (CircuitModel.ComponentData comp : branchComponents) {
+            GridPoint[] terms = computeComponentTerminals(comp);
+            if (terms.length >= 2) {
+                String k0 = ds.find(wireNets.netKey(terms[0]));
+                String k1 = ds.find(wireNets.netKey(terms[1]));
+                if ((setA.equals(k0) && setB.equals(k1)) || (setA.equals(k1) && setB.equals(k0))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean wouldShortCircuitBranchInMap(String netKey, int candidateNode,
+                                                        Map<String, Integer> rootToNode,
+                                                        List<CircuitModel.ComponentData> branchComponents,
+                                                        GridPoint[][] compTerminals,
+                                                        WireNets wireNets) {
+        for (int j = 0; j < branchComponents.size(); j++) {
+            String k0 = wireNets.netKey(compTerminals[j][0]);
+            String k1 = wireNets.netKey(compTerminals[j][1]);
+            if (k0.equals(k1)) {
+                continue;
+            }
+            if (netKey.equals(k0)) {
+                Integer otherNode = rootToNode.get(k1);
+                if (otherNode != null && otherNode == candidateNode) {
+                    return true;
+                }
+            } else if (netKey.equals(k1)) {
+                Integer otherNode = rootToNode.get(k0);
+                if (otherNode != null && otherNode == candidateNode) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

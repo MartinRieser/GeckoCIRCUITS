@@ -23,6 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -72,6 +73,7 @@ public class CircuitEditService {
                     normalizeOrientation(request.orientation()));
             comp.setFamily(family);
             comp.setUniqueObjectIdentifier(state.nextUid());
+            comp.setEnabledShorted(1);
             applyDefaultParameters(comp);
             if (request.parameters() != null && !request.parameters().isEmpty()) {
                 applyParameterMap(comp, request.parameters(), model);
@@ -375,6 +377,7 @@ public class CircuitEditService {
 
             CircuitModel.ConnectionData conn = new CircuitModel.ConnectionData(type, points);
             conn.setLabel(request.label() != null ? request.label() : "");
+            conn.setEnabledShorted(1);
             model.getConnections().add(conn);
 
             state.recordEdit(
@@ -419,11 +422,100 @@ public class CircuitEditService {
             CircuitModel model = state.model;
             CircuitModel.ConnectionData conn = connectionAt(model, index);
 
+            // Collect coordinates of the connection being deleted
+            Set<String> connPoints = new HashSet<>();
+            int[][] pts = conn.getPoints();
+            if (pts != null) {
+                for (int[] pt : pts) {
+                    if (pt != null && pt.length >= 2) {
+                        connPoints.add(pt[0] + "," + pt[1]);
+                    }
+                }
+            }
+
             model.getConnections().remove(index);
 
+            // Collect all points on remaining connections
+            Set<String> remainingWirePoints = new HashSet<>();
+            for (CircuitModel.ConnectionData remaining : model.getConnections()) {
+                if (remaining != null && remaining.getPoints() != null) {
+                    for (int[] pt : remaining.getPoints()) {
+                        if (pt != null && pt.length >= 2) {
+                            remainingWirePoints.add(pt[0] + "," + pt[1]);
+                        }
+                    }
+                }
+            }
+
+            record LabelClearSnapshot(CircuitModel.ComponentData comp,
+                                      boolean inputSide,
+                                      String[] oldRaw,
+                                      String[] oldSemantic) {}
+            List<LabelClearSnapshot> clearedLabels = new ArrayList<>();
+
+            for (CircuitModel.ComponentData comp : model.getAllComponents()) {
+                if (comp.getFamily() != null && !"LK".equalsIgnoreCase(comp.getFamily())) {
+                    continue;
+                }
+                int[] pos = comp.getPosition();
+                int x = pos != null && pos.length >= 2 ? pos[0] : 0;
+                int y = pos != null && pos.length >= 2 ? pos[1] : 0;
+                int orient = comp.getOrientation() != 0 ? comp.getOrientation() : ComponentTerminals.NORTH_SOUTH;
+                int[] dir = ComponentTerminals.flowVector(orient);
+                int d = ComponentTerminals.TERMINAL_DISTANCE;
+
+                String inPoint = (x - dir[0] * d) + "," + (y - dir[1] * d);
+                String outPoint = (x + dir[0] * d) + "," + (y + dir[1] * d);
+
+                if (connPoints.contains(inPoint) && !remainingWirePoints.contains(inPoint)) {
+                    String[] raw = comp.getRawTerminalXLabels();
+                    String[] semantic = comp.getTerminalXLabels();
+                    if ((raw != null && raw.length > 0) || (semantic != null && semantic.length > 0)) {
+                        clearedLabels.add(new LabelClearSnapshot(comp, true,
+                                raw != null ? raw.clone() : new String[0],
+                                semantic != null ? semantic.clone() : new String[0]));
+                        comp.setRawTerminalXLabels(new String[0]);
+                        comp.setTerminalXLabels(new String[0]);
+                    }
+                }
+                if (connPoints.contains(outPoint) && !remainingWirePoints.contains(outPoint)) {
+                    String[] raw = comp.getRawTerminalYLabels();
+                    String[] semantic = comp.getTerminalYLabels();
+                    if ((raw != null && raw.length > 0) || (semantic != null && semantic.length > 0)) {
+                        clearedLabels.add(new LabelClearSnapshot(comp, false,
+                                raw != null ? raw.clone() : new String[0],
+                                semantic != null ? semantic.clone() : new String[0]));
+                        comp.setRawTerminalYLabels(new String[0]);
+                        comp.setTerminalYLabels(new String[0]);
+                    }
+                }
+            }
+
             state.recordEdit(
-                    () -> model.getConnections().add(Math.min(index, model.getConnections().size()), conn),
-                    () -> model.getConnections().remove(conn));
+                    () -> {
+                        model.getConnections().add(Math.min(index, model.getConnections().size()), conn);
+                        for (LabelClearSnapshot snap : clearedLabels) {
+                            if (snap.inputSide()) {
+                                snap.comp().setRawTerminalXLabels(snap.oldRaw());
+                                snap.comp().setTerminalXLabels(snap.oldSemantic());
+                            } else {
+                                snap.comp().setRawTerminalYLabels(snap.oldRaw());
+                                snap.comp().setTerminalYLabels(snap.oldSemantic());
+                            }
+                        }
+                    },
+                    () -> {
+                        model.getConnections().remove(conn);
+                        for (LabelClearSnapshot snap : clearedLabels) {
+                            if (snap.inputSide()) {
+                                snap.comp().setRawTerminalXLabels(new String[0]);
+                                snap.comp().setTerminalXLabels(new String[0]);
+                            } else {
+                                snap.comp().setRawTerminalYLabels(new String[0]);
+                                snap.comp().setTerminalYLabels(new String[0]);
+                            }
+                        }
+                    });
             return change(state, circuitId, "deleteConnection", Map.of("index", index));
         }
     }

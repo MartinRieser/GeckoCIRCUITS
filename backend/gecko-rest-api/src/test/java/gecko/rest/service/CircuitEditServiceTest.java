@@ -445,6 +445,46 @@ class CircuitEditServiceTest {
     }
 
     @Test
+    void deleteConnection_clearsResidualTerminalLabelsAndUndoRestores() {
+        // Place R_wire at (20, 20) WEST_EAST (502)
+        // Terminal X is at (18, 20), Terminal Y is at (22, 20)
+        service.createComponent(circuitId,
+                new ComponentCreateRequest("LK", 1, "R_wire", 20, 20, 502, null));
+        CircuitModel.ComponentData r = findByName("R_wire");
+        r.setTerminalXLabels(new String[]{"netA"});
+        r.setRawTerminalXLabels(new String[]{"netA"});
+        r.setTerminalYLabels(new String[]{"netB"});
+        r.setRawTerminalYLabels(new String[]{"netB"});
+
+        // Connect wire1 to (18, 20) and wire2 to (22, 20)
+        CircuitChangeMessage w1Msg = service.createConnection(circuitId,
+                new ConnectionCreateRequest("LK", new int[][]{{10, 20}, {18, 20}}, "w1"));
+        int w1Idx = payloadWire(w1Msg).index();
+
+        service.createConnection(circuitId,
+                new ConnectionCreateRequest("LK", new int[][]{{22, 20}, {30, 20}}, "w2"));
+
+        // Delete wire1
+        service.deleteConnection(circuitId, w1Idx);
+
+        // Terminal X at (18, 20) is now disconnected, so its residual label must be cleared
+        assertEquals(0, r.getTerminalXLabels().length, "Terminal X label must be cleared on disconnect");
+        assertEquals(0, r.getRawTerminalXLabels().length, "Raw Terminal X label must be cleared on disconnect");
+        // Terminal Y at (22, 20) is still connected to wire2, so its label remains
+        assertArrayEquals(new String[]{"netB"}, r.getTerminalYLabels());
+
+        // Undo restores wire1 and the terminal label
+        service.undo(circuitId);
+        assertArrayEquals(new String[]{"netA"}, r.getTerminalXLabels(), "Undo must restore terminal X label");
+        assertArrayEquals(new String[]{"netA"}, r.getRawTerminalXLabels(), "Undo must restore raw terminal X label");
+
+        // Redo deletes wire1 and clears the terminal label again
+        service.redo(circuitId);
+        assertEquals(0, r.getTerminalXLabels().length, "Redo must re-clear terminal X label");
+        assertEquals(0, r.getRawTerminalXLabels().length, "Redo must re-clear raw terminal X label");
+    }
+
+    @Test
     void createConnection_invalidInputs() {
         assertThrows(ResponseStatusException.class, () -> service.createConnection(circuitId,
                 new ConnectionCreateRequest("LK", new int[][]{{16, 16}}, null)), "single point");

@@ -369,5 +369,43 @@ public class NetlistBuilderTest {
         assertNotEquals(netlist.getNodeY(0), netlist.getNodeX(1),
                 "Rotated component whose terminals do not touch wire must be treated as open/interrupted");
     }
+
+    @Test
+    public void testInsertingComponentBetweenCutWiresDoesNotShortCircuit() {
+        CircuitModel model = new CircuitModel();
+        // V1 at (10,10) WEST_EAST: terminal X at (8,10), terminal Y at (12,10)
+        CircuitModel.ComponentData v1 = component(4, "V1", 10, 10, 502);
+        v1.setTerminalXLabels(new String[]{"ac1"});
+        v1.setTerminalYLabels(new String[]{"0"});
+        model.addCircuitComponent(v1);
+
+        // D1 at (30,10) WEST_EAST: terminal X at (28,10), terminal Y at (32,10)
+        // D1 has residual label "ac1" on X from when it was previously wired to V1
+        CircuitModel.ComponentData d1 = component(6, "D1", 30, 10, 502);
+        d1.setTerminalXLabels(new String[]{"ac1"});
+        d1.setTerminalYLabels(new String[]{"out"});
+        model.addCircuitComponent(d1);
+
+        // Wire 1 connects V1.X (8,10) to R1.X (18,10)
+        // Wire 2 connects R1.Y (22,10) to D1.X (28,10)
+        // R1 is placed at (20,10) WEST_EAST: terminal X at (18,10), terminal Y at (22,10)
+        // R1 is newly created, so it has no terminal labels
+        CircuitModel.ComponentData r1 = component(1, "R1", 20, 10, 502);
+        model.addCircuitComponent(r1);
+
+        model.getConnections().add(new CircuitModel.ConnectionData("LK", dense("8 10 18 10")));
+        model.getConnections().add(new CircuitModel.ConnectionData("LK", dense("22 10 28 10")));
+
+        CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
+
+        // R1 is element index 2:
+        // nodeX (terminal at 18,10) must be the node of Wire 1 (connected to V1.X)
+        // nodeY (terminal at 22,10) must be the node of Wire 2 (connected to D1.X)
+        // R1 must NOT be short-circuited!
+        assertNotEquals(netlist.getNodeX(2), netlist.getNodeY(2),
+                "R1 terminals must be on distinct nodes; R1 must not be shorted by residual labels");
+        assertEquals(netlist.getNodeX(0), netlist.getNodeX(2), "V1.X and R1.X must be on Wire 1 node");
+        assertEquals(netlist.getNodeX(1), netlist.getNodeY(2), "D1.X and R1.Y must be on Wire 2 node");
+    }
 }
 

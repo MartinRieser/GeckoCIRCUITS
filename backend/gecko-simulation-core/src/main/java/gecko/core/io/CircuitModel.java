@@ -418,7 +418,7 @@ public class CircuitModel {
         private String[] nameOpt = new String[0];
         private long uniqueObjectIdentifier;
         private long coupledReferenceID;
-        private int enabledShorted;
+        private int enabledShorted = 1;
         private long parentSheetIdentifier;
         private String family = "LK";
         private final List<String> extraLines = new ArrayList<>();
@@ -683,7 +683,7 @@ public class CircuitModel {
         private int[][] points;
         private String label = "";
         private long uniqueObjectIdentifier;
-        private int enabledShorted;
+        private int enabledShorted = 1;
         private long parentSheetIdentifier;
         private int connectorType;
 
