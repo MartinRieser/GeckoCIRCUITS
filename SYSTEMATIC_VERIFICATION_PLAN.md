@@ -53,31 +53,37 @@ flowchart TD
 ### Phase 2: Interactive Editing State-Mutation Matrix (Lifecycle Testing)
 *Objective: Eliminate bugs occurring at the seam between the GUI/REST API and NetlistBuilder during circuit modifications.*
 
-- [ ] **Task 2.1: Series Insertion Workflow Tests**
+- [x] **Task 2.1: Series Insertion Workflow Tests**
   - Test: Load standard circuits (buck converter, active PFC, RC filter).
   - Perform: Delete a wire segment on the main power branch, insert a resistor (e.g. current shunt), connect with two new wire segments.
   - Assert: Resistor terminals reside on two distinct electrical nodes; non-zero current flows through the shunt.
+  - *Verification: Added `InteractiveEditingLifecycleTest#testSeriesInsertionWorkflow_distinctNodesAndNonZeroCurrent`.*
 
-- [ ] **Task 2.2: Parallel Branch Addition Workflow Tests**
+- [x] **Task 2.2: Parallel Branch Addition Workflow Tests**
   - Test: Add a parallel RC snubber or decoupling capacitor across existing component terminals.
   - Assert: Snubber nodes match target terminals; no other nets are affected; solver produces expected damping.
+  - *Verification: Added `InteractiveEditingLifecycleTest#testParallelBranchAdditionWorkflow_matchingNodes`.*
 
-- [ ] **Task 2.3: Wire Cut & Re-Route Tests**
+- [x] **Task 2.3: Wire Cut & Re-Route Tests**
   - Test: Delete arbitrary wire segment of a multi-vertex polyline wire; create a detour path.
   - Assert: Disconnected terminals have labels cleared; reconnected path restores net connectivity; Undo/Redo cycles maintain state.
+  - *Verification: Added `InteractiveEditingLifecycleTest#testWireCutAndReroute_undoRedoPreservesNetConnectivity`.*
 
-- [ ] **Task 2.4: Component Drag & Rubberband Wire Extension Tests**
+- [x] **Task 2.4: Component Drag & Rubberband Wire Extension Tests**
   - Test: Move component by $(\Delta x, \Delta y)$ via `CircuitEditService`.
   - Assert: Connected wire endpoints track component terminals without detaching or crossing into sibling pins.
+  - *Verification: Added `InteractiveEditingLifecycleTest#testComponentDrag_rubberbandsConnectedWireEndpoints`.*
 
-- [ ] **Task 2.5: Component Deletion & Dangling Wire Cleanup**
+- [x] **Task 2.5: Component Deletion & Dangling Wire Cleanup**
   - Test: Delete a multi-terminal component (e.g. transformer, script block).
   - Assert: All attached wires are cleanly unbonded or removed; no orphan terminal keys persist in the model.
+  - *Verification: Added `InteractiveEditingLifecycleTest#testComponentDeletion_clearsCoupledReferencesCleanly`.*
 
-- [ ] **Task 2.6: Comprehensive Undo/Redo Invariance Audit**
+- [x] **Task 2.6: Comprehensive Undo/Redo Invariance Audit**
   - For every mutation operation $M \in \{\text{createComp}, \text{deleteComp}, \text{createConn}, \text{deleteConn}, \text{patchConn}, \text{moveComp}\}$:
     - Execute $M \to \text{Undo}$. Assert model state matches original state byte-for-byte.
     - Execute $\text{Redo}$. Assert model state matches post-$M$ state.
+  - *Verification: Fixed index restoration in `CircuitEditService.deleteComponent`; added `InteractiveEditingLifecycleTest#testComprehensiveUndoRedoInvariance_restoresExactState`.*
 
 ---
 

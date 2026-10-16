@@ -347,6 +347,7 @@ public class CircuitEditService {
             CircuitModel.ComponentData comp = findComponent(model, name);
             List<CircuitModel.ComponentData> list = containingList(model, comp);
 
+            int originalIndex = list.indexOf(comp);
             CircuitModel.ComponentData snapshot = copyComponent(comp);
             // Clear references to the doomed component (gates, meters, K coupler
             // uid slots) so nothing dangles; snapshots make the cleanup undoable.
@@ -355,11 +356,11 @@ public class CircuitEditService {
 
             state.recordEdit(
                     () -> {
-                        list.add(snapshot);
+                        list.add(Math.min(originalIndex, list.size()), snapshot);
                         restoreNameReferences(refEdits);
                     },
                     () -> {
-                        clearReferencesTo(model, comp);
+                        clearReferencesTo(model, snapshot);
                         list.remove(snapshot);
                     });
             return change(state, circuitId, "deleteComponent", Map.of("name", name));
