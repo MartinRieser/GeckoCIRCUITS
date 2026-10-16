@@ -497,6 +497,40 @@ public class NetlistBuilderTest {
                 "NetlistBuilder must emit DRC_FLOATING_GROUND for isolated subcircuit R2, got: "
                         + netlist.getBuildWarnings());
     }
+
+    @Test
+    public void testUnattachedTerminalWithCollidingLabelEmitsDRCWarning() {
+        CircuitModel model = new CircuitModel();
+        // V1 at (10, 10), R1 at (20, 10) connected by wire labeled "NET_A"
+        CircuitModel.ComponentData v1 = component(4, "V1", 10, 10, 502);
+        CircuitModel.ComponentData r1 = component(1, "R1", 20, 10, 502);
+        model.addCircuitComponent(v1);
+        model.addCircuitComponent(r1);
+
+        CircuitModel.ConnectionData wire = new CircuitModel.ConnectionData("LK",
+                new int[][]{{12, 10}, {18, 10}});
+        wire.setLabel("NET_A");
+        model.getConnections().add(wire);
+
+        CircuitModel.ConnectionData gndWire = new CircuitModel.ConnectionData("LK",
+                new int[][]{{8, 10}, {22, 10}});
+        gndWire.setLabel("GND");
+        model.getConnections().add(gndWire);
+
+        // R2 floating at (50, 50) with stale/colliding label "NET_A" on terminal X
+        CircuitModel.ComponentData r2 = component(1, "R2", 50, 50, 503);
+        r2.setTerminalXLabels(new String[]{"NET_A"});
+        model.addCircuitComponent(r2);
+
+        CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
+
+        // Verify DRC_LABEL_COLLISION warning is emitted
+        boolean hasCollisionWarning = netlist.getBuildWarnings().stream()
+                .anyMatch(w -> w.contains("DRC_LABEL_COLLISION") && w.contains("R2") && w.contains("NET_A"));
+        assertTrue(hasCollisionWarning,
+                "NetlistBuilder must emit DRC_LABEL_COLLISION for unattached terminal carrying colliding label NET_A, got: "
+                        + netlist.getBuildWarnings());
+    }
 }
 
 

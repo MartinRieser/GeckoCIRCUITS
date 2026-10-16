@@ -41,7 +41,7 @@ flowchart TD
   - Implement check in `NetlistBuilder`: if an isolated sub-graph of components has no connection to node 0 (ground) and no voltage reference, flag `DRC_FLOATING_GROUND` before running the matrix solver.
   - Test: Unit test with isolated resistor-capacitor loop with no ground terminal; verify diagnostic.
 
-- [ ] **Task 1.3: Terminal Label Conflict & Stale Label Detector**
+- [x] **Task 1.3: Terminal Label Conflict & Stale Label Detector**
   - Implement warning in `NetlistBuilder`: if an unattached terminal carries a net label that conflicts with a physically connected wire net, emit `DRC_LABEL_COLLISION`.
   - Test: Unit test asserting warnings on conflicting optical labels.
 

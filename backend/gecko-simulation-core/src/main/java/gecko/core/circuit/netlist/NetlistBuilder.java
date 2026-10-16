@@ -563,9 +563,24 @@ public class NetlistBuilder {
                                 String otherKey = labelToKey.get(lbl);
                                 if (!wouldShortCircuitBranchInDisjointSet(key, otherKey, pointDs, branchComponents, wireNets)) {
                                     pointDs.union(key, otherKey);
+                                } else {
+                                    buildWarnings.add("DRC_LABEL_COLLISION: Net label '" + lbl
+                                            + "' on component '" + comp.getName()
+                                            + "' would short-circuit a branch component across its terminals; union rejected.");
                                 }
                             } else {
                                 labelToKey.put(lbl, key);
+                            }
+                        }
+                    }
+                } else {
+                    for (String l : t == 0 ? comp.getTerminalXLabels() : comp.getTerminalYLabels()) {
+                        if (isValidLabel(l)) {
+                            String lbl = l.trim();
+                            if (labelToKey.containsKey(lbl) || isGroundLabel(lbl)) {
+                                buildWarnings.add("DRC_LABEL_COLLISION: Unattached terminal of component '"
+                                        + comp.getName() + "' carries net label '" + lbl
+                                        + "' which collides with a physically connected net; label ignored.");
                             }
                         }
                     }
@@ -1047,6 +1062,21 @@ public class NetlistBuilder {
 
         for (int i = 0; i < elementCount; i++) {
             if (hasWires && !isConnected[i]) {
+                CircuitModel.ComponentData comp = branchComponents.get(i);
+                for (String label : comp.getTerminalXLabels()) {
+                    if (isValidLabel(label) && (labelToNode.containsKey(label) || isGroundLabel(label))) {
+                        buildWarnings.add("DRC_LABEL_COLLISION: Unattached terminal of component '"
+                                + comp.getName() + "' carries net label '" + label
+                                + "' which collides with a physically connected net; label ignored.");
+                    }
+                }
+                for (String label : comp.getTerminalYLabels()) {
+                    if (isValidLabel(label) && (labelToNode.containsKey(label) || isGroundLabel(label))) {
+                        buildWarnings.add("DRC_LABEL_COLLISION: Unattached terminal of component '"
+                                + comp.getName() + "' carries net label '" + label
+                                + "' which collides with a physically connected net; label ignored.");
+                    }
+                }
                 continue;
             }
             CircuitModel.ComponentData comp = branchComponents.get(i);
@@ -1100,6 +1130,9 @@ public class NetlistBuilder {
                 int node = isGroundLabel(xLabels[0]) ? 0 : labelToNode.getOrDefault(xLabels[0], 0);
                 if (!rootToNode.containsKey(netKey)) {
                     if (node != 0 && wouldShortCircuitBranchInMap(netKey, node, rootToNode, branchComponents, compTerminals, wireNets)) {
+                        buildWarnings.add("DRC_LABEL_COLLISION: Net label '" + xLabels[0]
+                                + "' on component '" + comp.getName()
+                                + "' would short-circuit a branch component across its terminals; isolated on new node.");
                         rootToNode.put(netKey, nextNode++);
                     } else {
                         rootToNode.put(netKey, node);
@@ -1112,6 +1145,9 @@ public class NetlistBuilder {
                 int node = isGroundLabel(yLabels[0]) ? 0 : labelToNode.getOrDefault(yLabels[0], 0);
                 if (!rootToNode.containsKey(netKey)) {
                     if (node != 0 && wouldShortCircuitBranchInMap(netKey, node, rootToNode, branchComponents, compTerminals, wireNets)) {
+                        buildWarnings.add("DRC_LABEL_COLLISION: Net label '" + yLabels[0]
+                                + "' on component '" + comp.getName()
+                                + "' would short-circuit a branch component across its terminals; isolated on new node.");
                         rootToNode.put(netKey, nextNode++);
                     } else {
                         rootToNode.put(netKey, node);
