@@ -147,7 +147,7 @@ flowchart TD
 ### Phase 6: Automated End-to-End GUI Smoke Verification
 *Objective: Validate the complete user journey from browser canvas to live simulation display.*
 
-- [ ] **Task 6.1: Headless Browser Canvas Smoke Tests**
+- [x] **Task 6.1: Headless Browser Canvas Smoke Tests**
   - Automated Playwright/browser subagent test:
     - Open web app.
     - Select example circuit from menu.
@@ -155,7 +155,7 @@ flowchart TD
     - Run simulation (F5).
     - Verify scope tab opens and displays non-zero waveforms.
 
-- [ ] **Task 6.2: Frontend State Consistency Audit**
+- [x] **Task 6.2: Frontend State Consistency Audit**
   - Verify that `frontend/src/model/store.ts` action reducers (`WIRE_PATCHED`, `COMPONENT_DRAGGED`, `DELETE_SELECTION`) maintain consistent point sets and geometry metadata with backend `CircuitModel`.
 
 ---
