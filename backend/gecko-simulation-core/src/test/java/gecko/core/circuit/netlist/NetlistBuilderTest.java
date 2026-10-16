@@ -432,6 +432,71 @@ public class NetlistBuilderTest {
                 "NetlistBuilder must emit DRC warning for short-circuited branch component, got: "
                         + netlist.getBuildWarnings());
     }
+
+    @Test
+    public void testFloatingUnreferencedSubcircuitEmitsDRCWarning() {
+        CircuitModel model = new CircuitModel();
+        // Isolated R1 and C1 loop with no ground and no voltage source
+        // R1 placed at (10, 10) NORTH_SOUTH: term X at (10, 8), term Y at (10, 12)
+        CircuitModel.ComponentData r1 = component(1, "R1", 10, 10, 503);
+        // C1 placed at (14, 10) NORTH_SOUTH: term X at (14, 8), term Y at (14, 12)
+        CircuitModel.ComponentData c1 = component(2, "C1", 14, 10, 503);
+        model.addCircuitComponent(r1);
+        model.addCircuitComponent(c1);
+
+        // Wire 1: connects top pins (10, 8) to (14, 8)
+        model.getConnections().add(new CircuitModel.ConnectionData("LK",
+                new int[][]{{10, 8}, {14, 8}}));
+        // Wire 2: connects bottom pins (10, 12) to (14, 12)
+        model.getConnections().add(new CircuitModel.ConnectionData("LK",
+                new int[][]{{10, 12}, {14, 12}}));
+
+        CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
+
+        // Verify DRC_FLOATING_GROUND is emitted
+        boolean hasFloatingGroundWarning = netlist.getBuildWarnings().stream()
+                .anyMatch(w -> w.contains("DRC_FLOATING_GROUND") && w.contains("no connection to ground"));
+        assertTrue(hasFloatingGroundWarning,
+                "NetlistBuilder must emit DRC_FLOATING_GROUND warning for isolated loop with no ground, got: "
+                        + netlist.getBuildWarnings());
+    }
+
+    @Test
+    public void testIsolatedSecondarySubcircuitWithoutGroundEmitsDRCWarning() {
+        CircuitModel model = new CircuitModel();
+        // Subcircuit 1: V1 + R1 with explicit GND
+        CircuitModel.ComponentData v1 = component(4, "V1", 10, 10, 502);
+        CircuitModel.ComponentData r1 = component(1, "R1", 20, 10, 502);
+        model.addCircuitComponent(v1);
+        model.addCircuitComponent(r1);
+
+        CircuitModel.ConnectionData gndWire = new CircuitModel.ConnectionData("LK",
+                new int[][]{{8, 10}, {18, 10}});
+        gndWire.setLabel("GND");
+        model.getConnections().add(gndWire);
+        model.getConnections().add(new CircuitModel.ConnectionData("LK",
+                new int[][]{{12, 10}, {22, 10}}));
+
+        // Subcircuit 2: Isolated R2 + C1 loop in another region, completely disconnected
+        CircuitModel.ComponentData r2 = component(1, "R2", 40, 10, 503);
+        CircuitModel.ComponentData c1 = component(2, "C1", 44, 10, 503);
+        model.addCircuitComponent(r2);
+        model.addCircuitComponent(c1);
+
+        model.getConnections().add(new CircuitModel.ConnectionData("LK",
+                new int[][]{{40, 8}, {44, 8}}));
+        model.getConnections().add(new CircuitModel.ConnectionData("LK",
+                new int[][]{{40, 12}, {44, 12}}));
+
+        CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
+
+        // Subcircuit 1 is properly grounded and has V1, but Subcircuit 2 is floating
+        boolean hasFloatingWarning = netlist.getBuildWarnings().stream()
+                .anyMatch(w -> w.contains("DRC_FLOATING_GROUND") && w.contains("R2"));
+        assertTrue(hasFloatingWarning,
+                "NetlistBuilder must emit DRC_FLOATING_GROUND for isolated subcircuit R2, got: "
+                        + netlist.getBuildWarnings());
+    }
 }
 
 

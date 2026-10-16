@@ -326,7 +326,8 @@ public class NetlistBuilder {
             long[] extraUids,
             List<int[]> vccsPairs, List<Double> vccsGains,
             List<WindingPair> windingPairs,
-            List<CircuitModel.ComponentData> mutualCouplers) {
+            List<CircuitModel.ComponentData> mutualCouplers,
+            boolean hasExplicitGround) {
         CircuitNetlist netlist = new CircuitNetlist();
         netlist.initNetlist(types, nodeX, nodeY, voltageSourceNumbers, params,
                 maxNodeIndex, voltageSourceCount, elementCount);
@@ -356,7 +357,7 @@ public class NetlistBuilder {
         }
         netlist.setElementNames(names);
 
-        // DRC: Detect branch components that are short-circuited across their terminals
+        // DRC: Detect branch components that are short-circuited across their terminals (Task 1.1)
         for (int i = 0; i < regularElementCount && i < elementCount; i++) {
             CircuitModel.ComponentData comp = branchComponents.get(i);
             CircuitTypCore typ = types[i];
@@ -364,6 +365,58 @@ public class NetlistBuilder {
                 buildWarnings.add("DRC: Branch component '" + comp.getName() + "' ("
                         + typ.name() + ") has both terminals connected to node " + nodeX[i]
                         + "; the component is short-circuited across itself.");
+            }
+        }
+
+        // DRC: Detect floating unreferenced sub-circuits (Task 1.2)
+        DisjointSet<Integer> electricalDs = new DisjointSet<>();
+        for (int i = 0; i <= maxNodeIndex; i++) {
+            electricalDs.find(i);
+        }
+        for (int i = 0; i < regularElementCount && i < elementCount; i++) {
+            CircuitTypCore typ = types[i];
+            if (!typ.isThermal() && !typ.isReluctance() && typ != CircuitTypCore.LK_GLOBAL_TERMINAL) {
+                if (nodeX[i] >= 0 && nodeX[i] <= maxNodeIndex && nodeY[i] >= 0 && nodeY[i] <= maxNodeIndex) {
+                    electricalDs.union(nodeX[i], nodeY[i]);
+                }
+            }
+        }
+        int electricalRoot0 = electricalDs.find(0);
+
+        Map<Integer, List<Integer>> islandComponents = new LinkedHashMap<>();
+        Map<Integer, Boolean> islandHasVoltageRef = new HashMap<>();
+
+        for (int i = 0; i < regularElementCount && i < elementCount; i++) {
+            CircuitTypCore typ = types[i];
+            if (!typ.isThermal() && !typ.isReluctance() && typ != CircuitTypCore.LK_GLOBAL_TERMINAL) {
+                int node = nodeX[i] >= 0 && nodeX[i] <= maxNodeIndex ? nodeX[i]
+                        : (nodeY[i] >= 0 && nodeY[i] <= maxNodeIndex ? nodeY[i] : -1);
+                if (node >= 0) {
+                    int r = electricalDs.find(node);
+                    islandComponents.computeIfAbsent(r, k -> new ArrayList<>()).add(i);
+                    boolean isVRef = (voltageSourceNumbers != null && voltageSourceNumbers[i] > 0)
+                            || typ.requiresVoltageSourceHandling()
+                            || typ == CircuitTypCore.LK_U;
+                    if (isVRef) {
+                        islandHasVoltageRef.put(r, true);
+                    }
+                }
+            }
+        }
+
+        for (Map.Entry<Integer, List<Integer>> entry : islandComponents.entrySet()) {
+            int root = entry.getKey();
+            List<Integer> compIndices = entry.getValue();
+            if (compIndices.size() < 2) {
+                continue;
+            }
+            boolean hasVRef = islandHasVoltageRef.getOrDefault(root, false);
+            boolean connectsToGround = hasExplicitGround && (root == electricalRoot0);
+
+            if (!connectsToGround && !hasVRef) {
+                String compName = branchComponents.get(compIndices.get(0)).getName();
+                buildWarnings.add("DRC_FLOATING_GROUND: Sub-circuit containing '" + compName
+                        + "' has no connection to ground (node 0) and no voltage reference; potentials are indeterminate.");
             }
         }
 
@@ -711,11 +764,12 @@ public class NetlistBuilder {
             }
         }
 
+        boolean hasExplicitGround = !groundPoints.isEmpty();
         CircuitNetlist netlist = finishNetlist(types, nodeX, nodeY, voltageSourceNumbers, params,
                 maxNodeIndex, voltageSourceCount, elementCount, buildWarnings,
                 branchComponents, branchComponents.size(),
                 bjtUids.stream().mapToLong(Long::longValue).toArray(),
-                vccsPairs, vccsGains, windingPairs, mutualCouplers);
+                vccsPairs, vccsGains, windingPairs, mutualCouplers, hasExplicitGround);
 
         // expose net labels so simulations can resolve signals like "V_out"
         for (Map.Entry<String, String> entry : labelToKey.entrySet()) {
@@ -1163,10 +1217,34 @@ public class NetlistBuilder {
             maxNodeIndex = Math.max(maxNodeIndex, Math.max(nodeX[i], nodeY[i]));
         }
 
+        boolean hasExplicitGround = false;
+        for (CircuitModel.ComponentData comp : components) {
+            if (comp.getType() == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber()) {
+                hasExplicitGround = true;
+                break;
+            }
+            for (String l : comp.getTerminalXLabels()) {
+                if (isGroundLabel(l)) { hasExplicitGround = true; break; }
+            }
+            if (hasExplicitGround) break;
+            for (String l : comp.getTerminalYLabels()) {
+                if (isGroundLabel(l)) { hasExplicitGround = true; break; }
+            }
+            if (hasExplicitGround) break;
+        }
+        if (!hasExplicitGround && connections != null) {
+            for (CircuitModel.ConnectionData conn : connections) {
+                if (isGroundLabel(conn.getLabel())) {
+                    hasExplicitGround = true;
+                    break;
+                }
+            }
+        }
+
         CircuitNetlist netlist = finishNetlist(types, nodeX, nodeY, voltageSourceNumbers, params,
                 maxNodeIndex, voltageSourceCount, elementCount, buildWarnings,
                 branchComponents, branchComponents.size(), new long[0],
-                new ArrayList<>(), new ArrayList<>(), windingPairs, mutualCouplers);
+                new ArrayList<>(), new ArrayList<>(), windingPairs, mutualCouplers, hasExplicitGround);
 
         for (Map.Entry<String, Integer> entry : labelToNode.entrySet()) {
             if (!entry.getKey().isBlank()) {

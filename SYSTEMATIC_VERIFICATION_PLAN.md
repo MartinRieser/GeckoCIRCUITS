@@ -37,7 +37,7 @@ flowchart TD
   - Implement check in `NetlistBuilder`: if any 2-terminal non-wire branch component with non-zero impedance (resistor $R > 0$, capacitor $C > 0$, inductor $L > 0$, DC/AC voltage source, active switch) has both terminals mapped to the exact same MNA node in a schematic with physical wires, generate a `DRC_BRANCH_SHORT_CIRCUIT` error or warning with the component's name.
   - Test: Unit test with intentional series shunt resistor and accidental shorting label; verify detection.
 
-- [ ] **Task 1.2: Floating Unreferenced Sub-Circuit Detector**
+- [x] **Task 1.2: Floating Unreferenced Sub-Circuit Detector**
   - Implement check in `NetlistBuilder`: if an isolated sub-graph of components has no connection to node 0 (ground) and no voltage reference, flag `DRC_FLOATING_GROUND` before running the matrix solver.
   - Test: Unit test with isolated resistor-capacitor loop with no ground terminal; verify diagnostic.
 
