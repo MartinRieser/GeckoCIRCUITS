@@ -34,6 +34,8 @@ import java.io.StringReader;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -374,5 +376,107 @@ class ControlCalculatorBuilderTest {
         AbstractControlCalculatable source = coupling.calculators().get(0);
         source.calculateYOUT(1e-6);
         assertEquals(1.0, source._outputSignal[0][0], 1e-12);
+    }
+
+    @Test
+    void sparseControlWireTJunctionConnectsToMultipleConsumers() {
+        CircuitModel m = new CircuitModel();
+        // SIGNAL.1 at (20, 20) NORTH_SOUTH: output at (22, 20)
+        CircuitModel.ComponentData sig = new CircuitModel.ComponentData(4, "SIGNAL.1", 20, 20, 503);
+        sig.setRawParameters(new double[]{404.0, 5.0, 1000.0, 0.0, 0.0, 0.5}); // 5.0V amp
+        m.addControlComponent(sig);
+
+        // GAIN.1 at (40, 20) NORTH_SOUTH: input at (38, 20)
+        CircuitModel.ComponentData g1 = new CircuitModel.ComponentData(7, "GAIN.1", 40, 20, 503);
+        g1.setRawParameters(new double[]{2.0});
+        m.addControlComponent(g1);
+
+        // GAIN.2 at (30, 30) NORTH_SOUTH: input at (28, 30)
+        CircuitModel.ComponentData g2 = new CircuitModel.ComponentData(7, "GAIN.2", 30, 30, 503);
+        g2.setRawParameters(new double[]{3.0});
+        m.addControlComponent(g2);
+
+        // Wire 1: horizontal wire with vertex at (30, 20) from (22, 20) to (38, 20)
+        m.getConnections().add(new CircuitModel.ConnectionData("CONTROL", new int[][]{{22, 20}, {30, 20}, {38, 20}}));
+
+        // Wire 2: vertical wire forming T-junction at (30, 20), routing to (28, 30)
+        m.getConnections().add(new CircuitModel.ConnectionData("CONTROL", new int[][]{{30, 20}, {30, 30}, {28, 30}}));
+
+        ControlCalculatorBuilder.ControlCoupling result = ControlCalculatorBuilder.build(m, null);
+        result.initialize(1e-6);
+
+        // Find calculators: 1 signal source, 2 gain blocks
+        AbstractControlCalculatable sigCalc = null;
+        AbstractControlCalculatable g1Calc = null;
+        AbstractControlCalculatable g2Calc = null;
+        for (AbstractControlCalculatable c : result.calculators()) {
+            if (c.getClass().getSimpleName().contains("Signal")) {
+                sigCalc = c;
+            } else if (g1Calc == null) {
+                g1Calc = c;
+            } else {
+                g2Calc = c;
+            }
+        }
+        assertNotNull(sigCalc);
+        assertNotNull(g1Calc);
+        assertNotNull(g2Calc);
+
+        // Both gains must have their input signal pointing to sigCalc output[0]
+        assertSame(sigCalc._outputSignal[0], g1Calc._inputSignal[0], "GAIN.1 must receive SIGNAL.1 via Wire 1");
+        assertSame(sigCalc._outputSignal[0], g2Calc._inputSignal[0], "GAIN.2 must receive SIGNAL.1 via Wire 2 T-junction");
+    }
+
+    @Test
+    void crossingControlWiresDoNotShortCircuit() {
+        CircuitModel m = new CircuitModel();
+        // SIGNAL.1 at (20, 20) NORTH_SOUTH: output at (22, 20)
+        CircuitModel.ComponentData sig1 = new CircuitModel.ComponentData(4, "SIG.1", 20, 20, 503);
+        sig1.setRawParameters(new double[]{404.0, 1.0, 1000.0, 0.0, 0.0, 0.5});
+        m.addControlComponent(sig1);
+
+        // GAIN.1 at (40, 20) NORTH_SOUTH: input at (38, 20)
+        CircuitModel.ComponentData g1 = new CircuitModel.ComponentData(7, "GAIN.1", 40, 20, 503);
+        g1.setRawParameters(new double[]{2.0});
+        m.addControlComponent(g1);
+
+        // SIGNAL.2 at (30, 10) WEST_EAST (502): output at (30, 12)
+        CircuitModel.ComponentData sig2 = new CircuitModel.ComponentData(4, "SIG.2", 30, 10, 502);
+        sig2.setRawParameters(new double[]{404.0, 2.0, 1000.0, 0.0, 0.0, 0.5});
+        m.addControlComponent(sig2);
+
+        // GAIN.2 at (30, 30) WEST_EAST (502): input at (30, 28)
+        CircuitModel.ComponentData g2 = new CircuitModel.ComponentData(7, "GAIN.2", 30, 30, 502);
+        g2.setRawParameters(new double[]{3.0});
+        m.addControlComponent(g2);
+
+        // Wire 1: horizontal wire from (22, 20) to (38, 20)
+        m.getConnections().add(new CircuitModel.ConnectionData("CONTROL", new int[][]{{22, 20}, {38, 20}}));
+
+        // Wire 2: vertical wire from (30, 12) to (30, 28) - crosses Wire 1 at (30, 20) without endpoint!
+        m.getConnections().add(new CircuitModel.ConnectionData("CONTROL", new int[][]{{30, 12}, {30, 28}}));
+
+        ControlCalculatorBuilder.ControlCoupling result = ControlCalculatorBuilder.build(m, null);
+        result.initialize(1e-6);
+
+        AbstractControlCalculatable s1 = null, s2 = null;
+        AbstractControlCalculatable gain1 = null, gain2 = null;
+        for (AbstractControlCalculatable c : result.calculators()) {
+            if (c.getClass().getSimpleName().contains("Signal")) {
+                if (s1 == null) s1 = c;
+                else s2 = c;
+            } else {
+                if (gain1 == null) gain1 = c;
+                else gain2 = c;
+            }
+        }
+        assertNotNull(s1);
+        assertNotNull(s2);
+        assertNotNull(gain1);
+        assertNotNull(gain2);
+
+        // Verify that GAIN.1 receives SIG.1 and GAIN.2 receives SIG.2, NOT both connected to same source
+        assertNotSame(gain1._inputSignal[0], gain2._inputSignal[0],
+                "Crossing control wires must not merge into the same signal net");
     }
 }

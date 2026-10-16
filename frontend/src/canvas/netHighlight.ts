@@ -63,7 +63,9 @@ export function analyzeElectricalNets(
     }
   };
 
+  const wireByIndex = new Map<number, EditorWire>();
   wires.forEach((w) => {
+    wireByIndex.set(w.index, w);
     parent.set(w.index, w.index);
   });
 
@@ -83,31 +85,36 @@ export function analyzeElectricalNets(
 
   // 1. Group wires: an electrical connection exists when at least one wire has
   // an endpoint touching another wire (endpoint-to-endpoint butt joint or
-  // endpoint-to-interior T-junction tap). Perpendicular crossovers where both
-  // wires pass through on their interior without an endpoint do NOT connect.
+  // endpoint-to-interior T-junction tap) of the SAME domain family.
   for (const wire of wires) {
     if (!wire.points || wire.points.length === 0) continue;
+    const wireDomain = (wire.type || 'LK').toUpperCase();
     const ends = [wire.points[0], wire.points[wire.points.length - 1]];
     for (const end of ends) {
       const endKey = `${end[0]},${end[1]}`;
       const touching = cellToWires.get(endKey);
       if (touching) {
         for (const otherIndex of touching) {
-          union(wire.index, otherIndex);
+          const other = wireByIndex.get(otherIndex);
+          if (other && (other.type || 'LK').toUpperCase() === wireDomain) {
+            union(wire.index, otherIndex);
+          }
         }
       }
     }
   }
 
-  // 2. Group wires sharing the same non-empty net label
+  // 2. Group wires sharing the same non-empty net label in the same domain
   const labelToWires = new Map<string, number[]>();
   for (const wire of wires) {
     const label = wire.label?.trim();
     if (label && label !== SENTINEL_UNSET) {
-      let list = labelToWires.get(label);
+      const wireDomain = (wire.type || 'LK').toUpperCase();
+      const domainLabel = `${wireDomain}#${label}`;
+      let list = labelToWires.get(domainLabel);
       if (!list) {
         list = [];
-        labelToWires.set(label, list);
+        labelToWires.set(domainLabel, list);
       }
       list.push(wire.index);
     }
@@ -155,6 +162,7 @@ export function analyzeElectricalNets(
     const wireIndices = new Set<number>();
     const pointKeys = new Set<string>();
     let netLabel: string | undefined;
+    const groupDomain = (wireGroup[0]?.type || 'LK').toUpperCase();
 
     for (const w of wireGroup) {
       wireIndices.add(w.index);
@@ -167,8 +175,10 @@ export function analyzeElectricalNets(
     }
 
     const terminalKeys = new Set<string>();
-    // Link terminals that land on any point of this net, or share the explicit netLabel
-    for (const { term, label } of allTerminals) {
+    // Link terminals that land on any point of this net in the matching domain
+    for (const { comp, term, label } of allTerminals) {
+      const compDomain = (comp.family || 'LK').toUpperCase();
+      if (compDomain !== groupDomain) continue;
       const key = `${term.x},${term.y}`;
       if (pointKeys.has(key) || (netLabel && label && label === netLabel)) {
         terminalKeys.add(key);

@@ -115,7 +115,7 @@ class CircuitBuilderTest {
 
         // Validate DRC
         Map<String, Object> valResult = CircuitValidator.validate(outputPath);
-        assertTrue((Boolean) valResult.get("valid"), "Chopper should pass DRC: " + valResult.get("diagnostics"));
+        assertTrue((Boolean) valResult.get("valid"), "Chopper should pass DRC: " + valResult.get("diagnostics") + " compile_checks: " + valResult.get("compile_checks"));
 
         // Simulate
         SimulationService.ParsedCsv csv = SimulationService.simulateToCsv(outputPath, 0.002, 1e-6);

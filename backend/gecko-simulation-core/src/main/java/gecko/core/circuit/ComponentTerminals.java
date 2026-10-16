@@ -187,7 +187,7 @@ public final class ComponentTerminals {
         return terminals;
     }
 
-    private static boolean isControlFamily(CircuitModel.ComponentData comp) {
+    public static boolean isControlFamily(CircuitModel.ComponentData comp) {
         return comp.getFamily() != null && "CONTROL".equalsIgnoreCase(comp.getFamily());
     }
 

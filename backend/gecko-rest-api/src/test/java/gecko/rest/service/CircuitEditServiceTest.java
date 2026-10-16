@@ -485,6 +485,62 @@ class CircuitEditServiceTest {
     }
 
     @Test
+    void deleteConnection_midWireTerminalLabelsCleared() {
+        // Place R_mid at (20, 20) NORTH_SOUTH (503)
+        // Terminal X is at (20, 18), Terminal Y is at (20, 22)
+        service.createComponent(circuitId,
+                new ComponentCreateRequest("LK", 1, "R_mid", 20, 20, 503, null));
+        CircuitModel.ComponentData r = findByName("R_mid");
+        r.setTerminalXLabels(new String[]{"tapNet"});
+        r.setRawTerminalXLabels(new String[]{"tapNet"});
+
+        // Wire spans horizontally from (0, 18) to (40, 18) -- R_mid.X at (20, 18) is in the MIDDLE!
+        CircuitChangeMessage wMsg = service.createConnection(circuitId,
+                new ConnectionCreateRequest("LK", new int[][]{{0, 18}, {40, 18}}, "longWire"));
+        int wIdx = payloadWire(wMsg).index();
+
+        // Delete the wire
+        service.deleteConnection(circuitId, wIdx);
+
+        // Terminal X in the middle of the wire must have its residual label cleared
+        assertEquals(0, r.getTerminalXLabels().length, "Mid-wire terminal label must be cleared on wire deletion");
+        assertEquals(0, r.getRawTerminalXLabels().length, "Mid-wire raw terminal label must be cleared on wire deletion");
+    }
+
+    @Test
+    void patchConnection_clearsResidualLabelsOfDisconnectedTerminalsAndUndoRestores() {
+        // Place R_patch at (20, 20) WEST_EAST (502)
+        // Terminal X is at (18, 20), Terminal Y is at (22, 20)
+        service.createComponent(circuitId,
+                new ComponentCreateRequest("LK", 1, "R_patch", 20, 20, 502, null));
+        CircuitModel.ComponentData r = findByName("R_patch");
+        r.setTerminalXLabels(new String[]{"netPatch"});
+        r.setRawTerminalXLabels(new String[]{"netPatch"});
+
+        // Wire connects from (10, 20) to (18, 20)
+        CircuitChangeMessage wMsg = service.createConnection(circuitId,
+                new ConnectionCreateRequest("LK", new int[][]{{10, 20}, {18, 20}}, "wPatch"));
+        int wIdx = payloadWire(wMsg).index();
+
+        // Patch connection: reroute wire from (10, 20) to (10, 30) -- away from (18, 20)!
+        service.patchConnection(circuitId, wIdx,
+                new ConnectionPatchRequest(new int[][]{{10, 20}, {10, 30}}, "wPatch"));
+
+        // Terminal X at (18, 20) was disconnected by the reroute, so its label must be cleared
+        assertEquals(0, r.getTerminalXLabels().length, "Rerouted wire must clear disconnected terminal label");
+        assertEquals(0, r.getRawTerminalXLabels().length, "Rerouted wire must clear disconnected raw terminal label");
+
+        // Undo restores original wire and terminal label
+        service.undo(circuitId);
+        assertArrayEquals(new String[]{"netPatch"}, r.getTerminalXLabels(), "Undo must restore terminal label");
+        assertArrayEquals(new String[]{"netPatch"}, r.getRawTerminalXLabels(), "Undo must restore raw terminal label");
+
+        // Redo re-reroutes wire and clears label again
+        service.redo(circuitId);
+        assertEquals(0, r.getTerminalXLabels().length, "Redo must re-clear disconnected terminal label");
+    }
+
+    @Test
     void createConnection_invalidInputs() {
         assertThrows(ResponseStatusException.class, () -> service.createConnection(circuitId,
                 new ConnectionCreateRequest("LK", new int[][]{{16, 16}}, null)), "single point");

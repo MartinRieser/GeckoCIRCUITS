@@ -463,8 +463,8 @@ public class NetlistBuilder {
         // Count how many terminals reside at each GridPoint to detect coincident (pin-to-pin) terminals
         Map<GridPoint, Integer> terminalUsageCount = new HashMap<>();
         for (CircuitModel.ComponentData comp : components) {
-            GridPoint[] terms = computeComponentTerminals(comp);
-            int termCount = comp.getType() == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber() ? 1 : 2;
+            GridPoint[] terms = computeComponentTerminalsAny(comp);
+            int termCount = comp.getType() == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber() ? 1 : terms.length;
             for (int t = 0; t < termCount; t++) {
                 terminalUsageCount.put(terms[t], terminalUsageCount.getOrDefault(terms[t], 0) + 1);
             }
@@ -786,12 +786,26 @@ public class NetlistBuilder {
         return false;
     }
 
+    private static List<GridPoint> toPointPath(int[][] points) {
+        List<GridPoint> path = new ArrayList<>();
+        if (points == null) {
+            return path;
+        }
+        for (int[] p : points) {
+            if (p != null && p.length >= 2) {
+                path.add(new GridPoint(p[0], p[1]));
+            }
+        }
+        return path;
+    }
+
     private static WireNets buildWireNets(List<CircuitModel.ConnectionData> connections) {
         WireNets nets = new WireNets();
         if (connections == null) {
             return nets;
         }
         List<List<GridPoint>> wires = new ArrayList<>();
+        List<String> wireDomains = new ArrayList<>();
         for (CircuitModel.ConnectionData conn : connections) {
             if (conn.getPoints() == null) {
                 continue;
@@ -800,15 +814,11 @@ public class NetlistBuilder {
             if (type != null && !"LK".equalsIgnoreCase(type) && !"THERMAL".equalsIgnoreCase(type)) {
                 continue;
             }
-            List<GridPoint> path = new ArrayList<>();
-            for (int[] pt : conn.getPoints()) {
-                GridPoint gp = new GridPoint(pt[0], pt[1]);
-                if (path.isEmpty() || !gp.equals(path.get(path.size() - 1))) {
-                    path.add(gp);
-                }
-            }
+            String domain = type == null || "LK".equalsIgnoreCase(type) ? "LK" : "THERMAL";
+            List<GridPoint> path = toPointPath(conn.getPoints());
             if (!path.isEmpty()) {
                 wires.add(path);
+                wireDomains.add(domain);
             }
         }
         DisjointSet<Integer> ids = nets.wireIds;
@@ -823,9 +833,12 @@ public class NetlistBuilder {
         for (int i = 0; i < wires.size(); i++) {
             List<GridPoint> path = wires.get(i);
             GridPoint[] ends = {path.get(0), path.get(path.size() - 1)};
+            String domainI = wireDomains.get(i);
             for (GridPoint end : ends) {
                 for (int j : wiresThroughPoint.getOrDefault(end, List.of())) {
-                    ids.union(i, j);
+                    if (domainI.equalsIgnoreCase(wireDomains.get(j))) {
+                        ids.union(i, j);
+                    }
                 }
             }
         }
@@ -930,8 +943,8 @@ public class NetlistBuilder {
 
         Map<GridPoint, Integer> terminalUsageCount = new HashMap<>();
         for (CircuitModel.ComponentData comp : components) {
-            GridPoint[] terms = computeComponentTerminals(comp);
-            int termCount = comp.getType() == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber() ? 1 : 2;
+            GridPoint[] terms = computeComponentTerminalsAny(comp);
+            int termCount = comp.getType() == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber() ? 1 : terms.length;
             for (int t = 0; t < termCount; t++) {
                 terminalUsageCount.put(terms[t], terminalUsageCount.getOrDefault(terms[t], 0) + 1);
             }

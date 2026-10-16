@@ -636,22 +636,7 @@ public final class ControlCalculatorBuilder {
             }
         }
 
-        // union-find over the CONTROL wire topology
-        Map<String, String> parent = new HashMap<>();
-        for (CircuitModel.ConnectionData conn : model.getConnections()) {
-            if (!"CONTROL".equalsIgnoreCase(conn.getType()) || conn.getPoints() == null) {
-                continue;
-            }
-            String previous = null;
-            for (int[] point : conn.getPoints()) {
-                String key = pointKey(point[0], point[1]);
-                parent.putIfAbsent(key, key);
-                if (previous != null) {
-                    union(parent, previous, key);
-                }
-                previous = key;
-            }
-        }
+        ControlWireNets controlWireNets = buildControlWireNets(model.getConnections());
 
         Map<String, AbstractControlCalculatable> calculatorByComp = new LinkedHashMap<>();
         List<GateDrive> gateDrives = new ArrayList<>();
@@ -719,7 +704,7 @@ public final class ControlCalculatorBuilder {
             }
         }
 
-        wireInputs(controlComponents, calculatorByComp, parent);
+        wireInputs(controlComponents, calculatorByComp, controlWireNets);
 
         return new ControlCoupling(topologicalOrder(calculatorByComp), gateDrives, probes,
                 signalTaps, warnings);
@@ -1187,7 +1172,7 @@ public final class ControlCalculatorBuilder {
 
     private static void wireInputs(List<CircuitModel.ComponentData> controlComponents,
                                    Map<String, AbstractControlCalculatable> calculatorByComp,
-                                   Map<String, String> parent) {
+                                   ControlWireNets wireNets) {
         // producer map: signal node -> (calculator, output index)
         Map<String, Object[]> producerByNode = new HashMap<>();
         for (CircuitModel.ComponentData comp : controlComponents) {
@@ -1198,7 +1183,7 @@ public final class ControlCalculatorBuilder {
             }
             for (int j = 0; j < layout[1]; j++) {
                 int[] point = terminalPoint(comp, -1, j, layout[2]);
-                producerByNode.putIfAbsent(find(parent, pointKey(point[0], point[1])),
+                producerByNode.putIfAbsent(wireNets.netKey(point[0], point[1]),
                         new Object[]{calculator, j});
             }
         }
@@ -1211,7 +1196,7 @@ public final class ControlCalculatorBuilder {
             }
             for (int i = 0; i < layout[0]; i++) {
                 int[] point = terminalPoint(comp, i, -1, layout[2]);
-                Object[] producer = producerByNode.get(find(parent, pointKey(point[0], point[1])));
+                Object[] producer = producerByNode.get(wireNets.netKey(point[0], point[1]));
                 if (producer != null) {
                     try {
                         calculator.setInputSignal(i, (AbstractControlCalculatable) producer[0],
@@ -1394,23 +1379,89 @@ public final class ControlCalculatorBuilder {
         return params != null && index < params.length ? params[index] : 0.0;
     }
 
-    private static String find(Map<String, String> parent, String key) {
-        String root = parent.get(key);
-        if (root == null) {
-            return key;
+    private static final class ControlWireNets {
+        private final Map<String, Integer> pointToWireId = new HashMap<>();
+        private final Map<Integer, Integer> wireParent = new HashMap<>();
+
+        private int find(int i) {
+            int root = i;
+            while (wireParent.containsKey(root) && wireParent.get(root) != root) {
+                root = wireParent.get(root);
+            }
+            int curr = i;
+            while (curr != root) {
+                int next = wireParent.getOrDefault(curr, curr);
+                wireParent.put(curr, root);
+                curr = next;
+            }
+            return root;
         }
-        while (!root.equals(key)) {
-            key = root;
-            root = parent.get(key);
+
+        private void union(int i, int j) {
+            int rootI = find(i);
+            int rootJ = find(j);
+            if (rootI != rootJ) {
+                wireParent.put(rootI, rootJ);
+            }
         }
-        return root;
+
+        public String netKey(int x, int y) {
+            String pKey = pointKey(x, y);
+            Integer wireId = pointToWireId.get(pKey);
+            if (wireId != null) {
+                return "W" + find(wireId);
+            }
+            return "P" + pKey;
+        }
     }
 
-    private static void union(Map<String, String> parent, String a, String b) {
-        String rootA = find(parent, a);
-        String rootB = find(parent, b);
-        if (!rootA.equals(rootB)) {
-            parent.put(rootA, rootB);
+    private static List<int[]> toControlPointPath(int[][] points) {
+        List<int[]> path = new ArrayList<>();
+        if (points == null) {
+            return path;
         }
+        for (int[] p : points) {
+            if (p != null && p.length >= 2) {
+                path.add(new int[]{p[0], p[1]});
+            }
+        }
+        return path;
+    }
+
+    private static ControlWireNets buildControlWireNets(List<CircuitModel.ConnectionData> connections) {
+        ControlWireNets nets = new ControlWireNets();
+        if (connections == null) {
+            return nets;
+        }
+        List<List<int[]>> wires = new ArrayList<>();
+        for (CircuitModel.ConnectionData conn : connections) {
+            if (conn == null || !"CONTROL".equalsIgnoreCase(conn.getType()) || conn.getPoints() == null) {
+                continue;
+            }
+            List<int[]> path = toControlPointPath(conn.getPoints());
+            if (!path.isEmpty()) {
+                wires.add(path);
+            }
+        }
+        Map<String, List<Integer>> wiresThroughPoint = new HashMap<>();
+        for (int i = 0; i < wires.size(); i++) {
+            nets.wireParent.put(i, i);
+            for (int[] pt : wires.get(i)) {
+                String k = pointKey(pt[0], pt[1]);
+                wiresThroughPoint.computeIfAbsent(k, key -> new ArrayList<>()).add(i);
+                nets.pointToWireId.putIfAbsent(k, i);
+            }
+        }
+        for (int i = 0; i < wires.size(); i++) {
+            List<int[]> path = wires.get(i);
+            int[][] ends = {path.get(0), path.get(path.size() - 1)};
+            for (int[] end : ends) {
+                String endKey = pointKey(end[0], end[1]);
+                for (int j : wiresThroughPoint.getOrDefault(endKey, List.of())) {
+                    nets.union(i, j);
+                }
+            }
+        }
+        return nets;
     }
 }
