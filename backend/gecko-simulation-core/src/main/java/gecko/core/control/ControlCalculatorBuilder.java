@@ -665,7 +665,8 @@ public final class ControlCalculatorBuilder {
                 if (elementIndex != null && isSwitch(netlist.getType(elementIndex))) {
                     gateDrives.add(new GateDrive(elementIndex, netlist.getType(elementIndex), gate0(comp, calculatorByComp)));
                 } else {
-                    String msg = "Gate '" + comp.getName() + "' references an unknown or non-switch power component and never switches";
+                    String msg = "DRC_PROBE_ERROR: Gate '" + comp.getName()
+                            + "' references an unknown or non-switch power component and never switches";
                     warnings.add(msg);
                     LOGGER.warn("Gate '{}' references unknown power component", comp.getName());
                 }
@@ -675,7 +676,7 @@ public final class ControlCalculatorBuilder {
                 if (probe != null) {
                     probes.add(probe);
                 } else {
-                    String msg = "Measurement '" + comp.getName()
+                    String msg = "DRC_PROBE_ERROR: Measurement '" + comp.getName()
                             + "' references an unknown power component or labels and exports 0";
                     warnings.add(msg);
                     LOGGER.warn("Measurement '{}' references unknown power component or labels",
@@ -807,7 +808,7 @@ public final class ControlCalculatorBuilder {
             int nodeY = nodeForLabel(netlist, measured[1]);
             if (nodeX < 0 || nodeY < 0) {
                 String bad = nodeX < 0 ? measured[0] : measured[1];
-                warnings.add("Voltmeter '" + comp.getName() + "' references unknown node label '"
+                warnings.add("DRC_PROBE_ERROR: Voltmeter '" + comp.getName() + "' references unknown node label '"
                         + bareLabel(bad) + "' — treated as ground, so it reads 0");
                 return new Probe(-1, false, name, compName, calculator,
                         Math.max(nodeX, 0), Math.max(nodeY, 0));

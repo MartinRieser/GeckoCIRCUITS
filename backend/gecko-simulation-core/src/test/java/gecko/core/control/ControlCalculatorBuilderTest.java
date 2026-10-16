@@ -307,6 +307,30 @@ class ControlCalculatorBuilderTest {
 
         assertEquals(0, result.gateDrives().size(), "unresolvable references must not crash the build");
         assertEquals(1, result.probes().size());
+        assertTrue(result.warnings().stream().anyMatch(w -> w.contains("DRC_PROBE_ERROR") && w.contains("Gate")),
+                "Must emit DRC_PROBE_ERROR diagnostic for unresolvable gate reference, got: " + result.warnings());
+    }
+
+    @Test
+    void probesWithoutCoupledComponent_emitDRCProbeError() throws Exception {
+        // Ammeter referencing unresolvable ID 8888
+        CircuitModel model = new CircuitModel();
+        CircuitModel.ComponentData ammeter = new CircuitModel.ComponentData(2, "AMP.1", 10, 10, 503);
+        ammeter.setCoupledReferenceID(8888);
+        model.addControlComponent(ammeter);
+
+        // Voltmeter referencing unknown node label "DOES_NOT_EXIST"
+        CircuitModel.ComponentData voltmeter = new CircuitModel.ComponentData(1, "VOLT.1", 20, 10, 503);
+        voltmeter.setParameterStrings(new String[]{"DOES_NOT_EXIST", "0"});
+        model.addControlComponent(voltmeter);
+
+        CircuitNetlist netlist = new CircuitNetlist();
+        ControlCalculatorBuilder.ControlCoupling result = ControlCalculatorBuilder.build(model, netlist);
+
+        assertTrue(result.warnings().stream().anyMatch(w -> w.contains("DRC_PROBE_ERROR") && w.contains("AMP.1")),
+                "Must emit DRC_PROBE_ERROR for unresolvable ammeter target, got: " + result.warnings());
+        assertTrue(result.warnings().stream().anyMatch(w -> w.contains("DRC_PROBE_ERROR") && w.contains("VOLT.1")),
+                "Must emit DRC_PROBE_ERROR for unresolvable voltmeter node, got: " + result.warnings());
     }
 
     private static String withControlBlock(String base, String typ, String name) {

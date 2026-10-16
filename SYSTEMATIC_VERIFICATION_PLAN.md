@@ -45,7 +45,7 @@ flowchart TD
   - Implement warning in `NetlistBuilder`: if an unattached terminal carries a net label that conflicts with a physically connected wire net, emit `DRC_LABEL_COLLISION`.
   - Test: Unit test asserting warnings on conflicting optical labels.
 
-- [ ] **Task 1.4: Probe Target Integrity Check**
+- [x] **Task 1.4: Probe Target Integrity Check**
   - Verify that every probe (`VOLTMETER`, `AMMETER`, `CTRL_PROBE`) targets an existing component and measurable state. A probe referencing an empty node or missing element must fail fast with a descriptive diagnostic rather than recording 0.0V.
 
 ---

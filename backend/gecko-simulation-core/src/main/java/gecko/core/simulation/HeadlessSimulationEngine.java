@@ -243,6 +243,9 @@ public class HeadlessSimulationEngine {
         // drives for switches and measurement probes, coupled via
         // coupledReferenceID like the classic editor
         controlCoupling = ControlCalculatorBuilder.build(circuitModel, circuitNetlist);
+        if (circuitNetlist != null && controlCoupling != null) {
+            controlCoupling.warnings().forEach(circuitNetlist::addBuildWarning);
+        }
         controlNetlist = ControlNetlist.createEmpty();
         controlNetlist.setSortedCalculators(controlCoupling.calculators());
         controlCoupling.initialize(dt);
