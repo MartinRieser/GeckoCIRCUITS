@@ -113,16 +113,16 @@ flowchart TD
 ### Phase 4: Differential Legacy Parity Verification (`-Pparity`)
 *Objective: Mathematically prove that the modern simulation engine computes bit-identical or floating-point equivalent results compared to classic GeckoCIRCUITS.*
 
-- [ ] **Task 4.1: Run Full Parity Harness**
+- [x] **Task 4.1: Run Full Parity Harness**
   - Execute: `mvn verify -Pparity`
   - Benchmark all 26 reference circuits (`.ipes` files in `backend/gecko-simulation-core/src/test/resources/classic-circuits/`).
 
-- [ ] **Task 4.2: Maximum Error Tolerance Audit**
+- [x] **Task 4.2: Maximum Error Tolerance Audit**
   - Assert that waveform divergence between modern solver and classic GUI engine satisfies:
     $$\frac{\|y_{\text{modern}}(t) - y_{\text{classic}}(t)\|_\infty}{\max(|y_{\text{classic}}|) + \epsilon} < 10^{-4}$$
   - Log any differences in numerical switching chatter or matrix condition numbers.
 
-- [ ] **Task 4.3: Parity Testing on Post-Edited Circuits**
+- [x] **Task 4.3: Parity Testing on Post-Edited Circuits**
   - Create parity fixtures where circuits have been edited (inserted shunts, altered inductances, retuned PI gains) and verify identical solver response.
 
 ---

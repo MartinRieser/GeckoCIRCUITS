@@ -1,5 +1,6 @@
 package gecko.core.simulation;
 
+import gecko.core.datacontainer.DataContainerGlobal;
 import gecko.core.io.CircuitFileParser;
 import gecko.core.io.CircuitModel;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -85,5 +86,17 @@ public class ClassicCompatibilityTest {
             System.err.println("FAILED " + circuitPath + ": " + result.getErrorMessage());
         }
         assertTrue(result.isSuccess(), "Simulation failed for " + circuitPath + ": " + result.getErrorMessage());
+        assertTrue(result.getTotalTimeSteps() > 0, "No time steps recorded for " + circuitPath);
+        DataContainerGlobal dc = result.getDataContainer();
+        if (dc != null) {
+            int rows = dc.getRowLength();
+            for (int r = 0; r < rows; r++) {
+                int maxIdx = dc.getMaximumTimeIndex(r);
+                for (int c = 0; c <= maxIdx; c++) {
+                    float val = dc.getValue(r, c);
+                    assertTrue(Float.isFinite(val), "Non-finite value " + val + " in row " + r + " at step " + c + " for " + circuitPath);
+                }
+            }
+        }
     }
 }
