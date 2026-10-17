@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 410" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 430" width="100%" height="100%">
   <defs>
     <style>
       .wire { stroke: #1e293b; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
@@ -32,157 +32,161 @@
     </marker>
   </defs>
   <rect width="100%" height="100%" class="card" />
-  <text x="35" y="38" class="title">Three-Phase Two-Level Voltage Source Inverter (VSI)</text>
-  <text x="35" y="58" class="subtitle">European IEC 60617 Standard Schematic • 6-Switch Bridge with Antiparallel Diodes</text>
-  <line x1="90" y1="110" x2="680" y2="110" class="wire" stroke="#dc2626" />
-<text x="75" y="115" class="tag-pos">+Vdc</text>
-<line x1="90" y1="350" x2="680" y2="350" class="wire" stroke="#1e293b" />
-<text x="75" y="355" class="tag-neg">0V</text>
+  <text x="35" y="38" class="title">Three-Phase Voltage Source Inverter (2-Level VSI)</text>
+  <text x="35" y="58" class="subtitle">European IEC 60617 Standard Schematic • 6-Switch Bridge for AC Motor Drives &amp; Grid Tie</text>
+  <line x1="120" y1="100" x2="560" y2="100" class="wire" stroke="#dc2626" />
+<text x="105" y="105" class="tag-pos">+Vdc</text>
+<line x1="120" y1="340" x2="560" y2="340" class="wire" stroke="#2563eb" />
+<text x="105" y="345" class="tag-neg">0V</text>
+<circle cx="180" cy="100" r="4" class="junction" />
+<circle cx="180" cy="340" r="4" class="junction" />
 
-    <line x1="160" y1="185" x2="160" y2="224" class="wire" />
-    <line x1="140" y1="224" x2="180" y2="224" class="wire" stroke-width="3" />
-    <line x1="140" y1="236" x2="180" y2="236" class="wire" stroke-width="3" />
-    <line x1="160" y1="236" x2="160" y2="275" class="wire" />
-    <text x="186" y="227" class="label-start">Cdc</text>
-    <text x="186" y="245" class="sublabel-start">DC Link</text>
+    <line x1="180" y1="100" x2="180" y2="214" class="wire" />
+    <line x1="162" y1="214" x2="198" y2="214" class="wire" stroke-width="3" />
+    <line x1="162" y1="226" x2="198" y2="226" class="wire" stroke-width="3" />
+    <line x1="180" y1="226" x2="180" y2="340" class="wire" />
+    <text x="204" y="217" class="label-start">C_dc</text>
+    <text x="204" y="235" class="sublabel-start">DC Bus Cap</text>
     
-<circle cx="160" cy="110" r="4" class="junction" />
-<circle cx="160" cy="350" r="4" class="junction" />
 
-    <line x1="280" y1="125" x2="280" y2="152" class="wire" />
-    <circle cx="280" cy="152" r="3.5" class="junction" />
-    <line x1="280" y1="152" x2="264" y2="180" class="comp-sw" />
-    <circle cx="280" cy="188" r="3.5" class="junction" />
-    <line x1="280" y1="188" x2="280" y2="215" class="wire" />
-    <text x="252" y="170" class="label-end">S_1</text>
-    <text x="252" y="186" class="sublabel" text-anchor="end">Phase A</text>
+    <line x1="180" y1="340" x2="180" y2="355" class="wire" />
+    <line x1="162" y1="355" x2="198" y2="355" class="wire-gnd" />
+    <line x1="169" y1="361" x2="191" y2="361" class="wire-gnd" />
+    <line x1="176" y1="367" x2="184" y2="367" class="wire-gnd" />
+    <text x="180" y="382" class="sublabel">GND</text>
     
-        <line x1="280" y1="142" x2="315" y2="142" class="wire-thin" />
-        <line x1="315" y1="142" x2="315" y2="158" class="wire-thin" />
-        <polygon points="305,180 315,160 325,180" fill="#94a3b8" stroke="#94a3b8" />
-        <line x1="305" y1="160" x2="325" y2="160" stroke="#94a3b8" stroke-width="2" />
-        <line x1="315" y1="180" x2="315" y2="198" class="wire-thin" />
-        <line x1="315" y1="198" x2="280" y2="198" class="wire-thin" />
-        <circle cx="280" cy="142" r="3" class="junction" />
-        <circle cx="280" cy="198" r="3" class="junction" />
+<circle cx="280" cy="100" r="4" class="junction" />
+<circle cx="280" cy="220" r="4" class="junction" />
+<circle cx="280" cy="340" r="4" class="junction" />
+
+    <line x1="280" y1="100" x2="280" y2="142" class="wire" />
+    <circle cx="280" cy="142" r="3.5" class="junction" />
+    <line x1="280" y1="142" x2="266" y2="170" class="comp-sw" />
+    <circle cx="280" cy="178" r="3.5" class="junction" />
+    <line x1="280" y1="178" x2="280" y2="220" class="wire" />
+    <text x="254" y="158" class="label-end">S_1</text>
+    <text x="254" y="176" class="sublabel" text-anchor="end"></text>
+    
+        <line x1="280" y1="132" x2="315" y2="132" class="wire-thin" />
+        <line x1="315" y1="132" x2="315" y2="148" class="wire-thin" />
+        <polygon points="305,170 315,150 325,170" fill="#94a3b8" stroke="#94a3b8" />
+        <line x1="305" y1="150" x2="325" y2="150" stroke="#94a3b8" stroke-width="2" />
+        <line x1="315" y1="170" x2="315" y2="188" class="wire-thin" />
+        <line x1="315" y1="188" x2="280" y2="188" class="wire-thin" />
+        <circle cx="280" cy="132" r="3" class="junction" />
+        <circle cx="280" cy="188" r="3" class="junction" />
         
 
-    <line x1="280" y1="245" x2="280" y2="272" class="wire" />
-    <circle cx="280" cy="272" r="3.5" class="junction" />
-    <line x1="280" y1="272" x2="264" y2="300" class="comp-sw" />
-    <circle cx="280" cy="308" r="3.5" class="junction" />
-    <line x1="280" y1="308" x2="280" y2="335" class="wire" />
-    <text x="252" y="290" class="label-end">S_2</text>
-    <text x="252" y="306" class="sublabel" text-anchor="end"></text>
+    <line x1="280" y1="220" x2="280" y2="262" class="wire" />
+    <circle cx="280" cy="262" r="3.5" class="junction" />
+    <line x1="280" y1="262" x2="266" y2="290" class="comp-sw" />
+    <circle cx="280" cy="298" r="3.5" class="junction" />
+    <line x1="280" y1="298" x2="280" y2="340" class="wire" />
+    <text x="254" y="278" class="label-end">S_4</text>
+    <text x="254" y="296" class="sublabel" text-anchor="end"></text>
     
-        <line x1="280" y1="262" x2="315" y2="262" class="wire-thin" />
-        <line x1="315" y1="262" x2="315" y2="278" class="wire-thin" />
-        <polygon points="305,300 315,280 325,300" fill="#94a3b8" stroke="#94a3b8" />
-        <line x1="305" y1="280" x2="325" y2="280" stroke="#94a3b8" stroke-width="2" />
-        <line x1="315" y1="300" x2="315" y2="318" class="wire-thin" />
-        <line x1="315" y1="318" x2="280" y2="318" class="wire-thin" />
-        <circle cx="280" cy="262" r="3" class="junction" />
-        <circle cx="280" cy="318" r="3" class="junction" />
+        <line x1="280" y1="252" x2="315" y2="252" class="wire-thin" />
+        <line x1="315" y1="252" x2="315" y2="268" class="wire-thin" />
+        <polygon points="305,290 315,270 325,290" fill="#94a3b8" stroke="#94a3b8" />
+        <line x1="305" y1="270" x2="325" y2="270" stroke="#94a3b8" stroke-width="2" />
+        <line x1="315" y1="290" x2="315" y2="308" class="wire-thin" />
+        <line x1="315" y1="308" x2="280" y2="308" class="wire-thin" />
+        <circle cx="280" cy="252" r="3" class="junction" />
+        <circle cx="280" cy="308" r="3" class="junction" />
         
-<circle cx="280" cy="110" r="4" class="junction" />
-<circle cx="280" cy="350" r="4" class="junction" />
-<circle cx="280" cy="230" r="4" class="junction" />
-<line x1="280" y1="230" x2="740" y2="230" class="wire" />
-<circle cx="740" cy="230" r="4" fill="#0284c7" />
-<text x="755" y="235" class="label-start" fill="#0284c7">A</text>
+<line x1="280" y1="220" x2="680" y2="220" class="wire" />
 
-    <line x1="420" y1="125" x2="420" y2="152" class="wire" />
-    <circle cx="420" cy="152" r="3.5" class="junction" />
-    <line x1="420" y1="152" x2="404" y2="180" class="comp-sw" />
-    <circle cx="420" cy="188" r="3.5" class="junction" />
-    <line x1="420" y1="188" x2="420" y2="215" class="wire" />
-    <text x="392" y="170" class="label-end">S_3</text>
-    <text x="392" y="186" class="sublabel" text-anchor="end">Phase B</text>
+    <circle cx="680" cy="220" r="4.5" fill="#0284c7" />
+    <text x="692" y="224" class="label" text-anchor="start" fill="#0284c7">Phase A (U)</text>
     
-        <line x1="420" y1="142" x2="455" y2="142" class="wire-thin" />
-        <line x1="455" y1="142" x2="455" y2="158" class="wire-thin" />
-        <polygon points="445,180 455,160 465,180" fill="#94a3b8" stroke="#94a3b8" />
-        <line x1="445" y1="160" x2="465" y2="160" stroke="#94a3b8" stroke-width="2" />
-        <line x1="455" y1="180" x2="455" y2="198" class="wire-thin" />
-        <line x1="455" y1="198" x2="420" y2="198" class="wire-thin" />
-        <circle cx="420" cy="142" r="3" class="junction" />
-        <circle cx="420" cy="198" r="3" class="junction" />
-        
+<circle cx="400" cy="100" r="4" class="junction" />
+<circle cx="400" cy="220" r="4" class="junction" />
+<circle cx="400" cy="340" r="4" class="junction" />
 
-    <line x1="420" y1="245" x2="420" y2="272" class="wire" />
-    <circle cx="420" cy="272" r="3.5" class="junction" />
-    <line x1="420" y1="272" x2="404" y2="300" class="comp-sw" />
-    <circle cx="420" cy="308" r="3.5" class="junction" />
-    <line x1="420" y1="308" x2="420" y2="335" class="wire" />
-    <text x="392" y="290" class="label-end">S_4</text>
-    <text x="392" y="306" class="sublabel" text-anchor="end"></text>
+    <line x1="400" y1="100" x2="400" y2="142" class="wire" />
+    <circle cx="400" cy="142" r="3.5" class="junction" />
+    <line x1="400" y1="142" x2="386" y2="170" class="comp-sw" />
+    <circle cx="400" cy="178" r="3.5" class="junction" />
+    <line x1="400" y1="178" x2="400" y2="220" class="wire" />
+    <text x="374" y="158" class="label-end">S_3</text>
+    <text x="374" y="176" class="sublabel" text-anchor="end"></text>
     
-        <line x1="420" y1="262" x2="455" y2="262" class="wire-thin" />
-        <line x1="455" y1="262" x2="455" y2="278" class="wire-thin" />
-        <polygon points="445,300 455,280 465,300" fill="#94a3b8" stroke="#94a3b8" />
-        <line x1="445" y1="280" x2="465" y2="280" stroke="#94a3b8" stroke-width="2" />
-        <line x1="455" y1="300" x2="455" y2="318" class="wire-thin" />
-        <line x1="455" y1="318" x2="420" y2="318" class="wire-thin" />
-        <circle cx="420" cy="262" r="3" class="junction" />
-        <circle cx="420" cy="318" r="3" class="junction" />
-        
-<circle cx="420" cy="110" r="4" class="junction" />
-<circle cx="420" cy="350" r="4" class="junction" />
-<circle cx="420" cy="230" r="4" class="junction" />
-<line x1="420" y1="230" x2="420" y2="265" class="wire" />
-<line x1="420" y1="265" x2="740" y2="265" class="wire" />
-<circle cx="740" cy="265" r="4" fill="#0284c7" />
-<text x="755" y="270" class="label-start" fill="#0284c7">B</text>
-
-    <line x1="560" y1="125" x2="560" y2="152" class="wire" />
-    <circle cx="560" cy="152" r="3.5" class="junction" />
-    <line x1="560" y1="152" x2="544" y2="180" class="comp-sw" />
-    <circle cx="560" cy="188" r="3.5" class="junction" />
-    <line x1="560" y1="188" x2="560" y2="215" class="wire" />
-    <text x="532" y="170" class="label-end">S_5</text>
-    <text x="532" y="186" class="sublabel" text-anchor="end">Phase C</text>
-    
-        <line x1="560" y1="142" x2="595" y2="142" class="wire-thin" />
-        <line x1="595" y1="142" x2="595" y2="158" class="wire-thin" />
-        <polygon points="585,180 595,160 605,180" fill="#94a3b8" stroke="#94a3b8" />
-        <line x1="585" y1="160" x2="605" y2="160" stroke="#94a3b8" stroke-width="2" />
-        <line x1="595" y1="180" x2="595" y2="198" class="wire-thin" />
-        <line x1="595" y1="198" x2="560" y2="198" class="wire-thin" />
-        <circle cx="560" cy="142" r="3" class="junction" />
-        <circle cx="560" cy="198" r="3" class="junction" />
+        <line x1="400" y1="132" x2="435" y2="132" class="wire-thin" />
+        <line x1="435" y1="132" x2="435" y2="148" class="wire-thin" />
+        <polygon points="425,170 435,150 445,170" fill="#94a3b8" stroke="#94a3b8" />
+        <line x1="425" y1="150" x2="445" y2="150" stroke="#94a3b8" stroke-width="2" />
+        <line x1="435" y1="170" x2="435" y2="188" class="wire-thin" />
+        <line x1="435" y1="188" x2="400" y2="188" class="wire-thin" />
+        <circle cx="400" cy="132" r="3" class="junction" />
+        <circle cx="400" cy="188" r="3" class="junction" />
         
 
-    <line x1="560" y1="245" x2="560" y2="272" class="wire" />
-    <circle cx="560" cy="272" r="3.5" class="junction" />
-    <line x1="560" y1="272" x2="544" y2="300" class="comp-sw" />
-    <circle cx="560" cy="308" r="3.5" class="junction" />
-    <line x1="560" y1="308" x2="560" y2="335" class="wire" />
-    <text x="532" y="290" class="label-end">S_6</text>
-    <text x="532" y="306" class="sublabel" text-anchor="end"></text>
+    <line x1="400" y1="220" x2="400" y2="262" class="wire" />
+    <circle cx="400" cy="262" r="3.5" class="junction" />
+    <line x1="400" y1="262" x2="386" y2="290" class="comp-sw" />
+    <circle cx="400" cy="298" r="3.5" class="junction" />
+    <line x1="400" y1="298" x2="400" y2="340" class="wire" />
+    <text x="374" y="278" class="label-end">S_6</text>
+    <text x="374" y="296" class="sublabel" text-anchor="end"></text>
     
-        <line x1="560" y1="262" x2="595" y2="262" class="wire-thin" />
-        <line x1="595" y1="262" x2="595" y2="278" class="wire-thin" />
-        <polygon points="585,300 595,280 605,300" fill="#94a3b8" stroke="#94a3b8" />
-        <line x1="585" y1="280" x2="605" y2="280" stroke="#94a3b8" stroke-width="2" />
-        <line x1="595" y1="300" x2="595" y2="318" class="wire-thin" />
-        <line x1="595" y1="318" x2="560" y2="318" class="wire-thin" />
-        <circle cx="560" cy="262" r="3" class="junction" />
-        <circle cx="560" cy="318" r="3" class="junction" />
+        <line x1="400" y1="252" x2="435" y2="252" class="wire-thin" />
+        <line x1="435" y1="252" x2="435" y2="268" class="wire-thin" />
+        <polygon points="425,290 435,270 445,290" fill="#94a3b8" stroke="#94a3b8" />
+        <line x1="425" y1="270" x2="445" y2="270" stroke="#94a3b8" stroke-width="2" />
+        <line x1="435" y1="290" x2="435" y2="308" class="wire-thin" />
+        <line x1="435" y1="308" x2="400" y2="308" class="wire-thin" />
+        <circle cx="400" cy="252" r="3" class="junction" />
+        <circle cx="400" cy="308" r="3" class="junction" />
         
-<circle cx="560" cy="110" r="4" class="junction" />
-<circle cx="560" cy="350" r="4" class="junction" />
-<circle cx="560" cy="230" r="4" class="junction" />
-<line x1="560" y1="230" x2="560" y2="300" class="wire" />
-<line x1="560" y1="300" x2="740" y2="300" class="wire" />
-<circle cx="740" cy="300" r="4" fill="#0284c7" />
-<text x="755" y="305" class="label-start" fill="#0284c7">C</text>
-<text x="820" y="270" class="label" fill="#0284c7">3-Phase</text>
-<text x="820" y="290" class="sublabel">Load / Motor</text>
+<line x1="400" y1="220" x2="400" y2="250" class="wire" />
+<line x1="400" y1="250" x2="680" y2="250" class="wire" />
 
-    <line x1="160" y1="350" x2="160" y2="365" class="wire" />
-    <line x1="142" y1="365" x2="178" y2="365" class="wire-gnd" />
-    <line x1="149" y1="371" x2="171" y2="371" class="wire-gnd" />
-    <line x1="156" y1="377" x2="164" y2="377" class="wire-gnd" />
-    <text x="160" y="392" class="sublabel">GND</text>
+    <circle cx="680" cy="250" r="4.5" fill="#0284c7" />
+    <text x="692" y="254" class="label" text-anchor="start" fill="#0284c7">Phase B (V)</text>
+    
+<circle cx="520" cy="100" r="4" class="junction" />
+<circle cx="520" cy="220" r="4" class="junction" />
+<circle cx="520" cy="340" r="4" class="junction" />
+
+    <line x1="520" y1="100" x2="520" y2="142" class="wire" />
+    <circle cx="520" cy="142" r="3.5" class="junction" />
+    <line x1="520" y1="142" x2="506" y2="170" class="comp-sw" />
+    <circle cx="520" cy="178" r="3.5" class="junction" />
+    <line x1="520" y1="178" x2="520" y2="220" class="wire" />
+    <text x="494" y="158" class="label-end">S_5</text>
+    <text x="494" y="176" class="sublabel" text-anchor="end"></text>
+    
+        <line x1="520" y1="132" x2="555" y2="132" class="wire-thin" />
+        <line x1="555" y1="132" x2="555" y2="148" class="wire-thin" />
+        <polygon points="545,170 555,150 565,170" fill="#94a3b8" stroke="#94a3b8" />
+        <line x1="545" y1="150" x2="565" y2="150" stroke="#94a3b8" stroke-width="2" />
+        <line x1="555" y1="170" x2="555" y2="188" class="wire-thin" />
+        <line x1="555" y1="188" x2="520" y2="188" class="wire-thin" />
+        <circle cx="520" cy="132" r="3" class="junction" />
+        <circle cx="520" cy="188" r="3" class="junction" />
+        
+
+    <line x1="520" y1="220" x2="520" y2="262" class="wire" />
+    <circle cx="520" cy="262" r="3.5" class="junction" />
+    <line x1="520" y1="262" x2="506" y2="290" class="comp-sw" />
+    <circle cx="520" cy="298" r="3.5" class="junction" />
+    <line x1="520" y1="298" x2="520" y2="340" class="wire" />
+    <text x="494" y="278" class="label-end">S_2</text>
+    <text x="494" y="296" class="sublabel" text-anchor="end"></text>
+    
+        <line x1="520" y1="252" x2="555" y2="252" class="wire-thin" />
+        <line x1="555" y1="252" x2="555" y2="268" class="wire-thin" />
+        <polygon points="545,290 555,270 565,290" fill="#94a3b8" stroke="#94a3b8" />
+        <line x1="545" y1="270" x2="565" y2="270" stroke="#94a3b8" stroke-width="2" />
+        <line x1="555" y1="290" x2="555" y2="308" class="wire-thin" />
+        <line x1="555" y1="308" x2="520" y2="308" class="wire-thin" />
+        <circle cx="520" cy="252" r="3" class="junction" />
+        <circle cx="520" cy="308" r="3" class="junction" />
+        
+<line x1="520" y1="220" x2="520" y2="280" class="wire" />
+<line x1="520" y1="280" x2="680" y2="280" class="wire" />
+
+    <circle cx="680" cy="280" r="4.5" fill="#0284c7" />
+    <text x="692" y="284" class="label" text-anchor="start" fill="#0284c7">Phase C (W)</text>
     
 </svg>
