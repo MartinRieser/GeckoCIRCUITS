@@ -23,12 +23,15 @@ $$P_{total} = P_{cond} + P_{sw}$$
 ### Conduction Losses
 
 **MOSFET:**
+
 $$P_{cond,MOS} = I_{rms}^2 \cdot R_{DS(on)}$$
 
 **IGBT:**
+
 $$P_{cond,IGBT} = V_{CE(sat)} \cdot I_{avg} + r_{CE} \cdot I_{rms}^2$$
 
 **Diode:**
+
 $$P_{cond,D} = V_F \cdot I_{avg} + r_D \cdot I_{rms}^2$$
 
 ### Switching Losses
@@ -78,25 +81,31 @@ $$E_{sw}(T) = E_{sw}(25°C) \cdot \left[1 + \beta(T - 25)\right]$$
 ### High-Side MOSFET
 
 **Conduction:**
+
 $$P_{cond,HS} = D \cdot I_L^2 \cdot R_{DS(on)}$$
 
 **Switching:**
+
 $$P_{sw,HS} = \frac{1}{2}V_{in} \cdot I_L \cdot (t_r + t_f) \cdot f_{sw}$$
 
 ### Low-Side Diode/MOSFET
 
 **Conduction:**
+
 $$P_{cond,LS} = (1-D) \cdot I_L \cdot V_F$$
 
 ### Inductor Losses
 
 **DC Copper Loss:**
+
 $$P_{Cu,DC} = I_{DC}^2 \cdot R_{DC}$$
 
 **AC Copper Loss (skin effect):**
+
 $$P_{Cu,AC} = I_{AC,rms}^2 \cdot R_{AC}$$
 
 **Core Loss (Steinmetz):**
+
 $$P_{core} = k \cdot f^{\alpha} \cdot B^{\beta} \cdot V_{core}$$
 
 ## Simulation Exercises

@@ -26,6 +26,7 @@ Given:
 - Rth,ch = 0.2 K/W (with thermal paste)
 
 Required:
+
 $$R_{th,ha} = \frac{125 - 50}{50} - 0.5 - 0.2 = 0.8 \text{ K/W}$$
 
 ## Heatsink Types
@@ -41,6 +42,7 @@ $$R_{th,ha} = \frac{125 - 50}{50} - 0.5 - 0.2 = 0.8 \text{ K/W}$$
 ### Forced Air Cooling
 
 Thermal resistance with airflow:
+
 $$R_{th}(v) = R_{th,natural} \cdot \sqrt{\frac{v_0}{v}}$$
 
 Where v₀ ≈ 0.5 m/s (natural convection equivalent)

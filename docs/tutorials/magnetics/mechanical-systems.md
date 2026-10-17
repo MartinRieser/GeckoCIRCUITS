@@ -169,6 +169,7 @@ $$\sigma = \frac{J_{load}}{J_{motor}}$$
 ### Resonance Frequency
 
 For two-mass system:
+
 $$f_{res} = \frac{1}{2\pi}\sqrt{\frac{k(J_1 + J_2)}{J_1 J_2}}$$
 
 Control bandwidth should be below resonance.

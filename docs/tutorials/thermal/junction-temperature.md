@@ -83,7 +83,9 @@ $$
 ### Periodic Power
 
 Average temperature + ripple:
+
 $$T_{j,avg} = T_a + P_{avg} \cdot R_{th,total}$$
+
 $$\Delta T_{j,ripple} = P_{peak} \cdot Z_{th}(t_{on})$$
 
 ## Design Guidelines
@@ -100,6 +102,7 @@ $$\Delta T_{j,ripple} = P_{peak} \cdot Z_{th}(t_{on})$$
 ### Derating
 
 Temperature margin for reliability:
+
 $$T_{j,design} = T_{j,max} - \Delta T_{margin}$$
 
 Typical margin: 25-50°C

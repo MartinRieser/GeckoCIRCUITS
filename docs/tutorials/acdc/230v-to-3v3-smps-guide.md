@@ -41,9 +41,12 @@ graph LR
 
 ### Stage 1: Mains Input & Transformer
 * **Peak Mains Voltage**:
+
   $$V_{\text{peak}} = 230\,\text{V} \times \sqrt{2} \approx 325.3\,\text{V}$$
+
 * **Transformer Secondary Voltage**:
   Stepping down from $230\,\text{V}$ to $\sim 12\,\text{V}$ AC RMS ($19 : 1$ turns ratio) yields a secondary peak voltage of:
+
   $$V_{\text{sec,peak}} \approx 12\,\text{V} \times \sqrt{2} \approx 17.0\,\text{V}$$
 
 ---
@@ -51,30 +54,42 @@ graph LR
 ### Stage 2: Rectifier & Intermediate DC Bus
 * **Rectifier Voltage Drop**: Two diode forward conduction drops ($\approx 2 \times 0.7\,\text{V} = 1.4\,\text{V}$).
 * **Peak Unloaded DC Voltage**:
+
   $$V_{\text{dc,peak}} = 17.0\,\text{V} - 1.4\,\text{V} \approx 15.6\,\text{V}$$
+
 * **DC-Link Filter Capacitor ($C_{\text{bulk}} = 4700\,\mu\text{F}$)**:
   At full 20 W load ($I_{\text{dc}} \approx 1.5\,\text{A}$ drawn from the intermediate bus), the bulk capacitor must supply current during the $\sim 8\,\text{ms}$ interval between 100 Hz rectifier peaks:
+
   $$\Delta V_{\text{ripple}} = \frac{I_{\text{dc}} \cdot \Delta t}{C_{\text{bulk}}} = \frac{1.5\,\text{A} \times 0.008\,\text{s}}{4700 \times 10^{-6}\,\text{F}} \approx 2.5\,\text{V}$$
+
   This keeps the DC bus stiff between **$13.0\,\text{V}$ and $15.6\,\text{V}$** (average $\approx 14.3\,\text{V}$ to $15.0\,\text{V}$), preventing output sag. *(A smaller $1000\,\mu\text{F}$ capacitor discharges by $>12\,\text{V}$, causing the bus and output to collapse to near 0 V at 100 Hz).*
 
 ---
 
 ### Stage 3: High-Frequency Buck Converter ($50\,\text{kHz}$)
 * **Duty Cycle ($D$)**:
+
   $$D = \frac{V_{\text{out}}}{V_{\text{in}}} = \frac{3.3\,\text{V}}{15.0\,\text{V}} = \mathbf{0.22}\quad (22\%)$$
+
 * **Switching Period ($T_{\text{sw}}$)**:
+
   $$T_{\text{sw}} = \frac{1}{50\,\text{kHz}} = 20\,\mu\text{s}$$
+
 * **Inductor Selection ($L_1 = 33\,\mu\text{H}$)**:
   Targeting an inductor ripple current $\Delta I_L \approx 30\%$ of full load ($1.8\,\text{A}$):
+
   $$L = \frac{V_{\text{out}} \cdot (1 - D)}{\Delta I_L \cdot f_{\text{sw}}} = \frac{3.3\,\text{V} \cdot (1 - 0.22)}{1.8\,\text{A} \cdot 50\,000\,\text{Hz}} = \frac{2.574}{90\,000} \approx \mathbf{28.6\,\mu\text{H}} \quad \longrightarrow \text{Select } \mathbf{33\,\mu\text{H}}$$
+
 * **Output Capacitor Selection ($C_1 = 470\,\mu\text{F}$)**:
   For an ultra-clean output ripple $\Delta V_{\text{out}} \le 20\,\text{mV}$:
+
   $$C = \frac{\Delta I_L}{8 \cdot f_{\text{sw}} \cdot \Delta V_{\text{out}}} = \frac{1.8\,\text{A}}{8 \cdot 50\,000\,\text{Hz} \cdot 0.02\,\text{V}} = \mathbf{225\,\mu\text{F}} \quad \longrightarrow \text{Select } \mathbf{470\,\mu\text{F}}$$
 
 ---
 
 ### Stage 4: Load Resistor Sizing
 * **Full Load Resistance ($R_{\text{load}}$)**:
+
   $$I_{\text{out}} = \frac{20\,\text{W}}{3.3\,\text{V}} = 6.06\,\text{A} \implies R_{\text{load}} = \frac{3.3\,\text{V}}{6.06\,\text{A}} = \mathbf{0.545\,\Omega} \approx \mathbf{0.55\,\Omega}$$
 
 ---
@@ -165,4 +180,5 @@ Click the **Gear icon (⚙)** or **Simulation ▾** in the top bar:
 2. **Inductor Current ($I_L$)**:
    * Continuous triangular ripple centered around **$6.06\,\text{A}$** with peak-to-peak ripple $\Delta I_L \approx 1.8\,\text{A}$ ($5.2\,\text{A} \to 7.0\,\text{A}$).
 3. **Delivered Output Power**:
+
    $$P_{\text{out}} = V_{\text{out}} \times I_{\text{out}} = 3.3\,\text{V} \times 6.06\,\text{A} \approx \mathbf{20.0\,\text{W}}$$

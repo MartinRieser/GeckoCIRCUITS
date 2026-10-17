@@ -116,6 +116,7 @@ Typical values:
 ### Improved GSE (iGSE)
 
 For non-sinusoidal waveforms:
+
 $$P_v = \frac{1}{T}\int_0^T k_i \left|\frac{dB}{dt}\right|^\alpha (\Delta B)^{\beta-\alpha} dt$$
 
 ## GeckoCIRCUITS Setup

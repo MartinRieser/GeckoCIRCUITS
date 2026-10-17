@@ -20,8 +20,9 @@ Inductor saturation occurs when the core's magnetic flux density approaches Bsat
 
 $$B = \mu_0 \mu_r(H) \cdot H$$
 
-At saturation:
-$$\mu_r \rightarrow 1$$ (core behaves like air)
+At saturation (core behaves like air):
+
+$$\mu_r \rightarrow 1$$
 
 ### Inductance vs Current
 
@@ -78,6 +79,7 @@ Physics-based model including:
 $$I_{sat} = \frac{B_{sat} \cdot l_e}{\mu_0 \mu_r \cdot N}$$
 
 With air gap:
+
 $$I_{sat} = \frac{B_{sat} \cdot l_g}{\mu_0 \cdot N}$$
 
 ## Design for Saturation Avoidance
@@ -85,6 +87,7 @@ $$I_{sat} = \frac{B_{sat} \cdot l_g}{\mu_0 \cdot N}$$
 ### Method 1: Air Gap
 
 Add gap to reduce effective permeability:
+
 $$\mu_{eff} = \frac{\mu_r}{1 + \mu_r \cdot l_g/l_e}$$
 
 Benefits:
@@ -95,6 +98,7 @@ Benefits:
 ### Method 2: Larger Core
 
 Increase Ae to reduce B for given flux:
+
 $$B = \frac{L \cdot I_{peak}}{N \cdot A_e}$$
 
 ### Method 3: Distributed Gap Materials
@@ -162,6 +166,7 @@ During load step:
 ### Safety Margin
 
 Design for:
+
 $$I_{peak} \leq 0.8 \cdot I_{sat}$$
 
 Account for:
