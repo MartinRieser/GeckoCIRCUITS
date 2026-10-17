@@ -11,6 +11,7 @@
       .label-end { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: end; }
       .sublabel { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: middle; }
       .sublabel-start { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: start; }
+      .sublabel-end { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: end; }
       .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 16px; fill: #0f172a; font-weight: 700; }
       .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 12px; fill: #64748b; font-weight: 400; }
       .comp-body { fill: #ffffff; stroke: #1e293b; stroke-width: 2.2; }
@@ -19,9 +20,11 @@
       .arrow { fill: #0284c7; stroke: none; }
       .measure-arrow { stroke: #0284c7; stroke-width: 1.75; fill: none; }
       .tag-pos { fill: #dc2626; font-family: sans-serif; font-size: 16px; font-weight: bold; text-anchor: middle; }
-      .tag-neg { fill: #2563eb; font-family: sans-serif; font-size: 18px; font-weight: bold; text-anchor: middle; }
       .tag-pos-start { fill: #dc2626; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: start; }
+      .tag-pos-end { fill: #dc2626; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: end; }
+      .tag-neg { fill: #2563eb; font-family: sans-serif; font-size: 18px; font-weight: bold; text-anchor: middle; }
       .tag-neg-start { fill: #2563eb; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: start; }
+      .tag-neg-end { fill: #2563eb; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: end; }
       .card { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; rx: 8px; }
       .block { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; rx: 6px; }
       .block-accent { fill: #f0f9ff; stroke: #0284c7; stroke-width: 1.5; rx: 6px; }
@@ -81,7 +84,7 @@
     <circle cx="440" cy="248" r="3.5" class="junction" />
     <line x1="440" y1="248" x2="440" y2="300" class="wire" />
     <text x="414" y="228" class="label-end">S_pfc</text>
-    <text x="414" y="246" class="sublabel" text-anchor="end">MOSFET / IGBT</text>
+    <text x="414" y="246" class="sublabel-end">MOSFET / IGBT</text>
     
         <line x1="440" y1="202" x2="475" y2="202" class="wire-thin" />
         <line x1="475" y1="202" x2="475" y2="218" class="wire-thin" />
@@ -130,7 +133,7 @@
     <text x="794" y="165" class="tag-pos">+</text>
     <text x="794" y="305" class="tag-neg">&#8722;</text>
     <line x1="805" y1="175" x2="805" y2="285" class="measure-arrow" marker-end="url(#arr-blue)" />
-    <text x="822" y="235" class="label" fill="#0284c7">Vdc = 400V</text>
+    <text x="822" y="235" class="label-start" fill="#0284c7">Vdc = 400V</text>
     
 
     <line x1="440" y1="300" x2="440" y2="315" class="wire" />

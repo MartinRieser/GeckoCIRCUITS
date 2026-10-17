@@ -39,6 +39,7 @@ def svg_wrap(viewbox, title, subtitle, elements):
       .label-end {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: end; }}
       .sublabel {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: middle; }}
       .sublabel-start {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: start; }}
+      .sublabel-end {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: end; }}
       .title {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 16px; fill: #0f172a; font-weight: 700; }}
       .subtitle {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 12px; fill: #64748b; font-weight: 400; }}
       .comp-body {{ fill: #ffffff; stroke: #1e293b; stroke-width: 2.2; }}
@@ -47,9 +48,11 @@ def svg_wrap(viewbox, title, subtitle, elements):
       .arrow {{ fill: #0284c7; stroke: none; }}
       .measure-arrow {{ stroke: #0284c7; stroke-width: 1.75; fill: none; }}
       .tag-pos {{ fill: #dc2626; font-family: sans-serif; font-size: 16px; font-weight: bold; text-anchor: middle; }}
-      .tag-neg {{ fill: #2563eb; font-family: sans-serif; font-size: 18px; font-weight: bold; text-anchor: middle; }}
       .tag-pos-start {{ fill: #dc2626; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: start; }}
+      .tag-pos-end {{ fill: #dc2626; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: end; }}
+      .tag-neg {{ fill: #2563eb; font-family: sans-serif; font-size: 18px; font-weight: bold; text-anchor: middle; }}
       .tag-neg-start {{ fill: #2563eb; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: start; }}
+      .tag-neg-end {{ fill: #2563eb; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: end; }}
       .card {{ fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; rx: 8px; }}
       .block {{ fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; rx: 6px; }}
       .block-accent {{ fill: #f0f9ff; stroke: #0284c7; stroke-width: 1.5; rx: 6px; }}
@@ -98,7 +101,7 @@ def terminal(x, y, label="", side="left", color="#0284c7"):
     dx = -12 if side == "left" else 12
     return f'''
     <circle cx="{x}" cy="{y}" r="4.5" fill="{color}" />
-    <text x="{x+dx}" y="{y+4}" class="label" text-anchor="{anchor}" fill="{color}">{label}</text>
+    <text x="{x+dx}" y="{y+4}" class="label-{anchor}" fill="{color}">{label}</text>
     '''
 
 def probe_v(x, y1, y2, label="V_out", polarity="+/-"):
@@ -111,7 +114,7 @@ def probe_v(x, y1, y2, label="V_out", polarity="+/-"):
     <text x="{x+14}" y="{y1+5}" class="tag-pos">{top_sgn}</text>
     <text x="{x+14}" y="{y2+5}" class="tag-neg">{bot_sgn}</text>
     <line x1="{x+25}" y1="{y1+15}" x2="{x+25}" y2="{y2-15}" class="measure-arrow" marker-end="url(#arr-blue)" />
-    <text x="{x+42}" y="{ym+5}" class="label" fill="#0284c7">{label}</text>
+    <text x="{x+42}" y="{ym+5}" class="label-start" fill="#0284c7">{label}</text>
     '''
 
 # ----------------- Two-Point Vertical Components -----------------
@@ -171,16 +174,17 @@ def cap_v(x, y1, y2, label="C", val="", side="right"):
 def ind_v(x, y1, y2, label="L", val="", side="left"):
     ym = int((y1 + y2) / 2)
     anchor = "end" if side == "left" else "start"
-    dx = -22 if side == "left" else 22
+    dx = -24 if side == "left" else 24
+    coil_dx = 14 if side == "left" else -14
     return f'''
     <line x1="{x}" y1="{y1}" x2="{x}" y2="{ym-28}" class="wire" />
-    <path d="M {x} {ym-28} C {x+16} {ym-28}, {x+16} {ym-14}, {x} {ym-14}
-             C {x+16} {ym-14}, {x+16} {ym}, {x} {ym}
-             C {x+16} {ym}, {x+16} {ym+14}, {x} {ym+14}
-             C {x+16} {ym+14}, {x+16} {ym+28}, {x} {ym+28}" class="wire" stroke-width="2.5" />
+    <path d="M {x} {ym-28} C {x+coil_dx} {ym-28}, {x+coil_dx} {ym-14}, {x} {ym-14}
+             C {x+coil_dx} {ym-14}, {x+coil_dx} {ym}, {x} {ym}
+             C {x+coil_dx} {ym}, {x+coil_dx} {ym+14}, {x} {ym+14}
+             C {x+coil_dx} {ym+14}, {x+coil_dx} {ym+28}, {x} {ym+28}" class="wire" stroke-width="2.5" />
     <line x1="{x}" y1="{ym+28}" x2="{x}" y2="{y2}" class="wire" />
     <text x="{x+dx}" y="{ym-3}" class="label-{anchor}">{label}</text>
-    <text x="{x+dx}" y="{ym+15}" class="sublabel" text-anchor="{anchor}">{val}</text>
+    <text x="{x+dx}" y="{ym+15}" class="sublabel-{anchor}">{val}</text>
     '''
 
 def diode_v(x, y1, y2, direction="up", label="D", val="", side="right"):
@@ -218,7 +222,7 @@ def switch_v(x, y1, y2, label="S", val="", with_diode=True, side="left"):
     <circle cx="{x}" cy="{ym+18}" r="3.5" class="junction" />
     <line x1="{x}" y1="{ym+18}" x2="{x}" y2="{y2}" class="wire" />
     <text x="{x+dx}" y="{ym-2}" class="label-{anchor}">{label}</text>
-    <text x="{x+dx}" y="{ym+16}" class="sublabel" text-anchor="{anchor}">{val}</text>
+    <text x="{x+dx}" y="{ym+16}" class="sublabel-{anchor}">{val}</text>
     '''
     if with_diode:
         diode_x = x + 35 if side == "left" else x - 35
@@ -667,46 +671,62 @@ def gen_vienna_rectifier():
 # ==============================================================================
 def gen_half_bridge_inverter():
     elems = [
-        # DC Rails: +Vdc/2 (y=100), Neutral (y=220), -Vdc/2 (y=340)
-        wire(120, 360, 100, stroke="#dc2626"),
-        f'<text x="105" y="105" class="tag-pos">+Vdc/2</text>',
-        wire(120, 680, 340, stroke="#2563eb"),
-        f'<text x="105" y="345" class="tag-neg">&#8722;Vdc/2</text>',
+        # DC Rails: +Vdc/2 (y=80), -Vdc/2 (y=400)
+        wire(150, 80, 360, 80, stroke="#dc2626"),
+        '<circle cx="150" cy="80" r="4.5" fill="#dc2626" />',
+        '<text x="135" y="85" class="tag-pos-end">+Vdc / 2</text>',
 
-        # Split Capacitors at x=190:
-        junc(190, 100), junc(190, 220), junc(190, 340),
-        cap_v(190, 100, 220, "C_1", "Upper Bus"),
-        cap_v(190, 220, 340, "C_2", "Lower Bus"),
+        wire(150, 400, 360, 400, stroke="#2563eb"),
+        '<circle cx="150" cy="400" r="4.5" fill="#2563eb" />',
+        '<text x="135" y="405" class="tag-neg-end">&#8722;Vdc / 2</text>',
 
-        # Neutral line from (190, 220) down to (190, 280) and horizontally across to AC load
-        wire(190, 220, 190, 280),
-        wire(190, 280, 680, 280),
-        gnd(260, 280, "Neutral GND"),
+        # Split Capacitors at x=210:
+        junc(210, 80), junc(210, 400),
+        cap_v(210, 80, 240, "C_1", "Upper Bus", side="left"),
+        cap_v(210, 240, 400, "C_2", "Lower Bus", side="left"),
+        junc(210, 240),
+
+        # Neutral line from (210, 240) to (280, 240), then drops down to y=365
+        wire(210, 240, 280, 240, stroke="#64748b"),
+        wire(280, 240, 280, 365, stroke="#64748b"),
+
+        # Neutral horizontal wire at y=365:
+        # Hop over Leg A bare wire at (360, 365):
+        hop_h(280, 360, 420, 365, stroke="#64748b"),
+        wire(420, 365, 800, 365, stroke="#64748b"),
+        gnd(450, 365, "Neutral (0V)"),
+        junc(590, 365), junc(700, 365),
+        terminal(800, 365, "&#8722;", side="right"),
 
         # Switch Leg at x=360:
-        junc(360, 100), junc(360, 220), junc(360, 340),
-        switch_v(360, 100, 220, "S_1", "Upper Switch"),
-        switch_v(360, 220, 340, "S_2", "Lower Switch"),
+        junc(360, 80), junc(360, 400),
+        switch_v(360, 80, 200, "S_1", "Upper Switch", side="right"),
+        wire(360, 200, 360, 240),
+        junc(360, 240),
+        wire(360, 240, 360, 260),
+        switch_v(360, 260, 340, "S_2", "Lower Switch", side="right"),
+        wire(360, 340, 360, 400),
 
-        # Filter Inductor L_f from switch midpoint (360, 220) to (500, 220)
-        ind_h(360, 500, 220, "L_f", "Filter Inductor"),
-        junc(500, 220),
+        # Phase Node A leaves (360, 240), jogs right to x=480 (safely past S_1 text!)
+        wire(360, 240, 480, 240),
+        wire(480, 240, 480, 150),
 
-        # Filter Capacitor C_f at x=500 from y=220 down to Neutral (280)
-        cap_v(500, 220, 280, "C_f", "Filter Cap"),
-        junc(500, 280),
+        # Filter Inductor L_f from (480, 150) to (590, 150)
+        ind_h(480, 590, 150, "L_f", "Filter Inductor"),
+        wire(590, 150, 800, 150),
+        junc(590, 150), junc(700, 150),
+        terminal(800, 150, "+", side="right"),
 
-        # Load Resistor R_load at x=600 from y=220 down to Neutral (280)
-        wire(500, 220, 600, 220),
-        junc(600, 220),
-        res_v(600, 220, 280, "R_load", "AC Load"),
-        junc(600, 280),
+        # Filter Capacitor C_f at x=590 from y=150 down to Neutral (y=365)
+        cap_v(590, 150, 365, "C_f", "Filter Cap"),
 
-        # Output probe across (680, 220) and (680, 280)
-        wire(600, 220, 680, 220),
-        probe_v(680, 220, 280, "V_AC = &#177; Vdc/2"),
+        # AC Load Resistor R_load at x=700 from y=150 down to Neutral (y=365)
+        res_v(700, 150, 365, "R_load", "AC Load"),
+
+        # Output probe at x=820 between y=150 (Phase) and y=365 (Neutral)
+        probe_v(820, 150, 365, "V_out = &#177;Vdc / 2"),
     ]
-    return svg_wrap("0 0 880 430", "Single-Phase Half-Bridge Inverter",
+    return svg_wrap("0 0 1020 460", "Single-Phase Half-Bridge Inverter",
                     "European IEC 60617 Standard Schematic • Two-Quadrant Switching Leg with LC Output Filter",
                     "\n".join(elems))
 
@@ -715,46 +735,67 @@ def gen_half_bridge_inverter():
 # ==============================================================================
 def gen_full_bridge_inverter():
     elems = [
-        # DC Rails: +Vdc (y=100), 0V/GND (y=340)
-        wire(120, 480, 100, stroke="#dc2626"),
-        f'<text x="105" y="105" class="tag-pos">+Vdc</text>',
-        wire(120, 480, 340, stroke="#2563eb"),
-        f'<text x="105" y="345" class="tag-neg">0V</text>',
+        # DC Rails: +Vdc (y=80), 0V/GND (y=400)
+        wire(150, 80, 500, 80, stroke="#dc2626"),
+        '<circle cx="150" cy="80" r="4.5" fill="#dc2626" />',
+        '<text x="135" y="85" class="tag-pos-end">+Vdc</text>',
 
-        # DC-link Capacitor C_dc at x=180
-        junc(180, 100), junc(180, 340),
-        cap_v(180, 100, 340, "C_dc", "DC-Link Cap"),
-        gnd(180, 340, "GND"),
+        wire(150, 400, 500, 400, stroke="#2563eb"),
+        '<circle cx="150" cy="400" r="4.5" fill="#2563eb" />',
+        '<text x="135" y="405" class="tag-neg-end">0V</text>',
 
-        # Leg 1 at x=300: S1, S2
-        junc(300, 100), junc(300, 220), junc(300, 340),
-        switch_v(300, 100, 220, "S_1", ""),
-        switch_v(300, 220, 340, "S_2", ""),
+        # DC-link Capacitor C_dc at x=210
+        junc(210, 80), junc(210, 400),
+        cap_v(210, 80, 400, "C_dc", "DC-Link Cap", side="left"),
+        gnd(210, 400, "GND"),
 
-        # Leg 2 at x=450: S3, S4
-        junc(450, 100), junc(450, 220), junc(450, 340),
-        switch_v(450, 100, 220, "S_3", ""),
-        switch_v(450, 220, 340, "S_4", ""),
+        # Leg 1 at x=340: S1 (130..220), S2 (260..350)
+        junc(340, 80), junc(340, 400),
+        wire(340, 80, 340, 130),
+        switch_v(340, 130, 220, "S_1", "", side="left"),
+        wire(340, 220, 340, 240),
+        junc(340, 240),
+        wire(340, 240, 340, 260),
+        switch_v(340, 260, 350, "S_2", "", side="left"),
+        wire(340, 350, 340, 400),
 
-        # AC Output Terminals & Load:
-        # Leg 1 midpoint (300, 220) routed up to y=170 and across to x=580
-        wire(300, 220, 300, 170),
-        wire(300, 170, 580, 170),
+        # Leg 2 at x=500: S3 (130..220), S4 (260..350)
+        junc(500, 80), junc(500, 400),
+        wire(500, 80, 500, 130),
+        switch_v(500, 130, 220, "S_3", "", side="left"),
+        wire(500, 220, 500, 240),
+        junc(500, 240),
+        wire(500, 240, 500, 260),
+        switch_v(500, 260, 350, "S_4", "", side="left"),
+        wire(500, 350, 500, 400),
 
-        # Leg 2 midpoint (450, 220) routed down to y=270 and across to x=580
-        wire(450, 220, 450, 270),
-        wire(450, 270, 580, 270),
+        # Phase A: Leg 1 midpoint (340, 240) stepped up to y=105
+        # Leg 2 is bare wire between y=80 and y=130!
+        # Hop over Leg 2 bare wire at (500, 105):
+        wire(340, 240, 380, 240),
+        wire(380, 240, 380, 105),
+        hop_h(380, 500, 690, 105, stroke="#0284c7"),
+        junc(690, 105),
+        '<text x="675" y="98" class="sublabel-end" font-weight="bold">Phase A</text>',
+        wire(690, 105, 750, 105, stroke="#0284c7"),
+        terminal(750, 105, "+", side="right"),
 
-        # Load Resistor R_load at x=580 between y=170 and y=270
-        junc(580, 170), junc(580, 270),
-        res_v(580, 170, 270, "R_load", "AC Load"),
+        # Phase B: Leg 2 midpoint (500, 240) stepped down to y=315
+        # Jog out to x=580 to safely bypass S_4 diode at x=535
+        wire(500, 240, 580, 240),
+        wire(580, 240, 580, 315),
+        wire(580, 315, 750, 315, stroke="#0284c7"),
+        junc(690, 315),
+        '<text x="675" y="330" class="sublabel-end" font-weight="bold">Phase B</text>',
+        terminal(750, 315, "&#8722;", side="right"),
 
-        # Output probe at x=650
-        wire(580, 170, 650, 170),
-        wire(580, 270, 650, 270),
-        probe_v(650, 170, 270, "V_out = &#177; Vdc"),
+        # Load Resistor R_load at x=690 between y=105 and y=315
+        res_v(690, 105, 315, "R_load", "AC Load"),
+
+        # Output probe at x=770 between y=105 and y=315
+        probe_v(770, 105, 315, "V_out = &#177;Vdc"),
     ]
-    return svg_wrap("0 0 880 430", "Single-Phase Full-Bridge (H-Bridge) Inverter",
+    return svg_wrap("0 0 960 460", "Single-Phase Full-Bridge (H-Bridge) Inverter",
                     "European IEC 60617 Standard Schematic • 4-Quadrant Bipolar/Unipolar PWM Inverter",
                     "\n".join(elems))
 
@@ -763,41 +804,71 @@ def gen_full_bridge_inverter():
 # ==============================================================================
 def gen_three_phase_inverter():
     elems = [
-        # DC Rails: +Vdc (y=100), 0V (y=340)
-        wire(120, 560, 100, stroke="#dc2626"),
-        f'<text x="105" y="105" class="tag-pos">+Vdc</text>',
-        wire(120, 560, 340, stroke="#2563eb"),
-        f'<text x="105" y="345" class="tag-neg">0V</text>',
+        # DC Rails: +Vdc (y=70), 0V (y=410)
+        wire(150, 70, 640, 70, stroke="#dc2626"),
+        '<circle cx="150" cy="70" r="4.5" fill="#dc2626" />',
+        '<text x="135" y="75" class="tag-pos-end">+Vdc</text>',
 
-        # DC bus capacitor C_dc at x=180
-        junc(180, 100), junc(180, 340),
-        cap_v(180, 100, 340, "C_dc", "DC Bus Cap"),
-        gnd(180, 340, "GND"),
+        wire(150, 410, 640, 410, stroke="#2563eb"),
+        '<circle cx="150" cy="410" r="4.5" fill="#2563eb" />',
+        '<text x="135" y="415" class="tag-neg-end">0V</text>',
 
-        # Leg A at x=280:
-        junc(280, 100), junc(280, 220), junc(280, 340),
-        switch_v(280, 100, 220, "S_1", ""),
-        switch_v(280, 220, 340, "S_4", ""),
-        wire(280, 220, 680, 220),
-        terminal(680, 220, "Phase A (U)", side="right"),
+        # DC bus capacitor C_dc at x=200
+        junc(200, 70), junc(200, 410),
+        cap_v(200, 70, 410, "C_dc", "DC Bus Cap", side="left"),
+        gnd(200, 410, "GND"),
 
-        # Leg B at x=400:
-        junc(400, 100), junc(400, 220), junc(400, 340),
-        switch_v(400, 100, 220, "S_3", ""),
-        switch_v(400, 220, 340, "S_6", ""),
-        wire(400, 220, 400, 250),
-        wire(400, 250, 680, 250),
-        terminal(680, 250, "Phase B (V)", side="right"),
+        # Leg A at x=320:
+        junc(320, 70), junc(320, 410),
+        wire(320, 70, 320, 120),
+        switch_v(320, 120, 210, "S_1", "", side="left"),
+        wire(320, 210, 320, 240),
+        junc(320, 240),
+        wire(320, 240, 320, 270),
+        switch_v(320, 270, 360, "S_4", "", side="left"),
+        wire(320, 360, 320, 410),
 
-        # Leg C at x=520:
-        junc(520, 100), junc(520, 220), junc(520, 340),
-        switch_v(520, 100, 220, "S_5", ""),
-        switch_v(520, 220, 340, "S_2", ""),
-        wire(520, 220, 520, 280),
-        wire(520, 280, 680, 280),
-        terminal(680, 280, "Phase C (W)", side="right"),
+        # Leg B at x=480:
+        junc(480, 70), junc(480, 410),
+        wire(480, 70, 480, 120),
+        switch_v(480, 120, 210, "S_3", "", side="left"),
+        wire(480, 210, 480, 240),
+        junc(480, 240),
+        wire(480, 240, 480, 270),
+        switch_v(480, 270, 360, "S_6", "", side="left"),
+        wire(480, 360, 480, 410),
+
+        # Leg C at x=640:
+        junc(640, 70), junc(640, 410),
+        wire(640, 70, 640, 120),
+        switch_v(640, 120, 210, "S_5", "", side="left"),
+        wire(640, 210, 640, 240),
+        junc(640, 240),
+        wire(640, 240, 640, 270),
+        switch_v(640, 270, 360, "S_2", "", side="left"),
+        wire(640, 360, 640, 410),
+
+        # Phase U (A): Leg A midpoint (320, 240) stepped up to y=100 (bare wire above S3 and S5)
+        wire(320, 240, 360, 240),
+        wire(360, 240, 360, 100),
+        hop_h(360, 480, 560, 100, stroke="#0284c7"),
+        hop_h(560, 640, 800, 100, stroke="#0284c7"),
+        terminal(800, 100, "Phase U (A)", side="right"),
+
+        # Phase V (B): Leg B midpoint (480, 240) stepped to y=225 (bare wire above S2/midpoint)
+        wire(480, 240, 520, 240),
+        wire(520, 240, 520, 225),
+        hop_h(520, 640, 800, 225, stroke="#0284c7"),
+        terminal(800, 225, "Phase V (B)", side="right"),
+
+        # Phase W (C): Leg C midpoint (640, 255) stepped to y=350 (jogged past S2 diode to x=720)
+        wire(640, 240, 640, 255),
+        wire(640, 255, 720, 255),
+        wire(720, 255, 720, 350),
+        wire(720, 350, 800, 350, stroke="#0284c7"),
+        terminal(800, 350, "Phase W (C)", side="right"),
     ]
-    return svg_wrap("0 0 880 430", "Three-Phase Voltage Source Inverter (2-Level VSI)",
+    return svg_wrap("0 0 940 480", "Three-Phase Voltage Source Inverter (2-Level VSI)",
                     "European IEC 60617 Standard Schematic • 6-Switch Bridge for AC Motor Drives & Grid Tie",
                     "\n".join(elems))
 
@@ -807,77 +878,97 @@ def gen_three_phase_inverter():
 def gen_foc_diagram():
     elems = [
         # Motor
-        f'<circle cx="780" cy="200" r="45" class="block-accent" />',
-        f'<text x="780" y="195" class="label" fill="#0284c7">PMSM</text>',
-        f'<text x="780" y="215" class="sublabel">Motor</text>',
+        f'<circle cx="800" cy="200" r="45" class="block-accent" />',
+        f'<text x="800" y="195" class="label" fill="#0284c7">PMSM</text>',
+        f'<text x="800" y="215" class="sublabel">Motor</text>',
 
         # Inverter Block
-        f'<rect x="610" y="155" width="80" height="90" class="block" />',
-        f'<text x="650" y="195" class="label">3-Phase</text>',
-        f'<text x="650" y="215" class="sublabel">Inverter</text>',
-        wire(690, 200, 735, 200),
-        f'<polygon points="735,200 725,195 725,205" fill="#1e293b" />',
+        f'<rect x="630" y="155" width="85" height="90" class="block" />',
+        f'<text x="672" y="195" class="label">3-Phase</text>',
+        f'<text x="672" y="215" class="sublabel">Inverter</text>',
+        wire(715, 200, 755, 200),
+        f'<polygon points="755,200 745,195 745,205" fill="#1e293b" />',
 
         # SVM Block
-        f'<rect x="490" y="165" width="70" height="70" class="block" />',
-        f'<text x="525" y="200" class="label">SVM</text>',
-        f'<text x="525" y="218" class="sublabel">PWM Gen</text>',
-        wire(560, 200, 610, 200),
-        f'<polygon points="610,200 600,195 600,205" fill="#1e293b" />',
+        f'<rect x="500" y="165" width="75" height="70" class="block" />',
+        f'<text x="537" y="200" class="label">SVM</text>',
+        f'<text x="537" y="218" class="sublabel">PWM Gen</text>',
+        wire(575, 200, 630, 200),
+        f'<polygon points="630,200 620,195 620,205" fill="#1e293b" />',
 
         # Inverse Park Transform
-        f'<rect x="360" y="165" width="80" height="70" class="block" />',
-        f'<text x="400" y="195" class="label">dq &#8594; &#945;&#946;</text>',
-        f'<text x="400" y="215" class="sublabel">Inv. Park</text>',
-        wire(440, 200, 490, 200),
-        f'<polygon points="490,200 480,195 480,205" fill="#1e293b" />',
+        f'<rect x="370" y="165" width="80" height="70" class="block" />',
+        f'<text x="410" y="195" class="label">dq &#8594; &#945;&#946;</text>',
+        f'<text x="410" y="215" class="sublabel">Inv. Park</text>',
+        wire(450, 200, 500, 200),
+        f'<polygon points="500,200 490,195 490,205" fill="#1e293b" />',
 
-        # Current Controllers (PI)
-        f'<rect x="230" y="145" width="80" height="45" class="block" />',
-        f'<text x="270" y="172" class="label">PI (d-axis)</text>',
-        wire(310, 167, 360, 185),
+        # Summing comparator d-axis at (200, 155)
+        f'<circle cx="200" cy="155" r="12" class="comp-body" />',
+        f'<text x="200" y="161" class="label" style="font-size:16px;">&#931;</text>',
+        f'<text x="178" y="148" class="label" style="font-size:11px; font-weight:bold;">+</text>',
+        f'<text x="210" y="178" class="label" style="font-size:12px; font-weight:bold;">&#8722;</text>',
+        wire(212, 155, 260, 155),
+        f'<polygon points="260,155 250,150 250,160" fill="#1e293b" />',
 
-        f'<rect x="230" y="210" width="80" height="45" class="block" />',
-        f'<text x="270" y="237" class="label">PI (q-axis)</text>',
-        wire(310, 232, 360, 215),
+        # Current Controller PI (d-axis)
+        f'<rect x="260" y="135" width="80" height="40" class="block" />',
+        f'<text x="300" y="160" class="label">PI (d-axis)</text>',
+        wire(340, 155, 370, 185),
+
+        # Summing comparator q-axis at (200, 225)
+        f'<circle cx="200" cy="225" r="12" class="comp-body" />',
+        f'<text x="200" y="231" class="label" style="font-size:16px;">&#931;</text>',
+        f'<text x="178" y="218" class="label" style="font-size:11px; font-weight:bold;">+</text>',
+        f'<text x="210" y="248" class="label" style="font-size:12px; font-weight:bold;">&#8722;</text>',
+        wire(212, 225, 260, 225),
+        f'<polygon points="260,225 250,220 250,230" fill="#1e293b" />',
+
+        # Current Controller PI (q-axis)
+        f'<rect x="260" y="205" width="80" height="40" class="block" />',
+        f'<text x="300" y="230" class="label">PI (q-axis)</text>',
+        wire(340, 225, 370, 215),
+
+        # Reference inputs (terminals at x=115, labels on left)
+        terminal(115, 155, "i_d* = 0", side="left", color="#16a34a"),
+        wire(115, 155, 188, 155),
+
+        terminal(115, 225, "i_q* (Torque)", side="left", color="#16a34a"),
+        wire(115, 225, 188, 225),
 
         # Feedback Park Transform
-        f'<rect x="360" y="280" width="80" height="60" class="block" />',
-        f'<text x="400" y="305" class="label">&#945;&#946; &#8594; dq</text>',
-        f'<text x="400" y="325" class="sublabel">Park</text>',
+        f'<rect x="370" y="290" width="80" height="60" class="block" />',
+        f'<text x="410" y="315" class="label">&#945;&#946; &#8594; dq</text>',
+        f'<text x="410" y="335" class="sublabel">Park</text>',
 
         # Clarke Transform
-        f'<rect x="490" y="280" width="80" height="60" class="block" />',
-        f'<text x="530" y="305" class="label">abc &#8594; &#945;&#946;</text>',
-        f'<text x="530" y="325" class="sublabel">Clarke</text>',
-        wire(490, 310, 440, 310),
-        f'<polygon points="440,310 450,305 450,315" fill="#1e293b" />',
+        f'<rect x="500" y="290" width="80" height="60" class="block" />',
+        f'<text x="540" y="315" class="label">abc &#8594; &#945;&#946;</text>',
+        f'<text x="540" y="335" class="sublabel">Clarke</text>',
+        wire(500, 320, 450, 320),
+        f'<polygon points="450,320 460,315 460,325" fill="#1e293b" />',
 
-        # Current measurement feedback wire
-        wire(710, 200, 710, 310),
-        junc(710, 200),
-        wire(710, 310, 570, 310),
-        f'<polygon points="570,310 580,305 580,315" fill="#1e293b" />',
+        # Current measurement feedback wire from inverter-motor link
+        wire(735, 200, 735, 320),
+        junc(735, 200),
+        wire(735, 320, 580, 320),
+        f'<polygon points="580,320 590,315 590,325" fill="#1e293b" />',
+        f'<text x="650" y="310" class="sublabel">i_a, i_b, i_c</text>',
 
-        # dq feedback loops
-        wire(360, 310, 150, 310),
-        wire(150, 310, 150, 167),
-        wire(150, 167, 230, 167),
-        f'<polygon points="230,167 220,162 220,172" fill="#1e293b" />',
+        # dq feedback loops to comparators:
+        # i_d feedback from (370, 305) to d-axis comparator at (200, 155)
+        wire(370, 305, 160, 305),
+        wire(160, 305, 160, 185),
+        wire(160, 185, 200, 185),
+        wire(200, 185, 200, 167),
+        f'<polygon points="200,167 195,177 205,177" fill="#1e293b" />',
 
-        wire(180, 310, 180, 232),
-        junc(180, 310),
-        wire(180, 232, 230, 232),
-        f'<polygon points="230,232 220,227 220,237" fill="#1e293b" />',
-
-        # Reference inputs
-        terminal(80, 150, "i_d* = 0", side="left", color="#16a34a"),
-        wire(80, 150, 230, 150),
-
-        terminal(80, 220, "i_q* (Torque)", side="left", color="#16a34a"),
-        wire(80, 220, 230, 220),
+        # i_q feedback from (370, 325) to q-axis comparator at (200, 225)
+        wire(370, 325, 200, 325),
+        wire(200, 325, 200, 237),
+        f'<polygon points="200,237 195,247 205,247" fill="#1e293b" />',
     ]
-    return svg_wrap("0 0 880 390", "Field-Oriented Control (FOC) Architecture",
+    return svg_wrap("0 0 920 400", "Field-Oriented Control (FOC) Architecture",
                     "Direct / Quadrature (dq0) Decoupled Vector Control with Space Vector Modulation",
                     "\n".join(elems))
 
@@ -886,46 +977,52 @@ def gen_foc_diagram():
 # ==============================================================================
 def gen_npc_leg():
     elems = [
-        # DC Rails: +Vdc/2 (y=80), Neutral (y=240), -Vdc/2 (y=400)
-        wire(100, 450, 80, stroke="#dc2626"),
-        f'<text x="65" y="85" class="tag-pos">+Vdc / 2</text>',
-        wire(100, 310, 240, stroke="#64748b"),
-        f'<text x="65" y="245" class="sublabel-start">Neutral (M)</text>',
-        wire(100, 450, 400, stroke="#2563eb"),
-        f'<text x="65" y="405" class="tag-neg">&#8722;Vdc / 2</text>',
+        # DC Rails: +Vdc/2 (y=70), Neutral (y=250), -Vdc/2 (y=430)
+        wire(140, 70, 560, 70, stroke="#dc2626"),
+        '<circle cx="140" cy="70" r="4.5" fill="#dc2626" />',
+        '<text x="125" y="75" class="tag-pos-end">+Vdc / 2</text>',
 
-        # Split capacitors C1 and C2 at x=180
-        junc(180, 80), junc(180, 240), junc(180, 400),
-        cap_v(180, 80, 240, "C_1", "Upper DC Cap"),
-        cap_v(180, 240, 400, "C_2", "Lower DC Cap"),
-        gnd(180, 240, "Neutral Ref"),
+        wire(140, 250, 400, 250, stroke="#64748b"),
+        '<circle cx="140" cy="250" r="4.5" fill="#64748b" />',
+        '<text x="125" y="255" class="sublabel-end">Neutral (M)</text>',
 
-        # Neutral wire extending to clamping branch at x=310
-        wire(180, 240, 310, 240),
-        junc(310, 240),
+        wire(140, 430, 560, 430, stroke="#2563eb"),
+        '<circle cx="140" cy="430" r="4.5" fill="#2563eb" />',
+        '<text x="125" y="435" class="tag-neg-end">&#8722;Vdc / 2</text>',
 
-        # Clamping Diodes at x=310:
-        # Upper clamp D_c1: from Neutral (240) up to S1/S2 node (160)
-        diode_v(310, 160, 240, direction="up", label="D_c1", val="Upper Clamp", side="left"),
-        wire(310, 160, 450, 160),
+        # Split capacitors C1 and C2 at x=200
+        junc(200, 70), junc(200, 250), junc(200, 430),
+        cap_v(200, 70, 250, "C_1", "Upper DC Cap", side="left"),
+        cap_v(200, 250, 430, "C_2", "Lower DC Cap", side="left"),
 
-        # Lower clamp D_c2: from S3/S4 node (320) up to Neutral (240)
-        diode_v(310, 240, 320, direction="up", label="D_c2", val="Lower Clamp", side="left"),
-        wire(310, 320, 450, 320),
+        # Neutral ground reference at x=260 (between caps and diodes)
+        gnd(260, 250, "0V (Neutral)"),
 
-        # 4 Switches in Series at x=450:
-        junc(450, 80), junc(450, 160), junc(450, 240), junc(450, 320), junc(450, 400),
-        switch_v(450, 80, 160, "S_1", ""),
-        switch_v(450, 160, 240, "S_2", ""),
-        switch_v(450, 240, 320, "S_3", ""),
-        switch_v(450, 320, 400, "S_4", ""),
+        # Neutral wire extending to clamping branch at x=400
+        junc(400, 250),
 
-        # AC Output from midpoint (450, 240) to (640, 240)
-        wire(450, 240, 640, 240, stroke="#0284c7", stroke_width=3),
-        terminal(640, 240, "AC Output (3-Level)", side="right"),
-        f'<text x="655" y="260" class="sublabel-start">+Vdc/2, 0, &#8722;Vdc/2</text>',
+        # Clamping Diodes at x=400:
+        # Upper clamp D_c1: from Neutral (250) up to S1/S2 node (160)
+        diode_v(400, 160, 250, direction="up", label="D_c1", val="Upper Clamp", side="left"),
+        wire(400, 160, 560, 160),
+
+        # Lower clamp D_c2: from S3/S4 node (340) up to Neutral (250)
+        diode_v(400, 250, 340, direction="up", label="D_c2", val="Lower Clamp", side="left"),
+        wire(400, 340, 560, 340),
+
+        # 4 Switches in Series at x=560:
+        junc(560, 70), junc(560, 160), junc(560, 250), junc(560, 340), junc(560, 430),
+        switch_v(560, 70, 160, "S_1", "", side="left"),
+        switch_v(560, 160, 250, "S_2", "", side="left"),
+        switch_v(560, 250, 340, "S_3", "", side="left"),
+        switch_v(560, 340, 430, "S_4", "", side="left"),
+
+        # AC Output from midpoint (560, 250) to (780, 250)
+        wire(560, 250, 780, 250, stroke="#0284c7", stroke_width=3),
+        terminal(780, 250, "AC Output (3-Level)", side="right"),
+        '<text x="792" y="270" class="sublabel-start">+Vdc/2, 0, &#8722;Vdc/2</text>',
     ]
-    return svg_wrap("0 0 920 460", "Three-Level Neutral-Point-Clamped (NPC) Inverter Leg",
+    return svg_wrap("0 0 980 500", "Three-Level Neutral-Point-Clamped (NPC) Inverter Leg",
                     "European IEC 60617 Standard Schematic • Reduced dv/dt Stress & 3-Level Voltage Output",
                     "\n".join(elems))
 
@@ -934,84 +1031,93 @@ def gen_npc_leg():
 # ==============================================================================
 def gen_mmc_topology():
     elems = [
-        # DC Rails: +Vdc/2 (y=90), -Vdc/2 (y=410)
-        wire(150, 720, 90, stroke="#dc2626"),
-        f'<text x="130" y="95" class="tag-pos">+Vdc / 2</text>',
-        wire(150, 720, 410, stroke="#2563eb"),
-        f'<text x="130" y="415" class="tag-neg">&#8722;Vdc / 2</text>',
+        # DC Rails: +Vdc/2 (y=70), -Vdc/2 (y=440)
+        wire(140, 70, 800, 70, stroke="#dc2626"),
+        '<circle cx="140" cy="70" r="4.5" fill="#dc2626" />',
+        '<text x="125" y="75" class="tag-pos-end">+Vdc / 2</text>',
 
-        # Three Phase Legs: A (x=260), B (x=440), C (x=620)
+        wire(140, 440, 800, 440, stroke="#2563eb"),
+        '<circle cx="140" cy="440" r="4.5" fill="#2563eb" />',
+        '<text x="125" y="445" class="tag-neg-end">&#8722;Vdc / 2</text>',
+
+        # Three Phase Legs: A (x=240), B (x=490), C (x=740)
         # Leg A
-        junc(260, 90), junc(260, 410),
-        wire(260, 90, 260, 115),
-        f'<rect x="230" y="115" width="60" height="26" class="block-accent" /><text x="260" y="133" class="sublabel">SM 1</text>',
-        wire(260, 141, 260, 150),
-        f'<rect x="230" y="150" width="60" height="26" class="block-accent" /><text x="260" y="168" class="sublabel">SM 2</text>',
-        wire(260, 176, 260, 185),
-        f'<text x="260" y="195" class="label">&#8942;</text>',
-        wire(260, 198, 260, 205),
-        f'<rect x="230" y="205" width="60" height="26" class="block-accent" /><text x="260" y="223" class="sublabel">SM N</text>',
-        ind_v(260, 231, 275, "L_arm", ""),
-        junc(260, 275),
-        wire(260, 275, 200, 275),
-        terminal(200, 275, "Phase A", side="left"),
+        junc(240, 70), junc(240, 440),
+        wire(240, 70, 240, 90),
+        '<rect x="210" y="90" width="60" height="26" class="block-accent" /><text x="240" y="108" class="sublabel">SM 1</text>',
+        wire(240, 116, 240, 124),
+        '<rect x="210" y="124" width="60" height="26" class="block-accent" /><text x="240" y="142" class="sublabel">SM 2</text>',
+        wire(240, 150, 240, 158),
+        '<text x="240" y="168" class="label">&#8942;</text>',
+        wire(240, 170, 240, 176),
+        '<rect x="210" y="176" width="60" height="26" class="block-accent" /><text x="240" y="194" class="sublabel">SM N</text>',
+        wire(240, 202, 240, 216),
+        ind_v(240, 216, 255, "L_arm", "", side="right"),
+        junc(240, 255),
+        wire(240, 255, 150, 255),
+        terminal(150, 255, "Phase A (U)", side="left"),
 
-        ind_v(260, 275, 319, "L_arm", ""),
-        f'<rect x="230" y="319" width="60" height="26" class="block-accent" /><text x="260" y="337" class="sublabel">SM 1</text>',
-        wire(260, 345, 260, 355),
-        f'<text x="260" y="367" class="label">&#8942;</text>',
-        wire(260, 370, 260, 375),
-        f'<rect x="230" y="375" width="60" height="26" class="block-accent" /><text x="260" y="393" class="sublabel">SM N</text>',
-        wire(260, 401, 260, 410),
+        ind_v(240, 255, 294, "L_arm", "", side="right"),
+        wire(240, 294, 240, 308),
+        '<rect x="210" y="308" width="60" height="26" class="block-accent" /><text x="240" y="326" class="sublabel">SM 1</text>',
+        wire(240, 334, 240, 342),
+        '<text x="240" y="352" class="label">&#8942;</text>',
+        wire(240, 354, 240, 360),
+        '<rect x="210" y="360" width="60" height="26" class="block-accent" /><text x="240" y="378" class="sublabel">SM N</text>',
+        wire(240, 386, 240, 440),
 
         # Leg B
-        junc(440, 90), junc(440, 410),
-        wire(440, 90, 440, 115),
-        f'<rect x="410" y="115" width="60" height="26" class="block-accent" /><text x="440" y="133" class="sublabel">SM 1</text>',
-        wire(440, 141, 440, 150),
-        f'<rect x="410" y="150" width="60" height="26" class="block-accent" /><text x="440" y="168" class="sublabel">SM 2</text>',
-        wire(440, 176, 440, 185),
-        f'<text x="440" y="195" class="label">&#8942;</text>',
-        wire(440, 198, 440, 205),
-        f'<rect x="410" y="205" width="60" height="26" class="block-accent" /><text x="440" y="223" class="sublabel">SM N</text>',
-        ind_v(440, 231, 275, "L_arm", ""),
-        junc(440, 275),
-        wire(440, 275, 500, 275),
-        terminal(500, 275, "Phase B", side="right"),
+        junc(490, 70), junc(490, 440),
+        wire(490, 70, 490, 90),
+        '<rect x="460" y="90" width="60" height="26" class="block-accent" /><text x="490" y="108" class="sublabel">SM 1</text>',
+        wire(490, 116, 490, 124),
+        '<rect x="460" y="124" width="60" height="26" class="block-accent" /><text x="490" y="142" class="sublabel">SM 2</text>',
+        wire(490, 150, 490, 158),
+        '<text x="490" y="168" class="label">&#8942;</text>',
+        wire(490, 170, 490, 176),
+        '<rect x="460" y="176" width="60" height="26" class="block-accent" /><text x="490" y="194" class="sublabel">SM N</text>',
+        wire(490, 202, 490, 216),
+        ind_v(490, 216, 255, "L_arm", "", side="left"),
+        junc(490, 255),
+        wire(490, 255, 590, 255),
+        terminal(590, 255, "Phase B (V)", side="right"),
 
-        ind_v(440, 275, 319, "L_arm", ""),
-        f'<rect x="410" y="319" width="60" height="26" class="block-accent" /><text x="440" y="337" class="sublabel">SM 1</text>',
-        wire(440, 345, 440, 355),
-        f'<text x="440" y="367" class="label">&#8942;</text>',
-        wire(440, 370, 440, 375),
-        f'<rect x="410" y="375" width="60" height="26" class="block-accent" /><text x="440" y="393" class="sublabel">SM N</text>',
-        wire(440, 401, 440, 410),
+        ind_v(490, 255, 294, "L_arm", "", side="left"),
+        wire(490, 294, 490, 308),
+        '<rect x="460" y="308" width="60" height="26" class="block-accent" /><text x="490" y="326" class="sublabel">SM 1</text>',
+        wire(490, 334, 490, 342),
+        '<text x="490" y="352" class="label">&#8942;</text>',
+        wire(490, 354, 490, 360),
+        '<rect x="460" y="360" width="60" height="26" class="block-accent" /><text x="490" y="378" class="sublabel">SM N</text>',
+        wire(490, 386, 490, 440),
 
         # Leg C
-        junc(620, 90), junc(620, 410),
-        wire(620, 90, 620, 115),
-        f'<rect x="590" y="115" width="60" height="26" class="block-accent" /><text x="620" y="133" class="sublabel">SM 1</text>',
-        wire(620, 141, 620, 150),
-        f'<rect x="590" y="150" width="60" height="26" class="block-accent" /><text x="620" y="168" class="sublabel">SM 2</text>',
-        wire(620, 176, 620, 185),
-        f'<text x="620" y="195" class="label">&#8942;</text>',
-        wire(620, 198, 620, 205),
-        f'<rect x="590" y="205" width="60" height="26" class="block-accent" /><text x="620" y="223" class="sublabel">SM N</text>',
-        ind_v(620, 231, 275, "L_arm", ""),
-        junc(620, 275),
-        wire(620, 275, 680, 275),
-        terminal(680, 275, "Phase C", side="right"),
+        junc(740, 70), junc(740, 440),
+        wire(740, 70, 740, 90),
+        '<rect x="710" y="90" width="60" height="26" class="block-accent" /><text x="740" y="108" class="sublabel">SM 1</text>',
+        wire(740, 116, 740, 124),
+        '<rect x="710" y="124" width="60" height="26" class="block-accent" /><text x="740" y="142" class="sublabel">SM 2</text>',
+        wire(740, 150, 740, 158),
+        '<text x="740" y="168" class="label">&#8942;</text>',
+        wire(740, 170, 740, 176),
+        '<rect x="710" y="176" width="60" height="26" class="block-accent" /><text x="740" y="194" class="sublabel">SM N</text>',
+        wire(740, 202, 740, 216),
+        ind_v(740, 216, 255, "L_arm", "", side="right"),
+        junc(740, 255),
+        wire(740, 255, 870, 255),
+        terminal(870, 255, "Phase C (W)", side="right"),
 
-        ind_v(620, 275, 319, "L_arm", ""),
-        f'<rect x="590" y="319" width="60" height="26" class="block-accent" /><text x="620" y="337" class="sublabel">SM 1</text>',
-        wire(620, 345, 620, 355),
-        f'<text x="620" y="367" class="label">&#8942;</text>',
-        wire(620, 370, 620, 375),
-        f'<rect x="590" y="375" width="60" height="26" class="block-accent" /><text x="620" y="393" class="sublabel">SM N</text>',
-        wire(620, 401, 620, 410),
+        ind_v(740, 255, 294, "L_arm", "", side="right"),
+        wire(740, 294, 740, 308),
+        '<rect x="710" y="308" width="60" height="26" class="block-accent" /><text x="740" y="326" class="sublabel">SM 1</text>',
+        wire(740, 334, 740, 342),
+        '<text x="740" y="352" class="label">&#8942;</text>',
+        wire(740, 354, 740, 360),
+        '<rect x="710" y="360" width="60" height="26" class="block-accent" /><text x="740" y="378" class="sublabel">SM N</text>',
+        wire(740, 386, 740, 440),
     ]
-    return svg_wrap("0 0 880 470", "Modular Multilevel Converter (MMC) Topology",
-                    "European IEC 60617 Standard Schematic • Cascaded Submodule HVDC & STATCOM Architecture",
+    return svg_wrap("0 0 1020 520", "Modular Multilevel Converter (MMC) Topology",
+                    "European IEC 60617 Standard Schematic • Cascaded Submodule HVDC &amp; STATCOM Architecture",
                     "\n".join(elems))
 
 # ==============================================================================
@@ -1019,55 +1125,70 @@ def gen_mmc_topology():
 # ==============================================================================
 def gen_mmc_submodules():
     elems = [
-        # Half-Bridge Submodule (Left, x=180..380)
-        f'<rect x="80" y="90" width="340" height="250" class="card" />',
-        f'<text x="250" y="115" class="label" fill="#0284c7">Half-Bridge Submodule (HBSM)</text>',
-        f'<text x="250" y="132" class="sublabel">2-Level (0, +V_sm)</text>',
+        # Half-Bridge Submodule (Left, x=50..430)
+        '<rect x="50" y="65" width="390" height="305" class="card" />',
+        '<text x="245" y="95" class="label" fill="#0284c7">Half-Bridge Submodule (HBSM)</text>',
+        '<text x="245" y="115" class="sublabel">2-Level (0, +V_sm)</text>',
 
-        # HBSM Capacitor at x=160
-        junc(160, 150), junc(160, 310),
-        cap_v(160, 150, 310, "C_sm", ""),
-        wire(160, 150, 260, 150),
-        wire(160, 310, 380, 310),
+        # HBSM Capacitor at x=130
+        junc(130, 150), junc(130, 330),
+        cap_v(130, 150, 330, "C_sm", "", side="left"),
+        wire(130, 150, 270, 150),
+        wire(130, 330, 370, 330),
 
-        # HBSM Switches at x=260: S1 (150 to 230), S2 (230 to 310)
-        junc(260, 150), junc(260, 230), junc(260, 310),
-        switch_v(260, 150, 230, "S_1", ""),
-        switch_v(260, 230, 310, "S_2", ""),
+        # HBSM Switches at x=270: S1 (170 to 230), S2 (250 to 310)
+        junc(270, 150), junc(270, 240), junc(270, 330),
+        wire(270, 150, 270, 170),
+        switch_v(270, 170, 230, "S_1", "", side="left"),
+        wire(270, 230, 270, 250),
+        switch_v(270, 250, 310, "S_2", "", side="left"),
+        wire(270, 310, 270, 330),
 
-        # Terminals: Out 1 from (260, 230) to (380, 230); Out 2 from (260, 310) to (380, 310)
-        wire(260, 230, 380, 230),
-        terminal(380, 230, "Terminal 1", side="right"),
-        terminal(380, 310, "Terminal 2", side="right"),
+        # Terminals: Terminal 1 from (270, 240) to (370, 240); Terminal 2 from bottom rail at y=330
+        wire(270, 240, 370, 240),
+        terminal(370, 240, "Terminal 1", side="right"),
+        terminal(370, 330, "Terminal 2", side="right"),
 
-        # Full-Bridge Submodule (Right, x=480..840)
-        f'<rect x="460" y="90" width="400" height="250" class="card" />',
-        f'<text x="660" y="115" class="label" fill="#0284c7">Full-Bridge Submodule (FBSM)</text>',
-        f'<text x="660" y="132" class="sublabel">3-Level (&#8722;V_sm, 0, +V_sm) • DC Fault Clearing</text>',
+        # Full-Bridge Submodule (Right, x=480..920)
+        '<rect x="480" y="65" width="440" height="305" class="card" />',
+        '<text x="700" y="95" class="label" fill="#0284c7">Full-Bridge Submodule (FBSM)</text>',
+        '<text x="700" y="115" class="sublabel">3-Level (&#8722;V_sm, 0, +V_sm) • DC Fault Clearing</text>',
 
-        # FBSM Capacitor at x=530
-        junc(530, 150), junc(530, 310),
-        cap_v(530, 150, 310, "C_sm", ""),
-        wire(530, 150, 730, 150),
-        wire(530, 310, 730, 310),
+        # Upper and lower DC bus inside FBSM at y=150 and y=330
+        junc(550, 150), junc(550, 330),
+        cap_v(550, 150, 330, "C_sm", "", side="left"),
+        wire(550, 150, 770, 150),
+        wire(550, 330, 770, 330),
 
-        # Leg 1 at x=630: S1, S2
-        junc(630, 150), junc(630, 220), junc(630, 310),
-        switch_v(630, 150, 220, "S_1", ""),
-        switch_v(630, 220, 310, "S_2", ""),
+        # Leg 1 at x=640: S1 (170..230), S2 (250..310)
+        junc(640, 150), junc(640, 240), junc(640, 330),
+        wire(640, 150, 640, 170),
+        switch_v(640, 170, 230, "S_1", "", side="left"),
+        wire(640, 230, 640, 250),
+        switch_v(640, 250, 310, "S_2", "", side="left"),
+        wire(640, 310, 640, 330),
 
-        # Leg 2 at x=730: S3, S4
-        junc(730, 150), junc(730, 250), junc(730, 310),
-        switch_v(730, 150, 250, "S_3", ""),
-        switch_v(730, 250, 310, "S_4", ""),
+        # Leg 2 at x=770: S3 (170..230), S4 (250..310)
+        junc(770, 150), junc(770, 240), junc(770, 330),
+        wire(770, 150, 770, 170),
+        switch_v(770, 170, 230, "S_3", "", side="left"),
+        wire(770, 230, 770, 250),
+        switch_v(770, 250, 310, "S_4", "", side="left"),
+        wire(770, 310, 770, 330),
 
-        # Terminals: Out 1 from (630, 220) to (820, 220); Out 2 from (730, 250) to (820, 250)
-        wire(630, 220, 820, 220),
-        wire(730, 250, 820, 250),
-        terminal(820, 220, "Terminal 1", side="right"),
-        terminal(820, 250, "Terminal 2", side="right"),
+        # Leg 1 midpoint (640, 240) stepped up to y=160 (bare wire above S3)
+        # Hops over Leg 2 at (770, 160)
+        wire(640, 240, 670, 240),
+        wire(670, 240, 670, 160),
+        hop_h(670, 770, 840, 160),
+        terminal(840, 160, "Terminal 1", side="right"),
+
+        # Leg 2 midpoint (770, 240) goes straight horizontally out to Terminal 2!
+        # Clear space between S3 and S4 diodes!
+        wire(770, 240, 840, 240),
+        terminal(840, 240, "Terminal 2", side="right"),
     ]
-    return svg_wrap("0 0 900 370", "MMC Submodule Configurations (HBSM vs. FBSM)",
+    return svg_wrap("0 0 950 400", "MMC Submodule Configurations (HBSM vs. FBSM)",
                     "European IEC 60617 Standard Schematic • Multilevel Arm Building Blocks",
                     "\n".join(elems))
 
