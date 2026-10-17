@@ -15,6 +15,7 @@
 - **No Test Skipping**: When verifying changes or running tests, never skip tests (`-DskipTests` is only for rapid intermediate compile checks). Always run `mvn test` before finalizing or merging changes.
 - **Exhaustive Field Fidelity**: When implementing parsers, serializers, or data models, tests must assert exact equality for every single modeled attribute, array, connection, identifier, flag, and metadata field. Never settle for superficial smoke checks.
 - **Complete Downstream Integration**: When adding core capabilities (e.g., serialization, new model types), always complete the integration in downstream consumers (services, controllers, netlist builders) and add full test coverage across all layers.
+- **Frontend Test Directory Import Paths**: Tests in `frontend/test/` reside outside the `src/` tree; any imports of source modules, models, geometry, or types MUST use `../src/...` (e.g. `import type { Point } from '../src/model/types'`, never `../model/types`). Verify full compilation with `tsc --noEmit` before committing.
 
 ## Example-Circuit Quality Gate (MANDATORY before declaring example work done)
 Bundled examples in `frontend/src/model/examples.ts` are user-facing products, not test fixtures. A change to an example (or to any engine semantics an example depends on) is **not done** until ALL of the following pass:
@@ -69,4 +70,13 @@ When conducting codebase reviews or refactorings across GeckoCIRCUITS (frontend 
 ## Schematic Validation & Diagnostic Usability
 - **Named Component Context in Coordinate Warnings**: When emitting validation notices citing schematic grid coordinates `(x, y)` (such as duplicate overlapping wires or unconnected ends), always resolve the nearest named component (e.g., `near 'D_3'`) so diagnostics are immediately human-actionable without grid hunting.
 - **Orthogonal Crossing Net Isolation**: Wires that merely cross orthogonally without terminating at the crossing point must remain isolated electrical nets.
+
+## Canvas Manipulators & Interactive Shape Resizing
+When implementing or modifying interactive mouse manipulators (such as 8-point bounding box resize handles on notes, shapes, or instruments):
+- **Opposite-Anchor Pinning Math**: Dragging edge or corner handles that move origin coordinates (`nw`, `n`, `ne`, `w`, `sw`) must keep the opposite edges/corners strictly pinned in place. Always clamp deltas against explicit minimum and maximum bounds (`MIN_WIDTH`, `MIN_HEIGHT`) so shapes can never invert or shrink below readable dimensions.
+- **Event Propagation Isolation**: All manipulator handles and controls must invoke `e.stopPropagation()` and `e.preventDefault()` on `onMouseDown` to prevent triggering component dragging (`DRAG_START`), canvas selection marquees, or canvas panning.
+- **Window-Level Drag Tracking**: Use global `window.addEventListener` for `mousemove` and `mouseup` while dragging is active so mouse tracking remains continuous even if the cursor moves outside the SVG canvas or over native toolbars.
+- **Cancellation Invariant**: Listen for the `Escape` keydown during active drags to immediately abort the manipulation and revert to original dimensions without committing changes.
+- **Cursor Flicker Prevention**: Lock the document body cursor (`document.body.style.cursor`) to the handle's resize cursor during active drag so the cursor remains consistent during rapid mouse movements.
+- **Optimistic State Synchronization**: Update editor state in the local store optimistically on mouse release (`COMPONENT_UPSERT`) to prevent visual layout flicker while the asynchronous backend patch request is in flight.
 
