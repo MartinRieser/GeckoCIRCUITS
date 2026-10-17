@@ -1027,96 +1027,191 @@ def gen_npc_leg():
                     "\n".join(elems))
 
 # ==============================================================================
+# ==============================================================================
 # 12. MMC Topology
 # ==============================================================================
 def gen_mmc_topology():
     elems = [
-        # DC Rails: +Vdc/2 (y=70), -Vdc/2 (y=440)
-        wire(140, 70, 800, 70, stroke="#dc2626"),
-        '<circle cx="140" cy="70" r="4.5" fill="#dc2626" />',
-        '<text x="125" y="75" class="tag-pos-end">+Vdc / 2</text>',
+        # DC Rails: +Vdc/2 (y=80), -Vdc/2 (y=560)
+        wire(90, 80, 600, 80, stroke="#dc2626"),
+        '<circle cx="90" cy="80" r="4.5" fill="#dc2626" />',
+        '<text x="76" y="85" class="tag-pos-end">+Vdc / 2</text>',
 
-        wire(140, 440, 800, 440, stroke="#2563eb"),
-        '<circle cx="140" cy="440" r="4.5" fill="#2563eb" />',
-        '<text x="125" y="445" class="tag-neg-end">&#8722;Vdc / 2</text>',
+        wire(90, 560, 600, 560, stroke="#2563eb"),
+        '<circle cx="90" cy="560" r="4.5" fill="#2563eb" />',
+        '<text x="76" y="565" class="tag-neg-end">&#8722;Vdc / 2</text>',
 
-        # Three Phase Legs: A (x=240), B (x=490), C (x=740)
-        # Leg A
-        junc(240, 70), junc(240, 440),
-        wire(240, 70, 240, 90),
-        '<rect x="210" y="90" width="60" height="26" class="block-accent" /><text x="240" y="108" class="sublabel">SM 1</text>',
-        wire(240, 116, 240, 124),
-        '<rect x="210" y="124" width="60" height="26" class="block-accent" /><text x="240" y="142" class="sublabel">SM 2</text>',
-        wire(240, 150, 240, 158),
-        '<text x="240" y="168" class="label">&#8942;</text>',
-        wire(240, 170, 240, 176),
-        '<rect x="210" y="176" width="60" height="26" class="block-accent" /><text x="240" y="194" class="sublabel">SM N</text>',
-        wire(240, 202, 240, 216),
-        ind_v(240, 216, 255, "L_arm", "", side="right"),
-        junc(240, 255),
-        wire(240, 255, 150, 255),
-        terminal(150, 255, "Phase A (U)", side="left"),
+        # DC Link Voltage Measurement Arrow & Neutral Reference
+        '<line x1="115" y1="90" x2="115" y2="550" class="measure-arrow" marker-start="url(#arr-blue)" marker-end="url(#arr-blue)" />',
+        '<line x1="105" y1="80" x2="125" y2="80" class="wire-thin" />',
+        '<line x1="105" y1="560" x2="125" y2="560" class="wire-thin" />',
+        '<text x="128" y="318" class="label-start" fill="#0284c7">Vdc</text>',
+        '<text x="128" y="334" class="sublabel-start">Total DC Bus</text>',
+        gnd(90, 325, "0V (Neutral)"),
+        '<line x1="90" y1="325" x2="115" y2="325" class="wire-thin" stroke-dasharray="3,3" />',
 
-        ind_v(240, 255, 294, "L_arm", "", side="right"),
-        wire(240, 294, 240, 308),
-        '<rect x="210" y="308" width="60" height="26" class="block-accent" /><text x="240" y="326" class="sublabel">SM 1</text>',
-        wire(240, 334, 240, 342),
-        '<text x="240" y="352" class="label">&#8942;</text>',
-        wire(240, 354, 240, 360),
-        '<rect x="210" y="360" width="60" height="26" class="block-accent" /><text x="240" y="378" class="sublabel">SM N</text>',
-        wire(240, 386, 240, 440),
+        # DC Current Arrow entering positive rail
+        '<line x1="140" y1="80" x2="190" y2="80" stroke="#dc2626" stroke-width="2" marker-end="url(#arr-blue)" />',
+        '<text x="165" y="72" class="sublabel" fill="#dc2626" font-weight="bold">I_dc</text>',
 
-        # Leg B
-        junc(490, 70), junc(490, 440),
-        wire(490, 70, 490, 90),
-        '<rect x="460" y="90" width="60" height="26" class="block-accent" /><text x="490" y="108" class="sublabel">SM 1</text>',
-        wire(490, 116, 490, 124),
-        '<rect x="460" y="124" width="60" height="26" class="block-accent" /><text x="490" y="142" class="sublabel">SM 2</text>',
-        wire(490, 150, 490, 158),
-        '<text x="490" y="168" class="label">&#8942;</text>',
-        wire(490, 170, 490, 176),
-        '<rect x="460" y="176" width="60" height="26" class="block-accent" /><text x="490" y="194" class="sublabel">SM N</text>',
-        wire(490, 202, 490, 216),
-        ind_v(490, 216, 255, "L_arm", "", side="left"),
-        junc(490, 255),
-        wire(490, 255, 590, 255),
-        terminal(590, 255, "Phase B (V)", side="right"),
+        # Phase Leg Titles
+        '<text x="240" y="68" class="label" fill="#0f172a" font-weight="700">Phase Leg A</text>',
+        '<text x="400" y="68" class="label" fill="#0f172a" font-weight="700">Phase Leg B</text>',
+        '<text x="560" y="68" class="label" fill="#0f172a" font-weight="700">Phase Leg C</text>',
 
-        ind_v(490, 255, 294, "L_arm", "", side="left"),
-        wire(490, 294, 490, 308),
-        '<rect x="460" y="308" width="60" height="26" class="block-accent" /><text x="490" y="326" class="sublabel">SM 1</text>',
-        wire(490, 334, 490, 342),
-        '<text x="490" y="352" class="label">&#8942;</text>',
-        wire(490, 354, 490, 360),
-        '<rect x="460" y="360" width="60" height="26" class="block-accent" /><text x="490" y="378" class="sublabel">SM N</text>',
-        wire(490, 386, 490, 440),
+        # Arm Annotations on Left of Leg A
+        '<text x="185" y="165" class="sublabel-end" font-weight="bold" fill="#0284c7">Upper Arm</text>',
+        '<text x="185" y="180" class="sublabel-end">N Submodules</text>',
+        '<text x="185" y="195" class="sublabel-end">+ L_arm</text>',
 
-        # Leg C
-        junc(740, 70), junc(740, 440),
-        wire(740, 70, 740, 90),
-        '<rect x="710" y="90" width="60" height="26" class="block-accent" /><text x="740" y="108" class="sublabel">SM 1</text>',
-        wire(740, 116, 740, 124),
-        '<rect x="710" y="124" width="60" height="26" class="block-accent" /><text x="740" y="142" class="sublabel">SM 2</text>',
-        wire(740, 150, 740, 158),
-        '<text x="740" y="168" class="label">&#8942;</text>',
-        wire(740, 170, 740, 176),
-        '<rect x="710" y="176" width="60" height="26" class="block-accent" /><text x="740" y="194" class="sublabel">SM N</text>',
-        wire(740, 202, 740, 216),
-        ind_v(740, 216, 255, "L_arm", "", side="right"),
-        junc(740, 255),
-        wire(740, 255, 870, 255),
-        terminal(870, 255, "Phase C (W)", side="right"),
-
-        ind_v(740, 255, 294, "L_arm", "", side="right"),
-        wire(740, 294, 740, 308),
-        '<rect x="710" y="308" width="60" height="26" class="block-accent" /><text x="740" y="326" class="sublabel">SM 1</text>',
-        wire(740, 334, 740, 342),
-        '<text x="740" y="352" class="label">&#8942;</text>',
-        wire(740, 354, 740, 360),
-        '<rect x="710" y="360" width="60" height="26" class="block-accent" /><text x="740" y="378" class="sublabel">SM N</text>',
-        wire(740, 386, 740, 440),
+        '<text x="185" y="445" class="sublabel-end" font-weight="bold" fill="#0284c7">Lower Arm</text>',
+        '<text x="185" y="460" class="sublabel-end">N Submodules</text>',
+        '<text x="185" y="475" class="sublabel-end">+ L_arm</text>',
     ]
-    return svg_wrap("0 0 1020 520", "Modular Multilevel Converter (MMC) Topology",
+
+    # Build the 3 Phase Legs: Leg A (240), Leg B (400), Leg C (560)
+    for x in [240, 400, 560]:
+        elems.extend([
+            junc(x, 80),
+            wire(x, 80, x, 102),
+
+            # Upper Arm Submodules
+            f'<rect x="{x-36}" y="102" width="72" height="28" rx="6" class="block-accent" />',
+            f'<text x="{x}" y="120" class="sublabel" font-weight="600">SM 1</text>',
+            wire(x, 130, x, 142),
+            f'<rect x="{x-36}" y="142" width="72" height="28" rx="6" class="block-accent" />',
+            f'<text x="{x}" y="160" class="sublabel" font-weight="600">SM 2</text>',
+            wire(x, 170, x, 178),
+            f'<text x="{x}" y="190" class="label">&#8942;</text>',
+            wire(x, 194, x, 202),
+            f'<rect x="{x-36}" y="202" width="72" height="28" rx="6" class="block-accent" />',
+            f'<text x="{x}" y="220" class="sublabel" font-weight="600">SM N</text>',
+            wire(x, 230, x, 238),
+
+            # Upper Arm Inductor (238 to 298, height 60, coil ym=268)
+            ind_v(x, 238, 298, "L_arm", "", side="left"),
+
+            # Bare wire through midpoint band (298 to 348, 50px clear!)
+            wire(x, 298, x, 348),
+
+            # Lower Arm Inductor (348 to 408, height 60, coil ym=378)
+            ind_v(x, 348, 408, "L_arm", "", side="left"),
+
+            # Lower Arm Submodules
+            wire(x, 408, x, 416),
+            f'<rect x="{x-36}" y="416" width="72" height="28" rx="6" class="block-accent" />',
+            f'<text x="{x}" y="434" class="sublabel" font-weight="600">SM 1</text>',
+            wire(x, 444, x, 452),
+            f'<rect x="{x-36}" y="452" width="72" height="28" rx="6" class="block-accent" />',
+            f'<text x="{x}" y="470" class="sublabel" font-weight="600">SM 2</text>',
+            wire(x, 480, x, 488),
+            f'<text x="{x}" y="500" class="label">&#8942;</text>',
+            wire(x, 504, x, 512),
+            f'<rect x="{x-36}" y="512" width="72" height="28" rx="6" class="block-accent" />',
+            f'<text x="{x}" y="530" class="sublabel" font-weight="600">SM N</text>',
+            wire(x, 540, x, 560),
+            junc(x, 560),
+        ])
+
+    # 3-Phase AC Midpoint Output Routing
+    # Phase A (y=302): leaves Leg A, hops over Leg B and Leg C
+    elems.extend([
+        junc(240, 302),
+        hop_h(240, 400, 480, 302, stroke="#0284c7"),
+        hop_h(480, 560, 740, 302, stroke="#0284c7"),
+        '<line x1="630" y1="302" x2="670" y2="302" stroke="#0284c7" stroke-width="2" marker-end="url(#arr-blue)" />',
+        '<text x="650" y="294" class="sublabel" fill="#0284c7" font-weight="bold">i_a</text>',
+
+        # Phase B (y=322): leaves Leg B, hops over Leg C
+        junc(400, 322),
+        hop_h(400, 560, 740, 322, stroke="#0284c7"),
+        '<line x1="630" y1="322" x2="670" y2="322" stroke="#0284c7" stroke-width="2" marker-end="url(#arr-blue)" />',
+        '<text x="650" y="314" class="sublabel" fill="#0284c7" font-weight="bold">i_b</text>',
+
+        # Phase C (y=342): leaves Leg C straight
+        junc(560, 342),
+        wire(560, 342, 740, 342, stroke="#0284c7"),
+        '<line x1="630" y1="342" x2="670" y2="342" stroke="#0284c7" stroke-width="2" marker-end="url(#arr-blue)" />',
+        '<text x="650" y="358" class="sublabel" fill="#0284c7" font-weight="bold">i_c</text>',
+
+        # 3-Phase AC Output Load / Grid Block (x=740..1090)
+        '<rect x="740" y="285" width="350" height="70" class="block-accent" />',
+        '<circle cx="740" cy="302" r="3.5" fill="#0284c7" />',
+        '<circle cx="740" cy="322" r="3.5" fill="#0284c7" />',
+        '<circle cx="740" cy="342" r="3.5" fill="#0284c7" />',
+        '<text x="752" y="306" class="sublabel-start" fill="#0284c7" font-weight="bold">Phase A (v_a)</text>',
+        '<text x="752" y="326" class="sublabel-start" fill="#0284c7" font-weight="bold">Phase B (v_b)</text>',
+        '<text x="752" y="346" class="sublabel-start" fill="#0284c7" font-weight="bold">Phase C (v_c)</text>',
+        '<text x="960" y="318" class="label" fill="#0284c7" font-size="15">3-Phase AC Output</text>',
+        '<text x="960" y="338" class="sublabel" font-size="12">Grid Interconnection / Motor Load</text>',
+    ])
+
+    # Callout: Submodule (SM) Internal Cell Circuit (Upper Right, x=740..1090)
+    elems.extend([
+        '<rect x="740" y="75" width="350" height="185" class="card" />',
+        '<rect x="740" y="75" width="350" height="26" fill="#f0f9ff" stroke="#e2e8f0" rx="8" />',
+        '<text x="915" y="93" class="label" fill="#0284c7">Submodule Internal Circuit (HBSM)</text>',
+
+        # Capacitor C_sm at x=790
+        cap_v(790, 120, 200, "C_sm", "", side="left"),
+        wire(790, 120, 870, 120),
+        wire(790, 200, 970, 200),
+
+        # Antiparallel Diodes placed cleanly on left at x=840 (between Cap and Switches)
+        diode_v(840, 120, 160, direction="up", label="", val="", side="left"),
+        diode_v(840, 160, 200, direction="up", label="", val="", side="left"),
+        wire(840, 120, 870, 120),
+        wire(840, 160, 870, 160),
+        wire(840, 200, 870, 200),
+
+        # Switch Leg at x=870 (without built-in diodes since diodes are placed cleanly at x=840)
+        switch_v(870, 120, 160, "S_1", "", with_diode=False, side="right"),
+        switch_v(870, 160, 200, "S_2", "", with_diode=False, side="right"),
+        junc(870, 120), junc(870, 160), junc(870, 200),
+
+        # Output Terminals (completely unobstructed to x=970)
+        wire(870, 160, 970, 160),
+        terminal(970, 160, "T_1", side="right"),
+        terminal(970, 200, "T_2", side="right"),
+        '<line x1="1020" y1="165" x2="1020" y2="195" class="measure-arrow" marker-end="url(#arr-blue)" />',
+        '<text x="1032" y="184" class="label-start" fill="#0284c7">v_sm</text>',
+
+        # Switching state legend
+        '<rect x="755" y="218" width="320" height="34" fill="#f8fafc" rx="4" />',
+        '<text x="915" y="232" class="sublabel" font-size="11">• S1 ON, S2 OFF &#8594; v_sm = +V_c (Inserted State)</text>',
+        '<text x="915" y="246" class="sublabel" font-size="11">• S1 OFF, S2 ON &#8594; v_sm = 0V (Bypassed State)</text>',
+
+        # Callout dashed line from Leg C SM 1 to Callout Card
+        '<circle cx="596" cy="116" r="3" fill="#0284c7" />',
+        '<line x1="596" y1="116" x2="740" y2="116" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="4,4" />',
+    ])
+
+    # MMC Key Formulas & Parameters Card (Bottom Right, x=740..1090)
+    elems.extend([
+        '<rect x="740" y="380" width="350" height="185" class="card" />',
+        '<rect x="740" y="380" width="350" height="26" fill="#f8fafc" stroke="#e2e8f0" rx="8" />',
+        '<text x="915" y="398" class="label" fill="#0f172a">MMC Key Formulas &amp; Parameters</text>',
+
+        '<text x="755" y="424" class="sublabel-start" font-weight="600" fill="#0f172a">• Submodule Voltage:</text>',
+        '<text x="910" y="424" class="sublabel-start">V_sm = V_dc / N</text>',
+
+        '<text x="755" y="448" class="sublabel-start" font-weight="600" fill="#0f172a">• Phase AC Levels:</text>',
+        '<text x="910" y="448" class="sublabel-start">N_levels = N + 1 (per phase)</text>',
+
+        '<text x="755" y="472" class="sublabel-start" font-weight="600" fill="#0f172a">• Upper Arm Current:</text>',
+        '<text x="910" y="472" class="sublabel-start">i_u = I_dc/3 + i_ac/2 + i_circ</text>',
+
+        '<text x="755" y="496" class="sublabel-start" font-weight="600" fill="#0f172a">• Lower Arm Current:</text>',
+        '<text x="910" y="496" class="sublabel-start">i_l = I_dc/3 &#8722; i_ac/2 + i_circ</text>',
+
+        '<text x="755" y="520" class="sublabel-start" font-weight="600" fill="#0f172a">• Arm Inductor L_arm:</text>',
+        '<text x="910" y="520" class="sublabel-start">Limits circulating &amp; fault di/dt</text>',
+
+        '<text x="755" y="544" class="sublabel-start" font-weight="600" fill="#0f172a">• Total Submodules:</text>',
+        '<text x="910" y="544" class="sublabel-start">6 × N (in 3-Phase converter)</text>',
+    ])
+
+    return svg_wrap("0 0 1140 640", "Modular Multilevel Converter (MMC) Topology",
                     "European IEC 60617 Standard Schematic • Cascaded Submodule HVDC &amp; STATCOM Architecture",
                     "\n".join(elems))
 
