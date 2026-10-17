@@ -565,21 +565,23 @@ function VoltageSource({ u }: { u: number }) {
       {leads(u)}
       <circle r={0.85 * u} />
       <text
-        x={-0.4 * u}
-        y={0.3 * u}
-        fontSize={0.7 * u}
+        x={-0.35 * u}
+        y={0.18 * u}
+        fontSize={0.52 * u}
         fill="currentColor"
         stroke="none"
+        textAnchor="middle"
         fontWeight="bold"
       >
         +
       </text>
       <text
-        x={0.15 * u}
-        y={0.3 * u}
-        fontSize={0.7 * u}
+        x={0.35 * u}
+        y={0.18 * u}
+        fontSize={0.52 * u}
         fill="currentColor"
         stroke="none"
+        textAnchor="middle"
         fontWeight="bold"
       >
         −
@@ -644,31 +646,45 @@ function Transistor({ type, u }: { type: number; u: number }) {
 
   return (
     <g>
-      <line x1={-LEAD * u} y1={0} x2={-0.4 * u} y2={0} />
+      {/* Base / Gate terminal lead */}
+      <line x1={-LEAD * u} y1={0} x2={isBjt ? -0.2 * u : -0.35 * u} y2={0} />
+      {/* Collector / Drain terminal lead */}
       <line x1={0.4 * u} y1={-0.5 * u} x2={LEAD * u} y2={-0.5 * u} />
+      {/* Emitter / Source terminal lead */}
       <line x1={0.4 * u} y1={0.5 * u} x2={LEAD * u} y2={0.5 * u} />
-      {/* Base / Gate bar */}
-      <line x1={-0.35 * u} y1={-0.65 * u} x2={-0.35 * u} y2={0.65 * u} strokeWidth={2} />
-      {/* Channel */}
+      {/* Insulated Gate bar for MOSFET / IGBT */}
+      {!isBjt && (
+        <line x1={-0.35 * u} y1={-0.65 * u} x2={-0.35 * u} y2={0.65 * u} strokeWidth={2} />
+      )}
+      {/* Channel / Base bar */}
       {isMosfet ? (
         <>
-          <line x1={-0.15 * u} y1={-0.6 * u} x2={-0.15 * u} y2={-0.3 * u} />
-          <line x1={-0.15 * u} y1={-0.15 * u} x2={-0.15 * u} y2={0.15 * u} />
-          <line x1={-0.15 * u} y1={0.3 * u} x2={-0.15 * u} y2={0.6 * u} />
+          <line x1={-0.15 * u} y1={-0.6 * u} x2={-0.15 * u} y2={-0.3 * u} strokeWidth={1.5} />
+          <line x1={-0.15 * u} y1={-0.15 * u} x2={-0.15 * u} y2={0.15 * u} strokeWidth={1.5} />
+          <line x1={-0.15 * u} y1={0.3 * u} x2={-0.15 * u} y2={0.6 * u} strokeWidth={1.5} />
           <line x1={-0.15 * u} y1={-0.45 * u} x2={0.4 * u} y2={-0.5 * u} />
           <line x1={-0.15 * u} y1={0.45 * u} x2={0.4 * u} y2={0.5 * u} />
           <path d={`M ${0.1 * u} ${0.45 * u} l ${-0.2 * u} ${-0.12 * u} l 0 ${0.24 * u} z`} fill="currentColor" />
         </>
       ) : (
         <>
-          <line x1={-0.2 * u} y1={-0.6 * u} x2={-0.2 * u} y2={0.6 * u} strokeWidth={isIgbt ? 2 : 1.4} />
-          <line x1={-0.2 * u} y1={-0.3 * u} x2={0.4 * u} y2={-0.65 * u} />
-          <line x1={-0.2 * u} y1={0.3 * u} x2={0.4 * u} y2={0.65 * u} />
-          {/* Emitter arrow */}
-          <path d={`M ${0.35 * u} ${0.62 * u} l ${-0.18 * u} ${-0.08 * u} l ${0.08 * u} ${-0.18 * u} z`} fill="currentColor" />
+          <line x1={-0.2 * u} y1={-0.6 * u} x2={-0.2 * u} y2={0.6 * u} strokeWidth={isIgbt ? 2 : 2.2} />
+          <line x1={-0.2 * u} y1={-0.3 * u} x2={0.4 * u} y2={-0.5 * u} />
+          <line x1={-0.2 * u} y1={0.3 * u} x2={0.4 * u} y2={0.5 * u} />
+          {/* Emitter arrow pointing outward (N-type) */}
+          <path d={`M ${0.35 * u} ${0.48 * u} l ${-0.18 * u} ${-0.08 * u} l ${0.08 * u} ${-0.18 * u} z`} fill="currentColor" />
         </>
       )}
-      <text x={0.05 * u} y={-0.1 * u} fontSize={0.45 * u} fill="currentColor" stroke="none" fontWeight="bold">
+      {/* Fitted device family badge placed cleanly in open area between diagonal lines */}
+      <text
+        x={0.12 * u}
+        y={-0.05 * u}
+        fontSize={0.28 * u}
+        fill="currentColor"
+        stroke="none"
+        fontWeight="bold"
+        textAnchor="middle"
+      >
         {isMosfet ? 'MOS' : isIgbt ? 'IGBT' : isBjt ? 'BJT' : 'T'}
       </text>
     </g>
@@ -771,7 +787,15 @@ function Motor({ u }: { u: number }) {
     <g>
       {leads(u)}
       <circle r={0.85 * u} />
-      <text x={-0.35 * u} y={0.32 * u} fontSize={0.75 * u} fill="currentColor" stroke="none" fontWeight="bold">
+      <text
+        x={0}
+        y={0.26 * u}
+        fontSize={0.72 * u}
+        fill="currentColor"
+        stroke="none"
+        textAnchor="middle"
+        fontWeight="bold"
+      >
         M
       </text>
     </g>
@@ -785,10 +809,10 @@ function OpAmp({ u }: { u: number }) {
       <line x1={-LEAD * u} y1={0.45 * u} x2={-0.65 * u} y2={0.45 * u} />
       <line x1={0.65 * u} y1={0} x2={LEAD * u} y2={0} />
       <path d={`M ${-0.65 * u} ${-0.8 * u} L ${-0.65 * u} ${0.8 * u} L ${0.65 * u} 0 z`} fill="rgba(255,255,255,0.05)" />
-      <text x={-0.5 * u} y={-0.25 * u} fontSize={0.5 * u} fill="currentColor" stroke="none" fontWeight="bold">
+      <text x={-0.48 * u} y={-0.22 * u} fontSize={0.45 * u} fill="currentColor" stroke="none" fontWeight="bold">
         −
       </text>
-      <text x={-0.5 * u} y={0.55 * u} fontSize={0.5 * u} fill="currentColor" stroke="none" fontWeight="bold">
+      <text x={-0.48 * u} y={0.52 * u} fontSize={0.45 * u} fill="currentColor" stroke="none" fontWeight="bold">
         +
       </text>
     </g>
@@ -799,8 +823,8 @@ function ThermalResistor({ u }: { u: number }) {
   return (
     <g>
       {leads(u)}
-      <rect x={-0.85 * u} y={-0.45 * u} width={1.7 * u} height={0.9 * u} strokeDasharray="3 2" />
-      <text x={-0.35 * u} y={0.25 * u} fontSize={0.45 * u} fill="currentColor" stroke="none">
+      <rect x={-0.85 * u} y={-0.45 * u} width={1.7 * u} height={0.9 * u} rx={1} strokeDasharray="3 2" />
+      <text x={0} y={0.14 * u} fontSize={0.38 * u} fill="currentColor" stroke="none" textAnchor="middle" fontWeight="bold">
         Rth
       </text>
     </g>
@@ -814,7 +838,7 @@ function ThermalCapacitor({ u }: { u: number }) {
       <line x1={0.25 * u} y1={0} x2={LEAD * u} y2={0} />
       <line x1={-0.25 * u} y1={-0.6 * u} x2={-0.25 * u} y2={0.6 * u} strokeDasharray="3 2" strokeWidth={2} />
       <line x1={0.25 * u} y1={-0.6 * u} x2={0.25 * u} y2={0.6 * u} strokeDasharray="3 2" strokeWidth={2} />
-      <text x={-0.25 * u} y={-0.75 * u} fontSize={0.45 * u} fill="currentColor" stroke="none">
+      <text x={0} y={-0.75 * u} fontSize={0.38 * u} fill="currentColor" stroke="none" textAnchor="middle" fontWeight="bold">
         Cth
       </text>
     </g>
@@ -826,7 +850,7 @@ function TemperatureSource({ u }: { u: number }) {
     <g>
       {leads(u)}
       <circle r={0.85 * u} strokeDasharray="4 2" />
-      <text x={-0.25 * u} y={0.3 * u} fontSize={0.65 * u} fill="currentColor" stroke="none" fontWeight="bold">
+      <text x={0} y={0.22 * u} fontSize={0.65 * u} fill="currentColor" stroke="none" textAnchor="middle" fontWeight="bold">
         T
       </text>
     </g>
@@ -840,7 +864,7 @@ function HeatFlowSource({ u }: { u: number }) {
       <circle r={0.85 * u} strokeDasharray="4 2" />
       <line x1={-0.45 * u} y1={0} x2={0.35 * u} y2={0} strokeWidth={1.6} />
       <path d={`M ${0.35 * u} 0 l ${-0.25 * u} ${-0.18 * u} l 0 ${0.36 * u} z`} fill="currentColor" />
-      <text x={-0.2 * u} y={-0.35 * u} fontSize={0.45 * u} fill="currentColor" stroke="none">
+      <text x={0} y={-0.35 * u} fontSize={0.34 * u} fill="currentColor" stroke="none" textAnchor="middle" fontWeight="bold">
         Pth
       </text>
     </g>
@@ -851,8 +875,8 @@ function AmbientSymbol({ u }: { u: number }) {
   return (
     <g>
       <line x1={-LEAD * u} y1={0} x2={0} y2={0} />
-      <circle cx={0} cy={0} r={0.6 * u} />
-      <text x={-0.3 * u} y={0.25 * u} fontSize={0.45 * u} fill="currentColor" stroke="none">
+      <circle cx={0} cy={0} r={0.65 * u} />
+      <text x={0} y={0.12 * u} fontSize={0.32 * u} fill="currentColor" stroke="none" textAnchor="middle" fontWeight="bold">
         amb
       </text>
     </g>
@@ -880,13 +904,14 @@ function GlobalTerminalSymbol({ u }: { u: number }) {
 }
 
 function ReluctanceSymbol({ u, type }: { u: number; type: number }) {
+  const label = type === 26 ? 'MMF' : type === 25 ? 'L_rel' : 'Rm';
   return (
     <g>
       {leads(u)}
       <rect x={-0.8 * u} y={-0.5 * u} width={1.6 * u} height={1.0 * u} />
       <line x1={-0.8 * u} y1={-0.5 * u} x2={0.8 * u} y2={0.5 * u} />
-      <text x={-0.3 * u} y={0.85 * u} fontSize={0.45 * u} fill="currentColor" stroke="none">
-        {type === 26 ? 'MMF' : type === 25 ? 'L_rel' : 'Rm'}
+      <text x={0} y={0.82 * u} fontSize={0.36 * u} fill="currentColor" stroke="none" textAnchor="middle" fontWeight="bold">
+        {label}
       </text>
     </g>
   );
@@ -896,8 +921,8 @@ function LISNSymbol({ u }: { u: number }) {
   return (
     <g>
       {leads(u)}
-      <rect x={-0.8 * u} y={-0.5 * u} width={1.6 * u} height={1.0 * u} />
-      <text x={-0.5 * u} y={0.25 * u} fontSize={0.45 * u} fill="currentColor" stroke="none">
+      <rect x={-0.85 * u} y={-0.5 * u} width={1.7 * u} height={1.0 * u} rx={2} />
+      <text x={0} y={0.14 * u} fontSize={0.38 * u} fill="currentColor" stroke="none" textAnchor="middle" fontWeight="bold">
         LISN
       </text>
     </g>
@@ -913,19 +938,26 @@ function GenericBox({
   family?: string;
   type: number;
 }) {
+  const label = family ? `${family}${type}` : `T${type}`;
+  const boxW = Math.max(1.5 * u, (label.length * 0.24 + 0.5) * u);
+  const boxH = 1.5 * u;
+  const fs = Math.min(0.42 * u, (boxW - 0.2 * u) / (label.length * 0.65));
+
   return (
     <g>
-      {leads(u)}
-      <rect x={-0.75 * u} y={-0.75 * u} width={1.5 * u} height={1.5 * u} rx={2} />
+      <line x1={-LEAD * u} y1={0} x2={-boxW / 2} y2={0} />
+      <line x1={boxW / 2} y1={0} x2={LEAD * u} y2={0} />
+      <rect x={-boxW / 2} y={-boxH / 2} width={boxW} height={boxH} rx={2} />
       <text
         x={0}
-        y={0.25 * u}
-        fontSize={0.45 * u}
+        y={fs * 0.35}
+        fontSize={fs}
         fill="currentColor"
         stroke="none"
         textAnchor="middle"
+        fontWeight="bold"
       >
-        {family ? `${family}${type}` : `T${type}`}
+        {label}
       </text>
     </g>
   );
@@ -935,11 +967,11 @@ function GenericBox({
 
 const CTRL_COLOR = '#4ade80';
 
-function controlLeads(u: number) {
+function controlLeads(u: number, boxW: number = 1.5 * u) {
   return (
     <>
-      <line x1={-LEAD * u} y1={0} x2={-0.75 * u} y2={0} stroke={CTRL_COLOR} />
-      <line x1={0.75 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
+      <line x1={-LEAD * u} y1={0} x2={-boxW / 2} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={boxW / 2} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
     </>
   );
 }
@@ -947,11 +979,26 @@ function controlLeads(u: number) {
 function VoltmeterSymbol({ u }: { u: number }) {
   return (
     <g>
-      <line x1={0.7 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
-      <rect x={-0.7 * u} y={-0.7 * u} width={1.4 * u} height={1.4 * u} rx={3}
-            stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.08)" />
-      <text x={0} y={0.3 * u} fontSize={0.75 * u} fill={CTRL_COLOR} stroke="none"
-            textAnchor="middle" fontWeight="bold">V</text>
+      <line x1={0.65 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <circle
+        cx={0}
+        cy={0}
+        r={0.65 * u}
+        stroke={CTRL_COLOR}
+        strokeWidth={1.5}
+        fill="rgba(74,222,128,0.08)"
+      />
+      <text
+        x={0}
+        y={0.24 * u}
+        fontSize={0.68 * u}
+        fill={CTRL_COLOR}
+        stroke="none"
+        textAnchor="middle"
+        fontWeight="bold"
+      >
+        V
+      </text>
     </g>
   );
 }
@@ -959,11 +1006,26 @@ function VoltmeterSymbol({ u }: { u: number }) {
 function AmmeterSymbol({ u }: { u: number }) {
   return (
     <g>
-      <line x1={0.7 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
-      <circle cx={0} cy={0} r={0.65 * u} stroke={CTRL_COLOR} strokeWidth={1.5}
-              fill="rgba(74,222,128,0.08)" />
-      <text x={0} y={0.3 * u} fontSize={0.75 * u} fill={CTRL_COLOR} stroke="none"
-            textAnchor="middle" fontWeight="bold">A</text>
+      <line x1={0.65 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <circle
+        cx={0}
+        cy={0}
+        r={0.65 * u}
+        stroke={CTRL_COLOR}
+        strokeWidth={1.5}
+        fill="rgba(74,222,128,0.08)"
+      />
+      <text
+        x={0}
+        y={0.24 * u}
+        fontSize={0.68 * u}
+        fill={CTRL_COLOR}
+        stroke="none"
+        textAnchor="middle"
+        fontWeight="bold"
+      >
+        A
+      </text>
     </g>
   );
 }
@@ -1061,11 +1123,28 @@ function SignalSourceSymbol({ u }: { u: number }) {
 function ConstantBlockSymbol({ u }: { u: number }) {
   return (
     <g>
-      <line x1={0.75 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
-      <rect x={-0.65 * u} y={-0.55 * u} width={1.3 * u} height={1.1 * u} rx={3}
-            stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
-      <text x={0} y={0.25 * u} fontSize={0.65 * u} fill={CTRL_COLOR} stroke="none"
-            textAnchor="middle" fontWeight="bold">k</text>
+      <line x1={0.65 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <rect
+        x={-0.65 * u}
+        y={-0.55 * u}
+        width={1.3 * u}
+        height={1.1 * u}
+        rx={3}
+        stroke={CTRL_COLOR}
+        strokeWidth={1.5}
+        fill="rgba(74,222,128,0.06)"
+      />
+      <text
+        x={0}
+        y={0.22 * u}
+        fontSize={0.6 * u}
+        fill={CTRL_COLOR}
+        stroke="none"
+        textAnchor="middle"
+        fontWeight="bold"
+      >
+        k
+      </text>
     </g>
   );
 }
@@ -1073,7 +1152,7 @@ function ConstantBlockSymbol({ u }: { u: number }) {
 function GateSymbol({ u }: { u: number }) {
   return (
     <g>
-      <line x1={-LEAD * u} y1={0} x2={-0.6 * u} y2={0} stroke={CTRL_COLOR} />
+      <line x1={-LEAD * u} y1={0} x2={-0.6 * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
       <path
         d={`M ${-0.6 * u} ${-0.6 * u} L ${-0.6 * u} ${0.6 * u} L ${0.6 * u} 0 z`}
         stroke={CTRL_COLOR}
@@ -1082,8 +1161,8 @@ function GateSymbol({ u }: { u: number }) {
       />
       <text
         x={-0.15 * u}
-        y={0.25 * u}
-        fontSize={0.55 * u}
+        y={0.22 * u}
+        fontSize={0.5 * u}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="middle"
@@ -1098,24 +1177,57 @@ function GateSymbol({ u }: { u: number }) {
 function GainTriangleSymbol({ u }: { u: number }) {
   return (
     <g>
-      {controlLeads(u)}
+      <line x1={-LEAD * u} y1={0} x2={-0.65 * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={0.65 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
       <path
         d={`M ${-0.65 * u} ${-0.65 * u} L ${-0.65 * u} ${0.65 * u} L ${0.65 * u} 0 z`}
-        stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
-      <text x={-0.2 * u} y={0.2 * u} fontSize={0.5 * u} fill={CTRL_COLOR} stroke="none"
-            textAnchor="middle" fontWeight="bold">k</text>
+        stroke={CTRL_COLOR}
+        strokeWidth={1.5}
+        fill="rgba(74,222,128,0.06)"
+      />
+      <text
+        x={-0.2 * u}
+        y={0.2 * u}
+        fontSize={0.48 * u}
+        fill={CTRL_COLOR}
+        stroke="none"
+        textAnchor="middle"
+        fontWeight="bold"
+      >
+        k
+      </text>
     </g>
   );
 }
 
 function ControlBlockLabel({ u, label }: { u: number; label: string }) {
+  const boxW = Math.max(1.6 * u, (label.length * 0.35 + 0.5) * u);
+  const boxH = 1.1 * u;
+  const fontSize = Math.min(0.52 * u, (boxW - 0.25 * u) / (label.length * 0.62));
   return (
     <g>
-      {controlLeads(u)}
-      <rect x={-0.75 * u} y={-0.55 * u} width={1.5 * u} height={1.1 * u} rx={3}
-            stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
-      <text x={0} y={0.25 * u} fontSize={0.55 * u} fill={CTRL_COLOR} stroke="none"
-            textAnchor="middle" fontWeight="bold">{label}</text>
+      {controlLeads(u, boxW)}
+      <rect
+        x={-boxW / 2}
+        y={-boxH / 2}
+        width={boxW}
+        height={boxH}
+        rx={3}
+        stroke={CTRL_COLOR}
+        strokeWidth={1.5}
+        fill="rgba(74,222,128,0.06)"
+      />
+      <text
+        x={0}
+        y={fontSize * 0.36}
+        fontSize={fontSize}
+        fill={CTRL_COLOR}
+        stroke="none"
+        textAnchor="middle"
+        fontWeight="bold"
+      >
+        {label}
+      </text>
     </g>
   );
 }
@@ -1131,25 +1243,38 @@ function TwoInputControlSymbol({
   in0Label?: string;
   in1Label?: string;
 }) {
+  const maxPinLen = Math.max(in0Label?.length || 0, in1Label?.length || 0);
+  const labelLen = label.length;
+  const hasPins = maxPinLen > 0;
+  const boxW = hasPins
+    ? Math.max(1.8 * u, (maxPinLen * 0.26 + labelLen * 0.36 + 0.8) * u)
+    : Math.max(1.5 * u, (labelLen * 0.38 + 0.6) * u);
+  const boxH = 2.1 * u;
+  const pinFs = maxPinLen > 2 ? 0.28 * u : 0.34 * u;
+  const labelFs = hasPins
+    ? Math.min(0.52 * u, (boxW / 2 - 0.08 * u) / (labelLen * 0.55))
+    : Math.min(0.6 * u, (boxW - 0.3 * u) / (labelLen * 0.55));
+  const labelX = hasPins ? boxW * 0.15 : 0;
+
   return (
     <g>
-      <line x1={-LEAD * u} y1={0} x2={-0.75 * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
-      <line x1={-LEAD * u} y1={1 * u} x2={-0.75 * u} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
-      <line x1={0.75 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={-LEAD * u} y1={0} x2={-boxW / 2} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={-LEAD * u} y1={1 * u} x2={-boxW / 2} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={boxW / 2} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
       <rect
-        x={-0.75 * u}
+        x={-boxW / 2}
         y={-0.55 * u}
-        width={1.5 * u}
-        height={2.1 * u}
+        width={boxW}
+        height={boxH}
         rx={3}
         stroke={CTRL_COLOR}
         strokeWidth={1.5}
         fill="rgba(74,222,128,0.06)"
       />
       <text
-        x={0}
-        y={0.7 * u}
-        fontSize={0.6 * u}
+        x={labelX}
+        y={0.5 * u + labelFs * 0.35}
+        fontSize={labelFs}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="middle"
@@ -1158,12 +1283,28 @@ function TwoInputControlSymbol({
         {label}
       </text>
       {in0Label && (
-        <text x={-0.45 * u} y={0.25 * u} fontSize={0.35 * u} fill={CTRL_COLOR} stroke="none" fontWeight="bold">
+        <text
+          x={-boxW / 2 + 0.16 * u}
+          y={0.12 * u}
+          fontSize={pinFs}
+          fill={CTRL_COLOR}
+          stroke="none"
+          fontWeight="bold"
+          textAnchor="start"
+        >
           {in0Label}
         </text>
       )}
       {in1Label && (
-        <text x={-0.45 * u} y={1.25 * u} fontSize={0.35 * u} fill={CTRL_COLOR} stroke="none" fontWeight="bold">
+        <text
+          x={-boxW / 2 + 0.16 * u}
+          y={1.12 * u}
+          fontSize={pinFs}
+          fill={CTRL_COLOR}
+          stroke="none"
+          fontWeight="bold"
+          textAnchor="start"
+        >
           {in1Label}
         </text>
       )}
@@ -1172,15 +1313,16 @@ function TwoInputControlSymbol({
 }
 
 function DeadTimeSymbol({ u }: { u: number }) {
+  const boxW = 1.6 * u;
   return (
     <g>
-      <line x1={-LEAD * u} y1={0} x2={-0.75 * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
-      <line x1={0.75 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
-      <line x1={0.75 * u} y1={1 * u} x2={LEAD * u} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={-LEAD * u} y1={0} x2={-boxW / 2} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={boxW / 2} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={boxW / 2} y1={1 * u} x2={LEAD * u} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
       <rect
-        x={-0.75 * u}
+        x={-boxW / 2}
         y={-0.55 * u}
-        width={1.5 * u}
+        width={boxW}
         height={2.1 * u}
         rx={3}
         stroke={CTRL_COLOR}
@@ -1188,9 +1330,9 @@ function DeadTimeSymbol({ u }: { u: number }) {
         fill="rgba(74,222,128,0.06)"
       />
       <text
-        x={-0.15 * u}
+        x={-0.18 * u}
         y={0.65 * u}
-        fontSize={0.45 * u}
+        fontSize={0.46 * u}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="middle"
@@ -1198,10 +1340,26 @@ function DeadTimeSymbol({ u }: { u: number }) {
       >
         DT
       </text>
-      <text x={0.48 * u} y={0.25 * u} fontSize={0.32 * u} fill={CTRL_COLOR} stroke="none" textAnchor="end" fontWeight="bold">
+      <text
+        x={boxW / 2 - 0.14 * u}
+        y={0.22 * u}
+        fontSize={0.32 * u}
+        fill={CTRL_COLOR}
+        stroke="none"
+        textAnchor="end"
+        fontWeight="bold"
+      >
         H
       </text>
-      <text x={0.48 * u} y={1.25 * u} fontSize={0.32 * u} fill={CTRL_COLOR} stroke="none" textAnchor="end" fontWeight="bold">
+      <text
+        x={boxW / 2 - 0.14 * u}
+        y={1.22 * u}
+        fontSize={0.32 * u}
+        fill={CTRL_COLOR}
+        stroke="none"
+        textAnchor="end"
+        fontWeight="bold"
+      >
         L
       </text>
     </g>
@@ -1213,26 +1371,50 @@ function TimeSourceSymbol({ u }: { u: number }) {
     <g>
       <line x1={0.75 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
       <circle cx={0} cy={0} r={0.75 * u} stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
-      <text x={0} y={0.28 * u} fontSize={0.65 * u} fill={CTRL_COLOR} stroke="none"
-            textAnchor="middle" fontWeight="bold">t</text>
+      <text
+        x={0}
+        y={0.24 * u}
+        fontSize={0.65 * u}
+        fill={CTRL_COLOR}
+        stroke="none"
+        textAnchor="middle"
+        fontWeight="bold"
+      >
+        t
+      </text>
     </g>
   );
 }
 
+/** IEC 60617-12 / DIN EN 60617-12 European Standard XOR Gate (=1) */
 function XorGateSymbol({ u }: { u: number }) {
+  const boxW = 1.3 * u;
   return (
     <g>
-      <line x1={-LEAD * u} y1={0} x2={-0.45 * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
-      <line x1={-LEAD * u} y1={1 * u} x2={-0.45 * u} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
-      <line x1={0.65 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
-      <path
-        d={`M ${-0.55 * u} ${-0.45 * u} Q ${-0.3 * u} ${0.5 * u} ${-0.55 * u} ${1.45 * u}`}
-        stroke={CTRL_COLOR} strokeWidth={1.5} fill="none" />
-      <path
-        d={`M ${-0.45 * u} ${-0.45 * u} Q 0 ${-0.45 * u} ${0.65 * u} 0 Q 0 ${1.45 * u} ${-0.45 * u} ${1.45 * u} Q ${-0.2 * u} ${0.5 * u} ${-0.45 * u} ${-0.45 * u} z`}
-        stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
-      <text x={0} y={0.65 * u} fontSize={0.4 * u} fill={CTRL_COLOR} stroke="none"
-            textAnchor="middle" fontWeight="bold">=1</text>
+      <line x1={-LEAD * u} y1={0} x2={-boxW / 2} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={-LEAD * u} y1={1 * u} x2={-boxW / 2} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={boxW / 2} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <rect
+        x={-boxW / 2}
+        y={-0.55 * u}
+        width={boxW}
+        height={2.1 * u}
+        rx={2}
+        stroke={CTRL_COLOR}
+        strokeWidth={1.5}
+        fill="rgba(74,222,128,0.06)"
+      />
+      <text
+        x={0}
+        y={0.68 * u}
+        fontSize={0.52 * u}
+        fill={CTRL_COLOR}
+        stroke="none"
+        textAnchor="middle"
+        fontWeight="bold"
+      >
+        =1
+      </text>
     </g>
   );
 }
@@ -1252,72 +1434,188 @@ function ComparatorSymbol({ u }: { u: number }) {
   );
 }
 
+/** IEC 60617-12 / DIN EN 60617-12 European Standard AND Gate (&) */
 function AndGateSymbol({ u }: { u: number }) {
+  const boxW = 1.3 * u;
   return (
     <g>
-      <line x1={-LEAD * u} y1={0} x2={-0.5 * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
-      <line x1={-LEAD * u} y1={1 * u} x2={-0.5 * u} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
-      <line x1={0.6 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
-      <path
-        d={`M ${-0.5 * u} ${-0.45 * u} L ${-0.5 * u} ${1.45 * u} L 0 ${1.45 * u} Q ${0.7 * u} ${1.45 * u} ${0.6 * u} 0 Q ${0.7 * u} ${-0.45 * u} 0 ${-0.45 * u} z`}
-        stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
-      <text x={-0.1 * u} y={0.65 * u} fontSize={0.4 * u} fill={CTRL_COLOR} stroke="none"
-            textAnchor="middle" fontWeight="bold">&amp;</text>
+      <line x1={-LEAD * u} y1={0} x2={-boxW / 2} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={-LEAD * u} y1={1 * u} x2={-boxW / 2} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={boxW / 2} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <rect
+        x={-boxW / 2}
+        y={-0.55 * u}
+        width={boxW}
+        height={2.1 * u}
+        rx={2}
+        stroke={CTRL_COLOR}
+        strokeWidth={1.5}
+        fill="rgba(74,222,128,0.06)"
+      />
+      <text
+        x={0}
+        y={0.68 * u}
+        fontSize={0.55 * u}
+        fill={CTRL_COLOR}
+        stroke="none"
+        textAnchor="middle"
+        fontWeight="bold"
+      >
+        &amp;
+      </text>
     </g>
   );
 }
 
+/** IEC 60617-12 / DIN EN 60617-12 European Standard OR Gate (≥1) */
 function OrGateSymbol({ u }: { u: number }) {
+  const boxW = 1.3 * u;
   return (
     <g>
-      <line x1={-LEAD * u} y1={0} x2={-0.35 * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
-      <line x1={-LEAD * u} y1={1 * u} x2={-0.35 * u} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
-      <line x1={0.65 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
-      <path
-        d={`M ${-0.45 * u} ${-0.45 * u} Q 0 ${-0.45 * u} ${0.65 * u} 0 Q 0 ${1.45 * u} ${-0.45 * u} ${1.45 * u} Q ${-0.2 * u} ${0.5 * u} ${-0.45 * u} ${-0.45 * u} z`}
-        stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
-      <text x={0} y={0.65 * u} fontSize={0.4 * u} fill={CTRL_COLOR} stroke="none"
-            textAnchor="middle" fontWeight="bold">≥1</text>
+      <line x1={-LEAD * u} y1={0} x2={-boxW / 2} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={-LEAD * u} y1={1 * u} x2={-boxW / 2} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={boxW / 2} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <rect
+        x={-boxW / 2}
+        y={-0.55 * u}
+        width={boxW}
+        height={2.1 * u}
+        rx={2}
+        stroke={CTRL_COLOR}
+        strokeWidth={1.5}
+        fill="rgba(74,222,128,0.06)"
+      />
+      <text
+        x={0}
+        y={0.68 * u}
+        fontSize={0.52 * u}
+        fill={CTRL_COLOR}
+        stroke="none"
+        textAnchor="middle"
+        fontWeight="bold"
+      >
+        ≥1
+      </text>
     </g>
   );
 }
 
+/** IEC 60617-12 / DIN EN 60617-12 European Standard NOT Gate (1 with inversion bubble) */
 function NotGateSymbol({ u }: { u: number }) {
+  const boxW = 1.1 * u;
+  const leftX = -boxW / 2;
+  const rightX = boxW / 2;
   return (
     <g>
-      <line x1={-LEAD * u} y1={0} x2={-0.6 * u} y2={0} stroke={CTRL_COLOR} />
-      <line x1={0.75 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} />
-      <path
-        d={`M ${-0.6 * u} ${-0.55 * u} L ${-0.6 * u} ${0.55 * u} L ${0.55 * u} 0 z`}
-        stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
-      <circle cx={0.65 * u} cy={0} r={0.1 * u} stroke={CTRL_COLOR} strokeWidth={1.5}
-              fill="rgba(74,222,128,0.1)" />
+      <line x1={-LEAD * u} y1={0} x2={leftX} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <rect
+        x={leftX}
+        y={-0.55 * u}
+        width={boxW}
+        height={1.1 * u}
+        rx={2}
+        stroke={CTRL_COLOR}
+        strokeWidth={1.5}
+        fill="rgba(74,222,128,0.06)"
+      />
+      <text
+        x={-0.08 * u}
+        y={0.2 * u}
+        fontSize={0.52 * u}
+        fill={CTRL_COLOR}
+        stroke="none"
+        textAnchor="middle"
+        fontWeight="bold"
+      >
+        1
+      </text>
+      {/* Inversion circle at output */}
+      <circle
+        cx={rightX + 0.1 * u}
+        cy={0}
+        r={0.1 * u}
+        stroke={CTRL_COLOR}
+        strokeWidth={1.5}
+        fill="rgba(15,23,42,0.9)"
+      />
+      <line x1={rightX + 0.2 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
     </g>
   );
 }
 
 function MuxSymbol({ u }: { u: number }) {
+  const boxW = 1.6 * u;
+  const leftX = -boxW / 2;
+  const rightX = boxW / 2;
   return (
     <g>
-      <line x1={-LEAD * u} y1={0} x2={-0.55 * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
-      <line x1={-LEAD * u} y1={1 * u} x2={-0.55 * u} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
-      <line x1={-LEAD * u} y1={2 * u} x2={-0.55 * u} y2={2 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
-      <line x1={0.55 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
-      {/* Trapezoid shape */}
+      <line x1={-LEAD * u} y1={0} x2={leftX} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={-LEAD * u} y1={1 * u} x2={leftX} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={-LEAD * u} y1={2 * u} x2={leftX} y2={2 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={rightX} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      {/* Multiplexer trapezoid / function block */}
       <path
-        d={`M ${-0.55 * u} ${-0.45 * u} L ${0.55 * u} ${-0.45 * u} L ${0.55 * u} ${0.45 * u} L ${-0.55 * u} ${2.45 * u} z`}
-        stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
+        d={`M ${leftX} ${-0.55 * u} L ${rightX} ${-0.55 * u} L ${rightX} ${0.65 * u} L ${leftX} ${2.55 * u} z`}
+        stroke={CTRL_COLOR}
+        strokeWidth={1.5}
+        fill="rgba(74,222,128,0.06)"
+      />
       {/* Pin function labels */}
-      <text x={-0.45 * u} y={0.12 * u} fontSize={0.28 * u} fill={CTRL_COLOR} stroke="none"
-            textAnchor="start" fontWeight="bold">sel</text>
-      <text x={-0.45 * u} y={1.12 * u} fontSize={0.28 * u} fill={CTRL_COLOR} stroke="none"
-            textAnchor="start" fontWeight="bold">0</text>
-      <text x={-0.45 * u} y={2.12 * u} fontSize={0.28 * u} fill={CTRL_COLOR} stroke="none"
-            textAnchor="start" fontWeight="bold">1</text>
-      <text x={0.45 * u} y={0.12 * u} fontSize={0.28 * u} fill={CTRL_COLOR} stroke="none"
-            textAnchor="end" fontWeight="bold">y</text>
-      <text x={0.06 * u} y={1.05 * u} fontSize={0.34 * u} fill={CTRL_COLOR} stroke="none"
-            textAnchor="middle" fontWeight="bold">MUX</text>
+      <text
+        x={leftX + 0.16 * u}
+        y={0.12 * u}
+        fontSize={0.28 * u}
+        fill={CTRL_COLOR}
+        stroke="none"
+        textAnchor="start"
+        fontWeight="bold"
+      >
+        sel
+      </text>
+      <text
+        x={leftX + 0.16 * u}
+        y={1.12 * u}
+        fontSize={0.28 * u}
+        fill={CTRL_COLOR}
+        stroke="none"
+        textAnchor="start"
+        fontWeight="bold"
+      >
+        0
+      </text>
+      <text
+        x={leftX + 0.16 * u}
+        y={2.12 * u}
+        fontSize={0.28 * u}
+        fill={CTRL_COLOR}
+        stroke="none"
+        textAnchor="start"
+        fontWeight="bold"
+      >
+        1
+      </text>
+      <text
+        x={rightX - 0.16 * u}
+        y={0.12 * u}
+        fontSize={0.28 * u}
+        fill={CTRL_COLOR}
+        stroke="none"
+        textAnchor="end"
+        fontWeight="bold"
+      >
+        y
+      </text>
+      <text
+        x={-0.12 * u}
+        y={1.05 * u}
+        fontSize={0.34 * u}
+        fill={CTRL_COLOR}
+        stroke="none"
+        textAnchor="middle"
+        fontWeight="bold"
+      >
+        MUX
+      </text>
     </g>
   );
 }
@@ -1346,8 +1644,25 @@ function ScriptFunctionBlockSymbol({
   const top = -0.8 * u;
   const bottom = (span + 0.8) * u;
   const boxH = Math.max(1.6 * u, bottom - top);
-  const boxW = 2.2 * u;
   const midY = (top + bottom) / 2;
+
+  // Pin label lengths
+  const maxInLabelLen = Math.max(0, ...(inLabels?.map((l) => l.length) || (inCount > 1 ? [2] : [0])));
+  const maxOutLabelLen = Math.max(0, ...(outLabels?.map((l) => l.length) || (outCount > 1 ? [2] : [0])));
+  const labelLen = label.length;
+
+  // Box width: ensure it fits within terminal distance (2.0u * 2 = 4.0u)
+  // while giving sufficient space for pin labels and the central label badge
+  const pinSpace = (maxInLabelLen + maxOutLabelLen) * 0.28 * u;
+  const labelSpace = (labelLen * 0.35 + 0.6) * u;
+  const boxW = Math.min(3.0 * u, Math.max(2.4 * u, (pinSpace + labelSpace) * 0.85, (labelLen * 0.36 + 0.8) * u));
+
+  // Central label font size scaled dynamically so it never overflows
+  const maxLabelW = boxW - 0.4 * u;
+  const labelFontSize = Math.min(
+    maxPins > 4 ? 0.65 * u : 0.58 * u,
+    maxLabelW / (labelLen * 0.65)
+  );
 
   return (
     <g className="symbol-control-script">
@@ -1395,11 +1710,11 @@ function ScriptFunctionBlockSymbol({
         fill="rgba(74,222,128,0.08)"
       />
 
-      {/* Central Badge label e.g. f(x), JAVA, FOC, PWM, SPM */}
+      {/* Central Badge label e.g. f(x), JAVA, FOC, PWM, SPM, ThyrCtrl */}
       <text
         x={0}
-        y={midY + 0.25 * u}
-        fontSize={maxPins > 4 ? 0.75 * u : 0.65 * u}
+        y={midY + labelFontSize * 0.35}
+        fontSize={labelFontSize}
         fontFamily="monospace"
         fontWeight="bold"
         fontStyle={label === 'f(x)' ? 'italic' : 'normal'}
@@ -1420,7 +1735,7 @@ function ScriptFunctionBlockSymbol({
             key={`in-label-${i}`}
             x={-boxW / 2 + 0.18 * u}
             y={yOffset + 0.12 * u}
-            fontSize={pinName.length > 3 ? 0.3 * u : 0.36 * u}
+            fontSize={pinName.length > 3 ? 0.28 * u : 0.34 * u}
             fontFamily="monospace"
             fill="rgba(74,222,128,0.95)"
             stroke="none"
@@ -1441,7 +1756,7 @@ function ScriptFunctionBlockSymbol({
             key={`out-label-${j}`}
             x={boxW / 2 - 0.18 * u}
             y={yOffset + 0.12 * u}
-            fontSize={pinName.length > 3 ? 0.3 * u : 0.36 * u}
+            fontSize={pinName.length > 3 ? 0.28 * u : 0.34 * u}
             fontFamily="monospace"
             fill="rgba(74,222,128,0.95)"
             stroke="none"

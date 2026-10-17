@@ -253,4 +253,65 @@ describe('symbols: SymbolPreview and SymbolByType fallback', () => {
       expect(container.textContent).toContain(expectedText);
     }
   });
+
+  it('renders European IEC 60617-12 rectangular logic gates with qualifying symbols', () => {
+    // AND gate (&)
+    const { container: andCont } = render(<svg><SymbolByType type={1011} u={10} family="CONTROL" /></svg>);
+    expect(andCont.querySelector('rect')).toBeTruthy();
+    expect(andCont.textContent).toContain('&');
+
+    // OR gate (≥1)
+    const { container: orCont } = render(<svg><SymbolByType type={1012} u={10} family="CONTROL" /></svg>);
+    expect(orCont.querySelector('rect')).toBeTruthy();
+    expect(orCont.textContent).toContain('≥1');
+
+    // XOR gate (=1)
+    const { container: xorCont } = render(<svg><SymbolByType type={1035} u={10} family="CONTROL" /></svg>);
+    expect(xorCont.querySelector('rect')).toBeTruthy();
+    expect(xorCont.textContent).toContain('=1');
+
+    // NOT gate (1 with output bubble)
+    const { container: notCont } = render(<svg><SymbolByType type={1013} u={10} family="CONTROL" /></svg>);
+    expect(notCont.querySelector('rect')).toBeTruthy();
+    expect(notCont.querySelector('circle')).toBeTruthy();
+    expect(notCont.textContent).toContain('1');
+  });
+
+  it('renders European IEC 60617-8 circular measuring instruments (Voltmeter, Ammeter)', () => {
+    // Voltmeter (V)
+    const { container: vCont } = render(<svg><SymbolByType type={1001} u={10} family="CONTROL" /></svg>);
+    expect(vCont.querySelector('circle')).toBeTruthy();
+    expect(vCont.textContent?.trim()).toBe('V');
+
+    // Ammeter (A)
+    const { container: aCont } = render(<svg><SymbolByType type={1002} u={10} family="CONTROL" /></svg>);
+    expect(aCont.querySelector('circle')).toBeTruthy();
+    expect(aCont.textContent?.trim()).toBe('A');
+  });
+
+  it('renders European standard electrical symbols (IEC resistor box, parallel plate capacitor, motor M)', () => {
+    // Resistor: IEC box (rect), not ANSI zigzag
+    const { container: resCont } = render(<svg><SymbolByType type={LkComponentType.RESISTOR} u={10} family="LK" /></svg>);
+    expect(resCont.querySelector('rect')).toBeTruthy();
+
+    // Motor: circle with centered M
+    const { container: motCont } = render(<svg><SymbolByType type={14} u={10} family="LK" /></svg>);
+    expect(motCont.querySelector('circle')).toBeTruthy();
+    expect(motCont.textContent?.trim()).toBe('M');
+
+    // Voltage source: circle with + and −
+    const { container: vsrcCont } = render(<svg><SymbolByType type={LkComponentType.VOLTAGE_SOURCE} u={10} family="LK" /></svg>);
+    expect(vsrcCont.querySelector('circle')).toBeTruthy();
+    expect(vsrcCont.textContent).toContain('+');
+    expect(vsrcCont.textContent).toContain('−');
+
+    // Transistors with device badges
+    const { container: bjtCont } = render(<svg><SymbolByType type={LkComponentType.BJT} u={10} family="LK" /></svg>);
+    expect(bjtCont.textContent).toContain('BJT');
+    const { container: mosCont } = render(<svg><SymbolByType type={28} u={10} family="LK" /></svg>);
+    expect(mosCont.textContent).toContain('MOS');
+    const { container: igbtCont } = render(<svg><SymbolByType type={10} u={10} family="LK" /></svg>);
+    expect(igbtCont.textContent).toContain('IGBT');
+  });
 });
+
