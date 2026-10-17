@@ -4,12 +4,33 @@
 
 Originally developed at ETH Zurich's Power Electronic Systems Laboratory by Andreas Muesing, Andrija Stupar, and Uwe Drofenik.
 
+---
+
+## At a Glance
+
+GeckoCIRCUITS is designed specifically for power electronics engineers, researchers, and students. Unlike general-purpose SPICE simulators, it combines specialized piecewise-linear and ideal-switch solvers with rapid numerical convergence, an interactive browser-based circuit canvas, and an integrated multi-channel oscilloscope.
+
+### 1. Interactive Schematic Capture
+Design power converter topologies, gate drives, filters, and digital/analog control loops with instant design-rule checking and parameter editing:
+
+![GeckoCIRCUITS Schematic Editor](docs/assets/images/gecko-schematic-editor.png)
+*Visual schematic capture: DC-DC Buck converter (50 kHz PWM) featuring power stage (MOSFET switch, freewheeling diode, LC filter, load), PWM gate drive, voltage/current sensors, multi-channel oscilloscope, and schematic documentation note.*
+
+### 2. Integrated Multi-Channel Oscilloscope & Waveform Analysis
+Run simulations with one keystroke (`F5` or the toolbar button) and immediately inspect high-frequency switching transients, steady-state ripple, and harmonic spectra without external post-processing tools:
+
+![GeckoCIRCUITS Waveform Viewer](docs/assets/images/gecko-scope-waveforms.png)
+*Oscilloscope view: stacked lane display of regulated DC output voltage ($v_{out}$) and triangular inductor ripple current ($i_L$) with instantaneous peak-to-peak ($V_{pp}$), RMS, and DC mean metrics.*
+
+---
+
 ## Key Features
 
 - **Multi-domain simulation** -- electrical + thermal + EMI in a single environment
 - **Fast simulation engine** -- optimized for power electronics (MNA-based solvers: Backward Euler, Trapezoidal, Gear-Shichman)
-- **Visual circuit editor** -- drag-and-drop schematic capture with built-in oscilloscope
+- **Visual circuit editor** -- drag-and-drop schematic capture with built-in multi-channel oscilloscope
 - **64+ control blocks** -- PI/PID, integrators, limiters, lookup tables, state machines, and more
+- **Firmware-in-the-loop (NativeC)** -- run real C/C++ microcontroller firmware directly in the simulation
 - **Thermal analysis** -- junction temperature, loss calculation, heatsink design
 - **EMI filter design** -- common-mode/differential-mode filter analysis
 - **MATLAB/Simulink integration** -- remote control via RMI or memory-mapped files

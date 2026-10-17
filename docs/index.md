@@ -56,19 +56,12 @@ GeckoCIRCUITS is an open-source circuit simulator specialized for power electron
 
 ## Quick Example
 
-```
-┌─────────────────────────────────────────┐
-│          Buck Converter                  │
-│                                          │
-│   Vin ──┬──[S]──┬──[L]──┬── Vout        │
-│         │       │       │               │
-│         │      [D]     [C]    [R]       │
-│         │       │       │     │         │
-│   GND ──┴───────┴───────┴─────┴── GND   │
-│                                          │
-│   Vout = D × Vin                        │
-└─────────────────────────────────────────┘
-```
+![GeckoCIRCUITS Schematic Editor](assets/images/gecko-schematic-editor.png)
+*Interactive schematic editor: DC-DC Buck converter (50 kHz PWM) with power stage, PWM gate drive, and oscilloscope.*
+
+![GeckoCIRCUITS Scope Waveforms](assets/images/gecko-scope-waveforms.png)
+*Real-time multi-channel oscilloscope: output voltage regulation ($v_{out}$) and inductor ripple current ($i_L$).*
+
 
 ## Getting Started
 
