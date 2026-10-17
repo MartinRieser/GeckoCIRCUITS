@@ -64,26 +64,6 @@ GeckoCIRCUITS provides a native [Model Context Protocol (MCP)](https://modelcont
 
 Connect your LLM agent (e.g. Google Antigravity, Claude Desktop, Cursor) using `scripts/desktop/launch-mcp.py` or the bundled desktop launcher. See the [full MCP Guide](docs/mcp.md) for tool documentation, JSON schemas, and client configuration.
 
-### GeckoCIRCUITS Classic (Swing UI, jpackage)
-
-Pre-built self-contained installers and portable packages are on the [Releases](https://github.com/MartinRieser/GeckoCIRCUITS/releases) page:
-
-- **Windows**: `GeckoCIRCUITS-<version>.msi` (installer) or `*-windows-x64-portable.zip` (portable)
-- **macOS**: `GeckoCIRCUITS-<version>.dmg` (drag-and-drop installer) or `*-macos-app.zip`
-- **Linux**: `geckocircuits_<version>-1_amd64.deb` (Debian/Ubuntu), `*.rpm` (Fedora/RHEL), or `*-linux-x64-portable.tar.gz`
-
-See [docs/PACKAGING.md](docs/PACKAGING.md) for details on packaging and local build commands.
-
-### Running with Standalone JAR (Requires Java 25+)
-
-1. Download `gecko-1.0-jar-with-dependencies.jar` from [Releases](https://github.com/MartinRieser/GeckoCIRCUITS/releases)
-2. Run:
-   ```bash
-   java -Xmx3G -Dpolyglot.js.nashorn-compat=true -jar gecko-1.0-jar-with-dependencies.jar
-   ```
-3. Open an example circuit from `File > Open` (see [Examples](#examples) below)
-4. Click the **Simulate** button (or press F5)
-
 ### Platform Launcher Scripts
 
 Run from a repository checkout with the launcher in the repository root — it
@@ -155,7 +135,7 @@ You can configure the log level dynamically using the `gecko.log.level` system p
 
 Example running the JAR with error-only logging:
 ```bash
-java -Dgecko.log.level=ERROR -jar target/gecko-1.0-jar-with-dependencies.jar
+java -Dgecko.log.level=ERROR -jar backend/gecko-rest-api/target/gecko-rest-api.jar
 ```
 
 To redirect the logs to a custom directory, set `-Dgecko.log.dir=/path/to/logs`.
@@ -175,24 +155,32 @@ GeckoCIRCUITS
 
 ## Documentation
 
-Full documentation is available at **[MartinRieser.github.io/GeckoCIRCUITS](https://MartinRieser.github.io/GeckoCIRCUITS/)**:
+Full interactive documentation is deployed at **[martinrieser.github.io/GeckoCIRCUITS](https://martinrieser.github.io/GeckoCIRCUITS/)** and available directly in the repository [`docs/`](docs/) directory:
 
-- [Getting Started Guide](https://MartinRieser.github.io/GeckoCIRCUITS/getting-started/)
-- [Tutorials](https://MartinRieser.github.io/GeckoCIRCUITS/tutorials/) (DC-DC, AC-DC, DC-AC, thermal, scripting)
-- [Examples Library](https://MartinRieser.github.io/GeckoCIRCUITS/examples/) (125+ circuit files)
-- [API Reference](https://MartinRieser.github.io/GeckoCIRCUITS/api/) (GeckoSCRIPT, RMI, REST)
-- [Developer Guide](https://MartinRieser.github.io/GeckoCIRCUITS/resources/developer-guide/)
+| Topic | Online Documentation | Repository Source | Description |
+| :--- | :--- | :--- | :--- |
+| **Desktop App** | [Desktop Guide](https://martinrieser.github.io/GeckoCIRCUITS/desktop-app/) | [docs/desktop-app.md](docs/desktop-app.md) | Native desktop shell, installation, and architecture |
+| **Getting Started** | [Getting Started](https://martinrieser.github.io/GeckoCIRCUITS/getting-started/) | [docs/getting-started/index.md](docs/getting-started/index.md) | First simulation, schematic editor, and quickstart |
+| **AI & LLM Tools (MCP)** | [MCP Guide](https://martinrieser.github.io/GeckoCIRCUITS/mcp/) | [docs/mcp.md](docs/mcp.md) | Model Context Protocol tools for AI circuit synthesis & DRC |
+| **Firmware in the Loop** | [NativeC Guide](https://martinrieser.github.io/GeckoCIRCUITS/native-c-blocks/) | [docs/native-c-blocks.md](docs/native-c-blocks.md) | Run real C/C++ microcontroller firmware in simulation |
+| **Tutorials** | [Tutorials](https://martinrieser.github.io/GeckoCIRCUITS/tutorials/) | [docs/tutorials/index.md](docs/tutorials/index.md) | DC-DC, AC-DC rectifiers, DC-AC inverters, thermal & magnetics |
+| **Examples Library** | [Examples](https://martinrieser.github.io/GeckoCIRCUITS/examples/) | [docs/examples/index.md](docs/examples/index.md) | 125+ ready-to-simulate power electronics circuit models |
+| **API Reference** | [API Reference](https://martinrieser.github.io/GeckoCIRCUITS/api/) | [docs/api/index.md](docs/api/index.md) | REST API, WebSocket waveform streaming, and GeckoSCRIPT |
+| **Developer Guide** | [Developer Guide](https://martinrieser.github.io/GeckoCIRCUITS/resources/developer-guide/) | [docs/resources/developer-guide.md](docs/resources/developer-guide.md) | Architecture, local builds, and development guidelines |
 
 ## Contributing
 
 Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
 
 ```bash
-# Run tests before submitting
+# Run backend engine, REST API & MCP server tests
 mvn test
 
-# Check code quality
-mvn spotbugs:check
+# Run frontend React & canvas tests
+npm --prefix frontend test
+
+# Run frontend linting
+npm --prefix frontend run lint
 ```
 
 ## License
@@ -206,6 +194,6 @@ Copyright (c) ETH Zurich, Power Electronic Systems Laboratory. Originally develo
 
 ## Links
 
-- [Documentation](https://MartinRieser.github.io/GeckoCIRCUITS/)
-- [Original SourceForge project](https://sourceforge.net/projects/geckocircuits/)
-- [Technokrat contributions](https://github.com/technokrat/gecko) (HiDPI support)
+- **Documentation**: [https://martinrieser.github.io/GeckoCIRCUITS/](https://martinrieser.github.io/GeckoCIRCUITS/)
+- **GitHub Releases**: [Latest Release (v42-2026)](https://github.com/MartinRieser/GeckoCIRCUITS/releases/latest)
+- **Original SourceForge Project**: [sourceforge.net/projects/geckocircuits](https://sourceforge.net/projects/geckocircuits/)
