@@ -141,6 +141,99 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
   const [isSpacePressed, setIsSpacePressed] = useState(false);
   const [showGrid, setShowGrid] = useState(true);
 
+  // Viewport container dimensions for scrollbar metrics
+  const [viewportSize, setViewportSize] = useState({ width: 800, height: 600 });
+  const [scrollDrag, setScrollDrag] = useState<{
+    axis: 'x' | 'y';
+    startMouse: number;
+    startPan: number;
+  } | null>(null);
+
+  // Measure and track container viewport size
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const updateSize = () => {
+      const rect = container.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        setViewportSize({ width: rect.width, height: rect.height });
+      }
+    };
+
+    updateSize();
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const observer = new ResizeObserver(() => updateSize());
+      observer.observe(container);
+      return () => observer.disconnect();
+    } else {
+      window.addEventListener('resize', updateSize);
+      return () => window.removeEventListener('resize', updateSize);
+    }
+  }, []);
+
+  // Circuit content bounds in grid units, including components, note cards, and wires
+  const contentBounds = useMemo(() => {
+    let minX = 0;
+    let minY = 0;
+    let maxX = 40;
+    let maxY = 30;
+
+    let hasElements = false;
+
+    for (const comp of state.components) {
+      const w = isTextboxComponent(comp) ? Number(comp.parameters?.width) || 26 : 6;
+      const h = isTextboxComponent(comp) ? Number(comp.parameters?.height) || 14 : 6;
+      if (!hasElements) {
+        minX = comp.position[0];
+        minY = comp.position[1];
+        maxX = comp.position[0] + w;
+        maxY = comp.position[1] + h;
+        hasElements = true;
+      } else {
+        minX = Math.min(minX, comp.position[0]);
+        minY = Math.min(minY, comp.position[1]);
+        maxX = Math.max(maxX, comp.position[0] + w);
+        maxY = Math.max(maxY, comp.position[1] + h);
+      }
+    }
+
+    for (const wire of state.wires) {
+      if (!wire.points) continue;
+      for (const [px, py] of wire.points) {
+        if (!hasElements) {
+          minX = px;
+          maxX = px;
+          minY = py;
+          maxY = py;
+          hasElements = true;
+        } else {
+          minX = Math.min(minX, px);
+          maxX = Math.max(maxX, px);
+          minY = Math.min(minY, py);
+          maxY = Math.max(maxY, py);
+        }
+      }
+    }
+
+    const MARGIN = 6;
+    if (!hasElements) {
+      return {
+        minGridX: 0,
+        minGridY: 0,
+        maxGridX: 40,
+        maxGridY: 30,
+      };
+    }
+    return {
+      minGridX: minX - MARGIN,
+      minGridY: minY - MARGIN,
+      maxGridX: maxX + MARGIN,
+      maxGridY: maxY + MARGIN,
+    };
+  }, [state.components, state.wires]);
+
   // Near-terminal hover snap halo and tooltip info
   const [hoveredTerminal, setHoveredTerminal] = useState<(Point & { label?: string; desc?: string; compName?: string }) | null>(null);
 
@@ -667,11 +760,132 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
     return dangling;
   }, [state.wires, state.components]);
 
+  // CAD Scrollbar metrics (track sizes, thumb sizes, positions)
+  const scrollMetrics = useMemo(() => {
+    const SCROLLBAR_SIZE = 14;
+    const STEPPER_SIZE = 14;
+    const MIN_THUMB_SIZE = 28;
+
+    const trackWidth = Math.max(20, viewportSize.width - SCROLLBAR_SIZE - 2 * STEPPER_SIZE);
+    const trackHeight = Math.max(20, viewportSize.height - SCROLLBAR_SIZE - 2 * STEPPER_SIZE);
+
+    const contentPixelWidth = Math.max(1, (contentBounds.maxGridX - contentBounds.minGridX) * dpix * zoom);
+    const contentPixelHeight = Math.max(1, (contentBounds.maxGridY - contentBounds.minGridY) * dpix * zoom);
+
+    const upperPanX = -contentBounds.minGridX * dpix * zoom + 40;
+    const lowerPanX = Math.min(upperPanX, viewportSize.width - 40 - contentBounds.maxGridX * dpix * zoom);
+    const spanX = Math.max(1, upperPanX - lowerPanX);
+
+    const upperPanY = -contentBounds.minGridY * dpix * zoom + 40;
+    const lowerPanY = Math.min(upperPanY, viewportSize.height - 40 - contentBounds.maxGridY * dpix * zoom);
+    const spanY = Math.max(1, upperPanY - lowerPanY);
+
+    const ratioX = Math.max(0, Math.min(1, (upperPanX - pan.x) / spanX));
+    const ratioY = Math.max(0, Math.min(1, (upperPanY - pan.y) / spanY));
+
+    const visibleFractionX = Math.min(1, viewportSize.width / Math.max(viewportSize.width, contentPixelWidth));
+    const visibleFractionY = Math.min(1, viewportSize.height / Math.max(viewportSize.height, contentPixelHeight));
+
+    const thumbWidth = Math.max(MIN_THUMB_SIZE, Math.min(trackWidth, visibleFractionX * trackWidth));
+    const thumbHeight = Math.max(MIN_THUMB_SIZE, Math.min(trackHeight, visibleFractionY * trackHeight));
+
+    const thumbLeft = ratioX * (trackWidth - thumbWidth);
+    const thumbTop = ratioY * (trackHeight - thumbHeight);
+
+    return {
+      trackWidth,
+      trackHeight,
+      upperPanX,
+      lowerPanX,
+      spanX,
+      upperPanY,
+      lowerPanY,
+      spanY,
+      thumbWidth,
+      thumbHeight,
+      thumbLeft,
+      thumbTop,
+    };
+  }, [contentBounds, dpix, zoom, pan.x, pan.y, viewportSize.width, viewportSize.height]);
+
+  // Window drag listener for CAD scrollbar thumbs
+  useEffect(() => {
+    if (!scrollDrag) return;
+
+    const handleWindowMouseMove = (e: MouseEvent) => {
+      if (scrollDrag.axis === 'x') {
+        const deltaClient = e.clientX - scrollDrag.startMouse;
+        const availableTrack = scrollMetrics.trackWidth - scrollMetrics.thumbWidth;
+        if (availableTrack > 0) {
+          const deltaRatio = deltaClient / availableTrack;
+          const newPanX = scrollDrag.startPan - deltaRatio * scrollMetrics.spanX;
+          setPan((prev) => ({ ...prev, x: Math.round(newPanX) }));
+        }
+      } else {
+        const deltaClient = e.clientY - scrollDrag.startMouse;
+        const availableTrack = scrollMetrics.trackHeight - scrollMetrics.thumbHeight;
+        if (availableTrack > 0) {
+          const deltaRatio = deltaClient / availableTrack;
+          const newPanY = scrollDrag.startPan - deltaRatio * scrollMetrics.spanY;
+          setPan((prev) => ({ ...prev, y: Math.round(newPanY) }));
+        }
+      }
+    };
+
+    const handleWindowMouseUp = () => {
+      setScrollDrag(null);
+    };
+
+    window.addEventListener('mousemove', handleWindowMouseMove);
+    window.addEventListener('mouseup', handleWindowMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleWindowMouseMove);
+      window.removeEventListener('mouseup', handleWindowMouseUp);
+    };
+  }, [scrollDrag, scrollMetrics]);
+
+  const handleHTrackClick = (e: ReactMouseEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).classList.contains('scrollbar-thumb')) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const availableTrack = scrollMetrics.trackWidth - scrollMetrics.thumbWidth;
+    if (availableTrack <= 0) return;
+    const targetThumbLeft = Math.max(0, Math.min(availableTrack, clickX - scrollMetrics.thumbWidth / 2));
+    const targetRatio = targetThumbLeft / availableTrack;
+    setPan((prev) => ({
+      ...prev,
+      x: Math.round(scrollMetrics.upperPanX - targetRatio * scrollMetrics.spanX),
+    }));
+  };
+
+  const handleVTrackClick = (e: ReactMouseEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).classList.contains('scrollbar-thumb')) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickY = e.clientY - rect.top;
+    const availableTrack = scrollMetrics.trackHeight - scrollMetrics.thumbHeight;
+    if (availableTrack <= 0) return;
+    const targetThumbTop = Math.max(0, Math.min(availableTrack, clickY - scrollMetrics.thumbHeight / 2));
+    const targetRatio = targetThumbTop / availableTrack;
+    setPan((prev) => ({
+      ...prev,
+      y: Math.round(scrollMetrics.upperPanY - targetRatio * scrollMetrics.spanY),
+    }));
+  };
+
   const handleWheel = (e: ReactWheelEvent) => {
-    if (e.ctrlKey || e.metaKey || isSpacePressed) {
+    if (e.ctrlKey || e.metaKey) {
       e.preventDefault();
       const zoomFactor = e.deltaY < 0 ? 1.15 : 0.87;
       setZoom((prev) => Math.max(0.3, Math.min(3.0, prev * zoomFactor)));
+    } else {
+      // Mouse wheel / trackpad scrolling: pan the canvas
+      e.preventDefault();
+      const dx = e.shiftKey ? e.deltaY : e.deltaX;
+      const dy = e.shiftKey ? 0 : e.deltaY;
+      setPan((prev) => ({
+        x: Math.round(prev.x - dx),
+        y: Math.round(prev.y - dy),
+      }));
     }
   };
 
@@ -957,13 +1171,23 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
   const handleZoomFit = () => {
     if (!containerRef.current) return;
     const container = containerRef.current.getBoundingClientRect();
-    const fitZoom = Math.min(
-      (container.width - 40) / rawWidth,
-      (container.height - 40) / rawHeight,
-      1.2,
-    );
-    setZoom(Math.max(0.4, fitZoom));
-    setPan({ x: 20, y: 20 });
+    const width = container.width > 0 ? container.width : viewportSize.width;
+    const height = container.height > 0 ? container.height : viewportSize.height;
+
+    const cWidthPx = Math.max(200, (contentBounds.maxGridX - contentBounds.minGridX) * dpix);
+    const cHeightPx = Math.max(150, (contentBounds.maxGridY - contentBounds.minGridY) * dpix);
+    const availW = Math.max(100, width - 60);
+    const availH = Math.max(100, height - 60);
+    const fitZoom = Math.max(0.4, Math.min(2.0, Math.min(availW / cWidthPx, availH / cHeightPx)));
+
+    // Center the content in the viewport:
+    const contentCenterXPx = (contentBounds.minGridX + (contentBounds.maxGridX - contentBounds.minGridX) / 2) * dpix * fitZoom;
+    const contentCenterYPx = (contentBounds.minGridY + (contentBounds.maxGridY - contentBounds.minGridY) / 2) * dpix * fitZoom;
+    const targetPanX = (width / 2) - contentCenterXPx;
+    const targetPanY = (height / 2) - contentCenterYPx;
+
+    setZoom(fitZoom);
+    setPan({ x: Math.round(targetPanX), y: Math.round(targetPanY) });
   };
 
   const selectedWireObj = useMemo(() => {
@@ -2486,6 +2710,103 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
           onZoomFit={handleZoomFit}
         />
       )}
+
+      {/* Horizontal CAD Scrollbar */}
+      <div className="canvas-scrollbar canvas-scrollbar-horizontal" data-testid="canvas-scrollbar-h">
+        <button
+          type="button"
+          className="scrollbar-stepper"
+          onClick={() => setPan((p) => ({ ...p, x: p.x + 80 }))}
+          title="Scroll Left"
+          aria-label="Scroll Left"
+          data-testid="canvas-scrollbar-h-left"
+        >
+          ◀
+        </button>
+        <div
+          className="scrollbar-track"
+          onClick={handleHTrackClick}
+          data-testid="canvas-scrollbar-track-h"
+        >
+          <div
+            className={`scrollbar-thumb ${scrollDrag?.axis === 'x' ? 'active' : ''}`}
+            data-testid="canvas-scrollbar-thumb-h"
+            style={{
+              left: `${scrollMetrics.thumbLeft}px`,
+              width: `${scrollMetrics.thumbWidth}px`,
+            }}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              setScrollDrag({
+                axis: 'x',
+                startMouse: e.clientX,
+                startPan: pan.x,
+              });
+            }}
+          />
+        </div>
+        <button
+          type="button"
+          className="scrollbar-stepper"
+          onClick={() => setPan((p) => ({ ...p, x: p.x - 80 }))}
+          title="Scroll Right"
+          aria-label="Scroll Right"
+          data-testid="canvas-scrollbar-h-right"
+        >
+          ▶
+        </button>
+      </div>
+
+      {/* Vertical CAD Scrollbar */}
+      <div className="canvas-scrollbar canvas-scrollbar-vertical" data-testid="canvas-scrollbar-v">
+        <button
+          type="button"
+          className="scrollbar-stepper"
+          onClick={() => setPan((p) => ({ ...p, y: p.y + 80 }))}
+          title="Scroll Up"
+          aria-label="Scroll Up"
+          data-testid="canvas-scrollbar-v-up"
+        >
+          ▲
+        </button>
+        <div
+          className="scrollbar-track"
+          onClick={handleVTrackClick}
+          data-testid="canvas-scrollbar-track-v"
+        >
+          <div
+            className={`scrollbar-thumb ${scrollDrag?.axis === 'y' ? 'active' : ''}`}
+            data-testid="canvas-scrollbar-thumb-v"
+            style={{
+              top: `${scrollMetrics.thumbTop}px`,
+              height: `${scrollMetrics.thumbHeight}px`,
+            }}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              setScrollDrag({
+                axis: 'y',
+                startMouse: e.clientY,
+                startPan: pan.y,
+              });
+            }}
+          />
+        </div>
+        <button
+          type="button"
+          className="scrollbar-stepper"
+          onClick={() => setPan((p) => ({ ...p, y: p.y - 80 }))}
+          title="Scroll Down"
+          aria-label="Scroll Down"
+          data-testid="canvas-scrollbar-v-down"
+        >
+          ▼
+        </button>
+      </div>
+
+      {/* Bottom-right Corner junction */}
+      <div className="canvas-scrollbar-corner" data-testid="canvas-scrollbar-corner" />
     </div>
   );
 }

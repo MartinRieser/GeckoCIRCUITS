@@ -1015,4 +1015,134 @@ describe('direct pin-to-pin wiring and wire editing', () => {
       expect(resizeComponent).not.toHaveBeenCalled();
     });
   });
+
+  describe('CAD scrollbars and wheel navigation', () => {
+    it('renders horizontal and vertical scrollbars and corner junction', () => {
+      const { getByTestId } = render(<Harness />);
+      expect(getByTestId('canvas-scrollbar-h')).not.toBeNull();
+      expect(getByTestId('canvas-scrollbar-v')).not.toBeNull();
+      expect(getByTestId('canvas-scrollbar-corner')).not.toBeNull();
+      expect(getByTestId('canvas-scrollbar-thumb-h')).not.toBeNull();
+      expect(getByTestId('canvas-scrollbar-thumb-v')).not.toBeNull();
+    });
+
+    it('pans the canvas vertically with regular mouse wheel', () => {
+      const { container } = render(<Harness />);
+      const scrollContainer = container.querySelector('.sheet-scroll')!;
+      const viewport = container.querySelector('.canvas-viewport') as HTMLElement;
+
+      const initialTransform = viewport.style.transform;
+      // Mouse wheel down (deltaY: 100)
+      fireEvent.wheel(scrollContainer, { deltaY: 100, deltaX: 0, ctrlKey: false, metaKey: false });
+
+      expect(viewport.style.transform).not.toBe(initialTransform);
+      expect(viewport.style.transform).toContain('translate(0px, -100px)');
+    });
+
+    it('pans the canvas horizontally with Shift + mouse wheel', () => {
+      const { container } = render(<Harness />);
+      const scrollContainer = container.querySelector('.sheet-scroll')!;
+      const viewport = container.querySelector('.canvas-viewport') as HTMLElement;
+
+      // Shift + mouse wheel down (deltaY: 60)
+      fireEvent.wheel(scrollContainer, { deltaY: 60, deltaX: 0, shiftKey: true, ctrlKey: false });
+
+      expect(viewport.style.transform).toContain('translate(-60px, 0px)');
+    });
+
+    it('zooms canvas when Ctrl is held during wheel', () => {
+      const { container } = render(<Harness />);
+      const scrollContainer = container.querySelector('.sheet-scroll')!;
+      const viewport = container.querySelector('.canvas-viewport') as HTMLElement;
+
+      fireEvent.wheel(scrollContainer, { deltaY: -100, ctrlKey: true });
+      expect(viewport.style.transform).toContain('scale(1.15)');
+    });
+
+    it('nudges canvas horizontally when stepper buttons are clicked', () => {
+      const { container, getByTestId } = render(<Harness />);
+      const viewport = container.querySelector('.canvas-viewport') as HTMLElement;
+
+      const rightBtn = getByTestId('canvas-scrollbar-h-right');
+      fireEvent.click(rightBtn);
+      expect(viewport.style.transform).toContain('translate(-80px, 0px)');
+
+      const leftBtn = getByTestId('canvas-scrollbar-h-left');
+      fireEvent.click(leftBtn);
+      expect(viewport.style.transform).toContain('translate(0px, 0px)');
+    });
+
+    it('nudges canvas vertically when stepper buttons are clicked', () => {
+      const { container, getByTestId } = render(<Harness />);
+      const viewport = container.querySelector('.canvas-viewport') as HTMLElement;
+
+      const downBtn = getByTestId('canvas-scrollbar-v-down');
+      fireEvent.click(downBtn);
+      expect(viewport.style.transform).toContain('translate(0px, -80px)');
+
+      const upBtn = getByTestId('canvas-scrollbar-v-up');
+      fireEvent.click(upBtn);
+      expect(viewport.style.transform).toContain('translate(0px, 0px)');
+    });
+
+    it('drags the horizontal thumb to pan canvas when content exceeds viewport', () => {
+      const { container, getByTestId } = render(<Harness />);
+      const scrollContainer = container.querySelector('.sheet-scroll')!;
+      const viewport = container.querySelector('.canvas-viewport') as HTMLElement;
+
+      // Zoom in sufficiently so content exceeds viewport and thumb has room to travel
+      fireEvent.wheel(scrollContainer, { deltaY: -100, ctrlKey: true });
+      fireEvent.wheel(scrollContainer, { deltaY: -100, ctrlKey: true });
+      fireEvent.wheel(scrollContainer, { deltaY: -100, ctrlKey: true });
+      fireEvent.wheel(scrollContainer, { deltaY: -100, ctrlKey: true });
+      const transformAfterZoom = viewport.style.transform;
+
+      const thumb = getByTestId('canvas-scrollbar-thumb-h');
+      fireEvent.mouseDown(thumb, { clientX: 100, clientY: 590, button: 0 });
+      fireEvent.mouseMove(window, { clientX: 250, clientY: 590 });
+      fireEvent.mouseUp(window);
+
+      expect(viewport.style.transform).not.toBe(transformAfterZoom);
+    });
+
+    it('jumps canvas pan when clicking the scrollbar track', () => {
+      const { container, getByTestId } = render(<Harness />);
+      const scrollContainer = container.querySelector('.sheet-scroll')!;
+      const viewport = container.querySelector('.canvas-viewport') as HTMLElement;
+
+      // Zoom in sufficiently so content exceeds viewport
+      fireEvent.wheel(scrollContainer, { deltaY: -100, ctrlKey: true });
+      fireEvent.wheel(scrollContainer, { deltaY: -100, ctrlKey: true });
+      fireEvent.wheel(scrollContainer, { deltaY: -100, ctrlKey: true });
+      fireEvent.wheel(scrollContainer, { deltaY: -100, ctrlKey: true });
+      const transformBeforeJump = viewport.style.transform;
+
+      const track = getByTestId('canvas-scrollbar-track-h');
+      vi.spyOn(track, 'getBoundingClientRect').mockReturnValue({
+        left: 14,
+        top: 586,
+        width: 758,
+        height: 14,
+        right: 772,
+        bottom: 600,
+        x: 14,
+        y: 586,
+        toJSON: () => {},
+      });
+
+      fireEvent.click(track, { clientX: 600, clientY: 593 });
+      expect(viewport.style.transform).not.toBe(transformBeforeJump);
+    });
+
+    it('fits circuit bounds into viewport when Fit button is clicked', () => {
+      const { container, getByTitle } = render(<Harness />);
+      const viewport = container.querySelector('.canvas-viewport') as HTMLElement;
+      const fitBtn = getByTitle('Fit to Screen');
+
+      fireEvent.click(fitBtn);
+      // Fit sets zoom and pans to center circuit
+      expect(viewport.style.transform).not.toBe('translate(0px, 0px) scale(1)');
+    });
+  });
 });
+

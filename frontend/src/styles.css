@@ -1028,7 +1028,7 @@ body,
 /* Floating View Controls */
 .canvas-view-controls {
   position: absolute;
-  bottom: 14px;
+  bottom: 22px;
   left: 14px;
   display: flex;
   align-items: center;
@@ -1038,13 +1038,165 @@ body,
   border-radius: 6px;
   padding: 3px 6px;
   gap: 4px;
-  z-index: 10;
+  z-index: 20;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 :root[data-theme='light'] .canvas-view-controls {
   background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ==========================================================================
+   Schematic Canvas Scrollbars (Desktop CAD style)
+   ========================================================================== */
+.canvas-scrollbar {
+  position: absolute;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(6px);
+  z-index: 15;
+  display: flex;
+  user-select: none;
+}
+
+.canvas-scrollbar-horizontal {
+  bottom: 0;
+  left: 0;
+  right: 14px;
+  height: 14px;
+  border-top: 1px solid rgba(51, 65, 85, 0.5);
+  flex-direction: row;
+  align-items: center;
+}
+
+.canvas-scrollbar-vertical {
+  top: 0;
+  right: 0;
+  bottom: 14px;
+  width: 14px;
+  border-left: 1px solid rgba(51, 65, 85, 0.5);
+  flex-direction: column;
+  align-items: center;
+}
+
+.canvas-scrollbar-corner {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 14px;
+  height: 14px;
+  background: rgba(15, 23, 42, 0.85);
+  border-left: 1px solid rgba(51, 65, 85, 0.5);
+  border-top: 1px solid rgba(51, 65, 85, 0.5);
+  z-index: 15;
+}
+
+.scrollbar-stepper {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 8px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.1s, background-color 0.1s;
+}
+
+.canvas-scrollbar-horizontal .scrollbar-stepper {
+  width: 14px;
+  height: 100%;
+}
+
+.canvas-scrollbar-vertical .scrollbar-stepper {
+  width: 100%;
+  height: 14px;
+}
+
+.scrollbar-stepper:hover {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+}
+
+.scrollbar-stepper:active {
+  background: rgba(56, 189, 248, 0.3);
+  color: #ffffff;
+}
+
+.scrollbar-track {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.canvas-scrollbar-horizontal .scrollbar-track {
+  height: 100%;
+  cursor: pointer;
+}
+
+.canvas-scrollbar-vertical .scrollbar-track {
+  width: 100%;
+  cursor: pointer;
+}
+
+.scrollbar-thumb {
+  position: absolute;
+  background: #475569;
+  border-radius: 4px;
+  transition: background-color 0.15s;
+  cursor: grab;
+}
+
+.canvas-scrollbar-horizontal .scrollbar-thumb {
+  top: 2px;
+  bottom: 2px;
+}
+
+.canvas-scrollbar-vertical .scrollbar-thumb {
+  left: 2px;
+  right: 2px;
+}
+
+.scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+.scrollbar-thumb.active {
+  background: #38bdf8;
+  cursor: grabbing;
+}
+
+:root[data-theme='light'] .canvas-scrollbar {
+  background: rgba(241, 245, 249, 0.85);
+  border-color: rgba(203, 213, 225, 0.8);
+}
+
+:root[data-theme='light'] .canvas-scrollbar-corner {
+  background: rgba(241, 245, 249, 0.9);
+  border-color: rgba(203, 213, 225, 0.8);
+}
+
+:root[data-theme='light'] .scrollbar-thumb {
+  background: #94a3b8;
+}
+
+:root[data-theme='light'] .scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+:root[data-theme='light'] .scrollbar-thumb.active {
+  background: #0284c7;
+}
+
+:root[data-theme='light'] .scrollbar-stepper {
+  color: #64748b;
+}
+
+:root[data-theme='light'] .scrollbar-stepper:hover {
+  background: rgba(2, 132, 199, 0.15);
+  color: #0284c7;
 }
 
 .canvas-coord-badge {
