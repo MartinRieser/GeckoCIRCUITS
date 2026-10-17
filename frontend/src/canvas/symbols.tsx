@@ -1091,12 +1091,13 @@ function ScopeSymbol({ u, inputCount = 1 }: { u: number; inputCount?: number }) 
               strokeWidth={1.5}
             />
             <text
-              x={-0.65 * u}
-              y={offset + 0.25 * u}
-              fontSize={0.4 * u}
+              x={-1.4 * u}
+              y={offset - 2}
+              fontSize={8.5}
               fill={CTRL_COLOR}
               stroke="none"
               fontWeight="bold"
+              textAnchor="middle"
             >
               {i + 1}
             </text>
@@ -1136,11 +1137,12 @@ function ConstantBlockSymbol({ u }: { u: number }) {
       />
       <text
         x={0}
-        y={0.22 * u}
-        fontSize={0.6 * u}
+        y={0.5}
+        fontSize={11}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="middle"
+        dominantBaseline="middle"
         fontWeight="bold"
       >
         k
@@ -1160,12 +1162,13 @@ function GateSymbol({ u }: { u: number }) {
         fill="rgba(74,222,128,0.1)"
       />
       <text
-        x={-0.15 * u}
-        y={0.22 * u}
-        fontSize={0.5 * u}
+        x={-0.12 * u}
+        y={0.5}
+        fontSize={10.5}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="middle"
+        dominantBaseline="middle"
         fontWeight="bold"
       >
         G
@@ -1186,12 +1189,13 @@ function GainTriangleSymbol({ u }: { u: number }) {
         fill="rgba(74,222,128,0.06)"
       />
       <text
-        x={-0.2 * u}
-        y={0.2 * u}
-        fontSize={0.48 * u}
+        x={-0.18 * u}
+        y={0.5}
+        fontSize={10.5}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="middle"
+        dominantBaseline="middle"
         fontWeight="bold"
       >
         k
@@ -1201,9 +1205,9 @@ function GainTriangleSymbol({ u }: { u: number }) {
 }
 
 function ControlBlockLabel({ u, label }: { u: number; label: string }) {
-  const boxW = Math.max(1.6 * u, (label.length * 0.35 + 0.5) * u);
-  const boxH = 1.1 * u;
-  const fontSize = Math.min(0.52 * u, (boxW - 0.25 * u) / (label.length * 0.62));
+  const boxW = Math.max(1.8 * u, (label.length * 0.4 + 0.6) * u);
+  const boxH = 1.3 * u;
+  const fontSize = Math.max(9.5, Math.min(11, (boxW - 4) / (label.length * 0.62)));
   return (
     <g>
       {controlLeads(u, boxW)}
@@ -1219,11 +1223,12 @@ function ControlBlockLabel({ u, label }: { u: number; label: string }) {
       />
       <text
         x={0}
-        y={fontSize * 0.36}
+        y={0.5}
         fontSize={fontSize}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="middle"
+        dominantBaseline="middle"
         fontWeight="bold"
       >
         {label}
@@ -1246,15 +1251,14 @@ function TwoInputControlSymbol({
   const maxPinLen = Math.max(in0Label?.length || 0, in1Label?.length || 0);
   const labelLen = label.length;
   const hasPins = maxPinLen > 0;
+  // Box width: accommodate readable pin text and center operator
   const boxW = hasPins
-    ? Math.max(1.8 * u, (maxPinLen * 0.26 + labelLen * 0.36 + 0.8) * u)
-    : Math.max(1.5 * u, (labelLen * 0.38 + 0.6) * u);
-  const boxH = 2.1 * u;
-  const pinFs = maxPinLen > 2 ? 0.28 * u : 0.34 * u;
-  const labelFs = hasPins
-    ? Math.min(0.52 * u, (boxW / 2 - 0.08 * u) / (labelLen * 0.55))
-    : Math.min(0.6 * u, (boxW - 0.3 * u) / (labelLen * 0.55));
-  const labelX = hasPins ? boxW * 0.15 : 0;
+    ? Math.min(3.2 * u, Math.max(2.4 * u, (maxPinLen * 0.45 + labelLen * 0.45 + 0.8) * u))
+    : Math.max(1.6 * u, (labelLen * 0.45 + 0.7) * u);
+  const boxH = 2.2 * u;
+  const pinFs = Math.max(8.5, maxPinLen > 2 ? 8.5 : 9.5);
+  const labelFs = Math.max(10, Math.min(13, hasPins ? 1.0 * u : 1.3 * u));
+  const labelX = hasPins ? boxW * 0.18 : 0;
 
   return (
     <g>
@@ -1263,7 +1267,7 @@ function TwoInputControlSymbol({
       <line x1={boxW / 2} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
       <rect
         x={-boxW / 2}
-        y={-0.55 * u}
+        y={-0.6 * u}
         width={boxW}
         height={boxH}
         rx={3}
@@ -1273,37 +1277,40 @@ function TwoInputControlSymbol({
       />
       <text
         x={labelX}
-        y={0.5 * u + labelFs * 0.35}
+        y={0.5 * u}
         fontSize={labelFs}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="middle"
+        dominantBaseline="middle"
         fontWeight="bold"
       >
         {label}
       </text>
       {in0Label && (
         <text
-          x={-boxW / 2 + 0.16 * u}
-          y={0.12 * u}
+          x={-boxW / 2 + 3}
+          y={0}
           fontSize={pinFs}
           fill={CTRL_COLOR}
           stroke="none"
           fontWeight="bold"
           textAnchor="start"
+          dominantBaseline="middle"
         >
           {in0Label}
         </text>
       )}
       {in1Label && (
         <text
-          x={-boxW / 2 + 0.16 * u}
-          y={1.12 * u}
+          x={-boxW / 2 + 3}
+          y={1 * u}
           fontSize={pinFs}
           fill={CTRL_COLOR}
           stroke="none"
           fontWeight="bold"
           textAnchor="start"
+          dominantBaseline="middle"
         >
           {in1Label}
         </text>
@@ -1313,7 +1320,7 @@ function TwoInputControlSymbol({
 }
 
 function DeadTimeSymbol({ u }: { u: number }) {
-  const boxW = 1.6 * u;
+  const boxW = 1.8 * u;
   return (
     <g>
       <line x1={-LEAD * u} y1={0} x2={-boxW / 2} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
@@ -1321,9 +1328,9 @@ function DeadTimeSymbol({ u }: { u: number }) {
       <line x1={boxW / 2} y1={1 * u} x2={LEAD * u} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
       <rect
         x={-boxW / 2}
-        y={-0.55 * u}
+        y={-0.6 * u}
         width={boxW}
-        height={2.1 * u}
+        height={2.2 * u}
         rx={3}
         stroke={CTRL_COLOR}
         strokeWidth={1.5}
@@ -1331,33 +1338,36 @@ function DeadTimeSymbol({ u }: { u: number }) {
       />
       <text
         x={-0.18 * u}
-        y={0.65 * u}
-        fontSize={0.46 * u}
+        y={0.5 * u}
+        fontSize={11}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="middle"
+        dominantBaseline="middle"
         fontWeight="bold"
       >
         DT
       </text>
       <text
-        x={boxW / 2 - 0.14 * u}
-        y={0.22 * u}
-        fontSize={0.32 * u}
+        x={boxW / 2 - 3}
+        y={0}
+        fontSize={9}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="end"
+        dominantBaseline="middle"
         fontWeight="bold"
       >
         H
       </text>
       <text
-        x={boxW / 2 - 0.14 * u}
-        y={1.22 * u}
-        fontSize={0.32 * u}
+        x={boxW / 2 - 3}
+        y={1 * u}
+        fontSize={9}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="end"
+        dominantBaseline="middle"
         fontWeight="bold"
       >
         L
@@ -1373,11 +1383,12 @@ function TimeSourceSymbol({ u }: { u: number }) {
       <circle cx={0} cy={0} r={0.75 * u} stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
       <text
         x={0}
-        y={0.24 * u}
-        fontSize={0.65 * u}
+        y={0.5}
+        fontSize={12}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="middle"
+        dominantBaseline="middle"
         fontWeight="bold"
       >
         t
@@ -1407,7 +1418,7 @@ function XorGateSymbol({ u }: { u: number }) {
       <text
         x={0}
         y={0.68 * u}
-        fontSize={0.52 * u}
+        fontSize={11}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="middle"
@@ -1420,16 +1431,60 @@ function XorGateSymbol({ u }: { u: number }) {
 }
 
 function ComparatorSymbol({ u }: { u: number }) {
+  const topY = -0.55 * u;
+  const botY = 1.55 * u;
+  const midY = 0.5 * u;
+  const apexX = 0.65 * u;
+  const baseX = -0.65 * u;
+  const fs = Math.max(9, 0.9 * u);
+
   return (
     <g>
-      <line x1={-LEAD * u} y1={0} x2={-0.65 * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
-      <line x1={-LEAD * u} y1={1 * u} x2={-0.65 * u} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
-      <line x1={0.65 * u} y1={0} x2={LEAD * u} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      {/* Symmetrical input leads along integer grid rows y=0 and y=1*u */}
+      <line x1={-LEAD * u} y1={0} x2={baseX} y2={0} stroke={CTRL_COLOR} strokeWidth={1.5} />
+      <line x1={-LEAD * u} y1={1 * u} x2={baseX} y2={1 * u} stroke={CTRL_COLOR} strokeWidth={1.5} />
+
+      {/* Symmetrical Isosceles Comparator Triangle: axis of symmetry at midY (0.5*u) */}
       <path
-        d={`M ${-0.65 * u} ${-0.45 * u} L ${-0.65 * u} ${1.45 * u} L ${0.65 * u} 0 z`}
-        stroke={CTRL_COLOR} strokeWidth={1.5} fill="rgba(74,222,128,0.06)" />
-      <text x={-0.38 * u} y={0.25 * u} fontSize={0.38 * u} fill={CTRL_COLOR} stroke="none" fontWeight="bold">+</text>
-      <text x={-0.38 * u} y={0.9 * u} fontSize={0.38 * u} fill={CTRL_COLOR} stroke="none" fontWeight="bold">−</text>
+        d={`M ${baseX} ${topY} L ${baseX} ${botY} L ${apexX} ${midY} z`}
+        stroke={CTRL_COLOR}
+        strokeWidth={1.5}
+        fill="rgba(74,222,128,0.06)"
+      />
+
+      {/* Symmetrical output lead stepped from apex at midY to integer terminal row y=0 */}
+      <path
+        d={`M ${apexX} ${midY} L ${1.1 * u} ${midY} L ${1.1 * u} 0 L ${LEAD * u} 0`}
+        stroke={CTRL_COLOR}
+        strokeWidth={1.5}
+        fill="none"
+      />
+
+      {/* Crisp, legible input polarity labels (+ and −) */}
+      <text
+        x={baseX + 0.28 * u}
+        y={0.12 * u}
+        fontSize={fs}
+        fill={CTRL_COLOR}
+        stroke="none"
+        fontWeight="bold"
+        textAnchor="middle"
+        dominantBaseline="middle"
+      >
+        +
+      </text>
+      <text
+        x={baseX + 0.28 * u}
+        y={0.88 * u}
+        fontSize={fs}
+        fill={CTRL_COLOR}
+        stroke="none"
+        fontWeight="bold"
+        textAnchor="middle"
+        dominantBaseline="middle"
+      >
+        −
+      </text>
     </g>
   );
 }
@@ -1455,7 +1510,7 @@ function AndGateSymbol({ u }: { u: number }) {
       <text
         x={0}
         y={0.68 * u}
-        fontSize={0.55 * u}
+        fontSize={11}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="middle"
@@ -1488,7 +1543,7 @@ function OrGateSymbol({ u }: { u: number }) {
       <text
         x={0}
         y={0.68 * u}
-        fontSize={0.52 * u}
+        fontSize={11}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="middle"
@@ -1520,11 +1575,12 @@ function NotGateSymbol({ u }: { u: number }) {
       />
       <text
         x={-0.08 * u}
-        y={0.2 * u}
-        fontSize={0.52 * u}
+        y={0.5}
+        fontSize={11}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="middle"
+        dominantBaseline="middle"
         fontWeight="bold"
       >
         1
@@ -1544,7 +1600,7 @@ function NotGateSymbol({ u }: { u: number }) {
 }
 
 function MuxSymbol({ u }: { u: number }) {
-  const boxW = 1.6 * u;
+  const boxW = 2.0 * u;
   const leftX = -boxW / 2;
   const rightX = boxW / 2;
   return (
@@ -1560,58 +1616,63 @@ function MuxSymbol({ u }: { u: number }) {
         strokeWidth={1.5}
         fill="rgba(74,222,128,0.06)"
       />
-      {/* Pin function labels */}
+      {/* Pin function labels - bold, crisp 8.5px-9px */}
       <text
-        x={leftX + 0.16 * u}
-        y={0.12 * u}
-        fontSize={0.28 * u}
+        x={leftX + 3}
+        y={0}
+        fontSize={8.5}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="start"
+        dominantBaseline="middle"
         fontWeight="bold"
       >
         sel
       </text>
       <text
-        x={leftX + 0.16 * u}
-        y={1.12 * u}
-        fontSize={0.28 * u}
+        x={leftX + 3}
+        y={1 * u}
+        fontSize={9}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="start"
+        dominantBaseline="middle"
         fontWeight="bold"
       >
         0
       </text>
       <text
-        x={leftX + 0.16 * u}
-        y={2.12 * u}
-        fontSize={0.28 * u}
+        x={leftX + 3}
+        y={2 * u}
+        fontSize={9}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="start"
+        dominantBaseline="middle"
         fontWeight="bold"
       >
         1
       </text>
       <text
-        x={rightX - 0.16 * u}
-        y={0.12 * u}
-        fontSize={0.28 * u}
+        x={rightX - 3}
+        y={0}
+        fontSize={9}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="end"
+        dominantBaseline="middle"
         fontWeight="bold"
       >
         y
       </text>
       <text
-        x={-0.12 * u}
+        x={-0.1 * u}
         y={1.05 * u}
-        fontSize={0.34 * u}
+        fontSize={10.5}
         fill={CTRL_COLOR}
         stroke="none"
         textAnchor="middle"
+        dominantBaseline="middle"
         fontWeight="bold"
       >
         MUX
@@ -1643,7 +1704,7 @@ function ScriptFunctionBlockSymbol({
   const span = (maxPins - 1) * step;
   const top = -0.8 * u;
   const bottom = (span + 0.8) * u;
-  const boxH = Math.max(1.6 * u, bottom - top);
+  const boxH = Math.max(1.8 * u, bottom - top);
   const midY = (top + bottom) / 2;
 
   // Pin label lengths
@@ -1653,16 +1714,14 @@ function ScriptFunctionBlockSymbol({
 
   // Box width: ensure it fits within terminal distance (2.0u * 2 = 4.0u)
   // while giving sufficient space for pin labels and the central label badge
-  const pinSpace = (maxInLabelLen + maxOutLabelLen) * 0.28 * u;
-  const labelSpace = (labelLen * 0.35 + 0.6) * u;
-  const boxW = Math.min(3.0 * u, Math.max(2.4 * u, (pinSpace + labelSpace) * 0.85, (labelLen * 0.36 + 0.8) * u));
+  const pinSpace = (maxInLabelLen + maxOutLabelLen) * 0.45 * u;
+  const labelSpace = (labelLen * 0.4 + 0.8) * u;
+  const boxW = Math.min(3.2 * u, Math.max(2.6 * u, (pinSpace + labelSpace) * 0.9, (labelLen * 0.4 + 1.0) * u));
 
-  // Central label font size scaled dynamically so it never overflows
+  // Central label font size
   const maxLabelW = boxW - 0.4 * u;
-  const labelFontSize = Math.min(
-    maxPins > 4 ? 0.65 * u : 0.58 * u,
-    maxLabelW / (labelLen * 0.65)
-  );
+  const labelFontSize = Math.max(10, Math.min(13, maxLabelW / (labelLen * 0.65)));
+  const pinFs = Math.max(8.5, (maxInLabelLen > 3 || maxOutLabelLen > 3) ? 8 : 8.5);
 
   return (
     <g className="symbol-control-script">
@@ -1713,7 +1772,7 @@ function ScriptFunctionBlockSymbol({
       {/* Central Badge label e.g. f(x), JAVA, FOC, PWM, SPM, ThyrCtrl */}
       <text
         x={0}
-        y={midY + labelFontSize * 0.35}
+        y={midY}
         fontSize={labelFontSize}
         fontFamily="monospace"
         fontWeight="bold"
@@ -1721,6 +1780,7 @@ function ScriptFunctionBlockSymbol({
         fill={maxPins > 3 ? 'rgba(74,222,128,0.35)' : CTRL_COLOR}
         stroke="none"
         textAnchor="middle"
+        dominantBaseline="middle"
       >
         {label}
       </text>
@@ -1733,13 +1793,14 @@ function ScriptFunctionBlockSymbol({
         return (
           <text
             key={`in-label-${i}`}
-            x={-boxW / 2 + 0.18 * u}
-            y={yOffset + 0.12 * u}
-            fontSize={pinName.length > 3 ? 0.28 * u : 0.34 * u}
+            x={-boxW / 2 + 4}
+            y={yOffset}
+            fontSize={pinFs}
             fontFamily="monospace"
             fill="rgba(74,222,128,0.95)"
             stroke="none"
             textAnchor="start"
+            dominantBaseline="middle"
             fontWeight="bold"
           >
             {pinName}
@@ -1754,13 +1815,14 @@ function ScriptFunctionBlockSymbol({
         return (
           <text
             key={`out-label-${j}`}
-            x={boxW / 2 - 0.18 * u}
-            y={yOffset + 0.12 * u}
-            fontSize={pinName.length > 3 ? 0.28 * u : 0.34 * u}
+            x={boxW / 2 - 4}
+            y={yOffset}
+            fontSize={pinFs}
             fontFamily="monospace"
             fill="rgba(74,222,128,0.95)"
             stroke="none"
             textAnchor="end"
+            dominantBaseline="middle"
             fontWeight="bold"
           >
             {pinName}

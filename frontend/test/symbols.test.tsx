@@ -117,7 +117,7 @@ describe('symbols: ComponentSymbol SVG rendering', () => {
     expect(texts).toContain('f(x)');
   });
 
-  it('renders Comparator with input lead lines aligned to integer grid rows (y=0 and y=1*u)', () => {
+  it('renders Comparator with symmetrical isosceles triangle, input leads, and stepped output lead to y=0', () => {
     const comp = makeComp({
       type: 1010,
       name: 'CMP.1',
@@ -132,7 +132,6 @@ describe('symbols: ComponentSymbol SVG rendering', () => {
     );
 
     const lines = Array.from(container.querySelectorAll('line'));
-    expect(lines.length).toBe(3); // 2 inputs + 1 output
     const lineCoords = lines.map((l) => ({
       x1: Number(l.getAttribute('x1')),
       y1: Number(l.getAttribute('y1')),
@@ -144,8 +143,13 @@ describe('symbols: ComponentSymbol SVG rendering', () => {
     expect(lineCoords).toContainEqual({ x1: -20, y1: 0, x2: -6.5, y2: 0 });
     // Input 1 (-) lead: along y=10 from -20 to -6.5
     expect(lineCoords).toContainEqual({ x1: -20, y1: 10, x2: -6.5, y2: 10 });
-    // Output lead: along y=0 from 6.5 to 20
-    expect(lineCoords).toContainEqual({ x1: 6.5, y1: 0, x2: 20, y2: 0 });
+
+    // Symmetrical triangle path: base from y=-5.5 to y=15.5 with apex at (6.5, 5)
+    const paths = Array.from(container.querySelectorAll('path')).map((p) => p.getAttribute('d'));
+    expect(paths).toContainEqual('M -6.5 -5.5 L -6.5 15.5 L 6.5 5 z');
+
+    // Symmetrical stepped output lead from apex (6.5, 5) to terminal (20, 0)
+    expect(paths).toContainEqual('M 6.5 5 L 11 5 L 11 0 L 20 0');
 
     const texts = Array.from(container.querySelectorAll('text')).map((t) => t.textContent);
     expect(texts).toContain('+');
