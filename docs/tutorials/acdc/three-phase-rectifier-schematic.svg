@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 430" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 430" width="100%" height="100%">
   <defs>
     <style>
       .wire { stroke: #1e293b; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
@@ -20,9 +20,12 @@
       .measure-arrow { stroke: #0284c7; stroke-width: 1.75; fill: none; }
       .tag-pos { fill: #dc2626; font-family: sans-serif; font-size: 16px; font-weight: bold; text-anchor: middle; }
       .tag-neg { fill: #2563eb; font-family: sans-serif; font-size: 18px; font-weight: bold; text-anchor: middle; }
+      .tag-pos-start { fill: #dc2626; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: start; }
+      .tag-neg-start { fill: #2563eb; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: start; }
       .card { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; rx: 8px; }
       .block { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; rx: 6px; }
       .block-accent { fill: #f0f9ff; stroke: #0284c7; stroke-width: 1.5; rx: 6px; }
+      .leg-box { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.2; stroke-dasharray: 4,4; rx: 6px; }
     </style>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0284c7"/>
@@ -35,87 +38,99 @@
   <text x="35" y="38" class="title">Three-Phase 6-Pulse Diode Bridge Rectifier (B6)</text>
   <text x="35" y="58" class="subtitle">European IEC 60617 Standard Schematic • Symmetrical 6-Pulse Full-Wave Rectification</text>
   
-    <circle cx="80" cy="160" r="4.5" fill="#0284c7" />
-    <text x="68" y="164" class="label" text-anchor="end" fill="#0284c7">L_1</text>
+    <circle cx="80" cy="200" r="4.5" fill="#0284c7" />
+    <text x="68" y="204" class="label" text-anchor="end" fill="#0284c7">L_1</text>
     
-<line x1="80" y1="160" x2="260" y2="160" class="wire" />
-<line x1="260" y1="160" x2="260" y2="220" class="wire" />
-<circle cx="260" cy="220" r="4" class="junction" />
+<line x1="80" y1="200" x2="260" y2="200" class="wire" />
+<circle cx="260" cy="200" r="4" class="junction" />
 
     <circle cx="80" cy="220" r="4.5" fill="#0284c7" />
     <text x="68" y="224" class="label" text-anchor="end" fill="#0284c7">L_2</text>
     
-<line x1="80" y1="220" x2="370" y2="220" class="wire" />
+
+    <line x1="80" y1="220" x2="254" y2="220" class="wire" />
+    <path d="M 254 220 A 6 6 0 0 1 266 220" class="wire" />
+    <line x1="266" y1="220" x2="370" y2="220" class="wire" />
+    
 <circle cx="370" cy="220" r="4" class="junction" />
 
-    <circle cx="80" cy="280" r="4.5" fill="#0284c7" />
-    <text x="68" y="284" class="label" text-anchor="end" fill="#0284c7">L_3</text>
+    <circle cx="80" cy="240" r="4.5" fill="#0284c7" />
+    <text x="68" y="244" class="label" text-anchor="end" fill="#0284c7">L_3</text>
     
-<line x1="80" y1="280" x2="480" y2="280" class="wire" />
-<line x1="480" y1="280" x2="480" y2="220" class="wire" />
-<circle cx="480" cy="220" r="4" class="junction" />
 
-        <line x1="260" y1="100" x2="260" y2="146" class="wire" />
-        <line x1="246" y1="146" x2="274" y2="146" class="wire" stroke-width="2.5" stroke="#0284c7" />
-        <polygon points="246,174 260,146 274,174" class="comp-diode" />
-        <line x1="260" y1="174" x2="260" y2="220" class="wire" />
-        <text x="282" y="158" class="label-start">D_1</text>
-        <text x="282" y="176" class="sublabel-start"></text>
+    <line x1="80" y1="240" x2="254" y2="240" class="wire" />
+    <path d="M 254 240 A 6 6 0 0 1 266 240" class="wire" />
+    <line x1="266" y1="240" x2="364" y2="240" class="wire" />
+    
+
+    <line x1="364" y1="240" x2="364" y2="240" class="wire" />
+    <path d="M 364 240 A 6 6 0 0 1 376 240" class="wire" />
+    <line x1="376" y1="240" x2="480" y2="240" class="wire" />
+    
+<circle cx="480" cy="240" r="4" class="junction" />
+
+        <line x1="260" y1="100" x2="260" y2="126" class="wire" />
+        <line x1="246" y1="126" x2="274" y2="126" class="wire" stroke-width="2.5" stroke="#0284c7" />
+        <polygon points="246,154 260,126 274,154" class="comp-diode" />
+        <line x1="260" y1="154" x2="260" y2="180" class="wire" />
+        <text x="282" y="138" class="label-start">D_1</text>
+        <text x="282" y="156" class="sublabel-start"></text>
+        
+<line x1="260" y1="180" x2="260" y2="260" class="wire" />
+
+        <line x1="260" y1="260" x2="260" y2="286" class="wire" />
+        <line x1="246" y1="286" x2="274" y2="286" class="wire" stroke-width="2.5" stroke="#0284c7" />
+        <polygon points="246,314 260,286 274,314" class="comp-diode" />
+        <line x1="260" y1="314" x2="260" y2="340" class="wire" />
+        <text x="282" y="298" class="label-start">D_4</text>
+        <text x="282" y="316" class="sublabel-start"></text>
         
 
-        <line x1="260" y1="220" x2="260" y2="266" class="wire" />
-        <line x1="246" y1="266" x2="274" y2="266" class="wire" stroke-width="2.5" stroke="#0284c7" />
-        <polygon points="246,294 260,266 274,294" class="comp-diode" />
-        <line x1="260" y1="294" x2="260" y2="340" class="wire" />
-        <text x="282" y="278" class="label-start">D_4</text>
-        <text x="282" y="296" class="sublabel-start"></text>
+        <line x1="370" y1="100" x2="370" y2="126" class="wire" />
+        <line x1="356" y1="126" x2="384" y2="126" class="wire" stroke-width="2.5" stroke="#0284c7" />
+        <polygon points="356,154 370,126 384,154" class="comp-diode" />
+        <line x1="370" y1="154" x2="370" y2="180" class="wire" />
+        <text x="392" y="138" class="label-start">D_3</text>
+        <text x="392" y="156" class="sublabel-start"></text>
+        
+<line x1="370" y1="180" x2="370" y2="260" class="wire" />
+
+        <line x1="370" y1="260" x2="370" y2="286" class="wire" />
+        <line x1="356" y1="286" x2="384" y2="286" class="wire" stroke-width="2.5" stroke="#0284c7" />
+        <polygon points="356,314 370,286 384,314" class="comp-diode" />
+        <line x1="370" y1="314" x2="370" y2="340" class="wire" />
+        <text x="392" y="298" class="label-start">D_6</text>
+        <text x="392" y="316" class="sublabel-start"></text>
         
 
-        <line x1="370" y1="100" x2="370" y2="146" class="wire" />
-        <line x1="356" y1="146" x2="384" y2="146" class="wire" stroke-width="2.5" stroke="#0284c7" />
-        <polygon points="356,174 370,146 384,174" class="comp-diode" />
-        <line x1="370" y1="174" x2="370" y2="220" class="wire" />
-        <text x="392" y="158" class="label-start">D_3</text>
-        <text x="392" y="176" class="sublabel-start"></text>
+        <line x1="480" y1="100" x2="480" y2="126" class="wire" />
+        <line x1="466" y1="126" x2="494" y2="126" class="wire" stroke-width="2.5" stroke="#0284c7" />
+        <polygon points="466,154 480,126 494,154" class="comp-diode" />
+        <line x1="480" y1="154" x2="480" y2="180" class="wire" />
+        <text x="502" y="138" class="label-start">D_5</text>
+        <text x="502" y="156" class="sublabel-start"></text>
         
+<line x1="480" y1="180" x2="480" y2="260" class="wire" />
 
-        <line x1="370" y1="220" x2="370" y2="266" class="wire" />
-        <line x1="356" y1="266" x2="384" y2="266" class="wire" stroke-width="2.5" stroke="#0284c7" />
-        <polygon points="356,294 370,266 384,294" class="comp-diode" />
-        <line x1="370" y1="294" x2="370" y2="340" class="wire" />
-        <text x="392" y="278" class="label-start">D_6</text>
-        <text x="392" y="296" class="sublabel-start"></text>
+        <line x1="480" y1="260" x2="480" y2="286" class="wire" />
+        <line x1="466" y1="286" x2="494" y2="286" class="wire" stroke-width="2.5" stroke="#0284c7" />
+        <polygon points="466,314 480,286 494,314" class="comp-diode" />
+        <line x1="480" y1="314" x2="480" y2="340" class="wire" />
+        <text x="502" y="298" class="label-start">D_2</text>
+        <text x="502" y="316" class="sublabel-start"></text>
         
-
-        <line x1="480" y1="100" x2="480" y2="146" class="wire" />
-        <line x1="466" y1="146" x2="494" y2="146" class="wire" stroke-width="2.5" stroke="#0284c7" />
-        <polygon points="466,174 480,146 494,174" class="comp-diode" />
-        <line x1="480" y1="174" x2="480" y2="220" class="wire" />
-        <text x="502" y="158" class="label-start">D_5</text>
-        <text x="502" y="176" class="sublabel-start"></text>
-        
-
-        <line x1="480" y1="220" x2="480" y2="266" class="wire" />
-        <line x1="466" y1="266" x2="494" y2="266" class="wire" stroke-width="2.5" stroke="#0284c7" />
-        <polygon points="466,294 480,266 494,294" class="comp-diode" />
-        <line x1="480" y1="294" x2="480" y2="340" class="wire" />
-        <text x="502" y="278" class="label-start">D_2</text>
-        <text x="502" y="296" class="sublabel-start"></text>
-        
-<line x1="260" y1="100" x2="750" y2="100" class="wire" stroke="#dc2626" />
+<line x1="260" y1="100" x2="760" y2="100" class="wire" stroke="#dc2626" />
 <circle cx="260" cy="100" r="4" class="junction" />
 <circle cx="370" cy="100" r="4" class="junction" />
 <circle cx="480" cy="100" r="4" class="junction" />
 <circle cx="590" cy="100" r="4" class="junction" />
 <circle cx="680" cy="100" r="4" class="junction" />
-<text x="765" y="105" class="tag-pos">+</text>
-<line x1="260" y1="340" x2="750" y2="340" class="wire" stroke="#2563eb" />
+<line x1="260" y1="340" x2="760" y2="340" class="wire" stroke="#2563eb" />
 <circle cx="260" cy="340" r="4" class="junction" />
 <circle cx="370" cy="340" r="4" class="junction" />
 <circle cx="480" cy="340" r="4" class="junction" />
 <circle cx="590" cy="340" r="4" class="junction" />
 <circle cx="680" cy="340" r="4" class="junction" />
-<text x="765" y="345" class="tag-neg">&#8722;</text>
 
     <line x1="590" y1="100" x2="590" y2="214" class="wire" />
     <line x1="572" y1="214" x2="608" y2="214" class="wire" stroke-width="3" />
@@ -132,12 +147,12 @@
     <text x="700" y="235" class="sublabel-start">DC Load</text>
     
 
-    <circle cx="750" cy="100" r="4" fill="none" stroke="#0284c7" stroke-width="2" />
-    <circle cx="750" cy="340" r="4" fill="none" stroke="#0284c7" stroke-width="2" />
-    <text x="764" y="105" class="tag-pos">+</text>
-    <text x="764" y="345" class="tag-neg">&#8722;</text>
-    <line x1="775" y1="115" x2="775" y2="325" class="measure-arrow" marker-end="url(#arr-blue)" />
-    <text x="792" y="225" class="label" fill="#0284c7">Vdc</text>
+    <circle cx="760" cy="100" r="4" fill="none" stroke="#0284c7" stroke-width="2" />
+    <circle cx="760" cy="340" r="4" fill="none" stroke="#0284c7" stroke-width="2" />
+    <text x="774" y="105" class="tag-pos">+</text>
+    <text x="774" y="345" class="tag-neg">&#8722;</text>
+    <line x1="785" y1="115" x2="785" y2="325" class="measure-arrow" marker-end="url(#arr-blue)" />
+    <text x="802" y="225" class="label" fill="#0284c7">Vdc</text>
     
 
     <line x1="590" y1="340" x2="590" y2="355" class="wire" />

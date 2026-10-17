@@ -48,9 +48,12 @@ def svg_wrap(viewbox, title, subtitle, elements):
       .measure-arrow {{ stroke: #0284c7; stroke-width: 1.75; fill: none; }}
       .tag-pos {{ fill: #dc2626; font-family: sans-serif; font-size: 16px; font-weight: bold; text-anchor: middle; }}
       .tag-neg {{ fill: #2563eb; font-family: sans-serif; font-size: 18px; font-weight: bold; text-anchor: middle; }}
+      .tag-pos-start {{ fill: #dc2626; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: start; }}
+      .tag-neg-start {{ fill: #2563eb; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: start; }}
       .card {{ fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; rx: 8px; }}
       .block {{ fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; rx: 6px; }}
       .block-accent {{ fill: #f0f9ff; stroke: #0284c7; stroke-width: 1.5; rx: 6px; }}
+      .leg-box {{ fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.2; stroke-dasharray: 4,4; rx: 6px; }}
     </style>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0284c7"/>
@@ -231,6 +234,28 @@ def switch_v(x, y1, y2, label="S", val="", with_diode=True, side="left"):
         '''
     return content
 
+def hop_h(x1, x_hop, x2, y, r=6, stroke="#1e293b"):
+    cls = "wire"
+    extra = f' stroke="{stroke}"' if stroke != "#1e293b" else ""
+    return f'''
+    <line x1="{x1}" y1="{y}" x2="{x_hop-r}" y2="{y}" class="{cls}"{extra} />
+    <path d="M {x_hop-r} {y} A {r} {r} 0 0 1 {x_hop+r} {y}" class="{cls}"{extra} />
+    <line x1="{x_hop+r}" y1="{y}" x2="{x2}" y2="{y}" class="{cls}"{extra} />
+    '''
+
+def switch_bidir_h(x1, x2, y, label="S", val="Bidirectional"):
+    xm = int((x1 + x2) / 2)
+    return f'''
+    <line x1="{x1}" y1="{y}" x2="{xm-18}" y2="{y}" class="wire" />
+    <circle cx="{xm-18}" cy="{y}" r="3" fill="#0284c7" />
+    <circle cx="{xm+18}" cy="{y}" r="3" fill="#0284c7" />
+    <line x1="{xm-16}" y1="{y-1}" x2="{xm+14}" y2="{y-14}" class="comp-sw" />
+    <line x1="{xm-12}" y1="{y+10}" x2="{xm+12}" y2="{y+10}" stroke="#0284c7" stroke-width="1.5" marker-start="url(#arr-blue)" marker-end="url(#arr-blue)" />
+    <line x1="{xm+18}" y1="{y}" x2="{x2}" y2="{y}" class="wire" />
+    <text x="{xm}" y="{y-18}" class="label">{label}</text>
+    <text x="{xm}" y="{y+24}" class="sublabel" fill="#0284c7">{val}</text>
+    '''
+
 # ----------------- Two-Point Horizontal Components -----------------
 
 def res_h(x1, x2, y, label="R", val="", side="top"):
@@ -375,32 +400,35 @@ def gen_cuk():
 def gen_single_phase_rectifier():
     elems = [
         source_ac_v(120, 160, 280, "V_ac", "Mains 230V / 50Hz"),
-        # AC Line 1 (top): (120, 160) to (260, 160) down to Leg 1 midpoint (260, 220)
-        wire(120, 160, 260, 160),
-        wire(260, 160, 260, 220),
-        junc(260, 220),
-        # AC Line 2 (bot): (120, 280) to (380, 280) up to Leg 2 midpoint (380, 220)
-        wire(120, 280, 380, 280),
-        wire(380, 280, 380, 220),
-        junc(380, 220),
+        # AC Line 1 (top): (120, 160) to (180, 160) down to (180, 200) across to Leg 1 phase node (260, 200)
+        wire(120, 160, 180, 160),
+        wire(180, 160, 180, 200),
+        wire(180, 200, 260, 200),
+        junc(260, 200),
+
+        # AC Line 2 (bot): (120, 280) to (180, 280) up to (180, 240) across hopping over Leg 1 to Leg 2 (380, 240)
+        wire(120, 280, 180, 280),
+        wire(180, 280, 180, 240),
+        hop_h(180, 260, 380, 240),
+        junc(380, 240),
 
         # Leg 1 at x=260:
-        diode_v(260, 100, 220, direction="up", label="D_1"),
-        diode_v(260, 220, 340, direction="up", label="D_2"),
+        diode_v(260, 100, 180, direction="up", label="D_1"),
+        wire(260, 180, 260, 260),
+        diode_v(260, 260, 340, direction="up", label="D_2"),
 
         # Leg 2 at x=380:
-        diode_v(380, 100, 220, direction="up", label="D_3"),
-        diode_v(380, 220, 340, direction="up", label="D_4"),
+        diode_v(380, 100, 180, direction="up", label="D_3"),
+        wire(380, 180, 380, 260),
+        diode_v(380, 260, 340, direction="up", label="D_4"),
 
         # DC+ Rail at y=100 (Red)
         wire(260, 680, 100, stroke="#dc2626"),
         junc(260, 100), junc(380, 100), junc(490, 100), junc(590, 100),
-        f'<text x="695" y="105" class="tag-pos">+</text>',
 
         # DC- Rail at y=340 (Blue)
         wire(260, 680, 340, stroke="#2563eb"),
         junc(260, 340), junc(380, 340), junc(490, 340), junc(590, 340),
-        f'<text x="695" y="345" class="tag-neg">&#8722;</text>',
 
         # Smoothing Capacitor C_f at x=490 from y=100 to y=340
         cap_v(490, 100, 340, "C_f", "Smoothing Cap"),
@@ -414,7 +442,7 @@ def gen_single_phase_rectifier():
         # Ground reference at (490, 340)
         gnd(490, 340, "0V / GND"),
     ]
-    return svg_wrap("0 0 860 420", "Single-Phase Full-Wave Diode Bridge Rectifier",
+    return svg_wrap("0 0 780 420", "Single-Phase Full-Wave Diode Bridge Rectifier",
                     "European IEC 60617 Standard Schematic • Uncontrolled Full-Wave AC-DC Converter",
                     "\n".join(elems))
 
@@ -424,41 +452,41 @@ def gen_single_phase_rectifier():
 def gen_three_phase_rectifier():
     elems = [
         # AC Inputs
-        terminal(80, 160, "L_1", side="left"),
-        wire(80, 160, 260, 160),
-        wire(260, 160, 260, 220),
-        junc(260, 220),
+        terminal(80, 200, "L_1", side="left"),
+        wire(80, 200, 260, 200),
+        junc(260, 200),
 
         terminal(80, 220, "L_2", side="left"),
-        wire(80, 220, 370, 220),
+        hop_h(80, 260, 370, 220),
         junc(370, 220),
 
-        terminal(80, 280, "L_3", side="left"),
-        wire(80, 280, 480, 280),
-        wire(480, 280, 480, 220),
-        junc(480, 220),
+        terminal(80, 240, "L_3", side="left"),
+        hop_h(80, 260, 364, 240),
+        hop_h(364, 370, 480, 240),
+        junc(480, 240),
 
         # Leg 1 (Phase A, x=260)
-        diode_v(260, 100, 220, direction="up", label="D_1"),
-        diode_v(260, 220, 340, direction="up", label="D_4"),
+        diode_v(260, 100, 180, direction="up", label="D_1"),
+        wire(260, 180, 260, 260),
+        diode_v(260, 260, 340, direction="up", label="D_4"),
 
         # Leg 2 (Phase B, x=370)
-        diode_v(370, 100, 220, direction="up", label="D_3"),
-        diode_v(370, 220, 340, direction="up", label="D_6"),
+        diode_v(370, 100, 180, direction="up", label="D_3"),
+        wire(370, 180, 370, 260),
+        diode_v(370, 260, 340, direction="up", label="D_6"),
 
         # Leg 3 (Phase C, x=480)
-        diode_v(480, 100, 220, direction="up", label="D_5"),
-        diode_v(480, 220, 340, direction="up", label="D_2"),
+        diode_v(480, 100, 180, direction="up", label="D_5"),
+        wire(480, 180, 480, 260),
+        diode_v(480, 260, 340, direction="up", label="D_2"),
 
         # DC+ Rail (Red)
-        wire(260, 750, 100, stroke="#dc2626"),
+        wire(260, 760, 100, stroke="#dc2626"),
         junc(260, 100), junc(370, 100), junc(480, 100), junc(590, 100), junc(680, 100),
-        f'<text x="765" y="105" class="tag-pos">+</text>',
 
         # DC- Rail (Blue)
-        wire(260, 750, 340, stroke="#2563eb"),
+        wire(260, 760, 340, stroke="#2563eb"),
         junc(260, 340), junc(370, 340), junc(480, 340), junc(590, 340), junc(680, 340),
-        f'<text x="765" y="345" class="tag-neg">&#8722;</text>',
 
         # Smoothing Capacitor C_dc at x=590
         cap_v(590, 100, 340, "C_dc", "Bulk Filter"),
@@ -466,11 +494,11 @@ def gen_three_phase_rectifier():
         # Load Resistor R_L at x=680
         res_v(680, 100, 340, "R_L", "DC Load"),
 
-        # Probe at x=750
-        probe_v(750, 100, 340, "Vdc"),
+        # Probe at x=760
+        probe_v(760, 100, 340, "Vdc"),
         gnd(590, 340, "0V / GND"),
     ]
-    return svg_wrap("0 0 880 430", "Three-Phase 6-Pulse Diode Bridge Rectifier (B6)",
+    return svg_wrap("0 0 860 430", "Three-Phase 6-Pulse Diode Bridge Rectifier (B6)",
                     "European IEC 60617 Standard Schematic • Symmetrical 6-Pulse Full-Wave Rectification",
                     "\n".join(elems))
 
@@ -534,68 +562,104 @@ def gen_boost_pfc():
 # ==============================================================================
 def gen_vienna_rectifier():
     elems = [
-        # AC Inputs through inductors L_a, L_b, L_c
-        terminal(80, 160, "L_1", side="left"),
-        ind_h(80, 220, 160, "L_a", ""),
-        junc(220, 160),
+        # Phase leg shading boxes (subtle grouping)
+        '<rect x="205" y="65" width="130" height="370" class="leg-box" />',
+        '<text x="270" y="450" class="sublabel" font-weight="600">Phase Leg A</text>',
+        '<rect x="365" y="65" width="130" height="370" class="leg-box" />',
+        '<text x="430" y="450" class="sublabel" font-weight="600">Phase Leg B</text>',
+        '<rect x="525" y="65" width="130" height="370" class="leg-box" />',
+        '<text x="590" y="450" class="sublabel" font-weight="600">Phase Leg C</text>',
 
-        terminal(80, 240, "L_2", side="left"),
-        ind_h(80, 310, 240, "L_b", ""),
-        junc(310, 240),
+        # DC+ Rail (Red, y=80)
+        wire(240, 80, 980, 80, stroke="#dc2626"),
+        junc(240, 80), junc(400, 80), junc(560, 80), junc(720, 80), junc(840, 80),
+        '<circle cx="980" cy="80" r="4.5" fill="#dc2626" />',
+        '<text x="995" y="86" class="tag-pos-start">+Vdc / 2 (+350V)</text>',
 
-        terminal(80, 320, "L_3", side="left"),
-        ind_h(80, 400, 320, "L_c", ""),
-        junc(400, 320),
+        # DC- Rail (Blue, y=420)
+        wire(240, 420, 980, 420, stroke="#2563eb"),
+        junc(240, 420), junc(400, 420), junc(560, 420), junc(720, 420), junc(840, 420),
+        '<circle cx="980" cy="420" r="4.5" fill="#2563eb" />',
+        '<text x="995" y="426" class="tag-neg-start">&#8722;Vdc / 2 (&#8722;350V)</text>',
 
-        # Phase Legs:
-        # Leg A at x=220:
-        diode_v(220, 90, 160, direction="up", label="D_1a"),
-        diode_v(220, 160, 390, direction="up", label="D_2a"),
-        # Switch A to Neutral (y=240):
-        wire(220, 160, 250, 160),
-        wire(250, 160, 250, 240),
-        wire(250, 240, 480, 240),
+        # Neutral Rail M running horizontally at y=325 (cleanly separated from switches at y=280)
+        wire(320, 280, 320, 325, stroke="#64748b"),
+        junc(320, 325),
+        hop_h(320, 400, 480, 325, stroke="#64748b"),
+        wire(480, 280, 480, 325, stroke="#64748b"),
+        junc(480, 325),
+        hop_h(480, 560, 640, 325, stroke="#64748b"),
+        wire(640, 280, 640, 325, stroke="#64748b"),
+        junc(640, 325),
+        wire(640, 325, 685, 325, stroke="#64748b"),
+        wire(685, 325, 685, 250, stroke="#64748b"),
+        wire(685, 250, 720, 250, stroke="#64748b"),
+        junc(720, 250),
 
-        # Leg B at x=310:
-        diode_v(310, 90, 240, direction="up", label="D_1b"),
-        diode_v(310, 240, 390, direction="up", label="D_2b"),
+        # ================= Phase Leg A =================
+        terminal(60, 150, "L_1", side="left"),
+        ind_h(60, 165, 150, "L_a", ""),
+        wire(165, 150, 240, 150),
+        junc(240, 150),
 
-        # Leg C at x=400:
-        diode_v(400, 90, 320, direction="up", label="D_1c"),
-        diode_v(400, 320, 390, direction="up", label="D_2c"),
-        # Switch C to Neutral (y=240):
-        wire(400, 320, 430, 320),
-        wire(430, 320, 430, 240),
-        wire(430, 240, 480, 240),
+        diode_v(240, 80, 150, direction="up", label="D_1a", side="left"),
+        wire(240, 150, 240, 345),
+        diode_v(240, 345, 420, direction="up", label="D_2a", side="left"),
+        junc(240, 280),
+        switch_bidir_h(240, 320, 280, "S_a", "Bi-dir Switch"),
 
-        # DC+ Rail (y=90)
-        wire(220, 800, 90, stroke="#dc2626"),
-        junc(220, 90), junc(310, 90), junc(400, 90), junc(660, 90), junc(740, 90),
-        f'<text x="815" y="95" class="tag-pos">+Vdc / 2</text>',
+        # ================= Phase Leg B =================
+        terminal(60, 195, "L_2", side="left"),
+        ind_h(60, 165, 195, "L_b", ""),
+        hop_h(165, 240, 400, 195),
+        junc(400, 195),
 
-        # Neutral Rail (y=240)
-        wire(250, 800, 240, stroke="#64748b"),
-        junc(310, 240), junc(430, 240), junc(660, 240),
-        f'<text x="815" y="245" class="sublabel-start">Neutral (M)</text>',
+        diode_v(400, 80, 150, direction="up", label="D_1b", side="left"),
+        wire(400, 150, 400, 345),
+        diode_v(400, 345, 420, direction="up", label="D_2b", side="left"),
+        junc(400, 280),
+        switch_bidir_h(400, 480, 280, "S_b", "Bi-dir Switch"),
 
-        # DC- Rail (y=390)
-        wire(220, 800, 390, stroke="#2563eb"),
-        junc(220, 390), junc(310, 390), junc(400, 390), junc(660, 390), junc(740, 390),
-        f'<text x="815" y="395" class="tag-neg">&#8722;Vdc / 2</text>',
+        # ================= Phase Leg C =================
+        terminal(60, 240, "L_3", side="left"),
+        ind_h(60, 165, 240, "L_c", ""),
+        hop_h(165, 240, 394, 240),
+        hop_h(394, 400, 560, 240),
+        junc(560, 240),
 
-        # Split Capacitors C1 and C2 at x=660
-        cap_v(660, 90, 240, "C_1", "Upper Bus"),
-        cap_v(660, 240, 390, "C_2", "Lower Bus"),
-        gnd(660, 240, "Neutral GND"),
+        diode_v(560, 80, 150, direction="up", label="D_1c", side="left"),
+        wire(560, 150, 560, 345),
+        diode_v(560, 345, 420, direction="up", label="D_2c", side="left"),
+        junc(560, 280),
+        switch_bidir_h(560, 640, 280, "S_c", "Bi-dir Switch"),
 
-        # Load Resistor R_L at x=740
-        res_v(740, 90, 390, "R_L", "DC Load"),
+        # ================= DC Link Stage =================
+        wire(720, 80, 720, 100),
+        cap_v(720, 100, 210, "C_1", "Upper Cap"),
+        wire(720, 210, 720, 290),
+        cap_v(720, 290, 400, "C_2", "Lower Cap"),
+        wire(720, 400, 720, 420),
 
-        # Total Probe at x=800
-        probe_v(800, 90, 390, "Vdc"),
+        # Neutral Ground GND at x=780 (spacious free area)
+        wire(720, 250, 780, 250, stroke="#64748b"),
+        gnd(780, 250, "Neutral M (0V)"),
+        junc(780, 250),
+
+        # Load Resistor RL at x=840
+        wire(840, 80, 840, 150),
+        res_v(840, 150, 350, "R_L", "DC Load"),
+        wire(840, 350, 840, 420),
+
+        # Output Voltage Probe Vdc at x=920
+        '<circle cx="920" cy="80" r="3.5" fill="none" stroke="#0284c7" stroke-width="2" />',
+        '<circle cx="920" cy="420" r="3.5" fill="none" stroke="#0284c7" stroke-width="2" />',
+        '<line x1="920" y1="92" x2="920" y2="236" class="measure-arrow" marker-start="url(#arr-blue)" />',
+        '<line x1="920" y1="264" x2="920" y2="408" class="measure-arrow" marker-end="url(#arr-blue)" />',
+        '<rect x="896" y="238" width="48" height="24" rx="4" fill="#ffffff" stroke="#0284c7" stroke-width="1.2" />',
+        '<text x="920" y="255" class="label" fill="#0284c7" font-size="12px">Vdc</text>',
     ]
-    return svg_wrap("0 0 920 480", "Three-Phase Three-Level Vienna Rectifier",
-                    "European IEC 60617 Standard Schematic • Low THD & Three-Level DC Output",
+    return svg_wrap("0 0 1150 480", "Three-Phase Three-Level Vienna Rectifier",
+                    "European IEC 60617 Standard Schematic • Low THD PFC &amp; Three-Level Clamped DC Output",
                     "\n".join(elems))
 
 # ==============================================================================
