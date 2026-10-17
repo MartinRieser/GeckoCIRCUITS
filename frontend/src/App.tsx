@@ -858,6 +858,7 @@ export function App() {
                 placeGhost: actions.placeGhost,
                 finishWire: actions.finishWire,
                 commitMove: actions.commitMove,
+                resizeComponent: actions.resizeComponent,
                 deleteSelection: actions.deleteSelection,
                 rotateComponent: actions.rotateComponent,
                 deleteComponent: actions.deleteComponent,

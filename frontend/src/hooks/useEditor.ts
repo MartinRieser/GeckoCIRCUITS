@@ -10,6 +10,7 @@ import { initialState, editorReducer, type Action as EditorAction } from '../mod
 import type {
   CatalogEntry,
   ComponentPayload,
+  ComponentPatch,
   WirePayload,
   SimulationDefaults,
   SimRunSettings,
@@ -1138,6 +1139,67 @@ export function useEditor() {
     [refresh, reportError],
   );
 
+  const resizeComponent = useCallback(
+    (name: string, width: number, height: number, x?: number, y?: number) => {
+      const circuitId = stateRef.current.circuitId;
+      const existing = stateRef.current.components.find((c) => c.name === name);
+      if (!circuitId || !existing) return;
+
+      const newPos: [number, number] = [
+        x !== undefined ? x : existing.position[0],
+        y !== undefined ? y : existing.position[1],
+      ];
+
+      // Optimistic local store update for immediate flicker-free feedback
+      dispatch({
+        type: 'COMPONENT_UPSERT',
+        component: {
+          ...existing,
+          position: newPos,
+          parameters: {
+            ...existing.parameters,
+            width,
+            height,
+          },
+        },
+        version: stateRef.current.modelVersion,
+      });
+
+      const patch: ComponentPatch = {
+        parameters: { width, height },
+      };
+      if (x !== undefined) patch.x = x;
+      if (y !== undefined) patch.y = y;
+
+      api
+        .patchComponent(circuitId, name, patch)
+        .then((msg) => {
+          const payload = msg.payload as ComponentPayload;
+          versionRef.current = msg.modelVersion;
+          const cur = stateRef.current.components.find((c) => c.name === name);
+          if (cur) {
+            dispatch({
+              type: 'COMPONENT_UPSERT',
+              component: {
+                ...cur,
+                position: payload.position ?? cur.position,
+                orientation: payload.orientation ?? cur.orientation,
+                parameters: {
+                  ...cur.parameters,
+                  ...payload.parameters,
+                  width,
+                  height,
+                },
+              },
+              version: msg.modelVersion,
+            });
+          }
+        })
+        .catch(reportError);
+    },
+    [reportError],
+  );
+
   const setParameter = useCallback(
     (name: string, key: string, value: number | string | boolean) => {
       const circuitId = stateRef.current.circuitId;
@@ -1494,6 +1556,7 @@ export function useEditor() {
       placeGhost,
       finishWire,
       commitMove,
+      resizeComponent,
       rotateComponent,
       deleteComponent,
       deleteWire,

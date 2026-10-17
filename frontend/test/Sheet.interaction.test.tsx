@@ -48,6 +48,7 @@ const snapshot: EditorSnapshot = {
 const placeGhost = vi.fn();
 const finishWire = vi.fn();
 const commitMove = vi.fn();
+const resizeComponent = vi.fn();
 const deleteWire = vi.fn();
 const patchWirePoints = vi.fn();
 const flipWire = vi.fn();
@@ -58,6 +59,7 @@ const actions: SheetActions = {
   placeGhost,
   finishWire,
   commitMove,
+  resizeComponent,
   deleteWire,
   patchWirePoints,
   flipWire,
@@ -835,6 +837,182 @@ describe('direct pin-to-pin wiring and wire editing', () => {
       // After drop: NO dangling endpoints!
       expect(container.querySelectorAll('.wire-dangling-box')).toHaveLength(0);
       expect(commitMove).toHaveBeenCalled();
+    });
+  });
+
+  describe('Schematic Note Card Microsoft Word-style Resizing', () => {
+    function NoteWrapper({ initialSelection = [] as string[] }) {
+      const [state, dispatch] = useReducer(editorReducer, {
+        ...initialState,
+        circuitId: 'c-note',
+        components: [
+          {
+            type: 2001,
+            name: 'NOTE.1',
+            family: 'SPECIAL',
+            position: [20, 10],
+            orientation: 501,
+            parameters: {
+              width: 26,
+              height: 14,
+              text: '# Title\n\nSome note content.',
+            },
+            inputLabels: [],
+            outputLabels: [],
+          },
+        ],
+        selection: initialSelection,
+        dpix: 16,
+      });
+      return <Sheet state={state} dispatch={dispatch} actions={actions} />;
+    }
+
+    it('renders 8 resize handles with corresponding Word-style cursors when selected', () => {
+      const { container } = render(<NoteWrapper initialSelection={['NOTE.1']} />);
+
+      // Handles: nw, n, ne, e, se, s, sw, w
+      const expectedHandles = [
+        { id: 'nw', cursor: 'nwse-resize' },
+        { id: 'n', cursor: 'ns-resize' },
+        { id: 'ne', cursor: 'nesw-resize' },
+        { id: 'e', cursor: 'ew-resize' },
+        { id: 'se', cursor: 'nwse-resize' },
+        { id: 's', cursor: 'ns-resize' },
+        { id: 'sw', cursor: 'nesw-resize' },
+        { id: 'w', cursor: 'ew-resize' },
+      ];
+
+      for (const h of expectedHandles) {
+        const handleEl = container.querySelector(`[data-testid="resize-handle-${h.id}"]`);
+        expect(handleEl).not.toBeNull();
+        expect((handleEl as HTMLElement).style.cursor).toBe(h.cursor);
+      }
+
+      // Selection outline box present
+      expect(container.querySelector('.textbox-selection-box')).not.toBeNull();
+    });
+
+    it('does not render resize handles when note card is not selected', () => {
+      const { container } = render(<NoteWrapper initialSelection={[]} />);
+      expect(container.querySelector('[data-testid="resize-handle-se"]')).toBeNull();
+      expect(container.querySelector('.textbox-selection-box')).toBeNull();
+    });
+
+    it('resizes width and height when dragging se handle and calls resizeComponent on mouseup', () => {
+      resizeComponent.mockClear();
+      const { container } = render(<NoteWrapper initialSelection={['NOTE.1']} />);
+      const seHandle = container.querySelector('[data-testid="resize-handle-se"]');
+      expect(seHandle).not.toBeNull();
+
+      // Initial position: pos=[20, 10], w=26, h=14.
+      // SE corner is at grid (20 + 26, 10 + 14) = (46, 24).
+      // ClientX = 46 * 16 = 736, ClientY = 24 * 16 = 384.
+      fireEvent.mouseDown(seHandle!, { clientX: 736, clientY: 384, button: 0 });
+
+      // Move mouse by dx = +4 grid steps (64px) and dy = +6 grid steps (96px)
+      // New ClientX = 800 (grid 50), New ClientY = 480 (grid 30)
+      const svg = container.querySelector('svg.sheet')!;
+      fireEvent.mouseMove(svg, { clientX: 800, clientY: 480 });
+
+      // Live dimension tooltip badge should be rendered with 30 × 20
+      const badge = container.querySelector('.note-resize-dimension-badge');
+      expect(badge).not.toBeNull();
+      expect(badge?.textContent).toContain('30 × 20');
+
+      // Release mouse
+      fireEvent.mouseUp(svg);
+
+      // Verify actions.resizeComponent was called with new dimensions and original position
+      expect(resizeComponent).toHaveBeenCalledWith('NOTE.1', 30, 20, 20, 10);
+    });
+
+    it('resizes width and adjusts x when dragging w handle, keeping right edge pinned', () => {
+      resizeComponent.mockClear();
+      const { container } = render(<NoteWrapper initialSelection={['NOTE.1']} />);
+      const wHandle = container.querySelector('[data-testid="resize-handle-w"]');
+      expect(wHandle).not.toBeNull();
+
+      // W handle is at grid (20, 10 + 7) = (20, 17)
+      // ClientX = 320, ClientY = 272.
+      fireEvent.mouseDown(wHandle!, { clientX: 320, clientY: 272, button: 0 });
+
+      // Move mouse right by +3 grid steps (48px) to ClientX = 368 (grid 23)
+      const svg = container.querySelector('svg.sheet')!;
+      fireEvent.mouseMove(svg, { clientX: 368, clientY: 272 });
+
+      // Release mouse
+      fireEvent.mouseUp(svg);
+
+      // Original right edge: 20 + 26 = 46.
+      // New x: 23, new width: 46 - 23 = 23.
+      expect(resizeComponent).toHaveBeenCalledWith('NOTE.1', 23, 14, 23, 10);
+    });
+
+    it('resizes height and adjusts y when dragging n handle, keeping bottom edge pinned', () => {
+      resizeComponent.mockClear();
+      const { container } = render(<NoteWrapper initialSelection={['NOTE.1']} />);
+      const nHandle = container.querySelector('[data-testid="resize-handle-n"]');
+      expect(nHandle).not.toBeNull();
+
+      // N handle is at grid (20 + 13, 10) = (33, 10)
+      // ClientX = 528, ClientY = 160.
+      fireEvent.mouseDown(nHandle!, { clientX: 528, clientY: 160, button: 0 });
+
+      // Move mouse down by +2 grid steps (32px) to ClientY = 192 (grid 12)
+      const svg = container.querySelector('svg.sheet')!;
+      fireEvent.mouseMove(svg, { clientX: 528, clientY: 192 });
+
+      // Release mouse
+      fireEvent.mouseUp(svg);
+
+      // Original bottom edge: 10 + 14 = 24.
+      // New y: 12, new height: 24 - 12 = 12.
+      expect(resizeComponent).toHaveBeenCalledWith('NOTE.1', 26, 12, 20, 12);
+    });
+
+    it('cancels resize without calling resizeComponent when Escape key is pressed', () => {
+      resizeComponent.mockClear();
+      const { container } = render(<NoteWrapper initialSelection={['NOTE.1']} />);
+      const seHandle = container.querySelector('[data-testid="resize-handle-se"]');
+      expect(seHandle).not.toBeNull();
+
+      fireEvent.mouseDown(seHandle!, { clientX: 736, clientY: 384, button: 0 });
+      const svg = container.querySelector('svg.sheet')!;
+      fireEvent.mouseMove(svg, { clientX: 800, clientY: 480 });
+
+      // Press Escape
+      fireEvent.keyDown(window, { key: 'Escape' });
+
+      // Mouse up after cancel
+      fireEvent.mouseUp(svg);
+
+      // resizeComponent should NOT be called
+      expect(resizeComponent).not.toHaveBeenCalled();
+      expect(container.querySelector('.note-resize-dimension-badge')).toBeNull();
+    });
+
+    it('drags and moves the component when clicking inside the note card body', () => {
+      commitMove.mockClear();
+      resizeComponent.mockClear();
+      const { container } = render(<NoteWrapper initialSelection={['NOTE.1']} />);
+
+      // Find the component hit area for the note card
+      const hitArea = container.querySelector('.textbox-hit-area');
+      expect(hitArea).not.toBeNull();
+
+      // Mouse down on body at (22 * 16, 12 * 16)
+      fireEvent.mouseDown(hitArea!, { clientX: 352, clientY: 192, button: 0 });
+
+      // Move mouse
+      const svg = container.querySelector('svg.sheet')!;
+      fireEvent.mouseMove(svg, { clientX: 384, clientY: 224 });
+
+      // Release mouse
+      fireEvent.mouseUp(svg);
+
+      // commitMove was called for moving, NOT resizeComponent
+      expect(commitMove).toHaveBeenCalled();
+      expect(resizeComponent).not.toHaveBeenCalled();
     });
   });
 });

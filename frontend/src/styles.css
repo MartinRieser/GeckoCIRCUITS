@@ -6355,6 +6355,32 @@ circle.junction-dot.net-highlighted {
 }
 
 /* ==========================================================================
+   Schematic Note Resize Handles (Microsoft Word style)
+   ========================================================================== */
+.note-resize-handle {
+  transition: transform 0.1s ease;
+  user-select: none;
+}
+
+.note-resize-handle:hover .resize-knob {
+  fill: #e0f2fe;
+  stroke: #0284c7;
+  stroke-width: 2px;
+}
+
+.textbox-selection-box {
+  stroke: #0284c7;
+  stroke-width: 1.5px;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.note-resize-dimension-badge {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ==========================================================================
    Properties Panel - Textbox / Note Editor
    ========================================================================== */
 .textbox-editor {

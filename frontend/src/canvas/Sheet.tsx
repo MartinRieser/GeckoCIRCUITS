@@ -3,7 +3,7 @@
  * wire draft and rubber band, with pan/zoom, terminal snap indicators, wire junction
  * connection dots, context menu, and floating canvas controls.
  */
-import { useRef, useState, useMemo, useEffect } from 'react';
+import { useRef, useState, useMemo, useEffect, useCallback } from 'react';
 import type { Dispatch, MouseEvent as ReactMouseEvent, WheelEvent as ReactWheelEvent, DragEvent as ReactDragEvent } from 'react';
 import type { EditorState, Action } from '../model/store';
 import { terminalPositions, terminalNear, findPlacementConflict } from '../model/geometry';
@@ -34,7 +34,7 @@ import {
   buildTerminalLabelItems,
 } from './sheetGuides';
 import { analyzeElectricalNets } from './netHighlight';
-import type { Point } from '../model/types';
+import type { Point, EditorComponent } from '../model/types';
 import { ContextMenu } from './ContextMenu';
 import type { ContextMenuTarget } from './ContextMenu';
 import { Orientation, CANVAS_METRICS, LkComponentType } from '../model/constants';
@@ -61,6 +61,7 @@ export interface SheetActions {
     wirePatches?: { index: number; points: number[][] }[],
     postStatus?: string,
   ): void;
+  resizeComponent?: (name: string, width: number, height: number, x?: number, y?: number) => void;
   rotateComponent?: (name: string) => void;
   deleteComponent?: (name: string) => void;
   deleteWire?: (index: number) => void;
@@ -70,6 +71,52 @@ export interface SheetActions {
   openScriptTab?: (name: string) => void;
   toggleWireMode?: () => void;
   openCommandPalette?: () => void;
+}
+
+export type NoteResizeHandle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
+
+export function getResizeCursor(handle: NoteResizeHandle): string {
+  switch (handle) {
+    case 'nw':
+    case 'se':
+      return 'nwse-resize';
+    case 'ne':
+    case 'sw':
+      return 'nesw-resize';
+    case 'n':
+    case 's':
+      return 'ns-resize';
+    case 'e':
+    case 'w':
+      return 'ew-resize';
+  }
+}
+
+const RESIZE_HANDLES: {
+  id: NoteResizeHandle;
+  cursor: string;
+  getPos: (w: number, h: number) => [number, number];
+}[] = [
+  { id: 'nw', cursor: 'nwse-resize', getPos: () => [0, 0] },
+  { id: 'n', cursor: 'ns-resize', getPos: (w) => [w / 2, 0] },
+  { id: 'ne', cursor: 'nesw-resize', getPos: (w) => [w, 0] },
+  { id: 'e', cursor: 'ew-resize', getPos: (w, h) => [w, h / 2] },
+  { id: 'se', cursor: 'nwse-resize', getPos: (w, h) => [w, h] },
+  { id: 's', cursor: 'ns-resize', getPos: (w, h) => [w / 2, h] },
+  { id: 'sw', cursor: 'nesw-resize', getPos: (_w, h) => [0, h] },
+  { id: 'w', cursor: 'ew-resize', getPos: (_w, h) => [0, h / 2] },
+];
+
+interface NoteResizeState {
+  name: string;
+  handle: NoteResizeHandle;
+  startMouseGrid: Point;
+  startPos: [number, number];
+  startWidth: number;
+  startHeight: number;
+  currentPos: [number, number];
+  currentWidth: number;
+  currentHeight: number;
 }
 
 interface SheetProps {
@@ -291,15 +338,216 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
     };
   }, []);
 
-  const toGrid = (e: ReactMouseEvent): Point => {
-    const rect = svgRef.current!.getBoundingClientRect();
-    const clientX = (e.clientX - rect.left) / zoom;
-    const clientY = (e.clientY - rect.top) / zoom;
-    return {
-      x: Math.round(clientX / dpix),
-      y: Math.round(clientY / dpix),
+  // Note resize drag state (Microsoft Word style 8-point resizing)
+  const [noteResize, setNoteResize] = useState<NoteResizeState | null>(null);
+
+  const clientToGrid = useCallback(
+    (clientX: number, clientY: number): Point => {
+      if (!svgRef.current) return { x: 0, y: 0 };
+      const rect = svgRef.current.getBoundingClientRect();
+      const x = (clientX - rect.left) / zoom;
+      const y = (clientY - rect.top) / zoom;
+      return {
+        x: Math.round(x / dpix),
+        y: Math.round(y / dpix),
+      };
+    },
+    [dpix, zoom],
+  );
+
+  const toGrid = useCallback(
+    (e: ReactMouseEvent): Point => clientToGrid(e.clientX, e.clientY),
+    [clientToGrid],
+  );
+
+  const startNoteResize = useCallback(
+    (e: ReactMouseEvent, comp: EditorComponent, handle: NoteResizeHandle) => {
+      if (e.button !== 0) return;
+      e.stopPropagation();
+      e.preventDefault();
+
+      const p = clientToGrid(e.clientX, e.clientY);
+      const startW = Number(comp.parameters?.width) || 26;
+      const startH = Number(comp.parameters?.height) || 14;
+
+      if (!state.selection.includes(comp.name)) {
+        dispatch({ type: 'SELECT', name: comp.name, additive: false });
+      }
+
+      setNoteResize({
+        name: comp.name,
+        handle,
+        startMouseGrid: p,
+        startPos: [comp.position[0], comp.position[1]],
+        startWidth: startW,
+        startHeight: startH,
+        currentPos: [comp.position[0], comp.position[1]],
+        currentWidth: startW,
+        currentHeight: startH,
+      });
+    },
+    [clientToGrid, state.selection, dispatch],
+  );
+
+  const updateNoteResize = useCallback(
+    (clientX: number, clientY: number) => {
+      setNoteResize((prev) => {
+        if (!prev) return null;
+        const p = clientToGrid(clientX, clientY);
+        const dx = p.x - prev.startMouseGrid.x;
+        const dy = p.y - prev.startMouseGrid.y;
+
+        const MIN_W = 8;
+        const MIN_H = 4;
+        const MAX_W = 100;
+        const MAX_H = 80;
+
+        const startX = prev.startPos[0];
+        const startY = prev.startPos[1];
+        const startW = prev.startWidth;
+        const startH = prev.startHeight;
+
+        let newX = startX;
+        let newY = startY;
+        let newW = startW;
+        let newH = startH;
+
+        const rightPinned = startX + startW;
+        const bottomPinned = startY + startH;
+
+        switch (prev.handle) {
+          case 'e':
+            newW = Math.max(MIN_W, Math.min(MAX_W, startW + dx));
+            break;
+          case 'se':
+            newW = Math.max(MIN_W, Math.min(MAX_W, startW + dx));
+            newH = Math.max(MIN_H, Math.min(MAX_H, startH + dy));
+            break;
+          case 's':
+            newH = Math.max(MIN_H, Math.min(MAX_H, startH + dy));
+            break;
+          case 'sw': {
+            const candX = startX + dx;
+            const minAllowedX = Math.max(0, rightPinned - MAX_W);
+            const maxAllowedX = rightPinned - MIN_W;
+            newX = Math.max(minAllowedX, Math.min(maxAllowedX, candX));
+            newW = rightPinned - newX;
+            newH = Math.max(MIN_H, Math.min(MAX_H, startH + dy));
+            break;
+          }
+          case 'w': {
+            const candX = startX + dx;
+            const minAllowedX = Math.max(0, rightPinned - MAX_W);
+            const maxAllowedX = rightPinned - MIN_W;
+            newX = Math.max(minAllowedX, Math.min(maxAllowedX, candX));
+            newW = rightPinned - newX;
+            break;
+          }
+          case 'nw': {
+            const candX = startX + dx;
+            const minAllowedX = Math.max(0, rightPinned - MAX_W);
+            const maxAllowedX = rightPinned - MIN_W;
+            newX = Math.max(minAllowedX, Math.min(maxAllowedX, candX));
+            newW = rightPinned - newX;
+
+            const candY = startY + dy;
+            const minAllowedY = Math.max(0, bottomPinned - MAX_H);
+            const maxAllowedY = bottomPinned - MIN_H;
+            newY = Math.max(minAllowedY, Math.min(maxAllowedY, candY));
+            newH = bottomPinned - newY;
+            break;
+          }
+          case 'n': {
+            const candY = startY + dy;
+            const minAllowedY = Math.max(0, bottomPinned - MAX_H);
+            const maxAllowedY = bottomPinned - MIN_H;
+            newY = Math.max(minAllowedY, Math.min(maxAllowedY, candY));
+            newH = bottomPinned - newY;
+            break;
+          }
+          case 'ne': {
+            newW = Math.max(MIN_W, Math.min(MAX_W, startW + dx));
+            const candY = startY + dy;
+            const minAllowedY = Math.max(0, bottomPinned - MAX_H);
+            const maxAllowedY = bottomPinned - MIN_H;
+            newY = Math.max(minAllowedY, Math.min(maxAllowedY, candY));
+            newH = bottomPinned - newY;
+            break;
+          }
+        }
+
+        if (
+          prev.currentWidth === newW &&
+          prev.currentHeight === newH &&
+          prev.currentPos[0] === newX &&
+          prev.currentPos[1] === newY
+        ) {
+          return prev;
+        }
+        return {
+          ...prev,
+          currentPos: [newX, newY],
+          currentWidth: newW,
+          currentHeight: newH,
+        };
+      });
+    },
+    [clientToGrid],
+  );
+
+  const commitNoteResize = useCallback(() => {
+    setNoteResize((prev) => {
+      if (!prev) return null;
+      const changed =
+        prev.currentWidth !== prev.startWidth ||
+        prev.currentHeight !== prev.startHeight ||
+        prev.currentPos[0] !== prev.startPos[0] ||
+        prev.currentPos[1] !== prev.startPos[1];
+
+      if (changed) {
+        actions.resizeComponent?.(
+          prev.name,
+          prev.currentWidth,
+          prev.currentHeight,
+          prev.currentPos[0],
+          prev.currentPos[1],
+        );
+      }
+      return null;
+    });
+  }, [actions]);
+
+  useEffect(() => {
+    if (!noteResize) return;
+
+    const originalCursor = document.body.style.cursor;
+    document.body.style.cursor = getResizeCursor(noteResize.handle);
+
+    const handleWindowMouseMove = (e: MouseEvent) => {
+      updateNoteResize(e.clientX, e.clientY);
     };
-  };
+
+    const handleWindowMouseUp = () => {
+      commitNoteResize();
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setNoteResize(null);
+      }
+    };
+
+    window.addEventListener('mousemove', handleWindowMouseMove);
+    window.addEventListener('mouseup', handleWindowMouseUp);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.cursor = originalCursor;
+      window.removeEventListener('mousemove', handleWindowMouseMove);
+      window.removeEventListener('mouseup', handleWindowMouseUp);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [noteResize, updateNoteResize, commitNoteResize]);
 
   const snappedToTerminal = (point: Point): Point => {
     const near = terminalNear(state.components, point);
@@ -478,6 +726,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
   const handleMouseDown = (e: ReactMouseEvent) => {
     // Close context menu if open
     if (contextMenu) setContextMenu(null);
+    if (noteResize) return;
 
     // Middle-click pan OR Spacebar + Left-click pan
     if (e.button === 1 || (e.button === 0 && isSpacePressed)) {
@@ -552,6 +801,11 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
     const p = toGrid(e);
     setCursorCoord(p);
 
+    if (noteResize) {
+      updateNoteResize(e.clientX, e.clientY);
+      return;
+    }
+
     // Update snap indicator
     const near = terminalNear(state.components, p);
     setHoveredTerminal(near ? near.point : null);
@@ -615,6 +869,11 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
   };
 
   const handleMouseUp = () => {
+    if (noteResize) {
+      commitNoteResize();
+      return;
+    }
+
     if (isPanning) {
       setIsPanning(false);
       return;
@@ -869,6 +1128,15 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
           width={rawWidth}
           height={rawHeight}
           className="sheet"
+          style={{
+            cursor: noteResize
+              ? getResizeCursor(noteResize.handle)
+              : isPanning
+                ? 'grabbing'
+                : isSpacePressed
+                  ? 'grab'
+                  : undefined,
+          }}
           onMouseMove={handleMouseMove}
           onMouseDown={handleMouseDown}
           onMouseUp={handleMouseUp}
@@ -1232,10 +1500,13 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
             {state.components.map((component) => {
               const selected = state.selection.includes(component.name);
               const terminals = terminalPositions(component);
+              const isResizingThis = noteResize?.name === component.name;
+              const posX = isResizingThis ? noteResize.currentPos[0] : component.position[0];
+              const posY = isResizingThis ? noteResize.currentPos[1] : component.position[1];
               return (
                 <g
                   key={component.name}
-                  transform={`translate(${component.position[0] * dpix}, ${component.position[1] * dpix})`}
+                  transform={`translate(${posX * dpix}, ${posY * dpix})`}
                   data-name={component.name}
                   className={`component family-${component.family || 'LK'}${selected ? ' selected' : ''}`}
                   onMouseEnter={() => setHoveredComponentName(component.name)}
@@ -1290,11 +1561,17 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                   {(() => {
                     const isTextbox = isTextboxComponent(component);
                     if (isTextbox) {
-                      const boxW = (Number(component.parameters?.width) || 26) * dpix;
-                      const boxH = (Number(component.parameters?.height) || 14) * dpix;
+                      const widthGrid = isResizingThis
+                        ? noteResize.currentWidth
+                        : (Number(component.parameters?.width) || 26);
+                      const heightGrid = isResizingThis
+                        ? noteResize.currentHeight
+                        : (Number(component.parameters?.height) || 14);
+                      const boxW = widthGrid * dpix;
+                      const boxH = heightGrid * dpix;
                       return (
                         <>
-                          {/* Full-area hit target for note card */}
+                          {/* Full-area hit target for note card (clicking/dragging moves the component) */}
                           <rect
                             x={0}
                             y={0}
@@ -1306,18 +1583,6 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                             pointerEvents="all"
                             style={{ cursor: 'pointer' }}
                           />
-                          {/* Selection box halo */}
-                          {selected && (
-                            <rect
-                              x={-2}
-                              y={-2}
-                              width={boxW + 4}
-                              height={boxH + 4}
-                              className="selection-box textbox-selection-box"
-                              rx={8}
-                              pointerEvents="none"
-                            />
-                          )}
                           <foreignObject
                             x={0}
                             y={0}
@@ -1333,6 +1598,97 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                               height={boxH}
                             />
                           </foreignObject>
+                          {/* Selection frame halo */}
+                          {selected && (
+                            <rect
+                              x={-1}
+                              y={-1}
+                              width={boxW + 2}
+                              height={boxH + 2}
+                              className="selection-box textbox-selection-box"
+                              stroke="#0284c7"
+                              strokeWidth={1.5}
+                              strokeDasharray={isResizingThis ? '4 3' : undefined}
+                              fill="none"
+                              rx={8}
+                              pointerEvents="none"
+                            />
+                          )}
+                          {/* 8 Resize handles (Microsoft Word style) */}
+                          {selected &&
+                            RESIZE_HANDLES.map((h) => {
+                              const [hx, hy] = h.getPos(boxW, boxH);
+                              return (
+                                <g
+                                  key={h.id}
+                                  data-testid={`resize-handle-${h.id}`}
+                                  className={`note-resize-handle note-resize-${h.id}`}
+                                  transform={`translate(${hx}, ${hy})`}
+                                  onMouseDown={(e) => startNoteResize(e, component, h.id)}
+                                  onDoubleClick={(e) => e.stopPropagation()}
+                                  style={{ cursor: h.cursor }}
+                                >
+                                  {/* Transparent 20x20 hit target for effortless grabbing */}
+                                  <rect
+                                    x={-10}
+                                    y={-10}
+                                    width={20}
+                                    height={20}
+                                    fill="transparent"
+                                    stroke="none"
+                                    pointerEvents="all"
+                                    style={{ cursor: h.cursor }}
+                                  />
+                                  {/* Word-style knob: 9x9 white square with blue border and shadow */}
+                                  <rect
+                                    x={-4.5}
+                                    y={-4.5}
+                                    width={9}
+                                    height={9}
+                                    rx={1.5}
+                                    fill="#ffffff"
+                                    stroke="#0284c7"
+                                    strokeWidth={1.5}
+                                    className="resize-knob"
+                                    style={{
+                                      pointerEvents: 'none',
+                                      filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.45))',
+                                    }}
+                                  />
+                                </g>
+                              );
+                            })}
+                          {/* Live dimension tooltip badge during resizing */}
+                          {isResizingThis && (
+                            <g
+                              className="note-resize-dimension-badge"
+                              transform={`translate(${boxW / 2}, ${boxH + 20})`}
+                              style={{ pointerEvents: 'none', userSelect: 'none' }}
+                            >
+                              <rect
+                                x={-36}
+                                y={-11}
+                                width={72}
+                                height={22}
+                                rx={5}
+                                fill="#0f172a"
+                                stroke="#38bdf8"
+                                strokeWidth={1.2}
+                                style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.5))' }}
+                              />
+                              <text
+                                x={0}
+                                y={4}
+                                textAnchor="middle"
+                                fontSize={11}
+                                fontWeight={600}
+                                fill="#38bdf8"
+                                fontFamily="system-ui, -apple-system, sans-serif"
+                              >
+                                {widthGrid} × {heightGrid}
+                              </text>
+                            </g>
+                          )}
                         </>
                       );
                     }
