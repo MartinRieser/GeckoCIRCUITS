@@ -117,7 +117,7 @@
     <text x="694" y="115" class="tag-pos">+</text>
     <text x="694" y="365" class="tag-neg">&#8722;</text>
     <line x1="705" y1="125" x2="705" y2="345" class="measure-arrow" marker-end="url(#arr-blue)" />
-    <text x="722" y="240" class="label" fill="#0284c7">V_{DC}</text>
+    <text x="722" y="240" class="label" fill="#0284c7">Vdc</text>
     
 
     <line x1="500" y1="360" x2="500" y2="375" class="wire" />

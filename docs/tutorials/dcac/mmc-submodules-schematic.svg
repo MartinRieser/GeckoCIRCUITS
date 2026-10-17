@@ -42,7 +42,7 @@
     <line x1="130" y1="214" x2="170" y2="214" class="wire" stroke-width="3" />
     <line x1="130" y1="226" x2="170" y2="226" class="wire" stroke-width="3" />
     <line x1="150" y1="226" x2="150" y2="265" class="wire" />
-    <text x="176" y="217" class="label-start">C_{sm}</text>
+    <text x="176" y="217" class="label-start">C_sm</text>
     <text x="176" y="235" class="sublabel-start">DC Cap</text>
     
 
@@ -101,7 +101,7 @@
     <line x1="520" y1="214" x2="560" y2="214" class="wire" stroke-width="3" />
     <line x1="520" y1="226" x2="560" y2="226" class="wire" stroke-width="3" />
     <line x1="540" y1="226" x2="540" y2="265" class="wire" />
-    <text x="566" y="217" class="label-start">C_{sm}</text>
+    <text x="566" y="217" class="label-start">C_sm</text>
     <text x="566" y="235" class="sublabel-start">DC Cap</text>
     
 

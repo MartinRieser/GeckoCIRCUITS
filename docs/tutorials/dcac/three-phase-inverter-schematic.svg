@@ -35,7 +35,7 @@
   <text x="35" y="38" class="title">Three-Phase Two-Level Voltage Source Inverter (VSI)</text>
   <text x="35" y="58" class="subtitle">European IEC 60617 Standard Schematic • 6-Switch Bridge with Antiparallel Diodes</text>
   <line x1="90" y1="110" x2="680" y2="110" class="wire" stroke="#dc2626" />
-<text x="75" y="115" class="tag-pos">+V_{dc}</text>
+<text x="75" y="115" class="tag-pos">+Vdc</text>
 <line x1="90" y1="350" x2="680" y2="350" class="wire" stroke="#1e293b" />
 <text x="75" y="355" class="tag-neg">0V</text>
 
@@ -43,7 +43,7 @@
     <line x1="140" y1="224" x2="180" y2="224" class="wire" stroke-width="3" />
     <line x1="140" y1="236" x2="180" y2="236" class="wire" stroke-width="3" />
     <line x1="160" y1="236" x2="160" y2="275" class="wire" />
-    <text x="186" y="227" class="label-start">C_{dc}</text>
+    <text x="186" y="227" class="label-start">Cdc</text>
     <text x="186" y="245" class="sublabel-start">DC Link</text>
     
 <circle cx="160" cy="110" r="4" class="junction" />

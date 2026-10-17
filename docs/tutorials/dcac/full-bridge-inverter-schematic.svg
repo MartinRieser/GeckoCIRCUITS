@@ -35,7 +35,7 @@
   <text x="35" y="38" class="title">Single-Phase Full-Bridge (H-Bridge) Inverter</text>
   <text x="35" y="58" class="subtitle">European IEC 60617 Standard Schematic • 4-Quadrant AC Power Output</text>
   <line x1="100" y1="110" x2="680" y2="110" class="wire" stroke="#dc2626" />
-<text x="85" y="115" class="tag-pos">+V_{dc}</text>
+<text x="85" y="115" class="tag-pos">+Vdc</text>
 <line x1="100" y1="350" x2="680" y2="350" class="wire" stroke="#1e293b" />
 <text x="85" y="355" class="tag-neg">0V</text>
 
@@ -43,7 +43,7 @@
     <line x1="160" y1="224" x2="200" y2="224" class="wire" stroke-width="3" />
     <line x1="160" y1="236" x2="200" y2="236" class="wire" stroke-width="3" />
     <line x1="180" y1="236" x2="180" y2="275" class="wire" />
-    <text x="206" y="227" class="label-start">C_{dc}</text>
+    <text x="206" y="227" class="label-start">Cdc</text>
     <text x="206" y="245" class="sublabel-start">DC Link</text>
     
 <circle cx="180" cy="110" r="4" class="junction" />
@@ -133,7 +133,7 @@
     <line x1="345" y1="230" x2="360" y2="230" class="wire" />
     <rect x="360" y="218" width="60" height="24" class="comp-body" />
     <line x1="420" y1="230" x2="435" y2="230" class="wire" />
-    <text x="390" y="212" class="label">R_{load}</text>
+    <text x="390" y="212" class="label">R_load</text>
     <text x="390" y="256" class="sublabel">AC Load</text>
     
 <line x1="440" y1="230" x2="480" y2="230" class="wire" />
@@ -147,7 +147,7 @@
     <text x="614" y="165" class="tag-pos">+</text>
     <text x="614" y="305" class="tag-neg">&#8722;</text>
     <line x1="625" y1="175" x2="625" y2="285" class="measure-arrow" marker-end="url(#arr-blue)" />
-    <text x="642" y="235" class="label" fill="#0284c7">V_{out} = &#177; V_{dc}</text>
+    <text x="642" y="235" class="label" fill="#0284c7">V_out = &#177; Vdc</text>
     
 
     <line x1="180" y1="350" x2="180" y2="365" class="wire" />

@@ -35,9 +35,9 @@
   <text x="35" y="38" class="title">Modular Multilevel Converter (MMC) Topology</text>
   <text x="35" y="58" class="subtitle">European IEC 60617 Standard Schematic • Cascaded Submodule HVDC &amp; STATCOM Architecture</text>
   <line x1="150" y1="90" x2="720" y2="90" class="wire" stroke="#dc2626" />
-<text x="130" y="95" class="tag-pos">+V_{dc}/2</text>
+<text x="130" y="95" class="tag-pos">+Vdc / 2</text>
 <line x1="150" y1="410" x2="720" y2="410" class="wire" stroke="#2563eb" />
-<text x="130" y="415" class="tag-neg">&#8722;V_{dc}/2</text>
+<text x="130" y="415" class="tag-neg">&#8722;Vdc / 2</text>
 <circle cx="260" cy="90" r="4" class="junction" />
 <circle cx="260" cy="410" r="4" class="junction" />
 <rect x="230" y="115" width="60" height="30" class="block-accent" /><text x="260" y="135" class="sublabel">SM 1</text>
@@ -51,7 +51,7 @@
              C 278 255, 278 270, 260 270
              C 278 270, 278 285, 260 285" class="wire" stroke-width="2.5" />
     <line x1="260" y1="285" x2="260" y2="300" class="wire" />
-    <text x="236" y="252" class="label-end">L_{arm}</text>
+    <text x="236" y="252" class="label-end">L_arm</text>
     <text x="236" y="270" class="sublabel" text-anchor="end"></text>
     
 <circle cx="260" cy="275" r="4" class="junction" />
@@ -65,7 +65,7 @@
              C 278 295, 278 310, 260 310
              C 278 310, 278 325, 260 325" class="wire" stroke-width="2.5" />
     <line x1="260" y1="325" x2="260" y2="340" class="wire" />
-    <text x="236" y="292" class="label-end">L_{arm}</text>
+    <text x="236" y="292" class="label-end">L_arm</text>
     <text x="236" y="310" class="sublabel" text-anchor="end"></text>
     
 <rect x="230" y="325" width="60" height="30" class="block-accent" /><text x="260" y="345" class="sublabel">SM 1</text>
@@ -83,7 +83,7 @@
              C 458 255, 458 270, 440 270
              C 458 270, 458 285, 440 285" class="wire" stroke-width="2.5" />
     <line x1="440" y1="285" x2="440" y2="300" class="wire" />
-    <text x="416" y="252" class="label-end">L_{arm}</text>
+    <text x="416" y="252" class="label-end">L_arm</text>
     <text x="416" y="270" class="sublabel" text-anchor="end"></text>
     
 <circle cx="440" cy="275" r="4" class="junction" />
@@ -97,7 +97,7 @@
              C 458 295, 458 310, 440 310
              C 458 310, 458 325, 440 325" class="wire" stroke-width="2.5" />
     <line x1="440" y1="325" x2="440" y2="340" class="wire" />
-    <text x="416" y="292" class="label-end">L_{arm}</text>
+    <text x="416" y="292" class="label-end">L_arm</text>
     <text x="416" y="310" class="sublabel" text-anchor="end"></text>
     
 <rect x="410" y="325" width="60" height="30" class="block-accent" /><text x="440" y="345" class="sublabel">SM 1</text>
@@ -115,7 +115,7 @@
              C 638 255, 638 270, 620 270
              C 638 270, 638 285, 620 285" class="wire" stroke-width="2.5" />
     <line x1="620" y1="285" x2="620" y2="300" class="wire" />
-    <text x="596" y="252" class="label-end">L_{arm}</text>
+    <text x="596" y="252" class="label-end">L_arm</text>
     <text x="596" y="270" class="sublabel" text-anchor="end"></text>
     
 <circle cx="620" cy="275" r="4" class="junction" />
@@ -129,7 +129,7 @@
              C 638 295, 638 310, 620 310
              C 638 310, 638 325, 620 325" class="wire" stroke-width="2.5" />
     <line x1="620" y1="325" x2="620" y2="340" class="wire" />
-    <text x="596" y="292" class="label-end">L_{arm}</text>
+    <text x="596" y="292" class="label-end">L_arm</text>
     <text x="596" y="310" class="sublabel" text-anchor="end"></text>
     
 <rect x="590" y="325" width="60" height="30" class="block-accent" /><text x="620" y="345" class="sublabel">SM 1</text>

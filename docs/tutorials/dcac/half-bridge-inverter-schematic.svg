@@ -35,9 +35,9 @@
   <text x="35" y="38" class="title">Single-Phase Half-Bridge Voltage Source Inverter</text>
   <text x="35" y="58" class="subtitle">European IEC 60617 Standard Schematic • Split DC-Bus Two-Level Topology</text>
   <line x1="120" y1="110" x2="500" y2="110" class="wire" stroke="#dc2626" />
-<text x="105" y="115" class="tag-pos">+V_{dc}/2</text>
+<text x="105" y="115" class="tag-pos">+Vdc/2</text>
 <line x1="120" y1="350" x2="500" y2="350" class="wire" stroke="#2563eb" />
-<text x="105" y="355" class="tag-neg">&#8722;V_{dc}/2</text>
+<text x="105" y="355" class="tag-neg">&#8722;Vdc/2</text>
 
     <line x1="220" y1="125" x2="220" y2="164" class="wire" />
     <line x1="200" y1="164" x2="240" y2="164" class="wire" stroke-width="3" />
@@ -119,7 +119,7 @@
     <line x1="570" y1="125" x2="570" y2="140" class="wire" />
     <rect x="558" y="140" width="24" height="60" class="comp-body" />
     <line x1="570" y1="200" x2="570" y2="215" class="wire" />
-    <text x="590" y="167" class="label-start">R_{load}</text>
+    <text x="590" y="167" class="label-start">R_load</text>
     <text x="590" y="185" class="sublabel-start">AC Load</text>
     
 <line x1="570" y1="125" x2="680" y2="125" class="wire" />
@@ -131,6 +131,6 @@
     <text x="734" y="130" class="tag-pos">+</text>
     <text x="734" y="235" class="tag-neg">&#8722;</text>
     <line x1="745" y1="140" x2="745" y2="215" class="measure-arrow" marker-end="url(#arr-blue)" />
-    <text x="762" y="182" class="label" fill="#0284c7">V_{AC} = &#177; V_{dc}/2</text>
+    <text x="762" y="182" class="label" fill="#0284c7">V_AC = &#177; Vdc/2</text>
     
 </svg>

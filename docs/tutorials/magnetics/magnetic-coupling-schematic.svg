@@ -66,7 +66,7 @@
 <line x1="560" y1="242" x2="560" y2="270" class="wire" />
 <line x1="560" y1="270" x2="680" y2="270" class="wire" />
 <rect x="680" y="195" width="60" height="50" class="comp-body" />
-<text x="710" y="225" class="label">P_{core}</text>
+<text x="710" y="225" class="label">P_core</text>
 <line x1="710" y1="170" x2="710" y2="195" class="wire" />
 <line x1="710" y1="245" x2="710" y2="270" class="wire" />
 <text x="630" y="160" class="label" fill="#16a34a">&#934; (Flux)</text>

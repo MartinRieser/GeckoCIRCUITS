@@ -61,7 +61,7 @@
              C 280 132, 295 132, 295 150
              C 295 132, 310 132, 310 150" class="wire" stroke-width="2.5" />
     <line x1="310" y1="150" x2="325" y2="150" class="wire" />
-    <text x="280" y="126" class="label">L_{&#963;p}</text>
+    <text x="280" y="126" class="label">L_&#963;p</text>
     <text x="280" y="174" class="sublabel">Leakage Ind.</text>
     
 <circle cx="360" cy="150" r="4" class="junction" />
@@ -71,7 +71,7 @@
     <line x1="330" y1="180" x2="330" y2="195" class="wire" />
     <rect x="318" y="195" width="24" height="60" class="comp-body" />
     <line x1="330" y1="255" x2="330" y2="270" class="wire" />
-    <text x="350" y="222" class="label-start">R_{fe}</text>
+    <text x="350" y="222" class="label-start">R_fe</text>
     <text x="350" y="240" class="sublabel-start">Core Loss</text>
     
 
@@ -105,7 +105,7 @@
              C 585 132, 600 132, 600 150
              C 600 132, 615 132, 615 150" class="wire" stroke-width="2.5" />
     <line x1="615" y1="150" x2="630" y2="150" class="wire" />
-    <text x="585" y="126" class="label">L_{&#963;s}</text>
+    <text x="585" y="126" class="label">L_&#963;s</text>
     <text x="585" y="174" class="sublabel">Sec. Leakage</text>
     
 

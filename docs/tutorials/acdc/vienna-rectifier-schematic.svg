@@ -77,7 +77,7 @@
     <polygon points="264,129 280,101 296,129" class="comp-diode" />
     <line x1="264" y1="101" x2="296" y2="101" class="wire" stroke-width="2.5" stroke="#0284c7" />
     <line x1="280" y1="101" x2="280" y2="80" class="wire" />
-    <text x="304" y="113" class="label-start">D_{1a}</text>
+    <text x="304" y="113" class="label-start">D_1a</text>
     <text x="304" y="131" class="sublabel-start"></text>
     
 
@@ -85,7 +85,7 @@
     <polygon points="264,199 280,171 296,199" class="comp-diode" />
     <line x1="264" y1="171" x2="296" y2="171" class="wire" stroke-width="2.5" stroke="#0284c7" />
     <line x1="280" y1="171" x2="280" y2="150" class="wire" />
-    <text x="304" y="183" class="label-start">D_{2a}</text>
+    <text x="304" y="183" class="label-start">D_2a</text>
     <text x="304" y="201" class="sublabel-start"></text>
     
 <line x1="280" y1="150" x2="350" y2="150" class="wire" />
@@ -99,7 +99,7 @@
     <polygon points="264,219 280,191 296,219" class="comp-diode" />
     <line x1="264" y1="191" x2="296" y2="191" class="wire" stroke-width="2.5" stroke="#0284c7" />
     <line x1="280" y1="191" x2="280" y2="170" class="wire" />
-    <text x="304" y="203" class="label-start">D_{1b}</text>
+    <text x="304" y="203" class="label-start">D_1b</text>
     <text x="304" y="221" class="sublabel-start"></text>
     
 
@@ -107,7 +107,7 @@
     <polygon points="264,289 280,261 296,289" class="comp-diode" />
     <line x1="264" y1="261" x2="296" y2="261" class="wire" stroke-width="2.5" stroke="#0284c7" />
     <line x1="280" y1="261" x2="280" y2="240" class="wire" />
-    <text x="304" y="273" class="label-start">D_{2b}</text>
+    <text x="304" y="273" class="label-start">D_2b</text>
     <text x="304" y="291" class="sublabel-start"></text>
     
 <line x1="280" y1="240" x2="350" y2="240" class="wire" />
@@ -121,7 +121,7 @@
     <polygon points="264,309 280,281 296,309" class="comp-diode" />
     <line x1="264" y1="281" x2="296" y2="281" class="wire" stroke-width="2.5" stroke="#0284c7" />
     <line x1="280" y1="281" x2="280" y2="260" class="wire" />
-    <text x="304" y="293" class="label-start">D_{1c}</text>
+    <text x="304" y="293" class="label-start">D_1c</text>
     <text x="304" y="311" class="sublabel-start"></text>
     
 
@@ -129,7 +129,7 @@
     <polygon points="264,379 280,351 296,379" class="comp-diode" />
     <line x1="264" y1="351" x2="296" y2="351" class="wire" stroke-width="2.5" stroke="#0284c7" />
     <line x1="280" y1="351" x2="280" y2="330" class="wire" />
-    <text x="304" y="363" class="label-start">D_{2c}</text>
+    <text x="304" y="363" class="label-start">D_2c</text>
     <text x="304" y="381" class="sublabel-start"></text>
     
 <line x1="280" y1="330" x2="350" y2="330" class="wire" />
@@ -137,13 +137,13 @@
 <text x="385" y="335" class="sublabel" fill="#0284c7">SW(bidir)</text>
 <line x1="420" y1="330" x2="520" y2="330" class="wire" />
 <line x1="280" y1="80" x2="740" y2="80" class="wire" stroke="#dc2626" />
-<text x="755" y="85" class="tag-pos">+V_{dc}/2</text>
+<text x="755" y="85" class="tag-pos">+Vdc/2</text>
 <line x1="520" y1="150" x2="520" y2="330" class="wire" stroke="#0284c7" />
 <circle cx="520" cy="240" r="4" class="junction" />
 <line x1="520" y1="240" x2="740" y2="240" class="wire" stroke="#0284c7" />
 <text x="755" y="245" class="label-start" fill="#0284c7">Neutral (M)</text>
 <line x1="280" y1="400" x2="740" y2="400" class="wire" stroke="#2563eb" />
-<text x="755" y="405" class="tag-neg">&#8722;V_{dc}/2</text>
+<text x="755" y="405" class="tag-neg">&#8722;Vdc/2</text>
 
     <line x1="620" y1="115" x2="620" y2="154" class="wire" />
     <line x1="600" y1="154" x2="640" y2="154" class="wire" stroke-width="3" />

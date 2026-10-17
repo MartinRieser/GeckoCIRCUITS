@@ -38,20 +38,20 @@
 <text x="125" y="160" class="label" fill="#0284c7">Junction</text>
 <text x="125" y="180" class="sublabel">T_j (Die)</text>
 <line x1="190" y1="165" x2="270" y2="165" class="wire" marker-end="url(#arr-blue)" />
-<text x="230" y="155" class="label">R_{th,jc}</text>
+<text x="230" y="155" class="label">R_th,jc</text>
 <rect x="270" y="130" width="130" height="70" class="block" />
 <text x="335" y="160" class="label">Case</text>
 <text x="335" y="180" class="sublabel">T_c (Package)</text>
 <line x1="400" y1="165" x2="480" y2="165" class="wire" marker-end="url(#arr-blue)" />
-<text x="440" y="155" class="label">R_{th,ch}</text>
+<text x="440" y="155" class="label">R_th,ch</text>
 <rect x="480" y="130" width="130" height="70" class="block" />
 <text x="545" y="160" class="label">Heatsink</text>
 <text x="545" y="180" class="sublabel">T_h</text>
 <line x1="610" y1="165" x2="690" y2="165" class="wire" marker-end="url(#arr-blue)" />
-<text x="650" y="155" class="label">R_{th,ha}</text>
+<text x="650" y="155" class="label">R_th,ha</text>
 <rect x="690" y="130" width="130" height="70" class="block-accent" />
 <text x="755" y="160" class="label" fill="#0284c7">Ambient</text>
 <text x="755" y="180" class="sublabel">T_a (Air)</text>
 <line x1="125" y1="75" x2="125" y2="125" class="wire" stroke="#dc2626" marker-end="url(#arr-blue)" stroke-width="3" />
-<text x="125" y="65" class="label" fill="#dc2626">P_{loss} (W)</text>
+<text x="125" y="65" class="label" fill="#dc2626">P_loss (W)</text>
 </svg>
