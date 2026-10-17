@@ -50,7 +50,9 @@ $$\begin{bmatrix} i_d \\ i_q \end{bmatrix} = \begin{bmatrix} \cos\theta & \sin\t
 ### Motor Equations (dq Frame)
 
 $$v_d = R_s i_d + L_d \frac{di_d}{dt} - \omega_e L_q i_q$$
+
 $$v_q = R_s i_q + L_q \frac{di_q}{dt} + \omega_e L_d i_d + \omega_e \psi_m$$
+
 
 ### Torque Equation
 

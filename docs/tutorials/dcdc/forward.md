@@ -15,14 +15,7 @@ Design and simulate an isolated forward converter.
 
 The forward converter is an isolated version of the buck converter:
 
-```
-              Np : Ns
-    Vin ──[FET]──●══════●──|>|──[L]──●── Vout
-                 ║      ║       │      │
-                 ║  Lm  ║     [D2]   [C]  [R]
-                 ║      ║       │      │    │
-                GND─────●──────●──────●────┘
-```
+![Forward Converter Circuit Schematic](forward-schematic.svg)
 
 Unlike the flyback, energy transfers during the switch ON time.
 

@@ -26,13 +26,7 @@ Explore converter topologies that can both step up and step down voltage.
 
 ### Topology
 
-```
-    Vin ──[FET]──●──[LLLLL]──●── Vout (negative)
-                 │            │
-               [D]          [C]  [R]
-                 │            │    │
-                GND ──────────●────┘
-```
+![Inverting Buck-Boost Converter Circuit Schematic](buck-boost-schematic.svg)
 
 ### Voltage Ratio
 

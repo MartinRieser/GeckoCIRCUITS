@@ -26,13 +26,7 @@ By the end of this tutorial, you will:
 
 ## Circuit Topology
 
-```
-    +Vin ──────┬──[S]──┬──[L]──┬── +Vout
-               │       │       │
-               │      [D]     [C]     [R] Load
-               │       │       │       │
-    GND ───────┴───────┴───────┴───────┴── GND
-```
+![Buck Converter Circuit Schematic](buck-converter-schematic.svg)
 
 **Components:**
 
@@ -46,15 +40,15 @@ By the end of this tutorial, you will:
 
 === "Switch ON"
 
-    - Current path: Vin → S → L → C/R → GND
-    - Inductor voltage: \\(V_L = V_{in} - V_{out}\\) (positive)
-    - Current increases: \\(\frac{di_L}{dt} = \frac{V_{in} - V_{out}}{L}\\)
+    - Current path: $V_{in} \to S \to L \to C/R \to \text{GND}$
+    - Inductor voltage: $V_L = V_{in} - V_{out}$ (positive)
+    - Current increases: $\frac{di_L}{dt} = \frac{V_{in} - V_{out}}{L}$
 
 === "Switch OFF"
 
-    - Current path: L → C/R → GND → D → L
-    - Inductor voltage: \\(V_L = -V_{out}\\) (negative)
-    - Current decreases: \\(\frac{di_L}{dt} = \frac{-V_{out}}{L}\\)
+    - Current path: $L \to C/R \to \text{GND} \to D \to L$
+    - Inductor voltage: $V_L = -V_{out}$ (negative)
+    - Current decreases: $\frac{di_L}{dt} = \frac{-V_{out}}{L}$
 
 ## Key Equations
 
@@ -62,30 +56,30 @@ By the end of this tutorial, you will:
 
 In steady state, the average inductor voltage is zero:
 
-\\[
+$$
 V_{out} = D \times V_{in}
-\\]
+$$
 
 !!! info "Key Insight"
     Output voltage is directly proportional to duty cycle!
 
 ### Inductor Current Ripple
 
-\\[
+$$
 \Delta I_L = \frac{V_{out} \times (1 - D)}{f_s \times L}
-\\]
+$$
 
 ### Output Voltage Ripple
 
-\\[
+$$
 \Delta V_{out} = \frac{\Delta I_L}{8 \times f_s \times C}
-\\]
+$$
 
 ### Critical Inductance (CCM Boundary)
 
-\\[
+$$
 L_{crit} = \frac{V_{in} \times (1-D) \times D}{2 \times f_s \times I_{out,min}}
-\\]
+$$
 
 ## Design Example
 
@@ -103,27 +97,32 @@ L_{crit} = \frac{V_{in} \times (1-D) \times D}{2 \times f_s \times I_{out,min}}
 ### Step-by-Step Design
 
 **1. Calculate Duty Cycle:**
-\\[
+
+$$
 D = \frac{V_{out}}{V_{in}} = \frac{12}{48} = 0.25
-\\]
+$$
 
 **2. Calculate Load Resistance:**
-\\[
+
+$$
 R = \frac{V_{out}}{I_{out}} = \frac{12}{5} = 2.4\,\Omega
-\\]
+$$
 
 **3. Calculate Inductance (for 30% ripple):**
-\\[
+
+$$
 \Delta I_L = 0.3 \times 5 = 1.5\,\text{A}
-\\]
-\\[
+$$
+
+$$
 L = \frac{V_{out} \times (1-D)}{f_s \times \Delta I_L} = \frac{12 \times 0.75}{100k \times 1.5} = 60\,\mu\text{H}
-\\]
+$$
 
 **4. Calculate Capacitance (for 1% ripple):**
-\\[
+
+$$
 C = \frac{\Delta I_L}{8 \times f_s \times \Delta V_{out}} = \frac{1.5}{8 \times 100k \times 0.12} = 15.6\,\mu\text{F}
-\\]
+$$
 
 ## Simulation
 
@@ -151,7 +150,7 @@ C = \frac{\Delta I_L}{8 \times f_s \times \Delta V_{out}} = \frac{1.5}{8 \times 
 !!! example "Exercise 1: Duty Cycle Variation"
     1. Vary D from 0.1 to 0.5 in steps of 0.1
     2. Record Vout for each D
-    3. Verify: \\(V_{out} = D \times V_{in}\\)
+    3. Verify: $V_{out} = D \times V_{in}$
 
 !!! example "Exercise 2: CCM to DCM Transition"
     1. Increase load resistance to 24Ω

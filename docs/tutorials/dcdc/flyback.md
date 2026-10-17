@@ -22,14 +22,7 @@ Design and simulate an isolated flyback converter.
 
 The flyback is an isolated version of the buck-boost converter:
 
-```
-              Np : Ns
-    Vin ──[FET]──●══════●──|>|──●── Vout
-                 ║      ║       │
-                 ║  Lm  ║     [C]  [R]
-                 ║      ║       │    │
-                GND─────●──────●────┘
-```
+![Flyback Converter Circuit Schematic](flyback-schematic.svg)
 
 ### Operating Principle
 

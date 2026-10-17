@@ -19,7 +19,9 @@ Transformer modeling in power electronics requires:
 ### Ideal Transformer
 
 $$\frac{V_1}{V_2} = \frac{N_1}{N_2} = n$$
+
 $$\frac{I_1}{I_2} = \frac{N_2}{N_1} = \frac{1}{n}$$
+
 
 ### Practical Model
 

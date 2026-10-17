@@ -24,14 +24,7 @@ Design and simulate a boost (step-up) DC-DC converter.
 
 The boost converter steps up DC voltage:
 
-```
-                    L
-    Vin ──────[LLLLL]──●──|>|──●── Vout
-                        │   D    │
-                      [FET]    [C]  [R]
-                        │       │    │
-                       GND ─────●────┘
-```
+![Boost Converter Circuit Schematic](boost-converter-schematic.svg)
 
 ### Operating Principle
 

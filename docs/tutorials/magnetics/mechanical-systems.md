@@ -45,8 +45,11 @@ Models shaft compliance:
 ```
 
 Equations:
+
 $$J_1 \frac{d\omega_1}{dt} = \tau_m - \tau_s$$
+
 $$J_2 \frac{d\omega_2}{dt} = \tau_s - \tau_L$$
+
 $$\tau_s = k(\theta_1 - \theta_2) + b(\omega_1 - \omega_2)$$
 
 ## Load Types
@@ -80,15 +83,19 @@ Applications: Winders, machine tools
 ### PMSM (Permanent Magnet Synchronous Motor)
 
 **Electrical equations (dq frame):**
+
 $$v_d = R_s i_d + L_d \frac{di_d}{dt} - \omega_e L_q i_q$$
+
 $$v_q = R_s i_q + L_q \frac{di_q}{dt} + \omega_e L_d i_d + \omega_e \psi_m$$
 
 **Torque:**
+
 $$\tau_e = \frac{3}{2} p [\psi_m i_q + (L_d - L_q)i_d i_q]$$
 
 ### BLDC (Brushless DC)
 
 Trapezoidal back-EMF model:
+
 $$e_{ph} = k_e \cdot \omega \cdot f(\theta_e)$$
 
 Where f(θe) is trapezoidal function of electrical angle.
@@ -96,9 +103,11 @@ Where f(θe) is trapezoidal function of electrical angle.
 ### Induction Motor
 
 **Rotor flux model:**
+
 $$\frac{d\psi_r}{dt} = \frac{L_m}{\tau_r}i_s - \frac{1}{\tau_r}\psi_r + j\omega_{slip}\psi_r$$
 
 **Torque:**
+
 $$\tau_e = \frac{3}{2}p\frac{L_m}{L_r}Im\{\psi_r^* i_s\}$$
 
 ## Gearbox Modeling
@@ -106,6 +115,7 @@ $$\tau_e = \frac{3}{2}p\frac{L_m}{L_r}Im\{\psi_r^* i_s\}$$
 ### Ideal Gear Ratio
 
 $$\omega_2 = \frac{\omega_1}{n}$$
+
 $$\tau_2 = n \cdot \tau_1$$
 
 ### Reflected Inertia
@@ -116,8 +126,9 @@ Inertia seen from motor side
 
 ### Gear Efficiency
 
-$$\tau_2 = \eta \cdot n \cdot \tau_1$$ (motoring)
-$$\tau_2 = \frac{n \cdot \tau_1}{\eta}$$ (regenerating)
+$$\tau_2 = \eta \cdot n \cdot \tau_1 \quad \text{(motoring)}$$
+
+$$\tau_2 = \frac{n \cdot \tau_1}{\eta} \quad \text{(regenerating)}$$
 
 ## GeckoCIRCUITS Setup
 
