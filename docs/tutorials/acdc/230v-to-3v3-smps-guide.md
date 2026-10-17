@@ -21,20 +21,6 @@ A complete, beginner-friendly design and simulation tutorial for building an off
 
 ![SMPS Architecture Block Diagram](./block-diagram-230v-3v3.svg)
 
-```text
-┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐
-│   Mains Input   │       │   Transformer   │       │   Diode Bridge  │
-│ 230 V AC / 50Hz ├──────►│ 19 : 1 (12V AC) ├──────►│    4x Diodes    │
-└─────────────────┘       └─────────────────┘       └────────┬────────┘
-                                                             │
-                                                             ▼
-┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐
-│  Output & Load  │       │   50 kHz Buck   │       │  DC-Link Filter │
-│  3.3 V / 20 W   │◄──────┤S1 + D_fw + 33 µH│◄──────┤ 4700 µF (~15V)  │
-│  (0.55 Ω load)  │       │ (Duty D = 0.22) │       │ (Smooths 100Hz) │
-└─────────────────┘       └─────────────────┘       └─────────────────┘
-```
-
 <details>
 <summary><b>Mermaid Diagram Source</b> (Click to expand if using the <i>Markdown Preview Mermaid Support</i> extension)</summary>
 

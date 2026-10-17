@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 390" width="100%" height="100%">
+  <defs>
+    <style>
+      .wire { stroke: #1e293b; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .wire-thin { stroke: #64748b; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .wire-dashed { stroke: #0284c7; stroke-width: 2; stroke-dasharray: 5,4; fill: none; }
+      .wire-gnd { stroke: #1e293b; stroke-width: 2.5; stroke-linecap: round; }
+      .junction { fill: #1e293b; }
+      .label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: middle; }
+      .label-start { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: start; }
+      .label-end { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: end; }
+      .sublabel { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: middle; }
+      .sublabel-start { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: start; }
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 16px; fill: #0f172a; font-weight: 700; }
+      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 12px; fill: #64748b; font-weight: 400; }
+      .comp-body { fill: #ffffff; stroke: #1e293b; stroke-width: 2.2; }
+      .comp-diode { fill: #0284c7; stroke: #0284c7; stroke-width: 2; }
+      .comp-sw { stroke: #0284c7; stroke-width: 2.5; stroke-linecap: round; fill: none; }
+      .arrow { fill: #0284c7; stroke: none; }
+      .measure-arrow { stroke: #0284c7; stroke-width: 1.75; fill: none; }
+      .tag-pos { fill: #dc2626; font-family: sans-serif; font-size: 16px; font-weight: bold; text-anchor: middle; }
+      .tag-neg { fill: #2563eb; font-family: sans-serif; font-size: 18px; font-weight: bold; text-anchor: middle; }
+      .card { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; rx: 8px; }
+      .block { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; rx: 6px; }
+      .block-accent { fill: #f0f9ff; stroke: #0284c7; stroke-width: 1.5; rx: 6px; }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0284c7"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" class="card" />
+  <text x="35" y="38" class="title">Ćuk Converter (Inverting Step-Up/Step-Down)</text>
+  <text x="35" y="58" class="subtitle">European IEC 60617 Standard Schematic • Continuous Input &amp; Output Current</text>
+  
+    <circle cx="120" cy="220" r="22" class="comp-body" />
+    <line x1="120" y1="198" x2="120" y2="185" class="wire" />
+    <line x1="120" y1="242" x2="120" y2="255" class="wire" />
+    <text x="120" y="214" class="tag-pos">+</text>
+    <text x="120" y="234" class="tag-neg">&#8722;</text>
+    <text x="88" y="216" class="label-end">V_in</text>
+    <text x="88" y="234" class="sublabel" text-anchor="end">DC Input</text>
+    
+
+    <line x1="175" y1="130" x2="190" y2="130" class="wire" />
+    <path d="M 190 130 C 190 112, 205 112, 205 130
+             C 205 112, 220 112, 220 130
+             C 220 112, 235 112, 235 130
+             C 235 112, 250 112, 250 130" class="wire" stroke-width="2.5" />
+    <line x1="250" y1="130" x2="265" y2="130" class="wire" />
+    <text x="220" y="106" class="label">L_1</text>
+    <text x="220" y="154" class="sublabel">Input Inductor</text>
+    
+<circle cx="280" cy="130" r="4" class="junction" />
+
+    <line x1="280" y1="175" x2="280" y2="202" class="wire" />
+    <circle cx="280" cy="202" r="3.5" class="junction" />
+    <line x1="280" y1="202" x2="264" y2="230" class="comp-sw" />
+    <circle cx="280" cy="238" r="3.5" class="junction" />
+    <line x1="280" y1="238" x2="280" y2="265" class="wire" />
+    <text x="252" y="220" class="label-end">S</text>
+    <text x="252" y="236" class="sublabel" text-anchor="end">PWM Switch</text>
+    
+
+    <line x1="315" y1="130" x2="354" y2="130" class="wire" />
+    <line x1="354" y1="110" x2="354" y2="150" class="wire" stroke-width="3" />
+    <line x1="366" y1="110" x2="366" y2="150" class="wire" stroke-width="3" />
+    <line x1="366" y1="130" x2="405" y2="130" class="wire" />
+    <text x="360" y="104" class="label">C_cp</text>
+    <text x="360" y="162" class="sublabel">Energy Transfer</text>
+    
+<circle cx="440" cy="130" r="4" class="junction" />
+
+    <line x1="440" y1="255" x2="440" y2="234" class="wire" />
+    <polygon points="424,234 440,206 456,234" class="comp-diode" />
+    <line x1="424" y1="206" x2="456" y2="206" class="wire" stroke-width="2.5" stroke="#0284c7" />
+    <line x1="440" y1="206" x2="440" y2="185" class="wire" />
+    <text x="464" y="218" class="label-start">D</text>
+    <text x="464" y="236" class="sublabel-start">Freewheel Diode</text>
+    
+
+    <line x1="475" y1="130" x2="490" y2="130" class="wire" />
+    <path d="M 490 130 C 490 112, 505 112, 505 130
+             C 505 112, 520 112, 520 130
+             C 520 112, 535 112, 535 130
+             C 535 112, 550 112, 550 130" class="wire" stroke-width="2.5" />
+    <line x1="550" y1="130" x2="565" y2="130" class="wire" />
+    <text x="520" y="106" class="label">L_2</text>
+    <text x="520" y="154" class="sublabel">Output Inductor</text>
+    
+<circle cx="590" cy="130" r="4" class="junction" />
+
+    <line x1="590" y1="175" x2="590" y2="214" class="wire" />
+    <line x1="570" y1="214" x2="610" y2="214" class="wire" stroke-width="3" />
+    <line x1="570" y1="226" x2="610" y2="226" class="wire" stroke-width="3" />
+    <line x1="590" y1="226" x2="590" y2="265" class="wire" />
+    <text x="616" y="217" class="label-start">C_out</text>
+    <text x="616" y="235" class="sublabel-start">Filter Cap</text>
+    
+
+    <line x1="680" y1="175" x2="680" y2="190" class="wire" />
+    <rect x="668" y="190" width="24" height="60" class="comp-body" />
+    <line x1="680" y1="250" x2="680" y2="265" class="wire" />
+    <text x="700" y="217" class="label-start">R_L</text>
+    <text x="700" y="235" class="sublabel-start">Load Resistor</text>
+    
+
+    <circle cx="740" cy="130" r="4" fill="none" stroke="#0284c7" stroke-width="2" />
+    <circle cx="740" cy="310" r="4" fill="none" stroke="#0284c7" stroke-width="2" />
+    <text x="754" y="135" class="tag-pos">&#8722;</text>
+    <text x="754" y="315" class="tag-neg">+</text>
+    <line x1="765" y1="145" x2="765" y2="295" class="measure-arrow" marker-end="url(#arr-blue)" />
+    <text x="782" y="225" class="label" fill="#0284c7">-V_out</text>
+    
+<line x1="120" y1="185" x2="120" y2="130" class="wire" />
+<line x1="120" y1="130" x2="175" y2="130" class="wire" />
+<line x1="265" y1="130" x2="315" y2="130" class="wire" />
+<line x1="405" y1="130" x2="475" y2="130" class="wire" />
+<line x1="565" y1="130" x2="740" y2="130" class="wire" />
+<line x1="120" y1="255" x2="120" y2="310" class="wire" />
+<line x1="120" y1="310" x2="740" y2="310" class="wire" />
+<circle cx="280" cy="310" r="4" class="junction" />
+<circle cx="440" cy="310" r="4" class="junction" />
+<circle cx="590" cy="310" r="4" class="junction" />
+<circle cx="680" cy="310" r="4" class="junction" />
+
+    <line x1="360" y1="310" x2="360" y2="325" class="wire" />
+    <line x1="342" y1="325" x2="378" y2="325" class="wire-gnd" />
+    <line x1="349" y1="331" x2="371" y2="331" class="wire-gnd" />
+    <line x1="356" y1="337" x2="364" y2="337" class="wire-gnd" />
+    <text x="360" y="352" class="sublabel">GND</text>
+    
+</svg>

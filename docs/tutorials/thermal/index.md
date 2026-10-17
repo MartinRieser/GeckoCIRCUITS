@@ -26,11 +26,11 @@ Power semiconductor loss calculation and thermal modeling for reliable converter
 
 ### Thermal Resistance Chain
 
-```
-Junction ──[Rth,jc]──► Case ──[Rth,ch]──► Heatsink ──[Rth,ha]──► Ambient
-```
+![Thermal Resistance Chain](thermal-resistance-chain.svg)
 
-$$T_j = T_a + P_{loss} \cdot (R_{th,jc} + R_{th,ch} + R_{th,ha})$$
+$$
+T_j = T_a + P_{loss} \cdot (R_{th,jc} + R_{th,ch} + R_{th,ha})
+$$
 
 ### Loss Equations
 
@@ -39,7 +39,10 @@ $$T_j = T_a + P_{loss} \cdot (R_{th,jc} + R_{th,ch} + R_{th,ha})$$
 - Diode: $P_{cond} = V_f \cdot I_d + R_d \cdot I_d^2$
 
 **Switching Loss:**
-$$P_{sw} = (E_{on} + E_{off}) \cdot f_{sw} \cdot \left(\frac{V_{dc}}{V_{ref}}\right) \cdot \left(\frac{I_c}{I_{ref}}\right)$$
+
+$$
+P_{sw} = (E_{on} + E_{off}) \cdot f_{sw} \cdot \left(\frac{V_{dc}}{V_{ref}}\right) \cdot \left(\frac{I_c}{I_{ref}}\right)
+$$
 
 ## Related Resources
 

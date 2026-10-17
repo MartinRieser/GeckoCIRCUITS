@@ -1,0 +1,186 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 430" width="100%" height="100%">
+  <defs>
+    <style>
+      .wire { stroke: #1e293b; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .wire-thin { stroke: #64748b; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .wire-dashed { stroke: #0284c7; stroke-width: 2; stroke-dasharray: 5,4; fill: none; }
+      .wire-gnd { stroke: #1e293b; stroke-width: 2.5; stroke-linecap: round; }
+      .junction { fill: #1e293b; }
+      .label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: middle; }
+      .label-start { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: start; }
+      .label-end { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: end; }
+      .sublabel { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: middle; }
+      .sublabel-start { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: start; }
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 16px; fill: #0f172a; font-weight: 700; }
+      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 12px; fill: #64748b; font-weight: 400; }
+      .comp-body { fill: #ffffff; stroke: #1e293b; stroke-width: 2.2; }
+      .comp-diode { fill: #0284c7; stroke: #0284c7; stroke-width: 2; }
+      .comp-sw { stroke: #0284c7; stroke-width: 2.5; stroke-linecap: round; fill: none; }
+      .arrow { fill: #0284c7; stroke: none; }
+      .measure-arrow { stroke: #0284c7; stroke-width: 1.75; fill: none; }
+      .tag-pos { fill: #dc2626; font-family: sans-serif; font-size: 16px; font-weight: bold; text-anchor: middle; }
+      .tag-neg { fill: #2563eb; font-family: sans-serif; font-size: 18px; font-weight: bold; text-anchor: middle; }
+      .card { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; rx: 8px; }
+      .block { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; rx: 6px; }
+      .block-accent { fill: #f0f9ff; stroke: #0284c7; stroke-width: 1.5; rx: 6px; }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0284c7"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" class="card" />
+  <text x="35" y="38" class="title">Dynamic Thermal Impedance Networks: Foster vs. Cauer</text>
+  <text x="35" y="58" class="subtitle">European IEC 60617 Standard Schematic • RC Models for Transient Junction Temperature</text>
+  <text x="40" y="110" class="label-start">Foster Thermal Network (Mathematical Series of RC Pairs)</text>
+<circle cx="80" cy="160" r="18" class="comp-body" />
+<text x="80" y="165" class="label">P</text>
+<line x1="80" y1="142" x2="80" y2="130" class="wire" />
+<line x1="80" y1="130" x2="150" y2="130" class="wire" />
+<line x1="80" y1="178" x2="80" y2="190" class="wire" />
+<line x1="80" y1="190" x2="700" y2="190" class="wire" />
+
+    <line x1="165" y1="110" x2="180" y2="110" class="wire" />
+    <rect x="180" y="98" width="60" height="24" class="comp-body" />
+    <line x1="240" y1="110" x2="255" y2="110" class="wire" />
+    <text x="210" y="92" class="label">R_1</text>
+    <text x="210" y="136" class="sublabel"></text>
+    
+
+    <line x1="165" y1="150" x2="204" y2="150" class="wire" />
+    <line x1="204" y1="130" x2="204" y2="170" class="wire" stroke-width="3" />
+    <line x1="216" y1="130" x2="216" y2="170" class="wire" stroke-width="3" />
+    <line x1="216" y1="150" x2="255" y2="150" class="wire" />
+    <text x="210" y="124" class="label">C_1</text>
+    <text x="210" y="182" class="sublabel"></text>
+    
+<line x1="150" y1="130" x2="165" y2="130" class="wire" />
+<line x1="165" y1="110" x2="165" y2="150" class="wire" />
+<circle cx="165" cy="130" r="4" class="junction" />
+<line x1="255" y1="110" x2="255" y2="150" class="wire" />
+<circle cx="255" cy="130" r="4" class="junction" />
+<line x1="255" y1="130" x2="315" y2="130" class="wire" />
+
+    <line x1="325" y1="110" x2="340" y2="110" class="wire" />
+    <rect x="340" y="98" width="60" height="24" class="comp-body" />
+    <line x1="400" y1="110" x2="415" y2="110" class="wire" />
+    <text x="370" y="92" class="label">R_2</text>
+    <text x="370" y="136" class="sublabel"></text>
+    
+
+    <line x1="325" y1="150" x2="364" y2="150" class="wire" />
+    <line x1="364" y1="130" x2="364" y2="170" class="wire" stroke-width="3" />
+    <line x1="376" y1="130" x2="376" y2="170" class="wire" stroke-width="3" />
+    <line x1="376" y1="150" x2="415" y2="150" class="wire" />
+    <text x="370" y="124" class="label">C_2</text>
+    <text x="370" y="182" class="sublabel"></text>
+    
+<line x1="325" y1="110" x2="325" y2="150" class="wire" />
+<circle cx="325" cy="130" r="4" class="junction" />
+<line x1="415" y1="110" x2="415" y2="150" class="wire" />
+<circle cx="415" cy="130" r="4" class="junction" />
+<line x1="415" y1="130" x2="475" y2="130" class="wire" />
+
+    <line x1="485" y1="110" x2="500" y2="110" class="wire" />
+    <rect x="500" y="98" width="60" height="24" class="comp-body" />
+    <line x1="560" y1="110" x2="575" y2="110" class="wire" />
+    <text x="530" y="92" class="label">R_3</text>
+    <text x="530" y="136" class="sublabel"></text>
+    
+
+    <line x1="485" y1="150" x2="524" y2="150" class="wire" />
+    <line x1="524" y1="130" x2="524" y2="170" class="wire" stroke-width="3" />
+    <line x1="536" y1="130" x2="536" y2="170" class="wire" stroke-width="3" />
+    <line x1="536" y1="150" x2="575" y2="150" class="wire" />
+    <text x="530" y="124" class="label">C_3</text>
+    <text x="530" y="182" class="sublabel"></text>
+    
+<line x1="485" y1="110" x2="485" y2="150" class="wire" />
+<circle cx="485" cy="130" r="4" class="junction" />
+<line x1="575" y1="110" x2="575" y2="150" class="wire" />
+<circle cx="575" cy="130" r="4" class="junction" />
+<line x1="575" y1="130" x2="700" y2="130" class="wire" />
+
+    <circle cx="700" cy="130" r="4" fill="none" stroke="#0284c7" stroke-width="2" />
+    <circle cx="700" cy="190" r="4" fill="none" stroke="#0284c7" stroke-width="2" />
+    <text x="714" y="135" class="tag-pos">+</text>
+    <text x="714" y="195" class="tag-neg">&#8722;</text>
+    <line x1="725" y1="145" x2="725" y2="175" class="measure-arrow" marker-end="url(#arr-blue)" />
+    <text x="742" y="165" class="label" fill="#0284c7">T_j - T_a</text>
+    
+
+    <line x1="600" y1="190" x2="600" y2="205" class="wire" />
+    <line x1="582" y1="205" x2="618" y2="205" class="wire-gnd" />
+    <line x1="589" y1="211" x2="611" y2="211" class="wire-gnd" />
+    <line x1="596" y1="217" x2="604" y2="217" class="wire-gnd" />
+    <text x="600" y="232" class="sublabel">T_ambient</text>
+    
+<text x="40" y="250" class="label-start">Cauer Thermal Network (Physical Ladder with Shunt Capacitances)</text>
+<circle cx="80" cy="300" r="18" class="comp-body" />
+<text x="80" y="305" class="label">P</text>
+<line x1="80" y1="282" x2="80" y2="270" class="wire" />
+<line x1="80" y1="270" x2="160" y2="270" class="wire" />
+<line x1="80" y1="318" x2="80" y2="350" class="wire" />
+<line x1="80" y1="350" x2="700" y2="350" class="wire" />
+
+    <line x1="165" y1="270" x2="180" y2="270" class="wire" />
+    <rect x="180" y="258" width="60" height="24" class="comp-body" />
+    <line x1="240" y1="270" x2="255" y2="270" class="wire" />
+    <text x="210" y="252" class="label">R_1</text>
+    <text x="210" y="296" class="sublabel">Die</text>
+    
+<circle cx="260" cy="270" r="4" class="junction" />
+
+    <line x1="260" y1="265" x2="260" y2="304" class="wire" />
+    <line x1="240" y1="304" x2="280" y2="304" class="wire" stroke-width="3" />
+    <line x1="240" y1="316" x2="280" y2="316" class="wire" stroke-width="3" />
+    <line x1="260" y1="316" x2="260" y2="355" class="wire" />
+    <text x="286" y="307" class="label-start">C_1</text>
+    <text x="286" y="325" class="sublabel-start"></text>
+    
+<circle cx="260" cy="350" r="4" class="junction" />
+
+    <line x1="315" y1="270" x2="330" y2="270" class="wire" />
+    <rect x="330" y="258" width="60" height="24" class="comp-body" />
+    <line x1="390" y1="270" x2="405" y2="270" class="wire" />
+    <text x="360" y="252" class="label">R_2</text>
+    <text x="360" y="296" class="sublabel">Solder</text>
+    
+<circle cx="410" cy="270" r="4" class="junction" />
+
+    <line x1="410" y1="265" x2="410" y2="304" class="wire" />
+    <line x1="390" y1="304" x2="430" y2="304" class="wire" stroke-width="3" />
+    <line x1="390" y1="316" x2="430" y2="316" class="wire" stroke-width="3" />
+    <line x1="410" y1="316" x2="410" y2="355" class="wire" />
+    <text x="436" y="307" class="label-start">C_2</text>
+    <text x="436" y="325" class="sublabel-start"></text>
+    
+<circle cx="410" cy="350" r="4" class="junction" />
+
+    <line x1="465" y1="270" x2="480" y2="270" class="wire" />
+    <rect x="480" y="258" width="60" height="24" class="comp-body" />
+    <line x1="540" y1="270" x2="555" y2="270" class="wire" />
+    <text x="510" y="252" class="label">R_3</text>
+    <text x="510" y="296" class="sublabel">Heatsink</text>
+    
+<circle cx="560" cy="270" r="4" class="junction" />
+
+    <line x1="560" y1="265" x2="560" y2="304" class="wire" />
+    <line x1="540" y1="304" x2="580" y2="304" class="wire" stroke-width="3" />
+    <line x1="540" y1="316" x2="580" y2="316" class="wire" stroke-width="3" />
+    <line x1="560" y1="316" x2="560" y2="355" class="wire" />
+    <text x="586" y="307" class="label-start">C_3</text>
+    <text x="586" y="325" class="sublabel-start"></text>
+    
+<circle cx="560" cy="350" r="4" class="junction" />
+<line x1="560" y1="270" x2="700" y2="270" class="wire" />
+
+    <line x1="560" y1="350" x2="560" y2="365" class="wire" />
+    <line x1="542" y1="365" x2="578" y2="365" class="wire-gnd" />
+    <line x1="549" y1="371" x2="571" y2="371" class="wire-gnd" />
+    <line x1="556" y1="377" x2="564" y2="377" class="wire-gnd" />
+    <text x="560" y="392" class="sublabel">T_ambient</text>
+    
+</svg>

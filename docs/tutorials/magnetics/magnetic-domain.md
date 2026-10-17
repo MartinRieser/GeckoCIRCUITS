@@ -49,49 +49,43 @@ Where:
 ### Winding (Gyrator)
 
 Converts electrical current to MMF:
-$$F = N \cdot i$$
-$$v = N \cdot \frac{d\Phi}{dt}$$
+
+$$
+F = N \cdot i
+$$
+
+$$
+v = N \cdot \frac{d\Phi}{dt}
+$$
 
 ### Air Gap
 
-$$P_{gap} = \frac{\mu_0 A_{eff}}{l_g}$$
+$$
+P_{gap} = \frac{\mu_0 A_{eff}}{l_g}
+$$
 
 With fringing factor for accurate modeling.
 
 ## Building Magnetic Circuits
 
-### Simple Inductor
+### Winding-to-Core Dual Domain Interface
 
-```
-Electrical:          Magnetic:
+![Electrical-to-Magnetic Domain Interface](magnetic-coupling-schematic.svg)
 
-  ●──[winding]──●    MMF ──[P_core]── GND
-       │  │               │
-      ~~~        Leakage:[P_leak]
-       N turns            │
-                         GND
-```
-
-### Transformer (Two Windings)
-
-```
-    Primary           Secondary
-       │                 │
-   [winding]         [winding]
-       │                 │
-       └──[P_core]──────┘
-              │
-          [P_leak]
-              │
-             GND
-```
+The dual-domain interface models:
+- **Electrical Port:** Winding with $N$ turns, terminal voltage $v(t)$, and current $i(t)$.
+- **Magnetic Port:** Magnetomotive force $F = N \cdot i$, driving core flux $\Phi$ through core permeance $P_{core}$ and air gap permeance $P_{gap}$.
+- **Coupling Principle:** The rate of change of magnetic flux induces back-EMF according to Faraday's law $v = N \cdot \frac{d\Phi}{dt}$.
 
 ## Saturation Modeling
 
 ### B-H Curve
 
 Non-linear permeability:
-$$B = f(H) = \mu_0 \mu_r(H) \cdot H$$
+
+$$
+B = f(H) = \mu_0 \mu_r(H) \cdot H
+$$
 
 ### Jiles-Atherton Model
 

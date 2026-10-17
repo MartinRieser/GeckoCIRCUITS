@@ -25,74 +25,60 @@ Junction temperature directly affects:
 | Thermal Resistance Rth | Resistance R | K/W / Ω |
 | Thermal Capacitance Cth | Capacitance C | J/K / F |
 
-### Basic Thermal Network
+### Thermal Network Representation
 
-```
-  Ploss      Rth,jc     Rth,ch     Rth,ha
-   (I)   ●───/\/\/───●───/\/\/───●───/\/\/───●
-         │           │           │           │
-        Tj          Tc          Th          Ta
-                   (Cth)       (Cth)        ⏚
-```
+![Dynamic Thermal Impedance Networks: Foster vs. Cauer](thermal-network-schematic.svg)
 
 ## Thermal Network Models
 
 ### Foster Network
 
-- Parameters from datasheet curve fitting
-- **Cannot be cascaded** (nodes have no physical meaning)
-- Faster simulation
-
-```
-        R1         R2         R3
-   ●───/\/\/───●───/\/\/───●───/\/\/───●
-       │           │           │
-      C1          C2          C3
-       │           │           │
-       ⏚           ⏚           ⏚
-```
+- Series connection of parallel $R_i \parallel C_i$ branches
+- Parameters obtained directly from datasheet transient thermal impedance curve fitting
+- **Cannot be cascaded** directly (internal nodes have no physical temperature meaning)
+- Mathematically efficient for fast simulation
 
 ### Cauer Network
 
-- Physically meaningful nodes (material layers)
-- **Can be cascaded** (junction→case→heatsink→ambient)
-- Derived from Foster via mathematical transformation
-
-```
-        R1         R2         R3
-   ●───/\/\/───●───/\/\/───●───/\/\/───●
-               │           │           │
-              C1          C2          C3
-               │           │           │
-               ⏚           ⏚           ⏚
-```
+- Ladder network with series thermal resistances and shunt thermal capacitances to ambient ground
+- Physically meaningful nodes corresponding to semiconductor material layers (junction, silicon die, solder, copper baseplate, heatsink, ambient)
+- **Can be cascaded** modularly (junction $\to$ case $\to$ heatsink $\to$ ambient)
+- Mathematically transformed from Foster coefficients or derived from finite element analysis (FEA)
 
 ## Setting Up Thermal Models
 
 ### Datasheet Parameters
 
 From semiconductor datasheet:
-- Rth,j-c (junction to case)
-- Rth,c-h (case to heatsink) - depends on mounting
-- Transient thermal impedance curve Zth(t)
+- $R_{th,j-c}$ (junction to case)
+- $R_{th,c-h}$ (case to heatsink) - depends on mounting / thermal grease
+- Transient thermal impedance curve $Z_{th}(t)$
 
 ### Extracting Foster Parameters
 
-From Zth curve fitting:
-$$Z_{th}(t) = \sum_{i=1}^{n} R_i \cdot (1 - e^{-t/\tau_i})$$
+From $Z_{th}$ curve fitting:
 
-Where τᵢ = Rᵢ × Cᵢ
+$$
+Z_{th}(t) = \sum_{i=1}^{n} R_i \cdot (1 - e^{-t/\tau_i})
+$$
+
+Where $\tau_i = R_i \times C_i$
 
 ## Temperature Calculations
 
 ### Steady-State
 
-$$T_j = T_a + P_{loss} \cdot (R_{th,jc} + R_{th,ch} + R_{th,ha})$$
+$$
+T_j = T_a + P_{loss} \cdot (R_{th,jc} + R_{th,ch} + R_{th,ha})
+$$
 
 ### Transient Response
 
 For step power change:
-$$T_j(t) = T_a + P \cdot Z_{th}(t)$$
+
+$$
+T_j(t) = T_a + P \cdot Z_{th}(t)
+$$
 
 ### Periodic Power
 

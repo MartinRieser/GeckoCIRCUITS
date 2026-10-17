@@ -31,29 +31,27 @@ As i increases → H increases → μr decreases → L decreases
 
 ## Saturation Models
 
-### Piecewise Linear
+### Inductance Characteristics
 
-Simple three-region model:
-```
-L(i)
-  │
-Lnom├────────┐
-  │         │
-  │         └────────
-Lsat├──────────────────
-  │
-  └─────────────────── i
-       Isat
-```
+![Inductor Saturation Characteristics Curve](inductor-saturation-curve.svg)
 
-$$L(i) = \begin{cases} L_{nom} & |i| < I_{sat} \\ L_{sat} & |i| \geq I_{sat} \end{cases}$$
+### Piecewise Linear Model
 
-### Smooth Saturation
+Simple region-based saturation model:
 
-More realistic model:
-$$L(i) = \frac{L_0}{1 + (i/I_{sat})^n}$$
+$$
+L(i) = \begin{cases} L_{nom} & |i| < I_{sat} \\ L_{sat} & |i| \geq I_{sat} \end{cases}
+$$
 
-Where n controls transition sharpness (typically 2-6)
+### Smooth Saturation Model
+
+More realistic continuous saturation roll-off:
+
+$$
+L(i) = \frac{L_0}{1 + (i/I_{sat})^n}
+$$
+
+Where $n$ controls transition sharpness (typically $2 \dots 6$).
 
 ### Jiles-Atherton
 

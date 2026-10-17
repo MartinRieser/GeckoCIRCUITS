@@ -21,15 +21,7 @@ Without PFC, rectifiers draw peaky current that:
 
 ### Circuit Configuration
 
-```
-        L           D
-AC+ ──┬─⊐⊏──┬──────┤►├─┬── DC+
-      │     │           │
-     ⌇      │    SW     C    Load
-Cin  ⌇      └────┤      │
-      │          │      │
-AC- ──┴──────────┴──────┴── DC-
-```
+![Active Boost Power Factor Correction (PFC) Schematic](boost-pfc-schematic.svg)
 
 ### Operating Principle
 
@@ -55,13 +47,22 @@ AC- ──┴──────────┴──────┴── DC-
 ## Key Equations
 
 **Duty Cycle (CCM):**
-$$D = 1 - \frac{V_{in}(t)}{V_{out}}$$
+
+$$
+D = 1 - \frac{V_{in}(t)}{V_{out}}
+$$
 
 **Inductor Current Ripple:**
-$$\Delta I_L = \frac{V_{in} \cdot D}{L \cdot f_{sw}}$$
+
+$$
+\Delta I_L = \frac{V_{in} \cdot D}{L \cdot f_{sw}}
+$$
 
 **Power Factor:**
-$$PF = \frac{P}{S} = \frac{V_{rms} \cdot I_{rms} \cdot \cos\phi}{V_{rms} \cdot I_{rms}}$$
+
+$$
+PF = \frac{P}{S} = \frac{V_{rms} \cdot I_{rms} \cdot \cos\phi}{V_{rms} \cdot I_{rms}}
+$$
 
 ## Design Parameters
 

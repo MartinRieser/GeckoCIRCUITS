@@ -47,20 +47,15 @@ $$V_{out} = -\frac{D}{1-D} \times V_{in}$$
 
 The SEPIC (Single-Ended Primary-Inductor Converter) provides non-inverted output:
 
-```
-         L1            C_coupling     D
-    Vin──[LLLLL]──●────||────●──|>|──●── Vout
-                  │          │       │
-                [FET]      [L2]    [C]  [R]
-                  │          │       │    │
-                 GND────────●───────●────┘
-```
+![SEPIC Converter Circuit Schematic](sepic-converter-schematic.svg)
 
 ### Voltage Ratio
 
 Same as buck-boost magnitude, but non-inverted:
 
-$$V_{out} = \frac{D}{1-D} \times V_{in}$$
+$$
+V_{out} = \frac{D}{1-D} \times V_{in}
+$$
 
 ### Advantages
 
@@ -78,18 +73,13 @@ $$V_{out} = \frac{D}{1-D} \times V_{in}$$
 
 ### Topology
 
-```
-         L1        C_coupling        L2
-    Vin──[LLLLL]──●──||──●──[LLLLL]──●── Vout (negative)
-                  │       │           │
-                [FET]   [D]         [C]  [R]
-                  │       │           │    │
-                 GND─────●───────────●────┘
-```
+![Ćuk Converter Circuit Schematic](cuk-converter-schematic.svg)
 
 ### Voltage Ratio
 
-$$V_{out} = -\frac{D}{1-D} \times V_{in}$$
+$$
+V_{out} = -\frac{D}{1-D} \times V_{in}
+$$
 
 ### Advantages
 
@@ -101,15 +91,21 @@ $$V_{out} = -\frac{D}{1-D} \times V_{in}$$
 
 ### Coupling Capacitor (SEPIC/Cuk)
 
-$$C_{coupling} = \frac{I_{out}}{f_{sw} \times \Delta V_C}$$
+$$
+C_{coupling} = \frac{I_{out}}{f_{sw} \times \Delta V_C}
+$$
 
 Typically 1-10 uF ceramic. Must handle RMS ripple current.
 
 ### Inductors
 
-$$L_1 \geq \frac{V_{in} \times D}{f_{sw} \times \Delta i_{L1}}$$
+$$
+L_1 \geq \frac{V_{in} \times D}{f_{sw} \times \Delta i_{L1}}
+$$
 
-$$L_2 \geq \frac{V_{out} \times (1-D)}{f_{sw} \times \Delta i_{L2}}$$
+$$
+L_2 \geq \frac{V_{out} \times (1-D)}{f_{sw} \times \Delta i_{L2}}
+$$
 
 ## Simulation
 

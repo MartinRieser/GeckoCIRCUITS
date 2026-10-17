@@ -18,17 +18,7 @@ The NPC inverter produces three voltage levels per phase, offering:
 
 ### Single-Phase Leg
 
-```
-      +Vdc/2 ───┬───┤S1├───┬───────────┐
-                │         │           │
-               C1        D1►          │
-                │         │           │
-      Neutral ──┼─────────┼───┤S2├────┼─── Output
-                │         │           │
-               C2        ◄D2          │
-                │         │           │
-      -Vdc/2 ───┴───┤S3├───┴───┤S4├───┘
-```
+![Three-Level Neutral-Point-Clamped (NPC) Inverter Leg](npc-phase-leg-schematic.svg)
 
 ### Switching States
 
@@ -75,10 +65,16 @@ The NPC inverter produces three voltage levels per phase, offering:
 ## Key Equations
 
 **Output Voltage Levels:**
-$$V_{out} \in \{-V_{dc}/2, 0, +V_{dc}/2\}$$
+
+$$
+V_{out} \in \{-V_{dc}/2, 0, +V_{dc}/2\}
+$$
 
 **Modulation Index:**
-$$m_a = \frac{V_{ref,peak}}{V_{dc}/2}$$
+
+$$
+m_a = \frac{V_{ref,peak}}{V_{dc}/2}
+$$
 
 **Switching Frequency per Device:**
 - Lower than 2-level (each switch operates part of cycle)

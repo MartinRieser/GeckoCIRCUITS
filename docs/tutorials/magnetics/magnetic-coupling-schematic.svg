@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 390" width="100%" height="100%">
+  <defs>
+    <style>
+      .wire { stroke: #1e293b; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .wire-thin { stroke: #64748b; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .wire-dashed { stroke: #0284c7; stroke-width: 2; stroke-dasharray: 5,4; fill: none; }
+      .wire-gnd { stroke: #1e293b; stroke-width: 2.5; stroke-linecap: round; }
+      .junction { fill: #1e293b; }
+      .label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: middle; }
+      .label-start { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: start; }
+      .label-end { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: end; }
+      .sublabel { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: middle; }
+      .sublabel-start { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: start; }
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 16px; fill: #0f172a; font-weight: 700; }
+      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 12px; fill: #64748b; font-weight: 400; }
+      .comp-body { fill: #ffffff; stroke: #1e293b; stroke-width: 2.2; }
+      .comp-diode { fill: #0284c7; stroke: #0284c7; stroke-width: 2; }
+      .comp-sw { stroke: #0284c7; stroke-width: 2.5; stroke-linecap: round; fill: none; }
+      .arrow { fill: #0284c7; stroke: none; }
+      .measure-arrow { stroke: #0284c7; stroke-width: 1.75; fill: none; }
+      .tag-pos { fill: #dc2626; font-family: sans-serif; font-size: 16px; font-weight: bold; text-anchor: middle; }
+      .tag-neg { fill: #2563eb; font-family: sans-serif; font-size: 18px; font-weight: bold; text-anchor: middle; }
+      .card { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; rx: 8px; }
+      .block { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; rx: 6px; }
+      .block-accent { fill: #f0f9ff; stroke: #0284c7; stroke-width: 1.5; rx: 6px; }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0284c7"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" class="card" />
+  <text x="35" y="38" class="title">Electrical-to-Magnetic Domain Interface</text>
+  <text x="35" y="58" class="subtitle">Dual-Domain Modeling in GeckoCIRCUITS • Current-to-MMF &amp; Voltage-to-Flux Rate</text>
+  <rect x="60" y="100" width="320" height="240" class="card" />
+<text x="220" y="130" class="label">Electrical Domain</text>
+<line x1="100" y1="170" x2="200" y2="170" class="wire" />
+<text x="90" y="175" class="label-end">i(t)</text>
+<line x1="100" y1="270" x2="200" y2="270" class="wire" />
+<text x="90" y="275" class="label-end">&#8722;</text>
+
+    <line x1="200" y1="175" x2="200" y2="190" class="wire" />
+    <path d="M 200 190 C 218 190, 218 205, 200 205
+             C 218 205, 218 220, 200 220
+             C 218 220, 218 235, 200 235
+             C 218 235, 218 250, 200 250" class="wire" stroke-width="2.5" />
+    <line x1="200" y1="250" x2="200" y2="265" class="wire" />
+    <text x="176" y="217" class="label-end">N</text>
+    <text x="176" y="235" class="sublabel" text-anchor="end">Turns</text>
+    
+<text x="140" y="225" class="label" fill="#0284c7">v(t)</text>
+<line x1="140" y1="185" x2="140" y2="255" class="measure-arrow" marker-end="url(#arr-blue)" />
+<rect x="350" y="150" width="160" height="140" class="block-accent" />
+<text x="430" y="185" class="label" fill="#0284c7">Winding Interface</text>
+<text x="430" y="210" class="sublabel">F = N &#183; i</text>
+<text x="430" y="235" class="sublabel">v = N &#183; d&#934;/dt</text>
+<text x="430" y="260" class="sublabel">(Gyrator Coupling)</text>
+<rect x="480" y="100" width="340" height="240" class="card" />
+<text x="650" y="130" class="label">Magnetic Domain</text>
+<circle cx="560" cy="220" r="22" class="comp-body" />
+<text x="560" y="225" class="label">F</text>
+<line x1="560" y1="198" x2="560" y2="170" class="wire" />
+<line x1="560" y1="170" x2="680" y2="170" class="wire" />
+<line x1="560" y1="242" x2="560" y2="270" class="wire" />
+<line x1="560" y1="270" x2="680" y2="270" class="wire" />
+<rect x="680" y="195" width="60" height="50" class="comp-body" />
+<text x="710" y="225" class="label">P_{core}</text>
+<line x1="710" y1="170" x2="710" y2="195" class="wire" />
+<line x1="710" y1="245" x2="710" y2="270" class="wire" />
+<text x="630" y="160" class="label" fill="#16a34a">&#934; (Flux)</text>
+<line x1="600" y1="165" x2="650" y2="165" class="wire" stroke="#16a34a" marker-end="url(#arr-green)" stroke-width="2" />
+</svg>

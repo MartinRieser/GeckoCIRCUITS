@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 470" width="100%" height="100%">
+  <defs>
+    <style>
+      .wire { stroke: #1e293b; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .wire-thin { stroke: #64748b; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .wire-dashed { stroke: #0284c7; stroke-width: 2; stroke-dasharray: 5,4; fill: none; }
+      .wire-gnd { stroke: #1e293b; stroke-width: 2.5; stroke-linecap: round; }
+      .junction { fill: #1e293b; }
+      .label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: middle; }
+      .label-start { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: start; }
+      .label-end { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: end; }
+      .sublabel { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: middle; }
+      .sublabel-start { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: start; }
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 16px; fill: #0f172a; font-weight: 700; }
+      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 12px; fill: #64748b; font-weight: 400; }
+      .comp-body { fill: #ffffff; stroke: #1e293b; stroke-width: 2.2; }
+      .comp-diode { fill: #0284c7; stroke: #0284c7; stroke-width: 2; }
+      .comp-sw { stroke: #0284c7; stroke-width: 2.5; stroke-linecap: round; fill: none; }
+      .arrow { fill: #0284c7; stroke: none; }
+      .measure-arrow { stroke: #0284c7; stroke-width: 1.75; fill: none; }
+      .tag-pos { fill: #dc2626; font-family: sans-serif; font-size: 16px; font-weight: bold; text-anchor: middle; }
+      .tag-neg { fill: #2563eb; font-family: sans-serif; font-size: 18px; font-weight: bold; text-anchor: middle; }
+      .card { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; rx: 8px; }
+      .block { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; rx: 6px; }
+      .block-accent { fill: #f0f9ff; stroke: #0284c7; stroke-width: 1.5; rx: 6px; }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0284c7"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" class="card" />
+  <text x="35" y="38" class="title">Modular Multilevel Converter (MMC) Topology</text>
+  <text x="35" y="58" class="subtitle">European IEC 60617 Standard Schematic • Cascaded Submodule HVDC &amp; STATCOM Architecture</text>
+  <line x1="150" y1="90" x2="720" y2="90" class="wire" stroke="#dc2626" />
+<text x="130" y="95" class="tag-pos">+V_{dc}/2</text>
+<line x1="150" y1="410" x2="720" y2="410" class="wire" stroke="#2563eb" />
+<text x="130" y="415" class="tag-neg">&#8722;V_{dc}/2</text>
+<circle cx="260" cy="90" r="4" class="junction" />
+<circle cx="260" cy="410" r="4" class="junction" />
+<rect x="230" y="115" width="60" height="30" class="block-accent" /><text x="260" y="135" class="sublabel">SM 1</text>
+<rect x="230" y="150" width="60" height="30" class="block-accent" /><text x="260" y="170" class="sublabel">SM 2</text>
+<text x="260" y="195" class="label">&#8942;</text>
+<rect x="230" y="205" width="60" height="30" class="block-accent" /><text x="260" y="225" class="sublabel">SM N</text>
+
+    <line x1="260" y1="210" x2="260" y2="225" class="wire" />
+    <path d="M 260 225 C 278 225, 278 240, 260 240
+             C 278 240, 278 255, 260 255
+             C 278 255, 278 270, 260 270
+             C 278 270, 278 285, 260 285" class="wire" stroke-width="2.5" />
+    <line x1="260" y1="285" x2="260" y2="300" class="wire" />
+    <text x="236" y="252" class="label-end">L_{arm}</text>
+    <text x="236" y="270" class="sublabel" text-anchor="end"></text>
+    
+<circle cx="260" cy="275" r="4" class="junction" />
+<line x1="260" y1="275" x2="210" y2="275" class="wire" />
+<circle cx="210" cy="275" r="4" fill="#0284c7" />
+<text x="195" y="280" class="label-end" fill="#0284c7">Phase A</text>
+
+    <line x1="260" y1="250" x2="260" y2="265" class="wire" />
+    <path d="M 260 265 C 278 265, 278 280, 260 280
+             C 278 280, 278 295, 260 295
+             C 278 295, 278 310, 260 310
+             C 278 310, 278 325, 260 325" class="wire" stroke-width="2.5" />
+    <line x1="260" y1="325" x2="260" y2="340" class="wire" />
+    <text x="236" y="292" class="label-end">L_{arm}</text>
+    <text x="236" y="310" class="sublabel" text-anchor="end"></text>
+    
+<rect x="230" y="325" width="60" height="30" class="block-accent" /><text x="260" y="345" class="sublabel">SM 1</text>
+<rect x="230" y="360" width="60" height="30" class="block-accent" /><text x="260" y="380" class="sublabel">SM N</text>
+<circle cx="440" cy="90" r="4" class="junction" />
+<circle cx="440" cy="410" r="4" class="junction" />
+<rect x="410" y="115" width="60" height="30" class="block-accent" /><text x="440" y="135" class="sublabel">SM 1</text>
+<rect x="410" y="150" width="60" height="30" class="block-accent" /><text x="440" y="170" class="sublabel">SM 2</text>
+<text x="440" y="195" class="label">&#8942;</text>
+<rect x="410" y="205" width="60" height="30" class="block-accent" /><text x="440" y="225" class="sublabel">SM N</text>
+
+    <line x1="440" y1="210" x2="440" y2="225" class="wire" />
+    <path d="M 440 225 C 458 225, 458 240, 440 240
+             C 458 240, 458 255, 440 255
+             C 458 255, 458 270, 440 270
+             C 458 270, 458 285, 440 285" class="wire" stroke-width="2.5" />
+    <line x1="440" y1="285" x2="440" y2="300" class="wire" />
+    <text x="416" y="252" class="label-end">L_{arm}</text>
+    <text x="416" y="270" class="sublabel" text-anchor="end"></text>
+    
+<circle cx="440" cy="275" r="4" class="junction" />
+<line x1="440" y1="275" x2="490" y2="275" class="wire" />
+<circle cx="490" cy="275" r="4" fill="#0284c7" />
+<text x="505" y="280" class="label-start" fill="#0284c7">Phase B</text>
+
+    <line x1="440" y1="250" x2="440" y2="265" class="wire" />
+    <path d="M 440 265 C 458 265, 458 280, 440 280
+             C 458 280, 458 295, 440 295
+             C 458 295, 458 310, 440 310
+             C 458 310, 458 325, 440 325" class="wire" stroke-width="2.5" />
+    <line x1="440" y1="325" x2="440" y2="340" class="wire" />
+    <text x="416" y="292" class="label-end">L_{arm}</text>
+    <text x="416" y="310" class="sublabel" text-anchor="end"></text>
+    
+<rect x="410" y="325" width="60" height="30" class="block-accent" /><text x="440" y="345" class="sublabel">SM 1</text>
+<rect x="410" y="360" width="60" height="30" class="block-accent" /><text x="440" y="380" class="sublabel">SM N</text>
+<circle cx="620" cy="90" r="4" class="junction" />
+<circle cx="620" cy="410" r="4" class="junction" />
+<rect x="590" y="115" width="60" height="30" class="block-accent" /><text x="620" y="135" class="sublabel">SM 1</text>
+<rect x="590" y="150" width="60" height="30" class="block-accent" /><text x="620" y="170" class="sublabel">SM 2</text>
+<text x="620" y="195" class="label">&#8942;</text>
+<rect x="590" y="205" width="60" height="30" class="block-accent" /><text x="620" y="225" class="sublabel">SM N</text>
+
+    <line x1="620" y1="210" x2="620" y2="225" class="wire" />
+    <path d="M 620 225 C 638 225, 638 240, 620 240
+             C 638 240, 638 255, 620 255
+             C 638 255, 638 270, 620 270
+             C 638 270, 638 285, 620 285" class="wire" stroke-width="2.5" />
+    <line x1="620" y1="285" x2="620" y2="300" class="wire" />
+    <text x="596" y="252" class="label-end">L_{arm}</text>
+    <text x="596" y="270" class="sublabel" text-anchor="end"></text>
+    
+<circle cx="620" cy="275" r="4" class="junction" />
+<line x1="620" y1="275" x2="670" y2="275" class="wire" />
+<circle cx="670" cy="275" r="4" fill="#0284c7" />
+<text x="685" y="280" class="label-start" fill="#0284c7">Phase C</text>
+
+    <line x1="620" y1="250" x2="620" y2="265" class="wire" />
+    <path d="M 620 265 C 638 265, 638 280, 620 280
+             C 638 280, 638 295, 620 295
+             C 638 295, 638 310, 620 310
+             C 638 310, 638 325, 620 325" class="wire" stroke-width="2.5" />
+    <line x1="620" y1="325" x2="620" y2="340" class="wire" />
+    <text x="596" y="292" class="label-end">L_{arm}</text>
+    <text x="596" y="310" class="sublabel" text-anchor="end"></text>
+    
+<rect x="590" y="325" width="60" height="30" class="block-accent" /><text x="620" y="345" class="sublabel">SM 1</text>
+<rect x="590" y="360" width="60" height="30" class="block-accent" /><text x="620" y="380" class="sublabel">SM N</text>
+</svg>

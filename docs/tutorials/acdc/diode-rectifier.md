@@ -22,39 +22,43 @@ Diode rectifiers are the simplest form of AC-DC power conversion, using uncontro
 
 ### Circuit Configuration
 
-```
-     D1      D3
-AC+ ─┤►├─┬──┤►├─ DC+
-         │
-        Load
-         │
-AC- ─┤◄├─┴──┤◄├─ DC-
-     D2      D4
-```
+![Single-Phase Full-Wave Diode Bridge Rectifier](single-phase-rectifier-schematic.svg)
 
 ### Key Equations
 
 **Average DC Voltage:**
-$$V_{DC} = \frac{2V_m}{\pi} \approx 0.637 \cdot V_m$$
+
+$$
+V_{DC} = \frac{2V_m}{\pi} \approx 0.637 \cdot V_m
+$$
 
 **RMS Voltage:**
-$$V_{rms} = \frac{V_m}{\sqrt{2}}$$
+
+$$
+V_{rms} = \frac{V_m}{\sqrt{2}}
+$$
 
 **Ripple Factor:**
-$$\gamma = \sqrt{\left(\frac{V_{rms}}{V_{DC}}\right)^2 - 1} \approx 0.483$$
+
+$$
+\gamma = \sqrt{\left(\frac{V_{rms}}{V_{DC}}\right)^2 - 1} \approx 0.483
+$$
 
 ## Three-Phase Diode Bridge
 
 ### Circuit Configuration
 
-Six-diode bridge configuration for three-phase input.
+![Three-Phase Six-Pulse Diode Bridge Rectifier](three-phase-rectifier-schematic.svg)
 
 ### Key Equations
 
 **Average DC Voltage:**
-$$V_{DC} = \frac{3\sqrt{2}}{\pi} V_{LL} \approx 1.35 \cdot V_{LL}$$
 
-**Ripple Frequency:** 6× line frequency (300 Hz for 50 Hz input)
+$$
+V_{DC} = \frac{3\sqrt{2}}{\pi} V_{LL} \approx 1.35 \cdot V_{LL}
+$$
+
+**Ripple Frequency:** $6 \times \text{line frequency}$ (300 Hz for 50 Hz input)
 
 ## Simulation Parameters
 

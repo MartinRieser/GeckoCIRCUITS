@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 390" width="100%" height="100%">
+  <defs>
+    <style>
+      .wire { stroke: #1e293b; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .wire-thin { stroke: #64748b; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .wire-dashed { stroke: #0284c7; stroke-width: 2; stroke-dasharray: 5,4; fill: none; }
+      .wire-gnd { stroke: #1e293b; stroke-width: 2.5; stroke-linecap: round; }
+      .junction { fill: #1e293b; }
+      .label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: middle; }
+      .label-start { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: start; }
+      .label-end { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: end; }
+      .sublabel { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: middle; }
+      .sublabel-start { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: start; }
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 16px; fill: #0f172a; font-weight: 700; }
+      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 12px; fill: #64748b; font-weight: 400; }
+      .comp-body { fill: #ffffff; stroke: #1e293b; stroke-width: 2.2; }
+      .comp-diode { fill: #0284c7; stroke: #0284c7; stroke-width: 2; }
+      .comp-sw { stroke: #0284c7; stroke-width: 2.5; stroke-linecap: round; fill: none; }
+      .arrow { fill: #0284c7; stroke: none; }
+      .measure-arrow { stroke: #0284c7; stroke-width: 1.75; fill: none; }
+      .tag-pos { fill: #dc2626; font-family: sans-serif; font-size: 16px; font-weight: bold; text-anchor: middle; }
+      .tag-neg { fill: #2563eb; font-family: sans-serif; font-size: 18px; font-weight: bold; text-anchor: middle; }
+      .card { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; rx: 8px; }
+      .block { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; rx: 6px; }
+      .block-accent { fill: #f0f9ff; stroke: #0284c7; stroke-width: 1.5; rx: 6px; }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0284c7"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" class="card" />
+  <text x="35" y="38" class="title">Magnetic Circuit Permeance Network (Hopkinson's Analogy)</text>
+  <text x="35" y="58" class="subtitle">Permeance Model with Core, Air Gap and Primary/Secondary Leakage Paths</text>
+  <line x1="120" y1="130" x2="740" y2="130" class="wire" />
+<line x1="120" y1="310" x2="740" y2="310" class="wire" />
+<circle cx="160" cy="220" r="22" class="comp-body" />
+<text x="160" y="215" class="label">F_1</text>
+<text x="160" y="235" class="sublabel">N_1 &#183; i_1</text>
+<line x1="160" y1="198" x2="160" y2="130" class="wire" />
+<line x1="160" y1="242" x2="160" y2="310" class="wire" />
+<circle cx="160" cy="130" r="4" class="junction" />
+<circle cx="160" cy="310" r="4" class="junction" />
+<rect x="260" y="195" width="50" height="50" class="comp-body" />
+<text x="285" y="225" class="label">P_&#963;1</text>
+<line x1="285" y1="130" x2="285" y2="195" class="wire" />
+<line x1="285" y1="245" x2="285" y2="310" class="wire" />
+<circle cx="285" cy="130" r="4" class="junction" />
+<circle cx="285" cy="310" r="4" class="junction" />
+<rect x="420" y="160" width="60" height="45" class="block-accent" />
+<text x="450" y="188" class="label" fill="#0284c7">P_{core}</text>
+<rect x="420" y="235" width="60" height="45" class="comp-body" />
+<text x="450" y="263" class="label">P_{gap}</text>
+<line x1="450" y1="130" x2="450" y2="160" class="wire" />
+<line x1="450" y1="205" x2="450" y2="235" class="wire" />
+<line x1="450" y1="280" x2="450" y2="310" class="wire" />
+<circle cx="450" cy="130" r="4" class="junction" />
+<circle cx="450" cy="310" r="4" class="junction" />
+<rect x="580" y="195" width="50" height="50" class="comp-body" />
+<text x="605" y="225" class="label">P_&#963;2</text>
+<line x1="605" y1="130" x2="605" y2="195" class="wire" />
+<line x1="605" y1="245" x2="605" y2="310" class="wire" />
+<circle cx="605" cy="130" r="4" class="junction" />
+<circle cx="605" cy="310" r="4" class="junction" />
+<circle cx="700" cy="220" r="22" class="comp-body" />
+<text x="700" y="215" class="label">F_2</text>
+<text x="700" y="235" class="sublabel">N_2 &#183; i_2</text>
+<line x1="700" y1="198" x2="700" y2="130" class="wire" />
+<line x1="700" y1="242" x2="700" y2="310" class="wire" />
+<circle cx="700" cy="130" r="4" class="junction" />
+<circle cx="700" cy="310" r="4" class="junction" />
+</svg>

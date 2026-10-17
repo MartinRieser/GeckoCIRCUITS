@@ -18,35 +18,15 @@ Single-phase inverters convert DC to AC using PWM switching strategies, essentia
 
 ### Half-Bridge Inverter
 
-```
-       +Vdc/2
-         │
-         ├───┤S1├───┬─── AC out
-         │          │
-        Cdc        Load
-         │          │
-         ├───┤S2├───┘
-         │
-       -Vdc/2
-```
+![Single-Phase Half-Bridge Inverter Schematic](half-bridge-inverter-schematic.svg)
 
-**Output:** ±Vdc/2
+**Output:** $\pm V_{dc}/2$
 
 ### Full-Bridge (H-Bridge) Inverter
 
-```
-      +Vdc ───┬────────┬───
-              │        │
-             S1       S3
-              │        │
-              ├─ Load ─┤
-              │        │
-             S2       S4
-              │        │
-      GND ───┴────────┴───
-```
+![Single-Phase Full-Bridge Inverter Schematic](full-bridge-inverter-schematic.svg)
 
-**Output:** ±Vdc
+**Output:** $\pm V_{dc}$
 
 ## PWM Strategies
 
@@ -54,25 +34,34 @@ Single-phase inverters convert DC to AC using PWM switching strategies, essentia
 
 - Compare sine reference to triangle carrier
 - S1-S4 switch together, S2-S3 switch together
-- Output levels: +Vdc, -Vdc
+- Output levels: $+V_{dc}, -V_{dc}$
 
 ### Unipolar PWM
 
 - Two reference signals (positive and negative)
 - Each leg switched independently
-- Output levels: +Vdc, 0, -Vdc
+- Output levels: $+V_{dc}, 0, -V_{dc}$
 - Lower harmonic content, reduced filter size
 
 ## Key Equations
 
 **Modulation Index:**
-$$m_a = \frac{V_{ref,peak}}{V_{carrier,peak}}$$
+
+$$
+m_a = \frac{V_{ref,peak}}{V_{carrier,peak}}
+$$
 
 **Fundamental Output Voltage (linear region):**
-$$V_{out,1} = m_a \cdot V_{dc}$$ (full-bridge)
+
+$$
+V_{out,1} = m_a \cdot V_{dc} \quad \text{(full-bridge)}
+$$
 
 **THD Calculation:**
-$$THD = \frac{\sqrt{V_2^2 + V_3^2 + ... + V_n^2}}{V_1}$$
+
+$$
+THD = \frac{\sqrt{V_2^2 + V_3^2 + \dots + V_n^2}}{V_1}
+$$
 
 ## Design Parameters
 

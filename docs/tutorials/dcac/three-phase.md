@@ -18,17 +18,7 @@ Three-phase VSIs are the backbone of:
 
 ### Two-Level VSI
 
-```
-      +Vdc ───┬────────┬────────┬───
-              │        │        │
-             S1       S3       S5
-              │        │        │
-              A        B        C ─── Three-phase
-              │        │        │     output
-             S2       S4       S6
-              │        │        │
-      GND ───┴────────┴────────┴───
-```
+![Three-Phase Two-Level VSI Schematic](three-phase-inverter-schematic.svg)
 
 ## Space Vector PWM (SVPWM)
 
@@ -47,7 +37,7 @@ Three-phase VSIs are the backbone of:
 
 ### SVPWM Algorithm
 
-1. Calculate reference vector in α-β frame
+1. Calculate reference vector in $\alpha$-$\beta$ frame
 2. Identify sector (1-6)
 3. Calculate dwell times for adjacent vectors
 4. Generate switching sequence
@@ -55,13 +45,26 @@ Three-phase VSIs are the backbone of:
 ## Key Equations
 
 **DC Bus Utilization:**
-- Sine PWM: $$V_{LL,max} = \frac{\sqrt{3}}{2} V_{dc} \approx 0.866 \cdot V_{dc}$$
-- SVPWM: $$V_{LL,max} = \frac{V_{dc}}{\sqrt{3}} \cdot \frac{2}{\sqrt{3}} = \frac{2}{\sqrt{3}} \cdot 0.5 \cdot V_{dc}$$
+
+- **Sine PWM:**
+
+$$
+V_{LL,max} = \frac{\sqrt{3}}{2} V_{dc} \approx 0.866 \cdot V_{dc}
+$$
+
+- **SVPWM:**
+
+$$
+V_{LL,max} = \frac{V_{dc}}{\sqrt{3}} \approx 1.15 \cdot V_{LL,max(\text{SPWM})}
+$$
 
 **15% more DC bus utilization with SVPWM**
 
 **Clarke Transform:**
-$$\begin{bmatrix} v_\alpha \\ v_\beta \end{bmatrix} = \frac{2}{3}\begin{bmatrix} 1 & -\frac{1}{2} & -\frac{1}{2} \\ 0 & \frac{\sqrt{3}}{2} & -\frac{\sqrt{3}}{2} \end{bmatrix} \begin{bmatrix} v_a \\ v_b \\ v_c \end{bmatrix}$$
+
+$$
+\begin{bmatrix} v_\alpha \\ v_\beta \end{bmatrix} = \frac{2}{3}\begin{bmatrix} 1 & -\frac{1}{2} & -\frac{1}{2} \\ 0 & \frac{\sqrt{3}}{2} & -\frac{\sqrt{3}}{2} \end{bmatrix} \begin{bmatrix} v_a \\ v_b \\ v_c \end{bmatrix}
+$$
 
 ## Design Parameters
 
@@ -74,20 +77,7 @@ $$\begin{bmatrix} v_\alpha \\ v_\beta \end{bmatrix} = \frac{2}{3}\begin{bmatrix}
 
 ## Control Architecture
 
-```
-                    ┌─────────────┐
-Speed ref ─────────►│   Speed     │
-                    │   Control   │
-Speed fb ──────────►│   (PI)      │
-                    └──────┬──────┘
-                           │ iq*
-                    ┌──────▼──────┐
-                    │   Current   │
-id*, iq* ──────────►│   Control   │───► PWM
-                    │   (PI)      │
-id, iq fb ─────────►│             │
-                    └─────────────┘
-```
+![Field-Oriented Control (FOC) Architecture](foc-control-diagram.svg)
 
 ## Simulation Exercises
 

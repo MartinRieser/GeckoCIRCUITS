@@ -25,73 +25,79 @@ $$\frac{I_1}{I_2} = \frac{N_2}{N_1} = \frac{1}{n}$$
 
 ### Practical Model
 
-```
-  Primary Side          Ideal TX         Secondary Side
-      │                   │ │                  │
-     Rp    Llk,p         ┌┴─┴┐        Llk,s   Rs
-  ●──/\/\──⊏⊐──┬────────┤ n:1├────────⊏⊐──/\/\──●
-               │        └┬─┬┘
-              Lm         │ │
-               │
-              ═╧═
-```
+![Practical Transformer Electrical Equivalent Circuit](transformer-equivalent-schematic.svg)
 
 Where:
-- Lm = magnetizing inductance
-- Llk,p, Llk,s = leakage inductances
-- Rp, Rs = winding resistances
+- $L_m$ = magnetizing inductance
+- $R_{fe}$ = core loss equivalent resistance
+- $L_{\sigma p}, L_{\sigma s}$ = primary and secondary leakage inductances
+- $R_p, R_s$ = primary and secondary winding resistances
 
 ## Magnetic Circuit Model
 
 ### Permeance Network
 
-```
-         P_leak,p      P_leak,s
-   MMF1 ────┬──────┬──────┬──── MMF2
-            │      │      │
-         P_gap   P_core   │
-            │      │      │
-   ─────────┴──────┴──────┴─────
-```
+![Magnetic Circuit Permeance Network](permeance-network-schematic.svg)
 
 ### Parameter Extraction
 
 **Magnetizing Inductance:**
-$$L_m = N_1^2 \cdot P_{core}$$
+
+$$
+L_m = N_1^2 \cdot P_{core}
+$$
 
 **Leakage Inductance:**
-$$L_{lk} = N^2 \cdot P_{leak}$$
+
+$$
+L_{lk} = N^2 \cdot P_{leak}
+$$
 
 ## Design Procedure
 
 ### Step 1: Core Selection
 
 Area product method:
-$$A_p = A_e \cdot A_w = \frac{P_{out}}{K_f \cdot K_u \cdot J \cdot B_{max} \cdot f}$$
+
+$$
+A_p = A_e \cdot A_w = \frac{P_{out}}{K_f \cdot K_u \cdot J \cdot B_{max} \cdot f}
+$$
 
 Where:
-- Ae = core cross-section
-- Aw = window area
-- Kf = waveform factor
-- Ku = window utilization
-- J = current density
-- Bmax = peak flux density
+- $A_e$ = core cross-section
+- $A_w$ = window area
+- $K_f$ = waveform factor
+- $K_u$ = window utilization
+- $J$ = current density
+- $B_{max}$ = peak flux density
 
 ### Step 2: Turns Calculation
 
 **Primary Turns:**
-$$N_1 = \frac{V_1}{4 \cdot f \cdot B_{max} \cdot A_e}$$
+
+$$
+N_1 = \frac{V_1}{4 \cdot f \cdot B_{max} \cdot A_e}
+$$
 
 **Secondary Turns:**
-$$N_2 = \frac{N_1}{n}$$
+
+$$
+N_2 = \frac{N_1}{n}
+$$
 
 ### Step 3: Wire Selection
 
 Current density (typical 3-5 A/mm² for natural cooling):
-$$A_{wire} = \frac{I_{rms}}{J}$$
 
-Skin depth at frequency f:
-$$\delta = \sqrt{\frac{\rho}{\pi f \mu}}$$
+$$
+A_{wire} = \frac{I_{rms}}{J}
+$$
+
+Skin depth at frequency $f$:
+
+$$
+\delta = \sqrt{\frac{\rho}{\pi f \mu}}
+$$
 
 ### Step 4: Leakage Inductance
 
@@ -99,7 +105,9 @@ Depends on winding arrangement:
 - Interleaved: lower leakage
 - Separated: higher leakage
 
-$$L_{lk} \approx \frac{\mu_0 N^2 MLT}{3 h_w} \cdot \left(n_p \cdot b_p + \frac{n_i \cdot b_i}{3}\right)$$
+$$
+L_{lk} \approx \frac{\mu_0 N^2 MLT}{3 h_w} \cdot \left(n_p \cdot b_p + \frac{n_i \cdot b_i}{3}\right)
+$$
 
 ## Winding Arrangements
 
@@ -121,7 +129,9 @@ $$L_{lk} \approx \frac{\mu_0 N^2 MLT}{3 h_w} \cdot \left(n_p \cdot b_p + \frac{n
 
 ### Inter-winding Capacitance
 
-$$C_{ps} = \frac{\epsilon_0 \epsilon_r A_{overlap}}{d_{insulation}}$$
+$$
+C_{ps} = \frac{\epsilon_0 \epsilon_r A_{overlap}}{d_{insulation}}
+$$
 
 Important for:
 - Common-mode noise
@@ -130,7 +140,10 @@ Important for:
 ### Intra-winding Capacitance
 
 Affects self-resonance frequency:
-$$f_{res} = \frac{1}{2\pi\sqrt{L_{lk} C_{self}}}$$
+
+$$
+f_{res} = \frac{1}{2\pi\sqrt{L_{lk} C_{self}}}
+$$
 
 ## GeckoCIRCUITS Transformer Model
 

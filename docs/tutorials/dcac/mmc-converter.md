@@ -18,49 +18,14 @@ The Modular Multilevel Converter (MMC) is the state-of-the-art topology for:
 
 ### Structure
 
-```
-        +Vdc/2
-           │
-    ┌──────┼──────┐
-    │      │      │
-   SM     SM     SM   ─── Upper Arm
-   SM     SM     SM       (N submodules)
-   SM     SM     SM
-    │      │      │
-    ●──────●──────●  ─── Phase outputs (A, B, C)
-    │      │      │
-   SM     SM     SM   ─── Lower Arm
-   SM     SM     SM       (N submodules)
-   SM     SM     SM
-    │      │      │
-    └──────┼──────┘
-           │
-        -Vdc/2
-```
+![Modular Multilevel Converter (MMC) Topology](mmc-topology-schematic.svg)
 
 ### Submodule Types
 
-**Half-Bridge SM:**
-```
-    ┬───┤S1├───┬
-    │         │
-    C        out
-    │         │
-    ┴───┤S2├───┘
-```
-- Output: 0 or Vc
-- Unipolar capability
+![MMC Submodule Configurations (HBSM vs. FBSM)](mmc-submodules-schematic.svg)
 
-**Full-Bridge SM:**
-```
-    ┬───┤S1├───┬───┤S3├───┬
-    │         │         │
-    C        out        C
-    │         │         │
-    ┴───┤S2├───┴───┤S4├───┘
-```
-- Output: -Vc, 0, or +Vc
-- DC fault blocking capability
+- **Half-Bridge SM (HBSM):** Output is $0$ or $+V_c$ (Unipolar capability, lowest conduction losses).
+- **Full-Bridge SM (FBSM):** Output is $-V_c, 0,$ or $+V_c$ (Bipolar capability, DC short-circuit fault-blocking capability).
 
 ## Operating Principle
 
@@ -77,16 +42,28 @@ The Modular Multilevel Converter (MMC) is the state-of-the-art topology for:
 ## Key Equations
 
 **Submodule Voltage:**
-$$V_{SM} = \frac{V_{dc}}{N}$$
+
+$$
+V_{SM} = \frac{V_{dc}}{N}
+$$
 
 **Number of Levels:**
-$$N_{levels} = N + 1$$ (per arm)
+
+$$
+N_{levels} = N + 1 \quad \text{(per arm)}
+$$
 
 **Arm Current:**
-$$i_{arm} = \frac{i_{dc}}{3} + \frac{i_{ac}}{2} + i_{circ}$$
+
+$$
+i_{arm} = \frac{i_{dc}}{3} + \frac{i_{ac}}{2} + i_{circ}
+$$
 
 **Energy Storage:**
-$$E_{stored} = 6 \cdot N \cdot \frac{1}{2}CV_{SM}^2$$
+
+$$
+E_{stored} = 6 \cdot N \cdot \frac{1}{2}CV_{SM}^2
+$$
 
 ## Control Architecture
 

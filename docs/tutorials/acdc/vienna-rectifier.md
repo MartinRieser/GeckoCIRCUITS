@@ -20,19 +20,7 @@ The Vienna rectifier is a three-level, three-phase PFC topology offering:
 
 Three-phase input with bidirectional switches connected to DC bus midpoint:
 
-```
-         D1a    D1b
-    ┌────┤►├─●─┤►├────┐
-    │        │        │
-A ──┤     ═══╪═══     │
-    │        │        ├─ +Vdc/2
-B ──┤    SW(bidir)    ●─ Neutral
-    │        │        ├─ -Vdc/2
-C ──┤     ═══╪═══     │
-    │        │        │
-    └────┤◄├─●─┤◄├────┘
-         D2a    D2b
-```
+![Vienna Rectifier Circuit Schematic](vienna-rectifier-schematic.svg)
 
 ## Operating Principle
 
@@ -54,9 +42,12 @@ C ──┤     ═══╪═══     │
 ## Key Equations
 
 **DC Bus Voltage:**
-$$V_{dc} = \sqrt{2} \cdot V_{LL} \cdot \frac{\pi}{3} \approx 1.1 \cdot V_{LL,rms}$$
 
-**Typical for 400V input:** Vdc ≈ 700V
+$$
+V_{dc} = \sqrt{2} \cdot V_{LL} \cdot \frac{\pi}{3} \approx 1.1 \cdot V_{LL,rms}
+$$
+
+**Typical for 400V input:** $V_{dc} \approx 700\text{V}$
 
 ## Design Parameters
 

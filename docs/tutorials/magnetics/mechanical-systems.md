@@ -37,12 +37,8 @@ In GeckoCIRCUITS: Capacitor with value J
 ### Two-Mass System
 
 Models shaft compliance:
-```
-    Motor        Shaft         Load
-   ┌─────┐    ┌────────┐    ┌─────┐
-   │  J1 │────│ k, b   │────│  J2 │
-   └─────┘    └────────┘    └─────┘
-```
+
+![Two-Mass Torsional Mechanical System](two-mass-system-schematic.svg)
 
 Equations:
 
