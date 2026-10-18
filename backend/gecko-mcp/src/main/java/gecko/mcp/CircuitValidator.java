@@ -40,9 +40,9 @@ public final class CircuitValidator {
             String message
     ) {}
 
-    private static final Pattern ELEMENT_LK = Pattern.compile("<ElementLK>([\\s\\S]*?)<\\\\ElementLK>");
-    private static final Pattern ELEMENT_CONTROL = Pattern.compile("<ElementCONTROL>([\\s\\S]*?)<\\\\ElementCONTROL>");
-    private static final Pattern CONNECTION_LK = Pattern.compile("<Connection>([\\s\\S]*?)<\\\\Connection>");
+    private static final Pattern ELEMENT_LK = Pattern.compile("<ElementLK>([\\s\\S]*?)<[\\\\/]+ElementLK>");
+    private static final Pattern ELEMENT_CONTROL = Pattern.compile("<ElementCONTROL>([\\s\\S]*?)<[\\\\/]+ElementCONTROL>");
+    private static final Pattern CONNECTION_LK = Pattern.compile("<(?:Connection|Verbindung)>([\\s\\S]*?)<[\\\\/]+(?:Connection|Verbindung)>");
 
     private CircuitValidator() {
     }
@@ -150,26 +150,37 @@ public final class CircuitValidator {
             String name = named(group(block, "idStringDialog\\s+([^\\s\\r\\n]+)"), "COMP_" + uid);
             int typ = parseInt(group(block, "typ\\s+([0-9]+)"), 0);
 
-            String nodeA = cleanNode(group(block, "labelAnfangsKnoten\\[\\]\\s+([^\\r\\n]+)"));
-            String nodeB = cleanNode(group(block, "labelEndKnoten\\[\\]\\s+([^\\r\\n]+)"));
+            List<String> nodesA = parseNodes(group(block, "labelAnfangsKnoten\\[\\]\\s+([^\\r\\n]+)"));
+            List<String> nodesB = parseNodes(group(block, "labelEndKnoten\\[\\]\\s+([^\\r\\n]+)"));
 
-            allNets.add(nodeA);
-            allNets.add(nodeB);
+            allNets.addAll(nodesA);
+            allNets.addAll(nodesB);
 
-            netToComponents.computeIfAbsent(nodeA, k -> new ArrayList<>()).add(name);
-            netToComponents.computeIfAbsent(nodeB, k -> new ArrayList<>()).add(name);
+            for (String nA : nodesA) {
+                netToComponents.computeIfAbsent(nA, k -> new ArrayList<>()).add(name);
+            }
+            for (String nB : nodesB) {
+                netToComponents.computeIfAbsent(nB, k -> new ArrayList<>()).add(name);
+            }
 
             // Rule 1: Short-circuited component
-            if (!nodeA.isEmpty() && nodeA.equalsIgnoreCase(nodeB)) {
-                diagnostics.add(new Diagnostic("ERROR", "SHORT_CIRCUIT", name,
-                        "Component " + name + " has both terminals connected to the same net: '" + nodeA + "'"));
+            if (nodesA.size() == 1 && nodesB.size() == 1) {
+                String nA = nodesA.get(0);
+                String nB = nodesB.get(0);
+                if (!nA.isEmpty() && !nA.equalsIgnoreCase("NIX_NIX_NIX") && nA.equals(nB)) {
+                    diagnostics.add(new Diagnostic("ERROR", "SHORT_CIRCUIT", name,
+                            "Component " + name + " has both terminals connected to the same net: '" + nA + "'"));
+                }
+            } else if (nodesA.size() > 1 || nodesB.size() > 1) {
+                checkPortShort(nodesA, name, "input port", diagnostics);
+                checkPortShort(nodesB, name, "output port", diagnostics);
             }
 
             Map<String, Object> info = new HashMap<>();
             info.put("name", name);
             info.put("type", typ);
-            info.put("nodeA", nodeA);
-            info.put("nodeB", nodeB);
+            info.put("nodesA", nodesA);
+            info.put("nodesB", nodesB);
             lkComponents.put(uid, info);
         }
 
@@ -349,13 +360,39 @@ public final class CircuitValidator {
         }
     }
 
+    private static void checkPortShort(List<String> nodes, String compName, String portName, List<Diagnostic> diagnostics) {
+        if (nodes.size() < 2) return;
+        Set<String> unique = new HashSet<>(nodes);
+        if (unique.size() == 1) {
+            String net = nodes.get(0);
+            if (!net.isEmpty() && !net.equalsIgnoreCase("NIX_NIX_NIX")) {
+                diagnostics.add(new Diagnostic("ERROR", "SHORT_CIRCUIT", compName,
+                        "Component " + compName + " has all " + portName + " terminals connected to the same net: '" + net + "'"));
+            }
+        }
+    }
+
+    private static List<String> parseNodes(String raw) {
+        if (raw == null || raw.isBlank()) return List.of();
+        List<String> list = new ArrayList<>();
+        for (String part : raw.trim().split("/")) {
+            String trimmed = part.trim();
+            if (!trimmed.isEmpty() && !trimmed.equalsIgnoreCase("NIX_NIX_NIX")) {
+                list.add(trimmed);
+            }
+        }
+        return list;
+    }
+
     private static String cleanNode(String raw) {
         if (raw == null) return "";
         String s = raw.trim();
+        if (s.equalsIgnoreCase("NIX_NIX_NIX")) return "";
         if (s.startsWith("/")) s = s.substring(1);
         int slash = s.indexOf('/');
         if (slash >= 0) s = s.substring(0, slash);
-        return s.trim();
+        s = s.trim();
+        return s.equalsIgnoreCase("NIX_NIX_NIX") ? "" : s;
     }
 
     private static String group(String text, String regex) {

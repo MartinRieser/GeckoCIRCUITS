@@ -176,6 +176,7 @@ public final class CircuitBuilder {
             comp.setRawParameters(paramArray);
             comp.setTerminalXLabels(xNodes.toArray(new String[0]));
             comp.setTerminalYLabels(yNodes.toArray(new String[0]));
+            comp.setParameterStrings(new String[]{"NIX_NIX_NIX", "NIX_NIX_NIX", "0"});
             comp.setUniqueObjectIdentifier(uid);
             model.addCircuitComponent(comp);
         }
@@ -216,6 +217,7 @@ public final class CircuitBuilder {
             comp.setRawParameters(normalizeParams(def, params));
             comp.setTerminalXLabels(new String[]{nodes.get(0)});
             comp.setTerminalYLabels(new String[]{nodes.get(1)});
+            comp.setParameterStrings(new String[]{"NIX_NIX_NIX", "NIX_NIX_NIX", "0"});
             comp.setUniqueObjectIdentifier(nextThermId++);
             model.addThermalComponent(comp);
         }

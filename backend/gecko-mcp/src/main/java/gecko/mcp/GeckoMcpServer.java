@@ -24,8 +24,11 @@ public final class GeckoMcpServer {
     }
 
     public static void main(String[] args) {
+        java.io.PrintStream mcpOut = System.out;
+        System.setOut(System.err);
+
         JacksonMcpJsonMapper json = new JacksonMcpJsonMapper(JsonMapper.builder().build());
-        var transport = new StdioServerTransportProvider(json);
+        var transport = new StdioServerTransportProvider(json, System.in, mcpOut);
         var builder = McpServer.sync(transport)
                 .serverInfo(SERVER_NAME, SERVER_VERSION)
                 .capabilities(McpSchema.ServerCapabilities.builder()

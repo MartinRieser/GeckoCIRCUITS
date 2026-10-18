@@ -1,126 +1,143 @@
 #!/usr/bin/env python3
-"""Standard MCP JSON-RPC Stdio Client for GeckoCIRCUITS.
+"""Reusable MCP Client for GeckoCIRCUITS.
 
-Speaks the official Model Context Protocol (JSON-RPC 2.0) over stdin/stdout
-to launch-mcp.py, demonstrating autonomous tool and resource invocation.
+Communicates with gecko-mcp.jar over stdio using JSON-RPC 2.0.
 """
 
 import json
 import subprocess
-import sys
+import threading
 from pathlib import Path
+from typing import Any, Dict, Optional
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-LAUNCHER = REPO_ROOT / "scripts" / "desktop" / "launch-mcp.py"
 
 
-class McpSession:
-    def __init__(self):
+class GeckoMcpClient:
+    def __init__(self, jar_path: Optional[Path] = None, java_path: Optional[Path] = None):
+        self.java_path = java_path or (REPO_ROOT / "desktop" / "app" / "engine" / "runtime" / "bin" / "java.exe")
+        self.jar_path = jar_path or (REPO_ROOT / "desktop" / "app" / "engine" / "gecko-mcp.jar")
+        if not self.jar_path.exists():
+            target_jar = REPO_ROOT / "backend" / "gecko-mcp" / "target" / "gecko-mcp-1.0-jar-with-dependencies.jar"
+            if target_jar.exists():
+                self.jar_path = target_jar
+
+        self.proc: Optional[subprocess.Popen] = None
+        self._next_id = 1
+        self._lock = threading.Lock()
+        self.stderr_lines = []
+
+    def start(self):
+        cmd = [str(self.java_path), "-jar", str(self.jar_path)]
         self.proc = subprocess.Popen(
-            [sys.executable, str(LAUNCHER)],
+            cmd,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True,
-            bufsize=1,
+            bufsize=0,
             cwd=str(REPO_ROOT),
         )
-        self.msg_id = 0
 
-    def send_notification(self, method: str, params: dict = None):
-        req = {
+        def read_stderr():
+            for line in iter(self.proc.stderr.readline, b""):
+                text = line.decode("utf-8", errors="replace").rstrip()
+                self.stderr_lines.append(text)
+
+        threading.Thread(target=read_stderr, daemon=True).start()
+
+        # MCP handshake
+        init_req = {
             "jsonrpc": "2.0",
-            "method": method,
+            "id": self._alloc_id(),
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2024-11-05",
+                "capabilities": {},
+                "clientInfo": {"name": "gecko-agent-client", "version": "1.0"},
+            },
         }
-        if params is not None:
-            req["params"] = params
-        line = json.dumps(req)
-        self.proc.stdin.write(line + "\n")
+        resp = self._send_and_receive(init_req)
+        if "error" in resp:
+            raise RuntimeError(f"Initialization failed: {resp['error']}")
+
+        notif = {"jsonrpc": "2.0", "method": "notifications/initialized"}
+        self._send_notification(notif)
+        return resp.get("result", {})
+
+    def _alloc_id(self) -> int:
+        with self._lock:
+            i = self._next_id
+            self._next_id += 1
+            return i
+
+    def _send_notification(self, notif: Dict[str, Any]):
+        data = json.dumps(notif).encode("utf-8") + b"\n"
+        self.proc.stdin.write(data)
         self.proc.stdin.flush()
 
-    def send_request(self, method: str, params: dict = None) -> dict:
-        self.msg_id += 1
-        req = {
-            "jsonrpc": "2.0",
-            "id": self.msg_id,
-            "method": method,
-        }
-        if params is not None:
-            req["params"] = params
-        
-        line = json.dumps(req)
-        self.proc.stdin.write(line + "\n")
-        self.proc.stdin.flush()
-
-        # Read JSON response (server writes one JSON line per message)
-        while True:
-            resp_line = self.proc.stdout.readline()
-            if not resp_line:
-                stderr = self.proc.stderr.read()
-                raise RuntimeError(f"MCP server exited unexpectedly: {stderr}")
-            resp_line = resp_line.strip()
-            if not resp_line:
-                continue
-            try:
-                resp = json.loads(resp_line)
-                if "id" in resp and resp["id"] == self.msg_id:
-                    if "error" in resp:
-                        raise RuntimeError(f"MCP error {resp['error']}")
-                    return resp.get("result", {})
-            except json.JSONDecodeError:
-                continue
-
-    def initialize(self):
-        result = self.send_request("initialize", {
-            "protocolVersion": "2024-11-05",
-            "capabilities": {},
-            "clientInfo": {"name": "mcp-test-client", "version": "1.0.0"}
-        })
-        self.send_notification("notifications/initialized")
-        return result
-
-    def list_tools(self):
-        return self.send_request("tools/list")
-
-    def call_tool(self, name: str, arguments: dict):
-        result = self.send_request("tools/call", {
-            "name": name,
-            "arguments": arguments
-        })
-        # Unpack text content if present
-        if "content" in result:
-            for item in result["content"]:
-                if item.get("type") == "text":
+    def _send_and_receive(self, req: Dict[str, Any]) -> Dict[str, Any]:
+        data = json.dumps(req).encode("utf-8") + b"\n"
+        with self._lock:
+            self.proc.stdin.write(data)
+            self.proc.stdin.flush()
+            while True:
+                line = self.proc.stdout.readline()
+                if not line:
+                    raise RuntimeError("EOF while reading MCP response")
+                text = line.decode("utf-8", errors="replace").strip()
+                if not text:
+                    continue
+                if text.startswith("{"):
                     try:
-                        return json.loads(item["text"])
-                    except json.JSONDecodeError:
-                        return item["text"]
-        return result
+                        return json.loads(text)
+                    except Exception:
+                        pass
+                self.stderr_lines.append(f"[STDOUT_SKIP] {text}")
 
-    def list_resources(self):
-        return self.send_request("resources/list")
-
-    def read_resource(self, uri: str):
-        return self.send_request("resources/read", {"uri": uri})
+    def call_tool(self, name: str, arguments: Optional[Dict[str, Any]] = None) -> Any:
+        req = {
+            "jsonrpc": "2.0",
+            "id": self._alloc_id(),
+            "method": "tools/call",
+            "params": {
+                "name": name,
+                "arguments": arguments or {},
+            },
+        }
+        resp = self._send_and_receive(req)
+        if "error" in resp:
+            raise RuntimeError(f"Tool {name} error: {resp['error']}")
+        res = resp.get("result", {})
+        if res.get("isError"):
+            msg = res.get("content", [{}])[0].get("text", "Unknown tool error")
+            raise RuntimeError(f"Tool {name} failed: {msg}")
+        contents = res.get("content", [])
+        if contents and contents[0].get("type") == "text":
+            text = contents[0].get("text", "")
+            try:
+                return json.loads(text)
+            except Exception:
+                return text
+        return res
 
     def close(self):
-        try:
-            self.proc.terminate()
-            self.proc.wait(timeout=3)
-        except Exception:
-            self.proc.kill()
+        if self.proc:
+            try:
+                self.proc.terminate()
+                self.proc.wait(timeout=2)
+            except Exception:
+                self.proc.kill()
+            self.proc = None
+
+    def __enter__(self):
+        self.start()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
 
 if __name__ == "__main__":
-    session = McpSession()
-    try:
-        init = session.initialize()
-        print(f"Connected to MCP server: {init.get('serverInfo')}")
-        tools = session.list_tools()
-        tool_names = [t["name"] for t in tools.get("tools", [])]
-        print(f"Available tools ({len(tool_names)}): {tool_names}")
-        resources = session.list_resources()
-        resource_uris = [r["uri"] for r in resources.get("resources", [])]
-        print(f"Available resources ({len(resource_uris)}): {resource_uris}")
-    finally:
-        session.close()
+    with GeckoMcpClient() as client:
+        status = client.call_tool("gecko_server_status")
+        print("Gecko Server Status:", json.dumps(status, indent=2))
