@@ -253,4 +253,189 @@ class CircuitValidatorTest {
         assertFalse(diags.stream().anyMatch(d -> d.get("message").contains("enabledShorted")),
                 "Empty labelEndKnoten should not swallow 'enabledShorted 1' as node name");
     }
+
+    @Test
+    void detectsWireBasedShortCircuit() {
+        String content = """
+                ElementLKAnzahl 1
+                c (0)
+                <ElementLK>
+                labelAnfangsKnoten[] /NIX_NIX_NIX
+                labelEndKnoten[] /NIX_NIX_NIX
+                typ 1
+                uniqueObjectIdentifier 1001
+                idStringDialog R_LOOP
+                x 6
+                y 6
+                orientierung 503
+                parameter[] 10.0
+                <\\ElementLK>
+                
+                verbindungLK (0)
+                <Verbindung>
+                label net_loop
+                x[] 6 6
+                y[] 4 8
+                connectorType 0
+                <\\Verbindung>
+                """;
+
+        Map<String, Object> result = CircuitValidator.validateContent(content, "test_wire_short");
+        assertFalse((Boolean) result.get("valid"));
+        @SuppressWarnings("unchecked")
+        List<Map<String, String>> diags = (List<Map<String, String>>) result.get("diagnostics");
+        assertTrue(diags.stream().anyMatch(d -> "SHORT_CIRCUIT".equals(d.get("rule"))
+                && d.get("component").equals("R_LOOP")),
+                "DRC should detect component shorted across wire loop");
+    }
+
+    @Test
+    void mapsWireLabelsToComponentTerminals() {
+        String content = """
+                ElementLKAnzahl 2
+                c (0)
+                <ElementLK>
+                labelAnfangsKnoten[] /NIX_NIX_NIX
+                labelEndKnoten[] /NIX_NIX_NIX
+                typ 1
+                uniqueObjectIdentifier 1001
+                idStringDialog R1
+                x 6
+                y 6
+                orientierung 503
+                parameter[] 10.0
+                <\\ElementLK>
+                
+                c (1)
+                <ElementLK>
+                labelAnfangsKnoten[] /NIX_NIX_NIX
+                labelEndKnoten[] /NIX_NIX_NIX
+                typ 1
+                uniqueObjectIdentifier 1002
+                idStringDialog R2
+                x 10
+                y 6
+                orientierung 503
+                parameter[] 20.0
+                <\\ElementLK>
+
+                verbindungLK (0)
+                <Verbindung>
+                label v_in
+                x[] 6 10
+                y[] 4 4
+                connectorType 0
+                <\\Verbindung>
+
+                verbindungLK (1)
+                <Verbindung>
+                label 0
+                x[] 6 10
+                y[] 8 8
+                connectorType 0
+                <\\Verbindung>
+                """;
+
+        Map<String, Object> result = CircuitValidator.validateContent(content, "test_wire_mapping");
+        assertTrue((Boolean) result.get("valid"), "Both resistors connected by wires to v_in and ground should be valid");
+        assertEquals(0L, result.get("error_count"));
+        assertEquals(0L, result.get("warning_count"));
+    }
+
+    @Test
+    void detectsWireBasedFloatingPin() {
+        String content = """
+                ElementLKAnzahl 1
+                c (0)
+                <ElementLK>
+                labelAnfangsKnoten[] /NIX_NIX_NIX
+                labelEndKnoten[] /NIX_NIX_NIX
+                typ 1
+                uniqueObjectIdentifier 1001
+                idStringDialog R_FLOAT
+                x 6
+                y 6
+                orientierung 503
+                parameter[] 10.0
+                <\\ElementLK>
+                
+                verbindungLK (0)
+                <Verbindung>
+                label 0
+                x[] 6 10
+                y[] 4 4
+                connectorType 0
+                <\\Verbindung>
+                """;
+
+        Map<String, Object> result = CircuitValidator.validateContent(content, "test_floating_pin");
+        @SuppressWarnings("unchecked")
+        List<Map<String, String>> diags = (List<Map<String, String>>) result.get("diagnostics");
+        assertTrue(diags.stream().anyMatch(d -> "FLOATING_NET".equals(d.get("rule"))
+                && d.get("component").equals("R_FLOAT")),
+                "Floating output pin at (6, 8) should trigger FLOATING_NET warning");
+    }
+
+    @Test
+    void resolvesMultiHopIntersectingWires() {
+        String content = """
+                ElementLKAnzahl 2
+                c (0)
+                <ElementLK>
+                labelAnfangsKnoten[] /NIX_NIX_NIX
+                labelEndKnoten[] /NIX_NIX_NIX
+                typ 4
+                uniqueObjectIdentifier 1001
+                idStringDialog V1
+                x 2
+                y 4
+                orientierung 503
+                parameter[] 10.0
+                <\\ElementLK>
+
+                c (1)
+                <ElementLK>
+                labelAnfangsKnoten[] /NIX_NIX_NIX
+                labelEndKnoten[] /NIX_NIX_NIX
+                typ 1
+                uniqueObjectIdentifier 1002
+                idStringDialog R1
+                x 2
+                y 8
+                orientierung 503
+                parameter[] 10.0
+                <\\ElementLK>
+
+                verbindungLK (0)
+                <Verbindung>
+                label NIX_NIX_NIX
+                x[] 2 5
+                y[] 6 6
+                connectorType 0
+                <\\Verbindung>
+
+                verbindungLK (1)
+                <Verbindung>
+                label 0
+                x[] 5 5
+                y[] 6 10
+                connectorType 0
+                <\\Verbindung>
+
+                verbindungLK (2)
+                <Verbindung>
+                label v_top
+                x[] 2 2
+                y[] 2 10
+                connectorType 0
+                <\\Verbindung>
+                """;
+
+        Map<String, Object> result = CircuitValidator.validateContent(content, "test_multihop_wires");
+        assertTrue((Boolean) result.get("valid"), "Multi-hop connected circuit should be valid");
+        @SuppressWarnings("unchecked")
+        List<Map<String, String>> diags = (List<Map<String, String>>) result.get("diagnostics");
+        assertFalse(diags.stream().anyMatch(d -> "MISSING_GROUND".equals(d.get("rule"))));
+    }
 }
+

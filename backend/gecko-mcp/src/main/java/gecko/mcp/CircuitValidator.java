@@ -1,6 +1,7 @@
 package gecko.mcp;
 
 import gecko.core.allg.SolverType;
+import gecko.core.circuit.ComponentTerminals;
 import gecko.core.circuit.netlist.CircuitNetlist;
 import gecko.core.circuit.netlist.NetlistBuilder;
 import gecko.core.control.ControlCalculatorBuilder;
@@ -135,47 +136,89 @@ public final class CircuitValidator {
         return entry;
     }
 
+    public record Point(int x, int y) {}
+
+    public static final class DisjointSet<T> {
+        private final Map<T, T> parent = new HashMap<>();
+
+        public T find(T item) {
+            T root = parent.get(item);
+            if (root == null) {
+                parent.put(item, item);
+                return item;
+            }
+            if (!root.equals(item)) {
+                root = find(root);
+                parent.put(item, root);
+            }
+            return root;
+        }
+
+        public void union(T itemA, T itemB) {
+            T rootA = find(itemA);
+            T rootB = find(itemB);
+            if (!rootA.equals(rootB)) {
+                parent.put(rootA, rootB);
+            }
+        }
+    }
+
+    private record ComponentData(
+            long uid,
+            String name,
+            int typ,
+            String domain,
+            boolean hasPos,
+            int x,
+            int y,
+            int orient,
+            List<String> nodesA,
+            List<String> nodesB,
+            List<Point> pins
+    ) {}
+
+    private record WireData(
+            String label,
+            int connectorType,
+            List<Point> points
+    ) {}
+
     public static Map<String, Object> validateContent(String content, String circuitName) {
         List<Diagnostic> diagnostics = new ArrayList<>();
 
-        // Parse Power Elements
         Map<Long, Map<String, Object>> lkComponents = new LinkedHashMap<>();
-        Map<String, List<String>> netToComponents = new LinkedHashMap<>();
+        Map<Long, Map<String, Object>> thermComponents = new LinkedHashMap<>();
+        List<ComponentData> allComponents = new ArrayList<>();
         Map<String, Integer> netPointCounts = new LinkedHashMap<>();
-        Set<String> allNets = new LinkedHashSet<>();
+        List<WireData> wires = new ArrayList<>();
 
+        long fallbackUidGen = 100000L;
+
+        // 1. Parse LK Components
         Matcher lkMatcher = ELEMENT_LK.matcher(content);
         while (lkMatcher.find()) {
             String block = lkMatcher.group(1);
             long uid = parseLong(group(block, "uniqueObjectIdentifier\\s+([0-9-]+)"), 0L);
+            if (uid <= 0L) {
+                uid = fallbackUidGen++;
+            }
             String name = named(group(block, "idStringDialog\\s+([^\\s\\r\\n]+)"), "COMP_" + uid);
             int typ = parseInt(group(block, "typ\\s+([0-9]+)"), 0);
+
+            Integer posX = parseOptionalInt(group(block, "(?:^|\\n)x\\s+([0-9-]+)"));
+            Integer posY = parseOptionalInt(group(block, "(?:^|\\n)y\\s+([0-9-]+)"));
+            int orient = parseInt(group(block, "(?:^|\\n)(?:orientierung|orientation)\\s+([0-9]+)"), 503);
+            boolean hasPos = posX != null && posY != null;
+            int x = hasPos ? posX : 0;
+            int y = hasPos ? posY : 0;
 
             List<String> nodesA = parseNodes(group(block, "labelAnfangsKnoten\\[\\][ \\t]*([^\\r\\n]*)"));
             List<String> nodesB = parseNodes(group(block, "labelEndKnoten\\[\\][ \\t]*([^\\r\\n]*)"));
 
-            allNets.addAll(nodesA);
-            allNets.addAll(nodesB);
+            List<Point> pins = computeComponentPins(typ, "LK", hasPos, x, y, orient);
 
-            for (String nA : nodesA) {
-                netToComponents.computeIfAbsent(nA, k -> new ArrayList<>()).add(name);
-            }
-            for (String nB : nodesB) {
-                netToComponents.computeIfAbsent(nB, k -> new ArrayList<>()).add(name);
-            }
-
-            // Rule 1: Short-circuited component
-            if (nodesA.size() == 1 && nodesB.size() == 1) {
-                String nA = nodesA.get(0);
-                String nB = nodesB.get(0);
-                if (!nA.isEmpty() && !nA.equalsIgnoreCase("NIX_NIX_NIX") && nA.equals(nB)) {
-                    diagnostics.add(new Diagnostic("ERROR", "SHORT_CIRCUIT", name,
-                            "Component " + name + " has both terminals connected to the same net: '" + nA + "'"));
-                }
-            } else if (nodesA.size() > 1 || nodesB.size() > 1) {
-                checkPortShort(nodesA, name, "input port", diagnostics);
-                checkPortShort(nodesB, name, "output port", diagnostics);
-            }
+            ComponentData comp = new ComponentData(uid, name, typ, "LK", hasPos, x, y, orient, nodesA, nodesB, pins);
+            allComponents.add(comp);
 
             Map<String, Object> info = new HashMap<>();
             info.put("name", name);
@@ -185,27 +228,31 @@ public final class CircuitValidator {
             lkComponents.put(uid, info);
         }
 
-        // Parse Thermal Elements
-        Map<Long, Map<String, Object>> thermComponents = new LinkedHashMap<>();
+        // 2. Parse Thermal Elements
         Matcher thermMatcher = ELEMENT_THERM.matcher(content);
         while (thermMatcher.find()) {
             String block = thermMatcher.group(1);
             long uid = parseLong(group(block, "uniqueObjectIdentifier\\s+([0-9-]+)"), 0L);
+            if (uid <= 0L) {
+                uid = fallbackUidGen++;
+            }
             String name = named(group(block, "idStringDialog\\s+([^\\s\\r\\n]+)"), "THERM_" + uid);
             int typ = parseInt(group(block, "typ\\s+([0-9]+)"), 0);
+
+            Integer posX = parseOptionalInt(group(block, "(?:^|\\n)x\\s+([0-9-]+)"));
+            Integer posY = parseOptionalInt(group(block, "(?:^|\\n)y\\s+([0-9-]+)"));
+            int orient = parseInt(group(block, "(?:^|\\n)(?:orientierung|orientation)\\s+([0-9]+)"), 503);
+            boolean hasPos = posX != null && posY != null;
+            int x = hasPos ? posX : 0;
+            int y = hasPos ? posY : 0;
 
             List<String> nodesA = parseNodes(group(block, "labelAnfangsKnoten\\[\\][ \\t]*([^\\r\\n]*)"));
             List<String> nodesB = parseNodes(group(block, "labelEndKnoten\\[\\][ \\t]*([^\\r\\n]*)"));
 
-            allNets.addAll(nodesA);
-            allNets.addAll(nodesB);
+            List<Point> pins = computeComponentPins(typ, "THERMAL", hasPos, x, y, orient);
 
-            for (String nA : nodesA) {
-                netToComponents.computeIfAbsent(nA, k -> new ArrayList<>()).add(name);
-            }
-            for (String nB : nodesB) {
-                netToComponents.computeIfAbsent(nB, k -> new ArrayList<>()).add(name);
-            }
+            ComponentData comp = new ComponentData(uid, name, typ, "THERMAL", hasPos, x, y, orient, nodesA, nodesB, pins);
+            allComponents.add(comp);
 
             Map<String, Object> info = new HashMap<>();
             info.put("name", name);
@@ -215,20 +262,213 @@ public final class CircuitValidator {
             thermComponents.put(uid, info);
         }
 
-        // Parse Connections
+        // 3. Parse Connections / Wires
         Matcher connMatcher = CONNECTION_LK.matcher(content);
         while (connMatcher.find()) {
             String block = connMatcher.group(1);
-            String label = named(group(block, "label\\s+([^\\s\\r\\n]+)"), "");
-            int pts = parseInt(group(block, "zeigerAktuell\\s+([0-9]+)"), 0);
-            if (!label.isEmpty() && !label.equalsIgnoreCase("NIX_NIX_NIX")) {
+            String label = named(group(block, "(?:^|\\n)label\\s+([^\\s\\r\\n]+)"), "");
+            if (label.equalsIgnoreCase("NIX_NIX_NIX")) {
+                label = "";
+            }
+            int connType = parseInt(group(block, "(?:^|\\n)connectorType\\s+([0-9]+)"), 0);
+            int pts = parseInt(group(block, "(?:^|\\n)zeigerAktuell\\s+([0-9]+)"), 0);
+            String xLine = group(block, "(?:^|\\n)x(?:\\[\\])?\\s+([0-9\\s-]+)");
+            String yLine = group(block, "(?:^|\\n)y(?:\\[\\])?\\s+([0-9\\s-]+)");
+            int[] xs = parseIntArray(xLine);
+            int[] ys = parseIntArray(yLine);
+            int len = Math.min(xs.length, ys.length);
+            List<Point> pList = new ArrayList<>();
+            for (int i = 0; i < len; i++) {
+                pList.add(new Point(xs[i], ys[i]));
+            }
+            if (!label.isEmpty()) {
                 netPointCounts.put(label, pts);
-                allNets.add(label);
+            }
+            wires.add(new WireData(label, connType, pList));
+        }
+
+        // 4. Build Union-Find Connectivity Graph
+        DisjointSet<String> uf = new DisjointSet<>();
+        Map<String, List<Integer>> wiresAtPoint = new HashMap<>();
+        Set<String> registeredElements = new LinkedHashSet<>();
+
+        // Wires
+        for (int wIdx = 0; wIdx < wires.size(); wIdx++) {
+            WireData w = wires.get(wIdx);
+            if (w.points.isEmpty()) continue;
+            String dom = w.connectorType == 2 ? "TH" : (w.connectorType == 1 ? "CTRL" : "LK");
+            Point first = w.points.get(0);
+            String firstKey = "P:" + dom + ":" + first.x + "," + first.y;
+            registeredElements.add(firstKey);
+
+            for (Point pt : w.points) {
+                String ptKey = "P:" + dom + ":" + pt.x + "," + pt.y;
+                registeredElements.add(ptKey);
+                uf.union(ptKey, firstKey);
+                wiresAtPoint.computeIfAbsent(dom + ":" + pt.x + "," + pt.y, k -> new ArrayList<>()).add(wIdx);
+            }
+            if (!w.label.isEmpty()) {
+                String lKey = isGroundLabel(w.label) ? "L:" + dom + ":0" : "L:" + dom + ":" + cleanLabel(w.label).toLowerCase();
+                registeredElements.add(lKey);
+                uf.union(firstKey, lKey);
+            }
+        }
+
+        // Wire intersections at endpoints
+        for (int wIdx = 0; wIdx < wires.size(); wIdx++) {
+            WireData w = wires.get(wIdx);
+            if (w.points.isEmpty()) continue;
+            String dom = w.connectorType == 2 ? "TH" : (w.connectorType == 1 ? "CTRL" : "LK");
+            Point end1 = w.points.get(0);
+            Point end2 = w.points.get(w.points.size() - 1);
+            for (Point end : List.of(end1, end2)) {
+                String endPointKey = "P:" + dom + ":" + end.x + "," + end.y;
+                for (int otherIdx : wiresAtPoint.getOrDefault(dom + ":" + end.x + "," + end.y, List.of())) {
+                    if (otherIdx != wIdx) {
+                        Point otherFirst = wires.get(otherIdx).points.get(0);
+                        String otherFirstKey = "P:" + dom + ":" + otherFirst.x + "," + otherFirst.y;
+                        uf.union(endPointKey, otherFirstKey);
+                    }
+                }
+            }
+        }
+
+        // Components
+        Map<String, List<String>> pinsAtPoint = new HashMap<>();
+
+        for (ComponentData comp : allComponents) {
+            String dom = "THERMAL".equals(comp.domain) ? "TH" : "LK";
+            int termCount = comp.typ == 23 ? 4 : (comp.typ == 33 ? 3 : 2);
+
+            for (int t = 0; t < termCount; t++) {
+                String tKey = "T:" + comp.uid + ":" + t;
+                registeredElements.add(tKey);
+
+                String lbl = getTerminalLabel(comp, t);
+                if (lbl != null && !lbl.isEmpty() && !lbl.equalsIgnoreCase("NIX_NIX_NIX")) {
+                    String lKey = isGroundLabel(lbl) ? "L:" + dom + ":0" : "L:" + dom + ":" + cleanLabel(lbl).toLowerCase();
+                    registeredElements.add(lKey);
+                    uf.union(tKey, lKey);
+                }
+
+                if (comp.hasPos && t < comp.pins.size()) {
+                    Point pin = comp.pins.get(t);
+                    String coordKey = dom + ":" + pin.x + "," + pin.y;
+                    if (wiresAtPoint.containsKey(coordKey)) {
+                        String ptKey = "P:" + coordKey;
+                        registeredElements.add(ptKey);
+                        uf.union(tKey, ptKey);
+                    }
+                    pinsAtPoint.computeIfAbsent(coordKey, k -> new ArrayList<>()).add(tKey);
+                }
+            }
+        }
+
+        // Union coincident component terminals at the same point
+        for (List<String> coincident : pinsAtPoint.values()) {
+            if (coincident.size() > 1) {
+                String first = coincident.get(0);
+                for (int i = 1; i < coincident.size(); i++) {
+                    uf.union(coincident.get(i), first);
+                }
+            }
+        }
+
+        // 5. Canonical Net Names resolution
+        Map<String, Set<String>> classMembers = new HashMap<>();
+        for (String el : registeredElements) {
+            String root = uf.find(el);
+            classMembers.computeIfAbsent(root, k -> new LinkedHashSet<>()).add(el);
+        }
+
+        Map<String, String> rootToCanonicalNet = new HashMap<>();
+        int syntheticNetCounter = 1;
+        for (Map.Entry<String, Set<String>> entry : classMembers.entrySet()) {
+            String root = entry.getKey();
+            Set<String> members = entry.getValue();
+            String canonical = resolveCanonicalName(members, syntheticNetCounter++);
+            rootToCanonicalNet.put(root, canonical);
+        }
+
+        // 6. Map Nets to Components
+        Map<String, List<String>> netToComponents = new LinkedHashMap<>();
+        Set<String> allNets = new LinkedHashSet<>();
+
+        for (WireData w : wires) {
+            if (!w.label.isEmpty() && w.connectorType == 0) {
+                String dom = "LK";
+                String lKey = isGroundLabel(w.label) ? "L:" + dom + ":0" : "L:" + dom + ":" + cleanLabel(w.label).toLowerCase();
+                String root = uf.find(lKey);
+                String net = rootToCanonicalNet.getOrDefault(root, cleanLabel(w.label));
+                allNets.add(net);
+            }
+        }
+
+        for (ComponentData comp : allComponents) {
+            int termCount = comp.typ == 23 ? 4 : (comp.typ == 33 ? 3 : 2);
+            for (int t = 0; t < termCount; t++) {
+                String tKey = "T:" + comp.uid + ":" + t;
+                String root = uf.find(tKey);
+                String net = rootToCanonicalNet.get(root);
+                if (net == null) continue;
+
+                boolean hasLbl = getTerminalLabel(comp, t) != null;
+                String dom = comp.domain.equals("THERMAL") ? "TH:" : "LK:";
+                boolean touches = comp.hasPos && t < comp.pins.size() && (
+                        wiresAtPoint.containsKey(dom + comp.pins.get(t).x + "," + comp.pins.get(t).y)
+                        || pinsAtPoint.getOrDefault(dom + comp.pins.get(t).x + "," + comp.pins.get(t).y, List.of()).size() > 1
+                );
+
+                if (hasLbl || touches || comp.hasPos) {
+                    allNets.add(net);
+                    netToComponents.computeIfAbsent(net, k -> new ArrayList<>()).add(comp.name);
+                }
+            }
+        }
+
+        // Rule 1: Short-circuited component check across net equivalence classes
+        for (ComponentData comp : allComponents) {
+            if (comp.typ == 23) { // LK_TRANS
+                String pIn = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":0"));
+                String pOut = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":1"));
+                if (pIn != null && pOut != null && pIn.equals(pOut)) {
+                    diagnostics.add(new Diagnostic("ERROR", "SHORT_CIRCUIT", comp.name,
+                            "Component " + comp.name + " has primary terminals connected to the same net: '" + pIn + "'"));
+                }
+                String sIn = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":2"));
+                String sOut = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":3"));
+                if (sIn != null && sOut != null && sIn.equals(sOut)) {
+                    diagnostics.add(new Diagnostic("ERROR", "SHORT_CIRCUIT", comp.name,
+                            "Component " + comp.name + " has secondary terminals connected to the same net: '" + sIn + "'"));
+                }
+            } else if (comp.typ == 33) { // LK_BJT
+                String cNet = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":0"));
+                String eNet = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":2"));
+                if (cNet != null && eNet != null && cNet.equals(eNet)) {
+                    diagnostics.add(new Diagnostic("ERROR", "SHORT_CIRCUIT", comp.name,
+                            "Component " + comp.name + " has collector and emitter connected to the same net: '" + cNet + "'"));
+                }
+            } else {
+                boolean hasA = getTerminalLabel(comp, 0) != null || (comp.hasPos && comp.pins.size() > 0);
+                boolean hasB = getTerminalLabel(comp, 1) != null || (comp.hasPos && comp.pins.size() > 1);
+                if (hasA && hasB) {
+                    String netA = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":0"));
+                    String netB = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":1"));
+                    if (netA != null && netB != null && netA.equals(netB)) {
+                        diagnostics.add(new Diagnostic("ERROR", "SHORT_CIRCUIT", comp.name,
+                                "Component " + comp.name + " has both terminals connected to the same net: '" + netA + "'"));
+                    }
+                }
+            }
+
+            if (comp.nodesA.size() > 1 || comp.nodesB.size() > 1) {
+                checkPortShort(comp.nodesA, comp.name, "input port", diagnostics);
+                checkPortShort(comp.nodesB, comp.name, "output port", diagnostics);
             }
         }
 
         // Rule 2: Ground existence check
-        boolean hasGround = allNets.stream().anyMatch(n -> n.equals("0") || n.equalsIgnoreCase("gnd") || n.equalsIgnoreCase("ground"));
+        boolean hasGround = allNets.stream().anyMatch(CircuitValidator::isGroundLabel);
         if (!hasGround) {
             diagnostics.add(new Diagnostic("ERROR", "MISSING_GROUND", "SYSTEM",
                     "Circuit has no explicit ground reference (node '0' or 'GND'). MNA matrix solution requires a reference node."));
@@ -238,7 +478,7 @@ public final class CircuitValidator {
         for (Map.Entry<String, List<String>> entry : netToComponents.entrySet()) {
             String net = entry.getKey();
             List<String> comps = entry.getValue();
-            if (comps.size() == 1 && !net.equals("0") && !net.equalsIgnoreCase("gnd")) {
+            if (comps.size() == 1 && !isGroundLabel(net)) {
                 diagnostics.add(new Diagnostic("WARNING", "FLOATING_NET", comps.get(0),
                         "Net '" + net + "' is only connected to component " + comps.get(0) + " (floating terminal)."));
             }
@@ -445,5 +685,156 @@ public final class CircuitValidator {
     private static long parseLong(String value, long fallback) {
         if (value == null) return fallback;
         try { return Long.parseLong(value.trim()); } catch (NumberFormatException e) { return fallback; }
+    }
+
+    private static List<Point> computeComponentPins(int typ, String domain, boolean hasPos, int x, int y, int orient) {
+        List<Point> pins = new ArrayList<>();
+        if (!hasPos) {
+            return pins;
+        }
+        if ("LK".equals(domain)) {
+            if (typ == 23) { // LK_TRANS
+                int primX, primY, primOrient, secX, secY, secOrient;
+                switch (orient) {
+                    case ComponentTerminals.SOUTH_NORTH -> { primX = x + 1; primY = y; primOrient = 501; secX = x - 1; secY = y; secOrient = 501; }
+                    case ComponentTerminals.EAST_WEST -> { primX = x; primY = y - 1; primOrient = 504; secX = x; secY = y + 1; secOrient = 504; }
+                    case ComponentTerminals.WEST_EAST -> { primX = x; primY = y + 1; primOrient = 502; secX = x; secY = y - 1; secOrient = 502; }
+                    default -> { primX = x - 1; primY = y; primOrient = 503; secX = x + 1; secY = y; secOrient = 503; }
+                }
+                int[] pDir = ComponentTerminals.flowVector(primOrient);
+                int[] sDir = ComponentTerminals.flowVector(secOrient);
+                pins.add(new Point(primX - pDir[0] * 2, primY - pDir[1] * 2));
+                pins.add(new Point(primX + pDir[0] * 2, primY + pDir[1] * 2));
+                pins.add(new Point(secX - sDir[0] * 2, secY - sDir[1] * 2));
+                pins.add(new Point(secX + sDir[0] * 2, secY + sDir[1] * 2));
+            } else if (typ == 33) { // LK_BJT
+                int[] dir = ComponentTerminals.flowVector(orient);
+                pins.add(new Point(x - dir[0] * 2, y - dir[1] * 2));
+                pins.add(rotatePinOffset(x, y, orient, -2, 0));
+                pins.add(new Point(x + dir[0] * 2, y + dir[1] * 2));
+            } else {
+                int[] dir = ComponentTerminals.flowVector(orient);
+                pins.add(new Point(x - dir[0] * 2, y - dir[1] * 2));
+                pins.add(new Point(x + dir[0] * 2, y + dir[1] * 2));
+            }
+        } else if ("THERMAL".equals(domain)) {
+            int[] dir = ComponentTerminals.flowVector(orient);
+            pins.add(new Point(x - dir[0] * 2, y - dir[1] * 2));
+            pins.add(new Point(x + dir[0] * 2, y + dir[1] * 2));
+        }
+        return pins;
+    }
+
+    private static String getTerminalLabel(ComponentData comp, int t) {
+        if (comp.typ == 23) {
+            return switch (t) {
+                case 0 -> comp.nodesA.size() > 0 ? comp.nodesA.get(0) : null;
+                case 1 -> comp.nodesA.size() > 1 ? comp.nodesA.get(1) : null;
+                case 2 -> comp.nodesB.size() > 0 ? comp.nodesB.get(0) : null;
+                case 3 -> comp.nodesB.size() > 1 ? comp.nodesB.get(1) : null;
+                default -> null;
+            };
+        } else if (comp.typ == 33) {
+            return switch (t) {
+                case 0 -> comp.nodesA.size() > 0 ? comp.nodesA.get(0) : null;
+                case 1 -> null;
+                case 2 -> comp.nodesB.size() > 0 ? comp.nodesB.get(0) : null;
+                default -> null;
+            };
+        } else {
+            return switch (t) {
+                case 0 -> comp.nodesA.size() > 0 ? comp.nodesA.get(0) : null;
+                case 1 -> comp.nodesB.size() > 0 ? comp.nodesB.get(0) : null;
+                default -> null;
+            };
+        }
+    }
+
+    private static String resolveCanonicalName(Set<String> set, int fallbackId) {
+        for (String item : set) {
+            if (item.startsWith("L:")) {
+                String lbl = item.substring(item.lastIndexOf(':') + 1);
+                if (isGroundLabel(lbl)) {
+                    return "0";
+                }
+            }
+        }
+        for (String item : set) {
+            if (item.startsWith("L:")) {
+                String lbl = item.substring(item.lastIndexOf(':') + 1);
+                if (!lbl.isEmpty() && !lbl.equalsIgnoreCase("NIX_NIX_NIX")) {
+                    return lbl;
+                }
+            }
+        }
+        for (String item : set) {
+            if (item.startsWith("P:")) {
+                String coords = item.substring(item.lastIndexOf(':') + 1);
+                return "NET_" + coords.replace(',', '_');
+            }
+        }
+        return "NET_" + fallbackId;
+    }
+
+    private static List<Point> rasterizeSegment(Point p1, Point p2) {
+        List<Point> points = new ArrayList<>();
+        int dx = Integer.compare(p2.x, p1.x);
+        int dy = Integer.compare(p2.y, p1.y);
+        int currX = p1.x;
+        int currY = p1.y;
+        points.add(new Point(currX, currY));
+        while (currX != p2.x || currY != p2.y) {
+            if (currX != p2.x) currX += dx;
+            if (currY != p2.y) currY += dy;
+            points.add(new Point(currX, currY));
+        }
+        return points;
+    }
+
+    private static int[] parseIntArray(String line) {
+        if (line == null || line.isBlank()) return new int[0];
+        String[] parts = line.trim().split("\\s+");
+        List<Integer> list = new ArrayList<>();
+        for (String p : parts) {
+            try {
+                list.add(Integer.parseInt(p.trim()));
+            } catch (NumberFormatException ignored) {}
+        }
+        int[] res = new int[list.size()];
+        for (int i = 0; i < list.size(); i++) res[i] = list.get(i);
+        return res;
+    }
+
+    private static Point rotatePinOffset(int cx, int cy, int orient, int posX, int posY) {
+        return switch (orient) {
+            case ComponentTerminals.EAST_WEST -> new Point(cx + posY, cy + posX);
+            case ComponentTerminals.SOUTH_NORTH -> new Point(cx - posX, cy + posY);
+            case ComponentTerminals.WEST_EAST -> new Point(cx - posY, cy - posX);
+            default -> new Point(cx + posX, cy - posY); // NORTH_SOUTH (503)
+        };
+    }
+
+    private static boolean isGroundLabel(String label) {
+        if (label == null) return false;
+        String trimmed = label.trim().toLowerCase();
+        if (trimmed.startsWith("/")) trimmed = trimmed.substring(1);
+        return trimmed.equals("0") || trimmed.equals("gnd") || trimmed.equals("ground");
+    }
+
+    private static String cleanLabel(String raw) {
+        if (raw == null) return "";
+        String s = raw.trim();
+        if (s.startsWith("/")) s = s.substring(1).trim();
+        if (s.equalsIgnoreCase("NIX_NIX_NIX")) return "";
+        return s;
+    }
+
+    private static Integer parseOptionalInt(String value) {
+        if (value == null || value.isBlank()) return null;
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 }
