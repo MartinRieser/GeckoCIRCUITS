@@ -161,4 +161,96 @@ class CircuitValidatorTest {
         List<Map<String, String>> diags = (List<Map<String, String>>) result.get("diagnostics");
         assertTrue(diags.stream().anyMatch(d -> "UNBALANCED_BRACES".equals(d.get("rule"))));
     }
+
+    @Test
+    void recognizesThermalComponentsAndAllowsCoupledProbes() {
+        String content = """
+                ElementLKAnzahl 1
+                c (0)
+                <ElementLK>
+                labelAnfangsKnoten[] /in
+                labelEndKnoten[] /0
+                typ 1
+                uniqueObjectIdentifier 1001
+                parameter[] 10.0
+                <\\ElementLK>
+                
+                ElementTHERMAnzahl 1
+                c (0)
+                <ElementTHERM>
+                labelAnfangsKnoten[] /Tj
+                labelEndKnoten[] /Tamb
+                typ 46
+                uniqueObjectIdentifier 3001
+                idStringDialog R_TH_JC
+                parameter[] 0.5 0.0 0.0
+                <\\ElementTHERM>
+
+                ElementCONTROLAnzahl 1
+                c (0)
+                <ElementCONTROL>
+                typ 1
+                uniqueObjectIdentifier 2001
+                idStringDialog VM_TH
+                coupledReferenceID[] 3001
+                <\\ElementCONTROL>
+                """;
+
+        Map<String, Object> result = CircuitValidator.validateContent(content, "test_thermal");
+        assertTrue((Boolean) result.get("valid"), "Thermal component and coupled probe should be valid");
+        assertEquals(1, result.get("thermal_components"));
+    }
+
+    @Test
+    void recognizesWireBasedGroundReference() {
+        String content = """
+                ElementLKAnzahl 1
+                c (0)
+                <ElementLK>
+                labelAnfangsKnoten[] /NIX_NIX_NIX
+                labelEndKnoten[] /NIX_NIX_NIX
+                typ 1
+                uniqueObjectIdentifier 1001
+                idStringDialog R1
+                parameter[] 10.0
+                <\\ElementLK>
+                
+                verbindungLK (0)
+                <Verbindung>
+                label 0
+                zeigerAktuell 2
+                x[] 5 5
+                y[] 5 6
+                <\\Verbindung>
+                """;
+
+        Map<String, Object> result = CircuitValidator.validateContent(content, "test_wire_ground");
+        @SuppressWarnings("unchecked")
+        List<Map<String, String>> diags = (List<Map<String, String>>) result.get("diagnostics");
+        assertFalse(diags.stream().anyMatch(d -> "MISSING_GROUND".equals(d.get("rule"))),
+                "Wire labeled '0' should satisfy ground requirement");
+    }
+
+    @Test
+    void emptyTerminalNodeDoesNotSwallowNextLineAttribute() {
+        String content = """
+                ElementLKAnzahl 1
+                c (0)
+                <ElementLK>
+                labelAnfangsKnoten[] /0
+                labelEndKnoten[] 
+                enabledShorted 1
+                typ 1
+                uniqueObjectIdentifier 1001
+                idStringDialog R1
+                parameter[] 10.0
+                <\\ElementLK>
+                """;
+
+        Map<String, Object> result = CircuitValidator.validateContent(content, "test_empty_node");
+        @SuppressWarnings("unchecked")
+        List<Map<String, String>> diags = (List<Map<String, String>>) result.get("diagnostics");
+        assertFalse(diags.stream().anyMatch(d -> d.get("message").contains("enabledShorted")),
+                "Empty labelEndKnoten should not swallow 'enabledShorted 1' as node name");
+    }
 }

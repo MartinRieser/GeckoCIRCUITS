@@ -218,7 +218,9 @@ public final class CircuitBuilder {
             comp.setTerminalXLabels(new String[]{nodes.get(0)});
             comp.setTerminalYLabels(new String[]{nodes.get(1)});
             comp.setParameterStrings(new String[]{"NIX_NIX_NIX", "NIX_NIX_NIX", "0"});
-            comp.setUniqueObjectIdentifier(nextThermId++);
+            long uid = nextThermId++;
+            comp.setUniqueObjectIdentifier(uid);
+            componentIdMap.put(name(c), uid);
             model.addThermalComponent(comp);
         }
 

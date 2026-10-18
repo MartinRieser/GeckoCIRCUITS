@@ -42,6 +42,7 @@ public final class CircuitValidator {
 
     private static final Pattern ELEMENT_LK = Pattern.compile("<ElementLK>([\\s\\S]*?)<[\\\\/]+ElementLK>");
     private static final Pattern ELEMENT_CONTROL = Pattern.compile("<ElementCONTROL>([\\s\\S]*?)<[\\\\/]+ElementCONTROL>");
+    private static final Pattern ELEMENT_THERM = Pattern.compile("<ElementTHERM>([\\s\\S]*?)<[\\\\/]+ElementTHERM>");
     private static final Pattern CONNECTION_LK = Pattern.compile("<(?:Connection|Verbindung)>([\\s\\S]*?)<[\\\\/]+(?:Connection|Verbindung)>");
 
     private CircuitValidator() {
@@ -150,8 +151,8 @@ public final class CircuitValidator {
             String name = named(group(block, "idStringDialog\\s+([^\\s\\r\\n]+)"), "COMP_" + uid);
             int typ = parseInt(group(block, "typ\\s+([0-9]+)"), 0);
 
-            List<String> nodesA = parseNodes(group(block, "labelAnfangsKnoten\\[\\]\\s+([^\\r\\n]+)"));
-            List<String> nodesB = parseNodes(group(block, "labelEndKnoten\\[\\]\\s+([^\\r\\n]+)"));
+            List<String> nodesA = parseNodes(group(block, "labelAnfangsKnoten\\[\\][ \\t]*([^\\r\\n]*)"));
+            List<String> nodesB = parseNodes(group(block, "labelEndKnoten\\[\\][ \\t]*([^\\r\\n]*)"));
 
             allNets.addAll(nodesA);
             allNets.addAll(nodesB);
@@ -184,14 +185,45 @@ public final class CircuitValidator {
             lkComponents.put(uid, info);
         }
 
+        // Parse Thermal Elements
+        Map<Long, Map<String, Object>> thermComponents = new LinkedHashMap<>();
+        Matcher thermMatcher = ELEMENT_THERM.matcher(content);
+        while (thermMatcher.find()) {
+            String block = thermMatcher.group(1);
+            long uid = parseLong(group(block, "uniqueObjectIdentifier\\s+([0-9-]+)"), 0L);
+            String name = named(group(block, "idStringDialog\\s+([^\\s\\r\\n]+)"), "THERM_" + uid);
+            int typ = parseInt(group(block, "typ\\s+([0-9]+)"), 0);
+
+            List<String> nodesA = parseNodes(group(block, "labelAnfangsKnoten\\[\\][ \\t]*([^\\r\\n]*)"));
+            List<String> nodesB = parseNodes(group(block, "labelEndKnoten\\[\\][ \\t]*([^\\r\\n]*)"));
+
+            allNets.addAll(nodesA);
+            allNets.addAll(nodesB);
+
+            for (String nA : nodesA) {
+                netToComponents.computeIfAbsent(nA, k -> new ArrayList<>()).add(name);
+            }
+            for (String nB : nodesB) {
+                netToComponents.computeIfAbsent(nB, k -> new ArrayList<>()).add(name);
+            }
+
+            Map<String, Object> info = new HashMap<>();
+            info.put("name", name);
+            info.put("type", typ);
+            info.put("nodesA", nodesA);
+            info.put("nodesB", nodesB);
+            thermComponents.put(uid, info);
+        }
+
         // Parse Connections
         Matcher connMatcher = CONNECTION_LK.matcher(content);
         while (connMatcher.find()) {
             String block = connMatcher.group(1);
             String label = named(group(block, "label\\s+([^\\s\\r\\n]+)"), "");
             int pts = parseInt(group(block, "zeigerAktuell\\s+([0-9]+)"), 0);
-            if (!label.isEmpty()) {
+            if (!label.isEmpty() && !label.equalsIgnoreCase("NIX_NIX_NIX")) {
                 netPointCounts.put(label, pts);
+                allNets.add(label);
             }
         }
 
@@ -225,13 +257,13 @@ public final class CircuitValidator {
             // Rule 4: Control coupling integrity (Probes & Gates)
             if (typ == 1 || typ == 2) { // Voltmeter / Ammeter
                 if (coupledId > 0L) {
-                    if (!lkComponents.containsKey(coupledId)) {
+                    if (!lkComponents.containsKey(coupledId) && !thermComponents.containsKey(coupledId)) {
                         diagnostics.add(new Diagnostic("ERROR", "DANGLING_PROBE", name,
-                                "Probe " + name + " has coupledReferenceID=" + coupledId + " which does not match any power component."));
+                                "Probe " + name + " has coupledReferenceID=" + coupledId + " which does not match any power or thermal component."));
                     }
                 } else {
-                    String inNode = cleanNode(group(block, "labelAnfangsKnoten\\[\\]\\s+([^\\r\\n]+)"));
-                    String outNode = cleanNode(group(block, "labelEndKnoten\\[\\]\\s+([^\\r\\n]+)"));
+                    String inNode = cleanNode(group(block, "labelAnfangsKnoten\\[\\][ \\t]*([^\\r\\n]*)"));
+                    String outNode = cleanNode(group(block, "labelEndKnoten\\[\\][ \\t]*([^\\r\\n]*)"));
                     if (inNode.isEmpty() && outNode.isEmpty()) {
                         diagnostics.add(new Diagnostic("ERROR", "DANGLING_PROBE", name,
                                 "Probe " + name + " is neither coupled to a component nor connected to circuit nodes."));
@@ -318,6 +350,7 @@ public final class CircuitValidator {
         result.put("error_count", errorCount);
         result.put("warning_count", warningCount);
         result.put("power_components", lkComponents.size());
+        result.put("thermal_components", thermComponents.size());
         result.put("control_components", ctrlComponents.size());
         result.put("nets_count", allNets.size());
 
