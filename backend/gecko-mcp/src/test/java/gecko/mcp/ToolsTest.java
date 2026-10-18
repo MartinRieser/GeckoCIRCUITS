@@ -12,6 +12,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -227,5 +228,25 @@ class ToolsTest {
         } finally {
             Files.deleteIfExists(temp);
         }
+    }
+
+    @Test
+    void measureMetricsEndToEndOnFixture() throws Exception {
+        Path circuit = fixture("rc-lowpass.ipes");
+        GeckoTools.ToolSpec measure = GeckoTools.all().stream()
+                .filter(tool -> tool.name().equals("gecko_measure_metrics"))
+                .findFirst().orElseThrow();
+        Map<String, Object> args = new java.util.HashMap<>();
+        args.put("circuit_path", circuit.toString());
+        args.put("duration", 0.005);
+        args.put("dt", 1e-6);
+        args.put("v_out_signal", "uOUT");
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> result = (Map<String, Object>) measure.handler().apply(args);
+        assertNotNull(result);
+        assertTrue(result.containsKey("sample_count"));
+        assertTrue(result.containsKey("signals"));
+        assertTrue(result.containsKey("system_metrics"));
     }
 }

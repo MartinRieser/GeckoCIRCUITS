@@ -188,19 +188,36 @@ final class GeckoTools {
 
     private static ToolSpec measureMetrics() {
         return new ToolSpec("gecko_measure_metrics",
-                "Compute comprehensive power electronics converter figures of merit (RMS, peak-to-peak ripple %, "
-                        + "average active power, apparent power, power factor, and conversion efficiency) directly "
-                        + "on simulation results without streaming massive raw time-series over stdio.",
+                "Compute comprehensive multi-domain figures of merit across electrical, thermal, magnetic, "
+                        + "and mechanical domains (RMS, ripple %, active power, power factor, efficiency, "
+                        + "junction temperatures, core flux/Steinmetz losses, motor speed/torque/settling) "
+                        + "directly on simulation results without streaming massive raw time-series over stdio.",
                 objectSchema(properties(
                         Map.of("circuit_path", str("Path to the .ipes file")),
                         Map.of("duration", num("Simulation duration (s); default 20e-3")),
                         Map.of("dt", num("Time step (s); default 1e-6")),
                         Map.of("start_time", num("Start time for steady-state analysis window (s); default last 50%")),
+                        Map.of("signals", arrayOf("Optional list of specific probe signal names to calculate statistics for", "string")),
                         Map.of("v_in_signal", str("Input voltage probe signal name (e.g. uIN, v_grid)")),
                         Map.of("i_in_signal", str("Input current probe signal name (e.g. iIN, i_grid)")),
                         Map.of("v_out_signal", str("Output voltage probe signal name (e.g. uOUT, v_dc)")),
                         Map.of("i_out_signal", str("Output load current probe signal name (e.g. iOUT, i_load)")),
                         Map.of("is_three_phase", bool("Set true if input is 3-phase AC; scales 1-phase reference power by 3")),
+                        Map.of("thermal_signals", arrayOf("Optional thermal junction temperature signal names (e.g. Tj_IGBT, T_sink)", "string")),
+                        Map.of("ambient_temperature", num("Ambient reference temperature in degC for delta T calculation; default 25.0")),
+                        Map.of("flux_signals", arrayOf("Optional magnetic flux signal names (e.g. Phi_Core, B_probe)", "string")),
+                        Map.of("i_inductor_signals", arrayOf("Optional inductor current signal names for magnetic stress analysis (e.g. i_L1, i_boost)", "string")),
+                        Map.of("core_area_m2", num("Magnetic core cross-sectional area A_e (m^2) for flux density B calculation")),
+                        Map.of("core_volume_m3", num("Magnetic core effective volume V_e (m^3) for total core loss calculation")),
+                        Map.of("i_sat", num("Inductor core saturation current I_sat (A) for saturation margin calculation")),
+                        Map.of("inductance", num("Inductance value L (H) for stored inductive energy calculation")),
+                        Map.of("steinmetz_k", num("Steinmetz core loss coefficient k")),
+                        Map.of("steinmetz_alpha", num("Steinmetz frequency exponent alpha")),
+                        Map.of("steinmetz_beta", num("Steinmetz flux density exponent beta")),
+                        Map.of("frequency", num("Operating/switching frequency (Hz) for Steinmetz core loss density calculation")),
+                        Map.of("speed_signals", arrayOf("Optional mechanical rotor speed signal names (e.g. omega, w_rotor, rpm)", "string")),
+                        Map.of("torque_signals", arrayOf("Optional mechanical torque signal names (e.g. T_mech, T_e, torque)", "string")),
+                        Map.of("target_speed", num("Target reference speed in rad/s for settling time (2% band) and speed tracking error %")),
                         runOptionsSchemaProperties()),
                         List.of("circuit_path")),
                 args -> {
@@ -209,20 +226,7 @@ final class GeckoTools {
                         throw new IllegalArgumentException("Circuit file not found: " + path);
                     }
                     SimulationService.ParsedCsv csv = SimulationService.simulateToCsv(path, args);
-
-                    double startTime = num_(args, "start_time", -1.0);
-                    List<String> signals = null;
-                    if (args.get("signals") instanceof List<?> list) {
-                        signals = list.stream().map(String::valueOf).toList();
-                    }
-                    String vIn = strOrNull(args, "v_in_signal");
-                    String iIn = strOrNull(args, "i_in_signal");
-                    String vOut = strOrNull(args, "v_out_signal");
-                    String iOut = strOrNull(args, "i_out_signal");
-                    boolean threePhase = Boolean.TRUE.equals(args.get("is_three_phase"))
-                            || "true".equalsIgnoreCase(String.valueOf(args.get("is_three_phase")));
-
-                    return PowerMetricsCalculator.calculate(csv, startTime, signals, vIn, iIn, vOut, iOut, threePhase);
+                    return PowerMetricsCalculator.calculate(csv, args);
                 });
     }
 
