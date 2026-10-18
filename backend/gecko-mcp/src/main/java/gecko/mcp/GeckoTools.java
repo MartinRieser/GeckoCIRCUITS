@@ -123,13 +123,13 @@ final class GeckoTools {
 
     private static ToolSpec createCircuit() {
         return new ToolSpec("gecko_create_circuit",
-                "Synthesize a new GeckoCIRCUITS (.ipes) model from a high-level schematic netlist. "
-                        + "Supports N-terminal components (e.g. the 3-phase PMSM_MOTOR): the 'nodes' array "
-                        + "must match the component's catalog pins, split into input and output sides. "
-                        + "Automatically computes collision-free 2D schematic layouts, places components, "
-                        + "routes net connections, wires control probes and gates, and normalizes companion "
-                        + "parameter slots for MNA numerical stability. Expert components without documented "
-                        + "parameter names accept 'parameters_raw' (numeric slot vector).",
+                "Synthesize a new GeckoCIRCUITS (.ipes) model across power, control, thermal, and magnetic domains. "
+                        + "Supports N-terminal components (e.g. PMSM_MOTOR), mutual inductor coupling (coupled_inductors, "
+                        + "auto-upgrading to LK_LKOP2), nonlinear saturating inductors (saturation_table), declarative "
+                        + "electro-thermal networks (Foster & Cauer RC chains via thermal_networks, loss coupling via TH_PvCHIP, "
+                        + "ambient reference via TH_TEMP), and direct thermal_components (TH_RTH, TH_CTH, TH_FLOW, TH_TEMP, TH_AMBIENT, TH_GLOBAL_TERMINAL). "
+                        + "Automatically computes collision-free 2D schematic layouts, places components, routes net connections, "
+                        + "wires control probes and gates, and normalizes companion parameter slots for MNA numerical stability.",
                 objectSchema(properties(
                         Map.of("output_path", str("Output .ipes path relative to workspace (e.g. resources/projects/my_circuit.ipes)")),
                         Map.of("simulation", objectOf("Simulation parameters", properties(
@@ -137,9 +137,12 @@ final class GeckoTools {
                                 Map.of("dt", num("Simulation timestep in seconds (default 1e-6)")),
                                 Map.of("solver", num("Solver algorithm: 0=Backward Euler (BE), 1=Trapezoidal (TRZ), 2=Gear-Shichman (GS)"))
                         ))),
-                        Map.of("components", arrayOf("List of power circuit components to place and connect", "object")),
+                        Map.of("components", arrayOf("List of power circuit components to place and connect (RESISTOR, INDUCTOR, COUPLED_INDUCTOR, NONLINEAR_INDUCTOR, CAPACITOR, SWITCH, DIODE, IGBT, MOSFET, BJT, TRANSFORMER, PMSM_MOTOR)", "object")),
+                        Map.of("coupled_inductors", arrayOf("Declarative mutual inductances between inductors (e.g. [{'inductors': ['L1', 'L2'], 'k': 0.98}])", "object")),
+                        Map.of("thermal_components", arrayOf("Direct thermal components (TH_RTH, TH_CTH, TH_FLOW, TH_TEMP, TH_AMBIENT, TH_PvCHIP, TH_GLOBAL_TERMINAL)", "object")),
+                        Map.of("thermal_networks", arrayOf("Declarative Foster/Cauer thermal networks (e.g. [{'target_switch': 'SW', 'model_type': 'foster', 'r_th': [0.4, 0.3], 'c_th': [0.01, 0.05], 'ambient_temperature': 25.0}])", "object")),
                         Map.of("control", objectOf("Control domain definitions (probes, microcontroller script blocks, gates)", properties(
-                                Map.of("probes", arrayOf("Measurement probes (VOLTMETER, AMMETER) coupled to power components", "object")),
+                                Map.of("probes", arrayOf("Measurement probes (VOLTMETER, AMMETER) coupled to power/thermal components or node pairs", "object")),
                                 Map.of("script_blocks", arrayOf("Microcontroller script blocks (PI loops, PWM generators)", "object")),
                                 Map.of("gates", arrayOf("Gate drivers coupling control signals to semiconductor switches", "object"))
                         )))),

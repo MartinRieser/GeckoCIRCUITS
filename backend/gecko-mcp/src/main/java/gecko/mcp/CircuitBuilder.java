@@ -94,6 +94,9 @@ public final class CircuitBuilder {
 
         // power nets: net name -> terminal points (one ConnectionData per net)
         Map<String, Set<Point>> netToPoints = new LinkedHashMap<>();
+        List<Map<String, Object>> deferredCouplers = new ArrayList<>();
+        long[] lkIdCounter = new long[]{nextLkId};
+        long[] thermIdCounter = new long[]{nextThermId};
 
         for (Map<String, Object> c : rawComponents) {
             String typeStr = (String) c.get("type");
@@ -105,6 +108,11 @@ public final class CircuitBuilder {
                 throw new IllegalArgumentException(
                         "Component '" + typeStr + "' is a " + def.domain() + " component; "
                                 + "place it via the thermal_components or control section");
+            }
+
+            if (def.typeNumber() == 9) { // MUTUAL_INDUCTANCE / LK_M
+                deferredCouplers.add(c);
+                continue;
             }
 
             @SuppressWarnings("unchecked")
@@ -164,7 +172,7 @@ public final class CircuitBuilder {
                 netToPoints.computeIfAbsent(yNodes.get(pin), k -> new LinkedHashSet<>()).add(termB.get(pin));
             }
 
-            long uid = nextLkId++;
+            long uid = lkIdCounter[0]++;
             componentIdMap.put(name(c), uid);
 
             double[] paramArray = normalizeParams(def, params);
@@ -178,14 +186,19 @@ public final class CircuitBuilder {
             comp.setTerminalYLabels(yNodes.toArray(new String[0]));
             comp.setParameterStrings(new String[]{"NIX_NIX_NIX", "NIX_NIX_NIX", "0"});
             comp.setUniqueObjectIdentifier(uid);
+            applyNonlinearInductorSettings(comp, c);
             model.addCircuitComponent(comp);
         }
 
-        // 3. Thermal components (same placement rules as power components)
+        // Process coupled inductors (MUTUAL_INDUCTANCE or coupled_inductors list)
+        processCoupledInductors(request, deferredCouplers, model, componentIdMap, lkIdCounter);
+
+        // 3. Thermal components & declarative thermal networks
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> rawThermal =
                 (List<Map<String, Object>>) request.getOrDefault("thermal_components", List.of());
         Map<String, Set<Point>> thermNetToPoints = new LinkedHashMap<>();
+        int thermY = maxRowY + 14;
         for (Map<String, Object> c : rawThermal) {
             String typeStr = (String) c.get("type");
             ComponentCatalog.ComponentDef def = ComponentCatalog.get(typeStr);
@@ -195,34 +208,82 @@ public final class CircuitBuilder {
             }
             @SuppressWarnings("unchecked")
             List<String> nodes = (List<String>) c.getOrDefault("nodes", List.of());
-            if (nodes.size() != 2) {
-                throw new IllegalArgumentException("Thermal component " + typeStr + " expects 2 nodes");
-            }
             @SuppressWarnings("unchecked")
             Map<String, Object> params = (Map<String, Object>) c.getOrDefault("parameters", Map.of());
 
             int orient = getOrientation(c, def);
             int posX = getInt(c, "x", 4);
-            int posY = getInt(c, "y", maxRowY + 30);
+            int posY = getInt(c, "y", thermY);
+            thermY = Math.max(thermY, posY + 6);
             maxRowY = Math.max(maxRowY, posY);
 
-            Point termA = getTerminalA(posX, posY, orient);
-            Point termB = getTerminalB(posX, posY, orient);
-            thermNetToPoints.computeIfAbsent(nodes.get(0), k -> new LinkedHashSet<>()).add(termA);
-            thermNetToPoints.computeIfAbsent(nodes.get(1), k -> new LinkedHashSet<>()).add(termB);
+            if (def.typeNumber() == 50) { // TH_GLOBAL_TERMINAL
+                String gndNode = !nodes.isEmpty() ? nodes.get(0) : "0";
+                thermNetToPoints.computeIfAbsent(gndNode, k -> new LinkedHashSet<>()).add(new Point(posX, posY));
+                CircuitModel.ComponentData comp =
+                        new CircuitModel.ComponentData(50, name(c), posX, posY, orient);
+                comp.setFamily("THERM");
+                comp.setRawParameters(new double[]{});
+                comp.setTerminalXLabels(new String[]{gndNode});
+                comp.setTerminalYLabels(new String[]{gndNode});
+                comp.setParameterStrings(new String[]{"NIX_NIX_NIX", "NIX_NIX_NIX", "0"});
+                long uid = thermIdCounter[0]++;
+                comp.setUniqueObjectIdentifier(uid);
+                componentIdMap.put(name(c), uid);
+                model.addThermalComponent(comp);
+            } else if (def.typeNumber() == 41) { // TH_PvCHIP
+                String targetSwitch = (String) c.getOrDefault("target_switch",
+                        c.getOrDefault("target_component", c.get("target")));
+                String outNode = nodes.size() == 1 ? nodes.get(0) : (nodes.size() > 1 ? nodes.get(1) : "Tj");
+                String inNode = nodes.size() > 1 ? nodes.get(0) : "NIX_NIX_NIX";
+                Point termB = getTerminalB(posX, posY, orient);
+                thermNetToPoints.computeIfAbsent(outNode, k -> new LinkedHashSet<>()).add(termB);
+                if (!"NIX_NIX_NIX".equals(inNode)) {
+                    Point termA = getTerminalA(posX, posY, orient);
+                    thermNetToPoints.computeIfAbsent(inNode, k -> new LinkedHashSet<>()).add(termA);
+                }
+                CircuitModel.ComponentData comp =
+                        new CircuitModel.ComponentData(41, name(c), posX, posY, orient);
+                comp.setFamily("THERM");
+                comp.setRawParameters(normalizeParams(def, params));
+                comp.setTerminalXLabels(new String[]{inNode});
+                comp.setTerminalYLabels(new String[]{outNode});
+                if (targetSwitch != null) {
+                    comp.setParameterStrings(new String[]{"/" + targetSwitch, "NIX_NIX_NIX", "0"});
+                    Long switchUid = componentIdMap.get(targetSwitch);
+                    if (switchUid != null) comp.setCoupledReferenceID(switchUid);
+                } else {
+                    comp.setParameterStrings(new String[]{"NIX_NIX_NIX", "NIX_NIX_NIX", "0"});
+                }
+                long uid = thermIdCounter[0]++;
+                comp.setUniqueObjectIdentifier(uid);
+                componentIdMap.put(name(c), uid);
+                model.addThermalComponent(comp);
+            } else {
+                if (nodes.size() != 2) {
+                    throw new IllegalArgumentException("Thermal component " + typeStr + " expects 2 nodes");
+                }
+                Point termA = getTerminalA(posX, posY, orient);
+                Point termB = getTerminalB(posX, posY, orient);
+                thermNetToPoints.computeIfAbsent(nodes.get(0), k -> new LinkedHashSet<>()).add(termA);
+                thermNetToPoints.computeIfAbsent(nodes.get(1), k -> new LinkedHashSet<>()).add(termB);
 
-            CircuitModel.ComponentData comp =
-                    new CircuitModel.ComponentData(def.typeNumber(), name(c), posX, posY, orient);
-            comp.setFamily("THERM");
-            comp.setRawParameters(normalizeParams(def, params));
-            comp.setTerminalXLabels(new String[]{nodes.get(0)});
-            comp.setTerminalYLabels(new String[]{nodes.get(1)});
-            comp.setParameterStrings(new String[]{"NIX_NIX_NIX", "NIX_NIX_NIX", "0"});
-            long uid = nextThermId++;
-            comp.setUniqueObjectIdentifier(uid);
-            componentIdMap.put(name(c), uid);
-            model.addThermalComponent(comp);
+                CircuitModel.ComponentData comp =
+                        new CircuitModel.ComponentData(def.typeNumber(), name(c), posX, posY, orient);
+                comp.setFamily("THERM");
+                comp.setRawParameters(normalizeParams(def, params));
+                comp.setTerminalXLabels(new String[]{nodes.get(0)});
+                comp.setTerminalYLabels(new String[]{nodes.get(1)});
+                comp.setParameterStrings(new String[]{"NIX_NIX_NIX", "NIX_NIX_NIX", "0"});
+                long uid = thermIdCounter[0]++;
+                comp.setUniqueObjectIdentifier(uid);
+                componentIdMap.put(name(c), uid);
+                model.addThermalComponent(comp);
+            }
         }
+
+        // Synthesize declarative thermal networks
+        maxRowY = Math.max(maxRowY, synthesizeThermalNetworks(request, model, componentIdMap, thermNetToPoints, maxRowY + 12, thermIdCounter));
 
         // 4. Control components
         @SuppressWarnings("unchecked")
@@ -239,10 +300,12 @@ public final class CircuitBuilder {
             String type = (String) p.getOrDefault("type", "VOLTMETER");
             String targetName = (String) p.getOrDefault("target_component",
                     p.getOrDefault("target", p.get("component")));
-            Long targetUid = componentIdMap.get(targetName);
-            if (targetUid == null) {
+            Long targetUid = targetName != null ? componentIdMap.get(targetName) : null;
+            String nodeA = (String) p.get("nodeA");
+            String nodeB = (String) p.getOrDefault("nodeB", "0");
+            if (targetUid == null && nodeA == null) {
                 throw new IllegalArgumentException(
-                        "Probe " + name + " references unknown power component: '" + targetName + "'");
+                        "Probe " + name + " references unknown power/thermal component: '" + targetName + "'");
             }
             String signal = (String) p.getOrDefault("signal_name",
                     p.getOrDefault("signal", name.toLowerCase(Locale.ROOT)));
@@ -251,9 +314,16 @@ public final class CircuitBuilder {
 
             long uid = nextCtrlId++;
             ctrlNetToPoints.computeIfAbsent(signal, k -> new LinkedHashSet<>()).add(new Point(12, probeY));
+            List<String> inLabels = List.of("NIX_NIX_NIX");
+            List<String> outLabels = List.of(signal);
+            Map<String, Object> strParams = new LinkedHashMap<>();
+            if (nodeA != null) {
+                strParams.put("nodeA", nodeA);
+                strParams.put("nodeB", nodeB != null ? nodeB : "0");
+            }
             PlacedControl placed = new PlacedControl(name, typeNum, uid, 10, probeY, 503,
-                    List.of("NIX_NIX_NIX"), List.of(signal), targetName, targetUid,
-                    Map.of(), Map.of());
+                    inLabels, outLabels, targetName, targetUid != null ? targetUid : 0L,
+                    Map.of(), strParams);
             controlsByName.put(name, placed);
             model.addControlComponent(placed.toComponentData());
             probeY++;
@@ -369,15 +439,30 @@ public final class CircuitBuilder {
             model.addConnection(new CircuitModel.ConnectionData("CONTROL", toPoints(path)));
         }
 
-        // 6. LK and thermal connections: one polyline per net
+        // 6. LK, CONTROL, and THERMAL connections: one polyline per net
         for (Map.Entry<String, Set<Point>> entry : netToPoints.entrySet()) {
-            model.addConnection(new CircuitModel.ConnectionData("LK", toPoints(entry.getValue())));
+            CircuitModel.ConnectionData conn = new CircuitModel.ConnectionData("LK", toPoints(entry.getValue()));
+            conn.setConnectorType(0);
+            if (entry.getKey() != null && !entry.getKey().isBlank()) {
+                conn.setLabel(entry.getKey());
+            }
+            model.addConnection(conn);
         }
         for (Map.Entry<String, Set<Point>> entry : ctrlNetToPoints.entrySet()) {
-            model.addConnection(new CircuitModel.ConnectionData("CONTROL", toPoints(entry.getValue())));
+            CircuitModel.ConnectionData conn = new CircuitModel.ConnectionData("CONTROL", toPoints(entry.getValue()));
+            conn.setConnectorType(1);
+            if (entry.getKey() != null && !entry.getKey().isBlank()) {
+                conn.setLabel(entry.getKey());
+            }
+            model.addConnection(conn);
         }
         for (Map.Entry<String, Set<Point>> entry : thermNetToPoints.entrySet()) {
-            model.addConnection(new CircuitModel.ConnectionData("THERMAL", toPoints(entry.getValue())));
+            CircuitModel.ConnectionData conn = new CircuitModel.ConnectionData("THERMAL", toPoints(entry.getValue()));
+            conn.setConnectorType(2);
+            if (entry.getKey() != null && !entry.getKey().isBlank()) {
+                conn.setLabel(entry.getKey());
+            }
+            model.addConnection(conn);
         }
 
         // 7. Serialize through the full-fidelity core writer
@@ -612,6 +697,10 @@ public final class CircuitBuilder {
         for (ComponentCatalog.ParameterDef p : def.parameters()) {
             if (inputParams.containsKey(p.name())) {
                 out[p.targetSlot()] = getDouble(inputParams, p.name(), p.defaultValue());
+            } else if ("r_th".equals(p.name()) && inputParams.containsKey("resistance")) {
+                out[p.targetSlot()] = getDouble(inputParams, "resistance", p.defaultValue());
+            } else if ("c_th".equals(p.name()) && inputParams.containsKey("capacitance")) {
+                out[p.targetSlot()] = getDouble(inputParams, "capacitance", p.defaultValue());
             }
         }
 
@@ -621,6 +710,10 @@ public final class CircuitBuilder {
                 double primary = out[0];
                 out[6] = primary; // MNA companion model slot
                 out[7] = primary; // nonlinear factor
+            }
+            case "COUPLED_INDUCTOR", "LKOP2" -> {
+                double primary = out[0];
+                out[10] = primary; // companion matrix A slot
             }
             case "VOLTAGE_SOURCE_AC", "CURRENT_SOURCE_AC" -> {
                 out[0] = 402.0; // SourceType.QUELLE_SIN
@@ -747,6 +840,10 @@ public final class CircuitBuilder {
                 if (coupledUid != 0) {
                     comp.setCoupledReferenceID(coupledUid);
                 }
+            } else if (stringParams.containsKey("nodeA")) {
+                String nA = String.valueOf(stringParams.get("nodeA"));
+                String nB = String.valueOf(stringParams.getOrDefault("nodeB", "0"));
+                comp.setParameterStrings(new String[]{"/" + nA, "/" + nB, "0"});
             }
             if (!inNodes.isEmpty() && !inNodes.get(0).equals("NIX_NIX_NIX")) {
                 comp.setTerminalXLabels(inNodes.toArray(new String[0]));
@@ -765,5 +862,332 @@ public final class CircuitBuilder {
             }
             return comp;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void applyNonlinearInductorSettings(CircuitModel.ComponentData comp, Map<String, Object> c) {
+        String typeStr = (String) c.get("type");
+        boolean isNonlinear = "NONLINEAR_INDUCTOR".equalsIgnoreCase(typeStr)
+                || Boolean.TRUE.equals(c.get("is_nonlinear"))
+                || Boolean.TRUE.equals(c.get("isNonlinear"))
+                || c.containsKey("saturation_table")
+                || c.containsKey("saturation_currents")
+                || c.containsKey("nonlinX");
+        if (!isNonlinear) {
+            return;
+        }
+        List<Double> xList = new ArrayList<>();
+        List<Double> yList = new ArrayList<>();
+        if (c.get("saturation_table") instanceof List<?> list) {
+            for (Object item : list) {
+                if (item instanceof List<?> pair && pair.size() >= 2) {
+                    xList.add(((Number) pair.get(0)).doubleValue());
+                    yList.add(((Number) pair.get(1)).doubleValue());
+                }
+            }
+        } else if (c.get("saturation_currents") instanceof List<?> xs && c.get("saturation_inductances") instanceof List<?> ys) {
+            for (Object x : xs) if (x instanceof Number n) xList.add(n.doubleValue());
+            for (Object y : ys) if (y instanceof Number n) yList.add(n.doubleValue());
+        } else if (c.get("nonlinX") instanceof List<?> xs && c.get("nonlinY") instanceof List<?> ys) {
+            for (Object x : xs) if (x instanceof Number n) xList.add(n.doubleValue());
+            for (Object y : ys) if (y instanceof Number n) yList.add(n.doubleValue());
+        }
+        if (xList.isEmpty() || yList.isEmpty()) {
+            double lNom = comp.getRawParameters() != null && comp.getRawParameters().length > 0
+                    ? comp.getRawParameters()[0] : 1e-3;
+            xList = List.of(0.0, 10.0, 15.0, 30.0);
+            yList = List.of(lNom, lNom, lNom * 0.3, lNom * 0.2);
+        }
+        comp.addExtraLine("berechneVerluste false");
+        comp.addExtraLine("isNonlinear true");
+        StringBuilder sbX = new StringBuilder("nonlinX[] ");
+        for (double v : xList) sbX.append(v).append(" ");
+        comp.addExtraLine(sbX.toString());
+        StringBuilder sbY = new StringBuilder("nonlinY[] ");
+        for (double v : yList) sbY.append(v).append(" ");
+        comp.addExtraLine(sbY.toString());
+        comp.addExtraLine("nonLinearCharHashValue 0");
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void processCoupledInductors(
+            Map<String, Object> request,
+            List<Map<String, Object>> deferredCouplers,
+            CircuitModel model,
+            Map<String, Long> componentIdMap,
+            long[] lkIdGen) {
+        List<Map<String, Object>> couplers = new ArrayList<>(deferredCouplers);
+        if (request.get("coupled_inductors") instanceof List<?> list) {
+            for (Object o : list) {
+                if (o instanceof Map<?, ?> m) {
+                    couplers.add((Map<String, Object>) m);
+                }
+            }
+        }
+
+        for (Map<String, Object> c : couplers) {
+            String name = (String) c.get("name");
+            double k = getDouble(c, "k", 0.99);
+            if (k <= 0.0 || k > 1.0) {
+                k = 0.99;
+            }
+
+            String ind1Name = null;
+            String ind2Name = null;
+            if (c.get("inductors") instanceof List<?> inds && inds.size() >= 2) {
+                ind1Name = String.valueOf(inds.get(0));
+                ind2Name = String.valueOf(inds.get(1));
+            } else {
+                ind1Name = (String) c.getOrDefault("inductor1", c.getOrDefault("target_1", c.get("target1")));
+                ind2Name = (String) c.getOrDefault("inductor2", c.getOrDefault("target_2", c.get("target2")));
+            }
+
+            if (ind1Name == null || ind2Name == null) {
+                throw new IllegalArgumentException("Coupled inductor definition requires two inductor names");
+            }
+
+            CircuitModel.ComponentData ind1 = null;
+            CircuitModel.ComponentData ind2 = null;
+            for (CircuitModel.ComponentData comp : model.getCircuitComponents()) {
+                if (ind1Name.equals(comp.getName())) ind1 = comp;
+                if (ind2Name.equals(comp.getName())) ind2 = comp;
+            }
+
+            if (ind1 == null || ind2 == null) {
+                throw new IllegalArgumentException("Coupled inductors references unknown inductor: "
+                        + (ind1 == null ? ind1Name : ind2Name));
+            }
+
+            // Upgrade referenced inductors to LK_LKOP2 (typ 12) if needed
+            upgradeToCoupledInductor(ind1);
+            upgradeToCoupledInductor(ind2);
+
+            String kName = name != null && !name.isBlank() ? name : "K_" + ind1.getName() + "_" + ind2.getName();
+            int kX = (ind1.getPosition()[0] + ind2.getPosition()[0]) / 2;
+            int kY = Math.min(ind1.getPosition()[1], ind2.getPosition()[1]) - 3;
+
+            CircuitModel.ComponentData kComp = new CircuitModel.ComponentData(9, kName, kX, kY, 503);
+            kComp.setFamily("LK");
+            long uid = lkIdGen[0]++;
+            kComp.setUniqueObjectIdentifier(uid);
+            componentIdMap.put(kName, uid);
+
+            double[] raw = new double[40];
+            raw[0] = k;
+            raw[1] = (double) ind1.getUniqueObjectIdentifier();
+            raw[2] = (double) ind2.getUniqueObjectIdentifier();
+            kComp.setRawParameters(raw);
+            kComp.setParameterStrings(new String[]{"/" + ind1.getName(), "/" + ind2.getName(), "1"});
+            kComp.setTerminalXLabels(new String[]{"NIX_NIX_NIX"});
+            kComp.setTerminalYLabels(new String[]{"NIX_NIX_NIX"});
+
+            model.addCircuitComponent(kComp);
+        }
+    }
+
+    private static void upgradeToCoupledInductor(CircuitModel.ComponentData comp) {
+        if (comp.getType() == 2) { // LK_L -> LK_LKOP2 (12)
+            comp.setType(12);
+            double[] p = comp.getRawParameters();
+            if (p != null && p.length > 0) {
+                double[] up = new double[40];
+                System.arraycopy(p, 0, up, 0, p.length);
+                up[10] = up[0]; // INDEX_EFFECTIVE_L
+                comp.setRawParameters(up);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static int synthesizeThermalNetworks(
+            Map<String, Object> request,
+            CircuitModel model,
+            Map<String, Long> componentIdMap,
+            Map<String, Set<Point>> thermNetToPoints,
+            int startY,
+            long[] thermIdGen) {
+        List<Map<String, Object>> networks = (List<Map<String, Object>>) request.get("thermal_networks");
+        if (networks == null || networks.isEmpty()) {
+            return startY;
+        }
+
+        int curY = startY;
+        for (Map<String, Object> net : networks) {
+            String targetSwitch = (String) net.getOrDefault("target_switch",
+                    net.getOrDefault("target_component", net.get("target")));
+            String name = (String) net.getOrDefault("name",
+                    targetSwitch != null ? "TH_" + targetSwitch : "TH_NET");
+            String modelType = ((String) net.getOrDefault("model_type", "foster")).toLowerCase(Locale.ROOT);
+            String junctionNode = (String) net.getOrDefault("junction_node",
+                    targetSwitch != null ? "Tj_" + targetSwitch : "Tj_" + name);
+            String ambientNode = (String) net.getOrDefault("ambient_node", "T_amb_" + name);
+            double ambientTemp = getDouble(net, "ambient_temperature", 25.0);
+
+            // Extract stages
+            List<Double> rList = new ArrayList<>();
+            List<Double> cList = new ArrayList<>();
+            if (net.get("stages") instanceof List<?> stageList) {
+                for (Object item : stageList) {
+                    if (item instanceof Map<?, ?> sm) {
+                        rList.add(getDouble((Map<String, Object>) sm, "r", 0.5));
+                        cList.add(getDouble((Map<String, Object>) sm, "c", 0.05));
+                    }
+                }
+            } else {
+                if (net.get("r_th") instanceof List<?> rs) {
+                    for (Object r : rs) if (r instanceof Number n) rList.add(n.doubleValue());
+                }
+                if (net.get("c_th") instanceof List<?> cs) {
+                    for (Object c : cs) if (c instanceof Number n) cList.add(n.doubleValue());
+                }
+            }
+
+            if (rList.isEmpty()) {
+                rList.add(getDouble(net, "r_th", 0.5));
+                cList.add(getDouble(net, "c_th", 0.05));
+            }
+            while (cList.size() < rList.size()) {
+                cList.add(0.01);
+            }
+
+            int netX = getInt(net, "x", 32);
+            int netY = getInt(net, "y", curY);
+
+            // 1. Loss injection: TH_PvCHIP (coupled to switch) and/or TH_FLOW
+            int pvY = netY;
+            if (targetSwitch != null) {
+                CircuitModel.ComponentData pv = new CircuitModel.ComponentData(41, "Pv_" + targetSwitch, netX, pvY, 503);
+                pv.setFamily("THERM");
+                pv.setRawParameters(new double[]{1.0});
+                pv.setTerminalXLabels(new String[]{"NIX_NIX_NIX"});
+                pv.setTerminalYLabels(new String[]{junctionNode});
+                pv.setParameterStrings(new String[]{"/" + targetSwitch, "NIX_NIX_NIX", "0"});
+                Long swUid = componentIdMap.get(targetSwitch);
+                if (swUid != null) {
+                    pv.setCoupledReferenceID(swUid);
+                }
+                long pvUid = thermIdGen[0]++;
+                pv.setUniqueObjectIdentifier(pvUid);
+                componentIdMap.put(pv.getName(), pvUid);
+                model.addThermalComponent(pv);
+
+                Point termPv = getTerminalB(netX, pvY, 503);
+                thermNetToPoints.computeIfAbsent(junctionNode, k -> new LinkedHashSet<>()).add(termPv);
+            }
+            if (net.containsKey("heat_flow") || targetSwitch == null) {
+                double heatFlow = getDouble(net, "heat_flow", 50.0);
+                int flowX = targetSwitch != null ? netX + 4 : netX;
+                CircuitModel.ComponentData flow = new CircuitModel.ComponentData(44, "P_" + name, flowX, pvY, 503);
+                flow.setFamily("THERM");
+                flow.setRawParameters(new double[]{401.0, heatFlow});
+                flow.setTerminalXLabels(new String[]{"0"});
+                flow.setTerminalYLabels(new String[]{junctionNode});
+                flow.setParameterStrings(new String[]{"NIX_NIX_NIX", "NIX_NIX_NIX", "0"});
+                long flowUid = thermIdGen[0]++;
+                flow.setUniqueObjectIdentifier(flowUid);
+                model.addThermalComponent(flow);
+
+                thermNetToPoints.computeIfAbsent("0", k -> new LinkedHashSet<>()).add(getTerminalA(flowX, pvY, 503));
+                thermNetToPoints.computeIfAbsent(junctionNode, k -> new LinkedHashSet<>()).add(getTerminalB(flowX, pvY, 503));
+            }
+
+            // 2. RC Ladder stages (4 grid units vertical pitch)
+            int stageCount = rList.size();
+            for (int i = 0; i < stageCount; i++) {
+                String nodeFrom = (i == 0) ? junctionNode : (name + "_n" + i);
+                String nodeTo = (i == stageCount - 1) ? ambientNode : (name + "_n" + (i + 1));
+                double rVal = rList.get(i);
+                double cVal = cList.get(i);
+                int stageY = pvY + 4 * (i + 1);
+
+                if ("cauer".equals(modelType)) {
+                    // Cauer ladder: Rth in series, Cth in shunt to ambient
+                    CircuitModel.ComponentData rComp = new CircuitModel.ComponentData(
+                            46, name + "_Rth" + (i + 1), netX, stageY, 503);
+                    rComp.setFamily("THERM");
+                    rComp.setRawParameters(new double[]{rVal});
+                    rComp.setTerminalXLabels(new String[]{nodeFrom});
+                    rComp.setTerminalYLabels(new String[]{nodeTo});
+                    rComp.setParameterStrings(new String[]{"NIX_NIX_NIX", "NIX_NIX_NIX", "0"});
+                    rComp.setUniqueObjectIdentifier(thermIdGen[0]++);
+                    model.addThermalComponent(rComp);
+                    thermNetToPoints.computeIfAbsent(nodeFrom, k -> new LinkedHashSet<>()).add(getTerminalA(netX, stageY, 503));
+                    thermNetToPoints.computeIfAbsent(nodeTo, k -> new LinkedHashSet<>()).add(getTerminalB(netX, stageY, 503));
+
+                    CircuitModel.ComponentData cComp = new CircuitModel.ComponentData(
+                            47, name + "_Cth" + (i + 1), netX + 4, stageY, 503);
+                    cComp.setFamily("THERM");
+                    double[] cParams = new double[40];
+                    cParams[0] = cVal;
+                    cParams[6] = cVal;
+                    cParams[7] = cVal;
+                    cComp.setRawParameters(cParams);
+                    cComp.setTerminalXLabels(new String[]{nodeFrom});
+                    cComp.setTerminalYLabels(new String[]{ambientNode});
+                    cComp.setParameterStrings(new String[]{"NIX_NIX_NIX", "NIX_NIX_NIX", "0"});
+                    cComp.setUniqueObjectIdentifier(thermIdGen[0]++);
+                    model.addThermalComponent(cComp);
+                    thermNetToPoints.computeIfAbsent(nodeFrom, k -> new LinkedHashSet<>()).add(getTerminalA(netX + 4, stageY, 503));
+                    thermNetToPoints.computeIfAbsent(ambientNode, k -> new LinkedHashSet<>()).add(getTerminalB(netX + 4, stageY, 503));
+                } else {
+                    // Foster chain: parallel Rth and Cth between nodeFrom and nodeTo
+                    CircuitModel.ComponentData rComp = new CircuitModel.ComponentData(
+                            46, name + "_Rth" + (i + 1), netX, stageY, 503);
+                    rComp.setFamily("THERM");
+                    rComp.setRawParameters(new double[]{rVal});
+                    rComp.setTerminalXLabels(new String[]{nodeFrom});
+                    rComp.setTerminalYLabels(new String[]{nodeTo});
+                    rComp.setParameterStrings(new String[]{"NIX_NIX_NIX", "NIX_NIX_NIX", "0"});
+                    rComp.setUniqueObjectIdentifier(thermIdGen[0]++);
+                    model.addThermalComponent(rComp);
+                    thermNetToPoints.computeIfAbsent(nodeFrom, k -> new LinkedHashSet<>()).add(getTerminalA(netX, stageY, 503));
+                    thermNetToPoints.computeIfAbsent(nodeTo, k -> new LinkedHashSet<>()).add(getTerminalB(netX, stageY, 503));
+
+                    CircuitModel.ComponentData cComp = new CircuitModel.ComponentData(
+                            47, name + "_Cth" + (i + 1), netX + 4, stageY, 503);
+                    cComp.setFamily("THERM");
+                    double[] cParams = new double[40];
+                    cParams[0] = cVal;
+                    cParams[6] = cVal;
+                    cParams[7] = cVal;
+                    cComp.setRawParameters(cParams);
+                    cComp.setTerminalXLabels(new String[]{nodeFrom});
+                    cComp.setTerminalYLabels(new String[]{nodeTo});
+                    cComp.setParameterStrings(new String[]{"NIX_NIX_NIX", "NIX_NIX_NIX", "0"});
+                    cComp.setUniqueObjectIdentifier(thermIdGen[0]++);
+                    model.addThermalComponent(cComp);
+                    thermNetToPoints.computeIfAbsent(nodeFrom, k -> new LinkedHashSet<>()).add(getTerminalA(netX + 4, stageY, 503));
+                    thermNetToPoints.computeIfAbsent(nodeTo, k -> new LinkedHashSet<>()).add(getTerminalB(netX + 4, stageY, 503));
+                }
+            }
+
+            // 3. Ambient boundary source & ground terminal
+            int ambY = pvY + 4 * (stageCount + 1);
+            CircuitModel.ComponentData tAmb = new CircuitModel.ComponentData(
+                    45, "Tamb_" + name, netX, ambY, 503);
+            tAmb.setFamily("THERM");
+            tAmb.setRawParameters(new double[]{401.0, ambientTemp});
+            tAmb.setTerminalXLabels(new String[]{ambientNode});
+            tAmb.setTerminalYLabels(new String[]{"0"});
+            tAmb.setParameterStrings(new String[]{"NIX_NIX_NIX", "NIX_NIX_NIX", "0"});
+            tAmb.setUniqueObjectIdentifier(thermIdGen[0]++);
+            model.addThermalComponent(tAmb);
+            thermNetToPoints.computeIfAbsent(ambientNode, k -> new LinkedHashSet<>()).add(getTerminalA(netX, ambY, 503));
+            thermNetToPoints.computeIfAbsent("0", k -> new LinkedHashSet<>()).add(getTerminalB(netX, ambY, 503));
+
+            CircuitModel.ComponentData gnd = new CircuitModel.ComponentData(
+                    50, "GND_TH_" + name, netX, ambY + 2, 503);
+            gnd.setFamily("THERM");
+            gnd.setRawParameters(new double[]{});
+            gnd.setTerminalXLabels(new String[]{"0"});
+            gnd.setTerminalYLabels(new String[]{"0"});
+            gnd.setParameterStrings(new String[]{"NIX_NIX_NIX", "NIX_NIX_NIX", "0"});
+            gnd.setUniqueObjectIdentifier(thermIdGen[0]++);
+            model.addThermalComponent(gnd);
+            thermNetToPoints.computeIfAbsent("0", k -> new LinkedHashSet<>()).add(new Point(netX, ambY + 2));
+
+            curY = ambY + 6;
+        }
+        return curY;
     }
 }

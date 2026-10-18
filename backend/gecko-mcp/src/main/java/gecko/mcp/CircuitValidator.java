@@ -374,7 +374,10 @@ public final class CircuitValidator {
 
         for (ComponentData comp : allComponents) {
             String dom = "THERMAL".equals(comp.domain) ? "TH" : "LK";
-            int termCount = comp.typ == 23 ? 4 : (comp.typ == 33 ? 3 : (comp.typ == 31 ? 1 : 2));
+            int termCount = comp.typ == 9 ? 0
+                    : (comp.typ == 23 ? 4
+                    : (comp.typ == 33 ? 3
+                    : (comp.typ == 31 || comp.typ == 50 || comp.typ == 41 ? 1 : 2)));
             Map<Point, List<Integer>> dPoints = wiresThroughPointByDomain.get(dom);
             DisjointSet<Integer> dUf = wireUfByDomain.get(dom);
 
@@ -384,6 +387,10 @@ public final class CircuitValidator {
 
                 if (comp.typ == 31 && "LK".equals(dom)) { // LK_GLOBAL_TERMINAL
                     String gndKey = "L:LK:0";
+                    registeredElements.add(gndKey);
+                    uf.union(tKey, gndKey);
+                } else if (comp.typ == 50 && "TH".equals(dom)) { // TH_GLOBAL_TERMINAL
+                    String gndKey = "L:TH:0";
                     registeredElements.add(gndKey);
                     uf.union(tKey, gndKey);
                 }
@@ -815,15 +822,24 @@ public final class CircuitValidator {
                 pins.add(new Point(x + dir[0] * 2, y + dir[1] * 2));
             } else if (typ == 31) { // LK_GLOBAL_TERMINAL
                 pins.add(new Point(x, y));
+            } else if (typ == 9) { // LK_M mutual coupler has no pins
+                return pins;
             } else {
                 int[] dir = ComponentTerminals.flowVector(orient);
                 pins.add(new Point(x - dir[0] * 2, y - dir[1] * 2));
                 pins.add(new Point(x + dir[0] * 2, y + dir[1] * 2));
             }
         } else if ("THERMAL".equals(domain)) {
-            int[] dir = ComponentTerminals.flowVector(orient);
-            pins.add(new Point(x - dir[0] * 2, y - dir[1] * 2));
-            pins.add(new Point(x + dir[0] * 2, y + dir[1] * 2));
+            if (typ == 50) { // TH_GLOBAL_TERMINAL
+                pins.add(new Point(x, y));
+            } else if (typ == 41) { // TH_PvCHIP: single output terminal on the Y side (Tj)
+                int[] dir = ComponentTerminals.flowVector(orient);
+                pins.add(new Point(x + dir[0] * 2, y + dir[1] * 2));
+            } else {
+                int[] dir = ComponentTerminals.flowVector(orient);
+                pins.add(new Point(x - dir[0] * 2, y - dir[1] * 2));
+                pins.add(new Point(x + dir[0] * 2, y + dir[1] * 2));
+            }
         }
         return pins;
     }
@@ -844,8 +860,10 @@ public final class CircuitValidator {
                 case 2 -> comp.nodesB.size() > 0 ? comp.nodesB.get(0) : null;
                 default -> null;
             };
-        } else if (comp.typ == 31) {
+        } else if (comp.typ == 31 || comp.typ == 50) {
             return comp.nodesA.size() > 0 ? comp.nodesA.get(0) : (comp.nodesB.size() > 0 ? comp.nodesB.get(0) : null);
+        } else if (comp.typ == 41) {
+            return comp.nodesB.size() > 0 ? comp.nodesB.get(0) : (comp.nodesA.size() > 0 ? comp.nodesA.get(0) : null);
         } else {
             return switch (t) {
                 case 0 -> comp.nodesA.size() > 0 ? comp.nodesA.get(0) : null;

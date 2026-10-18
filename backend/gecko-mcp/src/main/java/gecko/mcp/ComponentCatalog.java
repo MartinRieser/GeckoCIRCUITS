@@ -234,6 +234,36 @@ public final class ComponentCatalog {
                 3
         ));
 
+        register(new ComponentDef(
+                "COUPLED_INDUCTOR", "Coupled Inductor", "POWER_LK", 12, "L",
+                List.of("p", "n"),
+                List.of(
+                        new ParameterDef("inductance", "number", "H", 1e-3, 0, "Nominal inductance in Henrys (slot 10 holds companion matrix A value)"),
+                        new ParameterDef("i_init", "number", "A", 0.0, 1, "Initial current in Amperes")
+                ),
+                "Coupled linear electrical inductor (LK_LKOP2, typ 12) supporting mutual magnetic coupling via MUTUAL_INDUCTANCE (LK_M)."
+        ));
+
+        register(new ComponentDef(
+                "MUTUAL_INDUCTANCE", "Mutual Inductance Coupler", "POWER_LK", 9, "K",
+                List.of(),
+                List.of(
+                        new ParameterDef("k", "number", "", 0.99, 0, "Magnetic coupling coefficient (0 < k <= 1)")
+                ),
+                "Mutual inductance coupling between two coupable inductors (LK_LKOP2, typ 12). Raw parameters store [k, uid1, uid2].",
+                0
+        ));
+
+        register(new ComponentDef(
+                "NONLINEAR_INDUCTOR", "Nonlinear Saturating Inductor", "POWER_LK", 2, "L",
+                List.of("p", "n"),
+                List.of(
+                        new ParameterDef("inductance", "number", "H", 1e-3, 0, "Nominal small-signal inductance in Henrys"),
+                        new ParameterDef("i_init", "number", "A", 0.0, 1, "Initial current in Amperes")
+                ),
+                "Saturating inductor with current-dependent inductance table (nonlinX currents, nonlinY inductances)."
+        ));
+
         // ====================================================================
         // Control Domain Components (web catalog type numbers; executed natively
         // by the headless engine)
@@ -642,6 +672,23 @@ public final class ComponentCatalog {
                         + "acts as the 0-degree reference of the thermal network, like a ground symbol.",
                 1, true
         ));
+
+        register(new ComponentDef(
+                "TH_PvCHIP", "Thermal Power Loss Chip", "THERM", 41, "Pv",
+                List.of("p", "n"),
+                List.of(
+                        new ParameterDef("loss_factor", "number", "", 1.0, 0, "Loss scaling factor (default 1.0)")
+                ),
+                "Power loss chip injecting semiconductor losses from a coupled power switch (target switch in parameterString[0]) into a thermal node."
+        ));
+
+        register(new ComponentDef(
+                "TH_GLOBAL_TERMINAL", "Thermal Ground Terminal", "THERM", 50, "TH_GND",
+                List.of("gnd"),
+                List.of(),
+                "Thermal reference/ground terminal (net label '0').",
+                1
+        ));
     }
 
     private static final Map<String, String> ALIASES = Map.ofEntries(
@@ -678,10 +725,25 @@ public final class ComponentCatalog {
             Map.entry("RTH", "TH_RTH"),
             Map.entry("CTH", "TH_CTH"),
             Map.entry("THERMAL_RESISTANCE", "TH_RTH"),
+            Map.entry("THERMAL_RESISTOR", "TH_RTH"),
             Map.entry("THERMAL_CAPACITANCE", "TH_CTH"),
+            Map.entry("THERMAL_CAPACITOR", "TH_CTH"),
             Map.entry("HEAT_FLOW", "TH_FLOW"),
+            Map.entry("HEAT_FLOW_SOURCE", "TH_FLOW"),
             Map.entry("TEMPERATURE_SOURCE", "TH_TEMP"),
             Map.entry("AMBIENT", "TH_AMBIENT"),
+            Map.entry("AMBIENT_TEMPERATURE", "TH_AMBIENT"),
+            Map.entry("THERMAL_POWER_LOSS", "TH_PvCHIP"),
+            Map.entry("PV_CHIP", "TH_PvCHIP"),
+            Map.entry("PV", "TH_PvCHIP"),
+            Map.entry("THERMAL_GROUND", "TH_GLOBAL_TERMINAL"),
+            Map.entry("TH_GND", "TH_GLOBAL_TERMINAL"),
+            Map.entry("LKOP2", "COUPLED_INDUCTOR"),
+            Map.entry("LK_LKOP2", "COUPLED_INDUCTOR"),
+            Map.entry("LK_M", "MUTUAL_INDUCTANCE"),
+            Map.entry("MUTUAL_COUPLING", "MUTUAL_INDUCTANCE"),
+            Map.entry("COUPLER", "MUTUAL_INDUCTANCE"),
+            Map.entry("SATURATING_INDUCTOR", "NONLINEAR_INDUCTOR"),
             Map.entry("ARCSIN", "ASIN"),
             Map.entry("ARCCOS", "ACOS"),
             Map.entry("ARCTAN", "ATAN"),

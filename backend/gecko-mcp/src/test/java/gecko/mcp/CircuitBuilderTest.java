@@ -122,4 +122,167 @@ class CircuitBuilderTest {
         assertTrue(csv.rowCount() > 500);
         assertTrue(csv.columns().containsKey("u_load"));
     }
+
+    @Test
+    void buildsAndSimulatesCoupledInductors() throws IOException {
+        Path tempDir = Files.createTempDirectory("gecko-coupled-test");
+        Path outputPath = tempDir.resolve("coupled_inductors.ipes");
+
+        Map<String, Object> circuitDef = Map.of(
+                "output_path", outputPath.toString(),
+                "simulation", Map.of(
+                        "duration", 0.04,
+                        "dt", 1e-5,
+                        "solver", 0
+                ),
+                "components", List.of(
+                        Map.of("name", "V_AC", "type", "VOLTAGE_SOURCE_AC", "nodes", List.of("in", "0"),
+                                "parameters", Map.of("amplitude", 100.0, "frequency", 50.0)),
+                        Map.of("name", "R_PRI", "type", "RESISTOR", "nodes", List.of("in", "n1"),
+                                "parameters", Map.of("resistance", 1.0)),
+                        Map.of("name", "L1", "type", "INDUCTOR", "nodes", List.of("n1", "0"),
+                                "parameters", Map.of("inductance", 10e-3)),
+                        Map.of("name", "L2", "type", "INDUCTOR", "nodes", List.of("n2", "0"),
+                                "parameters", Map.of("inductance", 10e-3)),
+                        Map.of("name", "R_SEC", "type", "RESISTOR", "nodes", List.of("n2", "0"),
+                                "parameters", Map.of("resistance", 10.0))
+                ),
+                "coupled_inductors", List.of(
+                        Map.of("name", "K1", "inductor1", "L1", "inductor2", "L2", "k", 0.95)
+                ),
+                "control", Map.of(
+                        "probes", List.of(
+                                Map.of("name", "VM_SEC", "type", "VOLTMETER", "target_component", "R_SEC", "signal_name", "u_sec")
+                        )
+                )
+        );
+
+        Map<String, Object> createResult = CircuitBuilder.create(circuitDef);
+        assertEquals("CREATED", createResult.get("status"));
+        assertTrue(Files.exists(outputPath));
+
+        // Validate DRC
+        Map<String, Object> valResult = CircuitValidator.validate(outputPath);
+        assertTrue((Boolean) valResult.get("valid"), "Coupled inductor circuit should pass DRC: " + valResult.get("diagnostics"));
+
+        // Simulate
+        SimulationService.ParsedCsv csv = SimulationService.simulateToCsv(outputPath, 0.04, 1e-5);
+        assertNotNull(csv);
+        assertTrue(csv.rowCount() > 1000);
+        assertTrue(csv.columns().containsKey("u_sec"));
+
+        // Verify mutual coupling induces secondary voltage
+        List<Double> uSec = csv.columns().get("u_sec");
+        double maxAbs = uSec.stream().mapToDouble(Math::abs).max().orElse(0.0);
+        assertTrue(maxAbs > 20.0, "Secondary voltage should show induced AC coupling (> 20V), was: " + maxAbs);
+    }
+
+    @Test
+    void buildsAndSimulatesElectroThermalCircuit() throws IOException {
+        Path tempDir = Files.createTempDirectory("gecko-thermal-test");
+        Path outputPath = tempDir.resolve("electro_thermal.ipes");
+
+        Map<String, Object> circuitDef = Map.of(
+                "output_path", outputPath.toString(),
+                "simulation", Map.of(
+                        "duration", 0.02,
+                        "dt", 1e-5,
+                        "solver", 0
+                ),
+                "components", List.of(
+                        Map.of("name", "V_DC", "type", "DC_VOLTAGE", "nodes", List.of("in", "0"),
+                                "parameters", Map.of("voltage", 48.0)),
+                        Map.of("name", "R_LOAD", "type", "RESISTOR", "nodes", List.of("in", "n_sw"),
+                                "parameters", Map.of("resistance", 5.0)),
+                        Map.of("name", "SW", "type", "SWITCH", "nodes", List.of("n_sw", "0"),
+                                "parameters", Map.of("initial_state", 1.0, "r_on", 0.2, "r_off", 1e6))
+                ),
+                "thermal_networks", List.of(
+                        Map.of(
+                                "name", "TH_SW",
+                                "target_switch", "SW",
+                                "heat_flow", 20.0,
+                                "model_type", "foster",
+                                "ambient_temperature", 25.0,
+                                "stages", List.of(
+                                        Map.of("r", 2.0, "c", 0.005)
+                                )
+                        )
+                ),
+                "control", Map.of(
+                        "probes", List.of(
+                                Map.of("name", "VM_TJ", "type", "VOLTMETER", "nodeA", "Tj_SW", "nodeB", "0", "signal_name", "t_junction")
+                        )
+                )
+        );
+
+        Map<String, Object> createResult = CircuitBuilder.create(circuitDef);
+        assertEquals("CREATED", createResult.get("status"));
+        assertTrue(Files.exists(outputPath));
+
+        // Validate DRC
+        Map<String, Object> valResult = CircuitValidator.validate(outputPath);
+        assertTrue((Boolean) valResult.get("valid"), "Electro-thermal circuit should pass DRC: " + valResult.get("diagnostics"));
+
+        // Simulate
+        SimulationService.ParsedCsv csv = SimulationService.simulateToCsv(outputPath, 0.02, 1e-5);
+        assertNotNull(csv);
+        assertTrue(csv.rowCount() > 500);
+        assertTrue(csv.columns().containsKey("t_junction"));
+
+        // Verify temperature rises above ambient 25 degC due to switch conduction losses
+        List<Double> tj = csv.columns().get("t_junction");
+        double finalTj = tj.get(tj.size() - 1);
+        assertTrue(finalTj > 25.0, "Junction temperature should rise above 25.0 degC, was: " + finalTj);
+    }
+
+    @Test
+    void buildsAndSimulatesNonlinearSaturatingInductor() throws IOException {
+        Path tempDir = Files.createTempDirectory("gecko-nonlin-test");
+        Path outputPath = tempDir.resolve("nonlin_inductor.ipes");
+
+        Map<String, Object> circuitDef = Map.of(
+                "output_path", outputPath.toString(),
+                "simulation", Map.of(
+                        "duration", 0.01,
+                        "dt", 1e-5,
+                        "solver", 0
+                ),
+                "components", List.of(
+                        Map.of("name", "V_DC", "type", "DC_VOLTAGE", "nodes", List.of("in", "0"),
+                                "parameters", Map.of("voltage", 24.0)),
+                        Map.of("name", "R_SERIES", "type", "RESISTOR", "nodes", List.of("in", "n_mid"),
+                                "parameters", Map.of("resistance", 2.0)),
+                        Map.of("name", "L_SAT", "type", "NONLINEAR_INDUCTOR", "nodes", List.of("n_mid", "out"),
+                                "parameters", Map.of("inductance", 5e-3),
+                                "saturation_currents", List.of(-10.0, -5.0, 0.0, 5.0, 10.0),
+                                "saturation_inductances", List.of(1e-3, 2e-3, 5e-3, 2e-3, 1e-3)),
+                        Map.of("name", "R_LOAD", "type", "RESISTOR", "nodes", List.of("out", "0"),
+                                "parameters", Map.of("resistance", 10.0))
+                ),
+                "control", Map.of(
+                        "probes", List.of(
+                                Map.of("name", "VM_OUT", "type", "VOLTMETER", "target_component", "R_LOAD", "signal_name", "u_out")
+                        )
+                )
+        );
+
+        Map<String, Object> createResult = CircuitBuilder.create(circuitDef);
+        assertEquals("CREATED", createResult.get("status"));
+        assertTrue(Files.exists(outputPath));
+
+        // Validate DRC
+        Map<String, Object> valResult = CircuitValidator.validate(outputPath);
+        assertTrue((Boolean) valResult.get("valid"), "Nonlinear inductor circuit should pass DRC: " + valResult.get("diagnostics"));
+
+        // Simulate
+        SimulationService.ParsedCsv csv = SimulationService.simulateToCsv(outputPath, 0.01, 1e-5);
+        assertNotNull(csv);
+        assertTrue(csv.rowCount() > 500);
+        assertTrue(csv.columns().containsKey("u_out"));
+
+        List<Double> vout = csv.columns().get("u_out");
+        double finalV = vout.get(vout.size() - 1);
+        assertTrue(finalV > 18.0 && finalV < 22.0, "Vout should settle near 20V (24V * 10/12), was: " + finalV);
+    }
 }

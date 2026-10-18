@@ -404,7 +404,7 @@ public class CircuitModel {
      * Represents a circuit component's data.
      */
     public static class ComponentData {
-        private final int type;
+        private int type;
         private String name;
         private final Map<String, Object> parameters;
         private final int[] position; // x, y coordinates
@@ -437,6 +437,10 @@ public class CircuitModel {
 
         public int getType() {
             return type;
+        }
+
+        public void setType(int type) {
+            this.type = type;
         }
 
         public String getName() {
