@@ -2,6 +2,8 @@
 
 A complete, beginner-friendly design and simulation tutorial for building an offline switched-mode power supply in **GeckoCIRCUITS**.
 
+- **Project File**: [:material-download: smps-230v-to-3v3.ipes](smps-230v-to-3v3.ipes)
+
 ---
 
 ## 1. Design Overview
@@ -172,7 +174,16 @@ Click the **Gear icon (⚙)** or **Simulation ▾** in the top bar:
 * **Time Step ($\Delta t$)**: `1e-6` s ($1\,\mu\text{s}$).
 
 ### Running the Simulation
-* Press **`F5`** or click the green **Run (▶)** button on the top toolbar.
+* Press **`F5`** or click the green **Run (▶)** button on the top toolbar (or simulate via MCP `gecko_simulate`).
+
+### Monitored Probe Signals
+
+| Signal Name | Description | Nominal Steady-State Value |
+| :--- | :--- | :--- |
+| `v_dclink` | Intermediate filtered DC bus voltage | $\approx 15.6\text{ V DC}$ |
+| `v_out` | Regulated DC output across load | $\mathbf{3.30\text{ V DC}} \pm 15\text{ mV}$ |
+| `i_load` | Load current delivered to $0.55\,\Omega$ resistor | $\approx \mathbf{6.06\text{ A DC}}$ |
+| `s_pwm` | Gate pulse switching command to buck switch $S_1$ | 50 kHz square wave, $D \approx 0.22$ |
 
 ### Expected Results in Scope View
 1. **Output Voltage ($V_{\text{out}}$)**:

@@ -79,15 +79,56 @@ $$
 
 ![Field-Oriented Control (FOC) Architecture](foc-control-diagram.svg)
 
-## Simulation Exercises
+## Simulation & Project File
 
-1. Implement SVPWM modulator
-2. Compare with sinusoidal PWM
-3. Observe common-mode voltage
-4. Implement dead-time compensation
+A complete, simulated and verified 3-phase Voltage Source Inverter project file is provided directly in this directory:
+
+- **Project File**: [:material-download: three-phase-inverter.ipes](three-phase-inverter.ipes)
+
+### Power Stage & Modulation Architecture
+
+1. **Two-Level 6-Switch Bridge**:
+   - 3 phase legs with complementary switch pairs:
+     - Phase A: Upper `S1`, Lower `S4`
+     - Phase B: Upper `S3`, Lower `S6`
+     - Phase C: Upper `S5`, Lower `S2`
+   - $700.0\text{ V DC}$ DC bus voltage (typical for grid-tied inverters and industrial 400 V motor drives).
+
+2. **Sinusoidal Pulse-Width Modulation (SPWM)**:
+   - Three reference sinusoids shifted by $120^\circ$ ($0^\circ, -120^\circ, +120^\circ$) at fundamental frequency $f_0 = 50\text{ Hz}$.
+   - Modulated against a $10\text{ kHz}$ high-frequency triangular carrier.
+
+3. **Output LC Filter & Star Load**:
+   - 3-phase inductors $L_a = L_b = L_c = 2.0\,\text{mH}$.
+   - 3-phase filter capacitors $C_a = C_b = C_c = 10.0\,\mu\text{F}$.
+   - Balanced star-connected resistive load $R_a = R_b = R_c = 15.0\,\Omega$ connected to virtual neutral star point `star_n`.
+   - Attenuates 10 kHz switching harmonics while delivering clean 3-phase sinusoidal currents.
+
+### Simulation Specifications
+
+| Setting | Value |
+| :--- | :--- |
+| **DC Bus Voltage** | 700 V DC |
+| **Carrier Frequency** | 10 kHz |
+| **Fundamental Frequency** | 50 Hz |
+| **Phase Inductors** | $2.0\,\text{mH}$ per phase |
+| **Filter Capacitors** | $10.0\,\mu\text{F}$ per phase |
+| **Load Resistance** | $15.0\,\Omega$ per phase (star) |
+| **Simulation Step $\Delta t$** | $1.0\,\mu\text{s}$ |
+| **Duration** | $40.0\,\text{ms}$ (40,000 steps, 2 full 50 Hz cycles) |
+| **Monitored Signals** | `v_phase_a`, `v_phase_b`, `v_phase_c`, `i_load_a`, `g1`..`g6` |
+
+### How to Run in GeckoCIRCUITS
+
+1. Open `three-phase-inverter.ipes` in GeckoCIRCUITS.
+2. Press **F5** to start simulation.
+3. Open the **Scope** view to verify:
+   - Three balanced sinusoidal phase voltages (`v_phase_a`, `v_phase_b`, `v_phase_c`) with exact $120^\circ$ phase displacements.
+   - Smooth sinusoidal Phase A load current (`i_load_a`).
+   - Symmetrical gate drive pulses `g1..g6` switching at 10 kHz.
 
 ## Related Resources
 
-- [401 - Single-Phase Inverter](single-phase.md)
-- [403 - NPC Multilevel](npc-inverter.md)
-- [MMC Converter](mmc-converter.md)
+- [401 - Single-Phase Inverter](single-phase.md) - Single-phase H-bridge inverter
+- [403 - NPC Multilevel Inverter](npc-inverter.md) - 3-level Neutral-Point-Clamped inverter
+- [404 - MMC Converter](mmc-converter.md) - Modular Multilevel Converter for HVDC

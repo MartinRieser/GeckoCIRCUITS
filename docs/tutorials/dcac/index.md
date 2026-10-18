@@ -9,12 +9,12 @@ DC to AC power conversion and PWM control in GeckoCIRCUITS.
 
 ## Available Tutorials
 
-| Tutorial | Title | Difficulty | Description |
-|----------|-------|------------|-------------|
-| [401](single-phase.md) | [Single-Phase Inverter](single-phase.md) | Intermediate | H-bridge PWM inverter, bipolar vs. unipolar modulation |
-| [402](three-phase.md) | [Three-Phase Inverter](three-phase.md) | Intermediate | Voltage source inverter (VSI), SPWM, and space vector PWM |
-| [403](npc-inverter.md) | [NPC Multilevel Inverter](npc-inverter.md) | Advanced | 3-level Neutral-Point-Clamped inverter topology |
-| [404](mmc-converter.md) | [MMC Converter](mmc-converter.md) | Advanced | Modular Multilevel Converter for HVDC and grid systems |
+| Tutorial | Title | Difficulty | Project File | Description |
+|----------|-------|------------|--------------|-------------|
+| [401](single-phase.md) | [Single-Phase Inverter](single-phase.md) | Intermediate | [single-phase-inverter.ipes](single-phase-inverter.ipes) | H-bridge PWM inverter with LC filter and SPWM modulation |
+| [402](three-phase.md) | [Three-Phase Inverter](three-phase.md) | Intermediate | [three-phase-inverter.ipes](three-phase-inverter.ipes) | Voltage source inverter (VSI), 3-phase SPWM, and LC filter |
+| [403](npc-inverter.md) | [NPC Multilevel Inverter](npc-inverter.md) | Advanced | [npc-inverter.ipes](npc-inverter.ipes) | 3-level Neutral-Point-Clamped inverter with neutral clamping diodes |
+| [404](mmc-converter.md) | [MMC Converter](mmc-converter.md) | Advanced | [mmc-converter.ipes](mmc-converter.ipes) | Modular Multilevel Converter with Half-Bridge Submodules for HVDC |
 
 ## Learning Objectives
 

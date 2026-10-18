@@ -94,38 +94,57 @@ An RCD snubber clamps the voltage spike:
 
 $$R_{snub} = \frac{V_{clamp}^2}{P_{leak}}, \quad C_{snub} = \frac{V_{clamp}}{R_{snub} \cdot f_{sw} \cdot \Delta V_{clamp}}$$
 
-## Simulation Notes
+## Simulation & Project File
 
-### Coupled Inductor Parameters
+A complete, simulated and verified Isolated Flyback Converter project file is provided directly in this directory:
 
-In GeckoCIRCUITS, set:
+- **Project File**: [:material-download: flyback-converter.ipes](flyback-converter.ipes)
 
-| Parameter | Value |
-|-----------|-------|
-| Primary inductance (Lp) | 93 uH |
-| Turns ratio (n) | 1:8 |
-| Coupling coefficient (k) | 0.95-0.99 |
+### Flyback Energy Storage & Coupling Parameters
 
-### What to Observe
+In GeckoCIRCUITS, the flyback transformer is modeled using coupled inductors with a coupling coefficient:
 
-1. **Primary current** - Ramp up during ON, reset during OFF
-2. **Secondary current** - Pulse during OFF period
-3. **Switch voltage** - V_in + reflected voltage + spike
-4. **Output voltage** - Should regulate to 5V
+| Parameter | Value | Description |
+| :--- | :--- | :--- |
+| **Input Voltage ($V_{in}$)** | 24.0 V DC | Primary DC supply bus |
+| **Primary Inductor ($L_p$)** | $100\,\mu\text{H}$ | Magnetizing & primary energy storage |
+| **Secondary Inductor ($L_s$)** | $100\,\mu\text{H}$ | Secondary discharge winding (1:1 turns ratio) |
+| **Coupling Coefficient ($k$)** | 0.99 | High coupling ($k \to 1.0$) with small leakage |
+| **Duty Cycle ($D$)** | 0.35 | 35% duty ratio at 50 kHz ($T_s = 20\,\mu\text{s}$) |
+| **Secondary Filter ($C_{out}$)** | $470\,\mu\text{F}$ | Low-ESR secondary output filter |
+| **Load Resistance ($R_{load}$)** | $5.0\,\Omega$ | Secondary DC load ($P \approx 25\text{ W}$) |
+| **Simulation Step $\Delta t$** | $1.0\,\mu\text{s}$ | Fine temporal resolution |
+| **Simulation Duration** | $10.0\,\text{ms}$ | 10,001 time steps (500 switching periods) |
+
+### Monitored Probe Signals
+
+| Signal | Expected Value | Description |
+| :--- | :--- | :--- |
+| `v_out` | $\approx 11.5\text{ V DC}$ | Isolated secondary output voltage across load |
+| `v_sw` | Square pulse with flyback spike | Voltage across the primary switch ($V_{in} + \frac{N_p}{N_s} V_{out} + V_{leak}$) |
+| `pwm` | 50 kHz square wave, $35\%$ duty | Primary gate pulse |
+
+### How to Run in GeckoCIRCUITS
+
+1. Open `flyback-converter.ipes` in GeckoCIRCUITS desktop or simulate via MCP `gecko_simulate`.
+2. Press **F5** to run the simulation.
+3. Open the **Scope** window to inspect:
+   - Primary switch voltage rising to $V_{in} + n V_{out}$ during turn-off.
+   - Smooth DC output voltage regulation on the secondary side across the isolated load.
 
 ## Exercises
 
 ### Exercise 1: CCM vs DCM
-Reduce load until the magnetizing current reaches zero. Compare waveforms.
+Reduce the load (increase $R$ to $50\,\Omega$). Observe the magnetizing energy fully discharging before the next switching period begins (DCM).
 
-### Exercise 2: Coupling Coefficient
-Vary k from 0.90 to 0.99. Observe the voltage spike on the primary switch.
+### Exercise 2: Turns Ratio Scaling
+Modify secondary inductance $L_s$ to $25\,\mu\text{H}$ ($n = N_s/N_p = \sqrt{25/100} = 0.5$). Observe the output voltage scaling down proportionally to $\approx 5.5\text{ V}$.
 
 ### Exercise 3: Snubber Design
-Add an RCD snubber. Size it to clamp the spike below 120V.
+To prevent high voltage spikes when $k$ is reduced to 0.95, place an RCD snubber across the primary winding (diode in series with parallel $R = 1\,\text{k}\Omega$ and $C = 10\,\text{nF}$).
 
 ## Next Steps
 
-- [Forward Converter](forward.md) - Another isolated topology
+- [Forward Converter](forward.md) - True transformer isolated step-down topology
 - [Thermal Simulation](../../tutorials/thermal/loss-calculation.md) - Add switch and diode losses
 - [Magnetics](../../tutorials/magnetics/transformer-design.md) - Detailed transformer design

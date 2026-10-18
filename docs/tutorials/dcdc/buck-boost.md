@@ -107,32 +107,52 @@ $$
 L_2 \geq \frac{V_{out} \times (1-D)}{f_{sw} \times \Delta i_{L2}}
 $$
 
-## Simulation
+## Simulation & Project File
 
-### Comparing Topologies
+A complete, simulated and verified Inverting Buck-Boost Converter project file is provided directly in this directory:
 
-1. Open each circuit file
-2. Set identical specs: V_in = 24V, D = 0.5, f_sw = 100 kHz
-3. Run and compare output voltage, ripple, and waveform shapes
+- **Project File**: [:material-download: buck-boost-converter.ipes](buck-boost-converter.ipes)
 
-### What to Observe
+### Inverting Buck-Boost Model Specifications
 
-| Measurement | Buck-Boost | SEPIC | Cuk |
-|-------------|-----------|-------|-----|
-| Output polarity | Negative | Positive | Negative |
-| Input current | Pulsating | Continuous | Continuous |
-| Output current | Continuous | Pulsating | Continuous |
+| Parameter | Value | Description |
+| :--- | :--- | :--- |
+| **Input Voltage ($V_{in}$)** | 24.0 V DC | Clean DC voltage source |
+| **Duty Cycle ($D$)** | 0.40 | 40% duty ratio ($V_{out} = -\frac{D}{1-D} V_{in} = -16.0\text{ V}$) |
+| **Switching Frequency ($f_s$)** | 50 kHz | Period $T_s = 20\,\mu\text{s}$ |
+| **Energy Storage Inductor ($L_1$)** | $150\,\mu\text{H}$ | Inductor connected to ground |
+| **Output Smoothing Capacitor ($C_1$)** | $220\,\mu\text{F}$ | Polarized output capacitor |
+| **Load Resistor ($R_1$)** | $8.0\,\Omega$ | Continuous load current $|I_{out}| = 2.0\text{ A}$ ($P = 32.0\text{ W}$) |
+| **Simulation Step $\Delta t$** | $1.0\,\mu\text{s}$ | Fine temporal resolution |
+| **Simulation Duration** | $15.0\,\text{ms}$ | 15,001 time steps (750 switching periods) |
+
+### Monitored Probe Signals
+
+| Signal | Expected Nominal Value | Description |
+| :--- | :--- | :--- |
+| `v_out` | $\mathbf{-16.0\text{ V DC}}$ ($\Delta V \approx 20\text{ mV}_{\text{pp}}$) | Inverted negative DC output voltage across $R_1$ |
+| `v_in` | $+24.0\text{ V DC}$ | Input positive supply rail |
+| `i_L` | $3.33\text{ A DC}$ ($\Delta I_L \approx 1.28\text{ A}_{\text{pp}}$) | Inductor current flowing toward ground |
+| `pwm` | 50 kHz square wave, $40\%$ duty | Gate driver pulse command |
+
+### How to Run in GeckoCIRCUITS
+
+1. Open `buck-boost-converter.ipes` in GeckoCIRCUITS desktop or simulate via MCP `gecko_simulate`.
+2. Press **F5** to run the simulation.
+3. Open the **Scope** window to inspect:
+   - Output voltage smoothly settling to negative **$-16.0\text{ V DC}$**.
+   - Inductor current ramping linearly during switch ON time, and discharging through diode `D_1` into the load during switch OFF time.
 
 ## Exercises
 
 ### Exercise 1: Step-Up/Step-Down Transition
-Sweep D from 0.2 to 0.8. Identify the crossover point where |V_out| = V_in.
+Sweep D from 0.2 to 0.8:
+- For $D < 0.5$ (e.g. $D = 0.4$): $|V_{out}| = 16\text{ V} < V_{in}$ (step-down mode).
+- At $D = 0.5$: $|V_{out}| = V_{in} = 24\text{ V}$.
+- For $D > 0.5$ (e.g. $D = 0.67$): $|V_{out}| = 48\text{ V} > V_{in}$ (step-up mode).
 
-### Exercise 2: SEPIC vs Buck-Boost
-Compare efficiency of SEPIC and buck-boost at D = 0.5, 0.3, and 0.7.
-
-### Exercise 3: Coupled Inductors
-For the Cuk converter, try coupling L1 and L2 (k = 0.95). Observe the effect on ripple.
+### Exercise 2: Pulsating Current Stresses
+Compare the input and output currents: note that in the buck-boost converter, both input current and output diode current are discontinuous/pulsating, requiring substantial input and output capacitance.
 
 ## Next Steps
 

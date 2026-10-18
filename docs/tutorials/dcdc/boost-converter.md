@@ -92,44 +92,63 @@ Choose C = 47 uF.
 
 ## Simulation
 
-### Setup
+## Simulation & Project File
 
-1. Open `boost_simple.ipes`
-2. Verify parameters match the design
-3. Set simulation: T_end = 2 ms, dt = 50 ns
+A complete, simulated and verified Boost Converter project file is provided directly in this directory:
 
-### Run
+- **Project File**: [:material-download: boost-converter.ipes](boost-converter.ipes)
 
-Press ++f5++ and open the SCOPE to view:
+### Simulation Model Specifications
 
-1. **Output voltage** - Should settle to ~24V
-2. **Inductor current** - Triangular waveform, always positive (CCM)
-3. **Switch voltage** - Pulses to V_out when OFF
+| Parameter | Value | Description |
+| :--- | :--- | :--- |
+| **Input Voltage ($V_{in}$)** | 12.0 V DC | Clean DC voltage source |
+| **Duty Cycle ($D$)** | 0.50 | 50% duty ratio ($V_{out} = \frac{V_{in}}{1-D} = 24.0\text{ V}$) |
+| **Switching Frequency ($f_s$)** | 50 kHz | Period $T_s = 20\,\mu\text{s}$ |
+| **Boost Inductor ($L_1$)** | $100\,\mu\text{H}$ | High-current boost inductor in CCM |
+| **Output Capacitor ($C_1$)** | $100\,\mu\text{F}$ | Low-ESR output smoothing capacitor |
+| **Load Resistor ($R_1$)** | $10.0\,\Omega$ | Continuous load current $I_{out} = 2.4\text{ A}$ ($P = 57.6\text{ W}$) |
+| **Simulation Step $\Delta t$** | $1.0\,\mu\text{s}$ | Fine temporal resolution (20 points per switching cycle) |
+| **Simulation Duration** | $15.0\,\text{ms}$ | 15,001 time steps (750 switching periods) |
 
-### Expected Waveforms
+### Monitored Probe Signals
 
-- Output voltage: 24V with < 1% ripple
-- Average inductor current: I_out / (1-D) = 2A
-- Inductor current ripple: V_in x D / (L x f_sw) = 0.6A
+| Signal | Expected Nominal Value | Description |
+| :--- | :--- | :--- |
+| `v_out` | $24.0\text{ V DC}$ ($\Delta V \approx 240\text{ mV}_{\text{pp}}$) | Output voltage across load $R_1$ |
+| `v_in` | $12.0\text{ V DC}$ | Input supply voltage |
+| `i_L` | $4.8\text{ A DC}$ ($\Delta I_L \approx 1.2\text{ A}_{\text{pp}}$) | Inductor current through $L_1$ |
+| `i_diode` | Pulsating $0\text{ A} \to 5.4\text{ A}$ | Current through boost diode `D_1` during switch OFF times |
+| `pwm` | 50 kHz square wave, $50\%$ duty | Gate driver pulse command |
+
+### How to Run in GeckoCIRCUITS
+
+1. Open `boost-converter.ipes` in GeckoCIRCUITS desktop or simulate via MCP `gecko_simulate`.
+2. Press **F5** to run the simulation.
+3. Open the **Scope** window to inspect:
+   - Output voltage smoothly rising and stabilizing at $24.0\text{ V DC}$.
+   - Inductor current continuously flowing in CCM with average value $4.8\text{ A}$.
+   - Diode current pulsating during the OFF time $(1-D)T_s$ to deliver power to the load.
 
 ## Exercises
 
 ### Exercise 1: Duty Cycle Variation
-Change D from 0.3 to 0.7 in steps of 0.1. Plot V_out vs D and compare with theory.
+Change D from 0.3 to 0.7 in steps of 0.1. Plot $V_{out}$ vs $D$ and verify:
+$$V_{out} = \frac{V_{in}}{1 - D}$$
 
 ### Exercise 2: CCM/DCM Boundary
-Reduce the load power (increase R) until the inductor current touches zero. This is the CCM/DCM boundary.
+Reduce the load power (increase $R$ to $100\,\Omega$) until the inductor current touches zero. Observe the transition to discontinuous conduction mode.
 
 ### Exercise 3: Component Sizing
-Reduce L to 15 uH (minimum). Observe increased ripple. Then try 5 uH to see DCM operation.
+Change $L_1$ to $50\,\mu\text{H}$. Observe increased current ripple $\Delta I_L = 2.4\text{ A}$ and higher capacitor voltage ripple.
 
 ## Important Notes
 
 !!! warning "Boost Converter Limitations"
-    - Output is always higher than input (V_out > V_in)
-    - As D approaches 1, efficiency drops due to parasitic resistances
-    - Practical limit: V_out < 4-5x V_in
-    - Input current is continuous (good for solar/battery applications)
+    - Output is always higher than input ($V_{out} > V_{in}$)
+    - As $D$ approaches 1, practical duty cycle is limited by diode and inductor series resistances
+    - The boost converter has a Right-Half-Plane (RHP) zero at $\omega_z = \frac{R(1-D)^2}{L}$, limiting the control bandwidth in closed-loop designs
+    - Continuous input current makes boost topologies ideal for PFC and solar MPPT applications
 
 ## Next Steps
 
