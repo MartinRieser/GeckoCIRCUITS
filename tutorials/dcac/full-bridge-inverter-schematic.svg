@@ -1,0 +1,190 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 460" width="100%" height="100%">
+  <defs>
+    <style>
+      .wire { stroke: #1e293b; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .wire-thin { stroke: #64748b; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .wire-dashed { stroke: #0284c7; stroke-width: 2; stroke-dasharray: 5,4; fill: none; }
+      .wire-gnd { stroke: #1e293b; stroke-width: 2.5; stroke-linecap: round; }
+      .junction { fill: #1e293b; }
+      .label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: middle; }
+      .label-start { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: start; }
+      .label-end { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: end; }
+      .sublabel { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: middle; }
+      .sublabel-start { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: start; }
+      .sublabel-end { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: end; }
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 16px; fill: #0f172a; font-weight: 700; }
+      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 12px; fill: #64748b; font-weight: 400; }
+      .comp-body { fill: #ffffff; stroke: #1e293b; stroke-width: 2.2; }
+      .comp-diode { fill: #0284c7; stroke: #0284c7; stroke-width: 2; }
+      .comp-sw { stroke: #0284c7; stroke-width: 2.5; stroke-linecap: round; fill: none; }
+      .arrow { fill: #0284c7; stroke: none; }
+      .measure-arrow { stroke: #0284c7; stroke-width: 1.75; fill: none; }
+      .tag-pos { fill: #dc2626; font-family: sans-serif; font-size: 16px; font-weight: bold; text-anchor: middle; }
+      .tag-pos-start { fill: #dc2626; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: start; }
+      .tag-pos-end { fill: #dc2626; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: end; }
+      .tag-neg { fill: #2563eb; font-family: sans-serif; font-size: 18px; font-weight: bold; text-anchor: middle; }
+      .tag-neg-start { fill: #2563eb; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: start; }
+      .tag-neg-end { fill: #2563eb; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: end; }
+      .card { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; rx: 8px; }
+      .block { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; rx: 6px; }
+      .block-accent { fill: #f0f9ff; stroke: #0284c7; stroke-width: 1.5; rx: 6px; }
+      .leg-box { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.2; stroke-dasharray: 4,4; rx: 6px; }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0284c7"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" class="card" />
+  <text x="35" y="38" class="title">Single-Phase Full-Bridge (H-Bridge) Inverter</text>
+  <text x="35" y="58" class="subtitle">European IEC 60617 Standard Schematic • 4-Quadrant Bipolar/Unipolar PWM Inverter</text>
+  <line x1="150" y1="80" x2="500" y2="80" class="wire" stroke="#dc2626" />
+<circle cx="150" cy="80" r="4.5" fill="#dc2626" />
+<text x="135" y="85" class="tag-pos-end">+Vdc</text>
+<line x1="150" y1="400" x2="500" y2="400" class="wire" stroke="#2563eb" />
+<circle cx="150" cy="400" r="4.5" fill="#2563eb" />
+<text x="135" y="405" class="tag-neg-end">0V</text>
+<circle cx="210" cy="80" r="4" class="junction" />
+<circle cx="210" cy="400" r="4" class="junction" />
+
+    <line x1="210" y1="80" x2="210" y2="234" class="wire" />
+    <line x1="192" y1="234" x2="228" y2="234" class="wire" stroke-width="3" />
+    <line x1="192" y1="246" x2="228" y2="246" class="wire" stroke-width="3" />
+    <line x1="210" y1="246" x2="210" y2="400" class="wire" />
+    <text x="186" y="237" class="label-end">C_dc</text>
+    <text x="186" y="255" class="sublabel-end">DC-Link Cap</text>
+    
+
+    <line x1="210" y1="400" x2="210" y2="415" class="wire" />
+    <line x1="192" y1="415" x2="228" y2="415" class="wire-gnd" />
+    <line x1="199" y1="421" x2="221" y2="421" class="wire-gnd" />
+    <line x1="206" y1="427" x2="214" y2="427" class="wire-gnd" />
+    <text x="210" y="442" class="sublabel">GND</text>
+    
+<circle cx="340" cy="80" r="4" class="junction" />
+<circle cx="340" cy="400" r="4" class="junction" />
+<line x1="340" y1="80" x2="340" y2="130" class="wire" />
+
+    <line x1="340" y1="130" x2="340" y2="157" class="wire" />
+    <circle cx="340" cy="157" r="3.5" class="junction" />
+    <line x1="340" y1="157" x2="326" y2="185" class="comp-sw" />
+    <circle cx="340" cy="193" r="3.5" class="junction" />
+    <line x1="340" y1="193" x2="340" y2="220" class="wire" />
+    <text x="314" y="173" class="label-end">S_1</text>
+    <text x="314" y="191" class="sublabel-end"></text>
+    
+        <line x1="340" y1="147" x2="375" y2="147" class="wire-thin" />
+        <line x1="375" y1="147" x2="375" y2="163" class="wire-thin" />
+        <polygon points="365,185 375,165 385,185" fill="#94a3b8" stroke="#94a3b8" />
+        <line x1="365" y1="165" x2="385" y2="165" stroke="#94a3b8" stroke-width="2" />
+        <line x1="375" y1="185" x2="375" y2="203" class="wire-thin" />
+        <line x1="375" y1="203" x2="340" y2="203" class="wire-thin" />
+        <circle cx="340" cy="147" r="3" class="junction" />
+        <circle cx="340" cy="203" r="3" class="junction" />
+        
+<line x1="340" y1="220" x2="340" y2="240" class="wire" />
+<circle cx="340" cy="240" r="4" class="junction" />
+<line x1="340" y1="240" x2="340" y2="260" class="wire" />
+
+    <line x1="340" y1="260" x2="340" y2="287" class="wire" />
+    <circle cx="340" cy="287" r="3.5" class="junction" />
+    <line x1="340" y1="287" x2="326" y2="315" class="comp-sw" />
+    <circle cx="340" cy="323" r="3.5" class="junction" />
+    <line x1="340" y1="323" x2="340" y2="350" class="wire" />
+    <text x="314" y="303" class="label-end">S_2</text>
+    <text x="314" y="321" class="sublabel-end"></text>
+    
+        <line x1="340" y1="277" x2="375" y2="277" class="wire-thin" />
+        <line x1="375" y1="277" x2="375" y2="293" class="wire-thin" />
+        <polygon points="365,315 375,295 385,315" fill="#94a3b8" stroke="#94a3b8" />
+        <line x1="365" y1="295" x2="385" y2="295" stroke="#94a3b8" stroke-width="2" />
+        <line x1="375" y1="315" x2="375" y2="333" class="wire-thin" />
+        <line x1="375" y1="333" x2="340" y2="333" class="wire-thin" />
+        <circle cx="340" cy="277" r="3" class="junction" />
+        <circle cx="340" cy="333" r="3" class="junction" />
+        
+<line x1="340" y1="350" x2="340" y2="400" class="wire" />
+<circle cx="500" cy="80" r="4" class="junction" />
+<circle cx="500" cy="400" r="4" class="junction" />
+<line x1="500" y1="80" x2="500" y2="130" class="wire" />
+
+    <line x1="500" y1="130" x2="500" y2="157" class="wire" />
+    <circle cx="500" cy="157" r="3.5" class="junction" />
+    <line x1="500" y1="157" x2="486" y2="185" class="comp-sw" />
+    <circle cx="500" cy="193" r="3.5" class="junction" />
+    <line x1="500" y1="193" x2="500" y2="220" class="wire" />
+    <text x="474" y="173" class="label-end">S_3</text>
+    <text x="474" y="191" class="sublabel-end"></text>
+    
+        <line x1="500" y1="147" x2="535" y2="147" class="wire-thin" />
+        <line x1="535" y1="147" x2="535" y2="163" class="wire-thin" />
+        <polygon points="525,185 535,165 545,185" fill="#94a3b8" stroke="#94a3b8" />
+        <line x1="525" y1="165" x2="545" y2="165" stroke="#94a3b8" stroke-width="2" />
+        <line x1="535" y1="185" x2="535" y2="203" class="wire-thin" />
+        <line x1="535" y1="203" x2="500" y2="203" class="wire-thin" />
+        <circle cx="500" cy="147" r="3" class="junction" />
+        <circle cx="500" cy="203" r="3" class="junction" />
+        
+<line x1="500" y1="220" x2="500" y2="240" class="wire" />
+<circle cx="500" cy="240" r="4" class="junction" />
+<line x1="500" y1="240" x2="500" y2="260" class="wire" />
+
+    <line x1="500" y1="260" x2="500" y2="287" class="wire" />
+    <circle cx="500" cy="287" r="3.5" class="junction" />
+    <line x1="500" y1="287" x2="486" y2="315" class="comp-sw" />
+    <circle cx="500" cy="323" r="3.5" class="junction" />
+    <line x1="500" y1="323" x2="500" y2="350" class="wire" />
+    <text x="474" y="303" class="label-end">S_4</text>
+    <text x="474" y="321" class="sublabel-end"></text>
+    
+        <line x1="500" y1="277" x2="535" y2="277" class="wire-thin" />
+        <line x1="535" y1="277" x2="535" y2="293" class="wire-thin" />
+        <polygon points="525,315 535,295 545,315" fill="#94a3b8" stroke="#94a3b8" />
+        <line x1="525" y1="295" x2="545" y2="295" stroke="#94a3b8" stroke-width="2" />
+        <line x1="535" y1="315" x2="535" y2="333" class="wire-thin" />
+        <line x1="535" y1="333" x2="500" y2="333" class="wire-thin" />
+        <circle cx="500" cy="277" r="3" class="junction" />
+        <circle cx="500" cy="333" r="3" class="junction" />
+        
+<line x1="500" y1="350" x2="500" y2="400" class="wire" />
+<line x1="340" y1="240" x2="380" y2="240" class="wire" />
+<line x1="380" y1="240" x2="380" y2="105" class="wire" />
+
+    <line x1="380" y1="105" x2="494" y2="105" class="wire" stroke="#0284c7" />
+    <path d="M 494 105 A 6 6 0 0 1 506 105" class="wire" stroke="#0284c7" />
+    <line x1="506" y1="105" x2="690" y2="105" class="wire" stroke="#0284c7" />
+    
+<circle cx="690" cy="105" r="4" class="junction" />
+<text x="675" y="98" class="sublabel-end" font-weight="bold">Phase A</text>
+<line x1="690" y1="105" x2="750" y2="105" class="wire" stroke="#0284c7" />
+
+    <circle cx="750" cy="105" r="4.5" fill="#0284c7" />
+    <text x="762" y="109" class="label-start" fill="#0284c7">+</text>
+    
+<line x1="500" y1="240" x2="580" y2="240" class="wire" />
+<line x1="580" y1="240" x2="580" y2="315" class="wire" />
+<line x1="580" y1="315" x2="750" y2="315" class="wire" stroke="#0284c7" />
+<circle cx="690" cy="315" r="4" class="junction" />
+<text x="675" y="330" class="sublabel-end" font-weight="bold">Phase B</text>
+
+    <circle cx="750" cy="315" r="4.5" fill="#0284c7" />
+    <text x="762" y="319" class="label-start" fill="#0284c7">&#8722;</text>
+    
+
+    <line x1="690" y1="105" x2="690" y2="182" class="wire" />
+    <rect x="678" y="182" width="24" height="56" class="comp-body" />
+    <line x1="690" y1="238" x2="690" y2="315" class="wire" />
+    <text x="710" y="207" class="label-start">R_load</text>
+    <text x="710" y="225" class="sublabel-start">AC Load</text>
+    
+
+    <circle cx="770" cy="105" r="4" fill="none" stroke="#0284c7" stroke-width="2" />
+    <circle cx="770" cy="315" r="4" fill="none" stroke="#0284c7" stroke-width="2" />
+    <text x="784" y="110" class="tag-pos">+</text>
+    <text x="784" y="320" class="tag-neg">&#8722;</text>
+    <line x1="795" y1="120" x2="795" y2="300" class="measure-arrow" marker-end="url(#arr-blue)" />
+    <text x="812" y="215" class="label-start" fill="#0284c7">V_out = &#177;Vdc</text>
+    
+</svg>

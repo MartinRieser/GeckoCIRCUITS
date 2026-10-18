@@ -1,0 +1,578 @@
+
+verbindungLK (0)
+<Verbindung>
+label dc_p
+x[] 6 14 
+y[] 8 8 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (1)
+<Verbindung>
+label 0
+x[] 2 12 6 
+y[] 8 8 18 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (2)
+<Verbindung>
+label dc_n
+x[] 8 60 
+y[] 8 8 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (3)
+<Verbindung>
+label arm_up
+x[] 18 20 26 
+y[] 8 8 8 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (4)
+<Verbindung>
+label ac_node
+x[] 24 34 38 44 2 
+y[] 8 10 8 8 18 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (5)
+<Verbindung>
+label c_up_node
+x[] 30 34 
+y[] 8 6 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (6)
+<Verbindung>
+label arm_lo
+x[] 42 52 56 
+y[] 8 10 8 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (7)
+<Verbindung>
+label c_lo_node
+x[] 48 52 
+y[] 8 6 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungCONTROL (8)
+<Verbindung>
+label v_ac
+x[] 12 14 
+y[] 42 42 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (9)
+<Verbindung>
+label i_ac
+x[] 12 
+y[] 43 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (10)
+<Verbindung>
+label i_arm_up
+x[] 12 
+y[] 44 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (11)
+<Verbindung>
+label g_u1
+x[] 18 24 
+y[] 42 42 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (12)
+<Verbindung>
+label g_u2
+x[] 18 24 
+y[] 43 43 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (13)
+<Verbindung>
+label g_l1
+x[] 18 24 
+y[] 44 44 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (14)
+<Verbindung>
+label g_l2
+x[] 18 24 
+y[] 45 45 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+e (15)
+<ElementLK>
+labelAnfangsKnoten[] /dc_p
+labelEndKnoten[] /0
+enabledShorted 1
+parentSheetIdentifier 0
+typ 4
+uniqueObjectIdentifier 100
+x 4
+y 8
+parameter[] 401.0 400.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 504
+idStringDialog V_DC1
+
+<\ElementLK>
+
+e (16)
+<ElementLK>
+labelAnfangsKnoten[] /0
+labelEndKnoten[] /dc_n
+enabledShorted 1
+parentSheetIdentifier 0
+typ 4
+uniqueObjectIdentifier 101
+x 10
+y 8
+parameter[] 401.0 400.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 504
+idStringDialog V_DC2
+
+<\ElementLK>
+
+e (17)
+<ElementLK>
+labelAnfangsKnoten[] /dc_p
+labelEndKnoten[] /arm_up
+enabledShorted 1
+parentSheetIdentifier 0
+typ 2
+uniqueObjectIdentifier 102
+x 16
+y 8
+parameter[] 0.005 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog L_ARM_UP
+
+<\ElementLK>
+
+e (18)
+<ElementLK>
+labelAnfangsKnoten[] /arm_up
+labelEndKnoten[] /ac_node
+enabledShorted 1
+parentSheetIdentifier 0
+typ 7
+uniqueObjectIdentifier 103
+x 22
+y 8
+parameter[] 0.0 0.01 1000000.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog S_U1
+
+<\ElementLK>
+
+e (19)
+<ElementLK>
+labelAnfangsKnoten[] /arm_up
+labelEndKnoten[] /c_up_node
+enabledShorted 1
+parentSheetIdentifier 0
+typ 7
+uniqueObjectIdentifier 104
+x 28
+y 8
+parameter[] 0.0 0.01 1000000.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog S_U2
+
+<\ElementLK>
+
+e (20)
+<ElementLK>
+labelAnfangsKnoten[] /c_up_node
+labelEndKnoten[] /ac_node
+enabledShorted 1
+parentSheetIdentifier 0
+typ 3
+uniqueObjectIdentifier 105
+x 34
+y 8
+parameter[] 0.0022 0.0 0.0 0.0 0.0 0.0 0.0022 0.0022 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 503
+idStringDialog C_SM_UP
+
+<\ElementLK>
+
+e (21)
+<ElementLK>
+labelAnfangsKnoten[] /ac_node
+labelEndKnoten[] /arm_lo
+enabledShorted 1
+parentSheetIdentifier 0
+typ 7
+uniqueObjectIdentifier 106
+x 40
+y 8
+parameter[] 0.0 0.01 1000000.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog S_L1
+
+<\ElementLK>
+
+e (22)
+<ElementLK>
+labelAnfangsKnoten[] /ac_node
+labelEndKnoten[] /c_lo_node
+enabledShorted 1
+parentSheetIdentifier 0
+typ 7
+uniqueObjectIdentifier 107
+x 46
+y 8
+parameter[] 0.0 0.01 1000000.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog S_L2
+
+<\ElementLK>
+
+e (23)
+<ElementLK>
+labelAnfangsKnoten[] /c_lo_node
+labelEndKnoten[] /arm_lo
+enabledShorted 1
+parentSheetIdentifier 0
+typ 3
+uniqueObjectIdentifier 108
+x 52
+y 8
+parameter[] 0.0022 0.0 0.0 0.0 0.0 0.0 0.0022 0.0022 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 503
+idStringDialog C_SM_LO
+
+<\ElementLK>
+
+e (24)
+<ElementLK>
+labelAnfangsKnoten[] /arm_lo
+labelEndKnoten[] /dc_n
+enabledShorted 1
+parentSheetIdentifier 0
+typ 2
+uniqueObjectIdentifier 109
+x 58
+y 8
+parameter[] 0.005 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog L_ARM_LO
+
+<\ElementLK>
+
+e (25)
+<ElementLK>
+labelAnfangsKnoten[] /ac_node
+labelEndKnoten[] /0
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier 110
+x 4
+y 18
+parameter[] 20.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog R_LOAD
+
+<\ElementLK>
+
+c (26)
+<ElementCONTROL>
+labelAnfangsKnoten[]
+labelEndKnoten[] /v_ac
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1001
+uniqueObjectIdentifier 2001
+coupledReferenceID[] 110 
+x 10
+y 42
+parameter[] 0.0 
+parameterString[] /R_LOAD
+nameOpt[]
+orientierung 503
+idStringDialog VM_AC
+
+<\ElementCONTROL>
+
+c (27)
+<ElementCONTROL>
+labelAnfangsKnoten[]
+labelEndKnoten[] /i_ac
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1002
+uniqueObjectIdentifier 2002
+coupledReferenceID[] 110 
+x 10
+y 43
+parameter[] 0.0 
+parameterString[] /R_LOAD
+nameOpt[]
+orientierung 503
+idStringDialog AM_LOAD
+
+<\ElementCONTROL>
+
+c (28)
+<ElementCONTROL>
+labelAnfangsKnoten[]
+labelEndKnoten[] /i_arm_up
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1002
+uniqueObjectIdentifier 2003
+coupledReferenceID[] 102 
+x 10
+y 44
+parameter[] 0.0 
+parameterString[] /L_ARM_UP
+nameOpt[]
+orientierung 503
+idStringDialog AM_UPPER
+
+<\ElementCONTROL>
+
+c (29)
+<ElementCONTROL>
+labelAnfangsKnoten[] /v_ac
+labelEndKnoten[] /g_u1/g_u2/g_l1/g_l2
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1016
+uniqueObjectIdentifier 2004
+x 16
+y 42
+parameter[] 
+parameterString[]
+nameOpt[]
+orientierung 503
+idStringDialog MMC_CTRL
+<sourceCode>
+
+                            double f_line = 50.0;
+                            double f_carrier = 5000.0;
+                            phase += dt * f_carrier;
+                            if (phase >= 1.0) phase -= 1.0;
+                            double tri = 2.0 * Math.abs(phase - 0.5);
+                            double m_a = 0.8;
+                            double ref = 0.5 * (1.0 + m_a * Math.sin(2.0 * PI * f_line * t));
+                            double su = (ref > tri) ? 1.0 : 0.0;
+                            double sl = 1.0 - su;
+                            yOUT[0] = 1.0 - su;
+                            yOUT[1] = su;
+                            yOUT[2] = 1.0 - sl;
+                            yOUT[3] = sl;
+                            return yOUT;
+                            
+<\sourceCode>
+<staticCode>
+
+<\staticCode>
+<importCode>
+
+<\importCode>
+<staticVariables>
+double phase = 0.0;
+<\staticVariables>
+anzXIN 1.0
+anzYOUT 4.0
+
+<\ElementCONTROL>
+
+c (30)
+<ElementCONTROL>
+labelAnfangsKnoten[] /g_u1
+labelEndKnoten[]
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1000
+uniqueObjectIdentifier 2005
+coupledReferenceID[] 103 
+x 26
+y 42
+parameter[] 0.0 
+parameterString[] /S_U1
+nameOpt[]
+orientierung 503
+idStringDialog G_U1
+
+<\ElementCONTROL>
+
+c (31)
+<ElementCONTROL>
+labelAnfangsKnoten[] /g_u2
+labelEndKnoten[]
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1000
+uniqueObjectIdentifier 2006
+coupledReferenceID[] 104 
+x 26
+y 43
+parameter[] 0.0 
+parameterString[] /S_U2
+nameOpt[]
+orientierung 503
+idStringDialog G_U2
+
+<\ElementCONTROL>
+
+c (32)
+<ElementCONTROL>
+labelAnfangsKnoten[] /g_l1
+labelEndKnoten[]
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1000
+uniqueObjectIdentifier 2007
+coupledReferenceID[] 106 
+x 26
+y 44
+parameter[] 0.0 
+parameterString[] /S_L1
+nameOpt[]
+orientierung 503
+idStringDialog G_L1
+
+<\ElementCONTROL>
+
+c (33)
+<ElementCONTROL>
+labelAnfangsKnoten[] /g_l2
+labelEndKnoten[]
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1000
+uniqueObjectIdentifier 2008
+coupledReferenceID[] 107 
+x 26
+y 45
+parameter[] 0.0 
+parameterString[] /S_L2
+nameOpt[]
+orientierung 503
+idStringDialog G_L2
+
+<\ElementCONTROL>
+
+optimizerName[]
+optimizerValue[] null
+<scripterCode>
+
+<\scripterCode>
+<scripterImports>
+
+<\scripterImports>
+<scripterDeclarations>
+ 
+<\scripterDeclarations>
+<extraScriptSourceFiles>
+ 
+<\extraScriptSourceFiles>
+
+
+
+DtStor 2026-10-18
+tDURATION 0.04
+dt 1.0E-6
+tPAUSE -1.0
+T_pre 0.0
+dt_pre 0.0
+solverType 0
+path 
+
+dpix 16
+fontSize 12
+fontTyp Arial
+fensterWidth -1
+fensterHeight -1
+worksheetSize 600x600
+ANSICHT_SHOW_LK_NAME true
+ANSICHT_SHOW_LK_PARAMETER true
+ANSICHT_SHOW_LK_FLOWDIR false
+ANSICHT_SHOW_LK_TEXTLINIE true
+ANSICHT_SHOW_THERM_NAME true
+ANSICHT_SHOW_THERM_PARAMETER true
+ANSICHT_SHOW_THERM_FLOWDIR false
+ANSICHT_SHOW_THERM_TEXTLINIE true
+ANSICHT_SHOW_CONTROL_NAME true
+ANSICHT_SHOW_CONTROL_PARAMETER true
+ANSICHT_SHOW_CONTROL_TEXTLINIE true
+FileVersion 175
+UniqueFileId 0
+dataContainerSignals[]
+
+=======================
+ 

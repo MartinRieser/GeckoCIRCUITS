@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 830 380" width="100%" height="auto">
+  <defs>
+    <style>
+      .bg-card { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; rx: 12px; }
+      .wire { stroke: #1e293b; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .wire-thin { stroke: #0284c7; stroke-width: 1.75; stroke-linecap: round; stroke-dasharray: 4,4; fill: none; }
+      .component { stroke: #0284c7; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .diode-fill { fill: #0284c7; }
+      .node-dot { fill: #1e293b; }
+      .label-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 700; fill: #0f172a; }
+      .label-sub { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 500; fill: #64748b; }
+      .label-main { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 600; fill: #1e293b; }
+      .label-desc { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 11px; font-weight: 500; fill: #64748b; }
+      .arrow-v { stroke: #2563eb; stroke-width: 1.75; fill: none; marker-end: url(#arrow-blue); }
+      .source-plus { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 15px; font-weight: bold; fill: #dc2626; text-anchor: middle; }
+      .source-minus { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 18px; font-weight: bold; fill: #475569; text-anchor: middle; }
+
+      @media (prefers-color-scheme: dark) {
+        .bg-card { fill: #0f172a; stroke: #334155; }
+        .wire { stroke: #e2e8f0; }
+        .wire-thin { stroke: #38bdf8; }
+        .component { stroke: #38bdf8; }
+        .diode-fill { fill: #38bdf8; }
+        .node-dot { fill: #e2e8f0; }
+        .label-title { fill: #f8fafc; }
+        .label-sub { fill: #94a3b8; }
+        .label-main { fill: #f1f5f9; }
+        .label-desc { fill: #94a3b8; }
+        .source-minus { fill: #94a3b8; }
+      }
+    </style>
+    <marker id="arrow-blue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#2563eb" />
+    </marker>
+  </defs>
+
+  <rect class="bg-card" x="4" y="4" width="822" height="372" />
+
+  <text class="label-title" x="28" y="34">Inverting Buck-Boost Converter</text>
+  <text class="label-sub" x="28" y="52">European IEC 60617 Standard Schematic &#8226; Continuous Conduction Mode (CCM)</text>
+
+  <!-- Input DC Source -->
+  <text class="label-main" x="52" y="200" text-anchor="middle">V<tspan baseline-shift="sub" font-size="10">in</tspan></text>
+  <text class="label-desc" x="52" y="216" text-anchor="middle">DC Input</text>
+
+  <circle cx="105" cy="210" r="26" class="component" fill="#f0f9ff" />
+  <text class="source-plus" x="105" y="202">+</text>
+  <text class="source-minus" x="105" y="226">&#8722;</text>
+
+  <path class="wire" d="M 105 184 L 105 120 L 195 120" />
+  <path class="wire" d="M 105 236 L 105 300 L 310 300" />
+
+  <!-- High-side Switch S -->
+  <g transform="translate(195, 95)">
+    <path class="wire" d="M 0 25 L 18 25" />
+    <path class="wire" d="M 62 25 L 80 25" />
+    <circle cx="18" cy="25" r="3" class="component" fill="#ffffff" />
+    <circle cx="62" cy="25" r="3" class="component" fill="#ffffff" />
+    <path class="component" d="M 19 23 L 56 10" />
+    <path class="wire-thin" d="M 38 17 L 38 -10" />
+    <text class="label-desc" x="38" y="-15" text-anchor="middle" fill="#0284c7" font-weight="600">PWM Gate</text>
+    <text class="label-main" x="40" y="45" text-anchor="middle">S</text>
+    <text class="label-desc" x="40" y="58" text-anchor="middle">Power Switch</text>
+  </g>
+
+  <!-- Wire to SW Node -->
+  <path class="wire" d="M 275 120 L 415 120" />
+  <circle cx="310" cy="120" r="4.5" class="node-dot" />
+  <text class="label-desc" x="310" y="105" text-anchor="middle" font-weight="600">SW Node</text>
+
+  <!-- Shunt Inductor L -->
+  <path class="wire" d="M 310 120 L 310 165" />
+  <g transform="translate(310, 165)">
+    <path class="component" d="
+      M 0 0 
+      A 10 10 0 0 0 0 20 
+      A 10 10 0 0 0 0 40 
+      A 10 10 0 0 0 0 60 
+      A 10 10 0 0 0 0 80
+    " />
+    <path class="component" stroke-width="1.5" d="M -15 2 L -15 78" />
+    <path class="component" stroke-width="1.5" d="M -18 2 L -18 78" />
+    <text class="label-main" x="18" y="40">L</text>
+    <text class="label-desc" x="18" y="54">Inductor</text>
+  </g>
+  <path class="wire" d="M 310 245 L 310 300" />
+  <circle cx="310" cy="300" r="4.5" class="node-dot" />
+
+  <!-- Diode D (pointing LEFT to SW node for inverting polarity) -->
+  <g transform="translate(435, 120)">
+    <path class="component" d="M -16 -16 L -16 16" />
+    <polygon points="-16 0, 14 -16, 14 16" class="diode-fill" stroke="#0284c7" stroke-width="2" />
+    <text class="label-main" x="0" y="-24" text-anchor="middle">D</text>
+    <text class="label-desc" x="0" y="34" text-anchor="middle">Diode</text>
+  </g>
+  <path class="wire" d="M 449 120 L 555 120" />
+
+  <!-- Filter Capacitor C -->
+  <circle cx="555" cy="120" r="4.5" class="node-dot" />
+  <path class="wire" d="M 555 120 L 555 196" />
+  <g transform="translate(555, 210)">
+    <line x1="-18" y1="-10" x2="18" y2="-10" class="component" stroke-width="3" />
+    <line x1="-18" y1="6" x2="18" y2="6" class="component" stroke-width="3" />
+    <path class="wire" d="M 0 -20 L 0 -10" />
+    <path class="wire" d="M 0 6 L 0 20" />
+    <text class="label-main" x="24" y="-1">C</text>
+    <text class="label-desc" x="24" y="13">Filter</text>
+    <text class="label-desc" x="24" y="25">Capacitor</text>
+  </g>
+  <path class="wire" d="M 555 230 L 555 300" />
+  <circle cx="555" cy="300" r="4.5" class="node-dot" />
+
+  <!-- Load Resistor RL -->
+  <path class="wire" d="M 555 120 L 665 120" />
+  <path class="wire" d="M 555 300 L 665 300" />
+  <circle cx="665" cy="120" r="4.5" class="node-dot" />
+  <path class="wire" d="M 665 120 L 665 180" />
+  <g transform="translate(665, 210)">
+    <rect x="-12" y="-28" width="24" height="56" class="component" fill="#f8fafc" stroke-width="2.5" rx="2" />
+    <path class="wire" d="M 0 -38 L 0 -28" />
+    <path class="wire" d="M 0 28 L 0 38" />
+    <text class="label-main" x="20" y="2">R<tspan baseline-shift="sub" font-size="10">L</tspan></text>
+    <text class="label-desc" x="20" y="16">Load</text>
+    <text class="label-desc" x="20" y="28">Resistor</text>
+  </g>
+  <path class="wire" d="M 665 248 L 665 300" />
+  <circle cx="665" cy="300" r="4.5" class="node-dot" />
+
+  <!-- Inverted Output Terminals & -Vout -->
+  <path class="wire" d="M 665 120 L 735 120" />
+  <path class="wire" d="M 665 300 L 735 300" />
+  <circle cx="735" cy="120" r="3.5" class="component" fill="#ffffff" />
+  <circle cx="735" cy="300" r="3.5" class="component" fill="#ffffff" />
+  <text class="source-minus" x="748" y="125">&#8722;</text>
+  <text class="source-plus" x="748" y="305">+</text>
+  <path class="arrow-v" d="M 762 280 L 762 140" />
+  <text class="label-main" x="774" y="206" fill="#2563eb">&#8722;V<tspan baseline-shift="sub" font-size="10">out</tspan></text>
+  <text class="label-desc" x="774" y="222">Inverted DC</text>
+
+  <!-- Common Ground -->
+  <path class="wire" d="M 105 300 L 735 300" />
+  <g transform="translate(205, 300)">
+    <path class="wire" d="M 0 0 L 0 16" />
+    <line x1="-16" y1="16" x2="16" y2="16" class="wire" stroke-width="2.5" />
+    <line x1="-10" y1="21" x2="10" y2="21" class="wire" stroke-width="2" />
+    <line x1="-4" y1="26" x2="4" y2="26" class="wire" stroke-width="1.5" />
+    <text class="label-desc" x="0" y="42" text-anchor="middle">GND (0 V)</text>
+  </g>
+</svg>

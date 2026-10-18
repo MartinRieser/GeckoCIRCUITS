@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 120" width="100%" height="auto">
+  <defs>
+    <style>
+      .card { rx: 8px; stroke-width: 1.5px; }
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 600; text-anchor: middle; }
+      .desc { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 11px; text-anchor: middle; opacity: 0.85; }
+      .arrow { stroke: #94a3b8; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#94a3b8" />
+    </marker>
+  </defs>
+
+  <!-- Stage 1: Mains Input -->
+  <g transform="translate(15, 20)">
+    <rect class="card" width="125" height="75" fill="#1e293b" stroke="#38bdf8" />
+    <text class="title" x="62.5" y="33" fill="#38bdf8">Mains Input</text>
+    <text class="desc" x="62.5" y="55" fill="#cbd5e1">230 V AC (50 Hz)</text>
+  </g>
+
+  <!-- Arrow 1 -> 2 -->
+  <path class="arrow" d="M 140 57.5 L 175 57.5" />
+
+  <!-- Stage 2: Transformer -->
+  <g transform="translate(175, 20)">
+    <rect class="card" width="125" height="75" fill="#1e293b" stroke="#818cf8" />
+    <text class="title" x="62.5" y="33" fill="#818cf8">Transformer</text>
+    <text class="desc" x="62.5" y="55" fill="#cbd5e1">19 : 1 (12 V AC)</text>
+  </g>
+
+  <!-- Arrow 2 -> 3 -->
+  <path class="arrow" d="M 300 57.5 L 335 57.5" />
+
+  <!-- Stage 3: Diode Bridge -->
+  <g transform="translate(335, 20)">
+    <rect class="card" width="125" height="75" fill="#1e293b" stroke="#fbbf24" />
+    <text class="title" x="62.5" y="33" fill="#fbbf24">Diode Bridge</text>
+    <text class="desc" x="62.5" y="55" fill="#cbd5e1">4x Diodes</text>
+  </g>
+
+  <!-- Arrow 3 -> 4 -->
+  <path class="arrow" d="M 460 57.5 L 495 57.5" />
+
+  <!-- Stage 4: DC-Link Cap -->
+  <g transform="translate(495, 20)">
+    <rect class="card" width="125" height="75" fill="#1e293b" stroke="#34d399" />
+    <text class="title" x="62.5" y="33" fill="#34d399">DC-Link Filter</text>
+    <text class="desc" x="62.5" y="55" fill="#cbd5e1">1000 µF (~15 V DC)</text>
+  </g>
+
+  <!-- Arrow 4 -> 5 -->
+  <path class="arrow" d="M 620 57.5 L 655 57.5" />
+
+  <!-- Stage 5: Buck Stage -->
+  <g transform="translate(655, 20)">
+    <rect class="card" width="125" height="75" fill="#1e293b" stroke="#a78bfa" />
+    <text class="title" x="62.5" y="33" fill="#a78bfa">50 kHz Buck</text>
+    <text class="desc" x="62.5" y="55" fill="#cbd5e1">S1 + D_fw + 33 µH</text>
+  </g>
+
+  <!-- Arrow 5 -> 6 -->
+  <path class="arrow" d="M 780 57.5 L 815 57.5" />
+
+  <!-- Stage 6: Output & Load -->
+  <g transform="translate(815, 20)">
+    <rect class="card" width="145" height="75" fill="#1e293b" stroke="#4ade80" />
+    <text class="title" x="72.5" y="33" fill="#4ade80">Output &amp; Load</text>
+    <text class="desc" x="72.5" y="55" fill="#cbd5e1">3.3 V / 20 W (0.55 Ω)</text>
+  </g>
+</svg>

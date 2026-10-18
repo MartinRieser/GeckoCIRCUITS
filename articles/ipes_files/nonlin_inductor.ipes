@@ -1,0 +1,420 @@
+
+verbindungLeistungskreisANZAHL 4
+verbindungLK (0)
+<Verbindung>
+label NIX_NIX_NIX
+zeigerAktuell 13
+zeigerNetzlisteKnotenNr 0
+isReluctance false
+labelKnotenNr -1
+x[] 5 5 5 5 5 6 7 8 9 10 11 12 13 
+y[] 8 9 10 11 12 12 12 12 12 12 12 12 12 
+xPix[] 80 80 80 80 80 96 112 128 144 160 176 192 208 
+yPix[] 128 144 160 176 192 192 192 192 192 192 192 192 192 
+enabled true
+connectorType 0
+<\Verbindung>
+
+verbindungLK (1)
+<Verbindung>
+label NIX_NIX_NIX
+zeigerAktuell 9
+zeigerNetzlisteKnotenNr 0
+isReluctance false
+labelKnotenNr -1
+x[] 13 12 11 10 9 8 7 6 5 
+y[] 4 4 4 4 4 4 4 4 4 
+xPix[] 208 192 176 160 144 128 112 96 80 
+yPix[] 64 64 64 64 64 64 64 64 64 
+enabled true
+connectorType 0
+<\Verbindung>
+
+verbindungLK (2)
+<Verbindung>
+label NIX_NIX_NIX
+zeigerAktuell 6
+zeigerNetzlisteKnotenNr 0
+isReluctance false
+labelKnotenNr -1
+x[] 13 14 15 16 17 18 
+y[] 12 12 12 12 12 12 
+xPix[] 208 224 240 256 272 288 
+yPix[] 192 192 192 192 192 192 
+enabled true
+connectorType 0
+<\Verbindung>
+
+verbindungLK (3)
+<Verbindung>
+label NIX_NIX_NIX
+zeigerAktuell 6
+zeigerNetzlisteKnotenNr 0
+isReluctance false
+labelKnotenNr -1
+x[] 18 17 16 15 14 13 
+y[] 4 4 4 4 4 4 
+xPix[] 288 272 256 240 224 208 
+yPix[] 64 64 64 64 64 64 
+enabled true
+connectorType 0
+<\Verbindung>
+
+elementANZAHL 5
+
+e (0)
+<ElementLK>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+typ 4
+uniqueObjectIdentifier 1964639349
+x 5
+y 6
+parameter[] 402.0 327.0 10000.0 0.0 0.0 0.5 21.6157666049062 -1.3309318092069589E-9 64.19519081058367 64.1951908119146 0.0 
+parameterString[] /iLa/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog U.1
+dxTxt 2.0
+dyTxt 0.3125
+
+<\ElementLK>
+
+e (1)
+<ElementLK>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+typ 1
+uniqueObjectIdentifier -1217594719
+x 13
+y 10
+parameter[] 5.0 -12.83903816238292 -64.1951908119146 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog R.1
+dxTxt -2.6875
+dyTxt 0.5
+
+<\ElementLK>
+
+e (2)
+<ElementLK>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+typ 2
+uniqueObjectIdentifier -521582457
+x 18
+y 6
+parameter[] 5.0E-4 0.0 -8.776728442523279 43.88364221128546 87767.28442256854 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog L.3
+berechneVerluste false
+isNonlinear false
+nonlinX[] 0.0 10.0 15.0 30.0 
+nonlinY[] 5.0E-4 5.0E-4 1.5E-4 1.0E-4 
+nonLinearCharHashValue 0
+dxTxt 1.5625
+dyTxt -0.125
+
+<\ElementLK>
+
+e (3)
+<ElementLK>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+typ 1
+uniqueObjectIdentifier 641698908
+x 18
+y 10
+parameter[] 5.0 -8.776728442523279 -43.883642212616394 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog R.3
+dxTxt 1.6875
+dyTxt -0.1875
+
+<\ElementLK>
+
+e (4)
+<ElementLK>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+typ 2
+uniqueObjectIdentifier -374988358
+x 13
+y 6
+parameter[] 1.4289077996674485E-4 0.0 -12.839195055568858 64.19519081058367 449295.7733207348 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog L.4
+berechneVerluste false
+isNonlinear true
+nonlinX[] 0.0 7.0 10.0 30.0 
+nonlinY[] 5.0E-4 5.0E-4 1.5E-4 1.0E-4 
+nonLinearCharHashValue 1848012443
+dxTxt 0.8125
+dyTxt 0.25
+
+<\ElementLK>
+
+controlANZAHL 3
+
+c (0)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /iLa
+enabledShorted 1
+typ 2
+uniqueObjectIdentifier -1102347432
+x 8
+y 17
+parameter[] 
+parameterString[] /L.4/NIX_NIX_NIX/0
+nameOpt[] null
+orientierung 503
+idStringDialog AMP.1
+dxTxt -4.0625
+dyTxt 0.1875
+shiftLabelsIn[] 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (1)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /iLb
+enabledShorted 1
+typ 2
+uniqueObjectIdentifier 1648286387
+x 8
+y 18
+parameter[] 
+parameterString[] /L.3/NIX_NIX_NIX/0
+nameOpt[] null
+orientierung 503
+idStringDialog AMP.3
+dxTxt -3.75
+dyTxt 0.5
+shiftLabelsIn[] 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (2)
+<ElementCONTROL>
+labelAnfangsKnoten[] /iLa/iLb
+labelEndKnoten[] 
+enabledShorted 1
+typ 5
+uniqueObjectIdentifier -1433413302
+x 12
+y 17
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] null
+orientierung 503
+idStringDialog SCOPE.1
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] true true 
+shiftLabelsOut[] 
+<detail>
+tn 2
+isShowName false
+savedSignalNames[] /iLa/iLb
+avgIndices[] 
+avgValues[] 
+<ScopeSettings>
+isAntiAliasing true
+<Diagram>
+
+diagramType DiagramCurve
+<xAxis>
+axisType -111111114
+noMinorTicks 2
+isShowLabelsMaj true
+isShowLabelsMin false
+tickLengthMaj 10
+tickLengthMin 5
+userShowGridMaj true
+userShowGridMin false
+linStilGridNormal -3333330
+linStilGridMinor -3333330
+colorGridNormal -3444446
+colorGridMinor -3444446
+axisColor -3444440
+axisStroke -3333330
+axisCaption NIX_NIX_NIX
+isAutoEnabled true
+isUserScale 0.0 0.0
+valueScale 0.0 2.0E-4
+<\xAxis>
+<yAxis1>
+
+axisType -111111114
+noMinorTicks 2
+isShowLabelsMaj true
+isShowLabelsMin false
+tickLengthMaj 10
+tickLengthMin 5
+userShowGridMaj true
+userShowGridMin false
+linStilGridNormal -3333330
+linStilGridMinor -3333330
+colorGridNormal -3444446
+colorGridMinor -3444446
+axisColor -3444440
+axisStroke -3333330
+axisCaption NIX_NIX_NIX
+isAutoEnabled true
+isUserScale 0.0 0.0
+valueScale 0.0 1.0
+<\yAxis1>
+<yAxis2>
+
+axisType -111111114
+noMinorTicks 2
+isShowLabelsMaj true
+isShowLabelsMin false
+tickLengthMaj 10
+tickLengthMin 5
+userShowGridMaj true
+userShowGridMin false
+linStilGridNormal -3333330
+linStilGridMinor -3333330
+colorGridNormal -3444446
+colorGridMinor -3444446
+axisColor -3444440
+axisStroke -3333330
+axisCaption NIX_NIX_NIX
+isAutoEnabled true
+isUserScale 0.0 0.0
+valueScale 0.0 1.0
+<\yAxis2>
+<diagramSettings>
+
+nameDiagram GRF 0
+yWeightDiagram 1.0
+<\diagramSettings>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 52
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444441
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 52
+<\CurveDiagram>
+<\Diagram>
+
+<\ScopeSettings>
+
+<ScopeWindowSettings>
+
+isAutoScaleWindowOn true
+powerAnalCurIndices[] -1 -1 -1 
+powerAnalVoltIndices[] -1 -1 -1 
+windowWidth 741
+windowHeight 615
+saveScreenWidth 3840
+saveScreenHeight 1200
+saveScreenPosX 3099
+saveScreenPosY 585
+<\ScopeWindowSettings>
+
+<\detail>
+
+<\ElementCONTROL>
+
+<scopeSettings>
+noInputSignals 2
+<\scopeSettings>
+thermANZAHL 0
+
+optimizerName[] 
+optimizerValue[]  
+<scripterCode>
+ 
+<\scripterCode> 
+<scripterImports>
+
+<\scripterImports> 
+<scripterDeclarations>
+ 
+<\scripterDeclarations>
+
+GeckoFileManager
+<GeckoFileManager>
+<GeckoFile>
+hashValue 1848012443
+absPath /home/andreas/GeckoCIRCUITSOrig/Examples/Newsletter/inductorNonLinearity.nll
+relPath ../../../GeckoCIRCUITSOrig/Examples/Newsletter/inductorNonLinearity.nll
+fileSep /
+isExternal 0
+usageList[] /L.4
+<usageList>
+L.4
+<\usageList>
+fileContents[] 48 46 48 32 53 46 48 69 45 52 10 55 46 48 32 53 46 48 69 45 52 10 49 48 46 48 32 49 46 53 69 45 52 10 51 48 46 48 32 49 46 48 69 45 52 10 
+<\GeckoFile>
+<\GeckoFileManager>
+
+
+DtStor 2012-10-02
+tDURATION 2.0E-4
+bl 1378504800000
+dt 1.0E-8
+tPAUSE -1.0
+T_pre -1.0
+dt_pre 1.0E-8
+solverType 0
+path /home/andreas/GeckoCIRCUITSDistr/Examples/Newsletter/nonlin_inductor.ipes
+
+dpix 16
+fontSize 10
+fontTyp Dialog.plain
+fensterWidth 823
+fensterHeight 452
+worksheetSize 1000x1000
+ANSICHT_SHOW_LK_NAME true
+ANSICHT_SHOW_LK_PARAMETER true
+ANSICHT_SHOW_LK_FLOWDIR false
+ANSICHT_SHOW_LK_TEXTLINIE true
+ANSICHT_SHOW_THERM_NAME true
+ANSICHT_SHOW_THERM_PARAMETER true
+ANSICHT_SHOW_THERM_FLOWDIR false
+ANSICHT_SHOW_THERM_TEXTLINIE true
+ANSICHT_SHOW_CONTROL_NAME false
+ANSICHT_SHOW_CONTROL_PARAMETER true
+ANSICHT_SHOW_CONTROL_TEXTLINIE true
+FileVersion 160
+UniqueFileId 2107497700
+dataContainerSignals[] [] /iLa/iLb
+=======================
+ 
