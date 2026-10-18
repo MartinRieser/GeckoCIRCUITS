@@ -437,5 +437,206 @@ class CircuitValidatorTest {
         List<Map<String, String>> diags = (List<Map<String, String>>) result.get("diagnostics");
         assertFalse(diags.stream().anyMatch(d -> "MISSING_GROUND".equals(d.get("rule"))));
     }
+
+    @Test
+    void resolvesNameBasedGateCoupling() {
+        String content = """
+                ElementLKAnzahl 2
+                c (0)
+                <ElementLK>
+                labelAnfangsKnoten[] /in
+                labelEndKnoten[] /0
+                typ 1
+                uniqueObjectIdentifier 1001
+                idStringDialog R1
+                parameter[] 10.0
+                <\\ElementLK>
+                
+                c (1)
+                <ElementLK>
+                labelAnfangsKnoten[] /in
+                labelEndKnoten[] /0
+                typ 7
+                uniqueObjectIdentifier 1002
+                idStringDialog S_MAIN
+                parameter[] 1.0E7 0.001 0.0 0.0
+                <\\ElementLK>
+
+                ElementCONTROLAnzahl 1
+                c (0)
+                <ElementCONTROL>
+                typ 6
+                uniqueObjectIdentifier 2001
+                idStringDialog GATE_DRV
+                coupledReferenceID[] 0
+                parameterString[] /S_MAIN/0/0
+                <\\ElementCONTROL>
+                """;
+
+        Map<String, Object> result = CircuitValidator.validateContent(content, "test_name_gate");
+        @SuppressWarnings("unchecked")
+        List<Map<String, String>> diags = (List<Map<String, String>>) result.get("diagnostics");
+        assertFalse(diags.stream().anyMatch(d -> "DANGLING_GATE".equals(d.get("rule"))),
+                "Gate referencing switch by name in parameterString should resolve without DANGLING_GATE");
+    }
+
+    @Test
+    void resolvesProbeWithParameterStringNodeLabels() {
+        String content = """
+                ElementLKAnzahl 1
+                c (0)
+                <ElementLK>
+                labelAnfangsKnoten[] /u_load
+                labelEndKnoten[] /0
+                typ 1
+                uniqueObjectIdentifier 1001
+                idStringDialog R_LOAD
+                parameter[] 50.0
+                <\\ElementLK>
+
+                ElementCONTROLAnzahl 1
+                c (0)
+                <ElementCONTROL>
+                typ 1
+                uniqueObjectIdentifier 2001
+                idStringDialog VM_OUT
+                coupledReferenceID[] 0
+                parameterString[] /in1/u_load/0
+                <\\ElementCONTROL>
+                """;
+
+        Map<String, Object> result = CircuitValidator.validateContent(content, "test_probe_nodes");
+        @SuppressWarnings("unchecked")
+        List<Map<String, String>> diags = (List<Map<String, String>>) result.get("diagnostics");
+        assertFalse(diags.stream().anyMatch(d -> "DANGLING_PROBE".equals(d.get("rule"))),
+                "Voltmeter referencing /in1/u_load/0 in parameterString should resolve without DANGLING_PROBE");
+    }
+
+    @Test
+    void doesNotShortCircuitOpAmpWithNegativeFeedback() {
+        String content = """
+                ElementLKAnzahl 2
+                c (0)
+                <ElementLK>
+                labelAnfangsKnoten[] /0
+                labelEndKnoten[] /v_in
+                typ 4
+                uniqueObjectIdentifier 1001
+                idStringDialog V_IN
+                parameter[] 5.0
+                <\\ElementLK>
+
+                c (1)
+                <ElementLK>
+                labelAnfangsKnoten[] /NIX_NIX_NIX/v_out
+                labelEndKnoten[] /v_out/0
+                typ 22
+                uniqueObjectIdentifier 1002
+                idStringDialog OPV_BUF
+                parameter[] 100000.0 0.01 1.0E7
+                <\\ElementLK>
+                """;
+
+        Map<String, Object> result = CircuitValidator.validateContent(content, "test_opamp_feedback");
+        @SuppressWarnings("unchecked")
+        List<Map<String, String>> diags = (List<Map<String, String>>) result.get("diagnostics");
+        assertFalse(diags.stream().anyMatch(d -> "SHORT_CIRCUIT".equals(d.get("rule")) && "OPV_BUF".equals(d.get("component"))),
+                "Op-Amp in voltage follower configuration should not trigger SHORT_CIRCUIT");
+    }
+
+    @Test
+    void wiresMergeOnlyAtEndpointJunctionsNotMidCrossings() {
+        String content = """
+                ElementLKAnzahl 4
+                c (0)
+                <ElementLK>
+                labelAnfangsKnoten[] /NIX_NIX_NIX
+                labelEndKnoten[] /NIX_NIX_NIX
+                typ 1
+                uniqueObjectIdentifier 1001
+                idStringDialog R_HORIZ
+                x 5
+                y 5
+                orientierung 502
+                parameter[] 10.0
+                <\\ElementLK>
+
+                c (1)
+                <ElementLK>
+                labelAnfangsKnoten[] /NIX_NIX_NIX
+                labelEndKnoten[] /NIX_NIX_NIX
+                typ 1
+                uniqueObjectIdentifier 1002
+                idStringDialog R_VERT
+                x 15
+                y 15
+                orientierung 503
+                parameter[] 10.0
+                <\\ElementLK>
+
+                c (2)
+                <ElementLK>
+                labelAnfangsKnoten[] /0
+                labelEndKnoten[] /0
+                typ 31
+                uniqueObjectIdentifier 1003
+                x 5
+                y 1
+                <\\ElementLK>
+
+                c (3)
+                <ElementLK>
+                labelAnfangsKnoten[] /0
+                labelEndKnoten[] /0
+                typ 31
+                uniqueObjectIdentifier 1004
+                x 1
+                y 15
+                <\\ElementLK>
+
+                verbindungLK (0)
+                <Verbindung>
+                label net_horizontal
+                x[] 2 20
+                y[] 15 15
+                connectorType 0
+                <\\Verbindung>
+
+                verbindungLK (1)
+                <Verbindung>
+                label net_vertical
+                x[] 10 10
+                y[] 2 25
+                connectorType 0
+                <\\Verbindung>
+                """;
+
+        Map<String, Object> result = CircuitValidator.validateContent(content, "test_crossing_wires");
+        @SuppressWarnings("unchecked")
+        List<Map<String, String>> diags = (List<Map<String, String>>) result.get("diagnostics");
+        assertFalse(diags.stream().anyMatch(d -> "SHORT_CIRCUIT".equals(d.get("rule"))),
+                "Mid-crossing wires without an endpoint junction must remain separate nets");
+    }
+
+    @Test
+    void validatesTutorialCircuitsWithZeroErrors() throws IOException {
+        Path tutorialsDir = Path.of("docs/tutorials");
+        if (!Files.exists(tutorialsDir)) return;
+
+        try (var stream = Files.walk(tutorialsDir)) {
+            List<Path> files = stream.filter(p -> p.toString().endsWith(".ipes")).toList();
+            for (Path ipes : files) {
+                Map<String, Object> res = CircuitValidator.validate(ipes);
+                @SuppressWarnings("unchecked")
+                List<Map<String, String>> diags = (List<Map<String, String>>) res.get("diagnostics");
+                List<Map<String, String>> errors = diags.stream()
+                        .filter(d -> "ERROR".equals(d.get("level")))
+                        .toList();
+                assertEquals(0, errors.size(),
+                        "Tutorial circuit " + ipes.getFileName() + " must have 0 validation errors: " + errors);
+            }
+        }
+    }
 }
+
 
