@@ -58,7 +58,7 @@ public final class CircuitFileWriter {
      * @throws IOException if compression fails
      */
     public static byte[] write(CircuitModel model) throws IOException {
-        return write(model, true);
+        return write(model, false);
     }
 
     /**

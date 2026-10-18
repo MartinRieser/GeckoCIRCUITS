@@ -68,7 +68,7 @@ public final class CircuitBuilder {
                     default -> 0;
                 };
 
-        boolean compress = !Boolean.FALSE.equals(request.get("compress"));
+        boolean compress = Boolean.TRUE.equals(request.get("compress"));
 
         // 2. Power components
         @SuppressWarnings("unchecked")
