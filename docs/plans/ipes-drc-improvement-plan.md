@@ -17,7 +17,7 @@ Based on the completion and validation of all 21 converter and multi-domain tuto
 | **Phase 2** | Wire-Based Ground & Net Mapping in DRC | **DONE** | `4620f5c` (58/58 tests green, 0 false short circuits, 0 dangling gates/probes) |
 | **Phase 3** | Multi-Domain Synthesis in `gecko_create_circuit` | **DONE** | `674517b` (Coupled inductors, Foster/Cauer RC chains, non-linear saturating inductors, 61/61 tests green) |
 | **Phase 4** | Domain-Specific Metrics in `gecko_measure_metrics` | **DONE** | `5e892987` (Thermal, magnetic Steinmetz/saturation, mechanical speed/torque metrics, 66/66 tests green) |
-| **Phase 5** | Pre-Flight Topology Checks (Singular Matrix Prevention) | Planned | Pre-solver diagnostics |
+| **Phase 5** | Pre-Flight Topology Checks (Singular Matrix Prevention) | **DONE** | Pre-solver diagnostics: `VOLTAGE_SOURCE_LOOP`, `INDUCTIVE_CUTSET`, `UNCONNECTED_GATE`, structured `suggested_fix` (72/72 tests green) |
 | **Phase 6** | Parameterized Control Block Library | Planned | Standardized SPWM, PI, Deadtime blocks |
 | **Phase 7** | Developer Ergonomics: Python SDK & SVG Export | Planned | `geckopy` & `gecko_export_schematic_svg` |
 
@@ -213,16 +213,78 @@ Extend automated post-simulation waveform metrics to cover thermal, magnetic, an
 
 ---
 
-## Phase 5: Pre-Flight Topology Checks (Singular Matrix Prevention)
+## Phase 5: Pre-Flight Topology Checks (Singular Matrix Prevention) (COMPLETED)
 
 ### Objective
-Catch topological degeneracies before the MNA solver executes, providing structured actionable diagnostics with `suggested_fix`.
+Catch topological degeneracies in `CircuitValidator` before the MNA solver executes, preventing numerical singularity crashes (`SingularMatrixException`) and providing structured, actionable diagnostics with `suggested_fix` guidance.
 
-### Rule Checks
-1. **Voltage Source Loops**: Direct loop of ideal voltage sources with zero branch resistance.
-2. **Inductive Cutsets**: All-inductor cutset carrying discontinuous current steps.
-3. **Floating Switches / Unconnected Gates**: Active semiconductor switches with no gating signal connected.
-4. **Structured Diagnostics**: Provide JSON diagnostic payload with `suggested_fix` (e.g. "Add series damping resistor of 10 mΩ to voltage source loop").
+### Architecture & Rules Implemented
+
+```mermaid
+flowchart TD
+    subgraph PreFlight Topology Verification
+        A[Canonical Nets & Component Map] --> B{Rule 6: Ideal Voltage Source Loop?}
+        B -->|Cycle in Voltage Branch Subgraph| B1[ERROR: VOLTAGE_SOURCE_LOOP<br/>Suggest series damping resistor]
+        B -->|Acyclic Subgraph| C{Rule 7: Inductive Cutset?}
+        C -->|Inductor in series with Current Source| C1[ERROR: INDUCTIVE_CUTSET<br/>Suggest parallel snubber/resistor]
+        C -->|Series Inductors without Impedance| C2[WARNING: INDUCTIVE_CUTSET<br/>Suggest combining equivalent L]
+        C -->|Valid Impedance Paths| D{Rule 8: Active Switches Gated?}
+        D -->|Switch missing GATE block or control driver| D1[WARNING: UNCONNECTED_GATE<br/>Suggest coupling GATE block]
+        D -->|Gating Confirmed| E[Clean Pre-Flight Gate]
+    end
+```
+
+### Key Technical Deliverables
+1. **Rule 6: Voltage Source Loop Check (`VOLTAGE_SOURCE_LOOP`)**:
+   - Ideal voltage sources (`typ 4`) introduce auxiliary current variables in Modified Nodal Analysis (MNA). A closed loop of ideal voltage sources creates linearly dependent auxiliary equation rows/columns, causing solver singularity.
+   - Implemented disjoint-set cycle detection `DisjointSet<String> vsUf` on voltage source branch endpoints (`net0`, `net1`).
+   - Successfully catches parallel pairs ($V_1 \parallel V_2$) and closed polygonal loops ($V_1 \to V_2 \to \dots \to V_k \to V_1$) in $O(E \alpha(V))$ time without false positives on 3-phase star sources.
+   - **Diagnostic**: `ERROR: VOLTAGE_SOURCE_LOOP` with concrete `suggested_fix` ("Insert an internal series damping resistor (e.g. 10 mOhm) or remove redundant parallel voltage source branches to break the ideal voltage source loop.").
+
+2. **Rule 7: Inductive Cutset Check (`INDUCTIVE_CUTSET`)**:
+   - Inductors enforce current continuity. Connecting an inductor in series with an ideal current source (`typ 5`) forces conflicting current derivatives ($L \frac{di}{dt}$ singularity).
+   - Evaluates node-degree and component sets on non-ground circuit nets:
+     - **Error**: Net connecting inductor (`typ 2, 12`) directly in series with ideal current source (`typ 5`) without damping path.
+       - **Suggested Fix**: "Add a parallel damping resistor (e.g. 1 MOhm) or snubber across the inductor branch to avoid an ideal inductive current cutset."
+     - **Warning**: Net connecting two inductors in series with no intermediate branch or load impedance.
+       - **Suggested Fix**: "Combine the two series inductors into a single equivalent inductor (L_total = L1 + L2) or add a parallel damping resistance."
+
+3. **Rule 8: Unconnected Gate Check (`UNCONNECTED_GATE`)**:
+   - Active semiconductor power switches (`typ 7` Thyristor, `typ 8` Triac, `typ 10` GTO, `typ 11` IGBT, `typ 28` MOSFET, `typ 33` BJT) require gating control. An uncoupled switch remains statically open or in its initial condition, often indicating a schematic oversight.
+   - Checks:
+     - `coupledReferenceID` pointing to switch UID.
+     - `parameterString` / target name matching switch name.
+     - Script block references in `sourceCode`, `staticCode`, and `staticVars`.
+     - Physical terminal connectivity (for BJT base terminal).
+   - **Diagnostic**: `WARNING: UNCONNECTED_GATE` with concrete `suggested_fix` ("Add a GATE block (typ 6 / 1000) coupled to switch '<name>' or provide a gating control signal.").
+
+4. **Repository-Wide Structured `suggested_fix` Coverage**:
+   - Extended `CircuitValidator.Diagnostic` record to optionally carry `suggestedFix`.
+   - Preserved full 4-argument constructor backward compatibility (`Diagnostic(level, rule, comp, msg)`).
+   - Serialized `suggested_fix` into JSON diagnostic payload across **all 11 existing and new DRC rules**:
+     - `SHORT_CIRCUIT`: Disconnect shorted terminal or reroute branch.
+     - `MISSING_GROUND`: Connect node '0' or place `LK_GLOBAL_TERMINAL` (`typ 31`).
+     - `FLOATING_NET`: Connect open terminal or tie to ground/bus.
+     - `DANGLING_PROBE`: Wire probe terminals or point to valid measurement node vector.
+     - `DANGLING_GATE`: Target valid semiconductor switch UID or name.
+     - `INVALID_GATE_TARGET`: Retarget to active switch.
+     - `NATIVEC_NO_LIBRARY`: Build or configure C shared library path.
+     - `SCRIPT_COMPILE_ERROR`: Statement-level syntax fix.
+     - `EMPTY_SCRIPT`: Supply script logic or remove empty block.
+     - `UNBALANCED_BRACES`: Match open/closing brace count.
+     - `DIVIDE_BY_ZERO_RISK`: Insert zero-guard before division.
+
+### Verification Matrix
+- [x] `CircuitValidatorTest.detectsVoltageSourceLoop`: verifies detection of parallel voltage sources and suggested fix.
+- [x] `CircuitValidatorTest.detectsInductiveCutsetWithCurrentSource`: verifies series inductor + current source cutset error.
+- [x] `CircuitValidatorTest.detectsInductiveCutsetSeriesInductors`: verifies series inductor warning and simplification fix.
+- [x] `CircuitValidatorTest.detectsUnconnectedGateOnActiveSwitch`: verifies warning for ungated MOSFET/IGBT.
+- [x] `CircuitValidatorTest.gateBlockSuppressesUnconnectedGateWarning`: verifies that coupling a GATE block suppresses the warning.
+- [x] `CircuitValidatorTest.diagnosticsIncludeActionableSuggestedFix`: verifies `suggested_fix` is present and populated.
+- [x] Full `mvn test -pl backend/gecko-mcp`: 72/72 unit tests pass (100% green).
+- [x] Full `python scripts/desktop/build_tutorials.py`: all 21 tutorials pass validation and headless execution.
+- [x] Full `python scripts/verify-examples.py`: all 14 baseline examples pass physics assertions.
+- [x] Shaded JAR `desktop/app/engine/gecko-mcp.jar` rebuilt and updated.
 
 ---
 

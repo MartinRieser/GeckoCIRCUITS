@@ -38,8 +38,13 @@ public final class CircuitValidator {
             String level, // "ERROR", "WARNING", "INFO"
             String rule,
             String component,
-            String message
-    ) {}
+            String message,
+            String suggestedFix
+    ) {
+        public Diagnostic(String level, String rule, String component, String message) {
+            this(level, rule, component, message, null);
+        }
+    }
 
     private static final Pattern ELEMENT_LK = Pattern.compile("<ElementLK>([\\s\\S]*?)<[\\\\/]+ElementLK>");
     private static final Pattern ELEMENT_CONTROL = Pattern.compile("<ElementCONTROL>([\\s\\S]*?)<[\\\\/]+ElementCONTROL>");
@@ -82,7 +87,7 @@ public final class CircuitValidator {
             try {
                 CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
                 for (String warning : netlist.getBuildWarnings()) {
-                    compileChecks.add(compileEntry("WARNING", "NETLIST_WARNING", warning));
+                    compileChecks.add(compileEntry("WARNING", "NETLIST_WARNING", warning, null));
                 }
                 ControlCalculatorBuilder.ControlCoupling coupling =
                         ControlCalculatorBuilder.build(model, netlist);
@@ -93,11 +98,15 @@ public final class CircuitValidator {
                 compileOk &= testSolve(model, compileChecks);
             } catch (RuntimeException e) {
                 compileOk = false;
-                compileChecks.add(compileEntry("ERROR", "NETLIST_BUILD", String.valueOf(e.getMessage())));
+                String msg = String.valueOf(e.getMessage());
+                String fix = msg.toLowerCase().contains("singular")
+                        ? "Check circuit for loops of ideal voltage sources, floating subcircuits, or nodes without a DC path to ground."
+                        : null;
+                compileChecks.add(compileEntry("ERROR", "NETLIST_BUILD", msg, fix));
             }
         } catch (Exception e) {
             compileOk = false;
-            compileChecks.add(compileEntry("ERROR", "PARSE", String.valueOf(e.getMessage())));
+            compileChecks.add(compileEntry("ERROR", "PARSE", String.valueOf(e.getMessage()), null));
         }
         result.put("compile_checks", compileChecks);
         result.put("compile_level", "compile");
@@ -120,20 +129,31 @@ public final class CircuitValidator {
                 .build();
         SimulationResult result = new HeadlessSimulationEngine().runSimulation(config);
         if (result.isSuccess()) {
-            checks.add(compileEntry("INFO", "TEST_SOLVE", "two-step test solve passed"));
+            checks.add(compileEntry("INFO", "TEST_SOLVE", "two-step test solve passed", null));
             return true;
         }
-        checks.add(compileEntry("ERROR", "TEST_SOLVE",
-                String.valueOf(result.getErrorMessage())));
+        String errorMsg = String.valueOf(result.getErrorMessage());
+        String fix = null;
+        if (errorMsg.toLowerCase().contains("singular")) {
+            fix = "Check circuit for loops of ideal voltage sources, floating subcircuits, or nodes without a DC path to ground.";
+        }
+        checks.add(compileEntry("ERROR", "TEST_SOLVE", errorMsg, fix));
         return false;
     }
 
-    private static Map<String, Object> compileEntry(String severity, String code, String message) {
+    private static Map<String, Object> compileEntry(String severity, String code, String message, String suggestedFix) {
         Map<String, Object> entry = new LinkedHashMap<>();
         entry.put("severity", severity);
         entry.put("code", code);
         entry.put("message", message);
+        if (suggestedFix != null && !suggestedFix.isBlank()) {
+            entry.put("suggested_fix", suggestedFix);
+        }
         return entry;
+    }
+
+    private static Map<String, Object> compileEntry(String severity, String code, String message) {
+        return compileEntry(severity, code, message, null);
     }
 
     public record Point(int x, int y) {}
@@ -194,6 +214,8 @@ public final class CircuitValidator {
         Map<String, Map<String, Object>> thermComponentsByName = new LinkedHashMap<>();
         List<ComponentData> allComponents = new ArrayList<>();
         List<WireData> wires = new ArrayList<>();
+        Set<Long> drivenSwitchUids = new HashSet<>();
+        Set<String> drivenSwitchNames = new HashSet<>();
 
         long fallbackUidGen = 100000L;
 
@@ -207,6 +229,11 @@ public final class CircuitValidator {
             }
             String name = named(group(block, "idStringDialog\\s+([^\\s\\r\\n]+)"), "COMP_" + uid);
             int typ = parseInt(group(block, "typ\\s+([0-9]+)"), 0);
+
+            long switchCoupledId = parseLong(group(block, "coupledReferenceID(?:\\[\\])?[ \\t]+([0-9-]+)"), 0L);
+            if (switchCoupledId != 0L) {
+                drivenSwitchUids.add(uid);
+            }
 
             Integer posX = parseOptionalInt(group(block, "(?:^|\\n)x\\s+([0-9-]+)"));
             Integer posY = parseOptionalInt(group(block, "(?:^|\\n)y\\s+([0-9-]+)"));
@@ -483,20 +510,23 @@ public final class CircuitValidator {
                 String pOut = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":1"));
                 if (pIn != null && pOut != null && pIn.equals(pOut)) {
                     diagnostics.add(new Diagnostic("ERROR", "SHORT_CIRCUIT", comp.name,
-                            "Component " + comp.name + " has primary terminals connected to the same net: '" + pIn + "'"));
+                            "Component " + comp.name + " has primary terminals connected to the same net: '" + pIn + "'",
+                            "Disconnect one primary terminal of transformer " + comp.name + " from net '" + pIn + "' or reroute to a distinct circuit node."));
                 }
                 String sIn = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":2"));
                 String sOut = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":3"));
                 if (sIn != null && sOut != null && sIn.equals(sOut)) {
                     diagnostics.add(new Diagnostic("ERROR", "SHORT_CIRCUIT", comp.name,
-                            "Component " + comp.name + " has secondary terminals connected to the same net: '" + sIn + "'"));
+                            "Component " + comp.name + " has secondary terminals connected to the same net: '" + sIn + "'",
+                            "Disconnect one secondary terminal of transformer " + comp.name + " from net '" + sIn + "' or reroute to a distinct circuit node."));
                 }
             } else if (comp.typ == 33) { // LK_BJT
                 String cNet = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":0"));
                 String eNet = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":2"));
                 if (cNet != null && eNet != null && cNet.equals(eNet)) {
                     diagnostics.add(new Diagnostic("ERROR", "SHORT_CIRCUIT", comp.name,
-                            "Component " + comp.name + " has collector and emitter connected to the same net: '" + cNet + "'"));
+                            "Component " + comp.name + " has collector and emitter connected to the same net: '" + cNet + "'",
+                            "Disconnect collector or emitter of BJT " + comp.name + " from net '" + cNet + "' or insert a collector/emitter branch."));
                 }
             } else {
                 boolean hasA = isTerminalConnected(comp, 0, wiresThroughPointByDomain.get("LK"));
@@ -506,7 +536,8 @@ public final class CircuitValidator {
                     String netB = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":1"));
                     if (netA != null && netB != null && netA.equals(netB)) {
                         diagnostics.add(new Diagnostic("ERROR", "SHORT_CIRCUIT", comp.name,
-                                "Component " + comp.name + " has both terminals connected to the same net: '" + netA + "'"));
+                                "Component " + comp.name + " has both terminals connected to the same net: '" + netA + "'",
+                                "Disconnect one terminal of component " + comp.name + " from net '" + netA + "' or reroute to a distinct circuit node."));
                     }
                 }
             }
@@ -522,7 +553,8 @@ public final class CircuitValidator {
         long powerCompCount = allComponents.stream().filter(c -> "LK".equals(c.domain) && c.typ != 31 && c.typ != 9).count();
         if (powerCompCount > 0 && !hasGround) {
             diagnostics.add(new Diagnostic("ERROR", "MISSING_GROUND", "SYSTEM",
-                    "Circuit has no explicit ground reference (node '0' or 'GND'). MNA matrix solution requires a reference node."));
+                    "Circuit has no explicit ground reference (node '0' or 'GND'). MNA matrix solution requires a reference node.",
+                    "Connect node '0' or place a ground component (LK_GLOBAL_TERMINAL typ 31) to establish a 0V reference potential."));
         }
 
         // Rule 3: Single-connection / floating net check
@@ -533,7 +565,8 @@ public final class CircuitValidator {
                 List<String> comps = netToComponents.get(net);
                 String compName = comps != null && !comps.isEmpty() ? comps.get(0) : "UNKNOWN";
                 diagnostics.add(new Diagnostic("WARNING", "FLOATING_NET", compName,
-                        "Net '" + net + "' is only connected to component " + compName + " (floating terminal)."));
+                        "Net '" + net + "' is only connected to component " + compName + " (floating terminal).",
+                        "Connect net '" + net + "' to another component terminal or ground reference, or remove the unused terminal."));
             }
         }
 
@@ -570,9 +603,14 @@ public final class CircuitValidator {
 
                 if (!hasCoupledComp && !hasMeasuredNodes && !touchesWires) {
                     diagnostics.add(new Diagnostic("ERROR", "DANGLING_PROBE", name,
-                            "Probe " + name + " is neither coupled to a component nor connected to circuit nodes."));
+                            "Probe " + name + " is neither coupled to a component nor connected to circuit nodes.",
+                            "Couple probe '" + name + "' to a component via coupledReferenceID or attach it to measurement nodes."));
                 }
             } else if (typ == 6 || typ == 1000) { // Gate
+                if (coupledId != 0L) drivenSwitchUids.add(coupledId);
+                if (coupledName != null) drivenSwitchNames.add(coupledName);
+                for (String ps : paramStrings) drivenSwitchNames.add(ps);
+
                 Map<String, Object> target = null;
                 if (coupledId != 0L && lkComponents.containsKey(coupledId)) {
                     target = lkComponents.get(coupledId);
@@ -584,12 +622,14 @@ public final class CircuitValidator {
                     diagnostics.add(new Diagnostic("ERROR", "DANGLING_GATE", name,
                             "Gate " + name + " has coupledReferenceID=" + coupledId
                             + (coupledName != null ? " (target '" + coupledName + "')" : "")
-                            + " which does not match any switch component."));
+                            + " which does not match any switch component.",
+                            "Set coupledReferenceID or parameterString to the uniqueObjectIdentifier or name of the target semiconductor switch."));
                 } else {
                     int targetType = (int) target.get("type");
                     if (!isSwitchType(targetType)) {
                         diagnostics.add(new Diagnostic("WARNING", "INVALID_GATE_TARGET", name,
-                                "Gate " + name + " is coupled to non-switch component type: " + targetType));
+                                "Gate " + name + " is coupled to non-switch component type: " + targetType,
+                                "Change the coupled component to an active switch (MOSFET, IGBT, Thyristor, Ideal Switch, or BJT)."));
                     }
                 }
             } else if (typ == 88) { // NativeC C-library block
@@ -605,7 +645,8 @@ public final class CircuitValidator {
                 }
                 if (libPath.isEmpty() && classicSel.isEmpty()) {
                     diagnostics.add(new Diagnostic("ERROR", "NATIVEC_NO_LIBRARY", name,
-                            "C library block " + name + " has no library configured (libraryPath)."));
+                            "C library block " + name + " has no library configured (libraryPath).",
+                            "Specify the path to the compiled .dll/.so library in the libraryPath parameter."));
                 }
             } else if (typ == 61 || typ == 1016) { // ScriptBlock
                 int numIn = parseInt(group(block, "anzXIN\\s+([0-9]+)"), 0);
@@ -613,6 +654,13 @@ public final class CircuitValidator {
                 String src = named(group(block, "<sourceCode>([\\s\\S]*?)<\\\\sourceCode>"), "");
                 String staticCode = named(group(block, "<staticCode>([\\s\\S]*?)<\\\\staticCode>"), "");
                 String staticVars = named(group(block, "<staticVariables>([\\s\\S]*?)<\\\\staticVariables>"), "");
+
+                // Check if script directly references any switch names
+                for (ComponentData c : allComponents) {
+                    if (isActiveSwitchType(c.typ) && (src.contains(c.name) || staticCode.contains(c.name) || staticVars.contains(c.name))) {
+                        drivenSwitchNames.add(c.name);
+                    }
+                }
 
                 // Validate script compilation directly and identify failing statement
                 try {
@@ -633,11 +681,13 @@ public final class CircuitValidator {
                         }
                         String detail = failingStmt.isEmpty() ? "" : " at statement [" + failingStmt + "]";
                         diagnostics.add(new Diagnostic("ERROR", "SCRIPT_COMPILE_ERROR", name,
-                                "Script block " + name + " compilation failed" + detail + ": " + calc.getCompileError()));
+                                "Script block " + name + " compilation failed" + detail + ": " + calc.getCompileError(),
+                                "Check Java syntax in the script block sourceCode and staticCode sections."));
                     }
                 } catch (Exception e) {
                     diagnostics.add(new Diagnostic("ERROR", "SCRIPT_COMPILE_ERROR", name,
-                            "Script block " + name + " error: " + e.getMessage()));
+                            "Script block " + name + " error: " + e.getMessage(),
+                            "Check Java syntax in the script block sourceCode and staticCode sections."));
                 }
 
                 // Rule 5: Script block linter
@@ -648,6 +698,109 @@ public final class CircuitValidator {
             info.put("name", name);
             info.put("type", typ);
             ctrlComponents.put(uid, info);
+        }
+
+        // Rule 6: Voltage Source Loop Check (Singular Matrix Prevention)
+        DisjointSet<String> vsUf = new DisjointSet<>();
+        for (ComponentData comp : allComponents) {
+            if ("LK".equals(comp.domain) && comp.typ == 4) { // VOLTAGE_SOURCE (DC/AC)
+                String net0 = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":0"));
+                String net1 = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":1"));
+                if (net0 != null && net1 != null && !net0.equals(net1)) {
+                    if (vsUf.find(net0).equals(vsUf.find(net1))) {
+                        diagnostics.add(new Diagnostic(
+                                "ERROR",
+                                "VOLTAGE_SOURCE_LOOP",
+                                comp.name,
+                                "Voltage source " + comp.name + " forms a closed loop of ideal voltage sources between nets '"
+                                        + net0 + "' and '" + net1 + "', causing an MNA singular matrix.",
+                                "Insert an internal series damping resistor (e.g. 10 mOhm) or remove redundant parallel voltage source branches to break the ideal voltage source loop."
+                        ));
+                    } else {
+                        vsUf.union(net0, net1);
+                    }
+                }
+            }
+        }
+
+        // Rule 7: Inductive Cutset Check
+        Map<String, List<ComponentData>> netToLKComps = new LinkedHashMap<>();
+        for (ComponentData comp : allComponents) {
+            if (!"LK".equals(comp.domain) || comp.typ == 31 || comp.typ == 9) continue;
+            int termCount = comp.typ == 23 ? 4 : (comp.typ == 33 ? 3 : 2);
+            for (int t = 0; t < termCount; t++) {
+                String tKey = "T:" + comp.uid + ":" + t;
+                String net = rootToCanonicalNet.get(uf.find(tKey));
+                if (net != null) {
+                    netToLKComps.computeIfAbsent(net, k -> new ArrayList<>()).add(comp);
+                }
+            }
+        }
+
+        for (Map.Entry<String, List<ComponentData>> entry : netToLKComps.entrySet()) {
+            String net = entry.getKey();
+            if (isGroundLabel(net)) continue;
+            List<ComponentData> rawComps = entry.getValue();
+            Set<ComponentData> uniqueComps = new LinkedHashSet<>(rawComps);
+            if (uniqueComps.size() < 2) continue;
+
+            int indCount = 0;
+            int csCount = 0;
+            int otherCount = 0;
+            ComponentData firstInd = null;
+            ComponentData firstCs = null;
+
+            for (ComponentData c : uniqueComps) {
+                if (c.typ == 2 || c.typ == 12) {
+                    indCount++;
+                    if (firstInd == null) firstInd = c;
+                } else if (c.typ == 5) { // CURRENT_SOURCE
+                    csCount++;
+                    if (firstCs == null) firstCs = c;
+                } else {
+                    otherCount++;
+                }
+            }
+
+            if (otherCount == 0 && indCount >= 1 && csCount >= 1) {
+                diagnostics.add(new Diagnostic(
+                        "ERROR",
+                        "INDUCTIVE_CUTSET",
+                        firstInd.name,
+                        "Net '" + net + "' connects inductor " + firstInd.name + " directly in series with ideal current source "
+                                + firstCs.name + " with no parallel path for current redistribution.",
+                        "Add a parallel damping resistor (e.g. 1 MOhm) or snubber across the inductor branch to avoid an ideal inductive current cutset."
+                ));
+            } else if (otherCount == 0 && indCount == 2 && csCount == 0 && uniqueComps.size() == 2) {
+                List<ComponentData> indList = new ArrayList<>(uniqueComps);
+                diagnostics.add(new Diagnostic(
+                        "WARNING",
+                        "INDUCTIVE_CUTSET",
+                        indList.get(0).name,
+                        "Net '" + net + "' connects inductors " + indList.get(0).name + " and " + indList.get(1).name
+                                + " in series with no intermediate impedance.",
+                        "Combine the two series inductors into a single equivalent inductor (L_total = L1 + L2) or add a parallel damping resistance."
+                ));
+            }
+        }
+
+        // Rule 8: Unconnected Gate Check (Floating Switch Prevention)
+        for (ComponentData comp : allComponents) {
+            if ("LK".equals(comp.domain) && isActiveSwitchType(comp.typ)) {
+                if (!drivenSwitchUids.contains(comp.uid) && !drivenSwitchNames.contains(comp.name)) {
+                    boolean baseConnected = comp.typ == 33 && isTerminalConnected(comp, 1, wiresThroughPointByDomain.get("LK"));
+                    if (!baseConnected) {
+                        diagnostics.add(new Diagnostic(
+                                "WARNING",
+                                "UNCONNECTED_GATE",
+                                comp.name,
+                                "Active semiconductor switch " + comp.name + " (typ " + comp.typ
+                                        + ") has no gate drive or control coupling; switch will remain permanently in its initial state.",
+                                "Add a GATE block (typ 6 / 1000) coupled to switch '" + comp.name + "' or provide a gating control signal."
+                        ));
+                    }
+                }
+            }
         }
 
         long errorCount = diagnostics.stream().filter(d -> "ERROR".equals(d.level())).count();
@@ -670,6 +823,9 @@ public final class CircuitValidator {
             m.put("rule", d.rule());
             m.put("component", d.component());
             m.put("message", d.message());
+            if (d.suggestedFix() != null && !d.suggestedFix().isBlank()) {
+                m.put("suggested_fix", d.suggestedFix());
+            }
             diagList.add(m);
         }
         result.put("diagnostics", diagList);
@@ -677,7 +833,11 @@ public final class CircuitValidator {
     }
 
     private static boolean isSwitchType(int typ) {
-        return typ == 7 || typ == 8 || typ == 10 || typ == 11 || typ == 33 || typ == 6;
+        return typ == 7 || typ == 8 || typ == 10 || typ == 11 || typ == 28 || typ == 33 || typ == 6;
+    }
+
+    private static boolean isActiveSwitchType(int typ) {
+        return typ == 7 || typ == 8 || typ == 10 || typ == 11 || typ == 28 || typ == 33;
     }
 
     private static String extractFirstParameterString(String block) {
@@ -718,7 +878,8 @@ public final class CircuitValidator {
     private static void checkScriptBlock(String blockName, String sourceCode, List<Diagnostic> diagnostics) {
         if (sourceCode.isBlank()) {
             diagnostics.add(new Diagnostic("WARNING", "EMPTY_SCRIPT", blockName,
-                    "Script block " + blockName + " has empty source code."));
+                    "Script block " + blockName + " has empty source code.",
+                    "Add control statements to the script block source code or remove the empty block."));
             return;
         }
 
@@ -731,13 +892,15 @@ public final class CircuitValidator {
         }
         if (openBraces != closeBraces) {
             diagnostics.add(new Diagnostic("ERROR", "UNBALANCED_BRACES", blockName,
-                    "Script block " + blockName + " has unbalanced braces: " + openBraces + " '{' vs " + closeBraces + " '}'"));
+                    "Script block " + blockName + " has unbalanced braces: " + openBraces + " '{' vs " + closeBraces + " '}'",
+                    "Ensure every opening brace '{' has a matching closing brace '}' in the script code."));
         }
 
         // Check for non-short-circuit division in boolean conditions, e.g. "x > 0 && 1 / x"
         if (sourceCode.matches("(?s).*&&\\s*[^&|;]*?/\\s*[a-zA-Z0-9_]+.*")) {
             diagnostics.add(new Diagnostic("WARNING", "DIVIDE_BY_ZERO_RISK", blockName,
-                    "Script block contains division inside logical '&&' expression. ScriptBlockCalculator does not short-circuit sub-expressions; guard divisions with ternary or safe variable bounds."));
+                    "Script block contains division inside logical '&&' expression. ScriptBlockCalculator does not short-circuit sub-expressions; guard divisions with ternary or safe variable bounds.",
+                    "Guard divisions with ternary operators or safe non-zero bounds: 'denom != 0.0 ? num / denom : 0.0'."));
         }
     }
 
@@ -748,7 +911,8 @@ public final class CircuitValidator {
             String net = nodes.get(0);
             if (!net.isEmpty() && !net.equalsIgnoreCase("NIX_NIX_NIX")) {
                 diagnostics.add(new Diagnostic("ERROR", "SHORT_CIRCUIT", compName,
-                        "Component " + compName + " has all " + portName + " terminals connected to the same net: '" + net + "'"));
+                        "Component " + compName + " has all " + portName + " terminals connected to the same net: '" + net + "'",
+                        "Reroute " + portName + " terminals of " + compName + " across separate circuit nodes."));
             }
         }
     }

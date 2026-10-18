@@ -619,6 +619,235 @@ class CircuitValidatorTest {
     }
 
     @Test
+    void detectsVoltageSourceLoop() {
+        String content = """
+                ElementLKAnzahl 2
+
+                c (0)
+                <ElementLK>
+                labelAnfangsKnoten[] /vcc
+                labelEndKnoten[] /0
+                typ 4
+                uniqueObjectIdentifier 1001
+                idStringDialog V1
+                parameter[] 1 10.0 50.0 0.0 0.0
+                <\\ElementLK>
+
+                c (1)
+                <ElementLK>
+                labelAnfangsKnoten[] /vcc
+                labelEndKnoten[] /0
+                typ 4
+                uniqueObjectIdentifier 1002
+                idStringDialog V2
+                parameter[] 1 12.0 50.0 0.0 0.0
+                <\\ElementLK>
+                """;
+
+        Map<String, Object> result = CircuitValidator.validateContent(content, "test_vsource_loop");
+        assertFalse((Boolean) result.get("valid"));
+        @SuppressWarnings("unchecked")
+        List<Map<String, String>> diags = (List<Map<String, String>>) result.get("diagnostics");
+        Map<String, String> diag = diags.stream()
+                .filter(d -> "VOLTAGE_SOURCE_LOOP".equals(d.get("rule")))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(diag, "Voltage source loop diagnostic should be triggered");
+        assertEquals("ERROR", diag.get("level"));
+        assertEquals("V2", diag.get("component"));
+        assertNotNull(diag.get("suggested_fix"));
+        assertTrue(diag.get("suggested_fix").contains("damping resistor"));
+    }
+
+    @Test
+    void detectsInductiveCutsetWithCurrentSource() {
+        String content = """
+                ElementLKAnzahl 2
+
+                c (0)
+                <ElementLK>
+                labelAnfangsKnoten[] /vcc
+                labelEndKnoten[] /mid
+                typ 2
+                uniqueObjectIdentifier 1001
+                idStringDialog L1
+                parameter[] 0.001
+                <\\ElementLK>
+
+                c (1)
+                <ElementLK>
+                labelAnfangsKnoten[] /mid
+                labelEndKnoten[] /0
+                typ 5
+                uniqueObjectIdentifier 1002
+                idStringDialog I1
+                parameter[] 1 5.0 50.0 0.0 0.0
+                <\\ElementLK>
+                """;
+
+        Map<String, Object> result = CircuitValidator.validateContent(content, "test_ind_cutset_cs");
+        assertFalse((Boolean) result.get("valid"));
+        @SuppressWarnings("unchecked")
+        List<Map<String, String>> diags = (List<Map<String, String>>) result.get("diagnostics");
+        Map<String, String> diag = diags.stream()
+                .filter(d -> "INDUCTIVE_CUTSET".equals(d.get("rule")) && "ERROR".equals(d.get("level")))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(diag, "Inductive cutset error should be triggered for inductor in series with current source");
+        assertEquals("L1", diag.get("component"));
+        assertNotNull(diag.get("suggested_fix"));
+        assertTrue(diag.get("suggested_fix").contains("damping resistor"));
+    }
+
+    @Test
+    void detectsInductiveCutsetSeriesInductors() {
+        String content = """
+                ElementLKAnzahl 2
+
+                c (0)
+                <ElementLK>
+                labelAnfangsKnoten[] /vcc
+                labelEndKnoten[] /mid
+                typ 2
+                uniqueObjectIdentifier 1001
+                idStringDialog L1
+                parameter[] 0.001
+                <\\ElementLK>
+
+                c (1)
+                <ElementLK>
+                labelAnfangsKnoten[] /mid
+                labelEndKnoten[] /0
+                typ 2
+                uniqueObjectIdentifier 1002
+                idStringDialog L2
+                parameter[] 0.002
+                <\\ElementLK>
+                """;
+
+        Map<String, Object> result = CircuitValidator.validateContent(content, "test_ind_cutset_series");
+        @SuppressWarnings("unchecked")
+        List<Map<String, String>> diags = (List<Map<String, String>>) result.get("diagnostics");
+        Map<String, String> diag = diags.stream()
+                .filter(d -> "INDUCTIVE_CUTSET".equals(d.get("rule")) && "WARNING".equals(d.get("level")))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(diag, "Series inductors warning should be triggered");
+        assertNotNull(diag.get("suggested_fix"));
+        assertTrue(diag.get("suggested_fix").contains("Combine the two series inductors"));
+    }
+
+    @Test
+    void detectsUnconnectedGateOnActiveSwitch() {
+        String content = """
+                ElementLKAnzahl 2
+
+                c (0)
+                <ElementLK>
+                labelAnfangsKnoten[] /vcc
+                labelEndKnoten[] /mid
+                typ 28
+                uniqueObjectIdentifier 1001
+                idStringDialog S_MOSFET
+                parameter[] 0.01 100.0
+                <\\ElementLK>
+
+                c (1)
+                <ElementLK>
+                labelAnfangsKnoten[] /mid
+                labelEndKnoten[] /0
+                typ 1
+                uniqueObjectIdentifier 1002
+                idStringDialog R1
+                parameter[] 10.0
+                <\\ElementLK>
+                """;
+
+        Map<String, Object> result = CircuitValidator.validateContent(content, "test_unconnected_gate");
+        @SuppressWarnings("unchecked")
+        List<Map<String, String>> diags = (List<Map<String, String>>) result.get("diagnostics");
+        Map<String, String> diag = diags.stream()
+                .filter(d -> "UNCONNECTED_GATE".equals(d.get("rule")))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(diag, "Unconnected gate warning should be triggered for active MOSFET");
+        assertEquals("WARNING", diag.get("level"));
+        assertEquals("S_MOSFET", diag.get("component"));
+        assertNotNull(diag.get("suggested_fix"));
+        assertTrue(diag.get("suggested_fix").contains("GATE block"));
+    }
+
+    @Test
+    void gateBlockSuppressesUnconnectedGateWarning() {
+        String content = """
+                ElementLKAnzahl 2
+
+                c (0)
+                <ElementLK>
+                labelAnfangsKnoten[] /vcc
+                labelEndKnoten[] /mid
+                typ 28
+                uniqueObjectIdentifier 1001
+                idStringDialog S_MOSFET
+                parameter[] 0.01 100.0
+                <\\ElementLK>
+
+                c (1)
+                <ElementLK>
+                labelAnfangsKnoten[] /mid
+                labelEndKnoten[] /0
+                typ 1
+                uniqueObjectIdentifier 1002
+                idStringDialog R1
+                parameter[] 10.0
+                <\\ElementLK>
+
+                ElementCONTROLAnzahl 1
+
+                c (0)
+                <ElementCONTROL>
+                typ 6
+                uniqueObjectIdentifier 2001
+                idStringDialog GATE1
+                coupledReferenceID[] 1001
+                parameterString[] /S_MOSFET
+                <\\ElementCONTROL>
+                """;
+
+        Map<String, Object> result = CircuitValidator.validateContent(content, "test_connected_gate");
+        @SuppressWarnings("unchecked")
+        List<Map<String, String>> diags = (List<Map<String, String>>) result.get("diagnostics");
+        assertFalse(diags.stream().anyMatch(d -> "UNCONNECTED_GATE".equals(d.get("rule"))),
+                "Connected gate should suppress UNCONNECTED_GATE warning");
+    }
+
+    @Test
+    void diagnosticsIncludeActionableSuggestedFix() {
+        String content = """
+                ElementLKAnzahl 1
+
+                c (0)
+                <ElementLK>
+                labelAnfangsKnoten[] /0
+                labelEndKnoten[] /0
+                typ 1
+                uniqueObjectIdentifier 1001
+                idStringDialog R_SHORT
+                parameter[] 10.0
+                <\\ElementLK>
+                """;
+
+        Map<String, Object> result = CircuitValidator.validateContent(content, "test_suggested_fix");
+        @SuppressWarnings("unchecked")
+        List<Map<String, String>> diags = (List<Map<String, String>>) result.get("diagnostics");
+        for (Map<String, String> d : diags) {
+            String fix = d.get("suggested_fix");
+            assertNotNull(fix, "Diagnostic " + d.get("rule") + " should have suggested_fix populated");
+            assertFalse(fix.isBlank(), "Suggested fix should not be blank");
+        }
+    }
+
+    @Test
     void validatesTutorialCircuitsWithZeroErrors() throws IOException {
         Path tutorialsDir = Path.of("docs/tutorials");
         if (!Files.exists(tutorialsDir)) return;
