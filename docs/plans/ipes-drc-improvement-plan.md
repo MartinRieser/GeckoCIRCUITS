@@ -358,22 +358,102 @@ flowchart TD
 
 ---
 
-## Phase 7: Developer Ergonomics: Python SDK & SVG Export
+## Phase 7: Developer Ergonomics: Python SDK & SVG Export (COMPLETED)
 
 ### Objective
-Streamline external integration, continuous test workflows, and visual circuit documentation.
+Streamline external integration, automated continuous testing workflows, and visual circuit documentation across the GeckoCIRCUITS ecosystem.
 
-### Deliverables
-1. **`geckopy` Python SDK**:
-   ```python
-   from geckopy import Circuit
+### Architecture & System Overview
 
-   ckt = Circuit.open("docs/tutorials/dcdc/buck-converter.ipes")
-   ckt.set_parameter("L1", "inductance", 150e-6)
-   result = ckt.simulate(duration=0.01)
-   print(result.metrics.v_out_mean, result.metrics.efficiency)
-   ```
-2. **`gecko_export_schematic_svg`**:
-   - Render circuit schematic directly to clean SVG/PNG for markdown artifacts and browser inspection.
-3. **MCP Server Graceful Reload**:
-   - Add reload endpoint to drop file locks during rapid local JAR recompilation.
+```mermaid
+flowchart TD
+    subgraph geckopy Python SDK
+        P1[geckopy.Circuit.open / create] --> P2[ckt.set_parameter / set_script_code]
+        P2 --> P3[ckt.validate]
+        P3 --> P4[ckt.simulate / get_waveforms]
+        P4 --> P5[SimulationResult / Metrics / Waveforms]
+        P2 --> P6[ckt.export_svg]
+    end
+
+    subgraph Headless Simulation & MCP Surface
+        M1[JSON-RPC 2.0 stdio Client] <--> M2[gecko-mcp Backend Server]
+        M2 --> M3[gecko_simulate / gecko_get_waveforms]
+        M2 --> M4[gecko_export_schematic_svg]
+        M2 --> M5[gecko_server_reload]
+        M4 --> M6[SchematicSvgRenderer]
+    end
+
+    P1 <--> M1
+    P4 <--> M3
+    P6 <--> M4
+```
+
+### Components Implemented
+
+1. **`geckopy` Python SDK (`geckopy/`)**:
+   - **Idiomatic Pythonic API**:
+     ```python
+     from geckopy import Circuit
+
+     ckt = Circuit.open("docs/tutorials/dcdc/buck-converter.ipes")
+     ckt.set_parameter("L1", "inductance", 150e-6)
+     result = ckt.simulate(duration=0.01)
+     print(result.metrics.v_out_mean, result.metrics.efficiency)
+     ```
+   - **`Circuit`**:
+     - `Circuit.open(path)` / `Circuit.create(def, output_path)`: Factory constructors.
+     - `ckt.set_parameter(name, param, value)`: Method-chainable parameter patching.
+     - `ckt.set_script_code(block, source, static_code, static_vars)`: Dynamic script updating.
+     - `ckt.validate(level="compile")`: Pre-flight DRC report with `.is_valid`, `.errors`, and `.warnings`.
+     - `ckt.simulate(...)` / `ckt.get_waveforms(...)` / `ckt.measure_metrics(...)`: Execution wrappers.
+     - `ckt.export_svg(output_path, theme, scale)`: Vector schematic export.
+     - `ckt.list_signals()` / `ckt.inspect()`: Introspection utilities.
+   - **`SimulationResult` & `Metrics`**:
+     - Dot-accessible metrics (`res.metrics.v_out_mean`, `res.metrics.efficiency`, `res.metrics.power_factor`, `res.metrics.ripple`, etc.) alongside dictionary indexing.
+     - `res.waveforms`: Multi-channel time-series indexing and per-signal summary statistics.
+     - `res.to_dataframe()`: Optional zero-copy conversion to pandas DataFrame.
+   - **`GeckoClient` Process Lifecycle**:
+     - Auto-discovers bundled JDK runtime or system Java binary.
+     - Auto-discovers `gecko-mcp.jar`.
+     - Process-wide singleton client with clean `atexit` termination and context-manager support (`with GeckoClient() as client:`).
+   - **Packaging & Typing**:
+     - Full PEP 561 compliance (`geckopy/py.typed`).
+     - Standard `pyproject.toml` supporting `pip install -e .`.
+
+2. **Schematic SVG Export (`SchematicSvgRenderer.java`)**:
+   - **High-Fidelity Vector Graphics**: Renders `.ipes` circuit models directly to clean, scalable SVG without requiring Swing, AWT, or a display server.
+   - **Semantic Component Symbols**:
+     - Resistors (IEC standard box with connection leads).
+     - Inductors (multi-arch coil loops).
+     - Capacitors (parallel plates with dielectric gap).
+     - Voltage Sources (circles with `~` for AC or `+/-` for DC).
+     - Current Sources (circle with directional arrow).
+     - Diodes (triangle with cathode bar).
+     - Active Switches (MOSFETs, IGBTs, Thyristors, and contact switches).
+     - Global Terminals & Grounds (earth ground tapering lines and net pins).
+     - Measurement Probes (Voltmeters, Ammeters, Scopes with signal badges).
+     - Control Blocks & Script ICs (rounded blocks with inputs, outputs, and type badges).
+     - Thermal Components (heat sources, thermal resistors, ambient grounds).
+   - **Multi-Domain Wire Routing**:
+     - Distinct domain color coding (Electric LK blue `#2563eb`, Control green `#059669`, Thermal amber `#d97706`).
+     - Wire junction dots rendered at connections joining 3+ branches.
+     - Net label badges centered on labeled signal nets.
+   - **Theming**:
+     - Full support for `light` and `dark` themes.
+     - Responsive viewBox with customizable scale factor.
+
+3. **MCP Tool Integration (`GeckoTools.java`)**:
+   - **`gecko_export_schematic_svg`**: Exposes vector schematic generation through MCP tool surface.
+   - **`gecko_server_reload`**: Graceful engine reset clearing cached file locks and triggering garbage collection for rapid iterative development.
+
+### Verification Matrix
+- [x] `SchematicSvgRendererTest.rendersSchematicToSvgString`: validates vector SVG generation, light/dark themes, wire classes, and component labels.
+- [x] `SchematicSvgRendererTest.toolsExportSchematicSvgAndReload`: validates tool integration for SVG export and graceful server reload.
+- [x] `tests/test_geckopy.py`:
+  - `test_server_status_and_reload`: verifies `geckopy.server_status()` and `geckopy.reload_server()`.
+  - `test_open_modify_and_simulate_buck`: verifies opening buck tutorial, parameter patching (`L1`), DRC validation, simulation, and metrics dot access (`result.metrics.v_out_mean`).
+  - `test_create_circuit_and_export_svg`: verifies programmatic circuit creation, DRC validation, and SVG generation for both light and dark themes.
+- [x] Full `mvn test -pl backend/gecko-mcp`: 79/79 unit tests pass (100% green).
+- [x] Full `python scripts/desktop/build_tutorials.py`: all 21 tutorials pass validation and headless execution.
+- [x] Full `python scripts/verify-examples.py`: all 14 baseline examples pass physics assertions.
+- [x] Shaded JAR `desktop/app/engine/gecko-mcp.jar` rebuilt and updated.

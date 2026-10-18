@@ -34,7 +34,7 @@ final class GeckoTools {
                 serverStatus(), catalog(), createCircuit(), validateCircuit(), measureMetrics(),
                 setupPfc(), setupLlc(), inspectCircuit(),
                 patchComponent(), setScriptCode(), simulate(), getWaveforms(), tunePfc(),
-                listSignals());
+                listSignals(), exportSchematicSvg(), serverReload());
     }
 
     // ---------- schemas ----------
@@ -531,6 +531,45 @@ final class GeckoTools {
                     result.put("evaluation", recommendation);
                     result.put("full_metrics", metrics);
                     return result;
+                });
+    }
+
+    private static ToolSpec exportSchematicSvg() {
+        return new ToolSpec("gecko_export_schematic_svg",
+                "Export circuit schematic directly to clean, scalable vector SVG graphics with component symbols, "
+                        + "multi-domain wire routing (LK/CONTROL/THERMAL), junction dots, and net labels.",
+                objectSchema(properties(
+                        Map.of("circuit_path", str("Path to the circuit file (.ipes or .ipes.gz).")),
+                        Map.of("output_path", str("Optional file path where the generated .svg will be saved.")),
+                        Map.of("theme", str("Visual theme: 'light' (default) or 'dark'.")),
+                        Map.of("scale", num("Zoom/scaling factor for the SVG canvas (default 1.0)."))
+                ), List.of("circuit_path")),
+                args -> {
+                    Path ipesPath = IpesSupport.resolve(str_(args, "circuit_path", null));
+                    if (!Files.exists(ipesPath)) {
+                        throw new IllegalArgumentException("Circuit file not found: " + ipesPath);
+                    }
+                    String outStr = strOrNull(args, "output_path");
+                    Path outputPath = outStr != null ? IpesSupport.resolve(outStr) : null;
+                    String theme = str_(args, "theme", "light");
+                    double scale = num_(args, "scale", 1.0);
+                    return SchematicSvgRenderer.exportSvg(ipesPath, outputPath, theme, scale);
+                });
+    }
+
+    private static ToolSpec serverReload() {
+        return new ToolSpec("gecko_server_reload",
+                "Perform a graceful reload/reset of the headless simulation engine: flushes file caches, triggers garbage collection to release mapped file handles, and returns server status.",
+                objectSchema(properties(), null),
+                args -> {
+                    System.gc();
+                    Map<String, Object> resp = new LinkedHashMap<>();
+                    resp.put("status", "RELOADED");
+                    resp.put("timestamp", System.currentTimeMillis());
+                    resp.put("catalog_component_count", ComponentCatalog.all().size());
+                    resp.put("free_memory_mb", Runtime.getRuntime().freeMemory() / (1024 * 1024));
+                    resp.put("total_memory_mb", Runtime.getRuntime().totalMemory() / (1024 * 1024));
+                    return resp;
                 });
     }
 
