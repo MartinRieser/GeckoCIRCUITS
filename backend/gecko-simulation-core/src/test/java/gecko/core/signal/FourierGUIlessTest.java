@@ -1,7 +1,6 @@
 package gecko.core.signal;
 
 import gecko.core.datacontainer.DataContainerSimple;
-import gecko.core.datacontainer.DataContainerValuesSettable;
 import gecko.core.GeckoInvalidArgumentException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +13,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class FourierGUIlessTest {
 
     private DataContainerSimple dataContainer;
-    private static final double DELTA = 1e-3;
 
     @BeforeEach
     void setUp() {
@@ -103,14 +101,6 @@ class FourierGUIlessTest {
     private void setConstantSignal(DataContainerSimple container, int row, double value, int samples) {
         for (int i = 0; i < samples; i++) {
             container.insertValuesAtEnd(new float[]{(float) value}, i * 0.01);
-        }
-    }
-
-    private void setSineWave(DataContainerSimple container, int row, double amplitude, double frequency, int samples) {
-        for (int i = 0; i < samples; i++) {
-            double time = i * 0.01;
-            float val = (float) (amplitude * Math.sin(2 * Math.PI * frequency * time));
-            container.insertValuesAtEnd(new float[]{val}, time);
         }
     }
 }

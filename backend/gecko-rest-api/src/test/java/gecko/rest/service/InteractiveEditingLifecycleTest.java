@@ -138,6 +138,7 @@ class InteractiveEditingLifecycleTest {
                 .filter(c -> "R.1".equals(c.getName()))
                 .findFirst()
                 .orElseThrow();
+        assertNotNull(r1);
 
         // R.1 is at (21, 10) EAST_WEST (504): pins at (23, 10) and (19, 10)
         // Add parallel capacitor C_snub at (21, 12) EAST_WEST (504): pins at (23, 12) and (19, 12)

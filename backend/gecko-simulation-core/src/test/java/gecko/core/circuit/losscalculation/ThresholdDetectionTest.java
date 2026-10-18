@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class ThresholdDetectionTest {
 
-    private static final double DELTA = 1e-10;
     private static final double EPS = 0.01;
 
     private ThresholdHelper helper;

@@ -357,7 +357,6 @@ class ControlNetlistTest {
      */
     private static class MockCalculator extends AbstractControlCalculatable {
         int callCount = 0;
-        double lastDt = 0;
 
         MockCalculator(int inputs, int outputs) {
             super(inputs, outputs);
@@ -366,7 +365,6 @@ class ControlNetlistTest {
         @Override
         public void calculateYOUT(double deltaT) {
             callCount++;
-            lastDt = deltaT;
         }
     }
 }

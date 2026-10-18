@@ -1363,7 +1363,6 @@ public final class CircuitBuilder {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private static void applyNonlinearInductorSettings(CircuitModel.ComponentData comp, Map<String, Object> c) {
         String typeStr = (String) c.get("type");
         boolean isNonlinear = "NONLINEAR_INDUCTOR".equalsIgnoreCase(typeStr)

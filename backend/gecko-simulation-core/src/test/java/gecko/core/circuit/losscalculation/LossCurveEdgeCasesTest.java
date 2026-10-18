@@ -114,7 +114,6 @@ class LossCurveEdgeCasesTest {
     public void testSetCurveData_DoesNotModifyInput() {
         LossCurve curve = new TestLossCurve();
         double[][] input = {{1.0, 2.0}, {3.0, 4.0}};
-        double[][] inputCopy = {{1.0, 2.0}, {3.0, 4.0}};
 
         curve.setCurveData(input);
         input[0][0] = 999.0;  // Modify original

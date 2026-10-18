@@ -748,7 +748,6 @@ public final class PowerMetricsCalculator {
         return fallback;
     }
 
-    @SuppressWarnings("unchecked")
     private static List<String> getList(Map<String, Object> map, String key) {
         Object val = map.get(key);
         if (val instanceof List<?> list) {

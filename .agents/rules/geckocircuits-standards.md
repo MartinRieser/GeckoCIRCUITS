@@ -2,6 +2,12 @@
 
 ## Compilation & Warning Standards
 - **Zero-Warning Goal**: All code modifications must compile with 0 javac warnings.
+- **Mandatory Final Cleanup Pass**: After making substantive code changes, refactorings, or completing tasks/phases, ALWAYS perform an explicit cleanup inspection on all modified files before handoff:
+  - Remove all unused imports (including leftover, dead, or duplicate import blocks).
+  - Remove unused local variables, unused private fields, and orphaned/dead private helper methods created during development.
+  - Remove redundant or unnecessary `@SuppressWarnings` annotations (e.g. `@SuppressWarnings("unchecked")` when types are safely inferred).
+  - Ensure equality assertions and `equals()` comparisons compare compatible types (e.g. cast/type as `Object` to avoid unlikely argument type warnings).
+- **Linter & Compiler Cleanliness Verification**: Check compiler/linter diagnostics (including `-Xlint:all` and IDE problem markers) across all modified files before declaring work finished. Clean code hygiene is mandatory, not an afterthought.
 - **Architectural Fixes Over Suppression**: When addressing deprecations, build warnings, or runtime warnings, never merely suppress, silence, or disable warning output (e.g., passing JVM suppression flags like `--sun-misc-unsafe-memory-access=allow`, adding catch-all compiler suppression, or silencing stderr). Always investigate and fix the root architectural cause by migrating to standard APIs, modern class-loading strategies, or compliant configurations.
 - **Serialization**: Any class implementing `java.io.Serializable` or extending `Exception`/`RuntimeException` must declare `private static final long serialVersionUID = 1L;`.
 - **Generics**: Use type-safe generic collections (`Collections.emptyList()`, `List<T>`) instead of legacy raw types (`Collections.EMPTY_LIST`, raw `Vector`).
@@ -32,6 +38,7 @@ Known-good reference values live in the `ASSERTIONS` table; if physics-verificat
 - **No Premature Completion**: Never declare a task, goal, or milestone complete until all subtasks, edge cases, downstream integrations, and architectural plan requirements are fully implemented and verified.
 - **Plan Cross-Check**: Before finishing any phase or task, explicitly review the requirements checklist in the plan/specification document line-by-line.
 - **Clean Refactoring**: Eliminate code duplication immediately (e.g., share utility methods across core and builders) rather than leaving duplicate logic in place.
+- **Code Hygiene Gate Before Handoff**: A task or phase is NEVER complete if modified files retain dangling scratch variables, unused imports, dead private helpers, or uninspected compiler warnings. Always perform the Mandatory Final Cleanup Pass before reporting completion or requesting user review.
 
 ## CI & GitHub Actions Standards
 - Keep GitHub Actions on current major versions (`actions/checkout@v7`, `actions/setup-java@v6`, `actions/setup-python@v7`, `actions/setup-node@v7`, `actions/upload-artifact@v7`, `actions/download-artifact@v8`, `actions/cache@v6`, `softprops/action-gh-release@v3`).

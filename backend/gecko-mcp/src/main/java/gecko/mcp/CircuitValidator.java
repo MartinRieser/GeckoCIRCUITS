@@ -152,10 +152,6 @@ public final class CircuitValidator {
         return entry;
     }
 
-    private static Map<String, Object> compileEntry(String severity, String code, String message) {
-        return compileEntry(severity, code, message, null);
-    }
-
     public record Point(int x, int y) {}
 
     public static final class DisjointSet<T> {
@@ -1061,21 +1057,6 @@ public final class CircuitValidator {
             }
         }
         return "NET_" + fallbackId;
-    }
-
-    private static List<Point> rasterizeSegment(Point p1, Point p2) {
-        List<Point> points = new ArrayList<>();
-        int dx = Integer.compare(p2.x, p1.x);
-        int dy = Integer.compare(p2.y, p1.y);
-        int currX = p1.x;
-        int currY = p1.y;
-        points.add(new Point(currX, currY));
-        while (currX != p2.x || currY != p2.y) {
-            if (currX != p2.x) currX += dx;
-            if (currY != p2.y) currY += dy;
-            points.add(new Point(currX, currY));
-        }
-        return points;
     }
 
     private static int[] parseIntArray(String line) {

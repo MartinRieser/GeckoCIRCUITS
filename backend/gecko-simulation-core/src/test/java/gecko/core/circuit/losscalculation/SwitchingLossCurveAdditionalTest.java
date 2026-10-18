@@ -26,7 +26,6 @@ class SwitchingLossCurveAdditionalTest {
     private static final double DELTA = 1e-10;
     private static final double TEMPERATURE_25C = 25.0;
     private static final double TEMPERATURE_50C = 50.0;
-    private static final double TEMPERATURE_100C = 100.0;
 
     private SwitchingLossCurve curve;
 

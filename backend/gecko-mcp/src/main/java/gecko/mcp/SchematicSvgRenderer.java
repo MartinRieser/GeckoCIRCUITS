@@ -456,7 +456,6 @@ public final class SchematicSvgRenderer {
 
     private static void renderControlBlock(StringBuilder sb, ComponentData comp, double s, boolean dark) {
         int typ = comp.getType();
-        double p = 22.0 * s;
 
         if (typ == 1001 || typ == 1002 || typ == 1003) { // Probes
             sb.append(String.format(Locale.ROOT, "      <circle class=\"comp-body\" cx=\"0\" cy=\"0\" r=\"%.1f\" fill=\"var(--comp-accent)\" />\n", 12.0 * s));

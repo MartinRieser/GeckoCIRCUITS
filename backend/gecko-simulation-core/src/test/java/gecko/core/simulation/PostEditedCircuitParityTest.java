@@ -13,7 +13,6 @@
  */
 package gecko.core.simulation;
 
-import gecko.core.datacontainer.DataContainerGlobal;
 import gecko.core.io.CircuitFileParser;
 import gecko.core.io.CircuitFileWriter;
 import gecko.core.io.CircuitModel;
@@ -21,7 +20,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;

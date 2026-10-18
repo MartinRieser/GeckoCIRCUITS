@@ -28,37 +28,40 @@ class GeckopyTest(unittest.TestCase):
         self.assertGreater(reload_resp.get("free_memory_mb", 0), 0)
 
     def test_open_modify_and_simulate_buck(self):
-        buck_path = "docs/tutorials/dcdc/buck-converter.ipes"
-        ckt = Circuit.open(buck_path)
-        self.assertTrue(ckt.path.exists())
+        import shutil
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            buck_tmp = Path(tmp_dir) / "buck-converter.ipes"
+            shutil.copy("docs/tutorials/dcdc/buck-converter.ipes", buck_tmp)
+            ckt = Circuit.open(str(buck_tmp))
+            self.assertTrue(ckt.path.exists())
 
-        # Introspect
-        signals = ckt.list_signals()
-        self.assertGreater(len(signals), 0)
+            # Introspect
+            signals = ckt.list_signals()
+            self.assertGreater(len(signals), 0)
 
-        # Modify parameter
-        ckt.set_parameter("L1", "inductance", 150e-6)
+            # Modify parameter
+            ckt.set_parameter("L1", "inductance", 150e-6)
 
-        # Validate DRC
-        val = ckt.validate()
-        self.assertTrue(val.is_valid)
-        self.assertEqual(len(val.errors), 0)
+            # Validate DRC
+            val = ckt.validate()
+            self.assertTrue(val.is_valid)
+            self.assertEqual(len(val.errors), 0)
 
-        # Simulate
-        result = ckt.simulate(duration=0.01)
-        self.assertTrue(result.is_success)
-        self.assertAlmostEqual(result.duration, 0.01, places=4)
-        self.assertGreater(result.total_steps, 1000)
+            # Simulate
+            result = ckt.simulate(duration=0.01)
+            self.assertTrue(result.is_success)
+            self.assertAlmostEqual(result.duration, 0.01, places=4)
+            self.assertGreater(result.total_steps, 1000)
 
-        # Check metrics dot access (as specified in Phase 7 requirements)
-        v_mean = getattr(result.metrics, "v_out_mean", result.metrics.get("v_out_steady_state_dc_volts"))
-        self.assertIsNotNone(v_mean)
-        self.assertTrue(10.0 < float(v_mean) < 14.0)
+            # Check metrics dot access (as specified in Phase 7 requirements)
+            v_mean = getattr(result.metrics, "v_out_mean", result.metrics.get("v_out_steady_state_dc_volts"))
+            self.assertIsNotNone(v_mean)
+            self.assertTrue(10.0 < float(v_mean) < 14.0)
 
-        # Waveform signals access
-        self.assertIn("v_out", result.waveforms)
-        stats = result.waveforms.get_statistics("v_out")
-        self.assertIn("mean", stats)
+            # Waveform signals access
+            self.assertIn("v_out", result.waveforms)
+            stats = result.waveforms.get_statistics("v_out")
+            self.assertIn("mean", stats)
 
     def test_create_circuit_and_export_svg(self):
         with tempfile.TemporaryDirectory() as tmp:

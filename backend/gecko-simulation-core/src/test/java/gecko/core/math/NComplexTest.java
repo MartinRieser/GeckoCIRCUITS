@@ -212,7 +212,7 @@ class NComplexTest {
     @Test
     void testEquals_DifferentType() {
         NComplex a = new NComplex(3.0f, 4.0f);
-        String b = "not a complex number";
+        Object b = "not a complex number";
         assertFalse(a.equals(b));
     }
 

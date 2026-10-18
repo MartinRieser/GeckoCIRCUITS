@@ -1,7 +1,6 @@
 package gecko.core.signal;
 
 import gecko.core.datacontainer.DataContainerSimple;
-import gecko.core.datacontainer.DataContainerValuesSettable;
 import gecko.core.GeckoInvalidArgumentException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
