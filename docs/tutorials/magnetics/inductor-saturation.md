@@ -144,12 +144,63 @@ During load step:
 3. Connect winding to electrical circuit
 4. Observe flux and inductance vs current
 
+## Simulation Project: Linear vs. Saturating Inductor Comparison
+
+The companion project file [`inductor-saturation.ipes`](inductor-saturation.ipes) compares a linear inductor against an authentic non-linear saturating choke driven in parallel by a common voltage step excitation in GeckoCIRCUITS.
+
+### Circuit & Simulation Specifications
+
+| Parameter | Value | Description |
+| :--- | :--- | :--- |
+| **Circuit File** | [`inductor-saturation.ipes`](inductor-saturation.ipes) | Validated saturation comparison model |
+| **Excitation Voltage (`U.1`)** | $40\text{ V DC}$ pulse | Step voltage driving parallel branches |
+| **Branch 1 (Linear Inductor)** | `R.1` ($1.0\,\Omega$) + `L.3` ($500\,\mu\text{H}$) | Linear reference choke (`isNonlinear false`) |
+| **Branch 2 (Saturating Inductor)** | `R.3` ($1.0\,\Omega$) + `L.4` (Non-linear) | Saturating power choke (`isNonlinear true`) |
+| **Saturation Characteristic (`L.4`)** | $0\text{ A} \to 500\,\mu\text{H}$, $7\text{ A} \to 500\,\mu\text{H}$, $10\text{ A} \to 150\,\mu\text{H}$, $30\text{ A} \to 100\,\mu\text{H}$ | Non-linear inductance vs. current lookup curve |
+| **Saturation Knee ($I_{sat}$)** | $7.0\text{ A}$ | Transition current where core enters saturation |
+| **Simulation Step ($\Delta t$)** | $1.0\,\mu\text{s}$ | High temporal resolution |
+| **Simulation Duration** | $0.005\text{ s}$ ($5\text{ ms}$) | Complete current transient through saturation knee |
+
+### Current Slope Acceleration Physics
+
+For the linear inductor `L.3`, the current rises monotonically according to:
+
+$$
+i_{linear}(t) = \frac{V}{R} \left(1 - e^{-t/\tau}\right), \quad \tau = \frac{L_0}{R} = \frac{500\,\mu\text{H}}{1\,\Omega} = 500\,\mu\text{s}
+$$
+
+For the saturating inductor `L.4`:
+- When $i < 7.0\text{ A}$: $L(i) = 500\,\mu\text{H}$, and the current slope matches the linear choke: $\frac{di}{dt} = \frac{V - R i}{500\,\mu\text{H}}$.
+- When $i > 7.0\text{ A}$: The core saturates, and inductance drops to $100\,\mu\text{H}$. The current slope surges by a factor of 5:
+
+$$
+\left.\frac{di}{dt}\right|_{sat} = \frac{V - R i}{100\,\mu\text{H}} \approx 5 \times \left.\frac{di}{dt}\right|_{unsaturated}
+$$
+
+This causes a sharp upward curvature in the current waveform, demonstrating the severe current spikes caused by core saturation.
+
+### How to Run Simulation
+
+=== "GeckoCIRCUITS GUI"
+    1. Open `inductor-saturation.ipes` in GeckoCIRCUITS desktop.
+    2. Click **Start Simulation** (or press **F5**).
+    3. Open the **Scope** window and overlay the currents of `L.3` and `L.4` to observe the sharp divergence beyond $7.0\text{ A}$.
+
+=== "MCP Interface (Command Line)"
+    ```bash
+    # Validate circuit integrity
+    python -c "from scripts.desktop.mcp_client import GeckoMcpClient; c = GeckoMcpClient(); c.start(); print(c.call_tool('gecko_validate_circuit', {'circuit_path': 'docs/tutorials/magnetics/inductor-saturation.ipes'})); c.close()"
+
+    # Run simulation
+    python -c "from scripts.desktop.mcp_client import GeckoMcpClient; c = GeckoMcpClient(); c.start(); print(c.call_tool('gecko_simulate', {'circuit_path': 'docs/tutorials/magnetics/inductor-saturation.ipes', 'total_time': 0.005, 'time_step': 1e-6})); c.close()"
+    ```
+
 ## Simulation Exercises
 
-1. Compare linear vs saturating inductor
-2. Observe current waveform at saturation boundary
-3. Design air gap to prevent saturation
-4. Analyze startup transient with saturation
+1. Observe the current waveform bifurcation point at $i = 7\text{ A}$ ($t \approx 0.1\text{ ms}$).
+2. Modify the excitation voltage from $40\text{ V}$ to $20\text{ V}$ and observe whether current reaches the saturation threshold during the pulse.
+3. Edit the saturation curve in `L.4` to model a distributed air-gap powder core (smoother roll-off) vs an ungapped ferrite core (abrupt drop).
+4. Calculate peak switch stress and peak dissipated energy in both branches.
 
 ## Design Guidelines
 
@@ -157,11 +208,11 @@ During load step:
 
 | Core Material | Bsat (T) | Typical Use |
 |---------------|----------|-------------|
-| Ferrite (N87) | 0.39 | High freq |
-| Ferrite (N49) | 0.49 | High Bsat |
-| Kool Mμ | 1.0 | DC bias |
-| Iron powder | 1.0-1.4 | Low cost |
-| Nanocrystalline | 1.2 | High perf |
+| Ferrite (N87) | 0.39 | High frequency SMPS |
+| Ferrite (N49) | 0.49 | High Bsat resonant converters |
+| Kool Mμ | 1.0 | DC bias PFC chokes |
+| Iron powder | 1.0-1.4 | Low-cost DC filtering |
+| Nanocrystalline | 1.2 | High performance common-mode chokes |
 
 ### Safety Margin
 
@@ -170,11 +221,13 @@ Design for:
 $$I_{peak} \leq 0.8 \cdot I_{sat}$$
 
 Account for:
-- Load transients
-- Temperature variation (Bsat decreases with temp)
-- Component tolerance
+- Load transients and startup inrush currents
+- High temperature degradation ($B_{sat}$ drops by $20\dots 30\%$ at $100^\circ\text{C}$)
+- Component manufacturing tolerance ($\pm 15\%$)
 
 ## Related Resources
 
-- [901 - Magnetic Domain](magnetic-domain.md)
-- [902 - Transformer Design](transformer-design.md)
+- [901 - Magnetic Domain](magnetic-domain.md) — Permeance-capacitance analog modeling
+- [902 - Transformer Design](transformer-design.md) — High-frequency transformer design and leakage
+- [Buck Converter Tutorial](../dcdc/buck-converter.md) — DC-DC inductor design in CCM
+

@@ -7,13 +7,13 @@ description: Semiconductor loss calculation, thermal modeling, and heatsink desi
 
 Power semiconductor loss calculation and thermal modeling for reliable converter design in GeckoCIRCUITS.
 
-## Available Tutorials
+## Available Tutorials and Project Files
 
-| Tutorial | Title | Difficulty | Description |
-|----------|-------|------------|-------------|
-| [501](loss-calculation.md) | [Loss Calculation](loss-calculation.md) | Intermediate | Semiconductor conduction and switching loss estimation |
-| [502](junction-temperature.md) | [Junction Temperature](junction-temperature.md) | Advanced | Dynamic thermal impedance networks (Foster/Cauer) |
-| [503](heatsink-design.md) | [Heatsink Design](heatsink-design.md) | Advanced | Thermal resistance budgeting and cooling system selection |
+| Tutorial | Title | Difficulty | Validated Circuit File | Description |
+|:---|:---|:---|:---|:---|
+| [501](loss-calculation.md) | [Loss Calculation](loss-calculation.md) | Intermediate | [`loss-calculation.ipes`](loss-calculation.ipes) | Buck-boost converter with semiconductor conduction & switching loss models |
+| [502](junction-temperature.md) | [Junction Temperature](junction-temperature.md) | Advanced | [`junction-temperature.ipes`](junction-temperature.ipes) | 10 kW Three-Phase VSR with dynamic Cauer/Foster thermal impedance network |
+| [503](heatsink-design.md) | [Heatsink Design](heatsink-design.md) | Advanced | [`heatsink-design.ipes`](heatsink-design.ipes) | Power stage thermal budgeting, heatsink selection ($R_{th,ha} = 0.8\text{ K/W}$), and cooling |
 
 ## Learning Objectives
 
@@ -21,6 +21,7 @@ Power semiconductor loss calculation and thermal modeling for reliable converter
 - Model thermal impedance networks (Foster and Cauer representations)
 - Simulate transient and steady-state semiconductor junction temperatures
 - Size heatsinks for natural and forced-air convection cooling
+- Inspect thermal waveforms and loss metrics via GeckoCIRCUITS GUI and MCP tools
 
 ## Quick Reference
 

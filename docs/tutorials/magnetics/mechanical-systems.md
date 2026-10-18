@@ -147,34 +147,72 @@ $$\tau_2 = \frac{n \cdot \tau_1}{\eta} \quad \text{(regenerating)}$$
    - Shaft compliance (spring-damper)
    - Gearbox (transformer)
 
+## Simulation Project: Two-Mass Electromechanical Drivetrain
+
+The companion project file [`mechanical-systems.ipes`](mechanical-systems.ipes) models a compliant two-mass rotational drivetrain in GeckoCIRCUITS, simulating torsional oscillations, shaft compliance, and speed response under step torque excitation.
+
+### Circuit & Simulation Specifications
+
+| Parameter | Mechanical Value | Electrical Analogy | Description |
+| :--- | :--- | :--- | :--- |
+| **Circuit File** | [`mechanical-systems.ipes`](mechanical-systems.ipes) | Validated electromechanical model | Complete simulation project |
+| **Motor Drive Torque ($\tau_m$)** | $50.0\text{ Nm}$ | $V_{drive} = 50.0\text{ V}$ (`TAU_M`) | Step motor torque |
+| **Internal Source Resistance** | $0.5\text{ Nm}\cdot\text{s/rad}$ | $R_{int} = 0.5\,\Omega$ (`R_INT`) | Motor torque generation compliance |
+| **Motor Rotor Inertia ($J_1$)** | $0.05\text{ kg}\cdot\text{m}^2$ | $C_1 = 0.05\text{ F}$ (`J1_MOTOR`) | Motor rotor mass |
+| **Shaft Torsional Stiffness ($k$)** | $1000.0\text{ Nm/rad}$ | $L_{shaft} = 1.0\text{ mH}$ (`K_SHAFT`) | Elastic shaft compliance ($1/k$) |
+| **Shaft Damping ($b_s$)** | $0.1\text{ Nm}\cdot\text{s/rad}$ | $R_{shaft} = 10.0\,\Omega$ (`B_SHAFT`) | Torsional internal damping |
+| **Load Inertia ($J_2$)** | $0.15\text{ kg}\cdot\text{m}^2$ | $C_2 = 0.15\text{ F}$ (`J2_LOAD`) | Driven machine inertia |
+| **Load Viscous Friction ($b_L$)** | $0.2\text{ Nm}\cdot\text{s/rad}$ | $R_{load} = 5.0\,\Omega$ (`B_LOAD`) | Load resistance ($1/b_L$) |
+| **Simulation Step ($\Delta t$)** | $10.0\,\mu\text{s}$ | Fast MNA solver step | 15,001 time steps |
+| **Simulation Duration** | $0.15\text{ s}$ ($150\text{ ms}$) | Captures startup transient and torsional settling |
+
+### Torsional Resonance Frequency
+
+The mechanical natural resonance frequency of the two-mass system is:
+
+$$
+f_{res} = \frac{1}{2\pi}\sqrt{\frac{k(J_1 + J_2)}{J_1 J_2}} = \frac{1}{2\pi}\sqrt{\frac{1000 \cdot (0.05 + 0.15)}{0.05 \cdot 0.15}} = \frac{1}{2\pi}\sqrt{26666.7} \approx 25.99\text{ Hz}
+$$
+
+During acceleration, motor angular velocity $\omega_{motor}$ and load angular velocity $\omega_{load}$ oscillate out-of-phase at $26\text{ Hz}$ before damping out into synchronized steady-state velocity:
+
+$$
+\omega_{ss} = \frac{\tau_m}{b_L + b_{int}} = \frac{50.0}{0.2 + 0.5} \approx 71.4\text{ rad/s} \quad (682\text{ RPM})
+$$
+
+### Monitored Probe Signals
+
+| Signal | Analogous Unit | Description |
+| :--- | :--- | :--- |
+| `omega_motor` | $\text{rad/s}$ (Volts) | Motor rotor angular velocity $\omega_1(t)$ |
+| `omega_load` | $\text{rad/s}$ (Volts) | Driven load angular velocity $\omega_2(t)$ |
+
+### How to Run Simulation
+
+=== "GeckoCIRCUITS GUI"
+    1. Open `mechanical-systems.ipes` in GeckoCIRCUITS desktop.
+    2. Click **Start Simulation** (or press **F5**).
+    3. Open the **Scope** window and inspect `omega_motor` and `omega_load` to observe the $26\text{ Hz}$ torsional ringing during startup.
+
+=== "MCP Interface (Command Line)"
+    ```bash
+    # Validate circuit integrity
+    python -c "from scripts.desktop.mcp_client import GeckoMcpClient; c = GeckoMcpClient(); c.start(); print(c.call_tool('gecko_validate_circuit', {'circuit_path': 'docs/tutorials/magnetics/mechanical-systems.ipes'})); c.close()"
+
+    # Run simulation
+    python -c "from scripts.desktop.mcp_client import GeckoMcpClient; c = GeckoMcpClient(); c.start(); print(c.call_tool('gecko_simulate', {'circuit_path': 'docs/tutorials/magnetics/mechanical-systems.ipes', 'total_time': 0.15, 'time_step': 1e-5})); c.close()"
+    ```
+
 ## Simulation Exercises
 
-1. Startup transient of PMSM with fan load
-2. Compare single vs two-mass system response
-3. Analyze gear ratio selection
-4. Simulate regenerative braking
-
-## Design Considerations
-
-### Inertia Ratio
-
-$$\sigma = \frac{J_{load}}{J_{motor}}$$
-
-| Ratio | Application | Response |
-|-------|-------------|----------|
-| σ < 3 | Servo | Fast |
-| 3 < σ < 10 | Industrial | Moderate |
-| σ > 10 | High inertia | Slow, oscillation risk |
-
-### Resonance Frequency
-
-For two-mass system:
-
-$$f_{res} = \frac{1}{2\pi}\sqrt{\frac{k(J_1 + J_2)}{J_1 J_2}}$$
-
-Control bandwidth should be below resonance.
+1. Measure the measured oscillation period between velocity peaks and verify $T_{res} \approx 1 / 26\text{ Hz} \approx 38.5\text{ ms}$.
+2. Increase shaft stiffness $k$ by $4\times$ ($L_{shaft} = 250\,\mu\text{H}$) and observe how $f_{res}$ doubles to $52\text{ Hz}$.
+3. Vary the inertia ratio $\sigma = J_{load} / J_{motor}$ from $3.0$ to $10.0$ and observe the increasing overshoot and settling time.
+4. Add a notch filter in the speed controller tuned to $f_{res}$ to suppress mechanical resonance excitation.
 
 ## Related Resources
 
-- [PMSM FOC Example](../../examples/motor-drives/pmsm-foc.md)
-- [BLDC Control Example](../../examples/motor-drives/bldc.md)
+- [901 - Magnetic Domain](magnetic-domain.md) — Magnetic domain modeling
+- [902 - Transformer Design](transformer-design.md) — Transformer modeling and parasitics
+- [PMSM FOC Example](../../examples/motor-drives/pmsm-foc.md) — Field-Oriented Control of electric machines
+

@@ -108,14 +108,60 @@ $$P_{Cu,AC} = I_{AC,rms}^2 \cdot R_{AC}$$
 
 $$P_{core} = k \cdot f^{\alpha} \cdot B^{\beta} \cdot V_{core}$$
 
+## Simulation Project: Buck-Boost Loss Model
+
+The companion project file [`loss-calculation.ipes`](loss-calculation.ipes) implements an authentic buck-boost converter with active semiconductor loss calculation and electro-thermal feedback in GeckoCIRCUITS.
+
+### Circuit & Simulation Specifications
+
+| Parameter | Value | Description |
+| :--- | :--- | :--- |
+| **Circuit File** | [`loss-calculation.ipes`](loss-calculation.ipes) | Complete validated simulation model |
+| **Input Voltage ($V_{in}$)** | $300\text{ V DC}$ | High-voltage DC rail |
+| **Switching Frequency ($f_{sw}$)** | $20\text{ kHz}$ | Period $T_{sw} = 50\,\mu\text{s}$ |
+| **Duty Cycle ($D$)** | $0.40$ | Gate drive command |
+| **Switch Device (`IGBT.1`)** | $R_{on} = 44\,\text{m}\Omega$, $V_f = 0.8\text{ V}$, $k_{on} = 97\,\mu\text{J/A}$, $k_{off} = 120\,\mu\text{J/A}$ | Thermal loss calculator `Pv.1` coupled to thermal network |
+| **Diode Device (`D.1`)** | $R_{on} = 33\,\text{m}\Omega$, $V_f = 0.8\text{ V}$ | Thermal loss calculator `Pv.2` |
+| **Thermal Network** | 4-layer Foster RC network | $R_{th,jc}$ chain coupled to heatsink $R_{th,ha} = 0.8\text{ K/W}$ |
+| **Ambient Temperature ($T_a$)** | $25^\circ\text{C}$ | Thermal voltage source `Temp.1` |
+| **Simulation Step ($\Delta t$)** | $1.0\,\mu\text{s}$ | 10,001 time steps |
+| **Total Duration** | $0.01\text{ s}$ ($10\text{ ms}$) | Captures switching cycle losses and initial thermal transient |
+
+### Monitored Signals
+
+| Signal | Domain | Expected Value | Description |
+| :--- | :--- | :--- | :--- |
+| `Tj` | Thermal | Rises from $25^\circ\text{C}$ | Semiconductor junction temperature at die layer |
+| `TSink` | Thermal | $\approx 25^\circ\text{C} \to 28^\circ\text{C}$ | Heatsink surface temperature |
+| `v_sw` | Power | $0\text{ V} \leftrightarrow 300\text{ V}$ | Switch voltage across `IGBT.1` |
+| `i_sw` | Power | Triangular current | Conduction current through switch |
+| `P_loss_total` | Loss | Average loss power | Total dissipated electrical power converted to heat [W] |
+
+### How to Run Simulation
+
+=== "GeckoCIRCUITS GUI"
+    1. Open `loss-calculation.ipes` in GeckoCIRCUITS desktop.
+    2. Click **Start Simulation** (or press **F5**).
+    3. Open the **Scope** window and observe `Tj` temperature trajectory alongside switching pulses.
+
+=== "MCP Interface (Command Line)"
+    ```bash
+    # Validate circuit integrity
+    python -c "from scripts.desktop.mcp_client import GeckoMcpClient; c = GeckoMcpClient(); c.start(); print(c.call_tool('gecko_validate_circuit', {'circuit_path': 'docs/tutorials/thermal/loss-calculation.ipes'})); c.close()"
+
+    # Run simulation
+    python -c "from scripts.desktop.mcp_client import GeckoMcpClient; c = GeckoMcpClient(); c.start(); print(c.call_tool('gecko_simulate', {'circuit_path': 'docs/tutorials/thermal/loss-calculation.ipes', 'total_time': 0.01, 'time_step': 1e-6})); c.close()"
+    ```
+
 ## Simulation Exercises
 
-1. Measure losses at different load currents
-2. Compare MOSFET vs IGBT at different frequencies
-3. Analyze loss breakdown pie chart
-4. Correlate losses with junction temperature rise
+1. Measure losses at different load currents ($10\text{ A}$ vs $30\text{ A}$) and plot the quadratic conduction loss curve.
+2. Compare switching losses at $20\text{ kHz}$ vs $50\text{ kHz}$ to verify the linear frequency scaling $P_{sw} \propto f_{sw}$.
+3. Analyze the loss breakdown between `IGBT.1` and freewheeling diode `D.1`.
+4. Correlate total dissipated power with the resulting steady-state junction temperature rise: $\Delta T_j = P_{loss} \cdot R_{th,total}$.
 
 ## Related Resources
 
-- [502 - Junction Temperature](junction-temperature.md)
-- [503 - Heatsink Design](heatsink-design.md)
+- [502 - Junction Temperature](junction-temperature.md) — Dynamic thermal impedance networks (Foster/Cauer)
+- [503 - Heatsink Design](heatsink-design.md) — Thermal resistance budgeting and cooling system selection
+

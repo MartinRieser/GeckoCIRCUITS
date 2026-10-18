@@ -121,14 +121,63 @@ Cross-coupling: Z₁₂ = Z₂₁
 3. Single heatsink Rth,ha
 4. Enable thermal coupling if needed
 
+## Simulation Project: Heatsink Sizing & Thermal Verification
+
+The companion project file [`heatsink-design.ipes`](heatsink-design.ipes) models a complete power stage with thermal budgeting, semiconductor loss injection, and heatsink thermal mass in GeckoCIRCUITS.
+
+### Circuit & Simulation Specifications
+
+| Parameter | Value | Description |
+| :--- | :--- | :--- |
+| **Circuit File** | [`heatsink-design.ipes`](heatsink-design.ipes) | Validated heatsink design model |
+| **Input Voltage ($V_{in}$)** | $300\text{ V DC}$ | Operating DC supply |
+| **Ambient Temperature ($T_a$)** | $50.0^\circ\text{C}$ | Worst-case high ambient environment (`Temp.1`) |
+| **Power Loss ($P_{loss}$)** | $50\text{ W}$ | Average dissipated heat flux |
+| **Junction-to-Case Resistance ($R_{th,jc}$)** | $0.5\text{ K/W}$ | Internal semiconductor die thermal barrier |
+| **Case-to-Heatsink Resistance ($R_{th,ch}$)** | $0.2\text{ K/W}$ | Thermal interface material (TIM / thermal grease) |
+| **Heatsink Thermal Resistance ($R_{th,ha}$)** | $0.8\text{ K/W}$ | Sized for $T_j \le 125^\circ\text{C}$ design budget (`Rth.ha`) |
+| **Heatsink Thermal Capacitance ($C_{th,h}$)** | $25.0\text{ J/K}$ | Heatsink aluminum thermal mass (`Cth.6`) |
+| **Simulation Step ($\Delta t$)** | $1.0\,\mu\text{s}$ | Fast MNA solver step |
+| **Simulation Duration** | $0.01\text{ s}$ ($10\text{ ms}$) | High-resolution initial transient verification |
+
+### Thermal Verification
+
+Using the steady-state thermal chain formula:
+
+$$
+T_{sink} = T_a + P_{loss} \cdot R_{th,ha} = 50^\circ\text{C} + 50\text{ W} \cdot 0.8\text{ K/W} = 90.0^\circ\text{C}
+$$
+
+$$
+T_j = T_{sink} + P_{loss} \cdot (R_{th,jc} + R_{th,ch}) = 90.0^\circ\text{C} + 50\text{ W} \cdot (0.5 + 0.2)\text{ K/W} = 125.0^\circ\text{C}
+$$
+
+The selected heatsink ($0.8\text{ K/W}$) guarantees the junction temperature remains strictly within the $125^\circ\text{C}$ safe design envelope.
+
+### How to Run Simulation
+
+=== "GeckoCIRCUITS GUI"
+    1. Open `heatsink-design.ipes` in GeckoCIRCUITS desktop.
+    2. Click **Start Simulation** (or press **F5**).
+    3. Open the **Scope** window and inspect the thermal nodes `Tj` and `TSink`.
+
+=== "MCP Interface (Command Line)"
+    ```bash
+    # Validate circuit integrity
+    python -c "from scripts.desktop.mcp_client import GeckoMcpClient; c = GeckoMcpClient(); c.start(); print(c.call_tool('gecko_validate_circuit', {'circuit_path': 'docs/tutorials/thermal/heatsink-design.ipes'})); c.close()"
+
+    # Run simulation
+    python -c "from scripts.desktop.mcp_client import GeckoMcpClient; c = GeckoMcpClient(); c.start(); print(c.call_tool('gecko_simulate', {'circuit_path': 'docs/tutorials/thermal/heatsink-design.ipes', 'total_time': 0.01, 'time_step': 1e-6})); c.close()"
+    ```
+
 ## Simulation Exercises
 
-1. Size heatsink for 100W dissipation
-2. Compare natural vs forced convection
-3. Analyze thermal coupling effects
-4. Design for transient overload
+1. **Natural vs Forced Convection:** Change $R_{th,ha}$ from $0.8\text{ K/W}$ (forced air at $2\text{ m/s}$) to $2.5\text{ K/W}$ (natural convection). Observe the dramatic increase in $T_j$ exceeding the $150^\circ\text{C}$ maximum limit.
+2. **Thermal Mass Dynamics:** Double $C_{th,h}$ to $50.0\text{ J/K}$ and observe how the heatsink temperature rate-of-rise slows down during a cold start.
+3. **Transient Overload:** Apply a $2\times$ power pulse ($100\text{ W}$) for $100\text{ ms}$ and evaluate whether the thermal capacitances prevent $T_j$ from exceeding $T_{j,max}$.
 
 ## Related Resources
 
-- [501 - Loss Calculation](loss-calculation.md)
-- [502 - Junction Temperature](junction-temperature.md)
+- [501 - Loss Calculation](loss-calculation.md) — Semiconductor loss calculation and thermal modeling
+- [502 - Junction Temperature](junction-temperature.md) — Dynamic thermal impedance networks (Foster/Cauer)
+

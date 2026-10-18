@@ -939,6 +939,165 @@ def build_forward_converter(client: GeckoMcpClient):
     print("Simulate:", sim.get("status"), "steps:", sim.get("total_steps"), "signals:", sim.get("signal_names"))
 
 
+def build_loss_calculation(client: GeckoMcpClient):
+    print("\n--- 15. Loss Calculation (docs/tutorials/thermal/loss-calculation.ipes) ---")
+    val = client.call_tool(
+        "gecko_validate_circuit",
+        {"circuit_path": "docs/tutorials/thermal/loss-calculation.ipes", "level": "compile"},
+    )
+    print("Validate:", val.get("valid"), "Diagnostics:", val.get("diagnostics"))
+
+    sim = client.call_tool(
+        "gecko_simulate",
+        {"circuit_path": "docs/tutorials/thermal/loss-calculation.ipes", "duration": 0.01, "dt": 1e-6},
+    )
+    print("Simulate:", sim.get("status"), "steps:", sim.get("total_steps"), "signals count:", len(sim.get("signal_names", [])))
+
+
+def build_junction_temperature(client: GeckoMcpClient):
+    print("\n--- 16. Junction Temperature (docs/tutorials/thermal/junction-temperature.ipes) ---")
+    val = client.call_tool(
+        "gecko_validate_circuit",
+        {"circuit_path": "docs/tutorials/thermal/junction-temperature.ipes", "level": "compile"},
+    )
+    print("Validate:", val.get("valid"), "Diagnostics:", val.get("diagnostics"))
+
+    sim = client.call_tool(
+        "gecko_simulate",
+        {"circuit_path": "docs/tutorials/thermal/junction-temperature.ipes", "duration": 0.02, "dt": 1e-6},
+    )
+    print("Simulate:", sim.get("status"), "steps:", sim.get("total_steps"), "signals count:", len(sim.get("signal_names", [])))
+
+
+def build_heatsink_design(client: GeckoMcpClient):
+    print("\n--- 17. Heatsink Design (docs/tutorials/thermal/heatsink-design.ipes) ---")
+    val = client.call_tool(
+        "gecko_validate_circuit",
+        {"circuit_path": "docs/tutorials/thermal/heatsink-design.ipes", "level": "compile"},
+    )
+    print("Validate:", val.get("valid"), "Diagnostics:", val.get("diagnostics"))
+
+    sim = client.call_tool(
+        "gecko_simulate",
+        {"circuit_path": "docs/tutorials/thermal/heatsink-design.ipes", "duration": 0.01, "dt": 1e-6},
+    )
+    print("Simulate:", sim.get("status"), "steps:", sim.get("total_steps"), "signals count:", len(sim.get("signal_names", [])))
+
+
+def build_magnetic_domain(client: GeckoMcpClient):
+    print("\n--- 18. Magnetic Domain (docs/tutorials/magnetics/magnetic-domain.ipes) ---")
+    val = client.call_tool(
+        "gecko_validate_circuit",
+        {"circuit_path": "docs/tutorials/magnetics/magnetic-domain.ipes", "level": "compile"},
+    )
+    print("Validate:", val.get("valid"), "Diagnostics:", val.get("diagnostics"))
+
+    sim = client.call_tool(
+        "gecko_simulate",
+        {"circuit_path": "docs/tutorials/magnetics/magnetic-domain.ipes", "duration": 0.04, "dt": 1e-6},
+    )
+    print("Simulate:", sim.get("status"), "steps:", sim.get("total_steps"), "signals count:", len(sim.get("signal_names", [])))
+
+
+def build_transformer_design(client: GeckoMcpClient):
+    print("\n--- 19. Transformer Design (docs/tutorials/magnetics/transformer-design.ipes) ---")
+    circuit_def = {
+        "output_path": "docs/tutorials/magnetics/transformer-design.ipes",
+        "simulation": {
+            "duration": 0.04,
+            "dt": 1e-6,
+            "solver": 0,
+        },
+        "components": [
+            {"name": "V_AC", "type": "VOLTAGE_SOURCE_AC", "nodes": ["n_in", "0"], "parameters": {"amplitude": 325.27, "frequency": 50.0}},
+            {"name": "R_P", "type": "RESISTOR", "nodes": ["n_in", "n_lp"], "parameters": {"resistance": 0.5}},
+            {"name": "L_SIGMA_P", "type": "INDUCTOR", "nodes": ["n_lp", "n_pri"], "parameters": {"inductance": 50e-6}},
+            {"name": "R_FE", "type": "RESISTOR", "nodes": ["n_pri", "0"], "parameters": {"resistance": 10000.0}},
+            {"name": "L_M", "type": "INDUCTOR", "nodes": ["n_pri", "0"], "parameters": {"inductance": 50e-3}},
+            {"name": "XFMR", "type": "TRANSFORMER", "nodes": ["n_pri", "0", "n_sec", "0"], "parameters": {"n1": 10.0, "n2": 2.5, "polarity": -1.0}},
+            {"name": "L_SIGMA_S", "type": "INDUCTOR", "nodes": ["n_sec", "n_ls"], "parameters": {"inductance": 3.125e-6}},
+            {"name": "R_S", "type": "RESISTOR", "nodes": ["n_ls", "n_out"], "parameters": {"resistance": 0.03125}},
+            {"name": "R_LOAD", "type": "RESISTOR", "nodes": ["n_out", "0"], "parameters": {"resistance": 5.0}},
+        ],
+        "control": {
+            "probes": [
+                {"name": "V_SEC", "type": "VOLTMETER", "target_component": "R_LOAD", "signal_name": "v_sec"},
+                {"name": "V_PRI", "type": "VOLTMETER", "target_component": "V_AC", "signal_name": "v_pri"},
+            ]
+        },
+    }
+    res = client.call_tool("gecko_create_circuit", circuit_def)
+    print("Create:", res.get("status"))
+
+    val = client.call_tool(
+        "gecko_validate_circuit",
+        {"circuit_path": "docs/tutorials/magnetics/transformer-design.ipes", "level": "compile"},
+    )
+    print("Validate:", val.get("valid"), "Diagnostics:", val.get("diagnostics"))
+
+    sim = client.call_tool(
+        "gecko_simulate",
+        {"circuit_path": "docs/tutorials/magnetics/transformer-design.ipes", "duration": 0.04, "dt": 1e-6},
+    )
+    print("Simulate:", sim.get("status"), "steps:", sim.get("total_steps"), "signals:", sim.get("signal_names"))
+
+
+def build_inductor_saturation(client: GeckoMcpClient):
+    print("\n--- 20. Inductor Saturation (docs/tutorials/magnetics/inductor-saturation.ipes) ---")
+    val = client.call_tool(
+        "gecko_validate_circuit",
+        {"circuit_path": "docs/tutorials/magnetics/inductor-saturation.ipes", "level": "compile"},
+    )
+    print("Validate:", val.get("valid"), "Diagnostics:", val.get("diagnostics"))
+
+    sim = client.call_tool(
+        "gecko_simulate",
+        {"circuit_path": "docs/tutorials/magnetics/inductor-saturation.ipes", "duration": 0.005, "dt": 1e-6},
+    )
+    print("Simulate:", sim.get("status"), "steps:", sim.get("total_steps"), "signals count:", len(sim.get("signal_names", [])))
+
+
+def build_mechanical_systems(client: GeckoMcpClient):
+    print("\n--- 21. Mechanical Systems (docs/tutorials/magnetics/mechanical-systems.ipes) ---")
+    circuit_def = {
+        "output_path": "docs/tutorials/magnetics/mechanical-systems.ipes",
+        "simulation": {
+            "duration": 0.15,
+            "dt": 1e-5,
+            "solver": 0,
+        },
+        "components": [
+            {"name": "TAU_M", "type": "DC_VOLTAGE", "nodes": ["n_drive", "0"], "parameters": {"voltage": 50.0}},
+            {"name": "R_INT", "type": "RESISTOR", "nodes": ["n_drive", "w1"], "parameters": {"resistance": 0.5}},
+            {"name": "J1_MOTOR", "type": "CAPACITOR", "nodes": ["w1", "0"], "parameters": {"capacitance": 0.05}},
+            {"name": "K_SHAFT", "type": "INDUCTOR", "nodes": ["w1", "w2"], "parameters": {"inductance": 1e-3}},
+            {"name": "B_SHAFT", "type": "RESISTOR", "nodes": ["w1", "w2"], "parameters": {"resistance": 10.0}},
+            {"name": "J2_LOAD", "type": "CAPACITOR", "nodes": ["w2", "0"], "parameters": {"capacitance": 0.15}},
+            {"name": "B_LOAD", "type": "RESISTOR", "nodes": ["w2", "0"], "parameters": {"resistance": 5.0}},
+        ],
+        "control": {
+            "probes": [
+                {"name": "VM_W1", "type": "VOLTMETER", "target_component": "J1_MOTOR", "signal_name": "omega_motor"},
+                {"name": "VM_W2", "type": "VOLTMETER", "target_component": "J2_LOAD", "signal_name": "omega_load"},
+            ]
+        },
+    }
+    res = client.call_tool("gecko_create_circuit", circuit_def)
+    print("Create:", res.get("status"))
+
+    val = client.call_tool(
+        "gecko_validate_circuit",
+        {"circuit_path": "docs/tutorials/magnetics/mechanical-systems.ipes", "level": "compile"},
+    )
+    print("Validate:", val.get("valid"), "Diagnostics:", val.get("diagnostics"))
+
+    sim = client.call_tool(
+        "gecko_simulate",
+        {"circuit_path": "docs/tutorials/magnetics/mechanical-systems.ipes", "duration": 0.15, "dt": 1e-5},
+    )
+    print("Simulate:", sim.get("status"), "steps:", sim.get("total_steps"), "signals:", sim.get("signal_names"))
+
+
 if __name__ == "__main__":
     with GeckoMcpClient() as client:
         # ACDC
@@ -958,3 +1117,13 @@ if __name__ == "__main__":
         build_buck_boost_converter(client)
         build_flyback_converter(client)
         build_forward_converter(client)
+        # Thermal
+        build_loss_calculation(client)
+        build_junction_temperature(client)
+        build_heatsink_design(client)
+        # Magnetics & Mechanical
+        build_magnetic_domain(client)
+        build_transformer_design(client)
+        build_inductor_saturation(client)
+        build_mechanical_systems(client)
+
