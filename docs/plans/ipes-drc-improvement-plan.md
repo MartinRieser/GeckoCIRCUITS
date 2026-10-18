@@ -288,15 +288,73 @@ flowchart TD
 
 ---
 
-## Phase 6: Parameterized Control Block Library
+## Phase 6: Parameterized Control Block Library (COMPLETED)
 
 ### Objective
-Provide built-in, pre-verified control blocks in `gecko_create_circuit` to avoid repetitive manual scripting.
+Provide built-in, pre-verified control blocks in `gecko_create_circuit` to avoid repetitive manual scripting and boilerplate MNA control wiring.
 
-### Blocks
-1. `SPWM_GENERATOR`: Triangular carrier comparison with sinusoidal reference ($m_a, f_{carrier}, f_{grid}$).
-2. `PI_CONTROLLER`: Proportional-integral controller with anti-windup clamping and reset input.
-3. `DEADTIME_GENERATOR`: Complementary high-side/low-side pulses with configurable blanking delay $t_d$.
+### Architecture & Synthesis Engine
+
+```mermaid
+flowchart TD
+    subgraph Parameterized Control Block Synthesis
+        A[JSON Circuit Request] --> B{Parameterized Block Detection}
+        B -->|SPWM_GENERATOR| C[Carrier / Reference Comparator Engine]
+        B -->|PI_CONTROLLER| D[Discrete Anti-Windup PI Engine]
+        B -->|DEADTIME_GENERATOR| E[Turn-on Blanking Delay Engine]
+        
+        C --> F[Auto-Wire Signals to ctrlNetToPoints]
+        D --> F
+        E --> F
+        
+        C -.->|Declared switches| G[Auto-Generate GATE Blocks]
+        E -.->|Declared switches| G
+        
+        F --> H[High-Precision MNA Simulation Engine]
+        G --> H
+    end
+```
+
+### Components Implemented
+
+1. **`SPWM_GENERATOR` (Aliases: `SPWM`, `PWM_SPWM`)**:
+   - **Carrier Generation**: Symmetrical triangular carrier at configurable switching frequency ($f_{carrier}$, default 10 kHz).
+   - **Modulation Reference**: Internal sinusoidal reference with modulation index $m_a$ and grid frequency $f_{grid}$ (default 50 Hz), or external modulation signals (`in_signals: ["v_mod"]`).
+   - **Topological Outputs**:
+     - Single PWM output (`out_signals: ["pwm"]`).
+     - Half-bridge complementary pair (`out_signals: ["g_hi", "g_lo"]`).
+     - Full-bridge 4-switch inverter (`out_signals: ["g1", "g2", "g3", "g4"]`).
+     - Three-phase 6-switch bridge (`out_signals: ["g1", "g4", "g3", "g6", "g5", "g2"]`) with $120^\circ$ symmetric phase separation.
+   - **Integrated Dead-Time**: Configurable interlock blanking delay $t_d$ preventing cross-conduction shoot-through.
+   - **Auto-Gate Coupling**: Declaring `switches: ["S1", "S2", ...]` automatically instantiates coupled `GATE` blocks without manual wiring.
+
+2. **`PI_CONTROLLER` (Aliases: `PI_REGULATOR`, `PI_ANTI_WINDUP`)**:
+   - **Discrete PI Architecture**: Proportional gain $K_p$ and integral gain $K_i$ (or integration time $T_n = K_p / K_i$).
+   - **Automatic Error Subtraction**: When 2 inputs are supplied (`[reference, feedback]`), the block automatically calculates $e(t) = v_{ref} - v_{meas}$.
+   - **Dynamic Anti-Windup Clamping**: Clamps output within $[y_{min}, y_{max}]$ and halts integration whenever actuator saturation occurs in the direction of error, eliminating integrator windup overshoot.
+   - **Optional Reset Input**: Third input channel ($xIN[2] > 0.5$) forces instantaneous integrator reset to zero.
+   - **State Persistence**: Supports non-zero initial integrator condition $y_0$.
+
+3. **`DEADTIME_GENERATOR` (Aliases: `DEADTIME`, `DEAD_TIME`)**:
+   - **Shoot-Through Protection**: Converts single PWM input into complementary high-side and low-side switching signals with precise turn-on blanking delay $t_d$ (default $1.0\ \mu\text{s}$).
+   - **Robust State Tracking**: Dynamic rising/falling edge timer tracking operating at exact simulation timestep precision.
+   - **Auto-Gate Coupling**: Directly drives high-side and low-side switches declared via `switches` or `switch_hi` / `switch_lo`.
+
+4. **Component Catalog & Synthesis Guide**:
+   - Registered `DEADTIME` (typ 1037), `SPWM_GENERATOR` (typ 1016), and `PI_CONTROLLER` (typ 1016) in `ComponentCatalog.java`.
+   - Updated `ComponentCatalog.getSynthesisGuide()` with comprehensive property schemas, input/output definitions, and usage examples.
+   - Documented `parameterized_blocks` in MCP tool definition `gecko_create_circuit` in `GeckoTools.java`.
+
+### Verification Matrix
+- [x] `CircuitBuilderTest.buildsAndSimulatesSpwmGeneratorSinglePhase`: verifies single-phase H-bridge with 20 kHz SPWM generating 50 Hz AC sinusoidal swing ~170 Vpp.
+- [x] `CircuitBuilderTest.buildsAndSimulatesSpwmGeneratorThreePhase`: verifies 6-switch 3-phase bridge generating balanced 3-phase voltages.
+- [x] `CircuitBuilderTest.buildsAndSimulatesClosedLoopPiBuck`: verifies closed-loop buck converter regulated to 12 V using anti-windup PI controller.
+- [x] `CircuitBuilderTest.buildsAndSimulatesDeadTimeGenerator`: verifies complementary half-bridge gate generation with non-overlapping dead-time.
+- [x] `CircuitBuilderTest.catalogContainsParameterizedControlBlocks`: checks catalog entries and aliases.
+- [x] Full `mvn test -pl backend/gecko-mcp`: 77/77 unit tests pass (100% green).
+- [x] Full `python scripts/desktop/build_tutorials.py`: all 21 tutorials pass validation and headless execution.
+- [x] Full `python scripts/verify-examples.py`: all 14 baseline examples pass physics assertions.
+- [x] Shaded JAR `desktop/app/engine/gecko-mcp.jar` rebuilt and updated.
 
 ---
 

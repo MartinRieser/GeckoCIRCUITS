@@ -141,9 +141,10 @@ final class GeckoTools {
                         Map.of("coupled_inductors", arrayOf("Declarative mutual inductances between inductors (e.g. [{'inductors': ['L1', 'L2'], 'k': 0.98}])", "object")),
                         Map.of("thermal_components", arrayOf("Direct thermal components (TH_RTH, TH_CTH, TH_FLOW, TH_TEMP, TH_AMBIENT, TH_PvCHIP, TH_GLOBAL_TERMINAL)", "object")),
                         Map.of("thermal_networks", arrayOf("Declarative Foster/Cauer thermal networks (e.g. [{'target_switch': 'SW', 'model_type': 'foster', 'r_th': [0.4, 0.3], 'c_th': [0.01, 0.05], 'ambient_temperature': 25.0}])", "object")),
-                        Map.of("control", objectOf("Control domain definitions (probes, microcontroller script blocks, gates)", properties(
+                        Map.of("control", objectOf("Control domain definitions (probes, parameterized blocks, microcontroller script blocks, gates)", properties(
                                 Map.of("probes", arrayOf("Measurement probes (VOLTMETER, AMMETER) coupled to power/thermal components or node pairs", "object")),
-                                Map.of("script_blocks", arrayOf("Microcontroller script blocks (PI loops, PWM generators)", "object")),
+                                Map.of("parameterized_blocks", arrayOf("Built-in pre-verified controllers: SPWM_GENERATOR (triangular carrier, 1-ph/3-ph), PI_CONTROLLER (anti-windup clamping, reset, setpoint error), DEADTIME_GENERATOR (complementary half-bridge gate delays)", "object")),
+                                Map.of("script_blocks", arrayOf("Microcontroller script blocks (custom DSP/C-like algorithms)", "object")),
                                 Map.of("gates", arrayOf("Gate drivers coupling control signals to semiconductor switches", "object"))
                         )))),
                         List.of("output_path", "components")),

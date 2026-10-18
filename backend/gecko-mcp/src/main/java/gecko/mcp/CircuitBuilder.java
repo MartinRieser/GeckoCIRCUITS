@@ -329,8 +329,25 @@ public final class CircuitBuilder {
             probeY++;
         }
 
+        // Parameterized control blocks (SPWM, PI, Dead-Time)
+        List<Map<String, Object>> autoGates = new ArrayList<>();
+        Set<String> explicitlyGatedSwitches = new HashSet<>();
+        for (Map<String, Object> g : gateList(control)) {
+            String sw = (String) g.getOrDefault("target_switch",
+                    g.getOrDefault("target_component", g.getOrDefault("target", g.get("switch"))));
+            if (sw != null) explicitlyGatedSwitches.add(sw);
+        }
+
+        long[] ctrlIdCounter = new long[]{nextCtrlId};
+        List<Map<String, Object>> synthesizedScriptBlocks =
+                collectParameterizedBlocks(request, control, ctrlIdCounter, autoGates, explicitlyGatedSwitches);
+        nextCtrlId = ctrlIdCounter[0];
+
+        List<Map<String, Object>> allScriptBlocks = new ArrayList<>(scriptList(control));
+        allScriptBlocks.addAll(synthesizedScriptBlocks);
+
         int mcuY = ctrlY;
-        for (Map<String, Object> sb : scriptList(control)) {
+        for (Map<String, Object> sb : allScriptBlocks) {
             String name = name(sb, "CTRL_MCU");
             @SuppressWarnings("unchecked")
             List<String> inputs = (List<String>) sb.getOrDefault("inputs",
@@ -366,8 +383,11 @@ public final class CircuitBuilder {
             mcuY += Math.max(inputs.size(), outputs.size()) + 2;
         }
 
+        List<Map<String, Object>> allGates = new ArrayList<>(gateList(control));
+        allGates.addAll(autoGates);
+
         int gateY = ctrlY;
-        for (Map<String, Object> g : gateList(control)) {
+        for (Map<String, Object> g : allGates) {
             String name = name(g, "GATE." + nextCtrlId);
             String targetName = (String) g.getOrDefault("target_switch",
                     g.getOrDefault("target_component", g.getOrDefault("target", g.get("switch"))));
@@ -395,6 +415,9 @@ public final class CircuitBuilder {
         int blockX = CONTROL_BLOCK_BASE_X;
         int blockY = ctrlY;
         for (Map<String, Object> b : blockList(control)) {
+            if (isParameterizedBlock(b)) {
+                continue;
+            }
             String typeStr = (String) b.get("type");
             ComponentCatalog.ComponentDef def = ComponentCatalog.get(typeStr);
             if (def == null || !"CONTROL".equals(def.domain())) {
@@ -522,6 +545,482 @@ public final class CircuitBuilder {
     private static List<Map<String, Object>> wireList(Map<String, Object> control) {
         Object value = control.getOrDefault("wires", List.of());
         return value instanceof List ? (List<Map<String, Object>>) value : List.of();
+    }
+
+    private static boolean isParameterizedBlock(Map<String, Object> b) {
+        String type = (String) b.get("type");
+        if (type == null) return false;
+        String t = type.trim().toUpperCase(Locale.ROOT);
+        if (t.equals("SPWM_GENERATOR") || t.equals("SPWM") || t.equals("PWM_SPWM")
+                || t.equals("PI_CONTROLLER") || t.equals("PI_REGULATOR") || t.equals("PI_ANTI_WINDUP")
+                || t.equals("DEADTIME_GENERATOR") || t.equals("DEAD_TIME")) {
+            return true;
+        }
+        if (t.equals("DEADTIME") && (b.containsKey("in_signals") || b.containsKey("switches")
+                || b.containsKey("out_signals") || b.containsKey("in_signal"))) {
+            return true;
+        }
+        if (t.equals("PI") && (b.containsKey("anti_windup") || b.containsKey("limit_min")
+                || b.containsKey("limit_max") || b.containsKey("in_signals") || b.containsKey("in_signal"))) {
+            return true;
+        }
+        return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> collectParameterizedBlocks(
+            Map<String, Object> request,
+            Map<String, Object> control,
+            long[] nextCtrlId,
+            List<Map<String, Object>> autoGates,
+            Set<String> explicitlyGatedSwitches
+    ) {
+        List<Map<String, Object>> specs = new ArrayList<>();
+        Set<Map<String, Object>> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+
+        for (String key : List.of("parameterized_blocks", "controllers", "control_blocks")) {
+            Object obj = control.get(key);
+            if (obj instanceof List<?> list) {
+                for (Object item : list) {
+                    if (item instanceof Map<?, ?> m) {
+                        Map<String, Object> spec = (Map<String, Object>) m;
+                        if (seen.add(spec)) specs.add(spec);
+                    }
+                }
+            }
+        }
+
+        for (Map.Entry<String, String> entry : Map.of(
+                "spwm_generators", "SPWM_GENERATOR",
+                "pi_controllers", "PI_CONTROLLER",
+                "deadtime_generators", "DEADTIME_GENERATOR"
+        ).entrySet()) {
+            Object obj = control.get(entry.getKey());
+            if (obj instanceof List<?> list) {
+                for (Object item : list) {
+                    if (item instanceof Map<?, ?> m) {
+                        Map<String, Object> spec = new LinkedHashMap<>((Map<String, Object>) m);
+                        spec.putIfAbsent("type", entry.getValue());
+                        if (seen.add(spec)) specs.add(spec);
+                    }
+                }
+            }
+        }
+
+        for (Map<String, Object> b : blockList(control)) {
+            if (isParameterizedBlock(b)) {
+                if (seen.add(b)) specs.add(b);
+            }
+        }
+
+        for (String key : List.of("parameterized_blocks", "controllers", "control_blocks")) {
+            Object obj = request.get(key);
+            if (obj instanceof List<?> list) {
+                for (Object item : list) {
+                    if (item instanceof Map<?, ?> m) {
+                        Map<String, Object> spec = (Map<String, Object>) m;
+                        if (seen.add(spec)) specs.add(spec);
+                    }
+                }
+            }
+        }
+
+        List<Map<String, Object>> synthesized = new ArrayList<>();
+        for (Map<String, Object> spec : specs) {
+            String type = (String) spec.getOrDefault("type", "");
+            String t = type.trim().toUpperCase(Locale.ROOT);
+            long uid = nextCtrlId[0]++;
+            if (t.contains("SPWM") || t.contains("PWM_SPWM")) {
+                synthesized.add(synthesizeSpwmGenerator(spec, uid, autoGates, explicitlyGatedSwitches));
+            } else if (t.contains("PI")) {
+                synthesized.add(synthesizePiController(spec, uid));
+            } else if (t.contains("DEADTIME") || t.contains("DEAD_TIME") || t.contains("DT")) {
+                synthesized.add(synthesizeDeadtimeGenerator(spec, uid, autoGates, explicitlyGatedSwitches));
+            } else {
+                throw new IllegalArgumentException("Unknown parameterized control block type: '" + type + "'");
+            }
+        }
+        return synthesized;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> synthesizeSpwmGenerator(
+            Map<String, Object> spec,
+            long uid,
+            List<Map<String, Object>> autoGates,
+            Set<String> explicitlyGatedSwitches
+    ) {
+        String name = name(spec, "SPWM." + uid);
+        double fCarrier = getDouble(spec, "carrier_frequency",
+                getDouble(spec, "f_carrier", getDouble(spec, "fc", 10000.0)));
+        double fGrid = getDouble(spec, "grid_frequency",
+                getDouble(spec, "f_grid", getDouble(spec, "f_line", getDouble(spec, "frequency", 50.0))));
+        double ma = getDouble(spec, "modulation_index",
+                getDouble(spec, "m_a", getDouble(spec, "ma", 0.85)));
+        double deadTime = getDouble(spec, "dead_time",
+                getDouble(spec, "td", getDouble(spec, "t_dead", 0.0)));
+
+        double phase = getDouble(spec, "phase", getDouble(spec, "phi", 0.0));
+        if (spec.containsKey("phase_deg")) {
+            phase = Math.toRadians(getDouble(spec, "phase_deg", 0.0));
+        }
+
+        List<String> inSignals = (List<String>) spec.getOrDefault("in_signals",
+                spec.getOrDefault("inputs", List.of()));
+
+        List<String> rawSwitches = (List<String>) spec.getOrDefault("switches",
+                spec.getOrDefault("target_switches", List.of()));
+
+        boolean threePhase = Boolean.TRUE.equals(spec.get("three_phase"))
+                || Boolean.TRUE.equals(spec.get("is_3ph"))
+                || name.toUpperCase(Locale.ROOT).contains("3PH")
+                || rawSwitches.size() == 6;
+
+        List<String> outSignals = (List<String>) spec.getOrDefault("out_signals",
+                spec.getOrDefault("outputs", List.of()));
+
+        if (outSignals.isEmpty()) {
+            if (threePhase || rawSwitches.size() == 6) {
+                outSignals = List.of("g1", "g4", "g3", "g6", "g5", "g2");
+                threePhase = true;
+            } else if (rawSwitches.size() == 2) {
+                outSignals = List.of("g_hi", "g_lo");
+            } else if (rawSwitches.size() == 1) {
+                outSignals = List.of("pwm");
+            } else {
+                outSignals = List.of("g1", "g2", "g3", "g4");
+            }
+        } else if (outSignals.size() == 6) {
+            threePhase = true;
+        }
+
+        for (int i = 0; i < rawSwitches.size() && i < outSignals.size(); i++) {
+            String swName = rawSwitches.get(i);
+            String sigName = outSignals.get(i);
+            if (!explicitlyGatedSwitches.contains(swName)) {
+                autoGates.add(Map.of(
+                        "name", "GATE_" + swName,
+                        "target_switch", swName,
+                        "in_signal", sigName
+                ));
+            }
+        }
+
+        int outCount = outSignals.size();
+        boolean hasExtMod = !inSignals.isEmpty();
+
+        StringBuilder sv = new StringBuilder();
+        sv.append("double phase = 0.0;\n");
+        if (deadTime > 0.0) {
+            sv.append("double last_s1 = 0.0, timer_hi1 = 1e9, timer_lo1 = 1e9;\n");
+            if (outCount >= 4) {
+                sv.append("double last_s2 = 0.0, timer_hi2 = 1e9, timer_lo2 = 1e9;\n");
+            }
+            if (outCount >= 6) {
+                sv.append("double last_s3 = 0.0, timer_hi3 = 1e9, timer_lo3 = 1e9;\n");
+            }
+        }
+
+        StringBuilder src = new StringBuilder();
+        src.append(String.format(Locale.ROOT, "double f_carrier = %.6e;\n", fCarrier));
+        src.append(String.format(Locale.ROOT, "double f_line = %.6e;\n", fGrid));
+        src.append(String.format(Locale.ROOT, "double m_a = %.6f;\n", ma));
+        src.append(String.format(Locale.ROOT, "double phi = %.6f;\n", phase));
+        src.append("phase += dt * f_carrier;\n");
+        src.append("if (phase >= 1.0) phase -= 1.0;\n");
+        src.append("double tri = 2.0 * Math.abs(phase - 0.5);\n");
+
+        if (hasExtMod) {
+            src.append("double ref_a = 0.5 * (1.0 + Math.max(-1.0, Math.min(1.0, xIN[0])));\n");
+            if (outCount >= 4 && !threePhase) {
+                if (inSignals.size() > 1) {
+                    src.append("double ref_b = 0.5 * (1.0 + Math.max(-1.0, Math.min(1.0, xIN[1])));\n");
+                } else {
+                    src.append("double ref_b = 1.0 - ref_a;\n");
+                }
+            } else if (threePhase || outCount >= 6) {
+                if (inSignals.size() > 1) {
+                    src.append("double ref_b = 0.5 * (1.0 + Math.max(-1.0, Math.min(1.0, xIN[1])));\n");
+                } else {
+                    src.append("double ref_b = 0.5;\n");
+                }
+                if (inSignals.size() > 2) {
+                    src.append("double ref_c = 0.5 * (1.0 + Math.max(-1.0, Math.min(1.0, xIN[2])));\n");
+                } else {
+                    src.append("double ref_c = 0.5;\n");
+                }
+            }
+        } else {
+            src.append("double ref_a = 0.5 * (1.0 + m_a * Math.sin(2.0 * Math.PI * f_line * t + phi));\n");
+            if (outCount >= 4 && !threePhase) {
+                src.append("double ref_b = 0.5 * (1.0 - m_a * Math.sin(2.0 * Math.PI * f_line * t + phi));\n");
+            } else if (threePhase || outCount >= 6) {
+                src.append("double ref_b = 0.5 * (1.0 + m_a * Math.sin(2.0 * Math.PI * f_line * t + phi - 2.0943951023931953));\n");
+                src.append("double ref_c = 0.5 * (1.0 + m_a * Math.sin(2.0 * Math.PI * f_line * t + phi + 2.0943951023931953));\n");
+            }
+        }
+
+        if (outCount == 1) {
+            src.append("yOUT[0] = (ref_a > tri) ? 1.0 : 0.0;\n");
+        } else if (outCount == 2) {
+            src.append("double pwm1 = (ref_a > tri) ? 1.0 : 0.0;\n");
+            if (deadTime > 0.0) {
+                src.append(String.format(Locale.ROOT, "double t_dead = %.6e;\n", deadTime));
+                src.append("if (pwm1 > 0.5 && last_s1 <= 0.5) timer_hi1 = 0.0;\n");
+                src.append("else if (pwm1 <= 0.5 && last_s1 > 0.5) timer_lo1 = 0.0;\n");
+                src.append("else { timer_hi1 += dt; timer_lo1 += dt; }\n");
+                src.append("last_s1 = pwm1;\n");
+                src.append("yOUT[0] = (pwm1 > 0.5 && timer_hi1 + 1e-12 >= t_dead) ? 1.0 : 0.0;\n");
+                src.append("yOUT[1] = (pwm1 <= 0.5 && timer_lo1 + 1e-12 >= t_dead) ? 1.0 : 0.0;\n");
+            } else {
+                src.append("yOUT[0] = pwm1;\n");
+                src.append("yOUT[1] = 1.0 - pwm1;\n");
+            }
+        } else if (outCount == 4) {
+            src.append("double pwm1 = (ref_a > tri) ? 1.0 : 0.0;\n");
+            src.append("double pwm2 = (ref_b > tri) ? 1.0 : 0.0;\n");
+            if (deadTime > 0.0) {
+                src.append(String.format(Locale.ROOT, "double t_dead = %.6e;\n", deadTime));
+                src.append("if (pwm1 > 0.5 && last_s1 <= 0.5) timer_hi1 = 0.0;\n");
+                src.append("else if (pwm1 <= 0.5 && last_s1 > 0.5) timer_lo1 = 0.0;\n");
+                src.append("else { timer_hi1 += dt; timer_lo1 += dt; }\n");
+                src.append("last_s1 = pwm1;\n");
+                src.append("yOUT[0] = (pwm1 > 0.5 && timer_hi1 + 1e-12 >= t_dead) ? 1.0 : 0.0;\n");
+                src.append("yOUT[1] = (pwm1 <= 0.5 && timer_lo1 + 1e-12 >= t_dead) ? 1.0 : 0.0;\n");
+
+                src.append("if (pwm2 > 0.5 && last_s2 <= 0.5) timer_hi2 = 0.0;\n");
+                src.append("else if (pwm2 <= 0.5 && last_s2 > 0.5) timer_lo2 = 0.0;\n");
+                src.append("else { timer_hi2 += dt; timer_lo2 += dt; }\n");
+                src.append("last_s2 = pwm2;\n");
+                src.append("yOUT[2] = (pwm2 > 0.5 && timer_hi2 + 1e-12 >= t_dead) ? 1.0 : 0.0;\n");
+                src.append("yOUT[3] = (pwm2 <= 0.5 && timer_lo2 + 1e-12 >= t_dead) ? 1.0 : 0.0;\n");
+            } else {
+                src.append("yOUT[0] = pwm1;\n");
+                src.append("yOUT[1] = 1.0 - pwm1;\n");
+                src.append("yOUT[2] = pwm2;\n");
+                src.append("yOUT[3] = 1.0 - pwm2;\n");
+            }
+        } else if (outCount >= 6) {
+            src.append("double pwm1 = (ref_a > tri) ? 1.0 : 0.0;\n");
+            src.append("double pwm2 = (ref_b > tri) ? 1.0 : 0.0;\n");
+            src.append("double pwm3 = (ref_c > tri) ? 1.0 : 0.0;\n");
+            if (deadTime > 0.0) {
+                src.append(String.format(Locale.ROOT, "double t_dead = %.6e;\n", deadTime));
+                src.append("if (pwm1 > 0.5 && last_s1 <= 0.5) timer_hi1 = 0.0;\n");
+                src.append("else if (pwm1 <= 0.5 && last_s1 > 0.5) timer_lo1 = 0.0;\n");
+                src.append("else { timer_hi1 += dt; timer_lo1 += dt; }\n");
+                src.append("last_s1 = pwm1;\n");
+                src.append("yOUT[0] = (pwm1 > 0.5 && timer_hi1 + 1e-12 >= t_dead) ? 1.0 : 0.0;\n");
+                src.append("yOUT[1] = (pwm1 <= 0.5 && timer_lo1 + 1e-12 >= t_dead) ? 1.0 : 0.0;\n");
+
+                src.append("if (pwm2 > 0.5 && last_s2 <= 0.5) timer_hi2 = 0.0;\n");
+                src.append("else if (pwm2 <= 0.5 && last_s2 > 0.5) timer_lo2 = 0.0;\n");
+                src.append("else { timer_hi2 += dt; timer_lo2 += dt; }\n");
+                src.append("last_s2 = pwm2;\n");
+                src.append("yOUT[2] = (pwm2 > 0.5 && timer_hi2 + 1e-12 >= t_dead) ? 1.0 : 0.0;\n");
+                src.append("yOUT[3] = (pwm2 <= 0.5 && timer_lo2 + 1e-12 >= t_dead) ? 1.0 : 0.0;\n");
+
+                src.append("if (pwm3 > 0.5 && last_s3 <= 0.5) timer_hi3 = 0.0;\n");
+                src.append("else if (pwm3 <= 0.5 && last_s3 > 0.5) timer_lo3 = 0.0;\n");
+                src.append("else { timer_hi3 += dt; timer_lo3 += dt; }\n");
+                src.append("last_s3 = pwm3;\n");
+                src.append("yOUT[4] = (pwm3 > 0.5 && timer_hi3 + 1e-12 >= t_dead) ? 1.0 : 0.0;\n");
+                src.append("yOUT[5] = (pwm3 <= 0.5 && timer_lo3 + 1e-12 >= t_dead) ? 1.0 : 0.0;\n");
+            } else {
+                src.append("yOUT[0] = pwm1;\n");
+                src.append("yOUT[1] = 1.0 - pwm1;\n");
+                src.append("yOUT[2] = pwm2;\n");
+                src.append("yOUT[3] = 1.0 - pwm2;\n");
+                src.append("yOUT[4] = pwm3;\n");
+                src.append("yOUT[5] = 1.0 - pwm3;\n");
+            }
+        }
+        src.append("return yOUT;\n");
+
+        Map<String, Object> sb = new LinkedHashMap<>();
+        sb.put("name", name);
+        sb.put("inputs", inSignals);
+        sb.put("outputs", outSignals);
+        sb.put("source_code", src.toString());
+        sb.put("static_variables", sv.toString());
+        return sb;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> synthesizePiController(
+            Map<String, Object> spec,
+            long uid
+    ) {
+        String name = name(spec, "PI." + uid);
+        double kp = getDouble(spec, "kp", getDouble(spec, "proportional_gain", getDouble(spec, "Kp", 1.0)));
+        double ki = getDouble(spec, "ki", getDouble(spec, "integral_gain", getDouble(spec, "Ki", -1.0)));
+        if (ki < 0.0) {
+            double tn = getDouble(spec, "tn", getDouble(spec, "ti", getDouble(spec, "integration_time", 0.01)));
+            ki = tn > 0.0 ? kp / tn : 0.0;
+        }
+        double limitMin = getDouble(spec, "limit_min", getDouble(spec, "y_min", getDouble(spec, "min", -1.0)));
+        double limitMax = getDouble(spec, "limit_max", getDouble(spec, "y_max", getDouble(spec, "max", 1.0)));
+        boolean antiWindup = !Boolean.FALSE.equals(spec.get("anti_windup"));
+        double y0 = getDouble(spec, "initial_output", getDouble(spec, "y0", getDouble(spec, "initial_integral", 0.0)));
+
+        List<String> inSignals = (List<String>) spec.get("in_signals");
+        if (inSignals == null) inSignals = (List<String>) spec.get("inputs");
+        if (inSignals == null) {
+            if (spec.containsKey("in_signal")) {
+                inSignals = List.of(String.valueOf(spec.get("in_signal")));
+            } else if (spec.containsKey("reference") && spec.containsKey("feedback")) {
+                inSignals = List.of(String.valueOf(spec.get("reference")), String.valueOf(spec.get("feedback")));
+            } else {
+                inSignals = List.of("v_err");
+            }
+        }
+
+        List<String> outSignals = (List<String>) spec.get("out_signals");
+        if (outSignals == null) outSignals = (List<String>) spec.get("outputs");
+        if (outSignals == null) {
+            if (spec.containsKey("out_signal")) {
+                outSignals = List.of(String.valueOf(spec.get("out_signal")));
+            } else {
+                outSignals = List.of("v_ctrl");
+            }
+        }
+
+        StringBuilder sv = new StringBuilder();
+        sv.append(String.format(Locale.ROOT, "double integral = %.6f;\n", y0));
+
+        StringBuilder src = new StringBuilder();
+        src.append(String.format(Locale.ROOT, "double kp = %.6e;\n", kp));
+        src.append(String.format(Locale.ROOT, "double ki = %.6e;\n", ki));
+        src.append(String.format(Locale.ROOT, "double limit_min = %.6e;\n", limitMin));
+        src.append(String.format(Locale.ROOT, "double limit_max = %.6e;\n", limitMax));
+
+        if (inSignals.size() >= 3) {
+            src.append("if (xIN[2] > 0.5) integral = 0.0;\n");
+        }
+        if (inSignals.size() >= 2) {
+            src.append("double err = xIN[0] - xIN[1];\n");
+        } else if (!inSignals.isEmpty()) {
+            src.append("double err = xIN[0];\n");
+        } else {
+            src.append("double err = 0.0;\n");
+        }
+        src.append("double unsat = kp * err + integral;\n");
+        src.append("double out = Math.max(limit_min, Math.min(limit_max, unsat));\n");
+        if (antiWindup) {
+            src.append("boolean saturated_hi = (unsat >= limit_max);\n");
+            src.append("boolean saturated_lo = (unsat <= limit_min);\n");
+            src.append("if (!(saturated_hi && err > 0.0) && !(saturated_lo && err < 0.0)) {\n");
+            src.append("    integral += ki * err * dt;\n");
+            src.append("}\n");
+            src.append("integral = Math.max(limit_min, Math.min(limit_max, integral));\n");
+        } else {
+            src.append("integral += ki * err * dt;\n");
+        }
+        src.append("yOUT[0] = out;\n");
+        if (outSignals.size() >= 2) {
+            src.append("yOUT[1] = integral;\n");
+        }
+        src.append("return yOUT;\n");
+
+        Map<String, Object> sb = new LinkedHashMap<>();
+        sb.put("name", name);
+        sb.put("inputs", inSignals);
+        sb.put("outputs", outSignals);
+        sb.put("source_code", src.toString());
+        sb.put("static_variables", sv.toString());
+        return sb;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> synthesizeDeadtimeGenerator(
+            Map<String, Object> spec,
+            long uid,
+            List<Map<String, Object>> autoGates,
+            Set<String> explicitlyGatedSwitches
+    ) {
+        String name = name(spec, "DT." + uid);
+        double deadTime = getDouble(spec, "dead_time",
+                getDouble(spec, "delay", getDouble(spec, "td", getDouble(spec, "t_dead", 1.0e-6))));
+
+        List<String> inSignals = (List<String>) spec.get("in_signals");
+        if (inSignals == null) inSignals = (List<String>) spec.get("inputs");
+        if (inSignals == null) {
+            String singleSig = (String) spec.getOrDefault("in_signal", spec.get("signal"));
+            inSignals = List.of(singleSig != null ? singleSig : "pwm");
+        }
+
+        List<String> outSignals = (List<String>) spec.get("out_signals");
+        if (outSignals == null) outSignals = (List<String>) spec.get("outputs");
+        if (outSignals == null) {
+            if (spec.containsKey("out_hi") && spec.containsKey("out_lo")) {
+                outSignals = List.of(String.valueOf(spec.get("out_hi")), String.valueOf(spec.get("out_lo")));
+            } else {
+                outSignals = List.of("gate_hi", "gate_lo");
+            }
+        }
+
+        List<String> rawSwitches = (List<String>) spec.get("switches");
+        if (rawSwitches == null) rawSwitches = (List<String>) spec.get("target_switches");
+        if (rawSwitches == null && spec.containsKey("switch_hi") && spec.containsKey("switch_lo")) {
+            rawSwitches = List.of(String.valueOf(spec.get("switch_hi")), String.valueOf(spec.get("switch_lo")));
+        }
+        if (rawSwitches != null) {
+            for (int i = 0; i < rawSwitches.size() && i < outSignals.size(); i++) {
+                String swName = rawSwitches.get(i);
+                String sigName = outSignals.get(i);
+                if (!explicitlyGatedSwitches.contains(swName)) {
+                    autoGates.add(Map.of(
+                            "name", "GATE_" + swName,
+                            "target_switch", swName,
+                            "in_signal", sigName
+                    ));
+                }
+            }
+        }
+
+        StringBuilder sv = new StringBuilder();
+        sv.append("double lastPwm = 0.0;\n");
+        sv.append("double riseTimer = 1e9;\n");
+        sv.append("double fallTimer = 1e9;\n");
+        sv.append("boolean initialized = false;\n");
+
+        StringBuilder src = new StringBuilder();
+        src.append(String.format(Locale.ROOT, "double t_dead = %.6e;\n", deadTime));
+        if (!inSignals.isEmpty()) {
+            src.append("double pwm = (xIN[0] > 0.5) ? 1.0 : 0.0;\n");
+        } else {
+            src.append("double pwm = 0.0;\n");
+        }
+        src.append("if (!initialized) {\n");
+        src.append("    lastPwm = pwm;\n");
+        src.append("    if (pwm > 0.5) { riseTimer = t_dead; fallTimer = 0.0; }\n");
+        src.append("    else { fallTimer = t_dead; riseTimer = 0.0; }\n");
+        src.append("    initialized = true;\n");
+        src.append("} else {\n");
+        src.append("    if (pwm > 0.5 && lastPwm <= 0.5) {\n");
+        src.append("        riseTimer = 0.0;\n");
+        src.append("    } else if (pwm <= 0.5 && lastPwm > 0.5) {\n");
+        src.append("        fallTimer = 0.0;\n");
+        src.append("    } else {\n");
+        src.append("        riseTimer += dt;\n");
+        src.append("        fallTimer += dt;\n");
+        src.append("    }\n");
+        src.append("    lastPwm = pwm;\n");
+        src.append("}\n");
+        src.append("double eps = 1e-12;\n");
+        src.append("yOUT[0] = ((pwm > 0.5) && (riseTimer + eps >= t_dead)) ? 1.0 : 0.0;\n");
+        if (outSignals.size() > 1) {
+            src.append("yOUT[1] = ((pwm <= 0.5) && (fallTimer + eps >= t_dead)) ? 1.0 : 0.0;\n");
+        }
+        src.append("return yOUT;\n");
+
+        Map<String, Object> sb = new LinkedHashMap<>();
+        sb.put("name", name);
+        sb.put("inputs", inSignals);
+        sb.put("outputs", outSignals);
+        sb.put("source_code", src.toString());
+        sb.put("static_variables", sv.toString());
+        return sb;
     }
 
     /** Semantic control parameters (coupled component, measurement node pair). */

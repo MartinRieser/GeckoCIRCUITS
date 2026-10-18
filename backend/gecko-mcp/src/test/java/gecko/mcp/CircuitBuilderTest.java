@@ -285,4 +285,290 @@ class CircuitBuilderTest {
         double finalV = vout.get(vout.size() - 1);
         assertTrue(finalV > 18.0 && finalV < 22.0, "Vout should settle near 20V (24V * 10/12), was: " + finalV);
     }
+
+    @Test
+    void buildsAndSimulatesSpwmGeneratorSinglePhase() throws IOException {
+        Path tempDir = Files.createTempDirectory("gecko-spwm-test");
+        Path outputPath = tempDir.resolve("spwm_inverter.ipes");
+
+        Map<String, Object> circuitDef = Map.of(
+                "output_path", outputPath.toString(),
+                "simulation", Map.of(
+                        "duration", 0.04,
+                        "dt", 1e-6,
+                        "solver", 0
+                ),
+                "components", List.of(
+                        Map.of("name", "V_DC", "type", "DC_VOLTAGE", "nodes", List.of("dc_p", "0"),
+                                "parameters", Map.of("voltage", 100.0)),
+                        Map.of("name", "S1", "type", "MOSFET", "nodes", List.of("dc_p", "sw_a"),
+                                "parameters", Map.of("r_on", 0.01, "r_off", 1e6)),
+                        Map.of("name", "S2", "type", "MOSFET", "nodes", List.of("sw_a", "0"),
+                                "parameters", Map.of("r_on", 0.01, "r_off", 1e6)),
+                        Map.of("name", "S3", "type", "MOSFET", "nodes", List.of("dc_p", "sw_b"),
+                                "parameters", Map.of("r_on", 0.01, "r_off", 1e6)),
+                        Map.of("name", "S4", "type", "MOSFET", "nodes", List.of("sw_b", "0"),
+                                "parameters", Map.of("r_on", 0.01, "r_off", 1e6)),
+                        Map.of("name", "L_F", "type", "INDUCTOR", "nodes", List.of("sw_a", "out_a"),
+                                "parameters", Map.of("inductance", 2e-3)),
+                        Map.of("name", "C_F", "type", "CAPACITOR", "nodes", List.of("out_a", "sw_b"),
+                                "parameters", Map.of("capacitance", 20e-6)),
+                        Map.of("name", "R_LOAD", "type", "RESISTOR", "nodes", List.of("out_a", "sw_b"),
+                                "parameters", Map.of("resistance", 10.0))
+                ),
+                "control", Map.of(
+                        "parameterized_blocks", List.of(
+                                Map.of(
+                                        "name", "SPWM",
+                                        "type", "SPWM_GENERATOR",
+                                        "carrier_frequency", 20000.0,
+                                        "grid_frequency", 50.0,
+                                        "modulation_index", 0.85,
+                                        "switches", List.of("S1", "S2", "S3", "S4")
+                                )
+                        ),
+                        "probes", List.of(
+                                Map.of("name", "VM_AC", "type", "VOLTMETER", "target_component", "R_LOAD", "signal_name", "v_ac"),
+                                Map.of("name", "VM_G1", "type", "VOLTMETER", "target_component", "S1", "signal_name", "v_s1")
+                        )
+                )
+        );
+
+        Map<String, Object> createResult = CircuitBuilder.create(circuitDef);
+        assertEquals("CREATED", createResult.get("status"));
+        assertTrue(Files.exists(outputPath));
+
+        // Validate DRC
+        Map<String, Object> valResult = CircuitValidator.validate(outputPath);
+        assertTrue((Boolean) valResult.get("valid"), "SPWM inverter should pass DRC: " + valResult.get("diagnostics"));
+
+        // Simulate
+        SimulationService.ParsedCsv csv = SimulationService.simulateToCsv(outputPath, 0.04, 1e-6);
+        assertNotNull(csv);
+        assertTrue(csv.rowCount() > 10000);
+        assertTrue(csv.columns().containsKey("v_ac"));
+
+        // Verify AC swing: Vdc = 100V, ma = 0.85 -> Vpk ~ 85V -> Vpp ~ 170V
+        List<Double> vac = csv.columns().get("v_ac");
+        double maxV = vac.stream().mapToDouble(v -> v).max().orElse(0.0);
+        double minV = vac.stream().mapToDouble(v -> v).min().orElse(0.0);
+        double vpp = maxV - minV;
+        assertTrue(vpp > 140.0 && vpp < 200.0, "Vpp should be ~170 V, was: " + vpp);
+    }
+
+    @Test
+    void buildsAndSimulatesSpwmGeneratorThreePhase() throws IOException {
+        Path tempDir = Files.createTempDirectory("gecko-spwm3ph-test");
+        Path outputPath = tempDir.resolve("three_phase_inverter.ipes");
+
+        Map<String, Object> circuitDef = Map.of(
+                "output_path", outputPath.toString(),
+                "simulation", Map.of(
+                        "duration", 0.04,
+                        "dt", 1e-6,
+                        "solver", 0
+                ),
+                "components", List.of(
+                        Map.of("name", "V_DC", "type", "DC_VOLTAGE", "nodes", List.of("dc_p", "0"),
+                                "parameters", Map.of("voltage", 300.0)),
+                        Map.of("name", "S1", "type", "MOSFET", "nodes", List.of("dc_p", "sw_a")),
+                        Map.of("name", "S4", "type", "MOSFET", "nodes", List.of("sw_a", "0")),
+                        Map.of("name", "S3", "type", "MOSFET", "nodes", List.of("dc_p", "sw_b")),
+                        Map.of("name", "S6", "type", "MOSFET", "nodes", List.of("sw_b", "0")),
+                        Map.of("name", "S5", "type", "MOSFET", "nodes", List.of("dc_p", "sw_c")),
+                        Map.of("name", "S2", "type", "MOSFET", "nodes", List.of("sw_c", "0")),
+                        Map.of("name", "RA", "type", "RESISTOR", "nodes", List.of("sw_a", "star_n"),
+                                "parameters", Map.of("resistance", 10.0)),
+                        Map.of("name", "RB", "type", "RESISTOR", "nodes", List.of("sw_b", "star_n"),
+                                "parameters", Map.of("resistance", 10.0)),
+                        Map.of("name", "RC", "type", "RESISTOR", "nodes", List.of("sw_c", "star_n"),
+                                "parameters", Map.of("resistance", 10.0))
+                ),
+                "control", Map.of(
+                        "parameterized_blocks", List.of(
+                                Map.of(
+                                        "name", "SPWM_3PH",
+                                        "type", "SPWM_GENERATOR",
+                                        "three_phase", true,
+                                        "carrier_frequency", 10000.0,
+                                        "grid_frequency", 50.0,
+                                        "modulation_index", 0.8,
+                                        "switches", List.of("S1", "S4", "S3", "S6", "S5", "S2")
+                                )
+                        ),
+                        "probes", List.of(
+                                Map.of("name", "VM_PH_A", "type", "VOLTMETER", "target_component", "RA", "signal_name", "v_phase_a"),
+                                Map.of("name", "VM_PH_B", "type", "VOLTMETER", "target_component", "RB", "signal_name", "v_phase_b")
+                        )
+                )
+        );
+
+        Map<String, Object> createResult = CircuitBuilder.create(circuitDef);
+        assertEquals("CREATED", createResult.get("status"));
+        assertTrue(Files.exists(outputPath));
+
+        // Validate DRC
+        Map<String, Object> valResult = CircuitValidator.validate(outputPath);
+        assertTrue((Boolean) valResult.get("valid"), "Three-phase inverter should pass DRC: " + valResult.get("diagnostics"));
+
+        // Simulate
+        SimulationService.ParsedCsv csv = SimulationService.simulateToCsv(outputPath, 0.04, 1e-6);
+        assertNotNull(csv);
+        assertTrue(csv.rowCount() > 10000);
+        assertTrue(csv.columns().containsKey("v_phase_a"));
+        assertTrue(csv.columns().containsKey("v_phase_b"));
+    }
+
+    @Test
+    void buildsAndSimulatesClosedLoopPiBuck() throws IOException {
+        Path tempDir = Files.createTempDirectory("gecko-pi-test");
+        Path outputPath = tempDir.resolve("pi_buck.ipes");
+
+        Map<String, Object> circuitDef = Map.of(
+                "output_path", outputPath.toString(),
+                "simulation", Map.of(
+                        "duration", 0.015,
+                        "dt", 1e-6,
+                        "solver", 0
+                ),
+                "components", List.of(
+                        Map.of("name", "V_IN", "type", "DC_VOLTAGE", "nodes", List.of("in", "0"),
+                                "parameters", Map.of("voltage", 24.0)),
+                        Map.of("name", "SW", "type", "SWITCH", "nodes", List.of("in", "sw_node"),
+                                "parameters", Map.of("initial_state", 0.0, "r_on", 0.01, "r_off", 1e6)),
+                        Map.of("name", "D_FW", "type", "DIODE", "nodes", List.of("0", "sw_node")),
+                        Map.of("name", "L1", "type", "INDUCTOR", "nodes", List.of("sw_node", "out"),
+                                "parameters", Map.of("inductance", 200e-6)),
+                        Map.of("name", "C1", "type", "CAPACITOR", "nodes", List.of("out", "0"),
+                                "parameters", Map.of("capacitance", 220e-6)),
+                        Map.of("name", "R_LOAD", "type", "RESISTOR", "nodes", List.of("out", "0"),
+                                "parameters", Map.of("resistance", 6.0))
+                ),
+                "control", Map.of(
+                        "parameterized_blocks", List.of(
+                                Map.of(
+                                        "name", "PI_REG",
+                                        "type", "PI_CONTROLLER",
+                                        "in_signals", List.of("v_err"),
+                                        "out_signals", List.of("v_ctrl"),
+                                        "kp", 0.02,
+                                        "ki", 150.0,
+                                        "limit_min", 0.05,
+                                        "limit_max", 0.95,
+                                        "anti_windup", true
+                                ),
+                                Map.of(
+                                        "name", "PWM_MOD",
+                                        "type", "SPWM_GENERATOR",
+                                        "in_signals", List.of("v_ctrl"),
+                                        "out_signals", List.of("pwm"),
+                                        "carrier_frequency", 50000.0,
+                                        "switches", List.of("SW")
+                                )
+                        ),
+                        "script_blocks", List.of(
+                                Map.of(
+                                        "name", "ERR_CALC",
+                                        "in_signals", List.of("v_out"),
+                                        "out_signals", List.of("v_err"),
+                                        "code", "yOUT[0] = 12.0 - xIN[0]; return yOUT;"
+                                )
+                        ),
+                        "probes", List.of(
+                                Map.of("name", "VM_OUT", "type", "VOLTMETER", "target_component", "R_LOAD", "signal_name", "v_out")
+                        )
+                )
+        );
+
+        Map<String, Object> createResult = CircuitBuilder.create(circuitDef);
+        assertEquals("CREATED", createResult.get("status"));
+        assertTrue(Files.exists(outputPath));
+
+        // Validate DRC
+        Map<String, Object> valResult = CircuitValidator.validate(outputPath);
+        assertTrue((Boolean) valResult.get("valid"), "PI Buck circuit should pass DRC: " + valResult.get("diagnostics"));
+
+        // Simulate
+        SimulationService.ParsedCsv csv = SimulationService.simulateToCsv(outputPath, 0.015, 1e-6);
+        assertNotNull(csv);
+        assertTrue(csv.rowCount() > 5000);
+        assertTrue(csv.columns().containsKey("v_out"));
+
+        // Verify output settles near target 12.0 V
+        List<Double> vout = csv.columns().get("v_out");
+        double finalV = vout.get(vout.size() - 1);
+        assertTrue(finalV > 11.0 && finalV < 13.0, "Regulated Vout should settle near 12V, was: " + finalV);
+    }
+
+    @Test
+    void buildsAndSimulatesDeadTimeGenerator() throws IOException {
+        Path tempDir = Files.createTempDirectory("gecko-dt-test");
+        Path outputPath = tempDir.resolve("deadtime_leg.ipes");
+
+        Map<String, Object> circuitDef = Map.of(
+                "output_path", outputPath.toString(),
+                "simulation", Map.of(
+                        "duration", 0.001,
+                        "dt", 1e-7,
+                        "solver", 0
+                ),
+                "components", List.of(
+                        Map.of("name", "V_DC", "type", "DC_VOLTAGE", "nodes", List.of("dc_p", "0"),
+                                "parameters", Map.of("voltage", 48.0)),
+                        Map.of("name", "S_HI", "type", "MOSFET", "nodes", List.of("dc_p", "sw_mid")),
+                        Map.of("name", "S_LO", "type", "MOSFET", "nodes", List.of("sw_mid", "0")),
+                        Map.of("name", "R_LOAD", "type", "RESISTOR", "nodes", List.of("sw_mid", "0"),
+                                "parameters", Map.of("resistance", 10.0))
+                ),
+                "control", Map.of(
+                        "script_blocks", List.of(
+                                Map.of(
+                                        "name", "PWM_SRC",
+                                        "out_signals", List.of("pwm_in"),
+                                        "code", "double f = 10000.0; double phase = (t * f) % 1.0; yOUT[0] = (phase < 0.5) ? 1.0 : 0.0; return yOUT;"
+                                )
+                        ),
+                        "parameterized_blocks", List.of(
+                                Map.of(
+                                        "name", "DT_LEG",
+                                        "type", "DEADTIME_GENERATOR",
+                                        "in_signals", List.of("pwm_in"),
+                                        "out_signals", List.of("g_hi", "g_lo"),
+                                        "dead_time", 2.0e-6,
+                                        "switches", List.of("S_HI", "S_LO")
+                                )
+                        ),
+                        "probes", List.of(
+                                Map.of("name", "VM_MID", "type", "VOLTMETER", "target_component", "R_LOAD", "signal_name", "v_mid")
+                        )
+                )
+        );
+
+        Map<String, Object> createResult = CircuitBuilder.create(circuitDef);
+        assertEquals("CREATED", createResult.get("status"));
+        assertTrue(Files.exists(outputPath));
+
+        // Validate DRC
+        Map<String, Object> valResult = CircuitValidator.validate(outputPath);
+        assertTrue((Boolean) valResult.get("valid"), "Dead-time circuit should pass DRC: " + valResult.get("diagnostics"));
+
+        // Simulate
+        SimulationService.ParsedCsv csv = SimulationService.simulateToCsv(outputPath, 0.001, 1e-7);
+        assertNotNull(csv);
+        assertTrue(csv.rowCount() > 5000);
+    }
+
+    @Test
+    void catalogContainsParameterizedControlBlocks() {
+        assertNotNull(ComponentCatalog.get("SPWM_GENERATOR"));
+        assertNotNull(ComponentCatalog.get("SPWM"));
+        assertNotNull(ComponentCatalog.get("PI_CONTROLLER"));
+        assertNotNull(ComponentCatalog.get("DEADTIME"));
+        assertNotNull(ComponentCatalog.get("DEADTIME_GENERATOR"));
+
+        ComponentCatalog.ComponentDef dtDef = ComponentCatalog.get("DEADTIME");
+        assertEquals(1037, dtDef.typeNumber());
+        assertEquals("CONTROL", dtDef.domain());
+        assertEquals(1, dtDef.xPinCount());
+    }
 }

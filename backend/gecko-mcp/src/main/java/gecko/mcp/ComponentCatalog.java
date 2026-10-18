@@ -444,6 +444,41 @@ public final class ComponentCatalog {
         ));
 
         register(new ComponentDef(
+                "DEADTIME", "Dead-Time Generator", "CONTROL", 1037, "DT",
+                List.of("in", "out_hi", "out_lo"),
+                List.of(
+                        new ParameterDef("dead_time", "number", "s", 1e-6, 0, "Dead-time blanking delay in seconds")
+                ),
+                "Complementary half-bridge gate driver with turn-on delay (dead-time insertion) to prevent shoot-through cross-conduction.",
+                1
+        ));
+
+        register(new ComponentDef(
+                "SPWM_GENERATOR", "Sinusoidal PWM Generator", "CONTROL", 1016, "SPWM",
+                List.of("v_mod", "g1", "g2", "g3", "g4"),
+                List.of(
+                        new ParameterDef("modulation_index", "number", "", 0.85, 0, "Modulation index ma (0..1.2)"),
+                        new ParameterDef("carrier_frequency", "number", "Hz", 10000.0, 1, "Triangular carrier frequency in Hz"),
+                        new ParameterDef("grid_frequency", "number", "Hz", 50.0, 2, "Fundamental reference frequency in Hz")
+                ),
+                "High-frequency carrier comparison PWM generator supporting single-phase, H-bridge, and 3-phase modulation with dead-time.",
+                1
+        ));
+
+        register(new ComponentDef(
+                "PI_CONTROLLER", "Anti-Windup PI Controller", "CONTROL", 1016, "PI",
+                List.of("v_err", "v_ctrl"),
+                List.of(
+                        new ParameterDef("kp", "number", "", 1.0, 0, "Proportional gain"),
+                        new ParameterDef("ki", "number", "1/s", 100.0, 1, "Integral gain Ki (or Kp/Ti)"),
+                        new ParameterDef("limit_min", "number", "", -1.0, 2, "Lower saturation clamping limit"),
+                        new ParameterDef("limit_max", "number", "", 1.0, 3, "Upper saturation clamping limit")
+                ),
+                "Proportional-integral controller with anti-windup clamping, setpoint subtracting, and optional reset input.",
+                1
+        ));
+
+        register(new ComponentDef(
                 "ASIN", "Arc Sine", "CONTROL", 1038, "ASIN",
                 List.of("in", "out"),
                 List.of(),
@@ -758,7 +793,13 @@ public final class ComponentCatalog {
             Map.entry("THYRISTOR_CONTROL", "THYR_CTRL"),
             Map.entry("PMSM_CTRL", "PMSM_CONTROL"),
             Map.entry("PMSM_MOD", "PMSM_MODULATOR"),
-            Map.entry("SVM", "SPACE_VECTOR")
+            Map.entry("SVM", "SPACE_VECTOR"),
+            Map.entry("DEADTIME_GENERATOR", "DEADTIME"),
+            Map.entry("DEAD_TIME", "DEADTIME"),
+            Map.entry("SPWM", "SPWM_GENERATOR"),
+            Map.entry("PWM_SPWM", "SPWM_GENERATOR"),
+            Map.entry("PI_REGULATOR", "PI_CONTROLLER"),
+            Map.entry("PI_ANTI_WINDUP", "PI_CONTROLLER")
     );
 
     private static void register(ComponentDef def) {
@@ -914,6 +955,7 @@ public final class ComponentCatalog {
         synthGuide.put("control_blocks", "Control blocks chain through CONTROL wires: place a block, wire its output terminal point to the next block's input terminal point. A labeled output (signal name) makes the value recordable.");
         synthGuide.put("gates", "GATE couples an 'in_signal' to 'target_switch' by component name.");
         synthGuide.put("closed_loop_pattern", "Reference CONSTANT and feedback VOLTMETER feed the two COMPARATOR inputs; the COMPARATOR output drives a GATE. Replace the comparator with a SCRIPT_BLOCK (PI + PWM) for regulated converters.");
+        synthGuide.put("parameterized_control_blocks", "Built-in pre-verified control blocks: 'SPWM_GENERATOR' (carrier comparison, single/three-phase), 'PI_CONTROLLER' (anti-windup clamping, reset, error setpoint), 'DEADTIME_GENERATOR' (complementary half-bridge gate delays with td). Can specify directly under control.parameterized_blocks with auto-coupling to switches.");
         synthGuide.put("thermal_network", "Build heat networks from TH_RTH / TH_CTH between thermal nodes, inject losses with TH_FLOW, pin the reference with TH_AMBIENT, and drive junction temperatures with TH_TEMP sources. Electro-thermal feedback (R(T), Vf(T)) is configured per simulation run, see the multi-domain reference.");
         result.put("circuit_synthesis_guide", synthGuide);
 
