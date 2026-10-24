@@ -736,6 +736,10 @@ parameterString[]
 nameOpt[]
 orientierung 503
 idStringDialog SCOPE
+<scopeSettings>
+scopeLayout 2-graphs
+signalGraphs /v_sw:1,/v_out:1,/v_in:1,/duty:2
+<\scopeSettings>
 
 <\ElementCONTROL>
 

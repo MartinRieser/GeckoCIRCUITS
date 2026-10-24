@@ -16,8 +16,15 @@ import {
   parseEngineeringValue,
   formatEngineeringValue,
 } from '../model/componentSchema';
+import { SCOPE_SETTING_KEYS, ScopeDisplayLayout } from '../model/constants';
 import { mapSimulationResults } from './chartData';
-import { findScopeBlocks, scopeChannels, filterChannels } from './scopes';
+import {
+  findScopeBlocks,
+  scopeChannels,
+  filterChannels,
+  parseSignalGraphs,
+  resolveSignalGraph,
+} from './scopes';
 import { estimateStepCount, STEP_WARNING_THRESHOLD } from './simSteps';
 import { CHANNEL_TRACE_COLORS } from './traceColors';
 
@@ -90,13 +97,23 @@ export function SimulationDrawer({
   const [seededCircuit, setSeededCircuit] = useState<string | null>(null);
 
   const [selectedScope, setSelectedScope] = useState<string>('all');
-  const [displayLayout, setDisplayLayout] = useState<'overlay' | 'stacked'>('overlay');
+  const [displayLayout, setDisplayLayout] = useState<ScopeDisplayLayout>('overlay');
   const [channelSearch, setChannelSearch] = useState<string>('');
 
   const scopeBlocks = useMemo(
     () => (components ? findScopeBlocks(components) : []),
     [components],
   );
+
+  const activeScopeComp = useMemo(
+    () => (selectedScope !== 'all' ? scopeBlocks.find((b) => b.name === selectedScope) : scopeBlocks[0]),
+    [selectedScope, scopeBlocks],
+  );
+
+  const signalGraphs = useMemo(() => {
+    const raw = activeScopeComp?.parameters?.[SCOPE_SETTING_KEYS.signalGraphs];
+    return parseSignalGraphs(typeof raw === 'string' ? raw : undefined);
+  }, [activeScopeComp]);
 
   // Re-seed the parameter inputs whenever another circuit is opened
   useEffect(() => {
@@ -444,7 +461,23 @@ export function SimulationDrawer({
                         onClick={() => setDisplayLayout('overlay')}
                         title="Overlay signals on a unified plot"
                       >
-                        📈 Overlay
+                        📈 1 Graph
+                      </button>
+                      <button
+                        type="button"
+                        className={`segmented-btn ${displayLayout === '2-graphs' ? 'active' : ''}`}
+                        onClick={() => setDisplayLayout('2-graphs')}
+                        title="Display across 2 subplots"
+                      >
+                        📊 2 Graphs
+                      </button>
+                      <button
+                        type="button"
+                        className={`segmented-btn ${displayLayout === '3-graphs' ? 'active' : ''}`}
+                        onClick={() => setDisplayLayout('3-graphs')}
+                        title="Display across 3 subplots"
+                      >
+                        📑 3 Graphs
                       </button>
                       <button
                         type="button"
@@ -452,7 +485,7 @@ export function SimulationDrawer({
                         onClick={() => setDisplayLayout('stacked')}
                         title={`Stack channels in separate subplots (${activeScopeChannels.length} lanes)`}
                       >
-                        📑 Stacked ({activeScopeChannels.length})
+                        🪜 Stacked ({activeScopeChannels.length})
                       </button>
                     </div>
                   </div>
@@ -510,13 +543,25 @@ export function SimulationDrawer({
                   )}
                 </div>
 
-                {/* SVG Chart: Render Stacked or Standard Waveform Chart */}
+                {/* SVG Chart: Render Multi-Graph, Stacked or Standard Waveform Chart */}
                 {displayLayout === 'stacked' ? (
                   <StackedWaveformChart
                     time={timeArray}
                     signals={results}
                     activeSignals={visibleSignals}
                     allSignals={signalNames}
+                    hoverIndex={hoverIndex}
+                    onHoverIndex={setHoverIndex}
+                  />
+                ) : displayLayout === '2-graphs' || displayLayout === '3-graphs' ? (
+                  <MultiGraphWaveformChart
+                    numGraphs={displayLayout === '2-graphs' ? 2 : 3}
+                    time={timeArray}
+                    signals={results}
+                    activeSignals={visibleSignals}
+                    allSignals={signalNames}
+                    signalGraphs={signalGraphs}
+                    displayLayout={displayLayout}
                     hoverIndex={hoverIndex}
                     onHoverIndex={setHoverIndex}
                   />
@@ -605,6 +650,281 @@ export function SimulationDrawer({
               </div>
             </div>
           )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Multi-Graph Subplots Waveform Chart:
+ * Renders signals partitioned across 2 or 3 distinct subplots with individual Y-scaling,
+ * graph headers, and synchronized horizontal crosshairs.
+ */
+function MultiGraphWaveformChart({
+  numGraphs,
+  time,
+  signals,
+  activeSignals,
+  allSignals,
+  signalGraphs,
+  displayLayout,
+  hoverIndex,
+  onHoverIndex,
+}: {
+  numGraphs: 2 | 3;
+  time: number[];
+  signals: Record<string, number[]>;
+  activeSignals: string[];
+  allSignals: string[];
+  signalGraphs: Record<string, number>;
+  displayLayout: ScopeDisplayLayout;
+  hoverIndex: number | null;
+  onHoverIndex: (idx: number | null) => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const width = 640;
+  const laneH = numGraphs === 2 ? 120 : 85;
+  const laneGap = 16;
+  const padLeft = 60;
+  const padRight = 20;
+  const padTop = 20;
+  const padBottom = 25;
+  const totalH = Math.max(260, padTop + padBottom + numGraphs * (laneH + laneGap) - laneGap);
+  const plotW = width - padLeft - padRight;
+
+  const t0 = time[0] || 0;
+  const t1 = time[time.length - 1] || 1;
+
+  const mapX = (t: number) => padLeft + ((t - t0) / (t1 - t0 || 1)) * plotW;
+
+  const handleMouseMove = (e: ReactMouseEvent<SVGSVGElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const svgX = ((e.clientX - rect.left) / rect.width) * width;
+    if (svgX < padLeft || svgX > width - padRight) {
+      onHoverIndex(null);
+      return;
+    }
+
+    const t = t0 + ((svgX - padLeft) / plotW) * (t1 - t0);
+    let low = 0;
+    let high = time.length - 1;
+    while (low < high) {
+      const mid = Math.floor((low + high) / 2);
+      if (time[mid] < t) low = mid + 1;
+      else high = mid;
+    }
+    onHoverIndex(low);
+  };
+
+  const graphGroups = (numGraphs === 2 ? [1, 2] : [1, 2, 3]).map((g) => ({
+    graphIndex: g,
+    signals: activeSignals.filter((sig) => resolveSignalGraph(sig, displayLayout, signalGraphs) === g),
+  }));
+
+  return (
+    <div className="waveform-container" ref={containerRef}>
+      <svg
+        viewBox={`0 0 ${width} ${totalH}`}
+        className="waveform-svg"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => onHoverIndex(null)}
+      >
+        <rect width={width} height={totalH} className="waveform-bg" rx={6} />
+
+        {graphGroups.map(({ graphIndex, signals: gSignals }, k) => {
+          const laneTop = padTop + k * (laneH + laneGap);
+
+          let y0 = Infinity;
+          let y1 = -Infinity;
+          for (const name of gSignals) {
+            const arr = signals[name] || [];
+            for (let i = 0; i < arr.length; i++) {
+              if (arr[i] < y0) y0 = arr[i];
+              if (arr[i] > y1) y1 = arr[i];
+            }
+          }
+          if (!Number.isFinite(y0) || !Number.isFinite(y1)) {
+            y0 = -1;
+            y1 = 1;
+          }
+          if (y0 === y1) {
+            y0 -= 1;
+            y1 += 1;
+          }
+          const yPad = (y1 - y0) * 0.1;
+          const minY = y0 - yPad;
+          const maxY = y1 + yPad;
+
+          const mapLaneY = (v: number) =>
+            laneTop + laneH - ((v - minY) / (maxY - minY || 1)) * laneH;
+
+          const hasZero = minY <= 0 && maxY >= 0;
+          const zeroY = hasZero ? mapLaneY(0) : null;
+
+          return (
+            <g key={graphIndex} className="multigraph-lane">
+              {/* Lane background */}
+              <rect
+                x={padLeft}
+                y={laneTop}
+                width={plotW}
+                height={laneH}
+                className="waveform-plot-area"
+                rx={3}
+              />
+
+              {/* Zero reference line */}
+              {zeroY !== null && (
+                <line
+                  x1={padLeft}
+                  y1={zeroY}
+                  x2={width - padRight}
+                  y2={zeroY}
+                  style={{ stroke: 'var(--chart-zero)' }}
+                  strokeDasharray="3 3"
+                />
+              )}
+
+              {/* Min & Max Y-ticks */}
+              <text
+                x={padLeft - 6}
+                y={laneTop + 10}
+                style={{ fill: 'var(--chart-text)' }}
+                fontSize={9}
+                textAnchor="end"
+              >
+                {formatEngineeringValue(maxY)}
+              </text>
+              <text
+                x={padLeft - 6}
+                y={laneTop + laneH - 2}
+                style={{ fill: 'var(--chart-text)' }}
+                fontSize={9}
+                textAnchor="end"
+              >
+                {formatEngineeringValue(minY)}
+              </text>
+
+              {/* Subplot Title */}
+              <text
+                x={padLeft + 6}
+                y={laneTop + 12}
+                style={{ fill: 'var(--chart-axis-label)' }}
+                fontSize={10}
+                fontWeight={700}
+              >
+                Graph {graphIndex} {gSignals.length === 0 ? '(Empty)' : `(${gSignals.join(', ')})`}
+              </text>
+
+              {/* Traces */}
+              {gSignals.map((name) => {
+                const arr = signals[name] || [];
+                const colorIdx = allSignals.indexOf(name);
+                const color = TRACE_COLORS[colorIdx % TRACE_COLORS.length];
+                const len = Math.min(time.length, arr.length);
+                let pathD = '';
+                if (len > 0) {
+                  const step = Math.max(1, Math.floor(len / 2000));
+                  pathD = `M ${mapX(time[0])} ${mapLaneY(arr[0])}`;
+                  for (let i = step; i < len; i += step) {
+                    pathD += ` L ${mapX(time[i])} ${mapLaneY(arr[i])}`;
+                  }
+                  if ((len - 1) % step !== 0) {
+                    pathD += ` L ${mapX(time[len - 1])} ${mapLaneY(arr[len - 1])}`;
+                  }
+                }
+
+                return (
+                  <g key={name}>
+                    {pathD && (
+                      <path
+                        d={pathD}
+                        fill="none"
+                        stroke={color}
+                        strokeWidth={1.5}
+                        strokeLinejoin="round"
+                        strokeLinecap="round"
+                      />
+                    )}
+                    {hoverIndex !== null && hoverIndex >= 0 && hoverIndex < time.length && (
+                      <circle
+                        cx={mapX(time[hoverIndex])}
+                        cy={mapLaneY(arr[hoverIndex] ?? 0)}
+                        r={3.5}
+                        fill={color}
+                        style={{ stroke: 'var(--bg)' }}
+                        strokeWidth={1.2}
+                      />
+                    )}
+                  </g>
+                );
+              })}
+            </g>
+          );
+        })}
+
+        {/* Global time axis at the bottom */}
+        <line
+          x1={padLeft}
+          y1={totalH - padBottom}
+          x2={width - padRight}
+          y2={totalH - padBottom}
+          style={{ stroke: 'var(--chart-zero)' }}
+        />
+        <text
+          x={padLeft}
+          y={totalH - padBottom + 16}
+          style={{ fill: 'var(--chart-text)' }}
+          fontSize={10}
+          textAnchor="middle"
+        >
+          {formatEngineeringValue(t0, 's')}
+        </text>
+        <text
+          x={width - padRight}
+          y={totalH - padBottom + 16}
+          style={{ fill: 'var(--chart-text)' }}
+          fontSize={10}
+          textAnchor="middle"
+        >
+          {formatEngineeringValue(t1, 's')}
+        </text>
+
+        {/* Synchronized Crosshair */}
+        {hoverIndex !== null && hoverIndex >= 0 && hoverIndex < time.length && (
+          <line
+            x1={mapX(time[hoverIndex])}
+            y1={padTop}
+            x2={mapX(time[hoverIndex])}
+            y2={totalH - padBottom}
+            stroke="#cbd5e1"
+            strokeWidth={1}
+            strokeDasharray="3 3"
+            pointerEvents="none"
+          />
+        )}
+      </svg>
+
+      {/* Floating Tooltip */}
+      {hoverIndex !== null && hoverIndex >= 0 && hoverIndex < time.length && (
+        <div className="waveform-tooltip">
+          <div className="tooltip-time">
+            t = {formatEngineeringValue(time[hoverIndex], 's')}
+          </div>
+          {activeSignals.map((name) => {
+            const val = signals[name]?.[hoverIndex];
+            if (val === undefined) return null;
+            const colorIdx = allSignals.indexOf(name);
+            const color = TRACE_COLORS[colorIdx % TRACE_COLORS.length];
+            return (
+              <div key={name} className="tooltip-signal-row">
+                <span className="tooltip-dot" style={{ backgroundColor: color }} />
+                <span className="tooltip-name">{name}:</span>
+                <span className="tooltip-val">{formatEngineeringValue(val)}</span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

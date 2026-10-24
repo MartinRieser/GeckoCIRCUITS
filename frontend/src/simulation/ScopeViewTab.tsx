@@ -21,6 +21,14 @@ import type { ScopeController } from './useScopeController';
 import { useScopeController } from './useScopeController';
 import { ScopeChannelManager } from './ScopeChannelManager';
 import { isVoltmeterComponent, isAmmeterComponent } from '../model/componentSchema';
+import { SCOPE_SETTING_KEYS } from '../model/constants';
+import type { ScopeDisplayLayout } from '../model/constants';
+import {
+  parseSignalGraphs,
+  serializeSignalGraphs,
+  defaultGraphForSignal,
+  resolveSignalGraph,
+} from './scopes';
 
 /**
  * Properties for the {@link ScopeViewTab} full-viewport oscilloscope view.
@@ -32,12 +40,12 @@ export interface ScopeViewTabProps {
   components: EditorComponent[];
   /** Results time series dictionary. */
   results: Record<string, number[]> | null;
-  /** Waveform chart display layout ('overlay' or 'stacked'). */
-  displayLayout: 'overlay' | 'stacked';
+  /** Waveform chart display layout ('overlay', '2-graphs', '3-graphs', or 'stacked'). */
+  displayLayout: ScopeDisplayLayout;
   /** UI theme ('dark' or 'light'). */
   theme?: 'dark' | 'light';
   /** Callback to change display layout. */
-  onDisplayLayoutChange?: (layout: 'overlay' | 'stacked') => void;
+  onDisplayLayoutChange?: (layout: ScopeDisplayLayout) => void;
   /** Optional current simulation execution status. */
   status?: SimulationStatus | null;
   /** Optional loaded circuit filename. */
@@ -175,6 +183,7 @@ export function ScopeViewTab({
   components,
   results,
   displayLayout,
+  onDisplayLayoutChange,
   theme = 'dark',
   status,
   filename,
@@ -191,6 +200,35 @@ export function ScopeViewTab({
     onSetParameter,
   });
   const ctrl = scope ?? fallbackScope;
+
+  const {
+    view,
+    setView,
+    timePerDiv,
+    dataT0,
+    dataT1,
+    yScaleMode,
+    yView,
+    setYView,
+    signalNames,
+    timeArray,
+    signalStats,
+    scopeChannelNames,
+    hiddenSignals,
+    toggleSignal,
+    colorOf,
+    cursorsEnabled,
+    setCursorsEnabled,
+    cursorA,
+    setCursorA,
+    cursorB,
+    setCursorB,
+    activeCursor,
+    setActiveCursor,
+    setCursor,
+    drawerTab,
+    setDrawerTab,
+  } = ctrl;
 
   const [isChannelManagerOpen, setIsChannelManagerOpen] = useState(false);
 
@@ -274,34 +312,31 @@ export function ScopeViewTab({
     }
   }, [activeScopeBlock, onRemoveLabel, onSetLabel]);
 
-  const {
-    view,
-    setView,
-    timePerDiv,
-    dataT0,
-    dataT1,
-    yScaleMode,
-    yView,
-    setYView,
-    signalNames,
-    timeArray,
-    signalStats,
-    scopeChannelNames,
-    hiddenSignals,
-    toggleSignal,
-    colorOf,
-    cursorsEnabled,
-    setCursorsEnabled,
-    cursorA,
-    setCursorA,
-    cursorB,
-    setCursorB,
-    activeCursor,
-    setActiveCursor,
-    setCursor,
-    drawerTab,
-    setDrawerTab,
-  } = ctrl;
+  const signalGraphsRaw = activeScopeBlock?.parameters?.[SCOPE_SETTING_KEYS.signalGraphs] as string | undefined;
+  const signalGraphs = useMemo(() => parseSignalGraphs(signalGraphsRaw), [signalGraphsRaw]);
+
+  const handleMoveSignalToGraph = useCallback(
+    (signal: string, targetGraph: number) => {
+      if (!activeScopeBlock || !onSetParameter) return;
+      const current = { ...signalGraphs };
+      current[signal] = targetGraph;
+      const serialized = serializeSignalGraphs(current);
+      onSetParameter(activeScopeBlock.name, SCOPE_SETTING_KEYS.signalGraphs, serialized);
+    },
+    [activeScopeBlock, onSetParameter, signalGraphs],
+  );
+
+  const handleAutoGroupSignals = useCallback(() => {
+    if (!activeScopeBlock || !onSetParameter) return;
+    const mapping: Record<string, number> = {};
+    const targets = assignedChannels.length > 0 ? assignedChannels : scopeChannelNames;
+    for (const sig of targets) {
+      mapping[sig] = defaultGraphForSignal(sig, displayLayout);
+    }
+    const serialized = serializeSignalGraphs(mapping);
+    onSetParameter(activeScopeBlock.name, SCOPE_SETTING_KEYS.signalGraphs, serialized);
+  }, [activeScopeBlock, onSetParameter, assignedChannels, scopeChannelNames, displayLayout]);
+
 
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const [hoveredSignal, setHoveredSignal] = useState<string | null>(null);
@@ -466,6 +501,56 @@ export function ScopeViewTab({
             </button>
           )}
 
+          {/* Display Layout Switcher */}
+          {onDisplayLayoutChange && (
+            <div className="segmented-control" style={{ display: 'flex' }} data-testid="scope-tab-layout-switcher">
+              <button
+                type="button"
+                className={`segmented-btn ${displayLayout === 'overlay' ? 'active' : ''}`}
+                onClick={() => onDisplayLayoutChange('overlay')}
+                title="1 Graph: Overlay all traces on a single plot"
+              >
+                📈 1 Graph
+              </button>
+              <button
+                type="button"
+                className={`segmented-btn ${displayLayout === '2-graphs' ? 'active' : ''}`}
+                onClick={() => onDisplayLayoutChange('2-graphs')}
+                title="2 Graphs: Split traces across 2 subplots (e.g. Voltages / Currents)"
+              >
+                📊 2 Graphs
+              </button>
+              <button
+                type="button"
+                className={`segmented-btn ${displayLayout === '3-graphs' ? 'active' : ''}`}
+                onClick={() => onDisplayLayoutChange('3-graphs')}
+                title="3 Graphs: Split traces across 3 subplots (e.g. Voltages / Currents / Control)"
+              >
+                📑 3 Graphs
+              </button>
+              <button
+                type="button"
+                className={`segmented-btn ${displayLayout === 'stacked' ? 'active' : ''}`}
+                onClick={() => onDisplayLayoutChange('stacked')}
+                title="Stacked Lanes: Each trace in its own individual lane"
+              >
+                🪜 Stacked
+              </button>
+            </div>
+          )}
+
+          {(displayLayout === '2-graphs' || displayLayout === '3-graphs') && selectedScope !== 'all' && (
+            <button
+              type="button"
+              className="sim-mini-btn"
+              onClick={handleAutoGroupSignals}
+              title="Auto-organize traces by type: Voltages -> Graph 1, Currents -> Graph 2, Control -> Graph 3"
+              style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+            >
+              <span>⚡</span> Auto-Group
+            </button>
+          )}
+
           {/* Acquisition Status Pill */}
           <div className={`dso-status-pill ${isRunning ? 'running' : results ? 'auto' : 'stop'}`}>
             <span className="dso-status-dot" />
@@ -613,6 +698,44 @@ export function ScopeViewTab({
                     onZoomRange={zoomRange}
                     onResetZoom={resetZoom}
                     onPanSeconds={(delta) => setView(panWindow(win, delta, dataT0, dataT1))}
+                  />
+                ) : displayLayout === '2-graphs' || displayLayout === '3-graphs' ? (
+                  <FullScreenMultiGraphChart
+                    numGraphs={displayLayout === '2-graphs' ? 2 : 3}
+                    width={chartDimensions.width}
+                    height={chartDimensions.height}
+                    time={timeArray}
+                    signals={results}
+                    activeSignals={visibleSignals}
+                    signalGraphs={signalGraphs}
+                    onMoveSignalToGraph={handleMoveSignalToGraph}
+                    colorOf={colorOf}
+                    theme={theme}
+                    hoverIndex={hoverIndex}
+                    onHoverIndex={setHoverIndex}
+                    cursorA={cursorA}
+                    cursorB={cursorB}
+                    cursorsEnabled={cursorsEnabled}
+                    activeCursor={activeCursor}
+                    onSetActiveCursor={setActiveCursor}
+                    onSetCursor={(type, idx) => {
+                      if (setCursor) {
+                        setCursor(type, idx);
+                      } else {
+                        setCursorsEnabled(true);
+                        if (type === 'A') setCursorA(idx);
+                        else setCursorB(idx);
+                      }
+                    }}
+                    viewStart={win.start}
+                    viewEnd={win.end}
+                    onZoomAt={zoomAt}
+                    onZoomRange={zoomRange}
+                    onResetZoom={resetZoom}
+                    onPanSeconds={(delta) => setView(panWindow(win, delta, dataT0, dataT1))}
+                    hoveredSignal={hoveredSignal}
+                    onHoverSignal={setHoveredSignal}
+                    onToggleSignal={toggleSignal}
                   />
                 ) : (
                   <FullScreenOverlayChart
@@ -853,6 +976,11 @@ export function ScopeViewTab({
           onRemoveChannel={handleRemoveChannel}
           onAutoAddProbes={handleAutoAddProbes}
           onClearChannels={handleClearChannels}
+          displayLayout={displayLayout}
+          onDisplayLayoutChange={onDisplayLayoutChange}
+          signalGraphs={signalGraphs}
+          onSetSignalGraph={handleMoveSignalToGraph}
+          onAutoGroupByCategory={handleAutoGroupSignals}
           theme={theme}
         />
       )}
@@ -1684,6 +1812,792 @@ function FullScreenOverlayChart({
                 />
               );
             })}
+          </g>
+        )}
+      </svg>
+
+      {/* Floating Hover Tooltip */}
+      {hoverIndex !== null && hoverIndex >= 0 && hoverIndex < time.length && (
+        <WaveformTooltip
+          time={time}
+          hoverIndex={hoverIndex}
+          activeSignals={activeSignals}
+          signals={signals}
+          colorOf={colorOf}
+        />
+      )}
+    </div>
+  );
+}
+
+/** Full-Screen Multi-Graph (2 or 3 subplots) Waveform Chart with independent Y-axes & synchronized X-axis */
+function FullScreenMultiGraphChart({
+  numGraphs,
+  width = 1000,
+  height = 480,
+  time,
+  signals,
+  activeSignals,
+  signalGraphs,
+  onMoveSignalToGraph,
+  colorOf,
+  theme,
+  hoverIndex,
+  onHoverIndex,
+  cursorA,
+  cursorB,
+  cursorsEnabled,
+  activeCursor,
+  onSetActiveCursor,
+  onSetCursor,
+  viewStart,
+  viewEnd,
+  onZoomAt,
+  onZoomRange,
+  onResetZoom,
+  onPanSeconds,
+  hoveredSignal,
+  onHoverSignal,
+  onToggleSignal,
+}: {
+  numGraphs: 2 | 3;
+  width?: number;
+  height?: number;
+  time: number[];
+  signals: Record<string, number[]>;
+  activeSignals: string[];
+  signalGraphs: Record<string, number>;
+  onMoveSignalToGraph?: (signal: string, targetGraph: number) => void;
+  colorOf: (name: string) => string;
+  theme: 'dark' | 'light';
+  hoverIndex: number | null;
+  onHoverIndex: (idx: number | null) => void;
+  cursorA: number | null;
+  cursorB: number | null;
+  cursorsEnabled?: boolean;
+  activeCursor?: 'A' | 'B';
+  onSetActiveCursor?: (c: 'A' | 'B') => void;
+  onSetCursor: (type: 'A' | 'B', idx: number) => void;
+  viewStart: number;
+  viewEnd: number;
+  onZoomAt: (factor: number, anchor: number) => void;
+  onZoomRange: (start: number, end: number) => void;
+  onResetZoom: () => void;
+  onPanSeconds: (delta: number) => void;
+  hoveredSignal?: string | null;
+  onHoverSignal?: (s: string | null) => void;
+  onToggleSignal?: (s: string) => void;
+}) {
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const [dragBox, setDragBox] = useState<{ startX: number; currentX: number } | null>(null);
+  const suppressClickRef = useRef(false);
+
+  const padLeft = 72;
+  const padRight = 24;
+  const padTop = 22;
+  const padBottom = 34;
+  const laneGap = 16;
+  const count = numGraphs;
+  const availableH = height - padTop - padBottom;
+  const laneH = Math.max(90, Math.floor((availableH - (count - 1) * laneGap) / count));
+  const totalH = Math.max(height, padTop + padBottom + count * (laneH + laneGap) - laneGap);
+  const plotW = Math.max(100, width - padLeft - padRight);
+
+  const textColor = theme === 'light' ? '#64748b' : '#94a3b8';
+  const gridColor = theme === 'light' ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.07)';
+  const zeroColor = theme === 'light' ? '#cbd5e1' : '#475569';
+  const crosshairColor = theme === 'light' ? '#334155' : '#cbd5e1';
+
+  const t0 = viewStart;
+  const t1 = viewEnd;
+  const mapX = (t: number) => padLeft + ((t - t0) / (t1 - t0 || 1)) * plotW;
+
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const rect = svg.getBoundingClientRect();
+      const svgX = ((e.clientX - rect.left) / rect.width) * width;
+      const anchor = t0 + ((svgX - padLeft) / plotW) * (t1 - t0);
+      onZoomAt(Math.exp(e.deltaY / 500), anchor);
+    };
+    svg.addEventListener('wheel', onWheel, { passive: false });
+    return () => svg.removeEventListener('wheel', onWheel);
+  }, [t0, t1, onZoomAt, width, plotW]);
+
+  const handleMouseMove = (e: ReactMouseEvent<SVGSVGElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const svgX = ((e.clientX - rect.left) / rect.width) * width;
+    if (svgX < padLeft || svgX > width - padRight) {
+      onHoverIndex(null);
+      return;
+    }
+    const t = t0 + ((svgX - padLeft) / plotW) * (t1 - t0);
+    onHoverIndex(sampleIndexAt(time, t));
+  };
+
+  const handleCursorDragStart = (e: React.PointerEvent, type: 'A' | 'B') => {
+    e.stopPropagation();
+    e.preventDefault();
+    onSetActiveCursor?.(type);
+    const svg = svgRef.current;
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+
+    const onMove = (ev: PointerEvent) => {
+      const svgX = ((ev.clientX - rect.left) / rect.width) * width;
+      const clampedX = Math.max(padLeft, Math.min(width - padRight, svgX));
+      const t = t0 + ((clampedX - padLeft) / plotW) * (t1 - t0);
+      const newIdx = sampleIndexAt(time, t);
+      onSetCursor(type, newIdx);
+    };
+
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  };
+
+  const handleClick = (e: ReactMouseEvent<SVGSVGElement>) => {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      return;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    const svgX = ((e.clientX - rect.left) / rect.width) * width;
+    if (svgX < padLeft || svgX > width - padRight) return;
+    const t = t0 + ((svgX - padLeft) / plotW) * (t1 - t0);
+    const targetIdx = sampleIndexAt(time, t);
+
+    let targetCursor: 'A' | 'B' = 'A';
+    if (e.shiftKey) {
+      targetCursor = 'B';
+      onSetActiveCursor?.('B');
+    } else if (cursorA === null || !cursorsEnabled) {
+      targetCursor = 'A';
+      onSetActiveCursor?.('B');
+    } else if (cursorB === null) {
+      targetCursor = 'B';
+      onSetActiveCursor?.('A');
+    } else {
+      targetCursor = activeCursor ?? 'A';
+    }
+    onSetCursor(targetCursor, targetIdx);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (e.button === 2) {
+      const startX = e.clientX;
+      let lastX = startX;
+
+      const onMove = (ev: PointerEvent) => {
+        const deltaPx = ev.clientX - lastX;
+        lastX = ev.clientX;
+        const deltaSeconds = -(deltaPx / plotW) * (t1 - t0);
+        onPanSeconds(deltaSeconds);
+      };
+
+      const onUp = () => {
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+      };
+
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+      return;
+    }
+
+    if (e.button === 0) {
+      const svg = svgRef.current;
+      if (!svg) return;
+      const rect = svg.getBoundingClientRect();
+      const getSvgX = (clientX: number) => {
+        const sx = ((clientX - rect.left) / (rect.width || 1)) * width;
+        return Math.max(padLeft, Math.min(width - padRight, sx));
+      };
+
+      const startSvgX = getSvgX(e.clientX);
+      let currentSvgX = startSvgX;
+      suppressClickRef.current = false;
+
+      const onMove = (ev: PointerEvent) => {
+        currentSvgX = getSvgX(ev.clientX);
+        if (Math.abs(currentSvgX - startSvgX) > 5) {
+          suppressClickRef.current = true;
+          setDragBox({ startX: startSvgX, currentX: currentSvgX });
+        }
+      };
+
+      const onUp = () => {
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+        if (Math.abs(currentSvgX - startSvgX) > 5) {
+          const xA = Math.min(startSvgX, currentSvgX);
+          const xB = Math.max(startSvgX, currentSvgX);
+          const tA = t0 + ((xA - padLeft) / plotW) * (t1 - t0);
+          const tB = t0 + ((xB - padLeft) / plotW) * (t1 - t0);
+          onZoomRange(tA, tB);
+        }
+        setDragBox(null);
+      };
+
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+    }
+  };
+
+  const iWin0 = sampleIndexAt(time, t0);
+  const iWin1 = Math.min(sampleIndexAt(time, t1), time.length - 1);
+  const winLen = Math.max(1, iWin1 - iWin0 + 1);
+  const step = Math.max(1, Math.floor(winLen / 3000));
+
+  const layoutMode = numGraphs === 2 ? '2-graphs' : '3-graphs';
+  const graphData: {
+    graphIdx: number;
+    signals: string[];
+    minY: number;
+    maxY: number;
+    paths: Record<string, string>;
+    primaryUnit: string;
+    laneY: number;
+    mapLaneY: (v: number) => number;
+  }[] = [];
+
+  for (let g = 1; g <= numGraphs; g++) {
+    const gSignals = activeSignals.filter((s) => resolveSignalGraph(s, layoutMode, signalGraphs) === g);
+    let y0 = Infinity;
+    let y1 = -Infinity;
+    const unitsCount: Record<string, number> = {};
+
+    for (const name of gSignals) {
+      const u = inferSignalUnit(name);
+      if (u) unitsCount[u] = (unitsCount[u] || 0) + 1;
+      const arr = signals[name] || [];
+      for (let i = iWin0; i <= iWin1; i++) {
+        const v = arr[i];
+        if (v !== undefined) {
+          if (v < y0) y0 = v;
+          if (v > y1) y1 = v;
+        }
+      }
+    }
+
+    if (!Number.isFinite(y0) || !Number.isFinite(y1)) {
+      y0 = -1;
+      y1 = 1;
+    }
+    if (y0 === y1) {
+      y0 -= 1;
+      y1 += 1;
+    }
+    const yPad = (y1 - y0) * 0.12;
+    const minY = y0 - yPad;
+    const maxY = y1 + yPad;
+
+    const laneY = padTop + (g - 1) * (laneH + laneGap);
+    const mapLaneY = (v: number) => laneY + laneH - ((v - minY) / (maxY - minY || 1)) * laneH;
+
+    const paths: Record<string, string> = {};
+    for (const name of gSignals) {
+      const arr = signals[name] || [];
+      let pathD = '';
+      if (winLen > 0 && arr.length > 0) {
+        const startIdx = Math.max(0, Math.min(iWin0, arr.length - 1));
+        const endIdx = Math.max(0, Math.min(iWin1, arr.length - 1));
+        if (startIdx <= endIdx) {
+          pathD = `M ${mapX(time[startIdx])} ${mapLaneY(arr[startIdx] ?? 0)}`;
+          for (let i = startIdx + step; i <= endIdx; i += step) {
+            pathD += ` L ${mapX(time[i])} ${mapLaneY(arr[i] ?? 0)}`;
+          }
+          if ((endIdx - startIdx) % step !== 0) {
+            pathD += ` L ${mapX(time[endIdx])} ${mapLaneY(arr[endIdx] ?? 0)}`;
+          }
+        }
+      }
+      paths[name] = pathD;
+    }
+
+    let primaryUnit = '';
+    let maxUnitCount = 0;
+    for (const [u, cnt] of Object.entries(unitsCount)) {
+      if (cnt > maxUnitCount) {
+        maxUnitCount = cnt;
+        primaryUnit = u;
+      }
+    }
+
+    graphData.push({
+      graphIdx: g,
+      signals: gSignals,
+      minY,
+      maxY,
+      paths,
+      primaryUnit,
+      laneY,
+      mapLaneY,
+    });
+  }
+
+  // Time ticks for bottom axis
+  const numTimeTicks = Math.max(4, Math.floor(plotW / 120));
+  const timeTicks: number[] = [];
+  for (let i = 0; i <= numTimeTicks; i++) {
+    timeTicks.push(t0 + (i / numTimeTicks) * (t1 - t0));
+  }
+
+  return (
+    <div className="full-waveform-wrap">
+      <svg
+        ref={svgRef}
+        viewBox={`0 0 ${width} ${totalH}`}
+        className="full-waveform-svg"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => onHoverIndex(null)}
+        onClick={handleClick}
+        onDoubleClick={onResetZoom}
+        onContextMenu={(e) => e.preventDefault()}
+        onPointerDown={handlePointerDown}
+      >
+        <rect width={width} height={totalH} className="waveform-bg" rx={8} />
+
+        <defs>
+          {graphData.map((gd) => (
+            <clipPath key={`clip-${gd.graphIdx}`} id={`multi-graph-clip-${gd.graphIdx}`}>
+              <rect x={padLeft} y={gd.laneY} width={plotW} height={laneH} />
+            </clipPath>
+          ))}
+        </defs>
+
+        {/* Subplots */}
+        {graphData.map((gd) => {
+          const zeroY =
+            gd.minY <= 0 && gd.maxY >= 0 ? gd.mapLaneY(0) : null;
+
+          return (
+            <g key={`graph-${gd.graphIdx}`} className="multi-graph-subplot">
+              {/* Plot Background */}
+              <rect
+                x={padLeft}
+                y={gd.laneY}
+                width={plotW}
+                height={laneH}
+                className="waveform-plot-area"
+                rx={4}
+              />
+
+              {/* Horizontal Grid lines */}
+              {[0.25, 0.5, 0.75].map((pct) => (
+                <line
+                  key={pct}
+                  x1={padLeft}
+                  y1={gd.laneY + pct * laneH}
+                  x2={width - padRight}
+                  y2={gd.laneY + pct * laneH}
+                  stroke={gridColor}
+                  strokeWidth={1}
+                  strokeDasharray="2 3"
+                />
+              ))}
+
+              {/* Vertical time grid lines */}
+              {timeTicks.map((t, idx) => (
+                <line
+                  key={idx}
+                  x1={mapX(t)}
+                  y1={gd.laneY}
+                  x2={mapX(t)}
+                  y2={gd.laneY + laneH}
+                  stroke={gridColor}
+                  strokeWidth={1}
+                  strokeDasharray="2 3"
+                />
+              ))}
+
+              {/* Zero line */}
+              {zeroY !== null && (
+                <line
+                  x1={padLeft}
+                  y1={zeroY}
+                  x2={width - padRight}
+                  y2={zeroY}
+                  stroke={zeroColor}
+                  strokeWidth={1}
+                  strokeDasharray="3 3"
+                />
+              )}
+
+              {/* Y Axis Labels (Top, Mid, Bottom) */}
+              <text
+                x={padLeft - 8}
+                y={gd.laneY + 12}
+                textAnchor="end"
+                fill={textColor}
+                fontSize={10}
+                fontFamily="monospace"
+              >
+                {formatEngineeringValue(gd.maxY)} {gd.primaryUnit}
+              </text>
+              <text
+                x={padLeft - 8}
+                y={gd.laneY + laneH / 2 + 4}
+                textAnchor="end"
+                fill={textColor}
+                fontSize={9.5}
+                fontFamily="monospace"
+              >
+                {formatEngineeringValue((gd.minY + gd.maxY) / 2)}
+              </text>
+              <text
+                x={padLeft - 8}
+                y={gd.laneY + laneH - 4}
+                textAnchor="end"
+                fill={textColor}
+                fontSize={10}
+                fontFamily="monospace"
+              >
+                {formatEngineeringValue(gd.minY)} {gd.primaryUnit}
+              </text>
+
+              {/* Waveform Paths */}
+              {gd.signals.map((name) => {
+                const color = colorOf(name);
+                const isHovered = hoveredSignal === name;
+                return (
+                  <path
+                    key={name}
+                    d={gd.paths[name] || ''}
+                    fill="none"
+                    stroke={color}
+                    strokeWidth={isHovered ? 2.6 : 1.8}
+                    clipPath={`url(#multi-graph-clip-${gd.graphIdx})`}
+                    style={{
+                      transition: 'stroke-width 0.15s ease',
+                      filter: isHovered ? `drop-shadow(0 0 4px ${color})` : undefined,
+                    }}
+                  />
+                );
+              })}
+
+              {/* Subplot Header Overlay Badge & Signals */}
+              <g className="subplot-header" style={{ pointerEvents: 'auto' }}>
+                <rect
+                  x={padLeft + 8}
+                  y={gd.laneY + 6}
+                  width={68}
+                  height={18}
+                  rx={3}
+                  fill={theme === 'light' ? 'rgba(241, 245, 249, 0.92)' : 'rgba(15, 23, 42, 0.88)'}
+                  stroke="var(--border)"
+                  strokeWidth={1}
+                />
+                <text
+                  x={padLeft + 42}
+                  y={gd.laneY + 19}
+                  textAnchor="middle"
+                  fill="var(--text)"
+                  fontSize={10}
+                  fontWeight={800}
+                  fontFamily="monospace"
+                >
+                  GRAPH {gd.graphIdx}
+                </text>
+
+                {/* Assigned signal tags inside this graph */}
+                {gd.signals.map((name, sIdx) => {
+                  const color = colorOf(name);
+                  const isHovered = hoveredSignal === name;
+                  const tagX = padLeft + 84 + sIdx * 115;
+                  if (tagX + 110 > width - padRight) return null;
+
+                  return (
+                    <g
+                      key={name}
+                      transform={`translate(${tagX}, ${gd.laneY + 6})`}
+                      style={{ cursor: 'pointer' }}
+                      onMouseEnter={() => onHoverSignal?.(name)}
+                      onMouseLeave={() => onHoverSignal?.(null)}
+                      onClick={() => onToggleSignal?.(name)}
+                    >
+                      <rect
+                        width={105}
+                        height={18}
+                        rx={3}
+                        fill={
+                          isHovered
+                            ? (theme === 'light' ? 'rgba(226, 232, 240, 0.95)' : 'rgba(51, 65, 85, 0.95)')
+                            : (theme === 'light' ? 'rgba(248, 250, 252, 0.88)' : 'rgba(30, 41, 59, 0.85)')
+                        }
+                        stroke={isHovered ? color : 'var(--border)'}
+                        strokeWidth={isHovered ? 1.5 : 1}
+                      />
+                      <circle cx={8} cy={9} r={3.5} fill={color} />
+                      <text
+                        x={16}
+                        y={13}
+                        fill={color}
+                        fontSize={9.5}
+                        fontWeight={isHovered ? 700 : 600}
+                        fontFamily="sans-serif"
+                      >
+                        {name.length > 8 ? `${name.substring(0, 7)}…` : name}
+                      </text>
+                      {/* Move to another graph button icon */}
+                      {onMoveSignalToGraph && (
+                        <g
+                          transform="translate(86, 2)"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const nextGraph = gd.graphIdx === numGraphs ? 1 : gd.graphIdx + 1;
+                            onMoveSignalToGraph(name, nextGraph);
+                          }}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <rect width={16} height={14} rx={2} fill="rgba(56, 189, 248, 0.2)" />
+                          <text x={8} y={10.5} textAnchor="middle" fill="var(--accent, #38bdf8)" fontSize={8.5} fontWeight={700}>
+                            ⇄
+                          </text>
+                        </g>
+                      )}
+                    </g>
+                  );
+                })}
+
+                {/* Empty graph state placeholder */}
+                {gd.signals.length === 0 && (
+                  <text
+                    x={padLeft + 86}
+                    y={gd.laneY + 19}
+                    fill={textColor}
+                    fontSize={10.5}
+                    fontStyle="italic"
+                  >
+                    (No traces in Graph {gd.graphIdx} — click ⇄ on any trace to move here)
+                  </text>
+                )}
+              </g>
+            </g>
+          );
+        })}
+
+        {/* Synchronized Bottom Time Axis */}
+        <g className="time-axis" pointerEvents="none">
+          <line
+            x1={padLeft}
+            y1={totalH - padBottom}
+            x2={width - padRight}
+            y2={totalH - padBottom}
+            stroke={gridColor}
+            strokeWidth={1.5}
+          />
+          {timeTicks.map((t, idx) => (
+            <g key={idx} transform={`translate(${mapX(t)}, ${totalH - padBottom})`}>
+              <line x1={0} y1={0} x2={0} y2={4} stroke={textColor} strokeWidth={1} />
+              <text
+                x={0}
+                y={15}
+                textAnchor="middle"
+                fill={textColor}
+                fontSize={10}
+                fontFamily="monospace"
+              >
+                {formatEngineeringValue(t, 's')}
+              </text>
+            </g>
+          ))}
+        </g>
+
+        {/* Measurement Cursor A */}
+        {cursorsEnabled && cursorA !== null && cursorA >= 0 && cursorA < time.length && (
+          <g className="cursor-a-group">
+            <line
+              x1={mapX(time[cursorA])}
+              y1={padTop}
+              x2={mapX(time[cursorA])}
+              y2={totalH - padBottom}
+              stroke="#0ea5e9"
+              strokeWidth={1.5}
+              pointerEvents="none"
+            />
+            <line
+              x1={mapX(time[cursorA])}
+              y1={padTop}
+              x2={mapX(time[cursorA])}
+              y2={totalH - padBottom}
+              stroke="transparent"
+              strokeWidth={16}
+              style={{ cursor: 'ew-resize', pointerEvents: 'auto' }}
+              onPointerDown={(e) => handleCursorDragStart(e, 'A')}
+            />
+            <g
+              className="cursor-handle cursor-handle-a"
+              style={{ cursor: 'ew-resize', pointerEvents: 'auto', userSelect: 'none' }}
+              onPointerDown={(e) => handleCursorDragStart(e, 'A')}
+            >
+              <rect
+                x={mapX(time[cursorA]) - 16}
+                y={padTop - 20}
+                width={32}
+                height={18}
+                rx={4}
+                fill="#0ea5e9"
+              />
+              <text
+                x={mapX(time[cursorA])}
+                y={padTop - 7}
+                fill="#ffffff"
+                fontSize={10}
+                fontWeight={800}
+                textAnchor="middle"
+              >
+                A
+              </text>
+            </g>
+          </g>
+        )}
+
+        {/* Measurement Cursor B */}
+        {cursorsEnabled && cursorB !== null && cursorB >= 0 && cursorB < time.length && (
+          <g className="cursor-b-group">
+            <line
+              x1={mapX(time[cursorB])}
+              y1={padTop}
+              x2={mapX(time[cursorB])}
+              y2={totalH - padBottom}
+              stroke="#e11d48"
+              strokeWidth={1.5}
+              pointerEvents="none"
+            />
+            <line
+              x1={mapX(time[cursorB])}
+              y1={padTop}
+              x2={mapX(time[cursorB])}
+              y2={totalH - padBottom}
+              stroke="transparent"
+              strokeWidth={16}
+              style={{ cursor: 'ew-resize', pointerEvents: 'auto' }}
+              onPointerDown={(e) => handleCursorDragStart(e, 'B')}
+            />
+            <g
+              className="cursor-handle cursor-handle-b"
+              style={{ cursor: 'ew-resize', pointerEvents: 'auto', userSelect: 'none' }}
+              onPointerDown={(e) => handleCursorDragStart(e, 'B')}
+            >
+              <rect
+                x={mapX(time[cursorB]) - 16}
+                y={padTop - 20}
+                width={32}
+                height={18}
+                rx={4}
+                fill="#e11d48"
+              />
+              <text
+                x={mapX(time[cursorB])}
+                y={padTop - 7}
+                fill="#ffffff"
+                fontSize={10}
+                fontWeight={800}
+                textAnchor="middle"
+              >
+                B
+              </text>
+            </g>
+          </g>
+        )}
+
+        {/* Drag Box Zoom Selection */}
+        {dragBox && Math.abs(dragBox.currentX - dragBox.startX) > 5 && (
+          <g pointerEvents="none">
+            <rect
+              x={Math.min(dragBox.startX, dragBox.currentX)}
+              y={padTop}
+              width={Math.abs(dragBox.currentX - dragBox.startX)}
+              height={totalH - padTop - padBottom}
+              fill="rgba(56, 189, 248, 0.22)"
+              style={{ stroke: 'var(--accent)' }}
+              strokeWidth={1.5}
+              strokeDasharray="4 3"
+            />
+            <rect
+              x={Math.min(dragBox.startX, dragBox.currentX)}
+              y={padTop + 2}
+              width={120}
+              height={18}
+              rx={3}
+              style={{ fill: 'var(--accent)' }}
+              opacity={0.9}
+            />
+            <text
+              x={Math.min(dragBox.startX, dragBox.currentX) + 6}
+              y={padTop + 15}
+              fill="#ffffff"
+              fontSize={10}
+              fontWeight={700}
+            >
+              🔍 Time Zoom
+            </text>
+          </g>
+        )}
+
+        {/* Hover Crosshair & Indicators */}
+        {hoverIndex !== null && hoverIndex >= 0 && hoverIndex < time.length && (
+          <g className="hover-crosshair" pointerEvents="none">
+            <line
+              x1={mapX(time[hoverIndex])}
+              y1={padTop}
+              x2={mapX(time[hoverIndex])}
+              y2={totalH - padBottom}
+              stroke={crosshairColor}
+              strokeWidth={1}
+              strokeDasharray="3 3"
+            />
+            <rect
+              x={Math.max(padLeft, Math.min(width - padRight - 72, mapX(time[hoverIndex]) - 36))}
+              y={totalH - padBottom + 4}
+              width={72}
+              height={18}
+              rx={4}
+              fill="#0f172a"
+              stroke="#38bdf8"
+              strokeWidth={1.2}
+              className="hover-pill"
+            />
+            <text
+              x={Math.max(padLeft + 36, Math.min(width - padRight - 36, mapX(time[hoverIndex])))}
+              y={totalH - padBottom + 17}
+              textAnchor="middle"
+              fill="#38bdf8"
+              fontSize={10.5}
+              fontWeight={700}
+              fontFamily="monospace"
+              className="hover-text"
+            >
+              {formatEngineeringValue(time[hoverIndex], 's')}
+            </text>
+
+            {/* Trace dots on curves */}
+            {graphData.map((gd) =>
+              gd.signals.map((name) => {
+                const val = signals[name]?.[hoverIndex];
+                if (val === undefined) return null;
+                const dotY = gd.mapLaneY(val);
+                const color = colorOf(name);
+                return (
+                  <circle
+                    key={name}
+                    cx={mapX(time[hoverIndex])}
+                    cy={dotY}
+                    r={4}
+                    fill={color}
+                    stroke="#ffffff"
+                    strokeWidth={1.5}
+                  />
+                );
+              }),
+            )}
           </g>
         )}
       </svg>

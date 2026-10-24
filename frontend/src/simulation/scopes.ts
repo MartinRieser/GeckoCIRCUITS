@@ -189,3 +189,90 @@ export function isScriptComponent(component: EditorComponent | null | undefined)
 export function findScriptBlocks(components: EditorComponent[]): EditorComponent[] {
   return components.filter(isScriptComponent);
 }
+
+/**
+ * Parses a persisted signal-to-graph mapping string (e.g. "v_sw:1,v_out:1,i_L:2,duty:3")
+ * into a record mapping signal names to 1-indexed graph indices.
+ */
+export function parseSignalGraphs(raw: string | undefined | null): Record<string, number> {
+  if (!raw || typeof raw !== 'string') return {};
+  const result: Record<string, number> = {};
+  const parts = raw.split(',');
+  for (const part of parts) {
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+    const colonIdx = trimmed.lastIndexOf(':');
+    if (colonIdx <= 0 || colonIdx >= trimmed.length - 1) continue;
+    const name = trimmed.substring(0, colonIdx).trim();
+    const graphIdx = parseInt(trimmed.substring(colonIdx + 1).trim(), 10);
+    if (name && Number.isFinite(graphIdx) && graphIdx >= 1) {
+      result[name] = graphIdx;
+    }
+  }
+  return result;
+}
+
+/**
+ * Serializes a signal-to-graph mapping dictionary into a comma-separated string
+ * suitable for persisting into the .ipes <scopeSettings> sub-block.
+ */
+export function serializeSignalGraphs(mapping: Record<string, number>): string {
+  return Object.entries(mapping)
+    .filter(([name, g]) => Boolean(name && Number.isFinite(g) && g >= 1))
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([name, g]) => `${name}:${g}`)
+    .join(',');
+}
+
+/**
+ * Categorizes a signal by engineering type into 'voltage', 'current', or 'control'.
+ */
+export function inferSignalCategory(name: string): 'voltage' | 'current' | 'control' {
+  const lower = name.toLowerCase();
+  if (lower.startsWith('v') || lower.startsWith('u') || lower.includes('_v') || lower.includes('volt')) {
+    return 'voltage';
+  }
+  if (lower.startsWith('i') || lower.includes('_i') || lower.includes('curr') || lower.startsWith('amp')) {
+    return 'current';
+  }
+  return 'control';
+}
+
+/**
+ * Returns a smart default 1-indexed graph number for a signal based on the active layout and signal type.
+ */
+export function defaultGraphForSignal(name: string, layout: 'overlay' | '2-graphs' | '3-graphs' | 'stacked'): number {
+  if (layout === '3-graphs') {
+    const cat = inferSignalCategory(name);
+    if (cat === 'voltage') return 1;
+    if (cat === 'current') return 2;
+    return 3;
+  }
+  if (layout === '2-graphs') {
+    const cat = inferSignalCategory(name);
+    if (cat === 'voltage') return 1;
+    return 2;
+  }
+  return 1;
+}
+
+/**
+ * Resolves the effective graph index (1, 2, or 3) for a signal, respecting explicit user mappings
+ * when valid or falling back to the smart category-based default.
+ */
+export function resolveSignalGraph(
+  name: string,
+  layout: 'overlay' | '2-graphs' | '3-graphs' | 'stacked',
+  mapping?: Record<string, number>,
+): number {
+  const maxGraphs = layout === '2-graphs' ? 2 : layout === '3-graphs' ? 3 : 1;
+  if (mapping && typeof mapping[name] === 'number') {
+    const g = mapping[name];
+    if (g >= 1 && g <= maxGraphs) {
+      return g;
+    }
+  }
+  const def = defaultGraphForSignal(name, layout);
+  return Math.min(def, maxGraphs);
+}
+

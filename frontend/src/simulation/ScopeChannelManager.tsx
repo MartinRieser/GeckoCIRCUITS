@@ -5,6 +5,8 @@
  */
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { inferSignalUnit } from './ScopeViewTab';
+import type { ScopeDisplayLayout } from '../model/constants';
+import { resolveSignalGraph } from './scopes';
 
 export interface ScopeChannelManagerProps {
   /** Whether the channel manager modal is open. */
@@ -27,6 +29,16 @@ export interface ScopeChannelManagerProps {
   onAutoAddProbes?: () => void;
   /** Optional callback to clear all assigned channels for this scope. */
   onClearChannels?: () => void;
+  /** Current display layout mode. */
+  displayLayout?: ScopeDisplayLayout;
+  /** Callback to change display layout mode. */
+  onDisplayLayoutChange?: (layout: ScopeDisplayLayout) => void;
+  /** Signal to graph mapping dictionary. */
+  signalGraphs?: Record<string, number>;
+  /** Callback when signal graph assignment changes. */
+  onSetSignalGraph?: (signalName: string, graphIndex: number) => void;
+  /** Callback to auto-group signals by category. */
+  onAutoGroupByCategory?: () => void;
   /** Current UI theme. */
   theme?: 'dark' | 'light';
 }
@@ -44,6 +56,11 @@ export function ScopeChannelManager({
   onRemoveChannel,
   onAutoAddProbes,
   onClearChannels,
+  displayLayout = 'overlay',
+  onDisplayLayoutChange,
+  signalGraphs = {},
+  onSetSignalGraph,
+  onAutoGroupByCategory,
 }: ScopeChannelManagerProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<SignalCategory>('all');
@@ -185,6 +202,75 @@ export function ScopeChannelManager({
             gap: 14,
           }}
         >
+          {/* Display Layout Mode Strip */}
+          <div
+            style={{
+              padding: '10px 14px',
+              background: 'var(--surface)',
+              borderRadius: '6px',
+              border: '1px solid var(--border)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+              flexWrap: 'wrap',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text)' }}>
+                Display Layout:
+              </span>
+              {onDisplayLayoutChange && (
+                <div className="segmented-control" style={{ display: 'flex' }}>
+                  <button
+                    type="button"
+                    className={`segmented-btn ${displayLayout === 'overlay' ? 'active' : ''}`}
+                    onClick={() => onDisplayLayoutChange('overlay')}
+                    title="Overlay all channels on 1 combined graph"
+                  >
+                    📈 1 Graph
+                  </button>
+                  <button
+                    type="button"
+                    className={`segmented-btn ${displayLayout === '2-graphs' ? 'active' : ''}`}
+                    onClick={() => onDisplayLayoutChange('2-graphs')}
+                    title="Split into 2 subplots (e.g. Voltages / Currents)"
+                  >
+                    📊 2 Graphs
+                  </button>
+                  <button
+                    type="button"
+                    className={`segmented-btn ${displayLayout === '3-graphs' ? 'active' : ''}`}
+                    onClick={() => onDisplayLayoutChange('3-graphs')}
+                    title="Split into 3 subplots (e.g. Voltages / Currents / Control)"
+                  >
+                    📑 3 Graphs
+                  </button>
+                  <button
+                    type="button"
+                    className={`segmented-btn ${displayLayout === 'stacked' ? 'active' : ''}`}
+                    onClick={() => onDisplayLayoutChange('stacked')}
+                    title="Stack each channel in its own individual lane"
+                  >
+                    🪜 Stacked
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {(displayLayout === '2-graphs' || displayLayout === '3-graphs') && onAutoGroupByCategory && (
+              <button
+                type="button"
+                className="sim-mini-btn"
+                onClick={onAutoGroupByCategory}
+                title="Automatically organize signals: Voltages -> Graph 1, Currents -> Graph 2, Control -> Graph 3"
+                style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: 4 }}
+              >
+                <span>⚡</span> Auto-Group (V / I / Ctrl)
+              </button>
+            )}
+          </div>
+
           {/* Active Channels Strip */}
           <div
             style={{
@@ -268,6 +354,34 @@ export function ScopeChannelManager({
                         <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
                           [{unit}]
                         </span>
+                      )}
+                      {(displayLayout === '2-graphs' || displayLayout === '3-graphs') && (
+                        <div style={{ display: 'inline-flex', gap: 2, marginLeft: 2 }}>
+                          {[1, 2, ...(displayLayout === '3-graphs' ? [3] : [])].map((g) => {
+                            const currentG = resolveSignalGraph(sig, displayLayout, signalGraphs);
+                            const isSelected = currentG === g;
+                            return (
+                              <button
+                                key={g}
+                                type="button"
+                                onClick={() => onSetSignalGraph?.(sig, g)}
+                                title={`Move ${sig} to Graph ${g}`}
+                                style={{
+                                  border: isSelected ? '1px solid var(--accent, #38bdf8)' : '1px solid var(--border)',
+                                  background: isSelected ? 'var(--accent, #38bdf8)' : 'transparent',
+                                  color: isSelected ? '#ffffff' : 'var(--text-muted)',
+                                  borderRadius: '3px',
+                                  fontSize: '10px',
+                                  padding: '1px 4px',
+                                  cursor: 'pointer',
+                                  fontWeight: isSelected ? 700 : 500,
+                                }}
+                              >
+                                G{g}
+                              </button>
+                            );
+                          })}
+                        </div>
                       )}
                       <button
                         type="button"
@@ -413,6 +527,34 @@ export function ScopeChannelManager({
                         >
                           CH{channelIdx + 1}
                         </span>
+                      )}
+                      {isAssigned && (displayLayout === '2-graphs' || displayLayout === '3-graphs') && (
+                        <div style={{ display: 'inline-flex', gap: 2, marginLeft: 2 }}>
+                          {[1, 2, ...(displayLayout === '3-graphs' ? [3] : [])].map((g) => {
+                            const currentG = resolveSignalGraph(sig, displayLayout, signalGraphs);
+                            const isSelected = currentG === g;
+                            return (
+                              <button
+                                key={g}
+                                type="button"
+                                onClick={() => onSetSignalGraph?.(sig, g)}
+                                title={`Assign ${sig} to Graph ${g}`}
+                                style={{
+                                  border: isSelected ? '1px solid var(--accent, #38bdf8)' : '1px solid var(--border)',
+                                  background: isSelected ? 'var(--accent, #38bdf8)' : 'transparent',
+                                  color: isSelected ? '#ffffff' : 'var(--text-muted)',
+                                  borderRadius: '3px',
+                                  fontSize: '9px',
+                                  padding: '1px 3px',
+                                  cursor: 'pointer',
+                                  fontWeight: isSelected ? 700 : 500,
+                                }}
+                              >
+                                G{g}
+                              </button>
+                            );
+                          })}
+                        </div>
                       )}
                     </div>
 

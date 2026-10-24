@@ -338,11 +338,12 @@ class CircuitFileWriterTest {
         scope1.setParameter("yScaleMode", "fixed");
         scope1.setParameter("hiddenSignals", "sig1,sig2");
         scope1.setParameter("cursorsEnabled", true);
+        scope1.setParameter("signalGraphs", "sig1:1,sig2:2,sig3:3");
         model.addControlComponent(scope1);
 
         CircuitModel.ComponentData scope2 = new CircuitModel.ComponentData(5, "SCOPE.2", 30, 20, 503);
         scope2.setFamily("CONTROL");
-        scope2.setParameter("scopeLayout", "overlay");
+        scope2.setParameter("scopeLayout", "2-graphs");
         scope2.setParameter("yScaleMode", "auto");
         scope2.setParameter("hiddenSignals", "sig3");
         model.addControlComponent(scope2);
@@ -350,7 +351,8 @@ class CircuitFileWriterTest {
         String ipesContent = CircuitFileWriter.writeToString(model);
         assertTrue(ipesContent.contains("<scopeSettings>"));
         assertTrue(ipesContent.contains("scopeLayout stacked"));
-        assertTrue(ipesContent.contains("scopeLayout overlay"));
+        assertTrue(ipesContent.contains("scopeLayout 2-graphs"));
+        assertTrue(ipesContent.contains("signalGraphs sig1:1,sig2:2,sig3:3"));
 
         byte[] gzippedBytes = CircuitFileWriter.write(model, true);
         CircuitModel parsed = new CircuitFileParser().parse(new ByteArrayInputStream(gzippedBytes), "scope_test.ipes");
@@ -362,10 +364,11 @@ class CircuitFileWriterTest {
         assertEquals("fixed", parsedScope1.getParameters().get("yScaleMode"));
         assertEquals("sig1,sig2", parsedScope1.getParameters().get("hiddenSignals"));
         assertEquals(true, parsedScope1.getParameters().get("cursorsEnabled"));
+        assertEquals("sig1:1,sig2:2,sig3:3", parsedScope1.getParameters().get("signalGraphs"));
 
         CircuitModel.ComponentData parsedScope2 = parsed.getControlComponents().get(1);
         assertEquals("SCOPE.2", parsedScope2.getName());
-        assertEquals("overlay", parsedScope2.getParameters().get("scopeLayout"));
+        assertEquals("2-graphs", parsedScope2.getParameters().get("scopeLayout"));
         assertEquals("auto", parsedScope2.getParameters().get("yScaleMode"));
         assertEquals("sig3", parsedScope2.getParameters().get("hiddenSignals"));
     }

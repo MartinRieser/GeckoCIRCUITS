@@ -6,6 +6,11 @@ import {
   strictScopeChannels,
   resolveScopeWiredSignals,
   filterChannels,
+  parseSignalGraphs,
+  serializeSignalGraphs,
+  inferSignalCategory,
+  defaultGraphForSignal,
+  resolveSignalGraph,
 } from '../src/simulation/scopes';
 import type { EditorComponent } from '../src/model/types';
 import { ControlComponentType, LkComponentType } from '../src/model/constants';
@@ -203,6 +208,57 @@ describe('scopes helpers', () => {
       // scopeChannels should display v_sw
       const displayed = scopeChannels(scopeEmptyLabels, ['v_sw', 'v_other'], [voltmeter], [wire]);
       expect(displayed).toEqual(['v_sw']);
+    });
+  });
+
+  describe('signalGraphs persistence and assignment helpers', () => {
+    it('parses signalGraphs string correctly', () => {
+      const mapping = parseSignalGraphs('v_sw:1,v_out:1,i_L:2,duty:3');
+      expect(mapping).toEqual({
+        v_sw: 1,
+        v_out: 1,
+        i_L: 2,
+        duty: 3,
+      });
+      expect(parseSignalGraphs(undefined)).toEqual({});
+      expect(parseSignalGraphs('')).toEqual({});
+    });
+
+    it('serializes signalGraphs dictionary to sorted string', () => {
+      const serialized = serializeSignalGraphs({
+        duty: 3,
+        v_sw: 1,
+        i_L: 2,
+      });
+      expect(serialized).toBe('duty:3,i_L:2,v_sw:1');
+    });
+
+    it('categorizes and computes default graph based on layout', () => {
+      expect(inferSignalCategory('v_out')).toBe('voltage');
+      expect(inferSignalCategory('u_cap')).toBe('voltage');
+      expect(inferSignalCategory('i_inductor')).toBe('current');
+      expect(inferSignalCategory('duty_cycle')).toBe('control');
+
+      // 3-graphs layout defaults
+      expect(defaultGraphForSignal('v_out', '3-graphs')).toBe(1);
+      expect(defaultGraphForSignal('i_inductor', '3-graphs')).toBe(2);
+      expect(defaultGraphForSignal('duty_cycle', '3-graphs')).toBe(3);
+
+      // 2-graphs layout defaults
+      expect(defaultGraphForSignal('v_out', '2-graphs')).toBe(1);
+      expect(defaultGraphForSignal('i_inductor', '2-graphs')).toBe(2);
+      expect(defaultGraphForSignal('duty_cycle', '2-graphs')).toBe(2);
+    });
+
+    it('resolves explicit signal graph mapping with fallback', () => {
+      const customMapping = { v_out: 2, i_inductor: 1 };
+      // Explicit overrides
+      expect(resolveSignalGraph('v_out', '3-graphs', customMapping)).toBe(2);
+      expect(resolveSignalGraph('i_inductor', '3-graphs', customMapping)).toBe(1);
+      // Fallback to default
+      expect(resolveSignalGraph('duty', '3-graphs', customMapping)).toBe(3);
+      // Clamps to max allowed in layout
+      expect(resolveSignalGraph('duty', '2-graphs', { duty: 3 })).toBe(2);
     });
   });
 });

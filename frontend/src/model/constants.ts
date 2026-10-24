@@ -422,7 +422,12 @@ export const SCOPE_SETTING_KEYS = {
   hiddenSignals: 'hiddenSignals',
   /** Whether measurement cursors are enabled. */
   cursorsEnabled: 'cursorsEnabled',
+  /** Mapping of channel name to graph index (e.g. "v_sw:1,v_out:1,i_L:2"). */
+  signalGraphs: 'signalGraphs',
 } as const;
+
+/** Available oscilloscope display layouts. */
+export type ScopeDisplayLayout = 'overlay' | '2-graphs' | '3-graphs' | 'stacked';
 
 /** Maximum number of terminals a script/function block can expose per side. */
 export const SCRIPT_TERMINAL_LIMIT = 16;

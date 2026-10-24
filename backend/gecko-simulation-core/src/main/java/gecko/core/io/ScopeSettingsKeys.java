@@ -42,9 +42,12 @@ public final class ScopeSettingsKeys {
     /** Whether measurement cursors are enabled. */
     public static final String CURSORS_ENABLED = "cursorsEnabled";
 
+    /** Mapping of channel name to graph index (e.g. "v_sw:1,v_out:1,i_L:2"). */
+    public static final String SIGNAL_GRAPHS = "signalGraphs";
+
     /** All setting keys in the deterministic write order of the sub-block. */
     public static final List<String> ORDERED_KEYS =
-            Arrays.asList(SCOPE_LAYOUT, Y_SCALE_MODE, HIDDEN_SIGNALS, CURSORS_ENABLED);
+            Arrays.asList(SCOPE_LAYOUT, Y_SCALE_MODE, HIDDEN_SIGNALS, CURSORS_ENABLED, SIGNAL_GRAPHS);
 
     /** All setting keys as a set for membership checks. */
     public static final Set<String> ALL_KEYS =

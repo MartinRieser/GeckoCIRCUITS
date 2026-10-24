@@ -99,8 +99,10 @@ describe('ScopePropertiesPanel Component', () => {
 
     // Verify Display Layout exists
     expect(screen.getByText('Display Layout')).not.toBeNull();
-    expect(screen.getByRole('button', { name: /📈 Overlay/i })).not.toBeNull();
-    expect(screen.getByRole('button', { name: /📑 Stacked Lanes/i })).not.toBeNull();
+    expect(screen.getByRole('button', { name: /📈 1 Graph/i })).not.toBeNull();
+    expect(screen.getByRole('button', { name: /📊 2 Graphs/i })).not.toBeNull();
+    expect(screen.getByRole('button', { name: /📑 3 Graphs/i })).not.toBeNull();
+    expect(screen.getByRole('button', { name: /🪜 Stacked/i })).not.toBeNull();
 
     // Verify NO global simulation solver settings or run buttons
     expect(screen.queryByText(/▶ Run Simulation/i)).toBeNull();
@@ -134,11 +136,21 @@ describe('ScopePropertiesPanel Component', () => {
       />,
     );
 
-    const overlayBtn = screen.getByRole('button', { name: /📈 Overlay/i });
-    fireEvent.click(overlayBtn);
+    const oneGraphBtn = screen.getByRole('button', { name: /📈 1 Graph/i });
+    fireEvent.click(oneGraphBtn);
 
     expect(onLayoutChange).toHaveBeenCalledWith('overlay');
     expect(onSetParameter).toHaveBeenCalledWith('SCOPE.1', 'scopeLayout', 'overlay');
+
+    const twoGraphBtn = screen.getByRole('button', { name: /📊 2 Graphs/i });
+    fireEvent.click(twoGraphBtn);
+    expect(onLayoutChange).toHaveBeenCalledWith('2-graphs');
+    expect(onSetParameter).toHaveBeenCalledWith('SCOPE.1', 'scopeLayout', '2-graphs');
+
+    const threeGraphBtn = screen.getByRole('button', { name: /📑 3 Graphs/i });
+    fireEvent.click(threeGraphBtn);
+    expect(onLayoutChange).toHaveBeenCalledWith('3-graphs');
+    expect(onSetParameter).toHaveBeenCalledWith('SCOPE.1', 'scopeLayout', '3-graphs');
   });
 
   it('persists vertical scale mode change and channel visibility toggle to component parameters', () => {

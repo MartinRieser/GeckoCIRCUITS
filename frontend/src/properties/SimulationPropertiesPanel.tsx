@@ -15,6 +15,7 @@ import { mapSimulationResults } from '../simulation/chartData';
 import { findScopeBlocks } from '../simulation/scopes';
 import { estimateStepCount, STEP_WARNING_THRESHOLD } from '../simulation/simSteps';
 import type { ScopeController } from '../simulation/useScopeController';
+import type { ScopeDisplayLayout } from '../model/constants';
 
 /**
  * Properties for the {@link SimulationPropertiesPanel} sidebar component.
@@ -49,9 +50,9 @@ export interface SimulationPropertiesPanelProps {
   /** Callback when user changes the active oscilloscope block. */
   onSelectScope: (scope: string) => void;
   /** Waveform chart display layout mode. */
-  displayLayout: 'overlay' | 'stacked';
+  displayLayout: ScopeDisplayLayout;
   /** Callback to change waveform display layout mode. */
-  onDisplayLayoutChange: (layout: 'overlay' | 'stacked') => void;
+  onDisplayLayoutChange: (layout: ScopeDisplayLayout) => void;
   /** Optional oscilloscope controller instance. */
   scope?: ScopeController;
   /** Callback invoked to start simulation run with specified configuration parameters. */
@@ -403,24 +404,42 @@ export function SimulationPropertiesPanel({
         {/* Display Layout Mode Section */}
         <div className="prop-section">
           <div className="prop-section-title">Display Layout</div>
-          <div className="segmented-control" style={{ width: '100%', display: 'flex' }}>
+          <div className="segmented-control" style={{ width: '100%', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
             <button
               type="button"
               className={`segmented-btn ${displayLayout === 'overlay' ? 'active' : ''}`}
               onClick={() => onDisplayLayoutChange('overlay')}
-              style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }}
+              style={{ textAlign: 'center', justifyContent: 'center', padding: '4px 2px', fontSize: '11px' }}
               title="Overlay all channels on a single combined graph"
             >
-              📈 Overlay
+              📈 1 Graph
+            </button>
+            <button
+              type="button"
+              className={`segmented-btn ${displayLayout === '2-graphs' ? 'active' : ''}`}
+              onClick={() => onDisplayLayoutChange('2-graphs')}
+              style={{ textAlign: 'center', justifyContent: 'center', padding: '4px 2px', fontSize: '11px' }}
+              title="Split channels across 2 separate subplots"
+            >
+              📊 2 Graphs
+            </button>
+            <button
+              type="button"
+              className={`segmented-btn ${displayLayout === '3-graphs' ? 'active' : ''}`}
+              onClick={() => onDisplayLayoutChange('3-graphs')}
+              style={{ textAlign: 'center', justifyContent: 'center', padding: '4px 2px', fontSize: '11px' }}
+              title="Split channels across 3 separate subplots"
+            >
+              📑 3 Graphs
             </button>
             <button
               type="button"
               className={`segmented-btn ${displayLayout === 'stacked' ? 'active' : ''}`}
               onClick={() => onDisplayLayoutChange('stacked')}
-              style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }}
+              style={{ textAlign: 'center', justifyContent: 'center', padding: '4px 2px', fontSize: '11px' }}
               title="Stack each channel in its own subplot lane"
             >
-              📑 Stacked Lanes
+              🪜 Stacked
             </button>
           </div>
         </div>

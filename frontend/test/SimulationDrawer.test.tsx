@@ -185,11 +185,17 @@ describe('SimulationDrawer Component', () => {
     // Statistics table row & legend
     expect(screen.getAllByText('v_out').length).toBeGreaterThanOrEqual(2);
 
-    // Switch display layout to stacked and back
+    // Switch display layout to stacked, 2-graphs, 3-graphs, and 1 Graph
     const stackedBtn = screen.getByRole('button', { name: /Stacked/i });
     fireEvent.click(stackedBtn);
 
-    const overlayBtn = screen.getByRole('button', { name: /Overlay/i });
+    const twoGraphBtn = screen.getByRole('button', { name: /2 Graphs/i });
+    fireEvent.click(twoGraphBtn);
+
+    const threeGraphBtn = screen.getByRole('button', { name: /3 Graphs/i });
+    fireEvent.click(threeGraphBtn);
+
+    const overlayBtn = screen.getByRole('button', { name: /1 Graph/i });
     fireEvent.click(overlayBtn);
   });
 });

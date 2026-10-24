@@ -11,8 +11,15 @@
 import { useMemo } from 'react';
 import type { EditorComponent } from '../model/types';
 import { formatEngineeringValue } from '../model/componentSchema';
-import { strictScopeChannels } from '../simulation/scopes';
+import {
+  strictScopeChannels,
+  parseSignalGraphs,
+  serializeSignalGraphs,
+  defaultGraphForSignal,
+  resolveSignalGraph,
+} from '../simulation/scopes';
 import { SCOPE_SETTING_KEYS } from '../model/constants';
+import type { ScopeDisplayLayout } from '../model/constants';
 import type { ScopeController } from '../simulation/useScopeController';
 import { isVoltmeterComponent, isAmmeterComponent } from '../model/componentSchema';
 
@@ -25,10 +32,10 @@ export interface ScopePropertiesPanelProps {
   wires?: { points: number[][]; label?: string }[];
   /** Simulation results time-series mapping, if available. */
   results: Record<string, number[]> | null;
-  /** Waveform chart display layout mode for this scope ('overlay' or 'stacked'). */
-  displayLayout: 'overlay' | 'stacked';
+  /** Waveform chart display layout mode for this scope ('overlay', '2-graphs', '3-graphs', or 'stacked'). */
+  displayLayout: ScopeDisplayLayout;
   /** Callback to change waveform display layout mode. */
-  onDisplayLayoutChange: (layout: 'overlay' | 'stacked') => void;
+  onDisplayLayoutChange: (layout: ScopeDisplayLayout) => void;
   /** Oscilloscope controller instance. */
   scope: ScopeController;
   /** Callback to persist component parameter updates into the circuit model. */
@@ -66,9 +73,28 @@ export function ScopePropertiesPanel({
     [scopeComponent, scope.signalNames, allComponents, wires],
   );
 
-  const handleLayoutChange = (next: 'overlay' | 'stacked') => {
+  const signalGraphsRaw = scopeComponent.parameters?.[SCOPE_SETTING_KEYS.signalGraphs] as string | undefined;
+  const signalGraphs = useMemo(() => parseSignalGraphs(signalGraphsRaw), [signalGraphsRaw]);
+
+  const handleLayoutChange = (next: ScopeDisplayLayout) => {
     onDisplayLayoutChange(next);
     onSetParameter?.(scopeComponent.name, SCOPE_SETTING_KEYS.scopeLayout, next);
+  };
+
+  const handleMoveSignalToGraph = (signal: string, targetGraph: number) => {
+    const current = { ...signalGraphs };
+    current[signal] = targetGraph;
+    const serialized = serializeSignalGraphs(current);
+    onSetParameter?.(scopeComponent.name, SCOPE_SETTING_KEYS.signalGraphs, serialized);
+  };
+
+  const handleAutoGroupSignals = () => {
+    const mapping: Record<string, number> = {};
+    for (const sig of channels) {
+      mapping[sig] = defaultGraphForSignal(sig, displayLayout);
+    }
+    const serialized = serializeSignalGraphs(mapping);
+    onSetParameter?.(scopeComponent.name, SCOPE_SETTING_KEYS.signalGraphs, serialized);
   };
 
   const handleYScaleToggle = () => {
@@ -182,24 +208,42 @@ export function ScopePropertiesPanel({
         {/* Display Layout Mode Section */}
         <div className="prop-section">
           <div className="prop-section-title">Display Layout</div>
-          <div className="segmented-control" style={{ width: '100%', display: 'flex' }}>
+          <div className="segmented-control" style={{ width: '100%', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
             <button
               type="button"
               className={`segmented-btn ${displayLayout === 'overlay' ? 'active' : ''}`}
               onClick={() => handleLayoutChange('overlay')}
-              style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }}
+              style={{ textAlign: 'center', justifyContent: 'center', padding: '4px 2px', fontSize: '11px' }}
               title="Overlay all channels of this scope on a single combined graph"
             >
-              📈 Overlay
+              📈 1 Graph
+            </button>
+            <button
+              type="button"
+              className={`segmented-btn ${displayLayout === '2-graphs' ? 'active' : ''}`}
+              onClick={() => handleLayoutChange('2-graphs')}
+              style={{ textAlign: 'center', justifyContent: 'center', padding: '4px 2px', fontSize: '11px' }}
+              title="Split channels across 2 separate subplots"
+            >
+              📊 2 Graphs
+            </button>
+            <button
+              type="button"
+              className={`segmented-btn ${displayLayout === '3-graphs' ? 'active' : ''}`}
+              onClick={() => handleLayoutChange('3-graphs')}
+              style={{ textAlign: 'center', justifyContent: 'center', padding: '4px 2px', fontSize: '11px' }}
+              title="Split channels across 3 separate subplots"
+            >
+              📑 3 Graphs
             </button>
             <button
               type="button"
               className={`segmented-btn ${displayLayout === 'stacked' ? 'active' : ''}`}
               onClick={() => handleLayoutChange('stacked')}
-              style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }}
+              style={{ textAlign: 'center', justifyContent: 'center', padding: '4px 2px', fontSize: '11px' }}
               title="Stack each channel of this scope in its own subplot lane"
             >
-              📑 Stacked Lanes
+              🪜 Stacked
             </button>
           </div>
         </div>
@@ -264,8 +308,21 @@ export function ScopePropertiesPanel({
           </div>
 
           {/* Vertical & Channels */}
-          <div className="sim-sub-heading" style={{ marginTop: 12 }}>
-            Vertical (Scale & Channels)
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 }}>
+            <div className="sim-sub-heading" style={{ margin: 0 }}>
+              Vertical (Scale & Channels)
+            </div>
+            {(displayLayout === '2-graphs' || displayLayout === '3-graphs') && channels.length > 0 && (
+              <button
+                type="button"
+                className="sim-mini-btn"
+                onClick={handleAutoGroupSignals}
+                title="Automatically organize: Voltages -> Graph 1, Currents -> Graph 2, Control -> Graph 3"
+                style={{ fontSize: '10px', padding: '1px 6px' }}
+              >
+                ⚡ Auto-Group
+              </button>
+            )}
           </div>
           <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
             <button
@@ -311,6 +368,34 @@ export function ScopePropertiesPanel({
                       <span style={{ fontSize: '10px', opacity: 0.8, marginRight: 4 }}>CH{idx + 1}:</span>
                       {name}
                     </button>
+                    {(displayLayout === '2-graphs' || displayLayout === '3-graphs') && (
+                      <div style={{ display: 'inline-flex', gap: 2 }}>
+                        {[1, 2, ...(displayLayout === '3-graphs' ? [3] : [])].map((g) => {
+                          const currentG = resolveSignalGraph(name, displayLayout, signalGraphs);
+                          const isSelected = currentG === g;
+                          return (
+                            <button
+                              key={g}
+                              type="button"
+                              onClick={() => handleMoveSignalToGraph(name, g)}
+                              title={`Move ${name} to Graph ${g}`}
+                              style={{
+                                border: isSelected ? '1px solid var(--accent, #38bdf8)' : '1px solid var(--border)',
+                                background: isSelected ? 'var(--accent, #38bdf8)' : 'transparent',
+                                color: isSelected ? '#ffffff' : 'var(--text-muted)',
+                                borderRadius: '3px',
+                                fontSize: '9px',
+                                padding: '1px 3px',
+                                cursor: 'pointer',
+                                fontWeight: isSelected ? 700 : 500,
+                              }}
+                            >
+                              G{g}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                     {onRemoveLabel && (
                       <button
                         type="button"

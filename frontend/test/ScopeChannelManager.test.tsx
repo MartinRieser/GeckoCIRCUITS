@@ -91,4 +91,40 @@ describe('ScopeChannelManager Component', () => {
     fireEvent.click(doneBtn);
     expect(onClose).toHaveBeenCalled();
   });
+
+  it('triggers onDisplayLayoutChange and displays graph assignment buttons in 2-graphs mode', () => {
+    const onDisplayLayoutChange = vi.fn();
+    const onSetSignalGraph = vi.fn();
+    const onAutoGroupByCategory = vi.fn();
+
+    render(
+      <ScopeChannelManager
+        {...defaultProps}
+        displayLayout="2-graphs"
+        onDisplayLayoutChange={onDisplayLayoutChange}
+        onSetSignalGraph={onSetSignalGraph}
+        onAutoGroupByCategory={onAutoGroupByCategory}
+        signalGraphs={{ v_sw: 1, v_out: 2 }}
+      />,
+    );
+
+    // Layout buttons are rendered
+    expect(screen.getByText('📊 2 Graphs')).toBeDefined();
+    expect(screen.getByText('📑 3 Graphs')).toBeDefined();
+
+    // Auto-Group button is rendered
+    const autoGroupBtn = screen.getByText('Auto-Group (V / I / Ctrl)');
+    fireEvent.click(autoGroupBtn);
+    expect(onAutoGroupByCategory).toHaveBeenCalledTimes(1);
+
+    // Change layout to 3-graphs
+    fireEvent.click(screen.getByText('📑 3 Graphs'));
+    expect(onDisplayLayoutChange).toHaveBeenCalledWith('3-graphs');
+
+    // Click G2 button on v_sw
+    const g2Buttons = screen.getAllByText('G2');
+    expect(g2Buttons.length).toBeGreaterThan(0);
+    fireEvent.click(g2Buttons[0]);
+    expect(onSetSignalGraph).toHaveBeenCalled();
+  });
 });

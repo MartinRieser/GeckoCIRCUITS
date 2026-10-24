@@ -35,7 +35,7 @@ import { SaveAsModal } from './modals/SaveAsModal';
 import { FileMenu } from './nav/FileMenu';
 import { ScriptViewTab } from './properties/ScriptViewTab';
 import { resolveActiveSimSettings } from './simulation/simSettings';
-import { SCOPE_SETTING_KEYS } from './model/constants';
+import { SCOPE_SETTING_KEYS, ScopeDisplayLayout } from './model/constants';
 import {
   SCOPE_TAB_PREFIX,
   SCRIPT_TAB_PREFIX,
@@ -85,8 +85,8 @@ export function App() {
   const [simConfigOpen, setSimConfigOpen] = useState(false);
   const [saveAsOpen, setSaveAsOpen] = useState(false);
   const [selectedScope, setSelectedScope] = useState<string>('all');
-  const [displayLayout, setDisplayLayout] = useState<'overlay' | 'stacked'>(() => {
-    return (localStorage.getItem('gecko-display-layout') as 'overlay' | 'stacked') || 'stacked';
+  const [displayLayout, setDisplayLayout] = useState<ScopeDisplayLayout>(() => {
+    return (localStorage.getItem('gecko-display-layout') as ScopeDisplayLayout) || 'stacked';
   });
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     return (localStorage.getItem('gecko-theme') as 'dark' | 'light') || 'dark';
@@ -113,11 +113,11 @@ export function App() {
   const activeSelectedScope = tabTargetName(activeTabId, SCOPE_TAB_PREFIX) ?? selectedScope;
 
   const currentDisplayLayout =
-    (activeScopeComponent?.parameters?.[SCOPE_SETTING_KEYS.scopeLayout] as 'overlay' | 'stacked') ||
+    (activeScopeComponent?.parameters?.[SCOPE_SETTING_KEYS.scopeLayout] as ScopeDisplayLayout) ||
     displayLayout;
 
   const handleDisplayLayoutChange = useCallback(
-    (layout: 'overlay' | 'stacked') => {
+    (layout: ScopeDisplayLayout) => {
       setDisplayLayout(layout);
       localStorage.setItem('gecko-display-layout', layout);
       if (activeScopeComponent) {
@@ -130,7 +130,7 @@ export function App() {
   useEffect(() => {
     const saved = activeScopeComponent?.parameters?.[SCOPE_SETTING_KEYS.scopeLayout];
     if (saved) {
-      setDisplayLayout(saved as 'overlay' | 'stacked');
+      setDisplayLayout(saved as ScopeDisplayLayout);
     }
   }, [activeScopeComponent?.name, activeScopeComponent?.parameters?.[SCOPE_SETTING_KEYS.scopeLayout]]);
 
