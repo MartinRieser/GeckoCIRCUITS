@@ -70,6 +70,11 @@ def _pf(volt, curr, v_rms_expected):
 
 ASSERTIONS = {
     # 24 V buck at D=0.5 -> ~12 V; diode drop and R_ds losses keep it slightly low
+    "sampled-buck": [
+        ("v_out", 0.4, _mean, 9.8, 10.3, "regulated steady-state mean ~10.0 V"),
+        ("v_in", 0.5, _pp, 9.5, 10.5, "input ripple ~10 Vpp (50 Hz 5Vpk)"),
+        ("duty", 0.4, lambda x: max(x), 0.1, 0.9, "bounded duty cycle"),
+    ],
     "buck": [("v_out", 0.4, _mean, 10.0, 14.0, "steady-state mean ~12 V")],
     "sync-buck": [("v_out", 0.4, _mean, 10.0, 14.0, "steady-state mean ~12 V")],
     # 12 V boost at D=0.5 -> ~24 V (12 ms covers the startup overshoot)

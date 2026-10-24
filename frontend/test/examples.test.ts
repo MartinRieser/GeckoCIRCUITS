@@ -82,7 +82,7 @@ describe('Circuit Examples (.ipes templates)', () => {
   });
 
   it('provides a catalog of curated educational examples in EXAMPLES registry', () => {
-    expect(EXAMPLES.length).toBe(14);
+    expect(EXAMPLES.length).toBe(15);
 
     const ids = new Set<string>();
     for (const eg of EXAMPLES) {

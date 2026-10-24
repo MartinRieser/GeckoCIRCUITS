@@ -635,4 +635,47 @@ class CircuitBuilderTest {
         double lastV = vout.get(vout.size() - 1);
         assertTrue(Math.abs(lastV - 10.0) < 0.1, "15V * 2k/(1k+2k) = 10V, got: " + lastV);
     }
+
+    @Test
+    void buildsCircuitWithExplicitPowerConnections() throws IOException {
+        Path tempDir = Files.createTempDirectory("gecko-power-conns-test");
+        Path outputPath = tempDir.resolve("explicit_conns.ipes");
+
+        Map<String, Object> circuitDef = Map.of(
+                "output_path", outputPath.toString(),
+                "simulation", Map.of("duration", 0.001, "dt", 1e-6),
+                "components", List.of(
+                        Map.of("name", "V1", "type", "DC_VOLTAGE", "x", 6, "y", 10, "orientation", 503,
+                                "nodes", List.of("pos", "0"), "parameters", Map.of("voltage", 24.0)),
+                        Map.of("name", "R1", "type", "RESISTOR", "x", 16, "y", 10, "orientation", 503,
+                                "nodes", List.of("pos", "0"), "parameters", Map.of("resistance", 12.0))
+                ),
+                "power_connections", List.of(
+                        Map.of("net", "pos", "points", List.of(List.of(6, 8), List.of(16, 8))),
+                        Map.of("net", "0", "points", List.of(List.of(6, 12), List.of(16, 12)))
+                ),
+                "control", Map.of(
+                        "probes", List.of(
+                                Map.of("name", "VM", "type", "VOLTMETER", "target_component", "R1", "signal_name", "v_r1")
+                        )
+                )
+        );
+
+        Map<String, Object> createResult = CircuitBuilder.create(circuitDef);
+        assertEquals("CREATED", createResult.get("status"));
+
+        String ipes = IpesSupport.readIpesText(outputPath);
+        assertTrue(ipes.contains("verbindungLK"));
+        assertTrue(ipes.contains("x[] 6 16"));
+        assertTrue(ipes.contains("y[] 8 8"));
+        assertTrue(ipes.contains("y[] 12 12"));
+
+        SimulationService.ParsedCsv csv = SimulationService.simulateToCsv(outputPath, 0.001, 1e-6);
+        assertNotNull(csv);
+        assertTrue(csv.columns().containsKey("v_r1"));
+        List<Double> vr1 = csv.columns().get("v_r1");
+        double lastV = vr1.get(vr1.size() - 1);
+        assertEquals(24.0, lastV, 1e-3);
+    }
 }
+

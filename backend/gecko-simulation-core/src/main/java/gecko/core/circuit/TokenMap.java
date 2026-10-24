@@ -489,7 +489,11 @@ public final class TokenMap {
                 return targetObject;
             }
             final String ascii = asciiLines[lineNumber];
-            final String asciiDaten = ascii.substring(ascii.indexOf(' '));
+            final int spaceIdx = ascii.indexOf(' ');
+            if (spaceIdx < 0) {
+                return targetObject;
+            }
+            final String asciiDaten = ascii.substring(spaceIdx);
             final StringTokenizer stk = new StringTokenizer(asciiDaten, CircuitFileConstants.SEPARATOR_ASCII_STRINGARRAY);
             stk.nextToken();  // erster Wert wird uebersprungen
             String[] wert = new String[stk.countTokens()];

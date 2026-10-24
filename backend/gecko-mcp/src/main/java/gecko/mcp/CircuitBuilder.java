@@ -489,33 +489,71 @@ public final class CircuitBuilder {
             } else {
                 path = routeWire(start, end, wireIndex++);
             }
-            model.addConnection(new CircuitModel.ConnectionData("CONTROL", toPoints(path)));
+            CircuitModel.ConnectionData conn = new CircuitModel.ConnectionData("CONTROL", toPoints(path));
+            conn.setConnectorType(1);
+            model.addConnection(conn);
         }
 
-        // 6. LK, CONTROL, and THERMAL connections: one polyline per net
-        for (Map.Entry<String, Set<Point>> entry : netToPoints.entrySet()) {
-            CircuitModel.ConnectionData conn = new CircuitModel.ConnectionData("LK", toPoints(entry.getValue()));
-            conn.setConnectorType(0);
-            if (entry.getKey() != null && !entry.getKey().isBlank()) {
-                conn.setLabel(entry.getKey());
+        // 6. LK, CONTROL, and THERMAL connections
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> explicitPowerConns =
+                (List<Map<String, Object>>) request.get("power_connections");
+        if (explicitPowerConns == null) {
+            explicitPowerConns = (List<Map<String, Object>>) request.get("connections");
+        }
+
+        Set<String> explicitlyConnectedNets = new HashSet<>();
+        if (explicitPowerConns != null && !explicitPowerConns.isEmpty()) {
+            for (Map<String, Object> cDef : explicitPowerConns) {
+                String net = (String) cDef.getOrDefault("net", cDef.get("label"));
+                if (net != null) {
+                    explicitlyConnectedNets.add(net);
+                }
+                int connectorType = getInt(cDef, "connector_type", 0);
+                String type = (String) cDef.getOrDefault("type",
+                        connectorType == 1 ? "CONTROL" : (connectorType == 2 ? "THERMAL" : "LK"));
+                List<Point> pts = parsePoints((List<?>) cDef.get("points"));
+                if (pts.size() >= 2) {
+                    CircuitModel.ConnectionData conn = new CircuitModel.ConnectionData(type, toPoints(pts));
+                    conn.setConnectorType(connectorType);
+                    if (net != null && !net.isBlank()) {
+                        conn.setLabel(net);
+                    }
+                    model.addConnection(conn);
+                }
             }
-            model.addConnection(conn);
+        }
+
+        // Auto-generate fallback LK connections for nets not explicitly defined
+        for (Map.Entry<String, Set<Point>> entry : netToPoints.entrySet()) {
+            if (!explicitlyConnectedNets.contains(entry.getKey()) && entry.getValue().size() >= 2) {
+                CircuitModel.ConnectionData conn = new CircuitModel.ConnectionData("LK", toPoints(entry.getValue()));
+                conn.setConnectorType(0);
+                if (entry.getKey() != null && !entry.getKey().isBlank()) {
+                    conn.setLabel(entry.getKey());
+                }
+                model.addConnection(conn);
+            }
         }
         for (Map.Entry<String, Set<Point>> entry : ctrlNetToPoints.entrySet()) {
-            CircuitModel.ConnectionData conn = new CircuitModel.ConnectionData("CONTROL", toPoints(entry.getValue()));
-            conn.setConnectorType(1);
-            if (entry.getKey() != null && !entry.getKey().isBlank()) {
-                conn.setLabel(entry.getKey());
+            if (entry.getValue().size() >= 2) {
+                CircuitModel.ConnectionData conn = new CircuitModel.ConnectionData("CONTROL", toPoints(entry.getValue()));
+                conn.setConnectorType(1);
+                if (entry.getKey() != null && !entry.getKey().isBlank()) {
+                    conn.setLabel(entry.getKey());
+                }
+                model.addConnection(conn);
             }
-            model.addConnection(conn);
         }
         for (Map.Entry<String, Set<Point>> entry : thermNetToPoints.entrySet()) {
-            CircuitModel.ConnectionData conn = new CircuitModel.ConnectionData("THERMAL", toPoints(entry.getValue()));
-            conn.setConnectorType(2);
-            if (entry.getKey() != null && !entry.getKey().isBlank()) {
-                conn.setLabel(entry.getKey());
+            if (entry.getValue().size() >= 2) {
+                CircuitModel.ConnectionData conn = new CircuitModel.ConnectionData("THERMAL", toPoints(entry.getValue()));
+                conn.setConnectorType(2);
+                if (entry.getKey() != null && !entry.getKey().isBlank()) {
+                    conn.setLabel(entry.getKey());
+                }
+                model.addConnection(conn);
             }
-            model.addConnection(conn);
         }
 
         // 6. Documentation notes / textboxes (SPECIAL domain)
@@ -1321,7 +1359,7 @@ public final class CircuitBuilder {
             case "IDEAL_SWITCH" -> {
                 double rOn = out[1] > 0 ? out[1] : 0.005;
                 double rOff = out[2] > 0 ? out[2] : 1e6;
-                out[0] = 0.0; // initial off
+                out[0] = rOff; // initial blocking state resistance
                 out[1] = rOn;
                 out[2] = rOff;
             }
