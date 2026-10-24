@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import type { EditorComponent } from '../model/types';
 import { mapSimulationResults } from './chartData';
 import { findScopeBlocks, scopeChannels } from './scopes';
@@ -162,6 +162,9 @@ export function useScopeController({
     setYView(null);
   }, [results]);
 
+  const lastSyncedHiddenRef = useRef<string | undefined>(undefined);
+  const lastScopeNameRef = useRef<string | undefined>(undefined);
+
   // Synchronize per-scope saved settings from component parameters. Every
   // setting without a persisted value resets to its default, so switching
   // scopes never leaks the previous scope's view state. hiddenSignals is the
@@ -169,14 +172,23 @@ export function useScopeController({
   useEffect(() => {
     if (!activeScopeBlock) {
       setHiddenSignals({});
+      lastSyncedHiddenRef.current = undefined;
+      lastScopeNameRef.current = undefined;
       return;
     }
+    const isScopeSwitch = activeScopeBlock.name !== lastScopeNameRef.current;
+    lastScopeNameRef.current = activeScopeBlock.name;
+
     const params = activeScopeBlock.parameters ?? {};
     setYScaleMode(params[SCOPE_SETTING_KEYS.yScaleMode] === 'auto' ? 'auto' : 'fixed');
     const hidden = params[SCOPE_SETTING_KEYS.hiddenSignals];
-    if (typeof hidden === 'string') {
+    const hiddenStr = typeof hidden === 'string' ? hidden : undefined;
+
+    if (isScopeSwitch) {
+      const currentHidden = hiddenStr ?? '';
+      lastSyncedHiddenRef.current = currentHidden;
       const set: Record<string, boolean> = {};
-      hidden
+      currentHidden
         .split(',')
         .map((s) => s.trim())
         .filter(Boolean)
@@ -184,9 +196,19 @@ export function useScopeController({
           set[s] = true;
         });
       setHiddenSignals(set);
-    } else {
-      setHiddenSignals({});
+    } else if (hiddenStr !== undefined && hiddenStr !== lastSyncedHiddenRef.current) {
+      lastSyncedHiddenRef.current = hiddenStr;
+      const set: Record<string, boolean> = {};
+      hiddenStr
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .forEach((s) => {
+          set[s] = true;
+        });
+      setHiddenSignals(set);
     }
+
     const cursors = params[SCOPE_SETTING_KEYS.cursorsEnabled];
     // Accept both the parsed boolean and legacy string forms
     setCursorsEnabled(cursors === true || cursors === 'true');
@@ -234,9 +256,20 @@ export function useScopeController({
     [scopeChannelNames, theme],
   );
 
-  const toggleSignal = useCallback((name: string) => {
-    setHiddenSignals((prev) => ({ ...prev, [name]: !prev[name] }));
-  }, []);
+  const toggleSignal = useCallback(
+    (name: string) => {
+      setHiddenSignals((prev) => {
+        const next = { ...prev, [name]: !prev[name] };
+        const hiddenList = Object.keys(next).filter((k) => Boolean(next[k])).join(',');
+        lastSyncedHiddenRef.current = hiddenList;
+        if (activeScopeBlock && onSetParameter) {
+          onSetParameter(activeScopeBlock.name, SCOPE_SETTING_KEYS.hiddenSignals, hiddenList);
+        }
+        return next;
+      });
+    },
+    [activeScopeBlock, onSetParameter],
+  );
 
   const setCursorAWithEnable = useCallback(
     (action: React.SetStateAction<number | null>) => {

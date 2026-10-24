@@ -22,6 +22,7 @@ import { SCOPE_SETTING_KEYS } from '../model/constants';
 import type { ScopeDisplayLayout } from '../model/constants';
 import type { ScopeController } from '../simulation/useScopeController';
 import { isVoltmeterComponent, isAmmeterComponent } from '../model/componentSchema';
+import { isGroundSignal } from '../simulation/chartData';
 
 export interface ScopePropertiesPanelProps {
   /** The oscilloscope component currently inspected. */
@@ -105,15 +106,16 @@ export function ScopePropertiesPanel({
 
   const handleToggleChannel = (name: string) => {
     scope.toggleSignal(name);
-    const willBeHidden = !scope.hiddenSignals[name];
-    const nextHidden = { ...scope.hiddenSignals, [name]: willBeHidden };
-    // Persisted as a comma-separated list (net labels never contain commas)
-    const hiddenList = Object.keys(nextHidden).filter((k) => nextHidden[k]);
-    onSetParameter?.(scopeComponent.name, SCOPE_SETTING_KEYS.hiddenSignals, hiddenList.join(','));
+    const nextHidden = { ...scope.hiddenSignals, [name]: !scope.hiddenSignals[name] };
+    const serialized = Object.entries(nextHidden)
+      .filter(([, hidden]) => hidden)
+      .map(([n]) => n)
+      .join(',');
+    onSetParameter?.(scopeComponent.name, SCOPE_SETTING_KEYS.hiddenSignals, serialized);
   };
 
   const availableUnaddedSignals = useMemo(() => {
-    return scope.signalNames.filter((s) => !channels.includes(s));
+    return scope.signalNames.filter((s) => !channels.includes(s) && !isGroundSignal(s));
   }, [scope.signalNames, channels]);
 
   const handleAutoAddProbes = () => {
@@ -123,7 +125,7 @@ export function ScopePropertiesPanel({
     allComponents?.forEach((comp) => {
       if (isVoltmeterComponent(comp) || isAmmeterComponent(comp)) {
         comp.outputLabels?.forEach((lbl) => {
-          if (lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX' && !probeSignals.includes(lbl.trim())) {
+          if (lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX' && !isGroundSignal(lbl.trim()) && !probeSignals.includes(lbl.trim())) {
             probeSignals.push(lbl.trim());
           }
         });
@@ -131,7 +133,7 @@ export function ScopePropertiesPanel({
     });
     scope.signalNames.forEach((sig) => {
       const lower = sig.toLowerCase();
-      if ((lower.startsWith('u_') || lower.startsWith('v_') || lower.startsWith('i_')) && !probeSignals.includes(sig)) {
+      if ((lower.startsWith('u_') || lower.startsWith('v_') || lower.startsWith('i_')) && !isGroundSignal(sig) && !probeSignals.includes(sig)) {
         probeSignals.push(sig);
       }
     });

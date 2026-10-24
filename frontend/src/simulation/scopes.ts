@@ -6,6 +6,7 @@ import type { EditorComponent } from '../model/types';
 import { ControlComponentType } from '../model/constants';
 import { terminalPositions } from '../model/geometry';
 import { isVoltmeterComponent, isAmmeterComponent } from '../model/componentSchema';
+import { isGroundSignal } from './chartData';
 
 /**
  * Checks whether a given circuit component is an oscilloscope instrument block,
@@ -130,9 +131,11 @@ export function strictScopeChannels(
     return [];
   }
   const wired = resolveScopeWiredSignals(scopeBlock, allComponents, wires);
-  const explicit = (scopeBlock.inputLabels || []).filter((l) => l && l.trim() && l !== 'NIX_NIX_NIX');
+  const explicit = (scopeBlock.inputLabels || []).filter(
+    (l) => l && l.trim() && l !== 'NIX_NIX_NIX' && !isGroundSignal(l),
+  );
   const combined = Array.from(new Set([...explicit, ...wired]));
-  return combined.filter((l) => signalNames.includes(l));
+  return combined.filter((l) => signalNames.includes(l) && !isGroundSignal(l));
 }
 
 /**
@@ -150,7 +153,7 @@ export function scopeChannels(
   if (channels.length > 0) {
     return channels;
   }
-  return signalNames;
+  return signalNames.filter((s) => !isGroundSignal(s));
 }
 
 /** Case-insensitive substring filter; empty or blank query returns all channels. */

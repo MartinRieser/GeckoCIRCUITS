@@ -806,16 +806,30 @@ function MultiGraphWaveformChart({
                 {formatEngineeringValue(minY)}
               </text>
 
-              {/* Subplot Title */}
+              {/* Subtle Subplot Gutter Label */}
               <text
-                x={padLeft + 6}
+                x={12}
                 y={laneTop + 12}
-                style={{ fill: 'var(--chart-axis-label)' }}
-                fontSize={10}
+                style={{ fill: 'var(--chart-text)', opacity: 0.6 }}
+                fontSize={9}
                 fontWeight={700}
               >
-                Graph {graphIndex} {gSignals.length === 0 ? '(Empty)' : `(${gSignals.join(', ')})`}
+                G{graphIndex}
               </text>
+
+              {/* Empty placeholder */}
+              {gSignals.length === 0 && (
+                <text
+                  x={padLeft + plotW / 2}
+                  y={laneTop + laneH / 2}
+                  textAnchor="middle"
+                  style={{ fill: 'var(--chart-text)' }}
+                  fontSize={10}
+                  fontStyle="italic"
+                >
+                  (No traces in Graph {graphIndex})
+                </text>
+              )}
 
               {/* Traces */}
               {gSignals.map((name) => {

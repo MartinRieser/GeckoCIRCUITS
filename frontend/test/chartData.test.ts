@@ -52,4 +52,18 @@ describe('mapSimulationResults', () => {
     expect(signalStats['ghost']).toBeUndefined();
     expect(computeSignalStats([])).toBeNull();
   });
+
+  it('excludes reference ground signals like /0, 0, and gnd', () => {
+    const { signalNames } = mapSimulationResults({
+      time: [0, 1],
+      '/0': [0, 0],
+      '0': [0, 0],
+      '/gnd': [0, 0],
+      'GND': [0, 0],
+      v_out: [10, 10],
+      i_L: [5, 5],
+    });
+
+    expect(signalNames).toEqual(['v_out', 'i_L']);
+  });
 });

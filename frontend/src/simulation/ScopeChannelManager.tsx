@@ -7,6 +7,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { inferSignalUnit } from './ScopeViewTab';
 import type { ScopeDisplayLayout } from '../model/constants';
 import { resolveSignalGraph } from './scopes';
+import { isGroundSignal } from './chartData';
 
 export interface ScopeChannelManagerProps {
   /** Whether the channel manager modal is open. */
@@ -87,13 +88,18 @@ export function ScopeChannelManager({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
+  const validSignals = useMemo(
+    () => allAvailableSignals.filter((s) => !isGroundSignal(s)),
+    [allAvailableSignals],
+  );
+
   // Categorize signals
   const categorizedSignals = useMemo(() => {
     const voltages: string[] = [];
     const currents: string[] = [];
     const control: string[] = [];
 
-    allAvailableSignals.forEach((sig) => {
+    validSignals.forEach((sig) => {
       const unit = inferSignalUnit(sig);
       const lower = sig.toLowerCase();
       if (unit === 'V' || lower.startsWith('u_') || lower.startsWith('v_') || lower.includes('_v') || lower.includes('volt')) {
@@ -106,7 +112,7 @@ export function ScopeChannelManager({
     });
 
     return { voltages, currents, control };
-  }, [allAvailableSignals]);
+  }, [validSignals]);
 
   // Filter signals by search query and category
   const filteredSignals = useMemo(() => {
@@ -114,12 +120,12 @@ export function ScopeChannelManager({
     if (activeCategory === 'voltages') pool = categorizedSignals.voltages;
     else if (activeCategory === 'currents') pool = categorizedSignals.currents;
     else if (activeCategory === 'control') pool = categorizedSignals.control;
-    else pool = allAvailableSignals;
+    else pool = validSignals;
 
     const q = searchQuery.trim().toLowerCase();
     if (!q) return pool;
     return pool.filter((sig) => sig.toLowerCase().includes(q));
-  }, [allAvailableSignals, categorizedSignals, activeCategory, searchQuery]);
+  }, [validSignals, categorizedSignals, activeCategory, searchQuery]);
 
   if (!isOpen) return null;
 

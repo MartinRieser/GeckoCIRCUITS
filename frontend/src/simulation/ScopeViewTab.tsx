@@ -21,6 +21,7 @@ import type { ScopeController } from './useScopeController';
 import { useScopeController } from './useScopeController';
 import { ScopeChannelManager } from './ScopeChannelManager';
 import { isVoltmeterComponent, isAmmeterComponent } from '../model/componentSchema';
+import { isGroundSignal } from './chartData';
 import { SCOPE_SETTING_KEYS } from '../model/constants';
 import type { ScopeDisplayLayout } from '../model/constants';
 import {
@@ -276,7 +277,7 @@ export function ScopeViewTab({
     components.forEach((comp) => {
       if (isVoltmeterComponent(comp) || isAmmeterComponent(comp)) {
         comp.outputLabels?.forEach((lbl) => {
-          if (lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX' && !probeSignals.includes(lbl.trim())) {
+          if (lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX' && !isGroundSignal(lbl.trim()) && !probeSignals.includes(lbl.trim())) {
             probeSignals.push(lbl.trim());
           }
         });
@@ -286,7 +287,7 @@ export function ScopeViewTab({
     // Also include signals from results matching common voltage/current probe patterns
     ctrl.signalNames.forEach((sig) => {
       const lower = sig.toLowerCase();
-      if ((lower.startsWith('u_') || lower.startsWith('v_') || lower.startsWith('i_')) && !probeSignals.includes(sig)) {
+      if ((lower.startsWith('u_') || lower.startsWith('v_') || lower.startsWith('i_')) && !isGroundSignal(sig) && !probeSignals.includes(sig)) {
         probeSignals.push(sig);
       }
     });
@@ -1839,7 +1840,7 @@ function FullScreenMultiGraphChart({
   signals,
   activeSignals,
   signalGraphs,
-  onMoveSignalToGraph,
+  onMoveSignalToGraph: _onMoveSignalToGraph,
   colorOf,
   theme,
   hoverIndex,
@@ -1857,8 +1858,8 @@ function FullScreenMultiGraphChart({
   onResetZoom,
   onPanSeconds,
   hoveredSignal,
-  onHoverSignal,
-  onToggleSignal,
+  onHoverSignal: _onHoverSignal,
+  onToggleSignal: _onToggleSignal,
 }: {
   numGraphs: 2 | 3;
   width?: number;
@@ -2282,103 +2283,31 @@ function FullScreenMultiGraphChart({
                 );
               })}
 
-              {/* Subplot Header Overlay Badge & Signals */}
-              <g className="subplot-header" style={{ pointerEvents: 'auto' }}>
-                <rect
-                  x={padLeft + 8}
-                  y={gd.laneY + 6}
-                  width={68}
-                  height={18}
-                  rx={3}
-                  fill={theme === 'light' ? 'rgba(241, 245, 249, 0.92)' : 'rgba(15, 23, 42, 0.88)'}
-                  stroke="var(--border)"
-                  strokeWidth={1}
-                />
+              {/* Subtle Subplot Identifier in Left Margin (Outside Plot Area) */}
+              <text
+                x={14}
+                y={gd.laneY + 12}
+                fill={textColor}
+                fontSize={9}
+                fontWeight={700}
+                opacity={0.6}
+              >
+                G{gd.graphIdx}
+              </text>
+
+              {/* Empty graph state placeholder */}
+              {gd.signals.length === 0 && (
                 <text
-                  x={padLeft + 42}
-                  y={gd.laneY + 19}
+                  x={padLeft + plotW / 2}
+                  y={gd.laneY + laneH / 2}
                   textAnchor="middle"
-                  fill="var(--text)"
-                  fontSize={10}
-                  fontWeight={800}
-                  fontFamily="monospace"
+                  fill={textColor}
+                  fontSize={11}
+                  fontStyle="italic"
                 >
-                  GRAPH {gd.graphIdx}
+                  (No traces in Graph {gd.graphIdx})
                 </text>
-
-                {/* Assigned signal tags inside this graph */}
-                {gd.signals.map((name, sIdx) => {
-                  const color = colorOf(name);
-                  const isHovered = hoveredSignal === name;
-                  const tagX = padLeft + 84 + sIdx * 115;
-                  if (tagX + 110 > width - padRight) return null;
-
-                  return (
-                    <g
-                      key={name}
-                      transform={`translate(${tagX}, ${gd.laneY + 6})`}
-                      style={{ cursor: 'pointer' }}
-                      onMouseEnter={() => onHoverSignal?.(name)}
-                      onMouseLeave={() => onHoverSignal?.(null)}
-                      onClick={() => onToggleSignal?.(name)}
-                    >
-                      <rect
-                        width={105}
-                        height={18}
-                        rx={3}
-                        fill={
-                          isHovered
-                            ? (theme === 'light' ? 'rgba(226, 232, 240, 0.95)' : 'rgba(51, 65, 85, 0.95)')
-                            : (theme === 'light' ? 'rgba(248, 250, 252, 0.88)' : 'rgba(30, 41, 59, 0.85)')
-                        }
-                        stroke={isHovered ? color : 'var(--border)'}
-                        strokeWidth={isHovered ? 1.5 : 1}
-                      />
-                      <circle cx={8} cy={9} r={3.5} fill={color} />
-                      <text
-                        x={16}
-                        y={13}
-                        fill={color}
-                        fontSize={9.5}
-                        fontWeight={isHovered ? 700 : 600}
-                        fontFamily="sans-serif"
-                      >
-                        {name.length > 8 ? `${name.substring(0, 7)}…` : name}
-                      </text>
-                      {/* Move to another graph button icon */}
-                      {onMoveSignalToGraph && (
-                        <g
-                          transform="translate(86, 2)"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const nextGraph = gd.graphIdx === numGraphs ? 1 : gd.graphIdx + 1;
-                            onMoveSignalToGraph(name, nextGraph);
-                          }}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          <rect width={16} height={14} rx={2} fill="rgba(56, 189, 248, 0.2)" />
-                          <text x={8} y={10.5} textAnchor="middle" fill="var(--accent, #38bdf8)" fontSize={8.5} fontWeight={700}>
-                            ⇄
-                          </text>
-                        </g>
-                      )}
-                    </g>
-                  );
-                })}
-
-                {/* Empty graph state placeholder */}
-                {gd.signals.length === 0 && (
-                  <text
-                    x={padLeft + 86}
-                    y={gd.laneY + 19}
-                    fill={textColor}
-                    fontSize={10.5}
-                    fontStyle="italic"
-                  >
-                    (No traces in Graph {gd.graphIdx} — click ⇄ on any trace to move here)
-                  </text>
-                )}
-              </g>
+              )}
             </g>
           );
         })}

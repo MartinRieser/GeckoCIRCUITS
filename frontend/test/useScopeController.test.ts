@@ -279,4 +279,68 @@ describe('useScopeController hook', () => {
     );
     expect(result.current.cursorsEnabled).toBe(true);
   });
+
+  it('preserves hiddenSignals when toggling cursors on and off', () => {
+    const onSetParameter = vi.fn();
+    const scopeComponent: EditorComponent = {
+      ...dummyComponents[0],
+      name: 'SCOPE.1',
+      parameters: {},
+    };
+
+    const { result, rerender } = renderHook(
+      (comps: EditorComponent[]) =>
+        useScopeController({
+          results: dummyResults,
+          components: comps,
+          selectedScope: 'SCOPE.1',
+          onSetParameter,
+        }),
+      { initialProps: [scopeComponent] },
+    );
+
+    expect(result.current.hiddenSignals).toEqual({});
+
+    // Toggle signal 'v_out'
+    act(() => {
+      result.current.toggleSignal('v_out');
+    });
+    expect(result.current.hiddenSignals).toEqual({ v_out: true });
+    expect(onSetParameter).toHaveBeenCalledWith('SCOPE.1', 'hiddenSignals', 'v_out');
+
+    // Turn cursors on via setCursorPreset
+    act(() => {
+      result.current.setCursorPreset();
+    });
+    expect(result.current.cursorsEnabled).toBe(true);
+    expect(result.current.hiddenSignals).toEqual({ v_out: true });
+
+    // Simulate parent re-rendering with updated cursorsEnabled before or without hiddenSignals in props
+    rerender([
+      {
+        ...scopeComponent,
+        parameters: { cursorsEnabled: true },
+      },
+    ]);
+    expect(result.current.cursorsEnabled).toBe(true);
+    expect(result.current.hiddenSignals).toEqual({ v_out: true });
+
+    // Turn cursors off via clearCursors
+    act(() => {
+      result.current.clearCursors();
+    });
+    expect(result.current.cursorsEnabled).toBe(false);
+    expect(result.current.hiddenSignals).toEqual({ v_out: true });
+
+    // Simulate parent re-rendering with cursorsEnabled: false
+    rerender([
+      {
+        ...scopeComponent,
+        parameters: { cursorsEnabled: false },
+      },
+    ]);
+    expect(result.current.cursorsEnabled).toBe(false);
+    expect(result.current.hiddenSignals).toEqual({ v_out: true });
+  });
 });
+

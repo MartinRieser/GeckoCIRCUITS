@@ -32,6 +32,7 @@ import {
   getComponentMeta,
 } from '../model/componentSchema';
 import { isScopeComponent, isScriptComponent } from '../simulation/scopes';
+import { isGroundSignal } from '../simulation/chartData';
 import { BLANK_CIRCUIT_IPES } from '../model/examples';
 import { SIMULATION_DEFAULTS } from '../model/constants';
 import { flipRoute, densePoints, routeWireWithAnchors, deconflictMovedWires } from '../canvas/WireRouter';
@@ -1338,27 +1339,34 @@ export function useEditor() {
       // Dynamically collect active signals from scope channels, probe output labels, and wire labels
       const activeSignals = new Set<string>();
       if (config?.signals && config.signals.length > 0) {
-        config.signals.forEach((s) => s && s.trim() && activeSignals.add(s.trim()));
+        config.signals.forEach((s) => s && s.trim() && !isGroundSignal(s.trim()) && activeSignals.add(s.trim()));
       } else if (simDefaultsRef.current?.signals) {
-        simDefaultsRef.current.signals.forEach((s) => s && s.trim() && activeSignals.add(s.trim()));
+        simDefaultsRef.current.signals.forEach((s) => s && s.trim() && !isGroundSignal(s.trim()) && activeSignals.add(s.trim()));
       }
 
       for (const comp of stateRef.current.components) {
         if (isScopeComponent(comp)) {
           comp.inputLabels?.forEach((lbl) => {
-            if (lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX') activeSignals.add(lbl.trim());
+            if (lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX' && !isGroundSignal(lbl.trim())) {
+              activeSignals.add(lbl.trim());
+            }
           });
         }
         if (isVoltmeterComponent(comp) || isAmmeterComponent(comp)) {
           comp.outputLabels?.forEach((lbl) => {
-            if (lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX') activeSignals.add(lbl.trim());
+            if (lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX' && !isGroundSignal(lbl.trim())) {
+              activeSignals.add(lbl.trim());
+            }
           });
         }
       }
 
       for (const wire of stateRef.current.wires) {
         if (wire.label && wire.label.trim() && wire.label !== 'NIX_NIX_NIX') {
-          activeSignals.add(wire.label.trim());
+          const trimmed = wire.label.trim();
+          if (!isGroundSignal(trimmed)) {
+            activeSignals.add(trimmed);
+          }
         }
       }
 
