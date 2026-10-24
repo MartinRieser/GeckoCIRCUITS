@@ -59,6 +59,10 @@ export interface ScopeViewTabProps {
   onSetLabel?: (name: string, side: 'x' | 'y', index: number, label: string) => void;
   /** Optional callback to remove a terminal/channel label from a component. */
   onRemoveLabel?: (name: string, side: 'x' | 'y', index: number) => void;
+  /** Whether the right sidebar is currently open. */
+  isSidebarOpen?: boolean;
+  /** Callback to toggle the right sidebar for full-width focus mode. */
+  onToggleSidebar?: () => void;
 }
 
 export const DEFAULT_DRAWER_HEIGHT = 280;
@@ -192,6 +196,8 @@ export function ScopeViewTab({
   onSetParameter,
   onSetLabel,
   onRemoveLabel,
+  isSidebarOpen = true,
+  onToggleSidebar,
 }: ScopeViewTabProps) {
   const fallbackScope = useScopeController({
     results,
@@ -461,48 +467,90 @@ export function ScopeViewTab({
 
   return (
     <div className="scope-view-tab-container">
-      {/* Top Header Bar */}
-      <div className="scope-tab-header">
-        <div className="scope-tab-title-group">
-          <div className="scope-badge-icon">
+      {/* Unified Sleek DSO Toolbar */}
+      <div className="scope-tab-header dso-screen-osd">
+        <div className="scope-tab-title-group" style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flexShrink: 1 }}>
+          <div className="scope-badge-icon" style={{ flexShrink: 0 }}>
             {selectedScope === 'all' ? '📊' : '📺'}
           </div>
-          <div>
-            <span className="scope-tab-title">
-              {selectedScope === 'all' ? 'Simulation Results (All Signals)' : `Scope: ${selectedScope}`}
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, flexShrink: 0 }}>
+            <span className="scope-tab-title" title={filename ? `Circuit: ${filename}` : undefined}>
+              {selectedScope === 'all' ? 'All Signals' : `Scope: ${selectedScope}`}
             </span>
-            <span className="scope-tab-subtitle">
-              {scopeChannelNames.length} trace{scopeChannelNames.length === 1 ? '' : 's'}
-              {filename ? ` • ${filename}` : ''}
-            </span>
+            {filename && (
+              <span className="scope-tab-subtitle" style={{ fontSize: '11px', opacity: 0.6 }}>
+                • {filename}
+              </span>
+            )}
           </div>
-        </div>
 
-        <div className="scope-tab-actions">
+          {/* Active channel pills with color dots */}
+          <div className="dso-channels-wrap" style={{ display: 'flex', alignItems: 'center', gap: 4, overflowX: 'auto', scrollbarWidth: 'none', margin: '0 4px' }}>
+            {visibleSignals.map((sig) => {
+              const color = colorOf(sig);
+              const isHovered = hoveredSignal === sig;
+              return (
+                <button
+                  key={sig}
+                  type="button"
+                  className={`dso-osd-channel-tag ${isHovered ? 'highlighted' : ''}`}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    padding: '2px 8px',
+                    borderRadius: 4,
+                    border: `1px solid ${isHovered ? color : 'var(--border)'}`,
+                    background: isHovered
+                      ? (theme === 'light' ? 'rgba(226, 232, 240, 0.95)' : 'rgba(51, 65, 85, 0.95)')
+                      : 'var(--surface)',
+                    cursor: 'pointer',
+                    fontSize: 11,
+                    fontFamily: 'var(--font-mono, monospace)',
+                    whiteSpace: 'nowrap',
+                    color: isHovered ? color : 'var(--text)',
+                    boxShadow: isHovered ? `0 0 6px ${color}60` : undefined,
+                  }}
+                  onMouseEnter={() => setHoveredSignal(sig)}
+                  onMouseLeave={() => setHoveredSignal(null)}
+                  onClick={() => toggleSignal(sig)}
+                  title={`Click to hide/show ${sig}. Hover to highlight trace.`}
+                >
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, display: 'inline-block' }} />
+                  <span style={{ fontWeight: isHovered ? 700 : 500 }}>{sig}</span>
+                </button>
+              );
+            })}
+          </div>
+
           {/* Scope Channel Manager button */}
           {selectedScope !== 'all' && (
             <button
               type="button"
               className="sim-mini-btn"
               onClick={() => setIsChannelManagerOpen(true)}
-              title="Manage signals and channels for this scope"
+              title="Add or remove signals on this scope"
               style={{
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
-                gap: 5,
-                padding: '3px 10px',
-                background: 'var(--surface)',
-                borderColor: 'var(--accent, #38bdf8)',
+                gap: 4,
+                padding: '2px 8px',
+                fontSize: '11px',
+                background: 'rgba(56, 189, 248, 0.08)',
+                borderColor: 'rgba(56, 189, 248, 0.4)',
                 color: 'var(--accent, #38bdf8)',
                 fontWeight: 600,
+                flexShrink: 0,
               }}
               data-testid="scope-manage-channels-btn"
             >
               <span>➕</span> Channels ({assignedChannels.length || scopeChannelNames.length})
             </button>
           )}
+        </div>
 
-          {/* Display Layout Switcher */}
+        {/* Center: Layout Switcher + Auto-Group */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
           {onDisplayLayoutChange && (
             <div className="segmented-control" style={{ display: 'flex' }} data-testid="scope-tab-layout-switcher">
               <button
@@ -517,7 +565,7 @@ export function ScopeViewTab({
                 type="button"
                 className={`segmented-btn ${displayLayout === '2-graphs' ? 'active' : ''}`}
                 onClick={() => onDisplayLayoutChange('2-graphs')}
-                title="2 Graphs: Split traces across 2 subplots (e.g. Voltages / Currents)"
+                title="2 Graphs: Split traces across 2 subplots"
               >
                 📊 2 Graphs
               </button>
@@ -525,7 +573,7 @@ export function ScopeViewTab({
                 type="button"
                 className={`segmented-btn ${displayLayout === '3-graphs' ? 'active' : ''}`}
                 onClick={() => onDisplayLayoutChange('3-graphs')}
-                title="3 Graphs: Split traces across 3 subplots (e.g. Voltages / Currents / Control)"
+                title="3 Graphs: Split traces across 3 subplots"
               >
                 📑 3 Graphs
               </button>
@@ -545,10 +593,88 @@ export function ScopeViewTab({
               type="button"
               className="sim-mini-btn"
               onClick={handleAutoGroupSignals}
-              title="Auto-organize traces by type: Voltages -> Graph 1, Currents -> Graph 2, Control -> Graph 3"
-              style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+              title="Auto-organize traces: Voltages -> Graph 1, Currents -> Graph 2, Control -> Graph 3"
+              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', fontSize: '11px' }}
             >
               <span>⚡</span> Auto-Group
+            </button>
+          )}
+        </div>
+
+        {/* Right: Timebase, Fit, Cursors, Focus Mode, Status */}
+        <div className="scope-tab-actions" style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          {/* Timebase Badge */}
+          <span
+            className="dso-osd-item"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              fontSize: '11px',
+              fontFamily: 'var(--font-mono, monospace)',
+              color: 'var(--text-muted)',
+              background: 'var(--surface)',
+              padding: '2px 7px',
+              borderRadius: 4,
+              border: '1px solid var(--border)',
+            }}
+            title={`Timebase: ${formatEngineeringValue(timePerDiv, 's')}/div (Span: ${formatEngineeringValue(win.end - win.start, 's')})`}
+          >
+            ⏱ <strong className="dso-osd-val" style={{ color: 'var(--text)' }}>{formatEngineeringValue(timePerDiv, 's')}/div</strong>
+          </span>
+
+          {/* Fit Button */}
+          <button
+            type="button"
+            className="sim-mini-btn"
+            onClick={resetZoom}
+            title="Reset zoom & pan to fit full waveform (⟲)"
+            style={{ padding: '2px 8px', fontSize: '11px' }}
+          >
+            ⟲ Fit
+          </button>
+
+          {/* Cursors Toggle */}
+          <button
+            type="button"
+            className={`sim-mini-btn ${cursorsEnabled ? 'active' : ''}`}
+            onClick={() => {
+              if (cursorsEnabled) {
+                ctrl.clearCursors();
+              } else {
+                ctrl.setCursorPreset();
+              }
+            }}
+            title={cursorsEnabled ? 'Turn cursors OFF' : 'Turn cursors ON (places markers A & B)'}
+            style={{
+              padding: '2px 8px',
+              fontSize: '11px',
+              fontWeight: cursorsEnabled ? 700 : 500,
+              background: cursorsEnabled ? 'rgba(56, 189, 248, 0.2)' : undefined,
+              borderColor: cursorsEnabled ? 'var(--accent, #38bdf8)' : undefined,
+              color: cursorsEnabled ? 'var(--accent, #38bdf8)' : undefined,
+            }}
+          >
+            📍 Cursors{cursorsEnabled ? ' (ON)' : ''}
+          </button>
+
+          {/* Focus Mode (Sidebar Collapse/Restore) */}
+          {onToggleSidebar && (
+            <button
+              type="button"
+              className={`sim-mini-btn ${!isSidebarOpen ? 'active' : ''}`}
+              onClick={onToggleSidebar}
+              title={isSidebarOpen ? 'Full-Width Focus Mode (Hide Settings Sidebar)' : 'Restore Settings Sidebar'}
+              style={{
+                padding: '2px 8px',
+                fontSize: '11px',
+                fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+              }}
+            >
+              <span>{isSidebarOpen ? '⇥ Focus' : '⇤ Sidebar'}</span>
             </button>
           )}
 
@@ -596,75 +722,6 @@ export function ScopeViewTab({
           <>
             {/* The Oscilloscope Screen Bezel */}
             <div className="dso-screen-bezel">
-              {/* On-Screen Display (OSD) Top Bar */}
-              <div className="dso-screen-osd">
-                <div className="dso-osd-left">
-                  <span className={`dso-status-pill ${isRunning ? 'running' : 'auto'}`}>
-                    <span className="dso-status-dot" />
-                    {isRunning ? 'RUN' : 'AUTO'}
-                  </span>
-                  <span className="dso-osd-item">
-                    <span>M:</span>
-                    <strong className="dso-osd-val">{formatEngineeringValue(timePerDiv, 's')}/div</strong>
-                  </span>
-                  <span className="dso-osd-item">
-                    <span>Delay:</span>
-                    <strong className="dso-osd-val">{formatEngineeringValue(win.start, 's')}</strong>
-                  </span>
-                  <span className="dso-osd-item">
-                    <span>Span:</span>
-                    <strong className="dso-osd-val">{formatEngineeringValue(win.end - win.start, 's')}</strong>
-                  </span>
-                </div>
-
-                <div className="dso-osd-right">
-                  {selectedScope !== 'all' && (
-                    <button
-                      type="button"
-                      className="sim-mini-btn"
-                      onClick={() => setIsChannelManagerOpen(true)}
-                      title="Add or remove signals on this scope"
-                      style={{
-                        padding: '1px 6px',
-                        fontSize: '11px',
-                        marginRight: 6,
-                        background: 'rgba(56, 189, 248, 0.1)',
-                        borderColor: 'rgba(56, 189, 248, 0.4)',
-                        color: 'var(--accent, #38bdf8)',
-                      }}
-                    >
-                      + Trace
-                    </button>
-                  )}
-                  {visibleSignals.map((sig) => {
-                    const color = colorOf(sig);
-                    const isHovered = hoveredSignal === sig;
-                    return (
-                      <span
-                        key={sig}
-                        className={`dso-osd-channel-tag ${isHovered ? 'highlighted' : ''}`}
-                        style={{
-                          borderLeft: `3px solid ${color}`,
-                          background: isHovered
-                            ? (theme === 'light' ? 'rgba(226, 232, 240, 0.95)' : 'rgba(51, 65, 85, 0.95)')
-                            : undefined,
-                          boxShadow: isHovered ? `0 0 8px ${color}80` : undefined,
-                        }}
-                        onMouseEnter={() => setHoveredSignal(sig)}
-                        onMouseLeave={() => setHoveredSignal(null)}
-                        onClick={() => toggleSignal(sig)}
-                        title={`Click to hide/show ${sig}. Hover to highlight trace.`}
-                      >
-                        <span style={{ color, fontWeight: isHovered ? 700 : 500 }}>{sig}</span>
-                      </span>
-                    );
-                  })}
-                  <span className="dso-osd-item">
-                    <span>Pts:</span>
-                    <strong className="dso-osd-val">{timeArray.length}</strong>
-                  </span>
-                </div>
-              </div>
 
               {/* Central Chart Viewport with responsive ResizeObserver */}
               <div className="dso-chart-container" ref={chartContainerRef}>

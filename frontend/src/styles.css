@@ -3207,7 +3207,8 @@ circle.junction-dot.net-highlighted {
 }
 
 /* --- Scope Instrument Top Bar --- */
-.scope-tab-header {
+.scope-tab-header,
+.scope-tab-header.dso-screen-osd {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -3215,8 +3216,11 @@ circle.junction-dot.net-highlighted {
   background: var(--panel);
   border-bottom: 1px solid var(--border);
   gap: 12px;
-  height: 38px;
+  height: 40px;
   flex-shrink: 0;
+  font-family: inherit;
+  color: var(--text);
+  user-select: none;
 }
 
 .scope-tab-title-group {

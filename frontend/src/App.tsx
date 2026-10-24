@@ -927,6 +927,8 @@ export function App() {
               onSetParameter={actions.setParameter}
               onSetLabel={actions.setLabel}
               onRemoveLabel={actions.removeLabel}
+              isSidebarOpen={rightSidebarOpen}
+              onToggleSidebar={() => setRightSidebarOpen((prev) => !prev)}
             />
           </div>
 
