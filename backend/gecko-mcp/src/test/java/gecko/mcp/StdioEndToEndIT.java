@@ -52,7 +52,7 @@ class StdioEndToEndIT {
             client.initialize();
 
             McpSchema.ListToolsResult tools = client.listTools();
-            assertEquals(14, tools.tools().size(), "server should expose the 14 tools");
+            assertEquals(16, tools.tools().size(), "server should expose the 16 tools");
 
             McpSchema.ListResourcesResult resources = client.listResources();
             assertEquals(7, resources.resources().size(), "server should expose 7 MCP resources");

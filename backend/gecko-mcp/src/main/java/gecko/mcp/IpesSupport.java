@@ -26,7 +26,15 @@ final class IpesSupport {
                 return path;
             }
         }
-        return Path.of("").toAbsolutePath().normalize();
+        Path cur = Path.of("").toAbsolutePath().normalize();
+        Path p = cur;
+        while (p != null) {
+            if (Files.exists(p.resolve("resources")) && (Files.exists(p.resolve(".git")) || Files.exists(p.resolve("pom.xml")))) {
+                return p;
+            }
+            p = p.getParent();
+        }
+        return cur;
     }
 
     /** Relative paths resolve against the workspace root, like the Python server. */

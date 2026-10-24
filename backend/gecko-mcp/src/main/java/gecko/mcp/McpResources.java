@@ -461,20 +461,21 @@ public final class McpResources {
         return new SyncResourceSpecification(resource, (exchange, req) -> {
             try {
                 Path root = IpesSupport.workspaceRoot();
-                Path examplesDir = root.resolve("resources/examples");
                 List<Map<String, Object>> examples = new ArrayList<>();
-
-                if (Files.exists(examplesDir)) {
-                    try (Stream<Path> stream = Files.walk(examplesDir)) {
-                        stream.filter(p -> p.toString().endsWith(".ipes")).forEach(p -> {
-                            Map<String, Object> entry = new LinkedHashMap<>();
-                            entry.put("path", root.relativize(p).toString().replace('\\', '/'));
-                            entry.put("name", p.getFileName().toString().replace(".ipes", ""));
-                            try {
-                                entry.put("size_bytes", Files.size(p));
-                            } catch (IOException ignored) {}
-                            examples.add(entry);
-                        });
+                for (String sub : List.of("resources/examples", "resources/application_examples", "resources/projects", "resources/tutorials")) {
+                    Path dir = root.resolve(sub);
+                    if (Files.exists(dir)) {
+                        try (Stream<Path> stream = Files.walk(dir)) {
+                            stream.filter(p -> p.toString().endsWith(".ipes")).forEach(p -> {
+                                Map<String, Object> entry = new LinkedHashMap<>();
+                                entry.put("path", root.relativize(p).toString().replace('\\', '/'));
+                                entry.put("name", p.getFileName().toString().replace(".ipes", ""));
+                                try {
+                                    entry.put("size_bytes", Files.size(p));
+                                } catch (IOException ignored) {}
+                                examples.add(entry);
+                            });
+                        }
                     }
                 }
 
