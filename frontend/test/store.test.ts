@@ -284,6 +284,41 @@ describe('store: wire points follow dragged and nudged components', () => {
     // Wire must reach L1's new terminal position at (22,4)
     expect(wireKeys.has('22,4')).toBe(true);
   });
+
+  it('dragging an intermediate component on a multi-terminal wire keeps all connections intact', () => {
+    const buckLikeSnap: EditorSnapshot = {
+      ...snapshot,
+      components: [
+        { name: 'S1', type: 7, family: 'LK', position: [14, 6], orientation: 502, parameters: {}, inputLabels: [], outputLabels: [] },
+        { name: 'D1', type: 6, family: 'LK', position: [18, 8], orientation: 501, parameters: {}, inputLabels: [], outputLabels: [] },
+        { name: 'L1', type: 2, family: 'LK', position: [24, 6], orientation: 502, parameters: {}, inputLabels: [], outputLabels: [] },
+      ],
+      connections: [
+        {
+          index: 0,
+          type: 'LK',
+          label: 'sw_node',
+          points: [[16, 6], [17, 6], [18, 6], [19, 6], [20, 6], [21, 6], [22, 6]],
+        },
+      ],
+    };
+    let state = editorReducer(initialState, { type: 'SNAPSHOT', snapshot: buckLikeSnap });
+    // Drag intermediate component D1 downwards by (0, 2)
+    state = editorReducer(state, { type: 'DRAG_START', names: ['D1'], x: 18, y: 8 });
+    state = editorReducer(state, { type: 'DRAG_MOVE', x: 18, y: 10 });
+
+    const wirePoints = state.wires[0].points;
+    const wireKeys = new Set(wirePoints.map(([x, y]) => `${x},${y}`));
+
+    // S1 terminal at (16,6) must still be connected
+    expect(wireKeys.has('16,6')).toBe(true);
+    // Moved D1 terminal at (18,8) MUST be firmly connected
+    expect(wireKeys.has('18,8')).toBe(true);
+    // L1 terminal at (22,6) must still be connected
+    expect(wireKeys.has('22,6')).toBe(true);
+    // The wire must NOT collapse into a straight 2-point wire between S1 and L1
+    expect(wirePoints.length).toBeGreaterThan(7);
+  });
 });
 
 describe('store: DRAG_MOVE deconflicts moved wires against untouched wires', () => {  // The reported bug: dragging R1 down onto the bottom rail row slid its

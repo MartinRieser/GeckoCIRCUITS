@@ -237,6 +237,7 @@ function deconflictChangedWires(
   wires: EditorWire[],
   components: EditorComponent[],
   originalWires?: EditorWire[],
+  previousComponents?: EditorComponent[],
 ): EditorWire[] {
   const changedIdx: number[] = [];
   wires.forEach((w, i) => {
@@ -247,13 +248,59 @@ function deconflictChangedWires(
   if (changedIdx.length === 0) {
     return wires;
   }
-  const changed = new Set(changedIdx);
-  const slidRoutes = changedIdx.map((i) => wires[i].points);
+
+  // Collect all component terminal keys before the move
+  const compSource = previousComponents || components;
+  const terminalSet = new Set<string>();
+  for (const c of compSource) {
+    const t = terminalPositions(c);
+    for (const p of [...t.input, ...t.output]) {
+      terminalSet.add(`${p.x},${p.y}`);
+    }
+  }
+  // Also collect wire endpoints from other wires as junction points
+  for (const w of previousWires) {
+    if (w.points && w.points.length > 0) {
+      terminalSet.add(`${w.points[0][0]},${w.points[0][1]}`);
+      terminalSet.add(`${w.points[w.points.length - 1][0]},${w.points[w.points.length - 1][1]}`);
+    }
+  }
+
+  const anchorSource = originalWires || previousWires;
+
+  // Distinguish 2-terminal wires from multi-anchor wires (such as buses or junctioned nets).
+  // Multi-anchor wires are already properly stretched by routeWireWithAnchors; running 2-point
+  // deconfliction (routeCandidates) on them would collapse all intermediate pins into a straight line.
+  const twoTerminalChangedIdx: number[] = [];
+  for (const i of changedIdx) {
+    const orig = anchorSource[i]?.points || previousWires[i]?.points || [];
+    let isMultiAnchor = false;
+    if (orig.length >= 3) {
+      const p0Key = `${orig[0][0]},${orig[0][1]}`;
+      const pEndKey = `${orig[orig.length - 1][0]},${orig[orig.length - 1][1]}`;
+      for (let k = 1; k < orig.length - 1; k++) {
+        const key = `${orig[k][0]},${orig[k][1]}`;
+        if (key !== p0Key && key !== pEndKey && terminalSet.has(key)) {
+          isMultiAnchor = true;
+          break;
+        }
+      }
+    }
+    if (!isMultiAnchor) {
+      twoTerminalChangedIdx.push(i);
+    }
+  }
+
+  if (twoTerminalChangedIdx.length === 0) {
+    return wires;
+  }
+
+  const changed = new Set(twoTerminalChangedIdx);
+  const slidRoutes = twoTerminalChangedIdx.map((i) => wires[i].points);
   const staticRoutes = wires.filter((_, i) => !changed.has(i)).map((w) => w.points);
   // Collect terminals that each changed wire touched prior to the move so they are not
   // treated as illegal obstacle collisions by the deconfliction pass
-  const anchorSource = originalWires || previousWires;
-  const pinnedAnchorSets = changedIdx.map((i) => {
+  const pinnedAnchorSets = twoTerminalChangedIdx.map((i) => {
     const set = new Set<string>();
     const pts = anchorSource[i]?.points || previousWires[i]?.points || [];
     for (const p of pts) {
@@ -263,7 +310,7 @@ function deconflictChangedWires(
   });
   const deconflicted = deconflictMovedWires(slidRoutes, staticRoutes, components, pinnedAnchorSets);
   const next = [...wires];
-  changedIdx.forEach((wi, k) => {
+  twoTerminalChangedIdx.forEach((wi, k) => {
     next[wi] = { ...next[wi], points: deconflicted[k] };
   });
   return next;
@@ -614,7 +661,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         return wire;
       });
 
-      const wires = deconflictChangedWires(state.wires, slidWires, components);
+      const wires = deconflictChangedWires(state.wires, slidWires, components, undefined, state.components);
 
       return { ...state, components, wires };
     }
@@ -927,7 +974,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         return wire;
       });
 
-      const wires = deconflictChangedWires(state.wires, slidWires, components, state.drag?.originalWires);
+      const wires = deconflictChangedWires(state.wires, slidWires, components, state.drag?.originalWires, state.components);
 
       return { ...state, components, wires };
     }
