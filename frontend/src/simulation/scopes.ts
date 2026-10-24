@@ -4,6 +4,8 @@
  */
 import type { EditorComponent } from '../model/types';
 import { ControlComponentType } from '../model/constants';
+import { terminalPositions } from '../model/geometry';
+import { isVoltmeterComponent, isAmmeterComponent } from '../model/componentSchema';
 
 /**
  * Checks whether a given circuit component is an oscilloscope instrument block,
@@ -38,32 +40,113 @@ export function findScopeBlocks(components: EditorComponent[]): EditorComponent[
   return components.filter(isScopeComponent);
 }
 
+
 /**
- * Channels strictly wired to one scope: its input labels that match recorded
- * signals. Unlike {@link scopeChannels} there is no fallback — an unwired
- * scope yields an empty list, which is what persistence and per-scope
- * isolation logic need (never touch another scope's signals).
+ * Resolves signals physically connected to a scope's input terminals by tracing wires.
+ * If a pin has an explicit input label, that label is returned. If a pin is unlabeled
+ * but a wire physically connects it to an output pin of another component (e.g. voltmeter,
+ * ammeter, control block) or a labeled wire, the source signal name is auto-resolved.
+ *
+ * @param scopeBlock The oscilloscope component.
+ * @param allComponents Optional array of all circuit components.
+ * @param wires Optional array of circuit wires.
+ * @returns Array of resolved signal names.
+ */
+export function resolveScopeWiredSignals(
+  scopeBlock: EditorComponent | null | undefined,
+  allComponents: EditorComponent[] = [],
+  wires: { points: number[][]; label?: string }[] = [],
+): string[] {
+  if (!scopeBlock) return [];
+  const terms = terminalPositions(scopeBlock);
+  const wiredSignals: string[] = [];
+
+  for (let i = 0; i < terms.input.length; i++) {
+    const explicitLabel = scopeBlock.inputLabels?.[i]?.trim();
+    if (explicitLabel && explicitLabel !== 'NIX_NIX_NIX') {
+      wiredSignals.push(explicitLabel);
+      continue;
+    }
+
+    if (!wires.length) continue;
+    const pin = terms.input[i];
+    let foundSignal = '';
+
+    for (const wire of wires) {
+      if (!wire.points || wire.points.length < 2) continue;
+      const start = wire.points[0];
+      const end = wire.points[wire.points.length - 1];
+      const touchesStart = Math.hypot(start[0] - pin.x, start[1] - pin.y) < 0.25;
+      const touchesEnd = Math.hypot(end[0] - pin.x, end[1] - pin.y) < 0.25;
+
+      if (!touchesStart && !touchesEnd) continue;
+
+      if (wire.label && wire.label.trim() && wire.label !== 'NIX_NIX_NIX') {
+        foundSignal = wire.label.trim();
+        break;
+      }
+
+      const otherPt = touchesStart ? end : start;
+      for (const comp of allComponents) {
+        if (comp.name === scopeBlock.name) continue;
+        const compTerms = terminalPositions(comp);
+        for (let o = 0; o < compTerms.output.length; o++) {
+          const outPin = compTerms.output[o];
+          if (Math.hypot(outPin.x - otherPt[0], outPin.y - otherPt[1]) < 0.25) {
+            const outLbl = comp.outputLabels?.[o]?.trim();
+            if (outLbl && outLbl !== 'NIX_NIX_NIX') {
+              foundSignal = outLbl;
+            } else if (isVoltmeterComponent(comp) || isAmmeterComponent(comp)) {
+              foundSignal = comp.name;
+            }
+            break;
+          }
+        }
+        if (foundSignal) break;
+      }
+      if (foundSignal) break;
+    }
+
+    if (foundSignal) {
+      wiredSignals.push(foundSignal);
+    }
+  }
+
+  return wiredSignals;
+}
+
+/**
+ * Channels strictly wired or assigned to one scope: its input labels or connected wire
+ * signals that match recorded signals. Unlike {@link scopeChannels} there is no fallback —
+ * an unwired, unassigned scope yields an empty list.
  */
 export function strictScopeChannels(
   scopeBlock: EditorComponent | null | undefined,
   signalNames: string[],
+  allComponents: EditorComponent[] = [],
+  wires: { points: number[][]; label?: string }[] = [],
 ): string[] {
   if (!scopeBlock) {
     return [];
   }
-  return scopeBlock.inputLabels.filter((l) => l && signalNames.includes(l));
+  const wired = resolveScopeWiredSignals(scopeBlock, allComponents, wires);
+  const explicit = (scopeBlock.inputLabels || []).filter((l) => l && l.trim() && l !== 'NIX_NIX_NIX');
+  const combined = Array.from(new Set([...explicit, ...wired]));
+  return combined.filter((l) => signalNames.includes(l));
 }
 
 /**
- * Channels of a scope for display: its wired input labels that match recorded
+ * Channels of a scope for display: its wired or assigned input labels that match recorded
  * signals, falling back to all recorded signals when nothing matches so an
  * unwired scope still shows the run results.
  */
 export function scopeChannels(
   scopeBlock: EditorComponent | null | undefined,
   signalNames: string[],
+  allComponents: EditorComponent[] = [],
+  wires: { points: number[][]; label?: string }[] = [],
 ): string[] {
-  const channels = strictScopeChannels(scopeBlock, signalNames);
+  const channels = strictScopeChannels(scopeBlock, signalNames, allComponents, wires);
   if (channels.length > 0) {
     return channels;
   }

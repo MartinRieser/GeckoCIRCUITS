@@ -43,8 +43,12 @@ class ScriptBlockSimulationTest {
             return temp;
         }
         String text;
-        try (GZIPInputStream gz = new GZIPInputStream(new ByteArrayInputStream(raw))) {
-            text = new String(gz.readAllBytes(), StandardCharsets.UTF_8);
+        if (raw.length >= 2 && (raw[0] & 0xFF) == 0x1F && (raw[1] & 0xFF) == 0x8B) {
+            try (GZIPInputStream gz = new GZIPInputStream(new ByteArrayInputStream(raw))) {
+                text = new String(gz.readAllBytes(), StandardCharsets.UTF_8);
+            }
+        } else {
+            text = new String(raw, StandardCharsets.UTF_8);
         }
         int start = text.indexOf("<sourceCode>");
         int end = text.indexOf("<\\sourceCode>", start);

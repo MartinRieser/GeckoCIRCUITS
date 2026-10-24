@@ -872,6 +872,7 @@ export function App() {
                 },
                 openScopeTab: (name: string) => openScopeTab(name),
                 openScriptTab: (name: string) => openScriptTab(name),
+                setLabel: actions.setLabel,
                 toggleWireMode: actions.toggleWireMode,
                 openCommandPalette: () => setCommandPaletteOpen(true),
               }}
@@ -924,6 +925,8 @@ export function App() {
               filename={state.filename}
               scope={scope}
               onSetParameter={actions.setParameter}
+              onSetLabel={actions.setLabel}
+              onRemoveLabel={actions.removeLabel}
             />
           </div>
 
@@ -1025,11 +1028,14 @@ export function App() {
                     <ScopePropertiesPanel
                       scopeComponent={activeScopeComponent}
                       allComponents={state.components}
+                      wires={state.wires}
                       results={simState.results}
                       displayLayout={currentDisplayLayout}
                       onDisplayLayoutChange={handleDisplayLayoutChange}
                       scope={scope}
                       onSetParameter={actions.setParameter}
+                      onSetLabel={actions.setLabel}
+                      onRemoveLabel={actions.removeLabel}
                       onCollapse={() => setRightSidebarOpen(false)}
                     />
                   ) : (

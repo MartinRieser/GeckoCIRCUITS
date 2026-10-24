@@ -19,6 +19,8 @@ import { FftPanel } from './FftPanel';
 import { LossPanel } from './LossPanel';
 import type { ScopeController } from './useScopeController';
 import { useScopeController } from './useScopeController';
+import { ScopeChannelManager } from './ScopeChannelManager';
+import { isVoltmeterComponent, isAmmeterComponent } from '../model/componentSchema';
 
 /**
  * Properties for the {@link ScopeViewTab} full-viewport oscilloscope view.
@@ -44,6 +46,10 @@ export interface ScopeViewTabProps {
   scope?: ScopeController;
   /** Optional callback to persist scope parameters to circuit components. */
   onSetParameter?: (name: string, key: string, value: number | string | boolean) => void;
+  /** Optional callback to set a terminal/channel label on a component. */
+  onSetLabel?: (name: string, side: 'x' | 'y', index: number, label: string) => void;
+  /** Optional callback to remove a terminal/channel label from a component. */
+  onRemoveLabel?: (name: string, side: 'x' | 'y', index: number) => void;
 }
 
 export const DEFAULT_DRAWER_HEIGHT = 280;
@@ -174,6 +180,8 @@ export function ScopeViewTab({
   filename,
   scope,
   onSetParameter,
+  onSetLabel,
+  onRemoveLabel,
 }: ScopeViewTabProps) {
   const fallbackScope = useScopeController({
     results,
@@ -183,6 +191,88 @@ export function ScopeViewTab({
     onSetParameter,
   });
   const ctrl = scope ?? fallbackScope;
+
+  const [isChannelManagerOpen, setIsChannelManagerOpen] = useState(false);
+
+  const activeScopeBlock = useMemo(() => {
+    if (selectedScope === 'all') return null;
+    return components.find((c) => c.name === selectedScope) || null;
+  }, [components, selectedScope]);
+
+  const assignedChannels = useMemo(() => {
+    if (!activeScopeBlock) return [];
+    return (activeScopeBlock.inputLabels || []).filter(
+      (lbl) => lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX',
+    );
+  }, [activeScopeBlock]);
+
+  const handleAddChannel = useCallback(
+    (signalName: string) => {
+      if (!activeScopeBlock || !onSetLabel) return;
+      const currentLabels = activeScopeBlock.inputLabels || [];
+      if (currentLabels.includes(signalName)) return;
+      const nextIdx = currentLabels.length;
+      onSetLabel(activeScopeBlock.name, 'x', nextIdx, signalName);
+    },
+    [activeScopeBlock, onSetLabel],
+  );
+
+  const handleRemoveChannel = useCallback(
+    (signalName: string) => {
+      if (!activeScopeBlock || !onRemoveLabel) return;
+      const currentLabels = activeScopeBlock.inputLabels || [];
+      const idx = currentLabels.indexOf(signalName);
+      if (idx >= 0) {
+        onRemoveLabel(activeScopeBlock.name, 'x', idx);
+      }
+    },
+    [activeScopeBlock, onRemoveLabel],
+  );
+
+  const handleAutoAddProbes = useCallback(() => {
+    if (!activeScopeBlock || !onSetLabel) return;
+    const currentLabels = [...(activeScopeBlock.inputLabels || [])];
+    const probeSignals: string[] = [];
+
+    // Find all measurement probes and labeled outputs from components
+    components.forEach((comp) => {
+      if (isVoltmeterComponent(comp) || isAmmeterComponent(comp)) {
+        comp.outputLabels?.forEach((lbl) => {
+          if (lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX' && !probeSignals.includes(lbl.trim())) {
+            probeSignals.push(lbl.trim());
+          }
+        });
+      }
+    });
+
+    // Also include signals from results matching common voltage/current probe patterns
+    ctrl.signalNames.forEach((sig) => {
+      const lower = sig.toLowerCase();
+      if ((lower.startsWith('u_') || lower.startsWith('v_') || lower.startsWith('i_')) && !probeSignals.includes(sig)) {
+        probeSignals.push(sig);
+      }
+    });
+
+    let nextIdx = currentLabels.length;
+    probeSignals.forEach((sig) => {
+      if (!currentLabels.includes(sig)) {
+        onSetLabel(activeScopeBlock.name, 'x', nextIdx, sig);
+        currentLabels.push(sig);
+        nextIdx++;
+      }
+    });
+  }, [activeScopeBlock, onSetLabel, components, ctrl.signalNames]);
+
+  const handleClearChannels = useCallback(() => {
+    if (!activeScopeBlock || !onRemoveLabel) return;
+    const currentLabels = activeScopeBlock.inputLabels || [];
+    for (let i = currentLabels.length - 1; i > 0; i--) {
+      onRemoveLabel(activeScopeBlock.name, 'x', i);
+    }
+    if (onSetLabel && currentLabels.length > 0) {
+      onSetLabel(activeScopeBlock.name, 'x', 0, '');
+    }
+  }, [activeScopeBlock, onRemoveLabel, onSetLabel]);
 
   const {
     view,
@@ -353,6 +443,29 @@ export function ScopeViewTab({
         </div>
 
         <div className="scope-tab-actions">
+          {/* Scope Channel Manager button */}
+          {selectedScope !== 'all' && (
+            <button
+              type="button"
+              className="sim-mini-btn"
+              onClick={() => setIsChannelManagerOpen(true)}
+              title="Manage signals and channels for this scope"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+                padding: '3px 10px',
+                background: 'var(--surface)',
+                borderColor: 'var(--accent, #38bdf8)',
+                color: 'var(--accent, #38bdf8)',
+                fontWeight: 600,
+              }}
+              data-testid="scope-manage-channels-btn"
+            >
+              <span>➕</span> Channels ({assignedChannels.length || scopeChannelNames.length})
+            </button>
+          )}
+
           {/* Acquisition Status Pill */}
           <div className={`dso-status-pill ${isRunning ? 'running' : results ? 'auto' : 'stop'}`}>
             <span className="dso-status-dot" />
@@ -368,6 +481,30 @@ export function ScopeViewTab({
             <div className="empty-icon">{selectedScope === 'all' ? '📊' : '📺'}</div>
             <h3>No simulation data available</h3>
             <p>Configure parameters in the <strong>Simulation Settings</strong> panel on the right and click <strong>"▶ Run Simulation"</strong> to calculate waveforms.</p>
+          </div>
+        ) : selectedScope !== 'all' && visibleSignals.length === 0 ? (
+          <div className="scope-empty-state" data-testid="scope-no-channels-state">
+            <div className="empty-icon">📺</div>
+            <h3>No channels assigned to {selectedScope}</h3>
+            <p>This oscilloscope does not have any signals connected or assigned.</p>
+            <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+              <button
+                type="button"
+                className="sim-mini-btn active"
+                onClick={() => setIsChannelManagerOpen(true)}
+                style={{ padding: '6px 14px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: 6 }}
+              >
+                <span>➕</span> Assign Signals
+              </button>
+              <button
+                type="button"
+                className="sim-mini-btn"
+                onClick={handleAutoAddProbes}
+                style={{ padding: '6px 14px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: 6 }}
+              >
+                <span>⚡</span> Auto-Add Probes
+              </button>
+            </div>
           </div>
         ) : (
           <>
@@ -395,6 +532,24 @@ export function ScopeViewTab({
                 </div>
 
                 <div className="dso-osd-right">
+                  {selectedScope !== 'all' && (
+                    <button
+                      type="button"
+                      className="sim-mini-btn"
+                      onClick={() => setIsChannelManagerOpen(true)}
+                      title="Add or remove signals on this scope"
+                      style={{
+                        padding: '1px 6px',
+                        fontSize: '11px',
+                        marginRight: 6,
+                        background: 'rgba(56, 189, 248, 0.1)',
+                        borderColor: 'rgba(56, 189, 248, 0.4)',
+                        color: 'var(--accent, #38bdf8)',
+                      }}
+                    >
+                      + Trace
+                    </button>
+                  )}
                   {visibleSignals.map((sig) => {
                     const color = colorOf(sig);
                     const isHovered = hoveredSignal === sig;
@@ -684,6 +839,23 @@ export function ScopeViewTab({
           </>
         )}
       </div>
+
+      {/* Scope Channel Manager Modal */}
+      {selectedScope !== 'all' && (
+        <ScopeChannelManager
+          isOpen={isChannelManagerOpen}
+          onClose={() => setIsChannelManagerOpen(false)}
+          scopeName={selectedScope}
+          assignedChannels={assignedChannels}
+          allAvailableSignals={signalNames}
+          colorOf={colorOf}
+          onAddChannel={handleAddChannel}
+          onRemoveChannel={handleRemoveChannel}
+          onAutoAddProbes={handleAutoAddProbes}
+          onClearChannels={handleClearChannels}
+          theme={theme}
+        />
+      )}
     </div>
   );
 }

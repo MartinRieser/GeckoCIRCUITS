@@ -14,12 +14,15 @@ import { formatEngineeringValue } from '../model/componentSchema';
 import { strictScopeChannels } from '../simulation/scopes';
 import { SCOPE_SETTING_KEYS } from '../model/constants';
 import type { ScopeController } from '../simulation/useScopeController';
+import { isVoltmeterComponent, isAmmeterComponent } from '../model/componentSchema';
 
 export interface ScopePropertiesPanelProps {
   /** The oscilloscope component currently inspected. */
   scopeComponent: EditorComponent;
   /** All schematic components (optional). */
   allComponents?: EditorComponent[];
+  /** Circuit connection wires (optional). */
+  wires?: { points: number[][]; label?: string }[];
   /** Simulation results time-series mapping, if available. */
   results: Record<string, number[]> | null;
   /** Waveform chart display layout mode for this scope ('overlay' or 'stacked'). */
@@ -30,6 +33,10 @@ export interface ScopePropertiesPanelProps {
   scope: ScopeController;
   /** Callback to persist component parameter updates into the circuit model. */
   onSetParameter?: (name: string, key: string, value: number | string | boolean) => void;
+  /** Callback to set a channel / pin label. */
+  onSetLabel?: (name: string, side: 'x' | 'y', index: number, label: string) => void;
+  /** Callback to remove a channel / pin label. */
+  onRemoveLabel?: (name: string, side: 'x' | 'y', index: number) => void;
   /** Callback to collapse the scope properties panel. */
   onCollapse?: () => void;
 }
@@ -39,20 +46,24 @@ export interface ScopePropertiesPanelProps {
  */
 export function ScopePropertiesPanel({
   scopeComponent,
+  allComponents = [],
+  wires = [],
   results,
   displayLayout,
   onDisplayLayoutChange,
   scope,
   onSetParameter,
+  onSetLabel,
+  onRemoveLabel,
   onCollapse,
 }: ScopePropertiesPanelProps) {
-  // Strictly the channels wired to this oscilloscope block — unlike the
+  // Strictly the channels wired or assigned to this oscilloscope block — unlike the
   // display-side scopeChannels helper there is no all-signals fallback, so an
   // unwired scope shows nothing instead of another scope's signals and
   // persistence never writes foreign signal names into hiddenSignals.
   const channels = useMemo(
-    () => strictScopeChannels(scopeComponent, scope.signalNames),
-    [scopeComponent, scope.signalNames],
+    () => strictScopeChannels(scopeComponent, scope.signalNames, allComponents, wires),
+    [scopeComponent, scope.signalNames, allComponents, wires],
   );
 
   const handleLayoutChange = (next: 'overlay' | 'stacked') => {
@@ -73,6 +84,39 @@ export function ScopePropertiesPanel({
     // Persisted as a comma-separated list (net labels never contain commas)
     const hiddenList = Object.keys(nextHidden).filter((k) => nextHidden[k]);
     onSetParameter?.(scopeComponent.name, SCOPE_SETTING_KEYS.hiddenSignals, hiddenList.join(','));
+  };
+
+  const availableUnaddedSignals = useMemo(() => {
+    return scope.signalNames.filter((s) => !channels.includes(s));
+  }, [scope.signalNames, channels]);
+
+  const handleAutoAddProbes = () => {
+    if (!onSetLabel) return;
+    const current = [...(scopeComponent.inputLabels || [])];
+    const probeSignals: string[] = [];
+    allComponents?.forEach((comp) => {
+      if (isVoltmeterComponent(comp) || isAmmeterComponent(comp)) {
+        comp.outputLabels?.forEach((lbl) => {
+          if (lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX' && !probeSignals.includes(lbl.trim())) {
+            probeSignals.push(lbl.trim());
+          }
+        });
+      }
+    });
+    scope.signalNames.forEach((sig) => {
+      const lower = sig.toLowerCase();
+      if ((lower.startsWith('u_') || lower.startsWith('v_') || lower.startsWith('i_')) && !probeSignals.includes(sig)) {
+        probeSignals.push(sig);
+      }
+    });
+    let nextIdx = current.length;
+    probeSignals.forEach((sig) => {
+      if (!current.includes(sig)) {
+        onSetLabel(scopeComponent.name, 'x', nextIdx, sig);
+        current.push(sig);
+        nextIdx++;
+      }
+    });
   };
 
   const handleToggleCursors = () => {
@@ -239,28 +283,87 @@ export function ScopePropertiesPanel({
             </button>
           </div>
 
-          {/* Channel Toggles - STRICTLY FOR THIS SCOPE */}
-          <div className="sim-channels-list">
-            {channels.map((name) => {
-              const color = scope.colorOf(name);
-              const isHidden = !!scope.hiddenSignals[name];
-              return (
-                <button
-                  key={name}
-                  type="button"
-                  className={`sim-channel-badge ${isHidden ? 'hidden' : 'active'}`}
-                  onClick={() => handleToggleChannel(name)}
-                  style={{
-                    borderColor: color,
-                    color: isHidden ? 'var(--text-dim)' : color,
-                  }}
-                  title={isHidden ? `Show ${name}` : `Hide ${name}`}
-                >
-                  <span className="sim-ch-led" style={{ backgroundColor: color }} />
-                  {name}
-                </button>
-              );
-            })}
+          {/* Channel Toggles & Management - STRICTLY FOR THIS SCOPE */}
+          {channels.length === 0 ? (
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', padding: '6px 0', fontStyle: 'italic' }}>
+              No signals assigned to this scope.
+            </div>
+          ) : (
+            <div className="sim-channels-list">
+              {channels.map((name, idx) => {
+                const color = scope.colorOf(name);
+                const isHidden = !!scope.hiddenSignals[name];
+                return (
+                  <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 4, width: '100%' }}>
+                    <button
+                      type="button"
+                      className={`sim-channel-badge ${isHidden ? 'hidden' : 'active'}`}
+                      onClick={() => handleToggleChannel(name)}
+                      style={{
+                        flex: 1,
+                        borderColor: color,
+                        color: isHidden ? 'var(--text-dim)' : color,
+                        justifyContent: 'flex-start',
+                      }}
+                      title={isHidden ? `Show ${name}` : `Hide ${name}`}
+                    >
+                      <span className="sim-ch-led" style={{ backgroundColor: color }} />
+                      <span style={{ fontSize: '10px', opacity: 0.8, marginRight: 4 }}>CH{idx + 1}:</span>
+                      {name}
+                    </button>
+                    {onRemoveLabel && (
+                      <button
+                        type="button"
+                        className="action-icon-btn"
+                        onClick={() => {
+                          const lblIdx = scopeComponent.inputLabels?.indexOf(name);
+                          if (lblIdx !== undefined && lblIdx >= 0) {
+                            onRemoveLabel(scopeComponent.name, 'x', lblIdx);
+                          }
+                        }}
+                        title={`Remove ${name} from ${scopeComponent.name}`}
+                        style={{ fontSize: '11px', padding: '2px 6px', color: 'var(--text-muted)' }}
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Quick Signal Add & Probes */}
+          <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+            {availableUnaddedSignals.length > 0 && onSetLabel && (
+              <select
+                className="prop-input"
+                style={{ flex: 1, fontSize: '11px', padding: '3px 6px' }}
+                value=""
+                onChange={(e) => {
+                  if (e.target.value) {
+                    const nextIdx = scopeComponent.inputLabels?.length || 0;
+                    onSetLabel(scopeComponent.name, 'x', nextIdx, e.target.value);
+                  }
+                }}
+              >
+                <option value="" disabled>+ Add Signal to Scope...</option>
+                {availableUnaddedSignals.map((sig) => (
+                  <option key={sig} value={sig}>{sig}</option>
+                ))}
+              </select>
+            )}
+            {onSetLabel && (
+              <button
+                type="button"
+                className="sim-mini-btn"
+                onClick={handleAutoAddProbes}
+                title="Auto-add all probes (voltmeters, ammeters) from the circuit"
+                style={{ whiteSpace: 'nowrap', fontSize: '11px' }}
+              >
+                ⚡ Auto Probes
+              </button>
+            )}
           </div>
 
           {/* Cursors & Measurements */}

@@ -863,16 +863,45 @@ export function PropertiesPanel({
           <div className="prop-section scope-channels-section">
             <div className="prop-section-title">
               <span>Scope Channels ({component.inputLabels.length})</span>
-              {onOpenScopeTab && (
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 <button
                   type="button"
-                  className="link-action-btn"
-                  onClick={() => onOpenScopeTab(component.name)}
-                  title="Open Oscilloscope Viewer tab"
+                  className="sim-mini-btn"
+                  onClick={() => {
+                    const probeSignals: string[] = [];
+                    allComponents?.forEach((comp) => {
+                      if (isVoltmeterComponent(comp) || isAmmeterComponent(comp)) {
+                        comp.outputLabels?.forEach((l) => {
+                          if (l && l.trim() && l !== 'NIX_NIX_NIX' && !probeSignals.includes(l.trim())) {
+                            probeSignals.push(l.trim());
+                          }
+                        });
+                      }
+                    });
+                    let nextIdx = component.inputLabels.length;
+                    probeSignals.forEach((sig) => {
+                      if (!component.inputLabels.includes(sig)) {
+                        onSetLabel(component.name, 'x', nextIdx, sig);
+                        nextIdx++;
+                      }
+                    });
+                  }}
+                  title="Auto-add all measurement probes to this scope"
+                  style={{ fontSize: '11px', padding: '2px 6px' }}
                 >
-                  Open Scope Tab ↗
+                  ⚡ Auto Probes
                 </button>
-              )}
+                {onOpenScopeTab && (
+                  <button
+                    type="button"
+                    className="link-action-btn"
+                    onClick={() => onOpenScopeTab(component.name)}
+                    title="Open Oscilloscope Viewer tab"
+                  >
+                    Open Scope Tab ↗
+                  </button>
+                )}
+              </div>
             </div>
             <div className="prop-desc-hint">
               Select or type circuit signals recorded on each channel. Wires connected to scope pins bind signals automatically.
@@ -904,7 +933,7 @@ export function PropertiesPanel({
                         placeholder={`Signal for CH${idx + 1} (e.g. uOUT, il1)`}
                         onChange={(e) => onSetLabel(component.name, 'x', idx, e.target.value)}
                       />
-                      {isWired && (
+                      {isWired ? (
                         <span
                           style={{
                             fontSize: '9px',
@@ -923,7 +952,26 @@ export function PropertiesPanel({
                         >
                           ⚡ Wired
                         </span>
-                      )}
+                      ) : lbl ? (
+                        <span
+                          style={{
+                            fontSize: '9px',
+                            color: '#a78bfa',
+                            background: '#1e1b4b',
+                            border: '1px solid #6366f1',
+                            borderRadius: '3px',
+                            padding: '1px 5px',
+                            marginRight: '4px',
+                            whiteSpace: 'nowrap',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '2px',
+                          }}
+                          title="Virtual signal tap (no physical wire needed)"
+                        >
+                          📡 Virtual Tap
+                        </span>
+                      ) : null}
                       {lbl && (
                         <button
                           type="button"

@@ -69,6 +69,7 @@ export interface SheetActions {
   openProperties?: (name: string) => void;
   openScopeTab?: (name: string) => void;
   openScriptTab?: (name: string) => void;
+  setLabel?: (name: string, side: 'x' | 'y', index: number, label: string) => void;
   toggleWireMode?: () => void;
   openCommandPalette?: () => void;
 }
@@ -2033,6 +2034,30 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                             </g>
                           );
                         })}
+
+                        {/* Interactive + Pin Button for selected Scope block */}
+                        {isScopeComponent(component) && selected && terminals.input.length > 0 && actions.setLabel && (
+                          <g
+                            className="scope-add-pin-btn"
+                            transform={`translate(${
+                              terminals.input[terminals.input.length - 1].x * dpix - component.position[0] * dpix
+                            }, ${
+                              terminals.input[terminals.input.length - 1].y * dpix - component.position[1] * dpix + 16
+                            })`}
+                            style={{ cursor: 'pointer' }}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                              const nextIdx = component.inputLabels?.length || 1;
+                              actions.setLabel?.(component.name, 'x', nextIdx, '');
+                            }}
+                          >
+                            <title>Add Input Channel (CH{(component.inputLabels?.length || 1) + 1})</title>
+                            <circle r={7} fill="#1e293b" stroke="#38bdf8" strokeWidth={1.5} />
+                            <text textAnchor="middle" dy={3.5} fill="#38bdf8" fontSize={11} fontWeight="bold">
+                              +
+                            </text>
+                          </g>
+                        )}
 
                         {/* Component identifier label */}
                         {(() => {

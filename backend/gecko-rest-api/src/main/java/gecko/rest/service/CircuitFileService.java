@@ -191,7 +191,7 @@ public class CircuitFileService {
     public byte[] getIpesBytes(String circuitId) {
         CircuitState parsed = requireCircuit(circuitId);
         try {
-            return CircuitFileWriter.write(parsed.model);
+            return CircuitFileWriter.write(parsed.model, true);
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Failed to serialize circuit: " + e.getMessage(), e);

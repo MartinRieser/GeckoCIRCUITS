@@ -265,7 +265,7 @@ export function SymbolByType({
         return <SignalSourceSymbol u={u} />;
       case CTRL_TYPE.LEGACY_SCOPE:
       case CTRL_TYPE.SCOPE:
-        return <ScopeSymbol u={u} inputCount={inputCount} />;
+        return <ScopeSymbol u={u} inputCount={inputCount} inLabels={inLabels} />;
       case CTRL_TYPE.LEGACY_GATE:
       case CTRL_TYPE.GATE:
       case 1000:
@@ -1030,7 +1030,15 @@ function AmmeterSymbol({ u }: { u: number }) {
   );
 }
 
-function ScopeSymbol({ u, inputCount = 1 }: { u: number; inputCount?: number }) {
+function ScopeSymbol({
+  u,
+  inputCount = 1,
+  inLabels = [],
+}: {
+  u: number;
+  inputCount?: number;
+  inLabels?: (string | undefined)[];
+}) {
   // Anchored pin block, in lockstep with terminalPositions: channel 1 sits
   // on the component's anchor row, further channels extend downward (step
   // MULTI_PIN_STEP). The chassis is top-anchored too, so adding a channel
@@ -1077,9 +1085,26 @@ function ScopeSymbol({ u, inputCount = 1 }: { u: number; inputCount?: number }) 
         fill="none"
       />
 
+      {/* Channel Count badge if multi-channel */}
+      {inputCount > 1 && (
+        <text
+          x={0.6 * u}
+          y={top + 0.7 * u}
+          fontSize={7}
+          fill={CTRL_COLOR}
+          stroke="none"
+          fontWeight="bold"
+          textAnchor="end"
+          opacity={0.8}
+        >
+          {inputCount}CH
+        </text>
+      )}
+
       {/* Input pins and channel labels */}
       {Array.from({ length: inputCount }).map((_, i) => {
         const offset = i * step * u;
+        const label = inLabels[i]?.trim();
         return (
           <g key={i}>
             <line
@@ -1101,6 +1126,19 @@ function ScopeSymbol({ u, inputCount = 1 }: { u: number; inputCount?: number }) 
             >
               {i + 1}
             </text>
+            {label && label !== 'NIX_NIX_NIX' && (
+              <text
+                x={-LEAD * u - 2}
+                y={offset + 3}
+                fontSize={7.5}
+                fill="var(--text-dim, #94a3b8)"
+                stroke="none"
+                textAnchor="end"
+                fontFamily="monospace"
+              >
+                {label.length > 7 ? label.slice(0, 6) + '…' : label}
+              </text>
+            )}
           </g>
         );
       })}

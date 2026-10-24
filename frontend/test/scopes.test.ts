@@ -4,6 +4,7 @@ import {
   findScopeBlocks,
   scopeChannels,
   strictScopeChannels,
+  resolveScopeWiredSignals,
   filterChannels,
 } from '../src/simulation/scopes';
 import type { EditorComponent } from '../src/model/types';
@@ -153,6 +154,55 @@ describe('scopes helpers', () => {
 
     it('returns empty array when nothing matches', () => {
       expect(filterChannels(channels, 'nonexistent')).toEqual([]);
+    });
+  });
+
+  describe('resolveScopeWiredSignals', () => {
+    it('returns explicit inputLabels when present', () => {
+      expect(resolveScopeWiredSignals(scope1, [], [])).toEqual(['v_out', 'i_l']);
+    });
+
+    it('resolves signal from connected wire to an output terminal', () => {
+      const scopeEmptyLabels: EditorComponent = {
+        type: ControlComponentType.SCOPE,
+        family: 'CONTROL',
+        name: 'SCOPE',
+        position: [16, 48],
+        orientation: 503,
+        parameters: {},
+        inputLabels: [],
+        outputLabels: [],
+      };
+
+      const voltmeter: EditorComponent = {
+        type: ControlComponentType.VOLTMETER,
+        family: 'CONTROL',
+        name: 'VM_SW',
+        position: [6, 48],
+        orientation: 503,
+        parameters: {},
+        inputLabels: [],
+        outputLabels: ['v_sw'],
+      };
+
+      // Wire from voltmeter output (8, 48) to scope input (14, 48)
+      const wire = {
+        points: [
+          [8, 48],
+          [14, 48],
+        ],
+      };
+
+      const resolved = resolveScopeWiredSignals(scopeEmptyLabels, [voltmeter], [wire]);
+      expect(resolved).toEqual(['v_sw']);
+
+      // strictScopeChannels should also resolve v_sw
+      const strict = strictScopeChannels(scopeEmptyLabels, ['v_sw', 'v_other'], [voltmeter], [wire]);
+      expect(strict).toEqual(['v_sw']);
+
+      // scopeChannels should display v_sw
+      const displayed = scopeChannels(scopeEmptyLabels, ['v_sw', 'v_other'], [voltmeter], [wire]);
+      expect(displayed).toEqual(['v_sw']);
     });
   });
 });
