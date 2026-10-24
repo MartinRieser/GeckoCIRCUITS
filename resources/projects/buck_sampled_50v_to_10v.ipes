@@ -723,7 +723,7 @@ idStringDialog DIV_FF
 
 c (52)
 <ElementCONTROL>
-labelAnfangsKnoten[] /v_sw /v_out /v_in /duty
+labelAnfangsKnoten[] /v_sw
 labelEndKnoten[]
 enabledShorted 1
 parentSheetIdentifier 0
@@ -815,7 +815,7 @@ ANSICHT_SHOW_CONTROL_PARAMETER true
 ANSICHT_SHOW_CONTROL_TEXTLINIE true
 FileVersion 175
 UniqueFileId 0
-dataContainerSignals[]
+dataContainerSignals[] /v_sw/v_out/v_in/duty
 
 =======================
  

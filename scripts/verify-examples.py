@@ -69,13 +69,12 @@ def _pf(volt, curr, v_rms_expected):
 
 
 ASSERTIONS = {
-    # 24 V buck at D=0.5 -> ~12 V; diode drop and R_ds losses keep it slightly low
-    "sampled-buck": [
+    # 50V -> 10V buck converter with 50 Hz ripple, discrete S/H sampled control (0.5 ms) and feedforward
+    "buck": [
         ("v_out", 0.4, _mean, 9.8, 10.3, "regulated steady-state mean ~10.0 V"),
         ("v_in", 0.5, _pp, 9.5, 10.5, "input ripple ~10 Vpp (50 Hz 5Vpk)"),
         ("duty", 0.4, lambda x: max(x), 0.1, 0.9, "bounded duty cycle"),
     ],
-    "buck": [("v_out", 0.4, _mean, 10.0, 14.0, "steady-state mean ~12 V")],
     "sync-buck": [("v_out", 0.4, _mean, 10.0, 14.0, "steady-state mean ~12 V")],
     # 12 V boost at D=0.5 -> ~24 V (12 ms covers the startup overshoot)
     "boost": [("v_out", 0.25, _mean, 21.0, 27.0, "settled mean ~24 V")],
@@ -96,8 +95,6 @@ ASSERTIONS = {
         ("v_out", 0.2, _mean, 8.0, 12.0, "settles to 10 V step"),
         ("v_out", 1.0, lambda x: max(x), 0.0, 10.5, "no overshoot (first order)"),
     ],
-    # classic reference: 100 V step, R=10, C=100u (tau=1 ms, 5 ms = 5 tau)
-    "rc-classic": [("u_out", 0.2, _mean, 90.0, 100.0, "settles to 100 V step (5 tau)")],
     # series RLC step in the multi-scope demo: settles to the 24 V step
     "three-scopes": [("v_out", 0.2, _mean, 21.0, 27.0, "settles to 24 V step")],
     # PFC: 50 V bus, bounded ripple, near-unity power factor (24 Vrms grid)

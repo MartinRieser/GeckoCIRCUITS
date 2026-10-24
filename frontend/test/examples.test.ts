@@ -7,7 +7,6 @@ import {
   BOOST_CONVERTER_IPES,
   RECTIFIER_CIRCUIT_IPES,
   RC_FILTER_IPES,
-  RC_CLASSIC_IPES,
   THREE_SCOPES_RLC_IPES,
   SYNC_BUCK_IPES,
   BUCK_BOOST_IPES,
@@ -62,7 +61,6 @@ describe('Circuit Examples (.ipes templates)', () => {
       BOOST_CONVERTER_IPES,
       RECTIFIER_CIRCUIT_IPES,
       RC_FILTER_IPES,
-      RC_CLASSIC_IPES,
       THREE_SCOPES_RLC_IPES,
       SYNC_BUCK_IPES,
       BUCK_BOOST_IPES,
@@ -82,7 +80,7 @@ describe('Circuit Examples (.ipes templates)', () => {
   });
 
   it('provides a catalog of curated educational examples in EXAMPLES registry', () => {
-    expect(EXAMPLES.length).toBe(15);
+    expect(EXAMPLES.length).toBe(13);
 
     const ids = new Set<string>();
     for (const eg of EXAMPLES) {
