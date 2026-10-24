@@ -157,6 +157,22 @@ describe('validateCircuitForSimulation', () => {
     });
     expect(validateCircuitForSimulation([source, scope], [])).toEqual([]);
   });
+
+  it('does not flag ground terminals or documentation notes as unsupported', () => {
+    const source = comp({ name: 'U', type: LkComponentType.VOLTAGE_SOURCE, position: [10, 10] });
+    const gnd = comp({
+      name: 'GND',
+      type: LkComponentType.GLOBAL_TERMINAL,
+      position: [10, 16],
+    });
+    const note = comp({
+      name: 'INFO',
+      type: 2001,
+      family: 'SPECIAL',
+      position: [20, 20],
+    });
+    expect(validateCircuitForSimulation([source, gnd, note], [])).toEqual([]);
+  });
 });
 
 describe('findWireGeometryWarnings', () => {

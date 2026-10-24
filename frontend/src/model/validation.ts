@@ -30,6 +30,7 @@ export const SIMULATED_LK_TYPES: ReadonlySet<number> = new Set([
   LkComponentType.RELUCTANCE,
   LkComponentType.MMF,
   LkComponentType.MOSFET,
+  LkComponentType.GLOBAL_TERMINAL,
   LkComponentType.BJT,
   LkComponentType.THERMAL_FLOW,
   LkComponentType.THERMAL_TEMP,
@@ -286,7 +287,12 @@ export function validateCircuitForSimulation(
 
   // Identify unsupported components that the engine does not stamp
   const unsupported = components.filter(
-    (c) => c.family !== 'CONTROL' && !SIMULATED_LK_TYPES.has(c.type),
+    (c) =>
+      c.family !== 'CONTROL' &&
+      c.family !== 'SPECIAL' &&
+      c.family !== 'ANNOTATION' &&
+      c.type !== 2001 &&
+      !SIMULATED_LK_TYPES.has(c.type),
   );
   if (unsupported.length > 0) {
     const counts = new Map<string, number>();
