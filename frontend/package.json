@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "build:spring": "npm run build && node -e \"fs.rmSync('../backend/gecko-rest-api/src/main/resources/static',{recursive:true,force:true}); fs.cpSync('dist','../backend/gecko-rest-api/src/main/resources/static',{recursive:true})\"",
+    "build:spring": "npm run build && node -e \"fs.rmSync('../backend/gecko-rest-api/src/main/resources/static',{recursive:true,force:true}); fs.cpSync('dist','../backend/gecko-rest-api/src/main/resources/static',{recursive:true}); if (fs.existsSync('../backend/gecko-rest-api/target/classes/static')) { fs.cpSync('dist','../backend/gecko-rest-api/target/classes/static',{recursive:true}); }\"",
     "typecheck": "tsc --noEmit",
     "test": "tsc --noEmit && vitest run",
     "test:unit": "vitest run",
