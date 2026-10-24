@@ -571,4 +571,68 @@ class CircuitBuilderTest {
         assertEquals("CONTROL", dtDef.domain());
         assertEquals(1, dtDef.xPinCount());
     }
+
+    @Test
+    void synthesizesCircuitWithCatalogComponentsAndNotes() throws IOException {
+        Path tempDir = Files.createTempDirectory("gecko-catalog-build-test");
+        Path outputPath = tempDir.resolve("catalog_demo.ipes");
+
+        Map<String, Object> circuitDef = Map.of(
+                "output_path", outputPath.toString(),
+                "simulation", Map.of(
+                        "duration", 0.001,
+                        "dt", 1e-6,
+                        "solver", 0
+                ),
+                "components", List.of(
+                        Map.of("name", "V_DC", "type", "DC_VOLTAGE", "nodes", List.of("in", "0"),
+                                "parameters", Map.of("voltage", 15.0)),
+                        Map.of("name", "R1", "type", "RESISTOR", "nodes", List.of("in", "out"),
+                                "parameters", Map.of("resistance", 1000.0)),
+                        Map.of("name", "R2", "type", "RESISTOR", "nodes", List.of("out", "0"),
+                                "parameters", Map.of("resistance", 2000.0)),
+                        Map.of("name", "GND1", "type", "GND", "nodes", List.of("0", "0"))
+                ),
+                "control", Map.of(
+                        "blocks", List.of(
+                                Map.of("name", "MULT", "type", "MUL"),
+                                Map.of("name", "DIV1", "type", "DIV"),
+                                Map.of("name", "HYST", "type", "HYS", "parameters", Map.of("u_on", 2.5, "u_off", 1.5))
+                        ),
+                        "probes", List.of(
+                                Map.of("name", "VM_OUT", "type", "VOLTMETER", "target_component", "R2", "signal_name", "u_out")
+                        )
+                ),
+                "notes", List.of(
+                        Map.of("name", "TITLE_CARD", "text", "# Resistive Divider with Math Blocks\nBuilt via gecko-circuits MCP")
+                )
+        );
+
+        Map<String, Object> createResult = CircuitBuilder.create(circuitDef);
+        assertEquals("CREATED", createResult.get("status"));
+        assertEquals(4, createResult.get("power_components_count"));
+        assertEquals(1, createResult.get("special_components_count"));
+        assertTrue(Files.exists(outputPath));
+
+        // Read synthesized file content to ensure TEXTBOX and generic control blocks are present
+        String ipesText = IpesSupport.readIpesText(outputPath);
+        assertTrue(ipesText.contains("typ 2001"), "Special TEXTBOX typ 2001 should be serialized");
+        assertTrue(ipesText.contains("# Resistive Divider with Math Blocks"), "Markdown note text should be preserved");
+        assertTrue(ipesText.contains("typ 1019"), "MUL typ 1019 should be serialized in control elements");
+        assertTrue(ipesText.contains("typ 1020"), "DIV typ 1020 should be serialized in control elements");
+        assertTrue(ipesText.contains("typ 1030"), "HYS typ 1030 should be serialized in control elements");
+
+        // Validate DRC
+        Map<String, Object> valResult = CircuitValidator.validate(outputPath);
+        assertTrue((Boolean) valResult.get("valid"), "Synthesized circuit should pass DRC: " + valResult.get("diagnostics"));
+
+        // Simulate
+        SimulationService.ParsedCsv csv = SimulationService.simulateToCsv(outputPath, 0.001, 1e-6);
+        assertNotNull(csv);
+        assertTrue(csv.rowCount() > 500);
+        assertTrue(csv.columns().containsKey("u_out"));
+        List<Double> vout = csv.columns().get("u_out");
+        double lastV = vout.get(vout.size() - 1);
+        assertTrue(Math.abs(lastV - 10.0) < 0.1, "15V * 2k/(1k+2k) = 10V, got: " + lastV);
+    }
 }

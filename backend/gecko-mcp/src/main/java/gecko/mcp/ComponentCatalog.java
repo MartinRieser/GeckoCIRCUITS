@@ -264,6 +264,157 @@ public final class ComponentCatalog {
                 "Saturating inductor with current-dependent inductance table (nonlinX currents, nonlinY inductances)."
         ));
 
+        register(new ComponentDef(
+                "LISN", "LISN (Line Impedance Stabilization Network)", "POWER_LK", 13, "LISN",
+                List.of("line_in", "eut_out"),
+                List.of(),
+                "Line Impedance Stabilization Network for conducted electromagnetic compatibility (EMC) measurements."
+        ));
+
+        register(new ComponentDef(
+                "DC_MOTOR", "DC Motor (Separately Excited)", "POWER_LK", 14, "M_DC",
+                List.of("a1", "a2"),
+                List.of(
+                        new ParameterDef("r_armature", "number", "Ohm", 0.5, 0, "Armature circuit resistance in Ohms"),
+                        new ParameterDef("l_armature", "number", "H", 0.01, 1, "Armature circuit inductance in Henrys")
+                ),
+                "Separately or series excited DC machine."
+        ));
+
+        register(new ComponentDef(
+                "SYNC_MOTOR_SALIENT", "Synchronous Motor (Salient Pole)", "POWER_LK", 16, "SM",
+                List.of("uA", "uB", "uC"),
+                List.of(),
+                "Three-phase synchronous machine with salient poles.",
+                3
+        ));
+
+        register(new ComponentDef(
+                "SYNC_MOTOR_ROUND", "Synchronous Motor (Round Rotor)", "POWER_LK", 17, "SM",
+                List.of("uA", "uB", "uC"),
+                List.of(),
+                "Three-phase synchronous machine with round rotor (cylindrical rotor).",
+                3
+        ));
+
+        register(new ComponentDef(
+                "INDUCTION_MOTOR_CAGE", "Induction Motor (Cage Type A)", "POWER_LK", 18, "IM",
+                List.of("uA", "uB", "uC"),
+                List.of(),
+                "Three-phase squirrel-cage induction machine (cage type A).",
+                3
+        ));
+
+        register(new ComponentDef(
+                "INDUCTION_MOTOR", "Induction Motor (Generic)", "POWER_LK", 20, "IM",
+                List.of("uA", "uB", "uC"),
+                List.of(),
+                "Generic three-phase induction machine.",
+                3
+        ));
+
+        register(new ComponentDef(
+                "INDUCTION_MOTOR_SAT", "Induction Motor with Saturation", "POWER_LK", 21, "IM",
+                List.of("uA", "uB", "uC"),
+                List.of(),
+                "Three-phase induction machine with magnetic saturation characteristic.",
+                3
+        ));
+
+        register(new ComponentDef(
+                "OPAMP", "Operational Amplifier", "POWER_LK", 22, "OP",
+                List.of("in_plus", "in_minus", "out"),
+                List.of(
+                        new ParameterDef("r_in", "number", "Ohm", 90000.0, 0, "Differential input resistance in Ohms"),
+                        new ParameterDef("r_out", "number", "Ohm", 0.12, 1, "Output series resistance in Ohms"),
+                        new ParameterDef("f_corner", "number", "Hz", 1e5, 4, "Open loop dominant pole corner frequency in Hertz"),
+                        new ParameterDef("gain_dc", "number", "V/V", 10000.0, 5, "Differential open-loop DC voltage gain"),
+                        new ParameterDef("u_max", "number", "V", 12.0, 7, "Positive saturation output rail voltage limit"),
+                        new ParameterDef("u_min", "number", "V", -12.0, 8, "Negative saturation output rail voltage limit")
+                ),
+                "Macro-model operational amplifier with finite input/output impedance, gain-bandwidth product, and voltage rail limits.",
+                2
+        ));
+
+        register(new ComponentDef(
+                "RELUCTANCE", "Magnetic Reluctance", "POWER_LK", 24, "Rm",
+                List.of("p", "n"),
+                List.of(
+                        new ParameterDef("reluctance", "number", "1/H", 1.0, 0, "Magnetic reluctance Rm = F / Phi in inverse Henrys")
+                ),
+                "Linear magnetic reluctance element of the reluctance network (stamped as conductance 1/Rm in MNA)."
+        ));
+
+        register(new ComponentDef(
+                "RELUCTANCE_COIL", "Reluctance Network Inductor Coil", "POWER_LK", 25, "Lrel",
+                List.of("p", "n"),
+                List.of(
+                        new ParameterDef("inductance", "number", "H", 1e-3, 0, "Winding inductance in Henrys"),
+                        new ParameterDef("i_init", "number", "A", 0.0, 1, "Initial winding current in Amperes")
+                ),
+                "Inductor winding coupled into the magnetic reluctance network."
+        ));
+
+        register(new ComponentDef(
+                "MMF_SOURCE", "Magnetomotive Force Source", "POWER_LK", 26, "MMF",
+                List.of("p", "n"),
+                List.of(
+                        new ParameterDef("source_type", "number", "", 401.0, 0, "Source waveform code; 401 = constant DC MMF"),
+                        new ParameterDef("mmf", "number", "A", 100.0, 1, "Magnetomotive force Theta = N*I in ampere-turns")
+                ),
+                "Magnetomotive force (MMF) source of the reluctance network (magnetic potential source)."
+        ));
+
+        register(new ComponentDef(
+                "SUBCIRCUIT_TERMINAL", "Subcircuit Terminal Pin", "POWER_LK", 29, "PIN",
+                List.of("in", "out"),
+                List.of(),
+                "Boundary terminal pin for hierarchical subcircuit modular blocks."
+        ));
+
+        register(new ComponentDef(
+                "RELUCTANCE_TERMINAL", "Reluctance Network Terminal Pin", "POWER_LK", 30, "RPIN",
+                List.of("in", "out"),
+                List.of(),
+                "Boundary terminal pin for magnetic reluctance subcircuit networks."
+        ));
+
+        register(new ComponentDef(
+                "GLOBAL_TERMINAL", "Global Ground Terminal", "POWER_LK", 31, "GND",
+                List.of("gnd"),
+                List.of(),
+                "Global named circuit reference net (ground / 0V reference node).",
+                1
+        ));
+
+        register(new ComponentDef(
+                "RELUCTANCE_GLOBAL_TERMINAL", "Reluctance Global Ground Terminal", "POWER_LK", 32, "RGND",
+                List.of("gnd"),
+                List.of(),
+                "Global reference terminal of the magnetic reluctance network.",
+                1
+        ));
+
+        register(new ComponentDef(
+                "DC_MOTOR_PERM", "Permanent Magnet DC Motor", "POWER_LK", 51, "M_DC",
+                List.of("a1", "a2"),
+                List.of(
+                        new ParameterDef("r_armature", "number", "Ohm", 0.5, 0, "Armature circuit resistance in Ohms"),
+                        new ParameterDef("l_armature", "number", "H", 2e-3, 1, "Armature circuit inductance in Henrys"),
+                        new ParameterDef("k_torque", "number", "N*m/A", 0.1, 2, "Back-EMF and torque constant Km in N*m/A (or V*s/rad)")
+                ),
+                "Permanent magnet DC machine with armature resistance, inductance, and back-EMF torque constant."
+        ));
+
+        register(new ComponentDef(
+                "NONLINEAR_RELUCTANCE", "Nonlinear Saturating Reluctance", "POWER_LK", 52, "RmNL",
+                List.of("p", "n"),
+                List.of(
+                        new ParameterDef("reluctance", "number", "1/H", 1.0, 0, "Nominal small-signal magnetic reluctance in inverse Henrys")
+                ),
+                "Magnetic reluctance element with current/flux-dependent nonlinear B-H saturation characteristic."
+        ));
+
         // ====================================================================
         // Control Domain Components (web catalog type numbers; executed natively
         // by the headless engine)
@@ -451,6 +602,40 @@ public final class ComponentCatalog {
                 ),
                 "Complementary half-bridge gate driver with turn-on delay (dead-time insertion) to prevent shoot-through cross-conduction.",
                 1
+        ));
+
+        register(new ComponentDef(
+                "SUB", "Subtract", "CONTROL", 1017, "SUB",
+                List.of("plus", "minus", "out"),
+                List.of(),
+                "Subtracts input 1 from input 0: out = plus - minus.",
+                2
+        ));
+
+        register(new ComponentDef(
+                "ADD", "Add", "CONTROL", 1018, "ADD",
+                List.of("in0", "in1", "out"),
+                List.of(),
+                "Adds two signals: out = in0 + in1.",
+                2
+        ));
+
+        register(new ComponentDef(
+                "LIMIT", "Limiter", "CONTROL", 1021, "LIM",
+                List.of("in", "out"),
+                List.of(
+                        new ParameterDef("min", "number", "", -1.0, 0, "Lower limit bound"),
+                        new ParameterDef("max", "number", "", 1.0, 1, "Upper limit bound")
+                ),
+                "Limits signal amplitude between Min and Max bounds."
+        ));
+
+        register(new ComponentDef(
+                "SAMPLE_HOLD", "Sample and Hold", "CONTROL", 1033, "SH",
+                List.of("d", "clk", "out"),
+                List.of(),
+                "Samples data input when clock signal exceeds 0.5, holds otherwise.",
+                2
         ));
 
         register(new ComponentDef(
@@ -656,6 +841,132 @@ public final class ComponentCatalog {
                 8
         ));
 
+        register(new ComponentDef(
+                "MUL", "Multiply", "CONTROL", 1019, "MUL",
+                List.of("in0", "in1", "out"),
+                List.of(),
+                "Multiplies two signals: out = in0 * in1. Legacy editor type number: 14.",
+                2
+        ));
+
+        register(new ComponentDef(
+                "DIV", "Divide", "CONTROL", 1020, "DIV",
+                List.of("num", "den", "out"),
+                List.of(),
+                "Divides numerator by denominator: out = num / den. Legacy editor type number: 15.",
+                2
+        ));
+
+        register(new ComponentDef(
+                "ABS", "Absolute Value", "CONTROL", 1022, "ABS",
+                List.of("in", "out"),
+                List.of(),
+                "Computes absolute value: out = |in|. Legacy editor type number: 32."
+        ));
+
+        register(new ComponentDef(
+                "SQRT", "Square Root", "CONTROL", 1023, "SQRT",
+                List.of("in", "out"),
+                List.of(),
+                "Computes square root: out = sqrt(in). Legacy editor type number: 43."
+        ));
+
+        register(new ComponentDef(
+                "EXP", "Exponential", "CONTROL", 1024, "EXP",
+                List.of("in", "out"),
+                List.of(),
+                "Natural exponential function: out = e^(in). Legacy editor type number: 40."
+        ));
+
+        register(new ComponentDef(
+                "LN", "Natural Logarithm", "CONTROL", 1025, "LN",
+                List.of("in", "out"),
+                List.of(),
+                "Natural logarithm: out = ln(in). Legacy editor type number: 41."
+        ));
+
+        register(new ComponentDef(
+                "SIN", "Sine", "CONTROL", 1026, "SIN",
+                List.of("in", "out"),
+                List.of(),
+                "Trigonometric sine function: out = sin(in) with in in radians. Legacy editor type number: 34."
+        ));
+
+        register(new ComponentDef(
+                "COS", "Cosine", "CONTROL", 1027, "COS",
+                List.of("in", "out"),
+                List.of(),
+                "Trigonometric cosine function: out = cos(in) with in in radians. Legacy editor type number: 36."
+        ));
+
+        register(new ComponentDef(
+                "MIN", "Minimum", "CONTROL", 1028, "MIN",
+                List.of("in0", "in1", "out"),
+                List.of(),
+                "Selects the smaller of two signals: out = min(in0, in1). Legacy editor type number: 49.",
+                2
+        ));
+
+        register(new ComponentDef(
+                "MAX", "Maximum", "CONTROL", 1029, "MAX",
+                List.of("in0", "in1", "out"),
+                List.of(),
+                "Selects the larger of two signals: out = max(in0, in1). Legacy editor type number: 50.",
+                2
+        ));
+
+        register(new ComponentDef(
+                "HYS", "Hysteresis", "CONTROL", 1030, "HYS",
+                List.of("in", "out"),
+                List.of(
+                        new ParameterDef("h", "number", "", 0.1, 0, "Switching threshold window half-width (switches at +H and -H)")
+                ),
+                "Hysteresis comparator with threshold window +/-H: outputs +1 when in > +H, -1 when in < -H, and latches previous state inside [-H, +H]. Legacy editor type number: 11."
+        ));
+
+        register(new ComponentDef(
+                "PT2", "PT2 Filter", "CONTROL", 1031, "PT2",
+                List.of("in", "out"),
+                List.of(
+                        new ParameterDef("tau", "number", "s", 0.001, 0, "Filter time constant tau in seconds"),
+                        new ParameterDef("k", "number", "", 1.0, 1, "DC Gain K")
+                ),
+                "Second-order low-pass filter element: G(s) = K / (1 + (tau*s)^2). Legacy editor type number: 9."
+        ));
+
+        register(new ComponentDef(
+                "PD", "PD / Derivative Element", "CONTROL", 1032, "PD",
+                List.of("in", "out"),
+                List.of(
+                        new ParameterDef("kd", "number", "", 1.0, 0, "Derivative gain Kd for discrete differentiator y = Kd * dx/dt")
+                ),
+                "Discrete derivative differentiator: y = (Kd / dt) * (in - in_old). Legacy editor type number: 29."
+        ));
+
+        register(new ComponentDef(
+                "TIME", "Simulation Time", "CONTROL", 1034, "TIME",
+                List.of("t"),
+                List.of(),
+                "Outputs current simulation elapsed time t in seconds. Legacy editor type number: 58.",
+                0
+        ));
+
+        register(new ComponentDef(
+                "XOR", "XOR Gate", "CONTROL", 1035, "XOR",
+                List.of("a", "b", "out"),
+                List.of(),
+                "Logical XOR: output = 1 when exactly one input exceeds 0.5. Legacy editor type number: 21.",
+                2
+        ));
+
+        register(new ComponentDef(
+                "GE", "Greater or Equal", "CONTROL", 1036, "GE",
+                List.of("in0", "in1", "out"),
+                List.of(),
+                "Compares two signals: output = 1 while in0 >= in1, else 0. Legacy editor type number: 45.",
+                2
+        ));
+
         // ====================================================================
         // Thermal Domain Components (classic .ipes heat network)
         // ====================================================================
@@ -724,83 +1035,296 @@ public final class ComponentCatalog {
                 "Thermal reference/ground terminal (net label '0').",
                 1
         ));
+
+        register(new ComponentDef(
+                "TH_MODUL", "Thermal Housing Module", "THERM", 42, "MOD",
+                List.of("chip", "heatsink"),
+                List.of(
+                        new ParameterDef("r_th", "number", "K/W", 1.0, 0, "Module thermal resistance in Kelvin per Watt"),
+                        new ParameterDef("c_th", "number", "J/K", 1.0, 1, "Module heat capacity in Joules per Kelvin")
+                ),
+                "Module housing thermal model: Rth/Cth pair between chip and heatsink."
+        ));
+
+        register(new ComponentDef(
+                "TH_TERMINAL", "Thermal Subcircuit Terminal", "THERM", 49, "T_PIN",
+                List.of("in", "out"),
+                List.of(),
+                "Thermal subcircuit boundary terminal pin."
+        ));
+
+        // ====================================================================
+        // Special & Documentation Domain Components
+        // ====================================================================
+
+        register(new ComponentDef(
+                "TEXTBOX", "Markdown Note / Textbox", "SPECIAL", 2001, "NOTE",
+                List.of(),
+                List.of(
+                        new ParameterDef("width", "number", "", 26.0, 1, "Card width in schematic grid units"),
+                        new ParameterDef("height", "number", "", 14.0, 2, "Card height in schematic grid units")
+                ),
+                "Rich Markdown documentation note rendered directly on the schematic canvas for circuit explanations and block diagram documentation.",
+                0
+        ));
     }
 
-    private static final Map<String, String> ALIASES = Map.ofEntries(
-            Map.entry("DC_VOLTAGE", "VOLTAGE_SOURCE_DC"),
-            Map.entry("DC_SOURCE", "VOLTAGE_SOURCE_DC"),
-            Map.entry("VOLTAGE_DC", "VOLTAGE_SOURCE_DC"),
-            Map.entry("V_DC", "VOLTAGE_SOURCE_DC"),
-            Map.entry("VOLTAGE_SOURCE", "VOLTAGE_SOURCE_DC"),
-            Map.entry("AC_VOLTAGE", "VOLTAGE_SOURCE_AC"),
-            Map.entry("AC_SOURCE", "VOLTAGE_SOURCE_AC"),
-            Map.entry("VOLTAGE_AC", "VOLTAGE_SOURCE_AC"),
-            Map.entry("V_AC", "VOLTAGE_SOURCE_AC"),
-            Map.entry("DC_CURRENT", "CURRENT_SOURCE_DC"),
-            Map.entry("CURRENT_SOURCE", "CURRENT_SOURCE_DC"),
-            Map.entry("I_DC", "CURRENT_SOURCE_DC"),
-            Map.entry("AC_CURRENT", "CURRENT_SOURCE_AC"),
-            Map.entry("I_AC", "CURRENT_SOURCE_AC"),
-            Map.entry("SWITCH", "IDEAL_SWITCH"),
-            Map.entry("IDEALSWITCH", "IDEAL_SWITCH"),
-            Map.entry("MOSFET_TRANSISTOR", "MOSFET"),
-            Map.entry("TRANSFORMER_IDEAL", "TRANSFORMER"),
-            Map.entry("SCRIPT", "SCRIPT_BLOCK"),
-            Map.entry("SCRIPTBLOCK", "SCRIPT_BLOCK"),
-            Map.entry("FUNC", "SCRIPT_BLOCK"),
-            Map.entry("CONST", "CONSTANT"),
-            Map.entry("K", "CONSTANT"),
-            Map.entry("VOLT", "VOLTMETER"),
-            Map.entry("AMM", "AMMETER"),
-            Map.entry("PI_CTRL", "PI"),
-            Map.entry("PT1_FILTER", "PT1"),
-            Map.entry("COMPARATOR_PWM", "COMPARATOR"),
-            Map.entry("CMP", "COMPARATOR"),
-            Map.entry("MUX", "SELECTOR"),
-            Map.entry("RTH", "TH_RTH"),
-            Map.entry("CTH", "TH_CTH"),
-            Map.entry("THERMAL_RESISTANCE", "TH_RTH"),
-            Map.entry("THERMAL_RESISTOR", "TH_RTH"),
-            Map.entry("THERMAL_CAPACITANCE", "TH_CTH"),
-            Map.entry("THERMAL_CAPACITOR", "TH_CTH"),
-            Map.entry("HEAT_FLOW", "TH_FLOW"),
-            Map.entry("HEAT_FLOW_SOURCE", "TH_FLOW"),
-            Map.entry("TEMPERATURE_SOURCE", "TH_TEMP"),
-            Map.entry("AMBIENT", "TH_AMBIENT"),
-            Map.entry("AMBIENT_TEMPERATURE", "TH_AMBIENT"),
-            Map.entry("THERMAL_POWER_LOSS", "TH_PvCHIP"),
-            Map.entry("PV_CHIP", "TH_PvCHIP"),
-            Map.entry("PV", "TH_PvCHIP"),
-            Map.entry("THERMAL_GROUND", "TH_GLOBAL_TERMINAL"),
-            Map.entry("TH_GND", "TH_GLOBAL_TERMINAL"),
-            Map.entry("LKOP2", "COUPLED_INDUCTOR"),
-            Map.entry("LK_LKOP2", "COUPLED_INDUCTOR"),
-            Map.entry("LK_M", "MUTUAL_INDUCTANCE"),
-            Map.entry("MUTUAL_COUPLING", "MUTUAL_INDUCTANCE"),
-            Map.entry("COUPLER", "MUTUAL_INDUCTANCE"),
-            Map.entry("SATURATING_INDUCTOR", "NONLINEAR_INDUCTOR"),
-            Map.entry("ARCSIN", "ASIN"),
-            Map.entry("ARCCOS", "ACOS"),
-            Map.entry("ARCTAN", "ATAN"),
-            Map.entry("SQUARE", "SQR"),
-            Map.entry("POWER", "POW"),
-            Map.entry("SIGNUM", "SIGN"),
-            Map.entry("EQUAL", "EQ"),
-            Map.entry("NOTEQUAL", "NE"),
-            Map.entry("COUNT", "COUNTER"),
-            Map.entry("ABC_DQ", "ABCDQ"),
-            Map.entry("DQ_ABC", "DQABC"),
-            Map.entry("THYRISTOR_CONTROL", "THYR_CTRL"),
-            Map.entry("PMSM_CTRL", "PMSM_CONTROL"),
-            Map.entry("PMSM_MOD", "PMSM_MODULATOR"),
-            Map.entry("SVM", "SPACE_VECTOR"),
-            Map.entry("DEADTIME_GENERATOR", "DEADTIME"),
-            Map.entry("DEAD_TIME", "DEADTIME"),
-            Map.entry("SPWM", "SPWM_GENERATOR"),
-            Map.entry("PWM_SPWM", "SPWM_GENERATOR"),
-            Map.entry("PI_REGULATOR", "PI_CONTROLLER"),
-            Map.entry("PI_ANTI_WINDUP", "PI_CONTROLLER")
-    );
+    private static final Map<String, String> ALIASES = new LinkedHashMap<>();
+
+    private static void alias(String alias, String target) {
+        ALIASES.put(alias.toUpperCase(Locale.ROOT), target.toUpperCase(Locale.ROOT));
+    }
+
+    static {
+        // Power passives & sources
+        alias("R", "RESISTOR");
+        alias("RES", "RESISTOR");
+        alias("LK_R", "RESISTOR");
+        alias("L", "INDUCTOR");
+        alias("IND", "INDUCTOR");
+        alias("LK_L", "INDUCTOR");
+        alias("C", "CAPACITOR");
+        alias("CAP", "CAPACITOR");
+        alias("LK_C", "CAPACITOR");
+        alias("DC_VOLTAGE", "VOLTAGE_SOURCE_DC");
+        alias("DC_SOURCE", "VOLTAGE_SOURCE_DC");
+        alias("VOLTAGE_DC", "VOLTAGE_SOURCE_DC");
+        alias("V_DC", "VOLTAGE_SOURCE_DC");
+        alias("VOLTAGE_SOURCE", "VOLTAGE_SOURCE_DC");
+        alias("VDC", "VOLTAGE_SOURCE_DC");
+        alias("V", "VOLTAGE_SOURCE_DC");
+        alias("LK_U", "VOLTAGE_SOURCE_DC");
+        alias("AC_VOLTAGE", "VOLTAGE_SOURCE_AC");
+        alias("AC_SOURCE", "VOLTAGE_SOURCE_AC");
+        alias("VOLTAGE_AC", "VOLTAGE_SOURCE_AC");
+        alias("V_AC", "VOLTAGE_SOURCE_AC");
+        alias("VAC", "VOLTAGE_SOURCE_AC");
+        alias("DC_CURRENT", "CURRENT_SOURCE_DC");
+        alias("CURRENT_SOURCE", "CURRENT_SOURCE_DC");
+        alias("I_DC", "CURRENT_SOURCE_DC");
+        alias("IDC", "CURRENT_SOURCE_DC");
+        alias("I", "CURRENT_SOURCE_DC");
+        alias("LK_I", "CURRENT_SOURCE_DC");
+        alias("AC_CURRENT", "CURRENT_SOURCE_AC");
+        alias("I_AC", "CURRENT_SOURCE_AC");
+        alias("IAC", "CURRENT_SOURCE_AC");
+
+        // Power switches & semiconductors
+        alias("D", "DIODE");
+        alias("LK_D", "DIODE");
+        alias("SWITCH", "IDEAL_SWITCH");
+        alias("IDEALSWITCH", "IDEAL_SWITCH");
+        alias("SW", "IDEAL_SWITCH");
+        alias("LK_S", "IDEAL_SWITCH");
+        alias("THYR", "THYRISTOR");
+        alias("SCR", "THYRISTOR");
+        alias("LK_THYR", "THYRISTOR");
+        alias("LK_TH", "THYRISTOR");
+        alias("LK_IGBT", "IGBT");
+        alias("MOSFET_TRANSISTOR", "MOSFET");
+        alias("LK_MOSFET", "MOSFET");
+        alias("TR", "TRANSFORMER");
+        alias("TRANSFORMER_IDEAL", "TRANSFORMER");
+        alias("LK_TRANS", "TRANSFORMER");
+        alias("Q", "BJT");
+        alias("NPN", "BJT");
+        alias("PNP", "BJT");
+        alias("LK_BJT", "BJT");
+
+        // Coupled, magnetic & reluctance
+        alias("LKOP2", "COUPLED_INDUCTOR");
+        alias("LK_LKOP2", "COUPLED_INDUCTOR");
+        alias("LK_M", "MUTUAL_INDUCTANCE");
+        alias("MUTUAL_COUPLING", "MUTUAL_INDUCTANCE");
+        alias("COUPLER", "MUTUAL_INDUCTANCE");
+        alias("SATURATING_INDUCTOR", "NONLINEAR_INDUCTOR");
+        alias("RM", "RELUCTANCE");
+        alias("REL_RELUCTANCE", "RELUCTANCE");
+        alias("LREL", "RELUCTANCE_COIL");
+        alias("REL_INDUCTOR", "RELUCTANCE_COIL");
+        alias("RELUCTANCE_INDUCTOR", "RELUCTANCE_COIL");
+        alias("MMF", "MMF_SOURCE");
+        alias("REL_MMF", "MMF_SOURCE");
+        alias("RMNL", "NONLINEAR_RELUCTANCE");
+        alias("NONLIN_REL", "NONLINEAR_RELUCTANCE");
+
+        // Machines & OpAmps & Terminals
+        alias("OP", "OPAMP");
+        alias("OP_AMP", "OPAMP");
+        alias("OPV1", "OPAMP");
+        alias("LK_OPV1", "OPAMP");
+        alias("LISN", "LISN");
+        alias("LK_LISN", "LISN");
+        alias("M_DC", "DC_MOTOR");
+        alias("MOTOR_DC", "DC_MOTOR");
+        alias("LK_MOTOR", "DC_MOTOR");
+        alias("PM_DC_MOTOR", "DC_MOTOR_PERM");
+        alias("MOTOR_PERM", "DC_MOTOR_PERM");
+        alias("LK_MOTOR_PERM", "DC_MOTOR_PERM");
+        alias("PMSM", "PMSM_MOTOR");
+        alias("MOTOR_PMSM", "PMSM_MOTOR");
+        alias("LK_MOTOR_PMSM", "PMSM_MOTOR");
+        alias("SM_SALIENT", "SYNC_MOTOR_SALIENT");
+        alias("LK_MOTOR_SMSALIENT", "SYNC_MOTOR_SALIENT");
+        alias("SM_ROUND", "SYNC_MOTOR_ROUND");
+        alias("LK_MOTOR_SMROUND", "SYNC_MOTOR_ROUND");
+        alias("IM_CAGE", "INDUCTION_MOTOR_CAGE");
+        alias("LK_MOTOR_IMA", "INDUCTION_MOTOR_CAGE");
+        alias("INDUCTION_MOTOR_A", "INDUCTION_MOTOR_CAGE");
+        alias("IM", "INDUCTION_MOTOR");
+        alias("LK_MOTOR_IMC", "INDUCTION_MOTOR");
+        alias("IM_SAT", "INDUCTION_MOTOR_SAT");
+        alias("LK_MOTOR_IMSAT", "INDUCTION_MOTOR_SAT");
+        alias("PIN", "SUBCIRCUIT_TERMINAL");
+        alias("TERMINAL", "SUBCIRCUIT_TERMINAL");
+        alias("LK_TERMINAL", "SUBCIRCUIT_TERMINAL");
+        alias("RPIN", "RELUCTANCE_TERMINAL");
+        alias("REL_TERMINAL", "RELUCTANCE_TERMINAL");
+        alias("GND", "GLOBAL_TERMINAL");
+        alias("GROUND", "GLOBAL_TERMINAL");
+        alias("GLOBAL_NET", "GLOBAL_TERMINAL");
+        alias("LK_GLOBAL_TERMINAL", "GLOBAL_TERMINAL");
+        alias("RGND", "RELUCTANCE_GLOBAL_TERMINAL");
+        alias("REL_GLOBAL_TERMINAL", "RELUCTANCE_GLOBAL_TERMINAL");
+        alias("RELUCTANCE_GROUND", "RELUCTANCE_GLOBAL_TERMINAL");
+
+        // Thermal domain
+        alias("RTH", "TH_RTH");
+        alias("CTH", "TH_CTH");
+        alias("THERMAL_RESISTANCE", "TH_RTH");
+        alias("THERMAL_RESISTOR", "TH_RTH");
+        alias("THERMAL_CAPACITANCE", "TH_CTH");
+        alias("THERMAL_CAPACITOR", "TH_CTH");
+        alias("HEAT_FLOW", "TH_FLOW");
+        alias("HEAT_FLOW_SOURCE", "TH_FLOW");
+        alias("TEMPERATURE_SOURCE", "TH_TEMP");
+        alias("AMBIENT", "TH_AMBIENT");
+        alias("AMBIENT_TEMPERATURE", "TH_AMBIENT");
+        alias("THERMAL_POWER_LOSS", "TH_PvCHIP");
+        alias("PV_CHIP", "TH_PvCHIP");
+        alias("PV", "TH_PvCHIP");
+        alias("MOD", "TH_MODUL");
+        alias("THERMAL_MODULE", "TH_MODUL");
+        alias("MODUL", "TH_MODUL");
+        alias("THERMAL_TERMINAL", "TH_TERMINAL");
+        alias("THERMAL_GROUND", "TH_GLOBAL_TERMINAL");
+        alias("TH_GND", "TH_GLOBAL_TERMINAL");
+
+        // Control domain
+        alias("GATE_DRIVER", "GATE");
+        alias("VOLT", "VOLTMETER");
+        alias("VOLTAGE_PROBE", "VOLTMETER");
+        alias("V_PROBE", "VOLTMETER");
+        alias("AMM", "AMMETER");
+        alias("AMP", "AMMETER");
+        alias("CURRENT_PROBE", "AMMETER");
+        alias("I_PROBE", "AMMETER");
+        alias("OSCILLOSCOPE", "SCOPE");
+        alias("SIGNAL", "SIGNAL_SOURCE");
+        alias("SIG", "SIGNAL_SOURCE");
+        alias("SOURCE_SIGNAL", "SIGNAL_SOURCE");
+        alias("CONST", "CONSTANT");
+        alias("K", "CONSTANT");
+        alias("AMP_GAIN", "GAIN");
+        alias("PI_CTRL", "PI");
+        alias("PT1_FILTER", "PT1");
+        alias("PT2_FILTER", "PT2");
+        alias("DERIVATIVE", "PD");
+        alias("DIFF", "PD");
+        alias("DIFFERENTIATOR", "PD");
+        alias("INT", "INTEGRATOR");
+        alias("CMP", "COMPARATOR");
+        alias("COMPARATOR_PWM", "COMPARATOR");
+        alias("LOGIC_AND", "AND");
+        alias("LOGIC_OR", "OR");
+        alias("INVERTER", "NOT");
+        alias("LOGIC_NOT", "NOT");
+        alias("LOGIC_XOR", "XOR");
+        alias("GREATER_EQUAL", "GE");
+        alias("GTE", "GE");
+        alias("MUX", "SELECTOR");
+        alias("MULTIPLEXER", "SELECTOR");
+        alias("TRANSPORT_DELAY", "DELAY");
+        alias("SCRIPT", "SCRIPT_BLOCK");
+        alias("SCRIPTBLOCK", "SCRIPT_BLOCK");
+        alias("FUNC", "SCRIPT_BLOCK");
+        alias("MCU", "SCRIPT_BLOCK");
+        alias("DSP", "SCRIPT_BLOCK");
+        alias("JAVA", "JAVA_BLOCK");
+        alias("JAVA_FUNCTION", "JAVA_BLOCK");
+        alias("CNATC", "NATIVE_C");
+        alias("C_BLOCK", "NATIVE_C");
+        alias("DEADTIME_GENERATOR", "DEADTIME");
+        alias("DEAD_TIME", "DEADTIME");
+        alias("DT", "DEADTIME");
+        alias("SPWM", "SPWM_GENERATOR");
+        alias("PWM_SPWM", "SPWM_GENERATOR");
+        alias("PI_REGULATOR", "PI_CONTROLLER");
+        alias("PI_ANTI_WINDUP", "PI_CONTROLLER");
+        alias("SUBTRACT", "SUB");
+        alias("SUBTRACTION", "SUB");
+        alias("ADDER", "ADD");
+        alias("SUM", "ADD");
+        alias("MULTIPLY", "MUL");
+        alias("MULTIPLICATION", "MUL");
+        alias("PROD", "MUL");
+        alias("PRODUCT", "MUL");
+        alias("DIVIDE", "DIV");
+        alias("DIVISION", "DIV");
+        alias("QUOTIENT", "DIV");
+        alias("LIMITER", "LIMIT");
+        alias("LIM", "LIMIT");
+        alias("SATURATION", "LIMIT");
+        alias("ABSOLUTE", "ABS");
+        alias("ROOT", "SQRT");
+        alias("EXPONENTIAL", "EXP");
+        alias("LOG", "LN");
+        alias("NATURAL_LOG", "LN");
+        alias("SINE", "SIN");
+        alias("COSINE", "COS");
+        alias("TANGENT", "TAN");
+        alias("ARCSIN", "ASIN");
+        alias("ARCCOS", "ACOS");
+        alias("ARCTAN", "ATAN");
+        alias("SQUARE", "SQR");
+        alias("POWER", "POW");
+        alias("RND", "ROUND");
+        alias("SIGNUM", "SIGN");
+        alias("SGN", "SIGN");
+        alias("EQUAL", "EQ");
+        alias("NOTEQUAL", "NE");
+        alias("NOT_EQUAL", "NE");
+        alias("MINIMUM", "MIN");
+        alias("MAXIMUM", "MAX");
+        alias("HYSTERESIS", "HYS");
+        alias("COUNT", "COUNTER");
+        alias("CNT", "COUNTER");
+        alias("SIM_TIME", "TIME");
+        alias("CLOCK", "TIME");
+        alias("SAMPLEHOLD", "SAMPLE_HOLD");
+        alias("SAMPLE_AND_HOLD", "SAMPLE_HOLD");
+        alias("SH", "SAMPLE_HOLD");
+        alias("ABC_DQ", "ABCDQ");
+        alias("PARK", "ABCDQ");
+        alias("CLARKE", "ABCDQ");
+        alias("DQ_ABC", "DQABC");
+        alias("INV_PARK", "DQABC");
+        alias("THYRISTOR_CONTROL", "THYR_CTRL");
+        alias("PMSM_CTRL", "PMSM_CONTROL");
+        alias("FOC", "PMSM_CONTROL");
+        alias("PMSM_MOD", "PMSM_MODULATOR");
+        alias("SVPWM", "PMSM_MODULATOR");
+        alias("BUS_SPLITTER", "DEMUX");
+        alias("SVM", "SPACE_VECTOR");
+        alias("SLIDING_DFT", "SDFT");
+        alias("SPM", "SPARSEMATRIX");
+        alias("ISMC", "SPARSEMATRIX");
+
+        // Documentation / Special
+        alias("NOTE", "TEXTBOX");
+        alias("NOTE_BOX", "TEXTBOX");
+        alias("ANNOTATION", "TEXTBOX");
+    }
 
     private static void register(ComponentDef def) {
         REGISTRY.put(def.id().toUpperCase(Locale.ROOT), def);
@@ -879,48 +1403,172 @@ public final class ComponentCatalog {
             Map.entry(85, 1054)   // DEMUX
     );
 
+    public static Map<String, Object> toComponentEntry(ComponentDef def) {
+        Map<String, Object> entry = new LinkedHashMap<>();
+        entry.put("type", def.id());
+        entry.put("name", def.displayName());
+        entry.put("domain", def.domain());
+        entry.put("type_number", def.typeNumber());
+        entry.put("prefix", def.defaultPrefix());
+        entry.put("pins", def.pins());
+        entry.put("input_pins", def.pins().subList(0, def.xPinCount()));
+        entry.put("output_pins", def.pins().subList(def.xPinCount(), def.pins().size()));
+        entry.put("headless_executable", def.headlessExecutable());
+        entry.put("description", def.description());
+
+        List<Map<String, Object>> params = new ArrayList<>();
+        for (ParameterDef p : def.parameters()) {
+            Map<String, Object> pm = new LinkedHashMap<>();
+            pm.put("name", p.name());
+            pm.put("type", p.type());
+            pm.put("unit", p.unit());
+            pm.put("default", p.defaultValue());
+            pm.put("slot", p.targetSlot());
+            pm.put("description", p.description());
+            params.add(pm);
+        }
+        entry.put("parameters", params);
+        return entry;
+    }
+
+    private static Map<String, Object> generateUsageExample(ComponentDef def) {
+        Map<String, Object> example = new LinkedHashMap<>();
+        if ("POWER_LK".equals(def.domain())) {
+            Map<String, Object> comp = new LinkedHashMap<>();
+            comp.put("name", def.defaultPrefix() + "1");
+            comp.put("type", def.id());
+            comp.put("nodes", def.pins().isEmpty() ? List.of("nodeA", "nodeB") : def.pins());
+            Map<String, Object> params = new LinkedHashMap<>();
+            for (ParameterDef p : def.parameters()) {
+                params.put(p.name(), p.defaultValue());
+            }
+            if (!params.isEmpty()) {
+                comp.put("parameters", params);
+            }
+            example.put("placement_section", "components");
+            example.put("example", comp);
+        } else if ("THERM".equals(def.domain())) {
+            Map<String, Object> comp = new LinkedHashMap<>();
+            comp.put("name", def.defaultPrefix() + "1");
+            comp.put("type", def.id());
+            comp.put("nodes", def.pins().isEmpty() ? List.of("th_node1", "th_node2") : def.pins());
+            Map<String, Object> params = new LinkedHashMap<>();
+            for (ParameterDef p : def.parameters()) {
+                params.put(p.name(), p.defaultValue());
+            }
+            if (!params.isEmpty()) {
+                comp.put("parameters", params);
+            }
+            example.put("placement_section", "thermal_components");
+            example.put("example", comp);
+        } else if ("SPECIAL".equals(def.domain())) {
+            Map<String, Object> note = new LinkedHashMap<>();
+            note.put("name", "NOTE_1");
+            note.put("text", "Circuit documentation note or block header");
+            example.put("placement_section", "notes");
+            example.put("example", note);
+        } else {
+            Map<String, Object> block = new LinkedHashMap<>();
+            block.put("name", def.defaultPrefix() + "_1");
+            block.put("type", def.id());
+            Map<String, Object> params = new LinkedHashMap<>();
+            for (ParameterDef p : def.parameters()) {
+                params.put(p.name(), p.defaultValue());
+            }
+            if (!params.isEmpty()) {
+                block.put("parameters", params);
+            }
+            example.put("placement_section", "control.blocks");
+            example.put("example", block);
+        }
+        return example;
+    }
+
     public static Map<String, Object> toCatalogJson() {
+        return toCatalogJson(null, null);
+    }
+
+    public static Map<String, Object> toCatalogJson(String domainFilter, String componentQuery) {
+        if (componentQuery != null && !componentQuery.isBlank()) {
+            ComponentDef def = get(componentQuery);
+            if (def == null) {
+                Map<String, Object> notFound = new LinkedHashMap<>();
+                notFound.put("found", false);
+                notFound.put("query", componentQuery);
+                notFound.put("message", "No component matching '" + componentQuery + "' found in catalog.");
+                String upper = componentQuery.trim().toUpperCase(Locale.ROOT);
+                List<String> suggestions = REGISTRY.keySet().stream()
+                        .filter(k -> k.contains(upper))
+                        .limit(5)
+                        .toList();
+                notFound.put("suggestions", suggestions);
+                return notFound;
+            }
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("found", true);
+            result.put("component", toComponentEntry(def));
+            List<String> aliases = ALIASES.entrySet().stream()
+                    .filter(e -> e.getValue().equalsIgnoreCase(def.id()))
+                    .map(Map.Entry::getKey)
+                    .sorted()
+                    .toList();
+            result.put("aliases", aliases);
+            result.put("usage_example", generateUsageExample(def));
+            return result;
+        }
+
         Map<String, Object> result = new LinkedHashMap<>();
         List<Map<String, Object>> powerList = new ArrayList<>();
         List<Map<String, Object>> controlList = new ArrayList<>();
         List<Map<String, Object>> thermalList = new ArrayList<>();
+        List<Map<String, Object>> specialList = new ArrayList<>();
 
         for (ComponentDef def : REGISTRY.values()) {
-            Map<String, Object> entry = new LinkedHashMap<>();
-            entry.put("type", def.id());
-            entry.put("name", def.displayName());
-            entry.put("domain", def.domain());
-            entry.put("type_number", def.typeNumber());
-            entry.put("prefix", def.defaultPrefix());
-            entry.put("pins", def.pins());
-            entry.put("input_pins", def.pins().subList(0, def.xPinCount()));
-            entry.put("output_pins", def.pins().subList(def.xPinCount(), def.pins().size()));
-            entry.put("headless_executable", def.headlessExecutable());
-            entry.put("description", def.description());
-
-            List<Map<String, Object>> params = new ArrayList<>();
-            for (ParameterDef p : def.parameters()) {
-                Map<String, Object> pm = new LinkedHashMap<>();
-                pm.put("name", p.name());
-                pm.put("type", p.type());
-                pm.put("unit", p.unit());
-                pm.put("default", p.defaultValue());
-                pm.put("slot", p.targetSlot());
-                pm.put("description", p.description());
-                params.add(pm);
-            }
-            entry.put("parameters", params);
+            Map<String, Object> entry = toComponentEntry(def);
 
             switch (def.domain()) {
                 case "POWER_LK" -> powerList.add(entry);
                 case "THERM" -> thermalList.add(entry);
+                case "SPECIAL" -> specialList.add(entry);
                 default -> controlList.add(entry);
+            }
+        }
+
+        if (domainFilter != null && !domainFilter.isBlank()) {
+            String norm = domainFilter.trim().toLowerCase(Locale.ROOT);
+            Map<String, Object> filtered = new LinkedHashMap<>();
+            filtered.put("filtered_domain", norm);
+            List<Map<String, Object>> selected;
+            switch (norm) {
+                case "power", "power_lk", "lk" -> selected = powerList;
+                case "control", "ctrl" -> selected = controlList;
+                case "thermal", "therm", "th" -> selected = thermalList;
+                case "special", "doc", "notes" -> selected = specialList;
+                default -> selected = null;
+            }
+            if (selected != null) {
+                filtered.put("components", selected);
+                filtered.put("count", selected.size());
+                filtered.put("aliases", Collections.unmodifiableMap(ALIASES));
+                filtered.put("orientation_codes", orientationCodes());
+                filtered.put("grid_and_wiring_rules", gridAndWiringRules());
+                return filtered;
             }
         }
 
         result.put("power_components", powerList);
         result.put("control_components", controlList);
         result.put("thermal_components", thermalList);
+        result.put("special_components", specialList);
+
+        List<Map<String, Object>> allComponents = new ArrayList<>();
+        allComponents.addAll(powerList);
+        allComponents.addAll(controlList);
+        allComponents.addAll(thermalList);
+        allComponents.addAll(specialList);
+        result.put("all_components", allComponents);
+        result.put("total_component_count", REGISTRY.size());
+        result.put("aliases", Collections.unmodifiableMap(ALIASES));
 
         result.put("orientation_codes", orientationCodes());
         result.put("grid_and_wiring_rules", gridAndWiringRules());

@@ -116,7 +116,14 @@ public final class CircuitBuilder {
             }
 
             @SuppressWarnings("unchecked")
-            List<String> nodes = (List<String>) c.getOrDefault("nodes", List.of());
+            List<String> rawNodes = (List<String>) c.getOrDefault("nodes", List.of());
+            List<String> nodes = new ArrayList<>(rawNodes);
+            if ((def.typeNumber() == 31 || def.typeNumber() == 32) && nodes.isEmpty()) {
+                nodes.add("0");
+            }
+            if ((def.typeNumber() == 31 || def.typeNumber() == 32) && nodes.size() > 1) {
+                nodes = new ArrayList<>(List.of(nodes.get(0)));
+            }
             int expectedPins = def.pins().isEmpty() ? 2 : def.pins().size();
             if (nodes.size() != expectedPins) {
                 throw new IllegalArgumentException("Component " + typeStr + " expects "
@@ -183,7 +190,7 @@ public final class CircuitBuilder {
             comp.setFamily("LK");
             comp.setRawParameters(paramArray);
             comp.setTerminalXLabels(xNodes.toArray(new String[0]));
-            comp.setTerminalYLabels(yNodes.toArray(new String[0]));
+            comp.setTerminalYLabels(yNodes.isEmpty() ? (def.typeNumber() == 31 || def.typeNumber() == 32 ? xNodes.toArray(new String[0]) : new String[0]) : yNodes.toArray(new String[0]));
             comp.setParameterStrings(new String[]{"NIX_NIX_NIX", "NIX_NIX_NIX", "0"});
             comp.setUniqueObjectIdentifier(uid);
             applyNonlinearInductorSettings(comp, c);
@@ -312,21 +319,28 @@ public final class CircuitBuilder {
             int typeNum = "AMMETER".equalsIgnoreCase(type) || "AMP".equalsIgnoreCase(type)
                     ? TYP_PROBE_AMP : TYP_PROBE_VOLT;
 
+            int px = getInt(p, "x", 10);
+            int py = getInt(p, "y", probeY);
+
             long uid = nextCtrlId++;
-            ctrlNetToPoints.computeIfAbsent(signal, k -> new LinkedHashSet<>()).add(new Point(12, probeY));
+            if (signal != null) {
+                ctrlNetToPoints.computeIfAbsent(signal, k -> new LinkedHashSet<>()).add(new Point(px + 2, py));
+            }
             List<String> inLabels = List.of("NIX_NIX_NIX");
-            List<String> outLabels = List.of(signal);
+            List<String> outLabels = List.of(signal != null ? signal : "NIX_NIX_NIX");
             Map<String, Object> strParams = new LinkedHashMap<>();
             if (nodeA != null) {
                 strParams.put("nodeA", nodeA);
                 strParams.put("nodeB", nodeB != null ? nodeB : "0");
             }
-            PlacedControl placed = new PlacedControl(name, typeNum, uid, 10, probeY, 503,
+            PlacedControl placed = new PlacedControl(name, typeNum, uid, px, py, 503,
                     inLabels, outLabels, targetName, targetUid != null ? targetUid : 0L,
                     Map.of(), strParams);
             controlsByName.put(name, placed);
             model.addControlComponent(placed.toComponentData());
-            probeY++;
+            if (!p.containsKey("x") && !p.containsKey("y")) {
+                probeY++;
+            }
         }
 
         // Parameterized control blocks (SPWM, PI, Dead-Time)
@@ -399,16 +413,21 @@ public final class CircuitBuilder {
             String signal = (String) g.getOrDefault("in_signal",
                     g.getOrDefault("signal", g.get("signal_name")));
 
+            int gx = getInt(g, "x", 26);
+            int gy = getInt(g, "y", gateY);
+
             long uid = nextCtrlId++;
             if (signal != null) {
-                ctrlNetToPoints.computeIfAbsent(signal, k -> new LinkedHashSet<>()).add(new Point(24, gateY));
+                ctrlNetToPoints.computeIfAbsent(signal, k -> new LinkedHashSet<>()).add(new Point(gx - 2, gy));
             }
-            PlacedControl placed = new PlacedControl(name, TYP_GATE, uid, 26, gateY, 503,
+            PlacedControl placed = new PlacedControl(name, TYP_GATE, uid, gx, gy, 503,
                     List.of(signal != null ? signal : "NIX_NIX_NIX"), List.of("NIX_NIX_NIX"),
                     targetName, targetUid, Map.of(), Map.of());
             controlsByName.put(name, placed);
             model.addControlComponent(placed.toComponentData());
-            gateY++;
+            if (!g.containsKey("x") && !g.containsKey("y")) {
+                gateY++;
+            }
         }
 
         // Generic control blocks from the catalog (CONSTANT, PI, COMPARATOR, ...)
@@ -428,18 +447,24 @@ public final class CircuitBuilder {
             Map<String, Object> params = (Map<String, Object>) b.getOrDefault("parameters", Map.of());
             String outputLabel = (String) b.getOrDefault("output_label", b.get("signal_name"));
 
+            int posX = getInt(b, "x", blockX);
+            int posY = getInt(b, "y", blockY);
+            int orientation = getInt(b, "orientation", 503);
+
             long uid = nextCtrlId++;
             PlacedControl placed = new PlacedControl(name(b, def.defaultPrefix() + "." + uid),
-                    def.typeNumber(), uid, blockX, blockY, 503,
+                    def.typeNumber(), uid, posX, posY, orientation,
                     List.of(), outputLabel == null ? List.of("NIX_NIX_NIX") : List.of(outputLabel),
                     null, 0L, normalizeControlParams(def, params),
                     controlStringParams(b));
             controlsByName.put(placed.name(), placed);
             model.addControlComponent(placed.toComponentData());
-            blockY += CONTROL_BLOCK_STRIDE;
-            if (blockY > ctrlY + 40) {
-                blockY = ctrlY;
-                blockX += CONTROL_BLOCK_COLUMN_STRIDE;
+            if (!b.containsKey("x") && !b.containsKey("y")) {
+                blockY += CONTROL_BLOCK_STRIDE;
+                if (blockY > ctrlY + 40) {
+                    blockY = ctrlY;
+                    blockX += CONTROL_BLOCK_COLUMN_STRIDE;
+                }
             }
         }
 
@@ -456,9 +481,14 @@ public final class CircuitBuilder {
             }
             int fromOutput = (int) getDouble(w, "from_output", 0);
             int toInput = (int) getDouble(w, "to_input", 0);
-            Point start = source.outputPoint(503, fromOutput);
-            Point end = target.inputPoint(503, toInput);
-            List<Point> path = routeWire(start, end, wireIndex++);
+            Point start = source.outputPoint(source.orientation(), fromOutput);
+            Point end = target.inputPoint(target.orientation(), toInput);
+            List<Point> path;
+            if (w.containsKey("points")) {
+                path = parsePoints((List<?>) w.get("points"));
+            } else {
+                path = routeWire(start, end, wireIndex++);
+            }
             model.addConnection(new CircuitModel.ConnectionData("CONTROL", toPoints(path)));
         }
 
@@ -488,6 +518,32 @@ public final class CircuitBuilder {
             model.addConnection(conn);
         }
 
+        // 6. Documentation notes / textboxes (SPECIAL domain)
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> rawNotes =
+                (List<Map<String, Object>>) request.getOrDefault("notes",
+                        request.getOrDefault("textboxes", List.of()));
+        long nextSpecialId = 5001;
+        for (Map<String, Object> note : rawNotes) {
+            String noteName = name(note, "NOTE." + nextSpecialId);
+            String text = (String) note.getOrDefault("text", "## Circuit Notes\nWrite markdown documentation here.");
+            int posX = getInt(note, "x", 10);
+            int posY = getInt(note, "y", 4);
+            int width = getInt(note, "width", 26);
+            int height = getInt(note, "height", 14);
+            CircuitModel.ComponentData comp = new CircuitModel.ComponentData(2001, noteName, posX, posY, 503);
+            comp.setFamily("SPECIAL");
+            comp.setUniqueObjectIdentifier(nextSpecialId++);
+            comp.setRawParameters(new double[]{});
+            comp.setTerminalXLabels(new String[]{});
+            comp.setTerminalYLabels(new String[]{});
+            comp.setParameterStrings(new String[]{"NIX_NIX_NIX", "NIX_NIX_NIX", "0"});
+            comp.getParameters().put("text", text);
+            comp.getParameters().put("width", width);
+            comp.getParameters().put("height", height);
+            model.addSpecialComponent(comp);
+        }
+
         // 7. Serialize through the full-fidelity core writer
         byte[] bytes = CircuitFileWriter.write(model, compress);
         if (outputPath.getParent() != null) {
@@ -501,6 +557,7 @@ public final class CircuitBuilder {
         result.put("power_components_count", model.getCircuitComponents().size());
         result.put("control_components_count", model.getControlComponents().size());
         result.put("thermal_components_count", model.getThermalComponents().size());
+        result.put("special_components_count", model.getSpecialComponents().size());
         result.put("nets_count", netToPoints.size());
         result.put("control_signals_count", ctrlNetToPoints.size());
         return result;
@@ -1039,8 +1096,14 @@ public final class CircuitBuilder {
                                                               Map<String, Object> inputParams) {
         Map<String, Object> normalized = new LinkedHashMap<>();
         for (ComponentCatalog.ParameterDef p : def.parameters()) {
-            double value = inputParams.containsKey(p.name())
-                    ? getDouble(inputParams, p.name(), p.defaultValue()) : p.defaultValue();
+            double value = p.defaultValue();
+            if (inputParams.containsKey(p.name())) {
+                value = getDouble(inputParams, p.name(), p.defaultValue());
+            } else if (inputParams.containsKey(p.name().toLowerCase(Locale.ROOT))) {
+                value = getDouble(inputParams, p.name().toLowerCase(Locale.ROOT), p.defaultValue());
+            } else if (inputParams.containsKey("param" + p.targetSlot())) {
+                value = getDouble(inputParams, "param" + p.targetSlot(), p.defaultValue());
+            }
             normalized.put("param" + p.targetSlot(), value);
         }
         return normalized;
@@ -1131,17 +1194,35 @@ public final class CircuitBuilder {
     private static List<Point> routeWire(Point start, Point end, int wireIndex) {
         List<Point> path = new ArrayList<>();
         path.add(start);
-        if (end.x() > start.x()) {
-            int laneX = start.x() + WIRE_LANE_BASE_OFFSET + 2 * wireIndex;
-            path.add(new Point(laneX, start.y()));
-            path.add(new Point(laneX, end.y()));
+        if (start.x() == end.x() || start.y() == end.y()) {
+            // Direct straight segment
+        } else if (end.x() > start.x()) {
+            int midX = (start.x() + end.x()) / 2;
+            path.add(new Point(midX, start.y()));
+            path.add(new Point(midX, end.y()));
         } else {
-            int laneX = Math.min(start.x(), end.x()) - FEEDBACK_LANE_BASE_OFFSET - 2 * wireIndex;
+            int laneX = Math.min(start.x(), end.x()) - FEEDBACK_LANE_BASE_OFFSET - 2 * (wireIndex % 6);
             path.add(new Point(laneX, start.y()));
             path.add(new Point(laneX, end.y()));
         }
         path.add(end);
         return path;
+    }
+
+    private static List<Point> parsePoints(List<?> list) {
+        List<Point> points = new ArrayList<>();
+        for (Object item : list) {
+            if (item instanceof List<?> coord && coord.size() >= 2) {
+                int px = ((Number) coord.get(0)).intValue();
+                int py = ((Number) coord.get(1)).intValue();
+                points.add(new Point(px, py));
+            } else if (item instanceof Map<?, ?> map && map.containsKey("x") && map.containsKey("y")) {
+                int px = ((Number) map.get("x")).intValue();
+                int py = ((Number) map.get("y")).intValue();
+                points.add(new Point(px, py));
+            }
+        }
+        return points;
     }
 
     private static int[][] toPoints(Collection<Point> points) {

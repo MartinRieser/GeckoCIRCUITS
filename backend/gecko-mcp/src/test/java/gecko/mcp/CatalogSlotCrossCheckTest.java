@@ -190,6 +190,27 @@ class CatalogSlotCrossCheckTest {
         expected.put("SPACE_VECTOR", CircuitTypCore.CTRL_SPACE_VECTOR);
         expected.put("SDFT", CircuitTypCore.CTRL_SDFT);
         expected.put("SPARSEMATRIX", CircuitTypCore.CTRL_SPARSEMATRIX);
+        expected.put("MUL", CircuitTypCore.CTRL_MUL);
+        expected.put("DIV", CircuitTypCore.CTRL_DIV);
+        expected.put("ABS", CircuitTypCore.CTRL_ABS);
+        expected.put("SQRT", CircuitTypCore.CTRL_SQRT);
+        expected.put("EXP", CircuitTypCore.CTRL_EXP);
+        expected.put("LN", CircuitTypCore.CTRL_LN);
+        expected.put("SIN", CircuitTypCore.CTRL_SIN);
+        expected.put("COS", CircuitTypCore.CTRL_COS);
+        expected.put("MIN", CircuitTypCore.CTRL_MIN);
+        expected.put("MAX", CircuitTypCore.CTRL_MAX);
+        expected.put("HYS", CircuitTypCore.CTRL_HYS);
+        expected.put("PT2", CircuitTypCore.CTRL_PT2);
+        expected.put("PD", CircuitTypCore.CTRL_PD);
+        expected.put("TIME", CircuitTypCore.CTRL_TIME);
+        expected.put("XOR", CircuitTypCore.CTRL_XOR);
+        expected.put("GE", CircuitTypCore.CTRL_GE);
+        expected.put("DEADTIME", CircuitTypCore.CTRL_DEADTIME);
+        expected.put("SUB", CircuitTypCore.CTRL_SUB);
+        expected.put("ADD", CircuitTypCore.CTRL_ADD);
+        expected.put("LIMIT", CircuitTypCore.CTRL_LIMIT);
+        expected.put("SAMPLE_HOLD", CircuitTypCore.CTRL_SAMPLEHOLD);
 
         for (Map.Entry<String, CircuitTypCore> entry : expected.entrySet()) {
             ComponentCatalog.ComponentDef def = ComponentCatalog.get(entry.getKey());
@@ -198,6 +219,80 @@ class CatalogSlotCrossCheckTest {
                     "type number drift on " + entry.getKey());
             assertEquals("CONTROL", def.domain());
         }
+    }
+
+    @Test
+    void powerTypeNumbers_matchCircuitTypCore() {
+        Map<String, CircuitTypCore> expected = new HashMap<>();
+        expected.put("RESISTOR", CircuitTypCore.LK_R);
+        expected.put("INDUCTOR", CircuitTypCore.LK_L);
+        expected.put("CAPACITOR", CircuitTypCore.LK_C);
+        expected.put("VOLTAGE_SOURCE_DC", CircuitTypCore.LK_U);
+        expected.put("VOLTAGE_SOURCE_AC", CircuitTypCore.LK_U);
+        expected.put("CURRENT_SOURCE_DC", CircuitTypCore.LK_I);
+        expected.put("CURRENT_SOURCE_AC", CircuitTypCore.LK_I);
+        expected.put("DIODE", CircuitTypCore.LK_D);
+        expected.put("IDEAL_SWITCH", CircuitTypCore.LK_S);
+        expected.put("THYRISTOR", CircuitTypCore.LK_THYR);
+        expected.put("MUTUAL_INDUCTANCE", CircuitTypCore.LK_M);
+        expected.put("IGBT", CircuitTypCore.LK_IGBT);
+        expected.put("COUPLED_INDUCTOR", CircuitTypCore.LK_LKOP2);
+        expected.put("LISN", CircuitTypCore.LK_LISN);
+        expected.put("DC_MOTOR", CircuitTypCore.LK_MOTOR);
+        expected.put("PMSM_MOTOR", CircuitTypCore.LK_MOTOR_PMSM);
+        expected.put("SYNC_MOTOR_SALIENT", CircuitTypCore.LK_MOTOR_SMSALIENT);
+        expected.put("SYNC_MOTOR_ROUND", CircuitTypCore.LK_MOTOR_SMROUND);
+        expected.put("INDUCTION_MOTOR_CAGE", CircuitTypCore.LK_MOTOR_IMA);
+        expected.put("INDUCTION_MOTOR", CircuitTypCore.LK_MOTOR_IMC);
+        expected.put("INDUCTION_MOTOR_SAT", CircuitTypCore.LK_MOTOR_IMSAT);
+        expected.put("OPAMP", CircuitTypCore.LK_OPV1);
+        expected.put("TRANSFORMER", CircuitTypCore.LK_TRANS);
+        expected.put("RELUCTANCE", CircuitTypCore.REL_RELUCTANCE);
+        expected.put("RELUCTANCE_COIL", CircuitTypCore.REL_INDUCTOR);
+        expected.put("MMF_SOURCE", CircuitTypCore.REL_MMF);
+        expected.put("MOSFET", CircuitTypCore.LK_MOSFET);
+        expected.put("SUBCIRCUIT_TERMINAL", CircuitTypCore.LK_TERMINAL);
+        expected.put("RELUCTANCE_TERMINAL", CircuitTypCore.REL_TERMINAL);
+        expected.put("GLOBAL_TERMINAL", CircuitTypCore.LK_GLOBAL_TERMINAL);
+        expected.put("RELUCTANCE_GLOBAL_TERMINAL", CircuitTypCore.REL_GLOBAL_TERMINAL);
+        expected.put("BJT", CircuitTypCore.LK_BJT);
+        expected.put("DC_MOTOR_PERM", CircuitTypCore.LK_MOTOR_PERM);
+        expected.put("NONLINEAR_RELUCTANCE", CircuitTypCore.NONLIN_REL);
+
+        for (Map.Entry<String, CircuitTypCore> entry : expected.entrySet()) {
+            ComponentCatalog.ComponentDef def = ComponentCatalog.get(entry.getKey());
+            assertNotNull(def, "catalog entry missing: " + entry.getKey());
+            assertEquals(entry.getValue().getTypeNumber(), def.typeNumber(),
+                    "type number drift on " + entry.getKey());
+            assertEquals("POWER_LK", def.domain());
+        }
+    }
+
+    @Test
+    void thermalAndSpecialTypeNumbers_matchCircuitTypCore() {
+        Map<String, CircuitTypCore> expectedTherm = new HashMap<>();
+        expectedTherm.put("TH_PvCHIP", CircuitTypCore.TH_PvCHIP);
+        expectedTherm.put("TH_MODUL", CircuitTypCore.TH_MODUL);
+        expectedTherm.put("TH_FLOW", CircuitTypCore.TH_FLOW);
+        expectedTherm.put("TH_TEMP", CircuitTypCore.TH_TEMP);
+        expectedTherm.put("TH_RTH", CircuitTypCore.TH_RTH);
+        expectedTherm.put("TH_CTH", CircuitTypCore.TH_CTH);
+        expectedTherm.put("TH_AMBIENT", CircuitTypCore.TH_AMBIENT);
+        expectedTherm.put("TH_TERMINAL", CircuitTypCore.TH_TERMINAL);
+        expectedTherm.put("TH_GLOBAL_TERMINAL", CircuitTypCore.TH_GLOBAL_TERMINAL);
+
+        for (Map.Entry<String, CircuitTypCore> entry : expectedTherm.entrySet()) {
+            ComponentCatalog.ComponentDef def = ComponentCatalog.get(entry.getKey());
+            assertNotNull(def, "catalog entry missing: " + entry.getKey());
+            assertEquals(entry.getValue().getTypeNumber(), def.typeNumber(),
+                    "type number drift on " + entry.getKey());
+            assertEquals("THERM", def.domain());
+        }
+
+        ComponentCatalog.ComponentDef noteDef = ComponentCatalog.get("TEXTBOX");
+        assertNotNull(noteDef);
+        assertEquals(CircuitTypCore.TEXTBOX.getTypeNumber(), noteDef.typeNumber());
+        assertEquals("SPECIAL", noteDef.domain());
     }
 
     @Test

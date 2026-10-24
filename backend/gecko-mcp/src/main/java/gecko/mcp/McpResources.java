@@ -150,6 +150,36 @@ public final class McpResources {
                 | DELAY         | 1015 | 1              | 1 | 0=tau [s] transport delay |
                 | SCRIPT_BLOCK  | 1016 | anzXIN         | anzYOUT | source code, static variables, see script-blocks reference |
                 | JAVA_BLOCK    | 61   | anzXIN         | anzYOUT | same language as 1016 (classic) |
+                | SUB           | 1017 | 2 (plus,minus) | 1 | out = plus - minus |
+                | ADD           | 1018 | 2 (in1,in2)    | 1 | out = in1 + in2 |
+                | MUL           | 1019 | 2 (in1,in2)    | 1 | out = in1 * in2 |
+                | DIV           | 1020 | 2 (num,den)    | 1 | out = num / den (guarded against zero) |
+                | LIMIT         | 1021 | 1              | 1 | 0=min, 1=max; clamps input to [min, max] |
+                | ABS           | 1022 | 1              | 1 | out = |in| |
+                | SQRT          | 1023 | 1              | 1 | out = sqrt(max(0, in)) |
+                | EXP           | 1024 | 1              | 1 | out = exp(in) |
+                | LN            | 1025 | 1              | 1 | out = ln(max(1e-12, in)) |
+                | SIN           | 1026 | 1              | 1 | out = sin(in) [rad] |
+                | COS           | 1027 | 1              | 1 | out = cos(in) [rad] |
+                | MIN           | 1028 | 2 (in1,in2)    | 1 | out = min(in1, in2) |
+                | MAX           | 1029 | 2 (in1,in2)    | 1 | out = max(in1, in2) |
+                | HYS           | 1030 | 1              | 1 | 0=low threshold, 1=high threshold (hysteresis flip-flop) |
+                | PT2           | 1031 | 1              | 1 | 0=omega_0 [rad/s], 1=damping ratio D (2nd order lowpass) |
+                | PD            | 1032 | 1              | 1 | 0=Kd, 1=Tv [s] (derivative filter) |
+                | TIME          | 1034 | 0              | 1 | out = current simulation time t in seconds |
+                | XOR           | 1035 | 2              | 1 | out = 1 iff exactly one input > 0.5 |
+                | GE            | 1036 | 2 (in1,in2)    | 1 | out = 1 iff in1 >= in2 |
+                | DEADTIME      | 1037 | 1              | 2 | 0=dead time td [s]; outputs complementary gate signals g_hi, g_lo |
+                | SQR           | 1038 | 1              | 1 | out = in^2 |
+                | POW           | 1039 | 2 (base,exp)   | 1 | out = base^exp |
+                | ROUND         | 1040 | 1              | 1 | out = round(in) |
+                | SIGN          | 1041 | 1              | 1 | out = sgn(in) (-1, 0, +1) |
+                | EQ            | 1042 | 2              | 1 | out = 1 iff |in1 - in2| < 1e-9 |
+                | NE            | 1043 | 2              | 1 | out = 1 iff |in1 - in2| >= 1e-9 |
+                | COUNTER       | 1044 | 1              | 1 | edge-triggered pulse counter |
+                | SAMPLE_HOLD   | 1045 | 2 (sig,trig)   | 1 | samples sig on trig rising edge |
+                | ABCDQ         | 1046 | 3 (a,b,c)      | 2 | Clarke/Park 3-ph to d-q transformation |
+                | DQABC         | 1047 | 2 (d,q)        | 3 | Inverse Park/Clarke d-q to 3-ph transformation |
 
                 Legacy classic-editor numbers 1..6 map to 1001,1002,1005,1004,1003,1000 respectively.
 

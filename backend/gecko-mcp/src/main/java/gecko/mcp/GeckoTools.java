@@ -115,10 +115,19 @@ final class GeckoTools {
 
     private static ToolSpec catalog() {
         return new ToolSpec("gecko_catalog",
-                "Get the complete, authoritative catalog of all GeckoCIRCUITS power and control components, "
-                        + "terminal pinouts, typed parameter definitions, units, defaults, and .ipes slot mappings.",
-                objectSchema(properties(), null),
-                args -> ComponentCatalog.toCatalogJson());
+                "Get the complete, authoritative catalog of all GeckoCIRCUITS components across power, control, "
+                        + "thermal, and magnetic domains with terminal pinouts, typed parameter definitions, units, "
+                        + "defaults, and .ipes slot mappings. Supports optional 'domain' filter (power, control, thermal, special) "
+                        + "and optional 'component' lookup with full pinout, parameters, aliases, and usage example.",
+                objectSchema(properties(
+                        Map.of("domain", str("Optional domain filter: 'power', 'control', 'thermal', or 'special'")),
+                        Map.of("component", str("Optional component name or alias to inspect in detail (e.g. 'MOSFET', 'OPAMP', 'MUL', 'PI', 'GND')"))
+                ), null),
+                args -> {
+                    String domain = (String) args.get("domain");
+                    String comp = (String) args.get("component");
+                    return ComponentCatalog.toCatalogJson(domain, comp);
+                });
     }
 
     private static ToolSpec createCircuit() {
