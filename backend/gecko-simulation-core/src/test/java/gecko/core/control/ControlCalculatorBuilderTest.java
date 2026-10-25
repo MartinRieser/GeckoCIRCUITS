@@ -503,4 +503,100 @@ class ControlCalculatorBuilderTest {
         assertNotSame(gain1._inputSignal[0], gain2._inputSignal[0],
                 "Crossing control wires must not merge into the same signal net");
     }
+
+    @Test
+    void labeledControlWire_registersSignalTap() {
+        CircuitModel m = new CircuitModel();
+        // Signal generator at (20, 20) NORTH_SOUTH: output at (22, 20)
+        CircuitModel.ComponentData sig = new CircuitModel.ComponentData(4, "SIG.1", 20, 20, 503);
+        sig.setRawParameters(new double[]{404.0, 5.0, 1000.0, 0.0, 0.0, 0.5});
+        m.addControlComponent(sig);
+
+        // GAIN.1 at (30, 20) NORTH_SOUTH: input at (28, 20)
+        CircuitModel.ComponentData gain = new CircuitModel.ComponentData(7, "GAIN.1", 30, 20, 503);
+        gain.setRawParameters(new double[]{2.0});
+        m.addControlComponent(gain);
+
+        // Labeled wire connecting SIG output to GAIN input
+        CircuitModel.ConnectionData wire = new CircuitModel.ConnectionData("CONTROL", new int[][]{{22, 20}, {28, 20}});
+        wire.setLabel("pwm_ctrl");
+        m.getConnections().add(wire);
+
+        ControlCalculatorBuilder.ControlCoupling coupling = ControlCalculatorBuilder.build(m, null);
+        assertTrue(coupling.signalTaps().stream().anyMatch(t -> "pwm_ctrl".equals(t.name())),
+                "Labeled control wire must register as a SignalTap");
+    }
+
+    @Test
+    void labeledInputTerminal_registersSignalTap() {
+        CircuitModel m = new CircuitModel();
+        // Signal generator at (20, 20)
+        CircuitModel.ComponentData sig = new CircuitModel.ComponentData(4, "SIG.1", 20, 20, 503);
+        sig.setRawParameters(new double[]{404.0, 3.3, 1000.0, 0.0, 0.0, 0.5});
+        m.addControlComponent(sig);
+
+        // GAIN.1 at (30, 20) with labeled input terminal
+        CircuitModel.ComponentData gain = new CircuitModel.ComponentData(7, "GAIN.1", 30, 20, 503);
+        gain.setRawParameters(new double[]{2.0});
+        gain.setTerminalXLabels(new String[]{"v_err"});
+        m.addControlComponent(gain);
+
+        CircuitModel.ConnectionData wire = new CircuitModel.ConnectionData("CONTROL", new int[][]{{22, 20}, {28, 20}});
+        m.getConnections().add(wire);
+
+        ControlCalculatorBuilder.ControlCoupling coupling = ControlCalculatorBuilder.build(m, null);
+        assertTrue(coupling.signalTaps().stream().anyMatch(t -> "v_err".equals(t.name())),
+                "Labeled input terminal connected to producer must register as a SignalTap");
+    }
+
+    @Test
+    void labeledOutputTerminal_registersSignalTap() {
+        CircuitModel m = new CircuitModel();
+        // GAIN.1 with custom output terminal label "duty"
+        CircuitModel.ComponentData gain = new CircuitModel.ComponentData(7, "GAIN.1", 30, 20, 503);
+        gain.setRawParameters(new double[]{2.0});
+        gain.setTerminalYLabels(new String[]{"duty"});
+        m.addControlComponent(gain);
+
+        ControlCalculatorBuilder.ControlCoupling coupling = ControlCalculatorBuilder.build(m, null);
+        assertTrue(coupling.signalTaps().stream().anyMatch(t -> "duty".equals(t.name())),
+                "Labeled output terminal must register as a SignalTap");
+    }
+
+    @Test
+    void wirelessControlNetJoining_connectsProducerAndConsumerWithoutWires() {
+        CircuitModel m = new CircuitModel();
+        // Signal generator at (10, 10) with output terminal label "v_ref"
+        CircuitModel.ComponentData sig = new CircuitModel.ComponentData(4, "SIG.1", 10, 10, 503);
+        sig.setRawParameters(new double[]{404.0, 4.0, 1000.0, 0.0, 0.0, 0.5});
+        sig.setTerminalYLabels(new String[]{"v_ref"});
+        m.addControlComponent(sig);
+
+        // GAIN.1 at distant location (80, 80) with input terminal label "v_ref", NO physical wire
+        CircuitModel.ComponentData gain = new CircuitModel.ComponentData(7, "GAIN.1", 80, 80, 503);
+        gain.setRawParameters(new double[]{2.5});
+        gain.setTerminalXLabels(new String[]{"v_ref"});
+        m.addControlComponent(gain);
+
+        ControlCalculatorBuilder.ControlCoupling coupling = ControlCalculatorBuilder.build(m, null);
+        coupling.initialize(1e-6);
+
+        AbstractControlCalculatable sigCalc = null;
+        AbstractControlCalculatable gainCalc = null;
+        for (AbstractControlCalculatable c : coupling.calculators()) {
+            if (c.getClass().getSimpleName().contains("Signal")) sigCalc = c;
+            else gainCalc = c;
+        }
+        assertNotNull(sigCalc);
+        assertNotNull(gainCalc);
+
+        // Step calculators
+        sigCalc.calculateYOUT(1e-6);
+        gainCalc.calculateYOUT(1e-6);
+
+        // Since SIG output is 4.0 and GAIN gain is 2.5, GAIN output should be 4.0 * 2.5 = 10.0
+        assertEquals(4.0, sigCalc._outputSignal[0][0], 1e-6);
+        assertEquals(10.0, gainCalc._outputSignal[0][0], 1e-6,
+                "Wireless net joining must connect input to output sharing the same label without wires");
+    }
 }

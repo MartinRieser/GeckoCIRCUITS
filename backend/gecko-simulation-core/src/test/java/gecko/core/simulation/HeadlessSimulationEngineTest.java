@@ -7,6 +7,7 @@
 package gecko.core.simulation;
 
 import gecko.core.allg.SolverType;
+import gecko.core.io.CircuitModel;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.function.BooleanSupplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HeadlessSimulationEngineTest {
@@ -297,5 +299,67 @@ class HeadlessSimulationEngineTest {
         HeadlessSimulationEngine.EngineState state = engine.getState();
 
         assertEquals(HeadlessSimulationEngine.EngineState.IDLE, state);
+    }
+
+    @Test
+    void simulateCircuit_withLabeledControlWireAndTerminals_recordsWaveformsWithoutScopeBlock() {
+        CircuitModel model = new CircuitModel();
+        // Power stage: DC source and resistor
+        CircuitModel.ComponentData vSource = new CircuitModel.ComponentData(4, "U.1", 10, 10, 503);
+        vSource.setTerminalXLabels(new String[]{"1"});
+        vSource.setTerminalYLabels(new String[]{"0"});
+        vSource.setRawParameters(new double[]{401.0, 10.0});
+        model.addCircuitComponent(vSource);
+
+        CircuitModel.ComponentData r = new CircuitModel.ComponentData(1, "R.1", 20, 10, 503);
+        r.setTerminalXLabels(new String[]{"1"});
+        r.setTerminalYLabels(new String[]{"0"});
+        r.setRawParameters(new double[]{10.0});
+        model.addCircuitComponent(r);
+
+        // Control section: SIGNAL generator -> GAIN -> labeled control wire
+        CircuitModel.ComponentData sig = new CircuitModel.ComponentData(4, "SIG.1", 10, 30, 503);
+        sig.setRawParameters(new double[]{404.0, 2.0, 1000.0, 0.0, 0.0, 0.5}); // rectangle, 2.0 amplitude, 1000 Hz
+        sig.setTerminalYLabels(new String[]{"sig_out"});
+        model.addControlComponent(sig);
+
+        CircuitModel.ComponentData gain = new CircuitModel.ComponentData(7, "GAIN.1", 20, 30, 503);
+        gain.setRawParameters(new double[]{3.0});
+        gain.setTerminalXLabels(new String[]{"gain_in"});
+        gain.setTerminalYLabels(new String[]{"gain_out"});
+        model.addControlComponent(gain);
+
+        // Connect SIG (output at (12, 30)) to GAIN (input at (18, 30)) via wire labeled "pwm_wire"
+        CircuitModel.ConnectionData wire = new CircuitModel.ConnectionData("CONTROL", new int[][]{{12, 30}, {18, 30}});
+        wire.setLabel("pwm_wire");
+        model.addConnection(wire);
+
+        HeadlessSimulationEngine engine = new HeadlessSimulationEngine();
+        SimulationConfig config = SimulationConfig.builder()
+                .circuitModel(model)
+                .simulationDuration(0.002)
+                .stepWidth(1e-6)
+                .signals(List.of("sig_out", "gain_in", "pwm_wire", "gain_out"))
+                .build();
+
+        SimulationResult result = engine.runSimulation(config);
+        assertTrue(result.isSuccess(), "Simulation should succeed: " + result.getErrorMessage());
+
+        List<String> names = List.of(result.getSignalNames());
+        assertTrue(names.contains("sig_out"), "sig_out must be recorded");
+        assertTrue(names.contains("gain_in"), "gain_in must be recorded");
+        assertTrue(names.contains("pwm_wire"), "pwm_wire must be recorded");
+        assertTrue(names.contains("gain_out"), "gain_out must be recorded");
+
+        int gainOutIdx = names.indexOf("gain_out");
+        float[] gainOut = result.getSignalData(gainOutIdx);
+        assertNotNull(gainOut);
+        assertTrue(gainOut.length > 10);
+        // Amplitude should be 2.0 * 3.0 = 6.0
+        float maxVal = 0.0f;
+        for (float v : gainOut) {
+            if (v > maxVal) maxVal = v;
+        }
+        assertEquals(6.0f, maxVal, 0.01f, "Gain output must record 6.0V waveform from control tap");
     }
 }

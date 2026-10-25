@@ -599,7 +599,7 @@ public final class ControlCalculatorBuilder {
             }
         }
 
-        ControlWireNets controlWireNets = buildControlWireNets(model.getConnections());
+        ControlWireNets controlWireNets = buildControlWireNets(model.getConnections(), controlComponents);
 
         Map<String, AbstractControlCalculatable> calculatorByComp = new LinkedHashMap<>();
         List<GateDrive> gateDrives = new ArrayList<>();
@@ -646,29 +646,66 @@ public final class ControlCalculatorBuilder {
                             comp.getName());
                 }
             }
-            // recordable outputs: like the classic scope, the exported name is
-            // the block's output terminal label (labelEndKnoten)
-            if (isLabeledTapType(comp.getType())) {
-                String label = outputLabel(comp);
-                if (!label.equals(displayName(comp)) && usedTapNames.add(label)) {
-                    signalTaps.add(new SignalTap(label, calculator));
-                }
-            } else if (comp.getType() == TYP_JAVA_FUNCTION || comp.getType() == TYP_SCRIPT
-                    || comp.getType() == TYP_NATIVE_C || comp.getType() == TYP_DEADTIME) {
-                int[] layout = getTerminalLayout(comp);
-                String[] yLabels = comp.getTerminalYLabels();
-                for (int j = 0; j < (layout != null ? layout[1] : 1); j++) {
-                    String label = (yLabels != null && j < yLabels.length && yLabels[j] != null && !yLabels[j].trim().isEmpty() && !yLabels[j].equals("NIX_NIX_NIX"))
-                            ? yLabels[j].trim()
-                            : (displayName(comp) + (layout != null && layout[1] > 1 ? ("." + (j + 1)) : ""));
-                    if (usedTapNames.add(label)) {
-                        signalTaps.add(new SignalTap(label, calculator, j));
+            // recordable outputs:
+            // 1) Every control calculator with outputs registers a SignalTap for any non-empty output terminal label
+            int[] layout = getTerminalLayout(comp);
+            int numOutputs = (layout != null) ? layout[1] : 0;
+            if (numOutputs > 0) {
+                for (int j = 0; j < numOutputs; j++) {
+                    String customLabel = getOutputTerminalCustomLabel(comp, j);
+                    if (customLabel != null) {
+                        if (usedTapNames.add(customLabel)) {
+                            signalTaps.add(new SignalTap(customLabel, calculator, j));
+                        }
+                    } else if (comp.getType() == TYP_JAVA_FUNCTION || comp.getType() == TYP_SCRIPT
+                            || comp.getType() == TYP_NATIVE_C || comp.getType() == TYP_DEADTIME) {
+                        String fallback = displayName(comp) + (numOutputs > 1 ? ("." + (j + 1)) : "");
+                        if (usedTapNames.add(fallback)) {
+                            signalTaps.add(new SignalTap(fallback, calculator, j));
+                        }
                     }
                 }
             }
         }
 
-        wireInputs(controlComponents, calculatorByComp, controlWireNets);
+        Map<String, Object[]> producerByNode = wireInputs(controlComponents, calculatorByComp, controlWireNets);
+
+        // 2) Record taps for labeled CONTROL wires connected to a producer
+        if (model.getConnections() != null) {
+            for (CircuitModel.ConnectionData conn : model.getConnections()) {
+                if (conn != null && "CONTROL".equalsIgnoreCase(conn.getType())) {
+                    String wireLabel = conn.getLabel();
+                    if (isValidUserLabel(wireLabel)) {
+                        wireLabel = wireLabel.trim();
+                        List<int[]> path = toControlPointPath(conn.getPoints());
+                        if (!path.isEmpty()) {
+                            int[] pt = path.get(0);
+                            Object[] producer = producerByNode.get(controlWireNets.netKey(pt[0], pt[1]));
+                            if (producer != null && usedTapNames.add(wireLabel)) {
+                                signalTaps.add(new SignalTap(wireLabel, (AbstractControlCalculatable) producer[0], (Integer) producer[1]));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3) Record taps for labeled input terminals connected to a producer net
+        for (CircuitModel.ComponentData comp : controlComponents) {
+            int[] layout = getTerminalLayout(comp);
+            if (layout != null && layout[0] > 0) {
+                for (int i = 0; i < layout[0]; i++) {
+                    String inputLabel = getInputTerminalCustomLabel(comp, i);
+                    if (inputLabel != null) {
+                        int[] pt = terminalPoint(comp, i, -1, layout[2]);
+                        Object[] producer = producerByNode.get(controlWireNets.netKey(pt[0], pt[1]));
+                        if (producer != null && usedTapNames.add(inputLabel)) {
+                            signalTaps.add(new SignalTap(inputLabel, (AbstractControlCalculatable) producer[0], (Integer) producer[1]));
+                        }
+                    }
+                }
+            }
+        }
 
         return new ControlCoupling(topologicalOrder(calculatorByComp), gateDrives, probes,
                 signalTaps, warnings);
@@ -1134,9 +1171,9 @@ public final class ControlCalculatorBuilder {
         }
     }
 
-    private static void wireInputs(List<CircuitModel.ComponentData> controlComponents,
-                                   Map<String, AbstractControlCalculatable> calculatorByComp,
-                                   ControlWireNets wireNets) {
+    private static Map<String, Object[]> wireInputs(List<CircuitModel.ComponentData> controlComponents,
+                                                    Map<String, AbstractControlCalculatable> calculatorByComp,
+                                                    ControlWireNets wireNets) {
         // producer map: signal node -> (calculator, output index)
         Map<String, Object[]> producerByNode = new HashMap<>();
         for (CircuitModel.ComponentData comp : controlComponents) {
@@ -1173,6 +1210,7 @@ public final class ControlCalculatorBuilder {
                 }
             }
         }
+        return producerByNode;
     }
 
     /**
@@ -1326,6 +1364,52 @@ public final class ControlCalculatorBuilder {
                 || type == TYP_GE || type == TYP_LEGACY_GE;
     }
 
+    private static boolean isValidUserLabel(String label) {
+        if (label == null) {
+            return false;
+        }
+        String trimmed = label.trim();
+        return !trimmed.isEmpty() && !trimmed.equals("NIX_NIX_NIX");
+    }
+
+    private static String getOutputTerminalCustomLabel(CircuitModel.ComponentData comp, int j) {
+        String dispName = displayName(comp);
+        String[] raw = comp.getRawTerminalYLabels();
+        if (raw != null && j < raw.length && isValidUserLabel(raw[j])) {
+            String val = raw[j].trim();
+            if (!val.equals(dispName)) {
+                return val;
+            }
+        }
+        String[] yLabels = comp.getTerminalYLabels();
+        if (yLabels != null && j < yLabels.length && isValidUserLabel(yLabels[j])) {
+            String val = yLabels[j].trim();
+            if (!val.equals(dispName)) {
+                return val;
+            }
+        }
+        return null;
+    }
+
+    private static String getInputTerminalCustomLabel(CircuitModel.ComponentData comp, int i) {
+        String dispName = displayName(comp);
+        String[] raw = comp.getRawTerminalXLabels();
+        if (raw != null && i < raw.length && isValidUserLabel(raw[i])) {
+            String val = raw[i].trim();
+            if (!val.equals(dispName)) {
+                return val;
+            }
+        }
+        String[] xLabels = comp.getTerminalXLabels();
+        if (xLabels != null && i < xLabels.length && isValidUserLabel(xLabels[i])) {
+            String val = xLabels[i].trim();
+            if (!val.equals(dispName)) {
+                return val;
+            }
+        }
+        return null;
+    }
+
     private static String displayName(CircuitModel.ComponentData comp) {
         return comp.getName() != null && !comp.getName().isBlank()
                 ? comp.getName() : "CTRL_" + comp.getUniqueObjectIdentifier();
@@ -1346,6 +1430,7 @@ public final class ControlCalculatorBuilder {
     private static final class ControlWireNets {
         private final Map<String, Integer> pointToWireId = new HashMap<>();
         private final Map<Integer, Integer> wireParent = new HashMap<>();
+        private final Map<String, String> labelParent = new HashMap<>();
 
         private int find(int i) {
             int root = i;
@@ -1369,13 +1454,36 @@ public final class ControlCalculatorBuilder {
             }
         }
 
+        private String findLabel(String id) {
+            String root = id;
+            while (labelParent.containsKey(root) && !labelParent.get(root).equals(root)) {
+                root = labelParent.get(root);
+            }
+            String curr = id;
+            while (curr != null && labelParent.containsKey(curr) && !labelParent.get(curr).equals(root)) {
+                String next = labelParent.get(curr);
+                labelParent.put(curr, root);
+                curr = next;
+            }
+            return root;
+        }
+
+        public void unionLabel(String a, String b) {
+            if (a == null || b == null) {
+                return;
+            }
+            String rootA = findLabel(a);
+            String rootB = findLabel(b);
+            if (!rootA.equals(rootB)) {
+                labelParent.put(rootA, rootB);
+            }
+        }
+
         public String netKey(int x, int y) {
             String pKey = pointKey(x, y);
             Integer wireId = pointToWireId.get(pKey);
-            if (wireId != null) {
-                return "W" + find(wireId);
-            }
-            return "P" + pKey;
+            String rawKey = (wireId != null) ? ("W" + find(wireId)) : ("P" + pKey);
+            return findLabel(rawKey);
         }
     }
 
@@ -1392,37 +1500,74 @@ public final class ControlCalculatorBuilder {
         return path;
     }
 
-    private static ControlWireNets buildControlWireNets(List<CircuitModel.ConnectionData> connections) {
+    private static ControlWireNets buildControlWireNets(List<CircuitModel.ConnectionData> connections,
+                                                       List<CircuitModel.ComponentData> controlComponents) {
         ControlWireNets nets = new ControlWireNets();
-        if (connections == null) {
-            return nets;
-        }
-        List<List<int[]>> wires = new ArrayList<>();
-        for (CircuitModel.ConnectionData conn : connections) {
-            if (conn == null || !"CONTROL".equalsIgnoreCase(conn.getType()) || conn.getPoints() == null) {
-                continue;
+        if (connections != null) {
+            List<List<int[]>> wires = new ArrayList<>();
+            List<String> wireLabels = new ArrayList<>();
+            for (CircuitModel.ConnectionData conn : connections) {
+                if (conn == null || !"CONTROL".equalsIgnoreCase(conn.getType()) || conn.getPoints() == null) {
+                    continue;
+                }
+                List<int[]> path = toControlPointPath(conn.getPoints());
+                if (!path.isEmpty()) {
+                    wires.add(path);
+                    wireLabels.add(conn.getLabel());
+                }
             }
-            List<int[]> path = toControlPointPath(conn.getPoints());
-            if (!path.isEmpty()) {
-                wires.add(path);
+            Map<String, List<Integer>> wiresThroughPoint = new HashMap<>();
+            for (int i = 0; i < wires.size(); i++) {
+                nets.wireParent.put(i, i);
+                for (int[] pt : wires.get(i)) {
+                    String k = pointKey(pt[0], pt[1]);
+                    wiresThroughPoint.computeIfAbsent(k, key -> new ArrayList<>()).add(i);
+                    nets.pointToWireId.putIfAbsent(k, i);
+                }
+            }
+            for (int i = 0; i < wires.size(); i++) {
+                List<int[]> path = wires.get(i);
+                int[][] ends = {path.get(0), path.get(path.size() - 1)};
+                for (int[] end : ends) {
+                    String endKey = pointKey(end[0], end[1]);
+                    for (int j : wiresThroughPoint.getOrDefault(endKey, List.of())) {
+                        nets.union(i, j);
+                    }
+                }
+            }
+            for (int i = 0; i < wires.size(); i++) {
+                String wireLabel = wireLabels.get(i);
+                if (isValidUserLabel(wireLabel)) {
+                    nets.unionLabel("W" + nets.find(i), "LABEL:" + wireLabel.trim());
+                }
             }
         }
-        Map<String, List<Integer>> wiresThroughPoint = new HashMap<>();
-        for (int i = 0; i < wires.size(); i++) {
-            nets.wireParent.put(i, i);
-            for (int[] pt : wires.get(i)) {
-                String k = pointKey(pt[0], pt[1]);
-                wiresThroughPoint.computeIfAbsent(k, key -> new ArrayList<>()).add(i);
-                nets.pointToWireId.putIfAbsent(k, i);
-            }
-        }
-        for (int i = 0; i < wires.size(); i++) {
-            List<int[]> path = wires.get(i);
-            int[][] ends = {path.get(0), path.get(path.size() - 1)};
-            for (int[] end : ends) {
-                String endKey = pointKey(end[0], end[1]);
-                for (int j : wiresThroughPoint.getOrDefault(endKey, List.of())) {
-                    nets.union(i, j);
+
+        if (controlComponents != null) {
+            for (CircuitModel.ComponentData comp : controlComponents) {
+                int[] layout = getTerminalLayout(comp);
+                if (layout == null) {
+                    continue;
+                }
+                for (int j = 0; j < layout[1]; j++) {
+                    String label = getOutputTerminalCustomLabel(comp, j);
+                    if (label != null) {
+                        int[] pt = terminalPoint(comp, -1, j, layout[2]);
+                        String pKey = pointKey(pt[0], pt[1]);
+                        Integer wireId = nets.pointToWireId.get(pKey);
+                        String rawKey = (wireId != null) ? ("W" + nets.find(wireId)) : ("P" + pKey);
+                        nets.unionLabel(rawKey, "LABEL:" + label);
+                    }
+                }
+                for (int i = 0; i < layout[0]; i++) {
+                    String label = getInputTerminalCustomLabel(comp, i);
+                    if (label != null) {
+                        int[] pt = terminalPoint(comp, i, -1, layout[2]);
+                        String pKey = pointKey(pt[0], pt[1]);
+                        Integer wireId = nets.pointToWireId.get(pKey);
+                        String rawKey = (wireId != null) ? ("W" + nets.find(wireId)) : ("P" + pKey);
+                        nets.unionLabel(rawKey, "LABEL:" + label);
+                    }
                 }
             }
         }
