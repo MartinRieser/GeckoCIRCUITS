@@ -39,6 +39,10 @@ import { SCOPE_SETTING_KEYS, ScopeDisplayLayout } from './model/constants';
 import {
   SCOPE_TAB_PREFIX,
   SCRIPT_TAB_PREFIX,
+  OSCI_TAB_PREFIX,
+  makeOsciTabId,
+  parseOsciTabId,
+  isOsciTab,
   scopeTabId,
   scriptTabId,
   tabTargetName,
@@ -108,23 +112,48 @@ export function App() {
     return state.components.find((c) => c.name === targetName) || null;
   }, [activeTabId, state.components]);
 
-  // Single derived value for "which scope is inspected": the scope tab target
-  // when one is active, else the scope picked in the combined simulation view.
-  const activeSelectedScope = tabTargetName(activeTabId, SCOPE_TAB_PREFIX) ?? selectedScope;
+  const activeRegId = parseOsciTabId(activeTabId);
+  const activeGraphRegister = useMemo(() => {
+    if (!state.graphRegisters || state.graphRegisters.length === 0) return null;
+    if (activeRegId) {
+      const match = state.graphRegisters.find(
+        (r) => r.id === activeRegId || r.name === activeRegId,
+      );
+      if (match) return match;
+    }
+    if (isOsciTab(activeTabId) || activeTabId === 'simulation') {
+      return state.graphRegisters[0];
+    }
+    return null;
+  }, [activeRegId, activeTabId, state.graphRegisters]);
 
-  const currentDisplayLayout =
-    (activeScopeComponent?.parameters?.[SCOPE_SETTING_KEYS.scopeLayout] as ScopeDisplayLayout) ||
-    displayLayout;
+  // Derived value for "which scope is inspected": active register name, or legacy scope
+  const activeSelectedScope =
+    activeGraphRegister?.name ?? tabTargetName(activeTabId, SCOPE_TAB_PREFIX) ?? selectedScope;
+
+  const currentDisplayLayout: ScopeDisplayLayout =
+    activeGraphRegister
+      ? activeGraphRegister.numGraphs === 1
+        ? 'overlay'
+        : activeGraphRegister.numGraphs === 2
+          ? '2-graphs'
+          : '3-graphs'
+      : (activeScopeComponent?.parameters?.[SCOPE_SETTING_KEYS.scopeLayout] as ScopeDisplayLayout) ||
+        displayLayout;
 
   const handleDisplayLayoutChange = useCallback(
     (layout: ScopeDisplayLayout) => {
       setDisplayLayout(layout);
       localStorage.setItem('gecko-display-layout', layout);
+      if (activeGraphRegister) {
+        const numGraphs = layout === 'overlay' ? 1 : layout === '2-graphs' ? 2 : 3;
+        actions.updateGraphRegister(activeGraphRegister.id, { numGraphs });
+      }
       if (activeScopeComponent) {
         actions.setParameter(activeScopeComponent.name, SCOPE_SETTING_KEYS.scopeLayout, layout);
       }
     },
-    [activeScopeComponent, actions],
+    [activeGraphRegister, activeScopeComponent, actions],
   );
 
   useEffect(() => {
@@ -166,10 +195,23 @@ export function App() {
     prevComponentsRef.current = state.components;
     if (activeTabId.startsWith(SCRIPT_TAB_PREFIX) && !activeScriptComponent) {
       setActiveTabId('schematic');
-    } else if (activeTabId.startsWith(SCOPE_TAB_PREFIX) && !activeScopeComponent) {
+    } else if (
+      activeTabId.startsWith(SCOPE_TAB_PREFIX) &&
+      !activeScopeComponent &&
+      !state.graphRegisters?.some((r) => r.name === parseOsciTabId(activeTabId))
+    ) {
       setActiveTabId('schematic');
+    } else if (activeTabId.startsWith(OSCI_TAB_PREFIX)) {
+      const regId = parseOsciTabId(activeTabId);
+      if (!state.graphRegisters?.some((r) => r.id === regId || r.name === regId)) {
+        setActiveTabId(
+          state.graphRegisters && state.graphRegisters.length > 0
+            ? makeOsciTabId(state.graphRegisters[0].id)
+            : 'schematic',
+        );
+      }
     }
-  }, [state.components, activeTabId, activeScriptComponent, activeScopeComponent]);
+  }, [state.components, state.graphRegisters, activeTabId, activeScriptComponent, activeScopeComponent]);
 
   const scope = useScopeController({
     results: simState.results,
@@ -754,30 +796,110 @@ export function App() {
           📐 Schematic
         </button>
 
-        {scopeBlocks.map((sb) => {
-          const tabId = scopeTabId(sb.name);
-          const isActive = activeTabId === tabId;
-          const hasData = !!(
-            simState.results &&
-            (sb.inputLabels || []).some((lbl) => lbl && simState.results?.[lbl])
-          );
-          return (
-            <button
-              key={tabId}
-              type="button"
-              className={`workspace-tab ${isActive ? 'active' : ''}`}
-              onClick={() => {
-                setSelectedScope(sb.name);
-                setActiveTabId(tabId);
-              }}
-              title={`Oscilloscope Instrument: ${sb.name}`}
-            >
-              <span>📺</span>
-              <span>{sb.name}</span>
-              {hasData && <span className="tab-data-dot" title="Waveform data available" />}
-            </button>
-          );
-        })}
+        {state.graphRegisters && state.graphRegisters.length > 0 ? (
+          state.graphRegisters.map((reg) => {
+            const tabId = makeOsciTabId(reg.id);
+            const isActive = activeTabId === tabId || activeTabId === scopeTabId(reg.name);
+            const hasData = !!(
+              simState.results &&
+              (reg.signals || []).some((lbl) => lbl && simState.results?.[lbl])
+            );
+            return (
+              <div key={reg.id} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <button
+                  key={tabId}
+                  type="button"
+                  className={`workspace-tab ${isActive ? 'active' : ''}`}
+                  onClick={() => {
+                    setSelectedScope(reg.name);
+                    setActiveTabId(tabId);
+                  }}
+                  title={`Oscilloscope Register: ${reg.name} (${reg.numGraphs} graph${reg.numGraphs > 1 ? 's' : ''}, ${reg.signals.length} signals)`}
+                >
+                  <span>📈</span>
+                  <span>{reg.name}</span>
+                  <span className="workspace-tab-badge">{reg.numGraphs}G</span>
+                  {hasData && <span className="tab-data-dot" title="Waveform data available" />}
+                </button>
+                {state.graphRegisters.length > 1 && (
+                  <button
+                    type="button"
+                    className="workspace-tab-close"
+                    title={`Close ${reg.name}`}
+                    aria-label={`Close ${reg.name}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      actions.removeGraphRegister(reg.id);
+                      if (isActive) {
+                        const remaining = state.graphRegisters.filter((r) => r.id !== reg.id);
+                        if (remaining.length > 0) {
+                          setSelectedScope(remaining[0].name);
+                          setActiveTabId(makeOsciTabId(remaining[0].id));
+                        } else {
+                          setActiveTabId('schematic');
+                        }
+                      }
+                    }}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            );
+          })
+        ) : (
+          scopeBlocks.map((sb) => {
+            const tabId = scopeTabId(sb.name);
+            const isActive = activeTabId === tabId;
+            const hasData = !!(
+              simState.results &&
+              (sb.inputLabels || []).some((lbl) => lbl && simState.results?.[lbl])
+            );
+            return (
+              <button
+                key={tabId}
+                type="button"
+                className={`workspace-tab ${isActive ? 'active' : ''}`}
+                onClick={() => {
+                  setSelectedScope(sb.name);
+                  setActiveTabId(tabId);
+                }}
+                title={`Oscilloscope Instrument: ${sb.name}`}
+              >
+                <span>📺</span>
+                <span>{sb.name}</span>
+                {hasData && <span className="tab-data-dot" title="Waveform data available" />}
+              </button>
+            );
+          })
+        )}
+
+        {/* Dedicated + Button to add a new Osci / Graph View Register */}
+        <button
+          type="button"
+          className="workspace-add-tab-btn"
+          onClick={() => {
+            const idx = (state.graphRegisters?.length || 0) + 1;
+            const newId = `osci_${Date.now()}_${idx}`;
+            const newName = `Osci ${idx}`;
+            actions.addGraphRegister({
+              id: newId,
+              name: newName,
+              numGraphs: 1,
+              signals: [],
+              signalGraphs: {},
+              hiddenSignals: [],
+              yScaleMode: 'auto',
+              cursorsEnabled: false,
+            });
+            setSelectedScope(newName);
+            setActiveTabId(makeOsciTabId(newId));
+          }}
+          title="Add Osci / Graph View Register"
+          aria-label="Add Osci / Graph View Register"
+        >
+          + Add Osci
+        </button>
 
         {scriptBlocks.map((scr) => {
           const tabId = scriptTabId(scr.name);
@@ -796,8 +918,8 @@ export function App() {
           );
         })}
 
-        {/* Generic simulation tab if results exist without scope blocks */}
-        {scopeBlocks.length === 0 && simState.results && (
+        {/* Generic simulation tab if results exist without registers or scope blocks */}
+        {(!state.graphRegisters || state.graphRegisters.length === 0) && scopeBlocks.length === 0 && simState.results && (
           <button
             type="button"
             className={`workspace-tab ${activeTabId === 'simulation' ? 'active' : ''}`}
@@ -906,7 +1028,7 @@ export function App() {
           <div
             className="workspace-tab-pane"
             style={{
-              display: (activeTabId.startsWith(SCOPE_TAB_PREFIX) || activeTabId === 'simulation') ? 'flex' : 'none',
+              display: (isOsciTab(activeTabId) || activeTabId === 'simulation') ? 'flex' : 'none',
               flexDirection: 'column',
               width: '100%',
               height: '100%',
@@ -929,6 +1051,13 @@ export function App() {
               onRemoveLabel={actions.removeLabel}
               isSidebarOpen={rightSidebarOpen}
               onToggleSidebar={() => setRightSidebarOpen((prev) => !prev)}
+              graphRegister={activeGraphRegister}
+              onUpdateGraphRegister={(patch) => {
+                if (activeGraphRegister) {
+                  actions.updateGraphRegister(activeGraphRegister.id, patch);
+                }
+              }}
+              onRunSimulation={handleQuickRun}
             />
           </div>
 
@@ -1026,9 +1155,15 @@ export function App() {
                     />
                   </div>
 
-                  {activeScopeComponent ? (
+                  {(activeGraphRegister || activeScopeComponent) ? (
                     <ScopePropertiesPanel
                       scopeComponent={activeScopeComponent}
+                      graphRegister={activeGraphRegister}
+                      onUpdateGraphRegister={(patch) => {
+                        if (activeGraphRegister) {
+                          actions.updateGraphRegister(activeGraphRegister.id, patch);
+                        }
+                      }}
                       allComponents={state.components}
                       wires={state.wires}
                       results={simState.results}

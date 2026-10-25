@@ -244,4 +244,55 @@ describe('ScopePropertiesPanel Component', () => {
     expect(screen.getByText('v_L1')).not.toBeNull();
     expect(screen.queryByText('uOUT')).toBeNull();
   });
+
+  it('renders in GraphRegister mode with editable name, 1/2/3 graph buttons, and signals matrix', () => {
+    const mockScope = createMockScopeController(['V(out)', 'I(L1)', 'duty']);
+    const onUpdateRegister = vi.fn();
+    const onLayoutChange = vi.fn();
+
+    const reg = {
+      id: 'osci_1',
+      name: 'Power Stage Waveforms',
+      numGraphs: 2 as const,
+      signals: ['V(out)', 'I(L1)'],
+      signalGraphs: { 'V(out)': 1 as const, 'I(L1)': 2 as const },
+      hiddenSignals: [],
+      yScaleMode: 'auto' as const,
+      cursorsEnabled: false,
+    };
+
+    render(
+      <ScopePropertiesPanel
+        graphRegister={reg}
+        results={{ 'V(out)': [10, 10], 'I(L1)': [1, 2], duty: [0.5, 0.5] }}
+        displayLayout="2-graphs"
+        onDisplayLayoutChange={onLayoutChange}
+        scope={mockScope}
+        onUpdateGraphRegister={onUpdateRegister}
+      />,
+    );
+
+    // Register title and signals badge
+    expect(screen.getByDisplayValue('Power Stage Waveforms')).not.toBeNull();
+    expect(screen.getByText('2 sigs')).not.toBeNull();
+
+    // 1 / 2 / 3 graph layout buttons
+    const btn1G = screen.getByRole('button', { name: /1 Graph/i });
+    const btn2G = screen.getByRole('button', { name: /2 Graphs/i });
+    const btn3G = screen.getByRole('button', { name: /3 Graphs/i });
+    expect(btn1G).not.toBeNull();
+    expect(btn2G).not.toBeNull();
+    expect(btn3G).not.toBeNull();
+
+    // Clicking 3 Graphs
+    fireEvent.click(btn3G);
+    expect(onUpdateRegister).toHaveBeenCalledWith({ numGraphs: 3 });
+    expect(onLayoutChange).toHaveBeenCalledWith('3-graphs');
+
+    // Signal matrix elements
+    expect(screen.getByTestId('scope-signals-matrix')).not.toBeNull();
+    expect(screen.getByText('V(out)')).not.toBeNull();
+    expect(screen.getByText('I(L1)')).not.toBeNull();
+  });
 });
+

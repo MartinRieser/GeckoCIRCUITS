@@ -2,6 +2,10 @@ import { describe, it, expect } from 'vitest';
 import {
   SCOPE_TAB_PREFIX,
   SCRIPT_TAB_PREFIX,
+  OSCI_TAB_PREFIX,
+  makeOsciTabId,
+  parseOsciTabId,
+  isOsciTab,
   scopeTabId,
   scriptTabId,
   tabTargetName,
@@ -9,11 +13,27 @@ import {
 } from '../src/model/workspaceTabs';
 
 describe('workspace tab id helpers', () => {
-  it('builds prefixed tab ids for scopes and scripts', () => {
+  it('builds prefixed tab ids for scopes, scripts, and osci registers', () => {
     expect(scopeTabId('SCOPE.1')).toBe('scope:SCOPE.1');
     expect(scriptTabId('SCRIPT.1')).toBe('script:SCRIPT.1');
+    expect(makeOsciTabId('osci_1')).toBe('osci:osci_1');
     expect(SCOPE_TAB_PREFIX).toBe('scope:');
     expect(SCRIPT_TAB_PREFIX).toBe('script:');
+    expect(OSCI_TAB_PREFIX).toBe('osci:');
+  });
+
+  it('parses osci and scope register ids accurately', () => {
+    expect(parseOsciTabId('osci:osci_1')).toBe('osci_1');
+    expect(parseOsciTabId('scope:SCOPE.1')).toBe('SCOPE.1');
+    expect(parseOsciTabId('schematic')).toBeNull();
+    expect(parseOsciTabId('script:SCRIPT.1')).toBeNull();
+  });
+
+  it('detects whether a tab id is an osci / scope view', () => {
+    expect(isOsciTab('osci:osci_1')).toBe(true);
+    expect(isOsciTab('scope:SCOPE.1')).toBe(true);
+    expect(isOsciTab('schematic')).toBe(false);
+    expect(isOsciTab('script:SCRIPT.1')).toBe(false);
   });
 
   it('extracts the target name only for the matching prefix', () => {

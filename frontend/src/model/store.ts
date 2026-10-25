@@ -8,7 +8,7 @@
  * - 'rubber': multi-component selection rectangle active
  * - 'dragging': moving selected components on grid
  */
-import type { EditorComponent, EditorWire, Point, EditorSnapshot } from './types';
+import type { EditorComponent, EditorWire, Point, EditorSnapshot, GraphRegister } from './types';
 import { ORIENTATION_CYCLE, terminalPositions, findPlacementConflict } from './geometry';
 import { Orientation } from './constants';
 import { routeWireWithAnchors, densePoints, simplifyCorners, deconflictMovedWires } from '../canvas/WireRouter';
@@ -103,6 +103,7 @@ export interface EditorState {
   status: string;
   busy: boolean;
   wireFamily: string | null;
+  graphRegisters: GraphRegister[];
 }
 
 export const initialState: EditorState = {
@@ -128,6 +129,18 @@ export const initialState: EditorState = {
   status: 'Open a .ipes file or example to begin',
   busy: false,
   wireFamily: null,
+  graphRegisters: [
+    {
+      id: 'osci_1',
+      name: 'Osci 1',
+      numGraphs: 1,
+      signals: [],
+      signalGraphs: {},
+      hiddenSignals: [],
+      yScaleMode: 'auto',
+      cursorsEnabled: false,
+    },
+  ],
 };
 
 export type Action =
@@ -171,7 +184,11 @@ export type Action =
   | { type: 'DRAG_END' }
   | { type: 'PANEL_FOR'; name: string | null }
   | { type: 'TOGGLE_WIRE_MODE' }
-  | { type: 'SET_FILENAME'; filename: string; filePath?: string | null };
+  | { type: 'SET_FILENAME'; filename: string; filePath?: string | null }
+  | { type: 'SET_GRAPH_REGISTERS'; graphRegisters: GraphRegister[] }
+  | { type: 'ADD_GRAPH_REGISTER'; register?: Partial<GraphRegister> }
+  | { type: 'UPDATE_GRAPH_REGISTER'; id: string; patch: Partial<GraphRegister> }
+  | { type: 'REMOVE_GRAPH_REGISTER'; id: string };
 
 /**
  * Assigns discrete lane offsets (in grid units) to wires belonging to multi-wire
@@ -332,7 +349,124 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
       }
 
       const wires = (Array.isArray(snap.wires) ? snap.wires : Array.isArray(snap.connections) ? snap.connections : []) as EditorWire[];
-      const components = (Array.isArray(snap.components) ? snap.components : []) as EditorComponent[];
+      const rawComponents = (Array.isArray(snap.components) ? snap.components : []) as EditorComponent[];
+
+      // Resolve or synthesize graphRegisters
+      let graphRegisters: GraphRegister[] = [];
+      if (Array.isArray(snap.graphRegisters) && snap.graphRegisters.length > 0) {
+        graphRegisters = snap.graphRegisters as GraphRegister[];
+      } else {
+        // Fallback: Check for legacy SCOPE components in rawComponents
+        const legacyScopes = rawComponents.filter(
+          (c) =>
+            c.type === 5 ||
+            c.type === 1003 ||
+            (c.family === 'CONTROL' && (c.name.startsWith('SCOPE') || c.name.startsWith('OSZI'))),
+        );
+
+        if (legacyScopes.length > 0) {
+          graphRegisters = legacyScopes.map((scope) => {
+            const id = scope.name.toLowerCase().replace('.', '_');
+            const name = scope.name;
+            const params = scope.parameters || {};
+            let numGraphs: 1 | 2 | 3 = 1;
+            const layoutStr = String(params.scopeLayout || 'overlay');
+            if (layoutStr === '2-graphs') numGraphs = 2;
+            else if (layoutStr === '3-graphs') numGraphs = 3;
+            else if (layoutStr === 'stacked') {
+              numGraphs =
+                scope.inputLabels?.length === 2
+                  ? 2
+                  : (scope.inputLabels?.length ?? 0) >= 3
+                    ? 3
+                    : 1;
+            }
+
+            const signals: string[] = [];
+            if (scope.inputLabels) {
+              for (const l of scope.inputLabels) {
+                if (l && l.trim() && l.trim() !== 'NIX_NIX_NIX') {
+                  signals.push(l.trim());
+                }
+              }
+            }
+
+            const signalGraphs: Record<string, 1 | 2 | 3> = {};
+            if (params.signalGraphs && typeof params.signalGraphs === 'string') {
+              params.signalGraphs.split(',').forEach((pair) => {
+                const [sig, g] = pair.split(':');
+                if (sig && g) {
+                  const gNum = Number(g.trim());
+                  if (gNum >= 1 && gNum <= 3) signalGraphs[sig.trim()] = gNum as 1 | 2 | 3;
+                }
+              });
+            } else if (numGraphs > 1) {
+              signals.forEach((s, idx) => {
+                signalGraphs[s] = Math.min(idx + 1, numGraphs) as 1 | 2 | 3;
+              });
+            }
+
+            const hiddenSignals: string[] = [];
+            if (params.hiddenSignals && typeof params.hiddenSignals === 'string') {
+              params.hiddenSignals.split(',').forEach((s) => {
+                if (s.trim()) hiddenSignals.push(s.trim());
+              });
+            }
+
+            const yScaleMode: 'auto' | 'fixed' =
+              params.yScaleMode === 'fixed' ? 'fixed' : 'auto';
+            const cursorsEnabled = Boolean(params.cursorsEnabled);
+
+            return {
+              id,
+              name,
+              numGraphs,
+              signals,
+              signalGraphs,
+              hiddenSignals,
+              yScaleMode,
+              cursorsEnabled,
+            };
+          });
+        } else if (
+          snap.simulationDefaults &&
+          Array.isArray((snap.simulationDefaults as any).signals) &&
+          (snap.simulationDefaults as any).signals.length > 0
+        ) {
+          const sigs = (snap.simulationDefaults as any).signals.filter(
+            (s: string) => s && s.trim(),
+          );
+          graphRegisters = [
+            {
+              id: 'osci_1',
+              name: 'Osci 1',
+              numGraphs: 1,
+              signals: sigs,
+              signalGraphs: {},
+              hiddenSignals: [],
+              yScaleMode: 'auto',
+              cursorsEnabled: false,
+            },
+          ];
+        } else if (state.graphRegisters?.length > 0 && snap.circuitId === state.circuitId) {
+          graphRegisters = state.graphRegisters;
+        } else {
+          graphRegisters = [
+            {
+              id: 'osci_1',
+              name: 'Osci 1',
+              numGraphs: 1,
+              signals: [],
+              signalGraphs: {},
+              hiddenSignals: [],
+              yScaleMode: 'auto',
+              cursorsEnabled: false,
+            },
+          ];
+        }
+      }
+
+      const components = rawComponents;
 
       return {
         ...state,
@@ -345,6 +479,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         sheetHeight,
         components,
         wires,
+        graphRegisters,
         mode: 'idle',
         ghost: null,
         wireDraft: null,
@@ -362,6 +497,61 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
             ? state.status
             : `Loaded ${(snap.filename as string) || 'circuit'} (${components.length} ${components.length === 1 ? 'component' : 'components'})`,
         busy: false,
+      };
+    }
+
+    case 'SET_GRAPH_REGISTERS':
+      return {
+        ...state,
+        graphRegisters: action.graphRegisters.length > 0 ? action.graphRegisters : state.graphRegisters,
+      };
+
+    case 'ADD_GRAPH_REGISTER': {
+      const idx = state.graphRegisters.length + 1;
+      const newReg: GraphRegister = {
+        id: `osci_${Date.now()}_${idx}`,
+        name: `Osci ${idx}`,
+        numGraphs: 1,
+        signals: [],
+        signalGraphs: {},
+        hiddenSignals: [],
+        yScaleMode: 'auto',
+        cursorsEnabled: false,
+        ...action.register,
+      };
+      return {
+        ...state,
+        graphRegisters: [...state.graphRegisters, newReg],
+      };
+    }
+
+    case 'UPDATE_GRAPH_REGISTER':
+      return {
+        ...state,
+        graphRegisters: state.graphRegisters.map((reg) =>
+          reg.id === action.id ? { ...reg, ...action.patch } : reg,
+        ),
+      };
+
+    case 'REMOVE_GRAPH_REGISTER': {
+      const filtered = state.graphRegisters.filter((reg) => reg.id !== action.id);
+      return {
+        ...state,
+        graphRegisters:
+          filtered.length > 0
+            ? filtered
+            : [
+                {
+                  id: 'osci_1',
+                  name: 'Osci 1',
+                  numGraphs: 1,
+                  signals: [],
+                  signalGraphs: {},
+                  hiddenSignals: [],
+                  yScaleMode: 'auto',
+                  cursorsEnabled: false,
+                },
+              ],
       };
     }
 

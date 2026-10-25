@@ -384,5 +384,79 @@ describe('Oscilloscope GUI & Controls', () => {
       expect(inferSignalUnit('status_flag')).toBe('');
     });
   });
+
+  describe('GraphRegister Mode in ScopeViewTab', () => {
+    it('renders pre-simulation state with register name and runs simulation on button click', () => {
+      const onRunSim = vi.fn();
+      const reg = {
+        id: 'osci_main',
+        name: 'Osci Main View',
+        numGraphs: 2 as const,
+        signals: ['V(out)', 'I(L1)'],
+        signalGraphs: { 'V(out)': 1 as const, 'I(L1)': 2 as const },
+        hiddenSignals: [],
+        yScaleMode: 'auto' as const,
+        cursorsEnabled: false,
+      };
+
+      render(
+        <ScopeViewTab
+          selectedScope="osci_main"
+          graphRegister={reg}
+          components={dummyComponents}
+          results={null}
+          displayLayout="2-graphs"
+          onRunSimulation={onRunSim}
+        />,
+      );
+
+      // Check pre-sim screen renders
+      expect(screen.getByTestId('scope-pre-sim-state')).not.toBeNull();
+      expect(screen.getAllByText('Osci Main View').length).toBeGreaterThanOrEqual(2);
+      expect(screen.getByText(/Configured for 2 signals across 2 graphs/i)).not.toBeNull();
+
+      // Trigger run simulation button
+      const runBtn = screen.getByRole('button', { name: /Run Simulation/i });
+      expect(runBtn).not.toBeNull();
+      fireEvent.click(runBtn);
+      expect(onRunSim).toHaveBeenCalledTimes(1);
+    });
+
+    it('renders multi-graph layout switcher and updates numGraphs when clicked', () => {
+      const onUpdateReg = vi.fn();
+      const onLayoutChange = vi.fn();
+      const reg = {
+        id: 'osci_1',
+        name: 'Osci 1',
+        numGraphs: 1 as const,
+        signals: ['V_out', 'V_in'],
+        signalGraphs: {},
+        hiddenSignals: [],
+        yScaleMode: 'auto' as const,
+        cursorsEnabled: false,
+      };
+
+      render(
+        <ScopeViewTab
+          selectedScope="osci_1"
+          graphRegister={reg}
+          components={dummyComponents}
+          results={dummyResults}
+          displayLayout="overlay"
+          onUpdateGraphRegister={onUpdateReg}
+          onDisplayLayoutChange={onLayoutChange}
+        />,
+      );
+
+      // Verify layout switcher buttons exist
+      const btn3G = screen.getByRole('button', { name: /3 Graphs/i });
+      expect(btn3G).not.toBeNull();
+      fireEvent.click(btn3G);
+
+      expect(onUpdateReg).toHaveBeenCalledWith({ numGraphs: 3 });
+      expect(onLayoutChange).toHaveBeenCalledWith('3-graphs');
+    });
+  });
 });
+
 

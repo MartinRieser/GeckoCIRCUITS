@@ -10,11 +10,40 @@
 /** Tab id prefix for oscilloscope instrument tabs (e.g. 'scope:SCOPE.1'). */
 export const SCOPE_TAB_PREFIX = 'scope:';
 
+/** Tab id prefix for project-level oscilloscope register tabs (e.g. 'osci:osci_1'). */
+export const OSCI_TAB_PREFIX = 'osci:';
+
 /** Tab id prefix for script/function block tabs (e.g. 'script:SCRIPT.1'). */
 export const SCRIPT_TAB_PREFIX = 'script:';
 
 /** Union of all valid workspace tab ids. */
-export type WorkspaceTabId = 'schematic' | 'simulation' | `scope:${string}` | `script:${string}`;
+export type WorkspaceTabId =
+  | 'schematic'
+  | 'simulation'
+  | `osci:${string}`
+  | `scope:${string}`
+  | `script:${string}`;
+
+/** Builds the tab id of an Osci / Graph register tab. */
+export function makeOsciTabId(registerId: string): WorkspaceTabId {
+  return `${OSCI_TAB_PREFIX}${registerId}`;
+}
+
+/** Parses the register or scope ID from an osci/scope tab id. */
+export function parseOsciTabId(tabId: string): string | null {
+  if (tabId.startsWith(OSCI_TAB_PREFIX)) {
+    return tabId.slice(OSCI_TAB_PREFIX.length);
+  }
+  if (tabId.startsWith(SCOPE_TAB_PREFIX)) {
+    return tabId.slice(SCOPE_TAB_PREFIX.length);
+  }
+  return null;
+}
+
+/** Returns true if the tab id represents an oscilloscope / graph register view. */
+export function isOsciTab(tabId: string): boolean {
+  return tabId.startsWith(OSCI_TAB_PREFIX) || tabId.startsWith(SCOPE_TAB_PREFIX);
+}
 
 /** Builds the tab id of a scope instrument tab. */
 export function scopeTabId(name: string): string {

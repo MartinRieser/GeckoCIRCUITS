@@ -6,7 +6,7 @@
  */
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
-import type { EditorComponent, SimulationStatus } from '../model/types';
+import type { EditorComponent, SimulationStatus, GraphRegister } from '../model/types';
 import { formatEngineeringValue } from '../model/componentSchema';
 import {
   effectiveWindow,
@@ -63,6 +63,12 @@ export interface ScopeViewTabProps {
   isSidebarOpen?: boolean;
   /** Callback to toggle the right sidebar for full-width focus mode. */
   onToggleSidebar?: () => void;
+  /** Optional active project-level Graph Register. */
+  graphRegister?: GraphRegister | null;
+  /** Optional callback to update the active graph register. */
+  onUpdateGraphRegister?: (patch: Partial<GraphRegister>) => void;
+  /** Optional callback to trigger a simulation run. */
+  onRunSimulation?: () => void;
 }
 
 export const DEFAULT_DRAWER_HEIGHT = 280;
@@ -198,6 +204,9 @@ export function ScopeViewTab({
   onRemoveLabel,
   isSidebarOpen = true,
   onToggleSidebar,
+  graphRegister,
+  onUpdateGraphRegister,
+  onRunSimulation,
 }: ScopeViewTabProps) {
   const fallbackScope = useScopeController({
     results,
@@ -319,21 +328,50 @@ export function ScopeViewTab({
     }
   }, [activeScopeBlock, onRemoveLabel, onSetLabel]);
 
+  const effectiveDisplayLayout: ScopeDisplayLayout = graphRegister
+    ? graphRegister.numGraphs === 1
+      ? 'overlay'
+      : graphRegister.numGraphs === 2
+        ? '2-graphs'
+        : '3-graphs'
+    : displayLayout;
+
   const signalGraphsRaw = activeScopeBlock?.parameters?.[SCOPE_SETTING_KEYS.signalGraphs] as string | undefined;
-  const signalGraphs = useMemo(() => parseSignalGraphs(signalGraphsRaw), [signalGraphsRaw]);
+  const legacySignalGraphs = useMemo(() => parseSignalGraphs(signalGraphsRaw), [signalGraphsRaw]);
+  const effectiveSignalGraphs = useMemo(() => {
+    if (graphRegister) {
+      return graphRegister.signalGraphs;
+    }
+    return legacySignalGraphs;
+  }, [graphRegister, legacySignalGraphs]);
+  const signalGraphs = effectiveSignalGraphs;
 
   const handleMoveSignalToGraph = useCallback(
     (signal: string, targetGraph: number) => {
+      if (graphRegister) {
+        const next = { ...graphRegister.signalGraphs, [signal]: targetGraph as 1 | 2 | 3 };
+        onUpdateGraphRegister?.({ signalGraphs: next });
+        return;
+      }
       if (!activeScopeBlock || !onSetParameter) return;
-      const current = { ...signalGraphs };
+      const current = { ...legacySignalGraphs };
       current[signal] = targetGraph;
       const serialized = serializeSignalGraphs(current);
       onSetParameter(activeScopeBlock.name, SCOPE_SETTING_KEYS.signalGraphs, serialized);
     },
-    [activeScopeBlock, onSetParameter, signalGraphs],
+    [graphRegister, onUpdateGraphRegister, activeScopeBlock, onSetParameter, legacySignalGraphs],
   );
 
   const handleAutoGroupSignals = useCallback(() => {
+    if (graphRegister) {
+      const mapping: Record<string, 1 | 2 | 3> = {};
+      const targets = graphRegister.signals;
+      for (const sig of targets) {
+        mapping[sig] = defaultGraphForSignal(sig, effectiveDisplayLayout) as 1 | 2 | 3;
+      }
+      onUpdateGraphRegister?.({ signalGraphs: mapping });
+      return;
+    }
     if (!activeScopeBlock || !onSetParameter) return;
     const mapping: Record<string, number> = {};
     const targets = assignedChannels.length > 0 ? assignedChannels : scopeChannelNames;
@@ -342,8 +380,7 @@ export function ScopeViewTab({
     }
     const serialized = serializeSignalGraphs(mapping);
     onSetParameter(activeScopeBlock.name, SCOPE_SETTING_KEYS.signalGraphs, serialized);
-  }, [activeScopeBlock, onSetParameter, assignedChannels, scopeChannelNames, displayLayout]);
-
+  }, [graphRegister, onUpdateGraphRegister, effectiveDisplayLayout, activeScopeBlock, onSetParameter, assignedChannels, scopeChannelNames, displayLayout]);
 
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const [hoveredSignal, setHoveredSignal] = useState<string | null>(null);
@@ -373,11 +410,19 @@ export function ScopeViewTab({
     setYView(null);
   }, [setView, setYView]);
 
-  const filteredChannels = scopeChannelNames;
+  const filteredChannels = useMemo(() => {
+    if (graphRegister) {
+      return graphRegister.signals.length > 0 ? graphRegister.signals : scopeChannelNames;
+    }
+    return scopeChannelNames;
+  }, [graphRegister, scopeChannelNames]);
 
   const visibleSignals = useMemo(() => {
-    return filteredChannels.filter((s) => !hiddenSignals[s]);
-  }, [filteredChannels, hiddenSignals]);
+    return filteredChannels.filter((s) => {
+      if (graphRegister?.hiddenSignals?.includes(s)) return false;
+      return !hiddenSignals[s];
+    });
+  }, [filteredChannels, hiddenSignals, graphRegister?.hiddenSignals]);
 
   const isRunning = status === 'RUNNING' || status === 'PENDING';
 
@@ -475,7 +520,9 @@ export function ScopeViewTab({
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, flexShrink: 0 }}>
             <span className="scope-tab-title" title={filename ? `Circuit: ${filename}` : undefined}>
-              {selectedScope === 'all' ? 'All Signals' : `Scope: ${selectedScope}`}
+              {graphRegister
+                ? (graphRegister.name.startsWith('SCOPE.') ? `Scope: ${graphRegister.name}` : graphRegister.name)
+                : (selectedScope === 'all' ? 'All Signals' : `Scope: ${selectedScope}`)}
             </span>
             {filename && (
               <span className="scope-tab-subtitle" style={{ fontSize: '11px', opacity: 0.6 }}>
@@ -513,7 +560,16 @@ export function ScopeViewTab({
                   }}
                   onMouseEnter={() => setHoveredSignal(sig)}
                   onMouseLeave={() => setHoveredSignal(null)}
-                  onClick={() => toggleSignal(sig)}
+                  onClick={() => {
+                    toggleSignal(sig);
+                    if (graphRegister) {
+                      const isH = graphRegister.hiddenSignals.includes(sig);
+                      const nextHidden = isH
+                        ? graphRegister.hiddenSignals.filter((s) => s !== sig)
+                        : [...graphRegister.hiddenSignals, sig];
+                      onUpdateGraphRegister?.({ hiddenSignals: nextHidden });
+                    }
+                  }}
                   title={`Click to hide/show ${sig}. Hover to highlight trace.`}
                 >
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, display: 'inline-block' }} />
@@ -523,8 +579,8 @@ export function ScopeViewTab({
             })}
           </div>
 
-          {/* Scope Channel Manager button */}
-          {selectedScope !== 'all' && (
+          {/* Scope Channel Manager button (for legacy scopes) */}
+          {!graphRegister && selectedScope !== 'all' && (
             <button
               type="button"
               className="sim-mini-btn"
@@ -551,7 +607,43 @@ export function ScopeViewTab({
 
         {/* Center: Layout Switcher + Auto-Group */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-          {onDisplayLayoutChange && (
+          {graphRegister ? (
+            <div className="segmented-control" style={{ display: 'flex' }} data-testid="scope-tab-layout-switcher">
+              <button
+                type="button"
+                className={`segmented-btn ${graphRegister.numGraphs === 1 ? 'active' : ''}`}
+                onClick={() => {
+                  onUpdateGraphRegister?.({ numGraphs: 1 });
+                  onDisplayLayoutChange?.('overlay');
+                }}
+                title="1 Graph: Overlay all traces on a single plot"
+              >
+                📈 1 Graph
+              </button>
+              <button
+                type="button"
+                className={`segmented-btn ${graphRegister.numGraphs === 2 ? 'active' : ''}`}
+                onClick={() => {
+                  onUpdateGraphRegister?.({ numGraphs: 2 });
+                  onDisplayLayoutChange?.('2-graphs');
+                }}
+                title="2 Graphs: Split traces across 2 subplots"
+              >
+                📊 2 Graphs
+              </button>
+              <button
+                type="button"
+                className={`segmented-btn ${graphRegister.numGraphs === 3 ? 'active' : ''}`}
+                onClick={() => {
+                  onUpdateGraphRegister?.({ numGraphs: 3 });
+                  onDisplayLayoutChange?.('3-graphs');
+                }}
+                title="3 Graphs: Split traces across 3 subplots"
+              >
+                📑 3 Graphs
+              </button>
+            </div>
+          ) : onDisplayLayoutChange && (
             <div className="segmented-control" style={{ display: 'flex' }} data-testid="scope-tab-layout-switcher">
               <button
                 type="button"
@@ -588,7 +680,7 @@ export function ScopeViewTab({
             </div>
           )}
 
-          {(displayLayout === '2-graphs' || displayLayout === '3-graphs') && selectedScope !== 'all' && (
+          {(effectiveDisplayLayout === '2-graphs' || effectiveDisplayLayout === '3-graphs') && (
             <button
               type="button"
               className="sim-mini-btn"
@@ -689,12 +781,95 @@ export function ScopeViewTab({
       {/* DSO Main Viewport (Screen Bezel + Optional Drawer) */}
       <div className={`dso-viewport ${isDraggingDrawer ? 'dragging-drawer' : ''}`}>
         {!results || signalNames.length === 0 ? (
-          <div className="scope-empty-state">
-            <div className="empty-icon">{selectedScope === 'all' ? '📊' : '📺'}</div>
-            <h3>No simulation data available</h3>
-            <p>Configure parameters in the <strong>Simulation Settings</strong> panel on the right and click <strong>"▶ Run Simulation"</strong> to calculate waveforms.</p>
-          </div>
-        ) : selectedScope !== 'all' && visibleSignals.length === 0 ? (
+          graphRegister ? (
+            <div className="scope-empty-state pre-sim-screen" data-testid="scope-pre-sim-state">
+              <div className="empty-icon">📈</div>
+              <h3>{graphRegister.name}</h3>
+              <p>
+                {graphRegister.signals.length === 0
+                  ? 'No signals selected yet. Pick labeled electrical or control signals in the right panel to plot.'
+                  : `Configured for ${graphRegister.signals.length} signal${graphRegister.signals.length > 1 ? 's' : ''} across ${graphRegister.numGraphs} graph${graphRegister.numGraphs > 1 ? 's' : ''}.`}
+              </p>
+              {graphRegister.signals.length > 0 && (
+                <div
+                  className="pre-sim-signals-preview"
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 6,
+                    margin: '12px 0',
+                    maxWidth: 480,
+                    justifyContent: 'center',
+                  }}
+                >
+                  {graphRegister.signals.map((sig) => {
+                    const color = colorOf(sig);
+                    const g = graphRegister.signalGraphs[sig] || 1;
+                    return (
+                      <span
+                        key={sig}
+                        className="dso-osd-channel-tag"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 5,
+                          padding: '3px 8px',
+                          borderRadius: 4,
+                          border: `1px solid ${color}`,
+                          background: 'var(--surface)',
+                          fontSize: 11,
+                          fontFamily: 'var(--font-mono, monospace)',
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: '50%',
+                            background: color,
+                          }}
+                        />
+                        <span>{sig}</span>
+                        {graphRegister.numGraphs > 1 && (
+                          <span style={{ opacity: 0.7, fontSize: 10 }}>(G{g})</span>
+                        )}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+              {onRunSimulation && (
+                <div style={{ marginTop: 16 }}>
+                  <button
+                    type="button"
+                    className="sim-mini-btn active"
+                    onClick={onRunSimulation}
+                    style={{
+                      padding: '8px 20px',
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      borderRadius: 6,
+                      background: 'var(--accent, #38bdf8)',
+                      color: '#000000',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <span>▶</span> Run Simulation (F5)
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="scope-empty-state">
+              <div className="empty-icon">{selectedScope === 'all' ? '📊' : '📺'}</div>
+              <h3>No simulation data available</h3>
+              <p>Configure parameters in the <strong>Simulation Settings</strong> panel on the right and click <strong>"▶ Run Simulation"</strong> to calculate waveforms.</p>
+            </div>
+          )
+        ) : selectedScope !== 'all' && !graphRegister && visibleSignals.length === 0 ? (
           <div className="scope-empty-state" data-testid="scope-no-channels-state">
             <div className="empty-icon">📺</div>
             <h3>No channels assigned to {selectedScope}</h3>
@@ -725,7 +900,7 @@ export function ScopeViewTab({
 
               {/* Central Chart Viewport with responsive ResizeObserver */}
               <div className="dso-chart-container" ref={chartContainerRef}>
-                {displayLayout === 'stacked' ? (
+                {effectiveDisplayLayout === 'stacked' ? (
                   <FullScreenStackedChart
                     width={chartDimensions.width}
                     height={chartDimensions.height}
@@ -757,15 +932,15 @@ export function ScopeViewTab({
                     onResetZoom={resetZoom}
                     onPanSeconds={(delta) => setView(panWindow(win, delta, dataT0, dataT1))}
                   />
-                ) : displayLayout === '2-graphs' || displayLayout === '3-graphs' ? (
+                ) : effectiveDisplayLayout === '2-graphs' || effectiveDisplayLayout === '3-graphs' ? (
                   <FullScreenMultiGraphChart
-                    numGraphs={displayLayout === '2-graphs' ? 2 : 3}
+                    numGraphs={effectiveDisplayLayout === '2-graphs' ? 2 : 3}
                     width={chartDimensions.width}
                     height={chartDimensions.height}
                     time={timeArray}
                     signals={results}
                     activeSignals={visibleSignals}
-                    signalGraphs={signalGraphs}
+                    signalGraphs={effectiveSignalGraphs}
                     onMoveSignalToGraph={handleMoveSignalToGraph}
                     colorOf={colorOf}
                     theme={theme}

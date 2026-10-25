@@ -17,6 +17,7 @@ vi.mock('../src/api/client', () => ({
   uploadIpesString: vi.fn().mockResolvedValue('test-c1'),
   subscribeCircuitChanges: vi.fn().mockReturnValue(() => {}),
   cancelSimulation: vi.fn().mockResolvedValue(undefined),
+  setGraphRegisters: vi.fn().mockResolvedValue(undefined),
 }));
 
 describe('useEditor hook', () => {
@@ -40,6 +41,45 @@ describe('useEditor hook', () => {
     expect(result.current.state.ghost).toBeNull();
     expect(result.current.simState.isOpen).toBe(false);
     expect(result.current.simState.status).toBeNull();
+    expect(result.current.state.graphRegisters).toHaveLength(1);
+    expect(result.current.state.graphRegisters[0].name).toBe('Osci 1');
+  });
+
+  it('adds, updates, and removes graph registers', async () => {
+    const { result } = await renderEditor();
+
+    act(() => {
+      result.current.actions.addGraphRegister({
+        id: 'osci_2',
+        name: 'Control Loop Scope',
+        numGraphs: 2,
+        signals: ['v_err', 'duty'],
+        signalGraphs: { v_err: 1, duty: 2 },
+        hiddenSignals: [],
+        yScaleMode: 'auto',
+        cursorsEnabled: true,
+      });
+    });
+
+    expect(result.current.state.graphRegisters).toHaveLength(2);
+    const added = result.current.state.graphRegisters.find((r) => r.id === 'osci_2');
+    expect(added?.name).toBe('Control Loop Scope');
+    expect(added?.numGraphs).toBe(2);
+    expect(added?.signals).toEqual(['v_err', 'duty']);
+
+    // Update
+    act(() => {
+      result.current.actions.updateGraphRegister('osci_2', { numGraphs: 3, name: 'PID Signals' });
+    });
+    const updated = result.current.state.graphRegisters.find((r) => r.id === 'osci_2');
+    expect(updated?.name).toBe('PID Signals');
+    expect(updated?.numGraphs).toBe(3);
+
+    // Remove
+    act(() => {
+      result.current.actions.removeGraphRegister('osci_2');
+    });
+    expect(result.current.state.graphRegisters.find((r) => r.id === 'osci_2')).toBeUndefined();
   });
 
   it('arms a component and enters placing mode, then cancels back to idle', async () => {

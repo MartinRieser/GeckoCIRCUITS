@@ -15,6 +15,7 @@ import type {
   ConnectionCreate,
   ConnectionPatch,
   EditorSnapshot,
+  GraphRegister,
   SimulationRequest,
   SimulationResponse,
 } from '../model/types';
@@ -244,6 +245,19 @@ export function patchConnection(
  */
 export function deleteConnection(circuitId: string, index: number): Promise<ChangeMessage> {
   return request(`/circuits/${circuitId}/connections/${index}`, { method: 'DELETE' });
+}
+
+/**
+ * Persists the complete list of oscilloscope / graph view registers for an active circuit session.
+ *
+ * @param circuitId Active circuit ID
+ * @param registers Array of graph registers
+ */
+export function setGraphRegisters(circuitId: string, registers: GraphRegister[]): Promise<ChangeMessage> {
+  return request(`/circuits/${circuitId}/graph-registers`, {
+    method: 'PUT',
+    body: JSON.stringify(registers),
+  });
 }
 
 /**

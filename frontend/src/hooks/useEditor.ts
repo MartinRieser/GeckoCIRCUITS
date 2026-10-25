@@ -15,6 +15,7 @@ import type {
   SimulationDefaults,
   SimRunSettings,
   SimulationStatus,
+  GraphRegister,
 } from '../model/types';
 import {
   nextOrientation,
@@ -1527,6 +1528,95 @@ export function useEditor() {
     };
   }, [simStatus]);
 
+  const setGraphRegisters = useCallback(
+    async (registers: GraphRegister[]) => {
+      dispatch({ type: 'SET_GRAPH_REGISTERS', graphRegisters: registers });
+      if (stateRef.current.circuitId) {
+        try {
+          await api.setGraphRegisters(stateRef.current.circuitId, registers);
+        } catch (e) {
+          console.warn('Failed to persist graph registers to backend:', e);
+        }
+      }
+    },
+    [],
+  );
+
+  const addGraphRegister = useCallback(
+    async (initial?: Partial<GraphRegister>) => {
+      const currentRegs = stateRef.current.graphRegisters || [];
+      const idx = currentRegs.length + 1;
+      const newReg: GraphRegister = {
+        id: `osci_${Date.now()}_${idx}`,
+        name: `Osci ${idx}`,
+        numGraphs: 1,
+        signals: [],
+        signalGraphs: {},
+        hiddenSignals: [],
+        yScaleMode: 'auto',
+        cursorsEnabled: false,
+        ...initial,
+      };
+      const nextRegs = [...currentRegs, newReg];
+      dispatch({ type: 'SET_GRAPH_REGISTERS', graphRegisters: nextRegs });
+      if (stateRef.current.circuitId) {
+        try {
+          await api.setGraphRegisters(stateRef.current.circuitId, nextRegs);
+        } catch (e) {
+          console.warn('Failed to persist graph registers to backend:', e);
+        }
+      }
+      return newReg;
+    },
+    [],
+  );
+
+  const updateGraphRegister = useCallback(
+    async (id: string, patch: Partial<GraphRegister>) => {
+      const currentRegs = stateRef.current.graphRegisters || [];
+      const nextRegs = currentRegs.map((reg) => (reg.id === id ? { ...reg, ...patch } : reg));
+      dispatch({ type: 'SET_GRAPH_REGISTERS', graphRegisters: nextRegs });
+      if (stateRef.current.circuitId) {
+        try {
+          await api.setGraphRegisters(stateRef.current.circuitId, nextRegs);
+        } catch (e) {
+          console.warn('Failed to persist graph registers to backend:', e);
+        }
+      }
+    },
+    [],
+  );
+
+  const removeGraphRegister = useCallback(
+    async (id: string) => {
+      const currentRegs = stateRef.current.graphRegisters || [];
+      let nextRegs = currentRegs.filter((reg) => reg.id !== id);
+      if (nextRegs.length === 0) {
+        nextRegs = [
+          {
+            id: 'osci_1',
+            name: 'Osci 1',
+            numGraphs: 1,
+            signals: [],
+            signalGraphs: {},
+            hiddenSignals: [],
+            yScaleMode: 'auto',
+            cursorsEnabled: false,
+          },
+        ];
+      }
+      dispatch({ type: 'SET_GRAPH_REGISTERS', graphRegisters: nextRegs });
+      if (stateRef.current.circuitId) {
+        try {
+          await api.setGraphRegisters(stateRef.current.circuitId, nextRegs);
+        } catch (e) {
+          console.warn('Failed to persist graph registers to backend:', e);
+        }
+      }
+    },
+    [],
+  );
+
   return {
     state,
     dispatch,
@@ -1585,6 +1675,10 @@ export function useEditor() {
       debugResume,
       updateSimSettings,
       toggleSimDrawer: () => setSimDrawerOpen((prev) => !prev),
+      setGraphRegisters,
+      addGraphRegister,
+      updateGraphRegister,
+      removeGraphRegister,
     },
   };
 }
