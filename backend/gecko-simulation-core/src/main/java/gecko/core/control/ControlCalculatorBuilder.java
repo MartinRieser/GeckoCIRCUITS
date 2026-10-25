@@ -674,9 +674,8 @@ public final class ControlCalculatorBuilder {
         if (model.getConnections() != null) {
             for (CircuitModel.ConnectionData conn : model.getConnections()) {
                 if (conn != null && "CONTROL".equalsIgnoreCase(conn.getType())) {
-                    String wireLabel = conn.getLabel();
+                    String wireLabel = bareControlLabel(conn.getLabel());
                     if (isValidUserLabel(wireLabel)) {
-                        wireLabel = wireLabel.trim();
                         List<int[]> path = toControlPointPath(conn.getPoints());
                         if (!path.isEmpty()) {
                             int[] pt = path.get(0);
@@ -1372,19 +1371,30 @@ public final class ControlCalculatorBuilder {
         return !trimmed.isEmpty() && !trimmed.equals("NIX_NIX_NIX");
     }
 
+    private static String bareControlLabel(String rawLabel) {
+        if (rawLabel == null) {
+            return "";
+        }
+        String trimmed = rawLabel.trim();
+        while (trimmed.startsWith("/") && trimmed.length() > 1) {
+            trimmed = trimmed.substring(1).trim();
+        }
+        return trimmed;
+    }
+
     private static String getOutputTerminalCustomLabel(CircuitModel.ComponentData comp, int j) {
         String dispName = displayName(comp);
         String[] raw = comp.getRawTerminalYLabels();
         if (raw != null && j < raw.length && isValidUserLabel(raw[j])) {
-            String val = raw[j].trim();
-            if (!val.equals(dispName)) {
+            String val = bareControlLabel(raw[j]);
+            if (isValidUserLabel(val) && !val.equals(dispName)) {
                 return val;
             }
         }
         String[] yLabels = comp.getTerminalYLabels();
         if (yLabels != null && j < yLabels.length && isValidUserLabel(yLabels[j])) {
-            String val = yLabels[j].trim();
-            if (!val.equals(dispName)) {
+            String val = bareControlLabel(yLabels[j]);
+            if (isValidUserLabel(val) && !val.equals(dispName)) {
                 return val;
             }
         }
@@ -1395,15 +1405,15 @@ public final class ControlCalculatorBuilder {
         String dispName = displayName(comp);
         String[] raw = comp.getRawTerminalXLabels();
         if (raw != null && i < raw.length && isValidUserLabel(raw[i])) {
-            String val = raw[i].trim();
-            if (!val.equals(dispName)) {
+            String val = bareControlLabel(raw[i]);
+            if (isValidUserLabel(val) && !val.equals(dispName)) {
                 return val;
             }
         }
         String[] xLabels = comp.getTerminalXLabels();
         if (xLabels != null && i < xLabels.length && isValidUserLabel(xLabels[i])) {
-            String val = xLabels[i].trim();
-            if (!val.equals(dispName)) {
+            String val = bareControlLabel(xLabels[i]);
+            if (isValidUserLabel(val) && !val.equals(dispName)) {
                 return val;
             }
         }
@@ -1536,9 +1546,9 @@ public final class ControlCalculatorBuilder {
                 }
             }
             for (int i = 0; i < wires.size(); i++) {
-                String wireLabel = wireLabels.get(i);
+                String wireLabel = bareControlLabel(wireLabels.get(i));
                 if (isValidUserLabel(wireLabel)) {
-                    nets.unionLabel("W" + nets.find(i), "LABEL:" + wireLabel.trim());
+                    nets.unionLabel("W" + nets.find(i), "LABEL:" + wireLabel);
                 }
             }
         }

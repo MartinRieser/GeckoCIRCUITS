@@ -8,7 +8,7 @@
  * - Remembers layout (overlay / stacked), vertical scale mode, and channel visibility
  *   per scope and saves them with the circuit project (.ipes).
  */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { EditorComponent, GraphRegister } from '../model/types';
 import { formatEngineeringValue, extractAvailableSignalDetails, type AvailableSignalMetadata } from '../model/componentSchema';
 import {
@@ -200,15 +200,24 @@ export function ScopePropertiesPanel({
     }
   };
 
+  const [nameDraft, setNameDraft] = useState(graphRegister?.name ?? '');
+  useEffect(() => {
+    if (graphRegister) {
+      setNameDraft(graphRegister.name);
+    }
+  }, [graphRegister?.id, graphRegister?.name]);
+
   const handleToggleChannel = (name: string) => {
     scope.toggleSignal(name);
-    const nextHidden = { ...scope.hiddenSignals, [name]: !scope.hiddenSignals[name] };
     if (graphRegister) {
-      const nextArr = Object.entries(nextHidden)
-        .filter(([, hidden]) => hidden)
-        .map(([n]) => n);
+      const isHidden = graphRegister.hiddenSignals.includes(name);
+      const nextArr = isHidden
+        ? graphRegister.hiddenSignals.filter((s) => s !== name)
+        : [...graphRegister.hiddenSignals, name];
       onUpdateGraphRegister?.({ hiddenSignals: nextArr });
+      return;
     }
+    const nextHidden = { ...scope.hiddenSignals, [name]: !scope.hiddenSignals[name] };
     if (scopeComponent) {
       const serialized = Object.entries(nextHidden)
         .filter(([, hidden]) => hidden)
@@ -333,8 +342,19 @@ export function ScopePropertiesPanel({
             <input
               type="text"
               className="prop-input"
-              value={graphRegister.name}
-              onChange={(e) => onUpdateGraphRegister?.({ name: e.target.value })}
+              value={nameDraft}
+              onChange={(e) => {
+                const val = e.target.value;
+                setNameDraft(val);
+                if (val.trim().length > 0) {
+                  onUpdateGraphRegister?.({ name: val });
+                }
+              }}
+              onBlur={() => {
+                if (!nameDraft.trim()) {
+                  setNameDraft(graphRegister.name);
+                }
+              }}
               style={{ fontWeight: 600, fontSize: '12px', padding: '2px 6px', flex: 1, minWidth: 60 }}
               aria-label="Graph Register Name"
             />
@@ -704,12 +724,7 @@ export function ScopePropertiesPanel({
                       {isSelected && (
                         <button
                           type="button"
-                          onClick={() => {
-                            const nextHidden = isHidden
-                              ? graphRegister.hiddenSignals.filter((s) => s !== sig.name)
-                              : [...graphRegister.hiddenSignals, sig.name];
-                            onUpdateGraphRegister?.({ hiddenSignals: nextHidden });
-                          }}
+                          onClick={() => handleToggleChannel(sig.name)}
                           title={isHidden ? `Show ${sig.name}` : `Mute / Hide ${sig.name}`}
                           style={{
                             background: 'none',

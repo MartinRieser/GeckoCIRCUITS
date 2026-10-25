@@ -417,7 +417,45 @@ export function useEditor() {
             // row, further channels below), so adding a channel appends a
             // new pin and never moves — or re-jogs — any existing wire.
 
-            // If an output signal / probe terminal is renamed, automatically propagate to consumer Scope channels & wires
+            // If an output signal / probe terminal or input label is renamed, automatically propagate to consumer Scope channels, GraphRegisters & wires
+            if (oldLabel && label && oldLabel !== label) {
+              const regs = stateRef.current.graphRegisters || [];
+              let regsChanged = false;
+              const nextRegs = regs.map((reg) => {
+                const hasSig = reg.signals.includes(oldLabel);
+                const hasGraph = reg.signalGraphs && oldLabel in reg.signalGraphs;
+                const hasHidden = reg.hiddenSignals.includes(oldLabel);
+                if (!hasSig && !hasGraph && !hasHidden) return reg;
+                regsChanged = true;
+                const nextSignals = Array.from(
+                  new Set(reg.signals.map((s) => (s === oldLabel ? label : s))),
+                );
+                const nextSignalGraphs = { ...reg.signalGraphs };
+                if (hasGraph) {
+                  nextSignalGraphs[label] = nextSignalGraphs[oldLabel];
+                  delete nextSignalGraphs[oldLabel];
+                }
+                const nextHidden = Array.from(
+                  new Set(reg.hiddenSignals.map((s) => (s === oldLabel ? label : s))),
+                );
+                return {
+                  ...reg,
+                  signals: nextSignals,
+                  signalGraphs: nextSignalGraphs,
+                  hiddenSignals: nextHidden,
+                };
+              });
+              if (regsChanged) {
+                dispatch({ type: 'SET_GRAPH_REGISTERS', graphRegisters: nextRegs });
+                api
+                  .setGraphRegisters(circuitId, nextRegs)
+                  .then((regMsg) => {
+                    versionRef.current = regMsg.modelVersion;
+                  })
+                  .catch(() => {});
+              }
+            }
+
             if (side === 'y' && oldLabel && label && oldLabel !== label) {
               for (const other of stateRef.current.components) {
                 if (isScopeComponent(other) && other.inputLabels) {
@@ -887,6 +925,7 @@ export function useEditor() {
     (index: number, label: string) => {
       const circuitId = stateRef.current.circuitId;
       if (!circuitId) return;
+      const oldLabel = stateRef.current.wires[index]?.label || '';
       api
         .patchConnection(circuitId, index, { label })
         .then((msg) => {
@@ -899,6 +938,43 @@ export function useEditor() {
             label: payload.label,
             version: msg.modelVersion,
           });
+          if (oldLabel && label && oldLabel !== label) {
+            const regs = stateRef.current.graphRegisters || [];
+            let regsChanged = false;
+            const nextRegs = regs.map((reg) => {
+              const hasSig = reg.signals.includes(oldLabel);
+              const hasGraph = reg.signalGraphs && oldLabel in reg.signalGraphs;
+              const hasHidden = reg.hiddenSignals.includes(oldLabel);
+              if (!hasSig && !hasGraph && !hasHidden) return reg;
+              regsChanged = true;
+              const nextSignals = Array.from(
+                new Set(reg.signals.map((s) => (s === oldLabel ? label : s))),
+              );
+              const nextSignalGraphs = { ...reg.signalGraphs };
+              if (hasGraph) {
+                nextSignalGraphs[label] = nextSignalGraphs[oldLabel];
+                delete nextSignalGraphs[oldLabel];
+              }
+              const nextHidden = Array.from(
+                new Set(reg.hiddenSignals.map((s) => (s === oldLabel ? label : s))),
+              );
+              return {
+                ...reg,
+                signals: nextSignals,
+                signalGraphs: nextSignalGraphs,
+                hiddenSignals: nextHidden,
+              };
+            });
+            if (regsChanged) {
+              dispatch({ type: 'SET_GRAPH_REGISTERS', graphRegisters: nextRegs });
+              api
+                .setGraphRegisters(circuitId, nextRegs)
+                .then((regMsg) => {
+                  versionRef.current = regMsg.modelVersion;
+                })
+                .catch(() => {});
+            }
+          }
         })
         .catch(reportError);
     },
@@ -1533,7 +1609,10 @@ export function useEditor() {
       dispatch({ type: 'SET_GRAPH_REGISTERS', graphRegisters: registers });
       if (stateRef.current.circuitId) {
         try {
-          await api.setGraphRegisters(stateRef.current.circuitId, registers);
+          const msg = await api.setGraphRegisters(stateRef.current.circuitId, registers);
+          if (msg?.modelVersion !== undefined) {
+            versionRef.current = msg.modelVersion;
+          }
         } catch (e) {
           console.warn('Failed to persist graph registers to backend:', e);
         }
@@ -1545,7 +1624,16 @@ export function useEditor() {
   const addGraphRegister = useCallback(
     async (initial?: Partial<GraphRegister>) => {
       const currentRegs = stateRef.current.graphRegisters || [];
-      const idx = currentRegs.length + 1;
+      let idx = currentRegs.length + 1;
+      while (
+        currentRegs.some(
+          (r) =>
+            r.name.toLowerCase() === `osci ${idx}` ||
+            r.id === `osci_${idx}`,
+        )
+      ) {
+        idx++;
+      }
       const newReg: GraphRegister = {
         id: `osci_${Date.now()}_${idx}`,
         name: `Osci ${idx}`,
@@ -1561,7 +1649,10 @@ export function useEditor() {
       dispatch({ type: 'SET_GRAPH_REGISTERS', graphRegisters: nextRegs });
       if (stateRef.current.circuitId) {
         try {
-          await api.setGraphRegisters(stateRef.current.circuitId, nextRegs);
+          const msg = await api.setGraphRegisters(stateRef.current.circuitId, nextRegs);
+          if (msg?.modelVersion !== undefined) {
+            versionRef.current = msg.modelVersion;
+          }
         } catch (e) {
           console.warn('Failed to persist graph registers to backend:', e);
         }
@@ -1578,7 +1669,10 @@ export function useEditor() {
       dispatch({ type: 'SET_GRAPH_REGISTERS', graphRegisters: nextRegs });
       if (stateRef.current.circuitId) {
         try {
-          await api.setGraphRegisters(stateRef.current.circuitId, nextRegs);
+          const msg = await api.setGraphRegisters(stateRef.current.circuitId, nextRegs);
+          if (msg?.modelVersion !== undefined) {
+            versionRef.current = msg.modelVersion;
+          }
         } catch (e) {
           console.warn('Failed to persist graph registers to backend:', e);
         }
@@ -1608,7 +1702,10 @@ export function useEditor() {
       dispatch({ type: 'SET_GRAPH_REGISTERS', graphRegisters: nextRegs });
       if (stateRef.current.circuitId) {
         try {
-          await api.setGraphRegisters(stateRef.current.circuitId, nextRegs);
+          const msg = await api.setGraphRegisters(stateRef.current.circuitId, nextRegs);
+          if (msg?.modelVersion !== undefined) {
+            versionRef.current = msg.modelVersion;
+          }
         } catch (e) {
           console.warn('Failed to persist graph registers to backend:', e);
         }

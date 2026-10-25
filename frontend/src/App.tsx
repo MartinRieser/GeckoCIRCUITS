@@ -213,12 +213,23 @@ export function App() {
     }
   }, [state.components, state.graphRegisters, activeTabId, activeScriptComponent, activeScopeComponent]);
 
+  const handleUpdateActiveGraphRegister = useCallback(
+    (patch: Partial<typeof activeGraphRegister extends infer T ? NonNullable<T> : never>) => {
+      if (activeGraphRegister) {
+        void actions.updateGraphRegister(activeGraphRegister.id, patch);
+      }
+    },
+    [activeGraphRegister, actions],
+  );
+
   const scope = useScopeController({
     results: simState.results,
     components: state.components,
     selectedScope: activeSelectedScope,
+    graphRegister: activeGraphRegister,
     theme,
     onSetParameter: actions.setParameter,
+    onUpdateGraphRegister: handleUpdateActiveGraphRegister,
   });
   const [rightSidebarWidth, setRightSidebarWidth] = useState<number>(() => {
     const saved = localStorage.getItem('gecko-right-sidebar-width');
@@ -257,6 +268,16 @@ export function App() {
   }, [isResizingRight, rightSidebarWidth]);
 
   const openScopeTab = (scopeName: string) => {
+    const normalizedId = scopeName.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+    const matchingReg =
+      state.graphRegisters?.find(
+        (r) => r.name === scopeName || r.id === scopeName || r.id === normalizedId,
+      ) ?? state.graphRegisters?.[0];
+    if (matchingReg) {
+      setSelectedScope(matchingReg.name);
+      setActiveTabId(makeOsciTabId(matchingReg.id));
+      return;
+    }
     setSelectedScope(scopeName);
     setActiveTabId(scopeTabId(scopeName));
   };
@@ -382,6 +403,9 @@ export function App() {
           e.preventDefault();
           setActiveTabId((prev) => {
             if (prev === 'schematic') {
+              if (state.graphRegisters && state.graphRegisters.length > 0) {
+                return makeOsciTabId(state.graphRegisters[0].id);
+              }
               const firstScope = scopeBlocks[0]?.name;
               return firstScope ? scopeTabId(firstScope) : 'simulation';
             }
@@ -879,10 +903,20 @@ export function App() {
           type="button"
           className="workspace-add-tab-btn"
           onClick={() => {
-            const idx = (state.graphRegisters?.length || 0) + 1;
+            const currentRegs = state.graphRegisters || [];
+            let idx = currentRegs.length + 1;
+            while (
+              currentRegs.some(
+                (r) =>
+                  r.name.toLowerCase() === `osci ${idx}` ||
+                  r.id === `osci_${idx}`,
+              )
+            ) {
+              idx++;
+            }
             const newId = `osci_${Date.now()}_${idx}`;
             const newName = `Osci ${idx}`;
-            actions.addGraphRegister({
+            void actions.addGraphRegister({
               id: newId,
               name: newName,
               numGraphs: 1,
@@ -1224,9 +1258,11 @@ export function App() {
                   <span className="collapsed-strip-text">
                     {activeTabId === 'schematic'
                       ? 'PROPERTIES'
-                      : activeScopeComponent
-                        ? `SCOPE: ${activeScopeComponent.name}`
-                        : 'SIMULATION'}
+                      : activeGraphRegister
+                        ? `OSCI: ${activeGraphRegister.name}`
+                        : activeScopeComponent
+                          ? `SCOPE: ${activeScopeComponent.name}`
+                          : 'SIMULATION'}
                   </span>
                 </div>
               )}

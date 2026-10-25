@@ -108,3 +108,6 @@ logs/
 
 # legacy pre-refactor root directory leftover
 /src/
+
+# Vite / Vitest cache
+.vite/

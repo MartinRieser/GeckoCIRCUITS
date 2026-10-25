@@ -456,6 +456,32 @@ describe('Oscilloscope GUI & Controls', () => {
       expect(onUpdateReg).toHaveBeenCalledWith({ numGraphs: 3 });
       expect(onLayoutChange).toHaveBeenCalledWith('3-graphs');
     });
+
+    it('renders empty channel assignment state when GraphRegister has 0 signals even after simulation', () => {
+      const reg = {
+        id: 'osci_empty',
+        name: 'Osci 2',
+        numGraphs: 1 as const,
+        signals: [],
+        signalGraphs: {},
+        hiddenSignals: [],
+        yScaleMode: 'auto' as const,
+        cursorsEnabled: false,
+      };
+
+      render(
+        <ScopeViewTab
+          selectedScope="Osci 2"
+          graphRegister={reg}
+          components={dummyComponents}
+          results={dummyResults}
+          displayLayout="overlay"
+        />,
+      );
+
+      expect(screen.getByTestId('scope-no-channels-state')).not.toBeNull();
+      expect(screen.getByText(/No channels assigned to Osci 2/i)).not.toBeNull();
+    });
   });
 });
 

@@ -212,8 +212,10 @@ export function ScopeViewTab({
     results,
     components,
     selectedScope,
+    graphRegister,
     theme,
     onSetParameter,
+    onUpdateGraphRegister,
   });
   const ctrl = scope ?? fallbackScope;
 
@@ -253,26 +255,52 @@ export function ScopeViewTab({
     return components.find((c) => c.name === selectedScope) || null;
   }, [components, selectedScope]);
 
+  const effectiveDisplayLayout: ScopeDisplayLayout = graphRegister
+    ? graphRegister.numGraphs === 1
+      ? 'overlay'
+      : graphRegister.numGraphs === 2
+        ? '2-graphs'
+        : '3-graphs'
+    : displayLayout;
+
   const assignedChannels = useMemo(() => {
+    if (graphRegister) return graphRegister.signals;
     if (!activeScopeBlock) return [];
     return (activeScopeBlock.inputLabels || []).filter(
       (lbl) => lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX',
     );
-  }, [activeScopeBlock]);
+  }, [graphRegister, activeScopeBlock]);
 
   const handleAddChannel = useCallback(
     (signalName: string) => {
+      if (graphRegister) {
+        if (graphRegister.signals.includes(signalName)) return;
+        const nextSignals = [...graphRegister.signals, signalName];
+        const nextGraphs: Record<string, 1 | 2 | 3> = {
+          ...graphRegister.signalGraphs,
+          [signalName]: (graphRegister.signalGraphs[signalName] ||
+            defaultGraphForSignal(signalName, effectiveDisplayLayout)) as 1 | 2 | 3,
+        };
+        onUpdateGraphRegister?.({ signals: nextSignals, signalGraphs: nextGraphs });
+        return;
+      }
       if (!activeScopeBlock || !onSetLabel) return;
       const currentLabels = activeScopeBlock.inputLabels || [];
       if (currentLabels.includes(signalName)) return;
       const nextIdx = currentLabels.length;
       onSetLabel(activeScopeBlock.name, 'x', nextIdx, signalName);
     },
-    [activeScopeBlock, onSetLabel],
+    [graphRegister, onUpdateGraphRegister, effectiveDisplayLayout, activeScopeBlock, onSetLabel],
   );
 
   const handleRemoveChannel = useCallback(
     (signalName: string) => {
+      if (graphRegister) {
+        const nextSignals = graphRegister.signals.filter((s) => s !== signalName);
+        const nextHidden = graphRegister.hiddenSignals.filter((s) => s !== signalName);
+        onUpdateGraphRegister?.({ signals: nextSignals, hiddenSignals: nextHidden });
+        return;
+      }
       if (!activeScopeBlock || !onRemoveLabel) return;
       const currentLabels = activeScopeBlock.inputLabels || [];
       const idx = currentLabels.indexOf(signalName);
@@ -280,12 +308,10 @@ export function ScopeViewTab({
         onRemoveLabel(activeScopeBlock.name, 'x', idx);
       }
     },
-    [activeScopeBlock, onRemoveLabel],
+    [graphRegister, onUpdateGraphRegister, activeScopeBlock, onRemoveLabel],
   );
 
   const handleAutoAddProbes = useCallback(() => {
-    if (!activeScopeBlock || !onSetLabel) return;
-    const currentLabels = [...(activeScopeBlock.inputLabels || [])];
     const probeSignals: string[] = [];
 
     // Find all measurement probes and labeled outputs from components
@@ -307,6 +333,14 @@ export function ScopeViewTab({
       }
     });
 
+    if (graphRegister) {
+      const nextSignals = Array.from(new Set([...graphRegister.signals, ...probeSignals]));
+      onUpdateGraphRegister?.({ signals: nextSignals });
+      return;
+    }
+
+    if (!activeScopeBlock || !onSetLabel) return;
+    const currentLabels = [...(activeScopeBlock.inputLabels || [])];
     let nextIdx = currentLabels.length;
     probeSignals.forEach((sig) => {
       if (!currentLabels.includes(sig)) {
@@ -315,9 +349,13 @@ export function ScopeViewTab({
         nextIdx++;
       }
     });
-  }, [activeScopeBlock, onSetLabel, components, ctrl.signalNames]);
+  }, [graphRegister, onUpdateGraphRegister, activeScopeBlock, onSetLabel, components, ctrl.signalNames]);
 
   const handleClearChannels = useCallback(() => {
+    if (graphRegister) {
+      onUpdateGraphRegister?.({ signals: [], hiddenSignals: [] });
+      return;
+    }
     if (!activeScopeBlock || !onRemoveLabel) return;
     const currentLabels = activeScopeBlock.inputLabels || [];
     for (let i = currentLabels.length - 1; i > 0; i--) {
@@ -326,15 +364,7 @@ export function ScopeViewTab({
     if (onSetLabel && currentLabels.length > 0) {
       onSetLabel(activeScopeBlock.name, 'x', 0, '');
     }
-  }, [activeScopeBlock, onRemoveLabel, onSetLabel]);
-
-  const effectiveDisplayLayout: ScopeDisplayLayout = graphRegister
-    ? graphRegister.numGraphs === 1
-      ? 'overlay'
-      : graphRegister.numGraphs === 2
-        ? '2-graphs'
-        : '3-graphs'
-    : displayLayout;
+  }, [graphRegister, onUpdateGraphRegister, activeScopeBlock, onRemoveLabel, onSetLabel]);
 
   const signalGraphsRaw = activeScopeBlock?.parameters?.[SCOPE_SETTING_KEYS.signalGraphs] as string | undefined;
   const legacySignalGraphs = useMemo(() => parseSignalGraphs(signalGraphsRaw), [signalGraphsRaw]);
@@ -412,17 +442,38 @@ export function ScopeViewTab({
 
   const filteredChannels = useMemo(() => {
     if (graphRegister) {
-      return graphRegister.signals.length > 0 ? graphRegister.signals : scopeChannelNames;
+      return graphRegister.signals;
     }
     return scopeChannelNames;
   }, [graphRegister, scopeChannelNames]);
 
+  const isSignalHidden = useCallback(
+    (sig: string) => {
+      if (graphRegister) {
+        return graphRegister.hiddenSignals.includes(sig) || Boolean(hiddenSignals[sig]);
+      }
+      return Boolean(hiddenSignals[sig]);
+    },
+    [graphRegister, hiddenSignals],
+  );
+
   const visibleSignals = useMemo(() => {
-    return filteredChannels.filter((s) => {
-      if (graphRegister?.hiddenSignals?.includes(s)) return false;
-      return !hiddenSignals[s];
-    });
-  }, [filteredChannels, hiddenSignals, graphRegister?.hiddenSignals]);
+    return filteredChannels.filter((s) => !isSignalHidden(s));
+  }, [filteredChannels, isSignalHidden]);
+
+  const handleToggleSignal = useCallback(
+    (sig: string) => {
+      toggleSignal(sig);
+      if (graphRegister) {
+        const isH = graphRegister.hiddenSignals.includes(sig);
+        const nextHidden = isH
+          ? graphRegister.hiddenSignals.filter((s) => s !== sig)
+          : [...graphRegister.hiddenSignals, sig];
+        onUpdateGraphRegister?.({ hiddenSignals: nextHidden });
+      }
+    },
+    [toggleSignal, graphRegister, onUpdateGraphRegister],
+  );
 
   const isRunning = status === 'RUNNING' || status === 'PENDING';
 
@@ -533,9 +584,10 @@ export function ScopeViewTab({
 
           {/* Active channel pills with color dots */}
           <div className="dso-channels-wrap" style={{ display: 'flex', alignItems: 'center', gap: 4, overflowX: 'auto', scrollbarWidth: 'none', margin: '0 4px' }}>
-            {visibleSignals.map((sig) => {
+            {filteredChannels.map((sig) => {
               const color = colorOf(sig);
               const isHovered = hoveredSignal === sig;
+              const isHidden = isSignalHidden(sig);
               return (
                 <button
                   key={sig}
@@ -557,20 +609,13 @@ export function ScopeViewTab({
                     whiteSpace: 'nowrap',
                     color: isHovered ? color : 'var(--text)',
                     boxShadow: isHovered ? `0 0 6px ${color}60` : undefined,
+                    opacity: isHidden ? 0.45 : 1,
+                    textDecoration: isHidden ? 'line-through' : undefined,
                   }}
                   onMouseEnter={() => setHoveredSignal(sig)}
                   onMouseLeave={() => setHoveredSignal(null)}
-                  onClick={() => {
-                    toggleSignal(sig);
-                    if (graphRegister) {
-                      const isH = graphRegister.hiddenSignals.includes(sig);
-                      const nextHidden = isH
-                        ? graphRegister.hiddenSignals.filter((s) => s !== sig)
-                        : [...graphRegister.hiddenSignals, sig];
-                      onUpdateGraphRegister?.({ hiddenSignals: nextHidden });
-                    }
-                  }}
-                  title={`Click to hide/show ${sig}. Hover to highlight trace.`}
+                  onClick={() => handleToggleSignal(sig)}
+                  title={`Click to ${isHidden ? 'show' : 'hide'} ${sig}. Hover to highlight trace.`}
                 >
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, display: 'inline-block' }} />
                   <span style={{ fontWeight: isHovered ? 700 : 500 }}>{sig}</span>
@@ -579,8 +624,8 @@ export function ScopeViewTab({
             })}
           </div>
 
-          {/* Scope Channel Manager button (for legacy scopes) */}
-          {!graphRegister && selectedScope !== 'all' && (
+          {/* Scope Channel Manager button */}
+          {(Boolean(graphRegister) || selectedScope !== 'all') && (
             <button
               type="button"
               className="sim-mini-btn"
@@ -600,7 +645,7 @@ export function ScopeViewTab({
               }}
               data-testid="scope-manage-channels-btn"
             >
-              <span>➕</span> Channels ({assignedChannels.length || scopeChannelNames.length})
+              <span>➕</span> Channels ({graphRegister ? graphRegister.signals.length : (assignedChannels.length || scopeChannelNames.length)})
             </button>
           )}
         </div>
@@ -733,8 +778,10 @@ export function ScopeViewTab({
             onClick={() => {
               if (cursorsEnabled) {
                 ctrl.clearCursors();
+                if (graphRegister) onUpdateGraphRegister?.({ cursorsEnabled: false });
               } else {
                 ctrl.setCursorPreset();
+                if (graphRegister) onUpdateGraphRegister?.({ cursorsEnabled: true });
               }
             }}
             title={cursorsEnabled ? 'Turn cursors OFF' : 'Turn cursors ON (places markers A & B)'}
@@ -869,11 +916,11 @@ export function ScopeViewTab({
               <p>Configure parameters in the <strong>Simulation Settings</strong> panel on the right and click <strong>"▶ Run Simulation"</strong> to calculate waveforms.</p>
             </div>
           )
-        ) : selectedScope !== 'all' && !graphRegister && visibleSignals.length === 0 ? (
+        ) : (Boolean(graphRegister) || selectedScope !== 'all') && filteredChannels.length === 0 ? (
           <div className="scope-empty-state" data-testid="scope-no-channels-state">
             <div className="empty-icon">📺</div>
-            <h3>No channels assigned to {selectedScope}</h3>
-            <p>This oscilloscope does not have any signals connected or assigned.</p>
+            <h3>No channels assigned to {graphRegister?.name || selectedScope}</h3>
+            <p>Select labeled electrical or control signals in the right panel (or click Assign Signals below) to plot waveforms.</p>
             <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
               <button
                 type="button"
@@ -924,6 +971,9 @@ export function ScopeViewTab({
                         if (type === 'A') setCursorA(idx);
                         else setCursorB(idx);
                       }
+                      if (graphRegister && idx !== null) {
+                        onUpdateGraphRegister?.({ cursorsEnabled: true });
+                      }
                     }}
                     viewStart={win.start}
                     viewEnd={win.end}
@@ -959,6 +1009,9 @@ export function ScopeViewTab({
                         if (type === 'A') setCursorA(idx);
                         else setCursorB(idx);
                       }
+                      if (graphRegister && idx !== null) {
+                        onUpdateGraphRegister?.({ cursorsEnabled: true });
+                      }
                     }}
                     viewStart={win.start}
                     viewEnd={win.end}
@@ -968,7 +1021,7 @@ export function ScopeViewTab({
                     onPanSeconds={(delta) => setView(panWindow(win, delta, dataT0, dataT1))}
                     hoveredSignal={hoveredSignal}
                     onHoverSignal={setHoveredSignal}
-                    onToggleSignal={toggleSignal}
+                    onToggleSignal={handleToggleSignal}
                   />
                 ) : (
                   <FullScreenOverlayChart
@@ -994,6 +1047,9 @@ export function ScopeViewTab({
                         if (type === 'A') setCursorA(idx);
                         else setCursorB(idx);
                       }
+                      if (graphRegister && idx !== null) {
+                        onUpdateGraphRegister?.({ cursorsEnabled: true });
+                      }
                     }}
                     viewStart={win.start}
                     viewEnd={win.end}
@@ -1006,7 +1062,7 @@ export function ScopeViewTab({
                     onZoomYRange={setYView}
                     hoveredSignal={hoveredSignal}
                     onHoverSignal={setHoveredSignal}
-                    onToggleSignal={toggleSignal}
+                    onToggleSignal={handleToggleSignal}
                   />
                 )}
               </div>
@@ -1138,12 +1194,12 @@ export function ScopeViewTab({
                           const st = signalStats[name];
                           if (!st) return null;
                           const color = colorOf(name);
-                          const isHidden = !!hiddenSignals[name];
+                          const isHidden = isSignalHidden(name);
                           const unit = inferSignalUnit(name);
                           return (
                             <tr
                               key={name}
-                              onClick={() => toggleSignal(name)}
+                              onClick={() => handleToggleSignal(name)}
                               className={isHidden ? 'row-hidden' : ''}
                               title="Click row to toggle trace visibility"
                             >
@@ -1197,11 +1253,11 @@ export function ScopeViewTab({
       </div>
 
       {/* Scope Channel Manager Modal */}
-      {selectedScope !== 'all' && (
+      {(Boolean(graphRegister) || selectedScope !== 'all') && (
         <ScopeChannelManager
           isOpen={isChannelManagerOpen}
           onClose={() => setIsChannelManagerOpen(false)}
-          scopeName={selectedScope}
+          scopeName={graphRegister?.name || selectedScope}
           assignedChannels={assignedChannels}
           allAvailableSignals={signalNames}
           colorOf={colorOf}
@@ -1209,7 +1265,7 @@ export function ScopeViewTab({
           onRemoveChannel={handleRemoveChannel}
           onAutoAddProbes={handleAutoAddProbes}
           onClearChannels={handleClearChannels}
-          displayLayout={displayLayout}
+          displayLayout={effectiveDisplayLayout}
           onDisplayLayoutChange={onDisplayLayoutChange}
           signalGraphs={signalGraphs}
           onSetSignalGraph={handleMoveSignalToGraph}

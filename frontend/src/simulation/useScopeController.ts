@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import type { EditorComponent } from '../model/types';
+import type { EditorComponent, GraphRegister } from '../model/types';
 import { mapSimulationResults } from './chartData';
 import { findScopeBlocks, scopeChannels } from './scopes';
 import { SCOPE_SETTING_KEYS } from '../model/constants';
@@ -71,10 +71,14 @@ export interface UseScopeControllerProps {
   components?: EditorComponent[];
   /** Identifier of the selected scope, or 'all'. */
   selectedScope?: string;
+  /** Active workspace GraphRegister, if inspecting an Osci register tab. */
+  graphRegister?: GraphRegister | null;
   /** UI theme for waveform coloring ('dark' or 'light'). */
   theme?: 'dark' | 'light';
   /** Optional callback to persist scope parameters to circuit components. */
   onSetParameter?: (name: string, key: string, value: number | string | boolean) => void;
+  /** Optional callback to persist changes to the active workspace GraphRegister. */
+  onUpdateGraphRegister?: (patch: Partial<GraphRegister>) => void;
 }
 
 /** State and actions returned by {@link useScopeController} to control oscilloscope views. */
@@ -129,8 +133,10 @@ export function useScopeController({
   results,
   components = [],
   selectedScope = 'all',
+  graphRegister = null,
   theme = 'dark',
   onSetParameter,
+  onUpdateGraphRegister,
 }: UseScopeControllerProps): ScopeController {
   const [hiddenSignals, setHiddenSignals] = useState<Record<string, boolean>>({});
   const [cursorA, setCursorA] = useState<number | null>(null);
@@ -165,11 +171,29 @@ export function useScopeController({
   const lastSyncedHiddenRef = useRef<string | undefined>(undefined);
   const lastScopeNameRef = useRef<string | undefined>(undefined);
 
-  // Synchronize per-scope saved settings from component parameters. Every
-  // setting without a persisted value resets to its default, so switching
-  // scopes never leaks the previous scope's view state. hiddenSignals is the
-  // persisted comma-separated channel list (see SCOPE_SETTING_KEYS).
+  // Synchronize per-scope saved settings from GraphRegister or component parameters.
   useEffect(() => {
+    if (graphRegister) {
+      lastScopeNameRef.current = `reg:${graphRegister.id}`;
+      setYScaleMode(graphRegister.yScaleMode === 'auto' ? 'auto' : 'fixed');
+      const hiddenStr = (graphRegister.hiddenSignals ?? []).join(',');
+      if (hiddenStr !== lastSyncedHiddenRef.current) {
+        lastSyncedHiddenRef.current = hiddenStr;
+        const set: Record<string, boolean> = {};
+        (graphRegister.hiddenSignals ?? []).forEach((s) => {
+          if (s.trim()) set[s.trim()] = true;
+        });
+        setHiddenSignals(set);
+      }
+      const enabled = Boolean(graphRegister.cursorsEnabled);
+      setCursorsEnabled(enabled);
+      if (enabled && timeArray.length > 0) {
+        setCursorA((prev) => (prev === null ? Math.floor(timeArray.length * 0.25) : prev));
+        setCursorB((prev) => (prev === null ? Math.floor(timeArray.length * 0.75) : prev));
+      }
+      return;
+    }
+
     if (!activeScopeBlock) {
       setHiddenSignals({});
       lastSyncedHiddenRef.current = undefined;
@@ -213,6 +237,11 @@ export function useScopeController({
     // Accept both the parsed boolean and legacy string forms
     setCursorsEnabled(cursors === true || cursors === 'true');
   }, [
+    graphRegister?.id,
+    graphRegister?.yScaleMode,
+    graphRegister?.hiddenSignals,
+    graphRegister?.cursorsEnabled,
+    timeArray.length,
     activeScopeBlock?.name,
     activeScopeBlock?.parameters?.[SCOPE_SETTING_KEYS.yScaleMode],
     activeScopeBlock?.parameters?.[SCOPE_SETTING_KEYS.hiddenSignals],
@@ -243,32 +272,43 @@ export function useScopeController({
     setYView(null);
   }, []);
 
-  const scopeChannelNames = useMemo(
-    () => scopeChannels(activeScopeBlock, signalNames),
-    [activeScopeBlock, signalNames],
-  );
+  const scopeChannelNames = useMemo(() => {
+    if (graphRegister) {
+      return graphRegister.signals;
+    }
+    return scopeChannels(activeScopeBlock, signalNames);
+  }, [graphRegister, activeScopeBlock, signalNames]);
 
-  // One canonical color per signal: channel order when a scope is selected
+  // One canonical color per signal: channel order when a scope/register is selected
   // (CH1 = first palette entry, matching the properties badges), result
   // column order in the combined "All Scopes & Signals" view.
   const colorOf = useCallback(
-    (name: string) => signalColorInList(name, scopeChannelNames, theme as TraceTheme),
-    [scopeChannelNames, theme],
+    (name: string) =>
+      signalColorInList(
+        name,
+        scopeChannelNames.length > 0 ? scopeChannelNames : signalNames,
+        theme as TraceTheme,
+      ),
+    [scopeChannelNames, signalNames, theme],
   );
 
   const toggleSignal = useCallback(
     (name: string) => {
       setHiddenSignals((prev) => {
         const next = { ...prev, [name]: !prev[name] };
-        const hiddenList = Object.keys(next).filter((k) => Boolean(next[k])).join(',');
+        const hiddenArr = Object.keys(next).filter((k) => Boolean(next[k]));
+        const hiddenList = hiddenArr.join(',');
         lastSyncedHiddenRef.current = hiddenList;
+        if (graphRegister && onUpdateGraphRegister) {
+          onUpdateGraphRegister({ hiddenSignals: hiddenArr });
+        }
         if (activeScopeBlock && onSetParameter) {
           onSetParameter(activeScopeBlock.name, SCOPE_SETTING_KEYS.hiddenSignals, hiddenList);
         }
         return next;
       });
     },
-    [activeScopeBlock, onSetParameter],
+    [graphRegister, onUpdateGraphRegister, activeScopeBlock, onSetParameter],
   );
 
   const setCursorAWithEnable = useCallback(
@@ -277,6 +317,9 @@ export function useScopeController({
         const next = typeof action === 'function' ? action(prev) : action;
         if (next !== null) {
           setCursorsEnabled(true);
+          if (graphRegister && onUpdateGraphRegister) {
+            onUpdateGraphRegister({ cursorsEnabled: true });
+          }
           if (activeScopeBlock && onSetParameter) {
             onSetParameter(activeScopeBlock.name, SCOPE_SETTING_KEYS.cursorsEnabled, true);
           }
@@ -284,7 +327,7 @@ export function useScopeController({
         return next;
       });
     },
-    [activeScopeBlock, onSetParameter],
+    [graphRegister, onUpdateGraphRegister, activeScopeBlock, onSetParameter],
   );
 
   const setCursorBWithEnable = useCallback(
@@ -293,6 +336,9 @@ export function useScopeController({
         const next = typeof action === 'function' ? action(prev) : action;
         if (next !== null) {
           setCursorsEnabled(true);
+          if (graphRegister && onUpdateGraphRegister) {
+            onUpdateGraphRegister({ cursorsEnabled: true });
+          }
           if (activeScopeBlock && onSetParameter) {
             onSetParameter(activeScopeBlock.name, SCOPE_SETTING_KEYS.cursorsEnabled, true);
           }
@@ -300,13 +346,16 @@ export function useScopeController({
         return next;
       });
     },
-    [activeScopeBlock, onSetParameter],
+    [graphRegister, onUpdateGraphRegister, activeScopeBlock, onSetParameter],
   );
 
   const setCursor = useCallback(
     (type: 'A' | 'B', idx: number | null) => {
       if (idx !== null) {
         setCursorsEnabled(true);
+        if (graphRegister && onUpdateGraphRegister) {
+          onUpdateGraphRegister({ cursorsEnabled: true });
+        }
         if (activeScopeBlock && onSetParameter) {
           onSetParameter(activeScopeBlock.name, SCOPE_SETTING_KEYS.cursorsEnabled, true);
         }
@@ -317,7 +366,7 @@ export function useScopeController({
         setCursorB(idx);
       }
     },
-    [activeScopeBlock, onSetParameter],
+    [graphRegister, onUpdateGraphRegister, activeScopeBlock, onSetParameter],
   );
 
   const setCursorPreset = useCallback(() => {
@@ -326,19 +375,25 @@ export function useScopeController({
       setCursorA(Math.floor(timeArray.length * 0.25));
       setCursorB(Math.floor(timeArray.length * 0.75));
     }
+    if (graphRegister && onUpdateGraphRegister) {
+      onUpdateGraphRegister({ cursorsEnabled: true });
+    }
     if (activeScopeBlock && onSetParameter) {
       onSetParameter(activeScopeBlock.name, SCOPE_SETTING_KEYS.cursorsEnabled, true);
     }
-  }, [timeArray, activeScopeBlock, onSetParameter]);
+  }, [timeArray, graphRegister, onUpdateGraphRegister, activeScopeBlock, onSetParameter]);
 
   const clearCursors = useCallback(() => {
     setCursorA(null);
     setCursorB(null);
     setCursorsEnabled(false);
+    if (graphRegister && onUpdateGraphRegister) {
+      onUpdateGraphRegister({ cursorsEnabled: false });
+    }
     if (activeScopeBlock && onSetParameter) {
       onSetParameter(activeScopeBlock.name, SCOPE_SETTING_KEYS.cursorsEnabled, false);
     }
-  }, [activeScopeBlock, onSetParameter]);
+  }, [graphRegister, onUpdateGraphRegister, activeScopeBlock, onSetParameter]);
 
   // Compute the single source of truth for cursor measurements
   const cursorMeasurements = useMemo<CursorMeasurements | null>(() => {

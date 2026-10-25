@@ -342,5 +342,48 @@ describe('useScopeController hook', () => {
     expect(result.current.cursorsEnabled).toBe(false);
     expect(result.current.hiddenSignals).toEqual({ v_out: true });
   });
+
+  it('synchronizes settings and persists cursor/visibility changes for GraphRegister', () => {
+    const onUpdateGraphRegister = vi.fn();
+    const reg1 = {
+      id: 'osci_1',
+      name: 'Osci 1',
+      numGraphs: 2 as const,
+      signals: ['i_in', 'v_out'],
+      signalGraphs: { i_in: 1 as const, v_out: 2 as const },
+      hiddenSignals: ['v_out'],
+      yScaleMode: 'auto' as const,
+      cursorsEnabled: true,
+    };
+
+    const { result } = renderHook(() =>
+      useScopeController({
+        results: dummyResults,
+        components: [],
+        selectedScope: 'Osci 1',
+        graphRegister: reg1,
+        onUpdateGraphRegister,
+      }),
+    );
+
+    expect(result.current.scopeChannelNames).toEqual(['i_in', 'v_out']);
+    expect(result.current.yScaleMode).toBe('auto');
+    expect(result.current.hiddenSignals).toEqual({ v_out: true });
+    expect(result.current.cursorsEnabled).toBe(true);
+    expect(result.current.cursorA).toBe(1);
+    expect(result.current.cursorB).toBe(4);
+
+    act(() => {
+      result.current.toggleSignal('i_in');
+    });
+    expect(onUpdateGraphRegister).toHaveBeenCalledWith({
+      hiddenSignals: expect.arrayContaining(['v_out', 'i_in']),
+    });
+
+    act(() => {
+      result.current.clearCursors();
+    });
+    expect(onUpdateGraphRegister).toHaveBeenCalledWith({ cursorsEnabled: false });
+  });
 });
 

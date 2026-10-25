@@ -2957,6 +2957,7 @@ export function extractAvailableSignalDetails(
     name: string;
     type?: number;
     family?: string;
+    parameters?: Record<string, unknown>;
     inputLabels?: string[];
     outputLabels?: string[];
   }>,
@@ -2971,7 +2972,7 @@ export function extractAvailableSignalDetails(
     sourceDescription: string,
   ) => {
     if (!name) return;
-    const trimmed = name.trim();
+    const trimmed = name.trim().replace(/^\/+/, '');
     if (!trimmed || trimmed === SENTINEL_UNSET) return;
     if (!signalMap.has(trimmed)) {
       signalMap.set(trimmed, { name: trimmed, domain, category, sourceDescription });
@@ -3043,10 +3044,15 @@ export function extractAvailableSignalDetails(
         comp.type === ControlComponentType.LEGACY_AMMETER ||
         comp.type === ControlComponentType.SIGNAL_SOURCE ||
         comp.type === ControlComponentType.LEGACY_SIGNAL_SOURCE ||
+        comp.type === ControlComponentType.SCRIPT ||
+        comp.type === ControlComponentType.LEGACY_JAVA_FUNCTION ||
+        comp.type === ControlComponentType.DEADTIME ||
         comp.name.startsWith('V_meas') ||
         comp.name.startsWith('VOLT') ||
         comp.name.startsWith('AMP') ||
-        comp.name.startsWith('SIGNAL'))
+        comp.name.startsWith('SIGNAL') ||
+        comp.name.startsWith('SCRIPT') ||
+        comp.name.startsWith('JAVA'))
     ) {
       const hasOutputLabel = (comp.outputLabels ?? []).some(
         (l) => l?.trim() && l.trim() !== SENTINEL_UNSET,
@@ -3062,7 +3068,20 @@ export function extractAvailableSignalDetails(
           comp.type === ControlComponentType.LEGACY_AMMETER ||
           comp.name.startsWith('AMP');
         const cat = isVolt ? 'voltage' : isAmp ? 'current' : 'control';
-        register(comp.name, 'control', cat, `Probe ${comp.name}`);
+        const isScriptOrDeadtime =
+          comp.type === ControlComponentType.SCRIPT ||
+          comp.type === ControlComponentType.LEGACY_JAVA_FUNCTION ||
+          comp.type === ControlComponentType.DEADTIME ||
+          comp.name.startsWith('SCRIPT') ||
+          comp.name.startsWith('JAVA');
+        const { outputCount } = resolveComponentPinCounts(comp);
+        if (isScriptOrDeadtime && outputCount > 1) {
+          for (let j = 0; j < outputCount; j++) {
+            register(`${comp.name}.${j + 1}`, 'control', cat, `Output ${j + 1} of ${comp.name}`);
+          }
+        } else {
+          register(comp.name, 'control', cat, `Output of ${comp.name}`);
+        }
       }
     }
   }
