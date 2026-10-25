@@ -11,7 +11,9 @@ import gecko.rest.model.circuit.ComponentInfo;
 import gecko.rest.model.circuit.ComponentPatchRequest;
 import gecko.rest.model.circuit.ConnectionCreateRequest;
 import gecko.rest.model.circuit.ConnectionPatchRequest;
+import gecko.core.io.GraphRegisterData;
 import gecko.rest.model.circuit.EditorModelResponse;
+import gecko.rest.model.circuit.GraphRegisterDto;
 import gecko.rest.model.circuit.NodeLabelRequest;
 import gecko.rest.model.circuit.WireInfo;
 import gecko.rest.service.CircuitFileService.CircuitState;
@@ -684,9 +686,60 @@ public class CircuitEditService {
                 wires.add(new EditorModelResponse.Wire(i, conn.getType(), conn.getLabel(), conn.getPoints()));
             }
 
+            List<GraphRegisterDto> registers = new ArrayList<>();
+            if (model.getGraphRegisters() != null) {
+                for (GraphRegisterData reg : model.getGraphRegisters()) {
+                    registers.add(new GraphRegisterDto(
+                            reg.id(),
+                            reg.name(),
+                            reg.numGraphs(),
+                            reg.signals(),
+                            reg.signalGraphs(),
+                            reg.hiddenSignals(),
+                            reg.yScaleMode(),
+                            reg.cursorsEnabled()
+                    ));
+                }
+            }
+
             return new EditorModelResponse(circuitId, state.version.get(), state.filename,
                     model.getDisplayPixels(), model.getWorksheetSize(), components, wires,
-                    simulationDefaults(model));
+                    simulationDefaults(model), registers);
+        }
+    }
+
+    /**
+     * Updates the full list of graph registers (oscilloscope tab configurations) for this circuit.
+     * Records undo/redo operations and broadcasts the change event.
+     */
+    public CircuitChangeMessage setGraphRegisters(String circuitId, List<GraphRegisterDto> registers) {
+        CircuitState state = requireState(circuitId);
+        synchronized (state) {
+            CircuitModel model = state.model;
+            List<GraphRegisterData> oldRegisters = new ArrayList<>(model.getGraphRegisters());
+
+            List<GraphRegisterData> newRegisters = new ArrayList<>();
+            if (registers != null) {
+                for (GraphRegisterDto dto : registers) {
+                    newRegisters.add(new GraphRegisterData(
+                            dto.id(),
+                            dto.name(),
+                            dto.numGraphs(),
+                            dto.signals(),
+                            dto.signalGraphs(),
+                            dto.hiddenSignals(),
+                            dto.yScaleMode(),
+                            dto.cursorsEnabled()
+                    ));
+                }
+            }
+
+            model.setGraphRegisters(newRegisters);
+            state.recordEdit(
+                    () -> model.setGraphRegisters(oldRegisters),
+                    () -> model.setGraphRegisters(newRegisters)
+            );
+            return change(state, circuitId, "setGraphRegisters", registers);
         }
     }
 

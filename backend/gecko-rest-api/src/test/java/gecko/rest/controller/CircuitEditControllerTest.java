@@ -157,4 +157,31 @@ class CircuitEditControllerTest {
                 .andExpect(jsonPath("$.types[0].name").value("LK_R"))
                 .andExpect(jsonPath("$.types[0].family").value("LK"));
     }
+
+    @Test
+    void setGraphRegisters_updatesRegisters() throws Exception {
+        when(editService.setGraphRegisters(org.mockito.ArgumentMatchers.eq("circuit-1"), org.mockito.ArgumentMatchers.anyList()))
+                .thenReturn(new CircuitChangeMessage("circuit-1", 8, "setGraphRegisters", List.of()));
+
+        mockMvc.perform(put("/api/v1/circuits/circuit-1/graph-registers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            [
+                              {
+                                "id": "osci_1",
+                                "name": "Osci 1",
+                                "numGraphs": 2,
+                                "signals": ["V_out"],
+                                "signalGraphs": {"V_out": 1},
+                                "hiddenSignals": [],
+                                "yScaleMode": "auto",
+                                "cursorsEnabled": false
+                              }
+                            ]
+                        """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.circuitId").value("circuit-1"))
+                .andExpect(jsonPath("$.operation").value("setGraphRegisters"))
+                .andExpect(jsonPath("$.modelVersion").value(8));
+    }
 }

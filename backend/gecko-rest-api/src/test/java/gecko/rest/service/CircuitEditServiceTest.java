@@ -11,6 +11,7 @@ import gecko.rest.model.circuit.ComponentPatchRequest;
 import gecko.rest.model.circuit.ConnectionCreateRequest;
 import gecko.rest.model.circuit.ConnectionPatchRequest;
 import gecko.rest.model.circuit.EditorModelResponse;
+import gecko.rest.model.circuit.GraphRegisterDto;
 import gecko.rest.model.circuit.NodeLabelRequest;
 import gecko.rest.model.circuit.WireInfo;
 import org.junit.jupiter.api.BeforeEach;
@@ -916,6 +917,49 @@ class CircuitEditServiceTest {
         long secondUid = findByName("Rnew").getUniqueObjectIdentifier();
         assertNotEquals(firstUid, secondUid,
                 "a deleted component's uid must never be handed to a new component");
+    }
+
+    @Test
+    void getEditorModel_and_setGraphRegisters_roundTripsAndSupportsUndoRedo() {
+        EditorModelResponse initialSnapshot = service.getEditorModel(circuitId);
+        assertNotNull(initialSnapshot.graphRegisters());
+
+        GraphRegisterDto reg1 = new GraphRegisterDto(
+                "reg-abc",
+                "Main Waveforms",
+                2,
+                java.util.List.of("V(out)", "I(L1)"),
+                java.util.Map.of("V(out)", 1, "I(L1)", 2),
+                java.util.List.of(),
+                "auto",
+                true
+        );
+
+        CircuitChangeMessage msg = service.setGraphRegisters(circuitId, java.util.List.of(reg1));
+        assertEquals("setGraphRegisters", msg.operation());
+        assertEquals(circuitId, msg.circuitId());
+
+        EditorModelResponse updatedSnapshot = service.getEditorModel(circuitId);
+        assertEquals(1, updatedSnapshot.graphRegisters().size());
+        GraphRegisterDto saved = updatedSnapshot.graphRegisters().get(0);
+        assertEquals("reg-abc", saved.id());
+        assertEquals("Main Waveforms", saved.name());
+        assertEquals(2, saved.numGraphs());
+        assertEquals(java.util.List.of("V(out)", "I(L1)"), saved.signals());
+        assertEquals(1, saved.signalGraphs().get("V(out)"));
+        assertEquals(2, saved.signalGraphs().get("I(L1)"));
+        assertTrue(saved.cursorsEnabled());
+
+        // Test Undo
+        service.undo(circuitId);
+        EditorModelResponse undoneSnapshot = service.getEditorModel(circuitId);
+        assertEquals(initialSnapshot.graphRegisters().size(), undoneSnapshot.graphRegisters().size());
+
+        // Test Redo
+        service.redo(circuitId);
+        EditorModelResponse redoneSnapshot = service.getEditorModel(circuitId);
+        assertEquals(1, redoneSnapshot.graphRegisters().size());
+        assertEquals("reg-abc", redoneSnapshot.graphRegisters().get(0).id());
     }
 
     // ========== Helpers ==========

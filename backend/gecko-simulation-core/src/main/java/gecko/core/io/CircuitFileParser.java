@@ -203,6 +203,9 @@ public class CircuitFileParser {
         parseConnections(tokenMap, model);
         parseCircuitComponents(tokenMap, model);
 
+        // Parse graph registers (or fallback synthesis)
+        parseGraphRegisters(tokenMap, model);
+
         // Validate pre-simulation time step
         if (model.getPreSimulationTimeStep() <= 0) {
             model.setPreSimulationTimeStep(model.getTimeStep());
@@ -730,6 +733,185 @@ public class CircuitFileParser {
 
     private static boolean isMarkdownTextLine(String trimmed) {
         return trimmed.startsWith("<markdownText>") || trimmed.startsWith("<\\markdownText>");
+    }
+
+    private void parseGraphRegisters(TokenMap tokenMap, CircuitModel model) {
+        String block = tokenMap.createSubBlock(GraphRegisterData.BLOCK_START, GraphRegisterData.BLOCK_END);
+        if (block != null && !block.isBlank()) {
+            List<GraphRegisterData> registers = new ArrayList<>();
+            int idx = 0;
+            while (true) {
+                int start = block.indexOf(GraphRegisterData.ENTRY_START, idx);
+                if (start < 0) {
+                    break;
+                }
+                int end = block.indexOf(GraphRegisterData.ENTRY_END, start);
+                if (end < 0) {
+                    break;
+                }
+                String entryContent = block.substring(start + GraphRegisterData.ENTRY_START.length(), end).trim();
+                registers.add(parseGraphRegisterEntry(entryContent));
+                idx = end + GraphRegisterData.ENTRY_END.length();
+            }
+            if (!registers.isEmpty()) {
+                model.setGraphRegisters(registers);
+                return;
+            }
+        }
+
+        synthesizeFallbackGraphRegisters(model);
+    }
+
+    private GraphRegisterData parseGraphRegisterEntry(String content) {
+        String id = "osci_1";
+        String name = "Osci 1";
+        int numGraphs = 1;
+        List<String> signals = new ArrayList<>();
+        Map<String, Integer> signalGraphs = new LinkedHashMap<>();
+        List<String> hiddenSignals = new ArrayList<>();
+        String yScaleMode = "auto";
+        boolean cursorsEnabled = false;
+
+        for (String line : content.split("\n")) {
+            String trimmed = line.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+            int spaceIdx = trimmed.indexOf(' ');
+            String key = (spaceIdx > 0) ? trimmed.substring(0, spaceIdx) : trimmed;
+            String val = (spaceIdx > 0) ? trimmed.substring(spaceIdx + 1).trim() : "";
+
+            switch (key) {
+                case "id" -> id = val;
+                case "name" -> name = val;
+                case "numGraphs" -> {
+                    try {
+                        numGraphs = Integer.parseInt(val);
+                    } catch (NumberFormatException ignored) {}
+                }
+                case "signals" -> {
+                    if (!val.isEmpty()) {
+                        for (String s : val.split(",")) {
+                            if (!s.trim().isEmpty()) {
+                                signals.add(s.trim());
+                            }
+                        }
+                    }
+                }
+                case "signalGraphs" -> {
+                    if (!val.isEmpty()) {
+                        for (String pair : val.split(",")) {
+                            int colon = pair.indexOf(':');
+                            if (colon > 0) {
+                                String sig = pair.substring(0, colon).trim();
+                                try {
+                                    int gIdx = Integer.parseInt(pair.substring(colon + 1).trim());
+                                    signalGraphs.put(sig, gIdx);
+                                } catch (NumberFormatException ignored) {}
+                            }
+                        }
+                    }
+                }
+                case "hiddenSignals" -> {
+                    if (!val.isEmpty()) {
+                        for (String s : val.split(",")) {
+                            if (!s.trim().isEmpty()) {
+                                hiddenSignals.add(s.trim());
+                            }
+                        }
+                    }
+                }
+                case "yScaleMode" -> yScaleMode = val;
+                case "cursorsEnabled" -> cursorsEnabled = Boolean.parseBoolean(val);
+            }
+        }
+
+        return new GraphRegisterData(id, name, numGraphs, signals, signalGraphs, hiddenSignals, yScaleMode, cursorsEnabled);
+    }
+
+    private void synthesizeFallbackGraphRegisters(CircuitModel model) {
+        List<GraphRegisterData> synthesized = new ArrayList<>();
+        int scopeIndex = 1;
+
+        for (CircuitModel.ComponentData comp : model.getControlComponents()) {
+            if (comp.getType() == 5 || comp.getType() == 1003
+                    || (comp.getName() != null && (comp.getName().startsWith("SCOPE") || comp.getName().startsWith("OSZI")))) {
+                String name = (comp.getName() != null && !comp.getName().isBlank())
+                        ? comp.getName() : ("Osci " + scopeIndex);
+                String id = name.toLowerCase().replace('.', '_');
+
+                List<String> signals = new ArrayList<>();
+                String[] inLabels = comp.getTerminalXLabels();
+                if (inLabels != null) {
+                    for (String l : inLabels) {
+                        if (l != null && !l.isBlank() && !l.equals(NIX)) {
+                            signals.add(l.trim());
+                        }
+                    }
+                }
+
+                Map<String, Object> params = comp.getParameters();
+                String layoutStr = params.get("scopeLayout") != null ? params.get("scopeLayout").toString() : "overlay";
+                int numGraphs = 1;
+                if ("2-graphs".equalsIgnoreCase(layoutStr)) {
+                    numGraphs = 2;
+                } else if ("3-graphs".equalsIgnoreCase(layoutStr)) {
+                    numGraphs = 3;
+                } else if ("stacked".equalsIgnoreCase(layoutStr)) {
+                    numGraphs = (signals.size() == 2) ? 2 : (signals.size() >= 3 ? 3 : 1);
+                }
+
+                Map<String, Integer> signalGraphs = new LinkedHashMap<>();
+                Object sgObj = params.get("signalGraphs");
+                if (sgObj != null && !sgObj.toString().isBlank()) {
+                    for (String pair : sgObj.toString().split(",")) {
+                        int colon = pair.indexOf(':');
+                        if (colon > 0) {
+                            String sig = pair.substring(0, colon).trim();
+                            try {
+                                int gIdx = Integer.parseInt(pair.substring(colon + 1).trim());
+                                signalGraphs.put(sig, gIdx);
+                            } catch (NumberFormatException ignored) {}
+                        }
+                    }
+                } else if (numGraphs > 1) {
+                    for (int i = 0; i < signals.size(); i++) {
+                        int gIdx = Math.min(i + 1, numGraphs);
+                        signalGraphs.put(signals.get(i), gIdx);
+                    }
+                }
+
+                List<String> hidden = new ArrayList<>();
+                Object hidObj = params.get("hiddenSignals");
+                if (hidObj != null && !hidObj.toString().isBlank()) {
+                    for (String s : hidObj.toString().split(",")) {
+                        if (!s.trim().isEmpty()) {
+                            hidden.add(s.trim());
+                        }
+                    }
+                }
+
+                String yScaleMode = params.get("yScaleMode") != null ? params.get("yScaleMode").toString() : "auto";
+                boolean cursorsEnabled = Boolean.parseBoolean(String.valueOf(params.get("cursorsEnabled")));
+
+                synthesized.add(new GraphRegisterData(id, name, numGraphs, signals, signalGraphs, hidden, yScaleMode, cursorsEnabled));
+                scopeIndex++;
+            }
+        }
+
+        if (synthesized.isEmpty()) {
+            List<String> dataSignals = new ArrayList<>();
+            if (model.getDataContainerSignals() != null) {
+                for (String s : model.getDataContainerSignals()) {
+                    if (s != null && !s.isBlank()) {
+                        dataSignals.add(s.trim());
+                    }
+                }
+            }
+            synthesized.add(new GraphRegisterData("osci_1", "Osci 1", 1, dataSignals, Map.of(), List.of(), "auto", false));
+        }
+
+        model.setGraphRegisters(synthesized);
     }
 
     /**

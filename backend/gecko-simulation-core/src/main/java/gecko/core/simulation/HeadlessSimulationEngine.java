@@ -1469,6 +1469,19 @@ public class HeadlessSimulationEngine {
             }
         }
 
+        // 4b. Graph register signals
+        if (circuitModel != null && circuitModel.getGraphRegisters() != null) {
+            for (gecko.core.io.GraphRegisterData reg : circuitModel.getGraphRegisters()) {
+                if (reg.signals() != null) {
+                    for (String s : reg.signals()) {
+                        if (isValidSignalName(s)) {
+                            names.add(s.trim());
+                        }
+                    }
+                }
+            }
+        }
+
         // 5. Net labels from netlist
         if (circuitNetlist != null && circuitNetlist.getLabelResolver() != null) {
             for (String label : circuitNetlist.getLabelResolver().getAllLabels()) {

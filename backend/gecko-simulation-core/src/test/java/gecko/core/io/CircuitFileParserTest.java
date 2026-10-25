@@ -672,4 +672,35 @@ class CircuitFileParserTest {
         assertEquals(0L, model.getCircuitComponents().get(0).getCoupledReferenceID(),
                 "uncoupled components default to 0");
     }
+
+    @Test
+    void parse_legacyScope_synthesizesGraphRegister() throws Exception {
+        String content = """
+            tDURATION 0.02
+            dt 1e-6
+            c (0)
+            <ElementCONTROL>
+            typ 5
+            idStringDialog SCOPE.1
+            x 37
+            y 46
+            orientierung 503
+            parameter[] 0.0
+            uniqueObjectIdentifier 1
+            <scopeSettings>
+            scopeLayout 2-graphs
+            signalGraphs sig1:1,sig2:2
+            <\\scopeSettings>
+            <\\ElementCONTROL>
+            """;
+
+        CircuitModel model = parser.parse(new BufferedReader(new StringReader(content)), "test_legacy.ipes");
+
+        assertFalse(model.getGraphRegisters().isEmpty(), "Fallback graph register should be synthesized from SCOPE");
+        GraphRegisterData reg = model.getGraphRegisters().get(0);
+        assertEquals("SCOPE.1", reg.name());
+        assertEquals(2, reg.numGraphs());
+        assertEquals(1, reg.signalGraphs().get("sig1"));
+        assertEquals(2, reg.signalGraphs().get("sig2"));
+    }
 }

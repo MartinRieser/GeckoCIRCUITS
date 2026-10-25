@@ -372,4 +372,75 @@ class CircuitFileWriterTest {
         assertEquals("auto", parsedScope2.getParameters().get("yScaleMode"));
         assertEquals("sig3", parsedScope2.getParameters().get("hiddenSignals"));
     }
+
+    @Test
+    void roundTrip_graphRegisters_preservesAllRegisters() throws Exception {
+        CircuitModel model = new CircuitModel();
+        model.setSimulationDuration(0.01);
+        model.setTimeStep(1e-6);
+
+        GraphRegisterData reg1 = new GraphRegisterData(
+                "reg-1",
+                "Voltages & Currents",
+                2,
+                List.of("V(out)", "V(in)", "I(L1)"),
+                java.util.Map.of("V(out)", 1, "V(in)", 1, "I(L1)", 2),
+                List.of(),
+                "fixed",
+                true
+        );
+
+        GraphRegisterData reg2 = new GraphRegisterData(
+                "reg-2",
+                "Control Signals",
+                3,
+                List.of("ctrl_gate", "ctrl_ref", "ctrl_error"),
+                java.util.Map.of("ctrl_gate", 1, "ctrl_ref", 2, "ctrl_error", 3),
+                List.of("ctrl_error"),
+                "auto",
+                false
+        );
+
+        model.addGraphRegister(reg1);
+        model.addGraphRegister(reg2);
+
+        String ipesContent = CircuitFileWriter.writeToString(model);
+        assertTrue(ipesContent.contains("<graphRegisters>"));
+        assertTrue(ipesContent.contains("<graphRegister>"));
+        assertTrue(ipesContent.contains("id reg-1"));
+        assertTrue(ipesContent.contains("name Voltages & Currents"));
+        assertTrue(ipesContent.contains("numGraphs 2"));
+        assertTrue(ipesContent.contains("signals V(out),V(in),I(L1)"));
+        assertTrue(ipesContent.contains("cursorsEnabled true"));
+        assertTrue(ipesContent.contains("dataContainerSignals[]"));
+        assertTrue(ipesContent.contains("/V(out)/V(in)/I(L1)/ctrl_gate/ctrl_ref/ctrl_error"));
+
+        byte[] gzippedBytes = CircuitFileWriter.write(model, true);
+        CircuitModel parsed = new CircuitFileParser().parse(new ByteArrayInputStream(gzippedBytes), "registers_test.ipes");
+        assertEquals(2, parsed.getGraphRegisters().size());
+
+        GraphRegisterData parsed1 = parsed.getGraphRegisters().get(0);
+        assertEquals("reg-1", parsed1.id());
+        assertEquals("Voltages & Currents", parsed1.name());
+        assertEquals(2, parsed1.numGraphs());
+        assertEquals(List.of("V(out)", "V(in)", "I(L1)"), parsed1.signals());
+        assertEquals(1, parsed1.signalGraphs().get("V(out)"));
+        assertEquals(1, parsed1.signalGraphs().get("V(in)"));
+        assertEquals(2, parsed1.signalGraphs().get("I(L1)"));
+        assertTrue(parsed1.hiddenSignals().isEmpty());
+        assertEquals("fixed", parsed1.yScaleMode());
+        assertTrue(parsed1.cursorsEnabled());
+
+        GraphRegisterData parsed2 = parsed.getGraphRegisters().get(1);
+        assertEquals("reg-2", parsed2.id());
+        assertEquals("Control Signals", parsed2.name());
+        assertEquals(3, parsed2.numGraphs());
+        assertEquals(List.of("ctrl_gate", "ctrl_ref", "ctrl_error"), parsed2.signals());
+        assertEquals(1, parsed2.signalGraphs().get("ctrl_gate"));
+        assertEquals(2, parsed2.signalGraphs().get("ctrl_ref"));
+        assertEquals(3, parsed2.signalGraphs().get("ctrl_error"));
+        assertEquals(List.of("ctrl_error"), parsed2.hiddenSignals());
+        assertEquals("auto", parsed2.yScaleMode());
+        assertFalse(parsed2.cursorsEnabled());
+    }
 }

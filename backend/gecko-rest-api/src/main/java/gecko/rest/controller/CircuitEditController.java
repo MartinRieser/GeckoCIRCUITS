@@ -7,6 +7,7 @@ import gecko.rest.model.circuit.ComponentPatchRequest;
 import gecko.rest.model.circuit.ConnectionCreateRequest;
 import gecko.rest.model.circuit.ConnectionPatchRequest;
 import gecko.rest.model.circuit.EditorModelResponse;
+import gecko.rest.model.circuit.GraphRegisterDto;
 import gecko.rest.model.circuit.NodeLabelRequest;
 import gecko.rest.service.CircuitEditService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,6 +19,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * REST endpoints for editing loaded circuits (P1): component and wire CRUD,
@@ -171,6 +174,19 @@ public class CircuitEditController {
     })
     public EditorModelResponse getEditorModel(@PathVariable String circuitId) {
         return editService.getEditorModel(circuitId);
+    }
+
+    @PutMapping("/{circuitId}/graph-registers")
+    @Operation(summary = "Set graph registers",
+            description = "Save the full list of oscilloscope / graph tab configurations.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Graph registers updated"),
+        @ApiResponse(responseCode = "404", description = "Circuit not found")
+    })
+    public CircuitChangeMessage setGraphRegisters(
+            @PathVariable String circuitId,
+            @RequestBody List<GraphRegisterDto> registers) {
+        return editService.setGraphRegisters(circuitId, registers);
     }
 
     @GetMapping("/catalog")

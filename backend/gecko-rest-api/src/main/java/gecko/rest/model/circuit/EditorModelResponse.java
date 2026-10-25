@@ -33,8 +33,22 @@ public record EditorModelResponse(
     List<Wire> connections,
 
     @Schema(description = "Simulation defaults from the .ipes metadata (dt, tEnd, solver, signals)")
-    SimulationDefaults simulationDefaults
+    SimulationDefaults simulationDefaults,
+
+    @Schema(description = "Oscilloscope / Graph View Registers")
+    List<GraphRegisterDto> graphRegisters
 ) {
+    public EditorModelResponse(
+            String circuitId,
+            long modelVersion,
+            String filename,
+            int dpix,
+            String worksheetSize,
+            List<Component> components,
+            List<Wire> connections,
+            SimulationDefaults simulationDefaults) {
+        this(circuitId, modelVersion, filename, dpix, worksheetSize, components, connections, simulationDefaults, List.of());
+    }
     /**
      * Simulation parameters stored in the file, used to pre-populate the
      * sim panel. Signals fall back to the circuit's node labels when the

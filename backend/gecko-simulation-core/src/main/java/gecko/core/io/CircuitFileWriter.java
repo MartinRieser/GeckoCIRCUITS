@@ -20,8 +20,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -379,9 +381,57 @@ public final class CircuitFileWriter {
         sb.append("\nFileVersion ").append(fileVer);
         sb.append("\nUniqueFileId ").append(model.getUniqueFileId());
 
+        // Sync dataContainerSignals with union of signals from graphRegisters if graphRegisters exist
+        if (model.getGraphRegisters() != null && !model.getGraphRegisters().isEmpty()) {
+            Set<String> allSigs = new LinkedHashSet<>();
+            if (model.getDataContainerSignals() != null) {
+                for (String s : model.getDataContainerSignals()) {
+                    if (s != null && !s.isBlank()) {
+                        allSigs.add(s.trim());
+                    }
+                }
+            }
+            for (GraphRegisterData reg : model.getGraphRegisters()) {
+                if (reg.signals() != null) {
+                    for (String s : reg.signals()) {
+                        if (s != null && !s.isBlank()) {
+                            allSigs.add(s.trim());
+                        }
+                    }
+                }
+            }
+            model.setDataContainerSignals(allSigs.toArray(new String[0]));
+        }
+
         // 10. Signal names
         sb.append("\ndataContainerSignals");
         SerializationUtils.appendStringArray(sb, model.getDataContainerSignals());
+
+        // 10b. Osci / Graph view registers
+        if (model.getGraphRegisters() != null && !model.getGraphRegisters().isEmpty()) {
+            sb.append("\n<graphRegisters>\ncount ").append(model.getGraphRegisters().size());
+            for (GraphRegisterData reg : model.getGraphRegisters()) {
+                sb.append("\n<graphRegister>");
+                sb.append("\nid ").append(reg.id());
+                sb.append("\nname ").append(reg.name());
+                sb.append("\nnumGraphs ").append(reg.numGraphs());
+                sb.append("\nsignals ").append(String.join(",", reg.signals()));
+                if (reg.signalGraphs() != null && !reg.signalGraphs().isEmpty()) {
+                    List<String> pairs = new ArrayList<>();
+                    for (Map.Entry<String, Integer> e : reg.signalGraphs().entrySet()) {
+                        pairs.add(e.getKey() + ":" + e.getValue());
+                    }
+                    sb.append("\nsignalGraphs ").append(String.join(",", pairs));
+                } else {
+                    sb.append("\nsignalGraphs ");
+                }
+                sb.append("\nhiddenSignals ").append(String.join(",", reg.hiddenSignals()));
+                sb.append("\nyScaleMode ").append(reg.yScaleMode());
+                sb.append("\ncursorsEnabled ").append(reg.cursorsEnabled());
+                sb.append("\n<\\graphRegister>");
+            }
+            sb.append("\n<\\graphRegisters>");
+        }
 
         // 11. Footer
         sb.append("\n\n=======================\n ");

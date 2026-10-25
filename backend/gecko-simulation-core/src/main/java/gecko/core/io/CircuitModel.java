@@ -63,6 +63,9 @@ public class CircuitModel {
     // Signal names
     private String[] dataContainerSignals = new String[0];
 
+    // Osci / Graph view registers (<graphRegisters> block)
+    private final List<GraphRegisterData> graphRegisters = new ArrayList<>();
+
     // Scripting (if present)
     private String scripterCode = "";
     private String scripterImports = "";
@@ -310,6 +313,25 @@ public class CircuitModel {
 
     public void setDataContainerSignals(String[] dataContainerSignals) {
         this.dataContainerSignals = dataContainerSignals != null ? dataContainerSignals : new String[0];
+    }
+
+    // Graph registers
+
+    public List<GraphRegisterData> getGraphRegisters() {
+        return graphRegisters;
+    }
+
+    public void setGraphRegisters(List<GraphRegisterData> registers) {
+        this.graphRegisters.clear();
+        if (registers != null) {
+            this.graphRegisters.addAll(registers);
+        }
+    }
+
+    public void addGraphRegister(GraphRegisterData register) {
+        if (register != null) {
+            this.graphRegisters.add(register);
+        }
     }
 
     // Scripting
