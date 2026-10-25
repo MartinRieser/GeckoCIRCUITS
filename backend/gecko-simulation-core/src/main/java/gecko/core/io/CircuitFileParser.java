@@ -792,8 +792,12 @@ public class CircuitFileParser {
                 case "signals" -> {
                     if (!val.isEmpty()) {
                         for (String s : val.split(",")) {
-                            if (!s.trim().isEmpty()) {
-                                signals.add(s.trim());
+                            String trimmedSig = s.trim();
+                            while (trimmedSig.startsWith("/")) {
+                                trimmedSig = trimmedSig.substring(1).trim();
+                            }
+                            if (!trimmedSig.isEmpty()) {
+                                signals.add(trimmedSig);
                             }
                         }
                     }
@@ -804,6 +808,9 @@ public class CircuitFileParser {
                             int colon = pair.indexOf(':');
                             if (colon > 0) {
                                 String sig = pair.substring(0, colon).trim();
+                                while (sig.startsWith("/")) {
+                                    sig = sig.substring(1).trim();
+                                }
                                 try {
                                     int gIdx = Integer.parseInt(pair.substring(colon + 1).trim());
                                     signalGraphs.put(sig, gIdx);
@@ -815,8 +822,12 @@ public class CircuitFileParser {
                 case "hiddenSignals" -> {
                     if (!val.isEmpty()) {
                         for (String s : val.split(",")) {
-                            if (!s.trim().isEmpty()) {
-                                hiddenSignals.add(s.trim());
+                            String trimmedSig = s.trim();
+                            while (trimmedSig.startsWith("/")) {
+                                trimmedSig = trimmedSig.substring(1).trim();
+                            }
+                            if (!trimmedSig.isEmpty()) {
+                                hiddenSignals.add(trimmedSig);
                             }
                         }
                     }
@@ -868,6 +879,9 @@ public class CircuitFileParser {
                         int colon = pair.indexOf(':');
                         if (colon > 0) {
                             String sig = pair.substring(0, colon).trim();
+                            while (sig.startsWith("/")) {
+                                sig = sig.substring(1).trim();
+                            }
                             try {
                                 int gIdx = Integer.parseInt(pair.substring(colon + 1).trim());
                                 signalGraphs.put(sig, gIdx);
@@ -885,8 +899,12 @@ public class CircuitFileParser {
                 Object hidObj = params.get("hiddenSignals");
                 if (hidObj != null && !hidObj.toString().isBlank()) {
                     for (String s : hidObj.toString().split(",")) {
-                        if (!s.trim().isEmpty()) {
-                            hidden.add(s.trim());
+                        String hSig = s.trim();
+                        while (hSig.startsWith("/")) {
+                            hSig = hSig.substring(1).trim();
+                        }
+                        if (!hSig.isEmpty()) {
+                            hidden.add(hSig);
                         }
                     }
                 }

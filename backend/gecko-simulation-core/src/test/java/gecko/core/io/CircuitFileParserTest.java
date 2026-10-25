@@ -17,6 +17,8 @@ import java.io.FileNotFoundException;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -702,5 +704,97 @@ class CircuitFileParserTest {
         assertEquals(2, reg.numGraphs());
         assertEquals(1, reg.signalGraphs().get("sig1"));
         assertEquals(2, reg.signalGraphs().get("sig2"));
+    }
+
+    @Test
+    void parse_legacyScopeWithSlashPrefixedSignalGraphs_stripsLeadingSlashes() throws Exception {
+        String content = """
+            tDURATION 0.02
+            dt 1e-6
+            c (0)
+            <ElementCONTROL>
+            labelAnfangsKnoten[] /v_sw/v_out/duty
+            typ 1003
+            idStringDialog SCOPE
+            x 37
+            y 46
+            orientierung 503
+            parameter[] 0.0
+            uniqueObjectIdentifier 1
+            <scopeSettings>
+            scopeLayout 2-graphs
+            signalGraphs /v_sw:1,/v_out:1,/duty:2
+            hiddenSignals /duty
+            <\\scopeSettings>
+            <\\ElementCONTROL>
+            """;
+
+        CircuitModel model = parser.parse(new BufferedReader(new StringReader(content)), "test_slash.ipes");
+
+        assertFalse(model.getGraphRegisters().isEmpty());
+        GraphRegisterData reg = model.getGraphRegisters().get(0);
+        assertEquals("SCOPE", reg.name());
+        assertEquals(2, reg.numGraphs());
+        assertEquals(1, reg.signalGraphs().get("v_sw"));
+        assertEquals(1, reg.signalGraphs().get("v_out"));
+        assertEquals(2, reg.signalGraphs().get("duty"));
+        assertEquals(List.of("duty"), reg.hiddenSignals());
+    }
+
+    @Test
+    void parse_graphRegistersBlock_roundTripsExplicitRegisters() throws Exception {
+        String content = """
+            tDURATION 0.02
+            dt 1e-6
+            <graphRegisters>
+            count 2
+            <graphRegister>
+            id reg_main
+            name Power Stage
+            numGraphs 2
+            signals v_in,v_out,i_L
+            signalGraphs v_in:1,v_out:1,i_L:2
+            hiddenSignals 
+            yScaleMode fixed
+            cursorsEnabled true
+            <\\graphRegister>
+            <graphRegister>
+            id reg_ctrl
+            name Control Signals
+            numGraphs 3
+            signals v_err,duty,gate
+            signalGraphs v_err:1,duty:2,gate:3
+            hiddenSignals gate
+            yScaleMode auto
+            cursorsEnabled false
+            <\\graphRegister>
+            <\\graphRegisters>
+            """;
+
+        CircuitModel model = parser.parse(new BufferedReader(new StringReader(content)), "test_explicit_registers.ipes");
+
+        assertEquals(2, model.getGraphRegisters().size());
+        GraphRegisterData r1 = model.getGraphRegisters().get(0);
+        assertEquals("reg_main", r1.id());
+        assertEquals("Power Stage", r1.name());
+        assertEquals(2, r1.numGraphs());
+        assertEquals(List.of("v_in", "v_out", "i_L"), r1.signals());
+        assertEquals(1, r1.signalGraphs().get("v_in"));
+        assertEquals(1, r1.signalGraphs().get("v_out"));
+        assertEquals(2, r1.signalGraphs().get("i_L"));
+        assertEquals("fixed", r1.yScaleMode());
+        assertTrue(r1.cursorsEnabled());
+
+        GraphRegisterData r2 = model.getGraphRegisters().get(1);
+        assertEquals("reg_ctrl", r2.id());
+        assertEquals("Control Signals", r2.name());
+        assertEquals(3, r2.numGraphs());
+        assertEquals(List.of("v_err", "duty", "gate"), r2.signals());
+        assertEquals(1, r2.signalGraphs().get("v_err"));
+        assertEquals(2, r2.signalGraphs().get("duty"));
+        assertEquals(3, r2.signalGraphs().get("gate"));
+        assertEquals(List.of("gate"), r2.hiddenSignals());
+        assertEquals("auto", r2.yScaleMode());
+        assertFalse(r2.cursorsEnabled());
     }
 }
