@@ -1234,7 +1234,7 @@ dependencies = [
 
 [[package]]
 name = "gecko-desktop"
-version = "42.0.2026"
+version = "43.0.2026"
 dependencies = [
  "gecko-engine",
  "serde",
@@ -1248,7 +1248,7 @@ dependencies = [
 
 [[package]]
 name = "gecko-engine"
-version = "42.0.2026"
+version = "43.0.2026"
 dependencies = [
  "base64 0.22.1",
  "serde",

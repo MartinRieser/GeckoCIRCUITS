@@ -1,6 +1,6 @@
 [package]
 name = "gecko-desktop"
-version = "42.0.2026"
+version = "43.0.2026"
 edition = "2021"
 description = "GeckoCIRCUITS desktop shell"
 
