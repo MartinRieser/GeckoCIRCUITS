@@ -31,13 +31,17 @@ export function Palette({ catalog, onArm, onCollapse }: PaletteProps) {
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>('all');
   const viewMode = 'list';
 
-  // Augment catalog entries with schema metadata (hide legacy Java block from new part palette)
+  // Augment catalog entries with schema metadata (hide legacy Java block and Scope from new part palette)
   const catalogWithMeta = useMemo(() => {
     return (catalog || [])
       .filter(
         (entry) =>
           entry.type !== ControlComponentType.LEGACY_JAVA_FUNCTION &&
-          entry.name !== 'C_JAVA_FUNCTION',
+          entry.name !== 'C_JAVA_FUNCTION' &&
+          entry.type !== ControlComponentType.SCOPE &&
+          entry.type !== ControlComponentType.LEGACY_SCOPE &&
+          entry.name !== 'CONTROL_SCOPE' &&
+          entry.name !== 'SCOPE',
       )
       .map((entry) => {
         const meta = getComponentMeta(entry.type, entry.family, entry.name);

@@ -30,6 +30,7 @@ import {
   isAmmeterComponent,
   getCoupledComponentName,
   getComponentMeta,
+  extractAvailableSignals,
 } from '../model/componentSchema';
 import { isScopeComponent, isScriptComponent } from '../simulation/scopes';
 import { isGroundSignal } from '../simulation/chartData';
@@ -1336,7 +1337,8 @@ export function useEditor() {
       const tStep = config?.timeStep ?? simDefaultsRef.current?.timeStep ?? 1e-6;
       const solver = config?.solverType ?? simDefaultsRef.current?.solverType ?? 'backward-euler';
 
-      // Dynamically collect active signals from scope channels, probe output labels, and wire labels
+      // Dynamically collect active signals from available signals (probes, wires, control terminals)
+      // plus all signals configured in any graphRegister
       const activeSignals = new Set<string>();
       if (config?.signals && config.signals.length > 0) {
         config.signals.forEach((s) => s && s.trim() && !isGroundSignal(s.trim()) && activeSignals.add(s.trim()));
@@ -1344,28 +1346,19 @@ export function useEditor() {
         simDefaultsRef.current.signals.forEach((s) => s && s.trim() && !isGroundSignal(s.trim()) && activeSignals.add(s.trim()));
       }
 
-      for (const comp of stateRef.current.components) {
-        if (isScopeComponent(comp)) {
-          comp.inputLabels?.forEach((lbl) => {
-            if (lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX' && !isGroundSignal(lbl.trim())) {
-              activeSignals.add(lbl.trim());
-            }
-          });
-        }
-        if (isVoltmeterComponent(comp) || isAmmeterComponent(comp)) {
-          comp.outputLabels?.forEach((lbl) => {
-            if (lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX' && !isGroundSignal(lbl.trim())) {
-              activeSignals.add(lbl.trim());
-            }
-          });
+      const availableSigs = extractAvailableSignals(stateRef.current.components, stateRef.current.wires);
+      for (const sig of availableSigs) {
+        if (sig && sig.trim() && !isGroundSignal(sig.trim())) {
+          activeSignals.add(sig.trim());
         }
       }
 
-      for (const wire of stateRef.current.wires) {
-        if (wire.label && wire.label.trim() && wire.label !== 'NIX_NIX_NIX') {
-          const trimmed = wire.label.trim();
-          if (!isGroundSignal(trimmed)) {
-            activeSignals.add(trimmed);
+      for (const reg of ((stateRef.current as any).graphRegisters || [])) {
+        if (reg.signals) {
+          for (const s of reg.signals) {
+            if (s && s.trim() && !isGroundSignal(s.trim())) {
+              activeSignals.add(s.trim());
+            }
           }
         }
       }

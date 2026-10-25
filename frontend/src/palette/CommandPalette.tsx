@@ -46,6 +46,13 @@ export function CommandPalette({
   const items = useMemo(() => {
     const q = query.trim().toLowerCase();
     return (catalog || [])
+      .filter(
+        (entry) =>
+          entry.type !== 1003 &&
+          entry.type !== 5 &&
+          entry.name !== 'CONTROL_SCOPE' &&
+          entry.name !== 'SCOPE',
+      )
       .map((entry) => {
         const meta = getComponentMeta(entry.type, entry.family, entry.name);
         return {

@@ -2945,7 +2945,14 @@ export function getMutualCouplingUids(
   return [Number.isFinite(a) ? a : 0, Number.isFinite(b) ? b : 0];
 }
 
-export function extractAvailableSignals(
+export interface AvailableSignalMetadata {
+  name: string;
+  domain: 'electrical' | 'control' | 'thermal' | 'other';
+  category: 'voltage' | 'current' | 'control' | 'other';
+  sourceDescription: string;
+}
+
+export function extractAvailableSignalDetails(
   components: Array<{
     name: string;
     type?: number;
@@ -2953,27 +2960,82 @@ export function extractAvailableSignals(
     inputLabels?: string[];
     outputLabels?: string[];
   }>,
-  wires?: Array<{ label?: string }>,
-): string[] {
-  const set = new Set<string>();
+  wires?: Array<{ label?: string; type?: string; domain?: string }>,
+): AvailableSignalMetadata[] {
+  const signalMap = new Map<string, AvailableSignalMetadata>();
+
+  const register = (
+    name: string | undefined,
+    domain: 'electrical' | 'control' | 'thermal' | 'other',
+    category: 'voltage' | 'current' | 'control' | 'other',
+    sourceDescription: string,
+  ) => {
+    if (!name) return;
+    const trimmed = name.trim();
+    if (!trimmed || trimmed === SENTINEL_UNSET) return;
+    if (!signalMap.has(trimmed)) {
+      signalMap.set(trimmed, { name: trimmed, domain, category, sourceDescription });
+    }
+  };
+
+  if (wires) {
+    for (const wire of wires) {
+      if (wire.label && wire.label.trim() && wire.label.trim() !== SENTINEL_UNSET) {
+        const lbl = wire.label.trim();
+        const isControl = wire.type === 'CONTROL' || wire.domain === 'CONTROL';
+        const domain = isControl ? 'control' : 'electrical';
+        let category: 'voltage' | 'current' | 'control' | 'other' = isControl ? 'control' : 'voltage';
+        const lower = lbl.toLowerCase();
+        if (lower.startsWith('i_') || lower.startsWith('i(') || lower.startsWith('il')) {
+          category = 'current';
+        } else if (lower.startsWith('v_') || lower.startsWith('v(') || lower.startsWith('u')) {
+          category = 'voltage';
+        }
+        register(lbl, domain, category, `${isControl ? 'Control' : 'Electrical'} Net "${lbl}"`);
+      }
+    }
+  }
 
   for (const comp of components) {
+    const isControl =
+      comp.family === 'CONTROL' ||
+      (!comp.family &&
+        (comp.name.startsWith('VOLT') ||
+          comp.name.startsWith('AMP') ||
+          comp.name.startsWith('GATE') ||
+          comp.name.startsWith('CTRL') ||
+          comp.name.startsWith('PI')));
+    const isThermal = comp.family === 'THERM';
+    const domain = isThermal ? 'thermal' : isControl ? 'control' : 'electrical';
+
     if (comp.inputLabels) {
       for (const lbl of comp.inputLabels) {
-        const trimmed = lbl?.trim();
-        if (trimmed && trimmed !== SENTINEL_UNSET) set.add(trimmed);
+        register(lbl, domain, isControl ? 'control' : 'other', `Terminal on ${comp.name}`);
       }
     }
+
     if (comp.outputLabels) {
       for (const lbl of comp.outputLabels) {
-        const trimmed = lbl?.trim();
-        if (trimmed && trimmed !== SENTINEL_UNSET) set.add(trimmed);
+        let cat: 'voltage' | 'current' | 'control' | 'other' = isControl ? 'control' : 'other';
+        if (
+          comp.type === ControlComponentType.VOLTMETER ||
+          comp.type === ControlComponentType.LEGACY_VOLTMETER ||
+          comp.name.startsWith('VOLT') ||
+          comp.name.startsWith('V_meas')
+        ) {
+          cat = 'voltage';
+        } else if (
+          comp.type === ControlComponentType.AMMETER ||
+          comp.type === ControlComponentType.LEGACY_AMMETER ||
+          comp.name.startsWith('AMP')
+        ) {
+          cat = 'current';
+        }
+        register(lbl, domain, cat, `Output of ${comp.name}`);
       }
     }
+
     if (
-      // legacy .ipes type numbers collide with LK types (1 = resistor AND
-      // voltmeter) - without the family guard every R/L/C name leaked into
-      // the signal list
       (!comp.family || comp.family === 'CONTROL') &&
       (comp.type === ControlComponentType.VOLTMETER ||
         comp.type === ControlComponentType.LEGACY_VOLTMETER ||
@@ -2986,31 +3048,50 @@ export function extractAvailableSignals(
         comp.name.startsWith('AMP') ||
         comp.name.startsWith('SIGNAL'))
     ) {
-      // A measurement block is reachable under its component name too, but
-      // when it has an output label that label is the canonical signal name.
-      // Offering both lets the identical curve show up twice under different
-      // names in scope-channel pickers, so only label-less blocks fall back
-      // to their component name.
       const hasOutputLabel = (comp.outputLabels ?? []).some(
         (l) => l?.trim() && l.trim() !== SENTINEL_UNSET,
       );
       if (!hasOutputLabel) {
-        set.add(comp.name);
+        const isVolt =
+          comp.type === ControlComponentType.VOLTMETER ||
+          comp.type === ControlComponentType.LEGACY_VOLTMETER ||
+          comp.name.startsWith('VOLT') ||
+          comp.name.startsWith('V_meas');
+        const isAmp =
+          comp.type === ControlComponentType.AMMETER ||
+          comp.type === ControlComponentType.LEGACY_AMMETER ||
+          comp.name.startsWith('AMP');
+        const cat = isVolt ? 'voltage' : isAmp ? 'current' : 'control';
+        register(comp.name, 'control', cat, `Probe ${comp.name}`);
       }
     }
   }
 
-  if (wires) {
-    for (const wire of wires) {
-      const trimmed = wire.label?.trim();
-      if (trimmed && trimmed !== SENTINEL_UNSET) {
-        set.add(trimmed);
-      }
-    }
+  if (!signalMap.has('0')) {
+    signalMap.set('0', {
+      name: '0',
+      domain: 'electrical',
+      category: 'voltage',
+      sourceDescription: 'Circuit Ground Reference (0V)',
+    });
   }
 
-  set.add('0');
-  return Array.from(set).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  return Array.from(signalMap.values()).sort((a, b) =>
+    a.name.localeCompare(b.name, undefined, { numeric: true }),
+  );
+}
+
+export function extractAvailableSignals(
+  components: Array<{
+    name: string;
+    type?: number;
+    family?: string;
+    inputLabels?: string[];
+    outputLabels?: string[];
+  }>,
+  wires?: Array<{ label?: string; type?: string; domain?: string }>,
+): string[] {
+  return extractAvailableSignalDetails(components, wires).map((s) => s.name);
 }
 
 

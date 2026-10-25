@@ -100,6 +100,31 @@ export interface SimRunSettings {
   solver: string;
 }
 
+export type GraphCount = 1 | 2 | 3;
+export type ScopeYScaleMode = 'auto' | 'fixed';
+
+/**
+ * Project-level oscilloscope / graph view register configuration.
+ */
+export interface GraphRegister {
+  /** Stable unique ID within the project (e.g. "osci_1", "osci_2"). */
+  id: string;
+  /** User-facing tab title (e.g. "Osci 1", "Converter Waveforms"). */
+  name: string;
+  /** Number of stacked graphs in this view: 1, 2, or 3. */
+  numGraphs: GraphCount;
+  /** Ordered list of selected signal labels displayed in this register. */
+  signals: string[];
+  /** Maps signal label -> graph index (1, 2, or 3). Defaults to 1 if omitted. */
+  signalGraphs: Record<string, 1 | 2 | 3>;
+  /** Signals temporarily muted/hidden via eye-toggle in the legend/sidebar. */
+  hiddenSignals: string[];
+  /** Y-axis scaling mode ('auto' | 'fixed'). */
+  yScaleMode: ScopeYScaleMode;
+  /** Whether measurement cursors A & B are active on this register. */
+  cursorsEnabled: boolean;
+}
+
 /**
  * Complete snapshot of a circuit's editor model serialized by the REST backend.
  */
@@ -126,6 +151,8 @@ export interface EditorSnapshot {
   wires?: EditorWire[];
   /** Default simulation configuration parameters for this circuit. */
   simulationDefaults?: SimulationDefaults;
+  /** Project-level oscilloscope / graph view registers. */
+  graphRegisters?: GraphRegister[];
 }
 
 /**

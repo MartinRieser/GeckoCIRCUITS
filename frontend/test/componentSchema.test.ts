@@ -10,6 +10,7 @@ import {
   isVoltmeterComponent,
   getCoupledComponentName,
   extractAvailableSignals,
+  extractAvailableSignalDetails,
   resolveComponentPinCounts,
 } from '../src/model/componentSchema';
 import {
@@ -192,6 +193,26 @@ describe('componentSchema', () => {
       const signals = extractAvailableSignals(components, []);
       expect(signals).not.toContain('VOLT.1');
       expect(signals).toContain('VOLT.2');
+    });
+
+    it('extracts rich signal details including domain, category, and source description', () => {
+      const components = [
+        { name: 'PI.1', family: 'CONTROL', inputLabels: ['v_err'], outputLabels: ['duty'] },
+        { name: 'VOLT.1', type: ControlComponentType.VOLTMETER, inputLabels: [], outputLabels: ['V_out'] },
+      ];
+      const wires = [
+        { label: 'I_L1', type: 'LK' },
+        { label: 'pwm_gate', type: 'CONTROL' },
+      ];
+      const details = extractAvailableSignalDetails(components, wires);
+      const byName = new Map(details.map((d) => [d.name, d]));
+
+      expect(byName.get('v_err')).toMatchObject({ domain: 'control', category: 'control' });
+      expect(byName.get('duty')).toMatchObject({ domain: 'control', category: 'control' });
+      expect(byName.get('V_out')).toMatchObject({ domain: 'control', category: 'voltage' });
+      expect(byName.get('I_L1')).toMatchObject({ domain: 'electrical', category: 'current' });
+      expect(byName.get('pwm_gate')).toMatchObject({ domain: 'control', category: 'control' });
+      expect(byName.get('0')).toMatchObject({ domain: 'electrical', category: 'voltage' });
     });
   });
 
