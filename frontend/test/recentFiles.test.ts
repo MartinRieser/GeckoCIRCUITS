@@ -19,13 +19,14 @@ describe('recentFiles store', () => {
     expect(getRecentFiles()).toEqual([]);
   });
 
-  it('adds a recent file to the top', () => {
-    addRecentFile('buck.ipes', 'content-buck', 5);
+  it('adds a recent file to the top and preserves optional filePath', () => {
+    addRecentFile('buck.ipes', 'content-buck', 5, 'C:/circuits/buck.ipes');
     const list = getRecentFiles();
     expect(list).toHaveLength(1);
     expect(list[0].name).toBe('buck.ipes');
     expect(list[0].content).toBe('content-buck');
     expect(list[0].componentCount).toBe(5);
+    expect(list[0].filePath).toBe('C:/circuits/buck.ipes');
   });
 
   it('caps at MAX_RECENT_FILES (8) and evicts oldest', () => {

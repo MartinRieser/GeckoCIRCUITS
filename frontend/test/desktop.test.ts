@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   isDesktop,
+  hasNativeFileSystemAccess,
+  hasActiveFileTarget,
+  clearActiveFileHandle,
+  readIpesFileNative,
   openLogsFolder,
   registerOpenFileHandler,
   saveFileNative,
@@ -16,6 +20,8 @@ type Scope = {
   __geckoOpenFileHandler?: (payload: OpenFilePayload) => void;
   __geckoOpenFileQueue?: OpenFilePayload[];
   __geckoOpenFile?: (payload: OpenFilePayload) => void;
+  showOpenFilePicker?: unknown;
+  showSaveFilePicker?: unknown;
 };
 
 const scope = globalThis as Scope;
@@ -24,6 +30,9 @@ afterEach(() => {
   delete scope.__TAURI__;
   delete scope.__geckoOpenFileHandler;
   delete scope.__geckoOpenFileQueue;
+  delete scope.showOpenFilePicker;
+  delete scope.showSaveFilePicker;
+  clearActiveFileHandle();
   vi.restoreAllMocks();
 });
 
@@ -176,5 +185,70 @@ describe('confirmDialogNative', () => {
     expect(invoke).toHaveBeenCalledWith('confirm_dialog', { message: 'Discard?', title: 'Gecko' });
   });
 });
+
+describe('Chromium File System Access API fallback (run-gecko.bat --app mode)', () => {
+  it('detects native file system access when showOpenFilePicker & showSaveFilePicker exist', () => {
+    expect(hasNativeFileSystemAccess()).toBe(false);
+    scope.showOpenFilePicker = vi.fn();
+    scope.showSaveFilePicker = vi.fn();
+    expect(hasNativeFileSystemAccess()).toBe(true);
+  });
+
+  it('opens a file via showOpenFilePicker and caches its handle for in-place Ctrl+S saves', async () => {
+    const write = vi.fn().mockResolvedValue(undefined);
+    const close = vi.fn().mockResolvedValue(undefined);
+    const handle = {
+      name: 'buck.ipes',
+      getFile: vi.fn().mockResolvedValue({
+        name: 'buck.ipes',
+        arrayBuffer: async () => new Uint8Array([65, 66, 67]).buffer, // "ABC" -> "QUJD"
+      }),
+      createWritable: vi.fn().mockResolvedValue({ write, close }),
+    };
+    scope.showOpenFilePicker = vi.fn().mockResolvedValue([handle]);
+    scope.showSaveFilePicker = vi.fn();
+
+    const payload = await openFileNative();
+    expect(payload).toEqual({
+      name: 'buck.ipes',
+      base64: 'QUJD',
+      path: 'buck.ipes',
+    });
+    expect(hasActiveFileTarget('buck.ipes')).toBe(true);
+
+    // Direct save (Ctrl+S) writes directly via the cached FileSystemFileHandle
+    await expect(saveFileDirectNative('buck.ipes', 'WFla')).resolves.toBe(true);
+    expect(handle.createWritable).toHaveBeenCalledTimes(1);
+    expect(write).toHaveBeenCalledTimes(1);
+    expect(close).toHaveBeenCalledTimes(1);
+
+    // Reading via readIpesFileNative (for Open Recent) re-reads from the handle
+    const reread = await readIpesFileNative('buck.ipes', 'buck.ipes');
+    expect(reread).toEqual({
+      name: 'buck.ipes',
+      base64: 'QUJD',
+      path: 'buck.ipes',
+    });
+  });
+
+  it('saves via showSaveFilePicker and updates the active handle', async () => {
+    const write = vi.fn().mockResolvedValue(undefined);
+    const close = vi.fn().mockResolvedValue(undefined);
+    const handle = {
+      name: 'new_circuit.ipes',
+      getFile: vi.fn(),
+      createWritable: vi.fn().mockResolvedValue({ write, close }),
+    };
+    scope.showOpenFilePicker = vi.fn();
+    scope.showSaveFilePicker = vi.fn().mockResolvedValue(handle);
+
+    const savedName = await saveFileNative('QUJD', 'new_circuit.ipes');
+    expect(savedName).toBe('new_circuit.ipes');
+    expect(write).toHaveBeenCalledTimes(1);
+    expect(close).toHaveBeenCalledTimes(1);
+    expect(hasActiveFileTarget('new_circuit.ipes')).toBe(true);
+  });
+});
+
 
 

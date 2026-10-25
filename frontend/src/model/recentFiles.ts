@@ -19,6 +19,8 @@ export interface RecentFileEntry {
   timestamp: number;
   /** Optional count of schematic components in the circuit snapshot. */
   componentCount?: number;
+  /** Optional full file path on disk (for native in-place Save after Open Recent). */
+  filePath?: string | null;
 }
 
 const STORAGE_KEY = 'gecko-recent-files';
@@ -82,6 +84,7 @@ export function addRecentFile(
   name: string,
   content: string,
   componentCount?: number,
+  filePath?: string | null,
 ): RecentFileEntry[] {
   const cleanName = name?.trim();
   if (!cleanName || !content) {
@@ -100,6 +103,7 @@ export function addRecentFile(
     content,
     timestamp: Date.now(),
     componentCount: componentCount !== undefined ? componentCount : existing?.componentCount,
+    filePath: filePath !== undefined ? filePath : existing?.filePath,
   };
 
   const updated = [newEntry, ...filtered].slice(0, MAX_RECENT_FILES);

@@ -53,7 +53,7 @@ pub fn set_window_title(app: AppHandle, title: String) -> Result<(), String> {
 
 /// Native confirmation dialog returning true for OK/Yes, false for Cancel/No.
 #[tauri::command]
-pub fn confirm_dialog(
+pub async fn confirm_dialog(
     app: AppHandle,
     title: Option<String>,
     message: String,
@@ -71,10 +71,10 @@ pub fn confirm_dialog(
 }
 
 /// Native open file dialog for selecting an existing `.ipes` or `.txt` circuit.
-/// Pre-focuses the dialog on current file's directory if provided.
+/// Pre-focuses the dialog on current file's directory if provided, or Documents folder.
 /// Returns the opened file payload, or None on cancel.
 #[tauri::command]
-pub fn open_file_dialog(
+pub async fn open_file_dialog(
     app: AppHandle,
     current_path: Option<String>,
 ) -> Result<Option<circuit_files::OpenIpesFile>, String> {
@@ -83,11 +83,20 @@ pub fn open_file_dialog(
     } else {
         app.dialog().file()
     };
+    let mut dir_set = false;
     if let Some(ref p) = current_path {
         let path = Path::new(p);
         if let Some(parent) = path.parent() {
             if parent.is_dir() {
                 builder = builder.set_directory(parent);
+                dir_set = true;
+            }
+        }
+    }
+    if !dir_set {
+        if let Ok(doc_dir) = app.path().document_dir() {
+            if doc_dir.is_dir() {
+                builder = builder.set_directory(doc_dir);
             }
         }
     }
@@ -112,11 +121,11 @@ pub fn save_file_direct(path: String, base64: String) -> Result<(), String> {
 }
 
 /// Native save dialog + file write for `.ipes` downloads.
-/// Pre-focuses the dialog on current file's directory if provided.
+/// Pre-focuses the dialog on current file's directory if provided, or Documents folder.
 /// Auto-appends `.ipes` if user omitted extension.
 /// Returns the chosen path, or None on cancel.
 #[tauri::command]
-pub fn save_file_dialog(
+pub async fn save_file_dialog(
     app: AppHandle,
     base64: String,
     suggested_name: String,
@@ -130,11 +139,20 @@ pub fn save_file_dialog(
         app.dialog().file()
     };
     builder = builder.set_file_name(&suggested);
+    let mut dir_set = false;
     if let Some(ref p) = current_path {
         let path = Path::new(p);
         if let Some(parent) = path.parent() {
             if parent.is_dir() {
                 builder = builder.set_directory(parent);
+                dir_set = true;
+            }
+        }
+    }
+    if !dir_set {
+        if let Ok(doc_dir) = app.path().document_dir() {
+            if doc_dir.is_dir() {
+                builder = builder.set_directory(doc_dir);
             }
         }
     }

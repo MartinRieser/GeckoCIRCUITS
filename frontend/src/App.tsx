@@ -24,6 +24,7 @@ import { isWireEndPointConnected } from './model/validation';
 import {
   registerOpenFileHandler,
   isDesktop,
+  hasNativeFileSystemAccess,
   openFileNative,
   confirmDialogNative,
   setWindowTitleNative,
@@ -50,7 +51,7 @@ import {
 } from './model/workspaceTabs';
 
 export function App() {
-  const { state, dispatch, catalog, wsConnected, simState, actions } = useEditor();
+  const { state, dispatch, catalog, wsConnected, simState, isDirty, actions } = useEditor();
 
   // Desktop shell: circuits opened via double-click / "Open with" / second launch
   useEffect(() => {
@@ -61,10 +62,11 @@ export function App() {
 
   // Synchronize browser and desktop window title with current circuit file
   useEffect(() => {
-    const title = state.filename ? `${state.filename} - GeckoCIRCUITS` : 'GeckoCIRCUITS';
+    const dirtyPrefix = isDirty ? '*' : '';
+    const title = state.filename ? `${dirtyPrefix}${state.filename} - GeckoCIRCUITS` : 'GeckoCIRCUITS';
     document.title = title;
     void setWindowTitleNative(title);
-  }, [state.filename]);
+  }, [state.filename, isDirty]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [engineVersion, setEngineVersion] = useState<string | null>(null);
@@ -309,6 +311,7 @@ export function App() {
 
   // New / Open / Examples replace whatever is in the editor.
   const confirmDiscardCircuit = useCallback(async (): Promise<boolean> => {
+    if (!isDirty) return true;
     if (state.components.length === 0 && state.wires.length === 0) return true;
     if (isDesktop()) {
       return await confirmDialogNative(
@@ -319,22 +322,21 @@ export function App() {
     return window.confirm(
       'Replace the current circuit? Changes not saved as a .ipes file will be lost.',
     );
-  }, [state.components.length, state.wires.length]);
+  }, [isDirty, state.components.length, state.wires.length]);
 
   const handleOpenCircuit = useCallback(async () => {
-    if (isDesktop()) {
-      if (!(await confirmDiscardCircuit())) return;
+    if (hasNativeFileSystemAccess()) {
       const payload = await openFileNative(state.filePath);
-      if (payload) {
-        void actions.openBase64(payload.base64, payload.name, payload.path);
-      }
+      if (!payload) return;
+      if (!(await confirmDiscardCircuit())) return;
+      void actions.openBase64(payload.base64, payload.name, payload.path);
     } else {
       fileInputRef.current?.click();
     }
   }, [confirmDiscardCircuit, state.filePath, actions]);
 
   const handleSaveAs = useCallback(() => {
-    if (isDesktop()) {
+    if (hasNativeFileSystemAccess()) {
       void actions.saveAs();
     } else {
       setSaveAsOpen(true);
@@ -1037,8 +1039,11 @@ export function App() {
             {/* Quick Status Bar */}
             <div className="status-bar">
               <div className="status-left">
-                <span className="status-circuit-name">
-                  {state.filename || 'No circuit open'}
+                <span
+                  className="status-circuit-name"
+                  title={state.filePath || state.filename || 'No circuit open'}
+                >
+                  {state.filename ? `${isDirty ? '*' : ''}${state.filename}` : 'No circuit open'}
                 </span>
                 {state.modelVersion > 0 && (
                   <span className="status-version">v{state.modelVersion}</span>

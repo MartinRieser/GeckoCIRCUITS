@@ -39,12 +39,21 @@ import { BLANK_CIRCUIT_IPES } from '../model/examples';
 import { SIMULATION_DEFAULTS } from '../model/constants';
 import { flipRoute, densePoints, routeWireWithAnchors, deconflictMovedWires } from '../canvas/WireRouter';
 import { addRecentFile, type RecentFileEntry } from '../model/recentFiles';
-import { isDesktop, saveFileNative, saveFileDirectNative } from '../desktop';
+import {
+  hasNativeFileSystemAccess,
+  hasActiveFileTarget,
+  clearActiveFileHandle,
+  readIpesFileNative,
+  saveFileNative,
+  saveFileDirectNative,
+} from '../desktop';
 
 export function useEditor() {
   const [state, dispatch] = useReducer(editorReducer, initialState);
   const [catalog, setCatalog] = useState<CatalogEntry[]>([]);
   const [wsConnected, setWsConnected] = useState(false);
+  const [savedVersion, setSavedVersion] = useState(0);
+  const [graphRegsDirty, setGraphRegsDirty] = useState(false);
   const versionRef = useRef(0);
   const unsubscribeRef = useRef<(() => void) | null>(null);
 
@@ -194,6 +203,7 @@ export function useEditor() {
   const open = useCallback(
     async (file: File) => {
       resetSimulationState();
+      clearActiveFileHandle();
       dispatch({ type: 'STATUS', status: `Loading ${file.name}...` });
       try {
         const base64 = await api.fileToBase64(file);
@@ -201,7 +211,9 @@ export function useEditor() {
         attachSubscription(circuitId);
         await refresh(circuitId);
         dispatch({ type: 'SET_FILENAME', filename: file.name, filePath: null });
-        addRecentFile(file.name, base64, stateRef.current.components.length);
+        setSavedVersion(versionRef.current);
+        setGraphRegsDirty(false);
+        addRecentFile(file.name, base64, stateRef.current.components.length, null);
         dispatch({ type: 'STATUS', status: `Loaded ${file.name}` });
       } catch (e) {
         reportError(e);
@@ -213,13 +225,16 @@ export function useEditor() {
   const openContent = useCallback(
     async (content: string, filename = 'circuit.ipes') => {
       resetSimulationState();
+      clearActiveFileHandle();
       dispatch({ type: 'STATUS', status: `Loading ${filename}...` });
       try {
         const circuitId = await api.uploadIpesString(content, filename);
         attachSubscription(circuitId);
         await refresh(circuitId);
         dispatch({ type: 'SET_FILENAME', filename, filePath: null });
-        addRecentFile(filename, content, stateRef.current.components.length);
+        setSavedVersion(versionRef.current);
+        setGraphRegsDirty(false);
+        addRecentFile(filename, content, stateRef.current.components.length, null);
         dispatch({ type: 'STATUS', status: `Loaded ${filename}` });
       } catch (e) {
         reportError(e);
@@ -242,7 +257,9 @@ export function useEditor() {
         attachSubscription(circuitId);
         await refresh(circuitId);
         dispatch({ type: 'SET_FILENAME', filename, filePath: path });
-        addRecentFile(filename, base64, stateRef.current.components.length);
+        setSavedVersion(versionRef.current);
+        setGraphRegsDirty(false);
+        addRecentFile(filename, base64, stateRef.current.components.length, path);
         dispatch({ type: 'STATUS', status: `Loaded ${filename}` });
       } catch (e) {
         reportError(e);
@@ -257,6 +274,17 @@ export function useEditor() {
       resetSimulationState();
       dispatch({ type: 'STATUS', status: `Loading ${entry.name}...` });
       try {
+        const diskPayload = await readIpesFileNative(entry.filePath, entry.name);
+        if (diskPayload) {
+          await openBase64(
+            diskPayload.base64,
+            diskPayload.name || entry.name,
+            diskPayload.path ?? entry.filePath ?? null,
+          );
+          return;
+        }
+
+        clearActiveFileHandle();
         let circuitId: string;
         if (entry.content.startsWith('GECKO') || entry.content.includes('\n')) {
           circuitId = await api.uploadIpesString(entry.content, entry.name);
@@ -265,13 +293,21 @@ export function useEditor() {
         }
         attachSubscription(circuitId);
         await refresh(circuitId);
-        addRecentFile(entry.name, entry.content, stateRef.current.components.length);
+        dispatch({ type: 'SET_FILENAME', filename: entry.name, filePath: entry.filePath ?? null });
+        setSavedVersion(versionRef.current);
+        setGraphRegsDirty(false);
+        addRecentFile(
+          entry.name,
+          entry.content,
+          stateRef.current.components.length,
+          entry.filePath ?? null,
+        );
         dispatch({ type: 'STATUS', status: `Loaded ${entry.name}` });
       } catch (e) {
         reportError(e);
       }
     },
-    [attachSubscription, refresh, reportError, resetSimulationState],
+    [attachSubscription, openBase64, refresh, reportError, resetSimulationState],
   );
 
   // Shared in-flight promise so the auto-init effect and a concurrent arm()
@@ -281,9 +317,12 @@ export function useEditor() {
   const createBlankWorkspace = useCallback(async () => {
     dispatch({ type: 'STATUS', status: 'Initializing workspace...' });
     try {
+      clearActiveFileHandle();
       const circuitId = await api.uploadIpesString(BLANK_CIRCUIT_IPES, 'Untitled.ipes');
       attachSubscription(circuitId);
       await refresh(circuitId);
+      setSavedVersion(versionRef.current);
+      setGraphRegsDirty(false);
       return true;
     } catch (e) {
       reportError(e);
@@ -1148,7 +1187,7 @@ export function useEditor() {
       const cleanName = (suggestedName || current.filename || 'circuit.ipes').trim();
       const name = cleanName.endsWith('.ipes') ? cleanName : `${cleanName}.ipes`;
       try {
-        if (isDesktop()) {
+        if (hasNativeFileSystemAccess()) {
           const resp = await fetch(api.apiBase() + `/circuits/${current.circuitId}/ipes`);
           if (!resp.ok) throw new Error('Failed to export circuit');
           const blob = await resp.blob();
@@ -1157,19 +1196,23 @@ export function useEditor() {
           if (chosenPath) {
             const newFilename = chosenPath.split(/[/\\]/).pop() || name;
             dispatch({ type: 'SET_FILENAME', filename: newFilename, filePath: chosenPath });
-            addRecentFile(newFilename, base64, current.components.length);
+            setSavedVersion(versionRef.current);
+            setGraphRegsDirty(false);
+            addRecentFile(newFilename, base64, current.components.length, chosenPath);
             dispatch({ type: 'STATUS', status: `Saved as ${newFilename}` });
           }
           return;
         }
         await api.downloadIpes(current.circuitId, name);
         dispatch({ type: 'SET_FILENAME', filename: name, filePath: null });
+        setSavedVersion(versionRef.current);
+        setGraphRegsDirty(false);
         try {
           const resp = await fetch(api.apiBase() + `/circuits/${current.circuitId}/ipes`);
           if (resp.ok) {
             const blob = await resp.blob();
             const base64 = api.toBase64(new Uint8Array(await blob.arrayBuffer()));
-            addRecentFile(name, base64, current.components.length);
+            addRecentFile(name, base64, current.components.length, null);
           }
         } catch {
           // best effort cache update
@@ -1185,16 +1228,20 @@ export function useEditor() {
   const save = useCallback(async () => {
     const current = stateRef.current;
     if (!current.circuitId) return;
-    if (isDesktop() && current.filePath) {
+    if (hasActiveFileTarget(current.filePath)) {
       try {
         const resp = await fetch(api.apiBase() + `/circuits/${current.circuitId}/ipes`);
         if (!resp.ok) throw new Error('Failed to export circuit');
         const blob = await resp.blob();
         const base64 = api.toBase64(new Uint8Array(await blob.arrayBuffer()));
-        await saveFileDirectNative(current.filePath, base64);
-        addRecentFile(current.filename, base64, current.components.length);
-        dispatch({ type: 'STATUS', status: `Saved ${current.filename}` });
-        return;
+        const savedOk = await saveFileDirectNative(current.filePath || current.filename, base64);
+        if (savedOk) {
+          setSavedVersion(versionRef.current);
+          setGraphRegsDirty(false);
+          addRecentFile(current.filename, base64, current.components.length, current.filePath);
+          dispatch({ type: 'STATUS', status: `Saved ${current.filename}` });
+          return;
+        }
       } catch (e) {
         reportError(e);
         return;
@@ -1607,6 +1654,7 @@ export function useEditor() {
   const setGraphRegisters = useCallback(
     async (registers: GraphRegister[]) => {
       dispatch({ type: 'SET_GRAPH_REGISTERS', graphRegisters: registers });
+      setGraphRegsDirty(true);
       if (stateRef.current.circuitId) {
         try {
           const msg = await api.setGraphRegisters(stateRef.current.circuitId, registers);
@@ -1647,6 +1695,7 @@ export function useEditor() {
       };
       const nextRegs = [...currentRegs, newReg];
       dispatch({ type: 'SET_GRAPH_REGISTERS', graphRegisters: nextRegs });
+      setGraphRegsDirty(true);
       if (stateRef.current.circuitId) {
         try {
           const msg = await api.setGraphRegisters(stateRef.current.circuitId, nextRegs);
@@ -1667,6 +1716,7 @@ export function useEditor() {
       const currentRegs = stateRef.current.graphRegisters || [];
       const nextRegs = currentRegs.map((reg) => (reg.id === id ? { ...reg, ...patch } : reg));
       dispatch({ type: 'SET_GRAPH_REGISTERS', graphRegisters: nextRegs });
+      setGraphRegsDirty(true);
       if (stateRef.current.circuitId) {
         try {
           const msg = await api.setGraphRegisters(stateRef.current.circuitId, nextRegs);
@@ -1700,6 +1750,7 @@ export function useEditor() {
         ];
       }
       dispatch({ type: 'SET_GRAPH_REGISTERS', graphRegisters: nextRegs });
+      setGraphRegsDirty(true);
       if (stateRef.current.circuitId) {
         try {
           const msg = await api.setGraphRegisters(stateRef.current.circuitId, nextRegs);
@@ -1714,11 +1765,22 @@ export function useEditor() {
     [],
   );
 
+  const isBlankUntitled =
+    !state.filePath &&
+    (!state.filename || state.filename === 'Untitled.ipes') &&
+    state.components.length === 0 &&
+    state.wires.length === 0;
+  const isDirty =
+    Boolean(state.circuitId) &&
+    !isBlankUntitled &&
+    (state.modelVersion !== savedVersion || graphRegsDirty);
+
   return {
     state,
     dispatch,
     catalog,
     wsConnected,
+    isDirty,
     simState: {
       status: simStatus,
       progress: simProgress,

@@ -199,7 +199,7 @@ export function FileMenu({
                           closeMenu();
                           onOpenRecent(file);
                         }}
-                        title={file.name}
+                        title={file.filePath || file.name}
                       >
                         <span className="recent-index">{idx + 1}.</span>
                         <div className="recent-info">
