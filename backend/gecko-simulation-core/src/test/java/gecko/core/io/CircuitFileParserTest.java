@@ -754,7 +754,7 @@ class CircuitFileParserTest {
             numGraphs 2
             signals v_in,v_out,i_L
             signalGraphs v_in:1,v_out:1,i_L:2
-            hiddenSignals 
+            hiddenSignals
             yScaleMode fixed
             cursorsEnabled true
             <\\graphRegister>

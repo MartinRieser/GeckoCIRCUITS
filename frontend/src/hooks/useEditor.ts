@@ -1430,7 +1430,7 @@ export function useEditor() {
         }
       }
 
-      for (const reg of ((stateRef.current as any).graphRegisters || [])) {
+      for (const reg of (stateRef.current.graphRegisters || [])) {
         if (reg.signals) {
           for (const s of reg.signals) {
             if (s && s.trim() && !isGroundSignal(s.trim())) {

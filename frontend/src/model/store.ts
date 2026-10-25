@@ -336,7 +336,7 @@ function deconflictChangedWires(
 export function editorReducer(state: EditorState, action: Action): EditorState {
   switch (action.type) {
     case 'SNAPSHOT': {
-      const snap = action.snapshot as unknown as Record<string, unknown>;
+      const snap = action.snapshot as unknown as EditorSnapshot;
       let sheetWidth = 600;
       let sheetHeight = 600;
       if (typeof snap.sheetWidth === 'number' && typeof snap.sheetHeight === 'number') {
@@ -430,10 +430,10 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
           });
         } else if (
           snap.simulationDefaults &&
-          Array.isArray((snap.simulationDefaults as any).signals) &&
-          (snap.simulationDefaults as any).signals.length > 0
+          Array.isArray(snap.simulationDefaults.signals) &&
+          snap.simulationDefaults.signals.length > 0
         ) {
-          const sigs = (snap.simulationDefaults as any).signals.filter(
+          const sigs = snap.simulationDefaults.signals.filter(
             (s: string) => s && s.trim(),
           );
           graphRegisters = [
