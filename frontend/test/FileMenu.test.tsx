@@ -261,4 +261,28 @@ describe('FileMenu Component', () => {
 
     vi.useRealTimers();
   });
+
+  it('triggers onOpenExamples and closes menu when clicking Open Example...', () => {
+    const onOpenExamples = vi.fn();
+    render(
+      <FileMenu
+        onNew={vi.fn()}
+        onOpen={vi.fn()}
+        onOpenExamples={onOpenExamples}
+        onSave={vi.fn()}
+        onSaveAs={vi.fn()}
+        onOpenRecent={vi.fn()}
+        canSave={true}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /file/i }));
+
+    const exampleItem = screen.getByText('Open Example...');
+    expect(exampleItem).toBeDefined();
+
+    fireEvent.click(exampleItem);
+    expect(onOpenExamples).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
 });
+

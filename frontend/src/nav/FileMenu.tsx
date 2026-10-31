@@ -22,6 +22,8 @@ export interface FileMenuProps {
   onNew: () => void;
   /** Callback to trigger local file picker dialog (.ipes/.txt). */
   onOpen: () => void;
+  /** Callback to open example circuits gallery modal. */
+  onOpenExamples?: () => void;
   /** Callback to save/download active circuit with current file name. */
   onSave: () => void;
   /** Callback to open Save As modal for naming and saving the circuit. */
@@ -37,6 +39,7 @@ export interface FileMenuProps {
 export function FileMenu({
   onNew,
   onOpen,
+  onOpenExamples,
   onSave,
   onSaveAs,
   onOpenRecent,
@@ -155,6 +158,23 @@ export function FileMenu({
             <span className="file-menu-label">Open...</span>
             <span className="file-menu-shortcut">Ctrl+O</span>
           </button>
+
+          {/* Open Example Circuits */}
+          {onOpenExamples && (
+            <button
+              type="button"
+              className="file-menu-item"
+              role="menuitem"
+              disabled={busy}
+              onClick={() => {
+                closeMenu();
+                onOpenExamples();
+              }}
+            >
+              <span className="file-menu-icon">💡</span>
+              <span className="file-menu-label">Open Example...</span>
+            </button>
+          )}
 
           {/* Open Recent Submenu Trigger */}
           <div

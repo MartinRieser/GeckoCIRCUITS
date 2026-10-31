@@ -1,0 +1,190 @@
+verbindungLeistungskreisANZAHL 3
+verbindungLK (0)
+<Verbindung>
+label in
+x[] 6 7 8 9 10 11 12 
+y[] 6 6 6 6 6 6 6 
+enabled true
+connectorType 0
+<\Verbindung>
+
+verbindungLK (1)
+<Verbindung>
+label out
+x[] 16 17 18 19 20 21 22 
+y[] 6 6 6 6 6 6 6 
+enabled true
+connectorType 0
+<\Verbindung>
+
+verbindungLK (2)
+<Verbindung>
+label 0
+x[] 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 
+y[] 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 
+enabled true
+connectorType 0
+<\Verbindung>
+
+verbindungControlANZAHL 2
+verbindungCONTROL (0)
+<Verbindung>
+label v_in
+x[] 14 15 16 17 18 18
+y[] 16 16 16 16 16 18
+enabled true
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (1)
+<Verbindung>
+label v_out
+x[] 14 15 16 17 18
+y[] 20 20 20 20 20
+enabled true
+connectorType 1
+<\Verbindung>
+
+elementANZAHL 3
+
+e (0)
+<ElementLK>
+labelAnfangsKnoten[] /in
+labelEndKnoten[] /0
+enabledShorted 1
+typ 4
+uniqueObjectIdentifier 1001
+x 6
+y 8
+parameter[] 401.0 10.0 50.0 0.0 0.0 0.5 0.0 10.0 10.0 0.0 0.0 1.0 1.7976931348623157E308 0.0 0.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog V_step
+<\ElementLK>
+
+e (1)
+<ElementLK>
+labelAnfangsKnoten[] /in
+labelEndKnoten[] /out
+enabledShorted 1
+typ 1
+uniqueObjectIdentifier 1002
+x 14
+y 6
+parameter[] 1000.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 502
+idStringDialog R1
+<\ElementLK>
+
+e (2)
+<ElementLK>
+labelAnfangsKnoten[] /out
+labelEndKnoten[] /0
+enabledShorted 1
+typ 3
+uniqueObjectIdentifier 1003
+x 22
+y 8
+parameter[] 1.0E-6 0.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog C1
+<\ElementLK>
+
+controlANZAHL 3
+
+c (0)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /v_in
+enabledShorted 1
+typ 1
+uniqueObjectIdentifier 2001
+x 12
+y 16
+parameter[] 0.0
+parameterString[] /in/0/0
+nameOpt[] null
+orientierung 503
+idStringDialog VOLT_IN
+<\ElementCONTROL>
+
+c (1)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /v_out
+enabledShorted 1
+typ 1
+uniqueObjectIdentifier 2002
+x 12
+y 20
+parameter[] 0.0
+parameterString[] /out/0/0
+nameOpt[] null
+orientierung 503
+idStringDialog VOLT_OUT
+<\ElementCONTROL>
+
+c (2)
+<ElementCONTROL>
+labelAnfangsKnoten[] /v_in/v_out
+labelEndKnoten[] 
+enabledShorted 1
+typ 5
+uniqueObjectIdentifier 2003
+x 20
+y 18
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] null
+orientierung 503
+idStringDialog SCOPE.1
+<detail>
+tn 2
+isShowName false
+savedSignalNames[] /v_in/v_out
+<\detail>
+<\ElementCONTROL>
+
+sp (0)
+<ElementSPECIAL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+typ 2001
+uniqueObjectIdentifier 9001
+x 32
+y 6
+parameter[] 
+orientierung 501
+idStringDialog NOTE.1
+boxWidth 28
+boxHeight 18
+<markdownText>
+# RC Low-Pass Filter
+
+First-order passive RC filter demonstrating step response and exponential capacitor charging curve.
+
+### Circuit Parameters
+- **Input Source (V_step)**: 10 V DC step input.
+- **Series Resistor R1**: $1.0\text{ k}\Omega$.
+- **Shunt Capacitor C1**: $1.0\text{ µF}$.
+- **Time Constant**: $\tau = R \cdot C = 1.0\text{ ms}$.
+- **Cutoff Frequency**: $f_c = \frac{1}{2\pi R C} \approx 159.2\text{ Hz}$.
+
+### Observed Response (SCOPE.1)
+- **CH1 (v_in)**: Instantaneous 10 V step voltage.
+- **CH2 (v_out)**: Classic capacitor exponential charging: $v_C(t) = V_{in}(1 - e^{-t/\tau})$.
+- At $t = \tau = 1.0\text{ ms}$, $v_C \approx 6.32\text{ V}$ ($63.2\%$ of final value).
+<\markdownText>
+<\ElementSPECIAL>
+
+tDURATION 0.01
+dt 1e-06
+solverType 0
+FileVersion 1
+dataContainerSignals[] /v_in/v_out

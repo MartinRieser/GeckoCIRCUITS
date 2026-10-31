@@ -33,6 +33,7 @@ import { getEngineVersion } from './api/client';
 import { findScopeBlocks, findScriptBlocks, isScopeComponent, isScriptComponent } from './simulation/scopes';
 import { SimConfigModal } from './simulation/SimConfigModal';
 import { SaveAsModal } from './modals/SaveAsModal';
+import { ExamplesModal } from './modals/ExamplesModal';
 import { FileMenu } from './nav/FileMenu';
 import { ScriptViewTab } from './properties/ScriptViewTab';
 import { resolveActiveSimSettings } from './simulation/simSettings';
@@ -83,7 +84,7 @@ export function App() {
       cancelled = true;
     };
   }, []);
-  const [examplesMenuOpen, setExamplesMenuOpen] = useState(false);
+  const [examplesModalOpen, setExamplesModalOpen] = useState(false);
   const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
@@ -353,7 +354,7 @@ export function App() {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       // Modals manage their own keybindings; suspend global schematic shortcuts
-      if (simConfigOpen || saveAsOpen) {
+      if (simConfigOpen || saveAsOpen || examplesModalOpen) {
         return;
       }
       if (shortcutsHelpOpen) {
@@ -492,7 +493,7 @@ export function App() {
           break;
         case 'ghost-cancel':
           actions.cancel();
-          setExamplesMenuOpen(false);
+          setExamplesModalOpen(false);
           setCommandPaletteOpen(false);
           setShortcutsHelpOpen(false);
           break;
@@ -578,7 +579,7 @@ export function App() {
     if (ex && (await confirmDiscardCircuit())) {
       actions.openContent(ex.content, `${ex.name}.ipes`);
     }
-    setExamplesMenuOpen(false);
+    setExamplesModalOpen(false);
   };
 
   return (
@@ -604,6 +605,7 @@ export function App() {
           <FileMenu
             onNew={handleNewCircuit}
             onOpen={handleOpenCircuit}
+            onOpenExamples={() => setExamplesModalOpen(true)}
             onSave={actions.save}
             onSaveAs={handleSaveAs}
             onOpenRecent={async (entry) => {
@@ -625,33 +627,6 @@ export function App() {
               e.target.value = '';
             }}
           />
-
-          {/* Examples Dropdown */}
-          <div className="dropdown-wrap">
-            <button
-              type="button"
-              className={`nav-btn dropdown-toggle ${examplesMenuOpen ? 'active' : ''}`}
-              onClick={() => setExamplesMenuOpen(!examplesMenuOpen)}
-            >
-              Examples ▾
-            </button>
-            {examplesMenuOpen && (
-              <div className="dropdown-menu">
-                <div className="dropdown-header">Built-in Circuits</div>
-                {EXAMPLES.map((ex) => (
-                  <button
-                    key={ex.id}
-                    type="button"
-                    className="dropdown-item"
-                    onClick={() => handleSelectExample(ex.id)}
-                  >
-                    <div className="dropdown-item-title">{ex.name}</div>
-                    <div className="dropdown-item-desc">{ex.description}</div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
 
           <span className="nav-separator" />
 
@@ -1351,6 +1326,13 @@ export function App() {
         defaultFilename={state.filename || 'circuit.ipes'}
         onSave={(filename) => actions.saveAs(filename)}
         onClose={() => setSaveAsOpen(false)}
+      />
+
+      {/* Examples Library Modal Dialog */}
+      <ExamplesModal
+        isOpen={examplesModalOpen}
+        onClose={() => setExamplesModalOpen(false)}
+        onSelectExample={handleSelectExample}
       />
     </div>
   );

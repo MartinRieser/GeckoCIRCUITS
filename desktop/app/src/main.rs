@@ -53,6 +53,7 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             commands::open_logs_folder,
+            commands::open_examples_folder,
             commands::open_file_dialog,
             commands::save_file_dialog,
             commands::save_file_direct,

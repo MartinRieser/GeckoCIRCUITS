@@ -1,0 +1,420 @@
+verbindungLeistungskreisANZAHL 4
+verbindungLK (0)
+<Verbindung>
+label in
+x[] 6 7 8 9 10 
+y[] 6 6 6 6 6 
+enabled true
+connectorType 0
+<\Verbindung>
+
+verbindungLK (1)
+<Verbindung>
+label sw_node
+x[] 14 15 16 17 18 19 20 21 22 23 24 
+y[] 6 6 6 6 6 6 6 6 6 6 6 
+enabled true
+connectorType 0
+<\Verbindung>
+
+verbindungLK (2)
+<Verbindung>
+label out
+x[] 28 29 30 31 32 33 34 35 36 37 38 39 40 
+y[] 6 6 6 6 6 6 6 6 6 6 6 6 6 
+enabled true
+connectorType 0
+<\Verbindung>
+
+verbindungLK (3)
+<Verbindung>
+label 0
+x[] 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 
+y[] 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 
+enabled true
+connectorType 0
+<\Verbindung>
+
+verbindungControlANZAHL 5
+verbindungCONTROL (0)
+<Verbindung>
+label pwm_hi
+x[] 10 11 12 
+y[] 18 18 18 
+enabled true
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (1)
+<Verbindung>
+label pwm_lo
+x[] 10 10 11 12 
+y[] 22 23 23 23 
+enabled true
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (2)
+<Verbindung>
+label v_out
+x[] 26 27 28 29 30 31 32 33 34 34 34
+y[] 18 18 18 18 18 18 18 18 18 19 22
+enabled true
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (3)
+<Verbindung>
+label v_sw
+x[] 26 27 28 29 30 31 32 33 33 34
+y[] 22 22 22 22 22 22 22 22 24 24
+enabled true
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (4)
+<Verbindung>
+label i_L
+x[] 26 27 28 29 30 31 32 33 34
+y[] 26 26 26 26 26 26 26 26 26
+enabled true
+connectorType 1
+<\Verbindung>
+
+elementANZAHL 7
+
+e (0)
+<ElementLK>
+labelAnfangsKnoten[] /in
+labelEndKnoten[] /0
+enabledShorted 1
+typ 4
+uniqueObjectIdentifier 1001
+x 6
+y 8
+parameter[] 401.0 24.0 50.0 0.0 0.0 0.5 0.0 24.0 0.0 -24.0 0.0 1.0 1.7976931348623157E308 0.0 0.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog V_in
+<\ElementLK>
+
+e (1)
+<ElementLK>
+labelAnfangsKnoten[] /in
+labelEndKnoten[] /sw_node
+enabledShorted 1
+typ 7
+uniqueObjectIdentifier 1002
+x 12
+y 6
+parameter[] 1.0E7 0.01 1.0E7 0.0 0.0 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0
+parameterString[] /GATE_HI/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 502
+idStringDialog S_hi
+coupledReferenceID[] 2002
+<Verluste>
+verlustTyp 1
+rON 0.01
+uf 0.0
+kON 3.0E-5
+kOFF 1.5E-5
+uSWnorm 400.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\Verluste>
+<\ElementLK>
+
+e (2)
+<ElementLK>
+labelAnfangsKnoten[] /sw_node
+labelEndKnoten[] /0
+enabledShorted 1
+typ 7
+uniqueObjectIdentifier 1003
+x 18
+y 8
+parameter[] 1.0E7 0.01 1.0E7 0.0 0.0 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0
+parameterString[] /GATE_LO/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog S_lo
+coupledReferenceID[] 2004
+<Verluste>
+verlustTyp 1
+rON 0.01
+uf 0.0
+kON 3.0E-5
+kOFF 1.5E-5
+uSWnorm 400.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\Verluste>
+<\ElementLK>
+
+e (3)
+<ElementLK>
+labelAnfangsKnoten[] /0
+labelEndKnoten[] /sw_node
+enabledShorted 1
+typ 6
+uniqueObjectIdentifier 1007
+x 22
+y 8
+parameter[] 0.01 0.7 0.01 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog D_body
+<\ElementLK>
+
+e (4)
+<ElementLK>
+labelAnfangsKnoten[] /sw_node
+labelEndKnoten[] /out
+enabledShorted 1
+typ 2
+uniqueObjectIdentifier 1004
+x 26
+y 6
+parameter[] 1.0E-4 0.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 502
+idStringDialog L.1
+<\ElementLK>
+
+e (5)
+<ElementLK>
+labelAnfangsKnoten[] /out
+labelEndKnoten[] /0
+enabledShorted 1
+typ 3
+uniqueObjectIdentifier 1005
+x 34
+y 8
+parameter[] 4.7E-5 0.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog C.1
+<\ElementLK>
+
+e (6)
+<ElementLK>
+labelAnfangsKnoten[] /out
+labelEndKnoten[] /0
+enabledShorted 1
+typ 1
+uniqueObjectIdentifier 1006
+x 40
+y 8
+parameter[] 4.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog R_load
+<\ElementLK>
+
+controlANZAHL 8
+
+c (0)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /pwm_hi
+enabledShorted 1
+typ 4
+uniqueObjectIdentifier 2001
+x 8
+y 18
+parameter[] 404.0 1.0 50000.0 0.0 0.0 0.5 0.0 0.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] null
+orientierung 503
+idStringDialog PWM_HI
+<detail>
+typQuelle 404
+anteilDC 0.0
+amplitudeAC 1.0
+frequenz 50000.0
+tastverhaeltnis 0.5
+phase 0.0
+datnamXY not_defined
+externalDataFileHashValue 0
+<\detail>
+<\ElementCONTROL>
+
+c (1)
+<ElementCONTROL>
+labelAnfangsKnoten[] /pwm_hi
+labelEndKnoten[] 
+enabledShorted 1
+typ 6
+uniqueObjectIdentifier 2002
+x 14
+y 18
+parameter[] 0.0
+parameterString[] /S_hi/NIX_NIX_NIX/0
+nameOpt[] null
+orientierung 503
+idStringDialog GATE_HI
+coupledReferenceID[] 1002
+copyCoupledReferenceID[] 1002
+<\ElementCONTROL>
+
+c (2)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /pwm_lo
+enabledShorted 1
+typ 4
+uniqueObjectIdentifier 2003
+x 8
+y 22
+parameter[] 404.0 1.0 50000.0 0.0 3.141592653589793 0.48 0.0 0.0
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] null
+orientierung 503
+idStringDialog PWM_LO
+<detail>
+typQuelle 404
+anteilDC 0.0
+amplitudeAC 1.0
+frequenz 50000.0
+tastverhaeltnis 0.48
+phase 3.141592653589793
+datnamXY not_defined
+externalDataFileHashValue 0
+<\detail>
+<\ElementCONTROL>
+
+c (3)
+<ElementCONTROL>
+labelAnfangsKnoten[] /pwm_lo
+labelEndKnoten[] 
+enabledShorted 1
+typ 6
+uniqueObjectIdentifier 2004
+x 14
+y 23
+parameter[] 0.0
+parameterString[] /S_lo/NIX_NIX_NIX/0
+nameOpt[] null
+orientierung 503
+idStringDialog GATE_LO
+coupledReferenceID[] 1003
+copyCoupledReferenceID[] 1003
+<\ElementCONTROL>
+
+c (4)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /v_out
+enabledShorted 1
+typ 1
+uniqueObjectIdentifier 2005
+x 24
+y 18
+parameter[] 0.0
+parameterString[] /out/0/0
+nameOpt[] null
+orientierung 503
+idStringDialog VOLT_OUT
+<\ElementCONTROL>
+
+c (5)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /v_sw
+enabledShorted 1
+typ 1
+uniqueObjectIdentifier 2006
+x 24
+y 22
+parameter[] 0.0
+parameterString[] /sw_node/0/0
+nameOpt[] null
+orientierung 503
+idStringDialog VOLT_SW
+<\ElementCONTROL>
+
+c (6)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /i_L
+enabledShorted 1
+typ 2
+uniqueObjectIdentifier 2007
+x 24
+y 26
+parameter[] 0.0
+parameterString[] /L.1/NIX_NIX_NIX/0
+nameOpt[] null
+orientierung 503
+idStringDialog AMP_IL
+coupledReferenceID[] 1004
+copyCoupledReferenceID[] 1004
+<\ElementCONTROL>
+
+c (7)
+<ElementCONTROL>
+labelAnfangsKnoten[] /v_out/v_sw/i_L
+labelEndKnoten[] 
+enabledShorted 1
+typ 5
+uniqueObjectIdentifier 2008
+x 36
+y 22
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] null
+orientierung 503
+idStringDialog SCOPE.1
+<detail>
+tn 3
+isShowName false
+savedSignalNames[] /v_out/v_sw/i_L
+<\detail>
+<\ElementCONTROL>
+
+sp (0)
+<ElementSPECIAL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+typ 2001
+uniqueObjectIdentifier 9001
+x 44
+y 4
+parameter[] 
+orientierung 501
+idStringDialog NOTE.1
+boxWidth 28
+boxHeight 18
+<markdownText>
+# Synchronous Buck Converter (50 kHz)
+
+High-efficiency step-down converter using an active low-side MOSFET switch instead of a freewheeling diode.
+
+### Circuit Topology
+- **Input (V_in)**: 24 V DC bus.
+- **High-Side Switch (S_hi)**: Driven at 50 kHz ($D = 0.48$).
+- **Low-Side Switch (S_lo)**: Complementary active freewheeling ($1 - D = 0.48$ with dead-band).
+- **Body Diodes (D_hi, D_lo)**: Prevent shoot-through and handle dead-time commutation.
+- **Output Filter**: $L_1 = 100\text{ µH}$, $C_1 = 47\text{ µF}$, $R_{load} = 5.0\text{ }\Omega$.
+
+### Signals in SCOPE.1
+- **CH1 (v_out)**: Regulated ~11.5 V DC output voltage.
+- **CH2 (v_sw)**: Switch node square wave switching between 0 V and 24 V.
+- **CH3 (i_L)**: Inductor current ripple through $L_1$.
+<\markdownText>
+<\ElementSPECIAL>
+
+tDURATION 0.001
+dt 2.0E-7
+solverType 0
+FileVersion 1
+dataContainerSignals[] /v_out/v_sw/i_L

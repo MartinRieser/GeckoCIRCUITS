@@ -322,3 +322,34 @@ export async function openLogsFolder(): Promise<boolean> {
   await invoke('open_logs_folder');
   return true;
 }
+
+/**
+ * Reveals the examples folder in the host OS desktop file explorer.
+ * Works both in Tauri desktop mode and via the backend REST API in Chrome/Edge --app mode.
+ */
+export async function openExamplesFolder(): Promise<boolean> {
+  const invoke = tauri()?.invoke;
+  if (invoke) {
+    try {
+      await invoke('open_examples_folder');
+      return true;
+    } catch (err) {
+      console.warn('Failed to open examples folder via Tauri:', err);
+    }
+  }
+
+  // Fallback to backend REST endpoint for --app mode
+  try {
+    const res = await fetch('/gecko/api/v1/circuits/open-examples-folder', {
+      method: 'POST',
+    });
+    if (res.ok) {
+      return true;
+    }
+  } catch {
+    // Backend may not be running or remote
+  }
+
+  return false;
+}
+

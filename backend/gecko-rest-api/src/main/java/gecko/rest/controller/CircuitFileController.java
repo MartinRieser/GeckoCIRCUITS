@@ -449,4 +449,51 @@ public class CircuitFileController {
         CircuitInfo info = circuitFileService.updateCircuitParameters(circuitId, update);
         return ResponseEntity.ok(info);
     }
+
+    /**
+     * Reveal the examples folder in the host operating system's desktop file explorer.
+     */
+    @PostMapping("/open-examples-folder")
+    @Operation(
+        summary = "Open examples folder",
+        description = "Opens the examples directory in the host OS desktop file explorer (Windows Explorer, macOS Finder, or Linux file manager)."
+    )
+    public ResponseEntity<java.util.Map<String, Object>> openExamplesFolder() {
+        java.io.File[] candidates = new java.io.File[] {
+            new java.io.File("examples"),
+            new java.io.File("../examples"),
+            new java.io.File("../../examples"),
+            new java.io.File("resources/examples"),
+            new java.io.File("../resources/examples")
+        };
+
+        java.io.File target = null;
+        for (java.io.File c : candidates) {
+            if (c.exists() && c.isDirectory()) {
+                target = c;
+                break;
+            }
+        }
+
+        if (target == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(java.util.Map.of("success", false, "error", "Examples folder not found"));
+        }
+
+        try {
+            String os = System.getProperty("os.name", "").toLowerCase();
+            if (os.contains("win")) {
+                new ProcessBuilder("explorer.exe", target.getAbsolutePath()).start();
+            } else if (os.contains("mac")) {
+                new ProcessBuilder("open", target.getAbsolutePath()).start();
+            } else {
+                new ProcessBuilder("xdg-open", target.getAbsolutePath()).start();
+            }
+            return ResponseEntity.ok(java.util.Map.of("success", true, "path", target.getAbsolutePath()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(java.util.Map.of("success", false, "error", e.getMessage()));
+        }
+    }
 }
+

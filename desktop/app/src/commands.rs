@@ -25,6 +25,36 @@ pub fn open_logs_folder(app: AppHandle) -> Result<(), String> {
         .map_err(|error| error.to_string())
 }
 
+/// Opens the examples folder in the OS file manager.
+#[tauri::command]
+pub fn open_examples_folder(app: AppHandle) -> Result<(), String> {
+    use tauri_plugin_opener::OpenerExt;
+    let candidates = [
+        std::env::current_dir().map(|d| d.join("examples")).ok(),
+        std::env::current_dir().map(|d| d.join("..").join("..").join("examples")).ok(),
+        app.path().resource_dir().map(|d| d.join("examples")).ok(),
+    ];
+
+    for candidate in candidates.into_iter().flatten() {
+        if candidate.is_dir() {
+            return app
+                .opener()
+                .open_path(candidate.to_string_lossy(), None::<&str>)
+                .map_err(|error| error.to_string());
+        }
+    }
+
+    if let Ok(cwd) = std::env::current_dir() {
+        return app
+            .opener()
+            .open_path(cwd.to_string_lossy(), None::<&str>)
+            .map_err(|error| error.to_string());
+    }
+
+    Err("Examples folder not found".to_string())
+}
+
+
 /// Logs messages from webview to webview.log.
 #[tauri::command]
 pub fn log_webview_message(app: AppHandle, level: String, message: String) {
