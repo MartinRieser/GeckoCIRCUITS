@@ -64,7 +64,6 @@ pub fn open_examples_folder(app: AppHandle) -> Result<(), String> {
     Err("Examples folder not found".to_string())
 }
 
-
 /// Logs messages from webview to webview.log.
 #[tauri::command]
 pub fn log_webview_message(app: AppHandle, level: String, message: String) {

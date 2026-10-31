@@ -35,7 +35,7 @@ Run simulations with one keystroke (`F5` or the toolbar button) and immediately 
 - **EMI filter design** -- common-mode/differential-mode filter analysis
 - **MATLAB/Simulink integration** -- remote control via RMI or memory-mapped files
 - **Scriptable** -- built-in JavaScript (GraalVM) and Java block scripting
-- **Model Context Protocol (MCP) Server** -- 13 tools for autonomous AI/LLM circuit synthesis, DRC validation with live script compilation, simulation, and power electronics analytics (Google Antigravity, Claude, Cursor, Copilot)
+- **Model Context Protocol (MCP) Server** -- 16 tools for autonomous AI/LLM circuit synthesis, DRC validation with live script compilation, simulation, SVG schematic generation, and power electronics analytics (Google Antigravity, Claude, Cursor, Copilot)
 - **Cross-platform** -- runs on Windows, Linux, and macOS
 
 ## Quick Start
@@ -195,5 +195,5 @@ Copyright (c) ETH Zurich, Power Electronic Systems Laboratory. Originally develo
 ## Links
 
 - **Documentation**: [https://martinrieser.github.io/GeckoCIRCUITS/](https://martinrieser.github.io/GeckoCIRCUITS/)
-- **GitHub Releases**: [Latest Release (v42-2026)](https://github.com/MartinRieser/GeckoCIRCUITS/releases/latest)
+- **GitHub Releases**: [Latest Release (v44-2026)](https://github.com/MartinRieser/GeckoCIRCUITS/releases/latest)
 - **Original SourceForge Project**: [sourceforge.net/projects/geckocircuits](https://sourceforge.net/projects/geckocircuits/)

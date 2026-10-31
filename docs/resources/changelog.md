@@ -6,6 +6,37 @@ title: Changelog
 
 All notable changes to GeckoCIRCUITS.
 
+## v44-2026 (2026-10)
+
+### Added
+- **Native Desktop File Workflow**: Implemented full file lifecycle management (New, Open, Save, Save As, and real-time dirty state tracking) across both the Tauri desktop shell and browser application modes.
+- **Integrated Examples Library**: Integrated the circuit examples browser directly into the `File -> Examples` menu, supporting local/disk synchronization, custom example authoring, and collision-free overwriting.
+- **2D Planar Topology Placement & Trunk-and-Stub Manhattan Router**: Intelligent collision-free component placement and orthogonal Steiner comb routing in `gecko_create_circuit` for electrical, control, and thermal domains.
+- **Headless Vector SVG Schematic Generator (`gecko_export_schematic_svg`)**: Publication-quality vector export of `.ipes` schematics with IEC 60617 symbols, orthogonal wire polylines, 3-way junction dots, and light/dark themes.
+- **SPWM Inverter with Dead-Time Example**: Bundled turnkey full-bridge SPWM inverter circuit configuration with active semiconductor freewheeling and dead-time control.
+
+### Changed
+- **IEC 60617 / IEEE 315 Semiconductor Symbols**: Modernized IGBT, MOSFET, and BJT symbols by removing surrounding circular enclosures and scaling channel bar dimensions to match passive and diode component proportions.
+- **Unified Global Ground Terminals**: Synchronized `LK_GLOBAL_TERMINAL` (31), `REL_GLOBAL_TERMINAL` (32), and `TH_GLOBAL_TERMINAL` (50) across `ComponentTerminals`, `NetlistBuilder`, `CircuitValidator`, and the web canvas as single-terminal pins at `(x, y - 2)`.
+
+### Fixed
+- **DRC Dangling Wire Warnings**: Resolved ground terminal pin offset bug where wires erroneously routed past the terminal stem to the symbol center.
+- **Thermal Domain Wire Routing**: Fixed diagonal thermal connection lines by routing thermal RC ladders through orthogonal unit-stepped paths with intermediate obstacle avoidance.
+- **Code Review Cleanups**: Eliminated dead code, replaced hardcoded grid coordinates and orientation flags with named constants, and completed full Javadoc/TSDoc coverage.
+
+## v43-2026 (2026-10)
+
+### Added
+- **Workspace-Level Graph Register Tabs**: Dynamic oscilloscope view registers managed directly from the workspace tab bar with `+ Add Osci` button, inline renaming, and close tabs.
+- **1, 2, or 3 Stacked Subplots**: Configurable oscilloscope subplots with synchronized timebases and per-channel `G1`/`G2`/`G3` assignment.
+- **Pre-Simulation Signal Discovery**: Automatic discovery and category filtering of electrical and control signals before running simulations.
+- **Interactive Measurement Cursors**: Precision drag cursors with delta readouts, 2D box zoom, and collapsible statistical analysis drawer.
+- **MCP Server Comprehensive Test Suite**: End-to-end automated tests for all 16 Model Context Protocol tools.
+
+### Changed
+- **Wire-Based DRC Net Mapping**: Linter and DRC validator resolve circuit nodes and ground references through continuous wiring networks.
+- **Tutorial Schematics**: Upgraded documentation schematics to planar IEC 60617 vector SVGs.
+
 ## v1.1.0 - "Multi-Module" (2026-02)
 
 ### Added
