@@ -284,5 +284,28 @@ describe('FileMenu Component', () => {
     expect(onOpenExamples).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole('menu')).toBeNull();
   });
+
+  it('triggers onSaveAsExample and closes menu when clicking Save as Example...', () => {
+    const onSaveAsExample = vi.fn();
+    render(
+      <FileMenu
+        onNew={vi.fn()}
+        onOpen={vi.fn()}
+        onSave={vi.fn()}
+        onSaveAs={vi.fn()}
+        onSaveAsExample={onSaveAsExample}
+        onOpenRecent={vi.fn()}
+        canSave={true}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /file/i }));
+
+    const item = screen.getByText('Save as Example...');
+    expect(item).toBeDefined();
+
+    fireEvent.click(item);
+    expect(onSaveAsExample).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
 });
 

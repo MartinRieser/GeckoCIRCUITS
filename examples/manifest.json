@@ -1,0 +1,79 @@
+[ {
+  "id" : "spwm-inverter-deadtime",
+  "name" : "Closed-Loop SPWM Inverter with Dead-Time (50 Hz)",
+  "category" : "Power Electronics",
+  "description" : "Full-bridge 50 Hz inverter with PI regulator and 1.0 µs dead-time shoot-through prevention.",
+  "filename" : "spwm_inverter_deadtime.ipes"
+}, {
+  "id" : "buck",
+  "name" : "DC-DC Buck Converter (Sampled 0.5ms Control)",
+  "category" : "Power Electronics",
+  "description" : "50V to 10V buck converter with 50 Hz input ripple, 2 kHz (0.5ms) discrete S/H control and feedforward.",
+  "filename" : "buck.ipes"
+}, {
+  "id" : "sync-buck",
+  "name" : "Synchronous Buck Converter (50 kHz)",
+  "category" : "Power Electronics",
+  "description" : "High-efficiency step-down converter with complementary active MOSFET switching.",
+  "filename" : "sync_buck.ipes"
+}, {
+  "id" : "boost",
+  "name" : "DC-DC Boost Converter (Step-Up)",
+  "category" : "Power Electronics",
+  "description" : "Step-up converter (12V to 24V) with boost inductor and fast recovery diode.",
+  "filename" : "boost.ipes"
+}, {
+  "id" : "buck-boost",
+  "name" : "Inverting Buck-Boost Converter (-16V)",
+  "category" : "Power Electronics",
+  "description" : "Negative voltage step-up/step-down converter (24V to -16V) with single inductor.",
+  "filename" : "buck_boost.ipes"
+}, {
+  "id" : "flyback",
+  "name" : "Flyback Isolated DC-DC Converter",
+  "category" : "Power Electronics",
+  "description" : "Galvanically isolated converter with magnetically coupled inductors (k=0.999).",
+  "filename" : "flyback.ipes"
+}, {
+  "id" : "closed-loop-buck",
+  "name" : "Closed-Loop Regulated Buck (PI Control)",
+  "category" : "Power Electronics",
+  "description" : "Voltage-mode DC-DC converter regulated to 12.0V by embedded PI script block.",
+  "filename" : "closed_loop_buck.ipes"
+}, {
+  "id" : "inverter",
+  "name" : "Single-Phase H-Bridge Inverter (50 Hz)",
+  "category" : "Power Electronics",
+  "description" : "Full-bridge DC-AC inverter converting 40V DC bus into 50 Hz sinusoidal AC.",
+  "filename" : "inverter.ipes"
+}, {
+  "id" : "pfc-boost",
+  "name" : "Active PFC Boost Pre-Regulator (50 Hz)",
+  "category" : "Power Electronics",
+  "description" : "Active Power Factor Correction converter regulating 24V AC to 50V DC bus.",
+  "filename" : "pfc_boost.ipes"
+}, {
+  "id" : "rectifier",
+  "name" : "Diode Bridge Rectifier (AC to DC)",
+  "category" : "Power Electronics",
+  "description" : "Full-bridge Graetz diode rectifier with capacitive reservoir smoothing filter.",
+  "filename" : "rectifier.ipes"
+}, {
+  "id" : "three-scopes",
+  "name" : "Multi-Scope RLC (SCOPE.1 & SCOPE.2)",
+  "category" : "Analog & Filter",
+  "description" : "Second-order series RLC resonator with multi-instrument oscilloscope monitoring.",
+  "filename" : "three_scopes.ipes"
+}, {
+  "id" : "rlc",
+  "name" : "RLC Resonant Circuit",
+  "category" : "Analog & Filter",
+  "description" : "Underdamped second-order series RLC transient step response.",
+  "filename" : "rlc.ipes"
+}, {
+  "id" : "rc",
+  "name" : "RC Low-Pass Filter",
+  "category" : "Analog & Filter",
+  "description" : "First-order RC filter demonstrating step response and exponential charging.",
+  "filename" : "rc.ipes"
+} ]

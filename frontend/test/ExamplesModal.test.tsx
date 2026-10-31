@@ -103,7 +103,7 @@ describe('ExamplesModal Component', () => {
     const buckCard = screen.getByText('DC-DC Buck Converter (Sampled 0.5ms Control)').closest('.example-card')!;
     fireEvent.click(buckCard);
 
-    expect(onSelect).toHaveBeenCalledWith('buck');
+    expect(onSelect).toHaveBeenCalledWith('buck', expect.any(String), expect.any(String));
   });
 
   it('calls onSelectExample on Enter key on an example card', () => {
@@ -119,7 +119,7 @@ describe('ExamplesModal Component', () => {
     const buckCard = screen.getByText('DC-DC Buck Converter (Sampled 0.5ms Control)').closest('.example-card')!;
     fireEvent.keyDown(buckCard, { key: 'Enter' });
 
-    expect(onSelect).toHaveBeenCalledWith('buck');
+    expect(onSelect).toHaveBeenCalledWith('buck', expect.any(String), expect.any(String));
   });
 
   it('calls onClose when close button or Escape key is pressed', () => {
@@ -159,4 +159,36 @@ describe('ExamplesModal Component', () => {
     expect(openFolderSpy).toHaveBeenCalledTimes(1);
     expect(screen.getByText(/Opened examples folder in file explorer/i)).toBeDefined();
   });
+
+  it('triggers onAddNewExample when Add Example button is clicked', () => {
+    const onAdd = vi.fn();
+    render(
+      <ExamplesModal
+        isOpen={true}
+        onClose={vi.fn()}
+        onSelectExample={vi.fn()}
+        onAddNewExample={onAdd}
+      />,
+    );
+
+    const addBtn = screen.getByText('Add Example');
+    fireEvent.click(addBtn);
+    expect(onAdd).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens edit modal when clicking edit button on a card', () => {
+    render(
+      <ExamplesModal
+        isOpen={true}
+        onClose={vi.fn()}
+        onSelectExample={vi.fn()}
+      />,
+    );
+
+    const editBtn = screen.getByLabelText(/Edit DC-DC Buck Converter/i);
+    fireEvent.click(editBtn);
+
+    expect(screen.getByText('Edit Example')).toBeDefined();
+  });
 });
+

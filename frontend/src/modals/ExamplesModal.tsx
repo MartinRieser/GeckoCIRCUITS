@@ -1,11 +1,19 @@
 /**
  * Example Circuits Library Modal Dialog (PLECS / KiCad style).
- * Allows users to search, filter by category, explore curated simulation models,
+ * Allows users to search, filter, explore, add, edit, and delete curated simulation models,
  * load them cleanly into the workspace, or reveal the local examples/ folder in Explorer.
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { EXAMPLES, type CircuitExample } from '../model/examples';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import {
+  loadAllExamples,
+  deleteExample,
+  updateExample,
+  subscribeExamples,
+  type ManagedExample,
+} from '../model/examplesService';
+import { EXAMPLES } from '../model/examples';
 import { openExamplesFolder } from '../desktop';
+import { EditExampleModal } from './EditExampleModal';
 
 export interface ExamplesModalProps {
   /** Whether the dialog is visible. */
@@ -13,32 +21,70 @@ export interface ExamplesModalProps {
   /** Callback to close the dialog. */
   onClose: () => void;
   /** Callback invoked when an example is selected to be opened in the workspace. */
-  onSelectExample: (exampleId: string) => void;
+  onSelectExample: (exampleId: string, content?: string, name?: string) => void;
+  /** Callback to open the "Save Active Circuit as Example" modal. */
+  onAddNewExample?: () => void;
+  /** Whether an active circuit is currently open in the workspace that can update an example. */
+  canUpdateContent?: boolean;
+  /** Callback to fetch active circuit content when updating an example with workspace schematic. */
+  onGetActiveContent?: () => Promise<string | undefined>;
 }
 
 export function ExamplesModal({
   isOpen,
   onClose,
   onSelectExample,
+  onAddNewExample,
+  canUpdateContent = false,
+  onGetActiveContent,
 }: ExamplesModalProps) {
+  const [examplesList, setExamplesList] = useState<ManagedExample[]>(() =>
+    EXAMPLES.map((e) => ({ ...e, custom: false })),
+  );
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState<string>('All');
   const [folderStatus, setFolderStatus] = useState<string | null>(null);
+  const [editingExample, setEditingExample] = useState<ManagedExample | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Load examples on mount or open
+  const refreshList = useCallback(async () => {
+    const list = await loadAllExamples();
+    setExamplesList(list);
+  }, []);
+
+  useEffect(() => {
+    return subscribeExamples((updated) => {
+      setExamplesList(updated);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      setSearch('');
+      setCategory('All');
+      setFolderStatus(null);
+      setEditingExample(null);
+      void refreshList();
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 50);
+    }
+  }, [isOpen, refreshList]);
 
   // Available categories
   const categories = useMemo(() => {
     const set = new Set<string>();
-    for (const ex of EXAMPLES) {
+    for (const ex of examplesList) {
       if (ex.category) set.add(ex.category);
     }
     return ['All', ...Array.from(set)];
-  }, []);
+  }, [examplesList]);
 
   // Filtered examples
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return EXAMPLES.filter((ex) => {
+    return examplesList.filter((ex) => {
       const matchCat = category === 'All' || ex.category === category;
       if (!matchCat) return false;
       if (!q) return true;
@@ -49,32 +95,20 @@ export function ExamplesModal({
         ex.id.toLowerCase().includes(q)
       );
     });
-  }, [search, category]);
-
-  // Focus search on open
-  useEffect(() => {
-    if (isOpen) {
-      setSearch('');
-      setCategory('All');
-      setFolderStatus(null);
-      setTimeout(() => {
-        searchInputRef.current?.focus();
-      }, 50);
-    }
-  }, [isOpen]);
+  }, [examplesList, search, category]);
 
   // Escape key handler
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && !editingExample) {
         e.preventDefault();
         onClose();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, editingExample]);
 
   if (!isOpen) return null;
 
@@ -88,6 +122,42 @@ export function ExamplesModal({
       setFolderStatus('Folder located at ./examples in project directory');
       setTimeout(() => setFolderStatus(null), 4500);
     }
+  };
+
+  const handleDelete = async (e: React.MouseEvent, ex: ManagedExample) => {
+    e.stopPropagation();
+    const confirmed = window.confirm(
+      `Are you sure you want to delete the example "${ex.name}"? This removes it from the examples library.`,
+    );
+    if (!confirmed) return;
+    await deleteExample(ex.id);
+  };
+
+  const handleEditClick = (e: React.MouseEvent, ex: ManagedExample) => {
+    e.stopPropagation();
+    setEditingExample(ex);
+  };
+
+  const handleSaveEdit = async (
+    id: string,
+    updates: {
+      name: string;
+      category: string;
+      description: string;
+      updateContentWithWorkspace?: boolean;
+    },
+  ) => {
+    let contentToUpdate: string | undefined = undefined;
+    if (updates.updateContentWithWorkspace && onGetActiveContent) {
+      contentToUpdate = await onGetActiveContent();
+    }
+    await updateExample(id, {
+      name: updates.name,
+      category: updates.category,
+      description: updates.description,
+      content: contentToUpdate,
+    });
+    setEditingExample(null);
   };
 
   return (
@@ -112,7 +182,7 @@ export function ExamplesModal({
                 Example Circuits Library
               </h2>
               <div className="examples-modal-subtitle">
-                Explore curated power electronics and analog simulation models
+                Explore, save, edit, and run power electronics and analog simulation models
               </div>
             </div>
           </div>
@@ -126,7 +196,7 @@ export function ExamplesModal({
           </button>
         </div>
 
-        {/* Toolbar: Search, Category Filter & Reveal Folder */}
+        {/* Toolbar: Search, Add Example & Reveal Folder */}
         <div className="examples-modal-toolbar">
           <div className="examples-search-box">
             <span className="examples-search-icon">🔍</span>
@@ -151,6 +221,18 @@ export function ExamplesModal({
           </div>
 
           <div className="examples-toolbar-actions">
+            {onAddNewExample && (
+              <button
+                type="button"
+                className="examples-add-btn"
+                onClick={() => onAddNewExample()}
+                title="Save current circuit as a new example"
+              >
+                <span className="add-btn-icon">➕</span>
+                <span>Add Example</span>
+              </button>
+            )}
+
             <button
               type="button"
               className="examples-reveal-btn"
@@ -169,8 +251,8 @@ export function ExamplesModal({
             {categories.map((cat) => {
               const count =
                 cat === 'All'
-                  ? EXAMPLES.length
-                  : EXAMPLES.filter((e) => e.category === cat).length;
+                  ? examplesList.length
+                  : examplesList.filter((e) => e.category === cat).length;
               const isActive = category === cat;
               return (
                 <button
@@ -215,29 +297,57 @@ export function ExamplesModal({
             </div>
           ) : (
             <div className="examples-grid">
-              {filtered.map((ex: CircuitExample) => (
+              {filtered.map((ex: ManagedExample) => (
                 <div
                   key={ex.id}
                   className="example-card"
-                  onClick={() => onSelectExample(ex.id)}
+                  onClick={() => onSelectExample(ex.id, ex.content, ex.name)}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      onSelectExample(ex.id);
+                      onSelectExample(ex.id, ex.content, ex.name);
                     }
                   }}
                 >
                   <div className="example-card-header">
-                    <span
-                      className={`example-badge ${
-                        ex.category === 'Analog & Filter' ? 'badge-analog' : 'badge-power'
-                      }`}
-                    >
-                      {ex.category}
-                    </span>
-                    <span className="example-id-tag">#{ex.id}</span>
+                    <div className="example-badges-wrap">
+                      <span
+                        className={`example-badge ${
+                          ex.category === 'Analog & Filter'
+                            ? 'badge-analog'
+                            : ex.custom
+                              ? 'badge-custom'
+                              : 'badge-power'
+                        }`}
+                      >
+                        {ex.category}
+                      </span>
+                      {ex.custom && <span className="example-custom-pill">User</span>}
+                    </div>
+
+                    <div className="example-card-actions">
+                      <button
+                        type="button"
+                        className="example-action-btn edit-btn"
+                        onClick={(e) => handleEditClick(e, ex)}
+                        title="Edit example title, description, or update circuit"
+                        aria-label={`Edit ${ex.name}`}
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        type="button"
+                        className="example-action-btn delete-btn"
+                        onClick={(e) => handleDelete(e, ex)}
+                        title="Delete example"
+                        aria-label={`Delete ${ex.name}`}
+                      >
+                        🗑️
+                      </button>
+                      <span className="example-id-tag">#{ex.id}</span>
+                    </div>
                   </div>
 
                   <h3 className="example-card-title">{ex.name}</h3>
@@ -256,7 +366,7 @@ export function ExamplesModal({
         {/* Modal Footer */}
         <div className="modal-footer examples-modal-footer">
           <div className="examples-footer-hint">
-            💡 Examples open as a clean copy in your workspace. Changes will not overwrite the original template files.
+            💡 Examples open as a clean copy in your workspace. You can edit, simulate, and save changes using <strong>File → Save as Example...</strong>.
           </div>
           <button
             type="button"
@@ -267,6 +377,16 @@ export function ExamplesModal({
           </button>
         </div>
       </div>
+
+      {/* Nested Edit Example Modal */}
+      <EditExampleModal
+        isOpen={editingExample !== null}
+        example={editingExample}
+        onClose={() => setEditingExample(null)}
+        onSave={handleSaveEdit}
+        existingCategories={categories.filter((c) => c !== 'All')}
+        canUpdateContent={canUpdateContent}
+      />
     </div>
   );
 }

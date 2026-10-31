@@ -714,3 +714,73 @@ function decodeFrames(data: string): StompFrame[] {
       return { command: command.trim(), body: rest.join('\n\n') };
     });
 }
+
+// ========== Examples Endpoints ==========
+
+export interface ExampleDto {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  filename?: string;
+  content?: string;
+  custom?: boolean;
+}
+
+/**
+ * Retrieves raw decompressed .ipes content of an active circuit.
+ */
+export function getRawCircuit(circuitId: string): Promise<string> {
+  return request(`/circuits/${circuitId}/raw`);
+}
+
+/**
+ * Fetches all circuit examples available on disk via backend REST API.
+ */
+export function listExamplesApi(): Promise<ExampleDto[]> {
+  return request('/examples');
+}
+
+/**
+ * Creates and registers a new example in the examples directory.
+ */
+export function createExampleApi(data: {
+  id?: string;
+  name: string;
+  category: string;
+  description: string;
+  content: string;
+}): Promise<ExampleDto> {
+  return request('/examples', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Updates metadata and/or content of an existing circuit example on disk.
+ */
+export function updateExampleApi(
+  id: string,
+  data: {
+    name?: string;
+    category?: string;
+    description?: string;
+    content?: string;
+  },
+): Promise<ExampleDto> {
+  return request(`/examples/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Deletes a circuit example file and unregisters it from manifest.json.
+ */
+export function deleteExampleApi(id: string): Promise<void> {
+  return request(`/examples/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}
+

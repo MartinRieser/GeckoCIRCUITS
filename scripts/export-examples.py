@@ -50,14 +50,27 @@ def main():
         "|---|---|---|---|",
     ]
 
+    manifest = []
     for idx, ex in enumerate(examples, 1):
         filename = f"{ex['id'].replace('-', '_')}.ipes"
         filepath = OUTPUT_DIR / filename
         filepath.write_text(ex["content"] + "\n", encoding="utf-8")
         print(f"  Wrote {filepath.name} ({len(ex['content'])} bytes)")
+        manifest.append({
+            "id": ex["id"],
+            "name": ex["name"],
+            "category": ex["category"],
+            "description": ex["description"],
+            "filename": filename,
+        })
         readme_lines.append(
             f"| [`{filename}`](./{filename}) | {ex['category']} | **{ex['name']}** | {ex['description']} |"
         )
+
+    import json
+    manifest_path = OUTPUT_DIR / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    print(f"  Wrote {manifest_path.name}")
 
     readme_lines.extend([
         "",

@@ -6336,6 +6336,30 @@ circle.junction-dot.net-highlighted {
   font-size: 13px;
 }
 
+.examples-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent, #38bdf8);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.examples-add-btn:hover {
+  background: var(--accent, #38bdf8);
+  color: #ffffff;
+}
+
+.add-btn-icon {
+  font-size: 11px;
+}
+
 .examples-filter-row {
   padding: 8px 16px;
   display: flex;
@@ -6458,10 +6482,83 @@ circle.junction-dot.net-highlighted {
   border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
+.badge-custom {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.example-badges-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.example-custom-pill {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(168, 85, 247, 0.25);
+  color: #e9d5ff;
+}
+
+.example-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.example-action-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: all 0.12s ease;
+  line-height: 1;
+}
+
+.example-action-btn:hover {
+  opacity: 1;
+  background: var(--surface-hover);
+  border-color: var(--border-light);
+}
+
+.example-action-btn.delete-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
 .example-id-tag {
   font-size: 10px;
   color: var(--text-dim);
   font-family: monospace;
+}
+
+.example-textarea {
+  resize: vertical;
+  min-height: 64px;
+  line-height: 1.4;
+  font-family: inherit;
+}
+
+.example-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.example-category-input-group {
+  width: 100%;
 }
 
 .example-card-title {

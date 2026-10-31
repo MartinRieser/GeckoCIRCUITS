@@ -29,11 +29,13 @@ import {
   confirmDialogNative,
   setWindowTitleNative,
 } from './desktop';
-import { getEngineVersion } from './api/client';
+import { getEngineVersion, getRawCircuit } from './api/client';
 import { findScopeBlocks, findScriptBlocks, isScopeComponent, isScriptComponent } from './simulation/scopes';
 import { SimConfigModal } from './simulation/SimConfigModal';
 import { SaveAsModal } from './modals/SaveAsModal';
+import { SaveAsExampleModal } from './modals/SaveAsExampleModal';
 import { ExamplesModal } from './modals/ExamplesModal';
+import { addExample } from './model/examplesService';
 import { FileMenu } from './nav/FileMenu';
 import { ScriptViewTab } from './properties/ScriptViewTab';
 import { resolveActiveSimSettings } from './simulation/simSettings';
@@ -85,6 +87,7 @@ export function App() {
     };
   }, []);
   const [examplesModalOpen, setExamplesModalOpen] = useState(false);
+  const [saveAsExampleOpen, setSaveAsExampleOpen] = useState(false);
   const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
@@ -354,7 +357,7 @@ export function App() {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       // Modals manage their own keybindings; suspend global schematic shortcuts
-      if (simConfigOpen || saveAsOpen || examplesModalOpen) {
+      if (simConfigOpen || saveAsOpen || examplesModalOpen || saveAsExampleOpen) {
         return;
       }
       if (shortcutsHelpOpen) {
@@ -574,13 +577,51 @@ export function App() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [actions, commandPaletteOpen, dispatch, handleNewCircuit, handleOpenCircuit, handleQuickRun, handleSaveAs, shortcutsHelpOpen, simConfigOpen, state.focusedTerminal, state.ghost, state.mode, state.selection, state.selectedWire, state.wireDraft]);
 
-  const handleSelectExample = async (exampleId: string) => {
-    const ex = EXAMPLES.find((e) => e.id === exampleId);
-    if (ex && (await confirmDiscardCircuit())) {
-      actions.openContent(ex.content, `${ex.name}.ipes`);
+  const handleSelectExample = async (exampleId: string, customContent?: string, customName?: string) => {
+    let content = customContent;
+    let name = customName;
+    if (!content) {
+      const ex = EXAMPLES.find((e) => e.id === exampleId);
+      if (ex) {
+        content = ex.content;
+        name = ex.name;
+      }
+    }
+    if (content && (await confirmDiscardCircuit())) {
+      actions.openContent(content, `${name || exampleId}.ipes`);
     }
     setExamplesModalOpen(false);
   };
+
+  const handleSaveAsExample = useCallback(async (meta: { name: string; category: string; description: string }) => {
+    if (!state.circuitId) return;
+    let content = '';
+    try {
+      content = await getRawCircuit(state.circuitId);
+    } catch (err) {
+      console.warn('Failed to fetch raw circuit for example save:', err);
+    }
+    if (!content) {
+      throw new Error('Unable to retrieve circuit schematic content');
+    }
+    await addExample({
+      name: meta.name,
+      category: meta.category,
+      description: meta.description,
+      content,
+    });
+    dispatch({ type: 'STATUS', status: `Saved "${meta.name}" to Examples library` });
+  }, [state.circuitId, dispatch]);
+
+  const handleGetActiveContent = useCallback(async (): Promise<string | undefined> => {
+    if (!state.circuitId) return undefined;
+    try {
+      return await getRawCircuit(state.circuitId);
+    } catch (err) {
+      console.warn('Failed to fetch raw circuit content:', err);
+      return undefined;
+    }
+  }, [state.circuitId]);
 
   return (
     <div className="app">
@@ -608,6 +649,7 @@ export function App() {
             onOpenExamples={() => setExamplesModalOpen(true)}
             onSave={actions.save}
             onSaveAs={handleSaveAs}
+            onSaveAsExample={() => setSaveAsExampleOpen(true)}
             onOpenRecent={async (entry) => {
               if (await confirmDiscardCircuit()) actions.openRecent(entry);
             }}
@@ -1333,6 +1375,17 @@ export function App() {
         isOpen={examplesModalOpen}
         onClose={() => setExamplesModalOpen(false)}
         onSelectExample={handleSelectExample}
+        onAddNewExample={() => setSaveAsExampleOpen(true)}
+        canUpdateContent={!!state.circuitId}
+        onGetActiveContent={handleGetActiveContent}
+      />
+
+      {/* Save as Example Modal Dialog */}
+      <SaveAsExampleModal
+        isOpen={saveAsExampleOpen}
+        defaultName={state.filename || 'Custom Circuit'}
+        onClose={() => setSaveAsExampleOpen(false)}
+        onSave={handleSaveAsExample}
       />
     </div>
   );
