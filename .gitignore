@@ -30,6 +30,8 @@ target/
 
 # Native installer output
 release/
+# Node
+node_modules/
 dist/
 
 # Workspace-local development toolchain (JDK + Maven)
@@ -97,7 +99,9 @@ desktop/app/engine/gecko_c_block.h
 desktop/app/gen/schemas/
 
 # Desktop dist output (launchers etc.)
-desktop/dist/
+desktop/# Node
+node_modules/
+dist/
 
 # local debugging scratch
 scratch/
