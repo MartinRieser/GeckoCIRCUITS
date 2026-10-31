@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" width="100%" height="100%">
+  <defs>
+    <style>
+      .wire { stroke: #1e293b; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .wire-thin { stroke: #64748b; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .wire-dashed { stroke: #0284c7; stroke-width: 2; stroke-dasharray: 5,4; fill: none; }
+      .wire-gnd { stroke: #1e293b; stroke-width: 2.5; stroke-linecap: round; }
+      .junction { fill: #1e293b; }
+      .label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: middle; }
+      .label-start { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: start; }
+      .label-end { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: end; }
+      .sublabel { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: middle; }
+      .sublabel-start { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: start; }
+      .sublabel-end { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: end; }
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 16px; fill: #0f172a; font-weight: 700; }
+      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 12px; fill: #64748b; font-weight: 400; }
+      .comp-body { fill: #ffffff; stroke: #1e293b; stroke-width: 2.2; }
+      .comp-diode { fill: #0284c7; stroke: #0284c7; stroke-width: 2; }
+      .comp-sw { stroke: #0284c7; stroke-width: 2.5; stroke-linecap: round; fill: none; }
+      .arrow { fill: #0284c7; stroke: none; }
+      .measure-arrow { stroke: #0284c7; stroke-width: 1.75; fill: none; }
+      .tag-pos { fill: #dc2626; font-family: sans-serif; font-size: 16px; font-weight: bold; text-anchor: middle; }
+      .tag-pos-start { fill: #dc2626; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: start; }
+      .tag-pos-end { fill: #dc2626; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: end; }
+      .tag-neg { fill: #2563eb; font-family: sans-serif; font-size: 18px; font-weight: bold; text-anchor: middle; }
+      .tag-neg-start { fill: #2563eb; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: start; }
+      .tag-neg-end { fill: #2563eb; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: end; }
+      .card { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; rx: 8px; }
+      .block { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; rx: 6px; }
+      .block-accent { fill: #f0f9ff; stroke: #0284c7; stroke-width: 1.5; rx: 6px; }
+      .leg-box { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.2; stroke-dasharray: 4,4; rx: 6px; }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0284c7"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" class="card" />
+  <text x="35" y="38" class="title">Field-Oriented Control (FOC) Architecture</text>
+  <text x="35" y="58" class="subtitle">Direct / Quadrature (dq0) Decoupled Vector Control with Space Vector Modulation</text>
+  <circle cx="800" cy="200" r="45" class="block-accent" />
+<text x="800" y="195" class="label" fill="#0284c7">PMSM</text>
+<text x="800" y="215" class="sublabel">Motor</text>
+<rect x="630" y="155" width="85" height="90" class="block" />
+<text x="672" y="195" class="label">3-Phase</text>
+<text x="672" y="215" class="sublabel">Inverter</text>
+<line x1="715" y1="200" x2="755" y2="200" class="wire" />
+<polygon points="755,200 745,195 745,205" fill="#1e293b" />
+<rect x="500" y="165" width="75" height="70" class="block" />
+<text x="537" y="200" class="label">SVM</text>
+<text x="537" y="218" class="sublabel">PWM Gen</text>
+<line x1="575" y1="200" x2="630" y2="200" class="wire" />
+<polygon points="630,200 620,195 620,205" fill="#1e293b" />
+<rect x="370" y="165" width="80" height="70" class="block" />
+<text x="410" y="195" class="label">dq &#8594; &#945;&#946;</text>
+<text x="410" y="215" class="sublabel">Inv. Park</text>
+<line x1="450" y1="200" x2="500" y2="200" class="wire" />
+<polygon points="500,200 490,195 490,205" fill="#1e293b" />
+<circle cx="200" cy="155" r="12" class="comp-body" />
+<text x="200" y="161" class="label" style="font-size:16px;">&#931;</text>
+<text x="178" y="148" class="label" style="font-size:11px; font-weight:bold;">+</text>
+<text x="210" y="178" class="label" style="font-size:12px; font-weight:bold;">&#8722;</text>
+<line x1="212" y1="155" x2="260" y2="155" class="wire" />
+<polygon points="260,155 250,150 250,160" fill="#1e293b" />
+<rect x="260" y="135" width="80" height="40" class="block" />
+<text x="300" y="160" class="label">PI (d-axis)</text>
+<line x1="340" y1="155" x2="370" y2="185" class="wire" />
+<circle cx="200" cy="225" r="12" class="comp-body" />
+<text x="200" y="231" class="label" style="font-size:16px;">&#931;</text>
+<text x="178" y="218" class="label" style="font-size:11px; font-weight:bold;">+</text>
+<text x="210" y="248" class="label" style="font-size:12px; font-weight:bold;">&#8722;</text>
+<line x1="212" y1="225" x2="260" y2="225" class="wire" />
+<polygon points="260,225 250,220 250,230" fill="#1e293b" />
+<rect x="260" y="205" width="80" height="40" class="block" />
+<text x="300" y="230" class="label">PI (q-axis)</text>
+<line x1="340" y1="225" x2="370" y2="215" class="wire" />
+
+    <circle cx="115" cy="155" r="4.5" fill="#16a34a" />
+    <text x="103" y="159" class="label-end" fill="#16a34a">i_d* = 0</text>
+    
+<line x1="115" y1="155" x2="188" y2="155" class="wire" />
+
+    <circle cx="115" cy="225" r="4.5" fill="#16a34a" />
+    <text x="103" y="229" class="label-end" fill="#16a34a">i_q* (Torque)</text>
+    
+<line x1="115" y1="225" x2="188" y2="225" class="wire" />
+<rect x="370" y="290" width="80" height="60" class="block" />
+<text x="410" y="315" class="label">&#945;&#946; &#8594; dq</text>
+<text x="410" y="335" class="sublabel">Park</text>
+<rect x="500" y="290" width="80" height="60" class="block" />
+<text x="540" y="315" class="label">abc &#8594; &#945;&#946;</text>
+<text x="540" y="335" class="sublabel">Clarke</text>
+<line x1="500" y1="320" x2="450" y2="320" class="wire" />
+<polygon points="450,320 460,315 460,325" fill="#1e293b" />
+<line x1="735" y1="200" x2="735" y2="320" class="wire" />
+<circle cx="735" cy="200" r="4" class="junction" />
+<line x1="735" y1="320" x2="580" y2="320" class="wire" />
+<polygon points="580,320 590,315 590,325" fill="#1e293b" />
+<text x="650" y="310" class="sublabel">i_a, i_b, i_c</text>
+<line x1="370" y1="305" x2="160" y2="305" class="wire" />
+<line x1="160" y1="305" x2="160" y2="185" class="wire" />
+<line x1="160" y1="185" x2="200" y2="185" class="wire" />
+<line x1="200" y1="185" x2="200" y2="167" class="wire" />
+<polygon points="200,167 195,177 205,177" fill="#1e293b" />
+<line x1="370" y1="325" x2="200" y2="325" class="wire" />
+<line x1="200" y1="325" x2="200" y2="237" class="wire" />
+<polygon points="200,237 195,247 205,247" fill="#1e293b" />
+</svg>
