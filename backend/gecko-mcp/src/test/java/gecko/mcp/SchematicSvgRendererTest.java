@@ -112,4 +112,80 @@ class SchematicSvgRendererTest {
         assertEquals("RELOADED", reloadRes.get("status"));
         assertTrue((Long) reloadRes.get("free_memory_mb") > 0);
     }
+
+    @Test
+    void places2DTopologyWithOrthogonalWiresAndParallelBranches(@TempDir Path tempDir) throws Exception {
+        Path circuitPath = tempDir.resolve("sync_buck.ipes");
+        Map<String, Object> circuitDef = Map.of(
+                "output_path", circuitPath.toString(),
+                "compress", false,
+                "simulation", Map.of("duration", 0.001, "dt", 1e-6),
+                "components", List.of(
+                        Map.of("name", "V_DC", "type", "VOLTAGE_SOURCE_DC", "nodes", List.of("in", "0"),
+                                "parameters", Map.of("voltage", 600.0)),
+                        Map.of("name", "Q_HI", "type", "IGBT", "nodes", List.of("in", "sw_node")),
+                        Map.of("name", "D_HI", "type", "DIODE", "nodes", List.of("sw_node", "in")),
+                        Map.of("name", "Q_LO", "type", "IGBT", "nodes", List.of("0", "sw_node")),
+                        Map.of("name", "D_LO", "type", "DIODE", "nodes", List.of("0", "sw_node")),
+                        Map.of("name", "L1", "type", "INDUCTOR", "nodes", List.of("sw_node", "out"),
+                                "parameters", Map.of("inductance", 5e-3)),
+                        Map.of("name", "C1", "type", "CAPACITOR", "nodes", List.of("out", "0"),
+                                "parameters", Map.of("capacitance", 100e-6)),
+                        Map.of("name", "R_LOAD", "type", "RESISTOR", "nodes", List.of("out", "0"),
+                                "parameters", Map.of("resistance", 256.0)),
+                        Map.of("name", "GND1", "type", "GND", "nodes", List.of("0"))
+                ),
+                "control", Map.of(
+                        "probes", List.of(
+                                Map.of("name", "VM_OUT", "type", "VOLTMETER", "target_component", "R_LOAD", "signal_name", "v_out")
+                        ),
+                        "script_blocks", List.of(
+                                Map.of("name", "PI_PWM_CTRL", "in_signals", List.of("v_out"), "out_signals", List.of("g_hi", "g_lo"),
+                                        "code", "yOUT[0] = 0.5; yOUT[1] = 0.5; return yOUT;")
+                        ),
+                        "gates", List.of(
+                                Map.of("name", "GATE_HI", "target_switch", "Q_HI", "in_signal", "g_hi"),
+                                Map.of("name", "GATE_LO", "target_switch", "Q_LO", "in_signal", "g_lo")
+                        )
+                )
+        );
+
+        CircuitBuilder.create(circuitDef);
+
+        // Verify circuit passes full DRC + compile check
+        Map<String, Object> val = CircuitValidator.validate(circuitPath);
+        assertEquals(Boolean.TRUE, val.get("valid"), () -> "Sync buck must pass DRC: " + val);
+
+        // Verify CircuitPatcher preserves uncompressed plain-text format
+        CircuitPatcher.patchComponent(circuitPath.toString(), "R_LOAD", Map.of("resistance", 320.0), null);
+        assertFalse(IpesSupport.isGzipped(circuitPath), "Patching uncompressed .ipes must keep plain-text format");
+
+        // Verify SVG has strictly orthogonal polylines (no diagonal segments)
+        Map<String, Object> svgRes = SchematicSvgRenderer.exportSvg(circuitPath, null, "dark", 1.0);
+        String svg = (String) svgRes.get("svg");
+        assertTrue(svg.contains("POWER STAGE"), "Should render power stage separator");
+        assertTrue(svg.contains("CONTROL &amp; MODULATION"), "Should render control stage separator");
+        assertTrue(svg.contains("y1=\"-44.0\"") && svg.contains("y2=\"44.0\""),
+                "2-port component leads must span the full 2-grid-unit (44px) terminal offset so wires connect without gaps");
+
+        java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("<polyline class=\"wire-[^\"]+\" points=\"([^\"]+)\"")
+                .matcher(svg);
+        int wireCount = 0;
+        while (m.find()) {
+            wireCount++;
+            String[] coords = m.group(1).trim().split("\\s+");
+            for (int i = 0; i < coords.length - 1; i++) {
+                String[] a = coords[i].split(",");
+                String[] b = coords[i + 1].split(",");
+                double x1 = Double.parseDouble(a[0]);
+                double y1 = Double.parseDouble(a[1]);
+                double x2 = Double.parseDouble(b[0]);
+                double y2 = Double.parseDouble(b[1]);
+                assertTrue(Math.abs(x1 - x2) < 1e-3 || Math.abs(y1 - y2) < 1e-3,
+                        "Every wire segment must be orthogonal, found diagonal: (" + x1 + "," + y1 + ") -> (" + x2 + "," + y2 + ")");
+            }
+        }
+        assertTrue(wireCount >= 6, "Should render power and control wire polylines");
+    }
 }

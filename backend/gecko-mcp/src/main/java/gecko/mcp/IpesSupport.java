@@ -50,6 +50,14 @@ final class IpesSupport {
         return Files.exists(path);
     }
 
+    static boolean isGzipped(Path file) throws IOException {
+        if (!Files.exists(file)) {
+            return false;
+        }
+        byte[] raw = Files.readAllBytes(file);
+        return raw.length >= 2 && raw[0] == GZIP_MAGIC[0] && raw[1] == GZIP_MAGIC[1];
+    }
+
     static String readIpesText(Path file) throws IOException {
         byte[] raw = Files.readAllBytes(file);
         if (raw.length >= 2 && raw[0] == GZIP_MAGIC[0] && raw[1] == GZIP_MAGIC[1]) {

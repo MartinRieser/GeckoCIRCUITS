@@ -88,12 +88,12 @@ public final class CircuitBuilder {
         long nextThermId = 4001;
 
         Map<String, Long> componentIdMap = new LinkedHashMap<>();
-        int gridX = 4;
-        int gridY = 8;
-        int maxRowY = 8;
+        int gridX = 6;
+        int maxRowY = 14;
 
         // power nets: net name -> terminal points (one ConnectionData per net)
         Map<String, Set<Point>> netToPoints = new LinkedHashMap<>();
+        Map<String, SeriesPlacement> seriesByNodePair = new HashMap<>();
         List<Map<String, Object>> deferredCouplers = new ArrayList<>();
         long[] lkIdCounter = new long[]{nextLkId};
         long[] thermIdCounter = new long[]{nextThermId};
@@ -135,27 +135,75 @@ public final class CircuitBuilder {
             @SuppressWarnings("unchecked")
             Map<String, Object> params = (pObj instanceof Map) ? (Map<String, Object>) pObj : Map.of();
 
+            boolean hasExplicitOrient = c.containsKey("orientation");
             int orient = getOrientation(c, def);
             int posX = getInt(c, "x", -1);
             int posY = getInt(c, "y", -1);
 
             if (posX == -1 || posY == -1) {
-                posX = gridX;
-                posY = gridY;
-                gridX += 6;
-                if (gridX > 60) {
-                    gridX = 4;
-                    gridY += 10;
+                if (def.typeNumber() == 31 || def.typeNumber() == 32) {
+                    posX = Math.max(4, gridX - 8);
+                    posY = 16;
+                    orient = 503;
+                } else if (def.typeNumber() == CircuitTypCore.LK_TRANS.getTypeNumber() || expectedPins > 2) {
+                    posX = gridX;
+                    posY = 12;
+                    if (!hasExplicitOrient) {
+                        orient = 503;
+                    }
+                    gridX += 10;
+                } else if (nodes.size() == 2) {
+                    String n0 = nodes.get(0);
+                    String n1 = nodes.get(1);
+                    boolean g0 = isGroundNode(n0);
+                    boolean g1 = isGroundNode(n1);
+                    if (g0 ^ g1) {
+                        // Shunt component between active node and ground rail
+                        posX = gridX;
+                        posY = 12;
+                        if (!hasExplicitOrient) {
+                            orient = g1 ? 503 : 501; // 503: top=n0, bottom=0; 501: bottom=0, top=n1
+                        }
+                        gridX += 8;
+                    } else {
+                        // Series component between two non-ground nodes (or both ground)
+                        String pairKey = canonicalPairKey(n0, n1);
+                        SeriesPlacement existing = seriesByNodePair.get(pairKey);
+                        if (existing != null) {
+                            // Parallel / antiparallel series branch (e.g. antiparallel diode across switch)
+                            int pIdx = ++existing.parallelCount;
+                            posX = existing.x;
+                            posY = Math.max(2, 6 - 4 * pIdx);
+                            if (!hasExplicitOrient) {
+                                orient = n0.equals(existing.n0) ? 502 : 504;
+                            }
+                        } else {
+                            posX = gridX;
+                            posY = 6;
+                            if (!hasExplicitOrient) {
+                                orient = 502;
+                            }
+                            seriesByNodePair.put(pairKey, new SeriesPlacement(posX, n0, n1));
+                            gridX += 8;
+                        }
+                    }
+                } else {
+                    posX = gridX;
+                    posY = 8;
+                    gridX += 8;
                 }
             }
-            maxRowY = Math.max(maxRowY, posY);
+            maxRowY = Math.max(maxRowY, posY + 2);
 
             // multi-pin split: X side = def.xPinCount pins, Y side = the rest
             List<String> xNodes = nodes.subList(0, def.xPinCount());
             List<String> yNodes = nodes.subList(def.xPinCount(), nodes.size());
             List<Point> termA;
             List<Point> termB;
-            if (def.typeNumber() == CircuitTypCore.LK_TRANS.getTypeNumber()) {
+            if (def.typeNumber() == 31 || def.typeNumber() == 32) {
+                termA = List.of(new Point(posX, posY));
+                termB = List.of();
+            } else if (def.typeNumber() == CircuitTypCore.LK_TRANS.getTypeNumber()) {
                 // The netlist expands an ideal transformer into two windings
                 // placed one grid pitch left/right of center; the wires must
                 // touch exactly those expanded terminals.
@@ -290,12 +338,15 @@ public final class CircuitBuilder {
         }
 
         // Synthesize declarative thermal networks
-        maxRowY = Math.max(maxRowY, synthesizeThermalNetworks(request, model, componentIdMap, thermNetToPoints, maxRowY + 12, thermIdCounter));
+        int thermEndY = synthesizeThermalNetworks(request, model, componentIdMap, thermNetToPoints, maxRowY + 8, thermIdCounter);
+        if (!model.getThermalComponents().isEmpty()) {
+            maxRowY = Math.max(maxRowY, thermEndY);
+        }
 
         // 4. Control components
         @SuppressWarnings("unchecked")
         Map<String, Object> control = (Map<String, Object>) request.getOrDefault("control", Map.of());
-        int ctrlY = maxRowY + 12;
+        int ctrlY = maxRowY + 6;
 
         Map<String, Set<Point>> ctrlNetToPoints = new LinkedHashMap<>();
         // name -> PlacedControl for explicit wire routing
@@ -319,7 +370,7 @@ public final class CircuitBuilder {
             int typeNum = "AMMETER".equalsIgnoreCase(type) || "AMP".equalsIgnoreCase(type)
                     ? TYP_PROBE_AMP : TYP_PROBE_VOLT;
 
-            int px = getInt(p, "x", 10);
+            int px = getInt(p, "x", 8);
             int py = getInt(p, "y", probeY);
 
             long uid = nextCtrlId++;
@@ -339,7 +390,7 @@ public final class CircuitBuilder {
             controlsByName.put(name, placed);
             model.addControlComponent(placed.toComponentData());
             if (!p.containsKey("x") && !p.containsKey("y")) {
-                probeY++;
+                probeY += 3;
             }
         }
 
@@ -376,25 +427,30 @@ public final class CircuitBuilder {
             String staticCode = (String) sb.getOrDefault("static_code",
                     sb.getOrDefault("staticCode", ""));
 
+            int mcuX = getInt(sb, "x", 20);
+            int curMcuY = getInt(sb, "y", mcuY);
+
             long uid = nextCtrlId++;
             for (int inIdx = 0; inIdx < inputs.size(); inIdx++) {
                 ctrlNetToPoints.computeIfAbsent(inputs.get(inIdx), k -> new LinkedHashSet<>())
-                        .add(new Point(14, mcuY + inIdx));
+                        .add(new Point(mcuX - 2, curMcuY + inIdx));
             }
             for (int outIdx = 0; outIdx < outputs.size(); outIdx++) {
                 ctrlNetToPoints.computeIfAbsent(outputs.get(outIdx), k -> new LinkedHashSet<>())
-                        .add(new Point(18, mcuY + outIdx));
+                        .add(new Point(mcuX + 2, curMcuY + outIdx));
             }
 
-            PlacedControl placed = new PlacedControl(name, TYP_SCRIPT, uid, 16, mcuY, 503,
+            PlacedControl placed = new PlacedControl(name, TYP_SCRIPT, uid, mcuX, curMcuY, 503,
                     inputs, outputs, null, 0L,
                     Map.of("sourceCode", sourceCode, "staticCode", staticCode,
                             "staticVariables", staticVariables,
-                            "anzXIN", (double) inputs.size(), "anzYOUT", (double) outputs.size()),
+                            "anzXIN", inputs.size(), "anzYOUT", outputs.size()),
                     Map.of());
             controlsByName.put(name, placed);
             model.addControlComponent(placed.toComponentData());
-            mcuY += Math.max(inputs.size(), outputs.size()) + 2;
+            if (!sb.containsKey("x") && !sb.containsKey("y")) {
+                mcuY += Math.max(inputs.size(), outputs.size()) + 4;
+            }
         }
 
         List<Map<String, Object>> allGates = new ArrayList<>(gateList(control));
@@ -413,7 +469,7 @@ public final class CircuitBuilder {
             String signal = (String) g.getOrDefault("in_signal",
                     g.getOrDefault("signal", g.get("signal_name")));
 
-            int gx = getInt(g, "x", 26);
+            int gx = getInt(g, "x", 32);
             int gy = getInt(g, "y", gateY);
 
             long uid = nextCtrlId++;
@@ -426,7 +482,7 @@ public final class CircuitBuilder {
             controlsByName.put(name, placed);
             model.addControlComponent(placed.toComponentData());
             if (!g.containsKey("x") && !g.containsKey("y")) {
-                gateY++;
+                gateY += 3;
             }
         }
 
@@ -524,27 +580,13 @@ public final class CircuitBuilder {
             }
         }
 
-        // Auto-generate fallback LK connections for nets not explicitly defined
-        for (Map.Entry<String, Set<Point>> entry : netToPoints.entrySet()) {
-            if (!explicitlyConnectedNets.contains(entry.getKey()) && entry.getValue().size() >= 2) {
-                CircuitModel.ConnectionData conn = new CircuitModel.ConnectionData("LK", toPoints(entry.getValue()));
-                conn.setConnectorType(0);
-                if (entry.getKey() != null && !entry.getKey().isBlank()) {
-                    conn.setLabel(entry.getKey());
-                }
-                model.addConnection(conn);
-            }
-        }
-        for (Map.Entry<String, Set<Point>> entry : ctrlNetToPoints.entrySet()) {
-            if (entry.getValue().size() >= 2) {
-                CircuitModel.ConnectionData conn = new CircuitModel.ConnectionData("CONTROL", toPoints(entry.getValue()));
-                conn.setConnectorType(1);
-                if (entry.getKey() != null && !entry.getKey().isBlank()) {
-                    conn.setLabel(entry.getKey());
-                }
-                model.addConnection(conn);
-            }
-        }
+        // Auto-generate orthogonal LK connections for nets not explicitly defined
+        routeDomainNets(model, netToPoints, explicitlyConnectedNets, model.getCircuitComponents(), "LK", 0);
+
+        // Auto-generate orthogonal CONTROL connections for signal nets
+        routeControlSignalNets(model, ctrlNetToPoints);
+
+        // Auto-generate orthogonal THERMAL connections for thermal nets
         for (Map.Entry<String, Set<Point>> entry : thermNetToPoints.entrySet()) {
             if (entry.getValue().size() >= 2) {
                 CircuitModel.ConnectionData conn = new CircuitModel.ConnectionData("THERMAL", toPoints(entry.getValue()));
@@ -1247,6 +1289,313 @@ public final class CircuitBuilder {
         return path;
     }
 
+    private static final class SeriesPlacement {
+        final int x;
+        final String n0;
+        final String n1;
+        int parallelCount = 0;
+
+        SeriesPlacement(int x, String n0, String n1) {
+            this.x = x;
+            this.n0 = n0;
+            this.n1 = n1;
+        }
+    }
+
+    private record TrackSpan(int y, int minX, int maxX) {}
+
+    private static boolean isGroundNode(String node) {
+        if (node == null) return false;
+        String t = node.trim().toLowerCase(Locale.ROOT);
+        return t.equals("0") || t.equals("/0") || t.equals("gnd") || t.equals("ground");
+    }
+
+    private static String canonicalPairKey(String a, String b) {
+        return a.compareTo(b) <= 0 ? (a + "|" + b) : (b + "|" + a);
+    }
+
+    /**
+     * Routes all power or thermal nets orthogonally using a collision-free
+     * Trunk-and-Stub (Steiner comb) router so wires never cut diagonally across
+     * components or short-circuit foreign terminals.
+     */
+    private static void routeDomainNets(
+            CircuitModel model,
+            Map<String, Set<Point>> netToPoints,
+            Set<String> explicitlyConnectedNets,
+            List<CircuitModel.ComponentData> domainComponents,
+            String connType,
+            int connectorTypeCode
+    ) {
+        Map<Point, String> terminalOwner = new HashMap<>();
+        for (Map.Entry<String, Set<Point>> e : netToPoints.entrySet()) {
+            for (Point p : e.getValue()) {
+                terminalOwner.put(p, e.getKey());
+            }
+        }
+
+        List<TrackSpan> usedTrunks = new ArrayList<>();
+
+        for (Map.Entry<String, Set<Point>> entry : netToPoints.entrySet()) {
+            String net = entry.getKey();
+            if (explicitlyConnectedNets.contains(net)) {
+                continue;
+            }
+            List<Point> pts = new ArrayList<>(entry.getValue());
+            if (pts.size() < 2) {
+                continue;
+            }
+            pts.sort(Comparator.comparingInt(Point::x).thenComparingInt(Point::y));
+
+            int minX = pts.get(0).x();
+            int maxX = pts.get(pts.size() - 1).x();
+
+            if (minX == maxX) {
+                int minY = pts.stream().mapToInt(Point::y).min().orElse(0);
+                int maxY = pts.stream().mapToInt(Point::y).max().orElse(0);
+                if (!verticalSegmentBlocked(minX, minY, maxY, net, terminalOwner, domainComponents)) {
+                    addUnitSteppedConnection(model, connType, connectorTypeCode, net,
+                            List.of(new Point(minX, minY), new Point(minX, maxY)));
+                    continue;
+                }
+            }
+
+            int trunkY = chooseCleanTrunkY(net, pts, minX, maxX, terminalOwner, domainComponents, usedTrunks);
+            usedTrunks.add(new TrackSpan(trunkY, minX, maxX));
+
+            boolean labelAssigned = false;
+            if (minX < maxX) {
+                addUnitSteppedConnection(model, connType, connectorTypeCode, net,
+                        List.of(new Point(minX, trunkY), new Point(maxX, trunkY)));
+                labelAssigned = true;
+            }
+            for (Point p : pts) {
+                if (p.y() != trunkY) {
+                    addUnitSteppedConnection(model, connType, connectorTypeCode,
+                            labelAssigned ? null : net,
+                            List.of(new Point(p.x(), p.y()), new Point(p.x(), trunkY)));
+                    labelAssigned = true;
+                }
+            }
+        }
+    }
+
+    private static int chooseCleanTrunkY(
+            String net,
+            List<Point> pts,
+            int minX,
+            int maxX,
+            Map<Point, String> terminalOwner,
+            List<CircuitModel.ComponentData> comps,
+            List<TrackSpan> usedTrunks
+    ) {
+        List<Integer> candidates = new ArrayList<>();
+        int maxPtY = pts.stream().mapToInt(Point::y).max().orElse(14);
+        int minPtY = pts.stream().mapToInt(Point::y).min().orElse(4);
+        if (isGroundNode(net)) {
+            for (int y : new int[]{14, 16, Math.max(16, maxPtY), Math.max(16, maxPtY) + 2}) {
+                if (!candidates.contains(y)) {
+                    candidates.add(y);
+                }
+            }
+        } else {
+            boolean allSameY = pts.stream().allMatch(p -> p.y() == pts.get(0).y());
+            if (allSameY) {
+                candidates.add(pts.get(0).y());
+            }
+            for (int y : new int[]{6, 8, 7, 9, 4, 5, minPtY, maxPtY, (minPtY + maxPtY) / 2, 3, 1, 0, 15, 17, 18}) {
+                if (!candidates.contains(y)) {
+                    candidates.add(y);
+                }
+            }
+        }
+
+        for (int y : candidates) {
+            if (isTrunkValid(y, net, pts, minX, maxX, terminalOwner, comps, usedTrunks)) {
+                return y;
+            }
+        }
+        int centerRef = (minPtY + maxPtY) / 2;
+        for (int delta = 1; delta <= 40; delta++) {
+            int yDown = centerRef + delta;
+            if (isTrunkValid(yDown, net, pts, minX, maxX, terminalOwner, comps, usedTrunks)) {
+                return yDown;
+            }
+            int yUp = centerRef - delta;
+            if (isTrunkValid(yUp, net, pts, minX, maxX, terminalOwner, comps, usedTrunks)) {
+                return yUp;
+            }
+        }
+        return isGroundNode(net) ? Math.max(16, maxPtY) : minPtY;
+    }
+
+    private static boolean isTrunkValid(
+            int trunkY,
+            String net,
+            List<Point> pts,
+            int minX,
+            int maxX,
+            Map<Point, String> terminalOwner,
+            List<CircuitModel.ComponentData> comps,
+            List<TrackSpan> usedTrunks
+    ) {
+        for (TrackSpan span : usedTrunks) {
+            if (span.y() == trunkY && Math.max(span.minX(), minX) <= Math.min(span.maxX(), maxX)) {
+                return false;
+            }
+        }
+        for (int x = minX; x <= maxX; x++) {
+            String owner = terminalOwner.get(new Point(x, trunkY));
+            if (owner != null && !owner.equals(net)) {
+                return false;
+            }
+        }
+        for (CircuitModel.ComponentData c : comps) {
+            if (c.getType() == 31 || c.getType() == 32 || c.getType() == 50 || c.getType() == 9) {
+                continue;
+            }
+            int[] pos = c.getPosition();
+            if (pos == null || pos.length < 2) continue;
+            int cx = pos[0];
+            int cy = pos[1];
+            int orient = c.getOrientation();
+            boolean horiz = (orient == 502 || orient == 504);
+            if (horiz) {
+                if (cy == trunkY && Math.max(cx - 1, minX) <= Math.min(cx + 1, maxX)) {
+                    return false;
+                }
+            } else {
+                if (cx >= minX && cx <= maxX && trunkY >= cy - 1 && trunkY <= cy + 1) {
+                    return false;
+                }
+            }
+        }
+        for (Point p : pts) {
+            int y1 = Math.min(p.y(), trunkY);
+            int y2 = Math.max(p.y(), trunkY);
+            if (verticalSegmentBlocked(p.x(), y1, y2, net, terminalOwner, comps)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean verticalSegmentBlocked(
+            int x,
+            int y1,
+            int y2,
+            String net,
+            Map<Point, String> terminalOwner,
+            List<CircuitModel.ComponentData> comps
+    ) {
+        for (int y = y1; y <= y2; y++) {
+            String owner = terminalOwner.get(new Point(x, y));
+            if (owner != null && !owner.equals(net)) {
+                return true;
+            }
+        }
+        for (CircuitModel.ComponentData c : comps) {
+            if (c.getType() == 31 || c.getType() == 32 || c.getType() == 50 || c.getType() == 9) {
+                continue;
+            }
+            int[] pos = c.getPosition();
+            if (pos == null || pos.length < 2) continue;
+            int cx = pos[0];
+            int cy = pos[1];
+            int orient = c.getOrientation();
+            boolean horiz = (orient == 502 || orient == 504);
+            if (horiz) {
+                if (x >= cx - 1 && x <= cx + 1 && cy >= y1 && cy <= y2) {
+                    return true;
+                }
+            } else {
+                if (x == cx && Math.max(cy - 1, y1) <= Math.min(cy + 1, y2)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static void routeControlSignalNets(CircuitModel model, Map<String, Set<Point>> ctrlNetToPoints) {
+        int netIdx = 0;
+        for (Map.Entry<String, Set<Point>> entry : ctrlNetToPoints.entrySet()) {
+            String signal = entry.getKey();
+            List<Point> pts = new ArrayList<>(entry.getValue());
+            if (pts.size() < 2) {
+                continue;
+            }
+            pts.sort(Comparator.comparingInt(Point::x).thenComparingInt(Point::y));
+            Point start = pts.get(0);
+            for (int i = 1; i < pts.size(); i++) {
+                Point end = pts.get(i);
+                List<Point> path = new ArrayList<>();
+                path.add(start);
+                if (start.x() != end.x() && start.y() != end.y()) {
+                    int midX = (start.x() + end.x()) / 2 + (netIdx % 3) - 1;
+                    if (midX <= Math.min(start.x(), end.x()) || midX >= Math.max(start.x(), end.x())) {
+                        midX = (start.x() + end.x()) / 2;
+                    }
+                    path.add(new Point(midX, start.y()));
+                    path.add(new Point(midX, end.y()));
+                }
+                path.add(end);
+                addUnitSteppedConnection(model, "CONTROL", 1, i == 1 ? signal : null, path);
+            }
+            netIdx++;
+        }
+    }
+
+    /**
+     * Expands an orthogonal corner path into unit-stepped grid points so
+     * NetlistBuilder and ControlCalculatorBuilder register every intermediate
+     * grid coordinate along the wire for mid-wire terminal attachment.
+     */
+    private static void addUnitSteppedConnection(
+            CircuitModel model,
+            String type,
+            int connectorType,
+            String label,
+            List<Point> corners
+    ) {
+        if (corners.size() < 2) {
+            return;
+        }
+        List<Point> stepped = new ArrayList<>();
+        stepped.add(corners.get(0));
+        for (int i = 1; i < corners.size(); i++) {
+            Point prev = stepped.get(stepped.size() - 1);
+            Point target = corners.get(i);
+            if (prev.x() != target.x() && prev.y() != target.y()) {
+                // Force orthogonal elbow if non-orthogonal points were passed
+                Point elbow = new Point(target.x(), prev.y());
+                appendLinearSteps(stepped, prev, elbow);
+                prev = elbow;
+            }
+            appendLinearSteps(stepped, prev, target);
+        }
+        if (stepped.size() >= 2) {
+            CircuitModel.ConnectionData conn = new CircuitModel.ConnectionData(type, toPoints(stepped));
+            conn.setConnectorType(connectorType);
+            if (label != null && !label.isBlank()) {
+                conn.setLabel(label);
+            }
+            model.addConnection(conn);
+        }
+    }
+
+    private static void appendLinearSteps(List<Point> out, Point from, Point to) {
+        int dx = Integer.compare(to.x(), from.x());
+        int dy = Integer.compare(to.y(), from.y());
+        int cx = from.x();
+        int cy = from.y();
+        while (cx != to.x() || cy != to.y()) {
+            cx += dx;
+            cy += dy;
+            out.add(new Point(cx, cy));
+        }
+    }
+
     private static List<Point> parsePoints(List<?> list) {
         List<Point> points = new ArrayList<>();
         for (Object item : list) {
@@ -1690,10 +2039,11 @@ public final class CircuitBuilder {
 
                 Point termPv = getTerminalB(netX, pvY, 503);
                 thermNetToPoints.computeIfAbsent(junctionNode, k -> new LinkedHashSet<>()).add(termPv);
+                thermNetToPoints.computeIfAbsent("0", k -> new LinkedHashSet<>()).add(getTerminalA(netX, pvY, 503));
             }
             if (net.containsKey("heat_flow") || targetSwitch == null) {
                 double heatFlow = getDouble(net, "heat_flow", 50.0);
-                int flowX = targetSwitch != null ? netX + 4 : netX;
+                int flowX = targetSwitch != null ? netX + 6 : netX;
                 CircuitModel.ComponentData flow = new CircuitModel.ComponentData(44, "P_" + name, flowX, pvY, 503);
                 flow.setFamily("THERM");
                 flow.setRawParameters(new double[]{401.0, heatFlow});
@@ -1708,14 +2058,14 @@ public final class CircuitBuilder {
                 thermNetToPoints.computeIfAbsent(junctionNode, k -> new LinkedHashSet<>()).add(getTerminalB(flowX, pvY, 503));
             }
 
-            // 2. RC Ladder stages (4 grid units vertical pitch)
+            // 2. RC Ladder stages (6 grid units vertical pitch so inter-stage trunks never touch terminals)
             int stageCount = rList.size();
             for (int i = 0; i < stageCount; i++) {
                 String nodeFrom = (i == 0) ? junctionNode : (name + "_n" + i);
                 String nodeTo = (i == stageCount - 1) ? ambientNode : (name + "_n" + (i + 1));
                 double rVal = rList.get(i);
                 double cVal = cList.get(i);
-                int stageY = pvY + 4 * (i + 1);
+                int stageY = pvY + 6 * (i + 1);
 
                 if ("cauer".equals(modelType)) {
                     // Cauer ladder: Rth in series, Cth in shunt to ambient
@@ -1732,7 +2082,7 @@ public final class CircuitBuilder {
                     thermNetToPoints.computeIfAbsent(nodeTo, k -> new LinkedHashSet<>()).add(getTerminalB(netX, stageY, 503));
 
                     CircuitModel.ComponentData cComp = new CircuitModel.ComponentData(
-                            47, name + "_Cth" + (i + 1), netX + 4, stageY, 503);
+                            47, name + "_Cth" + (i + 1), netX + 6, stageY, 503);
                     cComp.setFamily("THERM");
                     double[] cParams = new double[40];
                     cParams[0] = cVal;
@@ -1744,8 +2094,8 @@ public final class CircuitBuilder {
                     cComp.setParameterStrings(new String[]{"NIX_NIX_NIX", "NIX_NIX_NIX", "0"});
                     cComp.setUniqueObjectIdentifier(thermIdGen[0]++);
                     model.addThermalComponent(cComp);
-                    thermNetToPoints.computeIfAbsent(nodeFrom, k -> new LinkedHashSet<>()).add(getTerminalA(netX + 4, stageY, 503));
-                    thermNetToPoints.computeIfAbsent(ambientNode, k -> new LinkedHashSet<>()).add(getTerminalB(netX + 4, stageY, 503));
+                    thermNetToPoints.computeIfAbsent(nodeFrom, k -> new LinkedHashSet<>()).add(getTerminalA(netX + 6, stageY, 503));
+                    thermNetToPoints.computeIfAbsent(ambientNode, k -> new LinkedHashSet<>()).add(getTerminalB(netX + 6, stageY, 503));
                 } else {
                     // Foster chain: parallel Rth and Cth between nodeFrom and nodeTo
                     CircuitModel.ComponentData rComp = new CircuitModel.ComponentData(
@@ -1761,7 +2111,7 @@ public final class CircuitBuilder {
                     thermNetToPoints.computeIfAbsent(nodeTo, k -> new LinkedHashSet<>()).add(getTerminalB(netX, stageY, 503));
 
                     CircuitModel.ComponentData cComp = new CircuitModel.ComponentData(
-                            47, name + "_Cth" + (i + 1), netX + 4, stageY, 503);
+                            47, name + "_Cth" + (i + 1), netX + 6, stageY, 503);
                     cComp.setFamily("THERM");
                     double[] cParams = new double[40];
                     cParams[0] = cVal;
@@ -1773,13 +2123,13 @@ public final class CircuitBuilder {
                     cComp.setParameterStrings(new String[]{"NIX_NIX_NIX", "NIX_NIX_NIX", "0"});
                     cComp.setUniqueObjectIdentifier(thermIdGen[0]++);
                     model.addThermalComponent(cComp);
-                    thermNetToPoints.computeIfAbsent(nodeFrom, k -> new LinkedHashSet<>()).add(getTerminalA(netX + 4, stageY, 503));
-                    thermNetToPoints.computeIfAbsent(nodeTo, k -> new LinkedHashSet<>()).add(getTerminalB(netX + 4, stageY, 503));
+                    thermNetToPoints.computeIfAbsent(nodeFrom, k -> new LinkedHashSet<>()).add(getTerminalA(netX + 6, stageY, 503));
+                    thermNetToPoints.computeIfAbsent(nodeTo, k -> new LinkedHashSet<>()).add(getTerminalB(netX + 6, stageY, 503));
                 }
             }
 
             // 3. Ambient boundary source & ground terminal
-            int ambY = pvY + 4 * (stageCount + 1);
+            int ambY = pvY + 6 * (stageCount + 1);
             CircuitModel.ComponentData tAmb = new CircuitModel.ComponentData(
                     45, "Tamb_" + name, netX, ambY, 503);
             tAmb.setFamily("THERM");
@@ -1793,7 +2143,7 @@ public final class CircuitBuilder {
             thermNetToPoints.computeIfAbsent("0", k -> new LinkedHashSet<>()).add(getTerminalB(netX, ambY, 503));
 
             CircuitModel.ComponentData gnd = new CircuitModel.ComponentData(
-                    50, "GND_TH_" + name, netX, ambY + 2, 503);
+                    50, "GND_TH_" + name, netX, ambY + 4, 503);
             gnd.setFamily("THERM");
             gnd.setRawParameters(new double[]{});
             gnd.setTerminalXLabels(new String[]{"0"});
@@ -1801,9 +2151,9 @@ public final class CircuitBuilder {
             gnd.setParameterStrings(new String[]{"NIX_NIX_NIX", "NIX_NIX_NIX", "0"});
             gnd.setUniqueObjectIdentifier(thermIdGen[0]++);
             model.addThermalComponent(gnd);
-            thermNetToPoints.computeIfAbsent("0", k -> new LinkedHashSet<>()).add(new Point(netX, ambY + 2));
+            thermNetToPoints.computeIfAbsent("0", k -> new LinkedHashSet<>()).add(getTerminalA(netX, ambY + 4, 503));
 
-            curY = ambY + 6;
+            curY = ambY + 8;
         }
         return curY;
     }

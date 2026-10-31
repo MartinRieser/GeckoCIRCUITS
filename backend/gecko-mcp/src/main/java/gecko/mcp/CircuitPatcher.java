@@ -77,7 +77,9 @@ final class CircuitPatcher {
         }
 
         Path target = outputPath != null ? IpesSupport.resolve(outputPath) : path;
-        CircuitFileWriter.write(model, target, true);
+        boolean compress = target.toString().toLowerCase(Locale.ROOT).endsWith(".gz")
+                || IpesSupport.isGzipped(path);
+        CircuitFileWriter.write(model, target, compress);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", "SUCCESS");
         result.put("component", componentName);
@@ -141,7 +143,9 @@ final class CircuitPatcher {
         stripScriptExtraLines(block);
 
         Path target = outputPath != null ? IpesSupport.resolve(outputPath) : path;
-        CircuitFileWriter.write(model, target, true);
+        boolean compress = target.toString().toLowerCase(Locale.ROOT).endsWith(".gz")
+                || IpesSupport.isGzipped(path);
+        CircuitFileWriter.write(model, target, compress);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", "SUCCESS");
         result.put("block", blockName);
