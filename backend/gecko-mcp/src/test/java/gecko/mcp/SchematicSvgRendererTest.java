@@ -187,5 +187,66 @@ class SchematicSvgRendererTest {
             }
         }
         assertTrue(wireCount >= 6, "Should render power and control wire polylines");
+
+        // Verify GND1 placed at (54, 16) connects at its stem tip (54, 14) and has no dangling wire to y=16
+        gecko.core.io.CircuitModel parsed = new gecko.core.io.CircuitFileParser().parse(circuitPath.toString());
+        gecko.core.io.CircuitModel.ComponentData gnd1 = parsed.getCircuitComponents().stream()
+                .filter(c -> "GND1".equals(c.getName()))
+                .findFirst().orElseThrow();
+        assertEquals(54, gnd1.getPosition()[0]);
+        assertEquals(16, gnd1.getPosition()[1]);
+        for (gecko.core.io.CircuitModel.ConnectionData conn : parsed.getConnections()) {
+            for (int[] pt : conn.getPoints()) {
+                assertFalse(pt[0] == 54 && pt[1] == 16,
+                        "No wire point may extend to GND1's center (54, 16) past its pin at (54, 14)");
+            }
+        }
+    }
+
+    @Test
+    void rendersThermalNetworksBjtAndTransformerWithOrthogonalWires(@TempDir Path tempDir) throws Exception {
+        Path circuitPath = tempDir.resolve("multi_domain.ipes");
+        Map<String, Object> circuitDef = Map.of(
+                "output_path", circuitPath.toString(),
+                "simulation", Map.of("duration", 0.001, "dt", 1e-6),
+                "components", List.of(
+                        Map.of("name", "V_IN", "type", "VOLTAGE_SOURCE_DC", "nodes", List.of("p1", "0"),
+                                "parameters", Map.of("voltage", 48.0)),
+                        Map.of("name", "Q_BJT", "type", "BJT", "nodes", List.of("p1", "base_n", "p2")),
+                        Map.of("name", "R_BASE", "type", "RESISTOR", "nodes", List.of("p1", "base_n"),
+                                "parameters", Map.of("resistance", 100.0)),
+                        Map.of("name", "TX1", "type", "TRANSFORMER", "nodes", List.of("p2", "0", "s1", "0"),
+                                "parameters", Map.of("n1", 2.0, "n2", 1.0)),
+                        Map.of("name", "R_SEC", "type", "RESISTOR", "nodes", List.of("s1", "0"),
+                                "parameters", Map.of("resistance", 20.0))
+                ),
+                "thermal_components", List.of(
+                        Map.of("name", "RTH_1", "type", "TH_RTH", "nodes", List.of("tj", "tc"),
+                                "parameters", Map.of("r_th", 0.5), "x", 10, "y", 26),
+                        Map.of("name", "CTH_1", "type", "TH_CTH", "nodes", List.of("tj", "0"),
+                                "parameters", Map.of("c_th", 0.05), "x", 18, "y", 26),
+                        Map.of("name", "TAMB_1", "type", "TH_TEMP", "nodes", List.of("tc", "0"),
+                                "parameters", Map.of("temperature", 25.0), "x", 26, "y", 26),
+                        Map.of("name", "GND_TH", "type", "TH_GLOBAL_TERMINAL", "nodes", List.of("0"),
+                                "x", 26, "y", 30)
+                ),
+                "control", Map.of(
+                        "blocks", List.of(
+                                Map.of("name", "VREF", "type", "CONSTANT", "out_signals", List.of("ref"),
+                                        "parameters", Map.of("value", 12.0)),
+                                Map.of("name", "GAIN_BLK", "type", "GAIN", "in_signals", List.of("ref"),
+                                        "out_signals", List.of("ctrl_out"),
+                                        "parameters", Map.of("gain", 2.0))
+                        )
+                )
+        );
+
+        CircuitBuilder.create(circuitDef);
+        Map<String, Object> svgRes = SchematicSvgRenderer.exportSvg(circuitPath, null, "dark", 1.0);
+        assertEquals("SUCCESS", svgRes.get("status"));
+        String svg = (String) svgRes.get("svg");
+        assertTrue(svg.contains("wire-thermal"), "Should render orthogonal thermal wires");
+        assertTrue(svg.contains(">CONST<"), "Should render CONST badge on CONSTANT block");
+        assertTrue(svg.contains(">GAIN<"), "Should render GAIN badge on GAIN block");
     }
 }

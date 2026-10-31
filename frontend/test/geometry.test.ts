@@ -776,5 +776,23 @@ describe('rebindWireEndpointToPin (no wire may touch a foreign pin)', () => {
         { x: 12, y: 15 },
       ]);
     });
+
+    it('places single-pin GLOBAL_TERMINAL (31, 32, 50) at stem tip (x, y - 2) with no output terminal', () => {
+      for (const [family, type] of [
+        ['LK', 31],
+        ['LK', 32],
+        ['THERM', 50],
+      ] as const) {
+        const gnd = {
+          family,
+          type,
+          position: [54, 16],
+          orientation: Orientation.NORTH_SOUTH,
+        };
+        const t = terminalPositions(gnd);
+        expect(t.input).toEqual([{ x: 54, y: 14 }]);
+        expect(t.output).toEqual([]);
+      }
+    });
   });
 });

@@ -180,4 +180,17 @@ class ComponentTerminalsTest {
         assertEquals(503, ComponentTerminals.NORTH_SOUTH);
         assertEquals(504, ComponentTerminals.EAST_WEST);
     }
+
+    @Test
+    void globalTerminals_haveSingleStemPinForLkRelAndThermal() {
+        assertArrayEquals(new int[][]{{54, 14}},
+                terminals("LK", 31, 54, 16, ComponentTerminals.NORTH_SOUTH).toArray(),
+                "LK_GLOBAL_TERMINAL (31) placed at (54, 16) has single pin at (54, 14)");
+        assertArrayEquals(new int[][]{{54, 14}},
+                terminals("LK", 32, 54, 16, ComponentTerminals.NORTH_SOUTH).toArray(),
+                "REL_GLOBAL_TERMINAL (32) placed at (54, 16) has single pin at (54, 14)");
+        assertArrayEquals(new int[][]{{26, 28}},
+                terminals("THERM", 50, 26, 30, ComponentTerminals.NORTH_SOUTH).toArray(),
+                "TH_GLOBAL_TERMINAL (50) placed at (26, 30) has single pin at (26, 28)");
+    }
 }

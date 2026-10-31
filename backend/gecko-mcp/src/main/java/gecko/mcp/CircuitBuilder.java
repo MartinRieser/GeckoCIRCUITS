@@ -35,10 +35,30 @@ public final class CircuitBuilder {
     private static final int CONTROL_BLOCK_STRIDE = 5;
     /** Horizontal stride when wrapping control blocks to the next column. */
     private static final int CONTROL_BLOCK_COLUMN_STRIDE = 14;
-    /** Lanes of a routed control wire start this far right of its source terminal. */
-    private static final int WIRE_LANE_BASE_OFFSET = 2;
     /** Feedback wires (routing leftwards) start this far left of the blocks. */
     private static final int FEEDBACK_LANE_BASE_OFFSET = 4;
+
+    /** Default grid Y row for series (horizontal) power components. */
+    private static final int SERIES_ROW_Y = 6;
+    /** Default grid Y row for shunt (vertical to ground) power components. */
+    private static final int SHUNT_ROW_Y = 12;
+    /** Default grid Y row for the bottom ground return rail. */
+    private static final int GROUND_RAIL_Y = 14;
+    /** Default grid Y row for the ground symbol origin (pin is 2 units above at y = 14). */
+    private static final int GROUND_SYMBOL_Y = 16;
+    /** Horizontal grid pitch between consecutive auto-placed power components. */
+    private static final int HORIZONTAL_PITCH = 8;
+    /** Vertical grid offset step for parallel/antiparallel series branches. */
+    private static final int PARALLEL_BRANCH_STEP_Y = 4;
+
+    /** Orientation code: terminals point South then North (501). */
+    private static final int ORIENT_SOUTH_NORTH = 501;
+    /** Orientation code: terminals point West then East (502). */
+    private static final int ORIENT_WEST_EAST = 502;
+    /** Orientation code: terminals point North then South (503). */
+    private static final int ORIENT_NORTH_SOUTH = 503;
+    /** Orientation code: terminals point East then West (504). */
+    private static final int ORIENT_EAST_WEST = 504;
 
     /** Web catalog control type numbers of the specially-placed blocks. */
     private static final int TYP_PROBE_VOLT = CircuitTypCore.CTRL_VOLT.getTypeNumber();
@@ -46,6 +66,16 @@ public final class CircuitBuilder {
     private static final int TYP_SCRIPT = CircuitTypCore.CTRL_SCRIPT.getTypeNumber();
     private static final int TYP_GATE = CircuitTypCore.CTRL_GATE.getTypeNumber();
 
+    /**
+     * Synthesizes a complete {@link CircuitModel} from a declarative JSON specification
+     * and writes it to the requested {@code output_path} in {@code .ipes} format.
+     *
+     * @param request map containing {@code output_path}, {@code simulation}, {@code components},
+     *                and optional {@code thermal_components}, {@code thermal_networks},
+     *                {@code control}, {@code connections}, and {@code notes} sections
+     * @return summary map containing creation status, component/wire counts, and node map
+     * @throws IOException if writing the {@code .ipes} file fails
+     */
     public static Map<String, Object> create(Map<String, Object> request) throws IOException {
         String outputPathStr = (String) request.get("output_path");
         if (outputPathStr == null || outputPathStr.isBlank()) {
@@ -142,14 +172,14 @@ public final class CircuitBuilder {
 
             if (posX == -1 || posY == -1) {
                 if (def.typeNumber() == 31 || def.typeNumber() == 32) {
-                    posX = Math.max(4, gridX - 8);
-                    posY = 16;
-                    orient = 503;
+                    posX = Math.max(4, gridX - HORIZONTAL_PITCH);
+                    posY = GROUND_SYMBOL_Y;
+                    orient = ORIENT_NORTH_SOUTH;
                 } else if (def.typeNumber() == CircuitTypCore.LK_TRANS.getTypeNumber() || expectedPins > 2) {
                     posX = gridX;
-                    posY = 12;
+                    posY = SHUNT_ROW_Y;
                     if (!hasExplicitOrient) {
-                        orient = 503;
+                        orient = ORIENT_NORTH_SOUTH;
                     }
                     gridX += 10;
                 } else if (nodes.size() == 2) {
@@ -160,11 +190,11 @@ public final class CircuitBuilder {
                     if (g0 ^ g1) {
                         // Shunt component between active node and ground rail
                         posX = gridX;
-                        posY = 12;
+                        posY = SHUNT_ROW_Y;
                         if (!hasExplicitOrient) {
-                            orient = g1 ? 503 : 501; // 503: top=n0, bottom=0; 501: bottom=0, top=n1
+                            orient = g1 ? ORIENT_NORTH_SOUTH : ORIENT_SOUTH_NORTH; // 503: top=n0, bottom=0; 501: bottom=0, top=n1
                         }
-                        gridX += 8;
+                        gridX += HORIZONTAL_PITCH;
                     } else {
                         // Series component between two non-ground nodes (or both ground)
                         String pairKey = canonicalPairKey(n0, n1);
@@ -173,24 +203,24 @@ public final class CircuitBuilder {
                             // Parallel / antiparallel series branch (e.g. antiparallel diode across switch)
                             int pIdx = ++existing.parallelCount;
                             posX = existing.x;
-                            posY = Math.max(2, 6 - 4 * pIdx);
+                            posY = Math.max(2, SERIES_ROW_Y - PARALLEL_BRANCH_STEP_Y * pIdx);
                             if (!hasExplicitOrient) {
-                                orient = n0.equals(existing.n0) ? 502 : 504;
+                                orient = n0.equals(existing.n0) ? ORIENT_WEST_EAST : ORIENT_EAST_WEST;
                             }
                         } else {
                             posX = gridX;
-                            posY = 6;
+                            posY = SERIES_ROW_Y;
                             if (!hasExplicitOrient) {
-                                orient = 502;
+                                orient = ORIENT_WEST_EAST;
                             }
                             seriesByNodePair.put(pairKey, new SeriesPlacement(posX, n0, n1));
-                            gridX += 8;
+                            gridX += HORIZONTAL_PITCH;
                         }
                     }
                 } else {
                     posX = gridX;
-                    posY = 8;
-                    gridX += 8;
+                    posY = HORIZONTAL_PITCH;
+                    gridX += HORIZONTAL_PITCH;
                 }
             }
             maxRowY = Math.max(maxRowY, posY + 2);
@@ -274,7 +304,7 @@ public final class CircuitBuilder {
 
             if (def.typeNumber() == 50) { // TH_GLOBAL_TERMINAL
                 String gndNode = !nodes.isEmpty() ? nodes.get(0) : "0";
-                thermNetToPoints.computeIfAbsent(gndNode, k -> new LinkedHashSet<>()).add(new Point(posX, posY));
+                thermNetToPoints.computeIfAbsent(gndNode, k -> new LinkedHashSet<>()).add(getTerminalA(posX, posY, orient));
                 CircuitModel.ComponentData comp =
                         new CircuitModel.ComponentData(50, name(c), posX, posY, orient);
                 comp.setFamily("THERM");
@@ -587,16 +617,7 @@ public final class CircuitBuilder {
         routeControlSignalNets(model, ctrlNetToPoints);
 
         // Auto-generate orthogonal THERMAL connections for thermal nets
-        for (Map.Entry<String, Set<Point>> entry : thermNetToPoints.entrySet()) {
-            if (entry.getValue().size() >= 2) {
-                CircuitModel.ConnectionData conn = new CircuitModel.ConnectionData("THERMAL", toPoints(entry.getValue()));
-                conn.setConnectorType(2);
-                if (entry.getKey() != null && !entry.getKey().isBlank()) {
-                    conn.setLabel(entry.getKey());
-                }
-                model.addConnection(conn);
-            }
-        }
+        routeDomainNets(model, thermNetToPoints, explicitlyConnectedNets, model.getThermalComponents(), "THERMAL", 2);
 
         // 6. Documentation notes / textboxes (SPECIAL domain)
         @SuppressWarnings("unchecked")
@@ -1289,6 +1310,11 @@ public final class CircuitBuilder {
         return path;
     }
 
+    /**
+     * Tracks the horizontal grid position and node orientation of a placed series
+     * branch so parallel or antiparallel components (such as freewheeling diodes
+     * across switches) stack cleanly above the primary device at the same X column.
+     */
     private static final class SeriesPlacement {
         final int x;
         final String n0;
@@ -1302,14 +1328,28 @@ public final class CircuitBuilder {
         }
     }
 
+    /**
+     * Represents an occupied horizontal routing track at row {@code y} spanning
+     * {@code [minX, maxX]} to prevent distinct nets from sharing overlapping trunk lines.
+     */
     private record TrackSpan(int y, int minX, int maxX) {}
 
+    /**
+     * Returns {@code true} if the given node name represents the reference ground net.
+     *
+     * @param node net identifier string
+     * @return {@code true} for {@code "0"}, {@code "/0"}, {@code "gnd"}, or {@code "ground"}
+     */
     private static boolean isGroundNode(String node) {
         if (node == null) return false;
         String t = node.trim().toLowerCase(Locale.ROOT);
         return t.equals("0") || t.equals("/0") || t.equals("gnd") || t.equals("ground");
     }
 
+    /**
+     * Builds an order-independent key for a pair of node names so parallel branches
+     * connecting the same two nodes in either polarity map to the same column.
+     */
     private static String canonicalPairKey(String a, String b) {
         return a.compareTo(b) <= 0 ? (a + "|" + b) : (b + "|" + a);
     }
@@ -1318,6 +1358,13 @@ public final class CircuitBuilder {
      * Routes all power or thermal nets orthogonally using a collision-free
      * Trunk-and-Stub (Steiner comb) router so wires never cut diagonally across
      * components or short-circuit foreign terminals.
+     *
+     * @param model                   target circuit model to receive routed connections
+     * @param netToPoints             map of net names to their attached terminal coordinates
+     * @param explicitlyConnectedNets nets that already have user-supplied wire paths
+     * @param domainComponents        components belonging to the current domain (LK or THERM)
+     * @param connType                connection domain string ({@code "LK"} or {@code "THERMAL"})
+     * @param connectorTypeCode       numeric connector domain code ({@code 0} for LK, {@code 2} for THERMAL)
      */
     private static void routeDomainNets(
             CircuitModel model,
@@ -1371,15 +1418,60 @@ public final class CircuitBuilder {
             }
             for (Point p : pts) {
                 if (p.y() != trunkY) {
+                    int y1 = Math.min(p.y(), trunkY);
+                    int y2 = Math.max(p.y(), trunkY);
+                    List<Point> stubPath;
+                    if (!verticalSegmentBlocked(p.x(), y1, y2, net, terminalOwner, domainComponents)) {
+                        stubPath = List.of(new Point(p.x(), p.y()), new Point(p.x(), trunkY));
+                    } else {
+                        int detourX = findClearDetourX(p, trunkY, minX, maxX, net, terminalOwner, domainComponents);
+                        int attachX = Math.min(Math.max(detourX, minX), maxX);
+                        stubPath = List.of(
+                                new Point(p.x(), p.y()),
+                                new Point(detourX, p.y()),
+                                new Point(detourX, trunkY),
+                                new Point(attachX, trunkY)
+                        );
+                    }
                     addUnitSteppedConnection(model, connType, connectorTypeCode,
                             labelAssigned ? null : net,
-                            List.of(new Point(p.x(), p.y()), new Point(p.x(), trunkY)));
+                            stubPath);
                     labelAssigned = true;
                 }
             }
         }
     }
 
+    /**
+     * Finds an unblocked vertical column {@code detourX} outside {@code [minX, maxX]}
+     * to route around intermediate components when a pin {@code p} and its horizontal
+     * trunk {@code trunkY} are separated by other components in the same column.
+     */
+    private static int findClearDetourX(
+            Point p,
+            int trunkY,
+            int minX,
+            int maxX,
+            String net,
+            Map<Point, String> terminalOwner,
+            List<CircuitModel.ComponentData> comps
+    ) {
+        int y1 = Math.min(p.y(), trunkY);
+        int y2 = Math.max(p.y(), trunkY);
+        for (int offset : new int[]{-2, 2, -4, 4, -6, 6}) {
+            int candX = offset < 0 ? minX + offset : maxX + offset;
+            if (!verticalSegmentBlocked(candX, y1, y2, net, terminalOwner, comps)) {
+                return candX;
+            }
+        }
+        return minX - 2;
+    }
+
+    /**
+     * Selects a horizontal grid row {@code trunkY} for routing {@code net} across
+     * {@code [minX, maxX]} that avoids all foreign terminals, component bodies,
+     * and previously allocated horizontal trunks.
+     */
     private static int chooseCleanTrunkY(
             String net,
             List<Point> pts,
@@ -1390,10 +1482,11 @@ public final class CircuitBuilder {
             List<TrackSpan> usedTrunks
     ) {
         List<Integer> candidates = new ArrayList<>();
-        int maxPtY = pts.stream().mapToInt(Point::y).max().orElse(14);
+        int maxPtY = pts.stream().mapToInt(Point::y).max().orElse(GROUND_RAIL_Y);
         int minPtY = pts.stream().mapToInt(Point::y).min().orElse(4);
+        int midPtY = (minPtY + maxPtY) / 2;
         if (isGroundNode(net)) {
-            for (int y : new int[]{14, 16, Math.max(16, maxPtY), Math.max(16, maxPtY) + 2}) {
+            for (int y : new int[]{maxPtY, maxPtY + 2, GROUND_RAIL_Y, GROUND_SYMBOL_Y, Math.max(GROUND_SYMBOL_Y, maxPtY) + 2}) {
                 if (!candidates.contains(y)) {
                     candidates.add(y);
                 }
@@ -1403,7 +1496,7 @@ public final class CircuitBuilder {
             if (allSameY) {
                 candidates.add(pts.get(0).y());
             }
-            for (int y : new int[]{6, 8, 7, 9, 4, 5, minPtY, maxPtY, (minPtY + maxPtY) / 2, 3, 1, 0, 15, 17, 18}) {
+            for (int y : new int[]{minPtY, midPtY, maxPtY, minPtY + 1, maxPtY - 1, minPtY - 2, maxPtY + 2, SERIES_ROW_Y, 8, 7, 9, 4, 5, 3, 1, 0, 15, 17, 18}) {
                 if (!candidates.contains(y)) {
                     candidates.add(y);
                 }
@@ -1426,9 +1519,14 @@ public final class CircuitBuilder {
                 return yUp;
             }
         }
-        return isGroundNode(net) ? Math.max(16, maxPtY) : minPtY;
+        return isGroundNode(net) ? Math.max(GROUND_SYMBOL_Y, maxPtY) : minPtY;
     }
 
+    /**
+     * Verifies whether a candidate horizontal trunk at {@code trunkY} from {@code minX}
+     * to {@code maxX} and all its vertical drop-stubs to {@code pts} are free of
+     * collisions with other trunks, foreign pins, and component bodies.
+     */
     private static boolean isTrunkValid(
             int trunkY,
             String net,
@@ -1459,7 +1557,7 @@ public final class CircuitBuilder {
             int cx = pos[0];
             int cy = pos[1];
             int orient = c.getOrientation();
-            boolean horiz = (orient == 502 || orient == 504);
+            boolean horiz = (orient == ORIENT_WEST_EAST || orient == ORIENT_EAST_WEST);
             if (horiz) {
                 if (cy == trunkY && Math.max(cx - 1, minX) <= Math.min(cx + 1, maxX)) {
                     return false;
@@ -1480,6 +1578,10 @@ public final class CircuitBuilder {
         return true;
     }
 
+    /**
+     * Checks whether the vertical grid segment at column {@code x} between {@code y1}
+     * and {@code y2} passes through any foreign terminal or 2-port component body.
+     */
     private static boolean verticalSegmentBlocked(
             int x,
             int y1,
@@ -1503,7 +1605,7 @@ public final class CircuitBuilder {
             int cx = pos[0];
             int cy = pos[1];
             int orient = c.getOrientation();
-            boolean horiz = (orient == 502 || orient == 504);
+            boolean horiz = (orient == ORIENT_WEST_EAST || orient == ORIENT_EAST_WEST);
             if (horiz) {
                 if (x >= cx - 1 && x <= cx + 1 && cy >= y1 && cy <= y2) {
                     return true;
@@ -1517,6 +1619,10 @@ public final class CircuitBuilder {
         return false;
     }
 
+    /**
+     * Routes label-matched CONTROL signal nets into orthogonal L- or Z-shaped
+     * unit-stepped wires when explicit {@code control_connections} are not provided.
+     */
     private static void routeControlSignalNets(CircuitModel model, Map<String, Set<Point>> ctrlNetToPoints) {
         int netIdx = 0;
         for (Map.Entry<String, Set<Point>> entry : ctrlNetToPoints.entrySet()) {
@@ -1584,6 +1690,10 @@ public final class CircuitBuilder {
         }
     }
 
+    /**
+     * Appends unit-length horizontal or vertical grid steps from {@code from} (exclusive)
+     * to {@code to} (inclusive) into {@code out}.
+     */
     private static void appendLinearSteps(List<Point> out, Point from, Point to) {
         int dx = Integer.compare(to.x(), from.x());
         int dy = Integer.compare(to.y(), from.y());

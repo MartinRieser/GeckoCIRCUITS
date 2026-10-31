@@ -39,6 +39,18 @@ final class CircuitPatcher {
     private CircuitPatcher() {
     }
 
+    /**
+     * Updates one or more parameters on a named component inside a {@code .ipes} circuit file
+     * and writes the modified circuit back to disk.
+     *
+     * @param circuitPath   path to the source {@code .ipes} file
+     * @param componentName exact name of the component to modify
+     * @param parameters    map of catalog parameter names or {@code param<slot>} keys to numeric values
+     * @param outputPath    optional destination path (if {@code null}, updates {@code circuitPath} in place)
+     * @return status map containing applied parameter count and output file path
+     * @throws IOException                           if reading or writing fails
+     * @throws CircuitFileParser.CircuitParseException if the {@code .ipes} file is malformed
+     */
     static Map<String, Object> patchComponent(String circuitPath, String componentName,
                                               Map<String, Object> parameters,
                                               String outputPath) throws IOException,
@@ -114,6 +126,20 @@ final class CircuitPatcher {
         return null;
     }
 
+    /**
+     * Replaces the Java script code of a {@code JAVA_SCRIPT} / {@code C_JAVA_FUNCTION}
+     * control block inside a {@code .ipes} file and writes the updated model to disk.
+     *
+     * @param circuitPath     path to the source {@code .ipes} file
+     * @param blockName       name of the script control block
+     * @param sourceCode      main step-execution Java source code
+     * @param staticVariables optional field declarations for persistent state across steps
+     * @param staticCode      optional initialization or helper method code
+     * @param outputPath      optional destination path (if {@code null}, updates {@code circuitPath} in place)
+     * @return status map containing the updated block name and file path
+     * @throws IOException                           if reading or writing fails
+     * @throws CircuitFileParser.CircuitParseException if the {@code .ipes} file is malformed
+     */
     static Map<String, Object> setScriptCode(String circuitPath, String blockName, String sourceCode,
                                              String staticVariables, String staticCode,
                                              String outputPath) throws IOException,

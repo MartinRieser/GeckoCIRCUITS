@@ -317,8 +317,14 @@ function terminalPositionsWithPinMode(
     };
   }
 
-  // Global Net / Ground Terminal (classic LK_GLOBAL_TERMINAL): single terminal pin at the stem end
-  if ((component.type === LkComponentType.GLOBAL_TERMINAL || component.type === 31) && family !== 'CONTROL') {
+  // Global Net / Ground Terminal (classic LK_GLOBAL_TERMINAL=31, REL_GLOBAL_TERMINAL=32, TH_GLOBAL_TERMINAL=50): single terminal pin at the stem end
+  if (
+    (component.type === LkComponentType.GLOBAL_TERMINAL ||
+      component.type === 31 ||
+      component.type === 32 ||
+      component.type === 50) &&
+    family !== 'CONTROL'
+  ) {
     return {
       input: [{ x: center.x - dir.x * TWO_PORT_DIST, y: center.y - dir.y * TWO_PORT_DIST }],
       output: [],

@@ -34,11 +34,37 @@ public final class SchematicSvgRenderer {
     private static final double DEFAULT_GRID = 22.0;
     private static final double PADDING = 72.0;
 
+    /** Directional bitmask flag: wire or lead extends East (+X). */
+    private static final int DIR_EAST = 1;
+    /** Directional bitmask flag: wire or lead extends West (-X). */
+    private static final int DIR_WEST = 2;
+    /** Directional bitmask flag: wire or lead extends South (+Y). */
+    private static final int DIR_SOUTH = 4;
+    /** Directional bitmask flag: wire or lead extends North (-Y). */
+    private static final int DIR_NORTH = 8;
+
+    /** Orientation code: terminals point South then North (501). */
+    private static final int ORIENT_SOUTH_NORTH = 501;
+    /** Orientation code: terminals point West then East (502). */
+    private static final int ORIENT_WEST_EAST = 502;
+    /** Orientation code: terminals point North then South (503). */
+    private static final int ORIENT_NORTH_SOUTH = 503;
+    /** Orientation code: terminals point East then West (504). */
+    private static final int ORIENT_EAST_WEST = 504;
+
     private SchematicSvgRenderer() {
     }
 
     /**
-     * Renders a circuit file to SVG and optionally writes it to disk.
+     * Renders a {@code .ipes} circuit file to an SVG diagram and optionally writes it to disk.
+     *
+     * @param ipesPath   path to the input {@code .ipes} file
+     * @param outputPath optional destination path for the generated {@code .svg} file (may be {@code null})
+     * @param theme      color theme ({@code "dark"} or {@code "light"})
+     * @param scale      coordinate scale factor (defaults to {@code 1.0} if {@code <= 0.1})
+     * @return map containing status, component/wire counts, active theme, and full SVG string
+     * @throws IOException                           if reading or writing files fails
+     * @throws CircuitFileParser.CircuitParseException if the {@code .ipes} file is malformed
      */
     public static Map<String, Object> exportSvg(
             Path ipesPath,
@@ -70,7 +96,13 @@ public final class SchematicSvgRenderer {
     }
 
     /**
-     * Renders a {@link CircuitModel} directly to SVG string.
+     * Renders a {@link CircuitModel} directly to an SVG string.
+     *
+     * @param model parsed circuit model containing LK, CONTROL, and THERMAL components and connections
+     * @param title header title displayed in the top-left watermark
+     * @param theme color theme ({@code "dark"} or {@code "light"})
+     * @param scale coordinate scale factor
+     * @return complete UTF-8 SVG document string
      */
     public static String renderToSvg(CircuitModel model, String title, String theme, double scale) {
         boolean dark = "dark".equalsIgnoreCase(theme);
@@ -263,7 +295,8 @@ public final class SchematicSvgRenderer {
     }
 
     /**
-     * Records directional bitmask (1=E, 2=W, 4=S, 8=N) along every unit grid step of an orthogonal polyline.
+     * Records directional bitmask ({@link #DIR_EAST}, {@link #DIR_WEST}, {@link #DIR_SOUTH}, {@link #DIR_NORTH})
+     * along every unit grid step of an orthogonal polyline.
      */
     private static void recordSegmentDirections(List<int[]> pts, Map<String, Integer> dirMaskByPoint) {
         for (int i = 0; i < pts.size() - 1; i++) {
@@ -274,8 +307,8 @@ public final class SchematicSvgRenderer {
             int dx = Integer.compare(x2, x1);
             int dy = Integer.compare(y2, y1);
             if (dx == 0 && dy == 0) continue;
-            int fwdBit = dx > 0 ? 1 : (dx < 0 ? 2 : (dy > 0 ? 4 : 8));
-            int revBit = dx > 0 ? 2 : (dx < 0 ? 1 : (dy > 0 ? 8 : 4));
+            int fwdBit = dx > 0 ? DIR_EAST : (dx < 0 ? DIR_WEST : (dy > 0 ? DIR_SOUTH : DIR_NORTH));
+            int revBit = dx > 0 ? DIR_WEST : (dx < 0 ? DIR_EAST : (dy > 0 ? DIR_NORTH : DIR_SOUTH));
             int cx = x1;
             int cy = y1;
             while (cx != x2 || cy != y2) {
@@ -290,7 +323,7 @@ public final class SchematicSvgRenderer {
     }
 
     /**
-     * Records the inward component-lead direction at each 2-terminal LK/THERM pin
+     * Records the inward component-lead direction at each LK/THERM pin
      * so T-junctions where a component lead taps onto a bus or meets two wires
      * receive a standard schematic junction dot.
      */
@@ -304,45 +337,78 @@ public final class SchematicSvgRenderer {
             if (pos == null || pos.length < 2) continue;
             int cx = pos[0];
             int cy = pos[1];
+            int orient = c.getOrientation();
             if (typ == 31 || typ == 32 || typ == 50) {
-                int orient = c.getOrientation();
                 int px = cx;
                 int py = cy;
                 int inwardDir;
-                if (orient == 501) {
+                if (orient == ORIENT_SOUTH_NORTH) {
                     py = cy + 2;
-                    inwardDir = 8;
-                } else if (orient == 502) {
+                    inwardDir = DIR_NORTH;
+                } else if (orient == ORIENT_WEST_EAST) {
                     px = cx - 2;
-                    inwardDir = 1;
-                } else if (orient == 504) {
+                    inwardDir = DIR_EAST;
+                } else if (orient == ORIENT_EAST_WEST) {
                     px = cx + 2;
-                    inwardDir = 2;
+                    inwardDir = DIR_WEST;
                 } else {
                     py = cy - 2;
-                    inwardDir = 4;
+                    inwardDir = DIR_SOUTH;
                 }
                 String k = px + "," + py;
                 dirMaskByPoint.put(k, dirMaskByPoint.getOrDefault(k, 0) | inwardDir);
                 continue;
             }
-            int orient = c.getOrientation();
-            if (orient == 502 || orient == 504) {
+            if (typ == 23) { // Ideal Transformer (4 pins: 2 primary, 2 secondary)
+                if (orient == ORIENT_WEST_EAST || orient == ORIENT_EAST_WEST) {
+                    for (int dy : new int[]{-1, 1}) {
+                        String kL = (cx - 2) + "," + (cy + dy);
+                        String kR = (cx + 2) + "," + (cy + dy);
+                        dirMaskByPoint.put(kL, dirMaskByPoint.getOrDefault(kL, 0) | DIR_EAST);
+                        dirMaskByPoint.put(kR, dirMaskByPoint.getOrDefault(kR, 0) | DIR_WEST);
+                    }
+                } else {
+                    for (int dx : new int[]{-1, 1}) {
+                        String kT = (cx + dx) + "," + (cy - 2);
+                        String kB = (cx + dx) + "," + (cy + 2);
+                        dirMaskByPoint.put(kT, dirMaskByPoint.getOrDefault(kT, 0) | DIR_SOUTH);
+                        dirMaskByPoint.put(kB, dirMaskByPoint.getOrDefault(kB, 0) | DIR_NORTH);
+                    }
+                }
+                continue;
+            }
+            if (orient == ORIENT_WEST_EAST || orient == ORIENT_EAST_WEST) {
                 // Horizontal: left pin (cx-2, cy) lead goes East (1), right pin (cx+2, cy) lead goes West (2)
                 String kL = (cx - 2) + "," + cy;
                 String kR = (cx + 2) + "," + cy;
-                dirMaskByPoint.put(kL, dirMaskByPoint.getOrDefault(kL, 0) | 1);
-                dirMaskByPoint.put(kR, dirMaskByPoint.getOrDefault(kR, 0) | 2);
+                dirMaskByPoint.put(kL, dirMaskByPoint.getOrDefault(kL, 0) | DIR_EAST);
+                dirMaskByPoint.put(kR, dirMaskByPoint.getOrDefault(kR, 0) | DIR_WEST);
+                if (typ == 33) { // BJT base terminal
+                    int by = orient == ORIENT_WEST_EAST ? cy + 2 : cy - 2;
+                    int bDir = orient == ORIENT_WEST_EAST ? DIR_NORTH : DIR_SOUTH;
+                    String kBase = cx + "," + by;
+                    dirMaskByPoint.put(kBase, dirMaskByPoint.getOrDefault(kBase, 0) | bDir);
+                }
             } else {
                 // Vertical: top pin (cx, cy-2) lead goes South (4), bottom pin (cx, cy+2) lead goes North (8)
                 String kT = cx + "," + (cy - 2);
                 String kB = cx + "," + (cy + 2);
-                dirMaskByPoint.put(kT, dirMaskByPoint.getOrDefault(kT, 0) | 4);
-                dirMaskByPoint.put(kB, dirMaskByPoint.getOrDefault(kB, 0) | 8);
+                dirMaskByPoint.put(kT, dirMaskByPoint.getOrDefault(kT, 0) | DIR_SOUTH);
+                dirMaskByPoint.put(kB, dirMaskByPoint.getOrDefault(kB, 0) | DIR_NORTH);
+                if (typ == 33) { // BJT base terminal
+                    int bx = orient == ORIENT_SOUTH_NORTH ? cx + 2 : cx - 2;
+                    int bDir = orient == ORIENT_SOUTH_NORTH ? DIR_WEST : DIR_EAST;
+                    String kBase = bx + "," + cy;
+                    dirMaskByPoint.put(kBase, dirMaskByPoint.getOrDefault(kBase, 0) | bDir);
+                }
             }
         }
     }
 
+    /**
+     * Selects the midpoint of the longest segment of an orthogonal wire polyline
+     * (strongly preferring horizontal segments) to anchor its net label badge.
+     */
     private static double[] findBestBadgeAnchor(
             List<int[]> pts,
             int minGx,
@@ -724,6 +790,34 @@ public final class SchematicSvgRenderer {
                 sb.append(String.format(Locale.ROOT, "      <polygon points=\"0,%.1f %.1f,%.1f %.1f,%.1f\" fill=\"var(--comp-stroke)\" />\n",
                         11.0 * s, -4.5 * s, 8.2 * s, -0.6 * s, 5.5 * s));
             }
+            case 23 -> { // Ideal Transformer (4-pin: primary at -grid, secondary at +grid)
+                double wx = DEFAULT_GRID * s; // 1 grid unit offset left/right
+                // Primary winding (-wx)
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"%.1f\" y2=\"%.1f\" />\n", -wx, -p, -wx, -14.0 * s));
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"%.1f\" y2=\"%.1f\" />\n", -wx, 14.0 * s, -wx, p));
+                sb.append(String.format(Locale.ROOT,
+                        "      <path class=\"comp-lead\" d=\"M %.1f,%.1f A %.1f,%.1f 0 0,1 %.1f,%.1f A %.1f,%.1f 0 0,1 %.1f,0 A %.1f,%.1f 0 0,1 %.1f,%.1f A %.1f,%.1f 0 0,1 %.1f,%.1f\" stroke-width=\"2.0\" />\n",
+                        -wx, -14.0 * s,
+                        4.2 * s, 3.5 * s, -wx, -7.0 * s,
+                        4.2 * s, 3.5 * s, -wx,
+                        4.2 * s, 3.5 * s, -wx, 7.0 * s,
+                        4.2 * s, 3.5 * s, -wx, 14.0 * s));
+                // Core lines
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"%.1f\" y2=\"%.1f\" stroke-width=\"1.6\" />\n",
+                        -2.0 * s, -14.0 * s, -2.0 * s, 14.0 * s));
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"%.1f\" y2=\"%.1f\" stroke-width=\"1.6\" />\n",
+                        2.0 * s, -14.0 * s, 2.0 * s, 14.0 * s));
+                // Secondary winding (+wx)
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"%.1f\" y2=\"%.1f\" />\n", wx, -p, wx, -14.0 * s));
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"%.1f\" y2=\"%.1f\" />\n", wx, 14.0 * s, wx, p));
+                sb.append(String.format(Locale.ROOT,
+                        "      <path class=\"comp-lead\" d=\"M %.1f,%.1f A %.1f,%.1f 0 0,0 %.1f,%.1f A %.1f,%.1f 0 0,0 %.1f,0 A %.1f,%.1f 0 0,0 %.1f,%.1f A %.1f,%.1f 0 0,0 %.1f,%.1f\" stroke-width=\"2.0\" />\n",
+                        wx, -14.0 * s,
+                        4.2 * s, 3.5 * s, wx, -7.0 * s,
+                        4.2 * s, 3.5 * s, wx,
+                        4.2 * s, 3.5 * s, wx, 7.0 * s,
+                        4.2 * s, 3.5 * s, wx, 14.0 * s));
+            }
             case 28 -> { // MOSFET (typ 28)
                 sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"0\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" />\n", -p, -11.0 * s));
                 sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"0\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" />\n", 11.0 * s, p));
@@ -744,6 +838,19 @@ public final class SchematicSvgRenderer {
                 sb.append(String.format(Locale.ROOT, "      <polyline class=\"comp-lead\" points=\"%.1f,0 0,0 0,%.1f %.1f,%.1f\" />\n",
                         -4.0 * s, 7.5 * s, -4.0 * s, 7.5 * s));
                 sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"0\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" />\n", 7.5 * s, 11.0 * s));
+            }
+            case 33 -> { // BJT (typ 33: 3-pin with base terminal at (-p, 0))
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"0\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" />\n", -p, -11.0 * s));
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"0\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" />\n", 11.0 * s, p));
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"0\" x2=\"%.1f\" y2=\"0\" />\n", -p, -4.0 * s));
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"%.1f\" y2=\"%.1f\" stroke-width=\"2.4\" />\n",
+                        -4.0 * s, -10.0 * s, -4.0 * s, 10.0 * s));
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" stroke-width=\"1.8\" />\n",
+                        -4.0 * s, -4.5 * s, -11.0 * s));
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" stroke-width=\"1.8\" />\n",
+                        -4.0 * s, 4.5 * s, 11.0 * s));
+                sb.append(String.format(Locale.ROOT, "      <polygon points=\"0,%.1f %.1f,%.1f %.1f,%.1f\" fill=\"var(--comp-stroke)\" />\n",
+                        11.0 * s, -4.5 * s, 8.2 * s, -0.6 * s, 5.5 * s));
             }
             case 7 -> { // Ideal Switch (contact blade)
                 sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"0\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" />\n", -p, -8.0 * s));
@@ -827,13 +934,51 @@ public final class SchematicSvgRenderer {
                     "      <rect class=\"comp-body\" x=\"%.1f\" y=\"%.1f\" width=\"%.1f\" height=\"%.1f\" rx=\"5\" fill=\"var(--comp-accent)\" stroke=\"var(--wire-ctrl)\" />\n",
                     -boxW / 2.0, topY, boxW, boxH));
 
-            String label = comp.getName().toUpperCase(Locale.ROOT).contains("SPWM") ? "SPWM"
-                    : (comp.getName().toUpperCase(Locale.ROOT).contains("PI") ? "PI / PWM" : "MCU");
+            String label = resolveControlBadgeLabel(comp);
             double midY = (topY + bottomY) * 0.5 + 3.5 * s;
             sb.append(String.format(Locale.ROOT,
                     "      <text font-size=\"8.5\" font-weight=\"bold\" fill=\"var(--text-main)\" text-anchor=\"middle\" x=\"0\" y=\"%.1f\">%s</text>\n",
                     midY, escapeXml(label)));
         }
+    }
+
+    /**
+     * Resolves a concise schematic symbol badge for a control block based on its
+     * component type code, falling back to name-based heuristics for script blocks.
+     */
+    private static String resolveControlBadgeLabel(ComponentData comp) {
+        int typ = comp.getType();
+        return switch (typ) {
+            case 3, 1005 -> "CONST";
+            case 4, 1004 -> "SIG";
+            case 7, 1006 -> "GAIN";
+            case 8, 1008 -> "PT1";
+            case 9, 1009 -> "INT";
+            case 10, 1007 -> "PI";
+            case 12, 1014 -> "+";
+            case 13, 1015 -> "−";
+            case 14, 1016 -> "×";
+            case 15, 1017 -> "÷";
+            case 16, 1018 -> "|x|";
+            case 17, 1020 -> "SIGN";
+            case 19, 1010 -> "CMP";
+            case 20, 1025 -> "S/H";
+            case 21, 1024 -> "Z⁻¹";
+            case 26, 1023 -> "LIMIT";
+            case 28, 1026 -> "CNT";
+            case 45, 1011 -> "AND";
+            case 46, 1012 -> "OR";
+            case 47, 1013 -> "NOT";
+            case 48, 1027 -> "XOR";
+            case 50, 1022 -> "DT";
+            case 84, 1021 -> "MUX";
+            default -> {
+                String upper = comp.getName() != null ? comp.getName().toUpperCase(Locale.ROOT) : "";
+                if (upper.contains("SPWM")) yield "SPWM";
+                if (upper.contains("PI")) yield "PI / PWM";
+                yield "MCU";
+            }
+        };
     }
 
     private static int countValidLabels(String[] labels) {

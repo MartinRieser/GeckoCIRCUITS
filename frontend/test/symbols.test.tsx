@@ -317,5 +317,45 @@ describe('symbols: SymbolPreview and SymbolByType fallback', () => {
     const { container: igbtCont } = render(<svg><SymbolByType type={10} u={10} family="LK" /></svg>);
     expect(igbtCont.textContent).toContain('IGBT');
   });
+
+  it('renders IGBT, MOSFET, and BJT without enclosing circles and with diode-matched 1.10*u channel width', () => {
+    for (const type of [10, 28, 33]) {
+      const { container } = render(
+        <svg>
+          <SymbolByType type={type} u={10} family="LK" />
+        </svg>,
+      );
+      expect(container.querySelector('circle')).toBeNull();
+      const lines = Array.from(container.querySelectorAll('line'));
+      // Collector/Drain lead reaches -20 (-2*u) and Emitter/Source lead reaches +20 (+2*u)
+      expect(lines.some((l) => l.getAttribute('x1') === '-20' && l.getAttribute('x2') === '-7')).toBe(true);
+      expect(lines.some((l) => l.getAttribute('x1') === '7' && l.getAttribute('x2') === '20')).toBe(true);
+    }
+  });
+
+  it('orients GlobalTerminalSymbol (31, 32, 50) at rotate(0) for NORTH_SOUTH (503)', () => {
+    for (const [family, type] of [
+      ['LK', 31],
+      ['LK', 32],
+      ['THERM', 50],
+    ] as const) {
+      const comp: EditorComponent = {
+        id: `GND_${type}`,
+        name: `GND_${type}`,
+        family,
+        type,
+        position: [54, 16],
+        orientation: Orientation.NORTH_SOUTH,
+        parameters: {},
+      };
+      const { container } = render(
+        <svg>
+          <ComponentSymbol component={comp} dpix={10} />
+        </svg>,
+      );
+      const rootG = container.querySelector('g');
+      expect(rootG?.getAttribute('transform')).toBe('rotate(0)');
+    }
+  });
 });
 

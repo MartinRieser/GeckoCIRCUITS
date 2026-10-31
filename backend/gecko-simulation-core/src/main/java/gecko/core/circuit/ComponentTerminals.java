@@ -159,7 +159,9 @@ public final class ComponentTerminals {
             }
         }
 
-        if (type == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber()) {
+        if (type == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber()
+                || type == CircuitTypCore.REL_GLOBAL_TERMINAL.getTypeNumber()
+                || type == CircuitTypCore.TH_GLOBAL_TERMINAL.getTypeNumber()) {
             return List.of(offset(x, y, dir, -TERMINAL_DISTANCE));
         }
 

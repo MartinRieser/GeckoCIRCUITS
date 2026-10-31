@@ -18,6 +18,13 @@ final class IpesSupport {
     private IpesSupport() {
     }
 
+    /**
+     * Resolves the GeckoCIRCUITS workspace root directory by checking the
+     * {@code GECKO_HOME} environment variable first, then walking up parent
+     * directories from the current working directory until locating the repository root.
+     *
+     * @return normalized absolute path to the workspace root
+     */
     static Path workspaceRoot() {
         String home = System.getenv("GECKO_HOME");
         if (home != null && !home.isBlank()) {
@@ -37,7 +44,13 @@ final class IpesSupport {
         return cur;
     }
 
-    /** Relative paths resolve against the workspace root, like the Python server. */
+    /**
+     * Resolves a user-supplied file path string, anchoring relative paths against
+     * {@link #workspaceRoot()}.
+     *
+     * @param path absolute or workspace-relative file path
+     * @return resolved {@link Path}
+     */
     static Path resolve(String path) {
         if (path == null || path.isBlank()) {
             throw new IllegalArgumentException("circuit_path is required");
@@ -46,10 +59,21 @@ final class IpesSupport {
         return candidate.isAbsolute() ? candidate : workspaceRoot().resolve(candidate);
     }
 
+    /**
+     * Returns {@code true} if the specified path exists on disk.
+     */
     static boolean exists(Path path) {
         return Files.exists(path);
     }
 
+    /**
+     * Checks whether a {@code .ipes} file on disk is GZIP-compressed by inspecting
+     * its 2-byte magic header ({@code 0x1f 0x8b}).
+     *
+     * @param file path to inspect
+     * @return {@code true} if the file exists and starts with the GZIP magic bytes
+     * @throws IOException if reading the file fails
+     */
     static boolean isGzipped(Path file) throws IOException {
         if (!Files.exists(file)) {
             return false;
@@ -58,6 +82,14 @@ final class IpesSupport {
         return raw.length >= 2 && raw[0] == GZIP_MAGIC[0] && raw[1] == GZIP_MAGIC[1];
     }
 
+    /**
+     * Reads the UTF-8 text content of a {@code .ipes} file, transparently
+     * decompressing it if GZIP-encoded.
+     *
+     * @param file path to the {@code .ipes} file
+     * @return decoded UTF-8 text content
+     * @throws IOException if reading or decompression fails
+     */
     static String readIpesText(Path file) throws IOException {
         byte[] raw = Files.readAllBytes(file);
         if (raw.length >= 2 && raw[0] == GZIP_MAGIC[0] && raw[1] == GZIP_MAGIC[1]) {
@@ -68,6 +100,15 @@ final class IpesSupport {
         return new String(raw, StandardCharsets.UTF_8);
     }
 
+    /**
+     * Writes UTF-8 text content to a {@code .ipes} file, optionally GZIP-compressing
+     * the output stream.
+     *
+     * @param file     destination file path
+     * @param content  raw text content to write
+     * @param compress {@code true} to GZIP-compress, {@code false} for plain text
+     * @throws IOException if creating directories or writing fails
+     */
     static void writeIpesText(Path file, String content, boolean compress) throws IOException {
         Files.createDirectories(file.toAbsolutePath().getParent());
         if (compress) {

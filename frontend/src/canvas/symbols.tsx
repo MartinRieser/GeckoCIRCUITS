@@ -87,8 +87,11 @@ export function ComponentSymbol({
     (component.family === 'LK' || !component.family) &&
     (component.type === 23 || component.type === LkComponentType.TRANSFORMER);
   const isGlobalTerminal =
-    (component.family === 'LK' || !component.family) &&
-    (component.type === 31 || component.type === LkComponentType.GLOBAL_TERMINAL);
+    component.family !== 'CONTROL' &&
+    (component.type === 31 ||
+      component.type === 32 ||
+      component.type === 50 ||
+      component.type === LkComponentType.GLOBAL_TERMINAL);
   const angle = component.family === 'CONTROL' || isGlobalTerminal
     ? controlOrientationAngle(component.orientation)
     : isTransformer
@@ -640,6 +643,12 @@ function Thyristor({ u }: { u: number }) {
   );
 }
 
+/**
+ * Renders IEC 60617 / IEEE 315 un-circled semiconductor transistor symbols
+ * for IGBT (`type=10`), MOSFET (`type=28`), and BJT (`type=33`), scaled to
+ * match the visual footprint of passive components and diodes (`1.10 * u`
+ * channel bar width, terminal leads extending to `±LEAD * u`).
+ */
 function Transistor({ type, u }: { type: number; u: number }) {
   const isMosfet = type === 28;
   const isIgbt = type === 10;
@@ -912,6 +921,11 @@ function TerminalSymbol({ u }: { u: number }) {
   );
 }
 
+/**
+ * Renders a single-pin global ground terminal symbol (`LK_GLOBAL_TERMINAL=31`,
+ * `REL_GLOBAL_TERMINAL=32`, `TH_GLOBAL_TERMINAL=50`) with its vertical stem
+ * connecting at `(0, -LEAD * u)` and horizontal ground bars centered at `(0, 0)`.
+ */
 function GlobalTerminalSymbol({ u }: { u: number }) {
   return (
     <g>

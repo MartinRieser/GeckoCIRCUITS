@@ -529,7 +529,7 @@ public class NetlistBuilder {
         Map<GridPoint, Integer> terminalUsageCount = new HashMap<>();
         for (CircuitModel.ComponentData comp : components) {
             GridPoint[] terms = computeComponentTerminalsAny(comp);
-            int termCount = comp.getType() == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber() ? 1 : terms.length;
+            int termCount = isGlobalTerminal(comp.getType()) ? 1 : terms.length;
             for (int t = 0; t < termCount; t++) {
                 terminalUsageCount.put(terms[t], terminalUsageCount.getOrDefault(terms[t], 0) + 1);
             }
@@ -540,7 +540,7 @@ public class NetlistBuilder {
         for (CircuitModel.ComponentData comp : components) {
             int typ = comp.getType();
             GridPoint[] terms = computeComponentTerminals(comp);
-            int termCount = typ == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber() ? 1 : 2;
+            int termCount = isGlobalTerminal(typ) ? 1 : 2;
 
             // Register labels / grounds
             for (int t = 0; t < termCount; t++) {
@@ -587,7 +587,7 @@ public class NetlistBuilder {
                 }
             }
 
-            if (typ == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber()) {
+            if (isGlobalTerminal(typ)) {
                 groundPoints.add(wireNets.netKey(terms[0]));
             }
 
@@ -956,6 +956,12 @@ public class NetlistBuilder {
         return type != null && !type.isBranchComponent();
     }
 
+    private static boolean isGlobalTerminal(int typ) {
+        return typ == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber()
+                || typ == CircuitTypCore.REL_GLOBAL_TERMINAL.getTypeNumber()
+                || typ == CircuitTypCore.TH_GLOBAL_TERMINAL.getTypeNumber();
+    }
+
     /**
      * Extracts simulation parameter array (up to 40 parameters) for a circuit element.
      * Merges raw parameters array, indexed map parameters ("param0".."param39"),
@@ -1025,7 +1031,7 @@ public class NetlistBuilder {
         Map<GridPoint, Integer> terminalUsageCount = new HashMap<>();
         for (CircuitModel.ComponentData comp : components) {
             GridPoint[] terms = computeComponentTerminalsAny(comp);
-            int termCount = comp.getType() == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber() ? 1 : terms.length;
+            int termCount = isGlobalTerminal(comp.getType()) ? 1 : terms.length;
             for (int t = 0; t < termCount; t++) {
                 terminalUsageCount.put(terms[t], terminalUsageCount.getOrDefault(terms[t], 0) + 1);
             }
@@ -1097,7 +1103,7 @@ public class NetlistBuilder {
         Map<String, Integer> rootToNode = new HashMap<>();
 
         for (CircuitModel.ComponentData comp : components) {
-            if (comp.getType() == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber()) {
+            if (isGlobalTerminal(comp.getType())) {
                 GridPoint[] terms = computeComponentTerminals(comp);
                 rootToNode.put(wireNets.netKey(terms[0]), 0);
             }
@@ -1255,7 +1261,7 @@ public class NetlistBuilder {
 
         boolean hasExplicitGround = false;
         for (CircuitModel.ComponentData comp : components) {
-            if (comp.getType() == CircuitTypCore.LK_GLOBAL_TERMINAL.getTypeNumber()) {
+            if (isGlobalTerminal(comp.getType())) {
                 hasExplicitGround = true;
                 break;
             }
