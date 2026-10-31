@@ -607,7 +607,8 @@ function CurrentSource({ u }: { u: number }) {
 function Diode({ u }: { u: number }) {
   return (
     <g>
-      {leads(u)}
+      <line x1={-LEAD * u} y1={0} x2={-0.55 * u} y2={0} strokeWidth={1.8} />
+      <line x1={0.55 * u} y1={0} x2={LEAD * u} y2={0} strokeWidth={1.8} />
       <path
         d={`M ${-0.55 * u} ${-0.55 * u} L ${-0.55 * u} ${0.55 * u} L ${0.55 * u} 0 z`}
         fill="rgba(255,255,255,0.08)"
@@ -643,66 +644,62 @@ function Transistor({ type, u }: { type: number; u: number }) {
   const isMosfet = type === 28;
   const isIgbt = type === 10;
   const isBjt = type === 33;
-  const R = 0.65 * u;
 
   return (
     <g className="symbol-transistor">
-      {/* Collector / Drain terminal lead (Terminal 0 at -LEAD * u) */}
-      <line x1={-LEAD * u} y1={0} x2={-0.45 * u} y2={0} strokeWidth={1.8} />
-      {/* Emitter / Source terminal lead (Terminal 1 at +LEAD * u) */}
-      <line x1={0.45 * u} y1={0} x2={LEAD * u} y2={0} strokeWidth={1.8} />
+      {/* Collector / Drain terminal lead (Terminal 0 at -LEAD * u, connecting at -0.70 * u) */}
+      <line x1={-LEAD * u} y1={0} x2={-0.70 * u} y2={0} strokeWidth={1.8} />
+      {/* Emitter / Source terminal lead (Terminal 1 at +LEAD * u, connecting at +0.70 * u) */}
+      <line x1={0.70 * u} y1={0} x2={LEAD * u} y2={0} strokeWidth={1.8} />
 
-      {/* Enclosure Circle */}
-      <circle cx={0} cy={0} r={R} fill="none" stroke="currentColor" strokeWidth={1.5} />
-
-      {/* Channel Bar: horizontal line at y = 0.16 * u */}
+      {/* Channel Bar: horizontal line at y = 0.32 * u (width 1.10 * u, matching Diode) */}
       {isMosfet ? (
         <>
-          <line x1={-0.35 * u} y1={0.16 * u} x2={-0.15 * u} y2={0.16 * u} strokeWidth={2.2} />
-          <line x1={-0.08 * u} y1={0.16 * u} x2={0.08 * u} y2={0.16 * u} strokeWidth={2.2} />
-          <line x1={0.15 * u} y1={0.16 * u} x2={0.35 * u} y2={0.16 * u} strokeWidth={2.2} />
+          <line x1={-0.55 * u} y1={0.32 * u} x2={-0.22 * u} y2={0.32 * u} strokeWidth={2.4} />
+          <line x1={-0.10 * u} y1={0.32 * u} x2={0.10 * u} y2={0.32 * u} strokeWidth={2.4} />
+          <line x1={0.22 * u} y1={0.32 * u} x2={0.55 * u} y2={0.32 * u} strokeWidth={2.4} />
         </>
       ) : (
-        <line x1={-0.35 * u} y1={0.16 * u} x2={0.35 * u} y2={0.16 * u} strokeWidth={isIgbt ? 2.4 : 2.2} />
+        <line x1={-0.55 * u} y1={0.32 * u} x2={0.55 * u} y2={0.32 * u} strokeWidth={isIgbt ? 2.6 : 2.4} />
       )}
 
       {/* Insulated Gate Bar for MOSFET and IGBT */}
       {!isBjt && (
         <>
-          <line x1={-0.32 * u} y1={0.30 * u} x2={0.32 * u} y2={0.30 * u} strokeWidth={2.0} />
-          <line x1={0} y1={0.30 * u} x2={0} y2={R} strokeWidth={1.6} />
+          <line x1={-0.50 * u} y1={0.50 * u} x2={0.50 * u} y2={0.50 * u} strokeWidth={2.0} />
+          <line x1={0} y1={0.50 * u} x2={0} y2={0.85 * u} strokeWidth={1.6} />
         </>
       )}
 
       {/* Direct Base lead for BJT */}
       {isBjt && (
-        <line x1={0} y1={0.16 * u} x2={0} y2={R} strokeWidth={1.6} />
+        <line x1={0} y1={0.32 * u} x2={0} y2={0.85 * u} strokeWidth={1.6} />
       )}
 
-      {/* Collector diagonal: from (-0.45 * u, 0) to (-0.16 * u, 0.16 * u) */}
-      <line x1={-0.45 * u} y1={0} x2={-0.16 * u} y2={0.16 * u} strokeWidth={1.6} />
+      {/* Collector diagonal: from (-0.70 * u, 0) to (-0.25 * u, 0.32 * u) */}
+      <line x1={-0.70 * u} y1={0} x2={-0.25 * u} y2={0.32 * u} strokeWidth={1.8} />
 
-      {/* Emitter diagonal: from (0.16 * u, 0.16 * u) to (0.45 * u, 0) */}
-      <line x1={0.16 * u} y1={0.16 * u} x2={0.45 * u} y2={0} strokeWidth={1.6} />
+      {/* Emitter diagonal: from (0.25 * u, 0.32 * u) to (0.70 * u, 0) */}
+      <line x1={0.25 * u} y1={0.32 * u} x2={0.70 * u} y2={0} strokeWidth={1.8} />
 
-      {/* Emitter arrow pointing outward towards (0.45 * u, 0) */}
+      {/* Emitter arrow pointing outward towards (0.70 * u, 0) */}
       {isMosfet ? (
         <polygon
-          points={`${0.06 * u},${0.06 * u} ${-0.06 * u},${0.06 * u} 0,${0.16 * u}`}
+          points={`${0.08 * u},${0.18 * u} ${-0.08 * u},${0.18 * u} 0,${0.32 * u}`}
           fill="currentColor"
         />
       ) : (
         <polygon
-          points={`${0.45 * u},0 ${0.30 * u},${-0.07 * u} ${0.35 * u},${0.06 * u}`}
+          points={`${0.70 * u},0 ${0.48 * u},${-0.10 * u} ${0.54 * u},${0.08 * u}`}
           fill="currentColor"
         />
       )}
 
-      {/* Device family badge placed cleanly in open top area */}
+      {/* Device family badge placed cleanly above diagonals */}
       <text
         x={0}
-        y={-0.24 * u}
-        fontSize={0.24 * u}
+        y={-0.18 * u}
+        fontSize={0.30 * u}
         fill="currentColor"
         stroke="none"
         fontWeight="bold"

@@ -690,46 +690,44 @@ public final class SchematicSvgRenderer {
                 }
             }
             case 10, 11 -> { // IGBT (typ 10)
-                // Collector (-p) and Emitter (+p) leads
-                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"0\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" />\n", -p, -9.0 * s));
-                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"0\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" />\n", 9.0 * s, p));
-                // Enclosure circle
-                sb.append(String.format(Locale.ROOT, "      <circle class=\"comp-body\" cx=\"0\" cy=\"0\" r=\"%.1f\" />\n", 12.5 * s));
-                // Gate plate & channel bar
-                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"0\" x2=\"%.1f\" y2=\"0\" />\n", -11.0 * s, -6.5 * s));
+                // Collector (-p) and Emitter (+p) leads scaled to match resistor/diode proportion
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"0\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" />\n", -p, -11.0 * s));
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"0\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" />\n", 11.0 * s, p));
+                // Gate stub & plate (insulated gate)
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"0\" x2=\"%.1f\" y2=\"0\" />\n", -14.0 * s, -7.5 * s));
                 sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"%.1f\" y2=\"%.1f\" stroke-width=\"2.0\" />\n",
-                        -6.5 * s, -6.5 * s, -6.5 * s, 6.5 * s));
-                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"%.1f\" y2=\"%.1f\" stroke-width=\"2.0\" />\n",
-                        -3.5 * s, -7.5 * s, -3.5 * s, 7.5 * s));
+                        -7.5 * s, -9.0 * s, -7.5 * s, 9.0 * s));
+                // Solid channel bar
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"%.1f\" y2=\"%.1f\" stroke-width=\"2.4\" />\n",
+                        -4.0 * s, -10.0 * s, -4.0 * s, 10.0 * s));
                 // Collector diagonal & Emitter diagonal with arrow
-                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" />\n",
-                        -3.5 * s, -3.5 * s, -9.0 * s));
-                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" />\n",
-                        -3.5 * s, 3.5 * s, 9.0 * s));
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" stroke-width=\"1.8\" />\n",
+                        -4.0 * s, -4.5 * s, -11.0 * s));
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" stroke-width=\"1.8\" />\n",
+                        -4.0 * s, 4.5 * s, 11.0 * s));
                 sb.append(String.format(Locale.ROOT, "      <polygon points=\"0,%.1f %.1f,%.1f %.1f,%.1f\" fill=\"var(--comp-stroke)\" />\n",
-                        9.0 * s, -3.8 * s, 6.8 * s, -0.5 * s, 4.5 * s));
+                        11.0 * s, -4.5 * s, 8.2 * s, -0.6 * s, 5.5 * s));
             }
             case 28 -> { // MOSFET (typ 28)
-                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"0\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" />\n", -p, -8.5 * s));
-                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"0\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" />\n", 8.5 * s, p));
-                sb.append(String.format(Locale.ROOT, "      <circle class=\"comp-body\" cx=\"0\" cy=\"0\" r=\"%.1f\" />\n", 12.5 * s));
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"0\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" />\n", -p, -11.0 * s));
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"0\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" />\n", 11.0 * s, p));
                 // Gate plate
-                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"0\" x2=\"%.1f\" y2=\"0\" />\n", -11.0 * s, -6.5 * s));
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"0\" x2=\"%.1f\" y2=\"0\" />\n", -14.0 * s, -7.5 * s));
                 sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"%.1f\" y2=\"%.1f\" stroke-width=\"2.0\" />\n",
-                        -6.5 * s, -6.5 * s, -6.5 * s, 6.5 * s));
+                        -7.5 * s, -9.0 * s, -7.5 * s, 9.0 * s));
                 // 3-segment channel bar
                 sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"%.1f\" y2=\"%.1f\" stroke-width=\"2.0\" />\n",
-                        -3.5 * s, -7.5 * s, -3.5 * s, -3.5 * s));
+                        -4.0 * s, -10.0 * s, -4.0 * s, -5.0 * s));
                 sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"%.1f\" y2=\"%.1f\" stroke-width=\"2.0\" />\n",
-                        -3.5 * s, -2.0 * s, -3.5 * s, 2.0 * s));
+                        -4.0 * s, -2.5 * s, -4.0 * s, 2.5 * s));
                 sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"%.1f\" y2=\"%.1f\" stroke-width=\"2.0\" />\n",
-                        -3.5 * s, 3.5 * s, -3.5 * s, 7.5 * s));
+                        -4.0 * s, 5.0 * s, -4.0 * s, 10.0 * s));
                 // Drain/Source connections
                 sb.append(String.format(Locale.ROOT, "      <polyline class=\"comp-lead\" points=\"%.1f,%.1f 0,%.1f 0,%.1f\" />\n",
-                        -3.5 * s, -5.5 * s, -5.5 * s, -8.5 * s));
+                        -4.0 * s, -7.5 * s, -7.5 * s, -11.0 * s));
                 sb.append(String.format(Locale.ROOT, "      <polyline class=\"comp-lead\" points=\"%.1f,0 0,0 0,%.1f %.1f,%.1f\" />\n",
-                        -3.5 * s, 5.5 * s, -3.5 * s, 5.5 * s));
-                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"0\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" />\n", 5.5 * s, 8.5 * s));
+                        -4.0 * s, 7.5 * s, -4.0 * s, 7.5 * s));
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"0\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" />\n", 7.5 * s, 11.0 * s));
             }
             case 7 -> { // Ideal Switch (contact blade)
                 sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"0\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" />\n", -p, -8.0 * s));
