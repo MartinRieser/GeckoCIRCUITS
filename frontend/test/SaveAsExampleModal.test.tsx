@@ -63,9 +63,54 @@ describe('SaveAsExampleModal Component', () => {
     });
 
     expect(onSave).toHaveBeenCalledWith({
+      id: undefined,
       name: 'Interleaved Boost',
       category: 'Power Converters',
       description: 'Dual phase interleaved topology',
+      overwrite: false,
+    });
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('detects existing example and submits with overwrite flag', async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined);
+    const onClose = vi.fn();
+    const existing = [
+      {
+        id: 'spwm-inverter',
+        name: 'SPWM Inverter',
+        category: 'Power Electronics',
+        description: 'Original',
+        content: 'content',
+        custom: false,
+      },
+    ];
+
+    render(
+      <SaveAsExampleModal
+        isOpen={true}
+        defaultName="SPWM Inverter"
+        existingExamples={existing}
+        onClose={onClose}
+        onSave={onSave}
+      />,
+    );
+
+    // Overwrite banner should be visible
+    expect(screen.getByText(/already exists/i)).toBeDefined();
+    const overwriteBtn = screen.getByRole('button', { name: 'Overwrite Example' });
+    expect(overwriteBtn).toBeDefined();
+
+    await act(async () => {
+      fireEvent.click(overwriteBtn);
+    });
+
+    expect(onSave).toHaveBeenCalledWith({
+      id: 'spwm-inverter',
+      name: 'SPWM Inverter',
+      category: 'Power Electronics',
+      description: '',
+      overwrite: true,
     });
     expect(onClose).toHaveBeenCalledTimes(1);
   });

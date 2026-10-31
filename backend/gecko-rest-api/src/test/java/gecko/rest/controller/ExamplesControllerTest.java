@@ -82,4 +82,61 @@ class ExamplesControllerTest {
         mockMvc.perform(get("/api/v1/examples/test_temp_example"))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void createExample_withOverwrite_updatesExistingInsteadOfDuplicating() throws Exception {
+        String initialJson = """
+                {
+                    "id": "overwrite_test_example",
+                    "name": "Unique Overwrite Circuit",
+                    "category": "Testing",
+                    "description": "Original description",
+                    "content": "tDURATION 0.01\\n"
+                }
+                """;
+
+        // Create initial
+        mockMvc.perform(post("/api/v1/examples")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(initialJson))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value("overwrite_test_example"))
+                .andExpect(jsonPath("$.name").value("Unique Overwrite Circuit"));
+
+        // Creating with duplicate name without overwrite returns 409 CONFLICT
+        String duplicateNameNoOverwrite = """
+                {
+                    "name": "Unique Overwrite Circuit",
+                    "category": "Testing",
+                    "description": "Duplicate attempt",
+                    "content": "tDURATION 0.05\\n"
+                }
+                """;
+        mockMvc.perform(post("/api/v1/examples")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(duplicateNameNoOverwrite))
+                .andExpect(status().isConflict());
+
+        // Creating with duplicate name AND overwrite=true replaces existing
+        String duplicateNameWithOverwrite = """
+                {
+                    "name": "Unique Overwrite Circuit",
+                    "category": "Testing",
+                    "description": "Overwritten description",
+                    "content": "tDURATION 0.09\\n",
+                    "overwrite": true
+                }
+                """;
+        mockMvc.perform(post("/api/v1/examples")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(duplicateNameWithOverwrite))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("overwrite_test_example"))
+                .andExpect(jsonPath("$.description").value("Overwritten description"))
+                .andExpect(jsonPath("$.content").value("tDURATION 0.09\n"));
+
+        // Clean up
+        mockMvc.perform(delete("/api/v1/examples/overwrite_test_example"))
+                .andExpect(status().isNoContent());
+    }
 }

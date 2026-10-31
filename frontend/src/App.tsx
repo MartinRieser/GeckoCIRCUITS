@@ -88,6 +88,7 @@ export function App() {
   }, []);
   const [examplesModalOpen, setExamplesModalOpen] = useState(false);
   const [saveAsExampleOpen, setSaveAsExampleOpen] = useState(false);
+  const [activeExample, setActiveExample] = useState<{ id: string; name: string } | null>(null);
   const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
@@ -333,8 +334,10 @@ export function App() {
       const payload = await openFileNative(state.filePath);
       if (!payload) return;
       if (!(await confirmDiscardCircuit())) return;
+      setActiveExample(null);
       void actions.openBase64(payload.base64, payload.name, payload.path);
     } else {
+      setActiveExample(null);
       fileInputRef.current?.click();
     }
   }, [confirmDiscardCircuit, state.filePath, actions]);
@@ -349,6 +352,7 @@ export function App() {
 
   const handleNewCircuit = useCallback(async () => {
     if (await confirmDiscardCircuit()) {
+      setActiveExample(null);
       actions.newCircuit();
     }
   }, [confirmDiscardCircuit, actions]);
@@ -589,29 +593,48 @@ export function App() {
     }
     if (content && (await confirmDiscardCircuit())) {
       actions.openContent(content, `${name || exampleId}.ipes`);
+      setActiveExample({ id: exampleId, name: name || exampleId });
     }
     setExamplesModalOpen(false);
   };
 
-  const handleSaveAsExample = useCallback(async (meta: { name: string; category: string; description: string }) => {
-    if (!state.circuitId) return;
-    let content = '';
-    try {
-      content = await getRawCircuit(state.circuitId);
-    } catch (err) {
-      console.warn('Failed to fetch raw circuit for example save:', err);
-    }
-    if (!content) {
-      throw new Error('Unable to retrieve circuit schematic content');
-    }
-    await addExample({
-      name: meta.name,
-      category: meta.category,
-      description: meta.description,
-      content,
-    });
-    dispatch({ type: 'STATUS', status: `Saved "${meta.name}" to Examples library` });
-  }, [state.circuitId, dispatch]);
+  const handleSaveAsExample = useCallback(
+    async (meta: {
+      id?: string;
+      name: string;
+      category: string;
+      description: string;
+      overwrite?: boolean;
+    }) => {
+      if (!state.circuitId) return;
+      let content = '';
+      try {
+        content = await getRawCircuit(state.circuitId);
+      } catch (err) {
+        console.warn('Failed to fetch raw circuit for example save:', err);
+      }
+      if (!content) {
+        throw new Error('Unable to retrieve circuit schematic content');
+      }
+      const targetId = meta.id || (meta.overwrite && activeExample ? activeExample.id : undefined);
+      const saved = await addExample({
+        id: targetId,
+        name: meta.name,
+        category: meta.category,
+        description: meta.description,
+        content,
+        overwrite: meta.overwrite,
+      });
+      setActiveExample({ id: saved.id, name: saved.name });
+      dispatch({
+        type: 'STATUS',
+        status: meta.overwrite
+          ? `Overwrote example "${saved.name}" in Examples library`
+          : `Saved "${saved.name}" to Examples library`,
+      });
+    },
+    [state.circuitId, activeExample, dispatch],
+  );
 
   const handleGetActiveContent = useCallback(async (): Promise<string | undefined> => {
     if (!state.circuitId) return undefined;
@@ -650,6 +673,7 @@ export function App() {
             onSave={actions.save}
             onSaveAs={handleSaveAs}
             onSaveAsExample={() => setSaveAsExampleOpen(true)}
+            activeExampleName={activeExample?.name}
             onOpenRecent={async (entry) => {
               if (await confirmDiscardCircuit()) actions.openRecent(entry);
             }}
@@ -1383,7 +1407,8 @@ export function App() {
       {/* Save as Example Modal Dialog */}
       <SaveAsExampleModal
         isOpen={saveAsExampleOpen}
-        defaultName={state.filename || 'Custom Circuit'}
+        defaultName={activeExample?.name || state.filename || 'Custom Circuit'}
+        activeExampleId={activeExample?.id}
         onClose={() => setSaveAsExampleOpen(false)}
         onSave={handleSaveAsExample}
       />

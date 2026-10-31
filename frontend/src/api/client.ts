@@ -750,6 +750,7 @@ export function createExampleApi(data: {
   category: string;
   description: string;
   content: string;
+  overwrite?: boolean;
 }): Promise<ExampleDto> {
   return request('/examples', {
     method: 'POST',

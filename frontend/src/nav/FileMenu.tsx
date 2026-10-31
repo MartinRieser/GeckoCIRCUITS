@@ -30,6 +30,8 @@ export interface FileMenuProps {
   onSaveAs: () => void;
   /** Callback to open Save as Example modal for saving into Examples library. */
   onSaveAsExample?: () => void;
+  /** Name of the active example currently open in the workspace, if any. */
+  activeExampleName?: string;
   /** Callback to load a previously opened circuit from the recent files list. */
   onOpenRecent: (entry: RecentFileEntry) => void;
   /** Whether save actions are currently permitted (requires active circuitId). */
@@ -45,6 +47,7 @@ export function FileMenu({
   onSave,
   onSaveAs,
   onSaveAsExample,
+  activeExampleName,
   onOpenRecent,
   canSave,
   busy = false,
@@ -301,7 +304,9 @@ export function FileMenu({
               }}
             >
               <span className="file-menu-icon">💡</span>
-              <span className="file-menu-label">Save as Example...</span>
+              <span className="file-menu-label">
+                {activeExampleName ? `Save Example "${activeExampleName}"...` : 'Save as Example...'}
+              </span>
             </button>
           )}
         </div>

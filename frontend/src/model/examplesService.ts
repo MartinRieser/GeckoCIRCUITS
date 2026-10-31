@@ -120,23 +120,33 @@ export async function addExample(example: {
   category: string;
   description: string;
   content: string;
+  overwrite?: boolean;
 }): Promise<ManagedExample> {
+  const currentList = await loadAllExamples();
+  const trimmedName = example.name.trim();
+  const existing = currentList.find(
+    (e) => (example.id && e.id === example.id) || e.name.toLowerCase() === trimmedName.toLowerCase(),
+  );
+
   const cleanId = (
     example.id ||
-    example.name
+    existing?.id ||
+    trimmedName
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '_')
       .replace(/^_+|_+$/g, '') ||
     `example_${Date.now()}`
   ).trim();
 
+  const isOverwrite = example.overwrite ?? Boolean(existing);
+
   let created: ManagedExample = {
     id: cleanId,
-    name: example.name.trim(),
-    category: (example.category || 'Custom').trim(),
-    description: (example.description || '').trim(),
+    name: trimmedName,
+    category: (example.category || existing?.category || 'Custom').trim(),
+    description: (example.description || existing?.description || '').trim(),
     content: example.content,
-    custom: true,
+    custom: existing ? existing.custom : true,
   };
 
   // 1. Try persisting via backend REST API
@@ -147,6 +157,7 @@ export async function addExample(example: {
       category: created.category,
       description: created.description,
       content: created.content,
+      overwrite: isOverwrite,
     });
     created = {
       id: dto.id,
@@ -154,7 +165,7 @@ export async function addExample(example: {
       category: dto.category,
       description: dto.description,
       content: dto.content || created.content,
-      custom: true,
+      custom: dto.custom ?? created.custom,
     };
   } catch (err) {
     console.warn('Backend unavailable, saving example to local storage:', err);
@@ -162,7 +173,7 @@ export async function addExample(example: {
 
   // 2. Persist to local storage
   const local = getLocalCustomExamples().filter((e) => e.id !== created.id);
-  local.push(created);
+  local.push({ ...created, custom: true });
   saveLocalCustomExamples(local);
 
   await loadAllExamples();

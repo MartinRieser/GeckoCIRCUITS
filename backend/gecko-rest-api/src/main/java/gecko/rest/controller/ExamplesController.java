@@ -44,7 +44,8 @@ public class ExamplesController {
             String name,
             String category,
             String description,
-            String content
+            String content,
+            Boolean overwrite
     ) {}
 
     private File getExamplesDir() {
@@ -157,10 +158,10 @@ public class ExamplesController {
     }
 
     /**
-     * Add a new circuit example to the examples folder.
+     * Add or overwrite a circuit example in the examples folder.
      */
     @PostMapping
-    @Operation(summary = "Create example", description = "Saves a new circuit example .ipes file and registers it in manifest.json.")
+    @Operation(summary = "Create or overwrite example", description = "Saves a circuit example .ipes file and registers it in manifest.json. If an example with this name or ID exists and overwrite is true, it replaces the existing example.")
     public ResponseEntity<ExampleDto> createExample(@RequestBody ExampleCreateOrUpdateRequest request) {
         if (request.name() == null || request.name().trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Example name is required");
@@ -172,7 +173,75 @@ public class ExamplesController {
         File dir = getExamplesDir();
         List<Map<String, Object>> manifest = readManifest(dir);
 
-        // Derive unique ID and filename
+        // Check if an existing example matches by id or by name (case-insensitive)
+        Map<String, Object> existingEntry = null;
+        if (request.id() != null && !request.id().trim().isEmpty()) {
+            for (Map<String, Object> item : manifest) {
+                if (request.id().trim().equalsIgnoreCase(String.valueOf(item.get("id")))) {
+                    existingEntry = item;
+                    break;
+                }
+            }
+        }
+        if (existingEntry == null && request.name() != null && !request.name().trim().isEmpty()) {
+            for (Map<String, Object> item : manifest) {
+                String existingName = (String) item.get("name");
+                if (existingName != null && existingName.trim().equalsIgnoreCase(request.name().trim())) {
+                    existingEntry = item;
+                    break;
+                }
+            }
+        }
+
+        // Overwrite existing example if requested or if explicit existing ID was provided
+        if (existingEntry != null) {
+            boolean shouldOverwrite = Boolean.TRUE.equals(request.overwrite())
+                    || (request.id() != null && !request.id().trim().isEmpty());
+            if (!shouldOverwrite) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "An example with the name '" + existingEntry.get("name") + "' already exists. Enable overwrite to update it.");
+            }
+
+            String targetId = (String) existingEntry.get("id");
+            if (request.name() != null && !request.name().trim().isEmpty()) {
+                existingEntry.put("name", request.name().trim());
+            }
+            if (request.category() != null) {
+                existingEntry.put("category", request.category().trim());
+            }
+            if (request.description() != null) {
+                existingEntry.put("description", request.description().trim());
+            }
+
+            String filename = (String) existingEntry.get("filename");
+            if (filename == null || filename.isBlank()) {
+                filename = targetId.replace('-', '_') + ".ipes";
+                existingEntry.put("filename", filename);
+            }
+
+            File circuitFile = new File(dir, filename);
+            try {
+                Files.writeString(circuitFile.toPath(), request.content(), StandardCharsets.UTF_8);
+                writeManifest(dir, manifest);
+
+                Boolean custom = existingEntry.containsKey("custom") ? (Boolean) existingEntry.get("custom") : Boolean.FALSE;
+                return ResponseEntity.ok(
+                        new ExampleDto(
+                                targetId,
+                                (String) existingEntry.get("name"),
+                                (String) existingEntry.get("category"),
+                                (String) existingEntry.get("description"),
+                                filename,
+                                request.content(),
+                                custom
+                        )
+                );
+            } catch (IOException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to write example file: " + e.getMessage());
+            }
+        }
+
+        // Derive unique ID and filename for brand new example
         String baseId = (request.id() != null && !request.id().trim().isEmpty())
                 ? request.id().trim().toLowerCase().replaceAll("[^a-z0-9_-]+", "_")
                 : request.name().trim().toLowerCase().replaceAll("[^a-z0-9]+", "_").replaceAll("^_+|_+$", "");
@@ -239,6 +308,15 @@ public class ExamplesController {
                 break;
             }
         }
+        if (target == null) {
+            for (Map<String, Object> item : manifest) {
+                String itemName = (String) item.get("name");
+                if (itemName != null && itemName.trim().equalsIgnoreCase(id.trim())) {
+                    target = item;
+                    break;
+                }
+            }
+        }
 
         if (target == null) {
             return ResponseEntity.notFound().build();
@@ -256,7 +334,7 @@ public class ExamplesController {
 
         String filename = (String) target.get("filename");
         if (filename == null || filename.isBlank()) {
-            filename = id.replace('-', '_') + ".ipes";
+            filename = ((String) target.get("id")).replace('-', '_') + ".ipes";
             target.put("filename", filename);
         }
 
@@ -274,7 +352,7 @@ public class ExamplesController {
 
             Boolean custom = target.containsKey("custom") ? (Boolean) target.get("custom") : Boolean.FALSE;
             return ResponseEntity.ok(new ExampleDto(
-                    id,
+                    (String) target.get("id"),
                     (String) target.get("name"),
                     (String) target.get("category"),
                     (String) target.get("description"),
@@ -300,7 +378,9 @@ public class ExamplesController {
         Map<String, Object> removed = null;
         while (it.hasNext()) {
             Map<String, Object> item = it.next();
-            if (id.equals(item.get("id"))) {
+            String itemId = (String) item.get("id");
+            String itemName = (String) item.get("name");
+            if (id.equals(itemId) || (itemName != null && itemName.trim().equalsIgnoreCase(id.trim()))) {
                 removed = item;
                 it.remove();
                 break;

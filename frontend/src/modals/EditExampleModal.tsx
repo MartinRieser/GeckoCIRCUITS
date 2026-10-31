@@ -157,16 +157,23 @@ export function EditExampleModal({
               onChange={(e) => setDescription(e.target.value)}
             />
 
-            {canUpdateContent && (
-              <label className="example-checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={updateContent}
-                  onChange={(e) => setUpdateContent(e.target.checked)}
-                />
-                <span>Update example circuit diagram with the active schematic currently in workspace</span>
-              </label>
-            )}
+            <div style={{ marginTop: 12 }}>
+              <label className="modal-field-label">Schematic Content</label>
+              {canUpdateContent ? (
+                <label className="example-checkbox-label" style={{ marginTop: 4, fontWeight: 500 }}>
+                  <input
+                    type="checkbox"
+                    checked={updateContent}
+                    onChange={(e) => setUpdateContent(e.target.checked)}
+                  />
+                  <span>Overwrite example circuit diagram with the active schematic currently in workspace</span>
+                </label>
+              ) : (
+                <p className="modal-field-hint" style={{ marginTop: 4 }}>
+                  (To overwrite this example&apos;s circuit diagram, open a circuit in the workspace first)
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="modal-footer">
