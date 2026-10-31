@@ -305,9 +305,25 @@ public final class SchematicSvgRenderer {
             int cx = pos[0];
             int cy = pos[1];
             if (typ == 31 || typ == 32 || typ == 50) {
-                // Ground pin has lead going South (4) from (cx, cy)
-                String k = cx + "," + cy;
-                dirMaskByPoint.put(k, dirMaskByPoint.getOrDefault(k, 0) | 4);
+                int orient = c.getOrientation();
+                int px = cx;
+                int py = cy;
+                int inwardDir;
+                if (orient == 501) {
+                    py = cy + 2;
+                    inwardDir = 8;
+                } else if (orient == 502) {
+                    px = cx - 2;
+                    inwardDir = 1;
+                } else if (orient == 504) {
+                    px = cx + 2;
+                    inwardDir = 2;
+                } else {
+                    py = cy - 2;
+                    inwardDir = 4;
+                }
+                String k = px + "," + py;
+                dirMaskByPoint.put(k, dirMaskByPoint.getOrDefault(k, 0) | inwardDir);
                 continue;
             }
             int orient = c.getOrientation();
@@ -738,14 +754,14 @@ public final class SchematicSvgRenderer {
                         8.0 * s, -7.5 * s, -6.5 * s));
             }
             case 31, 32 -> { // Global Terminal / Ground
-                // Note: Ground terminal is at (posX, posY) -> local (0, 0)
-                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"%.1f\" />\n", 5.0 * s));
-                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"%.1f\" y2=\"%.1f\" stroke-width=\"2.4\" />\n",
-                        -10.0 * s, 5.0 * s, 10.0 * s, 5.0 * s));
+                // Lead runs from pin at (0, -p) to ground bars starting at (0, 0)
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"0\" y1=\"%.1f\" x2=\"0\" y2=\"0\" />\n", -p));
+                sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"0\" x2=\"%.1f\" y2=\"0\" stroke-width=\"2.4\" />\n",
+                        -10.0 * s, 10.0 * s));
                 sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"%.1f\" y2=\"%.1f\" stroke-width=\"1.9\" />\n",
-                        -6.5 * s, 8.5 * s, 6.5 * s, 8.5 * s));
+                        -6.5 * s, 3.5 * s, 6.5 * s, 3.5 * s));
                 sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"%.1f\" y1=\"%.1f\" x2=\"%.1f\" y2=\"%.1f\" stroke-width=\"1.5\" />\n",
-                        -3.0 * s, 12.0 * s, 3.0 * s, 12.0 * s));
+                        -3.0 * s, 7.0 * s, 3.0 * s, 7.0 * s));
             }
             default -> { // Generic 2-terminal block
                 sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"0\" y1=\"%.1f\" x2=\"0\" y2=\"%.1f\" />\n", -p, -10.0 * s));
@@ -835,7 +851,7 @@ public final class SchematicSvgRenderer {
         int typ = comp.getType();
         double p = 2.0 * DEFAULT_GRID * s;
         if (typ == 50) { // Thermal Ground
-            sb.append("      <line class=\"comp-lead\" x1=\"0\" y1=\"-15\" x2=\"0\" y2=\"0\" stroke=\"var(--wire-therm)\" />\n");
+            sb.append(String.format(Locale.ROOT, "      <line class=\"comp-lead\" x1=\"0\" y1=\"%.1f\" x2=\"0\" y2=\"0\" stroke=\"var(--wire-therm)\" />\n", -p));
             sb.append(String.format(Locale.ROOT, "      <circle cx=\"0\" cy=\"0\" r=\"%.1f\" fill=\"var(--wire-therm)\" />\n", 4.0 * s));
             sb.append("      <text font-size=\"8\" font-weight=\"bold\" fill=\"var(--wire-therm)\" text-anchor=\"middle\" x=\"0\" y=\"12\">T_amb</text>\n");
         } else {

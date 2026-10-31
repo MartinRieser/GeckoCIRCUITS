@@ -201,7 +201,7 @@ public final class CircuitBuilder {
             List<Point> termA;
             List<Point> termB;
             if (def.typeNumber() == 31 || def.typeNumber() == 32) {
-                termA = List.of(new Point(posX, posY));
+                termA = List.of(getTerminalA(posX, posY, orient));
                 termB = List.of();
             } else if (def.typeNumber() == CircuitTypCore.LK_TRANS.getTypeNumber()) {
                 // The netlist expands an ideal transformer into two windings
