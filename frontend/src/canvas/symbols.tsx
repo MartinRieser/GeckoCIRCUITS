@@ -643,43 +643,66 @@ function Transistor({ type, u }: { type: number; u: number }) {
   const isMosfet = type === 28;
   const isIgbt = type === 10;
   const isBjt = type === 33;
+  const R = 0.65 * u;
 
   return (
-    <g>
-      {/* Base / Gate terminal lead */}
-      <line x1={-LEAD * u} y1={0} x2={isBjt ? -0.2 * u : -0.35 * u} y2={0} />
-      {/* Collector / Drain terminal lead */}
-      <line x1={0.4 * u} y1={-0.5 * u} x2={LEAD * u} y2={-0.5 * u} />
-      {/* Emitter / Source terminal lead */}
-      <line x1={0.4 * u} y1={0.5 * u} x2={LEAD * u} y2={0.5 * u} />
-      {/* Insulated Gate bar for MOSFET / IGBT */}
-      {!isBjt && (
-        <line x1={-0.35 * u} y1={-0.65 * u} x2={-0.35 * u} y2={0.65 * u} strokeWidth={2} />
-      )}
-      {/* Channel / Base bar */}
+    <g className="symbol-transistor">
+      {/* Collector / Drain terminal lead (Terminal 0 at -LEAD * u) */}
+      <line x1={-LEAD * u} y1={0} x2={-0.45 * u} y2={0} strokeWidth={1.8} />
+      {/* Emitter / Source terminal lead (Terminal 1 at +LEAD * u) */}
+      <line x1={0.45 * u} y1={0} x2={LEAD * u} y2={0} strokeWidth={1.8} />
+
+      {/* Enclosure Circle */}
+      <circle cx={0} cy={0} r={R} fill="none" stroke="currentColor" strokeWidth={1.5} />
+
+      {/* Channel Bar: horizontal line at y = 0.16 * u */}
       {isMosfet ? (
         <>
-          <line x1={-0.15 * u} y1={-0.6 * u} x2={-0.15 * u} y2={-0.3 * u} strokeWidth={1.5} />
-          <line x1={-0.15 * u} y1={-0.15 * u} x2={-0.15 * u} y2={0.15 * u} strokeWidth={1.5} />
-          <line x1={-0.15 * u} y1={0.3 * u} x2={-0.15 * u} y2={0.6 * u} strokeWidth={1.5} />
-          <line x1={-0.15 * u} y1={-0.45 * u} x2={0.4 * u} y2={-0.5 * u} />
-          <line x1={-0.15 * u} y1={0.45 * u} x2={0.4 * u} y2={0.5 * u} />
-          <path d={`M ${0.1 * u} ${0.45 * u} l ${-0.2 * u} ${-0.12 * u} l 0 ${0.24 * u} z`} fill="currentColor" />
+          <line x1={-0.35 * u} y1={0.16 * u} x2={-0.15 * u} y2={0.16 * u} strokeWidth={2.2} />
+          <line x1={-0.08 * u} y1={0.16 * u} x2={0.08 * u} y2={0.16 * u} strokeWidth={2.2} />
+          <line x1={0.15 * u} y1={0.16 * u} x2={0.35 * u} y2={0.16 * u} strokeWidth={2.2} />
         </>
       ) : (
+        <line x1={-0.35 * u} y1={0.16 * u} x2={0.35 * u} y2={0.16 * u} strokeWidth={isIgbt ? 2.4 : 2.2} />
+      )}
+
+      {/* Insulated Gate Bar for MOSFET and IGBT */}
+      {!isBjt && (
         <>
-          <line x1={-0.2 * u} y1={-0.6 * u} x2={-0.2 * u} y2={0.6 * u} strokeWidth={isIgbt ? 2 : 2.2} />
-          <line x1={-0.2 * u} y1={-0.3 * u} x2={0.4 * u} y2={-0.5 * u} />
-          <line x1={-0.2 * u} y1={0.3 * u} x2={0.4 * u} y2={0.5 * u} />
-          {/* Emitter arrow pointing outward (N-type) */}
-          <path d={`M ${0.35 * u} ${0.48 * u} l ${-0.18 * u} ${-0.08 * u} l ${0.08 * u} ${-0.18 * u} z`} fill="currentColor" />
+          <line x1={-0.32 * u} y1={0.30 * u} x2={0.32 * u} y2={0.30 * u} strokeWidth={2.0} />
+          <line x1={0} y1={0.30 * u} x2={0} y2={R} strokeWidth={1.6} />
         </>
       )}
-      {/* Fitted device family badge placed cleanly in open area between diagonal lines */}
+
+      {/* Direct Base lead for BJT */}
+      {isBjt && (
+        <line x1={0} y1={0.16 * u} x2={0} y2={R} strokeWidth={1.6} />
+      )}
+
+      {/* Collector diagonal: from (-0.45 * u, 0) to (-0.16 * u, 0.16 * u) */}
+      <line x1={-0.45 * u} y1={0} x2={-0.16 * u} y2={0.16 * u} strokeWidth={1.6} />
+
+      {/* Emitter diagonal: from (0.16 * u, 0.16 * u) to (0.45 * u, 0) */}
+      <line x1={0.16 * u} y1={0.16 * u} x2={0.45 * u} y2={0} strokeWidth={1.6} />
+
+      {/* Emitter arrow pointing outward towards (0.45 * u, 0) */}
+      {isMosfet ? (
+        <polygon
+          points={`${0.06 * u},${0.06 * u} ${-0.06 * u},${0.06 * u} 0,${0.16 * u}`}
+          fill="currentColor"
+        />
+      ) : (
+        <polygon
+          points={`${0.45 * u},0 ${0.30 * u},${-0.07 * u} ${0.35 * u},${0.06 * u}`}
+          fill="currentColor"
+        />
+      )}
+
+      {/* Device family badge placed cleanly in open top area */}
       <text
-        x={0.12 * u}
-        y={-0.05 * u}
-        fontSize={0.28 * u}
+        x={0}
+        y={-0.24 * u}
+        fontSize={0.24 * u}
         fill="currentColor"
         stroke="none"
         fontWeight="bold"
