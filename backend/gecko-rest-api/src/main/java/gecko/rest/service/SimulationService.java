@@ -24,6 +24,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Comparator;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -64,6 +65,9 @@ public class SimulationService {
      *  to keep the data container within heap. */
     private static final long MAX_RECORDED_ROWS = 2_000_000;
     static final String CANCELLED_BY_USER = "Cancelled by user";
+
+    /** Upper bound of completed/failed simulation results kept in memory. */
+    private static final int MAX_STORED_SIMULATIONS = 20;
 
     private final Map<String, SimulationResponse> simulationStore = new ConcurrentHashMap<>();
     private final Map<String, HeadlessSimulationEngine> runningEngines = new ConcurrentHashMap<>();
@@ -192,6 +196,20 @@ public class SimulationService {
         }
     }
 
+    private void evictOldSimulationsIfNeeded() {
+        if (simulationStore.size() < MAX_STORED_SIMULATIONS) {
+            return;
+        }
+        simulationStore.values().stream()
+                .filter(r -> r.getStatus() == SimulationResponse.SimulationStatus.COMPLETED
+                        || r.getStatus() == SimulationResponse.SimulationStatus.FAILED)
+                .min(Comparator.comparing(r -> r.getStartTime() != null ? r.getStartTime() : Instant.EPOCH))
+                .ifPresent(oldest -> {
+                    simulationStore.remove(oldest.getSimulationId());
+                    logger.info("Evicted old simulation result {} from memory", oldest.getSimulationId());
+                });
+    }
+
     /**
      * Submit a new simulation job.
      * The simulation runs asynchronously and results are stored when complete.
@@ -200,6 +218,7 @@ public class SimulationService {
      * @return Created simulation response with ID for tracking
      */
     public SimulationResponse submitSimulation(SimulationRequest request) {
+        evictOldSimulationsIfNeeded();
         String simulationId = UUID.randomUUID().toString();
         SimulationResponse response = new SimulationResponse(simulationId);
         response.setStatus(SimulationResponse.SimulationStatus.PENDING);

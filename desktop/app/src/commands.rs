@@ -30,9 +30,19 @@ pub fn open_logs_folder(app: AppHandle) -> Result<(), String> {
 pub fn open_examples_folder(app: AppHandle) -> Result<(), String> {
     use tauri_plugin_opener::OpenerExt;
     let candidates = [
+        app.path()
+            .home_dir()
+            .map(|d| d.join(".geckocircuits").join("examples"))
+            .ok(),
         std::env::current_dir().map(|d| d.join("examples")).ok(),
-        std::env::current_dir().map(|d| d.join("..").join("..").join("examples")).ok(),
+        std::env::current_dir()
+            .map(|d| d.join("..").join("..").join("examples"))
+            .ok(),
         app.path().resource_dir().map(|d| d.join("examples")).ok(),
+        app.path()
+            .resource_dir()
+            .map(|d| d.join("_up_").join("_up_").join("examples"))
+            .ok(),
     ];
 
     for candidate in candidates.into_iter().flatten() {
@@ -97,7 +107,11 @@ pub async fn confirm_dialog(
         builder = builder.title(t);
     }
     builder = builder.buttons(MessageDialogButtons::OkCancel);
-    Ok(builder.blocking_show())
+    let (tx, rx) = tokio::sync::oneshot::channel();
+    builder.show(move |res| {
+        let _ = tx.send(res);
+    });
+    rx.await.map_err(|e| e.to_string())
 }
 
 /// Native open file dialog for selecting an existing `.ipes` or `.txt` circuit.
@@ -130,10 +144,14 @@ pub async fn open_file_dialog(
             }
         }
     }
-    let target = builder
+    let (tx, rx) = tokio::sync::oneshot::channel();
+    builder
         .add_filter("GeckoCIRCUITS Circuit (*.ipes, *.txt)", &["ipes", "txt"])
         .add_filter("All Files (*.*)", &["*"])
-        .blocking_pick_file();
+        .pick_file(move |res| {
+            let _ = tx.send(res);
+        });
+    let target = rx.await.map_err(|error| error.to_string())?;
     let Some(path) = target else {
         return Ok(None);
     };
@@ -186,10 +204,14 @@ pub async fn save_file_dialog(
             }
         }
     }
-    let target = builder
+    let (tx, rx) = tokio::sync::oneshot::channel();
+    builder
         .add_filter("GeckoCIRCUITS Circuit (*.ipes)", &["ipes"])
         .add_filter("All Files (*.*)", &["*"])
-        .blocking_save_file();
+        .save_file(move |res| {
+            let _ = tx.send(res);
+        });
+    let target = rx.await.map_err(|error| error.to_string())?;
     let Some(path) = target else {
         return Ok(None);
     };

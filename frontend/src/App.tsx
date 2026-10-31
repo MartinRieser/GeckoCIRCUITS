@@ -56,13 +56,6 @@ import {
 export function App() {
   const { state, dispatch, catalog, wsConnected, simState, isDirty, actions } = useEditor();
 
-  // Desktop shell: circuits opened via double-click / "Open with" / second launch
-  useEffect(() => {
-    registerOpenFileHandler((payload) => {
-      void actions.openBase64(payload.base64, payload.name, payload.path);
-    });
-  }, [actions.openBase64]);
-
   // Synchronize browser and desktop window title with current circuit file
   useEffect(() => {
     const dirtyPrefix = isDirty ? '*' : '';
@@ -102,6 +95,15 @@ export function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     return (localStorage.getItem('gecko-theme') as 'dark' | 'light') || 'dark';
   });
+
+  // Desktop shell: circuits opened via double-click / "Open with" / second launch
+  useEffect(() => {
+    registerOpenFileHandler((payload) => {
+      setActiveTabId('schematic');
+      setActiveExample(null);
+      void actions.openBase64(payload.base64, payload.name, payload.path);
+    });
+  }, [actions.openBase64]);
 
   // Dynamic scope and script blocks discovered from schematic components
   const scopeBlocks = useMemo(() => findScopeBlocks(state.components), [state.components]);
@@ -334,6 +336,7 @@ export function App() {
       const payload = await openFileNative(state.filePath);
       if (!payload) return;
       if (!(await confirmDiscardCircuit())) return;
+      setActiveTabId('schematic');
       setActiveExample(null);
       void actions.openBase64(payload.base64, payload.name, payload.path);
     } else {
@@ -352,6 +355,7 @@ export function App() {
 
   const handleNewCircuit = useCallback(async () => {
     if (await confirmDiscardCircuit()) {
+      setActiveTabId('schematic');
       setActiveExample(null);
       actions.newCircuit();
     }
@@ -579,7 +583,7 @@ export function App() {
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [actions, commandPaletteOpen, dispatch, handleNewCircuit, handleOpenCircuit, handleQuickRun, handleSaveAs, shortcutsHelpOpen, simConfigOpen, state.focusedTerminal, state.ghost, state.mode, state.selection, state.selectedWire, state.wireDraft]);
+  }, [actions, commandPaletteOpen, dispatch, handleNewCircuit, handleOpenCircuit, handleQuickRun, handleSaveAs, shortcutsHelpOpen, simConfigOpen, saveAsOpen, examplesModalOpen, saveAsExampleOpen, state.focusedTerminal, state.ghost, state.mode, state.selection, state.selectedWire, state.wireDraft]);
 
   const handleSelectExample = async (exampleId: string, customContent?: string, customName?: string) => {
     let content = customContent;
@@ -592,6 +596,7 @@ export function App() {
       }
     }
     if (content && (await confirmDiscardCircuit())) {
+      setActiveTabId('schematic');
       actions.openContent(content, `${name || exampleId}.ipes`);
       setActiveExample({ id: exampleId, name: name || exampleId });
     }
@@ -675,7 +680,11 @@ export function App() {
             onSaveAsExample={() => setSaveAsExampleOpen(true)}
             activeExampleName={activeExample?.name}
             onOpenRecent={async (entry) => {
-              if (await confirmDiscardCircuit()) actions.openRecent(entry);
+              if (await confirmDiscardCircuit()) {
+                setActiveTabId('schematic');
+                setActiveExample(null);
+                actions.openRecent(entry);
+              }
             }}
             canSave={!!state.circuitId}
             busy={state.busy}
@@ -688,6 +697,8 @@ export function App() {
             onChange={async (e) => {
               const file = e.target.files?.[0];
               if (file && (await confirmDiscardCircuit())) {
+                setActiveTabId('schematic');
+                setActiveExample(null);
                 actions.open(file);
               }
               e.target.value = '';

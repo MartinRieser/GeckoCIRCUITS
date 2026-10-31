@@ -111,7 +111,19 @@ pub fn spawn(
         .env(
             "GECKO_LOG_DIR",
             log_path.parent().unwrap_or_else(|| Path::new(".")),
-        )
+        );
+    if let Some(res_dir) = paths.jar.parent().and_then(|p| p.parent()) {
+        for candidate in [
+            res_dir.join("examples"),
+            res_dir.join("_up_").join("_up_").join("examples"),
+        ] {
+            if candidate.is_dir() {
+                command.env("GECKO_EXAMPLES_DIR", candidate);
+                break;
+            }
+        }
+    }
+    command
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
     #[cfg(windows)]

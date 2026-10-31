@@ -459,19 +459,32 @@ public class CircuitFileController {
         description = "Opens the examples directory in the host OS desktop file explorer (Windows Explorer, macOS Finder, or Linux file manager)."
     )
     public ResponseEntity<java.util.Map<String, Object>> openExamplesFolder() {
-        java.io.File[] candidates = new java.io.File[] {
-            new java.io.File("examples"),
-            new java.io.File("../examples"),
-            new java.io.File("../../examples"),
-            new java.io.File("resources/examples"),
-            new java.io.File("../resources/examples")
-        };
-
         java.io.File target = null;
-        for (java.io.File c : candidates) {
-            if (c.exists() && c.isDirectory()) {
-                target = c;
-                break;
+        String customProp = System.getProperty("gecko.examples-dir");
+        if (customProp == null || customProp.isBlank()) {
+            customProp = System.getenv("GECKO_EXAMPLES_DIR");
+        }
+        if (customProp != null && !customProp.isBlank()) {
+            java.io.File envDir = new java.io.File(customProp.trim());
+            if (envDir.exists() && envDir.isDirectory()) {
+                target = envDir;
+            }
+        }
+
+        if (target == null) {
+            java.io.File[] candidates = new java.io.File[] {
+                new java.io.File("examples"),
+                new java.io.File("../examples"),
+                new java.io.File("../../examples"),
+                new java.io.File("resources/examples"),
+                new java.io.File("../resources/examples"),
+                new java.io.File(System.getProperty("user.home"), ".geckocircuits/examples")
+            };
+            for (java.io.File c : candidates) {
+                if (c.exists() && c.isDirectory()) {
+                    target = c;
+                    break;
+                }
             }
         }
 

@@ -38,12 +38,14 @@ export function SaveAsExampleModal({
   const [description, setDescription] = useState('');
   const [overwrite, setOverwrite] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [examplesList, setExamplesList] = useState<ManagedExample[]>(propExamples || []);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   // Load available examples when opening
   useEffect(() => {
     if (isOpen) {
+      setErrorMsg(null);
       if (propExamples && propExamples.length > 0) {
         setExamplesList(propExamples);
       } else {
@@ -62,6 +64,7 @@ export function SaveAsExampleModal({
       setDescription('');
       setOverwrite(true);
       setBusy(false);
+      setErrorMsg(null);
       setTimeout(() => {
         nameInputRef.current?.focus();
         nameInputRef.current?.select();
@@ -86,14 +89,8 @@ export function SaveAsExampleModal({
   const matchingExample = useMemo(() => {
     const trimmed = name.trim().toLowerCase();
     if (!trimmed) return null;
-    return (
-      examplesList.find(
-        (ex) =>
-          (activeExampleId && ex.id === activeExampleId) ||
-          ex.name.toLowerCase() === trimmed,
-      ) || null
-    );
-  }, [name, examplesList, activeExampleId]);
+    return examplesList.find((ex) => ex.name.toLowerCase() === trimmed) || null;
+  }, [name, examplesList]);
 
   if (!isOpen) return null;
 
@@ -112,6 +109,7 @@ export function SaveAsExampleModal({
     e.preventDefault();
     if (!name.trim() || busy) return;
     setBusy(true);
+    setErrorMsg(null);
     try {
       const isOverwriting = matchingExample ? overwrite : false;
       await onSave({
@@ -122,6 +120,8 @@ export function SaveAsExampleModal({
         overwrite: isOverwriting,
       });
       onClose();
+    } catch (err) {
+      setErrorMsg((err as Error).message || 'Failed to save example');
     } finally {
       setBusy(false);
     }
@@ -166,6 +166,21 @@ export function SaveAsExampleModal({
 
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
+            {errorMsg && (
+              <div
+                style={{
+                  background: '#ff4d4f22',
+                  border: '1px solid #ff4d4f',
+                  color: '#ff7875',
+                  padding: '8px 12px',
+                  borderRadius: 4,
+                  marginBottom: 12,
+                  fontSize: '0.85rem',
+                }}
+              >
+                {errorMsg}
+              </div>
+            )}
             {/* Quick selector to overwrite an existing example */}
             {examplesList.length > 0 && (
               <div style={{ marginBottom: 12 }}>
@@ -175,7 +190,7 @@ export function SaveAsExampleModal({
                 <select
                   id="example-overwrite-select"
                   className="modal-text-input example-target-select"
-                  value={matchingExample?.id || ''}
+                  value={matchingExample?.id || (activeExampleId ?? '')}
                   onChange={(e) => handleSelectExisting(e.target.value)}
                 >
                   <option value="">-- Create a new example or select below to overwrite --</option>

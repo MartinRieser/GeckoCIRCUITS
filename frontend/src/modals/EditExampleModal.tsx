@@ -36,6 +36,7 @@ export function EditExampleModal({
   const [description, setDescription] = useState('');
   const [updateContent, setUpdateContent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -45,6 +46,7 @@ export function EditExampleModal({
       setDescription(example.description);
       setUpdateContent(false);
       setBusy(false);
+      setErrorMsg(null);
       setTimeout(() => {
         nameInputRef.current?.focus();
         nameInputRef.current?.select();
@@ -58,6 +60,7 @@ export function EditExampleModal({
     e?.preventDefault();
     if (!name.trim()) return;
     setBusy(true);
+    setErrorMsg(null);
     try {
       await onSave(example.id, {
         name: name.trim(),
@@ -66,6 +69,8 @@ export function EditExampleModal({
         updateContentWithWorkspace: updateContent,
       });
       onClose();
+    } catch (err) {
+      setErrorMsg((err as Error).message || 'Failed to update example');
     } finally {
       setBusy(false);
     }
@@ -116,6 +121,21 @@ export function EditExampleModal({
 
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
+            {errorMsg && (
+              <div
+                style={{
+                  background: '#ff4d4f22',
+                  border: '1px solid #ff4d4f',
+                  color: '#ff7875',
+                  padding: '8px 12px',
+                  borderRadius: 4,
+                  marginBottom: 12,
+                  fontSize: '0.85rem',
+                }}
+              >
+                {errorMsg}
+              </div>
+            )}
             <label htmlFor="edit-example-name" className="modal-field-label">
               Example Title
             </label>

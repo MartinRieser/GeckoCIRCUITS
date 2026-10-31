@@ -238,6 +238,15 @@ export function patchConnection(
 }
 
 /**
+ * Deletes a circuit session from memory on the backend.
+ *
+ * @param circuitId Circuit ID to remove
+ */
+export async function deleteCircuit(circuitId: string): Promise<void> {
+  await fetch(apiBase() + `/circuits/${circuitId}`, { method: 'DELETE' });
+}
+
+/**
  * Deletes a wire connection by its index.
  *
  * @param circuitId Active circuit ID

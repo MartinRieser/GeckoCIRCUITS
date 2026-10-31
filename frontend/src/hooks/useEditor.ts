@@ -154,29 +154,34 @@ export function useEditor() {
       // file converges to the current layout. Idempotent — already-migrated
       // endpoints sit on anchored pins and match no legacy pin.
       const legacyEdits = normalizeLegacyMultiPinWires(snapshot.components, snapshot.wires ?? []);
-      for (const edit of legacyEdits) {
-        api
-          .patchConnection(circuitId, edit.index, { points: edit.points })
-          .then((wireMsg) => {
-            const payload = wireMsg.payload as WirePayload;
-            dispatch({
-              type: 'WIRE_PATCHED',
-              index: edit.index,
-              points: payload.points,
-              label: payload.label,
-              version: wireMsg.modelVersion,
-            });
-          })
-          .catch(() => {});
-      }
       if (legacyEdits.length > 0) {
+        await Promise.all(
+          legacyEdits.map(async (edit) => {
+            try {
+              const wireMsg = await api.patchConnection(circuitId, edit.index, { points: edit.points });
+              const payload = wireMsg.payload as WirePayload;
+              dispatch({
+                type: 'WIRE_PATCHED',
+                index: edit.index,
+                points: payload.points,
+                label: payload.label,
+                version: wireMsg.modelVersion,
+              });
+              versionRef.current = Math.max(versionRef.current, wireMsg.modelVersion);
+            } catch {
+              // ignore failure to patch legacy wire
+            }
+          }),
+        );
         dispatch({
           type: 'STATUS',
           status: `Migrated ${legacyEdits.length} wire${legacyEdits.length === 1 ? '' : 's'} to the new anchored multi-pin layout`,
         });
       }
+      return snapshot;
     } catch (e) {
       dispatch({ type: 'STATUS', status: `Refresh failed: ${(e as Error).message}` });
+      return null;
     }
   }, []);
 
@@ -204,16 +209,19 @@ export function useEditor() {
     async (file: File) => {
       resetSimulationState();
       clearActiveFileHandle();
+      if (stateRef.current.circuitId) {
+        api.deleteCircuit(stateRef.current.circuitId).catch(() => {});
+      }
       dispatch({ type: 'STATUS', status: `Loading ${file.name}...` });
       try {
         const base64 = await api.fileToBase64(file);
         const circuitId = await api.uploadIpesBase64(base64, file.name);
         attachSubscription(circuitId);
-        await refresh(circuitId);
+        const snapshot = await refresh(circuitId);
         dispatch({ type: 'SET_FILENAME', filename: file.name, filePath: null });
         setSavedVersion(versionRef.current);
         setGraphRegsDirty(false);
-        addRecentFile(file.name, base64, stateRef.current.components.length, null);
+        addRecentFile(file.name, base64, snapshot?.components.length ?? stateRef.current.components.length, null);
         dispatch({ type: 'STATUS', status: `Loaded ${file.name}` });
       } catch (e) {
         reportError(e);
@@ -226,15 +234,18 @@ export function useEditor() {
     async (content: string, filename = 'circuit.ipes') => {
       resetSimulationState();
       clearActiveFileHandle();
+      if (stateRef.current.circuitId) {
+        api.deleteCircuit(stateRef.current.circuitId).catch(() => {});
+      }
       dispatch({ type: 'STATUS', status: `Loading ${filename}...` });
       try {
         const circuitId = await api.uploadIpesString(content, filename);
         attachSubscription(circuitId);
-        await refresh(circuitId);
+        const snapshot = await refresh(circuitId);
         dispatch({ type: 'SET_FILENAME', filename, filePath: null });
         setSavedVersion(versionRef.current);
         setGraphRegsDirty(false);
-        addRecentFile(filename, content, stateRef.current.components.length, null);
+        addRecentFile(filename, content, snapshot?.components.length ?? stateRef.current.components.length, null);
         dispatch({ type: 'STATUS', status: `Loaded ${filename}` });
       } catch (e) {
         reportError(e);
@@ -251,15 +262,18 @@ export function useEditor() {
   const openBase64 = useCallback(
     async (base64: string, filename = 'circuit.ipes', path: string | null = null) => {
       resetSimulationState();
+      if (stateRef.current.circuitId) {
+        api.deleteCircuit(stateRef.current.circuitId).catch(() => {});
+      }
       dispatch({ type: 'STATUS', status: `Loading ${filename}...` });
       try {
         const circuitId = await api.uploadIpesBase64(base64, filename);
         attachSubscription(circuitId);
-        await refresh(circuitId);
+        const snapshot = await refresh(circuitId);
         dispatch({ type: 'SET_FILENAME', filename, filePath: path });
         setSavedVersion(versionRef.current);
         setGraphRegsDirty(false);
-        addRecentFile(filename, base64, stateRef.current.components.length, path);
+        addRecentFile(filename, base64, snapshot?.components.length ?? stateRef.current.components.length, path);
         dispatch({ type: 'STATUS', status: `Loaded ${filename}` });
       } catch (e) {
         reportError(e);
@@ -272,6 +286,9 @@ export function useEditor() {
   const openRecent = useCallback(
     async (entry: RecentFileEntry) => {
       resetSimulationState();
+      if (stateRef.current.circuitId) {
+        api.deleteCircuit(stateRef.current.circuitId).catch(() => {});
+      }
       dispatch({ type: 'STATUS', status: `Loading ${entry.name}...` });
       try {
         const diskPayload = await readIpesFileNative(entry.filePath, entry.name);
@@ -292,14 +309,14 @@ export function useEditor() {
           circuitId = await api.uploadIpesBase64(entry.content, entry.name);
         }
         attachSubscription(circuitId);
-        await refresh(circuitId);
+        const snapshot = await refresh(circuitId);
         dispatch({ type: 'SET_FILENAME', filename: entry.name, filePath: entry.filePath ?? null });
         setSavedVersion(versionRef.current);
         setGraphRegsDirty(false);
         addRecentFile(
           entry.name,
           entry.content,
-          stateRef.current.components.length,
+          snapshot?.components.length ?? stateRef.current.components.length,
           entry.filePath ?? null,
         );
         dispatch({ type: 'STATUS', status: `Loaded ${entry.name}` });

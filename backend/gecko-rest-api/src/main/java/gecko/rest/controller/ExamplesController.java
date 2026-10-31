@@ -49,6 +49,16 @@ public class ExamplesController {
     ) {}
 
     private File getExamplesDir() {
+        String customProp = System.getProperty("gecko.examples-dir");
+        if (customProp == null || customProp.isBlank()) {
+            customProp = System.getenv("GECKO_EXAMPLES_DIR");
+        }
+        if (customProp != null && !customProp.isBlank()) {
+            File envDir = new File(customProp.trim());
+            if (envDir.exists() && envDir.isDirectory()) {
+                return envDir;
+            }
+        }
         File[] candidates = new File[] {
                 new File("examples"),
                 new File("../examples"),
@@ -63,9 +73,35 @@ public class ExamplesController {
         }
         File created = new File("examples");
         if (!created.exists()) {
-            created.mkdirs();
+            try {
+                created.mkdirs();
+            } catch (Exception ignored) {}
         }
         return created;
+    }
+
+    private File getWritableExamplesDir() {
+        File dir = getExamplesDir();
+        if (dir.exists() && dir.canWrite()) {
+            return dir;
+        }
+        File userDir = new File(System.getProperty("user.home"), ".geckocircuits/examples");
+        if (!userDir.exists()) {
+            userDir.mkdirs();
+        }
+        return userDir;
+    }
+
+    private String sanitizeFilename(String filename) {
+        if (filename == null || filename.isBlank()) {
+            return "example.ipes";
+        }
+        String name = new File(filename).getName();
+        name = name.replaceAll("[^a-zA-Z0-9._-]", "_");
+        if (!name.endsWith(".ipes") && !name.endsWith(".txt")) {
+            name += ".ipes";
+        }
+        return name;
     }
 
     private File getManifestFile(File dir) {
@@ -97,15 +133,29 @@ public class ExamplesController {
     public ResponseEntity<List<ExampleDto>> listExamples() {
         File dir = getExamplesDir();
         List<Map<String, Object>> manifest = readManifest(dir);
-        List<ExampleDto> result = new ArrayList<>();
+        Map<String, ExampleDto> result = new LinkedHashMap<>();
 
+        populateExamples(dir, manifest, result, false);
+
+        File userDir = getWritableExamplesDir();
+        if (!userDir.getAbsolutePath().equals(dir.getAbsolutePath()) && userDir.exists()) {
+            List<Map<String, Object>> userManifest = readManifest(userDir);
+            populateExamples(userDir, userManifest, result, true);
+        }
+
+        return ResponseEntity.ok(new ArrayList<>(result.values()));
+    }
+
+    private void populateExamples(File dir, List<Map<String, Object>> manifest, Map<String, ExampleDto> out, boolean forceCustom) {
         for (Map<String, Object> item : manifest) {
             String id = (String) item.get("id");
+            if (id == null) continue;
             String name = (String) item.get("name");
             String category = (String) item.get("category");
             String description = (String) item.get("description");
-            String filename = (String) item.get("filename");
-            Boolean custom = item.containsKey("custom") ? (Boolean) item.get("custom") : Boolean.FALSE;
+            String rawFilename = (String) item.get("filename");
+            String filename = rawFilename != null ? sanitizeFilename(rawFilename) : null;
+            Boolean custom = forceCustom || (item.containsKey("custom") ? (Boolean) item.get("custom") : Boolean.FALSE);
 
             String content = "";
             if (filename != null) {
@@ -117,10 +167,8 @@ public class ExamplesController {
                 }
             }
 
-            result.add(new ExampleDto(id, name, category, description, filename, content, custom));
+            out.put(id, new ExampleDto(id, name, category, description, filename, content, custom));
         }
-
-        return ResponseEntity.ok(result);
     }
 
     /**
@@ -129,15 +177,33 @@ public class ExamplesController {
     @GetMapping("/{id}")
     @Operation(summary = "Get example by ID", description = "Returns the example metadata and .ipes circuit content.")
     public ResponseEntity<ExampleDto> getExample(@PathVariable String id) {
-        File dir = getExamplesDir();
-        List<Map<String, Object>> manifest = readManifest(dir);
+        File dir = getWritableExamplesDir();
+        ExampleDto dto = findExampleInDir(dir, id);
+        if (dto != null) {
+            return ResponseEntity.ok(dto);
+        }
+        File baseDir = getExamplesDir();
+        if (!baseDir.getAbsolutePath().equals(dir.getAbsolutePath())) {
+            dto = findExampleInDir(baseDir, id);
+            if (dto != null) {
+                return ResponseEntity.ok(dto);
+            }
+        }
+        return ResponseEntity.notFound().build();
+    }
 
+    private ExampleDto findExampleInDir(File dir, String id) {
+        if (!dir.exists()) return null;
+        List<Map<String, Object>> manifest = readManifest(dir);
         for (Map<String, Object> item : manifest) {
-            if (id.equals(item.get("id"))) {
+            String itemId = (String) item.get("id");
+            String itemName = (String) item.get("name");
+            if (id.equals(itemId) || (itemName != null && itemName.trim().equalsIgnoreCase(id.trim()))) {
                 String name = (String) item.get("name");
                 String category = (String) item.get("category");
                 String description = (String) item.get("description");
-                String filename = (String) item.get("filename");
+                String rawFilename = (String) item.get("filename");
+                String filename = rawFilename != null ? sanitizeFilename(rawFilename) : null;
                 Boolean custom = item.containsKey("custom") ? (Boolean) item.get("custom") : Boolean.FALSE;
 
                 String content = "";
@@ -150,11 +216,10 @@ public class ExamplesController {
                     }
                 }
 
-                return ResponseEntity.ok(new ExampleDto(id, name, category, description, filename, content, custom));
+                return new ExampleDto(itemId, name, category, description, filename, content, custom);
             }
         }
-
-        return ResponseEntity.notFound().build();
+        return null;
     }
 
     /**
@@ -162,7 +227,7 @@ public class ExamplesController {
      */
     @PostMapping
     @Operation(summary = "Create or overwrite example", description = "Saves a circuit example .ipes file and registers it in manifest.json. If an example with this name or ID exists and overwrite is true, it replaces the existing example.")
-    public ResponseEntity<ExampleDto> createExample(@RequestBody ExampleCreateOrUpdateRequest request) {
+    public synchronized ResponseEntity<ExampleDto> createExample(@RequestBody ExampleCreateOrUpdateRequest request) {
         if (request.name() == null || request.name().trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Example name is required");
         }
@@ -170,26 +235,18 @@ public class ExamplesController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Circuit content is required");
         }
 
-        File dir = getExamplesDir();
+        File dir = getWritableExamplesDir();
+        File baseDir = getExamplesDir();
         List<Map<String, Object>> manifest = readManifest(dir);
 
         // Check if an existing example matches by id or by name (case-insensitive)
-        Map<String, Object> existingEntry = null;
-        if (request.id() != null && !request.id().trim().isEmpty()) {
-            for (Map<String, Object> item : manifest) {
-                if (request.id().trim().equalsIgnoreCase(String.valueOf(item.get("id")))) {
-                    existingEntry = item;
-                    break;
-                }
-            }
-        }
-        if (existingEntry == null && request.name() != null && !request.name().trim().isEmpty()) {
-            for (Map<String, Object> item : manifest) {
-                String existingName = (String) item.get("name");
-                if (existingName != null && existingName.trim().equalsIgnoreCase(request.name().trim())) {
-                    existingEntry = item;
-                    break;
-                }
+        Map<String, Object> existingEntry = findEntryByIdOrName(manifest, request.id(), request.name());
+        if (existingEntry == null && !baseDir.getAbsolutePath().equals(dir.getAbsolutePath())) {
+            List<Map<String, Object>> baseManifest = readManifest(baseDir);
+            Map<String, Object> baseMatch = findEntryByIdOrName(baseManifest, request.id(), request.name());
+            if (baseMatch != null) {
+                existingEntry = new LinkedHashMap<>(baseMatch);
+                manifest.add(existingEntry);
             }
         }
 
@@ -213,11 +270,11 @@ public class ExamplesController {
                 existingEntry.put("description", request.description().trim());
             }
 
-            String filename = (String) existingEntry.get("filename");
-            if (filename == null || filename.isBlank()) {
-                filename = targetId.replace('-', '_') + ".ipes";
-                existingEntry.put("filename", filename);
-            }
+            String rawFilename = (String) existingEntry.get("filename");
+            String filename = rawFilename != null && !rawFilename.isBlank()
+                    ? sanitizeFilename(rawFilename)
+                    : sanitizeFilename(targetId.replace('-', '_') + ".ipes");
+            existingEntry.put("filename", filename);
 
             File circuitFile = new File(dir, filename);
             try {
@@ -256,7 +313,7 @@ public class ExamplesController {
             id = baseId + "_" + suffix++;
         }
 
-        String filename = id.replace('-', '_') + ".ipes";
+        String filename = sanitizeFilename(id.replace('-', '_') + ".ipes");
         File circuitFile = new File(dir, filename);
 
         try {
@@ -294,27 +351,21 @@ public class ExamplesController {
      */
     @PutMapping("/{id}")
     @Operation(summary = "Update example", description = "Updates example metadata and/or .ipes file content on disk.")
-    public ResponseEntity<ExampleDto> updateExample(
+    public synchronized ResponseEntity<ExampleDto> updateExample(
             @PathVariable String id,
             @RequestBody ExampleCreateOrUpdateRequest request
     ) {
-        File dir = getExamplesDir();
+        File dir = getWritableExamplesDir();
+        File baseDir = getExamplesDir();
         List<Map<String, Object>> manifest = readManifest(dir);
 
-        Map<String, Object> target = null;
-        for (Map<String, Object> item : manifest) {
-            if (id.equals(item.get("id"))) {
-                target = item;
-                break;
-            }
-        }
-        if (target == null) {
-            for (Map<String, Object> item : manifest) {
-                String itemName = (String) item.get("name");
-                if (itemName != null && itemName.trim().equalsIgnoreCase(id.trim())) {
-                    target = item;
-                    break;
-                }
+        Map<String, Object> target = findEntryByIdOrName(manifest, id, id);
+        if (target == null && !baseDir.getAbsolutePath().equals(dir.getAbsolutePath())) {
+            List<Map<String, Object>> baseManifest = readManifest(baseDir);
+            Map<String, Object> baseMatch = findEntryByIdOrName(baseManifest, id, id);
+            if (baseMatch != null) {
+                target = new LinkedHashMap<>(baseMatch);
+                manifest.add(target);
             }
         }
 
@@ -332,11 +383,11 @@ public class ExamplesController {
             target.put("description", request.description().trim());
         }
 
-        String filename = (String) target.get("filename");
-        if (filename == null || filename.isBlank()) {
-            filename = ((String) target.get("id")).replace('-', '_') + ".ipes";
-            target.put("filename", filename);
-        }
+        String rawFilename = (String) target.get("filename");
+        String filename = rawFilename != null && !rawFilename.isBlank()
+                ? sanitizeFilename(rawFilename)
+                : sanitizeFilename(((String) target.get("id")).replace('-', '_') + ".ipes");
+        target.put("filename", filename);
 
         String content = request.content();
         File circuitFile = new File(dir, filename);
@@ -346,6 +397,12 @@ public class ExamplesController {
                 Files.writeString(circuitFile.toPath(), content, StandardCharsets.UTF_8);
             } else if (circuitFile.exists()) {
                 content = Files.readString(circuitFile.toPath(), StandardCharsets.UTF_8);
+            } else {
+                File baseCircuitFile = new File(baseDir, filename);
+                if (baseCircuitFile.exists()) {
+                    content = Files.readString(baseCircuitFile.toPath(), StandardCharsets.UTF_8);
+                    Files.writeString(circuitFile.toPath(), content, StandardCharsets.UTF_8);
+                }
             }
 
             writeManifest(dir, manifest);
@@ -365,13 +422,32 @@ public class ExamplesController {
         }
     }
 
+    private Map<String, Object> findEntryByIdOrName(List<Map<String, Object>> manifest, String id, String name) {
+        if (id != null && !id.trim().isEmpty()) {
+            for (Map<String, Object> item : manifest) {
+                if (id.trim().equalsIgnoreCase(String.valueOf(item.get("id")))) {
+                    return item;
+                }
+            }
+        }
+        if (name != null && !name.trim().isEmpty()) {
+            for (Map<String, Object> item : manifest) {
+                String existingName = (String) item.get("name");
+                if (existingName != null && existingName.trim().equalsIgnoreCase(name.trim())) {
+                    return item;
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * Delete a circuit example from the examples directory.
      */
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete example", description = "Deletes an example file and unregisters it from manifest.json.")
-    public ResponseEntity<Void> deleteExample(@PathVariable String id) {
-        File dir = getExamplesDir();
+    public synchronized ResponseEntity<Void> deleteExample(@PathVariable String id) {
+        File dir = getWritableExamplesDir();
         List<Map<String, Object>> manifest = readManifest(dir);
 
         Iterator<Map<String, Object>> it = manifest.iterator();
@@ -391,9 +467,9 @@ public class ExamplesController {
             return ResponseEntity.notFound().build();
         }
 
-        String filename = (String) removed.get("filename");
-        if (filename != null) {
-            File circuitFile = new File(dir, filename);
+        String rawFilename = (String) removed.get("filename");
+        if (rawFilename != null) {
+            File circuitFile = new File(dir, sanitizeFilename(rawFilename));
             if (circuitFile.exists()) {
                 circuitFile.delete();
             }

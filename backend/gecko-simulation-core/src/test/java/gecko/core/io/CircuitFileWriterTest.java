@@ -443,4 +443,38 @@ class CircuitFileWriterTest {
         assertEquals("auto", parsed2.yScaleMode());
         assertFalse(parsed2.cursorsEnabled());
     }
+
+    @Test
+    void markdownNoteDoesNotDuplicateOnRepeatedRoundTrips() throws Exception {
+        CircuitModel model = new CircuitModel();
+        model.setSimulationDuration(0.01);
+        model.setTimeStep(1e-6);
+
+        CircuitModel.ComponentData note = new CircuitModel.ComponentData(2001, "NOTE.1", 10, 10, 501);
+        note.setFamily("SPECIAL");
+        note.setParameter("text", "# My Title\nSome description line 1\nSome description line 2");
+        note.setParameter("width", 25.0);
+        note.setParameter("height", 15.0);
+        model.addSpecialComponent(note);
+
+        // First write & parse
+        String round1Str = CircuitFileWriter.writeToString(model);
+        CircuitModel parsed1 = new CircuitFileParser().parse(new ByteArrayInputStream(round1Str.getBytes(java.nio.charset.StandardCharsets.UTF_8)), "test1.ipes");
+        CircuitModel.ComponentData noteParsed1 = parsed1.getSpecialComponents().get(0);
+        assertEquals("# My Title\nSome description line 1\nSome description line 2", noteParsed1.getParameters().get("text"));
+        assertTrue(noteParsed1.getExtraLines().isEmpty(), "Extra lines should not contain markdown body lines");
+
+        // Second write & parse
+        String round2Str = CircuitFileWriter.writeToString(parsed1);
+        CircuitModel parsed2 = new CircuitFileParser().parse(new ByteArrayInputStream(round2Str.getBytes(java.nio.charset.StandardCharsets.UTF_8)), "test2.ipes");
+        CircuitModel.ComponentData noteParsed2 = parsed2.getSpecialComponents().get(0);
+        assertEquals("# My Title\nSome description line 1\nSome description line 2", noteParsed2.getParameters().get("text"));
+        assertTrue(noteParsed2.getExtraLines().isEmpty(), "Extra lines must remain empty after second round-trip");
+
+        // Count occurrences of "# My Title" in written string
+        long count = java.util.Arrays.stream(round2Str.split("\n"))
+                .filter(l -> l.trim().equals("# My Title"))
+                .count();
+        assertEquals(1, count, "Markdown text must appear exactly once in serialized .ipes file");
+    }
 }

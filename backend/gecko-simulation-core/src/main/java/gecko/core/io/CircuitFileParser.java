@@ -688,9 +688,24 @@ public class CircuitFileParser {
 
                 // Preserve extra block lines (e.g. XML parameters, loss models, etc.)
                 if (elementBlock.asciiLines != null) {
+                    boolean inMarkdown = false;
                     for (String blockLine : elementBlock.asciiLines) {
                         String trimmed = blockLine.trim();
                         if (trimmed.isEmpty()) {
+                            continue;
+                        }
+                        if (trimmed.startsWith("<markdownText>")) {
+                            inMarkdown = true;
+                            continue;
+                        }
+                        if (inMarkdown) {
+                            if (trimmed.startsWith("<\\markdownText>") || trimmed.startsWith("</markdownText>")) {
+                                inMarkdown = false;
+                            }
+                            continue;
+                        }
+                        if (comp.getType() == 2001 && comp.getParameters().containsKey("text")) {
+                            // Markdown notes only have width, height and text; ignore duplicate lines outside tags
                             continue;
                         }
                         String token = trimmed.split("\\s+")[0];

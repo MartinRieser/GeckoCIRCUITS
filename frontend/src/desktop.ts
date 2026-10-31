@@ -5,6 +5,8 @@
  * (Chrome / Edge `--app` mode on localhost).
  */
 
+import { apiBase } from './api/client';
+
 export interface OpenFilePayload {
   name: string;
   base64: string;
@@ -340,7 +342,7 @@ export async function openExamplesFolder(): Promise<boolean> {
 
   // Fallback to backend REST endpoint for --app mode
   try {
-    const res = await fetch('/gecko/api/v1/circuits/open-examples-folder', {
+    const res = await fetch(apiBase() + '/circuits/open-examples-folder', {
       method: 'POST',
     });
     if (res.ok) {

@@ -12,7 +12,7 @@ import {
   type ManagedExample,
 } from '../model/examplesService';
 import { EXAMPLES } from '../model/examples';
-import { openExamplesFolder } from '../desktop';
+import { openExamplesFolder, confirmDialogNative } from '../desktop';
 import { EditExampleModal } from './EditExampleModal';
 
 export interface ExamplesModalProps {
@@ -126,8 +126,9 @@ export function ExamplesModal({
 
   const handleDelete = async (e: React.MouseEvent, ex: ManagedExample) => {
     e.stopPropagation();
-    const confirmed = window.confirm(
+    const confirmed = await confirmDialogNative(
       `Are you sure you want to delete the example "${ex.name}"? This removes it from the examples library.`,
+      'Delete Example',
     );
     if (!confirmed) return;
     await deleteExample(ex.id);

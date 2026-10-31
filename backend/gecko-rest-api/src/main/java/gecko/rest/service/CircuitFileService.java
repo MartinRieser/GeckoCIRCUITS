@@ -24,10 +24,26 @@ import java.util.stream.Collectors;
 @Service
 public class CircuitFileService {
 
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(CircuitFileService.class);
+    private static final int MAX_STORED_CIRCUITS = 25;
+
     private final CircuitFileParser parser = new CircuitFileParser();
 
     // In-memory storage of parsed circuits (circuit ID -> parsed data)
     private final Map<String, CircuitState> circuits = new ConcurrentHashMap<>();
+
+    private void evictOldCircuitsIfNeeded() {
+        if (circuits.size() < MAX_STORED_CIRCUITS) {
+            return;
+        }
+        circuits.entrySet().stream()
+                .min(Comparator.comparing((Map.Entry<String, CircuitState> e) ->
+                        e.getValue().loadedAt != null ? e.getValue().loadedAt : Instant.EPOCH))
+                .ifPresent(oldest -> {
+                    circuits.remove(oldest.getKey());
+                    logger.info("Evicted old circuit {} ({}) from memory", oldest.getKey(), oldest.getValue().filename);
+                });
+    }
 
     /**
      * Load circuit from multipart file upload.
@@ -296,6 +312,7 @@ public class CircuitFileService {
         }
 
         try {
+            evictOldCircuitsIfNeeded();
             // Deep copy via .ipes round-trip: guarantees the clone is a complete,
             // independent copy of every stored field (components, wires, labels, extras).
             CircuitModel newModel = copyCircuitModel(sourceParsed.model);
@@ -372,6 +389,7 @@ public class CircuitFileService {
 
     private CircuitLoadResponse loadCircuitFromBytes(byte[] content, String filename) {
         try {
+            evictOldCircuitsIfNeeded();
             // Parse using CircuitFileParser
             CircuitModel model;
             try (ByteArrayInputStream bais = new ByteArrayInputStream(content)) {
