@@ -39,18 +39,19 @@ describe('symbols: Orientation Angles', () => {
   });
 });
 
+function makeComp(partial: Partial<EditorComponent> & { type: number; name: string }): EditorComponent {
+  return {
+    family: 'LK',
+    position: [10, 10],
+    orientation: Orientation.WEST_EAST,
+    parameters: {},
+    inputLabels: [],
+    outputLabels: [],
+    ...partial,
+  };
+}
+
 describe('symbols: ComponentSymbol SVG rendering', () => {
-  function makeComp(partial: Partial<EditorComponent> & { type: number; name: string }): EditorComponent {
-    return {
-      family: 'LK',
-      position: [10, 10],
-      orientation: Orientation.WEST_EAST,
-      parameters: {},
-      inputLabels: [],
-      outputLabels: [],
-      ...partial,
-    };
-  }
 
   it('renders standard two-port passive components (Resistor, Inductor, Capacitor)', () => {
     for (const type of [
@@ -339,15 +340,13 @@ describe('symbols: SymbolPreview and SymbolByType fallback', () => {
       ['LK', 32],
       ['THERM', 50],
     ] as const) {
-      const comp: EditorComponent = {
-        id: `GND_${type}`,
+      const comp = makeComp({
         name: `GND_${type}`,
         family,
         type,
         position: [54, 16],
         orientation: Orientation.NORTH_SOUTH,
-        parameters: {},
-      };
+      });
       const { container } = render(
         <svg>
           <ComponentSymbol component={comp} dpix={10} />
