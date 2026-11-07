@@ -245,4 +245,52 @@ class PhysicsConservationOracleTest {
 
         assertConservationLaws(model, solver, 1.0e-5, 50);
     }
+
+    @ParameterizedTest
+    @EnumSource(value = SolverType.class)
+    void mosfetAntiparallelBodyDiodeFreewheelingSatisfiesTellegenAndKcl(SolverType solver) {
+        CircuitModel model = new CircuitModel();
+        // Reverse-biased DC source (-20V at Drain relative to Source) -> MOSFET (gate OFF, body diode uF=0.8V) -> R (10 Ohm)
+        // Because V_SD = 20V > 0.8V, the antiparallel body diode conducts ~1.92 A while satisfying KCL and Tellegen's theorem
+        CircuitModel.ComponentData vSrc = comp(4, "V_rev", 4, 10, ComponentTerminals.WEST_EAST, new double[]{401, 20.0});
+        CircuitModel.ComponentData mosfet = comp(28, "M1", 10, 10, ComponentTerminals.WEST_EAST, new double[]{1e7, 0.8, 10e-3, 1e7});
+        CircuitModel.ComponentData rLoad = comp(1, "R1", 16, 10, ComponentTerminals.WEST_EAST, new double[]{10.0});
+        model.getCircuitComponents().addAll(List.of(vSrc, mosfet, rLoad));
+
+        model.getConnections().add(new CircuitModel.ConnectionData("LK", new int[][]{{6, 10}, {8, 10}}));
+        model.getConnections().add(new CircuitModel.ConnectionData("LK", new int[][]{{12, 10}, {14, 10}}));
+        CircuitModel.ConnectionData gnd = new CircuitModel.ConnectionData("LK",
+                new int[][]{{18, 10}, {18, 14}, {2, 14}, {2, 10}});
+        gnd.setLabel("GND");
+        model.getConnections().add(gnd);
+
+        assertConservationLaws(model, solver, 1.0e-5, 40);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = SolverType.class)
+    void bjtCommonEmitterAmplifierSatisfiesTellegenAndKcl(SolverType solver) {
+        CircuitModel model = new CircuitModel();
+        // V_cc (12V) -> R_C (100 Ohm) -> BJT C(12,8), E(12,12) -> GND, with V_bb (5V) -> R_B (1000 Ohm) -> BJT B(10,10)
+        CircuitModel.ComponentData vcc = comp(4, "V_cc", 20, 10, ComponentTerminals.SOUTH_NORTH, new double[]{401, 12.0});
+        CircuitModel.ComponentData rc = comp(1, "R_c", 16, 6, ComponentTerminals.WEST_EAST, new double[]{100.0});
+        CircuitModel.ComponentData vbb = comp(4, "V_bb", 2, 10, ComponentTerminals.SOUTH_NORTH, new double[]{401, 5.0});
+        CircuitModel.ComponentData rb = comp(1, "R_b", 6, 10, ComponentTerminals.WEST_EAST, new double[]{1000.0});
+        CircuitModel.ComponentData bjt = comp(33, "Q1", 12, 10, ComponentTerminals.NORTH_SOUTH, new double[]{100.0, 1.0, 10.0, 1.0});
+        model.getCircuitComponents().addAll(List.of(vcc, rc, vbb, rb, bjt));
+
+        // V_cc+(20,8) -> (20,6) -> R_c(18,6); R_c(14,6) -> (12,6) -> Q1_C(12,8)
+        model.getConnections().add(new CircuitModel.ConnectionData("LK", new int[][]{{20, 8}, {20, 6}, {18, 6}}));
+        model.getConnections().add(new CircuitModel.ConnectionData("LK", new int[][]{{14, 6}, {12, 6}, {12, 8}}));
+        // V_bb+(2,8) -> (2,10) wait: V_bb at (2,10) SOUTH_NORTH has + at (2,8), - at (2,12)
+        model.getConnections().add(new CircuitModel.ConnectionData("LK", new int[][]{{2, 8}, {4, 8}, {4, 10}}));
+        model.getConnections().add(new CircuitModel.ConnectionData("LK", new int[][]{{8, 10}, {10, 10}}));
+        // Ground return: V_bb-(2,12), Q1_E(12,12), V_cc-(20,12)
+        CircuitModel.ConnectionData gnd = new CircuitModel.ConnectionData("LK",
+                new int[][]{{2, 12}, {12, 12}, {20, 12}});
+        gnd.setLabel("GND");
+        model.getConnections().add(gnd);
+
+        assertConservationLaws(model, solver, 1.0e-5, 40);
+    }
 }

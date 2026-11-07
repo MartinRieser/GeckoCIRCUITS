@@ -561,6 +561,135 @@ class ComprehensiveComponentAuditTest {
                 "Control block type " + ctrlType + " output mismatch");
     }
 
+    @Test
+    void mosfetAntiparallelBodyDiodeConductsInReverseWhenGateIsOff() {
+        CircuitModel model = new CircuitModel();
+        // V1 at (4, 10, EAST_WEST): nodeX (+) at (6, 10), nodeY (-) at (2, 10)
+        CircuitModel.ComponentData v1 = comp(4, "V1", 4, 10, ComponentTerminals.EAST_WEST, new double[]{401, 20.0});
+        // MOSFET at (10, 10, WEST_EAST): nodeX (Drain) at (8, 10), nodeY (Source) at (12, 10)
+        CircuitModel.ComponentData mosfet = comp(28, "M1", 10, 10, ComponentTerminals.WEST_EAST,
+                new double[]{1e7, 0.8, 10e-3, 1e7});
+        mosfet.setUniqueObjectIdentifier(901L);
+        CircuitModel.ComponentData r1 = comp(1, "R1", 16, 10, ComponentTerminals.WEST_EAST, new double[]{10.0});
+        model.getCircuitComponents().addAll(List.of(v1, mosfet, r1));
+
+        // Connect V1- (2,10) to MOSFET Drain (8,10) as GND:
+        CircuitModel.ConnectionData gndWire = new CircuitModel.ConnectionData("LK",
+                new int[][]{{2, 10}, {2, 6}, {8, 6}, {8, 10}});
+        gndWire.setLabel("GND");
+        model.getConnections().add(gndWire);
+        // Connect V1+ (6,10) to R1(18,10), and R1(14,10) to MOSFET Source (12,10):
+        model.getConnections().add(new CircuitModel.ConnectionData("LK",
+                new int[][]{{6, 10}, {6, 14}, {18, 14}, {18, 10}}));
+        model.getConnections().add(new CircuitModel.ConnectionData("LK",
+                new int[][]{{12, 10}, {14, 10}}));
+
+        // Ammeter coupled to M1
+        CircuitModel.ComponentData amp = comp(1002, "AMP_M1", 10, 20, ComponentTerminals.NORTH_SOUTH, new double[0]);
+        amp.setFamily("CONTROL");
+        amp.setCoupledReferenceID(901L);
+        amp.setParameterStrings(new String[]{"M1"});
+        amp.setTerminalYLabels(new String[]{"I_M1"});
+        model.getControlComponents().add(amp);
+
+        SimulationConfig config = SimulationConfig.builder()
+                .circuitModel(model)
+                .stepWidth(1e-5)
+                .simulationDuration(1e-4)
+                .signals(List.of("I_M1"))
+                .build();
+
+        SimulationResult result = new HeadlessSimulationEngine().runSimulation(config);
+        assertTrue(result.isSuccess(), () -> "MOSFET reverse body diode sim failed: " + result.getErrorMessage());
+        double current = assertSignalFiniteAndGetLast(result.getDataContainer(), "I_M1");
+        // Current from Drain(X) to Source(Y) is -(20 - 0.8) / (10 + 0.01) = -1.918 A
+        assertEquals(-1.918, current, 0.02, "MOSFET body diode must conduct in reverse when gate is OFF");
+    }
+
+    @Test
+    void idealTransformerAndBjtSupportCoupledAmmeterAndVoltmeterProbes() {
+        CircuitModel model = new CircuitModel();
+        // Part 1: Ideal Transformer TR1 (2:1 ratio) driven by 20V source with 10 Ohm secondary load
+        CircuitModel.ComponentData v1 = comp(4, "V1", 4, 10, ComponentTerminals.SOUTH_NORTH, new double[]{401, 20.0});
+        CircuitModel.ComponentData tr1 = comp(23, "TR1", 10, 10, ComponentTerminals.NORTH_SOUTH, new double[]{2.0, 1.0, 1.0});
+        tr1.setUniqueObjectIdentifier(910L);
+        CircuitModel.ComponentData rSec = comp(1, "R_sec", 16, 10, ComponentTerminals.NORTH_SOUTH, new double[]{10.0});
+        model.getCircuitComponents().addAll(List.of(v1, tr1, rSec));
+
+        // TR1 NORTH_SOUTH at (10,10): prim pins at (9,8) and (9,12); sec pins at (11,8) and (11,12)
+        model.getConnections().add(new CircuitModel.ConnectionData("LK", new int[][]{{4, 8}, {9, 8}}));
+        CircuitModel.ConnectionData gnd1 = new CircuitModel.ConnectionData("LK", new int[][]{{4, 12}, {9, 12}, {11, 12}, {16, 12}});
+        gnd1.setLabel("GND");
+        model.getConnections().add(gnd1);
+        model.getConnections().add(new CircuitModel.ConnectionData("LK", new int[][]{{11, 8}, {16, 8}}));
+
+        // Ammeter coupled to TR1 by name, Voltmeter coupled to TR1 by UID
+        CircuitModel.ComponentData ampTr = comp(1002, "AMP_TR", 20, 18, ComponentTerminals.NORTH_SOUTH, new double[0]);
+        ampTr.setFamily("CONTROL");
+        ampTr.setParameterStrings(new String[]{"TR1"});
+        ampTr.setTerminalYLabels(new String[]{"I_TR1"});
+        CircuitModel.ComponentData voltTr = comp(1001, "VOLT_TR", 20, 22, ComponentTerminals.NORTH_SOUTH, new double[0]);
+        voltTr.setFamily("CONTROL");
+        voltTr.setCoupledReferenceID(910L);
+        voltTr.setTerminalYLabels(new String[]{"V_TR1"});
+        model.getControlComponents().addAll(List.of(ampTr, voltTr));
+
+        SimulationConfig config = SimulationConfig.builder()
+                .circuitModel(model)
+                .stepWidth(1e-5)
+                .simulationDuration(5e-5)
+                .signals(List.of("I_TR1", "V_TR1"))
+                .build();
+
+        SimulationResult result = new HeadlessSimulationEngine().runSimulation(config);
+        assertTrue(result.isSuccess(), () -> "Transformer probe sim failed: " + result.getErrorMessage());
+        assertTrue(result.getWarnings().stream().noneMatch(w -> w.contains("DRC_PROBE_ERROR")),
+                () -> "Coupled probes on TR1 must not emit DRC_PROBE_ERROR: " + result.getWarnings());
+        double vTr = assertSignalFiniteAndGetLast(result.getDataContainer(), "V_TR1");
+        double iTr = assertSignalFiniteAndGetLast(result.getDataContainer(), "I_TR1");
+        assertEquals(20.0, Math.abs(vTr), 0.1, "Primary voltage on TR1 must be 20V");
+        // Secondary voltage is 10V across 10 Ohm -> 1A secondary current -> 0.5A primary current
+        assertEquals(0.5, Math.abs(iTr), 0.05, "Primary current on 2:1 TR1 with 1A secondary must be 0.5A");
+
+        // Part 2: BJT Q1 with coupled Ammeter AMP_Q1
+        // NORTH_SOUTH voltage source has nodeX (+) at y-2 and nodeY (-) at y+2
+        CircuitModel bjtModel = new CircuitModel();
+        CircuitModel.ComponentData vcc = comp(4, "V_cc", 20, 10, ComponentTerminals.NORTH_SOUTH, new double[]{401, 12.0});
+        CircuitModel.ComponentData rc = comp(1, "R_c", 16, 6, ComponentTerminals.WEST_EAST, new double[]{100.0});
+        CircuitModel.ComponentData vbb = comp(4, "V_bb", 2, 10, ComponentTerminals.NORTH_SOUTH, new double[]{401, 5.0});
+        CircuitModel.ComponentData rb = comp(1, "R_b", 6, 10, ComponentTerminals.WEST_EAST, new double[]{1000.0});
+        CircuitModel.ComponentData bjt = comp(33, "Q1", 12, 10, ComponentTerminals.NORTH_SOUTH, new double[]{0.0, 100.0, 60.0, 0.1, 1.0});
+        bjt.setUniqueObjectIdentifier(920L);
+        bjtModel.getCircuitComponents().addAll(List.of(vcc, rc, vbb, rb, bjt));
+
+        bjtModel.getConnections().add(new CircuitModel.ConnectionData("LK", new int[][]{{20, 8}, {20, 6}, {18, 6}}));
+        bjtModel.getConnections().add(new CircuitModel.ConnectionData("LK", new int[][]{{14, 6}, {12, 6}, {12, 8}}));
+        bjtModel.getConnections().add(new CircuitModel.ConnectionData("LK", new int[][]{{2, 8}, {4, 8}, {4, 10}}));
+        bjtModel.getConnections().add(new CircuitModel.ConnectionData("LK", new int[][]{{8, 10}, {10, 10}}));
+        CircuitModel.ConnectionData gnd2 = new CircuitModel.ConnectionData("LK", new int[][]{{2, 12}, {12, 12}, {20, 12}});
+        gnd2.setLabel("GND");
+        bjtModel.getConnections().add(gnd2);
+
+        CircuitModel.ComponentData ampBjt = comp(1002, "AMP_Q1", 20, 18, ComponentTerminals.NORTH_SOUTH, new double[0]);
+        ampBjt.setFamily("CONTROL");
+        ampBjt.setCoupledReferenceID(920L);
+        ampBjt.setParameterStrings(new String[]{"Q1"});
+        ampBjt.setTerminalYLabels(new String[]{"I_Q1"});
+        bjtModel.getControlComponents().add(ampBjt);
+
+        SimulationResult bjtResult = new HeadlessSimulationEngine().runSimulation(SimulationConfig.builder()
+                .circuitModel(bjtModel)
+                .stepWidth(1e-5)
+                .simulationDuration(5e-5)
+                .signals(List.of("I_Q1"))
+                .build());
+        assertTrue(bjtResult.isSuccess(), () -> "BJT probe sim failed: " + bjtResult.getErrorMessage());
+        assertTrue(bjtResult.getWarnings().stream().noneMatch(w -> w.contains("DRC_PROBE_ERROR")),
+                () -> "Coupled Ammeter on Q1 must not emit DRC_PROBE_ERROR: " + bjtResult.getWarnings());
+        double iQ1 = assertSignalFiniteAndGetLast(bjtResult.getDataContainer(), "I_Q1");
+        assertTrue(Math.abs(iQ1) > 0.05, "Coupled Ammeter on BJT Q1 must measure non-zero collector current, got: " + iQ1);
+    }
+
     private static double assertSignalFiniteAndGetLast(DataContainerGlobal container, String signal) {
         for (int row = 0; row < container.getRowLength(); row++) {
             if (signal.equals(container.getSignalName(row))) {

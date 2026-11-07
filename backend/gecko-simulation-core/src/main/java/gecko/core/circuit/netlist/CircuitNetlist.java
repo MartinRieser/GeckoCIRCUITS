@@ -208,6 +208,12 @@ public class CircuitNetlist implements INetList {
                     return i;
                 }
             }
+            String primName = name + " prim";
+            for (int i = 0; i < elementNames.length; i++) {
+                if (primName.equals(elementNames[i])) {
+                    return i;
+                }
+            }
         }
         return -1;
     }

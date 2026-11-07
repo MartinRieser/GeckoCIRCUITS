@@ -514,6 +514,29 @@ describe('Oscilloscope GUI & Controls', () => {
       expect(errorAlert.textContent).toContain('DRC_PROBE_ERROR: Gate.1 target not found');
       expect(screen.getByText('FAILED')).not.toBeNull();
     });
+
+    it('renders DRC warning banner and post-simulation empty-signal message when status is COMPLETED with warnings', () => {
+      render(
+        <ScopeViewTab
+          selectedScope="all"
+          components={dummyComponents}
+          results={{ time: [0, 1e-4] }}
+          displayLayout="overlay"
+          status="COMPLETED"
+          warnings={[
+            "DRC_PROBE_ERROR: Gate 'GATE.1' references an unknown or non-switch power component",
+            "DRC_PROBE_ERROR: Voltmeter 'VOLT.1' is not connected to any circuit node",
+          ]}
+        />,
+      );
+
+      const warningBanner = screen.getByTestId('scope-sim-warnings');
+      expect(warningBanner).not.toBeNull();
+      expect(warningBanner.textContent).toContain('Simulation Diagnostics (2 warnings)');
+      expect(warningBanner.textContent).toContain("Gate 'GATE.1'");
+      expect(warningBanner.textContent).toContain("Voltmeter 'VOLT.1'");
+      expect(screen.getByText(/No Observable Signals Recorded/i)).not.toBeNull();
+    });
   });
 });
 

@@ -11,6 +11,7 @@
 import type { EditorComponent, EditorWire, Point, EditorSnapshot, GraphRegister } from './types';
 import { ORIENTATION_CYCLE, terminalPositions, findPlacementConflict } from './geometry';
 import { Orientation } from './constants';
+import { getComponentMeta } from './componentSchema';
 import { routeWireWithAnchors, densePoints, simplifyCorners, deconflictMovedWires } from '../canvas/WireRouter';
 
 export type Mode = 'idle' | 'placing' | 'wiring' | 'rubber' | 'dragging';
@@ -466,7 +467,27 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         }
       }
 
-      const components = rawComponents;
+      const components = rawComponents.map((comp) => {
+        const meta = getComponentMeta(comp.type, comp.family, comp.name);
+        const existingParams = comp.parameters ?? {};
+        let needsPadding = false;
+        for (const pDef of meta.parameters) {
+          if (pDef.key.startsWith('param') && existingParams[pDef.key] === undefined) {
+            needsPadding = true;
+            break;
+          }
+        }
+        if (!needsPadding) {
+          return comp;
+        }
+        const paddedParams: Record<string, number | string | boolean> = { ...existingParams };
+        for (const pDef of meta.parameters) {
+          if (pDef.key.startsWith('param') && paddedParams[pDef.key] === undefined) {
+            paddedParams[pDef.key] = pDef.defaultValue;
+          }
+        }
+        return { ...comp, parameters: paddedParams };
+      });
 
       return {
         ...state,

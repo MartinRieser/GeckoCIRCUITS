@@ -521,6 +521,20 @@ public final class ControlCalculatorBuilder {
                 }
                 return;
             }
+            if (switchType == CircuitTypCore.LK_MOSFET) {
+                boolean wasGateOn = params.length > PARAM_GATE && params[PARAM_GATE] > 0.5;
+                if (params.length > PARAM_GATE) {
+                    params[PARAM_GATE] = on ? 1.0 : 0.0;
+                }
+                int onSlot = onResistanceSlot();
+                int offSlot = offResistanceSlot();
+                if (on && onSlot < params.length) {
+                    params[PARAM_RESISTANCE] = params[onSlot];
+                } else if (!on && wasGateOn && offSlot < params.length) {
+                    params[PARAM_RESISTANCE] = params[offSlot];
+                }
+                return;
+            }
             if (params.length > PARAM_GATE) {
                 params[PARAM_GATE] = signal;
             }

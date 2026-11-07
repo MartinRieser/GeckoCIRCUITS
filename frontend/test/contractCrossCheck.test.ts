@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { COMPONENT_METAS, resolveComponentPinCounts } from '../src/model/componentSchema';
+import { COMPONENT_METAS } from '../src/model/componentSchema';
 import { terminalPositions, flowVector, controlFlowVector, TWO_PORT_DIST, ORIENTATION_CYCLE } from '../src/model/geometry';
-import { Orientation } from '../src/model/constants';
 
 /**
  * Strategy 1: Cross-Layer Contract & Terminal Coordinate Parity Tests.

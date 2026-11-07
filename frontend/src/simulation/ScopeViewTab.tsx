@@ -861,15 +861,43 @@ export function ScopeViewTab({
             )}
           </div>
         )}
+        {status !== 'FAILED' && !errorMessage && warnings.length > 0 && (
+          <div
+            className="sim-warning-box scope-warning-banner"
+            role="status"
+            data-testid="scope-sim-warnings"
+            style={{
+              margin: '12px 16px 0 16px',
+              padding: '10px 14px',
+              borderRadius: 6,
+              border: '1px solid var(--warning, #f59e0b)',
+              background: 'rgba(245, 158, 11, 0.14)',
+              color: 'var(--warning, #fbbf24)',
+              fontSize: 13,
+              lineHeight: 1.45,
+            }}
+          >
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>
+              ⚠️ Simulation Diagnostics ({warnings.length} {warnings.length === 1 ? 'warning' : 'warnings'}):
+            </div>
+            <ul style={{ margin: '4px 0 0 18px', padding: 0, fontSize: 12 }}>
+              {warnings.map((w, idx) => (
+                <li key={idx}>{w}</li>
+              ))}
+            </ul>
+          </div>
+        )}
         {!results || signalNames.length === 0 ? (
           graphRegister ? (
             <div className="scope-empty-state pre-sim-screen" data-testid="scope-pre-sim-state">
               <div className="empty-icon">📈</div>
               <h3>{graphRegister.name}</h3>
               <p>
-                {graphRegister.signals.length === 0
-                  ? 'No signals selected yet. Pick labeled electrical or control signals in the right panel to plot.'
-                  : `Configured for ${graphRegister.signals.length} signal${graphRegister.signals.length > 1 ? 's' : ''} across ${graphRegister.numGraphs} graph${graphRegister.numGraphs > 1 ? 's' : ''}.`}
+                {status === 'COMPLETED'
+                  ? 'Simulation completed, but 0 signals were recorded. Ensure probes (VOLT, AMP) and gates are coupled to circuit components or labeled nodes.'
+                  : graphRegister.signals.length === 0
+                    ? 'No signals selected yet. Pick labeled electrical or control signals in the right panel to plot.'
+                    : `Configured for ${graphRegister.signals.length} signal${graphRegister.signals.length > 1 ? 's' : ''} across ${graphRegister.numGraphs} graph${graphRegister.numGraphs > 1 ? 's' : ''}.`}
               </p>
               {graphRegister.signals.length > 0 && (
                 <div
@@ -946,8 +974,18 @@ export function ScopeViewTab({
           ) : (
             <div className="scope-empty-state">
               <div className="empty-icon">{selectedScope === 'all' ? '📊' : '📺'}</div>
-              <h3>No simulation data available</h3>
-              <p>Configure parameters in the <strong>Simulation Settings</strong> panel on the right and click <strong>"▶ Run Simulation"</strong> to calculate waveforms.</p>
+              <h3>{status === 'COMPLETED' ? 'No Observable Signals Recorded' : 'No simulation data available'}</h3>
+              <p>
+                {status === 'COMPLETED' ? (
+                  <>
+                    The simulation finished, but <strong>0 signals</strong> were recorded. Ensure Voltmeters, Ammeters, or net labels are connected to valid circuit nodes or components, then click <strong>"▶ Run Simulation"</strong>.
+                  </>
+                ) : (
+                  <>
+                    Configure parameters in the <strong>Simulation Settings</strong> panel on the right and click <strong>"▶ Run Simulation"</strong> to calculate waveforms.
+                  </>
+                )}
+              </p>
             </div>
           )
         ) : (Boolean(graphRegister) || selectedScope !== 'all') && filteredChannels.length === 0 ? (

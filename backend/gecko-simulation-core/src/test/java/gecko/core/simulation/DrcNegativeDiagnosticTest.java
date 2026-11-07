@@ -248,24 +248,37 @@ class DrcNegativeDiagnosticTest {
         // DC source + R + IGBT + C in loop with ground
         CircuitModel.ComponentData u = createComp(
                 "LK", 4, "U", 10, 10, 501,
-                new double[]{401.0, 24.0, 50.0}, new String[]{"0", "n1"},
+                new double[]{401.0, 24.0, 50.0}, null,
                 Map.of(), 601L);
+        u.setTerminalXLabels(new String[]{"0"});
+        u.setTerminalYLabels(new String[]{"n1"});
+
         CircuitModel.ComponentData r = createComp(
                 "LK", 1, "R", 14, 10, 501,
-                new double[]{10.0}, new String[]{"n1", "n2"},
+                new double[]{10.0}, null,
                 Map.of(), 602L);
+        r.setTerminalXLabels(new String[]{"n1"});
+        r.setTerminalYLabels(new String[]{"n2"});
+
         CircuitModel.ComponentData igbt = createComp(
                 "LK", 10, "IGBT", 18, 10, 501,
-                new double[]{}, new String[]{"n2", "n3"},
+                new double[]{}, null,
                 Map.of(), 603L);
+        igbt.setTerminalXLabels(new String[]{"n2"});
+        igbt.setTerminalYLabels(new String[]{"n3"});
+
         CircuitModel.ComponentData c = createComp(
                 "LK", 3, "C", 22, 10, 501,
-                new double[]{1e-6}, new String[]{"n3", "0"},
+                new double[]{1e-6}, null,
                 Map.of(), 604L);
+        c.setTerminalXLabels(new String[]{"n3"});
+        c.setTerminalYLabels(new String[]{"0"});
+
         CircuitModel.ComponentData gnd = createComp(
                 "LK", 31, "GLOBAL_TERMINAL", 10, 14, 501,
-                new double[]{}, new String[]{"0"},
+                new double[]{}, null,
                 Map.of(), 605L);
+        gnd.setTerminalXLabels(new String[]{"0"});
 
         // Control: Signal -> Gate (uncoupled to IGBT)
         CircuitModel.ComponentData sig = createComp(
@@ -300,6 +313,7 @@ class DrcNegativeDiagnosticTest {
                 .build();
 
         SimulationResult result = new HeadlessSimulationEngine().runSimulation(config);
+        assertTrue(result.isSuccess(), "Valid RC loop in issue.ipes should solve without singular matrix error: " + result.getErrorMessage());
         List<String> warnings = result.getWarnings();
 
         // 1. Must warn about Gate having no coupled switch
@@ -309,5 +323,52 @@ class DrcNegativeDiagnosticTest {
         // 2. Must warn about Voltmeter having no connections
         assertTrue(warnings.stream().anyMatch(w -> w.contains("DRC_PROBE_ERROR") && w.contains("VOLT")),
                 () -> "Must warn about unconnected Voltmeter, got: " + warnings);
+    }
+
+    @Test
+    @DisplayName("Pin-to-pin touching components without wire segments build real netlist and solve")
+    void pinToPinCoincidentComponentsSolveWithoutExplicitWires() {
+        CircuitModel model = new CircuitModel();
+        model.setTimeStep(1e-6);
+        model.setSimulationDuration(1e-4);
+
+        // V1 at (10, 10, 501) SOUTH_NORTH: input at (10, 12) (-), output at (10, 8) (+)
+        CircuitModel.ComponentData v1 = createComp(
+                "LK", 4, "V1", 10, 10, 501,
+                new double[]{401.0, 20.0, 50.0}, null, Map.of(), 701L);
+        // R1 at (10, 10, 503) NORTH_SOUTH: input at (10, 8), output at (10, 12) — pins coincide directly with V1!
+        CircuitModel.ComponentData r1 = createComp(
+                "LK", 1, "R1", 10, 10, 503,
+                new double[]{10.0}, null, Map.of(), 702L);
+        // GND at (10, 14, 503) NORTH_SOUTH: pin at (10, 12)
+        CircuitModel.ComponentData gnd = createComp(
+                "LK", 31, "GND", 10, 14, 503,
+                new double[]{}, null, Map.of(), 703L);
+
+        // Ammeter coupled to R1
+        CircuitModel.ComponentData amp = createComp(
+                "CONTROL", 1002, "AMP1", 20, 10, 501,
+                new double[]{}, new String[]{"R1"}, Map.of("coupledComponent", "R1"), 704L);
+        amp.setCoupledReferenceID(702L);
+        amp.setTerminalYLabels(new String[]{"I_R1"});
+
+        model.addCircuitComponent(v1);
+        model.addCircuitComponent(r1);
+        model.addCircuitComponent(gnd);
+        model.addControlComponent(amp);
+
+        SimulationConfig config = SimulationConfig.builder()
+                .circuitModel(model)
+                .stepWidth(1e-5)
+                .simulationDuration(5e-5)
+                .signals(List.of("I_R1"))
+                .solverType(SolverType.SOLVER_BE)
+                .build();
+
+        SimulationResult result = new HeadlessSimulationEngine().runSimulation(config);
+        assertTrue(result.isSuccess(), "Pin-to-pin wire-free circuit must solve cleanly: " + result.getErrorMessage());
+        float[] iR1 = result.getSignalData(0);
+        assertNotNull(iR1);
+        assertEquals(2.0f, Math.abs(iR1[iR1.length - 1]), 1e-3f, "20V across 10 Ohm resistor must yield 2.0 A");
     }
 }

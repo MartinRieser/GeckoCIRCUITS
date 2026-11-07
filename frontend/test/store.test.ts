@@ -47,6 +47,29 @@ describe('store: snapshot loading', () => {
     expect(state.sheetWidth).toBe(600);
     expect(state.sheetHeight).toBe(400);
   });
+
+  it('pads truncated component parameter dictionaries with schema defaults on SNAPSHOT', () => {
+    const truncatedSnap: EditorSnapshot = {
+      ...snapshot,
+      components: [
+        {
+          type: 10, // IGBT
+          name: 'IGBT.1',
+          family: 'LK',
+          position: [10, 10],
+          orientation: 503,
+          parameters: {}, // missing param0..param3
+          inputLabels: [],
+          outputLabels: [],
+        },
+      ],
+    };
+    const state = editorReducer(initialState, { type: 'SNAPSHOT', snapshot: truncatedSnap });
+    const igbtParams = state.components[0].parameters;
+    expect(igbtParams.param1).toBe(0.8);
+    expect(igbtParams.param2).toBe(10e-3);
+    expect(igbtParams.param3).toBe(1e7);
+  });
 });
 
 describe('store: ghost placement mode', () => {

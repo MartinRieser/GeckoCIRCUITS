@@ -8,7 +8,7 @@
     "build:spring": "npm run build && node -e \"fs.rmSync('../backend/gecko-rest-api/src/main/resources/static',{recursive:true,force:true}); fs.cpSync('dist','../backend/gecko-rest-api/src/main/resources/static',{recursive:true}); if (fs.existsSync('../backend/gecko-rest-api/target/classes/static')) { fs.cpSync('dist','../backend/gecko-rest-api/target/classes/static',{recursive:true}); }\"",
     "typecheck": "tsc --noEmit",
     "test": "tsc --noEmit && vitest run",
-    "test:unit": "vitest run",
+    "test:unit": "tsc --noEmit && vitest run",
     "test:coverage": "tsc --noEmit && vitest run --coverage",
     "preview": "vite preview",
     "lint": "eslint src test"

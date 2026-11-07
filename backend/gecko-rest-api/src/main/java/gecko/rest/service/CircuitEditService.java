@@ -791,6 +791,14 @@ public class CircuitEditService {
                                          List<CircuitModel.ComponentData> source, String family) {
         for (CircuitModel.ComponentData comp : source) {
             Map<String, Object> params = new LinkedHashMap<>(comp.getParameters());
+            if (!("CONTROL".equalsIgnoreCase(family) && comp.getType() < 1000)) {
+                double[] defaults = DEFAULT_PARAMETERS.get(comp.getType());
+                if (defaults != null) {
+                    for (int i = 0; i < defaults.length; i++) {
+                        params.putIfAbsent("param" + i, defaults[i]);
+                    }
+                }
+            }
             String[] pStrings = comp.getParameterStrings();
             if (pStrings != null && pStrings.length > 0 && pStrings[0] != null) {
                 String first = pStrings[0].trim();

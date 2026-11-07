@@ -443,8 +443,25 @@ public class MatrixSolver implements MnaSolver {
 
             switch (componentType) {
                 // ===== Resistors and passive components (no b-vector contribution) =====
-                case LK_R, REL_RELUCTANCE, TH_RTH, TH_AMBIENT, LK_S, LK_MOSFET -> {
+                case LK_R, REL_RELUCTANCE, TH_RTH, TH_AMBIENT, LK_S -> {
                     // No contribution to b-vector (handled in matrix A)
+                }
+
+                // ===== Power MOSFET (bilateral channel when gate ON, antiparallel body diode when gate OFF) =====
+                case LK_MOSFET -> {
+                    double[] params = netlist.getParameter(elementIdx);
+                    boolean gateOn = params.length > DiodeParameters.INDEX_GATE_SIGNAL
+                            && params[DiodeParameters.INDEX_GATE_SIGNAL] > 0.5;
+                    if (!gateOn
+                            && params[DiodeParameters.INDEX_CURRENT_RESISTANCE] < SolverConstants.RD_OFF_THRESHOLD
+                            && params.length > DiodeParameters.INDEX_FORWARD_VOLTAGE
+                            && params[DiodeParameters.INDEX_FORWARD_VOLTAGE] > 0.0) {
+                        // Antiparallel body diode conducting in reverse (anode at nodeY, cathode at nodeX)
+                        bContribution = -params[DiodeParameters.INDEX_FORWARD_VOLTAGE]
+                                / params[DiodeParameters.INDEX_CURRENT_RESISTANCE];
+                        bVector[nodeX] += bContribution;
+                        bVector[nodeY] -= bContribution;
+                    }
                 }
 
                 // ===== Inductors (with history terms) =====

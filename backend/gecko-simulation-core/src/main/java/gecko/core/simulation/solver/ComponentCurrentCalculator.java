@@ -123,7 +123,7 @@ public class ComponentCurrentCalculator {
                     parameters[ResistorParameters.INDEX_CURRENT] = (p[nodeX] - p[nodeY]) / resistance;
                 }
 
-                case LK_S, LK_MOSFET -> {
+                case LK_S -> {
                     double resistance = parameters[SwitchParameters.INDEX_CURRENT_RESISTANCE];
                     if (resistance < FAST_NULL_R) {
                         resistance = FAST_NULL_R;
@@ -132,6 +132,43 @@ public class ComponentCurrentCalculator {
                     // params[1] holds the rOn slot of LK_S and must not be clobbered.
                     writeCurrentAndVoltage(parameters, SwitchParameters.INDEX_CURRENT,
                             (p[nodeX] - p[nodeY]) / resistance, p[nodeX] - p[nodeY]);
+                }
+
+                case LK_MOSFET -> {
+                    double rD = Math.max(parameters[SwitchParameters.INDEX_CURRENT_RESISTANCE], FAST_NULL_R);
+                    double uf = parameters.length > DiodeParameters.INDEX_FORWARD_VOLTAGE
+                            ? parameters[DiodeParameters.INDEX_FORWARD_VOLTAGE] : 0.0;
+                    boolean gateOn = parameters.length > SwitchParameters.INDEX_GATE_SIGNAL
+                            && parameters[SwitchParameters.INDEX_GATE_SIGNAL] > 0.5;
+                    double voltage = p[nodeX] - p[nodeY];
+                    boolean conducting = rD < RD_OFF_THRESHOLD;
+                    if (gateOn) {
+                        writeCurrentAndVoltage(parameters, SwitchParameters.INDEX_CURRENT,
+                                voltage / rD, voltage);
+                        if (!conducting && parameters.length > DiodeParameters.INDEX_R_ON
+                                && parameters[DiodeParameters.INDEX_R_ON] > 0.0) {
+                            parameters[SwitchParameters.INDEX_CURRENT_RESISTANCE] = parameters[DiodeParameters.INDEX_R_ON];
+                            stepBack = true;
+                        }
+                    } else if (uf > 0.0
+                            && parameters.length > DiodeParameters.INDEX_R_OFF
+                            && parameters[DiodeParameters.INDEX_R_OFF] > 0.0) {
+                        // Gate OFF: antiparallel body diode conducts when V_SD = V_Y - V_X > uF (voltage < 0)
+                        double effectiveUf = (conducting && voltage < 0.0) ? -uf : 0.0;
+                        writeCurrentAndVoltage(parameters, SwitchParameters.INDEX_CURRENT,
+                                (voltage - effectiveUf) / rD, voltage);
+                        double reverseVoltage = -voltage;
+                        if (conducting && reverseVoltage < stoergroesse * uf + acceptanceThreshold) {
+                            parameters[SwitchParameters.INDEX_CURRENT_RESISTANCE] = parameters[DiodeParameters.INDEX_R_OFF];
+                            stepBack = true;
+                        } else if (!conducting && reverseVoltage > stoergroesse * uf - acceptanceThreshold) {
+                            parameters[SwitchParameters.INDEX_CURRENT_RESISTANCE] = parameters[DiodeParameters.INDEX_R_ON];
+                            stepBack = true;
+                        }
+                    } else {
+                        writeCurrentAndVoltage(parameters, SwitchParameters.INDEX_CURRENT,
+                                voltage / rD, voltage);
+                    }
                 }
 
                 case LK_L, NONLIN_REL -> {
@@ -203,7 +240,17 @@ public class ComponentCurrentCalculator {
                         }
                         case SourceType.QUELLE_VOLTAGECONTROLLED_DIRECTLY_NEW,
                              SourceType.QUELLE_VOLTAGECONTROLLED_DIRECTLY -> {
-                            parameters[SourceParameters.INDEX_VALUE_DC] = 0.0;
+                            double vccsCurrent = 0.0;
+                            if (netlist instanceof gecko.core.circuit.netlist.CircuitNetlist cn) {
+                                for (gecko.core.circuit.netlist.CircuitNetlist.VccsCoupling vc : cn.getVccsCouplings()) {
+                                    if (vc.sourceElement() == elementIdx) {
+                                        int xm = netlist.getNodeX(vc.measuredElement());
+                                        int ym = netlist.getNodeY(vc.measuredElement());
+                                        vccsCurrent += vc.gain() * (p[xm] - p[ym]);
+                                    }
+                                }
+                            }
+                            parameters[SourceParameters.INDEX_VALUE_DC] = vccsCurrent;
                         }
                         default -> {
                         }

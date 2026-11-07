@@ -161,7 +161,12 @@ public class NetlistBuilder {
             return buildFromComponentsWithLabels(allComponents, connections, expansion.pairs(), mutualCouplers);
         }
 
-        if (hasWires) {
+        boolean hasPlacedPositions = allComponents.stream().anyMatch(c -> {
+            int[] pos = c.getPosition();
+            return (pos != null && pos.length >= 2 && (pos[0] != 0 || pos[1] != 0)) || c.getOrientation() != 0;
+        });
+
+        if (hasWires || hasPlacedPositions) {
             return buildFromWiresAndComponents(allComponents, connections, expansion.pairs(), mutualCouplers);
         }
 
@@ -303,7 +308,8 @@ public class NetlistBuilder {
             sec.setTerminalXLabels(new String[]{yl0});
             sec.setTerminalYLabels(new String[]{yl1});
 
-            prim.setUniqueObjectIdentifier(syntheticUid++);
+            long origUid = comp.getUniqueObjectIdentifier();
+            prim.setUniqueObjectIdentifier(origUid != 0 ? origUid : syntheticUid++);
             sec.setUniqueObjectIdentifier(syntheticUid++);
 
             result.add(prim);
@@ -324,6 +330,7 @@ public class NetlistBuilder {
             List<String> buildWarnings,
             List<CircuitModel.ComponentData> branchComponents, int regularElementCount,
             long[] extraUids,
+            String[] extraNames,
             List<int[]> vccsPairs, List<Double> vccsGains,
             List<WindingPair> windingPairs,
             List<CircuitModel.ComponentData> mutualCouplers,
@@ -354,6 +361,11 @@ public class NetlistBuilder {
         String[] names = new String[elementCount];
         for (int i = 0; i < regularElementCount && i < elementCount; i++) {
             names[i] = branchComponents.get(i).getName();
+        }
+        if (extraNames != null) {
+            for (int i = 0; i < extraNames.length && regularElementCount + i < elementCount; i++) {
+                names[regularElementCount + i] = extraNames[i];
+            }
         }
         netlist.setElementNames(names);
 
@@ -690,6 +702,7 @@ public class NetlistBuilder {
         List<int[]> vccsPairs = new ArrayList<>();
         List<Double> vccsGains = new ArrayList<>();
         List<Long> bjtUids = new ArrayList<>();
+        List<String> bjtNames = new ArrayList<>();
         // components already includes any expanded transformer windings, so
         // this base sits above every real AND synthetic uid in play; the
         // running counter keeps subcircuit uids unique across multiple BJTs.
@@ -776,9 +789,18 @@ public class NetlistBuilder {
                 vccsPairs.add(new int[]{feIdx, rbIdx});
                 vccsGains.add(betaF / rBase);
                 vccsGains.add(betaB / rBase);
-                for (int k = 1; k <= BjtParameters.SUBCIRCUIT_ELEMENT_COUNT; k++) {
-                    bjtUids.add(syntheticUid++);
-                }
+                long origUid = bjt.getUniqueObjectIdentifier();
+                String bjtName = bjt.getName() != null ? bjt.getName() : "BJT";
+                bjtUids.add(syntheticUid++);
+                bjtNames.add(bjtName + " rb");
+                bjtUids.add(syntheticUid++);
+                bjtNames.add(bjtName + " dc");
+                bjtUids.add(syntheticUid++);
+                bjtNames.add(bjtName + " de");
+                bjtUids.add(origUid != 0 ? origUid : syntheticUid++);
+                bjtNames.add(bjtName);
+                bjtUids.add(syntheticUid++);
+                bjtNames.add(bjtName + " fe");
             }
         }
 
@@ -787,6 +809,7 @@ public class NetlistBuilder {
                 maxNodeIndex, voltageSourceCount, elementCount, buildWarnings,
                 branchComponents, branchComponents.size(),
                 bjtUids.stream().mapToLong(Long::longValue).toArray(),
+                bjtNames.toArray(new String[0]),
                 vccsPairs, vccsGains, windingPairs, mutualCouplers, hasExplicitGround);
 
         // expose net labels so simulations can resolve signals like "V_out"
@@ -1301,7 +1324,7 @@ public class NetlistBuilder {
 
         CircuitNetlist netlist = finishNetlist(types, nodeX, nodeY, voltageSourceNumbers, params,
                 maxNodeIndex, voltageSourceCount, elementCount, buildWarnings,
-                branchComponents, branchComponents.size(), new long[0],
+                branchComponents, branchComponents.size(), new long[0], new String[0],
                 new ArrayList<>(), new ArrayList<>(), windingPairs, mutualCouplers, hasExplicitGround);
 
         for (Map.Entry<String, Integer> entry : labelToNode.entrySet()) {
