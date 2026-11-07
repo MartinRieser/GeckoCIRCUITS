@@ -474,6 +474,9 @@ export function App() {
         case 'toggle-wire-mode':
           actions.toggleWireMode();
           break;
+        case 'toggle-probe-mode':
+          actions.toggleProbeMode();
+          break;
         case 'ghost-move-up':
           e.preventDefault();
           dispatch({ type: 'GHOST_NUDGE', dx: 0, dy: -step });
@@ -1084,6 +1087,9 @@ export function App() {
                 openScriptTab: (name: string) => openScriptTab(name),
                 setLabel: actions.setLabel,
                 toggleWireMode: actions.toggleWireMode,
+                toggleProbeMode: actions.toggleProbeMode,
+                addSignalToScope: actions.addSignalToScope,
+                setProbeRefNet: actions.setProbeRefNet,
                 openCommandPalette: () => setCommandPaletteOpen(true),
               }}
             />

@@ -33,6 +33,7 @@ export type ActionId =
   | 'delete'
   | 'command-palette'
   | 'toggle-wire-mode'
+  | 'toggle-probe-mode'
   | 'rotate-selection'
   | 'save'
   | 'save-as'
@@ -174,6 +175,12 @@ export const KEYBINDINGS: KeyBinding[] = [
     key: 'w',
     description: 'Toggle Wire Pen Mode',
     category: 'Wiring',
+  },
+  {
+    action: 'toggle-probe-mode',
+    key: 'p',
+    description: 'Toggle Waveform Probe Mode',
+    category: 'Editing',
   },
 
   // Placing Mode (Armed Ghost)

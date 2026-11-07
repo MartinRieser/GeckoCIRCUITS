@@ -33,7 +33,7 @@ import {
   getComponentMeta,
   extractAvailableSignals,
 } from '../model/componentSchema';
-import { isScopeComponent, isScriptComponent } from '../simulation/scopes';
+import { isScopeComponent, isScriptComponent, defaultGraphForSignal } from '../simulation/scopes';
 import { isGroundSignal } from '../simulation/chartData';
 import { BLANK_CIRCUIT_IPES } from '../model/examples';
 import { SIMULATION_DEFAULTS } from '../model/constants';
@@ -383,6 +383,8 @@ export function useEditor() {
 
   const cancel = useCallback(() => dispatch({ type: 'CANCEL' }), []);
   const toggleWireMode = useCallback(() => dispatch({ type: 'TOGGLE_WIRE_MODE' }), []);
+  const toggleProbeMode = useCallback(() => dispatch({ type: 'TOGGLE_PROBE_MODE' }), []);
+  const setProbeRefNet = useCallback((netName: string | null) => dispatch({ type: 'SET_PROBE_REF_NET', netName }), []);
 
   const placeGhost = useCallback(
     (x: number, y: number, orientation?: number, typeOverride?: number, familyOverride?: string) => {
@@ -1863,6 +1865,54 @@ function cleanGraphRegistersForDeletedComponents(
     [],
   );
 
+  const addSignalToScope = useCallback(
+    async (signalName: string, targetGraph?: number) => {
+      const trimmed = signalName.trim();
+      if (!trimmed || isGroundSignal(trimmed)) return;
+      const regs = stateRef.current.graphRegisters || [];
+      if (regs.length === 0) {
+        const defaultG = (targetGraph || defaultGraphForSignal(trimmed, 'overlay')) as 1 | 2 | 3;
+        const newReg: GraphRegister = {
+          id: 'osci_1',
+          name: 'Osci 1',
+          numGraphs: 1,
+          signals: [trimmed],
+          signalGraphs: { [trimmed]: defaultG },
+          hiddenSignals: [],
+          yScaleMode: 'auto',
+          cursorsEnabled: false,
+        };
+        dispatch({ type: 'SET_GRAPH_REGISTERS', graphRegisters: [newReg] });
+        if (stateRef.current.circuitId) {
+          try {
+            await api.setGraphRegisters(stateRef.current.circuitId, [newReg]);
+          } catch {
+            // ignore
+          }
+        }
+        return;
+      }
+
+      const targetReg = regs[0];
+      if (targetReg.signals.includes(trimmed)) return;
+      const nextSignals = [...targetReg.signals, trimmed];
+      const defaultG = (targetGraph ||
+        defaultGraphForSignal(
+          trimmed,
+          targetReg.numGraphs === 2 ? '2-graphs' : targetReg.numGraphs === 3 ? '3-graphs' : 'overlay',
+        )) as 1 | 2 | 3;
+      const nextGraphs = {
+        ...targetReg.signalGraphs,
+        [trimmed]: defaultG,
+      };
+      await updateGraphRegister(targetReg.id, {
+        signals: nextSignals,
+        signalGraphs: nextGraphs,
+      });
+    },
+    [updateGraphRegister],
+  );
+
   const removeGraphRegister = useCallback(
     async (id: string) => {
       const currentRegs = stateRef.current.graphRegisters || [];
@@ -1966,6 +2016,9 @@ function cleanGraphRegistersForDeletedComponents(
       debugResume,
       updateSimSettings,
       toggleSimDrawer: () => setSimDrawerOpen((prev) => !prev),
+      toggleProbeMode,
+      setProbeRefNet,
+      addSignalToScope,
       setGraphRegisters,
       addGraphRegister,
       updateGraphRegister,

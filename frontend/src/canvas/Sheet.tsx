@@ -34,7 +34,7 @@ import {
   buildTerminalLabelItems,
 } from './sheetGuides';
 import { analyzeElectricalNets } from './netHighlight';
-import type { Point, EditorComponent } from '../model/types';
+import type { Point, EditorComponent, EditorWire } from '../model/types';
 import { ContextMenu } from './ContextMenu';
 import type { ContextMenuTarget } from './ContextMenu';
 import { Orientation, CANVAS_METRICS, LkComponentType } from '../model/constants';
@@ -72,6 +72,35 @@ export interface SheetActions {
   setLabel?: (name: string, side: 'x' | 'y', index: number, label: string) => void;
   toggleWireMode?: () => void;
   openCommandPalette?: () => void;
+  toggleProbeMode?: () => void;
+  addSignalToScope?: (signalName: string, targetGraph?: number) => void | Promise<void>;
+  setProbeRefNet?: (netName: string | null) => void;
+}
+
+export const VOLTAGE_PROBE_CURSOR = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28' fill='none'%3E%3Cpath d='M6 22 L18 10' stroke='%2338bdf8' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M4 24 L7 21' stroke='%2338bdf8' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='20' cy='8' r='3.5' fill='%2338bdf8' stroke='%230f172a' stroke-width='1.5'/%3E%3Ctext x='17' y='11' font-size='8' font-weight='bold' fill='%230f172a' font-family='sans-serif'%3EV%3C/text%3E%3C/svg%3E") 4 24, crosshair`;
+
+export const CURRENT_CLAMP_CURSOR = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28' fill='none'%3E%3Ccircle cx='14' cy='14' r='8' stroke='%23fb923c' stroke-width='2.5' stroke-dasharray='38 12' stroke-linecap='round'/%3E%3Cpath d='M14 6 L14 2' stroke='%23fb923c' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M14 22 L14 26' stroke='%23fb923c' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M14 8 L17 13 L11 13 Z' fill='%23fb923c'/%3E%3Ctext x='12' y='18' font-size='8' font-weight='bold' fill='%23fb923c' font-family='sans-serif'%3EI%3C/text%3E%3C/svg%3E") 14 14, crosshair`;
+
+/**
+ * Finds next unique net label like n1, n2, n3 avoiding existing wire and component names.
+ */
+export function findNextAvailableNetLabel(wires: EditorWire[], components: EditorComponent[]): string {
+  const existingNames = new Set<string>();
+  for (const w of wires) {
+    if (w.label && w.label !== 'NIX_NIX_NIX') {
+      existingNames.add(w.label.trim().toLowerCase());
+    }
+  }
+  for (const c of components) {
+    existingNames.add(c.name.trim().toLowerCase());
+    if (c.inputLabels) c.inputLabels.forEach((l) => l && existingNames.add(l.trim().toLowerCase()));
+    if (c.outputLabels) c.outputLabels.forEach((l) => l && existingNames.add(l.trim().toLowerCase()));
+  }
+  let counter = 1;
+  while (existingNames.has(`n${counter}`)) {
+    counter++;
+  }
+  return `n${counter}`;
 }
 
 export type NoteResizeHandle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
@@ -305,6 +334,102 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
     () => buildNetTerminalPoints(state.components),
     [state.components],
   );
+
+  // Keyboard modifiers for probing (Alt for component voltage, Shift for differential probing)
+  const [isAltDown, setIsAltDown] = useState(false);
+  const [isShiftDown, setIsShiftDown] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Alt') setIsAltDown(true);
+      if (e.key === 'Shift') setIsShiftDown(true);
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'Alt') setIsAltDown(false);
+      if (e.key === 'Shift') setIsShiftDown(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  const handleProbeWireClick = useCallback(
+    (wireIndex: number, e: React.MouseEvent) => {
+      const net = netAnalysis.wireIndexToNet.get(wireIndex);
+      let netLabel = net?.label;
+
+      if (!netLabel) {
+        const autoLabel = findNextAvailableNetLabel(state.wires, state.components);
+        actions.labelWire?.(wireIndex, autoLabel);
+        netLabel = autoLabel;
+      }
+
+      if (state.probeRefNet) {
+        const sigName = `V(${state.probeRefNet}|${netLabel})`;
+        actions.addSignalToScope?.(sigName, 1);
+        actions.setProbeRefNet?.(null);
+      } else if (e.shiftKey) {
+        actions.setProbeRefNet?.(netLabel);
+      } else {
+        const sigName = `V(${netLabel})`;
+        actions.addSignalToScope?.(sigName, 1);
+      }
+    },
+    [netAnalysis, state.wires, state.components, state.probeRefNet, actions],
+  );
+
+  const handleProbeComponentClick = useCallback(
+    (comp: EditorComponent, e: React.MouseEvent) => {
+      const useVolt = e.altKey || isAltDown;
+      const sigName = useVolt ? `V(${comp.name})` : `I(${comp.name})`;
+      const targetGraph = useVolt ? 1 : 2;
+      actions.addSignalToScope?.(sigName, targetGraph);
+    },
+    [isAltDown, actions],
+  );
+
+  const probeTooltip = useMemo(() => {
+    if (state.mode !== 'probing') return null;
+    if (hoveredComponentName) {
+      const useVolt = isAltDown;
+      return {
+        text: useVolt ? `+ V(${hoveredComponentName}) [Alt]` : `+ I(${hoveredComponentName})`,
+        color: useVolt ? '#38bdf8' : '#fb923c',
+      };
+    }
+    if (activeNet) {
+      const label = activeNet.label || 'auto';
+      if (state.probeRefNet) {
+        return {
+          text: `+ V(${state.probeRefNet}|${label}) [Diff]`,
+          color: '#38bdf8',
+        };
+      }
+      if (isShiftDown) {
+        return {
+          text: `Ref: ${label} [Shift]`,
+          color: '#a78bfa',
+        };
+      }
+      return {
+        text: `+ V(${label})`,
+        color: '#38bdf8',
+      };
+    }
+    if (state.probeRefNet) {
+      return {
+        text: `Ref: ${state.probeRefNet} (click 2nd net)`,
+        color: '#a78bfa',
+      };
+    }
+    return {
+      text: 'Probe Tool',
+      color: '#38bdf8',
+    };
+  }, [state.mode, hoveredComponentName, activeNet, isAltDown, isShiftDown, state.probeRefNet]);
 
   // Voltmeter ➔ measured-node guides, shown on hover/selection instead of
   // the permanent badge text. Lines are coloured by polarity: red for the
@@ -1215,7 +1340,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
 
   return (
     <div
-      className={`sheet-scroll ${isSpacePressed ? 'space-grab' : ''} ${isPanning ? 'panning' : ''} ${state.mode === 'wiring' ? 'mode-wiring' : ''}`}
+      className={`sheet-scroll ${isSpacePressed ? 'space-grab' : ''} ${isPanning ? 'panning' : ''} ${state.mode === 'wiring' ? 'mode-wiring' : ''} ${state.mode === 'probing' ? 'mode-probing' : ''}`}
       ref={containerRef}
       onWheel={handleWheel}
       onDragOver={handleDragOver}
@@ -1239,6 +1364,29 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
               actions.toggleWireMode?.();
             }}
             title="Exit Wire Tool (Esc)"
+          >
+            Exit (Esc)
+          </button>
+        </div>
+      )}
+
+      {/* Active Probe Mode Floating Banner */}
+      {state.mode === 'probing' && (
+        <div className="canvas-wire-mode-banner canvas-probe-mode-banner">
+          <span className="banner-icon">📍</span>
+          <span className="banner-text">
+            {state.probeRefNet
+              ? `Differential Probe: Ref net is '${state.probeRefNet}' — Click 2nd net to measure V(${state.probeRefNet}|net)`
+              : 'Probe Mode: Click wire for V(net) [Shift+click for Diff], click component for I(comp) [Alt+click for V(comp)]'}
+          </span>
+          <button
+            type="button"
+            className="banner-exit-btn"
+            onClick={() => {
+              actions.setProbeRefNet?.(null);
+              actions.toggleProbeMode?.();
+            }}
+            title="Exit Probe Tool (Esc)"
           >
             Exit (Esc)
           </button>
@@ -1288,6 +1436,15 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
           title="Wire Tool (W)"
         >
           W
+        </button>
+        <button
+          type="button"
+          data-testid="canvas-probe-tool-btn"
+          className={`canvas-ctrl-btn ${state.mode === 'probing' ? 'active' : ''}`}
+          onClick={actions.toggleProbeMode}
+          title="Probe Tool (P) — Click wire for V(net), component for I(comp)"
+        >
+          📍
         </button>
         <button
           type="button"
@@ -1360,7 +1517,13 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                 ? 'grabbing'
                 : isSpacePressed
                   ? 'grab'
-                  : undefined,
+                  : state.mode === 'probing'
+                    ? hoveredComponentName
+                      ? isAltDown
+                        ? VOLTAGE_PROBE_CURSOR
+                        : CURRENT_CLAMP_CURSOR
+                      : VOLTAGE_PROBE_CURSOR
+                    : undefined,
           }}
           onMouseMove={handleMouseMove}
           onMouseDown={handleMouseDown}
@@ -1466,6 +1629,10 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                     onMouseDown={(e) => {
                       if (e.button === 0) {
                         e.stopPropagation();
+                        if (state.mode === 'probing') {
+                          handleProbeWireClick(wire.index, e);
+                          return;
+                        }
                         if (state.mode === 'wiring' && state.wireDraft) {
                           const end = toGrid(e);
                           const route = routeAvoidingObstacles(
@@ -1738,6 +1905,11 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                   onMouseLeave={() => setHoveredComponentName((curr) => (curr === component.name ? null : curr))}
                   onMouseDown={(e) => {
                     if (e.button !== 0) return;
+                    if (state.mode === 'probing') {
+                      e.stopPropagation();
+                      handleProbeComponentClick(component, e);
+                      return;
+                    }
                     if (state.mode !== 'idle') return;
                     e.stopPropagation();
                     // note: while placing/dragging the components layer has
@@ -2006,12 +2178,36 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                                 fill="none"
                                 stroke="none"
                                 className="terminal-hit"
-                                style={{ cursor: 'crosshair', pointerEvents: 'all' }}
+                                style={{ cursor: state.mode === 'probing' ? 'inherit' : 'crosshair', pointerEvents: 'all' }}
                                 onMouseEnter={() => setHoveredTerminal({ x: t.x, y: t.y, label: termLabel, desc: termDesc, compName: component.name })}
                                 onMouseLeave={() => setHoveredTerminal((cur) => (cur && cur.x === t.x && cur.y === t.y ? null : cur))}
                                 onMouseDown={(e) => {
                                   if (e.button !== 0) return;
                                   e.stopPropagation();
+                                  if (state.mode === 'probing') {
+                                    const termKey = `${t.x},${t.y}`;
+                                    const net = netAnalysis.terminalKeyToNet.get(termKey);
+                                    let netLabel = net?.label;
+                                    if (!netLabel) {
+                                      const wireIdx = net?.wireIndices ? Array.from(net.wireIndices)[0] : undefined;
+                                      const autoLabel = findNextAvailableNetLabel(state.wires, state.components);
+                                      if (wireIdx !== undefined) {
+                                        actions.labelWire?.(wireIdx, autoLabel);
+                                      }
+                                      netLabel = autoLabel;
+                                    }
+                                    if (state.probeRefNet) {
+                                      const sigName = `V(${state.probeRefNet}|${netLabel})`;
+                                      actions.addSignalToScope?.(sigName, 1);
+                                      actions.setProbeRefNet?.(null);
+                                    } else if (e.shiftKey) {
+                                      actions.setProbeRefNet?.(netLabel);
+                                    } else {
+                                      const sigName = `V(${netLabel})`;
+                                      actions.addSignalToScope?.(sigName, 1);
+                                    }
+                                    return;
+                                  }
                                   if (state.mode === 'wiring' && state.wireDraft) {
                                     const end = { x: t.x, y: t.y };
                                     const route = routeAvoidingObstacles(
@@ -2658,6 +2854,36 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
               className="rubber-band"
               pointerEvents="none"
             />
+          )}
+
+          {/* Probe cursor live SPICE badge */}
+          {state.mode === 'probing' && cursorCoord && probeTooltip && (
+            <g
+              className="probe-cursor-badge"
+              transform={`translate(${cursorCoord.x * dpix + 16}, ${cursorCoord.y * dpix + 16})`}
+              pointerEvents="none"
+            >
+              <rect
+                x={-4}
+                y={-14}
+                width={probeTooltip.text.length * 7.5 + 14}
+                height={20}
+                rx={4}
+                fill="rgba(15, 23, 42, 0.92)"
+                stroke={probeTooltip.color}
+                strokeWidth={1.5}
+              />
+              <text
+                x={3}
+                y={0}
+                fill={probeTooltip.color}
+                fontSize={11}
+                fontWeight="bold"
+                fontFamily="monospace"
+              >
+                {probeTooltip.text}
+              </text>
+            </g>
           )}
         </svg>
 

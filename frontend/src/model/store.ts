@@ -14,7 +14,7 @@ import { Orientation } from './constants';
 import { getComponentMeta } from './componentSchema';
 import { routeWireWithAnchors, densePoints, simplifyCorners, deconflictMovedWires } from '../canvas/WireRouter';
 
-export type Mode = 'idle' | 'placing' | 'wiring' | 'rubber' | 'dragging';
+export type Mode = 'idle' | 'placing' | 'wiring' | 'rubber' | 'dragging' | 'probing';
 export type EditorMode = Mode;
 
 export interface Ghost {
@@ -105,6 +105,8 @@ export interface EditorState {
   busy: boolean;
   wireFamily: string | null;
   graphRegisters: GraphRegister[];
+  /** Reference net when measuring differential voltages in probe mode (e.g. net A in V(A|B)). */
+  probeRefNet: string | null;
 }
 
 export const initialState: EditorState = {
@@ -130,6 +132,7 @@ export const initialState: EditorState = {
   status: 'Open a .ipes file or example to begin',
   busy: false,
   wireFamily: null,
+  probeRefNet: null,
   graphRegisters: [
     {
       id: 'osci_1',
@@ -185,6 +188,8 @@ export type Action =
   | { type: 'DRAG_END' }
   | { type: 'PANEL_FOR'; name: string | null }
   | { type: 'TOGGLE_WIRE_MODE' }
+  | { type: 'TOGGLE_PROBE_MODE' }
+  | { type: 'SET_PROBE_REF_NET'; netName: string | null }
   | { type: 'SET_FILENAME'; filename: string; filePath?: string | null }
   | { type: 'SET_GRAPH_REGISTERS'; graphRegisters: GraphRegister[] }
   | { type: 'ADD_GRAPH_REGISTER'; register?: Partial<GraphRegister> }
@@ -665,9 +670,18 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
           status: nextMode === 'idle' ? '' : 'Wire mode — click a terminal or grid point to start a wire',
         };
       }
+      if (state.mode === 'probing') {
+        return {
+          ...state,
+          mode: 'idle',
+          probeRefNet: null,
+          status: 'Exited probe mode',
+        };
+      }
       return {
         ...state,
         mode: 'idle',
+        probeRefNet: null,
         ghost: null,
         wireDraft: null,
         rubber: null,
@@ -1208,6 +1222,32 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         ghost: null,
         selection: [],
         status: 'Wire mode active — Click or Tab/Enter on a terminal to start',
+      };
+    }
+
+    case 'TOGGLE_PROBE_MODE': {
+      if (state.mode === 'probing') {
+        return { ...state, mode: 'idle', probeRefNet: null, status: '' };
+      }
+      return {
+        ...state,
+        mode: 'probing',
+        probeRefNet: null,
+        wireDraft: null,
+        ghost: null,
+        rubber: null,
+        drag: null,
+        selection: [],
+        selectedWire: null,
+        selectedWires: [],
+        status: 'Probe mode — Click wire for V(net), click component for I(comp) (Alt for V), Shift+click for differential V(A|B)',
+      };
+    }
+
+    case 'SET_PROBE_REF_NET': {
+      return {
+        ...state,
+        probeRefNet: action.netName,
       };
     }
 

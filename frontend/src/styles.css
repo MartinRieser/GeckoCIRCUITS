@@ -1392,6 +1392,21 @@ body,
   cursor: crosshair !important;
 }
 
+/* Canvas Probe Mode feedback */
+.sheet-scroll.mode-probing svg,
+.sheet-scroll.mode-probing svg * {
+  cursor: inherit !important;
+}
+
+.canvas-probe-mode-banner {
+  border-color: #a78bfa !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45), 0 0 10px rgba(167, 139, 250, 0.25) !important;
+}
+
+.canvas-probe-mode-banner .banner-icon {
+  color: #a78bfa !important;
+}
+
 .canvas-wire-mode-banner {
   position: absolute;
   top: 14px;
