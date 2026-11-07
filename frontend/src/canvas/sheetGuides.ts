@@ -846,3 +846,203 @@ export function buildTerminalLabelItems(
 
   return items;
 }
+
+/**
+ * Active oscilloscope probe definition for schematic visual overlay.
+ */
+export interface ActiveProbeItem {
+  key: string;
+  rawSignal: string;
+  color: string;
+  type: 'voltage-single' | 'voltage-diff' | 'current' | 'control';
+  graph: number;
+  coord: Point;
+  refCoord?: Point;
+  netName?: string;
+  refNetName?: string;
+  compName?: string;
+}
+
+/**
+ * Positioned probe label badge with collision-free coordinates and optional leader line.
+ */
+export interface PositionedProbeBadge {
+  probe: ActiveProbeItem;
+  px: number;
+  py: number;
+  badgeX: number;
+  badgeY: number;
+  badgeW: number;
+  badgeH: number;
+  badgeText: string;
+  leaderLine?: {
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+  };
+}
+
+/**
+ * Generates candidate relative pixel offsets from an anchor pin in order of aesthetic preference.
+ */
+function getProbeCandidateOffsets(badgeW: number, badgeH: number): { dx: number; dy: number }[] {
+  const stepY = badgeH + 8; // 26px step for 18px badge height
+  const offsets: { dx: number; dy: number }[] = [];
+
+  // Preference 1: Top-Right standard
+  offsets.push({ dx: 14, dy: -14 });
+  // Preference 2: Stacked above Top-Right
+  offsets.push({ dx: 14, dy: -14 - stepY });
+  // Preference 3: Bottom-Right
+  offsets.push({ dx: 14, dy: 18 });
+  // Preference 4: Stacked below Bottom-Right
+  offsets.push({ dx: 14, dy: 18 + stepY });
+  // Preference 5: Top-Left
+  offsets.push({ dx: -badgeW - 14, dy: -14 });
+  // Preference 6: Stacked above Top-Left
+  offsets.push({ dx: -badgeW - 14, dy: -14 - stepY });
+  // Preference 7: Bottom-Left
+  offsets.push({ dx: -badgeW - 14, dy: 18 });
+  // Preference 8: Stacked below Bottom-Left
+  offsets.push({ dx: -badgeW - 14, dy: 18 + stepY });
+
+  // Further vertical stacking (levels 2..5)
+  for (let level = 2; level <= 5; level++) {
+    offsets.push({ dx: 14, dy: -14 - level * stepY });
+    offsets.push({ dx: 14, dy: 18 + level * stepY });
+    offsets.push({ dx: -badgeW - 14, dy: -14 - level * stepY });
+    offsets.push({ dx: -badgeW - 14, dy: 18 + level * stepY });
+  }
+
+  // Horizontal lateral shifts if vertical space is crowded
+  offsets.push({ dx: badgeW + 24, dy: -14 });
+  offsets.push({ dx: -2 * badgeW - 24, dy: -14 });
+
+  return offsets;
+}
+
+/**
+ * Resolves non-overlapping layout coordinates for active schematic oscilloscope probe badges.
+ *
+ * Prevents overlapping probe badges when multiple signals are recorded from the same component,
+ * the same electrical net, or nearby circuit nodes. Connects leader lines from anchor pins to
+ * badges that are displaced from their default positions.
+ *
+ * @param probes Array of active oscilloscope probe items
+ * @param dpix Schematic raster scaling factor (default: 16)
+ * @returns Positioned probe badges with guaranteed collision-free placements
+ */
+export function layoutProbeBadges(
+  probes: ActiveProbeItem[],
+  dpix = 16,
+): PositionedProbeBadge[] {
+  const positioned: PositionedProbeBadge[] = [];
+  const occupiedBoxes: { xMin: number; xMax: number; yMin: number; yMax: number }[] = [];
+
+  const BADGE_HEIGHT = 18;
+  const MARGIN_X = 6;
+  const MARGIN_Y = 4;
+
+  for (const probe of probes) {
+    const px = probe.coord.x * dpix;
+    const py = probe.coord.y * dpix;
+    const isDiff = probe.type === 'voltage-diff' && probe.refCoord;
+    const isCurr = probe.type === 'current';
+
+    const badgeText = isCurr
+      ? `I(${probe.compName}) ➔`
+      : isDiff
+      ? `V(${probe.netName}|${probe.refNetName})`
+      : probe.rawSignal;
+
+    const badgeW = Math.max(badgeText.length * 6.5 + 24, 60);
+
+    const candidateOffsets = getProbeCandidateOffsets(badgeW, BADGE_HEIGHT);
+
+    let chosenX = px + 14;
+    let chosenY = py - 14;
+    let bestScore = Infinity;
+
+    for (let i = 0; i < candidateOffsets.length; i++) {
+      const { dx, dy } = candidateOffsets[i];
+      const bx = px + dx;
+      const by = py + dy;
+
+      const candidateBox = {
+        xMin: bx - 2,
+        xMax: bx - 2 + badgeW,
+        yMin: by - 12,
+        yMax: by + 6,
+      };
+
+      let overlaps = false;
+      let totalOverlapArea = 0;
+
+      for (const box of occupiedBoxes) {
+        if (
+          candidateBox.xMin - MARGIN_X < box.xMax &&
+          candidateBox.xMax + MARGIN_X > box.xMin &&
+          candidateBox.yMin - MARGIN_Y < box.yMax &&
+          candidateBox.yMax + MARGIN_Y > box.yMin
+        ) {
+          overlaps = true;
+          const overlapW = Math.max(0, Math.min(candidateBox.xMax, box.xMax) - Math.max(candidateBox.xMin, box.xMin));
+          const overlapH = Math.max(0, Math.min(candidateBox.yMax, box.yMax) - Math.max(candidateBox.yMin, box.yMin));
+          totalOverlapArea += overlapW * overlapH;
+        }
+      }
+
+      if (!overlaps) {
+        chosenX = bx;
+        chosenY = by;
+        break;
+      }
+
+      const score = totalOverlapArea + i * 50;
+      if (score < bestScore) {
+        bestScore = score;
+        chosenX = bx;
+        chosenY = by;
+      }
+    }
+
+    occupiedBoxes.push({
+      xMin: chosenX - 2,
+      xMax: chosenX - 2 + badgeW,
+      yMin: chosenY - 12,
+      yMax: chosenY + 6,
+    });
+
+    const targetX = chosenX > px ? chosenX - 2 : chosenX - 2 + badgeW;
+    const targetY = chosenY - 3;
+    const dist = Math.hypot(targetX - px, targetY - py);
+
+    let leaderLine: { x1: number; y1: number; x2: number; y2: number } | undefined;
+    if (dist > 6) {
+      const pinRadius = isCurr ? 6 : 5;
+      const dirX = (targetX - px) / dist;
+      const dirY = (targetY - py) / dist;
+      leaderLine = {
+        x1: px + dirX * pinRadius,
+        y1: py + dirY * pinRadius,
+        x2: targetX,
+        y2: targetY,
+      };
+    }
+
+    positioned.push({
+      probe,
+      px,
+      py,
+      badgeX: chosenX,
+      badgeY: chosenY,
+      badgeW,
+      badgeH: BADGE_HEIGHT,
+      badgeText,
+      leaderLine,
+    });
+  }
+
+  return positioned;
+}

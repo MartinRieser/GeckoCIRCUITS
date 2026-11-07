@@ -33,6 +33,8 @@ import {
   buildNetWirePoints,
   buildScopeGuides,
   buildTerminalLabelItems,
+  layoutProbeBadges,
+  type ActiveProbeItem,
 } from './sheetGuides';
 import { analyzeElectricalNets } from './netHighlight';
 import type { Point, EditorComponent, EditorWire } from '../model/types';
@@ -581,19 +583,8 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
   );
 
   // Active oscilloscope probes for schematic visual overlay
-  const activeProbes = useMemo(() => {
-    const list: {
-      key: string;
-      rawSignal: string;
-      color: string;
-      type: 'voltage-single' | 'voltage-diff' | 'current' | 'control';
-      graph: number;
-      coord: Point;
-      refCoord?: Point;
-      netName?: string;
-      refNetName?: string;
-      compName?: string;
-    }[] = [];
+  const activeProbes = useMemo<ActiveProbeItem[]>(() => {
+    const list: ActiveProbeItem[] = [];
 
     const registers = state.graphRegisters || [];
     if (registers.length === 0) return list;
@@ -698,6 +689,12 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
 
     return list;
   }, [state.graphRegisters, netTerminalPoints, netWirePoints, state.components]);
+
+  // Collision-free layout coordinates and leader lines for schematic probe badges
+  const positionedProbes = useMemo(
+    () => layoutProbeBadges(activeProbes, dpix),
+    [activeProbes, dpix],
+  );
 
   // Wire segment and endpoint drag state
   const [wireDrag, setWireDrag] = useState<{
@@ -3252,17 +3249,10 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
           {/* Active Probe Markers Layer on Schematic */}
           {showProbes && (
             <g className="active-probes-layer">
-              {activeProbes.map((probe) => {
-              const px = probe.coord.x * dpix;
-              const py = probe.coord.y * dpix;
-              const isDiff = probe.type === 'voltage-diff' && probe.refCoord;
-              const isCurr = probe.type === 'current';
-              const badgeText = isCurr
-                ? `I(${probe.compName}) ➔`
-                : isDiff
-                ? `V(${probe.netName}|${probe.refNetName})`
-                : probe.rawSignal;
-              const badgeW = Math.max(badgeText.length * 6.5 + 24, 60);
+              {positionedProbes.map(
+                ({ probe, px, py, badgeX, badgeY, badgeW, badgeH, badgeText, leaderLine }) => {
+                  const isDiff = probe.type === 'voltage-diff' && probe.refCoord;
+                  const isCurr = probe.type === 'current';
 
               return (
                 <g key={probe.key} className="schematic-probe-marker-group">
@@ -3298,38 +3288,53 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                     </>
                   )}
 
-                  {/* Positive (+) probe anchor pin */}
-                  <g transform={`translate(${px}, ${py})`}>
-                    <circle
-                      r={isCurr ? 6 : 5}
-                      fill={isCurr ? '#fb923c' : probe.color}
-                      stroke="#0f172a"
-                      strokeWidth={1.5}
-                    />
-                    <text
-                      y={isCurr ? 2.5 : 3}
-                      textAnchor="middle"
-                      fill="#0f172a"
-                      fontSize={8}
-                      fontWeight="bold"
-                      fontFamily="sans-serif"
-                    >
-                      {isCurr ? 'I' : '+'}
-                    </text>
-                  </g>
+                      {/* Leader line from anchor pin to badge (prevents visual confusion on crowded nodes) */}
+                      {leaderLine && (
+                        <line
+                          x1={leaderLine.x1}
+                          y1={leaderLine.y1}
+                          x2={leaderLine.x2}
+                          y2={leaderLine.y2}
+                          stroke={probe.color}
+                          strokeWidth={1.2}
+                          strokeDasharray="3 2"
+                          opacity={0.75}
+                          pointerEvents="none"
+                        />
+                      )}
 
-                  {/* Marker badge with close button */}
-                  <g
-                    transform={`translate(${px + 14}, ${py - 14})`}
-                    className="schematic-probe-badge"
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <rect
-                      x={-2}
-                      y={-12}
-                      width={badgeW}
-                      height={18}
-                      rx={4}
+                      {/* Positive (+) probe anchor pin */}
+                      <g transform={`translate(${px}, ${py})`}>
+                        <circle
+                          r={isCurr ? 6 : 5}
+                          fill={isCurr ? '#fb923c' : probe.color}
+                          stroke="#0f172a"
+                          strokeWidth={1.5}
+                        />
+                        <text
+                          y={isCurr ? 2.5 : 3}
+                          textAnchor="middle"
+                          fill="#0f172a"
+                          fontSize={8}
+                          fontWeight="bold"
+                          fontFamily="sans-serif"
+                        >
+                          {isCurr ? 'I' : '+'}
+                        </text>
+                      </g>
+
+                      {/* Marker badge with close button (positioned to prevent collisions) */}
+                      <g
+                        transform={`translate(${badgeX}, ${badgeY})`}
+                        className="schematic-probe-badge"
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <rect
+                          x={-2}
+                          y={-12}
+                          width={badgeW}
+                          height={badgeH}
+                          rx={4}
                       fill="rgba(15, 23, 42, 0.94)"
                       stroke={probe.color}
                       strokeWidth={1.2}

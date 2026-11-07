@@ -15,6 +15,8 @@ import {
   describeDirection,
   computeCurrentDirectionHint,
   buildCurrentDirectionHints,
+  layoutProbeBadges,
+  type ActiveProbeItem,
 } from '../src/canvas/sheetGuides';
 import type { EditorComponent, EditorWire } from '../src/model/types';
 import { Orientation, LkComponentType, ControlComponentType } from '../src/model/constants';
@@ -727,6 +729,148 @@ describe('sheetGuides: current direction hints', () => {
       parameters: { coupledComponent: 'GHOST_R' },
     });
     expect(buildCurrentDirectionHints([orphanAmmeter], ['AMP.2'], null)).toEqual([]);
+  });
+});
+
+describe('sheetGuides: layoutProbeBadges (Collision Avoidance)', () => {
+  it('places a single probe at standard top-right offset with a leader line', () => {
+    const probes: ActiveProbeItem[] = [
+      {
+        key: 'probe-1',
+        rawSignal: 'V(OUT)',
+        color: '#38bdf8',
+        type: 'voltage-single',
+        graph: 1,
+        coord: { x: 20, y: 15 },
+        netName: 'OUT',
+      },
+    ];
+
+    const result = layoutProbeBadges(probes, 16);
+    expect(result).toHaveLength(1);
+    const item = result[0];
+    expect(item.px).toBe(320); // 20 * 16
+    expect(item.py).toBe(240); // 15 * 16
+    expect(item.badgeX).toBe(334); // px + 14
+    expect(item.badgeY).toBe(226); // py - 14
+    expect(item.badgeText).toBe('V(OUT)');
+    expect(item.leaderLine).toBeDefined();
+    // Leader line connects from anchor to badge boundary
+    expect(item.leaderLine!.x2).toBe(item.badgeX - 2);
+  });
+
+  it('prevents overlapping when multiple probes share the exact same anchor coordinates', () => {
+    // Both V(L1) and I(L1) on component L1 at (15, 10)
+    const probes: ActiveProbeItem[] = [
+      {
+        key: 'probe-v',
+        rawSignal: 'V(L1)',
+        color: '#38bdf8',
+        type: 'voltage-single',
+        graph: 1,
+        coord: { x: 15, y: 10 },
+        compName: 'L1',
+      },
+      {
+        key: 'probe-i',
+        rawSignal: 'I(L1)',
+        color: '#fb923c',
+        type: 'current',
+        graph: 2,
+        coord: { x: 15, y: 10 },
+        compName: 'L1',
+      },
+    ];
+
+    const result = layoutProbeBadges(probes, 16);
+    expect(result).toHaveLength(2);
+
+    const [badge1, badge2] = result;
+    // Bounding boxes
+    const box1 = {
+      xMin: badge1.badgeX - 2,
+      xMax: badge1.badgeX - 2 + badge1.badgeW,
+      yMin: badge1.badgeY - 12,
+      yMax: badge1.badgeY + 6,
+    };
+    const box2 = {
+      xMin: badge2.badgeX - 2,
+      xMax: badge2.badgeX - 2 + badge2.badgeW,
+      yMin: badge2.badgeY - 12,
+      yMax: badge2.badgeY + 6,
+    };
+
+    // Assert zero overlap between box1 and box2
+    const horizontalOverlap = box1.xMin < box2.xMax && box1.xMax > box2.xMin;
+    const verticalOverlap = box1.yMin < box2.yMax && box1.yMax > box2.yMin;
+    const hasOverlap = horizontalOverlap && verticalOverlap;
+    expect(hasOverlap).toBe(false);
+
+    // Both badges have leader lines pointing to the shared anchor (px=240, py=160)
+    expect(badge1.px).toBe(240);
+    expect(badge2.px).toBe(240);
+    expect(badge1.leaderLine).toBeDefined();
+    expect(badge2.leaderLine).toBeDefined();
+  });
+
+  it('handles 3 or more probes on nearby or same nodes cleanly by stacking', () => {
+    const probes: ActiveProbeItem[] = [
+      {
+        key: 'probe-1',
+        rawSignal: 'V(A)',
+        color: '#38bdf8',
+        type: 'voltage-single',
+        graph: 1,
+        coord: { x: 10, y: 10 },
+      },
+      {
+        key: 'probe-2',
+        rawSignal: 'V(A|B)',
+        color: '#a78bfa',
+        type: 'voltage-diff',
+        graph: 1,
+        coord: { x: 10, y: 10 },
+        refCoord: { x: 15, y: 10 },
+        netName: 'A',
+        refNetName: 'B',
+      },
+      {
+        key: 'probe-3',
+        rawSignal: 'I(SW1)',
+        color: '#fb923c',
+        type: 'current',
+        graph: 2,
+        coord: { x: 10, y: 10 },
+        compName: 'SW1',
+      },
+    ];
+
+    const result = layoutProbeBadges(probes, 16);
+    expect(result).toHaveLength(3);
+
+    // Verify all pairwise bounding boxes do NOT overlap
+    for (let i = 0; i < result.length; i++) {
+      for (let j = i + 1; j < result.length; j++) {
+        const b1 = result[i];
+        const b2 = result[j];
+        const boxA = {
+          xMin: b1.badgeX - 2,
+          xMax: b1.badgeX - 2 + b1.badgeW,
+          yMin: b1.badgeY - 12,
+          yMax: b1.badgeY + 6,
+        };
+        const boxB = {
+          xMin: b2.badgeX - 2,
+          xMax: b2.badgeX - 2 + b2.badgeW,
+          yMin: b2.badgeY - 12,
+          yMax: b2.badgeY + 6,
+        };
+
+        const horizontalOverlap = boxA.xMin < boxB.xMax && boxA.xMax > boxB.xMin;
+        const verticalOverlap = boxA.yMin < boxB.yMax && boxA.yMax > boxB.yMin;
+        expect(horizontalOverlap && verticalOverlap).toBe(false);
+      }
+    }
   });
 });
 
