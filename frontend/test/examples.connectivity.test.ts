@@ -117,17 +117,28 @@ describe('Example wire connectivity (no visually broken schematics)', () => {
       if (components.length === 0) problems.push(`${ex.id}: no components parsed`);
       if (wires.length === 0) problems.push(`${ex.id}: no wires parsed`);
 
-      // Terminals per component (LK_M coupler is pinless by design)
+      const diagonals: string[] = [];
+      const wireCells = wires.map((w) => denseCellsOf(w.points, diagonals));
+
+      // Terminals per component (LK_M coupler is pinless by design;
+      // observational display probes do not require an output wire unless connected)
       const terminals: { comp: string; x: number; y: number }[] = [];
       for (const c of components) {
         if (c.family === 'LK' && c.type === LkComponentType.MUTUAL_INDUCTANCE) continue;
+        const isProbe =
+          c.family === 'CONTROL' &&
+          (c.type === 1 || c.type === 2 || c.type === 1001 || c.type === 1002);
         const t = terminalPositions(c);
         for (const p of t.input) terminals.push({ comp: c.name, x: p.x, y: p.y });
-        for (const p of t.output) terminals.push({ comp: c.name, x: p.x, y: p.y });
+        for (const p of t.output) {
+          if (isProbe) {
+            const key = `${p.x},${p.y}`;
+            const touched = wireCells.some((cells) => cells.has(key));
+            if (!touched) continue;
+          }
+          terminals.push({ comp: c.name, x: p.x, y: p.y });
+        }
       }
-
-      const diagonals: string[] = [];
-      const wireCells = wires.map((w) => denseCellsOf(w.points, diagonals));
 
       // 1. No diagonal wire segments
       if (diagonals.length > 0) {
