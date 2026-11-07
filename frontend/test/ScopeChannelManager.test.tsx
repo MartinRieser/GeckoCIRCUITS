@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import type { EditorComponent, EditorWire } from '../src/model/types';
+import { LkComponentType } from '../src/model/constants';
 import { ScopeChannelManager } from '../src/simulation/ScopeChannelManager';
 
 describe('ScopeChannelManager Component', () => {
@@ -126,5 +128,212 @@ describe('ScopeChannelManager Component', () => {
     expect(g2Buttons.length).toBeGreaterThan(0);
     fireEvent.click(g2Buttons[0]);
     expect(onSetSignalGraph).toHaveBeenCalled();
+  });
+
+  describe('Phase 2 Hierarchical Signal Tree & Multi-Graph Probing', () => {
+    const mockComponents: EditorComponent[] = [
+      {
+        name: 'L_filter',
+        type: LkComponentType.INDUCTOR,
+        family: 'CIRCUIT',
+        position: [10, 10],
+        orientation: 501,
+        parameters: { L: 1e-3 },
+        inputLabels: [],
+        outputLabels: [],
+      },
+      {
+        name: 'S.1',
+        type: 201,
+        family: 'CIRCUIT',
+        position: [20, 20],
+        orientation: 501,
+        parameters: {},
+        inputLabels: [],
+        outputLabels: [],
+      },
+      {
+        name: 'PWM_GEN',
+        type: 501,
+        family: 'CONTROL',
+        position: [30, 30],
+        orientation: 501,
+        parameters: {},
+        inputLabels: [],
+        outputLabels: ['pwm_a'],
+      },
+    ];
+
+    const mockWires: EditorWire[] = [
+      { index: 0, type: 'LK', points: [[10, 10], [20, 10]], label: 'dc_pos' },
+      { index: 1, type: 'LK', points: [[20, 20], [30, 20]], label: 'load_p' },
+    ];
+
+    it('renders rich hierarchical Tree View with Power, Nets, Control, and Thermal groups', () => {
+      render(
+        <ScopeChannelManager
+          {...defaultProps}
+          components={mockComponents}
+          wires={mockWires}
+          assignedChannels={['I(L_filter)']}
+        />,
+      );
+
+      // Top-level sections rendered
+      expect(screen.getByTestId('scope-tree-power-section')).toBeDefined();
+      expect(screen.getByTestId('scope-tree-nets-section')).toBeDefined();
+      expect(screen.getByTestId('scope-tree-control-section')).toBeDefined();
+      expect(screen.getByTestId('scope-tree-thermal-section')).toBeDefined();
+
+      // Power components
+      expect(screen.getByText('L_filter')).toBeDefined();
+      expect(screen.getByText('S.1')).toBeDefined();
+      expect(screen.getAllByText('I(L_filter)').length).toBeGreaterThan(0);
+      expect(screen.getByText('V(L_filter)')).toBeDefined();
+      expect(screen.getByText('I(S.1)')).toBeDefined();
+      expect(screen.getByText('V(S.1)')).toBeDefined();
+      expect(screen.getByText('Ploss_S.1')).toBeDefined();
+
+      // Nets
+      expect(screen.getByText('V(dc_pos)')).toBeDefined();
+      expect(screen.getByText('V(load_p)')).toBeDefined();
+
+      // Control
+      expect(screen.getByText('pwm_a')).toBeDefined();
+
+      // Thermal & Magnetic
+      expect(screen.getByText('Tj_S.1')).toBeDefined();
+      expect(screen.getByText('Phi_L_filter')).toBeDefined();
+    });
+
+    it('switches between Tree View and Flat View seamlessly', () => {
+      render(
+        <ScopeChannelManager
+          {...defaultProps}
+          components={mockComponents}
+          wires={mockWires}
+        />,
+      );
+
+      // Initially in Tree View
+      expect(screen.getByTestId('scope-picker-tree-view-btn')).toBeDefined();
+      expect(screen.getByTestId('scope-tree-power-section')).toBeDefined();
+
+      // Switch to Flat View
+      fireEvent.click(screen.getByTestId('scope-picker-flat-view-btn'));
+      expect(screen.queryByTestId('scope-tree-power-section')).toBeNull();
+      expect(screen.getByText('⚡ Voltages')).toBeDefined();
+      expect(screen.getByText('🔌 Currents')).toBeDefined();
+
+      // Switch back to Tree View
+      fireEvent.click(screen.getByTestId('scope-picker-tree-view-btn'));
+      expect(screen.getByTestId('scope-tree-power-section')).toBeDefined();
+    });
+
+    it('supports collapsing and expanding tree sections and component nodes', () => {
+      render(
+        <ScopeChannelManager
+          {...defaultProps}
+          components={mockComponents}
+          wires={mockWires}
+        />,
+      );
+
+      // Collapse Power section
+      const powerHeader = screen.getByText('Power Components');
+      fireEvent.click(powerHeader);
+      // Components inside power section should be hidden
+      expect(screen.queryByTestId('scope-tree-comp-L_filter')).toBeNull();
+
+      // Re-expand Power section
+      fireEvent.click(powerHeader);
+      expect(screen.getByTestId('scope-tree-comp-L_filter')).toBeDefined();
+
+      // Toggle individual component node
+      const compNode = screen.getByTestId('scope-tree-comp-L_filter');
+      const compHeader = compNode.querySelector('div')!;
+      fireEvent.click(compHeader);
+      // Collapsed: signal row V(L_filter) hidden
+      expect(screen.queryByTestId('scope-signal-row-V(L_filter)')).toBeNull();
+
+      // Expand again
+      fireEvent.click(compHeader);
+      expect(screen.getByTestId('scope-signal-row-V(L_filter)')).toBeDefined();
+    });
+
+    it('allows adding signals directly to specific subplots (+ G1, + G2) in multi-graph mode', () => {
+      const onAddChannel = vi.fn();
+      render(
+        <ScopeChannelManager
+          {...defaultProps}
+          displayLayout="2-graphs"
+          components={mockComponents}
+          wires={mockWires}
+          onAddChannel={onAddChannel}
+        />,
+      );
+
+      // Find direct "+ G2" button on V(L_filter) row
+      const vFilterRow = screen.getByTestId('scope-signal-row-V(L_filter)');
+      const g2Btn = Array.from(vFilterRow.querySelectorAll('button')).find((b) => b.textContent?.includes('+ G2'));
+      expect(g2Btn).toBeDefined();
+      fireEvent.click(g2Btn!);
+
+      expect(onAddChannel).toHaveBeenCalledWith('V(L_filter)', 2);
+    });
+
+    it('adds all component signals at once via "+ Add all" button', () => {
+      const onAddChannel = vi.fn();
+      render(
+        <ScopeChannelManager
+          {...defaultProps}
+          components={mockComponents}
+          wires={mockWires}
+          assignedChannels={[]}
+          onAddChannel={onAddChannel}
+        />,
+      );
+
+      // Find "+ Add all" on L_filter
+      const compNode = screen.getByTestId('scope-tree-comp-L_filter');
+      const addAllBtn = Array.from(compNode.querySelectorAll('button')).find((b) => b.textContent?.includes('+ Add all'));
+      expect(addAllBtn).toBeDefined();
+      fireEvent.click(addAllBtn!);
+
+      // Both I(L_filter) and V(L_filter) should be requested
+      expect(onAddChannel).toHaveBeenCalledWith('I(L_filter)', undefined);
+      expect(onAddChannel).toHaveBeenCalledWith('V(L_filter)', undefined);
+    });
+
+    it('triggers hover callbacks onHoverComponent and onHoverNet', () => {
+      const onHighlightComponent = vi.fn();
+      const onHighlightNet = vi.fn();
+
+      render(
+        <ScopeChannelManager
+          {...defaultProps}
+          components={mockComponents}
+          wires={mockWires}
+          onHighlightComponent={onHighlightComponent}
+          onHighlightNet={onHighlightNet}
+        />,
+      );
+
+      // Hover on L_filter component container
+      const compNode = screen.getByTestId('scope-tree-comp-L_filter');
+      fireEvent.mouseEnter(compNode);
+      expect(onHighlightComponent).toHaveBeenCalledWith('L_filter');
+
+      fireEvent.mouseLeave(compNode);
+      expect(onHighlightComponent).toHaveBeenCalledWith(null);
+
+      // Hover on net V(dc_pos)
+      const netRow = screen.getByTestId('scope-signal-row-V(dc_pos)');
+      fireEvent.mouseEnter(netRow.parentElement!);
+      expect(onHighlightNet).toHaveBeenCalledWith('dc_pos');
+
+      fireEvent.mouseLeave(netRow.parentElement!);
+      expect(onHighlightNet).toHaveBeenCalledWith(null);
+    });
   });
 });

@@ -2986,6 +2986,10 @@ export interface AvailableSignalMetadata {
   domain: 'electrical' | 'control' | 'thermal' | 'other';
   category: 'voltage' | 'current' | 'control' | 'other';
   sourceDescription: string;
+  /** Name of the associated component if this signal is bound to a component. */
+  componentName?: string;
+  /** High-level tree group for scope signal picker. */
+  group?: 'power' | 'nets' | 'control' | 'thermal_magnetic';
 }
 
 export function extractAvailableSignalDetails(
@@ -3006,12 +3010,21 @@ export function extractAvailableSignalDetails(
     domain: 'electrical' | 'control' | 'thermal' | 'other',
     category: 'voltage' | 'current' | 'control' | 'other',
     sourceDescription: string,
+    componentName?: string,
+    group?: 'power' | 'nets' | 'control' | 'thermal_magnetic',
   ) => {
     if (!name) return;
     const trimmed = name.trim().replace(/^\/+/, '');
     if (!trimmed || trimmed === SENTINEL_UNSET) return;
     if (!signalMap.has(trimmed)) {
-      signalMap.set(trimmed, { name: trimmed, domain, category, sourceDescription });
+      signalMap.set(trimmed, {
+        name: trimmed,
+        domain,
+        category,
+        sourceDescription,
+        componentName,
+        group: group ?? (domain === 'control' ? 'control' : domain === 'thermal' ? 'thermal_magnetic' : 'power'),
+      });
     }
   };
 
@@ -3028,9 +3041,10 @@ export function extractAvailableSignalDetails(
         } else if (lower.startsWith('v_') || lower.startsWith('v(') || lower.startsWith('u')) {
           category = 'voltage';
         }
-        register(lbl, domain, category, `${isControl ? 'Control' : 'Electrical'} Net "${lbl}"`);
+        const netGroup: 'nets' | 'control' = isControl ? 'control' : 'nets';
+        register(lbl, domain, category, `${isControl ? 'Control' : 'Electrical'} Net "${lbl}"`, undefined, netGroup);
         if (!isControl && !lbl.startsWith('V(') && !lbl.startsWith('I(')) {
-          register(`V(${lbl})`, 'electrical', 'voltage', `Node Voltage V(${lbl})`);
+          register(`V(${lbl})`, 'electrical', 'voltage', `Node Voltage V(${lbl})`, undefined, 'nets');
         }
       }
     }
@@ -3038,8 +3052,19 @@ export function extractAvailableSignalDetails(
 
   for (const comp of components) {
     if (isCircuitPowerComponent(comp)) {
-      register(`I(${comp.name})`, 'electrical', 'current', `Current through ${comp.name}`);
-      register(`V(${comp.name})`, 'electrical', 'voltage', `Voltage across ${comp.name}`);
+      register(`I(${comp.name})`, 'electrical', 'current', `Current through ${comp.name}`, comp.name, 'power');
+      register(`V(${comp.name})`, 'electrical', 'voltage', `Voltage across ${comp.name}`, comp.name, 'power');
+      const hasType = comp.type !== undefined;
+      const isSwitch = hasType && isSwitchComponent({ type: comp.type!, family: comp.family, name: comp.name });
+      if (isSwitch) {
+        register(`Ploss_${comp.name}`, 'other', 'other', `Total switching and conduction loss for ${comp.name}`, comp.name, 'power');
+      }
+      if (comp.family === 'THERM' || isSwitch) {
+        register(`Tj_${comp.name}`, 'thermal', 'other', `Junction temperature for ${comp.name}`, comp.name, 'thermal_magnetic');
+      }
+      if ((hasType && isCoupledInductor({ type: comp.type!, family: comp.family })) || comp.type === LkComponentType.INDUCTOR || comp.type === LkComponentType.TRANSFORMER) {
+        register(`Phi_${comp.name}`, 'electrical', 'other', `Magnetic flux for ${comp.name}`, comp.name, 'thermal_magnetic');
+      }
     }
 
     const isControl =
@@ -3055,7 +3080,7 @@ export function extractAvailableSignalDetails(
 
     if (comp.inputLabels) {
       for (const lbl of comp.inputLabels) {
-        register(lbl, domain, isControl ? 'control' : 'other', `Terminal on ${comp.name}`);
+        register(lbl, domain, isControl ? 'control' : 'other', `Terminal on ${comp.name}`, comp.name, isControl ? 'control' : 'power');
       }
     }
 
@@ -3076,7 +3101,7 @@ export function extractAvailableSignalDetails(
         ) {
           cat = 'current';
         }
-        register(lbl, domain, cat, `Output of ${comp.name}`);
+        register(lbl, domain, cat, `Output of ${comp.name}`, comp.name, isControl ? 'control' : 'power');
       }
     }
 
@@ -3121,10 +3146,10 @@ export function extractAvailableSignalDetails(
         const { outputCount } = resolveComponentPinCounts(comp);
         if (isScriptOrDeadtime && outputCount > 1) {
           for (let j = 0; j < outputCount; j++) {
-            register(`${comp.name}.${j + 1}`, 'control', cat, `Output ${j + 1} of ${comp.name}`);
+            register(`${comp.name}.${j + 1}`, 'control', cat, `Output ${j + 1} of ${comp.name}`, comp.name, 'control');
           }
         } else {
-          register(comp.name, 'control', cat, `Output of ${comp.name}`);
+          register(comp.name, 'control', cat, `Output of ${comp.name}`, comp.name, 'control');
         }
       }
     }
@@ -3136,6 +3161,7 @@ export function extractAvailableSignalDetails(
       domain: 'electrical',
       category: 'voltage',
       sourceDescription: 'Circuit Ground Reference (0V)',
+      group: 'nets',
     });
   }
 

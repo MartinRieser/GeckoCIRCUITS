@@ -6,7 +6,7 @@
  */
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
-import type { EditorComponent, SimulationStatus, GraphRegister } from '../model/types';
+import type { EditorComponent, EditorWire, SimulationStatus, GraphRegister } from '../model/types';
 import { formatEngineeringValue } from '../model/componentSchema';
 import {
   effectiveWindow,
@@ -73,6 +73,12 @@ export interface ScopeViewTabProps {
   onUpdateGraphRegister?: (patch: Partial<GraphRegister>) => void;
   /** Optional callback to trigger a simulation run. */
   onRunSimulation?: () => void;
+  /** Schematic wires for net discovery and active net highlighting. */
+  wires?: EditorWire[];
+  /** Optional hover callback to highlight a schematic component. */
+  onHighlightComponent?: (componentName: string | null) => void;
+  /** Optional hover callback to highlight an electrical net. */
+  onHighlightNet?: (netLabelOrId: string | null) => void;
 }
 
 export const DEFAULT_DRAWER_HEIGHT = 280;
@@ -99,15 +105,16 @@ export function sampleIndexAt(time: number[], t: number): number {
 /**
  * Infers physical SI engineering unit from the signal or probe name convention.
  *
- * @param name Signal name (e.g. 'V_out', 'i_inductor', 'Power_loss', 'Temp_junction').
- * @returns Appropriate SI unit string ('V', 'A', 'W', '°C', or empty string).
+ * @param name Signal name (e.g. 'V_out', 'i_inductor', 'Power_loss', 'Temp_junction', 'Phi_Lp').
+ * @returns Appropriate SI unit string ('V', 'A', 'W', '°C', 'Wb', or empty string).
  */
 export function inferSignalUnit(name: string): string {
   const lower = name.toLowerCase();
   if (lower.startsWith('v') || lower.startsWith('u') || lower.includes('_v') || lower.includes('volt')) return 'V';
   if (lower.startsWith('i') || lower.includes('_i') || lower.includes('curr') || lower.startsWith('amp')) return 'A';
   if (lower.startsWith('p') || lower.includes('watt') || lower.includes('power')) return 'W';
-  if (lower.startsWith('temp') || lower.includes('th_') || lower.endsWith('_c')) return '°C';
+  if (lower.startsWith('temp') || lower.includes('th_') || lower.endsWith('_c') || lower.startsWith('tj')) return '°C';
+  if (lower.startsWith('phi')) return 'Wb';
   return '';
 }
 
@@ -213,6 +220,9 @@ export function ScopeViewTab({
   graphRegister,
   onUpdateGraphRegister,
   onRunSimulation,
+  wires,
+  onHighlightComponent,
+  onHighlightNet,
 }: ScopeViewTabProps) {
   const fallbackScope = useScopeController({
     results,
@@ -278,14 +288,18 @@ export function ScopeViewTab({
   }, [graphRegister, activeScopeBlock]);
 
   const handleAddChannel = useCallback(
-    (signalName: string) => {
+    (signalName: string, targetGraph?: number) => {
       if (graphRegister) {
         if (graphRegister.signals.includes(signalName)) return;
         const nextSignals = [...graphRegister.signals, signalName];
+        const assignedGraph =
+          targetGraph && targetGraph >= 1 && targetGraph <= 3
+            ? (targetGraph as 1 | 2 | 3)
+            : ((graphRegister.signalGraphs[signalName] ||
+                defaultGraphForSignal(signalName, effectiveDisplayLayout)) as 1 | 2 | 3);
         const nextGraphs: Record<string, 1 | 2 | 3> = {
           ...graphRegister.signalGraphs,
-          [signalName]: (graphRegister.signalGraphs[signalName] ||
-            defaultGraphForSignal(signalName, effectiveDisplayLayout)) as 1 | 2 | 3,
+          [signalName]: assignedGraph,
         };
         onUpdateGraphRegister?.({ signals: nextSignals, signalGraphs: nextGraphs });
         return;
@@ -1343,6 +1357,10 @@ export function ScopeViewTab({
           onSetSignalGraph={handleMoveSignalToGraph}
           onAutoGroupByCategory={handleAutoGroupSignals}
           theme={theme}
+          components={components}
+          wires={wires}
+          onHighlightComponent={onHighlightComponent}
+          onHighlightNet={onHighlightNet}
         />
       )}
     </div>

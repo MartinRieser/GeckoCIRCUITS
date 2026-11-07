@@ -1130,6 +1130,7 @@ export function App() {
             <ScopeViewTab
               selectedScope={activeSelectedScope}
               components={state.components}
+              wires={state.wires}
               results={simState.results}
               displayLayout={currentDisplayLayout}
               onDisplayLayoutChange={handleDisplayLayoutChange}
@@ -1151,6 +1152,11 @@ export function App() {
                 }
               }}
               onRunSimulation={handleQuickRun}
+              onHighlightComponent={(name) => {
+                if (name) {
+                  dispatch({ type: 'SELECT', name, additive: false });
+                }
+              }}
             />
           </div>
 
