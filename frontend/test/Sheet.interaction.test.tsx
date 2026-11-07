@@ -89,7 +89,7 @@ function Harness() {
 
 function setup() {
   const utils = render(<Harness />);
-  const svg = utils.container.querySelector('svg')!;
+  const svg = (utils.container.querySelector('svg.sheet') || utils.container.querySelector('svg'))!;
   expect(svg).toBeTruthy();
   return { ...utils, svg };
 }

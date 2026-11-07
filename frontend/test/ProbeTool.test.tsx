@@ -320,5 +320,78 @@ describe('Phase 3: Probe Tool & Cursor (LTspice style)', () => {
       fireEvent.mouseDown(compGroup!, { button: 0 });
       expect(addSignalToScope).not.toHaveBeenCalled();
     });
+
+    it('renders redesigned canvas controls toolbar with Wire, Probe, Probes toggle, Grid, and Labels', () => {
+      const toggleWireMode = vi.fn();
+      const toggleProbeMode = vi.fn();
+      const actions = {
+        ...({} as ReturnType<typeof import('../src/hooks/useEditor').useEditor>['actions']),
+        toggleWireMode,
+        toggleProbeMode,
+      };
+      const scopeBlock: EditorComponent = {
+        name: 'SCOPE1',
+        type: 51,
+        family: 'CONTROL',
+        position: [5, 5],
+        orientation: 503,
+        parameters: { signals: 'V(OUT)' },
+        inputLabels: [],
+        outputLabels: [],
+      };
+      const wire: EditorWire = {
+        index: 0,
+        type: 'LK',
+        label: 'OUT',
+        points: [[10, 10], [15, 10]],
+      };
+      const testState = {
+        ...initialState,
+        mode: 'idle' as const,
+        components: [scopeBlock],
+        wires: [wire],
+      };
+
+      const { container } = render(<Sheet state={testState} dispatch={vi.fn()} actions={actions} />);
+
+      // 1. Wire button
+      const wireBtn = screen.getByTestId('canvas-wire-tool-btn');
+      expect(wireBtn.textContent).toContain('Wire');
+      expect(wireBtn.textContent).toContain('W');
+      fireEvent.click(wireBtn);
+      expect(toggleWireMode).toHaveBeenCalledTimes(1);
+
+      // 2. Probe button
+      const probeBtn = screen.getByTestId('canvas-probe-tool-btn');
+      expect(probeBtn.textContent).toContain('Probe');
+      expect(probeBtn.textContent).toContain('P');
+      fireEvent.click(probeBtn);
+      expect(toggleProbeMode).toHaveBeenCalledTimes(1);
+
+      // 3. Probes toggle button
+      const probesToggleBtn = screen.getByTestId('canvas-toggle-probes-btn');
+      expect(probesToggleBtn.textContent).toContain('Probes');
+      // Initially probes are visible
+      expect(container.querySelector('.active-probes-layer')).not.toBeNull();
+
+      // Click to toggle off (hide probes)
+      fireEvent.click(probesToggleBtn);
+      expect(probesToggleBtn.textContent).toContain('OFF');
+      expect(container.querySelector('.active-probes-layer')).toBeNull();
+
+      // Click again to toggle on (show probes)
+      fireEvent.click(probesToggleBtn);
+      expect(container.querySelector('.active-probes-layer')).not.toBeNull();
+
+      // 4. Grid toggle button
+      const gridBtn = screen.getByTestId('canvas-grid-toggle-btn');
+      expect(gridBtn.textContent).toContain('Grid');
+      fireEvent.click(gridBtn);
+
+      // 5. Labels mode button
+      const labelsBtn = screen.getByTestId('canvas-labels-mode-btn');
+      expect(labelsBtn.textContent).toContain('Labels');
+      fireEvent.click(labelsBtn);
+    });
   });
 });

@@ -173,6 +173,37 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
   const [isSpacePressed, setIsSpacePressed] = useState(false);
   const [showGrid, setShowGrid] = useState(true);
 
+  // Probe markers visibility on schematic (persisted in localStorage)
+  const [showProbes, setShowProbes] = useState<boolean>(() => {
+    try {
+      const val = localStorage.getItem('gecko_show_probes');
+      return val !== 'false';
+    } catch {
+      return true;
+    }
+  });
+
+  const toggleShowProbes = useCallback(() => {
+    setShowProbes((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('gecko_show_probes', String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, []);
+
+  const ensureProbesVisible = useCallback(() => {
+    setShowProbes(true);
+    try {
+      localStorage.setItem('gecko_show_probes', 'true');
+    } catch {
+      // ignore
+    }
+  }, []);
+
   // Viewport container dimensions for scrollbar metrics
   const [viewportSize, setViewportSize] = useState({ width: 800, height: 600 });
   const [scrollDrag, setScrollDrag] = useState<{
@@ -388,16 +419,18 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
         const sigName = useVolt ? `V(${comp.name})` : `I(${comp.name})`;
         const targetGraph = useVolt ? 1 : 2;
         actions.addSignalToScope?.(sigName, targetGraph);
+        ensureProbesVisible();
         return;
       }
       if (comp.family === 'CONTROL') {
         const ctrlSig = resolveControlComponentSignal(comp);
         if (ctrlSig) {
           actions.addSignalToScope?.(ctrlSig, 3);
+          ensureProbesVisible();
         }
       }
     },
-    [isAltDown, actions, resolveControlComponentSignal],
+    [isAltDown, actions, resolveControlComponentSignal, ensureProbesVisible],
   );
 
   const hoveredComponent = useMemo(
@@ -788,6 +821,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
 
       if (isControlWire) {
         actions.addSignalToScope?.(netLabel, 3);
+        ensureProbesVisible();
         setProbeFirstPoint(null);
         return;
       }
@@ -802,6 +836,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
         } else {
           actions.addSignalToScope?.(`V(${ref}|${netLabel})`, 1);
         }
+        ensureProbesVisible();
         setProbeFirstPoint(null);
         actions.setProbeRefNet?.(null);
         return;
@@ -814,7 +849,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
       });
       actions.setProbeRefNet?.(netLabel);
     },
-    [netAnalysis, state.wires, state.components, probeFirstPoint, state.probeRefNet, actions, toGrid],
+    [netAnalysis, state.wires, state.components, probeFirstPoint, state.probeRefNet, actions, toGrid, ensureProbesVisible],
   );
 
   const updateNoteResize = useCallback(
@@ -1654,33 +1689,143 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
           Fit
         </button>
         <div className="canvas-ctrl-sep" />
+
+        {/* Wire Tool Button */}
         <button
           type="button"
+          data-testid="canvas-wire-tool-btn"
           className={`canvas-ctrl-btn ${state.mode === 'wiring' ? 'active' : ''}`}
           onClick={actions.toggleWireMode}
-          title="Wire Tool (W)"
+          title="Wire Tool (W) — Connect component terminals and wires. Press Esc to exit."
         >
-          W
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="canvas-ctrl-icon"
+          >
+            <polyline points="3 19 8 8 16 14 21 5" />
+            <circle cx="3" cy="19" r="2" fill="currentColor" />
+            <circle cx="21" cy="5" r="2" fill="currentColor" />
+          </svg>
+          <span className="canvas-ctrl-label">Wire</span>
+          <kbd className="canvas-ctrl-kbd">W</kbd>
         </button>
+
+        {/* Scope Probe Tool Button */}
         <button
           type="button"
           data-testid="canvas-probe-tool-btn"
           className={`canvas-ctrl-btn ${state.mode === 'probing' ? 'active' : ''}`}
           onClick={actions.toggleProbeMode}
-          title="Probe Tool (P) — Click wire for V(net), component for I(comp)"
+          title="Probe Tool (P) — Click wire for Voltage V(net), click 2 wires for Differential V(A|B), or click a component for Current I(comp). Esc to exit."
         >
-          📍
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="canvas-ctrl-icon"
+          >
+            <circle cx="12" cy="5" r="3" fill="currentColor" />
+            <path d="M12 8v13" />
+            <path d="M9 18l3 3 3-3" />
+          </svg>
+          <span className="canvas-ctrl-label">Probe</span>
+          <kbd className="canvas-ctrl-kbd">P</kbd>
         </button>
+
+        {/* Probes Visibility Toggle Button */}
         <button
           type="button"
+          data-testid="canvas-toggle-probes-btn"
+          className={`canvas-ctrl-btn ${showProbes ? 'active' : 'dimmed'}`}
+          onClick={toggleShowProbes}
+          title={
+            showProbes
+              ? `Probes Visible on Schematic (${activeProbes.length} active) — Click to hide probe markers and differential arcs`
+              : `Probes Hidden on Schematic (${activeProbes.length} active) — Click to show probe markers`
+          }
+        >
+          {showProbes ? (
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="canvas-ctrl-icon"
+            >
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          ) : (
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="canvas-ctrl-icon"
+            >
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+              <line x1="1" y1="1" x2="23" y2="23" />
+            </svg>
+          )}
+          <span className="canvas-ctrl-label">Probes</span>
+          <span className={`canvas-ctrl-badge ${showProbes ? 'on' : 'off'}`}>
+            {showProbes ? (activeProbes.length > 0 ? activeProbes.length : 'ON') : 'OFF'}
+          </span>
+        </button>
+
+        {/* Grid Alignment Toggle Button */}
+        <button
+          type="button"
+          data-testid="canvas-grid-toggle-btn"
           className={`canvas-ctrl-btn ${showGrid ? 'active' : ''}`}
           onClick={() => setShowGrid(!showGrid)}
-          title="Toggle Grid"
+          title={`Toggle Grid (${showGrid ? 'Currently ON' : 'Currently OFF'}) — Click to show or hide the alignment grid dot pattern.`}
         >
-          #
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="canvas-ctrl-icon"
+          >
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <line x1="9" y1="3" x2="9" y2="21" />
+            <line x1="15" y1="3" x2="15" y2="21" />
+            <line x1="3" y1="9" x2="21" y2="9" />
+            <line x1="3" y1="15" x2="21" y2="15" />
+          </svg>
+          <span className="canvas-ctrl-label">Grid</span>
+          <kbd className="canvas-ctrl-kbd">#</kbd>
         </button>
+
+        {/* Net Labels Mode Button */}
         <button
           type="button"
+          data-testid="canvas-labels-mode-btn"
           className={`canvas-ctrl-btn ${labelDisplayMode === 'smart' ? 'active' : ''}`}
           onClick={() => {
             const next = labelDisplayMode === 'smart' ? 'all' : labelDisplayMode === 'all' ? 'hover' : 'smart';
@@ -1691,16 +1836,26 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
               // ignore
             }
           }}
-          title={`Net Labels: ${
-            labelDisplayMode === 'smart'
-              ? 'Smart Mode (Virtual labels always visible; wired labels on hover/select)'
-              : labelDisplayMode === 'all'
-              ? 'All Labels Visible (click to show on hover only)'
-              : 'On Hover / Selection Only (click for Smart mode)'
-          }`}
-          style={{ fontSize: '11px', minWidth: '32px' }}
+          title={`Net Labels Mode — Cycle between Smart (labels on named/virtual nets), All (show labels on every net segment), and Hover (only when hovered or selected). Current: ${labelDisplayMode.toUpperCase()}. Click to cycle.`}
         >
-          {labelDisplayMode === 'smart' ? '🏷️' : labelDisplayMode === 'all' ? '🏷️⁺' : '🏷️⋯'}
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="canvas-ctrl-icon"
+          >
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+            <line x1="7" y1="7" x2="7.01" y2="7" />
+          </svg>
+          <span className="canvas-ctrl-label">Labels</span>
+          <span className="canvas-ctrl-badge mode">
+            {labelDisplayMode === 'smart' ? 'Smart' : labelDisplayMode === 'all' ? 'All' : 'Hover'}
+          </span>
         </button>
         {cursorCoord && (
           <>
@@ -3095,8 +3250,9 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
           )}
 
           {/* Active Probe Markers Layer on Schematic */}
-          <g className="active-probes-layer">
-            {activeProbes.map((probe) => {
+          {showProbes && (
+            <g className="active-probes-layer">
+              {activeProbes.map((probe) => {
               const px = probe.coord.x * dpix;
               const py = probe.coord.y * dpix;
               const isDiff = probe.type === 'voltage-diff' && probe.refCoord;
@@ -3207,6 +3363,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
               );
             })}
           </g>
+          )}
 
           {/* Active 2-Step Voltage Probe in Progress: Rubberband & Anchor (+) */}
           {state.mode === 'probing' && probeFirstPoint && (
