@@ -222,4 +222,24 @@ describe('useEditor hook', () => {
     expect(result.current.state.graphRegisters[0].signals).toEqual(['V_dc']);
     expect(result.current.state.graphRegisters[0].signalGraphs).toEqual({ V_dc: 1 });
   });
+
+  it('does not send speculative domain signals (Ploss, Tj, Phi) in simulation request unless configured', async () => {
+    const { result } = await renderEditor();
+    const { submitSimulation } = await import('../src/api/client');
+
+    // Simulate clicking Run
+    await act(async () => {
+      await result.current.actions.runSimulation();
+    });
+
+    expect(submitSimulation).toHaveBeenCalled();
+    const calls = vi.mocked(submitSimulation).mock.calls;
+    const simReq = calls[calls.length - 1][0];
+    const signals = simReq?.signals || [];
+
+    // Should NOT contain unconfigured speculative domain signals that trigger DRC warnings
+    expect(signals.some((s: string) => s.startsWith('Ploss_'))).toBe(false);
+    expect(signals.some((s) => s.startsWith('Tj_'))).toBe(false);
+    expect(signals.some((s) => s.startsWith('Phi_'))).toBe(false);
+  });
 });

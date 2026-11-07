@@ -1607,7 +1607,14 @@ function cleanGraphRegistersForDeletedComponents(
       const availableSigs = extractAvailableSignals(stateRef.current.components, stateRef.current.wires);
       for (const sig of availableSigs) {
         if (sig && sig.trim() && !isGroundSignal(sig.trim())) {
-          activeSignals.add(sig.trim());
+          const s = sig.trim();
+          // Speculative domain signals (semiconductor loss maps, thermal networks, non-linear magnetic cores)
+          // only exist when those specific modules are configured. Do not request them automatically unless
+          // the user or saved circuit explicitly added them to graphRegisters or simDefaults.
+          if (s.startsWith('Ploss_') || s.startsWith('Tj_') || s.startsWith('Phi_')) {
+            continue;
+          }
+          activeSignals.add(s);
         }
       }
 
