@@ -1203,13 +1203,13 @@ cursorsEnabled false
 `;
 
 export const RECTIFIER_CIRCUIT_IPES = `
-verbindungLeistungskreisANZAHL 9
 verbindungLK (0)
 <Verbindung>
 label ac1
 x[] 6 7 8 9 10 11 12 13 14 
 y[] 10 10 10 10 10 10 10 10 10 
-enabled true
+enabledShorted 0
+parentSheetIdentifier 0
 connectorType 0
 <\\Verbindung>
 
@@ -1218,7 +1218,8 @@ verbindungLK (1)
 label ac2
 x[] 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 
 y[] 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 
-enabled true
+enabledShorted 0
+parentSheetIdentifier 0
 connectorType 0
 <\\Verbindung>
 
@@ -1227,7 +1228,8 @@ verbindungLK (2)
 label ac2
 x[] 22 22 22 22 22 
 y[] 14 13 12 11 10 
-enabled true
+enabledShorted 0
+parentSheetIdentifier 0
 connectorType 0
 <\\Verbindung>
 
@@ -1236,7 +1238,8 @@ verbindungLK (3)
 label dc_plus
 x[] 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 
 y[] 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 
-enabled true
+enabledShorted 0
+parentSheetIdentifier 0
 connectorType 0
 <\\Verbindung>
 
@@ -1245,75 +1248,80 @@ verbindungLK (4)
 label 0
 x[] 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 
 y[] 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 
-enabled true
+enabledShorted 0
+parentSheetIdentifier 0
 connectorType 0
 <\\Verbindung>
 
 verbindungLK (5)
 <Verbindung>
 label dc_plus
-x[] 30 30 30 30 30
-y[] 6 7 8 9 10
-enabled true
+x[] 30 30 30 30 30 
+y[] 6 7 8 9 10 
+enabledShorted 0
+parentSheetIdentifier 0
 connectorType 0
 <\\Verbindung>
 
 verbindungLK (6)
 <Verbindung>
 label dc_plus
-x[] 36 36 36 36 36
-y[] 6 7 8 9 10
-enabled true
+x[] 36 36 36 36 36 
+y[] 6 7 8 9 10 
+enabledShorted 0
+parentSheetIdentifier 0
 connectorType 0
 <\\Verbindung>
 
 verbindungLK (7)
 <Verbindung>
 label 0
-x[] 30 30 30 30 30
-y[] 14 15 16 17 18
-enabled true
+x[] 30 30 30 30 30 
+y[] 14 15 16 17 18 
+enabledShorted 0
+parentSheetIdentifier 0
 connectorType 0
 <\\Verbindung>
 
 verbindungLK (8)
 <Verbindung>
 label 0
-x[] 36 36 36 36 36
-y[] 14 15 16 17 18
-enabled true
+x[] 36 36 36 36 36 
+y[] 14 15 16 17 18 
+enabledShorted 0
+parentSheetIdentifier 0
 connectorType 0
 <\\Verbindung>
 
-verbindungControlANZAHL 0
-elementANZAHL 7
-
-e (0)
+e (9)
 <ElementLK>
 labelAnfangsKnoten[] /ac1
 labelEndKnoten[] /ac2
 enabledShorted 1
+parentSheetIdentifier 0
 typ 4
 uniqueObjectIdentifier 1001
 x 6
 y 12
-parameter[] 402.0 34.0 50.0 0.0 0.0 0.5 0.0 34.0 0.0 -34.0 0.0 1.0 1.7976931348623157E308 0.0 0.0
+parameter[] 402.0 34.0 50.0 0.0 0.0 0.5 0.0 34.0 0.0 -34.0 0.0 1.0 1.7976931348623157E308 0.0 0.0 
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 503
 idStringDialog V_ac
+
 <\\ElementLK>
 
-e (1)
+e (10)
 <ElementLK>
 labelAnfangsKnoten[] /ac1
 labelEndKnoten[] /dc_plus
 enabledShorted 1
+parentSheetIdentifier 0
 typ 6
 uniqueObjectIdentifier 1002
 x 14
 y 8
-parameter[] 0.01 0.0 0.01 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
+parameter[] 0.01 0.0 0.01 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 501
@@ -1329,18 +1337,20 @@ Cosser 0.0
 datnamGemesseneVerluste not_defined
 lossFileHashValue 0
 <\\Verluste>
+
 <\\ElementLK>
 
-e (2)
+e (11)
 <ElementLK>
 labelAnfangsKnoten[] /0
 labelEndKnoten[] /ac1
 enabledShorted 1
+parentSheetIdentifier 0
 typ 6
 uniqueObjectIdentifier 1003
 x 14
 y 16
-parameter[] 0.01 0.0 0.01 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
+parameter[] 0.01 0.0 0.01 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 501
@@ -1356,18 +1366,20 @@ Cosser 0.0
 datnamGemesseneVerluste not_defined
 lossFileHashValue 0
 <\\Verluste>
+
 <\\ElementLK>
 
-e (3)
+e (12)
 <ElementLK>
 labelAnfangsKnoten[] /ac2
 labelEndKnoten[] /dc_plus
 enabledShorted 1
+parentSheetIdentifier 0
 typ 6
 uniqueObjectIdentifier 1004
 x 22
 y 8
-parameter[] 0.01 0.0 0.01 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
+parameter[] 0.01 0.0 0.01 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 501
@@ -1383,18 +1395,20 @@ Cosser 0.0
 datnamGemesseneVerluste not_defined
 lossFileHashValue 0
 <\\Verluste>
+
 <\\ElementLK>
 
-e (4)
+e (13)
 <ElementLK>
 labelAnfangsKnoten[] /0
 labelEndKnoten[] /ac2
 enabledShorted 1
+parentSheetIdentifier 0
 typ 6
 uniqueObjectIdentifier 1005
 x 22
 y 16
-parameter[] 0.01 0.0 0.01 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
+parameter[] 0.01 0.0 0.01 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 501
@@ -1410,106 +1424,117 @@ Cosser 0.0
 datnamGemesseneVerluste not_defined
 lossFileHashValue 0
 <\\Verluste>
+
 <\\ElementLK>
 
-e (5)
+e (14)
 <ElementLK>
 labelAnfangsKnoten[] /dc_plus
 labelEndKnoten[] /0
 enabledShorted 1
+parentSheetIdentifier 0
 typ 3
 uniqueObjectIdentifier 1006
 x 30
 y 12
-parameter[] 4.7E-4 0.0
+parameter[] 4.7E-4 0.0 
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 503
 idStringDialog C_filter
+
 <\\ElementLK>
 
-e (6)
+e (15)
 <ElementLK>
 labelAnfangsKnoten[] /dc_plus
 labelEndKnoten[] /0
 enabledShorted 1
+parentSheetIdentifier 0
 typ 1
 uniqueObjectIdentifier 1007
 x 36
 y 12
-parameter[] 50.0
+parameter[] 50.0 
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 503
 idStringDialog R_load
+
 <\\ElementLK>
 
-controlANZAHL 3
-
-c (0)
+c (16)
 <ElementCONTROL>
-labelAnfangsKnoten[] 
+labelAnfangsKnoten[]
 labelEndKnoten[] /v_ac
 enabledShorted 1
+parentSheetIdentifier 0
 typ 1
 uniqueObjectIdentifier 2001
 x 14
 y 24
-parameter[] 0.0
+parameter[] 0.0 
 parameterString[] /ac1/ac2/0
-nameOpt[] null
+nameOpt[]
 orientierung 503
 idStringDialog VOLT_AC
+
 <\\ElementCONTROL>
 
-c (1)
+c (17)
 <ElementCONTROL>
-labelAnfangsKnoten[] 
+labelAnfangsKnoten[]
 labelEndKnoten[] /v_dc
 enabledShorted 1
+parentSheetIdentifier 0
 typ 1
 uniqueObjectIdentifier 2002
 x 14
 y 28
-parameter[] 0.0
+parameter[] 0.0 
 parameterString[] /dc_plus/0/0
-nameOpt[] null
+nameOpt[]
 orientierung 503
 idStringDialog VOLT_DC
+
 <\\ElementCONTROL>
 
-c (2)
+c (18)
 <ElementCONTROL>
-labelAnfangsKnoten[] 
+labelAnfangsKnoten[]
 labelEndKnoten[] /i_load
 enabledShorted 1
+parentSheetIdentifier 0
 typ 2
 uniqueObjectIdentifier 2003
+coupledReferenceID[] 1007 
 x 14
 y 32
-parameter[] 0.0
+parameter[] 0.0 
 parameterString[] /R_load/NIX_NIX_NIX/0
-nameOpt[] null
+nameOpt[]
 orientierung 503
 idStringDialog AMP_LOAD
-coupledReferenceID[] 1007
-copyCoupledReferenceID[] 1007
+
 <\\ElementCONTROL>
 
-sp (0)
+sp (19)
 <ElementSPECIAL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] 
+labelAnfangsKnoten[]
+labelEndKnoten[]
 enabledShorted 1
+parentSheetIdentifier 0
 typ 2001
 uniqueObjectIdentifier 9001
-x 36
-y 6
-parameter[] 
+x 44
+y 9
+parameter[] NaN 
+parameterString[]
+nameOpt[]
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34
-boxHeight 26
+boxWidth 34.0
+boxHeight 26.0
 <markdownText>
 # Diode Bridge Rectifier (AC to DC)
 
@@ -1526,12 +1551,54 @@ Full-wave Graetz diode bridge converting **50 Hz AC mains** into a smoothed **DC
 - **CH2 (v_dc)**: Smoothed DC bus voltage with ripple $\\Delta V_{dc} \\approx \\frac{I_{load}}{2 f C}$.
 - **CH3 (i_load)**: Continuous DC output current through \`R_load\`.
 <\\markdownText>
+
 <\\ElementSPECIAL>
 
+optimizerName[]
+optimizerValue[] null
+<scripterCode>
+
+<\\scripterCode>
+<scripterImports>
+
+<\\scripterImports>
+<scripterDeclarations>
+ 
+<\\scripterDeclarations>
+<extraScriptSourceFiles>
+ 
+<\\extraScriptSourceFiles>
+
+
+
+DtStor 2026-11-07
 tDURATION 0.04
 dt 2.0E-6
+tPAUSE -1.0
+T_pre 0.0
+dt_pre 2.0E-6
 solverType 0
+path 
+
+dpix 16
+fontSize 12
+fontTyp Arial
+fensterWidth -1
+fensterHeight -1
+worksheetSize 600x600
+ANSICHT_SHOW_LK_NAME true
+ANSICHT_SHOW_LK_PARAMETER true
+ANSICHT_SHOW_LK_FLOWDIR false
+ANSICHT_SHOW_LK_TEXTLINIE true
+ANSICHT_SHOW_THERM_NAME true
+ANSICHT_SHOW_THERM_PARAMETER true
+ANSICHT_SHOW_THERM_FLOWDIR false
+ANSICHT_SHOW_THERM_TEXTLINIE true
+ANSICHT_SHOW_CONTROL_NAME true
+ANSICHT_SHOW_CONTROL_PARAMETER true
+ANSICHT_SHOW_CONTROL_TEXTLINIE true
 FileVersion 1
+UniqueFileId 0
 dataContainerSignals[] /v_ac/v_dc/i_load
 <graphRegisters>
 count 1
@@ -1546,6 +1613,8 @@ yScaleMode auto
 cursorsEnabled false
 <\\graphRegister>
 <\\graphRegisters>
+
+=======================
 `;
 
 export const THREE_SCOPES_RLC_IPES = `
@@ -4689,204 +4758,220 @@ dataContainerSignals[] /v_dc_meas/i_l/u_grid
 `;
 
 export const SPWM_INVERTER_DEADTIME_IPES = `
-
-verbindungLeistungskreisANZAHL 7
 verbindungLK (0)
 <Verbindung>
 label dc_pos
-x[] 6 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26
-y[] 9 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7
-enabled true
+x[] 6 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 
+y[] 9 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 
+enabledShorted 0
+parentSheetIdentifier 0
 connectorType 0
 <\\Verbindung>
 
 verbindungLK (1)
 <Verbindung>
 label 0
-x[] 6 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26
-y[] 13 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15
-enabled true
+x[] 6 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 
+y[] 13 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 
+enabledShorted 0
+parentSheetIdentifier 0
 connectorType 0
 <\\Verbindung>
 
 verbindungLK (2)
 <Verbindung>
 label out_a
-x[] 16 15 14 13 12 11 10 10 10 10 10 10 10 10 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32
-y[] 11 11 11 11 11 11 11 10 9 8 7 6 5 4 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
-enabled true
+x[] 16 15 14 13 12 11 10 10 10 10 10 10 10 10 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 
+y[] 11 11 11 11 11 11 11 10 9 8 7 6 5 4 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 
+enabledShorted 0
+parentSheetIdentifier 0
 connectorType 0
 <\\Verbindung>
 
 verbindungLK (3)
 <Verbindung>
 label out_b
-x[] 26 25 24 23 22 21 20 20 20 20 20 20 20 20 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 44 44 44 44 44 44
-y[] 11 11 11 11 11 11 11 12 13 14 15 16 17 18 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 18 17 16 15 14 13
-enabled true
+x[] 26 25 24 23 22 21 20 20 20 20 20 20 20 20 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 44 44 44 44 44 44 
+y[] 11 11 11 11 11 11 11 12 13 14 15 16 17 18 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 19 18 17 16 15 14 13 
+enabledShorted 0
+parentSheetIdentifier 0
 connectorType 0
 <\\Verbindung>
 
 verbindungLK (4)
 <Verbindung>
 label out_b
-x[] 38 38 38 38 38 38 38
-y[] 19 18 17 16 15 14 13
-enabled true
+x[] 38 38 38 38 38 38 38 
+y[] 19 18 17 16 15 14 13 
+enabledShorted 0
+parentSheetIdentifier 0
 connectorType 0
 <\\Verbindung>
 
 verbindungLK (5)
 <Verbindung>
 label load_p
-x[] 36 37 38 39 40 41 42 43 44 44 44 44 44 44 44
-y[] 3 3 3 3 3 3 3 3 3 4 5 6 7 8 9
-enabled true
+x[] 36 37 38 39 40 41 42 43 44 44 44 44 44 44 44 
+y[] 3 3 3 3 3 3 3 3 3 4 5 6 7 8 9 
+enabledShorted 0
+parentSheetIdentifier 0
 connectorType 0
 <\\Verbindung>
 
 verbindungLK (6)
 <Verbindung>
 label load_p
-x[] 38 38 38 38 38 38 38
-y[] 3 4 5 6 7 8 9
-enabled true
+x[] 38 38 38 38 38 38 38 
+y[] 3 4 5 6 7 8 9 
+enabledShorted 0
+parentSheetIdentifier 0
 connectorType 0
-<\\Verbindung>
-
-verbindungControlANZAHL 11
-verbindungCONTROL (0)
-<Verbindung>
-label v_ref
-x[] 8 9 10
-y[] 20 20 20
-enabled true
-connectorType 1
-<\\Verbindung>
-
-verbindungCONTROL (1)
-<Verbindung>
-label v_meas
-x[] 8 9 10 10
-y[] 24 24 24 21
-enabled true
-connectorType 1
-<\\Verbindung>
-
-verbindungCONTROL (2)
-<Verbindung>
-label v_err
-x[] 14 15 16
-y[] 20 20 20
-enabled true
-connectorType 1
-<\\Verbindung>
-
-verbindungCONTROL (3)
-<Verbindung>
-label v_ctrl
-x[] 20 21 22
-y[] 20 20 20
-enabled true
-connectorType 1
-<\\Verbindung>
-
-verbindungCONTROL (4)
-<Verbindung>
-label v_mod
-x[] 26 27 28
-y[] 20 20 20
-enabled true
-connectorType 1
-<\\Verbindung>
-
-verbindungCONTROL (5)
-<Verbindung>
-label v_tri
-x[] 26 27 28 28
-y[] 26 26 26 21
-enabled true
-connectorType 1
-<\\Verbindung>
-
-verbindungCONTROL (6)
-<Verbindung>
-label pwm
-x[] 32 33 34
-y[] 20 20 20
-enabled true
-connectorType 1
 <\\Verbindung>
 
 verbindungCONTROL (7)
 <Verbindung>
-label gate_hi
-x[] 38 39 40 41 42 43 44 45 46
-y[] 20 20 20 20 20 20 20 20 20
-enabled true
+label v_ref
+x[] 8 9 10 
+y[] 20 20 20 
+enabledShorted 0
+parentSheetIdentifier 0
 connectorType 1
 <\\Verbindung>
 
 verbindungCONTROL (8)
 <Verbindung>
-label gate_hi
-x[] 44 44 44 44 44 44 44 45 46
-y[] 20 21 22 23 24 25 26 26 26
-enabled true
+label v_meas
+x[] 8 9 10 10 
+y[] 24 24 24 21 
+enabledShorted 0
+parentSheetIdentifier 0
 connectorType 1
 <\\Verbindung>
 
 verbindungCONTROL (9)
 <Verbindung>
-label gate_lo
-x[] 38 39 39 39 39 39 39 39 39 39 39 39 39 40 41 42 43 44 45 46
-y[] 21 21 22 23 24 25 26 27 28 29 30 31 32 32 32 32 32 32 32 32
-enabled true
+label v_err
+x[] 14 15 16 
+y[] 20 20 20 
+enabledShorted 0
+parentSheetIdentifier 0
 connectorType 1
 <\\Verbindung>
 
 verbindungCONTROL (10)
 <Verbindung>
-label gate_lo
-x[] 44 44 44 44 44 44 44 45 46
-y[] 32 33 34 35 36 37 38 38 38
-enabled true
+label v_ctrl
+x[] 20 21 22 
+y[] 20 20 20 
+enabledShorted 0
+parentSheetIdentifier 0
 connectorType 1
 <\\Verbindung>
 
-elementANZAHL 12
+verbindungCONTROL (11)
+<Verbindung>
+label v_mod
+x[] 26 27 28 
+y[] 20 20 20 
+enabledShorted 0
+parentSheetIdentifier 0
+connectorType 1
+<\\Verbindung>
 
-e (0)
+verbindungCONTROL (12)
+<Verbindung>
+label v_tri
+x[] 26 27 28 28 
+y[] 26 26 26 21 
+enabledShorted 0
+parentSheetIdentifier 0
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (13)
+<Verbindung>
+label pwm
+x[] 32 33 34 
+y[] 20 20 20 
+enabledShorted 0
+parentSheetIdentifier 0
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (14)
+<Verbindung>
+label gate_hi
+x[] 38 39 40 41 42 43 44 45 46 
+y[] 20 20 20 20 20 20 20 20 20 
+enabledShorted 0
+parentSheetIdentifier 0
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (15)
+<Verbindung>
+label gate_hi
+x[] 44 44 44 44 44 44 44 45 46 
+y[] 20 21 22 23 24 25 26 26 26 
+enabledShorted 0
+parentSheetIdentifier 0
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (16)
+<Verbindung>
+label gate_lo
+x[] 38 39 39 39 39 39 39 39 39 39 39 39 39 40 41 42 43 44 45 46 
+y[] 21 21 22 23 24 25 26 27 28 29 30 31 32 32 32 32 32 32 32 32 
+enabledShorted 0
+parentSheetIdentifier 0
+connectorType 1
+<\\Verbindung>
+
+verbindungCONTROL (17)
+<Verbindung>
+label gate_lo
+x[] 44 44 44 44 44 44 44 45 46 
+y[] 32 33 34 35 36 37 38 38 38 
+enabledShorted 0
+parentSheetIdentifier 0
+connectorType 1
+<\\Verbindung>
+
+e (18)
 <ElementLK>
 labelAnfangsKnoten[] /dc_pos
 labelEndKnoten[] /0
 enabledShorted 1
+parentSheetIdentifier 0
 typ 4
 uniqueObjectIdentifier 1001
 x 6
 y 11
-parameter[] 401.0 40.0 50.0 0.0 0.0 0.5 0.0 40.0 0.0 -40.0 0.0 1.0 1.7976931348623157E308 0.0 0.0
+parameter[] 401.0 40.0 50.0 0.0 0.0 0.5 0.0 40.0 0.0 -40.0 0.0 1.0 1.7976931348623157E308 0.0 0.0 
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 503
 idStringDialog V_dc
+
 <\\ElementLK>
 
-e (1)
+e (19)
 <ElementLK>
 labelAnfangsKnoten[] /dc_pos
 labelEndKnoten[] /out_a
 enabledShorted 1
+parentSheetIdentifier 0
 typ 7
 uniqueObjectIdentifier 1002
+coupledReferenceID[] 2002 
 x 12
 y 9
-parameter[] 1.0E7 0.01 1.0E7 0.0 0.0 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0
+parameter[] 1.0E7 0.01 1.0E7 0.0 0.0 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0 
 parameterString[] /GATE.1/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 503
 idStringDialog S.1
-coupledReferenceID[] 2002
 <Verluste>
 verlustTyp 1
 rON 0.01
@@ -4898,23 +4983,25 @@ Cosser 0.0
 datnamGemesseneVerluste not_defined
 lossFileHashValue 0
 <\\Verluste>
+
 <\\ElementLK>
 
-e (2)
+e (20)
 <ElementLK>
 labelAnfangsKnoten[] /out_a
 labelEndKnoten[] /0
 enabledShorted 1
+parentSheetIdentifier 0
 typ 7
 uniqueObjectIdentifier 1003
+coupledReferenceID[] 2004 
 x 12
 y 13
-parameter[] 1.0E7 0.01 1.0E7 0.0 0.0 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0
+parameter[] 1.0E7 0.01 1.0E7 0.0 0.0 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0 
 parameterString[] /GATE.2/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 503
 idStringDialog S.2
-coupledReferenceID[] 2004
 <Verluste>
 verlustTyp 1
 rON 0.01
@@ -4926,23 +5013,25 @@ Cosser 0.0
 datnamGemesseneVerluste not_defined
 lossFileHashValue 0
 <\\Verluste>
+
 <\\ElementLK>
 
-e (3)
+e (21)
 <ElementLK>
 labelAnfangsKnoten[] /dc_pos
 labelEndKnoten[] /out_b
 enabledShorted 1
+parentSheetIdentifier 0
 typ 7
 uniqueObjectIdentifier 1004
+coupledReferenceID[] 2009 
 x 22
 y 9
-parameter[] 1.0E7 0.01 1.0E7 0.0 0.0 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0
+parameter[] 1.0E7 0.01 1.0E7 0.0 0.0 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0 
 parameterString[] /GATE.3/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 503
 idStringDialog S.3
-coupledReferenceID[] 2009
 <Verluste>
 verlustTyp 1
 rON 0.01
@@ -4954,23 +5043,25 @@ Cosser 0.0
 datnamGemesseneVerluste not_defined
 lossFileHashValue 0
 <\\Verluste>
+
 <\\ElementLK>
 
-e (4)
+e (22)
 <ElementLK>
 labelAnfangsKnoten[] /out_b
 labelEndKnoten[] /0
 enabledShorted 1
+parentSheetIdentifier 0
 typ 7
 uniqueObjectIdentifier 1005
+coupledReferenceID[] 2008 
 x 22
 y 13
-parameter[] 1.0E7 0.01 1.0E7 0.0 0.0 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0
+parameter[] 1.0E7 0.01 1.0E7 0.0 0.0 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0 
 parameterString[] /GATE.4/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 503
 idStringDialog S.4
-coupledReferenceID[] 2008
 <Verluste>
 verlustTyp 1
 rON 0.01
@@ -4982,18 +5073,20 @@ Cosser 0.0
 datnamGemesseneVerluste not_defined
 lossFileHashValue 0
 <\\Verluste>
+
 <\\ElementLK>
 
-e (5)
+e (23)
 <ElementLK>
 labelAnfangsKnoten[] /out_a
 labelEndKnoten[] /dc_pos
 enabledShorted 1
+parentSheetIdentifier 0
 typ 6
 uniqueObjectIdentifier 1006
 x 16
 y 9
-parameter[] 1.0E7 0.7 0.001 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
+parameter[] 1.0E7 0.7 0.001 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 501
@@ -5009,18 +5102,20 @@ Cosser 0.0
 datnamGemesseneVerluste not_defined
 lossFileHashValue 0
 <\\Verluste>
+
 <\\ElementLK>
 
-e (6)
+e (24)
 <ElementLK>
 labelAnfangsKnoten[] /0
 labelEndKnoten[] /out_a
 enabledShorted 1
+parentSheetIdentifier 0
 typ 6
 uniqueObjectIdentifier 1007
 x 16
 y 13
-parameter[] 1.0E7 0.7 0.001 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
+parameter[] 1.0E7 0.7 0.001 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 501
@@ -5036,18 +5131,20 @@ Cosser 0.0
 datnamGemesseneVerluste not_defined
 lossFileHashValue 0
 <\\Verluste>
+
 <\\ElementLK>
 
-e (7)
+e (25)
 <ElementLK>
 labelAnfangsKnoten[] /out_b
 labelEndKnoten[] /dc_pos
 enabledShorted 1
+parentSheetIdentifier 0
 typ 6
 uniqueObjectIdentifier 1008
 x 26
 y 9
-parameter[] 1.0E7 0.7 0.001 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
+parameter[] 1.0E7 0.7 0.001 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 501
@@ -5063,18 +5160,20 @@ Cosser 0.0
 datnamGemesseneVerluste not_defined
 lossFileHashValue 0
 <\\Verluste>
+
 <\\ElementLK>
 
-e (8)
+e (26)
 <ElementLK>
 labelAnfangsKnoten[] /0
 labelEndKnoten[] /out_b
 enabledShorted 1
+parentSheetIdentifier 0
 typ 6
 uniqueObjectIdentifier 1009
 x 26
 y 13
-parameter[] 1.0E7 0.7 0.001 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
+parameter[] 1.0E7 0.7 0.001 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 501
@@ -5090,68 +5189,76 @@ Cosser 0.0
 datnamGemesseneVerluste not_defined
 lossFileHashValue 0
 <\\Verluste>
+
 <\\ElementLK>
 
-e (9)
+e (27)
 <ElementLK>
 labelAnfangsKnoten[] /out_a
 labelEndKnoten[] /load_p
 enabledShorted 1
+parentSheetIdentifier 0
 typ 2
 uniqueObjectIdentifier 1010
 x 34
 y 3
-parameter[] 0.001 0.0
+parameter[] 0.004 0.0 
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 502
 idStringDialog L_filter
+
 <\\ElementLK>
 
-e (10)
+e (28)
 <ElementLK>
 labelAnfangsKnoten[] /load_p
 labelEndKnoten[] /out_b
 enabledShorted 1
+parentSheetIdentifier 0
 typ 3
 uniqueObjectIdentifier 1011
 x 38
 y 11
-parameter[] 2.0E-5 0.0
+parameter[] 2.0E-5 0.0 
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 503
 idStringDialog C_filter
+
 <\\ElementLK>
 
-e (11)
+e (29)
 <ElementLK>
 labelAnfangsKnoten[] /load_p
 labelEndKnoten[] /out_b
 enabledShorted 1
+parentSheetIdentifier 0
 typ 1
 uniqueObjectIdentifier 1012
 x 44
 y 11
-parameter[] 10.0
+parameter[] 10.0 
 parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX
 orientierung 503
 idStringDialog R_load
+
 <\\ElementLK>
 
-controlANZAHL 12
-
-c (0)
+c (30)
 <ElementCONTROL>
-labelAnfangsKnoten[] 
+labelAnfangsKnoten[]
 labelEndKnoten[] /v_ref
 enabledShorted 1
+parentSheetIdentifier 0
 typ 1004
 uniqueObjectIdentifier 2001
 x 6
 y 20
-parameter[] 402.0 20.0 50.0 0.0 0.0 0.5 0.0 0.0
+parameter[] 402.0 20.0 50.0 0.0 0.0 0.5 0.0 0.0 
+parameterString[]
+nameOpt[]
 orientierung 503
 idStringDialog V_REF
 <detail>
@@ -5162,75 +5269,94 @@ frequenz 50.0
 tastverhaeltnis 0.5
 phase 0.0
 <\\detail>
+
 <\\ElementCONTROL>
 
-c (1)
+c (31)
 <ElementCONTROL>
-labelAnfangsKnoten[] 
+labelAnfangsKnoten[]
 labelEndKnoten[] /v_meas
 enabledShorted 1
+parentSheetIdentifier 0
 typ 1001
 uniqueObjectIdentifier 2005
 x 6
 y 24
-parameter[] 0.0
+parameter[] 0.0 
 parameterString[] /load_p/out_b/0
+nameOpt[]
 orientierung 503
 idStringDialog VOLT_AC
+
 <\\ElementCONTROL>
 
-c (2)
+c (32)
 <ElementCONTROL>
 labelAnfangsKnoten[] /v_ref/v_meas
 labelEndKnoten[] /v_err
 enabledShorted 1
+parentSheetIdentifier 0
 typ 1017
 uniqueObjectIdentifier 2011
 x 12
 y 20
-parameter[] 0.0
+parameter[] 0.0 
+parameterString[]
+nameOpt[]
 orientierung 503
 idStringDialog CTRL_SUB
+
 <\\ElementCONTROL>
 
-c (3)
+c (33)
 <ElementCONTROL>
 labelAnfangsKnoten[] /v_err
 labelEndKnoten[] /v_ctrl
 enabledShorted 1
+parentSheetIdentifier 0
 typ 1007
 uniqueObjectIdentifier 2012
 x 18
 y 20
-parameter[] 0.04 0.005
+parameter[] 0.04 0.005 
+parameterString[]
+nameOpt[]
 orientierung 503
 idStringDialog CTRL_PI
+
 <\\ElementCONTROL>
 
-c (4)
+c (34)
 <ElementCONTROL>
 labelAnfangsKnoten[] /v_ctrl
 labelEndKnoten[] /v_mod
 enabledShorted 1
+parentSheetIdentifier 0
 typ 1021
 uniqueObjectIdentifier 2013
 x 24
 y 20
-parameter[] -0.95 0.95
+parameter[] -0.95 0.95 
+parameterString[]
+nameOpt[]
 orientierung 503
 idStringDialog CTRL_LIM
+
 <\\ElementCONTROL>
 
-c (5)
+c (35)
 <ElementCONTROL>
-labelAnfangsKnoten[] 
+labelAnfangsKnoten[]
 labelEndKnoten[] /v_tri
 enabledShorted 1
+parentSheetIdentifier 0
 typ 1004
 uniqueObjectIdentifier 2014
 x 24
 y 26
-parameter[] 403.0 1.0 5000.0 0.0 0.0 0.5 0.0 0.0
+parameter[] 403.0 1.0 5000.0 0.0 0.0 0.5 0.0 0.0 
+parameterString[]
+nameOpt[]
 orientierung 503
 idStringDialog V_CARRIER
 <detail>
@@ -5241,118 +5367,138 @@ frequenz 5000.0
 tastverhaeltnis 0.5
 phase 0.0
 <\\detail>
+
 <\\ElementCONTROL>
 
-c (6)
+c (36)
 <ElementCONTROL>
 labelAnfangsKnoten[] /v_mod/v_tri
 labelEndKnoten[] /pwm
 enabledShorted 1
+parentSheetIdentifier 0
 typ 1010
 uniqueObjectIdentifier 2015
 x 30
 y 20
-parameter[] 0.0
+parameter[] 0.0 
+parameterString[]
+nameOpt[]
 orientierung 503
 idStringDialog CTRL_CMP
+
 <\\ElementCONTROL>
 
-c (7)
+c (37)
 <ElementCONTROL>
 labelAnfangsKnoten[] /pwm
 labelEndKnoten[] /gate_hi/gate_lo
 enabledShorted 1
+parentSheetIdentifier 0
 typ 1037
 uniqueObjectIdentifier 2016
 x 36
 y 20
-parameter[] 1.0E-6
+parameter[] 1.0E-6 
+parameterString[]
+nameOpt[]
 orientierung 503
 idStringDialog CTRL_DT
+
 <\\ElementCONTROL>
 
-c (8)
+c (38)
 <ElementCONTROL>
 labelAnfangsKnoten[] /gate_hi
-labelEndKnoten[] 
+labelEndKnoten[]
 enabledShorted 1
+parentSheetIdentifier 0
 typ 6
 uniqueObjectIdentifier 2002
+coupledReferenceID[] 1002 
 x 48
 y 20
-parameter[] 0.0
+parameter[] 0.0 
 parameterString[] /S.1/NIX_NIX_NIX/0
+nameOpt[]
 orientierung 503
 idStringDialog GATE.1
-coupledReferenceID[] 1002
-copyCoupledReferenceID[] 1002
+
 <\\ElementCONTROL>
 
-c (9)
+c (39)
 <ElementCONTROL>
 labelAnfangsKnoten[] /gate_hi
-labelEndKnoten[] 
+labelEndKnoten[]
 enabledShorted 1
+parentSheetIdentifier 0
 typ 6
 uniqueObjectIdentifier 2008
+coupledReferenceID[] 1005 
 x 48
 y 26
-parameter[] 0.0
+parameter[] 0.0 
 parameterString[] /S.4/NIX_NIX_NIX/0
+nameOpt[]
 orientierung 503
 idStringDialog GATE.4
-coupledReferenceID[] 1005
-copyCoupledReferenceID[] 1005
+
 <\\ElementCONTROL>
 
-c (10)
+c (40)
 <ElementCONTROL>
 labelAnfangsKnoten[] /gate_lo
-labelEndKnoten[] 
+labelEndKnoten[]
 enabledShorted 1
+parentSheetIdentifier 0
 typ 6
 uniqueObjectIdentifier 2004
+coupledReferenceID[] 1003 
 x 48
 y 32
-parameter[] 0.0
+parameter[] 0.0 
 parameterString[] /S.2/NIX_NIX_NIX/0
+nameOpt[]
 orientierung 503
 idStringDialog GATE.2
-coupledReferenceID[] 1003
-copyCoupledReferenceID[] 1003
+
 <\\ElementCONTROL>
 
-c (11)
+c (41)
 <ElementCONTROL>
 labelAnfangsKnoten[] /gate_lo
-labelEndKnoten[] 
+labelEndKnoten[]
 enabledShorted 1
+parentSheetIdentifier 0
 typ 6
 uniqueObjectIdentifier 2009
+coupledReferenceID[] 1004 
 x 48
 y 38
-parameter[] 0.0
+parameter[] 0.0 
 parameterString[] /S.3/NIX_NIX_NIX/0
+nameOpt[]
 orientierung 503
 idStringDialog GATE.3
-coupledReferenceID[] 1004
-copyCoupledReferenceID[] 1004
+
 <\\ElementCONTROL>
 
-sp (0)
+sp (42)
 <ElementSPECIAL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] 
+labelAnfangsKnoten[]
+labelEndKnoten[]
 enabledShorted 1
+parentSheetIdentifier 0
 typ 2001
 uniqueObjectIdentifier 9001
-x 52
-y 4
-parameter[] 
+x 6
+y 37
+parameter[] NaN 
+parameterString[]
+nameOpt[]
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34
-boxHeight 26
+boxWidth 34.0
+boxHeight 26.0
 <markdownText>
 # Closed-Loop SPWM Inverter with Dead-Time (50 Hz)
 
@@ -5369,12 +5515,54 @@ Sinusoidal PWM (SPWM) full-bridge inverter converting **40 V DC** into **50 Hz A
 - **CH2 (v_err)**: Dynamic regulation error.
 - **CH3 (gate_hi / gate_lo)**: Non-overlapping gate drives preventing DC bus cross-conduction.
 <\\markdownText>
+
 <\\ElementSPECIAL>
 
+optimizerName[]
+optimizerValue[] null
+<scripterCode>
+
+<\\scripterCode>
+<scripterImports>
+
+<\\scripterImports>
+<scripterDeclarations>
+ 
+<\\scripterDeclarations>
+<extraScriptSourceFiles>
+ 
+<\\extraScriptSourceFiles>
+
+
+
+DtStor 2026-11-07
 tDURATION 0.04
 dt 1.0E-6
+tPAUSE -1.0
+T_pre 0.0
+dt_pre 1.0E-6
 solverType 0
+path 
+
+dpix 16
+fontSize 12
+fontTyp Arial
+fensterWidth -1
+fensterHeight -1
+worksheetSize 600x600
+ANSICHT_SHOW_LK_NAME true
+ANSICHT_SHOW_LK_PARAMETER true
+ANSICHT_SHOW_LK_FLOWDIR false
+ANSICHT_SHOW_LK_TEXTLINIE true
+ANSICHT_SHOW_THERM_NAME true
+ANSICHT_SHOW_THERM_PARAMETER true
+ANSICHT_SHOW_THERM_FLOWDIR false
+ANSICHT_SHOW_THERM_TEXTLINIE true
+ANSICHT_SHOW_CONTROL_NAME true
+ANSICHT_SHOW_CONTROL_PARAMETER true
+ANSICHT_SHOW_CONTROL_TEXTLINIE true
 FileVersion 1
+UniqueFileId 0
 dataContainerSignals[] /v_ref/v_meas/v_err/gate_hi/gate_lo
 <graphRegisters>
 count 1
@@ -5383,12 +5571,14 @@ id osci_1
 name Osci 1
 numGraphs 3
 signals v_ref,v_meas,v_err,gate_hi,gate_lo
-signalGraphs v_ref:1,v_meas:1,v_err:2,gate_hi:3,gate_lo:3
+signalGraphs v_ref:1,v_meas:1,v_err:2,gate_hi:3,gate_lo:3,dc_pos:1
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
 <\\graphRegister>
 <\\graphRegisters>
+
+=======================
 `;
 
 
