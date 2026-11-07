@@ -1710,6 +1710,41 @@ circle.junction-dot.net-highlighted {
   display: block;
 }
 
+.wire-inline-label-form {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.wire-inline-label-input {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid var(--accent, #38bdf8);
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 11px;
+  font-family: var(--font-mono, monospace);
+  padding: 2px 6px;
+  outline: none;
+  min-width: 90px;
+}
+
+:root[data-theme='light'] .wire-inline-label-input {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.wire-action-btn.primary {
+  background: var(--accent, #38bdf8);
+  color: #0f172a;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+.wire-action-btn.primary:hover {
+  filter: brightness(1.15);
+}
+
 .terminal-pin-group:hover .terminal {
   r: 4.5;
   fill: var(--accent, #38bdf8);

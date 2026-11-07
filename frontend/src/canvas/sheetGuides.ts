@@ -778,7 +778,8 @@ export function buildTerminalLabelItems(
   wireTouchTolerance: number = CANVAS_METRICS.TERMINAL_TOUCH_TOLERANCE,
 ): TerminalLabelItem[] {
   const items: TerminalLabelItem[] = [];
-  const seen = new Set<string>();
+  const seenPoint = new Set<string>();
+  const seenWiredLabel = new Set<string>();
 
   for (const component of components) {
     const terminals = terminalPositions(component);
@@ -789,9 +790,15 @@ export function buildTerminalLabelItems(
       const raw = inLabels[i]?.trim();
       if (!raw || raw === SENTINEL_UNSET) return;
       const pointKey = `${t.x},${t.y}:${raw}`;
-      if (seen.has(pointKey)) return;
-      seen.add(pointKey);
+      if (seenPoint.has(pointKey)) return;
+      seenPoint.add(pointKey);
       const isWired = isTerminalWired(t, wires, wireTouchTolerance);
+      // For physically wired pins on power circuits (LK), deduplicate so only 1 badge
+      // is shown per net name across the entire connected net instead of cluttering every pin
+      if (isWired && (component.family === 'LK' || !component.family)) {
+        if (seenWiredLabel.has(raw)) return;
+        seenWiredLabel.add(raw);
+      }
       items.push({
         key: `in-${component.name}-${i}-${raw}`,
         label: raw,
@@ -814,9 +821,15 @@ export function buildTerminalLabelItems(
       const raw = outLabels[i]?.trim();
       if (!raw || raw === SENTINEL_UNSET) return;
       const pointKey = `${t.x},${t.y}:${raw}`;
-      if (seen.has(pointKey)) return;
-      seen.add(pointKey);
+      if (seenPoint.has(pointKey)) return;
+      seenPoint.add(pointKey);
       const isWired = isTerminalWired(t, wires, wireTouchTolerance);
+      // For physically wired pins on power circuits (LK), deduplicate so only 1 badge
+      // is shown per net name across the entire connected net instead of cluttering every pin
+      if (isWired && (component.family === 'LK' || !component.family)) {
+        if (seenWiredLabel.has(raw)) return;
+        seenWiredLabel.add(raw);
+      }
       items.push({
         key: `out-${component.name}-${i}-${raw}`,
         label: raw,

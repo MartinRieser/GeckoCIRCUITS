@@ -590,6 +590,10 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
     target: ContextMenuTarget;
   } | null>(null);
 
+  // Inline wire label editing state (double-click wire to name)
+  const [editingWireIndex, setEditingWireIndex] = useState<number | null>(null);
+  const [editingWireText, setEditingWireText] = useState('');
+
   // Track spacebar for pan
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1708,6 +1712,13 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                           dispatch({ type: 'SELECT_WIRE', index: wire.index });
                         }
                       }
+                    }}
+                    onDoubleClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      dispatch({ type: 'SELECT_WIRE', index: wire.index });
+                      setEditingWireIndex(wire.index);
+                      setEditingWireText(wire.label && wire.label !== 'NIX_NIX_NIX' ? wire.label : '');
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault();
@@ -2950,7 +2961,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
           )}
         </svg>
 
-        {/* Floating Wire Action Pill */}
+        {/* Floating Wire Action Pill & Inline Label Editor */}
         {selectedWireObj && pillCoord && (
           <div
             className="wire-action-pill"
@@ -2961,42 +2972,75 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <button
-              type="button"
-              className="wire-action-btn danger"
-              title="Delete Wire (Delete / Backspace)"
-              onClick={() => actions.deleteWire?.(selectedWireObj.index)}
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-              </svg>
-              <span>Delete</span>
-            </button>
-            <button
-              type="button"
-              className="wire-action-btn"
-              title="Flip Route Orientation (R)"
-              onClick={() => actions.flipWire?.(selectedWireObj.index)}
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-              </svg>
-              <span>Flip</span>
-            </button>
-            <button
-              type="button"
-              className="wire-action-btn"
-              title="Set Net Label"
-              onClick={() => {
-                const label = window.prompt('Net label (empty = none, GND = ground):', selectedWireObj.label ?? '');
-                if (label !== null) {
-                  actions.labelWire?.(selectedWireObj.index, label.trim());
-                }
-              }}
-            >
-              <span>Label</span>
-            </button>
+            {editingWireIndex === selectedWireObj.index ? (
+              <form
+                className="wire-inline-label-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  actions.labelWire?.(selectedWireObj.index, editingWireText.trim());
+                  setEditingWireIndex(null);
+                }}
+              >
+                <input
+                  type="text"
+                  autoFocus
+                  className="wire-inline-label-input"
+                  placeholder="Net label (e.g. out, 0)"
+                  value={editingWireText}
+                  onChange={(e) => setEditingWireText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') {
+                      e.stopPropagation();
+                      setEditingWireIndex(null);
+                    }
+                  }}
+                  onBlur={() => {
+                    actions.labelWire?.(selectedWireObj.index, editingWireText.trim());
+                    setEditingWireIndex(null);
+                  }}
+                />
+                <button type="submit" className="wire-action-btn primary" title="Save label (Enter)">
+                  ✓
+                </button>
+              </form>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="wire-action-btn danger"
+                  title="Delete Wire (Delete / Backspace)"
+                  onClick={() => actions.deleteWire?.(selectedWireObj.index)}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  </svg>
+                  <span>Delete</span>
+                </button>
+                <button
+                  type="button"
+                  className="wire-action-btn"
+                  title="Flip Route Orientation (R)"
+                  onClick={() => actions.flipWire?.(selectedWireObj.index)}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                  </svg>
+                  <span>Flip</span>
+                </button>
+                <button
+                  type="button"
+                  className="wire-action-btn"
+                  title="Set Net Label (Double-click wire)"
+                  onClick={() => {
+                    setEditingWireIndex(selectedWireObj.index);
+                    setEditingWireText(selectedWireObj.label && selectedWireObj.label !== 'NIX_NIX_NIX' ? selectedWireObj.label : '');
+                  }}
+                >
+                  <span>🏷️ {selectedWireObj.label && selectedWireObj.label !== 'NIX_NIX_NIX' ? selectedWireObj.label : 'Label'}</span>
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>
