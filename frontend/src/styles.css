@@ -1745,6 +1745,35 @@ circle.junction-dot.net-highlighted {
   filter: brightness(1.15);
 }
 
+.banner-gnd-btn {
+  background: rgba(56, 189, 248, 0.25) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.5) !important;
+  margin-right: 4px;
+}
+
+.banner-gnd-btn:hover {
+  background: rgba(56, 189, 248, 0.4) !important;
+  color: #ffffff !important;
+}
+
+.schematic-probe-badge {
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.schematic-probe-badge:hover {
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6)) !important;
+}
+
+.probe-marker-close-btn {
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.probe-marker-close-btn:hover circle {
+  fill: rgba(244, 63, 94, 0.6) !important;
+}
+
 .terminal-pin-group:hover .terminal {
   r: 4.5;
   fill: var(--accent, #38bdf8);

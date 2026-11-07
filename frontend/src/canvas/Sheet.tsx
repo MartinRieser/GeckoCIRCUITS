@@ -75,6 +75,7 @@ export interface SheetActions {
   openCommandPalette?: () => void;
   toggleProbeMode?: () => void;
   addSignalToScope?: (signalName: string, targetGraph?: number) => void | Promise<void>;
+  removeSignalFromScope?: (signalName: string) => void | Promise<void>;
   setProbeRefNet?: (netName: string | null) => void;
 }
 
@@ -336,18 +337,21 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
     [state.components],
   );
 
-  // Keyboard modifiers for probing (Alt for component voltage, Shift for differential probing)
+  // Keyboard modifiers for probing (Alt for component voltage)
   const [isAltDown, setIsAltDown] = useState(false);
-  const [isShiftDown, setIsShiftDown] = useState(false);
+
+  // 2-step Guided Voltage Probe state: anchor point (+) and net label
+  const [probeFirstPoint, setProbeFirstPoint] = useState<{
+    net: string;
+    coord: Point;
+  } | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Alt') setIsAltDown(true);
-      if (e.key === 'Shift') setIsShiftDown(true);
     };
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.key === 'Alt') setIsAltDown(false);
-      if (e.key === 'Shift') setIsShiftDown(false);
     };
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
@@ -356,38 +360,6 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, []);
-
-  const handleProbeWireClick = useCallback(
-    (wireIndex: number, e: React.MouseEvent) => {
-      const wire = state.wires.find((w) => w.index === wireIndex);
-      const isControlWire = wire?.type === 'CONTROL';
-      const net = netAnalysis.wireIndexToNet.get(wireIndex);
-      let netLabel = net?.label;
-
-      if (!netLabel) {
-        const autoLabel = findNextAvailableNetLabel(state.wires, state.components);
-        actions.labelWire?.(wireIndex, autoLabel);
-        netLabel = autoLabel;
-      }
-
-      if (isControlWire) {
-        actions.addSignalToScope?.(netLabel, 3);
-        return;
-      }
-
-      if (state.probeRefNet) {
-        const sigName = `V(${state.probeRefNet}|${netLabel})`;
-        actions.addSignalToScope?.(sigName, 1);
-        actions.setProbeRefNet?.(null);
-      } else if (e.shiftKey) {
-        actions.setProbeRefNet?.(netLabel);
-      } else {
-        const sigName = `V(${netLabel})`;
-        actions.addSignalToScope?.(sigName, 1);
-      }
-    },
-    [netAnalysis, state.wires, state.components, state.probeRefNet, actions],
-  );
 
   const resolveControlComponentSignal = useCallback(
     (comp: EditorComponent): string | null => {
@@ -465,34 +437,36 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
           color: '#4ade80',
         };
       }
-      if (state.probeRefNet) {
+      if (probeFirstPoint || state.probeRefNet) {
+        const ref = probeFirstPoint?.net || state.probeRefNet!;
+        if (ref === label) {
+          return {
+            text: `Measure V(${label}) referenced to GND (0)`,
+            color: '#38bdf8',
+          };
+        }
         return {
-          text: `+ V(${state.probeRefNet}|${label}) [Diff]`,
+          text: `Measure V(${ref}|${label}) [Diff]`,
           color: '#38bdf8',
         };
       }
-      if (isShiftDown) {
-        return {
-          text: `Ref: ${label} [Shift]`,
-          color: '#a78bfa',
-        };
-      }
       return {
-        text: `+ V(${label})`,
-        color: '#38bdf8',
+        text: `+ V(+) at '${label}' (Click to pick V+)`,
+        color: '#f87171',
       };
     }
-    if (state.probeRefNet) {
+    if (probeFirstPoint || state.probeRefNet) {
+      const ref = probeFirstPoint?.net || state.probeRefNet!;
       return {
-        text: `Ref: ${state.probeRefNet} (click 2nd net)`,
+        text: `V(+) is '${ref}' — Click 2nd net for V(-), or press Enter for GND`,
         color: '#a78bfa',
       };
     }
     return {
-      text: 'Probe Tool',
+      text: 'Probe Tool: Click wire for V, or component for I',
       color: '#38bdf8',
     };
-  }, [state.mode, hoveredComponent, activeNet, isAltDown, isShiftDown, state.probeRefNet, state.wires, resolveControlComponentSignal]);
+  }, [state.mode, hoveredComponent, activeNet, isAltDown, probeFirstPoint, state.probeRefNet, state.wires, resolveControlComponentSignal]);
 
   // Voltmeter ➔ measured-node guides, shown on hover/selection instead of
   // the permanent badge text. Lines are coloured by polarity: red for the
@@ -573,6 +547,125 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
     [state.components, state.wires, signalDescriptions, netTerminalPoints],
   );
 
+  // Active oscilloscope probes for schematic visual overlay
+  const activeProbes = useMemo(() => {
+    const list: {
+      key: string;
+      rawSignal: string;
+      color: string;
+      type: 'voltage-single' | 'voltage-diff' | 'current' | 'control';
+      graph: number;
+      coord: Point;
+      refCoord?: Point;
+      netName?: string;
+      refNetName?: string;
+      compName?: string;
+    }[] = [];
+
+    const registers = state.graphRegisters || [];
+    if (registers.length === 0) return list;
+
+    // Use primary register signals
+    const reg = registers[0];
+    const signals = reg.signals || [];
+    const signalGraphs = reg.signalGraphs || {};
+
+    signals.forEach((sig, sIdx) => {
+      const color = channelColorByIndex(sIdx);
+      const graph = signalGraphs[sig] || 1;
+
+      // 1. Differential Voltage: V(netA|netB)
+      const diffMatch = /^V\(([^|]+)\|([^)]+)\)$/.exec(sig);
+      if (diffMatch) {
+        const netA = diffMatch[1].trim();
+        const netB = diffMatch[2].trim();
+        const ptA = netTerminalPoints.get(netA) || netWirePoints.get(netA)?.[0];
+        const ptB = netTerminalPoints.get(netB) || netWirePoints.get(netB)?.[0];
+        if (ptA) {
+          list.push({
+            key: `probe-diff-${sig}-${sIdx}`,
+            rawSignal: sig,
+            color,
+            type: 'voltage-diff',
+            graph,
+            coord: ptA,
+            refCoord: ptB,
+            netName: netA,
+            refNetName: netB,
+          });
+        }
+        return;
+      }
+
+      // 2. Single-ended Voltage: V(net) or V(comp)
+      const voltMatch = /^V\(([^)]+)\)$/.exec(sig);
+      if (voltMatch) {
+        const inner = voltMatch[1].trim();
+        const comp = state.components.find((c) => c.name === inner);
+        if (comp) {
+          list.push({
+            key: `probe-vcomp-${sig}-${sIdx}`,
+            rawSignal: sig,
+            color,
+            type: 'voltage-single',
+            graph,
+            coord: { x: comp.position[0], y: comp.position[1] },
+            compName: comp.name,
+          });
+        } else {
+          const pt = netTerminalPoints.get(inner) || netWirePoints.get(inner)?.[0];
+          if (pt) {
+            list.push({
+              key: `probe-vnet-${sig}-${sIdx}`,
+              rawSignal: sig,
+              color,
+              type: 'voltage-single',
+              graph,
+              coord: pt,
+              netName: inner,
+            });
+          }
+        }
+        return;
+      }
+
+      // 3. Current: I(comp)
+      const currMatch = /^I\(([^)]+)\)$/.exec(sig);
+      if (currMatch) {
+        const cName = currMatch[1].trim();
+        const comp = state.components.find((c) => c.name === cName);
+        if (comp) {
+          list.push({
+            key: `probe-curr-${sig}-${sIdx}`,
+            rawSignal: sig,
+            color,
+            type: 'current',
+            graph,
+            coord: { x: comp.position[0], y: comp.position[1] },
+            compName: cName,
+          });
+        }
+        return;
+      }
+
+      // 4. Control signal
+      const pt = netTerminalPoints.get(sig) || netWirePoints.get(sig)?.[0];
+      if (pt) {
+        list.push({
+          key: `probe-ctrl-${sig}-${sIdx}`,
+          rawSignal: sig,
+          color,
+          type: 'control',
+          graph,
+          coord: pt,
+          netName: sig,
+        });
+      }
+    });
+
+    return list;
+  }, [state.graphRegisters, netTerminalPoints, netWirePoints, state.components]);
+
   // Wire segment and endpoint drag state
   const [wireDrag, setWireDrag] = useState<{
     wireIndex: number;
@@ -594,7 +687,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
   const [editingWireIndex, setEditingWireIndex] = useState<number | null>(null);
   const [editingWireText, setEditingWireText] = useState('');
 
-  // Track spacebar for pan
+  // Track spacebar for pan and Enter for probe GND completion
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
@@ -603,6 +696,11 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
         !(e.target instanceof HTMLTextAreaElement)
       ) {
         setIsSpacePressed(true);
+      }
+      if (state.mode === 'probing' && (e.key === 'Enter' || e.code === 'Enter') && probeFirstPoint) {
+        actions.addSignalToScope?.(`V(${probeFirstPoint.net})`, 1);
+        setProbeFirstPoint(null);
+        actions.setProbeRefNet?.(null);
       }
     };
     const handleKeyUp = (e: KeyboardEvent) => {
@@ -673,6 +771,50 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
       });
     },
     [clientToGrid, state.selection, dispatch],
+  );
+
+  const handleProbeWireClick = useCallback(
+    (wireIndex: number, e: React.MouseEvent) => {
+      const wire = state.wires.find((w) => w.index === wireIndex);
+      const isControlWire = wire?.type === 'CONTROL';
+      const net = netAnalysis.wireIndexToNet.get(wireIndex);
+      let netLabel = net?.label;
+
+      if (!netLabel) {
+        const autoLabel = findNextAvailableNetLabel(state.wires, state.components);
+        actions.labelWire?.(wireIndex, autoLabel);
+        netLabel = autoLabel;
+      }
+
+      if (isControlWire) {
+        actions.addSignalToScope?.(netLabel, 3);
+        setProbeFirstPoint(null);
+        return;
+      }
+
+      const clickGrid = toGrid(e);
+
+      // Step 2 of Voltage Probe: 2nd point clicked!
+      if (probeFirstPoint || state.probeRefNet) {
+        const ref = probeFirstPoint?.net || state.probeRefNet!;
+        if (ref === netLabel) {
+          actions.addSignalToScope?.(`V(${netLabel})`, 1);
+        } else {
+          actions.addSignalToScope?.(`V(${ref}|${netLabel})`, 1);
+        }
+        setProbeFirstPoint(null);
+        actions.setProbeRefNet?.(null);
+        return;
+      }
+
+      // Step 1 of Voltage Probe: first point clicked (+)
+      setProbeFirstPoint({
+        net: netLabel,
+        coord: clickGrid,
+      });
+      actions.setProbeRefNet?.(netLabel);
+    },
+    [netAnalysis, state.wires, state.components, probeFirstPoint, state.probeRefNet, actions, toGrid],
   );
 
   const updateNoteResize = useCallback(
@@ -1442,14 +1584,30 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
         <div className="canvas-wire-mode-banner canvas-probe-mode-banner">
           <span className="banner-icon">📍</span>
           <span className="banner-text">
-            {state.probeRefNet
-              ? `Differential Probe: Ref net is '${state.probeRefNet}' — Click 2nd net to measure V(${state.probeRefNet}|net)`
-              : 'Probe Mode: Click wire for V(net) [Shift+click for Diff], click component for I(comp) [Alt+click for V(comp)]'}
+            {probeFirstPoint || state.probeRefNet
+              ? `Voltage Probe: V(+) is '${probeFirstPoint?.net || state.probeRefNet}' — Click 2nd net for V(-), or click Reference/Enter for GND (0)`
+              : 'Probe Mode: Click wire for Voltage V(net), or click component for Current I(comp)'}
           </span>
+          {(probeFirstPoint || state.probeRefNet) && (
+            <button
+              type="button"
+              className="banner-exit-btn banner-gnd-btn"
+              onClick={() => {
+                const ref = probeFirstPoint?.net || state.probeRefNet!;
+                actions.addSignalToScope?.(`V(${ref})`, 1);
+                setProbeFirstPoint(null);
+                actions.setProbeRefNet?.(null);
+              }}
+              title="Reference to GND (0)"
+            >
+              Ref to GND (0)
+            </button>
+          )}
           <button
             type="button"
             className="banner-exit-btn"
             onClick={() => {
+              setProbeFirstPoint(null);
               actions.setProbeRefNet?.(null);
               actions.toggleProbeMode?.();
             }}
@@ -2270,15 +2428,21 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                                       }
                                       netLabel = autoLabel;
                                     }
-                                    if (state.probeRefNet) {
-                                      const sigName = `V(${state.probeRefNet}|${netLabel})`;
-                                      actions.addSignalToScope?.(sigName, 1);
+                                    if (probeFirstPoint || state.probeRefNet) {
+                                      const ref = probeFirstPoint?.net || state.probeRefNet!;
+                                      if (ref === netLabel) {
+                                        actions.addSignalToScope?.(`V(${netLabel})`, 1);
+                                      } else {
+                                        actions.addSignalToScope?.(`V(${ref}|${netLabel})`, 1);
+                                      }
+                                      setProbeFirstPoint(null);
                                       actions.setProbeRefNet?.(null);
-                                    } else if (e.shiftKey) {
-                                      actions.setProbeRefNet?.(netLabel);
                                     } else {
-                                      const sigName = `V(${netLabel})`;
-                                      actions.addSignalToScope?.(sigName, 1);
+                                      setProbeFirstPoint({
+                                        net: netLabel,
+                                        coord: { x: t.x, y: t.y },
+                                      });
+                                      actions.setProbeRefNet?.(netLabel);
                                     }
                                     return;
                                   }
@@ -2928,6 +3092,153 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
               className="rubber-band"
               pointerEvents="none"
             />
+          )}
+
+          {/* Active Probe Markers Layer on Schematic */}
+          <g className="active-probes-layer">
+            {activeProbes.map((probe) => {
+              const px = probe.coord.x * dpix;
+              const py = probe.coord.y * dpix;
+              const isDiff = probe.type === 'voltage-diff' && probe.refCoord;
+              const isCurr = probe.type === 'current';
+              const badgeText = isCurr
+                ? `I(${probe.compName}) ➔`
+                : isDiff
+                ? `V(${probe.netName}|${probe.refNetName})`
+                : probe.rawSignal;
+              const badgeW = Math.max(badgeText.length * 6.5 + 24, 60);
+
+              return (
+                <g key={probe.key} className="schematic-probe-marker-group">
+                  {/* Differential probe curve linking V(+) to V(-) */}
+                  {isDiff && probe.refCoord && (
+                    <>
+                      <path
+                        d={`M ${px} ${py} Q ${(px + probe.refCoord.x * dpix) / 2} ${Math.min(py, probe.refCoord.y * dpix) - 24}, ${probe.refCoord.x * dpix} ${probe.refCoord.y * dpix}`}
+                        fill="none"
+                        stroke={probe.color}
+                        strokeWidth={2}
+                        strokeDasharray="4 3"
+                        opacity={0.8}
+                        pointerEvents="none"
+                      />
+                      {/* V(-) reference pin marker */}
+                      <g
+                        transform={`translate(${probe.refCoord.x * dpix}, ${probe.refCoord.y * dpix})`}
+                        pointerEvents="none"
+                      >
+                        <circle r={5} fill="#0f172a" stroke={probe.color} strokeWidth={2} />
+                        <text
+                          y={3}
+                          textAnchor="middle"
+                          fill="#ffffff"
+                          fontSize={8}
+                          fontWeight="bold"
+                          fontFamily="sans-serif"
+                        >
+                          -
+                        </text>
+                      </g>
+                    </>
+                  )}
+
+                  {/* Positive (+) probe anchor pin */}
+                  <g transform={`translate(${px}, ${py})`}>
+                    <circle
+                      r={isCurr ? 6 : 5}
+                      fill={isCurr ? '#fb923c' : probe.color}
+                      stroke="#0f172a"
+                      strokeWidth={1.5}
+                    />
+                    <text
+                      y={isCurr ? 2.5 : 3}
+                      textAnchor="middle"
+                      fill="#0f172a"
+                      fontSize={8}
+                      fontWeight="bold"
+                      fontFamily="sans-serif"
+                    >
+                      {isCurr ? 'I' : '+'}
+                    </text>
+                  </g>
+
+                  {/* Marker badge with close button */}
+                  <g
+                    transform={`translate(${px + 14}, ${py - 14})`}
+                    className="schematic-probe-badge"
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <rect
+                      x={-2}
+                      y={-12}
+                      width={badgeW}
+                      height={18}
+                      rx={4}
+                      fill="rgba(15, 23, 42, 0.94)"
+                      stroke={probe.color}
+                      strokeWidth={1.2}
+                      filter="drop-shadow(0 2px 6px rgba(0,0,0,0.5))"
+                    />
+                    <text
+                      x={6}
+                      y={1}
+                      fill={probe.color}
+                      fontSize={9.5}
+                      fontWeight="bold"
+                      fontFamily="var(--font-mono, monospace)"
+                    >
+                      {badgeText}
+                    </text>
+                    {/* Delete probe cross button */}
+                    <g
+                      className="probe-marker-close-btn"
+                      transform={`translate(${badgeW - 12}, -3)`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        actions.removeSignalFromScope?.(probe.rawSignal);
+                      }}
+                    >
+                      <circle r={6} fill="rgba(244, 63, 94, 0.2)" />
+                      <line x1={-3} y1={-3} x2={3} y2={3} stroke="#fb7185" strokeWidth={1.5} strokeLinecap="round" />
+                      <line x1={-3} y1={3} x2={3} y2={-3} stroke="#fb7185" strokeWidth={1.5} strokeLinecap="round" />
+                    </g>
+                  </g>
+                </g>
+              );
+            })}
+          </g>
+
+          {/* Active 2-Step Voltage Probe in Progress: Rubberband & Anchor (+) */}
+          {state.mode === 'probing' && probeFirstPoint && (
+            <g className="probe-rubberband-layer" pointerEvents="none">
+              {/* Anchor (+) at 1st point */}
+              <g transform={`translate(${probeFirstPoint.coord.x * dpix}, ${probeFirstPoint.coord.y * dpix})`}>
+                <circle r={9} fill="rgba(248, 113, 113, 0.2)" />
+                <circle r={6} fill="#f87171" stroke="#0f172a" strokeWidth={1.5} />
+                <text y={3} textAnchor="middle" fill="#0f172a" fontSize={9} fontWeight="bold">
+                  +
+                </text>
+                <g transform="translate(12, -10)">
+                  <rect x={-2} y={-10} width={Math.max(probeFirstPoint.net.length * 7 + 16, 50)} height={16} rx={3} fill="#0f172a" stroke="#f87171" strokeWidth={1} />
+                  <text x={4} y={2} fill="#f87171" fontSize={9} fontWeight="bold" fontFamily="monospace">
+                    V(+): {probeFirstPoint.net}
+                  </text>
+                </g>
+              </g>
+
+              {/* Rubberband line to mouse cursor */}
+              {cursorCoord && (
+                <line
+                  x1={probeFirstPoint.coord.x * dpix}
+                  y1={probeFirstPoint.coord.y * dpix}
+                  x2={cursorCoord.x * dpix}
+                  y2={cursorCoord.y * dpix}
+                  stroke="#f87171"
+                  strokeWidth={2}
+                  strokeDasharray="5 3"
+                />
+              )}
+            </g>
           )}
 
           {/* Probe cursor live SPICE badge */}

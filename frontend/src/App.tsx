@@ -1089,6 +1089,7 @@ export function App() {
                 toggleWireMode: actions.toggleWireMode,
                 toggleProbeMode: actions.toggleProbeMode,
                 addSignalToScope: actions.addSignalToScope,
+                removeSignalFromScope: actions.removeSignalFromScope,
                 setProbeRefNet: actions.setProbeRefNet,
                 openCommandPalette: () => setCommandPaletteOpen(true),
               }}

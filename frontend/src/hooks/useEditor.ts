@@ -1916,6 +1916,32 @@ function cleanGraphRegistersForDeletedComponents(
         signals: nextSignals,
         signalGraphs: nextGraphs,
       });
+      dispatch({
+        type: 'STATUS',
+        status: `Added '${trimmed}' to Scope (Graph ${defaultG})`,
+      });
+    },
+    [updateGraphRegister],
+  );
+
+  const removeSignalFromScope = useCallback(
+    async (signalName: string) => {
+      const trimmed = signalName.trim();
+      const regs = stateRef.current.graphRegisters || [];
+      if (regs.length === 0) return;
+      const targetReg = regs[0];
+      if (!targetReg.signals.includes(trimmed)) return;
+      const nextSignals = targetReg.signals.filter((s) => s !== trimmed);
+      const nextGraphs = { ...targetReg.signalGraphs };
+      delete nextGraphs[trimmed];
+      await updateGraphRegister(targetReg.id, {
+        signals: nextSignals,
+        signalGraphs: nextGraphs,
+      });
+      dispatch({
+        type: 'STATUS',
+        status: `Removed '${trimmed}' from Scope`,
+      });
     },
     [updateGraphRegister],
   );
@@ -2026,6 +2052,7 @@ function cleanGraphRegistersForDeletedComponents(
       toggleProbeMode,
       setProbeRefNet,
       addSignalToScope,
+      removeSignalFromScope,
       setGraphRegisters,
       addGraphRegister,
       updateGraphRegister,

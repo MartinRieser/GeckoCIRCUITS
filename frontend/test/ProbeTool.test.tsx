@@ -187,14 +187,21 @@ describe('Phase 3: Probe Tool & Cursor (LTspice style)', () => {
       expect(actions.addSignalToScope).toHaveBeenCalledWith('V(R1)', 1);
     });
 
-    it('clicking a labeled wire records single-ended node voltage V(net) on graph 1', () => {
+    it('clicking a labeled wire initiates 2-step voltage probing and records single-ended V(net) on Enter or Ref to GND', () => {
       const { container, actions } = renderProbeCanvas('probing');
 
       const wireHits = container.querySelectorAll('polyline.wire-hit');
       expect(wireHits.length).toBeGreaterThanOrEqual(2);
 
-      // Wire 0 has label 'OUT'
+      // Wire 0 has label 'OUT' - first click anchors V(+)
       fireEvent.mouseDown(wireHits[0], { button: 0 });
+      expect(actions.setProbeRefNet).toHaveBeenCalledWith('OUT');
+
+      // Click "Ref to GND (0)" button or press Enter to complete single-ended probe
+      const gndBtn = screen.getByText(/Ref to GND \(0\)/i);
+      expect(gndBtn).toBeDefined();
+      fireEvent.click(gndBtn);
+
       expect(actions.addSignalToScope).toHaveBeenCalledWith('V(OUT)', 1);
     });
 
@@ -206,15 +213,19 @@ describe('Phase 3: Probe Tool & Cursor (LTspice style)', () => {
       fireEvent.mouseDown(wireHits[1], { button: 0 });
 
       expect(actions.labelWire).toHaveBeenCalledWith(1, 'n1');
+      expect(actions.setProbeRefNet).toHaveBeenCalledWith('n1');
+
+      const gndBtn = screen.getByText(/Ref to GND \(0\)/i);
+      fireEvent.click(gndBtn);
       expect(actions.addSignalToScope).toHaveBeenCalledWith('V(n1)', 1);
     });
 
-    it('Shift-clicking a wire registers it as probeRefNet for differential voltage', () => {
+    it('clicking a wire anchors it as probeRefNet for differential voltage', () => {
       const { container, actions } = renderProbeCanvas('probing');
 
       const wireHits = container.querySelectorAll('polyline.wire-hit');
-      // Shift-click wire 0 ('OUT')
-      fireEvent.mouseDown(wireHits[0], { button: 0, shiftKey: true });
+      // Click wire 0 ('OUT')
+      fireEvent.mouseDown(wireHits[0], { button: 0 });
 
       expect(actions.setProbeRefNet).toHaveBeenCalledWith('OUT');
       expect(actions.addSignalToScope).not.toHaveBeenCalled();
@@ -224,8 +235,8 @@ describe('Phase 3: Probe Tool & Cursor (LTspice style)', () => {
       // probeRefNet is already set to 'V_DC'
       const { container, actions } = renderProbeCanvas('probing', 'V_DC');
 
-      // Banner shows differential guidance
-      expect(screen.getByText(/Differential Probe: Ref net is 'V_DC'/i)).toBeDefined();
+      // Banner shows guidance
+      expect(screen.getByText(/Voltage Probe: V\(\+\) is 'V_DC'/i)).toBeDefined();
 
       const wireHits = container.querySelectorAll('polyline.wire-hit');
       // Click wire 0 ('OUT')
