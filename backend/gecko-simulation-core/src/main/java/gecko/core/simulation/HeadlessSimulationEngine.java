@@ -300,14 +300,14 @@ public class HeadlessSimulationEngine {
         }
 
         // Resolve each requested signal name to a node index via the netlist's
-        // labels (e.g. "V_out"), to a CONTROL measurement probe (e.g. "VOLT.1"
-        // or its labeled output "u1"), or to a labeled control signal tap
-        // (e.g. "gate"). Signals that resolve to nothing are dropped with a
-        // warning instead of logging silent zeros (classic container semantics:
-        // only connected measurement curves produce columns).
+        // labels (e.g. "V_out"), to a virtual probe (e.g. "I(L_filter)", "V(out_a|out_b)"),
+        // to a CONTROL measurement probe (e.g. "VOLT.1" or its labeled output "u1"),
+        // or to a labeled control signal tap (e.g. "gate"). Signals that resolve to
+        // nothing are dropped with a warning instead of logging silent zeros.
         java.util.List<String> resolvedNames = new ArrayList<>(signalNames.length);
         java.util.List<Integer> resolvedIndices = new ArrayList<>(signalNames.length);
         int[] signalNodes = new int[signalNames.length];
+        VirtualSignal[] signalVirtual = new VirtualSignal[signalNames.length];
         ControlCalculatorBuilder.Probe[] signalProbes = new ControlCalculatorBuilder.Probe[signalNames.length];
         ControlCalculatorBuilder.SignalTap[] signalTaps = new ControlCalculatorBuilder.SignalTap[signalNames.length];
         boolean[] signalIsLoss = new boolean[signalNames.length];
@@ -317,18 +317,20 @@ public class HeadlessSimulationEngine {
         int[] magneticSignalNetwork = new int[signalNames.length];
         String[] magneticSignalWinding = new String[signalNames.length];
         for (int i = 0; i < signalNames.length; i++) {
-            // Probes and taps first: voltmeter output labels (e.g. "v_in")
-            // usually also exist as CONTROL wire labels, and the netlist label
-            // resolver indexes those too - resolving them as power nodes first
-            // shadows the probe with a bogus node index and logs flat zeros.
-            for (ControlCalculatorBuilder.Probe probe : controlCoupling.probes()) {
-                if (probe.name().equals(signalNames[i])
-                        || (probe.componentName() != null && probe.componentName().equals(signalNames[i]))) {
-                    signalProbes[i] = probe;
-                    break;
+            // 1. Virtual probes (meter-free SPICE syntax: I(<comp>), V(<comp>), V(<netA>|<netB>), V(<net>))
+            signalVirtual[i] = VirtualSignal.resolve(signalNames[i], circuitModel, circuitNetlist);
+
+            // 2. Physical measurement probes and signal taps
+            if (signalVirtual[i] == null) {
+                for (ControlCalculatorBuilder.Probe probe : controlCoupling.probes()) {
+                    if (probe.name().equals(signalNames[i])
+                            || (probe.componentName() != null && probe.componentName().equals(signalNames[i]))) {
+                        signalProbes[i] = probe;
+                        break;
+                    }
                 }
             }
-            if (signalProbes[i] == null) {
+            if (signalVirtual[i] == null && signalProbes[i] == null) {
                 for (ControlCalculatorBuilder.SignalTap tap : controlCoupling.signalTaps()) {
                     if (tap.name().equals(signalNames[i])) {
                         signalTaps[i] = tap;
@@ -336,13 +338,13 @@ public class HeadlessSimulationEngine {
                     }
                 }
             }
-            signalNodes[i] = signalProbes[i] == null && signalTaps[i] == null && circuitNetlist != null
+            signalNodes[i] = signalVirtual[i] == null && signalProbes[i] == null && signalTaps[i] == null && circuitNetlist != null
                     ? circuitNetlist.getLabelResolver().getIndex(signalNames[i]) : -1;
 
             // Domain channels take precedence: "Tj_<device>" logs the junction
             // temperature of a coupled device, "Phi_<winding>" the flux linked
             // by a magnetic winding
-            if (signalProbes[i] == null && signalTaps[i] == null
+            if (signalVirtual[i] == null && signalProbes[i] == null && signalTaps[i] == null
                     && signalNames[i].startsWith("Tj_")) {
                 for (int c = 0; c < thermalCouplings.size(); c++) {
                     if (("Tj_" + thermalCouplings.get(c).deviceName).equals(signalNames[i])) {
@@ -351,7 +353,7 @@ public class HeadlessSimulationEngine {
                         break;
                     }
                 }
-            } else if (signalProbes[i] == null && signalTaps[i] == null
+            } else if (signalVirtual[i] == null && signalProbes[i] == null && signalTaps[i] == null
                     && signalNames[i].startsWith("Phi_")) {
                 for (int n = 0; n < magneticRuntimes.size(); n++) {
                     final MagneticRuntime runtime = magneticRuntimes.get(n);
@@ -365,11 +367,11 @@ public class HeadlessSimulationEngine {
                 }
             }
 
-            if (signalProbes[i] == null && signalTaps[i] == null && signalNodes[i] < 0 && lossEngine != null) {
+            if (signalVirtual[i] == null && signalProbes[i] == null && signalTaps[i] == null && signalNodes[i] < 0 && lossEngine != null) {
                 signalIsLoss[i] = lossEngine.hasLossSignal(signalNames[i]);
             }
 
-            if (signalNodes[i] >= 0 || signalProbes[i] != null || signalTaps[i] != null
+            if (signalVirtual[i] != null || signalNodes[i] >= 0 || signalProbes[i] != null || signalTaps[i] != null
                     || signalIsLoss[i] || signalIsThermal[i] || signalIsMagnetic[i]) {
                 resolvedNames.add(signalNames[i]);
                 resolvedIndices.add(i);
@@ -385,20 +387,38 @@ public class HeadlessSimulationEngine {
         if (resolvedIndices.size() < signalNames.length) {
             signalNames = resolvedNames.toArray(new String[0]);
             int[] keptNodes = new int[signalNames.length];
+            VirtualSignal[] keptVirtual = new VirtualSignal[signalNames.length];
             ControlCalculatorBuilder.Probe[] keptProbes = new ControlCalculatorBuilder.Probe[signalNames.length];
             ControlCalculatorBuilder.SignalTap[] keptTaps = new ControlCalculatorBuilder.SignalTap[signalNames.length];
             boolean[] keptLoss = new boolean[signalNames.length];
+            boolean[] keptThermal = new boolean[signalNames.length];
+            int[] keptThermalCoupling = new int[signalNames.length];
+            boolean[] keptMagnetic = new boolean[signalNames.length];
+            int[] keptMagneticNet = new int[signalNames.length];
+            String[] keptMagneticWinding = new String[signalNames.length];
             for (int k = 0; k < resolvedIndices.size(); k++) {
                 int i = resolvedIndices.get(k);
                 keptNodes[k] = signalNodes[i];
+                keptVirtual[k] = signalVirtual[i];
                 keptProbes[k] = signalProbes[i];
                 keptTaps[k] = signalTaps[i];
                 keptLoss[k] = signalIsLoss[i];
+                keptThermal[k] = signalIsThermal[i];
+                keptThermalCoupling[k] = thermalSignalCoupling[i];
+                keptMagnetic[k] = signalIsMagnetic[i];
+                keptMagneticNet[k] = magneticSignalNetwork[i];
+                keptMagneticWinding[k] = magneticSignalWinding[i];
             }
             signalNodes = keptNodes;
+            signalVirtual = keptVirtual;
             signalProbes = keptProbes;
             signalTaps = keptTaps;
             signalIsLoss = keptLoss;
+            signalIsThermal = keptThermal;
+            thermalSignalCoupling = keptThermalCoupling;
+            signalIsMagnetic = keptMagnetic;
+            magneticSignalNetwork = keptMagneticNet;
+            magneticSignalWinding = keptMagneticWinding;
         }
 
         if (signalNames.length == 0 && circuitNetlist != null) {
@@ -629,6 +649,11 @@ public class HeadlessSimulationEngine {
                 }
                 if (signalIsLoss[sigIdx]) {
                     values[sigIdx] = (float) lossEngine.evaluateLossSignal(signalNames[sigIdx]);
+                    continue;
+                }
+                VirtualSignal vs = signalVirtual[sigIdx];
+                if (vs != null) {
+                    values[sigIdx] = vs.evaluate(circuitNetlist, matrixSolver.getP());
                     continue;
                 }
                 ControlCalculatorBuilder.Probe probe = signalProbes[sigIdx];
@@ -1432,8 +1457,27 @@ public class HeadlessSimulationEngine {
         // 1. Explicit request signals (from frontend or API caller)
         if (config.getSignals() != null && !config.getSignals().isEmpty()) {
             for (String s : config.getSignals()) {
-                if (isValidSignalName(s)) {
+                if (isValidSignalName(s) && !s.trim().equals("*")) {
                     names.add(s.trim());
+                }
+            }
+        }
+
+        // 1b. Wildcard expansion: '*' requests automatic recording of all component currents/voltages and nets
+        if (config.getSignals() != null && config.getSignals().contains("*")) {
+            if (circuitModel != null) {
+                for (CircuitModel.ComponentData comp : circuitModel.getCircuitComponents()) {
+                    if (comp.getName() != null && !comp.getName().isBlank()) {
+                        names.add("I(" + comp.getName().trim() + ")");
+                        names.add("V(" + comp.getName().trim() + ")");
+                    }
+                }
+            }
+            if (circuitNetlist != null && circuitNetlist.getLabelResolver() != null) {
+                for (String label : circuitNetlist.getLabelResolver().getAllLabels()) {
+                    if (isValidSignalName(label)) {
+                        names.add("V(" + label.trim() + ")");
+                    }
                 }
             }
         }
