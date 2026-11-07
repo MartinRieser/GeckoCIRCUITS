@@ -673,7 +673,8 @@ public final class ControlCalculatorBuilder {
                             signalTaps.add(new SignalTap(customLabel, calculator, j));
                         }
                     } else if (comp.getType() == TYP_JAVA_FUNCTION || comp.getType() == TYP_SCRIPT
-                            || comp.getType() == TYP_NATIVE_C || comp.getType() == TYP_DEADTIME) {
+                            || comp.getType() == TYP_NATIVE_C || comp.getType() == TYP_DEADTIME
+                            || comp.getType() == TYP_SIGNAL_SOURCE || comp.getType() == TYP_SIGNAL_WEB) {
                         String fallback = displayName(comp) + (numOutputs > 1 ? ("." + (j + 1)) : "");
                         if (usedTapNames.add(fallback)) {
                             signalTaps.add(new SignalTap(fallback, calculator, j));

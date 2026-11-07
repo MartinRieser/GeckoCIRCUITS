@@ -71,32 +71,32 @@ def _pf(volt, curr, v_rms_expected):
 ASSERTIONS = {
     # 50V -> 10V buck converter with 50 Hz ripple, discrete S/H sampled control (0.5 ms) and feedforward
     "buck": [
-        ("v_out", 0.4, _mean, 9.8, 10.3, "regulated steady-state mean ~10.0 V"),
-        ("v_in", 0.5, _pp, 9.5, 10.5, "input ripple ~10 Vpp (50 Hz 5Vpk)"),
+        ("V(out)", 0.4, _mean, 9.8, 10.3, "regulated steady-state mean ~10.0 V"),
+        ("V(in_tot)", 0.5, _pp, 9.5, 10.5, "input ripple ~10 Vpp (50 Hz 5Vpk)"),
         ("duty", 0.4, lambda x: max(x), 0.1, 0.9, "bounded duty cycle"),
     ],
-    "sync-buck": [("v_out", 0.4, _mean, 10.0, 14.0, "steady-state mean ~12 V")],
+    "sync-buck": [("V(out)", 0.4, _mean, 10.0, 14.0, "steady-state mean ~12 V")],
     # 12 V boost at D=0.5 -> ~24 V (12 ms covers the startup overshoot)
-    "boost": [("v_out", 0.25, _mean, 21.0, 27.0, "settled mean ~24 V")],
+    "boost": [("V(out)", 0.25, _mean, 21.0, 27.0, "settled mean ~24 V")],
     # 24 V inverting buck-boost at D=0.40 -> ~-16 V
-    "buck-boost": [("v_out", 0.4, _mean, -19.0, -13.0, "steady-state mean ~-16 V")],
+    "buck-boost": [("V(v_neg)", 0.4, _mean, -19.0, -13.0, "steady-state mean ~-16 V")],
     # closed-loop PI regulates 12.0 V
     "closed-loop-buck": [("v_out_scope", 0.5, _mean, 11.0, 13.0, "regulated 12 V")],
     # Graetz bridge on 24 Vrms (34 Vpk): bus sits just below the rectified peak with ~10 Vpp ripple
     "rectifier": [
-        ("v_ac", 1.0, _pp, 60.0, 70.0, "AC swing ~68 Vpp (34 Vpk sine)"),
-        ("v_dc", 0.3, _mean, 21.0, 28.0, "bus mean under 50 Ohm load (with 100 Hz ripple)"),
-        ("v_dc", 0.3, lambda x: max(x), 29.0, 33.0, "bus peak ~30..32 V (peak - diode drops)"),
+        ("V(ac1|ac2)", 1.0, _pp, 60.0, 70.0, "AC swing ~68 Vpp (34 Vpk sine)"),
+        ("V(dc_plus)", 0.3, _mean, 21.0, 28.0, "bus mean under 50 Ohm load (with 100 Hz ripple)"),
+        ("V(dc_plus)", 0.3, lambda x: max(x), 29.0, 33.0, "bus peak ~30..32 V (peak - diode drops)"),
     ],
     # second-order RLC step: capacitor charges to the 24 V step (with ringing)
-    "rlc": [("v_out", 0.2, _mean, 21.0, 27.0, "settles to 24 V step")],
+    "rlc": [("V(out)", 0.2, _mean, 21.0, 27.0, "settles to 24 V step")],
     # first-order RC step: capacitor charges to 10 V, never above
     "rc": [
-        ("v_out", 0.2, _mean, 8.0, 12.0, "settles to 10 V step"),
-        ("v_out", 1.0, lambda x: max(x), 0.0, 10.5, "no overshoot (first order)"),
+        ("V(out)", 0.2, _mean, 8.0, 12.0, "settles to 10 V step"),
+        ("V(out)", 1.0, lambda x: max(x), 0.0, 10.5, "no overshoot (first order)"),
     ],
     # series RLC step in the multi-scope demo: settles to the 24 V step
-    "three-scopes": [("v_out", 0.2, _mean, 21.0, 27.0, "settles to 24 V step")],
+    "three-scopes": [("V(V_out)", 0.2, _mean, 21.0, 27.0, "settles to 24 V step")],
     # PFC: 50 V bus, bounded ripple, near-unity power factor (24 Vrms grid)
     "pfc-boost": [
         ("v_dc_meas", 0.6, _mean, 48.0, 52.0, "bus regulated to 50 V"),
@@ -119,13 +119,13 @@ ASSERTIONS = {
 # --------------------------------------------------------------------------
 def load_examples():
     src = EXAMPLES_TS.read_text(encoding="utf-8")
-    consts = {m.group(1): m.group(2) for m in re.finditer(r"export const (\w+) = `(.*?)`;", src, re.S)}
+    consts = {m.group(1): m.group(2) for m in re.finditer(r"export const (\w+) = `((?:\\`|[^`])*)`;", src, re.S)}
     examples = []
     for m in re.finditer(r"id: '([\w-]+)',[\s\S]*?content: (\w+),", src):
         eid, const = m.group(1), m.group(2)
         if const not in consts:
             continue
-        body = consts[const].replace("\\\\", "\\").lstrip("\n")
+        body = consts[const].replace("\\`", "`").replace("\\\\", "\\").replace("\\${", "${").lstrip("\n")
         sig_match = re.search(r"dataContainerSignals\[\][ ]?(/[^\n]*)", body)
         dur_match = re.search(r"tDURATION[ ]?([\d.eE+-]+)", body)
         signals = [s for s in (sig_match.group(1) if sig_match else "").strip().split("/") if s]

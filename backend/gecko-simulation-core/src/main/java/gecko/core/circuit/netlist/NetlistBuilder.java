@@ -1182,6 +1182,10 @@ public class NetlistBuilder {
                     } else {
                         rootToNode.put(netKey, node);
                     }
+                } else if (isGroundLabel(xLabels[0])) {
+                    rootToNode.put(netKey, 0);
+                } else {
+                    labelToNode.put(xLabels[0].trim(), rootToNode.get(netKey));
                 }
             }
             String[] yLabels = comp.getTerminalYLabels();
@@ -1197,6 +1201,10 @@ public class NetlistBuilder {
                     } else {
                         rootToNode.put(netKey, node);
                     }
+                } else if (isGroundLabel(yLabels[0])) {
+                    rootToNode.put(netKey, 0);
+                } else {
+                    labelToNode.put(yLabels[0].trim(), rootToNode.get(netKey));
                 }
             }
         }

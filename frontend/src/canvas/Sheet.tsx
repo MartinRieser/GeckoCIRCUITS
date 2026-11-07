@@ -17,6 +17,7 @@ import {
   isAmmeterComponent,
   isVoltmeterComponent,
   isTextboxComponent,
+  isCircuitPowerComponent,
   getCoupledComponentName,
   getComponentMeta,
 } from '../model/componentSchema';
@@ -358,6 +359,8 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
 
   const handleProbeWireClick = useCallback(
     (wireIndex: number, e: React.MouseEvent) => {
+      const wire = state.wires.find((w) => w.index === wireIndex);
+      const isControlWire = wire?.type === 'CONTROL';
       const net = netAnalysis.wireIndexToNet.get(wireIndex);
       let netLabel = net?.label;
 
@@ -365,6 +368,11 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
         const autoLabel = findNextAvailableNetLabel(state.wires, state.components);
         actions.labelWire?.(wireIndex, autoLabel);
         netLabel = autoLabel;
+      }
+
+      if (isControlWire) {
+        actions.addSignalToScope?.(netLabel, 3);
+        return;
       }
 
       if (state.probeRefNet) {
@@ -381,27 +389,82 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
     [netAnalysis, state.wires, state.components, state.probeRefNet, actions],
   );
 
+  const resolveControlComponentSignal = useCallback(
+    (comp: EditorComponent): string | null => {
+      if (isScopeComponent(comp)) return null;
+      const outLbl = comp.outputLabels?.find((l) => l && l.trim() && l.trim() !== 'NIX_NIX_NIX');
+      if (outLbl) return outLbl.trim();
+      if (isGateDriver(comp)) {
+        const inLbl = comp.inputLabels?.find((l) => l && l.trim() && l.trim() !== 'NIX_NIX_NIX');
+        if (inLbl) return inLbl.trim();
+      }
+      const terms = terminalPositions(comp);
+      const searchTerms = isGateDriver(comp) ? terms.input : terms.output;
+      for (const pt of searchTerms) {
+        const net = netAnalysis.terminalKeyToNet.get(`${pt.x},${pt.y}`);
+        if (net?.label) return net.label;
+      }
+      return comp.name;
+    },
+    [netAnalysis],
+  );
+
   const handleProbeComponentClick = useCallback(
     (comp: EditorComponent, e: React.MouseEvent) => {
-      const useVolt = e.altKey || isAltDown;
-      const sigName = useVolt ? `V(${comp.name})` : `I(${comp.name})`;
-      const targetGraph = useVolt ? 1 : 2;
-      actions.addSignalToScope?.(sigName, targetGraph);
+      if (isCircuitPowerComponent(comp)) {
+        const useVolt = e.altKey || isAltDown;
+        const sigName = useVolt ? `V(${comp.name})` : `I(${comp.name})`;
+        const targetGraph = useVolt ? 1 : 2;
+        actions.addSignalToScope?.(sigName, targetGraph);
+        return;
+      }
+      if (comp.family === 'CONTROL') {
+        const ctrlSig = resolveControlComponentSignal(comp);
+        if (ctrlSig) {
+          actions.addSignalToScope?.(ctrlSig, 3);
+        }
+      }
     },
-    [isAltDown, actions],
+    [isAltDown, actions, resolveControlComponentSignal],
+  );
+
+  const hoveredComponent = useMemo(
+    () => (hoveredComponentName ? state.components.find((c) => c.name === hoveredComponentName) ?? null : null),
+    [hoveredComponentName, state.components],
   );
 
   const probeTooltip = useMemo(() => {
     if (state.mode !== 'probing') return null;
-    if (hoveredComponentName) {
-      const useVolt = isAltDown;
-      return {
-        text: useVolt ? `+ V(${hoveredComponentName}) [Alt]` : `+ I(${hoveredComponentName})`,
-        color: useVolt ? '#38bdf8' : '#fb923c',
-      };
+    if (hoveredComponent) {
+      if (isCircuitPowerComponent(hoveredComponent)) {
+        const useVolt = isAltDown;
+        return {
+          text: useVolt ? `+ V(${hoveredComponent.name}) [Alt]` : `+ I(${hoveredComponent.name})`,
+          color: useVolt ? '#38bdf8' : '#fb923c',
+        };
+      }
+      if (hoveredComponent.family === 'CONTROL') {
+        const ctrlSig = resolveControlComponentSignal(hoveredComponent);
+        if (ctrlSig) {
+          return {
+            text: `+ ${ctrlSig} [Ctrl]`,
+            color: '#4ade80',
+          };
+        }
+      }
+      return null;
     }
     if (activeNet) {
       const label = activeNet.label || 'auto';
+      const firstWireIdx = activeNet.wireIndices.values().next().value;
+      const firstWire = firstWireIdx !== undefined ? state.wires.find((w) => w.index === firstWireIdx) : undefined;
+      const isCtrlNet = firstWire?.type === 'CONTROL';
+      if (isCtrlNet) {
+        return {
+          text: `+ ${label} [Ctrl]`,
+          color: '#4ade80',
+        };
+      }
       if (state.probeRefNet) {
         return {
           text: `+ V(${state.probeRefNet}|${label}) [Diff]`,
@@ -429,7 +492,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
       text: 'Probe Tool',
       color: '#38bdf8',
     };
-  }, [state.mode, hoveredComponentName, activeNet, isAltDown, isShiftDown, state.probeRefNet]);
+  }, [state.mode, hoveredComponent, activeNet, isAltDown, isShiftDown, state.probeRefNet, state.wires, resolveControlComponentSignal]);
 
   // Voltmeter ➔ measured-node guides, shown on hover/selection instead of
   // the permanent badge text. Lines are coloured by polarity: red for the
@@ -1518,7 +1581,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                 : isSpacePressed
                   ? 'grab'
                   : state.mode === 'probing'
-                    ? hoveredComponentName
+                    ? hoveredComponent && isCircuitPowerComponent(hoveredComponent)
                       ? isAltDown
                         ? VOLTAGE_PROBE_CURSOR
                         : CURRENT_CLAMP_CURSOR
@@ -2119,7 +2182,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                           fill="transparent"
                           stroke="none"
                           pointerEvents="all"
-                          style={{ cursor: 'pointer' }}
+                          style={{ cursor: state.mode === 'probing' ? 'inherit' : 'pointer' }}
                         />
 
                         {/* Selection box halo */}

@@ -92,4 +92,56 @@ class WebEditorExampleSimulationTest {
             }
         }
     }
+
+    @Test
+    void allShippedExamples_simulateWithWildcardProbesAndZeroWarnings() throws Exception {
+        java.nio.file.Path repoExamplesDir = java.nio.file.Paths.get("..", "..", "examples").normalize();
+        if (!java.nio.file.Files.isDirectory(repoExamplesDir)) {
+            repoExamplesDir = java.nio.file.Paths.get("examples").normalize();
+        }
+        assertTrue(java.nio.file.Files.isDirectory(repoExamplesDir),
+                "examples directory must exist at " + repoExamplesDir.toAbsolutePath());
+
+        try (var stream = java.nio.file.Files.list(repoExamplesDir)) {
+            java.util.List<java.nio.file.Path> ipesFiles = stream
+                    .filter(p -> p.toString().endsWith(".ipes"))
+                    .sorted()
+                    .toList();
+            assertFalse(ipesFiles.isEmpty(), "must find shipped .ipes examples");
+
+            for (java.nio.file.Path path : ipesFiles) {
+                CircuitModel model = new CircuitFileParser().parse(path.toString());
+                double dt = model.getTimeStep() > 0 ? model.getTimeStep() : 1e-6;
+                // Run 200 steps of each example with wildcard '*' virtual probe expansion
+                // plus all saved dataContainerSignals and graphRegister signals
+                double duration = Math.min(model.getSimulationDuration() > 0 ? model.getSimulationDuration() : 1e-3, dt * 200);
+                java.util.List<String> requestedSignals = new java.util.ArrayList<>();
+                requestedSignals.add("*");
+                if (model.getDataContainerSignals() != null) {
+                    java.util.Collections.addAll(requestedSignals, model.getDataContainerSignals());
+                }
+                if (model.getGraphRegisters() != null) {
+                    for (var reg : model.getGraphRegisters()) {
+                        if (reg.signals() != null) {
+                            requestedSignals.addAll(reg.signals());
+                        }
+                    }
+                }
+                SimulationConfig config = SimulationConfig.builder()
+                        .circuitFile(path.getFileName().toString())
+                        .circuitModel(model)
+                        .stepWidth(dt)
+                        .simulationDuration(duration)
+                        .signals(requestedSignals)
+                        .solverType(model.getSolverType() != null ? model.getSolverType() : SolverType.SOLVER_BE)
+                        .build();
+                SimulationResult result = new HeadlessSimulationEngine().runSimulation(config);
+
+                assertTrue(result.isSuccess(),
+                        () -> path.getFileName() + " failed: " + result.getErrorMessage());
+                assertTrue(result.getWarnings().isEmpty(),
+                        () -> path.getFileName() + " emitted unexpected DRC warnings with '*' probes: " + result.getWarnings());
+            }
+        }
+    }
 }

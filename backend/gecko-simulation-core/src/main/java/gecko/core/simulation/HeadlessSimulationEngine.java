@@ -378,7 +378,12 @@ public class HeadlessSimulationEngine {
             } else {
                 LOGGER.warn("Signal '{}' cannot be resolved to a node, measurement probe, "
                         + "labeled control output, or loss channel - not recorded", signalNames[i]);
-                if (config.getSignals() != null && config.getSignals().contains(signalNames[i]) && circuitNetlist != null) {
+                final String unresolvedName = signalNames[i];
+                boolean explicitlyRequested = (config.getSignals() != null && config.getSignals().contains(unresolvedName))
+                        || (circuitModel != null && circuitModel.getGraphRegisters() != null
+                            && circuitModel.getGraphRegisters().stream()
+                                .anyMatch(r -> r.signals() != null && r.signals().contains(unresolvedName)));
+                if (explicitlyRequested && circuitNetlist != null) {
                     circuitNetlist.addBuildWarning("DRC_UNRESOLVED_SIGNAL: Requested signal '" + signalNames[i]
                             + "' could not be resolved to a node, measurement probe, or labeled wire.");
                 }
@@ -1467,7 +1472,8 @@ public class HeadlessSimulationEngine {
         if (config.getSignals() != null && config.getSignals().contains("*")) {
             if (circuitModel != null) {
                 for (CircuitModel.ComponentData comp : circuitModel.getCircuitComponents()) {
-                    if (comp.getName() != null && !comp.getName().isBlank()) {
+                    if (comp.getName() != null && !comp.getName().isBlank()
+                            && VirtualSignal.resolveElementIndex(circuitModel, circuitNetlist, comp.getName().trim()) >= 0) {
                         names.add("I(" + comp.getName().trim() + ")");
                         names.add("V(" + comp.getName().trim() + ")");
                     }

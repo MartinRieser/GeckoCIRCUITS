@@ -2945,10 +2945,24 @@ export function getMutualCouplingUids(
   return [Number.isFinite(a) ? a : 0, Number.isFinite(b) ? b : 0];
 }
 
+const NON_BRANCH_COMPONENT_TYPES = new Set<number>([
+  LkComponentType.MUTUAL_INDUCTANCE, // 9: K_coupler (magnetic coupling coefficient, not a branch)
+  13, // LISN (unsimulated placeholder)
+  14, 15, 16, 17, 18, 20, 21, 51, // Motors (multi-port / unsimulated in 2-terminal MNA)
+  22, // OpAmp (unsimulated placeholder)
+  25, 52, // Reluctance coil / non-linear reluctance
+  29, 30, // Subcircuit terminals
+  LkComponentType.GLOBAL_TERMINAL, // 31: GND / global terminal
+  32, // Reluctance global terminal
+  41, 42, 48, 49, 50, // Thermal non-branch / terminals
+  ControlComponentType.LEGACY_JAVA_FUNCTION, // 61
+  SpecialComponentType.TEXTBOX, // 2001
+]);
+
 /**
- * Returns true if the component is an electrical power circuit element (resistor, inductor, capacitor,
- * semiconductor switch, diode, transformer, etc.) that supports virtual branch current I(...) and
- * voltage drop V(...) probing without requiring physical meter components.
+ * Returns true if the component is an electrical power circuit branch element (resistor, inductor,
+ * capacitor, semiconductor switch, diode, transformer, etc.) that supports virtual branch current
+ * I(...) and voltage drop V(...) probing without requiring physical meter components.
  */
 export function isCircuitPowerComponent(
   component: { type?: number; family?: string; name?: string } | null | undefined,
@@ -2957,16 +2971,17 @@ export function isCircuitPowerComponent(
   if (component.family === 'CONTROL' || component.family === 'THERM' || component.family === 'SPECIAL') {
     return false;
   }
-  if (component.family === 'CIRCUIT' || component.family === 'LK') {
-    return true;
+  // Check against non-branch, control, or special type IDs first
+  if (component.type != null) {
+    if (component.type >= 1000 || NON_BRANCH_COMPONENT_TYPES.has(component.type)) {
+      return false;
+    }
   }
-  // Check against control/special type IDs
-  if (component.type != null && (component.type >= 1000 || component.type === SpecialComponentType.TEXTBOX)) {
-    return false;
-  }
-  // Name heuristics for legacy components lacking explicit family
   const n = component.name || '';
   if (
+    n === 'GND' ||
+    n.startsWith('GND.') ||
+    n.startsWith('K_') ||
     n.startsWith('VOLT') ||
     n.startsWith('AMP') ||
     n.startsWith('GATE') ||
@@ -2977,6 +2992,9 @@ export function isCircuitPowerComponent(
     n.startsWith('TEXT')
   ) {
     return false;
+  }
+  if (component.family === 'CIRCUIT' || component.family === 'LK') {
+    return true;
   }
   return true;
 }

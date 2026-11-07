@@ -1163,6 +1163,14 @@ export function App() {
                   dispatch({ type: 'SELECT', name, additive: false });
                 }
               }}
+              onHighlightNet={(netLabel) => {
+                if (netLabel) {
+                  const matchingWire = state.wires.find((w) => w.label?.trim() === netLabel);
+                  if (matchingWire) {
+                    dispatch({ type: 'SELECT_WIRE', index: matchingWire.index });
+                  }
+                }
+              }}
             />
           </div>
 

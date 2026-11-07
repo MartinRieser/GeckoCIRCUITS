@@ -470,24 +470,6 @@ idStringDialog VM_IN
 
 <\\ElementCONTROL>
 
-c (2)
-<ElementCONTROL>
-labelAnfangsKnoten[]
-labelEndKnoten[] /v_sw
-enabledShorted 1
-parentSheetIdentifier 0
-typ 1001
-uniqueObjectIdentifier 2003
-x 6
-y 48
-parameter[] 
-parameterString[] //sw_node//0/0
-nameOpt[]
-orientierung 503
-idStringDialog VM_SW
-
-<\\ElementCONTROL>
-
 c (3)
 <ElementCONTROL>
 labelAnfangsKnoten[] /pwm_gate
@@ -780,9 +762,9 @@ Synchronous-equivalent step-down buck converter stepping **50 V DC** down to **1
 - **CH2 (duty)**: Real-time control duty cycle demonstrating line disturbance rejection.
 
 ### Observed Waveforms (Oscilloscope)
-- **V(sw_node)**: High-speed pulsed switching node voltage (+24 V / 0 V) (Graph 1).
-- **V(out)**: Regulated DC output voltage (+12 V target) (Graph 1).
-- **V(in)**: DC bus input voltage (+24 V) (Graph 1).
+- **V(sw_node)**: High-speed pulsed switching node voltage (+50 V / 0 V) (Graph 1).
+- **V(out)**: Regulated DC output voltage (+10 V target) (Graph 1).
+- **V(in_tot)**: DC bus input voltage with AC ripple (Graph 1).
 - **duty**: Real-time closed-loop duty ratio from feedforward PI controller (Graph 2).
 <\\markdownText>
 
@@ -831,7 +813,7 @@ ANSICHT_SHOW_CONTROL_PARAMETER true
 ANSICHT_SHOW_CONTROL_TEXTLINIE true
 FileVersion 175
 UniqueFileId 0
-dataContainerSignals[] /V(sw_node)/V(out)/V(in)/duty
+dataContainerSignals[] /V(sw_node)/V(out)/V(in_tot)/duty
 
 <graphRegisters>
 count 1
@@ -839,8 +821,8 @@ count 1
 id osci_1
 name Osci 1
 numGraphs 2
-signals V(sw_node),V(out),V(in),duty
-signalGraphs V(sw_node):1,V(out):1,V(in):1,duty:2
+signals V(sw_node),V(out),V(in_tot),duty
+signalGraphs V(sw_node):1,V(out):1,V(in_tot):1,duty:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
@@ -1420,61 +1402,6 @@ idStringDialog R_load
 
 <\\ElementLK>
 
-c (16)
-<ElementCONTROL>
-labelAnfangsKnoten[]
-labelEndKnoten[] /v_ac
-enabledShorted 1
-parentSheetIdentifier 0
-typ 1
-uniqueObjectIdentifier 2001
-x 14
-y 24
-parameter[] 0.0 
-parameterString[] /ac1/ac2/0
-nameOpt[]
-orientierung 503
-idStringDialog VOLT_AC
-
-<\\ElementCONTROL>
-
-c (17)
-<ElementCONTROL>
-labelAnfangsKnoten[]
-labelEndKnoten[] /v_dc
-enabledShorted 1
-parentSheetIdentifier 0
-typ 1
-uniqueObjectIdentifier 2002
-x 14
-y 28
-parameter[] 0.0 
-parameterString[] /dc_plus/0/0
-nameOpt[]
-orientierung 503
-idStringDialog VOLT_DC
-
-<\\ElementCONTROL>
-
-c (18)
-<ElementCONTROL>
-labelAnfangsKnoten[]
-labelEndKnoten[] /i_load
-enabledShorted 1
-parentSheetIdentifier 0
-typ 2
-uniqueObjectIdentifier 2003
-coupledReferenceID[] 1007 
-x 14
-y 32
-parameter[] 0.0 
-parameterString[] /R_load/NIX_NIX_NIX/0
-nameOpt[]
-orientierung 503
-idStringDialog AMP_LOAD
-
-<\\ElementCONTROL>
-
 sp (19)
 <ElementSPECIAL>
 labelAnfangsKnoten[]
@@ -1715,8 +1642,8 @@ Demonstrates multiple oscilloscope view registers monitoring complementary secti
 - **Osci 2 (Component Voltages)**: Differential component voltages (\`v_R1\`, \`v_L1\`, \`v_C1\`) confirming Kirchhoff's Voltage Law: $V_{in}(t) = v_R(t) + v_L(t) + v_C(t)$.
 
 ### Observed Waveforms (Oscilloscope)
-- **Osci 1 (Step Response)**: Output ringing \`V(V_out)\` and \`V(V_in)\` (Graph 1), resonant current \`I(L.1)\` (Graph 2).
-- **Osci 2 (Component Voltages)**: Resistor \`V(R.1)\` (Graph 1), inductor \`V(L.1)\` (Graph 2), capacitor \`V(C.1)\` (Graph 3).
+- **Osci 1 (Step Response)**: Output ringing \`V(V_out)\` and \`V(V_in)\` (Graph 1), resonant current \`I(L1)\` (Graph 2).
+- **Osci 2 (Component Voltages)**: Resistor \`V(R1)\` (Graph 1), inductor \`V(L1)\` (Graph 2), capacitor \`V(C1)\` (Graph 3).
 <\\markdownText>
 <\\ElementSPECIAL>
 
@@ -1724,15 +1651,15 @@ tDURATION 0.01
 dt 1e-06
 solverType 0
 FileVersion 1
-dataContainerSignals[] /V(V_out)/V(V_in)/I(L.1)
+dataContainerSignals[] /V(V_out)/V(V_in)/I(L1)
 <graphRegisters>
 count 2
 <graphRegister>
 id osci_1
 name Step Response
 numGraphs 2
-signals V(V_out),V(V_in),I(L.1)
-signalGraphs V(V_out):1,V(V_in):1,I(L.1):2
+signals V(V_out),V(V_in),I(L1)
+signalGraphs V(V_out):1,V(V_in):1,I(L1):2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
@@ -1741,8 +1668,8 @@ cursorsEnabled false
 id osci_2
 name Component Voltages
 numGraphs 3
-signals V(R.1),V(L.1),V(C.1)
-signalGraphs V(R.1):1,V(L.1):2,V(C.1):3
+signals V(R1),V(L1),V(C1)
+signalGraphs V(R1):1,V(L1):2,V(C1):3
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
@@ -3466,7 +3393,7 @@ Galvanically isolated buck-boost topology using magnetically coupled inductors (
 ### Observed Waveforms (Oscilloscope)
 - **V(out)**: Isolated secondary DC output voltage (+15 V) (Graph 1).
 - **V(p_sw)**: Primary MOSFET drain-source voltage showing flyback spike and plateau (Graph 1).
-- **I(L_pri)**: Primary transformer winding magnetizing current (Graph 2).
+- **I(L_p)**: Primary transformer winding magnetizing current (Graph 2).
 <\\markdownText>
 <\\ElementSPECIAL>
 
@@ -3474,15 +3401,15 @@ tDURATION 0.005
 dt 2.0E-7
 solverType 0
 FileVersion 1
-dataContainerSignals[] /V(out)/V(p_sw)/I(L_pri)
+dataContainerSignals[] /V(out)/V(p_sw)/I(L_p)
 <graphRegisters>
 count 1
 <graphRegister>
 id osci_1
 name Osci 1
 numGraphs 2
-signals V(out),V(p_sw),I(L_pri)
-signalGraphs V(out):1,V(p_sw):1,I(L_pri):2
+signals V(out),V(p_sw),I(L_p)
+signalGraphs V(out):1,V(p_sw):1,I(L_p):2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
@@ -3771,10 +3698,10 @@ Voltage-mode closed-loop DC-DC converter featuring an embedded microcontroller *
 - Shows fast closed-loop step tracking with minimal overshoot and zero steady-state error.
 
 ### Observed Waveforms (Oscilloscope)
-- **v_out_scope**: Measured DC output voltage regulated to +12.0 V (Graph 1).
-- **v_ref**: Digital voltage reference setpoint (+12.0 V) (Graph 1).
-- **I(L1)**: Continuous filter inductor ripple current (Graph 2).
-- **duty**: Embedded PI controller PWM duty command (Graph 2).
+- **V(out)**: Regulated DC output voltage (+12.0 V) (Graph 1).
+- **v_out_scope**: Feedback sensor signal to microcontroller (Graph 1).
+- **I(L.1)**: Continuous filter inductor ripple current (Graph 2).
+- **pwm**: Embedded PI controller 50 kHz PWM gate drive (Graph 2).
 <\\markdownText>
 <\\ElementSPECIAL>
 
@@ -3782,15 +3709,15 @@ tDURATION 0.003
 dt 2.0E-7
 solverType 0
 FileVersion 1
-dataContainerSignals[] /v_out_scope/v_ref/I(L1)/duty
+dataContainerSignals[] /V(out)/v_out_scope/I(L.1)/pwm
 <graphRegisters>
 count 1
 <graphRegister>
 id osci_1
 name Osci 1
 numGraphs 2
-signals v_out_scope,v_ref,I(L1),duty
-signalGraphs v_out_scope:1,v_ref:1,I(L1):2,duty:2
+signals V(out),v_out_scope,I(L.1),pwm
+signalGraphs V(out):1,v_out_scope:1,I(L.1):2,pwm:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
@@ -4135,49 +4062,6 @@ anzXIN 2
 anzYOUT 1
 showName true
 <sourceCode>
-// <graphRegisters>
-count 1
-<graphRegister>
-id osci_1
-name Osci 1
-numGraphs 2
-signals v_dc_meas,u_grid,i_l,pwm
-signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
-hiddenSignals 
-yScaleMode auto
-cursorsEnabled false
-<\\graphRegister>
-<\\graphRegisters>
-
-=======================<graphRegisters>
-count 1
-<graphRegister>
-id osci_1
-name Osci 1
-numGraphs 2
-signals v_dc_meas,u_grid,i_l,pwm
-signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
-hiddenSignals 
-yScaleMode auto
-cursorsEnabled false
-<\\graphRegister>
-<\\graphRegisters>
-
-=======================<graphRegisters>
-count 1
-<graphRegister>
-id osci_1
-name Osci 1
-numGraphs 2
-signals v_dc_meas,u_grid,i_l,pwm
-signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
-hiddenSignals 
-yScaleMode auto
-cursorsEnabled false
-<\\graphRegister>
-<\\graphRegisters>
-
-=======================
 //  Active-PFC boost control - runs once per simulation step (dt = 1 us)
 //
 //  Structure (average-current-mode PFC, textbook two-loop control):
@@ -4191,49 +4075,6 @@ cursorsEnabled false
 //  The rectified-sine template forces the mains current to follow the
 //  shape of the grid voltage, so the converter draws its current in
 //  phase with the mains (power factor near 1).
-// <graphRegisters>
-count 1
-<graphRegister>
-id osci_1
-name Osci 1
-numGraphs 2
-signals v_dc_meas,u_grid,i_l,pwm
-signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
-hiddenSignals 
-yScaleMode auto
-cursorsEnabled false
-<\\graphRegister>
-<\\graphRegisters>
-
-=======================<graphRegisters>
-count 1
-<graphRegister>
-id osci_1
-name Osci 1
-numGraphs 2
-signals v_dc_meas,u_grid,i_l,pwm
-signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
-hiddenSignals 
-yScaleMode auto
-cursorsEnabled false
-<\\graphRegister>
-<\\graphRegisters>
-
-=======================<graphRegisters>
-count 1
-<graphRegister>
-id osci_1
-name Osci 1
-numGraphs 2
-signals v_dc_meas,u_grid,i_l,pwm
-signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
-hiddenSignals 
-yScaleMode auto
-cursorsEnabled false
-<\\graphRegister>
-<\\graphRegisters>
-
-=======================
 
 // ---- parameters ------------------------------------------------------
 double v_ref = 50.0;               // DC bus setpoint [V]
@@ -4374,9 +4215,8 @@ Power Factor Correction circuit shaping AC line current into a clean sinusoid in
 - **Result**: Unity power factor ($	ext{PF} > 0.99$) with minimal harmonic distortion (THD).
 
 ### Waveforms in Oscilloscope (Osci 1)
-- **CH1 (v_dc_meas)**: Regulated 50 V DC bus voltage.
-- **CH2 (i_l)**: High-frequency boost inductor current tracking sinusoidal envelope.
-- **CH3 (u_grid)**: 50 Hz AC grid voltage reference.
+- **CH1 (v_dc_meas, V(ac1|ac2))**: Regulated 50 V DC bus voltage and 50 Hz AC grid voltage.
+- **CH2 (i_l, pwm)**: High-frequency boost inductor current tracking sinusoidal envelope and PWM gate drive.
 <\\markdownText>
 <\\ElementSPECIAL>
 
@@ -4384,7 +4224,20 @@ tDURATION 0.060
 dt 1.0E-6
 solverType 0
 FileVersion 1
-dataContainerSignals[] /v_dc_meas/i_l/u_grid
+dataContainerSignals[] /v_dc_meas/V(ac1|ac2)/i_l/pwm
+<graphRegisters>
+count 1
+<graphRegister>
+id osci_1
+name Osci 1
+numGraphs 2
+signals v_dc_meas,V(ac1|ac2),i_l,pwm
+signalGraphs v_dc_meas:1,V(ac1|ac2):1,i_l:2,pwm:2
+hiddenSignals 
+yScaleMode auto
+cursorsEnabled false
+<\\graphRegister>
+<\\graphRegisters>
 `;
 
 export const SPWM_INVERTER_DEADTIME_IPES = `

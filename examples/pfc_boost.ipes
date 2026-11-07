@@ -334,49 +334,6 @@ anzXIN 2
 anzYOUT 1
 showName true
 <sourceCode>
-// <graphRegisters>
-count 1
-<graphRegister>
-id osci_1
-name Osci 1
-numGraphs 2
-signals v_dc_meas,u_grid,i_l,pwm
-signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
-hiddenSignals 
-yScaleMode auto
-cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
-
-=======================<graphRegisters>
-count 1
-<graphRegister>
-id osci_1
-name Osci 1
-numGraphs 2
-signals v_dc_meas,u_grid,i_l,pwm
-signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
-hiddenSignals 
-yScaleMode auto
-cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
-
-=======================<graphRegisters>
-count 1
-<graphRegister>
-id osci_1
-name Osci 1
-numGraphs 2
-signals v_dc_meas,u_grid,i_l,pwm
-signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
-hiddenSignals 
-yScaleMode auto
-cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
-
-=======================
 //  Active-PFC boost control - runs once per simulation step (dt = 1 us)
 //
 //  Structure (average-current-mode PFC, textbook two-loop control):
@@ -390,49 +347,6 @@ cursorsEnabled false
 //  The rectified-sine template forces the mains current to follow the
 //  shape of the grid voltage, so the converter draws its current in
 //  phase with the mains (power factor near 1).
-// <graphRegisters>
-count 1
-<graphRegister>
-id osci_1
-name Osci 1
-numGraphs 2
-signals v_dc_meas,u_grid,i_l,pwm
-signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
-hiddenSignals 
-yScaleMode auto
-cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
-
-=======================<graphRegisters>
-count 1
-<graphRegister>
-id osci_1
-name Osci 1
-numGraphs 2
-signals v_dc_meas,u_grid,i_l,pwm
-signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
-hiddenSignals 
-yScaleMode auto
-cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
-
-=======================<graphRegisters>
-count 1
-<graphRegister>
-id osci_1
-name Osci 1
-numGraphs 2
-signals v_dc_meas,u_grid,i_l,pwm
-signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
-hiddenSignals 
-yScaleMode auto
-cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
-
-=======================
 
 // ---- parameters ------------------------------------------------------
 double v_ref = 50.0;               // DC bus setpoint [V]
@@ -573,9 +487,8 @@ Power Factor Correction circuit shaping AC line current into a clean sinusoid in
 - **Result**: Unity power factor ($	ext{PF} > 0.99$) with minimal harmonic distortion (THD).
 
 ### Waveforms in Oscilloscope (Osci 1)
-- **CH1 (v_dc_meas)**: Regulated 50 V DC bus voltage.
-- **CH2 (i_l)**: High-frequency boost inductor current tracking sinusoidal envelope.
-- **CH3 (u_grid)**: 50 Hz AC grid voltage reference.
+- **CH1 (v_dc_meas, V(ac1|ac2))**: Regulated 50 V DC bus voltage and 50 Hz AC grid voltage.
+- **CH2 (i_l, pwm)**: High-frequency boost inductor current tracking sinusoidal envelope and PWM gate drive.
 <\markdownText>
 <\ElementSPECIAL>
 
@@ -583,4 +496,17 @@ tDURATION 0.060
 dt 1.0E-6
 solverType 0
 FileVersion 1
-dataContainerSignals[] /v_dc_meas/i_l/u_grid
+dataContainerSignals[] /v_dc_meas/V(ac1|ac2)/i_l/pwm
+<graphRegisters>
+count 1
+<graphRegister>
+id osci_1
+name Osci 1
+numGraphs 2
+signals v_dc_meas,V(ac1|ac2),i_l,pwm
+signalGraphs v_dc_meas:1,V(ac1|ac2):1,i_l:2,pwm:2
+hiddenSignals 
+yScaleMode auto
+cursorsEnabled false
+<\graphRegister>
+<\graphRegisters>

@@ -250,5 +250,64 @@ describe('Phase 3: Probe Tool & Cursor (LTspice style)', () => {
       expect(badge).not.toBeNull();
       expect(badge?.textContent).toContain('+ I(R1)');
     });
+
+    it('clicking a CONTROL wire records bare control signal name on graph 3', () => {
+      const addSignalToScope = vi.fn();
+      const ctrlWire: EditorWire = {
+        index: 5,
+        type: 'CONTROL',
+        label: 'gate_hi',
+        points: [
+          [20, 20],
+          [25, 20],
+        ],
+      };
+      const testState = {
+        ...initialState,
+        mode: 'probing' as const,
+        components: [],
+        wires: [ctrlWire],
+      };
+      const actions = {
+        ...({} as ReturnType<typeof import('../src/hooks/useEditor').useEditor>['actions']),
+        commitMove: vi.fn(),
+        addSignalToScope,
+      };
+      const { container } = render(<Sheet state={testState} dispatch={vi.fn()} actions={actions} />);
+      const wireHit = container.querySelector('polyline.wire-hit');
+      expect(wireHit).not.toBeNull();
+      fireEvent.mouseDown(wireHit!, { button: 0 });
+      expect(addSignalToScope).toHaveBeenCalledWith('gate_hi', 3);
+    });
+
+    it('clicking a non-branch coupler (K_coupler) does not add invalid I(K_coupler) probe', () => {
+      const addSignalToScope = vi.fn();
+      const coupler: EditorComponent = {
+        name: 'K_coupler',
+        type: 9,
+        family: 'LK',
+        position: [15, 15],
+        orientation: 503,
+        parameters: {},
+        inputLabels: [],
+        outputLabels: [],
+      };
+      const testState = {
+        ...initialState,
+        mode: 'probing' as const,
+        components: [coupler],
+        wires: [],
+      };
+      const actions = {
+        ...({} as ReturnType<typeof import('../src/hooks/useEditor').useEditor>['actions']),
+        commitMove: vi.fn(),
+        addSignalToScope,
+      };
+      const { container } = render(<Sheet state={testState} dispatch={vi.fn()} actions={actions} />);
+      const compGroup = container.querySelector('g.component[data-name="K_coupler"]');
+      expect(compGroup).not.toBeNull();
+      fireEvent.mouseDown(compGroup!, { button: 0 });
+      expect(addSignalToScope).not.toHaveBeenCalled();
+    });
   });
 });

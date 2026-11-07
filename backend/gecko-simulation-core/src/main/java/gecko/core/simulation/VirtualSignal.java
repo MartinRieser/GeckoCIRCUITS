@@ -143,6 +143,10 @@ public final class VirtualSignal {
         if (byNetlist >= 0) {
             return byNetlist;
         }
+        final int byPrim = netlist.indexOfElementName(name + " prim");
+        if (byPrim >= 0) {
+            return byPrim;
+        }
         if (model != null) {
             for (CircuitModel.ComponentData comp : model.getAllComponents()) {
                 if (name.equalsIgnoreCase(comp.getName())) {

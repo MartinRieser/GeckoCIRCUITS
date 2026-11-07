@@ -274,7 +274,7 @@ Galvanically isolated buck-boost topology using magnetically coupled inductors (
 ### Observed Waveforms (Oscilloscope)
 - **V(out)**: Isolated secondary DC output voltage (+15 V) (Graph 1).
 - **V(p_sw)**: Primary MOSFET drain-source voltage showing flyback spike and plateau (Graph 1).
-- **I(L_pri)**: Primary transformer winding magnetizing current (Graph 2).
+- **I(L_p)**: Primary transformer winding magnetizing current (Graph 2).
 <\markdownText>
 <\ElementSPECIAL>
 
@@ -282,15 +282,15 @@ tDURATION 0.005
 dt 2.0E-7
 solverType 0
 FileVersion 1
-dataContainerSignals[] /V(out)/V(p_sw)/I(L_pri)
+dataContainerSignals[] /V(out)/V(p_sw)/I(L_p)
 <graphRegisters>
 count 1
 <graphRegister>
 id osci_1
 name Osci 1
 numGraphs 2
-signals V(out),V(p_sw),I(L_pri)
-signalGraphs V(out):1,V(p_sw):1,I(L_pri):2
+signals V(out),V(p_sw),I(L_p)
+signalGraphs V(out):1,V(p_sw):1,I(L_p):2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false

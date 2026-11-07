@@ -439,24 +439,6 @@ idStringDialog VM_IN
 
 <\ElementCONTROL>
 
-c (2)
-<ElementCONTROL>
-labelAnfangsKnoten[]
-labelEndKnoten[] /v_sw
-enabledShorted 1
-parentSheetIdentifier 0
-typ 1001
-uniqueObjectIdentifier 2003
-x 6
-y 48
-parameter[] 
-parameterString[] //sw_node//0/0
-nameOpt[]
-orientierung 503
-idStringDialog VM_SW
-
-<\ElementCONTROL>
-
 c (3)
 <ElementCONTROL>
 labelAnfangsKnoten[] /pwm_gate
@@ -749,9 +731,9 @@ Synchronous-equivalent step-down buck converter stepping **50 V DC** down to **1
 - **CH2 (duty)**: Real-time control duty cycle demonstrating line disturbance rejection.
 
 ### Observed Waveforms (Oscilloscope)
-- **V(sw_node)**: High-speed pulsed switching node voltage (+24 V / 0 V) (Graph 1).
-- **V(out)**: Regulated DC output voltage (+12 V target) (Graph 1).
-- **V(in)**: DC bus input voltage (+24 V) (Graph 1).
+- **V(sw_node)**: High-speed pulsed switching node voltage (+50 V / 0 V) (Graph 1).
+- **V(out)**: Regulated DC output voltage (+10 V target) (Graph 1).
+- **V(in_tot)**: DC bus input voltage with AC ripple (Graph 1).
 - **duty**: Real-time closed-loop duty ratio from feedforward PI controller (Graph 2).
 <\markdownText>
 
@@ -800,7 +782,7 @@ ANSICHT_SHOW_CONTROL_PARAMETER true
 ANSICHT_SHOW_CONTROL_TEXTLINIE true
 FileVersion 175
 UniqueFileId 0
-dataContainerSignals[] /V(sw_node)/V(out)/V(in)/duty
+dataContainerSignals[] /V(sw_node)/V(out)/V(in_tot)/duty
 
 <graphRegisters>
 count 1
@@ -808,8 +790,8 @@ count 1
 id osci_1
 name Osci 1
 numGraphs 2
-signals V(sw_node),V(out),V(in),duty
-signalGraphs V(sw_node):1,V(out):1,V(in):1,duty:2
+signals V(sw_node),V(out),V(in_tot),duty
+signalGraphs V(sw_node):1,V(out):1,V(in_tot):1,duty:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
