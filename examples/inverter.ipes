@@ -62,7 +62,7 @@ enabled true
 connectorType 0
 <\Verbindung>
 
-verbindungControlANZAHL 7
+verbindungControlANZAHL 4
 verbindungCONTROL (0)
 <Verbindung>
 label pwm_a
@@ -95,33 +95,6 @@ verbindungCONTROL (3)
 label pwm_b
 x[] 10 10 10 10 10 11 12 13 14 15 16 17 18 18 18 18
 y[] 27 28 29 30 31 31 31 31 31 31 31 31 31 30 29 28
-enabled true
-connectorType 1
-<\Verbindung>
-
-verbindungCONTROL (4)
-<Verbindung>
-label v_ac
-x[] 36 37 38 39 40 40 40
-y[] 23 23 23 23 23 24 27
-enabled true
-connectorType 1
-<\Verbindung>
-
-verbindungCONTROL (5)
-<Verbindung>
-label v_ab
-x[] 36 37 38 39 39 40
-y[] 27 27 27 27 29 29
-enabled true
-connectorType 1
-<\Verbindung>
-
-verbindungCONTROL (6)
-<Verbindung>
-label i_load
-x[] 36 37 38 39 40
-y[] 31 31 31 31 31
 enabled true
 connectorType 1
 <\Verbindung>
@@ -368,7 +341,7 @@ orientierung 503
 idStringDialog R_load
 <\ElementLK>
 
-controlANZAHL 10
+controlANZAHL 9
 
 c (0)
 <ElementCONTROL>
@@ -544,27 +517,6 @@ coupledReferenceID[] 1010
 copyCoupledReferenceID[] 1010
 <\ElementCONTROL>
 
-c (9)
-<ElementCONTROL>
-labelAnfangsKnoten[] /v_ac/v_ab/i_load
-labelEndKnoten[] 
-enabledShorted 1
-typ 5
-uniqueObjectIdentifier 2010
-x 42
-y 27
-parameter[] 
-parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
-nameOpt[] null
-orientierung 503
-idStringDialog SCOPE.1
-<detail>
-tn 3
-isShowName false
-savedSignalNames[] /v_ac/v_ab/i_load
-<\detail>
-<\ElementCONTROL>
-
 sp (0)
 <ElementSPECIAL>
 labelAnfangsKnoten[] 
@@ -577,8 +529,8 @@ y 4
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 28
-boxHeight 18
+boxWidth 34
+boxHeight 26
 <markdownText>
 # Single-Phase H-Bridge Inverter (50 Hz)
 
@@ -590,10 +542,10 @@ Full-bridge DC-AC inverter converting **40 V DC** into **50 Hz sinusoidal AC** a
 - **LC Filter**: $L = 1.0\text{ mH}$, $C = 20\text{ µF}$ with corner frequency $f_c \approx 1.1\text{ kHz}$.
 - **AC Load**: $10.0\text{ }\Omega$ resistive load.
 
-### Observed Signals in SCOPE.1
+### Observed Signals in Oscilloscope (Osci 1)
 - **CH1 (v_ac)**: Filtered 50 Hz AC sinusoidal load voltage.
 - **CH2 (v_ab)**: Unfiltered two-level switching voltage (+40 V / -40 V) between bridge legs.
-- **CH3 (i_load)**: Sinusoidal load current through \`L_filter\`.
+- **CH3 (i_load)**: Sinusoidal load current through `L_filter`.
 <\markdownText>
 <\ElementSPECIAL>
 
@@ -602,3 +554,16 @@ dt 2.0E-6
 solverType 0
 FileVersion 1
 dataContainerSignals[] /v_ac/v_ab/i_load
+<graphRegisters>
+count 1
+<graphRegister>
+id osci_1
+name Osci 1
+numGraphs 2
+signals v_ac,v_ab,i_load
+signalGraphs v_ac:1,v_ab:1,i_load:2
+hiddenSignals 
+yScaleMode auto
+cursorsEnabled false
+<\graphRegister>
+<\graphRegisters>

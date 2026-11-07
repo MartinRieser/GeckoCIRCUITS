@@ -71,39 +71,12 @@ enabled true
 connectorType 0
 <\Verbindung>
 
-verbindungControlANZAHL 4
+verbindungControlANZAHL 1
 verbindungCONTROL (0)
 <Verbindung>
 label pwm
 x[] 10 11 12 13 14 
 y[] 16 16 16 16 16 
-enabled true
-connectorType 1
-<\Verbindung>
-
-verbindungCONTROL (1)
-<Verbindung>
-label v_in
-x[] 28 29 30 31 32 33 34 34
-y[] 16 16 16 16 16 16 16 20
-enabled true
-connectorType 1
-<\Verbindung>
-
-verbindungCONTROL (2)
-<Verbindung>
-label v_out
-x[] 28 29 30 31 32 33 33 34
-y[] 20 20 20 20 20 20 22 22
-enabled true
-connectorType 1
-<\Verbindung>
-
-verbindungCONTROL (3)
-<Verbindung>
-label i_L
-x[] 28 29 30 31 32 33 34
-y[] 24 24 24 24 24 24 24
 enabled true
 connectorType 1
 <\Verbindung>
@@ -229,7 +202,7 @@ orientierung 503
 idStringDialog R_load
 <\ElementLK>
 
-controlANZAHL 6
+controlANZAHL 5
 
 c (0)
 <ElementCONTROL>
@@ -325,27 +298,6 @@ coupledReferenceID[] 1002
 copyCoupledReferenceID[] 1002
 <\ElementCONTROL>
 
-c (5)
-<ElementCONTROL>
-labelAnfangsKnoten[] /v_in/v_out/i_L
-labelEndKnoten[] 
-enabledShorted 1
-typ 5
-uniqueObjectIdentifier 2006
-x 36
-y 20
-parameter[] 
-parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
-nameOpt[] null
-orientierung 503
-idStringDialog SCOPE.1
-<detail>
-tn 3
-isShowName false
-savedSignalNames[] /v_in/v_out/i_L
-<\detail>
-<\ElementCONTROL>
-
 sp (0)
 <ElementSPECIAL>
 labelAnfangsKnoten[] 
@@ -358,8 +310,8 @@ y 4
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 28
-boxHeight 18
+boxWidth 34
+boxHeight 26
 <markdownText>
 # DC-DC Boost Converter (Step-Up)
 
@@ -372,7 +324,7 @@ Step-up converter boosting **12 V DC** input to **24 V DC** output at a nominal 
 - **Output Capacitor C.1**: $100\text{ µF}$ reservoir filter maintaining steady 24 V DC.
 - **Load R_load**: $10.0\text{ }\Omega$ ($2.4\text{ A}$ nominal load).
 
-### Monitored Waveforms (SCOPE.1)
+### Monitored Waveforms (Oscilloscope / Osci 1)
 - **CH1 (v_in)**: 12.0 V DC input voltage.
 - **CH2 (v_out)**: Stepped-up 24.0 V DC output voltage.
 - **CH3 (i_L)**: Inductor charging/discharging triangular current ripple.
@@ -384,3 +336,16 @@ dt 2.0E-7
 solverType 0
 FileVersion 1
 dataContainerSignals[] /v_in/v_out/i_L
+<graphRegisters>
+count 1
+<graphRegister>
+id osci_1
+name Osci 1
+numGraphs 2
+signals v_in,v_out,i_L
+signalGraphs v_in:1,v_out:1,i_L:2
+hiddenSignals 
+yScaleMode auto
+cursorsEnabled false
+<\graphRegister>
+<\graphRegisters>

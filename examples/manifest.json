@@ -60,7 +60,7 @@
   "filename" : "rectifier.ipes"
 }, {
   "id" : "three-scopes",
-  "name" : "Multi-Scope RLC (SCOPE.1 & SCOPE.2)",
+  "name" : "Multi-Instrument RLC (Osci 1 & Osci 2)",
   "category" : "Analog & Filter",
   "description" : "Second-order series RLC resonator with multi-instrument oscilloscope monitoring.",
   "filename" : "three_scopes.ipes"

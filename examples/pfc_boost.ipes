@@ -281,7 +281,7 @@ orientierung 503
 idStringDialog R_load
 <\ElementLK>
 
-controlANZAHL 6
+controlANZAHL 5
 
 c (0)
 <ElementCONTROL>
@@ -350,7 +350,49 @@ anzXIN 2
 anzYOUT 1
 showName true
 <sourceCode>
-// =====================================================================
+// <graphRegisters>
+count 1
+<graphRegister>
+id osci_1
+name Osci 1
+numGraphs 2
+signals v_dc_meas,u_grid,i_l,pwm
+signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
+hiddenSignals 
+yScaleMode auto
+cursorsEnabled false
+<\graphRegister>
+<\graphRegisters>
+
+=======================<graphRegisters>
+count 1
+<graphRegister>
+id osci_1
+name Osci 1
+numGraphs 2
+signals v_dc_meas,u_grid,i_l,pwm
+signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
+hiddenSignals 
+yScaleMode auto
+cursorsEnabled false
+<\graphRegister>
+<\graphRegisters>
+
+=======================<graphRegisters>
+count 1
+<graphRegister>
+id osci_1
+name Osci 1
+numGraphs 2
+signals v_dc_meas,u_grid,i_l,pwm
+signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
+hiddenSignals 
+yScaleMode auto
+cursorsEnabled false
+<\graphRegister>
+<\graphRegisters>
+
+=======================
 //  Active-PFC boost control - runs once per simulation step (dt = 1 us)
 //
 //  Structure (average-current-mode PFC, textbook two-loop control):
@@ -364,7 +406,49 @@ showName true
 //  The rectified-sine template forces the mains current to follow the
 //  shape of the grid voltage, so the converter draws its current in
 //  phase with the mains (power factor near 1).
-// =====================================================================
+// <graphRegisters>
+count 1
+<graphRegister>
+id osci_1
+name Osci 1
+numGraphs 2
+signals v_dc_meas,u_grid,i_l,pwm
+signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
+hiddenSignals 
+yScaleMode auto
+cursorsEnabled false
+<\graphRegister>
+<\graphRegisters>
+
+=======================<graphRegisters>
+count 1
+<graphRegister>
+id osci_1
+name Osci 1
+numGraphs 2
+signals v_dc_meas,u_grid,i_l,pwm
+signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
+hiddenSignals 
+yScaleMode auto
+cursorsEnabled false
+<\graphRegister>
+<\graphRegisters>
+
+=======================<graphRegisters>
+count 1
+<graphRegister>
+id osci_1
+name Osci 1
+numGraphs 2
+signals v_dc_meas,u_grid,i_l,pwm
+signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
+hiddenSignals 
+yScaleMode auto
+cursorsEnabled false
+<\graphRegister>
+<\graphRegisters>
+
+=======================
 
 // ---- parameters ------------------------------------------------------
 double v_ref = 50.0;               // DC bus setpoint [V]
@@ -450,28 +534,7 @@ coupledReferenceID[] 1007
 copyCoupledReferenceID[] 1007
 <\ElementCONTROL>
 
-c (5)
-<ElementCONTROL>
-labelAnfangsKnoten[] /v_dc_meas/i_l/u_grid
-labelEndKnoten[]
-enabledShorted 1
-typ 5
-uniqueObjectIdentifier 2004
-x 38
-y 20
-parameter[]
-parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
-nameOpt[] null
-orientierung 503
-idStringDialog SCOPE.1
-<detail>
-tn 3
-isShowName false
-savedSignalNames[] /v_dc_meas/i_l/u_grid
-<\detail>
-<\ElementCONTROL>
-
-verbindungControlANZAHL 6
+verbindungControlANZAHL 3
 verbindungCONTROL (0)
 <Verbindung>
 label v_dc_meas
@@ -499,33 +562,6 @@ enabled true
 connectorType 1
 <\Verbindung>
 
-verbindungCONTROL (3)
-<Verbindung>
-label v_dc_meas
-x[] 13 13 13 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 36
-y[] 20 19 18 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 20
-enabled true
-connectorType 1
-<\Verbindung>
-
-verbindungCONTROL (4)
-<Verbindung>
-label i_l
-x[] 13 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 35 35 35 36
-y[] 24 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 25 24 23 22 22
-enabled true
-connectorType 1
-<\Verbindung>
-
-verbindungCONTROL (5)
-<Verbindung>
-label u_grid
-x[] 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 36 36 36 36
-y[] 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 27 26 25 24
-enabled true
-connectorType 1
-<\Verbindung>
-
 sp (0)
 <ElementSPECIAL>
 labelAnfangsKnoten[] 
@@ -538,8 +574,8 @@ y 4
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 28
-boxHeight 18
+boxWidth 34
+boxHeight 26
 <markdownText>
 # Active PFC Boost Pre-Regulator (50 Hz)
 
@@ -550,9 +586,9 @@ Power Factor Correction circuit shaping AC line current into a clean sinusoid in
 - **Two-Loop Cascaded Controller**:
   1. **Outer Voltage Loop**: Slow PI controller maintaining $50\text{ V DC}$ output across bulk capacitor.
   2. **Inner Current Loop**: Fast controller forcing inductor current to track rectified grid voltage shape $|\sin(\omega t)|$.
-- **Result**: Unity power factor ($\text{PF} > 0.99$) with minimal harmonic distortion (THD).
+- **Result**: Unity power factor ($	ext{PF} > 0.99$) with minimal harmonic distortion (THD).
 
-### Waveforms in SCOPE.1
+### Waveforms in Oscilloscope (Osci 1)
 - **CH1 (v_dc_meas)**: Regulated 50 V DC bus voltage.
 - **CH2 (i_l)**: High-frequency boost inductor current tracking sinusoidal envelope.
 - **CH3 (u_grid)**: 50 Hz AC grid voltage reference.

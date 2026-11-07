@@ -80,34 +80,7 @@ enabled true
 connectorType 0
 <\Verbindung>
 
-verbindungControlANZAHL 3
-verbindungCONTROL (0)
-<Verbindung>
-label v_ac
-x[] 16 17 18 19 20 21 22 22
-y[] 24 24 24 24 24 24 24 28
-enabled true
-connectorType 1
-<\Verbindung>
-
-verbindungCONTROL (1)
-<Verbindung>
-label v_dc
-x[] 16 17 18 19 20 21 21 22
-y[] 28 28 28 28 28 28 30 30
-enabled true
-connectorType 1
-<\Verbindung>
-
-verbindungCONTROL (2)
-<Verbindung>
-label i_load
-x[] 16 17 18 19 20 21 22
-y[] 32 32 32 32 32 32 32
-enabled true
-connectorType 1
-<\Verbindung>
-
+verbindungControlANZAHL 0
 elementANZAHL 7
 
 e (0)
@@ -266,7 +239,7 @@ orientierung 503
 idStringDialog R_load
 <\ElementLK>
 
-controlANZAHL 4
+controlANZAHL 3
 
 c (0)
 <ElementCONTROL>
@@ -318,27 +291,6 @@ coupledReferenceID[] 1007
 copyCoupledReferenceID[] 1007
 <\ElementCONTROL>
 
-c (3)
-<ElementCONTROL>
-labelAnfangsKnoten[] /v_ac/v_dc/i_load
-labelEndKnoten[] 
-enabledShorted 1
-typ 5
-uniqueObjectIdentifier 2004
-x 24
-y 28
-parameter[] 
-parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
-nameOpt[] null
-orientierung 503
-idStringDialog SCOPE.1
-<detail>
-tn 3
-isShowName false
-savedSignalNames[] /v_ac/v_dc/i_load
-<\detail>
-<\ElementCONTROL>
-
 sp (0)
 <ElementSPECIAL>
 labelAnfangsKnoten[] 
@@ -351,8 +303,8 @@ y 6
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 28
-boxHeight 18
+boxWidth 34
+boxHeight 26
 <markdownText>
 # Diode Bridge Rectifier (AC to DC)
 
@@ -364,10 +316,10 @@ Full-wave Graetz diode bridge converting **50 Hz AC mains** into a smoothed **DC
 - **Filter Capacitor C.1**: $470\text{ µF}$ reservoir smoothing the 100 Hz rectified voltage ripple.
 - **Load Resistor R_load**: $50\text{ }\Omega$ DC load drawing ~6 A nominal.
 
-### Monitored Waveforms (SCOPE.1)
+### Monitored Waveforms (Oscilloscope / Osci 1)
 - **CH1 (v_ac)**: 50 Hz sinusoidal AC mains voltage.
 - **CH2 (v_dc)**: Smoothed DC bus voltage with ripple $\Delta V_{dc} \approx \frac{I_{load}}{2 f C}$.
-- **CH3 (i_load)**: Continuous DC output current through \`R_load\`.
+- **CH3 (i_load)**: Continuous DC output current through `R_load`.
 <\markdownText>
 <\ElementSPECIAL>
 
@@ -376,3 +328,16 @@ dt 2.0E-6
 solverType 0
 FileVersion 1
 dataContainerSignals[] /v_ac/v_dc/i_load
+<graphRegisters>
+count 1
+<graphRegister>
+id osci_1
+name Osci 1
+numGraphs 2
+signals v_ac,v_dc,i_load
+signalGraphs v_ac:1,v_dc:1,i_load:2
+hiddenSignals 
+yScaleMode auto
+cursorsEnabled false
+<\graphRegister>
+<\graphRegisters>

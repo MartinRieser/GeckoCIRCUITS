@@ -841,8 +841,8 @@ signalGraphs v_sw:1,v_out:1,v_in:1,duty:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
+<\\graphRegister>
+<\\graphRegisters>
 
 =======================
  
@@ -1198,8 +1198,8 @@ signalGraphs v_in:1,v_out:1,i_L:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
+<\\graphRegister>
+<\\graphRegisters>
 `;
 
 export const RECTIFIER_CIRCUIT_IPES = `
@@ -1544,8 +1544,8 @@ signalGraphs v_ac:1,v_dc:1,i_load:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
+<\\graphRegister>
+<\\graphRegisters>
 `;
 
 export const THREE_SCOPES_RLC_IPES = `
@@ -1783,7 +1783,7 @@ signalGraphs v_in:1,v_out:1
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
-<\graphRegister>
+<\\graphRegister>
 <graphRegister>
 id osci_2
 name Osci 2
@@ -1793,8 +1793,8 @@ signalGraphs v_R1:1,v_L1:2,v_C1:3
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
+<\\graphRegister>
+<\\graphRegisters>
 `;
 
 export const RLC_CIRCUIT_IPES = `
@@ -2004,8 +2004,8 @@ signalGraphs v_in:1,v_out:1,i_L:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
+<\\graphRegister>
+<\\graphRegisters>
 `;
 
 export const RC_FILTER_IPES = `
@@ -2171,8 +2171,8 @@ signalGraphs v_in:1,v_out:1
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
+<\\graphRegister>
+<\\graphRegisters>
 `;
 
 
@@ -2560,8 +2560,8 @@ signalGraphs v_out:1,v_sw:1,i_L:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
+<\\graphRegister>
+<\\graphRegisters>
 `;
 
 export const BUCK_BOOST_IPES = `
@@ -2877,8 +2877,8 @@ signalGraphs v_in:1,v_out:1,i_L:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
+<\\graphRegister>
+<\\graphRegisters>
 `;
 
 export const INVERTER_IPES = `
@@ -3449,8 +3449,8 @@ signalGraphs v_ac:1,v_ab:1,i_load:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
+<\\graphRegister>
+<\\graphRegisters>
 `;
 
 export const FLYBACK_IPES = `
@@ -3777,8 +3777,8 @@ signalGraphs v_out:1,v_sw:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
+<\\graphRegister>
+<\\graphRegisters>
 `;
 
 export const CLOSED_LOOP_BUCK_IPES = `
@@ -4079,8 +4079,8 @@ signalGraphs v_out_scope:1,pwm:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
+<\\graphRegister>
+<\\graphRegisters>
 `;
 
 export const PFC_BOOST_IPES = `
@@ -4447,8 +4447,8 @@ signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
+<\\graphRegister>
+<\\graphRegisters>
 
 =======================<graphRegisters>
 count 1
@@ -4461,8 +4461,8 @@ signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
+<\\graphRegister>
+<\\graphRegisters>
 
 =======================<graphRegisters>
 count 1
@@ -4475,8 +4475,8 @@ signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
+<\\graphRegister>
+<\\graphRegisters>
 
 =======================
 //  Active-PFC boost control - runs once per simulation step (dt = 1 us)
@@ -4503,8 +4503,8 @@ signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
+<\\graphRegister>
+<\\graphRegisters>
 
 =======================<graphRegisters>
 count 1
@@ -4517,8 +4517,8 @@ signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
+<\\graphRegister>
+<\\graphRegisters>
 
 =======================<graphRegisters>
 count 1
@@ -4531,8 +4531,8 @@ signalGraphs v_dc_meas:1,u_grid:1,i_l:2,pwm:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
+<\\graphRegister>
+<\\graphRegisters>
 
 =======================
 
@@ -5387,8 +5387,8 @@ signalGraphs v_ref:1,v_meas:1,v_err:2,gate_hi:3,gate_lo:3
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
-<\graphRegister>
-<\graphRegisters>
+<\\graphRegister>
+<\\graphRegisters>
 `;
 
 
@@ -5467,7 +5467,7 @@ export const EXAMPLES: CircuitExample[] = [
   },
   {
     id: 'three-scopes',
-    name: 'Multi-Scope RLC (SCOPE.1 & SCOPE.2)',
+    name: 'Multi-Instrument RLC (Osci 1 & Osci 2)',
     category: 'Analog & Filter',
     description: 'Second-order series RLC resonator with multi-instrument oscilloscope monitoring.',
     content: THREE_SCOPES_RLC_IPES,

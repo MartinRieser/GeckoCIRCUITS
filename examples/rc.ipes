@@ -26,25 +26,7 @@ enabled true
 connectorType 0
 <\Verbindung>
 
-verbindungControlANZAHL 2
-verbindungCONTROL (0)
-<Verbindung>
-label v_in
-x[] 14 15 16 17 18 18
-y[] 16 16 16 16 16 18
-enabled true
-connectorType 1
-<\Verbindung>
-
-verbindungCONTROL (1)
-<Verbindung>
-label v_out
-x[] 14 15 16 17 18
-y[] 20 20 20 20 20
-enabled true
-connectorType 1
-<\Verbindung>
-
+verbindungControlANZAHL 0
 elementANZAHL 3
 
 e (0)
@@ -95,7 +77,7 @@ orientierung 503
 idStringDialog C1
 <\ElementLK>
 
-controlANZAHL 3
+controlANZAHL 2
 
 c (0)
 <ElementCONTROL>
@@ -129,27 +111,6 @@ orientierung 503
 idStringDialog VOLT_OUT
 <\ElementCONTROL>
 
-c (2)
-<ElementCONTROL>
-labelAnfangsKnoten[] /v_in/v_out
-labelEndKnoten[] 
-enabledShorted 1
-typ 5
-uniqueObjectIdentifier 2003
-x 20
-y 18
-parameter[] 
-parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
-nameOpt[] null
-orientierung 503
-idStringDialog SCOPE.1
-<detail>
-tn 2
-isShowName false
-savedSignalNames[] /v_in/v_out
-<\detail>
-<\ElementCONTROL>
-
 sp (0)
 <ElementSPECIAL>
 labelAnfangsKnoten[] 
@@ -162,8 +123,8 @@ y 6
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 28
-boxHeight 18
+boxWidth 34
+boxHeight 26
 <markdownText>
 # RC Low-Pass Filter
 
@@ -176,7 +137,7 @@ First-order passive RC filter demonstrating step response and exponential capaci
 - **Time Constant**: $\tau = R \cdot C = 1.0\text{ ms}$.
 - **Cutoff Frequency**: $f_c = \frac{1}{2\pi R C} \approx 159.2\text{ Hz}$.
 
-### Observed Response (SCOPE.1)
+### Observed Response in Oscilloscope (Osci 1)
 - **CH1 (v_in)**: Instantaneous 10 V step voltage.
 - **CH2 (v_out)**: Classic capacitor exponential charging: $v_C(t) = V_{in}(1 - e^{-t/\tau})$.
 - At $t = \tau = 1.0\text{ ms}$, $v_C \approx 6.32\text{ V}$ ($63.2\%$ of final value).
@@ -188,3 +149,16 @@ dt 1e-06
 solverType 0
 FileVersion 1
 dataContainerSignals[] /v_in/v_out
+<graphRegisters>
+count 1
+<graphRegister>
+id osci_1
+name Osci 1
+numGraphs 1
+signals v_in,v_out
+signalGraphs v_in:1,v_out:1
+hiddenSignals 
+yScaleMode auto
+cursorsEnabled false
+<\graphRegister>
+<\graphRegisters>

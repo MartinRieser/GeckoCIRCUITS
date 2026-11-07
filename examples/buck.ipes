@@ -148,16 +148,6 @@ parentSheetIdentifier 0
 connectorType 1
 <\Verbindung>
 
-verbindungCONTROL (15)
-<Verbindung>
-label NIX_NIX_NIX
-x[] 8 14 
-y[] 48 48 
-enabledShorted 1
-parentSheetIdentifier 0
-connectorType 1
-<\Verbindung>
-
 verbindungLK (16)
 <Verbindung>
 label in_dc
@@ -412,7 +402,7 @@ idStringDialog GND
 
 <\ElementLK>
 
-c (35)
+c (0)
 <ElementCONTROL>
 labelAnfangsKnoten[]
 labelEndKnoten[] /v_out
@@ -431,7 +421,7 @@ idStringDialog VM_OUT
 
 <\ElementCONTROL>
 
-c (36)
+c (1)
 <ElementCONTROL>
 labelAnfangsKnoten[]
 labelEndKnoten[] /v_in
@@ -449,7 +439,7 @@ idStringDialog VM_IN
 
 <\ElementCONTROL>
 
-c (37)
+c (2)
 <ElementCONTROL>
 labelAnfangsKnoten[]
 labelEndKnoten[] /v_sw
@@ -467,7 +457,7 @@ idStringDialog VM_SW
 
 <\ElementCONTROL>
 
-c (38)
+c (3)
 <ElementCONTROL>
 labelAnfangsKnoten[] /pwm_gate
 labelEndKnoten[]
@@ -486,7 +476,7 @@ idStringDialog GATE_SW1
 
 <\ElementCONTROL>
 
-c (39)
+c (4)
 <ElementCONTROL>
 labelAnfangsKnoten[]
 labelEndKnoten[]
@@ -504,7 +494,7 @@ idStringDialog SH_ADC
 
 <\ElementCONTROL>
 
-c (40)
+c (5)
 <ElementCONTROL>
 labelAnfangsKnoten[]
 labelEndKnoten[]
@@ -522,7 +512,7 @@ idStringDialog CLK_FB
 
 <\ElementCONTROL>
 
-c (41)
+c (6)
 <ElementCONTROL>
 labelAnfangsKnoten[]
 labelEndKnoten[]
@@ -540,7 +530,7 @@ idStringDialog V_REF
 
 <\ElementCONTROL>
 
-c (42)
+c (7)
 <ElementCONTROL>
 labelAnfangsKnoten[]
 labelEndKnoten[]
@@ -558,7 +548,7 @@ idStringDialog SUB_ERR
 
 <\ElementCONTROL>
 
-c (43)
+c (8)
 <ElementCONTROL>
 labelAnfangsKnoten[]
 labelEndKnoten[]
@@ -576,7 +566,7 @@ idStringDialog PI_REG
 
 <\ElementCONTROL>
 
-c (44)
+c (9)
 <ElementCONTROL>
 labelAnfangsKnoten[]
 labelEndKnoten[]
@@ -594,7 +584,7 @@ idStringDialog ADD_FF
 
 <\ElementCONTROL>
 
-c (45)
+c (10)
 <ElementCONTROL>
 labelAnfangsKnoten[]
 labelEndKnoten[] /duty
@@ -612,7 +602,7 @@ idStringDialog LIMIT
 
 <\ElementCONTROL>
 
-c (46)
+c (11)
 <ElementCONTROL>
 labelAnfangsKnoten[]
 labelEndKnoten[]
@@ -630,7 +620,7 @@ idStringDialog TRI
 
 <\ElementCONTROL>
 
-c (47)
+c (12)
 <ElementCONTROL>
 labelAnfangsKnoten[]
 labelEndKnoten[]
@@ -648,7 +638,7 @@ idStringDialog CMP
 
 <\ElementCONTROL>
 
-c (48)
+c (13)
 <ElementCONTROL>
 labelAnfangsKnoten[]
 labelEndKnoten[]
@@ -666,7 +656,7 @@ idStringDialog SH_VIN
 
 <\ElementCONTROL>
 
-c (49)
+c (14)
 <ElementCONTROL>
 labelAnfangsKnoten[]
 labelEndKnoten[]
@@ -684,7 +674,7 @@ idStringDialog CLK_FF
 
 <\ElementCONTROL>
 
-c (50)
+c (15)
 <ElementCONTROL>
 labelAnfangsKnoten[]
 labelEndKnoten[]
@@ -702,7 +692,7 @@ idStringDialog V_REF_FF
 
 <\ElementCONTROL>
 
-c (51)
+c (16)
 <ElementCONTROL>
 labelAnfangsKnoten[]
 labelEndKnoten[]
@@ -717,28 +707,6 @@ parameterString[]
 nameOpt[]
 orientierung 503
 idStringDialog DIV_FF
-
-<\ElementCONTROL>
-
-c (52)
-<ElementCONTROL>
-labelAnfangsKnoten[] /v_sw
-labelEndKnoten[]
-enabledShorted 1
-parentSheetIdentifier 0
-typ 1003
-uniqueObjectIdentifier 2018
-x 16
-y 48
-parameter[] 0.0 
-parameterString[]
-nameOpt[]
-orientierung 503
-idStringDialog SCOPE
-<scopeSettings>
-scopeLayout 2-graphs
-signalGraphs /v_sw:1,/v_out:1,/v_in:1,/duty:2
-<\scopeSettings>
 
 <\ElementCONTROL>
 
@@ -758,13 +726,27 @@ nameOpt[]
 orientierung 503
 idStringDialog INFO
 boxWidth 34
-boxHeight 12
+boxHeight 24
 <markdownText>
-## 50 V -> 10 V buck, sampled control
-- Input 50 V DC + 5 V / 50 Hz
-- Control sampled at 2 kHz (0.5 ms)
-- Feed-forward D = Vref/Vin + PI trim
-- 20 kHz triangle PWM, no script blocks
+# DC-DC Buck Converter with Sampled Control (50V to 10V)
+
+Synchronous-equivalent step-down buck converter stepping **50 V DC** down to **10 V DC** with discrete 2 kHz sampled feedback and feedforward compensation.
+
+### Power Stage & Filter Architecture
+- **Input Supply**: 50 V DC nominal supply with 5 V / 50 Hz AC line ripple.
+- **Switching Stage**: 20 kHz PWM gate control driving main switch `SW1`.
+- **Inductor L1**: $200\text{ µH}$ energy storage choke.
+- **Output Capacitor C1**: $100\text{ µF}$ smoothing capacitor with $2.0\text{ }\Omega$ resistive load (5 A nominal).
+
+### Discrete Sampled Control Loop
+1. **Feedback ADC**: `SH_ADC` samples load voltage at 2 kHz ($T_s = 0.5\text{ ms}$).
+2. **Regulation**: `SUB_ERR` subtracts from `V_REF` (10 V) into `PI_REG` controller.
+3. **Feedforward**: `DIV_FF` computes $D_{ff} = V_{ref} / V_{in}$ from sampled input `SH_VIN`.
+4. **Modulation**: `ADD_FF` sums feedforward and PI trim into 20 kHz carrier `CMP`.
+
+### Monitored Waveforms (Oscilloscope / Osci 1)
+- **CH1 (v_sw, v_out, v_in)**: Switching node voltage, regulated 10 V output, and ripple-bearing input bus.
+- **CH2 (duty)**: Real-time control duty cycle demonstrating line disturbance rejection.
 <\markdownText>
 
 <\ElementSPECIAL>
@@ -815,5 +797,19 @@ ANSICHT_SHOW_CONTROL_TEXTLINIE true
 FileVersion 175
 UniqueFileId 0
 dataContainerSignals[] /v_sw/v_out/v_in/duty
+
+<graphRegisters>
+count 1
+<graphRegister>
+id osci_1
+name Osci 1
+numGraphs 2
+signals v_sw,v_out,v_in,duty
+signalGraphs v_sw:1,v_out:1,v_in:1,duty:2
+hiddenSignals 
+yScaleMode auto
+cursorsEnabled false
+<\graphRegister>
+<\graphRegisters>
 
 =======================

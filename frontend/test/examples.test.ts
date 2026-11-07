@@ -137,5 +137,63 @@ describe('Circuit Examples (.ipes templates)', () => {
       }
     }
   });
+
+  it('contains no deprecated physical SCOPE components and includes modern graphRegisters across all examples', () => {
+    for (const ex of EXAMPLES) {
+      // Must not contain physical SCOPE element blocks
+      expect(ex.content).not.toMatch(/idStringDialog\s+SCOPE/i);
+      expect(ex.content).not.toMatch(/typ\s+5[\s\S]*?idStringDialog\s+SCOPE/i);
+      // Markdown notes should refer to Oscilloscope / Osci, not legacy SCOPE.1
+      expect(ex.content).not.toMatch(/SCOPE\.\d/);
+      // Must have modern graphRegisters
+      expect(ex.content).toContain('<graphRegisters>');
+      expect(ex.content).toContain('<\\graphRegisters>');
+    }
+  });
+
+  it('ensures all note cards have adequate dimensions for documentation readability', () => {
+    for (const ex of EXAMPLES) {
+      const noteMatches = ex.content.matchAll(/idStringDialog\s+NOTE\.\d+[\s\S]*?boxWidth\s+(\d+)[\s\S]*?boxHeight\s+(\d+)/g);
+      for (const m of noteMatches) {
+        const width = parseInt(m[1], 10);
+        const height = parseInt(m[2], 10);
+        expect(width, `Note width too small in '${ex.id}': ${width}`).toBeGreaterThanOrEqual(30);
+        expect(height, `Note height too small in '${ex.id}': ${height}`).toBeGreaterThanOrEqual(20);
+      }
+    }
+  });
+
+  it('synchronizes all example circuits exactly with disk examples/*.ipes and manifest.json', async () => {
+    // Dynamically access fs/path in Vitest Node test runner
+    // @ts-expect-error node fs dynamic import in Vitest environment
+    const fs = await import(/* @vite-ignore */ 'node:fs');
+    // @ts-expect-error node path dynamic import in Vitest environment
+    const path = await import(/* @vite-ignore */ 'node:path');
+
+    const cwd = (globalThis as unknown as { process?: { cwd: () => string } }).process?.cwd() ?? '.';
+    const examplesDir = path.resolve(cwd, '../examples');
+    const manifestPath = path.join(examplesDir, 'manifest.json');
+    if (!fs.existsSync(manifestPath)) {
+      return; // Skip if run in standalone bundle without root repo
+    }
+
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    expect(manifest.length).toBe(EXAMPLES.length);
+
+    for (const item of manifest) {
+      const ex = EXAMPLES.find((e: { id: string }) => e.id === item.id);
+      expect(ex, `Manifest id '${item.id}' missing in EXAMPLES registry`).toBeDefined();
+      expect(ex?.name).toBe(item.name);
+
+      const filePath = path.join(examplesDir, item.filename);
+      expect(fs.existsSync(filePath), `Example file '${item.filename}' does not exist on disk`).toBe(true);
+
+      const diskContent = fs.readFileSync(filePath, 'utf8');
+      expect(diskContent).not.toMatch(/idStringDialog\s+SCOPE/i);
+      expect(diskContent).not.toMatch(/SCOPE\.\d/);
+      expect(diskContent.trim()).toBe(ex!.content.trim());
+    }
+  });
 });
+
 

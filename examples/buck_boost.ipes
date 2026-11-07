@@ -35,39 +35,12 @@ enabled true
 connectorType 0
 <\Verbindung>
 
-verbindungControlANZAHL 4
+verbindungControlANZAHL 1
 verbindungCONTROL (0)
 <Verbindung>
 label pwm
 x[] 10 11 12 13 14 
 y[] 16 16 16 16 16 
-enabled true
-connectorType 1
-<\Verbindung>
-
-verbindungCONTROL (1)
-<Verbindung>
-label v_in
-x[] 28 29 30 31 32 33 34 34
-y[] 16 16 16 16 16 16 16 20
-enabled true
-connectorType 1
-<\Verbindung>
-
-verbindungCONTROL (2)
-<Verbindung>
-label v_out
-x[] 28 29 30 31 32 33 33 34
-y[] 20 20 20 20 20 20 22 22
-enabled true
-connectorType 1
-<\Verbindung>
-
-verbindungCONTROL (3)
-<Verbindung>
-label i_L
-x[] 28 29 30 31 32 33 34
-y[] 24 24 24 24 24 24 24
 enabled true
 connectorType 1
 <\Verbindung>
@@ -193,7 +166,7 @@ orientierung 503
 idStringDialog R_load
 <\ElementLK>
 
-controlANZAHL 6
+controlANZAHL 5
 
 c (0)
 <ElementCONTROL>
@@ -289,27 +262,6 @@ coupledReferenceID[] 1003
 copyCoupledReferenceID[] 1003
 <\ElementCONTROL>
 
-c (5)
-<ElementCONTROL>
-labelAnfangsKnoten[] /v_in/v_out/i_L
-labelEndKnoten[] 
-enabledShorted 1
-typ 5
-uniqueObjectIdentifier 2006
-x 36
-y 20
-parameter[] 
-parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
-nameOpt[] null
-orientierung 503
-idStringDialog SCOPE.1
-<detail>
-tn 3
-isShowName false
-savedSignalNames[] /v_in/v_out/i_L
-<\detail>
-<\ElementCONTROL>
-
 sp (0)
 <ElementSPECIAL>
 labelAnfangsKnoten[] 
@@ -322,21 +274,20 @@ y 4
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 28
-boxHeight 18
+boxWidth 34
+boxHeight 26
 <markdownText>
 # Inverting Buck-Boost Converter (-16V)
 
-Negative-voltage step-up/step-down converter producing **-16 V DC** from a **+24 V DC** input.
+Non-isolated inverting DC-DC topology producing negative output from positive **24 V DC** input at $D = 0.40$.
 
-### Operating Principles
-- **Voltage Transfer Ratio**: $V_{out} = -V_{in} \frac{D}{1 - D} = -24\text{ V} \cdot \frac{0.40}{0.60} = -16.0\text{ V}$.
-- **Switch S.1**: Closed during interval $D T$, energizing inductor \`L.1\` from \`V_in\`.
-- **Diode D.1**: Forward-biased during $(1-D) T$, discharging \`L.1\` into \`C.1\` and \`R_load\` with reversed polarity.
+### Circuit Dynamics
+- **Switch Interval ($D \cdot T$)**: Main switch `S.1` conducts; inductor `L.1` charges from +24 V rail while diode `D.1` is reverse-biased.
+- **Discharge Interval ($(1-D) T$)**: Diode `D.1` becomes forward-biased, discharging `L.1` into `C.1` and `R_load` with reversed polarity.
 - **Filter (L.1, C.1)**: $L_1 = 200\text{ µH}$, $C_1 = 100\text{ µF}$.
 - **Load R_load**: $10.0\text{ }\Omega$ carrying $-1.6\text{ A}$ load current.
 
-### Monitored Waveforms (SCOPE.1)
+### Monitored Waveforms (Oscilloscope / Osci 1)
 - **CH1 (v_in)**: +24.0 V input rail.
 - **CH2 (v_out)**: Inverted -16.0 V steady-state output.
 - **CH3 (i_L)**: Inductor triangular energy ramp.
@@ -348,3 +299,16 @@ dt 2.0E-7
 solverType 0
 FileVersion 1
 dataContainerSignals[] /v_in/v_out/i_L
+<graphRegisters>
+count 1
+<graphRegister>
+id osci_1
+name Osci 1
+numGraphs 2
+signals v_in,v_out,i_L
+signalGraphs v_in:1,v_out:1,i_L:2
+hiddenSignals 
+yScaleMode auto
+cursorsEnabled false
+<\graphRegister>
+<\graphRegisters>

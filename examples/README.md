@@ -16,7 +16,7 @@ using **File → Open Example...**.
 | [`inverter.ipes`](./inverter.ipes) | Power Electronics | **Single-Phase H-Bridge Inverter (50 Hz)** | Full-bridge DC-AC inverter converting 40V DC bus into 50 Hz sinusoidal AC. |
 | [`pfc_boost.ipes`](./pfc_boost.ipes) | Power Electronics | **Active PFC Boost Pre-Regulator (50 Hz)** | Active Power Factor Correction converter regulating 24V AC to 50V DC bus. |
 | [`rectifier.ipes`](./rectifier.ipes) | Power Electronics | **Diode Bridge Rectifier (AC to DC)** | Full-bridge Graetz diode rectifier with capacitive reservoir smoothing filter. |
-| [`three_scopes.ipes`](./three_scopes.ipes) | Analog & Filter | **Multi-Scope RLC (SCOPE.1 & SCOPE.2)** | Second-order series RLC resonator with multi-instrument oscilloscope monitoring. |
+| [`three_scopes.ipes`](./three_scopes.ipes) | Analog & Filter | **Multi-Instrument RLC (Osci 1 & Osci 2)** | Second-order series RLC resonator with multi-instrument oscilloscope monitoring. |
 | [`rlc.ipes`](./rlc.ipes) | Analog & Filter | **RLC Resonant Circuit** | Underdamped second-order series RLC transient step response. |
 | [`rc.ipes`](./rc.ipes) | Analog & Filter | **RC Low-Pass Filter** | First-order RC filter demonstrating step response and exponential charging. |
 

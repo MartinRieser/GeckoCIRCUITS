@@ -659,22 +659,22 @@ y 4
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 28
-boxHeight 18
+boxWidth 34
+boxHeight 26
 <markdownText>
 # Closed-Loop SPWM Inverter with Dead-Time (50 Hz)
 
 Sinusoidal PWM (SPWM) full-bridge inverter converting **40 V DC** into **50 Hz AC** with closed-loop voltage regulation and hardware dead-time protection.
 
 ### Control Pipeline Architecture
-1. **Reference & Feedback**: \`V_REF\` generates a 50 Hz sinusoidal reference (20 V pk). \`VOLT_LOAD\` samples load voltage.
-2. **Error & Regulation**: \`CTRL_SUB\` computes error $(v_{ref} - v_{meas})$, fed to \`CTRL_PI\` ($K_p=0.45, T_i=2\text{ ms}$) and \`CTRL_LIM\` clamped to $[-1, 1]$.
-3. **Modulation**: \`CTRL_CMP\` compares modulation signal with 10 kHz triangle carrier \`V_CARRIER\`.
-4. **Shoot-Through Protection**: \`CTRL_DEADTIME\` inserts **1.0 µs dead-time** between complementary gate drives (\`gate_hi\` and \`gate_lo\`).
+1. **Reference & Feedback**: `V_REF` generates a 50 Hz sinusoidal reference (20 V pk). `VOLT_AC` samples load voltage.
+2. **Error & Regulation**: `CTRL_SUB` computes error $(v_{ref} - v_{meas})$, fed to `CTRL_PI` ($K_p=0.45, T_i=2\text{ ms}$) and `CTRL_LIM` clamped to $[-1, 1]$.
+3. **Modulation**: `CTRL_CMP` compares modulation signal with 10 kHz triangle carrier `V_CARRIER`.
+4. **Shoot-Through Protection**: `CTRL_DEADTIME` inserts **1.0 µs dead-time** between complementary gate drives (`gate_hi` and `gate_lo`).
 
-### Key Waveforms in SCOPE.1
-- **CH1 (v_ref)**: 50 Hz reference wave.
-- **CH2 (v_meas)**: Filtered AC output voltage.
+### Key Waveforms in Oscilloscope (Osci 1)
+- **CH1 (v_ref, v_meas)**: 50 Hz reference wave and filtered AC output voltage.
+- **CH2 (v_err)**: Dynamic regulation error.
 - **CH3 (gate_hi / gate_lo)**: Non-overlapping gate drives preventing DC bus cross-conduction.
 <\markdownText>
 <\ElementSPECIAL>
@@ -684,3 +684,16 @@ dt 1.0E-6
 solverType 0
 FileVersion 1
 dataContainerSignals[] /v_ref/v_meas/v_err/gate_hi/gate_lo
+<graphRegisters>
+count 1
+<graphRegister>
+id osci_1
+name Osci 1
+numGraphs 3
+signals v_ref,v_meas,v_err,gate_hi,gate_lo
+signalGraphs v_ref:1,v_meas:1,v_err:2,gate_hi:3,gate_lo:3
+hiddenSignals 
+yScaleMode auto
+cursorsEnabled false
+<\graphRegister>
+<\graphRegisters>

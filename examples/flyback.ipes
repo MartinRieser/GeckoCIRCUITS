@@ -44,30 +44,12 @@ enabled true
 connectorType 0
 <\Verbindung>
 
-verbindungControlANZAHL 3
+verbindungControlANZAHL 1
 verbindungCONTROL (0)
 <Verbindung>
 label pwm
 x[] 10 11 12 
 y[] 16 16 16 
-enabled true
-connectorType 1
-<\Verbindung>
-
-verbindungCONTROL (1)
-<Verbindung>
-label v_out
-x[] 28 29 30 31 32 33 34 34
-y[] 16 16 16 16 16 16 16 18
-enabled true
-connectorType 1
-<\Verbindung>
-
-verbindungCONTROL (2)
-<Verbindung>
-label v_sw
-x[] 28 29 30 31 32 33 34
-y[] 20 20 20 20 20 20 20
 enabled true
 connectorType 1
 <\Verbindung>
@@ -214,7 +196,7 @@ orientierung 503
 idStringDialog R_load
 <\ElementLK>
 
-controlANZAHL 5
+controlANZAHL 4
 
 c (0)
 <ElementCONTROL>
@@ -292,27 +274,6 @@ orientierung 503
 idStringDialog VOLT_SW
 <\ElementCONTROL>
 
-c (4)
-<ElementCONTROL>
-labelAnfangsKnoten[] /v_out/v_sw
-labelEndKnoten[] 
-enabledShorted 1
-typ 5
-uniqueObjectIdentifier 2005
-x 36
-y 18
-parameter[] 
-parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
-nameOpt[] null
-orientierung 503
-idStringDialog SCOPE.1
-<detail>
-tn 2
-isShowName false
-savedSignalNames[] /v_out/v_sw
-<\detail>
-<\ElementCONTROL>
-
 sp (0)
 <ElementSPECIAL>
 labelAnfangsKnoten[] 
@@ -325,8 +286,8 @@ y 4
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 28
-boxHeight 18
+boxWidth 34
+boxHeight 26
 <markdownText>
 # Flyback Isolated DC-DC Converter
 
@@ -338,7 +299,7 @@ Galvanically isolated buck-boost topology using magnetically coupled inductors (
 - **Secondary Diode D.1**: Conduction occurs only when primary switch S.1 turns OFF, dumping stored magnetic flux into output capacitor $C_1 = 100\text{ µF}$.
 - **Load R_load**: $10.0\text{ }\Omega$ isolated load.
 
-### Recorded Signals in SCOPE.1
+### Recorded Signals in Oscilloscope (Osci 1)
 - **CH1 (v_out)**: Isolated DC output voltage.
 - **CH2 (v_sw)**: Primary switch drain node displaying flyback inductive voltage spike.
 <\markdownText>
@@ -349,3 +310,16 @@ dt 2.0E-7
 solverType 0
 FileVersion 1
 dataContainerSignals[] /v_out/v_sw
+<graphRegisters>
+count 1
+<graphRegister>
+id osci_1
+name Osci 1
+numGraphs 2
+signals v_out,v_sw
+signalGraphs v_out:1,v_sw:2
+hiddenSignals 
+yScaleMode auto
+cursorsEnabled false
+<\graphRegister>
+<\graphRegisters>

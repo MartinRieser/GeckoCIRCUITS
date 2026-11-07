@@ -35,34 +35,7 @@ enabled true
 connectorType 0
 <\Verbindung>
 
-verbindungControlANZAHL 3
-verbindungCONTROL (0)
-<Verbindung>
-label v_in
-x[] 16 17 18 19 20 21 22 22
-y[] 16 16 16 16 16 16 16 20
-enabled true
-connectorType 1
-<\Verbindung>
-
-verbindungCONTROL (1)
-<Verbindung>
-label v_out
-x[] 16 17 18 19 20 21 21 22
-y[] 20 20 20 20 20 20 22 22
-enabled true
-connectorType 1
-<\Verbindung>
-
-verbindungCONTROL (2)
-<Verbindung>
-label i_L
-x[] 16 17 18 19 20 21 22
-y[] 24 24 24 24 24 24 24
-enabled true
-connectorType 1
-<\Verbindung>
-
+verbindungControlANZAHL 0
 elementANZAHL 4
 
 e (0)
@@ -129,7 +102,7 @@ orientierung 503
 idStringDialog C1
 <\ElementLK>
 
-controlANZAHL 4
+controlANZAHL 3
 
 c (0)
 <ElementCONTROL>
@@ -181,27 +154,6 @@ coupledReferenceID[] 1003
 copyCoupledReferenceID[] 1003
 <\ElementCONTROL>
 
-c (3)
-<ElementCONTROL>
-labelAnfangsKnoten[] /v_in/v_out/i_L
-labelEndKnoten[] 
-enabledShorted 1
-typ 5
-uniqueObjectIdentifier 2004
-x 24
-y 20
-parameter[] 
-parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
-nameOpt[] null
-orientierung 503
-idStringDialog SCOPE.1
-<detail>
-tn 3
-isShowName false
-savedSignalNames[] /v_in/v_out/i_L
-<\detail>
-<\ElementCONTROL>
-
 sp (0)
 <ElementSPECIAL>
 labelAnfangsKnoten[] 
@@ -214,8 +166,8 @@ y 6
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 26
-boxHeight 18
+boxWidth 34
+boxHeight 26
 <markdownText>
 # RLC Resonant Circuit
 
@@ -229,10 +181,10 @@ Second-order series RLC resonator demonstrating underdamped transient step respo
 - **Damping Factor**: $\zeta = \frac{R}{2}\sqrt{\frac{C}{L}} \approx 0.10$ (strongly underdamped).
 - **Ringing Frequency**: $f_d \approx 1.58\text{ kHz}$.
 
-### Signals Tracked in SCOPE.1
+### Signals Tracked in Oscilloscope (Osci 1)
 - **CH1 (v_in)**: 24 V step stimulus.
-- **CH2 (v_out)**: Underdamped ringing voltage across \`C.1\` with ~73% overshoot.
-- **CH3 (i_L)**: Resonant tank current flowing through \`L.1\`.
+- **CH2 (v_out)**: Underdamped ringing voltage across `C.1` with ~73% overshoot.
+- **CH3 (i_L)**: Resonant tank current flowing through `L.1`.
 <\markdownText>
 <\ElementSPECIAL>
 
@@ -241,3 +193,16 @@ dt 1e-06
 solverType 0
 FileVersion 1
 dataContainerSignals[] /v_in/v_out/i_L
+<graphRegisters>
+count 1
+<graphRegister>
+id osci_1
+name Osci 1
+numGraphs 2
+signals v_in,v_out,i_L
+signalGraphs v_in:1,v_out:1,i_L:2
+hiddenSignals 
+yScaleMode auto
+cursorsEnabled false
+<\graphRegister>
+<\graphRegisters>
