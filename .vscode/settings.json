@@ -15,15 +15,7 @@
     // Project settings
     "java.compliance": "25",
     "java.autobuild.enabled": true,
-
-    // Project paths
-    "java.project.sourcePaths": [
-        "src/main/java"
-    ],
-    "java.project.outputPath": "target/classes",
-    "java.project.referencedLibraries": [
-        "target/*.jar"
-    ],
+    "java.import.maven.enabled": true,
 
     // Maven Configuration
     "maven.executable.path": "mvn",
