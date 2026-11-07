@@ -206,9 +206,9 @@ public class HeadlessSimulationEngine {
         try {
             return executeSimulation(config, startTime);
         } catch (Exception e) {
-            e.printStackTrace();
             String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
-            return SimulationResult.failed("Simulation error: " + msg);
+            LOGGER.error("Simulation run failed: {}", msg, e);
+            return SimulationResult.failed("Simulation error: " + msg, collectEngineWarnings());
         } finally {
             state.set(EngineState.IDLE);
         }
@@ -376,6 +376,10 @@ public class HeadlessSimulationEngine {
             } else {
                 LOGGER.warn("Signal '{}' cannot be resolved to a node, measurement probe, "
                         + "labeled control output, or loss channel - not recorded", signalNames[i]);
+                if (config.getSignals() != null && config.getSignals().contains(signalNames[i]) && circuitNetlist != null) {
+                    circuitNetlist.addBuildWarning("DRC_UNRESOLVED_SIGNAL: Requested signal '" + signalNames[i]
+                            + "' could not be resolved to a node, measurement probe, or labeled wire.");
+                }
             }
         }
         if (resolvedIndices.size() < signalNames.length) {
@@ -395,6 +399,11 @@ public class HeadlessSimulationEngine {
             signalProbes = keptProbes;
             signalTaps = keptTaps;
             signalIsLoss = keptLoss;
+        }
+
+        if (signalNames.length == 0 && circuitNetlist != null) {
+            circuitNetlist.addBuildWarning("DRC_NO_SIGNALS: No observable signals, probes, or scope channels were resolved. "
+                    + "Add a Voltmeter (VOLT), Ammeter (AMP), or label a wire/output to observe waveforms in the Scope.");
         }
 
         // Adaptive step-size control (opt-in): a shadow solver of the

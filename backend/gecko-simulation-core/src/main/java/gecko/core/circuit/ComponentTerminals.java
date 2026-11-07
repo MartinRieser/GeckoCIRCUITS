@@ -14,6 +14,7 @@
 package gecko.core.circuit;
 
 import gecko.core.circuit.circuitcomponents.CircuitTypCore;
+import gecko.core.control.ControlCalculatorBuilder;
 import gecko.core.io.CircuitModel;
 
 import java.util.ArrayList;
@@ -109,7 +110,17 @@ public final class ComponentTerminals {
         int type = comp.getType();
 
         if (isControlFamily(comp)) {
-            // constant, signal source, voltmeter probe, ammeter probe, time source: 0 schematic inputs, 1 output on the output side
+            // Scopes: one input terminal per input label, spread perpendicular
+            // to the flow direction exactly like the editor renders them
+            // (2 grid units apart, centered on the component)
+            if (type == CONTROL_SCOPE || type == CircuitTypCore.CTRL_SCOPE.getTypeNumber()) {
+                return scopeTerminals(comp, x, y, dir);
+            }
+            int[] layout = ControlCalculatorBuilder.getTerminalLayout(comp);
+            if (layout != null) {
+                return multiControlTerminals(layout[0], layout[1], x, y, dir);
+            }
+            // constant, signal source, voltmeter probe, ammeter probe, time source fallback
             if (type == CONTROL_SIGNAL_SOURCE || type == CONTROL_CONSTANT
                     || type == CONTROL_VOLTMETER || type == CONTROL_AMMETER
                     || type == CircuitTypCore.CTRL_SIGNAL.getTypeNumber()
@@ -120,42 +131,8 @@ public final class ComponentTerminals {
                     || type == 58) {
                 return List.of(offset(x, y, dir, TERMINAL_DISTANCE));
             }
-            // gates: 1 input on the input side, 0 outputs
             if (type == CONTROL_GATE || type == CircuitTypCore.CTRL_GATE.getTypeNumber()) {
                 return List.of(offset(x, y, dir, -TERMINAL_DISTANCE));
-            }
-            // scopes: one input terminal per input label, spread perpendicular
-            // to the flow direction exactly like the editor renders them
-            // (2 grid units apart, centered on the component)
-            if (type == CONTROL_SCOPE || type == CircuitTypCore.CTRL_SCOPE.getTypeNumber()) {
-                return scopeTerminals(comp, x, y, dir);
-            }
-            // Dead-time block: 1 input on the input side, 2 outputs on the output side
-            if (type == CircuitTypCore.CTRL_DEADTIME.getTypeNumber()) {
-                return multiControlTerminals(1, 2, x, y, dir);
-            }
-            // 3-input multiplexer
-            if (type == CircuitTypCore.CTRL_MUX.getTypeNumber() || type == 84) {
-                return multiControlTerminals(3, 1, x, y, dir);
-            }
-            // 2-input control blocks (comparator, logic gates, math operations)
-            if (type == CircuitTypCore.CTRL_COMPARATOR.getTypeNumber()
-                    || type == CircuitTypCore.CTRL_AND.getTypeNumber()
-                    || type == CircuitTypCore.CTRL_OR.getTypeNumber()
-                    || type == CircuitTypCore.CTRL_SUB.getTypeNumber()
-                    || type == CircuitTypCore.CTRL_ADD.getTypeNumber()
-                    || type == CircuitTypCore.CTRL_MUL.getTypeNumber()
-                    || type == CircuitTypCore.CTRL_DIV.getTypeNumber()
-                    || type == CircuitTypCore.CTRL_MIN.getTypeNumber()
-                    || type == CircuitTypCore.CTRL_MAX.getTypeNumber()
-                    || type == CircuitTypCore.CTRL_SAMPLEHOLD.getTypeNumber()
-                    || type == CircuitTypCore.CTRL_XOR.getTypeNumber()
-                    || type == CircuitTypCore.CTRL_GE.getTypeNumber()
-                    || type == CircuitTypCore.CTRL_INTEGRATOR.getTypeNumber()
-                    || type == 10 || type == 12 || type == 13 || type == 14 || type == 15
-                    || type == 19 || type == 20 || type == 21 || type == 26 || type == 45
-                    || type == 46 || type == 49 || type == 50 || type == 64) {
-                return multiControlTerminals(2, 1, x, y, dir);
             }
         }
 
@@ -166,6 +143,7 @@ public final class ComponentTerminals {
         }
 
         if (type == CircuitTypCore.TEXTBOX.getTypeNumber()
+                || type == CircuitTypCore.LK_M.getTypeNumber()
                 || (comp.getFamily() != null && "SPECIAL".equalsIgnoreCase(comp.getFamily()))) {
             return List.of();
         }

@@ -226,9 +226,14 @@ public final class SimulationResult {
      * @return failed result
      */
     public static SimulationResult failed(String errorMessage) {
+        return failed(errorMessage, List.of());
+    }
+
+    public static SimulationResult failed(String errorMessage, List<String> warnings) {
         return builder()
                 .status(Status.FAILED)
                 .errorMessage(errorMessage)
+                .warnings(warnings != null ? warnings : List.of())
                 .build();
     }
 

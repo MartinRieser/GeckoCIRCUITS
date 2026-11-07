@@ -590,9 +590,10 @@ public final class ControlCalculatorBuilder {
             return new ControlCoupling(List.of(), List.of(), List.of(), List.of());
         }
         Map<Long, Integer> elementIndexByUid = new HashMap<>();
-        if (netlist != null) {
-            for (int i = 0; i < netlist.getElementCount(); i++) {
-                long uid = netlist.getElementUids()[i];
+        if (netlist != null && netlist.getElementUids() != null) {
+            long[] uids = netlist.getElementUids();
+            for (int i = 0; i < netlist.getElementCount() && i < uids.length; i++) {
+                long uid = uids[i];
                 if (uid != 0) {
                     elementIndexByUid.put(uid, i);
                 }
@@ -803,6 +804,11 @@ public final class ControlCalculatorBuilder {
             }
         }
         if (measured.length >= 2) {
+            if (isUnconnectedLabel(measured[0]) && isUnconnectedLabel(measured[1])) {
+                warnings.add("DRC_PROBE_ERROR: Voltmeter '" + comp.getName()
+                        + "' is not connected to any circuit node (both terminals unconnected) — reads 0V");
+                return new Probe(-1, false, name, compName, calculator, 0, 0);
+            }
             int nodeX = nodeForLabel(netlist, measured[0]);
             int nodeY = nodeForLabel(netlist, measured[1]);
             if (nodeX < 0 || nodeY < 0) {
@@ -815,6 +821,12 @@ public final class ControlCalculatorBuilder {
             return new Probe(-1, false, name, compName, calculator, nodeX, nodeY);
         }
         return null;
+    }
+
+    private static boolean isUnconnectedLabel(String label) {
+        if (label == null) return true;
+        String t = label.trim();
+        return t.isEmpty() || t.equals("NIX_NIX_NIX") || t.equals("/NIX_NIX_NIX") || t.equalsIgnoreCase("NIX");
     }
 
     private static int nodeForLabel(CircuitNetlist netlist, String label) {
@@ -899,7 +911,7 @@ public final class ControlCalculatorBuilder {
         return selected;
     }
 
-    private static int[] getTerminalLayout(CircuitModel.ComponentData comp) {
+    public static int[] getTerminalLayout(CircuitModel.ComponentData comp) {
         if (comp.getType() == TYP_NATIVE_C) {
             // classic NativeC defaults: 3 inputs, 2 outputs
             int numIn = getIntParam(comp, "anzXIN", -1);
@@ -954,6 +966,10 @@ public final class ControlCalculatorBuilder {
     }
 
     private static AbstractControlCalculatable createCalculator(CircuitModel.ComponentData comp) {
+        if (comp.getType() == 70) {
+            // Text annotation box in schematic — purely decorative
+            return null;
+        }
         int[] layout = getTerminalLayout(comp);
         if (layout == null) {
             LOGGER.warn("Control block '{}' has unsupported typ {} - skipped",
@@ -1339,9 +1355,9 @@ public final class ControlCalculatorBuilder {
         return type == TYP_AMMETER || type == TYP_AMP_WEB;
     }
 
-    /** Display-only blocks: the classic scope type 5 and the web catalog CTRL_SCOPE. */
+    /** Display-only blocks: the classic scope type 5, the web catalog CTRL_SCOPE, and text annotations (70). */
     private static boolean isDisplayOnlyType(int type) {
-        return type == TYP_SCOPE || type == TYP_SCOPE_WEB;
+        return type == TYP_SCOPE || type == TYP_SCOPE_WEB || type == 70;
     }
 
     /**

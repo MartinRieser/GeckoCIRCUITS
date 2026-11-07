@@ -19,23 +19,29 @@ package gecko.core.control.calculators;
  */
 public final class DivCalculator extends AbstractTwoInputsOneOutputCalculator {
 
-    private static final double LARGE_NUMBER = 1e40;
+    // Fits comfortably in IEEE-754 single-precision float (max ~3.4e38) without overflowing to Infinity
+    private static final double LARGE_NUMBER = 1e30;
 
     @Override
     public void calculateYOUT(final double deltaT) {
-        final double result = _inputSignal[0][0] / _inputSignal[1][0];  // normale Division
-        _outputSignal[0][0] = result;
-        if(Double.isNaN(result)) { // here, we assume 0/0 = 0, since possibly no input is selected to this block!
-            assert _inputSignal[0][0] == 0 : "illegal division! " + _inputSignal[0][0] + "/" + _inputSignal[1][0];
-            assert _inputSignal[1][0] == 0 : "illegal division! " + _inputSignal[0][0] + "/" + _inputSignal[1][0];
-            _outputSignal[0][0] = 0; 
+        final double denom = _inputSignal[1][0];
+        final double numer = _inputSignal[0][0];
+        if (denom == 0.0) {
+            if (numer == 0.0 || Double.isNaN(numer)) {
+                _outputSignal[0][0] = 0.0;
+            } else {
+                _outputSignal[0][0] = Math.signum(numer) * LARGE_NUMBER;
+            }
+            return;
         }
-        
-        if(Double.isInfinite(result)) { // this is the case when dividing e.g. 1/0
-            
-            //assert false : "illegal division! " + _inputSignal[0][0] + "/" + _inputSignal[1][0]; 
-            // just return a largge value with the sign of the input.
-            _outputSignal[0][0] = Math.signum(_inputSignal[0][0]) * LARGE_NUMBER;
-        }                             
+
+        final double result = numer / denom;
+        if (Double.isNaN(result)) {
+            _outputSignal[0][0] = 0.0;
+        } else if (Double.isInfinite(result)) {
+            _outputSignal[0][0] = Math.signum(numer) * LARGE_NUMBER;
+        } else {
+            _outputSignal[0][0] = result;
+        }
     }
 }
