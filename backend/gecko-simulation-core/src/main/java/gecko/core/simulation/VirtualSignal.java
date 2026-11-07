@@ -261,3 +261,4 @@ public final class VirtualSignal {
                 + ", nodeA=" + nodeA + ", nodeB=" + nodeB + "]";
     }
 }
+
