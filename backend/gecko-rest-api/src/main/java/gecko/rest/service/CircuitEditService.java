@@ -1086,6 +1086,16 @@ public class CircuitEditService {
             Map.entry(5, sourceDefaults(1.0)),
             Map.entry(6, new double[]{10.0e-3, 0.6, 10.0e-3, 1.0e7}),
             Map.entry(7, new double[]{1.0e7, 10.0e-3, 1.0e7}),
+            Map.entry(8, new double[]{1.0e7, 0.8, 10.0e-3, 1.0e7}),
+            Map.entry(9, new double[]{0.98, 0.0, 0.0}),
+            Map.entry(10, new double[]{1.0e7, 0.8, 10.0e-3, 1.0e7}),
+            Map.entry(12, new double[]{1.0e-3, 0.0}),
+            Map.entry(22, new double[]{90000.0, 0.12, 0.0, 0.0, 1.0e5, 10000.0, 0.0, 12.0, -12.0}),
+            Map.entry(23, new double[]{10.0, 2.0, -1.0}),
+            Map.entry(24, new double[]{1.0}),
+            Map.entry(26, new double[]{401.0, 100.0}),
+            Map.entry(28, new double[]{1.0e7, 0.8, 10.0e-3, 1.0e7}),
+            Map.entry(33, new double[]{0.0, 100.0, 60.0, 0.1, 1.0}),
             // Thermal & reluctance domain defaults follow CircuitTypCore numbering:
             // 41=TH_PvCHIP (Pv chip loss), 42=TH_MODUL (Rth/Cth), 44=TH_FLOW,
             // 45=TH_TEMP (temperature source), 46=TH_RTH (thermal resistance),
@@ -1097,12 +1107,25 @@ public class CircuitEditService {
             Map.entry(46, new double[]{1.0}),
             Map.entry(47, new double[]{1.0, 25.0}),
             Map.entry(48, new double[]{401.0, 25.0}),
-            // 9 = mutual coupling [k, uid of first coupled inductor, uid of second]; 23 = ideal transformer n1/n2/polarity;
-            // 33 = BJT betaF/betaR/rBase/polarity (param0 unused)
-            Map.entry(9, new double[]{0.98, 0.0, 0.0}),
-            Map.entry(23, new double[]{10.0, 2.0, -1.0}),
-            Map.entry(33, new double[]{0.0, 100.0, 60.0, 0.1, 1.0}),
-            Map.entry(1000, new double[]{0.0}));
+            // Control domain defaults matching frontend/src/model/componentSchema.ts
+            Map.entry(1000, new double[]{0.0}),
+            Map.entry(1004, new double[]{404.0, 1.0, 100000.0, 0.0, 0.0, 0.5}),
+            Map.entry(1005, new double[]{1.0}),
+            Map.entry(1006, new double[]{1.0}),
+            Map.entry(1007, new double[]{1.0, 0.01}),
+            Map.entry(1008, new double[]{0.001}),
+            Map.entry(1009, new double[]{0.0}),
+            Map.entry(1015, new double[]{0.001}),
+            Map.entry(1021, new double[]{-1.0, 1.0}),
+            Map.entry(1030, new double[]{0.1}),
+            Map.entry(1031, new double[]{0.001, 1.0}),
+            Map.entry(1032, new double[]{1.0}),
+            Map.entry(1037, new double[]{200.0e-9}),
+            Map.entry(1051, new double[]{0.004, 50.0, 30.0}),
+            Map.entry(1052, new double[]{2.0, 0.05, 20.0, 5.0, 0.01, 400.0}),
+            Map.entry(1053, new double[]{600.0}),
+            Map.entry(1054, new double[]{3.0}),
+            Map.entry(1056, new double[]{0.02, 50.0}));
 
     private static double[] sourceDefaults(double dcValue) {
         double[] params = new double[5];
@@ -1118,6 +1141,10 @@ public class CircuitEditService {
             comp.setParameter("sourceCode", "yOUT[0] = xIN[0];");
             comp.setParameter("anzXIN", 1);
             comp.setParameter("anzYOUT", 1);
+        } else if (comp.getType() == CircuitTypCore.TEXTBOX.getTypeNumber()) {
+            comp.setParameter("text", "Note");
+            comp.setParameter("width", 26);
+            comp.setParameter("height", 14);
         }
         double[] defaults = DEFAULT_PARAMETERS.get(comp.getType());
         if (defaults == null) {

@@ -1043,6 +1043,168 @@ class NativeControlBlockTest {
     }
 
     @Test
+    void allControlBlocksWithEmptyParameters_initializeAndStepFinite() {
+        int[] allControlTypes = {
+                // Classic types
+                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+                18, 19, 20, 21, 25, 26, 27, 29, 32, 33, 34, 35, 36, 37, 38, 39,
+                40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 53, 58, 59,
+                63, 64, 65, 66, 72, 76, 77, 82, 85,
+                // Web catalog types (1000..1058)
+                1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009,
+                1010, 1011, 1012, 1013, 1014, 1015, 1017, 1018, 1019, 1020,
+                1021, 1022, 1023, 1024, 1025, 1026, 1027, 1028, 1029, 1030,
+                1031, 1032, 1033, 1034, 1035, 1036, 1037, 1038, 1039, 1040,
+                1041, 1042, 1043, 1044, 1045, 1046, 1047, 1048, 1049, 1050,
+                1051, 1052, 1053, 1054, 1055, 1056, 1058
+        };
+
+        for (int typ : allControlTypes) {
+            CircuitModel m = new CircuitModel();
+            // Feed input 0 from a positive constant (0.5) so LN/SQRT/DIV/ASIN/ACOS have valid domain inputs
+            CircuitModel.ComponentData src0 = new CircuitModel.ComponentData(1005, "SRC0", 10, 20, 503);
+            src0.setRawParameters(new double[]{0.5});
+            src0.setUniqueObjectIdentifier(10);
+            m.addControlComponent(src0);
+
+            CircuitModel.ComponentData src1 = new CircuitModel.ComponentData(1005, "SRC1", 10, 19, 503);
+            src1.setRawParameters(new double[]{0.5});
+            src1.setUniqueObjectIdentifier(11);
+            m.addControlComponent(src1);
+
+            CircuitModel.ComponentData dut = new CircuitModel.ComponentData(typ, "DUT_" + typ, 20, 20, 503);
+            dut.setRawParameters(new double[0]); // Empty parameter[] array!
+            dut.setUniqueObjectIdentifier(100 + typ);
+            dut.setTerminalYLabels(new String[]{"out_" + typ});
+            m.addControlComponent(dut);
+
+            // Connect input 0 at (18, 20) and input 1 at (18, 19)
+            m.getConnections().add(new CircuitModel.ConnectionData("CONTROL", new int[][]{{12, 20}, {18, 20}}));
+            m.getConnections().add(new CircuitModel.ConnectionData("CONTROL", new int[][]{{12, 19}, {18, 19}}));
+
+            ControlCalculatorBuilder.ControlCoupling coupling = ControlCalculatorBuilder.build(m, null);
+            coupling.initialize(DT);
+            for (int stepIdx = 0; stepIdx < 50; stepIdx++) {
+                step(coupling);
+                for (AbstractControlCalculatable calc : coupling.calculators()) {
+                    if (calc._outputSignal != null) {
+                        for (int outIdx = 0; outIdx < calc._outputSignal.length; outIdx++) {
+                            double val = calc._outputSignal[outIdx][0];
+                            assertTrue(Double.isFinite(val),
+                                    "Control block typ " + typ + " output[" + outIdx + "] became non-finite: " + val);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    void parameterizedControlBlocksWithEmptyParameters_useActiveFallbacks() throws Exception {
+        // Verify that SIGNAL (1004), CONSTANT (1005), GAIN (1006), PI (1007), PT1 (1008), DELAY (1015)
+        // with empty parameter[] arrays do NOT degenerate to dead 0.0 blocks!
+        ControlCalculatorBuilder.ControlCoupling coupling = buildCoupling("""
+            c (0)
+            <ElementCONTROL>
+            labelEndKnoten[] /sig_out
+            typ 1004
+            uniqueObjectIdentifier 401
+            x 10
+            y 10
+            parameter[] 
+            orientierung 503
+            idStringDialog SIG_EMPTY
+            <\\ElementCONTROL>
+            c (1)
+            <ElementCONTROL>
+            labelEndKnoten[] /const_out
+            typ 1005
+            uniqueObjectIdentifier 402
+            x 10
+            y 20
+            parameter[] 
+            orientierung 503
+            idStringDialog CONST_EMPTY
+            <\\ElementCONTROL>
+            c (2)
+            <ElementCONTROL>
+            labelEndKnoten[] /gain_out
+            typ 1006
+            uniqueObjectIdentifier 403
+            x 20
+            y 20
+            parameter[] 
+            orientierung 503
+            idStringDialog GAIN_EMPTY
+            <\\ElementCONTROL>
+            c (3)
+            <ElementCONTROL>
+            labelEndKnoten[] /pi_out
+            typ 1007
+            uniqueObjectIdentifier 404
+            x 30
+            y 20
+            parameter[] 
+            orientierung 503
+            idStringDialog PI_EMPTY
+            <\\ElementCONTROL>
+            c (4)
+            <ElementCONTROL>
+            labelEndKnoten[] /pt1_out
+            typ 1008
+            uniqueObjectIdentifier 405
+            x 40
+            y 20
+            parameter[] 
+            orientierung 503
+            idStringDialog PT1_EMPTY
+            <\\ElementCONTROL>
+            verbindungCONTROL (0)
+            <Connection>
+            label NIX_NIX_NIX
+            x[] 12 18
+            y[] 20 20
+            enabledShorted 1
+            connectorType 1
+            <\\Connection>
+            verbindungCONTROL (1)
+            <Connection>
+            label NIX_NIX_NIX
+            x[] 22 28
+            y[] 20 20
+            enabledShorted 1
+            connectorType 1
+            <\\Connection>
+            verbindungCONTROL (2)
+            <Connection>
+            label NIX_NIX_NIX
+            x[] 32 38
+            y[] 20 20
+            enabledShorted 1
+            connectorType 1
+            <\\Connection>
+            """);
+
+        coupling.initialize(DT);
+        step(coupling);
+
+        var tapMap = new java.util.HashMap<String, ControlCalculatorBuilder.SignalTap>();
+        for (var tap : coupling.signalTaps()) {
+            tapMap.put(tap.name(), tap);
+        }
+        assertEquals(1.0, tapMap.get("sig_out").source()._outputSignal[0][0], 1e-9,
+                "Empty SIGNAL (1004) must default to 1.0V rectangle wave (high on first half-period)");
+        assertEquals(1.0, tapMap.get("const_out").source()._outputSignal[0][0], 1e-9,
+                "Empty CONSTANT (1005) must default to 1.0");
+        assertEquals(1.0, tapMap.get("gain_out").source()._outputSignal[0][0], 1e-9,
+                "Empty GAIN (1006) must default to unity gain 1.0");
+        assertTrue(tapMap.get("pi_out").source()._outputSignal[0][0] > 1.0,
+                "Empty PI (1007) must default to Kp=1.0, Ti=0.01 and produce > 1.0 on unit input");
+        assertTrue(tapMap.get("pt1_out").source()._outputSignal[0][0] > 0.0,
+                "Empty PT1 (1008) must default to T=0.001s and respond positively");
+    }
+
+    @Test
     void volt1001_probe_readsVoltageAcrossTheCoupledResistor() throws Exception {
         CircuitModel model = parseBuck("6", "1001");
         CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);

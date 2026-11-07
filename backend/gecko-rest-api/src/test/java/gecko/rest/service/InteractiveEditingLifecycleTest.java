@@ -351,4 +351,134 @@ class InteractiveEditingLifecycleTest {
         assertEquals(baselineSnapshot, CircuitFileWriter.writeToString(model()),
                 "Undo patchComponent must restore exact baseline state");
     }
+
+    /**
+     * End-to-end test reproducing the user's switched RC circuit (issue.ipes) built entirely
+     * via CircuitEditService.createComponent with null parameters (default palette placement).
+     * Verifies IGBT (10) and SIGNAL (1004) receive valid defaults and charge C to ~9.2V.
+     */
+    @Test
+    void testSwitchedRcWithIgbtAndSignal_createdWithDefaultNullParameters_simulatesAndChargesCapacitor() {
+        byte[] blankIpes = "tDURATION 0.02\ndt 1.0E-6\nsolverType 0\n".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        String rcId = circuitFileService
+                .loadCircuit(Base64.getEncoder().encodeToString(blankIpes), "switched_rc.ipes")
+                .circuitId();
+
+        // Place U (typ 4), R (typ 1), IGBT (typ 10), C (typ 3), GLOBAL_TERMINAL (typ 31) with null parameters
+        service.createComponent(rcId, new ComponentCreateRequest("LK", 4, "U", 12, 13, 503, null));
+        service.createComponent(rcId, new ComponentCreateRequest("LK", 1, "R", 18, 9, 504, null));
+        service.createComponent(rcId, new ComponentCreateRequest("LK", 10, "IGBT", 26, 9, 502, null));
+        service.createComponent(rcId, new ComponentCreateRequest("LK", 3, "C", 35, 12, 503, null));
+        service.createComponent(rcId, new ComponentCreateRequest("LK", 31, "GLOBAL_TERMINAL", 12, 19, 501, null));
+
+        // Place SIGNAL (typ 1004), GATE (typ 1000), VOLT (typ 1001) with null parameters
+        service.createComponent(rcId, new ComponentCreateRequest("CONTROL", 1004, "SIGNAL", 13, 24, 503, null));
+        service.createComponent(rcId, new ComponentCreateRequest("CONTROL", 1000, "GATE", 25, 24, 503, null));
+        service.patchComponent(rcId, "GATE", new ComponentPatchRequest(null, null, null, null,
+                Map.of("coupledComponent", "IGBT")));
+        service.createComponent(rcId, new ComponentCreateRequest("CONTROL", 1001, "VOLT", 44, 12, 503, null));
+        service.patchComponent(rcId, "VOLT", new ComponentPatchRequest(null, null, null, null,
+                Map.of("coupledComponent", "C")));
+        service.setNodeLabel(rcId, "VOLT", new gecko.rest.model.circuit.NodeLabelRequest(0, "y", "u_C"));
+
+        // Wire LK loop and CONTROL wire
+        service.createConnection(rcId, new ConnectionCreateRequest("LK", new int[][]{{12, 11}, {12, 9}, {16, 9}}, null));
+        service.createConnection(rcId, new ConnectionCreateRequest("LK", new int[][]{{20, 9}, {24, 9}}, null));
+        service.createConnection(rcId, new ConnectionCreateRequest("LK", new int[][]{{28, 9}, {35, 9}, {35, 10}}, null));
+        service.createConnection(rcId, new ConnectionCreateRequest("LK", new int[][]{{35, 14}, {35, 15}, {12, 15}}, null));
+        service.createConnection(rcId, new ConnectionCreateRequest("LK", new int[][]{{12, 15}, {12, 17}}, null));
+        service.createConnection(rcId, new ConnectionCreateRequest("CONTROL", new int[][]{{15, 24}, {23, 24}}, null));
+
+        CircuitModel rcModel = circuitFileService.getModel(rcId);
+        HeadlessSimulationEngine engine = new HeadlessSimulationEngine();
+        SimulationResult res = engine.runSimulation(SimulationConfig.builder()
+                .circuitModel(rcModel)
+                .simulationDuration(0.02)
+                .stepWidth(1e-6)
+                .signals(List.of("u_C"))
+                .build());
+        assertTrue(res.isSuccess(), "Simulation must succeed: " + res.getErrorMessage());
+
+        int ucIdx = -1;
+        String[] names = res.getSignalNames();
+        for (int i = 0; i < names.length; i++) {
+            if ("u_C".equals(names[i])) {
+                ucIdx = i;
+                break;
+            }
+        }
+        assertTrue(ucIdx >= 0, "u_C signal must be recorded");
+        float[] data = res.getSignalData(ucIdx);
+        float finalUc = data[data.length - 1];
+        assertTrue(finalUc > 8.0f && finalUc < 10.0f,
+                "Capacitor voltage u_C must charge to ~9.2V, got " + finalUc);
+    }
+
+    /**
+     * Places every 2-terminal power component (R, L, C, D, S, THYR, IGBT, LKOP2, MOSFET) via
+     * CircuitEditService.createComponent with null parameters, serializes to .ipes, reparses,
+     * and simulates with both VOLT and AMP probes attached.
+     */
+    @Test
+    void testAllTwoTerminalPowerComponents_createdViaRestWithNullParameters_roundTripAndSimulate() throws Exception {
+        int[] powerTypes = {1, 2, 3, 6, 7, 8, 10, 12, 28};
+        for (int cutType : powerTypes) {
+            byte[] blankIpes = "tDURATION 2.0E-4\ndt 2.0E-6\nsolverType 0\n".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            String cid = circuitFileService
+                    .loadCircuit(Base64.getEncoder().encodeToString(blankIpes), "audit_" + cutType + ".ipes")
+                    .circuitId();
+
+            // Place U (typ 4) at (4, 10) orient 504 -> input (+) at (6, 10), output (-) at (2, 10)
+            service.createComponent(cid, new ComponentCreateRequest("LK", 4, "U_1", 4, 10, 504, null));
+            // Place CUT at (10, 10) orient 502 -> input at (8, 10), output at (12, 10)
+            service.createComponent(cid, new ComponentCreateRequest("LK", cutType, "CUT", 10, 10, 502, null));
+            // Place R_load (typ 1) at (16, 10) orient 502 -> input at (14, 10), output at (18, 10)
+            service.createComponent(cid, new ComponentCreateRequest("LK", 1, "R_load", 16, 10, 502, null));
+
+            service.createConnection(cid, new ConnectionCreateRequest("LK", new int[][]{{6, 10}, {8, 10}}, null));
+            service.createConnection(cid, new ConnectionCreateRequest("LK", new int[][]{{12, 10}, {14, 10}}, "V_out"));
+            service.createConnection(cid, new ConnectionCreateRequest("LK",
+                    new int[][]{{18, 10}, {18, 14}, {2, 14}, {2, 10}}, "GND"));
+
+            // Attach VOLT (1001) and AMP (1002) coupled to CUT
+            service.createComponent(cid, new ComponentCreateRequest("CONTROL", 1001, "V_probe", 6, 20, 503, null));
+            service.patchComponent(cid, "V_probe", new ComponentPatchRequest(null, null, null, null,
+                    Map.of("coupledComponent", "CUT")));
+            service.setNodeLabel(cid, "V_probe", new gecko.rest.model.circuit.NodeLabelRequest(0, "y", "v_cut"));
+
+            service.createComponent(cid, new ComponentCreateRequest("CONTROL", 1002, "I_probe", 14, 20, 503, null));
+            service.patchComponent(cid, "I_probe", new ComponentPatchRequest(null, null, null, null,
+                    Map.of("coupledComponent", "CUT")));
+            service.setNodeLabel(cid, "I_probe", new gecko.rest.model.circuit.NodeLabelRequest(0, "y", "i_cut"));
+
+            // If gated switch, attach CONSTANT(1005) -> GATE(1000) coupled to CUT
+            if (cutType == 7 || cutType == 8 || cutType == 10 || cutType == 28) {
+                service.createComponent(cid, new ComponentCreateRequest("CONTROL", 1005, "CONST_1", 6, 24, 503, null));
+                service.createComponent(cid, new ComponentCreateRequest("CONTROL", 1000, "GATE_1", 12, 24, 503, null));
+                service.patchComponent(cid, "GATE_1", new ComponentPatchRequest(null, null, null, null,
+                        Map.of("coupledComponent", "CUT")));
+                service.createConnection(cid, new ConnectionCreateRequest("CONTROL", new int[][]{{8, 24}, {10, 24}}, null));
+            }
+
+            // Round-trip through .ipes writer and parser to verify persisted defaults
+            byte[] savedBytes = CircuitFileWriter.write(circuitFileService.getModel(cid));
+            CircuitModel reparsed = new gecko.core.io.CircuitFileParser()
+                    .parse(new java.io.ByteArrayInputStream(savedBytes), "roundtrip_" + cutType + ".ipes");
+
+            SimulationResult res = new HeadlessSimulationEngine().runSimulation(SimulationConfig.builder()
+                    .circuitModel(reparsed)
+                    .simulationDuration(2e-4)
+                    .stepWidth(2e-6)
+                    .signals(List.of("V_out", "v_cut", "i_cut"))
+                    .build());
+            assertTrue(res.isSuccess(), "Simulation failed for cutType=" + cutType + ": " + res.getErrorMessage());
+            for (int sigIdx = 0; sigIdx < res.getSignalNames().length; sigIdx++) {
+                float[] samples = res.getSignalData(sigIdx);
+                assertTrue(samples.length > 10, "Signal must have samples for cutType=" + cutType);
+                for (float s : samples) {
+                    assertTrue(Float.isFinite(s), "Non-finite sample for cutType=" + cutType);
+                }
+            }
+        }
+    }
 }

@@ -443,18 +443,21 @@ public class NetlistBuilder {
                                                List<String> buildWarnings) {
         for (CircuitModel.ComponentData coupler : mutualCouplers) {
             double[] raw = coupler.getRawParameters();
-            if (raw == null || raw.length < 3) {
+            String[] names = coupler.getParameterStrings();
+            boolean hasStringRefs = names != null && names.length >= 2
+                    && names[0] != null && !names[0].isBlank()
+                    && names[1] != null && !names[1].isBlank();
+            if (raw == null || raw.length < 1 || (raw.length < 3 && !hasStringRefs)) {
                 buildWarnings.add("Component '" + coupler.getName()
                         + "' (mutual inductance) carries no inductor references (needs k and two ids) and is ignored");
                 continue;
             }
             double k = raw[0];
-            int idx1 = netlist.indexOfUid((long) raw[1]);
-            int idx2 = netlist.indexOfUid((long) raw[2]);
+            int idx1 = raw.length > 1 ? netlist.indexOfUid((long) raw[1]) : -1;
+            int idx2 = raw.length > 2 ? netlist.indexOfUid((long) raw[2]) : -1;
             if (idx1 < 0 || idx2 < 0) {
-                // Legacy export: slots held classic-internal indices, not uids;
-                // the winding names in parameterString[] still identify the pair.
-                String[] names = coupler.getParameterStrings();
+                // Legacy export or string-coupled coupler: the winding names in
+                // parameterString[] identify the pair.
                 String name1 = names != null && names.length > 0 ? stripLabelPrefix(names[0]) : "";
                 String name2 = names != null && names.length > 1 ? stripLabelPrefix(names[1]) : "";
                 if (idx1 < 0 && !name1.isEmpty()) {
@@ -848,7 +851,8 @@ public class NetlistBuilder {
         for (CircuitModel.ConnectionData conn : connections) {
             if (conn.getPoints() != null && conn.getPoints().length > 0) {
                 String type = conn.getType();
-                if (type == null || "LK".equalsIgnoreCase(type) || "THERMAL".equalsIgnoreCase(type)) {
+                if (type == null || "LK".equalsIgnoreCase(type)
+                        || "THERMAL".equalsIgnoreCase(type) || "THERM".equalsIgnoreCase(type)) {
                     return true;
                 }
             }
@@ -892,7 +896,8 @@ public class NetlistBuilder {
                 continue;
             }
             String type = conn.getType();
-            if (type != null && !"LK".equalsIgnoreCase(type) && !"THERMAL".equalsIgnoreCase(type)) {
+            if (type != null && !"LK".equalsIgnoreCase(type)
+                    && !"THERMAL".equalsIgnoreCase(type) && !"THERM".equalsIgnoreCase(type)) {
                 continue;
             }
             String domain = type == null || "LK".equalsIgnoreCase(type) ? "LK" : "THERMAL";
@@ -971,22 +976,33 @@ public class NetlistBuilder {
      * @return array of 40 parameters ready for MNA matrix stamping
      */
     private static double[] extractComponentParameters(CircuitModel.ComponentData comp) {
-        double[] paramArray = new double[40];
-        if (comp.getRawParameters() != null) {
-            int copyLen = Math.min(comp.getRawParameters().length, 40);
-            System.arraycopy(comp.getRawParameters(), 0, paramArray, 0, copyLen);
-        }
+        double[] raw = comp.getRawParameters();
+        int maxIdx = raw != null ? Math.min(raw.length, 40) - 1 : -1;
         for (int p = 0; p < 40; p++) {
+            if (comp.getParameters().get("param" + p) instanceof Number) {
+                maxIdx = Math.max(maxIdx, p);
+            }
+        }
+        Object primary = comp.getParameters().get(CircuitModel.ComponentData.resolveParameterKey(comp.getType()));
+        if (primary instanceof Number) {
+            maxIdx = Math.max(maxIdx, 0);
+        }
+        if (maxIdx < 0) {
+            return new double[0];
+        }
+        double[] paramArray = new double[maxIdx + 1];
+        if (raw != null) {
+            int copyLen = Math.min(raw.length, paramArray.length);
+            System.arraycopy(raw, 0, paramArray, 0, copyLen);
+        }
+        for (int p = 0; p <= maxIdx; p++) {
             Object val = comp.getParameters().get("param" + p);
             if (val instanceof Number) {
                 paramArray[p] = ((Number) val).doubleValue();
             }
         }
-        if (paramArray[0] == 0.0) {
-            Object primary = comp.getParameters().get(CircuitModel.ComponentData.resolveParameterKey(comp.getType()));
-            if (primary instanceof Number) {
-                paramArray[0] = ((Number) primary).doubleValue();
-            }
+        if (paramArray[0] == 0.0 && primary instanceof Number) {
+            paramArray[0] = ((Number) primary).doubleValue();
         }
         return paramArray;
     }

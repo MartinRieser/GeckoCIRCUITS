@@ -18,6 +18,17 @@ vi.mock('../src/api/client', () => ({
   subscribeCircuitChanges: vi.fn().mockReturnValue(() => {}),
   cancelSimulation: vi.fn().mockResolvedValue(undefined),
   setGraphRegisters: vi.fn().mockResolvedValue(undefined),
+  submitSimulation: vi.fn().mockResolvedValue({ simulationId: 'sim-fail-1', status: 'RUNNING' }),
+  streamSimulationProgress: vi.fn().mockImplementation((_simId, handlers) => {
+    setTimeout(() => handlers.onSimError(), 0);
+    return () => {};
+  }),
+  getSimulation: vi.fn().mockResolvedValue({
+    simulationId: 'sim-fail-1',
+    status: 'FAILED',
+    errorMessage: 'Simulation failed: Numerical instability of switch states at t=0.0',
+    warnings: ['Switch state oscillation'],
+  }),
 }));
 
 describe('useEditor hook', () => {
@@ -147,5 +158,19 @@ describe('useEditor hook', () => {
       result.current.actions.openProperties('');
     });
     expect(result.current.state.panelFor).toBe('');
+  });
+
+  it('surfaces simulation failure message in simState.errorMessage and state.status bar', async () => {
+    const { result } = await renderEditor();
+
+    await act(async () => {
+      await result.current.actions.runSimulation();
+      await new Promise((r) => setTimeout(r, 20));
+    });
+
+    expect(result.current.simState.status).toBe('FAILED');
+    expect(result.current.simState.errorMessage).toContain('Numerical instability of switch states');
+    expect(result.current.simState.warnings).toEqual(['Switch state oscillation']);
+    expect(result.current.state.status).toContain('Simulation failed: Simulation failed: Numerical instability');
   });
 });

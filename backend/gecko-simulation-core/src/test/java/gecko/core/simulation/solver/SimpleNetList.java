@@ -23,6 +23,7 @@ public class SimpleNetList implements INetList {
     private CircuitTypCore[] types;
     private int[] nodeX;
     private int[] nodeY;
+    private int[] voltageSourceNumbers;
     private double[][] parameters;
     private int elementCount = 0;
 
@@ -30,14 +31,21 @@ public class SimpleNetList implements INetList {
         types = new CircuitTypCore[10];
         nodeX = new int[10];
         nodeY = new int[10];
+        voltageSourceNumbers = new int[10];
+        java.util.Arrays.fill(voltageSourceNumbers, -1);
         parameters = new double[10][];
     }
 
     public void addComponent(CircuitTypCore type, int x, int y, double[] params) {
+        addComponent(type, x, y, -1, params);
+    }
+
+    public void addComponent(CircuitTypCore type, int x, int y, int vsNumber, double[] params) {
         if (elementCount < types.length) {
             types[elementCount] = type;
             nodeX[elementCount] = x;
             nodeY[elementCount] = y;
+            voltageSourceNumbers[elementCount] = vsNumber;
             parameters[elementCount] = params;
             elementCount++;
         }
@@ -65,7 +73,7 @@ public class SimpleNetList implements INetList {
     public double[] getParameter(int index) { return parameters[index]; }
 
     @Override
-    public int getVoltageSourceNumber(int index) { return -1; }
+    public int getVoltageSourceNumber(int index) { return voltageSourceNumbers[index]; }
 
     @Override
     public double getSimulationTime() { return 0.0; }

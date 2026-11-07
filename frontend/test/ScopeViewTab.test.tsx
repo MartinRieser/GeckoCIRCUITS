@@ -482,6 +482,38 @@ describe('Oscilloscope GUI & Controls', () => {
       expect(screen.getByTestId('scope-no-channels-state')).not.toBeNull();
       expect(screen.getByText(/No channels assigned to Osci 2/i)).not.toBeNull();
     });
+
+    it('renders prominent simulation error banner and FAILED status pill when simulation fails', () => {
+      const reg = {
+        id: 'osci_1',
+        name: 'Osci 1',
+        numGraphs: 1 as const,
+        signals: ['V_out', 'u_C'],
+        signalGraphs: { V_out: 1 as const, u_C: 1 as const },
+        hiddenSignals: [],
+        yScaleMode: 'auto' as const,
+        cursorsEnabled: false,
+      };
+
+      render(
+        <ScopeViewTab
+          selectedScope="Osci 1"
+          graphRegister={reg}
+          components={dummyComponents}
+          results={null}
+          displayLayout="overlay"
+          status="FAILED"
+          errorMessage="Simulation failed: Numerical instability of switch states at t=0.0"
+          warnings={['DRC_PROBE_ERROR: Gate.1 target not found']}
+        />,
+      );
+
+      const errorAlert = screen.getByTestId('scope-sim-error');
+      expect(errorAlert).not.toBeNull();
+      expect(errorAlert.textContent).toContain('Numerical instability of switch states at t=0.0');
+      expect(errorAlert.textContent).toContain('DRC_PROBE_ERROR: Gate.1 target not found');
+      expect(screen.getByText('FAILED')).not.toBeNull();
+    });
   });
 });
 

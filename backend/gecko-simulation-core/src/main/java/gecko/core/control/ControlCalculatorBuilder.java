@@ -852,7 +852,11 @@ public final class ControlCalculatorBuilder {
         if (model == null || netlist == null || name == null) {
             return null;
         }
-        for (CircuitModel.ComponentData comp : model.getCircuitComponents()) {
+        int byNetlistName = netlist.indexOfElementName(name);
+        if (byNetlistName >= 0) {
+            return byNetlistName;
+        }
+        for (CircuitModel.ComponentData comp : model.getAllComponents()) {
             if (name.equals(comp.getName())) {
                 int index = netlist.indexOfUid(comp.getUniqueObjectIdentifier());
                 return index >= 0 ? index : null;
@@ -970,7 +974,7 @@ public final class ControlCalculatorBuilder {
         }
         double[] params = comp.getRawParameters();
         return switch (comp.getType()) {
-            case TYP_CONSTANT -> new ConstantCalculator(param(params, 0));
+            case TYP_CONSTANT -> new ConstantCalculator(paramOrDefault(params, 0, 1.0));
             case TYP_SIGNAL_SOURCE -> createSignalSource(params);
             case TYP_GATE -> new GateCalculator();
             // measurement blocks hold their output; the engine writes it each step
@@ -982,10 +986,10 @@ public final class ControlCalculatorBuilder {
             case TYP_VOLT_WEB, TYP_AMP_WEB -> new ConstantCalculator(0);
             case TYP_SCOPE_WEB -> null;
             case TYP_SIGNAL_WEB -> createSignalSource(params);
-            case TYP_CONSTANT_WEB -> new ConstantCalculator(param(params, CONSTANT_VALUE));
-            case TYP_GAIN -> new GainCalculator(param(params, GAIN_FACTOR));
+            case TYP_CONSTANT_WEB -> new ConstantCalculator(paramOrDefault(params, CONSTANT_VALUE, 1.0));
+            case TYP_GAIN -> new GainCalculator(paramOrDefault(params, GAIN_FACTOR, 1.0));
             case TYP_PI -> createPiCalculator(params);
-            case TYP_PT1 -> new PT1Calculator(param(params, PT1_TIME_CONSTANT), PT1_DC_GAIN);
+            case TYP_PT1 -> createPt1Calculator(params);
             case TYP_INTEGRATOR -> createIntegrator(params);
             case TYP_COMPARATOR -> new GreaterThanCalculator();
             case TYP_AND, TYP_LEGACY_AND -> new AndTwoPortCalculator();
@@ -1034,8 +1038,8 @@ public final class ControlCalculatorBuilder {
             case TYP_SPACE_VECTOR, TYP_LEGACY_SPACE_VECTOR -> null;
             case TYP_SDFT, TYP_LEGACY_SDFT -> createSdft(params);
             case TYP_SPARSEMATRIX, TYP_LEGACY_SPARSEMATRIX -> new SparseMatrixCalculator();
-            case TYP_LEGACY_GAIN -> new GainCalculator(param(params, GAIN_FACTOR));
-            case TYP_LEGACY_PT1 -> new PT1Calculator(param(params, PT1_TIME_CONSTANT), PT1_DC_GAIN);
+            case TYP_LEGACY_GAIN -> new GainCalculator(paramOrDefault(params, GAIN_FACTOR, 1.0));
+            case TYP_LEGACY_PT1 -> createPt1Calculator(params);
             case TYP_LEGACY_PI -> createPiCalculator(params);
             case TYP_LEGACY_GT -> new GreaterThanCalculator();
             case TYP_LEGACY_INT -> createIntegrator(params);
@@ -1115,6 +1119,14 @@ public final class ControlCalculatorBuilder {
         return new DeadTimeCalculator(tDead);
     }
 
+    private static AbstractControlCalculatable createPt1Calculator(double[] params) {
+        double tau = paramOrDefault(params, PT1_TIME_CONSTANT, 0.001);
+        if (tau <= 0.0) {
+            tau = 0.001;
+        }
+        return new PT1Calculator(tau, PT1_DC_GAIN);
+    }
+
     /**
      * Creates the CTRL_PI calculator from its web catalog slots. The block
      * implements the series form {@code y = Kp·(x + (1/Ti)·∫x dt)}: slot 0
@@ -1122,8 +1134,8 @@ public final class ControlCalculatorBuilder {
      * Ti degrades the block to pure proportional action.
      */
     private static AbstractControlCalculatable createPiCalculator(double[] params) {
-        double proportionalGain = param(params, PI_PROPORTIONAL_GAIN);
-        double integrationTime = param(params, PI_INTEGRATION_TIME);
+        double proportionalGain = paramOrDefault(params, PI_PROPORTIONAL_GAIN, 1.0);
+        double integrationTime = paramOrDefault(params, PI_INTEGRATION_TIME, 0.01);
         double integralGain = integrationTime > 0.0 ? proportionalGain / integrationTime : 0.0;
         return new PICalculator(proportionalGain, integralGain);
     }
@@ -1141,7 +1153,7 @@ public final class ControlCalculatorBuilder {
     /** Creates the CTRL_DELAY calculator, degrading invalid delay times to a zero source. */
     private static AbstractControlCalculatable createDelayCalculator(double[] params) {
         try {
-            return new DelayCalculator(param(params, DELAY_TIME));
+            return new DelayCalculator(paramOrDefault(params, DELAY_TIME, 0.001));
         } catch (IllegalArgumentException e) {
             LOGGER.warn("Invalid delay time: {}", e.getMessage());
             return new ConstantCalculator(0);
@@ -1149,12 +1161,21 @@ public final class ControlCalculatorBuilder {
     }
 
     private static AbstractControlCalculatable createSignalSource(double[] params) {
-        int sourceType = (int) param(params, SIGNAL_SOURCE_TYPE);
-        double amplitude = param(params, SIGNAL_AMPLITUDE);
-        double frequency = param(params, SIGNAL_FREQUENCY);
+        int sourceType = (int) paramOrDefault(params, SIGNAL_SOURCE_TYPE, SOURCE_RECTANGLE);
+        if (sourceType == 0) {
+            sourceType = SOURCE_RECTANGLE;
+        }
+        double amplitude = paramOrDefault(params, SIGNAL_AMPLITUDE, 1.0);
+        double frequency = paramOrDefault(params, SIGNAL_FREQUENCY, 100000.0);
+        if (frequency <= 0.0) {
+            frequency = 100000.0;
+        }
         double offset = param(params, SIGNAL_DC_OFFSET);
         double phase = param(params, SIGNAL_PHASE_RADIANS);
-        double duty = param(params, SIGNAL_DUTY);
+        double duty = paramOrDefault(params, SIGNAL_DUTY, 0.5);
+        if (duty <= 0.0 || duty >= 1.0) {
+            duty = 0.5;
+        }
         try {
             return switch (sourceType) {
                 case SOURCE_SINUS -> new SignalCalculatorSinus(0, amplitude, frequency, phase, offset, duty);
@@ -1435,6 +1456,10 @@ public final class ControlCalculatorBuilder {
 
     private static double param(double[] params, int index) {
         return params != null && index < params.length ? params[index] : 0.0;
+    }
+
+    private static double paramOrDefault(double[] params, int index, double defaultValue) {
+        return params != null && index < params.length ? params[index] : defaultValue;
     }
 
     private static final class ControlWireNets {

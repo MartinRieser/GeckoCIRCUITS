@@ -389,6 +389,24 @@ describe('componentSchema', () => {
       expect(isTextboxComponent(null)).toBe(false);
       expect(isTextboxComponent(undefined)).toBe(false);
     });
+
+    it('every non-disabled component in COMPONENT_METAS has finite numeric defaults for all number/select parameters', () => {
+      for (const meta of Object.values(COMPONENT_METAS)) {
+        if (meta.disabled) continue;
+        expect(meta.displayName.length).toBeGreaterThan(0);
+        expect(meta.defaultPrefix.length).toBeGreaterThan(0);
+        for (const param of meta.parameters) {
+          if (param.type === 'number') {
+            expect(
+              typeof param.defaultValue === 'number' && Number.isFinite(param.defaultValue),
+              `Component ${meta.name} (type ${meta.type}) parameter ${param.key} must have finite numeric defaultValue`,
+            ).toBe(true);
+          } else if (param.type === 'select') {
+            expect(param.options && param.options.length > 0).toBe(true);
+          }
+        }
+      }
+    });
   });
 });
 

@@ -558,9 +558,13 @@ public class CircuitModel {
         }
 
         public void setRawParameters(double[] rawParameters) {
+            int oldLen = this.rawParameters != null ? this.rawParameters.length : 0;
             this.rawParameters = rawParameters != null ? rawParameters : new double[0];
             for (int i = 0; i < this.rawParameters.length; i++) {
                 parameters.put("param" + i, this.rawParameters[i]);
+            }
+            for (int i = this.rawParameters.length; i < oldLen; i++) {
+                parameters.remove("param" + i);
             }
         }
 

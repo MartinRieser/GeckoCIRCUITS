@@ -1135,6 +1135,8 @@ export function App() {
               onDisplayLayoutChange={handleDisplayLayoutChange}
               theme={theme}
               status={simState.status}
+              errorMessage={simState.errorMessage}
+              warnings={simState.warnings}
               filename={state.filename}
               scope={scope}
               onSetParameter={actions.setParameter}

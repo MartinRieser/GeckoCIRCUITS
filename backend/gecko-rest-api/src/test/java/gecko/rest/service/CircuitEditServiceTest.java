@@ -962,6 +962,63 @@ class CircuitEditServiceTest {
         assertEquals("reg-abc", redoneSnapshot.graphRegisters().get(0).id());
     }
 
+    @Test
+    void allPlaceableParameterizedComponentTypesReceiveDefaultParametersOnCreate() throws Exception {
+        int[][] familyAndType = {
+                // LK & Reluctance
+                {0, 1}, {0, 2}, {0, 3}, {0, 4}, {0, 5}, {0, 6}, {0, 7}, {0, 8},
+                {0, 9}, {0, 10}, {0, 12}, {0, 22}, {0, 23}, {0, 24}, {0, 26}, {0, 28}, {0, 33},
+                // THERM
+                {1, 41}, {1, 42}, {1, 44}, {1, 45}, {1, 46}, {1, 47}, {1, 48},
+                // CONTROL
+                {2, 1000}, {2, 1004}, {2, 1005}, {2, 1006}, {2, 1007}, {2, 1008}, {2, 1009},
+                {2, 1015}, {2, 1021}, {2, 1030}, {2, 1031}, {2, 1032}, {2, 1037},
+                {2, 1051}, {2, 1052}, {2, 1053}, {2, 1054}, {2, 1056}
+        };
+        String[] families = {"LK", "THERM", "CONTROL"};
+
+        for (int i = 0; i < familyAndType.length; i++) {
+            String family = families[familyAndType[i][0]];
+            int type = familyAndType[i][1];
+            String name = "DEF_" + type;
+            service.createComponent(circuitId,
+                    new ComponentCreateRequest(family, type, name, 10 + i * 2, 30, 503, null));
+            CircuitModel.ComponentData created = findByName(name);
+            double[] raw = created.getRawParameters();
+            assertNotNull(raw, "rawParameters must not be null for type " + type);
+            assertTrue(raw.length > 0,
+                    "Component type " + type + " (" + family + ") created with null parameters must have non-empty default rawParameters");
+            for (double v : raw) {
+                assertTrue(Double.isFinite(v), "Default parameter for type " + type + " must be finite");
+            }
+            assertNotNull(created.getParameters().get("param0"),
+                    "param0 must be populated in parameter map for type " + type);
+        }
+
+        // Also check SCRIPT (1016) and TEXTBOX (2001) named default parameters
+        service.createComponent(circuitId,
+                new ComponentCreateRequest("CONTROL", 1016, "SCR_DEF", 20, 50, 503, null));
+        assertEquals("yOUT[0] = xIN[0];", findByName("SCR_DEF").getParameters().get("sourceCode"));
+
+        service.createComponent(circuitId,
+                new ComponentCreateRequest("SPECIAL", 2001, "TXT_DEF", 30, 50, 503, null));
+        assertEquals("Note", findByName("TXT_DEF").getParameters().get("text"));
+
+        // Verify all defaults survive .ipes serialization round-trip
+        byte[] bytes = CircuitFileWriter.write(model());
+        CircuitModel reparsed = new CircuitFileParser().parse(new ByteArrayInputStream(bytes), "defaults.ipes");
+        for (int[] entry : familyAndType) {
+            int type = entry[1];
+            String name = "DEF_" + type;
+            CircuitModel.ComponentData c = reparsed.getAllComponents().stream()
+                    .filter(comp -> name.equals(comp.getName()))
+                    .findFirst()
+                    .orElseThrow(() -> new AssertionError("Missing after round-trip: " + name));
+            assertTrue(c.getRawParameters().length > 0,
+                    "Round-tripped component " + name + " (type " + type + ") must retain non-empty parameter[]");
+        }
+    }
+
     // ========== Helpers ==========
 
     private CircuitModel.ConnectionData wireByLabel(String label) {

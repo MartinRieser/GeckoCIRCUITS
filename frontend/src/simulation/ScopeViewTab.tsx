@@ -49,6 +49,10 @@ export interface ScopeViewTabProps {
   onDisplayLayoutChange?: (layout: ScopeDisplayLayout) => void;
   /** Optional current simulation execution status. */
   status?: SimulationStatus | null;
+  /** Optional simulation error message when a run fails. */
+  errorMessage?: string | null;
+  /** Optional engine warnings from the simulation run. */
+  warnings?: string[];
   /** Optional loaded circuit filename. */
   filename?: string | null;
   /** Optional scope controller instance. */
@@ -197,6 +201,8 @@ export function ScopeViewTab({
   onDisplayLayoutChange,
   theme = 'dark',
   status,
+  errorMessage,
+  warnings = [],
   filename,
   scope,
   onSetParameter,
@@ -818,15 +824,43 @@ export function ScopeViewTab({
           )}
 
           {/* Acquisition Status Pill */}
-          <div className={`dso-status-pill ${isRunning ? 'running' : results ? 'auto' : 'stop'}`}>
+          <div className={`dso-status-pill ${isRunning ? 'running' : status === 'FAILED' || errorMessage ? 'stop' : results ? 'auto' : 'stop'}`}>
             <span className="dso-status-dot" />
-            {isRunning ? 'RUNNING' : results ? 'AUTO' : 'STOP'}
+            {isRunning ? 'RUNNING' : status === 'FAILED' || errorMessage ? 'FAILED' : results ? 'AUTO' : 'STOP'}
           </div>
         </div>
       </div>
 
       {/* DSO Main Viewport (Screen Bezel + Optional Drawer) */}
       <div className={`dso-viewport ${isDraggingDrawer ? 'dragging-drawer' : ''}`}>
+        {(status === 'FAILED' || Boolean(errorMessage)) && (
+          <div
+            className="sim-error-box scope-error-banner"
+            role="alert"
+            data-testid="scope-sim-error"
+            style={{
+              margin: '12px 16px 0 16px',
+              padding: '10px 14px',
+              borderRadius: 6,
+              border: '1px solid var(--danger, #ef4444)',
+              background: 'rgba(239, 68, 68, 0.14)',
+              color: 'var(--danger, #f87171)',
+              fontSize: 13,
+              lineHeight: 1.45,
+            }}
+          >
+            <div style={{ fontWeight: 700, marginBottom: warnings.length > 0 ? 4 : 0 }}>
+              ⚠️ Simulation Failed: {errorMessage || 'An error occurred during simulation.'}
+            </div>
+            {warnings.length > 0 && (
+              <ul style={{ margin: '4px 0 0 18px', padding: 0, fontSize: 12 }}>
+                {warnings.map((w, idx) => (
+                  <li key={idx}>{w}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
         {!results || signalNames.length === 0 ? (
           graphRegister ? (
             <div className="scope-empty-state pre-sim-screen" data-testid="scope-pre-sim-state">

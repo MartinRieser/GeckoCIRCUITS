@@ -1425,15 +1425,19 @@ export function useEditor() {
         } else if (current.status === 'FAILED' || current.status === 'CANCELLED') {
           clearInterval(pollInterval);
           simPollTimerRef.current = null;
-          setSimError(current.errorMessage || 'Simulation failed or was cancelled');
+          const errMsg = current.errorMessage || 'Simulation failed or was cancelled';
+          setSimError(errMsg);
           // Failed runs keep their engine warnings too — they often explain why.
           setSimWarnings(current.warnings || []);
+          dispatch({ type: 'STATUS', status: `Simulation failed: ${errMsg}` });
         }
       } catch (err) {
         clearInterval(pollInterval);
         simPollTimerRef.current = null;
         setSimStatus('FAILED');
-        setSimError((err as Error).message);
+        const errMsg = (err as Error).message;
+        setSimError(errMsg);
+        dispatch({ type: 'STATUS', status: `Simulation failed: ${errMsg}` });
       }
     }, SIMULATION_DEFAULTS.POLL_INTERVAL_MS);
     simPollTimerRef.current = pollInterval;
@@ -1452,14 +1456,18 @@ export function useEditor() {
         setSimWarnings(current.warnings || []);
         announceCompletionWarnings(current.warnings, dispatch);
       } else if (current.status === 'FAILED' || current.status === 'CANCELLED') {
-        setSimError(current.errorMessage || 'Simulation failed or was cancelled');
+        const errMsg = current.errorMessage || 'Simulation failed or was cancelled';
+        setSimError(errMsg);
         setSimWarnings(current.warnings || []);
+        dispatch({ type: 'STATUS', status: `Simulation failed: ${errMsg}` });
       } else {
         startPolling(simId);
       }
     } catch (err) {
       setSimStatus('FAILED');
-      setSimError((err as Error).message);
+      const errMsg = (err as Error).message;
+      setSimError(errMsg);
+      dispatch({ type: 'STATUS', status: `Simulation failed: ${errMsg}` });
     }
   }, [startPolling, stopStream]);
 

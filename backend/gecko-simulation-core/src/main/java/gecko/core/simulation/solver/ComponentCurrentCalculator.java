@@ -168,7 +168,7 @@ public class ComponentCurrentCalculator {
                     }
                     double capacitance = parameters[CapacitorParameters.INDEX_EFFECTIVE_C];
                     double nonlinearFactor = parameters[CapacitorParameters.INDEX_NONLINEAR_FACTOR];
-                    double fac = 1.0 - nonlinearFactor / capacitance;
+                    double fac = capacitance > 0.0 ? 1.0 - nonlinearFactor / capacitance : 0.0;
                     double nonLinearCorrectionCurrent = -fac * parameters[CapacitorParameters.INDEX_COMPANION_CURRENT];
 
                     double voltage = p[nodeX] - p[nodeY];
@@ -210,7 +210,13 @@ public class ComponentCurrentCalculator {
                     }
                 }
 
-                case LK_U, REL_MMF, TH_TEMP -> {
+                case LK_U, REL_MMF, TH_TEMP, LK_TRANS -> {
+                    int voltageSourceNumber = netlist.getVoltageSourceNumber(elementIdx);
+                    int voltageSourceIdx = netlist.getNodeMax() + voltageSourceNumber;
+                    if (voltageSourceNumber >= 0 && voltageSourceIdx >= 0 && voltageSourceIdx < p.length
+                            && parameters.length > SourceParameters.INDEX_SAVED_CURRENT) {
+                        parameters[SourceParameters.INDEX_SAVED_CURRENT] = p[voltageSourceIdx];
+                    }
                 }
 
                 case LK_D -> {
@@ -262,7 +268,7 @@ public class ComponentCurrentCalculator {
                 }
 
                 case LK_IGBT -> {
-                    double rD = parameters[DiodeParameters.INDEX_CURRENT_RESISTANCE];
+                    double rD = Math.max(parameters[DiodeParameters.INDEX_CURRENT_RESISTANCE], FAST_NULL_R);
                     double uf = parameters[DiodeParameters.INDEX_FORWARD_VOLTAGE];
                     double voltage = p[nodeX] - p[nodeY];
                     writeCurrentAndVoltage(parameters, DiodeParameters.INDEX_CURRENT, (voltage - uf) / rD, voltage);
@@ -278,7 +284,8 @@ public class ComponentCurrentCalculator {
                         stepBack = true;
                     }
                     if (parameters[DiodeParameters.INDEX_GATE_SIGNAL] == 0.0
-                            && parameters[DiodeParameters.INDEX_CURRENT_RESISTANCE] == parameters[DiodeParameters.INDEX_R_ON]) {
+                            && parameters[DiodeParameters.INDEX_CURRENT_RESISTANCE] == parameters[DiodeParameters.INDEX_R_ON]
+                            && parameters[DiodeParameters.INDEX_CURRENT_RESISTANCE] != parameters[DiodeParameters.INDEX_R_OFF]) {
                         parameters[DiodeParameters.INDEX_CURRENT_RESISTANCE] = parameters[DiodeParameters.INDEX_R_OFF];
                         stepBack = true;
                     }
@@ -304,6 +311,7 @@ public class ComponentCurrentCalculator {
             if (parameters.length > 1) {
                 int currentSlot = switch (componentType) {
                     case LK_S, LK_MOSFET, LK_D, LK_THYR, LK_IGBT -> DiodeParameters.INDEX_CURRENT;
+                    case LK_U, REL_MMF, TH_TEMP, LK_TRANS -> SourceParameters.INDEX_SAVED_CURRENT;
                     default -> ResistorParameters.INDEX_CURRENT;
                 };
                 iCurrent[elementIdx] = parameters[Math.min(currentSlot, parameters.length - 1)];

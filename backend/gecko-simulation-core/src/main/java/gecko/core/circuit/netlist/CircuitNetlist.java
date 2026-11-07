@@ -309,9 +309,9 @@ public class CircuitNetlist implements INetList {
         vcvsCouplings.clear();
     }
 
-    /** Minimum parameter array length: solver stamps read slots up to [20]
-     *  (e.g. SIN source amplitude) and must never see ArrayIndexOutOfBounds. */
-    private static final int MIN_PARAM_SLOTS = 24;
+    /** Minimum parameter array length: solver stamps read slots up to [39]
+     *  (e.g. SIN source amplitude, subcircuit slots) and must never see ArrayIndexOutOfBounds. */
+    private static final int MIN_PARAM_SLOTS = 40;
 
     /**
      * Normalizes an element parameter array to the classic full-slot layout.
@@ -326,20 +326,86 @@ public class CircuitNetlist implements INetList {
      * primary value exactly like the classic editor does.
      */
     private static double[] normalizeParameters(CircuitTypCore type, double[] raw) {
-        double[] out = new double[Math.max(MIN_PARAM_SLOTS, raw.length)];
-        for (int i = 0; i < raw.length; i++) {
+        int rawLen = raw == null ? 0 : raw.length;
+        double[] out = new double[Math.max(MIN_PARAM_SLOTS, rawLen)];
+        for (int i = 0; i < rawLen; i++) {
             out[i] = Double.isFinite(raw[i]) ? raw[i] : 0.0;
         }
         if (type == CircuitTypCore.LK_C || type == CircuitTypCore.TH_CTH) {
+            if (out[0] <= 0.0) {
+                out[0] = type == CircuitTypCore.TH_CTH ? 1.0 : 100.0e-9;
+            }
             // capacitance also lives in [6]; nonlinear factor defaults to C
             // (linear element, fac = 1 - factor/C = 0); [10] history starts 0
             out[6] = out[0];
             out[7] = out[0];
-        } else if (type == CircuitTypCore.LK_U || type == CircuitTypCore.LK_I) {
+        } else if (type == CircuitTypCore.LK_L || type == CircuitTypCore.LK_LKOP2) {
+            if (out[0] <= 0.0) {
+                out[0] = type == CircuitTypCore.LK_LKOP2 ? 1.0e-3 : 3.0e-4;
+            }
+            if (type == CircuitTypCore.LK_LKOP2 && out[10] <= 0.0) {
+                out[10] = out[0];
+            }
+        } else if (type == CircuitTypCore.LK_R || type == CircuitTypCore.TH_RTH
+                || type == CircuitTypCore.REL_RELUCTANCE) {
+            if (rawLen == 0) {
+                out[0] = type == CircuitTypCore.LK_R ? 1000.0 : 1.0;
+            }
+        } else if (type == CircuitTypCore.LK_D || type == CircuitTypCore.LK_IGBT
+                || type == CircuitTypCore.LK_THYR || type == CircuitTypCore.LK_MOSFET) {
+            // [0]=rD (current state), [1]=uF, [2]=rON, [3]=rOFF, [9]=turn-off delay (THYR)
+            if (rawLen <= 1) {
+                out[1] = type == CircuitTypCore.LK_D ? 0.6 : 0.8;
+            }
+            if (out[2] <= 0.0) {
+                out[2] = 10.0e-3;
+            }
+            if (out[3] <= 0.0) {
+                out[3] = 1.0e7;
+            }
+            if (out[0] <= 0.0) {
+                out[0] = type == CircuitTypCore.LK_D ? out[2] : out[3];
+            }
+            if (type == CircuitTypCore.LK_THYR && rawLen <= 9 && out[9] <= 0.0) {
+                out[9] = 10.0e-6;
+            }
+        } else if (type == CircuitTypCore.LK_S) {
+            // [0]=rD (current state), [1]=rON, [2]=rOFF
+            if (out[1] <= 0.0) {
+                out[1] = 10.0e-3;
+            }
+            if (out[2] <= 0.0) {
+                out[2] = 1.0e7;
+            }
+            if (out[0] <= 0.0) {
+                out[0] = out[2];
+            }
+        } else if (type == CircuitTypCore.LK_U || type == CircuitTypCore.LK_I
+                || type == CircuitTypCore.TH_FLOW || type == CircuitTypCore.TH_TEMP
+                || type == CircuitTypCore.REL_MMF) {
+            if (rawLen == 0 || out[0] == 0.0) {
+                out[0] = gecko.core.circuit.SourceType.QUELLE_DC;
+            }
+            if (rawLen == 0) {
+                out[1] = switch (type) {
+                    case LK_I -> 1.0;
+                    case TH_TEMP -> 25.0;
+                    case REL_MMF -> 100.0;
+                    default -> 10.0;
+                };
+                out[2] = 50.0;
+            }
             int sourceType = (int) out[0];
             if (sourceType == gecko.core.circuit.SourceType.QUELLE_SIN
                     || sourceType == gecko.core.circuit.SourceType.QUELLE_SIN_NEW) {
-                out[20] = out[1]; // SIN amplitude slot
+                if (out[1] != 0.0) {
+                    out[20] = out[1]; // SIN amplitude slot from web editor slot 1
+                } else if (out[20] != 0.0) {
+                    out[1] = out[20]; // Preserve classic slot 20 amplitude when slot 1 is 0
+                }
+                if (rawLen <= 2 && out[2] <= 0.0) {
+                    out[2] = 50.0;
+                }
             }
         }
         return out;

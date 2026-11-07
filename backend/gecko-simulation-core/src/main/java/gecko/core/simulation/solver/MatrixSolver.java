@@ -570,7 +570,7 @@ public class MatrixSolver implements MnaSolver {
                             frequency = params[SourceParameters.INDEX_FREQUENCY];
                             phase = params[SourceParameters.INDEX_PHASE_DEG];
                             offset = params[SourceParameters.INDEX_OFFSET];
-                            bContribution = -amplitude * Math.sin(2 * Math.PI * frequency * time - Math.toRadians(phase)) + offset;
+                            bContribution = -(amplitude * Math.sin(2 * Math.PI * frequency * time - Math.toRadians(phase)) + offset);
                         }
                         case SourceType.QUELLE_VOLTAGECONTROLLED_DIRECTLY_NEW,
                              SourceType.QUELLE_VOLTAGECONTROLLED_DIRECTLY -> {
