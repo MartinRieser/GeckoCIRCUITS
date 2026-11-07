@@ -396,13 +396,15 @@ describe('componentSchema', () => {
         expect(meta.displayName.length).toBeGreaterThan(0);
         expect(meta.defaultPrefix.length).toBeGreaterThan(0);
         for (const param of meta.parameters) {
-          if (param.type === 'number') {
+          if (param.options) {
+            expect(param.options.length > 0).toBe(true);
+          } else if (typeof param.defaultValue === 'number') {
             expect(
-              typeof param.defaultValue === 'number' && Number.isFinite(param.defaultValue),
+              Number.isFinite(param.defaultValue),
               `Component ${meta.name} (type ${meta.type}) parameter ${param.key} must have finite numeric defaultValue`,
             ).toBe(true);
-          } else if (param.type === 'select') {
-            expect(param.options && param.options.length > 0).toBe(true);
+          } else {
+            expect(typeof param.defaultValue).toBe('string');
           }
         }
       }
