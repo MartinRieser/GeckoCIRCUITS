@@ -3,6 +3,7 @@ import {
   isWireEndPointConnected,
   validateCircuitForSimulation,
   findWireGeometryWarnings,
+  findUnusedMeters,
   type ComponentLike,
 } from '../src/model/validation';
 import {
@@ -297,5 +298,70 @@ describe('validateCircuitForSimulation: couplings and node labels', () => {
     const source = comp({ name: 'U', type: LkComponentType.VOLTAGE_SOURCE });
     const warnings = validateCircuitForSimulation([sw, gate, source], []);
     expect(warnings.some((x) => /deleted/.test(x))).toBe(false);
+  });
+
+  describe('Unused meter DRC hints (Phase 4)', () => {
+    it('identifies purely observational ammeter and suggests virtual current signal', () => {
+      const ammeter = comp({
+        name: 'AMP.1',
+        type: ControlComponentType.AMMETER,
+        family: 'CONTROL',
+        position: [20, 20],
+        orientation: Orientation.NORTH_SOUTH,
+        parameters: { coupledComponent: 'L_filter' },
+      });
+      const source = comp({ name: 'U', type: LkComponentType.VOLTAGE_SOURCE });
+
+      const unused = findUnusedMeters([ammeter, source], []);
+      expect(unused).toHaveLength(1);
+      expect(unused[0].name).toBe('AMP.1');
+      expect(unused[0].suggestedSignal).toBe('I(L_filter)');
+
+      const warnings = validateCircuitForSimulation([ammeter, source], []);
+      expect(warnings.some((w) => /Meter output unused on AMP.1/.test(w) && /I\(L_filter\)/.test(w))).toBe(true);
+    });
+
+    it('identifies purely observational voltmeter and suggests virtual voltage signal', () => {
+      const voltmeter = comp({
+        name: 'VOLT.1',
+        type: ControlComponentType.VOLTMETER,
+        family: 'CONTROL',
+        position: [20, 20],
+        orientation: Orientation.NORTH_SOUTH,
+        parameters: { nodeA: 'out_p', nodeB: 'out_n' },
+      });
+      const source = comp({ name: 'U', type: LkComponentType.VOLTAGE_SOURCE });
+
+      const unused = findUnusedMeters([voltmeter, source], []);
+      expect(unused).toHaveLength(1);
+      expect(unused[0].name).toBe('VOLT.1');
+      expect(unused[0].suggestedSignal).toBe('V(out_p|out_n)');
+
+      const warnings = validateCircuitForSimulation([voltmeter, source], []);
+      expect(warnings.some((w) => /Meter output unused on VOLT.1/.test(w) && /V\(out_p\|out_n\)/.test(w))).toBe(true);
+    });
+
+    it('stays silent when meter output is consumed by a control block input label', () => {
+      const voltmeter = comp({
+        name: 'VOLT.1',
+        type: ControlComponentType.VOLTMETER,
+        family: 'CONTROL',
+        position: [20, 20],
+        outputLabels: ['v_meas'],
+      });
+      const piController = comp({
+        name: 'PI.1',
+        type: ControlComponentType.PI,
+        family: 'CONTROL',
+        inputLabels: ['v_meas'],
+      });
+      const source = comp({ name: 'U', type: LkComponentType.VOLTAGE_SOURCE });
+
+      const unused = findUnusedMeters([voltmeter, piController, source], []);
+      expect(unused).toHaveLength(0);
+
+      const warnings = validateCircuitForSimulation([voltmeter, piController, source], []);
+      expect(warnings.some((w) => /Meter output unused/.test(w))).toBe(false);
+    });
   });
 });

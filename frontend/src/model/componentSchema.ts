@@ -91,7 +91,7 @@ export interface ComponentMeta {
   family: string;
   name: string;
   displayName: string;
-  category: 'passives' | 'sources' | 'semiconductors' | 'switches' | 'transformers' | 'machines' | 'thermal' | 'terminals' | 'measurement' | 'control' | 'logic' | 'documentation';
+  category: 'passives' | 'sources' | 'semiconductors' | 'switches' | 'transformers' | 'machines' | 'thermal' | 'terminals' | 'sensors' | 'control' | 'logic' | 'documentation';
   description: string;
   /** Not simulated by the engine yet: shown greyed out in the palette and
    *  cannot be armed/placed until implemented. */
@@ -114,7 +114,7 @@ export const CATEGORIES = [
   { id: 'switches', label: 'Switches' },
   { id: 'transformers', label: 'Transformers & Coupled' },
   { id: 'machines', label: 'Motors & OpAmps' },
-  { id: 'measurement', label: 'Measurement' },
+  { id: 'sensors', label: 'Sensors (control feedback)' },
   { id: 'control', label: 'Control & Signal' },
   { id: 'logic', label: 'Logic Gates' },
   { id: 'thermal', label: 'Thermal Domain' },
@@ -1307,15 +1307,15 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     },
   },
 
-  // ========== CONTROL-domain: Measurement ==========
+  // ========== CONTROL-domain: Sensors & Feedback ==========
 
   1001: {
     type: 1001,
     family: 'CONTROL',
     name: 'CTRL_VOLT',
     displayName: 'Voltmeter',
-    category: 'measurement',
-    description: 'Measures voltage between two electrical nodes',
+    category: 'sensors',
+    description: 'Measures voltage for feeding into control blocks; to view waveforms, use Probe (P) or Oscilloscope',
     shortcut: 'U',
     defaultPrefix: 'V_meas',
     parameters: [],
@@ -1330,8 +1330,8 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     family: 'CONTROL',
     name: 'CTRL_AMP',
     displayName: 'Ammeter',
-    category: 'measurement',
-    description: 'Measures current through an electrical branch',
+    category: 'sensors',
+    description: 'Measures current for feeding into control blocks; to view waveforms, use Probe (P) or Oscilloscope',
     shortcut: 'A',
     defaultPrefix: 'I_meas',
     parameters: [],
@@ -1346,7 +1346,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     family: 'CONTROL',
     name: 'CTRL_SCOPE',
     displayName: 'Scope',
-    category: 'measurement',
+    category: 'sensors',
     description: 'Oscilloscope display — records and visualises signals',
     defaultPrefix: 'SCOPE',
     parameters: [],

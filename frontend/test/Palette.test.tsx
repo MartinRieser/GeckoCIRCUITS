@@ -106,4 +106,22 @@ describe('Palette Component', () => {
 
     expect(screen.getByText('Resistor')).not.toBeNull();
   });
+
+  it('groups Voltmeter and Ammeter under Sensors (control feedback) category with clear guidance', () => {
+    const catalog: CatalogEntry[] = [
+      { type: ControlComponentType.VOLTMETER, name: 'CTRL_VOLT', family: 'CONTROL' },
+      { type: ControlComponentType.AMMETER, name: 'CTRL_AMP', family: 'CONTROL' },
+    ];
+    render(<Palette catalog={catalog} onArm={vi.fn()} />);
+
+    const select = screen.getByLabelText('Filter components by category');
+    expect(screen.getByText(/Sensors \(control feedback\)/i)).not.toBeNull();
+
+    fireEvent.change(select, { target: { value: 'sensors' } });
+    expect(screen.getByText('Voltmeter')).not.toBeNull();
+    expect(screen.getByText('Ammeter')).not.toBeNull();
+
+    // Descriptions should guide the user about Probe (P) and Oscilloscope
+    expect(screen.getAllByText(/feeding into control blocks/i).length).toBeGreaterThan(0);
+  });
 });

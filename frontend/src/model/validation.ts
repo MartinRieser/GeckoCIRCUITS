@@ -5,9 +5,10 @@
  * Surfaces missing sources, unsupported stamped components, dangling open power
  * leads, overlapping wire geometry, and accidental terminal shorts before runs.
  */
-import { allTerminals } from './geometry';
+import { allTerminals, terminalPositions } from './geometry';
 import { denseCellsOf } from '../canvas/WireRouter';
 import { LkComponentType } from './constants';
+import { isVoltmeterComponent, isAmmeterComponent } from './componentSchema';
 
 /**
  * Component type numbers the core engine can currently stamp and solve.
@@ -361,5 +362,101 @@ export function validateCircuitForSimulation(
     );
   }
 
+  // Observational sensors check (DRC hint):
+  // If a Voltmeter or Ammeter does NOT feed any control block input (neither via wire
+  // nor via terminal net-labels), suggest using virtual probing (P key) instead of a physical meter.
+  const unusedMeters = findUnusedMeters(components, wires);
+  for (const m of unusedMeters) {
+    warnings.push(
+      `Meter output unused on ${m.name}: This sensor does not feed any control block. Remove it and use '${m.suggestedSignal}' in the scope instead? (Use Probe tool 'P' or Oscilloscope tab).`,
+    );
+  }
+
   return warnings;
+}
+
+/**
+ * Metadata for a meter (Voltmeter or Ammeter) whose output does not feed any control block.
+ */
+export interface UnusedMeterInfo {
+  name: string;
+  type: number;
+  family?: string;
+  suggestedSignal: string;
+}
+
+/**
+ * Identifies Voltmeter and Ammeter components that are placed purely for waveform observation
+ * rather than supplying feedback signals to control blocks.
+ */
+export function findUnusedMeters(components: ComponentLike[], wires: WireLike[]): UnusedMeterInfo[] {
+  const unused: UnusedMeterInfo[] = [];
+
+  const consumedControlSignals = new Set<string>();
+  for (const c of components) {
+    if (c.family === 'CONTROL') {
+      for (const l of c.inputLabels ?? []) {
+        const raw = l?.trim();
+        if (raw && raw !== 'NIX_NIX_NIX') consumedControlSignals.add(raw.toLowerCase());
+      }
+    }
+  }
+
+  const allConnectedPoints = new Set<string>();
+  for (const w of wires) {
+    for (const pt of w.points ?? []) {
+      allConnectedPoints.add(`${pt[0]},${pt[1]}`);
+    }
+  }
+
+  for (const c of components) {
+    const isVolt = isVoltmeterComponent(c);
+    const isAmp = isAmmeterComponent(c);
+    if (!isVolt && !isAmp) continue;
+
+    // Check if output terminal is wired
+    const terms = terminalPositions(c);
+    const outTerm = terms.output?.[0];
+    const isWired = outTerm ? allConnectedPoints.has(`${outTerm.x},${outTerm.y}`) : false;
+
+    // Check if name or outputLabels are consumed by another control component
+    let isLabelConsumed = consumedControlSignals.has(c.name.trim().toLowerCase());
+    for (const l of c.outputLabels ?? []) {
+      const raw = l?.trim();
+      if (raw && raw !== 'NIX_NIX_NIX' && consumedControlSignals.has(raw.toLowerCase())) {
+        isLabelConsumed = true;
+        break;
+      }
+    }
+
+    if (!isWired && !isLabelConsumed) {
+      let suggestedSignal = 'waveform';
+      if (isAmp) {
+        const target = String(c.parameters?.coupledComponent ?? '').trim();
+        suggestedSignal = target && target !== 'NIX_NIX_NIX' ? `I(${target})` : 'I(...)';
+      } else if (isVolt) {
+        const target = String(c.parameters?.coupledComponent ?? '').trim();
+        const nodeA = String(c.parameters?.nodeA ?? c.parameters?.positiveNode ?? '').trim();
+        const nodeB = String(c.parameters?.nodeB ?? c.parameters?.negativeNode ?? '').trim();
+        if (target && target !== 'NIX_NIX_NIX') {
+          suggestedSignal = `V(${target})`;
+        } else if (nodeA && nodeA !== 'NIX_NIX_NIX' && nodeB && nodeB !== 'NIX_NIX_NIX' && nodeB !== '0') {
+          suggestedSignal = `V(${nodeA}|${nodeB})`;
+        } else if (nodeA && nodeA !== 'NIX_NIX_NIX') {
+          suggestedSignal = `V(${nodeA})`;
+        } else {
+          suggestedSignal = 'V(...)';
+        }
+      }
+
+      unused.push({
+        name: c.name,
+        type: c.type,
+        family: c.family,
+        suggestedSignal,
+      });
+    }
+  }
+
+  return unused;
 }
