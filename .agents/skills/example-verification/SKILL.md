@@ -37,13 +37,34 @@ Exit 0 = gate green. The script extracts every example from
 
 ## Authoring or fixing an example
 
-The `.ipes` content lives in template literals in `examples.ts`. When editing
-by hand, splice with a small Python script (regex the `export const X_IPES`
-block, escape `\` → `\\`), never edit hundreds of escaped lines inline — then
-round-trip-verify the literal reproduces the intended file byte-for-byte.
+Circuit examples live in TWO locations that MUST be kept strictly synchronized:
+1. `frontend/src/model/examples.ts` (embedded TypeScript constants used for tests and offline mode).
+2. `examples/*.ipes` & `examples/manifest.json` (disk files loaded by `ExamplesController.java` via `GET /gecko/api/v1/examples`).
+
+When modifying or creating an example:
+1. Update the `.ipes` template literal in `frontend/src/model/examples.ts` (ensure closing tags are escaped with double backslashes, e.g. `<\\graphRegisters>`, `<\\graphRegister>`).
+2. Synchronize the evaluated content to `examples/<filename>.ipes` on disk (and update `examples/manifest.json` and `examples/README.md` if names/descriptions changed).
+
+### Synchronization Command
+To safely dump evaluated template literals to disk files without escaping issues:
+```bash
+node -e "
+import('./frontend/src/model/examples.ts').then(async m => {
+  const fs = await import('fs/promises');
+  const path = await import('path');
+  const manifest = JSON.parse(await fs.readFile('examples/manifest.json', 'utf8'));
+  for (const item of manifest) {
+    const ex = m.EXAMPLES.find(e => e.id === item.id);
+    if (ex) await fs.writeFile(path.join('examples', item.filename), ex.content.trim() + '\n', 'utf8');
+  }
+});
+"
+```
 
 Checklist, in order:
 
+0. **Scope-Free Topology & Modern GraphRegisters**: Modern examples must NEVER contain physical `SCOPE` component blocks (`typ 5` or `idStringDialog SCOPE`) or obsolete wires connected to them. Instead, signals are captured via observational probes (`VOLT`, `AMP`) and organized in `<graphRegisters>` blocks (`<graphRegister>` with channel assignments).
+0. **Note Card Sizing**: Ensure schematic documentation cards (`NOTE.1`, `typ 2001`) have `boxWidth >= 34` and `boxHeight >= 24` to avoid clipping text, equations, or lists.
 1. **Power-stage physics**: compute the expected steady state BEFORE trusting
    the sim. Buck: V·D. Boost / buck-boost: V/(1−D) / −V·D/(1−D). Rectifier bus:
    Vpk − 2·Vf. RC/RLC: τ = RC / √(LC), ensure tDURATION ≥ 5τ. PFC: ripple
@@ -79,7 +100,7 @@ Checklist, in order:
 5. **Add the assertion entry** to `ASSERTIONS` in `scripts/verify-examples.py`
    with theory-derived windows (±20% generous), not observed values.
 6. **Run the gate** until green, then `npx vitest run` + `npx tsc --noEmit`
-   in `frontend/`.
+   in `frontend/` (specifically validating `test/examples.test.ts` for disk-to-frontend parity, zero-scope compliance, and note dimensions, as well as `test/examples.connectivity.test.ts`).
 7. **GUI smoke test** (browser-use): open http://localhost:5173, Examples →
    the example, F5. Confirm the scope tab appears with the promised channels
    and plausible shapes. Prefer `dom_cua.get_visible_dom()` refs /
