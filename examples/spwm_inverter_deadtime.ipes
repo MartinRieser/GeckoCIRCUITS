@@ -1,4 +1,3 @@
-
 verbindungLK (0)
 <Verbindung>
 label dc_pos
@@ -738,8 +737,8 @@ parameterString[]
 nameOpt[]
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34.0
-boxHeight 26.0
+boxWidth 38.0
+boxHeight 30.0
 <markdownText>
 # Closed-Loop SPWM Inverter with Dead-Time (50 Hz)
 
@@ -773,8 +772,6 @@ optimizerValue[] null
 <extraScriptSourceFiles>
  
 <\extraScriptSourceFiles>
-
-
 
 DtStor 2026-11-07
 tDURATION 0.04
@@ -820,4 +817,3 @@ cursorsEnabled false
 <\graphRegisters>
 
 =======================
- 

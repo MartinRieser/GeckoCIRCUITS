@@ -258,8 +258,8 @@ y 4
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34
-boxHeight 26
+boxWidth 36
+boxHeight 28
 <markdownText>
 # Closed-Loop Regulated Buck (PI Control)
 
@@ -276,6 +276,12 @@ Voltage-mode closed-loop DC-DC converter featuring an embedded microcontroller *
 
 ### Oscilloscope Verification (Osci 1)
 - Shows fast closed-loop step tracking with minimal overshoot and zero steady-state error.
+
+### Observed Waveforms (Oscilloscope)
+- **v_out_scope**: Measured DC output voltage regulated to +12.0 V (Graph 1).
+- **v_ref**: Digital voltage reference setpoint (+12.0 V) (Graph 1).
+- **I(L1)**: Continuous filter inductor ripple current (Graph 2).
+- **duty**: Embedded PI controller PWM duty command (Graph 2).
 <\markdownText>
 <\ElementSPECIAL>
 
@@ -283,15 +289,15 @@ tDURATION 0.003
 dt 2.0E-7
 solverType 0
 FileVersion 1
-dataContainerSignals[] /v_out_scope
+dataContainerSignals[] /v_out_scope/v_ref/I(L1)/duty
 <graphRegisters>
 count 1
 <graphRegister>
 id osci_1
 name Osci 1
 numGraphs 2
-signals v_out_scope,pwm
-signalGraphs v_out_scope:1,pwm:2
+signals v_out_scope,v_ref,I(L1),duty
+signalGraphs v_out_scope:1,v_ref:1,I(L1):2,duty:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false

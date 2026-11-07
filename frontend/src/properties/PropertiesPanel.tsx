@@ -34,8 +34,10 @@ import {
   isParameterVisible,
   resolveParameterDef,
   isTextboxComponent,
+  isCircuitPowerComponent,
   type ParameterDef,
 } from '../model/componentSchema';
+import type { GraphRegister } from '../model/types';
 import { isScopeComponent } from '../simulation/scopes';
 import { CHANNEL_TRACE_COLORS, CHANNEL_TRACE_COLORS_LIGHT } from '../simulation/traceColors';
 import { terminalPositions } from '../model/geometry';
@@ -81,6 +83,14 @@ export interface PropertiesPanelProps {
   wires?: EditorWire[];
   /** Script debug session state; omit to hide the script debugging UI. */
   scriptDebug?: ScriptDebugPanelState;
+  /** Active project graph registers for scope waveform probing. */
+  graphRegisters?: GraphRegister[];
+  /** Optional ID of the currently active graph register. */
+  activeGraphRegisterId?: string;
+  /** Callback to update a graph register. */
+  onUpdateGraphRegister?: (id: string, patch: Partial<GraphRegister>) => void;
+  /** Callback to add a new graph register if none exists. */
+  onAddGraphRegister?: (initial?: Partial<GraphRegister>) => void;
   /** Callback to rename a component. */
   onRename: (name: string, newName: string) => void;
   /** Callback to set or update a component parameter value. */
@@ -112,6 +122,10 @@ export function PropertiesPanel({
   allComponents,
   wires,
   scriptDebug,
+  graphRegisters,
+  activeGraphRegisterId,
+  onUpdateGraphRegister,
+  onAddGraphRegister,
   onRename,
   onSetParameter,
   onSetLabel,
@@ -146,6 +160,73 @@ export function PropertiesPanel({
   const isVoltmeter = isVoltmeterComponent(component);
   const isCoupler = isMutualCoupler(component);
   const isScope = component ? isScopeComponent(component) : false;
+  const isCircuitPower = isCircuitPowerComponent(component);
+
+  const activeReg = useMemo(() => {
+    if (!graphRegisters || graphRegisters.length === 0) return null;
+    if (activeGraphRegisterId) {
+      const found = graphRegisters.find((r) => r.id === activeGraphRegisterId);
+      if (found) return found;
+    }
+    return graphRegisters[0];
+  }, [graphRegisters, activeGraphRegisterId]);
+
+  const currentSigName = component ? `I(${component.name})` : '';
+  const voltageSigName = component ? `V(${component.name})` : '';
+
+  const isCurrentPlotted = Boolean(
+    activeReg && currentSigName && activeReg.signals.includes(currentSigName),
+  );
+  const isVoltagePlotted = Boolean(
+    activeReg && voltageSigName && activeReg.signals.includes(voltageSigName),
+  );
+  const currentGraph = (activeReg?.signalGraphs?.[currentSigName] || 2) as 1 | 2 | 3;
+  const voltageGraph = (activeReg?.signalGraphs?.[voltageSigName] || 1) as 1 | 2 | 3;
+
+  const handleToggleSignal = (sigName: string, defaultGraph: 1 | 2, checked: boolean) => {
+    if (!component || !sigName) return;
+
+    if (!activeReg) {
+      if (checked && onAddGraphRegister) {
+        onAddGraphRegister({
+          name: 'Scope',
+          signals: [sigName],
+          signalGraphs: { [sigName]: defaultGraph },
+          numGraphs: defaultGraph === 2 ? 2 : 1,
+        });
+      }
+      return;
+    }
+
+    if (!onUpdateGraphRegister) return;
+
+    if (checked) {
+      const nextSignals = activeReg.signals.includes(sigName)
+        ? activeReg.signals
+        : [...activeReg.signals, sigName];
+      const nextSignalGraphs = {
+        ...activeReg.signalGraphs,
+        [sigName]: defaultGraph,
+      };
+      const nextNumGraphs = Math.max(activeReg.numGraphs, defaultGraph) as 1 | 2 | 3;
+      onUpdateGraphRegister(activeReg.id, {
+        signals: nextSignals,
+        signalGraphs: nextSignalGraphs,
+        numGraphs: nextNumGraphs,
+      });
+    } else {
+      const nextSignals = activeReg.signals.filter((s) => s !== sigName);
+      const nextSignalGraphs = { ...activeReg.signalGraphs };
+      delete nextSignalGraphs[sigName];
+      const nextHidden = activeReg.hiddenSignals.filter((s) => s !== sigName);
+      onUpdateGraphRegister(activeReg.id, {
+        signals: nextSignals,
+        signalGraphs: nextSignalGraphs,
+        hiddenSignals: nextHidden,
+      });
+    }
+  };
+
   const coupledTarget = getCoupledComponentName(component);
   // A name reference that resolves to nothing on the sheet is dead (its
   // target was deleted): the pill must say so instead of showing green.
@@ -155,6 +236,10 @@ export function PropertiesPanel({
   const availableSignals = useMemo(() => {
     return extractAvailableSignals(allComponents || [], wires || []);
   }, [allComponents, wires]);
+
+  const availableNodeSignals = useMemo(() => {
+    return availableSignals.filter((s) => !s.startsWith('I(') && !s.startsWith('V('));
+  }, [availableSignals]);
 
   const availableSwitches = useMemo(() => {
     return (allComponents || []).filter((c) => isSwitchComponent(c) && c.name !== component?.name);
@@ -610,7 +695,7 @@ export function PropertiesPanel({
                 onClick={() => {
                   onSetParameter(component.name, 'coupledComponent', '');
                   if (!component.parameters?.nodeA) {
-                    const firstSig = availableSignals.find((s) => s !== '0') || 'z1';
+                    const firstSig = availableNodeSignals.find((s) => s !== '0') || 'z1';
                     onSetParameter(component.name, 'nodeA', firstSig);
                   }
                   if (!component.parameters?.nodeB) {
@@ -692,7 +777,7 @@ export function PropertiesPanel({
                     <input
                       type="text"
                       className="prop-input"
-                      list="circuit-available-signals"
+                      list="circuit-node-signals"
                       placeholder="e.g. z1, in"
                       value={String(component.parameters?.nodeA ?? '')}
                       onChange={(e) => {
@@ -712,7 +797,7 @@ export function PropertiesPanel({
                     <input
                       type="text"
                       className="prop-input"
-                      list="circuit-available-signals"
+                      list="circuit-node-signals"
                       placeholder="0 (GND)"
                       value={String(component.parameters?.nodeB ?? '0')}
                       onChange={(e) => {
@@ -856,6 +941,55 @@ export function PropertiesPanel({
               </div>
             </div>
           )
+        )}
+
+        {/* Oscilloscope Waveform Probing (meter-free virtual probes) */}
+        {isCircuitPower && (
+          <div className="prop-section virtual-probes-section">
+            <div
+              className="prop-section-title"
+              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            >
+              <span>📈 Oscilloscope Probes</span>
+              {onOpenScopeTab && (
+                <button
+                  type="button"
+                  className="link-action-btn"
+                  onClick={() => onOpenScopeTab(activeReg?.name || 'Scope')}
+                  title="Open Oscilloscope View"
+                >
+                  View Scope ↗
+                </button>
+              )}
+            </div>
+            <div className="prop-desc-hint">
+              Record and plot waveforms directly in the oscilloscope without canvas meters.
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13 }}>
+                <input
+                  type="checkbox"
+                  checked={isCurrentPlotted}
+                  onChange={(e) => handleToggleSignal(currentSigName, 2, e.target.checked)}
+                />
+                <span>Plot Current: <strong>{currentSigName}</strong></span>
+                {isCurrentPlotted && (
+                  <span className="type-badge" style={{ marginLeft: 'auto', fontSize: 10 }}>Graph {currentGraph}</span>
+                )}
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13 }}>
+                <input
+                  type="checkbox"
+                  checked={isVoltagePlotted}
+                  onChange={(e) => handleToggleSignal(voltageSigName, 1, e.target.checked)}
+                />
+                <span>Plot Voltage: <strong>{voltageSigName}</strong></span>
+                {isVoltagePlotted && (
+                  <span className="type-badge" style={{ marginLeft: 'auto', fontSize: 10 }}>Graph {voltageGraph}</span>
+                )}
+              </label>
+            </div>
+          </div>
         )}
 
         {/* Dedicated Scope Channels Inspector */}
@@ -1070,6 +1204,12 @@ export function PropertiesPanel({
 
         <datalist id="circuit-available-signals">
           {availableSignals.map((sig) => (
+            <option key={sig} value={sig} />
+          ))}
+        </datalist>
+
+        <datalist id="circuit-node-signals">
+          {availableNodeSignals.map((sig) => (
             <option key={sig} value={sig} />
           ))}
         </datalist>

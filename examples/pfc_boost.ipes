@@ -281,7 +281,7 @@ orientierung 503
 idStringDialog R_load
 <\ElementLK>
 
-controlANZAHL 5
+controlANZAHL 4
 
 c (0)
 <ElementCONTROL>
@@ -318,22 +318,6 @@ copyCoupledReferenceID[] 1006
 <\ElementCONTROL>
 
 c (2)
-<ElementCONTROL>
-labelAnfangsKnoten[]
-labelEndKnoten[] /u_grid
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2006
-x 10
-y 28
-parameter[] 0.0
-parameterString[] /ac1/ac2/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_GRID
-<\ElementCONTROL>
-
-c (3)
 <ElementCONTROL>
 labelAnfangsKnoten[] /v_dc_meas/i_l
 labelEndKnoten[] /pwm
@@ -516,7 +500,7 @@ double i_int = 0.0;   // inner-loop state: PI integrator
 <\staticVariables>
 <\ElementCONTROL>
 
-c (4)
+c (3)
 <ElementCONTROL>
 labelAnfangsKnoten[] /pwm
 labelEndKnoten[]
@@ -574,8 +558,8 @@ y 4
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34
-boxHeight 26
+boxWidth 38
+boxHeight 30
 <markdownText>
 # Active PFC Boost Pre-Regulator (50 Hz)
 

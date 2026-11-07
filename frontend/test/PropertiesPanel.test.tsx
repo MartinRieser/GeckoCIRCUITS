@@ -553,5 +553,80 @@ describe('PropertiesPanel Overhaul', () => {
     fireEvent.click(screen.getByText('1'));
     expect(onToggleBreakpoint).toHaveBeenCalledWith('CTRL_SCRIPT', 1);
   });
+
+  it('renders Oscilloscope Probes section for electrical power components and toggles virtual signals with intelligent graph allocation', () => {
+    const inductorComp: EditorComponent = {
+      type: 2,
+      family: 'LK',
+      name: 'L_filter',
+      position: [20, 10],
+      orientation: 502,
+      parameters: { L: 0.001 },
+      inputLabels: [],
+      outputLabels: [],
+    };
+
+    const mockRegister = {
+      id: 'reg_1',
+      name: 'Scope',
+      numGraphs: 1 as const,
+      signals: ['V(L_filter)'],
+      signalGraphs: { 'V(L_filter)': 1 as const },
+      hiddenSignals: [],
+      yScaleMode: 'auto' as const,
+      cursorsEnabled: false,
+    };
+
+    const onUpdateGraphRegister = vi.fn();
+    const onOpenScopeTab = vi.fn();
+
+    render(
+      <PropertiesPanel
+        component={inductorComp}
+        allComponents={[inductorComp]}
+        wires={[]}
+        graphRegisters={[mockRegister]}
+        onUpdateGraphRegister={onUpdateGraphRegister}
+        onOpenScopeTab={onOpenScopeTab}
+        onRename={vi.fn()}
+        onSetParameter={vi.fn()}
+        onSetLabel={vi.fn()}
+      />,
+    );
+
+    // Section header and view link are rendered
+    expect(screen.getByText(/Oscilloscope Probes/i)).not.toBeNull();
+    const viewScopeBtn = screen.getByRole('button', { name: /View Scope/i });
+    expect(viewScopeBtn).not.toBeNull();
+    fireEvent.click(viewScopeBtn);
+    expect(onOpenScopeTab).toHaveBeenCalledWith('Scope');
+
+    // Voltage is plotted on Graph 1
+    const voltCheckbox = screen.getByLabelText(/Plot Voltage:/i) as HTMLInputElement;
+    expect(voltCheckbox.checked).toBe(true);
+
+    // Current is not plotted yet
+    const currCheckbox = screen.getByLabelText(/Plot Current:/i) as HTMLInputElement;
+    expect(currCheckbox.checked).toBe(false);
+
+    // Toggling current ON allocates it to Graph 2 and auto-expands numGraphs to 2
+    fireEvent.click(currCheckbox);
+    expect(onUpdateGraphRegister).toHaveBeenCalledWith('reg_1', {
+      signals: ['V(L_filter)', 'I(L_filter)'],
+      signalGraphs: {
+        'V(L_filter)': 1,
+        'I(L_filter)': 2,
+      },
+      numGraphs: 2,
+    });
+
+    // Toggling voltage OFF removes it from signals and signalGraphs
+    fireEvent.click(voltCheckbox);
+    expect(onUpdateGraphRegister).toHaveBeenCalledWith('reg_1', {
+      signals: [],
+      signalGraphs: {},
+      hiddenSignals: [],
+    });
+  });
 });
 

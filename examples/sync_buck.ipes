@@ -192,7 +192,7 @@ orientierung 503
 idStringDialog R_load
 <\ElementLK>
 
-controlANZAHL 7
+controlANZAHL 4
 
 c (0)
 <ElementCONTROL>
@@ -282,56 +282,6 @@ coupledReferenceID[] 1003
 copyCoupledReferenceID[] 1003
 <\ElementCONTROL>
 
-c (4)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_out
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2005
-x 24
-y 18
-parameter[] 0.0
-parameterString[] /out/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_OUT
-<\ElementCONTROL>
-
-c (5)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_sw
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2006
-x 24
-y 22
-parameter[] 0.0
-parameterString[] /sw_node/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_SW
-<\ElementCONTROL>
-
-c (6)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /i_L
-enabledShorted 1
-typ 2
-uniqueObjectIdentifier 2007
-x 24
-y 26
-parameter[] 0.0
-parameterString[] /L.1/NIX_NIX_NIX/0
-nameOpt[] null
-orientierung 503
-idStringDialog AMP_IL
-coupledReferenceID[] 1004
-copyCoupledReferenceID[] 1004
-<\ElementCONTROL>
-
 sp (0)
 <ElementSPECIAL>
 labelAnfangsKnoten[] 
@@ -344,8 +294,8 @@ y 4
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34
-boxHeight 26
+boxWidth 36
+boxHeight 28
 <markdownText>
 # Synchronous Buck Converter (50 kHz)
 
@@ -362,6 +312,11 @@ High-efficiency step-down converter using an active low-side MOSFET switch inste
 - **CH1 (v_out)**: Regulated ~11.5 V DC output voltage.
 - **CH2 (v_sw)**: Switch node square wave switching between 0 V and 24 V.
 - **CH3 (i_L)**: Inductor current ripple through $L_1$.
+
+### Observed Waveforms (Oscilloscope)
+- **V(out)**: Low-ripple smoothed DC output voltage (5.0 V) (Graph 1).
+- **V(sw_node)**: 50 kHz complementary MOSFET switching node waveform (Graph 1).
+- **I(L.1)**: Filter inductor ripple current (Graph 2).
 <\markdownText>
 <\ElementSPECIAL>
 
@@ -369,15 +324,15 @@ tDURATION 0.001
 dt 2.0E-7
 solverType 0
 FileVersion 1
-dataContainerSignals[] /v_out/v_sw/i_L
+dataContainerSignals[] /V(out)/V(sw_node)/I(L.1)
 <graphRegisters>
 count 1
 <graphRegister>
 id osci_1
 name Osci 1
 numGraphs 2
-signals v_out,v_sw,i_L
-signalGraphs v_out:1,v_sw:1,i_L:2
+signals V(out),V(sw_node),I(L.1)
+signalGraphs V(out):1,V(sw_node):1,I(L.1):2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false

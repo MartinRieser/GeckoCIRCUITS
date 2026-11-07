@@ -1223,6 +1223,10 @@ export function App() {
                       }
                       allComponents={state.components}
                       wires={state.wires}
+                      graphRegisters={state.graphRegisters}
+                      activeGraphRegisterId={activeGraphRegister?.id}
+                      onUpdateGraphRegister={(id, patch) => actions.updateGraphRegister(id, patch)}
+                      onAddGraphRegister={(init) => actions.addGraphRegister(init)}
                       scriptDebug={{
                         status: simState.status,
                         breakpoints: simState.scriptBreakpoints,

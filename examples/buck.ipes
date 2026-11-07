@@ -725,8 +725,8 @@ parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[]
 orientierung 503
 idStringDialog INFO
-boxWidth 34
-boxHeight 24
+boxWidth 38
+boxHeight 30
 <markdownText>
 # DC-DC Buck Converter with Sampled Control (50V to 10V)
 
@@ -747,6 +747,12 @@ Synchronous-equivalent step-down buck converter stepping **50 V DC** down to **1
 ### Monitored Waveforms (Oscilloscope / Osci 1)
 - **CH1 (v_sw, v_out, v_in)**: Switching node voltage, regulated 10 V output, and ripple-bearing input bus.
 - **CH2 (duty)**: Real-time control duty cycle demonstrating line disturbance rejection.
+
+### Observed Waveforms (Oscilloscope)
+- **V(sw_node)**: High-speed pulsed switching node voltage (+24 V / 0 V) (Graph 1).
+- **V(out)**: Regulated DC output voltage (+12 V target) (Graph 1).
+- **V(in)**: DC bus input voltage (+24 V) (Graph 1).
+- **duty**: Real-time closed-loop duty ratio from feedforward PI controller (Graph 2).
 <\markdownText>
 
 <\ElementSPECIAL>
@@ -765,8 +771,6 @@ optimizerValue[] null
 <extraScriptSourceFiles>
  
 <\extraScriptSourceFiles>
-
-
 
 DtStor 2026-10-24
 tDURATION 0.1
@@ -796,7 +800,7 @@ ANSICHT_SHOW_CONTROL_PARAMETER true
 ANSICHT_SHOW_CONTROL_TEXTLINIE true
 FileVersion 175
 UniqueFileId 0
-dataContainerSignals[] /v_sw/v_out/v_in/duty
+dataContainerSignals[] /V(sw_node)/V(out)/V(in)/duty
 
 <graphRegisters>
 count 1
@@ -804,8 +808,8 @@ count 1
 id osci_1
 name Osci 1
 numGraphs 2
-signals v_sw,v_out,v_in,duty
-signalGraphs v_sw:1,v_out:1,v_in:1,duty:2
+signals V(sw_node),V(out),V(in),duty
+signalGraphs V(sw_node):1,V(out):1,V(in):1,duty:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false

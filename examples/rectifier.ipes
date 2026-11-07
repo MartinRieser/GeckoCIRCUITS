@@ -1,4 +1,3 @@
-
 verbindungLK (0)
 <Verbindung>
 label ac1
@@ -329,8 +328,8 @@ parameterString[]
 nameOpt[]
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34.0
-boxHeight 26.0
+boxWidth 36.0
+boxHeight 28.0
 <markdownText>
 # Diode Bridge Rectifier (AC to DC)
 
@@ -346,6 +345,11 @@ Full-wave Graetz diode bridge converting **50 Hz AC mains** into a smoothed **DC
 - **CH1 (v_ac)**: 50 Hz sinusoidal AC mains voltage.
 - **CH2 (v_dc)**: Smoothed DC bus voltage with ripple $\Delta V_{dc} \approx \frac{I_{load}}{2 f C}$.
 - **CH3 (i_load)**: Continuous DC output current through `R_load`.
+
+### Observed Waveforms (Oscilloscope)
+- **V(dc_plus)**: Rectified and smoothed DC bus voltage across reservoir capacitor (Graph 1).
+- **V(ac1|ac2)**: AC line sinusoidal input voltage (Graph 1).
+- **I(R_load)**: Continuous resistive DC load current (Graph 2).
 <\markdownText>
 
 <\ElementSPECIAL>
@@ -364,8 +368,6 @@ optimizerValue[] null
 <extraScriptSourceFiles>
  
 <\extraScriptSourceFiles>
-
-
 
 DtStor 2026-11-07
 tDURATION 0.04
@@ -395,15 +397,15 @@ ANSICHT_SHOW_CONTROL_PARAMETER true
 ANSICHT_SHOW_CONTROL_TEXTLINIE true
 FileVersion 1
 UniqueFileId 0
-dataContainerSignals[] /v_ac/v_dc/i_load
+dataContainerSignals[] /V(dc_plus)/V(ac1|ac2)/I(R_load)
 <graphRegisters>
 count 1
 <graphRegister>
 id osci_1
 name Osci 1
 numGraphs 2
-signals v_ac,v_dc,i_load
-signalGraphs v_ac:1,v_dc:1,i_load:2
+signals V(dc_plus),V(ac1|ac2),I(R_load)
+signalGraphs V(dc_plus):1,V(ac1|ac2):1,I(R_load):2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
@@ -411,4 +413,3 @@ cursorsEnabled false
 <\graphRegisters>
 
 =======================
- 

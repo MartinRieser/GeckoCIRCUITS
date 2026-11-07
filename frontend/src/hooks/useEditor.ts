@@ -910,10 +910,101 @@ export function useEditor() {
     [refresh, reportError],
   );
 
+function propagateComponentRenameToGraphRegisters(
+  regs: GraphRegister[],
+  oldName: string,
+  newName: string,
+): { nextRegs: GraphRegister[]; changed: boolean } {
+  let changed = false;
+  const oldCurrent = `I(${oldName})`;
+  const newCurrent = `I(${newName})`;
+  const oldVolt = `V(${oldName})`;
+  const newVolt = `V(${newName})`;
+
+  const renameSig = (s: string) => {
+    if (s === oldName) return newName;
+    if (s === oldCurrent) return newCurrent;
+    if (s === oldVolt) return newVolt;
+    return s;
+  };
+
+  const nextRegs = regs.map((reg) => {
+    const hasOld =
+      reg.signals.some((s) => s === oldName || s === oldCurrent || s === oldVolt) ||
+      (reg.signalGraphs &&
+        (oldName in reg.signalGraphs || oldCurrent in reg.signalGraphs || oldVolt in reg.signalGraphs)) ||
+      reg.hiddenSignals.some((s) => s === oldName || s === oldCurrent || s === oldVolt);
+    if (!hasOld) return reg;
+    changed = true;
+    const nextSignals = Array.from(new Set(reg.signals.map(renameSig)));
+    const nextSignalGraphs = { ...reg.signalGraphs };
+    for (const [o, n] of [
+      [oldName, newName],
+      [oldCurrent, newCurrent],
+      [oldVolt, newVolt],
+    ] as const) {
+      if (o in nextSignalGraphs) {
+        nextSignalGraphs[n] = nextSignalGraphs[o];
+        delete nextSignalGraphs[o];
+      }
+    }
+    const nextHidden = Array.from(new Set(reg.hiddenSignals.map(renameSig)));
+    return {
+      ...reg,
+      signals: nextSignals,
+      signalGraphs: nextSignalGraphs,
+      hiddenSignals: nextHidden,
+    };
+  });
+  return { nextRegs, changed };
+}
+
+function cleanGraphRegistersForDeletedComponents(
+  regs: GraphRegister[],
+  deletedNames: string[],
+): { nextRegs: GraphRegister[]; changed: boolean } {
+  const targetSet = new Set<string>();
+  for (const n of deletedNames) {
+    targetSet.add(n);
+    targetSet.add(`I(${n})`);
+    targetSet.add(`V(${n})`);
+  }
+  let changed = false;
+  const nextRegs = regs.map((reg) => {
+    const hasAny =
+      reg.signals.some((s) => targetSet.has(s)) ||
+      (reg.signalGraphs && Object.keys(reg.signalGraphs).some((s) => targetSet.has(s))) ||
+      reg.hiddenSignals.some((s) => targetSet.has(s));
+    if (!hasAny) return reg;
+    changed = true;
+    const nextSignals = reg.signals.filter((s) => !targetSet.has(s));
+    const nextSignalGraphs = { ...reg.signalGraphs };
+    for (const s of targetSet) {
+      delete nextSignalGraphs[s];
+    }
+    const nextHidden = reg.hiddenSignals.filter((s) => !targetSet.has(s));
+    return {
+      ...reg,
+      signals: nextSignals,
+      signalGraphs: nextSignalGraphs,
+      hiddenSignals: nextHidden,
+    };
+  });
+  return { nextRegs, changed };
+}
+
   const deleteComponent = useCallback(
     (name: string) => {
       const circuitId = stateRef.current.circuitId;
       if (!circuitId) return;
+
+      const regs = stateRef.current.graphRegisters || [];
+      const { nextRegs, changed } = cleanGraphRegistersForDeletedComponents(regs, [name]);
+      if (changed) {
+        dispatch({ type: 'SET_GRAPH_REGISTERS', graphRegisters: nextRegs });
+        api.setGraphRegisters(circuitId, nextRegs).catch(() => {});
+      }
+
       api
         .deleteComponent(circuitId, name)
         .then((msg) => {
@@ -1051,6 +1142,14 @@ export function useEditor() {
     wireIndicesToDelete.sort((a, b) => b - a);
 
     try {
+      if (current.selection.length > 0) {
+        const regs = current.graphRegisters || [];
+        const { nextRegs, changed } = cleanGraphRegistersForDeletedComponents(regs, current.selection);
+        if (changed) {
+          dispatch({ type: 'SET_GRAPH_REGISTERS', graphRegisters: nextRegs });
+          api.setGraphRegisters(circuitId, nextRegs).catch(() => {});
+        }
+      }
       for (const name of current.selection) {
         const msg = await api.deleteComponent(circuitId, name);
         versionRef.current = msg.modelVersion;
@@ -1271,6 +1370,14 @@ export function useEditor() {
     (name: string, newName: string) => {
       const circuitId = stateRef.current.circuitId;
       if (!circuitId || !newName || newName === name) return;
+
+      const regs = stateRef.current.graphRegisters || [];
+      const { nextRegs, changed } = propagateComponentRenameToGraphRegisters(regs, name, newName);
+      if (changed) {
+        dispatch({ type: 'SET_GRAPH_REGISTERS', graphRegisters: nextRegs });
+        api.setGraphRegisters(circuitId, nextRegs).catch(() => {});
+      }
+
       api
         .patchComponent(circuitId, name, { newName })
         .then(async (msg) => {

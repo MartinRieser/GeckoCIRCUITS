@@ -166,7 +166,7 @@ orientierung 503
 idStringDialog R_load
 <\ElementLK>
 
-controlANZAHL 5
+controlANZAHL 2
 
 c (0)
 <ElementCONTROL>
@@ -212,56 +212,6 @@ coupledReferenceID[] 1002
 copyCoupledReferenceID[] 1002
 <\ElementCONTROL>
 
-c (2)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_in
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2003
-x 26
-y 16
-parameter[] 0.0
-parameterString[] /in/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_IN
-<\ElementCONTROL>
-
-c (3)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_out
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2004
-x 26
-y 20
-parameter[] 0.0
-parameterString[] /v_neg/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_OUT
-<\ElementCONTROL>
-
-c (4)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /i_L
-enabledShorted 1
-typ 2
-uniqueObjectIdentifier 2005
-x 26
-y 24
-parameter[] 0.0
-parameterString[] /L.1/NIX_NIX_NIX/0
-nameOpt[] null
-orientierung 503
-idStringDialog AMP_IL
-coupledReferenceID[] 1003
-copyCoupledReferenceID[] 1003
-<\ElementCONTROL>
-
 sp (0)
 <ElementSPECIAL>
 labelAnfangsKnoten[] 
@@ -274,8 +224,8 @@ y 4
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34
-boxHeight 26
+boxWidth 36
+boxHeight 28
 <markdownText>
 # Inverting Buck-Boost Converter (-16V)
 
@@ -291,6 +241,11 @@ Non-isolated inverting DC-DC topology producing negative output from positive **
 - **CH1 (v_in)**: +24.0 V input rail.
 - **CH2 (v_out)**: Inverted -16.0 V steady-state output.
 - **CH3 (i_L)**: Inductor triangular energy ramp.
+
+### Observed Waveforms (Oscilloscope)
+- **V(v_neg)**: Inverted negative DC output voltage (-16 V) across output capacitor (Graph 1).
+- **V(in)**: Input DC supply voltage (24 V) (Graph 1).
+- **I(L.1)**: Triangular energy storage inductor current (Graph 2).
 <\markdownText>
 <\ElementSPECIAL>
 
@@ -298,15 +253,15 @@ tDURATION 0.005
 dt 2.0E-7
 solverType 0
 FileVersion 1
-dataContainerSignals[] /v_in/v_out/i_L
+dataContainerSignals[] /V(v_neg)/V(in)/I(L.1)
 <graphRegisters>
 count 1
 <graphRegister>
 id osci_1
 name Osci 1
 numGraphs 2
-signals v_in,v_out,i_L
-signalGraphs v_in:1,v_out:1,i_L:2
+signals V(v_neg),V(in),I(L.1)
+signalGraphs V(v_neg):1,V(in):1,I(L.1):2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false

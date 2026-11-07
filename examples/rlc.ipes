@@ -102,57 +102,7 @@ orientierung 503
 idStringDialog C1
 <\ElementLK>
 
-controlANZAHL 3
-
-c (0)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_in
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2001
-x 14
-y 16
-parameter[] 0.0
-parameterString[] /in/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_IN
-<\ElementCONTROL>
-
-c (1)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_out
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2002
-x 14
-y 20
-parameter[] 0.0
-parameterString[] /out/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_OUT
-<\ElementCONTROL>
-
-c (2)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /i_L
-enabledShorted 1
-typ 2
-uniqueObjectIdentifier 2003
-x 14
-y 24
-parameter[] 0.0
-parameterString[] /L1/NIX_NIX_NIX/0
-nameOpt[] null
-orientierung 503
-idStringDialog AMP_IL
-coupledReferenceID[] 1003
-copyCoupledReferenceID[] 1003
-<\ElementCONTROL>
+controlANZAHL 0
 
 sp (0)
 <ElementSPECIAL>
@@ -166,8 +116,8 @@ y 6
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34
-boxHeight 26
+boxWidth 36
+boxHeight 28
 <markdownText>
 # RLC Resonant Circuit
 
@@ -185,6 +135,11 @@ Second-order series RLC resonator demonstrating underdamped transient step respo
 - **CH1 (v_in)**: 24 V step stimulus.
 - **CH2 (v_out)**: Underdamped ringing voltage across `C.1` with ~73% overshoot.
 - **CH3 (i_L)**: Resonant tank current flowing through `L.1`.
+
+### Observed Waveforms (Oscilloscope)
+- **V(out)**: Underdamped oscillatory ringing step response across C1 (Graph 1).
+- **V(in)**: Input step voltage excitation (Graph 1).
+- **I(L1)**: Resonant series inductor current (Graph 2).
 <\markdownText>
 <\ElementSPECIAL>
 
@@ -192,15 +147,15 @@ tDURATION 0.005
 dt 1e-06
 solverType 0
 FileVersion 1
-dataContainerSignals[] /v_in/v_out/i_L
+dataContainerSignals[] /V(out)/V(in)/I(L1)
 <graphRegisters>
 count 1
 <graphRegister>
 id osci_1
 name Osci 1
 numGraphs 2
-signals v_in,v_out,i_L
-signalGraphs v_in:1,v_out:1,i_L:2
+signals V(out),V(in),I(L1)
+signalGraphs V(out):1,V(in):1,I(L1):2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false

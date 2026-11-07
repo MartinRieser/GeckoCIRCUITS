@@ -77,39 +77,7 @@ orientierung 503
 idStringDialog C1
 <\ElementLK>
 
-controlANZAHL 2
-
-c (0)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_in
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2001
-x 12
-y 16
-parameter[] 0.0
-parameterString[] /in/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_IN
-<\ElementCONTROL>
-
-c (1)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_out
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2002
-x 12
-y 20
-parameter[] 0.0
-parameterString[] /out/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_OUT
-<\ElementCONTROL>
+controlANZAHL 0
 
 sp (0)
 <ElementSPECIAL>
@@ -123,8 +91,8 @@ y 6
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34
-boxHeight 26
+boxWidth 36
+boxHeight 28
 <markdownText>
 # RC Low-Pass Filter
 
@@ -137,10 +105,10 @@ First-order passive RC filter demonstrating step response and exponential capaci
 - **Time Constant**: $\tau = R \cdot C = 1.0\text{ ms}$.
 - **Cutoff Frequency**: $f_c = \frac{1}{2\pi R C} \approx 159.2\text{ Hz}$.
 
-### Observed Response in Oscilloscope (Osci 1)
-- **CH1 (v_in)**: Instantaneous 10 V step voltage.
-- **CH2 (v_out)**: Classic capacitor exponential charging: $v_C(t) = V_{in}(1 - e^{-t/\tau})$.
-- At $t = \tau = 1.0\text{ ms}$, $v_C \approx 6.32\text{ V}$ ($63.2\%$ of final value).
+### Observed Waveforms (Oscilloscope)
+- **V(out)**: First-order exponential charging and discharging voltage across C1 (Graph 1).
+- **V(in)**: Input pulse excitation voltage (Graph 1).
+- **I(C1)**: Capacitor charging and discharging current spikes (Graph 2).
 <\markdownText>
 <\ElementSPECIAL>
 
@@ -148,15 +116,15 @@ tDURATION 0.01
 dt 1e-06
 solverType 0
 FileVersion 1
-dataContainerSignals[] /v_in/v_out
+dataContainerSignals[] /V(out)/V(in)/I(C1)
 <graphRegisters>
 count 1
 <graphRegister>
 id osci_1
 name Osci 1
-numGraphs 1
-signals v_in,v_out
-signalGraphs v_in:1,v_out:1
+numGraphs 2
+signals V(out),V(in),I(C1)
+signalGraphs V(out):1,V(in):1,I(C1):2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false

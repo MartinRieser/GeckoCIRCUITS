@@ -341,7 +341,7 @@ orientierung 503
 idStringDialog R_load
 <\ElementLK>
 
-controlANZAHL 9
+controlANZAHL 6
 
 c (0)
 <ElementCONTROL>
@@ -467,56 +467,6 @@ coupledReferenceID[] 1006
 copyCoupledReferenceID[] 1006
 <\ElementCONTROL>
 
-c (6)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_ac
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2005
-x 34
-y 23
-parameter[] 0.0
-parameterString[] /load_p/out_b/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_AC
-<\ElementCONTROL>
-
-c (7)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_ab
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2006
-x 34
-y 27
-parameter[] 0.0
-parameterString[] /out_a/out_b/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_AB
-<\ElementCONTROL>
-
-c (8)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /i_load
-enabledShorted 1
-typ 2
-uniqueObjectIdentifier 2007
-x 34
-y 31
-parameter[] 0.0
-parameterString[] /L_filter/NIX_NIX_NIX/0
-nameOpt[] null
-orientierung 503
-idStringDialog AMP_LOAD
-coupledReferenceID[] 1010
-copyCoupledReferenceID[] 1010
-<\ElementCONTROL>
-
 sp (0)
 <ElementSPECIAL>
 labelAnfangsKnoten[] 
@@ -529,8 +479,8 @@ y 4
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34
-boxHeight 26
+boxWidth 36
+boxHeight 28
 <markdownText>
 # Single-Phase H-Bridge Inverter (50 Hz)
 
@@ -542,10 +492,10 @@ Full-bridge DC-AC inverter converting **40 V DC** into **50 Hz sinusoidal AC** a
 - **LC Filter**: $L = 1.0\text{ mH}$, $C = 20\text{ µF}$ with corner frequency $f_c \approx 1.1\text{ kHz}$.
 - **AC Load**: $10.0\text{ }\Omega$ resistive load.
 
-### Observed Signals in Oscilloscope (Osci 1)
-- **CH1 (v_ac)**: Filtered 50 Hz AC sinusoidal load voltage.
-- **CH2 (v_ab)**: Unfiltered two-level switching voltage (+40 V / -40 V) between bridge legs.
-- **CH3 (i_load)**: Sinusoidal load current through `L_filter`.
+### Observed Waveforms (Oscilloscope)
+- **V(load_p|out_b)**: Filtered 50 Hz AC sinusoidal load voltage (Graph 1).
+- **V(out_a|out_b)**: Unfiltered two-level switching voltage (+40 V / -40 V) between bridge legs (Graph 1).
+- **I(L_filter)**: Sinusoidal filter inductor current (Graph 2).
 <\markdownText>
 <\ElementSPECIAL>
 
@@ -553,15 +503,15 @@ tDURATION 0.04
 dt 2.0E-6
 solverType 0
 FileVersion 1
-dataContainerSignals[] /v_ac/v_ab/i_load
+dataContainerSignals[] /V(load_p|out_b)/V(out_a|out_b)/I(L_filter)
 <graphRegisters>
 count 1
 <graphRegister>
 id osci_1
 name Osci 1
 numGraphs 2
-signals v_ac,v_ab,i_load
-signalGraphs v_ac:1,v_ab:1,i_load:2
+signals V(load_p|out_b),V(out_a|out_b),I(L_filter)
+signalGraphs V(load_p|out_b):1,V(out_a|out_b):1,I(L_filter):2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false

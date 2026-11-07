@@ -196,7 +196,7 @@ orientierung 503
 idStringDialog R_load
 <\ElementLK>
 
-controlANZAHL 4
+controlANZAHL 2
 
 c (0)
 <ElementCONTROL>
@@ -242,38 +242,6 @@ coupledReferenceID[] 1002
 copyCoupledReferenceID[] 1002
 <\ElementCONTROL>
 
-c (2)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_out
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2003
-x 26
-y 16
-parameter[] 0.0
-parameterString[] /out/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_OUT
-<\ElementCONTROL>
-
-c (3)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_sw
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2004
-x 26
-y 20
-parameter[] 0.0
-parameterString[] /p_sw/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_SW
-<\ElementCONTROL>
-
 sp (0)
 <ElementSPECIAL>
 labelAnfangsKnoten[] 
@@ -286,8 +254,8 @@ y 4
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34
-boxHeight 26
+boxWidth 36
+boxHeight 28
 <markdownText>
 # Flyback Isolated DC-DC Converter
 
@@ -302,6 +270,11 @@ Galvanically isolated buck-boost topology using magnetically coupled inductors (
 ### Recorded Signals in Oscilloscope (Osci 1)
 - **CH1 (v_out)**: Isolated DC output voltage.
 - **CH2 (v_sw)**: Primary switch drain node displaying flyback inductive voltage spike.
+
+### Observed Waveforms (Oscilloscope)
+- **V(out)**: Isolated secondary DC output voltage (+15 V) (Graph 1).
+- **V(p_sw)**: Primary MOSFET drain-source voltage showing flyback spike and plateau (Graph 1).
+- **I(L_pri)**: Primary transformer winding magnetizing current (Graph 2).
 <\markdownText>
 <\ElementSPECIAL>
 
@@ -309,15 +282,15 @@ tDURATION 0.005
 dt 2.0E-7
 solverType 0
 FileVersion 1
-dataContainerSignals[] /v_out/v_sw
+dataContainerSignals[] /V(out)/V(p_sw)/I(L_pri)
 <graphRegisters>
 count 1
 <graphRegister>
 id osci_1
 name Osci 1
 numGraphs 2
-signals v_out,v_sw
-signalGraphs v_out:1,v_sw:2
+signals V(out),V(p_sw),I(L_pri)
+signalGraphs V(out):1,V(p_sw):1,I(L_pri):2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false

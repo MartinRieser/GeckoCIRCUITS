@@ -29,7 +29,6 @@ dataContainerSignals[] V_out
 `;
 
 export const BUCK_CONVERTER_IPES = `
-
 verbindungCONTROL (0)
 <Verbindung>
 label NIX_NIX_NIX
@@ -757,8 +756,8 @@ parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
 nameOpt[]
 orientierung 503
 idStringDialog INFO
-boxWidth 34
-boxHeight 24
+boxWidth 38
+boxHeight 30
 <markdownText>
 # DC-DC Buck Converter with Sampled Control (50V to 10V)
 
@@ -779,6 +778,12 @@ Synchronous-equivalent step-down buck converter stepping **50 V DC** down to **1
 ### Monitored Waveforms (Oscilloscope / Osci 1)
 - **CH1 (v_sw, v_out, v_in)**: Switching node voltage, regulated 10 V output, and ripple-bearing input bus.
 - **CH2 (duty)**: Real-time control duty cycle demonstrating line disturbance rejection.
+
+### Observed Waveforms (Oscilloscope)
+- **V(sw_node)**: High-speed pulsed switching node voltage (+24 V / 0 V) (Graph 1).
+- **V(out)**: Regulated DC output voltage (+12 V target) (Graph 1).
+- **V(in)**: DC bus input voltage (+24 V) (Graph 1).
+- **duty**: Real-time closed-loop duty ratio from feedforward PI controller (Graph 2).
 <\\markdownText>
 
 <\\ElementSPECIAL>
@@ -797,8 +802,6 @@ optimizerValue[] null
 <extraScriptSourceFiles>
  
 <\\extraScriptSourceFiles>
-
-
 
 DtStor 2026-10-24
 tDURATION 0.1
@@ -828,7 +831,7 @@ ANSICHT_SHOW_CONTROL_PARAMETER true
 ANSICHT_SHOW_CONTROL_TEXTLINIE true
 FileVersion 175
 UniqueFileId 0
-dataContainerSignals[] /v_sw/v_out/v_in/duty
+dataContainerSignals[] /V(sw_node)/V(out)/V(in)/duty
 
 <graphRegisters>
 count 1
@@ -836,8 +839,8 @@ count 1
 id osci_1
 name Osci 1
 numGraphs 2
-signals v_sw,v_out,v_in,duty
-signalGraphs v_sw:1,v_out:1,v_in:1,duty:2
+signals V(sw_node),V(out),V(in),duty
+signalGraphs V(sw_node):1,V(out):1,V(in):1,duty:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
@@ -845,7 +848,6 @@ cursorsEnabled false
 <\\graphRegisters>
 
 =======================
- 
 `;
 
 export const BOOST_CONVERTER_IPES = `
@@ -1053,7 +1055,7 @@ orientierung 503
 idStringDialog R_load
 <\\ElementLK>
 
-controlANZAHL 5
+controlANZAHL 2
 
 c (0)
 <ElementCONTROL>
@@ -1099,56 +1101,6 @@ coupledReferenceID[] 1003
 copyCoupledReferenceID[] 1003
 <\\ElementCONTROL>
 
-c (2)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_in
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2003
-x 26
-y 16
-parameter[] 0.0
-parameterString[] /in/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_IN
-<\\ElementCONTROL>
-
-c (3)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_out
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2004
-x 26
-y 20
-parameter[] 0.0
-parameterString[] /out/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_OUT
-<\\ElementCONTROL>
-
-c (4)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /i_L
-enabledShorted 1
-typ 2
-uniqueObjectIdentifier 2005
-x 26
-y 24
-parameter[] 0.0
-parameterString[] /L_boost/NIX_NIX_NIX/0
-nameOpt[] null
-orientierung 503
-idStringDialog AMP_IL
-coupledReferenceID[] 1002
-copyCoupledReferenceID[] 1002
-<\\ElementCONTROL>
-
 sp (0)
 <ElementSPECIAL>
 labelAnfangsKnoten[] 
@@ -1161,8 +1113,8 @@ y 4
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34
-boxHeight 26
+boxWidth 36
+boxHeight 28
 <markdownText>
 # DC-DC Boost Converter (Step-Up)
 
@@ -1179,6 +1131,11 @@ Step-up converter boosting **12 V DC** input to **24 V DC** output at a nominal 
 - **CH1 (v_in)**: 12.0 V DC input voltage.
 - **CH2 (v_out)**: Stepped-up 24.0 V DC output voltage.
 - **CH3 (i_L)**: Inductor charging/discharging triangular current ripple.
+
+### Observed Waveforms (Oscilloscope)
+- **V(out)**: Boosted DC output voltage (24 V) across reservoir capacitor (Graph 1).
+- **V(in)**: Input DC supply voltage (12 V) (Graph 1).
+- **I(L_boost)**: Triangular boost inductor ripple current (Graph 2).
 <\\markdownText>
 <\\ElementSPECIAL>
 
@@ -1186,15 +1143,15 @@ tDURATION 0.012
 dt 2.0E-7
 solverType 0
 FileVersion 1
-dataContainerSignals[] /v_in/v_out/i_L
+dataContainerSignals[] /V(out)/V(in)/I(L_boost)
 <graphRegisters>
 count 1
 <graphRegister>
 id osci_1
 name Osci 1
 numGraphs 2
-signals v_in,v_out,i_L
-signalGraphs v_in:1,v_out:1,i_L:2
+signals V(out),V(in),I(L_boost)
+signalGraphs V(out):1,V(in):1,I(L_boost):2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
@@ -1533,8 +1490,8 @@ parameterString[]
 nameOpt[]
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34.0
-boxHeight 26.0
+boxWidth 36.0
+boxHeight 28.0
 <markdownText>
 # Diode Bridge Rectifier (AC to DC)
 
@@ -1550,6 +1507,11 @@ Full-wave Graetz diode bridge converting **50 Hz AC mains** into a smoothed **DC
 - **CH1 (v_ac)**: 50 Hz sinusoidal AC mains voltage.
 - **CH2 (v_dc)**: Smoothed DC bus voltage with ripple $\\Delta V_{dc} \\approx \\frac{I_{load}}{2 f C}$.
 - **CH3 (i_load)**: Continuous DC output current through \`R_load\`.
+
+### Observed Waveforms (Oscilloscope)
+- **V(dc_plus)**: Rectified and smoothed DC bus voltage across reservoir capacitor (Graph 1).
+- **V(ac1|ac2)**: AC line sinusoidal input voltage (Graph 1).
+- **I(R_load)**: Continuous resistive DC load current (Graph 2).
 <\\markdownText>
 
 <\\ElementSPECIAL>
@@ -1568,8 +1530,6 @@ optimizerValue[] null
 <extraScriptSourceFiles>
  
 <\\extraScriptSourceFiles>
-
-
 
 DtStor 2026-11-07
 tDURATION 0.04
@@ -1599,15 +1559,15 @@ ANSICHT_SHOW_CONTROL_PARAMETER true
 ANSICHT_SHOW_CONTROL_TEXTLINIE true
 FileVersion 1
 UniqueFileId 0
-dataContainerSignals[] /v_ac/v_dc/i_load
+dataContainerSignals[] /V(dc_plus)/V(ac1|ac2)/I(R_load)
 <graphRegisters>
 count 1
 <graphRegister>
 id osci_1
 name Osci 1
 numGraphs 2
-signals v_ac,v_dc,i_load
-signalGraphs v_ac:1,v_dc:1,i_load:2
+signals V(dc_plus),V(ac1|ac2),I(R_load)
+signalGraphs V(dc_plus):1,V(ac1|ac2):1,I(R_load):2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
@@ -1722,87 +1682,7 @@ orientierung 503
 idStringDialog C1
 <\\ElementLK>
 
-controlANZAHL 5
-
-c (0)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_in
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2001
-x 14
-y 16
-parameter[] 0.0
-parameterString[] /V_in/0/0
-nameOpt[] 
-orientierung 503
-idStringDialog VOLT_IN
-<\\ElementCONTROL>
-
-c (1)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_out
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2002
-x 14
-y 20
-parameter[] 0.0
-parameterString[] /V_out/0/0
-nameOpt[] 
-orientierung 503
-idStringDialog VOLT_OUT
-<\\ElementCONTROL>
-
-c (2)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_R1
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2004
-x 14
-y 26
-parameter[] 0.0
-parameterString[] /V_in/n_mid/0
-nameOpt[] 
-orientierung 503
-idStringDialog VOLT_R1
-<\\ElementCONTROL>
-
-c (3)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_L1
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2005
-x 14
-y 30
-parameter[] 0.0
-parameterString[] /n_mid/V_out/0
-nameOpt[] 
-orientierung 503
-idStringDialog VOLT_L1
-<\\ElementCONTROL>
-
-c (4)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_C1
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2006
-x 14
-y 34
-parameter[] 0.0
-parameterString[] /V_out/0/0
-nameOpt[] 
-orientierung 503
-idStringDialog VOLT_C1
-<\\ElementCONTROL>
+controlANZAHL 0
 
 sp (0)
 <ElementSPECIAL>
@@ -1816,8 +1696,8 @@ y 6
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34
-boxHeight 26
+boxWidth 36
+boxHeight 28
 <markdownText>
 # Multi-Instrument RLC Circuit (Osci 1 & Osci 2)
 
@@ -1833,6 +1713,10 @@ Demonstrates multiple oscilloscope view registers monitoring complementary secti
 ### Instrument Assignments
 - **Osci 1 (In/Out)**: Global input step (\`v_in\`) vs output capacitor voltage (\`v_out\`).
 - **Osci 2 (Component Voltages)**: Differential component voltages (\`v_R1\`, \`v_L1\`, \`v_C1\`) confirming Kirchhoff's Voltage Law: $V_{in}(t) = v_R(t) + v_L(t) + v_C(t)$.
+
+### Observed Waveforms (Oscilloscope)
+- **Osci 1 (Step Response)**: Output ringing \`V(V_out)\` and \`V(V_in)\` (Graph 1), resonant current \`I(L.1)\` (Graph 2).
+- **Osci 2 (Component Voltages)**: Resistor \`V(R.1)\` (Graph 1), inductor \`V(L.1)\` (Graph 2), capacitor \`V(C.1)\` (Graph 3).
 <\\markdownText>
 <\\ElementSPECIAL>
 
@@ -1840,25 +1724,25 @@ tDURATION 0.01
 dt 1e-06
 solverType 0
 FileVersion 1
-dataContainerSignals[] /v_in/v_out/v_R1/v_L1/v_C1
+dataContainerSignals[] /V(V_out)/V(V_in)/I(L.1)
 <graphRegisters>
 count 2
 <graphRegister>
 id osci_1
-name Osci 1
-numGraphs 1
-signals v_in,v_out
-signalGraphs v_in:1,v_out:1
+name Step Response
+numGraphs 2
+signals V(V_out),V(V_in),I(L.1)
+signalGraphs V(V_out):1,V(V_in):1,I(L.1):2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
 <\\graphRegister>
 <graphRegister>
 id osci_2
-name Osci 2
+name Component Voltages
 numGraphs 3
-signals v_R1,v_L1,v_C1
-signalGraphs v_R1:1,v_L1:2,v_C1:3
+signals V(R.1),V(L.1),V(C.1)
+signalGraphs V(R.1):1,V(L.1):2,V(C.1):3
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
@@ -1971,57 +1855,7 @@ orientierung 503
 idStringDialog C1
 <\\ElementLK>
 
-controlANZAHL 3
-
-c (0)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_in
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2001
-x 14
-y 16
-parameter[] 0.0
-parameterString[] /in/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_IN
-<\\ElementCONTROL>
-
-c (1)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_out
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2002
-x 14
-y 20
-parameter[] 0.0
-parameterString[] /out/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_OUT
-<\\ElementCONTROL>
-
-c (2)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /i_L
-enabledShorted 1
-typ 2
-uniqueObjectIdentifier 2003
-x 14
-y 24
-parameter[] 0.0
-parameterString[] /L1/NIX_NIX_NIX/0
-nameOpt[] null
-orientierung 503
-idStringDialog AMP_IL
-coupledReferenceID[] 1003
-copyCoupledReferenceID[] 1003
-<\\ElementCONTROL>
+controlANZAHL 0
 
 sp (0)
 <ElementSPECIAL>
@@ -2035,8 +1869,8 @@ y 6
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34
-boxHeight 26
+boxWidth 36
+boxHeight 28
 <markdownText>
 # RLC Resonant Circuit
 
@@ -2054,6 +1888,11 @@ Second-order series RLC resonator demonstrating underdamped transient step respo
 - **CH1 (v_in)**: 24 V step stimulus.
 - **CH2 (v_out)**: Underdamped ringing voltage across \`C.1\` with ~73% overshoot.
 - **CH3 (i_L)**: Resonant tank current flowing through \`L.1\`.
+
+### Observed Waveforms (Oscilloscope)
+- **V(out)**: Underdamped oscillatory ringing step response across C1 (Graph 1).
+- **V(in)**: Input step voltage excitation (Graph 1).
+- **I(L1)**: Resonant series inductor current (Graph 2).
 <\\markdownText>
 <\\ElementSPECIAL>
 
@@ -2061,15 +1900,15 @@ tDURATION 0.005
 dt 1e-06
 solverType 0
 FileVersion 1
-dataContainerSignals[] /v_in/v_out/i_L
+dataContainerSignals[] /V(out)/V(in)/I(L1)
 <graphRegisters>
 count 1
 <graphRegister>
 id osci_1
 name Osci 1
 numGraphs 2
-signals v_in,v_out,i_L
-signalGraphs v_in:1,v_out:1,i_L:2
+signals V(out),V(in),I(L1)
+signalGraphs V(out):1,V(in):1,I(L1):2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
@@ -2157,39 +1996,7 @@ orientierung 503
 idStringDialog C1
 <\\ElementLK>
 
-controlANZAHL 2
-
-c (0)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_in
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2001
-x 12
-y 16
-parameter[] 0.0
-parameterString[] /in/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_IN
-<\\ElementCONTROL>
-
-c (1)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_out
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2002
-x 12
-y 20
-parameter[] 0.0
-parameterString[] /out/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_OUT
-<\\ElementCONTROL>
+controlANZAHL 0
 
 sp (0)
 <ElementSPECIAL>
@@ -2203,8 +2010,8 @@ y 6
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34
-boxHeight 26
+boxWidth 36
+boxHeight 28
 <markdownText>
 # RC Low-Pass Filter
 
@@ -2217,10 +2024,10 @@ First-order passive RC filter demonstrating step response and exponential capaci
 - **Time Constant**: $\\tau = R \\cdot C = 1.0\\text{ ms}$.
 - **Cutoff Frequency**: $f_c = \\frac{1}{2\\pi R C} \\approx 159.2\\text{ Hz}$.
 
-### Observed Response in Oscilloscope (Osci 1)
-- **CH1 (v_in)**: Instantaneous 10 V step voltage.
-- **CH2 (v_out)**: Classic capacitor exponential charging: $v_C(t) = V_{in}(1 - e^{-t/\\tau})$.
-- At $t = \\tau = 1.0\\text{ ms}$, $v_C \\approx 6.32\\text{ V}$ ($63.2\\%$ of final value).
+### Observed Waveforms (Oscilloscope)
+- **V(out)**: First-order exponential charging and discharging voltage across C1 (Graph 1).
+- **V(in)**: Input pulse excitation voltage (Graph 1).
+- **I(C1)**: Capacitor charging and discharging current spikes (Graph 2).
 <\\markdownText>
 <\\ElementSPECIAL>
 
@@ -2228,15 +2035,15 @@ tDURATION 0.01
 dt 1e-06
 solverType 0
 FileVersion 1
-dataContainerSignals[] /v_in/v_out
+dataContainerSignals[] /V(out)/V(in)/I(C1)
 <graphRegisters>
 count 1
 <graphRegister>
 id osci_1
 name Osci 1
-numGraphs 1
-signals v_in,v_out
-signalGraphs v_in:1,v_out:1
+numGraphs 2
+signals V(out),V(in),I(C1)
+signalGraphs V(out):1,V(in):1,I(C1):2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
@@ -2440,7 +2247,7 @@ orientierung 503
 idStringDialog R_load
 <\\ElementLK>
 
-controlANZAHL 7
+controlANZAHL 4
 
 c (0)
 <ElementCONTROL>
@@ -2530,56 +2337,6 @@ coupledReferenceID[] 1003
 copyCoupledReferenceID[] 1003
 <\\ElementCONTROL>
 
-c (4)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_out
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2005
-x 24
-y 18
-parameter[] 0.0
-parameterString[] /out/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_OUT
-<\\ElementCONTROL>
-
-c (5)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_sw
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2006
-x 24
-y 22
-parameter[] 0.0
-parameterString[] /sw_node/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_SW
-<\\ElementCONTROL>
-
-c (6)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /i_L
-enabledShorted 1
-typ 2
-uniqueObjectIdentifier 2007
-x 24
-y 26
-parameter[] 0.0
-parameterString[] /L.1/NIX_NIX_NIX/0
-nameOpt[] null
-orientierung 503
-idStringDialog AMP_IL
-coupledReferenceID[] 1004
-copyCoupledReferenceID[] 1004
-<\\ElementCONTROL>
-
 sp (0)
 <ElementSPECIAL>
 labelAnfangsKnoten[] 
@@ -2592,8 +2349,8 @@ y 4
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34
-boxHeight 26
+boxWidth 36
+boxHeight 28
 <markdownText>
 # Synchronous Buck Converter (50 kHz)
 
@@ -2610,6 +2367,11 @@ High-efficiency step-down converter using an active low-side MOSFET switch inste
 - **CH1 (v_out)**: Regulated ~11.5 V DC output voltage.
 - **CH2 (v_sw)**: Switch node square wave switching between 0 V and 24 V.
 - **CH3 (i_L)**: Inductor current ripple through $L_1$.
+
+### Observed Waveforms (Oscilloscope)
+- **V(out)**: Low-ripple smoothed DC output voltage (5.0 V) (Graph 1).
+- **V(sw_node)**: 50 kHz complementary MOSFET switching node waveform (Graph 1).
+- **I(L.1)**: Filter inductor ripple current (Graph 2).
 <\\markdownText>
 <\\ElementSPECIAL>
 
@@ -2617,15 +2379,15 @@ tDURATION 0.001
 dt 2.0E-7
 solverType 0
 FileVersion 1
-dataContainerSignals[] /v_out/v_sw/i_L
+dataContainerSignals[] /V(out)/V(sw_node)/I(L.1)
 <graphRegisters>
 count 1
 <graphRegister>
 id osci_1
 name Osci 1
 numGraphs 2
-signals v_out,v_sw,i_L
-signalGraphs v_out:1,v_sw:1,i_L:2
+signals V(out),V(sw_node),I(L.1)
+signalGraphs V(out):1,V(sw_node):1,I(L.1):2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
@@ -2802,7 +2564,7 @@ orientierung 503
 idStringDialog R_load
 <\\ElementLK>
 
-controlANZAHL 5
+controlANZAHL 2
 
 c (0)
 <ElementCONTROL>
@@ -2848,56 +2610,6 @@ coupledReferenceID[] 1002
 copyCoupledReferenceID[] 1002
 <\\ElementCONTROL>
 
-c (2)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_in
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2003
-x 26
-y 16
-parameter[] 0.0
-parameterString[] /in/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_IN
-<\\ElementCONTROL>
-
-c (3)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_out
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2004
-x 26
-y 20
-parameter[] 0.0
-parameterString[] /v_neg/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_OUT
-<\\ElementCONTROL>
-
-c (4)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /i_L
-enabledShorted 1
-typ 2
-uniqueObjectIdentifier 2005
-x 26
-y 24
-parameter[] 0.0
-parameterString[] /L.1/NIX_NIX_NIX/0
-nameOpt[] null
-orientierung 503
-idStringDialog AMP_IL
-coupledReferenceID[] 1003
-copyCoupledReferenceID[] 1003
-<\\ElementCONTROL>
-
 sp (0)
 <ElementSPECIAL>
 labelAnfangsKnoten[] 
@@ -2910,8 +2622,8 @@ y 4
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34
-boxHeight 26
+boxWidth 36
+boxHeight 28
 <markdownText>
 # Inverting Buck-Boost Converter (-16V)
 
@@ -2927,6 +2639,11 @@ Non-isolated inverting DC-DC topology producing negative output from positive **
 - **CH1 (v_in)**: +24.0 V input rail.
 - **CH2 (v_out)**: Inverted -16.0 V steady-state output.
 - **CH3 (i_L)**: Inductor triangular energy ramp.
+
+### Observed Waveforms (Oscilloscope)
+- **V(v_neg)**: Inverted negative DC output voltage (-16 V) across output capacitor (Graph 1).
+- **V(in)**: Input DC supply voltage (24 V) (Graph 1).
+- **I(L.1)**: Triangular energy storage inductor current (Graph 2).
 <\\markdownText>
 <\\ElementSPECIAL>
 
@@ -2934,15 +2651,15 @@ tDURATION 0.005
 dt 2.0E-7
 solverType 0
 FileVersion 1
-dataContainerSignals[] /v_in/v_out/i_L
+dataContainerSignals[] /V(v_neg)/V(in)/I(L.1)
 <graphRegisters>
 count 1
 <graphRegister>
 id osci_1
 name Osci 1
 numGraphs 2
-signals v_in,v_out,i_L
-signalGraphs v_in:1,v_out:1,i_L:2
+signals V(v_neg),V(in),I(L.1)
+signalGraphs V(v_neg):1,V(in):1,I(L.1):2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
@@ -3294,7 +3011,7 @@ orientierung 503
 idStringDialog R_load
 <\\ElementLK>
 
-controlANZAHL 9
+controlANZAHL 6
 
 c (0)
 <ElementCONTROL>
@@ -3420,56 +3137,6 @@ coupledReferenceID[] 1006
 copyCoupledReferenceID[] 1006
 <\\ElementCONTROL>
 
-c (6)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_ac
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2005
-x 34
-y 23
-parameter[] 0.0
-parameterString[] /load_p/out_b/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_AC
-<\\ElementCONTROL>
-
-c (7)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_ab
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2006
-x 34
-y 27
-parameter[] 0.0
-parameterString[] /out_a/out_b/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_AB
-<\\ElementCONTROL>
-
-c (8)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /i_load
-enabledShorted 1
-typ 2
-uniqueObjectIdentifier 2007
-x 34
-y 31
-parameter[] 0.0
-parameterString[] /L_filter/NIX_NIX_NIX/0
-nameOpt[] null
-orientierung 503
-idStringDialog AMP_LOAD
-coupledReferenceID[] 1010
-copyCoupledReferenceID[] 1010
-<\\ElementCONTROL>
-
 sp (0)
 <ElementSPECIAL>
 labelAnfangsKnoten[] 
@@ -3482,8 +3149,8 @@ y 4
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34
-boxHeight 26
+boxWidth 36
+boxHeight 28
 <markdownText>
 # Single-Phase H-Bridge Inverter (50 Hz)
 
@@ -3495,10 +3162,10 @@ Full-bridge DC-AC inverter converting **40 V DC** into **50 Hz sinusoidal AC** a
 - **LC Filter**: $L = 1.0\\text{ mH}$, $C = 20\\text{ µF}$ with corner frequency $f_c \\approx 1.1\\text{ kHz}$.
 - **AC Load**: $10.0\\text{ }\\Omega$ resistive load.
 
-### Observed Signals in Oscilloscope (Osci 1)
-- **CH1 (v_ac)**: Filtered 50 Hz AC sinusoidal load voltage.
-- **CH2 (v_ab)**: Unfiltered two-level switching voltage (+40 V / -40 V) between bridge legs.
-- **CH3 (i_load)**: Sinusoidal load current through \`L_filter\`.
+### Observed Waveforms (Oscilloscope)
+- **V(load_p|out_b)**: Filtered 50 Hz AC sinusoidal load voltage (Graph 1).
+- **V(out_a|out_b)**: Unfiltered two-level switching voltage (+40 V / -40 V) between bridge legs (Graph 1).
+- **I(L_filter)**: Sinusoidal filter inductor current (Graph 2).
 <\\markdownText>
 <\\ElementSPECIAL>
 
@@ -3506,15 +3173,15 @@ tDURATION 0.04
 dt 2.0E-6
 solverType 0
 FileVersion 1
-dataContainerSignals[] /v_ac/v_ab/i_load
+dataContainerSignals[] /V(load_p|out_b)/V(out_a|out_b)/I(L_filter)
 <graphRegisters>
 count 1
 <graphRegister>
 id osci_1
 name Osci 1
 numGraphs 2
-signals v_ac,v_ab,i_load
-signalGraphs v_ac:1,v_ab:1,i_load:2
+signals V(load_p|out_b),V(out_a|out_b),I(L_filter)
+signalGraphs V(load_p|out_b):1,V(out_a|out_b):1,I(L_filter):2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
@@ -3721,7 +3388,7 @@ orientierung 503
 idStringDialog R_load
 <\\ElementLK>
 
-controlANZAHL 4
+controlANZAHL 2
 
 c (0)
 <ElementCONTROL>
@@ -3767,38 +3434,6 @@ coupledReferenceID[] 1002
 copyCoupledReferenceID[] 1002
 <\\ElementCONTROL>
 
-c (2)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_out
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2003
-x 26
-y 16
-parameter[] 0.0
-parameterString[] /out/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_OUT
-<\\ElementCONTROL>
-
-c (3)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_sw
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2004
-x 26
-y 20
-parameter[] 0.0
-parameterString[] /p_sw/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_SW
-<\\ElementCONTROL>
-
 sp (0)
 <ElementSPECIAL>
 labelAnfangsKnoten[] 
@@ -3811,8 +3446,8 @@ y 4
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34
-boxHeight 26
+boxWidth 36
+boxHeight 28
 <markdownText>
 # Flyback Isolated DC-DC Converter
 
@@ -3827,6 +3462,11 @@ Galvanically isolated buck-boost topology using magnetically coupled inductors (
 ### Recorded Signals in Oscilloscope (Osci 1)
 - **CH1 (v_out)**: Isolated DC output voltage.
 - **CH2 (v_sw)**: Primary switch drain node displaying flyback inductive voltage spike.
+
+### Observed Waveforms (Oscilloscope)
+- **V(out)**: Isolated secondary DC output voltage (+15 V) (Graph 1).
+- **V(p_sw)**: Primary MOSFET drain-source voltage showing flyback spike and plateau (Graph 1).
+- **I(L_pri)**: Primary transformer winding magnetizing current (Graph 2).
 <\\markdownText>
 <\\ElementSPECIAL>
 
@@ -3834,15 +3474,15 @@ tDURATION 0.005
 dt 2.0E-7
 solverType 0
 FileVersion 1
-dataContainerSignals[] /v_out/v_sw
+dataContainerSignals[] /V(out)/V(p_sw)/I(L_pri)
 <graphRegisters>
 count 1
 <graphRegister>
 id osci_1
 name Osci 1
 numGraphs 2
-signals v_out,v_sw
-signalGraphs v_out:1,v_sw:2
+signals V(out),V(p_sw),I(L_pri)
+signalGraphs V(out):1,V(p_sw):1,I(L_pri):2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
@@ -4111,8 +3751,8 @@ y 4
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34
-boxHeight 26
+boxWidth 36
+boxHeight 28
 <markdownText>
 # Closed-Loop Regulated Buck (PI Control)
 
@@ -4129,6 +3769,12 @@ Voltage-mode closed-loop DC-DC converter featuring an embedded microcontroller *
 
 ### Oscilloscope Verification (Osci 1)
 - Shows fast closed-loop step tracking with minimal overshoot and zero steady-state error.
+
+### Observed Waveforms (Oscilloscope)
+- **v_out_scope**: Measured DC output voltage regulated to +12.0 V (Graph 1).
+- **v_ref**: Digital voltage reference setpoint (+12.0 V) (Graph 1).
+- **I(L1)**: Continuous filter inductor ripple current (Graph 2).
+- **duty**: Embedded PI controller PWM duty command (Graph 2).
 <\\markdownText>
 <\\ElementSPECIAL>
 
@@ -4136,15 +3782,15 @@ tDURATION 0.003
 dt 2.0E-7
 solverType 0
 FileVersion 1
-dataContainerSignals[] /v_out_scope
+dataContainerSignals[] /v_out_scope/v_ref/I(L1)/duty
 <graphRegisters>
 count 1
 <graphRegister>
 id osci_1
 name Osci 1
 numGraphs 2
-signals v_out_scope,pwm
-signalGraphs v_out_scope:1,pwm:2
+signals v_out_scope,v_ref,I(L1),duty
+signalGraphs v_out_scope:1,v_ref:1,I(L1):2,duty:2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false
@@ -4436,7 +4082,7 @@ orientierung 503
 idStringDialog R_load
 <\\ElementLK>
 
-controlANZAHL 5
+controlANZAHL 4
 
 c (0)
 <ElementCONTROL>
@@ -4473,22 +4119,6 @@ copyCoupledReferenceID[] 1006
 <\\ElementCONTROL>
 
 c (2)
-<ElementCONTROL>
-labelAnfangsKnoten[]
-labelEndKnoten[] /u_grid
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2006
-x 10
-y 28
-parameter[] 0.0
-parameterString[] /ac1/ac2/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_GRID
-<\\ElementCONTROL>
-
-c (3)
 <ElementCONTROL>
 labelAnfangsKnoten[] /v_dc_meas/i_l
 labelEndKnoten[] /pwm
@@ -4671,7 +4301,7 @@ double i_int = 0.0;   // inner-loop state: PI integrator
 <\\staticVariables>
 <\\ElementCONTROL>
 
-c (4)
+c (3)
 <ElementCONTROL>
 labelAnfangsKnoten[] /pwm
 labelEndKnoten[]
@@ -4729,8 +4359,8 @@ y 4
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34
-boxHeight 26
+boxWidth 38
+boxHeight 30
 <markdownText>
 # Active PFC Boost Pre-Regulator (50 Hz)
 
@@ -5497,8 +5127,8 @@ parameterString[]
 nameOpt[]
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34.0
-boxHeight 26.0
+boxWidth 38.0
+boxHeight 30.0
 <markdownText>
 # Closed-Loop SPWM Inverter with Dead-Time (50 Hz)
 
@@ -5532,8 +5162,6 @@ optimizerValue[] null
 <extraScriptSourceFiles>
  
 <\\extraScriptSourceFiles>
-
-
 
 DtStor 2026-11-07
 tDURATION 0.04

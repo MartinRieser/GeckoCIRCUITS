@@ -202,7 +202,7 @@ orientierung 503
 idStringDialog R_load
 <\ElementLK>
 
-controlANZAHL 5
+controlANZAHL 2
 
 c (0)
 <ElementCONTROL>
@@ -248,56 +248,6 @@ coupledReferenceID[] 1003
 copyCoupledReferenceID[] 1003
 <\ElementCONTROL>
 
-c (2)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_in
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2003
-x 26
-y 16
-parameter[] 0.0
-parameterString[] /in/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_IN
-<\ElementCONTROL>
-
-c (3)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /v_out
-enabledShorted 1
-typ 1
-uniqueObjectIdentifier 2004
-x 26
-y 20
-parameter[] 0.0
-parameterString[] /out/0/0
-nameOpt[] null
-orientierung 503
-idStringDialog VOLT_OUT
-<\ElementCONTROL>
-
-c (4)
-<ElementCONTROL>
-labelAnfangsKnoten[] 
-labelEndKnoten[] /i_L
-enabledShorted 1
-typ 2
-uniqueObjectIdentifier 2005
-x 26
-y 24
-parameter[] 0.0
-parameterString[] /L_boost/NIX_NIX_NIX/0
-nameOpt[] null
-orientierung 503
-idStringDialog AMP_IL
-coupledReferenceID[] 1002
-copyCoupledReferenceID[] 1002
-<\ElementCONTROL>
-
 sp (0)
 <ElementSPECIAL>
 labelAnfangsKnoten[] 
@@ -310,8 +260,8 @@ y 4
 parameter[] 
 orientierung 501
 idStringDialog NOTE.1
-boxWidth 34
-boxHeight 26
+boxWidth 36
+boxHeight 28
 <markdownText>
 # DC-DC Boost Converter (Step-Up)
 
@@ -328,6 +278,11 @@ Step-up converter boosting **12 V DC** input to **24 V DC** output at a nominal 
 - **CH1 (v_in)**: 12.0 V DC input voltage.
 - **CH2 (v_out)**: Stepped-up 24.0 V DC output voltage.
 - **CH3 (i_L)**: Inductor charging/discharging triangular current ripple.
+
+### Observed Waveforms (Oscilloscope)
+- **V(out)**: Boosted DC output voltage (24 V) across reservoir capacitor (Graph 1).
+- **V(in)**: Input DC supply voltage (12 V) (Graph 1).
+- **I(L_boost)**: Triangular boost inductor ripple current (Graph 2).
 <\markdownText>
 <\ElementSPECIAL>
 
@@ -335,15 +290,15 @@ tDURATION 0.012
 dt 2.0E-7
 solverType 0
 FileVersion 1
-dataContainerSignals[] /v_in/v_out/i_L
+dataContainerSignals[] /V(out)/V(in)/I(L_boost)
 <graphRegisters>
 count 1
 <graphRegister>
 id osci_1
 name Osci 1
 numGraphs 2
-signals v_in,v_out,i_L
-signalGraphs v_in:1,v_out:1,i_L:2
+signals V(out),V(in),I(L_boost)
+signalGraphs V(out):1,V(in):1,I(L_boost):2
 hiddenSignals 
 yScaleMode auto
 cursorsEnabled false

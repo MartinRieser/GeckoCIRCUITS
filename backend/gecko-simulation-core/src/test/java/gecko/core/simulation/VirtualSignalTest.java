@@ -183,6 +183,62 @@ class VirtualSignalTest {
                 "Wildcard must discover component voltages V(...)");
     }
 
+    @Test
+    @DisplayName("Reworked bundled examples simulate cleanly with meter-free virtual probes")
+    void testReworkedInverterSimulationWithVirtualProbes() throws Exception {
+        java.io.File file = new java.io.File("../../examples/inverter.ipes");
+        if (!file.exists()) {
+            file = new java.io.File("examples/inverter.ipes");
+        }
+        assertTrue(file.exists(), "examples/inverter.ipes must exist");
+
+        CircuitModel model;
+        try (BufferedReader br = new BufferedReader(new java.io.FileReader(file, StandardCharsets.UTF_8))) {
+            model = new CircuitFileParser().parse(br, file.getAbsolutePath());
+        }
+
+        SimulationConfig config = SimulationConfig.builder()
+                .circuitFile(file.getAbsolutePath())
+                .circuitModel(model)
+                .signals(List.of("V(load_p|out_b)", "V(out_a|out_b)", "I(L_filter)"))
+                .stepWidth(2e-6)
+                .simulationDuration(0.04)
+                .dataLoggingInterval(1)
+                .build();
+
+        HeadlessSimulationEngine engine = new HeadlessSimulationEngine();
+        SimulationResult result = engine.runSimulation(config);
+
+        assertTrue(result.isSuccess(), "Inverter simulation must succeed");
+        float[] vac = getSignal(result, "V(load_p|out_b)");
+        float[] vab = getSignal(result, "V(out_a|out_b)");
+        float[] il = getSignal(result, "I(L_filter)");
+
+        assertNotNull(vac, "V(load_p|out_b) must be recorded");
+        assertNotNull(vab, "V(out_a|out_b) must be recorded");
+        assertNotNull(il, "I(L_filter) must be recorded");
+
+        assertTrue(vac.length > 100);
+        assertTrue(vab.length > 100);
+        assertTrue(il.length > 100);
+
+        // Assert physical AC sinusoidal amplitude: with 40V DC bus, peak output voltage reaches ~30-40 V
+        float maxVac = 0;
+        for (float v : vac) {
+            assertFalse(Float.isNaN(v) || Float.isInfinite(v), "Waveform must not contain NaN or Inf");
+            if (Math.abs(v) > maxVac) maxVac = Math.abs(v);
+        }
+        assertTrue(maxVac > 15.0f, "AC load voltage peak must be substantial (>15V), was: " + maxVac);
+
+        // Peak inductor current
+        float maxIl = 0;
+        for (float i : il) {
+            assertFalse(Float.isNaN(i) || Float.isInfinite(i), "Waveform must not contain NaN or Inf");
+            if (Math.abs(i) > maxIl) maxIl = Math.abs(i);
+        }
+        assertTrue(maxIl > 1.0f, "Filter inductor current peak must be substantial (>1A), was: " + maxIl);
+    }
+
     private static CircuitModel loadModel(String resourcePath) throws Exception {
         try (InputStream is = VirtualSignalTest.class.getResourceAsStream(resourcePath)) {
             if (is == null) {

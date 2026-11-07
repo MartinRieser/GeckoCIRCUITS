@@ -8,6 +8,7 @@ import {
   isSwitchComponent,
   isAmmeterComponent,
   isVoltmeterComponent,
+  isCircuitPowerComponent,
   getCoupledComponentName,
   extractAvailableSignals,
   extractAvailableSignalDetails,
@@ -388,6 +389,60 @@ describe('componentSchema', () => {
       expect(isTextboxComponent(resistor)).toBe(false);
       expect(isTextboxComponent(null)).toBe(false);
       expect(isTextboxComponent(undefined)).toBe(false);
+    });
+
+    it('identifies electrical power circuit components with isCircuitPowerComponent', () => {
+      expect(isCircuitPowerComponent({ name: 'R.1', type: LkComponentType.RESISTOR, family: 'LK' })).toBe(true);
+      expect(isCircuitPowerComponent({ name: 'L.1', type: LkComponentType.INDUCTOR, family: 'LK' })).toBe(true);
+      expect(isCircuitPowerComponent({ name: 'C.1', type: LkComponentType.CAPACITOR, family: 'LK' })).toBe(true);
+      expect(isCircuitPowerComponent({ name: 'V_in', type: LkComponentType.VOLTAGE_SOURCE, family: 'LK' })).toBe(true);
+      expect(isCircuitPowerComponent({ name: 'S.1', type: LkComponentType.IDEAL_SWITCH, family: 'LK' })).toBe(true);
+      expect(isCircuitPowerComponent({ name: 'D.1', type: LkComponentType.DIODE, family: 'CIRCUIT' })).toBe(true);
+
+      // Non-power components must return false
+      expect(isCircuitPowerComponent({ name: 'AMP.1', type: ControlComponentType.AMMETER, family: 'CONTROL' })).toBe(false);
+      expect(isCircuitPowerComponent({ name: 'VOLT.1', type: ControlComponentType.VOLTMETER, family: 'CONTROL' })).toBe(false);
+      expect(isCircuitPowerComponent({ name: 'SCOPE.1', type: ControlComponentType.SCOPE, family: 'CONTROL' })).toBe(false);
+      expect(isCircuitPowerComponent({ name: 'GATE.1', type: ControlComponentType.GATE, family: 'CONTROL' })).toBe(false);
+      expect(isCircuitPowerComponent({ name: 'NOTE.1', type: 2001, family: 'SPECIAL' })).toBe(false);
+      expect(isCircuitPowerComponent(null)).toBe(false);
+      expect(isCircuitPowerComponent(undefined)).toBe(false);
+    });
+
+    it('exposes virtual branch current I(...) and voltage drop V(...) signals in extractAvailableSignalDetails', () => {
+      const components = [
+        { name: 'L_filter', type: LkComponentType.INDUCTOR, family: 'LK' },
+        { name: 'R_load', type: LkComponentType.RESISTOR, family: 'LK' },
+        { name: 'VOLT.1', type: ControlComponentType.VOLTMETER, family: 'CONTROL' },
+      ];
+      const wires = [
+        { label: 'out_p', domain: 'electrical' },
+        { label: 'clk', domain: 'CONTROL', type: 'CONTROL' },
+      ];
+
+      const details = extractAvailableSignalDetails(components, wires);
+      const names = details.map((d) => d.name);
+
+      expect(names).toContain('I(L_filter)');
+      expect(names).toContain('V(L_filter)');
+      expect(names).toContain('I(R_load)');
+      expect(names).toContain('V(R_load)');
+      expect(names).toContain('V(out_p)');
+      expect(names).toContain('out_p');
+      expect(names).toContain('clk');
+      // Control voltmeter shouldn't have I(VOLT.1) or V(VOLT.1)
+      expect(names).not.toContain('I(VOLT.1)');
+      expect(names).not.toContain('V(VOLT.1)');
+      // Control wire clk shouldn't have V(clk)
+      expect(names).not.toContain('V(clk)');
+
+      const currentSignal = details.find((d) => d.name === 'I(L_filter)');
+      expect(currentSignal?.domain).toBe('electrical');
+      expect(currentSignal?.category).toBe('current');
+
+      const voltSignal = details.find((d) => d.name === 'V(L_filter)');
+      expect(voltSignal?.domain).toBe('electrical');
+      expect(voltSignal?.category).toBe('voltage');
     });
 
     it('every non-disabled component in COMPONENT_METAS has finite numeric defaults for all number/select parameters', () => {

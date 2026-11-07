@@ -17,7 +17,10 @@ vi.mock('../src/api/client', () => ({
   uploadIpesString: vi.fn().mockResolvedValue('test-c1'),
   subscribeCircuitChanges: vi.fn().mockReturnValue(() => {}),
   cancelSimulation: vi.fn().mockResolvedValue(undefined),
-  setGraphRegisters: vi.fn().mockResolvedValue(undefined),
+  setGraphRegisters: vi.fn().mockResolvedValue({ modelVersion: 2 }),
+  patchComponent: vi.fn().mockResolvedValue({ modelVersion: 2 }),
+  deleteComponent: vi.fn().mockResolvedValue({ modelVersion: 2 }),
+  deleteConnection: vi.fn().mockResolvedValue({ modelVersion: 2 }),
   submitSimulation: vi.fn().mockResolvedValue({ simulationId: 'sim-fail-1', status: 'RUNNING' }),
   streamSimulationProgress: vi.fn().mockImplementation((_simId, handlers) => {
     setTimeout(() => handlers.onSimError(), 0);
@@ -172,5 +175,51 @@ describe('useEditor hook', () => {
     expect(result.current.simState.errorMessage).toContain('Numerical instability of switch states');
     expect(result.current.simState.warnings).toEqual(['Switch state oscillation']);
     expect(result.current.state.status).toContain('Simulation failed: Simulation failed: Numerical instability');
+  });
+
+  it('renames virtual probe traces in graph registers when renaming a component', async () => {
+    const { result } = await renderEditor();
+
+    // Configure graph register with virtual current and voltage probes
+    act(() => {
+      result.current.actions.updateGraphRegister(result.current.state.graphRegisters[0].id, {
+        signals: ['I(L.1)', 'V(L.1)'],
+        signalGraphs: { 'I(L.1)': 2, 'V(L.1)': 1 },
+      });
+    });
+
+    expect(result.current.state.graphRegisters[0].signals).toEqual(['I(L.1)', 'V(L.1)']);
+
+    // Rename component L.1 to L_filter
+    act(() => {
+      result.current.actions.rename('L.1', 'L_filter');
+    });
+
+    expect(result.current.state.graphRegisters[0].signals).toEqual(['I(L_filter)', 'V(L_filter)']);
+    expect(result.current.state.graphRegisters[0].signalGraphs).toEqual({
+      'I(L_filter)': 2,
+      'V(L_filter)': 1,
+    });
+  });
+
+  it('cleans up virtual probe traces from graph registers when deleting a component', async () => {
+    const { result } = await renderEditor();
+
+    act(() => {
+      result.current.actions.updateGraphRegister(result.current.state.graphRegisters[0].id, {
+        signals: ['I(L_filter)', 'V(L_filter)', 'V_dc'],
+        signalGraphs: { 'I(L_filter)': 2, 'V(L_filter)': 1, V_dc: 1 },
+      });
+    });
+
+    expect(result.current.state.graphRegisters[0].signals).toHaveLength(3);
+
+    // Delete component L_filter
+    act(() => {
+      result.current.actions.deleteComponent('L_filter');
+    });
+
+    expect(result.current.state.graphRegisters[0].signals).toEqual(['V_dc']);
+    expect(result.current.state.graphRegisters[0].signalGraphs).toEqual({ V_dc: 1 });
   });
 });

@@ -2945,6 +2945,42 @@ export function getMutualCouplingUids(
   return [Number.isFinite(a) ? a : 0, Number.isFinite(b) ? b : 0];
 }
 
+/**
+ * Returns true if the component is an electrical power circuit element (resistor, inductor, capacitor,
+ * semiconductor switch, diode, transformer, etc.) that supports virtual branch current I(...) and
+ * voltage drop V(...) probing without requiring physical meter components.
+ */
+export function isCircuitPowerComponent(
+  component: { type?: number; family?: string; name?: string } | null | undefined,
+): boolean {
+  if (!component) return false;
+  if (component.family === 'CONTROL' || component.family === 'THERM' || component.family === 'SPECIAL') {
+    return false;
+  }
+  if (component.family === 'CIRCUIT' || component.family === 'LK') {
+    return true;
+  }
+  // Check against control/special type IDs
+  if (component.type != null && (component.type >= 1000 || component.type === SpecialComponentType.TEXTBOX)) {
+    return false;
+  }
+  // Name heuristics for legacy components lacking explicit family
+  const n = component.name || '';
+  if (
+    n.startsWith('VOLT') ||
+    n.startsWith('AMP') ||
+    n.startsWith('GATE') ||
+    n.startsWith('SCOPE') ||
+    n.startsWith('CTRL') ||
+    n.startsWith('PI') ||
+    n.startsWith('NOTE') ||
+    n.startsWith('TEXT')
+  ) {
+    return false;
+  }
+  return true;
+}
+
 export interface AvailableSignalMetadata {
   name: string;
   domain: 'electrical' | 'control' | 'thermal' | 'other';
@@ -2993,11 +3029,19 @@ export function extractAvailableSignalDetails(
           category = 'voltage';
         }
         register(lbl, domain, category, `${isControl ? 'Control' : 'Electrical'} Net "${lbl}"`);
+        if (!isControl && !lbl.startsWith('V(') && !lbl.startsWith('I(')) {
+          register(`V(${lbl})`, 'electrical', 'voltage', `Node Voltage V(${lbl})`);
+        }
       }
     }
   }
 
   for (const comp of components) {
+    if (isCircuitPowerComponent(comp)) {
+      register(`I(${comp.name})`, 'electrical', 'current', `Current through ${comp.name}`);
+      register(`V(${comp.name})`, 'electrical', 'voltage', `Voltage across ${comp.name}`);
+    }
+
     const isControl =
       comp.family === 'CONTROL' ||
       (!comp.family &&
