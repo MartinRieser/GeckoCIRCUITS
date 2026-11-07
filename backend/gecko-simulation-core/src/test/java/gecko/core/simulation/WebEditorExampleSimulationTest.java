@@ -77,12 +77,14 @@ class WebEditorExampleSimulationTest {
                     .circuitModel(model)
                     .stepWidth(1e-6)
                     .simulationDuration(0.04)
-                    .signals(java.util.List.of("v_meas", "v_ref", "v_err", "gate_hi", "gate_lo"))
+                    .signals(java.util.List.of("v_meas", "v_ref", "v_err", "gate_hi", "gate_lo", "I(L_filter)", "V(L_filter)", "I(S.1)"))
                     .solverType(SolverType.SOLVER_BE)
                     .build();
             SimulationResult result = new HeadlessSimulationEngine().runSimulation(config);
 
             assertTrue(result.isSuccess(), () -> "simulation failed: " + result.getErrorMessage());
+            assertTrue(result.getWarnings().isEmpty(),
+                    () -> "example must run warning-free with zero DRC warnings: " + result.getWarnings());
             float[] vMeas = result.getSignalData(0);
             assertNotNull(vMeas, "v_meas signal data must exist");
             for (int i = 0; i < vMeas.length; i++) {

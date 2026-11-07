@@ -17,6 +17,7 @@ import {
   SPWM_INVERTER_DEADTIME_IPES,
 } from '../src/model/examples';
 import { findPlacementConflict } from '../src/model/geometry';
+import { extractAvailableSignals } from '../src/model/componentSchema';
 import type { EditorComponent } from '../src/model/types';
 
 /** Helper to extract components from .ipes content string for geometry checks. */
@@ -192,6 +193,35 @@ describe('Circuit Examples (.ipes templates)', () => {
       expect(diskContent).not.toMatch(/idStringDialog\s+SCOPE/i);
       expect(diskContent).not.toMatch(/SCOPE\.\d/);
       expect(diskContent.trim()).toBe(ex!.content.trim());
+    }
+  });
+
+  it('guarantees zero unresolvable speculative signals (Ploss, Tj, Phi) are auto-requested for bundled examples', () => {
+    for (const ex of EXAMPLES) {
+      const comps = parseComponentsFromIpes(ex.content);
+      const available = extractAvailableSignals(comps, []);
+      // Filter by useEditor's auto-request policy
+      const autoRequested = available.filter(
+        (s) => !s.startsWith('Ploss_') && !s.startsWith('Tj_') && !s.startsWith('Phi_'),
+      );
+      // Verify no speculative domain signal was accidentally retained
+      expect(autoRequested.some((s) => s.startsWith('Ploss_'))).toBe(false);
+      expect(autoRequested.some((s) => s.startsWith('Tj_'))).toBe(false);
+      expect(autoRequested.some((s) => s.startsWith('Phi_'))).toBe(false);
+
+      // Verify all I(...) and V(...) quantities correspond to valid components in the example
+      const compNames = new Set(comps.map((c) => c.name));
+      for (const sig of autoRequested) {
+        if (sig.startsWith('I(') && sig.endsWith(')')) {
+          const compName = sig.slice(2, -1);
+          expect(compNames.has(compName), `Signal '${sig}' in example '${ex.id}' references non-existent component '${compName}'`).toBe(true);
+        } else if (sig.startsWith('V(') && sig.endsWith(')')) {
+          const inner = sig.slice(2, -1);
+          if (!inner.includes('|') && compNames.has(inner)) {
+            expect(compNames.has(inner)).toBe(true);
+          }
+        }
+      }
     }
   });
 });

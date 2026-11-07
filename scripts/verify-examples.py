@@ -189,6 +189,11 @@ def check_example(ex, results):
         if t[-1] < 0.9 * ex["duration"]:
             problems.append(f"time span {t[-1]:.4g}s << tDURATION {ex['duration']:.4g}s")
 
+    warnings = results.get("warnings", [])
+    for w in warnings:
+        if "DRC_UNRESOLVED_SIGNAL" in w or "DRC_" in w:
+            problems.append(f"simulation produced DRC warning: {w}")
+
     for sig in ex["signals"]:
         raw_data = results.get(sig)
         if raw_data is None:
