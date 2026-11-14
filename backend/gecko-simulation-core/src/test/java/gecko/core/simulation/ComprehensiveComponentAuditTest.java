@@ -2,8 +2,6 @@ package gecko.core.simulation;
 
 import gecko.core.allg.SolverType;
 import gecko.core.circuit.ComponentTerminals;
-import gecko.core.circuit.netlist.CircuitNetlist;
-import gecko.core.circuit.netlist.NetlistBuilder;
 import gecko.core.datacontainer.DataContainerGlobal;
 import gecko.core.io.CircuitModel;
 import org.junit.jupiter.api.Test;

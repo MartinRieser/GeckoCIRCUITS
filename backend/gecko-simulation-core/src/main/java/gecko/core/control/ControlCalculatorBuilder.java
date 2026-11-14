@@ -1375,46 +1375,6 @@ public final class ControlCalculatorBuilder {
         return type == TYP_SCOPE || type == TYP_SCOPE_WEB || type == 70;
     }
 
-    /**
-     * Control blocks whose labeled output becomes a recordable signal tap:
-     * sources/constants (classic + web) and the web catalog blocks with a
-     * single executable output. Latching on an explicit output label keeps
-     * unlabeled internal blocks out of the signal list.
-     */
-    private static boolean isLabeledTapType(int type) {
-        return type == TYP_SIGNAL_SOURCE || type == TYP_SIGNAL_WEB
-                || type == TYP_CONSTANT || type == TYP_CONSTANT_WEB
-                || type == TYP_GAIN || type == TYP_LEGACY_GAIN
-                || type == TYP_PI || type == TYP_LEGACY_PI
-                || type == TYP_PT1 || type == TYP_LEGACY_PT1
-                || type == TYP_INTEGRATOR || type == TYP_LEGACY_INT
-                || type == TYP_COMPARATOR || type == TYP_LEGACY_GT
-                || type == TYP_AND || type == TYP_LEGACY_AND
-                || type == TYP_OR || type == TYP_LEGACY_OR
-                || type == TYP_NOT || type == TYP_LEGACY_NOT
-                || type == TYP_SELECTOR || type == TYP_DELAY || type == TYP_LEGACY_DELAY
-                || type == TYP_SUB || type == TYP_LEGACY_SUB
-                || type == TYP_ADD || type == TYP_LEGACY_ADD
-                || type == TYP_MUL || type == TYP_LEGACY_MUL
-                || type == TYP_DIV || type == TYP_LEGACY_DIV
-                || type == TYP_LIMIT || type == TYP_LEGACY_LIMIT
-                || type == TYP_ABS || type == TYP_LEGACY_ABS
-                || type == TYP_SQRT || type == TYP_LEGACY_SQRT
-                || type == TYP_EXP || type == TYP_LEGACY_EXP
-                || type == TYP_LN || type == TYP_LEGACY_LN
-                || type == TYP_SIN || type == TYP_LEGACY_SIN
-                || type == TYP_COS || type == TYP_LEGACY_COS
-                || type == TYP_MIN || type == TYP_LEGACY_MIN
-                || type == TYP_MAX || type == TYP_LEGACY_MAX
-                || type == TYP_HYS || type == TYP_LEGACY_HYS
-                || type == TYP_PT2 || type == TYP_LEGACY_PT2
-                || type == TYP_PD || type == TYP_LEGACY_PD
-                || type == TYP_SAMPLEHOLD || type == TYP_LEGACY_SAMPLEHOLD
-                || type == TYP_TIME || type == TYP_LEGACY_TIME
-                || type == TYP_XOR || type == TYP_LEGACY_XOR
-                || type == TYP_GE || type == TYP_LEGACY_GE;
-    }
-
     private static boolean isValidUserLabel(String label) {
         if (label == null) {
             return false;

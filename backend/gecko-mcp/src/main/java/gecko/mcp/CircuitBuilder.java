@@ -213,7 +213,7 @@ public final class CircuitBuilder {
                             if (!hasExplicitOrient) {
                                 orient = ORIENT_WEST_EAST;
                             }
-                            seriesByNodePair.put(pairKey, new SeriesPlacement(posX, n0, n1));
+                            seriesByNodePair.put(pairKey, new SeriesPlacement(posX, n0));
                             gridX += HORIZONTAL_PITCH;
                         }
                     }
@@ -1330,13 +1330,11 @@ public final class CircuitBuilder {
     private static final class SeriesPlacement {
         final int x;
         final String n0;
-        final String n1;
         int parallelCount = 0;
 
-        SeriesPlacement(int x, String n0, String n1) {
+        SeriesPlacement(int x, String n0) {
             this.x = x;
             this.n0 = n0;
-            this.n1 = n1;
         }
     }
 
