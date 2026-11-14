@@ -18,7 +18,7 @@ import {
   resolveActiveSimSettings,
   suggestAutoTimeStep,
 } from './simSettings';
-import { STEP_WARNING_THRESHOLD, estimateStepCount } from './simSteps';
+import { STEP_WARNING_THRESHOLD, estimateStepCount, isHighStepCount } from './simSteps';
 
 /** Props for the always-visible top-bar inline simulation control strip. */
 export interface SimToolbarStripProps {
@@ -129,7 +129,7 @@ export function SimToolbarStrip({
   );
 
   const isAliasingRisk = maxFreq > 0 && effDt > 1 / (20 * maxFreq);
-  const isHeavyRun = estSteps >= STEP_WARNING_THRESHOLD;
+  const isHeavyRun = isHighStepCount(estSteps);
 
   const stepHealth: { tone: 'ok' | 'warn' | 'error'; label: string; title: string } = useMemo(() => {
     if (!isDtValid || !isTEndValid) {
@@ -157,7 +157,7 @@ export function SimToolbarStrip({
       return {
         tone: 'warn',
         label: `${formatCompactSteps(estSteps)} ⚠`,
-        title: `Large simulation (${estSteps.toLocaleString()} steps > ${STEP_WARNING_THRESHOLD.toLocaleString()}). Click to review timing setup.`,
+        title: `Very large simulation (${estSteps.toLocaleString()} steps >= ${STEP_WARNING_THRESHOLD.toLocaleString()}). May take noticeable runtime; click to review timing setup.`,
       };
     }
     return {

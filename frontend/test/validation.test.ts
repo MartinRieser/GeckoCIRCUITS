@@ -409,6 +409,26 @@ describe('buildCircuitDiagnostics & getComponentDiagnosticWarning', () => {
     );
   });
 
+  it('does not warn on normal 600k-step runs but warns at >= 10M steps', () => {
+    const src = comp({ name: 'U', type: LkComponentType.VOLTAGE_SOURCE });
+    const gnd = comp({ name: 'GND.1', type: LkComponentType.GLOBAL_TERMINAL });
+    const r = comp({ name: 'R.1', type: LkComponentType.RESISTOR });
+
+    const normal = buildCircuitDiagnostics([src, gnd, r], [], {
+      dt: '100n',
+      tEnd: '60m',
+    });
+    expect(normal.find((d) => d.id === 'timing-high-steps')).toBeUndefined();
+
+    const huge = buildCircuitDiagnostics([src, gnd, r], [], {
+      dt: '1n',
+      tEnd: '20m',
+    });
+    const highSteps = huge.find((d) => d.id === 'timing-high-steps');
+    expect(highSteps?.severity).toBe('warning');
+    expect(highSteps?.detail).toContain('20,000,000 steps');
+  });
+
   it('produces actionable delete-wire quick fix for dangling wires', () => {
     const r = comp({ name: 'R.1', type: LkComponentType.RESISTOR, position: [10, 10] });
     const diags = buildCircuitDiagnostics([r], [{ points: [[40, 40], [44, 40]] }]);

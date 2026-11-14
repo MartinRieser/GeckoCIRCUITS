@@ -14,7 +14,7 @@ import type {
 import { validateCircuitForSimulation } from '../model/validation';
 import { parseEngineeringValue } from '../model/componentSchema';
 import { findScopeBlocks } from './scopes';
-import { estimateStepCount, STEP_WARNING_THRESHOLD } from './simSteps';
+import { estimateStepCount, isHighStepCount, STEP_WARNING_THRESHOLD } from './simSteps';
 import { resolveActiveSimSettings } from './simSettings';
 import { SENTINEL_UNSET } from '../model/constants';
 
@@ -131,7 +131,7 @@ export function SimConfigModal({
     [tEndNum, dtNum],
   );
 
-  const isHeavyRun = estSteps > STEP_WARNING_THRESHOLD;
+  const isHeavyRun = isHighStepCount(estSteps);
 
   // Active scope blocks in schematic
   const scopeBlocks = useMemo(() => findScopeBlocks(components), [components]);
@@ -307,8 +307,8 @@ export function SimConfigModal({
             </div>
             <div className="workload-box-note">
               {isHeavyRun
-                ? `⚠️ Step count is very large (> ${STEP_WARNING_THRESHOLD.toLocaleString()}). Execution may take longer or consume significant memory.`
-                : '✓ Optimal step count for interactive real-time simulation.'}
+                ? `⚠️ Step count is very large (>= ${STEP_WARNING_THRESHOLD.toLocaleString()}). Simulation may take noticeable runtime depending on circuit complexity.`
+                : '✓ Normal step count for fast interactive simulation.'}
             </div>
           </div>
 

@@ -20,7 +20,11 @@ import {
   suggestAutoTimeStep,
   type FrequencyInspectableComponent,
 } from '../simulation/simSettings';
-import { estimateStepCount, STEP_WARNING_THRESHOLD } from '../simulation/simSteps';
+import {
+  estimateStepCount,
+  isHighStepCount,
+  STEP_WARNING_THRESHOLD,
+} from '../simulation/simSteps';
 import { ENGINE_UNREACHABLE_PREFIX } from '../api/client';
 
 /**
@@ -778,13 +782,13 @@ export function buildCircuitDiagnostics(
       const steps = estimateStepCount(tEndVal, dtVal);
       const auto = suggestAutoTimeStep(components as FrequencyInspectableComponent[], tEndVal);
 
-      if (steps >= STEP_WARNING_THRESHOLD) {
+      if (isHighStepCount(steps)) {
         items.push({
           id: 'timing-high-steps',
           severity: 'warning',
           category: 'timing',
           title: 'Very High Step Count',
-          detail: `${steps.toLocaleString()} steps (dt=${context.dt}, t_end=${context.tEnd}) reaches or exceeds ${STEP_WARNING_THRESHOLD.toLocaleString()} steps and may run slowly.`,
+          detail: `${steps.toLocaleString()} steps (dt=${context.dt}, t_end=${context.tEnd}) reaches or exceeds ${STEP_WARNING_THRESHOLD.toLocaleString()} steps and may take noticeable runtime depending on circuit complexity.`,
           quickFix: {
             label: `Set dt = ${auto.dtStr}`,
             action: 'auto-dt',

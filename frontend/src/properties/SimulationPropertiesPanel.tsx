@@ -13,7 +13,11 @@ import {
 } from '../model/componentSchema';
 import { mapSimulationResults } from '../simulation/chartData';
 import { findScopeBlocks } from '../simulation/scopes';
-import { estimateStepCount, STEP_WARNING_THRESHOLD } from '../simulation/simSteps';
+import {
+  estimateStepCount,
+  isHighStepCount,
+  STEP_WARNING_THRESHOLD,
+} from '../simulation/simSteps';
 import type { ScopeController } from '../simulation/useScopeController';
 import type { ScopeDisplayLayout } from '../model/constants';
 
@@ -135,7 +139,7 @@ export function SimulationPropertiesPanel({
   const tEndNum = parseEngineeringValue(effTEnd);
   const dtNum = parseEngineeringValue(effDt);
   const estSteps = estimateStepCount(tEndNum ?? 0.02, dtNum ?? 1e-6);
-  const isHeavyRun = estSteps > STEP_WARNING_THRESHOLD;
+  const isHeavyRun = isHighStepCount(estSteps);
 
   // Pre-run validation: first click on "Run Simulation" surfaces likely circuit
   // mistakes (dangling wires, missing source, unsupported components); a second
@@ -394,7 +398,7 @@ export function SimulationPropertiesPanel({
               </div>
               {isHeavyRun && (
                 <div style={{ fontSize: '10px', color: 'var(--wire)', marginTop: 2 }}>
-                  ⚠ Over 1M steps may affect browser plot rendering speed.
+                  ⚠ ≥ {STEP_WARNING_THRESHOLD.toLocaleString()} steps may take noticeable runtime depending on circuit complexity.
                 </div>
               )}
             </div>
