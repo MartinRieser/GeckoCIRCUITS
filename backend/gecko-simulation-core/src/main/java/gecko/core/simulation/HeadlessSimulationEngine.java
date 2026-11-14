@@ -277,11 +277,11 @@ public class HeadlessSimulationEngine {
         lossEngine = new SemiconductorLossEngine().initializeFromNetlist(circuitNetlist);
 
         // Electro-thermal couplings (opt-in): thermal networks, loss-to-heat
-        // flow mapping and temperature feedback (Task L1 Step 2)
+        // flow mapping and temperature feedback
         initializeThermalDomain(config, circuitModel, settings.getSolverType());
 
         // Magnetic couplings (opt-in): winding-current pickup, reluctance
-        // networks and induced-EMF feedback (Task L1 Step 3/4)
+        // networks and differential-inductance feedback
         initializeMagneticDomain(config, circuitModel);
 
         // Re-initialize matrix solver with real netlist dimensions
@@ -517,9 +517,8 @@ public class HeadlessSimulationEngine {
                         Math.max(dtToNextGrid, dt * GRID_ALIGNMENT_EPSILON));
             }
 
-            // Phase 4: Execute domain coupling (LK → CONTROL → LK) once per
-            // step; rejected adaptive attempts re-solve only the power domain
-            // Orchestrates data transfer between circuit, control, and thermal domains
+            // Execute domain coupling (LK → CONTROL → LK) once per step;
+            // rejected adaptive attempts re-solve only the power domain.
             domainCoupler.coupleDomainsForTimeStep(circuitNetlist, controlNetlist, attemptDt, currentTime);
 
             // Gate-driven switches: rewrite the switch resistance from the
@@ -980,15 +979,15 @@ public class HeadlessSimulationEngine {
 
     /**
      * Initializes the magnetic co-simulation networks: binds every winding to
-     * the electrical component carrying its name (an LK_U voltage source
-     * acting as the EMF-driven winding terminal) and requires unique winding
-     * names across networks so the logging channels are unambiguous.
+     * the electrical component carrying its name (an {@code LK_L} inductor) and
+     * requires unique winding names across networks so the logging channels are
+     * unambiguous.
      *
      * @param config simulation configuration
      * @param circuitModel parsed circuit model (winding name resolution)
      *
      * @throws IllegalArgumentException if a winding has no electrical
-     *         component, the component is not an LK_U voltage source, or a
+     *         component, the component is not an {@code LK_L} inductor, or a
      *         winding name is duplicated across networks
      */
     private void initializeMagneticDomain(final SimulationConfig config,
@@ -1301,7 +1300,6 @@ public class HeadlessSimulationEngine {
 
         double overallProgress = getProgress();
 
-        // For now, pre-calculation progress is 0 (will be implemented with real solver)
         double preCalcProgress = 0.0;
         double mainSimProgress = overallProgress;
 

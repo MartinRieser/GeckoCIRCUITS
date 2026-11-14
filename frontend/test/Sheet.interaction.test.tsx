@@ -654,7 +654,7 @@ describe('direct pin-to-pin wiring and wire editing', () => {
     expect(openScriptTab).toHaveBeenCalledWith('SCRIPT.1');
   });
 
-  describe('visual connection indicators & wire tool feedback (Phase 1)', () => {
+  describe('visual connection indicators & wire tool feedback', () => {
     it('renders LTspice-style open boxes on unconnected terminals and solid dots on connected terminals', () => {
       const { container } = setup();
       // In setup(), R1 terminals (8,10) and (12,10) are wired by w1 -> connected
@@ -719,7 +719,7 @@ describe('direct pin-to-pin wiring and wire editing', () => {
     });
   });
 
-  describe('Phase 3: Interactive net highlighting', () => {
+  describe('Interactive net highlighting', () => {
     it('highlights entire net on wire hover and clears on mouse leave', () => {
       const { container } = setup();
       // Initially, no wire or terminal is net-highlighted

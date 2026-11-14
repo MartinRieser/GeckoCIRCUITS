@@ -39,7 +39,6 @@ package gecko.core.thermal;
  *
  * @see ThermalNetworkSolver
  * @see ThermalRCModel
- * @since v2.18.0 Task L1 - Multi-Domain Coupling (Step 1: Thermal Domain Engine)
  */
 public record ThermalNode(int value) implements Comparable<ThermalNode> {
 

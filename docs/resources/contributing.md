@@ -4,179 +4,99 @@ title: Contributing
 
 # Contributing to GeckoCIRCUITS
 
-Thank you for your interest in contributing! GeckoCIRCUITS is an open-source power electronics simulator and we welcome contributions of all kinds.
+Thank you for your interest in contributing to GeckoCIRCUITS!
 
 ## Ways to Contribute
 
 | Contribution | Description | Difficulty |
-|-------------|-------------|------------|
-| Bug reports | Report issues you encounter | Easy |
-| Circuit examples | Add .ipes example circuits | Easy-Medium |
-| Documentation | Improve tutorials, fix typos | Easy-Medium |
-| Bug fixes | Fix reported issues | Medium |
-| New features | Add simulation capabilities | Medium-Hard |
-| Core engine | Improve solvers, matrix operations | Hard |
+|--------------|-------------|------------|
+| Bug reports | Report simulation, UI, or desktop issues | Easy |
+| Circuit examples | Add verified `.ipes` circuits and tutorial notes | Easy–Medium |
+| Documentation | Improve guides, API docs, and tutorials | Easy–Medium |
+| Bug fixes | Fix backend, frontend, desktop, or tooling bugs | Medium |
+| New features | Add editor tools, MCP tools, or REST endpoints | Medium–Hard |
+| Core engine | Improve MNA stampers, solvers, or calculators | Hard |
 
 ## Development Setup
 
 ### Prerequisites
 
-- **Java 25** (Temurin recommended)
+- **JDK 25** (Eclipse Temurin recommended)
 - **Maven 3.8+**
-- **Git**
+- **Node.js 22+** and **npm**
+- **Python 3** (for `geckopy` tests and example/docs scripts)
+- **Rust stable** (only needed if modifying `desktop/`)
 
-### Build from Source
+### Build & Test Everything
 
 ```bash
-git clone https://github.com/MartinRieser/GeckoCIRCUITS.git
-cd GeckoCIRCUITS
-mvn clean package -DskipTests
+# Backend engine, REST API, and MCP server (enforces >=30% JaCoCo coverage on core)
+mvn clean verify
+
+# View core JaCoCo coverage report:
+# backend/gecko-simulation-core/target/site/jacoco/index.html
+
+# Style & static checks on gecko-mcp and gecko-rest-api
+mvn checkstyle:check pmd:check \
+  -D"checkstyle.config.location=../../checkstyle.xml" \
+  -D"pmd.rulesets=../../pmd-ruleset.xml" \
+  -pl backend/gecko-mcp,backend/gecko-rest-api
+
+# Frontend lint, TypeScript check, and Vitest suite
+npm --prefix frontend run lint
+npx --prefix frontend tsc -p frontend/tsconfig.json --noEmit
+npm --prefix frontend test
+
+# Python SDK and tooling unit tests
+python -m unittest discover -s tests
+
+# Documentation strict link & build check
+mkdocs build --strict
 ```
 
-### Run Tests
+### Run the Application Locally
 
 ```bash
-# All unit tests
-mvn test
-
-# Single test class
-mvn test -Dtest=ClassName
-
-# With coverage report
-mvn clean test jacoco:report
-# View: target/site/jacoco/index.html
-```
-
-### Run the Application
-
-```bash
-# Starts the simulation engine on localhost:8080 and opens the editor
+# Starts the REST API engine on localhost:8080/gecko and launches the editor
 run-gecko.bat        # Windows
 ./run-gecko.sh       # Linux / macOS
 ```
 
 ## Code Architecture
 
-GeckoCIRCUITS is organized with a clear separation of concerns:
-
 ```
-src/main/java/gecko/
-├── GeckoSim.java                  # Entry point and operating mode selection
-├── geckocircuits/
-│   ├── allg/                      # Global settings, file management, dialogs
-│   ├── circuit/                   # Circuit components, terminals, MNA matrix
-│   │   ├── matrix/                # MNA matrix stamping and operations
-│   │   ├── netlist/               # Netlist generation and parsing
-│   │   ├── simulation/            # Simulation engine and runners
-│   │   └── circuitcomponents/     # All component definitions
-│   ├── control/                   # 64+ control block calculators (pure computation)
-│   │   └── calculators/           # PI/PID, integrators, gain, limiters, etc.
-│   ├── math/                      # Matrix operations, FFT, LU decomposition
-│   ├── newscope/                  # Oscilloscope visualization
-│   ├── datacontainer/             # Signal storage with caching (IntegerMatrixCache, ShortMatrixCache)
-│   └── nativec/                   # Native C integration layer
-├── expressionscripting/           # GraalVM JavaScript expression evaluation
-└── i18n/                          # Internationalization (968+ translation keys)
+GeckoCIRCUITS/
+├── backend/
+│   ├── gecko-simulation-core/   # GUI-free Java 25 MNA solver, stampers, calculators, .ipes I/O, DRC
+│   ├── gecko-rest-api/          # Spring Boot 4.1.1 REST/SSE/WebSocket API + embedded frontend assets
+│   └── gecko-mcp/               # Stdio MCP JSON-RPC 2.0 server (16 tools) + vector SVG exporter
+├── frontend/                    # React + TypeScript schematic editor, scopes, FFT, loss panels
+├── desktop/                     # Tauri 2 Rust desktop shell (`gecko-engine` & `gecko-desktop`)
+├── geckopy/                     # Python SDK wrapping `gecko-mcp`
+├── examples/                    # Curated quick-open circuits + manifest.json
+├── resources/                   # Tutorials, application examples, reference projects, newsletters
+└── docs/                        # MkDocs documentation site source
 ```
 
-### Key Architectural Principles
+### Architectural Principles
 
-- **Pure Computation** - Control calculators in `control/calculators/` are free from GUI dependencies (Swing/AWT).
-- **MNA Solver** - The Modified Nodal Analysis matrix system is in `circuit/matrix/` with multiple solver types (Backward Euler, Trapezoidal, Gear-Shichman).
-- **Component Registry** - `StamperRegistry` manages component-to-stamper mappings for the MNA solver.
-- **Signal Caching** - `datacontainer/` package optimizes memory usage for large signal datasets.
+- **Strict GUI-Free Simulation Core**: `backend/gecko-simulation-core` never imports Swing, AWT GUI frameworks, or UI libraries (guarded by `maven-enforcer-plugin`).
+- **MNA Solver & Stampers**: Components register in `StamperRegistry` (`CircuitTypCore` -> `IMatrixStamper` / `IStatefulStamper`).
+- **Pure-Java Control Calculators**: 74 calculator classes in `gecko.core.control.calculators` implement `AbstractControlCalculatable.calculateYOUT(double deltaT)`.
 
 ## Pull Request Process
 
-1. **Fork** the repository
-2. **Create a branch** from `main`:
-   ```bash
-   git checkout -b fix/description-of-change
-   ```
-3. **Make your changes** with clear, focused commits
-4. **Run tests** to ensure nothing breaks:
-   ```bash
-   mvn test
-   ```
-5. **Push** and open a Pull Request against `main`
-
-### PR Guidelines
-
-- Keep PRs focused - one logical change per PR
-- Include a clear description of what changed and why
-- Add tests for new functionality
-- Don't break existing tests
-- Follow the existing code style
-
-### Branch Naming
-
-| Prefix | Use |
-|--------|-----|
-| `fix/` | Bug fixes |
-| `feature/` | New features |
-| `docs/` | Documentation changes |
-| `refactor/` | Code refactoring |
-| `test/` | Test additions |
+1. **Fork** the repository and create a branch from `main` (`fix/...`, `feature/...`, `docs/...`, `refactor/...`, `test/...`).
+2. Keep changes focused and add unit tests for new behavior.
+3. Run the relevant backend, frontend, desktop, Python, and `mkdocs build --strict` checks.
+4. Open a Pull Request against `main` with a clear summary and verification results.
 
 ## Adding Circuit Examples
 
-Contributing example circuits is one of the easiest ways to help:
-
-1. Create your `.ipes` circuit in GeckoCIRCUITS
-2. Test that it simulates correctly
-3. Add it to the appropriate directory under `resources/examples/` or `resources/tutorials/`
-4. Include a `README.md` with:
-   - What the circuit demonstrates
-   - Key parameters and expected results
-   - Learning objectives (for tutorials)
-
-### Example README Template
-
-```markdown
-# Example: [Name]
-
-## Overview
-Brief description of what this circuit demonstrates.
-
-## Specifications
-| Parameter | Value |
-|-----------|-------|
-| Topology  | Buck  |
-| Vin       | 48V   |
-| Vout      | 12V   |
-
-## How to Use
-1. Open `circuit_name.ipes` in GeckoCIRCUITS
-2. Run the simulation (F5)
-3. Open the SCOPE to view waveforms
-
-## Expected Results
-- Output voltage: ~12V
-- Ripple: < 1%
-```
-
-## Reporting Issues
-
-When reporting bugs, please include:
-
-- GeckoCIRCUITS version (or commit hash)
-- Java version (`java -version`)
-- Operating system
-- Steps to reproduce
-- Expected vs actual behavior
-- Console output or error messages
-
-## Code Style
-
-- Follow existing patterns in the codebase
-- Use meaningful variable and method names
-- Keep methods focused and reasonably sized
-- Add Javadoc for public API methods
+1. Author and validate your `.ipes` file in GeckoCIRCUITS (or via `geckopy` / `gecko_validate_circuit`).
+2. Verify it simulates cleanly with expected physics behavior.
+3. Add or update documentation in `docs/` and run `mkdocs build --strict` (plus `python scripts/verify-examples.py` if editing `examples/`).
 
 ## License
 
 By contributing, you agree that your contributions will be licensed under the same [dual license](https://github.com/MartinRieser/GeckoCIRCUITS/blob/main/LICENSE) as the project.
-
-## Questions?
-
-Open a [GitHub Discussion](https://github.com/MartinRieser/GeckoCIRCUITS/discussions) or file an issue.

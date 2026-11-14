@@ -62,25 +62,25 @@ public final class McpResources {
     private static SyncResourceSpecification scriptBlockReferenceResource() {
         String uri = "gecko://reference/script-blocks";
         McpSchema.Resource resource = McpSchema.Resource.builder(uri, "Control Script Block Reference")
-                .description("Language specification, built-in variables, math functions, and syntax rules for GeckoCIRCUITS ScriptBlockCalculator (typ 61)")
+                .description("Language specification, built-in variables, math functions, and syntax rules for GeckoCIRCUITS ScriptBlockCalculator (typ 1016 / classic typ 61)")
                 .mimeType("text/markdown")
                 .build();
 
         String doc = """
-                # GeckoCIRCUITS ScriptBlockCalculator (typ 61) Reference Manual
-                
+                # GeckoCIRCUITS ScriptBlockCalculator (typ 1016 / classic typ 61) Reference Manual
+
                 The `ScriptBlockCalculator` is a high-speed interpreted DSP microcontroller block running synchronously inside the simulation loop at timestep `dt`.
-                
+
                 ## Simulation Variables
                 - `t`: Current simulation time in seconds (double)
                 - `dt`: Simulation timestep in seconds (double, e.g. 1.0e-6)
                 - `PI`: Math constant 3.141592653589793
-                
+
                 ## Input & Output Arrays
                 - `xIN[0 .. anzXIN - 1]`: Array of measured input signals from voltage/current probes
                 - `yOUT[0 .. anzYOUT - 1]`: Array of synthesized output signals (gate pulses, telemetry, etc.)
                 - The script must conclude with: `return yOUT;`
-                
+
                 ## State Variables (<staticVariables>)
                 Variables declared in `<staticVariables>` retain their values across simulation timesteps (integrator states, duty cycles, step counters):
                 ```java
@@ -89,7 +89,7 @@ public final class McpResources {
                 double v_int = 0.0;
                 <\\staticVariables>
                 ```
-                
+
                 ## Mathematical Operators & Functions
                 - Arithmetic: `+`, `-`, `*`, `/`, `%` (modulo), `^` (power)
                 - Relational: `<`, `<=`, `>`, `>=`, `==`, `!=`
@@ -100,7 +100,7 @@ public final class McpResources {
                   - `asin(x)`, `acos(x)`, `atan(x)`, `atan2(y, x)`
                   - `abs(x)`, `sqrt(x)`, `exp(x)`, `log(x)`
                   - `pow(x, y)`, `min(x, y)`, `max(x, y)`
-                
+
                 ## Safe Division Best Practices
                 Because boolean operators evaluate sub-expressions, always guard denominators using ternary operators:
                 ```java
@@ -117,13 +117,13 @@ public final class McpResources {
     private static SyncResourceSpecification controlBlocksReferenceResource() {
         String uri = "gecko://reference/control-blocks";
         McpSchema.Resource resource = McpSchema.Resource.builder(uri, "Native Control Block Reference")
-                .description("Executable control blocks (typ 1000-1016) with parameter slots, terminal geometry, "
+                .description("Executable control blocks (typ 1000-1058) with parameter slots, terminal geometry, "
                         + "wiring rules and the canonical bang-bang regulated buck pattern")
                 .mimeType("text/markdown")
                 .build();
 
         String doc = """
-                # Native Control Blocks (web catalog, typ 1000-1016)
+                # Native Control Blocks (web catalog, typ 1000-1058)
 
                 The headless engine executes these blocks natively. Chain them with CONTROL wires;
                 combine with SCRIPT_BLOCK (1016) for anything more complex than the blocks below.
@@ -166,20 +166,31 @@ public final class McpResources {
                 | HYS           | 1030 | 1              | 1 | 0=low threshold, 1=high threshold (hysteresis flip-flop) |
                 | PT2           | 1031 | 1              | 1 | 0=omega_0 [rad/s], 1=damping ratio D (2nd order lowpass) |
                 | PD            | 1032 | 1              | 1 | 0=Kd, 1=Tv [s] (derivative filter) |
+                | SAMPLE_HOLD   | 1033 | 2 (sig,trig)   | 1 | samples sig on trig rising edge |
                 | TIME          | 1034 | 0              | 1 | out = current simulation time t in seconds |
                 | XOR           | 1035 | 2              | 1 | out = 1 iff exactly one input > 0.5 |
                 | GE            | 1036 | 2 (in1,in2)    | 1 | out = 1 iff in1 >= in2 |
                 | DEADTIME      | 1037 | 1              | 2 | 0=dead time td [s]; outputs complementary gate signals g_hi, g_lo |
-                | SQR           | 1038 | 1              | 1 | out = in^2 |
-                | POW           | 1039 | 2 (base,exp)   | 1 | out = base^exp |
-                | ROUND         | 1040 | 1              | 1 | out = round(in) |
-                | SIGN          | 1041 | 1              | 1 | out = sgn(in) (-1, 0, +1) |
-                | EQ            | 1042 | 2              | 1 | out = 1 iff |in1 - in2| < 1e-9 |
-                | NE            | 1043 | 2              | 1 | out = 1 iff |in1 - in2| >= 1e-9 |
-                | COUNTER       | 1044 | 1              | 1 | edge-triggered pulse counter |
-                | SAMPLE_HOLD   | 1045 | 2 (sig,trig)   | 1 | samples sig on trig rising edge |
-                | ABCDQ         | 1046 | 3 (a,b,c)      | 2 | Clarke/Park 3-ph to d-q transformation |
-                | DQABC         | 1047 | 2 (d,q)        | 3 | Inverse Park/Clarke d-q to 3-ph transformation |
+                | ASIN          | 1038 | 1              | 1 | out = asin(in) [rad] |
+                | ACOS          | 1039 | 1              | 1 | out = acos(in) [rad] |
+                | TAN           | 1040 | 1              | 1 | out = tan(in) [rad] |
+                | ATAN          | 1041 | 1              | 1 | out = atan(in) [rad] |
+                | SQR           | 1042 | 1              | 1 | out = in^2 |
+                | POW           | 1043 | 2 (base,exp)   | 1 | out = base^exp |
+                | ROUND         | 1044 | 1              | 1 | out = round(in) |
+                | SIGN          | 1045 | 1              | 1 | out = sgn(in) (-1, 0, +1) |
+                | EQ            | 1046 | 2              | 1 | out = 1 iff |in1 - in2| < 1e-9 |
+                | NE            | 1047 | 2              | 1 | out = 1 iff |in1 - in2| >= 1e-9 |
+                | COUNTER       | 1048 | 2 (clk,rst)    | 1 | edge-triggered pulse counter with reset |
+                | ABCDQ         | 1049 | 4 (a,b,c,theta)| 2 | Clarke/Park 3-ph to d-q transformation |
+                | DQABC         | 1050 | 3 (d,q,theta)  | 3 | Inverse Park/Clarke d-q to 3-ph transformation |
+                | THYR_CTRL     | 1051 | 2              | 6 | 6-pulse thyristor firing angle controller |
+                | PMSM_CONTROL  | 1052 | 12             | 8 | PMSM field-oriented controller |
+                | PMSM_MODULATOR| 1053 | 4              | 3 | PMSM space-vector PWM modulator |
+                | DEMUX         | 1054 | 1              | 3 | 1-to-3 demultiplexer |
+                | SPACE_VECTOR  | 1055 | 9              | 0 | space vector display sink |
+                | SDFT          | 1056 | 1              | 1 | sliding discrete Fourier transform analyzer |
+                | SPARSEMATRIX  | 1058 | 8              | 9 | indirect sparse matrix converter modulator |
 
                 Legacy classic-editor numbers 1..6 map to 1001,1002,1005,1004,1003,1000 respectively.
 
@@ -425,7 +436,7 @@ public final class McpResources {
 
         String doc = """
                 # Power Converter Topologies Reference Guide
-                
+
                 ## 1. 3-Phase 3-Level Vienna Rectifier (Active PFC)
                 - **Input**: 3-phase AC ($230\\text{ V}_{\\text{RMS}}$ phase, $400\\text{ V}_{\\text{RMS}}$ line-to-line)
                 - **DC Link**: Split DC bus $V_{dc} = 750\\text{ V}$ ($2 \\times 375\\text{ V}$)
@@ -433,13 +444,13 @@ public final class McpResources {
                 - **Feedforward Duty Cycle**: $d_k(t) = 1.0 - M |\\sin_k(\\omega t)|$
                 - **Current Feedback**: $d_k(t) = 1.0 - M |\\sin_k| + \\text{sgn}(\\sin_k) \\cdot K_p (i_{ref,k} - i_{meas,k})$
                 - **Nominal Peak Current**: $I_{pk} = \\frac{P_{out}}{3 V_{ph,rms}} \\sqrt{2}$ (e.g. $22.55\\text{ A}$ for $11\\text{ kW}$)
-                
+
                 ## 2. DC-DC Buck Step-Down Converter
                 - **Transfer Ratio**: $V_{out} = D \\cdot V_{in}$
                 - **Nominal Duty**: $D = \\frac{V_{out}}{V_{in}}$ (e.g. $49.5 / 750 = 0.0660$)
                 - **Inductor Ripple**: $\\Delta I_L = \\frac{(V_{in} - V_{out}) D}{f_{sw} L}$
                 - **Hard Voltage Limit**: Clamp $D \\le \\frac{V_{max}}{V_{in}}$ to strictly enforce overvoltage safety.
-                
+
                 ## 3. Half-Bridge LLC Resonant Converter
                 - **Resonant Frequency**: $f_0 = \\frac{1}{2 \\pi \\sqrt{L_r C_r}}$
                 - **Characteristic Impedance**: $Z_0 = \\sqrt{L_r / C_r}$

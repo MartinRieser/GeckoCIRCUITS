@@ -13,7 +13,7 @@ pub struct OpenIpesFile {
     pub base64: String,
 }
 
-/// Validates that the OS-provided path really is an existing `.ipes` circuit.
+/// Validates that the OS-provided path is an existing `.ipes` or `.txt` circuit.
 pub fn validate_ipes_path(path: &str) -> Result<PathBuf, String> {
     let path = PathBuf::from(path);
     let is_ipes = path

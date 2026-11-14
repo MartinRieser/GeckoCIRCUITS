@@ -26,6 +26,7 @@ import gecko.core.magnetic.MagneticNode;
 import gecko.core.magnetic.MagneticWinding;
 import gecko.core.magnetic.NonlinearReluctance;
 import gecko.core.magnetic.ReluctanceBranch;
+import gecko.core.simulation.HeadlessSimulationEngine;
 import gecko.core.simulation.MatrixSolverKind;
 import gecko.core.simulation.SemiconductorModelKind;
 import gecko.core.simulation.SimulationConfig;
@@ -93,18 +94,13 @@ final class RunOptions {
      * extracts the reporting (signal names, metadata, warnings).
      */
     static RunResult run(Path circuit, Map<String, Object> args) throws IOException {
-        SimulationResult result = new HeadlessEngineHolder().run(buildConfig(circuit, args));
+        SimulationResult result = runRaw(circuit, args);
         return toRunResult(result);
     }
 
     /** Runs the engine and returns the raw result (for CSV-style extraction). */
     static SimulationResult runRaw(Path circuit, Map<String, Object> args) {
-        return new HeadlessEngineHolder().run(buildConfig(circuit, args));
-    }
-
-    /** Runs the engine for a caller-built config (used by list-signals). */
-    static SimulationResult runRaw(SimulationConfig config) {
-        return new HeadlessEngineHolder().run(config);
+        return new HeadlessSimulationEngine().runSimulation(buildConfig(circuit, args));
     }
 
     private static RunResult toRunResult(SimulationResult result) {
@@ -329,7 +325,7 @@ final class RunOptions {
      * configuration.
      */
     static List<Map<String, Object>> listSignals(Path circuit, Map<String, Object> args)
-            throws IOException, gecko.core.io.CircuitFileParser.CircuitParseException {
+            throws IOException, CircuitFileParser.CircuitParseException {
         CircuitModel model = new CircuitFileParser().parse(circuit.toFile().getAbsolutePath());
         CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
         ControlCalculatorBuilder.ControlCoupling coupling =
@@ -438,12 +434,5 @@ final class RunOptions {
             return Double.parseDouble(text);
         }
         return fallback;
-    }
-
-    /** Thin holder isolating the engine dependency for mocking clarity. */
-    private static final class HeadlessEngineHolder {
-        SimulationResult run(SimulationConfig config) {
-            return new gecko.core.simulation.HeadlessSimulationEngine().runSimulation(config);
-        }
     }
 }

@@ -14,10 +14,8 @@
 package gecko.core.control.calculators;
 
 abstract class AbstractSingleInputSingleOutputCalculator extends AbstractControlCalculatable {
-        double[] _inputSignalValue;
-        double[] _outputSignalValue;
     public AbstractSingleInputSingleOutputCalculator() {
-        super(1, 1);        
+        super(1, 1);
     }
     
 }

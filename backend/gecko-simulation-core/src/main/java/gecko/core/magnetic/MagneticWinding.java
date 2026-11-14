@@ -31,7 +31,6 @@ package gecko.core.magnetic;
  * induced EMF.
  *
  * @see MagneticNetworkSolver
- * @since v2.18.0 Task L1 - Multi-Domain Coupling (Step 3: Magnetic Domain Engine)
  */
 public final class MagneticWinding {
 

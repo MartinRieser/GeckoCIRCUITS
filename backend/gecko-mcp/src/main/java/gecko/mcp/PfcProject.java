@@ -9,9 +9,8 @@ import java.util.Map;
 import static gecko.mcp.PyFormat.format;
 
 /**
- * Port of the Python generator for the 2-phase interleaved boost PFC project.
- * The .ipes text comes from the extracted template; hole order follows
- * pfc-*-holes.json. Golden tests compare against the Python original.
+ * Generator for the 2-phase interleaved boost PFC project, filling parameters
+ * into the embedded {@code pfc-*.tpl} template resources.
  */
 final class PfcProject {
 

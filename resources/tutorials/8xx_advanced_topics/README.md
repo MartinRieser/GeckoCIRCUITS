@@ -13,7 +13,7 @@ Complex topologies and optimization techniques.
 
 - Understand direct AC-AC conversion with matrix converters
 - Implement field-oriented control for PMSM
-- Optimize converter designs using GeckoSCRIPT
+- Optimize converter designs using the [REST API](../../../docs/api/rest-api.md), [`geckopy`](../../../docs/tutorials/scripting/python.md), or Java/[`SCRIPT_BLOCK`](../../../docs/tutorials/scripting/java-blocks.md) control blocks (see archived MATLAB/GeckoSCRIPT materials in `803_optimization/`)
 - Control thyristor-based rectifiers
 
 ## Contents

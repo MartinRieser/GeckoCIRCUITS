@@ -14,13 +14,13 @@
 package gecko.core.control.calculators;
 
 /**
- * Der internen Zaehler kann durch den zweiten (unteren) RESET-Eingang auf '0' zurueckgesetzt werden:
- * solange der RESET-Eingang auf Null steht, ist der interne Zaehle auf Null gesetzt,
- * sobald der RESET-Eingang auf Eins gesetzt wird, beginnt der interne Zaehler zu laufen und wird direkt am Ausgang ausgegeben
- * @author andreas
+ * Edge-triggered pulse counter with an active-high synchronous reset on the
+ * second (lower) input: while RESET stays at or below the logic threshold
+ * ({@code <= 0.5}), rising edges on input 0 increment the count; whenever RESET
+ * rises above {@code 0.5}, the counter resets to {@code 0}.
  */
 public final class CounterCalculatable extends AbstractTwoInputsOneOutputCalculator {
-    private double _lastValue = 0;            
+    private double _lastValue = 0;
 
     @Override
     public void calculateYOUT(final double deltaT) {
@@ -28,8 +28,8 @@ public final class CounterCalculatable extends AbstractTwoInputsOneOutputCalcula
             _outputSignal[0][0]++;
         }
         if (_inputSignal[1][0] > SIGNAL_THRESHOLD) {
-            _outputSignal[0][0] = 0;  // Logik-Schwelle --> 0.5;  RESET bei Input '1' (somit braucht man 
-            // den Anschluss nicht extra mit einem const=1 - Block belegen, damit der Counter laeuft)
+            // Active-high reset at 0.5 threshold so an unwired RESET pin stays low and lets the counter run
+            _outputSignal[0][0] = 0;
         }
         _lastValue = _inputSignal[0][0];
         

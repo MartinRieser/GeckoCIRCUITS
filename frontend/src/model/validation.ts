@@ -7,7 +7,7 @@
  */
 import { allTerminals, terminalPositions } from './geometry';
 import { denseCellsOf } from '../canvas/WireRouter';
-import { LkComponentType } from './constants';
+import { LkComponentType, SENTINEL_UNSET } from './constants';
 import { isVoltmeterComponent, isAmmeterComponent } from './componentSchema';
 
 /**
@@ -317,12 +317,12 @@ export function validateCircuitForSimulation(
   for (const c of components) {
     for (const l of [...(c.inputLabels ?? []), ...(c.outputLabels ?? [])]) {
       const raw = l?.trim();
-      if (raw && raw !== 'NIX_NIX_NIX') knownNets.add(raw.toLowerCase());
+      if (raw && raw !== SENTINEL_UNSET) knownNets.add(raw.toLowerCase());
     }
   }
   for (const w of wires) {
     const raw = w.type === 'CONTROL' ? undefined : (w as { label?: string }).label?.trim();
-    if (raw && raw !== 'NIX_NIX_NIX') knownNets.add(raw.toLowerCase());
+    if (raw && raw !== SENTINEL_UNSET) knownNets.add(raw.toLowerCase());
   }
   const unknownNodes: string[] = [];
   for (const c of components) {
@@ -331,7 +331,7 @@ export function validateCircuitForSimulation(
     if (c.parameters?.coupledComponent) continue; // measures across a component instead
     for (const key of ['nodeA', 'nodeB', 'positiveNode', 'negativeNode']) {
       const node = String(c.parameters?.[key] ?? '').trim();
-      if (node && node !== 'NIX_NIX_NIX' && !knownNets.has(node.toLowerCase())
+      if (node && node !== SENTINEL_UNSET && !knownNets.has(node.toLowerCase())
           && !unknownNodes.some((u) => u.includes(`'${node}'`))) {
         unknownNodes.push(`${c.name}: '${node}'`);
       }
@@ -351,7 +351,7 @@ export function validateCircuitForSimulation(
   const danglingCouplings: string[] = [];
   for (const c of components) {
     const target = String(c.parameters?.coupledComponent ?? '').trim();
-    if (target && target !== 'NIX_NIX_NIX' && !knownNames.has(target)) {
+    if (target && target !== SENTINEL_UNSET && !knownNames.has(target)) {
       danglingCouplings.push(`${c.name} ➔ ${target}`);
     }
   }
@@ -397,7 +397,7 @@ export function findUnusedMeters(components: ComponentLike[], wires: WireLike[])
     if (c.family === 'CONTROL') {
       for (const l of c.inputLabels ?? []) {
         const raw = l?.trim();
-        if (raw && raw !== 'NIX_NIX_NIX') consumedControlSignals.add(raw.toLowerCase());
+        if (raw && raw !== SENTINEL_UNSET) consumedControlSignals.add(raw.toLowerCase());
       }
     }
   }
@@ -423,7 +423,7 @@ export function findUnusedMeters(components: ComponentLike[], wires: WireLike[])
     let isLabelConsumed = consumedControlSignals.has(c.name.trim().toLowerCase());
     for (const l of c.outputLabels ?? []) {
       const raw = l?.trim();
-      if (raw && raw !== 'NIX_NIX_NIX' && consumedControlSignals.has(raw.toLowerCase())) {
+      if (raw && raw !== SENTINEL_UNSET && consumedControlSignals.has(raw.toLowerCase())) {
         isLabelConsumed = true;
         break;
       }
@@ -433,16 +433,16 @@ export function findUnusedMeters(components: ComponentLike[], wires: WireLike[])
       let suggestedSignal = 'waveform';
       if (isAmp) {
         const target = String(c.parameters?.coupledComponent ?? '').trim();
-        suggestedSignal = target && target !== 'NIX_NIX_NIX' ? `I(${target})` : 'I(...)';
+        suggestedSignal = target && target !== SENTINEL_UNSET ? `I(${target})` : 'I(...)';
       } else if (isVolt) {
         const target = String(c.parameters?.coupledComponent ?? '').trim();
         const nodeA = String(c.parameters?.nodeA ?? c.parameters?.positiveNode ?? '').trim();
         const nodeB = String(c.parameters?.nodeB ?? c.parameters?.negativeNode ?? '').trim();
-        if (target && target !== 'NIX_NIX_NIX') {
+        if (target && target !== SENTINEL_UNSET) {
           suggestedSignal = `V(${target})`;
-        } else if (nodeA && nodeA !== 'NIX_NIX_NIX' && nodeB && nodeB !== 'NIX_NIX_NIX' && nodeB !== '0') {
+        } else if (nodeA && nodeA !== SENTINEL_UNSET && nodeB && nodeB !== SENTINEL_UNSET && nodeB !== '0') {
           suggestedSignal = `V(${nodeA}|${nodeB})`;
-        } else if (nodeA && nodeA !== 'NIX_NIX_NIX') {
+        } else if (nodeA && nodeA !== SENTINEL_UNSET) {
           suggestedSignal = `V(${nodeA})`;
         } else {
           suggestedSignal = 'V(...)';

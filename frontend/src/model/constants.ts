@@ -414,7 +414,7 @@ export const SENTINEL_UNSET = 'NIX_NIX_NIX';
  * all derive from that single definition.
  */
 export const SCOPE_SETTING_KEYS = {
-  /** Display layout mode: 'overlay' or 'stacked'. */
+  /** Display layout mode ('overlay', '2-graphs', '3-graphs', or 'stacked'). */
   scopeLayout: 'scopeLayout',
   /** Vertical scale mode: 'auto' or 'fixed'. */
   yScaleMode: 'yScaleMode',
@@ -441,7 +441,7 @@ export const SIMULATION_DEFAULTS = {
   /** Default transient calculation time step in seconds. */
   TIME_STEP_SEC: 1e-6,
   /** Default numeric integration solver. */
-  DEFAULT_SOLVER: 'TRAPEZOIDAL',
+  DEFAULT_SOLVER: 'backward-euler',
   /** Polling interval (in milliseconds) when monitoring asynchronous simulation runs. */
   POLL_INTERVAL_MS: 250,
   /** Max history depth retained for undo / redo operations. */

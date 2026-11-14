@@ -16,8 +16,7 @@ final class WaveformAnalysis {
     }
 
     private static double round(double value, int decimals) {
-        double scale = Math.pow(10, decimals);
-        return Math.round(value * scale) / scale;
+        return PyFormat.round(value, decimals);
     }
 
     static Map<String, Object> analyse(SimulationService.ParsedCsv csv, String circuitContent,

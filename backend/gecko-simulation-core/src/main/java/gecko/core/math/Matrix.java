@@ -35,20 +35,9 @@ implement basic matrix arithmetic, including matrix addition and
 multiplication, matrix norms, and element-by-element array operations.
 Methods for reading and printing matrices are also included.  All the
 operations in this version of the Matrix Class involve real matrices.
-Complex matrices may be handled in a future version.
 <P>
-Five fundamental matrix decompositions, which consist of pairs or triples
-of matrices, permutation vectors, and the like, produce results in five
-decomposition classes.  These decompositions are accessed by the Matrix
-class to compute solutions of simultaneous linear equations, determinants,
-inverses and other matrix functions.  The five decompositions are:
-<P><UL>
-<LI>Cholesky Decomposition of symmetric, positive definite matrices.
-<LI>LU Decomposition of rectangular matrices.
-<LI>QR Decomposition of rectangular matrices.
-<LI>Singular Value Decomposition of rectangular matrices.
-<LI>Eigenvalue Decomposition of both symmetric and nonsymmetric square matrices.
-</UL>
+Provides LU Decomposition for solving linear systems, inverting square matrices,
+and computing determinants in the circuit solver.
 <DL>
 <DT><B>Example of use:</B></DT>
 <P>
@@ -716,18 +705,9 @@ public class Matrix implements Cloneable, java.io.Serializable {
         return new LUDecomposition(this);
     }
 
-
-    /** Cholesky Decomposition
-    @return     CholeskyDecomposition
-    @see CholeskyDecomposition
-     */
-    public CholeskyDecomposition chol() {
-        return new CholeskyDecomposition(this);
-    }        
-
     /** Solve A*X = B
     @param B    right hand side
-    @return     solution if A is square, least squares solution otherwise
+    @return     solution if A is square
      */
     public Matrix solve(Matrix B) {
         if (m == n) {

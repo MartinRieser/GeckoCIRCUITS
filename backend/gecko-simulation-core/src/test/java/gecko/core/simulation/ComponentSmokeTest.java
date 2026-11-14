@@ -212,8 +212,7 @@ class ComponentSmokeTest {
 
     @Test
     void issueIpesSwitchedRcWithEmptyIgbtAndSignalParametersChargesCapacitor() throws Exception {
-        // Exact reproduction of C:\Users\mhr\Documents\issue.ipes:
-        // U (10V DC, orient 503) -> R (1k, orient 504) -> IGBT (empty parameter[], orient 502)
+        // Switched RC circuit: U (10V DC, orient 503) -> R (1k, orient 504) -> IGBT (empty parameter[], orient 502)
         // -> C (100nF, orient 503) -> GLOBAL_TERMINAL (GND), with SIGNAL (empty parameter[]) -> GATE
         // and VOLT probe across C outputting u_C.
         String issueIpesText = """
@@ -228,7 +227,7 @@ class ComponentSmokeTest {
                 x 12
                 y 13
                 orientierung 503
-                parameter[] 401.0 10.0 50.0 0.0 0.0
+                parameter[]401.0 10.0 50.0 0.0 0.0
                 <\\ElementLK>
                 e (1)
                 <ElementLK>
@@ -238,7 +237,7 @@ class ComponentSmokeTest {
                 x 18
                 y 9
                 orientierung 504
-                parameter[] 1000.0
+                parameter[]1000.0
                 <\\ElementLK>
                 e (2)
                 <ElementLK>
@@ -248,7 +247,7 @@ class ComponentSmokeTest {
                 x 26
                 y 9
                 orientierung 502
-                parameter[] 
+                parameter[]
                 coupledReferenceID[] 6
                 <\\ElementLK>
                 e (3)
@@ -259,7 +258,7 @@ class ComponentSmokeTest {
                 x 35
                 y 12
                 orientierung 503
-                parameter[] 1.0E-7 0.0
+                parameter[]1.0E-7 0.0
                 <\\ElementLK>
                 e (4)
                 <ElementLK>
@@ -269,7 +268,7 @@ class ComponentSmokeTest {
                 x 12
                 y 19
                 orientierung 501
-                parameter[] 
+                parameter[]
                 <\\ElementLK>
                 c (0)
                 <ElementCONTROL>
@@ -279,7 +278,7 @@ class ComponentSmokeTest {
                 x 25
                 y 24
                 orientierung 503
-                parameter[] 0.0
+                parameter[]0.0
                 coupledReferenceID[] 3
                 <\\ElementCONTROL>
                 c (1)
@@ -290,7 +289,7 @@ class ComponentSmokeTest {
                 x 13
                 y 24
                 orientierung 503
-                parameter[] 
+                parameter[]
                 <\\ElementCONTROL>
                 c (2)
                 <ElementCONTROL>
@@ -300,7 +299,7 @@ class ComponentSmokeTest {
                 x 44
                 y 12
                 orientierung 503
-                parameter[] 
+                parameter[]
                 parameterString[] C/NIX_NIX_NIX/0
                 labelEndKnoten[] /u_C
                 coupledReferenceID[] 4

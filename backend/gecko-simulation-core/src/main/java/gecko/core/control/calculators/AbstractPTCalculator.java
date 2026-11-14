@@ -11,16 +11,8 @@
  *  You should have received a copy of the GNU General Public License along with
  *  GeckoCIRCUITS.  If not, see <http://www.gnu.org/licenses/>.
  */
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package gecko.core.control.calculators;
 
-/**
- *
- * @author andreas
- */
 public abstract class AbstractPTCalculator extends AbstractSingleInputSingleOutputCalculator {
 
     protected double _TVal;

@@ -4,186 +4,97 @@ title: Troubleshooting
 
 # Troubleshooting
 
-Common issues and solutions for GeckoCIRCUITS.
+Common issues and solutions when running GeckoCIRCUITS desktop installers, building from source, or debugging simulations.
 
-## Startup Issues
+## Startup & Runtime Issues
 
-### Application won't launch
+### Desktop app fails to start engine
 
-**Symptom:** Nothing happens when running the JAR or launcher script.
+In installed desktop builds, the Tauri shell spawns `gecko-rest-api.jar` on a bundled JDK 25 runtime and waits up to 90 seconds for `GECKO_READY`. If startup times out:
 
-**Check Java version:**
-```bash
-java -version
-# Must show 21 or higher
-```
+1. Open the engine log directory (`Help → Open Engine Logs`, or `<app log dir>/engine/`):
+   - Windows: `%LOCALAPPDATA%\com.geckocircuits.desktop\logs\engine\`
+   - macOS: `~/Library/Logs/com.geckocircuits.desktop/engine/`
+   - Linux: `~/.local/share/com.geckocircuits.desktop/logs/engine/`
+2. Inspect `engine.log` (shell launcher output) and `rest-api.log` (Spring Boot server log).
+3. See [Desktop Application](../desktop-app.md#troubleshooting) for OS Gatekeeper/SmartScreen notes and WebView requirements.
 
-If Java is not installed or too old, install [Temurin JDK 25](https://adoptium.net/).
+### "Unsupported class file major version 69" when running from source
 
-**Check the JAR exists:**
-```bash
-ls -la target/gecko-1.0-jar-with-dependencies.jar
-```
+GeckoCIRCUITS compiles targeting **Java 25** (bytecode major version 69). Ensure `java -version` and `JAVA_HOME` point to JDK 25+ (for example [Eclipse Temurin 25](https://adoptium.net/)).
 
-If missing, build it:
-```bash
-mvn clean package -DskipTests
-```
+### OutOfMemoryError on large or long simulations
 
-### "Unsupported class file major version" error (e.g. version 69 or 65)
-
-Your Java runtime is older than the compiled bytecode. GeckoCIRCUITS is compiled with Java 25 (class file major version 69) and requires **Java 25+**.
+When launching the standalone REST API JAR directly with a large channel count or small time step, increase the heap limit:
 
 ```bash
-# Check version (must report 25 or higher)
-java -version
-
-# Install Java 25 (Ubuntu/Debian)
-sudo apt install openjdk-25-jdk
+java -Xmx4G -jar backend/gecko-rest-api/target/gecko-rest-api.jar
 ```
-
-### OutOfMemoryError
-
-Increase the heap size:
-```bash
-java -Xmx4G -Dpolyglot.js.nashorn-compat=true \
-  -jar target/gecko-1.0-jar-with-dependencies.jar
-```
-
-Default is `-Xmx3G`. Increase to 4G or more for large circuits.
-
-### Blank or black window
-
-**HiDPI scaling issue.** Try:
-```bash
-java -Dsun.java2d.uiScale=1 -jar target/gecko-1.0-jar-with-dependencies.jar
-```
-
-Or use the HiDPI launcher:
-```bash
-./scripts/run-gecko-linux.sh --hidpi
-```
-
-## WSL-Specific Issues
-
-### No display / HeadlessException
-
-GeckoCIRCUITS needs a display server. On WSL2:
-
-**Option 1:** WSLg (Windows 11, automatic):
-```bash
-# Should work automatically. Verify:
-echo $DISPLAY
-# Should show something like :0
-```
-
-**Option 2:** Install an X server (Windows 10):
-```bash
-# Install VcXsrv or Xming on Windows
-# Then in WSL:
-export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}'):0
-```
-
-**Option 3:** Headless mode with Xvfb:
-```bash
-sudo apt install xvfb
-Xvfb :99 -screen 0 1024x768x24 &
-export DISPLAY=:99
-java -jar target/gecko-1.0-jar-with-dependencies.jar
-```
-
-### Slow rendering on WSL
-
-WSL2 GUI forwarding can be slow. Try:
-
-1. Use `--hidpi` flag (reduces pixel count)
-2. Minimize scope window refreshes during simulation
-3. Close unused scope windows
 
 ## Simulation Issues
 
-### Simulation runs but produces incorrect results
+### Simulation runs but produces unexpected results
 
 | Check | Solution |
 |-------|----------|
-| Time step too large | Reduce to < 1/(100 x f_switch) |
-| Wrong solver | Try Backward Euler for stiff circuits |
-| Missing ground | Every circuit needs a ground reference |
-| Open nodes | Ensure all nodes are connected |
+| Time step too large | Reduce `dt` below `1 / (100 × f_switch)` |
+| Numerical ringing | Switch from Trapezoidal to **Backward Euler** |
+| Missing ground | Add a ground terminal (`LK_GLOBAL_TERMINAL`) to every electrical island |
+| Open nodes / floating wires | Run DRC validation (`gecko_validate_circuit` or editor validation) |
 
-### Simulation diverges / NaN values
+### Simulation diverges / `NaN` values
 
 Usually caused by:
 
-1. **Algebraic loops** - Break them with small parasitic elements:
-   - Add 1 mOhm series resistance to ideal voltage sources
-   - Add 1 nH series inductance to switches
+1. **Algebraic loops or ideal voltage-source parallels** — Add small series resistance (e.g., `1 mΩ`) to ideal voltage sources or small damping elements.
+2. **Zero-valued parameters** — Check that resistances, inductances, and capacitances are strictly positive where required.
+3. **Time step too large** for fast switching transitions.
 
-2. **Division by zero** - Check for zero-valued components
+### Simulation is slow
 
-3. **Time step too large** for the switching frequency
-
-### Simulation is very slow
-
-- **Reduce simulation duration** - Start with a few switching periods
-- **Increase time step** - But not above 1/(100 x f_switch)
-- **Simplify the circuit** - Remove unused components
-- **Close scope windows** - Real-time plotting slows simulation
+- **Reduce simulation duration (`tDURATION`)** while tuning topology or controller gains.
+- **Increase time step (`dt`)** as much as switching accuracy allows.
+- **Adjust max plot points / signals recorded** when fetching waveforms via MCP/REST.
 
 ## Build Issues
 
-### Maven build fails
+### Maven build or test failures
 
-**Clear cache and retry:**
 ```bash
-mvn clean
-mvn package -DskipTests
+# Clean rebuild and run all backend unit/integration tests
+mvn clean verify
 ```
 
-**If dependencies fail to download:**
+Ensure `mvn -version` shows **Java 25** and **Maven 3.8+**.
+
+### Frontend lint / type / test checks
+
 ```bash
-mvn dependency:resolve
+npm --prefix frontend ci
+npm --prefix frontend run lint
+npx --prefix frontend tsc -p frontend/tsconfig.json --noEmit
+npm --prefix frontend test
 ```
 
-### Tests fail with HeadlessException
+### Desktop Rust crate checks
 
-Some tests need a display. On Linux CI:
+On Windows, make sure the MSVC toolchain is installed (`rustup toolchain install stable-x86_64-pc-windows-msvc`):
+
 ```bash
-sudo apt install xvfb
-export DISPLAY=:99
-Xvfb :99 -screen 0 1024x768x24 &
-mvn test
-```
-
-### GraalVM/Polyglot errors
-
-Ensure you pass the compatibility flag:
-```bash
-java -Dpolyglot.js.nashorn-compat=true -jar target/gecko-1.0-jar-with-dependencies.jar
+cargo fmt --manifest-path desktop/Cargo.toml --all --check
+cargo clippy --manifest-path desktop/Cargo.toml --workspace -- -D warnings
+cargo test --manifest-path desktop/Cargo.toml -p gecko-engine
 ```
 
 ## File Issues
 
-### Can't open .ipes file
+### Can't open an `.ipes` file
 
-- Verify the file isn't corrupted (it should be gzip-compressed)
-- Try opening from the command line to see error messages:
-  ```bash
-  java -jar target/gecko-1.0-jar-with-dependencies.jar path/to/file.ipes
-  ```
-
-### Circuit looks different after reopening
-
-Component positions are saved in the .ipes file. If positions look wrong:
-
-- Check you're using the same version of GeckoCIRCUITS
-- Try **View > Fit to Window** to reset the view
+- Check whether the file is valid UTF-8 `.ipes` text (or a valid gzip-compressed `.ipes` archive).
+- Inspect structural errors via the REST validation endpoint (`GET /gecko/api/v1/circuits/{circuitId}/validate`) or `geckopy` (`ckt.validate()`).
 
 ## Still Stuck?
 
 1. Check the [FAQ](faq.md)
 2. Search [existing issues](https://github.com/MartinRieser/GeckoCIRCUITS/issues)
-3. Open a [new issue](https://github.com/MartinRieser/GeckoCIRCUITS/issues/new/choose) with:
-   - Your OS and Java version
-   - Steps to reproduce
-   - Console output / error messages
+3. Open a [new issue](https://github.com/MartinRieser/GeckoCIRCUITS/issues/new) with your OS, Java version, steps to reproduce, and `engine.log` / `rest-api.log` excerpts.

@@ -258,16 +258,13 @@ public class MatrixSolver implements MnaSolver {
      * contribution to the appropriate matrix positions based on its node connections.
      *
      * Extracted from legacy LKMatrices.schreibeMatrix_A() method (lines 116-367).
-     * This simplified version:
-     * - Clears the matrix
-     * - Iterates through netlist components
-     * - Uses stampers from the registry for component contributions
-     * - Skips magnetic couplings (future refinement)
+     * Clears the matrix, stamps element contributions from the registry, and
+     * applies coupled sources and mutual-inductance entries.
      *
      * @param netlist the circuit netlist containing components and topology
      * @param dt the time step size (used for dynamic components like capacitors)
      * @param time the current simulation time
-     * @param capacitorError flag indicating if capacitor has convergence issues
+     * @param capacitorError flag reserved for capacitor error correction
      * @throws IllegalArgumentException if netlist is null
      */
     public void buildMatrixA(INetList netlist, double dt, double time, boolean capacitorError) {
@@ -275,13 +272,10 @@ public class MatrixSolver implements MnaSolver {
             throw new IllegalArgumentException("Netlist cannot be null");
         }
 
-        // Step 1: Clear matrix A (set all entries to 0)
         matrixAccumulator.reset();
 
-        // Step 2: Use cached stamper registry for component contributions
         StamperRegistry registry = this.stamperRegistry;
 
-        // Step 2: Iterate through all components in the netlist
         int elementCount = netlist.getElementCount();
         for (int elementIndex = 0; elementIndex < elementCount; elementIndex++) {
             CircuitTypCore componentType = netlist.getType(elementIndex);
@@ -291,7 +285,6 @@ public class MatrixSolver implements MnaSolver {
             int nodeZ = netlist.getNodeMax() + voltageSourceNumber;
             double[] parameters = netlist.getParameter(elementIndex);
 
-            // Step 3: Get stamper for this component type and stamp matrix A
             IMatrixStamper stamper = registry.getStamper(componentType);
             if (stamper != null) {
                 stamper.stampMatrixA(matrixAccumulator, nodeX, nodeY, nodeZ, parameters, dt);
@@ -711,13 +704,11 @@ public class MatrixSolver implements MnaSolver {
                     "Matrices not initialized. Call initializeMatrices() first.");
         }
 
-        // Step 1: Factorize A (only if the matrix changed since the last solve)
         if (matrixChanged) {
             factorize();
             matrixChanged = false;
         }
 
-        // Step 2: Substitute the right-hand side into the factorization
         substitute();
     }
 

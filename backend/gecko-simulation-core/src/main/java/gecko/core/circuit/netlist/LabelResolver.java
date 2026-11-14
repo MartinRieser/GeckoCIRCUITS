@@ -33,9 +33,6 @@ import java.util.*;
  *   <li>Labels are used for measurements and cross-references</li>
  *   <li>Terminal labels allow connecting nodes via labels rather than wires</li>
  * </ul>
- *
- * @author Extracted from NetListLK.findIndexFromLabelInSheet
- * @since Sprint 2 - Circuit Refactoring
  */
 public class LabelResolver {
 

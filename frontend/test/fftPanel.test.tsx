@@ -80,7 +80,7 @@ describe('FftPanel', () => {
     expect(url).toBe('/gecko/api/v1/analysis/fourier?harmonics=40');
     expect(init.method).toBe('POST');
     const body = JSON.parse(init.body);
-    expect(body.signalName === undefined || body.signalName === undefined).toBe(true); // raw-data mode
+    expect(body.signalName).toBeUndefined(); // raw-data mode
     expect(body.data).toHaveLength(400);
     expect(body.sampleRate).toBeCloseTo(10_000, 6);
     expect(body.startTime).toBeCloseTo(0, 12);

@@ -14,11 +14,8 @@
 package gecko.core.circuit;
 
 /**
- * this ugly class is just (and still) used from the "old" geckocircuits solver.
- * Remove this, when the new solver is finished. CircuitSourceType should be a
- * complemte replacement of this one.
- *
- * @author andy
+ * Integer constants mapping legacy `.ipes` voltage and current source sub-types
+ * (waveform mode and controlled-source variants).
  */
 public class SourceType {
 

@@ -52,7 +52,7 @@ Known-good reference values live in the `ASSERTIONS` table; if physics-verificat
 - Keep GitHub Actions on current major versions (`actions/checkout@v7`, `actions/setup-java@v6`, `actions/setup-python@v7`, `actions/setup-node@v7`, `actions/upload-artifact@v7`, `actions/download-artifact@v8`, `actions/cache@v6`, `softprops/action-gh-release@v3`).
 
 ## Desktop Packaging
-- Local native packaging is executed via `scripts/package-desktop.bat` (Windows), `scripts/package-desktop.sh` (Linux/macOS), or `python scripts/package-desktop.py --type all`.
+- Local native packaging is executed via `scripts/desktop/build-all.bat` (Windows), `scripts/desktop/build-all.sh` (Linux/macOS), or `python scripts/desktop/build-engine.py` followed by `cargo tauri build`.
 
 ## Systematic Code Review & Refactoring Invariants
 When conducting codebase reviews or refactorings across GeckoCIRCUITS (frontend or backend):

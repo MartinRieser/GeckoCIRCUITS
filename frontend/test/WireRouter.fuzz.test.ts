@@ -8,7 +8,7 @@ import {
 } from '../src/canvas/WireRouter';
 import type { Point } from '../src/model/types';
 
-describe('Task 5.1: Wire Router Obstacle Avoidance Fuzz Testing', () => {
+describe('Wire Router Obstacle Avoidance Fuzz Testing', () => {
   it('fuzz tests 100 randomized layouts to ensure obstacle avoidance and orthogonal geometry', () => {
     // Deterministic PRNG for reproducible test runs
     let seed = 42;

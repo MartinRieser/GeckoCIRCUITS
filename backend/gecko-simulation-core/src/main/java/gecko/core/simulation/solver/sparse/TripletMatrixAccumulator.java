@@ -27,7 +27,6 @@ import java.util.Arrays;
  * ({@link SparseMatrix#fromTriplets}).
  *
  * @see SparseMatrix
- * @since v2.18.0 Task L3 - High-Performance Solver & Advanced Numerics
  */
 public final class TripletMatrixAccumulator implements MatrixAccumulator {
 

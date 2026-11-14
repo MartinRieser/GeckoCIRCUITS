@@ -285,8 +285,7 @@ public final class TokenMap {
             map.put(lineToken, lineNumber);
         }
 
-        // This is for repairing a severe file format bug in old versions of GeckoCIRCUITS. Could maybe
-        // removed in the future (current date: Octorber 2012)
+        // Compatibility fallback for older GeckoCIRCUITS .ipes files where "orientierung" could appear twice
         if(lineToken.equalsIgnoreCase("orientierung")) {
             map.put(lineToken, lineNumber);
         }
@@ -637,11 +636,12 @@ public final class TokenMap {
     }
 
     /**
-     * reads a textblock, including spaces. In contradiction, LeseAsciiString would return only the first token! If a \n
-     * character appears, a newline is done.
+     * Reads a text block including spaces, replacing escaped {@code \n} sequences
+     * with newlines.
      *
-     * @param ascii
-     * @return
+     * @param identifier token key prefix on the line
+     * @param targetObject fallback value if the key is missing or unreadable
+     * @return decoded text block
      */
     public String leseASCIITextBlock(final String identifier, final String targetObject) {
         try {
@@ -652,7 +652,7 @@ public final class TokenMap {
             final String ascii = asciiLines[lineNumber];
 
             final StringTokenizer stk = new StringTokenizer(ascii, " ");
-            final String identifierNew = stk.nextToken();  // 1.Eintrag ist ID-String --> wird uebersprungen
+            final String identifierNew = stk.nextToken();  // Skip leading identifier token
             String wert = ascii;
             if (stk.hasMoreElements()) {
                 // remove first token, the rest is the String to read in.

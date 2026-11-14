@@ -90,8 +90,6 @@ $$C = \frac{D}{R \times \frac{\Delta V}{V} \times f_{sw}} = \frac{0.5}{24 \times
 
 Choose C = 47 uF.
 
-## Simulation
-
 ## Simulation & Project File
 
 A complete, simulated and verified Boost Converter project file is provided directly in this directory:

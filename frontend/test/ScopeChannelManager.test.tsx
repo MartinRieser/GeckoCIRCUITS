@@ -130,7 +130,7 @@ describe('ScopeChannelManager Component', () => {
     expect(onSetSignalGraph).toHaveBeenCalled();
   });
 
-  describe('Phase 2 Hierarchical Signal Tree & Multi-Graph Probing', () => {
+  describe('Hierarchical Signal Tree & Multi-Graph Probing', () => {
     const mockComponents: EditorComponent[] = [
       {
         name: 'L_filter',

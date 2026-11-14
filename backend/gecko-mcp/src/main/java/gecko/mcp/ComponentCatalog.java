@@ -9,8 +9,8 @@ import java.util.*;
  * <p>Enables external tools and LLMs to author, inspect, and validate circuits
  * using human-readable names without needing to know internal .ipes slot
  * layouts. The control-block entries use the web catalog type numbers
- * (CircuitTypCore CTRL_* range, 1000..1016) which the headless engine executes
- * natively; the classic editor numbers (1..6) are listed as legacy aliases.
+ * (CircuitTypCore CTRL_* range, 1000..1058) which the headless engine executes
+ * natively; classic editor numbers are listed as legacy aliases.
  * Slot layouts mirror the typed parameter classes in
  * {@code gecko.core.circuit.parameters} and are pinned by
  * CatalogSlotCrossCheckTest.</p>

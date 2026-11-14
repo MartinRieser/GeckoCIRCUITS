@@ -22,9 +22,9 @@ instrument or shows everything.
 
 | Action | How |
 |--------|-----|
-| Zoom in/out | Mouse wheel (zooms around the cursor) |
-| Pan | Left-click and drag |
-| Fit whole simulation | ⟲ button in the toolbar |
+| Zoom in/out | Mouse wheel (zooms around cursor) or left-click and drag (2D box zoom) |
+| Pan | Middle-click and drag, or Alt+Left-click and drag |
+| Fit whole simulation | ⟲ button (or `Esc`) in the toolbar |
 | Overlay / one lane per signal | Display toggle in the scope header |
 
 When you zoom, the value axis rescales to the visible window — so switching
@@ -34,8 +34,8 @@ ripples become readable at any depth.
 
 ### Cursors
 
-Click on the plot to place cursor **A**, click again to place cursor **B**.
-The measurement card below the chart shows:
+Left-click on the plot to place cursor **A**; Shift+click or right-click to place cursor **B**.
+The cursor measurement section in the right sidebar shows:
 
 - **t_A** and **t_B** positions
 - **Δt** between the cursors

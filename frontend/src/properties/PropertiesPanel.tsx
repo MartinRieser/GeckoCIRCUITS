@@ -43,6 +43,7 @@ import { CHANNEL_TRACE_COLORS, CHANNEL_TRACE_COLORS_LIGHT } from '../simulation/
 import { terminalPositions } from '../model/geometry';
 import { SymbolPreview } from '../canvas/symbols';
 import { computeCurrentDirectionHint } from '../canvas/sheetGuides';
+import { SENTINEL_UNSET } from '../model/constants';
 
 // Same palette the scope view uses for its traces, so a channel's badge
 // color matches its waveform color everywhere.
@@ -1006,7 +1007,7 @@ export function PropertiesPanel({
                     allComponents?.forEach((comp) => {
                       if (isVoltmeterComponent(comp) || isAmmeterComponent(comp)) {
                         comp.outputLabels?.forEach((l) => {
-                          if (l && l.trim() && l !== 'NIX_NIX_NIX' && !probeSignals.includes(l.trim())) {
+                          if (l && l.trim() && l !== SENTINEL_UNSET && !probeSignals.includes(l.trim())) {
                             probeSignals.push(l.trim());
                           }
                         });

@@ -38,7 +38,6 @@ import java.util.List;
  * </ol>
  *
  * @see MatrixSolver
- * @since v2.18.0 Task L3 - High-Performance Solver & Advanced Numerics
  */
 public interface MnaSolver {
 

@@ -2,14 +2,16 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build GeckoCIRCUITS (Skip Tests)",
+            "label": "Build Backend Packages (Skip Tests)",
             "type": "shell",
             "command": "mvn",
             "args": [
-                "clean",
                 "package",
-                "assembly:single",
-                "-DskipTests"
+                "-pl",
+                "backend/gecko-rest-api,backend/gecko-mcp",
+                "-am",
+                "-DskipTests",
+                "--no-transfer-progress"
             ],
             "group": {
                 "kind": "build",
@@ -24,16 +26,15 @@
                 "clear": false
             },
             "problemMatcher": [],
-            "detail": "Build GeckoCIRCUITS with Maven (skip tests - default)"
+            "detail": "Build gecko-simulation-core, gecko-rest-api, and gecko-mcp packages without running tests"
         },
         {
-            "label": "Build GeckoCIRCUITS (With Tests)",
+            "label": "Build & Verify All Backend Modules",
             "type": "shell",
             "command": "mvn",
             "args": [
-                "clean",
-                "package",
-                "assembly:single"
+                "verify",
+                "--no-transfer-progress"
             ],
             "group": "build",
             "presentation": {
@@ -45,14 +46,15 @@
                 "clear": false
             },
             "problemMatcher": [],
-            "detail": "Build GeckoCIRCUITS with Maven (with tests - may fail)"
+            "detail": "Compile, test, and verify all Maven modules"
         },
         {
-            "label": "Clean Build Directory",
+            "label": "Clean Build Directories",
             "type": "shell",
             "command": "mvn",
             "args": [
-                "clean"
+                "clean",
+                "--no-transfer-progress"
             ],
             "presentation": {
                 "echo": true,
@@ -63,12 +65,16 @@
                 "clear": false
             },
             "problemMatcher": [],
-            "detail": "Clean the target directory"
+            "detail": "Remove Maven target directories across all modules"
         },
         {
-            "label": "Run Tests",
+            "label": "Run Backend Tests",
             "type": "shell",
-            "command": "mvn test",
+            "command": "mvn",
+            "args": [
+                "test",
+                "--no-transfer-progress"
+            ],
             "group": {
                 "kind": "test",
                 "isDefault": true
@@ -80,15 +86,38 @@
                 "panel": "dedicated",
                 "clear": false
             },
-            "problemMatcher": ["$junit"],
-            "detail": "Run Maven tests with Java 25"
+            "problemMatcher": [
+                "$junit"
+            ],
+            "detail": "Run JUnit tests across all backend modules on Java 25"
         },
         {
-            "label": "Maven: Update Dependencies",
+            "label": "Run Frontend Tests",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "--prefix",
+                "frontend",
+                "test"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "clear": false
+            },
+            "problemMatcher": [],
+            "detail": "Run frontend Vitest suite"
+        },
+        {
+            "label": "Maven: Resolve Dependencies",
             "type": "shell",
             "command": "mvn",
             "args": [
-                "dependency:resolve"
+                "dependency:resolve",
+                "--no-transfer-progress"
             ],
             "presentation": {
                 "echo": true,
@@ -99,7 +128,7 @@
                 "clear": false
             },
             "problemMatcher": [],
-            "detail": "Download and update all Maven dependencies"
+            "detail": "Download and verify Maven dependencies"
         }
     ]
 }

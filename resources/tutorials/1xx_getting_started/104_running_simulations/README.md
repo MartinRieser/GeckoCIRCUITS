@@ -275,9 +275,9 @@ GeckoCIRCUITS can detect when circuit reaches steady state:
 ### Parametric Sweeps
 
 Run multiple simulations with varying parameters:
-1. Use GeckoSCRIPT or MATLAB integration
-2. Sweep: duty cycle, load, frequency
-3. Automatically collect results
+1. Use the [Python SDK (`geckopy`)](../../../../docs/tutorials/scripting/python.md) or [REST API](../../../../docs/api/rest-api.md)
+2. Sweep: duty cycle, load, or switching frequency
+3. Collect waveform and metric results automatically
 
 ## Checkpoint
 
@@ -344,7 +344,7 @@ In this tutorial, you learned:
 You've completed the Getting Started series! Continue with:
 - **DC-DC Converters:** [2xx Series](../../2xx_dcdc_converters/)
 - **Rectifiers:** [3xx Series](../../3xx_acdc_rectifiers/)
-- **Examples:** [Basic Topologies](../../examples/basic_topologies/)
+- **Examples:** [Top-level Examples](../../../../examples/README.md)
 
 ---
 *Tutorial Version: 1.0*

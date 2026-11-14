@@ -21,19 +21,11 @@ SYNC_MAP = {
     "tutorials/3xx_acdc_rectifiers": "tutorials/acdc",
     "tutorials/4xx_dcac_inverters": "tutorials/dcac",
     "tutorials/5xx_thermal_simulation": "tutorials/thermal",
-    "tutorials/7xx_scripting_automation": "tutorials/scripting",
     "tutorials/6xx_emi_emc": "tutorials/emi",
+    "tutorials/7xx_scripting_automation": "tutorials/scripting",
     "tutorials/8xx_advanced_topics": "tutorials/advanced",
-    "tutorials/9xx_magnetics_mechanical": "tutorials/magnetics",
     # Examples
-    "examples/basic_topologies": "examples/basic",
-    "examples/power_supplies": "examples/power-supplies",
-    "examples/motor_drives": "examples/motor-drives",
     "examples/automotive": "examples/automotive",
-    "examples/thermal": "examples/thermal",
-    "examples/renewable_energy": "examples/renewable",
-    "examples/inverters": "examples/inverters",
-    "examples/rectifiers": "examples/rectifiers",
 }
 
 # File renaming rules
@@ -46,7 +38,7 @@ def convert_links(content: str, source_path: Path) -> str:
     # Convert .ipes references to download links
     content = re.sub(
         r'\[([^\]]+)\]\(([^)]+\.ipes)\)',
-        r'[\1](https://github.com/geckocircuits/geckocircuits/blob/main/resources/\2)',
+        r'[\1](https://github.com/MartinRieser/GeckoCIRCUITS/blob/main/resources/\2)',
         content
     )
 

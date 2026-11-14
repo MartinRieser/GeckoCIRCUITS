@@ -11,7 +11,7 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe('Phase 3: Probe Tool & Cursor (LTspice style)', () => {
+describe('Probe Tool & Cursor', () => {
   describe('findNextAvailableNetLabel', () => {
     it('returns n1 when no wires or components exist', () => {
       expect(findNextAvailableNetLabel([], [])).toBe('n1');

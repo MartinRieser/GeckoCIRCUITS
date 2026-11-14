@@ -55,17 +55,6 @@ public class SimulationStreamControllerTest {
      */
     @Test
     void completeProgressStreams_noEmitters_doesNotThrow() {
-        // Should not throw any exception even with no registered emitters
-        assertDoesNotThrow(() -> {
-            simulationService.completeProgressStreams(testSimulationId, true);
-        });
-    }
-
-    /**
-     * Test: completeProgressStreams success does not throw exception
-     */
-    @Test
-    void completeProgressStreams_success_doesNotThrow() {
         assertDoesNotThrow(() -> {
             simulationService.completeProgressStreams(testSimulationId, true);
         });
@@ -109,19 +98,7 @@ public class SimulationStreamControllerTest {
     }
 
     /**
-     * Test: SSE endpoint path is correctly registered
-     */
-    @Test
-    void streamEndpoint_pathIsValid() {
-        // This test verifies that the endpoint path in the controller is valid
-        // Path: GET /api/v1/simulations/{simulationId}/stream
-        String expectedPath = "/api/v1/simulations/test-id/stream";
-        assertNotNull(expectedPath);
-        assertTrue(expectedPath.contains("/stream"));
-    }
-
-    /**
-     * Test: broadcastProgress formats JSON correctly (manual check)
+     * Test: broadcastProgress edge-case IDs and time scales do not throw
      */
     @Test
     void broadcastProgress_jsonFormatting() {

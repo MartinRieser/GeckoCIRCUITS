@@ -50,9 +50,6 @@ import gecko.core.math.ParkTransform;
  *   <li>Signal 6: {@code iq} - Measured synchronous q-axis current [A]</li>
  *   <li>Signal 7: {@code id} - Measured synchronous d-axis current [A]</li>
  * </ul>
- *
- * @author GeckoCIRCUITS Team
- * @since v2.18.0 Task L4
  */
 public final class PmsmControlCalculator extends AbstractControlCalculatable {
 

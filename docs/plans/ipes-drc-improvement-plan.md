@@ -18,8 +18,8 @@ Based on the completion and validation of all 21 converter and multi-domain tuto
 | **Phase 3** | Multi-Domain Synthesis in `gecko_create_circuit` | **DONE** | `674517b` (Coupled inductors, Foster/Cauer RC chains, non-linear saturating inductors, 61/61 tests green) |
 | **Phase 4** | Domain-Specific Metrics in `gecko_measure_metrics` | **DONE** | `5e892987` (Thermal, magnetic Steinmetz/saturation, mechanical speed/torque metrics, 66/66 tests green) |
 | **Phase 5** | Pre-Flight Topology Checks (Singular Matrix Prevention) | **DONE** | Pre-solver diagnostics: `VOLTAGE_SOURCE_LOOP`, `INDUCTIVE_CUTSET`, `UNCONNECTED_GATE`, structured `suggested_fix` (72/72 tests green) |
-| **Phase 6** | Parameterized Control Block Library | Planned | Standardized SPWM, PI, Deadtime blocks |
-| **Phase 7** | Developer Ergonomics: Python SDK & SVG Export | Planned | `geckopy` & `gecko_export_schematic_svg` |
+| **Phase 6** | Parameterized Control Block Library | **DONE** | Standardized SPWM, PI, Deadtime blocks |
+| **Phase 7** | Developer Ergonomics: Python SDK & SVG Export | **DONE** | `geckopy` & `gecko_export_schematic_svg` |
 
 ---
 

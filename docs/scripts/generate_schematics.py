@@ -8,8 +8,9 @@ to rails, wires, and junctions.
 """
 import os
 import re
+from pathlib import Path
 
-BASE_DIR = "/Users/martinrieser/Documents/gecko/docs/tutorials"
+BASE_DIR = str(Path(__file__).resolve().parents[1] / "tutorials")
 
 def xml_escape(text):
     return re.sub(r'&(?!(?:[a-zA-Z]+|#\d+|#x[0-9a-fA-F]+);)', '&amp;', text)

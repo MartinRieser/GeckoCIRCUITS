@@ -228,8 +228,8 @@ public final class SimulationConfig {
     /**
      * Checks if the magnetic co-simulation domain is enabled.
      *
-     * @return true if the configured magnetic networks are stepped and their
-     *         induced EMFs drive the coupled electrical windings
+     * @return true if the configured magnetic networks are stepped and update
+     *         the coupled electrical inductors' differential inductance
      */
     public boolean isMagneticDomainEnabled() {
         return magneticDomainEnabled;
@@ -536,9 +536,9 @@ public final class SimulationConfig {
         /**
          * Enables the magnetic co-simulation domain. With magnetic networks
          * configured, the engine feeds each winding's electrical current into
-         * its network, steps it with the electrical time step and drives the
-         * coupled electrical winding source with the induced EMF
-         * {@code v = N * dPhi/dt}.
+         * its network, steps it with the electrical time step, and updates the
+         * coupled {@code LK_L} inductor with the solved differential inductance
+         * {@code L_diff = N * dPhi/di} (so {@code v = N * dPhi/dt = L_diff * di/dt}).
          *
          * @param enable true to simulate the magnetic domain
          * @return this builder

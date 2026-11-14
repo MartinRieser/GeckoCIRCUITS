@@ -4,19 +4,19 @@ GeckoCIRCUITS ships a native [Model Context Protocol (MCP)](https://modelcontext
 
 ---
 
-## Server Implementations
+## Server Implementation
 
-| Attribute | Bundled Production Server (Java) | Development Server (Python) |
-|---|---|---|
-| **Location** | `backend/gecko-mcp` | `tools/mcp/gecko_mcp` |
-| **Packaging** | Shaded into `desktop/app/engine/gecko-mcp.jar` | Standalone Python module (`uv run`) |
-| **Requirements** | Bundled Java 25 runtime (zero external dependencies) | Python 3 + `uv`, JDK 25 for engine |
-| **Transports** | `stdio` | `stdio`, `sse`, `streamable-http` |
-| **Simulation** | In-process headless simulation engine | Subprocess engine call |
-| **Tools Exposed** | **14 tools** (full authoring, multi-domain simulation, native control blocks) | 10 tools (template & simulation tools, legacy) |
-| **Resources** | 7 (catalog, script language, control blocks, workflow, multi-domain, topologies, examples) | 3 |
+| Attribute | Bundled Production Server (Java) |
+|---|---|
+| **Location** | `backend/gecko-mcp` |
+| **Packaging** | Shaded into `engine/gecko-mcp.jar` |
+| **Requirements** | Bundled Java 25 runtime (zero external dependencies) |
+| **Transports** | `stdio` |
+| **Simulation** | In-process headless simulation engine |
+| **Tools Exposed** | **16 tools** (full authoring, multi-domain simulation, native control blocks, SVG export) |
+| **Resources** | 7 (catalog, script language, control blocks, workflow, multi-domain, topologies, examples) |
 
-The production Java server (`launch-mcp.py` / `gecko-mcp.jar`) is recommended for all LLM workflows: simulations run in-process, the full `SimulationConfig` surface is exposed (parameter overrides, matrix solver selection, adaptive stepping, thermal and magnetic domains), and circuits are authored through the same `CircuitModel` the engine consumes.
+Simulations run in-process via the bundled Java server (`launch-mcp.py` / `gecko-mcp.jar`), the full `SimulationConfig` surface is exposed (parameter overrides, matrix solver selection, adaptive stepping, thermal and magnetic domains), and circuits are authored through the same `CircuitModel` the engine consumes.
 
 ---
 
@@ -104,7 +104,7 @@ It generates `gecko-mcp.bat` (Windows) or `gecko-mcp.sh` (Linux/macOS) which use
 
 ---
 
-## Complete Tools Reference (14 Tools)
+## Complete Tools Reference (16 Tools)
 
 | Tool | Category | Description |
 |---|---|---|
@@ -122,6 +122,8 @@ It generates `gecko-mcp.bat` (Windows) or `gecko-mcp.sh` (Linux/macOS) which use
 | `gecko_setup_pfc_project` | Parametric | Generates a 2-phase interleaved boost PFC project with MCU script controller and dynamic load step. |
 | `gecko_setup_llc_project` | Parametric | Generates a half-bridge resonant LLC converter with ZVS snubber and tank analytics (f0, Z0, Q, k). |
 | `gecko_tune_pfc` | Evaluation | Simulates a PFC project and evaluates DC regulation and ripple against a target (single evaluation; use `parameter_overrides` on the simulate family for sweeps). |
+| `gecko_export_schematic_svg` | Visualization | Exports circuit schematics to scalable SVG graphics with component symbols, multi-domain wiring, junction dots, and net labels. |
+| `gecko_server_reload` | System | Performs a graceful reset of the headless simulation engine (flushes caches, runs GC, and returns server status). |
 
 ---
 
@@ -131,7 +133,7 @@ It generates `gecko-mcp.bat` (Windows) or `gecko-mcp.sh` (Linux/macOS) which use
 |---|---|
 | `gecko://catalog/components` | The full catalog JSON (same as `gecko_catalog`). |
 | `gecko://reference/script-blocks` | ScriptBlockCalculator language manual (variables, functions, syntax, safety rules). |
-| `gecko://reference/control-blocks` | Native control blocks (typ 1000–1016): parameter slots, terminal geometry, wiring rules, canonical regulated-buck pattern. |
+| `gecko://reference/control-blocks` | Native control blocks (typ 1000–1047): parameter slots, terminal geometry, wiring rules, canonical regulated-buck pattern. |
 | `gecko://reference/workflow` | End-to-end authoring workflow with complete JSON cookbook payloads (RLC divider, closed-loop buck, thermal rectifier). |
 | `gecko://reference/multi-domain` | Electro-thermal feedback, in-file thermal networks, magnetic reluctance networks, loss channels. |
 | `gecko://reference/topologies` | Design equations for Vienna rectifier, buck and LLC. |
@@ -182,7 +184,7 @@ Components without documented parameter names accept `parameters_raw` (raw slot 
 ### `gecko_simulate`
 ```json
 {
-  "circuit_path": "resources/projects/my_buck.ipes",
+  "circuit_path": "resources/projects/buck_sampled_50v_to_10v.ipes",
   "duration": 0.01, "dt": 1e-6, "solver": "be",
   "signals": ["vout", "pwm"],
   "parameter_overrides": {"RL.resistance": 4.0},

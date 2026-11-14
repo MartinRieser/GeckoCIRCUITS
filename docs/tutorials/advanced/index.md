@@ -25,22 +25,22 @@ Complex power electronic topologies, advanced motor drives, and optimization in 
 
 ## Contents
 
-### 801 - Matrix Converters
+### 801: Matrix Converters
 - Direct AC-AC conversion without bulky electrolytic DC-link capacitors
 - Venturini and space-vector modulation algorithms
 - Thermal analysis under varying output frequencies
 
-### 802 - Motor Drives (PMSM)
+### 802: Motor Drives (PMSM)
 - Field-oriented current and torque control ($i_d = 0$ and MTPA)
 - Resolver and encoder feedback modeling
 - Inverter dead-time effects and compensation
 
-### 803 - Optimization
+### 803: Optimization
 - Automated multi-objective design optimization
-- Pare-to-front trade-offs between efficiency, volume, and THD
+- Pareto-front trade-offs between efficiency, volume, and THD
 - Swiss rectifier topology optimization
 
-### 804 - Thyristor Control
+### 804: Thyristor Control
 - Line-commutated single-phase and three-phase thyristor bridges
 - Firing angle control ($\alpha$) and commutation overlap ($\mu$)
 - Inverter operation and loss-of-commutation protection

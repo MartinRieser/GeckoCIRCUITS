@@ -1,253 +1,67 @@
 ---
-title: GeckoSCRIPT Basics
-description: Built-in JavaScript scripting for automation and batch simulations
+title: Script Blocks & Legacy GeckoSCRIPT
+description: Inline SCRIPT_BLOCK control blocks and notes on legacy GeckoSCRIPT
 ---
 
-# 701 - GeckoSCRIPT Basics
+# 701 - Script Blocks & Legacy GeckoSCRIPT
 
-GeckoSCRIPT is JavaScript-based scripting built directly into GeckoCIRCUITS, enabling automation without leaving the application. Powered by GraalVM Polyglot, it provides full access to the circuit simulator API from JavaScript.
+GeckoCIRCUITS separates **in-circuit custom scripting** (executed every simulation time step inside a circuit) from **external automation**:
 
-## What is GeckoSCRIPT?
+- **In-circuit control logic**: Use the **Script Block** (`SCRIPT_BLOCK`, component `typ 61`), supported natively in the desktop editor, REST API, MCP server (`gecko_set_script_code`), and headless simulation engine (`ScriptBlockCalculator`) via a pure-Java interpreter without GraalVM dependencies.
+- **External parameter sweeps & batch runs**: Use the Python SDK ([`geckopy`](python.md)) or the [REST API](../../api/rest-api.md).
 
-GeckoSCRIPT is:
+!!! warning "Legacy GeckoSCRIPT (Retired in v1.0+)"
+    Standalone **GeckoSCRIPT** (`Tools > GeckoSCRIPT`, GraalVM JavaScript macros with `runSimulation()` / `setParameter()` and CLI `--script`) was part of the Classic Swing GUI, which is archived on git tag `classic-v1.0-final`. Use **Python (`geckopy`)** or the **REST API** for external automation in current versions.
 
-- **Built-in JavaScript engine** - No external tools needed
-- **Direct API access** - Manipulate circuit parameters and run simulations programmatically
-- **Parameter sweeps** - Automate multi-variable design space exploration
-- **Batch automation** - Run hundreds of simulations sequentially
-- **Data export** - Generate CSV/JSON results automatically
+---
 
-## Opening the Script Editor
+## Using `SCRIPT_BLOCK` (`typ 61`)
 
-To access GeckoSCRIPT:
+A **Script Block** evaluates custom expressions at every simulation time step using wired control inputs (`xIN[0]`, `xIN[1]`, ...) and drives output signals (`yOUT[0]`, ...).
 
-1. Launch GeckoCIRCUITS with a circuit file
-2. Navigate to **Tools → GeckoSCRIPT** (or **Tools → Script Editor**)
-3. Write or paste your JavaScript code
-4. Click **Run** to execute
+### Inspecting or Updating a Script Block via Python (`geckopy`)
 
-!!! tip
-    Scripts run in the same process as GeckoCIRCUITS, with direct access to loaded circuits and simulation state. No external processes required.
+```python
+import geckopy
 
-## Script Structure
-
-### Basic Script
-
-```javascript
-// GeckoSCRIPT example
-var Vin = 48;        // Input voltage
-var Vout = 12;       // Output voltage
-var Iout = 10;       // Output current
-
-// Calculate duty cycle
-var D = Vout / Vin;
-print("Duty cycle: " + D);
-
-// Set component parameter
-setParameter("R_load", Vout / Iout);
-
-// Run simulation
-runSimulation();
-
-// Get result
-var efficiency = getMeasurement("P_out") / getMeasurement("P_in");
-print("Efficiency: " + (efficiency * 100) + "%");
+ckt = geckopy.open("resources/tutorials/7xx_scripting_automation/701_gecko_script_basics/GeckoSCRIPT.ipes")
+ckt.set_script_code(
+    block_name="SCRIPT.1",
+    source_code="yOUT[0] = (xIN[0] > 0.5) ? 1.0 : 0.0;",
+)
+report = ckt.validate()
+assert report.is_valid
+res = ckt.simulate()
 ```
 
-## Core Functions
+You can inspect or patch `SCRIPT_BLOCK` code from MCP assistants via `gecko_set_script_code` and `gecko_validate_circuit` (see [MCP Interface](../../mcp.md)).
 
-### Parameter Control
+### Headless CLI Batch Execution
 
-```javascript
-// Set component parameters
-setParameter("componentName.parameter", value);
-
-// Examples
-setParameter("MOSFET1.RdsOn", 0.01);
-setParameter("C1.capacitance", 100e-6);
-setParameter("L1.inductance", 50e-6);
-
-// Get current parameter value
-var L = getParameter("L1.inductance");
-```
-
-### Simulation Control
-
-```javascript
-// Configure simulation
-setSimulationTime(0.01);        // 10 ms
-setTimeStep(1e-7);              // 100 ns
-setSolverType("GEAR");          // GEAR, TRZ, or BE
-
-// Run simulation
-runSimulation();
-
-// Stop simulation
-stopSimulation();
-
-// Wait for completion
-waitForSimulation();
-```
-
-### Data Access
-
-```javascript
-// Get measurement values (after simulation)
-var Vavg = getMeasurement("SCOPE.CH1.mean");
-var Irms = getMeasurement("SCOPE.CH2.rms");
-var Ppk = getMeasurement("SCOPE.CH3.max");
-
-// Get waveform data
-var time = getWaveform("SCOPE.time");
-var voltage = getWaveform("SCOPE.CH1");
-```
-
-### Output and Export
-
-```javascript
-// Print to console
-print("Result: " + value);
-
-// Export data to CSV
-exportCSV("results.csv", ["time", "voltage", "current"]);
-
-// Save circuit
-saveCircuit("modified_circuit.ipes");
-```
-
-## Parameter Sweeps
-
-### Single Parameter Sweep
-
-```javascript
-var results = [];
-var duties = [0.3, 0.4, 0.5, 0.6, 0.7];
-
-for (var i = 0; i < duties.length; i++) {
-    setParameter("PWM1.dutyCycle", duties[i]);
-    runSimulation();
-    waitForSimulation();
-
-    var vout = getMeasurement("SCOPE.Vout.mean");
-    results.push({duty: duties[i], vout: vout});
-    print("D=" + duties[i] + " -> Vout=" + vout);
-}
-
-// Export results
-exportResults("sweep_results.csv", results);
-```
-
-### Multi-Parameter Sweep
-
-```javascript
-var fsw_values = [50e3, 100e3, 200e3];
-var L_values = [22e-6, 47e-6, 100e-6];
-
-for (var i = 0; i < fsw_values.length; i++) {
-    for (var j = 0; j < L_values.length; j++) {
-        setParameter("PWM1.frequency", fsw_values[i]);
-        setParameter("L1.inductance", L_values[j]);
-
-        runSimulation();
-        waitForSimulation();
-
-        var ripple = getMeasurement("SCOPE.IL.pp");
-        print("fsw=" + fsw_values[i] + ", L=" + L_values[j] + " -> ripple=" + ripple);
-    }
-}
-```
-
-## Control Flow
-
-### Conditional Logic
-
-```javascript
-var Vout = getMeasurement("SCOPE.Vout.mean");
-
-if (Vout < 11.9) {
-    print("Output voltage too low!");
-} else if (Vout > 12.1) {
-    print("Output voltage too high!");
-} else {
-    print("Output voltage within spec");
-}
-```
-
-### Loops
-
-```javascript
-// For loop
-for (var i = 0; i < 10; i++) {
-    // ...
-}
-
-// While loop
-var iteration = 0;
-while (efficiency < 0.95 && iteration < 100) {
-    // Adjust parameters
-    iteration++;
-}
-```
-
-## Mathematical Functions
-
-```javascript
-// Built-in math
-var x = Math.sin(angle);
-var y = Math.cos(angle);
-var z = Math.sqrt(value);
-var p = Math.pow(base, exponent);
-var l = Math.log10(value);
-
-// Constants
-var pi = Math.PI;
-var e = Math.E;
-```
-
-## Error Handling
-
-```javascript
-try {
-    runSimulation();
-    var result = getMeasurement("SCOPE.CH1.mean");
-} catch (error) {
-    print("Error: " + error.message);
-    // Handle error
-}
-```
-
-## Running Scripts
-
-### From GUI
-
-1. **Tools → Script Editor**
-2. Write or load script
-3. Click **Run**
-
-### From Command Line
+To run a circuit containing script blocks directly from the command line without opening the GUI:
 
 ```bash
-java -jar gecko.jar --script script.js circuit.ipes
+java -Dloader.main=gecko.core.GeckoHeadless \
+     -cp backend/gecko-rest-api/target/gecko-rest-api.jar \
+     org.springframework.boot.loader.launch.PropertiesLauncher \
+     --circuit resources/tutorials/7xx_scripting_automation/701_gecko_script_basics/buck_control.ipes \
+     --output results.csv --quiet
 ```
 
-## Simulation Exercises
+---
 
-1. Write parameter sweep for optimal duty cycle
-2. Automate efficiency measurement vs load
-3. Generate Bode plot data with frequency sweep
-4. Create batch simulation for component comparison
+## Historical GeckoSCRIPT Notes (`classic-v1.0-final`)
 
-## Advanced Topics
+For users opening historical tutorial archives (`resources/tutorials/7xx_scripting_automation/701_gecko_script_basics/GeckoSCRIPT.pdf`), Classic Swing GeckoSCRIPT exposed JavaScript helpers such as `setParameter()`, `runSimulation()`, `getMeasurement()`, `setSimulationTime()`, and `setTimeStep()`. In modern releases, equivalent sweeps are performed through Python `for` loops calling `geckopy` or `POST /gecko/api/v1/simulations/batch`.
 
-!!! note "Learning Resources"
-    See the comprehensive GeckoSCRIPT documentation in the tutorial file:
-    `resources/tutorials/7xx_scripting_automation/701_gecko_script_basics/GeckoSCRIPT.pdf`
+## Reference Files
 
-!!! info "Complete API Reference"
-    For a complete API reference with all available functions, see the [GeckoSCRIPT API Reference](../../api/geckoscript-ref.md).
+- `resources/tutorials/7xx_scripting_automation/701_gecko_script_basics/GeckoSCRIPT.ipes`
+- `resources/tutorials/7xx_scripting_automation/701_gecko_script_basics/buck_control.ipes`
+- `resources/tutorials/7xx_scripting_automation/701_gecko_script_basics/GeckoSCRIPT.pdf`
 
-## Related Tutorials
+## Related Guides
 
-- [702 - MATLAB Integration](matlab.md)
-- [704 - Java Blocks](java-blocks.md)
-- [706 - Python Integration](python.md)
+- [Python Integration](python.md) — Recommended replacement for parameter sweeps and optimization
+- [MATLAB Integration](matlab.md) — HTTP sweeps via REST API
+- [NativeC C/C++ Blocks](../../native-c-blocks.md) — Compiled C/C++ firmware control blocks

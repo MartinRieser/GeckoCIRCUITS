@@ -300,7 +300,7 @@ describe('validateCircuitForSimulation: couplings and node labels', () => {
     expect(warnings.some((x) => /deleted/.test(x))).toBe(false);
   });
 
-  describe('Unused meter DRC hints (Phase 4)', () => {
+  describe('Unused meter DRC hints', () => {
     it('identifies purely observational ammeter and suggests virtual current signal', () => {
       const ammeter = comp({
         name: 'AMP.1',

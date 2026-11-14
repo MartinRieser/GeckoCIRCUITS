@@ -74,5 +74,5 @@ Psw = (Eon + Eoff) × fsw × (Vdc/Vref) × (Ic/Iref)
 
 ## Related Examples
 
-- [Thermal Examples](../examples/thermal/)
+- [Top-level Examples](../../../examples/README.md) | [Thermal Tutorials Guide](../../../docs/tutorials/thermal/index.md)
 - [Loss Calculation](501_loss_calculation/)

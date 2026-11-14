@@ -11,7 +11,7 @@ import java.util.Map;
  */
 @Schema(description = "Create component request")
 public record ComponentCreateRequest(
-    @Schema(description = "Component family", allowableValues = {"LK", "THERM"})
+    @Schema(description = "Component family", allowableValues = {"LK", "THERM", "CONTROL", "SPECIAL"})
     @NotBlank
     String family,
 

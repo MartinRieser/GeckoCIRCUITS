@@ -1,6 +1,6 @@
 # GeckoCIRCUITS Parity Verification Harness (P5)
 
-The parity harness validates that simulation results produced by the new headless simulation engine (`gecko-simulation-core` / `gecko-rest-api`) are numerically identical to the reference output from the legacy Swing engine (`gecko-gui` / `GeckoSim`).
+The parity harness validates that simulation results produced by the headless simulation engine (`gecko-simulation-core` / `gecko-rest-api`) match reference outputs from the archived Classic Swing engine (`classic-v1.0-final`). Requires a classic JAR when running `ReferenceRunner` directly.
 
 ## Architecture & Workflow
 

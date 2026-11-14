@@ -30,7 +30,6 @@ package gecko.core.circuit.semiconductors;
  * floating-point overflow at strong forward bias.
  *
  * @see gecko.core.simulation.solver.NonlinearConvergenceController
- * @since v2.18.0 Task L3 - High-Performance Solver & Advanced Numerics
  */
 public final class ShockleyDiodeModel {
 

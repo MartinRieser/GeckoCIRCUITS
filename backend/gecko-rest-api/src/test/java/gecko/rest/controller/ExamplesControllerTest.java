@@ -1,24 +1,53 @@
 package gecko.rest.controller;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * Unit tests for ExamplesController endpoints.
+ * Unit tests for ExamplesController endpoints, isolated against a temporary directory
+ * so CRUD tests never mutate the repository's bundled examples folder.
  */
 @WebMvcTest(ExamplesController.class)
 @Import(gecko.rest.config.TestSecurityConfig.class)
 class ExamplesControllerTest {
 
+    @TempDir
+    Path tempExamplesDir;
+
     @Autowired
     private MockMvc mockMvc;
+
+    private String previousExamplesDir;
+
+    @BeforeEach
+    void setUpExamplesDir() throws IOException {
+        previousExamplesDir = System.getProperty("gecko.examples-dir");
+        Files.writeString(tempExamplesDir.resolve("manifest.json"), "[]");
+        System.setProperty("gecko.examples-dir", tempExamplesDir.toString());
+    }
+
+    @AfterEach
+    void restoreExamplesDir() {
+        if (previousExamplesDir == null) {
+            System.clearProperty("gecko.examples-dir");
+        } else {
+            System.setProperty("gecko.examples-dir", previousExamplesDir);
+        }
+    }
 
     @Test
     void listExamples_returnsOkAndArray() throws Exception {

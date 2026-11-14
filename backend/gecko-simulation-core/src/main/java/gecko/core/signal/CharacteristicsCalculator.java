@@ -26,9 +26,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * for signals in a data container. Implements caching for performance optimization.
  *
  * <p>Used for REST API signal analysis endpoints and GeckoSCRIPT integration.
- *
- * @author andy
- * @since Core Module Extraction Sprint - Phase 3
  */
 public final class CharacteristicsCalculator {
     private static final Logger LOGGER = LogManager.getLogger(CharacteristicsCalculator.class);

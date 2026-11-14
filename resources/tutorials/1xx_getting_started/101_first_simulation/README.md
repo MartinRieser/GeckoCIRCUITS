@@ -36,22 +36,7 @@ By the end of this tutorial, you will:
 
 ### Step 1: Launch GeckoCIRCUITS
 
-**Option A - Using launcher script (recommended):**
-```bash
-# Linux
-./scripts/run-gecko-linux.sh
-
-# Windows
-scripts\run-gecko.bat
-
-# macOS
-./scripts/run-gecko-macos.sh
-```
-
-**Option B - Direct Java execution:**
-```bash
-java -Xmx3G -Dpolyglot.js.nashorn-compat=true -jar target/gecko-1.0-jar-with-dependencies.jar
-```
+Start the desktop app or web UI + REST backend — see the [Quick Start Guide](../../../../docs/getting-started/quickstart.md) for current build and launch instructions.
 
 ### Step 2: Explore the Interface
 
@@ -122,8 +107,8 @@ The `ex_1.ipes` circuit contains:
 ### Circuit Files (.ipes)
 
 - GeckoCIRCUITS saves circuits in `.ipes` format
-- Files are gzip-compressed for efficiency
-- All component parameters and connections are stored
+- Stored as structured UTF-8 text blocks for components, connections, and solver settings
+- All component parameters and connections are recorded in one file
 
 ### Simulation Types
 
@@ -188,7 +173,7 @@ In this tutorial, you learned:
 
 Continue your learning with:
 - **Next Tutorial:** [102 - Basic Circuits](../102_basic_circuits/) - Build circuits from scratch
-- **Reference:** [GeckoCIRCUITS User Manual](../../docs/)
+- **Reference:** [GeckoCIRCUITS Documentation](../../../../docs/index.md)
 
 ## Additional Resources
 

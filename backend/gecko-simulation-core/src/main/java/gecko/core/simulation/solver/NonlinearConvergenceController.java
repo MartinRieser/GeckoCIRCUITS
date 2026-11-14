@@ -40,7 +40,6 @@ import org.apache.logging.log4j.Logger;
  *
  * @see ShockleyDiodeModel
  * @see ComponentCurrentCalculator
- * @since v2.18.0 Task L3 - High-Performance Solver & Advanced Numerics
  */
 public final class NonlinearConvergenceController {
 

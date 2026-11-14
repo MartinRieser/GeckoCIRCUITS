@@ -1,4 +1,4 @@
-/*  This file is part of GeckoCIRCUITS. Copyright (C) ETH Zurich, Gecko-Simulations GmbH
+/*  This file is part of GeckoCIRCUITS. Copyright (C) ETH Zurich, Gecko-Simulations AG
  *
  *  GeckoCIRCUITS is free software: you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free Software
@@ -11,71 +11,29 @@
  *  You should have received a copy of the GNU General Public License along with
  *  GeckoCIRCUITS. If not, see <http://www.gnu.org/licenses/>.
  */
-
 /**
- * GeckoCIRCUITS Simulation Core - GUI-Free Domain Logic
- * 
- * <h2>Overview</h2>
- * This package contains the pure simulation engine extracted from the 
- * GeckoCIRCUITS desktop application. It is designed to be:
- * <ul>
- *   <li><strong>GUI-free</strong> - No Swing, AWT, or JavaFX dependencies</li>
- *   <li><strong>Headless-compatible</strong> - Runs on servers without displays</li>
- *   <li><strong>API-ready</strong> - Clean interfaces for REST/RMI access</li>
- *   <li><strong>GraalVM-compatible</strong> - Can be compiled to native image</li>
- * </ul>
- * 
+ * GUI-free simulation core for GeckoCIRCUITS.
+ *
+ * <p>Provides headless circuit parsing, netlist construction, Modified Nodal Analysis (MNA),
+ * control-block execution, multi-domain magnetic/thermal solvers, and signal analysis without
+ * Swing/AWT dependencies.
+ *
  * <h2>Package Structure</h2>
- * <pre>
- * gecko.core
- * ├── api/          - Public simulation interfaces (IMatrixStamper, etc.)
- * ├── circuit/      - Circuit representation and MNA matrix building
- * │   ├── matrix/   - Matrix stampers for circuit elements
- * │   ├── netlist/  - Netlist parsing and construction
- * │   └── simulation/ - Simulation engine (solver context, etc.)
- * ├── control/      - Control block calculators
- * │   └── calculators/ - Signal processing (RMS, THD, FFT, etc.)
- * ├── math/         - Mathematical utilities
- * │   ├── Matrix.java - Dense matrix with LU decomposition
- * │   ├── NComplex.java - Complex number arithmetic
- * │   └── GlobalMatrixMath.java - Matrix utilities
- * └── data/         - Data containers and structures
- * </pre>
- * 
- * <h2>Usage Example</h2>
- * <pre>{@code
- * // Create a simple RC circuit simulation
- * SolverContext ctx = new SolverContext(dt, SolverContext.SOLVER_BE);
- * StamperRegistry registry = StamperRegistry.createDefault();
- * 
- * // Get stampers
- * IMatrixStamper resistor = registry.getStamper(CircuitTyp.LK_R);
- * IMatrixStamper capacitor = registry.getStamper(CircuitTyp.LK_C);
- * 
- * // Build MNA matrix
- * double[][] A = new double[2][2];
- * resistor.stampMatrixA(A, 0, 1, -1, new double[]{1000.0}, dt);
- * capacitor.stampMatrixA(A, 1, 0, -1, new double[]{1e-6}, dt);
- * 
- * // Solve and iterate
- * Matrix solver = new Matrix(A);
- * solver.luDecomposition();
- * double[] x = solver.luSolve(b);
- * }</pre>
- * 
- * <h2>Prohibited Dependencies</h2>
- * The following imports are <strong>FORBIDDEN</strong> in this module:
  * <ul>
- *   <li>{@code java.awt.*}</li>
- *   <li>{@code javax.swing.*}</li>
- *   <li>{@code java.applet.*}</li>
- *   <li>Any GUI framework classes</li>
+ *   <li>{@link gecko.core.GeckoHeadless} - Headless entry point and facade</li>
+ *   <li>{@code gecko.core.allg} - Solver settings, solver types, and user parameters</li>
+ *   <li>{@code gecko.core.circuit} - Component definitions, stampers, loss models, and netlists</li>
+ *   <li>{@code gecko.core.control} - Control block builders and calculators</li>
+ *   <li>{@code gecko.core.datacontainer} - Simulation waveform containers and time series</li>
+ *   <li>{@code gecko.core.io} - Headless {@code .ipes} parser, writer, and circuit model</li>
+ *   <li>{@code gecko.core.magnetic} - Magnetic reluctance network solver and saturation models</li>
+ *   <li>{@code gecko.core.math} - Dense matrix/LU routines and power-electronics transforms</li>
+ *   <li>{@code gecko.core.signal} - FFT and waveform characteristic calculators</li>
+ *   <li>{@code gecko.core.simulation} - Headless engine, domain coupler, dense and sparse MNA solvers</li>
+ *   <li>{@code gecko.core.thermal} - Thermal RC network solver and electro-thermal coupling</li>
  * </ul>
- * 
- * Build will fail if GUI dependencies are detected.
- * 
- * @since 2.0
- * @see gecko.core.api.IMatrixStamper
- * @see gecko.core.circuit.simulation.SolverContext
+ *
+ * @see gecko.core.simulation.HeadlessSimulationEngine
+ * @see gecko.core.circuit.matrix.IMatrixStamper
  */
 package gecko.core;

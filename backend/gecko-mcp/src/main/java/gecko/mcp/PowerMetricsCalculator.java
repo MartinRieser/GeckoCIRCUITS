@@ -106,7 +106,7 @@ public final class PowerMetricsCalculator {
             double mean = sum / count;
             double rms = Math.sqrt(sumSq / count);
             double pkPk = max - min;
-            double ripplePct = Math.abs(mean) > 1e-6 ? (pkPk / Math.abs(mean)) * 100.0 : 0.0;
+            double ripplePct = Math.abs(mean) > 1e-6 ? pkPk / Math.abs(mean) * 100.0 : 0.0;
 
             Map<String, Object> stats = new LinkedHashMap<>();
             stats.put("mean", round(mean, 4));
@@ -235,7 +235,7 @@ public final class PowerMetricsCalculator {
             if (systemMetrics.containsKey("p_out_avg_w")) {
                 double pOut = (double) systemMetrics.get("p_out_avg_w");
                 if (pInAvg > 1e-6) {
-                    double eff = (pOut / pInAvg) * 100.0;
+                    double eff = pOut / pInAvg * 100.0;
                     systemMetrics.put("efficiency_percent", round(eff, 2));
                 }
             }
@@ -460,7 +460,7 @@ public final class PowerMetricsCalculator {
                 double mean = sum / count;
                 double rms = Math.sqrt(sumSq / count);
                 double ripple = max - min;
-                double ripplePct = Math.abs(mean) > 1e-6 ? (ripple / Math.abs(mean)) * 100.0 : 0.0;
+                double ripplePct = Math.abs(mean) > 1e-6 ? ripple / Math.abs(mean) * 100.0 : 0.0;
 
                 Map<String, Object> m = new LinkedHashMap<>();
                 m.put("i_peak_a", round(maxAbs, 3));
@@ -561,7 +561,7 @@ public final class PowerMetricsCalculator {
                 }
                 double meanSpeed = sum / count;
                 double ripple = max - min;
-                double ripplePct = Math.abs(meanSpeed) > 1e-6 ? (ripple / Math.abs(meanSpeed)) * 100.0 : 0.0;
+                double ripplePct = Math.abs(meanSpeed) > 1e-6 ? ripple / Math.abs(meanSpeed) * 100.0 : 0.0;
                 double rpm = meanSpeed * 60.0 / (2.0 * Math.PI);
 
                 Map<String, Object> m = new LinkedHashMap<>();
@@ -608,7 +608,7 @@ public final class PowerMetricsCalculator {
                 }
                 double meanTorque = sum / count;
                 double ripple = max - min;
-                double ripplePct = Math.abs(meanTorque) > 1e-6 ? (ripple / Math.abs(meanTorque)) * 100.0 : 0.0;
+                double ripplePct = Math.abs(meanTorque) > 1e-6 ? ripple / Math.abs(meanTorque) * 100.0 : 0.0;
 
                 Map<String, Object> m = new LinkedHashMap<>();
                 m.put("mean_nm", round(meanTorque, 2));
@@ -757,8 +757,6 @@ public final class PowerMetricsCalculator {
     }
 
     private static double round(double val, int decimals) {
-        if (!Double.isFinite(val)) return 0.0;
-        double scale = Math.pow(10, decimals);
-        return Math.round(val * scale) / scale;
+        return PyFormat.round(val, decimals);
     }
 }

@@ -33,8 +33,7 @@ Run simulations with one keystroke (`F5` or the toolbar button) and immediately 
 - **Firmware-in-the-loop (NativeC)** -- run real C/C++ microcontroller firmware directly in the simulation
 - **Thermal analysis** -- junction temperature, loss calculation, heatsink design
 - **EMI filter design** -- common-mode/differential-mode filter analysis
-- **MATLAB/Simulink integration** -- remote control via RMI or memory-mapped files
-- **Scriptable** -- built-in JavaScript (GraalVM) and Java block scripting
+- **Scriptable** -- built-in `SCRIPT` blocks (`ScriptBlockCalculator`), C/C++ firmware (`NativeC`), REST API, and Python SDK (`geckopy`)
 - **Model Context Protocol (MCP) Server** -- 16 tools for autonomous AI/LLM circuit synthesis, DRC validation with live script compilation, simulation, SVG schematic generation, and power electronics analytics (Google Antigravity, Claude, Cursor, Copilot)
 - **Cross-platform** -- runs on Windows, Linux, and macOS
 
@@ -150,7 +149,7 @@ GeckoCIRCUITS
 ├── Thermal Domain (loss models, thermal networks, heatsink simulation)
 ├── EMI Domain (CISPR filters, CM/DM analysis)
 ├── Visualization (oscilloscope, FFT, THD, RMS analysis)
-└── Integration (RMI for MATLAB, memory-mapped files, JavaScript scripting)
+└── Integration (REST API, WebSocket streaming, MCP server, Python SDK)
 ```
 
 ## Documentation
@@ -164,7 +163,7 @@ Full interactive documentation is deployed at **[martinrieser.github.io/GeckoCIR
 | **AI & LLM Tools (MCP)** | [MCP Guide](https://martinrieser.github.io/GeckoCIRCUITS/mcp/) | [docs/mcp.md](docs/mcp.md) | Model Context Protocol tools for AI circuit synthesis & DRC |
 | **Firmware in the Loop** | [NativeC Guide](https://martinrieser.github.io/GeckoCIRCUITS/native-c-blocks/) | [docs/native-c-blocks.md](docs/native-c-blocks.md) | Run real C/C++ microcontroller firmware in simulation |
 | **Tutorials** | [Tutorials](https://martinrieser.github.io/GeckoCIRCUITS/tutorials/) | [docs/tutorials/index.md](docs/tutorials/index.md) | DC-DC, AC-DC rectifiers, DC-AC inverters, thermal & magnetics |
-| **Examples Library** | [Examples](https://martinrieser.github.io/GeckoCIRCUITS/examples/) | [docs/examples/index.md](docs/examples/index.md) | 125+ ready-to-simulate power electronics circuit models |
+| **Examples Library** | [Examples](https://martinrieser.github.io/GeckoCIRCUITS/examples/) | [docs/examples/index.md](docs/examples/index.md) | Power electronics converter and drive topology guides |
 | **API Reference** | [API Reference](https://martinrieser.github.io/GeckoCIRCUITS/api/) | [docs/api/index.md](docs/api/index.md) | REST API, WebSocket waveform streaming, and GeckoSCRIPT |
 | **Developer Guide** | [Developer Guide](https://martinrieser.github.io/GeckoCIRCUITS/resources/developer-guide/) | [docs/resources/developer-guide.md](docs/resources/developer-guide.md) | Architecture, local builds, and development guidelines |
 
@@ -195,5 +194,5 @@ Copyright (c) ETH Zurich, Power Electronic Systems Laboratory. Originally develo
 ## Links
 
 - **Documentation**: [https://martinrieser.github.io/GeckoCIRCUITS/](https://martinrieser.github.io/GeckoCIRCUITS/)
-- **GitHub Releases**: [Latest Release (v44-2026)](https://github.com/MartinRieser/GeckoCIRCUITS/releases/latest)
+- **GitHub Releases**: [Latest Release](https://github.com/MartinRieser/GeckoCIRCUITS/releases/latest)
 - **Original SourceForge Project**: [sourceforge.net/projects/geckocircuits](https://sourceforge.net/projects/geckocircuits/)

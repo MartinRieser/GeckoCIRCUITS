@@ -18,10 +18,6 @@ package gecko.core.io;
  *
  * <p>These methods append values to a StringBuffer with a space prefix,
  * used for writing .ipes circuit file format.
- *
- * <p>Extracted from ProjectData for headless/API use.
- *
- * @since Core Module Extraction Sprint
  */
 public final class SerializationUtils {
 

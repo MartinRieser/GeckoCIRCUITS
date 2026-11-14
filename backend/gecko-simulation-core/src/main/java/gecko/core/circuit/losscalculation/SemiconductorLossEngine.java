@@ -32,9 +32,6 @@ import java.util.Map;
  * {@code LK_IGBT}, {@code LK_MOSFET}, {@code LK_BJT}) in a {@link CircuitNetlist},
  * evaluates instantaneous and time-averaged power dissipation at each simulation time step,
  * and transfers heat flow to the thermal domain via {@link DomainCoupler}.</p>
- *
- * @author GeckoCIRCUITS Team
- * @since v2.18.0 Task L2
  */
 public final class SemiconductorLossEngine {
 

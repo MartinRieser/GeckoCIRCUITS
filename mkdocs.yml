@@ -144,6 +144,7 @@ nav:
       - Diode Rectifiers: tutorials/acdc/diode-rectifier.md
       - PFC Basics: tutorials/acdc/pfc-basics.md
       - Vienna Rectifier: tutorials/acdc/vienna-rectifier.md
+      - 230V to 3.3V SMPS Guide: tutorials/acdc/230v-to-3v3-smps-guide.md
     - DC-AC Inverters:
       - tutorials/dcac/index.md
       - Single-Phase Inverter: tutorials/dcac/single-phase.md

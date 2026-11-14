@@ -46,24 +46,19 @@ By varying D from 0 to 1, you can control the output from 0V to V_in.
 
 ## PWM in GeckoCIRCUITS
 
-### The PWM Block
+### PWM Generation Components
 
-GeckoCIRCUITS provides a built-in PWM control block:
+GeckoCIRCUITS provides control blocks for carrier comparison and switching modulation:
 
-**Inputs:**
-- Carrier frequency (f_sw)
-- Duty cycle (D)
-
-**Output:**
-- Digital signal (0 or 1) that drives the switch gate
+- **`COMPARATOR`**: Compares a modulating reference against a `SignalCalculatorTriangle` / sawtooth carrier (`SIGNAL` rectangle/triangle source) to output a binary gate drive (`0` or `1`).
+- **`SPWM_GENERATOR` (alias `SPWM`)**: Built-in carrier-comparison sinusoidal PWM modulator for single-phase, H-bridge, and three-phase bridges.
+- **`DEADTIME` (alias `DEADTIME_GENERATOR`)**: Inserts turn-on blanking / dead-time between complementary high-side and low-side gate signals.
 
 ### Setting Up PWM
 
-1. Place a **PWM** block from the control components
-2. Double-click to set parameters:
-   - **Frequency:** e.g., 100 kHz
-   - **Duty Cycle:** e.g., 0.5 (50%)
-3. Connect the output to the switch **gate** terminal
+1. Place a **Signal Source** (triangle/sawtooth carrier) + **Constant** (duty reference) + **`COMPARATOR`**, or a **`SPWM_GENERATOR`** block from the control palette.
+2. Configure switching frequency and modulation index / duty cycle in the properties panel.
+3. Connect the output (or couple a `GATE` driver block) to the switch **gate** terminal.
 
 ### PWM Generation Methods
 
@@ -71,7 +66,7 @@ GeckoCIRCUITS provides a built-in PWM control block:
 |--------|-------------|----------|
 | Fixed duty cycle | Constant D value | Open-loop testing |
 | Comparator-based | Compare reference to carrier | Closed-loop control |
-| Signal-based | External signal sets duty cycle | MATLAB/Python control |
+| Programmatic / Scripted | `SCRIPT` block, `geckopy`, or REST API sets duty cycle | Digital PI / MCU control |
 
 ## Duty Cycle and Output Voltage
 

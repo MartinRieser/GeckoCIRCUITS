@@ -22,9 +22,6 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Unit tests for DomainCoupler domain coupling orchestration.
  * Validates LK ↔ CONTROL ↔ THERM data transfers without GUI dependencies.
- *
- * @author Phase 4 test suite
- * @since v2.18.0 Phase 4 - Domain coupling
  */
 class DomainCouplerTest {
 

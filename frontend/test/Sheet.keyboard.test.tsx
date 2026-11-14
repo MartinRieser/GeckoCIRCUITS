@@ -127,7 +127,7 @@ afterEach(() => {
   fetchMock.mockReset();
 });
 
-describe('Keyboard-first navigation and workflows (P3)', () => {
+describe('Keyboard-first navigation and workflows', () => {
   it('loads circuit and navigates terminals using Tab / Shift+Tab', async () => {
     fetchMock.mockImplementation(routeFetch);
     const { container } = render(<App />);

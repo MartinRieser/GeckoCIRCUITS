@@ -34,7 +34,6 @@ import gecko.core.allg.SolverType;
  * not recommended.
  *
  * @see HeadlessSimulationEngine
- * @since v2.18.0 Task L3 - High-Performance Solver & Advanced Numerics
  */
 public final class AdaptiveStepController {
 

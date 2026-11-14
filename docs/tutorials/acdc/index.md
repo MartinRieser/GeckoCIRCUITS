@@ -13,7 +13,7 @@ AC to DC power conversion, harmonic reduction, and active power factor correctio
 |----------|-------|------------|--------------|-------------|
 | [301](diode-rectifier.md) | [Diode Rectifiers](diode-rectifier.md) | Beginner | [single-phase-rectifier.ipes](single-phase-rectifier.ipes)<br>[three-phase-rectifier.ipes](three-phase-rectifier.ipes) | Single-phase and three-phase uncontrolled diode bridges |
 | [302](pfc-basics.md) | [PFC Basics](pfc-basics.md) | Intermediate | [boost-pfc.ipes](boost-pfc.ipes) | 2-phase interleaved active boost PFC with digital PI control |
-| [303](vienna-rectifier.md) | [Vienna Rectifier](vienna-rectifier.md) | Advanced | [vienna-rectifier.ipes](vienna-rectifier.md#simulation-and-project-file) | Three-phase three-level active boost rectifier with split DC bus |
+| [303](vienna-rectifier.md) | [Vienna Rectifier](vienna-rectifier.md) | Advanced | [vienna-rectifier.ipes](vienna-rectifier.ipes) | Three-phase three-level active boost rectifier with split DC bus |
 | [304](230v-to-3v3-smps-guide.md) | [230V AC to 3.3V DC SMPS Guide](230v-to-3v3-smps-guide.md) | Intermediate | [smps-230v-to-3v3.ipes](smps-230v-to-3v3.ipes) | Complete 20W offline isolated SMPS with transformer and 50kHz buck stage |
 
 ## Learning Objectives

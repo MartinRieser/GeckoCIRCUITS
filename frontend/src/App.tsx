@@ -1,10 +1,9 @@
 /**
  * Application Shell: top navigation bar with file menus & built-in examples,
- * prominent simulation action, command palette (Ctrl+K), component palette,
- * interactive schematic canvas, structured properties inspector, and simulation
- * waveform drawer.
+ * simulation actions, command palette (Ctrl+K), component palette,
+ * interactive schematic canvas, structured properties inspector, and workspace tabs.
  *
- * Central keyboard interaction layer (P3) powered by keybindings.ts.
+ * Central keyboard interaction layer powered by keybindings.ts.
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import type { EditorComponent } from './model/types';
@@ -394,8 +393,7 @@ export function App() {
       }
 
       const hasSelection = state.selection.length > 0;
-      const hasDraft = !!state.wireDraft;
-      const action = resolveShortcut(e, state.mode, hasSelection, hasDraft);
+      const action = resolveShortcut(e, state.mode, hasSelection);
       if (!action) return;
 
       const step = e.shiftKey ? 5 : 1;
@@ -412,19 +410,6 @@ export function App() {
         case 'toggle-palette':
           e.preventDefault();
           setLeftSidebarOpen((prev) => !prev);
-          break;
-        case 'toggle-simulation':
-          e.preventDefault();
-          setActiveTabId((prev) => {
-            if (prev === 'schematic') {
-              if (state.graphRegisters && state.graphRegisters.length > 0) {
-                return makeOsciTabId(state.graphRegisters[0].id);
-              }
-              const firstScope = scopeBlocks[0]?.name;
-              return firstScope ? scopeTabId(firstScope) : 'simulation';
-            }
-            return 'schematic';
-          });
           break;
         case 'save':
           e.preventDefault();
@@ -731,7 +716,6 @@ export function App() {
 
           <span className="nav-separator" />
 
-          {/* Global Simulation Actions (Option B: Direct Run + Parameters Setup Modal) */}
           <div className="nav-sim-group">
             {isSimRunning ? (
               <>

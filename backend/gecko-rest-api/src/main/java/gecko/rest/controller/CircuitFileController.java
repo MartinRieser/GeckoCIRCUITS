@@ -239,7 +239,7 @@ public class CircuitFileController {
     @Operation(
         summary = "Download circuit as .ipes file",
         description = "Serialize the loaded circuit back to the gzip-compressed .ipes format. " +
-                     "The file is interchangeable with the GeckoCIRCUITS Swing UI."
+                     "The file is compatible with the GeckoCIRCUITS .ipes format."
     )
     @ApiResponses(value = {
         @ApiResponse(

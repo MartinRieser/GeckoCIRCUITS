@@ -1,16 +1,7 @@
 {
     // Java Configuration
-    "java.jdt.ls.java.home": "C:\\Users\\mhr\\.jdks\\jdk-25.0.4.1+1",
-    "java.configuration.runtimes": [
-        {
-            "name": "JavaSE-25",
-            "path": "C:\\Users\\mhr\\.jdks\\jdk-25.0.4.1+1",
-            "default": true
-        }
-    ],
     "java.configuration.updateBuildConfiguration": "automatic",
     "java.compile.nullAnalysis.mode": "disabled",
-    "java.errors.incompleteClasspath.severity": "ignore",
 
     // Project settings
     "java.compliance": "25",
@@ -29,7 +20,7 @@
 
     // File Associations
     "files.associations": {
-        "*.ipes": "xml"
+        "*.ipes": "plaintext"
     },
 
     // Files to exclude from explorer
@@ -42,15 +33,8 @@
     // Search settings
     "search.exclude": {
         "**/target": true,
-        "**/node_modules": true
-    },
-
-    // Terminal settings
-    "terminal.integrated.defaultProfile.windows": "Git Bash",
-    "terminal.integrated.profiles.windows": {
-        "Git Bash": {
-            "source": "Git Bash"
-        }
+        "**/node_modules": true,
+        "**/dist": true
     },
 
     // Java debug settings

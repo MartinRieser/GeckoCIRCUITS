@@ -10,7 +10,7 @@
  */
 import type { EditorComponent, EditorWire, Point, EditorSnapshot, GraphRegister } from './types';
 import { ORIENTATION_CYCLE, terminalPositions, findPlacementConflict } from './geometry';
-import { Orientation } from './constants';
+import { Orientation, SENTINEL_UNSET } from './constants';
 import { getComponentMeta } from './componentSchema';
 import { routeWireWithAnchors, densePoints, simplifyCorners, deconflictMovedWires } from '../canvas/WireRouter';
 
@@ -391,7 +391,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
             const signals: string[] = [];
             if (scope.inputLabels) {
               for (const l of scope.inputLabels) {
-                if (l && l.trim() && l.trim() !== 'NIX_NIX_NIX') {
+                if (l && l.trim() && l.trim() !== SENTINEL_UNSET) {
                   signals.push(l.trim());
                 }
               }

@@ -13,7 +13,7 @@
  */
 package gecko.core.signal;
 
-//for use with GeckoSCRIPT - like the DialogFourier object but without the GUI
+// GUI-free Fourier analysis helper for GeckoSCRIPT.
 
 import gecko.core.datacontainer.AbstractDataContainer;
 import gecko.core.GeckoInvalidArgumentException;
@@ -23,9 +23,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 public final class FourierGUIless {
     private final AbstractDataContainer _worksheet;
     private final String[] _header;
-    private final double _baseFreq;  // Grundfrequenz fuer Fourieranalyse
-    private final int _nMin, _nMax;  // Grundfrequenz-Vielfache fuer Fourieranalyse
-    private final double _rng1, _rng2;  // Bereichsgrenze fuer Berechnung
+    private final double _baseFreq;  // Fundamental frequency for Fourier analysis
+    private final int _nMin, _nMax;  // Harmonic index bounds relative to fundamental frequency
+    private final double _rng1, _rng2;  // Time window bounds [start, end]
     private int _nValues;
     private static final int FOUR = 4;
 
@@ -59,18 +59,12 @@ public final class FourierGUIless {
         }
     }
 
-    private double[][][] calculate() {  // eventuell OutOfMemoryError bei zuvielen Oberschwingungen
+    private double[][][] calculate() {
         final double[][] anVals = new double[_header.length][_nMax - _nMin + 1];
         final double[][] bnVals = new double[_header.length][_nMax - _nMin + 1];
-        final double[][] cnVals = new double[_header.length][_nMax - _nMin + 1];  // Amplitude
-        final double[][] jnVals = new double[_header.length][_nMax - _nMin + 1];  // Winkel [rad]
+        final double[][] cnVals = new double[_header.length][_nMax - _nMin + 1];  // Magnitude
+        final double[][] jnVals = new double[_header.length][_nMax - _nMin + 1];  // Phase [rad]
 
-
-
-        int index1 = 0; // Startpunkt finden:
-        while (_worksheet.getTimeValue(index1, 0) <= _rng1) {
-            index1++;
-        }
         final int startIndex = findStartIndex();
 
         final int stopIndex = findStopIndex(startIndex);
@@ -92,7 +86,7 @@ public final class FourierGUIless {
 
         final double timeSpan = stopTime - startTime;
 
-        for (int i2 = 0; i2 < _header.length; i2++) {  // Schleife ueber alle Fourier-zu-zerlegenden Kurven
+        for (int i2 = 0; i2 < _header.length; i2++) {  // Loop over all waveforms to transform
 
                 float[] data = new float[_nValues];
                 int jjj = startIndex;
@@ -112,7 +106,6 @@ public final class FourierGUIless {
                 }
 
         }
-        // Auswertung:
         double[][][] returnValue = evaluate(anVals, bnVals, cnVals, jnVals);
         return returnValue;
     }
@@ -122,7 +115,7 @@ public final class FourierGUIless {
         for (int i2 = 0; i2 < _header.length; i2++) {
             for (int n = _nMin; n <= _nMax; n++) {
 
-                if (n == 0) {  // DC-Gleichanteil
+                if (n == 0) {  // DC component
                     cnVals[i2][n - _nMin] = anVals[i2][n - _nMin] / 2.0;
                     jnVals[i2][n - _nMin] = 0;
                 } else {
@@ -145,7 +138,7 @@ public final class FourierGUIless {
     }
 
     private int findStartIndex() {
-        int index1 = 0; // Startpunkt finden:
+        int index1 = 0;
         while (_worksheet.getTimeValue(index1, 0) <= _rng1) {
             index1++;
         }
@@ -158,7 +151,7 @@ public final class FourierGUIless {
         while ((index1 < _worksheet.getMaximumTimeIndex(0))
                 && (_worksheet.getTimeValue(index1 + 1, 0) > _worksheet.getTimeValue(index1, 0))
                 && (_rng1 <= _worksheet.getTimeValue(index1, 0))
-                && (_worksheet.getTimeValue(index1, 0) <= _rng2)) {  // Schleife Zeitbereich [t1...t2]
+                && (_worksheet.getTimeValue(index1, 0) <= _rng2)) {
             returnValue = index1;
             index1++;
         }

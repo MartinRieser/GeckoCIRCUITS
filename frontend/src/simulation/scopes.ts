@@ -1,9 +1,9 @@
 /**
  * Scope-instrument helpers shared by the canvas, properties panels,
- * simulation drawer, and scope tabs.
+ * and scope tabs.
  */
 import type { EditorComponent } from '../model/types';
-import { ControlComponentType } from '../model/constants';
+import { ControlComponentType, SENTINEL_UNSET } from '../model/constants';
 import { terminalPositions } from '../model/geometry';
 import { isVoltmeterComponent, isAmmeterComponent } from '../model/componentSchema';
 import { isGroundSignal } from './chartData';
@@ -64,7 +64,7 @@ export function resolveScopeWiredSignals(
 
   for (let i = 0; i < terms.input.length; i++) {
     const explicitLabel = scopeBlock.inputLabels?.[i]?.trim();
-    if (explicitLabel && explicitLabel !== 'NIX_NIX_NIX') {
+    if (explicitLabel && explicitLabel !== SENTINEL_UNSET) {
       wiredSignals.push(explicitLabel);
       continue;
     }
@@ -82,7 +82,7 @@ export function resolveScopeWiredSignals(
 
       if (!touchesStart && !touchesEnd) continue;
 
-      if (wire.label && wire.label.trim() && wire.label !== 'NIX_NIX_NIX') {
+      if (wire.label && wire.label.trim() && wire.label !== SENTINEL_UNSET) {
         foundSignal = wire.label.trim();
         break;
       }
@@ -95,7 +95,7 @@ export function resolveScopeWiredSignals(
           const outPin = compTerms.output[o];
           if (Math.hypot(outPin.x - otherPt[0], outPin.y - otherPt[1]) < 0.25) {
             const outLbl = comp.outputLabels?.[o]?.trim();
-            if (outLbl && outLbl !== 'NIX_NIX_NIX') {
+            if (outLbl && outLbl !== SENTINEL_UNSET) {
               foundSignal = outLbl;
             } else if (isVoltmeterComponent(comp) || isAmmeterComponent(comp)) {
               foundSignal = comp.name;
@@ -132,7 +132,7 @@ export function strictScopeChannels(
   }
   const wired = resolveScopeWiredSignals(scopeBlock, allComponents, wires);
   const explicit = (scopeBlock.inputLabels || []).filter(
-    (l) => l && l.trim() && l !== 'NIX_NIX_NIX' && !isGroundSignal(l),
+    (l) => l && l.trim() && l !== SENTINEL_UNSET && !isGroundSignal(l),
   );
   const combined = Array.from(new Set([...explicit, ...wired]));
   return combined.filter((l) => signalNames.includes(l) && !isGroundSignal(l));

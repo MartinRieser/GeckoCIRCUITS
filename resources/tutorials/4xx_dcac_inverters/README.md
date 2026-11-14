@@ -58,5 +58,4 @@ DC to AC power conversion and PWM control.
 
 ## Related Examples
 
-- [Inverters](../examples/inverters/)
-- [Motor Drives](../examples/motor_drives/)
+- [Single-Phase Inverter](../../../examples/inverter.ipes) | [SPWM Inverter with Deadtime](../../../examples/spwm_inverter_deadtime.ipes)

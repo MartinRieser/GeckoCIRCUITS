@@ -23,7 +23,6 @@ import gecko.core.simulation.solver.sparse.SparseMatrixSolver;
  * @see MnaSolver
  * @see MatrixSolver
  * @see gecko.core.simulation.solver.sparse.SparseMatrixSolver
- * @since v2.18.0 Task L3 - High-Performance Solver & Advanced Numerics
  */
 public final class MnaSolverFactory {
 

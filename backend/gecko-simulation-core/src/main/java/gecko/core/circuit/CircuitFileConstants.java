@@ -21,8 +21,6 @@ package gecko.core.circuit;
  *   <li>Separator character for array elements</li>
  *   <li>Null/undefined value marker</li>
  * </ul>
- *
- * @since Core Module Extraction Sprint
  */
 public final class CircuitFileConstants {
 

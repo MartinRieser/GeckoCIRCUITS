@@ -36,7 +36,7 @@ import {
 import { isScopeComponent, isScriptComponent, defaultGraphForSignal } from '../simulation/scopes';
 import { isGroundSignal } from '../simulation/chartData';
 import { BLANK_CIRCUIT_IPES } from '../model/examples';
-import { SIMULATION_DEFAULTS } from '../model/constants';
+import { SIMULATION_DEFAULTS, SENTINEL_UNSET } from '../model/constants';
 import { flipRoute, densePoints, routeWireWithAnchors, deconflictMovedWires } from '../canvas/WireRouter';
 import { addRecentFile, type RecentFileEntry } from '../model/recentFiles';
 import {
@@ -63,7 +63,6 @@ export function useEditor() {
   const [simResults, setSimResults] = useState<Record<string, number[]> | null>(null);
   const [simError, setSimError] = useState<string | null>(null);
   const [simWarnings, setSimWarnings] = useState<string[]>([]);
-  const [simDrawerOpen, setSimDrawerOpen] = useState(false);
   const [simDefaults, setSimDefaults] = useState<SimulationDefaults | null>(null);
   // Script debugging: breakpoints per block name, the SSE pause event, and
   // the polled watch/debug state of the active run
@@ -114,7 +113,6 @@ export function useEditor() {
     setSimResults(null);
     setSimError(null);
     setSimWarnings([]);
-    setSimDrawerOpen(false);
     setDebugPause(null);
     setDebugState(null);
     setScriptBreakpointsState({});
@@ -665,7 +663,7 @@ export function useEditor() {
           const pin = terms.output[i];
           if (Math.hypot(pin.x - otherPoint.x, pin.y - otherPoint.y) < 0.25) {
             const outLabel = comp.outputLabels?.[i];
-            if (outLabel && outLabel.trim() && outLabel !== 'NIX_NIX_NIX') {
+            if (outLabel && outLabel.trim() && outLabel !== SENTINEL_UNSET) {
               detectedSignal = outLabel.trim();
             } else if (isVoltmeterComponent(comp)) {
               const coupled = getCoupledComponentName(comp);
@@ -690,7 +688,7 @@ export function useEditor() {
       // 2. Check labeled wires
       if (!detectedSignal) {
         for (const wire of stateRef.current.wires) {
-          if (wire.label && wire.label.trim() && wire.label !== 'NIX_NIX_NIX') {
+          if (wire.label && wire.label.trim() && wire.label !== SENTINEL_UNSET) {
             for (const pt of wire.points) {
               if (Math.hypot(pt[0] - otherPoint.x, pt[1] - otherPoint.y) < 0.25) {
                 detectedSignal = wire.label.trim();
@@ -709,7 +707,7 @@ export function useEditor() {
           for (let i = 0; i < terms.input.length; i++) {
             if (Math.hypot(terms.input[i].x - otherPoint.x, terms.input[i].y - otherPoint.y) < 0.25) {
               const lbl = comp.inputLabels?.[i];
-              if (lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX') detectedSignal = lbl.trim();
+              if (lbl && lbl.trim() && lbl !== SENTINEL_UNSET) detectedSignal = lbl.trim();
               break;
             }
           }
@@ -717,7 +715,7 @@ export function useEditor() {
           for (let i = 0; i < terms.output.length; i++) {
             if (Math.hypot(terms.output[i].x - otherPoint.x, terms.output[i].y - otherPoint.y) < 0.25) {
               const lbl = comp.outputLabels?.[i];
-              if (lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX') detectedSignal = lbl.trim();
+              if (lbl && lbl.trim() && lbl !== SENTINEL_UNSET) detectedSignal = lbl.trim();
               break;
             }
           }
@@ -1637,7 +1635,6 @@ function cleanGraphRegistersForDeletedComponents(
       setSimProgress(0.05);
       setSimError(null);
       setSimWarnings([]);
-      setSimDrawerOpen(true);
       setDebugPause(null);
       setDebugState(null);
 
@@ -2002,7 +1999,6 @@ function cleanGraphRegistersForDeletedComponents(
       results: simResults,
       errorMessage: simError,
       warnings: simWarnings,
-      isOpen: simDrawerOpen,
       defaults: simDefaults,
       simSettings,
       scriptBreakpoints,
@@ -2048,7 +2044,6 @@ function cleanGraphRegistersForDeletedComponents(
       debugStep,
       debugResume,
       updateSimSettings,
-      toggleSimDrawer: () => setSimDrawerOpen((prev) => !prev),
       toggleProbeMode,
       setProbeRefNet,
       addSignalToScope,

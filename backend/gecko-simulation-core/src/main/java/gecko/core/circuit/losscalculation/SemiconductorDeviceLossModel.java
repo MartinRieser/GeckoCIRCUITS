@@ -25,9 +25,6 @@ import java.util.Deque;
  * ({@code v(t) * i(t)}), and detailed 3D lookup table models for conduction losses,
  * along with datasheet energy-scaled ({@code E_on, E_off}) and table-interpolated
  * models for switching losses with moving window thermal averaging.</p>
- *
- * @author GeckoCIRCUITS Team
- * @since v2.18.0 Task L2
  */
 public final class SemiconductorDeviceLossModel {
 

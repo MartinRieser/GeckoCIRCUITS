@@ -35,7 +35,6 @@ package gecko.core.magnetic;
  *
  * @see MagneticNetworkSolver
  * @see ReluctanceBranch
- * @since v2.18.0 Task L1 - Multi-Domain Coupling (Step 3: Magnetic Domain Engine)
  */
 public record MagneticNode(int value) implements Comparable<MagneticNode> {
 

@@ -25,7 +25,6 @@ package gecko.core.magnetic;
  * {@code P_diff = dPhi/dF}.
  *
  * @see MagneticNetworkSolver
- * @since v2.18.0 Task L1 - Multi-Domain Coupling (Step 3: Magnetic Domain Engine)
  */
 public final class NonlinearReluctance {
 

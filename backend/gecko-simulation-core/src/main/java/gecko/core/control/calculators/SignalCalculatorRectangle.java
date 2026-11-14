@@ -24,8 +24,6 @@ public final class SignalCalculatorRectangle extends AbstractSignalCalculatorPer
 
     @Override
     public void calculateYOUT(final double deltaT) {
-        //double dphi= Math.PI*(0.5-tastverhaeltnis);  // Korrekturwinkel, damit Rechteck-Signal immer im Ursprung beginnt
-        //double fdr= 1/Math.PI*Math.asin(Math.sin(2*Math.PI*frequenz*t -phase +dphi)) +0.5;  // [0...1]
         _dyUP = FOUR * _frequency * deltaT;
         _dyDOWN = FOUR * _frequency * deltaT;
         if (_aufsteigend) {

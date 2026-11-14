@@ -15,7 +15,7 @@ description: GeckoCIRCUITS - Power Electronics Circuit Simulator
 
     [:octicons-arrow-right-24: Getting Started](getting-started/index.md)
 
--   :material-school:{ .lg .middle } **50+ Tutorials**
+-   :material-school:{ .lg .middle } **Step-by-Step Tutorials**
 
     ---
 
@@ -23,7 +23,7 @@ description: GeckoCIRCUITS - Power Electronics Circuit Simulator
 
     [:octicons-arrow-right-24: Tutorials](tutorials/index.md)
 
--   :material-file-document-multiple:{ .lg .middle } **100+ Examples**
+-   :material-file-document-multiple:{ .lg .middle } **Curated Circuit Examples**
 
     ---
 
@@ -35,7 +35,7 @@ description: GeckoCIRCUITS - Power Electronics Circuit Simulator
 
     ---
 
-    A self-contained desktop app — plus REST API and MCP tools to drive simulations from MATLAB, Python, or an LLM.
+    A self-contained desktop app — plus REST API and MCP tools to drive simulations from the REST API, Python (`geckopy`), or an MCP client.
 
     [:octicons-arrow-right-24: API Reference](api/index.md)
 
@@ -50,7 +50,7 @@ GeckoCIRCUITS is an open-source circuit simulator specialized for power electron
 - **Real-time visualization** - Scope view with zoom, cursors, FFT, and THD
 - **Firmware-in-the-loop** - Run your real C/C++ control code via NativeC blocks
 - **MCP interface** - Let Claude, Cursor, or any LLM build and tune circuits
-- **Automation** - REST API for MATLAB, Python, and CI integration
+- **Automation** - REST API (`gecko-rest-api`) and MCP server (`gecko-mcp`) for Python (`geckopy`), HTTP/WebSocket clients, and CI integration
 - **Extensive component library** - Switches, diodes, transformers, motors
 - **Advanced analysis** - Thermal modeling and semiconductor loss calculation
 
@@ -124,7 +124,7 @@ graph LR
 | Magnetic Domain | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
 | Mechanical Domain | ✅ | ✅ | ✅ | ✅ | ⚠️ Manual | ⚠️ Manual |
 | Motor Models (PMSM/BLDC/IM) | ✅ | ✅ | ✅ Add-on | ✅ | ⚠️ Manual | ⚠️ Manual |
-| MATLAB/Python Integration | ✅ REST + RMI | ✅ Blockset | ✅ Co-sim | ✅ Python | ❌ | ❌ |
+| MATLAB/Python Integration | ✅ REST + MCP | ✅ Blockset | ✅ Co-sim | ✅ Python | ❌ | ❌ |
 | Python Scripting | ✅ | ✅ XML-RPC | ✅ API | ✅ Native | ❌ | ✅ |
 | C/C++ Custom Blocks | ✅ FFM (dll/so/dylib) | ✅ C-Script | ✅ C-block | ✅ C-code | ❌ | ✅ C++/Verilog |
 | Code Generation | ❌ | ✅ Coder | ✅ | ❌ | ❌ | ❌ |
@@ -141,7 +141,7 @@ graph LR
 
 | Tool | Best For | Website |
 |------|----------|---------|
-| **GeckoCIRCUITS** | Power electronics education, MATLAB integration, open-source | [GitHub](https://github.com/MartinRieser/GeckoCIRCUITS) |
+| **GeckoCIRCUITS** | Power electronics education, automation (REST/MCP), open-source | [GitHub](https://github.com/MartinRieser/GeckoCIRCUITS) |
 | **PLECS** | Professional power electronics, Simulink co-sim, code generation | [plexim.com](https://www.plexim.com) |
 | **PSIM** | Motor drives, SmartCtrl design, embedded code | [altair.com/psim](https://altair.com/psim) |
 | **SIMBA** | Modern UI, Python-first workflow, cloud simulation | [simba.io](https://www.simba.io) |

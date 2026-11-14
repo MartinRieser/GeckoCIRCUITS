@@ -17,13 +17,8 @@ import gecko.core.circuit.TokenMap;
 
 /**
  * Core interface for parameter values in headless simulation contexts.
- * Extracts 9 essential methods needed by loss curve classes.
- *
- * This interface enables loss curve classes to work in GUI-free environments
- * while maintaining backward compatibility with the full GUI-enabled UserParameter class.
- *
- * Design pattern: Interface extraction with adapter pattern for GUI integration.
- * See: LossFileAccessor pattern used in LossCalculationDetailed.
+ * Extracts the essential methods needed by loss curve classes in GUI-free
+ * environments.
  */
 public interface UserParameterCore<T> {
 

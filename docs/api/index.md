@@ -1,137 +1,99 @@
 ---
 title: API Reference
-description: GeckoCIRCUITS programming interfaces and automation
+description: Core engine, REST/WebSocket API, MCP server, and Python SDK documentation
 ---
 
 # API Reference
 
-GeckoCIRCUITS provides multiple interfaces for automation, integration, and programmatic control.
+Programmatic interfaces for embedding, automating, and extending GeckoCIRCUITS.
 
 ## Available Interfaces
 
 <div class="grid cards" markdown>
 
--   :material-remote:{ .lg .middle } **[Remote Interface](remote-interface.md)**
+-   :material-engine:{ .lg .middle } **[Simulation Core (`gecko-simulation-core`)](core/index.md)**
 
     ---
 
-    Java RMI-based interface for MATLAB integration
+    GUI-free Java 25 MNA solver, circuit model I/O, matrix stampers, and control calculators
 
-    [:octicons-arrow-right-24: Documentation](remote-interface.md)
-
--   :material-api:{ .lg .middle } **[REST API](rest-api.md)** (Planned)
+-   :material-api:{ .lg .middle } **[REST & WebSocket API (`gecko-rest-api`)](rest-api.md)**
 
     ---
 
-    HTTP-based API for web integration and automation (designed, implementation pending)
+    Spring Boot 4.1.1 HTTP, SSE, and STOMP WebSocket API under `/gecko` (`Swagger UI` at `/gecko/swagger-ui.html`)
 
-    [:octicons-arrow-right-24: Documentation](rest-api.md)
-
--   :material-script:{ .lg .middle } **[GeckoSCRIPT](geckoscript-ref.md)**
+-   :material-robot:{ .lg .middle } **[MCP Server (`gecko-mcp`) & `geckopy`](../mcp.md)**
 
     ---
 
-    Built-in scripting language for automation
+    16 JSON-RPC 2.0 stdio tools for LLM assistants plus the repository Python SDK (`geckopy`)
 
-    [:octicons-arrow-right-24: Reference](geckoscript-ref.md)
+-   :material-archive:{ .lg .middle } **[Legacy RMI & GeckoSCRIPT](remote-interface.md)**
+
+    ---
+
+    Retirement notices for Classic Swing RMI (`GeckoRemoteInterface`) and GraalVM `GeckoSCRIPT`
 
 </div>
 
-## Interface Comparison
+## Quick Comparison
 
-| Feature | Remote (RMI) | REST API* | GeckoSCRIPT |
-|---------|--------------|----------|-------------|
-| Language | Java/MATLAB | Any | Built-in |
-| Real-time | Yes | No | Yes |
-| Network | Local/Remote | HTTP | Local |
-| Complexity | Medium | Low | Low |
-| Best for | MATLAB integration | Web apps | Quick automation |
+| Interface | Module / Location | Protocol | Best For |
+|-----------|-------------------|----------|----------|
+| **Core Java API** | `backend/gecko-simulation-core` | In-process JVM | Embedding solver in Java applications or tests |
+| **REST + WebSocket API** | `backend/gecko-rest-api` | HTTP / SSE / STOMP WS | Web UI, CI pipelines, MATLAB, remote clients |
+| **MCP + `geckopy` SDK** | `backend/gecko-mcp`, `geckopy/` | JSON-RPC 2.0 stdio | Python automation, SciPy sweeps, LLM coding agents |
+| **NativeC FFM Blocks** | `gecko_c_block.h` | C ABI (`java.lang.foreign`) | Firmware-in-the-loop C/C++ shared libraries |
 
-* REST API is currently in design phase, implementation is pending.
+## Quick Examples
 
-## Quick Start
+### Python via REST API (`requests`)
 
-### GeckoSCRIPT (Built-in)
-
-```javascript
-// Parameter sweep example
-for (D = 0.2; D <= 0.8; D += 0.1) {
-    setParameter("PWM.1", "dutyCycle", D);
-    runSimulation();
-    Vout = getMeasurement("SCOPE.1", "ch1_avg");
-    print("D=" + D + ", Vout=" + Vout);
-}
-```
-
-### MATLAB (RMI)
-
-```matlab
-% Connect to GeckoCIRCUITS
-gecko = GeckoRemoteInterface('localhost', 1099);
-
-% Load and run
-gecko.loadCircuit('buck.ipes');
-gecko.setParameter('PWM.1', 'dutyCycle', 0.5);
-gecko.runSimulation();
-vout = gecko.getMeasurement('Vout');
-```
-
-### Python (REST API - Planned)
+Start the REST server (`run-gecko.bat`, `./run-gecko.sh`, or `java -jar backend/gecko-rest-api/target/gecko-rest-api.jar`):
 
 ```python
+import time
 import requests
 
-# Run simulation (when REST API is implemented)
-response = requests.post('http://localhost:8080/api/simulate', json={
-    'circuit': 'buck.ipes',
-    'parameters': {'D': 0.5}
-})
-results = response.json()
-print(f"Vout = {results['Vout']}")
+base = "http://localhost:8080/gecko/api/v1"
+sim = requests.post(f"{base}/simulations", json={
+    "circuitFile": "resources/projects/buck_sampled_50v_to_10v.ipes",
+    "simulationTime": 0.01,
+    "timeStep": 1e-6,
+    "solverType": "backward-euler",
+}).json()
+
+while sim["status"] in ("PENDING", "RUNNING"):
+    time.sleep(0.1)
+    sim = requests.get(f"{base}/simulations/{sim['simulationId']}").json()
+
+results = requests.get(f"{base}/simulations/{sim['simulationId']}/results").json()
 ```
 
-### cURL (REST API - Planned)
+### Python via `geckopy` (MCP SDK)
+
+```python
+import geckopy
+
+ckt = geckopy.open("resources/projects/buck_sampled_50v_to_10v.ipes")
+res = ckt.simulate(duration=0.01, dt=1e-6)
+print(res.metrics)
+```
+
+### cURL
 
 ```bash
-# Get simulation status (when REST API is implemented)
-curl http://localhost:8080/api/status
+curl http://localhost:8080/gecko/api/health
 
-# Run simulation
-curl -X POST http://localhost:8080/api/simulate \
+curl -X POST http://localhost:8080/gecko/api/v1/simulations \
   -H "Content-Type: application/json" \
-  -d '{"circuit": "buck.ipes", "time": 0.01}'
+  -d '{"circuitFile": "tools/parity/circuits/rc-lowpass.ipes", "simulationTime": 0.01, "timeStep": 1e-5}'
 ```
 
-## Core API Methods
+## Related Documentation
 
-### Circuit Control
-
-| Method | Description |
-|--------|-------------|
-| `loadCircuit(path)` | Load circuit file |
-| `saveCircuit(path)` | Save current circuit |
-| `runSimulation()` | Start simulation |
-| `stopSimulation()` | Stop running simulation |
-| `resetSimulation()` | Reset to initial state |
-
-### Parameter Access
-
-| Method | Description |
-|--------|-------------|
-| `setParameter(component, param, value)` | Set component parameter |
-| `getParameter(component, param)` | Get component parameter |
-| `setGlobalParameter(name, value)` | Set global variable |
-
-### Data Retrieval
-
-| Method | Description |
-|--------|-------------|
-| `getMeasurement(scope, channel)` | Get scope measurement |
-| `getWaveform(scope, channel)` | Get time-series data |
-| `exportData(path, format)` | Export to file |
-
-## Related Tutorials
-
-- [GeckoSCRIPT Basics](../tutorials/scripting/geckoscript.md)
-- [MATLAB Integration](../tutorials/scripting/matlab.md)
-- [Python Integration](../tutorials/scripting/python.md)
+- [REST API Reference](rest-api.md)
+- [Core Module Overview](core/index.md)
+- [Python Integration Tutorial](../tutorials/scripting/python.md)
+- [MATLAB Integration Tutorial](../tutorials/scripting/matlab.md)

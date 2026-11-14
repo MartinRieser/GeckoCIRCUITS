@@ -20,7 +20,7 @@ package gecko.core.control;
  * Their output is set once (typically in the constructor or via a setter) and remains
  * constant throughout the simulation.
  *
- * Examples: ConstantCalculator, GateCalculator, ViewMotorCalculator
+ * Examples: ConstantCalculator, GateCalculator
  *
  * @author GeckoCIRCUITS Team
  */

@@ -99,7 +99,7 @@ Run once per release, per OS, on a machine **without Java installed**
 | 7 | *Save* shows a native dialog; the written file re-opens correctly | ✅ |
 | 8 | Quitting the app leaves **no** `java` process behind | ✅ |
 | 9 | Killing the app via task manager → engine exits within ~10 s | ✅ |
-| 10 | `gecko-mcp` launcher registers 13 tools in an LLM client (see [MCP](mcp.md)) | ✅ |
+| 10 | `gecko-mcp` launcher registers 16 tools in an LLM client (see [MCP](mcp.md)) | ✅ |
 | 11 | Uninstall removes files and the file association (Windows) | Win only |
 
 Log failures against the engine log (below) — it contains the engine's full
@@ -107,7 +107,7 @@ stdout/stderr including the `GECKO_READY` handshake line.
 
 ## Troubleshooting
 
-**Where are the engine logs?** `<app log dir>/logs/engine/engine.log`:
+**Where are the engine logs?** Inside `<app log dir>/engine/` (`engine.log` for the launcher and rolling `rest-api.log` for the Spring Boot server):
 
 - Windows: `%LOCALAPPDATA%\com.geckocircuits.desktop\logs\engine\`
 - macOS: `~/Library/Logs/com.geckocircuits.desktop/logs/engine/`
@@ -125,4 +125,4 @@ code-signed yet; choose *More info → Run anyway* (Windows) or right-click →
 
 **App starts but the editor shows a startup error screen** — the shell is
 running but the engine never became healthy. The screen appears after the
-60 s health-timeout; check the engine log.
+90 s health-timeout; check `engine.log` and `rest-api.log`.

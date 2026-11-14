@@ -622,7 +622,6 @@ export function SimulationPropertiesPanel({
               })}
             </div>
 
-            {/* Cursors & Measurements (The ONE Location!) */}
             <div className="sim-sub-heading" style={{ marginTop: 12 }}>Cursors & Measurement</div>
             <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
               <button
@@ -684,7 +683,6 @@ export function SimulationPropertiesPanel({
                   💡 Drag [A] / [B] handles on plot, or click plot to position active cursor.
                 </div>
 
-                {/* THE SINGLE LOCATION FOR CURSOR MEASUREMENTS */}
                 {scope.cursorMeasurements && (
                   <div className="sim-cursor-card">
                     <div className="sim-cursor-time-grid">

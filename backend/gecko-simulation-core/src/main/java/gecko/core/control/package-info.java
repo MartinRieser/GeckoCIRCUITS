@@ -1,34 +1,22 @@
-/*  This file is part of GeckoCIRCUITS. Copyright (C) ETH Zurich, Gecko-Simulations GmbH
+/*  This file is part of GeckoCIRCUITS. Copyright (C) ETH Zurich, Gecko-Simulations AG
  *
  *  GeckoCIRCUITS is free software: you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free Software
  *  Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  GeckoCIRCUITS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ *  GeckoCIRCUITS. If not, see <http://www.gnu.org/licenses/>.
  */
-
 /**
- * Control system block calculators - signal processing algorithms.
- * 
- * <p>This package contains the pure calculation logic for control system blocks,
- * separated from the GUI display and editing classes that remain in the
- * desktop module.</p>
- * 
- * <h2>Sub-packages</h2>
- * <ul>
- *   <li>{@code calculators/} - 71 GUI-free calculator classes</li>
- * </ul>
- * 
- * <h2>Calculator Types</h2>
- * <ul>
- *   <li><strong>Signal Generation</strong> - Sine, square, triangle, noise</li>
- *   <li><strong>Signal Processing</strong> - RMS, THD, FFT, harmonics</li>
- *   <li><strong>Mathematical</strong> - Add, multiply, integrate, differentiate</li>
- *   <li><strong>Control</strong> - PID, transfer functions, state-space</li>
- *   <li><strong>Logic</strong> - AND, OR, comparators, flip-flops</li>
- * </ul>
- * 
- * <h2>Coverage Target: 85%</h2>
- * <p>Current: 41% - Major opportunity for improvement</p>
- * 
- * @since 2.0
+ * GUI-free control block infrastructure and calculators.
+ *
+ * <p>Provides pure numerical control calculators (logic, arithmetic, PID/PI/PD/PT1/PT2,
+ * signal sources, scripting, and motor control blocks) and the wiring builder
+ * ({@link gecko.core.control.ControlCalculatorBuilder}) used by {@code ControlNetlist}
+ * in headless simulations.
  */
 package gecko.core.control;

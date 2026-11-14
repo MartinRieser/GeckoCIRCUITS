@@ -1,449 +1,122 @@
 # Architecture Document
 
 **Project:** GeckoCIRCUITS
-**Last Updated:** 2026-02-22
-**Status:** Dual-track architecture (Desktop + REST API v3.0.0) — 32 endpoints, 7,434 tests
+**Runtime Stack:** Java 25, Spring Boot 4.1.1, React + TypeScript, Tauri 2 (Rust), MCP SDK, Python (`geckopy`)
 
 ---
 
 ## 1. System Overview
 
-GeckoCIRCUITS is a multi-domain circuit simulator built in Java 25. The architecture follows a dual-track approach: maintaining the mature Swing desktop application while extracting a GUI-free simulation core for headless/API use.
+GeckoCIRCUITS is an open-source multi-domain power electronics simulator (electrical, thermal, magnetic, mechanical, and control domains). All simulation logic lives in a GUI-free Java 25 core library shared identically across the web/desktop editor, the HTTP REST/WebSocket API, the Model Context Protocol (MCP) server, Python automation (`geckopy`), and the headless CLI.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    GeckoCIRCUITS System                       │
-│                                                               │
-│  ┌──────────────────┐  ┌──────────────┐  ┌───────────────┐  │
-│  │  Desktop App     │  │  REST API    │  │  Documentation│  │
-│  │  (Swing GUI)     │  │  (Spring)    │  │  (MkDocs)     │  │
-│  │  PRODUCTION      │  │  v3.0.0 LIVE │  │  LIVE         │  │
-│  └────────┬─────────┘  └──────┬───────┘  └───────────────┘  │
-│           │                   │                               │
-│  ┌────────▼───────────────────▼──────────────────────────┐   │
-│  │            gecko-simulation-core                        │   │
-│  │            (GUI-free shared library)                    │   │
-│  │            216 classes, 1,837 tests, 30%+ coverage     │   │
-│  └────────────────────────────────────────────────────────┘   │
-└───────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          GeckoCIRCUITS Platform                         │
+│                                                                         │
+│  ┌──────────────────────┐  ┌────────────────────┐  ┌─────────────────┐  │
+│  │  React + TypeScript  │  │  REST / WebSocket  │  │  MCP Server &   │  │
+│  │  Editor (`frontend/`)│  │  (`gecko-rest-api`)│  │  `geckopy` SDK  │  │
+│  │  & Tauri (`desktop/`)│  │  Spring Boot 4.1.1 │  │  (`gecko-mcp`)  │  │
+│  └──────────┬───────────┘  └─────────┬──────────┘  └────────┬────────┘  │
+│             └────────────────────────┼──────────────────────┘           │
+│                                      ▼                                  │
+│                     ┌──────────────────────────────────┐                │
+│                     │     `gecko-simulation-core`      │                │
+│                     │  GUI-free Java 25 MNA Engine     │                │
+│                     └──────────────────────────────────┘                │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-## 2. Module Structure
+---
 
-### 2.1 Multi-Module Build (`pom.xml`)
+## 2. Repository & Module Structure
 
 ```
-gecko/
-├── pom.xml                          # Parent build (all modules)
+GeckoCIRCUITS/
+├── pom.xml                          # Maven multi-module reactor
 ├── backend/
-│   ├── gecko-simulation-core/       # GUI-free simulation engine
-│   │   ├── pom.xml
-│   │   └── src/main/java/gecko/core/
-│   │       ├── circuit/             # Component cores, matrix, netlist, simulation
-│   │       ├── control/calculators/ # 64 calculator classes (PI, PID, gain, etc.)
-│   │       ├── datacontainer/       # Signal storage (11 classes)
-│   │       ├── math/               # Matrix operations, LU decomposition
-│   │       └── api/                # Public interfaces
-│   ├── gecko-rest-api/              # Spring Boot REST API (v3.0.0, 32 endpoints)
-│   │   ├── pom.xml                  # Spring Boot 3.2.1, WebSocket, Security
-│   │   └── src/
-│   └── gecko-mcp/                   # Native Model Context Protocol (MCP) server
-│       ├── pom.xml
-│       └── src/
+│   ├── gecko-simulation-core/       # 196 Java classes: MNA engine, .ipes I/O, DRC, NativeC, calculators
+│   ├── gecko-rest-api/              # 59 Java classes: Spring Boot 4.1.1 REST, SSE, STOMP WebSocket, embedded UI
+│   └── gecko-mcp/                   # 18 Java classes: stdio MCP JSON-RPC 2.0 server (16 tools) + SVG exporter
+├── frontend/                        # 50 TS/TSX files: React 19 schematic editor, scope plots, FFT, loss view
+├── desktop/                         # 10 Rust files: Tauri 2 desktop shell (`gecko-desktop`) + `gecko-engine` crate
+├── geckopy/                         # Python SDK wrapping gecko-mcp (`Circuit`, `SimulationResult`, `Metrics`)
+├── examples/                        # Bundled quick-open example circuits + manifest.json
+├── resources/                       # Tutorials, application examples, reference projects, newsletters
+├── tools/parity/                    # Parity verification scripts and reference fixtures
+├── scripts/                         # Dev launchers (`run-gecko.*`), desktop bundlers, verification scripts
+├── docker/                          # Multi-stage Alpine JRE 25 Dockerfile & compose config
+└── docs/                            # MkDocs Material documentation source
 ```
 
-### 2.2 Main Application (832 files)
+---
 
-```
-src/main/java/gecko/
-├── GeckoSim.java                    # Entry point, mode selection
-├── geckocircuits/
-│   ├── allg/                        # Global settings, file management, dialogs
-│   ├── circuit/                     # Circuit components, terminals, netlist, matrix
-│   │   ├── matrix/                  # MNA matrix stampers (15 classes, 85% coverage)
-│   │   ├── netlist/                 # Netlist building (4 classes, 99% coverage)
-│   │   ├── simulation/             # Simulation engine (5 classes, 97% coverage)
-│   │   ├── losscalculation/        # Loss models (9 classes)
-│   │   └── ...                     # Component editors, terminals
-│   ├── control/                     # Control blocks
-│   │   ├── calculators/            # 64+ calculator classes (GUI-free)
-│   │   └── ...                     # Control panels, Java blocks
-│   ├── datacontainer/              # Signal storage, caching
-│   ├── math/                       # Matrix ops, FFT, LU decomposition
-│   ├── newscope/                   # Oscilloscope visualization
-│   └── scope/                      # Legacy scope
-├── i18n/                           # Internationalization (968+ keys)
-└── expressionscripting/            # GraalVM JavaScript evaluation
-```
-
-## 3. Core Simulation Engine
+## 3. Core Simulation Engine (`gecko-simulation-core`)
 
 ### 3.1 Simulation Flow
 
 ```
-.ipes file → Parser → Circuit Model → Netlist → MNA Matrix → Solver → Results
-                                          │
-                                    ┌─────▼─────┐
-                                    │ Stampers   │
-                                    │ (R, L, C,  │
-                                    │  switches) │
-                                    └────────────┘
+.ipes file ──► CircuitFileParser ──► CircuitModel ──► NetlistBuilder ──► MNA MatrixSolver ──► DataContainerGlobal
+                                                             │
+                                                       StamperRegistry
+                                                 (R, L, C, Diode, IGBT, MOSFET, ...)
 ```
 
-1. **Parser**: Reads gzip-compressed `.ipes` XML circuit files
-2. **Netlist Builder**: Converts schematic to node/branch representation
-3. **MNA Stampers**: Each component stamps its contribution into the system matrix
-4. **Solver**: Backward Euler (BE), Trapezoidal (TRZ), or Gear-Shichman (GS) integration
-5. **Results**: Time-domain waveforms stored in `DataContainer` classes
+1. **Parser (`gecko.core.io.CircuitFileParser`)**: Reads plain UTF-8 `.ipes` circuit files (plus gzip-compressed `.ipes` archives).
+2. **Design Rule Check (`CircuitValidator`)**: Verifies ground references, short circuits, floating terminals, and control-block syntax/libraries.
+3. **Netlist & MNA Stampers (`gecko.core.circuit.netlist`, `gecko.core.circuit.matrix`)**: `IMatrixStamper` and `IStatefulStamper` implementations stamp conductances/sources into `MatrixAccumulator` and track switching transitions.
+4. **Solvers (`gecko.core.simulation.solver`)**: Backward Euler (`SOLVER_BE`), Trapezoidal (`SOLVER_TRZ`), and Gear-Shichman (`SOLVER_GS`), plus `ZeroCrossingDetector` and multi-domain coupling (`DomainCoupler`).
+5. **Control & Firmware Blocks**:
+   - **74 calculator classes** under `gecko.core.control.calculators` implementing `AbstractControlCalculatable`.
+   - **Script Block (`typ 61`)**: Pure-Java per-step script evaluator (`ScriptBlockCalculator`).
+   - **NativeC Block (`typ 88`)**: Loads user-compiled C/C++ shared libraries via JDK 25 FFM (`CLibraryCalculator`, `gecko_c_block.h`).
 
-### 3.2 Key Interfaces
+### 3.2 GUI-Free Enforcer Boundary
 
-```java
-// Circuit component stamping (Modified Nodal Analysis)
-IMatrixStamper {
-    stampMatrixA(double[][] a, ...)    // Stamp conductance matrix
-    stampVectorB(double[] b, ...)      // Stamp source vector
-    calculateCurrent(...)              // Post-solve current calculation
-    getAdmittanceWeight(...)           // Diagonal weight for convergence
-}
-
-// Solver configuration
-SolverContext {
-    SOLVER_BE = 0   // Backward Euler (default)
-    SOLVER_TRZ = 1  // Trapezoidal (more accurate)
-    SOLVER_GS = 2   // Gear-Shichman (stiff systems)
-}
-
-// Component registry (Strategy pattern)
-StamperRegistry.getStamper(CircuitTyp) → IMatrixStamper
-```
-
-### 3.3 Operating Modes
-
-Defined in `OperatingMode` enum, selected at startup:
-
-| Mode | Description | Interface |
-|------|-------------|-----------|
-| STANDALONE | Desktop GUI (default) | Swing |
-| REMOTE | RMI server for MATLAB/Octave | `GeckoRemoteInterface` |
-| MMF | Memory-mapped file communication | `GeckoCustomMMF` |
-| SIMULINK | Direct Simulink integration | S-Function bridge |
-| EXTERNAL | External tool integration | Custom protocol |
-
-## 4. GUI-Free Boundary
-
-### 4.1 Validated Packages (216 classes in core module)
-
-Enforced by `CorePackageValidationTest` - build fails if GUI imports detected:
-
-| Package | Classes | Tests | Status |
-|---------|---------|-------|--------|
-| `circuit` (top-level) | 15 | 72+ | API-ready (TokenMap, ComponentIdentifiable, etc.) |
-| `circuit.matrix` | 14 | 183 | API-ready |
-| `circuit.netlist` | 6 | 89+ | API-ready (CircuitNetlist, NetlistBuilder, label-based topology) |
-| `circuit.calculator` | 8 | — | API-ready |
-| `circuit.waveform` | 2 | — | API-ready |
-| `circuit.terminal` | 3 | 138 | API-ready |
-| `circuit.component` | 3 | 206 | API-ready |
-| `circuit.losscalculation` | 14 | 180+ | API-ready |
-| `circuit.circuitcomponents` | 1 | — | API-ready |
-| `simulation` | 8 | 360+ | API-ready (HeadlessSimulationEngine, DomainCoupler, SimulationProgress) |
-| `simulation.solver` | 3 | 360+ | API-ready (MatrixSolver, ComponentCurrentCalculator, InitialConditionSolver) |
-| `control` | 6 | — | API-ready |
-| `control.calculators` | 72 | ~320 | API-ready (2 GUI exceptions) |
-| `datacontainer` | 23 | ~180 | API-ready |
-| `math` | 8 | 97 | API-ready |
-| `io` | 4 | 33+ | API-ready (CircuitFileParser, CircuitModel, ParameterOverrideApplicator, SerializationUtils) |
-| `allg` | 10 | 90+ | API-ready (GeckoFile, UserParameterCore, SolverType, etc.) |
-| `signal` | 3 | 29 | API-ready (CharacteristicsCalculator, FourierGUIless, Cispr16Fft) |
-| `nativec` | 7 | 46 | API-ready (JNI integration) |
-| `i18n` | 1 | 17 | API-ready (SelectableLanguages) |
-| `api` | 1 | — | Public interfaces |
-
-### 4.2 GUI Decoupling Pattern
-
-For packages that mix computation and GUI classes, the project uses **interface injection** to decouple computation code from GUI singletons:
-
-```
-┌──────────────────────────┐     ┌─────────────────────────────┐
-│ VerlustBerechnungDetailed │────►│ LossFileAccessor (interface)│
-│ (computation, GUI-free)   │     ├─────────────────────────────┤
-└──────────────────────────┘     │ getFile(hash)               │
-                                  │ maintain(file)              │
-    ┌─────────────────────────┐   │ addFile(file)               │
-    │ MainWindowLossFileAccessor│  │ getOpenFileName()           │
-    │ (GUI adapter)            │──►│ getFilesByExtension(ext)    │
-    │ delegates to MainWindow  │   └─────────────────────────────┘
-    └─────────────────────────┘
-```
-
-- **Default constructor** chains to `MainWindowLossFileAccessor` (preserves all existing callers)
-- **Injectable constructor** accepts any `LossFileAccessor` (enables headless testing with mocks)
-- Pattern is replicable for other classes with `MainWindow` static dependencies
-
-**GeckoFile Pattern (External Storage):**
-```
-┌──────────────────────────┐     ┌──────────────────────────────────┐
-│ GeckoFile                 │────►│ ExternalStorageConverter (interface)│
-│ (file handling, GUI-free) │     ├──────────────────────────────────┤
-└──────────────────────────┘     │ promptForExternalPath()          │
-                                  └──────────────────────────────────┘
-                                                 ▲
-                                                 │
-                                     (Reflection fallback to GUI
-                                   DialogMakeExternal at runtime)
-```
-
-- **Default constructor** uses reflection fallback to GUI dialog (preserves backward compatibility)
-- **Injectable constructor** accepts `ExternalStorageConverter` (enables headless/API use)
-- **ComponentIdentifiable interface** abstracts component identification for deserialization
-
-### 4.3 Prohibited Imports in Core
-
-```
-java.awt.*
-javax.swing.*
-java.awt.event.*
-javax.swing.event.*
-java.applet.*
-```
-
-### 4.4 Extraction Status
-
-```
-gecko-simulation-core (216 classes extracted):
-  ├── circuit/              49 classes
-  │   ├── (top-level)      15 classes (TokenMap, ComponentIdentifiable, ConnectorType, etc.)
-  │   ├── matrix/          14 classes (MNA stampers)
-  │   ├── netlist/         6 classes (CircuitNetlist, NetlistBuilder, label-based topology)
-  │   ├── calculator/      8 classes
-  │   ├── waveform/        2 classes
-  │   ├── terminal/        3 classes (ConnectionPath, ConnectionValidator, ITerminalPosition)
-  │   ├── component/       3 classes (ParameterRegistry, ParameterSerializer, TerminalRegistry)
-  │   ├── losscalculation/ 14 classes (loss curves, interpolation, calculators)
-  │   └── circuitcomponents/ 1 class
-  ├── simulation/          11 classes
-  │   ├── (top-level)      8 classes (HeadlessSimulationEngine, DomainCoupler, SimulationProgress, etc.)
-  │   └── solver/          3 classes (MatrixSolver, ComponentCurrentCalculator, InitialConditionSolver)
-  ├── control/             78 classes
-  │   ├── (top-level)      6 classes
-  │   └── calculators/     72 calculators (PI, PID, gain, limit, integrators, etc.)
-  ├── datacontainer/       23 classes (signal storage, caching)
-  ├── math/                8 classes (matrix ops, LU decomposition, FFT)
-  ├── nativec/             7 classes (Native C/C++ integration via JNI)
-  ├── signal/              3 classes (CharacteristicsCalculator, FourierGUIless, Cispr16Fft)
-  ├── io/                  4 classes (CircuitFileParser, CircuitModel, ParameterOverrideApplicator, SerializationUtils)
-  ├── i18n/                1 class (SelectableLanguages - 43 supported languages)
-  ├── api/                 1 class (public interfaces)
-  ├── allg/                10 classes (GeckoFile, UserParameterCore, SolverType, OperatingMode, etc.)
-  └── (top-level)          4 classes (GeckoRuntimeException, GeckoInvalidArgumentException, GeckoHeadless, package-info)
-
-Tests (80 test files, 1,837 tests):
-  ├── simulation/          6 test files (360+ tests)
-  ├── simulation/solver/   3 test files
-  ├── circuit/losscalculation/ 17 test files (180+ tests)
-  ├── circuit/netlist/     3 test files
-  ├── circuit/terminal/    3 test files (138 tests)
-  ├── circuit/component/   3 test files (206 tests)
-  ├── circuit/             1 test file (TokenMap)
-  ├── datacontainer/       18 test files
-  ├── math/                7 test files
-  ├── nativec/             5 test files (46 tests)
-  ├── allg/                4 test files (90+ tests)
-  ├── io/                  3 test files (33+ tests)
-  ├── signal/              3 test files (29 tests)
-  ├── control/calculators/ 1 test file
-  ├── i18n/                1 test file (17 tests)
-  ├── benchmark/           1 test file
-  └── core/                1 test file (8 tests - GeckoRuntimeException)
-```
-
-## 5. Documentation Architecture
-
-### 5.1 Content Pipeline
-
-```
-resources/                          docs/                      GitHub Pages
-├── tutorials/                      ├── getting-started/       (gh-pages branch)
-│   ├── 1xx_getting_started/  ──►   ├── tutorials/
-│   ├── 2xx_dcdc_converters/  ──►   │   ├── dcdc/
-│   ├── 6xx_emi_emc/          ──►   │   ├── emi/
-│   └── ...                         │   └── ...
-├── examples/                 ──►   ├── examples/
-├── articles/                 ──►   ├── articles/
-│   ├── *.md                        │   ├── *.md (sanitized names)
-│   ├── img/                        │   ├── img/ (copied)
-│   └── ipes_files/                 │   └── ipes_files/ (copied)
-└── README.md files                 └── api/core/ (generated)
-
-Scripts:
-  sync-docs.py           → Copies resources/ to docs/, converts links
-  generate-api-docs.py   → Extracts Javadoc from core module to docs/api/
-```
-
-### 5.2 Hand-Maintained Pages
-
-These files are NOT overwritten by `sync-docs.py` (path convention mismatch):
-- `docs/tutorials/index.md` - Tutorial landing page with correct docs paths
-- `docs/examples/index.md` - Examples landing page with correct docs paths
-
-## 6. External Integration
-
-### 6.1 RMI (Remote Method Invocation)
-- `GeckoRemoteInterface` exposes simulation control to MATLAB/Octave
-- `GeckoRemoteRegistry` manages RMI registry lifecycle
-- Validated by `GeckoRemoteTest` (interface consistency checks)
-
-### 6.2 Memory-Mapped Files
-- `GeckoCustomMMF` enables high-performance data exchange
-- Used for Simulink co-simulation with minimal latency
-
-### 6.3 REST API (v3.0.0 — 32 Live Endpoints)
-
-**Loss Calculation (3 endpoints):**
-```
-POST   /api/v1/loss/switching                Switching loss (voltage/energy scaling)
-POST   /api/v1/loss/conduction               Conduction loss (resistance model)
-POST   /api/v1/loss/detailed                 Detailed loss (temperature interpolation)
-```
-
-**Circuit File Operations (9 endpoints):**
-```
-POST   /api/v1/circuits/parse                Upload and parse .ipes files (multipart/JSON base64)
-GET    /api/v1/circuits                      List all loaded circuits
-GET    /api/v1/circuits/{id}/info            Circuit metadata (simulation params, counts)
-GET    /api/v1/circuits/{id}/components      List all components with parameters
-GET    /api/v1/circuits/{id}/validate        Validate circuit structure
-GET    /api/v1/circuits/{id}/raw             Get raw (decompressed) circuit content
-POST   /api/v1/circuits/{id}/clone           Deep-copy with optional parameter overrides
-PUT    /api/v1/circuits/{id}/parameters      Partial update (duration/timeStep/solverType)
-DELETE /api/v1/circuits/{id}                 Remove circuit from memory
-```
-
-**Simulation Control (13 endpoints, incl. WebSocket):**
-```
-POST   /api/v1/simulations                              Submit simulation (returns UUID)
-GET    /api/v1/simulations                              List all simulations (optional status filter)
-GET    /api/v1/simulations/{id}                         Get status, progress, results
-GET    /api/v1/simulations/{id}/results                 Get all result waveforms
-GET    /api/v1/simulations/{id}/results/{signalName}    Get specific signal data
-GET    /api/v1/simulations/{id}/progress                Get progress percentage
-GET    /api/v1/simulations/{id}/stream                  SSE real-time progress (text/event-stream)
-GET    /api/v1/simulations/{id}/ws-info                 WebSocket subscribe info
-POST   /api/v1/simulations/{id}/export                  Export results as CSV
-DELETE /api/v1/simulations/{id}                         Cancel simulation
-POST   /api/v1/simulations/batch                        Batch simulation (linearSweep/logSweep/explicit)
-GET    /api/v1/simulations/batch/{batchId}              Batch status (per-simulation states, progress)
-DELETE /api/v1/simulations/batch/{batchId}              Cancel entire batch
-```
-
-**Signal Analysis (3 endpoints):**
-```
-POST   /api/v1/analysis/characteristics      RMS, THD, AVG, min/max, ripple, shape factor
-POST   /api/v1/analysis/fourier              FFT harmonics (an, bn, cn, phase)
-POST   /api/v1/analysis/rms                  Quick RMS value computation
-```
-
-**Health/Info (3 endpoints):**
-```
-GET    /api/health                           Health check (status + version)
-GET    /api/info                             API information (metadata)
-GET    /api/docs                             Documentation links (Swagger UI)
-```
-
-**WebSocket (STOMP):**
-```
-WS     /ws                   STOMP endpoint (SockJS fallback)
-WS     /ws-raw               STOMP endpoint (raw WebSocket)
-TOPIC  /topic/simulations/{id}  Real-time simulation progress
-```
-
-**Authentication:**
-- `X-API-Key` header; `gecko.api.auth-enabled=false` by default
-- `gecko.api.keys=key1,key2` in application.properties to enable
-
-**Implementation Details:**
-- Real MNA solver backend: CircuitNetlist → MatrixSolver → DomainCoupler → HeadlessSimulationEngine
-- Component parameter parsing: space-separated (real .ipes) + slash-separated (legacy) formats
-- OpenAPI/Swagger documentation at http://localhost:8080/swagger-ui.html
-- Jakarta Bean Validation for request parameters
-- 224 tests passing
-
-**Docker Support:**
-- Multi-stage Dockerfile using Alpine JRE 25 (~180MB image)
-- `docker-compose.yml` for local development
-- Production-ready for cloud deployment (AWS ECS, Kubernetes, Cloud Run)
-
-## 7. Build & CI Pipeline
-
-### 7.1 Build Commands
-```bash
-mvn clean package -DskipTests              # All modules + fat JAR (shade plugin)
-mvn test                # All modules (reactor)
-mvn clean test jacoco:report               # Coverage report
-mvn clean package -Pdist-all -DskipTests   # Platform distributions
-mkdocs build --strict                      # Docs site (catches broken links)
-mkdocs gh-deploy --force                   # Deploy to GitHub Pages
-```
-
-### 7.2 Quality Gates
-- JaCoCo: 30%+ instruction coverage on gecko-simulation-core (`mvn verify`)
-- CorePackageValidationTest: No GUI imports in core
-- MkDocs strict mode: No broken internal links
-- SpotBugs: 0 bugs (204 inline `@SuppressFBWarnings` annotations)
-- PMD: Custom ruleset `pmd-ruleset.xml` (quickstart rules, 10 excluded rules, allowCommentedBlocks, excludes `com/intel/mkl/`), **496 violations** ✅ **<500 TARGET ACHIEVED** (code-style only, down 86% from original 3,443 after systematic cleanup: 327 violations fixed, 6 categories eliminated to 0, 116 false positives excluded)
-- Checkstyle: Custom config `checkstyle.xml` (150-char lines, relaxed naming), 4,632 violations
-
-### 7.3 Release Automation
-GitHub Actions workflows automate the release and CI process:
-- **`desktop.yml`** - Automated Tauri 2 desktop application matrix build (Windows NSIS/MSI, macOS DMG, Linux DEB/RPM/AppImage) with bundled Java sidecar runtime and MCP server.
-- **`ci.yml`** - Pull request and main branch automated test verification across `gecko-simulation-core`, `gecko-rest-api`, and `gecko-mcp`.
-- **`docs.yml`** - Documentation deployment to GitHub Pages via MkDocs Material.
-
-**Distribution Packages:**
-- Windows: `GeckoCIRCUITS_<version>_x64-setup.exe` (NSIS) and `.msi`
-- macOS: `GeckoCIRCUITS_<version>_x64.dmg` / `_aarch64.dmg`
-- Linux: `gecko-circuits_<version>_amd64.deb`, `*.rpm`, `*.AppImage`
-- Zero-install launcher (from source): `run-gecko.bat` (Windows) / `run-gecko.sh` (Linux/macOS)
-
-For detailed release planning, version strategy, and issue tracking, see [Roadmap](roadmap.md).
-
-## 8. Key Dependencies
-
-| Dependency | Version | Purpose |
-|------------|---------|---------|
-| GraalVM Polyglot | 24.1.1 | JavaScript scripting (GeckoSCRIPT) |
-| JTransforms | 2.4 | FFT operations |
-| Apache Batik | 1.7 | SVG generation |
-| JNA | 5.18.1 | Native library access |
-| Log4j2 | 2.24.3 | Logging |
-| Spring Boot | 3.2.1 | REST API (gecko-rest-api module) |
-| MkDocs Material | latest | Documentation site theme |
-
-## 9. Architecture Roadmap
-
-### Near-Term (v3.1.0)
-- ✅ Complete core module migration (math, datacontainer, matrix, losscalculation, signal)
-- ✅ Implement REST API (32 endpoints: loss calc, circuits, simulation, batch, analysis, WebSocket)
-- ✅ REST API Signal analysis endpoints (FFT, CISPR16, characteristics)
-- ✅ API key authentication (Spring Security)
-- ✅ Maven enforcer prevents GUI leakage into API module
-- 🔄 Rate limiting and request throttling
-- 🔄 JWT token authentication
-- 🔄 Pagination for list endpoints
-- 🔄 WebSocket authentication
-- Apply `UserParameterCore` pattern to other GUI-coupled computation classes
-
-### Mid-Term
-- Desktop `--rest-server` mode (GUI + API simultaneously)
-- Python SDK for REST API
-- Enhanced Docker deployment (health checks, multi-arch builds)
-
-### Long-Term
-- WebAssembly browser edition (GraalVM Native Image or TeaVM)
-- React/WebGL frontend for browser-based simulation
-- Progressive Web App for offline use
+`backend/gecko-simulation-core/pom.xml` configures `maven-enforcer-plugin` to ban GUI framework dependencies (`org.openjfx`, SWT) and enforce >=30% JaCoCo instruction coverage during `mvn verify`.
 
 ---
 
-*This document reflects the current architecture. Updated after each sprint/push.*
+## 4. Application & Integration Surfaces
+
+### 4.1 REST & WebSocket API (`gecko-rest-api`)
+
+Served under servlet context path `/gecko` on port `8080` by default (see [REST API Reference](api/rest-api.md)):
+
+- **Health & OpenAPI**: `/gecko/api/health`, `/gecko/api/info`, `/gecko/api/docs`, `/gecko/swagger-ui.html`, `/gecko/api-docs`
+- **Circuit File & Editing (`/gecko/api/v1/circuits`)**: parse, info, components, validate, raw, ipes export, update, clone, parameter updates, component/wire CRUD, node labels, undo/redo, model snapshot, graph registers, catalog
+- **Built-in Examples (`/gecko/api/v1/examples`)**: list, inspect, save, update, delete
+- **Simulation & Batch Control (`/gecko/api/v1/simulations`)**: async run, status, results, per-signal results, progress, SSE stream, ws-info, CSV export, pause/resume/cancel, debug breakpoints/step/state, batch sweeps
+- **Signal Analysis & Semiconductor Losses (`/gecko/api/v1/analysis`, `/gecko/api/v1/loss`)**: characteristics, Fourier/FFT, RMS, switching/conduction/detailed thermal losses
+- **WebSockets (STOMP)**: `/gecko/ws` (SockJS) and `/gecko/ws-raw` broadcasting progress on `/topic/simulations/{id}` and circuit changes on `/topic/circuits/{circuitId}`
+- **Security**: Optional `X-API-Key` header via `ApiKeyAuthFilter` (`gecko.api.auth-enabled=false` by default)
+
+### 4.2 Web Frontend & Tauri Desktop (`frontend/`, `desktop/`)
+
+- **Browser Mode**: Spring Boot serves the compiled React UI from static classpath resources; in local dev, Vite proxies API/WS calls to port `8080`.
+- **Desktop Mode (`desktop/`)**: Tauri 2 Rust binary spawns `gecko-rest-api.jar` on `127.0.0.1` (`--server.port=0`) using a bundled JDK 25 `jlink` runtime, waits for the `GECKO_READY` stdout handshake, injects `window.__GECKO_BACKEND__`, handles `.ipes` file associations and native save dialogs, and ties engine lifetime via `ParentWatchdog`. See [Desktop Application](desktop-app.md).
+
+### 4.3 MCP Server & Python SDK (`backend/gecko-mcp`, `geckopy/`)
+
+`gecko-mcp.jar` runs headless in-process simulations over MCP JSON-RPC 2.0 stdio with 16 tools covering circuit creation (`pfc`, `llc`, generic netlists), DRC validation, component/script patching, simulation metrics/waveforms, PFC tuning, SVG schematic export, and engine reset. `geckopy/` provides a Python API (`Circuit`, `SimulationResult`, `Metrics`, `Waveforms`) over `gecko-mcp.jar`. See [MCP Interface](mcp.md).
+
+---
+
+## 5. Build, Verification & CI Pipelines
+
+| Pipeline / Check | Command |
+|------------------|---------|
+| **Backend build & tests (JaCoCo >=30%)** | `mvn clean verify` |
+| **Style & static checks (`gecko-mcp`, `gecko-rest-api`)** | `mvn checkstyle:check pmd:check -D"checkstyle.config.location=../../checkstyle.xml" -D"pmd.rulesets=../../pmd-ruleset.xml" -pl backend/gecko-mcp,backend/gecko-rest-api` |
+| **Frontend lint, type-check & unit tests** | `npm --prefix frontend run lint && npx --prefix frontend tsc -p frontend/tsconfig.json --noEmit && npm --prefix frontend test` |
+| **Desktop Rust checks** | `cargo fmt --manifest-path desktop/Cargo.toml --all --check && cargo clippy --manifest-path desktop/Cargo.toml --workspace -- -D warnings && cargo test --manifest-path desktop/Cargo.toml -p gecko-engine` |
+| **Python tooling & `geckopy` tests** | `python -m unittest discover -s tests` |
+| **Documentation build** | `mkdocs build --strict` |
+
+GitHub Actions workflows automate verification and publishing in `.github/workflows/ci.yml`, `.github/workflows/desktop.yml`, and `.github/workflows/docs.yml`.
+
+---
+
+## 6. Historical Note
+
+The legacy Swing desktop UI (`gecko.geckocircuits`), RMI remote control (`GeckoRemoteInterface`), memory-mapped interface, and GraalVM polyglot scripting were retired in v1.0.0 and remain preserved under git tag `classic-v1.0-final`.

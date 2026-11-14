@@ -47,8 +47,6 @@ public final class SchematicSvgRenderer {
     private static final int ORIENT_SOUTH_NORTH = 501;
     /** Orientation code: terminals point West then East (502). */
     private static final int ORIENT_WEST_EAST = 502;
-    /** Orientation code: terminals point North then South (503). */
-    private static final int ORIENT_NORTH_SOUTH = 503;
     /** Orientation code: terminals point East then West (504). */
     private static final int ORIENT_EAST_WEST = 504;
 
@@ -165,7 +163,7 @@ public final class SchematicSvgRenderer {
 
         // Background & subtle grid pattern
         sb.append(String.format(Locale.ROOT, "  <rect width=\"%.1f\" height=\"%.1f\" fill=\"var(--bg)\" />\n", width, height));
-        appendGrid(sb, width, height, grid, dark);
+        appendGrid(sb, width, height, grid);
 
         // Header watermark
         long distinctNets = conns.stream()
@@ -174,7 +172,7 @@ public final class SchematicSvgRenderer {
                 .map(l -> l.startsWith("/") ? l.substring(1) : l)
                 .distinct()
                 .count();
-        appendHeader(sb, title, allComps.size(), distinctNets > 0 ? (int) distinctNets : conns.size(), width, pad);
+        appendHeader(sb, title, allComps.size(), distinctNets > 0 ? (int) distinctNets : conns.size(), pad);
 
         // Domain separator if both Power/Thermal and Control stages exist
         appendDomainSeparator(sb, model, minGy, grid, pad, width, s);
@@ -213,7 +211,7 @@ public final class SchematicSvgRenderer {
                     if (!clean.isBlank() && !clean.equalsIgnoreCase("NIX_NIX_NIX")
                             && renderedBadges.add(domain + ":" + clean)) {
                         double[] anchor = findBestBadgeAnchor(orthoPts, minGx, minGy, grid, pad, s);
-                        renderNetBadge(sb, clean, anchor[0], anchor[1], dark);
+                        renderNetBadge(sb, clean, anchor[0], anchor[1]);
                     }
                 }
             }
@@ -237,7 +235,7 @@ public final class SchematicSvgRenderer {
         // 3. Render Components
         sb.append("  <g class=\"components\">\n");
         for (ComponentData comp : allComps) {
-            renderComponent(sb, comp, minGx, minGy, grid, pad, s, dark);
+            renderComponent(sb, comp, minGx, minGy, grid, pad, s);
         }
         sb.append("  </g>\n");
 
@@ -307,8 +305,8 @@ public final class SchematicSvgRenderer {
             int dx = Integer.compare(x2, x1);
             int dy = Integer.compare(y2, y1);
             if (dx == 0 && dy == 0) continue;
-            int fwdBit = dx > 0 ? DIR_EAST : (dx < 0 ? DIR_WEST : (dy > 0 ? DIR_SOUTH : DIR_NORTH));
-            int revBit = dx > 0 ? DIR_WEST : (dx < 0 ? DIR_EAST : (dy > 0 ? DIR_NORTH : DIR_SOUTH));
+            int fwdBit = dx > 0 ? DIR_EAST : dx < 0 ? DIR_WEST : dy > 0 ? DIR_SOUTH : DIR_NORTH;
+            int revBit = dx > 0 ? DIR_WEST : dx < 0 ? DIR_EAST : dy > 0 ? DIR_NORTH : DIR_SOUTH;
             int cx = x1;
             int cy = y1;
             while (cx != x2 || cy != y2) {
@@ -534,7 +532,7 @@ public final class SchematicSvgRenderer {
         sb.append("  </style>\n");
     }
 
-    private static void appendGrid(StringBuilder sb, double w, double h, double grid, boolean dark) {
+    private static void appendGrid(StringBuilder sb, double w, double h, double grid) {
         sb.append("  <defs>\n");
         sb.append(String.format(Locale.ROOT,
                 "    <pattern id=\"grid\" width=\"%.1f\" height=\"%.1f\" patternUnits=\"userSpaceOnUse\">\n",
@@ -548,7 +546,7 @@ public final class SchematicSvgRenderer {
                 "  <rect width=\"%.1f\" height=\"%.1f\" fill=\"url(#grid)\" />\n", w, h));
     }
 
-    private static void appendHeader(StringBuilder sb, String title, int compCount, int wireCount, double w, double pad) {
+    private static void appendHeader(StringBuilder sb, String title, int compCount, int wireCount, double pad) {
         String t = (title != null && !title.isBlank()) ? title : "GeckoCIRCUITS Schematic";
         sb.append("  <g class=\"header\" opacity=\"0.9\">\n");
         sb.append(String.format(Locale.ROOT,
@@ -560,7 +558,7 @@ public final class SchematicSvgRenderer {
         sb.append("  </g>\n");
     }
 
-    private static void renderNetBadge(StringBuilder sb, String name, double x, double y, boolean dark) {
+    private static void renderNetBadge(StringBuilder sb, String name, double x, double y) {
         double bw = Math.max(26.0, name.length() * 6.2 + 10.0);
         double bh = 14.0;
         sb.append(String.format(Locale.ROOT,
@@ -579,8 +577,7 @@ public final class SchematicSvgRenderer {
             int minGy,
             double grid,
             double pad,
-            double s,
-            boolean dark
+            double s
     ) {
         int[] pos = comp.getPosition();
         if (pos == null || pos.length < 2) return;
@@ -601,7 +598,7 @@ public final class SchematicSvgRenderer {
         if ("CONTROL".equals(family)) {
             sb.append(String.format(Locale.ROOT,
                     "    <g transform=\"translate(%.1f, %.1f)\">\n", cx, cy));
-            renderControlBlock(sb, comp, s, grid, dark);
+            renderControlBlock(sb, comp, s, grid);
             sb.append("    </g>\n");
             renderControlLabels(sb, comp, cx, cy, s);
             return;
@@ -610,15 +607,15 @@ public final class SchematicSvgRenderer {
         sb.append(String.format(Locale.ROOT,
                 "    <g transform=\"translate(%.1f, %.1f) rotate(%.1f)\">\n", cx, cy, rotDeg));
         if ("THERM".equals(family)) {
-            renderThermalComponent(sb, comp, s, dark);
+            renderThermalComponent(sb, comp, s);
         } else {
-            renderPowerComponent(sb, comp, s, dark);
+            renderPowerComponent(sb, comp, s);
         }
         sb.append("    </g>\n");
 
         // Orientation-aware label placement: vertical components place labels to the right
         // of the symbol so text never collides with vertical wire leads.
-        boolean isHorizontal = (orient == 502 || orient == 504);
+        boolean isHorizontal = orient == 502 || orient == 504;
         if (typ == 31 || typ == 32 || typ == 50) {
             sb.append(String.format(Locale.ROOT,
                     "    <text class=\"comp-name\" text-anchor=\"middle\" x=\"%.1f\" y=\"%.1f\">%s</text>\n",
@@ -694,7 +691,7 @@ public final class SchematicSvgRenderer {
         };
     }
 
-    private static void renderPowerComponent(StringBuilder sb, ComponentData comp, double s, boolean dark) {
+    private static void renderPowerComponent(StringBuilder sb, ComponentData comp, double s) {
         int typ = comp.getType();
         double p = 2.0 * DEFAULT_GRID * s; // 2 grid units half-pitch (44px from center to each terminal, 88px total)
 
@@ -879,15 +876,15 @@ public final class SchematicSvgRenderer {
         }
     }
 
-    private static void renderControlBlock(StringBuilder sb, ComponentData comp, double s, double grid, boolean dark) {
+    private static void renderControlBlock(StringBuilder sb, ComponentData comp, double s, double grid) {
         int typ = comp.getType();
         double twoGrid = 2.0 * grid;
 
-        if (typ == 1 || typ == 2 || typ == 1001 || typ == 1002 || typ == 1003) { // Probes
+        if (typ == 1 || typ == 2 || typ == 5 || typ == 1001 || typ == 1002 || typ == 1003) { // Probes & Scope
             // Output pin is at +2 grid units right
             sb.append(String.format(Locale.ROOT, "      <line class=\"wire-control\" x1=\"%.1f\" y1=\"0\" x2=\"%.1f\" y2=\"0\" />\n", 12.0 * s, twoGrid));
             sb.append(String.format(Locale.ROOT, "      <circle class=\"comp-body\" cx=\"0\" cy=\"0\" r=\"%.1f\" fill=\"var(--comp-accent)\" stroke=\"var(--wire-ctrl)\" />\n", 12.0 * s));
-            String badge = (typ == 1 || typ == 1001) ? "V" : ((typ == 2 || typ == 1002) ? "A" : "OSC");
+            String badge = (typ == 1 || typ == 1001) ? "V" : (typ == 2 || typ == 1002) ? "A" : "OSC";
             sb.append(String.format(Locale.ROOT,
                     "      <text font-size=\"10\" font-weight=\"bold\" fill=\"var(--text-main)\" text-anchor=\"middle\" x=\"0\" y=\"3.5\">%s</text>\n", badge));
         } else if (typ == 6 || typ == 1000) { // Gate driver block
@@ -953,25 +950,56 @@ public final class SchematicSvgRenderer {
             case 4, 1004 -> "SIG";
             case 7, 1006 -> "GAIN";
             case 8, 1008 -> "PT1";
-            case 9, 1009 -> "INT";
+            case 9, 1031 -> "PT2";
             case 10, 1007 -> "PI";
-            case 12, 1014 -> "+";
-            case 13, 1015 -> "−";
-            case 14, 1016 -> "×";
-            case 15, 1017 -> "÷";
-            case 16, 1018 -> "|x|";
-            case 17, 1020 -> "SIGN";
-            case 19, 1010 -> "CMP";
-            case 20, 1025 -> "S/H";
-            case 21, 1024 -> "Z⁻¹";
-            case 26, 1023 -> "LIMIT";
-            case 28, 1026 -> "CNT";
-            case 45, 1011 -> "AND";
-            case 46, 1012 -> "OR";
-            case 47, 1013 -> "NOT";
-            case 48, 1027 -> "XOR";
-            case 50, 1022 -> "DT";
-            case 84, 1021 -> "MUX";
+            case 11, 1030 -> "HYS";
+            case 12, 1018 -> "+";
+            case 13, 1017 -> "−";
+            case 14, 1019 -> "×";
+            case 15, 1020 -> "÷";
+            case 18, 1013 -> "NOT";
+            case 19, 1011 -> "AND";
+            case 20, 1012 -> "OR";
+            case 21, 1035 -> "XOR";
+            case 25, 1015 -> "Z⁻¹";
+            case 26, 1033 -> "S/H";
+            case 27, 1021 -> "LIMIT";
+            case 29, 1032 -> "PD";
+            case 32, 1022 -> "|x|";
+            case 33, 1044 -> "ROUND";
+            case 34, 1026 -> "SIN";
+            case 35, 1038 -> "ASIN";
+            case 36, 1027 -> "COS";
+            case 37, 1039 -> "ACOS";
+            case 38, 1040 -> "TAN";
+            case 39, 1041 -> "ATAN";
+            case 40, 1024 -> "EXP";
+            case 41, 1025 -> "LN";
+            case 42, 1042 -> "x²";
+            case 43, 1023 -> "√x";
+            case 44, 1043 -> "xʸ";
+            case 45, 1036 -> ">=";
+            case 46, 1010 -> "CMP";
+            case 47, 1046 -> "==";
+            case 48, 1047 -> "!=";
+            case 49, 1028 -> "MIN";
+            case 50, 1029 -> "MAX";
+            case 51, 1045 -> "SIGN";
+            case 53, 1048 -> "CNT";
+            case 58, 1034 -> "TIME";
+            case 59, 1058 -> "SM";
+            case 61, 1016 -> "SCRIPT";
+            case 63, 1055 -> "SV";
+            case 64, 1009 -> "INT";
+            case 65, 1049 -> "dq";
+            case 66, 1050 -> "abc";
+            case 72, 1051 -> "THYR";
+            case 76, 1052 -> "PMSM";
+            case 77, 1053 -> "SVPWM";
+            case 82, 1056 -> "SDFT";
+            case 84, 1014 -> "MUX";
+            case 85, 1054 -> "DEMUX";
+            case 1037 -> "DT";
             default -> {
                 String upper = comp.getName() != null ? comp.getName().toUpperCase(Locale.ROOT) : "";
                 if (upper.contains("SPWM")) yield "SPWM";
@@ -992,7 +1020,7 @@ public final class SchematicSvgRenderer {
         return c;
     }
 
-    private static void renderThermalComponent(StringBuilder sb, ComponentData comp, double s, boolean dark) {
+    private static void renderThermalComponent(StringBuilder sb, ComponentData comp, double s) {
         int typ = comp.getType();
         double p = 2.0 * DEFAULT_GRID * s;
         if (typ == 50) { // Thermal Ground

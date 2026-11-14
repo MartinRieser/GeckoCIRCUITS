@@ -57,8 +57,6 @@ export interface ScopeChannelManagerProps {
   onSetSignalGraph?: (signalName: string, graphIndex: number) => void;
   /** Callback to auto-group signals by category. */
   onAutoGroupByCategory?: () => void;
-  /** Current UI theme. */
-  theme?: 'dark' | 'light';
   /** Optional circuit components for rich hierarchical tree view and virtual signal discovery. */
   components?: EditorComponent[];
   /** Optional circuit wires for net discovery. */

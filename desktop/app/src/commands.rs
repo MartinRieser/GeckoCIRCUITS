@@ -223,7 +223,7 @@ pub async fn save_file_dialog(
 }
 
 /// Reads a circuit the OS handed to the app (double-click, "Open with",
-/// second-launch argument). Restricted to an existing `.ipes` file.
+/// second-launch argument). Restricted to existing `.ipes` or `.txt` files.
 #[tauri::command]
 pub fn read_ipes_file(path: String) -> Result<circuit_files::OpenIpesFile, String> {
     circuit_files::load_ipes_file(&path)

@@ -54,9 +54,11 @@ public interface IMatrixStamper {
     /**
      * Stamps the component's contribution into the b vector (sources).
      *
-     * For a current source I from node x to y:
-     * - b[x] -= I
-     * - b[y] += I
+     * Entries represent net injected source currents entering each node: for a
+     * source driving current {@code I} from {@code nodeX} to {@code nodeY},
+     * {@code b[nodeX] -= I} and {@code b[nodeY] += I}; {@link CurrentSourceStamper}
+     * uses the {@code nodeY -> nodeX} terminal convention ({@code b[nodeX] += I},
+     * {@code b[nodeY] -= I}).
      *
      * @param b the b vector to stamp into
      * @param nodeX first node index

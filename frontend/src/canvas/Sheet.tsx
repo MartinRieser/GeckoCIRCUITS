@@ -40,7 +40,7 @@ import { analyzeElectricalNets } from './netHighlight';
 import type { Point, EditorComponent, EditorWire } from '../model/types';
 import { ContextMenu } from './ContextMenu';
 import type { ContextMenuTarget } from './ContextMenu';
-import { Orientation, CANVAS_METRICS, LkComponentType } from '../model/constants';
+import { Orientation, CANVAS_METRICS, LkComponentType, SENTINEL_UNSET } from '../model/constants';
 import {
   isMutualCoupler,
   isCoupledInductor,
@@ -91,7 +91,7 @@ export const CURRENT_CLAMP_CURSOR = `url("data:image/svg+xml,%3Csvg xmlns='http:
 export function findNextAvailableNetLabel(wires: EditorWire[], components: EditorComponent[]): string {
   const existingNames = new Set<string>();
   for (const w of wires) {
-    if (w.label && w.label !== 'NIX_NIX_NIX') {
+    if (w.label && w.label !== SENTINEL_UNSET) {
       existingNames.add(w.label.trim().toLowerCase());
     }
   }
@@ -308,10 +308,10 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
   // Hovered component for guideline emphasis
   const [hoveredComponentName, setHoveredComponentName] = useState<string | null>(null);
 
-  // Hovered wire index for whole-net highlighting (Phase 3)
+  // Hovered wire index for whole-net highlighting
   const [hoveredWireIndex, setHoveredWireIndex] = useState<number | null>(null);
 
-  // Electrical net topological analysis (Phase 3 net highlighting)
+  // Electrical net topological analysis for net highlighting
   const netAnalysis = useMemo(
     () => analyzeElectricalNets(state.wires, state.components),
     [state.wires, state.components],
@@ -397,10 +397,10 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
   const resolveControlComponentSignal = useCallback(
     (comp: EditorComponent): string | null => {
       if (isScopeComponent(comp)) return null;
-      const outLbl = comp.outputLabels?.find((l) => l && l.trim() && l.trim() !== 'NIX_NIX_NIX');
+      const outLbl = comp.outputLabels?.find((l) => l && l.trim() && l.trim() !== SENTINEL_UNSET);
       if (outLbl) return outLbl.trim();
       if (isGateDriver(comp)) {
-        const inLbl = comp.inputLabels?.find((l) => l && l.trim() && l.trim() !== 'NIX_NIX_NIX');
+        const inLbl = comp.inputLabels?.find((l) => l && l.trim() && l.trim() !== SENTINEL_UNSET);
         if (inLbl) return inLbl.trim();
       }
       const terms = terminalPositions(comp);
@@ -2028,7 +2028,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                       e.preventDefault();
                       dispatch({ type: 'SELECT_WIRE', index: wire.index });
                       setEditingWireIndex(wire.index);
-                      setEditingWireText(wire.label && wire.label !== 'NIX_NIX_NIX' ? wire.label : '');
+                      setEditingWireText(wire.label && wire.label !== SENTINEL_UNSET ? wire.label : '');
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault();
@@ -3507,10 +3507,10 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                   title="Set Net Label (Double-click wire)"
                   onClick={() => {
                     setEditingWireIndex(selectedWireObj.index);
-                    setEditingWireText(selectedWireObj.label && selectedWireObj.label !== 'NIX_NIX_NIX' ? selectedWireObj.label : '');
+                    setEditingWireText(selectedWireObj.label && selectedWireObj.label !== SENTINEL_UNSET ? selectedWireObj.label : '');
                   }}
                 >
-                  <span>🏷️ {selectedWireObj.label && selectedWireObj.label !== 'NIX_NIX_NIX' ? selectedWireObj.label : 'Label'}</span>
+                  <span>🏷️ {selectedWireObj.label && selectedWireObj.label !== SENTINEL_UNSET ? selectedWireObj.label : 'Label'}</span>
                 </button>
               </>
             )}

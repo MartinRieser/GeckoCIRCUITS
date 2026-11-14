@@ -34,7 +34,7 @@ class CircuitValidatorTest {
     void detectsMissingGroundReference() {
         String content = """
                 ElementLKAnzahl 2
-                
+
                 c (0)
                 <ElementLK>
                 labelAnfangsKnoten[] /node1
@@ -43,7 +43,7 @@ class CircuitValidatorTest {
                 uniqueObjectIdentifier 1001
                 parameter[] 10.0
                 <\\ElementLK>
-                
+
                 c (1)
                 <ElementLK>
                 labelAnfangsKnoten[] /node2
@@ -66,7 +66,7 @@ class CircuitValidatorTest {
     void detectsShortCircuitedComponent() {
         String content = """
                 ElementLKAnzahl 1
-                
+
                 c (0)
                 <ElementLK>
                 labelAnfangsKnoten[] /0
@@ -90,7 +90,7 @@ class CircuitValidatorTest {
     void detectsDanglingProbeAndGate() {
         String content = """
                 ElementLKAnzahl 1
-                
+
                 c (0)
                 <ElementLK>
                 labelAnfangsKnoten[] /in
@@ -99,9 +99,9 @@ class CircuitValidatorTest {
                 uniqueObjectIdentifier 1001
                 parameter[] 10.0
                 <\\ElementLK>
-                
+
                 ElementCONTROLAnzahl 2
-                
+
                 c (0)
                 <ElementCONTROL>
                 typ 1
@@ -109,7 +109,7 @@ class CircuitValidatorTest {
                 idStringDialog VOLT_DANGLING
                 coupledReferenceID[] 9999
                 <\\ElementCONTROL>
-                
+
                 c (1)
                 <ElementCONTROL>
                 typ 6
@@ -139,7 +139,7 @@ class CircuitValidatorTest {
                 uniqueObjectIdentifier 1001
                 parameter[] 10.0
                 <\\ElementLK>
-                
+
                 ElementCONTROLAnzahl 1
                 c (0)
                 <ElementCONTROL>
@@ -174,7 +174,7 @@ class CircuitValidatorTest {
                 uniqueObjectIdentifier 1001
                 parameter[] 10.0
                 <\\ElementLK>
-                
+
                 ElementTHERMAnzahl 1
                 c (0)
                 <ElementTHERM>
@@ -214,7 +214,7 @@ class CircuitValidatorTest {
                 idStringDialog R1
                 parameter[] 10.0
                 <\\ElementLK>
-                
+
                 verbindungLK (0)
                 <Verbindung>
                 label 0
@@ -238,7 +238,7 @@ class CircuitValidatorTest {
                 c (0)
                 <ElementLK>
                 labelAnfangsKnoten[] /0
-                labelEndKnoten[] 
+                labelEndKnoten[]
                 enabledShorted 1
                 typ 1
                 uniqueObjectIdentifier 1001
@@ -270,7 +270,7 @@ class CircuitValidatorTest {
                 orientierung 503
                 parameter[] 10.0
                 <\\ElementLK>
-                
+
                 verbindungLK (0)
                 <Verbindung>
                 label net_loop
@@ -305,7 +305,7 @@ class CircuitValidatorTest {
                 orientierung 503
                 parameter[] 10.0
                 <\\ElementLK>
-                
+
                 c (1)
                 <ElementLK>
                 labelAnfangsKnoten[] /NIX_NIX_NIX
@@ -358,7 +358,7 @@ class CircuitValidatorTest {
                 orientierung 503
                 parameter[] 10.0
                 <\\ElementLK>
-                
+
                 verbindungLK (0)
                 <Verbindung>
                 label 0
@@ -451,7 +451,7 @@ class CircuitValidatorTest {
                 idStringDialog R1
                 parameter[] 10.0
                 <\\ElementLK>
-                
+
                 c (1)
                 <ElementLK>
                 labelAnfangsKnoten[] /in
@@ -849,8 +849,10 @@ class CircuitValidatorTest {
 
     @Test
     void validatesTutorialCircuitsWithZeroErrors() throws IOException {
-        Path tutorialsDir = Path.of("docs/tutorials");
-        if (!Files.exists(tutorialsDir)) return;
+        Path tutorialsDir = Files.exists(Path.of("docs/tutorials"))
+                ? Path.of("docs/tutorials")
+                : Path.of("../../docs/tutorials");
+        assertTrue(Files.exists(tutorialsDir), "docs/tutorials directory must exist");
 
         try (var stream = Files.walk(tutorialsDir)) {
             List<Path> files = stream.filter(p -> p.toString().endsWith(".ipes")).toList();

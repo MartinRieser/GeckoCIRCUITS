@@ -29,7 +29,7 @@ final class LlcProject {
 
     static String generateIpesText(Params p) throws IOException {
         double rLoad = p.rLoad() != null ? p.rLoad() : Math.pow(p.vOut(), 2) / Math.max(50.0, p.pOut());
-        double cOut = p.cOut() != null ? p.cOut() : (p.pOut() >= 2000.0 ? 2.0e-4 : 2.0e-5);
+        double cOut = p.cOut() != null ? p.cOut() : p.pOut() >= 2000.0 ? 2.0e-4 : 2.0e-5;
         double vCrInit = p.vIn() / 2.0;
         double vOutInit = Math.min(p.vOut(), p.vIn() * 0.5);
 
@@ -69,7 +69,7 @@ final class LlcProject {
         double fRes = 1.0 / (2.0 * Math.PI * Math.sqrt(p.lR() * p.cR()));
         double kFactor = p.lM() / p.lR();
         double z0 = Math.sqrt(p.lR() / p.cR());
-        double rAc = (8.0 / (Math.PI * Math.PI)) * rLoad;
+        double rAc = 8.0 / (Math.PI * Math.PI) * rLoad;
         double qFactor = rAc > 1e-4 ? z0 / rAc : 0.0;
 
         Map<String, Object> result = new LinkedHashMap<>();
@@ -80,18 +80,13 @@ final class LlcProject {
         result.put("output_voltage_volts", p.vOut());
         result.put("output_power_watts", p.pOut());
         result.put("switching_frequency_hz", p.fSw());
-        result.put("resonant_frequency_hz", round(fRes, 1));
-        result.put("inductance_ratio_k", round(kFactor, 2));
-        result.put("characteristic_impedance_ohms", round(z0, 3));
-        result.put("quality_factor_q", round(qFactor, 3));
-        result.put("load_resistance_ohms", round(rLoad, 3));
+        result.put("resonant_frequency_hz", PyFormat.round(fRes, 1));
+        result.put("inductance_ratio_k", PyFormat.round(kFactor, 2));
+        result.put("characteristic_impedance_ohms", PyFormat.round(z0, 3));
+        result.put("quality_factor_q", PyFormat.round(qFactor, 3));
+        result.put("load_resistance_ohms", PyFormat.round(rLoad, 3));
         result.put("duration_seconds", p.duration());
         result.put("time_step_seconds", p.dt());
         return result;
-    }
-
-    private static double round(double value, int decimals) {
-        double scale = Math.pow(10, decimals);
-        return Math.round(value * scale) / scale;
     }
 }

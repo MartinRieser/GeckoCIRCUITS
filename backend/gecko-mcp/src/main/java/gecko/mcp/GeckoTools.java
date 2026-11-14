@@ -10,9 +10,9 @@ import java.util.Map;
 
 /**
  * The GeckoCIRCUITS tool surface. The original ten tools were ported 1:1 from
- * the Python server; the registry has since grown to fourteen with full
- * simulation-config exposure (RunOptions) and signal discovery. Handlers
- * return plain Maps/Lists; the MCP layer serializes them to JSON.
+ * the Python server; the registry has since grown to sixteen with full
+ * simulation-config exposure (RunOptions), SVG export, and signal discovery.
+ * Handlers return plain Maps/Lists; the MCP layer serializes them to JSON.
  */
 final class GeckoTools {
 
@@ -667,7 +667,6 @@ final class GeckoTools {
     }
 
     private static double round(double value, int decimals) {
-        double scale = Math.pow(10, decimals);
-        return Math.round(value * scale) / scale;
+        return PyFormat.round(value, decimals);
     }
 }

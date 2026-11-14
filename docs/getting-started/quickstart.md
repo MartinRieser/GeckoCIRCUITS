@@ -15,7 +15,7 @@ the background.
 
 !!! tip "No install? Run from source"
     From a repository checkout, `run-gecko.bat|.sh` starts the engine and
-    opens the same editor in your browser at `http://localhost:8080`.
+    opens the same editor in your browser at `http://localhost:8080/gecko/`.
 
 ## 2. Open an Example Circuit
 
@@ -49,10 +49,10 @@ The scope view is a full instrument:
 
 | Action | How |
 |--------|-----|
-| Zoom in/out | Mouse wheel (zooms around the cursor) |
-| Pan | Left-click and drag |
-| Fit whole simulation | ⟲ button in the scope toolbar |
-| Measure Δt / frequency | Click to place cursors **A** and **B** |
+| Zoom in/out | Mouse wheel (zooms around cursor) or left-click and drag (2D box zoom) |
+| Pan | Middle-click and drag, or Alt+Left-click and drag |
+| Fit whole simulation | ⟲ button (or `Esc`) in the scope toolbar |
+| Measure Δt / frequency | Click to place cursor **A**, Shift+click or right-click for **B** |
 | Harmonics / THD | **FFT** button (analyzes the visible window) |
 | Export data | **CSV export** in the results drawer |
 
@@ -85,8 +85,8 @@ The **Examples** menu includes ready-to-run circuits:
 | RC Low-Pass Filter | First-order charging curve |
 
 Over 100 application circuits (converters, inverters, PFC, motor drives,
-thermal demos) are in the repository under `resources/tutorials/` and
-`resources/examples/` — open them with **File ▸ Open** or by double-clicking
+thermal and education demos) are in the repository under `resources/`
+and `examples/` — open them with **File ▸ Open** or by double-clicking
 the `.ipes` file.
 
 ## Next Steps

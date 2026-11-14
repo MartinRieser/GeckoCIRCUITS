@@ -1,119 +1,106 @@
-# GeckoCIRCUITS Desktop Packaging Guide
+---
+title: Packaging & Distribution
+description: Building GeckoCIRCUITS desktop installers, headless JARs, and Docker images
+---
 
-This guide explains how GeckoCIRCUITS is packaged as native desktop applications for Windows, macOS, and Linux using JDK's `jpackage` tool and GitHub Actions.
+# Packaging & Distribution
+
+GeckoCIRCUITS ships in three distribution forms:
+
+1. **Desktop application (`desktop/`)** — A Tauri 2 native shell bundling the React frontend, Spring Boot engine (`gecko-rest-api.jar`), MCP server (`gecko-mcp.jar`), and a custom JDK 25 `jlink` runtime. See [Desktop Application](desktop-app.md) for runtime architecture and log locations.
+2. **Standalone JARs (`backend/`)** — Executable Spring Boot REST API and shaded MCP server JARs.
+3. **Docker container (`docker/`)** — Alpine JRE 25 image running the REST API with embedded web UI.
 
 ---
 
-## Overview
+## 1. Desktop Installers (Tauri 2)
 
-GeckoCIRCUITS provides native, self-contained packages:
-- **No separate Java installation required** -- all packages bundle an optimized, minimal Java Runtime Environment (JRE).
-- **Native OS integration** -- file associations (`.ipes`), Start Menu / Applications menu shortcuts, desktop icons, and uninstallers.
-- **Portable zero-install options** -- extract-and-run archives for USB drives or systems without admin rights.
-
----
-
-## Available Packages
-
-| Platform | Installer Package | Portable / Zero-Install | Desktop Integration |
-|---|---|---|---|
-| **Windows** (x64) | `GeckoCIRCUITS-<version>.msi` | `GeckoCIRCUITS-<version>-windows-x64-portable.zip` | Start Menu, Desktop Shortcut, `.ipes` association |
-| **macOS** (Apple Silicon & Intel) | `GeckoCIRCUITS-<version>.dmg` | `GeckoCIRCUITS-<version>-macos-app.zip` | Drag-and-Drop to Applications, Dock icon |
-| **Linux** (Debian/Ubuntu) | `geckocircuits_<version>-1_amd64.deb` | `GeckoCIRCUITS-<version>-linux-x64-portable.tar.gz` | App Menu (`Science;Electronics;Engineering`), `.desktop` file |
-| **Linux** (Fedora/RHEL) | `geckocircuits-<version>-1.x86_64.rpm` | `GeckoCIRCUITS-<version>-linux-x64-portable.tar.gz` | App Menu (`Science;Electronics;Engineering`), `.desktop` file |
-| **Universal (All OS)** | — | Fat JAR: `gecko-1.0-jar-with-dependencies.jar` | Run via `java -jar` (requires Java 25+) |
-
----
-
-## Tauri Desktop App (new UI)
-
-The React-editor desktop app is packaged with Tauri 2 (separate from the
-jpackage/Classic flow below):
-
-```sh
-# engine bundle (jlink runtime + REST jar + MCP jar + smoke test)
-python3 scripts/desktop/build-engine.py
-
-# engine + installers in one go (needs Tauri CLI: npm i -g @tauri-apps/cli)
-scripts/desktop/build-all.bat|.sh
-
-# release version across tauri.conf.json / application.properties / package.json
-python3 scripts/desktop/set-version.py 1.2.3
-```
-
-Outputs land in `desktop/target/release/bundle/`. CI: `.github/workflows/desktop.yml`
-(3-OS matrix on `v*` tags, SHA256SUMS, GitHub release). Details, including the
-release QA checklist: [desktop-app.md](desktop-app.md).
-
----
-
-## Classic Desktop Packaging (jpackage)
-
-You can package GeckoCIRCUITS classic desktop distributions locally on any OS:
+Native installers (NSIS `.exe` / `.msi` on Windows, `.dmg` on macOS, `.deb` / `.rpm` / AppImage on Linux) are built via `scripts/desktop/build-all.bat` (Windows MSVC), `scripts/desktop/build-all.sh` (Linux/macOS), or `.github/workflows/desktop.yml`.
 
 ### Prerequisites
-- **JDK 25+** (Adoptium Temurin or Oracle JDK) with `jpackage` in `PATH`
-- **Maven 3.6+**
-- **Python 3.8+** with `Pillow` installed (`pip install Pillow`)
-- Platform-specific tools:
-  - **Windows**: [WiX Toolset v3.11](https://wixtoolset.org/) (required for `.msi` installers: `choco install wixtoolset -y`)
-  - **Linux**: `rpm` (for RPM packages: `sudo apt install rpm fakeroot`)
-  - **macOS**: Xcode Command Line Tools (preinstalled)
 
-### Build Commands
+- **JDK 25** (Eclipse Temurin or equivalent with `jdeps` and `jlink`)
+- **Node.js 22+** and npm
+- **Python 3** (for `scripts/desktop/build-engine.py`)
+- **Rust stable** + `@tauri-apps/cli@^2` (`stable-x86_64-pc-windows-msvc` required on Windows)
+- **Linux system libraries** (Debian/Ubuntu): `libwebkit2gtk-4.1-dev`, `libgtk-3-dev`, `libayatana-appindicator3-dev`, `librsvg2-dev`, `libxdo-dev`, `libssl-dev`, `libfuse2`, `patchelf`, `rpm`, `fakeroot`
 
-#### Windows
-```cmd
-REM Build both MSI installer and Portable ZIP
-scripts\package-desktop.bat
+### One-Shot Build
 
-REM Build only the portable ZIP bundle
-scripts\package-desktop.bat --type portable
+```bash
+# Linux / macOS
+./scripts/desktop/build-all.sh
 
-REM Build only the MSI installer
-scripts\package-desktop.bat --type msi
-
-REM Rebuild Maven JAR before packaging
-scripts\package-desktop.bat --rebuild
+# Windows (MSVC toolchain required)
+scripts\desktop\build-all.bat
 ```
 
-#### macOS / Linux
+### Step-by-Step Build
+
 ```bash
-# Build all packages for current OS
-./scripts/package-desktop.sh
+# 1. Build frontend assets into backend/gecko-rest-api static resources
+npm --prefix frontend run build:spring
 
-# Build only portable archive
-./scripts/package-desktop.sh --type portable
+# 2. Build REST API and MCP server JARs
+mvn -pl backend/gecko-rest-api,backend/gecko-mcp -am package -DskipTests
 
-# Build specific installer type (deb, rpm, dmg)
-./scripts/package-desktop.sh --type deb
-./scripts/package-desktop.sh --type dmg
+# 3. Assemble desktop/app/engine/ (jlink runtime, JARs, gecko_c_block.h, VERSION) and smoke test
+python scripts/desktop/build-engine.py
 
-# Rebuild Maven JAR before packaging
-./scripts/package-desktop.sh --rebuild
+# 4. Build platform installers in desktop/app/src-tauri/target/release/bundle/
+cd desktop/app
+npx @tauri-apps/cli@^2 build
 ```
 
-#### Python CLI (Cross-Platform)
+`build-engine.py` finishes with a smoke test running `gecko.core.GeckoHeadless` against `tools/parity/circuits/rc-lowpass.ipes` through the bundled `jlink` runtime via Spring Boot's `PropertiesLauncher`.
+
+### Automated Release CI
+
+`.github/workflows/desktop.yml` runs on tag pushes (`v*`) or manual `workflow_dispatch`:
+
+- Synchronizes app version via `scripts/desktop/set-version.py`
+- Builds installers across `windows-latest`, `macos-latest`, and `ubuntu-latest`
+- Optionally publishes GitHub release artifacts when triggered on a version tag or with `upload_release: true`
+
+---
+
+## 2. Standalone Server & MCP JARs
+
 ```bash
-python3 scripts/package-desktop.py --version 1.0.0 --type all --dest dist/
+# Build all backend modules and run unit/integration tests
+mvn clean verify
+
+# Built artifacts:
+#   backend/gecko-rest-api/target/gecko-rest-api.jar   (Spring Boot REST + UI server)
+#   backend/gecko-mcp/target/gecko-mcp.jar             (shaded stdio MCP server)
+```
+
+Run the REST API + Web UI locally on `http://localhost:8080/gecko/`:
+
+```bash
+java -jar backend/gecko-rest-api/target/gecko-rest-api.jar
+```
+
+Run the headless CLI directly from the Spring Boot JAR:
+
+```bash
+java -Dloader.main=gecko.core.GeckoHeadless \
+     -cp backend/gecko-rest-api/target/gecko-rest-api.jar \
+     org.springframework.boot.loader.launch.PropertiesLauncher \
+     --circuit resources/projects/buck_sampled_50v_to_10v.ipes --output results.csv --quiet
 ```
 
 ---
 
-## Automated GitHub Actions Pipeline
+## 3. Docker Container
 
-The workflow `.github/workflows/package-desktop.yml` automates cross-platform builds:
+`docker/Dockerfile.api` builds a multi-stage `eclipse-temurin:25-jre-alpine` image exposing port `8080` with a `/gecko/api/health` health check:
 
-1. **Matrix Build**:
-   Spawns 3 parallel runners:
-   - `windows-latest` -> Builds `.msi` and `-windows-x64-portable.zip`
-   - `macos-latest` -> Builds `.dmg` and `-macos-app.zip`
-   - `ubuntu-latest` -> Builds `.deb`, `.rpm`, and `-linux-x64-portable.tar.gz`
+```bash
+# Using docker compose from docker/
+docker compose -f docker/docker-compose.yml up --build
 
-2. **Artifacts & Checksums**:
-   - Computes `SHA256SUMS.txt` for integrity verification.
-   - Uploads all binaries as workflow artifacts.
-
-3. **Release Publishing**:
-   - When a Git tag matching `v*` (e.g., `v1.0.0`) is pushed, a GitHub Release is automatically published with all binary packages attached.
-   - Can also be manually dispatched from the GitHub Actions tab.
+# Or build directly from backend/
+docker build -f docker/Dockerfile.api -t geckocircuits-api backend/
+docker run -p 8080:8080 geckocircuits-api
+```

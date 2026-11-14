@@ -24,9 +24,9 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Phase 2: Interactive Editing State-Mutation Matrix (Lifecycle Testing).
- * Validates mutation operations between the REST service, CircuitModel,
- * NetlistBuilder, and the simulation engine across all 6 lifecycle tasks (2.1 - 2.6).
+ * Interactive editing state-mutation lifecycle tests.
+ * Validates mutation operations across the REST service, CircuitModel,
+ * NetlistBuilder, and the simulation engine.
  */
 class InteractiveEditingLifecycleTest {
 

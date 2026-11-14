@@ -5,7 +5,7 @@ description: Browse all available circuit files included with GeckoCIRCUITS
 
 # Circuit Library
 
-GeckoCIRCUITS includes 100+ circuit example files (`.ipes`) organized by topic.
+GeckoCIRCUITS includes 200+ circuit files (`.ipes`) across `examples/`, `resources/tutorials/`, `resources/application_examples/`, and `resources/projects/`, organized by topic below.
 
 ## How to Open
 

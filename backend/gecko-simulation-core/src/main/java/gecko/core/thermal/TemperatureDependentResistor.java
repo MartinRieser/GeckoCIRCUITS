@@ -28,7 +28,6 @@ package gecko.core.thermal;
  *
  * @see TemperatureDependentDiode
  * @see ThermalNetworkSolver
- * @since v2.18.0 Task L1 - Multi-Domain Coupling (Step 2: Electro-Thermal Feedback)
  */
 public final class TemperatureDependentResistor {
 

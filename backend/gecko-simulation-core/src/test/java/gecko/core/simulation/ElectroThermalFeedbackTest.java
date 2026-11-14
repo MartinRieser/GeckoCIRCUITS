@@ -25,9 +25,9 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /**
- * Engine-level verification of the closed electro-thermal loop (Task L1
- * Step 2): device dissipation feeds the thermal RC network, and the solved
- * junction temperature feeds back into the electrical parameters until the
+ * Engine-level verification of the closed electro-thermal loop: device
+ * dissipation feeds the thermal RC network, and the solved junction
+ * temperature feeds back into the electrical parameters until the
  * coupled system reaches its analytic thermal-electrical equilibrium.
  *
  * <p>Covers: resistor self-heating with a positive temperature coefficient

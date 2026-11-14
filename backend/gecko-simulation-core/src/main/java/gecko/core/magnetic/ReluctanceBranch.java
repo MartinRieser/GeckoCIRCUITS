@@ -25,7 +25,6 @@ package gecko.core.magnetic;
  *
  * @see MagneticNetworkSolver
  * @see NonlinearReluctance
- * @since v2.18.0 Task L1 - Multi-Domain Coupling (Step 3: Magnetic Domain Engine)
  */
 public final class ReluctanceBranch {
 

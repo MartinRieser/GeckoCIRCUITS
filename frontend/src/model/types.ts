@@ -66,7 +66,7 @@ export interface EditorWire {
   index: number;
   /** Domain type (typically 'LK' or 'CONTROL'). */
   type: string;
-  /** User-assigned net label, or 'NIX_NIX_NIX' if unassigned. */
+  /** User-assigned net label, or SENTINEL_UNSET ('NIX_NIX_NIX') if unassigned. */
   label: string;
   /** Array of dense integer grid raster points [x, y] traversed by this wire. */
   points: number[][];

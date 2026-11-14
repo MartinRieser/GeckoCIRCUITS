@@ -8,7 +8,7 @@ services:
   gecko-api:
     build:
       context: ../backend
-      dockerfile: ../../docker/Dockerfile.api
+      dockerfile: ../docker/Dockerfile.api
     image: geckocircuits/rest-api:latest
     container_name: gecko-api
     ports:
@@ -18,7 +18,7 @@ services:
       - SERVER_PORT=8080
     volumes:
       # Mount example circuits (read-only)
-      - ../resources/examples:/app/circuits:ro
+      - ../examples:/app/circuits:ro
       # Mount data directory for simulation results
       - gecko-data:/app/data
     healthcheck:

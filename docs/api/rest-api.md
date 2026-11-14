@@ -6,9 +6,9 @@ description: HTTP API for remote simulation control
 # REST API
 
 !!! success "Live in v2.16.0+"
-    The REST API is fully functional and running in production. This page documents the implemented endpoints and usage examples. Built on Spring Boot 3.2 with `gecko-simulation-core`, enabling headless simulation without GUI dependencies.
+    The REST API is fully functional and running in production. This page documents the implemented endpoints and usage examples. Built on Spring Boot 4.1.1 with `gecko-simulation-core`, enabling headless simulation without GUI dependencies.
 
-The REST API provides an HTTP/REST interface for controlling GeckoCIRCUITS programmatically. It is built on Spring Boot 3.2 and uses the `gecko-simulation-core` module for all simulation logic, enabling cloud deployment, CI/CD automation, and remote computation.
+The REST API provides an HTTP/REST interface for controlling GeckoCIRCUITS programmatically. It is built on Spring Boot 4.1.1 and uses the `gecko-simulation-core` module for all simulation logic, enabling cloud deployment, CI/CD automation, and remote computation.
 
 ## Quick Start
 
@@ -22,7 +22,7 @@ docker-compose up -d
 curl http://localhost:8080/gecko/api/health
 
 # View API documentation
-# Open http://localhost:8080/swagger-ui.html in your browser
+# Open http://localhost:8080/gecko/swagger-ui.html in your browser
 ```
 
 ## Architecture
@@ -39,7 +39,7 @@ curl http://localhost:8080/gecko/api/health
 
 Full interactive documentation available at:
 
-**[http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)** (when running)
+**[http://localhost:8080/gecko/swagger-ui.html](http://localhost:8080/gecko/swagger-ui.html)** (when running; OpenAPI JSON at `/gecko/api-docs`)
 
 OpenAPI specification:
 
@@ -80,10 +80,10 @@ When authentication is enabled, all protected endpoints require the `X-API-Key` 
 ```bash
 # With API key
 curl -H "X-API-Key: my-secret-key" \
-  http://localhost:8080/api/v1/simulations
+  http://localhost:8080/gecko/api/v1/simulations
 
 # Without API key (only works when auth-enabled=false)
-curl http://localhost:8080/api/v1/simulations
+curl http://localhost:8080/gecko/api/v1/simulations
 ```
 
 #### Python
@@ -96,7 +96,7 @@ session.headers.update({"X-API-Key": "my-secret-key"})
 
 # All requests include the API key automatically
 response = session.post(
-    "http://localhost:8080/api/v1/simulations",
+    "http://localhost:8080/gecko/api/v1/simulations",
     json={"circuitFile": "path/to/circuit.ipes"}
 )
 
@@ -118,7 +118,7 @@ const client = axios.create({
   }
 });
 
-client.post('/api/v1/simulations', {
+client.post('/gecko/api/v1/simulations', {
   circuitFile: 'path/to/circuit.ipes'
 })
 .then(response => console.log(response.data))
@@ -146,21 +146,21 @@ The following endpoints do not require API authentication:
 
 | Path | Description |
 |------|-------------|
-| `/api/health` | Health check |
-| `/swagger-ui/**` | Swagger UI |
-| `/v3/api-docs/**` | OpenAPI specification |
-| `/ws/**` | WebSocket endpoint |
-| `/ws-raw/**` | Raw WebSocket endpoint |
+| `/gecko/api/health` | Health check |
+| `/gecko/swagger-ui/**` | Swagger UI |
+| `/gecko/api-docs/**` | OpenAPI specification |
+| `/gecko/ws/**` | WebSocket endpoint |
+| `/gecko/ws-raw/**` | Raw WebSocket endpoint |
 
 ### Security Best Practices
 
 1. **Always use HTTPS** in production:
    ```bash
    # Good: HTTPS protects the API key in transit
-   curl -H "X-API-Key: my-key" https://your-domain.com/api/v1/simulations
+   curl -H "X-API-Key: my-key" https://your-domain.com/gecko/api/v1/simulations
 
    # Bad: HTTP exposes the key in plain text
-   curl -H "X-API-Key: my-key" http://your-domain.com/api/v1/simulations
+   curl -H "X-API-Key: my-key" http://your-domain.com/gecko/api/v1/simulations
    ```
 
 2. **Rotate keys regularly** - Update keys quarterly or when team changes:
@@ -194,7 +194,7 @@ Calculate power loss for semiconductor devices.
 **Switching Loss** (Voltage and Energy Scaling)
 
 ```bash
-POST /api/v1/loss/switching
+POST /gecko/api/v1/loss/switching
 Content-Type: application/json
 ```
 
@@ -216,13 +216,13 @@ Content-Type: application/json
 **Conduction Loss** (Resistance Model)
 
 ```bash
-POST /api/v1/loss/conduction
+POST /gecko/api/v1/loss/conduction
 ```
 
 **Detailed Loss** (Temperature-Dependent Interpolation)
 
 ```bash
-POST /api/v1/loss/detailed
+POST /gecko/api/v1/loss/detailed
 ```
 
 ### Circuit File Endpoints
@@ -230,40 +230,40 @@ POST /api/v1/loss/detailed
 **Parse Circuit File**
 
 ```bash
-POST /api/v1/circuits/parse
+POST /gecko/api/v1/circuits/parse
 Content-Type: multipart/form-data
 
-curl -F "file=@circuit.ipes" http://localhost:8080/api/v1/circuits/parse
+curl -F "file=@circuit.ipes" http://localhost:8080/gecko/api/v1/circuits/parse
 ```
 
 **Get Circuit Metadata**
 
 ```bash
-GET /api/v1/circuits/{circuitId}/info
+GET /gecko/api/v1/circuits/{circuitId}/info
 ```
 
 **List Components**
 
 ```bash
-GET /api/v1/circuits/{circuitId}/components
+GET /gecko/api/v1/circuits/{circuitId}/components
 ```
 
 **Validate Circuit**
 
 ```bash
-POST /api/v1/circuits/{circuitId}/validate
+GET /gecko/api/v1/circuits/{circuitId}/validate
 ```
 
 **List All Circuits**
 
 ```bash
-GET /api/v1/circuits
+GET /gecko/api/v1/circuits
 ```
 
 **Delete Circuit**
 
 ```bash
-DELETE /api/v1/circuits/{circuitId}
+DELETE /gecko/api/v1/circuits/{circuitId}
 ```
 
 **Clone Circuit**
@@ -271,7 +271,7 @@ DELETE /api/v1/circuits/{circuitId}
 Create a deep copy of a loaded circuit with optional parameter overrides.
 
 ```bash
-POST /api/v1/circuits/{circuitId}/clone
+POST /gecko/api/v1/circuits/{circuitId}/clone
 Content-Type: application/json
 ```
 
@@ -305,7 +305,7 @@ Response (201 Created):
 Modify simulation parameters (duration, time step, solver) for a loaded circuit.
 
 ```bash
-PUT /api/v1/circuits/{circuitId}/parameters
+PUT /gecko/api/v1/circuits/{circuitId}/parameters
 Content-Type: application/json
 ```
 
@@ -321,10 +321,10 @@ Request (all fields optional):
 **Download Circuit as .ipes File**
 
 Serialize a loaded circuit back to the gzip-compressed `.ipes` format. The file is
-interchangeable with the GeckoCIRCUITS Swing UI (upload → edit → download round trip).
+preserved identically across upload → edit → download round trips.
 
 ```bash
-GET /api/v1/circuits/{circuitId}/ipes
+GET /gecko/api/v1/circuits/{circuitId}/ipes
 ```
 
 Response: `application/gzip` binary attachment.
@@ -335,7 +335,7 @@ Replace the circuit stored under the given ID with new `.ipes` content (gzip or 
 ASCII). The circuit ID stays stable — this is the save endpoint for editor clients.
 
 ```bash
-PUT /api/v1/circuits/{circuitId}
+PUT /gecko/api/v1/circuits/{circuitId}
 Content-Type: multipart/form-data   (file=@circuit.ipes)
 # or
 Content-Type: application/json       ({"content": "<base64>", "filename": "x.ipes"})
@@ -350,7 +350,7 @@ WebSocket topic `/topic/circuits/{circuitId}`. Every edit is undoable.
 **Create Component**
 
 ```bash
-POST /api/v1/circuits/{circuitId}/components
+POST /gecko/api/v1/circuits/{circuitId}/components
 Content-Type: application/json
 ```
 
@@ -378,19 +378,19 @@ explicit `parameters` override them.
 **Patch Component** (move / rotate / rename / set parameters — all fields optional)
 
 ```bash
-PATCH /api/v1/circuits/{circuitId}/components/{name}
+PATCH /gecko/api/v1/circuits/{circuitId}/components/{name}
 ```
 
 **Delete Component**
 
 ```bash
-DELETE /api/v1/circuits/{circuitId}/components/{name}
+DELETE /gecko/api/v1/circuits/{circuitId}/components/{name}
 ```
 
 **Create Wire** (polyline of grid points, at least two)
 
 ```bash
-POST /api/v1/circuits/{circuitId}/connections
+POST /gecko/api/v1/circuits/{circuitId}/connections
 Content-Type: application/json
 {"type": "LK", "points": [[96, 200], [144, 200], [144, 256]], "label": "w1"}
 ```
@@ -398,14 +398,14 @@ Content-Type: application/json
 **Patch / Delete Wire** (identified by index in the connection list)
 
 ```bash
-PATCH  /api/v1/circuits/{circuitId}/connections/{index}   {"points": [...], "label": "..."}
-DELETE /api/v1/circuits/{circuitId}/connections/{index}
+PATCH  /gecko/api/v1/circuits/{circuitId}/connections/{index}   {"points": [...], "label": "..."}
+DELETE /gecko/api/v1/circuits/{circuitId}/connections/{index}
 ```
 
 **Set Node Label** (terminals with equal labels are electrically connected)
 
 ```bash
-PUT /api/v1/circuits/{circuitId}/nodes/{componentName}
+PUT /gecko/api/v1/circuits/{circuitId}/nodes/{componentName}
 Content-Type: application/json
 {"terminalIndex": 0, "side": "x", "label": "dc_link"}
 ```
@@ -415,18 +415,18 @@ Content-Type: application/json
 **Undo / Redo**
 
 ```bash
-POST /api/v1/circuits/{circuitId}/undo
-POST /api/v1/circuits/{circuitId}/redo
+POST /gecko/api/v1/circuits/{circuitId}/undo
+POST /gecko/api/v1/circuits/{circuitId}/redo
 ```
 
 409 when there is nothing to undo/redo. A new edit discards the redo history.
 History is bounded (200 edits per circuit) and reset when the circuit content
-is replaced via `PUT /api/v1/circuits/{circuitId}`.
+is replaced via `PUT /gecko/api/v1/circuits/{circuitId}`.
 
 **Component Type Catalog**
 
 ```bash
-GET /api/v1/circuits/catalog
+GET /gecko/api/v1/circuits/catalog
 ```
 
 Returns all placeable types with `type` number, `name` and `family`.
@@ -434,7 +434,7 @@ Returns all placeable types with `type` number, `name` and `family`.
 **Editor Model Snapshot**
 
 ```bash
-GET /api/v1/circuits/{circuitId}/model
+GET /gecko/api/v1/circuits/{circuitId}/model
 ```
 
 Returns the full editor state in one response: components (with terminal node
@@ -452,7 +452,7 @@ Live in: **v2.20.0+** (`simulationDefaults` in v2.22.0+)
 **Submit Simulation** (Async)
 
 ```bash
-POST /api/v1/simulations
+POST /gecko/api/v1/simulations
 Content-Type: application/json
 ```
 
@@ -472,7 +472,7 @@ Request:
 ```
 
 The circuit can be referenced in one of three ways (exactly one is required):
-- `circuitId` — ID of a circuit uploaded via `POST /api/v1/circuits/parse`
+- `circuitId` — ID of a circuit uploaded via `POST /gecko/api/v1/circuits/parse`
 - `base64Circuit` — base64-encoded `.ipes` content
 - `circuitFile` — server-local `.ipes` file path (requires explicit `simulationTime` and `timeStep`)
 
@@ -490,26 +490,26 @@ signal names resolve to netlist node labels, unresolvable signals record as zero
 **Get Simulation Status and Results**
 
 ```bash
-GET /api/v1/simulations/{simulationId}
+GET /gecko/api/v1/simulations/{simulationId}
 ```
 
 **List All Simulations**
 
 ```bash
-GET /api/v1/simulations
+GET /gecko/api/v1/simulations
 ```
 
 **Cancel Simulation**
 
 ```bash
-DELETE /api/v1/simulations/{simulationId}
+DELETE /gecko/api/v1/simulations/{simulationId}
 ```
 
 **Pause / Resume Simulation** (v2.22.0+)
 
 ```bash
-POST /api/v1/simulations/{simulationId}/pause
-POST /api/v1/simulations/{simulationId}/resume
+POST /gecko/api/v1/simulations/{simulationId}/pause
+POST /gecko/api/v1/simulations/{simulationId}/resume
 ```
 
 `pause` halts a running simulation at the next time step (status becomes
@@ -520,7 +520,7 @@ not in the matching state; a paused simulation can also be cancelled via
 **Get Detailed Progress**
 
 ```bash
-GET /api/v1/simulations/{simulationId}/progress
+GET /gecko/api/v1/simulations/{simulationId}/progress
 ```
 
 Response fields:
@@ -533,7 +533,7 @@ Response fields:
 **Export Results**
 
 ```bash
-GET /api/v1/simulations/{simulationId}/export
+POST /gecko/api/v1/simulations/{simulationId}/export
 ```
 
 
@@ -542,7 +542,7 @@ GET /api/v1/simulations/{simulationId}/export
 Get aggregated status for all simulations in a batch submitted via v2.19.0+ batch endpoint.
 
 ```bash
-GET /api/v1/simulations/batch/{batchId}
+GET /gecko/api/v1/simulations/batch/{batchId}
 ```
 
 Response:
@@ -579,7 +579,7 @@ Response:
 Cancels all running and pending simulations in a batch.
 
 ```bash
-DELETE /api/v1/simulations/batch/{batchId}
+DELETE /gecko/api/v1/simulations/batch/{batchId}
 ```
 
 Returns: `204 No Content` on success
@@ -593,27 +593,26 @@ Real-time progress updates via WebSocket with STOMP message framing. Provides bi
 
 **WebSocket Endpoints**
 
-- `/ws` - SockJS-compatible WebSocket endpoint (for browsers)
-- `/ws-raw` - Raw WebSocket endpoint (for non-browser clients)
+- `/gecko/ws` - SockJS-compatible WebSocket endpoint (for browsers)
+- `/gecko/ws-raw` - Raw WebSocket endpoint (for non-browser clients)
 
 Both endpoints support STOMP protocol for message framing.
 
 **Discover WebSocket Connection Details**
 
 ```bash
-GET /api/v1/simulations/{simulationId}/ws-info
+GET /gecko/api/v1/simulations/{simulationId}/ws-info
 ```
 
 Response:
 ```json
 {
-  "simulationId": "9a1d5f7e-3b2c-4d9e-8f1a-6c2b4a7d9e3f",
   "stompEndpoint": "/ws",
   "rawWebSocketEndpoint": "/ws-raw",
   "subscribeDestination": "/topic/simulations/9a1d5f7e-3b2c-4d9e-8f1a-6c2b4a7d9e3f",
-  "protocol": "STOMP/1.2",
-  "supportsBidirectional": true,
-  "baseUrl": "http://localhost:8080"
+  "simulationId": "9a1d5f7e-3b2c-4d9e-8f1a-6c2b4a7d9e3f",
+  "protocol": "STOMP",
+  "note": "Connect to /ws via SockJS then subscribe to the destination"
 }
 ```
 
@@ -624,7 +623,7 @@ Response:
 <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/stomp.min.js"></script>
 
 <script>
-const socket = new SockJS('http://localhost:8080/ws');
+const socket = new SockJS('http://localhost:8080/gecko/ws');
 const client = Stomp.over(socket);
 
 client.connect({}, (frame) => {
@@ -688,7 +687,7 @@ except KeyboardInterrupt:
 npm install -g wscat
 
 # Connect to raw WebSocket endpoint
-wscat -c ws://localhost:8080/ws-raw
+wscat -c ws://localhost:8080/gecko/ws-raw
 
 # Send STOMP CONNECT frame
 CONNECT
@@ -708,7 +707,7 @@ destination:/topic/simulations/9a1d5f7e-3b2c-4d9e-8f1a-6c2b4a7d9e3f
 
 **Progress Message Format**
 
-Both SSE (`/api/v1/simulations/{id}/stream`) and WebSocket (`/topic/simulations/{id}`) use the same JSON message structure:
+Both SSE (`/gecko/api/v1/simulations/{id}/stream`) and WebSocket (`/topic/simulations/{id}`) use the same JSON message structure:
 
 ```json
 {
@@ -728,7 +727,7 @@ Both SSE (`/api/v1/simulations/{id}/stream`) and WebSocket (`/topic/simulations/
 
 | Feature | SSE | WebSocket |
 |---------|-----|-----------|
-| Endpoint | `/api/v1/simulations/{id}/stream` | `/topic/simulations/{id}` |
+| Endpoint | `/gecko/api/v1/simulations/{id}/stream` | `/topic/simulations/{id}` |
 | Protocol | HTTP/1.1 (text/event-stream) | TCP (STOMP/1.2) |
 | Direction | Server → Client only | Bidirectional (client → server coming in future versions) |
 | Browser Support | Native EventSource API | Requires SockJS or ws library |
@@ -751,7 +750,7 @@ Post-processing analysis of simulation or raw signal data.
 Returns 9 key metrics for any waveform.
 
 ```bash
-POST /api/v1/analysis/characteristics
+POST /gecko/api/v1/analysis/characteristics
 Content-Type: application/json
 ```
 
@@ -794,7 +793,7 @@ Response:
 Decompose signal into harmonic components with amplitude and phase.
 
 ```bash
-POST /api/v1/analysis/fourier?harmonics=10
+POST /gecko/api/v1/analysis/fourier?harmonics=10
 Content-Type: application/json
 ```
 
@@ -825,7 +824,7 @@ Response:
 Quick RMS calculation for any signal.
 
 ```bash
-POST /api/v1/analysis/rms
+POST /gecko/api/v1/analysis/rms
 Content-Type: application/json
 ```
 
@@ -845,9 +844,9 @@ Response:
 
 | Endpoint | Method | Purpose | Returns |
 |----------|--------|---------|---------|
-| `/api/v1/analysis/characteristics` | POST | 9 waveform metrics (RMS, THD, ripple, etc.) | CharacteristicsResult |
-| `/api/v1/analysis/fourier` | POST | Harmonic decomposition with amplitude & phase | FourierResult |
-| `/api/v1/analysis/rms` | POST | RMS calculation | number |
+| `/gecko/api/v1/analysis/characteristics` | POST | 9 waveform metrics (RMS, THD, ripple, etc.) | CharacteristicsResult |
+| `/gecko/api/v1/analysis/fourier` | POST | Harmonic decomposition with amplitude & phase | FourierResult |
+| `/gecko/api/v1/analysis/rms` | POST | RMS calculation | number |
 
 Live in: **v2.19.0+**
 
@@ -860,7 +859,7 @@ Live in: **v2.19.0+**
 import requests
 import numpy as np
 
-BASE_URL = "http://localhost:8080/api/v1"
+BASE_URL = "http://localhost:8080/gecko/api/v1"
 
 # Submit simulation
 response = requests.post(f"{BASE_URL}/simulations", json={
@@ -892,15 +891,15 @@ print(f"Vout: {results['SCOPE.1.ch1_avg']:.2f} V")
 
 ```bash
 # Loss calculation
-curl -X POST http://localhost:8080/api/v1/loss/conduction \
+curl -X POST http://localhost:8080/gecko/api/v1/loss/conduction \
   -H "Content-Type: application/json" \
   -d '{"voltage": 400, "current": 50, "temperature": 125}'
 
 # Upload circuit
-curl -F "file=@circuit.ipes" http://localhost:8080/api/v1/circuits/parse
+curl -F "file=@circuit.ipes" http://localhost:8080/gecko/api/v1/circuits/parse
 
 # Submit simulation
-curl -X POST http://localhost:8080/api/v1/simulations \
+curl -X POST http://localhost:8080/gecko/api/v1/simulations \
   -H "Content-Type: application/json" \
   -d '{"circuitId": "circuit-uuid-from-parse", "simulationTime": 0.01, "timeStep": 1e-7}'
 ```
@@ -911,13 +910,12 @@ curl -X POST http://localhost:8080/api/v1/simulations \
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `circuitId` | string | ID of a previously uploaded circuit (POST /api/v1/circuits/parse) |
+| `circuitId` | string | ID of a previously uploaded circuit (POST /gecko/api/v1/circuits/parse) |
 | `base64Circuit` | string | Base64-encoded .ipes file content |
 | `circuitFile` | string | Server-local .ipes file path (requires simulationTime/timeStep) |
 | `simulationTime` | number | Total simulation time (seconds); defaults to circuit value when using circuitId/base64Circuit |
 | `timeStep` | number | Integration time step (seconds); defaults to circuit value when using circuitId/base64Circuit |
 | `solverType` | enum | backward-euler, trapezoidal, gear-shichman |
-| `backend` | string | `"legacy"` runs the ORIGINAL uploaded file in the classic GUI engine (headless RMI) instead of the built-in engine. Results are bit-identical to the classic GUI. Plain-text circuits are gzip-wrapped automatically; the run is hard-bounded at 600 s. Circuits authored in the editor are NOT classic-compatible yet — the classic engine cannot fully import their wire format. |
 | `parameters` | map | Parameter overrides |
 
 ### ProgressDetails
@@ -945,16 +943,17 @@ curl -X POST http://localhost:8080/api/v1/simulations \
 ### Docker (Recommended)
 
 ```bash
-# Using docker-compose
-docker-compose up -d
+# Using Docker Compose
+docker compose -f docker/docker-compose.yml up -d
 
-# Manual Docker run
-docker run -p 8080:8080 geckocircuits/rest-api:latest
+# Manual Docker build & run
+docker build -f docker/Dockerfile.api -t geckocircuits-api backend/
+docker run -p 8080:8080 geckocircuits-api
 ```
 
 ## See Also
 
-- [Remote Interface (RMI)](remote-interface.md) - Java RMI integration
+- [Remote Interface (Legacy RMI — Retired)](remote-interface.md) - Retired RMI notice & MATLAB HTTP alternative
 - [GeckoSCRIPT](geckoscript-ref.md) - Built-in scripting
 - [Python Integration](../tutorials/scripting/python.md)
 - [Docker Setup](../getting-started/installation.md#docker)

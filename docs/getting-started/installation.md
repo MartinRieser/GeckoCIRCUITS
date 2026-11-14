@@ -44,18 +44,15 @@ Developers can run the editor + engine from a repository checkout. This needs
 **JDK 25**, **Node.js 22**, and **Maven**:
 
 ```bash
-# builds the engine jar if missing, starts it on localhost:8080,
+# builds the engine jar if missing, starts it on localhost:8080/gecko/,
 # and opens the editor in your browser
 run-gecko.bat        # Windows
 ./run-gecko.sh       # Linux / macOS
 ```
 
 This is the same React application the desktop app embeds, served
-against the same simulation engine — circuits and workflows are identical.
-
-## Classic Swing UI (Deprecated / Slated for Removal)
-
-The original Swing-based desktop UI is legacy and being phased out. All active development, new UI features, and current `.ipes` format workflows are centered on the modern **GeckoCIRCUITS Desktop App** (Tauri 2 + React Canvas). The `scripts/run-gecko*` scripts are convenience bridges that simply forward to the root launcher `run-gecko.bat|.sh`.
+against the same simulation engine — circuits and workflows are identical. The
+`scripts/run-gecko*` scripts forward directly to the root launcher `run-gecko.bat|.sh`.
 
 ## Docker
 
@@ -70,4 +67,4 @@ docker build -f docker/Dockerfile.api -t geckocircuits-api:latest .
 docker run -p 8080:8080 geckocircuits-api:latest
 ```
 
-Once running, the API is available at `http://localhost:8080/api/v1/`. See the [REST API Reference](../api/rest-api.md) for endpoint details.
+Once running, the API is available at `http://localhost:8080/gecko/api/v1/`. See the [REST API Reference](../api/rest-api.md) for endpoint details.

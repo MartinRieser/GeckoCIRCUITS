@@ -40,9 +40,6 @@ package gecko.core.math;
  *   b = -1/2 * alpha + sqrt(3)/2 * beta + gamma
  *   c = -1/2 * alpha - sqrt(3)/2 * beta + gamma
  * </pre>
- *
- * @author GeckoCIRCUITS Team
- * @since v2.18.0 Task L4
  */
 public final class ClarkeTransform {
 

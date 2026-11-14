@@ -33,8 +33,8 @@ public final class NewEngineRunner {
             System.err.println("Usage: NewEngineRunner <baseUrl> <ipesFile> <outCsv> [signals] [tEndOverride]");
             System.exit(2);
         }
-        String baseUrl = args[0].endsWith("/") ? args[0].substring(0, args[0].length() - 1)
-                : args[0] + "/gecko";
+        String trimmed = args[0].endsWith("/") ? args[0].substring(0, args[0].length() - 1) : args[0];
+        String baseUrl = trimmed.endsWith("/gecko") ? trimmed : trimmed + "/gecko";
         Path ipes = Path.of(args[1]).toAbsolutePath();
         Path outCsv = Path.of(args[2]).toAbsolutePath();
 

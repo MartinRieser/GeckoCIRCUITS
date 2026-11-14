@@ -63,7 +63,6 @@ import java.util.Map;
  * @see MagneticWinding
  * @see ReluctanceBranch
  * @see NonlinearReluctance
- * @since v2.18.0 Task L1 - Multi-Domain Coupling (Step 3: Magnetic Domain Engine)
  */
 public final class MagneticNetworkSolver {
 

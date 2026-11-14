@@ -32,4 +32,13 @@ final class PyFormat {
     static String strip(String text) {
         return text.strip();
     }
+
+    /** Rounds {@code value} to {@code decimals} decimal places; returns {@code 0.0} if non-finite. */
+    static double round(double value, int decimals) {
+        if (!Double.isFinite(value)) {
+            return 0.0;
+        }
+        double scale = Math.pow(10, decimals);
+        return Math.round(value * scale) / scale;
+    }
 }

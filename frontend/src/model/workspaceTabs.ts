@@ -1,10 +1,9 @@
 /**
  * Workspace tab identifier helpers for the dynamic multi-tab bar.
  *
- * Tabs are strictly derived from circuit components: the permanent schematic
- * tab, one tab per oscilloscope block, and one tab per script/function block.
- * These helpers build and decompose the prefixed tab ids in one place so the
- * App component and unit tests share the exact same semantics.
+ * Includes the permanent `'schematic'` tab, global `'simulation'` tab, project
+ * oscilloscope register tabs (`osci:<id>`), oscilloscope block tabs (`scope:<name>`),
+ * and script/function block tabs (`script:<name>`).
  */
 
 /** Tab id prefix for oscilloscope instrument tabs (e.g. 'scope:SCOPE.1'). */

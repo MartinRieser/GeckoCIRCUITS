@@ -3,11 +3,11 @@ import { COMPONENT_METAS } from '../src/model/componentSchema';
 import { terminalPositions, flowVector, controlFlowVector, TWO_PORT_DIST, ORIENTATION_CYCLE } from '../src/model/geometry';
 
 /**
- * Strategy 1: Cross-Layer Contract & Terminal Coordinate Parity Tests.
+ * Cross-Layer Contract & Terminal Coordinate Parity Tests.
  * Ensures COMPONENT_METAS definitions and geometry raster coordinate calculations
  * strictly align with simulation engine parameter and topology expectations.
  */
-describe('Strategy 1: Cross-Layer Contract & Coordinate Parity', () => {
+describe('Cross-Layer Contract & Coordinate Parity', () => {
 
   it('all non-disabled components declare well-formed parameter definitions and non-empty terminals', () => {
     for (const [typeStr, meta] of Object.entries(COMPONENT_METAS)) {

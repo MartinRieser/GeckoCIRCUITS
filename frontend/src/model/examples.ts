@@ -5062,9 +5062,6 @@ cursorsEnabled false
 =======================
 `;
 
-
-export const SAMPLED_BUCK_IPES = BUCK_CONVERTER_IPES;
-
 export const EXAMPLES: CircuitExample[] = [
   {
     id: 'spwm-inverter-deadtime',

@@ -17,7 +17,6 @@ public final class IntegratorCalculation extends AbstractControlCalculatable imp
 
     private double _y1old = 0;  // Storage of Integral part
     private double _xold = 0, _y11 = -1;
-    private double _xoldInit, _yoldInit;  // for Init&Start simulation
     private double _a1Val = 1;
     private final double _y0Val;
     private double _min = -1;
@@ -32,15 +31,14 @@ public final class IntegratorCalculation extends AbstractControlCalculatable imp
 
     @Override
     public void initializeAtSimulationStart(final double deltaT) {
-        _y1old = _yoldInit;
-        _xold = _xoldInit;
+        _xold = 0;
         _outputSignal[0][0] = _y0Val;
         _y1old = _y0Val;
     }
 
     @Override
     public void calculateYOUT(final double deltaT) {
-        if (_inputSignal[1][0] < 1) {   // normaler Betrieb - Integration  
+        if (_inputSignal[1][0] < 1) {   // Normal operation: integrate input signal
             
             _y11 = _y1old + _a1Val * deltaT * (_inputSignal[0][0] + _xold) / 2.0;
             if (_y11 <= _min) {
@@ -52,7 +50,7 @@ public final class IntegratorCalculation extends AbstractControlCalculatable imp
             _outputSignal[0][0] = _y11;
             _xold = _inputSignal[0][0];
             _y1old = _y11;
-        } else {// reset: alles auf Null bzw. Init            
+        } else { // Reset output and integrator state to initial condition
             _xold = 0;
             _y1old = _y0Val;
             _outputSignal[0][0] = _y0Val;

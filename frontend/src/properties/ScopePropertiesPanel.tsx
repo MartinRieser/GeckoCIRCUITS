@@ -5,7 +5,7 @@
  * Strictly scoped to the active oscilloscope block:
  * - Shows ONLY settings and channels belonging to this instrument.
  * - Does NOT display global solver parameters or duplicate simulation run buttons.
- * - Remembers layout (overlay / stacked), vertical scale mode, and channel visibility
+ * - Remembers layout (overlay / 2-graphs / 3-graphs / stacked), vertical scale mode, and channel visibility
  *   per scope and saves them with the circuit project (.ipes).
  */
 import { useEffect, useMemo, useState } from 'react';
@@ -18,7 +18,7 @@ import {
   defaultGraphForSignal,
   resolveSignalGraph,
 } from '../simulation/scopes';
-import { SCOPE_SETTING_KEYS } from '../model/constants';
+import { SCOPE_SETTING_KEYS, SENTINEL_UNSET } from '../model/constants';
 import type { ScopeDisplayLayout } from '../model/constants';
 import type { ScopeController } from '../simulation/useScopeController';
 import { isVoltmeterComponent, isAmmeterComponent } from '../model/componentSchema';
@@ -237,7 +237,7 @@ export function ScopePropertiesPanel({
       allComponents?.forEach((comp) => {
         if (isVoltmeterComponent(comp) || isAmmeterComponent(comp)) {
           comp.outputLabels?.forEach((lbl) => {
-            if (lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX' && !isGroundSignal(lbl.trim()) && !probeSignals.includes(lbl.trim())) {
+            if (lbl && lbl.trim() && lbl !== SENTINEL_UNSET && !isGroundSignal(lbl.trim()) && !probeSignals.includes(lbl.trim())) {
               probeSignals.push(lbl.trim());
             }
           });
@@ -260,7 +260,7 @@ export function ScopePropertiesPanel({
     allComponents?.forEach((comp) => {
       if (isVoltmeterComponent(comp) || isAmmeterComponent(comp)) {
         comp.outputLabels?.forEach((lbl) => {
-          if (lbl && lbl.trim() && lbl !== 'NIX_NIX_NIX' && !isGroundSignal(lbl.trim()) && !probeSignals.includes(lbl.trim())) {
+          if (lbl && lbl.trim() && lbl !== SENTINEL_UNSET && !isGroundSignal(lbl.trim()) && !probeSignals.includes(lbl.trim())) {
             probeSignals.push(lbl.trim());
           }
         });

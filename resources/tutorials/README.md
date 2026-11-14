@@ -10,15 +10,14 @@ Comprehensive tutorials for learning power electronics simulation with GeckoCIRC
 
 | Series | Topic | Tutorials | Difficulty |
 |--------|-------|-----------|------------|
-| **[1xx](1xx_getting_started/)** | Getting Started | 7 tutorials | Beginner-Intermediate |
+| **[1xx](1xx_getting_started/)** | Getting Started | 4 tutorials | Beginner-Intermediate |
 | **[2xx](2xx_dcdc_converters/)** | DC-DC Converters | 4 tutorials | Intermediate |
 | **[3xx](3xx_acdc_rectifiers/)** | AC-DC Rectifiers | 3 tutorials | Intermediate |
 | **[4xx](4xx_dcac_inverters/)** | DC-AC Inverters | 3 tutorials | Intermediate-Advanced |
 | **[5xx](5xx_thermal_simulation/)** | Thermal Simulation | 3 tutorials | Advanced |
 | **[6xx](6xx_emi_emc/)** | EMI/EMC | 2 tutorials | Advanced |
-| **[7xx](7xx_scripting_automation/)** | Scripting & Automation | 6 tutorials | Intermediate-Advanced |
+| **[7xx](7xx_scripting_automation/)** | Scripting & Automation | 5 tutorials | Intermediate-Advanced |
 | **[8xx](8xx_advanced_topics/)** | Advanced Topics | 4 tutorials | Advanced |
-| **[9xx](9xx_magnetics_mechanical/)** | Magnetics & Mechanical | 4 tutorials | Advanced |
 
 ## Learning Paths
 
@@ -48,21 +47,14 @@ For inverter and rectifier applications:
 For thermal management focus:
 
 ```
-201 → 501 → 502 → 503 → 901
+201 → 501 → 502 → 503
 ```
 
-### Path 4: Advanced Analysis
-For control design and optimization:
+### Path 4: Automation & Integration
+For Python/REST API automation, custom Java/`SCRIPT_BLOCK` control, and external integration:
 
 ```
-104 → 105 → 106 → 701 → 706
-```
-
-### Path 5: Automation & Integration
-For batch simulations and external tool integration:
-
-```
-104 → 701 → 702 → 706 → 705
+104 → 704 → 705
 ```
 
 ## Complete Tutorial Index
@@ -74,9 +66,6 @@ For batch simulations and external tool integration:
 | [102](1xx_getting_started/102_basic_circuits/) | Basic Circuits | Component library, wiring |
 | [103](1xx_getting_started/103_pwm_basics/) | PWM Basics | Duty cycle, control signals |
 | [104](1xx_getting_started/104_running_simulations/) | Running Simulations | Solvers, time step, export |
-| [105](1xx_getting_started/105_analysis_tools/) | Analysis Tools | Steady-state, Bode plots |
-| [106](1xx_getting_started/106_state_machines/) | State Machines | Control sequencing |
-| [107](1xx_getting_started/107_component_libraries/) | Component Libraries | Custom components |
 
 ### 2xx - DC-DC Converters
 | # | Title | Description |
@@ -116,12 +105,11 @@ For batch simulations and external tool integration:
 ### 7xx - Scripting & Automation
 | # | Title | Description |
 |---|-------|-------------|
-| [701](7xx_scripting_automation/701_gecko_script_basics/) | GeckoSCRIPT Basics | Scripting language |
-| [702](7xx_scripting_automation/702_matlab_integration/) | MATLAB Integration | RMI interface |
-| [703](7xx_scripting_automation/703_simulink_cosimulation/) | Simulink Co-simulation | S-Function block |
-| [704](7xx_scripting_automation/704_java_blocks/) | Java Blocks | Custom components |
-| [705](7xx_scripting_automation/705_api_integration/) | API Integration | External signals |
-| [706](7xx_scripting_automation/706_python_integration/) | Python Integration | NumPy, SciPy automation |
+| [701](7xx_scripting_automation/701_gecko_script_basics/) | GeckoSCRIPT Basics | Legacy archive / `.ipes` reference |
+| [702](7xx_scripting_automation/702_matlab_integration/) | MATLAB Integration | Legacy sweep/loss archive (see [docs](../../docs/tutorials/scripting/matlab.md)) |
+| [703](7xx_scripting_automation/703_simulink_cosimulation/) | Simulink Co-simulation | Legacy S-Function archive |
+| [704](7xx_scripting_automation/704_java_blocks/) | Java / `SCRIPT_BLOCK` | Custom control blocks |
+| [705](7xx_scripting_automation/705_api_integration/) | API Integration | External signals & WebSocket client |
 
 ### 8xx - Advanced Topics
 | # | Title | Description |
@@ -131,14 +119,6 @@ For batch simulations and external tool integration:
 | [803](8xx_advanced_topics/803_optimization/) | Optimization | Swiss rectifier |
 | [804](8xx_advanced_topics/804_thyristor_control/) | Thyristor Control | Phase-controlled |
 
-### 9xx - Magnetics & Mechanical (New)
-| # | Title | Description |
-|---|-------|-------------|
-| [901](9xx_magnetics_mechanical/901_magnetic_domain/) | Magnetic Domain | Permeance modeling |
-| [902](9xx_magnetics_mechanical/902_transformer_design/) | Transformer Design | HF transformer |
-| [903](9xx_magnetics_mechanical/903_inductor_saturation/) | Inductor Saturation | Non-linear inductance |
-| [904](9xx_magnetics_mechanical/904_mechanical_systems/) | Mechanical Systems | Motor-load dynamics |
-
 ## PLECS Equivalent Mapping
 
 | PLECS Tutorial | GeckoCIRCUITS Equivalent |
@@ -146,22 +126,20 @@ For batch simulations and external tool integration:
 | 101 Introduction | 101-102 First Simulation + Basic Circuits |
 | 103 SMPS | Flyback, Forward examples |
 | 104 Thermal | 501-503 Thermal series |
-| 105 Magnetic | 901-903 Magnetics series |
 | 110 PWM | 103 PWM Basics |
-| 112 State Machine | 106 State Machines |
-| 113 Python | 706 Python Integration |
-| 114 Analysis Tools | 105 Analysis Tools |
 
 ## Prerequisites
 
 - GeckoCIRCUITS 1.0 or later
 - Java 25 runtime
-- For scripting tutorials: MATLAB/Simulink or Python (optional)
+- Python (`geckopy`) or MATLAB (optional, for external automation)
 
 ## Related Resources
 
-- [**Examples**](../examples/) - Complete application examples
-- [**Articles**](../articles/) - Technical papers and notes
+- [**Top-level Examples**](../../examples/README.md) - Verified converter `.ipes` circuits
+- [**Resource Examples**](../examples/README.md) - Automotive DC fast charger example
+- [**Articles**](../articles/Readme.md) - Historical power electronics newsletter archive
+- [**Documentation Hub**](../../docs/index.md) - Online & MkDocs user/developer docs
 
 ---
 *GeckoCIRCUITS Tutorials v1.0*

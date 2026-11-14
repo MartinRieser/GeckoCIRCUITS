@@ -31,7 +31,6 @@ import gecko.core.simulation.solver.MatrixSolver;
  *
  * @see MatrixSolver
  * @see SparseLU
- * @since v2.18.0 Task L3 - High-Performance Solver & Advanced Numerics
  */
 public class SparseMatrixSolver extends MatrixSolver {
 

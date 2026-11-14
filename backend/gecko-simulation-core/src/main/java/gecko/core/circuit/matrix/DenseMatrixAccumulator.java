@@ -23,7 +23,6 @@ import java.util.Arrays;
  * writes, {@link #reset()} and {@link #zeroRow(int)} clear the wrapped array.
  *
  * @see MatrixAccumulator
- * @since v2.18.0 Task L3 - High-Performance Solver & Advanced Numerics
  */
 public final class DenseMatrixAccumulator implements MatrixAccumulator {
 

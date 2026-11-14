@@ -6,7 +6,7 @@ DC fast charging stations deliver high-power DC directly to the vehicle battery,
 
 **Difficulty:** Advanced
 
-**Status:** Placeholder
+**Status:** Verified model (`11kw_three_phase_vienna_charger.ipes`)
 
 ## Specifications
 

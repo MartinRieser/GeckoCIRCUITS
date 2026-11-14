@@ -605,7 +605,7 @@ public class CircuitFileParser {
                     comp.setParameter("param" + i, params[i]);
                 }
                 if (params.length > 0) {
-                    comp.setParameter(resolveParameterKey(type), params[0]);
+                    comp.setParameter(CircuitModel.ComponentData.resolveParameterKey(type), params[0]);
                 }
                 if (paramStrings != null && paramStrings.length > 0 && paramStrings[0] != null) {
                     String first = paramStrings[0].trim();
@@ -617,7 +617,7 @@ public class CircuitFileParser {
                         if (second.startsWith("/")) {
                             second = second.substring(1);
                         }
-                        if (!second.isEmpty() && !second.equalsIgnoreCase("NIX_NIX_NIX")) {
+                        if (!second.isEmpty() && !second.equalsIgnoreCase(NIX)) {
                             comp.setParameter("nodeA", first);
                             comp.setParameter("nodeB", second);
                         } else if (!first.isEmpty() && !first.equalsIgnoreCase("NIX_NIX_NIX")) {
@@ -995,22 +995,6 @@ public class CircuitFileParser {
             return result;
         }
         return readDoubleArrayFromTokenMap(elementBlock, "parameter[]");
-    }
-
-    /**
-     * Returns the semantic parameter key for the primary value of a component type.
-     */
-    private static String resolveParameterKey(int type) {
-        return switch (type) {
-            case 1 -> "resistance";     // LK_R
-            case 2 -> "inductance";     // LK_L
-            case 3 -> "capacitance";    // LK_C
-            case 4 -> "amplitude";      // LK_U voltage source
-            case 5 -> "amplitude";      // LK_I current source
-            case 6 -> "forwardVoltage"; // LK_D diode
-            case 7 -> "resistance";     // LK_S ideal switch (on-resistance)
-            default -> "value";
-        };
     }
 
     /**

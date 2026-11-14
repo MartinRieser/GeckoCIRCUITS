@@ -340,7 +340,7 @@ public final class CircuitValidator {
         // 4. Build Wire Connectivity Graphs per Domain (Endpoint-Junction Rule)
         Map<String, List<WireData>> wiresByDomain = new HashMap<>();
         for (WireData w : wires) {
-            String dom = w.connectorType == 2 ? "TH" : (w.connectorType == 1 ? "CTRL" : "LK");
+            String dom = w.connectorType == 2 ? "TH" : w.connectorType == 1 ? "CTRL" : "LK";
             wiresByDomain.computeIfAbsent(dom, k -> new ArrayList<>()).add(w);
         }
 
@@ -397,10 +397,13 @@ public final class CircuitValidator {
 
         for (ComponentData comp : allComponents) {
             String dom = "THERMAL".equals(comp.domain) ? "TH" : "LK";
-            int termCount = comp.typ == 9 ? 0
-                    : (comp.typ == 23 ? 4
-                    : (comp.typ == 33 ? 3
-                    : (comp.typ == 31 || comp.typ == 50 || comp.typ == 41 ? 1 : 2)));
+            int termCount = switch (comp.typ) {
+                case 9 -> 0;
+                case 23 -> 4;
+                case 33 -> 3;
+                case 31, 41, 50 -> 1;
+                default -> 2;
+            };
             Map<Point, List<Integer>> dPoints = wiresThroughPointByDomain.get(dom);
             DisjointSet<Integer> dUf = wireUfByDomain.get(dom);
 
@@ -483,7 +486,7 @@ public final class CircuitValidator {
             if ("THERMAL".equals(comp.domain) || comp.typ == 31 || comp.typ == 9) {
                 continue;
             }
-            int termCount = comp.typ == 23 ? 4 : (comp.typ == 33 ? 3 : 2);
+            int termCount = comp.typ == 23 ? 4 : comp.typ == 33 ? 3 : 2;
             for (int t = 0; t < termCount; t++) {
                 String tKey = "T:" + comp.uid + ":" + t;
                 String root = uf.find(tKey);
@@ -504,14 +507,14 @@ public final class CircuitValidator {
             if (comp.typ == 23) { // LK_TRANS
                 String pIn = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":0"));
                 String pOut = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":1"));
-                if (pIn != null && pOut != null && pIn.equals(pOut)) {
+                if (pIn != null && pIn.equals(pOut)) {
                     diagnostics.add(new Diagnostic("ERROR", "SHORT_CIRCUIT", comp.name,
                             "Component " + comp.name + " has primary terminals connected to the same net: '" + pIn + "'",
                             "Disconnect one primary terminal of transformer " + comp.name + " from net '" + pIn + "' or reroute to a distinct circuit node."));
                 }
                 String sIn = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":2"));
                 String sOut = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":3"));
-                if (sIn != null && sOut != null && sIn.equals(sOut)) {
+                if (sIn != null && sIn.equals(sOut)) {
                     diagnostics.add(new Diagnostic("ERROR", "SHORT_CIRCUIT", comp.name,
                             "Component " + comp.name + " has secondary terminals connected to the same net: '" + sIn + "'",
                             "Disconnect one secondary terminal of transformer " + comp.name + " from net '" + sIn + "' or reroute to a distinct circuit node."));
@@ -519,7 +522,7 @@ public final class CircuitValidator {
             } else if (comp.typ == 33) { // LK_BJT
                 String cNet = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":0"));
                 String eNet = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":2"));
-                if (cNet != null && eNet != null && cNet.equals(eNet)) {
+                if (cNet != null && cNet.equals(eNet)) {
                     diagnostics.add(new Diagnostic("ERROR", "SHORT_CIRCUIT", comp.name,
                             "Component " + comp.name + " has collector and emitter connected to the same net: '" + cNet + "'",
                             "Disconnect collector or emitter of BJT " + comp.name + " from net '" + cNet + "' or insert a collector/emitter branch."));
@@ -530,7 +533,7 @@ public final class CircuitValidator {
                 if (hasA && hasB) {
                     String netA = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":0"));
                     String netB = rootToCanonicalNet.get(uf.find("T:" + comp.uid + ":1"));
-                    if (netA != null && netB != null && netA.equals(netB)) {
+                    if (netA != null && netA.equals(netB)) {
                         diagnostics.add(new Diagnostic("ERROR", "SHORT_CIRCUIT", comp.name,
                                 "Component " + comp.name + " has both terminals connected to the same net: '" + netA + "'",
                                 "Disconnect one terminal of component " + comp.name + " from net '" + netA + "' or reroute to a distinct circuit node."));
@@ -591,7 +594,8 @@ public final class CircuitValidator {
 
                 boolean hasCoupledComp = (coupledId != 0L && (lkComponents.containsKey(coupledId) || thermComponents.containsKey(coupledId)))
                         || (coupledName != null && (lkComponentsByName.containsKey(coupledName) || thermComponentsByName.containsKey(coupledName)));
-                boolean hasMeasuredNodes = (!inNode.isEmpty() || !outNode.isEmpty()) || (paramStrings.size() >= (typ == 1 || typ == 1001 ? 1 : 2));
+                boolean hasMeasuredNodes = !inNode.isEmpty() || !outNode.isEmpty()
+                        || paramStrings.size() >= (typ == 1 || typ == 1001 ? 1 : 2);
                 boolean touchesWires = hasPos && (
                         (wiresThroughPointByDomain.get("CTRL") != null && wiresThroughPointByDomain.get("CTRL").containsKey(new Point(x, y)))
                         || (wiresThroughPointByDomain.get("LK") != null && wiresThroughPointByDomain.get("LK").containsKey(new Point(x, y)))
@@ -723,7 +727,7 @@ public final class CircuitValidator {
         Map<String, List<ComponentData>> netToLKComps = new LinkedHashMap<>();
         for (ComponentData comp : allComponents) {
             if (!"LK".equals(comp.domain) || comp.typ == 31 || comp.typ == 9) continue;
-            int termCount = comp.typ == 23 ? 4 : (comp.typ == 33 ? 3 : 2);
+            int termCount = comp.typ == 23 ? 4 : comp.typ == 33 ? 3 : 2;
             for (int t = 0; t < termCount; t++) {
                 String tKey = "T:" + comp.uid + ":" + t;
                 String net = rootToCanonicalNet.get(uf.find(tKey));
@@ -782,19 +786,18 @@ public final class CircuitValidator {
 
         // Rule 8: Unconnected Gate Check (Floating Switch Prevention)
         for (ComponentData comp : allComponents) {
-            if ("LK".equals(comp.domain) && isActiveSwitchType(comp.typ)) {
-                if (!drivenSwitchUids.contains(comp.uid) && !drivenSwitchNames.contains(comp.name)) {
-                    boolean baseConnected = comp.typ == 33 && isTerminalConnected(comp, 1, wiresThroughPointByDomain.get("LK"));
-                    if (!baseConnected) {
-                        diagnostics.add(new Diagnostic(
-                                "WARNING",
-                                "UNCONNECTED_GATE",
-                                comp.name,
-                                "Active semiconductor switch " + comp.name + " (typ " + comp.typ
-                                        + ") has no gate drive or control coupling; switch will remain permanently in its initial state.",
-                                "Add a GATE block (typ 6 / 1000) coupled to switch '" + comp.name + "' or provide a gating control signal."
-                        ));
-                    }
+            if ("LK".equals(comp.domain) && isActiveSwitchType(comp.typ)
+                    && !drivenSwitchUids.contains(comp.uid) && !drivenSwitchNames.contains(comp.name)) {
+                boolean baseConnected = comp.typ == 33 && isTerminalConnected(comp, 1, wiresThroughPointByDomain.get("LK"));
+                if (!baseConnected) {
+                    diagnostics.add(new Diagnostic(
+                            "WARNING",
+                            "UNCONNECTED_GATE",
+                            comp.name,
+                            "Active semiconductor switch " + comp.name + " (typ " + comp.typ
+                                    + ") has no gate drive or control coupling; switch will remain permanently in its initial state.",
+                            "Add a GATE block (typ 6 / 1000) coupled to switch '" + comp.name + "' or provide a gating control signal."
+                    ));
                 }
             }
         }
@@ -862,10 +865,8 @@ public final class CircuitValidator {
     }
 
     private static boolean isTerminalConnected(ComponentData comp, int t, Map<Point, List<Integer>> lkWires) {
-        if (comp.hasPos && t < comp.pins.size()) {
-            if (lkWires != null && lkWires.containsKey(comp.pins.get(t))) {
-                return true;
-            }
+        if (comp.hasPos && t < comp.pins.size() && lkWires != null && lkWires.containsKey(comp.pins.get(t))) {
+            return true;
         }
         String lbl = getTerminalLabel(comp, t);
         return lbl != null && !lbl.isEmpty() && !lbl.equalsIgnoreCase("NIX_NIX_NIX");
@@ -1021,9 +1022,9 @@ public final class CircuitValidator {
                 default -> null;
             };
         } else if (comp.typ == 31 || comp.typ == 50) {
-            return comp.nodesA.size() > 0 ? comp.nodesA.get(0) : (comp.nodesB.size() > 0 ? comp.nodesB.get(0) : null);
+            return comp.nodesA.size() > 0 ? comp.nodesA.get(0) : comp.nodesB.size() > 0 ? comp.nodesB.get(0) : null;
         } else if (comp.typ == 41) {
-            return comp.nodesB.size() > 0 ? comp.nodesB.get(0) : (comp.nodesA.size() > 0 ? comp.nodesA.get(0) : null);
+            return comp.nodesB.size() > 0 ? comp.nodesB.get(0) : comp.nodesA.size() > 0 ? comp.nodesA.get(0) : null;
         } else {
             return switch (t) {
                 case 0 -> comp.nodesA.size() > 0 ? comp.nodesA.get(0) : null;

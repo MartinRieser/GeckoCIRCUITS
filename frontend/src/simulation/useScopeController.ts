@@ -11,30 +11,6 @@ import {
 } from './viewWindow';
 import { signalColorInList, type TraceTheme } from './traceColors';
 
-/** @deprecated canonical colors come from colorOf(name) — kept for tests. */
-export const TRACE_COLORS_DARK = [
-  '#38bdf8', // Light blue / Cyan
-  '#f43f5e', // Rose / Red
-  '#facc15', // Amber / Yellow
-  '#4ade80', // Mint / Green
-  '#a855f7', // Purple
-  '#fb923c', // Orange
-  '#2dd4bf', // Teal
-  '#e879f9', // Fuchsia
-];
-
-/** @deprecated canonical colors come from colorOf(name) — kept for tests. */
-export const TRACE_COLORS_LIGHT = [
-  '#0284c7', // Sky blue
-  '#e11d48', // Crimson
-  '#ca8a04', // Dark amber
-  '#16a34a', // Forest green
-  '#7e22ce', // Dark violet
-  '#ea580c', // Dark orange
-  '#0f766e', // Dark teal
-  '#c026d3', // Magenta
-];
-
 /** Measurement details for a single channel evaluated at the cursor positions. */
 export interface CursorMeasurementChannel {
   /** Signal / channel identifier. */
@@ -110,7 +86,7 @@ export interface ScopeController {
    *  selected, result column order in the combined view. */
   colorOf: (name: string) => string;
 
-  // Cursors & Single Measurement Location
+  // Cursors & measurements
   cursorsEnabled: boolean;
   setCursorsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
   cursorA: number | null;

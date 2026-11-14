@@ -99,7 +99,9 @@ desktop/app/engine/gecko_c_block.h
 desktop/app/gen/schemas/
 
 # Desktop dist output (launchers etc.)
-desktop/# Node
+desktop/dist/
+
+# Node
 node_modules/
 dist/
 

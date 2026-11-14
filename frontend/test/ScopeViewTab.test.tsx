@@ -164,7 +164,7 @@ describe('Oscilloscope GUI & Controls', () => {
     expect(chBadges[1].textContent).toContain('I_L');
   });
 
-  it('displays cursor measurements in ONE single location (the right sidebar) when cursors are enabled', () => {
+  it('displays cursor measurements in the right sidebar when cursors are enabled', () => {
     const { result } = renderHook(() =>
       useScopeController({
         results: dummyResults,

@@ -65,7 +65,6 @@ import java.util.Map;
  *
  * @see ThermalRCModel
  * @see ThermalNode
- * @since v2.18.0 Task L1 - Multi-Domain Coupling (Step 1: Thermal Domain Engine)
  */
 public final class ThermalNetworkSolver {
 

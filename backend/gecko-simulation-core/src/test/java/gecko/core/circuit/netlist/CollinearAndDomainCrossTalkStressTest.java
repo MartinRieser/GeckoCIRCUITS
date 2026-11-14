@@ -21,13 +21,13 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Phase 5: Topology & Wiring Stress Tests.
+ * Topology & wiring stress tests.
  *
  * Validates:
- * - Task 5.2: Collinear & Orthogonal Crossings Stress Test: Perpendicular crossing wires
- *   never merge electrical nodes unless an explicit T-junction terminal vertex is present.
- * - Task 5.3: Domain Cross-Talk Stress Test: Electrical (LK), Thermal, and Control domains
- *   sharing coordinates or labels are completely isolated without matrix cross-talk.
+ * - Collinear & Orthogonal Crossings: Perpendicular crossing wires never
+ *   merge electrical nodes unless an explicit T-junction terminal vertex is present.
+ * - Domain Cross-Talk: Electrical (LK), Thermal, and Control domains sharing
+ *   coordinates or labels are completely isolated without matrix cross-talk.
  */
 public class CollinearAndDomainCrossTalkStressTest {
 

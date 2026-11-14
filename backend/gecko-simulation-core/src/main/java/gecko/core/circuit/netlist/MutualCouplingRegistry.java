@@ -34,9 +34,6 @@ import java.util.*;
  *   <li>Calculate mutual inductance values</li>
  *   <li>Provide coupling partners for each inductor</li>
  * </ul>
- *
- * @author Extracted from NetListLK
- * @since Sprint 2 - Circuit Refactoring
  */
 public class MutualCouplingRegistry {
 

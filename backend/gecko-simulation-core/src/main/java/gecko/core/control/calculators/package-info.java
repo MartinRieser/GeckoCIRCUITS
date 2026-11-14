@@ -1,37 +1,31 @@
-/*  This file is part of GeckoCIRCUITS. Copyright (C) ETH Zurich, Gecko-Simulations GmbH
+/*  This file is part of GeckoCIRCUITS. Copyright (C) ETH Zurich, Gecko-Simulations AG
  *
  *  GeckoCIRCUITS is free software: you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free Software
  *  Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  GeckoCIRCUITS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ *  GeckoCIRCUITS. If not, see <http://www.gnu.org/licenses/>.
  */
-
 /**
- * Pure calculator implementations for control blocks - GUI-FREE.
- * 
- * <p>These 71 classes contain the actual calculation algorithms for control
- * system blocks. They have NO GUI dependencies and can run headless.</p>
- * 
- * <h2>GUI-Free Calculators (examples)</h2>
- * <ul>
- *   <li>{@code AbstractControlCalculatable} - Base class for all calculators</li>
- *   <li>{@code SineCalculator} - Sine wave generation</li>
- *   <li>{@code RMSCalculator} - Root Mean Square calculation</li>
- *   <li>{@code THDCalculator} - Total Harmonic Distortion</li>
- *   <li>{@code FFTCalculator} - Fast Fourier Transform</li>
- *   <li>{@code PIDCalculator} - PID controller</li>
- *   <li>{@code IntegratorCalculator} - Numerical integration</li>
- *   <li>{@code ComparatorCalculator} - Signal comparison</li>
- * </ul>
- * 
- * <h2>Excluded (remain in desktop)</h2>
- * <ul>
- *   <li>{@code DEMUXCalculator} - Depends on ControlDemux GUI class</li>
- *   <li>{@code SpaceVectorCalculator} - Depends on SpaceVectorDisplay GUI</li>
- * </ul>
- * 
- * <h2>Coverage Target: 85%</h2>
- * <p>Current: 41% (4,241 of 10,117 instructions)</p>
- * 
- * @since 2.0
+ * GUI-free control block calculator implementations extending
+ * {@link gecko.core.control.calculators.AbstractControlCalculatable}.
+ *
+ * <p>Includes arithmetic and math blocks ({@code AddCalculator}, {@code MulCalculator},
+ * {@code DivCalculator}, {@code SqrtCalculator}, trigonometric and exponential functions),
+ * logic and comparison gates ({@code AndTwoPortCalculator}, {@code OrCalculatorTwoInputs},
+ * {@code NotCalculator}, {@code XORCalculator}, {@code GreaterThanCalculator}),
+ * dynamic/transfer blocks ({@code IntegratorCalculation}, {@code PICalculator},
+ * {@code PDCalculator}, {@code PT1Calculator}, {@code PT2Calculator}, {@code DelayCalculator}),
+ * signal sources ({@code ConstantCalculator}, {@code SignalCalculatorSinus},
+ * {@code SignalCalculatorRectangle}, {@code SignalCalculatorTriangle},
+ * {@code SignalCalculatorRandom}), transforms and motor control ({@code ABCDQCalculator},
+ * {@code DQABCDCalculator}, {@code PmsmControlCalculator}, {@code PmsmModulatorCalculator},
+ * {@code SlidingDFTCalculator}), and script/C-library blocks ({@code ScriptBlockCalculator},
+ * {@code CLibraryCalculator}).
  */
 package gecko.core.control.calculators;

@@ -838,7 +838,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     },
   },
 
-  // Ideal transformer (LK_TRANS) — not yet stamped by the core engine
+  // Ideal transformer (LK_TRANS)
   23: {
     type: 23,
     family: 'LK',
@@ -1005,7 +1005,7 @@ export const COMPONENT_METAS: Record<number, ComponentMeta> = {
     },
   },
 
-  // BJT transistor — not yet stamped by the core engine
+  // BJT transistor (LK_BJT)
   33: {
     type: 33,
     family: 'LK',

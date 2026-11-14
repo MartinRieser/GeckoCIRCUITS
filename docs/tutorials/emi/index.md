@@ -23,12 +23,12 @@ Electromagnetic interference and filter design in GeckoCIRCUITS.
 
 ## Contents
 
-### 601 - EMI Filter Basics
+### 601: EMI Filter Basics
 - Principles of conducted emissions and frequency spectra
 - Insertion loss definition and measurement methods
 - Inductor parasitics (parallel capacitance) and capacitor ESR/ESL effects
 
-### 602 - CM/DM Filters
+### 602: CM/DM Filters
 - Common-mode chokes and differential-mode filtering stages
 - Damping resistors to prevent filter resonance
 - LISN circuit modeling for standard conducted emission compliance

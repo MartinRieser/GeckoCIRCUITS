@@ -7,8 +7,8 @@
  */
 import type { EditorComponent } from '../model/types';
 import { CTRL_TYPE, resolveComponentPinCounts, getComponentMeta } from '../model/componentSchema';
-import { Orientation, CANVAS_METRICS, LkComponentType } from '../model/constants';
-import { TWO_PORT_DIST } from '../model/geometry';
+import { Orientation, CANVAS_METRICS, LkComponentType, SENTINEL_UNSET } from '../model/constants';
+import { TWO_PORT_DIST, SCRIPT_PIN_STEP } from '../model/geometry';
 
 /** Rotation angle (deg) that maps WEST_EAST base orientation to the given code. */
 export function orientationAngle(orientation: number): number {
@@ -1160,7 +1160,7 @@ function ScopeSymbol({
             >
               {i + 1}
             </text>
-            {label && label !== 'NIX_NIX_NIX' && (
+            {label && label !== SENTINEL_UNSET && (
               <text
                 x={-LEAD * u - 2}
                 y={offset + 3}
@@ -1771,7 +1771,7 @@ function ScriptFunctionBlockSymbol({
   // Anchored unit-step pin block, in lockstep with terminalPositions and
   // the simulation core's terminal grid: input i on row i, output j on row
   // j, first pin on the component's anchor row, the block grows downward.
-  const step = 1.0; // must match SCRIPT_PIN_STEP in model/geometry.ts
+  const step = SCRIPT_PIN_STEP;
   const maxPins = Math.max(inCount, outCount, 1);
   const span = (maxPins - 1) * step;
   const top = -0.8 * u;

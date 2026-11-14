@@ -7,8 +7,9 @@ use std::process::{Child, Command, Stdio};
 use std::sync::mpsc::{channel, Receiver};
 use std::thread;
 
-/// Locations of the bundled Java runtime and engine jar inside the
-/// installer's resource directory (`engine/runtime/bin/java`, `engine/*.jar`).
+/// Locations of the bundled Java runtime and REST engine jar inside the
+/// installer's resource directory (`engine/runtime/bin/java` or `java.exe`,
+/// `engine/gecko-rest-api.jar`).
 #[derive(Debug)]
 pub struct EnginePaths {
     pub java: PathBuf,

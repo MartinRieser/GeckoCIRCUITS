@@ -1,7 +1,6 @@
 /**
  * Pure mapping from a simulation results payload (signal name -> samples)
  * to chart inputs: trace order, the time vector and per-signal statistics.
- * Extracted from SimulationDrawer so it is unit-testable.
  */
 
 export interface SignalStats {

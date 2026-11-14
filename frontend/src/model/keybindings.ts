@@ -41,7 +41,6 @@ export type ActionId =
   | 'new-circuit'
   | 'toggle-inspector'
   | 'toggle-palette'
-  | 'toggle-simulation'
   | 'show-shortcuts-help';
 
 export interface KeyBinding {
@@ -352,7 +351,6 @@ export function resolveShortcut(
   e: KeyboardEventLike,
   mode: EditorMode,
   hasSelection = false,
-  _hasDraft = false,
 ): ActionId | null {
   const isCtrlOrMeta = !!(e.ctrlKey || e.metaKey);
   const isShift = !!e.shiftKey;

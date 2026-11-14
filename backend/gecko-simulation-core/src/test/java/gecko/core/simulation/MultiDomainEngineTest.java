@@ -29,13 +29,13 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /**
- * End-to-end verification of the multi-domain engine (Task L1 Step 4): one
- * run couples all three domains - the electrical loop drives a saturating
- * choke whose inductance the magnetic reluctance network updates to the
- * differential inductance of the solved operating point (the induced EMF
- * {@code N * dPhi/dt = L_diff * di/dt} acts through the inductor companion),
- * while the series resistor feeds its ohmic losses into a thermal RC network
- * whose junction temperature feeds back into the resistance.
+ * End-to-end verification of the multi-domain engine: one run couples all three
+ * domains - the electrical loop drives a saturating choke whose inductance the
+ * magnetic reluctance network updates to the differential inductance of the
+ * solved operating point (the induced EMF {@code N * dPhi/dt = L_diff * di/dt}
+ * acts through the inductor companion), while the series resistor feeds its
+ * ohmic losses into a thermal RC network whose junction temperature feeds back
+ * into the resistance.
  *
  * <p>The coupled steady state is analytic: the fully saturated choke releases
  * its EMF, so the current settles at {@code U/R(T*)} with the electro-thermal

@@ -5,7 +5,10 @@ Communicates with gecko-mcp.jar over stdio using JSON-RPC 2.0.
 """
 
 import json
+import os
+import shutil
 import subprocess
+import sys
 import threading
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -13,12 +16,25 @@ from typing import Any, Dict, Optional
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
+def _default_java() -> Path:
+    exe = "java.exe" if sys.platform == "win32" else "java"
+    bundled = REPO_ROOT / "desktop" / "app" / "engine" / "runtime" / "bin" / exe
+    if bundled.is_file():
+        return bundled
+    if os.environ.get("JAVA_HOME"):
+        cand = Path(os.environ["JAVA_HOME"]) / "bin" / exe
+        if cand.is_file():
+            return cand
+    resolved = shutil.which("java")
+    return Path(resolved) if resolved else Path(exe)
+
+
 class GeckoMcpClient:
     def __init__(self, jar_path: Optional[Path] = None, java_path: Optional[Path] = None):
-        self.java_path = java_path or (REPO_ROOT / "desktop" / "app" / "engine" / "runtime" / "bin" / "java.exe")
+        self.java_path = java_path or _default_java()
         self.jar_path = jar_path or (REPO_ROOT / "desktop" / "app" / "engine" / "gecko-mcp.jar")
         if not self.jar_path.exists():
-            target_jar = REPO_ROOT / "backend" / "gecko-mcp" / "target" / "gecko-mcp-1.0-jar-with-dependencies.jar"
+            target_jar = REPO_ROOT / "backend" / "gecko-mcp" / "target" / "gecko-mcp.jar"
             if target_jar.exists():
                 self.jar_path = target_jar
 

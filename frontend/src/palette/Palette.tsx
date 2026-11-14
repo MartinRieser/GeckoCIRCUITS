@@ -29,7 +29,6 @@ export interface PaletteProps {
 export function Palette({ catalog, onArm, onCollapse }: PaletteProps) {
   const [filter, setFilter] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>('all');
-  const viewMode = 'list';
 
   // Augment catalog entries with schema metadata (hide legacy Java block and Scope from new part palette)
   const catalogWithMeta = useMemo(() => {
@@ -173,7 +172,7 @@ export function Palette({ catalog, onArm, onCollapse }: PaletteProps) {
             )}
           </div>
         ) : (
-          <div className={`palette-${viewMode}`}>
+          <div className="palette-list">
             {filteredEntries.map((entry) => {
               const disabled = entry.meta?.disabled ?? false;
               return (
@@ -212,9 +211,7 @@ export function Palette({ catalog, onArm, onCollapse }: PaletteProps) {
                         entry.shortcut && <kbd className="card-shortcut">{entry.shortcut}</kbd>
                       )}
                     </div>
-                    {viewMode === 'list' && (
-                      <span className="card-desc">{entry.description}</span>
-                    )}
+                    <span className="card-desc">{entry.description}</span>
                   </div>
                 </button>
               );

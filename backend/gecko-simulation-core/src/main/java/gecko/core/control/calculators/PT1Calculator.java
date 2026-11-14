@@ -15,16 +15,15 @@ package gecko.core.control.calculators;
 
 public final class PT1Calculator extends AbstractPTCalculator {
         
-        private double _yOld = 0;  // Speicherung des I-Anteils
+        private double _yOld = 0;  // Storage of integral state
         private double _xOld = 0;
 
-        public PT1Calculator(final double timeConstant, final double gainFactor) {            
-            super(timeConstant, gainFactor);            
-        }        
+        public PT1Calculator(final double timeConstant, final double gainFactor) {
+            super(timeConstant, gainFactor);
+        }
 
         @Override
         public void calculateYOUT(final double deltaT) {
-            //if (t==0) { xalt=yaltInit;  yalt=xaltInit; }  // re-init
             _outputSignal[0][0] = _yOld * (2 * _TVal - deltaT) / (2 * _TVal + deltaT) + _a1Val / (1 + 2 * _TVal / deltaT)
                     * (_inputSignal[0][0] + _xOld);
             _xOld = _inputSignal[0][0];

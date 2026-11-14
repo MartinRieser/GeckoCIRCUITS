@@ -117,10 +117,12 @@ try {
     Write-Host 'starting gecko-rest-api...'
     $restProc = Start-Process -FilePath $javaBin -ArgumentList '-Xmx1g', '-jar', "`"$restJar`"" `
         -WindowStyle Hidden -PassThru
+    $trimmedBase = $BaseUrl.TrimEnd('/')
+    $apiBase = if ($trimmedBase.EndsWith('/gecko')) { $trimmedBase } else { "$trimmedBase/gecko" }
     $up = $false
     foreach ($i in 1..60) {
         try {
-            $r = Invoke-WebRequest -UseBasicParsing -Uri "$BaseUrl/gecko/api/v1/circuits/catalog" -TimeoutSec 2
+            $r = Invoke-WebRequest -UseBasicParsing -Uri "$apiBase/api/v1/circuits/catalog" -TimeoutSec 2
             if ($r.StatusCode -eq 200) { $up = $true; break }
         } catch { Start-Sleep -Milliseconds 500 }
     }

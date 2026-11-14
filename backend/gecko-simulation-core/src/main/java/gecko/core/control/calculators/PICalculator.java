@@ -17,7 +17,7 @@ public final class PICalculator extends AbstractControlCalculatable implements I
 
     private double _r0;
     private double _a1;
-    private double y1alt = 0;  // Speicherung des I-Anteils
+    private double y1alt = 0;  // Storage of integral state
     private double xalt = 0, y11 = -1;
 
     public PICalculator(final double r0, final double a1) {

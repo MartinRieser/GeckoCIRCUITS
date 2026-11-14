@@ -18,8 +18,6 @@ package gecko.core.circuit;
  *
  * <p>This is the GUI-free core version containing only the enum values.
  * Display properties (colors, etc.) are handled in the GUI layer.
- *
- * @since Core Module Extraction Sprint
  */
 public enum ConnectorType {
 

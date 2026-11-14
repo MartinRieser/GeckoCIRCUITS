@@ -27,10 +27,7 @@ import gecko.core.circuit.netlist.CircuitNetlist;
  *   <li>THERM → LK  : temperature-dependent resistances</li>
  * </ul>
  *
- * <p>Extracted from gecko.geckocircuits.circuit.SimulationKernel coupling arrays.
- *
- * @author Extracted for Phase 4 domain coupling
- * @since v2.18.0 Phase 4 - Domain coupling architecture
+ * <p>Extracted from GeckoCIRCUITS circuit coupling logic.
  */
 public class DomainCoupler {
 
@@ -132,9 +129,7 @@ public class DomainCoupler {
             controlNetlist.executeTimeStep(dt, time);
         }
 
-        // 3. Transfer CONTROL outputs back to LK (sources, switches)
-        // Note: actual source/switch updates happen in next buildVectorB/buildMatrixA call
-        // (placeholder for Phase 5 full integration)
+        // CONTROL outputs are applied by ControlCoupling and buildVectorB/buildMatrixA.
     }
 
     // --- Accessors ---

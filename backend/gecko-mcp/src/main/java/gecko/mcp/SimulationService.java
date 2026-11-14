@@ -25,12 +25,7 @@ final class SimulationService {
     }
 
     static SolverType solver(String name) {
-        return switch (name.toLowerCase()) {
-            case "be", "backward-euler" -> SolverType.SOLVER_BE;
-            case "trz", "trapezoidal" -> SolverType.SOLVER_TRZ;
-            case "gs", "gear-shichman" -> SolverType.SOLVER_GS;
-            default -> throw new IllegalArgumentException("Unknown solver: " + name);
-        };
+        return RunOptions.solver(name);
     }
 
     static RunResult simulate(Path circuit, Double duration, Double dt, String solver) throws IOException {
@@ -108,39 +103,8 @@ final class SimulationService {
         return new ParsedCsv(header, columns);
     }
 
-    /** Column-wise CSV parse mirroring the Python tool's line parsing. */
+    /** Per-signal time-series table extracted from simulation results. */
     record ParsedCsv(List<String> header, Map<String, List<Double>> columns) {
-
-        static ParsedCsv parse(String content) {
-            List<String> lines = List.of(content.split("\n"));
-            if (lines.isEmpty()) {
-                return new ParsedCsv(List.of(), Map.of());
-            }
-            List<String> header = List.of(stripCr(lines.get(0)).split(","));
-            Map<String, List<Double>> columns = new LinkedHashMap<>();
-            for (String name : header) {
-                columns.put(name, new ArrayList<>());
-            }
-            for (int i = 1; i < lines.size(); i++) {
-                String line = stripCr(lines.get(i));
-                String[] parts = line.split(",", -1);
-                if (parts.length != header.size()) {
-                    continue;
-                }
-                try {
-                    for (int c = 0; c < header.size(); c++) {
-                        columns.get(header.get(c)).add(Double.parseDouble(parts[c]));
-                    }
-                } catch (NumberFormatException e) {
-                    // Python port: malformed rows are skipped
-                }
-            }
-            return new ParsedCsv(header, columns);
-        }
-
-        private static String stripCr(String line) {
-            return line.endsWith("\r") ? line.substring(0, line.length() - 1) : line;
-        }
 
         int rowCount() {
             return columns.isEmpty() ? 0 : columns.values().iterator().next().size();

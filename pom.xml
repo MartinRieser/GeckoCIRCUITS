@@ -40,9 +40,9 @@
     </build>
 
     <profiles>
-        <!-- P5 verification harness: runs both engines over curated circuits
-             and compares results. Opt-in only (needs the GUI jar + a display
-             for the legacy engine). Usage: mvn -Pparity verify -->
+        <!-- Opt-in parity harness profile: invokes tools/parity/run-parity.ps1
+             to compare reference and headless engine CSV outputs.
+             Usage: mvn -Pparity verify -->
         <profile>
             <id>parity</id>
             <build>

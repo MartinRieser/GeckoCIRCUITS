@@ -25,8 +25,6 @@ package gecko.core.simulation;
  *       (auto-calibrated to the element's forward voltage at its rated
  *       current); latching thyristors and gated IGBTs keep the state machine.</li>
  * </ul>
- *
- * @since v2.18.0 Task L3 - High-Performance Solver & Advanced Numerics
  */
 public enum SemiconductorModelKind {
 

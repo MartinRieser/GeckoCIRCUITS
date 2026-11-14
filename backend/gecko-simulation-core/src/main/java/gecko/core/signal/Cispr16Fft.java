@@ -65,13 +65,10 @@ public final class Cispr16Fft {
     }
 
     /**
-     * this is not a "real" resampling. We need a 2^N number of samples,
-     * therefore we just continue calculation with the last 2^N values, where N
-     * is as big as possible.
+     * Extracts the latest power-of-two sample window supported by the input
+     * container because the built-in FFT requires {@code 2^N} samples.
      *
-     * @param data
-     * @param reductor additional data reduction factor. If reductor = 0, no
-     * further reduction is done. If freductor = 1, the data size is halved...
+     * @param data input container holding the time-series waveform in row 0
      */
     private void doResampling(final AbstractDataContainer data) {
 
@@ -139,11 +136,10 @@ public final class Cispr16Fft {
     }
 
     /**
+     * Computes the real-valued FFT in place.
      *
-     * @param data input-output array of length N + 1 (!)
-     * @param n
-     * @param isign 1 if from Timedomain to frequency domain, FD -> TD sign =
-     * -1;
+     * @param data input-output array whose length must be a power of two
+     * @param isign {@code 1} for time-domain to frequency-domain, {@code -1} for inverse
      */
     public static void realft(final float[] data, final int isign) {
 
@@ -209,8 +205,7 @@ public final class Cispr16Fft {
         }
     }
 
-    // float-Version von four1()
-    //
+    // Single-precision variant of four1()
     public static void ffour1(final float[] data, final int numberPoints, final int isign) {
         int mmm;
         int istep, iii;
@@ -280,7 +275,6 @@ public final class Cispr16Fft {
         }
     }
 
-    static long magnitudeCounter = 0;
     private float getMagnitude(final int frequencyIndex) {
         final double imag = _zvResampled[2 * frequencyIndex + 1];
         final double real = _zvResampled[2 * frequencyIndex];

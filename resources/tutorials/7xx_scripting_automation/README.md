@@ -4,122 +4,81 @@ Programmatic control and external tool integration.
 
 | Tutorial | Title | Difficulty | Status |
 |----------|-------|------------|--------|
-| [701](701_gecko_script_basics/) | GeckoSCRIPT Basics | 2/3 | Available |
-| [702](702_matlab_integration/) | MATLAB Integration | 2/3 | Available |
-| [703](703_simulink_cosimulation/) | Simulink Co-Simulation | 3/3 | Available |
-| [704](704_java_blocks/) | Java Blocks | 3/3 | Available |
+| [701](701_gecko_script_basics/) | GeckoSCRIPT Basics (Legacy Archive) | 2/3 | Legacy `.ipes` / docs |
+| [702](702_matlab_integration/) | MATLAB Integration (Legacy Archive) | 2/3 | Legacy `.m` / `.scl` / `.ipes` |
+| [703](703_simulink_cosimulation/) | Simulink Co-Simulation | 3/3 | Legacy S-Function files |
+| [704](704_java_blocks/) | Java / `SCRIPT_BLOCK` Examples | 3/3 | Available |
 | [705](705_api_integration/) | API Integration | 3/3 | Available |
-| [706](706_python_integration/) | Python Integration | 2/3 | Placeholder |
 
 ## Learning Objectives
 
-- Automate simulations with GeckoSCRIPT
-- Integrate with MATLAB for parameter sweeps
-- Co-simulate with Simulink models
-- Create custom Java control blocks
-- Use the REST API for remote control
-- Control simulations from Python scripts
+- Create custom Java/`SCRIPT_BLOCK` control logic
+- Use the REST API and WebSockets for remote simulation control
+- Automate parameter sweeps and analysis from Python (`geckopy`)
+- Consult legacy GeckoSCRIPT, MATLAB, and Simulink reference archives
 
 ## Integration Options Overview
 
-| Method | Best For | Complexity |
-|--------|----------|------------|
-| GeckoSCRIPT | Built-in automation | Low |
-| MATLAB | Control design, data analysis | Medium |
-| Simulink | Real-time HIL, system models | Medium |
-| Java Blocks | Custom components | Medium-High |
-| Python | Optimization, machine learning | Medium |
-| REST API | Web integration, remote control | High |
+| Method | Best For | Documentation |
+|--------|----------|---------------|
+| Python (`geckopy`) | Parameter sweeps, optimization, data analysis | [Python SDK Guide](../../../docs/tutorials/scripting/python.md) |
+| REST API / WebSocket | Web UI, headless automation, remote streaming | [REST API Reference](../../../docs/api/rest-api.md) |
+| Java / `SCRIPT_BLOCK` | Inline per-step custom control logic | [Java Control Blocks Guide](../../../docs/tutorials/scripting/java-blocks.md) |
+| Native C (`NativeC`) | Compiled C shared libraries | [Native C Blocks Guide](../../../docs/native-c-blocks.md) |
+| Legacy Archives (`701`–`703`) | Historical GeckoSCRIPT, MATLAB RMI, and Simulink files | [Scripting Overview](../../../docs/tutorials/scripting/index.md) |
+
+> [!NOTE]
+> The legacy Swing `GeckoSCRIPT` window and RMI `GeckoRemoteInterface` (`port 1099`) are retired in modern GeckoCIRCUITS; see the `classic-v1.0-final` tag for the archived Swing codebase. Use the REST API, `geckopy`, `SCRIPT_BLOCK`, or `NativeC` for active automation.
 
 ## Contents
 
-### 701 - GeckoSCRIPT Basics
-- `GeckoSCRIPT.pdf` - Complete scripting guide
-- `GeckoSCRIPT.ipes` - Example script-controlled circuit
-- `buck_control.ipes` / `buck_control_tuning.m` - Control tuning example
+### 701 - Legacy GeckoSCRIPT Material
+- `GeckoSCRIPT.pdf` — Historical scripting manual
+- `GeckoSCRIPT.ipes`, `buck_control.ipes`, `buck_control_tuning.m` — Historical circuit and MATLAB files
 
-### 702 - MATLAB Integration
-- `GeckoSCRIPT_ example_matlab/` - MATLAB integration examples
-- Loss calculation scripts (`.scl`)
-- RMI interface for bidirectional communication
+### 702 - Legacy MATLAB / GeckoSCRIPT Examples
+- `GeckoSCRIPT_ example_matlab/` — Historical MATLAB frequency sweep (`outputlegfrequencysweep.m`), semiconductor loss curves (`Diodeloss.scl`, `IGBTloss.scl`), and `outputstagemodel.ipes`
+- For modern MATLAB interop via the REST API, see the [MATLAB Interop Guide](../../../docs/tutorials/scripting/matlab.md)
 
 ### 703 - Simulink Co-Simulation
-- `GeckoCIRCUITS_simulink_tutorial.pdf` - Tutorial guide
-- `Gecko_VR1.mdl` - Simulink model
-- `s_GeckoCIRCUITS.c` - S-function source
-- MEX files for various platforms
+- `GeckoCIRCUITS_simulink_tutorial.pdf` — Legacy S-function tutorial guide
+- `Gecko_VR1.mdl` — Legacy Simulink model
+- `cj.h`, `gecko-research_simulink_tutorial.*` — Historical co-simulation files
 
-### 704 - Java Blocks
-- `demo_JAVA_Block.ipes` - Java block introduction
-- `JavaBlockPMSM.ipes` - PMSM control with Java
-- Custom component development guide
+### 704 - Java / `SCRIPT_BLOCK` Examples
+- `demo_JAVA_Block.ipes` — Control block example
+- `JavaBlockPMSM.ipes` — PMSM control example
 
 ### 705 - API Integration
-- `SIGNAL_ANALYSIS_API.md` - API documentation
-- `websocket-client.html` - WebSocket test client
-- External signal source examples
+- `websocket-client.html` — SockJS/STOMP WebSocket progress test client (`/gecko/ws`)
+- `ExternalSignalSource.ipes`, `signalsourceExternal.ipes` — External signal source examples
 
-### 706 - Python Integration (New)
-- Parameter sweep automation
-- Optimization with SciPy
-- Data analysis with NumPy/Pandas
-- Parallel simulation execution
+## Quick Start: Modern Automation
 
-## Quick Start: Automation
-
-### GeckoSCRIPT (Built-in)
-```javascript
-// Simple parameter sweep
-for (D = 0.2; D <= 0.8; D += 0.1) {
-    setParameter("PWM.1", "dutyCycle", D);
-    runSimulation();
-    Vout = getMeasurement("SCOPE.1", "ch1_avg");
-    print("D=" + D + ", Vout=" + Vout);
-}
-```
-
-### MATLAB (RMI Interface)
-```matlab
-% Connect to GeckoCIRCUITS
-gecko = GeckoRemoteInterface('localhost', 1099);
-
-% Run parameter sweep
-D_values = 0.2:0.1:0.8;
-for i = 1:length(D_values)
-    gecko.setParameter('PWM.1', 'dutyCycle', D_values(i));
-    gecko.runSimulation();
-    Vout(i) = gecko.getMeasurement('SCOPE.1', 'ch1_avg');
-end
-```
-
-### Python (File-based or API)
+### Python (`geckopy`)
 ```python
-import subprocess
-import numpy as np
+import geckopy
 
-# Parameter sweep
-D_values = np.linspace(0.2, 0.8, 7)
-for D in D_values:
-    # Run simulation
-    subprocess.run(['java', '-jar', 'gecko.jar',
-                   '--param', f'D={D}', 'buck.ipes'])
-    # Analyze results
-    results = np.loadtxt('output.csv')
-    print(f"D={D:.1f}, Vout={results[:,1].mean():.2f}")
+ckt = geckopy.open("examples/buck.ipes")
+for r_load in (5.0, 10.0, 15.0):
+    ckt.set_parameter("R_load", "resistance", r_load)
+    res = ckt.simulate(duration=0.01, dt=1e-6, solver="backward-euler")
+    print(f"R={r_load} Ohm -> metrics={res.metrics}")
 ```
+
+### REST API (`curl`)
+Check status and inspect endpoints at `http://localhost:8080/gecko/swagger-ui.html` (see [REST API Reference](../../../docs/api/rest-api.md)).
 
 ## Use Case Selection Guide
 
 | Task | Recommended Tool |
 |------|------------------|
-| Quick parameter check | GeckoSCRIPT |
-| Control loop design | MATLAB |
-| System-level simulation | Simulink |
-| Custom algorithms | Java Blocks |
-| Optimization/ML | Python |
-| Web dashboard | REST API |
+| Custom cycle-by-cycle control | `SCRIPT_BLOCK` (or Java `AbstractControlCalculatable`) |
+| Optimization / ML / sweeps | Python (`geckopy`) |
+| Web dashboard / remote CI | REST API (`/gecko/api/v1`) |
+| Legacy Swing scripts | Archived `classic-v1.0-final` tag |
 
 ## Related Tutorials
 
-- [104 - Running Simulations](../1xx_getting_started/104_running_simulations/) - Batch mode basics
-- [105 - Analysis Tools](../1xx_getting_started/105_analysis_tools/) - Automated analysis
+- [104 - Running Simulations](../1xx_getting_started/104_running_simulations/) - Solver settings and batch simulation basics
+- [Scripting & Automation Docs](../../../docs/tutorials/scripting/index.md) - Modern automation hub

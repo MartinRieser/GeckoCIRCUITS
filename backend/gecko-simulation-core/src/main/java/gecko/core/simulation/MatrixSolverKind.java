@@ -25,8 +25,6 @@ package gecko.core.simulation;
  *   <li><b>AUTO</b>: sparse above the automatic size threshold, dense
  *       below - the default.</li>
  * </ul>
- *
- * @since v2.18.0 Task L3 - High-Performance Solver & Advanced Numerics
  */
 public enum MatrixSolverKind {
 

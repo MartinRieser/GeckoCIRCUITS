@@ -23,7 +23,6 @@ package gecko.core.circuit.matrix;
  * exactly like the {@code +=} writes of the dense matrix.
  *
  * @see IMatrixStamper
- * @since v2.18.0 Task L3 - High-Performance Solver & Advanced Numerics
  */
 public interface MatrixAccumulator {
 

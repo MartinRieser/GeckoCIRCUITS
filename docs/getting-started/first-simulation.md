@@ -70,11 +70,11 @@ voltage, inductor current, switch node.
 
 | Action | Control |
 |--------|---------|
-| Zoom in/out | Mouse wheel (around the cursor) |
-| Pan | Left-click + drag |
-| Fit whole simulation | ⟲ toolbar button |
+| Zoom in/out | Mouse wheel (around cursor) or left-click + drag (2D box zoom) |
+| Pan | Middle-click + drag, or Alt+Left-click + drag |
+| Fit whole simulation | ⟲ toolbar button (or `Esc`) |
 | Y-axis | Auto-rescales to the visible window |
-| Cursors | Click to place **A**, click again for **B** — Δt and frequency readout below the chart |
+| Cursors | Left-click to place **A**, Shift+click or right-click for **B** — Δt and frequency readout in the right sidebar |
 
 ## Step 7: Analyze the Results
 

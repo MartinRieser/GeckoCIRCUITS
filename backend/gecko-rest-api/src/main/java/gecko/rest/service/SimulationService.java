@@ -24,8 +24,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Comparator;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -300,7 +302,10 @@ public class SimulationService {
                 }
                 double progress = endTime > 0 ? currentTime / endTime : 0;
                 broadcastProgress(simulationId, progress, currentTime, endTime);
-                logger.debug("Simulation {} progress: {:.1f}%", simulationId, (progress * 100));
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Simulation {} progress: {}%", simulationId,
+                            String.format(Locale.ROOT, "%.1f", progress * 100));
+                }
             });
 
             logger.info("Starting simulation {} with dt={}, duration={}",
@@ -310,7 +315,7 @@ public class SimulationService {
             SimulationResult result = engine.runSimulation(config);
 
             if (budgetExceeded[0]) {
-                result = SimulationResult.failed("Simulation exceeded its " 
+                result = SimulationResult.failed("Simulation exceeded its "
                         + (HEADLESS_TIME_BUDGET_MS / 1000) + " s time budget"
                         + " - increase the time step (dt) or reduce the duration");
             }
@@ -319,8 +324,7 @@ public class SimulationService {
             if (result.isSuccess() && isAllNonFinite(result)) {
                 result = SimulationResult.failed("All recorded signals are undefined (NaN/Inf)"
                         + " - the circuit produced no valid solution"
-                        + " (check grounding/component values; classic-authored .ipes files"
-                        + " can also run on the Classic engine)");
+                        + " (check grounding and component values)");
             }
             if (result.isSuccess()) {
                 if (applySuccessfulResult(response, result)) {
@@ -902,7 +906,7 @@ public class SimulationService {
      * @return BatchSimulationResponse with batchId and list of simulation IDs
      */
     public BatchSimulationResponse submitBatch(BatchSimulationRequest batchRequest) {
-        List<java.util.Map<String, Double>> parameterSets = expandParameterSets(batchRequest);
+        List<Map<String, Double>> parameterSets = expandParameterSets(batchRequest);
         List<String> simulationIds = new ArrayList<>();
 
         BatchSimulationRequest.SimulationSettings settings = batchRequest.getSimulationSettings();
@@ -910,7 +914,7 @@ public class SimulationService {
         double timeStep = settings != null && settings.getTimeStep() != null ? settings.getTimeStep() : 1e-6;
         String solverType = settings != null ? settings.getSolverType() : null;
 
-        for (java.util.Map<String, Double> params : parameterSets) {
+        for (Map<String, Double> params : parameterSets) {
             SimulationRequest req = new SimulationRequest(batchRequest.getCircuitFile(), simTime, timeStep);
             req.setParameters(params);
             if (solverType != null) {
@@ -999,7 +1003,7 @@ public class SimulationService {
 
     /**
      * Cancel all simulations in a batch.
-     * Returns null if batch not found.
+     * Returns false if batch not found.
      *
      * @param batchId Batch identifier
      * @return true if batch was found and cancellation was requested
@@ -1017,7 +1021,7 @@ public class SimulationService {
         return true;
     }
 
-    private List<java.util.Map<String, Double>> expandParameterSets(BatchSimulationRequest req) {
+    private List<Map<String, Double>> expandParameterSets(BatchSimulationRequest req) {
         // Explicit list takes priority
         if (req.getParameterSets() != null && !req.getParameterSets().isEmpty()) {
             return req.getParameterSets();
@@ -1025,11 +1029,11 @@ public class SimulationService {
         // Linear sweep
         if (req.getLinearSweep() != null) {
             BatchSimulationRequest.LinearSweep sweep = req.getLinearSweep();
-            List<java.util.Map<String, Double>> sets = new ArrayList<>();
+            List<Map<String, Double>> sets = new ArrayList<>();
             int n = sweep.getPoints();
             for (int i = 0; i < n; i++) {
                 double val = sweep.getStartValue() + i * (sweep.getEndValue() - sweep.getStartValue()) / (n - 1);
-                java.util.Map<String, Double> params = new java.util.HashMap<>();
+                Map<String, Double> params = new HashMap<>();
                 if (sweep.getFixedParameters() != null) {
                     params.putAll(sweep.getFixedParameters());
                 }
@@ -1041,14 +1045,14 @@ public class SimulationService {
         // Log sweep
         if (req.getLogSweep() != null) {
             BatchSimulationRequest.LogSweep sweep = req.getLogSweep();
-            List<java.util.Map<String, Double>> sets = new ArrayList<>();
+            List<Map<String, Double>> sets = new ArrayList<>();
             int n = sweep.getPoints();
             double logStart = Math.log10(sweep.getStartValue());
             double logEnd = Math.log10(sweep.getEndValue());
             for (int i = 0; i < n; i++) {
                 double logVal = logStart + i * (logEnd - logStart) / (n - 1);
                 double val = Math.pow(10, logVal);
-                java.util.Map<String, Double> params = new java.util.HashMap<>();
+                Map<String, Double> params = new HashMap<>();
                 if (sweep.getFixedParameters() != null) {
                     params.putAll(sweep.getFixedParameters());
                 }
@@ -1057,7 +1061,7 @@ public class SimulationService {
             }
             return sets;
         }
-        return java.util.Collections.emptyList();
+        return Collections.emptyList();
     }
 
 }

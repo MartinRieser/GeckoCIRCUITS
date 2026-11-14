@@ -8,15 +8,15 @@ The `gecko-simulation-core` module provides GUI-free simulation classes for head
 
 ## Package Overview
 
-| Package | Classes | Description |
-|---------|---------|-------------|
-| [`simulation`](simulation.md) | 5 | Headless simulation engine, zero-crossing detection |
-| [`circuit.matrix`](matrix-stampers.md) | 15 | MNA matrix stampers for circuit components |
-| `circuit.netlist` | 4 | Netlist building and node indexing |
-| `circuit.component` | 10+ | Component definitions |
-| [`control.calculators`](calculators.md) | 72 | Control block calculators (PI, PID, math, logic) |
-| `datacontainer` | 8 | Signal data storage with caching |
-| `math` | 8 | Matrix operations, LU decomposition, FFT |
+| Package | Files | Description |
+|---------|-------|-------------|
+| [`simulation`](simulation.md) | 10 | Headless simulation engine, zero-crossing detection |
+| [`circuit.matrix`](matrix-stampers.md) | 17 | MNA matrix stampers and `MatrixAccumulator` |
+| `circuit.netlist` | 5 | Netlist building and node indexing |
+| `circuit.parameters` | 9 | Component parameter structures |
+| [`control.calculators`](calculators.md) | 74 | Control block calculators (PI, PID, math, logic, SPWM) |
+| `datacontainer` | 11 | Signal data storage and containers |
+| `math` | 7 | Matrix operations, LU decomposition, FFT |
 
 ## Architecture
 
@@ -36,7 +36,7 @@ The `gecko-simulation-core` module provides GUI-free simulation classes for head
 │               Control & Math Layer               │
 │  ┌──────────────┐  ┌──────────┐  ┌──────────┐   │
 │  │  Calculators  │  │   Math   │  │   Data   │   │
-│  │  (72 classes) │  │ (LU,FFT) │  │Container │   │
+│  │  (74 classes) │  │ (LU,FFT) │  │Container │   │
 │  └──────────────┘  └──────────┘  └──────────┘   │
 └──────────────────────────────────────────────────┘
 ```
@@ -53,9 +53,8 @@ The `gecko-simulation-core` module provides GUI-free simulation classes for head
 
 ## Quality Metrics
 
-- JaCoCo coverage enforcement: 60%+ instruction coverage
-- GUI-free validation: `CorePackageValidationTest` ensures no AWT/Swing imports
-- Build: `mvn test -pl backend/gecko-simulation-core`
+- JaCoCo coverage enforcement: 30%+ instruction coverage (configured in root `pom.xml`)
+- Build & test: `mvn test -pl backend/gecko-simulation-core`
 
 ## Related
 

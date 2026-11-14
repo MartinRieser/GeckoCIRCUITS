@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class ThyristorControlCalculator extends AbstractControlCalculatable {
-    private static final int TN_X = 2, TN_Y = 6;  // Nummer der Terminals fuer Signal-Anschluss
+    private static final int TN_X = 2, TN_Y = 6;  // Input/output terminal counts for thyristor gate trigger control
     private static final double THREE = 3;
     private static final double THREE_HALF = 1.5;
     private double _lastFallingZero = -1;    

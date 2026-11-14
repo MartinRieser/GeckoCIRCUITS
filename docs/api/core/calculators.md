@@ -6,7 +6,7 @@ title: Control Calculators API
 
 Package: `gecko.core.control.calculators`
 
-72 calculator classes implementing the computation logic for GeckoCIRCUITS control blocks. These are GUI-free and suitable for headless simulation.
+74 calculator classes implementing the computation logic for GeckoCIRCUITS control blocks. These are GUI-free and suitable for headless simulation.
 
 ## Base Classes
 
@@ -90,7 +90,7 @@ Base for transfer function blocks (PT1, PT2, etc.).
 |------------|----------|
 | `AbstractSignalCalculatorPeriodic` | Base for periodic signals |
 | `SignalCalculatorSine` | Sine wave |
-| `SignalCalculatorSquare` | Square wave |
+| `SignalCalculatorRectangle` | Rectangle / square wave |
 | `SignalCalculatorTriangle` | Triangle wave |
 | `SignalCalculatorSawtooth` | Sawtooth wave |
 
@@ -128,17 +128,20 @@ Base for transfer function blocks (PT1, PT2, etc.).
 All calculators follow a common pattern during simulation:
 
 ```java
-// 1. Initialize
-calculator.init(dt);          // Set time step
+// 1. Wire input signals from upstream calculators
+calculator.setInputSignal(0, upstreamCalculator, 0);
 
-// 2. Set inputs (each simulation step)
-calculator.setInputValue(0, inputSignal);
+// 2. Initialize at simulation start if the calculator implements InitializableAtSimulationStart
+if (calculator instanceof InitializableAtSimulationStart init) {
+    init.initializeAtSimulationStart(dt);
+}
 
-// 3. Calculate
-calculator.bepiRechenRechts(dt);  // Compute output
+// 3. Advance one simulation step
+calculator.setSimulationTime(time);
+calculator.calculateYOUT(dt);
 
-// 4. Read output
-double output = calculator.getOutputValue(0);
+// 4. Read output signal
+double output = calculator._outputSignal[0][0];
 ```
 
 ## Related

@@ -25,6 +25,9 @@ APP_DIR = REPO_ROOT / "desktop" / "app"
 ENGINE_DIR = APP_DIR / "engine"
 JAR_TARGET = REPO_ROOT / "backend" / "gecko-rest-api" / "target"
 MCP_TARGET = REPO_ROOT / "backend" / "gecko-mcp" / "target"
+SMOKE_CIRCUIT = REPO_ROOT / "tools" / "parity" / "circuits" / "rc-lowpass.ipes"
+
+
 def read_app_version():
     """Engine version from app.version; CI syncs it from the git tag via set-version.py."""
     props = (REPO_ROOT / "backend" / "gecko-rest-api" / "src" / "main"
@@ -47,7 +50,7 @@ def find_mcp_jar():
     if not jar.is_file():
         raise SystemExit(f"ERROR: {jar} not found (run: mvn -pl backend/gecko-mcp -am package)")
     return jar
-SMOKE_CIRCUIT = REPO_ROOT / "tools" / "parity" / "circuits" / "rc-lowpass.ipes"
+
 
 # Safety net on top of jdeps: Spring/tomcat/jackson load some modules
 # reflectively that static analysis misses. Keep this list short and justified:
@@ -68,7 +71,7 @@ def run(cmd, **kwargs):
     import shutil
     parts = [str(part) for part in cmd]
     # Windows: npm/mvn are .cmd shims CreateProcess cannot find by bare name
-    if not os.sep in parts[0] and "/" not in parts[0]:
+    if os.sep not in parts[0] and "/" not in parts[0]:
         resolved = shutil.which(parts[0])
         if resolved:
             parts[0] = resolved

@@ -60,11 +60,14 @@ def find_jar() -> Path:
     # 2. Target in gecko-mcp module
     target_dir = REPO_ROOT / "backend" / "gecko-mcp" / "target"
     if target_dir.is_dir():
-        jars = list(target_dir.glob("gecko-mcp-*-jar-with-dependencies.jar"))
+        direct = target_dir / "gecko-mcp.jar"
+        if direct.is_file():
+            return direct
+        jars = list(target_dir.glob("gecko-mcp-*.jar"))
         if jars:
             return sorted(jars, key=lambda p: p.stat().st_mtime, reverse=True)[0]
 
-    raise SystemExit("ERROR: gecko-mcp shaded jar not found. Run 'python scripts/desktop/build-engine.py' or 'mvn package -pl backend/gecko-mcp'.")
+    raise SystemExit("ERROR: gecko-mcp shaded jar not found. Run 'python scripts/desktop/build-engine.py' or 'mvn package -pl backend/gecko-mcp -am'.")
 
 
 def main():

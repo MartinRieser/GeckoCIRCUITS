@@ -46,7 +46,6 @@ package gecko.core.thermal;
  * seconds, temperatures in degrees Celsius.
  *
  * @see ThermalNetworkSolver
- * @since v2.18.0 Task L1 - Multi-Domain Coupling (Step 1: Thermal Domain Engine)
  */
 public final class ThermalRCModel {
 

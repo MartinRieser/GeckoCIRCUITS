@@ -53,7 +53,6 @@ describe('useEditor hook', () => {
     expect(result.current.state.mode).toBe('idle');
     expect(result.current.state.selection).toEqual([]);
     expect(result.current.state.ghost).toBeNull();
-    expect(result.current.simState.isOpen).toBe(false);
     expect(result.current.simState.status).toBeNull();
     expect(result.current.state.graphRegisters).toHaveLength(1);
     expect(result.current.state.graphRegisters[0].name).toBe('Osci 1');
@@ -131,22 +130,6 @@ describe('useEditor hook', () => {
       result.current.actions.toggleWireMode();
     });
     expect(result.current.state.mode).toBe('idle');
-  });
-
-  it('toggles simulation drawer open/close', async () => {
-    const { result } = await renderEditor();
-
-    expect(result.current.simState.isOpen).toBe(false);
-
-    act(() => {
-      result.current.actions.toggleSimDrawer();
-    });
-    expect(result.current.simState.isOpen).toBe(true);
-
-    act(() => {
-      result.current.actions.toggleSimDrawer();
-    });
-    expect(result.current.simState.isOpen).toBe(false);
   });
 
   it('opens properties panel for a specific component', async () => {

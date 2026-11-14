@@ -26,9 +26,6 @@ import gecko.core.circuit.circuitcomponents.CircuitTypCore;
  *   <li><b>Elements</b>: Circuit components (resistors, capacitors, sources, etc.)</li>
  *   <li><b>Voltage Sources</b>: Components that require special handling in MNA</li>
  * </ul>
- *
- * @author Extracted from NetListLK for better testability
- * @since Sprint 2 - Circuit Refactoring
  */
 public interface INetList {
 

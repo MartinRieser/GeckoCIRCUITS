@@ -18,9 +18,6 @@ package gecko.core;
  *
  * <p>Used throughout the core simulation engine for parameter validation and
  * argument checking in signal analysis, scripting, and simulation methods.
- *
- * @author andreas
- * @since Core Module Extraction Sprint - Phase 3
  */
 public class GeckoInvalidArgumentException extends Exception {
     private static final long serialVersionUID = 1L;

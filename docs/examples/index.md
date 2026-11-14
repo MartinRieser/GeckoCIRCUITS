@@ -51,16 +51,11 @@ A comprehensive collection of power electronics circuit examples demonstrating r
 | [Traction Inverter](automotive/traction.md) | Automotive | EV motor drive |
 | [Solar Inverter](renewable/solar.md) | Renewable | Grid-tied PV inverter |
 
-## Example Structure
+## Repository Locations
 
-Each example folder contains:
-```
-example_name/
-├── README.md           # Documentation with theory and exercises
-├── example_basic.ipes  # Basic circuit file
-├── example_ctrl.ipes   # Circuit with control (if applicable)
-└── img/                # Screenshots and diagrams (optional)
-```
+- **`examples/`** — Curated quick-open circuits (`buck.ipes`, `boost.ipes`, `flyback.ipes`, `pfc_boost.ipes`, `inverter.ipes`, `spwm_inverter_deadtime.ipes`, etc.) indexed by `examples/manifest.json` for **File > Open Example...**.
+- **`resources/projects/`** — Reference power electronics models (`buck_sampled_50v_to_10v.ipes`, `interleaved_pfc_50v.ipes`, `llc_resonant_400v_24v.ipes`).
+- **`resources/application_examples/` & `resources/tutorials/`** — Educational ETH Zurich converter, thermal, EMI, and drive circuit collections.
 
 ## Running Examples
 

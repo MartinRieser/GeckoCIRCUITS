@@ -102,19 +102,21 @@ class ApiKeyAuthFilterTest {
         assertNotEquals(401, response.getStatus());
     }
 
-    // Test 6: Public path /v3/api-docs/swagger.json → passes without key
+    // Test 6: Public paths /api-docs & /v3/api-docs/swagger.json → pass without key
     @Test
     void testPublicPathApiDocsPassesWithoutKey() throws Exception {
         properties.setAuthEnabled(true);
         properties.setKeys("valid-key-123");
-        
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/v3/api-docs/swagger.json");
-        request.setServletPath("/v3/api-docs/swagger.json");
-        MockHttpServletResponse response = new MockHttpServletResponse();
 
-        filter.doFilterInternal(request, response, filterChain);
+        for (String docPath : new String[]{"/api-docs", "/v3/api-docs/swagger.json"}) {
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", docPath);
+            request.setServletPath(docPath);
+            MockHttpServletResponse response = new MockHttpServletResponse();
 
-        assertNotEquals(401, response.getStatus());
+            filter.doFilterInternal(request, response, new MockFilterChain());
+
+            assertNotEquals(401, response.getStatus(), "Expected public access for " + docPath);
+        }
     }
 
     // Test 7: Legacy wrong health path /api/v1/health → requires a key (only the

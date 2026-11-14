@@ -20,9 +20,6 @@ package gecko.core.math;
  * <p>Divides the stationary $(\alpha, \beta)$ space vector plane into six 60-degree
  * sectors (indexed 0 to 5) and computes symmetrical dwell times for the adjacent active
  * voltage vectors and zero vectors.</p>
- *
- * @author GeckoCIRCUITS Team
- * @since v2.18.0 Task L4
  */
 public final class SpaceVectorSector {
 

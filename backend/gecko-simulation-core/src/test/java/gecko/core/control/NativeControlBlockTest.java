@@ -1111,7 +1111,7 @@ class NativeControlBlockTest {
             uniqueObjectIdentifier 401
             x 10
             y 10
-            parameter[] 
+            parameter[]
             orientierung 503
             idStringDialog SIG_EMPTY
             <\\ElementCONTROL>
@@ -1122,7 +1122,7 @@ class NativeControlBlockTest {
             uniqueObjectIdentifier 402
             x 10
             y 20
-            parameter[] 
+            parameter[]
             orientierung 503
             idStringDialog CONST_EMPTY
             <\\ElementCONTROL>
@@ -1133,7 +1133,7 @@ class NativeControlBlockTest {
             uniqueObjectIdentifier 403
             x 20
             y 20
-            parameter[] 
+            parameter[]
             orientierung 503
             idStringDialog GAIN_EMPTY
             <\\ElementCONTROL>
@@ -1144,7 +1144,7 @@ class NativeControlBlockTest {
             uniqueObjectIdentifier 404
             x 30
             y 20
-            parameter[] 
+            parameter[]
             orientierung 503
             idStringDialog PI_EMPTY
             <\\ElementCONTROL>
@@ -1155,7 +1155,7 @@ class NativeControlBlockTest {
             uniqueObjectIdentifier 405
             x 40
             y 20
-            parameter[] 
+            parameter[]
             orientierung 503
             idStringDialog PT1_EMPTY
             <\\ElementCONTROL>

@@ -15,15 +15,14 @@ package gecko.core.datacontainer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-// GUI-free imports - using core module classes instead of newscope
 
 public class DataContainerSimple extends AbstractDataContainer implements DataContainerValuesSettable {
     private static final Logger LOGGER = LogManager.getLogger(DataContainerSimple.class);
 
     protected float[][] _data;
     private static final int MEGA_BYTE = 1048000;
-    private static final int DOUBLE_BYTES = 8;
-    private static final int FLOAT_BYTES = 8;
+    private static final int DOUBLE_BYTES = Double.BYTES;
+    private static final int FLOAT_BYTES = Float.BYTES;
     private AbstractTimeSeries _timeSerieArray;
     private String[] _signalNames;
     private int _maximumIndex = -1;
@@ -111,7 +110,6 @@ public class DataContainerSimple extends AbstractDataContainer implements DataCo
         }
         return _abMinMaxValues[0];
     }
-    static int clearCounter = 0;
     @Override
     public final int findTimeIndex(final double time, final int row) {
         int returnValue = 0;

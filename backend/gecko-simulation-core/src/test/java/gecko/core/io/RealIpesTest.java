@@ -37,30 +37,20 @@ public class RealIpesTest {
         CircuitModel model = new CircuitFileParser().parse(resolveIpes("ex_1.ipes").toAbsolutePath().toString());
         assertTrue(model.getSimulationDuration() > 0, "Duration > 0");
         assertTrue(model.getTimeStep() > 0, "TimeStep > 0");
-        System.out.println("ex_1.ipes  duration=" + model.getSimulationDuration()
-                + " dt=" + model.getTimeStep()
-                + " components=" + model.getCircuitComponents().size());
+        assertFalse(model.getCircuitComponents().isEmpty(), "Components should be parsed");
     }
 
     @Test
     void parseEx1_circuitComponents() throws Exception {
         CircuitModel model = new CircuitFileParser().parse(resolveIpes("ex_1.ipes").toAbsolutePath().toString());
-        for (CircuitModel.ComponentData c : model.getCircuitComponents()) {
-            System.out.printf("  [type=%d] %-12s params=%s  xL=%s  yL=%s%n",
-                    c.getType(), c.getName(), c.getParameters(),
-                    Arrays.toString(c.getTerminalXLabels()),
-                    Arrays.toString(c.getTerminalYLabels()));
-        }
         assertNotNull(model.getCircuitComponents());
+        assertFalse(model.getCircuitComponents().isEmpty(), "Components should not be empty");
     }
 
     @Test
     void parseEx1_netlistFromLabels() throws Exception {
         CircuitModel model = new CircuitFileParser().parse(resolveIpes("ex_1.ipes").toAbsolutePath().toString());
         CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
-
-        System.out.printf("Netlist: nodes=%d  vSrc=%d  elements=%d%n",
-                netlist.getNodeMax(), netlist.getVoltageSourceMax(), netlist.getElementCount());
 
         // Only electrical + thermal components become netlist elements; control
         // blocks (scope, probes) are measurement-only and must not collide
@@ -74,15 +64,6 @@ public class RealIpesTest {
     void parseEx3Pwm_simulationParameters() throws Exception {
         CircuitModel model = new CircuitFileParser().parse(resolveIpes("ex_3_pwm.ipes").toAbsolutePath().toString());
         assertTrue(model.getSimulationDuration() > 0, "Duration > 0");
-        System.out.println("ex_3_pwm.ipes  duration=" + model.getSimulationDuration()
-                + " dt=" + model.getTimeStep()
-                + " components=" + model.getCircuitComponents().size());
-        for (CircuitModel.ComponentData c : model.getCircuitComponents()) {
-            System.out.printf("  [type=%d] %-12s param0=%s  xL=%s  yL=%s%n",
-                    c.getType(), c.getName(),
-                    c.getParameters().get("param0"),
-                    Arrays.toString(c.getTerminalXLabels()),
-                    Arrays.toString(c.getTerminalYLabels()));
-        }
+        assertFalse(model.getCircuitComponents().isEmpty(), "Components should be parsed");
     }
 }

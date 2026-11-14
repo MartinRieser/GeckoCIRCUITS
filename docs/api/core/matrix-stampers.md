@@ -29,24 +29,24 @@ Strategy interface for stamping component contributions into MNA matrices.
 #### `stampMatrixA`
 
 ```java
-void stampMatrixA(double[][] a, int nodeX, int nodeY, int nodeZ,
+void stampMatrixA(MatrixAccumulator a, int nodeX, int nodeY, int nodeZ,
                   double[] parameter, double dt);
 ```
 
-Stamps the component's contribution into the A matrix (conductance/admittance).
+Stamps the component's contribution into the A matrix accumulator (conductance/admittance).
 
 **Example (resistor R between nodes x and y):**
 
-- `a[x][x] += 1/R`
-- `a[y][y] += 1/R`
-- `a[x][y] -= 1/R`
-- `a[y][x] -= 1/R`
+- `a.add(x, x, 1/R)`
+- `a.add(y, y, 1/R)`
+- `a.add(x, y, -1/R)`
+- `a.add(y, x, -1/R)`
 
 **Parameters:**
 
 | Parameter | Description |
 |-----------|-------------|
-| `a` | The A matrix to stamp into |
+| `a` | The `MatrixAccumulator` to stamp into |
 | `nodeX` | First node index |
 | `nodeY` | Second node index |
 | `nodeZ` | Auxiliary node index (for voltage sources, inductors) |

@@ -70,9 +70,9 @@ Requirements for running from source: JDK 25, Maven 3.8+, and Node.js 22+.
 
 Download ready-to-run circuit examples directly from GitHub:
 
-[:material-folder-download: Browse Circuit Examples on GitHub](https://github.com/MartinRieser/GeckoCIRCUITS/tree/main/resources/examples){ .md-button }
+[:material-folder-download: Browse Circuit Library on GitHub](https://github.com/MartinRieser/GeckoCIRCUITS/tree/main/resources){ .md-button }
 
-The library contains 100+ circuits covering:
+The repository includes 200+ `.ipes` circuit files across `examples/`, `resources/`, and `tools/` covering:
 - Basic topologies (Buck, Boost, Flyback, Forward)
 - Power supplies (LLC, DAB, PFC)
 - Motor drives (BLDC, PMSM FOC, Induction)

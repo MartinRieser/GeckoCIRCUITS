@@ -26,6 +26,7 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
     private static final Set<String> PUBLIC_PATH_PREFIXES = Set.of(
             "/api/health",
             "/swagger-ui",
+            "/api-docs",
             "/v3/api-docs",
             "/ws",
             "/ws-raw"

@@ -29,9 +29,6 @@ package gecko.core.math;
  *   alpha = d * cos(theta) - q * sin(theta)
  *   beta  = d * sin(theta) + q * cos(theta)
  * </pre>
- *
- * @author GeckoCIRCUITS Team
- * @since v2.18.0 Task L4
  */
 public final class ParkTransform {
 

@@ -39,7 +39,6 @@ package gecko.core.simulation.solver.sparse;
  * already in original unknown coordinates.
  *
  * @see SparseMatrix
- * @since v2.18.0 Task L3 - High-Performance Solver & Advanced Numerics
  */
 public final class SparseLU {
 

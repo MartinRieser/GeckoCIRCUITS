@@ -3,68 +3,46 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Run GeckoCIRCUITS",
+            "name": "Run GeckoCIRCUITS REST API",
             "request": "launch",
-            "mainClass": "gecko.GeckoSim",
-            "projectName": "gecko",
-            "vmArgs": "-Xmx3G -Dpolyglot.js.nashorn-compat=true",
-            "args": "",
+            "mainClass": "gecko.rest.GeckoRestApiApplication",
+            "projectName": "gecko-rest-api",
+            "vmArgs": "-Xmx3G",
+            "args": "--gecko.examples-dir=${workspaceFolder}/examples",
             "console": "integratedTerminal",
-            "preLaunchTask": "Build GeckoCIRCUITS (Skip Tests)"
+            "preLaunchTask": "Build Backend Packages (Skip Tests)"
         },
         {
             "type": "java",
-            "name": "Run GeckoCIRCUITS (HiDPI)",
+            "name": "Run GeckoCIRCUITS REST API (No Build)",
             "request": "launch",
-            "mainClass": "gecko.GeckoSim",
-            "projectName": "gecko",
-            "vmArgs": "-Xmx3G -Dpolyglot.js.nashorn-compat=true -Dsun.java2d.uiScale=2",
-            "args": "",
-            "console": "integratedTerminal",
-            "preLaunchTask": "Build GeckoCIRCUITS (Skip Tests)"
-        },
-        {
-            "type": "java",
-            "name": "Run GeckoCIRCUITS (No Build)",
-            "request": "launch",
-            "mainClass": "gecko.GeckoSim",
-            "projectName": "gecko",
-            "vmArgs": "-Xmx3G -Dpolyglot.js.nashorn-compat=true",
-            "args": "",
+            "mainClass": "gecko.rest.GeckoRestApiApplication",
+            "projectName": "gecko-rest-api",
+            "vmArgs": "-Xmx3G",
+            "args": "--gecko.examples-dir=${workspaceFolder}/examples",
             "console": "integratedTerminal"
         },
         {
             "type": "java",
-            "name": "Run GeckoCIRCUITS (Debug Mode)",
+            "name": "Run GeckoCIRCUITS MCP Server",
             "request": "launch",
-            "mainClass": "gecko.GeckoSim",
-            "projectName": "gecko",
-            "vmArgs": "-Xmx3G -Dpolyglot.js.nashorn-compat=true",
+            "mainClass": "gecko.mcp.GeckoMcpServer",
+            "projectName": "gecko-mcp",
+            "vmArgs": "-Xmx2G",
             "args": "",
             "console": "integratedTerminal",
-            "preLaunchTask": "Build GeckoCIRCUITS (Skip Tests)"
+            "preLaunchTask": "Build Backend Packages (Skip Tests)"
         },
         {
             "type": "java",
-            "name": "Run GeckoCIRCUITS with File",
+            "name": "Run Headless Simulation (Current File)",
             "request": "launch",
-            "mainClass": "gecko.GeckoSim",
-            "projectName": "gecko",
-            "vmArgs": "-Xmx3G -Dpolyglot.js.nashorn-compat=true",
-            "args": "${file}",
+            "mainClass": "gecko.core.GeckoHeadless",
+            "projectName": "gecko-simulation-core",
+            "vmArgs": "-Xmx2G",
+            "args": "--circuit ${file} --output ${workspaceFolder}/scratch/headless-out.csv",
             "console": "integratedTerminal",
-            "preLaunchTask": "Build GeckoCIRCUITS (Skip Tests)"
-        },
-        {
-            "type": "java",
-            "name": "Run GeckoCIRCUITS (Buck Converter Example)",
-            "request": "launch",
-            "mainClass": "gecko.GeckoSim",
-            "projectName": "gecko",
-            "vmArgs": "-Xmx3G -Dpolyglot.js.nashorn-compat=true",
-            "args": "resources/Education_ETHZ/ex_1.ipes",
-            "console": "integratedTerminal",
-            "preLaunchTask": "Build GeckoCIRCUITS (Skip Tests)"
+            "preLaunchTask": "Build Backend Packages (Skip Tests)"
         }
     ]
 }

@@ -20,9 +20,9 @@ import java.util.*;
  *
  * <p>Power and thermal components are placed on a collision-free grid with
  * their terminals spread exactly like the classic editor; control blocks use
- * the engine terminal geometry (inputs at rel (-2, -i), outputs at
- * (x + 2, -j) for NORTH_SOUTH) and CONTROL wires are routed orthogonally in
- * disjoint lanes.</p>
+ * the engine terminal geometry (inputs at (x - 2, y + i), outputs at
+ * (x + 2, y + j) in screen grid coordinates for NORTH_SOUTH) and CONTROL wires
+ * are routed orthogonally in disjoint lanes.</p>
  */
 public final class CircuitBuilder {
 
@@ -319,7 +319,7 @@ public final class CircuitBuilder {
             } else if (def.typeNumber() == 41) { // TH_PvCHIP
                 String targetSwitch = (String) c.getOrDefault("target_switch",
                         c.getOrDefault("target_component", c.get("target")));
-                String outNode = nodes.size() == 1 ? nodes.get(0) : (nodes.size() > 1 ? nodes.get(1) : "Tj");
+                String outNode = nodes.size() == 1 ? nodes.get(0) : nodes.size() > 1 ? nodes.get(1) : "Tj";
                 String inNode = nodes.size() > 1 ? nodes.get(0) : "NIX_NIX_NIX";
                 Point termB = getTerminalB(posX, posY, orient);
                 thermNetToPoints.computeIfAbsent(outNode, k -> new LinkedHashSet<>()).add(termB);
@@ -581,15 +581,13 @@ public final class CircuitBuilder {
         }
 
         // 6. LK, CONTROL, and THERMAL connections
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> explicitPowerConns =
-                (List<Map<String, Object>>) request.get("power_connections");
-        if (explicitPowerConns == null) {
-            explicitPowerConns = (List<Map<String, Object>>) request.get("connections");
+        List<Map<String, Object>> explicitPowerConns = asMapList(request.get("power_connections"));
+        if (explicitPowerConns.isEmpty()) {
+            explicitPowerConns = asMapList(request.get("connections"));
         }
 
         Set<String> explicitlyConnectedNets = new HashSet<>();
-        if (explicitPowerConns != null && !explicitPowerConns.isEmpty()) {
+        if (!explicitPowerConns.isEmpty()) {
             for (Map<String, Object> cDef : explicitPowerConns) {
                 String net = (String) cDef.getOrDefault("net", cDef.get("label"));
                 if (net != null) {
@@ -597,7 +595,7 @@ public final class CircuitBuilder {
                 }
                 int connectorType = getInt(cDef, "connector_type", 0);
                 String type = (String) cDef.getOrDefault("type",
-                        connectorType == 1 ? "CONTROL" : (connectorType == 2 ? "THERMAL" : "LK"));
+                        connectorType == 1 ? "CONTROL" : connectorType == 2 ? "THERMAL" : "LK");
                 List<Point> pts = parsePoints((List<?>) cDef.get("points"));
                 if (pts.size() >= 2) {
                     CircuitModel.ConnectionData conn = new CircuitModel.ConnectionData(type, toPoints(pts));
@@ -619,7 +617,7 @@ public final class CircuitBuilder {
         // Auto-generate orthogonal THERMAL connections for thermal nets
         routeDomainNets(model, thermNetToPoints, explicitlyConnectedNets, model.getThermalComponents(), "THERMAL", 2);
 
-        // 6. Documentation notes / textboxes (SPECIAL domain)
+        // 7. Documentation notes / textboxes (SPECIAL domain)
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> rawNotes =
                 (List<Map<String, Object>>) request.getOrDefault("notes",
@@ -673,6 +671,20 @@ public final class CircuitBuilder {
     private static String name(Map<String, Object> c, String fallback) {
         String name = (String) c.get("name");
         return name != null && !name.isBlank() ? name : fallback;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> asMapList(Object obj) {
+        if (!(obj instanceof List<?> list)) {
+            return List.of();
+        }
+        List<Map<String, Object>> out = new ArrayList<>(list.size());
+        for (Object item : list) {
+            if (item instanceof Map<?, ?>) {
+                out.add((Map<String, Object>) item);
+            }
+        }
+        return out;
     }
 
     @SuppressWarnings("unchecked")
@@ -766,8 +778,8 @@ public final class CircuitBuilder {
         }
 
         for (Map<String, Object> b : blockList(control)) {
-            if (isParameterizedBlock(b)) {
-                if (seen.add(b)) specs.add(b);
+            if (isParameterizedBlock(b) && seen.add(b)) {
+                specs.add(b);
             }
         }
 
@@ -1295,16 +1307,16 @@ public final class CircuitBuilder {
     private static List<Point> routeWire(Point start, Point end, int wireIndex) {
         List<Point> path = new ArrayList<>();
         path.add(start);
-        if (start.x() == end.x() || start.y() == end.y()) {
-            // Direct straight segment
-        } else if (end.x() > start.x()) {
-            int midX = (start.x() + end.x()) / 2;
-            path.add(new Point(midX, start.y()));
-            path.add(new Point(midX, end.y()));
-        } else {
-            int laneX = Math.min(start.x(), end.x()) - FEEDBACK_LANE_BASE_OFFSET - 2 * (wireIndex % 6);
-            path.add(new Point(laneX, start.y()));
-            path.add(new Point(laneX, end.y()));
+        if (start.x() != end.x() && start.y() != end.y()) {
+            if (end.x() > start.x()) {
+                int midX = (start.x() + end.x()) / 2;
+                path.add(new Point(midX, start.y()));
+                path.add(new Point(midX, end.y()));
+            } else {
+                int laneX = Math.min(start.x(), end.x()) - FEEDBACK_LANE_BASE_OFFSET - 2 * (wireIndex % 6);
+                path.add(new Point(laneX, start.y()));
+                path.add(new Point(laneX, end.y()));
+            }
         }
         path.add(end);
         return path;
@@ -1557,7 +1569,7 @@ public final class CircuitBuilder {
             int cx = pos[0];
             int cy = pos[1];
             int orient = c.getOrientation();
-            boolean horiz = (orient == ORIENT_WEST_EAST || orient == ORIENT_EAST_WEST);
+            boolean horiz = orient == ORIENT_WEST_EAST || orient == ORIENT_EAST_WEST;
             if (horiz) {
                 if (cy == trunkY && Math.max(cx - 1, minX) <= Math.min(cx + 1, maxX)) {
                     return false;
@@ -1605,7 +1617,7 @@ public final class CircuitBuilder {
             int cx = pos[0];
             int cy = pos[1];
             int orient = c.getOrientation();
-            boolean horiz = (orient == ORIENT_WEST_EAST || orient == ORIENT_EAST_WEST);
+            boolean horiz = orient == ORIENT_WEST_EAST || orient == ORIENT_EAST_WEST;
             if (horiz) {
                 if (x >= cx - 1 && x <= cx + 1 && cy >= y1 && cy <= y2) {
                     return true;
@@ -1896,7 +1908,7 @@ public final class CircuitBuilder {
         private static Point terminalPoint(int cx, int cy, int orientation, boolean input, int index) {
             // mirrors ControlCalculatorBuilder.terminalPoint
             int px = input ? -2 : 2;
-            int py = input ? -index : -index;
+            int py = -index;
             int dx;
             int dy;
             switch (orientation) {

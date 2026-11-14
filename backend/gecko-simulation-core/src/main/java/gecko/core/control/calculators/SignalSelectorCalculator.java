@@ -18,8 +18,8 @@ package gecko.core.control.calculators;
  * the output, chosen by a binary selector signal.
  *
  * <p>Input layout: {@code input 0 = selector}, {@code input 1 = data in0},
- * {@code input 2 = data in1}. With the selector below the switching threshold
- * the output carries in0, at or above the threshold it carries in1.</p>
+ * {@code input 2 = data in1}. With the selector at or below the switching threshold
+ * the output carries in0; above the threshold it carries in1.</p>
  */
 public final class SignalSelectorCalculator extends AbstractControlCalculatable {
 

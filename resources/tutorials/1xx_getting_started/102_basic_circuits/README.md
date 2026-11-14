@@ -262,7 +262,7 @@ In this tutorial, you learned:
 
 Continue your learning with:
 - **Next Tutorial:** [103 - PWM Basics](../103_pwm_basics/) - Learn pulse-width modulation
-- **Example:** [Buck Converter](../../examples/basic_topologies/buck_converter/) - Apply your skills
+- **Example:** [Buck Converter](../../../../examples/buck.ipes) - Ready-to-run buck converter circuit
 
 ## Additional Resources
 

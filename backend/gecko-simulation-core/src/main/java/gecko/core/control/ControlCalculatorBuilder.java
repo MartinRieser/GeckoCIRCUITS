@@ -127,7 +127,7 @@ public final class ControlCalculatorBuilder {
     private static final int PARAM_RESISTANCE = 0;
 
     // Classic control block types (ControlTyp in the GUI)
-    private static final int TYP_VOLTMEETER = 1;
+    private static final int TYP_VOLTMETER = 1;
     private static final int TYP_AMMETER = 2;
     private static final int TYP_CONSTANT = 3;
     private static final int TYP_SIGNAL_SOURCE = 4;
@@ -279,7 +279,7 @@ public final class ControlCalculatorBuilder {
      */
     private static final Map<Integer, int[]> TERMINALS_BY_TYPE = Map.ofEntries(
             // Classic blocks
-            Map.entry(TYP_VOLTMEETER, new int[]{0, 1, 2}),
+            Map.entry(TYP_VOLTMETER, new int[]{0, 1, 2}),
             Map.entry(TYP_AMMETER, new int[]{0, 1, 2}),
             Map.entry(TYP_CONSTANT, new int[]{0, 1, 2}),
             Map.entry(TYP_SIGNAL_SOURCE, new int[]{0, 1, 2}),
@@ -1009,7 +1009,7 @@ public final class ControlCalculatorBuilder {
             case TYP_SIGNAL_SOURCE -> createSignalSource(params);
             case TYP_GATE -> new GateCalculator();
             // measurement blocks hold their output; the engine writes it each step
-            case TYP_VOLTMEETER, TYP_AMMETER -> new ConstantCalculator(0);
+            case TYP_VOLTMETER, TYP_AMMETER -> new ConstantCalculator(0);
             // scopes only display; nothing to calculate headlessly
             case TYP_SCOPE -> null;
             // --- web catalog range (CircuitTypCore CTRL_*) ---
@@ -1362,7 +1362,7 @@ public final class ControlCalculatorBuilder {
 
     /** Voltage probe blocks: the classic type 1 and the web catalog CTRL_VOLT. */
     private static boolean isVoltageProbe(int type) {
-        return type == TYP_VOLTMEETER || type == TYP_VOLT_WEB;
+        return type == TYP_VOLTMETER || type == TYP_VOLT_WEB;
     }
 
     /** Current probe blocks: the classic type 2 and the web catalog CTRL_AMP. */

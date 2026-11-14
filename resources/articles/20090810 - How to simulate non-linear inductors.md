@@ -7,4 +7,4 @@ Just open the online-simulator (yellow box). A very simple example with two para
 The week before we modeled basic thyristor circuits in [iPES](http://www.ipes.ethz.ch/ipes/), an educational website about power electronics. Probably you have already visited iPES and maybe you are using it from time to time (it's currently available in 12 different languages and has 9,000 visits per month).
 Have a look at it at the [content page](http://www.ipes.ethz.ch/ipes/e_index.html), and follow one of the blue links 'Simulate Online'. Feel free to tell us what you think.
 
-Simulation file [](ipes_files/nonlin_inductor.ipes)
+Simulation file [nonlin_inductor.ipes](ipes_files/nonlin_inductor.ipes)

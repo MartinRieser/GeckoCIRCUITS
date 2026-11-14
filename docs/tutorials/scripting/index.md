@@ -1,59 +1,76 @@
 ---
 title: Scripting & Automation
-description: Programmatic simulation control, scripting, and external tool integration
+description: Programmatic simulation control, in-circuit script blocks, and external tool integration
 ---
 
 # Scripting & Automation
 
-Programmatic control and external tool integration with GeckoCIRCUITS.
+Programmatic control, firmware-in-the-loop simulation, and external tool integration with GeckoCIRCUITS.
 
-## Available Tutorials
+## Available Guides
 
-| Tutorial | Title | Difficulty | Description |
-|----------|-------|------------|-------------|
-| [701](geckoscript.md) | [GeckoSCRIPT Basics](geckoscript.md) | Intermediate | Built-in JavaScript scripting for parameter sweeps and optimization |
-| [702](matlab.md) | [MATLAB Integration](matlab.md) | Intermediate | Interfacing MATLAB with GeckoCIRCUITS for automated analysis |
-| [703](python.md) | [Python Integration](python.md) | Intermediate | Controlling simulations via Python, NumPy, SciPy, and REST API |
-| [704](java-blocks.md) | [Java Blocks](java-blocks.md) | Advanced | Implementing custom compiled algorithmic control blocks |
-
-## Learning Objectives
-
-- Automate batch simulations with GeckoSCRIPT
-- Integrate with MATLAB for parameter optimization
-- Control simulations and analyze output waveforms in Python
-- Create custom Java control blocks for specialized algorithms
-- Leverage the modern REST API and MCP server for remote simulation
+| Guide | Title | Difficulty | Description |
+|-------|-------|------------|-------------|
+| [701](geckoscript.md) | [Script Blocks & Legacy GeckoSCRIPT](geckoscript.md) | Intermediate | Inline control `SCRIPT_BLOCK` (typ 61) and archived GeckoSCRIPT notes |
+| [702](matlab.md) | [MATLAB Integration](matlab.md) | Intermediate | Interfacing MATLAB/Octave with GeckoCIRCUITS via the REST API |
+| [703](python.md) | [Python Integration](python.md) | Intermediate | Controlling simulations with Python (`geckopy` MCP SDK and REST API) |
+| [704](java-blocks.md) | [Custom Control Blocks & NativeC](java-blocks.md) | Advanced | Legacy Classic Java blocks vs modern `NativeC` C/C++ FFM blocks and core calculators |
 
 ## Integration Options Overview
 
-| Method | Best For | Complexity | Interface |
-|--------|----------|------------|-----------|
-| **GeckoSCRIPT** | Quick in-editor sweeps | Low | Built-in engine |
-| **Python** | Data science, machine learning, optimization | Medium | REST API / CLI |
-| **MATLAB** | Control engineering, matrix analysis | Medium | REST API / Scripting |
-| **Java Blocks** | High-performance custom components | Advanced | Java / JVM |
-| **REST API** | CI/CD pipelines, web apps, microservices | Medium | HTTP / WebSocket |
-| **MCP Server** | LLM assistants (Claude, Cursor, etc.) | Low | JSON-RPC standard |
+| Method | Best For | Status | Interface |
+|--------|----------|--------|-----------|
+| **Script Block (`SCRIPT_BLOCK`)** | Inline control logic evaluated every time step | Active | `ScriptBlockCalculator` (pure Java) |
+| **NativeC Block (`NATIVE_C`)** | Microcontroller C/C++ firmware-in-the-loop | Active | Java FFM (`gecko_c_block.h`) |
+| **Python (`geckopy` / REST)** | Sweeps, SciPy optimization, post-processing | Active | MCP stdio (`gecko-mcp.jar`) or REST API |
+| **MATLAB** | Control engineering, matrix analysis | Active | HTTP (`webwrite`/`webread` → REST API) |
+| **REST API** | CI/CD pipelines, web apps, batch sweeps | Active | HTTP / SSE / WebSocket (`/gecko/api/v1`) |
+| **MCP Server** | AI coding assistants and local Python SDK | Active | JSON-RPC 2.0 stdio (`gecko-mcp.jar`) |
+| **GeckoSCRIPT / Java RMI / Java Blocks** | Standalone GraalVM scripts, RMI, Swing plugins | Retired | Archived on tag `classic-v1.0-final` |
 
 ## Quick Start: Python Automation Example
 
+### Option A: Using `geckopy` (Repository Python SDK)
+
 ```python
+import geckopy
+
+ckt = geckopy.open("resources/projects/buck_sampled_50v_to_10v.ipes")
+ckt.set_parameter("R_load", "resistance", 12.0)
+res = ckt.simulate(duration=0.01, dt=1e-6)
+print(res.metrics)
+```
+
+### Option B: Using the REST API (`requests`)
+
+Start the server (`run-gecko.bat` or `./run-gecko.sh`) so it listens on `http://localhost:8080/gecko`:
+
+```python
+import time
 import requests
-import numpy as np
 
-# Trigger simulation via REST API
-response = requests.post("http://localhost:8080/api/v1/simulations/run", json={
-    "circuitPath": "circuits/buck.ipes",
-    "parameters": {"dutyCycle": 0.5}
+base = "http://localhost:8080/gecko/api/v1"
+resp = requests.post(f"{base}/simulations", json={
+    "circuitFile": "resources/projects/buck_sampled_50v_to_10v.ipes",
+    "simulationTime": 0.01,
+    "timeStep": 1e-6,
+    "solverType": "backward-euler",
 })
+resp.raise_for_status()
+sim_id = resp.json()["simulationId"]
 
-data = response.json()
-print(f"Simulation completed with status: {data['status']}")
+while True:
+    status = requests.get(f"{base}/simulations/{sim_id}").json()
+    if status["status"] in ("COMPLETED", "FAILED", "CANCELLED"):
+        print(f"Simulation finished: {status['status']}")
+        break
+    time.sleep(0.1)
 ```
 
 ## Related Resources
 
 - [Running Simulations](../../getting-started/running-simulations.md) — Solver configurations
 - [Analysis Tools](../../getting-started/analysis-tools.md) — Waveform post-processing
-- [REST API Reference](../../api/rest-api.md) — Comprehensive API documentation
+- [NativeC C/C++ Blocks](../../native-c-blocks.md) — Firmware-in-the-loop C/C++ shared libraries
+- [REST API Reference](../../api/rest-api.md) — Comprehensive HTTP & WebSocket API documentation
 - [MCP Interface](../../mcp.md) — Model Context Protocol tools

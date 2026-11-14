@@ -63,15 +63,15 @@ public class CircuitEditService {
         synchronized (state) {
             int reqType = (request.type() != null && request.type() == 6 && "CONTROL".equalsIgnoreCase(request.family()))
                     ? CircuitTypCore.CTRL_GATE.getTypeNumber()
-                    : (request.type() != null ? request.type() : 0);
+                    : request.type() != null ? request.type() : 0;
             String family = validateFamilyAndType(request.family(), reqType);
             CircuitModel model = state.model;
 
             CircuitModel.ComponentData comp = new CircuitModel.ComponentData(
                     reqType,
                     uniqueName(model, request.name(), baseName(reqType)),
-                    snap(model, request.x()),
-                    snap(model, request.y()),
+                    snap(request.x()),
+                    snap(request.y()),
                     normalizeOrientation(request.orientation()));
             comp.setFamily(family);
             comp.setUniqueObjectIdentifier(state.nextUid());
@@ -250,8 +250,8 @@ public class CircuitEditService {
             String beforeName = comp.getName();
             double[] beforeParams = comp.getRawParameters().clone();
 
-            int newX = request.x() != null ? snap(model, request.x()) : beforePosition[0];
-            int newY = request.y() != null ? snap(model, request.y()) : beforePosition[1];
+            int newX = request.x() != null ? snap(request.x()) : beforePosition[0];
+            int newY = request.y() != null ? snap(request.y()) : beforePosition[1];
             int newOrientation = request.orientation() != null
                     ? normalizeOrientation(request.orientation()) : beforeOrientation;
             String newName = request.newName() != null && !request.newName().isBlank()
@@ -375,7 +375,7 @@ public class CircuitEditService {
         synchronized (state) {
             CircuitModel model = state.model;
             String type = normalizeConnectionType(request.type());
-            int[][] points = snapPoints(model, request.points(), true);
+            int[][] points = snapPoints(request.points(), true);
 
             CircuitModel.ConnectionData conn = new CircuitModel.ConnectionData(type, points);
             conn.setLabel(request.label() != null ? request.label() : "");
@@ -399,7 +399,7 @@ public class CircuitEditService {
             int[][] beforePoints = conn.getPoints();
             String beforeLabel = conn.getLabel();
             int[][] newPoints = request.points() != null
-                    ? snapPoints(model, request.points(), true) : beforePoints;
+                    ? snapPoints(request.points(), true) : beforePoints;
             String newLabel = request.label() != null ? request.label() : beforeLabel;
 
             Set<String> oldConnPoints = densifyToPointKeys(beforePoints);
@@ -1025,13 +1025,13 @@ public class CircuitEditService {
 
     /**
      * Grid raster snapping: .ipes coordinates are integer grid units
-     * (dpix is only the pixel render scale), so snapping = rounding.
+     * (dpix is only the pixel render scale), so integer coordinates remain unchanged.
      */
-    private static int snap(CircuitModel model, int value) {
-        return Math.round((float) value);
+    private static int snap(int value) {
+        return value;
     }
 
-    private static int[][] snapPoints(CircuitModel model, int[][] points, boolean requireTwo) {
+    private static int[][] snapPoints(int[][] points, boolean requireTwo) {
         if (points == null || (requireTwo && points.length < 2)) {
             throw badRequest("A wire needs at least two [x, y] points");
         }
@@ -1040,8 +1040,8 @@ public class CircuitEditService {
             if (points[i] == null || points[i].length != 2) {
                 throw badRequest("Each point must be [x, y]");
             }
-            snapped[i][0] = snap(model, points[i][0]);
-            snapped[i][1] = snap(model, points[i][1]);
+            snapped[i][0] = snap(points[i][0]);
+            snapped[i][1] = snap(points[i][1]);
         }
         return snapped;
     }
@@ -1197,8 +1197,8 @@ public class CircuitEditService {
                     if (raw.length > 3) raw[3] = val;
                     if (raw.length > 4) raw[4] = val;
                     if (raw.length > 5) raw[5] = 0.0;
-                } else if (typ == 2) { // Inductor: raw[1]=iL0, raw[2]=i0
-                    if (raw.length > 2) raw[2] = val;
+                } else if (typ == 2 && raw.length > 2) { // Inductor: raw[1]=iL0, raw[2]=i0
+                    raw[2] = val;
                 }
             }
             comp.setRawParameters(raw);
@@ -1424,26 +1424,6 @@ public class CircuitEditService {
         System.arraycopy(array, 0, result, 0, index);
         System.arraycopy(array, index + 1, result, index, array.length - index - 1);
         return result;
-    }
-
-    private static CircuitModel.ComponentData copyComponent(CircuitModel.ComponentData source) {
-        CircuitModel.ComponentData copy = new CircuitModel.ComponentData(
-                source.getType(), source.getName(), source.getPosition()[0], source.getPosition()[1],
-                source.getOrientation());
-        copy.setTerminalXLabels(source.getTerminalXLabels().clone());
-        copy.setTerminalYLabels(source.getTerminalYLabels().clone());
-        copy.setRawTerminalXLabels(source.getRawTerminalXLabels().clone());
-        copy.setRawTerminalYLabels(source.getRawTerminalYLabels().clone());
-        copy.setRawParameters(source.getRawParameters().clone());
-        copy.setParameterStrings(source.getParameterStrings().clone());
-        copy.setNameOpt(source.getNameOpt().clone());
-        copy.setUniqueObjectIdentifier(source.getUniqueObjectIdentifier());
-        copy.setEnabledShorted(source.getEnabledShorted());
-        copy.setParentSheetIdentifier(source.getParentSheetIdentifier());
-        copy.setFamily(source.getFamily());
-        source.getParameters().forEach(copy::setParameter);
-        source.getExtraLines().forEach(copy::addExtraLine);
-        return copy;
     }
 
     private static ComponentInfo toInfo(CircuitModel.ComponentData comp, String family) {

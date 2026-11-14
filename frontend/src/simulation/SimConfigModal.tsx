@@ -16,6 +16,7 @@ import { parseEngineeringValue } from '../model/componentSchema';
 import { findScopeBlocks } from './scopes';
 import { estimateStepCount, STEP_WARNING_THRESHOLD } from './simSteps';
 import { resolveActiveSimSettings } from './simSettings';
+import { SENTINEL_UNSET } from '../model/constants';
 
 export interface SimConfigModalProps {
   /** Whether the modal is currently visible. */
@@ -320,7 +321,7 @@ export function SimConfigModal({
               <div className="sim-config-scope-chips">
                 {scopeBlocks.map((sb) => {
                   const activeLabels = (sb.inputLabels || []).filter(
-                    (l) => l && l.trim() && l !== 'NIX_NIX_NIX',
+                    (l) => l && l.trim() && l !== SENTINEL_UNSET,
                   );
                   return (
                     <div key={sb.name} className="sim-config-scope-chip">

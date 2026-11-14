@@ -299,7 +299,7 @@ In this tutorial, you learned:
 
 Continue your learning with:
 - **Tutorial:** [201 - Buck Converter](../../2xx_dcdc_converters/201_buck_converter/) - Apply PWM to real converter
-- **Example:** [Basic Topologies](../../examples/basic_topologies/) - Complete converter examples
+- **Examples:** [Top-level Examples](../../../../examples/README.md) - Ready-to-run converter circuits
 
 ---
 *Tutorial Version: 1.0*
