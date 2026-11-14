@@ -69,17 +69,52 @@ export function apiBase(): string {
  * @returns Parsed response body
  * @throws {ApiError} When response status is outside the 2xx range
  */
+/** Message prefix used when the backend cannot be reached at all (network-level failure). */
+export const ENGINE_UNREACHABLE_PREFIX = 'Cannot reach the GeckoCIRCUITS simulation engine';
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const url = apiBase() + path;
-  const response = await fetch(url, {
-    headers: { 'Content-Type': 'application/json' },
-    ...init,
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      headers: { 'Content-Type': 'application/json' },
+      ...init,
+    });
+  } catch (err) {
+    // fetch() rejects with an opaque "Failed to fetch" when the server is down,
+    // blocked or the connection dropped. Translate into an actionable message.
+    if (err instanceof TypeError) {
+      const origin = backendOrigin() || 'this host';
+      throw new ApiError(
+        `${ENGINE_UNREACHABLE_PREFIX} at ${origin} (${err.message}). ` +
+          'The backend is not running or the connection was lost — start/restart the engine and try again. ' +
+          'Your circuit itself was not found to be faulty.',
+        0,
+        path,
+      );
+    }
+    throw err;
+  }
   if (!response.ok) {
     throw new ApiError(await errorMessage(response), response.status, path);
   }
   const contentType = response.headers.get('content-type') ?? '';
-  return (contentType.includes('json') ? response.json() : response.text()) as Promise<T>;
+  if (!contentType.includes('json')) {
+    return (await response.text()) as unknown as T;
+  }
+  try {
+    return (await response.json()) as T;
+  } catch (err) {
+    if (err instanceof SyntaxError) {
+      throw new ApiError(
+        `Invalid or truncated JSON response from ${path} (${err.message}). ` +
+          'If this happened during simulation, the time step (dt) may be much too small for the duration (t_end), producing an oversized waveform payload — click "⚡ Auto" or increase dt.',
+        response.status,
+        path,
+      );
+    }
+    throw err;
+  }
 }
 
 /**

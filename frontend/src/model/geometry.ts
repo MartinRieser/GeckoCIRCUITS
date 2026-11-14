@@ -87,14 +87,17 @@ const CONTROL_INPUT_ONLY = new Set<number>([
 ]);
 
 /**
- * Returns the next orientation in the standard rotation cycle (triggered by 'R' or right-click).
+ * Returns the next orientation in the standard rotation cycle (triggered by 'R' or 'Shift+R' or right-click).
  *
  * @param orientation Current orientation code
+ * @param ccw When true, rotates counter-clockwise by 90 degrees
  * @returns Next orientation code in cycle (503 -> 504 -> 501 -> 502)
  */
-export function nextOrientation(orientation: number): number {
+export function nextOrientation(orientation: number, ccw = false): number {
   const i = ORIENTATION_CYCLE.indexOf(orientation as (typeof ORIENTATION_CYCLE)[number]);
-  return ORIENTATION_CYCLE[(i + 1) % ORIENTATION_CYCLE.length];
+  if (i < 0) return ORIENTATION_CYCLE[0];
+  const step = ccw ? ORIENTATION_CYCLE.length - 1 : 1;
+  return ORIENTATION_CYCLE[(i + step) % ORIENTATION_CYCLE.length];
 }
 
 /**

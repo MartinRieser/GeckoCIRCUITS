@@ -16,7 +16,7 @@ describe('estimateStepCount', () => {
     expect(estimateStepCount(1, 0.3)).toBe(3);
   });
 
-  it('warns above two million steps', () => {
-    expect(STEP_WARNING_THRESHOLD).toBe(2_000_000);
+  it('warns at or above two hundred thousand steps', () => {
+    expect(STEP_WARNING_THRESHOLD).toBe(200_000);
   });
 });

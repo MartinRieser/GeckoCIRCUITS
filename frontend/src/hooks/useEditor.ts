@@ -791,13 +791,13 @@ export function useEditor() {
   );
 
   const rotateComponent = useCallback(
-    (name: string) => {
+    (name: string, ccw = false) => {
       const circuitId = stateRef.current.circuitId;
       if (!circuitId) return;
       const comp = stateRef.current.components.find((c) => c.name === name);
       if (!comp) return;
 
-      const nextOrient = nextOrientation(comp.orientation);
+      const nextOrient = nextOrientation(comp.orientation, ccw);
       const oldTerms = terminalPositions(comp);
       const newTerms = terminalPositions({ ...comp, orientation: nextOrient });
 

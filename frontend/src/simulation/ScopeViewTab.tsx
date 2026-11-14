@@ -242,6 +242,7 @@ export function ScopeViewTab({
     dataT0,
     dataT1,
     yScaleMode,
+    setYScaleMode,
     yView,
     setYView,
     signalNames,
@@ -496,6 +497,85 @@ export function ScopeViewTab({
   );
 
   const isRunning = status === 'RUNNING' || status === 'PENDING';
+
+  const [scopeContextMenu, setScopeContextMenu] = useState<{
+    x: number;
+    y: number;
+    sampleIdx: number | null;
+  } | null>(null);
+  const scopeContextMenuRef = useRef<HTMLDivElement | null>(null);
+  const [scopeContextLayoutOpen, setScopeContextLayoutOpen] = useState(false);
+
+  useEffect(() => {
+    if (!scopeContextMenu) {
+      setScopeContextLayoutOpen(false);
+      return;
+    }
+    const handleOutside = (e: MouseEvent) => {
+      if (scopeContextMenuRef.current && !scopeContextMenuRef.current.contains(e.target as Node)) {
+        setScopeContextMenu(null);
+      }
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setScopeContextMenu(null);
+    };
+    window.addEventListener('mousedown', handleOutside);
+    window.addEventListener('keydown', handleKey);
+    return () => {
+      window.removeEventListener('mousedown', handleOutside);
+      window.removeEventListener('keydown', handleKey);
+    };
+  }, [scopeContextMenu]);
+
+  const placeCursorAtSample = useCallback(
+    (type: 'A' | 'B', idx: number | null) => {
+      if (setCursor) {
+        setCursor(type, idx);
+      } else {
+        setCursorsEnabled(true);
+        if (type === 'A') setCursorA(idx);
+        else setCursorB(idx);
+      }
+      if (graphRegister && idx !== null) {
+        onUpdateGraphRegister?.({ cursorsEnabled: true });
+      }
+    },
+    [setCursor, setCursorsEnabled, setCursorA, setCursorB, graphRegister, onUpdateGraphRegister],
+  );
+
+  const setScopeLayout = useCallback(
+    (layout: ScopeDisplayLayout) => {
+      if (graphRegister) {
+        const numGraphs = layout === 'overlay' ? 1 : layout === '2-graphs' ? 2 : 3;
+        onUpdateGraphRegister?.({ numGraphs });
+      }
+      onDisplayLayoutChange?.(layout);
+    },
+    [graphRegister, onUpdateGraphRegister, onDisplayLayoutChange],
+  );
+
+  const handleExportCsv = useCallback(() => {
+    if (!results || timeArray.length === 0) return;
+    const cols = visibleSignals.length > 0 ? visibleSignals : signalNames;
+    const rows: string[] = [['t', ...cols].join(',')];
+    for (let i = 0; i < timeArray.length; i++) {
+      rows.push([String(timeArray[i]), ...cols.map((c) => String(results[c]?.[i] ?? ''))].join(','));
+    }
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `${(filename || 'gecko-scope').replace(/\s+/g, '_')}.csv`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }, [results, timeArray, visibleSignals, signalNames, filename]);
+
+  const handleOpenChartContextMenu = useCallback(
+    (x: number, y: number, sampleIdx: number | null) => {
+      setScopeContextMenu({ x, y, sampleIdx });
+    },
+    [],
+  );
 
   // Analysis drawer resizable height state
   const [drawerHeight, setDrawerHeight] = useState<number>(() => {
@@ -1049,24 +1129,14 @@ export function ScopeViewTab({
                     cursorsEnabled={cursorsEnabled}
                     activeCursor={activeCursor}
                     onSetActiveCursor={setActiveCursor}
-                    onSetCursor={(type, idx) => {
-                      if (setCursor) {
-                        setCursor(type, idx);
-                      } else {
-                        setCursorsEnabled(true);
-                        if (type === 'A') setCursorA(idx);
-                        else setCursorB(idx);
-                      }
-                      if (graphRegister && idx !== null) {
-                        onUpdateGraphRegister?.({ cursorsEnabled: true });
-                      }
-                    }}
+                    onSetCursor={placeCursorAtSample}
                     viewStart={win.start}
                     viewEnd={win.end}
                     onZoomAt={zoomAt}
                     onZoomRange={zoomRange}
                     onResetZoom={resetZoom}
                     onPanSeconds={(delta) => setView(panWindow(win, delta, dataT0, dataT1))}
+                    onOpenContextMenu={handleOpenChartContextMenu}
                   />
                 ) : effectiveDisplayLayout === '2-graphs' || effectiveDisplayLayout === '3-graphs' ? (
                   <FullScreenMultiGraphChart
@@ -1087,18 +1157,7 @@ export function ScopeViewTab({
                     cursorsEnabled={cursorsEnabled}
                     activeCursor={activeCursor}
                     onSetActiveCursor={setActiveCursor}
-                    onSetCursor={(type, idx) => {
-                      if (setCursor) {
-                        setCursor(type, idx);
-                      } else {
-                        setCursorsEnabled(true);
-                        if (type === 'A') setCursorA(idx);
-                        else setCursorB(idx);
-                      }
-                      if (graphRegister && idx !== null) {
-                        onUpdateGraphRegister?.({ cursorsEnabled: true });
-                      }
-                    }}
+                    onSetCursor={placeCursorAtSample}
                     viewStart={win.start}
                     viewEnd={win.end}
                     onZoomAt={zoomAt}
@@ -1108,6 +1167,7 @@ export function ScopeViewTab({
                     hoveredSignal={hoveredSignal}
                     onHoverSignal={setHoveredSignal}
                     onToggleSignal={handleToggleSignal}
+                    onOpenContextMenu={handleOpenChartContextMenu}
                   />
                 ) : (
                   <FullScreenOverlayChart
@@ -1125,18 +1185,7 @@ export function ScopeViewTab({
                     cursorsEnabled={cursorsEnabled}
                     activeCursor={activeCursor}
                     onSetActiveCursor={setActiveCursor}
-                    onSetCursor={(type, idx) => {
-                      if (setCursor) {
-                        setCursor(type, idx);
-                      } else {
-                        setCursorsEnabled(true);
-                        if (type === 'A') setCursorA(idx);
-                        else setCursorB(idx);
-                      }
-                      if (graphRegister && idx !== null) {
-                        onUpdateGraphRegister?.({ cursorsEnabled: true });
-                      }
-                    }}
+                    onSetCursor={placeCursorAtSample}
                     viewStart={win.start}
                     viewEnd={win.end}
                     onZoomAt={zoomAt}
@@ -1149,6 +1198,7 @@ export function ScopeViewTab({
                     hoveredSignal={hoveredSignal}
                     onHoverSignal={setHoveredSignal}
                     onToggleSignal={handleToggleSignal}
+                    onOpenContextMenu={handleOpenChartContextMenu}
                   />
                 )}
               </div>
@@ -1362,6 +1412,225 @@ export function ScopeViewTab({
           onHighlightNet={onHighlightNet}
         />
       )}
+
+      {/* Floating DSO Right-Click Context Menu */}
+      {scopeContextMenu && (
+        <div
+          ref={scopeContextMenuRef}
+          className="context-menu scope-context-menu"
+          data-testid="scope-context-menu"
+          style={{
+            left:
+              typeof window !== 'undefined' && window.innerWidth > 260
+                ? Math.min(scopeContextMenu.x, window.innerWidth - 245)
+                : scopeContextMenu.x,
+            top:
+              typeof window !== 'undefined' && window.innerHeight > 440
+                ? Math.min(scopeContextMenu.y, window.innerHeight - 390)
+                : scopeContextMenu.y,
+          }}
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          <div className="context-menu-header">
+            <span>Oscilloscope</span>
+            {scopeContextMenu.sampleIdx !== null && timeArray[scopeContextMenu.sampleIdx] !== undefined && (
+              <span className="context-menu-meta">
+                {formatEngineeringValue(timeArray[scopeContextMenu.sampleIdx], 's')}
+              </span>
+            )}
+          </div>
+
+          <button
+            type="button"
+            className="context-menu-item"
+            disabled={scopeContextMenu.sampleIdx === null}
+            onClick={() => {
+              if (scopeContextMenu.sampleIdx !== null) {
+                placeCursorAtSample('A', scopeContextMenu.sampleIdx);
+                setActiveCursor('A');
+              }
+              setScopeContextMenu(null);
+            }}
+          >
+            <span>📍 Place Cursor A Here</span>
+          </button>
+          <button
+            type="button"
+            className="context-menu-item"
+            disabled={scopeContextMenu.sampleIdx === null}
+            onClick={() => {
+              if (scopeContextMenu.sampleIdx !== null) {
+                placeCursorAtSample('B', scopeContextMenu.sampleIdx);
+                setActiveCursor('B');
+              }
+              setScopeContextMenu(null);
+            }}
+          >
+            <span>📍 Place Cursor B Here</span>
+          </button>
+          <button
+            type="button"
+            className="context-menu-item"
+            onClick={() => {
+              ctrl.clearCursors();
+              if (graphRegister) onUpdateGraphRegister?.({ cursorsEnabled: false });
+              setScopeContextMenu(null);
+            }}
+          >
+            <span>✕ Clear Cursors</span>
+          </button>
+
+          <div className="context-menu-sep" />
+          <button
+            type="button"
+            className="context-menu-item"
+            onClick={() => {
+              resetZoom();
+              setScopeContextMenu(null);
+            }}
+          >
+            <span>⟲ Zoom to Fit Full Waveform</span>
+            <span className="context-menu-shortcut">2× Click</span>
+          </button>
+          <button
+            type="button"
+            className="context-menu-item"
+            onClick={() => {
+              setYScaleMode((prev) => (prev === 'auto' ? 'fixed' : 'auto'));
+              setScopeContextMenu(null);
+            }}
+          >
+            <span>↕ Y-Axis Scale: {yScaleMode === 'auto' ? 'Auto (Switch Fixed)' : 'Fixed (Switch Auto)'}</span>
+          </button>
+          <button
+            type="button"
+            className="context-menu-item"
+            onClick={() => {
+              handleAutoGroupSignals();
+              setScopeContextMenu(null);
+            }}
+          >
+            <span>⚡ Auto-Group Signals (V→G1, I→G2, Ctrl→G3)</span>
+          </button>
+
+          <div
+            className="context-menu-submenu-wrap"
+            onMouseEnter={() => setScopeContextLayoutOpen(true)}
+          >
+            <button
+              type="button"
+              className="context-menu-item"
+              onClick={() => setScopeContextLayoutOpen((prev) => !prev)}
+            >
+              <span>📊 Graph Layout</span>
+              <span className="context-menu-shortcut">▸</span>
+            </button>
+            {scopeContextLayoutOpen && (
+              <div className="context-menu-submenu">
+                <button
+                  type="button"
+                  className="context-menu-item"
+                  onClick={() => {
+                    setScopeLayout('overlay');
+                    setScopeContextMenu(null);
+                  }}
+                >
+                  <span>{effectiveDisplayLayout === 'overlay' ? '✓ ' : ''}1 Graph (Overlay)</span>
+                </button>
+                <button
+                  type="button"
+                  className="context-menu-item"
+                  onClick={() => {
+                    setScopeLayout('2-graphs');
+                    setScopeContextMenu(null);
+                  }}
+                >
+                  <span>{effectiveDisplayLayout === '2-graphs' ? '✓ ' : ''}2 Graphs</span>
+                </button>
+                <button
+                  type="button"
+                  className="context-menu-item"
+                  onClick={() => {
+                    setScopeLayout('3-graphs');
+                    setScopeContextMenu(null);
+                  }}
+                >
+                  <span>{effectiveDisplayLayout === '3-graphs' ? '✓ ' : ''}3 Graphs</span>
+                </button>
+                {!graphRegister && onDisplayLayoutChange && (
+                  <button
+                    type="button"
+                    className="context-menu-item"
+                    onClick={() => {
+                      onDisplayLayoutChange('stacked');
+                      setScopeContextMenu(null);
+                    }}
+                  >
+                    <span>{effectiveDisplayLayout === 'stacked' ? '✓ ' : ''}Stacked Lanes</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {(Boolean(graphRegister) || selectedScope !== 'all') && (
+            <button
+              type="button"
+              className="context-menu-item"
+              onClick={() => {
+                setIsChannelManagerOpen(true);
+                setScopeContextMenu(null);
+              }}
+            >
+              <span>➕ Add / Manage Channels...</span>
+            </button>
+          )}
+
+          <div className="context-menu-sep" />
+          <button
+            type="button"
+            className="context-menu-item"
+            onClick={() => {
+              setDrawerTab((prev) => (prev === 'fft' ? null : 'fft'));
+              setScopeContextMenu(null);
+            }}
+          >
+            <span>{drawerTab === 'fft' ? '✓ ' : ''}〰 Toggle FFT Spectrum</span>
+          </button>
+          <button
+            type="button"
+            className="context-menu-item"
+            onClick={() => {
+              setDrawerTab((prev) => (prev === 'losses' ? null : 'losses'));
+              setScopeContextMenu(null);
+            }}
+          >
+            <span>{drawerTab === 'losses' ? '✓ ' : ''}⚡ Toggle Power & Losses</span>
+          </button>
+          <button
+            type="button"
+            className="context-menu-item"
+            onClick={() => {
+              setDrawerTab((prev) => (prev === 'metrics' ? null : 'metrics'));
+              setScopeContextMenu(null);
+            }}
+          >
+            <span>{drawerTab === 'metrics' ? '✓ ' : ''}📊 Toggle Statistics</span>
+          </button>
+
+          <div className="context-menu-sep" />
+          <button
+            type="button"
+            className="context-menu-item"
+            onClick={() => {
+              handleExportCsv();
+              setScopeContextMenu(null);
+            }}
+          >
+            <span>📥 Export CSV...</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -1395,6 +1664,7 @@ function FullScreenOverlayChart({
   hoveredSignal,
   onHoverSignal,
   onToggleSignal,
+  onOpenContextMenu,
 }: {
   width?: number;
   height?: number;
@@ -1423,6 +1693,7 @@ function FullScreenOverlayChart({
   hoveredSignal?: string | null;
   onHoverSignal?: (name: string | null) => void;
   onToggleSignal?: (name: string) => void;
+  onOpenContextMenu?: (x: number, y: number, sampleIdx: number | null) => void;
 }) {
   const padLeft = 68;
   const padRight = 24;
@@ -1705,11 +1976,16 @@ function FullScreenOverlayChart({
     e.preventDefault();
     const rect = e.currentTarget.getBoundingClientRect();
     const svgX = ((e.clientX - rect.left) / (rect.width || 1)) * width;
-    if (svgX < padLeft || svgX > width - padRight) return;
-    const t = minT + ((svgX - padLeft) / plotW) * (maxT - minT);
-    const targetIdx = sampleIndexAt(time, t);
-    onSetCursor('B', targetIdx);
-    onSetActiveCursor?.('B');
+    const inPlot = svgX >= padLeft && svgX <= width - padRight && time.length > 0;
+    const targetIdx = inPlot
+      ? sampleIndexAt(time, minT + ((svgX - padLeft) / plotW) * (maxT - minT))
+      : null;
+    if (onOpenContextMenu) {
+      onOpenContextMenu(e.clientX, e.clientY, targetIdx);
+    } else if (targetIdx !== null) {
+      onSetCursor('B', targetIdx);
+      onSetActiveCursor?.('B');
+    }
   };
 
   const [dragBox, setDragBox] = useState<{ startX: number; startY: number; currentX: number; currentY: number } | null>(null);
@@ -2234,6 +2510,7 @@ function FullScreenMultiGraphChart({
   onResetZoom,
   onPanSeconds,
   hoveredSignal,
+  onOpenContextMenu,
 }: {
   numGraphs: 2 | 3;
   width?: number;
@@ -2262,9 +2539,11 @@ function FullScreenMultiGraphChart({
   hoveredSignal?: string | null;
   onHoverSignal?: (s: string | null) => void;
   onToggleSignal?: (s: string) => void;
+  onOpenContextMenu?: (x: number, y: number, sampleIdx: number | null) => void;
 }) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [dragBox, setDragBox] = useState<{ startX: number; currentX: number } | null>(null);
+  const suppressContextMenuRef = useRef(false);
   const suppressClickRef = useRef(false);
 
   const padLeft = 72;
@@ -2368,8 +2647,12 @@ function FullScreenMultiGraphChart({
     if (e.button === 2) {
       const startX = e.clientX;
       let lastX = startX;
+      suppressContextMenuRef.current = false;
 
       const onMove = (ev: PointerEvent) => {
+        if (Math.abs(ev.clientX - startX) > 4) {
+          suppressContextMenuRef.current = true;
+        }
         const deltaPx = ev.clientX - lastX;
         lastX = ev.clientX;
         const deltaSeconds = -(deltaPx / plotW) * (t1 - t0);
@@ -2534,7 +2817,21 @@ function FullScreenMultiGraphChart({
         onMouseLeave={() => onHoverIndex(null)}
         onClick={handleClick}
         onDoubleClick={onResetZoom}
-        onContextMenu={(e) => e.preventDefault()}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          if (suppressContextMenuRef.current) {
+            suppressContextMenuRef.current = false;
+            return;
+          }
+          if (!onOpenContextMenu) return;
+          const rect = e.currentTarget.getBoundingClientRect();
+          const svgX = ((e.clientX - rect.left) / (rect.width || 1)) * width;
+          const inPlot = svgX >= padLeft && svgX <= width - padRight && time.length > 0;
+          const targetIdx = inPlot
+            ? sampleIndexAt(time, t0 + ((svgX - padLeft) / plotW) * (t1 - t0))
+            : null;
+          onOpenContextMenu(e.clientX, e.clientY, targetIdx);
+        }}
         onPointerDown={handlePointerDown}
       >
         <rect width={width} height={totalH} className="waveform-bg" rx={8} />
@@ -2942,6 +3239,7 @@ function FullScreenStackedChart({
   onZoomRange,
   onResetZoom,
   onPanSeconds,
+  onOpenContextMenu,
 }: {
   width?: number;
   height?: number;
@@ -2964,6 +3262,7 @@ function FullScreenStackedChart({
   onZoomRange: (start: number, end: number) => void;
   onResetZoom: () => void;
   onPanSeconds: (delta: number) => void;
+  onOpenContextMenu?: (x: number, y: number, sampleIdx: number | null) => void;
 }) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [dragBox, setDragBox] = useState<{ startX: number; currentX: number } | null>(null);
@@ -3072,12 +3371,17 @@ function FullScreenStackedChart({
   const handleContextMenu = (e: ReactMouseEvent<SVGSVGElement>) => {
     e.preventDefault();
     const rect = e.currentTarget.getBoundingClientRect();
-    const svgX = ((e.clientX - rect.left) / rect.width) * width;
-    if (svgX < padLeft || svgX > width - padRight) return;
-    const t = t0 + ((svgX - padLeft) / plotW) * (t1 - t0);
-    const targetIdx = sampleIndexAt(time, t);
-    onSetCursor('B', targetIdx);
-    onSetActiveCursor?.('B');
+    const svgX = ((e.clientX - rect.left) / (rect.width || 1)) * width;
+    const inPlot = svgX >= padLeft && svgX <= width - padRight && time.length > 0;
+    const targetIdx = inPlot
+      ? sampleIndexAt(time, t0 + ((svgX - padLeft) / plotW) * (t1 - t0))
+      : null;
+    if (onOpenContextMenu) {
+      onOpenContextMenu(e.clientX, e.clientY, targetIdx);
+    } else if (targetIdx !== null) {
+      onSetCursor('B', targetIdx);
+      onSetActiveCursor?.('B');
+    }
   };
 
   const handlePointerDown = (e: ReactMouseEvent<SVGSVGElement>) => {

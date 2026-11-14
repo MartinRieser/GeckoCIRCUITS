@@ -8,7 +8,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import type { EditorComponent } from './model/types';
 import { useEditor } from './hooks/useEditor';
-import { Sheet } from './canvas/Sheet';
+import { Sheet, type SheetFocusTarget } from './canvas/Sheet';
 import { Palette } from './palette/Palette';
 import { PropertiesPanel } from './properties/PropertiesPanel';
 import { SimulationPropertiesPanel } from './properties/SimulationPropertiesPanel';
@@ -19,7 +19,12 @@ import { CommandPalette } from './palette/CommandPalette';
 import { EXAMPLES } from './model/examples';
 import { resolveShortcut, KEYBINDINGS } from './model/keybindings';
 import { routeAvoidingObstacles, routingBlockedCells, densePoints } from './canvas/WireRouter';
-import { isWireEndPointConnected } from './model/validation';
+import {
+  isWireEndPointConnected,
+  buildCircuitDiagnostics,
+  type DiagnosticItem,
+  type DiagnosticQuickFix,
+} from './model/validation';
 import {
   registerOpenFileHandler,
   isDesktop,
@@ -31,13 +36,27 @@ import {
 import { getEngineVersion, getRawCircuit } from './api/client';
 import { findScopeBlocks, findScriptBlocks, isScopeComponent, isScriptComponent } from './simulation/scopes';
 import { SimConfigModal } from './simulation/SimConfigModal';
+import { SimToolbarStrip } from './simulation/SimToolbarStrip';
+import {
+  IconUndo,
+  IconRedo,
+  IconRotateCw,
+  IconRotateCcw,
+  IconCopy,
+  IconTrash,
+} from './icons';
+import { DiagnosticsBadge, DiagnosticsDrawer } from './simulation/DiagnosticsDrawer';
 import { SaveAsModal } from './modals/SaveAsModal';
 import { SaveAsExampleModal } from './modals/SaveAsExampleModal';
 import { ExamplesModal } from './modals/ExamplesModal';
 import { addExample } from './model/examplesService';
 import { FileMenu } from './nav/FileMenu';
 import { ScriptViewTab } from './properties/ScriptViewTab';
-import { resolveActiveSimSettings } from './simulation/simSettings';
+import {
+  resolveActiveSimSettings,
+  suggestAutoTimeStep,
+  type FrequencyInspectableComponent,
+} from './simulation/simSettings';
 import { SCOPE_SETTING_KEYS, ScopeDisplayLayout } from './model/constants';
 import {
   SCOPE_TAB_PREFIX,
@@ -86,6 +105,34 @@ export function App() {
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [activeTabId, setActiveTabId] = useState<string>('schematic');
   const [simConfigOpen, setSimConfigOpen] = useState(false);
+  const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
+  /** Right-click context menu state for workspace tabs. */
+  const [tabContextMenu, setTabContextMenu] = useState<{
+    x: number;
+    y: number;
+    tabKind: 'schematic' | 'graph-register' | 'scope' | 'script';
+    tabId: string;
+  } | null>(null);
+  const tabContextMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!tabContextMenu) return;
+    const onDown = (e: MouseEvent) => {
+      if (tabContextMenuRef.current && !tabContextMenuRef.current.contains(e.target as Node)) {
+        setTabContextMenu(null);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setTabContextMenu(null);
+    };
+    window.addEventListener('mousedown', onDown);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('mousedown', onDown);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [tabContextMenu]);
+  const [focusTarget, setFocusTarget] = useState<SheetFocusTarget | null>(null);
   const [saveAsOpen, setSaveAsOpen] = useState(false);
   const [selectedScope, setSelectedScope] = useState<string>('all');
   const [displayLayout, setDisplayLayout] = useState<ScopeDisplayLayout>(() => {
@@ -296,6 +343,156 @@ export function App() {
 
   const isSimRunning = simState.status === 'RUNNING' || simState.status === 'PENDING';
 
+  const effectiveSim = useMemo(
+    () => resolveActiveSimSettings(simState.defaults, simState.simSettings),
+    [simState.defaults, simState.simSettings],
+  );
+
+  const diagnostics = useMemo(
+    () =>
+      buildCircuitDiagnostics(state.components, state.wires, {
+        dt: effectiveSim.dtStr,
+        tEnd: effectiveSim.tEndStr,
+        simStatus: simState.status ?? undefined,
+        simErrorMessage: simState.errorMessage,
+        simWarnings: simState.warnings,
+      }),
+    [
+      state.components,
+      state.wires,
+      effectiveSim.dtStr,
+      effectiveSim.tEndStr,
+      simState.status,
+      simState.errorMessage,
+      simState.warnings,
+    ],
+  );
+
+  // Surface new simulation failures and engine warnings automatically regardless of active tab
+  const lastSurfacedFailureRef = useRef<string>('');
+  useEffect(() => {
+    const err = simState.errorMessage || '';
+    const warnsKey = (simState.warnings ?? []).join('|');
+    const signature =
+      simState.status === 'FAILED' || err || warnsKey
+        ? `${simState.status}:${err}:${warnsKey}`
+        : '';
+    if (signature && signature !== lastSurfacedFailureRef.current) {
+      lastSurfacedFailureRef.current = signature;
+      setDiagnosticsOpen(true);
+    } else if (!signature) {
+      lastSurfacedFailureRef.current = '';
+    }
+  }, [simState.status, simState.errorMessage, simState.warnings]);
+
+  const focusCanvasAt = useCallback((x: number, y: number) => {
+    setFocusTarget((prev) => ({ x, y, seq: (prev?.seq ?? 0) + 1 }));
+  }, []);
+
+  const handleLocateDiagnostic = useCallback(
+    (item: DiagnosticItem) => {
+      setActiveTabId('schematic');
+      if (item.componentName) {
+        dispatch({ type: 'SELECT', name: item.componentName, additive: false });
+        actions.openProperties(item.componentName);
+        setRightSidebarOpen(true);
+        const comp = state.components.find((c) => c.name === item.componentName);
+        if (comp) {
+          focusCanvasAt(comp.position[0], comp.position[1]);
+        } else if (item.coord) {
+          focusCanvasAt(item.coord.x, item.coord.y);
+        }
+        return;
+      }
+      if (item.wireIndex !== undefined) {
+        dispatch({ type: 'SELECT_WIRE', index: item.wireIndex });
+        const wire = state.wires.find((w) => w.index === item.wireIndex);
+        const pt = wire?.points?.[0];
+        if (pt) {
+          focusCanvasAt(pt[0], pt[1]);
+        } else if (item.coord) {
+          focusCanvasAt(item.coord.x, item.coord.y);
+        }
+        return;
+      }
+      if (item.coord) {
+        focusCanvasAt(item.coord.x, item.coord.y);
+      }
+    },
+    [dispatch, actions, state.components, state.wires, focusCanvasAt],
+  );
+
+  const handleQuickFixDiagnostic = useCallback(
+    (item: DiagnosticItem, fix: DiagnosticQuickFix) => {
+      switch (fix.action) {
+        case 'auto-dt': {
+          const nextDt =
+            fix.suggestedDt ||
+            suggestAutoTimeStep(
+              state.components as FrequencyInspectableComponent[],
+              effectiveSim.tEnd,
+            ).dtStr;
+          actions.updateSimSettings({
+            dt: nextDt,
+            tEnd: effectiveSim.tEndStr,
+            solver: effectiveSim.solver,
+          });
+          break;
+        }
+        case 'open-sim-config':
+          setSimConfigOpen(true);
+          break;
+        case 'select-component':
+        case 'focus-wire':
+          handleLocateDiagnostic(item);
+          break;
+        case 'delete-wire':
+          if (fix.wireIndex !== undefined) {
+            actions.deleteWire(fix.wireIndex);
+          }
+          break;
+      }
+    },
+    [
+      state.components,
+      effectiveSim.tEnd,
+      actions,
+      simState.simSettings,
+      handleLocateDiagnostic,
+    ],
+  );
+
+  const armQuickComponent = useCallback(
+    (type: number, family: string) => {
+      const entry = catalog.find((c) => c.type === type && c.family === family);
+      if (entry) {
+        actions.arm(entry);
+      } else {
+        actions.arm({
+          type,
+          family,
+          displayName: String(type),
+          description: '',
+          category: family,
+        } as unknown as Parameters<typeof actions.arm>[0]);
+      }
+    },
+    [catalog, actions],
+  );
+
+  const handleRenameComponent = useCallback(
+    (name: string) => {
+      actions.openProperties(name);
+      setRightSidebarOpen(true);
+      dispatch({ type: 'SELECT', name, additive: false });
+      const next = window.prompt(`Rename '${name}' to:`, name);
+      if (next && next.trim() && next.trim() !== name) {
+        void actions.rename(name, next.trim());
+      }
+    },
+    [actions, dispatch],
+  );
+
   // F5 / ▶ Run: execute immediately with the effective settings. Ignored while
   // a run is active so the shortcut can never double-start a simulation.
   const handleQuickRun = useCallback(() => {
@@ -454,6 +651,11 @@ export function App() {
             actions.rotateComponent(state.selection[0]);
           } else if (state.selectedWire !== null) {
             actions.flipWire(state.selectedWire);
+          }
+          break;
+        case 'rotate-selection-ccw':
+          if (state.selection.length === 1) {
+            actions.rotateComponent(state.selection[0], true);
           }
           break;
         case 'toggle-wire-mode':
@@ -702,7 +904,7 @@ export function App() {
             disabled={!state.circuitId}
             title="Undo (Ctrl+Z)"
           >
-            ↩
+            <IconUndo />
           </button>
           <button
             type="button"
@@ -711,59 +913,86 @@ export function App() {
             disabled={!state.circuitId}
             title="Redo (Ctrl+Y)"
           >
-            ↪
+            <IconRedo />
           </button>
 
           <span className="nav-separator" />
 
-          <div className="nav-sim-group">
-            {isSimRunning ? (
-              <>
-                <div className="nav-sim-progress" title="Simulation progress">
-                  <span className="nav-sim-spinner" />
-                  <span>{Math.round(simState.progress * 100)}%</span>
-                </div>
-                <button
-                  type="button"
-                  className="nav-btn"
-                  onClick={simState.status === 'PAUSED' ? actions.resumeSimulation : actions.pauseSimulation}
-                  title={simState.status === 'PAUSED' ? 'Resume Simulation' : 'Pause Simulation'}
-                >
-                  {simState.status === 'PAUSED' ? '▶' : '⏸'}
-                </button>
-                <button
-                  type="button"
-                  className="nav-btn danger"
-                  onClick={actions.cancelSimulation}
-                  title="Cancel Simulation"
-                >
-                  ⏹
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  className="nav-btn primary-run-btn"
-                  onClick={handleQuickRun}
-                  disabled={!state.circuitId}
-                  title="Run Simulation with current parameters (F5)"
-                >
-                  ▶ Run <span className="kbd-shortcut run-kbd">F5</span>
-                </button>
-                <button
-                  type="button"
-                  className="nav-btn icon-only"
-                  onClick={() => setSimConfigOpen(true)}
-                  disabled={!state.circuitId}
-                  title="Simulation Parameters & Solver Setup"
-                  aria-label="Simulation Parameters Setup"
-                >
-                  ⚙
-                </button>
-              </>
-            )}
-          </div>
+          {/* Transform & Edit Buttons */}
+          <button
+            type="button"
+            className="nav-btn icon-only"
+            data-testid="nav-rotate-cw-btn"
+            disabled={!state.circuitId || (state.selection.length !== 1 && state.selectedWire === null)}
+            onClick={() => {
+              if (state.selection.length === 1) {
+                actions.rotateComponent(state.selection[0]);
+              } else if (state.selectedWire !== null) {
+                actions.flipWire(state.selectedWire);
+              }
+            }}
+            title="Rotate 90° CW / Flip Wire (R)"
+          >
+            <IconRotateCw />
+          </button>
+          <button
+            type="button"
+            className="nav-btn icon-only"
+            data-testid="nav-rotate-ccw-btn"
+            disabled={!state.circuitId || state.selection.length !== 1}
+            onClick={() => {
+              if (state.selection.length === 1) {
+                actions.rotateComponent(state.selection[0], true);
+              }
+            }}
+            title="Rotate 90° CCW (Shift+R)"
+          >
+            <IconRotateCcw />
+          </button>
+          <button
+            type="button"
+            className="nav-btn icon-only"
+            data-testid="nav-duplicate-btn"
+            disabled={!state.circuitId || state.selection.length === 0}
+            onClick={actions.duplicateSelection}
+            title="Duplicate Selection (Ctrl+D)"
+          >
+            <IconCopy />
+          </button>
+          <button
+            type="button"
+            className="nav-btn icon-only"
+            data-testid="nav-delete-btn"
+            disabled={
+              !state.circuitId ||
+              (state.selection.length === 0 &&
+                state.selectedWire === null &&
+                !(state.selectedWires && state.selectedWires.length > 0))
+            }
+            onClick={actions.deleteSelection}
+            title="Delete Selection (Del)"
+          >
+            <IconTrash />
+          </button>
+
+          <span className="nav-separator" />
+
+          <SimToolbarStrip
+            circuitId={state.circuitId}
+            isRunning={isSimRunning}
+            status={simState.status}
+            progress={simState.progress}
+            defaults={simState.defaults}
+            settings={simState.simSettings}
+            components={state.components}
+            onSettingsChange={actions.updateSimSettings}
+            onQuickRun={handleQuickRun}
+            onPause={actions.pauseSimulation}
+            onResume={actions.resumeSimulation}
+            onCancel={actions.cancelSimulation}
+            onOpenConfigModal={() => setSimConfigOpen(true)}
+            onStatusMessage={(status) => dispatch({ type: 'STATUS', status })}
+          />
 
           <span className="nav-separator" />
 
@@ -806,6 +1035,13 @@ export function App() {
 
         {/* Right Toolbar Actions */}
         <div className="nav-right">
+          <DiagnosticsBadge
+            diagnostics={diagnostics}
+            isOpen={diagnosticsOpen}
+            onToggle={() => setDiagnosticsOpen((prev) => !prev)}
+            testId="navbar-diagnostics-badge"
+          />
+
           <button
             type="button"
             className="nav-btn theme-toggle"
@@ -828,6 +1064,10 @@ export function App() {
           type="button"
           className={`workspace-tab ${activeTabId === 'schematic' ? 'active' : ''}`}
           onClick={() => setActiveTabId('schematic')}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            setTabContextMenu({ x: e.clientX, y: e.clientY, tabKind: 'schematic', tabId: 'schematic' });
+          }}
           title="Circuit Diagram Schematic Editor"
         >
           📐 Schematic
@@ -850,6 +1090,15 @@ export function App() {
                   onClick={() => {
                     setSelectedScope(reg.name);
                     setActiveTabId(tabId);
+                  }}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    setTabContextMenu({
+                      x: e.clientX,
+                      y: e.clientY,
+                      tabKind: 'graph-register',
+                      tabId: reg.id,
+                    });
                   }}
                   title={`Oscilloscope Register: ${reg.name} (${reg.numGraphs} graph${reg.numGraphs > 1 ? 's' : ''}, ${reg.signals.length} signals)`}
                 >
@@ -900,6 +1149,10 @@ export function App() {
                 onClick={() => {
                   setSelectedScope(sb.name);
                   setActiveTabId(tabId);
+                }}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  setTabContextMenu({ x: e.clientX, y: e.clientY, tabKind: 'scope', tabId: sb.name });
                 }}
                 title={`Oscilloscope Instrument: ${sb.name}`}
               >
@@ -957,6 +1210,10 @@ export function App() {
               type="button"
               className={`workspace-tab ${isActive ? 'active' : ''}`}
               onClick={() => setActiveTabId(tabId)}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                setTabContextMenu({ x: e.clientX, y: e.clientY, tabKind: 'script', tabId: scr.name });
+              }}
               title={`Script IDE Editor: ${scr.name}`}
             >
               <span>💻</span>
@@ -980,6 +1237,156 @@ export function App() {
           </button>
         )}
       </div>
+
+      {/* Workspace tab right-click context menu */}
+      {tabContextMenu && (() => {
+        const close = () => setTabContextMenu(null);
+        const act = (fn: () => void) => () => {
+          fn();
+          close();
+        };
+        const reg =
+          tabContextMenu.tabKind === 'graph-register'
+            ? state.graphRegisters?.find((r) => r.id === tabContextMenu.tabId)
+            : undefined;
+        const comp =
+          tabContextMenu.tabKind === 'scope' || tabContextMenu.tabKind === 'script'
+            ? state.components.find((c) => c.name === tabContextMenu.tabId)
+            : undefined;
+        return (
+          <div
+            ref={tabContextMenuRef}
+            className="context-menu workspace-tab-context-menu"
+            data-testid="workspace-tab-context-menu"
+            style={{ left: tabContextMenu.x, top: tabContextMenu.y }}
+            onContextMenu={(e) => e.preventDefault()}
+          >
+            {tabContextMenu.tabKind === 'schematic' && (
+              <>
+                <div className="context-menu-header"><span>Schematic</span></div>
+                <button type="button" className="context-menu-item" onClick={act(handleQuickRun)}>
+                  <span>▶ Run Simulation (F5)</span>
+                </button>
+                <button
+                  type="button"
+                  className="context-menu-item"
+                  onClick={act(() => setDiagnosticsOpen((o) => !o))}
+                >
+                  <span>🔍 Toggle Diagnostics Drawer</span>
+                </button>
+                <button
+                  type="button"
+                  className="context-menu-item"
+                  onClick={act(() => {
+                    void actions.addGraphRegister({ numGraphs: 1 });
+                  })}
+                >
+                  <span>➕ Add New Osci Tab</span>
+                </button>
+              </>
+            )}
+            {reg && (
+              <>
+                <div className="context-menu-header"><span>{reg.name}</span></div>
+                <button
+                  type="button"
+                  className="context-menu-item"
+                  onClick={act(() => {
+                    const next = window.prompt(`Rename '${reg.name}' to:`, reg.name);
+                    if (next && next.trim()) {
+                      void actions.updateGraphRegister(reg.id, { name: next.trim() });
+                    }
+                  })}
+                >
+                  <span>✏️ Rename Osci Tab...</span>
+                </button>
+                <button
+                  type="button"
+                  className="context-menu-item"
+                  onClick={act(() => {
+                    void actions.addGraphRegister({
+                      name: `${reg.name} Copy`,
+                      numGraphs: reg.numGraphs,
+                      signals: [...reg.signals],
+                      signalGraphs: { ...reg.signalGraphs },
+                      hiddenSignals: [...(reg.hiddenSignals || [])],
+                      yScaleMode: reg.yScaleMode,
+                      cursorsEnabled: reg.cursorsEnabled,
+                    });
+                  })}
+                >
+                  <span>📋 Duplicate Osci Tab</span>
+                </button>
+                <div className="context-menu-sep" />
+                {([1, 2, 3] as const).map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    className="context-menu-item"
+                    onClick={act(() => {
+                      void actions.updateGraphRegister(reg.id, { numGraphs: n });
+                    })}
+                  >
+                    <span>
+                      {reg.numGraphs === n ? '✓ ' : ''}📊 Layout: {n} Graph{n > 1 ? 's' : ''}
+                    </span>
+                  </button>
+                ))}
+                <div className="context-menu-sep" />
+                <button
+                  type="button"
+                  className="context-menu-item"
+                  onClick={act(() => {
+                    void actions.updateGraphRegister(reg.id, {
+                      signals: [],
+                      signalGraphs: {},
+                      hiddenSignals: [],
+                    });
+                  })}
+                >
+                  <span>🧹 Clear All Signals</span>
+                </button>
+                {state.graphRegisters.length > 1 && (
+                  <button
+                    type="button"
+                    className="context-menu-item danger"
+                    onClick={act(() => {
+                      void actions.removeGraphRegister(reg.id);
+                    })}
+                  >
+                    <span>✕ Close Osci Tab</span>
+                  </button>
+                )}
+              </>
+            )}
+            {comp && (
+              <>
+                <div className="context-menu-header"><span>{comp.name}</span></div>
+                <button
+                  type="button"
+                  className="context-menu-item"
+                  onClick={act(() => {
+                    setActiveTabId('schematic');
+                    dispatch({ type: 'SELECT', name: comp.name, additive: false });
+                    actions.openProperties(comp.name);
+                    setRightSidebarOpen(true);
+                    focusCanvasAt(comp.position[0], comp.position[1]);
+                  })}
+                >
+                  <span>🎯 Locate on Schematic</span>
+                </button>
+                <button
+                  type="button"
+                  className="context-menu-item"
+                  onClick={act(() => handleRenameComponent(comp.name))}
+                >
+                  <span>✏️ Rename Component...</span>
+                </button>
+              </>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Main Workspace (3-Column Layout) */}
       <div className="workspace">
@@ -1023,12 +1430,14 @@ export function App() {
             <Sheet
               state={state}
               dispatch={dispatch}
+              focusTarget={focusTarget}
               actions={{
                 placeGhost: actions.placeGhost,
                 finishWire: actions.finishWire,
                 commitMove: actions.commitMove,
                 resizeComponent: actions.resizeComponent,
                 deleteSelection: actions.deleteSelection,
+                duplicateSelection: actions.duplicateSelection,
                 rotateComponent: actions.rotateComponent,
                 deleteComponent: actions.deleteComponent,
                 deleteWire: actions.deleteWire,
@@ -1039,11 +1448,18 @@ export function App() {
                   actions.openProperties(name);
                   setRightSidebarOpen(true);
                 },
+                renameComponent: handleRenameComponent,
+                setParameter: actions.setParameter,
                 openScopeTab: (name: string) => openScopeTab(name),
                 openScriptTab: (name: string) => openScriptTab(name),
                 setLabel: actions.setLabel,
                 toggleWireMode: actions.toggleWireMode,
+                setSelectMode: actions.cancel,
+                armQuickComponent,
                 toggleProbeMode: actions.toggleProbeMode,
+                runSimulation: handleQuickRun,
+                runDrcCheck: () => setDiagnosticsOpen(true),
+                openSimConfig: () => setSimConfigOpen(true),
                 addSignalToScope: actions.addSignalToScope,
                 removeSignalFromScope: actions.removeSignalFromScope,
                 setProbeRefNet: actions.setProbeRefNet,
@@ -1071,6 +1487,13 @@ export function App() {
               </div>
               <div className="status-msg">{state.status}</div>
               <div className="status-right">
+                <DiagnosticsBadge
+                  diagnostics={diagnostics}
+                  isOpen={diagnosticsOpen}
+                  onToggle={() => setDiagnosticsOpen((prev) => !prev)}
+                  compact
+                  testId="statusbar-diagnostics-badge"
+                />
                 <span className="status-components-count">
                   {state.components.length} components, {state.wires.length} wires
                 </span>
@@ -1161,6 +1584,15 @@ export function App() {
               theme={theme}
             />
           </div>
+
+          <DiagnosticsDrawer
+            diagnostics={diagnostics}
+            isOpen={diagnosticsOpen}
+            onClose={() => setDiagnosticsOpen(false)}
+            onLocate={handleLocateDiagnostic}
+            onQuickFix={handleQuickFixDiagnostic}
+            onRunCheck={() => setDiagnosticsOpen(true)}
+          />
         </main>
 
         {/* Right Sidebar: Shown in Schematic and Scope tabs (Script tab has full internal IDE layout) */}

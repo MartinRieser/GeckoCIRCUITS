@@ -64,12 +64,13 @@ public class SimulationService {
     private static final long HEADLESS_TIME_BUDGET_MS = 120_000;
 
     /** Upper bound of stored result rows - larger runs record every Nth step
-     *  to keep the data container within heap. */
-    private static final long MAX_RECORDED_ROWS = 2_000_000;
+     *  to keep the data container within heap and the JSON response payload
+     *  within safe HTTP/browser parsing limits (~2-5 MB). */
+    static final long MAX_RECORDED_ROWS = 50_000;
     static final String CANCELLED_BY_USER = "Cancelled by user";
 
     /** Upper bound of completed/failed simulation results kept in memory. */
-    private static final int MAX_STORED_SIMULATIONS = 20;
+    private static final int MAX_STORED_SIMULATIONS = 10;
 
     private final Map<String, SimulationResponse> simulationStore = new ConcurrentHashMap<>();
     private final Map<String, HeadlessSimulationEngine> runningEngines = new ConcurrentHashMap<>();
@@ -738,12 +739,14 @@ public class SimulationService {
                 .solverType(parseSolverType(request.getSolverType()));
 
         // Bound result memory: logging every step of a huge run needs ~1 GB
-        // heap (OutOfMemoryError territory). Widen the interval so at most
+        // heap (OutOfMemoryError territory) and produces multi-hundred-MB JSON
+        // payloads that truncate over HTTP. Widen the interval so at most
         // MAX_RECORDED_ROWS rows are stored - the chart subsamples anyway.
         long totalSteps = timeStep > 0 && duration > 0
-                ? (long) (duration / timeStep) : 0;
+                ? Math.round(duration / timeStep) : 0;
         if (totalSteps > MAX_RECORDED_ROWS) {
-            builder.dataLoggingInterval((int) (totalSteps / MAX_RECORDED_ROWS + 1));
+            int interval = (int) Math.ceil((double) totalSteps / MAX_RECORDED_ROWS);
+            builder.dataLoggingInterval(Math.max(1, interval));
         }
 
         if (request.getParameters() != null) {

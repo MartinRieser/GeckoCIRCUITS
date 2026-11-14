@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { KEYBINDINGS, resolveShortcut } from '../src/model/keybindings';
+import { nextOrientation } from '../src/model/geometry';
+import { ORIENTATION_CYCLE, Orientation } from '../src/model/constants';
 
 describe('keybindings registry', () => {
   it('contains unique action bindings with valid descriptions', () => {
@@ -29,6 +31,15 @@ describe('keybindings registry', () => {
     expect(resolveShortcut({ key: 'd', ctrlKey: true }, 'idle', true)).toBe('duplicate');
     expect(resolveShortcut({ key: 'Delete' }, 'idle', true)).toBe('delete');
     expect(resolveShortcut({ key: 'r' }, 'idle', true)).toBe('rotate-selection');
+    expect(resolveShortcut({ key: 'r', shiftKey: true }, 'idle', true)).toBe('rotate-selection-ccw');
+  });
+
+  it('cycles orientations CW and CCW cleanly', () => {
+    const cw = nextOrientation(Orientation.NORTH_SOUTH);
+    expect(nextOrientation(cw, true)).toBe(Orientation.NORTH_SOUTH);
+    const ccw = nextOrientation(Orientation.NORTH_SOUTH, true);
+    expect(ccw).toBe(ORIENTATION_CYCLE[ORIENTATION_CYCLE.length - 1]);
+    expect(nextOrientation(ccw)).toBe(Orientation.NORTH_SOUTH);
   });
 
   it('resolves wiring mode navigation and draft shortcuts correctly', () => {

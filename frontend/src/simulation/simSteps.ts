@@ -5,8 +5,8 @@
  * count is the ratio of the two — the primary cost driver of a run.
  */
 
-/** Step counts above this are flagged as potentially long-running. */
-export const STEP_WARNING_THRESHOLD = 2_000_000;
+/** Step counts at or above this threshold are flagged as heavy / oversampled runs. */
+export const STEP_WARNING_THRESHOLD = 200_000;
 
 /** Estimated solver step count for a time span and step width; 0 if inputs are invalid or non-finite. */
 export function estimateStepCount(tEnd: number, dt: number): number {

@@ -4,6 +4,8 @@ import {
   validateCircuitForSimulation,
   findWireGeometryWarnings,
   findUnusedMeters,
+  buildCircuitDiagnostics,
+  getComponentDiagnosticWarning,
   type ComponentLike,
 } from '../src/model/validation';
 import {
@@ -363,5 +365,55 @@ describe('validateCircuitForSimulation: couplings and node labels', () => {
       const warnings = validateCircuitForSimulation([voltmeter, piController, source], []);
       expect(warnings.some((w) => /Meter output unused/.test(w))).toBe(false);
     });
+  });
+});
+
+describe('buildCircuitDiagnostics & getComponentDiagnosticWarning', () => {
+  it('surfaces simulation engine error, locates mentioned component, and reports aliasing risk', () => {
+    const source = comp({
+      name: 'V_pwm',
+      type: ControlComponentType.SIGNAL_SOURCE,
+      family: 'CONTROL',
+      position: [14, 18],
+      parameters: { param0: 403, param2: 100_000 },
+    });
+    const gate = comp({
+      name: 'GATE.1',
+      type: ControlComponentType.GATE,
+      family: 'CONTROL',
+      position: [22, 12],
+      parameters: {},
+    });
+
+    const diags = buildCircuitDiagnostics([source, gate], [], {
+      dt: '10u',
+      tEnd: '20m',
+      simStatus: 'FAILED',
+      simErrorMessage: 'Divergence detected around GATE.1 switching node',
+      simWarnings: ['Floating capacitance warning'],
+    });
+
+    const err = diags.find((d) => d.id === 'engine-error');
+    expect(err?.severity).toBe('error');
+    expect(err?.componentName).toBe('GATE.1');
+
+    const aliasing = diags.find((d) => d.id === 'timing-aliasing');
+    expect(aliasing?.severity).toBe('warning');
+    expect(aliasing?.quickFix?.action).toBe('auto-dt');
+
+    const uncoupledGate = diags.find((d) => d.id === 'drc-uncoupled-GATE.1');
+    expect(uncoupledGate?.severity).toBe('warning');
+    expect(uncoupledGate?.coord).toEqual({ x: 22, y: 12 });
+    expect(getComponentDiagnosticWarning(gate, new Set(['V_pwm', 'GATE.1']))).toMatch(
+      /no coupled switch/i,
+    );
+  });
+
+  it('produces actionable delete-wire quick fix for dangling wires', () => {
+    const r = comp({ name: 'R.1', type: LkComponentType.RESISTOR, position: [10, 10] });
+    const diags = buildCircuitDiagnostics([r], [{ points: [[40, 40], [44, 40]] }]);
+    const dangling = diags.find((d) => d.id === 'drc-dangling-power-0');
+    expect(dangling?.quickFix?.action).toBe('delete-wire');
+    expect(dangling?.quickFix?.wireIndex).toBe(0);
   });
 });

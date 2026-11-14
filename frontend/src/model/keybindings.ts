@@ -35,6 +35,7 @@ export type ActionId =
   | 'toggle-wire-mode'
   | 'toggle-probe-mode'
   | 'rotate-selection'
+  | 'rotate-selection-ccw'
   | 'save'
   | 'save-as'
   | 'open'
@@ -167,6 +168,14 @@ export const KEYBINDINGS: KeyBinding[] = [
     key: 'r',
     modes: ['idle', 'dragging'],
     description: 'Rotate Selected Components by 90°',
+    category: 'Editing',
+  },
+  {
+    action: 'rotate-selection-ccw',
+    key: 'r',
+    modifiers: { shift: true },
+    modes: ['idle', 'dragging'],
+    description: 'Rotate Selected Components by 90° CCW',
     category: 'Editing',
   },
   {

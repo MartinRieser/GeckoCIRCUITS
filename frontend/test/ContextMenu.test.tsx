@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from 'vitest';
-import { render, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { ContextMenu } from '../src/canvas/ContextMenu';
+
+afterEach(() => cleanup());
 
 describe('ContextMenu component', () => {
   it('renders actions for a component target and dispatches callbacks', () => {
@@ -129,5 +131,131 @@ describe('ContextMenu component', () => {
 
     fireEvent.mouseDown(document.body);
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it('supports CCW rotation, duplication, and coupling flyout on component menus', () => {
+    const onRotate = vi.fn();
+    const onDuplicate = vi.fn();
+    const onAssignCoupling = vi.fn();
+    const onClose = vi.fn();
+
+    render(
+      <ContextMenu
+        x={120}
+        y={120}
+        target={{ type: 'component', name: 'GATE.1', gridX: 5, gridY: 5 }}
+        component={{
+          name: 'GATE.1',
+          type: 1000,
+          family: 'CONTROL',
+          position: [5, 5],
+          orientation: 503,
+          parameters: {},
+          inputLabels: [],
+          outputLabels: [],
+        }}
+        components={[
+          {
+            name: 'GATE.1',
+            type: 1000,
+            family: 'CONTROL',
+            position: [5, 5],
+            orientation: 503,
+            parameters: {},
+            inputLabels: [],
+            outputLabels: [],
+          },
+          {
+            name: 'S.1',
+            type: 28,
+            family: 'LK',
+            position: [15, 5],
+            orientation: 503,
+            parameters: {},
+            inputLabels: [],
+            outputLabels: [],
+          },
+        ]}
+        onClose={onClose}
+        onRotate={onRotate}
+        onDuplicate={onDuplicate}
+        onAssignCoupling={onAssignCoupling}
+      />,
+    );
+
+    fireEvent.click(screen.getByText('↺ Rotate 90° CCW'));
+    expect(onRotate).toHaveBeenCalledWith('GATE.1', true);
+
+    fireEvent.click(screen.getByText('⧉ Duplicate'));
+    expect(onDuplicate).toHaveBeenCalledWith('GATE.1');
+
+    fireEvent.click(screen.getByText('🔗 Couple to Switch'));
+    fireEvent.click(screen.getByText('S.1'));
+    expect(onAssignCoupling).toHaveBeenCalledWith('GATE.1', 'S.1');
+  });
+
+  it('offers placing a new gate driver on a MOSFET when no GATE block exists', () => {
+    const onQuickPlaceAt = vi.fn();
+    const mosfet = {
+      name: 'M.1',
+      type: 28,
+      family: 'LK',
+      position: [20, 8] as [number, number],
+      orientation: 503,
+      parameters: {},
+      inputLabels: [],
+      outputLabels: [],
+    };
+    render(
+      <ContextMenu
+        x={50}
+        y={50}
+        target={{ type: 'component', name: 'M.1', gridX: 20, gridY: 8 }}
+        component={mosfet as never}
+        components={[mosfet as never]}
+        onClose={vi.fn()}
+        onQuickPlaceAt={onQuickPlaceAt}
+      />,
+    );
+    fireEvent.click(screen.getByText('🔗 Coupled Gate Driver'));
+    fireEvent.click(screen.getByText('+ Place New Gate Driver'));
+    expect(onQuickPlaceAt).toHaveBeenCalledWith(expect.any(Number), 'CONTROL', 16, 8);
+  });
+
+  it('supports wire ground assignment and canvas quick-place + DRC actions', () => {
+    const onSetWireGround = vi.fn();
+    const onQuickPlaceAt = vi.fn();
+    const onRunDrcCheck = vi.fn();
+
+    const { rerender } = render(
+      <ContextMenu
+        x={100}
+        y={100}
+        target={{ type: 'wire', wireIndex: 2, gridX: 4, gridY: 4 }}
+        onClose={vi.fn()}
+        onSetWireGround={onSetWireGround}
+      />,
+    );
+
+    fireEvent.click(screen.getByText('⏚ Set Net as Ground (0)'));
+    expect(onSetWireGround).toHaveBeenCalledWith(2);
+
+    rerender(
+      <ContextMenu
+        x={100}
+        y={100}
+        target={{ type: 'canvas', gridX: 12, gridY: 16 }}
+        onClose={vi.fn()}
+        onQuickPlaceAt={onQuickPlaceAt}
+        onRunDrcCheck={onRunDrcCheck}
+      />,
+    );
+
+    fireEvent.click(screen.getByText('⚡ Quick Place'));
+    fireEvent.click(screen.getByText(/Resistor/i));
+    expect(onQuickPlaceAt).toHaveBeenCalledWith(1, 'LK', 12, 16);
+
+    fireEvent.click(screen.getByText('🔍 Run Circuit Check (DRC)'));
+    expect(onRunDrcCheck).toHaveBeenCalledTimes(1);
   });
 });

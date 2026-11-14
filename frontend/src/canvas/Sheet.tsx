@@ -8,7 +8,7 @@ import type { Dispatch, MouseEvent as ReactMouseEvent, WheelEvent as ReactWheelE
 import type { EditorState, Action } from '../model/store';
 import { terminalPositions, terminalNear, findPlacementConflict } from '../model/geometry';
 import { routeAvoidingObstacles, routingBlockedCells, densePoints, denseCellsOf, orthogonalizePolyline, simplifyCorners, translateWireSegment } from './WireRouter';
-import { isWireEndPointConnected, findWireGeometryWarnings } from '../model/validation';
+import { isWireEndPointConnected, findWireGeometryWarnings, buildCircuitDiagnostics } from '../model/validation';
 import { ComponentSymbol } from './symbols';
 import { isScopeComponent, isScriptComponent } from '../simulation/scopes';
 import { channelColorByIndex } from '../simulation/traceColors';
@@ -39,15 +39,34 @@ import {
 import { analyzeElectricalNets } from './netHighlight';
 import type { Point, EditorComponent, EditorWire } from '../model/types';
 import { ContextMenu } from './ContextMenu';
+import {
+  IconGrip,
+  SymCapacitor,
+  SymDiode,
+  SymGnd,
+  SymInductor,
+  SymMosfet,
+  SymNote,
+  SymResistor,
+  SymVoltageSource,
+} from '../icons';
 import type { ContextMenuTarget } from './ContextMenu';
-import { Orientation, CANVAS_METRICS, LkComponentType, SENTINEL_UNSET } from '../model/constants';
+import {
+  Orientation,
+  CANVAS_METRICS,
+  LkComponentType,
+  SpecialComponentType,
+  SENTINEL_UNSET,
+} from '../model/constants';
 import {
   isMutualCoupler,
   isCoupledInductor,
   getMutualCouplingUids,
 } from '../model/componentSchema';
 
+/** Action callbacks exposed by the parent editor container to the interactive schematic Sheet. */
 export interface SheetActions {
+  /** Places the armed ghost component or an explicit override component at grid coordinates `(x, y)`. */
   placeGhost(
     x: number,
     y: number,
@@ -55,29 +74,65 @@ export interface SheetActions {
     typeOverride?: number,
     familyOverride?: string,
   ): void;
+  /** Commits a completed orthogonal wire polyline to the circuit model. */
   finishWire(points: number[][]): void;
+  /** Assigns or clears the net label of an existing wire by index. */
   labelWire?(index: number, label: string): void;
+  /** Replaces polyline vertices of an existing wire by index. */
   patchWirePoints?(index: number, points: number[][]): void;
+  /** Flips the orthogonal L-corner elbow of an existing wire by index. */
   flipWire?(index: number): void;
+  /** Commits dragged component positions and any attached rubber-banded wires. */
   commitMove(
     moves: { name: string; x: number; y: number }[],
     wirePatches?: { index: number; points: number[][] }[],
     postStatus?: string,
   ): void;
+  /** Resizes an annotation component (e.g. Schematic Note) in grid units. */
   resizeComponent?: (name: string, width: number, height: number, x?: number, y?: number) => void;
-  rotateComponent?: (name: string) => void;
+  /** Rotates a component 90° clockwise or counter-clockwise (`ccw = true`). */
+  rotateComponent?: (name: string, ccw?: boolean) => void;
+  /** Duplicates the current schematic selection. */
+  duplicateSelection?: () => void;
+  /** Deletes a component by name. */
   deleteComponent?: (name: string) => void;
+  /** Deletes a wire by index. */
   deleteWire?: (index: number) => void;
+  /** Deletes all currently selected components and wires. */
   deleteSelection?: () => void;
+  /** Opens and focuses the right-hand Properties panel for a component. */
   openProperties?: (name: string) => void;
+  /** Initiates interactive renaming of a component. */
+  renameComponent?: (name: string) => void;
+  /** Updates a single parameter on a component. */
+  setParameter?: (name: string, key: string, value: number | string) => void;
+  /** Switches workspace focus to a dedicated Oscilloscope tab. */
   openScopeTab?: (name: string) => void;
+  /** Switches workspace focus to a dedicated Script IDE tab. */
   openScriptTab?: (name: string) => void;
+  /** Updates a component terminal input/output signal label. */
   setLabel?: (name: string, side: 'x' | 'y', index: number, label: string) => void;
+  /** Toggles interactive wire routing mode. */
   toggleWireMode?: () => void;
+  /** Returns canvas mode to idle Select/Move tool. */
+  setSelectMode?: () => void;
+  /** Arms the placement ghost for a component type from quick-place buttons. */
+  armQuickComponent?: (type: number, family: string) => void;
+  /** Opens the Ctrl+K Command Palette modal. */
   openCommandPalette?: () => void;
+  /** Toggles interactive Oscilloscope voltage/current Probe mode. */
   toggleProbeMode?: () => void;
+  /** Dispatches a simulation run with active timing parameters. */
+  runSimulation?: () => void;
+  /** Opens the Circuit Check / Diagnostics drawer. */
+  runDrcCheck?: () => void;
+  /** Opens the Simulation Configuration modal. */
+  openSimConfig?: () => void;
+  /** Adds a signal trace to the active Oscilloscope register and graph index. */
   addSignalToScope?: (signalName: string, targetGraph?: number) => void | Promise<void>;
+  /** Removes a signal trace from the active Oscilloscope register. */
   removeSignalFromScope?: (signalName: string) => void | Promise<void>;
+  /** Sets or clears the differential voltage probe reference net. */
   setProbeRefNet?: (netName: string | null) => void;
 }
 
@@ -153,19 +208,132 @@ interface NoteResizeState {
   currentHeight: number;
 }
 
+/** Grid target passed by App diagnostics / click-to-locate to pan the canvas onto an issue. */
+export interface SheetFocusTarget {
+  /** Target schematic grid X coordinate. */
+  x: number;
+  /** Target schematic grid Y coordinate. */
+  y: number;
+  /** Monotonic trigger counter so clicking the same diagnostic twice still re-centers the viewport. */
+  seq: number;
+}
+
+/**
+ * One-click components pinned in the floating, movable quick-place bar.
+ * The scope block is intentionally NOT offered here (it was removed from the part
+ * palette in favour of Osci tabs / probes).
+ */
+const QUICK_PLACE_TOOLBAR_ITEMS = [
+  { label: 'GND', Icon: SymGnd, title: 'Place Ground (G)', type: LkComponentType.GLOBAL_TERMINAL, family: 'LK' },
+  { label: 'R', Icon: SymResistor, title: 'Place Resistor', type: LkComponentType.RESISTOR, family: 'LK' },
+  { label: 'L', Icon: SymInductor, title: 'Place Inductor', type: LkComponentType.INDUCTOR, family: 'LK' },
+  { label: 'C', Icon: SymCapacitor, title: 'Place Capacitor', type: LkComponentType.CAPACITOR, family: 'LK' },
+  { label: 'D', Icon: SymDiode, title: 'Place Diode', type: LkComponentType.DIODE, family: 'LK' },
+  { label: 'MOSFET', Icon: SymMosfet, title: 'Place MOSFET', type: LkComponentType.MOSFET, family: 'LK' },
+  { label: 'V', Icon: SymVoltageSource, title: 'Place Voltage Source', type: LkComponentType.VOLTAGE_SOURCE, family: 'LK' },
+  { label: 'Note', Icon: SymNote, title: 'Place Schematic Note', type: SpecialComponentType.TEXTBOX, family: 'ANNOTATION' },
+] as const;
+
+const QUICK_PLACE_POS_KEY = 'gecko_quickplace_pos';
+const QUICK_PLACE_COLLAPSED_KEY = 'gecko_quickplace_collapsed';
+const VIEW_CTRL_POS_KEY = 'gecko_viewctrl_pos';
+
+/**
+ * Manages a draggable floating toolbar whose position is persisted in `localStorage`.
+ */
+function useMovableToolbar(storageKey: string) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) return null;
+      const p = JSON.parse(raw) as { x?: unknown; y?: unknown };
+      return typeof p.x === 'number' && typeof p.y === 'number' ? { x: p.x, y: p.y } : null;
+    } catch {
+      return null;
+    }
+  });
+  const onDragStart = useCallback(
+    (e: ReactMouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const el = ref.current;
+      if (!el) return;
+      const parent = (el.offsetParent as HTMLElement | null) ?? el.parentElement;
+      const parentRect = parent?.getBoundingClientRect() ?? { left: 0, top: 0 };
+      const rect = el.getBoundingClientRect();
+      const offX = e.clientX - rect.left;
+      const offY = e.clientY - rect.top;
+      let last: { x: number; y: number } | null = null;
+      const onMove = (ev: MouseEvent) => {
+        last = {
+          x: Math.max(0, ev.clientX - parentRect.left - offX),
+          y: Math.max(0, ev.clientY - parentRect.top - offY),
+        };
+        setPos(last);
+      };
+      const onUp = () => {
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+        if (last) {
+          try {
+            localStorage.setItem(storageKey, JSON.stringify(last));
+          } catch {
+            /* storage unavailable */
+          }
+        }
+      };
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+    },
+    [storageKey],
+  );
+  return { ref, pos, onDragStart };
+}
+
 interface SheetProps {
   state: EditorState;
   dispatch: Dispatch<Action>;
   actions: SheetActions;
+  focusTarget?: SheetFocusTarget | null;
 }
 
-export function Sheet({ state, dispatch, actions }: SheetProps) {
+export function Sheet({ state, dispatch, actions, focusTarget }: SheetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
   const dpix = state.dpix;
   const rawWidth = state.sheetWidth * dpix;
   const rawHeight = state.sheetHeight * dpix;
+
+  // Movable / collapsible quick-place toolbar & bottom view controls bar
+  const {
+    ref: quickStripRef,
+    pos: quickStripPos,
+    onDragStart: handleQuickStripDragStart,
+  } = useMovableToolbar(QUICK_PLACE_POS_KEY);
+  const [quickCollapsed, setQuickCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(QUICK_PLACE_COLLAPSED_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const toggleQuickCollapsed = useCallback(() => {
+    setQuickCollapsed((prev) => {
+      try {
+        localStorage.setItem(QUICK_PLACE_COLLAPSED_KEY, String(!prev));
+      } catch {
+        /* storage unavailable */
+      }
+      return !prev;
+    });
+  }, []);
+  const {
+    ref: viewCtrlRef,
+    pos: viewCtrlPos,
+    onDragStart: handleViewCtrlDragStart,
+  } = useMovableToolbar(VIEW_CTRL_POS_KEY);
 
   // Viewport zoom & pan
   const [zoom, setZoom] = useState(1.0);
@@ -342,6 +510,54 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
       return 'smart';
     }
   });
+
+  const cycleLabelDisplayMode = useCallback(() => {
+    setLabelDisplayMode((prev) => {
+      const next = prev === 'smart' ? 'all' : prev === 'all' ? 'hover' : 'smart';
+      try {
+        localStorage.setItem('gecko_label_mode', next);
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, []);
+
+  // Pan and gently normalize zoom when a diagnostic issue locates a target
+  const focusViewportRef = useRef({ zoom, viewportSize, dpix });
+  focusViewportRef.current = { zoom, viewportSize, dpix };
+  useEffect(() => {
+    if (!focusTarget) return;
+    const { zoom: curZoom, viewportSize: vp, dpix: curDpix } = focusViewportRef.current;
+    const nextZoom = curZoom < 0.8 ? 1.0 : curZoom;
+    const targetPanX = Math.round(vp.width / 2 - focusTarget.x * curDpix * nextZoom);
+    const targetPanY = Math.round(vp.height / 2 - focusTarget.y * curDpix * nextZoom);
+    setZoom(nextZoom);
+    setPan({ x: targetPanX, y: targetPanY });
+  }, [focusTarget]);
+
+  // Per-component DRC warnings for on-canvas amber warning badges
+  const componentWarnings = useMemo(() => {
+    const map = new Map<string, string>();
+    const items = buildCircuitDiagnostics(state.components, state.wires);
+    for (const item of items) {
+      if (item.componentName && (item.severity === 'warning' || item.severity === 'error')) {
+        const prev = map.get(item.componentName);
+        map.set(item.componentName, prev ? `${prev}\n${item.detail}` : item.detail);
+      }
+    }
+    return map;
+  }, [state.components, state.wires]);
+
+  const activeScopeSignals = useMemo(
+    () => (state.graphRegisters ?? [])[0]?.signals ?? [],
+    [state.graphRegisters],
+  );
+
+  const selectedSingleComponent = useMemo(() => {
+    if (state.mode !== 'idle' || state.selection.length !== 1) return null;
+    return state.components.find((c) => c.name === state.selection[0]) ?? null;
+  }, [state.mode, state.selection, state.components]);
 
   // Active software coupling pairs (Gate Driver ➔ Switch, Ammeter ➔ Target Component)
   const couplingPairs = useMemo(
@@ -1650,8 +1866,27 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
         </div>
       )}
 
-      {/* Floating Canvas View Controls */}
-      <div className="canvas-view-controls">
+      {/* Floating Canvas View Controls (movable) */}
+      <div
+        ref={viewCtrlRef}
+        className="canvas-view-controls"
+        data-testid="canvas-view-controls"
+        style={
+          viewCtrlPos
+            ? { left: viewCtrlPos.x, top: viewCtrlPos.y, bottom: 'auto' }
+            : undefined
+        }
+        onMouseDown={(e) => e.stopPropagation()}
+        onDoubleClick={(e) => e.stopPropagation()}
+      >
+        <span
+          className="quick-place-grip"
+          data-testid="view-controls-grip"
+          title="Drag to move this toolbar"
+          onMouseDown={handleViewCtrlDragStart}
+        >
+          <IconGrip />
+        </span>
         <button
           type="button"
           className="canvas-ctrl-btn"
@@ -1686,6 +1921,19 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
           Fit
         </button>
         <div className="canvas-ctrl-sep" />
+
+        {/* Select / Move Tool Button */}
+        <button
+          type="button"
+          data-testid="canvas-select-tool-btn"
+          className={`canvas-ctrl-btn ${state.mode === 'idle' ? 'active' : ''}`}
+          onClick={() => actions.setSelectMode?.()}
+          title="Select / Move Tool (Esc) — Return to pointer selection mode."
+        >
+          <span className="canvas-ctrl-icon" aria-hidden="true">↖</span>
+          <span className="canvas-ctrl-label">Select</span>
+          <kbd className="canvas-ctrl-kbd">Esc</kbd>
+        </button>
 
         {/* Wire Tool Button */}
         <button
@@ -1824,15 +2072,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
           type="button"
           data-testid="canvas-labels-mode-btn"
           className={`canvas-ctrl-btn ${labelDisplayMode === 'smart' ? 'active' : ''}`}
-          onClick={() => {
-            const next = labelDisplayMode === 'smart' ? 'all' : labelDisplayMode === 'all' ? 'hover' : 'smart';
-            setLabelDisplayMode(next);
-            try {
-              localStorage.setItem('gecko_label_mode', next);
-            } catch {
-              // ignore
-            }
-          }}
+          onClick={cycleLabelDisplayMode}
           title={`Net Labels Mode — Cycle between Smart (labels on named/virtual nets), All (show labels on every net segment), and Hover (only when hovered or selected). Current: ${labelDisplayMode.toUpperCase()}. Click to cycle.`}
         >
           <svg
@@ -1873,6 +2113,58 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
             </span>
           </>
         )}
+      </div>
+
+      {/* Quick-Place Component Bar (movable, collapsible) */}
+      <div
+        ref={quickStripRef}
+        className={`canvas-quick-place-strip${quickCollapsed ? ' collapsed' : ''}`}
+        data-testid="canvas-quick-place-strip"
+        style={quickStripPos ? { left: quickStripPos.x, top: quickStripPos.y } : undefined}
+        onMouseDown={(e) => e.stopPropagation()}
+        onDoubleClick={(e) => e.stopPropagation()}
+        role="toolbar"
+        aria-label="Quick place components"
+      >
+        <span
+          className="quick-place-grip"
+          data-testid="quick-place-grip"
+          title="Drag to move this toolbar"
+          onMouseDown={handleQuickStripDragStart}
+        >
+          <IconGrip />
+        </span>
+        <span className="quick-place-caption">Place:</span>
+        {!quickCollapsed &&
+          QUICK_PLACE_TOOLBAR_ITEMS.map((item) => {
+            const isArmed =
+              state.mode === 'placing' &&
+              state.ghost?.type === item.type &&
+              state.ghost?.family === item.family;
+            return (
+              <button
+                key={`${item.family}-${item.type}`}
+                type="button"
+                data-testid={`quick-place-${item.label.toLowerCase()}`}
+                className={`canvas-quick-place-btn${isArmed ? ' active' : ''}`}
+                onClick={() => actions.armQuickComponent?.(item.type, item.family)}
+                title={item.title}
+              >
+                <item.Icon size={16} />
+                <span className="quick-place-label">{item.label}</span>
+              </button>
+            );
+          })}
+        <button
+          type="button"
+          className="canvas-quick-place-btn quick-place-collapse"
+          data-testid="quick-place-collapse"
+          onClick={toggleQuickCollapsed}
+          title={quickCollapsed ? 'Show quick-place toolbar' : 'Collapse quick-place toolbar'}
+          aria-label={quickCollapsed ? 'Expand quick-place toolbar' : 'Collapse quick-place toolbar'}
+        >
+          {quickCollapsed ? '▸' : '◂'}
+        </button>
       </div>
 
       <div
@@ -2034,6 +2326,7 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                       e.preventDefault();
                       e.stopPropagation();
                       const p = toGrid(e);
+                      const wNet = netAnalysis.wireIndexToNet.get(wire.index);
                       dispatch({ type: 'SELECT_WIRE', index: wire.index });
                       setContextMenu({
                         x: e.clientX,
@@ -2041,6 +2334,9 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                         target: {
                           type: 'wire',
                           wireIndex: wire.index,
+                          wireLabel: wire.label,
+                          resolvedNetName: wNet?.label || undefined,
+                          connectedPins: wNet?.terminalKeys.size,
                           gridX: p.x,
                           gridY: p.y,
                         },
@@ -2792,6 +3088,31 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
                             </g>
                           );
                         })()}
+
+                        {/* On-canvas DRC / Uncoupled warning indicator badge */}
+                        {(() => {
+                          const compWarning = componentWarnings.get(component.name);
+                          if (!compWarning) return null;
+                          return (
+                            <g
+                              className="comp-warning-badge"
+                              data-testid={`component-warning-badge-${component.name}`}
+                              transform={`translate(${halfW - 4}, ${top + 4})`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                dispatch({ type: 'SELECT', name: component.name, additive: false });
+                                dispatch({ type: 'PANEL_FOR', name: component.name });
+                              }}
+                              style={{ cursor: 'pointer' }}
+                            >
+                              <title>{compWarning}</title>
+                              <circle r={7} fill="#f59e0b" stroke="#0f172a" strokeWidth={1.2} />
+                              <text y={3.5} textAnchor="middle" fill="#0f172a" fontSize={10} fontWeight="bold">
+                                !
+                              </text>
+                            </g>
+                          );
+                        })()}
                       </>
                     );
                   })()}
@@ -3516,6 +3837,126 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
             )}
           </div>
         )}
+
+        {/* Floating Component Selection Action Pill */}
+        {selectedSingleComponent && (
+          <div
+            className="wire-action-pill component-action-pill"
+            data-testid="component-action-pill"
+            style={{
+              left: `${selectedSingleComponent.position[0] * dpix}px`,
+              top: `${
+                selectedSingleComponent.position[1] < 4
+                  ? selectedSingleComponent.position[1] * dpix + 48
+                  : selectedSingleComponent.position[1] * dpix - 54
+              }px`,
+            }}
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="wire-action-btn"
+              title="Rotate 90° CW (R)"
+              onClick={() => actions.rotateComponent?.(selectedSingleComponent.name)}
+            >
+              <span>↻ Rotate</span>
+            </button>
+            <button
+              type="button"
+              className="wire-action-btn"
+              title="Rotate 90° CCW (Shift+R)"
+              onClick={() => actions.rotateComponent?.(selectedSingleComponent.name, true)}
+            >
+              <span>↺</span>
+            </button>
+            {actions.duplicateSelection && (
+              <button
+                type="button"
+                className="wire-action-btn"
+                title="Duplicate (Ctrl+D)"
+                onClick={() => actions.duplicateSelection?.()}
+              >
+                <span>⧉ Copy</span>
+              </button>
+            )}
+            {actions.addSignalToScope && !isScopeComponent(selectedSingleComponent) && (
+              <>
+                <button
+                  type="button"
+                  className="wire-action-btn"
+                  title={
+                    isCircuitPowerComponent(selectedSingleComponent)
+                      ? `Plot Voltage V(${selectedSingleComponent.name})`
+                      : `Plot Signal ${resolveControlComponentSignal(selectedSingleComponent) || selectedSingleComponent.name}`
+                  }
+                  onClick={() => {
+                    const isPower = isCircuitPowerComponent(selectedSingleComponent);
+                    const sig = isPower
+                      ? `V(${selectedSingleComponent.name})`
+                      : resolveControlComponentSignal(selectedSingleComponent) ||
+                        selectedSingleComponent.name;
+                    actions.addSignalToScope?.(sig, isPower ? 1 : 3);
+                    ensureProbesVisible();
+                  }}
+                >
+                  <span>📈 {isCircuitPowerComponent(selectedSingleComponent) ? 'V' : 'Plot'}</span>
+                </button>
+                {isCircuitPowerComponent(selectedSingleComponent) && (
+                  <button
+                    type="button"
+                    className="wire-action-btn"
+                    title={`Plot Current I(${selectedSingleComponent.name})`}
+                    onClick={() => {
+                      actions.addSignalToScope?.(`I(${selectedSingleComponent.name})`, 2);
+                      ensureProbesVisible();
+                    }}
+                  >
+                    <span>📈 I</span>
+                  </button>
+                )}
+              </>
+            )}
+            {isScopeComponent(selectedSingleComponent) && actions.openScopeTab && (
+              <button
+                type="button"
+                className="wire-action-btn primary"
+                title="Open Oscilloscope Tab"
+                onClick={() => actions.openScopeTab?.(selectedSingleComponent.name)}
+              >
+                <span>📺 Osci</span>
+              </button>
+            )}
+            {isScriptComponent(selectedSingleComponent) && actions.openScriptTab && (
+              <button
+                type="button"
+                className="wire-action-btn primary"
+                title="Open Script Tab"
+                onClick={() => actions.openScriptTab?.(selectedSingleComponent.name)}
+              >
+                <span>📝 Script</span>
+              </button>
+            )}
+            {actions.openProperties && (
+              <button
+                type="button"
+                className="wire-action-btn"
+                title="Edit Properties (Enter)"
+                onClick={() => actions.openProperties?.(selectedSingleComponent.name)}
+              >
+                <span>⚙</span>
+              </button>
+            )}
+            <button
+              type="button"
+              className="wire-action-btn danger"
+              title="Delete Component (Del)"
+              onClick={() => actions.deleteComponent?.(selectedSingleComponent.name)}
+            >
+              <span>🗑</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Floating Context Menu */}
@@ -3524,21 +3965,68 @@ export function Sheet({ state, dispatch, actions }: SheetProps) {
           x={contextMenu.x}
           y={contextMenu.y}
           target={contextMenu.target}
+          component={
+            contextMenu.target.type === 'component' && contextMenu.target.name
+              ? state.components.find((c) => c.name === contextMenu.target.name)
+              : undefined
+          }
+          components={state.components}
+          activeScopeSignals={activeScopeSignals}
           onClose={() => setContextMenu(null)}
           onRotate={actions.rotateComponent}
+          onDuplicate={(name) => {
+            dispatch({ type: 'SELECT', name, additive: false });
+            actions.duplicateSelection?.();
+          }}
           onDeleteComponent={actions.deleteComponent}
           onDeleteWire={actions.deleteWire}
           onLabelWire={(index) => {
+            dispatch({ type: 'SELECT_WIRE', index });
             const wire = state.wires.find((w) => w.index === index);
-            const label = window.prompt('Net label (empty = none, GND = ground):', wire?.label ?? '');
-            if (label !== null) {
-              actions.labelWire?.(index, label.trim());
-            }
+            setEditingWireIndex(index);
+            setEditingWireText(
+              wire?.label && wire.label !== SENTINEL_UNSET ? wire.label : '',
+            );
+          }}
+          onSetWireGround={(index) => actions.labelWire?.(index, '0')}
+          onFlipWire={actions.flipWire}
+          onHighlightNet={(index) => dispatch({ type: 'SELECT_WIRE', index })}
+          onPlotNetVoltage={(_index, netName) => {
+            actions.addSignalToScope?.(`V(${netName})`, 1);
+            ensureProbesVisible();
+          }}
+          onStartDiffProbe={(_index, netName) => {
+            if (state.mode !== 'probing') actions.toggleProbeMode?.();
+            actions.setProbeRefNet?.(netName);
           }}
           onOpenProperties={actions.openProperties}
+          onRenameComponent={actions.renameComponent}
+          onOpenScopeTab={actions.openScopeTab}
+          onOpenScriptTab={actions.openScriptTab}
+          onProbeSignal={(sig) => {
+            actions.addSignalToScope?.(
+              sig,
+              sig.startsWith('I(') ? 2 : sig.startsWith('V(') ? 1 : 3,
+            );
+            ensureProbesVisible();
+          }}
+          onAssignCoupling={(sourceComp, targetComp) =>
+            actions.setParameter?.(sourceComp, 'coupledComponent', targetComp)
+          }
+          onSetSelectMode={actions.setSelectMode}
           onToggleWireMode={actions.toggleWireMode}
+          onToggleProbeMode={actions.toggleProbeMode}
           onOpenCommandPalette={actions.openCommandPalette}
+          onQuickPlaceAt={(type, family, gx, gy) =>
+            actions.placeGhost(gx, gy, Orientation.NORTH_SOUTH, type, family)
+          }
+          onRunSimulation={actions.runSimulation}
+          onRunDrcCheck={actions.runDrcCheck}
+          onOpenSimConfig={actions.openSimConfig}
           onZoomFit={handleZoomFit}
+          onResetZoom={handleZoomReset}
+          onToggleGrid={() => setShowGrid((prev) => !prev)}
+          onCycleNetLabels={cycleLabelDisplayMode}
         />
       )}
 

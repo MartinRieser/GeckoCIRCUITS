@@ -273,6 +273,20 @@ class SimulationServiceTest {
     }
 
     @Test
+    void buildSimulationConfig_capsRecordedRowsOnMultiMillionStepRun() {
+        // 2,000,000 solver steps (dt = 10 ns, duration = 20 ms) should decimate
+        // recorded waveform rows to <= MAX_RECORDED_ROWS so JSON responses stay small.
+        SimulationRequest request = new SimulationRequest("test.ipes", 0.02, 1e-8);
+
+        SimulationConfig config = simulationService.buildSimulationConfig(request);
+
+        int interval = config.getDataLoggingInterval();
+        assertTrue(interval >= 40, "Expected logging interval >= 40 for 2M steps, got " + interval);
+        long recordedRows = 2_000_000L / interval;
+        assertTrue(recordedRows <= SimulationService.MAX_RECORDED_ROWS);
+    }
+
+    @Test
     void pauseSimulation_unknownId_returnsNull() {
         assertNull(simulationService.pauseSimulation("unknown-id"));
         assertNull(simulationService.resumeSimulation("unknown-id"));
