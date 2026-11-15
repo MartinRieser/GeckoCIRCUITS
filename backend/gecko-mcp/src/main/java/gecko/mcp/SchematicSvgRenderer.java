@@ -999,6 +999,7 @@ public final class SchematicSvgRenderer {
             case 82, 1056 -> "SDFT";
             case 84, 1014 -> "MUX";
             case 85, 1054 -> "DEMUX";
+            case 88 -> "C/C++";
             case 1037 -> "DT";
             default -> {
                 String upper = comp.getName() != null ? comp.getName().toUpperCase(Locale.ROOT) : "";

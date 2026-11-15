@@ -122,6 +122,12 @@ final class CircuitInspector {
         if (staticVariables != null && !String.valueOf(staticVariables).isBlank()) {
             entry.put("staticVariables", String.valueOf(staticVariables));
         }
+        for (String nativeKey : new String[]{"libraryPath", "nativeCLibrary", "nativeCLibraries"}) {
+            Object nativeVal = comp.getParameters().get(nativeKey);
+            if (nativeVal != null && !String.valueOf(nativeVal).isBlank()) {
+                entry.put(nativeKey, String.valueOf(nativeVal));
+            }
+        }
     }
 
     private static List<Double> floatList(double[] parameters) {

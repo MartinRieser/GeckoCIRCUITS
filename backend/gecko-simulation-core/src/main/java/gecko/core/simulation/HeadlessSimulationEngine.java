@@ -246,9 +246,6 @@ public class HeadlessSimulationEngine {
         // drives for switches and measurement probes, coupled via
         // coupledReferenceID like the classic editor
         controlCoupling = ControlCalculatorBuilder.build(circuitModel, circuitNetlist);
-        if (circuitNetlist != null && controlCoupling != null) {
-            controlCoupling.warnings().forEach(circuitNetlist::addBuildWarning);
-        }
         controlNetlist = ControlNetlist.createEmpty();
         controlNetlist.setSortedCalculators(controlCoupling.calculators());
         controlCoupling.initialize(dt);
@@ -1089,7 +1086,7 @@ public class HeadlessSimulationEngine {
      * numbers, transformers without a model, element types with no stamper.
      */
     private java.util.List<String> collectEngineWarnings() {
-        java.util.List<String> warnings = new ArrayList<>();
+        java.util.Set<String> warnings = new java.util.LinkedHashSet<>();
         if (circuitNetlist != null) {
             warnings.addAll(circuitNetlist.getBuildWarnings());
         }
@@ -1099,7 +1096,7 @@ public class HeadlessSimulationEngine {
         if (controlCoupling != null) {
             warnings.addAll(controlCoupling.warnings());
         }
-        return warnings;
+        return new ArrayList<>(warnings);
     }
 
     /**

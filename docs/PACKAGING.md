@@ -47,7 +47,7 @@ mvn -pl backend/gecko-rest-api,backend/gecko-mcp -am package -DskipTests
 # 3. Assemble desktop/app/engine/ (jlink runtime, JARs, gecko_c_block.h, VERSION) and smoke test
 python scripts/desktop/build-engine.py
 
-# 4. Build platform installers in desktop/app/src-tauri/target/release/bundle/
+# 4. Build platform installers in desktop/target/release/bundle/
 cd desktop/app
 npx @tauri-apps/cli@^2 build
 ```

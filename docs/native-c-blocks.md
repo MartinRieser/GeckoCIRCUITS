@@ -153,8 +153,10 @@ only the hardware-access layer is replaced by the three exported functions.
 1. Open the **control palette** and place a **C Library Block (NativeC)**
    (the palette entry `C_NATIVE_C_FUNCTION`, typ 88).
 2. In the properties panel set **Inputs** and **Outputs** — these are the
-   `n_in` / `n_out` your `gecko_step` expects — and the **Library Path**.
-   The path may be absolute or relative to the circuit file.
+   `n_in` / `n_out` your `gecko_step` expects — and select the library:
+   in the desktop app or with an explicit **Library Path** (absolute or relative
+   to the circuit file), or in browser mode using **Attach…** (or the
+   `NATIVEC_NO_LIBRARY` Diagnostics quick-fix) to upload the compiled file.
 3. Wire the inputs to probes/signal sources and the outputs to gates or
    scopes, exactly like a script block.
 4. Run the simulation.
@@ -177,15 +179,15 @@ Behavior details worth knowing:
 | "required symbol gecko_step not found" | Functions not exported (Windows: add `GECKO_EXPORT` / `__declspec(dllexport)`), or C++ symbols without `extern "C"` |
 | Simulation crashes at step | An exception escaped `gecko_step` — wrap the body in `try/catch` (C++) and never `throw` across the boundary |
 | Outputs frozen after a change | The library failed to load *this* run — check the engine log
-  (`%APPDATA%\com.geckocircuits.desktop\logs\engine\` on Windows) |
+  (`%LOCALAPPDATA%\com.geckocircuits.desktop\logs\engine\` on Windows) |
 
 Engine logs are described in the [Desktop App guide](desktop-app.md).
 
 ## Security & MCP notes
 
-- The bundled MCP server can **run and validate** circuits that contain C
-  library blocks, but it deliberately **cannot create or modify** them —
-  prompt-injection into native code is excluded by design. Place and
-  configure the block in the GUI.
+- The bundled MCP server can **inspect, validate, export, and simulate**
+  circuits that contain C library blocks, but it deliberately **cannot create
+  or modify** them — prompt-injection into native code is excluded by design.
+  Place and configure the block in the GUI.
 - Your library runs in-process with the simulation: only load libraries you
   built yourself.

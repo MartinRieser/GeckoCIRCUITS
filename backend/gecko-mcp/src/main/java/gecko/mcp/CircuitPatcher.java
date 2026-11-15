@@ -64,6 +64,11 @@ final class CircuitPatcher {
         if (component == null) {
             throw new IllegalArgumentException("Component '" + componentName + "' not found in circuit");
         }
+        if (component.getType() == 88) {
+            throw new IllegalArgumentException(
+                    "C library block '" + componentName + "' (typ 88) cannot be modified via MCP by design; "
+                    + "configure it in the GUI.");
+        }
 
         int applied = 0;
         for (Map.Entry<String, Object> entry : parameters.entrySet()) {

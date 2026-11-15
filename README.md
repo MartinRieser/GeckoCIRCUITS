@@ -71,11 +71,8 @@ editor in a standalone app window:
 
 | Platform | Command |
 |----------|---------|
-| Windows | `run-gecko.bat` |
+| Windows | `run-gecko.bat` or `.\run-gecko.ps1` |
 | Linux / macOS / WSL | `./run-gecko.sh` |
-
-The `scripts/run-gecko*` scripts are convenience bridges that simply forward
-to the root launcher.
 
 ## Examples
 
@@ -98,10 +95,13 @@ The `resources/` directory contains ready-to-simulate circuits:
 git clone https://github.com/MartinRieser/GeckoCIRCUITS.git
 cd GeckoCIRCUITS
 
+# Build frontend bundle into Spring static resources (required when running gecko-rest-api.jar directly)
+npm --prefix frontend run build:spring
+
 # Build (simulation core, REST API, and MCP server)
 mvn clean package -DskipTests
 
-# Run GeckoCIRCUITS (serves http://localhost:8080/gecko/)
+# Run GeckoCIRCUITS (builds frontend/JAR if needed; serves http://localhost:8080/gecko/)
 run-gecko.bat    &:: Windows
 ./run-gecko.sh   # Linux / macOS
 
@@ -116,28 +116,20 @@ Requires: Java 25 JDK + Maven 3.6+
 
 ## Logging Configuration
 
-GeckoCIRCUITS uses **Apache Log4j2** for structured console and file logging.
+GeckoCIRCUITS uses **Logback** (Spring Boot) for the REST API server and **Apache Log4j2** for the simulation core.
 
 ### Output Locations
-- **Console**: Logs are outputted to stdout.
-- **File**: Logs are saved in a rolling file at `logs/gecko.log` (automatically rolled over at 10 MB, up to 10 archives / 100 MB max).
+- **Console**: Logs are written to stdout.
+- **Files**:
+  - `logs/rest-api.log` — REST API server logs (rolled daily/at 10 MB, 7 days history).
+  - `logs/gecko-core.log` — simulation core logs (rolled at 10 MB, up to 10 archives).
 
-### Configuring Log Levels at Startup
-You can configure the log level dynamically using the `gecko.log.level` system property:
-
-| Level | VM Option / Command | Description |
-|-------|---------------------|-------------|
-| **Disabled** | `-Dgecko.log.level=OFF` | Silences all logging output |
-| **Error Only** | `-Dgecko.log.level=ERROR` | Logs only error events |
-| **Standard (Default)** | `-Dgecko.log.level=INFO` | Logs standard informational events |
-| **Full / Debug** | `-Dgecko.log.level=TRACE` | Logs verbose debug and trace info |
-
-Example running the JAR with error-only logging:
-```bash
-java -Dgecko.log.level=ERROR -jar backend/gecko-rest-api/target/gecko-rest-api.jar
-```
-
-To redirect the logs to a custom directory, set `-Dgecko.log.dir=/path/to/logs`.
+### Customizing Logs at Startup
+- **Custom log directory**: set `-Dgecko.log.dir=/path/to/logs` (core) and/or `GECKO_LOG_DIR=/path/to/logs` (REST API).
+- **REST API log level**: pass Spring Boot's `--logging.level.root` option when running the JAR directly:
+  ```bash
+  java -jar backend/gecko-rest-api/target/gecko-rest-api.jar --logging.level.root=ERROR
+  ```
 
 ## Architecture
 

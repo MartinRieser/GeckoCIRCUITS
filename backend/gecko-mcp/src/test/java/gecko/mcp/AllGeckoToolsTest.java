@@ -425,4 +425,112 @@ class AllGeckoToolsTest {
         assertTrue(((Number) result.get("free_memory_mb")).longValue() > 0);
         assertTrue(((Number) result.get("total_memory_mb")).longValue() > 0);
     }
+
+    @Test
+    void testNativeCSecurityPolicyAndReadOnlyTools(@TempDir Path tempDir) throws Exception {
+        GeckoTools.ToolSpec createTool = getTool("gecko_create_circuit");
+        Path blockedOut = tempDir.resolve("blocked_nativec.ipes");
+        assertThrows(IllegalArgumentException.class, () -> createTool.handler().apply(Map.of(
+                "output_path", blockedOut.toString(),
+                "components", List.of(
+                        Map.of("name", "V1", "type", "DC_VOLTAGE", "nodes", List.of("vin", "0"),
+                                "parameters", Map.of("voltage", 12.0)),
+                        Map.of("name", "R1", "type", "RESISTOR", "nodes", List.of("vin", "0"),
+                                "parameters", Map.of("resistance", 10.0))
+                ),
+                "control", Map.of(
+                        "blocks", List.of(Map.of("type", "NATIVE_C", "name", "CNATC.1"))
+                )
+        )));
+
+        Path circuit = tempDir.resolve("nativec_readonly.ipes");
+        Files.writeString(circuit, """
+                verbindungLeistungskreisANZAHL 0
+                verbindungControlANZAHL 0
+                elementANZAHL 2
+                controlANZAHL 1
+                e (0)
+                <ElementLK>
+                labelAnfangsKnoten[] /vin
+                labelEndKnoten[] /0
+                enabledShorted 1
+                typ 4
+                uniqueObjectIdentifier 1
+                x 10
+                y 10
+                parameter[] 1.0 12.0 50.0 0.0 0.0
+                orientierung 503
+                idStringDialog U_DC.1
+                <\\ElementLK>
+                e (1)
+                <ElementLK>
+                labelAnfangsKnoten[] /vin
+                labelEndKnoten[] /0
+                enabledShorted 1
+                typ 1
+                uniqueObjectIdentifier 2
+                x 16
+                y 10
+                parameter[] 10.0
+                orientierung 503
+                idStringDialog R.1
+                <\\ElementLK>
+                c (0)
+                <ElementCONTROL>
+                labelAnfangsKnoten[]
+                labelEndKnoten[]
+                enabledShorted 1
+                typ 88
+                uniqueObjectIdentifier 101
+                x 24
+                y 12
+                parameter[] 0.0
+                parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+                orientierung 503
+                idStringDialog CNATC.1
+                anzXIN 1
+                anzYOUT 1
+                libraryPath missing_ctrl.dll
+                <\\ElementCONTROL>
+                tDURATION 2.0E-5
+                dt 1.0E-5
+                solverType 0
+                """);
+
+        GeckoTools.ToolSpec patchTool = getTool("gecko_patch_component");
+        assertThrows(IllegalArgumentException.class, () -> patchTool.handler().apply(Map.of(
+                "circuit_path", circuit.toString(),
+                "component_name", "CNATC.1",
+                "parameters", Map.of("param0", 1.0)
+        )));
+
+        GeckoTools.ToolSpec inspectTool = getTool("gecko_inspect_circuit");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> inspected = (Map<String, Object>) inspectTool.handler().apply(Map.of(
+                "circuit_path", circuit.toString()
+        ));
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> controls = (List<Map<String, Object>>) inspected.get("control_components");
+        assertEquals("missing_ctrl.dll", controls.get(0).get("libraryPath"));
+
+        GeckoTools.ToolSpec svgTool = getTool("gecko_export_schematic_svg");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> svgResult = (Map<String, Object>) svgTool.handler().apply(Map.of(
+                "circuit_path", circuit.toString()
+        ));
+        assertTrue(String.valueOf(svgResult.get("svg")).contains("C/C++"));
+
+        GeckoTools.ToolSpec validateTool = getTool("gecko_validate_circuit");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> validated = (Map<String, Object>) validateTool.handler().apply(Map.of(
+                "circuit_path", circuit.toString(),
+                "level", "compile"
+        ));
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> checks = (List<Map<String, Object>>) validated.get("compile_checks");
+        assertTrue(checks.stream().anyMatch(c ->
+                        "ENGINE_WARNING".equals(c.get("code"))
+                        && String.valueOf(c.get("message")).contains("NATIVEC_LOAD_ERROR")),
+                "Missing NativeC library should appear in compile_checks: " + checks);
+    }
 }

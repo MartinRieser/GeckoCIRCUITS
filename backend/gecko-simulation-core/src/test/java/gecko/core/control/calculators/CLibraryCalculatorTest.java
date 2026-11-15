@@ -328,6 +328,8 @@ class CLibraryCalculatorTest {
         assertTrue(result.isSuccess());
         assertTrue(result.getWarnings().stream().anyMatch(w -> w.contains("NATIVEC_LOAD_ERROR")),
                 "Missing DLL should surface NATIVEC_LOAD_ERROR warning, got: " + result.getWarnings());
+        assertEquals(1L, result.getWarnings().stream().filter(w -> w.contains("NATIVEC_LOAD_ERROR")).count(),
+                "NATIVEC_LOAD_ERROR warning should not be duplicated: " + result.getWarnings());
     }
 
     @Test

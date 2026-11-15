@@ -133,7 +133,7 @@ It generates `gecko-mcp.bat` (Windows) or `gecko-mcp.sh` (Linux/macOS) which use
 |---|---|
 | `gecko://catalog/components` | The full catalog JSON (same as `gecko_catalog`). |
 | `gecko://reference/script-blocks` | ScriptBlockCalculator language manual (variables, functions, syntax, safety rules). |
-| `gecko://reference/control-blocks` | Native control blocks (typ 1000–1047): parameter slots, terminal geometry, wiring rules, canonical regulated-buck pattern. |
+| `gecko://reference/control-blocks` | Native control blocks (typ 1000–1058, classic 61): parameter slots, terminal geometry, wiring rules, canonical regulated-buck pattern. |
 | `gecko://reference/workflow` | End-to-end authoring workflow with complete JSON cookbook payloads (RLC divider, closed-loop buck, thermal rectifier). |
 | `gecko://reference/multi-domain` | Electro-thermal feedback, in-file thermal networks, magnetic reluctance networks, loss channels. |
 | `gecko://reference/topologies` | Design equations for Vienna rectifier, buck and LLC. |

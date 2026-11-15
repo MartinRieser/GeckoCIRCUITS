@@ -86,7 +86,8 @@ public final class CircuitValidator {
                             new BufferedReader(new StringReader(content)), "inline_circuit");
             try {
                 CircuitNetlist netlist = NetlistBuilder.buildFromCircuitModel(model);
-                for (String warning : netlist.getBuildWarnings()) {
+                java.util.Set<String> netlistWarnings = new java.util.LinkedHashSet<>(netlist.getBuildWarnings());
+                for (String warning : netlistWarnings) {
                     compileChecks.add(compileEntry("WARNING", "NETLIST_WARNING", warning, null));
                 }
                 ControlCalculatorBuilder.ControlCoupling coupling =
@@ -95,7 +96,7 @@ public final class CircuitValidator {
                 result.put("probes", coupling.probes().size());
                 result.put("gates", coupling.gateDrives().size());
                 result.put("signal_taps", coupling.signalTaps().size());
-                compileOk &= testSolve(model, compileChecks);
+                compileOk &= testSolve(model, compileChecks, netlistWarnings);
             } catch (RuntimeException e) {
                 compileOk = false;
                 String msg = String.valueOf(e.getMessage());
@@ -119,7 +120,8 @@ public final class CircuitValidator {
      * Two-step test solve: catches singular matrices, invalid parameter
      * values and nonlinear solver failures cheaply, before any real run.
      */
-    private static boolean testSolve(CircuitModel model, List<Map<String, Object>> checks) {
+    private static boolean testSolve(CircuitModel model, List<Map<String, Object>> checks,
+                                     java.util.Set<String> netlistWarnings) {
         SimulationConfig config = SimulationConfig.builder()
                 .circuitModel(model)
                 .solverType(SolverType.SOLVER_BE)
@@ -129,6 +131,11 @@ public final class CircuitValidator {
                 .build();
         SimulationResult result = new HeadlessSimulationEngine().runSimulation(config);
         if (result.isSuccess()) {
+            for (String warning : result.getWarnings()) {
+                if (!netlistWarnings.contains(warning)) {
+                    checks.add(compileEntry("WARNING", "ENGINE_WARNING", warning, null));
+                }
+            }
             checks.add(compileEntry("INFO", "TEST_SOLVE", "two-step test solve passed", null));
             return true;
         }

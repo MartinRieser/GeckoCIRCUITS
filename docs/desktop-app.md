@@ -69,8 +69,9 @@ loads the Vite dev server, which proxies to an engine started separately via
 ### Versioning
 
 `scripts/desktop/set-version.py <version>` syncs the version across
-`tauri.conf.json`, the REST API's `application.properties`, and the frontend
-`package.json`. The CI pipeline calls it with the `v*` tag before building.
+`desktop/app/tauri.conf.json`, `desktop/app/Cargo.toml`, `desktop/engine/Cargo.toml`,
+and `backend/gecko-rest-api/src/main/resources/application.properties`. The CI
+pipeline calls it with the `v*` tag before building.
 
 ## CI
 

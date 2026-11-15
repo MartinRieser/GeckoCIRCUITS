@@ -590,7 +590,7 @@ public final class ComponentCatalog {
                 List.of(),
                 "Firmware-in-the-loop block binding a self-built host shared library (dll/so/dylib) "
                         + "implementing the gecko_c_block.h contract (gecko_init/gecko_step/gecko_deinit). "
-                        + "Configure with libraryPath plus anzXIN/anzYOUT.",
+                        + "Read-only via MCP (inspect, validate, simulate, export); create/configure in the GUI.",
                 1, true
         ));
 

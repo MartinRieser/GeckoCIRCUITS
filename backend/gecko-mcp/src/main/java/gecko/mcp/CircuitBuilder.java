@@ -529,6 +529,11 @@ public final class CircuitBuilder {
                 throw new IllegalArgumentException(
                         "control blocks entries must be control components, got: '" + typeStr + "'");
             }
+            if (def.typeNumber() == 88) {
+                throw new IllegalArgumentException(
+                        "C library blocks (NATIVE_C, typ 88) cannot be created via MCP by design; "
+                        + "place and configure them in the GUI.");
+            }
             @SuppressWarnings("unchecked")
             Map<String, Object> params = (Map<String, Object>) b.getOrDefault("parameters", Map.of());
             String outputLabel = (String) b.getOrDefault("output_label", b.get("signal_name"));
