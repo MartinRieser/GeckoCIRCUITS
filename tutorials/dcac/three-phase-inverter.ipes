@@ -1,0 +1,875 @@
+
+verbindungLK (0)
+<Verbindung>
+label dc_p
+x[] 6 8 18 32 42 56 6 
+y[] 8 8 8 8 8 8 18 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (1)
+<Verbindung>
+label 0
+x[] 2 24 26 48 50 12 14 
+y[] 8 8 8 8 8 18 18 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (2)
+<Verbindung>
+label sw_a
+x[] 12 14 20 30 20 
+y[] 8 8 8 8 18 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (3)
+<Verbindung>
+label sw_b
+x[] 36 38 44 54 26 
+y[] 8 8 8 8 18 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (4)
+<Verbindung>
+label sw_c
+x[] 60 2 8 18 32 
+y[] 8 18 18 18 18 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (5)
+<Verbindung>
+label out_a
+x[] 24 40 56 
+y[] 18 16 18 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (6)
+<Verbindung>
+label out_b
+x[] 30 46 2 
+y[] 18 16 28 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (7)
+<Verbindung>
+label out_c
+x[] 36 52 8 
+y[] 18 16 28 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (8)
+<Verbindung>
+label star_n
+x[] 40 46 52 60 6 12 
+y[] 20 20 20 18 28 28 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungCONTROL (9)
+<Verbindung>
+label v_phase_a
+x[] 12 14 
+y[] 52 52 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (10)
+<Verbindung>
+label v_phase_b
+x[] 12 
+y[] 53 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (11)
+<Verbindung>
+label v_phase_c
+x[] 12 
+y[] 54 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (12)
+<Verbindung>
+label i_load_a
+x[] 12 
+y[] 55 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (13)
+<Verbindung>
+label g1
+x[] 18 24 
+y[] 52 52 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (14)
+<Verbindung>
+label g4
+x[] 18 24 
+y[] 53 53 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (15)
+<Verbindung>
+label g3
+x[] 18 24 
+y[] 54 54 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (16)
+<Verbindung>
+label g6
+x[] 18 24 
+y[] 55 55 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (17)
+<Verbindung>
+label g5
+x[] 18 24 
+y[] 56 56 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (18)
+<Verbindung>
+label g2
+x[] 18 24 
+y[] 57 57 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+e (19)
+<ElementLK>
+labelAnfangsKnoten[] /dc_p
+labelEndKnoten[] /0
+enabledShorted 1
+parentSheetIdentifier 0
+typ 4
+uniqueObjectIdentifier 100
+x 4
+y 8
+parameter[] 401.0 700.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 504
+idStringDialog V_DC
+
+<\ElementLK>
+
+e (20)
+<ElementLK>
+labelAnfangsKnoten[] /dc_p
+labelEndKnoten[] /sw_a
+enabledShorted 1
+parentSheetIdentifier 0
+typ 7
+uniqueObjectIdentifier 101
+x 10
+y 8
+parameter[] 0.0 0.01 1000000.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog S1
+
+<\ElementLK>
+
+e (21)
+<ElementLK>
+labelAnfangsKnoten[] /sw_a
+labelEndKnoten[] /dc_p
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier 102
+x 16
+y 8
+parameter[] 1.0E7 0.7 0.01 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog D1
+
+<\ElementLK>
+
+e (22)
+<ElementLK>
+labelAnfangsKnoten[] /sw_a
+labelEndKnoten[] /0
+enabledShorted 1
+parentSheetIdentifier 0
+typ 7
+uniqueObjectIdentifier 103
+x 22
+y 8
+parameter[] 0.0 0.01 1000000.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog S4
+
+<\ElementLK>
+
+e (23)
+<ElementLK>
+labelAnfangsKnoten[] /0
+labelEndKnoten[] /sw_a
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier 104
+x 28
+y 8
+parameter[] 1.0E7 0.7 0.01 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog D4
+
+<\ElementLK>
+
+e (24)
+<ElementLK>
+labelAnfangsKnoten[] /dc_p
+labelEndKnoten[] /sw_b
+enabledShorted 1
+parentSheetIdentifier 0
+typ 7
+uniqueObjectIdentifier 105
+x 34
+y 8
+parameter[] 0.0 0.01 1000000.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog S3
+
+<\ElementLK>
+
+e (25)
+<ElementLK>
+labelAnfangsKnoten[] /sw_b
+labelEndKnoten[] /dc_p
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier 106
+x 40
+y 8
+parameter[] 1.0E7 0.7 0.01 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog D3
+
+<\ElementLK>
+
+e (26)
+<ElementLK>
+labelAnfangsKnoten[] /sw_b
+labelEndKnoten[] /0
+enabledShorted 1
+parentSheetIdentifier 0
+typ 7
+uniqueObjectIdentifier 107
+x 46
+y 8
+parameter[] 0.0 0.01 1000000.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog S6
+
+<\ElementLK>
+
+e (27)
+<ElementLK>
+labelAnfangsKnoten[] /0
+labelEndKnoten[] /sw_b
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier 108
+x 52
+y 8
+parameter[] 1.0E7 0.7 0.01 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog D6
+
+<\ElementLK>
+
+e (28)
+<ElementLK>
+labelAnfangsKnoten[] /dc_p
+labelEndKnoten[] /sw_c
+enabledShorted 1
+parentSheetIdentifier 0
+typ 7
+uniqueObjectIdentifier 109
+x 58
+y 8
+parameter[] 0.0 0.01 1000000.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog S5
+
+<\ElementLK>
+
+e (29)
+<ElementLK>
+labelAnfangsKnoten[] /sw_c
+labelEndKnoten[] /dc_p
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier 110
+x 4
+y 18
+parameter[] 1.0E7 0.7 0.01 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog D5
+
+<\ElementLK>
+
+e (30)
+<ElementLK>
+labelAnfangsKnoten[] /sw_c
+labelEndKnoten[] /0
+enabledShorted 1
+parentSheetIdentifier 0
+typ 7
+uniqueObjectIdentifier 111
+x 10
+y 18
+parameter[] 0.0 0.01 1000000.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog S2
+
+<\ElementLK>
+
+e (31)
+<ElementLK>
+labelAnfangsKnoten[] /0
+labelEndKnoten[] /sw_c
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier 112
+x 16
+y 18
+parameter[] 1.0E7 0.7 0.01 1.0E7 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog D2
+
+<\ElementLK>
+
+e (32)
+<ElementLK>
+labelAnfangsKnoten[] /sw_a
+labelEndKnoten[] /out_a
+enabledShorted 1
+parentSheetIdentifier 0
+typ 2
+uniqueObjectIdentifier 113
+x 22
+y 18
+parameter[] 0.002 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog LA
+
+<\ElementLK>
+
+e (33)
+<ElementLK>
+labelAnfangsKnoten[] /sw_b
+labelEndKnoten[] /out_b
+enabledShorted 1
+parentSheetIdentifier 0
+typ 2
+uniqueObjectIdentifier 114
+x 28
+y 18
+parameter[] 0.002 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog LB
+
+<\ElementLK>
+
+e (34)
+<ElementLK>
+labelAnfangsKnoten[] /sw_c
+labelEndKnoten[] /out_c
+enabledShorted 1
+parentSheetIdentifier 0
+typ 2
+uniqueObjectIdentifier 115
+x 34
+y 18
+parameter[] 0.002 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog LC
+
+<\ElementLK>
+
+e (35)
+<ElementLK>
+labelAnfangsKnoten[] /out_a
+labelEndKnoten[] /star_n
+enabledShorted 1
+parentSheetIdentifier 0
+typ 3
+uniqueObjectIdentifier 116
+x 40
+y 18
+parameter[] 1.0E-5 0.0 0.0 0.0 0.0 0.0 1.0E-5 1.0E-5 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 503
+idStringDialog CA
+
+<\ElementLK>
+
+e (36)
+<ElementLK>
+labelAnfangsKnoten[] /out_b
+labelEndKnoten[] /star_n
+enabledShorted 1
+parentSheetIdentifier 0
+typ 3
+uniqueObjectIdentifier 117
+x 46
+y 18
+parameter[] 1.0E-5 0.0 0.0 0.0 0.0 0.0 1.0E-5 1.0E-5 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 503
+idStringDialog CB
+
+<\ElementLK>
+
+e (37)
+<ElementLK>
+labelAnfangsKnoten[] /out_c
+labelEndKnoten[] /star_n
+enabledShorted 1
+parentSheetIdentifier 0
+typ 3
+uniqueObjectIdentifier 118
+x 52
+y 18
+parameter[] 1.0E-5 0.0 0.0 0.0 0.0 0.0 1.0E-5 1.0E-5 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 503
+idStringDialog CC
+
+<\ElementLK>
+
+e (38)
+<ElementLK>
+labelAnfangsKnoten[] /out_a
+labelEndKnoten[] /star_n
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier 119
+x 58
+y 18
+parameter[] 20.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog RA
+
+<\ElementLK>
+
+e (39)
+<ElementLK>
+labelAnfangsKnoten[] /out_b
+labelEndKnoten[] /star_n
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier 120
+x 4
+y 28
+parameter[] 20.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog RB
+
+<\ElementLK>
+
+e (40)
+<ElementLK>
+labelAnfangsKnoten[] /out_c
+labelEndKnoten[] /star_n
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier 121
+x 10
+y 28
+parameter[] 20.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog RC
+
+<\ElementLK>
+
+c (41)
+<ElementCONTROL>
+labelAnfangsKnoten[]
+labelEndKnoten[] /v_phase_a
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1001
+uniqueObjectIdentifier 2001
+coupledReferenceID[] 119 
+x 10
+y 52
+parameter[] 0.0 
+parameterString[] /RA
+nameOpt[]
+orientierung 503
+idStringDialog VM_PH_A
+
+<\ElementCONTROL>
+
+c (42)
+<ElementCONTROL>
+labelAnfangsKnoten[]
+labelEndKnoten[] /v_phase_b
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1001
+uniqueObjectIdentifier 2002
+coupledReferenceID[] 120 
+x 10
+y 53
+parameter[] 0.0 
+parameterString[] /RB
+nameOpt[]
+orientierung 503
+idStringDialog VM_PH_B
+
+<\ElementCONTROL>
+
+c (43)
+<ElementCONTROL>
+labelAnfangsKnoten[]
+labelEndKnoten[] /v_phase_c
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1001
+uniqueObjectIdentifier 2003
+coupledReferenceID[] 121 
+x 10
+y 54
+parameter[] 0.0 
+parameterString[] /RC
+nameOpt[]
+orientierung 503
+idStringDialog VM_PH_C
+
+<\ElementCONTROL>
+
+c (44)
+<ElementCONTROL>
+labelAnfangsKnoten[]
+labelEndKnoten[] /i_load_a
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1002
+uniqueObjectIdentifier 2004
+coupledReferenceID[] 119 
+x 10
+y 55
+parameter[] 0.0 
+parameterString[] /RA
+nameOpt[]
+orientierung 503
+idStringDialog AM_LOAD_A
+
+<\ElementCONTROL>
+
+c (45)
+<ElementCONTROL>
+labelAnfangsKnoten[] /v_phase_a
+labelEndKnoten[] /g1/g4/g3/g6/g5/g2
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1016
+uniqueObjectIdentifier 2005
+x 16
+y 52
+parameter[] 
+parameterString[]
+nameOpt[]
+orientierung 503
+idStringDialog SPWM_3PH
+<sourceCode>
+
+                            double f_line = 50.0;
+                            double f_carrier = 10000.0;
+                            double m_a = 0.85;
+                            phase += dt * f_carrier;
+                            if (phase >= 1.0) phase -= 1.0;
+                            double tri = 2.0 * Math.abs(phase - 0.5);
+                            double ref_a = 0.5 * (1.0 + m_a * Math.sin(2.0 * PI * f_line * t));
+                            double ref_b = 0.5 * (1.0 + m_a * Math.sin(2.0 * PI * f_line * t - 2.0943951));
+                            double ref_c = 0.5 * (1.0 + m_a * Math.sin(2.0 * PI * f_line * t + 2.0943951));
+                            yOUT[0] = (ref_a > tri) ? 1.0 : 0.0;
+                            yOUT[1] = 1.0 - yOUT[0];
+                            yOUT[2] = (ref_b > tri) ? 1.0 : 0.0;
+                            yOUT[3] = 1.0 - yOUT[2];
+                            yOUT[4] = (ref_c > tri) ? 1.0 : 0.0;
+                            yOUT[5] = 1.0 - yOUT[4];
+                            return yOUT;
+                            
+<\sourceCode>
+<staticCode>
+
+<\staticCode>
+<importCode>
+
+<\importCode>
+<staticVariables>
+double phase = 0.0;
+<\staticVariables>
+anzXIN 1.0
+anzYOUT 6.0
+
+<\ElementCONTROL>
+
+c (46)
+<ElementCONTROL>
+labelAnfangsKnoten[] /g1
+labelEndKnoten[]
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1000
+uniqueObjectIdentifier 2006
+coupledReferenceID[] 101 
+x 26
+y 52
+parameter[] 0.0 
+parameterString[] /S1
+nameOpt[]
+orientierung 503
+idStringDialog G_S1
+
+<\ElementCONTROL>
+
+c (47)
+<ElementCONTROL>
+labelAnfangsKnoten[] /g4
+labelEndKnoten[]
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1000
+uniqueObjectIdentifier 2007
+coupledReferenceID[] 103 
+x 26
+y 53
+parameter[] 0.0 
+parameterString[] /S4
+nameOpt[]
+orientierung 503
+idStringDialog G_S4
+
+<\ElementCONTROL>
+
+c (48)
+<ElementCONTROL>
+labelAnfangsKnoten[] /g3
+labelEndKnoten[]
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1000
+uniqueObjectIdentifier 2008
+coupledReferenceID[] 105 
+x 26
+y 54
+parameter[] 0.0 
+parameterString[] /S3
+nameOpt[]
+orientierung 503
+idStringDialog G_S3
+
+<\ElementCONTROL>
+
+c (49)
+<ElementCONTROL>
+labelAnfangsKnoten[] /g6
+labelEndKnoten[]
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1000
+uniqueObjectIdentifier 2009
+coupledReferenceID[] 107 
+x 26
+y 55
+parameter[] 0.0 
+parameterString[] /S6
+nameOpt[]
+orientierung 503
+idStringDialog G_S6
+
+<\ElementCONTROL>
+
+c (50)
+<ElementCONTROL>
+labelAnfangsKnoten[] /g5
+labelEndKnoten[]
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1000
+uniqueObjectIdentifier 2010
+coupledReferenceID[] 109 
+x 26
+y 56
+parameter[] 0.0 
+parameterString[] /S5
+nameOpt[]
+orientierung 503
+idStringDialog G_S5
+
+<\ElementCONTROL>
+
+c (51)
+<ElementCONTROL>
+labelAnfangsKnoten[] /g2
+labelEndKnoten[]
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1000
+uniqueObjectIdentifier 2011
+coupledReferenceID[] 111 
+x 26
+y 57
+parameter[] 0.0 
+parameterString[] /S2
+nameOpt[]
+orientierung 503
+idStringDialog G_S2
+
+<\ElementCONTROL>
+
+optimizerName[]
+optimizerValue[] null
+<scripterCode>
+
+<\scripterCode>
+<scripterImports>
+
+<\scripterImports>
+<scripterDeclarations>
+ 
+<\scripterDeclarations>
+<extraScriptSourceFiles>
+ 
+<\extraScriptSourceFiles>
+
+
+
+DtStor 2026-10-18
+tDURATION 0.04
+dt 1.0E-6
+tPAUSE -1.0
+T_pre 0.0
+dt_pre 0.0
+solverType 0
+path 
+
+dpix 16
+fontSize 12
+fontTyp Arial
+fensterWidth -1
+fensterHeight -1
+worksheetSize 600x600
+ANSICHT_SHOW_LK_NAME true
+ANSICHT_SHOW_LK_PARAMETER true
+ANSICHT_SHOW_LK_FLOWDIR false
+ANSICHT_SHOW_LK_TEXTLINIE true
+ANSICHT_SHOW_THERM_NAME true
+ANSICHT_SHOW_THERM_PARAMETER true
+ANSICHT_SHOW_THERM_FLOWDIR false
+ANSICHT_SHOW_THERM_TEXTLINIE true
+ANSICHT_SHOW_CONTROL_NAME true
+ANSICHT_SHOW_CONTROL_PARAMETER true
+ANSICHT_SHOW_CONTROL_TEXTLINIE true
+FileVersion 175
+UniqueFileId 0
+dataContainerSignals[]
+
+=======================
+ 

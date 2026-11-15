@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 400" width="100%" height="100%">
+  <defs>
+    <style>
+      .wire { stroke: #1e293b; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .wire-thin { stroke: #64748b; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .wire-dashed { stroke: #0284c7; stroke-width: 2; stroke-dasharray: 5,4; fill: none; }
+      .wire-gnd { stroke: #1e293b; stroke-width: 2.5; stroke-linecap: round; }
+      .junction { fill: #1e293b; }
+      .label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: middle; }
+      .label-start { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: start; }
+      .label-end { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: end; }
+      .sublabel { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: middle; }
+      .sublabel-start { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: start; }
+      .sublabel-end { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: 500; text-anchor: end; }
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 16px; fill: #0f172a; font-weight: 700; }
+      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 12px; fill: #64748b; font-weight: 400; }
+      .comp-body { fill: #ffffff; stroke: #1e293b; stroke-width: 2.2; }
+      .comp-diode { fill: #0284c7; stroke: #0284c7; stroke-width: 2; }
+      .comp-sw { stroke: #0284c7; stroke-width: 2.5; stroke-linecap: round; fill: none; }
+      .arrow { fill: #0284c7; stroke: none; }
+      .measure-arrow { stroke: #0284c7; stroke-width: 1.75; fill: none; }
+      .tag-pos { fill: #dc2626; font-family: sans-serif; font-size: 16px; font-weight: bold; text-anchor: middle; }
+      .tag-pos-start { fill: #dc2626; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: start; }
+      .tag-pos-end { fill: #dc2626; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: end; }
+      .tag-neg { fill: #2563eb; font-family: sans-serif; font-size: 18px; font-weight: bold; text-anchor: middle; }
+      .tag-neg-start { fill: #2563eb; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: start; }
+      .tag-neg-end { fill: #2563eb; font-family: sans-serif; font-size: 15px; font-weight: bold; text-anchor: end; }
+      .card { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; rx: 8px; }
+      .block { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; rx: 6px; }
+      .block-accent { fill: #f0f9ff; stroke: #0284c7; stroke-width: 1.5; rx: 6px; }
+      .leg-box { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.2; stroke-dasharray: 4,4; rx: 6px; }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0284c7"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" class="card" />
+  <text x="35" y="38" class="title">Active Boost Power Factor Correction (PFC) Converter</text>
+  <text x="35" y="58" class="subtitle">European IEC 60617 Standard Schematic • Sinusoidal Input Current Shaping</text>
+  
+    <line x1="100" y1="160" x2="100" y2="208" class="wire" />
+    <circle cx="100" cy="230" r="22" class="comp-body" />
+    <line x1="100" y1="252" x2="100" y2="300" class="wire" />
+    <path d="M 89 230 Q 94.5 219 100 230 Q 105.5 241 111 230" class="wire" />
+    <text x="68" y="226" class="label-end">V_mains</text>
+    <text x="68" y="244" class="sublabel" text-anchor="end">230V / 50Hz</text>
+    
+<line x1="100" y1="160" x2="180" y2="160" class="wire" />
+<line x1="100" y1="300" x2="180" y2="300" class="wire" />
+<circle cx="180" cy="160" r="4" class="junction" />
+<circle cx="180" cy="300" r="4" class="junction" />
+
+    <line x1="180" y1="160" x2="180" y2="224" class="wire" />
+    <line x1="162" y1="224" x2="198" y2="224" class="wire" stroke-width="3" />
+    <line x1="162" y1="236" x2="198" y2="236" class="wire" stroke-width="3" />
+    <line x1="180" y1="236" x2="180" y2="300" class="wire" />
+    <text x="204" y="227" class="label-start">C_in</text>
+    <text x="204" y="245" class="sublabel-start">EMI Filter</text>
+    
+<line x1="180" y1="160" x2="240" y2="160" class="wire" />
+<line x1="180" y1="300" x2="240" y2="300" class="wire" />
+<rect x="240" y="140" width="60" height="180" class="block" />
+<text x="270" y="225" class="label">Bridge</text>
+<text x="270" y="245" class="sublabel">Rectifier</text>
+<line x1="300" y1="300" x2="780" y2="300" class="wire" />
+
+    <line x1="300" y1="160" x2="342" y2="160" class="wire" />
+    <path d="M 342 160 C 342 144, 356 144, 356 160
+             C 356 144, 370 144, 370 160
+             C 370 144, 384 144, 384 160
+             C 384 144, 398 144, 398 160" class="wire" stroke-width="2.5" />
+    <line x1="398" y1="160" x2="440" y2="160" class="wire" />
+    <text x="370" y="138" class="label">L_pfc</text>
+    <text x="370" y="184" class="sublabel">Boost Inductor</text>
+    
+<circle cx="440" cy="160" r="4" class="junction" />
+
+    <line x1="440" y1="160" x2="440" y2="212" class="wire" />
+    <circle cx="440" cy="212" r="3.5" class="junction" />
+    <line x1="440" y1="212" x2="426" y2="240" class="comp-sw" />
+    <circle cx="440" cy="248" r="3.5" class="junction" />
+    <line x1="440" y1="248" x2="440" y2="300" class="wire" />
+    <text x="414" y="228" class="label-end">S_pfc</text>
+    <text x="414" y="246" class="sublabel-end">MOSFET / IGBT</text>
+    
+        <line x1="440" y1="202" x2="475" y2="202" class="wire-thin" />
+        <line x1="475" y1="202" x2="475" y2="218" class="wire-thin" />
+        <polygon points="465,240 475,220 485,240" fill="#94a3b8" stroke="#94a3b8" />
+        <line x1="465" y1="220" x2="485" y2="220" stroke="#94a3b8" stroke-width="2" />
+        <line x1="475" y1="240" x2="475" y2="258" class="wire-thin" />
+        <line x1="475" y1="258" x2="440" y2="258" class="wire-thin" />
+        <circle cx="440" cy="202" r="3" class="junction" />
+        <circle cx="440" cy="258" r="3" class="junction" />
+        
+<circle cx="440" cy="300" r="4" class="junction" />
+
+        <line x1="440" y1="160" x2="486" y2="160" class="wire" />
+        <polygon points="486,146 514,160 486,174" class="comp-diode" />
+        <line x1="514" y1="146" x2="514" y2="174" class="wire" stroke-width="2.5" stroke="#0284c7" />
+        <line x1="514" y1="160" x2="560" y2="160" class="wire" />
+        <text x="500" y="138" class="label">D_pfc</text>
+        <text x="500" y="186" class="sublabel">SiC Schottky</text>
+        
+<circle cx="560" cy="160" r="4" class="junction" />
+<line x1="560" y1="160" x2="650" y2="160" class="wire" />
+<circle cx="650" cy="160" r="4" class="junction" />
+
+    <line x1="650" y1="160" x2="650" y2="224" class="wire" />
+    <line x1="632" y1="224" x2="668" y2="224" class="wire" stroke-width="3" />
+    <line x1="632" y1="236" x2="668" y2="236" class="wire" stroke-width="3" />
+    <line x1="650" y1="236" x2="650" y2="300" class="wire" />
+    <text x="674" y="227" class="label-start">C_out</text>
+    <text x="674" y="245" class="sublabel-start">Bulk 400V</text>
+    
+<circle cx="650" cy="300" r="4" class="junction" />
+<line x1="650" y1="160" x2="730" y2="160" class="wire" />
+<circle cx="730" cy="160" r="4" class="junction" />
+
+    <line x1="730" y1="160" x2="730" y2="202" class="wire" />
+    <rect x="718" y="202" width="24" height="56" class="comp-body" />
+    <line x1="730" y1="258" x2="730" y2="300" class="wire" />
+    <text x="750" y="227" class="label-start">R_L</text>
+    <text x="750" y="245" class="sublabel-start">Load</text>
+    
+<circle cx="730" cy="300" r="4" class="junction" />
+<line x1="730" y1="160" x2="780" y2="160" class="wire" />
+
+    <circle cx="780" cy="160" r="4" fill="none" stroke="#0284c7" stroke-width="2" />
+    <circle cx="780" cy="300" r="4" fill="none" stroke="#0284c7" stroke-width="2" />
+    <text x="794" y="165" class="tag-pos">+</text>
+    <text x="794" y="305" class="tag-neg">&#8722;</text>
+    <line x1="805" y1="175" x2="805" y2="285" class="measure-arrow" marker-end="url(#arr-blue)" />
+    <text x="822" y="235" class="label-start" fill="#0284c7">Vdc = 400V</text>
+    
+
+    <line x1="440" y1="300" x2="440" y2="315" class="wire" />
+    <line x1="422" y1="315" x2="458" y2="315" class="wire-gnd" />
+    <line x1="429" y1="321" x2="451" y2="321" class="wire-gnd" />
+    <line x1="436" y1="327" x2="444" y2="327" class="wire-gnd" />
+    <text x="440" y="342" class="sublabel">0V Return</text>
+    
+</svg>

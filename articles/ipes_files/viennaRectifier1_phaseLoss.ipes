@@ -1,0 +1,4300 @@
+
+verbindungLeistungskreisANZAHL 38
+verbindungLK (0)
+<Verbindung>
+label U2
+x[] 13 13 13 13 13 13 
+y[] 18 17 16 15 14 13 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (1)
+<Verbindung>
+label NIX_NIX_NIX
+x[] 26 27 28 29 
+y[] 6 6 6 6 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (2)
+<Verbindung>
+label NIX_NIX_NIX
+x[] 26 27 28 29 
+y[] 14 14 14 14 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (3)
+<Verbindung>
+label NIX_NIX_NIX
+x[] 35 36 37 38 
+y[] 6 6 6 6 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (4)
+<Verbindung>
+label NIX_NIX_NIX
+x[] 35 36 37 38 
+y[] 14 14 14 14 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (5)
+<Verbindung>
+label NIX_NIX_NIX
+x[] 44 45 46 47 
+y[] 6 6 6 6 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (6)
+<Verbindung>
+label NIX_NIX_NIX
+x[] 44 45 46 47 
+y[] 14 14 14 14 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (7)
+<Verbindung>
+label Von
+x[] 26 27 28 29 30 31 32 33 34 35 
+y[] 18 18 18 18 18 18 18 18 18 18 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (8)
+<Verbindung>
+label Von
+x[] 35 36 37 38 39 40 41 42 43 44 
+y[] 18 18 18 18 18 18 18 18 18 18 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (9)
+<Verbindung>
+label Vop
+x[] 26 27 28 29 30 31 32 33 34 35 
+y[] 2 2 2 2 2 2 2 2 2 2 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (10)
+<Verbindung>
+label Vop
+x[] 35 36 37 38 39 40 41 42 43 44 
+y[] 2 2 2 2 2 2 2 2 2 2 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (11)
+<Verbindung>
+label M
+x[] 54 54 54 
+y[] 10 9 8 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (12)
+<Verbindung>
+label M
+x[] 54 54 54 
+y[] 10 11 12 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (13)
+<Verbindung>
+label Von
+x[] 44 45 46 47 48 49 50 51 52 53 54 54 54 
+y[] 18 18 18 18 18 18 18 18 18 18 18 17 16 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (14)
+<Verbindung>
+label Vop
+x[] 44 45 46 47 48 49 50 51 52 53 54 54 54 
+y[] 2 2 2 2 2 2 2 2 2 2 2 3 4 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (15)
+<Verbindung>
+label Ma
+x[] 38 39 40 
+y[] 10 10 10 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (16)
+<Verbindung>
+label Ma
+x[] 29 30 31 
+y[] 10 10 10 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (17)
+<Verbindung>
+label uL3
+x[] 42 43 44 
+y[] 10 10 10 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (18)
+<Verbindung>
+label uL2
+x[] 33 34 35 
+y[] 10 10 10 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (19)
+<Verbindung>
+label U3
+x[] 15 15 15 
+y[] 16 17 18 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (20)
+<Verbindung>
+label U1
+x[] 11 11 11 11 11 11 11 11 11 
+y[] 10 11 12 13 14 15 16 17 18 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (21)
+<Verbindung>
+label M
+x[] 54 55 56 57 58 59 59 59 
+y[] 10 10 10 10 10 10 9 8 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (22)
+<Verbindung>
+label M
+x[] 59 59 59 
+y[] 10 11 12 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (23)
+<Verbindung>
+label Von
+x[] 59 59 59 58 57 56 55 54 
+y[] 16 17 18 18 18 18 18 18 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (24)
+<Verbindung>
+label Vop
+x[] 59 59 59 58 57 56 55 54 
+y[] 4 3 2 2 2 2 2 2 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (25)
+<Verbindung>
+label Ma
+x[] 47 48 49 50 
+y[] 10 10 10 10 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (26)
+<Verbindung>
+label U2
+x[] 13 13 13 13 13 
+y[] 9 10 11 12 13 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (27)
+<Verbindung>
+label U3
+x[] 15 15 15 15 15 15 15 15 
+y[] 16 15 14 13 12 11 10 9 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (28)
+<Verbindung>
+label U1
+x[] 18 17 16 15 14 13 12 11 
+y[] 10 10 10 10 10 10 10 10 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (29)
+<Verbindung>
+label U2
+x[] 18 17 16 15 14 13 12 11 10 9 8 7 
+y[] 13 13 13 13 13 13 13 13 13 13 13 13 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (30)
+<Verbindung>
+label U3
+x[] 7 8 9 10 11 12 13 14 15 16 17 18 
+y[] 16 16 16 16 16 16 16 16 16 16 16 16 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (31)
+<Verbindung>
+label uL1
+x[] 22 23 24 25 26 
+y[] 10 10 10 10 10 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (32)
+<Verbindung>
+label Ma
+x[] 31 31 31 31 31 31 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 
+y[] 10 9 8 7 6 5 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (33)
+<Verbindung>
+label Ma
+x[] 40 40 40 40 40 40 40 
+y[] 10 9 8 7 6 5 4 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (34)
+<Verbindung>
+label Ma
+x[] 50 50 50 50 50 50 50 
+y[] 10 9 8 7 6 5 4 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (35)
+<Verbindung>
+label N2
+x[] 15 14 13 12 11 
+y[] 22 22 22 22 22 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (36)
+<Verbindung>
+label N1
+x[] 15 14 13 12 11 
+y[] 5 5 5 5 5 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (37)
+<Verbindung>
+label N
+x[] 3 3 3 3 3 3 3 
+y[] 16 15 14 13 12 11 10 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungCONTROL (0)
+<Verbindung>
+label NIX_NIX_NIX
+x[] 38 39 39 
+y[] 43 43 44 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (1)
+<Verbindung>
+label NIX_NIX_NIX
+x[] 38 39 39 
+y[] 46 46 45 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (2)
+<Verbindung>
+label ureg1
+x[] 38 39 
+y[] 25 25 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (3)
+<Verbindung>
+label ureg2
+x[] 38 39 
+y[] 31 31 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (4)
+<Verbindung>
+label ureg3
+x[] 38 39 
+y[] 37 37 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (5)
+<Verbindung>
+label uvor1
+x[] 38 39 39 39 
+y[] 22 22 23 24 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (6)
+<Verbindung>
+label NIX_NIX_NIX
+x[] 43 42 
+y[] 24 24 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (7)
+<Verbindung>
+label NIX_NIX_NIX
+x[] 43 42 
+y[] 30 30 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (8)
+<Verbindung>
+label NIX_NIX_NIX
+x[] 43 42 
+y[] 36 36 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (9)
+<Verbindung>
+label uvor2
+x[] 39 39 39 38 
+y[] 30 29 28 28 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (10)
+<Verbindung>
+label uvor3
+x[] 38 39 39 39 
+y[] 34 34 35 36 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (11)
+<Verbindung>
+label um1p
+x[] 51 51 51 
+y[] 24 25 26 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (12)
+<Verbindung>
+label um2p
+x[] 51 51 51 
+y[] 30 31 32 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (13)
+<Verbindung>
+label um3p
+x[] 51 51 51 
+y[] 36 37 38 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (14)
+<Verbindung>
+label um1p
+x[] 51 52 53 54 
+y[] 24 24 24 24 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (15)
+<Verbindung>
+label um2p
+x[] 54 53 52 51 
+y[] 30 30 30 30 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (16)
+<Verbindung>
+label um3p
+x[] 51 52 53 54 
+y[] 36 36 36 36 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (17)
+<Verbindung>
+label NIX_NIX_NIX
+x[] 48 47 46 
+y[] 24 24 24 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (18)
+<Verbindung>
+label NIX_NIX_NIX
+x[] 48 47 46 
+y[] 30 30 30 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (19)
+<Verbindung>
+label NIX_NIX_NIX
+x[] 48 47 46 
+y[] 36 36 36 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (20)
+<Verbindung>
+label NIX_NIX_NIX
+x[] 18 18 
+y[] 45 44 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+elementANZAHL 36
+
+e (0)
+<ElementLK>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /N
+enabledShorted 1
+parentSheetIdentifier 0
+typ 4
+uniqueObjectIdentifier -1455648429
+x 5
+y 10
+parameter[] 402.0 326.0 400.0 0.0 0.0 0.5 -4.044671442215986E-8 -0.40966356218616234 -0.2748411929753729 0.13482236921078944 0.0 1.0 -1.7976931348623157E308 1.7976931348623157E308 0.0 
+parameterString[] /tri180/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 504
+idStringDialog U.1
+coupledReferenceID[] 0 
+copyCoupledReferenceID[] 0 
+internalIndex -1
+internalString NIX_NIX_NIX
+dxTxt -0.5714285714285712
+dyTxt -0.4285714285714288
+
+<\ElementLK>
+
+e (1)
+<ElementLK>
+labelAnfangsKnoten[] /U2
+labelEndKnoten[] /N
+enabledShorted 1
+parentSheetIdentifier 0
+typ 4
+uniqueObjectIdentifier -173097490
+x 5
+y 13
+parameter[] 402.0 326.0 400.0 0.0 -2.0943951023931953 0.5 -37.17945015223162 282.52889050054506 282.66371286975584 0.13482236921078944 0.0 1.0 -1.7976931348623157E308 1.7976931348623157E308 0.0 
+parameterString[] /tri180/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 504
+idStringDialog U.2
+coupledReferenceID[] 0 
+copyCoupledReferenceID[] 0 
+internalIndex -1
+internalString NIX_NIX_NIX
+dxTxt -0.6428571428571432
+dyTxt -0.14285714285714235
+
+<\ElementLK>
+
+e (2)
+<ElementLK>
+labelAnfangsKnoten[] /U3
+labelEndKnoten[] /N
+enabledShorted 1
+parentSheetIdentifier 0
+typ 4
+uniqueObjectIdentifier -668846847
+x 5
+y 16
+parameter[] 402.0 326.0 400.0 0.0 2.0943951023931953 0.5 37.17945019267833 -282.11922693835885 -281.98440456914807 0.13482236921078944 0.0 1.0 -1.7976931348623157E308 1.7976931348623157E308 0.0 
+parameterString[] /tri180/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 504
+idStringDialog U.3
+coupledReferenceID[] 0 
+copyCoupledReferenceID[] 0 
+internalIndex -1
+internalString NIX_NIX_NIX
+dxTxt -0.7857142857142856
+dyTxt 3.071428571428571
+
+<\ElementLK>
+
+e (3)
+<ElementLK>
+labelAnfangsKnoten[] /U1
+labelEndKnoten[] /N1
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier 1243825406
+x 11
+y 7
+parameter[] 100000.0 -6.793083010306568E-6 -0.6793083010306568 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog R.1
+dxTxt 0.5
+dyTxt -0.07142857142857117
+
+<\ElementLK>
+
+e (4)
+<ElementLK>
+labelAnfangsKnoten[] /U2
+labelEndKnoten[] /N1
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier -1583421874
+x 13
+y 7
+parameter[] 100000.0 0.0028266371286996728 282.6637128699673 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog R.2
+dxTxt 0.5
+dyTxt 0.0
+
+<\ElementLK>
+
+e (5)
+<ElementLK>
+labelAnfangsKnoten[] /U3
+labelEndKnoten[] /N1
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier -269650934
+x 15
+y 7
+parameter[] 100000.0 -0.002819844045689366 -281.9844045689366 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog R.3
+dxTxt 0.6428571428571423
+dyTxt -0.14285714285714324
+
+<\ElementLK>
+
+e (6)
+<ElementLK>
+labelAnfangsKnoten[] /U1
+labelEndKnoten[] /N2
+enabledShorted 1
+parentSheetIdentifier 0
+typ 3
+uniqueObjectIdentifier -1694271591
+x 11
+y 20
+parameter[] 3.0E-6 0.0 0.23057298586584563 -0.6793083012420906 -0.6793083012420906 0.0 3.0E-6 3.0E-6 0.0 0.0 0.23057298586584563 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog C.1
+isNonlinear false
+nonlinX[] 0.0 100.0 300.0 400.0 
+nonlinY[] 1.0E-7 8.0E-8 1.2E-9 1.0E-9 
+nonLinearCharHashValue 0
+dxTxt -1.428571428571427
+dyTxt 0.14285714285714235
+
+<\ElementLK>
+
+e (7)
+<ElementLK>
+labelAnfangsKnoten[] /U2
+labelEndKnoten[] /N2
+enabledShorted 1
+parentSheetIdentifier 0
+typ 3
+uniqueObjectIdentifier 2135292084
+x 13
+y 20
+parameter[] 3.0E-6 0.0 -0.11127403799457625 282.66371286975584 282.66371286975584 0.0 3.0E-6 3.0E-6 0.0 0.0 -0.11127403799457625 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog C.2
+isNonlinear false
+nonlinX[] 0.0 100.0 300.0 400.0 
+nonlinY[] 1.0E-7 8.0E-8 1.2E-9 1.0E-9 
+nonLinearCharHashValue 0
+dxTxt -1.5
+dyTxt 0.2142857142857153
+
+<\ElementLK>
+
+e (8)
+<ElementLK>
+labelAnfangsKnoten[] /U3
+labelEndKnoten[] /N2
+enabledShorted 1
+parentSheetIdentifier 0
+typ 3
+uniqueObjectIdentifier 1161055289
+x 15
+y 20
+parameter[] 3.0E-6 0.0 -0.11929894800459806 -281.98440456914807 -281.98440456914807 0.0 3.0E-6 3.0E-6 0.0 0.0 -0.11929894800459806 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog C.3
+isNonlinear false
+nonlinX[] 0.0 100.0 300.0 400.0 
+nonlinY[] 1.0E-7 8.0E-8 1.2E-9 1.0E-9 
+nonLinearCharHashValue 0
+dxTxt -1.428571428571427
+dyTxt 0.14285714285714235
+
+<\ElementLK>
+
+e (9)
+<ElementLK>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /Vop
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier 2123634172
+x 26
+y 4
+parameter[] 1.0E7 0.8 0.08 1.0E7 -3.981246082770992E-5 -397.3246082770992 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog DF1p
+<Verluste>
+verlustTyp 1
+rON 0.08
+uf 0.8
+kON 0.0
+kOFF 0.0
+uSWnorm -1.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\Verluste>
+dxTxt 0.9
+dyTxt 0.5
+
+<\ElementLK>
+
+e (10)
+<ElementLK>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /Ma
+enabledShorted 1
+parentSheetIdentifier 0
+typ 7
+uniqueObjectIdentifier -69828504
+x 29
+y 8
+parameter[] 0.2 0.2 1.0E7 3.966721394021988E-5 7.933442788043976E-6 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0 
+parameterString[] /G_S1p/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog S1p
+<Verluste>
+verlustTyp 1
+rON 0.2
+uf 0.0
+kON 3.0E-5
+kOFF 1.5E-5
+uSWnorm 400.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\Verluste>
+dxTxt -0.07142857142857295
+dyTxt -1.6428571428571432
+
+<\ElementLK>
+
+e (11)
+<ElementLK>
+labelAnfangsKnoten[] /uL1
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier -1575620372
+x 26
+y 8
+parameter[] 1.0E7 0.7 0.0275 1.0E7 -1.4524696457980155E-7 -0.7524696457980156 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog DN1
+<Verluste>
+verlustTyp 1
+rON 0.0275
+uf 0.7
+kON 0.0
+kOFF 0.0
+uSWnorm -1.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\Verluste>
+dxTxt 0.9
+dyTxt 0.5
+
+<\ElementLK>
+
+e (12)
+<ElementLK>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /Ma
+enabledShorted 1
+parentSheetIdentifier 0
+typ 7
+uniqueObjectIdentifier -880079727
+x 29
+y 12
+parameter[] 0.2 0.2 1.0E7 -0.2306057358013902 -0.04612114716027804 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0 
+parameterString[] /G_S1n/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog S1n
+<Verluste>
+verlustTyp 1
+rON 0.2
+uf 0.0
+kON 3.0E-5
+kOFF 1.5E-5
+uSWnorm 400.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\Verluste>
+dxTxt 0.7142857142857153
+dyTxt 2.2857142857142865
+
+<\ElementLK>
+
+e (13)
+<ElementLK>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /uL1
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier -450938494
+x 26
+y 12
+parameter[] 0.0275 0.7 0.0275 1.0E7 0.2305660070890735 0.7063405651949495 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog Thy1
+<Verluste>
+verlustTyp 1
+rON 0.0275
+uf 0.7
+kON 0.0
+kOFF 0.0
+uSWnorm -1.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\Verluste>
+dxTxt 0.9
+dyTxt 0.5
+
+<\ElementLK>
+
+e (14)
+<ElementLK>
+labelAnfangsKnoten[] /Von
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier 1836774716
+x 26
+y 16
+parameter[] 1.0E7 0.8 0.08 1.0E7 -3.972871183548062E-5 -396.48711835480617 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog DF1n
+<Verluste>
+verlustTyp 1
+rON 0.08
+uf 0.8
+kON 0.0
+kOFF 0.0
+uSWnorm -1.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\Verluste>
+dxTxt 0.9
+dyTxt 0.5
+
+<\ElementLK>
+
+e (15)
+<ElementLK>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /Vop
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier 295467574
+x 35
+y 4
+parameter[] 0.08 0.8 0.08 1.0E7 37.28781708902616 3.783025367122093 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog DF2p
+<Verluste>
+verlustTyp 1
+rON 0.08
+uf 0.8
+kON 0.0
+kOFF 0.0
+uSWnorm -1.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\Verluste>
+dxTxt 0.9
+dyTxt 0.5
+
+<\ElementLK>
+
+e (16)
+<ElementLK>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /Ma
+enabledShorted 1
+parentSheetIdentifier 0
+typ 7
+uniqueObjectIdentifier 649853289
+x 38
+y 8
+parameter[] 1.0E7 0.2 1.0E7 4.01107641577664E-5 401.107641577664 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0 
+parameterString[] /GS2p/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog S2p
+<Verluste>
+verlustTyp 1
+rON 0.2
+uf 0.0
+kON 3.0E-5
+kOFF 1.5E-5
+uSWnorm 400.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\Verluste>
+dxTxt -0.4285714285714306
+dyTxt -1.5
+
+<\ElementLK>
+
+e (17)
+<ElementLK>
+labelAnfangsKnoten[] /uL2
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier -1246083294
+x 35
+y 8
+parameter[] 0.0275 0.7 0.0275 1.0E7 37.28785719979194 1.7254160729942782 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog DN2
+<Verluste>
+verlustTyp 1
+rON 0.0275
+uf 0.7
+kON 0.0
+kOFF 0.0
+uSWnorm -1.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\Verluste>
+dxTxt 0.9
+dyTxt 0.5
+
+<\ElementLK>
+
+e (18)
+<ElementLK>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /Ma
+enabledShorted 1
+parentSheetIdentifier 0
+typ 7
+uniqueObjectIdentifier 3646747
+x 38
+y 12
+parameter[] 0.2 0.2 1.0E7 6.19981790350721E-7 1.239963580701442E-7 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0 
+parameterString[] /GS2n/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog S2n
+<Verluste>
+verlustTyp 1
+rON 0.2
+uf 0.0
+kON 3.0E-5
+kOFF 1.5E-5
+uSWnorm 400.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\Verluste>
+dxTxt 0.9285714285714306
+dyTxt 1.9285714285714288
+
+<\ElementLK>
+
+e (19)
+<ElementLK>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /uL2
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier -1411090506
+x 35
+y 12
+parameter[] 1.0E7 0.7 0.0275 1.0E7 -4.035330575266619E-5 -402.83305752666195 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog Thy2
+<Verluste>
+verlustTyp 1
+rON 0.0275
+uf 0.7
+kON 0.0
+kOFF 0.0
+uSWnorm -1.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\Verluste>
+dxTxt 0.9
+dyTxt 0.5
+
+<\ElementLK>
+
+e (20)
+<ElementLK>
+labelAnfangsKnoten[] /Von
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier 1488577587
+x 35
+y 16
+parameter[] 1.0E7 0.8 0.08 1.0E7 -3.973332396259628E-5 -396.5332396259628 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog DF2n
+<Verluste>
+verlustTyp 1
+rON 0.08
+uf 0.8
+kON 0.0
+kOFF 0.0
+uSWnorm -1.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\Verluste>
+dxTxt 0.9
+dyTxt 0.5
+
+<\ElementLK>
+
+e (21)
+<ElementLK>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /Vop
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier 1412602351
+x 44
+y 4
+parameter[] 1.0E7 0.8 0.08 1.0E7 -3.9812460844466095E-5 -397.32460844466095 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog DF3p
+<Verluste>
+verlustTyp 1
+rON 0.08
+uf 0.8
+kON 0.0
+kOFF 0.0
+uSWnorm -1.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\Verluste>
+dxTxt 0.9
+dyTxt 0.5
+
+<\ElementLK>
+
+e (22)
+<ElementLK>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /Ma
+enabledShorted 1
+parentSheetIdentifier 0
+typ 7
+uniqueObjectIdentifier -1644454494
+x 47
+y 8
+parameter[] 0.2 0.2 1.0E7 3.8829405042406506E-5 7.765881008481301E-6 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0 
+parameterString[] /GS3p/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog S3p
+<Verluste>
+verlustTyp 1
+rON 0.2
+uf 0.0
+kON 3.0E-5
+kOFF 1.5E-5
+uSWnorm 400.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\Verluste>
+dxTxt -0.2142857142857153
+dyTxt -1.3571428571428568
+
+<\ElementLK>
+
+e (23)
+<ElementLK>
+labelAnfangsKnoten[] /uL3
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier -23396591
+x 44
+y 8
+parameter[] 1.0E7 0.7 0.0275 1.0E7 -9.830558234314291E-7 -9.130558234314293 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog DN3
+<Verluste>
+verlustTyp 1
+rON 0.0275
+uf 0.7
+kON 0.0
+kOFF 0.0
+uSWnorm -1.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\Verluste>
+dxTxt 0.9
+dyTxt 0.5
+
+<\ElementLK>
+
+e (24)
+<ElementLK>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /Ma
+enabledShorted 1
+parentSheetIdentifier 0
+typ 7
+uniqueObjectIdentifier 403823230
+x 47
+y 12
+parameter[] 0.2 0.2 1.0E7 -37.05736940975001 -7.411473881950002 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0 
+parameterString[] /GS3n/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog S3n
+<Verluste>
+verlustTyp 1
+rON 0.2
+uf 0.0
+kON 3.0E-5
+kOFF 1.5E-5
+uSWnorm 400.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\Verluste>
+dxTxt 0.6428571428571459
+dyTxt 2.2857142857142865
+
+<\ElementLK>
+
+e (25)
+<ElementLK>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /uL3
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier -1136355925
+x 44
+y 12
+parameter[] 0.0275 0.7 0.0275 1.0E7 37.057330417573915 1.7190765864832827 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog Thy3
+<Verluste>
+verlustTyp 1
+rON 0.0275
+uf 0.7
+kON 0.0
+kOFF 0.0
+uSWnorm -1.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\Verluste>
+dxTxt 0.9
+dyTxt 0.5
+
+<\ElementLK>
+
+e (26)
+<ElementLK>
+labelAnfangsKnoten[] /Von
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier -78451953
+x 44
+y 16
+parameter[] 1.0E7 0.8 0.08 1.0E7 -3.899217656200164E-5 -389.1217656200164 0.0 0.0 0.0 0.0 0.0 0.0 1.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 501
+idStringDialog DF3n
+<Verluste>
+verlustTyp 1
+rON 0.08
+uf 0.8
+kON 0.0
+kOFF 0.0
+uSWnorm -1.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\Verluste>
+dxTxt 0.9285714285714306
+dyTxt 1.1428571428571423
+
+<\ElementLK>
+
+e (27)
+<ElementLK>
+labelAnfangsKnoten[] /Vop
+labelEndKnoten[] /M
+enabledShorted 1
+parentSheetIdentifier 0
+typ 3
+uniqueObjectIdentifier 1727092601
+x 54
+y 6
+parameter[] 5.0E-4 400.0 24.882995662494526 396.9517376513601 266.34126771418073 -130.61046993717935 5.0E-4 5.0E-4 0.0 0.0 24.882995662494526 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog C.4
+isNonlinear false
+nonlinX[] 0.0 100.0 300.0 400.0 
+nonlinY[] 1.0E-7 8.0E-8 1.2E-9 1.0E-9 
+nonLinearCharHashValue 0
+dxTxt 1.2142857142857082
+dyTxt 1.1428571428571432
+
+<\ElementLK>
+
+e (28)
+<ElementLK>
+labelAnfangsKnoten[] /M
+labelEndKnoten[] /Von
+enabledShorted 1
+parentSheetIdentifier 0
+typ 3
+uniqueObjectIdentifier -705893880
+x 54
+y 14
+parameter[] 5.0E-4 400.0 -12.403434643545099 396.9061180611483 -130.61046993717935 -527.5165879983276 5.0E-4 5.0E-4 0.0 0.0 -12.403434643545099 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog C.5
+isNonlinear false
+nonlinX[] 0.0 100.0 300.0 400.0 
+nonlinY[] 1.0E-7 8.0E-8 1.2E-9 1.0E-9 
+nonLinearCharHashValue 0
+dxTxt 1.2857142857142918
+dyTxt 1.2142857142857135
+
+<\ElementLK>
+
+e (29)
+<ElementLK>
+labelAnfangsKnoten[] /U1
+labelEndKnoten[] /uL1
+enabledShorted 1
+parentSheetIdentifier 0
+typ 2
+uniqueObjectIdentifier -8293031
+x 20
+y 10
+parameter[] 3.0E-4 0.0 -0.23056615233612365 131.05650190747434 436855.00635824783 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 502
+idStringDialog L.1
+isNonlinear false
+nonlinX[] 0.0 10.0 15.0 30.0 
+nonlinY[] 5.0E-4 5.0E-4 1.5E-4 1.0E-4 
+nonLinearCharHashValue 0
+dxTxt -0.571428571428573
+dyTxt -0.21428571428571352
+
+<\ElementLK>
+
+e (30)
+<ElementLK>
+labelAnfangsKnoten[] /U2
+labelEndKnoten[] /uL2
+enabledShorted 1
+parentSheetIdentifier 0
+typ 2
+uniqueObjectIdentifier 525478480
+x 20
+y 13
+parameter[] 3.0E-4 0.0 37.287897553097494 10.814003715458739 36046.67905152326 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 502
+idStringDialog L.2
+isNonlinear false
+nonlinX[] 0.0 10.0 15.0 30.0 
+nonlinY[] 5.0E-4 5.0E-4 1.5E-4 1.0E-4 
+nonLinearCharHashValue 0
+dxTxt -0.35714285714285765
+dyTxt -0.21428571428571352
+
+<\ElementLK>
+
+e (31)
+<ElementLK>
+labelAnfangsKnoten[] /U3
+labelEndKnoten[] /uL3
+enabledShorted 1
+parentSheetIdentifier 0
+typ 2
+uniqueObjectIdentifier 1789804830
+x 20
+y 16
+parameter[] 3.0E-4 0.0 -37.05733140062837 -141.87050560435358 -472901.68534784985 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 502
+idStringDialog L.3
+isNonlinear false
+nonlinX[] 0.0 10.0 15.0 30.0 
+nonlinY[] 5.0E-4 5.0E-4 1.5E-4 1.0E-4 
+nonLinearCharHashValue 0
+dxTxt -0.2857142857142847
+dyTxt -0.21428571428571352
+
+<\ElementLK>
+
+e (32)
+<ElementLK>
+labelAnfangsKnoten[] /Vop
+labelEndKnoten[] /M
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier 673601918
+x 59
+y 6
+parameter[] 32.0 12.404741801605002 396.9517376513601 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog R.4
+dxTxt 0.8571428571428612
+dyTxt 1.1428571428571432
+
+<\ElementLK>
+
+e (33)
+<ElementLK>
+labelAnfangsKnoten[] /M
+labelEndKnoten[] /Von
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier 1612160981
+x 59
+y 14
+parameter[] 32.0 12.403316189410884 396.9061180611483 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 503
+idStringDialog R.5
+dxTxt 0.7142857142857082
+dyTxt 1.2142857142857135
+
+<\ElementLK>
+
+e (34)
+<ElementLK>
+labelAnfangsKnoten[] /M
+labelEndKnoten[] /Ma
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier -997434449
+x 52
+y 10
+parameter[] 0.01 37.28785591818564 0.3728785591818564 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 504
+idStringDialog R.12
+dxTxt -0.9285714285714306
+dyTxt 2.2142857142857135
+
+<\ElementLK>
+
+e (35)
+<ElementLK>
+labelAnfangsKnoten[] /U1
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 7
+uniqueObjectIdentifier 1695525130
+x 9
+y 10
+parameter[] 1.0E7 0.001 1.0E7 -4.044671082667177E-8 -0.4044671082667177 0.0 3.0E-5 1.5E-5 0.0 0.0 0.0 0.0 1.0 
+parameterString[] /GATE.17/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX/NIX_NIX_NIX
+orientierung 504
+idStringDialog S.12
+<Verluste>
+verlustTyp 1
+rON 0.001
+uf 0.0
+kON 3.0E-5
+kOFF 1.5E-5
+uSWnorm 400.0
+Cosser 0.0
+datnamGemesseneVerluste not_defined
+lossFileHashValue 0
+<\Verluste>
+dxTxt -1.4285714285714288
+dyTxt -0.14285714285714235
+
+<\ElementLK>
+
+controlANZAHL 83
+
+c (0)
+<ElementCONTROL>
+labelAnfangsKnoten[] /g1p
+labelEndKnoten[] 
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier 1907243013
+x 59
+y 23
+parameter[] 1.0 
+parameterString[] /S1p/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog G_S1p
+coupledReferenceID[] -69828504 
+copyCoupledReferenceID[] -69828504 
+internalIndex -1
+internalString NIX_NIX_NIX
+dxTxt 0.5
+dyTxt 0.2857142857142847
+shiftLabelsIn[] true 
+shiftLabelsOut[] 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (1)
+<ElementCONTROL>
+labelAnfangsKnoten[] /g1n
+labelEndKnoten[] 
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier 2131844019
+x 59
+y 25
+parameter[] 1.0 
+parameterString[] /S1n/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog G_S1n
+coupledReferenceID[] -880079727 
+copyCoupledReferenceID[] -880079727 
+internalIndex -1
+internalString NIX_NIX_NIX
+dxTxt 0.5714285714285694
+dyTxt 0.2857142857142847
+shiftLabelsIn[] true 
+shiftLabelsOut[] 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (2)
+<ElementCONTROL>
+labelAnfangsKnoten[] /g2p
+labelEndKnoten[] 
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier 661899290
+x 59
+y 29
+parameter[] 0.0 
+parameterString[] /S2p/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog GS2p
+coupledReferenceID[] 649853289 
+copyCoupledReferenceID[] 649853289 
+internalIndex -1
+internalString NIX_NIX_NIX
+dxTxt 0.5
+dyTxt 0.2857142857142847
+shiftLabelsIn[] true 
+shiftLabelsOut[] 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (3)
+<ElementCONTROL>
+labelAnfangsKnoten[] /g2n
+labelEndKnoten[] 
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier 846805665
+x 59
+y 31
+parameter[] 1.0 
+parameterString[] /S2n/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog GS2n
+coupledReferenceID[] 3646747 
+copyCoupledReferenceID[] 3646747 
+internalIndex -1
+internalString NIX_NIX_NIX
+dxTxt 0.5714285714285694
+dyTxt 0.2142857142857153
+shiftLabelsIn[] true 
+shiftLabelsOut[] 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (4)
+<ElementCONTROL>
+labelAnfangsKnoten[] /g3p
+labelEndKnoten[] 
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier -1589283228
+x 59
+y 35
+parameter[] 1.0 
+parameterString[] /S3p/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog GS3p
+coupledReferenceID[] -1644454494 
+copyCoupledReferenceID[] -1644454494 
+internalIndex -1
+internalString NIX_NIX_NIX
+dxTxt 0.5714285714285694
+dyTxt 0.2857142857142847
+shiftLabelsIn[] true 
+shiftLabelsOut[] 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (5)
+<ElementCONTROL>
+labelAnfangsKnoten[] /g3n
+labelEndKnoten[] 
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier 747087312
+x 59
+y 37
+parameter[] 1.0 
+parameterString[] /S3n/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog GS3n
+coupledReferenceID[] 403823230 
+copyCoupledReferenceID[] 403823230 
+internalIndex -1
+internalString NIX_NIX_NIX
+dxTxt 0.5714285714285694
+dyTxt 0.2142857142857153
+shiftLabelsIn[] true 
+shiftLabelsOut[] 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (6)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /u1N
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier -990136636
+x 7
+y 25
+parameter[] -0.8474816899680575 
+parameterString[] /U1/N1/0
+nameOpt[] 
+orientierung 503
+idStringDialog uN1
+coupledReferenceID[] 0 
+copyCoupledReferenceID[] 0 
+internalIndex -1
+internalString NIX_NIX_NIX
+dxTxt -5.071428571428571
+dyTxt 0.0
+shiftLabelsIn[] 
+shiftLabelsOut[] false 
+<detail>
+u[] -0.8474816899680575 
+<\detail>
+<\ElementCONTROL>
+
+c (7)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /u2N
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier 694549556
+x 7
+y 26
+parameter[] 282.74779956443604 
+parameterString[] /U2/N1/0
+nameOpt[] 
+orientierung 503
+idStringDialog uN2
+coupledReferenceID[] 0 
+copyCoupledReferenceID[] 0 
+internalIndex -1
+internalString NIX_NIX_NIX
+dxTxt -5.071428571428571
+dyTxt 0.07142857142857295
+shiftLabelsIn[] 
+shiftLabelsOut[] false 
+<detail>
+u[] 282.74779956443604 
+<\detail>
+<\ElementCONTROL>
+
+c (8)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /u3N
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier 1804009538
+x 7
+y 27
+parameter[] -281.90031787446793 
+parameterString[] /U3/N1/0
+nameOpt[] 
+orientierung 503
+idStringDialog uN3
+coupledReferenceID[] 0 
+copyCoupledReferenceID[] 0 
+internalIndex -1
+internalString NIX_NIX_NIX
+dxTxt -5.142857142857142
+dyTxt 0.14285714285714235
+shiftLabelsIn[] 
+shiftLabelsOut[] false 
+<detail>
+u[] -281.90031787446793 
+<\detail>
+<\ElementCONTROL>
+
+c (9)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /iL1
+enabledShorted 1
+parentSheetIdentifier 0
+typ 2
+uniqueObjectIdentifier 1886142554
+x 7
+y 28
+parameter[] 
+parameterString[] /L.1/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog iL1
+coupledReferenceID[] -8293031 
+copyCoupledReferenceID[] -8293031 
+internalIndex -1
+internalString NIX_NIX_NIX
+dxTxt -3.7857142857142856
+dyTxt 0.07142857142857295
+shiftLabelsIn[] 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (10)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /iL2
+enabledShorted 1
+parentSheetIdentifier 0
+typ 2
+uniqueObjectIdentifier -176471072
+x 7
+y 29
+parameter[] 
+parameterString[] /L.2/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog iL2
+coupledReferenceID[] 525478480 
+copyCoupledReferenceID[] 525478480 
+internalIndex -1
+internalString NIX_NIX_NIX
+dxTxt -3.7142857142857144
+dyTxt 0.2142857142857153
+shiftLabelsIn[] 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (11)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /iL3
+enabledShorted 1
+parentSheetIdentifier 0
+typ 2
+uniqueObjectIdentifier -1344532667
+x 7
+y 30
+parameter[] 
+parameterString[] /L.3/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog iL3
+coupledReferenceID[] 1789804830 
+copyCoupledReferenceID[] 1789804830 
+internalIndex -1
+internalString NIX_NIX_NIX
+dxTxt -3.7142857142857144
+dyTxt 0.2857142857142847
+shiftLabelsIn[] 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (12)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /tri
+enabledShorted 1
+parentSheetIdentifier 0
+typ 4
+uniqueObjectIdentifier -1514013680
+x 54
+y 43
+parameter[] 403.0 200.0 72000.0 200.0 0.0 0.5 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SIGNAL.4
+dxTxt -5.642857142857146
+dyTxt 0.7142857142857153
+shiftLabelsIn[] 
+shiftLabelsOut[] true 
+<detail>
+typQuelle 403
+anteilDC 200.0
+amplitudeAC 200.0
+frequenz 72000.0
+tastverhaeltnis 0.5
+phase 0.0
+datnamXY not_defined
+externalDataFileHashValue 0
+<\detail>
+<\ElementCONTROL>
+
+c (13)
+<ElementCONTROL>
+labelAnfangsKnoten[] /u1N/g
+labelEndKnoten[] /iL1ref
+enabledShorted 1
+parentSheetIdentifier 0
+typ 14
+uniqueObjectIdentifier 1715749017
+x 31
+y 25
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog MUL.1
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (14)
+<ElementCONTROL>
+labelAnfangsKnoten[] /iL1ref/iL1
+labelEndKnoten[] /eiL1
+enabledShorted 1
+parentSheetIdentifier 0
+typ 13
+uniqueObjectIdentifier 1287542674
+x 34
+y 25
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SUB.1
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] true false 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (15)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /kp_i
+enabledShorted 1
+parentSheetIdentifier 0
+typ 3
+uniqueObjectIdentifier 787979246
+x 17
+y 26
+parameter[] 32.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX
+orientierung 503
+idStringDialog kp_i
+dxTxt -3.8571428571428568
+dyTxt 0.2142857142857153
+shiftLabelsIn[] 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (16)
+<ElementCONTROL>
+labelAnfangsKnoten[] /u1N/h3
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 13
+uniqueObjectIdentifier -1172743293
+x 34
+y 22
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SUB.2
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (17)
+<ElementCONTROL>
+labelAnfangsKnoten[] /NIX_NIX_NIX/z
+labelEndKnoten[] /um1p
+enabledShorted 1
+parentSheetIdentifier 0
+typ 26
+uniqueObjectIdentifier -992007332
+x 50
+y 24
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SHLD.1
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (18)
+<ElementCONTROL>
+labelAnfangsKnoten[] /NIX_NIX_NIX/tri
+labelEndKnoten[] /z
+enabledShorted 1
+parentSheetIdentifier 0
+typ 46
+uniqueObjectIdentifier -240516584
+x 58
+y 42
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog GT.1
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] true true 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (19)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 3
+uniqueObjectIdentifier 1128328023
+x 54
+y 42
+parameter[] 1.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX
+orientierung 503
+idStringDialog CONST.3
+dxTxt -3.0714285714285694
+dyTxt 0.1428571428571459
+shiftLabelsIn[] 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (20)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /Vo
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier -288878635
+x 7
+y 32
+parameter[] 793.7475581917562 
+parameterString[] /Vop/Von/0
+nameOpt[] 
+orientierung 503
+idStringDialog Vo
+coupledReferenceID[] 0 
+copyCoupledReferenceID[] 0 
+internalIndex -1
+internalString NIX_NIX_NIX
+dxTxt -6.0
+dyTxt 0.2142857142857153
+shiftLabelsIn[] 
+shiftLabelsOut[] false 
+<detail>
+u[] 793.7475581917562 
+<\detail>
+<\ElementCONTROL>
+
+c (21)
+<ElementCONTROL>
+labelAnfangsKnoten[] /tri/um1p
+labelEndKnoten[] /g1p
+enabledShorted 1
+parentSheetIdentifier 0
+typ 46
+uniqueObjectIdentifier 334949867
+x 56
+y 23
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog GT.3
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (22)
+<ElementCONTROL>
+labelAnfangsKnoten[] /tri180/NIX_NIX_NIX
+labelEndKnoten[] /g1n
+enabledShorted 1
+parentSheetIdentifier 0
+typ 46
+uniqueObjectIdentifier -2093588167
+x 56
+y 25
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog GT.4
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false true 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (23)
+<ElementCONTROL>
+labelAnfangsKnoten[] /um1p
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 7
+uniqueObjectIdentifier 1959203340
+x 53
+y 26
+parameter[] -1.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog GAIN.3
+dxTxt -1.4285714285714306
+dyTxt 1.3571428571428577
+shiftLabelsIn[] false 
+shiftLabelsOut[] true 
+<detail>
+k -1.0
+<\detail>
+<\ElementCONTROL>
+
+c (24)
+<ElementCONTROL>
+labelAnfangsKnoten[] /u2N/g
+labelEndKnoten[] /iL2ref
+enabledShorted 1
+parentSheetIdentifier 0
+typ 14
+uniqueObjectIdentifier 894468660
+x 31
+y 31
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog MUL.3
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (25)
+<ElementCONTROL>
+labelAnfangsKnoten[] /iL2ref/iL2
+labelEndKnoten[] /eiL2
+enabledShorted 1
+parentSheetIdentifier 0
+typ 13
+uniqueObjectIdentifier -423190109
+x 34
+y 31
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SUB.3
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] true false 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (26)
+<ElementCONTROL>
+labelAnfangsKnoten[] /u2N/h3
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 13
+uniqueObjectIdentifier -221605236
+x 34
+y 28
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SUB.4
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (27)
+<ElementCONTROL>
+labelAnfangsKnoten[] /NIX_NIX_NIX/z
+labelEndKnoten[] /um2p
+enabledShorted 1
+parentSheetIdentifier 0
+typ 26
+uniqueObjectIdentifier 1764817238
+x 50
+y 30
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SHLD.2
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (28)
+<ElementCONTROL>
+labelAnfangsKnoten[] /tri/um2p
+labelEndKnoten[] /g2p
+enabledShorted 1
+parentSheetIdentifier 0
+typ 46
+uniqueObjectIdentifier -1319612988
+x 56
+y 29
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog GT.5
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (29)
+<ElementCONTROL>
+labelAnfangsKnoten[] /tri180/NIX_NIX_NIX
+labelEndKnoten[] /g2n
+enabledShorted 1
+parentSheetIdentifier 0
+typ 46
+uniqueObjectIdentifier 1897242399
+x 56
+y 31
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog GT.6
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false true 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (30)
+<ElementCONTROL>
+labelAnfangsKnoten[] /um2p
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 7
+uniqueObjectIdentifier -1719546446
+x 53
+y 32
+parameter[] -1.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog GAIN.5
+dxTxt -1.5
+dyTxt 1.5
+shiftLabelsIn[] false 
+shiftLabelsOut[] true 
+<detail>
+k -1.0
+<\detail>
+<\ElementCONTROL>
+
+c (31)
+<ElementCONTROL>
+labelAnfangsKnoten[] /u3N/g
+labelEndKnoten[] /iL3ref
+enabledShorted 1
+parentSheetIdentifier 0
+typ 14
+uniqueObjectIdentifier 122451782
+x 31
+y 37
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog MUL.4
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (32)
+<ElementCONTROL>
+labelAnfangsKnoten[] /iL3ref/iL3
+labelEndKnoten[] /eiL3
+enabledShorted 1
+parentSheetIdentifier 0
+typ 13
+uniqueObjectIdentifier 1081096671
+x 34
+y 37
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SUB.5
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] true false 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (33)
+<ElementCONTROL>
+labelAnfangsKnoten[] /u3N/h3
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 13
+uniqueObjectIdentifier 836894363
+x 34
+y 34
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SUB.6
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (34)
+<ElementCONTROL>
+labelAnfangsKnoten[] /NIX_NIX_NIX/z
+labelEndKnoten[] /um3p
+enabledShorted 1
+parentSheetIdentifier 0
+typ 26
+uniqueObjectIdentifier 241406473
+x 50
+y 36
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SHLD.3
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (35)
+<ElementCONTROL>
+labelAnfangsKnoten[] /tri/um3p
+labelEndKnoten[] /g3p
+enabledShorted 1
+parentSheetIdentifier 0
+typ 46
+uniqueObjectIdentifier 476457783
+x 56
+y 35
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog GT.7
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (36)
+<ElementCONTROL>
+labelAnfangsKnoten[] /tri180/NIX_NIX_NIX
+labelEndKnoten[] /g3n
+enabledShorted 1
+parentSheetIdentifier 0
+typ 46
+uniqueObjectIdentifier 1481702248
+x 56
+y 37
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog GT.8
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false true 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (37)
+<ElementCONTROL>
+labelAnfangsKnoten[] /um3p
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 7
+uniqueObjectIdentifier -247650413
+x 53
+y 38
+parameter[] -1.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog GAIN.7
+dxTxt -1.2857142857142847
+dyTxt 1.2142857142857153
+shiftLabelsIn[] false 
+shiftLabelsOut[] true 
+<detail>
+k -1.0
+<\detail>
+<\ElementCONTROL>
+
+c (38)
+<ElementCONTROL>
+labelAnfangsKnoten[] /eiL1/kp_i
+labelEndKnoten[] /ureg1
+enabledShorted 1
+parentSheetIdentifier 0
+typ 14
+uniqueObjectIdentifier 104577993
+x 37
+y 25
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog MUL.5
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] true false 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (39)
+<ElementCONTROL>
+labelAnfangsKnoten[] /eiL2/kp_i
+labelEndKnoten[] /ureg2
+enabledShorted 1
+parentSheetIdentifier 0
+typ 14
+uniqueObjectIdentifier -981651242
+x 37
+y 31
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog MUL.6
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] true false 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (40)
+<ElementCONTROL>
+labelAnfangsKnoten[] /eiL3/kp_i
+labelEndKnoten[] /ureg3
+enabledShorted 1
+parentSheetIdentifier 0
+typ 14
+uniqueObjectIdentifier -625573939
+x 37
+y 37
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog MUL.7
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] true false 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (41)
+<ElementCONTROL>
+labelAnfangsKnoten[] /u1N/u2N
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 50
+uniqueObjectIdentifier 1807973922
+x 34
+y 43
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog MAX.1
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (42)
+<ElementCONTROL>
+labelAnfangsKnoten[] /NIX_NIX_NIX/u3N
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 50
+uniqueObjectIdentifier 1068956453
+x 37
+y 43
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog MAX.2
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] true false 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (43)
+<ElementCONTROL>
+labelAnfangsKnoten[] /u1N/u2N
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 49
+uniqueObjectIdentifier 2093062399
+x 34
+y 46
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog MIN.1
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (44)
+<ElementCONTROL>
+labelAnfangsKnoten[] /NIX_NIX_NIX/u3N
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 49
+uniqueObjectIdentifier -1616870500
+x 37
+y 46
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog MIN.2
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] true false 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (45)
+<ElementCONTROL>
+labelAnfangsKnoten[] /NIX_NIX_NIX/NIX_NIX_NIX
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 12
+uniqueObjectIdentifier 81404894
+x 41
+y 44
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog ADD.1
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (46)
+<ElementCONTROL>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /h3
+enabledShorted 1
+parentSheetIdentifier 0
+typ 7
+uniqueObjectIdentifier 1929728436
+x 44
+y 44
+parameter[] 0.333 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog GAIN.8
+dxTxt -3.7142857142857153
+dyTxt -1.142857142857146
+shiftLabelsIn[] true 
+shiftLabelsOut[] false 
+<detail>
+k 0.333
+<\detail>
+<\ElementCONTROL>
+
+c (47)
+<ElementCONTROL>
+labelAnfangsKnoten[] /uvor1/ureg1
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 13
+uniqueObjectIdentifier -1569949033
+x 41
+y 24
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SUB.7
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (48)
+<ElementCONTROL>
+labelAnfangsKnoten[] /uvor2/ureg2
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 13
+uniqueObjectIdentifier -2111727983
+x 41
+y 30
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SUB.8
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (49)
+<ElementCONTROL>
+labelAnfangsKnoten[] /uvor3/ureg3
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 13
+uniqueObjectIdentifier 81906367
+x 41
+y 36
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SUB.9
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (50)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /Vo1
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier 297670139
+x 7
+y 33
+parameter[] 397.21507042776193 
+parameterString[] /Vop/Ma/0
+nameOpt[] 
+orientierung 503
+idStringDialog Vop
+coupledReferenceID[] 0 
+copyCoupledReferenceID[] 0 
+internalIndex -1
+internalString NIX_NIX_NIX
+dxTxt -5.7142857142857135
+dyTxt 0.2857142857142847
+shiftLabelsIn[] 
+shiftLabelsOut[] false 
+<detail>
+u[] 397.21507042776193 
+<\detail>
+<\ElementCONTROL>
+
+c (51)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /Vo2
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier -1749674066
+x 7
+y 34
+parameter[] 396.53248776399425 
+parameterString[] /Ma/Von/0
+nameOpt[] 
+orientierung 503
+idStringDialog Von
+coupledReferenceID[] 0 
+copyCoupledReferenceID[] 0 
+internalIndex -1
+internalString NIX_NIX_NIX
+dxTxt -5.857142857142858
+dyTxt 0.35714285714285765
+shiftLabelsIn[] 
+shiftLabelsOut[] false 
+<detail>
+u[] 396.53248776399425 
+<\detail>
+<\ElementCONTROL>
+
+c (52)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /u0
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier -1944222335
+x 7
+y 35
+parameter[] -131.13970961764403 
+parameterString[] /Ma/N/0
+nameOpt[] 
+orientierung 503
+idStringDialog VOLT.7
+coupledReferenceID[] 0 
+copyCoupledReferenceID[] 0 
+internalIndex -1
+internalString NIX_NIX_NIX
+dxTxt -5.0
+dyTxt 0.2857142857142847
+shiftLabelsIn[] 
+shiftLabelsOut[] false 
+<detail>
+u[] -131.13970961764403 
+<\detail>
+<\ElementCONTROL>
+
+c (53)
+<ElementCONTROL>
+labelAnfangsKnoten[] /NIX_NIX_NIX/kpre
+labelEndKnoten[] /uvor1
+enabledShorted 1
+parentSheetIdentifier 0
+typ 14
+uniqueObjectIdentifier -1090811609
+x 37
+y 22
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog MUL.17
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] true false 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (54)
+<ElementCONTROL>
+labelAnfangsKnoten[] /NIX_NIX_NIX/kpre
+labelEndKnoten[] /uvor2
+enabledShorted 1
+parentSheetIdentifier 0
+typ 14
+uniqueObjectIdentifier -1745489903
+x 37
+y 28
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog MUL.18
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] true false 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (55)
+<ElementCONTROL>
+labelAnfangsKnoten[] /NIX_NIX_NIX/kpre
+labelEndKnoten[] /uvor3
+enabledShorted 1
+parentSheetIdentifier 0
+typ 14
+uniqueObjectIdentifier -545060092
+x 37
+y 34
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog MUL.19
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] true false 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (56)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /kpre
+enabledShorted 1
+parentSheetIdentifier 0
+typ 3
+uniqueObjectIdentifier -1897942040
+x 17
+y 27
+parameter[] 1.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX
+orientierung 503
+idStringDialog CONST.5
+dxTxt -3.428571428571429
+dyTxt 0.4285714285714306
+shiftLabelsIn[] 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (57)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /tri180
+enabledShorted 1
+parentSheetIdentifier 0
+typ 4
+uniqueObjectIdentifier -1714532658
+x 54
+y 47
+parameter[] 403.0 200.0 72000.0 200.0 3.141592653589793 0.5 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SIGNAL.5
+dxTxt -5.571428571428569
+dyTxt -0.5714285714285694
+shiftLabelsIn[] 
+shiftLabelsOut[] false 
+<detail>
+typQuelle 403
+anteilDC 200.0
+amplitudeAC 200.0
+frequenz 72000.0
+tastverhaeltnis 0.5
+phase 3.141592653589793
+datnamXY not_defined
+externalDataFileHashValue 0
+<\detail>
+<\ElementCONTROL>
+
+c (58)
+<ElementCONTROL>
+labelAnfangsKnoten[] /NIX_NIX_NIX/i0
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 12
+uniqueObjectIdentifier 1738996665
+x 45
+y 24
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog ADD.9
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (59)
+<ElementCONTROL>
+labelAnfangsKnoten[] /NIX_NIX_NIX/i0
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 12
+uniqueObjectIdentifier 704960058
+x 45
+y 30
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog ADD.10
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (60)
+<ElementCONTROL>
+labelAnfangsKnoten[] /NIX_NIX_NIX/i0
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 12
+uniqueObjectIdentifier -722420478
+x 45
+y 36
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog ADD.11
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (61)
+<ElementCONTROL>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] 
+enabledShorted 1
+parentSheetIdentifier 0
+typ 6
+uniqueObjectIdentifier 1112242055
+x 14
+y 2
+parameter[] 0.0 
+parameterString[] /S.12/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog GATE.17
+coupledReferenceID[] 1695525130 
+copyCoupledReferenceID[] 1695525130 
+internalIndex -1
+internalString NIX_NIX_NIX
+dxTxt 0.571428571428573
+dyTxt 0.2857142857142847
+shiftLabelsIn[] true 
+shiftLabelsOut[] 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (62)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 3
+uniqueObjectIdentifier -1039187971
+x 4
+y 2
+parameter[] 1.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX
+orientierung 503
+idStringDialog CONST.9
+dxTxt -1.1428571428571423
+dyTxt -0.9285714285714306
+shiftLabelsIn[] 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (63)
+<ElementCONTROL>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 25
+uniqueObjectIdentifier -1104905847
+x 8
+y 2
+parameter[] 0.015 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX
+orientierung 503
+idStringDialog DELAY.2
+dxTxt -1.7142857142857153
+dyTxt -1.0714285714285694
+shiftLabelsIn[] true 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (64)
+<ElementCONTROL>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 18
+uniqueObjectIdentifier 2017093675
+x 11
+y 2
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog NOT.1
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] true 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (65)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+parentSheetIdentifier 0
+typ 70
+uniqueObjectIdentifier 671548122
+x 6
+y 4
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog Text.1
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] 
+shiftLabelsOut[] 
+<detail>
+back_color -657931
+front_color -65536
+box_breite 5
+hoehe 0.0
+title_string NIX_NIX_NIX
+contents_string Simulate phase-loss\nvia switch S.12
+<\detail>
+<\ElementCONTROL>
+
+c (66)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+parentSheetIdentifier 0
+typ 70
+uniqueObjectIdentifier -1382955780
+x 23
+y 20
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog Text.2
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] 
+shiftLabelsOut[] 
+<detail>
+back_color -657931
+front_color -52480
+box_breite 5
+hoehe 0.0
+title_string 3-Phase AC/DC Rectifier
+contents_string (Vienna Rectifier, 10kW)
+<\detail>
+<\ElementCONTROL>
+
+c (67)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+parentSheetIdentifier 0
+typ 70
+uniqueObjectIdentifier -609223923
+x 42
+y 26
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog Text.3
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] 
+shiftLabelsOut[] 
+<detail>
+back_color -657931
+front_color -11513776
+box_breite 12
+hoehe 5.0
+title_string Current control with pre-control signal
+contents_string NIX_NIX_NIX
+<\detail>
+<\ElementCONTROL>
+
+c (68)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+parentSheetIdentifier 0
+typ 70
+uniqueObjectIdentifier 669338804
+x 57
+y 26
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog Text.4
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] 
+shiftLabelsOut[] 
+<detail>
+back_color -657931
+front_color -11513776
+box_breite 10
+hoehe 5.0
+title_string Generation of switching pattern
+contents_string NIX_NIX_NIX
+<\detail>
+<\ElementCONTROL>
+
+c (69)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+parentSheetIdentifier 0
+typ 70
+uniqueObjectIdentifier 1674757753
+x 42
+y 43
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog Text.5
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] 
+shiftLabelsOut[] 
+<detail>
+back_color -657931
+front_color -11513776
+box_breite 12
+hoehe 2.0
+title_string 3rd harmonic pre-control signal
+contents_string NIX_NIX_NIX
+<\detail>
+<\ElementCONTROL>
+
+c (70)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+parentSheetIdentifier 0
+typ 70
+uniqueObjectIdentifier -2043364974
+x 9
+y 27
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog Text.6
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] 
+shiftLabelsOut[] 
+<detail>
+back_color -657931
+front_color -11513776
+box_breite 8
+hoehe 4.0
+title_string Title
+contents_string NIX_NIX_NIX
+<\detail>
+<\ElementCONTROL>
+
+c (71)
+<ElementCONTROL>
+labelAnfangsKnoten[] /uZref/Vo
+labelEndKnoten[] /duz
+enabledShorted 1
+parentSheetIdentifier 0
+typ 13
+uniqueObjectIdentifier 1810989805
+x 19
+y 36
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SUB.20
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] true false 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (72)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /uZref
+enabledShorted 1
+parentSheetIdentifier 0
+typ 3
+uniqueObjectIdentifier 2126470370
+x 15
+y 36
+parameter[] 800.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX
+orientierung 503
+idStringDialog CONST.10
+dxTxt -1.3571428571428577
+dyTxt -1.0
+shiftLabelsIn[] 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (73)
+<ElementCONTROL>
+labelAnfangsKnoten[] /NIX_NIX_NIX/NIX_NIX_NIX
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 13
+uniqueObjectIdentifier -592081027
+x 20
+y 43
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SUB.21
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] true false 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (74)
+<ElementCONTROL>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /i0
+enabledShorted 1
+parentSheetIdentifier 0
+typ 10
+uniqueObjectIdentifier -899841172
+x 23
+y 43
+parameter[] 2.0 1000.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog PI.2
+dxTxt -1.5
+dyTxt 1.5
+shiftLabelsIn[] true 
+shiftLabelsOut[] false 
+<detail>
+r0 2.0
+a1 1000.0
+<\detail>
+<\ElementCONTROL>
+
+c (75)
+<ElementCONTROL>
+labelAnfangsKnoten[] /Vo1/Vo2
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 13
+uniqueObjectIdentifier 1612125790
+x 17
+y 45
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SUB.22
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false 
+shiftLabelsOut[] false 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (76)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 3
+uniqueObjectIdentifier -1047295497
+x 16
+y 43
+parameter[] 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] /NIX_NIX_NIX
+orientierung 503
+idStringDialog CONST.11
+dxTxt -1.4285714285714288
+dyTxt -0.9285714285714306
+shiftLabelsIn[] 
+shiftLabelsOut[] true 
+exportASCII_IndividualCONTROL()
+<\ElementCONTROL>
+
+c (77)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+parentSheetIdentifier 0
+typ 70
+uniqueObjectIdentifier 690277879
+x 57
+y 43
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog Text.7
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] 
+shiftLabelsOut[] 
+<detail>
+back_color -657931
+front_color -11513776
+box_breite 10
+hoehe 2.0
+title_string PWM carrier-signals
+contents_string NIX_NIX_NIX
+<\detail>
+<\ElementCONTROL>
+
+c (78)
+<ElementCONTROL>
+labelAnfangsKnoten[] /duz
+labelEndKnoten[] /NIX_NIX_NIX
+enabledShorted 1
+parentSheetIdentifier 0
+typ 8
+uniqueObjectIdentifier -1164754183
+x 22
+y 36
+parameter[] 0.001 0.005 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog PT1.6
+dxTxt -1.5
+dyTxt 1.5
+shiftLabelsIn[] true 
+shiftLabelsOut[] true 
+<detail>
+T 0.001
+a1 0.005
+<\detail>
+<\ElementCONTROL>
+
+c (79)
+<ElementCONTROL>
+labelAnfangsKnoten[] /NIX_NIX_NIX
+labelEndKnoten[] /g
+enabledShorted 1
+parentSheetIdentifier 0
+typ 10
+uniqueObjectIdentifier -1984887024
+x 25
+y 36
+parameter[] 1.0 100.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog PI.4
+dxTxt -2.928571428571427
+dyTxt -2.2857142857142847
+shiftLabelsIn[] true 
+shiftLabelsOut[] false 
+<detail>
+r0 1.0
+a1 100.0
+<\detail>
+<\ElementCONTROL>
+
+c (80)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+parentSheetIdentifier 0
+typ 70
+uniqueObjectIdentifier -1799052107
+x 23
+y 34
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog Text.8
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] 
+shiftLabelsOut[] 
+<detail>
+back_color -657931
+front_color -11513776
+box_breite 10
+hoehe 2.0
+title_string Output voltage control
+contents_string NIX_NIX_NIX
+<\detail>
+<\ElementCONTROL>
+
+c (81)
+<ElementCONTROL>
+labelAnfangsKnoten[] 
+labelEndKnoten[] 
+enabledShorted 1
+parentSheetIdentifier 0
+typ 70
+uniqueObjectIdentifier -824665133
+x 23
+y 43
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog Text.9
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] 
+shiftLabelsOut[] 
+<detail>
+back_color -657931
+front_color -11513776
+box_breite 10
+hoehe 2.0
+title_string Center point voltage control
+contents_string NIX_NIX_NIX
+<\detail>
+<\ElementCONTROL>
+
+c (82)
+<ElementCONTROL>
+labelAnfangsKnoten[] /iL1ref/iL1/iL2ref/iL2/iL3ref/iL3/u1N/u2N/u3N/Vo1/Vo2/Vo
+labelEndKnoten[] 
+enabledShorted 1
+parentSheetIdentifier 0
+typ 5
+uniqueObjectIdentifier -2146427629
+x 65
+y 9
+parameter[] 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[] 
+orientierung 503
+idStringDialog SCOPE.12
+dxTxt -1.5
+dyTxt 0.19999999999999996
+shiftLabelsIn[] false false false false false false false false false false false false 
+shiftLabelsOut[] 
+<detail>
+tn 12
+isShowName false
+savedSignalNames[] /iL1ref/iL1/iL2ref/iL2/iL3ref/iL3/u1N/u2N/u3N/Vo1/Vo2/Vo
+avgIndices[] 
+avgValues[] 
+<ScopeSettings>
+isAntiAliasing true
+<Diagram>
+
+diagramType DiagramCurve
+<xAxis>
+axisType -111111114
+noMinorTicks 2
+isShowLabelsMaj false
+isShowLabelsMin false
+tickLengthMaj 0
+tickLengthMin 0
+userShowGridMaj true
+userShowGridMin false
+linStilGridNormal -3333330
+linStilGridMinor -3333330
+colorGridNormal -3444446
+colorGridMinor -3444446
+axisColor -3444440
+axisStroke -3333331
+axisCaption NIX_NIX_NIX
+isAutoEnabled true
+isUserScale 0.0 0.0
+valueScale 0.0 0.025
+<\xAxis>
+<yAxis1>
+
+axisType -111111114
+noMinorTicks 2
+isShowLabelsMaj true
+isShowLabelsMin false
+tickLengthMaj 10
+tickLengthMin 5
+userShowGridMaj true
+userShowGridMin false
+linStilGridNormal -3333330
+linStilGridMinor -3333330
+colorGridNormal -3444446
+colorGridMinor -3444446
+axisColor -3444440
+axisStroke -3333330
+axisCaption NIX_NIX_NIX
+isAutoEnabled true
+isUserScale 0.0 0.0
+valueScale 0.0 1.0
+<\yAxis1>
+<yAxis2>
+
+axisType -111111114
+noMinorTicks 2
+isShowLabelsMaj true
+isShowLabelsMin false
+tickLengthMaj 10
+tickLengthMin 5
+userShowGridMaj true
+userShowGridMin false
+linStilGridNormal -3333330
+linStilGridMinor -3333330
+colorGridNormal -3444446
+colorGridMinor -3444446
+axisColor -3444440
+axisStroke -3333330
+axisCaption NIX_NIX_NIX
+isAutoEnabled true
+isUserScale 0.0 0.0
+valueScale 0.0 1.0
+<\yAxis2>
+<diagramSettings>
+
+nameDiagram GRF 0
+yWeightDiagram 0.3333333333333333
+<\diagramSettings>
+<CurveDiagram>
+
+curveColor -3444446
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 52
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 52
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444446
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 52
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444441
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 52
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444446
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 52
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444443
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 52
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.0
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.0
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.0
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<\Diagram>
+<Diagram>
+
+diagramType DiagramCurve
+<xAxis>
+axisType -111111114
+noMinorTicks 2
+isShowLabelsMaj false
+isShowLabelsMin false
+tickLengthMaj 0
+tickLengthMin 0
+userShowGridMaj true
+userShowGridMin false
+linStilGridNormal -3333330
+linStilGridMinor -3333330
+colorGridNormal -3444446
+colorGridMinor -3444446
+axisColor -3444440
+axisStroke -3333331
+axisCaption NIX_NIX_NIX
+isAutoEnabled true
+isUserScale 0.0 0.0
+valueScale 0.0 0.025
+<\xAxis>
+<yAxis1>
+
+axisType -111111114
+noMinorTicks 2
+isShowLabelsMaj true
+isShowLabelsMin false
+tickLengthMaj 10
+tickLengthMin 5
+userShowGridMaj true
+userShowGridMin false
+linStilGridNormal -3333330
+linStilGridMinor -3333330
+colorGridNormal -3444446
+colorGridMinor -3444446
+axisColor -3444440
+axisStroke -3333330
+axisCaption NIX_NIX_NIX
+isAutoEnabled true
+isUserScale 0.0 0.0
+valueScale 0.0 1.0
+<\yAxis1>
+<yAxis2>
+
+axisType -111111114
+noMinorTicks 2
+isShowLabelsMaj true
+isShowLabelsMin false
+tickLengthMaj 10
+tickLengthMin 5
+userShowGridMaj true
+userShowGridMin false
+linStilGridNormal -3333330
+linStilGridMinor -3333330
+colorGridNormal -3444446
+colorGridMinor -3444446
+axisColor -3444440
+axisStroke -3333330
+axisCaption NIX_NIX_NIX
+isAutoEnabled true
+isUserScale 0.0 0.0
+valueScale 0.0 1.0
+<\yAxis2>
+<diagramSettings>
+
+nameDiagram GRF 1
+yWeightDiagram 0.3333333333333333
+<\diagramSettings>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 52
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444441
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 52
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444443
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 52
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.0
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.0
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444448
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.0
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 52
+<\CurveDiagram>
+<\Diagram>
+<Diagram>
+
+diagramType DiagramCurve
+<xAxis>
+axisType -111111114
+noMinorTicks 2
+isShowLabelsMaj true
+isShowLabelsMin false
+tickLengthMaj 10
+tickLengthMin 5
+userShowGridMaj true
+userShowGridMin false
+linStilGridNormal -3333330
+linStilGridMinor -3333330
+colorGridNormal -3444446
+colorGridMinor -3444446
+axisColor -3444440
+axisStroke -3333330
+axisCaption NIX_NIX_NIX
+isAutoEnabled true
+isUserScale 0.0 0.0
+valueScale 0.0 0.025
+<\xAxis>
+<yAxis1>
+
+axisType -111111114
+noMinorTicks 2
+isShowLabelsMaj true
+isShowLabelsMin false
+tickLengthMaj 10
+tickLengthMin 5
+userShowGridMaj true
+userShowGridMin false
+linStilGridNormal -3333330
+linStilGridMinor -3333330
+colorGridNormal -3444446
+colorGridMinor -3444446
+axisColor -3444440
+axisStroke -3333330
+axisCaption NIX_NIX_NIX
+isAutoEnabled true
+isUserScale 0.0 0.0
+valueScale 0.0 1.0
+<\yAxis1>
+<yAxis2>
+
+axisType -111111114
+noMinorTicks 2
+isShowLabelsMaj true
+isShowLabelsMin false
+tickLengthMaj 10
+tickLengthMin 5
+userShowGridMaj true
+userShowGridMin false
+linStilGridNormal -3333330
+linStilGridMinor -3333330
+colorGridNormal -3444446
+colorGridMinor -3444446
+axisColor -3444440
+axisStroke -3333330
+axisCaption NIX_NIX_NIX
+isAutoEnabled true
+isUserScale 0.0 0.0
+valueScale 0.0 1.0
+<\yAxis2>
+<diagramSettings>
+
+nameDiagram GRF 2
+yWeightDiagram 0.3333333333333333
+<\diagramSettings>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.9
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444442
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.800000011920929
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 52
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444449
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.800000011920929
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 52
+<\CurveDiagram>
+<CurveDiagram>
+
+curveColor -3444440
+curveLineStyle -3333330
+showCurveSymbols false
+symbolColor -3444444
+symbolShape -838300
+crvTransparency 0.0
+fillDigitalColor -3444446
+isFillDigitalCurves true
+axisConnection 55
+<\CurveDiagram>
+<\Diagram>
+
+<\ScopeSettings>
+
+<ScopeWindowSettings>
+
+isAutoScaleWindowOn true
+powerAnalCurIndices[] -1 -1 -1 
+powerAnalVoltIndices[] -1 -1 -1 
+windowWidth 741
+windowHeight 615
+saveScreenWidth 3840
+saveScreenHeight 1200
+saveScreenPosX 2164
+saveScreenPosY 362
+<\ScopeWindowSettings>
+
+<\detail>
+
+<\ElementCONTROL>
+
+<scopeSettings>
+noInputSignals 0
+<\scopeSettings>
+thermANZAHL 0
+
+optimizerName[] 
+optimizerValue[]  
+<scripterCode>
+  
+<\scripterCode> 
+<scripterImports>
+
+<\scripterImports> 
+<scripterDeclarations>
+ 
+<\scripterDeclarations>
+
+GeckoFileManager
+<GeckoFileManager>
+<\GeckoFileManager>
+
+
+DtStor 2012-12-07
+tDURATION 0.025
+bl 1358463600000
+dt 5.0E-7
+tPAUSE -1.0
+T_pre -1.0
+dt_pre 5.0E-7
+solverType 0
+path /home/andreas/Arbeitsfläche/GeckoCIRCUITS/Examples/Newsletter/viennaRectifier1_phaseLoss.ipes
+
+dpix 14
+fontSize 10
+fontTyp Dialog.plain
+fensterWidth 1177
+fensterHeight 750
+worksheetSizeX 900
+worksheetSizeY 900
+ANSICHT_SHOW_LK_NAME true
+ANSICHT_SHOW_LK_PARAMETER false
+ANSICHT_SHOW_LK_FLOWDIR false
+ANSICHT_SHOW_LK_TEXTLINIE true
+ANSICHT_SHOW_THERM_NAME true
+ANSICHT_SHOW_THERM_PARAMETER true
+ANSICHT_SHOW_THERM_FLOWDIR false
+ANSICHT_SHOW_THERM_TEXTLINIE true
+ANSICHT_SHOW_CONTROL_NAME false
+ANSICHT_SHOW_CONTROL_PARAMETER true
+ANSICHT_SHOW_CONTROL_TEXTLINIE false
+FileVersion 161
+UniqueFileId -1460593553
+dataContainerSignals[] [] /U/ia/ia_filt/NIX_NIX_NIX/ua/ub/uc/s1i/s2i/s3i/s1pp/s2pp/s3pp/s1n/s2n/s3n/isa/isb/isc/n/theta/Tm/n*
+=======================
+ 

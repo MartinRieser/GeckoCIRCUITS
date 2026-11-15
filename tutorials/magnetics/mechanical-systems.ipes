@@ -1,0 +1,274 @@
+
+verbindungLK (0)
+<Verbindung>
+label n_drive
+x[] 6 8 
+y[] 8 8 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (1)
+<Verbindung>
+label 0
+x[] 2 16 34 42 
+y[] 8 10 10 8 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (2)
+<Verbindung>
+label w1
+x[] 12 16 20 26 
+y[] 8 6 8 8 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungLK (3)
+<Verbindung>
+label w2
+x[] 24 30 34 38 
+y[] 8 8 6 8 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 0
+<\Verbindung>
+
+verbindungCONTROL (4)
+<Verbindung>
+label omega_motor
+x[] 12 
+y[] 32 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+verbindungCONTROL (5)
+<Verbindung>
+label omega_load
+x[] 12 
+y[] 33 
+enabledShorted 1
+parentSheetIdentifier 0
+connectorType 1
+<\Verbindung>
+
+e (6)
+<ElementLK>
+labelAnfangsKnoten[] /n_drive
+labelEndKnoten[] /0
+enabledShorted 1
+parentSheetIdentifier 0
+typ 4
+uniqueObjectIdentifier 100
+x 4
+y 8
+parameter[] 401.0 50.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 504
+idStringDialog TAU_M
+
+<\ElementLK>
+
+e (7)
+<ElementLK>
+labelAnfangsKnoten[] /n_drive
+labelEndKnoten[] /w1
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier 101
+x 10
+y 8
+parameter[] 0.5 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog R_INT
+
+<\ElementLK>
+
+e (8)
+<ElementLK>
+labelAnfangsKnoten[] /w1
+labelEndKnoten[] /0
+enabledShorted 1
+parentSheetIdentifier 0
+typ 3
+uniqueObjectIdentifier 102
+x 16
+y 8
+parameter[] 0.05 0.0 0.0 0.0 0.0 0.0 0.05 0.05 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 503
+idStringDialog J1_MOTOR
+
+<\ElementLK>
+
+e (9)
+<ElementLK>
+labelAnfangsKnoten[] /w1
+labelEndKnoten[] /w2
+enabledShorted 1
+parentSheetIdentifier 0
+typ 2
+uniqueObjectIdentifier 103
+x 22
+y 8
+parameter[] 0.001 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog K_SHAFT
+
+<\ElementLK>
+
+e (10)
+<ElementLK>
+labelAnfangsKnoten[] /w1
+labelEndKnoten[] /w2
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier 104
+x 28
+y 8
+parameter[] 10.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog B_SHAFT
+
+<\ElementLK>
+
+e (11)
+<ElementLK>
+labelAnfangsKnoten[] /w2
+labelEndKnoten[] /0
+enabledShorted 1
+parentSheetIdentifier 0
+typ 3
+uniqueObjectIdentifier 105
+x 34
+y 8
+parameter[] 0.15 0.0 0.0 0.0 0.0 0.0 0.15 0.15 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 503
+idStringDialog J2_LOAD
+
+<\ElementLK>
+
+e (12)
+<ElementLK>
+labelAnfangsKnoten[] /w2
+labelEndKnoten[] /0
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1
+uniqueObjectIdentifier 106
+x 40
+y 8
+parameter[] 5.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+nameOpt[]
+orientierung 502
+idStringDialog B_LOAD
+
+<\ElementLK>
+
+c (13)
+<ElementCONTROL>
+labelAnfangsKnoten[]
+labelEndKnoten[] /omega_motor
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1001
+uniqueObjectIdentifier 2001
+coupledReferenceID[] 102 
+x 10
+y 32
+parameter[] 0.0 
+parameterString[] /J1_MOTOR
+nameOpt[]
+orientierung 503
+idStringDialog VM_W1
+
+<\ElementCONTROL>
+
+c (14)
+<ElementCONTROL>
+labelAnfangsKnoten[]
+labelEndKnoten[] /omega_load
+enabledShorted 1
+parentSheetIdentifier 0
+typ 1001
+uniqueObjectIdentifier 2002
+coupledReferenceID[] 105 
+x 10
+y 33
+parameter[] 0.0 
+parameterString[] /J2_LOAD
+nameOpt[]
+orientierung 503
+idStringDialog VM_W2
+
+<\ElementCONTROL>
+
+optimizerName[]
+optimizerValue[] null
+<scripterCode>
+
+<\scripterCode>
+<scripterImports>
+
+<\scripterImports>
+<scripterDeclarations>
+ 
+<\scripterDeclarations>
+<extraScriptSourceFiles>
+ 
+<\extraScriptSourceFiles>
+
+
+
+DtStor 2026-10-18
+tDURATION 0.15
+dt 1.0E-5
+tPAUSE -1.0
+T_pre 0.0
+dt_pre 0.0
+solverType 0
+path 
+
+dpix 16
+fontSize 12
+fontTyp Arial
+fensterWidth -1
+fensterHeight -1
+worksheetSize 600x600
+ANSICHT_SHOW_LK_NAME true
+ANSICHT_SHOW_LK_PARAMETER true
+ANSICHT_SHOW_LK_FLOWDIR false
+ANSICHT_SHOW_LK_TEXTLINIE true
+ANSICHT_SHOW_THERM_NAME true
+ANSICHT_SHOW_THERM_PARAMETER true
+ANSICHT_SHOW_THERM_FLOWDIR false
+ANSICHT_SHOW_THERM_TEXTLINIE true
+ANSICHT_SHOW_CONTROL_NAME true
+ANSICHT_SHOW_CONTROL_PARAMETER true
+ANSICHT_SHOW_CONTROL_TEXTLINIE true
+FileVersion 175
+UniqueFileId 0
+dataContainerSignals[]
+
+=======================
+ 
