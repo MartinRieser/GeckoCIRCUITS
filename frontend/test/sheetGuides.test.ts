@@ -617,6 +617,56 @@ describe('sheetGuides: resolveChannelDisplayLabel & buildTerminalLabelItems', ()
     const outItem = items.find((i) => i.label === 'out_node');
     expect(outItem?.isWired).toBe(false);
   });
+
+  it('deduplicates wired CONTROL labels on the driving output rather than duplicating on destination inputs', () => {
+    const producer = makeComp({
+      type: ControlComponentType.VOLTMETER,
+      name: 'VOLT_IN',
+      family: 'CONTROL',
+      position: [8, 16],
+      orientation: Orientation.NORTH_SOUTH,
+      outputLabels: ['v_in_meas'],
+    });
+    const consumer = makeComp({
+      type: ControlComponentType.NATIVE_C,
+      name: 'CNATC.1',
+      family: 'CONTROL',
+      position: [20, 17],
+      orientation: Orientation.NORTH_SOUTH,
+      parameters: { anzXIN: 1, anzYOUT: 1 },
+      inputLabels: ['v_in_meas'],
+      outputLabels: ['pwm'],
+    });
+    const scope = makeComp({
+      type: ControlComponentType.SCOPE,
+      name: 'Osci 1',
+      family: 'CONTROL',
+      position: [32, 17],
+      orientation: Orientation.NORTH_SOUTH,
+      inputLabels: ['pwm'],
+    });
+
+    const wires: EditorWire[] = [
+      makeWire({
+        index: 0,
+        type: 'CONTROL',
+        points: [[10, 16], [18, 17]],
+      }),
+      makeWire({
+        index: 1,
+        type: 'CONTROL',
+        points: [[22, 17], [30, 17]],
+      }),
+    ];
+
+    const items = buildTerminalLabelItems([consumer, producer, scope], wires, new Map(), new Map());
+    const vInItems = items.filter((item) => item.label === 'v_in_meas');
+    expect(vInItems).toHaveLength(1);
+    expect(vInItems[0].componentName).toBe('VOLT_IN');
+    // Unwired output/consumer stays labeled on producer, while Osci scope keeps its own channel label
+    const pwmItems = items.filter((item) => item.label === 'pwm');
+    expect(pwmItems.map((i) => i.componentName)).toEqual(['CNATC.1', 'Osci 1']);
+  });
 });
 
 describe('sheetGuides: current direction hints', () => {

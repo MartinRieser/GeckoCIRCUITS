@@ -239,7 +239,11 @@ function terminalPositionsWithPinMode(
     // grid (inputs rel (-2, -i), outputs rel (+2, -j)), so wires drawn to
     // these pins are the wires the simulation connects. (The legacy editor
     // centered these pins with step 2 — the migration layout.)
-    if (component.type === CTRL_TYPE.SCRIPT || component.type === CTRL_TYPE.LEGACY_JAVA_FUNCTION) {
+    if (
+      component.type === CTRL_TYPE.SCRIPT ||
+      component.type === CTRL_TYPE.LEGACY_JAVA_FUNCTION ||
+      component.type === CTRL_TYPE.NATIVE_C
+    ) {
       const { inputCount, outputCount } = resolveComponentPinCounts(component);
       const step = pinMode === 'anchored' ? SCRIPT_PIN_STEP : CANVAS_METRICS.MULTI_PIN_STEP;
 
@@ -827,7 +831,11 @@ function pinsWithCount(
       component.inputLabels?.[i] ?? '');
     return terminalPositions({ ...component, inputLabels: labels });
   }
-  if (component.type === CTRL_TYPE.SCRIPT || component.type === CTRL_TYPE.LEGACY_JAVA_FUNCTION) {
+  if (
+    component.type === CTRL_TYPE.SCRIPT ||
+    component.type === CTRL_TYPE.LEGACY_JAVA_FUNCTION ||
+    component.type === CTRL_TYPE.NATIVE_C
+  ) {
     return terminalPositions({
       ...component,
       parameters: { ...(component.parameters ?? {}), anzXIN: inputCount },

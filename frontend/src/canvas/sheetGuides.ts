@@ -781,67 +781,56 @@ export function buildTerminalLabelItems(
   const seenPoint = new Set<string>();
   const seenWiredLabel = new Set<string>();
 
+  const pushPinLabel = (
+    component: EditorComponent,
+    kind: 'in' | 'out',
+    t: Point,
+    index: number,
+    rawLabel: string | undefined,
+  ): void => {
+    const raw = rawLabel?.trim();
+    if (!raw || raw === SENTINEL_UNSET) return;
+    const pointKey = `${t.x},${t.y}:${raw}`;
+    if (seenPoint.has(pointKey)) return;
+    seenPoint.add(pointKey);
+
+    const isWired = isTerminalWired(t, wires, wireTouchTolerance);
+    // Deduplicate wired pin labels across all nets (LK and CONTROL) so connected nets show
+    // a single badge at the driving output rather than cluttering destination block inputs.
+    // Scope inputs stay exempt so resolved channel names (e.g. V(out), I(L.1)) remain visible.
+    if (isWired && !(kind === 'in' && isScopeComponent(component))) {
+      if (seenWiredLabel.has(raw)) return;
+      seenWiredLabel.add(raw);
+    }
+
+    items.push({
+      key: `${kind}-${component.name}-${index}-${raw}`,
+      label: raw,
+      displayLabel:
+        kind === 'in'
+          ? resolveChannelDisplayLabel(component, raw, signalDescriptions, netTerminalPoints)
+          : raw,
+      gx: t.x,
+      gy: t.y,
+      componentName: component.name,
+      dirX: t.x - component.position[0],
+      dirY: t.y - component.position[1],
+      isWired,
+    });
+  };
+
+  // Process outputs before inputs so signal producers (e.g. probes / C/C++ drivers) retain
+  // the single wire badge instead of crowded destination multi-pin inputs.
+  for (const component of components) {
+    const terminals = terminalPositions(component);
+    const outLabels = component.outputLabels || [];
+    terminals.output.forEach((t, i) => pushPinLabel(component, 'out', t, i, outLabels[i]));
+  }
+
   for (const component of components) {
     const terminals = terminalPositions(component);
     const inLabels = component.inputLabels || [];
-    const outLabels = component.outputLabels || [];
-
-    terminals.input.forEach((t, i) => {
-      const raw = inLabels[i]?.trim();
-      if (!raw || raw === SENTINEL_UNSET) return;
-      const pointKey = `${t.x},${t.y}:${raw}`;
-      if (seenPoint.has(pointKey)) return;
-      seenPoint.add(pointKey);
-      const isWired = isTerminalWired(t, wires, wireTouchTolerance);
-      // For physically wired pins on power circuits (LK), deduplicate so only 1 badge
-      // is shown per net name across the entire connected net instead of cluttering every pin
-      if (isWired && (component.family === 'LK' || !component.family)) {
-        if (seenWiredLabel.has(raw)) return;
-        seenWiredLabel.add(raw);
-      }
-      items.push({
-        key: `in-${component.name}-${i}-${raw}`,
-        label: raw,
-        displayLabel: resolveChannelDisplayLabel(
-          component,
-          raw,
-          signalDescriptions,
-          netTerminalPoints,
-        ),
-        gx: t.x,
-        gy: t.y,
-        componentName: component.name,
-        dirX: t.x - component.position[0],
-        dirY: t.y - component.position[1],
-        isWired,
-      });
-    });
-
-    terminals.output.forEach((t, i) => {
-      const raw = outLabels[i]?.trim();
-      if (!raw || raw === SENTINEL_UNSET) return;
-      const pointKey = `${t.x},${t.y}:${raw}`;
-      if (seenPoint.has(pointKey)) return;
-      seenPoint.add(pointKey);
-      const isWired = isTerminalWired(t, wires, wireTouchTolerance);
-      // For physically wired pins on power circuits (LK), deduplicate so only 1 badge
-      // is shown per net name across the entire connected net instead of cluttering every pin
-      if (isWired && (component.family === 'LK' || !component.family)) {
-        if (seenWiredLabel.has(raw)) return;
-        seenWiredLabel.add(raw);
-      }
-      items.push({
-        key: `out-${component.name}-${i}-${raw}`,
-        label: raw,
-        displayLabel: raw,
-        gx: t.x,
-        gy: t.y,
-        componentName: component.name,
-        dirX: t.x - component.position[0],
-        dirY: t.y - component.position[1],
-        isWired,
-      });
-    });
+    terminals.input.forEach((t, i) => pushPinLabel(component, 'in', t, i, inLabels[i]));
   }
 
   return items;

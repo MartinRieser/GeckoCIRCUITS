@@ -11,11 +11,14 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Service for loading and parsing .ipes circuit files.
@@ -40,7 +43,8 @@ public class CircuitFileService {
                 .min(Comparator.comparing((Map.Entry<String, CircuitState> e) ->
                         e.getValue().loadedAt != null ? e.getValue().loadedAt : Instant.EPOCH))
                 .ifPresent(oldest -> {
-                    circuits.remove(oldest.getKey());
+                    CircuitState removed = circuits.remove(oldest.getKey());
+                    cleanupNativeLibraryDir(removed != null ? removed.model : null);
                     logger.info("Evicted old circuit {} ({}) from memory", oldest.getKey(), oldest.getValue().filename);
                 });
     }
@@ -54,7 +58,7 @@ public class CircuitFileService {
             byte[] content = file.getBytes();
             String filename = file.getOriginalFilename();
 
-            return loadCircuitFromBytes(content, filename);
+            return loadCircuitFromBytes(content, filename, null);
         } catch (IOException e) {
             return CircuitLoadResponse.failure(file.getOriginalFilename(),
                     "Failed to read file: " + e.getMessage());
@@ -65,10 +69,17 @@ public class CircuitFileService {
      * Load circuit from base64 encoded content.
      */
     public CircuitLoadResponse loadCircuit(String base64Content, String filename) {
+        return loadCircuit(base64Content, filename, null);
+    }
+
+    /**
+     * Load circuit from base64 encoded content with optional full disk filePath.
+     */
+    public CircuitLoadResponse loadCircuit(String base64Content, String filename, String filePath) {
         try {
             // Decode base64
             byte[] content = Base64.getDecoder().decode(base64Content);
-            return loadCircuitFromBytes(content, filename);
+            return loadCircuitFromBytes(content, filename, filePath);
         } catch (IllegalArgumentException e) {
             return CircuitLoadResponse.failure(filename,
                     "Invalid base64 encoding: " + e.getMessage());
@@ -226,21 +237,90 @@ public class CircuitFileService {
     public CircuitInfo replaceCircuit(String circuitId, byte[] content, String filename) {
         CircuitState parsed = requireCircuit(circuitId);
 
+        String effectiveFilename = filename != null ? filename : parsed.filename;
+        String sourceName = effectiveFilename;
+        if (parsed.model != null && parsed.model.getFilePath() != null && !parsed.model.getFilePath().isBlank()) {
+            String prevPath = parsed.model.getFilePath();
+            if (filename == null || filename.equals(parsed.filename) || prevPath.endsWith("/" + effectiveFilename) || prevPath.endsWith("\\" + effectiveFilename)) {
+                sourceName = prevPath;
+            }
+        }
+
         CircuitModel newModel;
         try (ByteArrayInputStream bais = new ByteArrayInputStream(content)) {
-            newModel = parser.parse(bais, filename != null ? filename : parsed.filename);
+            newModel = parser.parse(bais, sourceName);
         } catch (CircuitFileParser.CircuitParseException | IOException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Failed to parse circuit content: " + e.getMessage(), e);
         }
 
+        if (parsed.model != null && parsed.model.getNativeLibraryDir() != null) {
+            newModel.setNativeLibraryDir(parsed.model.getNativeLibraryDir());
+        }
+
         CircuitState replaced = new CircuitState(
-                filename != null ? filename : parsed.filename,
+                effectiveFilename,
                 newModel,
                 Instant.now());
         circuits.put(circuitId, replaced);
 
         return getCircuitInfo(circuitId);
+    }
+
+    /**
+     * Stages an uploaded NativeC shared library (.dll / .so / .dylib) into the circuit's
+     * per-session staging directory so browser-opened circuits without filesystem paths can run it.
+     */
+    public Map<String, Object> uploadNativeLibrary(String circuitId, String filename, String base64Content) {
+        CircuitState parsed = requireCircuit(circuitId);
+        if (filename == null || filename.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Native library filename must not be empty");
+        }
+        String rawName = filename.replace('\\', '/');
+        String baseName = rawName.substring(rawName.lastIndexOf('/') + 1).trim();
+        if (baseName.isEmpty() || baseName.equals(".") || baseName.equals("..") || baseName.contains("..")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid native library filename: " + filename);
+        }
+        String lower = baseName.toLowerCase(Locale.ROOT);
+        if (!(lower.endsWith(".dll") || lower.endsWith(".so") || lower.endsWith(".dylib"))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Unsupported shared library extension (expected .dll, .so, or .dylib): " + baseName);
+        }
+        byte[] bytes;
+        try {
+            bytes = Base64.getDecoder().decode(base64Content);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Invalid base64 encoding for native library: " + e.getMessage());
+        }
+
+        try {
+            Path stagingDir;
+            String existingDir = parsed.model.getNativeLibraryDir();
+            if (existingDir != null && !existingDir.isBlank()) {
+                stagingDir = Path.of(existingDir);
+                Files.createDirectories(stagingDir);
+            } else {
+                stagingDir = Files.createTempDirectory("gecko-native-libs-");
+                stagingDir.toFile().deleteOnExit();
+                parsed.model.setNativeLibraryDir(stagingDir.toString());
+            }
+            Path target = stagingDir.resolve(baseName).normalize();
+            if (!target.startsWith(stagingDir.normalize())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid target path for library");
+            }
+            Files.write(target, bytes);
+            logger.info("Staged NativeC library '{}' ({} bytes) for circuit {}", baseName, bytes.length, circuitId);
+            Map<String, Object> res = new LinkedHashMap<>();
+            res.put("status", "uploaded");
+            res.put("circuitId", circuitId);
+            res.put("filename", baseName);
+            res.put("sizeBytes", bytes.length);
+            return res;
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Failed to stage native library: " + e.getMessage(), e);
+        }
     }
 
     /**
@@ -258,7 +338,32 @@ public class CircuitFileService {
      * Delete circuit from memory.
      */
     public boolean deleteCircuit(String circuitId) {
-        return circuits.remove(circuitId) != null;
+        CircuitState removed = circuits.remove(circuitId);
+        if (removed == null) {
+            return false;
+        }
+        cleanupNativeLibraryDir(removed.model);
+        return true;
+    }
+
+    private static void cleanupNativeLibraryDir(CircuitModel model) {
+        if (model == null || model.getNativeLibraryDir() == null || model.getNativeLibraryDir().isBlank()) {
+            return;
+        }
+        Path dir = Path.of(model.getNativeLibraryDir());
+        if (!Files.exists(dir)) {
+            return;
+        }
+        try (Stream<Path> walk = Files.walk(dir)) {
+            walk.sorted(Comparator.reverseOrder()).forEach(p -> {
+                try {
+                    Files.deleteIfExists(p);
+                } catch (IOException ignored) {
+                    // Best-effort cleanup of temp library files (Windows may still hold DLL handles briefly)
+                }
+            });
+        } catch (IOException ignored) {
+        }
     }
 
     /**
@@ -375,13 +480,14 @@ public class CircuitFileService {
 
     // ========== Private Helper Methods ==========
 
-    private CircuitLoadResponse loadCircuitFromBytes(byte[] content, String filename) {
+    private CircuitLoadResponse loadCircuitFromBytes(byte[] content, String filename, String filePath) {
         try {
             evictOldCircuitsIfNeeded();
+            String sourceName = (filePath != null && !filePath.isBlank()) ? filePath : filename;
             // Parse using CircuitFileParser
             CircuitModel model;
             try (ByteArrayInputStream bais = new ByteArrayInputStream(content)) {
-                model = parser.parse(bais, filename);
+                model = parser.parse(bais, sourceName);
             }
 
             // Generate unique circuit ID
@@ -419,7 +525,9 @@ public class CircuitFileService {
     private CircuitModel copyCircuitModel(CircuitModel source) {
         try {
             byte[] bytes = CircuitFileWriter.write(source);
-            return parser.parse(new ByteArrayInputStream(bytes), source.getFilePath());
+            CircuitModel copy = parser.parse(new ByteArrayInputStream(bytes), source.getFilePath());
+            copy.setNativeLibraryDir(source.getNativeLibraryDir());
+            return copy;
         } catch (IOException | CircuitFileParser.CircuitParseException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Failed to copy circuit: " + e.getMessage(), e);

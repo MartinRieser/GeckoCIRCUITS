@@ -99,12 +99,29 @@ export function ComponentSymbol({
       : orientationAngle(component.orientation);
   const { inputCount, outputCount } = resolveComponentPinCounts(component);
   const meta = getComponentMeta(component.type, component.family, component.name);
-  const inLabels = component.inputLabels && component.inputLabels.length > 0
-    ? component.inputLabels
-    : meta?.terminals?.input?.map((t) => t.label);
-  const outLabels = component.outputLabels && component.outputLabels.length > 0
-    ? component.outputLabels
-    : meta?.terminals?.output?.map((t) => t.label);
+  const isNativeC = component.type === CTRL_TYPE.NATIVE_C;
+  const isGenericCodeBlock =
+    isNativeC ||
+    component.type === CTRL_TYPE.SCRIPT ||
+    component.type === CTRL_TYPE.LEGACY_JAVA_FUNCTION;
+  // On generic code blocks (C/C++, Java, f(x)), component.inputLabels/outputLabels
+  // store external wire net names (which Sheet renders outside the pins) rather than
+  // short fixed port names. Render concise C ABI indices (x0.., y0..) for C/C++
+  // and omit duplicate long net strings inside the box.
+  const inLabels = isNativeC
+    ? Array.from({ length: inputCount }, (_, i) => `x${i}`)
+    : isGenericCodeBlock
+      ? undefined
+      : component.inputLabels && component.inputLabels.length > 0
+        ? component.inputLabels
+        : meta?.terminals?.input?.map((t) => t.label);
+  const outLabels = isNativeC
+    ? Array.from({ length: outputCount }, (_, j) => `y${j}`)
+    : isGenericCodeBlock
+      ? undefined
+      : component.outputLabels && component.outputLabels.length > 0
+        ? component.outputLabels
+        : meta?.terminals?.output?.map((t) => t.label);
 
   return (
     <g transform={`rotate(${angle})`}>
@@ -426,8 +443,14 @@ export function SymbolByType({
       case 1058:
         return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label="SPM" inLabels={inLabels} outLabels={outLabels} />;
       case CTRL_TYPE.LEGACY_JAVA_FUNCTION:
+      case CTRL_TYPE.NATIVE_C:
       case CTRL_TYPE.SCRIPT: {
-        const label = type === CTRL_TYPE.LEGACY_JAVA_FUNCTION ? 'JAVA' : 'f(x)';
+        const label =
+          type === CTRL_TYPE.LEGACY_JAVA_FUNCTION
+            ? 'JAVA'
+            : type === CTRL_TYPE.NATIVE_C
+              ? 'C/C++'
+              : 'f(x)';
         return <ScriptFunctionBlockSymbol u={u} inCount={inputCount} outCount={outputCount} label={label} inLabels={inLabels} outLabels={outLabels} />;
       }
       default:
@@ -1753,6 +1776,11 @@ function MuxSymbol({ u }: { u: number }) {
   );
 }
 
+function truncateBlockPinLabel(raw: string, maxChars: number): string {
+  if (raw.length <= maxChars) return raw;
+  return `${raw.slice(0, Math.max(1, maxChars - 1))}…`;
+}
+
 function ScriptFunctionBlockSymbol({
   u,
   inCount = 1,
@@ -1774,26 +1802,44 @@ function ScriptFunctionBlockSymbol({
   const step = SCRIPT_PIN_STEP;
   const maxPins = Math.max(inCount, outCount, 1);
   const span = (maxPins - 1) * step;
-  const top = -0.8 * u;
-  const bottom = (span + 0.8) * u;
+  // Multi-pin blocks reserve a dedicated top header strip for the block type
+  // badge so middle input/output pin labels never overlap the title.
+  const hasHeaderBar = maxPins >= 2;
+  const headerBottom = -0.5 * u;
+  const top = hasHeaderBar ? -1.35 * u : -0.8 * u;
+  const bottom = hasHeaderBar ? (span + 0.75) * u : (span + 0.8) * u;
   const boxH = Math.max(1.8 * u, bottom - top);
   const midY = (top + bottom) / 2;
 
-  // Pin label lengths
-  const maxInLabelLen = Math.max(0, ...(inLabels?.map((l) => l.length) || (inCount > 1 ? [2] : [0])));
-  const maxOutLabelLen = Math.max(0, ...(outLabels?.map((l) => l.length) || (outCount > 1 ? [2] : [0])));
+  const hasLeftPins = inCount > 1 || Boolean(inLabels && inLabels.some(Boolean));
+  const hasRightPins = outCount > 1 || Boolean(outLabels && outLabels.some(Boolean));
+  const maxPinChars = hasLeftPins && hasRightPins ? 4 : 7;
+
+  const displayInLabels = Array.from({ length: inCount }, (_, i) => {
+    const raw = inLabels?.[i] || (inCount > 1 ? `u${i + 1}` : '');
+    return raw ? truncateBlockPinLabel(raw, maxPinChars) : '';
+  });
+  const displayOutLabels = Array.from({ length: outCount }, (_, j) => {
+    const raw = outLabels?.[j] || (outCount > 1 ? `y${j + 1}` : '');
+    return raw ? truncateBlockPinLabel(raw, maxPinChars) : '';
+  });
+
+  const maxInLabelLen = Math.max(0, ...displayInLabels.map((l) => l.length));
+  const maxOutLabelLen = Math.max(0, ...displayOutLabels.map((l) => l.length));
   const labelLen = label.length;
 
-  // Box width: ensure it fits within terminal distance (2.0u * 2 = 4.0u)
-  // while giving sufficient space for pin labels and the central label badge
+  // Box width: stays comfortably inside terminal distance (2.0u * 2 = 4.0u)
+  // while leaving clear space between left/right pin tags.
   const pinSpace = (maxInLabelLen + maxOutLabelLen) * 0.45 * u;
-  const labelSpace = (labelLen * 0.4 + 0.8) * u;
-  const boxW = Math.min(3.2 * u, Math.max(2.6 * u, (pinSpace + labelSpace) * 0.9, (labelLen * 0.4 + 1.0) * u));
+  const labelSpace = (labelLen * 0.42 + 0.8) * u;
+  const boxW = Math.min(3.3 * u, Math.max(2.7 * u, pinSpace + 0.9 * u, labelSpace));
 
-  // Central label font size
-  const maxLabelW = boxW - 0.4 * u;
-  const labelFontSize = Math.max(10, Math.min(13, maxLabelW / (labelLen * 0.65)));
-  const pinFs = Math.max(8.5, (maxInLabelLen > 3 || maxOutLabelLen > 3) ? 8 : 8.5);
+  // Header/center label font size
+  const maxLabelW = boxW - 0.35 * u;
+  const labelFontSize = hasHeaderBar
+    ? Math.max(8.5, Math.min(10.5, maxLabelW / (labelLen * 0.65)))
+    : Math.max(10, Math.min(13, maxLabelW / (labelLen * 0.65)));
+  const pinFs = Math.max(8, Math.min(9.5, (maxInLabelLen > 3 || maxOutLabelLen > 3) ? 8 : 8.5));
 
   return (
     <g className="symbol-control-script">
@@ -1841,15 +1887,27 @@ function ScriptFunctionBlockSymbol({
         fill="rgba(74,222,128,0.08)"
       />
 
-      {/* Central Badge label e.g. f(x), JAVA, FOC, PWM, SPM, ThyrCtrl */}
+      {hasHeaderBar && (
+        <line
+          x1={-boxW / 2}
+          y1={headerBottom}
+          x2={boxW / 2}
+          y2={headerBottom}
+          stroke={CTRL_COLOR}
+          strokeOpacity={0.45}
+          strokeWidth={1}
+        />
+      )}
+
+      {/* Badge label e.g. f(x), C/C++, JAVA, FOC, PWM, SPM, ThyrCtrl */}
       <text
         x={0}
-        y={midY}
+        y={hasHeaderBar ? (top + headerBottom) / 2 : midY}
         fontSize={labelFontSize}
         fontFamily="monospace"
         fontWeight="bold"
         fontStyle={label === 'f(x)' ? 'italic' : 'normal'}
-        fill={maxPins > 3 ? 'rgba(74,222,128,0.35)' : CTRL_COLOR}
+        fill={CTRL_COLOR}
         stroke="none"
         textAnchor="middle"
         dominantBaseline="middle"
@@ -1858,10 +1916,9 @@ function ScriptFunctionBlockSymbol({
       </text>
 
       {/* Pin function labels displayed right next to terminals inside the chassis */}
-      {Array.from({ length: inCount }).map((_, i) => {
-        const yOffset = i * step * u;
-        const pinName = inLabels?.[i] || (inCount > 1 ? `u${i + 1}` : '');
+      {displayInLabels.map((pinName, i) => {
         if (!pinName) return null;
+        const yOffset = i * step * u;
         return (
           <text
             key={`in-label-${i}`}
@@ -1880,10 +1937,9 @@ function ScriptFunctionBlockSymbol({
         );
       })}
 
-      {Array.from({ length: outCount }).map((_, j) => {
-        const yOffset = j * step * u;
-        const pinName = outLabels?.[j] || (outCount > 1 ? `y${j + 1}` : '');
+      {displayOutLabels.map((pinName, j) => {
         if (!pinName) return null;
+        const yOffset = j * step * u;
         return (
           <text
             key={`out-label-${j}`}

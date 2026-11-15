@@ -23,13 +23,25 @@
 - **Complete Downstream Integration**: When adding core capabilities (e.g., serialization, new model types), always complete the integration in downstream consumers (services, controllers, netlist builders) and add full test coverage across all layers.
 - **Frontend Test Directory Import Paths**: Tests in `frontend/test/` reside outside the `src/` tree; any imports of source modules, models, geometry, or types MUST use `../src/...` (e.g. `import type { Point } from '../src/model/types'`, never `../model/types`). Verify full compilation with `tsc --noEmit` before committing.
 
-## Example-Circuit Quality Gate (MANDATORY before declaring example work done)
+## Circuit & Example Quality Gate (MANDATORY before declaring ANY circuit or UI task done)
+Whether modifying bundled examples (`frontend/src/model/examples.ts` + `examples/*.ipes` + `examples/manifest.json`) **OR authoring a standalone test/demo `.ipes` circuit**, and whenever changing schematic symbols, file open/save flows, or engine semantics, work is **not done** until ALL of the following pass:
+
+### Universal Gate (Applies to ALL `.ipes` circuits & UI/symbol changes)
+1. **Zero DRC Errors or Simulation Warnings**: Every authored circuit must pass backend/frontend DRC and headless/GUI simulation with **0 errors and 0 warnings** (`Open Control Wire`, dangling outputs, `NATIVEC_LOAD_ERROR`, etc.). Never leave open/dangling control wire stubs attached to unused/monitor-only block outputs — either terminate them at valid sink blocks or omit stub wires when recording signals directly.
+2. **Readable Schematic & Zero Label/Pin Overlap**:
+   - Leave generous grid spacing between power/control blocks (`>= 4–6` grid units between inline blocks, `>= 3–4` vertical grid units between stacked probes feeding multi-pin blocks, and clear horizontal wire leads before bends) so wire label pills, component names, and parameter text never collide.
+   - Multi-pin blocks (`typ 88` NativeC, `typ 1016`/`61` Script/Java, `PWM`, etc.) must keep dynamically sized chassis boxes and pin labels (`in`/`out`, signal badges) readable and non-overlapping.
+3. **Browser + Desktop Parity for File-Relative Resources**: Browsers (`<input type="file">`, `showOpenFilePicker()`) expose only a bare filename, never the host folder path. When a circuit references relative external assets (such as NativeC `.dll`/`.so`/`.dylib` files), verify the actual browser `File → Open` workflow as well as Tauri native Open and headless CLI execution so relative lookup does not silently resolve against the backend working directory.
+4. **Live GUI Visual Inspection Gate (MANDATORY before handoff)**: Headless tests and unit tests (`vitest`) cannot catch overlapping SVG labels, crowded wire bundles, or browser vs. Tauri file-open path mismatches. Before reporting completion:
+   - Open the circuit in the running app/browser via the real user workflow (`File → Open` or Examples menu), click **Run (`F5`)**, and visually inspect screenshots of the **Schematic canvas**, **Diagnostics & DRC drawer**, and **Osci waveform tab**.
+   - Confirm: (a) clean, legible schematic with no overlapping wire labels/pins/notes, (b) `0` errors and `0` warnings in Diagnostics & DRC, and (c) populated scope curves matching physical expectations.
+
+### Bundled Example-Specific Requirements
 Bundled examples are user-facing products, not test fixtures. They exist in TWO synchronized locations:
 1. `frontend/src/model/examples.ts` (embedded TypeScript constants for offline fallback and unit tests), AND
 2. `examples/*.ipes` + `examples/manifest.json` on disk (served dynamically by the backend at `GET /gecko/api/v1/examples`).
 
-A change to an example (or to any engine semantics an example depends on) is **not done** until ALL of the following pass:
-
+For bundled examples, ALSO ensure:
 1. **Dual-Location Parity & Synchronization**: Any addition or modification to an example must update BOTH `frontend/src/model/examples.ts` AND `examples/*.ipes` on disk (along with `examples/manifest.json` and `examples/README.md`). Running `npm --prefix frontend test test/examples.test.ts` must pass to guarantee exact byte parity between disk files and TypeScript constants.
 2. **Zero Deprecated Scopes**: Modern examples must NEVER contain physical `SCOPE` component blocks (`typ 5` or `idStringDialog SCOPE`) or obsolete wires connected to them. Instead, signals must be captured via observational probes (`VOLT`, `AMP`) and organized in `<graphRegisters>` blocks (`<graphRegister>` with channel assignments).
 3. **Documentation Card Dimensions**: Every schematic documentation card (`NOTE.1`, `typ 2001`) must be sized with `boxWidth >= 34` and `boxHeight >= 24` so that headings, markdown lists, LaTeX formulas, and observed signal summaries are fully visible without truncation or scrollbars.
@@ -43,7 +55,7 @@ A change to an example (or to any engine semantics an example depends on) is **n
 Known-good reference values live in the `ASSERTIONS` table; if physics-verification fails, fix the example (or the engine), never the window — windows are derived from theory, and widening one requires a stated physical justification in the commit message.
 
 ## Task Completeness & Definition of Done
-- **No Premature Completion**: Never declare a task, goal, or milestone complete until all subtasks, edge cases, downstream integrations, and architectural plan requirements are fully implemented and verified.
+- **No Premature Completion**: Never declare a task, goal, or milestone complete until all subtasks, edge cases, downstream integrations, visual UI checks, and architectural plan requirements are fully implemented and verified in the real runtime environment.
 - **Plan Cross-Check**: Before finishing any phase or task, explicitly review the requirements checklist in the plan/specification document line-by-line.
 - **Clean Refactoring**: Eliminate code duplication immediately (e.g., share utility methods across core and builders) rather than leaving duplicate logic in place.
 - **Code Hygiene Gate Before Handoff**: A task or phase is NEVER complete if modified files retain dangling scratch variables, unused imports, dead private helpers, or uninspected compiler warnings. Always perform the Mandatory Final Cleanup Pass before reporting completion or requesting user review.

@@ -6,17 +6,26 @@
  */
 package gecko.core.control.calculators;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import gecko.core.io.CircuitFileParser;
+import gecko.core.io.CircuitFileWriter;
+import gecko.core.io.CircuitModel;
+import gecko.core.simulation.HeadlessSimulationEngine;
+import gecko.core.simulation.SimulationConfig;
+import gecko.core.simulation.SimulationResult;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
@@ -168,5 +177,186 @@ class CLibraryCalculatorTest {
         calculator.calculateYOUT(1e-6);
         assertEquals(0.0, calculator._outputSignal[0][0], 1e-12,
                 "failure contract: outputs hold at their initial value");
+    }
+
+    @Test
+    void relativeLibraryPathResolvesAgainstCircuitFile() throws Exception {
+        Path library = buildFixtureLibrary(false);
+        Path fakeCircuit = library.getParent().resolve("test_circuit.ipes");
+        String relativeName = library.getFileName().toString();
+
+        try (CLibraryCalculator calculator = new CLibraryCalculator(1, 2, relativeName, fakeCircuit.toString())) {
+            calculator.initializeAtSimulationStart(1e-6);
+            assertNull(calculator.getLoadError(), () -> "load error: " + calculator.getLoadError());
+            calculator._inputSignal[0] = new double[]{4.25};
+            calculator._outputSignal[0] = new double[]{0.0};
+            calculator._outputSignal[1] = new double[]{0.0};
+            AbstractControlCalculatable.setTime(0.0);
+            calculator.calculateYOUT(1e-6);
+            assertEquals(8.5, calculator._outputSignal[0][0], 1e-12);
+        }
+    }
+
+    @Test
+    void nativeCIpesRoundTripAndHeadlessSimulation() throws Exception {
+        Path library = buildFixtureLibrary(false);
+        String relativeName = library.getFileName().toString();
+        Path circuitFile = library.getParent().resolve("nativec_roundtrip.ipes");
+
+        String ipes = """
+                verbindungLeistungskreisANZAHL 0
+                verbindungControlANZAHL 2
+                verbindungCONTROL (0)
+                <Verbindung>
+                label in_sig
+                x[] 12 14
+                y[] 10 10
+                enabled true
+                connectorType 1
+                <\\Verbindung>
+                verbindungCONTROL (1)
+                <Verbindung>
+                label out_doubled
+                x[] 18 22
+                y[] 10 10
+                enabled true
+                connectorType 1
+                <\\Verbindung>
+                elementANZAHL 0
+                controlANZAHL 2
+                c (0)
+                <ElementCONTROL>
+                labelAnfangsKnoten[]
+                labelEndKnoten[] /in_sig
+                enabledShorted 1
+                typ 1005
+                uniqueObjectIdentifier 101
+                x 10
+                y 10
+                parameter[] 3.5
+                parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+                orientierung 503
+                idStringDialog CONST.1
+                <\\ElementCONTROL>
+                c (1)
+                <ElementCONTROL>
+                labelAnfangsKnoten[] /in_sig
+                labelEndKnoten[] /out_doubled
+                enabledShorted 1
+                typ 88
+                uniqueObjectIdentifier 102
+                x 16
+                y 10
+                parameter[] 0.0
+                parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+                orientierung 503
+                idStringDialog CNATC.1
+                anzXIN 1
+                anzYOUT 2
+                libraryPath %s
+                <\\ElementCONTROL>
+                tDURATION 1.0E-4
+                dt 1.0E-5
+                solverType 0
+                dataContainerSignals[] /out_doubled
+                """.formatted(relativeName);
+
+        CircuitFileParser parser = new CircuitFileParser();
+        CircuitModel model = parser.parse(new ByteArrayInputStream(ipes.getBytes(StandardCharsets.UTF_8)), circuitFile.toString());
+        byte[] serialized = CircuitFileWriter.write(model);
+        Files.write(circuitFile, serialized);
+
+        CircuitModel reparsed = parser.parse(circuitFile.toString());
+        CircuitModel.ComponentData nativeC = reparsed.getControlComponents().stream()
+                .filter(c -> c.getType() == 88)
+                .findFirst()
+                .orElseThrow();
+        assertEquals(relativeName, nativeC.getParameters().get("libraryPath"));
+        assertEquals(1.0, ((Number) nativeC.getParameters().get("anzXIN")).doubleValue());
+        assertEquals(2.0, ((Number) nativeC.getParameters().get("anzYOUT")).doubleValue());
+
+        HeadlessSimulationEngine engine = new HeadlessSimulationEngine();
+        SimulationResult result = engine.runSimulation(SimulationConfig.builder()
+                .circuitFile(circuitFile.toString())
+                .simulationDuration(1.0e-4)
+                .stepWidth(1.0e-5)
+                .build());
+        assertTrue(result.isSuccess(), "Simulation must succeed: " + result.getErrorMessage());
+        assertTrue(result.getWarnings().isEmpty(), "Expected no warnings, got: " + result.getWarnings());
+        int idx = List.of(result.getSignalNames()).indexOf("out_doubled");
+        assertTrue(idx >= 0, "out_doubled must be recorded");
+        float[] data = result.getSignalData(idx);
+        assertTrue(data.length > 0);
+        assertEquals(7.0, data[data.length - 1], 1e-5, "NativeC output should be 2 * 3.5 = 7.0");
+    }
+
+    @Test
+    void missingLibraryInHeadlessEngineSurfacesWarning() throws Exception {
+        Path circuitFile = Files.createTempDirectory("nativec_missing").resolve("missing.ipes");
+        String ipes = """
+                verbindungLeistungskreisANZAHL 0
+                verbindungControlANZAHL 0
+                elementANZAHL 0
+                controlANZAHL 1
+                c (0)
+                <ElementCONTROL>
+                labelAnfangsKnoten[]
+                labelEndKnoten[]
+                enabledShorted 1
+                typ 88
+                uniqueObjectIdentifier 101
+                x 16
+                y 10
+                parameter[] 0.0
+                parameterString[] /NIX_NIX_NIX/NIX_NIX_NIX/0
+                orientierung 503
+                idStringDialog CNATC.1
+                anzXIN 1
+                anzYOUT 1
+                libraryPath does_not_exist_12345.dll
+                <\\ElementCONTROL>
+                tDURATION 2.0E-5
+                dt 1.0E-5
+                solverType 0
+                """;
+        Files.writeString(circuitFile, ipes);
+        SimulationResult result = new HeadlessSimulationEngine().runSimulation(SimulationConfig.builder()
+                .circuitFile(circuitFile.toString())
+                .simulationDuration(2.0e-5)
+                .stepWidth(1.0e-5)
+                .build());
+        assertTrue(result.isSuccess());
+        assertTrue(result.getWarnings().stream().anyMatch(w -> w.contains("NATIVEC_LOAD_ERROR")),
+                "Missing DLL should surface NATIVEC_LOAD_ERROR warning, got: " + result.getWarnings());
+    }
+
+    @Test
+    void stagedNativeLibraryDirResolvesWhenCircuitFilePathIsBareFilename() throws Exception {
+        Path library = buildFixtureLibrary(false);
+        String relativeName = library.getFileName().toString();
+        String stagedDir = library.getParent().toString();
+
+        try (CLibraryCalculator calculator = new CLibraryCalculator(
+                1, 2, relativeName, "browser_only.ipes", stagedDir)) {
+            calculator.initializeAtSimulationStart(1e-6);
+            assertNull(calculator.getLoadError(), () -> "load error: " + calculator.getLoadError());
+            calculator._inputSignal[0] = new double[]{3.0};
+            calculator._outputSignal[0] = new double[]{0.0};
+            calculator._outputSignal[1] = new double[]{0.0};
+            AbstractControlCalculatable.setTime(0.0);
+            calculator.calculateYOUT(1e-6);
+            assertEquals(6.0, calculator._outputSignal[0][0], 1e-12);
+        }
+    }
+
+    @Test
+    void bareBrowserFilenameMissingLibraryIncludesAttachHint() {
+        try (CLibraryCalculator calculator = new CLibraryCalculator(
+                1, 1, "does_not_exist_12345.dll", "browser_only.ipes", null)) {
+            calculator.initializeAtSimulationStart(1e-6);
+            assertNotNull(calculator.getLoadError());
+            assertTrue(calculator.getLoadError().contains("Attach Library"),
+                    "Expected browser guidance hint in load error, got: " + calculator.getLoadError());
+        }
     }
 }

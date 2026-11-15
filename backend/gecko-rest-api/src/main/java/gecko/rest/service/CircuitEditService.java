@@ -933,6 +933,9 @@ public class CircuitEditService {
     }
 
     private static String baseName(int type) {
+        if (type == CircuitTypCore.C_NATIVE_C_FUNCTION.getTypeNumber()) {
+            return "CNATC";
+        }
         String name = CircuitTypCore.fromTypeNumber(type).name();
         for (String prefix : new String[] {"LK_", "TH_", "REL_", "CTRL_", "SPECIAL_"}) {
             if (name.startsWith(prefix)) {
@@ -1148,6 +1151,10 @@ public class CircuitEditService {
             comp.setParameter("sourceCode", "yOUT[0] = xIN[0];");
             comp.setParameter("anzXIN", 1);
             comp.setParameter("anzYOUT", 1);
+        } else if (comp.getType() == CircuitTypCore.C_NATIVE_C_FUNCTION.getTypeNumber()) {
+            comp.setParameter("libraryPath", "");
+            comp.setParameter("anzXIN", 3);
+            comp.setParameter("anzYOUT", 2);
         } else if (comp.getType() == CircuitTypCore.TEXTBOX.getTypeNumber()) {
             comp.setParameter("text", "Note");
             comp.setParameter("width", 26);
@@ -1323,6 +1330,9 @@ public class CircuitEditService {
                 "staticVariables".equals(key) ||
                 "anzXIN".equals(key) ||
                 "anzYOUT".equals(key) ||
+                "libraryPath".equals(key) ||
+                "nativeCLibrary".equals(key) ||
+                "nativeCLibraries".equals(key) ||
                 "nodeA".equals(key) ||
                 "nodeB".equals(key) ||
                 "positiveNode".equals(key) ||

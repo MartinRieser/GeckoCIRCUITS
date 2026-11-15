@@ -35,6 +35,7 @@ public class CircuitModel {
 
     // File metadata
     private String filePath;
+    private String nativeLibraryDir;
     private int fileVersion;
     private int uniqueFileId;
     private String creationDate;
@@ -140,6 +141,14 @@ public class CircuitModel {
 
     public void setFilePath(String filePath) {
         this.filePath = filePath;
+    }
+
+    public String getNativeLibraryDir() {
+        return nativeLibraryDir;
+    }
+
+    public void setNativeLibraryDir(String nativeLibraryDir) {
+        this.nativeLibraryDir = nativeLibraryDir;
     }
 
     public String getPath() {

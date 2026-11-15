@@ -210,6 +210,9 @@ public class HeadlessSimulationEngine {
             LOGGER.error("Simulation run failed: {}", msg, e);
             return SimulationResult.failed("Simulation error: " + msg, collectEngineWarnings());
         } finally {
+            if (controlCoupling != null) {
+                controlCoupling.close();
+            }
             state.set(EngineState.IDLE);
         }
     }

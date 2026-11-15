@@ -1343,11 +1343,11 @@ circle.terminal-hit,
 
 .node-label {
   fill: var(--accent, #38bdf8);
-  font-size: 8.5px;
+  font-size: 8px;
   font-weight: 600;
   stroke: none;
   user-select: none;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.15px;
 }
 
 /* Wires */

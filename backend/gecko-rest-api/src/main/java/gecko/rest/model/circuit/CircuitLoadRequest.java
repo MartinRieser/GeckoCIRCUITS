@@ -15,5 +15,12 @@ public record CircuitLoadRequest(
 
     @Schema(description = "Original filename", example = "buck_converter.ipes")
     @NotBlank
-    String filename
-) {}
+    String filename,
+
+    @Schema(description = "Optional full disk path of the opened .ipes file for resolving relative resources", example = "C:/circuits/buck_converter.ipes")
+    String filePath
+) {
+    public CircuitLoadRequest(String content, String filename) {
+        this(content, filename, null);
+    }
+}

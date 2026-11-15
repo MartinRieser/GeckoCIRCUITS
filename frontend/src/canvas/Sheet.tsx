@@ -54,6 +54,7 @@ import type { ContextMenuTarget } from './ContextMenu';
 import {
   Orientation,
   CANVAS_METRICS,
+  ControlComponentType,
   LkComponentType,
   SpecialComponentType,
   SENTINEL_UNSET,
@@ -2773,20 +2774,36 @@ export function Sheet({ state, dispatch, actions, focusTarget }: SheetProps) {
                     const isTransformer =
                       (component.family === 'LK' || !component.family) &&
                       (component.type === 23 || component.type === LkComponentType.TRANSFORMER);
+                    const isScriptFunctionBox =
+                      component.family === 'CONTROL' &&
+                      (component.type === ControlComponentType.SCRIPT ||
+                        component.type === ControlComponentType.LEGACY_JAVA_FUNCTION ||
+                        component.type === ControlComponentType.NATIVE_C ||
+                        component.type === ControlComponentType.ABCDQ ||
+                        component.type === ControlComponentType.DQABC ||
+                        component.type === ControlComponentType.THYR_CTRL ||
+                        component.type === ControlComponentType.PMSM_CONTROL ||
+                        component.type === ControlComponentType.PMSM_MODULATOR ||
+                        component.type === ControlComponentType.DEMUX ||
+                        component.type === ControlComponentType.SPACE_VECTOR ||
+                        component.type === ControlComponentType.SPARSEMATRIX);
                     const maxPins = Math.max(terminals.input.length, terminals.output.length, 1);
                     // Single-pin blocks keep the classic symmetric extent
                     // (name label + coupling badge offsets depend on it);
-                    // anchored multi-pin blocks extend downward only.
-                    // Transformers are symmetric 4-terminal elements spanning ±2 grid units.
+                    // multi-pin script/function blocks include a top header bar.
                     const top = isTransformer
                       ? -2.2 * dpix
-                      : (maxPins > 1 ? -0.9 : -1.3) * dpix;
+                      : isScriptFunctionBox && maxPins >= 2
+                        ? -1.4 * dpix
+                        : (maxPins > 1 ? -0.9 : -1.3) * dpix;
                     const bottom = isTransformer
                       ? 2.2 * dpix
                       : (maxPins > 1 ? maxPins - 1 + 0.9 : 1.3) * dpix;
                     const halfW = isTransformer
                       ? 2.2 * dpix
-                      : 1.3 * dpix;
+                      : isScriptFunctionBox
+                        ? 1.7 * dpix
+                        : 1.3 * dpix;
                     return (
                       <>
                         {/* Full-area hit target so clicking anywhere on the component bounding area selects it */}
@@ -3420,12 +3437,12 @@ export function Sheet({ state, dispatch, actions, focusTarget }: SheetProps) {
               }
 
               const shown = item.displayLabel || item.label;
-              const rectW = Math.max(shown.length * 5.8 + 6, 14);
-              const rectH = 13;
-              const rectY = textY - 9.5;
-              let rectX = textX - 3;
+              const rectW = Math.max(shown.length * 5.2 + 5, 14);
+              const rectH = 11;
+              const rectY = textY - 8;
+              let rectX = textX - 2.5;
               if (anchor === 'end') {
-                rectX = textX - rectW + 3;
+                rectX = textX - rectW + 2.5;
               } else if (anchor === 'middle') {
                 rectX = textX - rectW / 2;
               }

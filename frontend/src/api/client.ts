@@ -189,8 +189,19 @@ export async function uploadIpesString(content: string, filename = 'circuit.ipes
  * @param base64Content Base64 encoded file data
  * @param filename File name descriptor
  */
-export async function uploadIpesBase64(base64Content: string, filename: string): Promise<string> {
-  const body = JSON.stringify({ content: base64Content, filename });
+export async function uploadIpesBase64(
+  base64Content: string,
+  filename: string,
+  filePath?: string | null,
+): Promise<string> {
+  const payload: { content: string; filename: string; filePath?: string } = {
+    content: base64Content,
+    filename,
+  };
+  if (filePath) {
+    payload.filePath = filePath;
+  }
+  const body = JSON.stringify(payload);
   const response = await fetch(apiBase() + '/circuits/parse', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -204,6 +215,21 @@ export async function uploadIpesBase64(base64Content: string, filename: string):
     throw new ApiError(json.errorMessage, response.status, '/circuits/parse');
   }
   return json.circuitId!;
+}
+
+/**
+ * Stages a compiled NativeC shared library (.dll / .so / .dylib) for the active
+ * circuit session so browser-opened circuits can resolve relative library filenames.
+ */
+export async function uploadNativeLibrary(
+  circuitId: string,
+  filename: string,
+  base64Content: string,
+): Promise<{ status: string; circuitId: string; filename: string }> {
+  return request(`/circuits/${encodeURIComponent(circuitId)}/native-library`, {
+    method: 'POST',
+    body: JSON.stringify({ filename, content: base64Content }),
+  });
 }
 
 /**

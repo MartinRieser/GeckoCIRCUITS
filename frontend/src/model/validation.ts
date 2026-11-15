@@ -247,8 +247,14 @@ export interface DiagnosticQuickFix {
   /** Human-readable action button label shown in the Diagnostics Drawer. */
   label: string;
   /** Quick-fix handler action identifier. */
-  action: 'auto-dt' | 'open-sim-config' | 'select-component' | 'delete-wire' | 'focus-wire';
-  /** Target component name for `select-component` actions. */
+  action:
+    | 'auto-dt'
+    | 'open-sim-config'
+    | 'select-component'
+    | 'delete-wire'
+    | 'focus-wire'
+    | 'attach-native-library';
+  /** Target component name for `select-component` or `attach-native-library` actions. */
   componentName?: string;
   /** Target 0-based wire index for `delete-wire` or `focus-wire` actions. */
   wireIndex?: number;
@@ -741,18 +747,29 @@ export function buildCircuitDiagnostics(
 
   if (context?.simWarnings && context.simWarnings.length > 0) {
     context.simWarnings.forEach((msg, idx) => {
-      const mentioned = findMentionedComponent(msg, components);
+      const isNativeCLoadError = msg.includes('NATIVEC_LOAD_ERROR');
+      const mentioned =
+        findMentionedComponent(msg, components) ??
+        (isNativeCLoadError
+          ? components.find((c) => c.type === 88 || c.name.startsWith('CNATC'))
+          : undefined);
       items.push({
         id: `engine-warn-${idx}`,
         severity: 'warning',
         category: 'engine',
-        title: 'Simulation Engine Warning',
-        detail: msg,
+        title: isNativeCLoadError ? 'Native C/C++ Library Not Loaded' : 'Simulation Engine Warning',
+        detail: isNativeCLoadError ? msg.replace(/^NATIVEC_LOAD_ERROR:\s*/, '') : msg,
         componentName: mentioned?.name,
         coord: getCompCoord(mentioned),
-        quickFix: mentioned
-          ? { label: `Inspect ${mentioned.name}`, action: 'select-component', componentName: mentioned.name }
-          : undefined,
+        quickFix: isNativeCLoadError && mentioned
+          ? {
+              label: 'Attach Library (.dll / .so)…',
+              action: 'attach-native-library',
+              componentName: mentioned.name,
+            }
+          : mentioned
+            ? { label: `Inspect ${mentioned.name}`, action: 'select-component', componentName: mentioned.name }
+            : undefined,
       });
     });
   }

@@ -74,6 +74,8 @@ export enum ControlComponentType {
   LEGACY_GATE = 6,
   /** Classic Java block (legacy .ipes numeric code). */
   LEGACY_JAVA_FUNCTION = 61,
+  /** NativeC shared library (DLL/SO/DYLIB) control block (typ 88). */
+  NATIVE_C = 88,
 
   /** Gate driver (modern catalog CircuitTypCore.CTRL_GATE). */
   GATE = 1000,
@@ -284,6 +286,7 @@ export const CTRL_TYPE = {
   MUX: ControlComponentType.MUX,
   DELAY: ControlComponentType.DELAY,
   LEGACY_JAVA_FUNCTION: ControlComponentType.LEGACY_JAVA_FUNCTION,
+  NATIVE_C: ControlComponentType.NATIVE_C,
   SCRIPT: ControlComponentType.SCRIPT,
   SUB: ControlComponentType.SUB,
   ADD: ControlComponentType.ADD,

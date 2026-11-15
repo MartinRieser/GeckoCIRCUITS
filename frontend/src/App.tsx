@@ -82,6 +82,8 @@ export function App() {
     void setWindowTitleNative(title);
   }, [state.filename, isDirty]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const nativeLibInputRef = useRef<HTMLInputElement>(null);
+  const pendingNativeLibCompRef = useRef<string | null>(null);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [engineVersion, setEngineVersion] = useState<string | null>(null);
 
@@ -449,6 +451,13 @@ export function App() {
         case 'delete-wire':
           if (fix.wireIndex !== undefined) {
             actions.deleteWire(fix.wireIndex);
+          }
+          break;
+        case 'attach-native-library':
+          if (fix.componentName) {
+            pendingNativeLibCompRef.current = fix.componentName;
+            handleLocateDiagnostic(item);
+            nativeLibInputRef.current?.click();
           }
           break;
       }
@@ -892,6 +901,21 @@ export function App() {
                 actions.open(file);
               }
               e.target.value = '';
+            }}
+          />
+          <input
+            ref={nativeLibInputRef}
+            type="file"
+            accept=".dll,.so,.dylib"
+            hidden
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              const compName = pendingNativeLibCompRef.current;
+              e.target.value = '';
+              pendingNativeLibCompRef.current = null;
+              if (file && compName) {
+                await actions.attachNativeLibrary(compName, file);
+              }
             }}
           />
 
@@ -1657,6 +1681,7 @@ export function App() {
                       onDelete={actions.deleteComponent}
                       onOpenScopeTab={(name) => openScopeTab(name)}
                       onCollapse={() => setRightSidebarOpen(false)}
+                      onAttachNativeLibrary={actions.attachNativeLibrary}
                       theme={theme}
                     />
                   </div>

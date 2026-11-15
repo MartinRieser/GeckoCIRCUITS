@@ -213,13 +213,14 @@ export function useEditor() {
       dispatch({ type: 'STATUS', status: `Loading ${file.name}...` });
       try {
         const base64 = await api.fileToBase64(file);
-        const circuitId = await api.uploadIpesBase64(base64, file.name);
+        const nativePath = (file as File & { path?: string }).path ?? null;
+        const circuitId = await api.uploadIpesBase64(base64, file.name, nativePath);
         attachSubscription(circuitId);
         const snapshot = await refresh(circuitId);
-        dispatch({ type: 'SET_FILENAME', filename: file.name, filePath: null });
+        dispatch({ type: 'SET_FILENAME', filename: file.name, filePath: nativePath });
         setSavedVersion(versionRef.current);
         setGraphRegsDirty(false);
-        addRecentFile(file.name, base64, snapshot?.components.length ?? stateRef.current.components.length, null);
+        addRecentFile(file.name, base64, snapshot?.components.length ?? stateRef.current.components.length, nativePath);
         dispatch({ type: 'STATUS', status: `Loaded ${file.name}` });
       } catch (e) {
         reportError(e);
@@ -265,7 +266,7 @@ export function useEditor() {
       }
       dispatch({ type: 'STATUS', status: `Loading ${filename}...` });
       try {
-        const circuitId = await api.uploadIpesBase64(base64, filename);
+        const circuitId = await api.uploadIpesBase64(base64, filename, path);
         attachSubscription(circuitId);
         const snapshot = await refresh(circuitId);
         dispatch({ type: 'SET_FILENAME', filename, filePath: path });
@@ -1503,6 +1504,31 @@ function cleanGraphRegistersForDeletedComponents(
     [reportError],
   );
 
+  const attachNativeLibrary = useCallback(
+    async (componentName: string, file: File) => {
+      const circuitId = stateRef.current.circuitId;
+      if (!circuitId) return;
+      try {
+        dispatch({ type: 'STATUS', status: `Uploading native library ${file.name}...` });
+        const base64 = await api.fileToBase64(file);
+        await api.uploadNativeLibrary(circuitId, file.name, base64);
+        const existing = stateRef.current.components.find((c) => c.name === componentName);
+        const currentLib = String(existing?.parameters?.['libraryPath'] ?? '');
+        if (!currentLib.trim() || currentLib.trim() !== file.name) {
+          setParameter(componentName, 'libraryPath', file.name);
+        }
+        setSimWarnings((prev) => prev.filter((w) => !w.includes('NATIVEC_LOAD_ERROR')));
+        dispatch({
+          type: 'STATUS',
+          status: `Attached native library '${file.name}' — press Run (F5) to simulate`,
+        });
+      } catch (e) {
+        reportError(e);
+      }
+    },
+    [reportError, setParameter],
+  );
+
   // ========== Simulation Actions ==========
 
   /** REST polling fallback for when the SSE stream cannot be established. */
@@ -2033,6 +2059,7 @@ function cleanGraphRegistersForDeletedComponents(
       saveAs,
       rename,
       setParameter,
+      attachNativeLibrary,
       setLabel,
       removeLabel,
       openProperties: (name: string) => dispatch({ type: 'PANEL_FOR', name }),

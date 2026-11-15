@@ -1019,6 +1019,55 @@ class CircuitEditServiceTest {
         }
     }
 
+    @Test
+    void nativeCCatalogCreatePatchAndRoundTrip() throws Exception {
+        boolean inCatalog = service.getCatalog().types().stream()
+                .anyMatch(c -> c.type() == 88 && "CONTROL".equals(c.family())
+                        && "C_NATIVE_C_FUNCTION".equals(c.name()));
+        assertTrue(inCatalog, "NativeC (typ 88) must be listed in component catalog");
+
+        service.createComponent(circuitId,
+                new ComponentCreateRequest("CONTROL", 88, null, 20, 20, 503, null));
+        CircuitModel.ComponentData created = model().getControlComponents().stream()
+                .filter(c -> c.getType() == 88)
+                .findFirst()
+                .orElseThrow();
+        assertTrue(created.getName().startsWith("CNATC"),
+                "Default NativeC name should use CNATC prefix, got: " + created.getName());
+        assertEquals("", created.getParameters().get("libraryPath"));
+        assertEquals(3.0, ((Number) created.getParameters().get("anzXIN")).doubleValue());
+        assertEquals(2.0, ((Number) created.getParameters().get("anzYOUT")).doubleValue());
+
+        service.patchComponent(circuitId, created.getName(),
+                new ComponentPatchRequest(null, null, null, null,
+                        Map.of("libraryPath", "my libs/ctrl v2.dll", "anzXIN", 4, "anzYOUT", 3)));
+
+        byte[] bytes = CircuitFileWriter.write(model());
+        CircuitModel reparsed = new CircuitFileParser().parse(new ByteArrayInputStream(bytes), "nativec.ipes");
+        CircuitModel.ComponentData rt = reparsed.getControlComponents().stream()
+                .filter(c -> created.getName().equals(c.getName()))
+                .findFirst()
+                .orElseThrow();
+        assertEquals("my libs/ctrl v2.dll", rt.getParameters().get("libraryPath"));
+        assertEquals(4.0, ((Number) rt.getParameters().get("anzXIN")).doubleValue());
+        assertEquals(3.0, ((Number) rt.getParameters().get("anzYOUT")).doubleValue());
+
+        String dummyLib = java.util.Base64.getEncoder().encodeToString(new byte[]{1, 2, 3, 4});
+        Map<String, Object> staged = circuitFileService.uploadNativeLibrary(circuitId, "C:/tmp/ctrl v2.dll", dummyLib);
+        assertEquals("uploaded", staged.get("status"));
+        assertEquals("ctrl v2.dll", staged.get("filename"));
+        String dir = model().getNativeLibraryDir();
+        assertNotNull(dir);
+        java.nio.file.Path stagedPath = java.nio.file.Paths.get(dir).resolve("ctrl v2.dll");
+        assertTrue(Files.isRegularFile(stagedPath));
+
+        assertThrows(ResponseStatusException.class,
+                () -> circuitFileService.uploadNativeLibrary(circuitId, "evil.exe", dummyLib));
+
+        assertTrue(circuitFileService.deleteCircuit(circuitId));
+        assertFalse(Files.exists(stagedPath), "Staged native library directory must be cleaned up on deleteCircuit");
+    }
+
     // ========== Helpers ==========
 
     private CircuitModel.ConnectionData wireByLabel(String label) {

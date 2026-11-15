@@ -261,6 +261,7 @@ public final class CircuitFileWriter {
             Map<String, Object> parameters = comp.getParameters();
             boolean scriptInExtraLines = comp.getExtraLines().stream()
                     .anyMatch(line -> line.trim().startsWith("<sourceCode>"));
+            boolean emittedTerminalCounts = false;
             if (parameters.containsKey("sourceCode") && !scriptInExtraLines) {
                 sb.append("\n<sourceCode>\n").append(parameters.getOrDefault("sourceCode", ""))
                         .append("\n<\\sourceCode>");
@@ -270,11 +271,25 @@ public final class CircuitFileWriter {
                         .append("\n<\\importCode>");
                 sb.append("\n<staticVariables>\n").append(parameters.getOrDefault("staticVariables", ""))
                         .append("\n<\\staticVariables>");
-                if (parameters.containsKey("anzXIN")) {
-                    sb.append("\nanzXIN ").append(parameters.get("anzXIN"));
+                appendIntParam(sb, parameters, "anzXIN");
+                appendIntParam(sb, parameters, "anzYOUT");
+                emittedTerminalCounts = true;
+            }
+
+            // NativeC C-library block (typ 88): emit libraryPath and terminal counts
+            // when not already preserved in extraLines.
+            if (comp.getType() == 88 || parameters.containsKey("libraryPath")) {
+                if (!emittedTerminalCounts) {
+                    appendIntParam(sb, parameters, "anzXIN");
+                    appendIntParam(sb, parameters, "anzYOUT");
                 }
-                if (parameters.containsKey("anzYOUT")) {
-                    sb.append("\nanzYOUT ").append(parameters.get("anzYOUT"));
+                for (String nativeKey : new String[]{"libraryPath", "nativeCLibrary", "nativeCLibraries"}) {
+                    Object nativeVal = parameters.get(nativeKey);
+                    boolean inExtra = comp.getExtraLines().stream()
+                            .anyMatch(line -> line.trim().startsWith(nativeKey + " "));
+                    if (nativeVal != null && !String.valueOf(nativeVal).isBlank() && !inExtra) {
+                        sb.append("\n").append(nativeKey).append(" ").append(nativeVal);
+                    }
                 }
             }
 
@@ -437,5 +452,12 @@ public final class CircuitFileWriter {
         sb.append("\n\n=======================\n ");
 
         return sb.toString();
+    }
+
+    private static void appendIntParam(StringBuilder sb, Map<String, Object> parameters, String key) {
+        Object val = parameters.get(key);
+        if (val instanceof Number n) {
+            sb.append("\n").append(key).append(" ").append(n.intValue());
+        }
     }
 }

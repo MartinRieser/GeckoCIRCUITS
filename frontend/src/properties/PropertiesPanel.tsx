@@ -3,7 +3,7 @@
  * semantic engineering parameters with SI prefix notation (10k, 4.7u, 100n, 1M),
  * unit badges, terminal net label manager, and quick actions (Rotate, Delete, Duplicate).
  */
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import type { EditorComponent, EditorWire, SimulationStatus } from '../model/types';
 import type { ScriptDebugSnapshot, ScriptDebugState } from '../api/client';
 import {
@@ -43,7 +43,7 @@ import { CHANNEL_TRACE_COLORS, CHANNEL_TRACE_COLORS_LIGHT } from '../simulation/
 import { terminalPositions } from '../model/geometry';
 import { SymbolPreview } from '../canvas/symbols';
 import { computeCurrentDirectionHint } from '../canvas/sheetGuides';
-import { SENTINEL_UNSET } from '../model/constants';
+import { SENTINEL_UNSET, SCRIPT_TERMINAL_LIMIT } from '../model/constants';
 
 // Same palette the scope view uses for its traces, so a channel's badge
 // color matches its waveform color everywhere.
@@ -110,6 +110,8 @@ export interface PropertiesPanelProps {
   onOpenScopeTab?: (scopeName: string) => void;
   /** Callback to collapse the properties panel. */
   onCollapse?: () => void;
+  /** Callback to attach/upload a NativeC shared library file (.dll/.so/.dylib) in browser mode. */
+  onAttachNativeLibrary?: (componentName: string, file: File) => void | Promise<void>;
   /** Active UI theme; picks the light-calibrated channel badge palette. */
   theme?: 'dark' | 'light';
 }
@@ -136,6 +138,7 @@ export function PropertiesPanel({
   onDelete,
   onOpenScopeTab,
   onCollapse,
+  onAttachNativeLibrary,
   theme = 'dark',
 }: PropertiesPanelProps) {
   const CHANNEL_COLORS = theme === 'light' ? CHANNEL_TRACE_COLORS_LIGHT : CHANNEL_COLORS_DARK;
@@ -915,6 +918,12 @@ export function PropertiesPanel({
           component.type === CTRL_TYPE.LEGACY_JAVA_FUNCTION ||
           meta.name === 'CTRL_SCRIPT') ? (
           <ScriptBlockEditor component={component} onSetParameter={onSetParameter} debug={scriptDebug} />
+        ) : (component.type === CTRL_TYPE.NATIVE_C || meta.name === 'C_NATIVE_C_FUNCTION') ? (
+          <NativeCBlockEditor
+            component={component}
+            onSetParameter={onSetParameter}
+            onAttachNativeLibrary={onAttachNativeLibrary}
+          />
         ) : isTextboxComponent(component) ? (
           <TextboxEditor component={component} onSetParameter={onSetParameter} />
         ) : (
@@ -1911,6 +1920,174 @@ export function TextboxEditor({
           }}
         >
           {isSaved ? '✓ Applied' : 'Apply Text'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Dedicated inspector section for NativeC (typ 88) firmware-in-the-loop blocks:
+ * string path to the compiled .dll/.so/.dylib and dynamic input/output pin counts.
+ */
+function NativeCBlockEditor({
+  component,
+  onSetParameter,
+  onAttachNativeLibrary,
+}: {
+  component: EditorComponent;
+  onSetParameter: (componentName: string, paramKey: string, value: string | number) => void;
+  onAttachNativeLibrary?: (componentName: string, file: File) => void | Promise<void>;
+}) {
+  const storedPath = String(
+    component.parameters['libraryPath'] ?? component.parameters['nativeCLibrary'] ?? '',
+  );
+  const [libraryPath, setLibraryPath] = useState(storedPath);
+  const { inputCount, outputCount } = resolveComponentPinCounts(component);
+  const [inCount, setInCount] = useState(inputCount);
+  const [outCount, setOutCount] = useState(outputCount);
+  const [isSaved, setIsSaved] = useState(false);
+  const [attachFeedback, setAttachFeedback] = useState(false);
+  const libFileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setLibraryPath(
+      String(component.parameters['libraryPath'] ?? component.parameters['nativeCLibrary'] ?? ''),
+    );
+    const pins = resolveComponentPinCounts(component);
+    setInCount(pins.inputCount);
+    setOutCount(pins.outputCount);
+  }, [component]);
+
+  const commitLibraryPath = () => {
+    const trimmed = libraryPath.trim();
+    setLibraryPath(trimmed);
+    if (trimmed !== storedPath) {
+      onSetParameter(component.name, 'libraryPath', trimmed);
+    }
+    setIsSaved(true);
+    setTimeout(() => setIsSaved(false), 1200);
+  };
+
+  return (
+    <div className="prop-section">
+      <div className="prop-section-title">Native C/C++ Shared Library</div>
+
+      <div className="prop-fields-list" style={{ marginBottom: '8px' }}>
+        <div className="prop-field">
+          <label className="prop-label" htmlFor="nativec-library-path">
+            Library Path (.dll / .so / .dylib)
+          </label>
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <input
+              id="nativec-library-path"
+              type="text"
+              className="prop-input"
+              style={{ flex: 1 }}
+              value={libraryPath}
+              placeholder="e.g. buck_ctrl.dll or C:/path/to/ctrl.dll"
+              onChange={(e) => setLibraryPath(e.target.value)}
+              onBlur={commitLibraryPath}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.currentTarget.blur();
+                }
+              }}
+            />
+            {onAttachNativeLibrary && (
+              <>
+                <button
+                  type="button"
+                  className="secondary-btn"
+                  style={{ whiteSpace: 'nowrap', fontSize: '11px', padding: '5px 8px' }}
+                  onClick={() => libFileInputRef.current?.click()}
+                  title="Upload / attach .dll, .so, or .dylib to this browser session"
+                >
+                  {attachFeedback ? '✓ Attached' : 'Attach…'}
+                </button>
+                <input
+                  ref={libFileInputRef}
+                  type="file"
+                  accept=".dll,.so,.dylib"
+                  hidden
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = '';
+                    if (!file) return;
+                    setLibraryPath(file.name);
+                    await onAttachNativeLibrary(component.name, file);
+                    setAttachFeedback(true);
+                    setTimeout(() => setAttachFeedback(false), 1600);
+                  }}
+                />
+              </>
+            )}
+          </div>
+          <span className="prop-desc">
+            Relative paths resolve next to the <code>.ipes</code> file (desktop), or use <strong>Attach…</strong> in browser mode.
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <div className="prop-field" style={{ flex: 1 }}>
+            <label className="prop-label" htmlFor="nativec-inputs">
+              Inputs (n_in)
+            </label>
+            <input
+              id="nativec-inputs"
+              type="number"
+              className="prop-input"
+              min={0}
+              max={SCRIPT_TERMINAL_LIMIT}
+              value={inCount}
+              onChange={(e) => {
+                const v = clampInputTerminalCount(parseInt(e.target.value, 10) || 0);
+                setInCount(v);
+                onSetParameter(component.name, 'anzXIN', v);
+              }}
+            />
+          </div>
+          <div className="prop-field" style={{ flex: 1 }}>
+            <label className="prop-label" htmlFor="nativec-outputs">
+              Outputs (n_out)
+            </label>
+            <input
+              id="nativec-outputs"
+              type="number"
+              className="prop-input"
+              min={1}
+              max={SCRIPT_TERMINAL_LIMIT}
+              value={outCount}
+              onChange={(e) => {
+                const v = clampOutputTerminalCount(parseInt(e.target.value, 10) || 1);
+                setOutCount(v);
+                onSetParameter(component.name, 'anzYOUT', v);
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+          ABI: <code>gecko_init</code>, <code>gecko_step</code>, <code>gecko_deinit</code>
+        </span>
+        <button
+          type="button"
+          onClick={commitLibraryPath}
+          className="action-btn"
+          style={{
+            fontSize: '12px',
+            padding: '4px 12px',
+            backgroundColor: isSaved ? '#16a34a' : 'var(--accent-primary, #3b82f6)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontWeight: 500,
+          }}
+        >
+          {isSaved ? '✓ Applied' : 'Apply Path'}
         </button>
       </div>
     </div>

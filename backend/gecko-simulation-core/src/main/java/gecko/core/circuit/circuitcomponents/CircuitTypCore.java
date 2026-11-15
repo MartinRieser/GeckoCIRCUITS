@@ -163,6 +163,7 @@ public enum CircuitTypCore {
     CTRL_SDFT(1056),       // Sliding Discrete Fourier Transform harmonic analyzer
     CTRL_SPARSEMATRIX(1058), // Indirect Sparse Matrix Converter modulator
     C_JAVA_FUNCTION(61),   // Classic Java function block
+    C_NATIVE_C_FUNCTION(88), // NativeC shared library (DLL/SO/DYLIB) control block
 
     // Documentation / Annotation components
     TEXTBOX(2001);         // Markdown documentation note / textbox
@@ -296,7 +297,9 @@ public enum CircuitTypCore {
      * @return true if any CTRL_* type
      */
     public boolean isControl() {
-        return (typeNumber >= 1000 && typeNumber <= 1099) || this == C_JAVA_FUNCTION;
+        return (typeNumber >= 1000 && typeNumber <= 1099)
+                || this == C_JAVA_FUNCTION
+                || this == C_NATIVE_C_FUNCTION;
     }
 
     /**

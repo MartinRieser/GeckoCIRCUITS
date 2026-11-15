@@ -101,12 +101,11 @@ Checklist, in order:
    with theory-derived windows (±20% generous), not observed values.
 6. **Run the gate** until green, then `npx vitest run` + `npx tsc --noEmit`
    in `frontend/` (specifically validating `test/examples.test.ts` for disk-to-frontend parity, zero-scope compliance, and note dimensions, as well as `test/examples.connectivity.test.ts`).
-7. **GUI smoke test** (browser-use): open http://localhost:5173, Examples →
-   the example, F5. Confirm the scope tab appears with the promised channels
-   and plausible shapes. Prefer `dom_cua.get_visible_dom()` refs /
-   `cua.click` coordinates for the palette/menu (role-based clicks on the
-   canvas app time out); read measurement chips via `evaluate` on
-   `.sim-drawer` for min/max/mean/Vpp cross-checks.
+7. **GUI smoke test**: open the app in a real browser (`http://localhost:5173` or running desktop/preview UI) and load the circuit through the real UI workflow (Examples menu OR `File → Open` for standalone circuits), then press `F5` / `Run`:
+   - Inspect a screenshot of the schematic canvas to verify there are NO overlapping wire label pills, cramped pin labels, or obscured components.
+   - Check the **Diagnostics & DRC** drawer for **0 errors and 0 warnings** (including `Open Control Wire` and `NATIVEC_LOAD_ERROR`).
+   - Confirm the scope tab appears with the promised channels and plausible shapes; read measurement chips on `.sim-drawer` for min/max/mean/Vpp cross-checks.
+   - *(Browser-use tip: prefer `dom_cua.get_visible_dom()` refs / `cua.click` coordinates for the palette/menu as role-based clicks on the canvas app can time out.)*
 
 ## Plausibility analysis patterns (for debugging a suspicious example)
 

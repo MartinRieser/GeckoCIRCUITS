@@ -41,11 +41,13 @@ import org.apache.logging.log4j.Logger;
  * the error is logged once and available via {@link #getLoadError()}.</p>
  */
 public final class CLibraryCalculator extends AbstractControlCalculatable
-        implements InitializableAtSimulationStart {
+        implements InitializableAtSimulationStart, AutoCloseable {
 
     private static final Logger LOGGER = LogManager.getLogger(CLibraryCalculator.class);
 
     private final String libraryPath;
+    private final String circuitFilePath;
+    private final String nativeLibraryDir;
     private final Arena arena;
     private MemorySegment xSegment;
     private MemorySegment ySegment;
@@ -56,8 +58,21 @@ public final class CLibraryCalculator extends AbstractControlCalculatable
     private boolean initCalled;
 
     public CLibraryCalculator(final int noInputs, final int noOutputs, final String libraryPath) {
+        this(noInputs, noOutputs, libraryPath, null, null);
+    }
+
+    public CLibraryCalculator(final int noInputs, final int noOutputs,
+                              final String libraryPath, final String circuitFilePath) {
+        this(noInputs, noOutputs, libraryPath, circuitFilePath, null);
+    }
+
+    public CLibraryCalculator(final int noInputs, final int noOutputs,
+                              final String libraryPath, final String circuitFilePath,
+                              final String nativeLibraryDir) {
         super(noInputs, noOutputs);
         this.libraryPath = libraryPath;
+        this.circuitFilePath = circuitFilePath;
+        this.nativeLibraryDir = nativeLibraryDir;
         this.arena = Arena.ofAuto();
     }
 
@@ -81,8 +96,51 @@ public final class CLibraryCalculator extends AbstractControlCalculatable
         }
     }
 
+    private Path resolveLibraryPath() {
+        final Path raw = Path.of(libraryPath);
+        if (raw.isAbsolute()) {
+            return raw;
+        }
+        if (nativeLibraryDir != null && !nativeLibraryDir.isBlank()) {
+            final Path stagedDir = Path.of(nativeLibraryDir);
+            final Path stagedRelative = stagedDir.resolve(raw).normalize();
+            if (Files.isRegularFile(stagedRelative)) {
+                return stagedRelative;
+            }
+            if (raw.getFileName() != null) {
+                final Path stagedByName = stagedDir.resolve(raw.getFileName()).normalize();
+                if (Files.isRegularFile(stagedByName)) {
+                    return stagedByName;
+                }
+            }
+        }
+        if (circuitFilePath != null && !circuitFilePath.isBlank()) {
+            final Path circuitRef = Path.of(circuitFilePath);
+            // Only treat circuitFilePath as a disk location when it actually includes a directory;
+            // browser File->Open only supplies a bare filename without folder context.
+            if (circuitRef.getParent() != null) {
+                final Path parent = circuitRef.toAbsolutePath().getParent();
+                if (parent != null) {
+                    final Path relativeToCircuit = parent.resolve(raw).normalize();
+                    if (Files.isRegularFile(relativeToCircuit) || !Files.isRegularFile(raw)) {
+                        return relativeToCircuit;
+                    }
+                }
+            }
+        }
+        if (!Files.isRegularFile(raw)
+                && (circuitFilePath == null || circuitFilePath.isBlank()
+                || Path.of(circuitFilePath).getParent() == null)) {
+            throw new IllegalArgumentException(
+                    "library file '" + libraryPath + "' not found "
+                    + "(circuit folder path unavailable in browser mode; "
+                    + "click 'Attach Library...' in Properties or Diagnostics, or set an absolute path)");
+        }
+        return raw;
+    }
+
     private void loadAndBind() throws Throwable {
-        final Path source = Path.of(libraryPath);
+        final Path source = resolveLibraryPath();
         if (!Files.isRegularFile(source)) {
             throw new IllegalArgumentException("library file not found: " + source.toAbsolutePath());
         }

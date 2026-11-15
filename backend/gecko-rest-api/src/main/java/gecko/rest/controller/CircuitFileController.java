@@ -93,10 +93,9 @@ public class CircuitFileController {
     public ResponseEntity<CircuitLoadResponse> loadCircuitFromBase64(
             @Valid @RequestBody CircuitLoadRequest request) {
 
-        CircuitLoadResponse response = circuitFileService.loadCircuit(
-            request.content(),
-            request.filename()
-        );
+        CircuitLoadResponse response = (request.filePath() != null && !request.filePath().isBlank())
+            ? circuitFileService.loadCircuit(request.content(), request.filename(), request.filePath())
+            : circuitFileService.loadCircuit(request.content(), request.filename());
 
         if ("failed".equals(response.status())) {
             return ResponseEntity.badRequest().body(response);
@@ -331,6 +330,24 @@ public class CircuitFileController {
         }
 
         return ResponseEntity.ok(circuitFileService.replaceCircuit(circuitId, content, request.filename()));
+    }
+
+    /**
+     * Stage a compiled NativeC shared library (.dll / .so / .dylib) for this circuit session.
+     */
+    @PostMapping(value = "/{circuitId}/native-library", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(
+        summary = "Attach NativeC shared library",
+        description = "Upload a compiled shared library (.dll/.so/.dylib) for NativeC blocks in this circuit " +
+                     "when opened from a browser where folder paths are not exposed."
+    )
+    public ResponseEntity<java.util.Map<String, Object>> uploadNativeLibrary(
+            @Parameter(description = "Circuit ID")
+            @PathVariable String circuitId,
+            @Valid @RequestBody NativeLibraryUploadRequest request) {
+
+        return ResponseEntity.ok(circuitFileService.uploadNativeLibrary(
+                circuitId, request.filename(), request.content()));
     }
 
     /**

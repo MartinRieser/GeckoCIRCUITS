@@ -436,4 +436,24 @@ describe('buildCircuitDiagnostics & getComponentDiagnosticWarning', () => {
     expect(dangling?.quickFix?.action).toBe('delete-wire');
     expect(dangling?.quickFix?.wireIndex).toBe(0);
   });
+
+  it('turns NATIVEC_LOAD_ERROR engine warnings into an Attach Library quick fix targeting the C/C++ block', () => {
+    const cBlock = comp({
+      name: 'CNATC.1',
+      type: ControlComponentType.NATIVE_C,
+      family: 'CONTROL',
+      position: [24, 19],
+    });
+
+    const diags = buildCircuitDiagnostics([cBlock], [], {
+      simStatus: 'FAILED',
+      simWarnings: ["NATIVEC_LOAD_ERROR: cannot load 'buck_ctrl.dll': library file not found"],
+    });
+
+    const nativeDiag = diags.find((d) => d.id === 'engine-warn-0');
+    expect(nativeDiag?.title).toBe('Native C/C++ Library Not Loaded');
+    expect(nativeDiag?.componentName).toBe('CNATC.1');
+    expect(nativeDiag?.quickFix?.action).toBe('attach-native-library');
+    expect(nativeDiag?.quickFix?.componentName).toBe('CNATC.1');
+  });
 });

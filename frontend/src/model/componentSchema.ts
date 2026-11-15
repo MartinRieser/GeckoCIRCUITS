@@ -3133,13 +3133,15 @@ export function extractAvailableSignalDetails(
         comp.type === ControlComponentType.LEGACY_SIGNAL_SOURCE ||
         comp.type === ControlComponentType.SCRIPT ||
         comp.type === ControlComponentType.LEGACY_JAVA_FUNCTION ||
+        comp.type === ControlComponentType.NATIVE_C ||
         comp.type === ControlComponentType.DEADTIME ||
         comp.name.startsWith('V_meas') ||
         comp.name.startsWith('VOLT') ||
         comp.name.startsWith('AMP') ||
         comp.name.startsWith('SIGNAL') ||
         comp.name.startsWith('SCRIPT') ||
-        comp.name.startsWith('JAVA'))
+        comp.name.startsWith('JAVA') ||
+        comp.name.startsWith('CNATC'))
     ) {
       const hasOutputLabel = (comp.outputLabels ?? []).some(
         (l) => l?.trim() && l.trim() !== SENTINEL_UNSET,
@@ -3158,9 +3160,11 @@ export function extractAvailableSignalDetails(
         const isScriptOrDeadtime =
           comp.type === ControlComponentType.SCRIPT ||
           comp.type === ControlComponentType.LEGACY_JAVA_FUNCTION ||
+          comp.type === ControlComponentType.NATIVE_C ||
           comp.type === ControlComponentType.DEADTIME ||
           comp.name.startsWith('SCRIPT') ||
-          comp.name.startsWith('JAVA');
+          comp.name.startsWith('JAVA') ||
+          comp.name.startsWith('CNATC');
         const { outputCount } = resolveComponentPinCounts(comp);
         if (isScriptOrDeadtime && outputCount > 1) {
           for (let j = 0; j < outputCount; j++) {

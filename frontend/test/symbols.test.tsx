@@ -356,5 +356,39 @@ describe('symbols: SymbolPreview and SymbolByType fallback', () => {
       expect(rootG?.getAttribute('transform')).toBe('rotate(0)');
     }
   });
+
+  it('renders multi-pin NativeC block with separated C/C++ header strip and concise x/y port names', () => {
+    const comp = makeComp({
+      name: 'CNATC.1',
+      family: 'CONTROL',
+      type: 88,
+      position: [24, 19],
+      orientation: Orientation.NORTH_SOUTH,
+      parameters: { anzXIN: 3, anzYOUT: 4, libraryPath: 'buck_ctrl.dll' },
+      inputLabels: ['v_in_meas', 'i_in_meas', 'v_out_meas'],
+      outputLabels: ['pwm', 'duty', 'i_in_sample', 'v_out_sample'],
+    });
+
+    const { container } = render(
+      <svg>
+        <ComponentSymbol component={comp} dpix={10} />
+      </svg>,
+    );
+
+    const texts = Array.from(container.querySelectorAll('text'));
+    const allContent = texts.map((t) => t.textContent?.trim() ?? '');
+    expect(allContent).toContain('C/C++');
+    expect(allContent).toContain('x0');
+    expect(allContent).toContain('x2');
+    expect(allContent).toContain('y0');
+    expect(allContent).toContain('y3');
+    // External wire net names must stay outside the box as edge pills, not inside the symbol
+    expect(allContent).not.toContain('v_in_meas');
+    expect(allContent).not.toContain('i_in_sample');
+
+    const badge = texts.find((t) => t.textContent?.trim() === 'C/C++');
+    const pin0 = texts.find((t) => t.textContent?.trim() === 'x0');
+    expect(Number(badge?.getAttribute('y'))).toBeLessThan(Number(pin0?.getAttribute('y')));
+  });
 });
 

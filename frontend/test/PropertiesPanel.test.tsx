@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import { PropertiesPanel } from '../src/properties/PropertiesPanel';
 import type { EditorComponent, EditorWire } from '../src/model/types';
 
@@ -627,6 +627,69 @@ describe('PropertiesPanel Overhaul', () => {
       signalGraphs: {},
       hiddenSignals: [],
     });
+  });
+
+  it('renders NativeCBlockEditor for C Library Block (typ 88) and commits libraryPath and terminal counts', async () => {
+    const nativeCComp: EditorComponent = {
+      type: 88,
+      family: 'CONTROL',
+      name: 'CNATC.1',
+      position: [20, 17],
+      orientation: 503,
+      parameters: {
+        libraryPath: 'buck_ctrl.dll',
+        anzXIN: 3,
+        anzYOUT: 4,
+      },
+      inputLabels: ['v_in', 'i_in', 'v_out'],
+      outputLabels: ['pwm', 'duty', 'i_sample', 'v_sample'],
+    };
+
+    const onSetParameter = vi.fn();
+    const onAttachNativeLibrary = vi.fn().mockResolvedValue(undefined);
+
+    const { container } = render(
+      <PropertiesPanel
+        component={nativeCComp}
+        allComponents={[nativeCComp]}
+        wires={[]}
+        onRename={vi.fn()}
+        onSetParameter={onSetParameter}
+        onSetLabel={vi.fn()}
+        onAttachNativeLibrary={onAttachNativeLibrary}
+      />,
+    );
+
+    expect(screen.getByText(/Native C\/C\+\+ Shared Library/i)).not.toBeNull();
+    expect(screen.getByText(/Relative paths resolve/i)).not.toBeNull();
+
+    const libInput = screen.getByLabelText(/Library Path/i) as HTMLInputElement;
+    expect(libInput.value).toBe('buck_ctrl.dll');
+    fireEvent.change(libInput, { target: { value: 'custom ctrl.dll' } });
+    fireEvent.blur(libInput);
+    expect(onSetParameter).toHaveBeenCalledWith('CNATC.1', 'libraryPath', 'custom ctrl.dll');
+
+    const attachBtn = screen.getByRole('button', { name: /Attach/i });
+    expect(attachBtn).not.toBeNull();
+    const fileInput = container.querySelector('input[type="file"][accept=".dll,.so,.dylib"]') as HTMLInputElement;
+    expect(fileInput).not.toBeNull();
+    const dllFile = new File(['MZ'], 'new_ctrl.dll', { type: 'application/octet-stream' });
+    fireEvent.change(fileInput, { target: { files: [dllFile] } });
+    await waitFor(() => {
+      expect(onAttachNativeLibrary).toHaveBeenCalledWith('CNATC.1', dllFile);
+      expect(screen.getByRole('button', { name: /Attached/i })).not.toBeNull();
+    });
+    expect(libInput.value).toBe('new_ctrl.dll');
+
+    const inInput = screen.getByLabelText(/Inputs \(n_in\)/i) as HTMLInputElement;
+    expect(inInput.value).toBe('3');
+    fireEvent.change(inInput, { target: { value: '5' } });
+    expect(onSetParameter).toHaveBeenCalledWith('CNATC.1', 'anzXIN', 5);
+
+    const outInput = screen.getByLabelText(/Outputs \(n_out\)/i) as HTMLInputElement;
+    expect(outInput.value).toBe('4');
+    fireEvent.change(outInput, { target: { value: '6' } });
+    expect(onSetParameter).toHaveBeenCalledWith('CNATC.1', 'anzYOUT', 6);
   });
 });
 

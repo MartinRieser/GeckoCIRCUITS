@@ -406,10 +406,10 @@ public final class ControlCalculatorBuilder {
             List<GateDrive> gateDrives,
             List<Probe> probes,
             List<SignalTap> signalTaps,
-            List<String> warnings) {
+            List<String> warnings) implements AutoCloseable {
 
         public ControlCoupling {
-            warnings = warnings != null ? warnings : List.of();
+            warnings = warnings != null ? new ArrayList<>(warnings) : new ArrayList<>();
         }
 
         /**
@@ -423,11 +423,28 @@ public final class ControlCalculatorBuilder {
             this(calculators, gateDrives, probes, signalTaps, List.of());
         }
 
-        /** Prepares stateful calculators (periodic signal sources) for a run. */
+        /** Prepares stateful calculators (periodic signal sources, NativeC libraries) for a run. */
         public void initialize(double dt) {
             for (AbstractControlCalculatable calc : calculators) {
                 if (calc instanceof InitializableAtSimulationStart initializable) {
                     initializable.initializeAtSimulationStart(dt);
+                }
+                if (calc instanceof CLibraryCalculator nativeC && nativeC.getLoadError() != null) {
+                    warnings.add("NATIVEC_LOAD_ERROR: " + nativeC.getLoadError());
+                }
+            }
+        }
+
+        /** Releases any native resources (e.g. NativeC libraries via gecko_deinit). */
+        @Override
+        public void close() {
+            for (AbstractControlCalculatable calc : calculators) {
+                if (calc instanceof AutoCloseable closeable) {
+                    try {
+                        closeable.close();
+                    } catch (Exception e) {
+                        LOGGER.warn("Control calculator close threw: {}", e.getMessage());
+                    }
                 }
             }
         }
@@ -632,7 +649,7 @@ public final class ControlCalculatorBuilder {
             if (isDisplayOnlyType(comp.getType())) {
                 continue;
             }
-            AbstractControlCalculatable calculator = createCalculator(comp);
+            AbstractControlCalculatable calculator = createCalculator(comp, model);
             if (calculator == null) {
                 warnings.add("Control block '" + comp.getName() + "' has an unsupported type and is skipped");
                 continue;
@@ -980,7 +997,8 @@ public final class ControlCalculatorBuilder {
         return def;
     }
 
-    private static AbstractControlCalculatable createCalculator(CircuitModel.ComponentData comp) {
+    private static AbstractControlCalculatable createCalculator(
+            CircuitModel.ComponentData comp, CircuitModel model) {
         if (comp.getType() == 70) {
             // Text annotation box in schematic — purely decorative
             return null;
@@ -992,7 +1010,10 @@ public final class ControlCalculatorBuilder {
             return null;
         }
         if (comp.getType() == TYP_NATIVE_C) {
-            return new CLibraryCalculator(layout[0], layout[1], nativeLibraryPath(comp));
+            String circuitFilePath = model != null ? model.getFilePath() : null;
+            String nativeLibraryDir = model != null ? model.getNativeLibraryDir() : null;
+            return new CLibraryCalculator(layout[0], layout[1], nativeLibraryPath(comp),
+                    circuitFilePath, nativeLibraryDir);
         }
         if (comp.getType() == TYP_JAVA_FUNCTION || comp.getType() == TYP_SCRIPT) {
             String sourceCode = getStringParam(comp, "sourceCode", "");

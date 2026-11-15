@@ -56,7 +56,10 @@ public class CircuitFileParser {
             "boxWidth",
             "boxHeight",
             "anzXIN",
-            "anzYOUT"
+            "anzYOUT",
+            "libraryPath",
+            "nativeCLibrary",
+            "nativeCLibraries"
     );
 
     /**
@@ -648,6 +651,20 @@ public class CircuitFileParser {
                 int anzYOUT = elementBlock.readDataLine("anzYOUT", elementBlock.readDataLine("numberOutputTerminals", -1));
                 if (anzYOUT >= 0) {
                     comp.setParameter("anzYOUT", (double) anzYOUT);
+                }
+
+                // Parse NativeC (typ 88) shared library configuration (preserving spaces in file paths)
+                for (String nativeKey : new String[]{"libraryPath", "nativeCLibrary", "nativeCLibraries"}) {
+                    if (!elementBlock.containsToken(nativeKey)) {
+                        continue;
+                    }
+                    String rawLine = elementBlock.getLineString(nativeKey, "");
+                    if (rawLine != null && rawLine.trim().startsWith(nativeKey)) {
+                        String val = rawLine.trim().substring(nativeKey.length()).trim();
+                        if (!val.isEmpty()) {
+                            comp.setParameter(nativeKey, val);
+                        }
+                    }
                 }
 
                 // Parse markdown documentation note parameters (text, width, height)
