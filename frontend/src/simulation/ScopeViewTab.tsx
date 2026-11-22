@@ -174,6 +174,34 @@ export function sampleIndexAt(time: number[], t: number): number {
 }
 
 /**
+ * Converts browser viewport `(clientX, clientY)` to exact SVG viewBox coordinates,
+ * accounting cleanly for SVG `preserveAspectRatio` scaling/letterboxing via `getScreenCTM`.
+ */
+function clientToSvgCoords(
+  svg: SVGSVGElement,
+  clientX: number,
+  clientY: number,
+  vbWidth: number,
+  vbHeight: number,
+): { x: number; y: number } {
+  if (typeof svg.getScreenCTM === 'function') {
+    const ctm = svg.getScreenCTM();
+    if (ctm && ctm.a !== 0 && ctm.d !== 0) {
+      const inv = ctm.inverse();
+      return {
+        x: inv.a * clientX + inv.c * clientY + inv.e,
+        y: inv.b * clientX + inv.d * clientY + inv.f,
+      };
+    }
+  }
+  const rect = svg.getBoundingClientRect();
+  return {
+    x: ((clientX - rect.left) / (rect.width || 1)) * vbWidth,
+    y: ((clientY - rect.top) / (rect.height || 1)) * vbHeight,
+  };
+}
+
+/**
  * Infers physical SI engineering unit from the signal or probe name convention.
  *
  * @param name Signal name (e.g. 'V_out', 'i_inductor', 'Power_loss', 'Temp_junction', 'Phi_Lp').
@@ -2206,14 +2234,13 @@ function FullScreenOverlayChart({
     if (!svg) return;
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
-      const rect = svg.getBoundingClientRect();
-      const svgX = ((e.clientX - rect.left) / rect.width) * width;
+      const svgX = clientToSvgCoords(svg, e.clientX, e.clientY, width, height).x;
       const anchor = minT + ((svgX - padLeft) / plotW) * (maxT - minT);
       onZoomAt(Math.exp(e.deltaY / 500), anchor);
     };
     svg.addEventListener('wheel', onWheel, { passive: false });
     return () => svg.removeEventListener('wheel', onWheel);
-  }, [minT, maxT, onZoomAt]);
+  }, [minT, maxT, onZoomAt, width, height, plotW]);
 
   const mapX = (t: number) => padLeft + ((t - minT) / (maxT - minT || 1)) * plotW;
   const mapY = (v: number) => padTop + plotH - ((v - minY) / (maxY - minY || 1)) * plotH;
@@ -2365,8 +2392,7 @@ function FullScreenOverlayChart({
   }, [activeSignals, signals, time, maxT, padTop, height, padBottom, mapY, colorOf]);
 
   const handleMouseMove = (e: ReactMouseEvent<SVGSVGElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const svgX = ((e.clientX - rect.left) / rect.width) * width;
+    const svgX = clientToSvgCoords(e.currentTarget, e.clientX, e.clientY, width, height).x;
     if (svgX < padLeft || svgX > width - padRight) {
       onHoverIndex(null);
       return;
@@ -2382,10 +2408,9 @@ function FullScreenOverlayChart({
     onSetActiveCursor?.(type);
     const svg = svgRef.current;
     if (!svg) return;
-    const rect = svg.getBoundingClientRect();
 
     const onMove = (ev: PointerEvent) => {
-      const svgX = ((ev.clientX - rect.left) / rect.width) * width;
+      const svgX = clientToSvgCoords(svg, ev.clientX, ev.clientY, width, height).x;
       const clampedX = Math.max(padLeft, Math.min(width - padRight, svgX));
       const t = minT + ((clampedX - padLeft) / plotW) * (maxT - minT);
       const newIdx = sampleIndexAt(time, t);
@@ -2406,8 +2431,7 @@ function FullScreenOverlayChart({
       suppressClickRef.current = false;
       return;
     }
-    const rect = e.currentTarget.getBoundingClientRect();
-    const svgX = ((e.clientX - rect.left) / (rect.width || 1)) * width;
+    const svgX = clientToSvgCoords(e.currentTarget, e.clientX, e.clientY, width, height).x;
     if (svgX < padLeft || svgX > width - padRight) return;
     const t = minT + ((svgX - padLeft) / plotW) * (maxT - minT);
     const targetIdx = sampleIndexAt(time, t);
@@ -2429,8 +2453,7 @@ function FullScreenOverlayChart({
 
   const handleContextMenu = (e: ReactMouseEvent<SVGSVGElement>) => {
     e.preventDefault();
-    const rect = e.currentTarget.getBoundingClientRect();
-    const svgX = ((e.clientX - rect.left) / (rect.width || 1)) * width;
+    const svgX = clientToSvgCoords(e.currentTarget, e.clientX, e.clientY, width, height).x;
     const inPlot = svgX >= padLeft && svgX <= width - padRight && time.length > 0;
     const targetIdx = inPlot
       ? sampleIndexAt(time, minT + ((svgX - padLeft) / plotW) * (maxT - minT))
@@ -2450,10 +2473,12 @@ function FullScreenOverlayChart({
     // Middle click or Alt + Left click -> Pan
     if (e.button === 1 || (e.button === 0 && e.altKey)) {
       e.preventDefault();
-      const rect = e.currentTarget.getBoundingClientRect();
+      const svg = e.currentTarget;
+      const ctm = typeof svg.getScreenCTM === 'function' ? svg.getScreenCTM() : null;
+      const rect = svg.getBoundingClientRect();
       let lastX = e.clientX;
       const span = maxT - minT;
-      const svgPerScreen = width / (rect.width || 1);
+      const svgPerScreen = ctm && ctm.a !== 0 ? 1 / ctm.a : width / (rect.width || 1);
       suppressClickRef.current = true;
 
       const onMove = (ev: PointerEvent) => {
@@ -2476,25 +2501,25 @@ function FullScreenOverlayChart({
     if (e.button === 0) {
       const svg = svgRef.current;
       if (!svg) return;
-      const rect = svg.getBoundingClientRect();
-      const getSvgX = (clientX: number) => {
-        const sx = ((clientX - rect.left) / (rect.width || 1)) * width;
-        return Math.max(padLeft, Math.min(width - padRight, sx));
-      };
-      const getSvgY = (clientY: number) => {
-        const sy = ((clientY - rect.top) / (rect.height || 1)) * height;
-        return Math.max(padTop, Math.min(height - padBottom, sy));
+      const getSvgCoords = (clientX: number, clientY: number) => {
+        const pt = clientToSvgCoords(svg, clientX, clientY, width, height);
+        return {
+          x: Math.max(padLeft, Math.min(width - padRight, pt.x)),
+          y: Math.max(padTop, Math.min(height - padBottom, pt.y)),
+        };
       };
 
-      const startSvgX = getSvgX(e.clientX);
-      const startSvgY = getSvgY(e.clientY);
+      const startPt = getSvgCoords(e.clientX, e.clientY);
+      const startSvgX = startPt.x;
+      const startSvgY = startPt.y;
       let currentSvgX = startSvgX;
       let currentSvgY = startSvgY;
       suppressClickRef.current = false;
 
       const onMove = (ev: PointerEvent) => {
-        currentSvgX = getSvgX(ev.clientX);
-        currentSvgY = getSvgY(ev.clientY);
+        const pt = getSvgCoords(ev.clientX, ev.clientY);
+        currentSvgX = pt.x;
+        currentSvgY = pt.y;
         if (Math.abs(currentSvgX - startSvgX) > 5 || Math.abs(currentSvgY - startSvgY) > 5) {
           suppressClickRef.current = true;
           setDragBox({ startX: startSvgX, startY: startSvgY, currentX: currentSvgX, currentY: currentSvgY });
@@ -3038,10 +3063,10 @@ function FullScreenMultiGraphChart({
   const padRight = 24;
   const padTop = 22;
   const padBottom = 34;
-  const laneGap = 16;
+  const laneGap = 14;
   const count = numGraphs;
   const availableH = height - padTop - padBottom;
-  const laneH = Math.max(90, Math.floor((availableH - (count - 1) * laneGap) / count));
+  const laneH = Math.max(42, Math.floor((availableH - (count - 1) * laneGap) / count));
   const totalH = Math.max(height, padTop + padBottom + count * (laneH + laneGap) - laneGap);
   const plotW = Math.max(100, width - padLeft - padRight);
 
@@ -3059,18 +3084,16 @@ function FullScreenMultiGraphChart({
     if (!svg) return;
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
-      const rect = svg.getBoundingClientRect();
-      const svgX = ((e.clientX - rect.left) / rect.width) * width;
+      const svgX = clientToSvgCoords(svg, e.clientX, e.clientY, width, totalH).x;
       const anchor = t0 + ((svgX - padLeft) / plotW) * (t1 - t0);
       onZoomAt(Math.exp(e.deltaY / 500), anchor);
     };
     svg.addEventListener('wheel', onWheel, { passive: false });
     return () => svg.removeEventListener('wheel', onWheel);
-  }, [t0, t1, onZoomAt, width, plotW]);
+  }, [t0, t1, onZoomAt, width, totalH, plotW]);
 
   const handleMouseMove = (e: ReactMouseEvent<SVGSVGElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const svgX = ((e.clientX - rect.left) / rect.width) * width;
+    const svgX = clientToSvgCoords(e.currentTarget, e.clientX, e.clientY, width, totalH).x;
     if (svgX < padLeft || svgX > width - padRight) {
       onHoverIndex(null);
       return;
@@ -3085,10 +3108,9 @@ function FullScreenMultiGraphChart({
     onSetActiveCursor?.(type);
     const svg = svgRef.current;
     if (!svg) return;
-    const rect = svg.getBoundingClientRect();
 
     const onMove = (ev: PointerEvent) => {
-      const svgX = ((ev.clientX - rect.left) / rect.width) * width;
+      const svgX = clientToSvgCoords(svg, ev.clientX, ev.clientY, width, totalH).x;
       const clampedX = Math.max(padLeft, Math.min(width - padRight, svgX));
       const t = t0 + ((clampedX - padLeft) / plotW) * (t1 - t0);
       const newIdx = sampleIndexAt(time, t);
@@ -3109,8 +3131,7 @@ function FullScreenMultiGraphChart({
       suppressClickRef.current = false;
       return;
     }
-    const rect = e.currentTarget.getBoundingClientRect();
-    const svgX = ((e.clientX - rect.left) / rect.width) * width;
+    const svgX = clientToSvgCoords(e.currentTarget, e.clientX, e.clientY, width, totalH).x;
     if (svgX < padLeft || svgX > width - padRight) return;
     const t = t0 + ((svgX - padLeft) / plotW) * (t1 - t0);
     const targetIdx = sampleIndexAt(time, t);
@@ -3136,6 +3157,10 @@ function FullScreenMultiGraphChart({
       const startX = e.clientX;
       let lastX = startX;
       suppressContextMenuRef.current = false;
+      const svg = e.currentTarget;
+      const ctm = typeof svg.getScreenCTM === 'function' ? svg.getScreenCTM() : null;
+      const rect = svg.getBoundingClientRect();
+      const svgPerScreen = ctm && ctm.a !== 0 ? 1 / ctm.a : width / (rect.width || 1);
 
       const onMove = (ev: PointerEvent) => {
         if (Math.abs(ev.clientX - startX) > 4) {
@@ -3143,7 +3168,7 @@ function FullScreenMultiGraphChart({
         }
         const deltaPx = ev.clientX - lastX;
         lastX = ev.clientX;
-        const deltaSeconds = -(deltaPx / plotW) * (t1 - t0);
+        const deltaSeconds = -(deltaPx * svgPerScreen / plotW) * (t1 - t0);
         onPanSeconds(deltaSeconds);
       };
 
@@ -3160,18 +3185,17 @@ function FullScreenMultiGraphChart({
     if (e.button === 0) {
       const svg = svgRef.current;
       if (!svg) return;
-      const rect = svg.getBoundingClientRect();
-      const getSvgX = (clientX: number) => {
-        const sx = ((clientX - rect.left) / (rect.width || 1)) * width;
+      const getSvgX = (clientX: number, clientY: number) => {
+        const sx = clientToSvgCoords(svg, clientX, clientY, width, totalH).x;
         return Math.max(padLeft, Math.min(width - padRight, sx));
       };
 
-      const startSvgX = getSvgX(e.clientX);
+      const startSvgX = getSvgX(e.clientX, e.clientY);
       let currentSvgX = startSvgX;
       suppressClickRef.current = false;
 
       const onMove = (ev: PointerEvent) => {
-        currentSvgX = getSvgX(ev.clientX);
+        currentSvgX = getSvgX(ev.clientX, ev.clientY);
         if (Math.abs(currentSvgX - startSvgX) > 5) {
           suppressClickRef.current = true;
           setDragBox({ startX: startSvgX, currentX: currentSvgX });
@@ -3360,8 +3384,7 @@ function FullScreenMultiGraphChart({
             return;
           }
           if (!onOpenContextMenu) return;
-          const rect = e.currentTarget.getBoundingClientRect();
-          const svgX = ((e.clientX - rect.left) / (rect.width || 1)) * width;
+          const svgX = clientToSvgCoords(e.currentTarget, e.clientX, e.clientY, width, totalH).x;
           const inPlot = svgX >= padLeft && svgX <= width - padRight && time.length > 0;
           const targetIdx = inPlot
             ? sampleIndexAt(time, t0 + ((svgX - padLeft) / plotW) * (t1 - t0))
@@ -3882,18 +3905,16 @@ function FullScreenStackedChart({
     if (!svg) return;
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
-      const rect = svg.getBoundingClientRect();
-      const svgX = ((e.clientX - rect.left) / rect.width) * width;
+      const svgX = clientToSvgCoords(svg, e.clientX, e.clientY, width, totalH).x;
       const anchor = t0 + ((svgX - padLeft) / plotW) * (t1 - t0);
       onZoomAt(Math.exp(e.deltaY / 500), anchor);
     };
     svg.addEventListener('wheel', onWheel, { passive: false });
     return () => svg.removeEventListener('wheel', onWheel);
-  }, [t0, t1, onZoomAt]);
+  }, [t0, t1, onZoomAt, width, totalH, plotW]);
 
   const handleMouseMove = (e: ReactMouseEvent<SVGSVGElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const svgX = ((e.clientX - rect.left) / rect.width) * width;
+    const svgX = clientToSvgCoords(e.currentTarget, e.clientX, e.clientY, width, totalH).x;
     if (svgX < padLeft || svgX > width - padRight) {
       onHoverIndex(null);
       return;
@@ -3909,10 +3930,9 @@ function FullScreenStackedChart({
     onSetActiveCursor?.(type);
     const svg = svgRef.current;
     if (!svg) return;
-    const rect = svg.getBoundingClientRect();
 
     const onMove = (ev: PointerEvent) => {
-      const svgX = ((ev.clientX - rect.left) / rect.width) * width;
+      const svgX = clientToSvgCoords(svg, ev.clientX, ev.clientY, width, totalH).x;
       const clampedX = Math.max(padLeft, Math.min(width - padRight, svgX));
       const t = t0 + ((clampedX - padLeft) / plotW) * (t1 - t0);
       const newIdx = sampleIndexAt(time, t);
@@ -3933,8 +3953,7 @@ function FullScreenStackedChart({
       suppressClickRef.current = false;
       return;
     }
-    const rect = e.currentTarget.getBoundingClientRect();
-    const svgX = ((e.clientX - rect.left) / rect.width) * width;
+    const svgX = clientToSvgCoords(e.currentTarget, e.clientX, e.clientY, width, totalH).x;
     if (svgX < padLeft || svgX > width - padRight) return;
     const t = t0 + ((svgX - padLeft) / plotW) * (t1 - t0);
     const targetIdx = sampleIndexAt(time, t);
@@ -3957,8 +3976,7 @@ function FullScreenStackedChart({
 
   const handleContextMenu = (e: ReactMouseEvent<SVGSVGElement>) => {
     e.preventDefault();
-    const rect = e.currentTarget.getBoundingClientRect();
-    const svgX = ((e.clientX - rect.left) / (rect.width || 1)) * width;
+    const svgX = clientToSvgCoords(e.currentTarget, e.clientX, e.clientY, width, totalH).x;
     const inPlot = svgX >= padLeft && svgX <= width - padRight && time.length > 0;
     const targetIdx = inPlot
       ? sampleIndexAt(time, t0 + ((svgX - padLeft) / plotW) * (t1 - t0))
@@ -3975,10 +3993,12 @@ function FullScreenStackedChart({
     // Middle click or Alt + Left click -> Pan
     if (e.button === 1 || (e.button === 0 && e.altKey)) {
       e.preventDefault();
-      const rect = e.currentTarget.getBoundingClientRect();
+      const svg = e.currentTarget;
+      const ctm = typeof svg.getScreenCTM === 'function' ? svg.getScreenCTM() : null;
+      const rect = svg.getBoundingClientRect();
       let lastX = e.clientX;
       const span = t1 - t0;
-      const svgPerScreen = width / (rect.width || 1);
+      const svgPerScreen = ctm && ctm.a !== 0 ? 1 / ctm.a : width / (rect.width || 1);
       suppressClickRef.current = true;
 
       const onMove = (ev: PointerEvent) => {
@@ -4001,18 +4021,17 @@ function FullScreenStackedChart({
     if (e.button === 0) {
       const svg = svgRef.current;
       if (!svg) return;
-      const rect = svg.getBoundingClientRect();
-      const getSvgX = (clientX: number) => {
-        const sx = ((clientX - rect.left) / (rect.width || 1)) * width;
+      const getSvgX = (clientX: number, clientY: number) => {
+        const sx = clientToSvgCoords(svg, clientX, clientY, width, totalH).x;
         return Math.max(padLeft, Math.min(width - padRight, sx));
       };
 
-      const startSvgX = getSvgX(e.clientX);
+      const startSvgX = getSvgX(e.clientX, e.clientY);
       let currentSvgX = startSvgX;
       suppressClickRef.current = false;
 
       const onMove = (ev: PointerEvent) => {
-        currentSvgX = getSvgX(ev.clientX);
+        currentSvgX = getSvgX(ev.clientX, ev.clientY);
         if (Math.abs(currentSvgX - startSvgX) > 5) {
           suppressClickRef.current = true;
           setDragBox({ startX: startSvgX, currentX: currentSvgX });

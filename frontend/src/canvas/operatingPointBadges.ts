@@ -17,6 +17,8 @@ export type OpPointMetric = 'mean' | 'rms' | 'pkpk' | 'max';
 export interface OperatingPointBadge {
   /** Unique identifier (`comp:<name>` or `net:<name>`). */
   id: string;
+  /** Short target label (component name or net name) shown at top of badge. */
+  targetLabel?: string;
   anchorX: number;
   anchorY: number;
   kind: 'voltage' | 'current' | 'power' | 'thermal' | 'other';
@@ -54,6 +56,7 @@ interface BadgeReading {
 
 interface TargetAccumulator {
   id: string;
+  targetLabel?: string;
   anchorX: number;
   anchorY: number;
   isWireNet: boolean;
@@ -111,6 +114,7 @@ export function buildOperatingPointBadges(
   const targets = new Map<string, TargetAccumulator>();
   const addReading = (
     id: string,
+    targetLabel: string | undefined,
     anchorX: number,
     anchorY: number,
     isWireNet: boolean,
@@ -120,6 +124,7 @@ export function buildOperatingPointBadges(
     if (!bucket) {
       bucket = {
         id,
+        targetLabel,
         anchorX,
         anchorY,
         isWireNet,
@@ -129,6 +134,11 @@ export function buildOperatingPointBadges(
       targets.set(id, bucket);
     }
     if (bucket.seenSignals.has(reading.sig)) return;
+    // Prevent duplicate net readings when both `out` and `V(out)` exist in results
+    if (isWireNet && bucket.readings.length >= 1) return;
+    if (bucket.readings.some((r) => r.prefix === reading.prefix && r.valueStr === reading.valueStr)) {
+      return;
+    }
     bucket.seenSignals.add(reading.sig);
     bucket.readings.push(reading);
   };
@@ -144,6 +154,7 @@ export function buildOperatingPointBadges(
       const targetComp = compByName.get(currMatch[1].trim());
       if (targetComp) {
         addReading(
+          targetComp.name,
           targetComp.name,
           targetComp.position[0],
           targetComp.position[1],
@@ -166,6 +177,7 @@ export function buildOperatingPointBadges(
       if (targetComp) {
         addReading(
           targetComp.name,
+          targetComp.name,
           targetComp.position[0],
           targetComp.position[1],
           false,
@@ -187,6 +199,7 @@ export function buildOperatingPointBadges(
       if (targetComp) {
         addReading(
           targetComp.name,
+          targetComp.name,
           targetComp.position[0],
           targetComp.position[1],
           false,
@@ -207,6 +220,7 @@ export function buildOperatingPointBadges(
       const targetComp = compByName.get(compName);
       if (targetComp) {
         addReading(
+          targetComp.name,
           targetComp.name,
           targetComp.position[0],
           targetComp.position[1],
@@ -234,6 +248,7 @@ export function buildOperatingPointBadges(
       const unit = isAmp ? 'A' : 'V';
       addReading(
         target.name,
+        target.name,
         target.position[0],
         target.position[1],
         false,
@@ -260,17 +275,27 @@ export function buildOperatingPointBadges(
     if (wire) {
       const mid = longestSegmentMidpoint(wire.points);
       if (mid) {
+        const isControlWire = wire.type === 'CONTROL';
+        const isThermWire = wire.type === 'THERM';
+        const unit = isControlWire ? '' : isThermWire ? '°C' : 'V';
+        const prefix = isControlWire ? '' : isThermWire ? 'T' : 'V';
+        const kind: OperatingPointBadge['kind'] = isControlWire
+          ? 'other'
+          : isThermWire
+            ? 'thermal'
+            : 'voltage';
         addReading(
           `net:${strippedNet}`,
+          strippedNet,
           mid.x,
           mid.y,
           true,
           {
             sig,
-            prefix: 'V',
-            valueStr: formatEngineeringValue(stats[metric], 'V'),
-            kind: 'voltage',
-            tooltipLine: formatTooltipBreakdown(sig, stats, 'V'),
+            prefix,
+            valueStr: formatEngineeringValue(stats[metric], unit),
+            kind,
+            tooltipLine: formatTooltipBreakdown(sig, stats, unit),
           },
         );
       }
@@ -286,6 +311,7 @@ export function buildOperatingPointBadges(
     const primaryKind = bucket.readings[0]?.kind ?? 'other';
     badges.push({
       id: bucket.id,
+      targetLabel: bucket.targetLabel,
       anchorX: bucket.anchorX,
       anchorY: bucket.anchorY,
       kind: primaryKind,
@@ -319,9 +345,11 @@ export function layoutOperatingPointBadges(
   const placed: PlacedOperatingPointBadge[] = [];
 
   for (const badge of badges) {
-    const maxLen = Math.max(...badge.lines.map((line) => line.length), 1);
-    const width = Math.max(54, Math.round(maxLen * 6.4 + 16));
-    const height = badge.lines.length * 13 + 8;
+    const labelLen = badge.targetLabel ? badge.targetLabel.length : 0;
+    const maxLen = Math.max(...badge.lines.map((line) => line.length), labelLen, 1);
+    const width = Math.max(58, Math.round(maxLen * 6.4 + 16));
+    const hasHeader = Boolean(badge.targetLabel);
+    const height = badge.lines.length * 13 + (hasHeader ? 12 : 0) + 8;
 
     const ax = badge.anchorX * dpix;
     const ay = badge.anchorY * dpix;

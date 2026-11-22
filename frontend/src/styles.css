@@ -7218,6 +7218,13 @@ circle.junction-dot.net-highlighted {
   font-weight: 600;
 }
 
+.op-point-badge text.op-badge-target {
+  fill: var(--text-muted);
+  font-family: var(--font-mono, monospace);
+  font-size: 8.5px;
+  font-weight: 700;
+}
+
 :root[data-theme='light'] .op-point-badge rect.op-badge-bg {
   fill: var(--chart-badge-bg, rgba(255, 255, 255, 0.95));
   stroke: var(--border);

@@ -3895,10 +3895,15 @@ export function Sheet({
                 const tooltipText = isSimStale
                   ? `${badge.tooltip}\n(Circuit edited since last run — press F5 to refresh)`
                   : badge.tooltip;
+                const anchorPx = badge.anchorX * dpix;
+                const anchorPy = badge.anchorY * dpix;
+                const centerPx = badge.px + badge.width / 2;
+                const centerPy = badge.py + badge.height / 2;
+                const needsLeader = Math.hypot(centerPx - anchorPx, centerPy - anchorPy) > 22;
+                const hasHeader = Boolean(badge.targetLabel);
                 return (
                   <g
                     key={badge.id}
-                    transform={`translate(${badge.px}, ${badge.py})`}
                     className={`op-point-badge kind-${badge.kind}${isSimStale ? ' stale' : ''}`}
                     data-testid={`op-badge-${badge.id}`}
                     opacity={isSimStale ? 0.55 : 1}
@@ -3910,32 +3915,58 @@ export function Sheet({
                     }}
                   >
                     <title>{tooltipText}</title>
-                    <rect
-                      className="op-badge-bg"
-                      x={0}
-                      y={0}
-                      width={badge.width}
-                      height={badge.height}
-                      rx={4}
-                    />
-                    <rect
-                      x={0}
-                      y={1}
-                      width={3}
-                      height={Math.max(1, badge.height - 2)}
-                      rx={1.5}
-                      fill={barColor}
-                    />
-                    {badge.lines.map((line, li) => (
-                      <text
-                        key={`${badge.id}-line-${li}`}
-                        className="op-badge-text"
-                        x={7}
-                        y={13 + li * 13}
-                      >
-                        {line}
-                      </text>
-                    ))}
+                    {needsLeader && (
+                      <line
+                        x1={anchorPx}
+                        y1={anchorPy}
+                        x2={Math.max(badge.px, Math.min(badge.px + badge.width, anchorPx))}
+                        y2={Math.max(badge.py, Math.min(badge.py + badge.height, anchorPy))}
+                        stroke={barColor}
+                        strokeOpacity={0.45}
+                        strokeWidth={1}
+                        strokeDasharray="2 2"
+                        pointerEvents="none"
+                      />
+                    )}
+                    <g transform={`translate(${badge.px}, ${badge.py})`}>
+                      <rect
+                        className="op-badge-bg"
+                        x={0}
+                        y={0}
+                        width={badge.width}
+                        height={badge.height}
+                        rx={4}
+                      />
+                      <rect
+                        x={0}
+                        y={1}
+                        width={3}
+                        height={Math.max(1, badge.height - 2)}
+                        rx={1.5}
+                        fill={barColor}
+                      />
+                      {hasHeader && (
+                        <text
+                          className="op-badge-target"
+                          x={7}
+                          y={11}
+                          fontSize={9}
+                          opacity={0.72}
+                        >
+                          {badge.targetLabel}
+                        </text>
+                      )}
+                      {badge.lines.map((line, li) => (
+                        <text
+                          key={`${badge.id}-line-${li}`}
+                          className="op-badge-text"
+                          x={7}
+                          y={(hasHeader ? 24 : 13) + li * 13}
+                        >
+                          {line}
+                        </text>
+                      ))}
+                    </g>
                   </g>
                 );
               })}

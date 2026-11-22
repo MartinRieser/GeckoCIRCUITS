@@ -125,15 +125,41 @@ describe('operatingPointBadges', () => {
     const placed = layoutOperatingPointBadges([badgeA, badgeB], dpix, occupied);
 
     expect(placed).toHaveLength(2);
-    // Neither badge should sit inside the probe slot, and they should not overlap each other
+    // Neither badge should overlap the occupied slot or each other
     const a = placed[0];
     const b = placed[1];
-    expect(a.px === ax + 14 && a.py === ay + 14).toBe(false);
+    const overlapsOccupied =
+      a.px < occupied[0].x + occupied[0].w + 4 &&
+      a.px + a.width + 4 > occupied[0].x &&
+      a.py < occupied[0].y + occupied[0].h + 4 &&
+      a.py + a.height + 4 > occupied[0].y;
+    expect(overlapsOccupied).toBe(false);
     const overlap =
       a.px < b.px + b.width &&
       a.px + a.width > b.px &&
       a.py < b.py + b.height &&
       a.py + a.height > b.py;
     expect(overlap).toBe(false);
+  });
+
+  it('deduplicates alias net signals (out & V(out)) and omits Volt unit on CONTROL wires', () => {
+    const wires: EditorWire[] = [
+      { index: 0, type: 'LK', label: 'out', points: [[10, 10], [20, 10]] },
+      { index: 1, type: 'CONTROL', label: 'pwm', points: [[10, 18], [20, 18]] },
+    ];
+    const results = {
+      time: [0, 1],
+      out: [12, 12],
+      'V(out)': [12, 12],
+      pwm: [0.5, 0.5],
+    };
+
+    const badges = buildOperatingPointBadges([], wires, results, 'mean');
+    const outBadge = badges.find((b) => b.id === 'net:out');
+    const pwmBadge = badges.find((b) => b.id === 'net:pwm');
+    expect(outBadge?.lines).toEqual(['12 V']);
+    expect(outBadge?.targetLabel).toBe('out');
+    expect(pwmBadge?.lines).toEqual(['0.5']);
+    expect(pwmBadge?.kind).toBe('other');
   });
 });
