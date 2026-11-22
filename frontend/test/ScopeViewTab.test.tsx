@@ -2,6 +2,7 @@
 import { describe, expect, it, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, cleanup, renderHook } from '@testing-library/react';
 import { ScopeViewTab, sampleIndexAt, inferSignalUnit } from '../src/simulation/ScopeViewTab';
+import { createBaselineSnapshot } from '../src/simulation/baselineCompare';
 import { SimulationPropertiesPanel } from '../src/properties/SimulationPropertiesPanel';
 import { useScopeController } from '../src/simulation/useScopeController';
 import type { EditorComponent } from '../src/model/types';
@@ -56,8 +57,8 @@ describe('Oscilloscope GUI & Controls', () => {
     expect(container.querySelector('.dso-screen-osd')).not.toBeNull();
     expect(screen.getAllByText('AUTO').length).toBeGreaterThanOrEqual(1);
 
-    // Timebase readout in OSD
-    expect(container.querySelector('.dso-screen-osd')?.textContent).toContain('/div');
+    // Timebase readout in controls bar (Row 2)
+    expect(screen.getByTestId('scope-controls-row').textContent).toContain('/div');
 
     // Channel tags in OSD
     expect(container.querySelector('.dso-screen-osd')?.textContent).toContain('V_out');
@@ -73,7 +74,7 @@ describe('Oscilloscope GUI & Controls', () => {
     expect(container.querySelector('.dso-screen-cursor-hud')).toBeNull();
   });
 
-  it('toggles collapsible analysis drawer when clicking drawer toggle button without duplicate cursor tab', () => {
+  it('switches flat result views cleanly without nested drawer or splitter clutter', () => {
     const { container } = render(
       <ScopeViewTab
         selectedScope="SCOPE.1"
@@ -83,40 +84,29 @@ describe('Oscilloscope GUI & Controls', () => {
       />,
     );
 
-    // Click Analysis Drawer toggle button
-    const drawerBtn = container.querySelector('.dso-drawer-toggle-btn');
-    expect(drawerBtn).not.toBeNull();
-    fireEvent.click(drawerBtn!);
-
-    // Drawer should open with tab buttons
-    expect(screen.getByText('📊 Signal Statistics')).toBeDefined();
-    expect(screen.getByText('〰 FFT Spectrum')).toBeDefined();
-    expect(screen.getByText('⚡ Power & Losses')).toBeDefined();
-    expect(screen.getByText('✕ Minimize')).toBeDefined();
-
-    // Resizable divider splitter and size toggle button are present
-    const splitter = container.querySelector('.dso-drawer-splitter');
-    expect(splitter).not.toBeNull();
-    const sizeBtn = screen.getByRole('button', { name: /Enlarge/i });
-    expect(sizeBtn).toBeDefined();
-
-    // Toggle drawer size via button
-    fireEvent.click(sizeBtn);
-    expect(screen.getByRole('button', { name: /Compact/i })).toBeDefined();
-
-    // Double-clicking splitter toggles height back
-    fireEvent.doubleClick(splitter!);
-    expect(screen.getByRole('button', { name: /Enlarge/i })).toBeDefined();
-
-    // No duplicate cursor breakdown tab in drawer
-    expect(screen.queryByText('📐 Cursor Breakdown')).toBeNull();
-
-    // Click Minimize button
-    fireEvent.click(screen.getByText('✕ Minimize'));
-
-    // Drawer should be collapsed
-    expect(screen.queryByText('✕ Minimize')).toBeNull();
+    // No nested drawer or splitter elements exist
+    expect(container.querySelector('.dso-drawer-toggle-btn')).toBeNull();
     expect(container.querySelector('.dso-drawer-splitter')).toBeNull();
+
+    // Flat switcher tabs are directly in the view bar
+    expect(screen.getByTestId('scope-view-switcher')).toBeDefined();
+    expect(screen.getByTestId('scope-view-tab-curves')).toBeDefined();
+    expect(screen.getByTestId('scope-view-tab-metrics')).toBeDefined();
+    expect(screen.getByTestId('scope-view-tab-fft')).toBeDefined();
+    expect(screen.getByTestId('scope-view-tab-losses')).toBeDefined();
+
+    // Switch to Metrics flat view
+    fireEvent.click(screen.getByTestId('scope-view-tab-metrics'));
+    expect(screen.getByTestId('scope-flat-metrics')).toBeDefined();
+    expect(screen.getByText('Peak-to-Peak')).toBeDefined();
+
+    // Switch to FFT flat view
+    fireEvent.click(screen.getByTestId('scope-view-tab-fft'));
+    expect(screen.getByTestId('scope-flat-fft')).toBeDefined();
+
+    // Return to Curves flat view
+    fireEvent.click(screen.getByTestId('scope-view-tab-curves'));
+    expect(container.querySelector('.dso-screen-bezel')).not.toBeNull();
   });
 
   it('renders oscilloscope controls in the right sidebar below simulation settings', () => {
@@ -536,6 +526,177 @@ describe('Oscilloscope GUI & Controls', () => {
       expect(warningBanner.textContent).toContain("Gate 'GATE.1'");
       expect(warningBanner.textContent).toContain("Voltmeter 'VOLT.1'");
       expect(screen.getByText(/No Observable Signals Recorded/i)).not.toBeNull();
+    });
+  });
+
+  describe('Pin-to-Compare Baseline', () => {
+    const baselineSnap = createBaselineSnapshot(
+      {
+        time: [0, 2.5e-4, 5e-4, 7.5e-4, 1e-3],
+        V_out: [10, 40, 80, 40, 10],
+        I_L: [0.5, 1.5, 2.5, 1.5, 0.5],
+      },
+      1,
+      'Baseline (run 1)',
+    );
+
+    it('renders direct Save Reference button in Scope bar without Tools submenu and invokes callback', () => {
+      const onPin = vi.fn();
+      render(
+        <ScopeViewTab
+          selectedScope="SCOPE.1"
+          components={dummyComponents}
+          results={dummyResults}
+          displayLayout="overlay"
+          onPinBaseline={onPin}
+        />,
+      );
+      expect(screen.queryByTestId('scope-tools-menu-btn')).toBeNull();
+      const pinBtn = screen.getByTestId('btn-pin-baseline');
+      expect(pinBtn.textContent).toContain('Save Reference');
+      fireEvent.click(pinBtn);
+      expect(onPin).toHaveBeenCalledTimes(1);
+    });
+
+    it.each(['overlay', '2-graphs', 'stacked'] as const)(
+      'renders dashed baseline ghost traces in %s layout and toggles visibility',
+      (layout) => {
+        const { container } = render(
+          <ScopeViewTab
+            selectedScope="SCOPE.1"
+            components={dummyComponents}
+            results={dummyResults}
+            displayLayout={layout}
+            baseline={baselineSnap}
+            onPinBaseline={vi.fn()}
+            onClearBaseline={vi.fn()}
+          />,
+        );
+
+        expect(screen.getByTestId('baseline-controls')).toBeDefined();
+        expect(screen.getByTestId('baseline-status-banner')).toBeDefined();
+        const ghostV = container.querySelector('[data-testid="baseline-trace-V_out"]');
+        const ghostI = container.querySelector('[data-testid="baseline-trace-I_L"]');
+        expect(ghostV).not.toBeNull();
+        expect(ghostI).not.toBeNull();
+        expect(ghostV?.getAttribute('stroke-dasharray')).toBe('5 4');
+
+        // Toggle visibility off
+        fireEvent.click(screen.getByTestId('btn-toggle-baseline'));
+        expect(container.querySelector('[data-testid="baseline-trace-V_out"]')).toBeNull();
+      },
+    );
+
+    it('displays delta chips and delta columns in Metrics flat view', () => {
+      render(
+        <ScopeViewTab
+          selectedScope="SCOPE.1"
+          components={dummyComponents}
+          results={dummyResults}
+          displayLayout="overlay"
+          baseline={baselineSnap}
+          showBaseline
+          onPinBaseline={vi.fn()}
+          onClearBaseline={vi.fn()}
+        />,
+      );
+
+      expect(screen.getByTestId('quick-delta-V_out')).toBeDefined();
+
+      fireEvent.click(screen.getByTestId('scope-view-tab-metrics'));
+      expect(screen.getByText('Δ Mean')).toBeDefined();
+      expect(screen.getByText('Δ RMS')).toBeDefined();
+      expect(screen.getByText('Δ Pk-Pk')).toBeDefined();
+    });
+  });
+
+  describe('Parametric Sweep Integration', () => {
+    const sweepSession = {
+      batchId: 'b-test',
+      parameterPath: 'R.1.param0',
+      componentName: 'R.1',
+      paramKey: 'param0',
+      paramLabel: 'R.1 · Resistance',
+      unit: 'Ω',
+      mode: 'linear' as const,
+      status: 'COMPLETED' as const,
+      progress: 1,
+      totalRuns: 2,
+      completedRuns: 2,
+      runs: [
+        {
+          index: 0,
+          simulationId: 's0',
+          parameterValue: 10,
+          status: 'COMPLETED' as const,
+          results: {
+            time: [0, 5e-4, 1e-3],
+            V_out: [0, 120, 0],
+            I_L: [0, 3, 0],
+          },
+          stats: {
+            V_out: { min: 0, max: 120, pkpk: 120, mean: 40, rms: 69 },
+            I_L: { min: 0, max: 3, pkpk: 3, mean: 1, rms: 1.7 },
+          },
+        },
+        {
+          index: 1,
+          simulationId: 's1',
+          parameterValue: 20,
+          status: 'COMPLETED' as const,
+          results: {
+            time: [0, 5e-4, 1e-3],
+            V_out: [0, 200, 0],
+            I_L: [0, 5, 0],
+          },
+          stats: {
+            V_out: { min: 0, max: 200, pkpk: 200, mean: 66.7, rms: 115 },
+            I_L: { min: 0, max: 5, pkpk: 5, mean: 1.7, rms: 2.9 },
+          },
+        },
+      ],
+    };
+
+    it('renders synchronized Sweep Step Bar, updates all signal metrics on step click, and overlays ALL signals in All Curves mode', () => {
+      const onApplySweepValue = vi.fn();
+      const { container } = render(
+        <ScopeViewTab
+          selectedScope="SCOPE.1"
+          components={dummyComponents}
+          results={dummyResults}
+          displayLayout="overlay"
+          sweepSession={sweepSession}
+          onApplySweepValue={onApplySweepValue}
+          onClearSweep={vi.fn()}
+        />,
+      );
+
+      // Step bar appears directly above waveforms; Step 0 is active by default
+      expect(screen.getByTestId('sweep-step-bar')).toBeDefined();
+      expect(screen.getByTestId('sweep-step-pill-0').className).toContain('active');
+      expect(screen.getByTestId('sweep-step-pill-1')).toBeDefined();
+
+      // Clicking Step 1 updates displayed values for BOTH V_out and I_L together
+      fireEvent.click(screen.getByTestId('sweep-step-pill-1'));
+      expect(screen.getByTestId('sweep-step-pill-1').className).toContain('active');
+      const quickBarText = container.querySelector('.dso-quick-measure-bar')?.textContent ?? '';
+      expect(quickBarText).toContain('200 V');
+      expect(quickBarText).toContain('5 A');
+
+      // Apply button commits selected step value
+      fireEvent.click(screen.getByTestId('sweep-apply-active-btn'));
+      expect(onApplySweepValue).toHaveBeenCalledWith('R.1', 'param0', 20);
+
+      // Toggle All Curves overlays ALL visible channels (V_out and I_L)
+      fireEvent.click(screen.getByTestId('sweep-all-curves-btn'));
+      expect(container.querySelector('[data-testid="sweep-trace-0-V_out"]')).not.toBeNull();
+      expect(container.querySelector('[data-testid="sweep-trace-1-V_out"]')).not.toBeNull();
+      expect(container.querySelector('[data-testid="sweep-trace-0-I_L"]')).not.toBeNull();
+      expect(container.querySelector('[data-testid="sweep-trace-1-I_L"]')).not.toBeNull();
+
+      // Flat Sweep view tab shows SweepPanel summary trend chart
+      fireEvent.click(screen.getByTestId('scope-view-tab-sweep'));
+      expect(screen.getByTestId('sweep-panel')).toBeDefined();
     });
   });
 });

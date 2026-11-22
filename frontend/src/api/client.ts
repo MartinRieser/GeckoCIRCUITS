@@ -512,6 +512,90 @@ export function resumeSimulation(simulationId: string): Promise<SimulationRespon
   return request(`/simulations/${simulationId}/resume`, { method: 'POST' });
 }
 
+// ========== Batch / Parametric Sweep Endpoints ==========
+
+export interface BatchLinearSweep {
+  parameterPath: string;
+  startValue: number;
+  endValue: number;
+  points: number;
+  fixedParameters?: Record<string, number>;
+}
+
+export interface BatchLogSweep {
+  parameterPath: string;
+  startValue: number;
+  endValue: number;
+  points: number;
+  fixedParameters?: Record<string, number>;
+}
+
+export interface BatchSimulationRequest {
+  circuitId?: string;
+  base64Circuit?: string;
+  circuitFile?: string;
+  maxConcurrent?: number;
+  parameterSets?: Record<string, number>[];
+  linearSweep?: BatchLinearSweep;
+  logSweep?: BatchLogSweep;
+  simulationSettings?: {
+    simulationTime?: number;
+    timeStep?: number;
+    solverType?: string;
+    signals?: string[];
+  };
+}
+
+export interface BatchSimulationResponse {
+  batchId: string;
+  totalSimulations: number;
+  simulationIds: string[];
+  submittedAt: string;
+  maxConcurrent: number;
+  message: string;
+}
+
+export interface BatchJobStatus {
+  batchId: string;
+  total: number;
+  completed: number;
+  failed: number;
+  running: number;
+  pending: number;
+  overallProgress: number;
+  done: boolean;
+  simulationStatuses: Record<string, string>;
+  failedIds?: string[] | null;
+}
+
+/**
+ * Submits a parametric sweep / batch simulation job to the backend engine.
+ */
+export function submitBatchSimulation(
+  req: BatchSimulationRequest,
+): Promise<BatchSimulationResponse> {
+  return request('/simulations/batch', {
+    method: 'POST',
+    body: JSON.stringify(req),
+  });
+}
+
+/**
+ * Queries aggregated progress and per-run statuses for a batch simulation job.
+ */
+export function getBatchStatus(batchId: string): Promise<BatchJobStatus> {
+  return request(`/simulations/batch/${encodeURIComponent(batchId)}`);
+}
+
+/**
+ * Cancels all pending/running simulations inside a batch job.
+ */
+export function cancelBatchSimulation(batchId: string): Promise<void> {
+  return request(`/simulations/batch/${encodeURIComponent(batchId)}`, {
+    method: 'DELETE',
+  });
+}
+
 // ========== Script Debug Endpoints ==========
 
 /** Immutable snapshot of one script block's state (breakpoint pause or watch). */

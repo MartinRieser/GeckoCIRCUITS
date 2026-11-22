@@ -7,6 +7,7 @@ import { useRef, useState, useMemo, useEffect, useCallback } from 'react';
 import type { Dispatch, MouseEvent as ReactMouseEvent, WheelEvent as ReactWheelEvent, DragEvent as ReactDragEvent } from 'react';
 import type { EditorState, Action } from '../model/store';
 import { terminalPositions, terminalNear, findPlacementConflict } from '../model/geometry';
+import { hasSnippetPlacementConflict, type SchematicSnippet } from '../model/snippets';
 import { routeAvoidingObstacles, routingBlockedCells, densePoints, denseCellsOf, orthogonalizePolyline, simplifyCorners, translateWireSegment } from './WireRouter';
 import { isWireEndPointConnected, findWireGeometryWarnings, buildCircuitDiagnostics } from '../model/validation';
 import { ComponentSymbol } from './symbols';
@@ -40,23 +41,17 @@ import { analyzeElectricalNets } from './netHighlight';
 import type { Point, EditorComponent, EditorWire } from '../model/types';
 import { ContextMenu } from './ContextMenu';
 import {
-  IconGrip,
-  SymCapacitor,
-  SymDiode,
-  SymGnd,
-  SymInductor,
-  SymMosfet,
-  SymNote,
-  SymResistor,
-  SymVoltageSource,
-} from '../icons';
+  buildOperatingPointBadges,
+  layoutOperatingPointBadges,
+  type OpPointMetric,
+} from './operatingPointBadges';
+import { IconGrip } from '../icons';
 import type { ContextMenuTarget } from './ContextMenu';
 import {
   Orientation,
   CANVAS_METRICS,
   ControlComponentType,
   LkComponentType,
-  SpecialComponentType,
   SENTINEL_UNSET,
 } from '../model/constants';
 import {
@@ -135,6 +130,10 @@ export interface SheetActions {
   removeSignalFromScope?: (signalName: string) => void | Promise<void>;
   /** Sets or clears the differential voltage probe reference net. */
   setProbeRefNet?: (netName: string | null) => void;
+  /** Inserts a reusable schematic snippet anchored at grid `(anchorX, anchorY)`. */
+  placeSnippet?: (snippet: SchematicSnippet, anchorX: number, anchorY: number) => void;
+  /** Opens the Save Selection as Snippet modal. */
+  onSaveAsSnippet?: () => void;
 }
 
 export const VOLTAGE_PROBE_CURSOR = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28' fill='none'%3E%3Cpath d='M6 22 L18 10' stroke='%2338bdf8' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M4 24 L7 21' stroke='%2338bdf8' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='20' cy='8' r='3.5' fill='%2338bdf8' stroke='%230f172a' stroke-width='1.5'/%3E%3Ctext x='17' y='11' font-size='8' font-weight='bold' fill='%230f172a' font-family='sans-serif'%3EV%3C/text%3E%3C/svg%3E") 4 24, crosshair`;
@@ -219,24 +218,6 @@ export interface SheetFocusTarget {
   seq: number;
 }
 
-/**
- * One-click components pinned in the floating, movable quick-place bar.
- * The scope block is intentionally NOT offered here (it was removed from the part
- * palette in favour of Osci tabs / probes).
- */
-const QUICK_PLACE_TOOLBAR_ITEMS = [
-  { label: 'GND', Icon: SymGnd, title: 'Place Ground (G)', type: LkComponentType.GLOBAL_TERMINAL, family: 'LK' },
-  { label: 'R', Icon: SymResistor, title: 'Place Resistor', type: LkComponentType.RESISTOR, family: 'LK' },
-  { label: 'L', Icon: SymInductor, title: 'Place Inductor', type: LkComponentType.INDUCTOR, family: 'LK' },
-  { label: 'C', Icon: SymCapacitor, title: 'Place Capacitor', type: LkComponentType.CAPACITOR, family: 'LK' },
-  { label: 'D', Icon: SymDiode, title: 'Place Diode', type: LkComponentType.DIODE, family: 'LK' },
-  { label: 'MOSFET', Icon: SymMosfet, title: 'Place MOSFET', type: LkComponentType.MOSFET, family: 'LK' },
-  { label: 'V', Icon: SymVoltageSource, title: 'Place Voltage Source', type: LkComponentType.VOLTAGE_SOURCE, family: 'LK' },
-  { label: 'Note', Icon: SymNote, title: 'Place Schematic Note', type: SpecialComponentType.TEXTBOX, family: 'ANNOTATION' },
-] as const;
-
-const QUICK_PLACE_POS_KEY = 'gecko_quickplace_pos';
-const QUICK_PLACE_COLLAPSED_KEY = 'gecko_quickplace_collapsed';
 const VIEW_CTRL_POS_KEY = 'gecko_viewctrl_pos';
 
 /**
@@ -297,9 +278,21 @@ interface SheetProps {
   dispatch: Dispatch<Action>;
   actions: SheetActions;
   focusTarget?: SheetFocusTarget | null;
+  simResults?: Record<string, number[]> | null;
+  isSimStale?: boolean;
+  /** Optional sweep preview label shown when stepping through parametric sweep runs. */
+  sweepPreviewLabel?: string | null;
 }
 
-export function Sheet({ state, dispatch, actions, focusTarget }: SheetProps) {
+export function Sheet({
+  state,
+  dispatch,
+  actions,
+  focusTarget,
+  simResults = null,
+  isSimStale = false,
+  sweepPreviewLabel = null,
+}: SheetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -307,29 +300,6 @@ export function Sheet({ state, dispatch, actions, focusTarget }: SheetProps) {
   const rawWidth = state.sheetWidth * dpix;
   const rawHeight = state.sheetHeight * dpix;
 
-  // Movable / collapsible quick-place toolbar & bottom view controls bar
-  const {
-    ref: quickStripRef,
-    pos: quickStripPos,
-    onDragStart: handleQuickStripDragStart,
-  } = useMovableToolbar(QUICK_PLACE_POS_KEY);
-  const [quickCollapsed, setQuickCollapsed] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem(QUICK_PLACE_COLLAPSED_KEY) === 'true';
-    } catch {
-      return false;
-    }
-  });
-  const toggleQuickCollapsed = useCallback(() => {
-    setQuickCollapsed((prev) => {
-      try {
-        localStorage.setItem(QUICK_PLACE_COLLAPSED_KEY, String(!prev));
-      } catch {
-        /* storage unavailable */
-      }
-      return !prev;
-    });
-  }, []);
   const {
     ref: viewCtrlRef,
     pos: viewCtrlPos,
@@ -373,6 +343,61 @@ export function Sheet({ state, dispatch, actions, focusTarget }: SheetProps) {
     } catch {
       // ignore
     }
+  }, []);
+
+  // On-canvas operating-point value badges visibility & metric (persisted in localStorage)
+  const [showOpBadges, setShowOpBadges] = useState<boolean>(() => {
+    try {
+      const val = localStorage.getItem('gecko_show_op_badges');
+      return val !== 'false';
+    } catch {
+      return true;
+    }
+  });
+
+  const toggleShowOpBadges = useCallback(() => {
+    setShowOpBadges((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('gecko_show_op_badges', String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, []);
+
+  const [opBadgeMetric, setOpBadgeMetric] = useState<OpPointMetric>(() => {
+    try {
+      const val = localStorage.getItem('gecko_op_badge_metric');
+      if (val === 'mean' || val === 'rms' || val === 'pkpk' || val === 'max') {
+        return val;
+      }
+    } catch {
+      // ignore
+    }
+    return 'mean';
+  });
+
+  const OP_METRIC_CYCLE: OpPointMetric[] = ['mean', 'rms', 'pkpk', 'max'];
+  const OP_METRIC_LABELS: Record<OpPointMetric, string> = {
+    mean: 'Avg',
+    rms: 'RMS',
+    pkpk: 'Pk-Pk',
+    max: 'Max',
+  };
+
+  const handleCycleOpBadgeMetric = useCallback(() => {
+    setOpBadgeMetric((prev) => {
+      const idx = OP_METRIC_CYCLE.indexOf(prev);
+      const next = OP_METRIC_CYCLE[(idx + 1) % OP_METRIC_CYCLE.length];
+      try {
+        localStorage.setItem('gecko_op_badge_metric', next);
+      } catch {
+        // ignore
+      }
+      return next;
+    });
   }, []);
 
   // Viewport container dimensions for scrollbar metrics
@@ -912,6 +937,68 @@ export function Sheet({ state, dispatch, actions, focusTarget }: SheetProps) {
     () => layoutProbeBadges(activeProbes, dpix),
     [activeProbes, dpix],
   );
+
+  // Live operating-point badges from latest simulation results
+  const opBadges = useMemo(
+    () =>
+      showOpBadges && simResults
+        ? buildOperatingPointBadges(state.components, state.wires, simResults, opBadgeMetric)
+        : [],
+    [showOpBadges, simResults, state.components, state.wires, opBadgeMetric],
+  );
+
+  const placedOpBadges = useMemo(() => {
+    if (!showOpBadges || opBadges.length === 0) return [];
+    const occupied: { x: number; y: number; w: number; h: number }[] = showProbes
+      ? positionedProbes.map((p) => ({
+          x: p.badgeX - 2,
+          y: p.badgeY - 12,
+          w: p.badgeW,
+          h: p.badgeH,
+        }))
+      : [];
+
+    // Reserve component symbols, name labels, and Note cards so badges never cover schematic text
+    for (const c of state.components) {
+      const cx = c.position[0] * dpix;
+      const cy = c.position[1] * dpix;
+      if (isTextboxComponent(c)) {
+        const w = Math.max(8, Number(c.parameters?.width ?? 16)) * dpix;
+        const h = Math.max(4, Number(c.parameters?.height ?? 8)) * dpix;
+        occupied.push({ x: cx - 4, y: cy - 4, w: w + 8, h: h + 8 });
+      } else {
+        occupied.push({ x: cx - 32, y: cy - 30, w: 64, h: 60 });
+      }
+    }
+
+    // Reserve small label clearance above labeled wire segments (e.g. sw_node, in, out)
+    for (const w of state.wires) {
+      const lbl = w.label?.trim();
+      if (!lbl || lbl === SENTINEL_UNSET || w.points.length < 2) continue;
+      let bestMidX = w.points[0][0];
+      let bestMidY = w.points[0][1];
+      let bestLen = -1;
+      for (let i = 0; i < w.points.length - 1; i++) {
+        const dx = w.points[i + 1][0] - w.points[i][0];
+        const dy = w.points[i + 1][1] - w.points[i][1];
+        const dSq = dx * dx + dy * dy;
+        if (dSq > bestLen) {
+          bestLen = dSq;
+          bestMidX = (w.points[i][0] + w.points[i + 1][0]) / 2;
+          bestMidY = (w.points[i][1] + w.points[i + 1][1]) / 2;
+        }
+      }
+      const labelW = Math.max(32, lbl.length * 7 + 8);
+      occupied.push({
+        x: bestMidX * dpix - labelW / 2,
+        y: bestMidY * dpix - 18,
+        w: labelW,
+        h: 22,
+      });
+    }
+
+    return layoutOperatingPointBadges(opBadges, dpix, occupied);
+  }, [showOpBadges, opBadges, showProbes, positionedProbes, state.components, state.wires, dpix]);
 
   // Wire segment and endpoint drag state
   const [wireDrag, setWireDrag] = useState<{
@@ -1543,6 +1630,11 @@ export function Sheet({ state, dispatch, actions, focusTarget }: SheetProps) {
           actions.placeGhost(p.x, p.y, state.ghost.orientation);
         }
         return;
+      case 'placing_snippet':
+        if (state.snippetGhost) {
+          actions.placeSnippet?.(state.snippetGhost.snippet, p.x, p.y);
+        }
+        return;
       case 'wiring':
         if (!state.wireDraft) {
           const snapped = snappedToTerminal(p);
@@ -1652,6 +1744,9 @@ export function Sheet({ state, dispatch, actions, focusTarget }: SheetProps) {
       case 'placing':
         dispatch({ type: 'GHOST_MOVE', x: p.x, y: p.y });
         break;
+      case 'placing_snippet':
+        dispatch({ type: 'SNIPPET_GHOST_MOVE', x: p.x, y: p.y });
+        break;
       case 'wiring':
         if (state.wireDraft) {
           dispatch({ type: 'WIRE_CURSOR', ...snappedToTerminal(p) });
@@ -1705,6 +1800,10 @@ export function Sheet({ state, dispatch, actions, focusTarget }: SheetProps) {
     e.preventDefault();
     if (state.mode === 'placing') {
       dispatch({ type: 'GHOST_ROTATE' });
+      return;
+    }
+    if (state.mode === 'placing_snippet') {
+      actions.setSelectMode?.();
       return;
     }
     if (state.mode === 'wiring') {
@@ -2039,6 +2138,55 @@ export function Sheet({ state, dispatch, actions, focusTarget }: SheetProps) {
           </span>
         </button>
 
+        {simResults && (
+          <>
+            <button
+              type="button"
+              data-testid="toggle-op-badges"
+              className={`canvas-ctrl-btn ${showOpBadges ? 'active' : 'dimmed'}`}
+              onClick={toggleShowOpBadges}
+              title={`Show simulated voltage, current, and power numbers right on schematic components and wires (${showOpBadges ? 'ON' : 'OFF'})`}
+            >
+              <span className="canvas-ctrl-label">📊 Values</span>
+              <span className={`canvas-ctrl-badge ${showOpBadges ? 'on' : 'off'}`}>
+                {showOpBadges ? placedOpBadges.length : 'OFF'}
+              </span>
+            </button>
+            {showOpBadges && (
+              <button
+                type="button"
+                data-testid="op-badge-metric-cycle-btn"
+                className="canvas-ctrl-btn"
+                onClick={handleCycleOpBadgeMetric}
+                title={`Summary metric on schematic readouts: ${OP_METRIC_LABELS[opBadgeMetric]} — click to cycle Avg / RMS / Pk-Pk / Max`}
+                aria-label={`Operating-point metric: ${OP_METRIC_LABELS[opBadgeMetric]}`}
+              >
+                <span className="canvas-ctrl-badge mode">{OP_METRIC_LABELS[opBadgeMetric]}</span>
+              </button>
+            )}
+            {showOpBadges && sweepPreviewLabel && (
+              <span
+                data-testid="canvas-sweep-preview-pill"
+                className="canvas-sweep-preview-pill"
+                title="Schematic readouts are showing the selected Parametric Sweep step"
+              >
+                🎚 {sweepPreviewLabel}
+              </span>
+            )}
+            {showOpBadges && isSimStale && (
+              <button
+                type="button"
+                data-testid="op-badges-stale-pill"
+                className="canvas-stale-pill"
+                onClick={() => actions.runSimulation?.()}
+                title="Circuit was edited since the last simulation. Click or press F5 to refresh readouts."
+              >
+                ⚠ Outdated — F5
+              </button>
+            )}
+          </>
+        )}
+
         {/* Grid Alignment Toggle Button */}
         <button
           type="button"
@@ -2114,58 +2262,6 @@ export function Sheet({ state, dispatch, actions, focusTarget }: SheetProps) {
             </span>
           </>
         )}
-      </div>
-
-      {/* Quick-Place Component Bar (movable, collapsible) */}
-      <div
-        ref={quickStripRef}
-        className={`canvas-quick-place-strip${quickCollapsed ? ' collapsed' : ''}`}
-        data-testid="canvas-quick-place-strip"
-        style={quickStripPos ? { left: quickStripPos.x, top: quickStripPos.y } : undefined}
-        onMouseDown={(e) => e.stopPropagation()}
-        onDoubleClick={(e) => e.stopPropagation()}
-        role="toolbar"
-        aria-label="Quick place components"
-      >
-        <span
-          className="quick-place-grip"
-          data-testid="quick-place-grip"
-          title="Drag to move this toolbar"
-          onMouseDown={handleQuickStripDragStart}
-        >
-          <IconGrip />
-        </span>
-        <span className="quick-place-caption">Place:</span>
-        {!quickCollapsed &&
-          QUICK_PLACE_TOOLBAR_ITEMS.map((item) => {
-            const isArmed =
-              state.mode === 'placing' &&
-              state.ghost?.type === item.type &&
-              state.ghost?.family === item.family;
-            return (
-              <button
-                key={`${item.family}-${item.type}`}
-                type="button"
-                data-testid={`quick-place-${item.label.toLowerCase()}`}
-                className={`canvas-quick-place-btn${isArmed ? ' active' : ''}`}
-                onClick={() => actions.armQuickComponent?.(item.type, item.family)}
-                title={item.title}
-              >
-                <item.Icon size={16} />
-                <span className="quick-place-label">{item.label}</span>
-              </button>
-            );
-          })}
-        <button
-          type="button"
-          className="canvas-quick-place-btn quick-place-collapse"
-          data-testid="quick-place-collapse"
-          onClick={toggleQuickCollapsed}
-          title={quickCollapsed ? 'Show quick-place toolbar' : 'Collapse quick-place toolbar'}
-          aria-label={quickCollapsed ? 'Expand quick-place toolbar' : 'Collapse quick-place toolbar'}
-        >
-          {quickCollapsed ? '▸' : '◂'}
-        </button>
       </div>
 
       <div
@@ -2569,7 +2665,10 @@ export function Sheet({ state, dispatch, actions, focusTarget }: SheetProps) {
           </g>
 
           {/* Components */}
-          <g className="components" pointerEvents={state.mode === 'placing' ? 'none' : 'auto'}>
+          <g
+            className="components"
+            pointerEvents={state.mode === 'placing' || state.mode === 'placing_snippet' ? 'none' : 'auto'}
+          >
             {state.components.map((component) => {
               const selected = state.selection.includes(component.name);
               const terminals = terminalPositions(component);
@@ -3572,6 +3671,80 @@ export function Sheet({ state, dispatch, actions, focusTarget }: SheetProps) {
             </g>
           )}
 
+          {/* Snippet Ghost preview while placing multi-part snippet */}
+          {state.snippetGhost && state.mode === 'placing_snippet' && (() => {
+            const sg = state.snippetGhost;
+            const collides = hasSnippetPlacementConflict(
+              sg.snippet,
+              sg.x,
+              sg.y,
+              state.components,
+            );
+            return (
+              <g
+                className="snippet-ghost-preview"
+                data-testid="snippet-ghost-preview"
+                opacity={0.65}
+                pointerEvents="none"
+              >
+                <rect
+                  x={(sg.x - 1) * dpix}
+                  y={(sg.y - 1) * dpix}
+                  width={(sg.snippet.width + 2) * dpix}
+                  height={(sg.snippet.height + 2) * dpix}
+                  rx={6}
+                  fill={collides ? 'rgba(248, 113, 113, 0.1)' : 'rgba(56, 189, 248, 0.08)'}
+                  stroke={collides ? '#f87171' : '#38bdf8'}
+                  strokeWidth={1.5}
+                  strokeDasharray="5 3"
+                />
+                {sg.snippet.wires.map((w, wi) => (
+                  <polyline
+                    key={`sg-w-${wi}`}
+                    points={w.points
+                      .map(([dx, dy]) => `${(sg.x + dx) * dpix},${(sg.y + dy) * dpix}`)
+                      .join(' ')}
+                    fill="none"
+                    stroke={w.type === 'CONTROL' ? '#4ade80' : '#38bdf8'}
+                    strokeWidth={2}
+                    strokeDasharray="4 2"
+                  />
+                ))}
+                {sg.snippet.components.map((c) => (
+                  <g
+                    key={`sg-c-${c.localId}`}
+                    transform={`translate(${(sg.x + c.offset[0]) * dpix}, ${(sg.y + c.offset[1]) * dpix})`}
+                  >
+                    <ComponentSymbol
+                      component={{
+                        type: c.type,
+                        name: '',
+                        family: c.family,
+                        position: [0, 0],
+                        orientation: c.orientation,
+                        parameters: c.parameters,
+                        inputLabels: c.inputLabels,
+                        outputLabels: c.outputLabels,
+                      }}
+                      dpix={dpix}
+                    />
+                  </g>
+                ))}
+                {collides && (
+                  <text
+                    x={sg.x * dpix}
+                    y={(sg.y - 1.4) * dpix}
+                    fill="#f87171"
+                    fontSize={10}
+                    fontWeight="bold"
+                  >
+                    Overlap detected — will auto-shift on click
+                  </text>
+                )}
+              </g>
+            );
+          })()}
+
           {/* Rubber band selection */}
           {state.rubber && (
             <rect
@@ -3706,6 +3879,67 @@ export function Sheet({ state, dispatch, actions, focusTarget }: SheetProps) {
               );
             })}
           </g>
+          )}
+
+          {showOpBadges && placedOpBadges.length > 0 && (
+            <g className="op-point-badges-layer" data-testid="op-point-badges-layer">
+              {placedOpBadges.map((badge) => {
+                const barColor =
+                  badge.kind === 'current'
+                    ? '#fbbf24'
+                    : badge.kind === 'power' || badge.kind === 'thermal'
+                    ? '#fb7185'
+                    : badge.kind === 'voltage'
+                    ? '#38bdf8'
+                    : '#94a3b8';
+                const tooltipText = isSimStale
+                  ? `${badge.tooltip}\n(Circuit edited since last run — press F5 to refresh)`
+                  : badge.tooltip;
+                return (
+                  <g
+                    key={badge.id}
+                    transform={`translate(${badge.px}, ${badge.py})`}
+                    className={`op-point-badge kind-${badge.kind}${isSimStale ? ' stale' : ''}`}
+                    data-testid={`op-badge-${badge.id}`}
+                    opacity={isSimStale ? 0.55 : 1}
+                    style={{ cursor: 'pointer' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const firstScope = state.components.find((c) => isScopeComponent(c));
+                      actions.openScopeTab?.(firstScope?.name || 'osci_1');
+                    }}
+                  >
+                    <title>{tooltipText}</title>
+                    <rect
+                      className="op-badge-bg"
+                      x={0}
+                      y={0}
+                      width={badge.width}
+                      height={badge.height}
+                      rx={4}
+                    />
+                    <rect
+                      x={0}
+                      y={1}
+                      width={3}
+                      height={Math.max(1, badge.height - 2)}
+                      rx={1.5}
+                      fill={barColor}
+                    />
+                    {badge.lines.map((line, li) => (
+                      <text
+                        key={`${badge.id}-line-${li}`}
+                        className="op-badge-text"
+                        x={7}
+                        y={13 + li * 13}
+                      >
+                        {line}
+                      </text>
+                    ))}
+                  </g>
+                );
+              })}
+            </g>
           )}
 
           {/* Active 2-Step Voltage Probe in Progress: Rubberband & Anchor (+) */}
@@ -4044,6 +4278,8 @@ export function Sheet({ state, dispatch, actions, focusTarget }: SheetProps) {
           onResetZoom={handleZoomReset}
           onToggleGrid={() => setShowGrid((prev) => !prev)}
           onCycleNetLabels={cycleLabelDisplayMode}
+          selectionCount={state.selection.length}
+          onSaveAsSnippet={actions.onSaveAsSnippet}
         />
       )}
 

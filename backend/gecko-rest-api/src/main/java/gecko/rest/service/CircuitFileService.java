@@ -210,6 +210,21 @@ public class CircuitFileService {
     }
 
     /**
+     * Returns an isolated deep copy of a loaded circuit model (safe for concurrent
+     * simulations with parameter overrides without mutating the active editor model).
+     *
+     * @param circuitId active circuit session ID
+     * @return deep-copied CircuitModel, or null if not found
+     */
+    public CircuitModel getModelCopy(String circuitId) {
+        CircuitState parsed = circuits.get(circuitId);
+        if (parsed == null) {
+            return null;
+        }
+        return copyCircuitModel(parsed.model);
+    }
+
+    /**
      * Serialize a loaded circuit back to gzip-compressed .ipes bytes
      * using {@link CircuitFileWriter}.
      *

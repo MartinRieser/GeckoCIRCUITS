@@ -70,7 +70,7 @@ public class SimulationService {
     static final String CANCELLED_BY_USER = "Cancelled by user";
 
     /** Upper bound of completed/failed simulation results kept in memory. */
-    private static final int MAX_STORED_SIMULATIONS = 10;
+    private static final int MAX_STORED_SIMULATIONS = 50;
 
     private final Map<String, SimulationResponse> simulationStore = new ConcurrentHashMap<>();
     private final Map<String, HeadlessSimulationEngine> runningEngines = new ConcurrentHashMap<>();
@@ -766,7 +766,10 @@ public class SimulationService {
      */
     private CircuitModel resolveCircuitModel(SimulationRequest request) {
         if (request.getCircuitId() != null && !request.getCircuitId().isBlank()) {
-            CircuitModel model = circuitFileService.getModel(request.getCircuitId());
+            boolean hasOverrides = request.getParameters() != null && !request.getParameters().isEmpty();
+            CircuitModel model = hasOverrides
+                    ? circuitFileService.getModelCopy(request.getCircuitId())
+                    : circuitFileService.getModel(request.getCircuitId());
             if (model == null) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Circuit not found: " + request.getCircuitId());
@@ -909,19 +912,48 @@ public class SimulationService {
      * @return BatchSimulationResponse with batchId and list of simulation IDs
      */
     public BatchSimulationResponse submitBatch(BatchSimulationRequest batchRequest) {
+        if (batchRequest.getLogSweep() != null
+                && (batchRequest.getLogSweep().getStartValue() <= 0
+                || batchRequest.getLogSweep().getEndValue() <= 0)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Log sweep startValue and endValue must be > 0");
+        }
         List<Map<String, Double>> parameterSets = expandParameterSets(batchRequest);
+        if (parameterSets.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "At least one sweep configuration or parameter set is required");
+        }
         List<String> simulationIds = new ArrayList<>();
 
         BatchSimulationRequest.SimulationSettings settings = batchRequest.getSimulationSettings();
-        double simTime = settings != null && settings.getSimulationTime() != null ? settings.getSimulationTime() : 0.02;
-        double timeStep = settings != null && settings.getTimeStep() != null ? settings.getTimeStep() : 1e-6;
+        boolean hasInlineCircuit = !isBlank(batchRequest.getCircuitId())
+                || !isBlank(batchRequest.getBase64Circuit());
+        Double simTime = settings != null ? settings.getSimulationTime() : null;
+        Double timeStep = settings != null ? settings.getTimeStep() : null;
+        if (!hasInlineCircuit) {
+            if (simTime == null) {
+                simTime = 0.02;
+            }
+            if (timeStep == null) {
+                timeStep = 1e-6;
+            }
+        }
         String solverType = settings != null ? settings.getSolverType() : null;
+        List<String> signals = settings != null ? settings.getSignals() : null;
 
         for (Map<String, Double> params : parameterSets) {
-            SimulationRequest req = new SimulationRequest(batchRequest.getCircuitFile(), simTime, timeStep);
+            SimulationRequest req = new SimulationRequest();
+            req.setCircuitId(batchRequest.getCircuitId());
+            req.setBase64Circuit(batchRequest.getBase64Circuit());
+            req.setCircuitFile(batchRequest.getCircuitFile());
+            req.setSimulationTime(simTime);
+            req.setTimeStep(timeStep);
             req.setParameters(params);
             if (solverType != null) {
                 req.setSolverType(solverType);
+            }
+            if (signals != null && !signals.isEmpty()) {
+                req.setSignals(signals);
             }
             SimulationResponse resp = submitSimulation(req);
             simulationIds.add(resp.getSimulationId());

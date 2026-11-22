@@ -11,6 +11,8 @@ import type {
   CatalogEntry,
   ComponentPayload,
   ComponentPatch,
+  EditorComponent,
+  EditorWire,
   WirePayload,
   SimulationDefaults,
   SimRunSettings,
@@ -34,7 +36,21 @@ import {
   extractAvailableSignals,
 } from '../model/componentSchema';
 import { isScopeComponent, isScriptComponent, defaultGraphForSignal } from '../simulation/scopes';
-import { isGroundSignal } from '../simulation/chartData';
+import { isGroundSignal, mapSimulationResults } from '../simulation/chartData';
+import { createBaselineSnapshot, type BaselineSnapshot } from '../simulation/baselineCompare';
+import {
+  generateSweepValues,
+  listSweepableParameters,
+  type SweepRunResult,
+  type SweepScaleMode,
+  type SweepSession,
+} from '../simulation/parametricSweep';
+import {
+  deriveDefaultSliderBounds,
+  MAX_PINNED_SLIDERS,
+  type PinnedSlider,
+} from '../simulation/liveSliders';
+import { findConflictFreeAnchor, type SchematicSnippet } from '../model/snippets';
 import { BLANK_CIRCUIT_IPES } from '../model/examples';
 import { SIMULATION_DEFAULTS, SENTINEL_UNSET } from '../model/constants';
 import { flipRoute, densePoints, routeWireWithAnchors, deconflictMovedWires } from '../canvas/WireRouter';
@@ -72,11 +88,23 @@ export function useEditor() {
   // Simulation run settings as displayed (engineering strings); null until the
   // user edits them, so a newly loaded circuit's own defaults show through
   const [simSettings, setSimSettings] = useState<SimRunSettings | null>(null);
+  const [baseline, setBaseline] = useState<BaselineSnapshot | null>(null);
+  const [showBaseline, setShowBaseline] = useState(true);
+  const [sweepSession, setSweepSession] = useState<SweepSession | null>(null);
+  const [lastSimModelVersion, setLastSimModelVersion] = useState<number | null>(null);
+  const [pinnedSliders, setPinnedSliders] = useState<PinnedSlider[]>([]);
+  const pinnedSlidersRef = useRef(pinnedSliders);
+  pinnedSlidersRef.current = pinnedSliders;
   const simPollTimerRef = useRef<number | null>(null);
+  const sweepPollTimerRef = useRef<number | null>(null);
+  const sweepBatchIdRef = useRef<string | null>(null);
   const simStreamStopRef = useRef<(() => void) | null>(null);
   const currentSimIdRef = useRef<string | null>(null);
+  const submittedModelVersionRef = useRef<Map<string, number>>(new Map());
   const simDefaultsRef = useRef<SimulationDefaults | null>(null);
   simDefaultsRef.current = simDefaults;
+  const simResultsRef = useRef<Record<string, number[]> | null>(null);
+  simResultsRef.current = simResults;
 
   // latest state for callbacks that need current values without re-creating
   const stateRef = useRef(state);
@@ -93,6 +121,13 @@ export function useEditor() {
     }
   }, []);
 
+  const stopSweepPolling = useCallback(() => {
+    if (sweepPollTimerRef.current !== null) {
+      clearInterval(sweepPollTimerRef.current);
+      sweepPollTimerRef.current = null;
+    }
+  }, []);
+
   const stopStream = useCallback(() => {
     simStreamStopRef.current?.();
     simStreamStopRef.current = null;
@@ -102,11 +137,16 @@ export function useEditor() {
    *  circuits so results from the previous example never leak through. */
   const resetSimulationState = useCallback(() => {
     stopPolling();
+    stopSweepPolling();
     stopStream();
     if (currentSimIdRef.current) {
       // cancel a still-running simulation of the old circuit (best effort)
       void api.cancelSimulation(currentSimIdRef.current).catch(() => {});
       currentSimIdRef.current = null;
+    }
+    if (sweepBatchIdRef.current) {
+      void api.cancelBatchSimulation(sweepBatchIdRef.current).catch(() => {});
+      sweepBatchIdRef.current = null;
     }
     setSimStatus(null);
     setSimProgress(0);
@@ -120,7 +160,13 @@ export function useEditor() {
     // A new circuit brings its own stored defaults: drop the previous
     // circuit's user-edited run settings so they don't leak through
     setSimSettings(null);
-  }, [stopPolling, stopStream]);
+    setBaseline(null);
+    setShowBaseline(true);
+    setSweepSession(null);
+    setLastSimModelVersion(null);
+    submittedModelVersionRef.current.clear();
+    setPinnedSliders([]);
+  }, [stopPolling, stopSweepPolling, stopStream]);
 
   useEffect(() => {
     api
@@ -134,6 +180,9 @@ export function useEditor() {
     return () => {
       if (simPollTimerRef.current !== null) {
         clearInterval(simPollTimerRef.current);
+      }
+      if (sweepPollTimerRef.current !== null) {
+        clearInterval(sweepPollTimerRef.current);
       }
       simStreamStopRef.current?.();
     };
@@ -380,6 +429,15 @@ export function useEditor() {
     [ensureWorkspace],
   );
 
+  const armSnippet = useCallback(
+    async (snippet: SchematicSnippet) => {
+      const ready = await ensureWorkspace();
+      if (!ready) return;
+      dispatch({ type: 'ARM_SNIPPET', snippet });
+    },
+    [ensureWorkspace],
+  );
+
   const cancel = useCallback(() => dispatch({ type: 'CANCEL' }), []);
   const toggleWireMode = useCallback(() => dispatch({ type: 'TOGGLE_WIRE_MODE' }), []);
   const toggleProbeMode = useCallback(() => dispatch({ type: 'TOGGLE_PROBE_MODE' }), []);
@@ -439,6 +497,99 @@ export function useEditor() {
         .catch(reportError);
     },
     [reportError],
+  );
+
+  const placeSnippet = useCallback(
+    async (snippet: SchematicSnippet, anchorX: number, anchorY: number) => {
+      const circuitId = stateRef.current.circuitId;
+      if (!circuitId) return;
+
+      const { x, y } = findConflictFreeAnchor(
+        snippet,
+        anchorX,
+        anchorY,
+        stateRef.current.components,
+      );
+      dispatch({ type: 'CANCEL' });
+
+      try {
+        const localMap = new Map<number, { name: string; uid: number }>();
+        const createdNames: string[] = [];
+
+        for (const comp of snippet.components) {
+          const msg = await api.createComponent(circuitId, {
+            family: comp.family,
+            type: comp.type,
+            x: x + comp.offset[0],
+            y: y + comp.offset[1],
+            orientation: comp.orientation,
+          });
+          const payload = msg.payload as ComponentPayload;
+          versionRef.current = msg.modelVersion;
+          localMap.set(comp.localId, { name: payload.name, uid: payload.uid ?? 0 });
+          createdNames.push(payload.name);
+        }
+
+        for (const comp of snippet.components) {
+          const created = localMap.get(comp.localId);
+          if (!created) continue;
+          const finalParams: Record<string, number | string | boolean> = {
+            ...comp.parameters,
+          };
+          for (const coupling of snippet.couplings) {
+            if (coupling.sourceLocalId !== comp.localId) continue;
+            const target = localMap.get(coupling.targetLocalId);
+            if (!target) continue;
+            finalParams[coupling.paramKey] =
+              coupling.refKind === 'uid' ? target.uid : target.name;
+          }
+          if (Object.keys(finalParams).length > 0) {
+            const patchMsg = await api.patchComponent(circuitId, created.name, {
+              parameters: finalParams,
+            });
+            versionRef.current = patchMsg.modelVersion;
+          }
+          for (let i = 0; i < comp.inputLabels.length; i++) {
+            const lbl = comp.inputLabels[i]?.trim();
+            if (lbl && lbl !== SENTINEL_UNSET) {
+              const lblMsg = await api.setNodeLabel(circuitId, created.name, i, 'x', lbl);
+              versionRef.current = lblMsg.modelVersion;
+            }
+          }
+          for (let i = 0; i < comp.outputLabels.length; i++) {
+            const lbl = comp.outputLabels[i]?.trim();
+            if (lbl && lbl !== SENTINEL_UNSET) {
+              const lblMsg = await api.setNodeLabel(circuitId, created.name, i, 'y', lbl);
+              versionRef.current = lblMsg.modelVersion;
+            }
+          }
+        }
+
+        for (const wire of snippet.wires) {
+          const pts = wire.points.map(([dx, dy]) => [x + dx, y + dy]);
+          const label = wire.label?.trim();
+          const wireMsg = await api.createConnection(circuitId, {
+            type: wire.type || 'LK',
+            points: pts,
+            label: label && label !== SENTINEL_UNSET ? label : undefined,
+          });
+          versionRef.current = wireMsg.modelVersion;
+        }
+
+        await refresh(circuitId);
+        dispatch({ type: 'CLEAR_SELECTION' });
+        for (const name of createdNames) {
+          dispatch({ type: 'SELECT', name, additive: true });
+        }
+        dispatch({
+          type: 'STATUS',
+          status: `Inserted snippet '${snippet.name}' (${createdNames.length} components)`,
+        });
+      } catch (err) {
+        reportError(err);
+      }
+    },
+    [refresh, reportError],
   );
 
   const setLabel = useCallback(
@@ -1551,6 +1702,9 @@ function cleanGraphRegistersForDeletedComponents(
         if (current.status === 'COMPLETED') {
           clearInterval(pollInterval);
           simPollTimerRef.current = null;
+          const simVer = submittedModelVersionRef.current.get(simId) ?? stateRef.current.modelVersion;
+          submittedModelVersionRef.current.delete(simId);
+          setLastSimModelVersion(simVer);
           setSimProgress(1.0);
           setSimResults(current.results || (await api.getSimulationResults(simId)));
           setSimWarnings(current.warnings || []);
@@ -1558,6 +1712,7 @@ function cleanGraphRegistersForDeletedComponents(
         } else if (current.status === 'FAILED' || current.status === 'CANCELLED') {
           clearInterval(pollInterval);
           simPollTimerRef.current = null;
+          submittedModelVersionRef.current.delete(simId);
           const errMsg = current.errorMessage || 'Simulation failed or was cancelled';
           setSimError(errMsg);
           // Failed runs keep their engine warnings too — they often explain why.
@@ -1584,11 +1739,15 @@ function cleanGraphRegistersForDeletedComponents(
       const current = await api.getSimulation(simId);
       setSimStatus(current.status);
       if (current.status === 'COMPLETED') {
+        const simVer = submittedModelVersionRef.current.get(simId) ?? stateRef.current.modelVersion;
+        submittedModelVersionRef.current.delete(simId);
+        setLastSimModelVersion(simVer);
         setSimProgress(1.0);
         setSimResults(current.results || (await api.getSimulationResults(simId)));
         setSimWarnings(current.warnings || []);
         announceCompletionWarnings(current.warnings, dispatch);
       } else if (current.status === 'FAILED' || current.status === 'CANCELLED') {
+        submittedModelVersionRef.current.delete(simId);
         const errMsg = current.errorMessage || 'Simulation failed or was cancelled';
         setSimError(errMsg);
         setSimWarnings(current.warnings || []);
@@ -1619,40 +1778,13 @@ function cleanGraphRegistersForDeletedComponents(
       const tStep = config?.timeStep ?? simDefaultsRef.current?.timeStep ?? 1e-6;
       const solver = config?.solverType ?? simDefaultsRef.current?.solverType ?? 'backward-euler';
 
-      // Dynamically collect active signals from available signals (probes, wires, control terminals)
-      // plus all signals configured in any graphRegister
-      const activeSignals = new Set<string>();
-      if (config?.signals && config.signals.length > 0) {
-        config.signals.forEach((s) => s && s.trim() && !isGroundSignal(s.trim()) && activeSignals.add(s.trim()));
-      } else if (simDefaultsRef.current?.signals) {
-        simDefaultsRef.current.signals.forEach((s) => s && s.trim() && !isGroundSignal(s.trim()) && activeSignals.add(s.trim()));
-      }
-
-      const availableSigs = extractAvailableSignals(stateRef.current.components, stateRef.current.wires);
-      for (const sig of availableSigs) {
-        if (sig && sig.trim() && !isGroundSignal(sig.trim())) {
-          const s = sig.trim();
-          // Speculative domain signals (semiconductor loss maps, thermal networks, non-linear magnetic cores)
-          // only exist when those specific modules are configured. Do not request them automatically unless
-          // the user or saved circuit explicitly added them to graphRegisters or simDefaults.
-          if (s.startsWith('Ploss_') || s.startsWith('Tj_') || s.startsWith('Phi_')) {
-            continue;
-          }
-          activeSignals.add(s);
-        }
-      }
-
-      for (const reg of (stateRef.current.graphRegisters || [])) {
-        if (reg.signals) {
-          for (const s of reg.signals) {
-            if (s && s.trim() && !isGroundSignal(s.trim())) {
-              activeSignals.add(s.trim());
-            }
-          }
-        }
-      }
-
-      const signalsToSimulate = activeSignals.size > 0 ? Array.from(activeSignals) : undefined;
+      const signalsToSimulate = collectSimulationSignals(
+        stateRef.current.components,
+        stateRef.current.wires,
+        stateRef.current.graphRegisters || [],
+        simDefaultsRef.current,
+        config?.signals,
+      );
 
       stopPolling();
       stopStream();
@@ -1664,6 +1796,7 @@ function cleanGraphRegistersForDeletedComponents(
       setDebugPause(null);
       setDebugState(null);
 
+      const runVersion = stateRef.current.modelVersion;
       try {
         const sim = await api.submitSimulation({
           circuitId,
@@ -1677,6 +1810,7 @@ function cleanGraphRegistersForDeletedComponents(
             : undefined,
         });
         currentSimIdRef.current = sim.simulationId;
+        submittedModelVersionRef.current.set(sim.simulationId, runVersion);
 
         // Live progress via SSE; REST polling only as connection fallback
         simStreamStopRef.current = api.streamSimulationProgress(sim.simulationId, {
@@ -1783,6 +1917,317 @@ function cleanGraphRegistersForDeletedComponents(
   const updateSimSettings = useCallback((settings: SimRunSettings) => {
     setSimSettings(settings);
   }, []);
+
+  /** Pins the current simulation waveforms as an immutable comparison baseline. */
+  const pinBaseline = useCallback((label?: string, explicitResults?: Record<string, number[]> | null) => {
+    const current = explicitResults && Object.keys(explicitResults).length > 0
+      ? explicitResults
+      : simResultsRef.current;
+    if (!current || Object.keys(current).length === 0) return;
+    setBaseline(createBaselineSnapshot(current, stateRef.current.modelVersion, label));
+    setShowBaseline(true);
+    dispatch({ type: 'STATUS', status: 'Reference saved — edit any parameter & press F5 to compare before vs. after' });
+  }, []);
+
+  /** Clears the pinned baseline snapshot. */
+  const clearBaseline = useCallback(() => {
+    setBaseline(null);
+    setShowBaseline(true);
+    dispatch({ type: 'STATUS', status: 'Cleared baseline comparison' });
+  }, []);
+
+  /** Toggles visibility of pinned baseline ghost traces and delta metrics. */
+  const toggleBaselineVisible = useCallback(() => {
+    setShowBaseline((prev) => !prev);
+  }, []);
+
+  /** Runs an asynchronous parametric sweep via /api/v1/simulations/batch and polls until complete. */
+  const runParametricSweep = useCallback(
+    async (config: {
+      componentName: string;
+      paramKey: string;
+      paramLabel: string;
+      unit: string;
+      mode: SweepScaleMode;
+      startValue: number;
+      endValue: number;
+      points: number;
+      simulationTime: number;
+      timeStep: number;
+      solverType: string;
+    }) => {
+      const circuitId = stateRef.current.circuitId;
+      if (!circuitId) return;
+
+      stopSweepPolling();
+      if (sweepBatchIdRef.current) {
+        void api.cancelBatchSimulation(sweepBatchIdRef.current).catch(() => {});
+        sweepBatchIdRef.current = null;
+      }
+
+      const parameterPath = `${config.componentName}.${config.paramKey}`;
+      const values = generateSweepValues(config.mode, config.startValue, config.endValue, config.points);
+      const signalsToSimulate = collectSimulationSignals(
+        stateRef.current.components,
+        stateRef.current.wires,
+        stateRef.current.graphRegisters || [],
+        simDefaultsRef.current,
+      );
+
+      setSweepSession({
+        batchId: '',
+        parameterPath,
+        componentName: config.componentName,
+        paramKey: config.paramKey,
+        paramLabel: config.paramLabel,
+        unit: config.unit,
+        mode: config.mode,
+        status: 'RUNNING',
+        progress: 0.02,
+        totalRuns: values.length,
+        completedRuns: 0,
+        runs: [],
+      });
+
+      try {
+        const sweepSpec = {
+          parameterPath,
+          startValue: config.startValue,
+          endValue: config.endValue,
+          points: config.points,
+        };
+        const batchResp = await api.submitBatchSimulation({
+          circuitId,
+          maxConcurrent: 4,
+          ...(config.mode === 'linear' ? { linearSweep: sweepSpec } : { logSweep: sweepSpec }),
+          simulationSettings: {
+            simulationTime: config.simulationTime,
+            timeStep: config.timeStep,
+            solverType: config.solverType,
+            signals: signalsToSimulate,
+          },
+        });
+        const batchId = batchResp.batchId;
+        sweepBatchIdRef.current = batchId;
+
+        setSweepSession((prev) => (prev ? { ...prev, batchId } : prev));
+        dispatch({ type: 'STATUS', status: `Running parametric sweep (${batchResp.totalSimulations} steps)...` });
+
+        const pollOnce = async () => {
+          if (sweepBatchIdRef.current !== batchId) return;
+          try {
+            const job = await api.getBatchStatus(batchId);
+            if (sweepBatchIdRef.current !== batchId) return;
+
+            if (!job.done) {
+              setSweepSession((prev) =>
+                prev && prev.batchId === batchId
+                  ? {
+                      ...prev,
+                      progress: Math.max(0.05, job.overallProgress / 100),
+                      completedRuns: job.completed + job.failed,
+                    }
+                  : prev,
+              );
+              return;
+            }
+
+            stopSweepPolling();
+            const simDetails = await Promise.all(
+              batchResp.simulationIds.map((simId) => api.getSimulation(simId).catch(() => null)),
+            );
+            if (sweepBatchIdRef.current !== batchId) return;
+
+            const runs: SweepRunResult[] = batchResp.simulationIds.map((simId, idx) => {
+              const sim = simDetails[idx];
+              const ok = sim?.status === 'COMPLETED';
+              const results = ok ? sim?.results : undefined;
+              const stats = results ? mapSimulationResults(results).signalStats : {};
+              return {
+                index: idx,
+                simulationId: simId,
+                parameterValue: values[idx] ?? config.startValue,
+                status: ok ? 'COMPLETED' : 'FAILED',
+                errorMessage: sim?.errorMessage,
+                results,
+                stats,
+              };
+            });
+
+            const anyCompleted = runs.some((r) => r.status === 'COMPLETED');
+            const finalStatus = anyCompleted ? 'COMPLETED' : 'FAILED';
+            if (anyCompleted && !simResultsRef.current) {
+              const firstOk = runs.find((r) => r.status === 'COMPLETED' && r.results);
+              if (firstOk?.results) {
+                setSimResults(firstOk.results);
+                setSimStatus('COMPLETED');
+                setSimProgress(1.0);
+              }
+            }
+            setSweepSession((prev) =>
+              prev && prev.batchId === batchId
+                ? {
+                    ...prev,
+                    status: finalStatus,
+                    progress: 1,
+                    completedRuns: runs.length,
+                    runs,
+                    errorMessage: anyCompleted ? undefined : (runs[0]?.errorMessage || 'All sweep runs failed'),
+                  }
+                : prev,
+            );
+            dispatch({
+              type: 'STATUS',
+              status: anyCompleted
+                ? `Parametric sweep completed (${runs.filter((r) => r.status === 'COMPLETED').length}/${runs.length} runs)`
+                : 'Parametric sweep failed',
+            });
+          } catch (err) {
+            stopSweepPolling();
+            const msg = (err as Error).message;
+            setSweepSession((prev) =>
+              prev && prev.batchId === batchId ? { ...prev, status: 'FAILED', errorMessage: msg } : prev,
+            );
+            dispatch({ type: 'STATUS', status: `Sweep failed: ${msg}` });
+          }
+        };
+
+        void pollOnce();
+        sweepPollTimerRef.current = window.setInterval(() => void pollOnce(), 400);
+      } catch (err) {
+        const msg = (err as Error).message;
+        setSweepSession((prev) => (prev ? { ...prev, status: 'FAILED', errorMessage: msg } : null));
+        dispatch({ type: 'STATUS', status: `Sweep failed: ${msg}` });
+      }
+    },
+    [stopSweepPolling],
+  );
+
+  const cancelParametricSweep = useCallback(async () => {
+    stopSweepPolling();
+    const batchId = sweepBatchIdRef.current;
+    sweepBatchIdRef.current = null;
+    if (batchId) {
+      await api.cancelBatchSimulation(batchId).catch(() => {});
+    }
+    setSweepSession((prev) => (prev ? { ...prev, status: 'CANCELLED' } : prev));
+    dispatch({ type: 'STATUS', status: 'Parametric sweep cancelled' });
+  }, [stopSweepPolling]);
+
+  const clearParametricSweep = useCallback(() => {
+    stopSweepPolling();
+    sweepBatchIdRef.current = null;
+    setSweepSession(null);
+  }, [stopSweepPolling]);
+
+  // Remove pinned live sliders if their underlying schematic component is deleted
+  useEffect(() => {
+    const names = new Set(state.components.map((c) => c.name));
+    setPinnedSliders((prev) => {
+      const next = prev.filter((s) => names.has(s.componentName));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [state.components]);
+
+  const pinSlider = useCallback((componentName: string, paramKey: string) => {
+    const id = `${componentName}.${paramKey}`;
+    const existing = pinnedSlidersRef.current;
+    if (existing.some((s) => s.id === id)) {
+      return;
+    }
+    if (existing.length >= MAX_PINNED_SLIDERS) {
+      dispatch({
+        type: 'STATUS',
+        status: `Up to ${MAX_PINNED_SLIDERS} live sliders can be pinned at once`,
+      });
+      return;
+    }
+    const param = listSweepableParameters(stateRef.current.components).find(
+      (p) => p.componentName === componentName && p.paramKey === paramKey,
+    );
+    if (!param) {
+      return;
+    }
+    const bounds = deriveDefaultSliderBounds(param.currentValue, param.min, param.max);
+    const slider: PinnedSlider = {
+      id,
+      componentName,
+      paramKey,
+      label: param.label,
+      unit: param.unit,
+      initialValue: param.currentValue,
+      min: bounds.min,
+      max: bounds.max,
+      scale: bounds.scale,
+    };
+    setPinnedSliders((prev) => {
+      if (prev.some((s) => s.id === id) || prev.length >= MAX_PINNED_SLIDERS) {
+        return prev;
+      }
+      return [...prev, slider];
+    });
+  }, []);
+
+  const unpinSlider = useCallback((id: string) => {
+    setPinnedSliders((prev) => prev.filter((s) => s.id !== id));
+  }, []);
+
+  const updateSliderConfig = useCallback(
+    (id: string, patch: Partial<Pick<PinnedSlider, 'min' | 'max' | 'scale'>>) => {
+      setPinnedSliders((prev) =>
+        prev.map((s) => (s.id === id ? { ...s, ...patch } : s)),
+      );
+    },
+    [],
+  );
+
+  const commitSliderValue = useCallback(
+    async (
+      componentName: string,
+      paramKey: string,
+      value: number,
+      autoRun: boolean,
+      simConfig?: {
+        simulationTime?: number;
+        timeStep?: number;
+        solverType?: string;
+        backend?: string;
+        signals?: string[];
+      },
+    ) => {
+      const circuitId = stateRef.current.circuitId;
+      if (!circuitId) return;
+      if (simStatusRef.current === 'RUNNING' || simStatusRef.current === 'PAUSED') {
+        await cancelSimulation();
+      }
+      try {
+        const msg = await api.patchComponent(circuitId, componentName, {
+          parameters: { [paramKey]: value },
+        });
+        const payload = msg.payload as ComponentPayload;
+        versionRef.current = msg.modelVersion;
+        const existing = stateRef.current.components.find((c) => c.name === componentName);
+        if (existing) {
+          dispatch({
+            type: 'COMPONENT_UPSERT',
+            component: {
+              ...existing,
+              position: payload.position,
+              orientation: payload.orientation,
+              parameters: payload.parameters,
+            },
+            version: msg.modelVersion,
+          });
+        }
+        if (autoRun) {
+          await runSimulation(simConfig);
+        }
+      } catch (err) {
+        reportError(err);
+      }
+    },
+    [cancelSimulation, reportError, runSimulation],
+  );
 
   // Poll the script debug state while a run is active: this drives the watch
   // panel while the simulation runs and recovers the paused state when the
@@ -2027,6 +2472,11 @@ function cleanGraphRegistersForDeletedComponents(
       warnings: simWarnings,
       defaults: simDefaults,
       simSettings,
+      baseline,
+      showBaseline,
+      sweepSession,
+      lastSimModelVersion,
+      pinnedSliders,
       scriptBreakpoints,
       debugPause,
       debugState,
@@ -2038,9 +2488,11 @@ function cleanGraphRegistersForDeletedComponents(
       openRecent,
       newCircuit,
       arm,
+      armSnippet,
       cancel,
       toggleWireMode,
       placeGhost,
+      placeSnippet,
       finishWire,
       commitMove,
       resizeComponent,
@@ -2071,6 +2523,16 @@ function cleanGraphRegistersForDeletedComponents(
       debugStep,
       debugResume,
       updateSimSettings,
+      pinBaseline,
+      clearBaseline,
+      toggleBaselineVisible,
+      runParametricSweep,
+      cancelParametricSweep,
+      clearParametricSweep,
+      pinSlider,
+      unpinSlider,
+      updateSliderConfig,
+      commitSliderValue,
       toggleProbeMode,
       setProbeRefNet,
       addSignalToScope,
@@ -2081,6 +2543,47 @@ function cleanGraphRegistersForDeletedComponents(
       removeGraphRegister,
     },
   };
+}
+
+function collectSimulationSignals(
+  components: EditorComponent[],
+  wires: EditorWire[],
+  graphRegisters: GraphRegister[],
+  simDefaults: SimulationDefaults | null,
+  explicitSignals?: string[],
+): string[] | undefined {
+  const activeSignals = new Set<string>();
+  if (explicitSignals && explicitSignals.length > 0) {
+    explicitSignals.forEach((s) => s && s.trim() && !isGroundSignal(s.trim()) && activeSignals.add(s.trim()));
+  } else if (simDefaults?.signals) {
+    simDefaults.signals.forEach((s) => s && s.trim() && !isGroundSignal(s.trim()) && activeSignals.add(s.trim()));
+  }
+
+  const availableSigs = extractAvailableSignals(components, wires);
+  for (const sig of availableSigs) {
+    if (sig && sig.trim() && !isGroundSignal(sig.trim())) {
+      const s = sig.trim();
+      // Speculative domain signals (semiconductor loss maps, thermal networks, non-linear magnetic cores)
+      // only exist when those specific modules are configured. Do not request them automatically unless
+      // the user or saved circuit explicitly added them to graphRegisters or simDefaults.
+      if (s.startsWith('Ploss_') || s.startsWith('Tj_') || s.startsWith('Phi_')) {
+        continue;
+      }
+      activeSignals.add(s);
+    }
+  }
+
+  for (const reg of graphRegisters) {
+    if (reg.signals) {
+      for (const s of reg.signals) {
+        if (s && s.trim() && !isGroundSignal(s.trim())) {
+          activeSignals.add(s.trim());
+        }
+      }
+    }
+  }
+
+  return activeSignals.size > 0 ? Array.from(activeSignals) : undefined;
 }
 
 function toEditorComponent(payload: ComponentPayload, family: string) {

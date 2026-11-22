@@ -524,6 +524,12 @@ public class SimulationController {
     @ApiResponse(responseCode = "400", description = "Invalid request")
     public ResponseEntity<BatchSimulationResponse> submitBatch(
             @Valid @RequestBody BatchSimulationRequest batchRequest) {
+        if (isBlank(batchRequest.getCircuitId())
+                && isBlank(batchRequest.getBase64Circuit())
+                && isBlank(batchRequest.getCircuitFile())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "One of circuitId, base64Circuit or circuitFile must be provided");
+        }
         BatchSimulationResponse response = simulationService.submitBatch(batchRequest);
         return ResponseEntity.status(201).body(response);
     }

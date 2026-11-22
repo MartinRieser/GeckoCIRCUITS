@@ -30,6 +30,25 @@ import {
   defaultGraphForSignal,
   resolveSignalGraph,
 } from './scopes';
+import {
+  buildTraceSvgPath,
+  compareSignalStats,
+  formatDeltaBadge,
+  type BaselineSnapshot,
+} from './baselineCompare';
+import { SweepPanel } from './SweepPanel';
+import { sweepRunColor, type SweepSession } from './parametricSweep';
+import { LiveSliderBar } from './LiveSliderBar';
+import type { PinnedSlider } from './liveSliders';
+
+export interface SweepOverlayTrace {
+  runIndex: number;
+  label: string;
+  color: string;
+  time: number[];
+  signals: Record<string, number[]>;
+  highlighted: boolean;
+}
 
 /**
  * Properties for the {@link ScopeViewTab} full-viewport oscilloscope view.
@@ -79,6 +98,58 @@ export interface ScopeViewTabProps {
   onHighlightComponent?: (componentName: string | null) => void;
   /** Optional hover callback to highlight an electrical net. */
   onHighlightNet?: (netLabelOrId: string | null) => void;
+  /** Optional pinned baseline snapshot for before/after waveform comparison. */
+  baseline?: BaselineSnapshot | null;
+  /** Whether pinned baseline ghost traces and deltas are currently visible. */
+  showBaseline?: boolean;
+  /** Callback to pin current results as comparison baseline. */
+  onPinBaseline?: () => void;
+  /** Callback to clear the pinned comparison baseline. */
+  onClearBaseline?: () => void;
+  /** Callback to toggle visibility of the comparison baseline. */
+  onToggleBaselineVisible?: () => void;
+  /** Active or completed parametric sweep session. */
+  sweepSession?: SweepSession | null;
+  /** Controlled active sweep step index (`null` or `'all'` handled via `sweepOverlayAll`). */
+  activeSweepStepIndex?: number | null;
+  /** Selects a specific completed sweep run index so all channels & schematic update together. */
+  onSelectSweepStep?: (runIndex: number | null) => void;
+  /** Controlled toggle to overlay all sweep runs across all visible channels. */
+  sweepOverlayAll?: boolean;
+  /** Toggles overlaying all sweep runs across every visible channel. */
+  onToggleSweepOverlayAll?: (enabled: boolean) => void;
+  /** Opens the Parametric Sweep configuration modal. */
+  onOpenSweepModal?: () => void;
+  /** Clears the active parametric sweep overlay and results. */
+  onClearSweep?: () => void;
+  /** Applies a parameter value from a sweep row back onto the schematic component. */
+  onApplySweepValue?: (componentName: string, paramKey: string, value: number) => void;
+  /** Pinned sliders in the "What-If" Live Tuner bar. */
+  pinnedSliders?: PinnedSlider[];
+  /** Pins a component parameter as a live slider. */
+  onPinSlider?: (componentName: string, paramKey: string) => void;
+  /** Unpins a live slider by its `${componentName}.${paramKey}` id. */
+  onUnpinSlider?: (id: string) => void;
+  /** Updates slider bounds/scale configuration. */
+  onUpdateSliderConfig?: (
+    id: string,
+    patch: Partial<Pick<PinnedSlider, 'min' | 'max' | 'scale'>>,
+  ) => void;
+  /** Commits a slider value to the schematic and optionally triggers simulation. */
+  onCommitSliderValue?: (
+    componentName: string,
+    paramKey: string,
+    value: number,
+    autoRun: boolean,
+  ) => void | Promise<void>;
+  /** Controlled open state for the Live Parameter Sliders bar. */
+  tuneBarOpen?: boolean;
+  /** Toggles controlled Live Parameter Sliders bar visibility. */
+  onToggleTuneBar?: () => void;
+  /** Hides the docked bottom waveforms drawer when shown beneath Schematic. */
+  onCollapseDrawer?: () => void;
+  /** Expands the docked bottom waveforms drawer into a full-screen Oscilloscope tab. */
+  onExpandToTab?: () => void;
 }
 
 export const DEFAULT_DRAWER_HEIGHT = 280;
@@ -223,9 +294,94 @@ export function ScopeViewTab({
   wires,
   onHighlightComponent,
   onHighlightNet,
+  baseline = null,
+  showBaseline: showBaselineProp,
+  onPinBaseline,
+  onClearBaseline,
+  onToggleBaselineVisible,
+  sweepSession = null,
+  activeSweepStepIndex: activeSweepStepIndexProp,
+  onSelectSweepStep,
+  sweepOverlayAll: sweepOverlayAllProp,
+  onToggleSweepOverlayAll,
+  onOpenSweepModal: _onOpenSweepModal,
+  onClearSweep,
+  onApplySweepValue,
+  pinnedSliders = [],
+  onPinSlider,
+  onUnpinSlider,
+  onUpdateSliderConfig,
+  onCommitSliderValue,
+  tuneBarOpen: tuneBarOpenProp,
+  onToggleTuneBar: _onToggleTuneBar,
+  onCollapseDrawer,
+  onExpandToTab,
 }: ScopeViewTabProps) {
+  const [internalShowBaseline, setInternalShowBaseline] = useState(true);
+  const isBaselineVisible = showBaselineProp !== undefined ? showBaselineProp : internalShowBaseline;
+  const handleToggleBaselineVisible = useCallback(() => {
+    if (onToggleBaselineVisible) {
+      onToggleBaselineVisible();
+    } else {
+      setInternalShowBaseline((prev) => !prev);
+    }
+  }, [onToggleBaselineVisible]);
+  const baselineResults = isBaselineVisible && baseline ? baseline.results : null;
+
+  const [internalSweepOverlayAll, setInternalSweepOverlayAll] = useState(false);
+  const [internalSweepStepIndex, setInternalSweepStepIndex] = useState<number | null>(null);
+  const [sweepSelectedSignal, setSweepSelectedSignal] = useState('');
+  const [sweepHighlightedRun, setSweepHighlightedRun] = useState<number | null>(null);
+  const tuneBarOpen = tuneBarOpenProp ?? false;
+
+  const completedSweepRuns = useMemo(
+    () =>
+      sweepSession?.runs.filter((r) => r.status === 'COMPLETED' && Boolean(r.results)) ?? [],
+    [sweepSession],
+  );
+
+  const sweepOverlayAll =
+    sweepOverlayAllProp !== undefined ? sweepOverlayAllProp : internalSweepOverlayAll;
+  const setSweepOverlayAll = useCallback(
+    (enabled: boolean) => {
+      if (onToggleSweepOverlayAll) {
+        onToggleSweepOverlayAll(enabled);
+      } else {
+        setInternalSweepOverlayAll(enabled);
+      }
+    },
+    [onToggleSweepOverlayAll],
+  );
+
+  const activeSweepStepIndex =
+    activeSweepStepIndexProp !== undefined
+      ? activeSweepStepIndexProp
+      : (internalSweepStepIndex ?? completedSweepRuns[0]?.index ?? null);
+  const setActiveSweepStepIndex = useCallback(
+    (idx: number | null) => {
+      if (onSelectSweepStep) {
+        onSelectSweepStep(idx);
+      } else {
+        setInternalSweepStepIndex(idx);
+      }
+    },
+    [onSelectSweepStep],
+  );
+
+  const activeSweepRun = useMemo(() => {
+    if (!sweepSession || activeSweepStepIndex === null) return null;
+    return (
+      completedSweepRuns.find((r) => r.index === activeSweepStepIndex) ??
+      completedSweepRuns[0] ??
+      null
+    );
+  }, [sweepSession, activeSweepStepIndex, completedSweepRuns]);
+
+  const effectiveResults =
+    !sweepOverlayAll && activeSweepRun?.results ? activeSweepRun.results : results;
+
   const fallbackScope = useScopeController({
-    results,
+    results: effectiveResults,
     components,
     selectedScope,
     graphRegister,
@@ -482,6 +638,69 @@ export function ScopeViewTab({
     return filteredChannels.filter((s) => !isSignalHidden(s));
   }, [filteredChannels, isSignalHidden]);
 
+  const baselineComparisons = useMemo(() => {
+    if (!baseline || !isBaselineVisible) return {};
+    return compareSignalStats(baseline.stats, signalStats, filteredChannels);
+  }, [baseline, isBaselineVisible, signalStats, filteredChannels]);
+
+  const hasBaselineDiff = useMemo(
+    () =>
+      Object.values(baselineComparisons).some(
+        (c) =>
+          Math.abs(c.mean.absDelta) > 1e-9 ||
+          Math.abs(c.rms.absDelta) > 1e-9 ||
+          Math.abs(c.pkpk.absDelta) > 1e-9,
+      ),
+    [baselineComparisons],
+  );
+
+  const prevSweepStatusRef = useRef<string | null>(null);
+  useEffect(() => {
+    const nextStatus = sweepSession?.status ?? null;
+    if (nextStatus === 'COMPLETED' && prevSweepStatusRef.current !== 'COMPLETED') {
+      const firstRun = sweepSession?.runs.find((r) => r.status === 'COMPLETED');
+      if (firstRun) {
+        setActiveSweepStepIndex(firstRun.index);
+      }
+      setSweepHighlightedRun(null);
+      if (!sweepSelectedSignal) {
+        const firstSig =
+          visibleSignals[0] ||
+          signalNames[0] ||
+          (firstRun ? Object.keys(firstRun.stats)[0] : '');
+        if (firstSig) setSweepSelectedSignal(firstSig);
+      }
+    } else if (nextStatus === null && drawerTab === 'sweep') {
+      setDrawerTab(null);
+    }
+    prevSweepStatusRef.current = nextStatus;
+  }, [
+    sweepSession,
+    drawerTab,
+    setDrawerTab,
+    sweepSelectedSignal,
+    visibleSignals,
+    signalNames,
+    setActiveSweepStepIndex,
+  ]);
+
+  const effectiveSweepSignal =
+    sweepSelectedSignal && (signalNames.includes(sweepSelectedSignal) || Boolean(sweepSession?.runs.some((r) => r.stats[sweepSelectedSignal])))
+      ? sweepSelectedSignal
+      : (visibleSignals[0] || signalNames[0] || '');
+
+  const sweepOverlays = useMemo<SweepOverlayTrace[]>(() => {
+    if (!sweepSession || completedSweepRuns.length === 0 || !sweepOverlayAll) return [];
+    return completedSweepRuns.map((r) => ({
+      runIndex: r.index,
+      label: formatEngineeringValue(r.parameterValue, sweepSession.unit),
+      color: sweepRunColor(r.index, sweepSession.totalRuns, theme),
+      time: r.results!['time'] || [],
+      signals: r.results!,
+      highlighted: sweepHighlightedRun === r.index || activeSweepStepIndex === r.index,
+    }));
+  }, [sweepSession, completedSweepRuns, sweepOverlayAll, theme, sweepHighlightedRun, activeSweepStepIndex]);
+
   const handleToggleSignal = useCallback(
     (sig: string) => {
       toggleSignal(sig);
@@ -555,11 +774,11 @@ export function ScopeViewTab({
   );
 
   const handleExportCsv = useCallback(() => {
-    if (!results || timeArray.length === 0) return;
+    if (!effectiveResults || timeArray.length === 0) return;
     const cols = visibleSignals.length > 0 ? visibleSignals : signalNames;
     const rows: string[] = [['t', ...cols].join(',')];
     for (let i = 0; i < timeArray.length; i++) {
-      rows.push([String(timeArray[i]), ...cols.map((c) => String(results[c]?.[i] ?? ''))].join(','));
+      rows.push([String(timeArray[i]), ...cols.map((c) => String(effectiveResults[c]?.[i] ?? ''))].join(','));
     }
     const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -568,7 +787,7 @@ export function ScopeViewTab({
     anchor.download = `${(filename || 'gecko-scope').replace(/\s+/g, '_')}.csv`;
     anchor.click();
     URL.revokeObjectURL(url);
-  }, [results, timeArray, visibleSignals, signalNames, filename]);
+  }, [effectiveResults, timeArray, visibleSignals, signalNames, filename]);
 
   const handleOpenChartContextMenu = useCallback(
     (x: number, y: number, sampleIdx: number | null) => {
@@ -577,113 +796,32 @@ export function ScopeViewTab({
     [],
   );
 
-  // Analysis drawer resizable height state
-  const [drawerHeight, setDrawerHeight] = useState<number>(() => {
-    try {
-      const saved = localStorage.getItem('gecko.scope.drawerHeight');
-      if (saved) {
-        const val = parseInt(saved, 10);
-        if (Number.isFinite(val) && val >= MIN_DRAWER_HEIGHT && val <= 1400) {
-          return val;
-        }
-      }
-    } catch {
-      // ignore
-    }
-    return DEFAULT_DRAWER_HEIGHT;
-  });
-
-  const [isDraggingDrawer, setIsDraggingDrawer] = useState(false);
-  const dragStartYRef = useRef<number>(0);
-  const startHeightRef = useRef<number>(DEFAULT_DRAWER_HEIGHT);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('gecko.scope.drawerHeight', String(drawerHeight));
-    } catch {
-      // ignore
-    }
-  }, [drawerHeight]);
-
-  const handleSplitterMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsDraggingDrawer(true);
-    dragStartYRef.current = e.clientY;
-    startHeightRef.current = drawerHeight;
-
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      const deltaY = moveEvent.clientY - dragStartYRef.current;
-      // Dragging UP decreases clientY (deltaY < 0), expanding drawer height
-      const newHeight = startHeightRef.current - deltaY;
-      const viewportEl = chartContainerRef.current?.closest('.dso-viewport');
-      const maxH = viewportEl ? Math.max(220, viewportEl.clientHeight - 150) : 800;
-      const clamped = Math.max(MIN_DRAWER_HEIGHT, Math.min(maxH, newHeight));
-      setDrawerHeight(clamped);
-    };
-
-    const onMouseUp = () => {
-      setIsDraggingDrawer(false);
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-    };
-
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-  }, [drawerHeight, chartContainerRef]);
-
-  const handleSplitterTouchStart = useCallback((e: React.TouchEvent) => {
-    if (e.touches.length === 0) return;
-    setIsDraggingDrawer(true);
-    dragStartYRef.current = e.touches[0].clientY;
-    startHeightRef.current = drawerHeight;
-
-    const onTouchMove = (moveEvent: TouchEvent) => {
-      if (moveEvent.touches.length === 0) return;
-      const deltaY = moveEvent.touches[0].clientY - dragStartYRef.current;
-      const newHeight = startHeightRef.current - deltaY;
-      const viewportEl = chartContainerRef.current?.closest('.dso-viewport');
-      const maxH = viewportEl ? Math.max(220, viewportEl.clientHeight - 150) : 800;
-      const clamped = Math.max(MIN_DRAWER_HEIGHT, Math.min(maxH, newHeight));
-      setDrawerHeight(clamped);
-    };
-
-    const onTouchEnd = () => {
-      setIsDraggingDrawer(false);
-      window.removeEventListener('touchmove', onTouchMove);
-      window.removeEventListener('touchend', onTouchEnd);
-    };
-
-    window.addEventListener('touchmove', onTouchMove);
-    window.addEventListener('touchend', onTouchEnd);
-  }, [drawerHeight, chartContainerRef]);
-
-  const handleSplitterDoubleClick = useCallback(() => {
-    setDrawerHeight((prev) => (prev > 360 ? DEFAULT_DRAWER_HEIGHT : 480));
-  }, []);
-
   return (
     <div className="scope-view-tab-container">
-      {/* Unified Sleek DSO Toolbar */}
+      {/* Row 1: Scope Title, Channels, Flat Result View Switcher & Window Actions */}
       <div className="scope-tab-header dso-screen-osd">
-        <div className="scope-tab-title-group" style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flexShrink: 1 }}>
+        <div
+          className="scope-tab-title-group"
+          style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: '1 1 260px', overflow: 'hidden' }}
+        >
           <div className="scope-badge-icon" style={{ flexShrink: 0 }}>
             {selectedScope === 'all' ? '📊' : '📺'}
           </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, flexShrink: 0 }}>
-            <span className="scope-tab-title" title={filename ? `Circuit: ${filename}` : undefined}>
-              {graphRegister
-                ? (graphRegister.name.startsWith('SCOPE.') ? `Scope: ${graphRegister.name}` : graphRegister.name)
-                : (selectedScope === 'all' ? 'All Signals' : `Scope: ${selectedScope}`)}
-            </span>
-            {filename && (
-              <span className="scope-tab-subtitle" style={{ fontSize: '11px', opacity: 0.6 }}>
-                • {filename}
-              </span>
-            )}
-          </div>
+          <span
+            className="scope-tab-title"
+            style={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+            title={filename ? `Circuit: ${filename}` : undefined}
+          >
+            {graphRegister
+              ? (graphRegister.name.startsWith('SCOPE.') ? `Scope: ${graphRegister.name}` : graphRegister.name)
+              : (selectedScope === 'all' ? 'All Signals' : `Scope: ${selectedScope}`)}
+          </span>
 
           {/* Active channel pills with color dots */}
-          <div className="dso-channels-wrap" style={{ display: 'flex', alignItems: 'center', gap: 4, overflowX: 'auto', scrollbarWidth: 'none', margin: '0 4px' }}>
+          <div
+            className="dso-channels-wrap"
+            style={{ display: 'flex', alignItems: 'center', gap: 4, overflowX: 'auto', scrollbarWidth: 'none', minWidth: 0, flexShrink: 1 }}
+          >
             {filteredChannels.map((sig) => {
               const color = colorOf(sig);
               const isHovered = hoveredSignal === sig;
@@ -707,6 +845,7 @@ export function ScopeViewTab({
                     fontSize: 11,
                     fontFamily: 'var(--font-mono, monospace)',
                     whiteSpace: 'nowrap',
+                    flexShrink: 0,
                     color: isHovered ? color : 'var(--text)',
                     boxShadow: isHovered ? `0 0 6px ${color}60` : undefined,
                     opacity: isHidden ? 0.45 : 1,
@@ -742,6 +881,7 @@ export function ScopeViewTab({
                 color: 'var(--accent, #38bdf8)',
                 fontWeight: 600,
                 flexShrink: 0,
+                whiteSpace: 'nowrap',
               }}
               data-testid="scope-manage-channels-btn"
             >
@@ -750,183 +890,431 @@ export function ScopeViewTab({
           )}
         </div>
 
-        {/* Center: Layout Switcher + Auto-Group */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-          {graphRegister ? (
-            <div className="segmented-control" style={{ display: 'flex' }} data-testid="scope-tab-layout-switcher">
-              <button
-                type="button"
-                className={`segmented-btn ${graphRegister.numGraphs === 1 ? 'active' : ''}`}
-                onClick={() => {
-                  onUpdateGraphRegister?.({ numGraphs: 1 });
-                  onDisplayLayoutChange?.('overlay');
-                }}
-                title="1 Graph: Overlay all traces on a single plot"
-              >
-                📈 1 Graph
-              </button>
-              <button
-                type="button"
-                className={`segmented-btn ${graphRegister.numGraphs === 2 ? 'active' : ''}`}
-                onClick={() => {
-                  onUpdateGraphRegister?.({ numGraphs: 2 });
-                  onDisplayLayoutChange?.('2-graphs');
-                }}
-                title="2 Graphs: Split traces across 2 subplots"
-              >
-                📊 2 Graphs
-              </button>
-              <button
-                type="button"
-                className={`segmented-btn ${graphRegister.numGraphs === 3 ? 'active' : ''}`}
-                onClick={() => {
-                  onUpdateGraphRegister?.({ numGraphs: 3 });
-                  onDisplayLayoutChange?.('3-graphs');
-                }}
-                title="3 Graphs: Split traces across 3 subplots"
-              >
-                📑 3 Graphs
-              </button>
-            </div>
-          ) : onDisplayLayoutChange && (
-            <div className="segmented-control" style={{ display: 'flex' }} data-testid="scope-tab-layout-switcher">
-              <button
-                type="button"
-                className={`segmented-btn ${displayLayout === 'overlay' ? 'active' : ''}`}
-                onClick={() => onDisplayLayoutChange('overlay')}
-                title="1 Graph: Overlay all traces on a single plot"
-              >
-                📈 1 Graph
-              </button>
-              <button
-                type="button"
-                className={`segmented-btn ${displayLayout === '2-graphs' ? 'active' : ''}`}
-                onClick={() => onDisplayLayoutChange('2-graphs')}
-                title="2 Graphs: Split traces across 2 subplots"
-              >
-                📊 2 Graphs
-              </button>
-              <button
-                type="button"
-                className={`segmented-btn ${displayLayout === '3-graphs' ? 'active' : ''}`}
-                onClick={() => onDisplayLayoutChange('3-graphs')}
-                title="3 Graphs: Split traces across 3 subplots"
-              >
-                📑 3 Graphs
-              </button>
-              <button
-                type="button"
-                className={`segmented-btn ${displayLayout === 'stacked' ? 'active' : ''}`}
-                onClick={() => onDisplayLayoutChange('stacked')}
-                title="Stacked Lanes: Each trace in its own individual lane"
-              >
-                🪜 Stacked
-              </button>
-            </div>
-          )}
-
-          {(effectiveDisplayLayout === '2-graphs' || effectiveDisplayLayout === '3-graphs') && (
-            <button
-              type="button"
-              className="sim-mini-btn"
-              onClick={handleAutoGroupSignals}
-              title="Auto-organize traces: Voltages -> Graph 1, Currents -> Graph 2, Control -> Graph 3"
-              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', fontSize: '11px' }}
-            >
-              <span>⚡</span> Auto-Group
-            </button>
-          )}
-        </div>
-
-        {/* Right: Timebase, Fit, Cursors, Focus Mode, Status */}
         <div className="scope-tab-actions" style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          {/* Timebase Badge */}
-          <span
-            className="dso-osd-item"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 4,
-              fontSize: '11px',
-              fontFamily: 'var(--font-mono, monospace)',
-              color: 'var(--text-muted)',
-              background: 'var(--surface)',
-              padding: '2px 7px',
-              borderRadius: 4,
-              border: '1px solid var(--border)',
-            }}
-            title={`Timebase: ${formatEngineeringValue(timePerDiv, 's')}/div (Span: ${formatEngineeringValue(win.end - win.start, 's')})`}
-          >
-            ⏱ <strong className="dso-osd-val" style={{ color: 'var(--text)' }}>{formatEngineeringValue(timePerDiv, 's')}/div</strong>
-          </span>
-
-          {/* Fit Button */}
-          <button
-            type="button"
-            className="sim-mini-btn"
-            onClick={resetZoom}
-            title="Reset zoom & pan to fit full waveform (⟲)"
-            style={{ padding: '2px 8px', fontSize: '11px' }}
-          >
-            ⟲ Fit
-          </button>
-
-          {/* Cursors Toggle */}
-          <button
-            type="button"
-            className={`sim-mini-btn ${cursorsEnabled ? 'active' : ''}`}
-            onClick={() => {
-              if (cursorsEnabled) {
-                ctrl.clearCursors();
-                if (graphRegister) onUpdateGraphRegister?.({ cursorsEnabled: false });
-              } else {
-                ctrl.setCursorPreset();
-                if (graphRegister) onUpdateGraphRegister?.({ cursorsEnabled: true });
-              }
-            }}
-            title={cursorsEnabled ? 'Turn cursors OFF' : 'Turn cursors ON (places markers A & B)'}
-            style={{
-              padding: '2px 8px',
-              fontSize: '11px',
-              fontWeight: cursorsEnabled ? 700 : 500,
-              background: cursorsEnabled ? 'rgba(56, 189, 248, 0.2)' : undefined,
-              borderColor: cursorsEnabled ? 'var(--accent, #38bdf8)' : undefined,
-              color: cursorsEnabled ? 'var(--accent, #38bdf8)' : undefined,
-            }}
-          >
-            📍 Cursors{cursorsEnabled ? ' (ON)' : ''}
-          </button>
-
-          {/* Focus Mode (Sidebar Collapse/Restore) */}
-          {onToggleSidebar && (
+          {/* Flat Result View Switcher */}
+          <div className="segmented-control scope-view-switcher" data-testid="scope-view-switcher">
             <button
               type="button"
-              className={`sim-mini-btn ${!isSidebarOpen ? 'active' : ''}`}
-              onClick={onToggleSidebar}
-              title={isSidebarOpen ? 'Full-Width Focus Mode (Hide Settings Sidebar)' : 'Restore Settings Sidebar'}
-              style={{
-                padding: '2px 8px',
-                fontSize: '11px',
-                fontWeight: 600,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-              }}
+              data-testid="scope-view-tab-curves"
+              className={`segmented-btn ${drawerTab === null ? 'active' : ''}`}
+              onClick={() => setDrawerTab(null)}
+              title="Oscilloscope waveform traces"
             >
-              <span>{isSidebarOpen ? '⇥ Focus' : '⇤ Sidebar'}</span>
+              📈 Curves
             </button>
-          )}
+            <button
+              type="button"
+              data-testid="scope-view-tab-metrics"
+              className={`segmented-btn ${drawerTab === 'metrics' ? 'active' : ''}`}
+              onClick={() => setDrawerTab('metrics')}
+              title="Signal statistics table (Min, Max, Pk-Pk, RMS, Mean)"
+            >
+              📊 Metrics
+            </button>
+            <button
+              type="button"
+              data-testid="scope-view-tab-fft"
+              className={`segmented-btn ${drawerTab === 'fft' ? 'active' : ''}`}
+              onClick={() => setDrawerTab('fft')}
+              title="Harmonic FFT frequency spectrum"
+            >
+              〰 FFT
+            </button>
+            <button
+              type="button"
+              data-testid="scope-view-tab-losses"
+              className={`segmented-btn ${drawerTab === 'losses' ? 'active' : ''}`}
+              onClick={() => setDrawerTab('losses')}
+              title="Waveform power (p = v · i) and semiconductor losses"
+            >
+              ⚡ Losses
+            </button>
+            {sweepSession && (
+              <button
+                type="button"
+                data-testid="scope-view-tab-sweep"
+                className={`segmented-btn ${drawerTab === 'sweep' ? 'active' : ''}`}
+                onClick={() => setDrawerTab('sweep')}
+                title="Parametric sweep summary trend & CSV export"
+              >
+                🎚 Sweep
+              </button>
+            )}
+          </div>
 
           {/* Acquisition Status Pill */}
-          <div className={`dso-status-pill ${isRunning ? 'running' : status === 'FAILED' || errorMessage ? 'stop' : results ? 'auto' : 'stop'}`}>
+          <div className={`dso-status-pill ${isRunning ? 'running' : status === 'FAILED' || errorMessage ? 'stop' : effectiveResults ? 'auto' : 'stop'}`}>
             <span className="dso-status-dot" />
-            {isRunning ? 'RUNNING' : status === 'FAILED' || errorMessage ? 'FAILED' : results ? 'AUTO' : 'STOP'}
+            {isRunning ? 'RUNNING' : status === 'FAILED' || errorMessage ? 'FAILED' : effectiveResults ? 'AUTO' : 'STOP'}
           </div>
+
+          {onExpandToTab && (
+            <button
+              type="button"
+              data-testid="expand-waveforms-drawer-btn"
+              className="sim-mini-btn"
+              onClick={onExpandToTab}
+              title="Open full-screen Oscilloscope tab"
+              style={{ padding: '2px 6px', fontSize: '11px' }}
+            >
+              ⤢
+            </button>
+          )}
+          {onCollapseDrawer && (
+            <button
+              type="button"
+              data-testid="collapse-waveforms-drawer-btn"
+              className="sim-mini-btn"
+              onClick={onCollapseDrawer}
+              title="Hide Waveforms panel"
+              style={{ padding: '2px 6px', fontSize: '11px' }}
+            >
+              ✕
+            </button>
+          )}
         </div>
       </div>
 
-      {/* DSO Main Viewport (Screen Bezel + Optional Drawer) */}
-      <div className={`dso-viewport ${isDraggingDrawer ? 'dragging-drawer' : ''}`}>
+      {/* Row 2: Compact Chart Controls Bar (Layout, Timebase, Fit, Cursors, Save Reference) */}
+      {drawerTab === null && (
+        <div className="scope-controls-row" data-testid="scope-controls-row">
+          <div className="scope-controls-group">
+            {graphRegister ? (
+              <div className="segmented-control" style={{ display: 'flex' }} data-testid="scope-tab-layout-switcher">
+                <button
+                  type="button"
+                  className={`segmented-btn ${graphRegister.numGraphs === 1 ? 'active' : ''}`}
+                  onClick={() => {
+                    onUpdateGraphRegister?.({ numGraphs: 1 });
+                    onDisplayLayoutChange?.('overlay');
+                  }}
+                  title="1 Graph: Overlay all traces on a single plot"
+                >
+                  📈 1 Graph
+                </button>
+                <button
+                  type="button"
+                  className={`segmented-btn ${graphRegister.numGraphs === 2 ? 'active' : ''}`}
+                  onClick={() => {
+                    onUpdateGraphRegister?.({ numGraphs: 2 });
+                    onDisplayLayoutChange?.('2-graphs');
+                  }}
+                  title="2 Graphs: Split traces across 2 subplots"
+                >
+                  📊 2 Graphs
+                </button>
+                <button
+                  type="button"
+                  className={`segmented-btn ${graphRegister.numGraphs === 3 ? 'active' : ''}`}
+                  onClick={() => {
+                    onUpdateGraphRegister?.({ numGraphs: 3 });
+                    onDisplayLayoutChange?.('3-graphs');
+                  }}
+                  title="3 Graphs: Split traces across 3 subplots"
+                >
+                  📑 3 Graphs
+                </button>
+              </div>
+            ) : onDisplayLayoutChange && (
+              <div className="segmented-control" style={{ display: 'flex' }} data-testid="scope-tab-layout-switcher">
+                <button
+                  type="button"
+                  className={`segmented-btn ${displayLayout === 'overlay' ? 'active' : ''}`}
+                  onClick={() => onDisplayLayoutChange('overlay')}
+                  title="1 Graph: Overlay all traces on a single plot"
+                >
+                  📈 1 Graph
+                </button>
+                <button
+                  type="button"
+                  className={`segmented-btn ${displayLayout === '2-graphs' ? 'active' : ''}`}
+                  onClick={() => onDisplayLayoutChange('2-graphs')}
+                  title="2 Graphs: Split traces across 2 subplots"
+                >
+                  📊 2 Graphs
+                </button>
+                <button
+                  type="button"
+                  className={`segmented-btn ${displayLayout === '3-graphs' ? 'active' : ''}`}
+                  onClick={() => onDisplayLayoutChange('3-graphs')}
+                  title="3 Graphs: Split traces across 3 subplots"
+                >
+                  📑 3 Graphs
+                </button>
+                <button
+                  type="button"
+                  className={`segmented-btn ${displayLayout === 'stacked' ? 'active' : ''}`}
+                  onClick={() => onDisplayLayoutChange('stacked')}
+                  title="Stacked Lanes: Each trace in its own individual lane"
+                >
+                  🪜 Stacked
+                </button>
+              </div>
+            )}
+
+            {(effectiveDisplayLayout === '2-graphs' || effectiveDisplayLayout === '3-graphs') && (
+              <button
+                type="button"
+                className="sim-mini-btn"
+                onClick={handleAutoGroupSignals}
+                title="Auto-organize traces: Voltages -> Graph 1, Currents -> Graph 2, Control -> Graph 3"
+                style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', fontSize: '11px' }}
+              >
+                <span>⚡</span> Auto-Group
+              </button>
+            )}
+          </div>
+
+          <div className="scope-controls-group">
+            {/* Timebase Badge */}
+            <span
+              className="dso-osd-item"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                fontSize: '11px',
+                fontFamily: 'var(--font-mono, monospace)',
+                color: 'var(--text-muted)',
+                background: 'var(--surface)',
+                padding: '2px 7px',
+                borderRadius: 4,
+                border: '1px solid var(--border)',
+                whiteSpace: 'nowrap',
+              }}
+              title={`Timebase: ${formatEngineeringValue(timePerDiv, 's')}/div (Span: ${formatEngineeringValue(win.end - win.start, 's')})`}
+            >
+              ⏱ <strong className="dso-osd-val" style={{ color: 'var(--text)' }}>{formatEngineeringValue(timePerDiv, 's')}/div</strong>
+            </span>
+
+            {/* Fit Button */}
+            <button
+              type="button"
+              className="sim-mini-btn"
+              onClick={resetZoom}
+              title="Reset zoom & pan to fit full waveform (⟲)"
+              style={{ padding: '2px 8px', fontSize: '11px' }}
+            >
+              ⟲ Fit
+            </button>
+
+            {/* Cursors Toggle */}
+            <button
+              type="button"
+              className={`sim-mini-btn ${cursorsEnabled ? 'active' : ''}`}
+              onClick={() => {
+                if (cursorsEnabled) {
+                  ctrl.clearCursors();
+                  if (graphRegister) onUpdateGraphRegister?.({ cursorsEnabled: false });
+                } else {
+                  ctrl.setCursorPreset();
+                  if (graphRegister) onUpdateGraphRegister?.({ cursorsEnabled: true });
+                }
+              }}
+              title={cursorsEnabled ? 'Turn cursors OFF' : 'Turn cursors ON (places markers A & B)'}
+              style={{
+                padding: '2px 8px',
+                fontSize: '11px',
+                fontWeight: cursorsEnabled ? 700 : 500,
+                background: cursorsEnabled ? 'rgba(56, 189, 248, 0.2)' : undefined,
+                borderColor: cursorsEnabled ? 'var(--accent, #38bdf8)' : undefined,
+                color: cursorsEnabled ? 'var(--accent, #38bdf8)' : undefined,
+              }}
+            >
+              📍 Cursors{cursorsEnabled ? ' (ON)' : ''}
+            </button>
+
+            {/* Self-explanatory Before/After Reference Comparison */}
+            {onPinBaseline && (
+              !baseline ? (
+                <button
+                  type="button"
+                  data-testid="btn-pin-baseline"
+                  className="sim-mini-btn"
+                  disabled={!effectiveResults || signalNames.length === 0}
+                  onClick={onPinBaseline}
+                  title="Freeze these curves as a Before reference so you can compare against your next change"
+                  style={{ padding: '2px 8px', fontSize: '11px' }}
+                >
+                  ⇄ Save Reference
+                </button>
+              ) : (
+                <div className="dso-baseline-group" data-testid="baseline-controls">
+                  <button
+                    type="button"
+                    data-testid="btn-toggle-baseline"
+                    className={`sim-mini-btn ${isBaselineVisible ? 'active' : ''}`}
+                    onClick={handleToggleBaselineVisible}
+                    title={isBaselineVisible ? 'Hide dashed Before reference curves' : 'Show dashed Before reference curves'}
+                  >
+                    {isBaselineVisible ? '⇄ Reference ON' : '⇄ Reference OFF'}
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="btn-repin-baseline"
+                    className="sim-mini-btn"
+                    disabled={!effectiveResults || signalNames.length === 0}
+                    onClick={onPinBaseline}
+                    title="Overwrite saved reference with current curves"
+                  >
+                    ↺ Update
+                  </button>
+                  {onClearBaseline && (
+                    <button
+                      type="button"
+                      data-testid="btn-clear-baseline"
+                      className="sim-mini-btn"
+                      onClick={onClearBaseline}
+                      title="Remove saved reference comparison"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              )
+            )}
+
+            {/* Focus Mode (only when not in docked bottom drawer) */}
+            {onToggleSidebar && !onCollapseDrawer && (
+              <button
+                type="button"
+                className={`sim-mini-btn ${!isSidebarOpen ? 'active' : ''}`}
+                onClick={onToggleSidebar}
+                title={isSidebarOpen ? 'Hide Settings Sidebar' : 'Show Settings Sidebar'}
+                style={{ padding: '2px 8px', fontSize: '11px', fontWeight: 600 }}
+              >
+                {isSidebarOpen ? '⇥ Focus' : '⇤ Sidebar'}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Clear Reference Comparison Banner — gives instant visual confirmation */}
+      {baseline && (
+        <div className="scope-baseline-banner" data-testid="baseline-status-banner">
+          <span className="scope-baseline-banner-text">
+            {hasBaselineDiff ? (
+              <>
+                <strong>⇄ Comparing vs. Reference</strong> — dashed = before, solid = after
+              </>
+            ) : (
+              <>
+                <strong>📌 Reference saved</strong> — now change a component value &amp; run{' '}
+                <kbd className="kbd-shortcut">F5</kbd> to see before (dashed) vs. after (solid)
+              </>
+            )}
+          </span>
+          {onClearBaseline && (
+            <button
+              type="button"
+              className="sim-mini-btn"
+              onClick={onClearBaseline}
+              title="Clear saved reference"
+            >
+              Clear Ref
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Synchronized Sweep Step Bar — controls ALL scope channels & schematic values together */}
+      {sweepSession && (
+        <div className="sweep-step-bar" data-testid="sweep-step-bar">
+          <span className="sweep-step-bar-label">
+            🎚 Sweep <strong>{sweepSession.paramLabel}</strong>:
+          </span>
+
+          {sweepSession.status === 'RUNNING' ? (
+            <span className="sweep-step-progress">
+              Running {sweepSession.completedRuns}/{sweepSession.totalRuns} (
+              {Math.round(sweepSession.progress * 100)}%)…
+            </span>
+          ) : (
+            <>
+              <div className="sweep-step-pills" role="group" aria-label="Sweep step selector">
+                {completedSweepRuns.map((run) => {
+                  const isActive = !sweepOverlayAll && activeSweepRun?.index === run.index;
+                  const color = sweepRunColor(run.index, sweepSession.totalRuns, theme);
+                  return (
+                    <button
+                      key={run.index}
+                      type="button"
+                      data-testid={`sweep-step-pill-${run.index}`}
+                      className={`sweep-step-pill ${isActive ? 'active' : ''}`}
+                      onClick={() => {
+                        setSweepOverlayAll(false);
+                        setActiveSweepStepIndex(run.index);
+                      }}
+                      title={`Inspect step ${run.index + 1}/${sweepSession.totalRuns}: ${sweepSession.componentName} = ${formatEngineeringValue(run.parameterValue, sweepSession.unit)} across all signals & schematic readouts`}
+                    >
+                      <span className="sweep-step-dot" style={{ backgroundColor: color }} />
+                      <span>{formatEngineeringValue(run.parameterValue, sweepSession.unit)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {completedSweepRuns.length > 0 && (
+                <button
+                  type="button"
+                  data-testid="sweep-all-curves-btn"
+                  className={`sim-mini-btn ${sweepOverlayAll ? 'active' : ''}`}
+                  onClick={() => setSweepOverlayAll(!sweepOverlayAll)}
+                  title="Overlay all sweep steps across every visible waveform channel"
+                >
+                  All Curves ({completedSweepRuns.length})
+                </button>
+              )}
+
+              {activeSweepRun && onApplySweepValue && (
+                <button
+                  type="button"
+                  data-testid="sweep-apply-active-btn"
+                  className="sim-mini-btn active"
+                  onClick={() =>
+                    onApplySweepValue(
+                      sweepSession.componentName,
+                      sweepSession.paramKey,
+                      activeSweepRun.parameterValue,
+                    )
+                  }
+                  title={`Apply ${formatEngineeringValue(activeSweepRun.parameterValue, sweepSession.unit)} to ${sweepSession.componentName}`}
+                >
+                  ✓ Apply {formatEngineeringValue(activeSweepRun.parameterValue, sweepSession.unit)}
+                </button>
+              )}
+            </>
+          )}
+
+          {onClearSweep && (
+            <button
+              type="button"
+              data-testid="sweep-bar-close-btn"
+              className="sim-mini-btn sweep-bar-close-btn"
+              onClick={onClearSweep}
+              title="Close sweep preview and return to normal simulation"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* DSO Main Viewport (Single flat view: Curves, Metrics, FFT, Losses, or Sweep) */}
+      <div className="dso-viewport">
+        {onPinSlider && onUnpinSlider && onUpdateSliderConfig && onCommitSliderValue && (
+          <LiveSliderBar
+            pinnedSliders={pinnedSliders}
+            components={components}
+            isOpen={tuneBarOpen}
+            onPinSlider={onPinSlider}
+            onUnpinSlider={onUnpinSlider}
+            onUpdateSliderConfig={onUpdateSliderConfig}
+            onCommitValue={onCommitSliderValue}
+            isSimRunning={isRunning}
+          />
+        )}
         {(status === 'FAILED' || Boolean(errorMessage)) && (
           <div
             className="sim-error-box scope-error-banner"
@@ -981,7 +1369,7 @@ export function ScopeViewTab({
             </ul>
           </div>
         )}
-        {!results || signalNames.length === 0 ? (
+        {!effectiveResults || signalNames.length === 0 ? (
           graphRegister ? (
             <div className="scope-empty-state pre-sim-screen" data-testid="scope-pre-sim-state">
               <div className="empty-icon">📈</div>
@@ -1043,10 +1431,11 @@ export function ScopeViewTab({
               )}
               {onRunSimulation && (
                 <div style={{ marginTop: 16 }}>
-                  <button
+                    <button
                     type="button"
                     className="sim-mini-btn active"
                     onClick={onRunSimulation}
+                    title="Run Simulation (F5)"
                     style={{
                       padding: '8px 20px',
                       fontSize: '14px',
@@ -1060,7 +1449,7 @@ export function ScopeViewTab({
                       cursor: 'pointer',
                     }}
                   >
-                    <span>▶</span> Run Simulation (F5)
+                    <span aria-hidden="true">▶</span> Run Simulation
                   </button>
                 </div>
               )}
@@ -1108,211 +1497,159 @@ export function ScopeViewTab({
           </div>
         ) : (
           <>
-            {/* The Oscilloscope Screen Bezel */}
-            <div className="dso-screen-bezel">
-
-              {/* Central Chart Viewport with responsive ResizeObserver */}
-              <div className="dso-chart-container" ref={chartContainerRef}>
-                {effectiveDisplayLayout === 'stacked' ? (
-                  <FullScreenStackedChart
-                    width={chartDimensions.width}
-                    height={chartDimensions.height}
-                    time={timeArray}
-                    signals={results}
-                    activeSignals={visibleSignals}
-                    colorOf={colorOf}
-                    theme={theme}
-                    hoverIndex={hoverIndex}
-                    onHoverIndex={setHoverIndex}
-                    cursorA={cursorA}
-                    cursorB={cursorB}
-                    cursorsEnabled={cursorsEnabled}
-                    activeCursor={activeCursor}
-                    onSetActiveCursor={setActiveCursor}
-                    onSetCursor={placeCursorAtSample}
-                    viewStart={win.start}
-                    viewEnd={win.end}
-                    onZoomAt={zoomAt}
-                    onZoomRange={zoomRange}
-                    onResetZoom={resetZoom}
-                    onPanSeconds={(delta) => setView(panWindow(win, delta, dataT0, dataT1))}
-                    onOpenContextMenu={handleOpenChartContextMenu}
-                  />
-                ) : effectiveDisplayLayout === '2-graphs' || effectiveDisplayLayout === '3-graphs' ? (
-                  <FullScreenMultiGraphChart
-                    numGraphs={effectiveDisplayLayout === '2-graphs' ? 2 : 3}
-                    width={chartDimensions.width}
-                    height={chartDimensions.height}
-                    time={timeArray}
-                    signals={results}
-                    activeSignals={visibleSignals}
-                    signalGraphs={effectiveSignalGraphs}
-                    onMoveSignalToGraph={handleMoveSignalToGraph}
-                    colorOf={colorOf}
-                    theme={theme}
-                    hoverIndex={hoverIndex}
-                    onHoverIndex={setHoverIndex}
-                    cursorA={cursorA}
-                    cursorB={cursorB}
-                    cursorsEnabled={cursorsEnabled}
-                    activeCursor={activeCursor}
-                    onSetActiveCursor={setActiveCursor}
-                    onSetCursor={placeCursorAtSample}
-                    viewStart={win.start}
-                    viewEnd={win.end}
-                    onZoomAt={zoomAt}
-                    onZoomRange={zoomRange}
-                    onResetZoom={resetZoom}
-                    onPanSeconds={(delta) => setView(panWindow(win, delta, dataT0, dataT1))}
-                    hoveredSignal={hoveredSignal}
-                    onHoverSignal={setHoveredSignal}
-                    onToggleSignal={handleToggleSignal}
-                    onOpenContextMenu={handleOpenChartContextMenu}
-                  />
-                ) : (
-                  <FullScreenOverlayChart
-                    width={chartDimensions.width}
-                    height={chartDimensions.height}
-                    time={timeArray}
-                    signals={results}
-                    activeSignals={visibleSignals}
-                    colorOf={colorOf}
-                    theme={theme}
-                    hoverIndex={hoverIndex}
-                    onHoverIndex={setHoverIndex}
-                    cursorA={cursorA}
-                    cursorB={cursorB}
-                    cursorsEnabled={cursorsEnabled}
-                    activeCursor={activeCursor}
-                    onSetActiveCursor={setActiveCursor}
-                    onSetCursor={placeCursorAtSample}
-                    viewStart={win.start}
-                    viewEnd={win.end}
-                    onZoomAt={zoomAt}
-                    onZoomRange={zoomRange}
-                    onResetZoom={resetZoom}
-                    onPanSeconds={(delta) => setView(panWindow(win, delta, dataT0, dataT1))}
-                    yScaleMode={yScaleMode}
-                    yZoomRange={yView}
-                    onZoomYRange={setYView}
-                    hoveredSignal={hoveredSignal}
-                    onHoverSignal={setHoveredSignal}
-                    onToggleSignal={handleToggleSignal}
-                    onOpenContextMenu={handleOpenChartContextMenu}
-                  />
-                )}
-              </div>
-
-              {/* Screen Bottom Quick-Measurement Strip */}
-              <div className="dso-quick-measure-bar">
-                <div className="dso-quick-tiles">
-                  {visibleSignals.map((name) => {
-                    const st = signalStats[name];
-                    if (!st) return null;
-                    const unit = inferSignalUnit(name);
-                    const color = colorOf(name);
-                    const isHovered = hoveredSignal === name;
-                    return (
-                      <div
-                        key={name}
-                        className={`dso-measure-tile ${isHovered ? 'highlighted' : ''}`}
-                        style={{
-                          borderLeft: `3px solid ${color}`,
-                          boxShadow: isHovered ? `0 0 8px ${color}60` : undefined,
-                        }}
-                        onMouseEnter={() => setHoveredSignal(name)}
-                        onMouseLeave={() => setHoveredSignal(null)}
-                      >
-                        <span style={{ color, fontWeight: 700 }}>{name}</span>
-                        <span>Vpp: <strong className="dso-measure-tile-val">{formatEngineeringValue(st.pkpk, unit)}</strong></span>
-                        <span>Vrms: <strong className="dso-measure-tile-val">{formatEngineeringValue(st.rms, unit)}</strong></span>
-                        <span>Mean: <strong className="dso-measure-tile-val">{formatEngineeringValue(st.mean, unit)}</strong></span>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <button
-                  type="button"
-                  className="dso-drawer-toggle-btn"
-                  onClick={() => setDrawerTab((prev) => (prev ? null : 'metrics'))}
-                >
-                  📊 Analysis Drawer {drawerTab ? '▼' : '▲'}
-                </button>
-              </div>
-            </div>
-
-            {/* Draggable Divider Splitter between Scope Graph & Analysis Drawer */}
-            {drawerTab && (
-              <div
-                className={`dso-drawer-splitter ${isDraggingDrawer ? 'dragging' : ''}`}
-                onMouseDown={handleSplitterMouseDown}
-                onTouchStart={handleSplitterTouchStart}
-                onDoubleClick={handleSplitterDoubleClick}
-                title="Drag to resize analysis drawer vs. scope graph (Double-click to toggle height)"
-                role="separator"
-                aria-orientation="horizontal"
-                aria-label="Resize Analysis Drawer"
-              >
-                <div className="dso-splitter-handle">
-                  <span className="dso-splitter-grip" />
-                </div>
-              </div>
-            )}
-
-            {/* Collapsible Bottom Analysis Drawer */}
-            {drawerTab && (
-              <div
-                className="dso-bottom-drawer"
-                style={{ height: `${drawerHeight}px` }}
-              >
-                <div className="dso-drawer-tabs">
-                  <div className="dso-tab-group">
-                    <button
-                      type="button"
-                      className={`dso-tab-btn ${drawerTab === 'metrics' ? 'active' : ''}`}
-                      onClick={() => setDrawerTab('metrics')}
-                    >
-                      📊 Signal Statistics
-                    </button>
-                    <button
-                      type="button"
-                      className={`dso-tab-btn ${drawerTab === 'fft' ? 'active' : ''}`}
-                      onClick={() => setDrawerTab('fft')}
-                    >
-                      〰 FFT Spectrum
-                    </button>
-                    <button
-                      type="button"
-                      className={`dso-tab-btn ${drawerTab === 'losses' ? 'active' : ''}`}
-                      onClick={() => setDrawerTab('losses')}
-                      title="Waveform Power (p = v · i) and Semiconductor Loss Analysis"
-                    >
-                      ⚡ Power & Losses
-                    </button>
+            {/* Primary Content based on flat view tab */}
+            {drawerTab === null ? (
+              <>
+                <div className="dso-screen-bezel">
+                  <div className="dso-chart-container" ref={chartContainerRef}>
+                    {effectiveDisplayLayout === 'stacked' ? (
+                      <FullScreenStackedChart
+                        width={chartDimensions.width}
+                        height={chartDimensions.height}
+                        time={timeArray}
+                        signals={effectiveResults}
+                        activeSignals={visibleSignals}
+                        colorOf={colorOf}
+                        theme={theme}
+                        hoverIndex={hoverIndex}
+                        onHoverIndex={setHoverIndex}
+                        cursorA={cursorA}
+                        cursorB={cursorB}
+                        cursorsEnabled={cursorsEnabled}
+                        activeCursor={activeCursor}
+                        onSetActiveCursor={setActiveCursor}
+                        onSetCursor={placeCursorAtSample}
+                        viewStart={win.start}
+                        viewEnd={win.end}
+                        onZoomAt={zoomAt}
+                        onZoomRange={zoomRange}
+                        onResetZoom={resetZoom}
+                        onPanSeconds={(delta) => setView(panWindow(win, delta, dataT0, dataT1))}
+                        onOpenContextMenu={handleOpenChartContextMenu}
+                        baselineResults={baselineResults}
+                        sweepOverlays={sweepOverlays}
+                        sweepSignal={effectiveSweepSignal}
+                      />
+                    ) : effectiveDisplayLayout === '2-graphs' || effectiveDisplayLayout === '3-graphs' ? (
+                      <FullScreenMultiGraphChart
+                        numGraphs={effectiveDisplayLayout === '2-graphs' ? 2 : 3}
+                        width={chartDimensions.width}
+                        height={chartDimensions.height}
+                        time={timeArray}
+                        signals={effectiveResults}
+                        activeSignals={visibleSignals}
+                        signalGraphs={effectiveSignalGraphs}
+                        onMoveSignalToGraph={handleMoveSignalToGraph}
+                        colorOf={colorOf}
+                        theme={theme}
+                        hoverIndex={hoverIndex}
+                        onHoverIndex={setHoverIndex}
+                        cursorA={cursorA}
+                        cursorB={cursorB}
+                        cursorsEnabled={cursorsEnabled}
+                        activeCursor={activeCursor}
+                        onSetActiveCursor={setActiveCursor}
+                        onSetCursor={placeCursorAtSample}
+                        viewStart={win.start}
+                        viewEnd={win.end}
+                        onZoomAt={zoomAt}
+                        onZoomRange={zoomRange}
+                        onResetZoom={resetZoom}
+                        onPanSeconds={(delta) => setView(panWindow(win, delta, dataT0, dataT1))}
+                        hoveredSignal={hoveredSignal}
+                        onHoverSignal={setHoveredSignal}
+                        onToggleSignal={handleToggleSignal}
+                        onOpenContextMenu={handleOpenChartContextMenu}
+                        baselineResults={baselineResults}
+                        sweepOverlays={sweepOverlays}
+                        sweepSignal={effectiveSweepSignal}
+                      />
+                    ) : (
+                      <FullScreenOverlayChart
+                        width={chartDimensions.width}
+                        height={chartDimensions.height}
+                        time={timeArray}
+                        signals={effectiveResults}
+                        activeSignals={visibleSignals}
+                        colorOf={colorOf}
+                        theme={theme}
+                        hoverIndex={hoverIndex}
+                        onHoverIndex={setHoverIndex}
+                        cursorA={cursorA}
+                        cursorB={cursorB}
+                        cursorsEnabled={cursorsEnabled}
+                        activeCursor={activeCursor}
+                        onSetActiveCursor={setActiveCursor}
+                        onSetCursor={placeCursorAtSample}
+                        viewStart={win.start}
+                        viewEnd={win.end}
+                        onZoomAt={zoomAt}
+                        onZoomRange={zoomRange}
+                        onResetZoom={resetZoom}
+                        onPanSeconds={(delta) => setView(panWindow(win, delta, dataT0, dataT1))}
+                        yScaleMode={yScaleMode}
+                        yZoomRange={yView}
+                        onZoomYRange={setYView}
+                        hoveredSignal={hoveredSignal}
+                        onHoverSignal={setHoveredSignal}
+                        onToggleSignal={handleToggleSignal}
+                        onOpenContextMenu={handleOpenChartContextMenu}
+                        baselineResults={baselineResults}
+                        sweepOverlays={sweepOverlays}
+                        sweepSignal={effectiveSweepSignal}
+                      />
+                    )}
                   </div>
-                  <div className="dso-drawer-actions">
-                    <button
-                      type="button"
-                      className="dso-drawer-size-btn"
-                      onClick={() => setDrawerHeight((prev) => (prev > 360 ? DEFAULT_DRAWER_HEIGHT : 480))}
-                      title={drawerHeight > 360 ? 'Compact drawer height' : 'Enlarge drawer height'}
-                    >
-                      {drawerHeight > 360 ? '⤡ Compact' : '⤢ Enlarge'}
-                    </button>
-                    <button
-                      type="button"
-                      className="dso-drawer-close-btn"
-                      onClick={() => setDrawerTab(null)}
-                      title="Minimize Analysis Drawer"
-                    >
-                      ✕ Minimize
-                    </button>
+
+                  {/* Screen Bottom Quick-Measurement Strip */}
+                  <div className="dso-quick-measure-bar">
+                    <div className="dso-quick-tiles">
+                      {visibleSignals.map((name) => {
+                        const st = signalStats[name];
+                        if (!st) return null;
+                        const unit = inferSignalUnit(name);
+                        const color = colorOf(name);
+                        const isHovered = hoveredSignal === name;
+                        const cmp = baselineComparisons[name];
+                        const deltaCls = cmp
+                          ? cmp.mean.absDelta > 1e-12
+                            ? 'pos'
+                            : cmp.mean.absDelta < -1e-12
+                              ? 'neg'
+                              : ''
+                          : '';
+                        return (
+                          <div
+                            key={name}
+                            className={`dso-measure-tile ${isHovered ? 'highlighted' : ''}`}
+                            style={{
+                              borderLeft: `3px solid ${color}`,
+                              boxShadow: isHovered ? `0 0 8px ${color}60` : undefined,
+                            }}
+                            onMouseEnter={() => setHoveredSignal(name)}
+                            onMouseLeave={() => setHoveredSignal(null)}
+                          >
+                            <span style={{ color, fontWeight: 700 }}>{name}</span>
+                            <span>Vpp: <strong className="dso-measure-tile-val">{formatEngineeringValue(st.pkpk, unit)}</strong></span>
+                            <span>Vrms: <strong className="dso-measure-tile-val">{formatEngineeringValue(st.rms, unit)}</strong></span>
+                            <span>Mean: <strong className="dso-measure-tile-val">{formatEngineeringValue(st.mean, unit)}</strong></span>
+                            {cmp && (
+                              <span className={`dso-delta-chip ${deltaCls}`} data-testid={`quick-delta-${name}`}>
+                                ΔMean: {formatDeltaBadge(cmp.mean, unit, formatEngineeringValue)}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
-
-                <div className="dso-drawer-content">
-                  {drawerTab === 'metrics' && (
+              </>
+            ) : (
+              <div className="dso-flat-panel" data-testid={`scope-flat-${drawerTab}`}>
+                {drawerTab === 'metrics' && (() => {
+                  const showDeltaCols = Boolean(baseline && isBaselineVisible);
+                  return (
                     <table className="scope-metrics-table">
                       <thead>
                         <tr>
@@ -1322,6 +1659,13 @@ export function ScopeViewTab({
                           <th>Peak-to-Peak</th>
                           <th>RMS</th>
                           <th>Mean (Avg)</th>
+                          {showDeltaCols && (
+                            <>
+                              <th>Δ Mean</th>
+                              <th>Δ RMS</th>
+                              <th>Δ Pk-Pk</th>
+                            </>
+                          )}
                           <th>Status</th>
                         </tr>
                       </thead>
@@ -1332,6 +1676,7 @@ export function ScopeViewTab({
                           const color = colorOf(name);
                           const isHidden = isSignalHidden(name);
                           const unit = inferSignalUnit(name);
+                          const cmp = showDeltaCols ? baselineComparisons[name] : undefined;
                           return (
                             <tr
                               key={name}
@@ -1348,6 +1693,24 @@ export function ScopeViewTab({
                               <td>{formatEngineeringValue(st.pkpk, unit)}</td>
                               <td>{formatEngineeringValue(st.rms, unit)}</td>
                               <td>{formatEngineeringValue(st.mean, unit)}</td>
+                              {showDeltaCols && (
+                                <>
+                                  {[cmp?.mean, cmp?.rms, cmp?.pkpk].map((delta, dIdx) => {
+                                    if (!delta) return <td key={dIdx} className="dso-delta-cell">—</td>;
+                                    const cls =
+                                      delta.absDelta > 1e-12 ? 'pos' : delta.absDelta < -1e-12 ? 'neg' : '';
+                                    return (
+                                      <td
+                                        key={dIdx}
+                                        className={`dso-delta-cell ${cls}`}
+                                        title={`Baseline: ${formatEngineeringValue(delta.baseline, unit)}`}
+                                      >
+                                        {formatDeltaBadge(delta, unit, formatEngineeringValue)}
+                                      </td>
+                                    );
+                                  })}
+                                </>
+                              )}
                               <td>
                                 <span className={`channel-status-pill ${isHidden ? 'off' : 'on'}`}>
                                   {isHidden ? 'Hidden' : 'Active'}
@@ -1358,30 +1721,54 @@ export function ScopeViewTab({
                         })}
                       </tbody>
                     </table>
-                  )}
+                  );
+                })()}
 
-                  {drawerTab === 'fft' && (
-                    <FftPanel
-                      time={timeArray}
-                      signals={results}
-                      activeSignals={visibleSignals}
-                      viewStart={win.start}
-                      viewEnd={win.end}
-                    />
-                  )}
+                {drawerTab === 'fft' && (
+                  <FftPanel
+                    time={timeArray}
+                    signals={effectiveResults}
+                    activeSignals={visibleSignals}
+                    viewStart={win.start}
+                    viewEnd={win.end}
+                  />
+                )}
 
-                  {drawerTab === 'losses' && (
-                    <LossPanel
-                      time={timeArray}
-                      signals={results || undefined}
-                      activeSignals={visibleSignals}
-                      cursorA={cursorA}
-                      cursorB={cursorB}
-                      colorOf={colorOf}
-                      components={components}
-                    />
-                  )}
-                </div>
+                {drawerTab === 'losses' && (
+                  <LossPanel
+                    time={timeArray}
+                    signals={effectiveResults || undefined}
+                    activeSignals={visibleSignals}
+                    cursorA={cursorA}
+                    cursorB={cursorB}
+                    colorOf={colorOf}
+                    components={components}
+                  />
+                )}
+
+                {drawerTab === 'sweep' && (
+                  <SweepPanel
+                    sweepSession={sweepSession}
+                    availableSignals={filteredChannels.length > 0 ? filteredChannels : signalNames}
+                    theme={theme}
+                    overlayEnabled={sweepOverlayAll}
+                    onToggleOverlay={setSweepOverlayAll}
+                    selectedSignal={effectiveSweepSignal}
+                    onSelectSignal={setSweepSelectedSignal}
+                    highlightedRunIndex={sweepHighlightedRun}
+                    onHighlightRun={(idx) => {
+                      setSweepHighlightedRun(idx);
+                      if (idx !== null) {
+                        setActiveSweepStepIndex(idx);
+                      }
+                    }}
+                    onApplyValue={onApplySweepValue}
+                    onClearSweep={() => {
+                      onClearSweep?.();
+                      setDrawerTab(null);
+                    }}
+                  />
+                )}
               </div>
             )}
           </>
@@ -1665,6 +2052,9 @@ function FullScreenOverlayChart({
   onHoverSignal,
   onToggleSignal,
   onOpenContextMenu,
+  baselineResults = null,
+  sweepOverlays = [],
+  sweepSignal: _sweepSignal = '',
 }: {
   width?: number;
   height?: number;
@@ -1694,7 +2084,11 @@ function FullScreenOverlayChart({
   onHoverSignal?: (name: string | null) => void;
   onToggleSignal?: (name: string) => void;
   onOpenContextMenu?: (x: number, y: number, sampleIdx: number | null) => void;
+  baselineResults?: Record<string, number[]> | null;
+  sweepOverlays?: SweepOverlayTrace[];
+  sweepSignal?: string;
 }) {
+  const hasAnyHighlightedSweep = sweepOverlays.some((ov) => ov.highlighted);
   const padLeft = 68;
   const padRight = 24;
   const padTop = 20;
@@ -1723,14 +2117,24 @@ function FullScreenOverlayChart({
   const { globalMinY, globalMaxY } = useMemo(() => {
     let y0 = Infinity;
     let y1 = -Infinity;
-    for (const name of activeSignals) {
-      const arr = signals[name] || [];
+    const scan = (arr: number[]) => {
       for (let i = 0; i < arr.length; i++) {
         const v = arr[i];
         if (v !== undefined) {
           if (v < y0) y0 = v;
           if (v > y1) y1 = v;
         }
+      }
+    };
+    for (const name of activeSignals) {
+      scan(signals[name] || []);
+      if (baselineResults?.[name]) {
+        scan(baselineResults[name]);
+      }
+    }
+    for (const ov of sweepOverlays) {
+      for (const name of activeSignals) {
+        if (ov.signals[name]) scan(ov.signals[name]);
       }
     }
     if (!Number.isFinite(y0) || !Number.isFinite(y1)) {
@@ -1743,22 +2147,34 @@ function FullScreenOverlayChart({
     }
     const yPad = (y1 - y0) * 0.08;
     return { globalMinY: y0 - yPad, globalMaxY: y1 + yPad };
-  }, [activeSignals, signals]);
+  }, [activeSignals, signals, baselineResults, sweepOverlays]);
 
   // Visible slice min/max (used only when user switches to 'auto' Y-scale)
   const { sliceMinY, sliceMaxY } = useMemo(() => {
     let y0 = Infinity;
     let y1 = -Infinity;
-    const i0 = sampleIndexAt(time, minT);
-    const i1 = sampleIndexAt(time, maxT);
-    for (const name of activeSignals) {
-      const arr = signals[name] || [];
-      for (let i = i0; i <= i1 && i < arr.length; i++) {
+    const scanSlice = (tVec: number[], arr: number[]) => {
+      if (tVec.length === 0 || arr.length === 0) return;
+      const s0 = sampleIndexAt(tVec, minT);
+      const s1 = sampleIndexAt(tVec, maxT);
+      for (let i = s0; i <= s1 && i < arr.length; i++) {
         const v = arr[i];
         if (v !== undefined) {
           if (v < y0) y0 = v;
           if (v > y1) y1 = v;
         }
+      }
+    };
+    const bTime = baselineResults?.['time'] || [];
+    for (const name of activeSignals) {
+      scanSlice(time, signals[name] || []);
+      if (baselineResults && bTime.length > 0 && baselineResults[name]) {
+        scanSlice(bTime, baselineResults[name]);
+      }
+    }
+    for (const ov of sweepOverlays) {
+      for (const name of activeSignals) {
+        if (ov.signals[name]) scanSlice(ov.time, ov.signals[name]);
       }
     }
     if (!Number.isFinite(y0) || !Number.isFinite(y1)) {
@@ -1771,7 +2187,7 @@ function FullScreenOverlayChart({
     }
     const yPad = (y1 - y0) * 0.08;
     return { sliceMinY: y0 - yPad, sliceMaxY: y1 + yPad };
-  }, [time, signals, activeSignals, minT, maxT]);
+  }, [time, signals, baselineResults, sweepOverlays, activeSignals, minT, maxT]);
 
   // If 2D box zoomed, use yZoomRange; else fixed or slice
   const { minY, maxY } = useMemo(() => {
@@ -1868,6 +2284,45 @@ function FullScreenOverlayChart({
       return { name, path: d };
     });
   }, [activeSignals, time, signals, minT, maxT, minY, maxY]);
+
+  const baselinePaths = useMemo(() => {
+    if (!baselineResults) return [];
+    const bTime = baselineResults['time'] || [];
+    if (bTime.length === 0) return [];
+    return activeSignals
+      .map((name) => {
+        const arr = baselineResults[name];
+        if (!arr || arr.length === 0) return { name, path: '' };
+        return {
+          name,
+          path: buildTraceSvgPath(bTime, arr, minT, maxT, mapX, mapY),
+        };
+      })
+      .filter((item) => item.path !== '');
+  }, [activeSignals, baselineResults, minT, maxT, minY, maxY, plotW, plotH, padLeft, padTop]);
+
+  const sweepPaths = useMemo(() => {
+    if (sweepOverlays.length === 0 || activeSignals.length === 0) return [];
+    const items: { runIndex: number; signal: string; label: string; color: string; path: string; highlighted: boolean }[] = [];
+    for (const sigName of activeSignals) {
+      for (const ov of sweepOverlays) {
+        const arr = ov.signals[sigName];
+        if (!arr || arr.length === 0 || ov.time.length === 0) continue;
+        const path = buildTraceSvgPath(ov.time, arr, minT, maxT, mapX, mapY);
+        if (path) {
+          items.push({
+            runIndex: ov.runIndex,
+            signal: sigName,
+            label: ov.label,
+            color: ov.color,
+            path,
+            highlighted: ov.highlighted,
+          });
+        }
+      }
+    }
+    return items;
+  }, [sweepOverlays, activeSignals, minT, maxT, minY, maxY, plotW, plotH, padLeft, padTop]);
 
   // Compute collision-free direct trace end badges at right plot edge
   const traceBadges = useMemo(() => {
@@ -2187,6 +2642,33 @@ function FullScreenOverlayChart({
 
         {/* Waveform Traces (clipped to the visible window) */}
         <g clipPath="url(#overlay-plot-clip)">
+        {sweepPaths.map((ov) => (
+          <path
+            key={`sweep-${ov.runIndex}-${ov.signal}`}
+            data-testid={`sweep-trace-${ov.runIndex}-${ov.signal}`}
+            d={ov.path}
+            fill="none"
+            stroke={ov.color}
+            strokeWidth={ov.highlighted ? 2.6 : 1.5}
+            strokeOpacity={hasAnyHighlightedSweep && !ov.highlighted ? 0.25 : 0.8}
+            strokeLinejoin="round"
+            pointerEvents="none"
+          />
+        ))}
+        {baselinePaths.map(({ name, path }) => (
+          <path
+            key={`baseline-${name}`}
+            data-testid={`baseline-trace-${name}`}
+            d={path}
+            fill="none"
+            stroke={colorOf(name)}
+            strokeOpacity={0.42}
+            strokeDasharray="5 4"
+            strokeWidth={1.5}
+            strokeLinejoin="round"
+            pointerEvents="none"
+          />
+        ))}
         {tracePaths.map(({ name, path }) => {
           const color = colorOf(name);
           const isHighlighted = currentHoveredSignal === name;
@@ -2511,6 +2993,9 @@ function FullScreenMultiGraphChart({
   onPanSeconds,
   hoveredSignal,
   onOpenContextMenu,
+  baselineResults = null,
+  sweepOverlays = [],
+  sweepSignal: _sweepSignal = '',
 }: {
   numGraphs: 2 | 3;
   width?: number;
@@ -2540,6 +3025,9 @@ function FullScreenMultiGraphChart({
   onHoverSignal?: (s: string | null) => void;
   onToggleSignal?: (s: string) => void;
   onOpenContextMenu?: (x: number, y: number, sampleIdx: number | null) => void;
+  baselineResults?: Record<string, number[]> | null;
+  sweepOverlays?: SweepOverlayTrace[];
+  sweepSignal?: string;
 }) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [dragBox, setDragBox] = useState<{ startX: number; currentX: number } | null>(null);
@@ -2712,7 +3200,11 @@ function FullScreenMultiGraphChart({
   const iWin1 = Math.min(sampleIndexAt(time, t1), time.length - 1);
   const winLen = Math.max(1, iWin1 - iWin0 + 1);
   const step = Math.max(1, Math.floor(winLen / 3000));
+  const bTime = baselineResults?.['time'] || [];
+  const bWin0 = bTime.length > 0 ? sampleIndexAt(bTime, t0) : 0;
+  const bWin1 = bTime.length > 0 ? Math.min(sampleIndexAt(bTime, t1), bTime.length - 1) : -1;
 
+  const hasAnyHighlightedSweep = sweepOverlays.some((ov) => ov.highlighted);
   const layoutMode = numGraphs === 2 ? '2-graphs' : '3-graphs';
   const graphData: {
     graphIdx: number;
@@ -2720,6 +3212,8 @@ function FullScreenMultiGraphChart({
     minY: number;
     maxY: number;
     paths: Record<string, string>;
+    baselinePaths: Record<string, string>;
+    sweepPaths: { runIndex: number; signal: string; color: string; path: string; highlighted: boolean }[];
     primaryUnit: string;
     laneY: number;
     mapLaneY: (v: number) => number;
@@ -2742,6 +3236,30 @@ function FullScreenMultiGraphChart({
           if (v > y1) y1 = v;
         }
       }
+      if (baselineResults && bTime.length > 0) {
+        const bArr = baselineResults[name] || [];
+        for (let i = bWin0; i <= bWin1 && i < bArr.length; i++) {
+          const v = bArr[i];
+          if (v !== undefined) {
+            if (v < y0) y0 = v;
+            if (v > y1) y1 = v;
+          }
+        }
+      }
+      if (sweepOverlays.length > 0) {
+        for (const ov of sweepOverlays) {
+          const sArr = ov.signals[name] || [];
+          const s0 = ov.time.length > 0 ? sampleIndexAt(ov.time, t0) : 0;
+          const s1 = ov.time.length > 0 ? Math.min(sampleIndexAt(ov.time, t1), sArr.length - 1) : -1;
+          for (let i = s0; i <= s1; i++) {
+            const v = sArr[i];
+            if (v !== undefined) {
+              if (v < y0) y0 = v;
+              if (v > y1) y1 = v;
+            }
+          }
+        }
+      }
     }
 
     if (!Number.isFinite(y0) || !Number.isFinite(y1)) {
@@ -2760,6 +3278,8 @@ function FullScreenMultiGraphChart({
     const mapLaneY = (v: number) => laneY + laneH - ((v - minY) / (maxY - minY || 1)) * laneH;
 
     const paths: Record<string, string> = {};
+    const baselinePaths: Record<string, string> = {};
+    const sweepPaths: { runIndex: number; signal: string; color: string; path: string; highlighted: boolean }[] = [];
     for (const name of gSignals) {
       const arr = signals[name] || [];
       let pathD = '';
@@ -2777,6 +3297,20 @@ function FullScreenMultiGraphChart({
         }
       }
       paths[name] = pathD;
+      if (baselineResults && bTime.length > 0 && baselineResults[name]?.length) {
+        baselinePaths[name] = buildTraceSvgPath(bTime, baselineResults[name], t0, t1, mapX, mapLaneY);
+      }
+      if (sweepOverlays.length > 0) {
+        for (const ov of sweepOverlays) {
+          const sArr = ov.signals[name];
+          if (sArr?.length && ov.time.length) {
+            const p = buildTraceSvgPath(ov.time, sArr, t0, t1, mapX, mapLaneY);
+            if (p) {
+              sweepPaths.push({ runIndex: ov.runIndex, signal: name, color: ov.color, path: p, highlighted: ov.highlighted });
+            }
+          }
+        }
+      }
     }
 
     let primaryUnit = '';
@@ -2794,6 +3328,8 @@ function FullScreenMultiGraphChart({
       minY,
       maxY,
       paths,
+      baselinePaths,
+      sweepPaths,
       primaryUnit,
       laneY,
       mapLaneY,
@@ -2935,6 +3471,37 @@ function FullScreenMultiGraphChart({
               </text>
 
               {/* Waveform Paths */}
+              {gd.sweepPaths.map((sp) => (
+                <path
+                  key={`sweep-${sp.runIndex}-${sp.signal}`}
+                  data-testid={`sweep-trace-${sp.runIndex}-${sp.signal}`}
+                  d={sp.path}
+                  fill="none"
+                  stroke={sp.color}
+                  strokeWidth={sp.highlighted ? 2.4 : 1.3}
+                  strokeOpacity={hasAnyHighlightedSweep && !sp.highlighted ? 0.25 : 0.78}
+                  clipPath={`url(#multi-graph-clip-${gd.graphIdx})`}
+                  pointerEvents="none"
+                />
+              ))}
+              {gd.signals.map((name) => {
+                const bPath = gd.baselinePaths[name];
+                if (!bPath) return null;
+                return (
+                  <path
+                    key={`baseline-${name}`}
+                    data-testid={`baseline-trace-${name}`}
+                    d={bPath}
+                    fill="none"
+                    stroke={colorOf(name)}
+                    strokeOpacity={0.42}
+                    strokeDasharray="5 4"
+                    strokeWidth={1.5}
+                    clipPath={`url(#multi-graph-clip-${gd.graphIdx})`}
+                    pointerEvents="none"
+                  />
+                );
+              })}
               {gd.signals.map((name) => {
                 const color = colorOf(name);
                 const isHovered = hoveredSignal === name;
@@ -2954,17 +3521,30 @@ function FullScreenMultiGraphChart({
                 );
               })}
 
-              {/* Subtle Subplot Identifier in Left Margin (Outside Plot Area) */}
-              <text
-                x={14}
-                y={gd.laneY + 12}
-                fill={textColor}
-                fontSize={9}
-                fontWeight={700}
-                opacity={0.6}
-              >
-                G{gd.graphIdx}
-              </text>
+              {/* Subtle Subplot Identifier Inside Top-Left of Plot Box (never collides with Y-axis numbers) */}
+              <g pointerEvents="none">
+                <rect
+                  x={padLeft + 6}
+                  y={gd.laneY + 5}
+                  width={22}
+                  height={14}
+                  rx={3}
+                  fill="var(--panel)"
+                  fillOpacity={0.78}
+                  stroke="var(--border)"
+                  strokeWidth={0.75}
+                />
+                <text
+                  x={padLeft + 17}
+                  y={gd.laneY + 15}
+                  textAnchor="middle"
+                  fill={textColor}
+                  fontSize={9}
+                  fontWeight={700}
+                >
+                  G{gd.graphIdx}
+                </text>
+              </g>
 
               {/* Empty graph state placeholder */}
               {gd.signals.length === 0 && (
@@ -3240,6 +3820,9 @@ function FullScreenStackedChart({
   onResetZoom,
   onPanSeconds,
   onOpenContextMenu,
+  baselineResults = null,
+  sweepOverlays = [],
+  sweepSignal: _sweepSignal = '',
 }: {
   width?: number;
   height?: number;
@@ -3263,7 +3846,11 @@ function FullScreenStackedChart({
   onResetZoom: () => void;
   onPanSeconds: (delta: number) => void;
   onOpenContextMenu?: (x: number, y: number, sampleIdx: number | null) => void;
+  baselineResults?: Record<string, number[]> | null;
+  sweepOverlays?: SweepOverlayTrace[];
+  sweepSignal?: string;
 }) {
+  const hasAnyHighlightedSweep = sweepOverlays.some((ov) => ov.highlighted);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [dragBox, setDragBox] = useState<{ startX: number; currentX: number } | null>(null);
   const suppressClickRef = useRef(false);
@@ -3452,11 +4039,16 @@ function FullScreenStackedChart({
 
   const signalMinMax: Record<string, { min: number; max: number }> = {};
   const lanePaths: Record<string, string> = {};
+  const baselineLanePaths: Record<string, string> = {};
+  const sweepLanePaths: Record<string, { runIndex: number; color: string; path: string; highlighted: boolean }[]> = {};
 
   const iWin0 = sampleIndexAt(time, t0);
   const iWin1 = Math.min(sampleIndexAt(time, t1), time.length - 1);
   const winLen = Math.max(1, iWin1 - iWin0 + 1);
   const step = Math.max(1, Math.floor(winLen / 3000));
+  const bTime = baselineResults?.['time'] || [];
+  const bWin0 = bTime.length > 0 ? sampleIndexAt(bTime, t0) : 0;
+  const bWin1 = bTime.length > 0 ? Math.min(sampleIndexAt(bTime, t1), bTime.length - 1) : -1;
 
   for (let k = 0; k < activeSignals.length; k++) {
     const name = activeSignals[k];
@@ -3470,6 +4062,30 @@ function FullScreenStackedChart({
       if (v !== undefined) {
         if (v < y0) y0 = v;
         if (v > y1) y1 = v;
+      }
+    }
+    if (baselineResults && bTime.length > 0) {
+      const bArr = baselineResults[name] || [];
+      for (let i = bWin0; i <= bWin1 && i < bArr.length; i++) {
+        const v = bArr[i];
+        if (v !== undefined) {
+          if (v < y0) y0 = v;
+          if (v > y1) y1 = v;
+        }
+      }
+    }
+    if (sweepOverlays.length > 0) {
+      for (const ov of sweepOverlays) {
+        const sArr = ov.signals[name] || [];
+        const s0 = ov.time.length > 0 ? sampleIndexAt(ov.time, t0) : 0;
+        const s1 = ov.time.length > 0 ? Math.min(sampleIndexAt(ov.time, t1), sArr.length - 1) : -1;
+        for (let i = s0; i <= s1; i++) {
+          const v = sArr[i];
+          if (v !== undefined) {
+            if (v < y0) y0 = v;
+            if (v > y1) y1 = v;
+          }
+        }
       }
     }
     if (!Number.isFinite(y0) || !Number.isFinite(y1)) {
@@ -3503,6 +4119,20 @@ function FullScreenStackedChart({
       }
     }
     lanePaths[name] = pathD;
+    if (baselineResults && bTime.length > 0 && baselineResults[name]?.length) {
+      baselineLanePaths[name] = buildTraceSvgPath(bTime, baselineResults[name], t0, t1, mapX, mapLaneY);
+    }
+    if (sweepOverlays.length > 0) {
+      const sPaths: { runIndex: number; color: string; path: string; highlighted: boolean }[] = [];
+      for (const ov of sweepOverlays) {
+        const sArr = ov.signals[name];
+        if (sArr?.length && ov.time.length) {
+          const p = buildTraceSvgPath(ov.time, sArr, t0, t1, mapX, mapLaneY);
+          if (p) sPaths.push({ runIndex: ov.runIndex, color: ov.color, path: p, highlighted: ov.highlighted });
+        }
+      }
+      sweepLanePaths[name] = sPaths;
+    }
   }
 
   return (
@@ -3531,6 +4161,8 @@ function FullScreenStackedChart({
           const laneY = padTop + i * (laneH + laneGap);
           const color = colorOf(name);
           const path = lanePaths[name];
+          const bPath = baselineLanePaths[name];
+          const sPaths = sweepLanePaths[name] || [];
           const mm = signalMinMax[name] || { min: 0, max: 1 };
           const zeroY =
             mm.min <= 0 && mm.max >= 0
@@ -3604,6 +4236,32 @@ function FullScreenStackedChart({
 
               {/* Waveform */}
               <g clipPath="url(#stacked-plot-clip)">
+                {sPaths.map((sp) => (
+                  <path
+                    key={`sweep-${sp.runIndex}-${name}`}
+                    data-testid={`sweep-trace-${sp.runIndex}-${name}`}
+                    d={sp.path}
+                    fill="none"
+                    stroke={sp.color}
+                    strokeWidth={sp.highlighted ? 2.4 : 1.3}
+                    strokeOpacity={hasAnyHighlightedSweep && !sp.highlighted ? 0.25 : 0.78}
+                    strokeLinejoin="round"
+                    pointerEvents="none"
+                  />
+                ))}
+                {bPath && (
+                  <path
+                    data-testid={`baseline-trace-${name}`}
+                    d={bPath}
+                    fill="none"
+                    stroke={color}
+                    strokeOpacity={0.42}
+                    strokeDasharray="5 4"
+                    strokeWidth={1.5}
+                    strokeLinejoin="round"
+                    pointerEvents="none"
+                  />
+                )}
                 {path && (
                   <path
                     d={path}

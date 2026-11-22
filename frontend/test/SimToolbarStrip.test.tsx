@@ -23,7 +23,7 @@ describe('SimToolbarStrip', () => {
     cleanup();
   });
 
-  it('renders inline dt, t_end, solver, step pill, and run button with resolved defaults', () => {
+  it('renders compact Run button and timing chip, expanding popover with dt, t_end, solver, and step pill', () => {
     render(
       <SimToolbarStrip
         circuitId="ckt-1"
@@ -42,13 +42,17 @@ describe('SimToolbarStrip', () => {
       />,
     );
 
+    const chip = screen.getByTestId('toolbar-timing-chip');
+    expect(chip.textContent).toContain('20m · 1u · BE');
+    expect(screen.getByRole('button', { name: /▶ Run/i })).toBeTruthy();
+
+    fireEvent.click(chip);
     expect((screen.getByTestId('toolbar-dt-input') as HTMLInputElement).value).toBe('1u');
     expect((screen.getByTestId('toolbar-tend-input') as HTMLInputElement).value).toBe('20m');
     expect((screen.getByTestId('toolbar-solver-select') as HTMLSelectElement).value).toBe(
       'backward-euler',
     );
     expect(screen.getByTestId('toolbar-steps-pill').textContent).toContain('20k steps ✓');
-    expect(screen.getByRole('button', { name: /▶ Run/i })).toBeTruthy();
   });
 
   it('commits valid inline dt edits and flags invalid input until blur', () => {
@@ -70,6 +74,7 @@ describe('SimToolbarStrip', () => {
       />,
     );
 
+    fireEvent.click(screen.getByTestId('toolbar-timing-chip'));
     const dtInput = screen.getByTestId('toolbar-dt-input') as HTMLInputElement;
     fireEvent.change(dtInput, { target: { value: '500n' } });
     expect(onSettingsChange).toHaveBeenCalledWith({
@@ -115,9 +120,13 @@ describe('SimToolbarStrip', () => {
       />,
     );
 
-    // 10 us at 100 kHz is 1 step/period -> aliasing warning
+    // 10 us at 100 kHz is 1 step/period -> warning reflected directly on timing chip
+    const chip = screen.getByTestId('toolbar-timing-chip');
+    expect(chip.className).toContain('warn');
+    expect(chip.textContent).toContain('⚠');
+
+    fireEvent.click(chip);
     expect(screen.getByTestId('toolbar-steps-pill').className).toContain('warn');
-    expect(screen.getByTestId('toolbar-steps-pill').textContent).toContain('⚠');
 
     fireEvent.click(screen.getByTestId('toolbar-auto-dt-btn'));
     expect(onSettingsChange).toHaveBeenCalled();
@@ -146,6 +155,8 @@ describe('SimToolbarStrip', () => {
         onStatusMessage={onStatusMessage}
       />,
     );
+
+    fireEvent.click(screen.getByTestId('toolbar-timing-chip'));
 
     fireEvent.change(screen.getByTestId('toolbar-dt-presets'), { target: { value: '100n' } });
     expect(onSettingsChange).toHaveBeenLastCalledWith({

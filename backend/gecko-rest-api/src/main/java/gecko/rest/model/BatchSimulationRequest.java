@@ -21,7 +21,12 @@ import java.util.Map;
 @Schema(description = "Batch simulation request with parameter variations")
 public class BatchSimulationRequest {
 
-    @NotBlank
+    @Schema(description = "Active in-memory circuit session ID")
+    private String circuitId;
+
+    @Schema(description = "Base64-encoded .ipes circuit content")
+    private String base64Circuit;
+
     @Schema(description = "Circuit file path (.ipes)", example = "circuit.ipes")
     private String circuitFile;
 
@@ -43,6 +48,22 @@ public class BatchSimulationRequest {
 
     @Schema(description = "Simulation settings applied to all runs")
     private SimulationSettings simulationSettings;
+
+    public String getCircuitId() {
+        return circuitId;
+    }
+
+    public void setCircuitId(String circuitId) {
+        this.circuitId = circuitId;
+    }
+
+    public String getBase64Circuit() {
+        return base64Circuit;
+    }
+
+    public void setBase64Circuit(String base64Circuit) {
+        this.base64Circuit = base64Circuit;
+    }
 
     public String getCircuitFile() { return circuitFile; }
     public void setCircuitFile(String circuitFile) { this.circuitFile = circuitFile; }
@@ -120,6 +141,8 @@ public class BatchSimulationRequest {
         @Schema(description = "Solver type", example = "backward-euler",
                 allowableValues = {"backward-euler", "trapezoidal", "gear-shichman"})
         private String solverType;
+        @Schema(description = "Optional list of signal names to record")
+        private List<String> signals;
 
         public Double getSimulationTime() { return simulationTime; }
         public void setSimulationTime(Double v) { simulationTime = v; }
@@ -127,5 +150,7 @@ public class BatchSimulationRequest {
         public void setTimeStep(Double v) { timeStep = v; }
         public String getSolverType() { return solverType; }
         public void setSolverType(String v) { solverType = v; }
+        public List<String> getSignals() { return signals; }
+        public void setSignals(List<String> s) { signals = s; }
     }
 }

@@ -36,15 +36,21 @@ import {
 import { getEngineVersion, getRawCircuit } from './api/client';
 import { findScopeBlocks, findScriptBlocks, isScopeComponent, isScriptComponent } from './simulation/scopes';
 import { SimConfigModal } from './simulation/SimConfigModal';
-import { SimToolbarStrip } from './simulation/SimToolbarStrip';
+import { ParametricSweepModal } from './modals/ParametricSweepModal';
+import { SaveSnippetModal } from './modals/SaveSnippetModal';
 import {
-  IconUndo,
-  IconRedo,
-  IconRotateCw,
-  IconRotateCcw,
-  IconCopy,
-  IconTrash,
-} from './icons';
+  BUILT_IN_SNIPPETS,
+  deleteUserSnippet,
+  exportSnippetsJson,
+  extractSnippetFromSelection,
+  importSnippetsJson,
+  loadUserSnippets,
+  saveUserSnippet,
+  type SchematicSnippet,
+} from './model/snippets';
+import { formatEngineeringValue } from './model/componentSchema';
+import { SimToolbarStrip } from './simulation/SimToolbarStrip';
+import { IconUndo, IconRedo } from './icons';
 import { DiagnosticsBadge, DiagnosticsDrawer } from './simulation/DiagnosticsDrawer';
 import { SaveAsModal } from './modals/SaveAsModal';
 import { SaveAsExampleModal } from './modals/SaveAsExampleModal';
@@ -107,6 +113,28 @@ export function App() {
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [activeTabId, setActiveTabId] = useState<string>('schematic');
   const [simConfigOpen, setSimConfigOpen] = useState(false);
+  const [sweepModalOpen, setSweepModalOpen] = useState(false);
+  const [sweepPrefill, setSweepPrefill] = useState<{ componentName: string; paramKey: string } | null>(null);
+  const [tuneBarOpen, setTuneBarOpen] = useState(false);
+  const [activeSweepStepIndex, setActiveSweepStepIndex] = useState<number | null>(null);
+  const [sweepOverlayAll, setSweepOverlayAll] = useState(false);
+  const [helpMenuOpen, setHelpMenuOpen] = useState(false);
+  const helpMenuRef = useRef<HTMLDivElement>(null);
+  const [saveSnippetModalOpen, setSaveSnippetModalOpen] = useState(false);
+  const [waveformsDrawerOpen, setWaveformsDrawerOpen] = useState(false);
+  const [drawerRatio, setDrawerRatio] = useState<number>(() => {
+    const saved = Number(localStorage.getItem('gecko-waveforms-drawer-ratio'));
+    return Number.isFinite(saved) && saved >= 0.22 && saved <= 0.78 ? saved : 0.42;
+  });
+  const [isResizingDrawer, setIsResizingDrawer] = useState(false);
+  const splitContainerRef = useRef<HTMLDivElement>(null);
+  const drawerRatioRef = useRef(drawerRatio);
+  drawerRatioRef.current = drawerRatio;
+  const [userSnippets, setUserSnippets] = useState<SchematicSnippet[]>(() => loadUserSnippets());
+  const allSnippets = useMemo(
+    () => [...BUILT_IN_SNIPPETS, ...userSnippets],
+    [userSnippets],
+  );
   const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
   /** Right-click context menu state for workspace tabs. */
   const [tabContextMenu, setTabContextMenu] = useState<{
@@ -169,6 +197,12 @@ export function App() {
     return state.components.find((c) => c.name === targetName) || null;
   }, [activeTabId, state.components]);
 
+  const isScriptActive = activeTabId.startsWith(SCRIPT_TAB_PREFIX);
+  const isDockedScopeVisible = activeTabId === 'schematic' && waveformsDrawerOpen;
+  const showScopePane =
+    !isScriptActive &&
+    (isDockedScopeVisible || isOsciTab(activeTabId) || activeTabId === 'simulation');
+
   const activeRegId = parseOsciTabId(activeTabId);
   const activeGraphRegister = useMemo(() => {
     if (!state.graphRegisters || state.graphRegisters.length === 0) return null;
@@ -183,6 +217,8 @@ export function App() {
     }
     return null;
   }, [activeRegId, activeTabId, state.graphRegisters]);
+
+  const drawerGraphRegister = activeGraphRegister ?? state.graphRegisters?.[0] ?? null;
 
   // Derived value for "which scope is inspected": active register name, or legacy scope
   const activeSelectedScope =
@@ -279,8 +315,41 @@ export function App() {
     [activeGraphRegister, actions],
   );
 
+  useEffect(() => {
+    if (!helpMenuOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (helpMenuRef.current && !helpMenuRef.current.contains(e.target as Node)) {
+        setHelpMenuOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setHelpMenuOpen(false);
+    };
+    window.addEventListener('mousedown', onDown);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('mousedown', onDown);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [helpMenuOpen]);
+
+  const activeSweepRun = useMemo(() => {
+    if (!simState.sweepSession || sweepOverlayAll || activeSweepStepIndex === null) return null;
+    return (
+      simState.sweepSession.runs.find(
+        (r) => r.index === activeSweepStepIndex && r.status === 'COMPLETED' && Boolean(r.results),
+      ) ?? null
+    );
+  }, [simState.sweepSession, sweepOverlayAll, activeSweepStepIndex]);
+
+  const effectiveSimResults = activeSweepRun?.results ?? simState.results;
+  const sweepPreviewLabel =
+    activeSweepRun && simState.sweepSession
+      ? `${simState.sweepSession.componentName} = ${formatEngineeringValue(activeSweepRun.parameterValue, simState.sweepSession.unit)}`
+      : null;
+
   const scope = useScopeController({
-    results: simState.results,
+    results: effectiveSimResults,
     components: state.components,
     selectedScope: activeSelectedScope,
     graphRegister: activeGraphRegister,
@@ -324,6 +393,37 @@ export function App() {
     };
   }, [isResizingRight, rightSidebarWidth]);
 
+  const handleStartResizeDrawer = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizingDrawer(true);
+  };
+
+  useEffect(() => {
+    if (!isResizingDrawer) return;
+    const onMove = (e: MouseEvent) => {
+      const el = splitContainerRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      if (rect.height <= 0) return;
+      const raw = (rect.bottom - e.clientY) / rect.height;
+      setDrawerRatio(Math.max(0.22, Math.min(0.78, raw)));
+    };
+    const onUp = () => {
+      setIsResizingDrawer(false);
+      try {
+        localStorage.setItem('gecko-waveforms-drawer-ratio', String(drawerRatioRef.current));
+      } catch {
+        // ignore
+      }
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+  }, [isResizingDrawer]);
+
   const openScopeTab = (scopeName: string) => {
     const normalizedId = scopeName.toLowerCase().replace(/[^a-z0-9]+/g, '_');
     const matchingReg =
@@ -342,6 +442,44 @@ export function App() {
   const openScriptTab = (scriptName: string) => {
     setActiveTabId(scriptTabId(scriptName));
   };
+
+  // Auto-open the bottom Waveforms drawer when simulation completes while viewing Schematic
+  const prevSimStatusRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (simState.status === 'COMPLETED' && prevSimStatusRef.current !== 'COMPLETED' && activeTabId === 'schematic') {
+      setWaveformsDrawerOpen(true);
+    }
+    prevSimStatusRef.current = simState.status;
+  }, [simState.status, activeTabId]);
+
+  // When a parametric sweep completes, activate step 0 across Scope & schematic and reveal results
+  const prevSweepStatusRef = useRef<string | null>(null);
+  useEffect(() => {
+    const next = simState.sweepSession?.status ?? null;
+    if (next === 'COMPLETED' && prevSweepStatusRef.current !== 'COMPLETED') {
+      const firstRun = simState.sweepSession?.runs.find((r) => r.status === 'COMPLETED');
+      setActiveSweepStepIndex(firstRun?.index ?? 0);
+      setSweepOverlayAll(false);
+      if (sweepModalOpen) {
+        setSweepModalOpen(false);
+        setSweepPrefill(null);
+      }
+      if (activeTabId === 'schematic') {
+        setWaveformsDrawerOpen(true);
+      } else {
+        openScopeTab(drawerGraphRegister?.name || 'Osci 1');
+      }
+    } else if (next === null) {
+      setActiveSweepStepIndex(null);
+      setSweepOverlayAll(false);
+    }
+    prevSweepStatusRef.current = next;
+  }, [
+    simState.sweepSession,
+    sweepModalOpen,
+    activeTabId,
+    drawerGraphRegister?.name,
+  ]);
 
   const isSimRunning = simState.status === 'RUNNING' || simState.status === 'PENDING';
 
@@ -507,6 +645,9 @@ export function App() {
   const handleQuickRun = useCallback(() => {
     if (!state.circuitId) return;
     if (simState.status === 'RUNNING' || simState.status === 'PENDING') return;
+    if (activeTabId === 'schematic') {
+      setWaveformsDrawerOpen(true);
+    }
     const { tEnd, dt, solver } = resolveActiveSimSettings(simState.defaults, simState.simSettings);
     actions.runSimulation({
       simulationTime: tEnd,
@@ -514,7 +655,7 @@ export function App() {
       solverType: solver,
       backend: 'headless',
     });
-  }, [state.circuitId, simState.status, simState.defaults, simState.simSettings, actions]);
+  }, [state.circuitId, simState.status, simState.defaults, simState.simSettings, actions, activeTabId]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -570,7 +711,7 @@ export function App() {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       // Modals manage their own keybindings; suspend global schematic shortcuts
-      if (simConfigOpen || saveAsOpen || examplesModalOpen || saveAsExampleOpen) {
+      if (simConfigOpen || saveAsOpen || examplesModalOpen || saveAsExampleOpen || saveSnippetModalOpen) {
         return;
       }
       if (shortcutsHelpOpen) {
@@ -942,65 +1083,6 @@ export function App() {
 
           <span className="nav-separator" />
 
-          {/* Transform & Edit Buttons */}
-          <button
-            type="button"
-            className="nav-btn icon-only"
-            data-testid="nav-rotate-cw-btn"
-            disabled={!state.circuitId || (state.selection.length !== 1 && state.selectedWire === null)}
-            onClick={() => {
-              if (state.selection.length === 1) {
-                actions.rotateComponent(state.selection[0]);
-              } else if (state.selectedWire !== null) {
-                actions.flipWire(state.selectedWire);
-              }
-            }}
-            title="Rotate 90° CW / Flip Wire (R)"
-          >
-            <IconRotateCw />
-          </button>
-          <button
-            type="button"
-            className="nav-btn icon-only"
-            data-testid="nav-rotate-ccw-btn"
-            disabled={!state.circuitId || state.selection.length !== 1}
-            onClick={() => {
-              if (state.selection.length === 1) {
-                actions.rotateComponent(state.selection[0], true);
-              }
-            }}
-            title="Rotate 90° CCW (Shift+R)"
-          >
-            <IconRotateCcw />
-          </button>
-          <button
-            type="button"
-            className="nav-btn icon-only"
-            data-testid="nav-duplicate-btn"
-            disabled={!state.circuitId || state.selection.length === 0}
-            onClick={actions.duplicateSelection}
-            title="Duplicate Selection (Ctrl+D)"
-          >
-            <IconCopy />
-          </button>
-          <button
-            type="button"
-            className="nav-btn icon-only"
-            data-testid="nav-delete-btn"
-            disabled={
-              !state.circuitId ||
-              (state.selection.length === 0 &&
-                state.selectedWire === null &&
-                !(state.selectedWires && state.selectedWires.length > 0))
-            }
-            onClick={actions.deleteSelection}
-            title="Delete Selection (Del)"
-          >
-            <IconTrash />
-          </button>
-
-          <span className="nav-separator" />
-
           <SimToolbarStrip
             circuitId={state.circuitId}
             isRunning={isSimRunning}
@@ -1037,28 +1119,55 @@ export function App() {
           >
             Properties <span className="kbd-shortcut">Ctrl+I</span>
           </button>
-
-          <button
-            type="button"
-            className="nav-btn"
-            onClick={() => setCommandPaletteOpen(true)}
-            title="Search components & commands (Ctrl+K or /)"
-          >
-            Command Palette <span className="kbd-shortcut">Ctrl+K</span>
-          </button>
-
-          <button
-            type="button"
-            className="nav-btn"
-            onClick={() => setShortcutsHelpOpen(true)}
-            title="Keyboard Shortcuts Cheatsheet (?)"
-          >
-            Shortcuts <span className="kbd-shortcut">?</span>
-          </button>
         </div>
 
         {/* Right Toolbar Actions */}
         <div className="nav-right">
+          <div className="nav-help-wrap" ref={helpMenuRef}>
+            <button
+              type="button"
+              data-testid="nav-help-btn"
+              className={`nav-btn icon-only${helpMenuOpen ? ' active' : ''}`}
+              onClick={() => setHelpMenuOpen((prev) => !prev)}
+              aria-expanded={helpMenuOpen}
+              aria-haspopup="menu"
+              title="Search Commands (Ctrl+K) & Keyboard Shortcuts (?)"
+              aria-label="Help and Command Palette"
+            >
+              ?
+            </button>
+            {helpMenuOpen && (
+              <div className="nav-help-menu" role="menu" data-testid="nav-help-menu">
+                <button
+                  type="button"
+                  role="menuitem"
+                  data-testid="nav-open-command-palette-btn"
+                  className="nav-help-item"
+                  onClick={() => {
+                    setCommandPaletteOpen(true);
+                    setHelpMenuOpen(false);
+                  }}
+                >
+                  <span>🔍 Search Parts &amp; Commands</span>
+                  <kbd className="kbd-shortcut">Ctrl+K</kbd>
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  data-testid="nav-open-shortcuts-btn"
+                  className="nav-help-item"
+                  onClick={() => {
+                    setShortcutsHelpOpen(true);
+                    setHelpMenuOpen(false);
+                  }}
+                >
+                  <span>⌨ Keyboard Shortcuts</span>
+                  <kbd className="kbd-shortcut">?</kbd>
+                </button>
+              </div>
+            )}
+          </div>
+
           <DiagnosticsBadge
             diagnostics={diagnostics}
             isOpen={diagnosticsOpen}
@@ -1260,6 +1369,22 @@ export function App() {
             📊 Simulation
           </button>
         )}
+
+        {activeTabId === 'schematic' && (
+          <button
+            type="button"
+            data-testid="toggle-waveforms-drawer-btn"
+            className={`workspace-drawer-toggle-btn ${waveformsDrawerOpen ? 'active' : ''}`}
+            onClick={() => setWaveformsDrawerOpen((prev) => !prev)}
+            title={
+              waveformsDrawerOpen
+                ? 'Hide bottom Waveforms panel'
+                : 'Show Waveforms panel below Schematic'
+            }
+          >
+            📈 Waveforms {waveformsDrawerOpen ? '▾' : '▴'}
+          </button>
+        )}
       </div>
 
       {/* Workspace tab right-click context menu */}
@@ -1414,7 +1539,7 @@ export function App() {
 
       {/* Main Workspace (3-Column Layout) */}
       <div className="workspace">
-        {/* Left Sidebar: Component Palette (Visible only in Schematic view) */}
+        {/* Left Sidebar: Component & Snippets Palette (Visible in Schematic view) */}
         {activeTabId === 'schematic' && (
           <aside
             className={`sidebar left ${leftSidebarOpen ? '' : 'collapsed'}`}
@@ -1427,6 +1552,34 @@ export function App() {
                 catalog={catalog}
                 onArm={actions.arm}
                 onCollapse={() => setLeftSidebarOpen(false)}
+                snippets={allSnippets}
+                selectedCount={state.selection.length}
+                onSaveSelectionAsSnippet={() => setSaveSnippetModalOpen(true)}
+                onArmSnippet={(snip) => void actions.armSnippet(snip)}
+                onDeleteSnippet={(id) => {
+                  setUserSnippets(deleteUserSnippet(id));
+                  dispatch({ type: 'STATUS', status: 'Snippet deleted' });
+                }}
+                onExportSnippets={() => {
+                  const json = exportSnippetsJson(userSnippets);
+                  const blob = new Blob([json], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'gecko-snippets.json';
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  dispatch({ type: 'STATUS', status: 'Exported snippets JSON' });
+                }}
+                onImportSnippets={(rawJson) => {
+                  const res = importSnippetsJson(rawJson);
+                  if (res.error) {
+                    dispatch({ type: 'STATUS', status: `⚠️ Snippet import failed: ${res.error}` });
+                  } else {
+                    setUserSnippets(res.snippets);
+                    dispatch({ type: 'STATUS', status: `Imported ${res.importedCount} snippet(s)` });
+                  }
+                }}
               />
             ) : (
               <div className="collapsed-strip" title="Click to expand Components Palette (Ctrl+B)">
@@ -1439,15 +1592,21 @@ export function App() {
 
         {/* Center: Canvas Schematic Sheet / Simulation Workspace */}
         <main className="sheet-viewport">
+          <div
+            ref={splitContainerRef}
+            data-testid="workspace-split-container"
+            className={`workspace-split-container${isResizingDrawer ? ' resizing' : ''}`}
+            style={{ display: isScriptActive ? 'none' : 'flex' }}
+          >
           {/* Schematic Workspace Pane */}
           <div
             className="workspace-tab-pane"
+            data-testid="workspace-pane-schematic"
             style={{
               display: activeTabId === 'schematic' ? 'flex' : 'none',
               flexDirection: 'column',
-              width: '100%',
-              height: '100%',
-              flex: 1,
+              flex: isDockedScopeVisible ? `${1 - drawerRatio} 1 0` : '1 1 0',
+              minWidth: 0,
               minHeight: 0,
             }}
           >
@@ -1455,8 +1614,17 @@ export function App() {
               state={state}
               dispatch={dispatch}
               focusTarget={focusTarget}
+              simResults={effectiveSimResults}
+              sweepPreviewLabel={sweepPreviewLabel}
+              isSimStale={
+                simState.results !== null &&
+                simState.lastSimModelVersion !== null &&
+                simState.lastSimModelVersion !== state.modelVersion
+              }
               actions={{
                 placeGhost: actions.placeGhost,
+                placeSnippet: actions.placeSnippet,
+                onSaveAsSnippet: () => setSaveSnippetModalOpen(true),
                 finishWire: actions.finishWire,
                 commitMove: actions.commitMove,
                 resizeComponent: actions.resizeComponent,
@@ -1474,7 +1642,14 @@ export function App() {
                 },
                 renameComponent: handleRenameComponent,
                 setParameter: actions.setParameter,
-                openScopeTab: (name: string) => openScopeTab(name),
+                openScopeTab: (name: string) => {
+                  if (activeTabId === 'schematic') {
+                    setSelectedScope(name);
+                    setWaveformsDrawerOpen(true);
+                  } else {
+                    openScopeTab(name);
+                  }
+                },
                 openScriptTab: (name: string) => openScriptTab(name),
                 setLabel: actions.setLabel,
                 toggleWireMode: actions.toggleWireMode,
@@ -1525,23 +1700,33 @@ export function App() {
             </div>
           </div>
 
+          {isDockedScopeVisible && (
+            <div
+              className="workspace-split-resizer horizontal"
+              data-testid="workspace-split-resizer"
+              onMouseDown={handleStartResizeDrawer}
+              onDoubleClick={() => setDrawerRatio(0.42)}
+              title="Drag to resize Waveforms panel (double-click to reset)"
+            />
+          )}
+
           {/* Simulation & Scope Workspace Pane */}
           <div
             className="workspace-tab-pane"
+            data-testid="workspace-pane-scope"
             style={{
-              display: (isOsciTab(activeTabId) || activeTabId === 'simulation') ? 'flex' : 'none',
+              display: showScopePane ? 'flex' : 'none',
               flexDirection: 'column',
-              width: '100%',
-              height: '100%',
-              flex: 1,
+              flex: isDockedScopeVisible ? `${drawerRatio} 1 0` : '1 1 0',
+              minWidth: 0,
               minHeight: 0,
             }}
           >
             <ScopeViewTab
-              selectedScope={activeSelectedScope}
+              selectedScope={drawerGraphRegister?.name ?? activeSelectedScope}
               components={state.components}
               wires={state.wires}
-              results={simState.results}
+              results={effectiveSimResults}
               displayLayout={currentDisplayLayout}
               onDisplayLayoutChange={handleDisplayLayoutChange}
               theme={theme}
@@ -1555,13 +1740,49 @@ export function App() {
               onRemoveLabel={actions.removeLabel}
               isSidebarOpen={rightSidebarOpen}
               onToggleSidebar={() => setRightSidebarOpen((prev) => !prev)}
-              graphRegister={activeGraphRegister}
+              graphRegister={drawerGraphRegister}
               onUpdateGraphRegister={(patch) => {
-                if (activeGraphRegister) {
-                  actions.updateGraphRegister(activeGraphRegister.id, patch);
+                if (drawerGraphRegister) {
+                  actions.updateGraphRegister(drawerGraphRegister.id, patch);
                 }
               }}
               onRunSimulation={handleQuickRun}
+              baseline={simState.baseline}
+              showBaseline={simState.showBaseline}
+              onPinBaseline={() => actions.pinBaseline(undefined, effectiveSimResults)}
+              onClearBaseline={actions.clearBaseline}
+              onToggleBaselineVisible={actions.toggleBaselineVisible}
+              sweepSession={simState.sweepSession}
+              activeSweepStepIndex={activeSweepStepIndex}
+              onSelectSweepStep={setActiveSweepStepIndex}
+              sweepOverlayAll={sweepOverlayAll}
+              onToggleSweepOverlayAll={setSweepOverlayAll}
+              onOpenSweepModal={() => setSweepModalOpen(true)}
+              onClearSweep={() => {
+                actions.clearParametricSweep();
+                setActiveSweepStepIndex(null);
+                setSweepOverlayAll(false);
+              }}
+              onApplySweepValue={(compName, paramKey, val) => {
+                actions.setParameter(compName, paramKey, val);
+                actions.clearParametricSweep();
+                setActiveSweepStepIndex(null);
+                setSweepOverlayAll(false);
+                dispatch({ type: 'STATUS', status: `Applied ${compName}.${paramKey} = ${val}` });
+              }}
+              pinnedSliders={simState.pinnedSliders}
+              onPinSlider={actions.pinSlider}
+              onUnpinSlider={actions.unpinSlider}
+              onUpdateSliderConfig={actions.updateSliderConfig}
+              onCommitSliderValue={(compName, paramKey, val, autoRun) =>
+                actions.commitSliderValue(compName, paramKey, val, autoRun, {
+                  simulationTime: effectiveSim.tEnd,
+                  timeStep: effectiveSim.dt,
+                  solverType: effectiveSim.solver,
+                })
+              }
+              tuneBarOpen={tuneBarOpen}
+              onToggleTuneBar={() => setTuneBarOpen((prev) => !prev)}
               onHighlightComponent={(name) => {
                 if (name) {
                   dispatch({ type: 'SELECT', name, additive: false });
@@ -1575,7 +1796,16 @@ export function App() {
                   }
                 }
               }}
+              onCollapseDrawer={
+                isDockedScopeVisible ? () => setWaveformsDrawerOpen(false) : undefined
+              }
+              onExpandToTab={
+                isDockedScopeVisible
+                  ? () => openScopeTab(drawerGraphRegister?.name || activeSelectedScope || 'Osci 1')
+                  : undefined
+              }
             />
+          </div>
           </div>
 
           {/* Dedicated Full-Viewport Script IDE Pane */}
@@ -1681,37 +1911,44 @@ export function App() {
                       onDelete={actions.deleteComponent}
                       onOpenScopeTab={(name) => openScopeTab(name)}
                       onCollapse={() => setRightSidebarOpen(false)}
+                      onPinLiveSlider={(compName, paramKey) => {
+                        actions.pinSlider(compName, paramKey);
+                        setTuneBarOpen(true);
+                        if (activeTabId === 'schematic') {
+                          setWaveformsDrawerOpen(true);
+                        }
+                      }}
+                      onOpenSweepForComponent={(compName, paramKey) => {
+                        setSweepPrefill({ componentName: compName, paramKey });
+                        setSweepModalOpen(true);
+                      }}
                       onAttachNativeLibrary={actions.attachNativeLibrary}
                       theme={theme}
                     />
                   </div>
 
-                  {(activeGraphRegister || activeScopeComponent) ? (
-                    <ScopePropertiesPanel
-                      scopeComponent={activeScopeComponent}
-                      graphRegister={activeGraphRegister}
-                      onUpdateGraphRegister={(patch) => {
-                        if (activeGraphRegister) {
-                          actions.updateGraphRegister(activeGraphRegister.id, patch);
-                        }
-                      }}
-                      allComponents={state.components}
-                      wires={state.wires}
-                      results={simState.results}
-                      displayLayout={currentDisplayLayout}
-                      onDisplayLayoutChange={handleDisplayLayoutChange}
-                      scope={scope}
-                      onSetParameter={actions.setParameter}
-                      onSetLabel={actions.setLabel}
-                      onRemoveLabel={actions.removeLabel}
-                      onCollapse={() => setRightSidebarOpen(false)}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        display: activeTabId !== 'schematic' ? 'contents' : 'none',
-                      }}
-                    >
+                  {activeTabId !== 'schematic' &&
+                    ((activeGraphRegister || activeScopeComponent) ? (
+                      <ScopePropertiesPanel
+                        scopeComponent={activeScopeComponent}
+                        graphRegister={activeGraphRegister}
+                        onUpdateGraphRegister={(patch) => {
+                          if (activeGraphRegister) {
+                            actions.updateGraphRegister(activeGraphRegister.id, patch);
+                          }
+                        }}
+                        allComponents={state.components}
+                        wires={state.wires}
+                        results={simState.results}
+                        displayLayout={currentDisplayLayout}
+                        onDisplayLayoutChange={handleDisplayLayoutChange}
+                        scope={scope}
+                        onSetParameter={actions.setParameter}
+                        onSetLabel={actions.setLabel}
+                        onRemoveLabel={actions.removeLabel}
+                        onCollapse={() => setRightSidebarOpen(false)}
+                      />
+                    ) : (
                       <SimulationPropertiesPanel
                         circuitId={state.circuitId}
                         status={simState.status}
@@ -1735,8 +1972,7 @@ export function App() {
                         onCancelSimulation={actions.cancelSimulation}
                         onCollapse={() => setRightSidebarOpen(false)}
                       />
-                    </div>
-                  )}
+                    ))}
                 </>
               ) : (
                 <div className="collapsed-strip" title="Click to expand Properties (Ctrl+I)">
@@ -1777,6 +2013,13 @@ export function App() {
           actions.arm(entry);
           setCommandPaletteOpen(false);
         }}
+        snippets={allSnippets}
+        onSelectSnippet={(snip) => {
+          void actions.armSnippet(snip);
+          setCommandPaletteOpen(false);
+        }}
+        hasSelection={state.selection.length > 0}
+        onSaveAsSnippet={() => setSaveSnippetModalOpen(true)}
       />
 
       {/* Simulation Configuration Modal */}
@@ -1792,6 +2035,63 @@ export function App() {
         wires={state.wires}
         engineWarnings={simState.warnings}
       />
+
+      {/* Parametric Sweep Modal */}
+      <ParametricSweepModal
+        isOpen={sweepModalOpen}
+        onClose={() => {
+          setSweepModalOpen(false);
+          setSweepPrefill(null);
+        }}
+        circuitId={state.circuitId}
+        components={state.components}
+        defaults={simState.defaults}
+        settings={simState.simSettings}
+        sweepSession={simState.sweepSession}
+        initialComponentName={sweepPrefill?.componentName}
+        initialParamKey={sweepPrefill?.paramKey}
+        onStartSweep={actions.runParametricSweep}
+        onCancelSweep={actions.cancelParametricSweep}
+      />
+
+      {/* Save Selection as Snippet Modal */}
+      {(() => {
+        const preview = saveSnippetModalOpen
+          ? extractSnippetFromSelection(
+              'preview',
+              'Custom',
+              '',
+              state.selection,
+              state.components,
+              state.wires,
+              state.selectedWires,
+            )
+          : null;
+        return (
+          <SaveSnippetModal
+            isOpen={saveSnippetModalOpen}
+            onClose={() => setSaveSnippetModalOpen(false)}
+            selectedComponentsCount={preview?.components.length ?? 0}
+            selectedWiresCount={preview?.wires.length ?? 0}
+            internalCouplingsCount={preview?.couplings.length ?? 0}
+            onSave={({ name, category, description }) => {
+              const created = extractSnippetFromSelection(
+                name,
+                category,
+                description,
+                state.selection,
+                state.components,
+                state.wires,
+                state.selectedWires,
+              );
+              if (created) {
+                setUserSnippets(saveUserSnippet(created));
+                dispatch({ type: 'STATUS', status: `Saved snippet '${created.name}'` });
+              }
+            }}
+          />
+        );
+      })()}
 
       {/* Keyboard Shortcuts Help Modal */}
       {shortcutsHelpOpen && (

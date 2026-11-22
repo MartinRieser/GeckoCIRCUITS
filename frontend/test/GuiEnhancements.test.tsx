@@ -79,43 +79,18 @@ function SheetHarness({ actions }: { actions: SheetActions }) {
 afterEach(cleanup);
 
 describe('Schematic canvas controls', () => {
-  it('select tool button and quick-place strip invoke actions', () => {
+  it('select tool button invokes action and removes redundant top quick-place strip', () => {
     const actions = makeActions();
     render(<SheetHarness actions={actions} />);
 
     fireEvent.click(screen.getByTestId('canvas-select-tool-btn'));
     expect(actions.setSelectMode).toHaveBeenCalled();
-
-    expect(screen.getByTestId('canvas-quick-place-strip')).toBeTruthy();
-    fireEvent.click(screen.getByTestId('quick-place-gnd'));
-    fireEvent.click(screen.getByTestId('quick-place-r'));
-    fireEvent.click(screen.getByTestId('quick-place-mosfet'));
-    fireEvent.click(screen.getByTestId('quick-place-note'));
-    // The scope block was removed from the parts; it must not be offered here
-    expect(screen.queryByTestId('quick-place-scope')).toBeNull();
-    expect(actions.armQuickComponent).toHaveBeenCalledTimes(4);
-    expect(actions.armQuickComponent).toHaveBeenCalledWith(28, 'LK');
-    expect(actions.armQuickComponent).toHaveBeenCalledWith(expect.any(Number), 'ANNOTATION');
+    expect(screen.queryByTestId('canvas-quick-place-strip')).toBeNull();
   });
 
-  it('quick-place toolbar can be dragged and collapsed', () => {
-    localStorage.removeItem('gecko_quickplace_pos');
-    localStorage.removeItem('gecko_quickplace_collapsed');
-    render(<SheetHarness actions={makeActions()} />);
-    const strip = screen.getByTestId('canvas-quick-place-strip');
-    fireEvent.mouseDown(screen.getByTestId('quick-place-grip'), { clientX: 10, clientY: 10 });
-    fireEvent.mouseMove(window, { clientX: 210, clientY: 160 });
-    fireEvent.mouseUp(window);
-    expect(strip.style.left).not.toBe('');
-    expect(localStorage.getItem('gecko_quickplace_pos')).not.toBeNull();
-
-    fireEvent.click(screen.getByTestId('quick-place-collapse'));
-    expect(screen.queryByTestId('quick-place-r')).toBeNull();
-    fireEvent.click(screen.getByTestId('quick-place-collapse'));
-    expect(screen.getByTestId('quick-place-r')).toBeTruthy();
-
-    // Bottom canvas view controls toolbar is also movable via its grip
+  it('bottom canvas view controls toolbar can be dragged via its grip', () => {
     localStorage.removeItem('gecko_viewctrl_pos');
+    render(<SheetHarness actions={makeActions()} />);
     const viewBar = screen.getByTestId('canvas-view-controls');
     fireEvent.mouseDown(screen.getByTestId('view-controls-grip'), { clientX: 20, clientY: 500 });
     fireEvent.mouseMove(window, { clientX: 180, clientY: 420 });
@@ -250,24 +225,29 @@ describe('App toolbar, diagnostics and tab context menu', () => {
     expect(screen.getByTestId('diagnostics-drawer')).toBeTruthy();
   });
 
-  it('enables selection-dependent toolbar buttons only with a selection', async () => {
+  it('declutters duplicate selection buttons from navbar and shows on-canvas action pill on selection', async () => {
     fetchMock.mockReset();
     fetchMock.mockImplementation(routeFetch);
     const { container } = render(<App />);
     await waitFor(() => expect(container.querySelectorAll('g.component').length).toBe(2));
-    expect((screen.getByTestId('nav-rotate-cw-btn') as HTMLButtonElement).disabled).toBe(true);
-    expect((screen.getByTestId('nav-rotate-ccw-btn') as HTMLButtonElement).disabled).toBe(true);
-    expect((screen.getByTestId('nav-delete-btn') as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.queryByTestId('nav-rotate-cw-btn')).toBeNull();
+    expect(screen.queryByTestId('nav-rotate-ccw-btn')).toBeNull();
+    expect(screen.queryByTestId('nav-duplicate-btn')).toBeNull();
+    expect(screen.queryByTestId('nav-delete-btn')).toBeNull();
+
+    // Compact Help menu provides Command Palette & Shortcuts
+    fireEvent.click(screen.getByTestId('nav-help-btn'));
+    expect(screen.getByTestId('nav-help-menu')).toBeTruthy();
+    expect(screen.getByTestId('nav-open-command-palette-btn')).toBeTruthy();
+    expect(screen.getByTestId('nav-open-shortcuts-btn')).toBeTruthy();
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByTestId('nav-help-menu')).toBeNull();
 
     const comp = container.querySelectorAll('g.component')[0];
-    const svg = container.querySelector('svg.sheet, svg') as SVGElement;
+    const svg = container.querySelector('svg.sheet') as SVGElement;
     fireEvent.mouseDown(comp, { clientX: 160, clientY: 160, button: 0 });
     fireEvent.mouseUp(svg, { clientX: 160, clientY: 160 });
-    await waitFor(() =>
-      expect((screen.getByTestId('nav-rotate-cw-btn') as HTMLButtonElement).disabled).toBe(false),
-    );
-    expect((screen.getByTestId('nav-delete-btn') as HTMLButtonElement).disabled).toBe(false);
-    expect((screen.getByTestId('nav-duplicate-btn') as HTMLButtonElement).disabled).toBe(false);
+    await waitFor(() => expect(screen.getByTestId('component-action-pill')).toBeTruthy());
   });
 
   it('right-click on workspace tabs opens the tab context menu and edits Osci layout', async () => {

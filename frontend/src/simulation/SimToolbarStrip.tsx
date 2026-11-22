@@ -3,7 +3,7 @@
  * Exposes time step (dt), duration (t_end), solver method, Auto-dt calculation,
  * and live step-count / aliasing diagnostics without opening a modal.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type {
   EditorComponent,
   SimRunSettings,
@@ -100,6 +100,8 @@ export function SimToolbarStrip({
 
   const [dtDraft, setDtDraft] = useState(resolved.dtStr);
   const [tEndDraft, setTEndDraft] = useState(resolved.tEndStr);
+  const [timingOpen, setTimingOpen] = useState(false);
+  const timingWrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setDtDraft(resolved.dtStr);
@@ -108,6 +110,26 @@ export function SimToolbarStrip({
   useEffect(() => {
     setTEndDraft(resolved.tEndStr);
   }, [resolved.tEndStr]);
+
+  useEffect(() => {
+    if (!timingOpen) return;
+    const onMouseDown = (e: MouseEvent) => {
+      if (timingWrapRef.current && !timingWrapRef.current.contains(e.target as Node)) {
+        setTimingOpen(false);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setTimingOpen(false);
+      }
+    };
+    window.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [timingOpen]);
 
   const parsedDt = parsePositiveTime(dtDraft);
   const parsedTEnd = parsePositiveTime(tEndDraft);
@@ -218,6 +240,13 @@ export function SimToolbarStrip({
     }
   };
 
+  const solverShort =
+    resolved.solver === 'trapezoidal'
+      ? 'Trap'
+      : resolved.solver === 'gear-shichman'
+        ? 'Gear'
+        : 'BE';
+
   const showActiveControls = isRunning || status === 'PAUSED';
 
   return (
@@ -257,137 +286,177 @@ export function SimToolbarStrip({
             ▶ Run <span className="kbd-shortcut run-kbd">F5</span>
           </button>
 
-          {/* Inline Time Step (dt) Control */}
-          <div className="sim-inline-field" title="Simulation integration time step (dt)">
-            <span className="sim-inline-label">dt:</span>
-            <input
-              type="text"
-              data-testid="toolbar-dt-input"
-              aria-label="Time Step (dt)"
-              className={`sim-inline-input ${!isDtValid || !isRatioValid ? 'invalid' : ''}`}
-              value={dtDraft}
-              onChange={(e) => handleDtChange(e.target.value)}
-              onBlur={handleDtBlur}
-              onKeyDown={handleInputKeyDown}
-              disabled={!circuitId}
-              placeholder="1u"
-            />
-            <select
-              data-testid="toolbar-dt-presets"
-              aria-label="Time Step Presets"
-              className="sim-inline-preset-select"
-              value=""
-              disabled={!circuitId}
-              title="Choose a time step (dt) preset or Auto-dt"
-              onChange={(e) => {
-                const chosen = e.target.value;
-                if (chosen === '__auto__') {
-                  handleAutoDt();
-                } else if (chosen) {
-                  setDtDraft(chosen);
-                  commitSettings({ dt: chosen });
-                }
-              }}
-            >
-              <option value="" disabled>
-                ▾
-              </option>
-              <option value="__auto__">⚡ Auto-dt (from circuit)</option>
-              {DT_PRESETS.map((preset) => (
-                <option key={preset} value={preset}>
-                  {preset}s
-                </option>
-              ))}
-            </select>
+          {/* Compact Timing Chip + Popover */}
+          <div className="sim-timing-wrap" ref={timingWrapRef}>
             <button
               type="button"
-              data-testid="toolbar-auto-dt-btn"
-              className="sim-inline-auto-btn"
-              onClick={handleAutoDt}
+              data-testid="toolbar-timing-chip"
+              className={`sim-timing-chip ${stepHealth.tone}${timingOpen ? ' open' : ''}`}
+              onClick={() => setTimingOpen((prev) => !prev)}
               disabled={!circuitId}
-              title="Auto-calculate optimal time step (dt) from circuit frequencies"
+              aria-expanded={timingOpen}
+              aria-haspopup="dialog"
+              title={`Simulation timing: Duration ${resolved.tEndStr}s, Step ${resolved.dtStr}s, Solver ${solverShort} (${stepHealth.label}). Click to adjust.`}
             >
-              ⚡ Auto
+              <span className={`sim-timing-dot ${stepHealth.tone}`} aria-hidden="true" />
+              <span>
+                {resolved.tEndStr} · {resolved.dtStr} · {solverShort}
+              </span>
+              {stepHealth.tone !== 'ok' && <span className="sim-timing-warn">⚠</span>}
+              <span className="sim-timing-caret">▾</span>
             </button>
+
+            {timingOpen && (
+              <div
+                className="sim-timing-popover"
+                role="dialog"
+                aria-label="Simulation Timing"
+                data-testid="toolbar-timing-popover"
+              >
+                <div className="sim-timing-row">
+                  <span className="sim-inline-label">Duration (t_end)</span>
+                  <div className="sim-inline-field">
+                    <input
+                      type="text"
+                      data-testid="toolbar-tend-input"
+                      aria-label="Simulation Duration (t_end)"
+                      className={`sim-inline-input ${!isTEndValid || !isRatioValid ? 'invalid' : ''}`}
+                      value={tEndDraft}
+                      onChange={(e) => handleTEndChange(e.target.value)}
+                      onBlur={handleTEndBlur}
+                      onKeyDown={handleInputKeyDown}
+                      disabled={!circuitId}
+                      placeholder="20m"
+                    />
+                    <select
+                      data-testid="toolbar-tend-presets"
+                      aria-label="Duration Presets"
+                      className="sim-inline-preset-select"
+                      value=""
+                      disabled={!circuitId}
+                      title="Choose a simulation duration (t_end) preset"
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          setTEndDraft(e.target.value);
+                          commitSettings({ tEnd: e.target.value });
+                        }
+                      }}
+                    >
+                      <option value="" disabled>
+                        ▾
+                      </option>
+                      {T_END_PRESETS.map((preset) => (
+                        <option key={preset} value={preset}>
+                          {preset}s
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="sim-timing-row">
+                  <span className="sim-inline-label">Time Step (dt)</span>
+                  <div className="sim-inline-field">
+                    <input
+                      type="text"
+                      data-testid="toolbar-dt-input"
+                      aria-label="Time Step (dt)"
+                      className={`sim-inline-input ${!isDtValid || !isRatioValid ? 'invalid' : ''}`}
+                      value={dtDraft}
+                      onChange={(e) => handleDtChange(e.target.value)}
+                      onBlur={handleDtBlur}
+                      onKeyDown={handleInputKeyDown}
+                      disabled={!circuitId}
+                      placeholder="1u"
+                    />
+                    <select
+                      data-testid="toolbar-dt-presets"
+                      aria-label="Time Step Presets"
+                      className="sim-inline-preset-select"
+                      value=""
+                      disabled={!circuitId}
+                      title="Choose a time step (dt) preset or Auto-dt"
+                      onChange={(e) => {
+                        const chosen = e.target.value;
+                        if (chosen === '__auto__') {
+                          handleAutoDt();
+                        } else if (chosen) {
+                          setDtDraft(chosen);
+                          commitSettings({ dt: chosen });
+                        }
+                      }}
+                    >
+                      <option value="" disabled>
+                        ▾
+                      </option>
+                      <option value="__auto__">⚡ Auto-dt (from circuit)</option>
+                      {DT_PRESETS.map((preset) => (
+                        <option key={preset} value={preset}>
+                          {preset}s
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      data-testid="toolbar-auto-dt-btn"
+                      className="sim-inline-auto-btn"
+                      onClick={handleAutoDt}
+                      disabled={!circuitId}
+                      title="Auto-calculate optimal time step (dt) from circuit frequencies"
+                    >
+                      ⚡ Auto
+                    </button>
+                  </div>
+                </div>
+
+                <div className="sim-timing-row">
+                  <span className="sim-inline-label">Solver</span>
+                  <div className="sim-timing-solver-wrap">
+                    <select
+                      data-testid="toolbar-solver-select"
+                      aria-label="Solver Method"
+                      className="sim-inline-solver-select"
+                      value={resolved.solver}
+                      disabled={!circuitId}
+                      title="Differential equation solver integration method"
+                      onChange={(e) => commitSettings({ solver: e.target.value })}
+                    >
+                      <option value="backward-euler">Backward Euler (BE)</option>
+                      <option value="trapezoidal">Trapezoidal (Trap)</option>
+                      <option value="gear-shichman">Gear-Shichman (Gear)</option>
+                    </select>
+                    <button
+                      type="button"
+                      data-testid="toolbar-steps-pill"
+                      className={`sim-toolbar-steps-pill ${stepHealth.tone}`}
+                      onClick={() => {
+                        setTimingOpen(false);
+                        onOpenConfigModal();
+                      }}
+                      disabled={!circuitId}
+                      title={stepHealth.title}
+                    >
+                      {stepHealth.label}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="sim-timing-footer">
+                  <button
+                    type="button"
+                    data-testid="toolbar-open-setup-btn"
+                    className="sim-timing-setup-link"
+                    onClick={() => {
+                      setTimingOpen(false);
+                      onOpenConfigModal();
+                    }}
+                  >
+                    ⚙ Full Simulation Setup…
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-
-          {/* Inline Duration (t_end) Control */}
-          <div className="sim-inline-field" title="Total simulation duration (t_end)">
-            <span className="sim-inline-label">t_end:</span>
-            <input
-              type="text"
-              data-testid="toolbar-tend-input"
-              aria-label="Simulation Duration (t_end)"
-              className={`sim-inline-input ${!isTEndValid || !isRatioValid ? 'invalid' : ''}`}
-              value={tEndDraft}
-              onChange={(e) => handleTEndChange(e.target.value)}
-              onBlur={handleTEndBlur}
-              onKeyDown={handleInputKeyDown}
-              disabled={!circuitId}
-              placeholder="20m"
-            />
-            <select
-              data-testid="toolbar-tend-presets"
-              aria-label="Duration Presets"
-              className="sim-inline-preset-select"
-              value=""
-              disabled={!circuitId}
-              title="Choose a simulation duration (t_end) preset"
-              onChange={(e) => {
-                if (e.target.value) {
-                  setTEndDraft(e.target.value);
-                  commitSettings({ tEnd: e.target.value });
-                }
-              }}
-            >
-              <option value="" disabled>
-                ▾
-              </option>
-              {T_END_PRESETS.map((preset) => (
-                <option key={preset} value={preset}>
-                  {preset}s
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Inline Solver Selector */}
-          <select
-            data-testid="toolbar-solver-select"
-            aria-label="Solver Method"
-            className="sim-inline-solver-select"
-            value={resolved.solver}
-            disabled={!circuitId}
-            title="Differential equation solver integration method"
-            onChange={(e) => commitSettings({ solver: e.target.value })}
-          >
-            <option value="backward-euler">BE</option>
-            <option value="trapezoidal">Trap</option>
-            <option value="gear-shichman">Gear</option>
-          </select>
-
-          {/* Live Step-Count & Health Pill */}
-          <button
-            type="button"
-            data-testid="toolbar-steps-pill"
-            className={`sim-toolbar-steps-pill ${stepHealth.tone}`}
-            onClick={onOpenConfigModal}
-            disabled={!circuitId}
-            title={stepHealth.title}
-          >
-            {stepHealth.label}
-          </button>
-
-          <button
-            type="button"
-            className="nav-btn icon-only"
-            onClick={onOpenConfigModal}
-            disabled={!circuitId}
-            title="Simulation Parameters & Solver Setup"
-            aria-label="Simulation Parameters Setup"
-          >
-            ⚙
-          </button>
         </>
       )}
     </div>

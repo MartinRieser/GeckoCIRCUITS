@@ -145,6 +145,10 @@ export interface ContextMenuProps {
   onToggleGrid?: () => void;
   /** Cycles net label display mode across schematic wires. */
   onCycleNetLabels?: () => void;
+  /** Number of currently selected schematic components. */
+  selectionCount?: number;
+  /** Opens Save Selection as Snippet modal. */
+  onSaveAsSnippet?: () => void;
 }
 
 /**
@@ -186,6 +190,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onResetZoom,
   onToggleGrid,
   onCycleNetLabels,
+  selectionCount = 0,
+  onSaveAsSnippet,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const [openSubmenu, setOpenSubmenu] = useState<'coupling' | 'quickPlace' | null>(null);
@@ -470,6 +476,16 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
               <span className="context-menu-shortcut">Ctrl+D</span>
             </button>
           )}
+          {onSaveAsSnippet && (
+            <button
+              type="button"
+              className="context-menu-item"
+              data-testid="context-save-snippet"
+              onClick={() => act(onSaveAsSnippet)}
+            >
+              <span>📦 Save Selection as Snippet...</span>
+            </button>
+          )}
           <div className="context-menu-sep" />
           <button
             type="button"
@@ -622,6 +638,16 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             <span>Add Component...</span>
             <span className="context-menu-shortcut">Ctrl+K</span>
           </button>
+          {onSaveAsSnippet && selectionCount >= 1 && (
+            <button
+              type="button"
+              className="context-menu-item"
+              data-testid="context-save-snippet"
+              onClick={() => act(onSaveAsSnippet)}
+            >
+              <span>📦 Save Selection as Snippet...</span>
+            </button>
+          )}
 
           {onQuickPlaceAt && (
             <>

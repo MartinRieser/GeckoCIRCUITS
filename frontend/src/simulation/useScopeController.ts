@@ -101,8 +101,8 @@ export interface ScopeController {
   cursorMeasurements: CursorMeasurements | null;
 
   // Drawer
-  drawerTab: 'metrics' | 'fft' | 'losses' | null;
-  setDrawerTab: React.Dispatch<React.SetStateAction<'metrics' | 'fft' | 'losses' | null>>;
+  drawerTab: 'metrics' | 'fft' | 'losses' | 'sweep' | null;
+  setDrawerTab: React.Dispatch<React.SetStateAction<'metrics' | 'fft' | 'losses' | 'sweep' | null>>;
 }
 
 export function useScopeController({
@@ -119,7 +119,7 @@ export function useScopeController({
   const [cursorB, setCursorB] = useState<number | null>(null);
   const [activeCursor, setActiveCursor] = useState<'A' | 'B'>('A');
   const [cursorsEnabled, setCursorsEnabled] = useState(false);
-  const [drawerTab, setDrawerTab] = useState<'metrics' | 'fft' | 'losses' | null>(null);
+  const [drawerTab, setDrawerTab] = useState<'metrics' | 'fft' | 'losses' | 'sweep' | null>(null);
 
   // Time-axis view window; null = fit whole simulation
   const [view, setView] = useState<ViewWindow | null>(null);

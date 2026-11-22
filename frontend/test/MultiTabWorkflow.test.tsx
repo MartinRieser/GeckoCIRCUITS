@@ -150,7 +150,8 @@ describe('Multi-Tab Workspace & Unified Simulation Setup', () => {
       expect(screen.getByText('multitab_test.ipes')).not.toBeNull();
     });
 
-    const setupGearBtn = screen.getByRole('button', { name: /Simulation Parameters Setup/i });
+    fireEvent.click(screen.getByTestId('toolbar-timing-chip'));
+    const setupGearBtn = screen.getByTestId('toolbar-open-setup-btn');
     fireEvent.click(setupGearBtn);
 
     expect(screen.getByText('⚙ Simulation Configuration')).not.toBeNull();

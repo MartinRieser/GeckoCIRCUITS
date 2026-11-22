@@ -39,6 +39,7 @@ import {
 } from '../model/componentSchema';
 import type { GraphRegister } from '../model/types';
 import { isScopeComponent } from '../simulation/scopes';
+import { listSweepableParameters } from '../simulation/parametricSweep';
 import { CHANNEL_TRACE_COLORS, CHANNEL_TRACE_COLORS_LIGHT } from '../simulation/traceColors';
 import { terminalPositions } from '../model/geometry';
 import { SymbolPreview } from '../canvas/symbols';
@@ -110,6 +111,10 @@ export interface PropertiesPanelProps {
   onOpenScopeTab?: (scopeName: string) => void;
   /** Callback to collapse the properties panel. */
   onCollapse?: () => void;
+  /** Callback to pin one of this component's parameters as a Live Slider. */
+  onPinLiveSlider?: (componentName: string, paramKey: string) => void;
+  /** Callback to open Parametric Sweep pre-filled for this component & parameter. */
+  onOpenSweepForComponent?: (componentName: string, paramKey: string) => void;
   /** Callback to attach/upload a NativeC shared library file (.dll/.so/.dylib) in browser mode. */
   onAttachNativeLibrary?: (componentName: string, file: File) => void | Promise<void>;
   /** Active UI theme; picks the light-calibrated channel badge palette. */
@@ -138,15 +143,28 @@ export function PropertiesPanel({
   onDelete,
   onOpenScopeTab,
   onCollapse,
+  onPinLiveSlider,
+  onOpenSweepForComponent,
   onAttachNativeLibrary,
   theme = 'dark',
 }: PropertiesPanelProps) {
   const CHANNEL_COLORS = theme === 'light' ? CHANNEL_TRACE_COLORS_LIGHT : CHANNEL_COLORS_DARK;
   const [name, setName] = useState('');
+  const [varyMenuOpen, setVaryMenuOpen] = useState(false);
+  const [varyParamKey, setVaryParamKey] = useState('');
 
   useEffect(() => {
     setName(component?.name ?? '');
+    setVaryMenuOpen(false);
+    setVaryParamKey('');
   }, [component?.name]);
+
+  const componentSweepParams = useMemo(
+    () => (component ? listSweepableParameters([component]) : []),
+    [component],
+  );
+  const activeVaryParam =
+    componentSweepParams.find((p) => p.paramKey === varyParamKey) ?? componentSweepParams[0] ?? null;
 
   const meta = useMemo(() => {
     if (!component) return null;
@@ -949,6 +967,71 @@ export function PropertiesPanel({
                     );
                   })}
               </div>
+
+              {componentSweepParams.length > 0 && (onPinLiveSlider || onOpenSweepForComponent) && (
+                <div className="prop-vary-wrap" data-testid="prop-vary-section">
+                  <button
+                    type="button"
+                    data-testid="prop-vary-btn"
+                    className={`prop-vary-trigger${varyMenuOpen ? ' open' : ''}`}
+                    onClick={() => setVaryMenuOpen((prev) => !prev)}
+                    title="Vary a parameter live with a slider or sweep it across a range"
+                  >
+                    <span>🎛 Vary Value…</span>
+                    <span>{varyMenuOpen ? '▴' : '▾'}</span>
+                  </button>
+                  {varyMenuOpen && activeVaryParam && (
+                    <div className="prop-vary-box" data-testid="prop-vary-menu">
+                      {componentSweepParams.length > 1 && (
+                        <label className="prop-vary-param-row">
+                          <span>Parameter:</span>
+                          <select
+                            data-testid="prop-vary-param-select"
+                            value={activeVaryParam.paramKey}
+                            onChange={(e) => setVaryParamKey(e.target.value)}
+                          >
+                            {componentSweepParams.map((p) => (
+                              <option key={p.paramKey} value={p.paramKey}>
+                                {p.label} ({formatEngineeringValue(p.currentValue, p.unit)})
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      )}
+                      <div className="prop-vary-actions">
+                        {onPinLiveSlider && (
+                          <button
+                            type="button"
+                            data-testid="prop-pin-slider-btn"
+                            className="prop-vary-action-btn"
+                            onClick={() => {
+                              onPinLiveSlider(component.name, activeVaryParam.paramKey);
+                              setVaryMenuOpen(false);
+                            }}
+                          >
+                            <strong>🎚 Live Slider</strong>
+                            <span>Adjust with a knob &amp; re-simulate</span>
+                          </button>
+                        )}
+                        {onOpenSweepForComponent && (
+                          <button
+                            type="button"
+                            data-testid="prop-run-sweep-btn"
+                            className="prop-vary-action-btn"
+                            onClick={() => {
+                              onOpenSweepForComponent(component.name, activeVaryParam.paramKey);
+                              setVaryMenuOpen(false);
+                            }}
+                          >
+                            <strong>📈 Parameter Sweep…</strong>
+                            <span>Test a range &amp; compare all signals</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )
         )}

@@ -1,11 +1,12 @@
 /**
  * Command Palette modal dialog (Ctrl+K or /): quick keyboard search
- * to find and arm any component with live symbol preview.
+ * to find and arm any component or reusable snippet, or run snippet save actions.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CatalogEntry } from '../model/types';
 import { getComponentMeta } from '../model/componentSchema';
 import { SymbolPreview } from '../canvas/symbols';
+import type { SchematicSnippet } from '../model/snippets';
 
 /**
  * Properties for the {@link CommandPalette} modal.
@@ -19,17 +20,40 @@ export interface CommandPaletteProps {
   catalog: CatalogEntry[];
   /** Callback invoked when a component is selected from the list. */
   onSelect: (entry: CatalogEntry) => void;
+  /** Optional list of reusable schematic snippets. */
+  snippets?: SchematicSnippet[];
+  /** Optional callback invoked when a snippet is chosen. */
+  onSelectSnippet?: (snippet: SchematicSnippet) => void;
+  /** Whether schematic components are currently selected. */
+  hasSelection?: boolean;
+  /** Optional action to save current selection as a snippet. */
+  onSaveAsSnippet?: () => void;
 }
 
+type CommandEntry =
+  | { kind: 'action'; key: string; label: string; category: string; desc: string; score: number; run: () => void }
+  | { kind: 'snippet'; key: string; snippet: SchematicSnippet; score: number }
+  | {
+      kind: 'component';
+      key: string;
+      entry: CatalogEntry;
+      meta: ReturnType<typeof getComponentMeta>;
+      score: number;
+    };
+
 /**
- * Fast keyboard-driven command palette modal for searching and selecting circuit components.
- * Supports up/down arrow key navigation, Enter to choose, and Esc to dismiss.
+ * Fast keyboard-driven command palette modal for searching and selecting circuit components
+ * and schematic snippets. Supports up/down arrow key navigation, Enter to choose, and Esc to dismiss.
  */
 export function CommandPalette({
   isOpen,
   onClose,
   catalog,
   onSelect,
+  snippets,
+  onSelectSnippet,
+  hasSelection = false,
+  onSaveAsSnippet,
 }: CommandPaletteProps) {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -43,44 +67,90 @@ export function CommandPalette({
     }
   }, [isOpen]);
 
-  const items = useMemo(() => {
+  const commands = useMemo<CommandEntry[]>(() => {
     const q = query.trim().toLowerCase();
-    return (catalog || [])
-      .filter(
-        (entry) =>
-          entry.type !== 1003 &&
-          entry.type !== 5 &&
-          entry.name !== 'CONTROL_SCOPE' &&
-          entry.name !== 'SCOPE',
-      )
-      .map((entry) => {
-        const meta = getComponentMeta(entry.type, entry.family, entry.name);
-        return {
+    const list: CommandEntry[] = [];
+
+    if (hasSelection && onSaveAsSnippet) {
+      const score = getMatchScore('Save Selection as Snippet', 'snippet', 'Save selected components and wires as reusable snippet', q);
+      if (score > 0) {
+        list.push({
+          kind: 'action',
+          key: 'action-save-snippet',
+          label: 'Save Selection as Snippet...',
+          category: 'Snippet',
+          desc: 'Save selected components and wires to the Snippet library',
+          score: q ? score + 10 : 90,
+          run: onSaveAsSnippet,
+        });
+      }
+    }
+
+    if (snippets && onSelectSnippet) {
+      for (const snip of snippets) {
+        const score = getMatchScore(snip.name, snip.category, snip.description, q);
+        if (score > 0) {
+          list.push({
+            kind: 'snippet',
+            key: `snip-${snip.id}`,
+            snippet: snip,
+            score,
+          });
+        }
+      }
+    }
+
+    for (const entry of catalog || []) {
+      if (
+        entry.type === 1003 ||
+        entry.type === 5 ||
+        entry.name === 'CONTROL_SCOPE' ||
+        entry.name === 'SCOPE'
+      ) {
+        continue;
+      }
+      const meta = getComponentMeta(entry.type, entry.family, entry.name);
+      const score = getMatchScore(meta.displayName, meta.name, meta.description, q);
+      if (score > 0) {
+        list.push({
+          kind: 'component',
+          key: `${entry.family}-${entry.type}`,
           entry,
           meta,
-          matchScore: getMatchScore(meta.displayName, meta.name, meta.description, q),
-        };
-      })
-      .filter((item) => item.matchScore > 0)
-      .sort((a, b) => b.matchScore - a.matchScore);
-  }, [catalog, query]);
+          score,
+        });
+      }
+    }
+
+    return list.sort((a, b) => b.score - a.score);
+  }, [catalog, query, snippets, onSelectSnippet, hasSelection, onSaveAsSnippet]);
 
   useEffect(() => {
     setSelectedIndex(0);
-  }, [items]);
+  }, [commands]);
+
+  const executeItem = (item: CommandEntry) => {
+    if (item.kind === 'action') {
+      item.run();
+    } else if (item.kind === 'snippet') {
+      onSelectSnippet?.(item.snippet);
+    } else {
+      onSelect(item.entry);
+    }
+    onClose();
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setSelectedIndex((prev) => (prev + 1) % Math.max(1, items.length));
+      setSelectedIndex((prev) => (prev + 1) % Math.max(1, commands.length));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setSelectedIndex((prev) => (prev - 1 + items.length) % Math.max(1, items.length));
+      setSelectedIndex((prev) => (prev - 1 + commands.length) % Math.max(1, commands.length));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      if (items[selectedIndex]) {
-        onSelect(items[selectedIndex].entry);
-        onClose();
+      if (commands[selectedIndex]) {
+        executeItem(commands[selectedIndex]);
       }
     } else if (e.key === 'Escape') {
       e.preventDefault();
@@ -103,7 +173,7 @@ export function CommandPalette({
             ref={inputRef}
             type="text"
             className="command-search-input"
-            placeholder="Search component to place (e.g. Resistor, Diode, MOSFET, V_in)..."
+            placeholder="Search component to place (e.g. Resistor, Diode, MOSFET, Buck, V_in)..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -111,36 +181,75 @@ export function CommandPalette({
         </div>
 
         <div className="command-results-list">
-          {items.length === 0 ? (
+          {commands.length === 0 ? (
             <div className="command-empty">No matching components found</div>
           ) : (
-            items.map(({ entry, meta }, index) => {
+            commands.map((item, index) => {
               const isSelected = index === selectedIndex;
+              if (item.kind === 'action') {
+                return (
+                  <div
+                    key={item.key}
+                    className={`command-item ${isSelected ? 'selected' : ''}`}
+                    onClick={() => executeItem(item)}
+                    onMouseEnter={() => setSelectedIndex(index)}
+                  >
+                    <div className="command-item-symbol">📦</div>
+                    <div className="command-item-info">
+                      <div className="command-item-name-row">
+                        <span className="command-item-name">{item.label}</span>
+                        <span className="command-item-category">{item.category}</span>
+                      </div>
+                      <span className="command-item-desc">{item.desc}</span>
+                    </div>
+                  </div>
+                );
+              }
+              if (item.kind === 'snippet') {
+                return (
+                  <div
+                    key={item.key}
+                    className={`command-item ${isSelected ? 'selected' : ''}`}
+                    onClick={() => executeItem(item)}
+                    onMouseEnter={() => setSelectedIndex(index)}
+                  >
+                    <div className="command-item-symbol">🧩</div>
+                    <div className="command-item-info">
+                      <div className="command-item-name-row">
+                        <span className="command-item-name">{item.snippet.name}</span>
+                        <span className="command-item-category">Snippet · {item.snippet.category}</span>
+                      </div>
+                      <span className="command-item-desc">
+                        {item.snippet.description || `${item.snippet.components.length} components, ${item.snippet.wires.length} wires`}
+                      </span>
+                    </div>
+                  </div>
+                );
+              }
               return (
                 <div
-                  key={`${entry.family}-${entry.type}`}
+                  key={item.key}
                   className={`command-item ${isSelected ? 'selected' : ''}`}
-                  onClick={() => {
-                    onSelect(entry);
-                    onClose();
-                  }}
+                  onClick={() => executeItem(item)}
                   onMouseEnter={() => setSelectedIndex(index)}
                 >
                   <div className="command-item-symbol">
-                    <SymbolPreview type={entry.type} family={entry.family} size={32} />
+                    <SymbolPreview type={item.entry.type} family={item.entry.family} size={32} />
                   </div>
                   <div className="command-item-info">
                     <div className="command-item-name-row">
-                      <span className="command-item-name">{meta.displayName}</span>
-                      {meta.disabled && <span className="card-soon-badge">planned</span>}
-                      <span className="command-item-category">{meta.category}</span>
+                      <span className="command-item-name">{item.meta.displayName}</span>
+                      {item.meta.disabled && <span className="card-soon-badge">planned</span>}
+                      <span className="command-item-category">{item.meta.category}</span>
                     </div>
                     <span className="command-item-desc">
-                      {meta.disabled ? `${meta.description} — not placeable yet` : meta.description}
+                      {item.meta.disabled
+                        ? `${item.meta.description} — not placeable yet`
+                        : item.meta.description}
                     </span>
                   </div>
-                  {meta.shortcut && (
-                    <kbd className="command-item-shortcut">{meta.shortcut}</kbd>
+                  {item.meta.shortcut && (
+                    <kbd className="command-item-shortcut">{item.meta.shortcut}</kbd>
                   )}
                 </div>
               );

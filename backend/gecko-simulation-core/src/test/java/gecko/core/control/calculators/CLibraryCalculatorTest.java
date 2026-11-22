@@ -169,14 +169,15 @@ class CLibraryCalculatorTest {
 
     @Test
     void missingLibraryHoldsOutputsAndReports() {
-        CLibraryCalculator calculator = new CLibraryCalculator(1, 1, "Z:/definitely/missing.dll");
-        calculator._inputSignal[0] = new double[]{7.0};
-        calculator._outputSignal[0] = new double[]{0.0};
-        calculator.initializeAtSimulationStart(1e-6);
-        assertNotNull(calculator.getLoadError(), "missing library must set a load error");
-        calculator.calculateYOUT(1e-6);
-        assertEquals(0.0, calculator._outputSignal[0][0], 1e-12,
-                "failure contract: outputs hold at their initial value");
+        try (CLibraryCalculator calculator = new CLibraryCalculator(1, 1, "Z:/definitely/missing.dll")) {
+            calculator._inputSignal[0] = new double[]{7.0};
+            calculator._outputSignal[0] = new double[]{0.0};
+            calculator.initializeAtSimulationStart(1e-6);
+            assertNotNull(calculator.getLoadError(), "missing library must set a load error");
+            calculator.calculateYOUT(1e-6);
+            assertEquals(0.0, calculator._outputSignal[0][0], 1e-12,
+                    "failure contract: outputs hold at their initial value");
+        }
     }
 
     @Test

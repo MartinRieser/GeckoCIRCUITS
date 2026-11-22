@@ -290,6 +290,35 @@ class BatchSimulationControllerTest {
                 .andExpect(jsonPath("$.batchId").exists());
     }
 
+    // --- Test 14: circuitId without circuitFile returns 201 ---
+
+    @Test
+    void submitBatch_withCircuitIdWithoutCircuitFile_returnsCreated() throws Exception {
+        BatchSimulationRequest request = buildRequestWithLinearSweep(null, 5);
+        request.setCircuitId("session-circuit-123");
+
+        when(simulationService.submitBatch(any(BatchSimulationRequest.class)))
+                .thenReturn(batchResponse5);
+
+        mockMvc.perform(post("/api/v1/simulations/batch")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.totalSimulations").value(5));
+    }
+
+    // --- Test 15: missing all circuit sources returns 400 ---
+
+    @Test
+    void submitBatch_missingAllCircuitSources_returnsBadRequest() throws Exception {
+        BatchSimulationRequest request = buildRequestWithLinearSweep(null, 5);
+
+        mockMvc.perform(post("/api/v1/simulations/batch")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
     // --- Helper methods ---
 
     private BatchSimulationRequest buildRequestWithParameterSets(String circuitFile, int count) {

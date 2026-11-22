@@ -13,8 +13,9 @@ import { ORIENTATION_CYCLE, terminalPositions, findPlacementConflict } from './g
 import { Orientation, SENTINEL_UNSET } from './constants';
 import { getComponentMeta } from './componentSchema';
 import { routeWireWithAnchors, densePoints, simplifyCorners, deconflictMovedWires } from '../canvas/WireRouter';
+import type { SchematicSnippet } from './snippets';
 
-export type Mode = 'idle' | 'placing' | 'wiring' | 'rubber' | 'dragging' | 'probing';
+export type Mode = 'idle' | 'placing' | 'placing_snippet' | 'wiring' | 'rubber' | 'dragging' | 'probing';
 export type EditorMode = Mode;
 
 export interface Ghost {
@@ -23,6 +24,12 @@ export interface Ghost {
   x: number;
   y: number;
   orientation: number;
+}
+
+export interface SnippetGhost {
+  snippet: SchematicSnippet;
+  x: number;
+  y: number;
 }
 
 export interface WireDraft {
@@ -93,6 +100,7 @@ export interface EditorState {
   wires: EditorWire[];
   mode: Mode;
   ghost: Ghost | null;
+  snippetGhost: SnippetGhost | null;
   wireDraft: WireDraft | null;
   rubber: RubberBand | null;
   drag: DragState | null;
@@ -121,6 +129,7 @@ export const initialState: EditorState = {
   wires: [],
   mode: 'idle',
   ghost: null,
+  snippetGhost: null,
   wireDraft: null,
   rubber: null,
   drag: null,
@@ -152,7 +161,9 @@ export type Action =
   | { type: 'STATUS'; status: string }
   | { type: 'BUSY'; busy: boolean }
   | { type: 'ARM'; componentType: number; family: string }
+  | { type: 'ARM_SNIPPET'; snippet: SchematicSnippet }
   | { type: 'GHOST_MOVE'; x: number; y: number }
+  | { type: 'SNIPPET_GHOST_MOVE'; x: number; y: number }
   | { type: 'GHOST_NUDGE'; dx: number; dy: number }
   | { type: 'GHOST_ROTATE'; ccw?: boolean }
   | { type: 'CANCEL' }
@@ -508,6 +519,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         graphRegisters,
         mode: 'idle',
         ghost: null,
+        snippetGhost: null,
         wireDraft: null,
         rubber: null,
         selection: state.selection.filter((n) => components.some((c) => c.name === n)),
@@ -605,10 +617,27 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
           y: 10,
           orientation: Orientation.NORTH_SOUTH,
         },
+        snippetGhost: null,
         wireDraft: null,
         rubber: null,
         drag: null,
         status: 'Placing component — Click or press Enter to place, R to rotate, Esc to cancel',
+      };
+
+    case 'ARM_SNIPPET':
+      return {
+        ...state,
+        mode: 'placing_snippet',
+        snippetGhost: {
+          snippet: action.snippet,
+          x: 10,
+          y: 10,
+        },
+        ghost: null,
+        wireDraft: null,
+        rubber: null,
+        drag: null,
+        status: `Click canvas to place snippet '${action.snippet.name}' (Esc to cancel)`,
       };
 
     case 'GHOST_MOVE':
@@ -616,6 +645,13 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
       return {
         ...state,
         ghost: { ...state.ghost, x: action.x, y: action.y },
+      };
+
+    case 'SNIPPET_GHOST_MOVE':
+      if (!state.snippetGhost) return state;
+      return {
+        ...state,
+        snippetGhost: { ...state.snippetGhost, x: action.x, y: action.y },
       };
 
     case 'GHOST_NUDGE': {
@@ -683,6 +719,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         mode: 'idle',
         probeRefNet: null,
         ghost: null,
+        snippetGhost: null,
         wireDraft: null,
         rubber: null,
         drag: null,
@@ -1220,6 +1257,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         mode: 'wiring',
         wireDraft: null,
         ghost: null,
+        snippetGhost: null,
         selection: [],
         status: 'Wire mode active — Click or Tab/Enter on a terminal to start',
       };
@@ -1235,6 +1273,7 @@ export function editorReducer(state: EditorState, action: Action): EditorState {
         probeRefNet: null,
         wireDraft: null,
         ghost: null,
+        snippetGhost: null,
         rubber: null,
         drag: null,
         selection: [],
