@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { useReducer } from 'react';
+import { useReducer, useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { Sheet, type SheetActions } from '../src/canvas/Sheet';
@@ -40,6 +40,7 @@ function Harness({
   onOpenScopeTab?: (name: string) => void;
   onRunSimulation?: () => void;
 }) {
+  const [showOpBadges, setShowOpBadges] = useState(true);
   const [state, dispatch] = useReducer(editorReducer, undefined, () =>
     editorReducer(initialState, { type: 'SNAPSHOT', snapshot }),
   );
@@ -57,6 +58,8 @@ function Harness({
       actions={actions}
       simResults={simResults}
       isSimStale={isSimStale}
+      showOperatingPointBadges={showOpBadges}
+      onToggleOperatingPointBadges={() => setShowOpBadges((v) => !v)}
     />
   );
 }
@@ -80,6 +83,23 @@ describe('OpPointBadgesOverlay', () => {
   };
 
   it('renders live operating-point badges, switches metric, and toggles visibility', () => {
+    // Default Sheet hides operating-point badges unless explicitly enabled
+    render(
+      <Sheet
+        state={{
+          ...initialState,
+          circuitId: 'c1',
+          components: snapshot.components,
+          wires: [{ index: 0, type: 'LK', points: [[15, 10], [25, 10]], label: 'out' }],
+        }}
+        dispatch={vi.fn()}
+        actions={{ placeGhost: vi.fn(), finishWire: vi.fn(), commitMove: vi.fn() }}
+        simResults={mockResults}
+      />,
+    );
+    expect(screen.queryByTestId('op-point-badges-layer')).toBeNull();
+    cleanup();
+
     const onOpenScopeTab = vi.fn();
     render(<Harness simResults={mockResults} onOpenScopeTab={onOpenScopeTab} />);
 

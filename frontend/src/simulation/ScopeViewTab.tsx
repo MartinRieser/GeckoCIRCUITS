@@ -40,6 +40,7 @@ import { SweepPanel } from './SweepPanel';
 import { sweepRunColor, type SweepSession } from './parametricSweep';
 import { LiveSliderBar } from './LiveSliderBar';
 import type { PinnedSlider } from './liveSliders';
+import type { AppSettings } from '../model/appSettings';
 
 export interface SweepOverlayTrace {
   runIndex: number;
@@ -150,6 +151,12 @@ export interface ScopeViewTabProps {
   onCollapseDrawer?: () => void;
   /** Expands the docked bottom waveforms drawer into a full-screen Oscilloscope tab. */
   onExpandToTab?: () => void;
+  /** Feature flags controlling which analysis tools/tabs appear. */
+  features?: Partial<AppSettings['features']>;
+  /** Hide duplicate wire aliases and unrecorded domain signals in Channel Manager. */
+  hideDuplicatesAndSpeculative?: boolean;
+  /** Show the quick measurement tiles strip below waveforms. */
+  showQuickMeasureStrip?: boolean;
 }
 
 export const DEFAULT_DRAWER_HEIGHT = 280;
@@ -344,7 +351,15 @@ export function ScopeViewTab({
   onToggleTuneBar: _onToggleTuneBar,
   onCollapseDrawer,
   onExpandToTab,
+  features,
+  hideDuplicatesAndSpeculative = true,
+  showQuickMeasureStrip = true,
 }: ScopeViewTabProps) {
+  const showRefCompare = features?.referenceCompare !== false;
+  const showSweep = features?.parametricSweep !== false;
+  const showSliders = features?.liveSliders !== false;
+  const showFft = features?.fftAnalysis !== false;
+  const showLosses = features?.lossAnalysis !== false;
   const [internalShowBaseline, setInternalShowBaseline] = useState(true);
   const isBaselineVisible = showBaselineProp !== undefined ? showBaselineProp : internalShowBaseline;
   const handleToggleBaselineVisible = useCallback(() => {
@@ -939,25 +954,29 @@ export function ScopeViewTab({
             >
               📊 Metrics
             </button>
-            <button
-              type="button"
-              data-testid="scope-view-tab-fft"
-              className={`segmented-btn ${drawerTab === 'fft' ? 'active' : ''}`}
-              onClick={() => setDrawerTab('fft')}
-              title="Harmonic FFT frequency spectrum"
-            >
-              〰 FFT
-            </button>
-            <button
-              type="button"
-              data-testid="scope-view-tab-losses"
-              className={`segmented-btn ${drawerTab === 'losses' ? 'active' : ''}`}
-              onClick={() => setDrawerTab('losses')}
-              title="Waveform power (p = v · i) and semiconductor losses"
-            >
-              ⚡ Losses
-            </button>
-            {sweepSession && (
+            {showFft && (
+              <button
+                type="button"
+                data-testid="scope-view-tab-fft"
+                className={`segmented-btn ${drawerTab === 'fft' ? 'active' : ''}`}
+                onClick={() => setDrawerTab('fft')}
+                title="Harmonic FFT frequency spectrum"
+              >
+                〰 FFT
+              </button>
+            )}
+            {showLosses && (
+              <button
+                type="button"
+                data-testid="scope-view-tab-losses"
+                className={`segmented-btn ${drawerTab === 'losses' ? 'active' : ''}`}
+                onClick={() => setDrawerTab('losses')}
+                title="Waveform power (p = v · i) and semiconductor losses"
+              >
+                ⚡ Losses
+              </button>
+            )}
+            {showSweep && sweepSession && (
               <button
                 type="button"
                 data-testid="scope-view-tab-sweep"
@@ -1153,7 +1172,7 @@ export function ScopeViewTab({
             </button>
 
             {/* Self-explanatory Before/After Reference Comparison */}
-            {onPinBaseline && (
+            {showRefCompare && onPinBaseline && (
               !baseline ? (
                 <button
                   type="button"
@@ -1219,7 +1238,7 @@ export function ScopeViewTab({
       )}
 
       {/* Clear Reference Comparison Banner — gives instant visual confirmation */}
-      {baseline && (
+      {showRefCompare && baseline && (
         <div className="scope-baseline-banner" data-testid="baseline-status-banner">
           <span className="scope-baseline-banner-text">
             {hasBaselineDiff ? (
@@ -1247,7 +1266,7 @@ export function ScopeViewTab({
       )}
 
       {/* Synchronized Sweep Step Bar — controls ALL scope channels & schematic values together */}
-      {sweepSession && (
+      {showSweep && sweepSession && (
         <div className="sweep-step-bar" data-testid="sweep-step-bar">
           <span className="sweep-step-bar-label">
             🎚 Sweep <strong>{sweepSession.paramLabel}</strong>:
@@ -1331,7 +1350,7 @@ export function ScopeViewTab({
 
       {/* DSO Main Viewport (Single flat view: Curves, Metrics, FFT, Losses, or Sweep) */}
       <div className="dso-viewport">
-        {onPinSlider && onUnpinSlider && onUpdateSliderConfig && onCommitSliderValue && (
+        {showSliders && onPinSlider && onUnpinSlider && onUpdateSliderConfig && onCommitSliderValue && (
           <LiveSliderBar
             pinnedSliders={pinnedSliders}
             components={components}
@@ -1630,47 +1649,49 @@ export function ScopeViewTab({
                   </div>
 
                   {/* Screen Bottom Quick-Measurement Strip */}
-                  <div className="dso-quick-measure-bar">
-                    <div className="dso-quick-tiles">
-                      {visibleSignals.map((name) => {
-                        const st = signalStats[name];
-                        if (!st) return null;
-                        const unit = inferSignalUnit(name);
-                        const color = colorOf(name);
-                        const isHovered = hoveredSignal === name;
-                        const cmp = baselineComparisons[name];
-                        const deltaCls = cmp
-                          ? cmp.mean.absDelta > 1e-12
-                            ? 'pos'
-                            : cmp.mean.absDelta < -1e-12
-                              ? 'neg'
-                              : ''
-                          : '';
-                        return (
-                          <div
-                            key={name}
-                            className={`dso-measure-tile ${isHovered ? 'highlighted' : ''}`}
-                            style={{
-                              borderLeft: `3px solid ${color}`,
-                              boxShadow: isHovered ? `0 0 8px ${color}60` : undefined,
-                            }}
-                            onMouseEnter={() => setHoveredSignal(name)}
-                            onMouseLeave={() => setHoveredSignal(null)}
-                          >
-                            <span style={{ color, fontWeight: 700 }}>{name}</span>
-                            <span>Vpp: <strong className="dso-measure-tile-val">{formatEngineeringValue(st.pkpk, unit)}</strong></span>
-                            <span>Vrms: <strong className="dso-measure-tile-val">{formatEngineeringValue(st.rms, unit)}</strong></span>
-                            <span>Mean: <strong className="dso-measure-tile-val">{formatEngineeringValue(st.mean, unit)}</strong></span>
-                            {cmp && (
-                              <span className={`dso-delta-chip ${deltaCls}`} data-testid={`quick-delta-${name}`}>
-                                ΔMean: {formatDeltaBadge(cmp.mean, unit, formatEngineeringValue)}
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })}
+                  {showQuickMeasureStrip && (
+                    <div className="dso-quick-measure-bar">
+                      <div className="dso-quick-tiles">
+                        {visibleSignals.map((name) => {
+                          const st = signalStats[name];
+                          if (!st) return null;
+                          const unit = inferSignalUnit(name);
+                          const color = colorOf(name);
+                          const isHovered = hoveredSignal === name;
+                          const cmp = baselineComparisons[name];
+                          const deltaCls = cmp
+                            ? cmp.mean.absDelta > 1e-12
+                              ? 'pos'
+                              : cmp.mean.absDelta < -1e-12
+                                ? 'neg'
+                                : ''
+                            : '';
+                          return (
+                            <div
+                              key={name}
+                              className={`dso-measure-tile ${isHovered ? 'highlighted' : ''}`}
+                              style={{
+                                borderLeft: `3px solid ${color}`,
+                                boxShadow: isHovered ? `0 0 8px ${color}60` : undefined,
+                              }}
+                              onMouseEnter={() => setHoveredSignal(name)}
+                              onMouseLeave={() => setHoveredSignal(null)}
+                            >
+                              <span style={{ color, fontWeight: 700 }}>{name}</span>
+                              <span>Vpp: <strong className="dso-measure-tile-val">{formatEngineeringValue(st.pkpk, unit)}</strong></span>
+                              <span>Vrms: <strong className="dso-measure-tile-val">{formatEngineeringValue(st.rms, unit)}</strong></span>
+                              <span>Mean: <strong className="dso-measure-tile-val">{formatEngineeringValue(st.mean, unit)}</strong></span>
+                              {cmp && (
+                                <span className={`dso-delta-chip ${deltaCls}`} data-testid={`quick-delta-${name}`}>
+                                  ΔMean: {formatDeltaBadge(cmp.mean, unit, formatEngineeringValue)}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </>
             ) : (
@@ -1823,6 +1844,8 @@ export function ScopeViewTab({
           onAutoGroupByCategory={handleAutoGroupSignals}
           components={components}
           wires={wires}
+          results={effectiveResults}
+          hideDuplicatesAndSpeculative={hideDuplicatesAndSpeculative}
           onHighlightComponent={onHighlightComponent}
           onHighlightNet={onHighlightNet}
         />
@@ -2002,26 +2025,30 @@ export function ScopeViewTab({
           )}
 
           <div className="context-menu-sep" />
-          <button
-            type="button"
-            className="context-menu-item"
-            onClick={() => {
-              setDrawerTab((prev) => (prev === 'fft' ? null : 'fft'));
-              setScopeContextMenu(null);
-            }}
-          >
-            <span>{drawerTab === 'fft' ? '✓ ' : ''}〰 Toggle FFT Spectrum</span>
-          </button>
-          <button
-            type="button"
-            className="context-menu-item"
-            onClick={() => {
-              setDrawerTab((prev) => (prev === 'losses' ? null : 'losses'));
-              setScopeContextMenu(null);
-            }}
-          >
-            <span>{drawerTab === 'losses' ? '✓ ' : ''}⚡ Toggle Power & Losses</span>
-          </button>
+          {showFft && (
+            <button
+              type="button"
+              className="context-menu-item"
+              onClick={() => {
+                setDrawerTab((prev) => (prev === 'fft' ? null : 'fft'));
+                setScopeContextMenu(null);
+              }}
+            >
+              <span>{drawerTab === 'fft' ? '✓ ' : ''}〰 Toggle FFT Spectrum</span>
+            </button>
+          )}
+          {showLosses && (
+            <button
+              type="button"
+              className="context-menu-item"
+              onClick={() => {
+                setDrawerTab((prev) => (prev === 'losses' ? null : 'losses'));
+                setScopeContextMenu(null);
+              }}
+            >
+              <span>{drawerTab === 'losses' ? '✓ ' : ''}⚡ Toggle Power & Losses</span>
+            </button>
+          )}
           <button
             type="button"
             className="context-menu-item"

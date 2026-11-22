@@ -282,6 +282,19 @@ interface SheetProps {
   isSimStale?: boolean;
   /** Optional sweep preview label shown when stepping through parametric sweep runs. */
   sweepPreviewLabel?: string | null;
+  /** Controlled toggle for showing operating-point V/I boxes on the schematic (default: false). */
+  showOperatingPointBadges?: boolean;
+  /** Optional callback when user toggles schematic operating-point boxes. */
+  onToggleOperatingPointBadges?: () => void;
+  /** Controlled alignment grid visibility. */
+  showGrid?: boolean;
+  onToggleGrid?: () => void;
+  /** Controlled probe marker visibility. */
+  showProbeMarkers?: boolean;
+  onToggleProbeMarkers?: () => void;
+  /** Controlled net label visibility mode. */
+  netLabelMode?: 'smart' | 'all' | 'hover';
+  onCycleNetLabelMode?: () => void;
 }
 
 export function Sheet({
@@ -292,6 +305,14 @@ export function Sheet({
   simResults = null,
   isSimStale = false,
   sweepPreviewLabel = null,
+  showOperatingPointBadges: showOpBadgesProp,
+  onToggleOperatingPointBadges,
+  showGrid: showGridProp,
+  onToggleGrid,
+  showProbeMarkers: showProbesProp,
+  onToggleProbeMarkers,
+  netLabelMode: labelModeProp,
+  onCycleNetLabelMode,
 }: SheetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -312,10 +333,18 @@ export function Sheet({
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [isSpacePressed, setIsSpacePressed] = useState(false);
-  const [showGrid, setShowGrid] = useState(true);
+  const [internalShowGrid, setInternalShowGrid] = useState(true);
+  const showGrid = showGridProp !== undefined ? showGridProp : internalShowGrid;
+  const setShowGrid = (next: boolean) => {
+    if (onToggleGrid) {
+      onToggleGrid();
+    } else {
+      setInternalShowGrid(next);
+    }
+  };
 
   // Probe markers visibility on schematic (persisted in localStorage)
-  const [showProbes, setShowProbes] = useState<boolean>(() => {
+  const [internalShowProbes, setInternalShowProbes] = useState<boolean>(() => {
     try {
       const val = localStorage.getItem('gecko_show_probes');
       return val !== 'false';
@@ -323,9 +352,14 @@ export function Sheet({
       return true;
     }
   });
+  const showProbes = showProbesProp !== undefined ? showProbesProp : internalShowProbes;
 
   const toggleShowProbes = useCallback(() => {
-    setShowProbes((prev) => {
+    if (onToggleProbeMarkers) {
+      onToggleProbeMarkers();
+      return;
+    }
+    setInternalShowProbes((prev) => {
       const next = !prev;
       try {
         localStorage.setItem('gecko_show_probes', String(next));
@@ -334,10 +368,10 @@ export function Sheet({
       }
       return next;
     });
-  }, []);
+  }, [onToggleProbeMarkers]);
 
   const ensureProbesVisible = useCallback(() => {
-    setShowProbes(true);
+    setInternalShowProbes(true);
     try {
       localStorage.setItem('gecko_show_probes', 'true');
     } catch {
@@ -345,18 +379,22 @@ export function Sheet({
     }
   }, []);
 
-  // On-canvas operating-point value badges visibility & metric (persisted in localStorage)
-  const [showOpBadges, setShowOpBadges] = useState<boolean>(() => {
+  // On-canvas operating-point value badges visibility (OFF by default unless explicitly enabled)
+  const [internalShowOpBadges, setInternalShowOpBadges] = useState<boolean>(() => {
     try {
-      const val = localStorage.getItem('gecko_show_op_badges');
-      return val !== 'false';
+      return localStorage.getItem('gecko_show_op_badges') === 'true';
     } catch {
-      return true;
+      return false;
     }
   });
+  const showOpBadges = showOpBadgesProp !== undefined ? showOpBadgesProp : internalShowOpBadges;
 
   const toggleShowOpBadges = useCallback(() => {
-    setShowOpBadges((prev) => {
+    if (onToggleOperatingPointBadges) {
+      onToggleOperatingPointBadges();
+      return;
+    }
+    setInternalShowOpBadges((prev) => {
       const next = !prev;
       try {
         localStorage.setItem('gecko_show_op_badges', String(next));
@@ -365,7 +403,7 @@ export function Sheet({
       }
       return next;
     });
-  }, []);
+  }, [onToggleOperatingPointBadges]);
 
   const [opBadgeMetric, setOpBadgeMetric] = useState<OpPointMetric>(() => {
     try {
@@ -529,16 +567,21 @@ export function Sheet({
   }, [hoveredWireIndex, state.selectedWire, hoveredTerminal, state.focusedTerminal, netAnalysis]);
 
   // Net label visibility mode: 'smart' (virtual always show; wired on hover/selection), 'all' (always show all), or 'hover' (only on hover/selection)
-  const [labelDisplayMode, setLabelDisplayMode] = useState<'smart' | 'all' | 'hover'>(() => {
+  const [internalLabelMode, setInternalLabelMode] = useState<'smart' | 'all' | 'hover'>(() => {
     try {
       return (localStorage.getItem('gecko_label_mode') as 'smart' | 'all' | 'hover') || 'smart';
     } catch {
       return 'smart';
     }
   });
+  const labelDisplayMode = labelModeProp !== undefined ? labelModeProp : internalLabelMode;
 
   const cycleLabelDisplayMode = useCallback(() => {
-    setLabelDisplayMode((prev) => {
+    if (onCycleNetLabelMode) {
+      onCycleNetLabelMode();
+      return;
+    }
+    setInternalLabelMode((prev) => {
       const next = prev === 'smart' ? 'all' : prev === 'all' ? 'hover' : 'smart';
       try {
         localStorage.setItem('gecko_label_mode', next);
@@ -547,7 +590,7 @@ export function Sheet({
       }
       return next;
     });
-  }, []);
+  }, [onCycleNetLabelMode]);
 
   // Pan and gently normalize zoom when a diagnostic issue locates a target
   const focusViewportRef = useRef({ zoom, viewportSize, dpix });
@@ -2138,33 +2181,29 @@ export function Sheet({
           </span>
         </button>
 
-        {simResults && (
+        {simResults && showOpBadges && (
           <>
             <button
               type="button"
               data-testid="toggle-op-badges"
-              className={`canvas-ctrl-btn ${showOpBadges ? 'active' : 'dimmed'}`}
+              className="canvas-ctrl-btn active"
               onClick={toggleShowOpBadges}
-              title={`Show simulated voltage, current, and power numbers right on schematic components and wires (${showOpBadges ? 'ON' : 'OFF'})`}
+              title="Showing simulated values on schematic — click to hide (also in View / Settings)"
             >
               <span className="canvas-ctrl-label">📊 Values</span>
-              <span className={`canvas-ctrl-badge ${showOpBadges ? 'on' : 'off'}`}>
-                {showOpBadges ? placedOpBadges.length : 'OFF'}
-              </span>
+              <span className="canvas-ctrl-badge on">{placedOpBadges.length}</span>
             </button>
-            {showOpBadges && (
-              <button
-                type="button"
-                data-testid="op-badge-metric-cycle-btn"
-                className="canvas-ctrl-btn"
-                onClick={handleCycleOpBadgeMetric}
-                title={`Summary metric on schematic readouts: ${OP_METRIC_LABELS[opBadgeMetric]} — click to cycle Avg / RMS / Pk-Pk / Max`}
-                aria-label={`Operating-point metric: ${OP_METRIC_LABELS[opBadgeMetric]}`}
-              >
-                <span className="canvas-ctrl-badge mode">{OP_METRIC_LABELS[opBadgeMetric]}</span>
-              </button>
-            )}
-            {showOpBadges && sweepPreviewLabel && (
+            <button
+              type="button"
+              data-testid="op-badge-metric-cycle-btn"
+              className="canvas-ctrl-btn"
+              onClick={handleCycleOpBadgeMetric}
+              title={`Summary metric on schematic readouts: ${OP_METRIC_LABELS[opBadgeMetric]} — click to cycle Avg / RMS / Pk-Pk / Max`}
+              aria-label={`Operating-point metric: ${OP_METRIC_LABELS[opBadgeMetric]}`}
+            >
+              <span className="canvas-ctrl-badge mode">{OP_METRIC_LABELS[opBadgeMetric]}</span>
+            </button>
+            {sweepPreviewLabel && (
               <span
                 data-testid="canvas-sweep-preview-pill"
                 className="canvas-sweep-preview-pill"
@@ -2173,7 +2212,7 @@ export function Sheet({
                 🎚 {sweepPreviewLabel}
               </span>
             )}
-            {showOpBadges && isSimStale && (
+            {isSimStale && (
               <button
                 type="button"
                 data-testid="op-badges-stale-pill"
@@ -4307,7 +4346,7 @@ export function Sheet({
           onOpenSimConfig={actions.openSimConfig}
           onZoomFit={handleZoomFit}
           onResetZoom={handleZoomReset}
-          onToggleGrid={() => setShowGrid((prev) => !prev)}
+          onToggleGrid={() => setShowGrid(!showGrid)}
           onCycleNetLabels={cycleLabelDisplayMode}
           selectionCount={state.selection.length}
           onSaveAsSnippet={actions.onSaveAsSnippet}

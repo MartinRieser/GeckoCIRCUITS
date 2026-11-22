@@ -33,7 +33,7 @@ describe('ScopeChannelManager Component', () => {
   it('filters signals by search query', () => {
     render(<ScopeChannelManager {...defaultProps} />);
 
-    const searchInput = screen.getByPlaceholderText('Filter signals (e.g. u_out, duty, i_L)...');
+    const searchInput = screen.getByPlaceholderText(/Filter signals/i);
     fireEvent.change(searchInput, { target: { value: 'duty' } });
 
     // duty should be visible
@@ -58,9 +58,8 @@ describe('ScopeChannelManager Component', () => {
     const onRemoveChannel = vi.fn();
     render(<ScopeChannelManager {...defaultProps} onRemoveChannel={onRemoveChannel} />);
 
-    const removeButtons = screen.getAllByText('Remove');
-    expect(removeButtons.length).toBeGreaterThan(0);
-    fireEvent.click(removeButtons[0]);
+    const removeBtn = screen.getByTitle('Remove v_sw from scope');
+    fireEvent.click(removeBtn);
 
     expect(onRemoveChannel).toHaveBeenCalledWith('v_sw');
   });
@@ -179,11 +178,11 @@ describe('ScopeChannelManager Component', () => {
         />,
       );
 
-      // Top-level sections rendered
+      // Top-level clean sections rendered (Thermal/unrecorded Ploss/Tj/Phi hidden by default)
       expect(screen.getByTestId('scope-tree-power-section')).toBeDefined();
       expect(screen.getByTestId('scope-tree-nets-section')).toBeDefined();
       expect(screen.getByTestId('scope-tree-control-section')).toBeDefined();
-      expect(screen.getByTestId('scope-tree-thermal-section')).toBeDefined();
+      expect(screen.queryByTestId('scope-tree-thermal-section')).toBeNull();
 
       // Power components
       expect(screen.getByText('L_filter')).toBeDefined();
@@ -192,16 +191,20 @@ describe('ScopeChannelManager Component', () => {
       expect(screen.getByText('V(L_filter)')).toBeDefined();
       expect(screen.getByText('I(S.1)')).toBeDefined();
       expect(screen.getByText('V(S.1)')).toBeDefined();
-      expect(screen.getByText('Ploss_S.1')).toBeDefined();
+      expect(screen.queryByText('Ploss_S.1')).toBeNull();
 
-      // Nets
+      // Canonical nets (V(dc_pos), V(load_p)) shown; bare duplicate wire aliases hidden
       expect(screen.getByText('V(dc_pos)')).toBeDefined();
       expect(screen.getByText('V(load_p)')).toBeDefined();
+      expect(screen.queryByTestId('scope-signal-row-dc_pos')).toBeNull();
 
       // Control
       expect(screen.getByText('pwm_a')).toBeDefined();
 
-      // Thermal & Magnetic
+      // Toggling "Show advanced signals" reveals unrecorded Ploss / Tj / Phi
+      fireEvent.click(screen.getByTestId('scope-show-advanced-signals'));
+      expect(screen.getByTestId('scope-tree-thermal-section')).toBeDefined();
+      expect(screen.getByText('Ploss_S.1')).toBeDefined();
       expect(screen.getByText('Tj_S.1')).toBeDefined();
       expect(screen.getByText('Phi_L_filter')).toBeDefined();
     });

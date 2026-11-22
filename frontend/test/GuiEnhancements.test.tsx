@@ -235,13 +235,15 @@ describe('App toolbar, diagnostics and tab context menu', () => {
     expect(screen.queryByTestId('nav-duplicate-btn')).toBeNull();
     expect(screen.queryByTestId('nav-delete-btn')).toBeNull();
 
-    // Compact Help menu provides Command Palette & Shortcuts
-    fireEvent.click(screen.getByTestId('nav-help-btn'));
-    expect(screen.getByTestId('nav-help-menu')).toBeTruthy();
+    // Structured menu bar provides View, Analyze (Command Palette & Shortcuts), and Settings
+    expect(screen.getByTestId('nav-view-menu-btn')).toBeTruthy();
+    expect(screen.getByTestId('nav-settings-btn')).toBeTruthy();
+    fireEvent.click(screen.getByTestId('nav-analyze-menu-btn'));
+    expect(screen.getByTestId('nav-analyze-menu')).toBeTruthy();
     expect(screen.getByTestId('nav-open-command-palette-btn')).toBeTruthy();
     expect(screen.getByTestId('nav-open-shortcuts-btn')).toBeTruthy();
     fireEvent.keyDown(window, { key: 'Escape' });
-    expect(screen.queryByTestId('nav-help-menu')).toBeNull();
+    expect(screen.queryByTestId('nav-analyze-menu')).toBeNull();
 
     const comp = container.querySelectorAll('g.component')[0];
     const svg = container.querySelector('svg.sheet') as SVGElement;

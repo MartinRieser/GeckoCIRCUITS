@@ -10,7 +10,9 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import type { EditorComponent, GraphRegister } from '../model/types';
-import { formatEngineeringValue, extractAvailableSignalDetails, type AvailableSignalMetadata } from '../model/componentSchema';
+import { formatEngineeringValue } from '../model/componentSchema';
+import { buildCleanSignalCatalog } from '../simulation/signalCatalog';
+import { isGroundSignal } from '../simulation/chartData';
 import {
   strictScopeChannels,
   parseSignalGraphs,
@@ -22,7 +24,6 @@ import { SCOPE_SETTING_KEYS, SENTINEL_UNSET } from '../model/constants';
 import type { ScopeDisplayLayout } from '../model/constants';
 import type { ScopeController } from '../simulation/useScopeController';
 import { isVoltmeterComponent, isAmmeterComponent } from '../model/componentSchema';
-import { isGroundSignal } from '../simulation/chartData';
 
 export interface ScopePropertiesPanelProps {
   /** The oscilloscope component currently inspected (for legacy scope tabs). */
@@ -51,6 +52,8 @@ export interface ScopePropertiesPanelProps {
   onRemoveLabel?: (name: string, side: 'x' | 'y', index: number) => void;
   /** Callback to collapse the scope properties panel. */
   onCollapse?: () => void;
+  /** Whether duplicate wire aliases and unrecorded domain signals are hidden. */
+  hideDuplicatesAndSpeculative?: boolean;
 }
 
 /**
@@ -70,9 +73,15 @@ export function ScopePropertiesPanel({
   onSetLabel,
   onRemoveLabel,
   onCollapse,
+  hideDuplicatesAndSpeculative = true,
 }: ScopePropertiesPanelProps) {
   const [signalSearch, setSignalSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'electrical' | 'control'>('all');
+  const [showAdvancedSignals, setShowAdvancedSignals] = useState(!hideDuplicatesAndSpeculative);
+
+  useEffect(() => {
+    setShowAdvancedSignals(!hideDuplicatesAndSpeculative);
+  }, [hideDuplicatesAndSpeculative]);
 
   const channels = useMemo(
     () => (scopeComponent ? strictScopeChannels(scopeComponent, scope.signalNames, allComponents, wires) : []),
@@ -82,49 +91,19 @@ export function ScopePropertiesPanel({
   const signalGraphsRaw = scopeComponent?.parameters?.[SCOPE_SETTING_KEYS.signalGraphs] as string | undefined;
   const signalGraphs = useMemo(() => parseSignalGraphs(signalGraphsRaw), [signalGraphsRaw]);
 
-  // Unified available signal metadata across schematic and simulation results
-  const allAvailableSignalDetails = useMemo(() => {
-    const list = extractAvailableSignalDetails(allComponents, wires);
-    const known = new Set(list.map((s) => s.name));
-    const extraNames = new Set<string>();
-
-    if (results) {
-      Object.keys(results).forEach((k) => {
-        if (!known.has(k) && !isGroundSignal(k)) extraNames.add(k);
-      });
-    }
-    scope.signalNames.forEach((k) => {
-      if (!known.has(k) && !isGroundSignal(k)) extraNames.add(k);
-    });
-    if (graphRegister?.signals) {
-      graphRegister.signals.forEach((k) => {
-        if (!known.has(k) && !isGroundSignal(k)) extraNames.add(k);
-      });
-    }
-
-    const extras: AvailableSignalMetadata[] = Array.from(extraNames).map((name) => {
-      const lower = name.toLowerCase();
-      const isCtrl =
-        lower.startsWith('ctrl') ||
-        lower.startsWith('gate') ||
-        lower.startsWith('pwm') ||
-        lower.startsWith('pi');
-      const isAmp =
-        lower.startsWith('i_') || lower.startsWith('i(') || lower.startsWith('il');
-      const isVolt =
-        lower.startsWith('v_') || lower.startsWith('v(') || lower.startsWith('u');
-      return {
-        name,
-        domain: isCtrl ? 'control' : 'electrical',
-        category: isVolt ? 'voltage' : isAmp ? 'current' : isCtrl ? 'control' : 'other',
-        sourceDescription: 'Waveform signal',
-      };
-    });
-
-    return [...list.filter((s) => !isGroundSignal(s.name)), ...extras].sort((a, b) =>
-      a.name.localeCompare(b.name, undefined, { numeric: true }),
-    );
-  }, [allComponents, wires, results, scope.signalNames, graphRegister?.signals]);
+  // Unified, deduplicated available signal metadata across schematic and simulation results
+  const allAvailableSignalDetails = useMemo(
+    () =>
+      buildCleanSignalCatalog({
+        components: allComponents,
+        wires,
+        results,
+        extraSignalNames: scope.signalNames,
+        assignedChannels: graphRegister?.signals ?? channels,
+        hideDuplicatesAndSpeculative: !showAdvancedSignals,
+      }),
+    [allComponents, wires, results, scope.signalNames, graphRegister?.signals, channels, showAdvancedSignals],
+  );
 
   const filteredSignalDetails = useMemo(() => {
     return allAvailableSignalDetails.filter((sig) => {
@@ -535,6 +514,26 @@ export function ScopePropertiesPanel({
                   </button>
                 ))}
               </div>
+              <label
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  fontSize: '10px',
+                  color: 'var(--text-muted)',
+                  cursor: 'pointer',
+                  userSelect: 'none',
+                }}
+                title="Include duplicate wire aliases and unrecorded Ploss/Tj/Phi signals"
+              >
+                <input
+                  type="checkbox"
+                  data-testid="scope-props-show-advanced-signals"
+                  checked={showAdvancedSignals}
+                  onChange={(e) => setShowAdvancedSignals(e.target.checked)}
+                />
+                <span>Show advanced signals</span>
+              </label>
             </div>
 
             {/* Available Signals Scrollable List */}

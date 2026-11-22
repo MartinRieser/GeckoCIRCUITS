@@ -55,8 +55,17 @@ import { DiagnosticsBadge, DiagnosticsDrawer } from './simulation/DiagnosticsDra
 import { SaveAsModal } from './modals/SaveAsModal';
 import { SaveAsExampleModal } from './modals/SaveAsExampleModal';
 import { ExamplesModal } from './modals/ExamplesModal';
+import { SettingsModal } from './modals/SettingsModal';
 import { addExample } from './model/examplesService';
 import { FileMenu } from './nav/FileMenu';
+import { ViewMenu } from './nav/ViewMenu';
+import { AnalyzeMenu } from './nav/AnalyzeMenu';
+import {
+  loadAppSettings,
+  saveAppSettings,
+  resetWorkspaceLayoutStorage,
+  type AppSettings,
+} from './model/appSettings';
 import { ScriptViewTab } from './properties/ScriptViewTab';
 import {
   resolveActiveSimSettings,
@@ -114,12 +123,11 @@ export function App() {
   const [activeTabId, setActiveTabId] = useState<string>('schematic');
   const [simConfigOpen, setSimConfigOpen] = useState(false);
   const [sweepModalOpen, setSweepModalOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [sweepPrefill, setSweepPrefill] = useState<{ componentName: string; paramKey: string } | null>(null);
   const [tuneBarOpen, setTuneBarOpen] = useState(false);
   const [activeSweepStepIndex, setActiveSweepStepIndex] = useState<number | null>(null);
   const [sweepOverlayAll, setSweepOverlayAll] = useState(false);
-  const [helpMenuOpen, setHelpMenuOpen] = useState(false);
-  const helpMenuRef = useRef<HTMLDivElement>(null);
   const [saveSnippetModalOpen, setSaveSnippetModalOpen] = useState(false);
   const [waveformsDrawerOpen, setWaveformsDrawerOpen] = useState(false);
   const [drawerRatio, setDrawerRatio] = useState<number>(() => {
@@ -165,12 +173,16 @@ export function App() {
   const [focusTarget, setFocusTarget] = useState<SheetFocusTarget | null>(null);
   const [saveAsOpen, setSaveAsOpen] = useState(false);
   const [selectedScope, setSelectedScope] = useState<string>('all');
-  const [displayLayout, setDisplayLayout] = useState<ScopeDisplayLayout>(() => {
-    return (localStorage.getItem('gecko-display-layout') as ScopeDisplayLayout) || 'stacked';
-  });
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    return (localStorage.getItem('gecko-theme') as 'dark' | 'light') || 'dark';
-  });
+  const [appSettings, setAppSettings] = useState<AppSettings>(() => loadAppSettings());
+  const [displayLayout, setDisplayLayout] = useState<ScopeDisplayLayout>(
+    () => appSettings.workspace.defaultScopeLayout,
+  );
+  const theme = appSettings.workspace.theme;
+  const updateAppSettings = useCallback((next: AppSettings) => {
+    setAppSettings(next);
+    saveAppSettings(next);
+    setDisplayLayout(next.workspace.defaultScopeLayout);
+  }, []);
 
   // Desktop shell: circuits opened via double-click / "Open with" / second launch
   useEffect(() => {
@@ -315,24 +327,6 @@ export function App() {
     [activeGraphRegister, actions],
   );
 
-  useEffect(() => {
-    if (!helpMenuOpen) return;
-    const onDown = (e: MouseEvent) => {
-      if (helpMenuRef.current && !helpMenuRef.current.contains(e.target as Node)) {
-        setHelpMenuOpen(false);
-      }
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setHelpMenuOpen(false);
-    };
-    window.addEventListener('mousedown', onDown);
-    window.addEventListener('keydown', onKey);
-    return () => {
-      window.removeEventListener('mousedown', onDown);
-      window.removeEventListener('keydown', onKey);
-    };
-  }, [helpMenuOpen]);
-
   const activeSweepRun = useMemo(() => {
     if (!simState.sweepSession || sweepOverlayAll || activeSweepStepIndex === null) return null;
     return (
@@ -443,14 +437,19 @@ export function App() {
     setActiveTabId(scriptTabId(scriptName));
   };
 
-  // Auto-open the bottom Waveforms drawer when simulation completes while viewing Schematic
+  // Auto-open the bottom Waveforms drawer when simulation completes while viewing Schematic (if enabled)
   const prevSimStatusRef = useRef<string | null>(null);
   useEffect(() => {
-    if (simState.status === 'COMPLETED' && prevSimStatusRef.current !== 'COMPLETED' && activeTabId === 'schematic') {
+    if (
+      appSettings.workspace.autoOpenWaveformsOnRun &&
+      simState.status === 'COMPLETED' &&
+      prevSimStatusRef.current !== 'COMPLETED' &&
+      activeTabId === 'schematic'
+    ) {
       setWaveformsDrawerOpen(true);
     }
     prevSimStatusRef.current = simState.status;
-  }, [simState.status, activeTabId]);
+  }, [simState.status, activeTabId, appSettings.workspace.autoOpenWaveformsOnRun]);
 
   // When a parametric sweep completes, activate step 0 across Scope & schematic and reveal results
   const prevSweepStatusRef = useRef<string | null>(null);
@@ -711,6 +710,18 @@ export function App() {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       // Modals manage their own keybindings; suspend global schematic shortcuts
+      if (settingsOpen) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          setSettingsOpen(false);
+        }
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === ',') {
+        e.preventDefault();
+        setSettingsOpen(true);
+        return;
+      }
       if (simConfigOpen || saveAsOpen || examplesModalOpen || saveAsExampleOpen || saveSnippetModalOpen) {
         return;
       }
@@ -1029,6 +1040,41 @@ export function App() {
             canSave={!!state.circuitId}
             busy={state.busy}
           />
+          <ViewMenu
+            leftSidebarOpen={leftSidebarOpen}
+            onToggleLeftSidebar={() => setLeftSidebarOpen((p) => !p)}
+            rightSidebarOpen={rightSidebarOpen}
+            onToggleRightSidebar={() => setRightSidebarOpen((p) => !p)}
+            waveformsDrawerOpen={waveformsDrawerOpen}
+            onToggleWaveformsDrawer={() => setWaveformsDrawerOpen((p) => !p)}
+            diagnosticsOpen={diagnosticsOpen}
+            onToggleDiagnostics={() => setDiagnosticsOpen((p) => !p)}
+            settings={appSettings}
+            onUpdateSettings={updateAppSettings}
+            onResetLayout={() => {
+              resetWorkspaceLayoutStorage();
+              setLeftSidebarOpen(true);
+              setRightSidebarOpen(true);
+              setRightSidebarWidth(320);
+              setDrawerRatio(0.42);
+              dispatch({ type: 'STATUS', status: 'Reset workspace panel layout' });
+            }}
+          />
+          <AnalyzeMenu
+            circuitId={state.circuitId}
+            hasResults={Boolean(effectiveSimResults && Object.keys(effectiveSimResults).length > 0)}
+            features={appSettings.features}
+            onOpenSimConfig={() => setSimConfigOpen(true)}
+            onPinReference={() => actions.pinBaseline(undefined, effectiveSimResults)}
+            onOpenSweep={() => setSweepModalOpen(true)}
+            onToggleLiveSliders={() => {
+              setTuneBarOpen((prev) => !prev);
+              if (activeTabId === 'schematic') setWaveformsDrawerOpen(true);
+            }}
+            onOpenDiagnostics={() => setDiagnosticsOpen(true)}
+            onOpenCommandPalette={() => setCommandPaletteOpen(true)}
+            onOpenShortcuts={() => setShortcutsHelpOpen(true)}
+          />
           <input
             ref={fileInputRef}
             type="file"
@@ -1099,74 +1145,19 @@ export function App() {
             onOpenConfigModal={() => setSimConfigOpen(true)}
             onStatusMessage={(status) => dispatch({ type: 'STATUS', status })}
           />
-
-          <span className="nav-separator" />
-
-          {/* Panel Toggle Shortcuts */}
-          <button
-            type="button"
-            className={`nav-btn ${leftSidebarOpen ? 'active' : ''}`}
-            onClick={() => setLeftSidebarOpen(!leftSidebarOpen)}
-            title="Toggle Components Palette (Ctrl+B)"
-          >
-            Palette <span className="kbd-shortcut">Ctrl+B</span>
-          </button>
-          <button
-            type="button"
-            className={`nav-btn ${rightSidebarOpen ? 'active' : ''}`}
-            onClick={() => setRightSidebarOpen(!rightSidebarOpen)}
-            title="Toggle Properties Panel (Ctrl+I)"
-          >
-            Properties <span className="kbd-shortcut">Ctrl+I</span>
-          </button>
         </div>
 
         {/* Right Toolbar Actions */}
         <div className="nav-right">
-          <div className="nav-help-wrap" ref={helpMenuRef}>
-            <button
-              type="button"
-              data-testid="nav-help-btn"
-              className={`nav-btn icon-only${helpMenuOpen ? ' active' : ''}`}
-              onClick={() => setHelpMenuOpen((prev) => !prev)}
-              aria-expanded={helpMenuOpen}
-              aria-haspopup="menu"
-              title="Search Commands (Ctrl+K) & Keyboard Shortcuts (?)"
-              aria-label="Help and Command Palette"
-            >
-              ?
-            </button>
-            {helpMenuOpen && (
-              <div className="nav-help-menu" role="menu" data-testid="nav-help-menu">
-                <button
-                  type="button"
-                  role="menuitem"
-                  data-testid="nav-open-command-palette-btn"
-                  className="nav-help-item"
-                  onClick={() => {
-                    setCommandPaletteOpen(true);
-                    setHelpMenuOpen(false);
-                  }}
-                >
-                  <span>🔍 Search Parts &amp; Commands</span>
-                  <kbd className="kbd-shortcut">Ctrl+K</kbd>
-                </button>
-                <button
-                  type="button"
-                  role="menuitem"
-                  data-testid="nav-open-shortcuts-btn"
-                  className="nav-help-item"
-                  onClick={() => {
-                    setShortcutsHelpOpen(true);
-                    setHelpMenuOpen(false);
-                  }}
-                >
-                  <span>⌨ Keyboard Shortcuts</span>
-                  <kbd className="kbd-shortcut">?</kbd>
-                </button>
-              </div>
-            )}
-          </div>
+          <button
+            type="button"
+            data-testid="nav-settings-btn"
+            className={`nav-btn${settingsOpen ? ' active' : ''}`}
+            onClick={() => setSettingsOpen(true)}
+            title="Open Settings & Workspace Feature Toggles (Ctrl+,)"
+          >
+            ⚙ Settings
+          </button>
 
           <DiagnosticsBadge
             diagnostics={diagnostics}
@@ -1174,15 +1165,6 @@ export function App() {
             onToggle={() => setDiagnosticsOpen((prev) => !prev)}
             testId="navbar-diagnostics-badge"
           />
-
-          <button
-            type="button"
-            className="nav-btn theme-toggle"
-            onClick={() => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))}
-            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} theme`}
-          >
-            {theme === 'dark' ? '☀️' : '🌙'}
-          </button>
 
           <div className="connection-badge" title={wsConnected ? 'WebSocket live' : 'Offline / Polling'}>
             <span className={`status-dot ${wsConnected ? 'connected' : 'disconnected'}`} />
@@ -1552,7 +1534,7 @@ export function App() {
                 catalog={catalog}
                 onArm={actions.arm}
                 onCollapse={() => setLeftSidebarOpen(false)}
-                snippets={allSnippets}
+                snippets={appSettings.features.snippets ? allSnippets : undefined}
                 selectedCount={state.selection.length}
                 onSaveSelectionAsSnippet={() => setSaveSnippetModalOpen(true)}
                 onArmSnippet={(snip) => void actions.armSnippet(snip)}
@@ -1616,6 +1598,45 @@ export function App() {
               focusTarget={focusTarget}
               simResults={effectiveSimResults}
               sweepPreviewLabel={sweepPreviewLabel}
+              showOperatingPointBadges={appSettings.schematic.showOperatingPointBadges}
+              onToggleOperatingPointBadges={() =>
+                updateAppSettings({
+                  ...appSettings,
+                  schematic: {
+                    ...appSettings.schematic,
+                    showOperatingPointBadges: !appSettings.schematic.showOperatingPointBadges,
+                  },
+                })
+              }
+              showGrid={appSettings.schematic.showGrid}
+              onToggleGrid={() =>
+                updateAppSettings({
+                  ...appSettings,
+                  schematic: {
+                    ...appSettings.schematic,
+                    showGrid: !appSettings.schematic.showGrid,
+                  },
+                })
+              }
+              showProbeMarkers={appSettings.schematic.showProbeMarkers}
+              onToggleProbeMarkers={() =>
+                updateAppSettings({
+                  ...appSettings,
+                  schematic: {
+                    ...appSettings.schematic,
+                    showProbeMarkers: !appSettings.schematic.showProbeMarkers,
+                  },
+                })
+              }
+              netLabelMode={appSettings.schematic.netLabelMode}
+              onCycleNetLabelMode={() => {
+                const cur = appSettings.schematic.netLabelMode;
+                const next = cur === 'smart' ? 'all' : cur === 'all' ? 'hover' : 'smart';
+                updateAppSettings({
+                  ...appSettings,
+                  schematic: { ...appSettings.schematic, netLabelMode: next },
+                });
+              }}
               isSimStale={
                 simState.results !== null &&
                 simState.lastSimModelVersion !== null &&
@@ -1624,7 +1645,9 @@ export function App() {
               actions={{
                 placeGhost: actions.placeGhost,
                 placeSnippet: actions.placeSnippet,
-                onSaveAsSnippet: () => setSaveSnippetModalOpen(true),
+                onSaveAsSnippet: appSettings.features.snippets
+                  ? () => setSaveSnippetModalOpen(true)
+                  : undefined,
                 finishWire: actions.finishWire,
                 commitMove: actions.commitMove,
                 resizeComponent: actions.resizeComponent,
@@ -1783,6 +1806,9 @@ export function App() {
               }
               tuneBarOpen={tuneBarOpen}
               onToggleTuneBar={() => setTuneBarOpen((prev) => !prev)}
+              features={appSettings.features}
+              hideDuplicatesAndSpeculative={appSettings.scope.hideDuplicateAndSpeculativeSignals}
+              showQuickMeasureStrip={appSettings.scope.showQuickMeasureStrip}
               onHighlightComponent={(name) => {
                 if (name) {
                   dispatch({ type: 'SELECT', name, additive: false });
@@ -1911,17 +1937,25 @@ export function App() {
                       onDelete={actions.deleteComponent}
                       onOpenScopeTab={(name) => openScopeTab(name)}
                       onCollapse={() => setRightSidebarOpen(false)}
-                      onPinLiveSlider={(compName, paramKey) => {
-                        actions.pinSlider(compName, paramKey);
-                        setTuneBarOpen(true);
-                        if (activeTabId === 'schematic') {
-                          setWaveformsDrawerOpen(true);
-                        }
-                      }}
-                      onOpenSweepForComponent={(compName, paramKey) => {
-                        setSweepPrefill({ componentName: compName, paramKey });
-                        setSweepModalOpen(true);
-                      }}
+                      onPinLiveSlider={
+                        appSettings.features.liveSliders
+                          ? (compName, paramKey) => {
+                              actions.pinSlider(compName, paramKey);
+                              setTuneBarOpen(true);
+                              if (activeTabId === 'schematic') {
+                                setWaveformsDrawerOpen(true);
+                              }
+                            }
+                          : undefined
+                      }
+                      onOpenSweepForComponent={
+                        appSettings.features.parametricSweep
+                          ? (compName, paramKey) => {
+                              setSweepPrefill({ componentName: compName, paramKey });
+                              setSweepModalOpen(true);
+                            }
+                          : undefined
+                      }
                       onAttachNativeLibrary={actions.attachNativeLibrary}
                       theme={theme}
                     />
@@ -1947,6 +1981,9 @@ export function App() {
                         onSetLabel={actions.setLabel}
                         onRemoveLabel={actions.removeLabel}
                         onCollapse={() => setRightSidebarOpen(false)}
+                        hideDuplicatesAndSpeculative={
+                          appSettings.scope.hideDuplicateAndSpeculativeSignals
+                        }
                       />
                     ) : (
                       <SimulationPropertiesPanel
@@ -2013,13 +2050,31 @@ export function App() {
           actions.arm(entry);
           setCommandPaletteOpen(false);
         }}
-        snippets={allSnippets}
+        snippets={appSettings.features.snippets ? allSnippets : undefined}
         onSelectSnippet={(snip) => {
           void actions.armSnippet(snip);
           setCommandPaletteOpen(false);
         }}
         hasSelection={state.selection.length > 0}
-        onSaveAsSnippet={() => setSaveSnippetModalOpen(true)}
+        onSaveAsSnippet={
+          appSettings.features.snippets ? () => setSaveSnippetModalOpen(true) : undefined
+        }
+      />
+
+      {/* Settings & Feature Toggles Modal (Ctrl+,) */}
+      <SettingsModal
+        isOpen={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        settings={appSettings}
+        onUpdateSettings={updateAppSettings}
+        onResetLayout={() => {
+          resetWorkspaceLayoutStorage();
+          setLeftSidebarOpen(true);
+          setRightSidebarOpen(true);
+          setRightSidebarWidth(320);
+          setDrawerRatio(0.42);
+          dispatch({ type: 'STATUS', status: 'Reset workspace panel layout' });
+        }}
       />
 
       {/* Simulation Configuration Modal */}

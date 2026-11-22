@@ -11,8 +11,8 @@ import type { EditorComponent, EditorWire } from '../model/types';
 import { inferSignalUnit } from './ScopeViewTab';
 import type { ScopeDisplayLayout } from '../model/constants';
 import { resolveSignalGraph, defaultGraphForSignal } from './scopes';
-import { isGroundSignal } from './chartData';
-import { extractAvailableSignalDetails, type AvailableSignalMetadata } from '../model/componentSchema';
+import { type AvailableSignalMetadata } from '../model/componentSchema';
+import { buildCleanSignalCatalog } from './signalCatalog';
 
 /**
  * Extracts pure net label from single-ended or differential virtual voltage signal.
@@ -65,6 +65,10 @@ export interface ScopeChannelManagerProps {
   onHighlightComponent?: (componentName: string | null) => void;
   /** Optional hover callback to highlight an electrical net. */
   onHighlightNet?: (netLabelOrId: string | null) => void;
+  /** Optional simulation results to verify which domain signals were actually recorded. */
+  results?: Record<string, number[]> | null;
+  /** Whether duplicate net aliases and unrecorded Ploss/Tj/Phi signals are hidden by default. */
+  hideDuplicatesAndSpeculative?: boolean;
 }
 
 type SignalCategory = 'all' | 'voltages' | 'currents' | 'control';
@@ -90,13 +94,20 @@ export function ScopeChannelManager({
   wires,
   onHighlightComponent,
   onHighlightNet,
+  results = null,
+  hideDuplicatesAndSpeculative = true,
 }: ScopeChannelManagerProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('tree');
   const [activeCategory, setActiveCategory] = useState<SignalCategory>('all');
+  const [showAdvancedSignals, setShowAdvancedSignals] = useState(!hideDuplicatesAndSpeculative);
   const [targetSubplot, setTargetSubplot] = useState<'auto' | 1 | 2 | 3>('auto');
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
   const [collapsedComponents, setCollapsedComponents] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setShowAdvancedSignals(!hideDuplicatesAndSpeculative);
+  }, [hideDuplicatesAndSpeculative]);
 
   const modalRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -155,81 +166,19 @@ export function ScopeChannelManager({
     onAddChannel(signalName, g);
   };
 
-  // Compile unified signal metadata from components, wires, and simulation results
-  const allSignalsMetadata = useMemo(() => {
-    const extracted = components ? extractAvailableSignalDetails(components, wires) : [];
-    const metaMap = new Map<string, AvailableSignalMetadata>();
-
-    for (const item of extracted) {
-      metaMap.set(item.name, item);
-    }
-
-    const validAvailable = allAvailableSignals.filter((s) => !isGroundSignal(s));
-    for (const sig of validAvailable) {
-      if (!metaMap.has(sig)) {
-        const unit = inferSignalUnit(sig);
-        let domain: 'electrical' | 'control' | 'thermal' | 'other' = 'electrical';
-        let category: 'voltage' | 'current' | 'control' | 'other' = 'other';
-        let group: 'power' | 'nets' | 'control' | 'thermal_magnetic' = 'control';
-        let compName: string | undefined;
-
-        if (sig.startsWith('I(') && sig.endsWith(')')) {
-          compName = sig.slice(2, -1);
-          domain = 'electrical';
-          category = 'current';
-          group = 'power';
-        } else if (sig.startsWith('V(') && sig.endsWith(')')) {
-          const interior = sig.slice(2, -1);
-          domain = 'electrical';
-          category = 'voltage';
-          if (components && components.some((c) => c.name === interior)) {
-            compName = interior;
-            group = 'power';
-          } else {
-            group = 'nets';
-          }
-        } else if (sig.startsWith('Ploss_')) {
-          compName = sig.replace('Ploss_', '');
-          domain = 'other';
-          category = 'other';
-          group = 'power';
-        } else if (sig.startsWith('Tj_')) {
-          compName = sig.replace('Tj_', '');
-          domain = 'thermal';
-          category = 'other';
-          group = 'thermal_magnetic';
-        } else if (sig.startsWith('Phi_')) {
-          compName = sig.replace('Phi_', '');
-          domain = 'electrical';
-          category = 'other';
-          group = 'thermal_magnetic';
-        } else if (unit === 'V' || sig.toLowerCase().startsWith('v_') || sig.toLowerCase().startsWith('u_')) {
-          domain = 'electrical';
-          category = 'voltage';
-          group = 'nets';
-        } else if (unit === 'A' || sig.toLowerCase().startsWith('i_')) {
-          domain = 'electrical';
-          category = 'current';
-          group = 'power';
-        } else {
-          domain = 'control';
-          category = 'control';
-          group = 'control';
-        }
-
-        metaMap.set(sig, {
-          name: sig,
-          domain,
-          category,
-          sourceDescription: compName ? `Signal for ${compName}` : `Signal "${sig}"`,
-          componentName: compName,
-          group,
-        });
-      }
-    }
-
-    return Array.from(metaMap.values());
-  }, [components, wires, allAvailableSignals]);
+  // Compile unified, deduplicated signal metadata from components, wires, and simulation results
+  const allSignalsMetadata = useMemo(
+    () =>
+      buildCleanSignalCatalog({
+        components,
+        wires,
+        results,
+        extraSignalNames: allAvailableSignals,
+        assignedChannels,
+        hideDuplicatesAndSpeculative: !showAdvancedSignals,
+      }),
+    [components, wires, results, allAvailableSignals, assignedChannels, showAdvancedSignals],
+  );
 
   const q = searchQuery.trim().toLowerCase();
 
@@ -837,7 +786,7 @@ export function ScopeChannelManager({
             )}
           </div>
 
-          {/* Search, View Mode Toggle, and Filters */}
+          {/* Search, View Mode Toggle, and Clean Filter */}
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <input
               ref={searchInputRef}
@@ -845,9 +794,30 @@ export function ScopeChannelManager({
               className="prop-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Filter signals (e.g. u_out, duty, i_L)..."
-              style={{ flex: '1 1 240px' }}
+              placeholder="Filter signals (e.g. V(out), pwm, I(L.1))..."
+              style={{ flex: '1 1 200px' }}
             />
+
+            <label
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+                fontSize: '11px',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                userSelect: 'none',
+              }}
+              title="Include duplicate wire aliases and unrecorded Ploss/Tj/Phi signals"
+            >
+              <input
+                type="checkbox"
+                data-testid="scope-show-advanced-signals"
+                checked={showAdvancedSignals}
+                onChange={(e) => setShowAdvancedSignals(e.target.checked)}
+              />
+              <span>Show advanced signals</span>
+            </label>
 
             {/* View Mode Toggle: Tree View vs Flat View */}
             <div className="segmented-control" style={{ display: 'flex' }}>

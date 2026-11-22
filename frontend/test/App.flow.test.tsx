@@ -5,7 +5,7 @@
  * live subscription is not under test here).
  */
 import { describe, expect, it, vi, afterEach } from 'vitest';
-import { cleanup, fireEvent, render, waitFor, act } from '@testing-library/react';
+import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
 import { App } from '../src/App';
 
 const fetchMock = vi.fn();
@@ -180,35 +180,25 @@ describe('App user flow', () => {
   });
 
   it('toggles theme between dark and light', async () => {
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: async () => catalogBody,
-    });
+    fetchMock.mockImplementation(routeFetch);
 
-    const { container } = render(<App />);
+    const { getByTestId } = render(<App />);
 
     await waitFor(() => {
-      expect(container.querySelector('.nav-btn.theme-toggle')).not.toBeNull();
+      expect(getByTestId('nav-view-menu-btn')).toBeTruthy();
     });
-
-    const themeBtn = container.querySelector('.nav-btn.theme-toggle') as HTMLButtonElement;
-    expect(themeBtn).toBeDefined();
 
     // Default dark theme
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
 
-    // Click to toggle to light
-    act(() => {
-      fireEvent.click(themeBtn);
-    });
+    // Open View menu and toggle to light
+    fireEvent.click(getByTestId('nav-view-menu-btn'));
+    fireEvent.click(getByTestId('view-toggle-theme-btn'));
     expect(document.documentElement.getAttribute('data-theme')).toBe('light');
-    expect(localStorage.getItem('gecko-theme')).toBe('light');
 
-    // Click to toggle back to dark
-    act(() => {
-      fireEvent.click(themeBtn);
-    });
+    // Open View menu and toggle back to dark
+    fireEvent.click(getByTestId('nav-view-menu-btn'));
+    fireEvent.click(getByTestId('view-toggle-theme-btn'));
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
-    expect(localStorage.getItem('gecko-theme')).toBe('dark');
   });
 });
